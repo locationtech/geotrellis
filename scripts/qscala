@@ -1,0 +1,53 @@
+#!/usr/bin/python
+
+import os
+from os.path import join, basename, dirname, splitext
+from subprocess import call, Popen, PIPE, STDOUT
+import shutil
+import sys
+
+# memory limits
+mps = 512
+ms  = 512
+mx  = 4096
+
+# trellis path
+if os.getenv("TRELLIS_HOME"):
+    trellis = os.getenv("TRELLIS_HOME")
+else:
+    raise Exception("please set $TRELLIS_HOME")
+
+# return paths relative to trellis dir
+def getd(d): return join(trellis, d)
+
+# used to find files in trellis dir
+def find(d, name):
+    path = getd(d)
+    if os.path.exists(path):
+        p = Popen(["find", path, "-name", name], stdout=PIPE)
+        return [line[:-1] for line in p.stdout]
+    else:
+        return []
+
+# used to run scala scripts
+def runscala(args):
+    classpath = []
+    for d in ["lib", "lib_managed", "project"]:
+        #classpath.extend(find(d, '*.jar'))
+        classpath.extend(find(d, '*'))
+    for d in ['src/main/scala', 'src/main/java', 'target/scala_2.8.1/classes']:
+        classpath.append(getd(d))
+    
+    cp  = ':'.join(classpath)
+    
+    env = dict(os.environ)
+    env['JAVA_OPTS'] = "-XX:MaxPermSize=%dm -Xms%dm -Xmx%dm" % (mps, ms, mx)
+
+    args2 = ['scala', '-cp', cp, '-Xscript', 'Script'] + args
+    #print basename(args2[5]) + ' ' + ' '.join(args2[6:])
+    result = call(args2, env=env)
+    if result != 0:
+        print '%s: exited %d' % (args2[5], result)
+        sys.exit(result)
+
+runscala(sys.argv[1:])

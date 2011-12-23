@@ -1,0 +1,13 @@
+<METADATA>
+  <VERSION value="NORMALIZED" />
+  <ID value="" />
+  <NAME value="quadborder" />
+  <DESCRIPTION value="This is four quadrants with a boreder of nulls" />
+  <SRID value="102100" />
+  <CELLWIDTH value="8.0" />
+  <CELLHEIGHT value="8.0" />
+  <ORIGIN xMin="-9.5" yMin="3.8" />
+  <DIMENSIONS width="20" height="20" />
+  <CREATEDATE value="10/1/2010 10:35:35 AM" />
+  <UPDATEDATE value="10/1/2010 10:35:35 AM" />
+</METADATA>

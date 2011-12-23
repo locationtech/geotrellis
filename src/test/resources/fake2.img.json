@@ -1,0 +1,11 @@
+{
+  "layer": "fake2.img",
+  "xmin": -100.0,
+  "xmax": -60.0,
+  "ymin": 100.0,
+  "ymax": 140.0,
+  "rows": 4,
+  "cols": 4,
+  "cellwidth": 10.0,
+  "cellheight": 10.0
+}

@@ -1,0 +1,206 @@
+package trellis.bugs.WeightedOverlayThree
+
+import trellis.operation._
+
+import trellis.process._
+
+import org.scalatest.Spec
+import org.scalatest.matchers.MustMatchers
+
+// This currently crashes:
+//
+// http://192.168.1.75:8001/wo?renderer=quantile&df=SBN_farm_mkt,3&bbox=-8400412.38390939,4869100.598665332,-8361717.407295826,4907446.971885979&height=825&width=832&format=png
+//
+// http://sample.avencia.com:8080/dt_sbn/api/calculations/WeightedOverlay.png?
+//   renderer=quantile_color&
+//   colors=0.17,0000FF,0.34,0080FF,0.50,00FF80,0.67,FFFF00,0.84,FF8000,1.0,FF0000&
+//   width=832&
+//   height=825&
+//   bbox=-8400412.38390939,-8361717.407295826,4869100.598665332,4907446.971885979&,
+//   df=SBN_farm_mkt,3
+
+// http://sample.avencia.com:8080/dt_sbn/api/calculations/WeightedOverlay.png?renderer=quantile_color&width=832&height=825&bbox=-8400412.38390939,-8361717.407295826,4869100.598665332,4907446.971885979&df=SBN_farm_mkt,3
+
+case class Timer[T](f:() => T) {
+  val t0 = System.currentTimeMillis()
+  val result = f()
+  val t1 = System.currentTimeMillis()
+  val time = t1 - t0
+}
+
+class BugSpec extends Spec with MustMatchers {
+  describe("A Trellis") {
+    // inputs and constants
+    val weights = Array(3)
+    val paths = Array("SBN_farm_mkt" ).map { "src/test/resources/sbn/" + _ }
+
+    val height = 256
+    val width  = 256
+
+    val maskpath    = "src/test/resources/sbn/SBN_co_phila"
+    val colors      = Array(0x0000FF, 0x0080FF, 0x00FF80, 0xFFFF00, 0xFF8000, 0xFF0000)
+    val noDataColor = 0x000000
+
+    // pre-process the total weights
+    val weightsum:Int = weights.foldLeft(0.toInt) { (a, b) => (a + b).toInt }
+
+    it("should not crash & then hang with a subextent") {
+      val server = TestServer()
+    
+      //val geo = LoadRasterExtentFromArgFile(paths(0)).run(server)
+  
+      val xmin = -8362103.781742656
+      val xmax = -8362092.161629559
+      val ymin = 4866335.011748168
+      val ymax = 4866346.631861265 
+
+      val geo = BuildRasterExtent(xmin = xmin, ymin = ymin,
+                              xmax = xmax, ymax = ymax,
+                                                     cols = width, rows = width,
+                                                     projection=102113)
+ 
+      Console.printf(geo.toString)
+      // load the files
+      var Rs:Seq[IntRasterOperation] = paths.map {
+        path => LoadArgFileChunk(path, geo)
+      }
+      
+      // associate the rasters with their weights
+      val Tpls = Rs.zip { weights }
+      
+      // multiply each raster point by its weight
+      Rs = Tpls.map { tpl => MultiplyConstant(tpl._1, tpl._2) }
+      
+      // average: add the rasters then divide by the sum of the weights
+      val W = DivideConstant(Add(Rs: _*), weightsum)
+    
+      // load the mask file
+      val M = LoadResampledArgFile(maskpath, height, width)
+      
+      // apply the mask
+      val T = if (false) { Mask(W, M, 0, 0) } else { W }
+      
+      // normalize the result for 1-100
+      val I = Immutable(Normalize(T, 1, 100))
+    
+      // create a histogram for color breaks
+      val H = BuildHistogramArray(I)
+    
+      // create colorized quantile breaks
+      val C = FindClassBreaks(H, colors.length)
+
+      // ACTUAL EXECUTION STARTS HERE
+      val t0 = System.currentTimeMillis()
+    
+      val classBreaks = C.run(server)
+      C.logTimingTree
+      val colorBreaks = classBreaks.zip(colors).toArray
+      val t1 = System.currentTimeMillis();
+      Console.printf("color breaks: %d ms\n", t1 - t0)
+      
+      //// write a PNG file using quantile class breaks
+      //val P = WritePNGFile(I, "/tmp/output.png", colorBreaks, 0, noDataColor, true)
+      //P.run(server)
+      //val t2 = System.currentTimeMillis();
+      //Console.printf("wrote png: %d ms\n", t2 - t1)
+    
+      //val P = RenderPNG(I, colorBreaks, 0, noDataColor)
+      //val pngData = P.run(server)
+      //val t2 = System.currentTimeMillis();
+      //Console.printf("rendered png(%dK): %d ms\n", pngData.length / 1024, t2 - t1)
+    
+      // write out the data as an ARG file
+      //val Z = WriteArgFile(N, "/tmp/argout")
+      //Z.run(server)
+      //Z.logTimingTree
+      //val t3 = System.currentTimeMillis();
+      //Console.printf("write arg: %d ms\n", t3 - t2)
+    
+      val tN = System.currentTimeMillis()
+      Console.printf("finished in %d ms\n", tN - t0)
+    }
+
+
+    //it("should work in parallel") {
+    //  val server = TestServer()
+    //
+    //  // break our "space" into four areas
+    //  val O  = LoadRasterExtentFromArgFile(paths(0))
+    //
+    //  val geo = O.run(server)
+    //  val U = BuildRasterExtent(xmin = geo.xmin, ymin = geo.ymin,
+    //                        xmax = geo.xmax, ymax = geo.ymax,
+    //                        cols = 600, rows = 600,
+    //                        projection=102113)
+    //
+    //  val Gs = ChunkRasterExtent(U, 1, 4).run(server)
+    //
+    //  // for each area, perform the weighted overlay operation
+    //  val Ds = Gs.map {
+    //    G => {
+    //      // load the rasters
+    //      val Rs = paths.map { path => LoadArgFileChunk(path, G) }
+    //
+    //      // associate the rasters with their weights
+    //      val Tpls = Rs.zip { weights }
+    //      
+    //      // multiply each raster point by its weight
+    //      val Ms = Tpls.map { tpl => MultiplyConstant(tpl._1, tpl._2) }
+    //      
+    //      // average: add the rasters then divide by the sum of the weights
+    //      DivideConstant(Add(Ms: _*), weightsum)
+    //    }
+    //  }
+    //
+    //  // stitch the areas back into one large piece
+    //  val S = StitchIntRasters(Ds)
+    //  //val S = StitchIntRasters(Array(Ds(0)))
+    //
+    //  // load the mask file
+    //  val M = LoadResampledArgFile(maskpath, height, width)
+    //  
+    //  // apply the mask
+    //  val T = if (false) { Mask(S, M, 0, 0) } else { S }
+    //  
+    //  // normalize the result for 1-100
+    //  val I = Immutable(Normalize(T, 1, 99))
+    //
+    //  // create a histogram for color breaks
+    //  val H = BuildHistogramArray(I)
+    //
+    //  // create colorized quantile breaks
+    //  val C = FindClassBreaks(H, colors.length)
+    //
+    //  // ACTUAL EXECUTION STARTS HERE
+    //  val t0 = System.currentTimeMillis()
+    //
+    //  val classBreaks = C.run(server)
+    //  C.logTimingTree
+    //  val colorBreaks = classBreaks.zip(colors).toArray
+    //  val t1 = System.currentTimeMillis();
+    //  Console.printf("color breaks: %d ms\n", t1 - t0)
+    //  
+    //  // write a PNG file using quantile class breaks
+    //  val P = WritePNGFile(I, "/tmp/output.png", colorBreaks, 0, noDataColor, true)
+    //  P.run(server)
+    //  val t2 = System.currentTimeMillis();
+    //  Console.printf("wrote png: %d ms\n", t2 - t1)
+    //
+    //  //val P = RenderPNG(I, colorBreaks, 0, noDataColor)
+    //  //val pngData = P.run(server)
+    //  //val t2 = System.currentTimeMillis();
+    //  //Console.printf("rendered png(%dK): %d ms\n", pngData.length / 1024, t2 - t1)
+    //
+    //  // write out the data as an ARG file
+    //  //val Z = WriteArgFile(N, "/tmp/argout")
+    //  //Z.run(server)
+    //  //Z.logTimingTree
+    //  //val t3 = System.currentTimeMillis();
+    //  //Console.printf("write arg: %d ms\n", t3 - t2)
+    //
+    //  val tN = System.currentTimeMillis()
+    //  Console.printf("finished in %d ms\n", tN - t0)
+    //}
+
+  }
+}

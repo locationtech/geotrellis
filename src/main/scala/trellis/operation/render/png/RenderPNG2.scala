@@ -1,0 +1,20 @@
+package trellis.operation.render.png
+
+import trellis.data.ColorBreaks
+import trellis.process.Server
+import trellis.operation._
+
+/**
+  * Generate a PNG from a given raster and a set of color breaks.  The background
+  * can be set to a color or be made transparent.
+  */
+case class RenderPNG2(r:IntRasterOperation, c:Operation[ColorBreaks],
+                      noDataColor:Int, transparent:Boolean) extends PNGOperation with SimpleOperation[Array[Byte]] {
+  def childOperations = { List(r, c) }
+  def _value(server:Server) = {
+    val colorBreaks = server.run(c)
+    val p = RenderPNG(r, colorBreaks.breaks, noDataColor, transparent)
+    server.run(p)
+  }
+}
+

@@ -1,0 +1,82 @@
+package trellis
+
+import trellis.operation._
+
+import trellis.process._
+
+import org.scalatest.Spec
+import org.scalatest.matchers.MustMatchers
+
+@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
+class ExampleTwoSpec extends Spec with MustMatchers {
+  //describe("A Trellis") {
+  //  // inputs and constants
+  //  val weights = Array(3)
+  //  val paths = Array("SBN_farm_mkt" ).map { "src/test/resources/sbn/" + _ }
+  //
+  //  val height = 825
+  //  val width  = 832
+  //
+  //  val maskpath    = "src/test/resources/sbn/SBN_co_phila"
+  //  val colors      = Array(0x0000FF, 0x0080FF, 0x00FF80, 0xFFFF00, 0xFF8000, 0xFF0000)
+  //  val noDataColor = 0x000000
+  //
+  //  // pre-process the total weights
+  //  val weightsum:Int = weights.foldLeft(0.toInt) { (a, b) => (a + b).toInt }
+  //
+  //  it("should work with a subextent that once crashed") {
+  //    val server = TestServer()
+  //  
+  //    //val geo = LoadRasterExtentFromArgFile(paths(0)).run(server)
+  // 
+  //    val xmin = -8400412.38390939
+  //    val xmax = -8361717.407295826
+  //    val ymin =  4869100.598665332
+  //    val ymax =  4907446.971885979
+  //
+  //    // load the files
+  //    var Rs:Seq[IntRasterOperation] = paths.map {
+  //      path => LoadArgFileChunk(path, BuildRasterExtent(xmin = xmin, ymin = ymin,
+  //                                                   xmax = xmax, ymax = ymax,
+  //                                                   cols = width, rows = width,
+  //                                                   projection=102113))
+  //    }
+  //    
+  //    // associate the rasters with their weights
+  //    val Tpls = Rs.zip { weights }
+  //    
+  //    // multiply each raster point by its weight
+  //    Rs = Tpls.map { tpl => MultiplyConstant(tpl._1, tpl._2) }
+  //    
+  //    // average: add the rasters then divide by the sum of the weights
+  //    val W = DivideConstant(Add(Rs: _*), weightsum)
+  //  
+  //    // load the mask file
+  //    val M = LoadResampledArgFile(maskpath, height, width)
+  //    
+  //    // apply the mask
+  //    val T = if (false) { Mask(W, M, 0, 0) } else { W }
+  //    
+  //    // normalize the result for 1-100
+  //    val I = Immutable(Normalize(T, 1, 100))
+  //  
+  //    // create a histogram for color breaks
+  //    val H = BuildHistogramArray(I)
+  //  
+  //    // create colorized quantile breaks
+  //    val C = FindClassBreaks(H, colors.length)
+  //
+  //    // ACTUAL EXECUTION STARTS HERE
+  //    val t0 = System.currentTimeMillis()
+  //  
+  //    val classBreaks = C.run(server)
+  //    C.logTimingTree
+  //    val colorBreaks = classBreaks.zip(colors).toArray
+  //    val t1 = System.currentTimeMillis();
+  //    Console.printf("color breaks: %d ms\n", t1 - t0)
+  //    
+  //    val tN = System.currentTimeMillis()
+  //    Console.printf("finished in %d ms\n", tN - t0)
+  //  }
+  //}
+}

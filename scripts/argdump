@@ -1,0 +1,83 @@
+#!/usr/bin/python
+import math, os, sys
+from xml.dom.minidom import parse
+
+if __name__ == "__main__":
+    if not sys.argv[1:]:
+        print 'usage: argdump ARGFILE'
+        sys.exit(1)
+
+    path = sys.argv[1]
+    if not os.path.exists(path):
+        print 'error: %s not found' % path
+        print 'usage: argdump ARGFILE'
+        sys.exit(1)
+
+    size = 1
+
+    h = None
+    w = None
+
+    hide_null = True
+
+    if path.endswith('.arg32'):
+        data = open(path, 'r').read()
+        xml  = path[0:-6] + ".xml"
+        size = 4
+    elif path.endswith('.arg'):
+        data = open(path, 'r').read()
+        xml  = path[0:-4] + ".xml"
+        size = 1
+    else:
+        raise Exception("not supported")
+
+    if len(data) % size != 0:
+        raise Exception("corrupted")
+
+    if h and w:
+        pass
+    elif os.path.exists(xml):
+        dom = parse(xml)
+        node = [o for o in dom.childNodes[0].childNodes if o.nodeName == 'DIMENSIONS'][0]
+        h = int(node.attributes['height'].value)
+        w = int(node.attributes['width'].value)
+    else:
+        L = len(data) / size
+        w = int(math.sqrt(L))
+        while L % w != 0:
+            w -= 1
+        h = L / w
+
+    if size == 1:
+        cmin = 100
+        cmax = 0
+        for i in range(0, h):
+            for j in range(0, w):
+                c = data[i * w + j]
+                x = ord(c)
+                if x == 0 and hide_null:
+                    sys.stdout.write('   ')
+                else:
+                    sys.stdout.write('%02x ' % x)
+                    cmin = min(cmin, x)
+                    cmax = max(cmax, x)
+            sys.stdout.write('\n')
+    else:
+        cmin = (1<<31) - 1
+        cmax = -(1<<31)
+        off = w * size
+        for i in range(0, h):
+            for j in range(0, w):
+                k = j * size
+                x  = ord(data[i * off + k + 0])<<24
+                x += ord(data[i * off + k + 1])<<16
+                x += ord(data[i * off + k + 2])<<8
+                x += ord(data[i * off + k + 3])
+
+                #sys.stdout.write('%08x ' % x)
+                sys.stdout.write('%d ' % x)
+                cmin = min(cmin, x)
+                cmax = max(cmax, x)
+            sys.stdout.write('\n')
+        
+    print "height=%d width=%d min=%d max=%d" % (h, w, cmin, cmax)

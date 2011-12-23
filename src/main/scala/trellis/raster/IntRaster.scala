@@ -1,0 +1,185 @@
+package trellis.raster
+
+import scala.math.{min, max}
+import trellis.constant.NODATA
+import trellis.RasterExtent
+
+//?TODO: remove rows & cols from IntRaster constructor
+object IntRaster {
+  def apply(data:RasterData, rows:Int, cols:Int,
+            rasterExtent:RasterExtent) = new IntRaster(data, rows, cols, rasterExtent, "")
+
+  def apply(data:RasterData, rows:Int, cols:Int,
+            rasterExtent:RasterExtent, name:String) = {
+    new IntRaster(data, rows, cols, rasterExtent, name)
+  } 
+   
+  def apply(array:Array[Int], rows:Int, cols:Int,
+            rasterExtent:RasterExtent, name:String = "") = {
+    new IntRaster(new ArrayRasterData(array), rows, cols, rasterExtent, name)
+  }
+
+  def createEmpty(geo:RasterExtent) = {
+    val size = geo.rows * geo.cols
+    val data = Array.fill[Int](size)(NODATA)
+    new IntRaster(ArrayRasterData(data), geo.rows, geo.cols, geo, "")
+  }
+}
+
+/**
+ * 
+ */
+class IntRaster(val data:RasterData, val rows:Int, val cols:Int,
+                      val rasterExtent:RasterExtent, val name:String) extends IsIntRaster {}
+
+/**
+  * Core data object that represents a raster with integer values.
+  * @param cols Number of columns in this raster (width in cells)
+  * @param rows Number of rows in this raster (height in rows)
+  */
+trait IsIntRaster {
+  def data:RasterData
+  def rows:Int 
+  def cols:Int
+  def rasterExtent:RasterExtent
+
+  def name:String
+ 
+  def length = this.rows * this.cols
+
+  /**
+    * Get value at given coordinates.
+    */
+  def get(col:Int, row:Int) = this.data(row * this.cols + col)
+
+  /**
+    * Set value at given coordinates.
+    */
+  def set(col:Int, row:Int, value:Int) {
+    this.data(row * this.cols + col) = value
+  }
+
+  /**
+    * Return tuple of highest and lowest value in raster.
+    */
+  def findMinMax = {
+    var zmin = Int.MaxValue
+    var zmax = Int.MinValue
+
+    var i = 0
+    while (i < length) {
+      val z = this.data(i)
+      if (z != NODATA) {
+        zmin = min(zmin, z)
+        zmax = max(zmax, z)
+      }
+      i += 1
+    }
+    (zmin, zmax)
+  }      
+
+  /**
+    * Return data in this raster as a one-dimensional array (row by row).
+    */
+  def asArray = this.data.asArray
+
+  /**
+    * Test [[trellis.RasterExtent]] of other raster w/ our own geographic attributes.
+    */
+  def compare(other:IntRaster) = this.rasterExtent.compare(other.rasterExtent)
+
+  /**
+    * Test other raster for equality.
+    */
+  def equals(other:IntRaster): Boolean = {
+    if (null == other) return false
+    if (this.rows != other.rows || this.cols != other.cols) return false
+    if (!this.rasterExtent.equals(other.rasterExtent)) return false
+
+    var i = 0
+    val limit = length
+    while (i < limit) {
+      if (this.data(i) != other.data(i)) return false
+      i += 1
+    }
+
+    true
+  }
+
+  /**
+    * Clone this raster.
+    */
+  def copy() = {
+    new IntRaster(this.data.copy, this.rows, this.cols, this.rasterExtent, this.name + "_copy")
+  }
+
+  /**
+    * Return ascii art of this raster.
+    */
+  def asciiDraw() = {
+    var s = "";
+    for (row <- 0 until this.rows) {
+      for (col <- 0 until this.cols) {
+        val z = this.data(row * this.cols + col)
+        if (z == NODATA) {
+          s += ".."
+        } else {
+          s += "%02X".format(z)
+        }
+      }
+      s += "\n"
+    }
+    s
+  }
+
+  /**
+    * Return ascii art of a range from this raster.
+    */
+  def asciiDrawRange(colMin:Int, colMax:Int, rowMin:Int, rowMax:Int) = {
+    var s = "";
+    for (row <- rowMin to rowMax) {
+      for (col <- colMin to colMax) {
+        val z = this.data(row * this.cols + col)
+        if (z == NODATA) {
+          s += ".."
+        } else {
+          s += "%02X".format(z)
+        }
+      }
+      s += "\n"
+    }
+    s
+  }
+
+  def foreach(f: Int => Unit):Unit = {
+    var i = 0
+    while(i < length) {
+      f(data(i))
+      i += 1
+    }
+  }
+
+  def map(f:Int => Int) = {
+    val data = this.data
+    val data2 = this.data.copy
+    var i = 0
+    while (i < length) {
+      data2(i) = f(data(i))
+      i += 1
+    }
+    new IntRaster(data2, this.rows, this.cols, this.rasterExtent, this.name + "_map")
+  }
+
+  def mapIfSet(f:Int => Int) = {
+    val data = this.data
+    val data2 = this.data.copy
+
+    var i = 0
+    while (i < length) {
+      val z = data(i)
+      if (z != NODATA) data2(i) = f(z)
+      i += 1
+    }
+    new IntRaster(data2, this.rows, this.cols, this.rasterExtent, this.name + "_map")
+  }
+}
