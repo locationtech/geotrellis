@@ -23,7 +23,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
   describe("The operations include") {
     val server = TestServer()
-    server.start
 
     val nd = NODATA
 

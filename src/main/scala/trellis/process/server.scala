@@ -34,14 +34,12 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
     implicit val timeout = system.settings.ActorTimeout
     val future = (actor ? Run(op)).mapTo[CalculationResult[T]]
     val result = Await.result(future, 5 seconds)
-    println("got a result")
     val r = result match {
       //TODO: eventually calculation result shouldn't be a list
       case Complete(List(r:T)) => r
       case Error(msg) => error("server(%s) returned an error: %s".format(op,msg))
       case _ => error("unexpected status: %s" format (result) )
     }
-    println("got result: %s" format r)
     r
   }
 }

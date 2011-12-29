@@ -20,7 +20,6 @@ import org.scalatest.matchers.ShouldMatchers
 class BurnRasterSpec extends Spec with MustMatchers with ShouldMatchers {
   describe("The BurnRaster operation") {
     val server = TestServer()
-    server.start
 
     val baseExtent = Extent(0.0, 0.0, 100.0, 100.0)
     val baseGeo = RasterExtent(baseExtent, 25, 25, 4, 4)

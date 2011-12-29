@@ -1,4 +1,4 @@
-package trellis.process.catalog
+package trellis.process
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
