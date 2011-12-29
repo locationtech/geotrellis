@@ -25,7 +25,7 @@ trait CachedOperation[T] extends Operation[T] {
   }
 }
 
-case class Cache[T](op: Operation[T]) extends SimpleOperation[T] with CachedOperation[T] {
+case class Cache[T:Manifest](op: Operation[T]) extends SimpleOperation[T] with CachedOperation[T] {
   override def childOperations = List(op)
   def _value(server:Server) = server.run(op)
 }

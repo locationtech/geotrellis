@@ -9,7 +9,7 @@ import Console.printf
 import trellis.raster.IntRaster
 import trellis.{Extent,RasterExtent}
 import trellis.constant._
-import trellis.process.catalog._
+import trellis.process._
 import trellis.util._
 
 final class AsciiReadState(val path:String,

@@ -10,7 +10,7 @@ import trellis.raster.IntRaster
 import trellis.{Extent,RasterExtent}
 import trellis.constant._
 import trellis.raster.RasterData
-import trellis.process.catalog._
+import trellis.process._
 
 import scala.math.{abs}
 

@@ -1,4 +1,4 @@
-package trellis.process.catalog
+package trellis.process
 
 import scala.collection.mutable.{Map => MMap}
 import scala.io.Source
@@ -104,7 +104,7 @@ trait Rec[T] {
 case class RasterLayerRec(layer:String, xmin:Double, xmax:Double, ymin:Double,
                           ymax:Double, cols:Int, rows:Int, cellheight:Double, cellwidth:Double) 
            extends Rec[RasterLayer] {
-  def create = {
+  def create() = {
   /*
     val xmin = params("xmin").toDouble
     val xmax = params("xmax").toDouble

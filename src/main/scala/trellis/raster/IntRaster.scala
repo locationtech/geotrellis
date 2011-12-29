@@ -161,13 +161,44 @@ trait IsIntRaster {
 
   def map(f:Int => Int) = {
     val data = this.data
-    val data2 = this.data.copy
+    val output = data.copy //Array.ofDim[Int](length)
     var i = 0
     while (i < length) {
-      data2(i) = f(data(i))
+      output(i) = f(data(i))
       i += 1
     }
-    new IntRaster(data2, this.rows, this.cols, this.rasterExtent, this.name + "_map")
+    new IntRaster(output, this.rows, this.cols, this.rasterExtent, this.name + "_map")
+  }
+
+  //TODO: optimize (replace length?, don't copy?)
+  def map2(f:(Int,Int) => Int, r2:IntRaster) = {
+    val data = this.data
+    val data2 = r2.data
+    val output = data.copy // Array.ofDim[Int](length)
+    var i = 0
+    while (i < length) {
+      output(i) = f(data(i), data2(i))
+      i += 1
+    }
+    new IntRaster(output, this.rows, this.cols, this.rasterExtent, this.name + "_map")
+  }
+
+  def map2IfSet(f:(Int,Int) => Int, r2:IntRaster) = {
+    val data = this.data
+    val data2 = r2.data
+    val output = data.copy
+    var i = 0
+    while(i < length) {
+      val v1 = data(i)
+      val v2 = data2(i)
+      output(i) = if (v1 == NODATA || v2 == NODATA) {
+        if (v1 == NODATA) v2 else v1
+      } else {
+        f(data(i),data2(i))
+      }
+      i += 1
+    } 
+    new IntRaster(output, this.rows, this.cols, this.rasterExtent, this.name + "_map")
   }
 
   def mapIfSet(f:Int => Int) = {

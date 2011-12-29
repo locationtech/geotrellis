@@ -5,13 +5,20 @@ import trellis.process.{Server, Results}
 case class ForEach[A, Z:Manifest](a:Op[Array[A]], f:(A) => Op[Z]) extends Op[Array[Z]] {
   def childOperations = List(a)
 
-  def _run(server:Server, cb:Callback) = runAsync(List(a, server), server, cb)
+  def _run(server:Server, cb:Callback) = { 
+    println("foreach, step 1, about to call runAsync")
+    runAsync(List(a, server), server, cb)
+  }
 
   val nextSteps:Steps = {
     case Results(List(as:Array[_], server:Server)) => step2(as.asInstanceOf[Array[A]], server)
+    case x => sys.error("Unknown message at nextSteps: %s" format x)
   }
 
-  def step2(as:Array[A], server:Server) = Some(as.map(a => server.run(f(a))).toArray)
+  def step2(as:Array[A], server:Server) = {
+	println("in foreach, step2")
+    Some(as.map(a => server.run(f(a))).toArray)
+  }
 }
 
 case class ForEach2[A, B, Z:Manifest](a:Op[Array[A]],

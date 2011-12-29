@@ -1,11 +1,16 @@
 package trellis.operation
 
 import trellis.process.{Server,CreateTaskGroup,Results}
+import PackageDummy._
+import trellis.process.RunAsync
+import trellis.process.InProgress
+import trellis.process.CalculationResult
+import trellis.process.Complete
 
 object PackageDummy {
 }
 
-import PackageDummy._
+
 
 /**
  * Base Operation for all Trellis functionality. All other operations must
@@ -70,28 +75,33 @@ trait Operation[T] {
   }
 
   def runAsync( args:List[Any], server:Server, callback:(Option[T]) => Any) = {
-    server ! CreateTaskGroup(args, nextStep( callback, _:Any) ) 
+    val f = (result:CalculationResult[Any]) => { 
+      val oldResult:Option[T] = result match {
+        case Complete(v:T) => Some(v)
+        case _ => None
+      }
+      callback(oldResult)
+    }
+    server.actor ! RunAsync(args, nextStep(f, _:Any)) 
     None
   }
 
   // TODO: we probably shouldn't use response:Any
-  def nextStep (callback:(Option[T])=>Any, response:Any) {
+  def nextStep (callback:(CalculationResult[_])=>Any, response:Any) {
     response match {
-      case None => callback(None)
-
       // If we've received Some() response, invoke the callback.
       // Otherwise we have just completed a single async step in the process,
       // and suspend execution here.
-      case Some(results:Results) => nextSteps(results) match {
-        case r:Some[_] => callback(r)
+      case Complete(value) => nextSteps(Results(value.asInstanceOf[List[Any]])) match {
+        case Some(v) => callback(Complete(v))
         case None => { println("DEBUG: received None from op step in: " + this )}
       }
-
+      case InProgress => println("debug: in progress in next step")
       case u => throw new Exception("got something unexpected: %s".format(u))
     }
   }
 
-  def call[U] (f:T => U) = Call(this, f)
+  //def call[U:Manifest] (f:T => U) = Call(this, f)
 }
 
 object Operation {

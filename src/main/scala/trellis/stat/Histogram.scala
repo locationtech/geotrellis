@@ -148,7 +148,7 @@ abstract trait Histogram {
     breaks.slice(0, qIndex)
   }
 
-  def generateStatistics = {
+  def generateStatistics() = {
     val values = this.getValues
 
     var mode = 0

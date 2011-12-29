@@ -19,7 +19,7 @@ import trellis.process.Server
 import trellis.raster.IntRaster
 import trellis.{Extent,RasterExtent}
 import trellis.constant._
-import trellis.process.catalog._
+import trellis.process._
 import org.geotools.coverage.Category
 import org.geotools.coverage.GridSampleDimension
 import java.awt.Color

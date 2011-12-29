@@ -2,7 +2,7 @@ package trellis.operation
 
 import trellis.RasterExtent
 import trellis.process.Server
-import trellis.process.catalog._
+import trellis.process._
 
 /**
   * Load the [[trellis.geoattrs.RasterExtent]] from the raster in the specified file.
@@ -15,7 +15,7 @@ class LoadRasterExtentFromFile(path:String) extends RasterExtentOperation with S
     //rdr.readMetadata
     //rdr.getRasterExtent()
     val i = path.lastIndexOf(".")
-    val jsonPath = path.substring(0, i) + ".json"
+    val jsonPath = (if (i == -1) path else path.substring(0, i)) + ".json"
     val layer = RasterLayer.fromPath(jsonPath)
     layer.rasterExtent
   }

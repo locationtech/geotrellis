@@ -9,7 +9,7 @@ import trellis._
 import trellis.util._
 import trellis.constant._
 import trellis.raster.IntRaster
-import trellis.process.catalog._
+import trellis.process._
 
 
 final class ArgReadState(val path:String,

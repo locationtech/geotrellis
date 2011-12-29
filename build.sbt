@@ -13,7 +13,9 @@ resolvers ++= Seq(
   "NL4J Repository" at "http://nativelibs4java.sourceforge.net/maven/",
   "maven2 dev repository" at "http://download.java.net/maven/2",
   "Scala Test" at "http://www.scala-tools.org/repo-reloases/",
-  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository")
+  "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
+  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
+)
 
 libraryDependencies ++= { 
   val geotoolsVersion = "2.7-M3"
@@ -33,6 +35,9 @@ libraryDependencies ++= {
     "org.geotools" % "gt-coveragetools" % geotoolsVersion,
     "javax.media" % "jai_core" % "1.1.3",
     "postgresql" % "postgresql" % "8.4-701.jdbc4",
+    "com.typesafe.akka" % "akka-kernel" % "2.0-M1",
+    "com.typesafe.akka" % "akka-remote" % "2.0-M1",
+    "com.typesafe.akka" % "akka-actor"  % "2.0-M1",
     "net.liftweb" %% "lift-json" % "2.4-M5")
 }
 

@@ -11,7 +11,7 @@ import sys.error
  */
 trait RasterData {
   def apply(i: Int): Int
-  def copy:RasterData
+  def copy():RasterData
   def length:Int
   def update(i:Int, x: Int)
   def asArray:Array[Int]

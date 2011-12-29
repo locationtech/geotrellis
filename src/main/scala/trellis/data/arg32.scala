@@ -11,7 +11,7 @@ import trellis.Extent
 import trellis.RasterExtent
 import trellis.constant._
 import trellis.util._
-import trellis.process.catalog._
+import trellis.process._
 
 final class Arg32ReadState(val path:String,
                            val layer:RasterLayer,

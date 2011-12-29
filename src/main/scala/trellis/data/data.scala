@@ -9,7 +9,7 @@ import java.nio.channels.FileChannel.MapMode._
 import trellis.raster.IntRaster
 import trellis.{Extent,RasterExtent}
 import trellis.constant._
-import trellis.process.catalog.RasterLayer
+import trellis.process.RasterLayer
 
 trait ReadState {
   val layer:RasterLayer

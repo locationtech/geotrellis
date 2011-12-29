@@ -50,7 +50,8 @@ class PNGWriterRGB(raster:IntRaster, path:String, colorMap:Int=>Int, bg:Int,
   * Create a PNG image from a [[trellis.core.raster.Raster]] 
   */
 class PNGWriterRGB2(raster:IntRaster, path:String, bg:Int, transparent:Boolean) {
-  def getRawBytes = {
+  
+  def getRawBytes() = {
     val data = this.raster.data
     val cols = this.raster.cols
     val rows = this.raster.rows
@@ -73,12 +74,12 @@ class PNGWriterRGB2(raster:IntRaster, path:String, bg:Int, transparent:Boolean) 
     bb
   }
 
-  def render = {
+  def render() = {
     val bb = this.getRawBytes
     PNGWriter.makeByteArray(bb, this.raster.rows, this.raster.cols, this.bg, this.transparent)
   }
 
-  def write {
+  def write() {
     val bb = this.getRawBytes
     val f = new File(this.path)
     PNGWriter.write(f, bb, this.raster.rows, this.raster.cols, this.bg, this.transparent)
