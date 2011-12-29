@@ -77,7 +77,7 @@ trait Operation[T] {
   def runAsync( args:List[Any], server:Server, callback:(Option[T]) => Any) = {
     val f = (result:CalculationResult[Any]) => { 
       val oldResult:Option[T] = result match {
-        case Complete(v:T) => Some(v)
+        case Complete(v) => Some(v.asInstanceOf[T])
         case _ => None
       }
       callback(oldResult)

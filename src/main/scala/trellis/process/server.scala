@@ -36,7 +36,7 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
     val result = Await.result(future, 5 seconds)
     val r = result match {
       //TODO: eventually calculation result shouldn't be a list
-      case Complete(List(r:T)) => r
+      case Complete(r :: Nil) => r.asInstanceOf[T]
       case Error(msg) => error("server(%s) returned an error: %s".format(op,msg))
       case _ => error("unexpected status: %s" format (result) )
     }
