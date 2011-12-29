@@ -4,8 +4,6 @@ name := "Trellis"
 
 organization := "Azavea"
 
-//scalaVersion := "2.8.1"
-
 scalaVersion := "2.9.1"
 
 resolvers ++= Seq(
@@ -18,9 +16,9 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= { 
-  val geotoolsVersion = "2.7-M3"
+  val geotoolsVersion = "2.7.4"
   Seq(
-    "org.scalatest" %% "scalatest" % "1.6.1", // scala 2.9
+    "org.scalatest" %% "scalatest" % "1.6.1",
     "junit" % "junit" % "4.5",
     "com.vividsolutions" % "jts" % "1.8",
     "java3d" % "j3d-core" % "1.3.1",
@@ -28,7 +26,6 @@ libraryDependencies ++= {
     "org.geotools" % "gt-epsg-hsql" % geotoolsVersion,
     "org.geotools"      % "gt-shapefile" % geotoolsVersion,
     "org.geotools" % "gt-jdbc" % geotoolsVersion,
-    //"org.geotools" % "gt-directory" % geotoolsVersion,
     "org.geotools.jdbc" % "gt-jdbc-postgis" % geotoolsVersion,
     "org.geotools" % "gt-coverage" % geotoolsVersion,
     "org.geotools" % "gt-coverageio" % geotoolsVersion,
