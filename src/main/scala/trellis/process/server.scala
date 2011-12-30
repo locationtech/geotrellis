@@ -1,21 +1,13 @@
 package trellis.process
 
-import java.io.{File,FileInputStream}
-import java.nio.ByteBuffer
-import java.nio.MappedByteBuffer
-import java.nio.channels.FileChannel.MapMode._
-//import scala.actors.{Future, Actor}
-//import scala.actors.Actor._
-//import scala.actors.OutputChannel
-import scala.collection.mutable.{HashMap, ArrayBuffer,ListBuffer,Map=>MMap}
+import java.io.File
 import scala.util.matching.Regex
+
 import trellis.data._
 import trellis.data.FileExtensionRegexes._
-
 import trellis.RasterExtent
 import trellis.operation._
 import trellis.raster.IntRaster
-import scala.math.min
 
 // akka imports
 import akka.actor._
@@ -23,23 +15,38 @@ import akka.routing._
 import akka.dispatch.Await
 import akka.util.duration._
 
-import sys.error
-
 class Server (id:String, val catalog:Catalog) extends FileCaching {
+  val debug = false
+
   val system = akka.actor.ActorSystem(id)
   val actor = system.actorOf(Props(new ServerActor(id, this)), "server")
-  
+
+  def log(msg:String) = if(debug) println(msg)
+
   def run[T:Manifest] (op:Operation[T]):T = {
+    log("server.run called with %s" format op)
 
     implicit val timeout = system.settings.ActorTimeout
-    val future = (actor ? Run(op)).mapTo[CalculationResult[T]]
+    log("$$$ alpha")
+    //val future = (actor ? Run(op)).mapTo[CalculationResult[T]]
+    val future = (actor ? Run(op)).mapTo[OperationResult[T]]
+    log("$$$ beta")
     val result = Await.result(future, 5 seconds)
+    log("$$$ gamma")
     val r = result match {
-      //TODO: eventually calculation result shouldn't be a list
-      case Complete(r :: Nil) => r.asInstanceOf[T]
-      case Error(msg) => error("server(%s) returned an error: %s".format(op,msg))
-      case _ => error("unexpected status: %s" format (result) )
+      case OperationResult(Complete(r, _), _) => {
+        log(" run is complete: received: %s" format r)
+        r.asInstanceOf[T]
+      }
+      case OperationResult(Inlined(_), _) => {
+        sys.error("server.run(%s) unexpected response: %s".format(op, result))
+      }
+      case OperationResult(Error(msg, _), _) => {
+        sys.error("server.run(%s) error: %s".format(op, msg))
+      }
+      case _ => sys.error("unexpected status: %s" format result)
     }
+    log("$$$ delta")
     r
   }
 }

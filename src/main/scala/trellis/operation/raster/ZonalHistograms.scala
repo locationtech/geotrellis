@@ -3,7 +3,7 @@ package trellis.operation
 import scala.math.{min, max}
 import trellis.constant.NODATA
 import trellis.geometry.rasterizer.Rasterizer
-import trellis.process.{Server,Results}
+import trellis.process._
 import trellis.raster.IntRaster
 import trellis.stat.{Histogram, ArrayHistogram, MapHistogram, CompressedArrayHistogram, Statistics}
 import trellis.geometry.Polygon
@@ -12,20 +12,21 @@ import trellis.geometry.Polygon
   * Given a raster and an array of polygons, return a histogram summary of the cells
   * within each polygon.
   */
-case class ZonalHistograms(data: Operation[IntRaster], zones: Operation[IntRaster], zonesArraySize: Int, histArraySize: Int) extends Operation[Array[Histogram]] {
+case class ZonalHistograms(data: Op[IntRaster],
+                           zones: Op[IntRaster],
+                           zonesArraySize: Int,
+                           histArraySize: Int) extends Op[Array[Histogram]] {
 
   def childOperations = List(data, zones)
-  def _run(server:Server, cb:Callback) = {
-    runAsync( List(data, zones), server, cb)
-  }
+  def _run(server:Server) = runAsync( List(data, zones), server)
 
   val nextSteps:Steps = {
-    case Results( List(dataRaster, zoneRaster) ) => { 
+    case dataRaster :: zoneRaster :: Nil => { 
       step2(dataRaster.asInstanceOf[IntRaster], zoneRaster.asInstanceOf[IntRaster])
     }
   }
 
-  def step2(raster:IntRaster, zones: IntRaster):Option[Array[Histogram]] = {
+  def step2(raster:IntRaster, zones: IntRaster) = {
     // build our map to hold results
     val histmap = Array.ofDim[Histogram](zonesArraySize)
     for(i <- 0 until histmap.length) {
@@ -72,7 +73,8 @@ case class ZonalHistograms(data: Operation[IntRaster], zones: Operation[IntRaste
     }
 
     // return an immutable mapping
-    Some(histmap)
+    //Some(histmap)
+    StepResult(histmap)
   }
 
 }

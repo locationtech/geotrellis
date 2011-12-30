@@ -16,6 +16,4 @@ package object operation {
   type PNGOperation = Op[Array[Byte]]
 
   import trellis.operation.Literal.implicitLiteral
-
-  type Callback = (Any) => Any
 }

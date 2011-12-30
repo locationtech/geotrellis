@@ -1,6 +1,6 @@
 package trellis.operation
 
-import trellis.process.{Server,Results}
+import trellis.process._
 import trellis.raster.IntRaster
 
 import scala.math.{max, min, pow}
@@ -13,8 +13,8 @@ trait WithIntConstant extends Operation[IntRaster] {
   val c:Operation[Int]
 
   def childOperations = List(r, c)
-  def _run(server:Server, cb:Callback) = runAsync(List(r, c), server, cb)
-  val nextSteps:Steps = { case Results(List(a:IntRaster, b:Int)) => step2(a, b) }
+  def _run(server:Server) = runAsync(List(r, c), server)
+  val nextSteps:Steps = { case (a:IntRaster) :: (b:Int) :: Nil => step2(a, b) }
   def step2(raster:IntRaster, constant:Int) = Some(doit(raster, constant))
 
   def doit(raster:IntRaster, c:Int):IntRaster
@@ -28,8 +28,8 @@ trait WithDoubleConstant extends Operation[IntRaster] {
   val c:Operation[Double]
 
   def childOperations = List(r, c)
-  def _run(server:Server, cb:Callback) = runAsync(List(r, c), server, cb)
-  val nextSteps:Steps = { case Results(List(a:IntRaster, b:Double)) => step2(a, b) }
+  def _run(server:Server) = runAsync(List(r, c), server)
+  val nextSteps:Steps = { case (a:IntRaster) :: (b:Double) :: Nil => step2(a, b) }
   def step2(raster:IntRaster, constant:Double) = Some(doit(raster, constant))
 
   def doit(raster:IntRaster, c:Double):IntRaster

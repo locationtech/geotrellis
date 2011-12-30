@@ -1,27 +1,22 @@
 package trellis.operation
 
-import trellis.process.{Server,CreateTaskGroup,Results}
-import PackageDummy._
-import trellis.process.RunAsync
-import trellis.process.InProgress
-import trellis.process.CalculationResult
-import trellis.process.Complete
+import trellis.process._
 
-object PackageDummy {
-}
-
-
+import scala.{PartialFunction => PF}
 
 /**
  * Base Operation for all Trellis functionality. All other operations must
  * extend this trait.
  */
 trait Operation[T] {
-  val nextSteps:PartialFunction[Any,Option[T]]
-  type Steps = PartialFunction[Any,Option[T]]
-  type Callback = (Option[T]) => Unit
+  type Steps = PF[Any, StepOutput[T]]
+
+  val nextSteps:PF[Any, StepOutput[T]]
   var startTime:Long = 0
   var endTime:Long = 0
+
+  val debug = false
+  private def log(msg:String) = if(debug) println(msg)
 
   /**
     * Return total execution time of operation.
@@ -64,41 +59,30 @@ trait Operation[T] {
     s
   }
 
-  protected def _run(server:Server, callback:Callback):Unit 
+  protected def _run(server:Server): StepOutput[T]
  
   /**
    * Execute this operation and return the result.  
    */
-  def run(server:Server, callback:Callback): Unit = {
+  def run(server:Server): StepOutput[T] = {
+    log("Operation.run called")
     startTime = System.currentTimeMillis()
-    this._run(server, callback)
+    val o = this._run(server)
+    log("Operation run returning %s" format o)
+    o
   }
 
-  def runAsync( args:List[Any], server:Server, callback:(Option[T]) => Any) = {
-    val f = (result:CalculationResult[Any]) => { 
-      val oldResult:Option[T] = result match {
-        case Complete(v) => Some(v.asInstanceOf[T])
-        case _ => None
-      }
-      callback(oldResult)
+  def runAsync(args:Args, server:Server): StepOutput[T] = {
+    log("Operation.runAsync called with %s" format args)
+    val f = (args2:Args) => {
+      log("*** runAsync-generated callback called with %s" format args2)
+      val stepOutput:StepOutput[T] = nextSteps(args2)
+      log("*** step output from nextSteps was %s" format stepOutput)
+      stepOutput
     }
-    server.actor ! RunAsync(args, nextStep(f, _:Any)) 
-    None
-  }
-
-  // TODO: we probably shouldn't use response:Any
-  def nextStep (callback:(CalculationResult[_])=>Any, response:Any) {
-    response match {
-      // If we've received Some() response, invoke the callback.
-      // Otherwise we have just completed a single async step in the process,
-      // and suspend execution here.
-      case Complete(value) => nextSteps(Results(value.asInstanceOf[List[Any]])) match {
-        case Some(v) => callback(Complete(v))
-        case None => { println("DEBUG: received None from op step in: " + this )}
-      }
-      case InProgress => println("debug: in progress in next step")
-      case u => throw new Exception("got something unexpected: %s".format(u))
-    }
+    val o = StepRequiresAsync[T](args, f)
+    log("Operation.runAsync returns %s" format o)
+    o
   }
 
   //def call[U:Manifest] (f:T => U) = Call(this, f)
@@ -112,11 +96,14 @@ object Operation {
 trait SimpleOperation[T] extends Operation[T] {
   def _value(server:Server):T // define simple behavior here
 
-  def _run(server:Server, callback:(Option[T]) => Unit) = {
+  def _run(server:Server) = {
     startTime = System.currentTimeMillis()
     val value = this._value(server)
     endTime = System.currentTimeMillis()
-    callback(Some(value))
+    StepResult(value)
   }
-  val nextSteps:Steps = {case _ => throw new Exception("simple operation has no steps") }
+
+  val nextSteps:PF[Any, StepResult[T]] = {
+    case _ => throw new Exception("simple operation has no steps")
+  }
 }

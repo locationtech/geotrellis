@@ -2,15 +2,15 @@ package trellis.operation
 
 import trellis.raster.IntRaster
 import trellis.geometry.rasterizer.Rasterizer
-import trellis.process.{Server,Results}
+import trellis.process._
 import trellis.geometry.Polygon
 import trellis.geometry.MultiPolygon
 
 /**
   * Rasterize an array of polygons and then draw them into the provided raster.
   */
-case class BurnPolygons(r:IntRasterOperation,
-                        ps:Array[PolygonOperation]) extends SimpleOperation[IntRaster] {
+case class BurnPolygons(r:Op[IntRaster], ps:Array[Op[Polygon]])
+extends SimpleOp[IntRaster] {
   def childOperations = r :: ps.toList
   def _value(server:Server) = {
     // TODO: profile/optimize
@@ -21,36 +21,36 @@ case class BurnPolygons(r:IntRasterOperation,
   }
 }
 
-case class BurnMultiPolygon(rr: Operation[IntRaster],
-                            p: Operation[MultiPolygon]) extends BurnPolygons4Base(rr, Call(p, (_:MultiPolygon).polygons))
+case class BurnMultiPolygon(rr: Op[IntRaster], p: Op[MultiPolygon])
+extends BurnPolygons4Base(rr, Call(p, (_:MultiPolygon).polygons))
 
-case class BurnMultiPolygons(rr: Operation[IntRaster],
-                             ps: Array[Operation[MultiPolygon]]) extends Operation[IntRaster] {
+case class BurnMultiPolygons(rr: Op[IntRaster],
+                             ps: Array[Op[MultiPolygon]])
+extends Op[IntRaster] {
 
-  def childOperations = { rr :: ps.toList }
-  def _run(server:Server, cb:Callback) = {
-    runAsync( rr :: ps.toList, server, cb)
-  }
+  def childOperations = rr :: ps.toList
+  def _run(server:Server) = runAsync(rr :: ps.toList, server)
 
   val nextSteps:Steps = {
-    case Results( raster :: polygons ) => { 
+    case raster :: polygons => { 
       step2(raster.asInstanceOf[IntRaster], polygons.asInstanceOf[List[MultiPolygon]])
     }
   }
 
-  def step2(raster:IntRaster, polygons:List[MultiPolygon]):Option[IntRaster] = {
+  def step2(raster:IntRaster, polygons:List[MultiPolygon]) = {
     val rasterCp = raster.copy()
     val allPolys = polygons.map(_.polygons).flatten.toArray
     Rasterizer.rasterize(rasterCp, allPolys)
-    Some(rasterCp)
+    //Some(rasterCp)
+    StepResult(rasterCp)
   }
 }
 
 /**
   * Rasterize an array of polygons and then draw them into the provided raster.
   */
-case class BurnPolygons2(r:IntRasterOperation, ps:Array[PolygonOperation],
-                         fs:Array[Int => Int]) extends SimpleOperation[IntRaster] {
+case class BurnPolygons2(r:Op[IntRaster], ps:Array[Op[Polygon]], fs:Array[Int => Int])
+extends SimpleOp[IntRaster] {
   def childOperations = r :: ps.toList
   def _value(server:Server) = {
     // TODO: profile/optimize
@@ -64,8 +64,8 @@ case class BurnPolygons2(r:IntRasterOperation, ps:Array[PolygonOperation],
 /**
   * Rasterize an array of polygons and then draw them into the provided raster.
   */
-case class BurnPolygons3(r:IntRasterOperation, ps:Operation[List[Polygon]], value:Int)
-extends SimpleOperation[IntRaster] {
+case class BurnPolygons3(r:Op[IntRaster], ps:Op[List[Polygon]], value:Int)
+extends SimpleOp[IntRaster] {
 
   def childOperations = List(r, ps)
   def _value(server:Server) = {
@@ -79,9 +79,9 @@ extends SimpleOperation[IntRaster] {
   }
 }
 
-trait BurnPolygonsBase extends SimpleOperation[IntRaster] {
-  def r:Operation[IntRaster]
-  def ps:Operation[Array[Polygon]]
+trait BurnPolygonsBase extends SimpleOp[IntRaster] {
+  def r:Op[IntRaster]
+  def ps:Op[Array[Polygon]]
 
   def childOperations = List(r, ps)
   def _value(server:Server) = {
@@ -97,5 +97,8 @@ trait BurnPolygonsBase extends SimpleOperation[IntRaster] {
 /**
   * Rasterize an array of polygons and then draw them into the provided raster.
   */
-abstract class BurnPolygons4Base(val r:IntRasterOperation, val ps:Operation[Array[Polygon]]) extends BurnPolygonsBase
-case class BurnPolygons4(_r:IntRasterOperation, _ps:Operation[Array[Polygon]]) extends BurnPolygons4Base(_r, _ps)
+abstract class BurnPolygons4Base(val r:Op[IntRaster], val ps:Op[Array[Polygon]])
+extends BurnPolygonsBase
+
+case class BurnPolygons4(_r:Op[IntRaster], _ps:Op[Array[Polygon]])
+extends BurnPolygons4Base(_r, _ps)

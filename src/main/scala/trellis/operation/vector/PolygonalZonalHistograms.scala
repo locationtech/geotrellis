@@ -3,7 +3,7 @@ package trellis.operation
 import scala.math.{min, max}
 import trellis.constant.NODATA
 import trellis.geometry.rasterizer.Rasterizer
-import trellis.process.{Server,Results}
+import trellis.process._
 import trellis.raster.IntRaster
 import trellis.stat.{Histogram, ArrayHistogram, MapHistogram, CompressedArrayHistogram, Statistics}
 import trellis.geometry.Polygon
@@ -12,17 +12,13 @@ import trellis.geometry.Polygon
   * Given a raster and an array of polygons, return a histogram summary of the cells
   * within each polygon.
   */
-case class PolygonalZonalHistograms(ps:Array[PolygonOperation],
-                                    r:IntRasterOperation,
-                                    size:Int) extends Operation[Array[Histogram]] {
-  def childOperations = { r :: ps.toList }
-  def _run(server:Server, cb:Callback) = {
-    // evaluate our child operations
-    runAsync( r :: ps.toList, server, cb)
-  }
+case class PolygonalZonalHistograms(ps:Array[Op[Polygon]], r:Op[IntRaster],
+                                    size:Int) extends Op[Array[Histogram]] {
+  def childOperations = r :: ps.toList
+  def _run(server:Server) = runAsync(r :: ps.toList, server)
 
   val nextSteps:Steps = {
-    case Results( raster :: polygons ) => { 
+    case raster :: polygons => {
       step2(raster.asInstanceOf[IntRaster], polygons.asInstanceOf[List[Polygon]])
     }
   }

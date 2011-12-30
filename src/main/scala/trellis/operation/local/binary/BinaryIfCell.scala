@@ -1,5 +1,7 @@
 package trellis.operation
 
+import trellis.raster.IntRaster
+
 /**
   * Given a condition over two rasters, set the value of each cell in the output
   * to a specified value if the condition is true given the corresponding values in
@@ -8,7 +10,7 @@ package trellis.operation
   * Local operation.
   * Binary operation (input includes two rasters).
   */
-case class BinaryIfCell(r1:IntRasterOperation, r2:IntRasterOperation,
+case class BinaryIfCell(r1:Op[IntRaster], r2:Op[IntRaster],
                         cond: (Int,Int) => Boolean, trueValue: Int) extends BinaryLocal {
   val identity1 = 0
   val identity2 = 0

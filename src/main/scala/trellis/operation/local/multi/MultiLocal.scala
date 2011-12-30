@@ -2,7 +2,7 @@ package trellis.operation
 
 import trellis.raster.IntRaster
 import trellis.constant.NODATA
-import trellis.process.{Server,Results}
+import trellis.process._
 
 
 /**
@@ -30,13 +30,13 @@ trait MultiLocal extends LocalOperation {
   }
   var childStart:Long = 0
 
-  def _run(server:Server, callback:Callback) = {
+  def _run(server:Server) = {
     startTime = System.currentTimeMillis
-    runAsync(rs.toList, server, callback)
+    runAsync(rs.toList, server)
   }
 
   val nextSteps:Steps = {
-    case Results(l:List[_]) => step2(l.asInstanceOf[List[IntRaster]])
+    case rasters:List[_] => step2(rasters.asInstanceOf[List[IntRaster]])
   }
   def step2(rasters:List[IntRaster]) = {
     val datas   = rasters.map { raster => raster.data }

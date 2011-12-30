@@ -2,24 +2,22 @@ package trellis.operation
 
 import trellis.raster.IntRaster
 import trellis.stat.{Histogram, Statistics}
-import trellis.process.{Server,Results}
+import trellis.process._
 
 /*
  * Calculate a raster in which each value is set to the standard deviation of that cell's value.
  */
-case class DeviationRaster(r:IntRasterOperation, h:Operation[Histogram],
-                           factor:Int) extends IntRasterOperation {
-  def childOperations = { List(r, h) }
-  def _run(server:Server, cb:Callback) = {
-    val g = GenerateStatistics(h)
-    runAsync(List(g,r),server,cb)
-  }
+case class DeviationRaster(r:Op[IntRaster], h:Op[Histogram], factor:Int) extends Op[IntRaster] {
+  val g = GenerateStatistics(h)
+
+  def childOperations = List(g, r)
+  def _run(server:Server) = runAsync(List(g, r), server)
 
   val nextSteps:Steps = {
-    case Results(List(g:Statistics, r:IntRaster)) => step2(g,r)
+    case (stats:Statistics) :: (raster:IntRaster) :: Nil => step2(stats, raster)
   }
 
-  def step2 (stats:Statistics, raster:IntRaster) = {
+  def step2(stats:Statistics, raster:IntRaster) = {
     val indata = raster.data
     val len = indata.length
     val outdata = Array.ofDim[Int](len)

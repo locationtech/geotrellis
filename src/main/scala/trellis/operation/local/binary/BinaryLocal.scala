@@ -2,7 +2,7 @@ package trellis.operation
 
 import trellis.raster.IntRaster
 import trellis.constant.NODATA
-import trellis.process.{Server,Results}
+import trellis.process._
 import trellis.raster.IntRaster
 
 
@@ -23,13 +23,13 @@ trait BinaryLocal extends LocalOperation {
 
   var childStart:Long = 0
 
-  def _run(server:Server, callback:Callback) = {
+  def _run(server:Server) = {
     val childStart = System.currentTimeMillis()
-    runAsync(List(r1, r2), server, callback)
+    runAsync(List(r1, r2), server)
   }
 
   val nextSteps:Steps = {
-    case Results(List(r1:IntRaster, r2:IntRaster)) => step2(r1, r2)
+    case (r1:IntRaster) :: (r2:IntRaster) :: Nil => step2(r1, r2)
   }
 
   def step2(raster1:IntRaster, raster2:IntRaster) = {

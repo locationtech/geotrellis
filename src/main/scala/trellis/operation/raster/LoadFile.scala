@@ -1,7 +1,7 @@
 package trellis.operation
 
 import trellis.RasterExtent
-import trellis.process.{Server,Results}
+import trellis.process._
 import trellis.raster.IntRaster
 
 /**

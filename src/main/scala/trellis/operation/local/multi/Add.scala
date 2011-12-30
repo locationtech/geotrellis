@@ -2,7 +2,7 @@ package trellis.operation
 
 import trellis.constant.NODATA
 import trellis.raster.IntRaster
-import trellis.process.{Results, Server}
+import trellis.process._
 
 /**
   * Add the values of each cell in each raster.
@@ -34,11 +34,11 @@ case class Add(rs:IntRasterOperation*) extends MultiLocal {
   */
 case class AddArray(op:Operation[Array[IntRaster]]) extends Operation[IntRaster] {
   def childOperations = List(op)
-  def _run(server:Server, cb:Callback) = { 
+  def _run(server:Server) = {
     startTime = System.currentTimeMillis
-    runAsync(List(op), server, cb)
+    runAsync(List(op), server)
   }
-  val nextSteps:Steps = { case Results(List(arr:Array[IntRaster])) => step2(arr) }
+  val nextSteps:Steps = { case (arr:Array[IntRaster]) :: Nil => step2(arr) }
 
   @inline
   final def handle(a:Int, b:Int) = a + b

@@ -2,7 +2,7 @@ package trellis.operation
 
 import scala.math.{ceil, floor}
 import trellis.{Extent,RasterExtent}
-import trellis.process.{Server,Results}
+import trellis.process._
 
 /**
  * Given a geographical extent and grid height/width, return an object used to
@@ -13,10 +13,10 @@ case class CropRasterExtent(g:Op[RasterExtent],
                             xmax:Double, ymax:Double) extends Op[RasterExtent] {
   def childOperations = List(g)
 
-  def _run(server:Server, cb:Callback) = runAsync(List(g), server, cb)
+  def _run(server:Server) = runAsync(List(g), server)
 
   val nextSteps:Steps = {
-    case Results(List(geo:RasterExtent)) => step2(geo)
+    case (geo:RasterExtent) :: Nil => step2(geo)
   }
 
   def step2(geo:RasterExtent) = {

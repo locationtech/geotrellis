@@ -1,7 +1,7 @@
 package trellis.operation
 
 import trellis.constant.NODATA
-import trellis.process.{Server,Results}
+import trellis.process._
 import trellis.raster.IntRaster
 
 import scala.math.{max, min, pow}

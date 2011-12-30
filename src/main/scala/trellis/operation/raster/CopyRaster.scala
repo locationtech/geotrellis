@@ -1,6 +1,6 @@
 package trellis.operation
 
-import trellis.process.{Server,Results}
+import trellis.process._
 import trellis.raster.IntRaster
 
 /**
@@ -9,14 +9,8 @@ import trellis.raster.IntRaster
  * Useful because some operations currently mutate one or more of their
  * arguments.
  */
-case class CopyRaster(r:IntRasterOperation) extends IntRasterOperation {
+case class CopyRaster(r:Op[IntRaster]) extends Op[IntRaster] {
   def childOperations = List(r)
-  def _run(server:Server, callback:Callback) = {
-    runAsync(List(r),server,callback)
-  }
-
-  val nextSteps:Steps = {
-    case Results(List(r:IntRaster)) => Some(r.copy)
-  }
-
+  def _run(server:Server) = runAsync(List(r), server)
+  val nextSteps:Steps = { case (r:IntRaster) :: Nil => Some(r.copy) }
 }

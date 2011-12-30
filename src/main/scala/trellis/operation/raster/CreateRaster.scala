@@ -6,7 +6,7 @@ import scala.math.{min, max}
 import scala.util.Sorting
 import trellis.RasterExtent
 import trellis.raster.IntRaster
-import trellis.process.{Results,Server}
+import trellis.process._
 import trellis.constant.NODATA
 
 /**

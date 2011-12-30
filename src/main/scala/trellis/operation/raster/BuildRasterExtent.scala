@@ -2,7 +2,7 @@ package trellis.operation
 
 import trellis.Extent
 import trellis.RasterExtent
-import trellis.process.{Server, Results}
+import trellis.process._
 
 /**
  * Given a geographical extent and grid height/width, return an object used to
@@ -27,16 +27,14 @@ case class BuildRasterExtent(xmin:Double, ymin:Double,
  * load raster data.
  */
 case class BuildRasterExtent2(extent:Op[Extent], cols:Op[Int], rows:Op[Int])
-extends RasterExtentOperation {
+extends Op[RasterExtent] {
   def childOperations = List(extent, cols, rows)
 
   val nextSteps:Steps = {
-    case Results(List(e:Extent, c:Int, r:Int)) => step2(e, c, r)
+    case (e:Extent) :: (c:Int) :: (r:Int) :: Nil => step2(e, c, r)
   }
 
-  def _run(server:Server, cb:Callback) = {
-    runAsync(List(extent, cols, rows), server, cb)
-  }
+  def _run(server:Server) = runAsync(List(extent, cols, rows), server)
 
   def step2(e:Extent, cols:Int, rows:Int) = {
     val cw = (e.xmax - e.xmin) / cols
