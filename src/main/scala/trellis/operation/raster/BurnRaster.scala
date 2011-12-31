@@ -8,8 +8,8 @@ import trellis.data.IntRasterReader
 /**
  * This uses a nearest-neighbor algorithm to resample a raster.
  */
-case class BurnRaster(r:Operation[IntRaster], g:Operation[RasterExtent])
-extends SimpleOperation[IntRaster] {
+case class BurnRaster(r:Op[IntRaster], g:Op[RasterExtent])
+extends SimpleOp[IntRaster] {
 
   def childOperations = List(r, g)
 

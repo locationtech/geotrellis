@@ -113,11 +113,6 @@ case class StepResult[T](value:T) extends StepOutput[T]
 case class StepError(msg:String, trace:String) extends StepOutput[Nothing]
 case class StepRequiresAsync[T](args:Args, cb:Callback[T]) extends StepOutput[T]
 
-// TODO: refactor code that needs this, then remove it
-object StepOutput {
-  implicit def someToStepOutput[T](o:Some[T]) = StepResult(o.get)
-}
-
 object StepError {
   def fromException(e:Throwable) = {
     val msg = e.getMessage

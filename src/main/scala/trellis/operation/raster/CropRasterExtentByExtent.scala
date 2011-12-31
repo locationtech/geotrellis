@@ -20,6 +20,6 @@ extends Op[RasterExtent] {
   def step2(geo:RasterExtent, ext:Extent) = {
     val cols = ((ext.ymax - ext.ymin) / geo.cellheight).toInt
     val rows = ((ext.xmax - ext.xmin) / geo.cellwidth).toInt
-    Some(RasterExtent(ext, geo.cellwidth, geo.cellheight, cols, rows))
+    StepResult(RasterExtent(ext, geo.cellwidth, geo.cellheight, cols, rows))
   }
 }

@@ -158,6 +158,6 @@ trait MultiLocal extends LocalOperation {
       }
     }
     endTime = System.currentTimeMillis
-    Some(rasters(0))
+    StepResult(rasters(0))
   }
 }

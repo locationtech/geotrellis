@@ -19,7 +19,7 @@ trait CachedOperation[T] extends Op[T] {
       case Some(o) => { println("Cached operation.  woot."); o }
       case None => {
         startTime = System.currentTimeMillis()
-        this._run(server)
+        cacheOutput(this._run(server))
       }
     }
   }

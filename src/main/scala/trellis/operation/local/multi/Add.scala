@@ -68,6 +68,6 @@ case class AddArray(op:Operation[Array[IntRaster]]) extends Operation[IntRaster]
     }
     //println("AddArray: returning data")
     endTime = System.currentTimeMillis
-    Some(output)
+    StepResult(output)
   }
 }

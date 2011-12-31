@@ -15,7 +15,7 @@ trait WithIntConstant extends Operation[IntRaster] {
   def childOperations = List(r, c)
   def _run(server:Server) = runAsync(List(r, c), server)
   val nextSteps:Steps = { case (a:IntRaster) :: (b:Int) :: Nil => step2(a, b) }
-  def step2(raster:IntRaster, constant:Int) = Some(doit(raster, constant))
+  def step2(raster:IntRaster, constant:Int) = StepResult(doit(raster, constant))
 
   def doit(raster:IntRaster, c:Int):IntRaster
 }
@@ -30,7 +30,7 @@ trait WithDoubleConstant extends Operation[IntRaster] {
   def childOperations = List(r, c)
   def _run(server:Server) = runAsync(List(r, c), server)
   val nextSteps:Steps = { case (a:IntRaster) :: (b:Double) :: Nil => step2(a, b) }
-  def step2(raster:IntRaster, constant:Double) = Some(doit(raster, constant))
+  def step2(raster:IntRaster, constant:Double) = StepResult(doit(raster, constant))
 
   def doit(raster:IntRaster, c:Double):IntRaster
 }
