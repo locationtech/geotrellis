@@ -5,4 +5,5 @@ package object process {
   type Args = List[Any]
 
   def time() = System.currentTimeMillis
+  def log(msg:String) = if (false) println(msg)
 }

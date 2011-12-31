@@ -31,13 +31,13 @@ sealed trait History {
 }
 
 /**
- * History of a successful operation.
+ * Success is the History of a successful operation.
  */
 case class Success(id:String, startTime:Long, stopTime:Long,
                    children:List[History]) extends History
 
 /**
- * History of a failed operation.
+ * Failure is the History of a failed operation.
  */
 case class Failure(id:String, startTime:Long, stopTime:Long,
                    children:List[History], message:String,
@@ -46,14 +46,24 @@ case class Failure(id:String, startTime:Long, stopTime:Long,
 
 /**
  * CalculationResult contains an operation's results.
+ *
+ * This could include the resulting value the operation produced, an error
+ * that prevented the operation from completing, and the history of the
+ * operation.
  */
-sealed trait CalculationResult[+T] {
-  def history:History
-}
+sealed trait CalculationResult[+T]
 
-case class Inlined[T](value:T) extends CalculationResult[T] {
-  def history = sys.error("inlined results have no history")
-}
+/**
+ * CalculationResult for an operation which was a literal argument.
+ *
+ * Instances of Inlined should never leak out of the actor world. E.g. messages
+ * sent to clients in the Trellis world should either be Complete or Failure.
+ *
+ * Inlined exists because these arguments don't have useful history, and
+ * Calculations need to distinguish them from Complete results (which were
+ * calculated operations with history).
+ */
+case class Inlined[T](value:T) extends CalculationResult[T]
 
 /**
  * CalculationResult for a successful operation.
@@ -103,6 +113,11 @@ case class StepResult[T](value:T) extends StepOutput[T]
 case class StepError(msg:String, trace:String) extends StepOutput[Nothing]
 case class StepRequiresAsync[T](args:Args, cb:Callback[T]) extends StepOutput[T]
 
+// TODO: refactor code that needs this, then remove it
+object StepOutput {
+  implicit def someToStepOutput[T](o:Some[T]) = StepResult(o.get)
+}
+
 object StepError {
   def fromException(e:Throwable) = {
     val msg = e.getMessage
@@ -111,23 +126,22 @@ object StepError {
   }
 }
 
-// TODO: refactor code that needs this, then remove it
-object StepOutput {
-  implicit def someToStepOutput[T](o:Some[T]) = StepResult(o.get)
-}
-
-trait TrellisActor extends Actor {
-  def debug = false
-  def log(msg:String) = if(debug) println(msg)
-  def err(msg:String) = println(msg)
-}
-
 /**
  * Actor responsible for dispatching and executing operations.
+ *
+ * This is a long-running actor which expects to receive two kinds of messages:
+ *
+ *  1. Requests made by the outside world to run operations.
+ *  2. Requests made by other actors to asynchronously evaluate arguments.
+ *
+ * In the first case, we dispatch the message to Dispatcher (who is expected to
+ * send the message to a workers). In the second case we will spin up a
+ * Calculation actor who will handle the message.
  */
-case class ServerActor(id: String, server: Server) extends TrellisActor {
+case class ServerActor(id: String, server: Server) extends Actor {
   val dispatcher: ActorRef = context.actorOf(Props(Dispatcher(server)))
 
+  // Actor event loop
   def receive = {
     case Run(op) => {
       log("server asked to run op %s" format op)
@@ -146,7 +160,9 @@ case class ServerActor(id: String, server: Server) extends TrellisActor {
 /**
  * Dispatcher is responsible for forwarding work to workers.
  */
-case class Dispatcher(server: Server) extends TrellisActor {
+case class Dispatcher(server: Server) extends Actor {
+
+  // Actor event loop
   def receive = {
     case msg:RunOperation[_] => {
       log("dispatcher asked to run op")
@@ -157,15 +173,27 @@ case class Dispatcher(server: Server) extends TrellisActor {
   }
 }
 
-trait WorkerLike extends TrellisActor {
+
+/**
+ * This trait contains functionality shared by Worker and Calculation.
+ *
+ * Mostly, this pertains to evaluating StepOutput, constructing
+ * OperationResults and sending them back to the client.
+ */
+trait WorkerLike extends Actor {
   protected[this] var startTime:Long = 0L
   protected[this] var workStartTime:Long = 0L
 
   def server:Server
+
+  // TODO: what should this be?
   def id:String = "myid"
+
   def getChildHistories():List[History]
 
-  def handleResult[T](pos: Int, client: ActorRef, output: StepOutput[T]) {
+  // This method handles a given output. It will either return a result/error
+  // to the client, or dispatch more asynchronous requests, as necessary.
+  def handleResult[T](pos:Int, client:ActorRef, output:StepOutput[T]) {
     log("worker-like (%s) got output %d: %s" format (this, pos, output))
 
     output match {
@@ -196,9 +224,21 @@ trait WorkerLike extends TrellisActor {
 }
 
 
+/**
+ * Workers are responsible for evaluating an operation. However, if the
+ * operation in question requires asynchronous callbacks, the work will be
+ * off-loaded to a Calculation.
+ *
+ * Thus, in practice workers only ever do work on SimpleOperations.
+ */
 case class Worker(val server: Server) extends WorkerLike {
+  // Workers themselves don't have direct children. If the operation in
+  // question has child operations it will be processed by a Calculation
+  // instead, who will be responsible for constructing the response (including
+  // history).
   def getChildHistories():List[History] = Nil
 
+  // Actor event loop
   def receive = {
     case RunOperation(op, pos, client) => {
       log("worker: run operation (%d): %s" format (pos, op))
@@ -217,12 +257,12 @@ case class Calculation[T](val server:Server, pos:Int, args:Args,
                           cb:Callback[T], client:ActorRef, dispatcher:ActorRef)
 extends WorkerLike {
 
-  // results won't (necessarily) share any type info with each other, so we
-  // have to use Any as the least-upper type bound :(
+  // These results won't (necessarily) share any type info with each other, so
+  // we have to use Any as the least-upper type bound :(
   val results = Array.ofDim[CalculationResult[Any]](args.length)
 
-  // just after starting the actor, we need to dispatch out the child
-  // operations to be run. if none of those existed, we should run the
+  // Just after starting the actor, we need to dispatch out the child
+  // operations to be run. If none of those existed, we should run the
   // callback and be done.
   override def preStart {
     for (i <- 0 until args.length) {
@@ -236,28 +276,30 @@ extends WorkerLike {
     if (isDone) finishCallback()
   }
 
-  // 
+  // This should create a list of all the (non-trivial) child histories we
+  // have. This leaves out inlined arguments, who don't have history in any
+  // real sense (e.g. they were complete when we received them).
   def getChildHistories() = results.toList.flatMap {
     case Complete(_, history) => Some(history)
     case Error(_, history) => Some(history)
     case Inlined(_) => None
   }
 
-  // if any entry in the results array is null, we're not done.
+  // If any entry in the results array is null, we're not done.
   def isDone = results.find(_ == null).isEmpty
 
-  // if any entry in the results array is Error, we have an error.
+  // If any entry in the results array is Error, we have an error.
   def hasError = results.find(_.isInstanceOf[Error]).isDefined
 
-  // create a list of the actual values of our children
+  // Create a list of the actual values of our children.
   def getValues = results.toList.flatMap {
     case Complete(value, _) => Some(value)
     case Inlined(value) => Some(value)
     case r => sys.error("found unexpected result %s" format r)
   }
 
-  // this is called when we have heard back from all our sub-operations and
-  // are ready to begin evaluation. after this point we will terminate and not
+  // This is called when we have heard back from all our sub-operations and
+  // are ready to begin evaluation. After this point we will terminate and not
   // receive any more messages.
   def finishCallback() {
     log(" all values complete")
@@ -267,6 +309,7 @@ extends WorkerLike {
     context.stop(self)
   }
 
+  // Actor event loop
   def receive = {
     case OperationResult(childResult,  pos) => {
       log("calculation got result %d" format pos)
@@ -282,6 +325,6 @@ extends WorkerLike {
       }
     }
 
-    case g => err("calculation got unknown message: %s" format g)
+    case g => sys.error("calculation got unknown message: %s" format g)
   }
 }
