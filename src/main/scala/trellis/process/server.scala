@@ -16,7 +16,7 @@ import akka.dispatch.Await
 import akka.util.duration._
 
 class Server (id:String, val catalog:Catalog) extends FileCaching {
-  val debug = false
+  val debug = true
 
   val system = akka.actor.ActorSystem(id)
   val actor = system.actorOf(Props(new ServerActor(id, this)), "server")
@@ -34,8 +34,9 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
     val result = Await.result(future, 5 seconds)
     log("$$$ gamma")
     val r = result match {
-      case OperationResult(Complete(r, _), _) => {
+      case OperationResult(Complete(r, h), _) => {
         log(" run is complete: received: %s" format r)
+        log("%s" format h.toPretty())
         r.asInstanceOf[T]
       }
       case OperationResult(Inlined(_), _) => {

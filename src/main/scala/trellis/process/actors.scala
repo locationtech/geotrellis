@@ -28,6 +28,16 @@ sealed trait History {
       case failures => failures
     }
   }
+
+  def toPretty(indent:Int = 0):String = {
+    val pad = " " * indent 
+    var s = pad + " -- %s\n" format id 
+    val elapsed = stopTime - startTime
+    s += pad + " -- elapsed: %d\n" format elapsed 
+    s += pad + " -- times: %d -> %d\n" format (startTime % 1000, stopTime % 1000)
+    children.foreach { s += _.toPretty(indent + 2) } 
+    s
+  }
 }
 
 /**
@@ -94,7 +104,7 @@ case class RunOperation[T](op: Operation[T], pos: Int, client: ActorRef)
  * Internal message to compute the provided args (if necessary), invoke the
  * provided callback with the computed args, and send the result to the client.
  */
-case class RunCallback[T](args:Args, pos:Int, cb:Callback[T], client:ActorRef)
+case class RunCallback[T](args:Args, pos:Int, cb:Callback[T], client:ActorRef, id:String)
 
 /**
  * Message used to send result values. Used internally and externally.
@@ -143,9 +153,9 @@ case class ServerActor(id: String, server: Server) extends Actor {
       dispatcher ! RunOperation(op, 0, sender)
     }
 
-    case RunCallback(args, pos, cb, client) => {
+    case RunCallback(args, pos, cb, client, id) => {
       log("server asked to run callback %s %s" format (args, cb))
-      context.actorOf(Props(Calculation(server, pos, args, cb, client, dispatcher)))
+      context.actorOf(Props(Calculation(server, pos, args, cb, client, dispatcher, id)))
     }
 
     case msg => sys.error("unknown message: %s" format msg)
@@ -181,8 +191,7 @@ trait WorkerLike extends Actor {
 
   def server:Server
 
-  // TODO: what should this be?
-  def id:String = "myid"
+  def id:String 
 
   def getChildHistories():List[History]
 
@@ -212,7 +221,7 @@ trait WorkerLike extends Actor {
       // we need to do more work, so as the server to do it asynchronously.
       case StepRequiresAsync(args, cb) => {
         log(" output requires async: %s" format args.toList)
-        server.actor ! RunCallback(args, pos, cb, client)
+        server.actor ! RunCallback(args, pos, cb, client, id)
       }
     }
   }
@@ -233,9 +242,14 @@ case class Worker(val server: Server) extends WorkerLike {
   // history).
   def getChildHistories():List[History] = Nil
 
+  private var _id = ""
+  def id = _id
+
   // Actor event loop
   def receive = {
     case RunOperation(op, pos, client) => {
+      _id = op.toString
+      startTime = time()
       log("worker: run operation (%d): %s" format (pos, op))
       try {
         handleResult(pos, client, op.run(server))
@@ -249,22 +263,23 @@ case class Worker(val server: Server) extends WorkerLike {
 }
 
 case class Calculation[T](val server:Server, pos:Int, args:Args,
-                          cb:Callback[T], client:ActorRef, dispatcher:ActorRef)
+                          cb:Callback[T], client:ActorRef, dispatcher:ActorRef, val id:String)
 extends WorkerLike {
 
   // These results won't (necessarily) share any type info with each other, so
   // we have to use Any as the least-upper type bound :(
-  val results = Array.ofDim[CalculationResult[Any]](args.length)
+  val results = Array.fill[Option[CalculationResult[Any]]](args.length)(None)
 
   // Just after starting the actor, we need to dispatch out the child
   // operations to be run. If none of those existed, we should run the
   // callback and be done.
   override def preStart {
+    startTime = time()
     for (i <- 0 until args.length) {
       log(" calculation looking at %d: %s" format (i, args(i)))
       args(i) match {
         case op:Operation[_] => dispatcher ! RunOperation(op, i, self)
-        case value => results(i) = Inlined(value)
+        case value => results(i) = Some(Inlined(value))
       }
     }
 
@@ -275,21 +290,22 @@ extends WorkerLike {
   // have. This leaves out inlined arguments, who don't have history in any
   // real sense (e.g. they were complete when we received them).
   def getChildHistories() = results.toList.flatMap {
-    case Complete(_, history) => Some(history)
-    case Error(_, history) => Some(history)
-    case Inlined(_) => None
+    case Some(Complete(_, history)) => Some(history)
+    case Some(Error(_, history)) => Some(history)
+    case Some(Inlined(_)) => None
+    case None => None
   }
 
   // If any entry in the results array is null, we're not done.
-  def isDone = results.find(_ == null).isEmpty
+  def isDone = results.find(_ == None).isEmpty
 
   // If any entry in the results array is Error, we have an error.
-  def hasError = results.find(_.isInstanceOf[Error]).isDefined
+  def hasError = results.find { case Some(Error(_,_)) => true; case a => false } isDefined
 
   // Create a list of the actual values of our children.
-  def getValues = results.toList.flatMap {
-    case Complete(value, _) => Some(value)
-    case Inlined(value) => Some(value)
+  def getValues = results.toList.map {
+    case Some(Complete(value, _)) => value
+    case Some(Inlined(value)) => value
     case r => sys.error("found unexpected result %s" format r)
   }
 
@@ -308,7 +324,7 @@ extends WorkerLike {
   def receive = {
     case OperationResult(childResult,  pos) => {
       log("calculation got result %d" format pos)
-      results(pos) = childResult
+      results(pos) = Some(childResult)
 
       if (!isDone) {
       } else if (hasError) {
