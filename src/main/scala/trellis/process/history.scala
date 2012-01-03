@@ -49,35 +49,28 @@ case class Failure(id:String, startTime:Long, stopTime:Long,
                    children:List[History], message:String,
                    trace:String) extends History {}
 
-trait TimerLike
+trait TimerLike {
+  def add(h:History):Unit
+  def children:List[History]
+  def toSuccess(name:String, start:Long, stop:Long) = {
+    Success(name, start, stop, children)
+  }
+  def toFailure(name:String, start:Long, stop:Long, msg:String, trace:String) = {
+    Failure(name, start, stop, children, msg, trace)
+  }
+}
 
 object TimerLike {
   implicit val need = NeedTimer
 }
 
-object NeedTimer extends TimerLike
-
-class Timer(name:String) extends TimerLike {
-  private var startTime = 0L
-  private var stopTime = 0L
-
-  val timers = new ArrayBuffer[Timer]
-
-  def add(t:Timer) { timers.append(t) }
-
-  def start() { startTime = time() }
-  def stop() { stopTime = time() }
-
-  def toHistory: History = Success("timer " + name, startTime, stopTime,
-                                   timers.toList.map(_.toHistory))
-
-  def createChild(name:String) = {
-    val t2 = new Timer(name)
-    this.add(t2)
-    t2
-  }
+object NeedTimer extends TimerLike {
+  def add(h:History) {}
+  def children = Nil
 }
 
-object Timer {
-  def fromOp(op:Operation[_]) = new Timer(op.getClass.getName)
+class Timer extends TimerLike {
+  private val histories = new ArrayBuffer[History]
+  def add(h:History) { histories.append(h) }
+  def children = histories.toList
 }

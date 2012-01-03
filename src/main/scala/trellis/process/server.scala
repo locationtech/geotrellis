@@ -26,23 +26,15 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
   def run[T](op:Operation[T])(implicit m:Manifest[T], t:TimerLike):T = {
     log("server.run called with %s" format op)
 
-    val timer = t match {
-      case t:Timer => {
-        val subTimer = Timer.fromOp(op)
-        t.add(subTimer)
-        subTimer
-      }
-      case _ => Timer.fromOp(op)
-    }
-
     implicit val timeout = system.settings.ActorTimeout
-    val future = (actor ? Run(op, timer)).mapTo[OperationResult[T]]
+    val future = (actor ? Run(op)).mapTo[OperationResult[T]]
     val result = Await.result(future, 5 seconds)
 
     val r = result match {
       case OperationResult(Complete(r, h), _) => {
         log(" run is complete: received: %s" format r)
         log("%s" format h.toPretty())
+        t.add(h)
         r.asInstanceOf[T]
       }
       case OperationResult(Inlined(_), _) => {

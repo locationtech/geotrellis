@@ -47,18 +47,18 @@ case class Error(message:String, history:Failure) extends CalculationResult[Noth
 /**
  * External message to compute the given operation and return result to sender.
  */
-case class Run(op:Operation[_], t:Timer)
+case class Run(op:Operation[_])
 
 /**
  * Internal message to run the provided op and send the result to the client.
  */
-case class RunOperation[T](op: Operation[T], pos: Int, client: ActorRef, t:Timer)
+case class RunOperation[T](op: Operation[T], pos: Int, client: ActorRef)
 
 /**
  * Internal message to compute the provided args (if necessary), invoke the
  * provided callback with the computed args, and send the result to the client.
  */
-case class RunCallback[T](args:Args, pos:Int, cb:Callback[T], client:ActorRef, id:String, t:Timer)
+case class RunCallback[T](args:Args, pos:Int, cb:Callback[T], client:ActorRef, id:String)
 
 /**
  * Message used to send result values. Used internally and externally.
@@ -102,16 +102,14 @@ case class ServerActor(id: String, server: Server) extends Actor {
 
   // Actor event loop
   def receive = {
-    case Run(op, timer) => {
+    case Run(op) => {
       log("server asked to run op %s" format op)
-      val subTimer = Timer.fromOp(op)
-      timer.add(subTimer)
-      dispatcher ! RunOperation(op, 0, sender, subTimer)
+      dispatcher ! RunOperation(op, 0, sender)
     }
 
-    case RunCallback(args, pos, cb, client, id, timer) => {
+    case RunCallback(args, pos, cb, client, id) => {
       log("server asked to run callback %s %s" format (args, cb))
-      context.actorOf(Props(Calculation(server, pos, args, cb, client, dispatcher, id, timer)))
+      context.actorOf(Props(Calculation(server, pos, args, cb, client, dispatcher, id)))
     }
 
     case msg => sys.error("unknown message: %s" format msg)
@@ -149,24 +147,20 @@ trait WorkerLike extends Actor {
 
   def id:String 
 
-  def getChildHistories(timer:Timer):List[History]
+  def success(id:String, start:Long, stop:Long, t:Option[Timer]): Success
+  def failure(id:String, start:Long, stop:Long, t:Option[Timer], msg:String, trace:String): Failure
 
   // This method handles a given output. It will either return a result/error
   // to the client, or dispatch more asynchronous requests, as necessary.
-  def handleResult[T](pos:Int, client:ActorRef, output:StepOutput[T], timer:Timer) {
+  def handleResult[T](pos:Int, client:ActorRef, output:StepOutput[T], t:Option[Timer]) {
     log("worker-like (%s) got output %d: %s" format (this, pos, output))
 
     output match {
       // ok, this operation completed and we have a value. so return it.
       case StepResult(value) => {
-        if (timer != null) {
-          timer.stop() // TODO fixme
-        } else {
-          println("*** we had a null timer...")
-        }
 
         log(" output was a result %s" format value)
-        val history = Success(id, startTime, time(), getChildHistories(timer))
+        val history = success(id, startTime, time(), t)
         println("&&& generated history: %s" format history)
         val result = OperationResult(Complete(value, history), pos)
 
@@ -178,14 +172,14 @@ trait WorkerLike extends Actor {
       // there was an error, so return that as well.
       case StepError(msg, trace) => {
         log(" output was an error %s" format msg)
-        val history = Failure(id, startTime, time(), getChildHistories(timer), msg, trace)
+        val history = failure(id, startTime, time(), t, msg, trace)
         client ! OperationResult(Error(msg, history), pos)
       }
 
       // we need to do more work, so as the server to do it asynchronously.
       case StepRequiresAsync(args, cb) => {
         log(" output requires async: %s" format args.toList)
-        server.actor ! RunCallback(args, pos, cb, client, id, timer)
+        server.actor ! RunCallback(args, pos, cb, client, id)
       }
     }
   }
@@ -204,22 +198,32 @@ case class Worker(val server: Server) extends WorkerLike {
   // question has child operations it will be processed by a Calculation
   // instead, who will be responsible for constructing the response (including
   // history).
-  def getChildHistories(timer:Timer):List[History] = timer.toHistory :: Nil
 
   private var _id = ""
   def id = "worker " + _id
 
+  def success(id:String, start:Long, stop:Long, t:Option[Timer]) = t match {
+    case Some(timer) => timer.toSuccess(id, start, stop)
+    case None => Success(id, start, stop, Nil)
+  }
+
+  def failure(id:String, start:Long, stop:Long, t:Option[Timer], msg:String, trace:String) = t match {
+    case Some(timer) => timer.toFailure(id, start, stop, msg, trace)
+    case None => Failure(id, start, stop, Nil, msg, trace)
+  }
+
   // Actor event loop
   def receive = {
-    case RunOperation(op, pos, client, timer) => {
+    case RunOperation(op, pos, client) => {
       _id = op.toString
       startTime = time()
-      timer.start()
       log("worker: run operation (%d): %s" format (pos, op))
+      val timer = new Timer()
       try {
-        handleResult(pos, client, op.run(server)(timer), timer)
+        val z = op.run(server)(timer)
+        handleResult(pos, client, z, Some(timer))
       } catch {
-        case e => handleResult(pos, client, StepError.fromException(e), timer)
+        case e => handleResult(pos, client, StepError.fromException(e), Some(timer))
       }
       context.stop(self)
     }
@@ -229,13 +233,12 @@ case class Worker(val server: Server) extends WorkerLike {
 
 case class Calculation[T](val server:Server, pos:Int, args:Args,
                           cb:Callback[T], client:ActorRef, dispatcher:ActorRef,
-                          _id:String, timer:Timer)
+                          _id:String)
 extends WorkerLike {
 
   def id = "calc " + _id
 
   startTime = time()
-  timer.start()
 
   // These results won't (necessarily) share any type info with each other, so
   // we have to use Any as the least-upper type bound :(
@@ -249,11 +252,7 @@ extends WorkerLike {
     for (i <- 0 until args.length) {
       log(" calculation looking at %d: %s" format (i, args(i)))
       args(i) match {
-        case op:Operation[_] => {
-          val subTimer = Timer.fromOp(op)
-          timer.add(subTimer)
-          dispatcher ! RunOperation(op, i, self, subTimer)
-        }
+        case op:Operation[_] => dispatcher ! RunOperation(op, i, self)
         case value => results(i) = Some(Inlined(value))
       }
     }
@@ -264,11 +263,21 @@ extends WorkerLike {
   // This should create a list of all the (non-trivial) child histories we
   // have. This leaves out inlined arguments, who don't have history in any
   // real sense (e.g. they were complete when we received them).
-  def getChildHistories(timer:Timer) = results.toList.flatMap {
+  def childHistories = results.toList.flatMap {
     case Some(Complete(_, history)) => Some(history)
     case Some(Error(_, history)) => Some(history)
     case Some(Inlined(_)) => None
     case None => None
+  }
+
+  def success(id:String, start:Long, stop:Long, t:Option[Timer]) = t match {
+    case Some(timer) => Success(id, start, stop, childHistories ++ timer.children)
+    case None => Success(id, start, stop, childHistories)
+  }
+
+  def failure(id:String, start:Long, stop:Long, t:Option[Timer], msg:String, trace:String) = t match {
+    case Some(timer) => Failure(id, start, stop, childHistories ++ timer.children, msg, trace)
+    case None => Failure(id, start, stop, childHistories, msg, trace)
   }
 
   // If any entry in the results array is null, we're not done.
@@ -289,8 +298,7 @@ extends WorkerLike {
   // receive any more messages.
   def finishCallback() {
     log(" all values complete")
-    handleResult(pos, client, cb(getValues), null)
-    timer.stop()
+    handleResult(pos, client, cb(getValues), None)
 
     log(" calculation done: performing callback")
     context.stop(self)
@@ -304,7 +312,7 @@ extends WorkerLike {
 
       if (!isDone) {
       } else if (hasError) {
-        val h = Failure(id, startTime, time(), getChildHistories(null), "child failed", "")
+        val h = failure(id, startTime, time(), None, "child failed", "")
         client ! Error("this is a failure message", h)
       } else {
         log(" all values complete")
