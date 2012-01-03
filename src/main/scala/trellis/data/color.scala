@@ -64,7 +64,7 @@ abstract class ColorRangeChooser extends ColorChooser {
 /**
   * Generates colors between an initial color and an end color.
   */
-class LinearColorRangeChooser(val color1:Int,
+case class LinearColorRangeChooser(val color1:Int,
                               val color2:Int) extends ColorRangeChooser {
   def getRanges(masker:(Int) => Int, num:Int) = {
     val start = masker(this.color1)
@@ -82,7 +82,7 @@ class LinearColorRangeChooser(val color1:Int,
 /**
   * Generates a range of colors from an array of initial colors. 
   */
-class MultiColorRangeChooser(val colors:Array[Int]) extends ColorRangeChooser {
+case class MultiColorRangeChooser(val colors:Array[Int]) extends ColorRangeChooser {
   def getRanges(masker:(Int) => Int, count:Int) = {
     val hues  = this.colors.map(masker)
     val n     = this.colors.length - 1

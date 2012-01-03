@@ -140,7 +140,7 @@ object GridPolygon {
   * the next line's p1 (with the final line's p2 equal to the first line's p1).
   * the user is required to provide lines in this order.
   */
-class GridPolygon(val edges:Seq[GridLine]) {
+case class GridPolygon(val edges:Seq[GridLine]) {
   val len = this.edges.length
 
   // check to make sure the lines are all attached correctly, and figure out

@@ -29,9 +29,14 @@ final class ArgReadState(val path:String,
   }
 }
 
+object ArgReadState {
+  def apply(path:String, layer:RasterLayer, target:RasterExtent) = {
+    new ArgReadState(path, layer, target)
+  }
+}
 object ArgReader extends FileReader {
   def createReadState(path:String, layer:RasterLayer, target:RasterExtent) = {
-    new ArgReadState(path, layer, target)
+    ArgReadState(path, layer, target)
   }
 }
 

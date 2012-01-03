@@ -139,7 +139,7 @@ object PostgisFeatureReader {
 }
 
 
-class PostgisFeatureReader(database:String, host:String, port:String, 
+case class PostgisFeatureReader(database:String, host:String, port:String, 
                            table:String, username:String, password:String) { 
   val url = "jdbc:postgresql_postGIS://%s:%s/%s".format(host,port,database)
   val conn = DriverManager.getConnection(url, username, password)
