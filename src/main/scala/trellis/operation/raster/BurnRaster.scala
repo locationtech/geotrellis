@@ -1,6 +1,6 @@
 package trellis.operation
 
-import trellis.process.Server
+import trellis.process._
 import trellis.RasterExtent
 import trellis.raster.IntRaster
 import trellis.data.IntRasterReader
@@ -13,7 +13,7 @@ extends SimpleOp[IntRaster] {
 
   def childOperations = List(r, g)
 
-  def _value(server:Server) = {
+  def _value(server:Server)(implicit t:Timer) = {
     val source = server.run(r)
     val geo = server.run(g)
 

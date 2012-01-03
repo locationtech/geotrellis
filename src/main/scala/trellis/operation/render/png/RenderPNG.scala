@@ -1,6 +1,6 @@
 package trellis.operation.render.png
 
-import trellis.process.Server
+import trellis.process._
 import trellis.operation._
 import trellis.data.PNGWriterRGB;
 
@@ -13,7 +13,7 @@ case class RenderPNG(r:IntRasterOperation, _colorBreaks:Array[(Int, Int)],
                      transparent:Boolean) extends PNGOperation with PNGBase 
                                                                with SimpleOperation[Array[Byte]] {
   val colorBreaks = _colorBreaks.sortWith(_._1 < _._1)
-  def _value(server:Server) = {
+  def _value(server:Server)(implicit t:Timer) = {
     val raster = server.run(r)
     val writer = new PNGWriterRGB(raster, "/dev/null", applyColorMap,
                                   noDataColor, transparent)

@@ -1,7 +1,7 @@
 package trellis.operation
 
 import trellis.RasterExtent
-import trellis.process.Server
+import trellis.process._
 
 /**
   * Get the [[trellis.geoattrs.RasterExtent]] from a given raster.
@@ -9,6 +9,6 @@ import trellis.process.Server
 case class GetRasterExtent(r:IntRasterOperation) extends RasterExtentOperation with SimpleOperation[RasterExtent]{ 
   def childOperations = List(r)
 
-  def _value(server:Server) = server.run(r).rasterExtent
+  def _value(server:Server)(implicit t:Timer) = server.run(r).rasterExtent
 
 }

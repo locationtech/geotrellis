@@ -1,7 +1,7 @@
 package trellis.operation
 
 import trellis.RasterExtent
-import trellis.process.Server
+import trellis.process._
 
 // ny=4    nx=4    nx=2 ny=2
 // AAAA    ABCD    AABB
@@ -19,7 +19,7 @@ extends CachedOp[Seq[Op[RasterExtent]]] with SimpleOp[Seq[Op[RasterExtent]]] {
 
   def childOperations = List(g)
 
-  def _value(server:Server) = {
+  def _value(server:Server)(implicit t:Timer) = {
     val geo = server.run(g)
     val a = Array.ofDim[Op[RasterExtent]](ny * nx)
 

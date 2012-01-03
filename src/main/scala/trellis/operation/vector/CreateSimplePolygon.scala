@@ -1,7 +1,7 @@
 package trellis.operation
 import trellis.geometry.Polygon
 
-import trellis.process.Server
+import trellis.process._
 
 /**
   * Create a Polygon from an array of coordinates represented as a tuple (x,y).
@@ -9,7 +9,7 @@ import trellis.process.Server
 case class CreateSimplePolygon(pts:Array[(Double, Double)],
                                value:Int) extends PolygonOperation with SimpleOperation[Polygon] {
   def childOperations = List.empty[Operation[_]]
-  def _value(server:Server) = Polygon(pts, value, null)
+  def _value(server:Server)(implicit t:Timer) = Polygon(pts, value, null)
 }
 
 /**
@@ -17,5 +17,5 @@ case class CreateSimplePolygon(pts:Array[(Double, Double)],
  */
 case class WrapPolygon(polygon:Polygon) extends PolygonOperation with SimpleOperation[Polygon] {
   def childOperations = List.empty[Operation[_]]
-  def _value(server:Server) = polygon
+  def _value(server:Server)(implicit t:Timer) = polygon
 }

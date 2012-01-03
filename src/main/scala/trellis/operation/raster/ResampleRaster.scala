@@ -2,7 +2,7 @@ package trellis.operation
 
 import trellis.data.IntRasterReader
 import trellis.RasterExtent
-import trellis.process.Server
+import trellis.process._
 import trellis.raster.IntRaster
 
 /**
@@ -13,7 +13,7 @@ extends IntRasterOperation with SimpleOperation[IntRaster]{
 
   def childOperations = List(r)
 
-  def _value(server:Server) = {
+  def _value(server:Server)(implicit t:Timer) = {
     val raster = server.run(r)
     val extent = raster.rasterExtent.extent
     val cw = extent.width / cols

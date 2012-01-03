@@ -12,7 +12,7 @@ import trellis.geometry.MultiPolygon
 case class BurnPolygons(r:Op[IntRaster], ps:Array[Op[Polygon]])
 extends SimpleOp[IntRaster] {
   def childOperations = r :: ps.toList
-  def _value(server:Server) = {
+  def _value(server:Server)(implicit t:Timer) = {
     // TODO: profile/optimize
     val raster   = server.run(CopyRaster(r))
     val polygons = ps.map(server.run(_))
@@ -29,7 +29,7 @@ case class BurnMultiPolygons(rr: Op[IntRaster],
 extends Op[IntRaster] {
 
   def childOperations = rr :: ps.toList
-  def _run(server:Server) = runAsync(rr :: ps.toList, server)
+  def _run(server:Server)(implicit t:Timer) = runAsync(rr :: ps.toList, server)
 
   val nextSteps:Steps = {
     case raster :: polygons => { 
@@ -51,7 +51,7 @@ extends Op[IntRaster] {
 case class BurnPolygons2(r:Op[IntRaster], ps:Array[Op[Polygon]], fs:Array[Int => Int])
 extends SimpleOp[IntRaster] {
   def childOperations = r :: ps.toList
-  def _value(server:Server) = {
+  def _value(server:Server)(implicit t:Timer) = {
     // TODO: profile/optimize
     val raster   = server.run(CopyRaster(r))
     val polygons = ps.map(server.run(_))
@@ -67,7 +67,7 @@ case class BurnPolygons3(r:Op[IntRaster], ps:Op[List[Polygon]], value:Int)
 extends SimpleOp[IntRaster] {
 
   def childOperations = List(r, ps)
-  def _value(server:Server) = {
+  def _value(server:Server)(implicit t:Timer) = {
     // TODO: profile/optimize
     val raster   = server.run(CopyRaster(r))
     val polygons = server.run(ps).toArray
@@ -83,7 +83,7 @@ trait BurnPolygonsBase extends SimpleOp[IntRaster] {
   def ps:Op[Array[Polygon]]
 
   def childOperations = List(r, ps)
-  def _value(server:Server) = {
+  def _value(server:Server)(implicit t:Timer) = {
     // TODO: profile/optimize
     val raster   = server.run(CopyRaster(r))
     val polygons = server.run(ps)

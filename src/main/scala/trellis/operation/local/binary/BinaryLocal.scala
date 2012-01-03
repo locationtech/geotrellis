@@ -23,7 +23,7 @@ trait BinaryLocal extends LocalOperation {
 
   var childStart:Long = 0
 
-  def _run(server:Server) = {
+  def _run(server:Server)(implicit t:Timer) = {
     val childStart = System.currentTimeMillis()
     runAsync(List(r1, r2), server)
   }

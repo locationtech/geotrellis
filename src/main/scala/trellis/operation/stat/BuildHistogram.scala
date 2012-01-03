@@ -1,7 +1,7 @@
 package trellis.operation
 
 import trellis.constant.NODATA
-import trellis.process.Server
+import trellis.process._
 import trellis.stat._
 
 
@@ -15,7 +15,7 @@ trait BuildHistogram extends CachedOperation[Histogram] with SimpleOperation[His
   var h:Histogram = null
   def childOperations = { List(r) }
   def initHistogram:Histogram
-  def _value(server:Server) = {
+  def _value(server:Server)(implicit t:Timer) = {
     this.h = this.initHistogram
 
     val raster = server.run(r)

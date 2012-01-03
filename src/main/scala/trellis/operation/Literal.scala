@@ -1,6 +1,6 @@
 package trellis.operation
 
-import trellis.process.Server
+import trellis.process._
 
 // TODO: create some nice implicits?
 
@@ -9,7 +9,7 @@ import trellis.process.Server
  */
 case class Literal[A](value:A) extends SimpleOperation[A] {
   def childOperations = List.empty[Operation[_]]
-  def _value(server:Server) = this.value
+  def _value(server:Server)(implicit t:Timer) = this.value
 }
 
 object Literal {

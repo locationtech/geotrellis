@@ -13,7 +13,7 @@ case class CropRasterExtent(g:Op[RasterExtent],
                             xmax:Double, ymax:Double) extends Op[RasterExtent] {
   def childOperations = List(g)
 
-  def _run(server:Server) = runAsync(List(g), server)
+  def _run(server:Server)(implicit t:Timer) = runAsync(List(g), server)
 
   val nextSteps:Steps = {
     case (geo:RasterExtent) :: Nil => step2(geo)

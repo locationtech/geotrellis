@@ -5,7 +5,7 @@ import trellis.Extent
 import trellis.RasterExtent
 import trellis.raster.IntRaster
 import trellis.constant.NODATA
-import trellis.process.Server
+import trellis.process._
 
 // this operation doesn't currently work.
 // we need to create unit tests and get it working.
@@ -21,7 +21,7 @@ case class CropRaster(r:IntRasterOperation, e:Op[Extent]) extends SimpleOp[IntRa
                     
   def childOperations = List(r)
 
-  def _value(server:Server) = {
+  def _value(server:Server)(implicit t:Timer) = {
     val raster = server.run(r)
     val geo = raster.rasterExtent
     //println(geo)

@@ -1,7 +1,7 @@
 package trellis.operation
 
 import trellis.raster.IntRaster
-import trellis.process.Server
+import trellis.process._
 
 
 /**
@@ -9,6 +9,6 @@ import trellis.process.Server
   */
 case class WrapRaster(raster:IntRaster) extends IntRasterOperation with SimpleOperation[IntRaster] {
   def childOperations = List.empty[Operation[_]]
-  def _value(server:Server) = raster
+  def _value(server:Server)(implicit t:Timer) = raster
 }
 

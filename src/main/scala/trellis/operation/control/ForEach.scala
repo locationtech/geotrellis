@@ -6,7 +6,7 @@ import trellis.process._
 case class ForEach[A, Z:Manifest](a:Op[Array[A]], f:(A) => Op[Z]) extends Op[Array[Z]] {
   def childOperations = List(a)
 
-  def _run(server:Server) = runAsync(List(a, server), server)
+  def _run(server:Server)(implicit t:Timer) = runAsync(List(a, server), server)
 
   val nextSteps:PF[Any, StepOutput[Array[Z]]] = {
     case (as:Array[_]) :: (server:Server) :: Nil => step2(as.asInstanceOf[Array[A]], server)
@@ -20,7 +20,7 @@ case class ForEach2[A, B, Z:Manifest](a:Op[Array[A]],
                                       f:(A, B) => Op[Z]) extends Op[Array[Z]] {
   def childOperations = List(a, b)
 
-  def _run(server:Server) = runAsync(List(a, b, server), server)
+  def _run(server:Server)(implicit t:Timer) = runAsync(List(a, b, server), server)
 
   val nextSteps:PF[Any, StepOutput[Array[Z]]] = {
     case (as:Array[_]) :: (bs:Array[_]) :: (server:Server) :: Nil => {
@@ -45,7 +45,7 @@ extends Op[Array[Z]] {
 
   def childOperations = List(a, b, c)
 
-  def _run(server:Server) = runAsync(List(a, b, c, server), server)
+  def _run(server:Server)(implicit t:Timer) = runAsync(List(a, b, c, server), server)
 
   val nextSteps:PF[Any, StepOutput[Array[Z]]] = {
     case (as:Array[_]) :: (bs:Array[_]) :: (cs:Array[_]) :: (server:Server) :: Nil => {

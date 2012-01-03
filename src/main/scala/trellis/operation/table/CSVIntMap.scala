@@ -1,7 +1,7 @@
 package trellis.operation
 
 import scala.collection.mutable.Map
-import trellis.process.Server
+import trellis.process._
 
 /**
  * Create a Map of (String,String) => Int from a CSV file 
@@ -11,7 +11,7 @@ case class CsvIntMap(path:String,
                      delimiter:String) extends Operation[Map[(String, String), Int]]
      with SimpleOperation[Map[(String,String), Int]]{
   def childOperations = { List[Operation[_]]() }
-  def _value(server:Server) = {
+  def _value(server:Server)(implicit t:Timer) = {
     val source = io.Source.fromFile(path)
     val lines  = source.getLines.toArray.filter {
       s => s.length > 0

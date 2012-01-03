@@ -15,7 +15,7 @@ import trellis.geometry.Polygon
 case class PolygonalZonalHistograms(ps:Array[Op[Polygon]], r:Op[IntRaster],
                                     size:Int) extends Op[Array[Histogram]] {
   def childOperations = r :: ps.toList
-  def _run(server:Server) = runAsync(r :: ps.toList, server)
+  def _run(server:Server)(implicit t:Timer) = runAsync(r :: ps.toList, server)
 
   val nextSteps:Steps = {
     case raster :: polygons => {

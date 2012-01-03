@@ -59,15 +59,15 @@ trait Operation[T] {
     s
   }
 
-  protected def _run(server:Server): StepOutput[T]
+  protected def _run(server:Server)(implicit timer:Timer): StepOutput[T]
  
   /**
    * Execute this operation and return the result.  
    */
-  def run(server:Server): StepOutput[T] = {
+  def run(server:Server)(implicit timer:Timer): StepOutput[T] = {
     log("Operation.run called")
     startTime = System.currentTimeMillis()
-    val o = this._run(server)
+    val o = this._run(server)(timer)
     log("Operation run returning %s" format o)
     o
   }
@@ -94,9 +94,10 @@ object Operation {
 
 
 trait SimpleOperation[T] extends Operation[T] {
-  def _value(server:Server):T // define simple behavior here
+  // define simple behavior here
+  def _value(server:Server)(implicit timer:Timer):T 
 
-  def _run(server:Server) = {
+  def _run(server:Server)(implicit timer:Timer) = {
     startTime = System.currentTimeMillis()
     val value = this._value(server)
     endTime = System.currentTimeMillis()

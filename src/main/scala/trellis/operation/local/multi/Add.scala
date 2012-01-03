@@ -34,7 +34,7 @@ case class Add(rs:IntRasterOperation*) extends MultiLocal {
   */
 case class AddArray(op:Operation[Array[IntRaster]]) extends Operation[IntRaster] {
   def childOperations = List(op)
-  def _run(server:Server) = {
+  def _run(server:Server)(implicit t:Timer) = {
     startTime = System.currentTimeMillis
     runAsync(List(op), server)
   }
