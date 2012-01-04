@@ -10,5 +10,5 @@ import trellis.process._
 case class WrapRasterExtent(geo:RasterExtent)  extends RasterExtentOperation with SimpleOperation[RasterExtent]{
   def childOperations = List.empty[Operation[_]]
 
-  def _value(server:Server)(implicit t:Timer) = geo
+  def _value(context:Context) = geo
 }

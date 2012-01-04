@@ -10,7 +10,7 @@ import trellis.process._
 class LoadRasterExtentFromFile(path:String) extends RasterExtentOperation with SimpleOperation[RasterExtent] { 
   def childOperations = List.empty[Operation[_]]
 
-  def _value(server:Server)(implicit t:Timer) = {
+  def _value(context:Context) = {
     //val rdr = server.getReader(path)
     //rdr.readMetadata
     //rdr.getRasterExtent()

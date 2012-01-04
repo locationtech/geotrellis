@@ -59,20 +59,20 @@ trait Operation[T] {
     s
   }
 
-  protected def _run(server:Server)(implicit timer:Timer): StepOutput[T]
+  protected def _run(context:Context): StepOutput[T]
  
   /**
    * Execute this operation and return the result.  
    */
-  def run(server:Server)(implicit timer:Timer): StepOutput[T] = {
+  def run(context:Context): StepOutput[T] = {
     log("Operation.run called")
     startTime = System.currentTimeMillis()
-    val o = this._run(server)(timer)
+    val o = _run(context)
     log("Operation run returning %s" format o)
     o
   }
 
-  def runAsync(args:Args, server:Server): StepOutput[T] = {
+  def runAsync(args:Args): StepOutput[T] = {
     log("Operation.runAsync called with %s" format args)
     val f = (args2:Args) => {
       log("*** runAsync-generated callback called with %s" format args2)
@@ -95,11 +95,11 @@ object Operation {
 
 trait SimpleOperation[T] extends Operation[T] {
   // define simple behavior here
-  def _value(server:Server)(implicit timer:Timer):T 
+  def _value(context:Context):T 
 
-  def _run(server:Server)(implicit timer:Timer) = {
+  def _run(context:Context) = {
     startTime = System.currentTimeMillis()
-    val value = this._value(server)
+    val value = this._value(context)
     endTime = System.currentTimeMillis()
     StepResult(value)
   }

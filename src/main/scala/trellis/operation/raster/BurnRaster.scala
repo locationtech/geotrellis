@@ -13,9 +13,9 @@ extends SimpleOp[IntRaster] {
 
   def childOperations = List(r, g)
 
-  def _value(server:Server)(implicit t:Timer) = {
-    val source = server.run(r)
-    val geo = server.run(g)
+  def _value(context:Context) = {
+    val source = context.run(r)
+    val geo = context.run(g)
 
     // this object will read from a raster as a data source
     // (instead of using an arg32/tif/etc) to load a new

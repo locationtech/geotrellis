@@ -12,8 +12,8 @@ case class GetPolygonExtent(p:PolygonOperation) extends Op[Extent]
      with SimpleOp[Extent] {
   def childOperations = List(p)
 
-  def _value(server:Server)(implicit t:Timer) = {
-    val polygon = server.run(p)
+  def _value(context:Context) = {
+    val polygon = context.run(p)
     val (xmin, ymin, xmax, ymax) = polygon.getBounds()
     Extent(xmin, ymin, xmax, ymax)
   }

@@ -11,10 +11,10 @@ import trellis.process._
 case class BurnPolygon(r:IntRasterOperation,
                        p:PolygonOperation) extends IntRasterOperation with SimpleOperation[IntRaster]{
   def childOperations = List(r, p)
-  def _value(server:Server)(implicit t:Timer) = {
+  def _value(context:Context) = {
     // TODO: profile/optimize
-    val raster  = server.run(CopyRaster(r))
-    val polygon = server.run(p)
+    val raster  = context.run(CopyRaster(r))
+    val polygon = context.run(p)
 
     Rasterizer.rasterize(raster, Array(polygon))
     raster
@@ -27,10 +27,10 @@ case class BurnPolygon(r:IntRasterOperation,
 case class BurnPolygon2(r:IntRasterOperation, p:PolygonOperation,
                         f:Int => Int) extends IntRasterOperation with SimpleOperation[IntRaster]{
   def childOperations = List(r, p)
-  def _value(server:Server)(implicit t:Timer) = {
+  def _value(context:Context) = {
     // TODO: profile/optimize
-    val raster  = server.run(CopyRaster(r))
-    val polygon = server.run(p)
+    val raster  = context.run(CopyRaster(r))
+    val polygon = context.run(p)
     Rasterizer.rasterize(raster, Array(polygon), Array(f))
     raster
   }

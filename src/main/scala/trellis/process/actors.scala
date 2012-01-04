@@ -218,12 +218,18 @@ case class Worker(val server: Server) extends WorkerLike {
       _id = op.toString
       startTime = time()
       log("worker: run operation (%d): %s" format (pos, op))
-      val timer = new Timer()
+      //val timer = new Timer()
+      val trellisContext = new Context(server)
       try {
-        val z = op.run(server)(timer)
-        handleResult(pos, client, z, Some(timer))
+        //val z = op.run(server)(timer)
+        //handleResult(pos, client, z, Some(timer))
+        val z = op.run(trellisContext)
+        handleResult(pos, client, z, Some(trellisContext.timer))
       } catch {
-        case e => handleResult(pos, client, StepError.fromException(e), Some(timer))
+        case e => {
+          val error = StepError.fromException(e)
+          handleResult(pos, client, error, Some(trellisContext.timer))
+        }
       }
       context.stop(self)
     }

@@ -21,12 +21,12 @@ case class CropRaster(r:IntRasterOperation, e:Op[Extent]) extends SimpleOp[IntRa
                     
   def childOperations = List(r)
 
-  def _value(server:Server)(implicit t:Timer) = {
-    val raster = server.run(r)
+  def _value(context:Context) = {
+    val raster = context.run(r)
     val geo = raster.rasterExtent
     //println(geo)
 
-    val extent = server.run(e)
+    val extent = context.run(e)
     val xmin = extent.xmin
     val xmax = extent.xmax
     val ymin = extent.ymin

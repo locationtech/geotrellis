@@ -16,7 +16,7 @@ case class BuildRasterExtent(xmin:Double, ymin:Double,
 
   def childOperations = List.empty[Op[_]]
 
-  def _value(server:Server)(implicit t:Timer) = {
+  def _value(context:Context) = {
     val extent = Extent(xmin, ymin, xmax, ymax)
     RasterExtent(extent, cellwidth, cellheight, cols, rows)
   }
@@ -34,7 +34,7 @@ extends Op[RasterExtent] {
     case (e:Extent) :: (c:Int) :: (r:Int) :: Nil => step2(e, c, r)
   }
 
-  def _run(server:Server)(implicit t:Timer) = runAsync(List(extent, cols, rows), server)
+  def _run(context:Context) = runAsync(List(extent, cols, rows))
 
   def step2(e:Extent, cols:Int, rows:Int) = {
     val cw = (e.xmax - e.xmin) / cols

@@ -17,9 +17,9 @@ trait UnaryLocal extends LocalOperation with SimpleOperation[IntRaster] {
 
   def getRasters = Array(r)
 
-  def _value(server:Server)(implicit t:Timer) = {
+  def _value(context:Context) = {
     val childStart = System.currentTimeMillis
-    val raster = server.run(r)
+    val raster = context.run(r)
     childTime = System.currentTimeMillis - childStart
     val data   = raster.data
     var i = 0

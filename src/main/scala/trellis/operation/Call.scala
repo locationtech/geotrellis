@@ -7,5 +7,5 @@ import trellis.process._
   */
 case class Call[A:Manifest, B](r:Operation[A], f:A => B) extends SimpleOperation[B] {
   def childOperations = List(r)
-  def _value(server:Server)(implicit t:Timer) = f(server.run(r))
+  def _value(context:Context) = f(context.run(r))
 }

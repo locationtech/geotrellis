@@ -11,8 +11,8 @@ import trellis.data.{PNGWriterRGB,PNGWriterRGB2}
 case class WritePNGFile(r:IntRasterOperation, path:String,
                         colorBreaks:Array[(Int, Int)], noDataColor:Int,
                         transparent:Boolean) extends Operation[Unit] with PNGBase with SimpleOperation[Unit] {
-  def _value(server:Server)(implicit t:Timer) = {
-    val raster = server.run(r)
+  def _value(context:Context) = {
+    val raster = context.run(r)
     val writer = new PNGWriterRGB(raster, path, applyColorMap, noDataColor,
                                   transparent)
     writer.write
@@ -23,8 +23,8 @@ case class WritePNGFile2(r:IntRasterOperation, path:String, noDataColor:Int, tra
 extends Operation[Unit] with SimpleOperation[Unit] {
   def childOperations = { List(r) }
 
-  def _value(server:Server)(implicit t:Timer) = {
-    val raster = server.run(r)
+  def _value(context:Context) = {
+    val raster = context.run(r)
     val writer = new PNGWriterRGB2(raster, path, noDataColor, transparent)
     writer.write
   }

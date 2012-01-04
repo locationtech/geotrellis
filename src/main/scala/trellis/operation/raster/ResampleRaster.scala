@@ -13,8 +13,8 @@ extends IntRasterOperation with SimpleOperation[IntRaster]{
 
   def childOperations = List(r)
 
-  def _value(server:Server)(implicit t:Timer) = {
-    val raster = server.run(r)
+  def _value(context:Context) = {
+    val raster = context.run(r)
     val extent = raster.rasterExtent.extent
     val cw = extent.width / cols
     val ch = extent.height / rows

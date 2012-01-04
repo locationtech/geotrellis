@@ -12,10 +12,10 @@ import trellis.geometry.MultiPolygon
 case class BurnPolygons(r:Op[IntRaster], ps:Array[Op[Polygon]])
 extends SimpleOp[IntRaster] {
   def childOperations = r :: ps.toList
-  def _value(server:Server)(implicit t:Timer) = {
+  def _value(context:Context) = {
     // TODO: profile/optimize
-    val raster   = server.run(CopyRaster(r))
-    val polygons = ps.map(server.run(_))
+    val raster   = context.run(CopyRaster(r))
+    val polygons = ps.map(context.run(_))
     Rasterizer.rasterize(raster, polygons)
     raster
   }
@@ -29,7 +29,7 @@ case class BurnMultiPolygons(rr: Op[IntRaster],
 extends Op[IntRaster] {
 
   def childOperations = rr :: ps.toList
-  def _run(server:Server)(implicit t:Timer) = runAsync(rr :: ps.toList, server)
+  def _run(context:Context) = runAsync(rr :: ps.toList)
 
   val nextSteps:Steps = {
     case raster :: polygons => { 
@@ -51,10 +51,10 @@ extends Op[IntRaster] {
 case class BurnPolygons2(r:Op[IntRaster], ps:Array[Op[Polygon]], fs:Array[Int => Int])
 extends SimpleOp[IntRaster] {
   def childOperations = r :: ps.toList
-  def _value(server:Server)(implicit t:Timer) = {
+  def _value(context:Context) = {
     // TODO: profile/optimize
-    val raster   = server.run(CopyRaster(r))
-    val polygons = ps.map(server.run(_))
+    val raster   = context.run(CopyRaster(r))
+    val polygons = ps.map(context.run(_))
     Rasterizer.rasterize(raster, polygons, fs)
     raster
   }
@@ -67,10 +67,10 @@ case class BurnPolygons3(r:Op[IntRaster], ps:Op[List[Polygon]], value:Int)
 extends SimpleOp[IntRaster] {
 
   def childOperations = List(r, ps)
-  def _value(server:Server)(implicit t:Timer) = {
+  def _value(context:Context) = {
     // TODO: profile/optimize
-    val raster   = server.run(CopyRaster(r))
-    val polygons = server.run(ps).toArray
+    val raster   = context.run(CopyRaster(r))
+    val polygons = context.run(ps).toArray
     val fs = polygons.map(p => (z:Int) => value)
 
     Rasterizer.rasterize(raster, polygons, fs)
@@ -83,10 +83,10 @@ trait BurnPolygonsBase extends SimpleOp[IntRaster] {
   def ps:Op[Array[Polygon]]
 
   def childOperations = List(r, ps)
-  def _value(server:Server)(implicit t:Timer) = {
+  def _value(context:Context) = {
     // TODO: profile/optimize
-    val raster   = server.run(CopyRaster(r))
-    val polygons = server.run(ps)
+    val raster   = context.run(CopyRaster(r))
+    val polygons = context.run(ps)
 
     Rasterizer.rasterize(raster, polygons)
     raster

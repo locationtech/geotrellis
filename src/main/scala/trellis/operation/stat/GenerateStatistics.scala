@@ -8,5 +8,5 @@ import trellis.process._
   */
 case class GenerateStatistics(h:Operation[Histogram]) extends Operation[Statistics] with SimpleOperation[Statistics] {
   def childOperations = { List(h) }
-  def _value(server:Server)(implicit t:Timer) = server.run(h).generateStatistics
+  def _value(context:Context) = context.run(h).generateStatistics
 }

@@ -23,9 +23,9 @@ trait BinaryLocal extends LocalOperation {
 
   var childStart:Long = 0
 
-  def _run(server:Server)(implicit t:Timer) = {
+  def _run(context:Context) = {
     val childStart = System.currentTimeMillis()
-    runAsync(List(r1, r2), server)
+    runAsync(r1 :: r2 :: Nil)
   }
 
   val nextSteps:Steps = {

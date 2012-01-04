@@ -11,20 +11,19 @@ import trellis.raster.IntRaster
 case class LoadFile(p:Op[String]) extends SimpleOp[IntRaster] {
   def childOperations = List(p)
 
-  def _value(server:Server)(implicit t:Timer) = {
-    val path = server.run(p)
-    server.loadRaster(path, null)
+  def _value(context:Context) = {
+    val path = context.run(p)
+    context.loadRaster(path, null)
   }
 }
 
 case class LoadFileWithRasterExtent(p:Op[String], e:Op[RasterExtent]) extends SimpleOp[IntRaster] {
   def childOperations = List(p, e)
   
-  //def _value(server:Server)(implicit t:Timer) = {
-  def _value(server:Server)(implicit t:Timer) = {
-    val path = server.run(p)
-    val rasterExtent = server.run(e)
-    server.loadRaster(path, rasterExtent)
+  def _value(context:Context) = {
+    val path = context.run(p)
+    val rasterExtent = context.run(e)
+    context.loadRaster(path, rasterExtent)
   }
 }
 

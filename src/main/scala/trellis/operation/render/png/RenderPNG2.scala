@@ -11,10 +11,10 @@ import trellis.operation._
 case class RenderPNG2(r:IntRasterOperation, c:Operation[ColorBreaks],
                       noDataColor:Int, transparent:Boolean) extends PNGOperation with SimpleOperation[Array[Byte]] {
   def childOperations = { List(r, c) }
-  def _value(server:Server)(implicit t:Timer) = {
-    val colorBreaks = server.run(c)
+  def _value(context:Context) = {
+    val colorBreaks = context.run(c)
     val p = RenderPNG(r, colorBreaks.breaks, noDataColor, transparent)
-    server.run(p)
+    context.run(p)
   }
 }
 

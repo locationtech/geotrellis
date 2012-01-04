@@ -11,7 +11,7 @@ case class DeviationRaster(r:Op[IntRaster], h:Op[Histogram], factor:Int) extends
   val g = GenerateStatistics(h)
 
   def childOperations = List(g, r)
-  def _run(server:Server)(implicit t:Timer) = runAsync(List(g, r), server)
+  def _run(context:Context) = runAsync(List(g, r))
 
   val nextSteps:Steps = {
     case (stats:Statistics) :: (raster:IntRaster) :: Nil => step2(stats, raster)

@@ -14,6 +14,6 @@ import trellis.constant.NODATA
  */
 case class CreateRaster(g:RasterExtentOperation) extends IntRasterOperation with SimpleOperation[IntRaster] {
   def childOperations = List(g)
-  def _value(server:Server)(implicit t:Timer) = { IntRaster.createEmpty( server.run(g) ) }
+  def _value(context:Context) = { IntRaster.createEmpty( context.run(g) ) }
   
 }

@@ -9,7 +9,7 @@ import trellis.process._
  */
 case class Literal[A](value:A) extends SimpleOperation[A] {
   def childOperations = List.empty[Operation[_]]
-  def _value(server:Server)(implicit t:Timer) = this.value
+  def _value(context:Context) = this.value
 }
 
 object Literal {

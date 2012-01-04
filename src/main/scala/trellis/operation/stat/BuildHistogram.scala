@@ -15,10 +15,10 @@ trait BuildHistogram extends CachedOperation[Histogram] with SimpleOperation[His
   var h:Histogram = null
   def childOperations = { List(r) }
   def initHistogram:Histogram
-  def _value(server:Server)(implicit t:Timer) = {
+  def _value(context:Context) = {
     this.h = this.initHistogram
 
-    val raster = server.run(r)
+    val raster = context.run(r)
     val data   = raster.data
 
     var i = 0

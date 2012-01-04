@@ -9,6 +9,6 @@ import trellis.process._
 case class GetRasterExtent(r:IntRasterOperation) extends RasterExtentOperation with SimpleOperation[RasterExtent]{ 
   def childOperations = List(r)
 
-  def _value(server:Server)(implicit t:Timer) = server.run(r).rasterExtent
+  def _value(context:Context) = context.run(r).rasterExtent
 
 }

@@ -15,9 +15,9 @@ with SimpleOperation[List[Polygon]] {
 
   def childOperations = List(p, e)
 
-  def _value(server:Server)(implicit t:Timer) = {
-    val polygon = server.run(p)
-    val extent = server.run(e)
+  def _value(context:Context) = {
+    val polygon = context.run(p)
+    val extent = context.run(e)
     polygon.bound(extent)
   }
 }

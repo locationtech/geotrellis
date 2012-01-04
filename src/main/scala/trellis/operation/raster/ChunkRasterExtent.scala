@@ -19,8 +19,8 @@ extends CachedOp[Seq[Op[RasterExtent]]] with SimpleOp[Seq[Op[RasterExtent]]] {
 
   def childOperations = List(g)
 
-  def _value(server:Server)(implicit t:Timer) = {
-    val geo = server.run(g)
+  def _value(context:Context) = {
+    val geo = context.run(g)
     val a = Array.ofDim[Op[RasterExtent]](ny * nx)
 
     // calculate the break points along the X and Y axes

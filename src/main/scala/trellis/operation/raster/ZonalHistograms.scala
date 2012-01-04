@@ -18,7 +18,7 @@ case class ZonalHistograms(data: Op[IntRaster],
                            histArraySize: Int) extends Op[Array[Histogram]] {
 
   def childOperations = List(data, zones)
-  def _run(server:Server)(implicit t:Timer) = runAsync( List(data, zones), server)
+  def _run(context:Context) = runAsync(List(data, zones))
 
   val nextSteps:Steps = {
     case dataRaster :: zoneRaster :: Nil => { 

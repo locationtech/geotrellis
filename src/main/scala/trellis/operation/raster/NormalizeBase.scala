@@ -17,8 +17,8 @@ trait NormalizeBase extends IntRasterOperation with SimpleOperation[IntRaster] {
 
   def getMinMax(raster:IntRaster):(Int, Int)
 
-  def _value(server:Server)(implicit t:Timer):IntRaster = {
-    val raster:IntRaster = server.run(r)
+  def _value(context:Context):IntRaster = {
+    val raster:IntRaster = context.run(r)
 
     val (zmin, zmax) = this.getMinMax(raster)
 

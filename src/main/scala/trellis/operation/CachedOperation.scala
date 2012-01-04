@@ -14,12 +14,12 @@ trait CachedOperation[T] extends Op[T] {
     output
   }
 
-  override def run(server:Server)(implicit t:Timer): StepOutput[T] = {
+  override def run(context:Context): StepOutput[T] = {
     cachedOutput match {
       case Some(o) => { println("Cached operation.  woot."); o }
       case None => {
         startTime = System.currentTimeMillis()
-        cacheOutput(_run(server)(t))
+        cacheOutput(_run(context))
       }
     }
   }
@@ -28,5 +28,5 @@ trait CachedOperation[T] extends Op[T] {
 case class Cache[T:Manifest](op:Op[T])
 extends SimpleOperation[T] with CachedOperation[T] {
   override def childOperations = List(op)
-  def _value(server:Server)(implicit t:Timer) = server.run(op)
+  def _value(context:Context) = context.run(op)
 }

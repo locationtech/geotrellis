@@ -30,9 +30,9 @@ trait MultiLocal extends LocalOperation {
   }
   var childStart:Long = 0
 
-  def _run(server:Server)(implicit t:Timer) = {
+  def _run(context:Context) = {
     startTime = System.currentTimeMillis
-    runAsync(rs.toList, server)
+    runAsync(rs.toList)
   }
 
   val nextSteps:Steps = {

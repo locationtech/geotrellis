@@ -6,13 +6,13 @@ import trellis.process._
 case class ForEach[A, Z:Manifest](a:Op[Array[A]], f:(A) => Op[Z]) extends Op[Array[Z]] {
   def childOperations = List(a)
 
-  def _run(server:Server)(implicit t:Timer) = runAsync(List(a, server), server)
+  def _run(context:Context) = runAsync(List(a, context))
 
   val nextSteps:PF[Any, StepOutput[Array[Z]]] = {
-    case (as:Array[_]) :: (server:Server) :: Nil => step2(as.asInstanceOf[Array[A]], server)
+    case (as:Array[_]) :: (context:Context) :: Nil => step2(as.asInstanceOf[Array[A]], context)
   }
 
-  def step2(as:Array[A], server:Server) = StepResult(as.map(a => server.run(f(a))).toArray)
+  def step2(as:Array[A], context:Context) = StepResult(as.map(a => context.run(f(a))).toArray)
 }
 
 case class ForEach2[A, B, Z:Manifest](a:Op[Array[A]],
@@ -20,20 +20,20 @@ case class ForEach2[A, B, Z:Manifest](a:Op[Array[A]],
                                       f:(A, B) => Op[Z]) extends Op[Array[Z]] {
   def childOperations = List(a, b)
 
-  def _run(server:Server)(implicit t:Timer) = runAsync(List(a, b, server), server)
+  def _run(context:Context) = runAsync(List(a, b, context))
 
   val nextSteps:PF[Any, StepOutput[Array[Z]]] = {
-    case (as:Array[_]) :: (bs:Array[_]) :: (server:Server) :: Nil => {
+    case (as:Array[_]) :: (bs:Array[_]) :: (context:Context) :: Nil => {
       step2(as.asInstanceOf[Array[A]],
             bs.asInstanceOf[Array[B]],
-            server)
+            context)
     }
     case zs:List[_] => StepResult(zs.asInstanceOf[List[Z]].toArray)
   }
 
-  def step2(as:Array[A], bs:Array[B], server:Server) = {
+  def step2(as:Array[A], bs:Array[B], context:Context) = {
     val ops = (0 until as.length).map(i => f(as(i), bs(i))).toList
-    runAsync(ops, server)
+    runAsync(ops)
   }
 }
 
@@ -45,21 +45,21 @@ extends Op[Array[Z]] {
 
   def childOperations = List(a, b, c)
 
-  def _run(server:Server)(implicit t:Timer) = runAsync(List(a, b, c, server), server)
+  def _run(context:Context) = runAsync(List(a, b, c, context))
 
   val nextSteps:PF[Any, StepOutput[Array[Z]]] = {
-    case (as:Array[_]) :: (bs:Array[_]) :: (cs:Array[_]) :: (server:Server) :: Nil => {
+    case (as:Array[_]) :: (bs:Array[_]) :: (cs:Array[_]) :: (context:Context) :: Nil => {
       step2(as.asInstanceOf[Array[A]],
             bs.asInstanceOf[Array[B]],
             cs.asInstanceOf[Array[C]],
-            server)
+            context)
       
     }
     case zs:List[_] => StepResult(zs.asInstanceOf[List[Z]].toArray)
   }
 
-  def step2(as:Array[A], bs:Array[B], cs:Array[C], server:Server) = {
+  def step2(as:Array[A], bs:Array[B], cs:Array[C], context:Context) = {
     val ops = (0 until as.length).map(i => f(as(i), bs(i), cs(i))).toList
-    runAsync(ops, server)
+    runAsync(ops)
   }
 }

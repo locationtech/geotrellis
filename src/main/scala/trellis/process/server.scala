@@ -15,6 +15,20 @@ import akka.routing._
 import akka.dispatch.Await
 import akka.util.duration._
 
+class Context (server:Server) {
+  val timer = new Timer()
+
+  def run[T](op:Operation[T])(implicit m:Manifest[T]):T = {
+    server._run(op)(m, timer)
+  }
+  def getRaster(path:String, layer:RasterLayer, re:RasterExtent):IntRaster = {
+    server.getRaster(path, layer, re)
+  }
+  def loadRaster(path:String, g:RasterExtent):IntRaster = {
+    server.getRaster(path, null, g)
+  }
+}
+
 class Server (id:String, val catalog:Catalog) extends FileCaching {
   val debug = true
 
@@ -23,7 +37,12 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
 
   def log(msg:String) = if(debug) println(msg)
 
-  def run[T](op:Operation[T])(implicit m:Manifest[T], t:TimerLike):T = {
+  def run[T](op:Operation[T])(implicit m:Manifest[T]):T = {
+    val context = new Context(this)
+    context.run(op)(m)
+  }
+
+  private[process] def _run[T](op:Operation[T])(implicit m:Manifest[T], t:TimerLike):T = {
     log("server.run called with %s" format op)
 
     implicit val timeout = system.settings.ActorTimeout
@@ -59,12 +78,14 @@ trait FileCaching {
   val catalog:Catalog
 
   var cacheSize:Int = 0
-  val maxCacheSize:Int = 1000000000 
+  val maxCacheSize:Int = 1000 * 1000 * 1000 // 1G
 
   var caching = false
 
   var id = "default"
 
+  // TODO: remove this and add cache configuration to server's JSON config
+  //       and/or constructor arguments
   def enableCaching() { caching = true }
   def disableCaching() { caching = false }
 
