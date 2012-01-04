@@ -25,13 +25,23 @@ sealed trait History {
     }
   }
 
-  def toPretty(indent:Int = 0):String = {
+  def toPretty() = _toPretty(0)
+  private def _toPretty(indent:Int):String = {
+    val pad = "  " * indent
+    var s = "%s%s %d ms\n" format (pad, id, stopTime - startTime)
+    children.foreach {
+      s += _._toPretty(indent + 1)
+    }
+    s
+  }
+
+  def toDetailed(indent:Int = 0):String = {
     val pad = " " * indent 
     var s = pad + " -- %s\n" format id 
     val elapsed = stopTime - startTime
     s += pad + " -- elapsed: %d\n" format elapsed 
     s += pad + " -- times: %d -> %d\n" format (startTime % 1000, stopTime % 1000)
-    children.foreach { s += _.toPretty(indent + 2) } 
+    children.foreach { s += _.toDetailed(indent + 2) } 
     s
   }
 }

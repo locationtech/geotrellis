@@ -161,7 +161,7 @@ trait WorkerLike extends Actor {
 
         log(" output was a result %s" format value)
         val history = success(id, startTime, time(), t)
-        println("&&& generated history: %s" format history)
+        log("&&& generated history: %s" format history)
         val result = OperationResult(Complete(value, history), pos)
 
         log(" sending %s back to client" format result)
@@ -200,7 +200,8 @@ case class Worker(val server: Server) extends WorkerLike {
   // history).
 
   private var _id = ""
-  def id = "worker " + _id
+  //def id = "worker " + _id
+  def id = _id
 
   def success(id:String, start:Long, stop:Long, t:Option[Timer]) = t match {
     case Some(timer) => timer.toSuccess(id, start, stop)
@@ -215,7 +216,8 @@ case class Worker(val server: Server) extends WorkerLike {
   // Actor event loop
   def receive = {
     case RunOperation(op, pos, client) => {
-      _id = op.toString
+      //_id = op.toString
+      _id = op.name
       startTime = time()
       log("worker: run operation (%d): %s" format (pos, op))
       //val timer = new Timer()
@@ -242,7 +244,8 @@ case class Calculation[T](val server:Server, pos:Int, args:Args,
                           _id:String)
 extends WorkerLike {
 
-  def id = "calc " + _id
+  //def id = "calc " + _id
+  def id = _id
 
   startTime = time()
 

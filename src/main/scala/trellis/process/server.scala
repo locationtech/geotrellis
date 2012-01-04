@@ -30,7 +30,7 @@ class Context (server:Server) {
 }
 
 class Server (id:String, val catalog:Catalog) extends FileCaching {
-  val debug = true
+  val debug = false
 
   val system = akka.actor.ActorSystem(id)
   val actor = system.actorOf(Props(new ServerActor(id, this)), "server")
@@ -52,6 +52,7 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
     val r = result match {
       case OperationResult(Complete(r, h), _) => {
         log(" run is complete: received: %s" format r)
+        log(op.toString)
         log("%s" format h.toPretty())
         t.add(h)
         r.asInstanceOf[T]
