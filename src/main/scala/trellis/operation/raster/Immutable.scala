@@ -9,7 +9,7 @@ import trellis.raster.IntRaster
  *
  * Deprecated!
  */
-case class Immutable(r:IntRasterOperation) extends IntRasterOperation with SimpleOperation[IntRaster] with CachedOperation[IntRaster] {
-  override def childOperations = List(r)
+case class Immutable(r:IntRasterOperation)
+extends SimpleOperation[IntRaster] with CachedOperation[IntRaster] {
   def _value(context:Context) = context.run(r)
 }

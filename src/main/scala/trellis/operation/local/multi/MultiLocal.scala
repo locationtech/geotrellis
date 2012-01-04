@@ -28,20 +28,15 @@ trait MultiLocal extends LocalOperation {
   def handleCells(zs:Seq[Int]) = {
     zs.foldLeft(0)((z1, z2) => (handleCells2(z1, z2)))
   }
-  var childStart:Long = 0
 
-  def _run(context:Context) = {
-    startTime = System.currentTimeMillis
-    runAsync(rs.toList)
-  }
+  def _run(context:Context) = runAsync(rs.toList)
 
   val nextSteps:Steps = {
     case rasters:List[_] => step2(rasters.asInstanceOf[List[IntRaster]])
   }
+
   def step2(rasters:List[IntRaster]) = {
     val datas   = rasters.map { raster => raster.data }
-
-    //childTime = System.currentTimeMillis() - childStart
 
     val a = datas(0)
   
@@ -157,7 +152,7 @@ trait MultiLocal extends LocalOperation {
         i += 1
       }
     }
-    endTime = System.currentTimeMillis
+
     StepResult(rasters(0))
   }
 }

@@ -10,7 +10,6 @@ import trellis.process._
 case class CsvIntMap(path:String,
                      delimiter:String) extends Operation[Map[(String, String), Int]]
      with SimpleOperation[Map[(String,String), Int]]{
-  def childOperations = { List[Operation[_]]() }
   def _value(context:Context) = {
     val source = io.Source.fromFile(path)
     val lines  = source.getLines.toArray.filter {

@@ -7,8 +7,6 @@ import trellis.process._
 /**
   * Return a hard-coded [[trellis.geoattrs.RasterExtent]]. 
   */ 
-case class WrapRasterExtent(geo:RasterExtent)  extends RasterExtentOperation with SimpleOperation[RasterExtent]{
-  def childOperations = List.empty[Operation[_]]
-
+case class WrapRasterExtent(geo:RasterExtent)  extends SimpleOperation[RasterExtent]{
   def _value(context:Context) = geo
 }

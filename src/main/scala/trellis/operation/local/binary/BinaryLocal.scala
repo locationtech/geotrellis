@@ -21,20 +21,13 @@ trait BinaryLocal extends LocalOperation {
   def getRasters = { Array(r1, r2) }
   def handleCells(z1:Int, z2:Int): Int
 
-  var childStart:Long = 0
-
-  def _run(context:Context) = {
-    val childStart = System.currentTimeMillis()
-    runAsync(r1 :: r2 :: Nil)
-  }
+  def _run(context:Context) = runAsync(r1 :: r2 :: Nil)
 
   val nextSteps:Steps = {
     case (r1:IntRaster) :: (r2:IntRaster) :: Nil => step2(r1, r2)
   }
 
   def step2(raster1:IntRaster, raster2:IntRaster) = {
-    childTime = System.currentTimeMillis() - childStart
-
     val data1  = raster1.data
     val data2  = raster2.data
     val id1    = this.identity1

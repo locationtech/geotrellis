@@ -12,7 +12,6 @@ trait WithIntConstant extends Operation[IntRaster] {
   val r:Operation[IntRaster]
   val c:Operation[Int]
 
-  def childOperations = List(r, c)
   def _run(context:Context) = runAsync(List(r, c))
   val nextSteps:Steps = { case (a:IntRaster) :: (b:Int) :: Nil => step2(a, b) }
   def step2(raster:IntRaster, constant:Int) = StepResult(doit(raster, constant))
@@ -27,7 +26,6 @@ trait WithDoubleConstant extends Operation[IntRaster] {
   val r:Operation[IntRaster]
   val c:Operation[Double]
 
-  def childOperations = List(r, c)
   def _run(context:Context) = runAsync(List(r, c))
   val nextSteps:Steps = { case (a:IntRaster) :: (b:Double) :: Nil => step2(a, b) }
   def step2(raster:IntRaster, constant:Double) = StepResult(doit(raster, constant))

@@ -10,11 +10,7 @@ import trellis.geometry.Polygon
   * Return the extent of a given polygon.
   */
 case class BoundPolygon(p:PolygonOperation, e:Operation[Extent])
-extends Operation[List[Polygon]]
-with SimpleOperation[List[Polygon]] {
-
-  def childOperations = List(p, e)
-
+extends SimpleOperation[List[Polygon]] {
   def _value(context:Context) = {
     val polygon = context.run(p)
     val extent = context.run(e)

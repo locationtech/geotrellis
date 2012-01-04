@@ -4,8 +4,6 @@ import scala.{PartialFunction => PF}
 import trellis.process._
 
 case class ForEach[A, Z:Manifest](a:Op[Array[A]], f:(A) => Op[Z]) extends Op[Array[Z]] {
-  def childOperations = List(a)
-
   def _run(context:Context) = runAsync(List(a, context))
 
   val nextSteps:PF[Any, StepOutput[Array[Z]]] = {
@@ -18,7 +16,6 @@ case class ForEach[A, Z:Manifest](a:Op[Array[A]], f:(A) => Op[Z]) extends Op[Arr
 case class ForEach2[A, B, Z:Manifest](a:Op[Array[A]],
                                       b:Op[Array[B]],
                                       f:(A, B) => Op[Z]) extends Op[Array[Z]] {
-  def childOperations = List(a, b)
 
   def _run(context:Context) = runAsync(List(a, b, context))
 
@@ -42,8 +39,6 @@ case class ForEach3[A, B, C, Z:Manifest](a:Op[Array[A]],
                                          c:Op[Array[C]],
                                          f:(A, B, C) => Op[Z])
 extends Op[Array[Z]] {
-
-  def childOperations = List(a, b, c)
 
   def _run(context:Context) = runAsync(List(a, b, c, context))
 

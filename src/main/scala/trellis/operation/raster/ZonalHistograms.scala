@@ -17,7 +17,6 @@ case class ZonalHistograms(data: Op[IntRaster],
                            zonesArraySize: Int,
                            histArraySize: Int) extends Op[Array[Histogram]] {
 
-  def childOperations = List(data, zones)
   def _run(context:Context) = runAsync(List(data, zones))
 
   val nextSteps:Steps = {

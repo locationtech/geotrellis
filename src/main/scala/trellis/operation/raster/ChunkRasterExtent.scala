@@ -17,8 +17,6 @@ import trellis.process._
 case class ChunkRasterExtent(g:Op[RasterExtent], nx:Int, ny:Int)
 extends CachedOp[Seq[Op[RasterExtent]]] with SimpleOp[Seq[Op[RasterExtent]]] {
 
-  def childOperations = List(g)
-
   def _value(context:Context) = {
     val geo = context.run(g)
     val a = Array.ofDim[Op[RasterExtent]](ny * nx)

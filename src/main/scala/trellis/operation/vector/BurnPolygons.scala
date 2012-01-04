@@ -11,7 +11,6 @@ import trellis.geometry.MultiPolygon
   */
 case class BurnPolygons(r:Op[IntRaster], ps:Array[Op[Polygon]])
 extends SimpleOp[IntRaster] {
-  def childOperations = r :: ps.toList
   def _value(context:Context) = {
     // TODO: profile/optimize
     val raster   = context.run(CopyRaster(r))
@@ -28,7 +27,6 @@ case class BurnMultiPolygons(rr: Op[IntRaster],
                              ps: Array[Op[MultiPolygon]])
 extends Op[IntRaster] {
 
-  def childOperations = rr :: ps.toList
   def _run(context:Context) = runAsync(rr :: ps.toList)
 
   val nextSteps:Steps = {
@@ -50,7 +48,6 @@ extends Op[IntRaster] {
   */
 case class BurnPolygons2(r:Op[IntRaster], ps:Array[Op[Polygon]], fs:Array[Int => Int])
 extends SimpleOp[IntRaster] {
-  def childOperations = r :: ps.toList
   def _value(context:Context) = {
     // TODO: profile/optimize
     val raster   = context.run(CopyRaster(r))
@@ -66,7 +63,6 @@ extends SimpleOp[IntRaster] {
 case class BurnPolygons3(r:Op[IntRaster], ps:Op[List[Polygon]], value:Int)
 extends SimpleOp[IntRaster] {
 
-  def childOperations = List(r, ps)
   def _value(context:Context) = {
     // TODO: profile/optimize
     val raster   = context.run(CopyRaster(r))
@@ -82,7 +78,6 @@ trait BurnPolygonsBase extends SimpleOp[IntRaster] {
   def r:Op[IntRaster]
   def ps:Op[Array[Polygon]]
 
-  def childOperations = List(r, ps)
   def _value(context:Context) = {
     // TODO: profile/optimize
     val raster   = context.run(CopyRaster(r))

@@ -8,9 +8,8 @@ import trellis.process._
 /**
   * Rasterize a polygon and then draw it on the provided raster.
   */
-case class BurnPolygon(r:IntRasterOperation,
-                       p:PolygonOperation) extends IntRasterOperation with SimpleOperation[IntRaster]{
-  def childOperations = List(r, p)
+case class BurnPolygon(r:IntRasterOperation, p:PolygonOperation)
+extends SimpleOperation[IntRaster]{
   def _value(context:Context) = {
     // TODO: profile/optimize
     val raster  = context.run(CopyRaster(r))
@@ -24,9 +23,8 @@ case class BurnPolygon(r:IntRasterOperation,
 /**
   * Rasterize a polygon and then draw it on the provided raster.
   */
-case class BurnPolygon2(r:IntRasterOperation, p:PolygonOperation,
-                        f:Int => Int) extends IntRasterOperation with SimpleOperation[IntRaster]{
-  def childOperations = List(r, p)
+case class BurnPolygon2(r:IntRasterOperation, p:PolygonOperation, f:Int => Int)
+extends SimpleOperation[IntRaster]{
   def _value(context:Context) = {
     // TODO: profile/optimize
     val raster  = context.run(CopyRaster(r))

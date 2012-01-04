@@ -12,52 +12,14 @@ trait Operation[T] {
   type Steps = PF[Any, StepOutput[T]]
 
   val nextSteps:PF[Any, StepOutput[T]]
-  var startTime:Long = 0
-  var endTime:Long = 0
 
   val debug = false
   private def log(msg:String) = if(debug) println(msg)
 
   /**
-    * Return total execution time of operation.
-    */
-  def totalTime = endTime - startTime
-
-  /**
-    * Return exclusive execution time of operation.
-    */
-  def exclusiveTime = {
-    val deps = childOperations.filter(_.startTime >= this.startTime)
-    totalTime - deps.map(_.totalTime).foldLeft(0.toLong)((a, b) => a + b)
-  }
-
-  /**
-    * Return child operations (operations invoked by this operation). 
-    */
-  def childOperations: Seq[Operation[_]]
-
-  /**
     * Return operation identified (class simple name).
     */
-  def opId: String = getClass.getSimpleName
-
-  /**
-    * Print timing tree for diagnostics.
-    */
-  def logTimingTree { Console.printf(this.genTimingTree) }
-
-  /**
-    * Return timing tree as a string, for diagnostics.
-    */
-  def genTimingTree = _genTimingTree(0)
-
-  protected def _genTimingTree(lvl:Int):String = {
-    var s = "%-30s  %5d ms   %5d ms\n".format((" " * lvl) + opId, totalTime, exclusiveTime)
-    childOperations.foreach {
-      c => s = s + c._genTimingTree(lvl + 1)
-    }
-    s
-  }
+  def name: String = getClass.getSimpleName
 
   protected def _run(context:Context): StepOutput[T]
  
@@ -66,7 +28,6 @@ trait Operation[T] {
    */
   def run(context:Context): StepOutput[T] = {
     log("Operation.run called")
-    startTime = System.currentTimeMillis()
     val o = _run(context)
     log("Operation run returning %s" format o)
     o
@@ -97,12 +58,7 @@ trait SimpleOperation[T] extends Operation[T] {
   // define simple behavior here
   def _value(context:Context):T 
 
-  def _run(context:Context) = {
-    startTime = System.currentTimeMillis()
-    val value = this._value(context)
-    endTime = System.currentTimeMillis()
-    StepResult(value)
-  }
+  def _run(context:Context) = StepResult(this._value(context))
 
   val nextSteps:PF[Any, StepResult[T]] = {
     case _ => throw new Exception("simple operation has no steps")

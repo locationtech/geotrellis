@@ -7,8 +7,5 @@ import trellis.raster.IntRaster
  * about other values in the raster. 
  */
 trait LocalOperation extends Op[IntRaster] { 
-  var childTime:Long = 0
   def getRasters: Seq[Op[IntRaster]]
-  def childOperations = getRasters
-  override def exclusiveTime = totalTime - childTime
 }

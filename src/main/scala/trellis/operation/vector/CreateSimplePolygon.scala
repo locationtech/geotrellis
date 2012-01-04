@@ -8,7 +8,6 @@ import trellis.process._
   */
 case class CreateSimplePolygon(pts:Array[(Double, Double)],
                                value:Int) extends PolygonOperation with SimpleOperation[Polygon] {
-  def childOperations = List.empty[Operation[_]]
   def _value(context:Context) = Polygon(pts, value, null)
 }
 
@@ -16,6 +15,5 @@ case class CreateSimplePolygon(pts:Array[(Double, Double)],
  * Return a previously created polygon as the result of this operation
  */
 case class WrapPolygon(polygon:Polygon) extends PolygonOperation with SimpleOperation[Polygon] {
-  def childOperations = List.empty[Operation[_]]
   def _value(context:Context) = polygon
 }

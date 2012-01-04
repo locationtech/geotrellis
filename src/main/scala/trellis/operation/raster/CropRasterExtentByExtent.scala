@@ -9,8 +9,6 @@ import trellis.process._
  */
 case class CropRasterExtentByExtent(g:Op[RasterExtent], e:Op[Extent])
 extends Op[RasterExtent] {
-  def childOperations = List(g, e)
-
   def _run(context:Context) = runAsync(List(g, e))
 
   val nextSteps:Steps = {

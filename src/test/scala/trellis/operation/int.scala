@@ -51,14 +51,12 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
     it("Literal") {
       val L = Literal(33)
-      L.childOperations must be === List.empty[Operation[_]]
       server.run(L) must be === 33
     }
 
     it("CreateRaster") {
       val G = BuildRasterExtent(0.0, 0.0, 100.0, 100.0, 100, 100)
       val C = CreateRaster(G)
-      C.childOperations must be === List(G)
       val raster = server.run(C)
       raster.get(0, 0) must be === NODATA
       raster.get(1, 0) must be === NODATA
@@ -86,7 +84,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     it("LoadFile, w/ resampling") {
       println("AAAAAA")
       val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img.arg")
-      G1.childOperations must be === List.empty[Operation[_]]
       val geo1 = server.run(G1)
 
       println("BBBBBBBB")
@@ -152,14 +149,12 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
     it("WrapRaster") {
       val R = WrapRaster(raster1)
-      R.childOperations must be === List.empty[Operation[_]]
       val result = server.run(R)
       result.equals(raster1) must be === true
     }
 
     it("WrapRasterExtent") {
       val G = WrapRasterExtent(raster1.rasterExtent)
-      G.childOperations must be === List.empty[Operation[_]]
       val result = server.run(G)
       result.equals(raster1.rasterExtent) must be === true
     }
@@ -167,7 +162,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     it("CopyRaster") {
       val W = WrapRaster(raster1)
       val R = CopyRaster(W)
-      R.childOperations must be === List(W)
 
       val orig = server.run(W)
       val copy = server.run(R)
@@ -271,7 +265,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val R = WrapRaster(raster1)
       val F = FindMinMax(R)
       F.run(server) must be === (11, 95)
-      F.childOperations must be === List(R)
     }
 
 */
@@ -299,13 +292,11 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       geo.extent.ymax must be === 100.0
       geo.cellwidth must be === 1.0
       geo.cellheight must be === 1.0
-      G.childOperations must be === List()
     }
 
     it("CropRasterExtent") {
       val G = BuildRasterExtent(0.0, 0.0, 10000.0, 10000.0, 100, 100, 102100)
       val C = CropRasterExtent(G, 2303.0, 4305.0, 5288.0, 5790.0)
-      C.childOperations must be === List(G)
       val geo = C.run(server)
       geo.extent.xmin must be === 2300.0
       geo.extent.ymin must be === 4300.0
@@ -353,7 +344,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
         geo.extent.ymin must be === row * 25.0
       }
 
-      C.childOperations must be === List(G)
     }
 */
     val f2 = (a:Array[Int], cols:Int, rows:Int, xmin:Double, ymin:Double,
@@ -453,7 +443,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val S  = StitchIntRasters(Rs)
       val rOut = S.run(server)
       rOut.equals(rG) must be === true
-      S.childOperations.toList must be === Rs.toList
     }
 
     it("should explode when stitching at different resolutions") {
@@ -506,7 +495,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val transparent = true
 
       val P1 = RenderPNG(R, colorBreaks, noDataColor, transparent)
-      P1.childOperations must be === List(R)
       val bytes  = P1.run(server)
 
       val fyle = File.createTempFile("flarg", ".png");
@@ -519,7 +507,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
       val P2 = WritePNGFile(R, path, colorBreaks,
                             noDataColor, transparent)
-      P2.childOperations must be === List(R)
       P2.run(server)
       val fis    = new FileInputStream(file)
       val bytes2 = Array.ofDim[Byte](file.length.toInt)
@@ -683,7 +670,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       result.value must be === goal.value
       result.getCoordTuples must be === goal.getCoordTuples
 
-      P.childOperations.length must be === 0
     }
 
     it("BurnPolygon") {
@@ -696,8 +682,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
       val B = BurnPolygon(Rx, P)
   
-      B.childOperations must be === List(Rx, P)
-
       val output = B.run(server)
 
       Console.printf(output.asciiDraw)
@@ -747,7 +731,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
       // build the burn operation
       val B = BurnPolygons(Rx, Array(P1, P2, P3))
-      B.childOperations must be === List(Rx, P1, P2, P3)
 
       // generate a PNG
       val breaks1 = Array((30, 0xFF0000), (60, 0x00FF00), (100, 0x0000FF))
@@ -755,7 +738,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       //val G = RenderPNG(B, breaks1, 0x000000, true)
       val L = Literal(cb)
       val G = RenderPNG2(B, L, 0x000000, true)
-      G.childOperations must be === List(B, L)
       val bytes = G.run(server)
 
       // write the output
@@ -789,7 +771,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val P3 = pf(90, Array((900.0, 300.0), (200.0, 700.0), (600.0, 950.0), (900.0, 300.0)))
 
       val Z = PolygonalZonalHistograms(Array(P1, P2, P3), Rx, 101)
-      Z.childOperations must be === List(Rx, P1, P2, P3)
 
       val histmap = Z.run(server)
 

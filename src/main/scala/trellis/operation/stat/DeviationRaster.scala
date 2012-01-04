@@ -10,7 +10,6 @@ import trellis.process._
 case class DeviationRaster(r:Op[IntRaster], h:Op[Histogram], factor:Int) extends Op[IntRaster] {
   val g = GenerateStatistics(h)
 
-  def childOperations = List(g, r)
   def _run(context:Context) = runAsync(List(g, r))
 
   val nextSteps:Steps = {

@@ -8,7 +8,6 @@ import trellis.process._
  * Return the literal value specified.
  */
 case class Literal[A](value:A) extends SimpleOperation[A] {
-  def childOperations = List.empty[Operation[_]]
   def _value(context:Context) = this.value
 }
 

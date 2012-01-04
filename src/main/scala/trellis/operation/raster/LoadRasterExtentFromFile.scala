@@ -7,8 +7,7 @@ import trellis.process._
 /**
   * Load the [[trellis.geoattrs.RasterExtent]] from the raster in the specified file.
   */
-class LoadRasterExtentFromFile(path:String) extends RasterExtentOperation with SimpleOperation[RasterExtent] { 
-  def childOperations = List.empty[Operation[_]]
+class LoadRasterExtentFromFile(path:String) extends SimpleOperation[RasterExtent] { 
 
   def _value(context:Context) = {
     //val rdr = server.getReader(path)

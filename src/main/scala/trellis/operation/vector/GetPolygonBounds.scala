@@ -9,8 +9,6 @@ import trellis.process._
   */
 case class GetPolygonBounds(p:PolygonOperation)
 extends SimpleOperation[(Double,Double,Double,Double)] {
-  def childOperations = List(p)
-
   def _value(context:Context) = {
     val polygon = context.run(p)
     polygon.getBounds()

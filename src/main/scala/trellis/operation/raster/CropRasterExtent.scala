@@ -11,7 +11,6 @@ import trellis.process._
 case class CropRasterExtent(g:Op[RasterExtent],
                             xmin:Double, ymin:Double,
                             xmax:Double, ymax:Double) extends Op[RasterExtent] {
-  def childOperations = List(g)
 
   def _run(context:Context) = runAsync(List(g))
 

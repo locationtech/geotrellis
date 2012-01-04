@@ -13,7 +13,6 @@ import trellis.stat._
 trait BuildHistogram extends CachedOperation[Histogram] with SimpleOperation[Histogram] {
   val r:IntRasterOperation
   var h:Histogram = null
-  def childOperations = { List(r) }
   def initHistogram:Histogram
   def _value(context:Context) = {
     this.h = this.initHistogram

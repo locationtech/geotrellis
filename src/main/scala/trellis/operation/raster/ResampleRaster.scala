@@ -11,8 +11,6 @@ import trellis.raster.IntRaster
 case class ResampleRaster(r:IntRasterOperation, cols:Int, rows:Int)
 extends IntRasterOperation with SimpleOperation[IntRaster]{
 
-  def childOperations = List(r)
-
   def _value(context:Context) = {
     val raster = context.run(r)
     val extent = raster.rasterExtent.extent

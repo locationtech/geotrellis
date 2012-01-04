@@ -10,7 +10,6 @@ import trellis.raster.IntRaster
  * arguments.
  */
 case class CopyRaster(r:Op[IntRaster]) extends Op[IntRaster] {
-  def childOperations = List(r)
   def _run(context:Context) = runAsync(List(r))
   val nextSteps:Steps = { case (r:IntRaster) :: Nil => StepResult(r.copy) }
 }

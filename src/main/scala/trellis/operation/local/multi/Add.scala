@@ -33,11 +33,8 @@ case class Add(rs:IntRasterOperation*) extends MultiLocal {
   * Add(Array(r1, r2, r3))
   */
 case class AddArray(op:Operation[Array[IntRaster]]) extends Operation[IntRaster] {
-  def childOperations = List(op)
-  def _run(context:Context) = {
-    startTime = System.currentTimeMillis
-    runAsync(List(op))
-  }
+  def _run(context:Context) = runAsync(List(op))
+
   val nextSteps:Steps = { case (arr:Array[IntRaster]) :: Nil => step2(arr) }
 
   @inline
@@ -66,8 +63,7 @@ case class AddArray(op:Operation[Array[IntRaster]]) extends Operation[IntRaster]
       }
       i += 1
     }
-    //println("AddArray: returning data")
-    endTime = System.currentTimeMillis
+
     StepResult(output)
   }
 }

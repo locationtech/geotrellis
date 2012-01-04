@@ -10,7 +10,6 @@ import trellis.stat._
 case class FindColorBreaks(h:Operation[Histogram], n:Int,
                            colors:Array[Int]) extends Operation[ColorBreaks] 
                                               with SimpleOperation[ColorBreaks] {
-  def childOperations = { List(h) }
   def _value(context:Context) = {
     val histogram = context.run(h)
     val breaks = histogram.getQuantileBreaks(n)

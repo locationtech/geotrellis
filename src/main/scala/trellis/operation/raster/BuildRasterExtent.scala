@@ -14,8 +14,6 @@ case class BuildRasterExtent(xmin:Double, ymin:Double,
   val cellwidth  = (this.xmax - this.xmin) / this.cols
   val cellheight = (this.ymax - this.ymin) / this.rows
 
-  def childOperations = List.empty[Op[_]]
-
   def _value(context:Context) = {
     val extent = Extent(xmin, ymin, xmax, ymax)
     RasterExtent(extent, cellwidth, cellheight, cols, rows)
@@ -28,8 +26,6 @@ case class BuildRasterExtent(xmin:Double, ymin:Double,
  */
 case class BuildRasterExtent2(extent:Op[Extent], cols:Op[Int], rows:Op[Int])
 extends Op[RasterExtent] {
-  def childOperations = List(extent, cols, rows)
-
   val nextSteps:Steps = {
     case (e:Extent) :: (c:Int) :: (r:Int) :: Nil => step2(e, c, r)
   }

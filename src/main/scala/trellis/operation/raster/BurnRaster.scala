@@ -11,8 +11,6 @@ import trellis.data.IntRasterReader
 case class BurnRaster(r:Op[IntRaster], g:Op[RasterExtent])
 extends SimpleOp[IntRaster] {
 
-  def childOperations = List(r, g)
-
   def _value(context:Context) = {
     val source = context.run(r)
     val geo = context.run(g)

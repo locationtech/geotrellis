@@ -21,8 +21,6 @@ case class WritePNGFile(r:IntRasterOperation, path:String,
 
 case class WritePNGFile2(r:IntRasterOperation, path:String, noDataColor:Int, transparent:Boolean)
 extends Operation[Unit] with SimpleOperation[Unit] {
-  def childOperations = { List(r) }
-
   def _value(context:Context) = {
     val raster = context.run(r)
     val writer = new PNGWriterRGB2(raster, path, noDataColor, transparent)

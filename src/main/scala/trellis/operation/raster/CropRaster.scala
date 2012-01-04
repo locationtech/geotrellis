@@ -19,8 +19,6 @@ import trellis.process._
 
 case class CropRaster(r:IntRasterOperation, e:Op[Extent]) extends SimpleOp[IntRaster] {
                     
-  def childOperations = List(r)
-
   def _value(context:Context) = {
     val raster = context.run(r)
     val geo = raster.rasterExtent

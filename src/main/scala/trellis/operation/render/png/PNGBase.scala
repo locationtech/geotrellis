@@ -8,7 +8,6 @@ trait PNGBase {
   val colorBreaks:Array[(Int, Int)]
   val noDataColor:Int
   val transparent:Boolean
-  def childOperations = { List(r) }
   def applyColorMap(z:Int): Int = {
     if (z == NODATA) return this.noDataColor
     colorBreaks.foreach {

@@ -13,8 +13,6 @@ trait NormalizeBase extends IntRasterOperation with SimpleOperation[IntRaster] {
   val gmin:Int
   val gmax:Int
 
-  override def childOperations = List(r)
-
   def getMinMax(raster:IntRaster):(Int, Int)
 
   def _value(context:Context):IntRaster = {

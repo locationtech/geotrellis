@@ -12,8 +12,7 @@ import trellis.constant.NODATA
 /**
  * Creates an empty raster object based on the given raster properties.
  */
-case class CreateRaster(g:RasterExtentOperation) extends IntRasterOperation with SimpleOperation[IntRaster] {
-  def childOperations = List(g)
+case class CreateRaster(g:RasterExtentOperation) extends SimpleOperation[IntRaster] {
   def _value(context:Context) = { IntRaster.createEmpty( context.run(g) ) }
   
 }
