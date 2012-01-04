@@ -35,6 +35,6 @@ case class CropRasterExtent(g:Op[RasterExtent],
     val rows3 = row2 - row1
 
     val extent = Extent(xmin3, ymin3, xmax3, ymax3)
-    StepResult(RasterExtent(extent, geo.cellwidth, geo.cellheight, cols3, rows3))
+    Result(RasterExtent(extent, geo.cellwidth, geo.cellheight, cols3, rows3))
   }
 }

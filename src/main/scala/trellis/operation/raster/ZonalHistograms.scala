@@ -72,7 +72,7 @@ case class ZonalHistograms(data: Op[IntRaster],
     }
 
     // return an immutable mapping
-    StepResult(histmap)
+    Result(histmap)
   }
 
 }

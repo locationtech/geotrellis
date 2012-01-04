@@ -49,6 +49,6 @@ trait BinaryLocal extends LocalOperation {
       }
       i += 1
     }
-    StepResult(IntRaster(outdata, raster1.rows, raster1.cols, raster1.rasterExtent.copy))
+    Result(IntRaster(outdata, raster1.rows, raster1.cols, raster1.rasterExtent.copy))
   }
 }

@@ -84,7 +84,7 @@ case class PolygonalZonalHistograms(ps:Array[Op[Polygon]], r:Op[IntRaster],
     }
 
     // return an immutable mapping
-    StepResult(histmap)
+    Result(histmap)
   }
 
 }

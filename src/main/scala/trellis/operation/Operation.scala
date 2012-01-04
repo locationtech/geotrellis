@@ -58,9 +58,9 @@ trait SimpleOperation[T] extends Operation[T] {
   // define simple behavior here
   def _value(context:Context):T 
 
-  def _run(context:Context) = StepResult(this._value(context))
+  def _run(context:Context) = Result(this._value(context))
 
-  val nextSteps:PF[Any, StepResult[T]] = {
+  val nextSteps:PF[Any, Result[T]] = {
     case _ => throw new Exception("simple operation has no steps")
   }
 }

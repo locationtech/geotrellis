@@ -35,6 +35,6 @@ extends Op[RasterExtent] {
   def step2(e:Extent, cols:Int, rows:Int) = {
     val cw = (e.xmax - e.xmin) / cols
     val ch = (e.ymax - e.ymin) / rows
-    StepResult(RasterExtent(e, cw, ch, cols, rows))
+    Result(RasterExtent(e, cw, ch, cols, rows))
   }
 }

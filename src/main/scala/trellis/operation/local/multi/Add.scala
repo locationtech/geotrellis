@@ -64,6 +64,6 @@ case class AddArray(op:Operation[Array[IntRaster]]) extends Operation[IntRaster]
       i += 1
     }
 
-    StepResult(output)
+    Result(output)
   }
 }

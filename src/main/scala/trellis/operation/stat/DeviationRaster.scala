@@ -31,6 +31,6 @@ case class DeviationRaster(r:Op[IntRaster], h:Op[Histogram], factor:Int) extends
       i += 1
     }
     val output = IntRaster(outdata, raster.rows, raster.cols, raster.rasterExtent.copy)
-    StepResult(output)
+    Result(output)
   }
 }

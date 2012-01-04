@@ -10,7 +10,7 @@ case class ForEach[A, Z:Manifest](a:Op[Array[A]], f:(A) => Op[Z]) extends Op[Arr
     case (as:Array[_]) :: (context:Context) :: Nil => step2(as.asInstanceOf[Array[A]], context)
   }
 
-  def step2(as:Array[A], context:Context) = StepResult(as.map(a => context.run(f(a))).toArray)
+  def step2(as:Array[A], context:Context) = Result(as.map(a => context.run(f(a))).toArray)
 }
 
 case class ForEach2[A, B, Z:Manifest](a:Op[Array[A]],
@@ -25,7 +25,7 @@ case class ForEach2[A, B, Z:Manifest](a:Op[Array[A]],
             bs.asInstanceOf[Array[B]],
             context)
     }
-    case zs:List[_] => StepResult(zs.asInstanceOf[List[Z]].toArray)
+    case zs:List[_] => Result(zs.asInstanceOf[List[Z]].toArray)
   }
 
   def step2(as:Array[A], bs:Array[B], context:Context) = {
@@ -50,7 +50,7 @@ extends Op[Array[Z]] {
             context)
       
     }
-    case zs:List[_] => StepResult(zs.asInstanceOf[List[Z]].toArray)
+    case zs:List[_] => Result(zs.asInstanceOf[List[Z]].toArray)
   }
 
   def step2(as:Array[A], bs:Array[B], cs:Array[C], context:Context) = {

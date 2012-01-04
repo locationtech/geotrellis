@@ -39,7 +39,7 @@ extends Op[IntRaster] {
     val rasterCp = raster.copy()
     val allPolys = polygons.map(_.polygons).flatten.toArray
     Rasterizer.rasterize(rasterCp, allPolys)
-    StepResult(rasterCp)
+    Result(rasterCp)
   }
 }
 

@@ -153,6 +153,6 @@ trait MultiLocal extends LocalOperation {
       }
     }
 
-    StepResult(rasters(0))
+    Result(rasters(0))
   }
 }
