@@ -1,12 +1,18 @@
 package trellis.operation
 
+import trellis.process._
+import trellis.raster._
+
 /**
  * Maps all cells matching `cond` to `trueValue`.
  */
 case class IfCell(r:IntRasterOperation, cond:Int => Boolean, 
                   trueValue:Int) extends UnaryLocal {
-  @inline
-  def handleCell(z:Int): Int = { if (cond(z)) trueValue else z } 
+  //@inline
+  //def handleCell(z:Int): Int = { if (cond(z)) trueValue else z } 
+  def getCallback(context:Context) = {
+    (z:Int) => if (cond(z)) trueValue else z
+  }
 } 
 
 object IfCell {

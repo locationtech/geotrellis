@@ -1,7 +1,8 @@
 package trellis.operation
 
+import trellis.constant._
 import trellis.process._
-import trellis.raster.IntRaster
+import trellis.raster._
 
 import scala.math.{max, min, pow}
 
@@ -36,8 +37,35 @@ trait WithDoubleConstant extends Operation[IntRaster] {
 /**
  * Add a constant value to each cell.
  */
-case class AddConstant(r:Operation[IntRaster], c:Operation[Int]) extends WithIntConstant {
-  def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => z + c)
+//case class AddConstant(r:Operation[IntRaster], c:Operation[Int]) extends WithIntConstant {
+//  def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => z + c)
+//}
+case class AddConstant(r:Operation[IntRaster], c:Operation[Int]) extends UnaryLocal {
+  def getCallback(context:Context) = {
+    val constant = context.run(c)
+    (z:Int) => z + constant
+  }
+}
+case class AddLiteralConstant(r:Operation[IntRaster], c:Int) extends UnaryLocal {
+  def getCallback(context:Context) = (z:Int) => z + c
+}
+case class AddInlinedConstant(r:Op[IntRaster], c:Int) extends SimpleOp[IntRaster] {
+  def _value(context:Context) = {
+    val raster = context.run(r)
+    val data   = raster.data
+    val raster2 = raster.copy
+    val data2  = raster2.data
+    var i = 0
+    val limit = raster.length
+    while (i < limit) {
+      val z = data(i)
+      if (z != NODATA) {
+        data2(i) = z + c
+      }
+      i += 1
+    }
+    raster2
+  }
 }
 
 

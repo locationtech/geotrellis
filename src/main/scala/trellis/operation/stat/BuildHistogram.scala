@@ -1,21 +1,20 @@
 package trellis.operation
 
-import trellis.constant.NODATA
+import trellis.constant._
 import trellis.process._
+import trellis.raster._
 import trellis.stat._
 
-
 /**
-  * Build a histogram from this raster by iterating through each cell value. 
-  *
-  * See other histogram operations for alternate strategies with better performance.
-  */
-trait BuildHistogram extends CachedOperation[Histogram] with SimpleOperation[Histogram] {
-  val r:IntRasterOperation
-  var h:Histogram = null
-  def initHistogram:Histogram
+ * Generic trait used by the various histogram-building operations.
+ */
+trait BuildHistogram extends SimpleOperation[Histogram] {
+  val r:Op[IntRaster]
+
+  protected[this] def createHistogram:Histogram
+
   def _value(context:Context) = {
-    this.h = this.initHistogram
+    val h = createHistogram
 
     val raster = context.run(r)
     val data   = raster.data
@@ -24,14 +23,17 @@ trait BuildHistogram extends CachedOperation[Histogram] with SimpleOperation[His
     val limit = raster.length
     while (i < limit) {
       val z = data(i)
+      // TODO: some histogram types can handle negative values. really we
+      // should use a protected[this] countValue(h,z) that can be implemented
+      // as a final, inlined method in extending subclasses.
       if (z == NODATA) {
       } else if (z < 0) {
         println("bad value: " + z)
       } else {
-        this.h.countItem(z, 1)
+        h.countItem(z, 1)
       }
       i += 1
     }
-    this.h
+    h
   }
 }

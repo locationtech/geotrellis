@@ -19,11 +19,17 @@ class Context (server:Server) {
   val timer = new Timer()
 
   def run[T](op:Operation[T])(implicit m:Manifest[T]):T = {
+    server._run(op)(m, timer).value
+  }
+
+  def getResult[T](op:Operation[T])(implicit m:Manifest[T]):Complete[T] = {
     server._run(op)(m, timer)
   }
+
   def getRaster(path:String, layer:RasterLayer, re:RasterExtent):IntRaster = {
     server.getRaster(path, layer, re)
   }
+
   def loadRaster(path:String, g:RasterExtent):IntRaster = {
     server.getRaster(path, null, g)
   }
@@ -42,20 +48,28 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
     context.run(op)(m)
   }
 
-  private[process] def _run[T](op:Operation[T])(implicit m:Manifest[T], t:TimerLike):T = {
+  def getResult[T](op:Operation[T])(implicit m:Manifest[T]):Complete[T] = {
+    val context = new Context(this)
+    context.getResult(op)(m)
+  }
+
+  private[process] def _run[T](op:Operation[T])(implicit m:Manifest[T], t:TimerLike):Complete[T] = {
     log("server.run called with %s" format op)
 
     implicit val timeout = system.settings.ActorTimeout
     val future = (actor ? Run(op)).mapTo[OperationResult[T]]
     val result = Await.result(future, 5 seconds)
 
-    val r = result match {
-      case OperationResult(Complete(r, h), _) => {
+    val result2:Complete[T] = result match {
+      case OperationResult(c:Complete[_], _) => {
+        val r = c.value
+        val h = c.history
         log(" run is complete: received: %s" format r)
         log(op.toString)
         log("%s" format h.toPretty())
         t.add(h)
-        r.asInstanceOf[T]
+        //r.asInstanceOf[T]
+        c.asInstanceOf[Complete[T]]
       }
       case OperationResult(Inlined(_), _) => {
         sys.error("server.run(%s) unexpected response: %s".format(op, result))
@@ -65,8 +79,7 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
       }
       case _ => sys.error("unexpected status: %s" format result)
     }
-    log("$$$ delta")
-    r
+    result2
   }
 }
 

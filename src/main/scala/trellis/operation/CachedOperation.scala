@@ -16,7 +16,7 @@ trait CachedOperation[T] extends Op[T] {
 
   override def run(context:Context): StepOutput[T] = {
     cachedOutput match {
-      case Some(o) => { println("Cached operation.  woot."); o }
+      case Some(o) => o
       case None => cacheOutput(_run(context))
     }
   }
