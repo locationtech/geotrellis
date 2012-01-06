@@ -1,4 +1,5 @@
 package trellis.operation.render.png
+// TODO: fix package
 
 import trellis.data.ColorBreaks
 import trellis.process._

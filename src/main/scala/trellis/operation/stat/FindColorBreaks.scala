@@ -7,6 +7,7 @@ import trellis.stat._
 /**
   * Generate quantile class breaks with assigned colors.
   */
+// TODO: since n must be equal to colors.length, why do we need it???
 case class FindColorBreaks(h:Operation[Histogram], n:Int,
                            colors:Array[Int]) extends Operation[ColorBreaks] 
                                               with SimpleOperation[ColorBreaks] {

@@ -12,7 +12,8 @@ resolvers ++= Seq(
   "maven2 dev repository" at "http://download.java.net/maven/2",
   "Scala Test" at "http://www.scala-tools.org/repo-reloases/",
   "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
-  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
+  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
+  "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
 )
 
 libraryDependencies ++= { 
@@ -36,6 +37,9 @@ libraryDependencies ++= {
     "com.typesafe.akka" % "akka-kernel" % "2.0-M1",
     "com.typesafe.akka" % "akka-remote" % "2.0-M1",
     "com.typesafe.akka" % "akka-actor"  % "2.0-M1",
+    "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
+    "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT",
+    "com.google.code.gson" % "gson" % "1.8-SNAPSHOT",
     "net.liftweb" %% "lift-json" % "2.4-M5")
 }
 
