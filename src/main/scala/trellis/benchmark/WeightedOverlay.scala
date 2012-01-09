@@ -32,6 +32,28 @@ object MiniAddBenchmark {
   }
 }
 
+class MiniWoBenchmark(raster1:IntRaster, weight1:Int, raster2:IntRaster, weight2:Int) {
+  val op = Add(MultiplyConstant(raster1, weight1),
+               MultiplyConstant(raster2, weight2))
+  def run(reps:Int, server:Server) {
+    var r:IntRaster = null
+    for (i <- 0 until reps) r = server.run(op)
+  }
+}
+
+object MiniWoBenchmark {
+  def apply(server:Server, pair1:(String, Int), pair2:(String, Int),
+            extent:Extent, size:Int) = {
+    val (path1, weight1) = pair1
+    val (path2, weight2) = pair2
+
+    val e = server.run(LoadRasterExtentFromFile(path1)).extent
+    val r1 = server.run(LoadFile(path1, BuildRasterExtent2(e, size, size)))
+    val r2 = server.run(LoadFile(path2, BuildRasterExtent2(e, size, size)))
+    new MiniWoBenchmark(r1, weight1, r2, weight2)
+  }
+}
+
 class WoBenchmark(size:Int, extent:Extent, pairs:Seq[(String, Int)],
                   total:Int, colors:Array[Int]) {
 
@@ -74,6 +96,8 @@ class TrellisBenchmarks extends SimpleBenchmark {
   val total = pairs.map(_._2).sum
   val colors = Array(0x0000FF, 0x0080FF, 0x00FF80, 0xFFFF00, 0xFF8000, 0xFF0000)
 
+  var server:Server = null
+
   var s64:WoBenchmark = null
   var s128:WoBenchmark = null
   var s256:WoBenchmark = null
@@ -83,7 +107,9 @@ class TrellisBenchmarks extends SimpleBenchmark {
   var s4096:WoBenchmark = null
   var s8192:WoBenchmark = null
 
-  var server:Server = null
+  var m100:MiniWoBenchmark = null
+  var m1000:MiniWoBenchmark = null
+  var m10000:MiniWoBenchmark = null
 
   var a64:MiniAddBenchmark = null
   var a128:MiniAddBenchmark = null
@@ -99,6 +125,10 @@ class TrellisBenchmarks extends SimpleBenchmark {
 
     val path = pairs(0)._1
     val extent = server.run(LoadRasterExtentFromFile(path)).extent
+
+    m100 = MiniWoBenchmark(server, pairs(0), pairs(1), extent, 100)
+    m1000 = MiniWoBenchmark(server, pairs(0), pairs(1), extent, 1000)
+    m10000 = MiniWoBenchmark(server, pairs(0), pairs(1), extent, 10000)
 
     s64 = new WoBenchmark(64, extent, pairs, total, colors)
     s128 = new WoBenchmark(128, extent, pairs, total, colors)
@@ -118,6 +148,8 @@ class TrellisBenchmarks extends SimpleBenchmark {
     a4096 = MiniAddBenchmark(server, path, extent, 4096)
     a8192 = MiniAddBenchmark(server, path, extent, 8192)
   }
+
+
 
   def timeWeightedOverlayPNG_64(reps:Int) = s64.run(reps, server)
   def timeWeightedOverlayPNG_128(reps:Int) = s128.run(reps, server)
