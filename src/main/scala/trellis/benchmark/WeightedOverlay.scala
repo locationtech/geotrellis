@@ -19,7 +19,6 @@ import com.google.caliper.SimpleBenchmark
 class MiniAddBenchmark(raster:IntRaster) {
   val op = AddConstant(raster, 13)
   def run(reps:Int, server:Server) {
-    var r:IntRaster = null
     for (i <- 0 until reps) r = server.run(op)
   }
 }
@@ -149,7 +148,9 @@ class TrellisBenchmarks extends SimpleBenchmark {
     a8192 = MiniAddBenchmark(server, path, extent, 8192)
   }
 
-
+  def timeBasicWeightedOverlay_100(reps:Int) = m100.run(reps, server)
+  def timeBasicWeightedOverlay_1000(reps:Int) = m1000.run(reps, server)
+  def timeBasicWeightedOverlay_10000(reps:Int) = m10000.run(reps, server)
 
   def timeWeightedOverlayPNG_64(reps:Int) = s64.run(reps, server)
   def timeWeightedOverlayPNG_128(reps:Int) = s128.run(reps, server)
@@ -157,7 +158,6 @@ class TrellisBenchmarks extends SimpleBenchmark {
   def timeWeightedOverlayPNG_512(reps:Int) = s512.run(reps, server)
   def timeWeightedOverlayPNG_1024(reps:Int) = s1024.run(reps, server)
   def timeWeightedOverlayPNG_2048(reps:Int) = s2048.run(reps, server)
-
   // disabled
   //def timeWeightedOverlayPNG_4096(reps:Int) = s4096.run(reps, server)
   //def timeWeightedOverlayPNG_8192(reps:Int) = s8192.run(reps, server)
