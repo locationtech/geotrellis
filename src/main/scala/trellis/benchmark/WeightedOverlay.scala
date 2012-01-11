@@ -91,7 +91,7 @@ class WoBenchmark(size:Int, extent:Extent, pairs:Seq[(String, Int)],
 class TrellisBenchmarks extends SimpleBenchmark {
   def buildPairs(ts:(String, Int)*) = ts.map { case (s, w) => (base + s + ".arg", w) }
 
-  val base = "/home/eosheim/trellis/src/test/resources/sbn/SBN_"
+  val base = "src/test/resources/sbn/SBN_"
   val pairs = buildPairs(("farm_mkt", 2), ("RR_stops_walk", 1), ("inc_percap", 5), ("street_den_1k", 2))
   val total = pairs.map(_._2).sum
   val colors = Array(0x0000FF, 0x0080FF, 0x00FF80, 0xFFFF00, 0xFF8000, 0xFF0000)
