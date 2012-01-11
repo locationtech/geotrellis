@@ -19,6 +19,7 @@ import com.google.caliper.SimpleBenchmark
 class MiniAddBenchmark(raster:IntRaster) {
   val op = AddConstant(raster, 13)
   def run(reps:Int, server:Server) {
+    var r:IntRaster = null
     for (i <- 0 until reps) r = server.run(op)
   }
 }
@@ -174,6 +175,8 @@ class TrellisBenchmarks extends SimpleBenchmark {
 
 object TrellisBenchmarks {
   def main(args:Array[String]) {
+    println("starting benchmarks...")
     Runner.main(classOf[TrellisBenchmarks], args:_*)
+    println("completed benchmarks.")
   }
 }
