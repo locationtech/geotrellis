@@ -1,6 +1,6 @@
 package trellis.operation
 
-import trellis.RasterExtent
+import trellis._
 import trellis.process._
 
 // ny=4    nx=4    nx=2 ny=2
@@ -14,16 +14,19 @@ import trellis.process._
  * into many smaller contiguous pieces. The number of columns desired is
  * provided by `nx` and the number of rows by `ny`.
  */
-case class ChunkRasterExtent(g:Op[RasterExtent], nx:Int, ny:Int)
-extends CachedOp[Seq[Op[RasterExtent]]] with SimpleOp[Seq[Op[RasterExtent]]] {
+case class ChunkRasterExtent(g:Op[RasterExtent], opnx:Op[Int], opny:Op[Int])
+extends SimpleOp[Array[RasterExtent]] {
 
   def _value(context:Context) = {
-    val geo = context.run(g)
-    val a = Array.ofDim[Op[RasterExtent]](ny * nx)
+    val re = context.run(g)
+    val nx = context.run(opnx)
+    val ny = context.run(opny)
+    val a = Array.ofDim[RasterExtent](ny * nx)
 
     // calculate the break points along the X and Y axes
-    var xlimits = (0 to nx).map(i => geo.extent.xmin + ((i * geo.width) / nx))
-    var ylimits = (0 to ny).map(i => geo.extent.ymin + ((i * geo.height) / ny))
+    val e = re.extent
+    var xlimits = (0 to nx).map(e.xmin + _.toDouble / nx * e.width)
+    var ylimits = (0 to ny).map(e.ymin + _.toDouble / ny * e.height)
 
     var y = 0
     while (y < ny) {
@@ -33,9 +36,14 @@ extends CachedOp[Seq[Op[RasterExtent]]] with SimpleOp[Seq[Op[RasterExtent]]] {
         val ymax = ylimits(y + 1)
         val xmin = xlimits(x)
         val xmax = xlimits(x + 1)
-        a(y * nx + x) = BuildRasterExtent(xmin, ymin, xmax, ymax,
-                                          ((xmax - xmin) / geo.cellwidth).toInt,
-                                          ((ymax - ymin) / geo.cellheight).toInt)
+
+        val extent = Extent(xmin, ymin, xmax, ymax)
+        val cols = ((xmax - xmin) / re.cellwidth).toInt
+        val rows = ((ymax - ymin) / re.cellheight).toInt
+
+        val re2 = RasterExtent(extent, re.cellwidth, re.cellheight, cols, rows)
+        a(y * nx + x) = re2
+
         x += 1
       }
       y += 1

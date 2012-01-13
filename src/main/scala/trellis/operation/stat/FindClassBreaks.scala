@@ -3,14 +3,14 @@ package trellis.operation
 import trellis.process._
 import trellis.stat._
 
+// TODO: parallelize
 /**
   * Generate quantile class breaks for a given raster.
   */
-case class FindClassBreaks(h:Operation[Histogram],
-                           n:Int) extends CachedOperation[Array[Int]] 
-                                  with SimpleOperation[Array[Int]]{
+case class FindClassBreaks(h:Op[Histogram], n:Op[Int]) extends SimpleOp[Array[Int]] {
   def _value(context:Context) = {
     val histogram = context.run(h)
-    histogram.getQuantileBreaks(n)
+    val num = context.run(n)
+    histogram.getQuantileBreaks(num)
   }
 }

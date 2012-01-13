@@ -21,7 +21,7 @@ extends SimpleOp[IntRaster] {
 }
 
 case class BurnMultiPolygon(rr: Op[IntRaster], p: Op[MultiPolygon])
-extends BurnPolygons4Base(rr, Call(p, (_:MultiPolygon).polygons))
+extends BurnPolygons4Base(rr, p.call(_.polygons))
 
 case class BurnMultiPolygons(rr: Op[IntRaster],
                              ps: Array[Op[MultiPolygon]])
