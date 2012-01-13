@@ -73,7 +73,7 @@ class WoBenchmark(size:Int, extent:Extent, pairs:Seq[(String, Int)],
   }
 
   def buildPNGOp(r:Op[IntRaster]) = {
-    val i = Immutable(r)
+    val i = Cache(r)
     RenderPNG2(i, buildColorBreaksOp(i), 0, true)
   }
 
