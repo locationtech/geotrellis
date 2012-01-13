@@ -81,7 +81,7 @@ class BugSpec extends Spec with MustMatchers {
       val T = if (false) { Mask(W, M, 0, 0) } else { W }
       
       // normalize the result for 1-100
-      val I = Immutable(Normalize(T, 1, 100))
+      val I = Cache(Normalize(T, 1, 100))
     
       // create a histogram for color breaks
       val H = BuildHistogramArray(I)
@@ -163,7 +163,7 @@ class BugSpec extends Spec with MustMatchers {
     //  val T = if (false) { Mask(S, M, 0, 0) } else { S }
     //  
     //  // normalize the result for 1-100
-    //  val I = Immutable(Normalize(T, 1, 99))
+    //  val I = Cache(Normalize(T, 1, 99))
     //
     //  // create a histogram for color breaks
     //  val H = BuildHistogramArray(I)

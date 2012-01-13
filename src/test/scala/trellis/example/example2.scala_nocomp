@@ -58,7 +58,7 @@ class ExampleTwoSpec extends Spec with MustMatchers {
   //    val T = if (false) { Mask(W, M, 0, 0) } else { W }
   //    
   //    // normalize the result for 1-100
-  //    val I = Immutable(Normalize(T, 1, 100))
+  //    val I = Cache(Normalize(T, 1, 100))
   //  
   //    // create a histogram for color breaks
   //    val H = BuildHistogramArray(I)
