@@ -33,7 +33,7 @@ class AsciiSpec extends Spec with MustMatchers with ShouldMatchers {
 
     it ("should read ASCII") {
       val r2 = AsciiReader.read("/tmp/foo.asc", None, None)
-      r2.equals(r) must be === true
+      r2 must be === r
     }
 
     it ("should translate GeoTiff") {

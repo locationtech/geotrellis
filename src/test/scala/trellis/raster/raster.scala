@@ -38,11 +38,11 @@ class RasterSpec extends Spec with MustMatchers {
       val r3 = IntRaster(Array(1,2,3,4), 1, 4, g)
       val r4 = IntRaster(Array(1,2,3,4), 4, 1, g)
 
-      r1.equals(r0) must be === false
-      r1.equals(r1) must be === true
-      r1.equals(r2) must be === false
-      r1.equals(r3) must be === false
-      r1.equals(r4) must be === false
+      r1 == r0 must be === false
+      r1 == r1 must be === true
+      r1 == r2 must be === false
+      r1 == r3 must be === false
+      r1 == r4 must be === false
     }
 
     it("should set coordinates") {

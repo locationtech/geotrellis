@@ -106,8 +106,8 @@ case class TileSet(rasterExtent:RasterExtent, tileSize:Int) {
    */
   def tileRange(mapExtent:Extent) = {
     // get col/row min and max of extent from full grid (according to rasterExtent)
-    val sw = mapExtent.southWest()
-    val ne = mapExtent.northEast()
+    val sw = mapExtent.southWest
+    val ne = mapExtent.northEast
     val (minCol, minRow) = rasterExtent.mapToGrid(sw)
     val (maxCol, maxRow) = rasterExtent.mapToGrid(ne)
     

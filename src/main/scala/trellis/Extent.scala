@@ -21,6 +21,10 @@ case class Extent(xmin:Double, ymin:Double, xmax:Double, ymax:Double) {
    * Orders two extents by their (geographically) lower-left corner. The extent
    * that is further south (or west in the case of a tie) comes first.
    *
+   * If the lower-left corners are the same, the upper-right corners are
+   * compared. This is mostly to assure that 0 is only returned when the
+   * extents are equal.
+   *
    * Return type signals:
    *
    *   -1 this extent comes first
@@ -28,8 +32,16 @@ case class Extent(xmin:Double, ymin:Double, xmax:Double, ymax:Double) {
    *    1 the other extent comes first
    */
   def compare(other:Extent):Int = {
-    val cmp = ymin.compare(other.ymin)
-    if (cmp != 0) cmp else xmin.compare(other.xmin)
+    var cmp = ymin compare other.ymin
+    if (cmp != 0) return cmp
+
+    cmp = xmin compare other.xmin
+    if (cmp != 0) return cmp
+
+    cmp = ymax compare other.ymax
+    if (cmp != 0) return cmp
+
+    xmax compare other.xmax
   }
   
   /**
@@ -41,7 +53,7 @@ case class Extent(xmin:Double, ymin:Double, xmax:Double, ymax:Double) {
     val xmaxNew = max(xmax, other.xmax)
     val yminNew = min(ymin, other.ymin)
     val ymaxNew = max(ymax, other.ymax)
-    Extent(xminNew, yminNew, yminNew, ymaxNew)
+    Extent(xminNew, yminNew, xmaxNew, ymaxNew)
   }
   
   /**
@@ -55,10 +67,10 @@ case class Extent(xmin:Double, ymin:Double, xmax:Double, ymax:Double) {
   /**
    * Return SW corner (xmin, ymin) as tuple.
    */
-  def southWest() = { (xmin, ymin) }
+  def southWest = (xmin, ymin)
   
   /**
    * Return NE corner (xmax, ymax) as tuple.
    */
-  def northEast() = { (xmax, ymax) }
+  def northEast = (xmax, ymax)
 }

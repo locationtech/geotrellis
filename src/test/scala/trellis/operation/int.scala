@@ -82,24 +82,24 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("LoadFile, w/ resampling") {
-      println("AAAAAA")
+      //println("AAAAAA")
       val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img.arg")
       val geo1 = server.run(G1)
 
-      println("BBBBBBBB")
+      //println("BBBBBBBB")
       val G2 = BuildRasterExtent( geo1.extent.xmin, geo1.extent.ymin, geo1.extent.xmax, geo1.extent.ymax, 2, 2) 
       val L = LoadFile("src/test/resources/fake.img.arg", G2)
       val raster = server.run(L)
-      println("CCC %s cols=%d rows=%d (len=%d)".format(raster, raster.cols, raster.rows, raster.data.length))
-      println(raster.asciiDraw)
+      //println("CCC %s cols=%d rows=%d (len=%d)".format(raster, raster.cols, raster.rows, raster.data.length))
+      //println(raster.asciiDraw)
       raster.get(0, 0) must be === 18
-      println("D1")
+      //println("D1")
       raster.get(1, 0) must be === 20
-      println("D2")
+      //println("D2")
       raster.get(0, 1) must be === 50
-      println("D3")
+      //println("D3")
       raster.get(1, 1) must be === 52
-      println("D4")
+      //println("D4")
     }
   
     it("LoadResampledArgFile, take 2") {
@@ -150,13 +150,13 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     it("WrapRaster") {
       val R = WrapRaster(raster1)
       val result = server.run(R)
-      result.equals(raster1) must be === true
+      result must be === raster1
     }
 
     it("WrapRasterExtent") {
       val G = WrapRasterExtent(raster1.rasterExtent)
       val result = server.run(G)
-      result.equals(raster1.rasterExtent) must be === true
+      result must be === raster1.rasterExtent
     }
 
     it("CopyRaster") {
@@ -166,15 +166,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val orig = server.run(W)
       val copy = server.run(R)
 
-      //println(orig)
-      //println(copy)
-      //
-      //println(orig.rasterExtent)
-      //println(copy.rasterExtent)
-
-      copy.equals(orig) must be === true
-      //copy.set(0, 0, 99)
-      //copy.equals(orig) must be === false
+      copy must be === orig
     }
 
     it("BuildArrayHistogram") {
@@ -370,7 +362,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val r = W.run(server)
 
       val result1 = Normalize(W, zMin, zMax).run(server)
-      val ok1 = expect.equals(result1)
+      val ok1 = expect.equal(result1)
       if(!ok1) {
         println(expect)
         println(result1)
@@ -380,7 +372,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val (zzmin, zzmax) = r.findMinMax
       //val result2 = Normalize2(W, 1, 100, zMin, zMax).run(server)
       val result2 = Normalize2(W, zzmin, zzmax, zMin, zMax).run(server)
-      val ok2 = expect.equals(result2)
+      val ok2 = expect.equal(result2)
       if(!ok2) {
         println(expect)
         println(result2)
@@ -442,7 +434,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val Rs = Array(r1, r2, r3, r4).map { WrapRaster(_) }
       val S  = StitchIntRasters(Rs)
       val rOut = S.run(server)
-      rOut.equals(rG) must be === true
+      rOut.equal(rG) must be === true
     }
 
     it("should explode when stitching at different resolutions") {
@@ -482,7 +474,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       
       val S = StitchIntRasters(Array(r1, r2, r3).map { WrapRaster(_) })
       val rOut = S.run(server)
-      rOut.equals(rG) must be === true
+      rOut.equal(rG) must be === true
     }
 
     it("should write PNG data") {

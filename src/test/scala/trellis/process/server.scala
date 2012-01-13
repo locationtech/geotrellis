@@ -46,7 +46,7 @@ describe("A Server") {
       val r1 = server.loadRaster(path, geo)
       val r2 = server.loadRaster(path, geo)
 
-      r1.equals(r2) must be === true
+      r1 must be === r2
     }
   }
 

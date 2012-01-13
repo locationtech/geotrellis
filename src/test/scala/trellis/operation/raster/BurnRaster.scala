@@ -39,7 +39,7 @@ class BurnRasterSpec extends Spec with MustMatchers with ShouldMatchers {
       println(raster.asciiDraw())
       println(raster2.asciiDraw())
 
-      raster.equals(raster2) must be === true
+      raster must be === raster2
     }
   }
 }
