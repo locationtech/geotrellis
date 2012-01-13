@@ -38,7 +38,7 @@ object MyBuild extends Build {
       "com.typesafe.akka" % "akka-remote" % "2.0-M1",
       "com.typesafe.akka" % "akka-actor"  % "2.0-M1",
       "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
-      "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT",
+      //"com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT",
       "com.google.code.gson" % "gson" % "1.7.1"
     ),
 
@@ -51,8 +51,6 @@ object MyBuild extends Build {
       "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
       "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
     ),
-
-
 
     // caliper stuff stolen shamelessly from scala-benchmarking-template
 
