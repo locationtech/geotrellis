@@ -99,10 +99,10 @@ case class DivideDoubleConstant(r:Op[IntRaster], c:Op[Double]) extends WithDoubl
 /**
  * For each cell, divide a constant value by that cell's value.
  */
-case class DivideConstantBy(r:Op[IntRaster], c:Op[Int]) extends WithIntConstant {
+case class DivideConstantBy(c:Op[Int], r:Op[IntRaster]) extends WithIntConstant {
   def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => c / z)
 }
-case class DivideDoubleConstantBy(r:Op[IntRaster], c:Op[Double]) extends WithDoubleConstant {
+case class DivideDoubleConstantBy(c:Op[Double], r:Op[IntRaster]) extends WithDoubleConstant {
   def doit(raster:IntRaster, c:Double) = raster.mapIfSet(z => (c / z).toInt)
 }
 
