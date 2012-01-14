@@ -72,6 +72,9 @@ case class AddInlinedConstant(r:Op[IntRaster], c:Int) extends SimpleOp[IntRaster
 case class SubtractConstant(r:Op[IntRaster], c:Op[Int]) extends WithIntConstant {
   def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => z - c)
 }
+case class SubtractConstantBy(c:Op[Int], r:Op[IntRaster]) extends WithIntConstant {
+  def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => c - z)
+}
 
 
 /**
