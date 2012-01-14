@@ -9,7 +9,7 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class AddTest extends FunSuite {
+class AddArrayTest extends FunSuite {
   val e = Extent(0.0, 0.0, 10.0, 10.0)
   val re = RasterExtent(e, 1.0, 1.0, 10, 10)
 
@@ -20,9 +20,6 @@ class AddTest extends FunSuite {
   val server = TestServer()
 
   test("add correctly") {
-    assert(server.run(Add(r1, r2)) === r3)
-    //val rr = server.run(Add(r1, r2))
-    //println("%s %s %s %s" format (rr.rasterExtent, rr.cols, rr.rows, rr.data.asList))
-    //println("%s %s %s %s" format (r3.rasterExtent, r3.cols, r3.rows, r3.data.asList))
+    assert(server.run(AddArray(Literal(Array(r1, r2)))) === r3)
   }
 }
