@@ -1,19 +1,16 @@
 package trellis.operation
-import trellis.geometry.Polygon
 
+import trellis.geometry.Polygon
 import trellis.process._
 
 /**
   * Create a Polygon from an array of coordinates represented as a tuple (x,y).
   */
-case class CreateSimplePolygon(pts:Array[(Double, Double)],
-                               value:Int) extends PolygonOperation with SimpleOperation[Polygon] {
-  def _value(context:Context) = Polygon(pts, value, null)
-}
-
-/**
- * Return a previously created polygon as the result of this operation
- */
-case class WrapPolygon(polygon:Polygon) extends PolygonOperation with SimpleOperation[Polygon] {
-  def _value(context:Context) = polygon
+case class CreateSimplePolygon(pts:Op[Array[(Double, Double)]], v:Op[Int])
+extends SimpleOperation[Polygon] {
+  def _value(context:Context) = {
+    val points = context.run(pts)
+    val value = context.run(v)
+    Polygon(points, value, null)
+  }
 }

@@ -4,22 +4,14 @@ import trellis._
 import trellis.geometry.Polygon
 
 package object operation {
+  // Operation is such a long word :(
   type Op[A] = Operation[A]
-
   type SimpleOp[A] = SimpleOperation[A]
-
-  /* Provide some handy aliases for various Operation[T] types. */
-  // TODO: remove these, they cause more problems than they solve
-  type PolygonOperation = Op[Polygon]
-  type RasterExtentOperation = Op[RasterExtent]
-  type PNGOperation = Op[Array[Byte]]
-
   type LocalOp = LocalOperation
 
-  // TODO: consider things like type PNG = Array[Byte]
+  // TODO: consider adding things like type PNG = Array[Byte]?
 
   import trellis.operation.Operation.implicitLiteral
-
 
   /**
    * Addition-operator implicits for Int, IntRaster and Op[IntRaster].
