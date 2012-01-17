@@ -214,6 +214,16 @@ trait IsIntRaster {
   //  new IntRaster(output, this.rows, this.cols, this.rasterExtent, this.name + "_map")
   //}
   
+  def normalize(zmin:Int, zmax:Int, gmin:Int, gmax:Int) = {
+    val grange = gmax - gmin
+    val zrange = zmax - zmin
+    if (zrange <= 0) {
+      copy()
+    } else {
+      mapIfSet(z => (z - zmin) * (grange / zrange) + gmin)
+    }
+  }
+
   def mapIfSet(f:Int => Int) = {
     val data = this.data
     val data2 = this.data.copy

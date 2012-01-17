@@ -64,7 +64,7 @@ class WoBenchmark(size:Int, extent:Extent, pairs:Seq[(String, Int)],
 
   def buildWoOp = {
     val rs = pairs.map { case (p, w) => buildScaleRasterOp(p, w) }.toArray
-    Normalize(DivideConstant(Add(rs: _*), total), 1, 100)
+    Normalize(DivideConstant(Add(rs: _*), total), (1, 100))
   }
 
   def buildColorBreaksOp(r:Op[IntRaster]) = {

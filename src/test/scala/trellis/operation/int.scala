@@ -370,8 +370,8 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       ok1 must be === true
 
       val (zzmin, zzmax) = r.findMinMax
-      //val result2 = Normalize2(W, 1, 100, zMin, zMax).run(server)
-      val result2 = Normalize2(W, zzmin, zzmax, zMin, zMax).run(server)
+      //val result2 = Normalize2(W, (1, 100), (zMin, zMax)).run(server)
+      val result2 = Normalize2(W, (zzmin, zzmax), (zMin, zMax)).run(server)
       val ok2 = expect.equal(result2)
       if(!ok2) {
         println(expect)
@@ -383,7 +383,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     it("should normalize with alternate min/max") {
       val r  = f(Array(1, 10, 5, 20), 2, 2, 0.0, 0.0, 3.0)
       val r2 = Normalize(CopyRaster(WrapRaster(r)), 1, 100).run(server)
-      val r3 = Normalize2(CopyRaster(WrapRaster(r)), 1, 40, 1, 100).run(server)
+      val r3 = Normalize2(CopyRaster(WrapRaster(r)), (1, 40), (1, 100)).run(server)
 
       r2.data must be === Array(1, 47, 21, 100)
       r3.data must be === Array(1, 23, 11, 49)
