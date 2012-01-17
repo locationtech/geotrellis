@@ -1,7 +1,7 @@
 package trellis.operation
 
 import trellis.process._
-import trellis.raster._
+import trellis._
 
 /**
  * Set all values of output raster to one value or another based on whether a

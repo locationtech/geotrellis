@@ -1,7 +1,7 @@
 package trellis.operation
 
 import trellis.process._
-import trellis.raster._
+import trellis._
 
 /**
  * Negate (multiply by -1) each value in a raster.

@@ -1,15 +1,14 @@
 package trellis.operation
 
-import trellis.constant.NODATA
-import trellis.raster.IntRaster
+import trellis._
 import trellis.process._
 
 /**
-  * Add the values of each cell in each raster.
-  * Local operation.
-  *
-  * Add(r1, r2, r3)
-  */
+ * Add the values of each cell in each raster.
+ * Local operation.
+ *
+ * Add(r1, r2, r3)
+ */
 case class Add(rs:IntRasterOperation*) extends MultiLocal {
   override val identity = 0
 

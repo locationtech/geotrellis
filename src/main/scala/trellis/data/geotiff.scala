@@ -16,9 +16,10 @@ import org.geotools.geometry.Envelope2D
 import org.geotools.referencing.CRS
 import scala.math.{abs, min, max, round}
 import trellis.process.Server
-import trellis.raster.IntRaster
+import trellis.IntRaster
 import trellis.{Extent,RasterExtent}
-import trellis.constant._
+
+import trellis._
 import trellis.process._
 import org.geotools.coverage.Category
 import org.geotools.coverage.GridSampleDimension

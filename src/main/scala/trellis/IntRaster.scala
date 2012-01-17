@@ -1,8 +1,6 @@
-package trellis.raster
+package trellis
 
 import scala.math.{min, max}
-import trellis.constant.NODATA
-import trellis.RasterExtent
 
 //?TODO: remove rows & cols from IntRaster constructor
 object IntRaster {

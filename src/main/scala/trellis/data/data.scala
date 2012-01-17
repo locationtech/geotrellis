@@ -6,10 +6,8 @@ import java.io.{BufferedOutputStream, FileOutputStream}
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel.MapMode._
 
-import trellis.raster.IntRaster
-import trellis.{Extent,RasterExtent}
-import trellis.constant._
-import trellis.process.RasterLayer
+import trellis._
+import trellis.process._
 
 trait ReadState {
   val layer:RasterLayer

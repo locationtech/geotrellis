@@ -10,7 +10,7 @@ import trellis._
 import trellis.data._
 import trellis.operation._
 import trellis.process._
-import trellis.raster._
+import trellis._
 
 import com.google.caliper.Runner 
 import com.google.caliper.SimpleBenchmark

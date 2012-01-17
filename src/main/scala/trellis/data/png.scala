@@ -4,7 +4,7 @@ import java.io.File
 import java.nio.ByteBuffer
 
 import trellis.data.png.PNGWriter;
-import trellis.raster.IntRaster
+import trellis.IntRaster
 
 /**
  * Create a PNG image from a [[trellis.core.raster.Raster]] 

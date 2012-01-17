@@ -1,10 +1,11 @@
 package trellis.operation
 
 import scala.math.{ceil, floor, max, min}
+
+import trellis._
 import trellis.Extent
 import trellis.RasterExtent
-import trellis.raster.IntRaster
-import trellis.constant.NODATA
+import trellis.IntRaster
 import trellis.process._
 
 // this operation doesn't currently work.

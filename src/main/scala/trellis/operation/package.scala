@@ -1,7 +1,7 @@
 package trellis
 
+import trellis._
 import trellis.geometry.Polygon
-import trellis.raster.IntRaster
 
 package object operation {
   type Op[A] = Operation[A]

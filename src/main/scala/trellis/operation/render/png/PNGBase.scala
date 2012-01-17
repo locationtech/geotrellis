@@ -1,7 +1,7 @@
 package trellis.operation.render.png
 
+import trellis._
 import trellis.operation._
-import trellis.constant.NODATA
 
 trait PNGBase {
   val r:IntRasterOperation

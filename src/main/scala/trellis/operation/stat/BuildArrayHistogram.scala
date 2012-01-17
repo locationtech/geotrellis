@@ -1,8 +1,8 @@
 package trellis.operation
 
-import trellis.constant._
+
+import trellis._
 import trellis.process._
-import trellis.raster._
 import trellis.stat._
 
 /**

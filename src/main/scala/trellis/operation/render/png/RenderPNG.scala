@@ -1,9 +1,9 @@
 package trellis.operation
 
-import trellis.constant._
+
 import trellis.data._
 import trellis.process._
-import trellis.raster._
+import trellis._
 
 /**
  * Generate a PNG from a given raster and a set of color breaks. The background

@@ -1,8 +1,7 @@
 package trellis.data
 
 import trellis.process.TestServer
-import trellis.{Extent,RasterExtent}
-import trellis.constant._
+import trellis._
 import trellis.raster._
 
 import trellis.operation._

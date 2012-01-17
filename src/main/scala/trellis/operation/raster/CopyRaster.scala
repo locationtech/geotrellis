@@ -1,7 +1,7 @@
 package trellis.operation
 
 import trellis.process._
-import trellis.raster.IntRaster
+import trellis.IntRaster
 
 /**
  * Given an operation producing a raster, returns a copy of this raster.

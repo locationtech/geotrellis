@@ -1,9 +1,9 @@
 package trellis.geometry.rasterizer
 
-import trellis.raster.{IntRaster,RasterData}
+import trellis.{IntRaster,RasterData}
 import trellis.geometry.{Polygon}
 import trellis.geometry.grid.{GridPoint, GridLine, GridPolygon}
-import trellis.constant.NODATA
+
 
 import scala.collection.mutable.{ArrayBuffer}
 import scala.util.Sorting

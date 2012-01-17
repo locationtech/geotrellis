@@ -2,7 +2,7 @@ package trellis.operation
 
 import trellis.RasterExtent
 import trellis.process._
-import trellis.raster.IntRaster
+import trellis.IntRaster
 
 /**
  * Load the raster data for a particular extent/resolution from the specified file.

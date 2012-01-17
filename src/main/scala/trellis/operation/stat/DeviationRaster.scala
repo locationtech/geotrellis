@@ -1,6 +1,6 @@
 package trellis.operation
 
-import trellis.raster.IntRaster
+import trellis.IntRaster
 import trellis.stat.{Histogram, Statistics}
 import trellis.process._
 

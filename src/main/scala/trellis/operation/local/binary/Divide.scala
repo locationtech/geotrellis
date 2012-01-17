@@ -1,6 +1,6 @@
 package trellis.operation
 
-import trellis.constant.NODATA
+import trellis._
 
 /**
   * Divide each value of one raster with the values from another raster.

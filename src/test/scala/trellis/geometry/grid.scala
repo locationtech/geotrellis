@@ -2,8 +2,8 @@ package trellis.geometry.grid
 
 import math.{max,min,round}
 
-import trellis.constant._
-import trellis.raster.{IntRaster,ArrayRasterData}
+import trellis._
+import trellis.raster._
 import trellis.{Extent,RasterExtent}
 
 import org.scalatest.Spec

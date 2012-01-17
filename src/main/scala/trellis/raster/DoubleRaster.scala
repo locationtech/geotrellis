@@ -2,8 +2,8 @@ package trellis.raster
 
 import java.io.Serializable
 import scala.math.{min, max}
-import trellis.constant.NODATA
-import trellis.RasterExtent
+
+import trellis._
 
 object DoubleRaster {
   def apply(data:Array[Double], rows:Int, cols:Int,

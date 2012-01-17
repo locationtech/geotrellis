@@ -5,7 +5,7 @@ import scala.math.{min, max, round}
 
 import trellis.geometry.grid.{GridPoint, GridLine, GridPolygon}
 import trellis.{Extent,RasterExtent}
-import trellis.raster.{IntRaster}
+import trellis.{IntRaster}
 
 import com.vividsolutions.jts.geom.{GeometryFactory,Geometry}
 import com.vividsolutions.jts.geom.{Coordinate => JtsCoordinate}

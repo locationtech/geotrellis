@@ -1,6 +1,6 @@
 package trellis.stat
 
-import trellis.constant.NODATA
+import trellis._
 import scala.collection.mutable.Map
 import scala.math.{max, min}
 import scala.util.Sorting

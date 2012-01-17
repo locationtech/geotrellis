@@ -7,8 +7,8 @@ import java.nio.channels.FileChannel.MapMode._
 
 import trellis._
 import trellis.util._
-import trellis.constant._
-import trellis.raster.IntRaster
+
+import trellis.IntRaster
 import trellis.process._
 
 

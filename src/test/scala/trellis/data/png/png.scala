@@ -5,8 +5,7 @@ import scala.tools.nsc.io.{PlainFile}
 
 import java.io.{File,FileInputStream}
 
-import trellis.raster.IntRaster
-import trellis.{RasterExtent,Extent}
+import trellis._
 import trellis.data.PNGRenderer
 
 import org.scalatest.Spec

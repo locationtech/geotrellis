@@ -6,12 +6,11 @@ import scala.math.{max,min,sqrt}
 import trellis.geometry.Polygon
 
 import trellis.data.ColorBreaks
-import trellis.raster.IntRaster
+import trellis.IntRaster
 import trellis.{Extent,RasterExtent}
 
 import trellis.stat._
 import trellis.process._
-import trellis.constant._
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers

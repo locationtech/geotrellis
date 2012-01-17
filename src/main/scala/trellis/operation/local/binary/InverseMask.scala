@@ -1,7 +1,6 @@
 package trellis.operation
 
-import trellis.constant.NODATA
-
+import trellis._
 
 /**
   * Generate a raster with the values from the first raster, but only include

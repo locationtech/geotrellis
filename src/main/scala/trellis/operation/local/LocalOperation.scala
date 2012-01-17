@@ -1,6 +1,6 @@
 package trellis.operation
 
-import trellis.raster._
+import trellis._
 
 /**
  * Local operations involve each individual value in a raster without information

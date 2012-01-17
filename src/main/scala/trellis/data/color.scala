@@ -1,6 +1,6 @@
 package trellis.data
 
-import trellis.constant._
+import trellis._
 
 object Color {
   // read color bands from a color value

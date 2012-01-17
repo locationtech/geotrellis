@@ -1,4 +1,4 @@
-package trellis.raster
+package trellis
 
 import sys.error
 

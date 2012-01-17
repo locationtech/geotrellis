@@ -1,9 +1,9 @@
 package trellis.raster
 
-import trellis.{ Extent, RasterExtent }
-import trellis.constant._
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
+
+import trellis._
 import trellis.process.TestServer
 import trellis.operation._
 

@@ -1,16 +1,13 @@
 package trellis.operation
 
-import trellis.raster.IntRaster
-import trellis.constant.NODATA
+import trellis._
 import trellis.process._
-import trellis.raster.IntRaster
-
 
 /**
-  * BinaryLocal is an abstract class for all operations that are both local (operating
-  * on each cell in a raster without knowledge of other cells) and binary, by which
-  * we mean that the input includes two rasters (as opposed to 'unary' or 'multi').
-  */
+ * BinaryLocal is an abstract class for all operations that are both local (operating
+ * on each cell in a raster without knowledge of other cells) and binary, by which
+ * we mean that the input includes two rasters (as opposed to 'unary' or 'multi').
+ */
 trait BinaryLocal extends LocalOperation {
   val r1:IntRasterOperation
   val r2:IntRasterOperation

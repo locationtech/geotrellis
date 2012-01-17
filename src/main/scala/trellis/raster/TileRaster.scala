@@ -1,10 +1,8 @@
 package trellis.raster
 
-import trellis.{Extent,RasterExtent}
-import trellis.constant.NODATA
+import trellis._
 import trellis.data.{Arg32Writer, Arg32Reader}
-import trellis.process.Server
-
+import trellis.process._
 
 /**
  * Used to create a tileset (TileRasterData) from a source raster.

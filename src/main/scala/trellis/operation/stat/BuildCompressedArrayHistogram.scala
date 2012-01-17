@@ -1,6 +1,6 @@
 package trellis.operation
 
-import trellis.raster._
+import trellis._
 import trellis.stat._
 
 /**

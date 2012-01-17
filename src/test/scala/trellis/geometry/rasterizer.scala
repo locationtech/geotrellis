@@ -2,9 +2,7 @@ package trellis.geometry.rasterizer
 
 import math.{max,min,round}
 
-import trellis.constant._
-import trellis.raster.{IntRaster}
-import trellis.{Extent,RasterExtent}
+import trellis._
 import trellis.geometry.{Polygon}
 import trellis.geometry.grid.{GridPoint, GridLine, GridPolygon}
 

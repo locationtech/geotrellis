@@ -7,6 +7,6 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class ConstantsTest extends FunSuite {
   test("constants") {
-    assert(trellis.constant.NODATA === Int.MinValue)
+    assert(NODATA === Int.MinValue)
   }
 }

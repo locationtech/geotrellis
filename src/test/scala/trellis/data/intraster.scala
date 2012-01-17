@@ -7,7 +7,6 @@ import org.scalatest.matchers.ShouldMatchers
 import Console.printf
 import trellis.process.TestServer
 import trellis.{Extent,RasterExtent}
-import trellis.constant._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class IntRasterReaderSpec extends Spec with MustMatchers with ShouldMatchers {

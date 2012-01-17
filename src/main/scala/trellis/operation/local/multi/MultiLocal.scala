@@ -1,7 +1,6 @@
 package trellis.operation
 
-import trellis.raster.IntRaster
-import trellis.constant.NODATA
+import trellis._
 import trellis.process._
 
 // TODO: this class needs love, badly.

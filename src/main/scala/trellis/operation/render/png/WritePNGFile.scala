@@ -3,7 +3,7 @@ package trellis.operation.render.png
 import trellis.data._
 import trellis.operation._
 import trellis.process._
-import trellis.raster._
+import trellis._
 
 /**
  * Write out a PNG graphic file to the file system at the specified path.
