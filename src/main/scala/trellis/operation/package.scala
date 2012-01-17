@@ -20,7 +20,6 @@ package object operation {
   // TODO: consider things like type PNG = Array[Byte]
 
   import trellis.operation.Operation.implicitLiteral
-  //import trellis.operation.Literal.implicitLiteral
 
 
   /**

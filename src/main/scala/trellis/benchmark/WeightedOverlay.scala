@@ -9,7 +9,6 @@ package trellis.benchmark
 import trellis._
 import trellis.data._
 import trellis.operation._
-import trellis.operation.render.png.RenderPNG2
 import trellis.process._
 import trellis.raster._
 
@@ -69,12 +68,12 @@ class WoBenchmark(size:Int, extent:Extent, pairs:Seq[(String, Int)],
   }
 
   def buildColorBreaksOp(r:Op[IntRaster]) = {
-    FindColorBreaks(BuildArrayHistogram(r, 101), colors.length, colors)
+    FindColorBreaks(BuildArrayHistogram(r, 101), colors)
   }
 
   def buildPNGOp(r:Op[IntRaster]) = {
     val i = Cache(r)
-    RenderPNG2(i, buildColorBreaksOp(i), 0, true)
+    RenderPNG(i, buildColorBreaksOp(i), 0, true)
   }
 
   val weight:Op[IntRaster] = buildWoOp

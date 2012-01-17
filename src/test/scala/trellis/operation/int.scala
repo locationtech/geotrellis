@@ -220,7 +220,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val H = BuildArrayHistogram(WrapRaster(raster1), 101)
       val (g, y, o, r) = (0x00FF00, 0xFFFF00, 0xFF7F00, 0xFF0000)
       val colors = Array(g, y, o, r)
-      val F = FindColorBreaks(H, 4, colors)
+      val F = FindColorBreaks(H, colors)
       val cb = server.run(F)
       cb.breaks.toList must be === List((12, g), (15, y), (66, o), (95, r))
     }
@@ -729,7 +729,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val cb = ColorBreaks(breaks1)
       //val G = RenderPNG(B, breaks1, 0x000000, true)
       val L = Literal(cb)
-      val G = RenderPNG2(B, L, 0x000000, true)
+      val G = RenderPNG(B, L, 0x000000, true)
       val bytes = G.run(server)
 
       // write the output

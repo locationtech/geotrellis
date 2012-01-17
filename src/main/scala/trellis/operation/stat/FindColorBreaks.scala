@@ -5,15 +5,20 @@ import trellis.process._
 import trellis.stat._
 
 /**
-  * Generate quantile class breaks with assigned colors.
-  */
-// TODO: since n must be equal to colors.length, why do we need it???
-case class FindColorBreaks(h:Operation[Histogram], n:Int,
-                           colors:Array[Int]) extends Operation[ColorBreaks] 
-                                              with SimpleOperation[ColorBreaks] {
-  def _value(context:Context) = {
-    val histogram = context.run(h)
-    val breaks = histogram.getQuantileBreaks(n)
-    ColorBreaks(breaks.zip(colors))
+ * Generate quantile class breaks with assigned colors.
+ */
+case class FindColorBreaks(h:Op[Histogram], cs:Op[Array[Int]]) extends Op[ColorBreaks] {
+
+  def _run(context:Context) = runAsync(List(h, cs))
+
+  val nextSteps:Steps = {
+    case (histogram:Histogram) :: (colors:Array[_]) :: Nil => {
+      step2(histogram, colors.asInstanceOf[Array[Int]])
+    }
+  }
+
+  def step2(histogram:Histogram, colors:Array[Int]) = {
+    val breaks = histogram.getQuantileBreaks(colors.length)
+    Result(ColorBreaks(breaks.zip(colors)))
   }
 }
