@@ -21,7 +21,7 @@ case class ForEachTile(r:Op[IntRaster], f:(Op[IntRaster] => Op[IntRaster])) exte
       tr.data match {
       	case trData:TileRasterData => {
       		val ops = trData.rasters.toList.flatten 
-      		    .map { c => f(WrapRaster(c)) }
+      		    .map { c => f(Literal(c)) }
       		(ops, Some(trData.tileSet))
       	}
       	// Not a tiled raster -- just apply f to input raster

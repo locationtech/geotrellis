@@ -146,21 +146,8 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       //println(L.toString)
     }
 
-
-    it("WrapRaster") {
-      val R = WrapRaster(raster1)
-      val result = server.run(R)
-      result must be === raster1
-    }
-
-    it("WrapRasterExtent") {
-      val G = WrapRasterExtent(raster1.rasterExtent)
-      val result = server.run(G)
-      result must be === raster1.rasterExtent
-    }
-
     it("CopyRaster") {
-      val W = WrapRaster(raster1)
+      val W = Literal(raster1)
       val R = CopyRaster(W)
 
       val orig = server.run(W)
@@ -170,7 +157,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("BuildArrayHistogram") {
-      val H = BuildArrayHistogram(WrapRaster(raster1), 101)
+      val H = BuildArrayHistogram(Literal(raster1), 101)
       val histo = server.run(H)
       //println(histo.toJSON)
       //println(histo.getValues.toList)
@@ -183,7 +170,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("BuildCompressedArrayHistogram") {
-      val H = BuildCompressedArrayHistogram(WrapRaster(raster1), 1, 101, 50)
+      val H = BuildCompressedArrayHistogram(Literal(raster1), 1, 101, 50)
       val histo = server.run(H)
       //println(histo.toJSON)
       //println(histo.getValues.toList)
@@ -197,7 +184,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
     it("BuildMapHistogram") {
       //println(raster1)
-      val H = BuildMapHistogram(WrapRaster(raster1))
+      val H = BuildMapHistogram(Literal(raster1))
       val histo = server.run(H)
 
       //println(histo.toJSON)
@@ -211,13 +198,13 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("FindClassBreaks") {
-      val H = BuildArrayHistogram(WrapRaster(raster1), 101)
+      val H = BuildArrayHistogram(Literal(raster1), 101)
       val F = FindClassBreaks(H, 4)
       server.run(F) must be === Array(12, 15, 66, 95)
     }
 
     it("FindColorBreaks") {
-      val H = BuildArrayHistogram(WrapRaster(raster1), 101)
+      val H = BuildArrayHistogram(Literal(raster1), 101)
       val (g, y, o, r) = (0x00FF00, 0xFFFF00, 0xFF7F00, 0xFF0000)
       val colors = Array(g, y, o, r)
       val F = FindColorBreaks(H, colors)
@@ -254,7 +241,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
 /*
     it("FindMinMax") {
-      val R = WrapRaster(raster1)
+      val R = Literal(raster1)
       val F = FindMinMax(R)
       F.run(server) must be === (11, 95)
     }
@@ -358,7 +345,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val given  = h(a1, cols, rows)
       val expect = h(a2, cols, rows)
 
-      val W = CopyRaster(WrapRaster(given))
+      val W = CopyRaster(Literal(given))
       val r = W.run(server)
 
       val result1 = Normalize(W, zMin, zMax).run(server)
@@ -382,8 +369,8 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
     it("should normalize with alternate min/max") {
       val r  = f(Array(1, 10, 5, 20), 2, 2, 0.0, 0.0, 3.0)
-      val r2 = Normalize(CopyRaster(WrapRaster(r)), 1, 100).run(server)
-      val r3 = Normalize2(CopyRaster(WrapRaster(r)), (1, 40), (1, 100)).run(server)
+      val r2 = Normalize(CopyRaster(Literal(r)), 1, 100).run(server)
+      val r3 = Normalize2(CopyRaster(Literal(r)), (1, 40), (1, 100)).run(server)
 
       r2.data must be === Array(1, 47, 21, 100)
       r3.data must be === Array(1, 23, 11, 49)
@@ -431,7 +418,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
                        3, 3, 4, 4, 4,
                        3, 3, 4, 4, 4), 5, 5, 0.0, 0.0, 3.0)
       
-      val Rs = Array(r1, r2, r3, r4).map { WrapRaster(_) }
+      val Rs = Array(r1, r2, r3, r4).map { Literal(_) }
       val S  = StitchIntRasters(Rs)
       val rOut = S.run(server)
       rOut.equal(rG) must be === true
@@ -441,7 +428,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val r1 = f(Array(1), 1, 1, 0.0, 0.0, 3.0)
       val r2 = f(Array(2), 1, 1, 2.0, 0.0, 4.0)
       
-      val S = StitchIntRasters(Array(r1, r2).map { WrapRaster(_) })
+      val S = StitchIntRasters(Array(r1, r2).map { Literal(_) })
       evaluating { S.run(server) } should produce [Exception];
     }
 
@@ -449,7 +436,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val r1 = f2(Array(1), 1, 1, 0.0, 0.0, 4.0, 999)
       val r2 = f2(Array(2), 1, 1, 2.0, 0.0, 4.0, 998)
       
-      val S = StitchIntRasters(Array(r1, r2).map { WrapRaster(_) })
+      val S = StitchIntRasters(Array(r1, r2).map { Literal(_) })
       evaluating { S.run(server) } should produce [Exception];
     }
 
@@ -472,13 +459,13 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
                        2, 2, 2, nd, nd, nd, nd, nd, nd,
                        2, 2, 2, nd, nd, nd, nd, nd, nd), 9, 9, 0.0, 1.0, 1.0)
       
-      val S = StitchIntRasters(Array(r1, r2, r3).map { WrapRaster(_) })
+      val S = StitchIntRasters(Array(r1, r2, r3).map { Literal(_) })
       val rOut = S.run(server)
       rOut.equal(rG) must be === true
     }
 
     it("should write PNG data") {
-      val R = CopyRaster(WrapRaster(f(Array(1, 2, 3,
+      val R = CopyRaster(Literal(f(Array(1, 2, 3,
                                             4, 5, 6,
                                             7, 8, 9),
                                       3, 3, 0.0, 0.0, 1.0)))
@@ -510,15 +497,15 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
 */
     val a = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    val R = CopyRaster(WrapRaster(f(a, 3, 3, 0.0, 0.0, 1.0)))
+    val R = CopyRaster(Literal(f(a, 3, 3, 0.0, 0.0, 1.0)))
 
     val a2 = Array(2, 2, 2, 2, 2, 2, 2, 2, 2)
-    val R2 = CopyRaster(WrapRaster(f(a2, 3, 3, 0.0, 0.0, 1.0)))
+    val R2 = CopyRaster(Literal(f(a2, 3, 3, 0.0, 0.0, 1.0)))
 
     val a3 = Array(nd, nd, 1, 2, 2, 2, 3, 3, nd)
     val y3 = Array(1, 1, 1, 2, 2, 2, 3, 3, 1)
     val z3 = Array(0, 0, 1, 2, 2, 2, 3, 3, 0)
-    val R3 = CopyRaster(WrapRaster(f(a3, 3, 3, 0.0, 0.0, 1.0)))
+    val R3 = CopyRaster(Literal(f(a3, 3, 3, 0.0, 0.0, 1.0)))
 
 /*
     it("should recover from weird color breaks") {
@@ -634,7 +621,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       Add(R3, R, R, R, R, R).run(server).data must be === z3.zip(a).map { a => a._1 + a._2 + a._2 + a._2 + a._2 + a._2}
 
       val q = Array(nd, nd, nd, nd)
-      val Rq = CopyRaster(WrapRaster(f(q, 2, 2, 0.0, 0.0, 1.0)))
+      val Rq = CopyRaster(Literal(f(q, 2, 2, 0.0, 0.0, 1.0)))
       Add(Rq, Rq, Rq, Rq, Rq, Rq).run(server).data must be === q
     }
 
@@ -667,7 +654,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     it("BurnPolygon") {
       val ax = Array.ofDim[Int](400)
       for(i <- 0 until ax.length) { ax(i) = NODATA }
-      val Rx = CopyRaster(WrapRaster(f(ax, 20, 20, 13.1, 19.6, 5.0)))
+      val Rx = CopyRaster(Literal(f(ax, 20, 20, 13.1, 19.6, 5.0)))
 
       val tpls = Array((20.9, 26.1), (84.2, 44.1), (64.2, 102.4), (20.9, 26.1))
       val P    = CreateSimplePolygon(tpls, 13)
@@ -714,7 +701,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val h = 1000
       val w = 1000
       val ax = Array.fill[Int](h * w)(NODATA)
-      val Rx = CopyRaster(WrapRaster(f(ax, w, h, 13.1, 19.6, 1.0)))
+      val Rx = CopyRaster(Literal(f(ax, w, h, 13.1, 19.6, 1.0)))
 
       // build the polygons
       val P1 = pf(13, Array((40.0, 40.0), (600.0, 100.0), (300.0, 400.0), (40.0, 40.0)))
@@ -747,7 +734,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val rows = 100
       val cols = 100
       val ax   = Array.fill[Int](rows * cols)(NODATA)
-      val Rx   = CopyRaster(WrapRaster(f(ax, cols, rows, 13.1, 19.6, 10.0)))
+      val Rx   = CopyRaster(Literal(f(ax, cols, rows, 13.1, 19.6, 10.0)))
 
       for(row <- 0 until rows) {
         val d = (2347 * row) % 13 + 1

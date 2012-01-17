@@ -149,7 +149,7 @@ class TileSpec extends Spec with MustMatchers {
   
   describe("DoTile") {
     it("can operate over each subraster of a tiled raster") {
-      val op = ForEachTile(WrapRaster(tileRaster),AddConstant(_, 3))
+      val op = ForEachTile(Literal(tileRaster), AddConstant(_, 3))
       val result = server.run(op)
       for (y <- 0 to 4; x <- 0 to 4)
         result.get(x, y) must be === ((y * 5) + x) + 1 + 3
