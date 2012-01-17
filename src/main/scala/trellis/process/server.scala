@@ -74,8 +74,8 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
       case OperationResult(Inlined(_), _) => {
         sys.error("server.run(%s) unexpected response: %s".format(op, result))
       }
-      case OperationResult(Error(msg, _), _) => {
-        sys.error("server.run(%s) error: %s".format(op, msg))
+      case OperationResult(Error(msg, trace), _) => {
+        sys.error("server.run(%s) error: %s, trace: %s".format(op, msg, trace))
       }
       case _ => sys.error("unexpected status: %s" format result)
     }

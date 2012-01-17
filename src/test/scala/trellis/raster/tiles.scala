@@ -5,6 +5,7 @@ import trellis.constant._
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
 import trellis.process.TestServer
+import trellis.operation._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class TileSpec extends Spec with MustMatchers {
@@ -84,6 +85,8 @@ class TileSpec extends Spec with MustMatchers {
   val tileData = TileRasterData(tileset, tiles)
   val tileRaster = IntRaster(tileData, rows = 5, cols = 5, rasterExtent = g)
 
+  val server = TestServer()
+  
   def loader(col: Int, row: Int): Option[IntRaster] = {
     val r = tiles(row * 3 + col)
     r
@@ -141,6 +144,15 @@ class TileSpec extends Spec with MustMatchers {
     it("can delete tiles from the disk") {
       val trd = Tiler.createTileRasterData(raster, 2)
       Tiler.deleteTiles(trd, "testraster", "/tmp/")
+    }
+  }
+  
+  describe("DoTile") {
+    it("can operate over each subraster of a tiled raster") {
+      val op = ForEachTile(WrapRaster(tileRaster),AddConstant(_, 3))
+      val result = server.run(op)
+      for (y <- 0 to 4; x <- 0 to 4)
+        result.get(x, y) must be === ((y * 5) + x) + 1 + 3
     }
   }
 }

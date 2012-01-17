@@ -89,7 +89,7 @@ object StepError {
  * Actor responsible for dispatching and executing operations.
  *
  * This is a long-running actor which expects to receive two kinds of messages:
- *
+ *trellis.raster.TileSpec
  *  1. Requests made by the outside world to run operations.
  *  2. Requests made by other actors to asynchronously evaluate arguments.
  *

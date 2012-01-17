@@ -9,6 +9,10 @@ object IntRaster {
   def apply(data:RasterData, rows:Int, cols:Int,
             rasterExtent:RasterExtent) = new IntRaster(data, rows, cols, rasterExtent, "")
 
+  def apply(data:RasterData, rasterExtent:RasterExtent) = {
+    new IntRaster(data, rasterExtent.rows, rasterExtent.cols, rasterExtent, "")
+  }
+
   def apply(data:RasterData, rows:Int, cols:Int,
             rasterExtent:RasterExtent, name:String) = {
     new IntRaster(data, rows, cols, rasterExtent, name)
