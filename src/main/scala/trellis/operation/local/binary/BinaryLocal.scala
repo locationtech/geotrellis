@@ -9,13 +9,13 @@ import trellis.process._
  * we mean that the input includes two rasters (as opposed to 'unary' or 'multi').
  */
 trait BinaryLocal extends LocalOperation {
-  val r1:IntRasterOperation
-  val r2:IntRasterOperation
+  val r1:Op[IntRaster]
+  val r2:Op[IntRaster]
 
   val identity1:Int
   val identity2:Int
 
-  def getRasters = { Array(r1, r2) }
+  def getRasters = Array(r1, r2)
   def handleCells(z1:Int, z2:Int): Int
 
   def _run(context:Context) = runAsync(r1 :: r2 :: Nil)

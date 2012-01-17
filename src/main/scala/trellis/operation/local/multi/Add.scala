@@ -9,7 +9,7 @@ import trellis.process._
  *
  * Add(r1, r2, r3)
  */
-case class Add(rs:IntRasterOperation*) extends MultiLocal {
+case class Add(rs:Op[IntRaster]*) extends MultiLocal {
   override val identity = 0
 
   @inline

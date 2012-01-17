@@ -7,7 +7,7 @@ import trellis._
   * Local operation.
   * Binary operation.
   */
-case class Divide(r1:IntRasterOperation, r2:IntRasterOperation) extends BinaryLocal {
+case class Divide(r1:Op[IntRaster], r2:Op[IntRaster]) extends BinaryLocal {
   val identity1 = NODATA
   val identity2 = NODATA
   @inline

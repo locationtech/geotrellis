@@ -11,7 +11,6 @@ package object operation {
   /* Provide some handy aliases for various Operation[T] types. */
   // TODO: remove these, they cause more problems than they solve
   type PolygonOperation = Op[Polygon]
-  type IntRasterOperation = Op[IntRaster]
   type RasterExtentOperation = Op[RasterExtent]
   type PNGOperation = Op[Array[Byte]]
 

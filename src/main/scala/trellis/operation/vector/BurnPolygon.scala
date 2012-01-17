@@ -1,35 +1,23 @@
 package trellis.operation
 
-import trellis.IntRaster
+import trellis._
+import trellis.geometry.Polygon
 import trellis.geometry.rasterizer.Rasterizer
 import trellis.process._
 
-
 /**
-  * Rasterize a polygon and then draw it on the provided raster.
-  */
-case class BurnPolygon(r:IntRasterOperation, p:PolygonOperation)
-extends SimpleOperation[IntRaster]{
-  def _value(context:Context) = {
-    // TODO: profile/optimize
-    val raster  = context.run(CopyRaster(r))
-    val polygon = context.run(p)
+ * Rasterize a polygon and then draw it on the provided raster.
+ */
+case class BurnPolygon(r:Op[IntRaster], p:Op[Polygon]) extends Op[IntRaster] {
+  def _run(context:Context) = runAsync(List(r, p))
 
-    Rasterizer.rasterize(raster, Array(polygon))
-    raster
+  val nextSteps:Steps = {
+    case (raster:IntRaster) :: (polygon:Polygon) :: Nil => step2(raster, polygon)
   }
-}
 
-/**
-  * Rasterize a polygon and then draw it on the provided raster.
-  */
-case class BurnPolygon2(r:IntRasterOperation, p:PolygonOperation, f:Int => Int)
-extends SimpleOperation[IntRaster]{
-  def _value(context:Context) = {
-    // TODO: profile/optimize
-    val raster  = context.run(CopyRaster(r))
-    val polygon = context.run(p)
-    Rasterizer.rasterize(raster, Array(polygon), Array(f))
-    raster
+  def step2(raster:IntRaster, polygon:Polygon) = {
+    val copy = raster.copy()
+    Rasterizer.rasterize(copy, Array(polygon))
+    Result(copy)
   }
 }

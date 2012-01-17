@@ -1,11 +1,11 @@
 package trellis.operation
 
-import trellis.process._
 import trellis._
+import trellis.process._
 
 /**
  * Negate (multiply by -1) each value in a raster.
  */
-case class Negate(r:IntRasterOperation) extends UnaryLocal {
+case class Negate(r:Op[IntRaster]) extends UnaryLocal {
   def getCallback(context:Context) = (z:Int) => -z
 }

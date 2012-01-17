@@ -11,7 +11,7 @@ import trellis.process._
  * MULTI OPERATIONS
  */
 trait MultiLocal extends LocalOperation {
-  val rs:Seq[IntRasterOperation]
+  val rs:Seq[Op[IntRaster]]
   val identity:Int = 0
 
   def getRasters = rs
