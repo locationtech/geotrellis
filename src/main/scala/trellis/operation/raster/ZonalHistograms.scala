@@ -1,28 +1,21 @@
 package trellis.operation
 
-import scala.math.{min, max}
-
 import trellis._
-import trellis.geometry.rasterizer.Rasterizer
 import trellis.process._
-import trellis.IntRaster
-import trellis.stat.{Histogram, ArrayHistogram, MapHistogram, CompressedArrayHistogram, Statistics}
-import trellis.geometry.Polygon
+import trellis.stat._
 
 /**
-  * Given a raster and an array of polygons, return a histogram summary of the cells
-  * within each polygon.
-  */
-case class ZonalHistograms(data: Op[IntRaster],
-                           zones: Op[IntRaster],
-                           zonesArraySize: Int,
-                           histArraySize: Int) extends Op[Array[Histogram]] {
+ * Given a raster and an array of polygons, return a histogram summary of the cells
+ * within each polygon.
+ */
+case class ZonalHistograms(data: Op[IntRaster], zones: Op[IntRaster],
+                           zonesArraySize: Int, histArraySize: Int) extends Op[Array[Histogram]] {
 
   def _run(context:Context) = runAsync(List(data, zones))
 
   val nextSteps:Steps = {
-    case dataRaster :: zoneRaster :: Nil => { 
-      step2(dataRaster.asInstanceOf[IntRaster], zoneRaster.asInstanceOf[IntRaster])
+    case (dataRaster:IntRaster) :: (zoneRaster:IntRaster) :: Nil => { 
+      step2(dataRaster, zoneRaster)
     }
   }
 
@@ -75,5 +68,4 @@ case class ZonalHistograms(data: Op[IntRaster],
     // return an immutable mapping
     Result(histmap)
   }
-
 }
