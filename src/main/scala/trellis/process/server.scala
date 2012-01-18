@@ -35,10 +35,41 @@ class Context (server:Server) {
   }
 }
 
+import com.typesafe.config.ConfigFactory
+
 class Server (id:String, val catalog:Catalog) extends FileCaching {
   val debug = false
 
-  val system = akka.actor.ActorSystem(id)
+    val customConf = ConfigFactory.parseString("""
+      akka {
+        version = "2.0-M2"
+        logConfigOnStart = off
+        loglevel = "DEBUG"
+        stdout-loglevel = "DEBUG"
+        event-handlers = ["akka.event.Logging$DefaultLogger"]
+        remote {
+          client {
+            "message-frame-size": "100 MiB"
+          },
+          server {
+            "message-frame-size": "100 MiB"
+          }
+        }
+        default-dispatcher {
+          core-pool-size-factor = 80.0
+        }
+        actor {
+          deployment {
+            /routey {
+              nr-of-instances = 300
+            }
+          }
+        }
+      }
+  
+      """)
+
+  val system = akka.actor.ActorSystem(id, ConfigFactory.load(customConf))
   val actor = system.actorOf(Props(new ServerActor(id, this)), "server")
 
   def log(msg:String) = if(debug) println(msg)

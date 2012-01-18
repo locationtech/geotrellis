@@ -121,11 +121,14 @@ case class ServerActor(id: String, server: Server) extends Actor {
  */
 case class Dispatcher(server: Server) extends Actor {
 
+  val pool = context.actorOf(Props(Worker(server)).withRouter(RoundRobinRouter( nrOfInstances = 120 )))
+
   // Actor event loop
   def receive = {
     case msg:RunOperation[_] => {
       log("dispatcher asked to run op")
-      context.actorOf(Props(Worker(server))) ! msg
+      //context.actorOf(Props(Worker(server))) ! msg
+      pool ! msg
     }
 
     case r => sys.error("Dispatcher received unknown result.")
@@ -233,7 +236,7 @@ case class Worker(val server: Server) extends WorkerLike {
           handleResult(pos, client, error, Some(trellisContext.timer))
         }
       }
-      context.stop(self)
+      //context.stop(self)
     }
     case x => sys.error("worker got unknown msg: %s" format x)
   }
@@ -266,7 +269,10 @@ extends WorkerLike {
       }
     }
 
-    if (isDone) finishCallback()
+    if (isDone) { 
+      finishCallback()
+      context.stop(self)
+    }
   }
 
   // This should create a list of all the (non-trivial) child histories we
@@ -318,7 +324,7 @@ extends WorkerLike {
     case OperationResult(childResult,  pos) => {
       log("calculation got result %d" format pos)
       results(pos) = Some(childResult)
-
+      log("results: %s".format(results))
       if (!isDone) {
       } else if (hasError) {
         val h = failure(id, startTime, time(), None, "child failed", "")
@@ -326,6 +332,7 @@ extends WorkerLike {
       } else {
         log(" all values complete")
         finishCallback()
+        context.stop(self)
       }
     }
 
