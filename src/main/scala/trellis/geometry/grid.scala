@@ -1,6 +1,6 @@
 package trellis.geometry.grid
 
-import trellis.raster.{IntRaster,RasterData}
+import trellis._
 
 import scala.util.Sorting
 import math.{abs,min,max,round}

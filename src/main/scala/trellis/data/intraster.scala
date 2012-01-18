@@ -3,18 +3,11 @@ package trellis.data
 import scala.math.{Numeric,min,max,round,abs}
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.nio.ByteBuffer
+import java.nio.IntBuffer
 import java.nio.channels.FileChannel.MapMode._
 
-//import trellis.process.Server
-import trellis.raster.IntRaster
-import trellis.{Extent,RasterExtent}
-import trellis.constant._
-import trellis.raster.RasterData
+import trellis._
 import trellis.process._
-
-import scala.math.{abs}
-
-import java.nio.IntBuffer
 
 final class IntRasterReadState(val raster:IntRaster,
                                val target:RasterExtent) extends ReadState {

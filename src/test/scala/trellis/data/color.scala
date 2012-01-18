@@ -30,7 +30,7 @@ class ColorSpec extends Spec with MustMatchers {
     }
 
     it("should unzip colors") {
-      val (r, g, b) = c.unzipRGB(0xFF9900)
+      val (r, g, b) = Color.unzipRGB(0xFF9900)
       r must be === 0xFF
       g must be === 0x99
       b must be === 0x00

@@ -1,6 +1,6 @@
 package trellis.operation
 
-import trellis.raster.IntRaster
+import trellis.IntRaster
 import trellis.geometry.rasterizer.Rasterizer
 import trellis.process._
 import trellis.geometry.Polygon

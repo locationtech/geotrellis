@@ -1,4 +1,4 @@
-package trellis.raster
+package trellis
 
 import sys.error
 
@@ -15,6 +15,24 @@ trait RasterData {
   def length:Int
   def update(i:Int, x: Int)
   def asArray:Array[Int]
+  def asList = asArray.toList
+
+  override def toString = "RasterData(<%d values>)" format length
+
+  override def equals(other:Any):Boolean = other match {
+    case r:RasterData => {
+      if (r == null) return false
+      if (length != r.length) return false
+      var i = 0
+      val len = length
+      while (i < len) {
+        if (apply(i) != r(i)) return false
+        i += 1
+      }
+      true
+    }
+    case _ => false
+  }
 }
 
 class ArrayRasterData(array:Array[Int]) extends RasterData {

@@ -1,13 +1,12 @@
-package trellis.raster
+package trellis
 
 import scala.math.{min, max}
-import trellis.constant.NODATA
-import trellis.RasterExtent
 
 //?TODO: remove rows & cols from IntRaster constructor
 object IntRaster {
-  def apply(data:RasterData, rows:Int, cols:Int,
-            rasterExtent:RasterExtent) = new IntRaster(data, rows, cols, rasterExtent, "")
+  def apply(data:RasterData, rows:Int, cols:Int, rasterExtent:RasterExtent):IntRaster = {
+    new IntRaster(data, rows, cols, rasterExtent, "")
+  }
 
   def apply(data:RasterData, rasterExtent:RasterExtent) = {
     new IntRaster(data, rasterExtent.rows, rasterExtent.cols, rasterExtent, "")
@@ -18,23 +17,28 @@ object IntRaster {
     new IntRaster(data, rows, cols, rasterExtent, name)
   } 
    
-  def apply(array:Array[Int], rows:Int, cols:Int,
-            rasterExtent:RasterExtent, name:String = "") = {
+  def apply(array:Array[Int], rows:Int, cols:Int, rasterExtent:RasterExtent, name:String = ""):IntRaster = {
     new IntRaster(new ArrayRasterData(array), rows, cols, rasterExtent, name)
   }
 
   def createEmpty(geo:RasterExtent) = {
     val size = geo.rows * geo.cols
     val data = Array.fill[Int](size)(NODATA)
-    new IntRaster(ArrayRasterData(data), geo.rows, geo.cols, geo, "")
+    IntRaster(ArrayRasterData(data), geo.rows, geo.cols, geo, "")
   }
 }
 
 /**
  * 
  */
-class IntRaster(val data:RasterData, val rows:Int, val cols:Int,
-                      val rasterExtent:RasterExtent, val name:String) extends IsIntRaster {}
+class IntRaster(val data:RasterData, val rows:Int, val cols:Int, val rasterExtent:RasterExtent,
+                val name:String) extends IsIntRaster {
+  override def toString = "IntRaster(%s, %s, %s, %s, %s)" format (data, rows, cols, rasterExtent, name)
+  override def equals(other:Any) = other match {
+    case r:IntRaster => data == r.data && rows == r.rows && cols == r.cols && rasterExtent == r.rasterExtent
+    case _ => false
+  }
+}
 
 /**
   * Core data object that represents a raster with integer values.
@@ -92,23 +96,26 @@ trait IsIntRaster {
     */
   def compare(other:IntRaster) = this.rasterExtent.compare(other.rasterExtent)
 
-  /**
-    * Test other raster for equality.
-    */
-  def equals(other:IntRaster): Boolean = {
-    if (null == other) return false
-    if (this.rows != other.rows || this.cols != other.cols) return false
-    if (!this.rasterExtent.equals(other.rasterExtent)) return false
-
-    var i = 0
-    val limit = length
-    while (i < limit) {
-      if (this.data(i) != other.data(i)) return false
-      i += 1
-    }
-
-    true
-  }
+  ///**
+  //  * Test other raster for equality.
+  //  */
+  //override def equals(other:Any): Boolean = other match {
+  //  case r:IntRaster => {
+  //    if (r == null) return false
+  //    if (rows != r.rows || this.cols != r.cols) return false
+  //    if (rasterExtent != r.rasterExtent) return false
+  //
+  //    var i = 0
+  //    val limit = length
+  //    while (i < limit) {
+  //      if (data(i) != r.data(i)) return false
+  //      i += 1
+  //    }
+  //
+  //    true
+  //  }
+  //  case _ => false
+  //}
 
   /**
     * Clone this raster.
@@ -205,6 +212,16 @@ trait IsIntRaster {
   //  new IntRaster(output, this.rows, this.cols, this.rasterExtent, this.name + "_map")
   //}
   
+  def normalize(zmin:Int, zmax:Int, gmin:Int, gmax:Int) = {
+    val grange = gmax - gmin
+    val zrange = zmax - zmin
+    if (zrange <= 0) {
+      copy()
+    } else {
+      mapIfSet(z => (z - zmin) * (grange / zrange) + gmin)
+    }
+  }
+
   def mapIfSet(f:Int => Int) = {
     val data = this.data
     val data2 = this.data.copy

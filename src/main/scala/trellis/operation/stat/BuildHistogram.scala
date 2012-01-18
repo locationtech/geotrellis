@@ -1,14 +1,14 @@
 package trellis.operation
 
-import trellis.constant._
+
+import trellis._
 import trellis.process._
-import trellis.raster._
 import trellis.stat._
 
 /**
  * Generic trait used by the various histogram-building operations.
  */
-trait BuildHistogram extends SimpleOperation[Histogram] {
+trait BuildHistogram extends SimpleOp[Histogram] {
   val r:Op[IntRaster]
 
   protected[this] def createHistogram:Histogram

@@ -5,11 +5,7 @@ import java.io.{BufferedOutputStream, FileOutputStream}
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel.MapMode._
 
-import trellis.constant._
-import trellis.raster.IntRaster
-import trellis.Extent
-import trellis.RasterExtent
-import trellis.constant._
+import trellis._
 import trellis.util._
 import trellis.process._
 

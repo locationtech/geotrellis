@@ -1,8 +1,7 @@
 package trellis.data
 
 import trellis.process.TestServer
-import trellis.{Extent,RasterExtent}
-import trellis.constant._
+import trellis._
 import trellis.raster._
 
 import trellis.operation._
@@ -27,7 +26,6 @@ import java.awt.image.BufferedImage
 
 //xyz
 import Console.printf
-import trellis.constant._
 import java.awt.image.DataBuffer
 import java.awt.Transparency
 

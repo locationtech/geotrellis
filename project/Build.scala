@@ -52,8 +52,6 @@ object MyBuild extends Build {
       "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
     ),
 
-
-
     // caliper stuff stolen shamelessly from scala-benchmarking-template
 
     // enable forking in run

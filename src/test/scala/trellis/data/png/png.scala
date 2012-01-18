@@ -5,15 +5,14 @@ import scala.tools.nsc.io.{PlainFile}
 
 import java.io.{File,FileInputStream}
 
-import trellis.raster.IntRaster
-import trellis.{RasterExtent,Extent}
-import trellis.data.PNGWriterRGB
+import trellis._
+import trellis.data.PNGRenderer
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
 
 class PNGSpec extends Spec with MustMatchers {
-  describe("A PNGWriterRGB") {
+  describe("A PNGRenderer") {
     val width = 256
     val height = 256
     val data   = Array.ofDim[Int](height * width)
@@ -31,7 +30,7 @@ class PNGSpec extends Spec with MustMatchers {
 
     val bg = 0
     val transparent = true
-    val writer = new PNGWriterRGB(raster, fh.getPath, (z:Int) => z, bg, transparent)
+    val writer = new PNGRenderer(raster, fh.getPath, (z:Int) => z, bg, transparent)
     it("should write a PNG") {
       writer.write
     }

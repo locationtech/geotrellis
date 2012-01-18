@@ -1,8 +1,8 @@
 package trellis.operation
 
-import trellis.constant.NODATA
+import trellis._
+
 import trellis.process._
-import trellis.raster.IntRaster
 
 import scala.math.{max, min, pow}
 
@@ -10,7 +10,7 @@ import scala.math.{max, min, pow}
  * Abstract class for all operations that are unary (operate on a single raster) and
  * are local (operate on each cell without knowledge of other cells).
  */
-trait UnaryLocal extends SimpleOp[IntRaster] with LocalOp {
+trait UnaryLocal extends Op[IntRaster] with LocalOp {
   val r:Op[IntRaster]
 
   def getCallback(context:Context): (Int) => Int
@@ -24,11 +24,15 @@ trait UnaryLocal extends SimpleOp[IntRaster] with LocalOp {
     }
   }
 
-  def _value(context:Context) = {
-    val f = getCallback(context)
+  def _run(context:Context) = {
     r match {
-      case (child:UnaryLocal) => context.run(child.mergeUnaryLocals(context, f))
-      case child => context.run(child).mapIfSet(f)
+      case (child:UnaryLocal) => runAsync('merged :: child.mergeUnaryLocals(context, getCallback(context)) :: Nil)
+      case child => runAsync('normal :: child :: context :: Nil) //.mapIfSet(f)
     }
+  }
+  
+  val nextSteps:Steps = {
+    case 'merged :: (raster:IntRaster) :: Nil => Result(raster)
+    case 'normal :: (raster:IntRaster) :: (context:Context) :: Nil => Result(raster.mapIfSet(getCallback(context)))
   }
 }

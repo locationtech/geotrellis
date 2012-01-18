@@ -1,15 +1,14 @@
 package trellis.data
 
-import trellis.process.TestServer
-import trellis.{Extent,RasterExtent}
-import trellis.constant._
-import trellis.raster._
-
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
-import scala.math.{abs}
+import scala.math.abs
+
+import trellis._
+import trellis.process.TestServer
+import trellis.raster._
 import trellis.data._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])

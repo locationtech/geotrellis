@@ -1,11 +1,13 @@
 package trellis.operation
 
-import trellis.stat.{Histogram, Statistics}
 import trellis.process._
+import trellis.stat._
 
 /** 
-  * Determine mean, median, mode, stddev, and min and max values for a given raster. 
-  */
-case class GenerateStatistics(h:Operation[Histogram]) extends Operation[Statistics] with SimpleOperation[Statistics] {
+ * Determine statistical data for the given histogram.
+ *
+ * This includes mean, median, mode, stddev, and min and max values.
+ */
+case class GenerateStatistics(h:Op[Histogram]) extends SimpleOp[Statistics] {
   def _value(context:Context) = context.run(h).generateStatistics
 }

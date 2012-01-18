@@ -61,7 +61,7 @@ class BugSpec extends Spec with MustMatchers {
  
       Console.printf(geo.toString)
       // load the files
-      var Rs:Seq[IntRasterOperation] = paths.map {
+      var Rs:Seq[Op[IntRaster]] = paths.map {
         path => LoadArgFileChunk(path, geo)
       }
       

@@ -1,23 +1,40 @@
-package trellis.operation.render.png
+package trellis.operation
 
+
+import trellis.data._
 import trellis.process._
-import trellis.operation._
-import trellis.data.PNGWriterRGB;
+import trellis._
 
 /**
-  * Render a PNG of a raster given a set of color breaks specified as tuples of maximum   * value and an integer color value.  The background can be set to a specified color
-  * or be made transparent.
-  */
-case class RenderPNG(r:IntRasterOperation, _colorBreaks:Array[(Int, Int)],
-                     noDataColor:Int,
-                     transparent:Boolean) extends PNGOperation with PNGBase 
-                                                               with SimpleOperation[Array[Byte]] {
-  val colorBreaks = _colorBreaks.sortWith(_._1 < _._1)
-  def _value(context:Context) = {
-    val raster = context.run(r)
-    val writer = new PNGWriterRGB(raster, "/dev/null", applyColorMap,
-                                  noDataColor, transparent)
-    writer.render
+ * Generate a PNG from a given raster and a set of color breaks. The background
+ * can be set to a color or be made transparent.
+ */
+case class RenderPNG(r:Op[IntRaster], cbs:Op[ColorBreaks], ndc:Op[Int], t:Op[Boolean])
+extends Op[Array[Byte]] {
+  def _run(context:Context) = runAsync(List(r, cbs, ndc, t))
+
+  val nextSteps:Steps = {
+    case ((raster:IntRaster) :: (breaks:ColorBreaks) :: (noDataColor:Int) :: (transparent:Boolean) :: Nil) => {
+      step2(raster, breaks, noDataColor, transparent)
+    }
+  }
+
+  def step2(raster:IntRaster, breaks:ColorBreaks, noDataColor:Int, transparent:Boolean) = {
+    val f = ColorMapper(breaks, noDataColor)
+    val w = new PNGRenderer(raster, "/dev/null", f, noDataColor, transparent)
+    Result(w.render)
   }
 }
 
+case class RenderPNG3(r:Op[IntRaster], m:Op[ColorMapper]) extends Op[Array[Byte]] {
+  def _run(context:Context) = runAsync(List(r, m))
+
+  val nextSteps:Steps = {
+    case (raster:IntRaster) :: (mapper:ColorMapper) :: Nil => step2(raster, mapper)
+  }
+
+  def step2(raster:IntRaster, f:ColorMapper) = {
+    val w = new PNGRenderer(raster, "/dev/null", f, f.nodataColor, true)
+    Result(w.render)
+  }
+}

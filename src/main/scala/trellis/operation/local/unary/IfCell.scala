@@ -1,7 +1,7 @@
 package trellis.operation
 
 import trellis.process._
-import trellis.raster._
+import trellis._
 
 /**
  * Maps all cells matching `cond` to `trueValue`.

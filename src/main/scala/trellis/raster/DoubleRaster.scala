@@ -2,8 +2,8 @@ package trellis.raster
 
 import java.io.Serializable
 import scala.math.{min, max}
-import trellis.constant.NODATA
-import trellis.RasterExtent
+
+import trellis._
 
 object DoubleRaster {
   def apply(data:Array[Double], rows:Int, cols:Int,
@@ -48,21 +48,19 @@ class DoubleRaster(val data:Array[Double], val rows:Int, val cols:Int,
 
   def compare(other:DoubleRaster) = this.rasterExtent.compare(other.rasterExtent)
 
-  def equals(other:DoubleRaster): Boolean = {
-    if (null == other) {
-      return false
-    } else if (this.rows != other.rows || this.cols != other.cols ||
-               !this.rasterExtent.equals(other.rasterExtent)) {
-      return false
-    }
+  def equal(other:DoubleRaster): Boolean = {
+    if (null == other) return false
+    if (rows != other.rows) return false
+    if (cols != other.cols) return false
+    if (rasterExtent != other.rasterExtent) return false
+
     var i = 0
-    val limit = this.data.length
-    while (i < limit) {
-      if (this.data(i) != other.data(i)) {
-        return false
-      }
+    val len = data.length
+    while (i < len) {
+      if (data(i) != other.data(i)) return false
       i += 1
     }
+
     true
   }
 

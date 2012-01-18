@@ -1,10 +1,8 @@
 package trellis.operation
 
 import trellis._
-import trellis.constant._
 import trellis.process._
 import trellis.geometry._
-import trellis.raster._
 
 /**
  * Used for Kernel Density calculation

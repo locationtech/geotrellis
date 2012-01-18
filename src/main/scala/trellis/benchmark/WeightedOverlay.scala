@@ -9,7 +9,6 @@ package trellis.benchmark
 import trellis._
 import trellis.data._
 import trellis.operation._
-import trellis.operation.render.png.RenderPNG2
 import trellis.process._
 import trellis.raster._
 
@@ -82,16 +81,16 @@ class WoBenchmark(size:Int, extent:Extent, pairs:Seq[(String, Int)],
 
   def buildWoOp = {
     val rs = pairs.map { case (p, w) => buildScaleRasterOp(p, w) }.toArray
-    Normalize(DivideConstant(Add(rs: _*), total), 1, 100)
+    Normalize(DivideConstant(Add(rs: _*), total), (1, 100))
   }
 
   def buildColorBreaksOp(r:Op[IntRaster]) = {
-    FindColorBreaks(BuildArrayHistogram(r, 101), colors.length, colors)
+    FindColorBreaks(BuildArrayHistogram(r, 101), colors)
   }
 
   def buildPNGOp(r:Op[IntRaster]) = {
     val i = Cache(r)
-    RenderPNG2(i, buildColorBreaksOp(i), 0, true)
+    RenderPNG(i, buildColorBreaksOp(i), 0, true)
   }
 
   val weight:Op[IntRaster] = buildWoOp
@@ -171,7 +170,7 @@ class TrellisBenchmarks extends SimpleBenchmark {
     //a8192 = MiniAddBenchmark(server, path, extent, 8192)
 
     //t_a4096 = TiledMiniAddBenchmark(server, path, extent, 4096, 512)
-    t_a8192_512 = TiledMiniAddBenchmark(server, path, extent, 10000, 10000)
+    t_a8192_512 = TiledMiniAddBenchmark(server, path, extent, 8192, 512)
   }
 
 /*

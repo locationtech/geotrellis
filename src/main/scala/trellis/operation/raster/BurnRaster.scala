@@ -2,7 +2,7 @@ package trellis.operation
 
 import trellis.process._
 import trellis.RasterExtent
-import trellis.raster.IntRaster
+import trellis.IntRaster
 import trellis.data.IntRasterReader
 
 /**

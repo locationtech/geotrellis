@@ -1,9 +1,9 @@
 package trellis.raster
 
-import trellis.{ Extent, RasterExtent }
-import trellis.constant._
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
+
+import trellis._
 import trellis.process.TestServer
 import trellis.operation._
 
@@ -13,7 +13,7 @@ class TileSpec extends Spec with MustMatchers {
   val g = RasterExtent(e, 20.0, 20.0, 5, 5)
   
   // with 512, 5631 is threshold
-  var largeSize = 1000
+  var largeSize = 10000
   val gLarge = RasterExtent(e, 20.0, 20.0, largeSize, largeSize)
 
   // The extent of the test raster is xmin: 0, xmax: 100, ymin: 0, xmax: 100
@@ -155,15 +155,17 @@ class TileSpec extends Spec with MustMatchers {
   }
   
   describe("DoTile") {
+
     it("can operate over each subraster of a tiled raster") {
-      val op = ForEachTile(WrapRaster(tileRaster),AddConstant(_, 3))
+      val op = ForEachTile(Literal(tileRaster), AddConstant(_, 3))
       val result = server.run(op)
       for (y <- 0 to 4; x <- 0 to 4)
         result.get(x, y) must be === ((y * 5) + x) + 1 + 3
     }
+
     it ("can operate on raster larger than 6000x6000") {
 
-      val largeTileRaster = Tiler.createTileRaster(largeRaster, 90)
+      val largeTileRaster = Tiler.createTileRaster(largeRaster, 1024)
 
       /*
       for (i <- 1 until 10) {
@@ -176,7 +178,7 @@ class TileSpec extends Spec with MustMatchers {
       */
       for (i <- 1 until 10) { 
         val start = System.currentTimeMillis
-        val op = ForEachTile(WrapRaster(largeTileRaster),AddConstant(_, 3))
+        val op = ForEachTile(Literal(largeTileRaster),AddConstant(_, 3))
         val result = server.run(op)
         val elapsed = System.currentTimeMillis - start
         println("tiled elapsed: %d".format(elapsed))

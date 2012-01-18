@@ -1,8 +1,7 @@
 package trellis.data
 
 import trellis.process.TestServer
-import trellis.{Extent,RasterExtent}
-import trellis.constant._
+import trellis._
 import trellis.raster._
 
 import trellis.operation._
@@ -33,7 +32,7 @@ class AsciiSpec extends Spec with MustMatchers with ShouldMatchers {
 
     it ("should read ASCII") {
       val r2 = AsciiReader.read("/tmp/foo.asc", None, None)
-      r2.equals(r) must be === true
+      r2 must be === r
     }
 
     it ("should translate GeoTiff") {

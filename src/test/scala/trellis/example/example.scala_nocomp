@@ -50,7 +50,7 @@ class ExampleSpec extends Spec with MustMatchers {
    
       val reqGeo = BuildRasterExtent2(Literal(geo.extent), Literal(width), Literal(height))
       // load the files
-      var Rs:Seq[IntRasterOperation] = paths.map {
+      var Rs:Seq[Op[IntRaster]] = paths.map {
         path => LoadFile(path, reqGeo)
       }
       

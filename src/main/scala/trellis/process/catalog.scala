@@ -9,7 +9,7 @@ import net.liftweb.json.{parse, DefaultFormats}
 
 import trellis.{Extent,RasterExtent}
 import trellis.process._
-import trellis.raster.IntRaster
+import trellis.IntRaster
 
 // this is a work in progress. the definitions for Layer, DataStore and Catalog
 // are not complete, and we will likely need more objects.

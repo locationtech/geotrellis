@@ -1,16 +1,11 @@
 package trellis.operation
 
-import scala.math.{min, max}
-import trellis.geometry.rasterizer.Rasterizer
+import trellis.geometry.Polygon
 import trellis.process._
 
 /**
-  * Return the extent of a given polygon.
-  */
-case class GetPolygonBounds(p:PolygonOperation)
-extends SimpleOperation[(Double,Double,Double,Double)] {
-  def _value(context:Context) = {
-    val polygon = context.run(p)
-    polygon.getBounds()
-  }
+ * Return the extent of a given polygon.
+ */
+case class GetPolygonBounds(p:Op[Polygon]) extends SimpleOp[(Double,Double,Double,Double)] {
+  def _value(context:Context) = context.run(p).getBounds()
 }

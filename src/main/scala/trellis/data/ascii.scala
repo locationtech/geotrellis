@@ -5,10 +5,7 @@ import java.io.{File, FileWriter, BufferedReader, BufferedWriter, PrintWriter}
 
 import Console.printf
 
-//import trellis.process.Server
-import trellis.raster.IntRaster
-import trellis.{Extent,RasterExtent}
-import trellis.constant._
+import trellis._
 import trellis.process._
 import trellis.util._
 

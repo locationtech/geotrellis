@@ -1,8 +1,7 @@
 package trellis.operation
 
-import trellis.constant._
+import trellis._
 import trellis.process._
-import trellis.raster._
 
 import scala.math.{max, min, pow}
 
@@ -39,7 +38,11 @@ trait WithDoubleConstant extends Op[IntRaster] {
  */
 case class AddConstant(r:Op[IntRaster], c:Op[Int]) extends UnaryLocal {
   def getCallback(context:Context) = {
-    val constant = context.run(c)
+    val result = c.run(context)
+    val constant:Int = result match {
+      case Result(n) => n
+      case _ => throw new Exception("Async operations not currently supported in AddConstant")
+    } 
     (z:Int) => z + constant
   }
 }
@@ -72,6 +75,9 @@ case class AddInlinedConstant(r:Op[IntRaster], c:Int) extends SimpleOp[IntRaster
 case class SubtractConstant(r:Op[IntRaster], c:Op[Int]) extends WithIntConstant {
   def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => z - c)
 }
+case class SubtractConstantBy(c:Op[Int], r:Op[IntRaster]) extends WithIntConstant {
+  def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => c - z)
+}
 
 
 /**
@@ -99,10 +105,10 @@ case class DivideDoubleConstant(r:Op[IntRaster], c:Op[Double]) extends WithDoubl
 /**
  * For each cell, divide a constant value by that cell's value.
  */
-case class DivideConstantBy(r:Op[IntRaster], c:Op[Int]) extends WithIntConstant {
+case class DivideConstantBy(c:Op[Int], r:Op[IntRaster]) extends WithIntConstant {
   def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => c / z)
 }
-case class DivideDoubleConstantBy(r:Op[IntRaster], c:Op[Double]) extends WithDoubleConstant {
+case class DivideDoubleConstantBy(c:Op[Double], r:Op[IntRaster]) extends WithDoubleConstant {
   def doit(raster:IntRaster, c:Double) = raster.mapIfSet(z => (c / z).toInt)
 }
 

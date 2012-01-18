@@ -1,4 +1,4 @@
-/*
+/**
  * PNGWriter.java
  *
  * Copyright (c) 2007 Matthias Mann - www.matthiasmann.de
@@ -21,9 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * Modified by Azavea, 2010-2011.
  */
  
-package trellis.operation.render.png;
+package trellis.data.png;
  
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

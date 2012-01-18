@@ -1,5 +1,6 @@
 package trellis.operation
 
+import trellis._
 import trellis.raster._
 import collection.mutable.PriorityQueue
 

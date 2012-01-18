@@ -1,10 +1,11 @@
 package trellis.operation
 
 import scala.math.{min, max}
-import trellis.constant.NODATA
+
+import trellis._
 import trellis.geometry.rasterizer.Rasterizer
 import trellis.process._
-import trellis.raster.IntRaster
+import trellis.IntRaster
 import trellis.stat.{Histogram, ArrayHistogram, MapHistogram, CompressedArrayHistogram, Statistics}
 import trellis.geometry.Polygon
 

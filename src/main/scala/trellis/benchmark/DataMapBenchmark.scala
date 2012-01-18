@@ -1,9 +1,7 @@
 package trellis.benchmark
 
-import trellis.raster.IntRaster
-import trellis.{Extent,RasterExtent}
 
-import trellis.constant.NODATA
+import trellis._
 
 import scala.util.Random
 

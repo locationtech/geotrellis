@@ -16,13 +16,13 @@ import org.geotools.geometry.Envelope2D
 import org.geotools.referencing.CRS
 import scala.math.{abs, min, max, round}
 import trellis.process.Server
-import trellis.raster.IntRaster
+import trellis.IntRaster
 import trellis.{Extent,RasterExtent}
-import trellis.constant._
+
+import trellis._
 import trellis.process._
 import org.geotools.coverage.Category
 import org.geotools.coverage.GridSampleDimension
-import java.awt.Color
 import org.geotools.coverage.GeophysicsCategory
 import java.awt.image.WritableRaster
 import java.awt.image.Raster
@@ -131,7 +131,7 @@ object GeoTiffWriter extends Writer {
       row += 1
     }
     
-     val nodata = new Category("no data",  Array(new Color(5,5,5)), Int.MinValue, Int.MinValue+1, 1, 1)
+     val nodata = new Category("no data",  Array(new java.awt.Color(5,5,5)), Int.MinValue, Int.MinValue+1, 1, 1)
     //val rest = new Category("data",  Array(new Color(255,255,255)), Int.MinValue+1, Int.MaxValue, 1, 1)
 
     val gsd = new GridSampleDimension("categories", Array(nodata), null)

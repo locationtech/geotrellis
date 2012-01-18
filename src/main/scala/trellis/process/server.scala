@@ -7,7 +7,7 @@ import trellis.data._
 import trellis.data.FileExtensionRegexes._
 import trellis.RasterExtent
 import trellis.operation._
-import trellis.raster.IntRaster
+import trellis.IntRaster
 
 // akka imports
 import akka.actor._

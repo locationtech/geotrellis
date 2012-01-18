@@ -89,7 +89,7 @@ object StepError {
  * Actor responsible for dispatching and executing operations.
  *
  * This is a long-running actor which expects to receive two kinds of messages:
- *trellis.raster.TileSpec
+ * trellis.raster.TileSpec
  *  1. Requests made by the outside world to run operations.
  *  2. Requests made by other actors to asynchronously evaluate arguments.
  *
@@ -103,7 +103,7 @@ case class ServerActor(id: String, server: Server) extends Actor {
   // Actor event loop
   def receive = {
     case Run(op) => {
-      log("server asked to run op %s" format op)
+      log("server asked to run op %s: thread: %s" format (op,Thread.currentThread.getName))
       dispatcher ! RunOperation(op, 0, sender)
     }
 
@@ -174,8 +174,9 @@ trait WorkerLike extends Actor {
 
       // there was an error, so return that as well.
       case StepError(msg, trace) => {
-        log(" output was an error %s" format msg)
+        //log(" output was an error %s" format msg)
         val history = failure(id, startTime, time(), t, msg, trace)
+        print(" *** Worker-like %s received an error %s, %s, %s" format (id, msg,history.toPretty, Thread.currentThread.getName))
         client ! OperationResult(Error(msg, history), pos)
       }
 
@@ -222,7 +223,7 @@ case class Worker(val server: Server) extends WorkerLike {
       //_id = op.toString
       _id = op.name
       startTime = time()
-      log("worker: run operation (%d): %s" format (pos, op))
+      log("worker: run operation (%d): %s: %s" format (pos, op, Thread.currentThread.getName))
       //val timer = new Timer()
       val trellisContext = new Context(server)
       try {
@@ -248,7 +249,7 @@ case class Calculation[T](val server:Server, pos:Int, args:Args,
 extends WorkerLike {
 
   //def id = "calc " + _id
-  def id = _id
+  def id = "calc " + _id
 
   startTime = time()
 
