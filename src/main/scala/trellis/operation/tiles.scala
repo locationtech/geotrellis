@@ -16,22 +16,23 @@ import trellis.RasterExtent
   * </pre>
   */
 case class ForEachTile(r:Op[IntRaster], f:(Op[IntRaster] => Op[IntRaster])) extends Op[IntRaster] {
-  def _run(context:Context) = {
-    val tr = context.run(r)
-    val (ops:List[Op[IntRaster]], tileSet:Option[_]) = 
-      tr.data match {
-      	case trData:TileRasterData => {
-      		val ops = trData.rasters.toList.flatten 
-      		    .map { c => f(Literal(c)) }
-      		(ops, Some(trData.tileSet))
-      	}
-      	// Not a tiled raster -- just apply f to input raster
-      	case _ => (List(f(r), None))
-    }
-    runAsync(tr.rasterExtent :: tileSet :: ops)
-  }
-  
+  def _run(context:Context) = runAsync(r :: Nil)
+
   val nextSteps:Steps = { 
+    case (tr:IntRaster) :: Nil => { 
+      val (ops:List[Op[IntRaster]], tileSet:Option[_]) = 
+        tr.data match {
+      	  case trData:TileRasterData => {
+      		  val ops = trData.rasters.toList.flatten 
+      		    .map { c => f(Literal(c)) }
+      		  (ops, Some(trData.tileSet))
+      	  }
+      	  // Not a tiled raster -- just apply f to input raster
+      	  case _ => (List(f(r), None))
+        }
+      runAsync(tr.rasterExtent :: tileSet :: ops)
+    }
+  
     case rasterExtent :: tileSet :: rasters => {
       val rs:Array[Option[IntRaster]] = rasters map { case r:IntRaster => Some(r) } toArray
       val outputRaster = tileSet match { 

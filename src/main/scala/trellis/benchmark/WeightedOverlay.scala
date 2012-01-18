@@ -10,7 +10,7 @@ import trellis._
 import trellis.data._
 import trellis.operation._
 import trellis.process._
-import trellis._
+import trellis.raster._
 
 import com.google.caliper.Runner 
 import com.google.caliper.SimpleBenchmark
@@ -28,6 +28,23 @@ object MiniAddBenchmark {
     val e = server.run(LoadRasterExtentFromFile(path)).extent
     val r = server.run(LoadFile(path, BuildRasterExtent2(e, size, size)))
     new MiniAddBenchmark(r)
+  }
+}
+
+class TiledMiniAddBenchmark(raster:IntRaster) {
+  val op = ForEachTile(raster, AddConstant(_, 13))
+  def run(reps:Int, server:Server) {
+    var r:IntRaster = null
+    for (i <- 0 until reps) r = server.run(op)
+  }
+}
+
+object TiledMiniAddBenchmark {
+  def apply(server:Server, path:String, extent:Extent, size:Int, pixels:Int) = {
+    val e = server.run(LoadRasterExtentFromFile(path)).extent
+    val r = server.run(LoadFile(path, BuildRasterExtent2(e, size, size)))
+    val t = Tiler.createTileRaster(r, pixels)
+    new TiledMiniAddBenchmark(t)
   }
 }
 
@@ -119,12 +136,16 @@ class TrellisBenchmarks extends SimpleBenchmark {
   var a4096:MiniAddBenchmark = null
   var a8192:MiniAddBenchmark = null
 
+  var t_a4096:TiledMiniAddBenchmark = null
+  var t_a8192_512:TiledMiniAddBenchmark = null
+
   override def setUp() {
     server = TestServer()
 
     val path = pairs(0)._1
     val extent = server.run(LoadRasterExtentFromFile(path)).extent
 
+    /*
     m100 = MiniWoBenchmark(server, pairs(0), pairs(1), extent, 100)
     m1000 = MiniWoBenchmark(server, pairs(0), pairs(1), extent, 1000)
     m10000 = MiniWoBenchmark(server, pairs(0), pairs(1), extent, 10000)
@@ -137,17 +158,22 @@ class TrellisBenchmarks extends SimpleBenchmark {
     s2048 = new WoBenchmark(2048, extent, pairs, total, colors)
     s4096 = new WoBenchmark(4096, extent, pairs, total, colors)
     s8192 = new WoBenchmark(8192, extent, pairs, total, colors)
-
-    a64 = MiniAddBenchmark(server, path, extent, 64)
+    */
+    /*a64 = MiniAddBenchmark(server, path, extent, 64)
     a128 = MiniAddBenchmark(server, path, extent, 128)
     a256 = MiniAddBenchmark(server, path, extent, 256)
     a512 = MiniAddBenchmark(server, path, extent, 512)
     a1024 = MiniAddBenchmark(server, path, extent, 1024)
     a2048 = MiniAddBenchmark(server, path, extent, 2048)
     a4096 = MiniAddBenchmark(server, path, extent, 4096)
-    a8192 = MiniAddBenchmark(server, path, extent, 8192)
+    */
+    //a8192 = MiniAddBenchmark(server, path, extent, 8192)
+
+    //t_a4096 = TiledMiniAddBenchmark(server, path, extent, 4096, 512)
+    t_a8192_512 = TiledMiniAddBenchmark(server, path, extent, 8192, 512)
   }
 
+/*
   def timeBasicWeightedOverlay_100(reps:Int) = m100.run(reps, server)
   def timeBasicWeightedOverlay_1000(reps:Int) = m1000.run(reps, server)
   def timeBasicWeightedOverlay_10000(reps:Int) = m10000.run(reps, server)
@@ -158,18 +184,25 @@ class TrellisBenchmarks extends SimpleBenchmark {
   def timeWeightedOverlayPNG_512(reps:Int) = s512.run(reps, server)
   def timeWeightedOverlayPNG_1024(reps:Int) = s1024.run(reps, server)
   def timeWeightedOverlayPNG_2048(reps:Int) = s2048.run(reps, server)
+*/
   // disabled
   //def timeWeightedOverlayPNG_4096(reps:Int) = s4096.run(reps, server)
   //def timeWeightedOverlayPNG_8192(reps:Int) = s8192.run(reps, server)
 
+/*
   def timeAddConstant_64(reps:Int) = a64.run(reps, server)
   def timeAddConstant_128(reps:Int) = a128.run(reps, server)
   def timeAddConstant_256(reps:Int) = a256.run(reps, server)
   def timeAddConstant_512(reps:Int) = a512.run(reps, server)
   def timeAddConstant_1024(reps:Int) = a1024.run(reps, server)
   def timeAddConstant_2048(reps:Int) = a2048.run(reps, server)
-  def timeAddConstant_4086(reps:Int) = a4096.run(reps, server)
-  def timeAddConstant_8192(reps:Int) = a8192.run(reps, server)
+*/
+  //def timeAddConstant_4086(reps:Int) = a4096.run(reps, server)
+  //def timeAddConstant_8192(reps:Int) = a8192.run(reps, server)
+
+  //def timeTiledAddConstant_4086(reps:Int) = t_a4096.run(reps, server)
+  def timeTiledAddConstant_8196_10k(reps:Int) = t_a8192_512.run(reps, server)
+ 
 }
 
 object TrellisBenchmarks {

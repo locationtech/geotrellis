@@ -34,9 +34,9 @@ object MyBuild extends Build {
       "javax.media" % "jai_core" % "1.1.3",
       "postgresql" % "postgresql" % "8.4-701.jdbc4",
       "net.liftweb" %% "lift-json" % "2.4-M5",
-      "com.typesafe.akka" % "akka-kernel" % "2.0-M1",
-      "com.typesafe.akka" % "akka-remote" % "2.0-M1",
-      "com.typesafe.akka" % "akka-actor"  % "2.0-M1",
+      "com.typesafe.akka" % "akka-kernel" % "2.0-M2",
+      "com.typesafe.akka" % "akka-remote" % "2.0-M2",
+      "com.typesafe.akka" % "akka-actor"  % "2.0-M2",
       "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
       //"com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT",
       "com.google.code.gson" % "gson" % "1.7.1"

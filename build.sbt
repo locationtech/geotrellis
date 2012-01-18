@@ -1,1 +1,1 @@
-seq(ScctPlugin.scctSettings: _*)
+//seq(ScctPlugin.scctSettings: _*)

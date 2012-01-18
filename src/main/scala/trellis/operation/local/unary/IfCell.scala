@@ -6,8 +6,8 @@ import trellis._
 /**
  * Maps all cells matching `cond` to `trueValue`.
  */
-case class IfCell(r:Op[IntRaster], cond:Int => Boolean, trueValue:Int) extends UnaryLocal {
-  def getCallback(context:Context) = (z:Int) => if (cond(z)) trueValue else z
+case class IfCell(r:Op[IntRaster], cond:Int => Boolean, trueValue:Int) extends SimpleUnaryLocal {
+  def getCallback = (z:Int) => if (cond(z)) trueValue else z
 } 
 
 object IfCell {

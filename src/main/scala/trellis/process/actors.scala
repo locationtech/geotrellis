@@ -103,7 +103,7 @@ case class ServerActor(id: String, server: Server) extends Actor {
   // Actor event loop
   def receive = {
     case Run(op) => {
-      log("server asked to run op %s" format op)
+      log("server asked to run op %s: thread: %s" format (op,Thread.currentThread.getName))
       dispatcher ! RunOperation(op, 0, sender)
     }
 
@@ -121,11 +121,14 @@ case class ServerActor(id: String, server: Server) extends Actor {
  */
 case class Dispatcher(server: Server) extends Actor {
 
+  val pool = context.actorOf(Props(Worker(server)).withRouter(RoundRobinRouter( nrOfInstances = 120 )))
+
   // Actor event loop
   def receive = {
     case msg:RunOperation[_] => {
       log("dispatcher asked to run op")
-      context.actorOf(Props(Worker(server))) ! msg
+      //context.actorOf(Props(Worker(server))) ! msg
+      pool ! msg
     }
 
     case r => sys.error("Dispatcher received unknown result.")
@@ -171,8 +174,9 @@ trait WorkerLike extends Actor {
 
       // there was an error, so return that as well.
       case StepError(msg, trace) => {
-        log(" output was an error %s" format msg)
+        //log(" output was an error %s" format msg)
         val history = failure(id, startTime, time(), t, msg, trace)
+        print(" *** Worker %s received an error %s, %s, %s" format (id, msg,history.toPretty, Thread.currentThread.getName))
         client ! OperationResult(Error(msg, history), pos)
       }
 
@@ -219,7 +223,7 @@ case class Worker(val server: Server) extends WorkerLike {
       //_id = op.toString
       _id = op.name
       startTime = time()
-      log("worker: run operation (%d): %s" format (pos, op))
+      log("worker: run operation (%d): %s: %s" format (pos, op, Thread.currentThread.getName))
       //val timer = new Timer()
       val trellisContext = new Context(server)
       try {
@@ -233,7 +237,7 @@ case class Worker(val server: Server) extends WorkerLike {
           handleResult(pos, client, error, Some(trellisContext.timer))
         }
       }
-      context.stop(self)
+      //context.stop(self)
     }
     case x => sys.error("worker got unknown msg: %s" format x)
   }
@@ -245,7 +249,7 @@ case class Calculation[T](val server:Server, pos:Int, args:Args,
 extends WorkerLike {
 
   //def id = "calc " + _id
-  def id = _id
+  def id = "calc " + _id
 
   startTime = time()
 
@@ -266,7 +270,10 @@ extends WorkerLike {
       }
     }
 
-    if (isDone) finishCallback()
+    if (isDone) { 
+      finishCallback()
+      context.stop(self)
+    }
   }
 
   // This should create a list of all the (non-trivial) child histories we
@@ -318,7 +325,7 @@ extends WorkerLike {
     case OperationResult(childResult,  pos) => {
       log("calculation got result %d" format pos)
       results(pos) = Some(childResult)
-
+      log("results: %s".format(results))
       if (!isDone) {
       } else if (hasError) {
         val h = failure(id, startTime, time(), None, "child failed", "")
@@ -326,6 +333,7 @@ extends WorkerLike {
       } else {
         log(" all values complete")
         finishCallback()
+        context.stop(self)
       }
     }
 

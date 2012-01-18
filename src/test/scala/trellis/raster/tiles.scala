@@ -11,6 +11,10 @@ import trellis.operation._
 class TileSpec extends Spec with MustMatchers {
   val e = Extent(0.0, 0.0, 100.0, 100.0)
   val g = RasterExtent(e, 20.0, 20.0, 5, 5)
+  
+  // with 512, 5631 is threshold
+  var largeSize = 10000
+  val gLarge = RasterExtent(e, 20.0, 20.0, largeSize, largeSize)
 
   // The extent of the test raster is xmin: 0, xmax: 100, ymin: 0, xmax: 100
   // cellsize is 20.  so (0,0) (centerpoint) is at 10,90  
@@ -87,6 +91,9 @@ class TileSpec extends Spec with MustMatchers {
 
   val server = TestServer()
   
+  val largeData = Array.fill(largeSize * largeSize)(0)
+  val largeRaster = IntRaster(largeData, rows = largeSize, cols = largeSize, rasterExtent = gLarge)
+
   def loader(col: Int, row: Int): Option[IntRaster] = {
     val r = tiles(row * 3 + col)
     r
@@ -148,11 +155,36 @@ class TileSpec extends Spec with MustMatchers {
   }
   
   describe("DoTile") {
+
     it("can operate over each subraster of a tiled raster") {
       val op = ForEachTile(Literal(tileRaster), AddConstant(_, 3))
       val result = server.run(op)
       for (y <- 0 to 4; x <- 0 to 4)
         result.get(x, y) must be === ((y * 5) + x) + 1 + 3
+    }
+
+    it ("can operate on raster larger than 6000x6000") {
+
+      val largeTileRaster = Tiler.createTileRaster(largeRaster, 1024)
+
+      /*
+      for (i <- 1 until 10) {
+        val start = System.currentTimeMillis
+        val op = AddConstant(largeRaster, 3)
+        val result = server.run(op)
+        val elapsed = System.currentTimeMillis - start
+        println("normal elapsed: %d".format(elapsed))
+      }
+      */
+      for (i <- 1 until 10) { 
+        val start = System.currentTimeMillis
+        val op = ForEachTile(Literal(largeTileRaster),AddConstant(_, 3))
+        val result = server.run(op)
+        val elapsed = System.currentTimeMillis - start
+        println("tiled elapsed: %d".format(elapsed))
+        System.gc()
+      }
+
     }
   }
 }
