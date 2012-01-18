@@ -8,8 +8,8 @@ import trellis.process._
  * condition is true or false.
  */
 case class IfElseCell(r:Op[IntRaster], cond:Int => Boolean, trueValue:Int,
-                      falseValue:Int) extends UnaryLocal {
-  def getCallback(context:Context) = (z:Int) => if (cond(z)) {
+                      falseValue:Int) extends SimpleUnaryLocal {
+  def getCallback = (z:Int) => if (cond(z)) {
     trueValue
   } else {
     falseValue

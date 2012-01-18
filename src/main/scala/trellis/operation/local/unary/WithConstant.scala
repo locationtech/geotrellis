@@ -37,18 +37,22 @@ trait WithDoubleConstant extends Op[IntRaster] {
  * Add a constant value to each cell.
  */
 case class AddConstant(r:Op[IntRaster], c:Op[Int]) extends UnaryLocal {
-  def getCallback(context:Context) = {
-    val result = c.run(context)
-    val constant:Int = result match {
-      case Result(n) => n
-      case _ => throw new Exception("Async operations not currently supported in AddConstant")
-    } 
-    (z:Int) => z + constant
+  def functionOps:List[Op[Any]] = {
+      val list = c.asInstanceOf[Op[Any]] :: Nil 
+      list
+  }
+  val functionNextSteps:PartialFunction[Any,StepOutput[Function1[Int,Int]]] = {
+      case (n:Int) :: Nil => Result((z:Int) => z + n)
   }
 }
+
 case class AddLiteralConstant(r:Op[IntRaster], c:Int) extends UnaryLocal {
-  def getCallback(context:Context) = (z:Int) => z + c
+  def functionOps = Nil
+  val functionNextSteps:PartialFunction[Any,StepOutput[Function1[Int,Int]]] = {
+    case _ => Result((z:Int) => z + c)
+  }
 }
+
 case class AddInlinedConstant(r:Op[IntRaster], c:Int) extends SimpleOp[IntRaster] {
   def _value(context:Context) = {
     val raster = context.run(r)

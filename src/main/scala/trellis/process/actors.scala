@@ -176,7 +176,7 @@ trait WorkerLike extends Actor {
       case StepError(msg, trace) => {
         //log(" output was an error %s" format msg)
         val history = failure(id, startTime, time(), t, msg, trace)
-        print(" *** Worker-like %s received an error %s, %s, %s" format (id, msg,history.toPretty, Thread.currentThread.getName))
+        print(" *** Worker %s received an error %s, %s, %s" format (id, msg,history.toPretty, Thread.currentThread.getName))
         client ! OperationResult(Error(msg, history), pos)
       }
 

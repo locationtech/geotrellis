@@ -12,6 +12,6 @@ import trellis.process._
  * val D = DoCell(R, x => x + 3 ) // add 3 to every cell in the raster  
  * </pre>
  */
-case class DoCell(r:Op[IntRaster], f:(Int) => Int) extends UnaryLocal {
-  def getCallback(context:Context) = f
+case class DoCell(r:Op[IntRaster], f:(Int) => Int) extends SimpleUnaryLocal {
+  def getCallback = f
 }
