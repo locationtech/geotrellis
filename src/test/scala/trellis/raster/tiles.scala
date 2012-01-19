@@ -12,8 +12,7 @@ class TileSpec extends Spec with MustMatchers {
   val e = Extent(0.0, 0.0, 100.0, 100.0)
   val g = RasterExtent(e, 20.0, 20.0, 5, 5)
   
-  // with 512, 5631 is threshold
-  var largeSize = 10000
+  var largeSize = 6100
   val gLarge = RasterExtent(e, 20.0, 20.0, largeSize, largeSize)
 
   // The extent of the test raster is xmin: 0, xmax: 100, ymin: 0, xmax: 100
@@ -167,23 +166,10 @@ class TileSpec extends Spec with MustMatchers {
 
       val largeTileRaster = Tiler.createTileRaster(largeRaster, 1024)
 
-      /*
-      for (i <- 1 until 10) {
-        val start = System.currentTimeMillis
-        val op = AddConstant(largeRaster, 3)
-        val result = server.run(op)
-        val elapsed = System.currentTimeMillis - start
-        println("normal elapsed: %d".format(elapsed))
-      }
-      */
-      for (i <- 1 until 10) { 
-        val start = System.currentTimeMillis
-        val op = ForEachTile(Literal(largeTileRaster),AddConstant(_, 3))
-        val result = server.run(op)
-        val elapsed = System.currentTimeMillis - start
-        println("tiled elapsed: %d".format(elapsed))
-        System.gc()
-      }
+      val start = System.currentTimeMillis
+      val op = ForEachTile(Literal(largeTileRaster),AddConstant(_, 3))
+      val result = server.run(op)
+      val elapsed = System.currentTimeMillis - start
 
     }
   }

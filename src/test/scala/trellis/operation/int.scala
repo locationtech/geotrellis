@@ -98,7 +98,15 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       raster.get(1, 1) must be === 52
       //println("D4")
     }
-  
+    it("NewStyleRasterExtent") {
+      val e = Extent(xmin = -90, ymin = 20,
+                     xmax = -80, ymax = 40)
+      val op = NewStyleBuildRasterExtent(e, 20, 30)
+      val re = server.run(op)
+      re.extent.xmin must be === -90
+      re.cols must be === 20
+    }
+ 
     it("LoadResampledArgFile, take 2") {
       val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img.arg")
       val geo1 = server.run(G1)
