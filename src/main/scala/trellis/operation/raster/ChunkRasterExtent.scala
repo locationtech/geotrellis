@@ -14,13 +14,9 @@ import trellis.process._
  * into many smaller contiguous pieces. The number of columns desired is
  * provided by `nx` and the number of rows by `ny`.
  */
-case class ChunkRasterExtent(g:Op[RasterExtent], opnx:Op[Int], opny:Op[Int])
-extends SimpleOp[Array[RasterExtent]] {
-
-  def _value(context:Context) = {
-    val re = context.run(g)
-    val nx = context.run(opnx)
-    val ny = context.run(opny)
+case class ChunkRasterExtent(re:Op[RasterExtent], nx:Op[Int], ny:Op[Int])
+extends Op3(re,nx,ny) ({
+  (re, nx, ny) => {
     val a = Array.ofDim[RasterExtent](ny * nx)
 
     // calculate the break points along the X and Y axes
@@ -48,6 +44,6 @@ extends SimpleOp[Array[RasterExtent]] {
       }
       y += 1
     }
-    a
+    Result(a)
   }
-}
+})

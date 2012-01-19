@@ -9,7 +9,6 @@ import trellis.IntRaster
  * Useful because some operations currently mutate one or more of their
  * arguments.
  */
-case class CopyRaster(r:Op[IntRaster]) extends Op[IntRaster] {
-  def _run(context:Context) = runAsync(List(r))
-  val nextSteps:Steps = { case (r:IntRaster) :: Nil => Result(r.copy) }
-}
+case class CopyRaster(r:Op[IntRaster]) extends Op1(r)({
+  (r) => Result(r.copy)
+})
