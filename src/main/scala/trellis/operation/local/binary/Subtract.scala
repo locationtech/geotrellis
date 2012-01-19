@@ -3,13 +3,12 @@ package trellis.operation
 import trellis._
 
 /**
-  * Subtract each value in the second raster from the corresponding value in the first raster.
-  * Local operation.
-  * Binary operation. 
-  */
+ * Subtract each value in the second raster from the corresponding value in the first raster.
+ */
 case class Subtract(r1:Op[IntRaster], r2:Op[IntRaster]) extends BinaryLocal {
-  val identity1 = 0
-  val identity2 = 0
-  @inline
-  def handleCells(z1:Int, z2:Int) = z1 - z2
+  def handleCells(z1:Int, z2:Int) = if (z1 == NODATA) {
+    if (z2 == NODATA) 0 else -z2
+  } else {
+    if (z2 == NODATA) z1 else z1 - z2
+  }
 }
