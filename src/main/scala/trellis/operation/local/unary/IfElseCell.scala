@@ -9,9 +9,10 @@ import trellis.process._
  */
 case class IfElseCell(r:Op[IntRaster], cond:Int => Boolean, trueValue:Int,
                       falseValue:Int) extends SimpleUnaryLocal {
-  def getCallback = (z:Int) => if (cond(z)) {
-    trueValue
-  } else {
-    falseValue
-  }
+  def handleCell(z:Int) = if (cond(z)) trueValue else falseValue
+  //def getCallback = (z:Int) => if (cond(z)) {
+  //  trueValue
+  //} else {
+  //  falseValue
+  //}
 }

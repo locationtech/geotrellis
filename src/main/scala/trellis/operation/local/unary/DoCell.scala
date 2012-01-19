@@ -13,5 +13,5 @@ import trellis.process._
  * </pre>
  */
 case class DoCell(r:Op[IntRaster], f:(Int) => Int) extends SimpleUnaryLocal {
-  def getCallback = f
+  def handleCell(z:Int) = f(z)
 }

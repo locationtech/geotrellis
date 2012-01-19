@@ -8,66 +8,66 @@ import scala.math.{max, min, pow}
 /**
  * Multiply each cell in a raster by a constant value.
  */
-trait WithIntConstant extends Op[IntRaster] {
-  val r:Op[IntRaster]
-  val c:Op[Int]
+trait WithIntConstant extends UnaryLocal {
+  def c:Op[Int]
 
-  def _run(context:Context) = runAsync(List(r, c))
-  val nextSteps:Steps = { case (a:IntRaster) :: (b:Int) :: Nil => step2(a, b) }
-  def step2(raster:IntRaster, constant:Int) = Result(doit(raster, constant))
+  def functionOps = c :: Nil
 
-  def doit(raster:IntRaster, c:Int):IntRaster
+  def handleCell(z:Int, n:Int):Int
+
+  val functionNextSteps:UnaryLocal.Steps = {
+    case UnaryF(f) :: (n:Int) :: Nil => Result(UnaryF((z:Int) => handleCell(f(z), n)))
+  }
 }
 
 /**
  * Multiply each cell in a raster by a constant value.
  */
-trait WithDoubleConstant extends Op[IntRaster] {
-  val r:Op[IntRaster]
-  val c:Op[Double]
+trait WithDoubleConstant extends UnaryLocal {
+  def c:Op[Double]
 
-  def _run(context:Context) = runAsync(List(r, c))
-  val nextSteps:Steps = { case (a:IntRaster) :: (b:Double) :: Nil => step2(a, b) }
-  def step2(raster:IntRaster, constant:Double) = Result(doit(raster, constant))
+  def functionOps = c :: Nil
 
-  def doit(raster:IntRaster, c:Double):IntRaster
+  def handleCell(z:Int, n:Double):Int
+
+  val functionNextSteps:UnaryLocal.Steps = {
+    case UnaryF(f) :: (n:Double) :: Nil => Result(UnaryF((z:Int) => handleCell(f(z), n)))
+  }
 }
 
 /**
  * Add a constant value to each cell.
  */
-case class AddConstant(r:Op[IntRaster], c:Op[Int]) extends UnaryLocal {
-  def functionOps:List[Any] = c :: Nil
-
-  //val functionNextSteps:PartialFunction[Any, StepOutput[Function1[Int,Int]]] = {
-  val functionNextSteps:UnaryLocal.Steps = {
-    case (f:Function1[_, _]) :: (n:Int) :: Nil => Result((z:Int) => asF1(f)(z) + n)
-  }
+case class AddConstant(r:Op[IntRaster], c:Op[Int]) extends WithIntConstant {
+  //def functionOps = c :: Nil
+  //val functionNextSteps:UnaryLocal.Steps = {
+  //  case UnaryF(f) :: (n:Int) :: Nil => Result(UnaryF((z:Int) => f(z) + n))
+  //}
+  def handleCell(z:Int, c:Int) = z + c
 }
 
-case class AddLiteralConstant(r:Op[IntRaster], c:Int) extends UnaryLocal {
-  def functionOps = Nil
-  val functionNextSteps:PartialFunction[Any,StepOutput[Function1[Int,Int]]] = {
-    case _ => Result((z:Int) => z + c)
-  }
+case class AddLiteralConstant(r:Op[IntRaster], c:Int) extends SimpleUnaryLocal {
+  def handleCell(z:Int) = z + c
 }
 
-case class AddInlinedConstant(r:Op[IntRaster], c:Int) extends SimpleOp[IntRaster] {
-  def _value(context:Context) = {
-    val raster = context.run(r)
-    val data   = raster.data
-    val raster2 = raster.copy
-    val data2  = raster2.data
-    var i = 0
-    val limit = raster.length
-    while (i < limit) {
-      val z = data(i)
-      if (z != NODATA) {
-        data2(i) = z + c
+case class AddInlinedConstant(r:Op[IntRaster], c:Int) extends Op[IntRaster] {
+  def _run(context:Context) = runAsync(r :: Nil)
+  val nextSteps:Steps = {
+    case (raster:IntRaster) :: Nil => {
+      val data   = raster.data
+      val raster2 = raster.copy
+      val data2  = raster2.data
+      var i = 0
+      val limit = raster.length
+      while (i < limit) {
+        val z = data(i)
+        if (z != NODATA) {
+          data2(i) = z + c
+        }
+        i += 1
       }
-      i += 1
+      Result(raster2)
     }
-    raster2
   }
 }
 
@@ -76,10 +76,10 @@ case class AddInlinedConstant(r:Op[IntRaster], c:Int) extends SimpleOp[IntRaster
  * Subtract a constant value from each cell.
  */
 case class SubtractConstant(r:Op[IntRaster], c:Op[Int]) extends WithIntConstant {
-  def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => z - c)
+  def handleCell(z:Int, c:Int) = z - c
 }
 case class SubtractConstantBy(c:Op[Int], r:Op[IntRaster]) extends WithIntConstant {
-  def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => c - z)
+  def handleCell(z:Int, c:Int) = c - z
 }
 
 
@@ -87,10 +87,10 @@ case class SubtractConstantBy(c:Op[Int], r:Op[IntRaster]) extends WithIntConstan
  * Multiply each cell by a constant.
  */
 case class MultiplyConstant(r:Op[IntRaster], c:Op[Int]) extends WithIntConstant {
-  def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => z * c)
+  def handleCell(z:Int, c:Int) = z * c
 }
 case class MultiplyDoubleConstant(r:Op[IntRaster], c:Op[Double]) extends WithDoubleConstant {
-  def doit(raster:IntRaster, c:Double) = raster.mapIfSet(z => (z * c).toInt)
+  def handleCell(z:Int, c:Double) = (z * c).toInt
 }
 
 
@@ -98,10 +98,10 @@ case class MultiplyDoubleConstant(r:Op[IntRaster], c:Op[Double]) extends WithDou
  * Divide each cell by a constant value.
  */
 case class DivideConstant(r:Op[IntRaster], c:Op[Int]) extends WithIntConstant {
-  def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => z / c)
+  def handleCell(z:Int, c:Int) = z / c
 }
 case class DivideDoubleConstant(r:Op[IntRaster], c:Op[Double]) extends WithDoubleConstant {
-  def doit(raster:IntRaster, c:Double) = raster.mapIfSet(z => (z / c).toInt)
+  def handleCell(z:Int, c:Double) = (z / c).toInt
 }
 
 
@@ -109,10 +109,10 @@ case class DivideDoubleConstant(r:Op[IntRaster], c:Op[Double]) extends WithDoubl
  * For each cell, divide a constant value by that cell's value.
  */
 case class DivideConstantBy(c:Op[Int], r:Op[IntRaster]) extends WithIntConstant {
-  def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => c / z)
+  def handleCell(z:Int, c:Int) = c / z
 }
 case class DivideDoubleConstantBy(c:Op[Double], r:Op[IntRaster]) extends WithDoubleConstant {
-  def doit(raster:IntRaster, c:Double) = raster.mapIfSet(z => (c / z).toInt)
+  def handleCell(z:Int, c:Double) = (c / z).toInt
 }
 
 
@@ -120,29 +120,29 @@ case class DivideDoubleConstantBy(c:Op[Double], r:Op[IntRaster]) extends WithDou
  * Bitmask each cell by a constant value.
  */
 case class Bitmask(r:Op[IntRaster], c:Op[Int]) extends WithIntConstant {
-  def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => z & c)
+  def handleCell(z:Int, c:Int) = z & c
 }
 
 /**
   * Set each cell to a constant number or the corresponding cell value, whichever is highest.
   */
 case class MaxConstant(r:Op[IntRaster], c:Op[Int]) extends WithIntConstant {
-  def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => max(z, c))
+  def handleCell(z:Int, c:Int) = max(z, c)
 }
 
 /**
   * Set each cell to a constant or its existing value, whichever is lowest.
   */
 case class MinConstant(r:Op[IntRaster], c:Op[Int]) extends WithIntConstant {
-  def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => min(z, c))
+  def handleCell(z:Int, c:Int) = min(z, c)
 }
 
 /**
  * Raise each cell to the cth power.
  */
 case class PowConstant(r:Op[IntRaster], c:Op[Int]) extends WithIntConstant {
-  def doit(raster:IntRaster, c:Int) = raster.mapIfSet(z => pow(z, c).toInt)
+  def handleCell(z:Int, c:Int) = pow(z, c).toInt
 }
 case class PowDoubleConstant(r:Op[IntRaster], c:Op[Double]) extends WithDoubleConstant {
-  def doit(raster:IntRaster, c:Double) = raster.mapIfSet(z => pow(z, c).toInt)
+  def handleCell(z:Int, c:Double) = pow(z, c).toInt
 }

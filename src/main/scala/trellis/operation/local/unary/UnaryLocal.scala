@@ -6,8 +6,20 @@ import trellis.process._
 
 import scala.math.{max, min, pow}
 
+/**
+ * Useful wrapper for Function1[Int,Int] that helps preserve type information
+ * between actors.
+ */
+case class UnaryF(f:(Int) => Int) extends Function1[Int, Int] {
+  def apply(z:Int) = f(z)
+}
+
+object UnaryF {
+  def id = UnaryF(identity _)
+}
+
 object UnaryLocal {
-  type Steps = PartialFunction[Any, StepOutput[(Int) => Int]]
+  type Steps = PartialFunction[Any, StepOutput[UnaryF]]
 }
 
 /**
@@ -15,7 +27,7 @@ object UnaryLocal {
  * are local (operate on each cell without knowledge of other cells).
  */
 trait UnaryLocal extends Op[IntRaster] with LocalOp {
-  val r:Op[IntRaster]
+  def r:Op[IntRaster]
 
   def getUnderlyingOp:Op[IntRaster] = r match {
     case (child:UnaryLocal) => child.getUnderlyingOp
@@ -24,28 +36,26 @@ trait UnaryLocal extends Op[IntRaster] with LocalOp {
 
   def _run(context:Context) = runAsync(GetUnaryFunction(this) :: getUnderlyingOp :: Nil)
 
-  // cast a Function1[_,_] into a Function1[Int,Int]
-  def asF1(f:Function1[_,_]) = f.asInstanceOf[Function1[Int, Int]]
-
   val nextSteps:Steps = {
-    case (f:Function1[_, _]) :: (raster:IntRaster) :: Nil => Result(raster.mapIfSet(asF1(f)))
+    case UnaryF(f) :: (raster:IntRaster) :: Nil => Result(raster.mapIfSet(f))
   }
   
   def functionOps:List[Any]
   val functionNextSteps:UnaryLocal.Steps
 }
 
-trait SimpleUnaryLocal extends UnaryLocal {
-  def getCallback:(Int) => Int
-  def functionOps:List[Any] = Nil
-  val functionNextSteps:UnaryLocal.Steps = {
-    case _ => Result(getCallback)
-  }
-}
-case class GetUnaryFunction (op:UnaryLocal) extends Op[(Int) => Int] {
+case class GetUnaryFunction (op:UnaryLocal) extends Op[UnaryF] {
   def _run(context:Context) = op.r match {
     case u:UnaryLocal => runAsync(GetUnaryFunction(u) :: op.functionOps)
-    case _ => runAsync(((z:Int) => z) :: op.functionOps)
+    case _ => runAsync(UnaryF.id :: op.functionOps)
   }
   val nextSteps = op.functionNextSteps
+}
+
+trait SimpleUnaryLocal extends UnaryLocal {
+  def handleCell(z:Int):Int
+  def functionOps:List[Any] = Nil
+  val functionNextSteps:UnaryLocal.Steps = {
+    case _ => Result(UnaryF(handleCell _))
+  }
 }

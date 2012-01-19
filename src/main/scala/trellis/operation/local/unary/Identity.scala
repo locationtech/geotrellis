@@ -10,5 +10,5 @@ import trellis._
  * a new raster with the values of the given raster.
  */
 case class Identity(r:Op[IntRaster]) extends SimpleUnaryLocal {
-  def getCallback = (z:Int) => z
+  def handleCell(z:Int) = z
 }
