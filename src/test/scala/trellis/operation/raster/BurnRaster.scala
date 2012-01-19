@@ -16,8 +16,8 @@ import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
-class BurnRasterSpec extends Spec with MustMatchers with ShouldMatchers {
-  describe("The BurnRaster operation") {
+class WarpRasterSpec extends Spec with MustMatchers with ShouldMatchers {
+  describe("The WarpRaster operation") {
     val server = TestServer()
 
     val baseExtent = Extent(0.0, 0.0, 100.0, 100.0)
@@ -29,7 +29,7 @@ class BurnRasterSpec extends Spec with MustMatchers with ShouldMatchers {
     val raster = IntRaster(data, 4, 4, baseGeo)
 
     it("should load the full raster on its own extent") {
-      val op = BurnRaster(Literal(raster), baseGeo)
+      val op = WarpRaster(Literal(raster), baseGeo)
       val raster2 = server.run(op)
 
       println(raster.rasterExtent)
