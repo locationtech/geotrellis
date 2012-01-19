@@ -41,7 +41,7 @@ extends Op[RasterExtent] {
 
 
 case class NewStyleBuildRasterExtent(extent:Op[Extent], cols:Op[Int], rows:Op[Int])
-  extends Op3 (extent,cols,rows) ({
+extends Op3 (extent,cols,rows) ({
   (e, cols, rows) => {
     val cw = (e.xmax - e.xmin) / cols
     val ch = (e.ymax - e.ymin) / rows

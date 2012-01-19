@@ -12,9 +12,5 @@ import trellis._
  */
 case class BinaryIfCell(r1:Op[IntRaster], r2:Op[IntRaster],
                         cond: (Int,Int) => Boolean, trueValue: Int) extends BinaryLocal {
-  val identity1 = 0
-  val identity2 = 0
-
-  @inline
-  def handleCells(z1:Int, z2:Int): Int = { if (cond(z1,z2)) trueValue else z1 }
+  def handleCells(z1:Int, z2:Int): Int = if (cond(z1,z2)) trueValue else z1
 }

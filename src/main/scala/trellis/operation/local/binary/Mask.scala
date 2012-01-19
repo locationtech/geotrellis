@@ -11,10 +11,5 @@ import trellis._
  * the output raster will be empty -- all values set to NODATA.
  */
 case class Mask(r1:Op[IntRaster], r2:Op[IntRaster], readMask:Int, writeMask:Int) extends BinaryLocal {
-  val identity1 = NODATA
-  val identity2 = NODATA
-  @inline
-  def handleCells(z1:Int, z2:Int) = {
-    if (z2 == this.readMask) this.writeMask else z1
-  }
+  def handleCells(z1:Int, z2:Int) = if (z2 == readMask) writeMask else z1
 }
