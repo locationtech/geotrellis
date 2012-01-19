@@ -26,7 +26,7 @@ class MiniAddBenchmark(raster:IntRaster) {
 object MiniAddBenchmark {
   def apply(server:Server, path:String, extent:Extent, size:Int) = {
     val e = server.run(LoadRasterExtentFromFile(path)).extent
-    val r = server.run(LoadFile(path, BuildRasterExtent2(e, size, size)))
+    val r = server.run(LoadFile(path, BuildRasterExtent(e, size, size)))
     new MiniAddBenchmark(r)
   }
 }
@@ -42,7 +42,7 @@ class TiledMiniAddBenchmark(raster:IntRaster) {
 object TiledMiniAddBenchmark {
   def apply(server:Server, path:String, extent:Extent, size:Int, pixels:Int) = {
     val e = server.run(LoadRasterExtentFromFile(path)).extent
-    val r = server.run(LoadFile(path, BuildRasterExtent2(e, size, size)))
+    val r = server.run(LoadFile(path, BuildRasterExtent(e, size, size)))
     val t = Tiler.createTileRaster(r, pixels)
     new TiledMiniAddBenchmark(t)
   }
@@ -64,8 +64,8 @@ object MiniWoBenchmark {
     val (path2, weight2) = pair2
 
     val e = server.run(LoadRasterExtentFromFile(path1)).extent
-    val r1 = server.run(LoadFile(path1, BuildRasterExtent2(e, size, size)))
-    val r2 = server.run(LoadFile(path2, BuildRasterExtent2(e, size, size)))
+    val r1 = server.run(LoadFile(path1, BuildRasterExtent(e, size, size)))
+    val r2 = server.run(LoadFile(path2, BuildRasterExtent(e, size, size)))
     new MiniWoBenchmark(r1, weight1, r2, weight2)
   }
 }
@@ -73,7 +73,7 @@ object MiniWoBenchmark {
 class WoBenchmark(size:Int, extent:Extent, pairs:Seq[(String, Int)],
                   total:Int, colors:Array[Int]) {
 
-  val re = BuildRasterExtent2(extent, size, size)
+  val re = BuildRasterExtent(extent, size, size)
 
   def buildScaleRasterOp(path:String, weight:Int) = {
     MultiplyConstant(LoadFile(path, re), weight)
