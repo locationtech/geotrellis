@@ -44,8 +44,8 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
       akka {
         version = "2.0-M2"
         logConfigOnStart = off
-        loglevel = "DEBUG"
-        stdout-loglevel = "DEBUG"
+        loglevel = "WARN"
+        stdout-loglevel = "WARN"
         event-handlers = ["akka.event.Logging$DefaultLogger"]
         remote {
           client {
@@ -59,6 +59,11 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
           core-pool-size-factor = 80.0
         }
         actor {
+          debug {
+            receive = off
+            autoreceive = off
+            lifecycle = off
+          }
           deployment {
             /routey {
               nr-of-instances = 300
