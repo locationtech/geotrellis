@@ -38,3 +38,13 @@ extends Op[RasterExtent] {
     Result(RasterExtent(e, cw, ch, cols, rows))
   }
 }
+
+
+case class NewStyleBuildRasterExtent(extent:Op[Extent], cols:Op[Int], rows:Op[Int])
+  extends Op3 (extent,cols,rows) ({
+  (extent, cols, rows) => {
+    val cw = (e.xmax - e.xmin) / cols
+    val ch = (e.ymax - e.ymin) / rows
+    Result(RasterExtent(e, cw, ch, cols, rows))
+  }
+})
