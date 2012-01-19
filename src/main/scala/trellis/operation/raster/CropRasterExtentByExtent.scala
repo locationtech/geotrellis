@@ -8,16 +8,10 @@ import trellis.process._
  * load raster data.
  */
 case class CropRasterExtentByExtent(g:Op[RasterExtent], e:Op[Extent])
-extends Op[RasterExtent] {
-  def _run(context:Context) = runAsync(List(g, e))
-
-  val nextSteps:Steps = {
-    case (geo:RasterExtent) :: (ext:Extent) :: Nil => step2(geo, ext)
-  }
-
-  def step2(geo:RasterExtent, ext:Extent) = {
+extends Op2(g,e) ({
+  (geo,ext) => {
     val cols = ((ext.ymax - ext.ymin) / geo.cellheight).toInt
     val rows = ((ext.xmax - ext.xmin) / geo.cellwidth).toInt
     Result(RasterExtent(ext, geo.cellwidth, geo.cellheight, cols, rows))
   }
-}
+})
