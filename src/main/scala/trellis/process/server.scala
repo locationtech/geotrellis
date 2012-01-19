@@ -44,8 +44,8 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
       akka {
         version = "2.0-M2"
         logConfigOnStart = off
-        loglevel = "WARN"
-        stdout-loglevel = "WARN"
+        loglevel = "INFO"
+        stdout-loglevel = "INFO"
         event-handlers = ["akka.event.Logging$DefaultLogger"]
         remote {
           client {
