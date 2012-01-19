@@ -1,7 +1,7 @@
 package trellis.operation
 
 import trellis.process._
-
+import trellis._
 import scala.{PartialFunction => PF}
 
 /**
@@ -64,3 +64,64 @@ trait SimpleOperation[T] extends Operation[T] {
     case _ => throw new Exception("simple operation has no steps")
   }
 }
+
+
+abstract class Op1[A,T:Manifest](a:Op[A])(f:(A)=>StepOutput[T]) extends Operation[T] {
+  def _run(context:Context) = runAsync(List(a))
+  val nextSteps:Steps = {
+    case a :: Nil => f(a.asInstanceOf[A])
+  } 
+}
+
+abstract class Op2[A,B,T:Manifest](a:Op[A],b:Op[B])(f:(A,B)=>StepOutput[T]) extends Operation[T] {
+  def _run(context:Context) = runAsync(List(a,b))
+  val nextSteps:Steps = { 
+    case a :: b :: Nil => f(a.asInstanceOf[A],
+                            b.asInstanceOf[B])
+  }
+}
+
+
+abstract class Op3[A,B,C,T:Manifest](a:Op[A],b:Op[B],c:Op[C])(f:(A,B,C)=>StepOutput[T]) extends Operation[T] {
+  def _run(context:Context) = runAsync(List(a,b,c))
+  val nextSteps:Steps = { 
+    case a :: b :: c :: Nil => f(a.asInstanceOf[A],
+                                 b.asInstanceOf[B],
+                                 c.asInstanceOf[C])
+  }
+}
+
+abstract class Op4[A,B,C,D,T:Manifest](a:Op[A],b:Op[B],c:Op[C],d:Op[D])(f:(A,B,C,D)=>StepOutput[T]) extends Operation[T] {
+  def _run(context:Context) = runAsync(List(a,b,c,d))
+  val nextSteps:Steps = { 
+    case a :: b :: c :: d :: Nil => f(a.asInstanceOf[A],
+                                      b.asInstanceOf[B],
+                                      c.asInstanceOf[C],
+                                      d.asInstanceOf[D])
+  }
+}
+
+abstract class Op5[A,B,C,D,E,T:Manifest](a:Op[A],b:Op[B],c:Op[C],d:Op[D],e:Op[E])(f:(A,B,C,D,E)=>StepOutput[T]) extends Operation[T] {
+  def _run(context:Context) = runAsync(List(a,b,c,d,e))
+  val nextSteps:Steps = {
+    case a :: b :: c :: d :: e :: Nil => f(a.asInstanceOf[A],
+                                           b.asInstanceOf[B],
+                                           c.asInstanceOf[C],
+                                           d.asInstanceOf[D],
+                                           e.asInstanceOf[E])
+  }
+}
+
+
+
+
+case class ExampleIdentity(r:Op[IntRaster]) extends Op1(r)({
+  (r) => {
+    Result(r)
+  } 
+})  
+
+case class ExampleIdentity2(r:Op[IntRaster]) extends Op1(r)(Result(_))
+
+// could also just be
+// case class ExampleIdentity(r:Op[IntRaster]) extendsOp1(r)(Result(_))
