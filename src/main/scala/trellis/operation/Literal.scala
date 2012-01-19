@@ -5,6 +5,6 @@ import trellis.process._
 /**
  * Return the literal value specified.
  */
-case class Literal[A:Manifest](value:A) extends SimpleOperation[A] {
-  def _value(context:Context) = value
+case class Literal[A:Manifest](a:A) extends SimpleOp[A] {
+  def _value(context:Context) = a
 }

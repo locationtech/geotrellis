@@ -37,12 +37,11 @@ trait WithDoubleConstant extends Op[IntRaster] {
  * Add a constant value to each cell.
  */
 case class AddConstant(r:Op[IntRaster], c:Op[Int]) extends UnaryLocal {
-  def functionOps:List[Op[Any]] = {
-      val list = c.asInstanceOf[Op[Any]] :: Nil 
-      list
-  }
-  val functionNextSteps:PartialFunction[Any,StepOutput[Function1[Int,Int]]] = {
-      case (n:Int) :: Nil => Result((z:Int) => z + n)
+  def functionOps:List[Any] = c :: Nil
+
+  //val functionNextSteps:PartialFunction[Any, StepOutput[Function1[Int,Int]]] = {
+  val functionNextSteps:UnaryLocal.Steps = {
+    case (f:Function1[_, _]) :: (n:Int) :: Nil => Result((z:Int) => asF1(f)(z) + n)
   }
 }
 

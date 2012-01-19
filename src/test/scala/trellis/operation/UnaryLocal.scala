@@ -11,8 +11,9 @@ import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class UnaryLocalSpec extends Spec with MustMatchers with ShouldMatchers {
-  describe("The UnaryLocal operation (AddConstant)") {
+  def f(op:Op[IntRaster]) = AddConstant(op, 1)
 
+  describe("The UnaryLocal operation (AddConstant)") {
     val cols = 1000
     val rows = 1000
 
@@ -28,14 +29,22 @@ class UnaryLocalSpec extends Spec with MustMatchers with ShouldMatchers {
       raster2.data(0) must be === raster.data(0) + 33
     }
 
+    it("should compose 2 local operations") {
+      server.run(f(f(raster))).data(0) must be === raster.data(0) + 2
+    }
+
+    it("should compose 3 local operations") {
+      server.run(f(f(f(raster)))).data(0) must be === raster.data(0) + 3
+    }
+
+    it("should compose 4 local operations") {
+      server.run(f(f(f(f(raster))))).data(0) must be === raster.data(0) + 4
+    }
+
     it("should compose multiple operations") {
-      val f = (op:Operation[IntRaster]) => AddConstant(op, 1)
-      val op = f(f(f(f(raster)))) // should add 4
-      //val op = f(raster) // should add 1
-      val Complete(raster2, history) = server.getResult(op)
-      raster2.data(0) must be === raster.data(0) + 4
-      //raster2.data(0) must be === raster.data(0) + 1
+      val Complete(raster2, history) = server.getResult(f(f(f(f(f(raster))))))
       println(history.toPretty)
+      raster2.data(0) must be === raster.data(0) + 5
     }
   }
 }
