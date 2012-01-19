@@ -8,18 +8,19 @@ import trellis.IntRaster
  * Load the raster data for a particular extent/resolution from the specified file.
  */
 
-case class LoadFile(p:Op[String]) extends SimpleOp[IntRaster] {
-  def _value(context:Context) = {
-    val path = context.run(p)
-    context.loadRaster(path, null)
+case class LoadFile(p:Op[String]) extends Operation[IntRaster] {
+  def _run(context:Context) = runAsync(List(p,context))
+  val nextSteps:Steps = {
+    case (path:String) :: (context:Context) :: Nil =>
+      Result(context.loadRaster(path, null))
   }
 }
 
-case class LoadFileWithRasterExtent(p:Op[String], e:Op[RasterExtent]) extends SimpleOp[IntRaster] {
-  def _value(context:Context) = {
-    val path = context.run(p)
-    val rasterExtent = context.run(e)
-    context.loadRaster(path, rasterExtent)
+case class LoadFileWithRasterExtent(p:Op[String], e:Op[RasterExtent]) extends Operation[IntRaster] {
+  def _run(context:Context) = runAsync(List(p,e, context))
+  val nextSteps:Steps = {
+    case (path:String) :: (re:RasterExtent) :: (context:Context) :: Nil => 
+      Result(context.loadRaster(path, re))
   }
 }
 
