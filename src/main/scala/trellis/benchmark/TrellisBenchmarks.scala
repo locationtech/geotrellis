@@ -131,6 +131,33 @@ object AddRastersBenchmark {
 }
 
 
+/**
+ *
+ */
+class SubtractRastersBenchmark(raster1:IntRaster, raster2:IntRaster) {
+  val r1 = AddConstant(raster1, 10)
+  val r2 = AddConstant(raster2, 2)
+
+  val op = Subtract(r1, r2)
+
+  def run(reps:Int, server:Server) = {
+    var r:IntRaster = null
+    for (i <- 0 until reps) r = server.run(op)
+    r
+  }
+}
+
+object SubtractRastersBenchmark {
+  def apply(server:Server, path:String, extent:Extent, size:Int) = {
+    val e = server.run(LoadRasterExtentFromFile(path)).extent
+    val r1 = server.run(LoadFile(path, BuildRasterExtent(e, size, size)))
+    val r2 = server.run(LoadFile(path, BuildRasterExtent(e, size, size)))
+    new SubtractRastersBenchmark(r1, r2)
+  }
+}
+
+
+
 class TrellisBenchmarks extends SimpleBenchmark {
   def buildPairs(ts:(String, Int)*) = ts.map { case (s, w) => (base + s + ".arg", w) }
 
@@ -171,6 +198,11 @@ class TrellisBenchmarks extends SimpleBenchmark {
   var ma1024:AddRastersBenchmark = null
   var ma2048:AddRastersBenchmark = null
 
+  var sb256:SubtractRastersBenchmark = null
+  var sb512:SubtractRastersBenchmark = null
+  var sb1024:SubtractRastersBenchmark = null
+  var sb2048:SubtractRastersBenchmark = null
+
   override def setUp() {
     server = TestServer()
 
@@ -206,6 +238,11 @@ class TrellisBenchmarks extends SimpleBenchmark {
     ma512 = AddRastersBenchmark(server, path, extent, 512)
     ma1024 = AddRastersBenchmark(server, path, extent, 1024)
     ma2048 = AddRastersBenchmark(server, path, extent, 2048)
+
+    sb256 = SubtractRastersBenchmark(server, path, extent, 256)
+    sb512 = SubtractRastersBenchmark(server, path, extent, 512)
+    sb1024 = SubtractRastersBenchmark(server, path, extent, 1024)
+    sb2048 = SubtractRastersBenchmark(server, path, extent, 2048)
   }
 
   //def timeBasicWeightedOverlay_100(reps:Int) = m100.run(reps, server)
@@ -239,6 +276,11 @@ class TrellisBenchmarks extends SimpleBenchmark {
   def timeAddRasters_512(reps:Int) = ma512.run(reps, server)
   def timeAddRasters_1024(reps:Int) = ma1024.run(reps, server)
   def timeAddRasters_2048(reps:Int) = ma2048.run(reps, server)
+
+  def timeSubtractRasters_256(reps:Int) = sb256.run(reps, server)
+  def timeSubtractRasters_512(reps:Int) = sb512.run(reps, server)
+  def timeSubtractRasters_1024(reps:Int) = sb1024.run(reps, server)
+  def timeSubtractRasters_2048(reps:Int) = sb2048.run(reps, server)
 }
 
 object TrellisBenchmarks {

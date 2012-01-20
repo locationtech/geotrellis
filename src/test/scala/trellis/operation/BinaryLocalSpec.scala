@@ -34,5 +34,16 @@ class BinaryLocalSpec extends Spec with MustMatchers with ShouldMatchers {
       val r = server.run(Subtract(r63, r17))
       r.get(0, 0) must be === r46.get(0, 0)
     }
+
+    it("should collapse operations") {
+      val a = AddConstant(MultiplyConstant(AddConstant(r13, 1), 3), 5)
+      val b = AddConstant(MultiplyConstant(AddConstant(r13, 1), 2), 3)
+      val op = Subtract(a, b)
+
+      val Complete(r, history) = server.getResult(op)
+      println(history.toPretty)
+
+      r.get(0, 0) must be === 16
+    }
   }
 }
