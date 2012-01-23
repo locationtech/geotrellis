@@ -22,7 +22,7 @@ object HillshadeTest {
     val h = Hillshade(LoadFile("/var/trellis/stroud/elevation30m-20110607.arg32"), 45.0, 20.0)
     val grayscale = for (i <- 0 until 255) yield (i, i * (256 * 256) + i * 256 + i)
     
-    val png = WritePNGFile(h,"/tmp/hillshade.png", grayscale.toArray, -1, true)
+    val png = WritePNGFile(h,"/tmp/hillshade.png", Literal(grayscale.toArray), -1, true)
     server.run(png)
     val elapsed = System.currentTimeMillis - start
     println("ran hillshade: %d".format(elapsed))

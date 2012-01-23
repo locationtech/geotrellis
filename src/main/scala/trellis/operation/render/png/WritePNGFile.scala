@@ -8,19 +8,24 @@ import trellis.process._
 /**
  * Write out a PNG graphic file to the file system at the specified path.
  */
-case class WritePNGFile(r:Op[IntRaster], path:String, breaks:Array[(Int, Int)],
-                        noDataColor:Int, transparent:Boolean) extends SimpleOp[Unit] {
-  def _value(context:Context) = {
-    val raster = context.run(r)
+//TODO: rename this to RenderPNGFile?
+case class WritePNGFile(r:Op[IntRaster], path:Op[String], breaks:Op[Array[(Int, Int)]],
+                        noDataColor:Op[Int], transparent:Op[Boolean]) 
+extends Op5(r,path,breaks,noDataColor,transparent) ({
+    (r,path,breaks,noDataColor,transparent) => {
     val f = ColorMapper(ColorBreaks(breaks), noDataColor)
-    val writer = new PNGRenderer(raster, path, f, noDataColor, transparent)
+    val writer = new PNGRenderer(r, path, f, noDataColor, transparent)
     writer.write
+    Result(Unit)
   }
-}
+})
 
-case class WritePNGFile2(r:Op[IntRaster], path:String, noDataColor:Int, transparent:Boolean) extends SimpleOp[Unit] {
-  def _value(context:Context) = {
-    val writer = new PNGWriterRGB2(context.run(r), path, noDataColor, transparent)
+//TODO: rename this to WritePNGFile?
+case class WritePNGFile2(r:Op[IntRaster], path:String, noDataColor:Int, transparent:Boolean) 
+extends Op4(r,path,noDataColor,transparent)({
+  (r,path,noDataColor,transparent) => {
+    val writer = new PNGWriterRGB2(r, path, noDataColor, transparent)
     writer.write
+    Result(Unit)
   }
-}
+})
