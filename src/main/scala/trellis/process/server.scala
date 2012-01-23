@@ -14,6 +14,7 @@ import akka.actor._
 import akka.routing._
 import akka.dispatch.Await
 import akka.util.duration._
+import akka.util.Timeout
 
 class Context (server:Server) {
   val timer = new Timer()
@@ -77,6 +78,10 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
   val system = akka.actor.ActorSystem(id, ConfigFactory.load(customConf))
   val actor = system.actorOf(Props(new ServerActor(id, this)), "server")
 
+  def shutdown() {
+    system.shutdown()
+  }
+
   def log(msg:String) = if(debug) println(msg)
 
   def run[T](op:Operation[T])(implicit m:Manifest[T]):T = {
@@ -92,9 +97,9 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
   private[process] def _run[T](op:Operation[T])(implicit m:Manifest[T], t:TimerLike):Complete[T] = {
     log("server.run called with %s" format op)
 
-    implicit val timeout = system.settings.ActorTimeout
+    implicit val timeout = Timeout(60 seconds)
     val future = (actor ? Run(op)).mapTo[OperationResult[T]]
-    val result = Await.result(future, 5 seconds)
+    val result = Await.result(future, 60 seconds)
 
     val result2:Complete[T] = result match {
       case OperationResult(c:Complete[_], _) => {

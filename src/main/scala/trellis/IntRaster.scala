@@ -18,7 +18,11 @@ object IntRaster {
   } 
    
   def apply(array:Array[Int], rows:Int, cols:Int, rasterExtent:RasterExtent, name:String = ""):IntRaster = {
-    new IntRaster(new ArrayRasterData(array), rows, cols, rasterExtent, name)
+    new IntRaster(ArrayRasterData(array), rows, cols, rasterExtent, name)
+  }
+
+  def apply(array:Array[Int], rasterExtent:RasterExtent):IntRaster = {
+    IntRaster(ArrayRasterData(array), rasterExtent)
   }
 
   def createEmpty(geo:RasterExtent) = {
