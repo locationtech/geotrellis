@@ -65,7 +65,6 @@ trait SimpleOperation[T] extends Operation[T] {
   }
 }
 
-
 abstract class Op1[A,T:Manifest](a:Op[A])(f:(A)=>StepOutput[T]) extends Operation[T] {
   def _run(context:Context) = runAsync(List(a))
   val nextSteps:Steps = {

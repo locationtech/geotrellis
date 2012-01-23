@@ -11,6 +11,9 @@ import trellis.geometry._
  */
 class Kernel(val data: Array[Int])
 
+
+
+
 /**
  * Object used for generating kernels
  */
@@ -57,6 +60,7 @@ object Kernel {
     Kernel(r)
   }
 
+  
   /**
    * Predefined functions useful for generating kernels
    */
@@ -108,7 +112,39 @@ object Kernel {
     }
   }
 
+ 
 }
+
+object KernelDensityHelper {
+    private[operation] def stampNeigh(raster: IntRaster, v: Int, x: Int, y: Int,
+                                 dx: Int, dy: Int, kernel: Array[Int]):Unit = {
+      var k = 0
+      val nr = raster.rows
+      val nc = raster.cols
+      var c:Int = x - dx / 2
+      var r:Int = 0
+
+      while(c <= x + dx / 2) {
+        r = y - dy / 2
+
+        while(r <= y + dy / 2) {
+          if (c >= 0 && c < nc && r >= 0 && r < nr) {
+            val i = kernel(k) * v
+            // Don't stamp zero values
+            if (i > 0) {
+              val z = raster.get(c, r)
+              raster.set(c, r, if (z == NODATA) i else z + i)
+            }
+          }
+         
+          k += 1
+          r += 1
+        }
+        
+        c += 1
+      }
+    }
+  }
 
 /**
  * Compute the kernel density of a set of points onto a raster
@@ -128,13 +164,10 @@ object Kernel {
  */
 case class KernelDensity(outputRasterExtent: Op[RasterExtent], 
                          kernel: Op[Kernel], points: Op[Array[Point]])
-extends SimpleOp[IntRaster] {
-
-  def _value(context:Context): IntRaster = {
-    val re = context.run(outputRasterExtent)
-    val raster = context.run(CreateRaster(re))
-    val k = context.run(kernel).data
-    val pts = context.run(points)
+extends Op3(outputRasterExtent, kernel, points) ({
+  (re, kernel, pts) => {
+    val raster = IntRaster.createEmpty(re)
+    val k = kernel.data
 
     val w = math.sqrt(k.length).toInt
     if (w * w != k.length) {
@@ -154,41 +187,13 @@ extends SimpleOp[IntRaster] {
 
       val w2 = w / 2
       if ((px > -w2 && px < cols + w2) && (py > -w2 && py < rows + w2)) {
-        stampNeigh(raster, pt.value, px, py, w, w, k)
+        KernelDensityHelper.stampNeigh(raster, pt.value, px, py, w, w, k)
       }
 
       ptIdx += 1
     }
 
-    raster
+    Result(raster)
   }
+})
 
-  private[this] def stampNeigh(raster: IntRaster, v: Int, x: Int, y: Int,
-                               dx: Int, dy: Int, kernel: Array[Int]):Unit = {
-    var k = 0
-    val nr = raster.rows
-    val nc = raster.cols
-    var c:Int = x - dx / 2
-    var r:Int = 0
-
-    while(c <= x + dx / 2) {
-      r = y - dy / 2
-
-      while(r <= y + dy / 2) {
-        if (c >= 0 && c < nc && r >= 0 && r < nr) {
-          val i = kernel(k) * v
-          // Don't stamp zero values
-          if (i > 0) {
-            val z = raster.get(c, r)
-            raster.set(c, r, if (z == NODATA) i else z + i)
-          }
-        }
-       
-        k += 1
-        r += 1
-      }
-      
-      c += 1
-    }
-  }
-}

@@ -6,17 +6,19 @@ import trellis.process._
 import trellis.geometry.Polygon
 import trellis.geometry.MultiPolygon
 
+//TODO: refactor
 /**
   * Rasterize an array of polygons and then draw them into the provided raster.
   */
 case class BurnPolygons(r:Op[IntRaster], ps:Array[Op[Polygon]])
-extends SimpleOp[IntRaster] {
-  def _value(context:Context) = {
-    // TODO: profile/optimize
-    val raster   = context.run(CopyRaster(r))
-    val polygons = ps.map(context.run(_))
-    Rasterizer.rasterize(raster, polygons)
-    raster
+extends Operation[IntRaster]  {
+  def _run (context:Context) = runAsync( r :: ps.toList)
+  val nextSteps:Steps = {
+    case (r:IntRaster) :: ps => {
+      val raster = r.copy
+      Rasterizer.rasterize(raster, ps.asInstanceOf[List[Polygon]].toArray)
+      Result(raster)
+    }
   }
 }
 
@@ -43,48 +45,62 @@ extends Op[IntRaster] {
   }
 }
 
+//TODO: review these operations
 /**
   * Rasterize an array of polygons and then draw them into the provided raster.
   */
 case class BurnPolygons2(r:Op[IntRaster], ps:Array[Op[Polygon]], fs:Array[Int => Int])
-extends SimpleOp[IntRaster] {
-  def _value(context:Context) = {
-    // TODO: profile/optimize
-    val raster   = context.run(CopyRaster(r))
-    val polygons = ps.map(context.run(_))
-    Rasterizer.rasterize(raster, polygons, fs)
-    raster
+extends Operation[IntRaster] {
+  def _run(context:Context) = {
+    runAsync(List(r,fs) :: ps.toList)
+  }
+
+  val nextSteps:Steps = {
+    case (r:IntRaster) :: fs :: p => {
+      val polygons = p.asInstanceOf[Array[Polygon]] 
+      val raster = r.copy
+      Rasterizer.rasterize(raster, polygons, fs.asInstanceOf[Array[Int=>Int]])
+      Result(raster)
+    }
   }
 }
 
 /**
   * Rasterize an array of polygons and then draw them into the provided raster.
   */
-case class BurnPolygons3(r:Op[IntRaster], ps:Op[List[Polygon]], value:Int)
-extends SimpleOp[IntRaster] {
+case class BurnPolygons3(r:Op[IntRaster], ps:Op[List[Polygon]], value:Op[Int])
+extends Operation[IntRaster] {
+  def _run(context:Context) = {
+    runAsync( List(r, value, ps) )
+  }
 
-  def _value(context:Context) = {
-    // TODO: profile/optimize
-    val raster   = context.run(CopyRaster(r))
-    val polygons = context.run(ps).toArray
-    val fs = polygons.map(p => (z:Int) => value)
-
-    Rasterizer.rasterize(raster, polygons, fs)
-    raster
+  val nextSteps:Steps = {
+    case r :: value :: (ps:List[_]) :: Nil => runAsync(r :: value :: ps)
+    case (r:IntRaster) :: (value:Int) :: ps => {
+      val polygons = ps.toArray.asInstanceOf[Array[Polygon]]
+      val raster = r.copy
+      val fs = polygons.map(p => (z:Int) => value)
+      Rasterizer.rasterize(raster, polygons, fs)
+      Result(raster)
+    }
   }
 }
 
-trait BurnPolygonsBase extends SimpleOp[IntRaster] {
+
+abstract class BurnPolygonsBase extends Operation[IntRaster] {
   def r:Op[IntRaster]
   def ps:Op[Array[Polygon]]
 
-  def _value(context:Context) = {
-    // TODO: profile/optimize
-    val raster   = context.run(CopyRaster(r))
-    val polygons = context.run(ps)
+  def _run(context:Context) = runAsync(List(r,ps))
 
-    Rasterizer.rasterize(raster, polygons)
-    raster
+  val nextSteps:Steps = {
+    case (r:IntRaster) :: (ps:Array[_]) :: Nil => runAsync(r :: ps.toList)
+    case (r:IntRaster) :: pList => {
+      val raster = r.copy
+      val polygons = pList.toArray.asInstanceOf[Array[Polygon]]
+      Rasterizer.rasterize(raster, polygons)
+      Result(raster)
+    }
   }
 }
 

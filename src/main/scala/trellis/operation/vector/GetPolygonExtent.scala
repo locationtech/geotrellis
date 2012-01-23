@@ -8,6 +8,6 @@ import trellis.Extent
 /**
   * Return the extent of a given polygon.
   */
-case class GetPolygonExtent(p:Op[Polygon]) extends SimpleOp[Extent] {
-  def _value(context:Context) = context.run(p).getExtent
-}
+case class GetPolygonExtent(p:Op[Polygon]) extends Op1(p) ({
+  (p) => { Result(p.getExtent) }
+})
