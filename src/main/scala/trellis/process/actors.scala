@@ -194,8 +194,6 @@ trait WorkerLike extends Actor {
  * Workers are responsible for evaluating an operation. However, if the
  * operation in question requires asynchronous callbacks, the work will be
  * off-loaded to a Calculation.
- *
- * Thus, in practice workers only ever do work on SimpleOperations.
  */
 case class Worker(val server: Server) extends WorkerLike {
   // Workers themselves don't have direct children. If the operation in

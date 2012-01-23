@@ -54,6 +54,7 @@ object Operation {
 }
 
 
+/*
 trait SimpleOperation[T] extends Operation[T] {
   // define simple behavior here
   def _value(context:Context):T 
@@ -64,6 +65,7 @@ trait SimpleOperation[T] extends Operation[T] {
     case _ => throw new Exception("simple operation has no steps")
   }
 }
+*/
 
 abstract class Op1[A,T:Manifest](a:Op[A])(f:(A)=>StepOutput[T]) extends Operation[T] {
   def _run(context:Context) = runAsync(List(a))
