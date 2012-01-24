@@ -126,45 +126,46 @@ object Kernel {
  * 
  * @see trellis.operation.Kernel$ for methods of creating the input kernel
  */
-case class KernelDensity(outputRasterExtent: Op[RasterExtent], 
-                         kernel: Op[Kernel], points: Op[Array[Point]])
-extends SimpleOp[IntRaster] {
+case class KernelDensity(re:Op[RasterExtent], k:Op[Kernel], pts:Op[Array[Point]])
+extends Op[IntRaster] {
 
-  def _value(context:Context): IntRaster = {
-    val re = context.run(outputRasterExtent)
-    val raster = context.run(CreateRaster(re))
-    val k = context.run(kernel).data
-    val pts = context.run(points)
+  def _run(context:Context) = runAsync(List(re, k, pts))
 
-    val w = math.sqrt(k.length).toInt
-    if (w * w != k.length) {
-      sys.error("You must use a square kernel")
-    }
-
-    var ptIdx = 0
-    val ptLen = pts.length
-
-    val cols = raster.cols
-    val rows = raster.rows
-    while(ptIdx < ptLen) {
-      val pt = pts(ptIdx)
-
-      val px = ((pt.x - re.extent.xmin) / re.cellwidth).toInt
-      val py = ((re.extent.ymax - pt.y) / re.cellheight).toInt
-
-      val w2 = w / 2
-      if ((px > -w2 && px < cols + w2) && (py > -w2 && py < rows + w2)) {
-        stampNeigh(raster, pt.value, px, py, w, w, k)
+  val nextSteps:Steps = {
+    case (re:RasterExtent) :: (kernel:Kernel) :: (pts:Array[Point]) :: Nil => {
+      val raster = IntRaster.createEmpty(re)
+      val k = kernel.data
+  
+      val w = math.sqrt(k.length).toInt
+      if (w * w != k.length) {
+        sys.error("You must use a square kernel")
       }
-
-      ptIdx += 1
+  
+      var ptIdx = 0
+      val ptLen = pts.length
+  
+      val cols = raster.cols
+      val rows = raster.rows
+      while(ptIdx < ptLen) {
+        val pt = pts(ptIdx)
+  
+        val px = ((pt.x - re.extent.xmin) / re.cellwidth).toInt
+        val py = ((re.extent.ymax - pt.y) / re.cellheight).toInt
+  
+        val w2 = w / 2
+        if ((px > -w2 && px < cols + w2) && (py > -w2 && py < rows + w2)) {
+          stampNeigh(raster, pt.value, px, py, w, w, k)
+        }
+  
+        ptIdx += 1
+      }
+  
+      Result(raster)
     }
-
-    raster
   }
 
   private[this] def stampNeigh(raster: IntRaster, v: Int, x: Int, y: Int,
-                               dx: Int, dy: Int, kernel: Array[Int]):Unit = {
+                               dx: Int, dy: Int, kernel: Array[Int]) {
     var k = 0
     val nr = raster.rows
     val nc = raster.cols
