@@ -8,18 +8,17 @@ import trellis.stat._
  * Build a histogram (using the [[trellis.stat.MapHistogram]] strategy) from
  * this raster.
  */
-case class BuildMapHistogram(r:Op[IntRaster]) extends SimpleOp[Histogram] {
-  def _value(context:Context) = {
-    val histogram = FastMapHistogram()
-    val raster = context.run(r)
-    val data = raster.data
+case class BuildMapHistogram(r:Op[IntRaster]) extends Op1(r) ({
+    (raster) => {
+      val histogram = FastMapHistogram()
+      val data = raster.data
 
-    var i = 0
-    val len = raster.length
-    while (i < len) {
-      if (data(i) != NODATA) histogram.countItem(data(i), 1)
-      i += 1
+      var i = 0
+      val len = raster.length
+      while (i < len) {
+        if (data(i) != NODATA) histogram.countItem(data(i), 1)
+        i += 1
+      }
+      Result(histogram.asInstanceOf[Histogram])
     }
-    histogram
-  }
-}
+})

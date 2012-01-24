@@ -16,22 +16,13 @@ object Normalize {
  * Normalize the values in the given raster so that all values are within the
  * specified minimum and maximum value range.
  */
-case class AutomaticNormalize(r:Op[IntRaster], g:Op[(Int, Int)]) extends Op[IntRaster] {
-
-  def _run(context:Context) = runAsync(List(r, g))
-
-  val nextSteps:Steps = {
-    case (raster:IntRaster) :: (goal:Tuple2[_, _]) :: Nil => {
-      step2(raster, goal.asInstanceOf[(Int, Int)])
-    }
-  }
-
-  def step2(raster:IntRaster, goal:(Int, Int)) = {
+case class AutomaticNormalize(r:Op[IntRaster], g:Op[(Int, Int)]) extends Op2(r,g) ({
+  (raster,goal) => {
     val (zmin, zmax) = raster.findMinMax
     val (gmin, gmax) = goal
     Result(raster.normalize(zmin, zmax, gmin, gmax))
   }
-}
+})
 
 /**
  * Normalize the values in the given raster.
@@ -39,19 +30,10 @@ case class AutomaticNormalize(r:Op[IntRaster], g:Op[(Int, Int)]) extends Op[IntR
  * gmin and gmax are the desired minimum and maximum values in the output raster.
  */ 
 case class PrecomputedNormalize(r:Op[IntRaster], c:Op[(Int, Int)],
-                                g:Op[(Int, Int)]) extends Op[IntRaster] {
-
-  def _run(context:Context) = runAsync(List(r, c, g))
-
-  val nextSteps:Steps = {
-    case (raster:IntRaster) :: (curr:Tuple2[_, _]) :: (goal:Tuple2[_, _]) :: Nil => {
-      step2(raster, curr.asInstanceOf[(Int, Int)], goal.asInstanceOf[(Int, Int)])
-    }
-  }
-
-  def step2(raster:IntRaster, curr:(Int, Int), goal:(Int, Int)) = {
+                                g:Op[(Int, Int)]) extends Op3(r,c,g) ({
+  (raster,curr,goal) => {
     val (zmin, zmax) = curr
     val (gmin, gmax) = goal
     Result(raster.normalize(zmin, zmax, gmin, gmax))
   }
-}
+})

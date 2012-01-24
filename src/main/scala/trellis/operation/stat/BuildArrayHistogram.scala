@@ -9,12 +9,10 @@ import trellis.stat._
  * Build an array histogram (see [[trellis.stat.ArrayHistogram]] of values from
  * a raster.
  */
-case class BuildArrayHistogram(r:Op[IntRaster], n:Op[Int]) extends SimpleOp[Histogram] {
-  def _value(context:Context) = {
-    val size = context.run(n)
+case class BuildArrayHistogram(r:Op[IntRaster], size:Op[Int]) extends Op2(r,size) ({
+  (raster, size) => {
     val histogram = ArrayHistogram(size)
 
-    val raster = context.run(r)
     val data = raster.data
 
     var i = 0
@@ -24,6 +22,6 @@ case class BuildArrayHistogram(r:Op[IntRaster], n:Op[Int]) extends SimpleOp[Hist
       if (z != NODATA && z >= 0) histogram.countItem(z, 1)
       i += 1
     }
-    histogram
+    Result(histogram.asInstanceOf[Histogram])
   }
-}
+})

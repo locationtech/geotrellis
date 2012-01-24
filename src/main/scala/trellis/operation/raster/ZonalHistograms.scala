@@ -5,21 +5,12 @@ import trellis.process._
 import trellis.stat._
 
 /**
- * Given a raster and an array of polygons, return a histogram summary of the cells
- * within each polygon.
+ * Given a raster, return a histogram summary of the cells within each zone.
  */
-case class ZonalHistograms(data: Op[IntRaster], zones: Op[IntRaster],
-                           zonesArraySize: Int, histArraySize: Int) extends Op[Array[Histogram]] {
-
-  def _run(context:Context) = runAsync(List(data, zones))
-
-  val nextSteps:Steps = {
-    case (dataRaster:IntRaster) :: (zoneRaster:IntRaster) :: Nil => { 
-      step2(dataRaster, zoneRaster)
-    }
-  }
-
-  def step2(raster:IntRaster, zones: IntRaster) = {
+case class ZonalHistogram(data: Op[IntRaster], zones: Op[IntRaster],
+                           zonesArraySize: Op[Int], histArraySize: Op[Int]) 
+extends Op4(data, zones, zonesArraySize, histArraySize) ({
+  (raster, zones, zonesArraySize, histArraySize) => {
     // build our map to hold results
     val histmap = Array.ofDim[Histogram](zonesArraySize)
     for(i <- 0 until histmap.length) {
@@ -68,4 +59,4 @@ case class ZonalHistograms(data: Op[IntRaster], zones: Op[IntRaster],
     // return an immutable mapping
     Result(histmap)
   }
-}
+})

@@ -8,6 +8,6 @@ import trellis.stat._
  *
  * This includes mean, median, mode, stddev, and min and max values.
  */
-case class GenerateStatistics(h:Op[Histogram]) extends SimpleOp[Statistics] {
-  def _value(context:Context) = context.run(h).generateStatistics
-}
+case class GenerateStatistics(h:Op[Histogram]) extends Op1(h) ({
+  (h) => Result(h.generateStatistics)
+})

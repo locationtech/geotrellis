@@ -6,7 +6,7 @@ import trellis.geometry.Polygon
 package object operation {
   // Operation is such a long word :(
   type Op[A] = Operation[A]
-  type SimpleOp[A] = SimpleOperation[A]
+  //type SimpleOp[A] = SimpleOperation[A]
   type LocalOp = LocalOperation
 
   // TODO: consider adding things like type PNG = Array[Byte]?

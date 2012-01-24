@@ -20,6 +20,9 @@ trait CachedOp[T] extends Op[T] {
   }
 }
 
-case class Cache[T:Manifest](op:Op[T]) extends SimpleOp[T] with CachedOp[T] {
-  def _value(context:Context) = context.run(op)
+case class Cache[T:Manifest](op:Op[T]) extends Operation[T] with CachedOp[T] {
+  def _run(context:Context) = runAsync(List(op)) 
+  val nextSteps:Steps = {
+    case op :: Nil => Result(op.asInstanceOf[T]) 
+  }
 }
