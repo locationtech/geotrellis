@@ -4,9 +4,14 @@ seq(assemblySettings: _*)
 
 seq(ProguardPlugin.proguardSettings :_*)
 
-retrieveManaged := true
+seq(com.github.retronym.SbtOneJar.oneJarSettings: _*)
 
-proguardOptions += keepMain("trellis.rest.WebRunner")
+
+//retrieveManaged := true
+
+libraryDependencies += "commons-lang" % "commons-lang" % "2.6"
+
+//proguardOptions += keepMain("trellis.rest.WebRunner")
 
 proguardOptions := Seq(
   "-keepclasseswithmembers public class * { public static void main(java.lang.String[]); }",

@@ -17,8 +17,8 @@ object MyBuild extends Build {
     testListeners <+= target.map(tgt => new JUnitXmlTestsListener(tgt.toString)),
 
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "1.6.1",
-      "junit" % "junit" % "4.5",
+      "org.scalatest" %% "scalatest" % "1.6.1" % "test",
+      "junit" % "junit" % "4.5" % "test",
       "com.vividsolutions" % "jts" % "1.8",
       "java3d" % "j3d-core" % "1.3.1",
       "org.geotools" % "gt-main" % geotoolsVersion,
@@ -37,7 +37,7 @@ object MyBuild extends Build {
       "com.typesafe.akka" % "akka-remote" % "2.0-M2",
       "com.typesafe.akka" % "akka-actor"  % "2.0-M2",
       "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
-      //"com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT",
+      "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT" from "http://n0d.es/caliper-1.0-SNAPSHOT.jar",
       "com.google.code.gson" % "gson" % "1.7.1",
       "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
        "com.sun.jersey"          % "jersey-bundle" % "1.11"
