@@ -189,11 +189,9 @@ extends Op3(outputRasterExtent, kernel, points) ({
       if ((px > -w2 && px < cols + w2) && (py > -w2 && py < rows + w2)) {
         KernelDensityHelper.stampNeigh(raster, pt.value, px, py, w, w, k)
       }
-
+  
       ptIdx += 1
     }
-
     Result(raster)
   }
 })
-

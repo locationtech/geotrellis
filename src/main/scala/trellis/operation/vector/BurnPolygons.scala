@@ -6,109 +6,75 @@ import trellis.process._
 import trellis.geometry.Polygon
 import trellis.geometry.MultiPolygon
 
-//TODO: refactor
-/**
-  * Rasterize an array of polygons and then draw them into the provided raster.
-  */
-case class BurnPolygons(r:Op[IntRaster], ps:Array[Op[Polygon]])
-extends Operation[IntRaster]  {
-  def _run (context:Context) = runAsync( r :: ps.toList)
-  val nextSteps:Steps = {
-    case (r:IntRaster) :: ps => {
-      val raster = r.copy
-      Rasterizer.rasterize(raster, ps.asInstanceOf[List[Polygon]].toArray)
-      Result(raster)
-    }
+// TODO: Rasterizer.rasterize() should be split into a version that mutates
+// and a version that returns a copy
+//
+// Until then, we'll use Util.rasterize().
+object Util {
+  def rasterize(raster:IntRaster, polygons:Array[Polygon]) = {
+    val copy = raster.copy()
+    Rasterizer.rasterize(copy, polygons)
+    Result(copy)
+  }
+
+  def rasterize(raster:IntRaster, polygons:Array[Polygon], fs:Array[Int => Int]) = {
+    val copy = raster.copy()
+    Rasterizer.rasterize(copy, polygons, fs)
+    Result(copy)
   }
 }
 
-case class BurnMultiPolygon(rr: Op[IntRaster], p: Op[MultiPolygon])
-extends BurnPolygons4Base(rr, p.call(_.polygons))
+// TODO: BurnPolygons should support many different apply() methods for
+// different kinds of arguments.
+object BurnPolygons {
+  def apply(r:Op[IntRaster], ps:Array[Op[Polygon]]):BurnPolygons = {
+    BurnPolygons(r, CollectArray(ps))
+  }
+}
 
-case class BurnMultiPolygons(rr: Op[IntRaster],
-                             ps: Array[Op[MultiPolygon]])
+/**
+  * Rasterize an array of polygons and then draw them into the provided raster.
+  */
+case class BurnPolygons(r:Op[IntRaster], ps:Op[Array[Polygon]])
+extends Op2(r, ps)({
+  (r, ps) => Util.rasterize(r, ps)
+})
+
+
+/**
+ * Rasterize an array of polygons and then draw them into the provided raster.
+ */
+case class BurnPolygonsWithTransform(r:Op[IntRaster], ps:Array[Op[Polygon]], fs:Array[Int => Int])
 extends Op[IntRaster] {
-
-  def _run(context:Context) = runAsync(rr :: ps.toList)
+  def _run(context:Context) = runAsync(r :: CollectArray(ps) :: Nil)
 
   val nextSteps:Steps = {
-    case raster :: polygons => { 
-      step2(raster.asInstanceOf[IntRaster], polygons.asInstanceOf[List[MultiPolygon]])
-    }
-  }
-
-  def step2(raster:IntRaster, polygons:List[MultiPolygon]) = {
-    val rasterCp = raster.copy()
-    val allPolys = polygons.map(_.polygons).flatten.toArray
-    Rasterizer.rasterize(rasterCp, allPolys)
-    Result(rasterCp)
+    case (r:IntRaster) :: (ps:Array[Polygon]) :: Nil => Util.rasterize(r, ps, fs)
   }
 }
 
 //TODO: review these operations
 /**
-  * Rasterize an array of polygons and then draw them into the provided raster.
-  */
-case class BurnPolygons2(r:Op[IntRaster], ps:Array[Op[Polygon]], fs:Array[Int => Int])
-extends Operation[IntRaster] {
-  def _run(context:Context) = {
-    runAsync(List(r,fs) :: ps.toList)
-  }
+ * Rasterize an array of polygons and then draw them into the provided raster.
+ */
+case class BurnPolygonsWithValue(r:Op[IntRaster], ps:Op[Array[Polygon]], v:Op[Int])
+extends Op3(r, ps, v)({
+  (r, ps, v) => Util.rasterize(r, ps, ps.map(p => (z:Int) => v))
+})
 
-  val nextSteps:Steps = {
-    case (r:IntRaster) :: fs :: p => {
-      val polygons = p.asInstanceOf[Array[Polygon]] 
-      val raster = r.copy
-      Rasterizer.rasterize(raster, polygons, fs.asInstanceOf[Array[Int=>Int]])
-      Result(raster)
-    }
+object BurnMultiPolygon {
+  def apply(r:Op[IntRaster], m:Op[MultiPolygon]) = {
+    BurnPolygons(r, SplitMultiPolygon(m))
   }
 }
 
-/**
-  * Rasterize an array of polygons and then draw them into the provided raster.
-  */
-case class BurnPolygons3(r:Op[IntRaster], ps:Op[List[Polygon]], value:Op[Int])
-extends Operation[IntRaster] {
-  def _run(context:Context) = {
-    runAsync( List(r, value, ps) )
-  }
-
-  val nextSteps:Steps = {
-    case r :: value :: (ps:List[_]) :: Nil => runAsync(r :: value :: ps)
-    case (r:IntRaster) :: (value:Int) :: ps => {
-      val polygons = ps.toArray.asInstanceOf[Array[Polygon]]
-      val raster = r.copy
-      val fs = polygons.map(p => (z:Int) => value)
-      Rasterizer.rasterize(raster, polygons, fs)
-      Result(raster)
-    }
+object BurnMultiPolygons {
+  def apply(r:Op[IntRaster], mps:Array[Op[MultiPolygon]]):BurnMultiPolygons = {
+    BurnMultiPolygons(r, CollectArray(mps))
   }
 }
 
-
-abstract class BurnPolygonsBase extends Operation[IntRaster] {
-  def r:Op[IntRaster]
-  def ps:Op[Array[Polygon]]
-
-  def _run(context:Context) = runAsync(List(r,ps))
-
-  val nextSteps:Steps = {
-    case (r:IntRaster) :: (ps:Array[_]) :: Nil => runAsync(r :: ps.toList)
-    case (r:IntRaster) :: pList => {
-      val raster = r.copy
-      val polygons = pList.toArray.asInstanceOf[Array[Polygon]]
-      Rasterizer.rasterize(raster, polygons)
-      Result(raster)
-    }
-  }
-}
-
-/**
-  * Rasterize an array of polygons and then draw them into the provided raster.
-  */
-abstract class BurnPolygons4Base(val r:Op[IntRaster], val ps:Op[Array[Polygon]])
-extends BurnPolygonsBase
-
-case class BurnPolygons4(_r:Op[IntRaster], _ps:Op[Array[Polygon]])
-extends BurnPolygons4Base(_r, _ps)
+case class BurnMultiPolygons(r:Op[IntRaster], mps:Op[Array[MultiPolygon]])
+extends Op2(r, mps)({
+  (r, mps) => Util.rasterize(r, mps.flatMap(_.polygons))
+})
