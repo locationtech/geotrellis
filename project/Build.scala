@@ -1,6 +1,5 @@
 import sbt._
 import sbt.Keys._
-
 import eu.henkelmann.sbt.JUnitXmlTestsListener
 
 object MyBuild extends Build {
@@ -39,7 +38,14 @@ object MyBuild extends Build {
       "com.typesafe.akka" % "akka-actor"  % "2.0-M2",
       "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
       //"com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT",
-      "com.google.code.gson" % "gson" % "1.7.1"
+      "com.google.code.gson" % "gson" % "1.7.1",
+      "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
+       "com.sun.jersey"          % "jersey-bundle" % "1.11"
+     //"com.sun.jersey"          % "jersey-server" % "1.11",
+    // "com.sun.jersey"          % "jersey-servlet" % "1.11" 
+     // "com.sun.jersey"          % "jersey-core"   % "1.2" % "compile",
+      //"com.sun.jersey"          % "jersey-json"   % "1.2" % "compile",
+      //"com.sun.jersey.contribs" % "jersey-scala"  % "1.2" % "compile"
     ),
 
     resolvers ++= Seq(
@@ -91,7 +97,6 @@ object MyBuild extends Build {
 
 
 // TODO: add proguard stuff back in. this is from old build.sbt file:
-
 /*
 seq(ProguardPlugin.proguardSettings :_*)
 
@@ -122,4 +127,4 @@ makeInJarFilter ~= (j => ((file) => j + ",!**.RSA,!**.SF"))
 // May not even need this--- I think scalaLib is included by default!
 proguardInJars <+= scalaInstance.map ((_:sbt.ScalaInstance).libraryJar)
 
- */
+*/
