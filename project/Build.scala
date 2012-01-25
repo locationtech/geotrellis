@@ -37,7 +37,7 @@ object MyBuild extends Build {
       "com.typesafe.akka" % "akka-remote" % "2.0-M2",
       "com.typesafe.akka" % "akka-actor"  % "2.0-M2",
       "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
-      "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT" from "http://n0d.es/caliper-1.0-SNAPSHOT.jar",
+      "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT" from "http://n0d.es/jars/caliper-1.0-SNAPSHOT.jar",
       "com.google.code.gson" % "gson" % "1.7.1",
       "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
        "com.sun.jersey"          % "jersey-bundle" % "1.11"
@@ -95,6 +95,12 @@ object MyBuild extends Build {
   )
 }
 
+
+object PluginDef extends Build {
+  lazy val root = Project("plugins", file(".")) dependsOn( 
+    pamflet)
+  lazy val pamflet = uri("git://github.com/n8han/pamflet-plugin#0.3.0")
+}
 
 // TODO: add proguard stuff back in. this is from old build.sbt file:
 /*
