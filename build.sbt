@@ -15,3 +15,5 @@ SiteKeys.siteMappings <<=
   (SiteKeys.siteMappings, PamfletKeys.write, PamfletKeys.output) map { (mappings, _, dir) =>
     mappings ++ (dir ** "*.*" x relativeTo(dir))
   }
+
+
