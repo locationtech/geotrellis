@@ -52,11 +52,11 @@ operations with existing operations.
   // create a new operation that takes the result of the
   // previous operation and divide each cell by the average 
   // weight, creating a weighted overlay of our two rasters
-  val op2 = DivideConstant(op, weight1 + weight2 / 2) 
+  val op2 = DivideConstant(op, (weight1 + weight2) / 2) 
 
   // or, we can use a simpler syntax:
-  val avg = weight1 + weight2 / 2 
-  val wo = (raster1 * weight1) + (raster2 * weight2) / avg
+  val avg = (weight1 + weight2) / 2 
+  val wo  = (raster1 * weight1 + raster2 * weight2) / avg
 
   // To this point, we've only been composing new operations.
   // To run an operation:
