@@ -1,0 +1,28 @@
+#!/bin/bash
+
+## replace this with the main class of the method
+mainClass="trellis.run.GeotiffImporter"
+
+version="0.6"
+jar_name="Trellis-assembly-$version.jar"
+
+java_args=""
+
+# find jar either in target (we're in SBT) 
+# or in the same directory as this script (we're both in /bin)
+sbt_path="target/"$jar_name
+bin_path=`dirname $0`/$jar_name
+
+if [ -e $sbt_path ]; then
+  jar_path=$sbt_path;
+elif [ -e $bin_path ]; then
+  jar_path=$bin_path;
+else
+  echo "Could not find jar to execute: "$jar_name
+  echo "This script checks two locations,"
+  echo "  the directory of this script  : "$bin_path
+  echo "  and the relative path from sbt: "$sbt_path  
+  exit 1
+fi
+
+java $java_args -cp $jar_path $mainClass "$@" 
