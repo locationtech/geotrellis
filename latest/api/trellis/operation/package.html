@@ -1,0 +1,1557 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>trellis.operation</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../lib/template.css" />
+      <script type="text/javascript" src="../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../lib/template.js"></script>
+      <script type="text/javascript" src="../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img src="../../lib/package_big.png" />
+        <p id="owner"><a name="trellis" class="extype" href="../package.html">trellis</a></p>
+        <h1>operation</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="kind">package</span>
+      <span class="symbol"> 
+        <span class="name">operation</span>
+        
+        
+      </span>
+      </h4>
+      
+          <div class="fullcommenttop" id="comment"></div>
+        
+
+      <div id="template">
+
+        <div id="mbrsel">
+          <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+          
+          
+          <div id="visbl">
+              <span class="filtertype">Visibility</span>
+              <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+            </div>
+        </div>
+
+        
+
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="trellis.operation.Add" data-isabs="false">
+      <a id="Add:Add"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Add.html"><span class="name">Add</span></a>
+        
+        <span class="params">(<span name="rs">rs: Op[IntRaster]*</span>)</span><span class="result"> extends Op[IntRaster] with MultiLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Add the values of each cell in each raster.</p>
+    </li><li visbl="pub" name="trellis.operation.AddArray" data-isabs="false">
+      <a id="AddArray:AddArray"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="AddArray.html"><span class="name">AddArray</span></a>
+        
+        <span class="params">(<span name="op">op: Op[Array[IntRaster]]</span>)</span><span class="result"> extends Op[IntRaster] with MultiLocalArray with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Add the values of each cell in each raster.</p>
+    </li><li visbl="pub" name="trellis.operation.AddConstant" data-isabs="false">
+      <a id="AddConstant:AddConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="AddConstant.html"><span class="name">AddConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Add a constant value to each cell.</p>
+    </li><li visbl="pub" name="trellis.operation.AddInlinedConstant" data-isabs="false">
+      <a id="AddInlinedConstant:AddInlinedConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="AddInlinedConstant.html"><span class="name">AddInlinedConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Int</span>)</span><span class="result"> extends Op[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.AddLiteralConstant" data-isabs="false">
+      <a id="AddLiteralConstant:AddLiteralConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="AddLiteralConstant.html"><span class="name">AddLiteralConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Int</span>)</span><span class="result"> extends Op[IntRaster] with SimpleUnaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.AutomaticNormalize" data-isabs="false">
+      <a id="AutomaticNormalize:AutomaticNormalize"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="AutomaticNormalize.html"><span class="name">AutomaticNormalize</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="g">g: Op[(Int, Int)]</span>)</span><span class="result"> extends Op2[IntRaster, (Int, Int), IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Normalize the values in the given raster so that all values are within the
+specified minimum and maximum value range.</p>
+    </li><li visbl="pub" name="trellis.operation.BinaryDoCell" data-isabs="false">
+      <a id="BinaryDoCell:BinaryDoCell"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BinaryDoCell.html"><span class="name">BinaryDoCell</span></a>
+        
+        <span class="params">(<span name="r1">r1: Op[IntRaster]</span>, <span name="r2">r2: Op[IntRaster]</span>, <span name="f">f: (Int, Int) ⇒ Int</span>)</span><span class="result"> extends Op[IntRaster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Perform a function on every cell in a raster with the values from another raster.</p>
+    </li><li visbl="pub" name="trellis.operation.BinaryIfCell" data-isabs="false">
+      <a id="BinaryIfCell:BinaryIfCell"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BinaryIfCell.html"><span class="name">BinaryIfCell</span></a>
+        
+        <span class="params">(<span name="r1">r1: Op[IntRaster]</span>, <span name="r2">r2: Op[IntRaster]</span>, <span name="cond">cond: (Int, Int) ⇒ Boolean</span>, <span name="trueValue">trueValue: Int</span>)</span><span class="result"> extends Op[IntRaster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a condition over two rasters, set the value of each cell in the output
+to a specified value if the condition is true given the corresponding values in
+each of the two input rasters.</p>
+    </li><li visbl="pub" name="trellis.operation.BinaryIfElseCell" data-isabs="false">
+      <a id="BinaryIfElseCell:BinaryIfElseCell"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BinaryIfElseCell.html"><span class="name">BinaryIfElseCell</span></a>
+        
+        <span class="params">(<span name="r1">r1: Op[IntRaster]</span>, <span name="r2">r2: Op[IntRaster]</span>, <span name="cond">cond: (Int, Int) ⇒ Boolean</span>, <span name="trueValue">trueValue: Int</span>, <span name="falseValue">falseValue: Int</span>)</span><span class="result"> extends Op[IntRaster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a condition over two rasters, set the value of each cell in the output
+to a specified true or false value after testing the specified condition on
+the corresponding values in each of the two input rasters.</p>
+    </li><li visbl="pub" name="trellis.operation.BinaryLocal" data-isabs="true">
+      <a id="BinaryLocal:BinaryLocal"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="BinaryLocal.html"><span class="name">BinaryLocal</span></a>
+        
+        <span class="result"> extends Op[IntRaster] with LocalOperation</span>
+      </span>
+      </h4>
+      <p class="comment cmt">BinaryLocal is an abstract class for all operations that are both local (operating
+on each cell in a raster without knowledge of other cells) and binary, by which
+we mean that the input includes two rasters (as opposed to 'unary' or 'multi').</p>
+    </li><li visbl="pub" name="trellis.operation.Bitmask" data-isabs="false">
+      <a id="Bitmask:Bitmask"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Bitmask.html"><span class="name">Bitmask</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Bitmask each cell by a constant value.</p>
+    </li><li visbl="pub" name="trellis.operation.BuildArrayHistogram" data-isabs="false">
+      <a id="BuildArrayHistogram:BuildArrayHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BuildArrayHistogram.html"><span class="name">BuildArrayHistogram</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="size">size: Op[Int]</span>)</span><span class="result"> extends Op2[IntRaster, Int, Histogram] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Build an array histogram (see <a name="trellis.stat.ArrayHistogram" class="extype" href="../stat/ArrayHistogram.html">ArrayHistogram</a> of values from
+a raster.</p>
+    </li><li visbl="pub" name="trellis.operation.BuildCompressedArrayHistogram" data-isabs="false">
+      <a id="BuildCompressedArrayHistogram:BuildCompressedArrayHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BuildCompressedArrayHistogram.html"><span class="name">BuildCompressedArrayHistogram</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="vmin">vmin: Int</span>, <span name="vmax">vmax: Int</span>, <span name="size">size: Int</span>)</span><span class="result"> extends Operation[Histogram] with BuildHistogram with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Build a histogram (using the <a name="trellis.stat.CompressedArrayHistogram" class="extype" href="../stat/CompressedArrayHistogram.html">CompressedArrayHistogram</a>
+strategy) from this raster.</p>
+    </li><li visbl="pub" name="trellis.operation.BuildHistogram" data-isabs="true">
+      <a id="BuildHistogram:BuildHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="BuildHistogram.html"><span class="name">BuildHistogram</span></a>
+        
+        <span class="result"> extends Operation[Histogram]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generic trait used by the various histogram-building operations.</p>
+    </li><li visbl="pub" name="trellis.operation.BuildMapHistogram" data-isabs="false">
+      <a id="BuildMapHistogram:BuildMapHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BuildMapHistogram.html"><span class="name">BuildMapHistogram</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op1[IntRaster, Histogram] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Build a histogram (using the <a name="trellis.stat.MapHistogram" class="extype" href="../stat/MapHistogram.html">MapHistogram</a> strategy) from
+this raster.</p>
+    </li><li visbl="pub" name="trellis.operation.BuildRasterExtent" data-isabs="false">
+      <a id="BuildRasterExtent:BuildRasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BuildRasterExtent.html"><span class="name">BuildRasterExtent</span></a>
+        
+        <span class="params">(<span name="extent">extent: Op[Extent]</span>, <span name="cols">cols: Op[Int]</span>, <span name="rows">rows: Op[Int]</span>)</span><span class="result"> extends Op3[Extent, Int, Int, RasterExtent] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a geographical extent and grid height/width, return an object used to
+load raster data.</p>
+    </li><li visbl="pub" name="trellis.operation.BurnMultiPolygons" data-isabs="false">
+      <a id="BurnMultiPolygons:BurnMultiPolygons"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BurnMultiPolygons.html"><span class="name">BurnMultiPolygons</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="mps">mps: Op[Array[MultiPolygon]]</span>)</span><span class="result"> extends Op2[IntRaster, Array[MultiPolygon], IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.BurnPolygon" data-isabs="false">
+      <a id="BurnPolygon:BurnPolygon"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BurnPolygon.html"><span class="name">BurnPolygon</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="p">p: Op[Polygon]</span>)</span><span class="result"> extends Op2[IntRaster, Polygon, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Rasterize a polygon and then draw it on the provided raster.</p>
+    </li><li visbl="pub" name="trellis.operation.BurnPolygons" data-isabs="false">
+      <a id="BurnPolygons:BurnPolygons"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BurnPolygons.html"><span class="name">BurnPolygons</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="ps">ps: Op[Array[Polygon]]</span>)</span><span class="result"> extends Op2[IntRaster, Array[Polygon], IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Rasterize an array of polygons and then draw them into the provided raster.</p>
+    </li><li visbl="pub" name="trellis.operation.BurnPolygonsWithTransform" data-isabs="false">
+      <a id="BurnPolygonsWithTransform:BurnPolygonsWithTransform"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BurnPolygonsWithTransform.html"><span class="name">BurnPolygonsWithTransform</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="ps">ps: Array[Op[Polygon]]</span>, <span name="fs">fs: Array[(Int) ⇒ Int]</span>)</span><span class="result"> extends Op[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Rasterize an array of polygons and then draw them into the provided raster.</p>
+    </li><li visbl="pub" name="trellis.operation.BurnPolygonsWithValue" data-isabs="false">
+      <a id="BurnPolygonsWithValue:BurnPolygonsWithValue"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BurnPolygonsWithValue.html"><span class="name">BurnPolygonsWithValue</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="ps">ps: Op[Array[Polygon]]</span>, <span name="v">v: Op[Int]</span>)</span><span class="result"> extends Op3[IntRaster, Array[Polygon], Int, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Rasterize an array of polygons and then draw them into the provided raster.</p>
+    </li><li visbl="pub" name="trellis.operation.Cache" data-isabs="false">
+      <a id="Cache:Cache[T]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Cache.html"><span class="name">Cache</span></a>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="params">(<span name="op">op: Op[T]</span>, <span name="evidence$1">evidence$1: Manifest[T]</span>)</span><span class="result"> extends Operation[T] with CachedOp[T] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.CachedOp" data-isabs="true">
+      <a id="CachedOp:CachedOp[T]"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="CachedOp.html"><span class="name">CachedOp</span></a>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="result"> extends Op[T]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Trait providing caching support for operations which want to save their
+result and return those on future invocations of run().</p>
+    </li><li visbl="pub" name="trellis.operation.Call" data-isabs="false">
+      <a id="Call:Call[A, B]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Call.html"><span class="name">Call</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span>
+        <span class="params">(<span name="v">v: Op[A]</span>, <span name="f">f: (A) ⇒ B</span>, <span name="evidence$1">evidence$1: Manifest[A]</span>, <span name="evidence$2">evidence$2: Manifest[B]</span>)</span><span class="result"> extends Operation[B] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Multiply each cell in a raster by a constant value.</p>
+    </li><li visbl="pub" name="trellis.operation.ChunkRasterExtent" data-isabs="false">
+      <a id="ChunkRasterExtent:ChunkRasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ChunkRasterExtent.html"><span class="name">ChunkRasterExtent</span></a>
+        
+        <span class="params">(<span name="re">re: Op[RasterExtent]</span>, <span name="nx">nx: Op[Int]</span>, <span name="ny">ny: Op[Int]</span>)</span><span class="result"> extends Op3[RasterExtent, Int, Int, Array[RasterExtent]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Used to chunk a RasterExtent object (geographical extent + grid information)
+into many smaller contiguous pieces.</p>
+    </li><li visbl="pub" name="trellis.operation.CollectArray" data-isabs="false">
+      <a id="CollectArray:CollectArray[A]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="CollectArray.html"><span class="name">CollectArray</span></a>
+        <span class="tparams">[<span name="A">A</span>]</span>
+        <span class="params">(<span name="ops">ops: Array[Op[A]]</span>, <span name="evidence$1">evidence$1: Manifest[A]</span>)</span><span class="result"> extends Op[Array[A]] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.CopyRaster" data-isabs="false">
+      <a id="CopyRaster:CopyRaster"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="CopyRaster.html"><span class="name">CopyRaster</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op1[IntRaster, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given an operation producing a raster, returns a copy of this raster.</p>
+    </li><li visbl="pub" name="trellis.operation.CreateRaster" data-isabs="false">
+      <a id="CreateRaster:CreateRaster"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="CreateRaster.html"><span class="name">CreateRaster</span></a>
+        
+        <span class="params">(<span name="re">re: Op[RasterExtent]</span>)</span><span class="result"> extends Op1[RasterExtent, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Creates an empty raster object based on the given raster properties.</p>
+    </li><li visbl="pub" name="trellis.operation.CreateSimplePolygon" data-isabs="false">
+      <a id="CreateSimplePolygon:CreateSimplePolygon"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="CreateSimplePolygon.html"><span class="name">CreateSimplePolygon</span></a>
+        
+        <span class="params">(<span name="pts">pts: Op[Array[(Double, Double)]]</span>, <span name="v">v: Op[Int]</span>)</span><span class="result"> extends Op2[Array[(Double, Double)], Int, Polygon] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Create a Polygon from an array of coordinates represented as a tuple (x,y).</p>
+    </li><li visbl="pub" name="trellis.operation.CropRasterExtent" data-isabs="false">
+      <a id="CropRasterExtent:CropRasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="CropRasterExtent.html"><span class="name">CropRasterExtent</span></a>
+        
+        <span class="params">(<span name="r">r: Op[RasterExtent]</span>, <span name="e">e: Op[Extent]</span>)</span><span class="result"> extends Op2[RasterExtent, Extent, RasterExtent] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a geographical extent and grid height/width, return an object used to
+load raster data.</p>
+    </li><li visbl="pub" name="trellis.operation.CropRasterExtentByExtent" data-isabs="false">
+      <a id="CropRasterExtentByExtent:CropRasterExtentByExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="CropRasterExtentByExtent.html"><span class="name">CropRasterExtentByExtent</span></a>
+        
+        <span class="params">(<span name="g">g: Op[RasterExtent]</span>, <span name="e">e: Op[Extent]</span>)</span><span class="result"> extends Op2[RasterExtent, Extent, RasterExtent] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a geographical extent and grid height/width, return an object used to
+load raster data.</p>
+    </li><li visbl="pub" name="trellis.operation.CsvIntMap" data-isabs="false">
+      <a id="CsvIntMap:CsvIntMap"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="CsvIntMap.html"><span class="name">CsvIntMap</span></a>
+        
+        <span class="params">(<span name="path">path: String</span>, <span name="delimiter">delimiter: String</span>)</span><span class="result"> extends Op2[String, String, Map[(String, String), Int]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Create a Map of (String,String) =&gt; Int from a CSV file
+of the format: String,String,Int
+</p>
+    </li><li visbl="pub" name="trellis.operation.DeviationRaster" data-isabs="false">
+      <a id="DeviationRaster:DeviationRaster"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="DeviationRaster.html"><span class="name">DeviationRaster</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="h">h: Op[Histogram]</span>, <span name="factor">factor: Int</span>)</span><span class="result"> extends Op[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.Divide" data-isabs="false">
+      <a id="Divide:Divide"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Divide.html"><span class="name">Divide</span></a>
+        
+        <span class="params">(<span name="r1">r1: Op[IntRaster]</span>, <span name="r2">r2: Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Divide each value of one raster with the values from another raster.</p>
+    </li><li visbl="pub" name="trellis.operation.DivideConstant" data-isabs="false">
+      <a id="DivideConstant:DivideConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="DivideConstant.html"><span class="name">DivideConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Divide each cell by a constant value.</p>
+    </li><li visbl="pub" name="trellis.operation.DivideConstantBy" data-isabs="false">
+      <a id="DivideConstantBy:DivideConstantBy"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="DivideConstantBy.html"><span class="name">DivideConstantBy</span></a>
+        
+        <span class="params">(<span name="c">c: Op[Int]</span>, <span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">For each cell, divide a constant value by that cell's value.</p>
+    </li><li visbl="pub" name="trellis.operation.DivideDoubleConstant" data-isabs="false">
+      <a id="DivideDoubleConstant:DivideDoubleConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="DivideDoubleConstant.html"><span class="name">DivideDoubleConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Double]</span>)</span><span class="result"> extends Op[IntRaster] with WithDoubleConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.DivideDoubleConstantBy" data-isabs="false">
+      <a id="DivideDoubleConstantBy:DivideDoubleConstantBy"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="DivideDoubleConstantBy.html"><span class="name">DivideDoubleConstantBy</span></a>
+        
+        <span class="params">(<span name="c">c: Op[Double]</span>, <span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with WithDoubleConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.DoCell" data-isabs="false">
+      <a id="DoCell:DoCell"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="DoCell.html"><span class="name">DoCell</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="f">f: (Int) ⇒ Int</span>)</span><span class="result"> extends Op[IntRaster] with SimpleUnaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Perform a function on every cell in a raster.</p>
+    </li><li visbl="pub" name="trellis.operation.ExampleIdentity" data-isabs="false">
+      <a id="ExampleIdentity:ExampleIdentity"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ExampleIdentity.html"><span class="name">ExampleIdentity</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op1[IntRaster, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.ExampleIdentity2" data-isabs="false">
+      <a id="ExampleIdentity2:ExampleIdentity2"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ExampleIdentity2.html"><span class="name">ExampleIdentity2</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op1[IntRaster, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.FindClassBreaks" data-isabs="false">
+      <a id="FindClassBreaks:FindClassBreaks"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="FindClassBreaks.html"><span class="name">FindClassBreaks</span></a>
+        
+        <span class="params">(<span name="h">h: Op[Histogram]</span>, <span name="n">n: Op[Int]</span>)</span><span class="result"> extends Op[Array[Int]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generate quantile class breaks for a given raster.</p>
+    </li><li visbl="pub" name="trellis.operation.FindColorBreaks" data-isabs="false">
+      <a id="FindColorBreaks:FindColorBreaks"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="FindColorBreaks.html"><span class="name">FindColorBreaks</span></a>
+        
+        <span class="params">(<span name="h">h: Op[Histogram]</span>, <span name="cs">cs: Op[Array[Int]]</span>)</span><span class="result"> extends Op[ColorBreaks] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generate quantile class breaks with assigned colors.</p>
+    </li><li visbl="pub" name="trellis.operation.FindMinMax" data-isabs="false">
+      <a id="FindMinMax:FindMinMax"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="FindMinMax.html"><span class="name">FindMinMax</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op1[IntRaster, (Int, Int)] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Find the minimum and maximum value of a raster.</p>
+    </li><li visbl="pub" name="trellis.operation.ForEach" data-isabs="false">
+      <a id="ForEach:ForEach[A, Z]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ForEach.html"><span class="name">ForEach</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="Z">Z</span>]</span>
+        <span class="params">(<span name="op">op: Op[Array[A]]</span>, <span name="f">f: (A) ⇒ Op[Z]</span>, <span name="evidence$1">evidence$1: Manifest[Z]</span>)</span><span class="result"> extends Op[Array[Z]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Evaluates then given operation (op) to get an array of A's.</p>
+    </li><li visbl="pub" name="trellis.operation.ForEach2" data-isabs="false">
+      <a id="ForEach2:ForEach2[A, B, Z]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ForEach2.html"><span class="name">ForEach2</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="Z">Z</span>]</span>
+        <span class="params">(<span name="opA">opA: Op[Array[A]]</span>, <span name="opB">opB: Op[Array[B]]</span>, <span name="f">f: (A, B) ⇒ Op[Z]</span>, <span name="evidence$2">evidence$2: Manifest[Z]</span>)</span><span class="result"> extends Op[Array[Z]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Evaluates then given operations (opA and opB) to get an array of A's and an
+array of B's.</p>
+    </li><li visbl="pub" name="trellis.operation.ForEach3" data-isabs="false">
+      <a id="ForEach3:ForEach3[A, B, C, Z]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ForEach3.html"><span class="name">ForEach3</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="Z">Z</span>]</span>
+        <span class="params">(<span name="opA">opA: Op[Array[A]]</span>, <span name="opB">opB: Op[Array[B]]</span>, <span name="opC">opC: Op[Array[C]]</span>, <span name="f">f: (A, B, C) ⇒ Op[Z]</span>, <span name="evidence$3">evidence$3: Manifest[Z]</span>)</span><span class="result"> extends Op[Array[Z]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Evaluates then given operations (opA opB, and opC) to get arrays of A's, B's
+and C's (which should be the same length).</p>
+    </li><li visbl="pub" name="trellis.operation.ForEachTile" data-isabs="false">
+      <a id="ForEachTile:ForEachTile"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ForEachTile.html"><span class="name">ForEachTile</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="f">f: (Op[IntRaster]) ⇒ Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Perform an operation on every tile in a tileset, and return the new tileset.</p>
+    </li><li visbl="pub" name="trellis.operation.GenerateStatistics" data-isabs="false">
+      <a id="GenerateStatistics:GenerateStatistics"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="GenerateStatistics.html"><span class="name">GenerateStatistics</span></a>
+        
+        <span class="params">(<span name="h">h: Op[Histogram]</span>)</span><span class="result"> extends Op1[Histogram, Statistics] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Determine statistical data for the given histogram.</p>
+    </li><li visbl="pub" name="trellis.operation.GetPolygonExtent" data-isabs="false">
+      <a id="GetPolygonExtent:GetPolygonExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="GetPolygonExtent.html"><span class="name">GetPolygonExtent</span></a>
+        
+        <span class="params">(<span name="p">p: Op[Polygon]</span>)</span><span class="result"> extends Op1[Polygon, Extent] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Return the extent of a given polygon.</p>
+    </li><li visbl="pub" name="trellis.operation.GetRasterExtent" data-isabs="false">
+      <a id="GetRasterExtent:GetRasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="GetRasterExtent.html"><span class="name">GetRasterExtent</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op1[IntRaster, RasterExtent] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Get the trellis.geoattrs.RasterExtent from a given raster.</p>
+    </li><li visbl="pub" name="trellis.operation.GetUnaryFunction" data-isabs="false">
+      <a id="GetUnaryFunction:GetUnaryFunction"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="GetUnaryFunction.html"><span class="name">GetUnaryFunction</span></a>
+        
+        <span class="params">(<span name="op">op: UnaryLocal</span>)</span><span class="result"> extends Op[UnaryF] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.Hillshade" data-isabs="false">
+      <a id="Hillshade:Hillshade"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Hillshade.html"><span class="name">Hillshade</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="azimuth">azimuth: Op[Double]</span>, <span name="altitude">altitude: Op[Double]</span>)</span><span class="result"> extends Op3[IntRaster, Double, Double, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Hillshade creates a raster that, visually, adds a three dimensional appearance to an elevation raster.</p>
+    </li><li visbl="pub" name="trellis.operation.Identity" data-isabs="false">
+      <a id="Identity:Identity"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Identity.html"><span class="name">Identity</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with SimpleUnaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Suspiciously similar to <a name="trellis.operation.CopyRaster" class="extype" href="CopyRaster.html">CopyRaster</a>, Identity returns
+a new raster with the values of the given raster.</p>
+    </li><li visbl="pub" name="trellis.operation.IfCell" data-isabs="false">
+      <a id="IfCell:IfCell"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="IfCell.html"><span class="name">IfCell</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="cond">cond: (Int) ⇒ Boolean</span>, <span name="trueValue">trueValue: Int</span>)</span><span class="result"> extends Op[IntRaster] with SimpleUnaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Maps all cells matching <code>cond</code> to <code>trueValue</code>.</p>
+    </li><li visbl="pub" name="trellis.operation.IfElseCell" data-isabs="false">
+      <a id="IfElseCell:IfElseCell"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="IfElseCell.html"><span class="name">IfElseCell</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="cond">cond: (Int) ⇒ Boolean</span>, <span name="trueValue">trueValue: Int</span>, <span name="falseValue">falseValue: Int</span>)</span><span class="result"> extends Op[IntRaster] with SimpleUnaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Set all values of output raster to one value or another based on whether a
+condition is true or false.</p>
+    </li><li visbl="pub" name="trellis.operation.InverseMask" data-isabs="false">
+      <a id="InverseMask:InverseMask"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="InverseMask.html"><span class="name">InverseMask</span></a>
+        
+        <span class="params">(<span name="r1">r1: Op[IntRaster]</span>, <span name="r2">r2: Op[IntRaster]</span>, <span name="readMask">readMask: Int</span>, <span name="writeMask">writeMask: Int</span>)</span><span class="result"> extends Op[IntRaster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generate a raster with the values from the first raster, but only include
+cells in which the corresponding cell in the second raster is set to the
+&quot;readMask&quot; value.</p>
+    </li><li visbl="pub" name="trellis.operation.Kernel" data-isabs="false">
+      <a id="Kernel:Kernel"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Kernel.html"><span class="name">Kernel</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Used for Kernel Density calculation
+</p>
+    </li><li visbl="pub" name="trellis.operation.KernelDensity" data-isabs="false">
+      <a id="KernelDensity:KernelDensity"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="KernelDensity.html"><span class="name">KernelDensity</span></a>
+        
+        <span class="params">(<span name="outputRasterExtent">outputRasterExtent: Op[RasterExtent]</span>, <span name="kernel">kernel: Op[Kernel]</span>, <span name="points">points: Op[Array[Point]]</span>)</span><span class="result"> extends Op3[RasterExtent, Kernel, Array[Point], IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Compute the kernel density of a set of points onto a raster</p>
+    </li><li visbl="pub" name="trellis.operation.Literal" data-isabs="false">
+      <a id="Literal:Literal[A]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Literal.html"><span class="name">Literal</span></a>
+        <span class="tparams">[<span name="A">A</span>]</span>
+        <span class="params">(<span name="a">a: A</span>, <span name="evidence$1">evidence$1: Manifest[A]</span>)</span><span class="result"> extends Op[A] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Return the literal value specified.</p>
+    </li><li visbl="pub" name="trellis.operation.LoadFile" data-isabs="false">
+      <a id="LoadFile:LoadFile"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="LoadFile.html"><span class="name">LoadFile</span></a>
+        
+        <span class="params">(<span name="p">p: Op[String]</span>)</span><span class="result"> extends Operation[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Load the raster data for a particular extent/resolution from the specified file.</p>
+    </li><li visbl="pub" name="trellis.operation.LoadFileWithRasterExtent" data-isabs="false">
+      <a id="LoadFileWithRasterExtent:LoadFileWithRasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="LoadFileWithRasterExtent.html"><span class="name">LoadFileWithRasterExtent</span></a>
+        
+        <span class="params">(<span name="p">p: Op[String]</span>, <span name="e">e: Op[RasterExtent]</span>)</span><span class="result"> extends Operation[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.LoadRasterExtentFromFile" data-isabs="false">
+      <a id="LoadRasterExtentFromFile:LoadRasterExtentFromFile"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="LoadRasterExtentFromFile.html"><span class="name">LoadRasterExtentFromFile</span></a>
+        
+        <span class="result"> extends Op1[String, RasterExtent]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Load the trellis.geoattrs.RasterExtent from the raster in the specified file.</p>
+    </li><li visbl="pub" name="trellis.operation.package#LocalOp" data-isabs="false">
+      <a id="LocalOp:LocalOp"></a>
+      <h4 class="signature">
+      <span class="kind">type</span>
+      <span class="symbol"> 
+        <span class="name">LocalOp</span>
+        
+        <span class="result"> = <a name="trellis.operation.LocalOperation" class="extype" href="LocalOperation.html">LocalOperation</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.LocalOperation" data-isabs="true">
+      <a id="LocalOperation:LocalOperation"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="LocalOperation.html"><span class="name">LocalOperation</span></a>
+        
+        <span class="result"> extends Op[IntRaster]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Local operations involve each individual value in a raster without information
+about other values in the raster.</p>
+    </li><li visbl="pub" name="trellis.operation.Mask" data-isabs="false">
+      <a id="Mask:Mask"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Mask.html"><span class="name">Mask</span></a>
+        
+        <span class="params">(<span name="r1">r1: Op[IntRaster]</span>, <span name="r2">r2: Op[IntRaster]</span>, <span name="readMask">readMask: Int</span>, <span name="writeMask">writeMask: Int</span>)</span><span class="result"> extends Op[IntRaster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generate a raster with the values from the first raster, but only include
+cells in which the corresponding cell in the second raster *are not* set to the
+&quot;readMask&quot; value.</p>
+    </li><li visbl="pub" name="trellis.operation.MaxConstant" data-isabs="false">
+      <a id="MaxConstant:MaxConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="MaxConstant.html"><span class="name">MaxConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Set each cell to a constant number or the corresponding cell value, whichever is highest.</p>
+    </li><li visbl="pub" name="trellis.operation.MinConstant" data-isabs="false">
+      <a id="MinConstant:MinConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="MinConstant.html"><span class="name">MinConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Set each cell to a constant or its existing value, whichever is lowest.</p>
+    </li><li visbl="pub" name="trellis.operation.MultiLocal" data-isabs="true">
+      <a id="MultiLocal:MultiLocal"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="MultiLocal.html"><span class="name">MultiLocal</span></a>
+        
+        <span class="result"> extends Op[IntRaster] with LocalOperation</span>
+      </span>
+      </h4>
+      <p class="comment cmt"></p>
+    </li><li visbl="pub" name="trellis.operation.MultiLocalArray" data-isabs="true">
+      <a id="MultiLocalArray:MultiLocalArray"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="MultiLocalArray.html"><span class="name">MultiLocalArray</span></a>
+        
+        <span class="result"> extends Op[IntRaster]</span>
+      </span>
+      </h4>
+      <p class="comment cmt"></p>
+    </li><li visbl="pub" name="trellis.operation.Multiply" data-isabs="false">
+      <a id="Multiply:Multiply"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Multiply.html"><span class="name">Multiply</span></a>
+        
+        <span class="params">(<span name="rs">rs: Op[IntRaster]*</span>)</span><span class="result"> extends Op[IntRaster] with MultiLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.MultiplyArray" data-isabs="false">
+      <a id="MultiplyArray:MultiplyArray"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="MultiplyArray.html"><span class="name">MultiplyArray</span></a>
+        
+        <span class="params">(<span name="op">op: Op[Array[IntRaster]]</span>)</span><span class="result"> extends Op[IntRaster] with MultiLocalArray with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.MultiplyConstant" data-isabs="false">
+      <a id="MultiplyConstant:MultiplyConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="MultiplyConstant.html"><span class="name">MultiplyConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Multiply each cell by a constant.</p>
+    </li><li visbl="pub" name="trellis.operation.MultiplyDoubleConstant" data-isabs="false">
+      <a id="MultiplyDoubleConstant:MultiplyDoubleConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="MultiplyDoubleConstant.html"><span class="name">MultiplyDoubleConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Double]</span>)</span><span class="result"> extends Op[IntRaster] with WithDoubleConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.Negate" data-isabs="false">
+      <a id="Negate:Negate"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Negate.html"><span class="name">Negate</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with SimpleUnaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Negate (multiply by -1) each value in a raster.</p>
+    </li><li visbl="pub" name="trellis.operation.package#Op" data-isabs="false">
+      <a id="Op:Op[A]"></a>
+      <h4 class="signature">
+      <span class="kind">type</span>
+      <span class="symbol"> 
+        <span class="name">Op</span>
+        <span class="tparams">[<span name="A">A</span>]</span>
+        <span class="result"> = <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a>[A]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.Op1" data-isabs="true">
+      <a id="Op1:Op1[A, T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Op1.html"><span class="name">Op1</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.Op2" data-isabs="true">
+      <a id="Op2:Op2[A, B, T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Op2.html"><span class="name">Op2</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.Op3" data-isabs="true">
+      <a id="Op3:Op3[A, B, C, T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Op3.html"><span class="name">Op3</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.Op4" data-isabs="true">
+      <a id="Op4:Op4[A, B, C, D, T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Op4.html"><span class="name">Op4</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.Op5" data-isabs="true">
+      <a id="Op5:Op5[A, B, C, D, E, T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Op5.html"><span class="name">Op5</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.Operation" data-isabs="true">
+      <a id="Operation:Operation[T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Operation.html"><span class="name">Operation</span></a>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Base Operation for all Trellis functionality.</p>
+    </li><li visbl="pub" name="trellis.operation.PolygonExtent" data-isabs="false">
+      <a id="PolygonExtent:PolygonExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="PolygonExtent.html"><span class="name">PolygonExtent</span></a>
+        
+        <span class="params">(<span name="p">p: Op[Polygon]</span>, <span name="e">e: Op[Extent]</span>)</span><span class="result"> extends Op2[Polygon, Extent, List[Polygon]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Return the extent of a given polygon.</p>
+    </li><li visbl="pub" name="trellis.operation.PolygonalZonalHistograms" data-isabs="false">
+      <a id="PolygonalZonalHistograms:PolygonalZonalHistograms"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="PolygonalZonalHistograms.html"><span class="name">PolygonalZonalHistograms</span></a>
+        
+        <span class="params">(<span name="ps">ps: Array[Op[Polygon]]</span>, <span name="r">r: Op[IntRaster]</span>, <span name="size">size: Int</span>)</span><span class="result"> extends Op[Array[Histogram]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a raster and an array of polygons, return a histogram summary of the cells
+within each polygon.</p>
+    </li><li visbl="pub" name="trellis.operation.Popper" data-isabs="false">
+      <a id="Popper:Popper"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Popper.html"><span class="name">Popper</span></a>
+        
+        <span class="params">(<span name="pV">pV: Int</span>, <span name="pH">pH: Int</span>, <span name="neighborV">neighborV: Int</span>, <span name="direction">direction: Int</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.PowConstant" data-isabs="false">
+      <a id="PowConstant:PowConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="PowConstant.html"><span class="name">PowConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Raise each cell to the cth power.</p>
+    </li><li visbl="pub" name="trellis.operation.PowDoubleConstant" data-isabs="false">
+      <a id="PowDoubleConstant:PowDoubleConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="PowDoubleConstant.html"><span class="name">PowDoubleConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Double]</span>)</span><span class="result"> extends Op[IntRaster] with WithDoubleConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.PrecomputedNormalize" data-isabs="false">
+      <a id="PrecomputedNormalize:PrecomputedNormalize"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="PrecomputedNormalize.html"><span class="name">PrecomputedNormalize</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[(Int, Int)]</span>, <span name="g">g: Op[(Int, Int)]</span>)</span><span class="result"> extends Op3[IntRaster, (Int, Int), (Int, Int), IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Normalize the values in the given raster.</p>
+    </li><li visbl="pub" name="trellis.operation.RenderPNG" data-isabs="false">
+      <a id="RenderPNG:RenderPNG"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="RenderPNG.html"><span class="name">RenderPNG</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="colorBreaks">colorBreaks: Op[ColorBreaks]</span>, <span name="noDataColor">noDataColor: Op[Int]</span>, <span name="transparent">transparent: Op[Boolean]</span>)</span><span class="result"> extends Op4[IntRaster, ColorBreaks, Int, Boolean, Array[Byte]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generate a PNG from a given raster and a set of color breaks.</p>
+    </li><li visbl="pub" name="trellis.operation.RenderPNG3" data-isabs="false">
+      <a id="RenderPNG3:RenderPNG3"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="RenderPNG3.html"><span class="name">RenderPNG3</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="mapper">mapper: Op[ColorMapper]</span>)</span><span class="result"> extends Op2[IntRaster, ColorMapper, Array[Byte]] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.ResampleRaster" data-isabs="false">
+      <a id="ResampleRaster:ResampleRaster"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ResampleRaster.html"><span class="name">ResampleRaster</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="cols">cols: Op[Int]</span>, <span name="rows">rows: Op[Int]</span>)</span><span class="result"> extends Op3[IntRaster, Int, Int, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This uses a nearest-neighbor algorithm to resample a raster.</p>
+    </li><li visbl="pub" name="trellis.operation.SimpleUnaryLocal" data-isabs="true">
+      <a id="SimpleUnaryLocal:SimpleUnaryLocal"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="SimpleUnaryLocal.html"><span class="name">SimpleUnaryLocal</span></a>
+        
+        <span class="result"> extends Op[IntRaster] with UnaryLocal</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.SplitMultiPolygon" data-isabs="false">
+      <a id="SplitMultiPolygon:SplitMultiPolygon"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="SplitMultiPolygon.html"><span class="name">SplitMultiPolygon</span></a>
+        
+        <span class="params">(<span name="m">m: Op[MultiPolygon]</span>)</span><span class="result"> extends Op1[MultiPolygon, Array[Polygon]] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.Spreader" data-isabs="false">
+      <a id="Spreader:Spreader"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Spreader.html"><span class="name">Spreader</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.Subtract" data-isabs="false">
+      <a id="Subtract:Subtract"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Subtract.html"><span class="name">Subtract</span></a>
+        
+        <span class="params">(<span name="r1">r1: Op[IntRaster]</span>, <span name="r2">r2: Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Subtract each value in the second raster from the corresponding value in the first raster.</p>
+    </li><li visbl="pub" name="trellis.operation.SubtractConstant" data-isabs="false">
+      <a id="SubtractConstant:SubtractConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="SubtractConstant.html"><span class="name">SubtractConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Subtract a constant value from each cell.</p>
+    </li><li visbl="pub" name="trellis.operation.SubtractConstantBy" data-isabs="false">
+      <a id="SubtractConstantBy:SubtractConstantBy"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="SubtractConstantBy.html"><span class="name">SubtractConstantBy</span></a>
+        
+        <span class="params">(<span name="c">c: Op[Int]</span>, <span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.UnaryF" data-isabs="false">
+      <a id="UnaryF:UnaryF"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="UnaryF.html"><span class="name">UnaryF</span></a>
+        
+        <span class="params">(<span name="f">f: (Int) ⇒ Int</span>)</span><span class="result"> extends (Int) ⇒ Int with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Useful wrapper for Function1[Int,Int] that helps preserve type information
+between actors.</p>
+    </li><li visbl="pub" name="trellis.operation.UnaryLocal" data-isabs="true">
+      <a id="UnaryLocal:UnaryLocal"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="UnaryLocal.html"><span class="name">UnaryLocal</span></a>
+        
+        <span class="result"> extends Op[IntRaster] with LocalOp</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Abstract class for all operations that are unary (operate on a single raster) and
+are local (operate on each cell without knowledge of other cells).</p>
+    </li><li visbl="pub" name="trellis.operation.WarpRaster" data-isabs="false">
+      <a id="WarpRaster:WarpRaster"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="WarpRaster.html"><span class="name">WarpRaster</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="e">e: Op[RasterExtent]</span>)</span><span class="result"> extends Op2[IntRaster, RasterExtent, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Crop a raster to a given extent, using a nearest neighbor algorithm to resample.</p>
+    </li><li visbl="pub" name="trellis.operation.WithDoubleConstant" data-isabs="true">
+      <a id="WithDoubleConstant:WithDoubleConstant"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="WithDoubleConstant.html"><span class="name">WithDoubleConstant</span></a>
+        
+        <span class="result"> extends Op[IntRaster] with UnaryLocal</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Multiply each cell in a raster by a constant value.</p>
+    </li><li visbl="pub" name="trellis.operation.WithIntConstant" data-isabs="true">
+      <a id="WithIntConstant:WithIntConstant"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="WithIntConstant.html"><span class="name">WithIntConstant</span></a>
+        
+        <span class="result"> extends Op[IntRaster] with UnaryLocal</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Multiply each cell in a raster by a constant value.</p>
+    </li><li visbl="pub" name="trellis.operation.ZonalHistogram" data-isabs="false">
+      <a id="ZonalHistogram:ZonalHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ZonalHistogram.html"><span class="name">ZonalHistogram</span></a>
+        
+        <span class="params">(<span name="data">data: Op[IntRaster]</span>, <span name="zones">zones: Op[IntRaster]</span>, <span name="zonesArraySize">zonesArraySize: Op[Int]</span>, <span name="histArraySize">histArraySize: Op[Int]</span>)</span><span class="result"> extends Op4[IntRaster, IntRaster, Int, Int, Array[Histogram]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a raster, return a histogram summary of the cells within each zone.</p>
+    </li></ol>
+            </div>
+        
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="trellis.operation.BuildRasterExtent" data-isabs="false">
+      <a id="BuildRasterExtent:BuildRasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="BuildRasterExtent$.html"><span class="name">BuildRasterExtent</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.BurnMultiPolygon" data-isabs="false">
+      <a id="BurnMultiPolygon:BurnMultiPolygon"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="BurnMultiPolygon$.html"><span class="name">BurnMultiPolygon</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.BurnMultiPolygons" data-isabs="false">
+      <a id="BurnMultiPolygons:BurnMultiPolygons"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="BurnMultiPolygons$.html"><span class="name">BurnMultiPolygons</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.BurnPolygons" data-isabs="false">
+      <a id="BurnPolygons:BurnPolygons"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="BurnPolygons$.html"><span class="name">BurnPolygons</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.CropRasterExtent" data-isabs="false">
+      <a id="CropRasterExtent:CropRasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="CropRasterExtent$.html"><span class="name">CropRasterExtent</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.HillshadeHelper" data-isabs="false">
+      <a id="HillshadeHelper:HillshadeHelper"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="HillshadeHelper$.html"><span class="name">HillshadeHelper</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.IfCell" data-isabs="false">
+      <a id="IfCell:IfCell"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="IfCell$.html"><span class="name">IfCell</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.Kernel" data-isabs="false">
+      <a id="Kernel:Kernel"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="Kernel$.html"><span class="name">Kernel</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Object used for generating kernels
+</p>
+    </li><li visbl="pub" name="trellis.operation.KernelDensityHelper" data-isabs="false">
+      <a id="KernelDensityHelper:KernelDensityHelper"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="KernelDensityHelper$.html"><span class="name">KernelDensityHelper</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.LoadFile" data-isabs="false">
+      <a id="LoadFile:LoadFile"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="LoadFile$.html"><span class="name">LoadFile</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.LoadRasterExtentFromFile" data-isabs="false">
+      <a id="LoadRasterExtentFromFile:LoadRasterExtentFromFile"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="LoadRasterExtentFromFile$.html"><span class="name">LoadRasterExtentFromFile</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.Normalize" data-isabs="false">
+      <a id="Normalize:Normalize"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="Normalize$.html"><span class="name">Normalize</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">We'd like to use the normalize name both when we want to automatically
+detect the min/max values, and when we provide them explicitly.</p>
+    </li><li visbl="pub" name="trellis.operation.Operation" data-isabs="false">
+      <a id="Operation:Operation"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="Operation$.html"><span class="name">Operation</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.UnaryF" data-isabs="false">
+      <a id="UnaryF:UnaryF"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="UnaryF$.html"><span class="name">UnaryF</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.UnaryLocal" data-isabs="false">
+      <a id="UnaryLocal:UnaryLocal"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="UnaryLocal$.html"><span class="name">UnaryLocal</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.Util" data-isabs="false">
+      <a id="Util:Util"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="Util$.html"><span class="name">Util</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.package#addIntRasterTo" data-isabs="false">
+      <a id="addIntRasterTo(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addIntRasterTo</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#addIntRasterTo" data-isabs="false">
+      <a id="addIntRasterTo(IntRaster):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addIntRasterTo</span>
+        
+        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#addOpTo" data-isabs="false">
+      <a id="addOpTo(Op[IntRaster]):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addOpTo</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Addition-operator implicits for Int, IntRaster and Op[IntRaster].</p><div class="fullcomment"><div class="comment cmt"><p>Addition-operator implicits for Int, IntRaster and Op[IntRaster].
+</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#divideIntRasterBy" data-isabs="false">
+      <a id="divideIntRasterBy(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">divideIntRasterBy</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#divideIntRasterBy" data-isabs="false">
+      <a id="divideIntRasterBy(IntRaster):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">divideIntRasterBy</span>
+        
+        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#divideOpBy" data-isabs="false">
+      <a id="divideOpBy(Op[IntRaster]):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">divideOpBy</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Division-operator implicits for Int, IntRaster and Op[IntRaster].</p><div class="fullcomment"><div class="comment cmt"><p>Division-operator implicits for Int, IntRaster and Op[IntRaster].
+</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#multiplyIntRasterBy" data-isabs="false">
+      <a id="multiplyIntRasterBy(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyIntRasterBy</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#multiplyIntRasterBy" data-isabs="false">
+      <a id="multiplyIntRasterBy(IntRaster):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyIntRasterBy</span>
+        
+        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#multiplyOpBy" data-isabs="false">
+      <a id="multiplyOpBy(Op[IntRaster]):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyOpBy</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Multiplication-operator implicits for Int, IntRaster and Op[IntRaster].</p><div class="fullcomment"><div class="comment cmt"><p>Multiplication-operator implicits for Int, IntRaster and Op[IntRaster].
+</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.render" data-isabs="false">
+      <a id="render:render"></a>
+      <h4 class="signature">
+      <span class="kind">package</span>
+      <span class="symbol"> 
+        <a href="render/package.html"><span class="name">render</span></a>
+        
+        
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.package#subtractIntRasterBy" data-isabs="false">
+      <a id="subtractIntRasterBy(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractIntRasterBy</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#subtractIntRasterBy" data-isabs="false">
+      <a id="subtractIntRasterBy(IntRaster):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractIntRasterBy</span>
+        
+        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#subtractOpBy" data-isabs="false">
+      <a id="subtractOpBy(Op[IntRaster]):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractOpBy</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Subtraction-operator implicits for Int, IntRaster and Op[IntRaster].</p><div class="fullcomment"><div class="comment cmt"><p>Subtraction-operator implicits for Int, IntRaster and Op[IntRaster].
+</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+
+      </div>
+      
+      <div id="tooltip"></div>
+      
+    </body>
+      </html>
