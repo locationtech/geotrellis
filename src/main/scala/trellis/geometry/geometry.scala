@@ -15,6 +15,9 @@ import com.vividsolutions.jts.geom.{LinearRing => JtsLinearRing}
 import com.vividsolutions.jts.geom.{Polygon    => JtsPolygon}
 import com.vividsolutions.jts.geom.{Geometry   => JtsGeometry}
 
+// TODO: we either shouldn't use our own classes, or we should stop wrapping
+// the JTS classes. currently we seem to have the worst of both worlds.
+
 /**
  * Turn tuples into JtsCoordinates.
  */
