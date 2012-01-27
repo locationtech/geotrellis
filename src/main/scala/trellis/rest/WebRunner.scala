@@ -6,6 +6,7 @@ import org.eclipse.jetty.servlet.{ServletHolder, ServletContextHandler}
 import org.eclipse.jetty.util.thread.QueuedThreadPool
 import com.sun.jersey.spi.container.servlet.ServletContainer
 
+import com.typesafe.config.ConfigFactory
 
 /**
  * Starts a webserver on the configured port (default 8080) that will serve any rest
@@ -17,28 +18,30 @@ import com.sun.jersey.spi.container.servlet.ServletContainer
  */
 
 object WebRunner {
+  val config = ConfigFactory.load()
 
   def main(args: Array[String]) {
-    var port = 8080
+    val host = config.getString("trellis.host")
+    val port = config.getInt("trellis.port")
 
     println("Starting server on port %d.".format(port))
     val server = new Server()
 
     val connector = new SelectChannelConnector()
-    connector.setHost("0.0.0.0")
+    connector.setHost(host)
     connector.setPort(port)
-   // connector.setThreadPool(new QueuedThreadPool(40))
-   // connector.setName("trellis")
     server.addConnector(connector)
 
     val holder: ServletHolder = new ServletHolder(classOf[ServletContainer])
     holder.setInitParameter("com.sun.jersey.config.property.resourceConfigClass",
       "com.sun.jersey.api.core.PackagesResourceConfig")
-    holder.setInitParameter("com.sun.jersey.config.property.packages", "trellis.rest")
+
+    val pkg = config.getString("trellis.rest-package")
+    holder.setInitParameter("com.sun.jersey.config.property.packages", pkg)
+
     val context = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS)
     context.addServlet(holder, "/*")
     server.start
     server.join
   }
 }
-

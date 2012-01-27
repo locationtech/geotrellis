@@ -8,9 +8,5 @@ import javax.ws.rs._
 @Path("/hello")
 class HelloResource {
   @GET
-  def hello() = {
-    "<h2>Hello Worldd!</h2>"
-  }
-
+  def hello() = "<h2>Hello Trellis!</h2>"
 }
-
