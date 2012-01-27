@@ -752,16 +752,15 @@ trait FileCaching {
 }
 
 object Server {
-  val catalogPath = "/etc/trellis/catalog.json"
+  val config = ConfigFactory.load()
+  val catalogPath = config.getString("trellis.catalog")
 
-  def apply(id:String): Server = Server(id, Catalog.fromPath(catalogPath))
-
-  def apply(id:String, catalog:Catalog): Server = {
-    val server = new Server(id, catalog)
-    server
-  }
+  def apply(id:String) = new Server(id, Catalog.fromPath(catalogPath))
+  def apply(id:String, path:String) = new Server(id, Catalog.fromPath(path))
+  def apply(id:String, catalog:Catalog) = new Server(id, catalog)
 }
 
 object TestServer {
   def apply() = Server("test", Catalog.empty("test"))
+  def apply(path:String) = new Server("test", Catalog.fromPath(path))
 }
