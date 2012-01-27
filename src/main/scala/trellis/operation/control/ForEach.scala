@@ -8,8 +8,7 @@ import trellis.process._
  * the given function (f) to each item in the array in. The resulting array of
  * Z's is returned.
  */
-case class ForEach[A, Z:Manifest](op:Op[Array[A]],
-                                  f:(A) => Op[Z]) extends Op[Array[Z]] {
+case class ForEach[A, Z:Manifest](op:Op[Array[A]])(f:(A) => Op[Z]) extends Op[Array[Z]] {
 
   def _run(context:Context) = runAsync(List(op, context))
 
@@ -33,9 +32,8 @@ case class ForEach[A, Z:Manifest](op:Op[Array[A]],
  * the arrays (pairwise by array index) to get a Z value. The resulting array
  * of Z's is returned.
  */
-case class ForEach2[A, B, Z:Manifest](opA:Op[Array[A]],
-                                      opB:Op[Array[B]],
-                                      f:(A, B) => Op[Z]) extends Op[Array[Z]] {
+case class ForEach2[A, B, Z:Manifest](opA:Op[Array[A]], opB:Op[Array[B]])
+(f:(A, B) => Op[Z]) extends Op[Array[Z]] {
 
   def _run(context:Context) = runAsync(List(opA, opB, context))
 
@@ -64,8 +62,8 @@ case class ForEach2[A, B, Z:Manifest](opA:Op[Array[A]],
  */
 case class ForEach3[A, B, C, Z:Manifest](opA:Op[Array[A]],
                                          opB:Op[Array[B]],
-                                         opC:Op[Array[C]],
-                                         f:(A, B, C) => Op[Z]) extends Op[Array[Z]] {
+                                         opC:Op[Array[C]])
+(f:(A, B, C) => Op[Z]) extends Op[Array[Z]] {
 
   def _run(context:Context) = runAsync(List(opA, opB, opC, context))
 

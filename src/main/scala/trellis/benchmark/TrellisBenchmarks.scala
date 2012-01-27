@@ -32,7 +32,7 @@ object MiniAddBenchmark {
 }
 
 class TiledMiniAddBenchmark(raster:IntRaster) {
-  val op = ForEachTile(raster, AddConstant(_, 13))
+  val op = ForEachTile(raster)(AddConstant(_, 13))
   def run(reps:Int, server:Server) {
     var r:IntRaster = null
     for (i <- 0 until reps) r = server.run(op)

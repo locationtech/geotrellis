@@ -156,7 +156,7 @@ class TileSpec extends Spec with MustMatchers {
   describe("DoTile") {
 
     it("can operate over each subraster of a tiled raster") {
-      val op = ForEachTile(Literal(tileRaster), AddConstant(_, 3))
+      val op = ForEachTile(Literal(tileRaster))(AddConstant(_, 3))
       val result = server.run(op)
       for (y <- 0 to 4; x <- 0 to 4)
         result.get(x, y) must be === ((y * 5) + x) + 1 + 3
@@ -167,7 +167,7 @@ class TileSpec extends Spec with MustMatchers {
       val largeTileRaster = Tiler.createTileRaster(largeRaster, 1024)
 
       val start = System.currentTimeMillis
-      val op = ForEachTile(Literal(largeTileRaster),AddConstant(_, 3))
+      val op = ForEachTile(Literal(largeTileRaster))(AddConstant(_, 3))
       val result = server.run(op)
       val elapsed = System.currentTimeMillis - start
 
