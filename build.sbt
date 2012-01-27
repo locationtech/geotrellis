@@ -12,7 +12,7 @@ seq(assemblySettings: _*)
 
 seq(Revolver.settings: _*)
 
-mainClass in (Compile, run) := Some("trellis.rest.WebRunner")
+// mainClass in (Compile, run) := Some("trellis.rest.WebRunner")
 
 mainClass := Some("trellis.rest.WebRunner")
 

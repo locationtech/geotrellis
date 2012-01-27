@@ -11,7 +11,7 @@ import trellis.process.{Run,OperationResult}
 class RemoteClientApplication extends Bootable {
   val system = ActorSystem("RemoteClientApplication", ConfigFactory.load.getConfig("remoteClient"))
   val actor = system.actorOf(Props[RemoteClientActor], "remoteClientActor")
-  val remoteActor = system.actorFor("akka://RemoteServerApplication@127.0.0.1:2552/user/remoteServer")
+  val remoteActor = system.actorFor("akka://RemoteServerApplication@192.168.16.41:2552/user/remoteServer")
 
   def sendRemote(op: Run) = {
     actor ! (remoteActor, op)

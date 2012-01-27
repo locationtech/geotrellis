@@ -8,7 +8,7 @@ import scala.{PartialFunction => PF}
  * Base Operation for all Trellis functionality. All other operations must
  * extend this trait.
  */
-abstract class Operation[T:Manifest] {
+abstract class Operation[T] {
   type Steps = PF[Any, StepOutput[T]]
 
   val nextSteps:PF[Any, StepOutput[T]]
@@ -46,7 +46,7 @@ abstract class Operation[T:Manifest] {
     o
   }
 
-  def call[U:Manifest](f:T => U) = Call(this)(f)
+  //def call[U:Manifest](f:T => U) = Call(this)(f)
 }
 
 object Operation {
