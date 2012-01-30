@@ -48,8 +48,8 @@ object RemoteClient {
     val height = 10.0
     val width = 10.0
 
-    val cols = 256
-    val rows = 256
+    val cols = 512
+    val rows = 512
 
     val e = Extent(0.0, 0.0, width, height)
     val re = RasterExtent(e, width / cols, height / rows, cols, rows)
