@@ -4,6 +4,8 @@ import trellis.process._
 import trellis._
 import scala.{PartialFunction => PF}
 
+import akka.actor._
+
 /**
  * Base Operation for all Trellis functionality. All other operations must
  * extend this trait.
@@ -21,7 +23,7 @@ abstract class Operation[T] {
     */
   def name: String = getClass.getSimpleName
 
-  protected def _run(context:Context): StepOutput[T]
+  protected[operation] def _run(context:Context): StepOutput[T]
  
   /**
    * Execute this operation and return the result.  
@@ -45,7 +47,18 @@ abstract class Operation[T] {
     log("Operation.runAsync returns %s" format o)
     o
   }
+
+  def dispatch(dispatcher:ActorRef) = {
+    DispatchedOperation(this, dispatcher)    
+  }
 }
+
+abstract class OperationWrapper[T](op:Op[T]) extends Operation[T] {
+  def _run(context:Context) = op._run(context)
+  val nextSteps:Steps = op.nextSteps
+}
+
+case class DispatchedOperation[T](val op:Op[T], val dispatcher:ActorRef) extends OperationWrapper(op) {}
 
 object Operation {
   implicit def implicitLiteral[A:Manifest](a:A):Operation[A] = Literal(a)

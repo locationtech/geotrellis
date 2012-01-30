@@ -101,7 +101,12 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
     log("server.run called with %s" format op)
 
     implicit val timeout = Timeout(60 seconds)
-    val future = (actor ? Run(op)).mapTo[OperationResult[T]]
+
+    val future = op match {
+      case op:DispatchedOperation[_] => (actor ? RunDispatched(op.op, op.dispatcher)).mapTo[OperationResult[T]]
+      case op:Operation[_]           => (actor ? Run(op)).mapTo[OperationResult[T]]
+    }
+
     val result = Await.result(future, 60 seconds)
 
     val result2:Complete[T] = result match {
