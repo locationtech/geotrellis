@@ -6,16 +6,37 @@ import scala.util.Random
 import com.typesafe.config.ConfigFactory
 import akka.actor.{ ActorRef, Props, Actor, ActorSystem }
 import trellis.operation._
-import trellis.process.{Run,OperationResult}
+import trellis.process._
 import trellis._
 
 class RemoteClientApplication extends Bootable {
+
+
   val system = ActorSystem("RemoteClientApplication", ConfigFactory.load.getConfig("remoteClient"))
-  val actor = system.actorOf(Props[RemoteClientActor], "remoteClientActor")
+  val server = new Server("client", Catalog.empty("client"))
+  val actor = system.actorOf(Props(new ServerActor("client", server)), "remoteClientActor")
+
+  server._actor = actor
+  server._system = system
+
+
+  //val system = ActorSystem("RemoteClientApplication", ConfigFactory.load.getConfig("remoteClient"))
+  //val actor = system.actorOf(Props[RemoteClientActor], "remoteClientActor")
   val remoteActor = system.actorFor("akka://RemoteServerApplication@192.168.16.41:2552/user/remoteServer")
+
 
   def sendRemote(op: Run) = {
     actor ! (remoteActor, op)
+  }
+
+  def runRemote(op:Operation[_]) {
+    val remoteOp = op.dispatch(remoteActor)
+    println("About to run operation w/ remote dispatch")
+    val start = System.currentTimeMillis 
+    val result = server.run(remoteOp)
+    val elapsed = System.currentTimeMillis - start
+    println("Finished running operation w/ remote dispatch.")
+    println("Finished request: elapsed time: %d".format(elapsed))
   }
 
   def startup() {
@@ -60,13 +81,10 @@ object RemoteClient {
     for (i <- 0 until cols * rows) data(i) = Random.nextInt() % 1000000
 
     val r1 = IntRaster(Array.fill(cols * rows)(3), cols, rows, re)
-    println("Started Lookup Application")
+    println("CLIENT: Started application.")
     while (true) {
-      val msg = Run(AddConstant(r1, 3))
-
-      app.sendRemote(msg)
-
-      Thread.sleep(50)
+      val remoteOp = AddConstant(r1,3)
+      app.runRemote(remoteOp)
     }
   }
 }
