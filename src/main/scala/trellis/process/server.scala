@@ -157,13 +157,10 @@ trait FileCaching {
   def disableCaching() { caching = false }
 
   def getRasterByName(name:String, re:RasterExtent):IntRaster = {
-    for (store <- catalog.stores.values) {
-      if (store.layers.contains(name)) {
-        val (path, layer) = store.layers(name)
-        return getRaster(path, layer, re)
-      }
+    catalog.getRasterLayerByName(name) match {
+      case Some((path, layer)) => getRaster(path, layer, re)
+      case None => sys.error("couldn't find %s" format name)
     }
-    sys.error("couldn't find %s" format name)
   }
 
   def loadRaster(path:String, g:RasterExtent):IntRaster = getRaster(path, null, g)

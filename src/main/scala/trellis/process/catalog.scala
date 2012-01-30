@@ -17,7 +17,6 @@ import trellis.IntRaster
 // example json is available in the trellis.process.catalog tests. please keep
 // it up-to-date with changes you make here.
 
-
 /**
  * Represents a layer of raster data, or a feature layer (e.g. a postgis table
  * of polygons.
@@ -60,7 +59,6 @@ case class DataStore(name:String, params:Map[String, String]) {
 
   def recursiveListFiles(f: File, r: Regex): Array[File] = {
     val these = f.listFiles
-    //these.foreach { println _ }
     val good = these.filter(  _.getPath.endsWith(".json") )
     good ++ these.filter(_.isDirectory).flatMap(recursiveListFiles(_,r))
   }
@@ -72,7 +70,22 @@ case class DataStore(name:String, params:Map[String, String]) {
  * Represents a named collection of data stores. We expect each JSON file to
  * correspond to one catalog.
  */
-case class Catalog(name:String, stores:Map[String, DataStore])
+case class Catalog(name:String, stores:Map[String, DataStore]) {
+  def getRasterLayerByName(layerName:String):Option[(String, RasterLayer)] = {
+    stores.values.foreach {
+      store => {
+        if (store.layers.contains(layerName)) {
+          val (jsonPath, layer) = store.layers(layerName)
+  
+          // fixme
+          val path = jsonPath.substring(0, jsonPath.length - 5) + ".arg32"
+          return Some((path, layer))
+        }
+      }
+    }
+    None
+  }
+}
 
 /**
  * Records are the raw scala/json objects, rather than the objects we
@@ -98,19 +111,9 @@ trait Rec[T] {
  * Concrete Rec types defined below.
  */
 case class RasterLayerRec(layer:String, xmin:Double, xmax:Double, ymin:Double,
-                          ymax:Double, cols:Int, rows:Int, cellheight:Double, cellwidth:Double) 
-           extends Rec[RasterLayer] {
-  def create() = {
-  /*
-    val xmin = params("xmin").toDouble
-    val xmax = params("xmax").toDouble
-    val ymin = params("ymin").toDouble
-    val ymax = params("ymax").toDouble
-    val cols = params("cols").toInt
-    val rows = params("rows").toInt
-    val cellheight = params("cellheight").toDouble
-    val cellwidth = params("cellwidth").toDouble
-    */ 
+                          ymax:Double, cols:Int, rows:Int,
+                          cellheight:Double, cellwidth:Double) extends Rec[RasterLayer] {
+  def create = {
     val extent = Extent(xmin, ymin, xmax, ymax)
     val rasterExtent = RasterExtent(extent, cellwidth, cellheight, cols, rows)
     RasterLayer(layer, rasterExtent)
@@ -139,7 +142,6 @@ object RasterLayer {
    * Build a RasterLayer instance given a path to a JSON file.
    */
   def fromPath(path:String) = {
-    println("loading from path %s" format path)
     val src = Source.fromFile(path)
     val data = src.mkString
     src.close()
@@ -149,11 +151,7 @@ object RasterLayer {
   /**
    * Build a RasterLayer instance given a JSON string.
    */
-  def fromJSON(json:String) = {
-    val rl = parse(json).extract[RasterLayerRec].create
-    println("loaded %s" format rl)
-    rl
-  }
+  def fromJSON(json:String) = parse(json).extract[RasterLayerRec].create
 }
 
 case class RasterLayer(name:String, rasterExtent:RasterExtent) extends Layer {
