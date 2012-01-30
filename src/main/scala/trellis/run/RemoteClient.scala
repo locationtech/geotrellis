@@ -44,9 +44,22 @@ class RemoteClientActor extends Actor {
 object RemoteClient {
   def main(args: Array[String]) {
     val app = new RemoteClientApplication
-    val e = Extent(0.0, 0.0, 10.0, 10.0)
-    val re = RasterExtent(e, 1.0, 1.0, 10, 10)
-    val r1 = IntRaster(Array.fill(100)(3), 10, 10, re)
+
+    val height = 10.0
+    val width = 10.0
+
+    val cols = 256
+    val rows = 256
+
+    val e = Extent(0.0, 0.0, width, height)
+    val re = RasterExtent(e, width / cols, height / rows, cols, rows)
+
+    val data = Array.ofDim[Int](cols * rows)
+    import scala.util.Random
+
+    for (i <- 0 until cols * rows) data(i) = Random.nextInt() % 1000000
+
+    val r1 = IntRaster(Array.fill(cols * rows)(3), cols, rows, re)
     println("Started Lookup Application")
     while (true) {
       val msg = Run(AddConstant(r1, 3))
