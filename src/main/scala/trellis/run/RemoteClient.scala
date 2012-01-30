@@ -7,6 +7,7 @@ import com.typesafe.config.ConfigFactory
 import akka.actor.{ ActorRef, Props, Actor, ActorSystem }
 import trellis.operation._
 import trellis.process.{Run,OperationResult}
+import trellis._
 
 class RemoteClientApplication extends Bootable {
   val system = ActorSystem("RemoteClientApplication", ConfigFactory.load.getConfig("remoteClient"))
@@ -43,9 +44,13 @@ class RemoteClientActor extends Actor {
 object RemoteClient {
   def main(args: Array[String]) {
     val app = new RemoteClientApplication
+    val e = Extent(0.0, 0.0, 10.0, 10.0)
+    val re = RasterExtent(e, 1.0, 1.0, 10, 10)
+    val r1 = IntRaster(Array.fill(100)(3), 10, 10, re)
     println("Started Lookup Application")
     while (true) {
-      val msg = Run(Literal(Random.nextInt(100)))
+      val msg = Run(AddConstant(r1, 3))
+
       app.sendRemote(msg)
 
       Thread.sleep(50)
