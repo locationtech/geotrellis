@@ -7,7 +7,6 @@ import trellis.IntRaster
 /**
  * Load the raster data for a particular extent/resolution from the specified file.
  */
-
 case class LoadFile(p:Op[String]) extends Operation[IntRaster] {
   def _run(context:Context) = runAsync(List(p,context))
   val nextSteps:Steps = {

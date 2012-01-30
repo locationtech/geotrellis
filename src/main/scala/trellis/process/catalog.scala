@@ -30,8 +30,7 @@ trait Layer {
  * Represents a location where data can be loaded from (e.g. the filesystem,
  * postgis, a web service, etc).
  */
-case class DataStore(name:String,
-                     params:Map[String, String]) {
+case class DataStore(name:String, params:Map[String, String]) {
 
   val layers = MMap.empty[String, (String, RasterLayer)]
   val paths = MMap.empty[String, RasterLayer]
@@ -44,9 +43,7 @@ case class DataStore(name:String,
 
   def getLayer(name:String) = layers(name)
   
-  def getRaster(name:String, server:Server) = {
-    
-  }
+  //def getRaster(name:String, server:Server) = {}
 
   /**
    * Recursively find RasterLayers defined in the DataStore path.
@@ -56,10 +53,9 @@ case class DataStore(name:String,
     if (!path.isDirectory) return Array.empty[(String, RasterLayer)]
 
     val layerJson = recursiveListFiles(path, """^.*\.json$""".r)
-    val x = layerJson map ( x => { 
-      (x.getPath, RasterLayer.fromPath(x.getPath)) }
-    ) 
-    x
+    layerJson map {
+      x => (x.getPath, RasterLayer.fromPath(x.getPath))
+    }
   }
 
   def recursiveListFiles(f: File, r: Regex): Array[File] = {
@@ -143,6 +139,7 @@ object RasterLayer {
    * Build a RasterLayer instance given a path to a JSON file.
    */
   def fromPath(path:String) = {
+    println("loading from path %s" format path)
     val src = Source.fromFile(path)
     val data = src.mkString
     src.close()
@@ -152,7 +149,11 @@ object RasterLayer {
   /**
    * Build a RasterLayer instance given a JSON string.
    */
-  def fromJSON(json:String) = parse(json).extract[RasterLayerRec].create
+  def fromJSON(json:String) = {
+    val rl = parse(json).extract[RasterLayerRec].create
+    println("loaded %s" format rl)
+    rl
+  }
 }
 
 case class RasterLayer(name:String, rasterExtent:RasterExtent) extends Layer {

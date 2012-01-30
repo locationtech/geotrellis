@@ -22,7 +22,7 @@ class Context (server:Server) {
   def run[T](op:Operation[T])(implicit m:Manifest[T]):T = {
     server._run(op)(m, timer).value
   }
-
+  
   def getResult[T](op:Operation[T])(implicit m:Manifest[T]):Complete[T] = {
     server._run(op)(m, timer)
   }
@@ -33,6 +33,10 @@ class Context (server:Server) {
 
   def loadRaster(path:String, g:RasterExtent):IntRaster = {
     server.getRaster(path, null, g)
+  }
+
+  def getRasterByName(name:String, re:RasterExtent):IntRaster = {
+    server getRasterByName(name, re)
   }
 }
 
@@ -151,6 +155,16 @@ trait FileCaching {
   //       and/or constructor arguments
   def enableCaching() { caching = true }
   def disableCaching() { caching = false }
+
+  def getRasterByName(name:String, re:RasterExtent):IntRaster = {
+    for (store <- catalog.stores.values) {
+      if (store.layers.contains(name)) {
+        val (path, layer) = store.layers(name)
+        return getRaster(path, layer, re)
+      }
+    }
+    sys.error("couldn't find %s" format name)
+  }
 
   def loadRaster(path:String, g:RasterExtent):IntRaster = getRaster(path, null, g)
 
