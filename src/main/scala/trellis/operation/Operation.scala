@@ -45,8 +45,6 @@ abstract class Operation[T] {
     log("Operation.runAsync returns %s" format o)
     o
   }
-
-  //def call[U:Manifest](f:T => U) = Call(this)(f)
 }
 
 object Operation {
