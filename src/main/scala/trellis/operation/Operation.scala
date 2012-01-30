@@ -53,19 +53,12 @@ object Operation {
   implicit def implicitLiteral[A:Manifest](a:A):Operation[A] = Literal(a)
 }
 
-
-/*
-trait SimpleOperation[T] extends Operation[T] {
-  // define simple behavior here
-  def _value(context:Context):T 
-
-  def _run(context:Context) = Result(this._value(context))
-
-  val nextSteps:PF[Any, Result[T]] = {
-    case _ => throw new Exception("simple operation has no steps")
-  }
+abstract class Op0[T:Manifest](f:()=>StepOutput[T]) extends Operation[T] {
+  def _run(context:Context) = f()
+  val nextSteps:Steps = {
+    case _ => sys.error("should not be called")
+  } 
 }
-*/
 
 abstract class Op1[A,T:Manifest](a:Op[A])(f:(A)=>StepOutput[T]) extends Operation[T] {
   def _run(context:Context) = runAsync(List(a))
@@ -110,6 +103,20 @@ abstract class Op5[A,B,C,D,E,T:Manifest](a:Op[A],b:Op[B],c:Op[C],d:Op[D],e:Op[E]
                                            c.asInstanceOf[C],
                                            d.asInstanceOf[D],
                                            e.asInstanceOf[E])
+  }
+}
+
+abstract class Op6[A,B,C,D,E,F,T:Manifest]
+(a:Op[A],b:Op[B],c:Op[C],d:Op[D],e:Op[E],f:Op[F])
+(ff:(A,B,C,D,E,F)=>StepOutput[T]) extends Operation[T] {
+  def _run(context:Context) = runAsync(List(a,b,c,d,e,f))
+  val nextSteps:Steps = {
+    case a :: b :: c :: d :: e :: f :: Nil => ff(a.asInstanceOf[A],
+                                                 b.asInstanceOf[B],
+                                                 c.asInstanceOf[C],
+                                                 d.asInstanceOf[D],
+                                                 e.asInstanceOf[E],
+                                                 f.asInstanceOf[F])
   }
 }
 

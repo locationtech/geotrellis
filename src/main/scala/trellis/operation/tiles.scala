@@ -15,7 +15,7 @@ import trellis.RasterExtent
   * val t2 = DoTile(R, AddConstant(_, 3)) // _ is in place of a raster operation
   * </pre>
   */
-case class ForEachTile(r:Op[IntRaster], f:(Op[IntRaster] => Op[IntRaster])) extends Op[IntRaster] {
+case class ForEachTile(r:Op[IntRaster])(f:(Op[IntRaster] => Op[IntRaster])) extends Op[IntRaster] {
   def _run(context:Context) = runAsync(r :: Nil)
 
   val nextSteps:Steps = { 
