@@ -204,9 +204,10 @@ trait WorkerLike extends Actor {
 
       // there was an error, so return that as well.
       case StepError(msg, trace) => {
-        //log(" output was an error %s" format msg)
+        log(" output was an error %s" format msg)
         val history = failure(id, startTime, time(), t, msg, trace)
-        print(" *** Worker %s received an error %s, %s, %s" format (id, msg,history.toPretty, Thread.currentThread.getName))
+        log(" *** Worker %s received an error %s, %s, %s\n" format (id, msg,history.toPretty, Thread.currentThread.getName))
+        log (" *** Sending error message to %s\n" format client )
         client ! OperationResult(Error(msg, history), pos)
       }
 
@@ -264,6 +265,7 @@ case class Worker(val server: Server) extends WorkerLike {
       } catch {
         case e => {
           val error = StepError.fromException(e)
+          System.err.printf("Operation failed, with exception: %s\n\nStack trace:\n%s\n", error.msg,error.trace)
           handleResult(pos, client, error, Some(trellisContext.timer), dispatcher)
         }
       }
@@ -333,14 +335,14 @@ extends WorkerLike {
   // If any entry in the results array is null, we're not done.
   def isDone = results.find(_ == None).isEmpty
 
-  // If any entry in the results array is Error, we have an error.
   def hasError = results.find { case Some(Error(_,_)) => true; case a => false } isDefined
 
+ 
   // Create a list of the actual values of our children.
   def getValues = results.toList.map {
     case Some(Complete(value, _)) => value
     case Some(Inlined(value)) => value
-    case r => sys.error("found unexpected result %s" format r)
+    case r => sys.error("found unexpected result (some(error)) ") 
   }
 
   // This is called when we have heard back from all our sub-operations and
@@ -357,13 +359,19 @@ extends WorkerLike {
   // Actor event loop
   def receive = {
     case OperationResult(childResult,  pos) => {
-      log("calculation got result %d" format pos)
+      log("calculation (%s) got result %d".format(id,pos))
       results(pos) = Some(childResult)
       log("results: %s".format(results))
+      log("result: %s".format(results(0)))
       if (!isDone) {
+        log("Calculation is not yet complete: %s".format(id))
       } else if (hasError) {
-        val h = failure(id, startTime, time(), None, "child failed", "")
-        client ! Error("this is a failure message", h)
+        log("Calculation %s has an error.".format(id))
+        val se = StepError("error", "error")
+        handleResult(this.pos, client, se , None, dispatcher)
+        log("child operation error, stopping: " + this.id )
+        //finishCallback()
+        context.stop(self)
       } else {
         log(" all values complete")
         finishCallback()
