@@ -36,7 +36,7 @@ object IntRaster {
  * 
  */
 class IntRaster(val data:RasterData, val rows:Int, val cols:Int, val rasterExtent:RasterExtent,
-                val name:String) extends IsIntRaster {
+                val name:String) extends IsIntRaster with Serializable {
   override def toString = "IntRaster(%s, %s, %s, %s, %s)" format (data, rows, cols, rasterExtent, name)
   override def equals(other:Any) = other match {
     case r:IntRaster => data == r.data && rows == r.rows && cols == r.cols && rasterExtent == r.rasterExtent

@@ -35,7 +35,7 @@ trait RasterData {
   }
 }
 
-class ArrayRasterData(array:Array[Int]) extends RasterData {
+class ArrayRasterData(array:Array[Int]) extends RasterData with Serializable {
   def length = array.length
   def apply(i:Int) = array(i)
   def update(i:Int, x: Int): Unit = array(i) = x
