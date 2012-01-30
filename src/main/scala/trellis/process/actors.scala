@@ -350,8 +350,15 @@ extends WorkerLike {
   // receive any more messages.
   def finishCallback() {
     log(" all values complete")
-    handleResult(pos, client, cb(getValues), None, dispatcher)
-
+    try {
+      handleResult(pos, client, cb(getValues), None, dispatcher)
+    } catch {
+      case e => {
+        val error = StepError.fromException(e)
+        System.err.printf("Operation failed, with exception: %s\n\nStack trace:\n%s\n", error.msg,error.trace)
+        handleResult(pos, client, error, None, dispatcher)
+      }
+    }
     log(" calculation done: performing callback")
     context.stop(self)
   }
