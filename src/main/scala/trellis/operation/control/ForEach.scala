@@ -4,7 +4,7 @@ import scala.{PartialFunction => PF}
 import trellis.process._
 
 /**
- * Evaluates then given operation (op) to get an array of A's. Then, applies
+ * Evaluates the given operation (op) to get an array of A's. Then, applies
  * the given function (f) to each item in the array in. The resulting array of
  * Z's is returned.
  */
@@ -27,7 +27,7 @@ case class ForEach[A, Z:Manifest](op:Op[Array[A]])(f:(A) => Op[Z]) extends Op[Ar
 
 
 /**
- * Evaluates then given operations (opA and opB) to get an array of A's and an
+ * Evaluates the given operations (opA and opB) to get an array of A's and an
  * array of B's. Then, applies the given function (f) to each (A, B) item in
  * the arrays (pairwise by array index) to get a Z value. The resulting array
  * of Z's is returned.
@@ -54,7 +54,7 @@ case class ForEach2[A, B, Z:Manifest](opA:Op[Array[A]], opB:Op[Array[B]])
 
 
 /**
- * Evaluates then given operations (opA opB, and opC) to get arrays of A's, B's
+ * Evaluates the given operations (opA opB, and opC) to get arrays of A's, B's
  * and C's (which should be the same length).
  *
  * Then, applies the given function (f) to each (A, B, C) triple in (grouped by

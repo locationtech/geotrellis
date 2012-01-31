@@ -78,6 +78,10 @@ case class AddInlinedConstant(r:Op[IntRaster], c:Int) extends Op[IntRaster] {
 case class SubtractConstant(r:Op[IntRaster], c:Op[Int]) extends WithIntConstant {
   def handleCell(z:Int, c:Int) = z - c
 }
+
+/**
+ * Subtract the value of each cell by a constant.
+ */
 case class SubtractConstantBy(c:Op[Int], r:Op[IntRaster]) extends WithIntConstant {
   def handleCell(z:Int, c:Int) = c - z
 }

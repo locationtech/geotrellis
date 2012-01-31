@@ -4,6 +4,10 @@ import trellis._
 import trellis.process._
 import trellis.geometry._
 
+
+/**
+ * Split multipolygon into polygons.
+ */
 case class SplitMultiPolygon(m:Op[MultiPolygon]) extends Op1(m)({
   mp => Result(mp.polygons)
 })
