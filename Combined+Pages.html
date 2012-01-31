@@ -32,7 +32,7 @@
             </div>
           </div>
           <div class="span-16 prepend-1 append-1 contents">
-            <h4>Contents</h4><div><a href="#Arpeggeo">Arpeggeo</a></div><ol class="toc"> <li><div><a href="#API+Reference">API Reference</a></div></li><li><div><a href="#Operations+Reference">Operations Reference</a></div></li> </ol><h1 id="Arpeggeo">Arpeggeo</h1><p><em>Arpeggeo</em> is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
+            <h4>Contents</h4><div><a href="#Arpeggeo">Arpeggeo</a></div><ol class="toc"> <li><div><a href="#API+Reference">API Reference</a></div></li><li><div><a href="#Operations">Operations</a></div></li> </ol><h1 id="Arpeggeo">Arpeggeo</h1><p><em>Arpeggeo</em> is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
 user interaction with geospatial data by bringing the power of geospatial analysis to real time, interactive web applications.
 </p><p>Arpeggeo was designed to solve three core problems, with a focus on raster processing:
 </p><ul><li>Creating scalable, high performance geoprocessing web services
@@ -66,7 +66,7 @@ operations with existing operations.
 </code></pre><h2 id="API+Reference">API Reference</h2><h3 id="Scaladocs">Scaladocs</h3><p>You can find <em>Scaladocs</em> for the latest version of the project here:
 </p><p><a  href="http://azavea.github.com/trellis/latest/api/index.html#trellis.package">http://azavea.github.com/trellis/latest/api/index.html#trellis.package</a>
 </p><h3 id="Operations">Operations</h3><p>A full list of core operations can be in found in the Scala API documentation for the <code>trellis.operation</code> package: <a  href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.package">http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.package</a>.
-</p><h2 id="Operations+Reference">Operations Reference</h2><table class="bordered-table zebra-striped">
+</p><h2 id="Operations">Operations</h2><table class="bordered-table zebra-striped">
       <thead>
           <tr>
             <th>Operation</th>
@@ -120,7 +120,7 @@ operations with existing operations.
 <tr><td><code><a href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.IfCell">IfCell</a></code></td><td>Raster</td><td>Maps all cells matching <code>cond</code> to <code>trueValue</code>.</p> ...</td></tr>
 <tr><td><code><a href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.IfElseCell">IfElseCell</a></code></td><td>Raster</td><td>Set all values of output raster to one value or another based on whether a ...</td></tr>
 <tr><td><code><a href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.InverseMask">InverseMask</a></code></td><td>Raster</td><td>Generate a raster with the values from the first raster, but only include ...</td></tr>
-<tr><td><code><a href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.KernelDensity">KernelDensity</a></code></td><td>Point</td><td>Compute the kernel density of a set of points onto a raster</td></tr>
+<tr><td><code><a href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.KernelDensity">KernelDensity</a></code></td><td>Raster</td><td>Compute the kernel density of a set of points onto a raster</td></tr>
 <tr><td><code><a href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.Literal">Literal</a></code></td><td>A</td><td>Return the literal value specified.</td></tr>
 <tr><td><code><a href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.LoadFile">LoadFile</a></code></td><td>Raster</td><td>Load the raster data for a particular extent/resolution from the specified file.</td></tr>
 <tr><td><code><a href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.LoadRaster">LoadRaster</a></code></td><td>Raster</td><td>Load the raster data for a particular extent/resolution from the specified file.</td></tr>
@@ -149,8 +149,6 @@ operations with existing operations.
 <tr><td><code><a href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.SubtractConstantBy">SubtractConstantBy</a></code></td><td>Raster</td><td>Subtract the value of each cell by a constant.</td></tr>
 <tr><td><code><a href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.UnaryLocal">UnaryLocal</a></code></td><td>Raster</td><td>Abstract class for all operations that are unary (operate on a single raster) and ...</td></tr>
 <tr><td><code><a href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.WarpRaster">WarpRaster</a></code></td><td>Raster</td><td>Crop a raster to a given extent, using a nearest neighbor algorithm to resample.</td></tr>
-<tr><td><code><a href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.WithDoubleConstant">WithDoubleConstant</a></code></td><td>Raster</td><td>Multiply each cell in a raster by a constant value.</td></tr>
-<tr><td><code><a href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.WithIntConstant">WithIntConstant</a></code></td><td>Raster</td><td>Multiply each cell in a raster by a constant value.</td></tr>
 <tr><td><code><a href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.ZonalHistogram">ZonalHistogram</a></code></td><td>Histogram</td><td>Given a raster, return a histogram summary of the cells within each zone.</td></tr>
         </tbody>
       </table>
