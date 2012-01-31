@@ -36,26 +36,14 @@ object IntRaster {
  * 
  */
 class IntRaster(val data:RasterData, val rows:Int, val cols:Int, val rasterExtent:RasterExtent,
-                val name:String) extends IsIntRaster with Serializable {
+                val name:String) extends Serializable {
+
   override def toString = "IntRaster(%s, %s, %s, %s, %s)" format (data, rows, cols, rasterExtent, name)
+
   override def equals(other:Any) = other match {
     case r:IntRaster => data == r.data && rows == r.rows && cols == r.cols && rasterExtent == r.rasterExtent
     case _ => false
   }
-}
-
-/**
-  * Core data object that represents a raster with integer values.
-  * @param cols Number of columns in this raster (width in cells)
-  * @param rows Number of rows in this raster (height in rows)
-  */
-trait IsIntRaster {
-  def data:RasterData
-  def rows:Int 
-  def cols:Int
-  def rasterExtent:RasterExtent
-
-  def name:String
  
   def length = this.rows * this.cols
 
