@@ -1,5 +1,6 @@
 import AssemblyKeys._
 
+
 //import com.jsuereth.sbtsite.SiteKeys
 
 seq(assemblySettings: _*)
@@ -20,3 +21,5 @@ mainClass := Some("trellis.rest.WebRunner")
 //  (SiteKeys.siteMappings, PamfletKeys.write, PamfletKeys.output) map { (mappings, _, dir) =>
 //    mappings ++ (dir ** "*.*" x relativeTo(dir))
 //  }
+
+

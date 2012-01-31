@@ -1,5 +1,6 @@
 import sbt._
 import sbt.Keys._
+
 import eu.henkelmann.sbt.JUnitXmlTestsListener
 
 object MyBuild extends Build {
