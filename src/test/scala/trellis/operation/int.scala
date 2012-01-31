@@ -229,12 +229,12 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       stats must be === expected
     }
 
-    it("DeviationRaster") {
+    it("StandardDeviation") {
       val newServer = TestServer()
       val R1 = LoadFile("src/test/resources/quad.arg")
       val R2 = LoadFile("src/test/resources/quad.arg")
       val H = BuildMapHistogram(R1)
-      val S = DeviationRaster(R2, H, 1000)
+      val S = StandardDeviation(R2, H, 1000)
       val raster = newServer.run(S)
 
       raster.data(0) must be === -1341

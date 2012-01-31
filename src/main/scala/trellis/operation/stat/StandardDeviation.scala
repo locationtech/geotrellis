@@ -8,7 +8,7 @@ import trellis.process._
 /*
  * Calculate a raster in which each value is set to the standard deviation of that cell's value.
  */
-case class DeviationRaster(r:Op[IntRaster], h:Op[Histogram], factor:Int) extends Op[IntRaster] {
+case class StandardDeviation(r:Op[IntRaster], h:Op[Histogram], factor:Int) extends Op[IntRaster] {
   val g = GenerateStatistics(h)
 
   def _run(context:Context) = runAsync(List(g, r))

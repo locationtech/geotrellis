@@ -16,7 +16,7 @@ class DeviationRasterSpec extends Spec with MustMatchers with ShouldMatchers {
       val r1 = LoadFile("src/test/resources/quad.arg")
       val r2 = LoadFile("src/test/resources/quad.arg")
       val h = BuildMapHistogram(r1)
-      val s = DeviationRaster(r2, h, 1000)
+      val s = StandardDeviation(r2, h, 1000)
       val raster = server.run(s)
   
       raster.data(0) must be === -1341
