@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>trellis.operation.DeviationRaster</title>
+          <title>trellis.operation.StandardDeviation</title>
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link type="text/css" media="screen" rel="stylesheet" href="../../lib/template.css" />
@@ -16,19 +16,20 @@
       <div id="definition">
         <img src="../../lib/class_big.png" />
         <p id="owner"><a name="trellis" class="extype" href="../package.html">trellis</a>.<a name="trellis.operation" class="extype" href="package.html">operation</a></p>
-        <h1>DeviationRaster</h1>
+        <h1>StandardDeviation</h1>
       </div>
 
       <h4 class="signature" id="signature">
       <span class="kind">case class</span>
       <span class="symbol"> 
-        <span class="name">DeviationRaster</span>
+        <span class="name">StandardDeviation</span>
         
         <span class="params">(<span name="r">r: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>, <span name="h">h: Op[<a name="trellis.stat.Histogram" class="extype" href="../stat/Histogram.html">Histogram</a>]</span>, <span name="factor">factor: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result"> extends Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>] with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
-          <div class="fullcommenttop" id="comment"><div class="toggleContainer block">
+          <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Calculate the standard deviation of each cell from the values in the raster.
+</p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a>[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>], AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
@@ -46,7 +47,7 @@
                 <span class="filtertype">Inherited</span>
                 <ol><li class="hideall out"><span>Hide All</span></li>
                 <li class="showall in"><span>Show all</span></li></ol>
-                <ol id="linearization"><li name="trellis.operation.DeviationRaster" class="in"><span>DeviationRaster</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.Product" class="in"><span>Product</span></li><li name="scala.Equals" class="in"><span>Equals</span></li><li name="trellis.operation.Operation" class="in"><span>Operation</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+                <ol id="linearization"><li name="trellis.operation.StandardDeviation" class="in"><span>StandardDeviation</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.Product" class="in"><span>Product</span></li><li name="scala.Equals" class="in"><span>Equals</span></li><li name="trellis.operation.Operation" class="in"><span>Operation</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
               </div>
           <div id="visbl">
               <span class="filtertype">Visibility</span>
@@ -56,12 +57,12 @@
 
         <div class="members" id="constructors">
               <h3>Instance Constructors</h3>
-              <ol><li visbl="pub" name="trellis.operation.DeviationRaster#this" data-isabs="false">
-      <a id="this:DeviationRaster"></a>
+              <ol><li visbl="pub" name="trellis.operation.StandardDeviation#this" data-isabs="false">
+      <a id="this:StandardDeviation"></a>
       <h4 class="signature">
       <span class="kind">new</span>
       <span class="symbol"> 
-        <span class="name">DeviationRaster</span>
+        <span class="name">StandardDeviation</span>
         
         <span class="params">(<span name="r">r: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>, <span name="h">h: Op[<a name="trellis.stat.Histogram" class="extype" href="../stat/Histogram.html">Histogram</a>]</span>, <span name="factor">factor: <span name="scala.Int" class="extype">Int</span></span>)</span>
       </span>
@@ -145,7 +146,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.DeviationRaster#_run" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.StandardDeviation#_run" data-isabs="false">
       <a id="_run(Context):StepOutput[IntRaster]"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -155,7 +156,7 @@
         <span class="params">(<span name="context">context: <a name="trellis.process.Context" class="extype" href="../process/Context.html">Context</a></span>)</span><span class="result">: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.DeviationRaster" class="extype" href="">DeviationRaster</a> → <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.StandardDeviation" class="extype" href="">StandardDeviation</a> → <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
     </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
@@ -167,7 +168,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.DeviationRaster#canEqual" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.StandardDeviation#canEqual" data-isabs="false">
       <a id="canEqual(Any):Boolean"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -177,7 +178,7 @@
         <span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.DeviationRaster" class="extype" href="">DeviationRaster</a> → Equals</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.StandardDeviation" class="extype" href="">StandardDeviation</a> → Equals</dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
@@ -225,7 +226,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.DeviationRaster#equals" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.StandardDeviation#equals" data-isabs="false">
       <a id="equals(Any):Boolean"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -235,8 +236,8 @@
         <span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.DeviationRaster" class="extype" href="">DeviationRaster</a> → Equals → AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.DeviationRaster#factor" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.StandardDeviation" class="extype" href="">StandardDeviation</a> → Equals → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.StandardDeviation#factor" data-isabs="false">
       <a id="factor:Int"></a>
       <h4 class="signature">
       <span class="kind">val</span>
@@ -261,7 +262,7 @@
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.DeviationRaster#g" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.StandardDeviation#g" data-isabs="false">
       <a id="g:GenerateStatistics"></a>
       <h4 class="signature">
       <span class="kind">val</span>
@@ -283,7 +284,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.DeviationRaster#h" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.StandardDeviation#h" data-isabs="false">
       <a id="h:Op[Histogram]"></a>
       <h4 class="signature">
       <span class="kind">val</span>
@@ -294,7 +295,7 @@
       </span>
       </h4>
       
-    </li><li visbl="pub" name="trellis.operation.DeviationRaster#hashCode" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.StandardDeviation#hashCode" data-isabs="false">
       <a id="hashCode():Int"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -304,7 +305,7 @@
         <span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.DeviationRaster" class="extype" href="">DeviationRaster</a> → AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.StandardDeviation" class="extype" href="">StandardDeviation</a> → AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
@@ -339,7 +340,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.DeviationRaster#nextSteps" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.StandardDeviation#nextSteps" data-isabs="false">
       <a id="nextSteps:Steps"></a>
       <h4 class="signature">
       <span class="kind">val</span>
@@ -349,7 +350,7 @@
         <span class="result">: Steps</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.DeviationRaster" class="extype" href="">DeviationRaster</a> → <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.StandardDeviation" class="extype" href="">StandardDeviation</a> → <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
       <a id="notify():Unit"></a>
       <h4 class="signature">
@@ -372,7 +373,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.DeviationRaster#productArity" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.StandardDeviation#productArity" data-isabs="false">
       <a id="productArity:Int"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -382,8 +383,8 @@
         <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.DeviationRaster" class="extype" href="">DeviationRaster</a> → Product</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.DeviationRaster#productElement" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.StandardDeviation" class="extype" href="">StandardDeviation</a> → Product</dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.StandardDeviation#productElement" data-isabs="false">
       <a id="productElement(Int):Any"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -393,7 +394,7 @@
         <span class="params">(<span name="arg0">arg0: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Any" class="extype">Any</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.DeviationRaster" class="extype" href="">DeviationRaster</a> → Product</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.StandardDeviation" class="extype" href="">StandardDeviation</a> → Product</dd></dl></div>
     </li><li visbl="pub" name="scala.Product#productIterator" data-isabs="false">
       <a id="productIterator:Iterator[Any]"></a>
       <h4 class="signature">
@@ -405,7 +406,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Product</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.DeviationRaster#productPrefix" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.StandardDeviation#productPrefix" data-isabs="false">
       <a id="productPrefix:String"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -415,8 +416,8 @@
         <span class="result">: <span name="java.lang.String" class="extype">String</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.DeviationRaster" class="extype" href="">DeviationRaster</a> → Product</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.DeviationRaster#r" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.StandardDeviation" class="extype" href="">StandardDeviation</a> → Product</dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.StandardDeviation#r" data-isabs="false">
       <a id="r:Op[IntRaster]"></a>
       <h4 class="signature">
       <span class="kind">val</span>
@@ -450,7 +451,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.DeviationRaster#step2" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.StandardDeviation#step2" data-isabs="false">
       <a id="step2(Statistics,IntRaster):Result[IntRaster]"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -472,7 +473,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.DeviationRaster#toString" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.StandardDeviation#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -482,7 +483,7 @@
         <span class="params">()</span><span class="result">: String</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.DeviationRaster" class="extype" href="">DeviationRaster</a> → AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.StandardDeviation" class="extype" href="">StandardDeviation</a> → AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">

@@ -405,17 +405,6 @@ load raster data.</p>
       <p class="comment cmt">Create a Map of (String,String) =&gt; Int from a CSV file
 of the format: String,String,Int
 </p>
-    </li><li visbl="pub" name="trellis.operation.DeviationRaster" data-isabs="false">
-      <a id="DeviationRaster:DeviationRaster"></a>
-      <h4 class="signature">
-      <span class="kind">case class</span>
-      <span class="symbol"> 
-        <a href="DeviationRaster.html"><span class="name">DeviationRaster</span></a>
-        
-        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="h">h: Op[Histogram]</span>, <span name="factor">factor: Int</span>)</span><span class="result"> extends Op[IntRaster] with Product with Serializable</span>
-      </span>
-      </h4>
-      
     </li><li visbl="pub" name="trellis.operation.DispatchedOperation" data-isabs="false">
       <a id="DispatchedOperation:DispatchedOperation[T]"></a>
       <h4 class="signature">
@@ -558,7 +547,7 @@ of the format: String,String,Int
         <span class="params">(<span name="op">op: Op[Array[A]]</span>, <span name="f">f: (A) ⇒ Op[Z]</span>, <span name="evidence$1">evidence$1: Manifest[Z]</span>)</span><span class="result"> extends Op[Array[Z]] with Product with Serializable</span>
       </span>
       </h4>
-      <p class="comment cmt">Evaluates then given operation (op) to get an array of A's.</p>
+      <p class="comment cmt">Evaluates the given operation (op) to get an array of A's.</p>
     </li><li visbl="pub" name="trellis.operation.ForEach2" data-isabs="false">
       <a id="ForEach2:ForEach2[A, B, Z]"></a>
       <h4 class="signature">
@@ -569,7 +558,7 @@ of the format: String,String,Int
         <span class="params">(<span name="opA">opA: Op[Array[A]]</span>, <span name="opB">opB: Op[Array[B]]</span>, <span name="f">f: (A, B) ⇒ Op[Z]</span>, <span name="evidence$2">evidence$2: Manifest[Z]</span>)</span><span class="result"> extends Op[Array[Z]] with Product with Serializable</span>
       </span>
       </h4>
-      <p class="comment cmt">Evaluates then given operations (opA and opB) to get an array of A's and an
+      <p class="comment cmt">Evaluates the given operations (opA and opB) to get an array of A's and an
 array of B's.</p>
     </li><li visbl="pub" name="trellis.operation.ForEach3" data-isabs="false">
       <a id="ForEach3:ForEach3[A, B, C, Z]"></a>
@@ -581,7 +570,7 @@ array of B's.</p>
         <span class="params">(<span name="opA">opA: Op[Array[A]]</span>, <span name="opB">opB: Op[Array[B]]</span>, <span name="opC">opC: Op[Array[C]]</span>, <span name="f">f: (A, B, C) ⇒ Op[Z]</span>, <span name="evidence$3">evidence$3: Manifest[Z]</span>)</span><span class="result"> extends Op[Array[Z]] with Product with Serializable</span>
       </span>
       </h4>
-      <p class="comment cmt">Evaluates then given operations (opA opB, and opC) to get arrays of A's, B's
+      <p class="comment cmt">Evaluates the given operations (opA opB, and opC) to get arrays of A's, B's
 and C's (which should be the same length).</p>
     </li><li visbl="pub" name="trellis.operation.ForEachTile" data-isabs="false">
       <a id="ForEachTile:ForEachTile"></a>
@@ -887,7 +876,7 @@ cells in which the corresponding cell in the second raster *are not* set to the
         <span class="params">(<span name="rs">rs: Op[IntRaster]*</span>)</span><span class="result"> extends Op[IntRaster] with MultiLocal with Product with Serializable</span>
       </span>
       </h4>
-      
+      <p class="comment cmt">Multiply each cell of each raster.</p>
     </li><li visbl="pub" name="trellis.operation.MultiplyArray" data-isabs="false">
       <a id="MultiplyArray:MultiplyArray"></a>
       <h4 class="signature">
@@ -898,7 +887,7 @@ cells in which the corresponding cell in the second raster *are not* set to the
         <span class="params">(<span name="op">op: Op[Array[IntRaster]]</span>)</span><span class="result"> extends Op[IntRaster] with MultiLocalArray with Product with Serializable</span>
       </span>
       </h4>
-      
+      <p class="comment cmt">Multiply each cell of each raster in array.</p>
     </li><li visbl="pub" name="trellis.operation.MultiplyConstant" data-isabs="false">
       <a id="MultiplyConstant:MultiplyConstant"></a>
       <h4 class="signature">
@@ -1163,7 +1152,7 @@ within each polygon.</p>
         <span class="params">(<span name="m">m: Op[MultiPolygon]</span>)</span><span class="result"> extends Op1[MultiPolygon, Array[Polygon]] with Product with Serializable</span>
       </span>
       </h4>
-      
+      <p class="comment cmt">Split multipolygon into polygons.</p>
     </li><li visbl="pub" name="trellis.operation.Spreader" data-isabs="false">
       <a id="Spreader:Spreader"></a>
       <h4 class="signature">
@@ -1175,6 +1164,17 @@ within each polygon.</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="trellis.operation.StandardDeviation" data-isabs="false">
+      <a id="StandardDeviation:StandardDeviation"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="StandardDeviation.html"><span class="name">StandardDeviation</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="h">h: Op[Histogram]</span>, <span name="factor">factor: Int</span>)</span><span class="result"> extends Op[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Calculate the standard deviation of each cell from the values in the raster.</p>
     </li><li visbl="pub" name="trellis.operation.Subtract" data-isabs="false">
       <a id="Subtract:Subtract"></a>
       <h4 class="signature">
@@ -1207,7 +1207,7 @@ within each polygon.</p>
         <span class="params">(<span name="c">c: Op[Int]</span>, <span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
       </span>
       </h4>
-      
+      <p class="comment cmt">Subtract the value of each cell by a constant.</p>
     </li><li visbl="pub" name="trellis.operation.UnaryF" data-isabs="false">
       <a id="UnaryF:UnaryF"></a>
       <h4 class="signature">
