@@ -24,7 +24,7 @@
       <span class="symbol"> 
         <span class="name">RunCallback</span>
         <span class="tparams">[<span name="T">T</span>]</span>
-        <span class="params">(<span name="args">args: Args</span>, <span name="pos">pos: <span name="scala.Int" class="extype">Int</span></span>, <span name="cb">cb: Callback[T]</span>, <span name="client">client: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>, <span name="id">id: String</span>)</span><span class="result"> extends <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+        <span class="params">(<span name="args">args: Args</span>, <span name="pos">pos: <span name="scala.Int" class="extype">Int</span></span>, <span name="cb">cb: Callback[T]</span>, <span name="client">client: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>, <span name="id">id: String</span>, <span name="dispatcher">dispatcher: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>)</span><span class="result"> extends <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
@@ -65,7 +65,7 @@ provided callback with the computed args, and send the result to the client.
       <span class="symbol"> 
         <span class="name">RunCallback</span>
         
-        <span class="params">(<span name="args">args: Args</span>, <span name="pos">pos: <span name="scala.Int" class="extype">Int</span></span>, <span name="cb">cb: Callback[T]</span>, <span name="client">client: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>, <span name="id">id: String</span>)</span>
+        <span class="params">(<span name="args">args: Args</span>, <span name="pos">pos: <span name="scala.Int" class="extype">Int</span></span>, <span name="cb">cb: Callback[T]</span>, <span name="client">client: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>, <span name="id">id: String</span>, <span name="dispatcher">dispatcher: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>)</span>
       </span>
       </h4>
       
@@ -202,6 +202,17 @@ provided callback with the computed args, and send the result to the client.
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li visbl="pub" name="trellis.process.RunCallback#dispatcher" data-isabs="false">
+      <a id="dispatcher:ActorRef"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">dispatcher</span>
+        
+        <span class="result">: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">

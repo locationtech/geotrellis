@@ -33,7 +33,7 @@
           <div class="superTypes hiddenContent"><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a>[T], AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div><div class="toggleContainer block">
           <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a name="trellis.operation.BuildMapHistogram" class="extype" href="BuildMapHistogram.html">BuildMapHistogram</a>, <a name="trellis.operation.CopyRaster" class="extype" href="CopyRaster.html">CopyRaster</a>, <a name="trellis.operation.CreateRaster" class="extype" href="CreateRaster.html">CreateRaster</a>, <a name="trellis.operation.ExampleIdentity" class="extype" href="ExampleIdentity.html">ExampleIdentity</a>, <a name="trellis.operation.ExampleIdentity2" class="extype" href="ExampleIdentity2.html">ExampleIdentity2</a>, <a name="trellis.operation.FindMinMax" class="extype" href="FindMinMax.html">FindMinMax</a>, <a name="trellis.operation.GenerateStatistics" class="extype" href="GenerateStatistics.html">GenerateStatistics</a>, <a name="trellis.operation.GetPolygonExtent" class="extype" href="GetPolygonExtent.html">GetPolygonExtent</a>, <a name="trellis.operation.GetRasterExtent" class="extype" href="GetRasterExtent.html">GetRasterExtent</a>, <a name="trellis.operation.LoadRasterExtentFromFile" class="extype" href="LoadRasterExtentFromFile.html">LoadRasterExtentFromFile</a>, <a name="trellis.operation.SplitMultiPolygon" class="extype" href="SplitMultiPolygon.html">SplitMultiPolygon</a></div>
+          <div class="subClasses hiddenContent"><a name="trellis.operation.BuildMapHistogram" class="extype" href="BuildMapHistogram.html">BuildMapHistogram</a>, <a name="trellis.operation.CopyRaster" class="extype" href="CopyRaster.html">CopyRaster</a>, <a name="trellis.operation.CreateRaster" class="extype" href="CreateRaster.html">CreateRaster</a>, <a name="trellis.operation.ExampleIdentity" class="extype" href="ExampleIdentity.html">ExampleIdentity</a>, <a name="trellis.operation.ExampleIdentity2" class="extype" href="ExampleIdentity2.html">ExampleIdentity2</a>, <a name="trellis.operation.FindMinMax" class="extype" href="FindMinMax.html">FindMinMax</a>, <a name="trellis.operation.applicative.Fmap" class="extype" href="applicative/Fmap.html">Fmap</a>, <a name="trellis.operation.GenerateStatistics" class="extype" href="GenerateStatistics.html">GenerateStatistics</a>, <a name="trellis.operation.GetPolygonExtent" class="extype" href="GetPolygonExtent.html">GetPolygonExtent</a>, <a name="trellis.operation.GetRasterExtent" class="extype" href="GetRasterExtent.html">GetRasterExtent</a>, <a name="trellis.operation.LoadRasterExtentFromFile" class="extype" href="LoadRasterExtentFromFile.html">LoadRasterExtentFromFile</a>, <a name="trellis.operation.SplitMultiPolygon" class="extype" href="SplitMultiPolygon.html">SplitMultiPolygon</a></div>
         </div></div>
         
 
@@ -170,17 +170,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.Operation#call" data-isabs="false">
-      <a id="call[U]((T) ⇒ U)(Manifest[U]):Call[T, U]"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">call</span>
-        <span class="tparams">[<span name="U">U</span>]</span>
-        <span class="params">(<span name="f">f: (T) ⇒ U</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: Manifest[U]</span>)</span><span class="result">: <a name="trellis.operation.Call" class="extype" href="Call.html">Call</a>[T, U]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
@@ -203,6 +192,17 @@
         <span class="name">debug</span>
         
         <span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.Operation#dispatch" data-isabs="false">
+      <a id="dispatch(ActorRef):DispatchedOperation[T]"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">dispatch</span>
+        
+        <span class="params">(<span name="dispatcher">dispatcher: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>)</span><span class="result">: <a name="trellis.operation.DispatchedOperation" class="extype" href="DispatchedOperation.html">DispatchedOperation</a>[T]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>

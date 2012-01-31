@@ -312,17 +312,6 @@ load raster data.</p>
       </h4>
       <p class="comment cmt">Trait providing caching support for operations which want to save their
 result and return those on future invocations of run().</p>
-    </li><li visbl="pub" name="trellis.operation.Call" data-isabs="false">
-      <a id="Call:Call[A, B]"></a>
-      <h4 class="signature">
-      <span class="kind">case class</span>
-      <span class="symbol"> 
-        <a href="Call.html"><span class="name">Call</span></a>
-        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span>
-        <span class="params">(<span name="v">v: Op[A]</span>, <span name="f">f: (A) ⇒ B</span>, <span name="evidence$1">evidence$1: Manifest[A]</span>, <span name="evidence$2">evidence$2: Manifest[B]</span>)</span><span class="result"> extends Operation[B] with Product with Serializable</span>
-      </span>
-      </h4>
-      <p class="comment cmt">Multiply each cell in a raster by a constant value.</p>
     </li><li visbl="pub" name="trellis.operation.ChunkRasterExtent" data-isabs="false">
       <a id="ChunkRasterExtent:ChunkRasterExtent"></a>
       <h4 class="signature">
@@ -424,6 +413,17 @@ of the format: String,String,Int
         <a href="DeviationRaster.html"><span class="name">DeviationRaster</span></a>
         
         <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="h">h: Op[Histogram]</span>, <span name="factor">factor: Int</span>)</span><span class="result"> extends Op[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.DispatchedOperation" data-isabs="false">
+      <a id="DispatchedOperation:DispatchedOperation[T]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="DispatchedOperation.html"><span class="name">DispatchedOperation</span></a>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="params">(<span name="op">op: Op[T]</span>, <span name="dispatcher">dispatcher: ActorRef</span>)</span><span class="result"> extends OperationWrapper[T] with Product with Serializable</span>
       </span>
       </h4>
       
@@ -753,6 +753,17 @@ cells in which the corresponding cell in the second raster is set to the
       </span>
       </h4>
       
+    </li><li visbl="pub" name="trellis.operation.LoadRaster" data-isabs="false">
+      <a id="LoadRaster:LoadRaster"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="LoadRaster.html"><span class="name">LoadRaster</span></a>
+        
+        <span class="params">(<span name="n">n: Op[String]</span>, <span name="r">r: Op[RasterExtent]</span>)</span><span class="result"> extends Op[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Load the raster data for a particular extent/resolution from the specified file.</p>
     </li><li visbl="pub" name="trellis.operation.LoadRasterExtentFromFile" data-isabs="false">
       <a id="LoadRasterExtentFromFile:LoadRasterExtentFromFile"></a>
       <h4 class="signature">
@@ -787,6 +798,28 @@ cells in which the corresponding cell in the second raster is set to the
       </h4>
       <p class="comment cmt">Local operations involve each individual value in a raster without information
 about other values in the raster.</p>
+    </li><li visbl="pub" name="trellis.operation.Map1" data-isabs="false">
+      <a id="Map1:Map1[A, Z]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Map1.html"><span class="name">Map1</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="Z">Z</span>]</span>
+        <span class="params">(<span name="a">a: Op[A]</span>, <span name="call">call: (A) ⇒ Z</span>, <span name="evidence$1">evidence$1: Manifest[A]</span>, <span name="evidence$2">evidence$2: Manifest[Z]</span>)</span><span class="result"> extends Op[Z] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Map an Op[A] into an Op[Z] using a function from A =&gt; Z.</p>
+    </li><li visbl="pub" name="trellis.operation.Map2" data-isabs="false">
+      <a id="Map2:Map2[A, B, Z]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Map2.html"><span class="name">Map2</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="Z">Z</span>]</span>
+        <span class="params">(<span name="a">a: Op[A]</span>, <span name="b">b: Op[B]</span>, <span name="call">call: (A, B) ⇒ Z</span>, <span name="evidence$1">evidence$1: Manifest[A]</span>, <span name="evidence$2">evidence$2: Manifest[B]</span>, <span name="evidence$3">evidence$3: Manifest[Z]</span>)</span><span class="result"> extends Op[Z] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Map an Op[A] and Op[B] into an Op[Z] using a function from (A,B) =&gt; Z.</p>
     </li><li visbl="pub" name="trellis.operation.Mask" data-isabs="false">
       <a id="Mask:Mask"></a>
       <h4 class="signature">
@@ -910,6 +943,17 @@ cells in which the corresponding cell in the second raster *are not* set to the
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.Op0" data-isabs="true">
+      <a id="Op0:Op0[T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Op0.html"><span class="name">Op0</span></a>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
     </li><li visbl="pub" name="trellis.operation.Op1" data-isabs="true">
       <a id="Op1:Op1[A, T]"></a>
       <h4 class="signature">
@@ -965,6 +1009,17 @@ cells in which the corresponding cell in the second raster *are not* set to the
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.Op6" data-isabs="true">
+      <a id="Op6:Op6[A, B, C, D, E, F, T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Op6.html"><span class="name">Op6</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
     </li><li visbl="pub" name="trellis.operation.Operation" data-isabs="true">
       <a id="Operation:Operation[T]"></a>
       <h4 class="signature">
@@ -976,6 +1031,17 @@ cells in which the corresponding cell in the second raster *are not* set to the
       </span>
       </h4>
       <p class="comment cmt">Base Operation for all Trellis functionality.</p>
+    </li><li visbl="pub" name="trellis.operation.OperationWrapper" data-isabs="true">
+      <a id="OperationWrapper:OperationWrapper[T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="OperationWrapper.html"><span class="name">OperationWrapper</span></a>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
     </li><li visbl="pub" name="trellis.operation.PolygonExtent" data-isabs="false">
       <a id="PolygonExtent:PolygonExtent"></a>
       <h4 class="signature">
@@ -1328,6 +1394,17 @@ are local (operate on each cell without knowledge of other cells).</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="trellis.operation.LoadRaster" data-isabs="false">
+      <a id="LoadRaster:LoadRaster"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="LoadRaster$.html"><span class="name">LoadRaster</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="trellis.operation.LoadRasterExtentFromFile" data-isabs="false">
       <a id="LoadRasterExtentFromFile:LoadRasterExtentFromFile"></a>
       <h4 class="signature">
@@ -1429,6 +1506,17 @@ detect the min/max values, and when we provide them explicitly.</p>
       </h4>
       <p class="shortcomment cmt">Addition-operator implicits for Int, IntRaster and Op[IntRaster].</p><div class="fullcomment"><div class="comment cmt"><p>Addition-operator implicits for Int, IntRaster and Op[IntRaster].
 </p></div><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.applicative" data-isabs="false">
+      <a id="applicative:applicative"></a>
+      <h4 class="signature">
+      <span class="kind">package</span>
+      <span class="symbol"> 
+        <a href="applicative/package.html"><span class="name">applicative</span></a>
+        
+        
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="trellis.operation.package#divideIntRasterBy" data-isabs="false">
       <a id="divideIntRasterBy(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
       <h4 class="signature">

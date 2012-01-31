@@ -33,7 +33,7 @@
           <div class="superTypes hiddenContent"><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a>[T], AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div><div class="toggleContainer block">
           <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a name="trellis.operation.AutomaticNormalize" class="extype" href="AutomaticNormalize.html">AutomaticNormalize</a>, <a name="trellis.operation.BuildArrayHistogram" class="extype" href="BuildArrayHistogram.html">BuildArrayHistogram</a>, <a name="trellis.operation.BurnMultiPolygons" class="extype" href="BurnMultiPolygons.html">BurnMultiPolygons</a>, <a name="trellis.operation.BurnPolygon" class="extype" href="BurnPolygon.html">BurnPolygon</a>, <a name="trellis.operation.BurnPolygons" class="extype" href="BurnPolygons.html">BurnPolygons</a>, <a name="trellis.operation.CreateSimplePolygon" class="extype" href="CreateSimplePolygon.html">CreateSimplePolygon</a>, <a name="trellis.operation.CropRasterExtent" class="extype" href="CropRasterExtent.html">CropRasterExtent</a>, <a name="trellis.operation.CropRasterExtentByExtent" class="extype" href="CropRasterExtentByExtent.html">CropRasterExtentByExtent</a>, <a name="trellis.operation.CsvIntMap" class="extype" href="CsvIntMap.html">CsvIntMap</a>, <a name="trellis.operation.PolygonExtent" class="extype" href="PolygonExtent.html">PolygonExtent</a>, <a name="trellis.operation.RenderPNG3" class="extype" href="RenderPNG3.html">RenderPNG3</a>, <a name="trellis.operation.WarpRaster" class="extype" href="WarpRaster.html">WarpRaster</a></div>
+          <div class="subClasses hiddenContent"><a name="trellis.operation.applicative.Apply" class="extype" href="applicative/Apply.html">Apply</a>, <a name="trellis.operation.AutomaticNormalize" class="extype" href="AutomaticNormalize.html">AutomaticNormalize</a>, <a name="trellis.operation.BuildArrayHistogram" class="extype" href="BuildArrayHistogram.html">BuildArrayHistogram</a>, <a name="trellis.operation.BurnMultiPolygons" class="extype" href="BurnMultiPolygons.html">BurnMultiPolygons</a>, <a name="trellis.operation.BurnPolygon" class="extype" href="BurnPolygon.html">BurnPolygon</a>, <a name="trellis.operation.BurnPolygons" class="extype" href="BurnPolygons.html">BurnPolygons</a>, <a name="trellis.operation.CreateSimplePolygon" class="extype" href="CreateSimplePolygon.html">CreateSimplePolygon</a>, <a name="trellis.operation.CropRasterExtent" class="extype" href="CropRasterExtent.html">CropRasterExtent</a>, <a name="trellis.operation.CropRasterExtentByExtent" class="extype" href="CropRasterExtentByExtent.html">CropRasterExtentByExtent</a>, <a name="trellis.operation.CsvIntMap" class="extype" href="CsvIntMap.html">CsvIntMap</a>, <a name="trellis.operation.PolygonExtent" class="extype" href="PolygonExtent.html">PolygonExtent</a>, <a name="trellis.operation.RenderPNG3" class="extype" href="RenderPNG3.html">RenderPNG3</a>, <a name="trellis.operation.WarpRaster" class="extype" href="WarpRaster.html">WarpRaster</a></div>
         </div></div>
         
 
@@ -170,17 +170,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.Operation#call" data-isabs="false">
-      <a id="call[U]((T) ⇒ U)(Manifest[U]):Call[T, U]"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">call</span>
-        <span class="tparams">[<span name="U">U</span>]</span>
-        <span class="params">(<span name="f">f: (T) ⇒ U</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: Manifest[U]</span>)</span><span class="result">: <a name="trellis.operation.Call" class="extype" href="Call.html">Call</a>[T, U]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
@@ -203,6 +192,17 @@
         <span class="name">debug</span>
         
         <span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.Operation#dispatch" data-isabs="false">
+      <a id="dispatch(ActorRef):DispatchedOperation[T]"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">dispatch</span>
+        
+        <span class="params">(<span name="dispatcher">dispatcher: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>)</span><span class="result">: <a name="trellis.operation.DispatchedOperation" class="extype" href="DispatchedOperation.html">DispatchedOperation</a>[T]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>

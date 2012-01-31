@@ -1,0 +1,120 @@
+<html manifest="pamflet.manifest">
+      <head>
+        <title>Arpeggeo — Operations</title>
+        <link type="text/css" media="screen, projection" rel="stylesheet" href="css/blueprint/screen.css"></link>
+        <link type="text/css" media="screen and (min-device-width: 800px), projection" rel="stylesheet" href="css/blueprint/grid.css"></link>
+        <link type="text/css" media="print" rel="stylesheet" href="css/blueprint/print.css"></link> 
+        <!--[if lt IE 8]>
+          <link rel="stylesheet" href="css/blueprint/ie.css" type="text/css" media="screen, projection"/>
+        <![endif]-->
+        <link type="text/css" media="screen, projection" rel="stylesheet" href="css/pamflet.css"></link>
+        <link type="text/css" media="print" rel="stylesheet" href="css/pamflet-print.css"></link>
+        <link type="text/css" media="screen and (min-device-width: 800px), projection" rel="stylesheet" href="css/pamflet-grid.css"></link>
+        <link type="text/css" media="screen, projection" rel="stylesheet" href="css/custom.css"></link>
+        <script src="js/jquery-1.6.2.min.js"></script>
+        <script src="js/pamflet.js"></script>
+        
+        <meta charset="utf-8"></meta>
+        <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+      </head>
+      <body>
+        <a class="page prev nav" href="API+Reference.html">
+            <span class="space">&nbsp;</span>
+            <span class="flip">❧</span>
+          </a><a class="page next nav" href="Contents+in+Depth.html">
+            <span class="space">&nbsp;</span>
+            <span>❧</span>
+          </a>
+        <div class="container">
+          <div class="span-16 prepend-1 append-1">
+            <div class="top nav span-16 title">
+              <span>Arpeggeo</span>
+               — Operations
+            </div>
+          </div>
+          <div class="span-16 prepend-1 append-1 contents">
+            <h3 id="Operations">Operations</h3><p>A full list of core operations can be in found in the Scala API documentation for the <code>trellis.operation</code> package: <a  href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.package">http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.package</a>.
+</p><h2 id="Operation+Reference+Table">Operation Reference Table</h2><p><tr><td><code>Add</code></td><td>IntRaster</td><td>Add the values of each cell in each raster.</td></tr>
+<tr><td><code>AddArray</code></td><td>IntRaster</td><td>Add the values of each cell in each raster.</td></tr>
+<tr><td><code>AddConstant</code></td><td>IntRaster</td><td>Add a constant value to each cell.</td></tr>
+<tr><td><code>AutomaticNormalize</code></td><td>Raster</td><td>Normalize the values in the given raster so that all values are within the ...</td></tr>
+<tr><td><code>BinaryDoCell</code></td><td>IntRaster</td><td>Perform a function on every cell in a raster with the values from another raster.</td></tr>
+<tr><td><code>BinaryIfCell</code></td><td>IntRaster</td><td>Given a condition over two rasters, set the value of each cell in the output ...</td></tr>
+<tr><td><code>BinaryIfElseCell</code></td><td>IntRaster</td><td>Given a condition over two rasters, set the value of each cell in the output ...</td></tr>
+<tr><td><code>BinaryLocal</code></td><td>IntRaster</td><td>BinaryLocal is an abstract class for all operations that are both local (operating ...</td></tr>
+<tr><td><code>Bitmask</code></td><td>IntRaster</td><td>Bitmask each cell by a constant value.</td></tr>
+<tr><td><code>BuildArrayHistogram</code></td><td>Histogram</td><td>Build an array histogram (see <a name="trellis.stat.ArrayHistogram" class="extype" href="../stat/ArrayHistogram.html">ArrayHistogram</a> of values from ...</td></tr>
+<tr><td><code>BuildCompressedArrayHistogram</code></td><td>Histogram</td><td>Build a histogram (using the <a name="trellis.stat.CompressedArrayHistogram" class="extype" href="../stat/CompressedArrayHistogram.html">CompressedArrayHistogram</a> ...</td></tr>
+<tr><td><code>BuildHistogram</code></td><td>Histogram</td><td>Generic trait used by the various histogram-building operations.</td></tr>
+<tr><td><code>BuildMapHistogram</code></td><td>Histogram</td><td>Build a histogram (using the <a name="trellis.stat.MapHistogram" class="extype" href="../stat/MapHistogram.html">MapHistogram</a> strategy) from ...</td></tr>
+<tr><td><code>BuildRasterExtent</code></td><td>RasterExtent</td><td>Given a geographical extent and grid height/width, return an object used to ...</td></tr>
+<tr><td><code>BurnPolygon</code></td><td>Raster</td><td>Rasterize a polygon and then draw it on the provided raster.</td></tr>
+<tr><td><code>BurnPolygons</code></td><td>Polygon</td><td>Rasterize an array of polygons and then draw them into the provided raster.</td></tr>
+<tr><td><code>BurnPolygonsWithTransform</code></td><td>IntRaster</td><td>Rasterize an array of polygons and then draw them into the provided raster.</td></tr>
+<tr><td><code>BurnPolygonsWithValue</code></td><td>Polygon</td><td>Rasterize an array of polygons and then draw them into the provided raster.</td></tr>
+<tr><td><code>CachedOp</code></td><td>T</td><td>Trait providing caching support for operations which want to save their ...</td></tr>
+<tr><td><code>Call</code></td><td>B</td><td>Multiply each cell in a raster by a constant value.</td></tr>
+<tr><td><code>ChunkRasterExtent</code></td><td>RasterExtent</td><td>Used to chunk a RasterExtent object (geographical extent + grid information) ...</td></tr>
+<tr><td><code>CopyRaster</code></td><td>Raster</td><td>Given an operation producing a raster, returns a copy of this raster.</td></tr>
+<tr><td><code>CreateRaster</code></td><td>Raster</td><td>Creates an empty raster object based on the given raster properties.</td></tr>
+<tr><td><code>CreateSimplePolygon</code></td><td>Double)</td><td>Create a Polygon from an array of coordinates represented as a tuple (x,y).</td></tr>
+<tr><td><code>CropRasterExtent</code></td><td>RasterExtent</td><td>Given a geographical extent and grid height/width, return an object used to ...</td></tr>
+<tr><td><code>CropRasterExtentByExtent</code></td><td>RasterExtent</td><td>Given a geographical extent and grid height/width, return an object used to ...</td></tr>
+<tr><td><code>CsvIntMap</code></td><td>Int</td><td>Create a Map of (String,String) =&gt; Int from a CSV file ...</td></tr>
+<tr><td><code>Divide</code></td><td>IntRaster</td><td>Divide each value of one raster with the values from another raster.</td></tr>
+<tr><td><code>DivideConstant</code></td><td>IntRaster</td><td>Divide each cell by a constant value.</td></tr>
+<tr><td><code>DivideConstantBy</code></td><td>IntRaster</td><td>For each cell, divide a constant value by that cell's value.</td></tr>
+<tr><td><code>DoCell</code></td><td>IntRaster</td><td>Perform a function on every cell in a raster.</td></tr>
+<tr><td><code>FindClassBreaks</code></td><td>Int</td><td>Generate quantile class breaks for a given raster.</td></tr>
+<tr><td><code>FindColorBreaks</code></td><td>ColorBreaks</td><td>Generate quantile class breaks with assigned colors.</td></tr>
+<tr><td><code>FindMinMax</code></td><td>Int)</td><td>Find the minimum and maximum value of a raster.</td></tr>
+<tr><td><code>ForEach</code></td><td>Z</td><td>Evaluates then given operation (op) to get an array of A's.</td></tr>
+<tr><td><code>ForEach2</code></td><td>Z</td><td>Evaluates then given operations (opA and opB) to get an array of A's and an ...</td></tr>
+<tr><td><code>ForEach3</code></td><td>Z</td><td>Evaluates then given operations (opA opB, and opC) to get arrays of A's, B's ...</td></tr>
+<tr><td><code>ForEachTile</code></td><td>IntRaster</td><td>Perform an operation on every tile in a tileset, and return the new tileset.</td></tr>
+<tr><td><code>GenerateStatistics</code></td><td>Statistics</td><td>Determine statistical data for the given histogram.</td></tr>
+<tr><td><code>GetPolygonExtent</code></td><td>Extent</td><td>Return the extent of a given polygon.</td></tr>
+<tr><td><code>GetRasterExtent</code></td><td>RasterExtent</td><td>Get the trellis.geoattrs.RasterExtent from a given raster.</td></tr>
+<tr><td><code>Hillshade</code></td><td>Raster</td><td>Hillshade creates a raster that, visually, adds a three dimensional appearance to an elevation raster.</td></tr>
+<tr><td><code>Identity</code></td><td>IntRaster</td><td>Suspiciously similar to <a name="trellis.operation.CopyRaster" class="extype" href="CopyRaster.html">CopyRaster</a>, Identity returns ...</td></tr>
+multi line description: Maps all cells matching <code>cond</code> to <code>trueValue</code>.&lt;/p&gt; …
+<tr><td><code>IfCell</code></td><td>IntRaster</td><td>Maps all cells matching <code>cond</code> to <code>trueValue</code>.</p> ...</td></tr>
+<tr><td><code>IfElseCell</code></td><td>IntRaster</td><td>Set all values of output raster to one value or another based on whether a ...</td></tr>
+<tr><td><code>InverseMask</code></td><td>IntRaster</td><td>Generate a raster with the values from the first raster, but only include ...</td></tr>
+<tr><td><code>KernelDensity</code></td><td>Point</td><td>Used for Kernel Density calculation ...</td></tr>
+<tr><td><code>Literal</code></td><td>A</td><td>Compute the kernel density of a set of points onto a raster</td></tr>
+<tr><td><code>LoadFile</code></td><td>IntRaster</td><td>Return the literal value specified.</td></tr>
+<tr><td><code>LoadFileWithRasterExtent</code></td><td>IntRaster</td><td>Load the raster data for a particular extent/resolution from the specified file.</td></tr>
+<tr><td><code>LoadRasterExtentFromFile</code></td><td>RasterExtent</td><td>Load the trellis.geoattrs.RasterExtent from the raster in the specified file.</td></tr>
+<tr><td><code>LocalOperation</code></td><td>IntRaster</td><td>Local operations involve each individual value in a raster without information ...</td></tr>
+<tr><td><code>Mask</code></td><td>IntRaster</td><td>Generate a raster with the values from the first raster, but only include ...</td></tr>
+<tr><td><code>MaxConstant</code></td><td>IntRaster</td><td>Set each cell to a constant number or the corresponding cell value, whichever is highest.</td></tr>
+<tr><td><code>MinConstant</code></td><td>IntRaster</td><td>Set each cell to a constant or its existing value, whichever is lowest.</td></tr>
+<tr><td><code>MultiplyConstant</code></td><td>IntRaster</td><td>Multiply each cell by a constant.</td></tr>
+<tr><td><code>Negate</code></td><td>IntRaster</td><td>Negate (multiply by -1) each value in a raster.</td></tr>
+<tr><td><code>Operation</code></td><td>T</td><td>Base Operation for all Trellis functionality.</td></tr>
+<tr><td><code>PolygonExtent</code></td><td>Polygon</td><td>Return the extent of a given polygon.</td></tr>
+<tr><td><code>PolygonalZonalHistograms</code></td><td>Histogram</td><td>Given a raster and an array of polygons, return a histogram summary of the cells ...</td></tr>
+<tr><td><code>PowConstant</code></td><td>IntRaster</td><td>Raise each cell to the cth power.</td></tr>
+<tr><td><code>PrecomputedNormalize</code></td><td>Raster</td><td>Normalize the values in the given raster.</td></tr>
+<tr><td><code>RenderPNG</code></td><td>Byte</td><td>Generate a PNG from a given raster and a set of color breaks.</td></tr>
+<tr><td><code>ResampleRaster</code></td><td>Raster</td><td>This uses a nearest-neighbor algorithm to resample a raster.</td></tr>
+<tr><td><code>Subtract</code></td><td>IntRaster</td><td>Subtract each value in the second raster from the corresponding value in the first raster.</td></tr>
+<tr><td><code>SubtractConstant</code></td><td>IntRaster</td><td>Subtract a constant value from each cell.</td></tr>
+<tr><td><code>UnaryF</code></td><td>IntRaster</td><td>Useful wrapper for Function1[Int,Int] that helps preserve type information ...</td></tr>
+<tr><td><code>UnaryLocal</code></td><td>IntRaster</td><td>Abstract class for all operations that are unary (operate on a single raster) and ...</td></tr>
+<tr><td><code>WarpRaster</code></td><td>Raster</td><td>Crop a raster to a given extent, using a nearest neighbor algorithm to resample.</td></tr>
+<tr><td><code>WithDoubleConstant</code></td><td>IntRaster</td><td>Multiply each cell in a raster by a constant value.</td></tr>
+<tr><td><code>WithIntConstant</code></td><td>IntRaster</td><td>Multiply each cell in a raster by a constant value.</td></tr>
+<tr><td><code>ZonalHistogram</code></td><td>Histogram</td><td>Given a raster, return a histogram summary of the cells within each zone.</td></tr>
+<tr><td><code>addIntRasterTo</code></td><td>IntRaster</td><td>We'd like to use the normalize name both when we want to automatically ...</td></tr>
+<tr><td><code>addOpTo</code></td><td>IntRaster</td><td>Addition-operator implicits for Int, IntRaster and Op[IntRaster].</td></tr>
+<tr><td><code>divideOpBy</code></td><td>IntRaster</td><td>Division-operator implicits for Int, IntRaster and Op[IntRaster].</td></tr>
+<tr><td><code>multiplyOpBy</code></td><td>IntRaster</td><td>Multiplication-operator implicits for Int, IntRaster and Op[IntRaster].</td></tr>
+<tr><td><code>subtractOpBy</code></td><td>IntRaster</td><td>Subtraction-operator implicits for Int, IntRaster and Op[IntRaster].</td></tr>
+</p><h4>Contents</h4><div><a href="Arpeggeo.html">Arpeggeo</a></div><ol class="toc"> <li><div><a href="API+Reference.html">API Reference</a></div></li><li><div class="current">Operations</div></li><li class="generated"><div><a href="Contents+in+Depth.html">Contents in Depth</a></div></li><li class="generated"><div><a href="Combined+Pages.html">Combined Pages</a></div></li> </ol>
+          </div>
+        </div>
+        <a class="fork nav" href="http://github.com/azavea/trellis"><img alt="Fork me on GitHub" src="img/fork.png"></img></a>
+      </body>
+    </html>

@@ -66,7 +66,7 @@ array index) to get a Z value. The resulting array of Z's is returned.
       <span class="symbol"> 
         <span class="name">ForEach3</span>
         
-        <span class="params">(<span name="opA">opA: Op[<span name="scala.Array" class="extype">Array</span>[A]]</span>, <span name="opB">opB: Op[<span name="scala.Array" class="extype">Array</span>[B]]</span>, <span name="opC">opC: Op[<span name="scala.Array" class="extype">Array</span>[C]]</span>, <span name="f">f: (A, B, C) ⇒ Op[Z]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: Manifest[Z]</span>)</span>
+        <span class="params">(<span name="opA">opA: Op[<span name="scala.Array" class="extype">Array</span>[A]]</span>, <span name="opB">opB: Op[<span name="scala.Array" class="extype">Array</span>[B]]</span>, <span name="opC">opC: Op[<span name="scala.Array" class="extype">Array</span>[C]]</span>)</span><span class="params">(<span name="f">f: (A, B, C) ⇒ Op[Z]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: Manifest[Z]</span>)</span>
       </span>
       </h4>
       
@@ -170,17 +170,6 @@ array index) to get a Z value. The resulting array of Z's is returned.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.Operation#call" data-isabs="false">
-      <a id="call[U]((Array[Z]) ⇒ U)(Manifest[U]):Call[Array[Z], U]"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">call</span>
-        <span class="tparams">[<span name="U">U</span>]</span>
-        <span class="params">(<span name="f">f: (<span name="scala.Array" class="extype">Array</span>[Z]) ⇒ U</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: Manifest[U]</span>)</span><span class="result">: <a name="trellis.operation.Call" class="extype" href="Call.html">Call</a>[<span name="scala.Array" class="extype">Array</span>[Z], U]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
     </li><li visbl="pub" name="trellis.operation.ForEach3#canEqual" data-isabs="false">
       <a id="canEqual(Any):Boolean"></a>
       <h4 class="signature">
@@ -217,6 +206,17 @@ array index) to get a Z value. The resulting array of Z's is returned.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.Operation#dispatch" data-isabs="false">
+      <a id="dispatch(ActorRef):DispatchedOperation[Array[Z]]"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">dispatch</span>
+        
+        <span class="params">(<span name="dispatcher">dispatcher: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>)</span><span class="result">: <a name="trellis.operation.DispatchedOperation" class="extype" href="DispatchedOperation.html">DispatchedOperation</a>[<span name="scala.Array" class="extype">Array</span>[Z]]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -239,17 +239,6 @@ array index) to get a Z value. The resulting array of Z's is returned.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.ForEach3" class="extype" href="">ForEach3</a> → Equals → AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.ForEach3#f" data-isabs="false">
-      <a id="f:(A, B, C) ⇒ Op[Z]"></a>
-      <h4 class="signature">
-      <span class="kind">val</span>
-      <span class="symbol"> 
-        <span class="name">f</span>
-        
-        <span class="result">: (A, B, C) ⇒ Op[Z]</span>
-      </span>
-      </h4>
-      
     </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
       <a id="finalize():Unit"></a>
       <h4 class="signature">

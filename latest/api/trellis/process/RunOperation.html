@@ -24,7 +24,7 @@
       <span class="symbol"> 
         <span class="name">RunOperation</span>
         <span class="tparams">[<span name="T">T</span>]</span>
-        <span class="params">(<span name="op">op: <a name="trellis.operation.Operation" class="extype" href="../operation/Operation.html">Operation</a>[T]</span>, <span name="pos">pos: <span name="scala.Int" class="extype">Int</span></span>, <span name="client">client: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>)</span><span class="result"> extends <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+        <span class="params">(<span name="op">op: <a name="trellis.operation.Operation" class="extype" href="../operation/Operation.html">Operation</a>[T]</span>, <span name="pos">pos: <span name="scala.Int" class="extype">Int</span></span>, <span name="client">client: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>, <span name="dispatcher">dispatcher: <span name="scala.Option" class="extype">Option</span>[<span name="akka.actor.ActorRef" class="extype">ActorRef</span>]</span>)</span><span class="result"> extends <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
@@ -64,7 +64,7 @@
       <span class="symbol"> 
         <span class="name">RunOperation</span>
         
-        <span class="params">(<span name="op">op: <a name="trellis.operation.Operation" class="extype" href="../operation/Operation.html">Operation</a>[T]</span>, <span name="pos">pos: <span name="scala.Int" class="extype">Int</span></span>, <span name="client">client: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>)</span>
+        <span class="params">(<span name="op">op: <a name="trellis.operation.Operation" class="extype" href="../operation/Operation.html">Operation</a>[T]</span>, <span name="pos">pos: <span name="scala.Int" class="extype">Int</span></span>, <span name="client">client: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>, <span name="dispatcher">dispatcher: <span name="scala.Option" class="extype">Option</span>[<span name="akka.actor.ActorRef" class="extype">ActorRef</span>]</span>)</span>
       </span>
       </h4>
       
@@ -179,6 +179,17 @@
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li visbl="pub" name="trellis.process.RunOperation#dispatcher" data-isabs="false">
+      <a id="dispatcher:Option[ActorRef]"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">dispatcher</span>
+        
+        <span class="result">: <span name="scala.Option" class="extype">Option</span>[<span name="akka.actor.ActorRef" class="extype">ActorRef</span>]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">

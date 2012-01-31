@@ -416,11 +416,22 @@ actually want to pass to the constructors.</p>
       <span class="symbol"> 
         <a href="RunCallback.html"><span class="name">RunCallback</span></a>
         <span class="tparams">[<span name="T">T</span>]</span>
-        <span class="params">(<span name="args">args: Args</span>, <span name="pos">pos: Int</span>, <span name="cb">cb: Callback[T]</span>, <span name="client">client: ActorRef</span>, <span name="id">id: String</span>)</span><span class="result"> extends Product with Serializable</span>
+        <span class="params">(<span name="args">args: Args</span>, <span name="pos">pos: Int</span>, <span name="cb">cb: Callback[T]</span>, <span name="client">client: ActorRef</span>, <span name="id">id: String</span>, <span name="dispatcher">dispatcher: ActorRef</span>)</span><span class="result"> extends Product with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">Internal message to compute the provided args (if necessary), invoke the
 provided callback with the computed args, and send the result to the client.</p>
+    </li><li visbl="pub" name="trellis.process.RunDispatched" data-isabs="false">
+      <a id="RunDispatched:RunDispatched"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="RunDispatched.html"><span class="name">RunDispatched</span></a>
+        
+        <span class="params">(<span name="op">op: trellis.operation.Operation[_]</span>, <span name="dispatcher">dispatcher: ActorRef</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">External message to compute the given operation and return result to sender.</p>
     </li><li visbl="pub" name="trellis.process.RunOperation" data-isabs="false">
       <a id="RunOperation:RunOperation[T]"></a>
       <h4 class="signature">
@@ -428,7 +439,7 @@ provided callback with the computed args, and send the result to the client.</p>
       <span class="symbol"> 
         <a href="RunOperation.html"><span class="name">RunOperation</span></a>
         <span class="tparams">[<span name="T">T</span>]</span>
-        <span class="params">(<span name="op">op: Operation[T]</span>, <span name="pos">pos: Int</span>, <span name="client">client: ActorRef</span>)</span><span class="result"> extends Product with Serializable</span>
+        <span class="params">(<span name="op">op: Operation[T]</span>, <span name="pos">pos: Int</span>, <span name="client">client: ActorRef</span>, <span name="dispatcher">dispatcher: Option[ActorRef]</span>)</span><span class="result"> extends Product with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">Internal message to run the provided op and send the result to the client.</p>
