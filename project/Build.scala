@@ -1,8 +1,6 @@
 import sbt._
 import sbt.Keys._
 
-import eu.henkelmann.sbt.JUnitXmlTestsListener
-
 object MyBuild extends Build {
   val geotoolsVersion = "2.7.4"
 
@@ -15,7 +13,7 @@ object MyBuild extends Build {
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-optimize"),
 
     parallelExecution := false,
-    testListeners <+= target.map(tgt => new JUnitXmlTestsListener(tgt.toString)),
+    testListeners <+= target.map(tgt => new eu.henkelmann.sbt.JUnitXmlTestsListener(tgt.toString)),
 
     libraryDependencies ++= Seq(
       "org.scalatest" %% "scalatest" % "1.6.1" % "test",
