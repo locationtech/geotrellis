@@ -22,7 +22,7 @@ val json0 = """
    "store": "stroud:fs",
    "params": {
      "type": "fs",
-     "path": "src/test/resources"
+     "path": "src/test/resources/data"
    }
   }
  ]
@@ -57,7 +57,7 @@ val json0 = """
         Map(
           "stroud:fs" -> DataStore(
               "stroud:fs",
-              Map("type" -> "fs", "path" -> "src/test/resources")
+              Map("type" -> "fs", "path" -> "src/test/resources/data")
           )
         )
       )
@@ -70,15 +70,8 @@ val json0 = """
       val catalog = Catalog.fromJSON(json1)
       val store = catalog.stores("stroud:fs")
       val layers = store.findRasterLayers
-      layers.length must be >= 4
+      layers.length must be === 1
     } 
   }
 
 }
-/*
-Map("elevation" -> RasterLayer("elevation", "/dev/null/elevation.arg32", 
-                RasterExtent( Extent(0.0,0.0,100.0,100.0),20.0,20.0,5,5 )
-                )
-)
-*/
-
