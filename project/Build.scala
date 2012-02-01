@@ -39,12 +39,9 @@ object MyBuild extends Build {
       "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT" from "http://n0d.es/jars/caliper-1.0-SNAPSHOT.jar",
       "com.google.code.gson" % "gson" % "1.7.1",
       "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
-       "com.sun.jersey"          % "jersey-bundle" % "1.11"
-     //"com.sun.jersey"          % "jersey-server" % "1.11",
-    // "com.sun.jersey"          % "jersey-servlet" % "1.11" 
-     // "com.sun.jersey"          % "jersey-core"   % "1.2" % "compile",
-      //"com.sun.jersey"          % "jersey-json"   % "1.2" % "compile",
-      //"com.sun.jersey.contribs" % "jersey-scala"  % "1.2" % "compile"
+      "com.sun.jersey" % "jersey-bundle" % "1.11",
+      "com.azavea.math" %% "numeric" % "0.1" from "http://n0d.es/jars/numeric_2.9.1-0.1.jar",
+      "com.azavea.math.plugin" %% "optimized-numeric" % "0.2" from "http://plastic-idolatry.com/jars/optimized-numeric-plugin_2.9.1-0.2.jar"
     ),
 
     resolvers ++= Seq(
@@ -96,8 +93,8 @@ object MyBuild extends Build {
 
 
 object PluginDef extends Build {
-  lazy val root = Project("plugins", file(".")) dependsOn( 
-    pamflet)
+  lazy val root = Project("plugins", file(".")) dependsOn(pamflet)
+
   lazy val pamflet = uri("git://github.com/n8han/pamflet-plugin#0.3.0")
 }
 

@@ -1,8 +1,20 @@
 import scala.annotation.tailrec
 
+//import annotation.implicitNotFound
+
 package object trellis {
   // TOOD: phase out trellis.contants package
   final val NODATA = Int.MinValue
+
+  //@implicitNotFound(msg = "Cannot find NoData type class for ${T}")
+  //trait NoData[T] {
+  //  def value:T
+  //}
+
+  //implicit object IntNoData extends NoData[Int] { final def value = Int.MinValue }
+  //implicit object LongNoData extends NoData[Long] { final def value = Long.MinValue }
+  //implicit object FloatNoData extends NoData[Float] { final def value = Float.NaN }
+  //implicit object DoubleNoData extends NoData[Double] { final def value = Double.NaN }
 }
 
 package trellis {

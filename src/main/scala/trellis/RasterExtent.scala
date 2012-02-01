@@ -18,6 +18,11 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
   val height = extent.height
 
   /**
+   * The size of the extent, e.g. cols * rows.
+   */
+  def size = cols * rows
+
+  /**
    * Create a copy of this instance
    */
   def copy = RasterExtent(extent, cellwidth, cellheight, cols, rows)

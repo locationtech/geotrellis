@@ -46,11 +46,3 @@ class ArrayRasterData(array:Array[Int]) extends RasterData with Serializable {
 object ArrayRasterData {
   def apply(array:Array[Int]) = new ArrayRasterData(array)
 }
-
-class SparseRasterData( var rasters:List[IntRaster]  ) extends RasterData {
-  def length = error("not implemented")
-  def apply(i:Int) = error("not implemented")
-  def update(i:Int, x:Int) { error("not implemented") }
-  def copy = throw new Exception("not implemented")
-  def asArray = error("not implemented")
-} 
