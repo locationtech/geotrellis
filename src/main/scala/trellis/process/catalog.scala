@@ -71,6 +71,11 @@ case class DataStore(name:String, params:Map[String, String]) {
  * correspond to one catalog.
  */
 case class Catalog(name:String, stores:Map[String, DataStore]) {
+
+  def exists(path:String) = if (new java.io.File(path).exists) Some(path) else None
+
+  def findPath(base:String) = exists(base + ".arg32") orElse exists(base + ".arg")
+
   def getRasterLayerByName(layerName:String):Option[(String, RasterLayer)] = {
     stores.values.foreach {
       store => {
@@ -78,8 +83,10 @@ case class Catalog(name:String, stores:Map[String, DataStore]) {
           val (jsonPath, layer) = store.layers(layerName)
   
           // fixme
-          val path = jsonPath.substring(0, jsonPath.length - 5) + ".arg32"
-          return Some((path, layer))
+          val base = jsonPath.substring(0, jsonPath.length - 5)
+          return findPath(base).map(s => (s, layer))
+          //val path = jsonPath.substring(0, jsonPath.length - 5) + ".arg32"
+          //return Some((path, layer))
         }
       }
     }

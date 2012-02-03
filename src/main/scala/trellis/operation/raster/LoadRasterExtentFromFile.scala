@@ -7,7 +7,7 @@ import trellis.process._
 /**
   * Load the [[trellis.geoattrs.RasterExtent]] from the raster in the specified file.
   */
-class LoadRasterExtentFromFile(path:String) extends Op1(path)({
+case class LoadRasterExtentFromFile(path:String) extends Op1(path)({
   (path) => {
     val i = path.lastIndexOf(".")
     val jsonPath = (if (i == -1) path else path.substring(0, i)) + ".json"
@@ -16,6 +16,6 @@ class LoadRasterExtentFromFile(path:String) extends Op1(path)({
   }
 })
 
-object LoadRasterExtentFromFile {
-  def apply(path:String) = new LoadRasterExtentFromFile(path)
-}
+//object LoadRasterExtentFromFile {
+//  def apply(path:String) = LoadRasterExtentFromFile(path)
+//}

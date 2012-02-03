@@ -1,5 +1,6 @@
 package trellis.operation
 
+import trellis.data.MultiColorRangeChooser
 import trellis.data.ColorBreaks
 import trellis.process._
 import trellis.stat._
@@ -22,3 +23,7 @@ case class FindColorBreaks(h:Op[Histogram], cs:Op[Array[Int]]) extends Op[ColorB
     Result(ColorBreaks(breaks.zip(colors)))
   }
 }
+
+case class ColorsFromPalette(palette:Op[Array[Int]], num:Op[Int]) extends Op2(palette, num)({
+  (palette, num) => Result(new MultiColorRangeChooser(palette).getColors(num).toArray)
+})

@@ -89,8 +89,7 @@ class WoBenchmark(size:Int, extent:Extent, pairs:Seq[(String, Int)],
   }
 
   def buildPNGOp(r:Op[IntRaster]) = {
-    val i = Cache(r)
-    RenderPNG(i, buildColorBreaksOp(i), 0, true)
+    RenderPNG(r, buildColorBreaksOp(r), 0, true)
   }
 
   val weight:Op[IntRaster] = buildWoOp

@@ -1,0 +1,12 @@
+{
+ "catalog": "Catalog of Demo Data",
+ "stores": [
+  {
+   "store": "test:fs",
+   "params": {
+     "type": "fs",
+     "path": "src/test/resources/sbn"
+   }
+  }
+ ]
+}

@@ -13,6 +13,8 @@ sealed trait History {
 
   def startTime:Long
   def stopTime:Long
+  def elapsedTime:Long = stopTime - startTime
+
   def children:List[History]
 
   def isOriginalFailure = originalFailures == List(this)

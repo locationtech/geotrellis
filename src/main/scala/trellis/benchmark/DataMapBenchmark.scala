@@ -102,7 +102,7 @@ object DataMapBenchmark {
     genericTime = 0L
     moreGenericTime = 0L
 
-    println("running each test %d times" format (times * 2))
+    println("running each test %d times" format times)
     for (i <- 0 until times) {
       runit()
     }
@@ -115,7 +115,7 @@ object DataMapBenchmark {
   }
 
   def output(label:String, t:Long) {
-    val p = (t * 1.0) / (times * 2)
+    val p = (t * 1.0) / times
     println("%-10s took %4d ms (%.3f ms/per)" format (label, t, p))
   }
 }

@@ -7,8 +7,10 @@ import trellis._
  */
 case class Subtract(r1:Op[IntRaster], r2:Op[IntRaster]) extends BinaryLocal {
   def handleCells(z1:Int, z2:Int) = if (z1 == NODATA) {
-    if (z2 == NODATA) 0 else -z2
+    NODATA
+  } else if (z2 == NODATA) {
+    z1
   } else {
-    if (z2 == NODATA) z1 else z1 - z2
+    z1 - z2
   }
 }

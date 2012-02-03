@@ -242,16 +242,27 @@ abstract trait Histogram {
     val sb = new StringBuilder()
     sb.append("[")
     
-    val (zmin, zmax) = getMinMaxValues
-
+    //val (zmin, zmax) = getMinMaxValues
+    //
+    //var first = true
+    //var i = zmin
+    //
+    //while (i <= zmax) {
+    //  val count = this.getItemCount(i)
+    //  if (count > 0) {
+    //    if (first) { first = false } else { sb.append(",") }
+    //    sb.append("[%d,%d]".format(i, count))
+    //  }
+    //  i += 1
+    //}
     var first = true
-    var i = zmin
-
-    while (i <= zmax) {
-      val count = this.getItemCount(i)
+    val values = getValues
+    var i = 0
+    while (i < values.length) {
+      val count = this.getItemCount(values(i))
       if (count > 0) {
-        if (first) { first = false } else { sb.append(",") }
-        sb.append("[%d,%d]".format(i, count))
+        if (first) first = false else sb.append(",")
+        sb.append("[%d,%d]".format(values(i), count))
       }
       i += 1
     }
