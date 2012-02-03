@@ -87,27 +87,6 @@ class IntRaster(val data:RasterData, val rasterExtent:RasterExtent,
     */
   def compare(other:IntRaster) = this.rasterExtent.compare(other.rasterExtent)
 
-  ///**
-  //  * Test other raster for equality.
-  //  */
-  //override def equals(other:Any): Boolean = other match {
-  //  case r:IntRaster => {
-  //    if (r == null) return false
-  //    if (rows != r.rows || this.cols != r.cols) return false
-  //    if (rasterExtent != r.rasterExtent) return false
-  //
-  //    var i = 0
-  //    val limit = length
-  //    while (i < limit) {
-  //      if (data(i) != r.data(i)) return false
-  //      i += 1
-  //    }
-  //
-  //    true
-  //  }
-  //  case _ => false
-  //}
-
   /**
     * Clone this raster.
     */
