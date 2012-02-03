@@ -33,14 +33,12 @@ class DoCellSpec extends Spec with MustMatchers with ShouldMatchers {
              cellsize:Double, srs:Int) => {
       val g = RasterExtent(Extent(xmin, ymin, xmin + cellsize * cols, ymin + cellsize * rows),
                                cellsize, cellsize, cols, rows)
-      IntRaster(a, cols, rows, g)
+      IntRaster(a, g)
     }
     val f = (a:Array[Int], cols:Int, rows:Int, xmin:Double, ymin:Double,
              cellsize:Double) => f2(a, cols, rows, xmin, ymin, cellsize, 999)
   
     val a = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    //val raster1 = IntRaster(data1, 4, 5, rasterExtent)
-    //val r = Literal(raster1)
     val r = CopyRaster(Literal(f(a, 3, 3, 0.0, 0.0, 1.0)))
 
     it ("DoCell") {

@@ -111,7 +111,7 @@ trait ReadState {
 
   // don't usually override
   protected[this] def createRaster(data:Array[Int]) = {
-    IntRaster(translate(data), target.rows, target.cols, target, layer.name)
+    IntRaster(translate(data), target, layer.name)
   }
 
   // must override

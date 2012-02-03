@@ -18,7 +18,7 @@ class AsciiSpec extends Spec with MustMatchers with ShouldMatchers {
 
   val e = Extent(19.0, 9.0, 49.0, 39.0)
   val g = RasterExtent(e, 3.0, 3.0, 10, 10)
-  val r = IntRaster(data, 10, 10, g)
+  val r = IntRaster(data, g)
 
   describe("An AsciiReader") {
     it ("should fail on non-existent files") {

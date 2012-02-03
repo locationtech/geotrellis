@@ -31,7 +31,7 @@ case class StandardDeviation(r:Op[IntRaster], h:Op[Histogram], factor:Int) exten
       outdata(i) = (delta * factor / stddev).toInt
       i += 1
     }
-    val output = IntRaster(outdata, raster.rows, raster.cols, raster.rasterExtent.copy)
+    val output = IntRaster(outdata, raster.rasterExtent)
     Result(output)
   }
 }

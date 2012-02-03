@@ -26,7 +26,7 @@ class WarpRasterSpec extends Spec with MustMatchers with ShouldMatchers {
                      2, 2, 2, 2,
                      3, 3, 3, 3,
                      4, 4, 4, 4)
-    val raster = IntRaster(data, 4, 4, baseGeo)
+    val raster = IntRaster(data, baseGeo)
 
     it("should load the full raster on its own extent") {
       val op = WarpRaster(Literal(raster), baseGeo)

@@ -4,38 +4,33 @@ import scala.math.{min, max}
 
 //?TODO: remove rows & cols from IntRaster constructor
 object IntRaster {
-  def apply(data:RasterData, rows:Int, cols:Int, rasterExtent:RasterExtent):IntRaster = {
-    new IntRaster(data, rows, cols, rasterExtent, "")
+  def apply(data:RasterData, rasterExtent:RasterExtent):IntRaster = {
+    new IntRaster(data, rasterExtent, "")
   }
 
-  def apply(data:RasterData, rasterExtent:RasterExtent) = {
-    new IntRaster(data, rasterExtent.rows, rasterExtent.cols, rasterExtent, "")
-  }
-
-  def apply(data:RasterData, rows:Int, cols:Int,
-            rasterExtent:RasterExtent, name:String) = {
-    new IntRaster(data, rows, cols, rasterExtent, name)
+  def apply(data:RasterData, rasterExtent:RasterExtent, name:String) = {
+    new IntRaster(data, rasterExtent, name)
   } 
    
-  def apply(array:Array[Int], rows:Int, cols:Int, rasterExtent:RasterExtent, name:String = ""):IntRaster = {
-    new IntRaster(ArrayRasterData(array), rows, cols, rasterExtent, name)
+  def apply(array:Array[Int], rasterExtent:RasterExtent):IntRaster = {
+    new IntRaster(ArrayRasterData(array), rasterExtent, "")
   }
 
-  def apply(array:Array[Int], rasterExtent:RasterExtent):IntRaster = {
-    IntRaster(ArrayRasterData(array), rasterExtent)
+  def apply(array:Array[Int], rasterExtent:RasterExtent, name:String):IntRaster = {
+    new IntRaster(ArrayRasterData(array), rasterExtent, name)
   }
 
   def createEmpty(geo:RasterExtent) = {
     val size = geo.rows * geo.cols
     val data = Array.fill[Int](size)(NODATA)
-    IntRaster(ArrayRasterData(data), geo.rows, geo.cols, geo, "")
+    IntRaster(ArrayRasterData(data), geo, "")
   }
 }
 
 /**
  * 
  */
-class IntRaster(val data:RasterData, val rows:Int, val cols:Int, val rasterExtent:RasterExtent,
+class IntRaster(val data:RasterData, val rasterExtent:RasterExtent,
                 val name:String) extends Serializable {
 
   override def toString = "IntRaster(%s, %s, %s, %s, %s)" format (data, rows, cols, rasterExtent, name)
@@ -44,8 +39,12 @@ class IntRaster(val data:RasterData, val rows:Int, val cols:Int, val rasterExten
     case r:IntRaster => data == r.data && rows == r.rows && cols == r.cols && rasterExtent == r.rasterExtent
     case _ => false
   }
+
+  def cols = rasterExtent.cols
+
+  def rows = rasterExtent.rows
  
-  def length = this.rows * this.cols
+  def length = rasterExtent.size
 
   /**
     * Get value at given coordinates.
@@ -113,7 +112,7 @@ class IntRaster(val data:RasterData, val rows:Int, val cols:Int, val rasterExten
     * Clone this raster.
     */
   def copy() = {
-    new IntRaster(this.data.copy, this.rows, this.cols, this.rasterExtent, this.name + "_copy")
+    new IntRaster(data.copy, rasterExtent, name + "_copy")
   }
 
   /**
@@ -170,7 +169,7 @@ class IntRaster(val data:RasterData, val rows:Int, val cols:Int, val rasterExten
       output(i) = f(data(i))
       i += 1
     }
-    new IntRaster(output, this.rows, this.cols, this.rasterExtent, this.name + "_map")
+    new IntRaster(output, rasterExtent, name + "_map")
   }
 
   //TODO: optimize (replace length?, don't copy?)
@@ -183,27 +182,9 @@ class IntRaster(val data:RasterData, val rows:Int, val cols:Int, val rasterExten
       output(i) = f(data(i), data2(i))
       i += 1
     }
-    new IntRaster(output, this.rows, this.cols, this.rasterExtent, this.name + "_map")
+    new IntRaster(output, this.rasterExtent, this.name + "_map")
   }
 
-  //def combine2IfSet(r2:IntRaster)(f:(Int,Int) => Int)  = {
-  //  val data = this.data
-  //  val data2 = r2.data
-  //  val output = data.copy
-  //  var i = 0
-  //  while(i < length) {
-  //    val v1 = data(i)
-  //    val v2 = data2(i)
-  //    output(i) = if (v1 == NODATA || v2 == NODATA) {
-  //      if (v1 == NODATA) v2 else v1
-  //    } else {
-  //      f(data(i),data2(i))
-  //    }
-  //    i += 1
-  //  } 
-  //  new IntRaster(output, this.rows, this.cols, this.rasterExtent, this.name + "_map")
-  //}
-  
   def normalize(zmin:Int, zmax:Int, gmin:Int, gmax:Int) = {
     val grange = gmax - gmin
     val zrange = zmax - zmin
@@ -224,6 +205,6 @@ class IntRaster(val data:RasterData, val rows:Int, val cols:Int, val rasterExten
       if (z != NODATA) data2(i) = f(z)
       i += 1
     }
-    new IntRaster(data2, this.rows, this.cols, this.rasterExtent, this.name + "_map")
+    new IntRaster(data2, rasterExtent, name + "_map")
   }
 }

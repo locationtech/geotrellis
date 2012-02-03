@@ -24,7 +24,7 @@ object RasterizerSpec {
     val g = RasterExtent(e, cellwidth=1.0, cellheight=1.0, cols=cols, rows=rows)
 
     val data   = Array.fill[Int](cols * rows)(NODATA)
-    val raster = IntRaster(data, rows=rows, cols=cols, rasterExtent=g)
+    val raster = IntRaster(data, rasterExtent=g)
 
     Rasterizer.rasterize(raster, polygons, fs)
     println(raster.asciiDraw)
@@ -45,7 +45,7 @@ class RasterizerSpec extends Spec with MustMatchers with ShouldMatchers {
     val g = RasterExtent(e, cellwidth=1.0, cellheight=1.0, cols=width, rows=height)
 
     val data = Array.fill[Int](width * height)(NODATA)
-    val raster = IntRaster(data, rows=height, cols=width, rasterExtent=g)
+    val raster = IntRaster(data, rasterExtent=g)
 
     val polygons = Array(p)
     val values   = Array(19)

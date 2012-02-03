@@ -13,7 +13,7 @@ class RasterSpec extends Spec with MustMatchers {
     val data = Array(1, 2, 3,
                      4, 5, 6,
                      7, 8, 9)
-    val raster = IntRaster(data, rows=3, cols=3, rasterExtent=g)
+    val raster = IntRaster(data, rasterExtent=g)
 
     it("should preserve the data") {
       raster.asArray must be === data
@@ -32,16 +32,16 @@ class RasterSpec extends Spec with MustMatchers {
 
     it("should be comparable to others") {
       val r0:IntRaster = null
-      val r1 = IntRaster(Array(1,2,3,4), 2, 2, g)
-      val r2 = IntRaster(Array(1,2,3,5), 2, 2, g)
-      val r3 = IntRaster(Array(1,2,3,4), 1, 4, g)
-      val r4 = IntRaster(Array(1,2,3,4), 4, 1, g)
+      val r1 = IntRaster(Array(1,2,3,4), g)
+      val r2 = IntRaster(Array(1,2,3,5), g)
+      val r3 = IntRaster(Array(1,2,3,4), g)
+      val r4 = IntRaster(Array(1,2,3,4), g)
 
-      r1 == r0 must be === false
-      r1 == r1 must be === true
-      r1 == r2 must be === false
-      r1 == r3 must be === false
-      r1 == r4 must be === false
+      r1 must not be r0
+      r1 must be === r1
+      r1 must not be r2
+      r1 must be === r3
+      r1 must be === r4
     }
 
     it("should set coordinates") {

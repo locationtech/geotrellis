@@ -22,7 +22,7 @@ class BinaryLocalSpec extends Spec with MustMatchers with ShouldMatchers {
     val re = RasterExtent(e, e.width / cols, e.height / rows, cols, rows)
 
     def makeData(c:Int) = Array.fill(re.cols * re.rows)(c)
-    def makeRaster(c:Int) = IntRaster(makeData(c), re.cols, re.rows, re)
+    def makeRaster(c:Int) = IntRaster(makeData(c), re)
 
     val r63 = makeRaster(63)
     val r46 = makeRaster(46)

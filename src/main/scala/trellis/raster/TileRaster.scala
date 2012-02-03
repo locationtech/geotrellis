@@ -12,7 +12,7 @@ object Tiler {
     val srcExtent = src.rasterExtent
     val tileExtent = srcExtent.copy
     val tileRasterData = createTileRasterData(src, pixels)
-    IntRaster(tileRasterData, srcExtent.cols, srcExtent.rows, tileExtent)
+    IntRaster(tileRasterData, tileExtent)
   }
 
   def createTileRasterData(src: IntRaster, pixels: Int): TileRasterData = {
@@ -42,7 +42,7 @@ object Tiler {
         data(y * pixels + x) = if (xsrc >= srcExtent.cols || ysrc >= srcExtent.rows)
           NODATA else src.get(xsrc, ysrc)
       }
-      Some(IntRaster(data, pixels, pixels, rasterExtent))
+      Some(IntRaster(data, rasterExtent))
     }
     val tileRasterData = TileRasterData(TileSet(tileExtent, pixels), rasters.toArray)
     tileRasterData

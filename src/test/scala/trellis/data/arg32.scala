@@ -59,7 +59,7 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
       val e = Extent(0.0, 0.0, 40.0, 40.0)
       val geo = RasterExtent(e, 10.0, 10.0, 4, 4)
       val data1 = Array.fill[Int](16)(nd)
-      val raster = IntRaster(data1, 4, 4, geo)
+      val raster = IntRaster(data1, geo)
       
       val fh = java.io.File.createTempFile("nodata", ".arg32")
       val path = fh.getPath

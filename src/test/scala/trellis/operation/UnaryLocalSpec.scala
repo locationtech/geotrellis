@@ -21,7 +21,7 @@ class UnaryLocalSpec extends Spec with MustMatchers with ShouldMatchers {
     val e = Extent(0.0, 0.0, 100.0, 100.0)
     val re = RasterExtent(e, e.width / cols, e.height / rows, cols, rows)
     val data = Array.fill(re.cols * re.rows)(100)
-    val raster = IntRaster(data, re.cols, re.rows, re)
+    val raster = IntRaster(data, re)
 
     it("should produce correct results") {
       val op = AddConstant(raster, 33)

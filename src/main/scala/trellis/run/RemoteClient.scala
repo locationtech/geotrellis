@@ -80,7 +80,7 @@ object RemoteClient {
 
     for (i <- 0 until cols * rows) data(i) = Random.nextInt() % 1000000
 
-    val r1 = IntRaster(Array.fill(cols * rows)(3), cols, rows, re)
+    val r1 = IntRaster(Array.fill(cols * rows)(3), re)
     println("CLIENT: Started application.")
     while (true) {
       val remoteOp = AddConstant(r1,3)

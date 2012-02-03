@@ -70,7 +70,7 @@ class GridPolygonSpec extends Spec with MustMatchers with ShouldMatchers {
     val g = RasterExtent(e, 1.0, 1.0, width, height)
 
     val data = Array.fill[Int](width * height)(NODATA)
-    val raster = IntRaster(data, rows=height, cols=width, rasterExtent=g)
+    val raster = IntRaster(data, rasterExtent=g)
 
     p.rasterize(raster, 1)
     println(raster.asciiDraw)

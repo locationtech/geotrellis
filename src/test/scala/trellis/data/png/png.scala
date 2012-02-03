@@ -24,7 +24,7 @@ class PNGSpec extends Spec with MustMatchers {
 
     val e = Extent(0.0, 0.0, 100.0, 100.0)
     val rasterExtent = RasterExtent(e, 1.0, 1.0, 100, 100)
-    val raster   = IntRaster(data, height, width, rasterExtent)
+    val raster   = IntRaster(data, rasterExtent)
 
     val fh = File.createTempFile("bar", ".png")
 

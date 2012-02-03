@@ -60,7 +60,7 @@ object DataMapBenchmark {
     val extent = Extent(0, 0, w, h)
     val re = RasterExtent(extent, 1.0, 1.0, w, h)
 
-    val raster = IntRaster(data, h, w, re)
+    val raster = IntRaster(data, re)
 
     val graster = GenRaster[Int](data, re)
 

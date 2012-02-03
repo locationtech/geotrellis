@@ -27,19 +27,19 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
                       44, 91, nd, 11, 95,
                       12, 13, 56, 66, 66,
                       44, 91, nd, 11, 95)
-    val raster1 = IntRaster(data1, 4, 5, rasterExtent)
+    val raster1 = IntRaster(data1, rasterExtent)
 
     val data2 = Array(nd, nd, nd, 1, 1,
                       nd, nd, nd, 1, 1,
                       nd, nd, nd, 1, 1,
                       nd, nd, nd, 1, 1)
-    val raster2 = IntRaster(data2, 4, 5, rasterExtent)
+    val raster2 = IntRaster(data2, rasterExtent)
 
     val data3 = Array(nd, nd, 33, 1, 1,
                       18, 88, 11, 1, 14,
                       33, 3, 10, 1, 17,
                       18, 12, nd, 34, 77)
-    val raster3 = IntRaster(data3, 4, 5, rasterExtent)
+    val raster3 = IntRaster(data3, rasterExtent)
 
     it("dispatch is not yet implemented") {
       val G = BuildRasterExtent(0.0, 0.0, 100.0, 100.0, 100, 100)
@@ -334,7 +334,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
              cellsize:Double, srs:Int) => {
       val g = RasterExtent(Extent(xmin, ymin, xmin + cellsize * cols, ymin + cellsize * rows),
                                cellsize, cellsize, cols, rows)
-      IntRaster(a, cols, rows, g)
+      IntRaster(a, g)
     }
 
     val f = (a:Array[Int], cols:Int, rows:Int, xmin:Double, ymin:Double,
