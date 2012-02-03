@@ -71,15 +71,18 @@ class DemoService1 {
 
   @GET
   def get(
-    @DefaultValue("-8379782.57151,4846436.32082,-8343857.57151,4886861.32082")
+    //@DefaultValue("-8379782.57151,4846436.32082,-8343857.57151,4886861.32082")
+    @DefaultValue("-8379782.57151,4846436.32082,-8360582.57151,4865636.32082")
     @QueryParam("bbox")
     bbox:String,
 
-    @DefaultValue("479")
+    //@DefaultValue("479")
+    @DefaultValue("256")
     @QueryParam("cols")
     cols:String,
 
-    @DefaultValue("539")
+    //@DefaultValue("539")
+    @DefaultValue("256")
     @QueryParam("rows")
     rows:String,
 
