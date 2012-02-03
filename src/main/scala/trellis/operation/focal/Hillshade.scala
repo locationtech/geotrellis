@@ -70,6 +70,6 @@ case class Hillshade(r:Op[IntRaster], azimuth:Op[Double], altitude:Op[Double])
         }
         data(y * r.rasterExtent.cols + x) = h  
       }
-    Result(IntRaster(data, r.rasterExtent.copy))
+    Result(IntRaster(data, r.rasterExtent))
   }
 }) 

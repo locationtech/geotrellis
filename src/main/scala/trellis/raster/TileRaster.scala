@@ -10,14 +10,14 @@ import trellis.process._
 object Tiler {
   def createTileRaster(src: IntRaster, pixels: Int) = {
     val srcExtent = src.rasterExtent
-    val tileExtent = srcExtent.copy
+    val tileExtent = srcExtent
     val tileRasterData = createTileRasterData(src, pixels)
     IntRaster(tileRasterData, tileExtent)
   }
 
   def createTileRasterData(src: IntRaster, pixels: Int): TileRasterData = {
     val srcExtent = src.rasterExtent
-    val tileExtent = srcExtent.copy
+    //val tileExtent = srcExtent
 
     val tileCols = (srcExtent.cols / pixels) + 1
     val tileRows = (srcExtent.rows / pixels) + 1
@@ -44,7 +44,7 @@ object Tiler {
       }
       Some(IntRaster(data, rasterExtent))
     }
-    val tileRasterData = TileRasterData(TileSet(tileExtent, pixels), rasters.toArray)
+    val tileRasterData = TileRasterData(TileSet(srcExtent, pixels), rasters.toArray)
     tileRasterData
   }
   

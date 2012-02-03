@@ -13,7 +13,7 @@ class RasterExtentSpec extends Spec with MustMatchers with ShouldMatchers {
 
     val g1 = RasterExtent(e1, 1.0, 1.0, 1, 1)
     val g2 = RasterExtent(e2, 1.0, 1.0, 20, 20)
-    val g3 = g1.copy
+    val g3 = g1
     val g4 = RasterExtent(e1, 1.0, 1.0, 1, 1)
 
     g4.cellheight
