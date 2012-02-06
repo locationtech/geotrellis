@@ -4,8 +4,8 @@
 mainClass="trellis.rest.WebRunner"
 
 version="0.6"
-jar_name="Trellis-assembly-$version.jar"
-
+#jar_name="Trellis-assembly-$version.jar"
+jar_name="/scala-2.9.1/trellis_2.9.1-0.6.min.jar"
 java_args=""
 
 # find jar either in target (we're in SBT) 
@@ -25,4 +25,4 @@ else
   exit 1
 fi
 
-java $java_args -cp $jar_path $mainClass "$@" 
+echo java $java_args -cp $jar_path $mainClass "$@" 

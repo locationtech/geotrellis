@@ -4,7 +4,7 @@
 mainClass="trellis.run.GeotiffImporter"
 
 version="0.6"
-jar_name="Trellis-assembly-$version.jar"
+jar_name="scala-2.9.1/trellis_2.9.1-0.6.min.jar" #trellisscalaTrellis-assembly-$version.jar"
 
 java_args=""
 
