@@ -1,8 +1,4 @@
-import AssemblyKeys._
-
 import com.jsuereth.sbtsite.SiteKeys
-
-seq(assemblySettings: _*)
 
 seq(site.settings: _*)
 

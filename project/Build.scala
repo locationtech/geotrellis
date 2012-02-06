@@ -97,36 +97,3 @@ object PluginDef extends Build {
 
   lazy val pamflet = uri("git://github.com/n8han/pamflet-plugin#0.3.0")
 }
-
-// TODO: add proguard stuff back in. this is from old build.sbt file:
-/*
-seq(ProguardPlugin.proguardSettings :_*)
-
-proguardOptions := Seq(
-  "-keepclasseswithmembers public class * { public static void main(java.lang.String[]); }",
-  //"-dooptimize",
-  //"-dontobfuscate",
-  "-dontshrink",
-  "-dontoptimize",
-  """
-    -keepclassmembers class * implements java.io.Serializable {
-        static long serialVersionUID;
-        private void writeObject(java.io.ObjectOutputStream);
-        private void readObject(java.io.ObjectInputStream);
-        java.lang.Object writeReplace();
-        java.lang.Object readResolve();
-    }
-  """,
-  "-keep class scala.** { *; }",
-  "-keep class ch.** { *; }",
-  "-keep class trellis.** { *; }",
-  "-keep class jline.** { *; }",
-  "-keep interface scala.ScalaObject",
-  "-keep interface scala.tools.nsc.Interpreter$DebugParam")
-
-makeInJarFilter ~= (j => ((file) => j + ",!**.RSA,!**.SF"))
-
-// May not even need this--- I think scalaLib is included by default!
-proguardInJars <+= scalaInstance.map ((_:sbt.ScalaInstance).libraryJar)
-
-*/
