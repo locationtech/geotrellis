@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>trellis.operation.CachedOp</title>
+          <title>trellis.operation.ColorsFromPalette</title>
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link type="text/css" media="screen" rel="stylesheet" href="../../lib/template.css" />
@@ -14,28 +14,23 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img src="../../lib/trait_big.png" />
+        <img src="../../lib/class_big.png" />
         <p id="owner"><a name="trellis" class="extype" href="../package.html">trellis</a>.<a name="trellis.operation" class="extype" href="package.html">operation</a></p>
-        <h1>CachedOp</h1>
+        <h1>ColorsFromPalette</h1>
       </div>
 
       <h4 class="signature" id="signature">
-      <span class="kind">trait</span>
+      <span class="kind">case class</span>
       <span class="symbol"> 
-        <span class="name">CachedOp</span>
-        <span class="tparams">[<span name="T">T</span>]</span>
-        <span class="result"> extends Op[T]</span>
+        <span class="name">ColorsFromPalette</span>
+        
+        <span class="params">(<span name="palette">palette: Op[<span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]]</span>, <span name="num">num: Op[<span name="scala.Int" class="extype">Int</span>]</span>)</span><span class="result"> extends <a name="trellis.operation.Op2" class="extype" href="Op2.html">Op2</a>[<span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>], <span name="scala.Int" class="extype">Int</span>, <span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]] with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
-          <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Trait providing caching support for operations which want to save their
-result and return those on future invocations of run().
-</p></div><div class="toggleContainer block">
+          <div class="fullcommenttop" id="comment"><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a>[T], AnyRef, <span name="scala.Any" class="extype">Any</span></div>
-        </div><div class="toggleContainer block">
-          <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a name="trellis.operation.Cache" class="extype" href="Cache.html">Cache</a></div>
+          <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, <a name="trellis.operation.Op2" class="extype" href="Op2.html">Op2</a>[<span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>], <span name="scala.Int" class="extype">Int</span>, <span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]], <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a>[<span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]], <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
         
 
@@ -51,7 +46,7 @@ result and return those on future invocations of run().
                 <span class="filtertype">Inherited</span>
                 <ol><li class="hideall out"><span>Hide All</span></li>
                 <li class="showall in"><span>Show all</span></li></ol>
-                <ol id="linearization"><li name="trellis.operation.CachedOp" class="in"><span>CachedOp</span></li><li name="trellis.operation.Operation" class="in"><span>Operation</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+                <ol id="linearization"><li name="trellis.operation.ColorsFromPalette" class="in"><span>ColorsFromPalette</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="trellis.operation.Op2" class="in"><span>Op2</span></li><li name="trellis.operation.Operation" class="in"><span>Operation</span></li><li name="scala.Product" class="in"><span>Product</span></li><li name="scala.Equals" class="in"><span>Equals</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
               </div>
           <div id="visbl">
               <span class="filtertype">Visibility</span>
@@ -59,7 +54,21 @@ result and return those on future invocations of run().
             </div>
         </div>
 
+        <div class="members" id="constructors">
+              <h3>Instance Constructors</h3>
+              <ol><li visbl="pub" name="trellis.operation.ColorsFromPalette#this" data-isabs="false">
+      <a id="this:ColorsFromPalette"></a>
+      <h4 class="signature">
+      <span class="kind">new</span>
+      <span class="symbol"> 
+        <span class="name">ColorsFromPalette</span>
         
+        <span class="params">(<span name="palette">palette: Op[<span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]]</span>, <span name="num">num: Op[<span name="scala.Int" class="extype">Int</span>]</span>)</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
 
         <div class="types members" id="types">
               <h3>Type Members</h3>
@@ -70,42 +79,17 @@ result and return those on future invocations of run().
       <span class="symbol"> 
         <span class="name">Steps</span>
         
-        <span class="result"> = <span name="scala.PartialFunction" class="extype">PartialFunction</span>[<span name="scala.Any" class="extype">Any</span>, <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[T]]</span>
+        <span class="result"> = <span name="scala.PartialFunction" class="extype">PartialFunction</span>[<span name="scala.Any" class="extype">Any</span>, <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[<span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]]]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
     </li></ol>
             </div>
         
-        <div class="values members" id="values">
-              <h3>Abstract Value Members</h3>
-              <ol><li visbl="prt" name="trellis.operation.Operation#_run" data-isabs="true">
-      <a id="_run(Context):StepOutput[T]"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">_run</span>
         
-        <span class="params">(<span name="context">context: <a name="trellis.process.Context" class="extype" href="../process/Context.html">Context</a></span>)</span><span class="result">: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[T]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="trellis.operation" class="extype" href="package.html">operation</a>] abstract </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.Operation#nextSteps" data-isabs="true">
-      <a id="nextSteps:PartialFunction[Any, StepOutput[T]]"></a>
-      <h4 class="signature">
-      <span class="kind">val</span>
-      <span class="symbol"> 
-        <span class="name">nextSteps</span>
-        
-        <span class="result">: <span name="scala.PartialFunction" class="extype">PartialFunction</span>[<span name="scala.Any" class="extype">Any</span>, <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[T]]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
-    </li></ol>
-            </div>
 
         <div class="values members" id="values">
-              <h3>Concrete Value Members</h3>
+              <h3>Value Members</h3>
               <ol><li visbl="pub" name="scala.AnyRef#!=" data-isabs="false">
       <a id="!=(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -161,6 +145,17 @@ result and return those on future invocations of run().
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.Op2#_run" data-isabs="false">
+      <a id="_run(Context):StepOutput[Array[Int]]"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">_run</span>
+        
+        <span class="params">(<span name="context">context: <a name="trellis.process.Context" class="extype" href="../process/Context.html">Context</a></span>)</span><span class="result">: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[<span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Op2" class="extype" href="Op2.html">Op2</a> → <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
     </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
@@ -172,28 +167,17 @@ result and return those on future invocations of run().
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.CachedOp#cacheOutput" data-isabs="false">
-      <a id="cacheOutput(StepOutput[T]):StepOutput[T]"></a>
+    </li><li visbl="pub" name="trellis.operation.ColorsFromPalette#canEqual" data-isabs="false">
+      <a id="canEqual(Any):Boolean"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
-        <span class="name">cacheOutput</span>
+        <span class="name">canEqual</span>
         
-        <span class="params">(<span name="output">output: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[T]</span>)</span><span class="result">: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[T]</span>
+        <span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
       </span>
       </h4>
-      
-    </li><li visbl="pub" name="trellis.operation.CachedOp#cachedOutput" data-isabs="false">
-      <a id="cachedOutput:Option[StepOutput[T]]"></a>
-      <h4 class="signature">
-      <span class="kind">var</span>
-      <span class="symbol"> 
-        <span class="name">cachedOutput</span>
-        
-        <span class="result">: <span name="scala.Option" class="extype">Option</span>[<a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[T]]</span>
-      </span>
-      </h4>
-      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.ColorsFromPalette" class="extype" href="">ColorsFromPalette</a> → Equals</dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
@@ -220,13 +204,13 @@ result and return those on future invocations of run().
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
     </li><li visbl="pub" name="trellis.operation.Operation#dispatch" data-isabs="false">
-      <a id="dispatch(ActorRef):DispatchedOperation[T]"></a>
+      <a id="dispatch(ActorRef):DispatchedOperation[Array[Int]]"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">dispatch</span>
         
-        <span class="params">(<span name="dispatcher">dispatcher: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>)</span><span class="result">: <a name="trellis.operation.DispatchedOperation" class="extype" href="DispatchedOperation.html">DispatchedOperation</a>[T]</span>
+        <span class="params">(<span name="dispatcher">dispatcher: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>)</span><span class="result">: <a name="trellis.operation.DispatchedOperation" class="extype" href="DispatchedOperation.html">DispatchedOperation</a>[<span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
@@ -241,7 +225,7 @@ result and return those on future invocations of run().
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#equals" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.ColorsFromPalette#equals" data-isabs="false">
       <a id="equals(Any):Boolean"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -251,7 +235,7 @@ result and return those on future invocations of run().
         <span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.ColorsFromPalette" class="extype" href="">ColorsFromPalette</a> → Equals → AnyRef → Any</dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
       <a id="finalize():Unit"></a>
       <h4 class="signature">
@@ -277,7 +261,7 @@ result and return those on future invocations of run().
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#hashCode" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.ColorsFromPalette#hashCode" data-isabs="false">
       <a id="hashCode():Int"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -287,7 +271,7 @@ result and return those on future invocations of run().
         <span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.ColorsFromPalette" class="extype" href="">ColorsFromPalette</a> → AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
@@ -322,6 +306,17 @@ result and return those on future invocations of run().
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.Op2#nextSteps" data-isabs="false">
+      <a id="nextSteps:Steps"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">nextSteps</span>
+        
+        <span class="result">: Steps</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Op2" class="extype" href="Op2.html">Op2</a> → <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
       <a id="notify():Unit"></a>
       <h4 class="signature">
@@ -344,26 +339,92 @@ result and return those on future invocations of run().
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.CachedOp#run" data-isabs="false">
-      <a id="run(Context):StepOutput[T]"></a>
+    </li><li visbl="pub" name="trellis.operation.ColorsFromPalette#num" data-isabs="false">
+      <a id="num:Op[Int]"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">num</span>
+        
+        <span class="result">: Op[<span name="scala.Int" class="extype">Int</span>]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.ColorsFromPalette#palette" data-isabs="false">
+      <a id="palette:Op[Array[Int]]"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">palette</span>
+        
+        <span class="result">: Op[<span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.ColorsFromPalette#productArity" data-isabs="false">
+      <a id="productArity:Int"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">productArity</span>
+        
+        <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.ColorsFromPalette" class="extype" href="">ColorsFromPalette</a> → Product</dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.ColorsFromPalette#productElement" data-isabs="false">
+      <a id="productElement(Int):Any"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">productElement</span>
+        
+        <span class="params">(<span name="arg0">arg0: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Any" class="extype">Any</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.ColorsFromPalette" class="extype" href="">ColorsFromPalette</a> → Product</dd></dl></div>
+    </li><li visbl="pub" name="scala.Product#productIterator" data-isabs="false">
+      <a id="productIterator:Iterator[Any]"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">productIterator</span>
+        
+        <span class="result">: Iterator[<span name="scala.Any" class="extype">Any</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Product</dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.ColorsFromPalette#productPrefix" data-isabs="false">
+      <a id="productPrefix:String"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">productPrefix</span>
+        
+        <span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.ColorsFromPalette" class="extype" href="">ColorsFromPalette</a> → Product</dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.Operation#run" data-isabs="false">
+      <a id="run(Context):StepOutput[Array[Int]]"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">run</span>
         
-        <span class="params">(<span name="context">context: <a name="trellis.process.Context" class="extype" href="../process/Context.html">Context</a></span>)</span><span class="result">: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[T]</span>
+        <span class="params">(<span name="context">context: <a name="trellis.process.Context" class="extype" href="../process/Context.html">Context</a></span>)</span><span class="result">: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[<span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Execute this operation and return the result.</p><div class="fullcomment"><div class="comment cmt"><p>Execute this operation and return the result.
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.CachedOp" class="extype" href="">CachedOp</a> → <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
     </li><li visbl="pub" name="trellis.operation.Operation#runAsync" data-isabs="false">
-      <a id="runAsync(Args):StepOutput[T]"></a>
+      <a id="runAsync(Args):StepOutput[Array[Int]]"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">runAsync</span>
         
-        <span class="params">(<span name="args">args: Args</span>)</span><span class="result">: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[T]</span>
+        <span class="params">(<span name="args">args: Args</span>)</span><span class="result">: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[<span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
@@ -378,17 +439,17 @@ result and return those on future invocations of run().
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.ColorsFromPalette#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">toString</span>
         
-        <span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+        <span class="params">()</span><span class="result">: String</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.ColorsFromPalette" class="extype" href="">ColorsFromPalette</a> → AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">
@@ -434,10 +495,37 @@ result and return those on future invocations of run().
     </li></ol>
             </div>
 
+        <div class="values members" id="values">
+              <h3>Deprecated Value Members</h3>
+              <ol><li visbl="pub" name="scala.Product#productElements" data-isabs="false">
+      <a id="productElements:Iterator[Any]"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name deprecated">productElements</span>
         
+        <span class="result">: Iterator[<span name="scala.Any" class="extype">Any</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Product</dd><dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p>use productIterator instead</p></dd></dl></div>
+    </li></ol>
+            </div>
 
-        <div name="trellis.operation.Operation" class="parent">
-              <h3>Inherited from <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a>[T]</h3>
+        <div name="scala.Serializable" class="parent">
+              <h3>Inherited from <span name="scala.Serializable" class="extype">Serializable</span></h3>
+            </div><div name="java.io.Serializable" class="parent">
+              <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
+            </div><div name="trellis.operation.Op2" class="parent">
+              <h3>Inherited from <a name="trellis.operation.Op2" class="extype" href="Op2.html">Op2</a>[<span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>], <span name="scala.Int" class="extype">Int</span>, <span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]]</h3>
+            </div><div name="trellis.operation.Operation" class="parent">
+              <h3>Inherited from <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a>[<span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]]</h3>
+            </div><div name="scala.Product" class="parent">
+              <h3>Inherited from <span name="scala.Product" class="extype">Product</span></h3>
+            </div><div name="scala.Equals" class="parent">
+              <h3>Inherited from <span name="scala.Equals" class="extype">Equals</span></h3>
             </div><div name="scala.AnyRef" class="parent">
               <h3>Inherited from AnyRef</h3>
             </div><div name="scala.Any" class="parent">

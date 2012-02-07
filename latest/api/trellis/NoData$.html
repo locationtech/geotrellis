@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>trellis.SparseRasterData</title>
+          <title>trellis.NoData</title>
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link type="text/css" media="screen" rel="stylesheet" href="../lib/template.css" />
@@ -12,25 +12,26 @@
       <script type="text/javascript" src="../lib/tools.tooltip.js"></script>
     
         </head>
-        <body class="type">
+        <body class="value">
       <div id="definition">
-        <img src="../lib/class_big.png" />
+        <a title="Go to companion" href="NoData.html"><img src="../lib/object_to_trait_big.png" /></a>
         <p id="owner"><a name="trellis" class="extype" href="package.html">trellis</a></p>
-        <h1>SparseRasterData</h1>
+        <h1><a title="Go to companion" href="NoData.html">NoData</a></h1>
       </div>
 
       <h4 class="signature" id="signature">
-      <span class="kind">class</span>
+      <span class="kind">object</span>
       <span class="symbol"> 
-        <span class="name">SparseRasterData</span>
+        <span class="name">NoData</span>
         
-        <span class="result"> extends <a name="trellis.RasterData" class="extype" href="RasterData.html">RasterData</a></span>
+        <span class="result"> extends AnyRef</span>
       </span>
       </h4>
       
-          <div class="fullcommenttop" id="comment"><div class="toggleContainer block">
+          <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Companion object containing some no data values for types trellis supports.
+</p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a name="trellis.RasterData" class="extype" href="RasterData.html">RasterData</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent">AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
         
 
@@ -46,7 +47,7 @@
                 <span class="filtertype">Inherited</span>
                 <ol><li class="hideall out"><span>Hide All</span></li>
                 <li class="showall in"><span>Show all</span></li></ol>
-                <ol id="linearization"><li name="trellis.SparseRasterData" class="in"><span>SparseRasterData</span></li><li name="trellis.RasterData" class="in"><span>RasterData</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+                <ol id="linearization"><li name="trellis.NoData" class="in"><span>NoData</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
               </div>
           <div id="visbl">
               <span class="filtertype">Visibility</span>
@@ -54,21 +55,7 @@
             </div>
         </div>
 
-        <div class="members" id="constructors">
-              <h3>Instance Constructors</h3>
-              <ol><li visbl="pub" name="trellis.SparseRasterData#this" data-isabs="false">
-      <a id="this:SparseRasterData"></a>
-      <h4 class="signature">
-      <span class="kind">new</span>
-      <span class="symbol"> 
-        <span class="name">SparseRasterData</span>
         
-        <span class="params">(<span name="rasters">rasters: List[<a name="trellis.IntRaster" class="extype" href="IntRaster.html">IntRaster</a>]</span>)</span>
-      </span>
-      </h4>
-      
-    </li></ol>
-            </div>
 
         
         
@@ -131,28 +118,50 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.SparseRasterData#apply" data-isabs="false">
-      <a id="apply(Int):Nothing"></a>
+    </li><li visbl="pub" name="trellis.NoData.DoubleNoData" data-isabs="false">
+      <a id="DoubleNoData:DoubleNoData"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
+      <span class="kind">object</span>
       <span class="symbol"> 
-        <span class="name">apply</span>
+        <a href="NoData$$DoubleNoData$.html"><span class="name">DoubleNoData</span></a>
         
-        <span class="params">(<span name="i">i: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Nothing" class="extype">Nothing</span></span>
+        <span class="result"> extends NoData[Double]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.SparseRasterData" class="extype" href="">SparseRasterData</a> → <a name="trellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
-    </li><li visbl="pub" name="trellis.SparseRasterData#asArray" data-isabs="false">
-      <a id="asArray:Nothing"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd></dl></div>
+    </li><li visbl="pub" name="trellis.NoData.FloatNoData" data-isabs="false">
+      <a id="FloatNoData:FloatNoData"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
+      <span class="kind">object</span>
       <span class="symbol"> 
-        <span class="name">asArray</span>
+        <a href="NoData$$FloatNoData$.html"><span class="name">FloatNoData</span></a>
         
-        <span class="result">: <span name="scala.Nothing" class="extype">Nothing</span></span>
+        <span class="result"> extends NoData[Float]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.SparseRasterData" class="extype" href="">SparseRasterData</a> → <a name="trellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd></dl></div>
+    </li><li visbl="pub" name="trellis.NoData.IntNoData" data-isabs="false">
+      <a id="IntNoData:IntNoData"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="NoData$$IntNoData$.html"><span class="name">IntNoData</span></a>
+        
+        <span class="result"> extends NoData[Int]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd></dl></div>
+    </li><li visbl="pub" name="trellis.NoData.LongNoData" data-isabs="false">
+      <a id="LongNoData:LongNoData"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="NoData$$LongNoData$.html"><span class="name">LongNoData</span></a>
+        
+        <span class="result"> extends NoData[Long]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd></dl></div>
     </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
@@ -164,17 +173,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.RasterData#asList" data-isabs="false">
-      <a id="asList:List[Int]"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">asList</span>
-        
-        <span class="result">: List[<span name="scala.Int" class="extype">Int</span>]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
@@ -189,17 +187,6 @@
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="trellis.SparseRasterData#copy" data-isabs="false">
-      <a id="copy():Nothing"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">copy</span>
-        
-        <span class="params">()</span><span class="result">: <span name="scala.Nothing" class="extype">Nothing</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.SparseRasterData" class="extype" href="">SparseRasterData</a> → <a name="trellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -211,17 +198,17 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="trellis.RasterData#equals" data-isabs="false">
+    </li><li visbl="pub" name="scala.AnyRef#equals" data-isabs="false">
       <a id="equals(Any):Boolean"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">equals</span>
         
-        <span class="params">(<span name="other">other: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.RasterData" class="extype" href="RasterData.html">RasterData</a> → AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
       <a id="finalize():Unit"></a>
       <h4 class="signature">
@@ -269,17 +256,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.SparseRasterData#length" data-isabs="false">
-      <a id="length:Nothing"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">length</span>
-        
-        <span class="result">: <span name="scala.Nothing" class="extype">Nothing</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.SparseRasterData" class="extype" href="">SparseRasterData</a> → <a name="trellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -313,17 +289,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="trellis.SparseRasterData#rasters" data-isabs="false">
-      <a id="rasters:List[IntRaster]"></a>
-      <h4 class="signature">
-      <span class="kind">var</span>
-      <span class="symbol"> 
-        <span class="name">rasters</span>
-        
-        <span class="result">: List[<a name="trellis.IntRaster" class="extype" href="IntRaster.html">IntRaster</a>]</span>
-      </span>
-      </h4>
-      
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">
@@ -335,28 +300,17 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="trellis.RasterData#toString" data-isabs="false">
+    </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">toString</span>
         
-        <span class="params">()</span><span class="result">: String</span>
+        <span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.RasterData" class="extype" href="RasterData.html">RasterData</a> → AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.SparseRasterData#update" data-isabs="false">
-      <a id="update(Int,Int):Unit"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">update</span>
-        
-        <span class="params">(<span name="i">i: <span name="scala.Int" class="extype">Int</span></span>, <span name="x">x: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.SparseRasterData" class="extype" href="">SparseRasterData</a> → <a name="trellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">
@@ -404,9 +358,7 @@
 
         
 
-        <div name="trellis.RasterData" class="parent">
-              <h3>Inherited from <a name="trellis.RasterData" class="extype" href="RasterData.html">RasterData</a></h3>
-            </div><div name="scala.AnyRef" class="parent">
+        <div name="scala.AnyRef" class="parent">
               <h3>Inherited from AnyRef</h3>
             </div><div name="scala.Any" class="parent">
               <h3>Inherited from <span name="scala.Any" class="extype">Any</span></h3>

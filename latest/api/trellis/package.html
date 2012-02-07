@@ -47,7 +47,18 @@
 
         <div class="types members" id="types">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="trellis.ArrayRasterData" data-isabs="false">
+              <ol><li visbl="pub" name="trellis.ArrayGenRasterData" data-isabs="false">
+      <a id="ArrayGenRasterData:ArrayGenRasterData[T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="ArrayGenRasterData.html"><span class="name">ArrayGenRasterData</span></a>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="result"> extends GenRasterData[T] with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.ArrayRasterData" data-isabs="false">
       <a id="ArrayRasterData:ArrayRasterData"></a>
       <h4 class="signature">
       <span class="kind">class</span>
@@ -81,6 +92,28 @@ particular projection).</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="trellis.GenRaster" data-isabs="false">
+      <a id="GenRaster:GenRaster[T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="GenRaster.html"><span class="name">GenRaster</span></a>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt"></p>
+    </li><li visbl="pub" name="trellis.GenRasterData" data-isabs="true">
+      <a id="GenRasterData:GenRasterData[T]"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="GenRasterData.html"><span class="name">GenRasterData</span></a>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">GenRasterData provides access and update to the grid data of a raster.</p>
     </li><li visbl="pub" name="trellis.GeoAttrsError" data-isabs="false">
       <a id="GeoAttrsError:GeoAttrsError"></a>
       <h4 class="signature">
@@ -99,21 +132,22 @@ particular projection).</p>
       <span class="symbol"> 
         <a href="IntRaster.html"><span class="name">IntRaster</span></a>
         
-        <span class="result"> extends IsIntRaster with Serializable</span>
+        <span class="result"> extends Serializable</span>
       </span>
       </h4>
       <p class="comment cmt"></p>
-    </li><li visbl="pub" name="trellis.IsIntRaster" data-isabs="true">
-      <a id="IsIntRaster:IsIntRaster"></a>
+    </li><li visbl="pub" name="trellis.NoData" data-isabs="true">
+      <a id="NoData:NoData[T]"></a>
       <h4 class="signature">
       <span class="kind">trait</span>
       <span class="symbol"> 
-        <a href="IsIntRaster.html"><span class="name">IsIntRaster</span></a>
-        
+        <a href="NoData.html"><span class="name">NoData</span></a>
+        <span class="tparams">[<span name="T">T</span>]</span>
         <span class="result"> extends AnyRef</span>
       </span>
       </h4>
-      <p class="comment cmt">Core data object that represents a raster with integer values.</p>
+      <p class="comment cmt">Used to associate a type parameter T with a particular value which trellis
+uses as the &quot;nodata value&quot;.</p>
     </li><li visbl="pub" name="trellis.RasterData" data-isabs="true">
       <a id="RasterData:RasterData"></a>
       <h4 class="signature">
@@ -136,17 +170,6 @@ particular projection).</p>
       </span>
       </h4>
       <p class="comment cmt">RasterExtent objects represent the geographic extent (envelope) of a raster.</p>
-    </li><li visbl="pub" name="trellis.SparseRasterData" data-isabs="false">
-      <a id="SparseRasterData:SparseRasterData"></a>
-      <h4 class="signature">
-      <span class="kind">class</span>
-      <span class="symbol"> 
-        <a href="SparseRasterData.html"><span class="name">SparseRasterData</span></a>
-        
-        <span class="result"> extends RasterData</span>
-      </span>
-      </h4>
-      
     </li></ol>
             </div>
         
@@ -154,12 +177,34 @@ particular projection).</p>
 
         <div class="values members" id="values">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="trellis.ArrayRasterData" data-isabs="false">
+              <ol><li visbl="pub" name="trellis.ArrayGenRasterData" data-isabs="false">
+      <a id="ArrayGenRasterData:ArrayGenRasterData"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="ArrayGenRasterData$.html"><span class="name">ArrayGenRasterData</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.ArrayRasterData" data-isabs="false">
       <a id="ArrayRasterData:ArrayRasterData"></a>
       <h4 class="signature">
       <span class="kind">object</span>
       <span class="symbol"> 
         <a href="ArrayRasterData$.html"><span class="name">ArrayRasterData</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.GenRaster" data-isabs="false">
+      <a id="GenRaster:GenRaster"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="GenRaster$.html"><span class="name">GenRaster</span></a>
         
         <span class="result"> extends Serializable</span>
       </span>
@@ -187,6 +232,17 @@ particular projection).</p>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd><a name="trellis.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.NoData" data-isabs="false">
+      <a id="NoData:NoData"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="NoData$.html"><span class="name">NoData</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Companion object containing some no data values for types trellis supports.</p>
     </li><li visbl="pub" name="trellis.benchmark" data-isabs="false">
       <a id="benchmark:benchmark"></a>
       <h4 class="signature">

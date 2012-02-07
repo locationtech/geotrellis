@@ -32,7 +32,7 @@
             </div>
           </div>
           <div class="span-16 prepend-1 append-1 contents">
-            <h4>Contents</h4><div><a href="#Arpeggeo">Arpeggeo</a></div><ol class="toc"> <li><div><a href="#API+Reference">API Reference</a></div></li><li><div><a href="#Operations">Operations</a></div></li> </ol><h1 id="Arpeggeo">Arpeggeo</h1><p><em>Arpeggeo</em> is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
+            <h4>Contents</h4><div><a href="#Arpeggeo">Arpeggeo</a></div><ol class="toc"> <li><div><a href="#API+Reference">API Reference</a></div></li><li><div><a href="#Operations">Operations</a></div></li><li><div><a href="#Setting+up+Arpeggeo">Setting up Arpeggeo</a></div></li><li><div><a href="#Using+the+Arpeggeo+template+REST+service+project">Using the Arpeggeo template REST service project</a></div></li> </ol><h1 id="Arpeggeo">Arpeggeo</h1><p><em>Arpeggeo</em> is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
 user interaction with geospatial data by bringing the power of geospatial analysis to real time, interactive web applications.
 </p><p>Arpeggeo was designed to solve three core problems, with a focus on raster processing:
 </p><ul><li>Creating scalable, high performance geoprocessing web services
@@ -66,6 +66,12 @@ operations with existing operations.
 </code></pre><h2 id="API+Reference">API Reference</h2><h3 id="Scaladocs">Scaladocs</h3><p>You can find <em>Scaladocs</em> for the latest version of the project here:
 </p><p><a  href="http://azavea.github.com/trellis/latest/api/index.html#trellis.package">http://azavea.github.com/trellis/latest/api/index.html#trellis.package</a>
 </p><h3 id="Operations">Operations</h3><p>A full list of core operations can be in found in the Scala API documentation for the <code>trellis.operation</code> package: <a  href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.package">http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.package</a>.
+</p><h3 id="Template+project">Template project</h3><p>We have created a template project that you can use as a launching pad for new REST
+services based on Arpeggeo.  It is a simple project that uses SBT (Simple Build Tool)
+to load the Arpeggeo dependencies and has the basic infrastructure in place to help
+you get started quickly.  
+<br/>
+<a  href="https://github.com/azavea/trellis-template">https://github.com/azavea/trellis-template</a>
 </p><h2 id="Operations">Operations</h2><table class="bordered-table zebra-striped">
       <thead>
           <tr>
@@ -152,7 +158,112 @@ operations with existing operations.
 <tr><td><code><a href="http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.ZonalHistogram">ZonalHistogram</a></code></td><td>Histogram</td><td>Given a raster, return a histogram summary of the cells within each zone.</td></tr>
         </tbody>
       </table>
-
+<h2 id="Setting+up+Arpeggeo">Setting up Arpeggeo</h2><h3 id="Configuration">Configuration</h3><p>Arpeggeo has two important configuration files, the application
+configuration and the catalog, which defines what geospatial data
+is available.
+</p><h4 id="Application+configuration">Application configuration</h4><p>The main application configuration allows a variety of system parameters to be set.
+The configuration file should be on the classpath of your application: e.g. if using
+SBT, create the configuration file at src/main/resources/application.conf.
+</p><p>You can also override individual configuration parameters with Java system properties, e.g.
+<code>`java -Dtrellis.port=5555 ...</code>`
+</p><p>Example:
+<code>`
+trellis.host = &quot;0.0.0.0&quot; // IP address to which the server will listen
+                         // (0.0.0.0 means listen to all ports)
+trellis.port = 8888      // The server port 
+trellis.rest-package = &quot;trellis.rest&quot; // The package that will be searched for
+                                      // for rest services
+trellis.tmp = &quot;/tmp&quot;     // A temporary directory to be used for scratch files
+</code>`
+</p><h4 id="Data+catalog">Data catalog</h4><p>The data catalog defines what data sources are available to your Arpeggeo server, and
+can include metadata about the data in those sources.  Data catalogs are defined as JSON files.  Arpeggeo uses a custom format, ARG (Azavea Raster Grid), to store raster data.  ARG files have companion JSON configuration files which allows a data catalog to automatically
+discover and load ARG files that are under a filesystem data directory configured in the
+catalog.  For example, the following catalog.json file defines a data directory ”/var/arpeggeo/data” in which any .arg32 files with accompanying .json metadata will be loaded.
+</p><pre><code class="prettyprint lang-json">{
+ &quot;catalog&quot;: &quot;my-catalog&quot;,
+ &quot;stores&quot;: [
+  {
+   &quot;store&quot;: &quot;data:fs&quot;,
+   &quot;params&quot;: {
+     &quot;type&quot;: &quot;fs&quot;,
+     &quot;path&quot;: &quot;/var/arpeggeo/data&quot;
+   }
+  }
+ ]
+}
+</code></pre><h3 id="Importing+Raster+Data">Importing Raster Data</h3><p>There is a script in the /scripts directory that you can use to convert raster data in
+GeoTiff format to the ARG32 format.  It assumes that you are using a Unix shell (Linux/Mac) and have installed “wget”.
+</p><p>For example, to convert <code>`your_geotiff.tif</code><code> to </code><code>output.arg32</code>`, change to the
+directory you’ve checked out the template and run:
+</p><pre><code class="prettyprint lang-bash">scripts/trellis_import_geotiff your_geotiff.tif output.arg32
+</code></pre><p>The first time you run the script it will download the necessary Trellis libraries to your
+system.
+</p><h2 id="Using+the+Arpeggeo+template+REST+service+project">Using the Arpeggeo template REST service project</h2><p>The template REST service project provides a template for creating a 
+geoprocessing web service with Arpeggeo.  It’s an initial project that is a blank 
+slate for your own 
+development by providing a development environment that is set up
+with the necessary dependencies in place.  The project loads Arpeggeo as a
+library, includes some basic configuration, and has a very simple “hello world” 
+web service in place for you 
+to edit.
+</p><p>If you are a first time user, you may want to use the template along with the tutorial
+included in this documentation to start exploring how to build your own geoprocessing service.
+</p><h2 id="Step+1%3A+Run+SBT">Step 1: Run SBT</h2><p>This project uses SBT, Simple Build Tool, for compilation and execution.
+</p><p>If you don’t have SBT installed already, you can run a script in the template
+directory (from https://github.com/paulp/sbt-extras) that will automatically download it for you.
+</p><p>At the command line, go to the directory where you’ve installed this template
+and run ”./sbt”.  For example:
+</p><pre><code class="prettyprint lang-bash">git clone xxxx
+cd arpegeo-template
+./sbt
+</code></pre><p>The first time you run SBT, there will be a significant delay as all of the
+necessary libraries are downloaded.
+</p><p>If you get any sort of error that a library can’t be downloaded, please let us 
+know so we can fix the problem.  SBT downloads the libraries from where they
+are hosted on the internet, so problems can arise when repositories change.  
+<br/>
+When sbt is done loading and compiling, you’ll see an sbt prompt:
+</p><pre><code class="prettyprint lang-"> &gt;
+</code></pre><p>If you type <code>`run</code><code>, you'll see some messages from Jetty, the embedded webserver that responds to Arpeggeo requests. 
+</code><code>
+ &gt; run
+[info] Starting server on port 8888.
+[error] 2012-02-06 14:17:08.255:INFO:oejs.Server:jetty-8.1.0.RC4
+[error] 2012-02-06 14:17:08.329:INFO:oejs.AbstractConnector:Started SelectChannelConnector@0.0.0.0:8888 STARTING
+</code>`
+</p><p>This means that you are now running a webserver on port 8888 that responds to
+requests.  Go to 
+</p><p>http://localhost:8888/template
+</p><p>to see the template web service, which just shows HTML of “Hello Trellis!”
+</p><h2 id="Step+2%3A+Edit+the+configuration+file">Step 2: Edit the configuration file</h2><p>There’s a configuration file you can edit at src/main/resources/application.conf.  For example, some settings include:
+</p><p>What ip address should the server be listening to?
+</p><pre><code class="">trellis.host = &quot;0.0.0.0&quot; // IP address to which the server will listen
+                         // (0.0.0.0 means listen to all ports)
+trellis.port = 8888      // The server port 
+trellis.rest-package = &quot;trellis.rest&quot; // The package that will be searched for
+                                      // for rest services
+trellis.tmp = &quot;/tmp&quot;     // A temporary directory to be used for scratch files
+</code></pre><h2 id="Step+3%3A+Import+data">Step 3: Import data</h2><p>There is a script in the /scripts directory that you can use to convert raster data in
+GeoTiff format to the ARG32 format.  It assumes that you are using a Unix shell (Linux/Mac) and have installed “wget”.
+</p><p>For example, to convert <code>`your_geotiff.tif</code><code> to </code><code>output.arg32</code>`, change to the
+directory you’ve checked out the template and run:
+</p><pre><code class="prettyprint lang-bash">scripts/trellis_import_geotiff your_geotiff.tif output.arg32
+</code></pre><p>The first time you run the script it will download the necessary Trellis libraries to your
+system.
+</p><h2 id="Step+4%3A+Edit+the+catalog.json+file">Step 4: Edit the catalog.json file</h2><p>The catalog.json file (in src/main/resources) defines the data sources that are
+available to the Arpeggeo service.  You can move it to an alternate location if you
+define the file path in the configuration file.
+</p><h2 id="Step+5%3A+Create+your+service%21">Step 5: Create your service!</h2><p>The blank REST service is in the file src/main/scala/trellis/rest/TemplateResource.scala.  Edit that file to change the existing service, or create a similar 
+class in the “trellis.rest” package to create a new service.
+</p><p>If you are using the ScalaIDE for Eclipse (http://scala-ide.org/), you should
+type <code>`eclipse</code>` at the sbt prompt, and then import the project into Eclipse.
+(If you are using emacs, you should consider using ENSIME: https://github.com/aemoncannon/ensime.)  
+</p><h2 id="Additional+notes">Additional notes</h2><h3 id="Triggered+Restart">Triggered Restart</h3><p>Note: If you run … 
+</p><p> &gt; ~re-start
+</p><p>… at the sbt prompt, you will be in a ‘triggered restart’ mode.  As soon
+as you edit your source files, the application will re-compile and restart 
+with your updated code. 
+</p>
           </div>
         </div>
         <a class="fork nav" href="http://github.com/azavea/trellis"><img alt="Fork me on GitHub" src="img/fork.png"></img></a>

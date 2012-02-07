@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>trellis.operation.Cache</title>
+          <title>trellis.operation.ParseExtent</title>
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link type="text/css" media="screen" rel="stylesheet" href="../../lib/template.css" />
@@ -16,21 +16,21 @@
       <div id="definition">
         <img src="../../lib/class_big.png" />
         <p id="owner"><a name="trellis" class="extype" href="../package.html">trellis</a>.<a name="trellis.operation" class="extype" href="package.html">operation</a></p>
-        <h1>Cache</h1>
+        <h1>ParseExtent</h1>
       </div>
 
       <h4 class="signature" id="signature">
       <span class="kind">case class</span>
       <span class="symbol"> 
-        <span class="name">Cache</span>
-        <span class="tparams">[<span name="T">T</span>]</span>
-        <span class="params">(<span name="op">op: Op[T]</span>, <span name="evidence$1">evidence$1: Manifest[T]</span>)</span><span class="result"> extends <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a>[T] with <a name="trellis.operation.CachedOp" class="extype" href="CachedOp.html">CachedOp</a>[T] with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+        <span class="name">ParseExtent</span>
+        
+        <span class="params">(<span name="s">s: String</span>)</span><span class="result"> extends <a name="trellis.operation.Op1" class="extype" href="Op1.html">Op1</a>[String, <a name="trellis.Extent" class="extype" href="../Extent.html">Extent</a>] with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
           <div class="fullcommenttop" id="comment"><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, <a name="trellis.operation.CachedOp" class="extype" href="CachedOp.html">CachedOp</a>[T], <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a>[T], AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, <a name="trellis.operation.Op1" class="extype" href="Op1.html">Op1</a>[String, <a name="trellis.Extent" class="extype" href="../Extent.html">Extent</a>], <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a>[<a name="trellis.Extent" class="extype" href="../Extent.html">Extent</a>], <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
         
 
@@ -46,7 +46,7 @@
                 <span class="filtertype">Inherited</span>
                 <ol><li class="hideall out"><span>Hide All</span></li>
                 <li class="showall in"><span>Show all</span></li></ol>
-                <ol id="linearization"><li name="trellis.operation.Cache" class="in"><span>Cache</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.Product" class="in"><span>Product</span></li><li name="scala.Equals" class="in"><span>Equals</span></li><li name="trellis.operation.CachedOp" class="in"><span>CachedOp</span></li><li name="trellis.operation.Operation" class="in"><span>Operation</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+                <ol id="linearization"><li name="trellis.operation.ParseExtent" class="in"><span>ParseExtent</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="trellis.operation.Op1" class="in"><span>Op1</span></li><li name="trellis.operation.Operation" class="in"><span>Operation</span></li><li name="scala.Product" class="in"><span>Product</span></li><li name="scala.Equals" class="in"><span>Equals</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
               </div>
           <div id="visbl">
               <span class="filtertype">Visibility</span>
@@ -56,14 +56,14 @@
 
         <div class="members" id="constructors">
               <h3>Instance Constructors</h3>
-              <ol><li visbl="pub" name="trellis.operation.Cache#this" data-isabs="false">
-      <a id="this:Cache[T]"></a>
+              <ol><li visbl="pub" name="trellis.operation.ParseExtent#this" data-isabs="false">
+      <a id="this:ParseExtent"></a>
       <h4 class="signature">
       <span class="kind">new</span>
       <span class="symbol"> 
-        <span class="name">Cache</span>
+        <span class="name">ParseExtent</span>
         
-        <span class="params">(<span name="op">op: Op[T]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: Manifest[T]</span>)</span>
+        <span class="params">(<span name="s">s: String</span>)</span>
       </span>
       </h4>
       
@@ -79,7 +79,7 @@
       <span class="symbol"> 
         <span class="name">Steps</span>
         
-        <span class="result"> = <span name="scala.PartialFunction" class="extype">PartialFunction</span>[<span name="scala.Any" class="extype">Any</span>, <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[T]]</span>
+        <span class="result"> = <span name="scala.PartialFunction" class="extype">PartialFunction</span>[<span name="scala.Any" class="extype">Any</span>, <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[<a name="trellis.Extent" class="extype" href="../Extent.html">Extent</a>]]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
@@ -145,17 +145,17 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.Cache#_run" data-isabs="false">
-      <a id="_run(Context):StepOutput[T]"></a>
+    </li><li visbl="pub" name="trellis.operation.Op1#_run" data-isabs="false">
+      <a id="_run(Context):StepOutput[Extent]"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">_run</span>
         
-        <span class="params">(<span name="context">context: <a name="trellis.process.Context" class="extype" href="../process/Context.html">Context</a></span>)</span><span class="result">: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[T]</span>
+        <span class="params">(<span name="context">context: <a name="trellis.process.Context" class="extype" href="../process/Context.html">Context</a></span>)</span><span class="result">: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[<a name="trellis.Extent" class="extype" href="../Extent.html">Extent</a>]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Cache" class="extype" href="">Cache</a> → <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Op1" class="extype" href="Op1.html">Op1</a> → <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
     </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
@@ -167,29 +167,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.CachedOp#cacheOutput" data-isabs="false">
-      <a id="cacheOutput(StepOutput[T]):StepOutput[T]"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">cacheOutput</span>
-        
-        <span class="params">(<span name="output">output: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[T]</span>)</span><span class="result">: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[T]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.CachedOp" class="extype" href="CachedOp.html">CachedOp</a></dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.CachedOp#cachedOutput" data-isabs="false">
-      <a id="cachedOutput:Option[StepOutput[T]]"></a>
-      <h4 class="signature">
-      <span class="kind">var</span>
-      <span class="symbol"> 
-        <span class="name">cachedOutput</span>
-        
-        <span class="result">: <span name="scala.Option" class="extype">Option</span>[<a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[T]]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.CachedOp" class="extype" href="CachedOp.html">CachedOp</a></dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.Cache#canEqual" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.ParseExtent#canEqual" data-isabs="false">
       <a id="canEqual(Any):Boolean"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -199,7 +177,7 @@
         <span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Cache" class="extype" href="">Cache</a> → Equals</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.ParseExtent" class="extype" href="">ParseExtent</a> → Equals</dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
@@ -226,13 +204,13 @@
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
     </li><li visbl="pub" name="trellis.operation.Operation#dispatch" data-isabs="false">
-      <a id="dispatch(ActorRef):DispatchedOperation[T]"></a>
+      <a id="dispatch(ActorRef):DispatchedOperation[Extent]"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">dispatch</span>
         
-        <span class="params">(<span name="dispatcher">dispatcher: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>)</span><span class="result">: <a name="trellis.operation.DispatchedOperation" class="extype" href="DispatchedOperation.html">DispatchedOperation</a>[T]</span>
+        <span class="params">(<span name="dispatcher">dispatcher: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>)</span><span class="result">: <a name="trellis.operation.DispatchedOperation" class="extype" href="DispatchedOperation.html">DispatchedOperation</a>[<a name="trellis.Extent" class="extype" href="../Extent.html">Extent</a>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
@@ -247,7 +225,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.Cache#equals" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.ParseExtent#equals" data-isabs="false">
       <a id="equals(Any):Boolean"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -257,7 +235,7 @@
         <span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Cache" class="extype" href="">Cache</a> → Equals → AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.ParseExtent" class="extype" href="">ParseExtent</a> → Equals → AnyRef → Any</dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
       <a id="finalize():Unit"></a>
       <h4 class="signature">
@@ -283,7 +261,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.Cache#hashCode" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.ParseExtent#hashCode" data-isabs="false">
       <a id="hashCode():Int"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -293,7 +271,7 @@
         <span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Cache" class="extype" href="">Cache</a> → AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.ParseExtent" class="extype" href="">ParseExtent</a> → AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
@@ -328,7 +306,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.Cache#nextSteps" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.Op1#nextSteps" data-isabs="false">
       <a id="nextSteps:Steps"></a>
       <h4 class="signature">
       <span class="kind">val</span>
@@ -338,7 +316,7 @@
         <span class="result">: Steps</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Cache" class="extype" href="">Cache</a> → <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Op1" class="extype" href="Op1.html">Op1</a> → <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
       <a id="notify():Unit"></a>
       <h4 class="signature">
@@ -361,18 +339,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.Cache#op" data-isabs="false">
-      <a id="op:Op[T]"></a>
-      <h4 class="signature">
-      <span class="kind">val</span>
-      <span class="symbol"> 
-        <span class="name">op</span>
-        
-        <span class="result">: Op[T]</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="trellis.operation.Cache#productArity" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.ParseExtent#productArity" data-isabs="false">
       <a id="productArity:Int"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -382,8 +349,8 @@
         <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Cache" class="extype" href="">Cache</a> → Product</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.Cache#productElement" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.ParseExtent" class="extype" href="">ParseExtent</a> → Product</dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.ParseExtent#productElement" data-isabs="false">
       <a id="productElement(Int):Any"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -393,7 +360,7 @@
         <span class="params">(<span name="arg0">arg0: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Any" class="extype">Any</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Cache" class="extype" href="">Cache</a> → Product</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.ParseExtent" class="extype" href="">ParseExtent</a> → Product</dd></dl></div>
     </li><li visbl="pub" name="scala.Product#productIterator" data-isabs="false">
       <a id="productIterator:Iterator[Any]"></a>
       <h4 class="signature">
@@ -405,7 +372,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Product</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.Cache#productPrefix" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.ParseExtent#productPrefix" data-isabs="false">
       <a id="productPrefix:String"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -415,30 +382,41 @@
         <span class="result">: <span name="java.lang.String" class="extype">String</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Cache" class="extype" href="">Cache</a> → Product</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.CachedOp#run" data-isabs="false">
-      <a id="run(Context):StepOutput[T]"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.ParseExtent" class="extype" href="">ParseExtent</a> → Product</dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.Operation#run" data-isabs="false">
+      <a id="run(Context):StepOutput[Extent]"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">run</span>
         
-        <span class="params">(<span name="context">context: <a name="trellis.process.Context" class="extype" href="../process/Context.html">Context</a></span>)</span><span class="result">: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[T]</span>
+        <span class="params">(<span name="context">context: <a name="trellis.process.Context" class="extype" href="../process/Context.html">Context</a></span>)</span><span class="result">: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[<a name="trellis.Extent" class="extype" href="../Extent.html">Extent</a>]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Execute this operation and return the result.</p><div class="fullcomment"><div class="comment cmt"><p>Execute this operation and return the result.
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.CachedOp" class="extype" href="CachedOp.html">CachedOp</a> → <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
     </li><li visbl="pub" name="trellis.operation.Operation#runAsync" data-isabs="false">
-      <a id="runAsync(Args):StepOutput[T]"></a>
+      <a id="runAsync(Args):StepOutput[Extent]"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">runAsync</span>
         
-        <span class="params">(<span name="args">args: Args</span>)</span><span class="result">: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[T]</span>
+        <span class="params">(<span name="args">args: Args</span>)</span><span class="result">: <a name="trellis.process.StepOutput" class="extype" href="../process/StepOutput.html">StepOutput</a>[<a name="trellis.Extent" class="extype" href="../Extent.html">Extent</a>]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.ParseExtent#s" data-isabs="false">
+      <a id="s:String"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">s</span>
+        
+        <span class="result">: String</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">
@@ -450,7 +428,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.Cache#toString" data-isabs="false">
+    </li><li visbl="pub" name="trellis.operation.ParseExtent#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -460,7 +438,7 @@
         <span class="params">()</span><span class="result">: String</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.Cache" class="extype" href="">Cache</a> → AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.operation.ParseExtent" class="extype" href="">ParseExtent</a> → AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">
@@ -529,14 +507,14 @@
               <h3>Inherited from <span name="scala.Serializable" class="extype">Serializable</span></h3>
             </div><div name="java.io.Serializable" class="parent">
               <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
+            </div><div name="trellis.operation.Op1" class="parent">
+              <h3>Inherited from <a name="trellis.operation.Op1" class="extype" href="Op1.html">Op1</a>[String, <a name="trellis.Extent" class="extype" href="../Extent.html">Extent</a>]</h3>
+            </div><div name="trellis.operation.Operation" class="parent">
+              <h3>Inherited from <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a>[<a name="trellis.Extent" class="extype" href="../Extent.html">Extent</a>]</h3>
             </div><div name="scala.Product" class="parent">
               <h3>Inherited from <span name="scala.Product" class="extype">Product</span></h3>
             </div><div name="scala.Equals" class="parent">
               <h3>Inherited from <span name="scala.Equals" class="extype">Equals</span></h3>
-            </div><div name="trellis.operation.CachedOp" class="parent">
-              <h3>Inherited from <a name="trellis.operation.CachedOp" class="extype" href="CachedOp.html">CachedOp</a>[T]</h3>
-            </div><div name="trellis.operation.Operation" class="parent">
-              <h3>Inherited from <a name="trellis.operation.Operation" class="extype" href="Operation.html">Operation</a>[T]</h3>
             </div><div name="scala.AnyRef" class="parent">
               <h3>Inherited from AnyRef</h3>
             </div><div name="scala.Any" class="parent">

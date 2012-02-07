@@ -199,6 +199,17 @@ a raster.</p>
       </h4>
       <p class="comment cmt">Build a histogram (using the <a name="trellis.stat.CompressedArrayHistogram" class="extype" href="../stat/CompressedArrayHistogram.html">CompressedArrayHistogram</a>
 strategy) from this raster.</p>
+    </li><li visbl="pub" name="trellis.operation.BuildExtent" data-isabs="false">
+      <a id="BuildExtent:BuildExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BuildExtent.html"><span class="name">BuildExtent</span></a>
+        
+        <span class="params">(<span name="xmin">xmin: Op[Double]</span>, <span name="ymin">ymin: Op[Double]</span>, <span name="xmax">xmax: Op[Double]</span>, <span name="ymax">ymax: Op[Double]</span>)</span><span class="result"> extends Op4[Double, Double, Double, Double, Extent] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt"></p>
     </li><li visbl="pub" name="trellis.operation.BuildHistogram" data-isabs="true">
       <a id="BuildHistogram:BuildHistogram"></a>
       <h4 class="signature">
@@ -289,29 +300,6 @@ load raster data.</p>
       </span>
       </h4>
       <p class="comment cmt">Rasterize an array of polygons and then draw them into the provided raster.</p>
-    </li><li visbl="pub" name="trellis.operation.Cache" data-isabs="false">
-      <a id="Cache:Cache[T]"></a>
-      <h4 class="signature">
-      <span class="kind">case class</span>
-      <span class="symbol"> 
-        <a href="Cache.html"><span class="name">Cache</span></a>
-        <span class="tparams">[<span name="T">T</span>]</span>
-        <span class="params">(<span name="op">op: Op[T]</span>, <span name="evidence$1">evidence$1: Manifest[T]</span>)</span><span class="result"> extends Operation[T] with CachedOp[T] with Product with Serializable</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="trellis.operation.CachedOp" data-isabs="true">
-      <a id="CachedOp:CachedOp[T]"></a>
-      <h4 class="signature">
-      <span class="kind">trait</span>
-      <span class="symbol"> 
-        <a href="CachedOp.html"><span class="name">CachedOp</span></a>
-        <span class="tparams">[<span name="T">T</span>]</span>
-        <span class="result"> extends Op[T]</span>
-      </span>
-      </h4>
-      <p class="comment cmt">Trait providing caching support for operations which want to save their
-result and return those on future invocations of run().</p>
     </li><li visbl="pub" name="trellis.operation.ChunkRasterExtent" data-isabs="false">
       <a id="ChunkRasterExtent:ChunkRasterExtent"></a>
       <h4 class="signature">
@@ -332,6 +320,17 @@ into many smaller contiguous pieces.</p>
         <a href="CollectArray.html"><span class="name">CollectArray</span></a>
         <span class="tparams">[<span name="A">A</span>]</span>
         <span class="params">(<span name="ops">ops: Array[Op[A]]</span>, <span name="evidence$1">evidence$1: Manifest[A]</span>)</span><span class="result"> extends Op[Array[A]] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.ColorsFromPalette" data-isabs="false">
+      <a id="ColorsFromPalette:ColorsFromPalette"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ColorsFromPalette.html"><span class="name">ColorsFromPalette</span></a>
+        
+        <span class="params">(<span name="palette">palette: Op[Array[Int]]</span>, <span name="num">num: Op[Int]</span>)</span><span class="result"> extends Op2[Array[Int], Int, Array[Int]] with Product with Serializable</span>
       </span>
       </h4>
       
@@ -482,28 +481,6 @@ of the format: String,String,Int
       </span>
       </h4>
       <p class="comment cmt">Perform a function on every cell in a raster.</p>
-    </li><li visbl="pub" name="trellis.operation.ExampleIdentity" data-isabs="false">
-      <a id="ExampleIdentity:ExampleIdentity"></a>
-      <h4 class="signature">
-      <span class="kind">case class</span>
-      <span class="symbol"> 
-        <a href="ExampleIdentity.html"><span class="name">ExampleIdentity</span></a>
-        
-        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op1[IntRaster, IntRaster] with Product with Serializable</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="trellis.operation.ExampleIdentity2" data-isabs="false">
-      <a id="ExampleIdentity2:ExampleIdentity2"></a>
-      <h4 class="signature">
-      <span class="kind">case class</span>
-      <span class="symbol"> 
-        <a href="ExampleIdentity2.html"><span class="name">ExampleIdentity2</span></a>
-        
-        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op1[IntRaster, IntRaster] with Product with Serializable</span>
-      </span>
-      </h4>
-      
     </li><li visbl="pub" name="trellis.operation.FindClassBreaks" data-isabs="false">
       <a id="FindClassBreaks:FindClassBreaks"></a>
       <h4 class="signature">
@@ -756,11 +733,11 @@ cells in which the corresponding cell in the second raster is set to the
     </li><li visbl="pub" name="trellis.operation.LoadRasterExtentFromFile" data-isabs="false">
       <a id="LoadRasterExtentFromFile:LoadRasterExtentFromFile"></a>
       <h4 class="signature">
-      <span class="kind">class</span>
+      <span class="kind">case class</span>
       <span class="symbol"> 
         <a href="LoadRasterExtentFromFile.html"><span class="name">LoadRasterExtentFromFile</span></a>
         
-        <span class="result"> extends Op1[String, RasterExtent]</span>
+        <span class="params">(<span name="path">path: String</span>)</span><span class="result"> extends Op1[String, RasterExtent] with Product with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">Load the trellis.geoattrs.RasterExtent from the raster in the specified file.</p>
@@ -942,7 +919,7 @@ cells in which the corresponding cell in the second raster *are not* set to the
         <span class="result"> extends Operation[T]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+      <p class="comment cmt">Below are the Op0 - Op6 abstract classes.</p>
     </li><li visbl="pub" name="trellis.operation.Op1" data-isabs="true">
       <a id="Op1:Op1[A, T]"></a>
       <h4 class="signature">
@@ -1016,7 +993,7 @@ cells in which the corresponding cell in the second raster *are not* set to the
       <span class="symbol"> 
         <a href="Operation.html"><span class="name">Operation</span></a>
         <span class="tparams">[<span name="T">T</span>]</span>
-        <span class="result"> extends AnyRef</span>
+        <span class="result"> extends Product</span>
       </span>
       </h4>
       <p class="comment cmt">Base Operation for all Trellis functionality.</p>
@@ -1031,6 +1008,39 @@ cells in which the corresponding cell in the second raster *are not* set to the
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.ParseDouble" data-isabs="false">
+      <a id="ParseDouble:ParseDouble"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ParseDouble.html"><span class="name">ParseDouble</span></a>
+        
+        <span class="params">(<span name="s">s: Op[String]</span>)</span><span class="result"> extends Op1[String, Double] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Parse a string as a double.</p>
+    </li><li visbl="pub" name="trellis.operation.ParseExtent" data-isabs="false">
+      <a id="ParseExtent:ParseExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ParseExtent.html"><span class="name">ParseExtent</span></a>
+        
+        <span class="params">(<span name="s">s: String</span>)</span><span class="result"> extends Op1[String, Extent] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.operation.ParseInt" data-isabs="false">
+      <a id="ParseInt:ParseInt"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ParseInt.html"><span class="name">ParseInt</span></a>
+        
+        <span class="params">(<span name="s">s: Op[String]</span>)</span><span class="result"> extends Op1[String, Int] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Parse a string as an integer.</p>
     </li><li visbl="pub" name="trellis.operation.PolygonExtent" data-isabs="false">
       <a id="PolygonExtent:PolygonExtent"></a>
       <h4 class="signature">
@@ -1131,6 +1141,17 @@ within each polygon.</p>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="trellis.operation.Split" data-isabs="false">
+      <a id="Split:Split"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Split.html"><span class="name">Split</span></a>
+        
+        <span class="params">(<span name="s">s: String</span>, <span name="delim">delim: String</span>)</span><span class="result"> extends Op2[String, String, Array[String]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Split a string on a comma.</p>
     </li><li visbl="pub" name="trellis.operation.SplitMultiPolygon" data-isabs="false">
       <a id="SplitMultiPolygon:SplitMultiPolygon"></a>
       <h4 class="signature">
@@ -1142,6 +1163,17 @@ within each polygon.</p>
       </span>
       </h4>
       <p class="comment cmt">Split multipolygon into polygons.</p>
+    </li><li visbl="pub" name="trellis.operation.SplitOnComma" data-isabs="false">
+      <a id="SplitOnComma:SplitOnComma"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="SplitOnComma.html"><span class="name">SplitOnComma</span></a>
+        
+        <span class="params">(<span name="s">s: String</span>)</span><span class="result"> extends Op1[String, Array[String]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Split a string on a comma.</p>
     </li><li visbl="pub" name="trellis.operation.StandardDeviation" data-isabs="false">
       <a id="StandardDeviation:StandardDeviation"></a>
       <h4 class="signature">
@@ -1383,17 +1415,6 @@ are local (operate on each cell without knowledge of other cells).</p>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="trellis.operation.LoadRasterExtentFromFile" data-isabs="false">
-      <a id="LoadRasterExtentFromFile:LoadRasterExtentFromFile"></a>
-      <h4 class="signature">
-      <span class="kind">object</span>
-      <span class="symbol"> 
-        <a href="LoadRasterExtentFromFile$.html"><span class="name">LoadRasterExtentFromFile</span></a>
-        
-        <span class="result"> extends AnyRef</span>
-      </span>
-      </h4>
-      
     </li><li visbl="pub" name="trellis.operation.Normalize" data-isabs="false">
       <a id="Normalize:Normalize"></a>
       <h4 class="signature">
@@ -1450,40 +1471,95 @@ detect the min/max values, and when we provide them explicitly.</p>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="trellis.operation.package#addIntRasterTo" data-isabs="false">
-      <a id="addIntRasterTo(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+    </li><li visbl="pub" name="trellis.operation.package#addIntRasterTo1" data-isabs="false">
+      <a id="addIntRasterTo1(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
       <h4 class="signature">
       <span class="kind">implicit def</span>
       <span class="symbol"> 
-        <span class="name">addIntRasterTo</span>
+        <span class="name">addIntRasterTo1</span>
+        
+        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#addIntRasterTo2" data-isabs="false">
+      <a id="addIntRasterTo2(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addIntRasterTo2</span>
+        
+        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#addIntTo1" data-isabs="false">
+      <a id="addIntTo1(Int):AnyRef { def +(rhs: trellis.operation.package.Op[Int]): trellis.operation.package.Op[Int] }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addIntTo1</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { def +(rhs: trellis.operation.package.Op[Int]): trellis.operation.package.Op[Int] }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#addIntTo2" data-isabs="false">
+      <a id="addIntTo2(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addIntTo2</span>
         
         <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.package#addIntRasterTo" data-isabs="false">
-      <a id="addIntRasterTo(IntRaster):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
+    </li><li visbl="pub" name="trellis.operation.package#addOpIntRasterTo1" data-isabs="false">
+      <a id="addOpIntRasterTo1(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
       <h4 class="signature">
       <span class="kind">implicit def</span>
       <span class="symbol"> 
-        <span class="name">addIntRasterTo</span>
+        <span class="name">addOpIntRasterTo1</span>
         
-        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.package#addOpTo" data-isabs="false">
-      <a id="addOpTo(Op[IntRaster]):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
-      <h4 class="signature">
-      <span class="kind">implicit def</span>
-      <span class="symbol"> 
-        <span class="name">addOpTo</span>
-        
-        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
+        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Addition-operator implicits for Int, IntRaster and Op[IntRaster].</p><div class="fullcomment"><div class="comment cmt"><p>Addition-operator implicits for Int, IntRaster and Op[IntRaster].
 </p></div><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#addOpIntRasterTo2" data-isabs="false">
+      <a id="addOpIntRasterTo2(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addOpIntRasterTo2</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#addOpIntTo1" data-isabs="false">
+      <a id="addOpIntTo1(Op[Int]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addOpIntTo1</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<span name="scala.Int" class="extype">Int</span>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#addOpIntTo2" data-isabs="false">
+      <a id="addOpIntTo2(Op[Int]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addOpIntTo2</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<span name="scala.Int" class="extype">Int</span>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
     </li><li visbl="pub" name="trellis.operation.applicative" data-isabs="false">
       <a id="applicative:applicative"></a>
       <h4 class="signature">
@@ -1495,74 +1571,184 @@ detect the min/max values, and when we provide them explicitly.</p>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="trellis.operation.package#divideIntRasterBy" data-isabs="false">
-      <a id="divideIntRasterBy(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+    </li><li visbl="pub" name="trellis.operation.package#divideIntBy1" data-isabs="false">
+      <a id="divideIntBy1(Int):AnyRef { def /(rhs: trellis.operation.package.Op[Int]): trellis.operation.package.Op[Int] }"></a>
       <h4 class="signature">
       <span class="kind">implicit def</span>
       <span class="symbol"> 
-        <span class="name">divideIntRasterBy</span>
+        <span class="name">divideIntBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { def /(rhs: trellis.operation.package.Op[Int]): trellis.operation.package.Op[Int] }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#divideIntBy2" data-isabs="false">
+      <a id="divideIntBy2(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">divideIntBy2</span>
         
         <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.package#divideIntRasterBy" data-isabs="false">
-      <a id="divideIntRasterBy(IntRaster):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
+    </li><li visbl="pub" name="trellis.operation.package#divideIntRasterBy1" data-isabs="false">
+      <a id="divideIntRasterBy1(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
       <h4 class="signature">
       <span class="kind">implicit def</span>
       <span class="symbol"> 
-        <span class="name">divideIntRasterBy</span>
+        <span class="name">divideIntRasterBy1</span>
         
-        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
+        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.package#divideOpBy" data-isabs="false">
-      <a id="divideOpBy(Op[IntRaster]):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
+    </li><li visbl="pub" name="trellis.operation.package#divideIntRasterBy2" data-isabs="false">
+      <a id="divideIntRasterBy2(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
       <h4 class="signature">
       <span class="kind">implicit def</span>
       <span class="symbol"> 
-        <span class="name">divideOpBy</span>
+        <span class="name">divideIntRasterBy2</span>
         
-        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
+        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#divideOpIntBy1" data-isabs="false">
+      <a id="divideOpIntBy1(Op[Int]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">divideOpIntBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<span name="scala.Int" class="extype">Int</span>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#divideOpIntBy2" data-isabs="false">
+      <a id="divideOpIntBy2(Op[Int]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">divideOpIntBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<span name="scala.Int" class="extype">Int</span>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#divideOpIntRasterBy1" data-isabs="false">
+      <a id="divideOpIntRasterBy1(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">divideOpIntRasterBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Division-operator implicits for Int, IntRaster and Op[IntRaster].</p><div class="fullcomment"><div class="comment cmt"><p>Division-operator implicits for Int, IntRaster and Op[IntRaster].
 </p></div><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.package#multiplyIntRasterBy" data-isabs="false">
-      <a id="multiplyIntRasterBy(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+    </li><li visbl="pub" name="trellis.operation.package#divideOpIntRasterBy2" data-isabs="false">
+      <a id="divideOpIntRasterBy2(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
       <h4 class="signature">
       <span class="kind">implicit def</span>
       <span class="symbol"> 
-        <span class="name">multiplyIntRasterBy</span>
+        <span class="name">divideOpIntRasterBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#multiplyIntBy1" data-isabs="false">
+      <a id="multiplyIntBy1(Int):AnyRef { def *(rhs: trellis.operation.package.Op[Int]): trellis.operation.package.Op[Int] }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyIntBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { def *(rhs: trellis.operation.package.Op[Int]): trellis.operation.package.Op[Int] }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#multiplyIntBy2" data-isabs="false">
+      <a id="multiplyIntBy2(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyIntBy2</span>
         
         <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.package#multiplyIntRasterBy" data-isabs="false">
-      <a id="multiplyIntRasterBy(IntRaster):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
+    </li><li visbl="pub" name="trellis.operation.package#multiplyIntRasterBy1" data-isabs="false">
+      <a id="multiplyIntRasterBy1(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
       <h4 class="signature">
       <span class="kind">implicit def</span>
       <span class="symbol"> 
-        <span class="name">multiplyIntRasterBy</span>
+        <span class="name">multiplyIntRasterBy1</span>
         
-        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
+        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.package#multiplyOpBy" data-isabs="false">
-      <a id="multiplyOpBy(Op[IntRaster]):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
+    </li><li visbl="pub" name="trellis.operation.package#multiplyIntRasterBy2" data-isabs="false">
+      <a id="multiplyIntRasterBy2(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
       <h4 class="signature">
       <span class="kind">implicit def</span>
       <span class="symbol"> 
-        <span class="name">multiplyOpBy</span>
+        <span class="name">multiplyIntRasterBy2</span>
         
-        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
+        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#multiplyOpIntBy1" data-isabs="false">
+      <a id="multiplyOpIntBy1(Op[Int]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyOpIntBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<span name="scala.Int" class="extype">Int</span>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#multiplyOpIntBy2" data-isabs="false">
+      <a id="multiplyOpIntBy2(Op[Int]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyOpIntBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<span name="scala.Int" class="extype">Int</span>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#multiplyOpIntRasterBy1" data-isabs="false">
+      <a id="multiplyOpIntRasterBy1(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyOpIntRasterBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Multiplication-operator implicits for Int, IntRaster and Op[IntRaster].</p><div class="fullcomment"><div class="comment cmt"><p>Multiplication-operator implicits for Int, IntRaster and Op[IntRaster].
 </p></div><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#multiplyOpIntRasterBy2" data-isabs="false">
+      <a id="multiplyOpIntRasterBy2(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyOpIntRasterBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
     </li><li visbl="pub" name="trellis.operation.render" data-isabs="false">
       <a id="render:render"></a>
       <h4 class="signature">
@@ -1574,40 +1760,95 @@ detect the min/max values, and when we provide them explicitly.</p>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="trellis.operation.package#subtractIntRasterBy" data-isabs="false">
-      <a id="subtractIntRasterBy(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+    </li><li visbl="pub" name="trellis.operation.package#subtractIntBy1" data-isabs="false">
+      <a id="subtractIntBy1(Int):AnyRef { def -(rhs: trellis.operation.package.Op[Int]): trellis.operation.package.Op[Int] }"></a>
       <h4 class="signature">
       <span class="kind">implicit def</span>
       <span class="symbol"> 
-        <span class="name">subtractIntRasterBy</span>
+        <span class="name">subtractIntBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { def -(rhs: trellis.operation.package.Op[Int]): trellis.operation.package.Op[Int] }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#subtractIntBy2" data-isabs="false">
+      <a id="subtractIntBy2(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractIntBy2</span>
         
         <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.package#subtractIntRasterBy" data-isabs="false">
-      <a id="subtractIntRasterBy(IntRaster):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
+    </li><li visbl="pub" name="trellis.operation.package#subtractIntRasterBy1" data-isabs="false">
+      <a id="subtractIntRasterBy1(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
       <h4 class="signature">
       <span class="kind">implicit def</span>
       <span class="symbol"> 
-        <span class="name">subtractIntRasterBy</span>
+        <span class="name">subtractIntRasterBy1</span>
         
-        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
+        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
-    </li><li visbl="pub" name="trellis.operation.package#subtractOpBy" data-isabs="false">
-      <a id="subtractOpBy(Op[IntRaster]):AnyRef { ... /* 3 definitions in type refinement */ }"></a>
+    </li><li visbl="pub" name="trellis.operation.package#subtractIntRasterBy2" data-isabs="false">
+      <a id="subtractIntRasterBy2(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
       <h4 class="signature">
       <span class="kind">implicit def</span>
       <span class="symbol"> 
-        <span class="name">subtractOpBy</span>
+        <span class="name">subtractIntRasterBy2</span>
         
-        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 3 definitions in type refinement */ }</span>
+        <span class="params">(<span name="lhs">lhs: <a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#subtractOpIntBy1" data-isabs="false">
+      <a id="subtractOpIntBy1(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractOpIntBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#subtractOpIntBy2" data-isabs="false">
+      <a id="subtractOpIntBy2(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractOpIntBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#subtractOpIntRasterBy1" data-isabs="false">
+      <a id="subtractOpIntRasterBy1(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractOpIntRasterBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Subtraction-operator implicits for Int, IntRaster and Op[IntRaster].</p><div class="fullcomment"><div class="comment cmt"><p>Subtraction-operator implicits for Int, IntRaster and Op[IntRaster].
 </p></div><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="trellis.operation.package#subtractOpIntRasterBy2" data-isabs="false">
+      <a id="subtractOpIntRasterBy2(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractOpIntRasterBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="trellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="trellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
     </li></ol>
             </div>
 

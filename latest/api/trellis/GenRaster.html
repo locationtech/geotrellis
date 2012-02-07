@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>trellis.IsIntRaster</title>
+          <title>trellis.GenRaster</title>
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link type="text/css" media="screen" rel="stylesheet" href="../lib/template.css" />
@@ -14,26 +14,23 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img src="../lib/trait_big.png" />
+        <a title="Go to companion" href="GenRaster$.html"><img src="../lib/class_to_object_big.png" /></a>
         <p id="owner"><a name="trellis" class="extype" href="package.html">trellis</a></p>
-        <h1>IsIntRaster</h1>
+        <h1><a title="Go to companion" href="GenRaster$.html">GenRaster</a></h1>
       </div>
 
       <h4 class="signature" id="signature">
-      <span class="kind">trait</span>
+      <span class="kind">class</span>
       <span class="symbol"> 
-        <span class="name">IsIntRaster</span>
-        
-        <span class="result"> extends AnyRef</span>
+        <span class="name">GenRaster</span>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="result"> extends <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
-          <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Core data object that represents a raster with integer values.</p></div><div class="toggleContainer block">
+          <div class="fullcommenttop" id="comment"><div class="comment cmt"></div><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent">AnyRef, <span name="scala.Any" class="extype">Any</span></div>
-        </div><div class="toggleContainer block">
-          <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a name="trellis.IntRaster" class="extype" href="IntRaster.html">IntRaster</a></div>
+          <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
         
 
@@ -49,7 +46,7 @@
                 <span class="filtertype">Inherited</span>
                 <ol><li class="hideall out"><span>Hide All</span></li>
                 <li class="showall in"><span>Show all</span></li></ol>
-                <ol id="linearization"><li name="trellis.IsIntRaster" class="in"><span>IsIntRaster</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+                <ol id="linearization"><li name="trellis.GenRaster" class="in"><span>GenRaster</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
               </div>
           <div id="visbl">
               <span class="filtertype">Visibility</span>
@@ -57,72 +54,28 @@
             </div>
         </div>
 
-        
-
-        
-        
-        <div class="values members" id="values">
-              <h3>Abstract Value Members</h3>
-              <ol><li visbl="pub" name="trellis.IsIntRaster#cols" data-isabs="true">
-      <a id="cols:Int"></a>
+        <div class="members" id="constructors">
+              <h3>Instance Constructors</h3>
+              <ol><li visbl="pub" name="trellis.GenRaster#this" data-isabs="false">
+      <a id="this:GenRaster[T]"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
+      <span class="kind">new</span>
       <span class="symbol"> 
-        <span class="name">cols</span>
+        <span class="name">GenRaster</span>
         
-        <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span class="params">(<span name="data">data: <a name="trellis.GenRasterData" class="extype" href="GenRasterData.html">GenRasterData</a>[T]</span>, <span name="rasterExtent">rasterExtent: <a name="trellis.RasterExtent" class="extype" href="RasterExtent.html">RasterExtent</a></span>, <span name="name">name: String</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span name="com.azavea.math.Numeric" class="extype">Numeric</span>[T]</span>, <span name="arg1">arg1: Manifest[T]</span>, <span name="arg2">arg2: <a name="trellis.NoData" class="extype" href="NoData.html">NoData</a>[T]</span>)</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
-    </li><li visbl="pub" name="trellis.IsIntRaster#data" data-isabs="true">
-      <a id="data:RasterData"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">data</span>
-        
-        <span class="result">: <a name="trellis.RasterData" class="extype" href="RasterData.html">RasterData</a></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
-    </li><li visbl="pub" name="trellis.IsIntRaster#name" data-isabs="true">
-      <a id="name:String"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">name</span>
-        
-        <span class="result">: String</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
-    </li><li visbl="pub" name="trellis.IsIntRaster#rasterExtent" data-isabs="true">
-      <a id="rasterExtent:RasterExtent"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">rasterExtent</span>
-        
-        <span class="result">: <a name="trellis.RasterExtent" class="extype" href="RasterExtent.html">RasterExtent</a></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
-    </li><li visbl="pub" name="trellis.IsIntRaster#rows" data-isabs="true">
-      <a id="rows:Int"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">rows</span>
-        
-        <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+      
     </li></ol>
             </div>
 
+        
+        
+        
+
         <div class="values members" id="values">
-              <h3>Concrete Value Members</h3>
+              <h3>Value Members</h3>
               <ol><li visbl="pub" name="scala.AnyRef#!=" data-isabs="false">
       <a id="!=(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -178,14 +131,14 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.IsIntRaster#asArray" data-isabs="false">
-      <a id="asArray:Array[Int]"></a>
+    </li><li visbl="pub" name="trellis.GenRaster#asArray" data-isabs="false">
+      <a id="asArray:Array[T]"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">asArray</span>
         
-        <span class="result">: <span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]</span>
+        <span class="result">: <span name="scala.Array" class="extype">Array</span>[T]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Return data in this raster as a one-dimensional array (row by row).</p>
@@ -200,7 +153,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.IsIntRaster#asciiDraw" data-isabs="false">
+    </li><li visbl="pub" name="trellis.GenRaster#asciiDraw" data-isabs="false">
       <a id="asciiDraw():String"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -211,7 +164,7 @@
       </span>
       </h4>
       <p class="shortcomment cmt">Return ascii art of this raster.</p>
-    </li><li visbl="pub" name="trellis.IsIntRaster#asciiDrawRange" data-isabs="false">
+    </li><li visbl="pub" name="trellis.GenRaster#asciiDrawRange" data-isabs="false">
       <a id="asciiDrawRange(Int,Int,Int,Int):String"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -236,39 +189,61 @@
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="trellis.IsIntRaster#combine2" data-isabs="false">
-      <a id="combine2(IntRaster)((Int, Int) ⇒ Int):IntRaster"></a>
+    </li><li visbl="pub" name="trellis.GenRaster#cols" data-isabs="false">
+      <a id="cols:Int"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">cols</span>
+        
+        <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.GenRaster#combine2" data-isabs="false">
+      <a id="combine2(GenRaster[T])((T, T) ⇒ T):GenRaster[T]"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">combine2</span>
         
-        <span class="params">(<span name="r2">r2: <a name="trellis.IntRaster" class="extype" href="IntRaster.html">IntRaster</a></span>)</span><span class="params">(<span name="f">f: (<span name="scala.Int" class="extype">Int</span>, <span name="scala.Int" class="extype">Int</span>) ⇒ <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <a name="trellis.IntRaster" class="extype" href="IntRaster.html">IntRaster</a></span>
+        <span class="params">(<span name="r2">r2: <a name="trellis.GenRaster" class="extype" href="">GenRaster</a>[T]</span>)</span><span class="params">(<span name="f">f: (T, T) ⇒ T</span>)</span><span class="result">: <a name="trellis.GenRaster" class="extype" href="">GenRaster</a>[T]</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="trellis.IsIntRaster#compare" data-isabs="false">
-      <a id="compare(IntRaster):Int"></a>
+    </li><li visbl="pub" name="trellis.GenRaster#compare" data-isabs="false">
+      <a id="compare(GenRaster[T]):Int"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">compare</span>
         
-        <span class="params">(<span name="other">other: <a name="trellis.IntRaster" class="extype" href="IntRaster.html">IntRaster</a></span>)</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span class="params">(<span name="other">other: <a name="trellis.GenRaster" class="extype" href="">GenRaster</a>[T]</span>)</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">Test <a name="trellis.RasterExtent" class="extype" href="RasterExtent.html">RasterExtent</a> of other raster w/ our own geographic attributes.</p>
-    </li><li visbl="pub" name="trellis.IsIntRaster#copy" data-isabs="false">
-      <a id="copy():IntRaster"></a>
+    </li><li visbl="pub" name="trellis.GenRaster#copy" data-isabs="false">
+      <a id="copy():GenRaster[T]"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">copy</span>
         
-        <span class="params">()</span><span class="result">: <a name="trellis.IntRaster" class="extype" href="IntRaster.html">IntRaster</a></span>
+        <span class="params">()</span><span class="result">: <a name="trellis.GenRaster" class="extype" href="">GenRaster</a>[T]</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Clone this raster.</p>
+    </li><li visbl="pub" name="trellis.GenRaster#data" data-isabs="false">
+      <a id="data:GenRasterData[T]"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">data</span>
+        
+        <span class="result">: <a name="trellis.GenRasterData" class="extype" href="GenRasterData.html">GenRasterData</a>[T]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -280,17 +255,17 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#equals" data-isabs="false">
+    </li><li visbl="pub" name="trellis.GenRaster#equals" data-isabs="false">
       <a id="equals(Any):Boolean"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">equals</span>
         
-        <span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+        <span class="params">(<span name="other">other: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.GenRaster" class="extype" href="">GenRaster</a> → AnyRef → Any</dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
       <a id="finalize():Unit"></a>
       <h4 class="signature">
@@ -305,36 +280,36 @@
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="trellis.IsIntRaster#findMinMax" data-isabs="false">
-      <a id="findMinMax:(Int, Int)"></a>
+    </li><li visbl="pub" name="trellis.GenRaster#findMinMax" data-isabs="false">
+      <a id="findMinMax:(T, T)"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">findMinMax</span>
         
-        <span class="result">: (<span name="scala.Int" class="extype">Int</span>, <span name="scala.Int" class="extype">Int</span>)</span>
+        <span class="result">: (T, T)</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Return tuple of highest and lowest value in raster.</p>
-    </li><li visbl="pub" name="trellis.IsIntRaster#foreach" data-isabs="false">
-      <a id="foreach((Int) ⇒ Unit):Unit"></a>
+    </li><li visbl="pub" name="trellis.GenRaster#foreach" data-isabs="false">
+      <a id="foreach((T) ⇒ Unit):Unit"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">foreach</span>
         
-        <span class="params">(<span name="f">f: (<span name="scala.Int" class="extype">Int</span>) ⇒ <span name="scala.Unit" class="extype">Unit</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="params">(<span name="f">f: (T) ⇒ <span name="scala.Unit" class="extype">Unit</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="trellis.IsIntRaster#get" data-isabs="false">
-      <a id="get(Int,Int):Int"></a>
+    </li><li visbl="pub" name="trellis.GenRaster#get" data-isabs="false">
+      <a id="get(Int,Int):T"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">get</span>
         
-        <span class="params">(<span name="col">col: <span name="scala.Int" class="extype">Int</span></span>, <span name="row">row: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+        <span class="params">(<span name="col">col: <span name="scala.Int" class="extype">Int</span></span>, <span name="row">row: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: T</span>
       </span>
       </h4>
       <p class="shortcomment cmt">Get value at given coordinates.</p>
@@ -371,7 +346,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="trellis.IsIntRaster#length" data-isabs="false">
+    </li><li visbl="pub" name="trellis.GenRaster#length" data-isabs="false">
       <a id="length:Int"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -382,25 +357,37 @@
       </span>
       </h4>
       
-    </li><li visbl="pub" name="trellis.IsIntRaster#map" data-isabs="false">
-      <a id="map((Int) ⇒ Int):IntRaster"></a>
+    </li><li visbl="pub" name="trellis.GenRaster#map" data-isabs="false">
+      <a id="map((T) ⇒ T):GenRaster[T]"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">map</span>
         
-        <span class="params">(<span name="f">f: (<span name="scala.Int" class="extype">Int</span>) ⇒ <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <a name="trellis.IntRaster" class="extype" href="IntRaster.html">IntRaster</a></span>
+        <span class="params">(<span name="f">f: (T) ⇒ T</span>)</span><span class="result">: <a name="trellis.GenRaster" class="extype" href="">GenRaster</a>[T]</span>
       </span>
       </h4>
-      
-    </li><li visbl="pub" name="trellis.IsIntRaster#mapIfSet" data-isabs="false">
-      <a id="mapIfSet((Int) ⇒ Int):IntRaster"></a>
+      <p class="shortcomment cmt"></p>
+    </li><li visbl="pub" name="trellis.GenRaster#mapIfSet" data-isabs="false">
+      <a id="mapIfSet((T) ⇒ T):GenRaster[T]"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">mapIfSet</span>
         
-        <span class="params">(<span name="f">f: (<span name="scala.Int" class="extype">Int</span>) ⇒ <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <a name="trellis.IntRaster" class="extype" href="IntRaster.html">IntRaster</a></span>
+        <span class="params">(<span name="f">f: (T) ⇒ T</span>)</span><span class="result">: <a name="trellis.GenRaster" class="extype" href="">GenRaster</a>[T]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Convenience version of 'map' which skips nodata values.</p><div class="fullcomment"><div class="comment cmt"><p>Convenience version of 'map' which skips nodata values. For instance:</p><p> r.mapIfSet(x =&gt; x + 2)</p><p>is equivalent to:</p><p> r.map(x =&gt; if (x == nodata) x else x + 2)
+</p></div></div>
+    </li><li visbl="pub" name="trellis.GenRaster#name" data-isabs="false">
+      <a id="name:String"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">name</span>
+        
+        <span class="result">: String</span>
       </span>
       </h4>
       
@@ -415,17 +402,39 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="trellis.IsIntRaster#normalize" data-isabs="false">
-      <a id="normalize(Int,Int,Int,Int):IntRaster"></a>
+    </li><li visbl="pub" name="trellis.GenRaster#nodata" data-isabs="false">
+      <a id="nodata:T"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">nodata</span>
+        
+        <span class="result">: T</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd></dl></div>
+    </li><li visbl="pub" name="trellis.GenRaster#normalize" data-isabs="false">
+      <a id="normalize(T,T,T,T):GenRaster[T]"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">normalize</span>
         
-        <span class="params">(<span name="zmin">zmin: <span name="scala.Int" class="extype">Int</span></span>, <span name="zmax">zmax: <span name="scala.Int" class="extype">Int</span></span>, <span name="gmin">gmin: <span name="scala.Int" class="extype">Int</span></span>, <span name="gmax">gmax: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <a name="trellis.IntRaster" class="extype" href="IntRaster.html">IntRaster</a></span>
+        <span class="params">(<span name="zmin">zmin: T</span>, <span name="zmax">zmax: T</span>, <span name="gmin">gmin: T</span>, <span name="gmax">gmax: T</span>)</span><span class="result">: <a name="trellis.GenRaster" class="extype" href="">GenRaster</a>[T]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt"></p>
+    </li><li visbl="pub" name="trellis.GenRaster#normalize" data-isabs="false">
+      <a id="normalize(T,T):GenRaster[T]"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">normalize</span>
+        
+        <span class="params">(<span name="gmin">gmin: T</span>, <span name="gmax">gmax: T</span>)</span><span class="result">: <a name="trellis.GenRaster" class="extype" href="">GenRaster</a>[T]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt"></p>
     </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
       <a id="notify():Unit"></a>
       <h4 class="signature">
@@ -448,14 +457,36 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="trellis.IsIntRaster#set" data-isabs="false">
-      <a id="set(Int,Int,Int):Unit"></a>
+    </li><li visbl="pub" name="trellis.GenRaster#rasterExtent" data-isabs="false">
+      <a id="rasterExtent:RasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">rasterExtent</span>
+        
+        <span class="result">: <a name="trellis.RasterExtent" class="extype" href="RasterExtent.html">RasterExtent</a></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.GenRaster#rows" data-isabs="false">
+      <a id="rows:Int"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">rows</span>
+        
+        <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="trellis.GenRaster#set" data-isabs="false">
+      <a id="set(Int,Int,T):Unit"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">set</span>
         
-        <span class="params">(<span name="col">col: <span name="scala.Int" class="extype">Int</span></span>, <span name="row">row: <span name="scala.Int" class="extype">Int</span></span>, <span name="value">value: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+        <span class="params">(<span name="col">col: <span name="scala.Int" class="extype">Int</span></span>, <span name="row">row: <span name="scala.Int" class="extype">Int</span></span>, <span name="value">value: T</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
       <p class="shortcomment cmt">Set value at given coordinates.</p>
@@ -470,17 +501,17 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
+    </li><li visbl="pub" name="trellis.GenRaster#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">toString</span>
         
-        <span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+        <span class="params">()</span><span class="result">: String</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="trellis.GenRaster" class="extype" href="">GenRaster</a> → AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">
@@ -528,7 +559,11 @@
 
         
 
-        <div name="scala.AnyRef" class="parent">
+        <div name="scala.Serializable" class="parent">
+              <h3>Inherited from <span name="scala.Serializable" class="extype">Serializable</span></h3>
+            </div><div name="java.io.Serializable" class="parent">
+              <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
+            </div><div name="scala.AnyRef" class="parent">
               <h3>Inherited from AnyRef</h3>
             </div><div name="scala.Any" class="parent">
               <h3>Inherited from <span name="scala.Any" class="extype">Any</span></h3>
