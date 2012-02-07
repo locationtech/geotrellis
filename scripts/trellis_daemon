@@ -4,25 +4,38 @@
 mainClass="trellis.rest.WebRunner"
 
 version="0.6"
-#jar_name="Trellis-assembly-$version.jar"
-jar_name="/scala-2.9.1/trellis_2.9.1-0.6.min.jar"
+jar_name="trellis_2.9.1-0.6.min.jar"
+
 java_args=""
+jar_url="http://n0d.es/jars/"$jar_name
 
 # find jar either in target (we're in SBT) 
 # or in the same directory as this script (we're both in /bin)
-sbt_path="target/"$jar_name
+sbt_path="target/scala-2.9.1/"$jar_name
 bin_path=`dirname $0`/$jar_name
+
+trellis_dir=$HOME/.trellis/
+trellis_lib_dir=$trellis_dir/lib
+
+home_path=$trellis_lib_dir/$jar_name
 
 if [ -e $sbt_path ]; then
   jar_path=$sbt_path;
 elif [ -e $bin_path ]; then
   jar_path=$bin_path;
 else
-  echo "Could not find jar to execute: "$jar_name
-  echo "This script checks two locations,"
-  echo "  the directory of this script  : "$bin_path
-  echo "  and the relative path from sbt: "$sbt_path  
-  exit 1
+  if [ -e $home_path ]; then
+    jar_path=$home_path;
+  else
+    echo " ** As this is the first time a trellis script has been run"
+    echo " ** under this account, the trellis library will first be"
+    echo " ** downloaded to "$trellis_dir
+    echo
+    mkdir -p $trellis_lib_dir
+    wget --progress=bar:force -P $trellis_lib_dir $jar_url
+    jar_path=$trellis_lib_dir"/"$jar_name
+    echo " ** Trellis libraries downloaded."
+  fi
 fi
 
 echo java $java_args -cp $jar_path $mainClass "$@" 
