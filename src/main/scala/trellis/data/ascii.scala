@@ -142,6 +142,10 @@ object AsciiReader extends FileReader {
 
 object AsciiWriter extends Writer {
   def write(path:String, raster:IntRaster, name:String) {
+    write(path, raster, name, NODATA)
+  }
+
+  def write(path:String, raster:IntRaster, name:String, noData:Int) {
     val g = raster.rasterExtent
     val e = raster.rasterExtent.extent
 
@@ -154,7 +158,7 @@ object AsciiWriter extends Writer {
     pw.write("xllcorner %.12f\n".format(e.xmin))
     pw.write("yllcorner %.12f\n".format(e.ymin))
     pw.write("cellsize %.12f\n".format(g.cellwidth))
-    pw.write("nodata_value %d\n".format(NODATA))
+    pw.write("nodata_value %d\n".format(noData))
 
     val data = raster.data
 

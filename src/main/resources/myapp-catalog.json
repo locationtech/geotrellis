@@ -1,0 +1,12 @@
+{
+ "catalog": "Catalog of MyApp data",
+ "stores": [
+  {
+   "store": "test:fs",
+   "params": {
+     "type": "fs",
+     "path": "src/main/resources/myapp"
+   }
+  }
+ ]
+}
