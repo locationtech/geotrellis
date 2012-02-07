@@ -14,10 +14,10 @@ mainClass in (Compile, run) := Some("trellis.rest.WebRunner")
 
 addCompilerPlugin("com.azavea.math.plugin" %% "optimized-numeric" % "0.1")
 
-SiteKeys.siteMappings <<=
-  (SiteKeys.siteMappings, PamfletKeys.write, PamfletKeys.output) map { (mappings, _, dir) =>
-    mappings ++ (dir ** "*.*" x relativeTo(dir))
-  }
+//SiteKeys.siteMappings <<=
+//  (SiteKeys.siteMappings, PamfletKeys.write, PamfletKeys.output) map { (mappings, _, dir) =>
+//    mappings ++ (dir ** "*.*" x relativeTo(dir))
+//  }
 
 seq(ProguardPlugin.proguardSettings :_*)
 
