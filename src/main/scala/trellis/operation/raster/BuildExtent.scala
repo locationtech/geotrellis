@@ -17,3 +17,6 @@ case class ParseExtent(s:String) extends Op1(s)({
     case _ => sys.error("couldn't parse %s")
   }
 })
+
+case class CombineExtents(e1:Op[Extent], e2:Op[Extent])
+extends Op2(e1, e2)((e1, e2) => Result(e1.combine(e2)))
