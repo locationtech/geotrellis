@@ -1,6 +1,6 @@
 <html manifest="pamflet.manifest">
       <head>
-        <title>Arpeggeo — Arpeggeo</title>
+        <title>Arpeggeo — Creating Operations</title>
         <link type="text/css" media="screen, projection" rel="stylesheet" href="css/blueprint/screen.css"></link>
         <link type="text/css" media="screen and (min-device-width: 800px), projection" rel="stylesheet" href="css/blueprint/grid.css"></link>
         <link type="text/css" media="print" rel="stylesheet" href="css/blueprint/print.css"></link> 
@@ -20,7 +20,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
       </head>
       <body>
-        <a class="page next nav" href="API+Reference.html">
+        <a class="page prev nav" href="Using+the+template+project.html">
+            <span class="space">&nbsp;</span>
+            <span class="flip">❧</span>
+          </a><a class="page next nav" href="Parallel+and+Distributed+Calculation.html">
             <span class="space">&nbsp;</span>
             <span>❧</span>
           </a>
@@ -28,11 +31,22 @@
           <div class="span-16 prepend-1 append-1">
             <div class="top nav span-16 title">
               <span>Arpeggeo</span>
-              
+               — Creating Operations
             </div>
           </div>
           <div class="span-16 prepend-1 append-1 contents">
-            <h1 id="Arpeggeo">Arpeggeo</h1><p><em>Arpeggeo</em> is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
+            <h2 id="Creating+Operations">Creating Operations</h2><p>Ideally, a new geoprocessing service can be composed with existing operations that
+have already been created for you.  The tutorial, for example, shows a series of
+examples of a service being created by composing existing operations.  But sometimes
+it is necessary to create new operations instead of simply composing a new process with
+existing operations.  There is a simple and an advanced structure for creating new operations.
+</p><h3 id="Simple">Simple</h3><h3 id="Advanced">Advanced</h3><h4 id="Parallel+and+Distributed+Calculation">Parallel and Distributed Calculation</h4><p>While it’s not necessary to understand why we follow the pattern above, here is a quick 
+explanation if you’re curious.  Behind the scenes, Arpeggeo is using the actor model for parallel and distributed computation, which means that the primary abstraction is message passing instead of shared memory.  This event-based model allows us to re-use the same threads by interleaving calculations for different processes on the same threads, but this means that nothing can ever block or stop on a thread while waiting for another result because that would hold up the other work that is scheduled to execute on the same thread.  By using the continuation passing style from functional programming (http://en.wikipedia.org/wiki/Continuation-passing_style) we can perform work in a series of stages, in which requests
+are first sent out for calculations to be processed and then when all of the results
+are received, we can execute the next step of the calculation, without ever blocking
+execution on an individual thread.
+</p><h2 id="Running+operations">Running operations</h2><h3 id="Parallel+execution">Parallel execution</h3><h3 id="Distributed+execution">Distributed execution</h3><ul><li>When an operation is 
+</li></ul><p><em>Arpeggeo</em> is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
 user interaction with geospatial data by bringing the power of geospatial analysis to real time, interactive web applications.
 </p><p>Arpeggeo was designed to solve three core problems, with a focus on raster processing:
 </p><ul><li>Creating scalable, high performance geoprocessing web services
@@ -63,7 +77,7 @@ operations with existing operations.
   val server = Server(&quot;example&quot;)
   val result = server.run(wo)
 
-</code></pre><h4>Contents</h4><div class="current">Arpeggeo</div><ol class="toc"> <li><div><a href="API+Reference.html">API Reference</a></div></li><li><div><a href="Operations.html">Operations</a></div></li><li><div><a href="Setting+up+Arpeggeo.html">Setting up Arpeggeo</a></div></li><li><div><a href="Using+the+template+project.html">Using the template project</a></div></li><li><div><a href="Creating+Operations.html">Creating Operations</a></div></li><li><div><a href="Parallel+and+Distributed+Calculation.html">Parallel and Distributed Calculation</a></div></li><li class="generated"><div><a href="Contents+in+Depth.html">Contents in Depth</a></div></li><li class="generated"><div><a href="Combined+Pages.html">Combined Pages</a></div></li> </ol>
+</code></pre><h4>Contents</h4><div><a href="Arpeggeo.html">Arpeggeo</a></div><ol class="toc"> <li><div><a href="API+Reference.html">API Reference</a></div></li><li><div><a href="Operations.html">Operations</a></div></li><li><div><a href="Setting+up+Arpeggeo.html">Setting up Arpeggeo</a></div></li><li><div><a href="Using+the+template+project.html">Using the template project</a></div></li><li><div class="current">Creating Operations</div></li><li><div><a href="Parallel+and+Distributed+Calculation.html">Parallel and Distributed Calculation</a></div></li><li class="generated"><div><a href="Contents+in+Depth.html">Contents in Depth</a></div></li><li class="generated"><div><a href="Combined+Pages.html">Combined Pages</a></div></li> </ol>
           </div>
         </div>
         <a class="fork nav" href="http://github.com/azavea/trellis"><img alt="Fork me on GitHub" src="img/fork.png"></img></a>

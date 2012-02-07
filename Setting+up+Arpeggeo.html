@@ -23,7 +23,7 @@
         <a class="page prev nav" href="Operations.html">
             <span class="space">&nbsp;</span>
             <span class="flip">❧</span>
-          </a><a class="page next nav" href="Using+the+Arpeggeo+template+REST+service+project.html">
+          </a><a class="page next nav" href="Using+the+template+project.html">
             <span class="space">&nbsp;</span>
             <span>❧</span>
           </a>
@@ -42,17 +42,15 @@ is available.
 The configuration file should be on the classpath of your application: e.g. if using
 SBT, create the configuration file at src/main/resources/application.conf.
 </p><p>You can also override individual configuration parameters with Java system properties, e.g.
-<code>`java -Dtrellis.port=5555 ...</code>`
+<code>java -Dtrellis.port=5555 ...</code>
 </p><p>Example:
-<code>`
-trellis.host = &quot;0.0.0.0&quot; // IP address to which the server will listen
+</p><pre><code class="">trellis.host = &quot;0.0.0.0&quot; // IP address to which the server will listen
                          // (0.0.0.0 means listen to all ports)
 trellis.port = 8888      // The server port 
 trellis.rest-package = &quot;trellis.rest&quot; // The package that will be searched for
                                       // for rest services
 trellis.tmp = &quot;/tmp&quot;     // A temporary directory to be used for scratch files
-</code>`
-</p><h4 id="Data+catalog">Data catalog</h4><p>The data catalog defines what data sources are available to your Arpeggeo server, and
+</code></pre><h4 id="Data+catalog">Data catalog</h4><p>The data catalog defines what data sources are available to your Arpeggeo server, and
 can include metadata about the data in those sources.  Data catalogs are defined as JSON files.  Arpeggeo uses a custom format, ARG (Azavea Raster Grid), to store raster data.  ARG files have companion JSON configuration files which allows a data catalog to automatically
 discover and load ARG files that are under a filesystem data directory configured in the
 catalog.  For example, the following catalog.json file defines a data directory ”/var/arpeggeo/data” in which any .arg32 files with accompanying .json metadata will be loaded.
@@ -75,7 +73,7 @@ directory you’ve checked out the template and run:
 </p><pre><code class="prettyprint lang-bash">scripts/trellis_import_geotiff your_geotiff.tif output.arg32
 </code></pre><p>The first time you run the script it will download the necessary Trellis libraries to your
 system.
-</p><h4>Contents</h4><div><a href="Arpeggeo.html">Arpeggeo</a></div><ol class="toc"> <li><div><a href="API+Reference.html">API Reference</a></div></li><li><div><a href="Operations.html">Operations</a></div></li><li><div class="current">Setting up Arpeggeo</div></li><li><div><a href="Using+the+Arpeggeo+template+REST+service+project.html">Using the Arpeggeo template REST service project</a></div></li><li class="generated"><div><a href="Contents+in+Depth.html">Contents in Depth</a></div></li><li class="generated"><div><a href="Combined+Pages.html">Combined Pages</a></div></li> </ol>
+</p><h4>Contents</h4><div><a href="Arpeggeo.html">Arpeggeo</a></div><ol class="toc"> <li><div><a href="API+Reference.html">API Reference</a></div></li><li><div><a href="Operations.html">Operations</a></div></li><li><div class="current">Setting up Arpeggeo</div></li><li><div><a href="Using+the+template+project.html">Using the template project</a></div></li><li><div><a href="Creating+Operations.html">Creating Operations</a></div></li><li><div><a href="Parallel+and+Distributed+Calculation.html">Parallel and Distributed Calculation</a></div></li><li class="generated"><div><a href="Contents+in+Depth.html">Contents in Depth</a></div></li><li class="generated"><div><a href="Combined+Pages.html">Combined Pages</a></div></li> </ol>
           </div>
         </div>
         <a class="fork nav" href="http://github.com/azavea/trellis"><img alt="Fork me on GitHub" src="img/fork.png"></img></a>

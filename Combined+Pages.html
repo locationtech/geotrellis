@@ -32,7 +32,7 @@
             </div>
           </div>
           <div class="span-16 prepend-1 append-1 contents">
-            <h4>Contents</h4><div><a href="#Arpeggeo">Arpeggeo</a></div><ol class="toc"> <li><div><a href="#API+Reference">API Reference</a></div></li><li><div><a href="#Operations">Operations</a></div></li><li><div><a href="#Setting+up+Arpeggeo">Setting up Arpeggeo</a></div></li><li><div><a href="#Using+the+Arpeggeo+template+REST+service+project">Using the Arpeggeo template REST service project</a></div></li> </ol><h1 id="Arpeggeo">Arpeggeo</h1><p><em>Arpeggeo</em> is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
+            <h4>Contents</h4><div><a href="#Arpeggeo">Arpeggeo</a></div><ol class="toc"> <li><div><a href="#API+Reference">API Reference</a></div></li><li><div><a href="#Operations">Operations</a></div></li><li><div><a href="#Setting+up+Arpeggeo">Setting up Arpeggeo</a></div></li><li><div><a href="#Using+the+template+project">Using the template project</a></div></li><li><div><a href="#Creating+Operations">Creating Operations</a></div></li><li><div><a href="#Parallel+and+Distributed+Calculation">Parallel and Distributed Calculation</a></div></li> </ol><h1 id="Arpeggeo">Arpeggeo</h1><p><em>Arpeggeo</em> is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
 user interaction with geospatial data by bringing the power of geospatial analysis to real time, interactive web applications.
 </p><p>Arpeggeo was designed to solve three core problems, with a focus on raster processing:
 </p><ul><li>Creating scalable, high performance geoprocessing web services
@@ -165,17 +165,15 @@ is available.
 The configuration file should be on the classpath of your application: e.g. if using
 SBT, create the configuration file at src/main/resources/application.conf.
 </p><p>You can also override individual configuration parameters with Java system properties, e.g.
-<code>`java -Dtrellis.port=5555 ...</code>`
+<code>java -Dtrellis.port=5555 ...</code>
 </p><p>Example:
-<code>`
-trellis.host = &quot;0.0.0.0&quot; // IP address to which the server will listen
+</p><pre><code class="">trellis.host = &quot;0.0.0.0&quot; // IP address to which the server will listen
                          // (0.0.0.0 means listen to all ports)
 trellis.port = 8888      // The server port 
 trellis.rest-package = &quot;trellis.rest&quot; // The package that will be searched for
                                       // for rest services
 trellis.tmp = &quot;/tmp&quot;     // A temporary directory to be used for scratch files
-</code>`
-</p><h4 id="Data+catalog">Data catalog</h4><p>The data catalog defines what data sources are available to your Arpeggeo server, and
+</code></pre><h4 id="Data+catalog">Data catalog</h4><p>The data catalog defines what data sources are available to your Arpeggeo server, and
 can include metadata about the data in those sources.  Data catalogs are defined as JSON files.  Arpeggeo uses a custom format, ARG (Azavea Raster Grid), to store raster data.  ARG files have companion JSON configuration files which allows a data catalog to automatically
 discover and load ARG files that are under a filesystem data directory configured in the
 catalog.  For example, the following catalog.json file defines a data directory ”/var/arpeggeo/data” in which any .arg32 files with accompanying .json metadata will be loaded.
@@ -198,16 +196,20 @@ directory you’ve checked out the template and run:
 </p><pre><code class="prettyprint lang-bash">scripts/trellis_import_geotiff your_geotiff.tif output.arg32
 </code></pre><p>The first time you run the script it will download the necessary Trellis libraries to your
 system.
-</p><h2 id="Using+the+Arpeggeo+template+REST+service+project">Using the Arpeggeo template REST service project</h2><p>The template REST service project provides a template for creating a 
-geoprocessing web service with Arpeggeo.  It’s an initial project that is a blank 
+</p><h2 id="Using+the+template+project">Using the template project</h2><p>We have provided a sample project that provides a template for creating a 
+geoprocessing web service with Arpeggeo.  It is a blank 
 slate for your own 
-development by providing a development environment that is set up
-with the necessary dependencies in place.  The project loads Arpeggeo as a
+development that provides a development environment that is set up
+with the necessary dependencies in place, making it a little easier to get started.  
+<br/>
+The project loads Arpeggeo as a
 library, includes some basic configuration, and has a very simple “hello world” 
 web service in place for you 
 to edit.
 </p><p>If you are a first time user, you may want to use the template along with the tutorial
-included in this documentation to start exploring how to build your own geoprocessing service.
+included in this documentation to start exploring how to build your own geoprocessing service.  If you’re new to Scala, you’ll need to choose a text editor for editing Scala, but
+you won’t need to install Scala or any other files to get started.  The following 
+instructions assume you are running under Linux or OS X.
 </p><h2 id="Step+1%3A+Run+SBT">Step 1: Run SBT</h2><p>This project uses SBT, Simple Build Tool, for compilation and execution.
 </p><p>If you don’t have SBT installed already, you can run a script in the template
 directory (from https://github.com/paulp/sbt-extras) that will automatically download it for you.
@@ -263,6 +265,68 @@ type <code>`eclipse</code>` at the sbt prompt, and then import the project into 
 </p><p>… at the sbt prompt, you will be in a ‘triggered restart’ mode.  As soon
 as you edit your source files, the application will re-compile and restart 
 with your updated code. 
+</p><h2 id="Creating+Operations">Creating Operations</h2><p>Ideally, a new geoprocessing service can be composed with existing operations that
+have already been created for you.  The tutorial, for example, shows a series of
+examples of a service being created by composing existing operations.  But sometimes
+it is necessary to create new operations instead of simply composing a new process with
+existing operations.  There is a simple and an advanced structure for creating new operations.
+</p><h3 id="Simple">Simple</h3><h3 id="Advanced">Advanced</h3><h4 id="Parallel+and+Distributed+Calculation">Parallel and Distributed Calculation</h4><p>While it’s not necessary to understand why we follow the pattern above, here is a quick 
+explanation if you’re curious.  Behind the scenes, Arpeggeo is using the actor model for parallel and distributed computation, which means that the primary abstraction is message passing instead of shared memory.  This event-based model allows us to re-use the same threads by interleaving calculations for different processes on the same threads, but this means that nothing can ever block or stop on a thread while waiting for another result because that would hold up the other work that is scheduled to execute on the same thread.  By using the continuation passing style from functional programming (http://en.wikipedia.org/wiki/Continuation-passing_style) we can perform work in a series of stages, in which requests
+are first sent out for calculations to be processed and then when all of the results
+are received, we can execute the next step of the calculation, without ever blocking
+execution on an individual thread.
+</p><h2 id="Running+operations">Running operations</h2><h3 id="Parallel+execution">Parallel execution</h3><h3 id="Distributed+execution">Distributed execution</h3><ul><li>When an operation is 
+</li></ul><p><em>Arpeggeo</em> is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
+user interaction with geospatial data by bringing the power of geospatial analysis to real time, interactive web applications.
+</p><p>Arpeggeo was designed to solve three core problems, with a focus on raster processing:
+</p><ul><li>Creating scalable, high performance geoprocessing web services
+</li><li>Creating distributed geoprocessing services that can act on large data sets
+</li><li>Parallelizing geoprocessing operations to take full advantage of multi-core architecture 
+</li></ul><p>Arpeggeo is a project of Azavea (www.azavea.com), and was written by Josh Marcus (jmarcus@azavea.com) and Erik Osheim (eosheim@azavea.com).  Please contact us if you have any questions!
+</p><h2 id="Features">Features</h2><ul><li>Arpeggeo is designed to help a developer create simple, standard REST services that return the results of geoprocessing models.
+</li><li>Like an RDBS that can optimize queries, Arpeggeo will automatically parallelize and optimize your geoprocessing models where possible.  
+</li><li>In the spirit of the object-functional style of Scala, it is easy to both create new operations and compose new 
+operations with existing operations.
+</li></ul><h2 id="Some+sample+Arpeggeo+code">Some sample Arpeggeo code</h2><pre><code class="prettyprint lang-scala">  // create a new operation that multiplies each cell of 
+  // each raster by a weight, and then add those two new
+  // rasters together
+  val op = Add(MultiplyConstant(raster1, weight1),
+               MultiplyConstant(raster2, weight2))
+
+  // create a new operation that takes the result of the
+  // previous operation and divide each cell by the average 
+  // weight, creating a weighted overlay of our two rasters
+  val op2 = DivideConstant(op, (weight1 + weight2) / 2) 
+
+  // or, we can use a simpler syntax:
+  val avg = (weight1 + weight2) / 2 
+  val wo  = (raster1 * weight1 + raster2 * weight2) / avg
+
+  // To this point, we've only been composing new operations.
+  // To run an operation:
+  val server = Server(&quot;example&quot;)
+  val result = server.run(wo)
+
+</code></pre><h2 id="Parallel+and+Distributed+Calculation">Parallel and Distributed Calculation</h2><h3 id="Parallel+Execution">Parallel Execution</h3><p>Most operations have “child operations” which are the inputs or incoming data streams
+that the operation acts on.  Arpeggeo will automatically run all child operations in
+parallel.  For example, if you are adding each cell of five rasters together, the
+service will calculate each input raster in parallel (if resources allow).  If working
+with a single large data set (e.g. a large raster), it is usually beneficial to transform
+the raster into a <code>TiledRaster</code> which allows the system to parallelize the work. 
+</p><h3 id="Distributed+Execution">Distributed Execution</h3><p>With a single command, an operation can be transformed into a RemoteOperation that
+sends each of its child operations to a remote Arpeggeo server for execution.  
+</p><pre><code class="prettyprint lang-scala">Add(r1,r2,r3).remote(cluster) // calculate input rasters on remote cluster
+</code></pre><p>The remote cluster or server is an Akka actor or load balancer, defined using the Akka 
+library configuration.  See the Akka documenation for more information.  (http://akka.io/docs/akka/2.0-M4/)
+</p><p>For operations that do not need to pass data over the network, the overhead can be as 
+low as a few milliseconds.  When passing raster data, the time overhead depends on the
+network and the size of the rasters, but an operation that sends and receives a 256x256 raster tile can be executed in under 15ms, 512x512 in ~30ms, etc.
+</p><h3 id="Architecture">Architecture</h3><p>Behind the scenes, Arpeggeo is using the actor model for parallel and distributed computation, which means that the primary abstraction is message passing instead of shared memory.  This event-based model allows us to re-use the same threads by interleaving calculations for different processes on the same threads, but this means that nothing can ever block or stop on a thread while waiting for another result because that would hold up the other work that is scheduled to execute on the same thread.  By using the continuation passing style from functional programming (http://en.wikipedia.org/wiki/Continuation-passing_style) we can perform work in a series of stages, in which requests
+are first sent out for calculations to be processed and then when all of the results
+are received, we can execute the next step of the calculation, without ever blocking
+execution on an individual thread.  Operations are sent as immutable messages, and should
+be referrentially transparent, which allows us to perform optimizations such as combining
+local raster operations. 
 </p>
           </div>
         </div>
