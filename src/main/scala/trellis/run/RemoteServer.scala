@@ -12,8 +12,8 @@ class RemoteServerApplication extends Bootable {
 
   val actor = system.actorOf(Props(new ServerActor("server", server)), "remoteServer")
 
-  server._actor = actor
-  server._system = system
+  server.actor = actor
+  server.system = system
  
   def startup() {
   }

@@ -19,24 +19,16 @@ import akka.util.Timeout
 class Context (server:Server) {
   val timer = new Timer()
 
-  def run[T](op:Operation[T])(implicit m:Manifest[T]):T = {
-    server._run(op)(m, timer).value
-  }
-  
-  def getResult[T](op:Operation[T])(implicit m:Manifest[T]):Complete[T] = {
-    server._run(op)(m, timer)
+  def loadRaster(path:String, g:RasterExtent):IntRaster = {
+    server.getRaster(path, None, Option(g))
   }
 
   def getRaster(path:String, layer:RasterLayer, re:RasterExtent):IntRaster = {
-    server.getRaster(path, layer, re)
-  }
-
-  def loadRaster(path:String, g:RasterExtent):IntRaster = {
-    server.getRaster(path, null, g)
+    server.getRaster(path, Option(layer), Option(re))
   }
 
   def getRasterByName(name:String, re:RasterExtent):IntRaster = {
-    server getRasterByName(name, re)
+    server getRasterByName(name, Option(re))
   }
 }
 
@@ -45,7 +37,7 @@ import com.typesafe.config.ConfigFactory
 class Server (id:String, val catalog:Catalog) extends FileCaching {
   val debug = false
 
-    val customConf2 = ConfigFactory.parseString("""
+  val customConf2 = ConfigFactory.parseString("""
       akka {
         version = "2.0-M2"
         logConfigOnStart = off
@@ -79,106 +71,82 @@ class Server (id:String, val catalog:Catalog) extends FileCaching {
   
       """)
 
-  var _system = akka.actor.ActorSystem(id, ConfigFactory.load())
-  var _actor = system.actorOf(Props(new ServerActor(id, this)), "server")
+  var system:akka.actor.ActorSystem = akka.actor.ActorSystem(id, ConfigFactory.load())
+  var actor:akka.actor.ActorRef = system.actorOf(Props(new ServerActor(id, this)), "server")
 
-  def system:akka.actor.ActorSystem = _system
-  def actor:akka.actor.ActorRef = _actor 
-
-  def shutdown() {
-    system.shutdown()
-  }
+  def shutdown() { system.shutdown() }
 
   def log(msg:String) = if(debug) println(msg)
 
-  def run[T](op:Operation[T])(implicit m:Manifest[T]):T = {
-    val context = new Context(this)
-    context.run(op)(m)
+  def run[T:Manifest](op:Op[T]):T = getResult(op) match {
+    case Complete(value, _) => value
+    case Error(msg, trace) => sys.error(msg)
   }
 
-  def getResult[T](op:Operation[T])(implicit m:Manifest[T]):Complete[T] = {
-    val context = new Context(this)
-    context.getResult(op)(m)
-  }
+  def getResult[T:Manifest](op:Op[T]) = _run(op)
 
-  private[process] def _run[T](op:Operation[T])(implicit m:Manifest[T], t:TimerLike):Complete[T] = {
-    log("server.run called with %s" format op)
+  private[process] def _run[T:Manifest](op:Op[T]) = {
+    log("server._run called with %s" format op)
 
     implicit val timeout = Timeout(60 seconds)
 
     val future = op match {
-      case op:DispatchedOperation[_] => (actor ? RunDispatched(op.op, op.dispatcher)).mapTo[OperationResult[T]]
-      case op:Operation[_]           => (actor ? Run(op)).mapTo[OperationResult[T]]
+      case op:DispatchedOp[_] => (actor ? RunDispatched(op.op, op.dispatcher)).mapTo[OperationResult[T]]
+      case op:Op[_]           => (actor ? Run(op)).mapTo[OperationResult[T]]
     }
 
     val result = Await.result(future, 60 seconds)
 
-    val result2:Complete[T] = result match {
-      case OperationResult(c:Complete[_], _) => {
-        val r = c.value
-        val h = c.history
-        log(" run is complete: received: %s" format r)
-        log(op.toString)
-        log("%s" format h.toPretty())
-        t.add(h)
-        //r.asInstanceOf[T]
-        c.asInstanceOf[Complete[T]]
-      }
-      case OperationResult(Inlined(_), _) => {
-        sys.error("server.run(%s) unexpected response: %s".format(op, result))
-      }
-      case OperationResult(Error(msg, trace), _) => {
-        sys.error("server.run(%s) error: %s, trace: %s".format(op, msg, trace))
-      }
-      case _ => sys.error("unexpected status: %s" format result)
+    result match {
+      case OperationResult(c:Complete[_], _) => c.asInstanceOf[Complete[T]]
+      case OperationResult(e:Error, _) => e
+      case r => sys.error("unexpected status: %s" format r)
     }
-    result2
   }
 }
 
 trait FileCaching {
-  val mb = math.pow(2,20).toLong
-  val maxBytesInCache = 2000 * mb
+  val mb = 1<<20
+
+  // TODO: set this in config file
+  val maxBytesInCache = 2000 * mb // 2G
+  var caching = true //xyz
+  var cacheSize:Int = 0
   val cache:CacheStrategy[String,Array[Byte]] = new MRUCache(maxBytesInCache, _.length)
   val rasterCache:HashBackedCache[String,IntRaster] = new MRUCache(maxBytesInCache, _.length * 4)
 
   val catalog:Catalog
 
-  var cacheSize:Int = 0
-  val maxCacheSize:Int = 1000 * 1000 * 1000 // 1G
-
-  var caching = false
-
   var id = "default"
 
-  // TODO: remove this and add cache configuration to server's JSON config
-  //       and/or constructor arguments
-  def enableCaching() { caching = true }
-  def disableCaching() { caching = false }
+  //// TODO: remove this and add cache configuration to server's JSON config
+  ////       and/or constructor arguments
+  //def enableCaching() { caching = true }
+  //def disableCaching() { caching = false }
 
-  def getRasterByName(name:String, re:RasterExtent):IntRaster = {
+  def getRasterByName(name:String, reOpt:Option[RasterExtent]):IntRaster = {
     catalog.getRasterLayerByName(name) match {
-      case Some((path, layer)) => getRaster(path, layer, re)
+      case Some((path, layer)) => getRaster(path, Option(layer), reOpt)
       case None => sys.error("couldn't find %s" format name)
     }
   }
 
-  def loadRaster(path:String, g:RasterExtent):IntRaster = getRaster(path, null, g)
+  def loadRaster(path:String, g:RasterExtent):IntRaster = getRaster(path, None, Option(g))
 
   /**
    * THIS is the new thing that we are wanting to use.
    */
-  def getRaster(path:String, layer:RasterLayer, re:RasterExtent):IntRaster = {
+  def getRaster(path:String, layerOpt:Option[RasterLayer], reOpt:Option[RasterExtent]):IntRaster = {
 
-    def xyz(path:String, layer:RasterLayer) = {
-      getReader(path).read(path, Option(layer), None)
+    def xyz(path:String, layerOpt:Option[RasterLayer]) = {
+      getReader(path).read(path, layerOpt, None)
     }
 
     if (this.caching) {
-      val raster = rasterCache.getOrInsert(path, xyz(path, layer))
-      IntRasterReader.read(raster, Option(re))
+      val raster = rasterCache.getOrInsert(path, xyz(path, layerOpt))
+      IntRasterReader.read(raster, reOpt)
     } else {
-      getReader(path).read(path, Option(layer), Option(re))
+      getReader(path).read(path, layerOpt, reOpt)
     }
   }
 
@@ -190,7 +158,7 @@ trait FileCaching {
 
   def cacheRasters() = catalog.stores.foreach {
     case (name, store) => store.layers.values.foreach {
-      case (path, layer) => getRaster(path, layer, null)
+      case (path, layer) => getRaster(path, Some(layer), None)
     }
   }
 

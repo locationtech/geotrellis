@@ -8,9 +8,9 @@ git.remoteRepo := "git@github.com:azavea/trellis.git"
 
 seq(Revolver.settings: _*)
 
-mainClass in (Compile, run) := Some("trellis.rest.WebRunner")
+//mainClass in (Compile, run) := Some("trellis.rest.WebRunner")
 
-//mainClass := Some("trellis.rest.WebRunner")
+mainClass := Some("trellis.rest.WebRunner")
 
 addCompilerPlugin("com.azavea.math.plugin" %% "optimized-numeric" % "0.1")
 

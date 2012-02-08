@@ -71,17 +71,14 @@ class DemoService1 {
 
   @GET
   def get(
-    //@DefaultValue("-8379782.57151,4846436.32082,-8343857.57151,4886861.32082")
     @DefaultValue("-8379782.57151,4846436.32082,-8360582.57151,4865636.32082")
     @QueryParam("bbox")
     bbox:String,
 
-    //@DefaultValue("479")
     @DefaultValue("256")
     @QueryParam("cols")
     cols:String,
 
-    //@DefaultValue("539")
     @DefaultValue("256")
     @QueryParam("rows")
     rows:String,
@@ -173,15 +170,20 @@ class DemoService1 {
           val html = Demo.infoPage(cols.toInt, rows.toInt, ms, url, tree)
           Response.ok(html).`type`("text/html").build()
         }
+
+        case Error(msg, trace) => {
+          val output = "failed: %s\n\ntrace:\n%s".format(msg, trace)
+          Response.ok(output).`type`("text/plain").build()
+        }
       }
     } else {
       Demo.server.getResult(pngOp) match {
         case Complete(img, _) => Response.ok(img).`type`("image/png").build()
       
-        //case Error(msg, traceback) => {
-        //  val output = "failed world: %s".format(msg)
-        //  Response.ok(output).`type`("text/plain").build()
-        //}
+        case Error(msg, trace) => {
+          val output = "failed: %s\n\ntrace:\n%s".format(msg, trace)
+          Response.ok(output).`type`("text/plain").build()
+        }
       }
     }
   }

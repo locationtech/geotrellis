@@ -23,7 +23,7 @@ describe("A Server") {
     it("should use caching for LoadRaster") {
       val path = "src/test/resources/quadborder.arg32"
       val server = TestServer()
-      server.enableCaching
+      //server.enableCaching
 
       //<METADATA>
       //  <VERSION value="NORMALIZED" />
