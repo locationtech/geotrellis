@@ -25,9 +25,9 @@ class OperationsTest extends FunSuite {
   def run(op:Op[IntRaster], expected:IntRaster) {
     test("%d:%s" format (n, op.name)) {
       val got = server.run(op)
-      println("op " + op)
-      println("got " + got.data(0))
-      println("expected " + expected.data(0))
+      //println("op " + op)
+      //println("got " + got.data(0))
+      //println("expected " + expected.data(0))
       assert(got == expected)
     }
     n += 1
