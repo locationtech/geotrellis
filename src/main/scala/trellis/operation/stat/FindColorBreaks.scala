@@ -1,9 +1,14 @@
 package trellis.operation
 
-import trellis.data.MultiColorRangeChooser
-import trellis.data.ColorBreaks
+import trellis.data._
 import trellis.process._
 import trellis.stat._
+
+case class BuildColorMapper(colorBreaks:Op[ColorBreaks], noDataColor:Op[Int])
+extends Op2(colorBreaks, noDataColor)((bs, c) => Result(ColorMapper(bs, c)))
+
+case class BuildColorBreaks(breaks:Op[Array[Int]], colors:Op[Array[Int]])
+extends Op2(breaks, colors)((bs, cs) => Result(ColorBreaks(bs.zip(cs))))
 
 /**
  * Generate quantile class breaks with assigned colors.

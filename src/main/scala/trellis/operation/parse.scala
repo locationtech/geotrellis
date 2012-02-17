@@ -15,12 +15,12 @@ case class ParseDouble(s:Op[String]) extends Op1(s)(s => Result(s.toDouble))
 /**
  * Split a string on a comma.
  */
-case class Split(s:String, delim:String) extends Op2(s, delim)((s, d) => Result(s split d))
+case class Split(s:Op[String], delim:Op[String]) extends Op2(s, delim)((s, d) => Result(s split d))
 
 /**
  * Split a string on a comma.
  */
-case class SplitOnComma(s:String) extends Op1(s)(s => Result(s split ","))
+case class SplitOnComma(s:Op[String]) extends Op1(s)(s => Result(s split ","))
 
 /**
  * Parse a string as a base-16 integer. Often useful when dealing with colors.

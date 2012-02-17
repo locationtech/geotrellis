@@ -16,8 +16,8 @@ class RemoteClientApplication extends Bootable {
   val server = new Server("client", Catalog.empty("client"))
   val actor = system.actorOf(Props(new ServerActor("client", server)), "remoteClientActor")
 
-  server._actor = actor
-  server._system = system
+  server.actor = actor
+  server.system = system
 
 
   //val system = ActorSystem("RemoteClientApplication", ConfigFactory.load.getConfig("remoteClient"))

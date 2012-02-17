@@ -22,3 +22,9 @@ object BuildRasterExtent {
     BuildRasterExtent(Extent(xmin,ymin,xmax,ymax),cols,rows)
   }
 }
+
+object ParseRasterExtent {
+  def apply(bbox:Op[String], colsOp:Op[String], rowsOp:Op[String]) = {
+    BuildRasterExtent(ParseExtent(bbox), ParseInt(colsOp), ParseInt(rowsOp))
+  }
+}
