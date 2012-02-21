@@ -16,17 +16,11 @@ import trellis.geometry.Feature
 
 trait BasePgTypes {
 
-  def wkbReader = new WKBReader()
+  def wkbReader() = new WKBReader()
 
-  def getGeometry(r:ResultSet, pos:Int) = {
-    val s = r.getString(pos)
-    try {
-      wkbReader.read(WKBReader.hexToBytes(s))
-    } catch {
-      case e:Exception => {
-        throw e
-      }
-    }
+  def getGeometry(r:ResultSet, pos:Int) = r.getString(pos) match {
+    case null => null
+    case s => wkbReader().read(WKBReader.hexToBytes(s))
   }
 
   /**
@@ -44,12 +38,13 @@ trait BasePgTypes {
       case INTEGER => r.getInt(pos)
       case VARCHAR => r.getString(pos)
       case BIGINT => r.getInt(pos)
-      case 1111 => {
-        getGeometry(r, pos)
+      case 1111 => m.getColumnTypeName(pos) match {
+        case "geometry" => getGeometry(r, pos)
+        case _ => r.getObject(pos)
       }
       case i => {
         val typname = r.getMetaData().getColumnTypeName(pos)
-        throw new Exception("unhandled sql type: %s (%s)".format(typname, i))
+        throw new Exception("unhandled sql type: %s/%s".format(typname, i))
       }
     }
   }
@@ -98,13 +93,10 @@ trait BasePgTypes {
   }
 }
 
-object PgTypes extends BasePgTypes {
+//object PgTypes extends BasePgTypes
 
-}
+class PgTypes extends BasePgTypes
 
-class PgTypes extends BasePgTypes {
-
-}
 
 // somewhere else????
 object PgUtil {
