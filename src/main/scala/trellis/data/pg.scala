@@ -38,6 +38,7 @@ trait BasePgTypes {
       case INTEGER => r.getInt(pos)
       case VARCHAR => r.getString(pos)
       case BIGINT => r.getInt(pos)
+      case BIT => r.getBoolean(pos)
       case 1111 => m.getColumnTypeName(pos) match {
         case "geometry" => getGeometry(r, pos)
         case _ => r.getObject(pos)
@@ -93,7 +94,7 @@ trait BasePgTypes {
   }
 }
 
-//object PgTypes extends BasePgTypes
+object PgTypes extends BasePgTypes
 
 class PgTypes extends BasePgTypes
 
