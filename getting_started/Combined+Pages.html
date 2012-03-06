@@ -1,0 +1,541 @@
+<html >
+      <head>
+        <title>GeoTrellis — Combined Pages</title>
+        <link type="text/css" media="screen, projection" rel="stylesheet" href="css/blueprint/screen.css"></link>
+        <link type="text/css" media="screen and (min-device-width: 800px), projection" rel="stylesheet" href="css/blueprint/grid.css"></link>
+        <link type="text/css" media="print" rel="stylesheet" href="css/blueprint/print.css"></link> 
+        <!--[if lt IE 8]>
+          <link rel="stylesheet" href="css/blueprint/ie.css" type="text/css" media="screen, projection"/>
+        <![endif]-->
+        <link type="text/css" media="screen, projection" rel="stylesheet" href="css/pamflet.css"></link>
+        <link type="text/css" media="print" rel="stylesheet" href="css/pamflet-print.css"></link>
+        <link type="text/css" media="screen and (min-device-width: 800px), projection" rel="stylesheet" href="css/pamflet-grid.css"></link>
+        <link type="text/css" media="screen, projection" rel="stylesheet" href="css/custom.css"></link>
+        <script src="js/jquery-1.6.2.min.js"></script>
+        <script src="js/pamflet.js"></script>
+        <script type="text/javascript" src="js/prettify/prettify.js"></script><script type="text/javascript" src="js/prettify/lang-scala.js"></script><link type="text/css" rel="stylesheet" href="css/prettify.css"></link><script type="text/javascript"><!--
+        window.onload=function() { prettyPrint(); };
+      --></script>
+        <meta charset="utf-8"></meta>
+        <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+      </head>
+      <body>
+        <a class="page prev nav" href="Contents+in+Depth.html">
+            <span class="space">&nbsp;</span>
+            <span class="flip">❧</span>
+          </a>
+        <div class="container">
+          <div class="span-16 prepend-1 append-1">
+            <div class="top nav span-16 title">
+              <span>GeoTrellis</span>
+               — Combined Pages
+            </div>
+          </div>
+          <div class="span-16 prepend-1 append-1 contents">
+            <h4>Contents</h4><div><a href="#GeoTrellis">GeoTrellis</a></div><ol class="toc"> <li><div><a href="#API+Reference">API Reference</a></div></li><li><div><a href="#Get+started+with+the+template+project">Get started with the template project</a></div></li><li><div><a href="#Web+Service+Tutorial">Web Service Tutorial</a></div></li><li><div><a href="#Setting+up+GeoTrellis">Setting up GeoTrellis</a></div></li><li><div><a href="#Operations">Operations</a></div></li><li><div><a href="#Creating+new+operations">Creating new operations</a></div></li><li><div><a href="#Parallel+and+distributed+execution">Parallel and distributed execution</a></div></li> </ol><h1 id="GeoTrellis">GeoTrellis</h1><p><em>GeoTrellis</em> is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
+user interaction with geospatial data by bringing the power of geospatial analysis to real time, interactive web applications.
+</p><p>GeoTrellis was designed to solve three core problems, with a focus on raster processing:
+</p><ul><li>Creating scalable, high performance geoprocessing web services
+</li><li>Creating distributed geoprocessing services that can act on large data sets
+</li><li>Parallelizing geoprocessing operations to take full advantage of multi-core architecture 
+</li></ul><p>GeoTrellis is a project of Azavea (www.azavea.com), and was written by Josh Marcus (jmarcus@azavea.com) and Erik Osheim (eosheim@azavea.com).  Please contact us if you have any questions!
+</p><h2 id="Features">Features</h2><ul><li>GeoTrellis is designed to help a developer create simple, standard REST services that return the results of geoprocessing models.
+</li><li>Like an RDBS that can optimize queries, GeoTrellis will automatically parallelize and optimize your geoprocessing models where possible.  
+</li><li>In the spirit of the object-functional style of Scala, it is easy to both create new operations and compose new 
+operations with existing operations.
+</li></ul><h2 id="Some+sample+GeoTrellis+code">Some sample GeoTrellis code</h2><pre><code class="prettyprint lang-scala">  // create a new operation that multiplies each cell of 
+  // each raster by a weight, and then add those two new
+  // rasters together
+  val op = Add(MultiplyConstant(raster1, weight1),
+               MultiplyConstant(raster2, weight2))
+
+  // create a new operation that takes the result of the
+  // previous operation and divide each cell by the average 
+  // weight, creating a weighted overlay of our two rasters
+  val op2 = DivideConstant(op, (weight1 + weight2) / 2) 
+
+  // or, we can use a simpler syntax:
+  val avg = (weight1 + weight2) / 2 
+  val wo  = (raster1 * weight1 + raster2 * weight2) / avg
+
+  // To this point, we've only been composing new operations.
+  // To run an operation:
+  val server = Server(&quot;example&quot;)
+  val result = server.run(wo)
+
+</code></pre><h2 id="API+Reference">API Reference</h2><h3 id="Scaladocs">Scaladocs</h3><p>You can find <em>Scaladocs</em> for the latest version of the project here:
+</p><p><a  href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.package">http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.package</a>
+</p><h3 id="Operations">Operations</h3><p>A full list of core operations can be in found in the Scala API documentation for the <code>geotrellis.operation</code> package: <a  href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.package">http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.package</a>.
+</p><h3 id="Template+project">Template project</h3><p>We have created a template project that you can use as a launching pad for new REST
+services based on GeoTrellis.  It is a simple project that uses SBT (Simple Build Tool)
+to load the GeoTrellis dependencies and has the basic infrastructure in place to help
+you get started quickly.  
+<br/>
+<a  href="https://github.com/azavea/geotrellis-template">https://github.com/azavea/geotrellis-template</a>
+</p><h2 id="Get+started+with+the+template+project">Get started with the template project</h2><p>We have provided a sample project that provides a template for creating a 
+geoprocessing web service with GeoTrellis.  It is a blank 
+slate for your own 
+development that provides a development environment that is set up
+with the necessary dependencies in place, making it a little easier to get started.  
+<br/>
+The project loads GeoTrellis as a
+library, includes some basic configuration, and has a very simple “hello world” 
+web service in place for you 
+to edit.
+</p><p>If you are a first time user, you may want to use the template along with the tutorial
+included in this documentation to start exploring how to build your own geoprocessing service.  If you’re new to Scala, you’ll need to choose a text editor for editing Scala, but
+you won’t need to install Scala or any other files to get started.  The following 
+instructions assume you are running under Linux or OS X.
+</p><h2 id="Step+1%3A+Run+SBT">Step 1: Run SBT</h2><p>This project uses SBT, Simple Build Tool, for compilation and execution.
+</p><p>If you don’t have SBT installed already, you can run a script in the template
+directory (from https://github.com/paulp/sbt-extras) that will automatically download it for you.
+</p><p>At the command line, go to the directory where you’ve installed this template
+and run <code>./sbt</code>.  For example, to check out the repository and run sbt:
+</p><pre><code class="prettyprint lang-bash">git clone xxxx
+cd arpegeo-template
+./sbt
+</code></pre><p>The first time you run SBT, there will be a significant delay as all of the
+necessary libraries are downloaded.
+</p><p>If you get any sort of error that a library can’t be downloaded, please let us 
+know so we can fix the problem.  SBT downloads the libraries from where they
+are hosted on the internet, so problems can arise when repositories change.  
+<br/>
+When sbt is done loading and compiling, you’ll see an sbt prompt:
+</p><pre><code class="prettyprint lang-"> &gt;
+</code></pre><p>If you type <code>run</code>, you’ll see some messages from Jetty, the embedded webserver that responds to GeoTrellis requests. 
+</p><pre><code class=""> &gt; run
+[info] Starting server on port 8888.
+[error] 2012-02-06 14:17:08.255:INFO:oejs.Server:jetty-8.1.0.RC4
+[error] 2012-02-06 14:17:08.329:INFO:oejs.AbstractConnector:Started SelectChannelConnector@0.0.0.0:8888 STARTING
+</code></pre><p>This means that you are now running a webserver on port 8888 that responds to
+requests.  Go to 
+</p><p><a  href="http://localhost:8888/template">http://localhost:8888/template</a>
+</p><p>to see the template web service, which just shows HTML of “Hello GeoTrellis!”
+</p><h2 id="Step+2%3A+Edit+the+configuration+file">Step 2: Edit the configuration file</h2><p>There’s a configuration file you can edit at src/main/resources/application.conf.  For example, some settings include:
+</p><pre><code class="">geotrellis.host = &quot;0.0.0.0&quot; // IP address to which the server will listen
+                         // (0.0.0.0 means listen to all ports)
+geotrellis.port = 8888      // The server port 
+geotrellis.rest-package = &quot;geotrellis.rest&quot; // The package that will be searched for
+                                      // for rest services
+geotrellis.tmp = &quot;/tmp&quot;     // A temporary directory to be used for scratch files
+</code></pre><h2 id="Step+3%3A+Import+data">Step 3: Import data</h2><p>There is a script in the /scripts directory that you can use to convert raster data in
+GeoTiff format to the ARG32 format.  It assumes that you are using a Unix shell (Linux/Mac) and have installed “wget”.
+</p><p>For example, to convert <code>`your_geotiff.tif</code><code> to </code><code>output.arg32</code>`, change to the
+directory you’ve checked out the template and run:
+</p><pre><code class="prettyprint lang-bash">scripts/geotrellis_import_geotiff your_geotiff.tif output.arg32
+</code></pre><p>The first time you run the script it will download the necessary GeoTrellis libraries to your
+system.
+</p><h2 id="Step+4%3A+Edit+the+catalog.json+file">Step 4: Edit the catalog.json file</h2><p>The catalog.json file (in src/main/resources) defines the data sources that are
+available to the GeoTrellis service.  You can move it to an alternate location if you
+define the file path in the configuration file.
+</p><h2 id="Step+5%3A+Create+your+service">Step 5: Create your service</h2><p>The blank REST service is in the file src/main/scala/geotrellis/rest/TemplateResource.scala.  Edit that file to change the existing service, or create a similar 
+class in the <code>geotrellis.rest</code> package to create a new service.
+</p><p>If you are using the <a  href="http://scala-ide.org/">ScalaIDE for Eclipse</a>, you should
+type <code>eclipse</code> at the sbt prompt, and then import the project into Eclipse.
+If you are using emacs, you should consider using <a  href="https://github.com/aemoncannon/ensime">ENSIME</a>. 
+</p><h2 id="Additional+notes">Additional notes</h2><h3 id="Triggered+Restart">Triggered Restart</h3><p>Note: If you run … 
+</p><p> &gt; ~re-start
+</p><p>… at the sbt prompt, you will be in a ‘triggered restart’ mode.  As soon
+as you edit your source files, the application will re-compile and restart 
+with your updated code. 
+</p><h2 id="Web+Service+Tutorial">Web Service Tutorial</h2><p>GeoTrellis is commonly used to build web services.
+</p><p>Here we will show you how to build simple web services with Jetty that use
+GeoTrellis.
+</p><h3 id="Hello+World">Hello World</h3><p>This is the most basic web service—in fact, it doesn’t directly use GeoTrellis
+at all. However, it contains all the imports and objects that the other
+examples will need, as well as providing an example of writing a Jetty web
+service in Scala.
+</p><p>This service can be accessed at <code>http://localhost:8000/greeting</code> and should
+print “hello world”. You may want to substitude your own values for <code>myapp</code> and
+<code>endpoint</code>.
+</p><pre><code class="prettyprint lang-scala">package geotrellis.rest.myapp
+
+import javax.servlet.http.HttpServletRequest
+import javax.ws.rs.{GET, Path, DefaultValue, PathParam, QueryParam}
+import javax.ws.rs.core.{Response, Context}
+
+import geotrellis._
+import geotrellis.operation._
+import geotrellis.process._
+
+object MyApp {
+  val server = Server(&quot;myapp&quot;, &quot;src/main/resources/myapp-catalog.json&quot;)
+  def response(mime:String)(data:Any) = Response.ok(data).`type`(mime).build()
+}
+
+@Path(&quot;/greeting&quot;)
+class HelloWorld {
+  @GET
+  def get(@Context req:HttpServletRequest) = {
+    // give a friendly greeting
+    MyApp.response(&quot;text/plain&quot;)(&quot;hello world&quot;)
+  }
+}
+</code></pre><h3 id="Adder">Adder</h3><p>With that out of the way, here’s a REST service that actually does something:
+it treats the final part of the URL as a number, adds one to it, and returns
+that number as plaintext. For instance, <code>http://localhost:8080/adder/127</code> would
+return “128”.
+</p><p>The important thing to see here is that <code>ParseInt</code> doesn’t actually do any
+work. It creates an operation which when run will parse an input <code>String</code> and
+return an <code>Int</code>. But running operations isn’t the only thing you can do. In our
+case, <code>opX + 1</code> actually builds us a new operation, which evaluates <code>opX</code> and
+then adds one to it. If there is an exception (i.e. the parameter is not a
+valid number) it will only occur when <code>MyApp.server.run</code> is called.
+</p><p>This means that instead of sprinkling error-handling code through your handler,
+you only need to guard your calls to <code>server.run</code>. Combining operations allows
+the web service author to focus on correctly encoding application logic without
+having to handle errors at every possible point.
+</p><p>Calling <code>server.run</code> returns an integer value which can be passed to the user.
+</p><pre><code class="prettyprint lang-scala">@Path(&quot;/adder/&quot;)
+class AddOne {
+  @GET
+  @Path(&quot;/{x}&quot;)
+  def get(@PathParam(&quot;x&quot;) s:String,
+          @Context req:HttpServletRequest) = {
+    // parse the given integer
+    val opX:Op[Int] = ParseInt(s)
+
+    // add one
+    val opY:Op[Int] = opX + 1
+
+    // run the operation
+    val data:String = try {
+      val y:Int = MyApp.server.run(opY)
+      y.toString
+    } catch {
+      case e =&gt; e.toString
+    }
+
+    MyApp.response(&quot;text/plain&quot;)(data)
+  }
+}
+</code></pre><h3 id="Bounding+Box+Union">Bounding Box Union</h3><p>This example is similar to the previous one, but a bit more complicated: it
+uses <code>geotrellis.Extent</code>, an object which represents a geographical bounding box.
+The service uses two extents, each encoded in a string as
+<code>xmin,ymin,xmax,ymax</code>. For example, using the Web Mercator coordinate system a
+bounding box around Philadelphia might be encoded as:
+</p><p><code>-8475497.88486,4825540.69147,-8317922.88486,4954765.69147</code>
+</p><p>This service takes two such extents and combines them, returning the smallest
+extent that contains both of them. For instance, the request:
+</p><p><code>http://localhost:8000/bbox/0,0,10,10/union/5,-10,15,0</code>
+</p><p>will result in <code>0,-10,15,10</code>.
+</p><pre><code class="prettyprint lang-scala">@Path(&quot;/bbox/&quot;)
+class BoundingBox {
+  @GET
+  @Path(&quot;/{extent1}/union/{extent2}&quot;)
+  def get(@PathParam(&quot;extent1&quot;) s1:String,
+          @PathParam(&quot;extent2&quot;) s2:String,
+          @Context req:HttpServletRequest) = {
+    // parse the given extents
+    val e1:Op[Extent] = ParseExtent(s1)
+    val e2:Op[Extent] = ParseExtent(s2)
+
+    // combine the extents
+    val op:Op[Extent] = CombineExtents(e1, e2)
+
+    // run the operation
+    val data = try {
+      val extent:Extent = MyApp.server.run(op)
+      extent.toString
+    } catch {
+      case e =&gt; e.toString
+    }
+
+    MyApp.response(&quot;text/plain&quot;)(data)
+  }
+}
+</code></pre><h3 id="Draw+Raster">Draw Raster</h3><p>Finally, we will actually do some raster processing! This example shows how to
+load raster data, create a palette of colors, assign those colors to value
+rangers (classes) in the raster, and create a PNG to send to the user. Whenever
+you are rendering an image for a user, you will probably need to go through
+these same steps (although you may choose to hardcode the colors). 
+</p><p>Given a <code>name</code>, the <code>LoadRaster</code> operation will return a <code>geotrellis.IntRaster</code>
+instance containing the appropriate raster data. This class represents a file
+of raster data in the <code>arg32</code> format. If you have raster data in another format
+(e.g. <code>.tif</code> or <code>.asc</code>) it will need to be converted ahead of time.
+</p><p>The <code>palette</code> and <code>shades</code> arguments are used to construct the color palette to
+use. For example:
+</p><p><code>http://localhost:8000/draw/foo/palette/ff0000,0000ff/shades/3</code>
+</p><p>specifies that the palette should be a gradient from red (<code>ff0000</code>) to blue
+(<code>0000ff</code>) containing 5 colors. The colors chosen in this case would be:
+</p><ul><li>red (<code>ff0000</code>)
+</li><li>reddish-purple (<code>bf003f</code>)
+</li><li>purple (<code>7f007f</code>)
+</li><li>bluish-purple (<code>3f00bf</code>)
+</li><li>blue (<code>0000ff</code>)
+</li></ul><p>The rest of the code builds a <code>geotrellis.stat.Histogram</code> object (using
+<code>BuildMapHistogram</code>) to determine what value ranges should map to which colors
+(using <code>FindColorsBreaks</code> to create a <code>geotrellis.data.ColorBreaks</code>). A full
+explanation of the methodology is beyond the scope of this tutorial, but the
+basic idea is to try to find ranges of equal size in the raster, so that the 5
+colors are evenly used. Thus, assuming our values ranged from 0-100, we might
+create the following ranges (also know as “breaks”): 
+</p><ul><li>0-12: red
+</li><li>13-30: reddish-purple
+</li><li>31-36: purple
+</li><li>37-60: bluish-purple
+</li><li>61-100: blue
+</li></ul><p>Finally, we render the PNG using the raster and color breaks we found.
+</p><p>Again, remember that none of this work is happening until after the “run the
+operation” comment. This means that any errors (e.g. invalid colors, invalid
+raster, other problems) won’t happen until that point. It also means that we
+could as many raster transformations as we want without needing to modify any
+of the rendering code, or the error-handling.   
+<br/>
+One thing to note is that this code is not doing any kind of resampling or
+resizing. In your own code, you will usually want to load raster data for a
+particular extent (e.g. a tile) at a particular resolution (e.g. 256x256). This
+services loads and renders the entire raster at its underlying resolution,
+which can be slower.
+</p><pre><code class="prettyprint lang-scala">@Path(&quot;/draw/&quot;)
+class DrawRaster {
+  @GET
+  @Path(&quot;/{name}/palette/{palette}/shades/{shades}&quot;)
+  def get(@PathParam(&quot;name&quot;) name:String,
+          @PathParam(&quot;palette&quot;) palette:String,
+          @PathParam(&quot;shades&quot;) shades:String,
+          @Context req:HttpServletRequest) = {
+
+    // load the raster
+    val rasterOp = LoadRaster(name)
+
+    // find the colors to use
+    val paletteOp = ForEach(SplitOnComma(palette))(ParseHexInt(_))
+    val numOp = ParseInt(shades)
+    val colorsOp = ColorsFromPalette(paletteOp, numOp)
+
+    // find the appropriate quantile class breaks to use
+    val histogramOp = BuildMapHistogram(rasterOp)
+    val breaksOp = FindColorBreaks(histogramOp, colorsOp)
+
+    // render the png
+    val pngOp = RenderPNG(rasterOp, breaksOp, 0, true)
+
+    // run the operation
+    try {
+      val img:Array[Byte] = MyApp.server.run(pngOp)
+      MyApp.response(&quot;image/png&quot;)(img)
+    } catch {
+      case e =&gt; MyApp.response(&quot;text/plain&quot;)(e.toString)
+    }
+  }
+}
+</code></pre><h3 id="Conclusion">Conclusion</h3><p>These services are all toys, but hopefully illustrate (and explain) some of the
+concepts and objects used by GeoTrellis. For a more complete example please see
+<code>geotrellis.rest.Demo</code> which implements a weighted overlay service.
+</p><h2 id="Setting+up+GeoTrellis">Setting up GeoTrellis</h2><h3 id="Configuration">Configuration</h3><p>GeoTrellis has two important configuration files, the application
+configuration and the catalog, which defines what geospatial data
+is available.
+</p><h4 id="Application+configuration">Application configuration</h4><p>The main application configuration allows a variety of system parameters to be set.
+The configuration file should be on the classpath of your application: e.g. if using
+SBT, create the configuration file at src/main/resources/application.conf.
+</p><p>You can also override individual configuration parameters with Java system properties, e.g.
+<code>java -Dgeotrellis.port=5555 ...</code>
+</p><p>Example:
+</p><pre><code class="">geotrellis.host = &quot;0.0.0.0&quot; // IP address to which the server will listen
+                         // (0.0.0.0 means listen to all ports)
+geotrellis.port = 8888      // The server port 
+geotrellis.rest-package = &quot;geotrellis.rest&quot; // The package that will be searched for
+                                      // for rest services
+geotrellis.tmp = &quot;/tmp&quot;     // A temporary directory to be used for scratch files
+</code></pre><h4 id="Data+catalog">Data catalog</h4><p>The data catalog defines what data sources are available to your GeoTrellis server, and
+can include metadata about the data in those sources.  Data catalogs are defined as JSON files.  GeoTrellis uses a custom format, ARG (Azavea Raster Grid), to store raster data.  ARG files have companion JSON configuration files which allows a data catalog to automatically
+discover and load ARG files that are under a filesystem data directory configured in the
+catalog.  For example, the following catalog.json file defines a data directory ”/var/arpeggeo/data” in which any .arg32 files with accompanying .json metadata will be loaded.
+</p><pre><code class="prettyprint lang-json">{
+ &quot;catalog&quot;: &quot;my-catalog&quot;,
+ &quot;stores&quot;: [
+  {
+   &quot;store&quot;: &quot;data:fs&quot;,
+   &quot;params&quot;: {
+     &quot;type&quot;: &quot;fs&quot;,
+     &quot;path&quot;: &quot;/var/arpeggeo/data&quot;
+   }
+  }
+ ]
+}
+</code></pre><h3 id="Importing+Raster+Data">Importing Raster Data</h3><p>There is a script in the /scripts directory that you can use to convert raster data in
+GeoTiff format to the ARG32 format.  It assumes that you are using a Unix shell (Linux/Mac) and have installed “wget”.
+</p><p>For example, to convert <code>`your_geotiff.tif</code><code> to </code><code>output.arg32</code>`, change to the
+directory you’ve checked out the template and run:
+</p><pre><code class="prettyprint lang-bash">scripts/geotrellis_import_geotiff your_geotiff.tif output.arg32
+</code></pre><p>The first time you run the script it will download the necessary GeoTrellis libraries to your
+system.
+</p><h2 id="Operations">Operations</h2><p>This is a a reference table of operations you can use in your services.  A few
+caveats: this is an automatically generated table that is still in progress.  Not all of the operations are included, and a few of the return types are not 
+correct.  If you click on the names of any of the operations, you will be brought to the Scaladoc API document for the operation, which is correct.
+</p><table class="bordered-table zebra-striped">
+      <thead>
+          <tr>
+            <th>Operation</th>
+            <th>Output</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.Add">Add</a></code></td><td>Raster</td><td>Add the values of each cell in each raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.AddArray">AddArray</a></code></td><td>Raster</td><td>Add the values of each cell in each raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.AddConstant">AddConstant</a></code></td><td>Raster</td><td>Add a constant value to each cell.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.AutomaticNormalize">AutomaticNormalize</a></code></td><td>Raster</td><td>Normalize the values in the given raster so that all values are within the ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.BinaryDoCell">BinaryDoCell</a></code></td><td>Raster</td><td>Perform a function on every cell in a raster with the values from another raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.BinaryIfCell">BinaryIfCell</a></code></td><td>Raster</td><td>Given a condition over two rasters, set the value of each cell in the output ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.BinaryIfElseCell">BinaryIfElseCell</a></code></td><td>Raster</td><td>Given a condition over two rasters, set the value of each cell in the output ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.BinaryLocal">BinaryLocal</a></code></td><td>Raster</td><td>BinaryLocal is an abstract class for all operations that are both local (operating ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.Bitmask">Bitmask</a></code></td><td>Raster</td><td>Bitmask each cell by a constant value.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.BuildArrayHistogram">BuildArrayHistogram</a></code></td><td>Histogram</td><td>Build an array histogram (see <a name="geotrellis.stat.ArrayHistogram" class="extype" href="../stat/ArrayHistogram.html">ArrayHistogram</a> of values from ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.BuildCompressedArrayHistogram">BuildCompressedArrayHistogram</a></code></td><td>Histogram</td><td>Build a histogram (using the <a name="geotrellis.stat.CompressedArrayHistogram" class="extype" href="../stat/CompressedArrayHistogram.html">CompressedArrayHistogram</a> ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.BuildHistogram">BuildHistogram</a></code></td><td>Histogram</td><td>Generic trait used by the various histogram-building operations.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.BuildMapHistogram">BuildMapHistogram</a></code></td><td>Histogram</td><td>Build a histogram (using the <a name="geotrellis.stat.MapHistogram" class="extype" href="../stat/MapHistogram.html">MapHistogram</a> strategy) from ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.BuildRasterExtent">BuildRasterExtent</a></code></td><td>RasterExtent</td><td>Given a geographical extent and grid height/width, return an object used to ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.BurnPolygon">BurnPolygon</a></code></td><td>Raster</td><td>Rasterize a polygon and then draw it on the provided raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.BurnPolygons">BurnPolygons</a></code></td><td>Polygon</td><td>Rasterize an array of polygons and then draw them into the provided raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.BurnPolygonsWithTransform">BurnPolygonsWithTransform</a></code></td><td>Raster</td><td>Rasterize an array of polygons and then draw them into the provided raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.BurnPolygonsWithValue">BurnPolygonsWithValue</a></code></td><td>Polygon</td><td>Rasterize an array of polygons and then draw them into the provided raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.CachedOp">CachedOp</a></code></td><td>T</td><td>Trait providing caching support for operations which want to save their ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.ChunkRasterExtent">ChunkRasterExtent</a></code></td><td>RasterExtent</td><td>Used to chunk a RasterExtent object (geographical extent + grid information) ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.CopyRaster">CopyRaster</a></code></td><td>Raster</td><td>Given an operation producing a raster, returns a copy of this raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.CreateRaster">CreateRaster</a></code></td><td>Raster</td><td>Creates an empty raster object based on the given raster properties.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.CreateSimplePolygon">CreateSimplePolygon</a></code></td><td>Double)</td><td>Create a Polygon from an array of coordinates represented as a tuple (x,y).</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.CropRasterExtent">CropRasterExtent</a></code></td><td>RasterExtent</td><td>Given a geographical extent and grid height/width, return an object used to ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.CropRasterExtentByExtent">CropRasterExtentByExtent</a></code></td><td>RasterExtent</td><td>Given a geographical extent and grid height/width, return an object used to ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.CsvIntMap">CsvIntMap</a></code></td><td>Int</td><td>Create a Map of (String,String) =&gt; Int from a CSV file ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.Divide">Divide</a></code></td><td>Raster</td><td>Divide each value of one raster with the values from another raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.DivideConstant">DivideConstant</a></code></td><td>Raster</td><td>Divide each cell by a constant value.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.DivideConstantBy">DivideConstantBy</a></code></td><td>Raster</td><td>For each cell, divide a constant value by that cell's value.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.DoCell">DoCell</a></code></td><td>Raster</td><td>Perform a function on every cell in a raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.FindClassBreaks">FindClassBreaks</a></code></td><td>Int</td><td>Generate quantile class breaks for a given raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.FindColorBreaks">FindColorBreaks</a></code></td><td>ColorBreaks</td><td>Generate quantile class breaks with assigned colors.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.FindMinMax">FindMinMax</a></code></td><td>(Int,Int)</td><td>Find the minimum and maximum value of a raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.ForEach">ForEach</a></code></td><td>Z</td><td>Evaluates then given operation (op) to get an array of A's.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.ForEach2">ForEach2</a></code></td><td>Z</td><td>Evaluates then given operations (opA and opB) to get an array of A's and an ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.ForEach3">ForEach3</a></code></td><td>Z</td><td>Evaluates then given operations (opA opB, and opC) to get arrays of A's, B's ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.ForEachTile">ForEachTile</a></code></td><td>Raster</td><td>Perform an operation on every tile in a tileset, and return the new tileset.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.GenerateStatistics">GenerateStatistics</a></code></td><td>Statistics</td><td>Determine statistical data for the given histogram.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.GetPolygonExtent">GetPolygonExtent</a></code></td><td>Extent</td><td>Return the extent of a given polygon.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.GetRasterExtent">GetRasterExtent</a></code></td><td>RasterExtent</td><td>Get the geotrellis.geoattrs.RasterExtent from a given raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.Hillshade">Hillshade</a></code></td><td>Raster</td><td>Hillshade creates a raster that, visually, adds a three dimensional appearance to an elevation raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.Identity">Identity</a></code></td><td>Raster</td><td>Suspiciously similar to <a name="geotrellis.operation.CopyRaster" class="extype" href="CopyRaster.html">CopyRaster</a>, Identity returns ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.IfCell">IfCell</a></code></td><td>Raster</td><td>Maps all cells matching <code>cond</code> to <code>trueValue</code>.</p> ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.IfElseCell">IfElseCell</a></code></td><td>Raster</td><td>Set all values of output raster to one value or another based on whether a ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.InverseMask">InverseMask</a></code></td><td>Raster</td><td>Generate a raster with the values from the first raster, but only include ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.KernelDensity">KernelDensity</a></code></td><td>Raster</td><td>Compute the kernel density of a set of points onto a raster</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.Literal">Literal</a></code></td><td>A</td><td>Return the literal value specified.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.LoadFile">LoadFile</a></code></td><td>Raster</td><td>Load the raster data for a particular extent/resolution from the specified file.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.LoadRaster">LoadRaster</a></code></td><td>Raster</td><td>Load the raster data for a particular extent/resolution from the specified file.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.LoadRasterExtentFromFile">LoadRasterExtentFromFile</a></code></td><td>RasterExtent</td><td>Load the geotrellis.geoattrs.RasterExtent from the raster in the specified file.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.LocalOperation">LocalOperation</a></code></td><td>Raster</td><td>Local operations involve each individual value in a raster without information ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.Map1">Map1</a></code></td><td>Z</td><td>Map an Op[A] into an Op[Z] using a function from A =&gt; Z.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.Map2">Map2</a></code></td><td>Z</td><td>Map an Op[A] and Op[B] into an Op[Z] using a function from (A,B) =&gt; Z.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.Mask">Mask</a></code></td><td>Raster</td><td>Generate a raster with the values from the first raster, but only include ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.MaxConstant">MaxConstant</a></code></td><td>Raster</td><td>Set each cell to a constant number or the corresponding cell value, whichever is highest.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.MinConstant">MinConstant</a></code></td><td>Raster</td><td>Set each cell to a constant or its existing value, whichever is lowest.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.Multiply">Multiply</a></code></td><td>Raster</td><td>Multiply each cell of each raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.MultiplyArray">MultiplyArray</a></code></td><td>Raster</td><td>Multiply each cell of each raster in array.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.MultiplyConstant">MultiplyConstant</a></code></td><td>Raster</td><td>Multiply each cell by a constant.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.Negate">Negate</a></code></td><td>Raster</td><td>Negate (multiply by -1) each value in a raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.Operation">Operation</a></code></td><td>T</td><td>Base Operation for all GeoTrellis functionality.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.PolygonExtent">PolygonExtent</a></code></td><td>Polygon</td><td>Return the extent of a given polygon.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.PolygonalZonalHistograms">PolygonalZonalHistograms</a></code></td><td>Histogram</td><td>Given a raster and an array of polygons, return a histogram summary of the cells ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.PowConstant">PowConstant</a></code></td><td>Raster</td><td>Raise each cell to the cth power.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.PrecomputedNormalize">PrecomputedNormalize</a></code></td><td>Raster</td><td>Normalize the values in the given raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.RenderPNG">RenderPNG</a></code></td><td>Byte</td><td>Generate a PNG from a given raster and a set of color breaks.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.ResampleRaster">ResampleRaster</a></code></td><td>Raster</td><td>This uses a nearest-neighbor algorithm to resample a raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.SplitMultiPolygon">SplitMultiPolygon</a></code></td><td>Polygon</td><td>Split multipolygon into polygons.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.StandardDeviation">StandardDeviation</a></code></td><td>Raster</td><td>Calculate the standard deviation of each cell from the values in the raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.Subtract">Subtract</a></code></td><td>Raster</td><td>Subtract each value in the second raster from the corresponding value in the first raster.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.SubtractConstant">SubtractConstant</a></code></td><td>Raster</td><td>Subtract a constant value from each cell.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.SubtractConstantBy">SubtractConstantBy</a></code></td><td>Raster</td><td>Subtract the value of each cell by a constant.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.UnaryLocal">UnaryLocal</a></code></td><td>Raster</td><td>Abstract class for all operations that are unary (operate on a single raster) and ...</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.WarpRaster">WarpRaster</a></code></td><td>Raster</td><td>Crop a raster to a given extent, using a nearest neighbor algorithm to resample.</td></tr>
+<tr><td><code><a href="http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.ZonalHistogram">ZonalHistogram</a></code></td><td>Histogram</td><td>Given a raster, return a histogram summary of the cells within each zone.</td></tr>
+        </tbody>
+      </table>
+<h2 id="Creating+new+operations">Creating new operations</h2><p>Ideally, a new geoprocessing service can be composed with existing operations that
+have already been created for you.  The tutorial, for example, shows a series of
+examples of a service being created by composing existing operations.  But sometimes
+it is necessary to create new operations instead of simply composing a new process with
+existing operations.  There is a short method and the full method creating new operations.
+</p><p>When thinking about operations, think about them like a mathematical function — 
+operations take input and produce an output.  The inputs to all operations are 
+operations themselves.  You can think about this as a data pipeline, in which
+each operation’s output is connected to the input of its parent operations.
+</p><h3 id="Short+method">Short method</h3><p>Let’s create a simple operation that adds two integers together.
+</p><p>We’ll make an operation that can be instantiated with the following code:
+</p><pre><code class="prettyprint lang-scala">val a = AddInts(1,2)
+val result = server.run(a)
+</code></pre><p>This is an example of using the short method to define an operation:
+</p><pre><code class="prettyprint lang-scala">case class AddInts(a:Op[Int], b:Op[Int]) extends Op2(a,b) ({
+  (a,b) =&gt; {
+    a + b
+  }
+})
+</code></pre><p>The operation above is called <code>AddInts</code>.  <code>Op</code> is short for Operation.
+Right after AddInts are the inputs to this operation, called <code>a</code> and <code>b</code>.
+The declaration <code>a:Op[Int]</code> means that the first input is of the type <code>Op[Int]</code>.
+<code>[Int]</code> is the type parameter of <code>Op</code>, and it means that a is an operation that outputs
+an Int, an integer.  The class <code>AddInts</code> exends the class <code>Op2</code>, which means that it is
+an operation that takes two inputs.  If this operation had only 1 input, we’d use <code>Op1</code> instead of <code>Op2</code>.  For example,
+</p><pre><code class="prettyprint lang-scala">case class AddOne(a:Op[Int]) extends Op1(a) ({
+  (a) =&gt; {
+    a + 1
+  }
+})
+</code></pre><p>The syntax in the middle, e.g.:
+</p><pre><code class="prettyprint lang-scala">  (a,b) =&gt; {
+    a + b
+  }
+</code></pre><p>means that we are making a function that takes two arguments (a and b) and we define the
+body of the function that does the actual work with the inputs between the two braces.
+</p><p>You can see lots of examples of Operations in the src/main/geotrellis/operation directory.
+</p><h3 id="Full+method">Full method</h3><p>Instead of the short syntax (in which operations extend Op1..OpN) you can use subclass
+Operation[T].  By directly extending Operation you gain access ot the Context object
+(which allows data loading) and can create multiple steps.  
+</p><pre><code class="prettyprint lang-scala">case class Add(a:Op[Int], b:Op[Int]) extends Operation[Int] {
+  def _run(context:Context) = {
+    runAsync(List(a,b))
+  }
+  def nextSteps:Steps = {
+    case (a:Int) :: (b:Int) :: Nil =&gt; {
+      a + b
+    }
+  }
+}
+</code></pre><p>The _run method is where the execution of the Operation begins.  We call ‘runAsync’
+with a list of operations to tell the server to asynchronous execute our child operations,
+and then the partial function nextSteps is executed when all of the results have been 
+retrieved.  If we need to pass any information forward, we can include it in the List given
+to runAsync.  When the nextSteps method matches the results received, it can execute the
+next step of the calculation.  If you’re not familar with the syntax in nextSteps, learn
+more about pattern matching in scala.  
+<br/>
+For example, the following code tries to find the pattern of a two-element list where the first element and second elements are integers.  If the input matches this pattern, it
+saves the first element in <code>a</code> and the second in <code>b</code> and executes the provide block
+of code.
+</p><pre><code class="prettyprint lang-scala">  case (a:Int) :: (b:Int) :: Nil =&gt; {
+</code></pre><p>If you want to understand more about the machinery at work here, see the <em>Architecture Concepts</em> section and the Server code (src/main/process/server.scala and src/main/process/actors.scala).
+</p><h2 id="Parallel+and+distributed+execution">Parallel and distributed execution</h2><h3 id="Parallel+Execution">Parallel Execution</h3><p>Most operations have “child operations” which are the inputs or incoming data streams
+that the operation acts on.  GeoTrellis will automatically run all child operations in
+parallel.  For example, if you are adding each cell of five rasters together, the
+service will calculate each input raster in parallel (if resources allow).  If working
+with a single large data set (e.g. a large raster), it is usually beneficial to transform
+the raster into a <code>TiledRaster</code> which allows the system to parallelize the work. 
+</p><h3 id="Distributed+Execution">Distributed Execution</h3><p>With a single command, an operation can be transformed into a RemoteOperation that
+sends each of its child operations to a remote GeoTrellis server for execution.  
+</p><pre><code class="prettyprint lang-scala">Add(r1,r2,r3).remote(cluster) // calculate input rasters on remote cluster
+</code></pre><p>The remote cluster or server is an Akka actor or load balancer, defined using the Akka 
+library configuration.  See the <a  href="http://akka.io/docs/akka/2.0-M4">Akka documenation</a> for more information.  Akka configuration can be placed directly in your GeoTrellis configuration file (application.conf). 
+</p><p>For operations that do not need to pass much data over the network, the overhead can be as 
+low as a few milliseconds.  When passing raster data, the time overhead depends on the
+network and the size of the rasters. 
+</p><h3 id="Architecture+Concepts">Architecture Concepts</h3><p>Behind the scenes, GeoTrellis is using the actor model for parallel and distributed computation, which means that the primary abstraction is message passing instead of shared memory.  This event-based model allows us to re-use the same threads by interleaving calculations for different processes on the same threads, but this means that nothing can ever block or stop on a thread while waiting for another result because that would hold up the other work that is scheduled to execute on the same thread.  By using the <a  href="http://en.wikipedia.org/wiki/Continuation-passing_style">continuation passing style</a> from functional programming we can perform work in a series of stages, in which requests
+are first sent out for calculations to be processed and then when all of the results
+are received, we can execute the next step of the calculation, without ever blocking
+execution on an individual thread.  Operations are sent as immutable messages, and should
+be referrentially transparent, which allows us to perform optimizations such as combining
+local raster operations. 
+</p>
+          </div>
+        </div>
+        <a class="fork nav" href="http://github.com/azavea/geotrellis"><img alt="Fork me on GitHub" src="img/fork.png"></img></a>
+      </body>
+    </html>
