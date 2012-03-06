@@ -1,6 +1,6 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
+import geotrellis._
 
 /**
  * Generate a raster with the values from the first raster, but only include

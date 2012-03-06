@@ -1,6 +1,6 @@
-package trellis.benchmark
+package geotrellis.benchmark
 
-import trellis._
+import geotrellis._
 
 import scala.util.Random
 

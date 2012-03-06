@@ -1,4 +1,4 @@
-package trellis.process
+package geotrellis.process
 
 // akka imports
 import akka.actor._
@@ -6,7 +6,7 @@ import akka.routing._
 import akka.dispatch.Await
 import akka.util.duration._
 
-import trellis.operation.Operation
+import geotrellis.operation.Operation
 
 /**
  * CalculationResult contains an operation's results.
@@ -103,7 +103,7 @@ object StepError {
  * Actor responsible for dispatching and executing operations.
  *
  * This is a long-running actor which expects to receive two kinds of messages:
- * trellis.raster.TileSpec
+ * geotrellis.raster.TileSpec
  *  1. Requests made by the outside world to run operations.
  *  2. Requests made by other actors to asynchronously evaluate arguments.
  *
@@ -256,17 +256,17 @@ case class Worker(val server: Server) extends WorkerLike {
       startTime = time()
       log("worker: run operation (%d): %s: %s" format (pos, op, Thread.currentThread.getName))
       //val timer = new Timer()
-      val trellisContext = new Context(server)
+      val geotrellisContext = new Context(server)
       try {
         //val z = op.run(server)(timer)
         //handleResult(pos, client, z, Some(timer))
-        val z = op.run(trellisContext)
-        handleResult(pos, client, z, Some(trellisContext.timer), dispatcher)
+        val z = op.run(geotrellisContext)
+        handleResult(pos, client, z, Some(geotrellisContext.timer), dispatcher)
       } catch {
         case e => {
           val error = StepError.fromException(e)
           System.err.printf("Operation failed, with exception: %s\n\nStack trace:\n%s\n", error.msg,error.trace)
-          handleResult(pos, client, error, Some(trellisContext.timer), dispatcher)
+          handleResult(pos, client, error, Some(geotrellisContext.timer), dispatcher)
         }
       }
       //context.stop(self)

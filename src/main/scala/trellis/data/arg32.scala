@@ -1,13 +1,13 @@
-package trellis.data
+package geotrellis.data
 
 import scala.xml._
 import java.io.{BufferedOutputStream, FileOutputStream}
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel.MapMode._
 
-import trellis._
-import trellis.util._
-import trellis.process._
+import geotrellis._
+import geotrellis.util._
+import geotrellis.process._
 
 final class Arg32ReadState(val path:String,
                            val layer:RasterLayer,

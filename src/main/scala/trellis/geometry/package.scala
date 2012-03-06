@@ -1,4 +1,4 @@
-package trellis.geometry
+package geotrellis.geometry
 
 import scala.math.{atan, exp, floor, log, sin}
 

@@ -24,7 +24,7 @@
  * Modified by Azavea, 2010-2011.
  */
  
-package trellis.data.png;
+package geotrellis.data.png;
  
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

@@ -1,9 +1,9 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
-import trellis.raster._
-import trellis.process._
-import trellis.RasterExtent
+import geotrellis._
+import geotrellis.raster._
+import geotrellis.process._
+import geotrellis.RasterExtent
 
 /**
   * Perform an operation on every tile in a tileset, and return the new tileset.

@@ -1,7 +1,7 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.process._
-import trellis.stat._
+import geotrellis.process._
+import geotrellis.stat._
 
 /**
   * Generate quantile class breaks for a given raster.

@@ -1,12 +1,12 @@
-package trellis.run
+package geotrellis.run
 
 import java.util.Calendar
 
-import trellis.data.GeoTiffReader
-import trellis.data.Arg32Writer
-import trellis.process.{Server}
-import trellis.operation.LoadFile
-import trellis.process._
+import geotrellis.data.GeoTiffReader
+import geotrellis.data.Arg32Writer
+import geotrellis.process.{Server}
+import geotrellis.operation.LoadFile
+import geotrellis.process._
 
 object GeotiffImporter {
   def error(msg:String) {

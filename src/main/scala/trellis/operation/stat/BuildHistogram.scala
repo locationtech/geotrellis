@@ -1,9 +1,9 @@
-package trellis.operation
+package geotrellis.operation
 
 
-import trellis._
-import trellis.process._
-import trellis.stat._
+import geotrellis._
+import geotrellis.process._
+import geotrellis.stat._
 
 /**
  * Generic trait used by the various histogram-building operations.

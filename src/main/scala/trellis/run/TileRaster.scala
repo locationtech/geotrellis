@@ -1,15 +1,15 @@
-package trellis.run
+package geotrellis.run
 
 import java.util.Calendar
 
-import trellis.data.GeoTiffReader
-import trellis.data.Arg32Writer
-import trellis.process.{Server}
-import trellis.operation.LoadFile
-import trellis.process._
-import trellis._
-import trellis.operation._
-import trellis.raster._
+import geotrellis.data.GeoTiffReader
+import geotrellis.data.Arg32Writer
+import geotrellis.process.{Server}
+import geotrellis.operation.LoadFile
+import geotrellis.process._
+import geotrellis._
+import geotrellis.operation._
+import geotrellis.raster._
 
 object TileRaster {
   def error(msg:String) {

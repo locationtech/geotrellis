@@ -1,6 +1,6 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
+import geotrellis._
 
 /**
  * Given a condition over two rasters, set the value of each cell in the output

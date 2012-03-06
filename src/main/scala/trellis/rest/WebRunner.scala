@@ -1,4 +1,4 @@
-package trellis.rest
+package geotrellis.rest
 
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.nio.SelectChannelConnector
@@ -12,7 +12,7 @@ import com.typesafe.config.ConfigFactory
  * Starts a webserver on the configured port (default 8080) that will serve any rest
  * services found in the package defined as 'resource_package' in the configuration file.
  *
- * At the moment, the directory is this package -- trellis.rest.
+ * At the moment, the directory is this package -- geotrellis.rest.
  * See "HelloService" for an example.  Any classes defined in the package with
  * JAX-RS attributes will become REST services.
  */
@@ -21,8 +21,8 @@ object WebRunner {
   val config = ConfigFactory.load()
 
   def main(args: Array[String]) {
-    val host = config.getString("trellis.host")
-    val port = config.getInt("trellis.port")
+    val host = config.getString("geotrellis.host")
+    val port = config.getInt("geotrellis.port")
 
     println("Starting server on port %d.".format(port))
     val server = new Server()
@@ -36,7 +36,7 @@ object WebRunner {
     holder.setInitParameter("com.sun.jersey.config.property.resourceConfigClass",
       "com.sun.jersey.api.core.PackagesResourceConfig")
 
-    val pkg = config.getString("trellis.rest-package")
+    val pkg = config.getString("geotrellis.rest-package")
     holder.setInitParameter("com.sun.jersey.config.property.packages", pkg)
 
     val context = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS)

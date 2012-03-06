@@ -1,4 +1,4 @@
-package trellis.process
+package geotrellis.process
 
 import scala.collection.mutable.{Map => MMap}
 import scala.io.Source
@@ -7,14 +7,14 @@ import java.io.File
 
 import net.liftweb.json.{parse, DefaultFormats}
 
-import trellis.{Extent,RasterExtent}
-import trellis.process._
-import trellis.IntRaster
+import geotrellis.{Extent,RasterExtent}
+import geotrellis.process._
+import geotrellis.IntRaster
 
 // this is a work in progress. the definitions for Layer, DataStore and Catalog
 // are not complete, and we will likely need more objects.
 //
-// example json is available in the trellis.process.catalog tests. please keep
+// example json is available in the geotrellis.process.catalog tests. please keep
 // it up-to-date with changes you make here.
 
 /**

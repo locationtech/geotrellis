@@ -1,10 +1,10 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.IntRaster
-import trellis.geometry.rasterizer.Rasterizer
-import trellis.process._
-import trellis.geometry.Polygon
-import trellis.geometry.MultiPolygon
+import geotrellis.IntRaster
+import geotrellis.geometry.rasterizer.Rasterizer
+import geotrellis.process._
+import geotrellis.geometry.Polygon
+import geotrellis.geometry.MultiPolygon
 
 // TODO: Rasterizer.rasterize() should be split into a version that mutates
 // and a version that returns a copy

@@ -1,11 +1,11 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.RasterExtent
-import trellis.process._
-import trellis.process._
+import geotrellis.RasterExtent
+import geotrellis.process._
+import geotrellis.process._
 
 /**
-  * Load the [[trellis.geoattrs.RasterExtent]] from the raster in the specified file.
+  * Load the [[geotrellis.geoattrs.RasterExtent]] from the raster in the specified file.
   */
 case class LoadRasterExtentFromFile(path:String) extends Op1(path)({
   (path) => {

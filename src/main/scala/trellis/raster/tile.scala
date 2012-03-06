@@ -1,4 +1,4 @@
-package trellis.raster;
+package geotrellis.raster;
 
 // ###############################################################################
 // # Copyright (c) 2008 Klokan Petr Pridal. All rights reserved.

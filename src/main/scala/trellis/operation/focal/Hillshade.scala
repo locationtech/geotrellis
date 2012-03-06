@@ -1,8 +1,8 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
-import trellis.process._
-import trellis.IntRaster
+import geotrellis._
+import geotrellis.process._
+import geotrellis.IntRaster
 
 object HillshadeHelper {
   def hillshade(zenith:Double, slope:Double, azimuth:Double, aspect:Double):Int = {

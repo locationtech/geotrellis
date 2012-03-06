@@ -1,13 +1,13 @@
-package trellis.run
+package geotrellis.run
 
 import akka.kernel.Bootable
 import scala.util.Random
 
 import com.typesafe.config.ConfigFactory
 import akka.actor.{ ActorRef, Props, Actor, ActorSystem }
-import trellis.operation._
-import trellis.process._
-import trellis._
+import geotrellis.operation._
+import geotrellis.process._
+import geotrellis._
 
 class RemoteClientApplication extends Bootable {
 

@@ -1,8 +1,8 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
-import trellis.process._
-import trellis.stat._
+import geotrellis._
+import geotrellis.process._
+import geotrellis.stat._
 
 /**
  * Given a raster, return a histogram summary of the cells within each zone.

@@ -1,6 +1,6 @@
-package trellis.geometry.grid
+package geotrellis.geometry.grid
 
-import trellis._
+import geotrellis._
 
 import scala.util.Sorting
 import math.{abs,min,max,round}

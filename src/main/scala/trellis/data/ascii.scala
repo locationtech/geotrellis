@@ -1,13 +1,13 @@
-package trellis.data
+package geotrellis.data
 
 import scala.math.{min, max}
 import java.io.{File, FileWriter, BufferedReader, BufferedWriter, PrintWriter}
 
 import Console.printf
 
-import trellis._
-import trellis.process._
-import trellis.util._
+import geotrellis._
+import geotrellis.process._
+import geotrellis.util._
 
 final class AsciiReadState(val path:String,
                            val layer:RasterLayer,

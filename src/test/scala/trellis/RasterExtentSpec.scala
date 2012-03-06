@@ -1,4 +1,4 @@
-package trellis
+package geotrellis
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers

@@ -4,18 +4,18 @@ seq(site.settings: _*)
 
 seq(ghpages.settings: _*)
 
-git.remoteRepo := "git@github.com:azavea/trellis.git"
+git.remoteRepo := "git@github.com:azavea/geotrellis.git"
 
 seq(Revolver.settings: _*)
 
-//mainClass in (Compile, run) := Some("trellis.rest.WebRunner")
+//mainClass in (Compile, run) := Some("geotrellis.rest.WebRunner")
 
-mainClass := Some("trellis.rest.WebRunner")
+mainClass := Some("geotrellis.rest.WebRunner")
 
 addCompilerPlugin("com.azavea.math.plugin" %% "optimized-numeric" % "0.1")
 
 //SiteKeys.siteMappings <<=
-//  (SiteKeys.siteMappings, PamfletKeys.write, PamfletKeys.output) map { (mappings, _, dir) =>
+//  (SiteKeys.siteMappings, PamfletKeys.output) map { (mappings, _, dir) =>
 //    mappings ++ (dir ** "*.*" x relativeTo(dir))
 //  }
 
@@ -54,7 +54,7 @@ proguardOptions := Seq(
   "-keep class akka.** { *; }",
   "-keep class com.typesafe.** { *; }",
   "-keep class ch.** { *; }",
-  "-keep class trellis.** { *; }",
+  "-keep class geotrellis.** { *; }",
   "-keep class jline.** { *; }",
   "-keep class com.sun.ws.rs.ext.RuntimeDelegateImpl { *; }",
   "-keep class com.sun.jersey.** { *; }",

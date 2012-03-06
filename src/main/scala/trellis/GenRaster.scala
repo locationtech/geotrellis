@@ -1,4 +1,4 @@
-package trellis
+package geotrellis
 
 import scala.math.{min, max}
 
@@ -8,7 +8,7 @@ import com.azavea.math.{Numeric => Num}
 import com.azavea.math.FastImplicits._
 
 /**
- * Used to associate a type parameter T with a particular value which trellis
+ * Used to associate a type parameter T with a particular value which geotrellis
  * uses as the "nodata value".
  */
 trait NoData[T] {
@@ -16,7 +16,7 @@ trait NoData[T] {
 }
 
 /**
- * Companion object containing some no data values for types trellis supports.
+ * Companion object containing some no data values for types geotrellis supports.
  */
 object NoData {
   implicit object IntNoData extends NoData[Int] { final def value = Int.MinValue }
@@ -107,7 +107,7 @@ final class GenRaster[@spec T:Num:Manifest:NoData](val data:GenRasterData[T],
   def asArray = data.asArray
 
   /**
-    * Test [[trellis.RasterExtent]] of other raster w/ our own geographic attributes.
+    * Test [[geotrellis.RasterExtent]] of other raster w/ our own geographic attributes.
     */
   def compare(other:GenRaster[T]) = rasterExtent.compare(other.rasterExtent)
 

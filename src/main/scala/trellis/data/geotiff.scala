@@ -1,4 +1,4 @@
-package trellis.data
+package geotrellis.data
 
 import java.awt.image.BufferedImage
 import java.awt.image.RenderedImage
@@ -15,12 +15,12 @@ import org.geotools.gce.geotiff
 import org.geotools.geometry.Envelope2D
 import org.geotools.referencing.CRS
 import scala.math.{abs, min, max, round}
-import trellis.process.Server
-import trellis.IntRaster
-import trellis.{Extent,RasterExtent}
+import geotrellis.process.Server
+import geotrellis.IntRaster
+import geotrellis.{Extent,RasterExtent}
 
-import trellis._
-import trellis.process._
+import geotrellis._
+import geotrellis.process._
 import org.geotools.coverage.Category
 import org.geotools.coverage.GridSampleDimension
 import org.geotools.coverage.GeophysicsCategory

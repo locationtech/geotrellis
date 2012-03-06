@@ -1,8 +1,8 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
-import trellis.process._
-import trellis.geometry._
+import geotrellis._
+import geotrellis.process._
+import geotrellis.geometry._
 
 /**
  * Used for Kernel Density calculation
@@ -160,7 +160,7 @@ object KernelDensityHelper {
  *
  * Note that the kernel must be square (sqrt(len(kernel)) is an integer)
  * 
- * @see trellis.operation.Kernel$ for methods of creating the input kernel
+ * @see geotrellis.operation.Kernel$ for methods of creating the input kernel
  */
 case class KernelDensity(outputRasterExtent: Op[RasterExtent], 
                          kernel: Op[Kernel], points: Op[Array[Point]])

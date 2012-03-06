@@ -1,9 +1,9 @@
-package trellis.operation.render.png
+package geotrellis.operation.render.png
 
-import trellis._
-import trellis.data._
-import trellis.operation._
-import trellis.process._
+import geotrellis._
+import geotrellis.data._
+import geotrellis.operation._
+import geotrellis.process._
 
 /**
  * Write out a PNG graphic file to the file system at the specified path.

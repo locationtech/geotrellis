@@ -1,12 +1,12 @@
-package trellis.operation.applicative
+package geotrellis.operation.applicative
 
-import trellis.operation._
-import trellis.process._
+import geotrellis.operation._
+import geotrellis.process._
 
 /**
  * Some implicit operators to add some syntactic sugar. To use say:
  *
- * import trellis.operation.applicative.Implicits._
+ * import geotrellis.operation.applicative.Implicits._
  */
 object Implicits {
   implicit def applyOperator[A, Z:Manifest](lhs:Op[A => Z]) = new {

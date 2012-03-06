@@ -1,11 +1,11 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
-import trellis.process._
-import trellis.stat._
+import geotrellis._
+import geotrellis.process._
+import geotrellis.stat._
 
 /**
- * Build a histogram (using the [[trellis.stat.MapHistogram]] strategy) from
+ * Build a histogram (using the [[geotrellis.stat.MapHistogram]] strategy) from
  * this raster.
  */
 case class BuildMapHistogram(r:Op[IntRaster]) extends Op1(r) ({

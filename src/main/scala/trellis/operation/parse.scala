@@ -1,6 +1,6 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.process._
+import geotrellis.process._
 
 /**
  * Parse a string as an integer.

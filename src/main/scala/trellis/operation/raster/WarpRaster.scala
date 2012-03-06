@@ -1,9 +1,9 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.process._
-import trellis.RasterExtent
-import trellis.IntRaster
-import trellis.data.IntRasterReader
+import geotrellis.process._
+import geotrellis.RasterExtent
+import geotrellis.IntRaster
+import geotrellis.data.IntRasterReader
 
 
 //TODO: Is this really what this operation is doing?

@@ -1,9 +1,9 @@
-package trellis.operation
+package geotrellis.operation
 
 import scala.math.{min, max}
-import trellis.geometry.Polygon
-import trellis.process._
-import trellis.Extent
+import geotrellis.geometry.Polygon
+import geotrellis.process._
+import geotrellis.Extent
 
 /**
  * Return the extent of a given polygon.

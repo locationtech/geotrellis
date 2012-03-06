@@ -1,6 +1,6 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.process._
+import geotrellis.process._
 
 /**
  * Map an Op[A] into an Op[Z] using a function from A => Z.

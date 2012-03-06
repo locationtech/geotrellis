@@ -1,8 +1,8 @@
-package trellis.geometry.rasterizer
+package geotrellis.geometry.rasterizer
 
-import trellis.{IntRaster,RasterData}
-import trellis.geometry.{Polygon}
-import trellis.geometry.grid.{GridPoint, GridLine, GridPolygon}
+import geotrellis.{IntRaster,RasterData}
+import geotrellis.geometry.{Polygon}
+import geotrellis.geometry.grid.{GridPoint, GridLine, GridPolygon}
 
 
 import scala.collection.mutable.{ArrayBuffer}

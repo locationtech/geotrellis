@@ -1,8 +1,8 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
-import trellis.process._
-import trellis.geometry._
+import geotrellis._
+import geotrellis.process._
+import geotrellis.geometry._
 
 
 /**

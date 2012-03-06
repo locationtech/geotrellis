@@ -1,4 +1,4 @@
-package trellis.process
+package geotrellis.process
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import scala.collection.mutable.HashMap

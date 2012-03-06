@@ -1,7 +1,7 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
-import trellis.process._
+import geotrellis._
+import geotrellis.process._
 
 /**
  * Set all values of output raster to one value or another based on whether a

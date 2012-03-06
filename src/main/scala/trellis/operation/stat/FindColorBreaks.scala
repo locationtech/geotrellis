@@ -1,8 +1,8 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.data._
-import trellis.process._
-import trellis.stat._
+import geotrellis.data._
+import geotrellis.process._
+import geotrellis.stat._
 
 case class BuildColorMapper(colorBreaks:Op[ColorBreaks], noDataColor:Op[Int])
 extends Op2(colorBreaks, noDataColor)((bs, c) => Result(ColorMapper(bs, c)))

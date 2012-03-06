@@ -1,4 +1,4 @@
-package trellis
+package geotrellis
 
 import Predef.{any2stringadd => _, _}
 import scala.{specialized => spec}

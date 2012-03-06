@@ -1,10 +1,10 @@
-package trellis.run
+package geotrellis.run
 
 import akka.kernel.Bootable
 import akka.actor.{ Props, Actor, ActorSystem }
 import com.typesafe.config.ConfigFactory
 
-import trellis.process._
+import geotrellis.process._
 
 class RemoteServerApplication extends Bootable {
   val system = ActorSystem("RemoteServerApplication", ConfigFactory.load.getConfig("remoteServer"))

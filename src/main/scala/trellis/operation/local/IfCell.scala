@@ -1,7 +1,7 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.process._
-import trellis._
+import geotrellis.process._
+import geotrellis._
 
 /**
  * Maps all cells matching `cond` to `trueValue`.

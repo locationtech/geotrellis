@@ -1,7 +1,7 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
-import trellis.process._
+import geotrellis._
+import geotrellis.process._
 
 // ny=4    nx=4    nx=2 ny=2
 // AAAA    ABCD    AABB

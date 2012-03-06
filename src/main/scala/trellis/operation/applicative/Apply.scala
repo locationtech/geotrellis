@@ -1,7 +1,7 @@
-package trellis.operation.applicative
+package geotrellis.operation.applicative
 
-import trellis.operation._
-import trellis.process._
+import geotrellis.operation._
+import geotrellis.process._
 
 /**
  * This corresponds to Haskell's "apply" (<*>) on Functor.

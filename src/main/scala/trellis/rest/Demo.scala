@@ -1,14 +1,14 @@
-package trellis.rest
+package geotrellis.rest
 
 import javax.servlet.http.HttpServletRequest
 import javax.ws.rs.core.Response
 import javax.ws.rs.{GET, Path, DefaultValue, QueryParam}
 import javax.ws.rs.core.{Response, Context}
 
-import trellis._
-import trellis.data.MultiColorRangeChooser
-import trellis.operation._
-import trellis.process._
+import geotrellis._
+import geotrellis.data.MultiColorRangeChooser
+import geotrellis.operation._
+import geotrellis.process._
 
 /**
  * Operation to perform the basic weighted overlay calculation.

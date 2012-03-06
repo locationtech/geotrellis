@@ -1,9 +1,9 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
-import trellis.geometry.Polygon
-import trellis.geometry.rasterizer.Rasterizer
-import trellis.process._
+import geotrellis._
+import geotrellis.geometry.Polygon
+import geotrellis.geometry.rasterizer.Rasterizer
+import geotrellis.process._
 
 /**
  * Rasterize a polygon and then draw it on the provided raster.
