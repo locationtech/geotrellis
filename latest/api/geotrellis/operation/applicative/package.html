@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>geotrellis.operation.applicative</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../../lib/template.css" />
+      <script type="text/javascript" src="../../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img src="../../../lib/package_big.png" />
+        <p id="owner"><a name="geotrellis" class="extype" href="../../package.html">geotrellis</a>.<a name="geotrellis.operation" class="extype" href="../package.html">operation</a></p>
+        <h1>applicative</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="kind">package</span>
+      <span class="symbol"> 
+        <span class="name">applicative</span>
+        
+        
+      </span>
+      </h4>
+      
+          <div class="fullcommenttop" id="comment"></div>
+        
+
+      <div id="template">
+
+        <div id="mbrsel">
+          <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+          
+          
+          <div id="visbl">
+              <span class="filtertype">Visibility</span>
+              <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+            </div>
+        </div>
+
+        
+
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="geotrellis.operation.applicative.Apply" data-isabs="false">
+      <a id="Apply:Apply[A, Z]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Apply.html"><span class="name">Apply</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="Z">Z</span>]</span>
+        <span class="params">(<span name="a">a: Op[A]</span>, <span name="f">f: Op[(A) ⇒ Z]</span>, <span name="evidence$1">evidence$1: Manifest[Z]</span>)</span><span class="result"> extends Op2[A, (A) ⇒ Z, Z] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This corresponds to Haskell's &quot;apply&quot; (&lt;*&gt;) on Functor.</p>
+    </li><li visbl="pub" name="geotrellis.operation.applicative.Fmap" data-isabs="false">
+      <a id="Fmap:Fmap[A, Z]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Fmap.html"><span class="name">Fmap</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="Z">Z</span>]</span>
+        <span class="params">(<span name="a">a: Op[A]</span>, <span name="f">f: (A) ⇒ Z</span>, <span name="evidence$1">evidence$1: Manifest[Z]</span>)</span><span class="result"> extends Op1[A, Z] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This corresponds to Haskell's &quot;fmap&quot; on Functor.</p>
+    </li><li visbl="pub" name="geotrellis.operation.applicative.Pure" data-isabs="false">
+      <a id="Pure:Pure[Z]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Pure.html"><span class="name">Pure</span></a>
+        <span class="tparams">[<span name="Z">Z</span>]</span>
+        <span class="params">(<span name="z">z: Z</span>, <span name="evidence$1">evidence$1: Manifest[Z]</span>)</span><span class="result"> extends Op0[Z] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This corresponds to Haskell's &quot;pure&quot; on Functor.</p>
+    </li></ol>
+            </div>
+        
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="geotrellis.operation.applicative.Implicits" data-isabs="false">
+      <a id="Implicits:Implicits"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="Implicits$.html"><span class="name">Implicits</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Some implicit operators to add some syntactic sugar.</p>
+    </li></ol>
+            </div>
+
+        
+
+        
+
+      </div>
+      
+      <div id="tooltip"></div>
+      
+    </body>
+      </html>

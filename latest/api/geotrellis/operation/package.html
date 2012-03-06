@@ -1,0 +1,1930 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>geotrellis.operation</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../lib/template.css" />
+      <script type="text/javascript" src="../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../lib/template.js"></script>
+      <script type="text/javascript" src="../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img src="../../lib/package_big.png" />
+        <p id="owner"><a name="geotrellis" class="extype" href="../package.html">geotrellis</a></p>
+        <h1>operation</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="kind">package</span>
+      <span class="symbol"> 
+        <span class="name">operation</span>
+        
+        
+      </span>
+      </h4>
+      
+          <div class="fullcommenttop" id="comment"></div>
+        
+
+      <div id="template">
+
+        <div id="mbrsel">
+          <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+          
+          
+          <div id="visbl">
+              <span class="filtertype">Visibility</span>
+              <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+            </div>
+        </div>
+
+        
+
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="geotrellis.operation.Add" data-isabs="false">
+      <a id="Add:Add"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Add.html"><span class="name">Add</span></a>
+        
+        <span class="params">(<span name="rs">rs: Op[IntRaster]*</span>)</span><span class="result"> extends Op[IntRaster] with MultiLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Add the values of each cell in each raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.AddArray" data-isabs="false">
+      <a id="AddArray:AddArray"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="AddArray.html"><span class="name">AddArray</span></a>
+        
+        <span class="params">(<span name="op">op: Op[Array[IntRaster]]</span>)</span><span class="result"> extends Op[IntRaster] with MultiLocalArray with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Add the values of each cell in each raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.AddConstant" data-isabs="false">
+      <a id="AddConstant:AddConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="AddConstant.html"><span class="name">AddConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Add a constant value to each cell.</p>
+    </li><li visbl="pub" name="geotrellis.operation.AddInlinedConstant" data-isabs="false">
+      <a id="AddInlinedConstant:AddInlinedConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="AddInlinedConstant.html"><span class="name">AddInlinedConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Int</span>)</span><span class="result"> extends Op[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.AddLiteralConstant" data-isabs="false">
+      <a id="AddLiteralConstant:AddLiteralConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="AddLiteralConstant.html"><span class="name">AddLiteralConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Int</span>)</span><span class="result"> extends Op[IntRaster] with SimpleUnaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.AutomaticNormalize" data-isabs="false">
+      <a id="AutomaticNormalize:AutomaticNormalize"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="AutomaticNormalize.html"><span class="name">AutomaticNormalize</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="g">g: Op[(Int, Int)]</span>)</span><span class="result"> extends Op2[IntRaster, (Int, Int), IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Normalize the values in the given raster so that all values are within the
+specified minimum and maximum value range.</p>
+    </li><li visbl="pub" name="geotrellis.operation.BinaryDoCell" data-isabs="false">
+      <a id="BinaryDoCell:BinaryDoCell"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BinaryDoCell.html"><span class="name">BinaryDoCell</span></a>
+        
+        <span class="params">(<span name="r1">r1: Op[IntRaster]</span>, <span name="r2">r2: Op[IntRaster]</span>, <span name="f">f: (Int, Int) ⇒ Int</span>)</span><span class="result"> extends Op[IntRaster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Perform a function on every cell in a raster with the values from another raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.BinaryIfCell" data-isabs="false">
+      <a id="BinaryIfCell:BinaryIfCell"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BinaryIfCell.html"><span class="name">BinaryIfCell</span></a>
+        
+        <span class="params">(<span name="r1">r1: Op[IntRaster]</span>, <span name="r2">r2: Op[IntRaster]</span>, <span name="cond">cond: (Int, Int) ⇒ Boolean</span>, <span name="trueValue">trueValue: Int</span>)</span><span class="result"> extends Op[IntRaster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a condition over two rasters, set the value of each cell in the output
+to a specified value if the condition is true given the corresponding values in
+each of the two input rasters.</p>
+    </li><li visbl="pub" name="geotrellis.operation.BinaryIfElseCell" data-isabs="false">
+      <a id="BinaryIfElseCell:BinaryIfElseCell"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BinaryIfElseCell.html"><span class="name">BinaryIfElseCell</span></a>
+        
+        <span class="params">(<span name="r1">r1: Op[IntRaster]</span>, <span name="r2">r2: Op[IntRaster]</span>, <span name="cond">cond: (Int, Int) ⇒ Boolean</span>, <span name="trueValue">trueValue: Int</span>, <span name="falseValue">falseValue: Int</span>)</span><span class="result"> extends Op[IntRaster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a condition over two rasters, set the value of each cell in the output
+to a specified true or false value after testing the specified condition on
+the corresponding values in each of the two input rasters.</p>
+    </li><li visbl="pub" name="geotrellis.operation.BinaryLocal" data-isabs="true">
+      <a id="BinaryLocal:BinaryLocal"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="BinaryLocal.html"><span class="name">BinaryLocal</span></a>
+        
+        <span class="result"> extends Op[IntRaster] with LocalOperation</span>
+      </span>
+      </h4>
+      <p class="comment cmt">BinaryLocal is an abstract class for all operations that are both local (operating
+on each cell in a raster without knowledge of other cells) and binary, by which
+we mean that the input includes two rasters (as opposed to 'unary' or 'multi').</p>
+    </li><li visbl="pub" name="geotrellis.operation.Bitmask" data-isabs="false">
+      <a id="Bitmask:Bitmask"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Bitmask.html"><span class="name">Bitmask</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Bitmask each cell by a constant value.</p>
+    </li><li visbl="pub" name="geotrellis.operation.BuildArrayHistogram" data-isabs="false">
+      <a id="BuildArrayHistogram:BuildArrayHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BuildArrayHistogram.html"><span class="name">BuildArrayHistogram</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="size">size: Op[Int]</span>)</span><span class="result"> extends Op2[IntRaster, Int, Histogram] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Build an array histogram (see <a name="geotrellis.stat.ArrayHistogram" class="extype" href="../stat/ArrayHistogram.html">ArrayHistogram</a> of values from
+a raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.BuildColorBreaks" data-isabs="false">
+      <a id="BuildColorBreaks:BuildColorBreaks"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BuildColorBreaks.html"><span class="name">BuildColorBreaks</span></a>
+        
+        <span class="params">(<span name="breaks">breaks: Op[Array[Int]]</span>, <span name="colors">colors: Op[Array[Int]]</span>)</span><span class="result"> extends Op2[Array[Int], Array[Int], ColorBreaks] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.BuildColorMapper" data-isabs="false">
+      <a id="BuildColorMapper:BuildColorMapper"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BuildColorMapper.html"><span class="name">BuildColorMapper</span></a>
+        
+        <span class="params">(<span name="colorBreaks">colorBreaks: Op[ColorBreaks]</span>, <span name="noDataColor">noDataColor: Op[Int]</span>)</span><span class="result"> extends Op2[ColorBreaks, Int, ColorMapper] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.BuildCompressedArrayHistogram" data-isabs="false">
+      <a id="BuildCompressedArrayHistogram:BuildCompressedArrayHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BuildCompressedArrayHistogram.html"><span class="name">BuildCompressedArrayHistogram</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="vmin">vmin: Int</span>, <span name="vmax">vmax: Int</span>, <span name="size">size: Int</span>)</span><span class="result"> extends Operation[Histogram] with BuildHistogram with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Build a histogram (using the <a name="geotrellis.stat.CompressedArrayHistogram" class="extype" href="../stat/CompressedArrayHistogram.html">CompressedArrayHistogram</a>
+strategy) from this raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.BuildExtent" data-isabs="false">
+      <a id="BuildExtent:BuildExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BuildExtent.html"><span class="name">BuildExtent</span></a>
+        
+        <span class="params">(<span name="xmin">xmin: Op[Double]</span>, <span name="ymin">ymin: Op[Double]</span>, <span name="xmax">xmax: Op[Double]</span>, <span name="ymax">ymax: Op[Double]</span>)</span><span class="result"> extends Op4[Double, Double, Double, Double, Extent] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt"></p>
+    </li><li visbl="pub" name="geotrellis.operation.BuildHistogram" data-isabs="true">
+      <a id="BuildHistogram:BuildHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="BuildHistogram.html"><span class="name">BuildHistogram</span></a>
+        
+        <span class="result"> extends Operation[Histogram]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generic trait used by the various histogram-building operations.</p>
+    </li><li visbl="pub" name="geotrellis.operation.BuildMapHistogram" data-isabs="false">
+      <a id="BuildMapHistogram:BuildMapHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BuildMapHistogram.html"><span class="name">BuildMapHistogram</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op1[IntRaster, Histogram] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Build a histogram (using the <a name="geotrellis.stat.MapHistogram" class="extype" href="../stat/MapHistogram.html">MapHistogram</a> strategy) from
+this raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.BuildRasterExtent" data-isabs="false">
+      <a id="BuildRasterExtent:BuildRasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BuildRasterExtent.html"><span class="name">BuildRasterExtent</span></a>
+        
+        <span class="params">(<span name="extent">extent: Op[Extent]</span>, <span name="cols">cols: Op[Int]</span>, <span name="rows">rows: Op[Int]</span>)</span><span class="result"> extends Op3[Extent, Int, Int, RasterExtent] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a geographical extent and grid height/width, return an object used to
+load raster data.</p>
+    </li><li visbl="pub" name="geotrellis.operation.BurnMultiPolygons" data-isabs="false">
+      <a id="BurnMultiPolygons:BurnMultiPolygons"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BurnMultiPolygons.html"><span class="name">BurnMultiPolygons</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="mps">mps: Op[Array[MultiPolygon]]</span>)</span><span class="result"> extends Op2[IntRaster, Array[MultiPolygon], IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.BurnPolygon" data-isabs="false">
+      <a id="BurnPolygon:BurnPolygon"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BurnPolygon.html"><span class="name">BurnPolygon</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="p">p: Op[Polygon]</span>)</span><span class="result"> extends Op2[IntRaster, Polygon, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Rasterize a polygon and then draw it on the provided raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.BurnPolygons" data-isabs="false">
+      <a id="BurnPolygons:BurnPolygons"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BurnPolygons.html"><span class="name">BurnPolygons</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="ps">ps: Op[Array[Polygon]]</span>)</span><span class="result"> extends Op2[IntRaster, Array[Polygon], IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Rasterize an array of polygons and then draw them into the provided raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.BurnPolygonsWithTransform" data-isabs="false">
+      <a id="BurnPolygonsWithTransform:BurnPolygonsWithTransform"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BurnPolygonsWithTransform.html"><span class="name">BurnPolygonsWithTransform</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="ps">ps: Array[Op[Polygon]]</span>, <span name="fs">fs: Array[(Int) ⇒ Int]</span>)</span><span class="result"> extends Op[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Rasterize an array of polygons and then draw them into the provided raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.BurnPolygonsWithValue" data-isabs="false">
+      <a id="BurnPolygonsWithValue:BurnPolygonsWithValue"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="BurnPolygonsWithValue.html"><span class="name">BurnPolygonsWithValue</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="ps">ps: Op[Array[Polygon]]</span>, <span name="v">v: Op[Int]</span>)</span><span class="result"> extends Op3[IntRaster, Array[Polygon], Int, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Rasterize an array of polygons and then draw them into the provided raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.ChunkRasterExtent" data-isabs="false">
+      <a id="ChunkRasterExtent:ChunkRasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ChunkRasterExtent.html"><span class="name">ChunkRasterExtent</span></a>
+        
+        <span class="params">(<span name="re">re: Op[RasterExtent]</span>, <span name="nx">nx: Op[Int]</span>, <span name="ny">ny: Op[Int]</span>)</span><span class="result"> extends Op3[RasterExtent, Int, Int, Array[RasterExtent]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Used to chunk a RasterExtent object (geographical extent + grid information)
+into many smaller contiguous pieces.</p>
+    </li><li visbl="pub" name="geotrellis.operation.CollectArray" data-isabs="false">
+      <a id="CollectArray:CollectArray[A]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="CollectArray.html"><span class="name">CollectArray</span></a>
+        <span class="tparams">[<span name="A">A</span>]</span>
+        <span class="params">(<span name="ops">ops: Array[Op[A]]</span>, <span name="evidence$1">evidence$1: Manifest[A]</span>)</span><span class="result"> extends Op[Array[A]] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.ColorsFromPalette" data-isabs="false">
+      <a id="ColorsFromPalette:ColorsFromPalette"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ColorsFromPalette.html"><span class="name">ColorsFromPalette</span></a>
+        
+        <span class="params">(<span name="palette">palette: Op[Array[Int]]</span>, <span name="num">num: Op[Int]</span>)</span><span class="result"> extends Op2[Array[Int], Int, Array[Int]] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.CombineExtents" data-isabs="false">
+      <a id="CombineExtents:CombineExtents"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="CombineExtents.html"><span class="name">CombineExtents</span></a>
+        
+        <span class="params">(<span name="e1">e1: Op[Extent]</span>, <span name="e2">e2: Op[Extent]</span>)</span><span class="result"> extends Op2[Extent, Extent, Extent] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.CopyRaster" data-isabs="false">
+      <a id="CopyRaster:CopyRaster"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="CopyRaster.html"><span class="name">CopyRaster</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op1[IntRaster, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given an operation producing a raster, returns a copy of this raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.CreateRaster" data-isabs="false">
+      <a id="CreateRaster:CreateRaster"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="CreateRaster.html"><span class="name">CreateRaster</span></a>
+        
+        <span class="params">(<span name="re">re: Op[RasterExtent]</span>)</span><span class="result"> extends Op1[RasterExtent, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Creates an empty raster object based on the given raster properties.</p>
+    </li><li visbl="pub" name="geotrellis.operation.CreateSimplePolygon" data-isabs="false">
+      <a id="CreateSimplePolygon:CreateSimplePolygon"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="CreateSimplePolygon.html"><span class="name">CreateSimplePolygon</span></a>
+        
+        <span class="params">(<span name="pts">pts: Op[Array[(Double, Double)]]</span>, <span name="v">v: Op[Int]</span>)</span><span class="result"> extends Op2[Array[(Double, Double)], Int, Polygon] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Create a Polygon from an array of coordinates represented as a tuple (x,y).</p>
+    </li><li visbl="pub" name="geotrellis.operation.CropRasterExtent" data-isabs="false">
+      <a id="CropRasterExtent:CropRasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="CropRasterExtent.html"><span class="name">CropRasterExtent</span></a>
+        
+        <span class="params">(<span name="r">r: Op[RasterExtent]</span>, <span name="e">e: Op[Extent]</span>)</span><span class="result"> extends Op2[RasterExtent, Extent, RasterExtent] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a geographical extent and grid height/width, return an object used to
+load raster data.</p>
+    </li><li visbl="pub" name="geotrellis.operation.CropRasterExtentByExtent" data-isabs="false">
+      <a id="CropRasterExtentByExtent:CropRasterExtentByExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="CropRasterExtentByExtent.html"><span class="name">CropRasterExtentByExtent</span></a>
+        
+        <span class="params">(<span name="g">g: Op[RasterExtent]</span>, <span name="e">e: Op[Extent]</span>)</span><span class="result"> extends Op2[RasterExtent, Extent, RasterExtent] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a geographical extent and grid height/width, return an object used to
+load raster data.</p>
+    </li><li visbl="pub" name="geotrellis.operation.CsvIntMap" data-isabs="false">
+      <a id="CsvIntMap:CsvIntMap"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="CsvIntMap.html"><span class="name">CsvIntMap</span></a>
+        
+        <span class="params">(<span name="path">path: String</span>, <span name="delimiter">delimiter: String</span>)</span><span class="result"> extends Op2[String, String, Map[(String, String), Int]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Create a Map of (String,String) =&gt; Int from a CSV file
+of the format: String,String,Int
+</p>
+    </li><li visbl="pub" name="geotrellis.operation.package#DispatchedOp" data-isabs="false">
+      <a id="DispatchedOp:DispatchedOp[T]"></a>
+      <h4 class="signature">
+      <span class="kind">type</span>
+      <span class="symbol"> 
+        <span class="name">DispatchedOp</span>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="result"> = <a name="geotrellis.operation.DispatchedOperation" class="extype" href="DispatchedOperation.html">DispatchedOperation</a>[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.DispatchedOperation" data-isabs="false">
+      <a id="DispatchedOperation:DispatchedOperation[T]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="DispatchedOperation.html"><span class="name">DispatchedOperation</span></a>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="params">(<span name="op">op: Op[T]</span>, <span name="dispatcher">dispatcher: ActorRef</span>)</span><span class="result"> extends OperationWrapper[T] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.Divide" data-isabs="false">
+      <a id="Divide:Divide"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Divide.html"><span class="name">Divide</span></a>
+        
+        <span class="params">(<span name="r1">r1: Op[IntRaster]</span>, <span name="r2">r2: Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Divide each value of one raster with the values from another raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.DivideConstant" data-isabs="false">
+      <a id="DivideConstant:DivideConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="DivideConstant.html"><span class="name">DivideConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Divide each cell by a constant value.</p>
+    </li><li visbl="pub" name="geotrellis.operation.DivideConstantBy" data-isabs="false">
+      <a id="DivideConstantBy:DivideConstantBy"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="DivideConstantBy.html"><span class="name">DivideConstantBy</span></a>
+        
+        <span class="params">(<span name="c">c: Op[Int]</span>, <span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">For each cell, divide a constant value by that cell's value.</p>
+    </li><li visbl="pub" name="geotrellis.operation.DivideDoubleConstant" data-isabs="false">
+      <a id="DivideDoubleConstant:DivideDoubleConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="DivideDoubleConstant.html"><span class="name">DivideDoubleConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Double]</span>)</span><span class="result"> extends Op[IntRaster] with WithDoubleConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.DivideDoubleConstantBy" data-isabs="false">
+      <a id="DivideDoubleConstantBy:DivideDoubleConstantBy"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="DivideDoubleConstantBy.html"><span class="name">DivideDoubleConstantBy</span></a>
+        
+        <span class="params">(<span name="c">c: Op[Double]</span>, <span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with WithDoubleConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.DoCell" data-isabs="false">
+      <a id="DoCell:DoCell"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="DoCell.html"><span class="name">DoCell</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="f">f: (Int) ⇒ Int</span>)</span><span class="result"> extends Op[IntRaster] with SimpleUnaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Perform a function on every cell in a raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.FindClassBreaks" data-isabs="false">
+      <a id="FindClassBreaks:FindClassBreaks"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="FindClassBreaks.html"><span class="name">FindClassBreaks</span></a>
+        
+        <span class="params">(<span name="h">h: Op[Histogram]</span>, <span name="n">n: Op[Int]</span>)</span><span class="result"> extends Op[Array[Int]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generate quantile class breaks for a given raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.FindColorBreaks" data-isabs="false">
+      <a id="FindColorBreaks:FindColorBreaks"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="FindColorBreaks.html"><span class="name">FindColorBreaks</span></a>
+        
+        <span class="params">(<span name="h">h: Op[Histogram]</span>, <span name="cs">cs: Op[Array[Int]]</span>)</span><span class="result"> extends Op[ColorBreaks] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generate quantile class breaks with assigned colors.</p>
+    </li><li visbl="pub" name="geotrellis.operation.FindMinMax" data-isabs="false">
+      <a id="FindMinMax:FindMinMax"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="FindMinMax.html"><span class="name">FindMinMax</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op1[IntRaster, (Int, Int)] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Find the minimum and maximum value of a raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.ForEach" data-isabs="false">
+      <a id="ForEach:ForEach[A, Z]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ForEach.html"><span class="name">ForEach</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="Z">Z</span>]</span>
+        <span class="params">(<span name="op">op: Op[Array[A]]</span>, <span name="f">f: (A) ⇒ Op[Z]</span>, <span name="evidence$1">evidence$1: Manifest[Z]</span>)</span><span class="result"> extends Op[Array[Z]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Evaluates the given operation (op) to get an array of A's.</p>
+    </li><li visbl="pub" name="geotrellis.operation.ForEach2" data-isabs="false">
+      <a id="ForEach2:ForEach2[A, B, Z]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ForEach2.html"><span class="name">ForEach2</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="Z">Z</span>]</span>
+        <span class="params">(<span name="opA">opA: Op[Array[A]]</span>, <span name="opB">opB: Op[Array[B]]</span>, <span name="f">f: (A, B) ⇒ Op[Z]</span>, <span name="evidence$2">evidence$2: Manifest[Z]</span>)</span><span class="result"> extends Op[Array[Z]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Evaluates the given operations (opA and opB) to get an array of A's and an
+array of B's.</p>
+    </li><li visbl="pub" name="geotrellis.operation.ForEach3" data-isabs="false">
+      <a id="ForEach3:ForEach3[A, B, C, Z]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ForEach3.html"><span class="name">ForEach3</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="Z">Z</span>]</span>
+        <span class="params">(<span name="opA">opA: Op[Array[A]]</span>, <span name="opB">opB: Op[Array[B]]</span>, <span name="opC">opC: Op[Array[C]]</span>, <span name="f">f: (A, B, C) ⇒ Op[Z]</span>, <span name="evidence$3">evidence$3: Manifest[Z]</span>)</span><span class="result"> extends Op[Array[Z]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Evaluates the given operations (opA opB, and opC) to get arrays of A's, B's
+and C's (which should be the same length).</p>
+    </li><li visbl="pub" name="geotrellis.operation.ForEachTile" data-isabs="false">
+      <a id="ForEachTile:ForEachTile"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ForEachTile.html"><span class="name">ForEachTile</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="f">f: (Op[IntRaster]) ⇒ Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Perform an operation on every tile in a tileset, and return the new tileset.</p>
+    </li><li visbl="pub" name="geotrellis.operation.GenerateStatistics" data-isabs="false">
+      <a id="GenerateStatistics:GenerateStatistics"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="GenerateStatistics.html"><span class="name">GenerateStatistics</span></a>
+        
+        <span class="params">(<span name="h">h: Op[Histogram]</span>)</span><span class="result"> extends Op1[Histogram, Statistics] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Determine statistical data for the given histogram.</p>
+    </li><li visbl="pub" name="geotrellis.operation.GetPolygonExtent" data-isabs="false">
+      <a id="GetPolygonExtent:GetPolygonExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="GetPolygonExtent.html"><span class="name">GetPolygonExtent</span></a>
+        
+        <span class="params">(<span name="p">p: Op[Polygon]</span>)</span><span class="result"> extends Op1[Polygon, Extent] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Return the extent of a given polygon.</p>
+    </li><li visbl="pub" name="geotrellis.operation.GetRasterExtent" data-isabs="false">
+      <a id="GetRasterExtent:GetRasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="GetRasterExtent.html"><span class="name">GetRasterExtent</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op1[IntRaster, RasterExtent] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Get the geotrellis.geoattrs.RasterExtent from a given raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.GetUnaryFunction" data-isabs="false">
+      <a id="GetUnaryFunction:GetUnaryFunction"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="GetUnaryFunction.html"><span class="name">GetUnaryFunction</span></a>
+        
+        <span class="params">(<span name="op">op: UnaryLocal</span>)</span><span class="result"> extends Op[UnaryF] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.Hillshade" data-isabs="false">
+      <a id="Hillshade:Hillshade"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Hillshade.html"><span class="name">Hillshade</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="azimuth">azimuth: Op[Double]</span>, <span name="altitude">altitude: Op[Double]</span>)</span><span class="result"> extends Op3[IntRaster, Double, Double, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Hillshade creates a raster that, visually, adds a three dimensional appearance to an elevation raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.Identity" data-isabs="false">
+      <a id="Identity:Identity"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Identity.html"><span class="name">Identity</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with SimpleUnaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Suspiciously similar to <a name="geotrellis.operation.CopyRaster" class="extype" href="CopyRaster.html">CopyRaster</a>, Identity returns
+a new raster with the values of the given raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.IfCell" data-isabs="false">
+      <a id="IfCell:IfCell"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="IfCell.html"><span class="name">IfCell</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="cond">cond: (Int) ⇒ Boolean</span>, <span name="trueValue">trueValue: Int</span>)</span><span class="result"> extends Op[IntRaster] with SimpleUnaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Maps all cells matching <code>cond</code> to <code>trueValue</code>.</p>
+    </li><li visbl="pub" name="geotrellis.operation.IfElseCell" data-isabs="false">
+      <a id="IfElseCell:IfElseCell"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="IfElseCell.html"><span class="name">IfElseCell</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="cond">cond: (Int) ⇒ Boolean</span>, <span name="trueValue">trueValue: Int</span>, <span name="falseValue">falseValue: Int</span>)</span><span class="result"> extends Op[IntRaster] with SimpleUnaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Set all values of output raster to one value or another based on whether a
+condition is true or false.</p>
+    </li><li visbl="pub" name="geotrellis.operation.InverseMask" data-isabs="false">
+      <a id="InverseMask:InverseMask"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="InverseMask.html"><span class="name">InverseMask</span></a>
+        
+        <span class="params">(<span name="r1">r1: Op[IntRaster]</span>, <span name="r2">r2: Op[IntRaster]</span>, <span name="readMask">readMask: Int</span>, <span name="writeMask">writeMask: Int</span>)</span><span class="result"> extends Op[IntRaster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generate a raster with the values from the first raster, but only include
+cells in which the corresponding cell in the second raster is set to the
+&quot;readMask&quot; value.</p>
+    </li><li visbl="pub" name="geotrellis.operation.Kernel" data-isabs="false">
+      <a id="Kernel:Kernel"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Kernel.html"><span class="name">Kernel</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Used for Kernel Density calculation
+</p>
+    </li><li visbl="pub" name="geotrellis.operation.KernelDensity" data-isabs="false">
+      <a id="KernelDensity:KernelDensity"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="KernelDensity.html"><span class="name">KernelDensity</span></a>
+        
+        <span class="params">(<span name="outputRasterExtent">outputRasterExtent: Op[RasterExtent]</span>, <span name="kernel">kernel: Op[Kernel]</span>, <span name="points">points: Op[Array[Point]]</span>)</span><span class="result"> extends Op3[RasterExtent, Kernel, Array[Point], IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Compute the kernel density of a set of points onto a raster</p>
+    </li><li visbl="pub" name="geotrellis.operation.Literal" data-isabs="false">
+      <a id="Literal:Literal[A]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Literal.html"><span class="name">Literal</span></a>
+        <span class="tparams">[<span name="A">A</span>]</span>
+        <span class="params">(<span name="a">a: A</span>, <span name="evidence$1">evidence$1: Manifest[A]</span>)</span><span class="result"> extends Op[A] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Return the literal value specified.</p>
+    </li><li visbl="pub" name="geotrellis.operation.LoadFile" data-isabs="false">
+      <a id="LoadFile:LoadFile"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="LoadFile.html"><span class="name">LoadFile</span></a>
+        
+        <span class="params">(<span name="p">p: Op[String]</span>)</span><span class="result"> extends Operation[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Load the raster data for a particular extent/resolution from the specified file.</p>
+    </li><li visbl="pub" name="geotrellis.operation.LoadFileWithRasterExtent" data-isabs="false">
+      <a id="LoadFileWithRasterExtent:LoadFileWithRasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="LoadFileWithRasterExtent.html"><span class="name">LoadFileWithRasterExtent</span></a>
+        
+        <span class="params">(<span name="p">p: Op[String]</span>, <span name="e">e: Op[RasterExtent]</span>)</span><span class="result"> extends Operation[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.LoadRaster" data-isabs="false">
+      <a id="LoadRaster:LoadRaster"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="LoadRaster.html"><span class="name">LoadRaster</span></a>
+        
+        <span class="params">(<span name="n">n: Op[String]</span>, <span name="r">r: Op[RasterExtent]</span>)</span><span class="result"> extends Op[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Load the raster data for a particular extent/resolution from the specified file.</p>
+    </li><li visbl="pub" name="geotrellis.operation.LoadRasterExtentFromFile" data-isabs="false">
+      <a id="LoadRasterExtentFromFile:LoadRasterExtentFromFile"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="LoadRasterExtentFromFile.html"><span class="name">LoadRasterExtentFromFile</span></a>
+        
+        <span class="params">(<span name="path">path: String</span>)</span><span class="result"> extends Op1[String, RasterExtent] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Load the geotrellis.geoattrs.RasterExtent from the raster in the specified file.</p>
+    </li><li visbl="pub" name="geotrellis.operation.package#LocalOp" data-isabs="false">
+      <a id="LocalOp:LocalOp"></a>
+      <h4 class="signature">
+      <span class="kind">type</span>
+      <span class="symbol"> 
+        <span class="name">LocalOp</span>
+        
+        <span class="result"> = <a name="geotrellis.operation.LocalOperation" class="extype" href="LocalOperation.html">LocalOperation</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.LocalOperation" data-isabs="true">
+      <a id="LocalOperation:LocalOperation"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="LocalOperation.html"><span class="name">LocalOperation</span></a>
+        
+        <span class="result"> extends Op[IntRaster]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Local operations involve each individual value in a raster without information
+about other values in the raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.Map1" data-isabs="false">
+      <a id="Map1:Map1[A, Z]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Map1.html"><span class="name">Map1</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="Z">Z</span>]</span>
+        <span class="params">(<span name="a">a: Op[A]</span>, <span name="call">call: (A) ⇒ Z</span>, <span name="evidence$1">evidence$1: Manifest[A]</span>, <span name="evidence$2">evidence$2: Manifest[Z]</span>)</span><span class="result"> extends Op[Z] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Map an Op[A] into an Op[Z] using a function from A =&gt; Z.</p>
+    </li><li visbl="pub" name="geotrellis.operation.Map2" data-isabs="false">
+      <a id="Map2:Map2[A, B, Z]"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Map2.html"><span class="name">Map2</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="Z">Z</span>]</span>
+        <span class="params">(<span name="a">a: Op[A]</span>, <span name="b">b: Op[B]</span>, <span name="call">call: (A, B) ⇒ Z</span>, <span name="evidence$1">evidence$1: Manifest[A]</span>, <span name="evidence$2">evidence$2: Manifest[B]</span>, <span name="evidence$3">evidence$3: Manifest[Z]</span>)</span><span class="result"> extends Op[Z] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Map an Op[A] and Op[B] into an Op[Z] using a function from (A,B) =&gt; Z.</p>
+    </li><li visbl="pub" name="geotrellis.operation.Mask" data-isabs="false">
+      <a id="Mask:Mask"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Mask.html"><span class="name">Mask</span></a>
+        
+        <span class="params">(<span name="r1">r1: Op[IntRaster]</span>, <span name="r2">r2: Op[IntRaster]</span>, <span name="readMask">readMask: Int</span>, <span name="writeMask">writeMask: Int</span>)</span><span class="result"> extends Op[IntRaster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generate a raster with the values from the first raster, but only include
+cells in which the corresponding cell in the second raster *are not* set to the
+&quot;readMask&quot; value.</p>
+    </li><li visbl="pub" name="geotrellis.operation.MaxConstant" data-isabs="false">
+      <a id="MaxConstant:MaxConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="MaxConstant.html"><span class="name">MaxConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Set each cell to a constant number or the corresponding cell value, whichever is highest.</p>
+    </li><li visbl="pub" name="geotrellis.operation.MinConstant" data-isabs="false">
+      <a id="MinConstant:MinConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="MinConstant.html"><span class="name">MinConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Set each cell to a constant or its existing value, whichever is lowest.</p>
+    </li><li visbl="pub" name="geotrellis.operation.MultiLocal" data-isabs="true">
+      <a id="MultiLocal:MultiLocal"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="MultiLocal.html"><span class="name">MultiLocal</span></a>
+        
+        <span class="result"> extends Op[IntRaster] with LocalOperation</span>
+      </span>
+      </h4>
+      <p class="comment cmt"></p>
+    </li><li visbl="pub" name="geotrellis.operation.MultiLocalArray" data-isabs="true">
+      <a id="MultiLocalArray:MultiLocalArray"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="MultiLocalArray.html"><span class="name">MultiLocalArray</span></a>
+        
+        <span class="result"> extends Op[IntRaster]</span>
+      </span>
+      </h4>
+      <p class="comment cmt"></p>
+    </li><li visbl="pub" name="geotrellis.operation.Multiply" data-isabs="false">
+      <a id="Multiply:Multiply"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Multiply.html"><span class="name">Multiply</span></a>
+        
+        <span class="params">(<span name="rs">rs: Op[IntRaster]*</span>)</span><span class="result"> extends Op[IntRaster] with MultiLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Multiply each cell of each raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.MultiplyArray" data-isabs="false">
+      <a id="MultiplyArray:MultiplyArray"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="MultiplyArray.html"><span class="name">MultiplyArray</span></a>
+        
+        <span class="params">(<span name="op">op: Op[Array[IntRaster]]</span>)</span><span class="result"> extends Op[IntRaster] with MultiLocalArray with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Multiply each cell of each raster in array.</p>
+    </li><li visbl="pub" name="geotrellis.operation.MultiplyConstant" data-isabs="false">
+      <a id="MultiplyConstant:MultiplyConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="MultiplyConstant.html"><span class="name">MultiplyConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Multiply each cell by a constant.</p>
+    </li><li visbl="pub" name="geotrellis.operation.MultiplyDoubleConstant" data-isabs="false">
+      <a id="MultiplyDoubleConstant:MultiplyDoubleConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="MultiplyDoubleConstant.html"><span class="name">MultiplyDoubleConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Double]</span>)</span><span class="result"> extends Op[IntRaster] with WithDoubleConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.Negate" data-isabs="false">
+      <a id="Negate:Negate"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Negate.html"><span class="name">Negate</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with SimpleUnaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Negate (multiply by -1) each value in a raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.package#Op" data-isabs="false">
+      <a id="Op:Op[A]"></a>
+      <h4 class="signature">
+      <span class="kind">type</span>
+      <span class="symbol"> 
+        <span class="name">Op</span>
+        <span class="tparams">[<span name="A">A</span>]</span>
+        <span class="result"> = <a name="geotrellis.operation.Operation" class="extype" href="Operation.html">Operation</a>[A]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.Op0" data-isabs="true">
+      <a id="Op0:Op0[T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Op0.html"><span class="name">Op0</span></a>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Below are the Op0 - Op6 abstract classes.</p>
+    </li><li visbl="pub" name="geotrellis.operation.Op1" data-isabs="true">
+      <a id="Op1:Op1[A, T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Op1.html"><span class="name">Op1</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.Op2" data-isabs="true">
+      <a id="Op2:Op2[A, B, T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Op2.html"><span class="name">Op2</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.Op3" data-isabs="true">
+      <a id="Op3:Op3[A, B, C, T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Op3.html"><span class="name">Op3</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.Op4" data-isabs="true">
+      <a id="Op4:Op4[A, B, C, D, T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Op4.html"><span class="name">Op4</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.Op5" data-isabs="true">
+      <a id="Op5:Op5[A, B, C, D, E, T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Op5.html"><span class="name">Op5</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.Op6" data-isabs="true">
+      <a id="Op6:Op6[A, B, C, D, E, F, T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Op6.html"><span class="name">Op6</span></a>
+        <span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.Operation" data-isabs="true">
+      <a id="Operation:Operation[T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="Operation.html"><span class="name">Operation</span></a>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="result"> extends Product</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Base Operation for all Trellis functionality.</p>
+    </li><li visbl="pub" name="geotrellis.operation.OperationWrapper" data-isabs="true">
+      <a id="OperationWrapper:OperationWrapper[T]"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="OperationWrapper.html"><span class="name">OperationWrapper</span></a>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.ParseDouble" data-isabs="false">
+      <a id="ParseDouble:ParseDouble"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ParseDouble.html"><span class="name">ParseDouble</span></a>
+        
+        <span class="params">(<span name="s">s: Op[String]</span>)</span><span class="result"> extends Op1[String, Double] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Parse a string as a double.</p>
+    </li><li visbl="pub" name="geotrellis.operation.ParseExtent" data-isabs="false">
+      <a id="ParseExtent:ParseExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ParseExtent.html"><span class="name">ParseExtent</span></a>
+        
+        <span class="params">(<span name="s">s: Op[String]</span>)</span><span class="result"> extends Op1[String, Extent] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.ParseHexInt" data-isabs="false">
+      <a id="ParseHexInt:ParseHexInt"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ParseHexInt.html"><span class="name">ParseHexInt</span></a>
+        
+        <span class="params">(<span name="s">s: Op[String]</span>)</span><span class="result"> extends Op1[String, Int] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Parse a string as a base-16 integer.</p>
+    </li><li visbl="pub" name="geotrellis.operation.ParseInt" data-isabs="false">
+      <a id="ParseInt:ParseInt"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ParseInt.html"><span class="name">ParseInt</span></a>
+        
+        <span class="params">(<span name="s">s: Op[String]</span>)</span><span class="result"> extends Op1[String, Int] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Parse a string as an integer.</p>
+    </li><li visbl="pub" name="geotrellis.operation.PolygonExtent" data-isabs="false">
+      <a id="PolygonExtent:PolygonExtent"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="PolygonExtent.html"><span class="name">PolygonExtent</span></a>
+        
+        <span class="params">(<span name="p">p: Op[Polygon]</span>, <span name="e">e: Op[Extent]</span>)</span><span class="result"> extends Op2[Polygon, Extent, List[Polygon]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Return the extent of a given polygon.</p>
+    </li><li visbl="pub" name="geotrellis.operation.PolygonalZonalHistograms" data-isabs="false">
+      <a id="PolygonalZonalHistograms:PolygonalZonalHistograms"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="PolygonalZonalHistograms.html"><span class="name">PolygonalZonalHistograms</span></a>
+        
+        <span class="params">(<span name="ps">ps: Array[Op[Polygon]]</span>, <span name="r">r: Op[IntRaster]</span>, <span name="size">size: Int</span>)</span><span class="result"> extends Op[Array[Histogram]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a raster and an array of polygons, return a histogram summary of the cells
+within each polygon.</p>
+    </li><li visbl="pub" name="geotrellis.operation.PowConstant" data-isabs="false">
+      <a id="PowConstant:PowConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="PowConstant.html"><span class="name">PowConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Raise each cell to the cth power.</p>
+    </li><li visbl="pub" name="geotrellis.operation.PowDoubleConstant" data-isabs="false">
+      <a id="PowDoubleConstant:PowDoubleConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="PowDoubleConstant.html"><span class="name">PowDoubleConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Double]</span>)</span><span class="result"> extends Op[IntRaster] with WithDoubleConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.PrecomputedNormalize" data-isabs="false">
+      <a id="PrecomputedNormalize:PrecomputedNormalize"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="PrecomputedNormalize.html"><span class="name">PrecomputedNormalize</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[(Int, Int)]</span>, <span name="g">g: Op[(Int, Int)]</span>)</span><span class="result"> extends Op3[IntRaster, (Int, Int), (Int, Int), IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Normalize the values in the given raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.RenderPNG" data-isabs="false">
+      <a id="RenderPNG:RenderPNG"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="RenderPNG.html"><span class="name">RenderPNG</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="colorBreaks">colorBreaks: Op[ColorBreaks]</span>, <span name="noDataColor">noDataColor: Op[Int]</span>, <span name="transparent">transparent: Op[Boolean]</span>)</span><span class="result"> extends Op4[IntRaster, ColorBreaks, Int, Boolean, Array[Byte]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generate a PNG from a given raster and a set of color breaks.</p>
+    </li><li visbl="pub" name="geotrellis.operation.RenderPNG3" data-isabs="false">
+      <a id="RenderPNG3:RenderPNG3"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="RenderPNG3.html"><span class="name">RenderPNG3</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="mapper">mapper: Op[ColorMapper]</span>)</span><span class="result"> extends Op2[IntRaster, ColorMapper, Array[Byte]] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.ResampleRaster" data-isabs="false">
+      <a id="ResampleRaster:ResampleRaster"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ResampleRaster.html"><span class="name">ResampleRaster</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="cols">cols: Op[Int]</span>, <span name="rows">rows: Op[Int]</span>)</span><span class="result"> extends Op3[IntRaster, Int, Int, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This uses a nearest-neighbor algorithm to resample a raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.SimpleUnaryLocal" data-isabs="true">
+      <a id="SimpleUnaryLocal:SimpleUnaryLocal"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="SimpleUnaryLocal.html"><span class="name">SimpleUnaryLocal</span></a>
+        
+        <span class="result"> extends Op[IntRaster] with UnaryLocal</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.Split" data-isabs="false">
+      <a id="Split:Split"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Split.html"><span class="name">Split</span></a>
+        
+        <span class="params">(<span name="s">s: Op[String]</span>, <span name="delim">delim: Op[String]</span>)</span><span class="result"> extends Op2[String, String, Array[String]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Split a string on a comma.</p>
+    </li><li visbl="pub" name="geotrellis.operation.SplitMultiPolygon" data-isabs="false">
+      <a id="SplitMultiPolygon:SplitMultiPolygon"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="SplitMultiPolygon.html"><span class="name">SplitMultiPolygon</span></a>
+        
+        <span class="params">(<span name="m">m: Op[MultiPolygon]</span>)</span><span class="result"> extends Op1[MultiPolygon, Array[Polygon]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Split multipolygon into polygons.</p>
+    </li><li visbl="pub" name="geotrellis.operation.SplitOnComma" data-isabs="false">
+      <a id="SplitOnComma:SplitOnComma"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="SplitOnComma.html"><span class="name">SplitOnComma</span></a>
+        
+        <span class="params">(<span name="s">s: Op[String]</span>)</span><span class="result"> extends Op1[String, Array[String]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Split a string on a comma.</p>
+    </li><li visbl="pub" name="geotrellis.operation.StandardDeviation" data-isabs="false">
+      <a id="StandardDeviation:StandardDeviation"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="StandardDeviation.html"><span class="name">StandardDeviation</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="h">h: Op[Histogram]</span>, <span name="factor">factor: Int</span>)</span><span class="result"> extends Op[IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.Subtract" data-isabs="false">
+      <a id="Subtract:Subtract"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Subtract.html"><span class="name">Subtract</span></a>
+        
+        <span class="params">(<span name="r1">r1: Op[IntRaster]</span>, <span name="r2">r2: Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Subtract each value in the second raster from the corresponding value in the first raster.</p>
+    </li><li visbl="pub" name="geotrellis.operation.SubtractConstant" data-isabs="false">
+      <a id="SubtractConstant:SubtractConstant"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="SubtractConstant.html"><span class="name">SubtractConstant</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Subtract a constant value from each cell.</p>
+    </li><li visbl="pub" name="geotrellis.operation.SubtractConstantBy" data-isabs="false">
+      <a id="SubtractConstantBy:SubtractConstantBy"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="SubtractConstantBy.html"><span class="name">SubtractConstantBy</span></a>
+        
+        <span class="params">(<span name="c">c: Op[Int]</span>, <span name="r">r: Op[IntRaster]</span>)</span><span class="result"> extends Op[IntRaster] with WithIntConstant with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Subtract the value of each cell by a constant.</p>
+    </li><li visbl="pub" name="geotrellis.operation.UnaryF" data-isabs="false">
+      <a id="UnaryF:UnaryF"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="UnaryF.html"><span class="name">UnaryF</span></a>
+        
+        <span class="params">(<span name="f">f: (Int) ⇒ Int</span>)</span><span class="result"> extends (Int) ⇒ Int with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Useful wrapper for Function1[Int,Int] that helps preserve type information
+between actors.</p>
+    </li><li visbl="pub" name="geotrellis.operation.UnaryLocal" data-isabs="true">
+      <a id="UnaryLocal:UnaryLocal"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="UnaryLocal.html"><span class="name">UnaryLocal</span></a>
+        
+        <span class="result"> extends Op[IntRaster] with LocalOp</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Abstract class for all operations that are unary (operate on a single raster) and
+are local (operate on each cell without knowledge of other cells).</p>
+    </li><li visbl="pub" name="geotrellis.operation.WarpRaster" data-isabs="false">
+      <a id="WarpRaster:WarpRaster"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="WarpRaster.html"><span class="name">WarpRaster</span></a>
+        
+        <span class="params">(<span name="r">r: Op[IntRaster]</span>, <span name="e">e: Op[RasterExtent]</span>)</span><span class="result"> extends Op2[IntRaster, RasterExtent, IntRaster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Crop a raster to a given extent, using a nearest neighbor algorithm to resample.</p>
+    </li><li visbl="pub" name="geotrellis.operation.WithDoubleConstant" data-isabs="true">
+      <a id="WithDoubleConstant:WithDoubleConstant"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="WithDoubleConstant.html"><span class="name">WithDoubleConstant</span></a>
+        
+        <span class="result"> extends Op[IntRaster] with UnaryLocal</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Multiply each cell in a raster by a constant value.</p>
+    </li><li visbl="pub" name="geotrellis.operation.WithIntConstant" data-isabs="true">
+      <a id="WithIntConstant:WithIntConstant"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="WithIntConstant.html"><span class="name">WithIntConstant</span></a>
+        
+        <span class="result"> extends Op[IntRaster] with UnaryLocal</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Multiply each cell in a raster by a constant value.</p>
+    </li><li visbl="pub" name="geotrellis.operation.ZonalHistogram" data-isabs="false">
+      <a id="ZonalHistogram:ZonalHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="ZonalHistogram.html"><span class="name">ZonalHistogram</span></a>
+        
+        <span class="params">(<span name="data">data: Op[IntRaster]</span>, <span name="zones">zones: Op[IntRaster]</span>, <span name="zonesArraySize">zonesArraySize: Op[Int]</span>, <span name="histArraySize">histArraySize: Op[Int]</span>)</span><span class="result"> extends Op4[IntRaster, IntRaster, Int, Int, Array[Histogram]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a raster, return a histogram summary of the cells within each zone.</p>
+    </li></ol>
+            </div>
+        
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="geotrellis.operation.BuildRasterExtent" data-isabs="false">
+      <a id="BuildRasterExtent:BuildRasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="BuildRasterExtent$.html"><span class="name">BuildRasterExtent</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.BurnMultiPolygon" data-isabs="false">
+      <a id="BurnMultiPolygon:BurnMultiPolygon"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="BurnMultiPolygon$.html"><span class="name">BurnMultiPolygon</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.BurnMultiPolygons" data-isabs="false">
+      <a id="BurnMultiPolygons:BurnMultiPolygons"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="BurnMultiPolygons$.html"><span class="name">BurnMultiPolygons</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.BurnPolygons" data-isabs="false">
+      <a id="BurnPolygons:BurnPolygons"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="BurnPolygons$.html"><span class="name">BurnPolygons</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.CropRasterExtent" data-isabs="false">
+      <a id="CropRasterExtent:CropRasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="CropRasterExtent$.html"><span class="name">CropRasterExtent</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.HillshadeHelper" data-isabs="false">
+      <a id="HillshadeHelper:HillshadeHelper"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="HillshadeHelper$.html"><span class="name">HillshadeHelper</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.IfCell" data-isabs="false">
+      <a id="IfCell:IfCell"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="IfCell$.html"><span class="name">IfCell</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.Kernel" data-isabs="false">
+      <a id="Kernel:Kernel"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="Kernel$.html"><span class="name">Kernel</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Object used for generating kernels
+</p>
+    </li><li visbl="pub" name="geotrellis.operation.KernelDensityHelper" data-isabs="false">
+      <a id="KernelDensityHelper:KernelDensityHelper"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="KernelDensityHelper$.html"><span class="name">KernelDensityHelper</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.LoadFile" data-isabs="false">
+      <a id="LoadFile:LoadFile"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="LoadFile$.html"><span class="name">LoadFile</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.LoadRaster" data-isabs="false">
+      <a id="LoadRaster:LoadRaster"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="LoadRaster$.html"><span class="name">LoadRaster</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.Normalize" data-isabs="false">
+      <a id="Normalize:Normalize"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="Normalize$.html"><span class="name">Normalize</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">We'd like to use the normalize name both when we want to automatically
+detect the min/max values, and when we provide them explicitly.</p>
+    </li><li visbl="pub" name="geotrellis.operation.Operation" data-isabs="false">
+      <a id="Operation:Operation"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="Operation$.html"><span class="name">Operation</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.ParseRasterExtent" data-isabs="false">
+      <a id="ParseRasterExtent:ParseRasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="ParseRasterExtent$.html"><span class="name">ParseRasterExtent</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.UnaryF" data-isabs="false">
+      <a id="UnaryF:UnaryF"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="UnaryF$.html"><span class="name">UnaryF</span></a>
+        
+        <span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.UnaryLocal" data-isabs="false">
+      <a id="UnaryLocal:UnaryLocal"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="UnaryLocal$.html"><span class="name">UnaryLocal</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.Util" data-isabs="false">
+      <a id="Util:Util"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="Util$.html"><span class="name">Util</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.package#addIntRasterTo1" data-isabs="false">
+      <a id="addIntRasterTo1(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addIntRasterTo1</span>
+        
+        <span class="params">(<span name="lhs">lhs: <a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#addIntRasterTo2" data-isabs="false">
+      <a id="addIntRasterTo2(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addIntRasterTo2</span>
+        
+        <span class="params">(<span name="lhs">lhs: <a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#addIntTo1" data-isabs="false">
+      <a id="addIntTo1(Int):AnyRef { def +(rhs: geotrellis.operation.package.Op[Int]): geotrellis.operation.package.Op[Int] }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addIntTo1</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { def +(rhs: geotrellis.operation.package.Op[Int]): geotrellis.operation.package.Op[Int] }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#addIntTo2" data-isabs="false">
+      <a id="addIntTo2(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addIntTo2</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#addOpIntRasterTo1" data-isabs="false">
+      <a id="addOpIntRasterTo1(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addOpIntRasterTo1</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Addition-operator implicits for Int, IntRaster and Op[IntRaster].</p><div class="fullcomment"><div class="comment cmt"><p>Addition-operator implicits for Int, IntRaster and Op[IntRaster].
+</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#addOpIntRasterTo2" data-isabs="false">
+      <a id="addOpIntRasterTo2(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addOpIntRasterTo2</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#addOpIntTo1" data-isabs="false">
+      <a id="addOpIntTo1(Op[Int]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addOpIntTo1</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<span name="scala.Int" class="extype">Int</span>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#addOpIntTo2" data-isabs="false">
+      <a id="addOpIntTo2(Op[Int]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">addOpIntTo2</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<span name="scala.Int" class="extype">Int</span>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.applicative" data-isabs="false">
+      <a id="applicative:applicative"></a>
+      <h4 class="signature">
+      <span class="kind">package</span>
+      <span class="symbol"> 
+        <a href="applicative/package.html"><span class="name">applicative</span></a>
+        
+        
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.package#divideIntBy1" data-isabs="false">
+      <a id="divideIntBy1(Int):AnyRef { def /(rhs: geotrellis.operation.package.Op[Int]): geotrellis.operation.package.Op[Int] }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">divideIntBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { def /(rhs: geotrellis.operation.package.Op[Int]): geotrellis.operation.package.Op[Int] }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#divideIntBy2" data-isabs="false">
+      <a id="divideIntBy2(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">divideIntBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#divideIntRasterBy1" data-isabs="false">
+      <a id="divideIntRasterBy1(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">divideIntRasterBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: <a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#divideIntRasterBy2" data-isabs="false">
+      <a id="divideIntRasterBy2(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">divideIntRasterBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: <a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#divideOpIntBy1" data-isabs="false">
+      <a id="divideOpIntBy1(Op[Int]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">divideOpIntBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<span name="scala.Int" class="extype">Int</span>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#divideOpIntBy2" data-isabs="false">
+      <a id="divideOpIntBy2(Op[Int]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">divideOpIntBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<span name="scala.Int" class="extype">Int</span>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#divideOpIntRasterBy1" data-isabs="false">
+      <a id="divideOpIntRasterBy1(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">divideOpIntRasterBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Division-operator implicits for Int, IntRaster and Op[IntRaster].</p><div class="fullcomment"><div class="comment cmt"><p>Division-operator implicits for Int, IntRaster and Op[IntRaster].
+</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#divideOpIntRasterBy2" data-isabs="false">
+      <a id="divideOpIntRasterBy2(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">divideOpIntRasterBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#multiplyIntBy1" data-isabs="false">
+      <a id="multiplyIntBy1(Int):AnyRef { def *(rhs: geotrellis.operation.package.Op[Int]): geotrellis.operation.package.Op[Int] }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyIntBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { def *(rhs: geotrellis.operation.package.Op[Int]): geotrellis.operation.package.Op[Int] }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#multiplyIntBy2" data-isabs="false">
+      <a id="multiplyIntBy2(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyIntBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#multiplyIntRasterBy1" data-isabs="false">
+      <a id="multiplyIntRasterBy1(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyIntRasterBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: <a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#multiplyIntRasterBy2" data-isabs="false">
+      <a id="multiplyIntRasterBy2(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyIntRasterBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: <a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#multiplyOpIntBy1" data-isabs="false">
+      <a id="multiplyOpIntBy1(Op[Int]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyOpIntBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<span name="scala.Int" class="extype">Int</span>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#multiplyOpIntBy2" data-isabs="false">
+      <a id="multiplyOpIntBy2(Op[Int]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyOpIntBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<span name="scala.Int" class="extype">Int</span>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#multiplyOpIntRasterBy1" data-isabs="false">
+      <a id="multiplyOpIntRasterBy1(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyOpIntRasterBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Multiplication-operator implicits for Int, IntRaster and Op[IntRaster].</p><div class="fullcomment"><div class="comment cmt"><p>Multiplication-operator implicits for Int, IntRaster and Op[IntRaster].
+</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#multiplyOpIntRasterBy2" data-isabs="false">
+      <a id="multiplyOpIntRasterBy2(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">multiplyOpIntRasterBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.render" data-isabs="false">
+      <a id="render:render"></a>
+      <h4 class="signature">
+      <span class="kind">package</span>
+      <span class="symbol"> 
+        <a href="render/package.html"><span class="name">render</span></a>
+        
+        
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.operation.package#subtractIntBy1" data-isabs="false">
+      <a id="subtractIntBy1(Int):AnyRef { def -(rhs: geotrellis.operation.package.Op[Int]): geotrellis.operation.package.Op[Int] }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractIntBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { def -(rhs: geotrellis.operation.package.Op[Int]): geotrellis.operation.package.Op[Int] }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#subtractIntBy2" data-isabs="false">
+      <a id="subtractIntBy2(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractIntBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#subtractIntRasterBy1" data-isabs="false">
+      <a id="subtractIntRasterBy1(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractIntRasterBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: <a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#subtractIntRasterBy2" data-isabs="false">
+      <a id="subtractIntRasterBy2(IntRaster):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractIntRasterBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: <a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#subtractOpIntBy1" data-isabs="false">
+      <a id="subtractOpIntBy1(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractOpIntBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#subtractOpIntBy2" data-isabs="false">
+      <a id="subtractOpIntBy2(Int):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractOpIntBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#subtractOpIntRasterBy1" data-isabs="false">
+      <a id="subtractOpIntRasterBy1(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractOpIntRasterBy1</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Subtraction-operator implicits for Int, IntRaster and Op[IntRaster].</p><div class="fullcomment"><div class="comment cmt"><p>Subtraction-operator implicits for Int, IntRaster and Op[IntRaster].
+</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.operation.package#subtractOpIntRasterBy2" data-isabs="false">
+      <a id="subtractOpIntRasterBy2(Op[IntRaster]):AnyRef { ... /* 2 definitions in type refinement */ }"></a>
+      <h4 class="signature">
+      <span class="kind">implicit def</span>
+      <span class="symbol"> 
+        <span class="name">subtractOpIntRasterBy2</span>
+        
+        <span class="params">(<span name="lhs">lhs: Op[<a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>)</span><span class="result">: AnyRef { ... /* 2 definitions in type refinement */ }</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit </dd><dt>Definition Classes</dt><dd><a name="geotrellis.operation.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+
+      </div>
+      
+      <div id="tooltip"></div>
+      
+    </body>
+      </html>

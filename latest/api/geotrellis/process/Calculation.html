@@ -1,0 +1,747 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>geotrellis.process.Calculation</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../lib/template.css" />
+      <script type="text/javascript" src="../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../lib/template.js"></script>
+      <script type="text/javascript" src="../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body class="type">
+      <div id="definition">
+        <img src="../../lib/class_big.png" />
+        <p id="owner"><a name="geotrellis" class="extype" href="../package.html">geotrellis</a>.<a name="geotrellis.process" class="extype" href="package.html">process</a></p>
+        <h1>Calculation</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <span class="name">Calculation</span>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="params">(<span name="server">server: <a name="geotrellis.process.Server" class="extype" href="Server.html">Server</a></span>, <span name="pos">pos: <span name="scala.Int" class="extype">Int</span></span>, <span name="args">args: Args</span>, <span name="cb">cb: Callback[T]</span>, <span name="client">client: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>, <span name="dispatcher">dispatcher: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>, <span name="_id">_id: String</span>)</span><span class="result"> extends <a name="geotrellis.process.WorkerLike" class="extype" href="WorkerLike.html">WorkerLike</a> with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+      </span>
+      </h4>
+      
+          <div class="fullcommenttop" id="comment"><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, <span name="scala.Product" class="extype">Product</span>, <span name="scala.Equals" class="extype">Equals</span>, <a name="geotrellis.process.WorkerLike" class="extype" href="WorkerLike.html">WorkerLike</a>, <span name="akka.actor.Actor" class="extype">Actor</span>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+        </div></div>
+        
+
+      <div id="template">
+
+        <div id="mbrsel">
+          <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+          <div id="order">
+                <span class="filtertype">Ordering</span>
+                <ol><li class="alpha in"><span>Alphabetic</span></li><li class="inherit out"><span>By inheritance</span></li></ol>
+              </div>
+          <div id="ancestors">
+                <span class="filtertype">Inherited</span>
+                <ol><li class="hideall out"><span>Hide All</span></li>
+                <li class="showall in"><span>Show all</span></li></ol>
+                <ol id="linearization"><li name="geotrellis.process.Calculation" class="in"><span>Calculation</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="scala.Product" class="in"><span>Product</span></li><li name="scala.Equals" class="in"><span>Equals</span></li><li name="geotrellis.process.WorkerLike" class="in"><span>WorkerLike</span></li><li name="akka.actor.Actor" class="in"><span>Actor</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+              </div>
+          <div id="visbl">
+              <span class="filtertype">Visibility</span>
+              <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+            </div>
+        </div>
+
+        <div class="members" id="constructors">
+              <h3>Instance Constructors</h3>
+              <ol><li visbl="pub" name="geotrellis.process.Calculation#this" data-isabs="false">
+      <a id="this:Calculation[T]"></a>
+      <h4 class="signature">
+      <span class="kind">new</span>
+      <span class="symbol"> 
+        <span class="name">Calculation</span>
+        
+        <span class="params">(<span name="server">server: <a name="geotrellis.process.Server" class="extype" href="Server.html">Server</a></span>, <span name="pos">pos: <span name="scala.Int" class="extype">Int</span></span>, <span name="args">args: Args</span>, <span name="cb">cb: Callback[T]</span>, <span name="client">client: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>, <span name="dispatcher">dispatcher: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>, <span name="_id">_id: String</span>)</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="akka.actor.Actor#Receive" data-isabs="false">
+      <a id="Receive:Receive"></a>
+      <h4 class="signature">
+      <span class="kind">type</span>
+      <span class="symbol"> 
+        <span class="name">Receive</span>
+        
+        <span class="result"> = <span name="scala.PartialFunction" class="extype">PartialFunction</span>[<span name="scala.Any" class="extype">Any</span>, <span name="scala.Unit" class="extype">Unit</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Actor</dd></dl></div>
+    </li></ol>
+            </div>
+        
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="scala.AnyRef#!=" data-isabs="false">
+      <a id="!=(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">!=</span>
+        
+        <span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#!=" data-isabs="false">
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">!=</span>
+        
+        <span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef###" data-isabs="false">
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">##</span>
+        
+        <span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#==" data-isabs="false">
+      <a id="==(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">==</span>
+        
+        <span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#==" data-isabs="false">
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">==</span>
+        
+        <span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#_id" data-isabs="false">
+      <a id="_id:String"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">_id</span>
+        
+        <span class="result">: String</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.process.Calculation#args" data-isabs="false">
+      <a id="args:Args"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">args</span>
+        
+        <span class="result">: Args</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">asInstanceOf</span>
+        <span class="tparams">[<span name="T0">T0</span>]</span>
+        <span class="result">: T0</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#canEqual" data-isabs="false">
+      <a id="canEqual(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">canEqual</span>
+        
+        <span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.Calculation" class="extype" href="">Calculation</a> → Equals</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#cb" data-isabs="false">
+      <a id="cb:Callback[T]"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">cb</span>
+        
+        <span class="result">: Callback[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.process.Calculation#childHistories" data-isabs="false">
+      <a id="childHistories:List[Product with Serializable with History]"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">childHistories</span>
+        
+        <span class="result">: <span name="scala.collection.immutable.List" class="extype">List</span>[<span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span> with <a name="geotrellis.process.History" class="extype" href="History.html">History</a>]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.process.Calculation#client" data-isabs="false">
+      <a id="client:ActorRef"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">client</span>
+        
+        <span class="result">: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">clone</span>
+        
+        <span class="params">()</span><span class="result">: AnyRef</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="prt" name="akka.actor.Actor#context" data-isabs="false">
+      <a id="context:ActorContext"></a>
+      <h4 class="signature">
+      <span class="kind">implicit val</span>
+      <span class="symbol"> 
+        <span class="name">context</span>
+        
+        <span class="result">: <span name="akka.actor.ActorContext" class="extype">ActorContext</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="akka" class="extype" href="../../akka/package.html">akka</a>] implicit </dd><dt>Definition Classes</dt><dd>Actor</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#dispatcher" data-isabs="false">
+      <a id="dispatcher:ActorRef"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">dispatcher</span>
+        
+        <span class="result">: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">eq</span>
+        
+        <span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#equals" data-isabs="false">
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">equals</span>
+        
+        <span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.Calculation" class="extype" href="">Calculation</a> → Equals → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#failure" data-isabs="false">
+      <a id="failure(String,Long,Long,Option[Timer],String,String):Failure"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">failure</span>
+        
+        <span class="params">(<span name="id">id: String</span>, <span name="start">start: <span name="scala.Long" class="extype">Long</span></span>, <span name="stop">stop: <span name="scala.Long" class="extype">Long</span></span>, <span name="t">t: <span name="scala.Option" class="extype">Option</span>[<a name="geotrellis.process.Timer" class="extype" href="Timer.html">Timer</a>]</span>, <span name="msg">msg: String</span>, <span name="trace">trace: String</span>)</span><span class="result">: <a name="geotrellis.process.Failure" class="extype" href="Failure.html">Failure</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.Calculation" class="extype" href="">Calculation</a> → <a name="geotrellis.process.WorkerLike" class="extype" href="WorkerLike.html">WorkerLike</a></dd></dl></div>
+    </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">finalize</span>
+        
+        <span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#finishCallback" data-isabs="false">
+      <a id="finishCallback():Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">finishCallback</span>
+        
+        <span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="scala.AnyRef#getClass" data-isabs="false">
+      <a id="getClass():java.lang.Class[_]"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">getClass</span>
+        
+        <span class="params">()</span><span class="result">: java.lang.Class[_]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#getValues" data-isabs="false">
+      <a id="getValues:List[Any]"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">getValues</span>
+        
+        <span class="result">: <span name="scala.collection.immutable.List" class="extype">List</span>[<span name="scala.Any" class="extype">Any</span>]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.process.WorkerLike#handleResult" data-isabs="false">
+      <a id="handleResult[T](Int,ActorRef,StepOutput[T],Option[Timer],ActorRef):Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">handleResult</span>
+        <span class="tparams">[<span name="T">T</span>]</span>
+        <span class="params">(<span name="pos">pos: <span name="scala.Int" class="extype">Int</span></span>, <span name="client">client: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>, <span name="output">output: <a name="geotrellis.process.StepOutput" class="extype" href="StepOutput.html">StepOutput</a>[T]</span>, <span name="t">t: <span name="scala.Option" class="extype">Option</span>[<a name="geotrellis.process.Timer" class="extype" href="Timer.html">Timer</a>]</span>, <span name="dispatcher">dispatcher: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.WorkerLike" class="extype" href="WorkerLike.html">WorkerLike</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#hasError" data-isabs="false">
+      <a id="hasError:Boolean"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">hasError</span>
+        
+        <span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.process.Calculation#hashCode" data-isabs="false">
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">hashCode</span>
+        
+        <span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.Calculation" class="extype" href="">Calculation</a> → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#id" data-isabs="false">
+      <a id="id:String"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">id</span>
+        
+        <span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.Calculation" class="extype" href="">Calculation</a> → <a name="geotrellis.process.WorkerLike" class="extype" href="WorkerLike.html">WorkerLike</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#isDone" data-isabs="false">
+      <a id="isDone:Boolean"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">isDone</span>
+        
+        <span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">isInstanceOf</span>
+        <span class="tparams">[<span name="T0">T0</span>]</span>
+        <span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">ne</span>
+        
+        <span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">notify</span>
+        
+        <span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#notifyAll" data-isabs="false">
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">notifyAll</span>
+        
+        <span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#pos" data-isabs="false">
+      <a id="pos:Int"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">pos</span>
+        
+        <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="akka.actor.Actor#postRestart" data-isabs="false">
+      <a id="postRestart(Throwable):Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">postRestart</span>
+        
+        <span class="params">(<span name="reason">reason: Throwable</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Actor</dd></dl></div>
+    </li><li visbl="pub" name="akka.actor.Actor#postStop" data-isabs="false">
+      <a id="postStop():Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">postStop</span>
+        
+        <span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Actor</dd></dl></div>
+    </li><li visbl="pub" name="akka.actor.Actor#preRestart" data-isabs="false">
+      <a id="preRestart(Throwable,Option[Any]):Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">preRestart</span>
+        
+        <span class="params">(<span name="reason">reason: Throwable</span>, <span name="message">message: <span name="scala.Option" class="extype">Option</span>[<span name="scala.Any" class="extype">Any</span>]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Actor</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#preStart" data-isabs="false">
+      <a id="preStart():Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">preStart</span>
+        
+        <span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.Calculation" class="extype" href="">Calculation</a> → Actor</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#productArity" data-isabs="false">
+      <a id="productArity:Int"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">productArity</span>
+        
+        <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.Calculation" class="extype" href="">Calculation</a> → Product</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#productElement" data-isabs="false">
+      <a id="productElement(Int):Any"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">productElement</span>
+        
+        <span class="params">(<span name="arg0">arg0: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Any" class="extype">Any</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.Calculation" class="extype" href="">Calculation</a> → Product</dd></dl></div>
+    </li><li visbl="pub" name="scala.Product#productIterator" data-isabs="false">
+      <a id="productIterator:Iterator[Any]"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">productIterator</span>
+        
+        <span class="result">: Iterator[<span name="scala.Any" class="extype">Any</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Product</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#productPrefix" data-isabs="false">
+      <a id="productPrefix:String"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">productPrefix</span>
+        
+        <span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.Calculation" class="extype" href="">Calculation</a> → Product</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#receive" data-isabs="false">
+      <a id="receive:PartialFunction[Any, Unit]"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">receive</span>
+        
+        <span class="result">: <span name="scala.PartialFunction" class="extype">PartialFunction</span>[<span name="scala.Any" class="extype">Any</span>, <span name="scala.Unit" class="extype">Unit</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.Calculation" class="extype" href="">Calculation</a> → Actor</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#results" data-isabs="false">
+      <a id="results:Array[Option[CalculationResult[Any]]]"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">results</span>
+        
+        <span class="result">: <span name="scala.Array" class="extype">Array</span>[<span name="scala.Option" class="extype">Option</span>[<a name="geotrellis.process.CalculationResult" class="extype" href="CalculationResult.html">CalculationResult</a>[<span name="scala.Any" class="extype">Any</span>]]]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="akka.actor.Actor#self" data-isabs="false">
+      <a id="self:ActorRef"></a>
+      <h4 class="signature">
+      <span class="kind">implicit val</span>
+      <span class="symbol"> 
+        <span class="name">self</span>
+        
+        <span class="result">: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>implicit final </dd><dt>Definition Classes</dt><dd>Actor</dd></dl></div>
+    </li><li visbl="pub" name="akka.actor.Actor#sender" data-isabs="false">
+      <a id="sender:ActorRef"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">sender</span>
+        
+        <span class="result">: <span name="akka.actor.ActorRef" class="extype">ActorRef</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Actor</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#server" data-isabs="false">
+      <a id="server:Server"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">server</span>
+        
+        <span class="result">: <a name="geotrellis.process.Server" class="extype" href="Server.html">Server</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.Calculation" class="extype" href="">Calculation</a> → <a name="geotrellis.process.WorkerLike" class="extype" href="WorkerLike.html">WorkerLike</a></dd></dl></div>
+    </li><li visbl="prt" name="geotrellis.process.WorkerLike#startTime" data-isabs="false">
+      <a id="startTime:Long"></a>
+      <h4 class="signature">
+      <span class="kind">var</span>
+      <span class="symbol"> 
+        <span class="name">startTime</span>
+        
+        <span class="result">: <span name="scala.Long" class="extype">Long</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[this] </dd><dt>Definition Classes</dt><dd><a name="geotrellis.process.WorkerLike" class="extype" href="WorkerLike.html">WorkerLike</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#success" data-isabs="false">
+      <a id="success(String,Long,Long,Option[Timer]):Success"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">success</span>
+        
+        <span class="params">(<span name="id">id: String</span>, <span name="start">start: <span name="scala.Long" class="extype">Long</span></span>, <span name="stop">stop: <span name="scala.Long" class="extype">Long</span></span>, <span name="t">t: <span name="scala.Option" class="extype">Option</span>[<a name="geotrellis.process.Timer" class="extype" href="Timer.html">Timer</a>]</span>)</span><span class="result">: <a name="geotrellis.process.Success" class="extype" href="Success.html">Success</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.Calculation" class="extype" href="">Calculation</a> → <a name="geotrellis.process.WorkerLike" class="extype" href="WorkerLike.html">WorkerLike</a></dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
+      <a id="synchronized[T0](⇒ T0):T0"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">synchronized</span>
+        <span class="tparams">[<span name="T0">T0</span>]</span>
+        <span class="params">(<span name="arg0">arg0: ⇒ T0</span>)</span><span class="result">: T0</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Calculation#toString" data-isabs="false">
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">toString</span>
+        
+        <span class="params">()</span><span class="result">: String</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.Calculation" class="extype" href="">Calculation</a> → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="akka.actor.Actor#unhandled" data-isabs="false">
+      <a id="unhandled(Any):Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">unhandled</span>
+        
+        <span class="params">(<span name="message">message: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Actor</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">wait</span>
+        
+        <span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">wait</span>
+        
+        <span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>, <span name="arg1">arg1: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">wait</span>
+        
+        <span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li visbl="prt" name="geotrellis.process.WorkerLike#workStartTime" data-isabs="false">
+      <a id="workStartTime:Long"></a>
+      <h4 class="signature">
+      <span class="kind">var</span>
+      <span class="symbol"> 
+        <span class="name">workStartTime</span>
+        
+        <span class="result">: <span name="scala.Long" class="extype">Long</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[this] </dd><dt>Definition Classes</dt><dd><a name="geotrellis.process.WorkerLike" class="extype" href="WorkerLike.html">WorkerLike</a></dd></dl></div>
+    </li></ol>
+            </div>
+
+        <div class="values members" id="values">
+              <h3>Deprecated Value Members</h3>
+              <ol><li visbl="pub" name="scala.Product#productElements" data-isabs="false">
+      <a id="productElements:Iterator[Any]"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name deprecated">productElements</span>
+        
+        <span class="result">: Iterator[<span name="scala.Any" class="extype">Any</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Product</dd><dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p>use productIterator instead</p></dd></dl></div>
+    </li></ol>
+            </div>
+
+        <div name="scala.Serializable" class="parent">
+              <h3>Inherited from <span name="scala.Serializable" class="extype">Serializable</span></h3>
+            </div><div name="java.io.Serializable" class="parent">
+              <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
+            </div><div name="scala.Product" class="parent">
+              <h3>Inherited from <span name="scala.Product" class="extype">Product</span></h3>
+            </div><div name="scala.Equals" class="parent">
+              <h3>Inherited from <span name="scala.Equals" class="extype">Equals</span></h3>
+            </div><div name="geotrellis.process.WorkerLike" class="parent">
+              <h3>Inherited from <a name="geotrellis.process.WorkerLike" class="extype" href="WorkerLike.html">WorkerLike</a></h3>
+            </div><div name="akka.actor.Actor" class="parent">
+              <h3>Inherited from <span name="akka.actor.Actor" class="extype">Actor</span></h3>
+            </div><div name="scala.AnyRef" class="parent">
+              <h3>Inherited from AnyRef</h3>
+            </div><div name="scala.Any" class="parent">
+              <h3>Inherited from <span name="scala.Any" class="extype">Any</span></h3>
+            </div>
+
+      </div>
+      
+      <div id="tooltip"></div>
+      
+    </body>
+      </html>

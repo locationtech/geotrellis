@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>geotrellis.stat</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../lib/template.css" />
+      <script type="text/javascript" src="../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../lib/template.js"></script>
+      <script type="text/javascript" src="../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img src="../../lib/package_big.png" />
+        <p id="owner"><a name="geotrellis" class="extype" href="../package.html">geotrellis</a></p>
+        <h1>stat</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="kind">package</span>
+      <span class="symbol"> 
+        <span class="name">stat</span>
+        
+        
+      </span>
+      </h4>
+      
+          <div class="fullcommenttop" id="comment"></div>
+        
+
+      <div id="template">
+
+        <div id="mbrsel">
+          <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+          
+          
+          <div id="visbl">
+              <span class="filtertype">Visibility</span>
+              <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+            </div>
+        </div>
+
+        
+
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="geotrellis.stat.ArrayHistogram" data-isabs="false">
+      <a id="ArrayHistogram:ArrayHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="ArrayHistogram.html"><span class="name">ArrayHistogram</span></a>
+        
+        <span class="result"> extends Histogram</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Data object representing a histogram that uses an array for internal storage.</p>
+    </li><li visbl="pub" name="geotrellis.stat.CompressedArrayHistogram" data-isabs="false">
+      <a id="CompressedArrayHistogram:CompressedArrayHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="CompressedArrayHistogram.html"><span class="name">CompressedArrayHistogram</span></a>
+        
+        <span class="result"> extends ArrayHistogram</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Data object representing a histogram using an array for internal storage,
+which requires an initial minimum and maximum val and a specified number of 'breaks' which
+are used to group values together into ranges.</p>
+    </li><li visbl="pub" name="geotrellis.stat.FastMapHistogram" data-isabs="false">
+      <a id="FastMapHistogram:FastMapHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="FastMapHistogram.html"><span class="name">FastMapHistogram</span></a>
+        
+        <span class="result"> extends Histogram</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.stat.Histogram" data-isabs="true">
+      <a id="Histogram:Histogram"></a>
+      <h4 class="signature">
+      <span class="kind">trait</span>
+      <span class="symbol"> 
+        <a href="Histogram.html"><span class="name">Histogram</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Data object representing a histogram of values.</p>
+    </li><li visbl="pub" name="geotrellis.stat.MapHistogram" data-isabs="false">
+      <a id="MapHistogram:MapHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">class</span>
+      <span class="symbol"> 
+        <a href="MapHistogram.html"><span class="name">MapHistogram</span></a>
+        
+        <span class="result"> extends Histogram</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Data object representing a histogram that uses a Map (as in hashtable map/dictionary) for internal storage.</p>
+    </li><li visbl="pub" name="geotrellis.stat.Statistics" data-isabs="false">
+      <a id="Statistics:Statistics"></a>
+      <h4 class="signature">
+      <span class="kind">case class</span>
+      <span class="symbol"> 
+        <a href="Statistics.html"><span class="name">Statistics</span></a>
+        
+        <span class="params">(<span name="mean">mean: Double</span>, <span name="median">median: Int</span>, <span name="mode">mode: Int</span>, <span name="stddev">stddev: Double</span>, <span name="zmin">zmin: Int</span>, <span name="zmax">zmax: Int</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Data object for sharing the basic statistics about a raster or region.</p>
+    </li></ol>
+            </div>
+        
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="geotrellis.stat.ArrayHistogram" data-isabs="false">
+      <a id="ArrayHistogram:ArrayHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="ArrayHistogram$.html"><span class="name">ArrayHistogram</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.stat.CompressedArrayHistogram" data-isabs="false">
+      <a id="CompressedArrayHistogram:CompressedArrayHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="CompressedArrayHistogram$.html"><span class="name">CompressedArrayHistogram</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.stat.FastMapHistogram" data-isabs="false">
+      <a id="FastMapHistogram:FastMapHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="FastMapHistogram$.html"><span class="name">FastMapHistogram</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.stat.MapHistogram" data-isabs="false">
+      <a id="MapHistogram:MapHistogram"></a>
+      <h4 class="signature">
+      <span class="kind">object</span>
+      <span class="symbol"> 
+        <a href="MapHistogram$.html"><span class="name">MapHistogram</span></a>
+        
+        <span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+
+      </div>
+      
+      <div id="tooltip"></div>
+      
+    </body>
+      </html>
