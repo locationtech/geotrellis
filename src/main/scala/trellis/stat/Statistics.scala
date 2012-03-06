@@ -1,4 +1,4 @@
-package trellis.stat
+package geotrellis.stat
 
 /**
   * Data object for sharing the basic statistics about a raster or region.

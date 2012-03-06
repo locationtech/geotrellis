@@ -1,9 +1,9 @@
-package trellis.raster
+package geotrellis.raster
 
 import java.io.Serializable
 import scala.math.{min, max}
 
-import trellis._
+import geotrellis._
 
 object DoubleRaster {
   def apply(data:Array[Double], rows:Int, cols:Int,

@@ -1,7 +1,7 @@
 use strict;
 
 my $fh;
-open(my $fh, "<", "target/scala-2.9.1/api/trellis/operation/package.html");
+open(my $fh, "<", "target/scala-2.9.1/api/geotrellis/operation/package.html");
 
 my ($name, $op, $output, $description) = '';
 
@@ -24,7 +24,7 @@ while (<$fh>) {
   if ($_ =~ /class="name">([^<]*)</) {
     my $class_name = $1;
     $simple_name = $class_name;
-    $name = "<a href=\"http://azavea.github.com/trellis/latest/api/index.html#trellis.operation.$class_name\">$class_name</a>";
+    $name = "<a href=\"http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.$class_name\">$class_name</a>";
     $output = '';
     $description = '';
 #    print ("name: " . $name . "\n");

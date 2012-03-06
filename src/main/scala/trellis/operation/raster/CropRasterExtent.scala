@@ -1,8 +1,8 @@
-package trellis.operation
+package geotrellis.operation
 
 import scala.math.{ceil, floor}
-import trellis.{Extent,RasterExtent}
-import trellis.process._
+import geotrellis.{Extent,RasterExtent}
+import geotrellis.process._
 
 /**
  * Given a geographical extent and grid height/width, return an object used to

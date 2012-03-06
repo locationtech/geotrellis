@@ -1,4 +1,4 @@
-package trellis
+package geotrellis
 
 import scala.math.{min,max}
 

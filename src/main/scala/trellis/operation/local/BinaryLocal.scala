@@ -1,7 +1,7 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
-import trellis.process._
+import geotrellis._
+import geotrellis.process._
 
 /**
  * BinaryLocal is an abstract class for all operations that are both local (operating

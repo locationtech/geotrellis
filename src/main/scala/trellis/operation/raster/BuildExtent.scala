@@ -1,7 +1,7 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.Extent
-import trellis.process._
+import geotrellis.Extent
+import geotrellis.process._
 
 /**
  *

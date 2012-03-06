@@ -1,8 +1,8 @@
-package trellis.raster
+package geotrellis.raster
 
-import trellis._
-import trellis.data.{Arg32Writer, Arg32Reader}
-import trellis.process._
+import geotrellis._
+import geotrellis.data.{Arg32Writer, Arg32Reader}
+import geotrellis.process._
 
 /**
  * Used to create a tileset (TileRasterData) from a source raster.

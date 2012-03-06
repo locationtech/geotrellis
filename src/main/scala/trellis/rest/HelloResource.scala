@@ -1,4 +1,4 @@
-package trellis.rest
+package geotrellis.rest
 
 import javax.ws.rs._
 

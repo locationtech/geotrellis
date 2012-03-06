@@ -1,12 +1,12 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.process._
-import trellis._
+import geotrellis.process._
+import geotrellis._
 
 // TODO: unify with CopyRaster
 
 /**
- * Suspiciously similar to [[trellis.operation.CopyRaster]], Identity returns
+ * Suspiciously similar to [[geotrellis.operation.CopyRaster]], Identity returns
  * a new raster with the values of the given raster.
  */
 case class Identity(r:Op[IntRaster]) extends SimpleUnaryLocal {

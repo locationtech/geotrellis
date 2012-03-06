@@ -1,13 +1,13 @@
-package trellis.data
+package geotrellis.data
 
 import java.io.File
 import java.nio.ByteBuffer
 
-import trellis.data.png.PNGWriter;
-import trellis.IntRaster
+import geotrellis.data.png.PNGWriter;
+import geotrellis.IntRaster
 
 /**
- * Create a PNG image from a [[trellis.core.raster.Raster]] 
+ * Create a PNG image from a [[geotrellis.core.raster.Raster]] 
  */
 case class PNGRenderer(raster:IntRaster, path:String, colorMap:Int=>Int, bg:Int,
                        transparent:Boolean) {
@@ -47,7 +47,7 @@ case class PNGRenderer(raster:IntRaster, path:String, colorMap:Int=>Int, bg:Int,
 }
 
 /**
- * Create a PNG image from a [[trellis.core.raster.Raster]] 
+ * Create a PNG image from a [[geotrellis.core.raster.Raster]] 
  */
 case class PNGWriterRGB2(raster:IntRaster, path:String, bg:Int, transparent:Boolean) {
   val cols = raster.cols

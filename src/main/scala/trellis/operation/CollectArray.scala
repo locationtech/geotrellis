@@ -1,7 +1,7 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
-import trellis.process._
+import geotrellis._
+import geotrellis.process._
 
 case class CollectArray[A:Manifest](ops:Array[Op[A]]) extends Op[Array[A]] {
   def _run(context:Context) = runAsync(ops.toList)

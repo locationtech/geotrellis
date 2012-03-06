@@ -1,8 +1,8 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.Extent
-import trellis.RasterExtent
-import trellis.process._
+import geotrellis.Extent
+import geotrellis.RasterExtent
+import geotrellis.process._
 
 /**
  * Given a geographical extent and grid height/width, return an object used to

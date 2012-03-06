@@ -1,8 +1,8 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.RasterExtent
-import trellis.process._
-import trellis.IntRaster
+import geotrellis.RasterExtent
+import geotrellis.process._
+import geotrellis.IntRaster
 
 /**
  * Load the raster data for a particular extent/resolution from the specified file.

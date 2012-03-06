@@ -2,8 +2,8 @@ import scala.annotation.tailrec
 
 //import annotation.implicitNotFound
 
-package object trellis {
-  // TOOD: phase out trellis.contants package
+package object geotrellis {
+  // TOOD: phase out geotrellis.contants package
   final val NODATA = Int.MinValue
 
   //@implicitNotFound(msg = "Cannot find NoData type class for ${T}")
@@ -17,7 +17,7 @@ package object trellis {
   //implicit object DoubleNoData extends NoData[Double] { final def value = Double.NaN }
 }
 
-package trellis {
+package geotrellis {
   package object process {
     type Callback[T] = (List[Any]) => StepOutput[T]
     type Args = List[Any]

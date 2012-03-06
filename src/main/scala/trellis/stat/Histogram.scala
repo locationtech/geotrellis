@@ -1,4 +1,4 @@
-package trellis.stat
+package geotrellis.stat
 
 import math.{abs, sqrt}
 

@@ -1,6 +1,6 @@
-package trellis.stat
+package geotrellis.stat
 
-import trellis._
+import geotrellis._
 import scala.math.{ceil, max, min, abs}
 import scala.util.Sorting
 

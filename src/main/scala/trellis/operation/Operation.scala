@@ -1,7 +1,7 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.process._
-import trellis._
+import geotrellis.process._
+import geotrellis._
 import scala.{PartialFunction => PF}
 
 import akka.actor._

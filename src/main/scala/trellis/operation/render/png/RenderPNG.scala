@@ -1,9 +1,9 @@
-package trellis.operation
+package geotrellis.operation
 
 
-import trellis.data._
-import trellis.process._
-import trellis._
+import geotrellis.data._
+import geotrellis.process._
+import geotrellis._
 
 /**
  * Generate a PNG from a given raster and a set of color breaks. The background

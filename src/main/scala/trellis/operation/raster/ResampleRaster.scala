@@ -1,8 +1,8 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
-import trellis.process._
-import trellis.data.IntRasterReader
+import geotrellis._
+import geotrellis.process._
+import geotrellis.data.IntRasterReader
 
 /**
  * This uses a nearest-neighbor algorithm to resample a raster.

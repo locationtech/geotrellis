@@ -1,7 +1,7 @@
-package trellis.operation
+package geotrellis.operation
 
 import scala.collection.mutable.Map
-import trellis.process._
+import geotrellis.process._
 
 /**
  * Create a Map of (String,String) => Int from a CSV file 

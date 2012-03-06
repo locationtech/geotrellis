@@ -1,24 +1,28 @@
-# Arpeggeo
+# GeoTrellis
 
-*Arpeggeo* is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
+*GeoTrellis* is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
 user interaction with geospatial data by bringing the power of geospatial analysis to real time, interactive web applications.
 
-Arpeggeo was designed to solve three core problems, with a focus on raster processing:
+GeoTrellis was designed to solve three core problems, with a focus on raster processing:
 
 - Creating scalable, high performance geoprocessing web services
 - Creating distributed geoprocessing services that can act on large data sets
 - Parallelizing geoprocessing operations to take full advantage of multi-core architecture 
 
-Arpeggeo is a project of Azavea (www.azavea.com), and was written by Josh Marcus (jmarcus@azavea.com) and Erik Osheim (eosheim@azavea.com).  Please contact us if you have any questions!
+GeoTrellis is a project of Azavea (www.azavea.com), and was written by Josh Marcus (jmarcus@azavea.com) and Erik Osheim (eosheim@azavea.com).  Please contact us if you have any questions, find us on irc at #geotrellis on freenode, or join 
+the user mailing list at [https://groups.google.com/group/geotrellis-user](https://groups.google.com/group/geotrellis-user).
+
+Please see our 
+[getting started guide](http://azavea.github.com/geotrellis/getting_started/GeoTrellis.html) for more information. 
 
 ## Features
 
-- Arpeggeo is designed to help a developer create simple, standard REST services that return the results of geoprocessing models.
-- Like an RDBS that can optimize queries, Arpeggeo will automatically parallelize and optimize your geoprocessing models where possible.  
+- GeoTrellis is designed to help a developer create simple, standard REST services that return the results of geoprocessing models.
+- Like an RDBS that can optimize queries, GeoTrellis will automatically parallelize and optimize your geoprocessing models where possible.  
 - In the spirit of the object-functional style of Scala, it is easy to both create new operations and compose new 
 operations with existing operations.
 
-## Some sample Arpeggeo code
+## Some sample GeoTrellis code
 
 ```scala
   // create a new operation that multiplies each cell of 
@@ -48,4 +52,4 @@ operations with existing operations.
 
 You can find *Scaladocs* for the latest version of the project here:
 
-[http://azavea.github.com/trellis/latest/api/index.html#trellis.package](http://azavea.github.com/trellis/latest/api/index.html#trellis.package)
+[http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.package](http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.package)

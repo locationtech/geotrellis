@@ -1,13 +1,13 @@
-package trellis.operation
+package geotrellis.operation
 
 import scala.math.{min, max}
 
-import trellis._
-import trellis.geometry.rasterizer.Rasterizer
-import trellis.process._
-import trellis.IntRaster
-import trellis.stat.{Histogram, ArrayHistogram, MapHistogram, CompressedArrayHistogram, Statistics}
-import trellis.geometry.Polygon
+import geotrellis._
+import geotrellis.geometry.rasterizer.Rasterizer
+import geotrellis.process._
+import geotrellis.IntRaster
+import geotrellis.stat.{Histogram, ArrayHistogram, MapHistogram, CompressedArrayHistogram, Statistics}
+import geotrellis.geometry.Polygon
 
 /**
  * Given a raster and an array of polygons, return a histogram summary of the cells

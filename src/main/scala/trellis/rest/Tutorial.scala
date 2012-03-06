@@ -1,12 +1,12 @@
-package trellis.rest.myapp
+package geotrellis.rest.myapp
 
 import javax.servlet.http.HttpServletRequest
 import javax.ws.rs.{GET, Path, DefaultValue, PathParam, QueryParam}
 import javax.ws.rs.core.{Response, Context}
 
-import trellis._
-import trellis.operation._
-import trellis.process._
+import geotrellis._
+import geotrellis.operation._
+import geotrellis.process._
 
 object MyApp {
   val server = Server("myapp", "src/main/resources/myapp-catalog.json")

@@ -1,4 +1,4 @@
-package trellis
+package geotrellis
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite

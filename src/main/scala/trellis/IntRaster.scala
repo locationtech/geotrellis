@@ -1,4 +1,4 @@
-package trellis
+package geotrellis
 
 import scala.math.{min, max}
 
@@ -83,7 +83,7 @@ class IntRaster(val data:RasterData, val rasterExtent:RasterExtent,
   def asArray = this.data.asArray
 
   /**
-    * Test [[trellis.RasterExtent]] of other raster w/ our own geographic attributes.
+    * Test [[geotrellis.RasterExtent]] of other raster w/ our own geographic attributes.
     */
   def compare(other:IntRaster) = this.rasterExtent.compare(other.rasterExtent)
 

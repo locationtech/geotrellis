@@ -1,10 +1,10 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
-import trellis.stat._
+import geotrellis._
+import geotrellis.stat._
 
 /**
- * Build a histogram (using the [[trellis.stat.CompressedArrayHistogram]]
+ * Build a histogram (using the [[geotrellis.stat.CompressedArrayHistogram]]
  * strategy) from this raster.
  */
 case class BuildCompressedArrayHistogram(r:Op[IntRaster], vmin:Int, vmax:Int,

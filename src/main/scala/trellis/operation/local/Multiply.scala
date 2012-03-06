@@ -1,6 +1,6 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
+import geotrellis._
 
 /**
  * Multiply each cell of each raster.

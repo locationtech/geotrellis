@@ -1,7 +1,7 @@
-package trellis
+package geotrellis
 
-import trellis._
-import trellis.geometry.Polygon
+import geotrellis._
+import geotrellis.geometry.Polygon
 
 package object operation {
   // Operation is such a long word :(

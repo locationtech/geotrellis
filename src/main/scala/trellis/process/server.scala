@@ -1,13 +1,13 @@
-package trellis.process
+package geotrellis.process
 
 import java.io.File
 import scala.util.matching.Regex
 
-import trellis.data._
-import trellis.data.FileExtensionRegexes._
-import trellis.RasterExtent
-import trellis.operation._
-import trellis.IntRaster
+import geotrellis.data._
+import geotrellis.data.FileExtensionRegexes._
+import geotrellis.RasterExtent
+import geotrellis.operation._
+import geotrellis.IntRaster
 
 // akka imports
 import akka.actor._
@@ -184,7 +184,7 @@ trait FileCaching {
 
 object Server {
   val config = ConfigFactory.load()
-  val catalogPath = config.getString("trellis.catalog")
+  val catalogPath = config.getString("geotrellis.catalog")
 
   def apply(id:String) = new Server(id, Catalog.fromPath(catalogPath))
   def apply(id:String, path:String) = new Server(id, Catalog.fromPath(path))

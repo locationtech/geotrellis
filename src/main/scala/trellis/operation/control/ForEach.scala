@@ -1,7 +1,7 @@
-package trellis.operation
+package geotrellis.operation
 
 import scala.{PartialFunction => PF}
-import trellis.process._
+import geotrellis.process._
 
 /**
  * Evaluates the given operation (op) to get an array of A's. Then, applies

@@ -1,4 +1,4 @@
-package trellis.util
+package geotrellis.util
 
 import java.io.{File,FileInputStream}
 import java.nio.ByteBuffer

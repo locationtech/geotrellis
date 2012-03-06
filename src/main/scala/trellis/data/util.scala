@@ -1,4 +1,4 @@
-package trellis.data
+package geotrellis.data
 
 import scala.util.matching.Regex
 

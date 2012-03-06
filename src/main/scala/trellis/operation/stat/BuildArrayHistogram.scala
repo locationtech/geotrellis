@@ -1,12 +1,12 @@
-package trellis.operation
+package geotrellis.operation
 
 
-import trellis._
-import trellis.process._
-import trellis.stat._
+import geotrellis._
+import geotrellis.process._
+import geotrellis.stat._
 
 /**
- * Build an array histogram (see [[trellis.stat.ArrayHistogram]] of values from
+ * Build an array histogram (see [[geotrellis.stat.ArrayHistogram]] of values from
  * a raster.
  */
 case class BuildArrayHistogram(r:Op[IntRaster], size:Op[Int]) extends Op2(r,size) ({

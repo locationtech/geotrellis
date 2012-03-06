@@ -1,11 +1,11 @@
-package trellis.geometry
+package geotrellis.geometry
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math.{min, max, round}
 
-import trellis.geometry.grid.{GridPoint, GridLine, GridPolygon}
-import trellis.{Extent,RasterExtent}
-import trellis.{IntRaster}
+import geotrellis.geometry.grid.{GridPoint, GridLine, GridPolygon}
+import geotrellis.{Extent,RasterExtent}
+import geotrellis.{IntRaster}
 
 import com.vividsolutions.jts.geom.{GeometryFactory,Geometry}
 import com.vividsolutions.jts.geom.{Coordinate => JtsCoordinate}

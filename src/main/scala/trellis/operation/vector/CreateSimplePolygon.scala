@@ -1,7 +1,7 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.geometry.Polygon
-import trellis.process._
+import geotrellis.geometry.Polygon
+import geotrellis.process._
 
 /**
   * Create a Polygon from an array of coordinates represented as a tuple (x,y).

@@ -1,6 +1,6 @@
-package trellis.data
+package geotrellis.data
 
-import trellis._
+import geotrellis._
 
 object Color {
   // read color bands from a color value

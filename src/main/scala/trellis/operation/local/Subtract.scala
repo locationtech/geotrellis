@@ -1,6 +1,6 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
+import geotrellis._
 
 /**
  * Subtract each value in the second raster from the corresponding value in the first raster.

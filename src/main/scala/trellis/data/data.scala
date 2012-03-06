@@ -1,4 +1,4 @@
-package trellis.data
+package geotrellis.data
 
 import scala.math.{Numeric, min, max, abs, round, floor, ceil}
 import java.io.{File, FileInputStream, FileOutputStream}
@@ -6,8 +6,8 @@ import java.io.{BufferedOutputStream, FileOutputStream}
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel.MapMode._
 
-import trellis._
-import trellis.process._
+import geotrellis._
+import geotrellis.process._
 
 trait ReadState {
   val layer:RasterLayer

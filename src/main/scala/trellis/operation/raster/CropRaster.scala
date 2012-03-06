@@ -1,12 +1,12 @@
-//package trellis.operation
+//package geotrellis.operation
 //
 //import scala.math.{ceil, floor, max, min}
 //
-//import trellis._
-//import trellis.Extent
-//import trellis.RasterExtent
-//import trellis.IntRaster
-//import trellis.process._
+//import geotrellis._
+//import geotrellis.Extent
+//import geotrellis.RasterExtent
+//import geotrellis.IntRaster
+//import geotrellis.process._
 //
 //// this operation doesn't currently work.
 //// we need to create unit tests and get it working.
@@ -14,7 +14,7 @@
 //// TODO: fix this
 //
 ///**
-//  * Return a raster cropped to the given [[trellis.geoattrs.RasterExtent]].
+//  * Return a raster cropped to the given [[geotrellis.geoattrs.RasterExtent]].
 //  * N.B. Not currently working.
 //  */
 //

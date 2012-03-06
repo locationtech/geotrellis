@@ -1,7 +1,7 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.process._
-import trellis.IntRaster
+import geotrellis.process._
+import geotrellis.IntRaster
 
 /**
  * Given an operation producing a raster, returns a copy of this raster.

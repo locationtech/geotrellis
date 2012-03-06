@@ -1,8 +1,8 @@
-package trellis.process
+package geotrellis.process
 
 import scala.collection.mutable.ArrayBuffer
 
-import trellis.operation._
+import geotrellis.operation._
 
 /**
  * History stores information about the execution of an operation.

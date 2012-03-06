@@ -1,8 +1,8 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis.IntRaster
-import trellis.stat.{Histogram, Statistics}
-import trellis.process._
+import geotrellis.IntRaster
+import geotrellis.stat.{Histogram, Statistics}
+import geotrellis.process._
 
 // TODO: rewrite this in terms of Op[Statistics].
 /*

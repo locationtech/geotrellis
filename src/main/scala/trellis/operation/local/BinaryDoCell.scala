@@ -1,6 +1,6 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
+import geotrellis._
 
 /**
  * Perform a function on every cell in a raster with the values from another raster.

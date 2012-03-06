@@ -1,12 +1,12 @@
-package trellis.data
+package geotrellis.data
 
 import java.sql.{Connection, DriverManager, PreparedStatement, ResultSet, ResultSetMetaData, Types}
 import com.vividsolutions.jts.io.WKBReader
 import com.vividsolutions.jts.geom.Geometry
 import scala.collection.mutable.{ArrayBuffer, Map}
 
-import trellis.{geometry => tr}
-import trellis.geometry.Feature
+import geotrellis.{geometry => tr}
+import geotrellis.geometry.Feature
 
 /**
  * Object containing methods for connecting to Postgres using JDBC.

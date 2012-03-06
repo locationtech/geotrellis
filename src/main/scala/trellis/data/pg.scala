@@ -1,4 +1,4 @@
-package trellis.data
+package geotrellis.data
 
 import java.sql.{Connection, ResultSet, ResultSetMetaData, PreparedStatement, DriverManager}
 import java.util._
@@ -12,7 +12,7 @@ import com.vividsolutions.jts.geom.Geometry
 import scala.collection.mutable.{Map => MMap}
 import scala.collection.mutable.ArrayBuffer
 
-import trellis.geometry.Feature
+import geotrellis.geometry.Feature
 
 trait BasePgTypes {
 
@@ -155,15 +155,15 @@ case class PostgisFeatureReader(database:String, host:String, port:String,
     //printf("GOT %d COORDS\n", coords.length)
 
     val feature = geom.getGeometryType() match {
-      case "Point" => trellis.geometry.Point(coords(0), value, attrs.toMap)
+      case "Point" => geotrellis.geometry.Point(coords(0), value, attrs.toMap)
       case "Polygon" => {
         buildPolygon(coords, value, attrs)
       }
       case "MultiPolygon" =>
-        trellis.geometry.MultiPolygon(
+        geotrellis.geometry.MultiPolygon(
           (0 until geom.getNumGeometries()).map(n => buildPolygon(geom.getGeometryN(n).getCoordinates(),value,attrs)).toArray,
           value, attrs.toMap)
-      case "LineString" => trellis.geometry.LineString(coords, value, attrs.toMap)
+      case "LineString" => geotrellis.geometry.LineString(coords, value, attrs.toMap)
       case "GeometryCollection" => throw new Exception("not supported")
       case t => throw new Exception("unknown type: %s".format(t))
     }
@@ -176,7 +176,7 @@ case class PostgisFeatureReader(database:String, host:String, port:String,
     
     // XXX XXX XXX terrible hacks await!
     if (coords(0).equals2D(last)) {
-      trellis.geometry.Polygon(coords, value, attrs.toMap)
+      geotrellis.geometry.Polygon(coords, value, attrs.toMap)
     } else {
       val coords2 = Array.ofDim[JtsCoordinate](coords.length + 1)
       var i = 0
@@ -185,7 +185,7 @@ case class PostgisFeatureReader(database:String, host:String, port:String,
         i += 1
       }
       coords2(coords.length) = coords(0)
-      trellis.geometry.Polygon(coords2, value, attrs.toMap)
+      geotrellis.geometry.Polygon(coords2, value, attrs.toMap)
     }    
   }
 

@@ -1,8 +1,8 @@
-package trellis.operation
+package geotrellis.operation
 
-import trellis._
+import geotrellis._
 
-import trellis.process._
+import geotrellis.process._
 
 import scala.math.{max, min, pow}
 

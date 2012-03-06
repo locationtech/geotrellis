@@ -1,4 +1,4 @@
-package trellis.benchmark
+package geotrellis.benchmark
 
 /*
  * # Caliper API key for jmarcus@azavea.com
@@ -6,11 +6,11 @@ package trellis.benchmark
  * apiKey: 3226081d-9776-40f4-a2d7-a1dc99c948c6
 */
 
-import trellis._
-import trellis.data._
-import trellis.operation._
-import trellis.process._
-import trellis.raster._
+import geotrellis._
+import geotrellis.data._
+import geotrellis.operation._
+import geotrellis.process._
+import geotrellis.raster._
 
 import com.google.caliper.Runner 
 import com.google.caliper.SimpleBenchmark
