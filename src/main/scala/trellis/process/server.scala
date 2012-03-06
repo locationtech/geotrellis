@@ -28,7 +28,11 @@ class Context (server:Server) {
   }
 
   def getRasterByName(name:String, re:RasterExtent):IntRaster = {
-    server getRasterByName(name, Option(re))
+    server.getRasterByName(name, Option(re))
+  }
+
+  def getRasterExtentByName(name:String):RasterExtent = {
+    server.getRasterExtentByName(name)
   }
 }
 
@@ -123,6 +127,13 @@ trait FileCaching {
   ////       and/or constructor arguments
   //def enableCaching() { caching = true }
   //def disableCaching() { caching = false }
+
+  def getRasterExtentByName(name:String):RasterExtent = {
+    catalog.getRasterLayerByName(name) match {
+      case Some((path, layer)) => layer.rasterExtent
+      case None => sys.error("couldn't find %s" format name)
+    }
+  }
 
   def getRasterByName(name:String, reOpt:Option[RasterExtent]):IntRaster = {
     catalog.getRasterLayerByName(name) match {

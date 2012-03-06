@@ -16,6 +16,15 @@ case class LoadRasterExtentFromFile(path:String) extends Op1(path)({
   }
 })
 
+case class LoadRasterExtent(nme:Op[String]) extends Op[RasterExtent] {
+  def _run(context:Context) = runAsync(List(nme, context))
+  val nextSteps:Steps = {
+    case (name:String) :: (context:Context) :: Nil => {
+      Result(context.getRasterExtentByName(name))
+    }
+  }
+}
+
 //object LoadRasterExtentFromFile {
 //  def apply(path:String) = LoadRasterExtentFromFile(path)
 //}
