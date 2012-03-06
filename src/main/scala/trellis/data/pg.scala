@@ -37,7 +37,7 @@ trait BasePgTypes {
       case DOUBLE => r.getDouble(pos)
       case INTEGER => r.getInt(pos)
       case VARCHAR => r.getString(pos)
-      case BIGINT => r.getInt(pos)
+      case BIGINT => r.getLong(pos)
       case BIT => r.getBoolean(pos)
       case 1111 => m.getColumnTypeName(pos) match {
         case "geometry" => getGeometry(r, pos)
