@@ -84,10 +84,15 @@ akka {
 
   initStaticCache()
 
+  def startUp:Unit = ()
+
   def initStaticCache():Unit = {
     catalog.stores.values.filter(_.cacheAll).flatMap(_.paths.values).foreach {
       layer => loadInStaticCache(layer)
     }
+    val n = staticCache.size
+    val (amt, units) = Units.bytes(staticCache.foldLeft(0)(_ + _._2.length))
+    println("loaded %d layers (%.2f %s) into static cache" format (n, amt, units))
   }
 
   def loadInStaticCache(layer:RasterLayer):Unit = {

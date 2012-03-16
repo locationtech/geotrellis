@@ -7,6 +7,18 @@ import java.nio.channels.FileChannel.MapMode._
 
 import scala.math.min
 
+object Units {
+  val bytesUnits = List("B", "K", "M", "G", "P")
+  def bytes(n:Long) = {
+    def xyz(amt:Double, units:List[String]): (Double, String) = units match {
+      case Nil => sys.error("invalid units list")
+      case u :: Nil => (amt, u)
+      case u :: us => if (amt < 1024) (amt, u) else xyz(amt / 1024, us)
+    }
+    xyz(n, bytesUnits)
+  }  
+}
+
 /**
   * Utility class for timing the execution time of a function.
   */
@@ -37,7 +49,6 @@ object Filesystem {
     val f = new File(path)
     val fis = new FileInputStream(f)
     val size = f.length.toInt
-    println("size for %s is %d" format (path, size))
     val channel = fis.getChannel
     val buffer = channel.map(READ_ONLY, 0, size)
     fis.close
