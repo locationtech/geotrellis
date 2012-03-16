@@ -5,7 +5,8 @@
    "store": "test:fs",
    "params": {
      "type": "fs",
-     "path": "src/test/resources/data"
+     "path": "src/test/resources/data",
+     "cacheAll": "yes"
    }
   }
  ]

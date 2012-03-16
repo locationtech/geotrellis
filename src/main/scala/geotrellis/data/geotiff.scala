@@ -6,6 +6,10 @@ import java.io.{File, FileInputStream, FileOutputStream}
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel.MapMode._
 import javax.imageio.ImageIO
+import java.awt.image.WritableRaster
+import java.awt.image.Raster
+import java.awt.Point
+
 import org.geotools.coverage.grid.GridCoverageFactory
 import org.geotools.coverage.grid.GridCoordinates2D
 import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder
@@ -14,21 +18,18 @@ import org.geotools.factory.Hints
 import org.geotools.gce.geotiff
 import org.geotools.geometry.Envelope2D
 import org.geotools.referencing.CRS
-import scala.math.{abs, min, max, round}
-import geotrellis.process.Server
-import geotrellis.IntRaster
-import geotrellis.{Extent,RasterExtent}
-
-import geotrellis._
-import geotrellis.process._
 import org.geotools.coverage.Category
 import org.geotools.coverage.GridSampleDimension
 import org.geotools.coverage.GeophysicsCategory
-import java.awt.image.WritableRaster
-import java.awt.image.Raster
-import java.awt.Point
 
-final class GeoTiffReadState(val path:String,
+import scala.math.{abs, min, max, round}
+
+import geotrellis._
+import geotrellis.process._
+import geotrellis.util._
+
+
+final class GeoTiffReadState(path:String,
                              val layer:RasterLayer,
                              val target:RasterExtent) extends ReadState {
   private var noData:Int = 0
@@ -90,17 +91,24 @@ final class GeoTiffReadState(val path:String,
 }
 
 object GeoTiffReader extends FileReader {
-  def createReadState(path:String, layer:RasterLayer, target:RasterExtent) = {
-    new GeoTiffReadState(path, layer, target)
+  def readStateFromPath(path:String, rl:RasterLayer, re:RasterExtent) = {
+    new GeoTiffReadState(path, rl, re)
+  }
+
+  def readStateFromCache(b:Array[Byte], rl:RasterLayer, re:RasterExtent) = {
+    sys.error("caching geotif not supported")
   }
 
   override def readMetadata(path:String) = {
     val state = new GeoTiffReadState(path, null, null)
-    RasterLayer("", state.loadRasterExtent())
+    val (base, typ) = Filesystem.split(path)
+    RasterLayer("", typ, base, state.loadRasterExtent())
   }
 }
 
 object GeoTiffWriter extends Writer {
+  def rasterType = "arg32"
+
   def write(path:String, raster:IntRaster, name:String) {
     val re = raster.rasterExtent
     val e = raster.rasterExtent.extent

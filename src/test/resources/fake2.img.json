@@ -1,5 +1,6 @@
 {
   "layer": "fake2.img",
+  "type": "arg",
   "xmin": -100.0,
   "xmax": -60.0,
   "ymin": 100.0,

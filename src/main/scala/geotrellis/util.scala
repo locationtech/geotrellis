@@ -37,6 +37,7 @@ object Filesystem {
     val f = new File(path)
     val fis = new FileInputStream(f)
     val size = f.length.toInt
+    println("size for %s is %d" format (path, size))
     val channel = fis.getChannel
     val buffer = channel.map(READ_ONLY, 0, size)
     fis.close
@@ -53,7 +54,26 @@ object Filesystem {
     data
   }
 
+  /**
+   * Return the path string with the final extension removed.
+   */
+  def basename(p:String) = p.lastIndexOf(".") match {
+    case -1 => p
+    case n => p.substring(0, n)
+  }
+
+  def split(p:String) = p.lastIndexOf(".") match {
+    case -1 => (p, "")
+    case n => (p.substring(0, n), p.substring(n + 1, p.length))
+  }
+
   def slurpToBuffer(path:String, pos:Int, size:Int, bs:Int = 262144) = {
     ByteBuffer.wrap(slurp(path, bs), pos, size)
   }
+
+  //def findFiles(f:File, r:Regex):Array[File] = {
+  //  val these = f.listFiles
+  //  val good = these.filter(f => r.findFirstIn(f.getName).isDefined)
+  //  good ++ these.filter(_.isDirectory).flatMap(recursiveListFiles(_, r))
+  //}
 }

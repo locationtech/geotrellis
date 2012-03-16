@@ -1,5 +1,6 @@
 {
   "layer": "quadborder",
+  "type": "arg32",
   "xmin": -9.5,
   "xmax": 150.5,
   "ymin": 3.8,

@@ -142,23 +142,28 @@ trait ReadState {
 trait Reader {}
 
 trait FileReader extends Reader {
-  def createReadState(path:String, layer:RasterLayer, target:RasterExtent):ReadState
-
-  def metadataPath(path:String) = {
-    val i = path.lastIndexOf(".")
-    path.substring(0, i) + ".json"
-  }
+  def metadataPath(path:String) = path.substring(0, path.lastIndexOf(".")) + ".json"
 
   def readMetadata(path:String) = RasterLayer.fromPath(metadataPath(path))
 
-  def read(path:String, layerOpt:Option[RasterLayer], targetOpt:Option[RasterExtent]): IntRaster = {
+  def readStateFromCache(bytes:Array[Byte], layer:RasterLayer, target:RasterExtent):ReadState
+
+  def readCache(bytes:Array[Byte], layer:RasterLayer, targetOpt:Option[RasterExtent]): IntRaster = {
+    val target = targetOpt.getOrElse(layer.rasterExtent)
+    val readState = readStateFromCache(bytes, layer, target)
+    val raster = readState.loadRaster() // all the work is here
+    readState.destroy()
+    raster
+  }
+
+  def readStateFromPath(path:String, layer:RasterLayer, target:RasterExtent):ReadState
+
+  def readPath(path:String, layerOpt:Option[RasterLayer], targetOpt:Option[RasterExtent]): IntRaster = {
     val layer = layerOpt.getOrElse(readMetadata(path))
     val target = targetOpt.getOrElse(layer.rasterExtent)
-
-    val readState = createReadState(path, layer, target)
-    val raster = readState.loadRaster() // all the works is here
+    val readState = readStateFromPath(path, layer, target)
+    val raster = readState.loadRaster() // all the work is here
     readState.destroy()
-
     raster
   }
 }
@@ -168,9 +173,12 @@ trait Writer {
 
   def write(path:String, raster:IntRaster, name:String):Unit
 
+  def rasterType: String
+
   def writeMetadataJSON(path:String, name:String, re:RasterExtent) {
     val metadata = """{
   "layer": "%s",
+  "type": "%s",
   "xmin": %f,
   "xmax": %f,
   "ymin": %f,
@@ -179,7 +187,7 @@ trait Writer {
   "rows": %d,
   "cellwidth": %f,
   "cellheight": %f 
-}""".format(name, re.extent.xmin, re.extent.xmax, re.extent.ymin,
+}""".format(name, rasterType, re.extent.xmin, re.extent.xmax, re.extent.ymin,
              re.extent.ymax, re.cols, re.rows, re.cellwidth, re.cellheight)
 
     val bos = new BufferedOutputStream(new FileOutputStream(path))

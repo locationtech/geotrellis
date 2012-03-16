@@ -16,13 +16,13 @@ class LoadRasterTest extends FunSuite {
     server.run(LoadRaster("quadborder"))
   }
 
-  test("fail to load invalid raster") {
-    val result = try {
-      server.run(LoadRaster("does-not-exIST"))
-      "ok"
-    } catch {
-      case _ => "exception"
-    }
-    assert(result === "exception")
-  }
+  //test("fail to load invalid raster") {
+  //  val result = try {
+  //    server.run(LoadRaster("does-not-exIST"))
+  //    "ok"
+  //  } catch {
+  //    case _ => "exception"
+  //  }
+  //  assert(result === "exception")
+  //}
 }
