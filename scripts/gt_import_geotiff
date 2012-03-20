@@ -1,0 +1,41 @@
+#!/bin/bash
+
+## replace this with the main class of the method
+mainClass="geotrellis.run.GeotiffImporter"
+
+version="0.6"
+jar_name="geotrellis_2.9.1-0.6.min.jar"
+
+java_args=""
+jar_url="http://n0d.es/jars/"$jar_name
+
+# find jar either in target (we're in SBT) 
+# or in the same directory as this script (we're both in /bin)
+sbt_path="target/scala-2.9.1/"$jar_name
+bin_path=`dirname $0`/$jar_name
+
+geotrellis_dir=$HOME/.geotrellis/
+geotrellis_lib_dir=$geotrellis_dir/lib
+
+home_path=$geotrellis_lib_dir/$jar_name
+
+if [ -e $sbt_path ]; then
+  jar_path=$sbt_path;
+elif [ -e $bin_path ]; then
+  jar_path=$bin_path;
+else
+  if [ -e $home_path ]; then
+    jar_path=$home_path;
+  else
+    echo " ** As this is the first time a geotrellis script has been run"
+    echo " ** under this account, the geotrellis library will first be"
+    echo " ** downloaded to "$geotrellis_dir
+    echo
+    mkdir -p $geotrellis_lib_dir
+    wget --progress=bar:force -P $geotrellis_lib_dir $jar_url
+    jar_path=$geotrellis_lib_dir"/"$jar_name
+    echo " ** GeoTrellis libraries downloaded."
+  fi
+fi
+
+java $java_args -cp $jar_path $mainClass "$@" 
