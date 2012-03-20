@@ -23,7 +23,7 @@ class AsciiSpec extends Spec with MustMatchers with ShouldMatchers {
   describe("An AsciiReader") {
     it ("should fail on non-existent files") {
       val path = "/does/not/exist.tif"
-      evaluating { AsciiReader.read(path, None, None) } should produce [Exception]
+      evaluating { AsciiReader.readPath(path, None, None) } should produce [Exception]
     }
 
     it ("should write ASCII") {
@@ -31,12 +31,12 @@ class AsciiSpec extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it ("should read ASCII") {
-      val r2 = AsciiReader.read("/tmp/foo.asc", None, None)
+      val r2 = AsciiReader.readPath("/tmp/foo.asc", None, None)
       r2 must be === r
     }
 
     it ("should translate GeoTiff") {
-      val r2 = GeoTiffReader.read("src/test/resources/econic.tif", None, None)
+      val r2 = GeoTiffReader.readPath("src/test/resources/econic.tif", None, None)
       AsciiWriter.write("/tmp/econic-geotrellis.asc", r2)
     }
   }

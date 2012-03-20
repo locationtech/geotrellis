@@ -6,8 +6,8 @@ import scala.collection.mutable.ListBuffer
 
 /** Base trait for a caching strategy
  *
- * @type K cache key
- * @type V cached value
+ * K is the cache key
+ * V is the cache value
  */
 trait CacheStrategy[K,V] {
 
@@ -62,11 +62,11 @@ trait HashBackedCache[K,V] extends CacheStrategy[K,V] {
 trait LoggingCache[K,V] extends CacheStrategy[K,V] {
   abstract override def lookup(k: K):Option[V] = super.lookup(k) match {
     case None => { 
-      //println("Cache miss on %s".format(k)); 
+      println("Cache miss on %s".format(k)); 
       None 
     }
     case z => { 
-      // println("Cache hit on %s".format(k)); 
+      println("Cache hit on %s".format(k)); 
       z
     }
   }
@@ -96,9 +96,15 @@ trait BoundedCache[K,V] extends CacheStrategy[K,V] {
 
   var currentSize: Long = 0
 
-  /** @returns true iff v can be inserted into the cache without violating the size boundary */
-  def canInsert(v: V) =
-    currentSize + sizeOf(v) <= maxSize
+  /**
+   * returns true iff v can be inserted into the cache without violating the
+   * size boundary
+   */
+  def canInsert(v: V) = {
+    val ok = currentSize + sizeOf(v) <= maxSize
+    println("[cache] canInsert says %s (%d + %d <= %d)" format (ok, currentSize, sizeOf(v), maxSize))
+    ok
+  }
 
   abstract override def remove(k: K):Option[V] = lookup(k) match {
     case None => None
@@ -114,16 +120,16 @@ trait BoundedCache[K,V] extends CacheStrategy[K,V] {
 
     if (!canInsert(v)) {
       cacheFree(currentSize + sizeOf(v) - maxSize)
-    }
+    } 
 
     if (canInsert(v)) {
       currentSize += sizeOf(v)
-      //println("[Cache] Inserted %s".format(k))
+      println("[Cache] Inserted %s".format(k))
       super.insert(k,v)
 
       true
     } else {
-      //println("[Cache] Failed to insert %s (cache full)".format(k))
+      println("[Cache] Failed to insert %s (cache full)".format(k))
       false
     }
   }
@@ -142,7 +148,7 @@ trait OrderedBoundedCache[K,V] extends BoundedCache[K,V] {
    * @param ltgt: The additional space in the cache requested
    */
   def cacheFree(ltgt: Long):Unit = {
-    //println("[Cache] Attempting to free %d units of data (cache max: %d, cache cur: %d)".format(ltgt, maxSize, currentSize))
+    println("[Cache] Attempting to free %d units of data (cache max: %d, cache cur: %d)".format(ltgt, maxSize, currentSize))
 
     if (ltgt > maxSize) {
        println("[Cache] File to big to fit in cache at all")
@@ -153,7 +159,7 @@ trait OrderedBoundedCache[K,V] extends BoundedCache[K,V] {
       val item:K = cacheOrder.remove(removeIdx(cacheOrder))
       val removedSize: Long = remove(item) match {
         case Some(v) => {
-          //println("[Cache]\tEvicted %s (%d units) from cache".format(item, sizeOf(v)))
+          println("[Cache]\tEvicted %s (%d units) from cache".format(item, sizeOf(v)))
           sizeOf(v)
         }
         case None => 0L
@@ -202,9 +208,7 @@ class MRUCache[K,V](val maxSize: Long, val sizeOf: V => Long = (v:V) => 1) exten
  * This cache assumes that (k,v) pair is immutable
  */
 trait AtomicCache[K,V] extends CacheStrategy[K,V] {
-  def lock():Lock = new ReentrantLock()
-
-  val bigLock:Lock = lock()
+  val bigLock:Lock = new ReentrantLock()
 
   val currentlyLoading:HashMap[K,Lock] = new HashMap[K,Lock].empty
 
@@ -222,41 +226,60 @@ trait AtomicCache[K,V] extends CacheStrategy[K,V] {
   }
 
   abstract override def getOrInsert(k: K, v: => V):V = {
+    val t0 = System.currentTimeMillis
     bigLock.lock()
     try {
       if (currentlyLoading.contains(k)) {
-        // Another thread is currently loading up the cache entry for k so we block until it is done
+        // Another thread is currently loading up the cache entry for k so we
+        // block until it is done.
         val smallLock = currentlyLoading.get(k).get
         bigLock.unlock()
 
-        // the small lock blocks until the thread that is doing the loading is complete
+        // the small lock blocks until the thread that is doing the loading is
+        // complete.
         smallLock.lock()
         smallLock.unlock()
         
         // v will already have been evaluated by some other thread
         // if there was an error we'll evaluate v
-        super.lookup(k).getOrElse(v)
+        //super.lookup(k).getOrElse(v)
+        val resultOpt = super.lookup(k)
+        resultOpt match {
+          case None => {
+            val vv = v
+            val t = System.currentTimeMillis - t0            
+            println("waited on other thread, but failed: %d ms" format (t))
+            vv
+          }
+          case Some(vv) => {
+            val t = System.currentTimeMillis - t0            
+            println("waited on other thread: %d ms" format (t))
+            vv
+          }
+        }
       } else {
         super.lookup(k) match {
           case Some(vv) => {
             bigLock.unlock()
+            val t = System.currentTimeMillis - t0            
+            println("found in cache: %d ms" format t)
             vv
           }
           case None => {
-            val smallLock = lock()
+            val smallLock = new ReentrantLock()
             currentlyLoading.put(k, smallLock)
             smallLock.lock()
-            try {
+            val vv = try {
               bigLock.unlock()
             
               val vv = v    // Evaluate v
-
 
               bigLock.lock()
               super.insert(k,v)
 
               currentlyLoading.remove(k)
               bigLock.unlock()
+              vv
 
             } catch {
               case t => { println("error"); t.printStackTrace(); println("rethrow..."); throw t }
@@ -264,7 +287,9 @@ trait AtomicCache[K,V] extends CacheStrategy[K,V] {
               smallLock.unlock()
             }
             
-            v
+            val t = System.currentTimeMillis - t0            
+            println("added to cache: %d ms" format t)
+            vv
           }
         }
       }

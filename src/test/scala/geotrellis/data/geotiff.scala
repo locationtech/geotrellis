@@ -42,12 +42,12 @@ class GeoTiffSpec extends Spec with MustMatchers with ShouldMatchers {
   describe("A GeoTiffReader") {
     it ("should fail on non-existent files") {
       val path = "/does/not/exist.tif"
-      evaluating { GeoTiffReader.read(path, None, None) } should produce [Exception];
+      evaluating { GeoTiffReader.readPath(path, None, None) } should produce [Exception];
     }
 
     it ("should load correct extent & gridToMap should work") {
       val path = "src/test/resources/econic.tif"
-      val raster1 = GeoTiffReader.read(path, None, None)
+      val raster1 = GeoTiffReader.readPath(path, None, None)
       val (xmap, ymap) = raster1.rasterExtent.gridToMap(0,0)
       xmap should be (-15381.615 plusOrMinus 0.001)
       ymap should be (15418.729 plusOrMinus 0.001)
@@ -55,16 +55,16 @@ class GeoTiffSpec extends Spec with MustMatchers with ShouldMatchers {
 
     it ("should render to PNG") {
       val path = "src/test/resources/econic.tif"
-      val raster1 = GeoTiffReader.read(path, None, None)
+      val raster1 = GeoTiffReader.readPath(path, None, None)
 
       val e = Extent(-15471.6, -15511.3, 15428.4, 15388.7)
       val geo = RasterExtent(e, 60.0, 60.0, 513, 513)
-      val raster2 = GeoTiffReader.read(path, None, Some(geo))
+      val raster2 = GeoTiffReader.readPath(path, None, Some(geo))
     }
 
     it ("should draw") {
       val path = "src/test/resources/econic.tif"
-      val raster = GeoTiffReader.read(path, None, None)
+      val raster = GeoTiffReader.readPath(path, None, None)
 
       val (zmin, zmax) = raster.findMinMax
 
@@ -80,7 +80,7 @@ class GeoTiffSpec extends Spec with MustMatchers with ShouldMatchers {
 
     it ("should write") {
       val inpath = "src/test/resources/econic.tif"
-      val raster = GeoTiffReader.read(inpath, None, None)
+      val raster = GeoTiffReader.readPath(inpath, None, None)
       /*println(raster.asciiDrawRange(0,5,0,5))
       println(raster.get(0,3))
       println(raster.get(1,3))

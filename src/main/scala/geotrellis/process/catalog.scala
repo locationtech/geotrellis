@@ -7,9 +7,9 @@ import java.io.File
 
 import net.liftweb.json.{parse, DefaultFormats}
 
-import geotrellis.{Extent,RasterExtent}
+import geotrellis._
 import geotrellis.process._
-import geotrellis.IntRaster
+import geotrellis.util._
 
 // this is a work in progress. the definitions for Layer, DataStore and Catalog
 // are not complete, and we will likely need more objects.
@@ -33,27 +33,29 @@ case class DataStore(name:String, params:Map[String, String]) {
 
   val layers = MMap.empty[String, (String, RasterLayer)]
   val paths = MMap.empty[String, RasterLayer]
+
   findRasterLayers.foreach {
-    case (path, layer) => {
-      layers(layer.name) = (path, layer)
-      paths(path) = layer
-    }
+    layer =>
+    val path = layer.jsonPath
+    layers(layer.name) = (path, layer)
+    paths(path) = layer
   }
 
+  def cacheAll = params.contains("cacheAll")
+
   def getLayer(name:String) = layers(name)
-  
-  //def getRaster(name:String, server:Server) = {}
 
   /**
    * Recursively find RasterLayers defined in the DataStore path.
    */
-  def findRasterLayers: Array[(String, RasterLayer)] = {
+  def findRasterLayers: Array[RasterLayer] = {
     val path = new java.io.File(params("path"))
-    if (!path.isDirectory) return Array.empty[(String, RasterLayer)]
+    if (!path.isDirectory) return Array.empty[RasterLayer]
 
     val layerJson = recursiveListFiles(path, """^.*\.json$""".r)
-    layerJson map {
-      x => (x.getPath, RasterLayer.fromPath(x.getPath))
+    layerJson.map(_.getAbsolutePath).map {
+      p => RasterLayer.fromPath(p)
+      //p => (p, RasterLayer.fromPath(p))
     }
   }
 
@@ -72,7 +74,11 @@ case class DataStore(name:String, params:Map[String, String]) {
  */
 case class Catalog(name:String, stores:Map[String, DataStore]) {
 
-  def exists(path:String) = if (new java.io.File(path).exists) Some(path) else None
+  def findRasterLayer(path:String): Option[RasterLayer] = {
+    stores.values.flatMap(_.paths.get(path)).headOption
+  }
+
+  private def exists(path:String) = if (new java.io.File(path).exists) Some(path) else None
 
   def findPath(base:String) = exists(base + ".arg32") orElse exists(base + ".arg")
 
@@ -104,40 +110,31 @@ case class Catalog(name:String, stores:Map[String, DataStore]) {
  */
 trait Rec[T] {
   def name: String
-  def create: T
-
-  /**
-   * Helper method for transforming a list of records into a map of objects.
-   */
-  def recsToMap[T](recs:List[Rec[T]]): Map[String, T] = {
-    recs.map(r => r.name -> r.create).toMap
-  }
 }
 
 /**
  * Concrete Rec types defined below.
  */
-case class RasterLayerRec(layer:String, xmin:Double, xmax:Double, ymin:Double,
+case class RasterLayerRec(layer:String, `type`:String, xmin:Double, xmax:Double, ymin:Double,
                           ymax:Double, cols:Int, rows:Int,
                           cellheight:Double, cellwidth:Double) extends Rec[RasterLayer] {
-  def create = {
+  def create(basePath:String) = {
     val extent = Extent(xmin, ymin, xmax, ymax)
     val rasterExtent = RasterExtent(extent, cellwidth, cellheight, cols, rows)
-    RasterLayer(layer, rasterExtent)
+    RasterLayer(layer, `type`, basePath, rasterExtent)
   }
   def name = layer
 }
 
 case class DataStoreRec(store:String,
-                        params:Map[String, String]
-                        ) extends Rec[DataStore] {
+                        params:Map[String, String]) extends Rec[DataStore] {
   def create = DataStore(store, params)
   def name = store
 }
 
 case class CatalogRec(catalog:String,
                       stores:List[DataStoreRec]) extends Rec[Catalog] {
-  def create = Catalog(catalog, recsToMap(stores))
+  def create = Catalog(catalog, stores.map(s => s.name -> s.create).toMap)
   def name = catalog
 }
 
@@ -149,20 +146,25 @@ object RasterLayer {
    * Build a RasterLayer instance given a path to a JSON file.
    */
   def fromPath(path:String) = {
+    val base = Filesystem.basename(path)
     val src = Source.fromFile(path)
     val data = src.mkString
     src.close()
-    fromJSON(data)
+    fromJSON(data, base)
   }
 
   /**
    * Build a RasterLayer instance given a JSON string.
    */
-  def fromJSON(json:String) = parse(json).extract[RasterLayerRec].create
+  def fromJSON(json:String, basePath:String) = {
+    parse(json).extract[RasterLayerRec].create(basePath)
+  }
 }
 
-case class RasterLayer(name:String, rasterExtent:RasterExtent) extends Layer {
-  def buildRaster(): IntRaster = sys.error("unimplemented")
+case class RasterLayer(name:String, typ:String, basePath:String,
+                       rasterExtent:RasterExtent) extends Layer {
+  def jsonPath = basePath + ".json"
+  def rasterPath = basePath + "." + typ
 }
 
 object Catalog {

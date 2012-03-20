@@ -7,6 +7,18 @@ import java.nio.channels.FileChannel.MapMode._
 
 import scala.math.min
 
+object Units {
+  val bytesUnits = List("B", "K", "M", "G", "P")
+  def bytes(n:Long) = {
+    def xyz(amt:Double, units:List[String]): (Double, String) = units match {
+      case Nil => sys.error("invalid units list")
+      case u :: Nil => (amt, u)
+      case u :: us => if (amt < 1024) (amt, u) else xyz(amt / 1024, us)
+    }
+    xyz(n, bytesUnits)
+  }  
+}
+
 /**
   * Utility class for timing the execution time of a function.
   */
@@ -53,7 +65,26 @@ object Filesystem {
     data
   }
 
+  /**
+   * Return the path string with the final extension removed.
+   */
+  def basename(p:String) = p.lastIndexOf(".") match {
+    case -1 => p
+    case n => p.substring(0, n)
+  }
+
+  def split(p:String) = p.lastIndexOf(".") match {
+    case -1 => (p, "")
+    case n => (p.substring(0, n), p.substring(n + 1, p.length))
+  }
+
   def slurpToBuffer(path:String, pos:Int, size:Int, bs:Int = 262144) = {
     ByteBuffer.wrap(slurp(path, bs), pos, size)
   }
+
+  //def findFiles(f:File, r:Regex):Array[File] = {
+  //  val these = f.listFiles
+  //  val good = these.filter(f => r.findFirstIn(f.getName).isDefined)
+  //  good ++ these.filter(_.isDirectory).flatMap(recursiveListFiles(_, r))
+  //}
 }

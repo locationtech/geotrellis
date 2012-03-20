@@ -79,7 +79,7 @@ object Tiler {
   def makeTileLoader(name:String, path:String, s:Server) = {
     (tx:Int,ty:Int) => {
       val path2 = tilePath(path, name, tx, ty)
-      Some(Arg32Reader.read(path2, None, None))
+      Some(Arg32Reader.readPath(path2, None, None))
     } 
   }
 }
@@ -121,12 +121,9 @@ object TileRasterData {
   def apply(tileset: TileSet, loadExtent: Extent,
             loader: (Int, Int) => Option[IntRaster]): TileRasterData = {
     val tileExtent = tileset.tileRange(loadExtent);
-    val rasters = for (y <- 0 until tileset.tileRows; x<- 0 until tileset.tileCols) yield {
-      if (tileExtent.contains(x,y)) {
-        loader(x,y)
-      } else {
-        None
-      }
+    val rasters = for (y <- 0 until tileset.tileRows;
+                       x <- 0 until tileset.tileCols) yield {
+      if (tileExtent.contains(x,y)) loader(x,y) else None
     }
     TileRasterData(tileset, rasters.toArray)
   }

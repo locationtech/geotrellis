@@ -9,7 +9,7 @@ import geotrellis._
 import geotrellis.util._
 import geotrellis.process._
 
-final class Arg32ReadState(val path:String,
+final class Arg32ReadState(data:Either[String, Array[Byte]],
                            val layer:RasterLayer,
                            val target:RasterExtent) extends ReadState {
   private var src:ByteBuffer = null
@@ -17,7 +17,10 @@ final class Arg32ReadState(val path:String,
   def getNoDataValue = NODATA
 
   def initSource(pos:Int, size:Int) {
-    src = Filesystem.slurpToBuffer(path, pos * 4, size * 4)
+    src = data match {
+      case Left(path) => Filesystem.slurpToBuffer(path, pos * 4, size * 4)
+      case Right(bytes) => ByteBuffer.wrap(bytes, pos * 4, size * 4)
+    }
   }
 
   @inline
@@ -27,12 +30,16 @@ final class Arg32ReadState(val path:String,
 }
 
 object Arg32Reader extends FileReader {
-  def createReadState(path:String, layer:RasterLayer, target:RasterExtent) = {
-    new Arg32ReadState(path, layer, target)
-  }
+  //def createReadState(path:String, layer:RasterLayer, target:RasterExtent) = {
+  //  new Arg32ReadState(path, layer, target)
+  //}
+  def readStateFromCache(b:Array[Byte], rl:RasterLayer, re:RasterExtent) = new Arg32ReadState(Right(b), rl, re)
+  def readStateFromPath(p:String, rl:RasterLayer, re:RasterExtent) = new Arg32ReadState(Left(p), rl, re)
 }
 
 object Arg32Writer extends Writer {
+  def rasterType = "arg32"
+
   def write(path:String, raster:IntRaster, name:String) {
     val i = path.lastIndexOf(".")
     val base = path.substring(0, i)
