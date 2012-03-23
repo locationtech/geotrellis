@@ -9,13 +9,15 @@ import geotrellis._
 import geotrellis.util._
 import geotrellis.process._
 
-final class Arg32ReadState(data:Either[String, Array[Byte]],
+abstract class ArgNReadState(data:Either[String, Array[Byte]],
                            val layer:RasterLayer,
                            val target:RasterExtent) extends ReadState {
+  def width:Int // byte width, e.g. 4 for arg32 with 32bit values
+
   private var src:ByteBuffer = null
 
-  def width = 4 // byte width
-  def getNoDataValue = NODATA
+  // NoData value is the minimum value storable w/ this bitwidth (-1 for sign)
+  def getNoDataValue:Int = 0 - (math.pow(2, width * 8 - 1)).toInt
 
   def initSource(pos:Int, size:Int) {
     src = data match {
@@ -30,23 +32,16 @@ final class Arg32ReadState(data:Either[String, Array[Byte]],
   }
 }
 
-object Arg32Reader extends FileReader {
-  //def createReadState(path:String, layer:RasterLayer, target:RasterExtent) = {
-  //  new Arg32ReadState(path, layer, target)
-  //}
-  def readStateFromCache(b:Array[Byte], rl:RasterLayer, re:RasterExtent) = new Arg32ReadState(Right(b), rl, re)
-  def readStateFromPath(p:String, rl:RasterLayer, re:RasterExtent) = new Arg32ReadState(Left(p), rl, re)
-}
 
-object Arg32Writer extends Writer {
-  def width = 4 // byte width
-  def rasterType = "arg32"
+trait ArgNWriter extends Writer {
+  def width:Int
+  def rasterType:String
 
   def write(path:String, raster:IntRaster, name:String) {
     val i = path.lastIndexOf(".")
     val base = path.substring(0, i)
     writeMetadataJSON(base + ".json", name, raster.rasterExtent)
-    writeData(base + ".arg32", raster)
+    writeData(base + ".arg" + (width * 8).toString(), raster)
   }
 
   private def writeData(path:String, raster:IntRaster) {
@@ -83,4 +78,39 @@ object Arg32Writer extends Writer {
 
     bos.close()
   }
+}
+
+//REFACTOR: Create a single ArgReader/Writer that passes through bitwidth as an argument.
+//          This would require refactoring the Writer/Reader traits.
+
+class Arg32ReadState(data:Either[String, Array[Byte]],
+                           layer:RasterLayer,
+                           target:RasterExtent)  extends ArgNReadState (data,layer,target) {
+  val width = 4
+}
+
+object Arg32Reader extends FileReader {
+  def readStateFromCache(b:Array[Byte], rl:RasterLayer, re:RasterExtent) = new Arg32ReadState(Right(b), rl, re)
+  def readStateFromPath(p:String, rl:RasterLayer, re:RasterExtent) = new Arg32ReadState(Left(p), rl, re)
+}
+
+object Arg32Writer extends ArgNWriter {
+  def width = 4
+  def rasterType = "arg32"
+}
+
+class Arg8ReadState(data:Either[String, Array[Byte]],
+                    layer:RasterLayer,
+                    target:RasterExtent) extends ArgNReadState(data,layer,target) {
+  val width = 1
+}
+
+class Arg8Reader extends FileReader {
+  def readStateFromCache(b:Array[Byte], rl:RasterLayer, re:RasterExtent) = new Arg8ReadState(Right(b), rl, re)
+  def readStateFromPath(p:String, rl:RasterLayer, re:RasterExtent) = new Arg8ReadState(Left(p), rl, re)
+}
+
+object Arg8Writer extends ArgNWriter {
+  def width = 1
+  def rasterType = "arg8"
 }
