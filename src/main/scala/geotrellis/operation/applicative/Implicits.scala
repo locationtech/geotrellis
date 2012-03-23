@@ -4,9 +4,15 @@ import geotrellis.operation._
 import geotrellis.process._
 
 /**
- * Some implicit operators to add some syntactic sugar. To use say:
+ * Some implicit operators to add some syntactic sugar. Example:
  *
+ * import geotrellis.operation._
  * import geotrellis.operation.applicative.Implicits._
+ *
+ * val f = (a:Int) => (b:Int) => (c:Int) => a + b * c
+ * val op = f <@> 1 <*> 2 <*> 3
+ *
+ * server.run(op) // returns 7
  */
 object Implicits {
   implicit def applyOperator[A, Z:Manifest](lhs:Op[A => Z]) = new {
