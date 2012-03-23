@@ -14,18 +14,19 @@ final class Arg32ReadState(data:Either[String, Array[Byte]],
                            val target:RasterExtent) extends ReadState {
   private var src:ByteBuffer = null
 
+  def width = 4 // byte width
   def getNoDataValue = NODATA
 
   def initSource(pos:Int, size:Int) {
     src = data match {
-      case Left(path) => Filesystem.slurpToBuffer(path, pos * 4, size * 4)
-      case Right(bytes) => ByteBuffer.wrap(bytes, pos * 4, size * 4)
+      case Left(path) => Filesystem.slurpToBuffer(path, pos * width, size * width)
+      case Right(bytes) => ByteBuffer.wrap(bytes, pos * width, size * width)
     }
   }
 
   @inline
   def assignFromSource(sourceIndex:Int, dest:Array[Int], destIndex:Int) {
-    dest(destIndex) = src.getInt(sourceIndex * 4)
+    dest(destIndex) = src.getInt(sourceIndex * width)
   }
 }
 
@@ -38,6 +39,7 @@ object Arg32Reader extends FileReader {
 }
 
 object Arg32Writer extends Writer {
+  def width = 4 // byte width
   def rasterType = "arg32"
 
   def write(path:String, raster:IntRaster, name:String) {
@@ -51,7 +53,7 @@ object Arg32Writer extends Writer {
     val re = raster.rasterExtent
     val cols = re.cols
     val rows = re.rows
-    val buffer = Array.ofDim[Byte](cols * 4)
+    val buffer = Array.ofDim[Byte](cols * width)
 
     val bos = new BufferedOutputStream(new FileOutputStream(path))
 
@@ -59,12 +61,20 @@ object Arg32Writer extends Writer {
     while (row < rows) {
       var col = 0
       while (col < cols) {
-        val i = col * 4
+        val i = col * width 
         var z = raster.get(col, row)
-        buffer(i)     = ((z & 0xff000000) >> 24).toByte
-        buffer(i + 1) = ((z & 0x00ff0000) >> 16).toByte
-        buffer(i + 2) = ((z & 0x0000ff00) >>  8).toByte
-        buffer(i + 3) = ((z & 0x000000ff)).toByte
+        var j = 0
+        while (j < width) {
+          val k = width - j - 1
+          val mask = 0xff << 8 * k 
+          buffer(i + j) = ((z & mask) >> 8 * k).toByte
+          //e.g. for width = 4
+          //buffer(i)     = ((z & 0xff000000) >> 24).toByte
+          //buffer(i + 1) = ((z & 0x00ff0000) >> 16).toByte
+          //buffer(i + 2) = ((z & 0x0000ff00) >>  8).toByte
+          //buffer(i + 3) = ((z & 0x000000ff)).toByte
+          j += 1
+        }
         col += 1
       }
       bos.write(buffer)
