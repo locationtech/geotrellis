@@ -24,6 +24,13 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
 
     val path1 = "src/test/resources/fake.img.arg32"
 
+    it("should use correct no data values") {
+      ArgFormat.noData(1) must be === -128
+      ArgFormat.noData(2) must be === -32768
+      ArgFormat.noData(3) must be === -8388608
+      ArgFormat.noData(4) must be === -2147483648
+    }
+
     it("should build a valid raster") {
       val raster = Arg32Reader.readPath(path1, None, None)
       //val raster = reader.getRaster

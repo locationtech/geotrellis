@@ -1,6 +1,5 @@
 package geotrellis.data
 
-import scala.xml._
 import java.io.{BufferedOutputStream, FileOutputStream}
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel.MapMode._
@@ -8,6 +7,13 @@ import java.nio.channels.FileChannel.MapMode._
 import geotrellis._
 import geotrellis.util._
 import geotrellis.process._
+
+import scala.math.pow
+import scala.xml._
+
+object ArgFormat {
+  def noData(width:Int):Int = -(1 << (width * 8 - 1))
+}
 
 abstract class ArgNReadState(data:Either[String, Array[Byte]],
                            val layer:RasterLayer,
@@ -17,7 +23,7 @@ abstract class ArgNReadState(data:Either[String, Array[Byte]],
   private var src:ByteBuffer = null
 
   // NoData value is the minimum value storable w/ this bitwidth (-1 for sign)
-  def getNoDataValue:Int = 0 - (math.pow(2, width * 8 - 1)).toInt
+  def getNoDataValue:Int = ArgFormat.noData(width)
 
   def initSource(pos:Int, size:Int) {
     src = data match {
@@ -41,7 +47,7 @@ trait ArgNWriter extends Writer {
     val i = path.lastIndexOf(".")
     val base = path.substring(0, i)
     writeMetadataJSON(base + ".json", name, raster.rasterExtent)
-    writeData(base + ".arg" + (width * 8).toString(), raster)
+    writeData(base + "." + rasterType, raster)
   }
 
   private def writeData(path:String, raster:IntRaster) {
@@ -61,13 +67,13 @@ trait ArgNWriter extends Writer {
         var j = 0
         while (j < width) {
           val k = width - j - 1
-          val mask = 0xff << 8 * k 
-          buffer(i + j) = ((z & mask) >> 8 * k).toByte
+          buffer(i + j) = (z >> 8 * k).toByte
+
           //e.g. for width = 4
-          //buffer(i)     = ((z & 0xff000000) >> 24).toByte
-          //buffer(i + 1) = ((z & 0x00ff0000) >> 16).toByte
-          //buffer(i + 2) = ((z & 0x0000ff00) >>  8).toByte
-          //buffer(i + 3) = ((z & 0x000000ff)).toByte
+          //buffer(i)     = (z >> 24).toByte
+          //buffer(i + 1) = (z >> 16).toByte
+          //buffer(i + 2) = (z >> 8).toByte
+          //buffer(i + 3) = (z >> 0).toByte
           j += 1
         }
         col += 1
