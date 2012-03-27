@@ -26,7 +26,11 @@ object TileRaster {
     val inpath  = args(0)
     val name    = args(1)
     val outpath  = args(2)
-    
+   
+    execute(inpath, name, outpath)
+  } 
+
+  def execute(inpath:String, name:String, outpath:String) {
     val server = Server("script", Catalog.empty("script"))
 
     println("Loading file: " + inpath)

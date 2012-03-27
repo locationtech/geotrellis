@@ -1,5 +1,7 @@
 import com.jsuereth.sbtsite.SiteKeys
 
+import com.typesafe.startscript.StartScriptPlugin
+
 seq(site.settings: _*)
 
 seq(ghpages.settings: _*)
@@ -20,6 +22,8 @@ addCompilerPlugin("com.azavea.math.plugin" %% "optimized-numeric" % "0.1")
 //  }
 
 seq(ProguardPlugin.proguardSettings :_*)
+
+seq(StartScriptPlugin.startScriptForClassesSettings: _*)
 
 libraryDependencies += "commons-lang" % "commons-lang" % "2.6"
 
