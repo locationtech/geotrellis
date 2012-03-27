@@ -1,2 +1,12 @@
 #!/bin/sh
-./target/start geotrellis.run.Tasks "$@"
+
+TARGET="./target/start"
+
+if [ -x $TARGET ]; then
+    ./target/start geotrellis.run.Tasks "$@"
+else
+    echo "$0: ERROR ($TARGET not found)"
+    echo ""
+    echo "make sure you've run the 'start-script' sbt task."
+    exit 1
+fi
