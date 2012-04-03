@@ -70,7 +70,7 @@ val json0 = """
       val catalog = Catalog.fromJSON(json1)
       val store = catalog.stores("stroud:fs")
       val layers = store.findRasterLayers
-      layers.length must be === 1
+      layers.length must be === 3
     } 
   }
 
