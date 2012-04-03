@@ -37,7 +37,11 @@ trait ReadState {
 
     // save "normalized map coordinates" for destination cell (0, 0)
     val xbase = target.extent.xmin - src_xmin + (dst_cellwidth / 2)
-    val ybase = target.extent.ymin - src_ymin + (dst_cellheight / 2)
+
+    val ybase = target.extent.ymax - src_ymin - (dst_cellheight / 2)
+    // find map coordinates for destination cell (0,0)
+    //    val destOrigin = target.extent.ymax - (dst_cellheight / 2)
+    //val ybase = src_ymax - (target.extent.ymax - (dst_cellheight / 2))
 
     // track height/width in map units
     val src_map_width  = src_xmax - src_xmin
@@ -64,12 +68,12 @@ trait ReadState {
     while (dst_row < dst_rows) {
 
       // calculate the Y grid coordinate to read from
-      val src_row = (src_rows - (y / src_cellheight)).asInstanceOf[Int]
+      val src_row = (src_rows - (y / src_cellheight).asInstanceOf[Int] - 1)
       //assert(src_row < src_rows)
 
       // pre-calculate some spans we'll use a bunch
       val src_span = src_row * src_cols
-      val dst_span = (dst_rows - 1 - dst_row) * dst_cols
+      val dst_span = dst_row * dst_cols
 
       // xyz
       if (src_span + min_col < src_size && src_span + max_col >= 0) {
@@ -100,8 +104,8 @@ trait ReadState {
         }
       }
 
-      // increase our X map coordinate
-      y += dst_cellwidth
+      // decrease our Y map coordinate
+      y -= dst_cellheight
       dst_row += 1
     }
 
