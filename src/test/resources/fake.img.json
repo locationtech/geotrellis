@@ -1,12 +1,13 @@
 {
-  "layer": "fake.img",
-  "type": "arg32",
-  "xmin": -9.5,
-  "xmax": 22.5,
-  "ymin": 3.8,
-  "ymax": 35.8,
-  "rows": 4,
-  "cols": 4,
-  "cellwidth": 8.0,
-  "cellheight": 8.0
+  "cellheight": 8.0, 
+  "cellwidth": 8.0, 
+  "cols": 4, 
+  "datatype": "int32", 
+  "layer": "fake.img", 
+  "rows": 4, 
+  "type": "arg", 
+  "xmax": 22.5, 
+  "xmin": -9.5, 
+  "ymax": 35.8, 
+  "ymin": 3.8
 }

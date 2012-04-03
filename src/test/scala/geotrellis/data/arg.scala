@@ -25,7 +25,7 @@ class ArgSpec extends Spec with MustMatchers with ShouldMatchers {
 
       for(y <- 0 until 4) {
         for(x <- 0 until 4) {
-          raster.get(x, y) must be === (16 * y + x + 1)
+          raster.get(x, y) must be === (16 * (3 - y) + x + 1)
         }
       }
     }
@@ -86,18 +86,16 @@ class ArgSpec extends Spec with MustMatchers with ShouldMatchers {
     val nd = NODATA
 
     it("should handle simple chunks") {
-      dotest(-9.5, 43.8, 150.5, 123.8, 10, 5, Array(1, 1, 1, 1, 1, 2, 2, 2, 2, 2,
-                                                    1, 1, 1, 1, 1, 2, 2, 2, 2, 2,
-                                                    3, 3, 3, 3, 3, 4, 4, 4, 4, 4,
-                                                    3, 3, 3, 3, 3, 4, 4, 4, 4, 4,
+      dotest(-9.5, 43.8, 150.5, 123.8, 10, 5, Array(1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 
+                                                    1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 
+                                                    1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 
+                                                    3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 
                                                     3, 3, 3, 3, 3, 4, 4, 4, 4, 4))
-                                                          
-                                                          
     }
 
     it("should handle complex chunks (#1)") {
       dotest(1.0, -48.5, 81.0, 31.5, 4, 4, Array(3, 3, 3, 4,
-                                                 nd, nd, nd, nd,
+                                                 3, 3, 3, 4,
                                                  nd, nd, nd, nd,
                                                  nd, nd, nd, nd))
     }
