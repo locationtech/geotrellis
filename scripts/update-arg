@@ -59,17 +59,28 @@ def mkarray(code):
     return a
 
 def flip_arg(path, cols, rows):
-    flip('b', path, cols, rows)
-
-def flip_arg32(path, cols, rows):
-    flip('i', path, cols, rows)
-
-def flip(code, path, cols, rows):
-    a = mkarray(code)
+    a = mkarray('b')
     f = open(path, 'r')
     a.fromfile(f, cols * rows)
     
-    a2 = mkarray(code)
+    a2 = mkarray('b')
+    for y in range(0, rows):
+        span = (rows - y - 1) * cols
+        for x in range(0, cols):
+            z = a[span + x]
+            # map old no-data to new
+            if (z == 0): z = -128
+            a2.append(z)
+
+    f2 = open(path, 'w')
+    a2.tofile(f2)
+
+def flip_arg32(path, cols, rows):
+    a = mkarray('i')
+    f = open(path, 'r')
+    a.fromfile(f, cols * rows)
+    
+    a2 = mkarray('i')
     for y in range(0, rows):
         span = (rows - y - 1) * cols
         for x in range(0, cols):
