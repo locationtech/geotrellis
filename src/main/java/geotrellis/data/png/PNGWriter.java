@@ -111,7 +111,7 @@ public class PNGWriter {
         byte[] prevLine = new byte[lineLen];
  
         for(int line=0 ; line<height ; line++) {
-            bb.position((height - line - 1)*lineLen);
+            bb.position(line * lineLen);
             bb.get(curLine);
  
             lineOut[0] = (byte)(curLine[0] - prevLine[0]);
