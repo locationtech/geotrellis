@@ -2,12 +2,15 @@
   "cellheight": 8.0, 
   "cellwidth": 8.0, 
   "cols": 4, 
-  "datatype": "int32", 
-  "layer": "fake.img", 
+  "datatype": "int8", 
+  "epsg": 3785, 
+  "layer": "fake.img8", 
   "rows": 4, 
   "type": "arg", 
   "xmax": 22.5, 
   "xmin": -9.5, 
+  "xskew": 0.0, 
   "ymax": 35.8, 
-  "ymin": 3.8
+  "ymin": 3.8, 
+  "yskew": 0.0
 }

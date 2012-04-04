@@ -3,11 +3,14 @@
   "cellwidth": 8.0, 
   "cols": 20, 
   "datatype": "int32", 
-  "layer": "quad", 
+  "epsg": 3785, 
+  "layer": "quadborder", 
   "rows": 20, 
   "type": "arg", 
   "xmax": 150.5, 
   "xmin": -9.5, 
+  "xskew": 0.0, 
   "ymax": 163.8, 
-  "ymin": 3.8
+  "ymin": 3.8, 
+  "yskew": 0.0
 }

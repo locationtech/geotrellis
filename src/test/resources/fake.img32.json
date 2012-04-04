@@ -1,16 +1,16 @@
 {
   "cellheight": 8.0, 
   "cellwidth": 8.0, 
-  "cols": 20, 
+  "cols": 4, 
   "datatype": "int32", 
   "epsg": 3785, 
-  "layer": "quadborder", 
-  "rows": 20, 
+  "layer": "fake.img", 
+  "rows": 4, 
   "type": "arg", 
-  "xmax": 150.5, 
+  "xmax": 22.5, 
   "xmin": -9.5, 
   "xskew": 0.0, 
-  "ymax": 163.8, 
+  "ymax": 35.8, 
   "ymin": 3.8, 
   "yskew": 0.0
 }
