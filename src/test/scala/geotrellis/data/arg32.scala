@@ -22,7 +22,7 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
   describe("An Arg32Reader") {
     val server = TestServer()
 
-    val path1 = "src/test/resources/fake.img.arg32"
+    val path1 = "src/test/resources/fake.img32.arg"
 
     it("should use correct no data values") {
       ArgFormat.noData(1) must be === -128
@@ -48,17 +48,18 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
     val raster = Arg32Reader.readPath(path1, None, None)
 
     it("should write to full paths ") {
-      val fh = java.io.File.createTempFile("foog", ".arg32")
+      val fh = java.io.File.createTempFile("foog", ".arg")
       val path = fh.getPath
-      val base = path.substring(0, path.length - 6)
+      val base = path.substring(0, path.length - 4)
+      println("base path: " + base)
 
       Arg32Writer.write(path, raster)
 
       val data1 = io.Source.fromFile(path).mkString
-      val data2 = io.Source.fromFile("src/test/resources/fake.img.arg32").mkString
+      val data2 = io.Source.fromFile("src/test/resources/fake.img32.arg").mkString
     
-      new java.io.File(base + ".arg32").delete() must be === true
-      new java.io.File(base + ".json").delete() must be === true
+      //new java.io.File(base + ".arg").delete() must be === true
+      //new java.io.File(base + ".json").delete() must be === true
       data1 must be === data2
     }
 
@@ -68,9 +69,9 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
       val data1 = Array.fill[Int](16)(nd)
       val raster = IntRaster(data1, geo)
       
-      val fh = java.io.File.createTempFile("nodata", ".arg32")
+      val fh = java.io.File.createTempFile("nodata", ".arg")
       val path = fh.getPath
-      val base = path.substring(0, path.length - 6)
+      val base = path.substring(0, path.length - 4)
 
       Arg32Writer.write(path, raster)
 
@@ -92,7 +93,7 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
       val e = Extent(xmin, ymin, xmax, ymax)
       val re = RasterExtent(e, cellwidth, cellheight, cols, rows)
 
-      Arg32Reader.readPath("src/test/resources/quad.arg32", None, Some(re))
+      Arg32Reader.readPath("src/test/resources/quad32.arg", None, Some(re))
     }
     
     // helper function

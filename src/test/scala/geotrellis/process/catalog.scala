@@ -39,7 +39,10 @@ val json0 = """
     "cellwidth": 20.0,
     "cellheight": 20.0,
     "cols": 5,
-    "rows": 5
+    "rows": 5,
+    "epsg": 3785,
+    "xskew": 0.0,
+    "yskew": 0.0 
     }
    }
 """

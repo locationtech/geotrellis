@@ -140,12 +140,13 @@ object AsciiReader extends FileReader {
   override def readMetadata(path:String) = {
     val state = new AsciiReadState(path, null, null)
     val (base, typ) = Filesystem.split(path)
-    RasterLayer("", typ, base, state.loadRasterExtent())
+    RasterLayer("", typ, "", base, state.loadRasterExtent(), 3857, 0.0, 0.0)
   }
 }
 
 object AsciiWriter extends Writer {
-  def rasterType = "arg32"
+  def rasterType = "ascii"
+  def dataType = ""
 
   def write(path:String, raster:IntRaster, name:String) {
     write(path, raster, name, NODATA)

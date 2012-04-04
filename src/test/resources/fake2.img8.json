@@ -3,11 +3,14 @@
   "cellwidth": 10.0, 
   "cols": 4, 
   "datatype": "int8", 
-  "layer": "fake2.img", 
+  "epsg": 3785, 
+  "layer": "fake2.img8", 
   "rows": 4, 
   "type": "arg", 
   "xmax": -60.0, 
   "xmin": -100.0, 
+  "xskew": 0.0, 
   "ymax": 140.0, 
-  "ymin": 100.0
+  "ymin": 100.0, 
+  "yskew": 0.0
 }

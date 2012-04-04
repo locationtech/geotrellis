@@ -1,0 +1,39 @@
+#!/usr/bin/env python
+import array
+import json
+from os.path import basename, splitext, join
+import sys
+
+def mkarray(code):
+    a = array.array(code)
+    if sys.byteorder == 'little': a.byteswap()
+    return a
+
+def flip(code, path, outpath, cols, rows):
+    a = mkarray(code)
+    f = open(path, 'r')
+    a.fromfile(f, cols * rows)
+    
+    a2 = mkarray(code)
+    for y in range(0, rows):
+        span = (rows - y - 1) * cols
+        for x in range(0, cols):
+            a2.append(a[span + x])
+
+    f2 = open(outpath, 'w')
+    a2.tofile(f2)
+
+if __name__ == "__main__":
+    path = sys.argv[1]
+    jpath = splitext(path)[0] + ".json"
+    d = json.load(open(jpath, 'r'))
+
+    if d['datatype'] == 'int8':
+        cell = 'b'
+    elif d['datatype'] == 'int32':
+        cell = 'i'
+    else:
+        raise Exception("unsupported")
+
+    flip(cell, path, path, d['cols'], d['rows'])
+    print "flipped %s" % path

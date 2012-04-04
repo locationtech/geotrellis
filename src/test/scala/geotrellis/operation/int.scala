@@ -61,7 +61,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("LoadFile") {
-      val L = LoadFile("src/test/resources/fake.img.arg")
+      val L = LoadFile("src/test/resources/fake.img8.arg")
       val raster = server.run(L)
 
       raster.get(0, 0) must be === 49 
@@ -70,18 +70,18 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
 
     it("LoadFile, take 2") {
-      val L2 = LoadFile("src/test/resources/fake.img.arg")
+      val L2 = LoadFile("src/test/resources/fake.img8.arg")
       val raster2 = server.run(L2)
       raster2.get(0, 0) must be === 49
       raster2.get(3, 3) must be === 4 
     }
 
     it("LoadFile, w/ resampling") {
-      val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img.arg")
+      val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img8.arg")
       val geo1 = server.run(G1)
 
       val G2 = BuildRasterExtent( geo1.extent.xmin, geo1.extent.ymin, geo1.extent.xmax, geo1.extent.ymax, 2, 2) 
-      val L = LoadFile("src/test/resources/fake.img.arg", G2)
+      val L = LoadFile("src/test/resources/fake.img8.arg", G2)
       val raster = server.run(L)
       raster.get(0, 0) must be === 34
       raster.get(1, 0) must be === 36
@@ -98,11 +98,11 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
  
     it("LoadResampledArgFile, take 2") {
-      val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img.arg")
+      val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img8.arg")
       val geo1 = server.run(G1)
 
       val G2 = BuildRasterExtent( geo1.extent.xmin, geo1.extent.ymin, geo1.extent.xmax, geo1.extent.ymax, 2, 2) 
-      val L = LoadFile("src/test/resources/fake.img.arg", G2)
+      val L = LoadFile("src/test/resources/fake.img8.arg", G2)
       val raster = server.run(L)
 
       raster.get(0, 0) must be === 34
@@ -113,7 +113,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
 
     it("ResampleRaster") {
-      val L = LoadFile("src/test/resources/quad.arg")
+      val L = LoadFile("src/test/resources/quad8.arg")
       val F = ResampleRaster(L, 4, 4)
       val raster = server.run(F)
 
@@ -127,9 +127,9 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
     it("test Literal implicit") {
       import geotrellis.operation.Literal._
-      val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img.arg")
+      val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img8.arg")
       val geo1 = server.run(G1)
-      val L = LoadFile("src/test/resources/fake.img.arg", geo1)
+      val L = LoadFile("src/test/resources/fake.img8.arg", geo1)
     }
 
     it("should LoadArgFileChunk with subextents that are within the arg extent") {
@@ -138,7 +138,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val G = BuildRasterExtent(xmin = -90, ymin = 20,
                             xmax = -80, ymax = 40,
                             cols = 1, rows = 1)
-      val L = LoadFile("src/test/resources/fake2.img.arg", G)
+      val L = LoadFile("src/test/resources/fake2.img8.arg", G)
     }
 
     it("CopyRaster") {
@@ -208,7 +208,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("GenerateStatistics") {
-      val R = LoadFile("src/test/resources/quad.arg")
+      val R = LoadFile("src/test/resources/quad8.arg")
       val S = GenerateStatistics(BuildMapHistogram(R))
       val stats = server.run(S)
 
@@ -220,8 +220,8 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
     it("StandardDeviation") {
       val newServer = TestServer()
-      val R1 = LoadFile("src/test/resources/quad.arg")
-      val R2 = LoadFile("src/test/resources/quad.arg")
+      val R1 = LoadFile("src/test/resources/quad8.arg")
+      val R2 = LoadFile("src/test/resources/quad8.arg")
       val H = BuildMapHistogram(R1)
       val S = StandardDeviation(R2, H, 1000)
       val raster = newServer.run(S)

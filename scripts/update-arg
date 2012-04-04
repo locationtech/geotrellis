@@ -4,11 +4,12 @@ import array
 from lxml import etree
 import json
 import os
+from os.path import basename, splitext, join
 import sys
 
 def convert_old_xml(path):
     tree = etree.parse(path)
-    name = os.path.basename(os.path.splitext(path)[0])
+    name = basename(splitext(path)[0])
     d = {
         'layer': name,
         'type': 'arg',
@@ -19,6 +20,9 @@ def convert_old_xml(path):
         'rows': int(grab(tree, '/METADATA/DIMENSIONS/@height')),
         'xmin': float(grab(tree, '/METADATA/ORIGIN/@xMin')),
         'ymin': float(grab(tree, '/METADATA/ORIGIN/@yMin')),
+        'epsg': 3785,
+        'xskew': 0.0,
+        'yskew': 0.0,
     }
     d['xmax'] = d['xmin'] + (d['cellwidth'] * d['cols'])
     d['ymax'] = d['ymin'] + (d['cellheight'] * d['rows'])
@@ -35,9 +39,12 @@ def grab(tree, xpath, default=None):
 
 def convert_old_json(path):
     d = json.load(open(path, 'r'))
-    name = os.path.basename(os.path.splitext(path)[0])
+    name = basename(splitext(path)[0])
     d['type'] = 'arg'
     d['datatype'] = 'int32'
+    d['epsg'] = 3785
+    d['xskew'] = 0.0
+    d['yskew'] = 0.0
     return d
 
 def check_json(d):
@@ -51,43 +58,28 @@ def check_json(d):
         raise Exception("missing required names: %s" % ", ".join(missing))
 
 def subext(path, ext):
-    return os.path.splitext(path)[0] + "." + ext
+    return splitext(path)[0] + "." + ext
 
 def mkarray(code):
     a = array.array(code)
     if sys.byteorder == 'little': a.byteswap()
     return a
 
-def flip_arg(path, cols, rows):
-    a = mkarray('b')
+def flip(code, path, outpath, cols, rows):
+    a = mkarray(code)
     f = open(path, 'r')
     a.fromfile(f, cols * rows)
     
-    a2 = mkarray('b')
+    a2 = mkarray(code)
     for y in range(0, rows):
         span = (rows - y - 1) * cols
         for x in range(0, cols):
             z = a[span + x]
-            # map old no-data to new
-            if (z == 0): z = -128
+            # map no-data for legacy arg
+            if (code == 'b' and z == 0): z = -128
             a2.append(z)
 
-    f2 = open(path, 'w')
-    a2.tofile(f2)
-
-def flip_arg32(path, cols, rows):
-    a = mkarray('i')
-    f = open(path, 'r')
-    a.fromfile(f, cols * rows)
-    
-    a2 = mkarray('i')
-    for y in range(0, rows):
-        span = (rows - y - 1) * cols
-        for x in range(0, cols):
-            z = a[span + x]
-            a2.append(z)
-
-    f2 = open(path, 'w')
+    f2 = open(outpath, 'w')
     a2.tofile(f2)
 
 def write_json(d, path):
@@ -96,21 +88,23 @@ def write_json(d, path):
 
 if __name__ == "__main__":
     for path in sys.argv[1:]:
-        jsonpath = subext(path, 'json')
+        bpath = splitext(path)[0]
 
-        raw = open(path, 'r').read()
+        if True:
+            bpath2 = bpath
+        else:
+            bpath2 = bpath + ".conv"
 
         if path.endswith('arg32'):
-            d = convert_old_json(jsonpath)
-            flip_arg32(path, d['cols'], d['rows'])
-            write_json(d, jsonpath)
-            
+            cell = 'i'
+            d = convert_old_json(bpath + '.json')
         elif path.endswith('arg'):
-            d = convert_old_xml(subext(path, 'xml'))
-            flip_arg(path, d['cols'], d['rows'])
-            write_json(d, jsonpath)
-
+            cell = 'b'
+            d = convert_old_xml(bpath + '.xml')
         else:
             print "unknown format: %s" % path
+            continue
 
+        flip(cell, path, bpath2 + ".arg", d['cols'], d['rows'])
+        write_json(d, bpath2 + ".json")
         print "updated %s" % path

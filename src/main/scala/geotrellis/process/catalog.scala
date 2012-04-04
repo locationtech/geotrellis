@@ -115,13 +115,14 @@ trait Rec[T] {
 /**
  * Concrete Rec types defined below.
  */
-case class RasterLayerRec(layer:String, `type`:String, xmin:Double, xmax:Double, ymin:Double,
-                          ymax:Double, cols:Int, rows:Int,
-                          cellheight:Double, cellwidth:Double) extends Rec[RasterLayer] {
+case class RasterLayerRec(layer:String, `type`:String, datatype:String, 
+                          xmin:Double, xmax:Double, ymin:Double, ymax:Double, 
+                          cols:Int, rows:Int, cellheight:Double, cellwidth:Double, 
+                          epsg:Int, yskew:Double, xskew:Double) extends Rec[RasterLayer] {
   def create(basePath:String) = {
     val extent = Extent(xmin, ymin, xmax, ymax)
     val rasterExtent = RasterExtent(extent, cellwidth, cellheight, cols, rows)
-    RasterLayer(layer, `type`, basePath, rasterExtent)
+    RasterLayer(layer, `type`, datatype, basePath, rasterExtent, epsg, yskew, xskew)
   }
   def name = layer
 }
@@ -161,8 +162,8 @@ object RasterLayer {
   }
 }
 
-case class RasterLayer(name:String, typ:String, basePath:String,
-                       rasterExtent:RasterExtent) extends Layer {
+case class RasterLayer(name:String, typ:String, datatyp:String, basePath:String,
+                       rasterExtent:RasterExtent, epsg:Int, xskew:Double, yskew:Double) extends Layer {
   def jsonPath = basePath + ".json"
   def rasterPath = basePath + "." + typ
 }

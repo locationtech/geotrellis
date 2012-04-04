@@ -15,7 +15,7 @@ import geotrellis.data._
 class ArgSpec extends Spec with MustMatchers with ShouldMatchers {
   describe("An ArgReader") {
     val server = TestServer()
-    val path1 = "src/test/resources/fake.img.arg"
+    val path1 = "src/test/resources/fake.img8.arg"
     	 
     it("should build a valid raster") {
       val raster = ArgReader.readPath(path1, None, None)
@@ -39,7 +39,7 @@ class ArgSpec extends Spec with MustMatchers with ShouldMatchers {
       ArgWriter.write(path2, raster)
 
       val data1 = io.Source.fromFile(path2).mkString
-      val data2 = io.Source.fromFile("src/test/resources/fake.img.arg").mkString
+      val data2 = io.Source.fromFile("src/test/resources/fake.img8.arg").mkString
 
       val base = path2.substring(0, path2.lastIndexOf("."))
 
@@ -55,7 +55,7 @@ class ArgSpec extends Spec with MustMatchers with ShouldMatchers {
       val cellheight = abs(ymax - ymin) / cols
       val e = Extent(xmin, ymin, xmax, ymax)
       val re = RasterExtent(e, cellwidth, cellheight, cols, rows)
-      ArgReader.readPath("src/test/resources/quad.arg", None, Some(re))
+      ArgReader.readPath("src/test/resources/quad8.arg", None, Some(re))
     }
 
     // helper function

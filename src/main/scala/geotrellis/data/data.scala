@@ -173,15 +173,18 @@ trait FileReader extends Reader {
 }
 
 trait Writer {
+
   def write(path:String, raster:IntRaster) { write(path, raster, raster.name) }
 
   def write(path:String, raster:IntRaster, name:String):Unit
 
   def rasterType: String
+  def dataType:String
 
   def writeMetadataJSON(path:String, name:String, re:RasterExtent) {
     val metadata = """{
   "layer": "%s",
+  "datatype": "%s", 
   "type": "%s",
   "xmin": %f,
   "xmax": %f,
@@ -190,8 +193,11 @@ trait Writer {
   "cols": %d,
   "rows": %d,
   "cellwidth": %f,
-  "cellheight": %f 
-}""".format(name, rasterType, re.extent.xmin, re.extent.xmax, re.extent.ymin,
+  "cellheight": %f,
+  "epsg": 3785,
+  "yskew": 0.0,
+  "xskew": 0.0
+}""".format(name, rasterType, dataType, re.extent.xmin, re.extent.xmax, re.extent.ymin,
              re.extent.ymax, re.cols, re.rows, re.cellwidth, re.cellheight)
 
     val bos = new BufferedOutputStream(new FileOutputStream(path))

@@ -131,19 +131,28 @@ akka {
     }
   }
 
+  def metadataPath(path:String) = path.substring(0, path.lastIndexOf(".")) + ".json"
   /**
    * Return the appropriate reader object for the given path.
    */
-  def getReader(path:String): FileReader = path match {
-    case Arg32Pattern() => Arg32Reader
-    case ArgPattern() => ArgReader
+  def getReader(path:String, layerOpt:Option[RasterLayer]): FileReader = path match {
+    case ArgPattern() => {
+      //REVIEW: replace with unified ARG reader
+      layerOpt.getOrElse(RasterLayer.fromPath(metadataPath(path))) match {
+        case RasterLayer(_, "arg", "int32", _, _, _, _, _) => Arg32Reader
+        case RasterLayer(_, "arg", "int8",  _, _, _, _, _) => Arg8Reader
+        case RasterLayer(_, typ, datatyp,   _, _, _, _, _) => 
+          throw new Exception("Unsupported raster layer: with type %s, datatype %s".format(typ,datatyp))
+      } 
+    }
+ArgReader
     case GeoTiffPattern() => GeoTiffReader
     case AsciiPattern() => AsciiReader
     case _ => sys.error("unknown path type %s".format(path))
   }
 
   def getRaster(path:String, layerOpt:Option[RasterLayer], reOpt:Option[RasterExtent]):IntRaster = {
-    getReader(path).readPath(path, layerOpt, reOpt)
+    getReader(path, layerOpt).readPath(path, layerOpt, reOpt)  
   }
 
   // TODO: rewrite calls to loadRaster to getRaster. then remove?
@@ -159,7 +168,7 @@ akka {
   def getRasterByName(name:String, reOpt:Option[RasterExtent]):IntRaster = {
     catalog.getRasterLayerByName(name) match {
       case Some((path, layer)) => {
-        val reader = getReader(path)
+        val reader = getReader(path,Some(layer))
         staticCache.get(layer.name) match {
           case Some(bytes) => reader.readCache(bytes, layer, reOpt)
           case None => reader.readPath(path, Some(layer), reOpt)

@@ -43,11 +43,13 @@ trait ArgNWriter extends Writer {
   def width:Int
   def rasterType:String
 
+  def dataType = "Int" + (width * 8).toString
+
   def write(path:String, raster:IntRaster, name:String) {
     val i = path.lastIndexOf(".")
     val base = path.substring(0, i)
     writeMetadataJSON(base + ".json", name, raster.rasterExtent)
-    writeData(base + "." + rasterType, raster)
+    writeData(base + ".arg", raster)
   }
 
   private def writeData(path:String, raster:IntRaster) {
@@ -111,7 +113,7 @@ class Arg8ReadState(data:Either[String, Array[Byte]],
   val width = 1
 }
 
-class Arg8Reader extends FileReader {
+object Arg8Reader extends FileReader {
   def readStateFromCache(b:Array[Byte], rl:RasterLayer, re:RasterExtent) = new Arg8ReadState(Right(b), rl, re)
   def readStateFromPath(p:String, rl:RasterLayer, re:RasterExtent) = new Arg8ReadState(Left(p), rl, re)
 }
