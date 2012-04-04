@@ -24,13 +24,13 @@
       <span class="symbol"> 
         <span class="name">Arg32Writer</span>
         
-        <span class="result"> extends <a name="geotrellis.data.Writer" class="extype" href="Writer.html">Writer</a></span>
+        <span class="result"> extends <a name="geotrellis.data.ArgNWriter" class="extype" href="ArgNWriter.html">ArgNWriter</a></span>
       </span>
       </h4>
       
           <div class="fullcommenttop" id="comment"><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a name="geotrellis.data.Writer" class="extype" href="Writer.html">Writer</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><a name="geotrellis.data.ArgNWriter" class="extype" href="ArgNWriter.html">ArgNWriter</a>, <a name="geotrellis.data.Writer" class="extype" href="Writer.html">Writer</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
         
 
@@ -46,7 +46,7 @@
                 <span class="filtertype">Inherited</span>
                 <ol><li class="hideall out"><span>Hide All</span></li>
                 <li class="showall in"><span>Show all</span></li></ol>
-                <ol id="linearization"><li name="geotrellis.data.Arg32Writer" class="in"><span>Arg32Writer</span></li><li name="geotrellis.data.Writer" class="in"><span>Writer</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+                <ol id="linearization"><li name="geotrellis.data.Arg32Writer" class="in"><span>Arg32Writer</span></li><li name="geotrellis.data.ArgNWriter" class="in"><span>ArgNWriter</span></li><li name="geotrellis.data.Writer" class="in"><span>Writer</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
               </div>
           <div id="visbl">
               <span class="filtertype">Visibility</span>
@@ -244,6 +244,17 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.data.Arg32Writer#rasterType" data-isabs="false">
+      <a id="rasterType:String"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">rasterType</span>
+        
+        <span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.data.Arg32Writer" class="extype" href="">Arg32Writer</a> → <a name="geotrellis.data.ArgNWriter" class="extype" href="ArgNWriter.html">ArgNWriter</a> → <a name="geotrellis.data.Writer" class="extype" href="Writer.html">Writer</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">
@@ -308,7 +319,18 @@
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.data.Arg32Writer#write" data-isabs="false">
+    </li><li visbl="pub" name="geotrellis.data.Arg32Writer#width" data-isabs="false">
+      <a id="width:Int"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">width</span>
+        
+        <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.data.Arg32Writer" class="extype" href="">Arg32Writer</a> → <a name="geotrellis.data.ArgNWriter" class="extype" href="ArgNWriter.html">ArgNWriter</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.data.ArgNWriter#write" data-isabs="false">
       <a id="write(String,IntRaster,String):Unit"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -318,7 +340,7 @@
         <span class="params">(<span name="path">path: String</span>, <span name="raster">raster: <a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>, <span name="name">name: String</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.data.Arg32Writer" class="extype" href="">Arg32Writer</a> → <a name="geotrellis.data.Writer" class="extype" href="Writer.html">Writer</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.data.ArgNWriter" class="extype" href="ArgNWriter.html">ArgNWriter</a> → <a name="geotrellis.data.Writer" class="extype" href="Writer.html">Writer</a></dd></dl></div>
     </li><li visbl="pub" name="geotrellis.data.Writer#write" data-isabs="false">
       <a id="write(String,IntRaster):Unit"></a>
       <h4 class="signature">
@@ -346,7 +368,9 @@
 
         
 
-        <div name="geotrellis.data.Writer" class="parent">
+        <div name="geotrellis.data.ArgNWriter" class="parent">
+              <h3>Inherited from <a name="geotrellis.data.ArgNWriter" class="extype" href="ArgNWriter.html">ArgNWriter</a></h3>
+            </div><div name="geotrellis.data.Writer" class="parent">
               <h3>Inherited from <a name="geotrellis.data.Writer" class="extype" href="Writer.html">Writer</a></h3>
             </div><div name="scala.AnyRef" class="parent">
               <h3>Inherited from AnyRef</h3>

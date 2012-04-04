@@ -94,8 +94,7 @@ Operations on this cache may required O(N) time to execute (N = size of cache)
         <span class="result"> extends AnyRef</span>
       </span>
       </h4>
-      <p class="comment cmt">Base trait for a caching strategy
-</p>
+      <p class="comment cmt">Base trait for a caching strategy</p>
     </li><li visbl="pub" name="geotrellis.process.Calculation" data-isabs="false">
       <a id="Calculation:Calculation[T]"></a>
       <h4 class="signature">
@@ -228,17 +227,6 @@ Operations on this cache may required O(N) time to execute (N = size of cache)
       </span>
       </h4>
       <p class="comment cmt">Failure is the History of a failed operation.</p>
-    </li><li visbl="pub" name="geotrellis.process.FileCaching" data-isabs="true">
-      <a id="FileCaching:FileCaching"></a>
-      <h4 class="signature">
-      <span class="kind">trait</span>
-      <span class="symbol"> 
-        <a href="FileCaching.html"><span class="name">FileCaching</span></a>
-        
-        <span class="result"> extends AnyRef</span>
-      </span>
-      </h4>
-      
     </li><li visbl="pub" name="geotrellis.process.HashBackedCache" data-isabs="true">
       <a id="HashBackedCache:HashBackedCache[K, V]"></a>
       <h4 class="signature">
@@ -360,7 +348,7 @@ Operations on this cache execute in O(1) time
       <span class="symbol"> 
         <a href="RasterLayer.html"><span class="name">RasterLayer</span></a>
         
-        <span class="params">(<span name="name">name: String</span>, <span name="rasterExtent">rasterExtent: RasterExtent</span>)</span><span class="result"> extends Layer with Product with Serializable</span>
+        <span class="params">(<span name="name">name: String</span>, <span name="typ">typ: String</span>, <span name="basePath">basePath: String</span>, <span name="rasterExtent">rasterExtent: RasterExtent</span>)</span><span class="result"> extends Layer with Product with Serializable</span>
       </span>
       </h4>
       
@@ -371,7 +359,7 @@ Operations on this cache execute in O(1) time
       <span class="symbol"> 
         <a href="RasterLayerRec.html"><span class="name">RasterLayerRec</span></a>
         
-        <span class="params">(<span name="layer">layer: String</span>, <span name="xmin">xmin: Double</span>, <span name="xmax">xmax: Double</span>, <span name="ymin">ymin: Double</span>, <span name="ymax">ymax: Double</span>, <span name="cols">cols: Int</span>, <span name="rows">rows: Int</span>, <span name="cellheight">cellheight: Double</span>, <span name="cellwidth">cellwidth: Double</span>)</span><span class="result"> extends Rec[RasterLayer] with Product with Serializable</span>
+        <span class="params">(<span name="layer">layer: String</span>, <span name="type">type: String</span>, <span name="xmin">xmin: Double</span>, <span name="xmax">xmax: Double</span>, <span name="ymin">ymin: Double</span>, <span name="ymax">ymax: Double</span>, <span name="cols">cols: Int</span>, <span name="rows">rows: Int</span>, <span name="cellheight">cellheight: Double</span>, <span name="cellwidth">cellwidth: Double</span>)</span><span class="result"> extends Rec[RasterLayer] with Product with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">Concrete Rec types defined below.</p>
@@ -450,7 +438,7 @@ provided callback with the computed args, and send the result to the client.</p>
       <span class="symbol"> 
         <a href="Server.html"><span class="name">Server</span></a>
         
-        <span class="result"> extends FileCaching</span>
+        <span class="result"> extends AnyRef</span>
       </span>
       </h4>
       

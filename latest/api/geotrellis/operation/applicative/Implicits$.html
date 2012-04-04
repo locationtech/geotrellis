@@ -28,7 +28,9 @@
       </span>
       </h4>
       
-          <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Some implicit operators to add some syntactic sugar. To use say:</p><p>import geotrellis.operation.applicative.Implicits._
+          <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>Some implicit operators to add some syntactic sugar. Example:</p><p>import geotrellis.operation._
+import geotrellis.operation.applicative.Implicits._</p><p>val f = (a:Int) =&gt; (b:Int) =&gt; (c:Int) =&gt; a + b * c
+val op = f &lt;@&gt; 1 &lt;*&gt; 2 &lt;*&gt; 3</p><p>server.run(op) // returns 7
 </p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent">AnyRef, <span name="scala.Any" class="extype">Any</span></div>

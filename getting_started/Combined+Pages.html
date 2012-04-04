@@ -1,4 +1,4 @@
-<html >
+<html>
       <head>
         <title>GeoTrellis — Combined Pages</title>
         <link type="text/css" media="screen, projection" rel="stylesheet" href="css/blueprint/screen.css"></link>
@@ -354,13 +354,20 @@ catalog.  For example, the following catalog.json file defines a data directory 
   }
  ]
 }
-</code></pre><h3 id="Importing+Raster+Data">Importing Raster Data</h3><p>There is a script in the /scripts directory that you can use to convert raster data in
-GeoTiff format to the ARG32 format.  It assumes that you are using a Unix shell (Linux/Mac) and have installed “wget”.
-</p><p>For example, to convert <code>`your_geotiff.tif</code><code> to </code><code>output.arg32</code>`, change to the
-directory you’ve checked out the template and run:
-</p><pre><code class="prettyprint lang-bash">scripts/geotrellis_import_geotiff your_geotiff.tif output.arg32
+</code></pre><h3 id="Importing+Raster+Data">Importing Raster Data</h3><p>The most recent development version of GDAL (http://www.gdal.org/) can convert files from most raster formats into the
+ARG format.  This is by far the best way to convert data to the ARG format that GeoTrellis uses for raster data.  Please feel
+free to ask for advice on the mailing list on installing a recent version of GDAL.  We also have an AMI Ubuntu instance for EC2
+with GeoTrellis and a recent version of GDAL installed.
+</p><p>While the GDAL method is much more reliable, there is also command line script that you can use in a checkout of the 
+geotrellis project to convert raster data in GeoTiff format to the ARG Int32 format.  
+<br/>
+For example, to convert <code>`myraster.tif</code><code> to </code><code>myraster.arg</code><code>, run the </code><code>start-script</code> sbt task, and then run
+the following command in your geotrellis checkout:
+</p><pre><code class="prettyprint lang-bash">./geotrellis geotiff_convert -i myraster.tif -n myraster -o myraster.arg
 </code></pre><p>The first time you run the script it will download the necessary GeoTrellis libraries to your
 system.
+</p><p>GeoTrellis has limited support for directly reading and writing GeoTiff ASCII Grid files directly, but you should convert your
+data to ARG for use in services.
 </p><h2 id="Operations">Operations</h2><p>This is a a reference table of operations you can use in your services.  A few
 caveats: this is an automatically generated table that is still in progress.  Not all of the operations are included, and a few of the return types are not 
 correct.  If you click on the names of any of the operations, you will be brought to the Scaladoc API document for the operation, which is correct.

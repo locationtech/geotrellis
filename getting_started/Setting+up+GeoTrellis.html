@@ -1,4 +1,4 @@
-<html >
+<html>
       <head>
         <title>GeoTrellis — Setting up GeoTrellis</title>
         <link type="text/css" media="screen, projection" rel="stylesheet" href="css/blueprint/screen.css"></link>
@@ -66,13 +66,20 @@ catalog.  For example, the following catalog.json file defines a data directory 
   }
  ]
 }
-</code></pre><h3 id="Importing+Raster+Data">Importing Raster Data</h3><p>There is a script in the /scripts directory that you can use to convert raster data in
-GeoTiff format to the ARG32 format.  It assumes that you are using a Unix shell (Linux/Mac) and have installed “wget”.
-</p><p>For example, to convert <code>`your_geotiff.tif</code><code> to </code><code>output.arg32</code>`, change to the
-directory you’ve checked out the template and run:
-</p><pre><code class="prettyprint lang-bash">scripts/geotrellis_import_geotiff your_geotiff.tif output.arg32
+</code></pre><h3 id="Importing+Raster+Data">Importing Raster Data</h3><p>The most recent development version of GDAL (http://www.gdal.org/) can convert files from most raster formats into the
+ARG format.  This is by far the best way to convert data to the ARG format that GeoTrellis uses for raster data.  Please feel
+free to ask for advice on the mailing list on installing a recent version of GDAL.  We also have an AMI Ubuntu instance for EC2
+with GeoTrellis and a recent version of GDAL installed.
+</p><p>While the GDAL method is much more reliable, there is also command line script that you can use in a checkout of the 
+geotrellis project to convert raster data in GeoTiff format to the ARG Int32 format.  
+<br/>
+For example, to convert <code>`myraster.tif</code><code> to </code><code>myraster.arg</code><code>, run the </code><code>start-script</code> sbt task, and then run
+the following command in your geotrellis checkout:
+</p><pre><code class="prettyprint lang-bash">./geotrellis geotiff_convert -i myraster.tif -n myraster -o myraster.arg
 </code></pre><p>The first time you run the script it will download the necessary GeoTrellis libraries to your
 system.
+</p><p>GeoTrellis has limited support for directly reading and writing GeoTiff ASCII Grid files directly, but you should convert your
+data to ARG for use in services.
 </p><h4>Contents</h4><div><a href="GeoTrellis.html">GeoTrellis</a></div><ol class="toc"> <li><div><a href="API+Reference.html">API Reference</a></div></li><li><div><a href="Get+started+with+the+template+project.html">Get started with the template project</a></div></li><li><div><a href="Web+Service+Tutorial.html">Web Service Tutorial</a></div></li><li><div class="current">Setting up GeoTrellis</div></li><li><div><a href="Operations.html">Operations</a></div></li><li><div><a href="Creating+new+operations.html">Creating new operations</a></div></li><li><div><a href="Parallel+and+distributed+execution.html">Parallel and distributed execution</a></div></li><li class="generated"><div><a href="Contents+in+Depth.html">Contents in Depth</a></div></li><li class="generated"><div><a href="Combined+Pages.html">Combined Pages</a></div></li> </ol>
           </div>
         </div>

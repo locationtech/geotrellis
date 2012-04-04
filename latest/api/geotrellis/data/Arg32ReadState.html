@@ -24,13 +24,13 @@
       <span class="symbol"> 
         <span class="name">Arg32ReadState</span>
         
-        <span class="result"> extends <a name="geotrellis.data.ReadState" class="extype" href="ReadState.html">ReadState</a></span>
+        <span class="result"> extends <a name="geotrellis.data.ArgNReadState" class="extype" href="ArgNReadState.html">ArgNReadState</a></span>
       </span>
       </h4>
       
-          <div class="fullcommenttop" id="comment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd></dl><div class="toggleContainer block">
+          <div class="fullcommenttop" id="comment"><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a name="geotrellis.data.ReadState" class="extype" href="ReadState.html">ReadState</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><a name="geotrellis.data.ArgNReadState" class="extype" href="ArgNReadState.html">ArgNReadState</a>, <a name="geotrellis.data.ReadState" class="extype" href="ReadState.html">ReadState</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
         
 
@@ -46,7 +46,7 @@
                 <span class="filtertype">Inherited</span>
                 <ol><li class="hideall out"><span>Hide All</span></li>
                 <li class="showall in"><span>Show all</span></li></ol>
-                <ol id="linearization"><li name="geotrellis.data.Arg32ReadState" class="in"><span>Arg32ReadState</span></li><li name="geotrellis.data.ReadState" class="in"><span>ReadState</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+                <ol id="linearization"><li name="geotrellis.data.Arg32ReadState" class="in"><span>Arg32ReadState</span></li><li name="geotrellis.data.ArgNReadState" class="in"><span>ArgNReadState</span></li><li name="geotrellis.data.ReadState" class="in"><span>ReadState</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
               </div>
           <div id="visbl">
               <span class="filtertype">Visibility</span>
@@ -63,7 +63,7 @@
       <span class="symbol"> 
         <span class="name">Arg32ReadState</span>
         
-        <span class="params">(<span name="path">path: String</span>, <span name="layer">layer: <a name="geotrellis.process.RasterLayer" class="extype" href="../process/RasterLayer.html">RasterLayer</a></span>, <span name="target">target: <a name="geotrellis.RasterExtent" class="extype" href="../RasterExtent.html">RasterExtent</a></span>)</span>
+        <span class="params">(<span name="data">data: <span name="scala.Either" class="extype">Either</span>[String, <span name="scala.Array" class="extype">Array</span>[<span name="scala.Byte" class="extype">Byte</span>]]</span>, <span name="layer">layer: <a name="geotrellis.process.RasterLayer" class="extype" href="../process/RasterLayer.html">RasterLayer</a></span>, <span name="target">target: <a name="geotrellis.RasterExtent" class="extype" href="../RasterExtent.html">RasterExtent</a></span>)</span>
       </span>
       </h4>
       
@@ -142,7 +142,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.data.Arg32ReadState#assignFromSource" data-isabs="false">
+    </li><li visbl="pub" name="geotrellis.data.ArgNReadState#assignFromSource" data-isabs="false">
       <a id="assignFromSource(Int,Array[Int],Int):Unit"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -152,7 +152,7 @@
         <span class="params">(<span name="sourceIndex">sourceIndex: <span name="scala.Int" class="extype">Int</span></span>, <span name="dest">dest: <span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]</span>, <span name="destIndex">destIndex: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.data.Arg32ReadState" class="extype" href="">Arg32ReadState</a> → <a name="geotrellis.data.ReadState" class="extype" href="ReadState.html">ReadState</a></dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.data.ArgNReadState" class="extype" href="ArgNReadState.html">ArgNReadState</a> → <a name="geotrellis.data.ReadState" class="extype" href="ReadState.html">ReadState</a></dd><dt>Annotations</dt><dd>
                 <span class="name">@inline</span><span class="args">()</span>
               
         </dd></dl></div>
@@ -239,7 +239,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.data.Arg32ReadState#getNoDataValue" data-isabs="false">
+    </li><li visbl="pub" name="geotrellis.data.ArgNReadState#getNoDataValue" data-isabs="false">
       <a id="getNoDataValue:Int"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -249,7 +249,7 @@
         <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.data.Arg32ReadState" class="extype" href="">Arg32ReadState</a> → <a name="geotrellis.data.ReadState" class="extype" href="ReadState.html">ReadState</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.data.ArgNReadState" class="extype" href="ArgNReadState.html">ArgNReadState</a> → <a name="geotrellis.data.ReadState" class="extype" href="ReadState.html">ReadState</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#hashCode" data-isabs="false">
       <a id="hashCode():Int"></a>
       <h4 class="signature">
@@ -261,7 +261,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.data.Arg32ReadState#initSource" data-isabs="false">
+    </li><li visbl="pub" name="geotrellis.data.ArgNReadState#initSource" data-isabs="false">
       <a id="initSource(Int,Int):Unit"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -271,7 +271,7 @@
         <span class="params">(<span name="pos">pos: <span name="scala.Int" class="extype">Int</span></span>, <span name="size">size: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.data.Arg32ReadState" class="extype" href="">Arg32ReadState</a> → <a name="geotrellis.data.ReadState" class="extype" href="ReadState.html">ReadState</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.data.ArgNReadState" class="extype" href="ArgNReadState.html">ArgNReadState</a> → <a name="geotrellis.data.ReadState" class="extype" href="ReadState.html">ReadState</a></dd></dl></div>
     </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
@@ -283,17 +283,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.data.Arg32ReadState#layer" data-isabs="false">
-      <a id="layer:RasterLayer"></a>
-      <h4 class="signature">
-      <span class="kind">val</span>
-      <span class="symbol"> 
-        <span class="name">layer</span>
-        
-        <span class="result">: <a name="geotrellis.process.RasterLayer" class="extype" href="../process/RasterLayer.html">RasterLayer</a></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.data.Arg32ReadState" class="extype" href="">Arg32ReadState</a> → <a name="geotrellis.data.ReadState" class="extype" href="ReadState.html">ReadState</a></dd></dl></div>
     </li><li visbl="pub" name="geotrellis.data.ReadState#loadRaster" data-isabs="false">
       <a id="loadRaster():IntRaster"></a>
       <h4 class="signature">
@@ -338,17 +327,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.data.Arg32ReadState#path" data-isabs="false">
-      <a id="path:String"></a>
-      <h4 class="signature">
-      <span class="kind">val</span>
-      <span class="symbol"> 
-        <span class="name">path</span>
-        
-        <span class="result">: String</span>
-      </span>
-      </h4>
-      
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">
@@ -360,17 +338,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.data.Arg32ReadState#target" data-isabs="false">
-      <a id="target:RasterExtent"></a>
-      <h4 class="signature">
-      <span class="kind">val</span>
-      <span class="symbol"> 
-        <span class="name">target</span>
-        
-        <span class="result">: <a name="geotrellis.RasterExtent" class="extype" href="../RasterExtent.html">RasterExtent</a></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.data.Arg32ReadState" class="extype" href="">Arg32ReadState</a> → <a name="geotrellis.data.ReadState" class="extype" href="ReadState.html">ReadState</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">
@@ -435,12 +402,25 @@
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.data.Arg32ReadState#width" data-isabs="false">
+      <a id="width:Int"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">width</span>
+        
+        <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.data.Arg32ReadState" class="extype" href="">Arg32ReadState</a> → <a name="geotrellis.data.ArgNReadState" class="extype" href="ArgNReadState.html">ArgNReadState</a></dd></dl></div>
     </li></ol>
             </div>
 
         
 
-        <div name="geotrellis.data.ReadState" class="parent">
+        <div name="geotrellis.data.ArgNReadState" class="parent">
+              <h3>Inherited from <a name="geotrellis.data.ArgNReadState" class="extype" href="ArgNReadState.html">ArgNReadState</a></h3>
+            </div><div name="geotrellis.data.ReadState" class="parent">
               <h3>Inherited from <a name="geotrellis.data.ReadState" class="extype" href="ReadState.html">ReadState</a></h3>
             </div><div name="scala.AnyRef" class="parent">
               <h3>Inherited from AnyRef</h3>

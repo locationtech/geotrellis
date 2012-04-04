@@ -24,7 +24,7 @@
       <span class="symbol"> 
         <span class="name">RasterLayerRec</span>
         
-        <span class="params">(<span name="layer">layer: String</span>, <span name="xmin">xmin: <span name="scala.Double" class="extype">Double</span></span>, <span name="xmax">xmax: <span name="scala.Double" class="extype">Double</span></span>, <span name="ymin">ymin: <span name="scala.Double" class="extype">Double</span></span>, <span name="ymax">ymax: <span name="scala.Double" class="extype">Double</span></span>, <span name="cols">cols: <span name="scala.Int" class="extype">Int</span></span>, <span name="rows">rows: <span name="scala.Int" class="extype">Int</span></span>, <span name="cellheight">cellheight: <span name="scala.Double" class="extype">Double</span></span>, <span name="cellwidth">cellwidth: <span name="scala.Double" class="extype">Double</span></span>)</span><span class="result"> extends <a name="geotrellis.process.Rec" class="extype" href="Rec.html">Rec</a>[<a name="geotrellis.process.RasterLayer" class="extype" href="RasterLayer.html">RasterLayer</a>] with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+        <span class="params">(<span name="layer">layer: String</span>, <span name="type">type: String</span>, <span name="xmin">xmin: <span name="scala.Double" class="extype">Double</span></span>, <span name="xmax">xmax: <span name="scala.Double" class="extype">Double</span></span>, <span name="ymin">ymin: <span name="scala.Double" class="extype">Double</span></span>, <span name="ymax">ymax: <span name="scala.Double" class="extype">Double</span></span>, <span name="cols">cols: <span name="scala.Int" class="extype">Int</span></span>, <span name="rows">rows: <span name="scala.Int" class="extype">Int</span></span>, <span name="cellheight">cellheight: <span name="scala.Double" class="extype">Double</span></span>, <span name="cellwidth">cellwidth: <span name="scala.Double" class="extype">Double</span></span>)</span><span class="result"> extends <a name="geotrellis.process.Rec" class="extype" href="Rec.html">Rec</a>[<a name="geotrellis.process.RasterLayer" class="extype" href="RasterLayer.html">RasterLayer</a>] with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
@@ -64,7 +64,7 @@
       <span class="symbol"> 
         <span class="name">RasterLayerRec</span>
         
-        <span class="params">(<span name="layer">layer: String</span>, <span name="xmin">xmin: <span name="scala.Double" class="extype">Double</span></span>, <span name="xmax">xmax: <span name="scala.Double" class="extype">Double</span></span>, <span name="ymin">ymin: <span name="scala.Double" class="extype">Double</span></span>, <span name="ymax">ymax: <span name="scala.Double" class="extype">Double</span></span>, <span name="cols">cols: <span name="scala.Int" class="extype">Int</span></span>, <span name="rows">rows: <span name="scala.Int" class="extype">Int</span></span>, <span name="cellheight">cellheight: <span name="scala.Double" class="extype">Double</span></span>, <span name="cellwidth">cellwidth: <span name="scala.Double" class="extype">Double</span></span>)</span>
+        <span class="params">(<span name="layer">layer: String</span>, <span name="type">type: String</span>, <span name="xmin">xmin: <span name="scala.Double" class="extype">Double</span></span>, <span name="xmax">xmax: <span name="scala.Double" class="extype">Double</span></span>, <span name="ymin">ymin: <span name="scala.Double" class="extype">Double</span></span>, <span name="ymax">ymax: <span name="scala.Double" class="extype">Double</span></span>, <span name="cols">cols: <span name="scala.Int" class="extype">Int</span></span>, <span name="rows">rows: <span name="scala.Int" class="extype">Int</span></span>, <span name="cellheight">cellheight: <span name="scala.Double" class="extype">Double</span></span>, <span name="cellwidth">cellwidth: <span name="scala.Double" class="extype">Double</span></span>)</span>
       </span>
       </h4>
       
@@ -202,16 +202,16 @@
       </h4>
       
     </li><li visbl="pub" name="geotrellis.process.RasterLayerRec#create" data-isabs="false">
-      <a id="create:RasterLayer"></a>
+      <a id="create(String):RasterLayer"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
         <span class="name">create</span>
         
-        <span class="result">: <a name="geotrellis.process.RasterLayer" class="extype" href="RasterLayer.html">RasterLayer</a></span>
+        <span class="params">(<span name="basePath">basePath: String</span>)</span><span class="result">: <a name="geotrellis.process.RasterLayer" class="extype" href="RasterLayer.html">RasterLayer</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.RasterLayerRec" class="extype" href="">RasterLayerRec</a> → <a name="geotrellis.process.Rec" class="extype" href="Rec.html">Rec</a></dd></dl></div>
+      
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -380,18 +380,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.RasterLayerRec" class="extype" href="">RasterLayerRec</a> → Product</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.Rec#recsToMap" data-isabs="false">
-      <a id="recsToMap[T](List[Rec[T]]):Map[String, T]"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">recsToMap</span>
-        <span class="tparams">[<span name="T">T</span>]</span>
-        <span class="params">(<span name="recs">recs: List[<a name="geotrellis.process.Rec" class="extype" href="Rec.html">Rec</a>[T]]</span>)</span><span class="result">: Map[String, T]</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Helper method for transforming a list of records into a map of objects.</p><div class="fullcomment"><div class="comment cmt"><p>Helper method for transforming a list of records into a map of objects.
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.Rec" class="extype" href="Rec.html">Rec</a></dd></dl></div>
     </li><li visbl="pub" name="geotrellis.process.RasterLayerRec#rows" data-isabs="false">
       <a id="rows:Int"></a>
       <h4 class="signature">
@@ -425,6 +413,17 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.RasterLayerRec" class="extype" href="">RasterLayerRec</a> → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.RasterLayerRec#type" data-isabs="false">
+      <a id="type:String"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">type</span>
+        
+        <span class="result">: String</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">

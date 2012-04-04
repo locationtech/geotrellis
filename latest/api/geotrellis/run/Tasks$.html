@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>geotrellis.process.OrderedBoundedCache</title>
+          <title>geotrellis.run.Tasks</title>
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link type="text/css" media="screen" rel="stylesheet" href="../../lib/template.css" />
@@ -12,28 +12,25 @@
       <script type="text/javascript" src="../../lib/tools.tooltip.js"></script>
     
         </head>
-        <body class="type">
+        <body class="value">
       <div id="definition">
-        <img src="../../lib/trait_big.png" />
-        <p id="owner"><a name="geotrellis" class="extype" href="../package.html">geotrellis</a>.<a name="geotrellis.process" class="extype" href="package.html">process</a></p>
-        <h1>OrderedBoundedCache</h1>
+        <img src="../../lib/object_big.png" />
+        <p id="owner"><a name="geotrellis" class="extype" href="../package.html">geotrellis</a>.<a name="geotrellis.run" class="extype" href="package.html">run</a></p>
+        <h1>Tasks</h1>
       </div>
 
       <h4 class="signature" id="signature">
-      <span class="kind">trait</span>
+      <span class="kind">object</span>
       <span class="symbol"> 
-        <span class="name">OrderedBoundedCache</span>
-        <span class="tparams">[<span name="K">K</span>, <span name="V">V</span>]</span>
-        <span class="result"> extends <a name="geotrellis.process.BoundedCache" class="extype" href="BoundedCache.html">BoundedCache</a>[K, V]</span>
+        <span class="name">Tasks</span>
+        
+        <span class="result"> extends AnyRef</span>
       </span>
       </h4>
       
           <div class="fullcommenttop" id="comment"><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a name="geotrellis.process.BoundedCache" class="extype" href="BoundedCache.html">BoundedCache</a>[K, V], <a name="geotrellis.process.CacheStrategy" class="extype" href="CacheStrategy.html">CacheStrategy</a>[K, V], AnyRef, <span name="scala.Any" class="extype">Any</span></div>
-        </div><div class="toggleContainer block">
-          <span class="toggle">Known Subclasses</span>
-          <div class="subClasses hiddenContent"><a name="geotrellis.process.LRUCache" class="extype" href="LRUCache.html">LRUCache</a>, <a name="geotrellis.process.MRUCache" class="extype" href="MRUCache.html">MRUCache</a></div>
+          <div class="superTypes hiddenContent">AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
         
 
@@ -49,7 +46,7 @@
                 <span class="filtertype">Inherited</span>
                 <ol><li class="hideall out"><span>Hide All</span></li>
                 <li class="showall in"><span>Show all</span></li></ol>
-                <ol id="linearization"><li name="geotrellis.process.OrderedBoundedCache" class="in"><span>OrderedBoundedCache</span></li><li name="geotrellis.process.BoundedCache" class="in"><span>BoundedCache</span></li><li name="geotrellis.process.CacheStrategy" class="in"><span>CacheStrategy</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+                <ol id="linearization"><li name="geotrellis.run.Tasks" class="in"><span>Tasks</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
               </div>
           <div id="visbl">
               <span class="filtertype">Visibility</span>
@@ -59,59 +56,26 @@
 
         
 
-        
-        
-        <div class="values members" id="values">
-              <h3>Abstract Value Members</h3>
-              <ol><li visbl="pub" name="geotrellis.process.BoundedCache#maxSize" data-isabs="true">
-      <a id="maxSize:Long"></a>
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="geotrellis.run.Tasks.BaseArgs" data-isabs="false">
+      <a id="BaseArgs:BaseArgs"></a>
       <h4 class="signature">
-      <span class="kind">val</span>
+      <span class="kind">class</span>
       <span class="symbol"> 
-        <span class="name">maxSize</span>
+        <a href="Tasks$$BaseArgs.html"><span class="name">BaseArgs</span></a>
         
-        <span class="result">: <span name="scala.Long" class="extype">Long</span></span>
+        <span class="result"> extends AnyRef</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Maximum size of the cache
-</p><div class="fullcomment"><div class="comment cmt"><p>Maximum size of the cache
-</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd><dt>Definition Classes</dt><dd><a name="geotrellis.process.BoundedCache" class="extype" href="BoundedCache.html">BoundedCache</a></dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.OrderedBoundedCache#removeIdx" data-isabs="true">
-      <a id="removeIdx:(Seq[K]) ⇒ Int"></a>
-      <h4 class="signature">
-      <span class="kind">val</span>
-      <span class="symbol"> 
-        <span class="name">removeIdx</span>
-        
-        <span class="result">: (Seq[K]) ⇒ <span name="scala.Int" class="extype">Int</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Called when attempt to make space in the cache.</p><div class="fullcomment"><div class="comment cmt"><p>Called when attempt to make space in the cache. This function should
-return the index of the item to remove next
-</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.BoundedCache#sizeOf" data-isabs="true">
-      <a id="sizeOf:(V) ⇒ Long"></a>
-      <h4 class="signature">
-      <span class="kind">val</span>
-      <span class="symbol"> 
-        <span class="name">sizeOf</span>
-        
-        <span class="result">: (V) ⇒ <span name="scala.Long" class="extype">Long</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Return the size of a a given cache item
-If items are objects (for example) this might just be: (x) =&gt; 1
-If items are arrays of ints and the maxSize is in bytes this function might be:
-  (x) =&gt; x.</p><div class="fullcomment"><div class="comment cmt"><p>Return the size of a a given cache item
-If items are objects (for example) this might just be: (x) =&gt; 1
-If items are arrays of ints and the maxSize is in bytes this function might be:
-  (x) =&gt; x.length * 4
-</p></div><dl class="attributes block"> <dt>Attributes</dt><dd>abstract </dd><dt>Definition Classes</dt><dd><a name="geotrellis.process.BoundedCache" class="extype" href="BoundedCache.html">BoundedCache</a></dd></dl></div>
+      
     </li></ol>
             </div>
+        
+        
 
         <div class="values members" id="values">
-              <h3>Concrete Value Members</h3>
+              <h3>Value Members</h3>
               <ol><li visbl="pub" name="scala.AnyRef#!=" data-isabs="false">
       <a id="!=(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -167,6 +131,17 @@ If items are arrays of ints and the maxSize is in bytes this function might be:
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.run.Tasks#addTask" data-isabs="false">
+      <a id="addTask(Task):Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">addTask</span>
+        
+        <span class="params">(<span name="t">t: <a name="geotrellis.run.Task" class="extype" href="Task.html">Task</a></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
       <a id="asInstanceOf[T0]:T0"></a>
       <h4 class="signature">
@@ -178,32 +153,6 @@ If items are arrays of ints and the maxSize is in bytes this function might be:
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.OrderedBoundedCache#cacheFree" data-isabs="false">
-      <a id="cacheFree(Long):Unit"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">cacheFree</span>
-        
-        <span class="params">(<span name="ltgt">ltgt: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Attempt to free space in the cache starting with the last accessed element</p><div class="fullcomment"><div class="comment cmt"><p>Attempt to free space in the cache starting with the last accessed element</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.OrderedBoundedCache" class="extype" href="">OrderedBoundedCache</a> → <a name="geotrellis.process.BoundedCache" class="extype" href="BoundedCache.html">BoundedCache</a></dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.BoundedCache#canInsert" data-isabs="false">
-      <a id="canInsert(V):Boolean"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">canInsert</span>
-        
-        <span class="params">(<span name="v">v: V</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">returns true iff v can be inserted into the cache without violating the
-size boundary
-</p><div class="fullcomment"><div class="comment cmt"><p>returns true iff v can be inserted into the cache without violating the
-size boundary
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.BoundedCache" class="extype" href="BoundedCache.html">BoundedCache</a></dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
@@ -218,17 +167,6 @@ size boundary
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.BoundedCache#currentSize" data-isabs="false">
-      <a id="currentSize:Long"></a>
-      <h4 class="signature">
-      <span class="kind">var</span>
-      <span class="symbol"> 
-        <span class="name">currentSize</span>
-        
-        <span class="result">: <span name="scala.Long" class="extype">Long</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.BoundedCache" class="extype" href="BoundedCache.html">BoundedCache</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -276,22 +214,6 @@ size boundary
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.CacheStrategy#getOrInsert" data-isabs="false">
-      <a id="getOrInsert(K,⇒ V):V"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">getOrInsert</span>
-        
-        <span class="params">(<span name="k">k: K</span>, <span name="vv">vv: ⇒ V</span>)</span><span class="result">: V</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Lookup the value for key k
-If the value is in the cache, return it.</p><div class="fullcomment"><div class="comment cmt"><p>Lookup the value for key k
-If the value is in the cache, return it.
-Otherwise, insert the value v and return it</p><p>Note: This method does not guarantee that v will be in the cache when it returns
-</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>the cached value keyed to k or the computed value of v
-</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.CacheStrategy" class="extype" href="CacheStrategy.html">CacheStrategy</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#hashCode" data-isabs="false">
       <a id="hashCode():Int"></a>
       <h4 class="signature">
@@ -303,18 +225,6 @@ Otherwise, insert the value v and return it</p><p>Note: This method does not gua
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.OrderedBoundedCache#insert" data-isabs="false">
-      <a id="insert(K,V):Boolean"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">insert</span>
-        
-        <span class="params">(<span name="k">k: K</span>, <span name="v">v: V</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Insert the value v (keyed by k) into the cache</p><div class="fullcomment"><div class="comment cmt"><p>Insert the value v (keyed by k) into the cache</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>true if the value was inserted into the cache
-</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.OrderedBoundedCache" class="extype" href="">OrderedBoundedCache</a> → <a name="geotrellis.process.BoundedCache" class="extype" href="BoundedCache.html">BoundedCache</a> → <a name="geotrellis.process.CacheStrategy" class="extype" href="CacheStrategy.html">CacheStrategy</a></dd></dl></div>
     </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
@@ -326,18 +236,17 @@ Otherwise, insert the value v and return it</p><p>Note: This method does not gua
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.OrderedBoundedCache#lookup" data-isabs="false">
-      <a id="lookup(K):Option[V]"></a>
+    </li><li visbl="pub" name="geotrellis.run.Tasks#main" data-isabs="false">
+      <a id="main(Array[String]):Unit"></a>
       <h4 class="signature">
       <span class="kind">def</span>
       <span class="symbol"> 
-        <span class="name">lookup</span>
+        <span class="name">main</span>
         
-        <span class="params">(<span name="k">k: K</span>)</span><span class="result">: <span name="scala.Option" class="extype">Option</span>[V]</span>
+        <span class="params">(<span name="args">args: <span name="scala.Array" class="extype">Array</span>[String]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Lookup the value for key k</p><div class="fullcomment"><div class="comment cmt"><p>Lookup the value for key k</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>Some(v) if the value was cached, None otherwise
-</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.OrderedBoundedCache" class="extype" href="">OrderedBoundedCache</a> → <a name="geotrellis.process.CacheStrategy" class="extype" href="CacheStrategy.html">CacheStrategy</a></dd></dl></div>
+      
     </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -371,17 +280,6 @@ Otherwise, insert the value v and return it</p><p>Note: This method does not gua
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.BoundedCache#remove" data-isabs="false">
-      <a id="remove(K):Option[V]"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">remove</span>
-        
-        <span class="params">(<span name="k">k: K</span>)</span><span class="result">: <span name="scala.Option" class="extype">Option</span>[V]</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Remove k from the cache</p><div class="fullcomment"><div class="comment cmt"><p>Remove k from the cache</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.BoundedCache" class="extype" href="BoundedCache.html">BoundedCache</a> → <a name="geotrellis.process.CacheStrategy" class="extype" href="CacheStrategy.html">CacheStrategy</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">
@@ -393,6 +291,17 @@ Otherwise, insert the value v and return it</p><p>Note: This method does not gua
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.run.Tasks#tasks" data-isabs="false">
+      <a id="tasks:ListBuffer[Task]"></a>
+      <h4 class="signature">
+      <span class="kind">var</span>
+      <span class="symbol"> 
+        <span class="name">tasks</span>
+        
+        <span class="result">: <span name="scala.collection.mutable.ListBuffer" class="extype">ListBuffer</span>[<a name="geotrellis.run.Task" class="extype" href="Task.html">Task</a>]</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">
@@ -404,6 +313,17 @@ Otherwise, insert the value v and return it</p><p>Note: This method does not gua
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.run.Tasks#usage" data-isabs="false">
+      <a id="usage(Option[JCommander]):Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">usage</span>
+        
+        <span class="params">(<span name="jcOpt">jcOpt: <span name="scala.Option" class="extype">Option</span>[<span name="com.beust.jcommander.JCommander" class="extype">JCommander</span>]</span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">
@@ -451,11 +371,7 @@ Otherwise, insert the value v and return it</p><p>Note: This method does not gua
 
         
 
-        <div name="geotrellis.process.BoundedCache" class="parent">
-              <h3>Inherited from <a name="geotrellis.process.BoundedCache" class="extype" href="BoundedCache.html">BoundedCache</a>[K, V]</h3>
-            </div><div name="geotrellis.process.CacheStrategy" class="parent">
-              <h3>Inherited from <a name="geotrellis.process.CacheStrategy" class="extype" href="CacheStrategy.html">CacheStrategy</a>[K, V]</h3>
-            </div><div name="scala.AnyRef" class="parent">
+        <div name="scala.AnyRef" class="parent">
               <h3>Inherited from AnyRef</h3>
             </div><div name="scala.Any" class="parent">
               <h3>Inherited from <span name="scala.Any" class="extype">Any</span></h3>

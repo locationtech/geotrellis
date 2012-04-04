@@ -24,13 +24,13 @@
       <span class="symbol"> 
         <span class="name">Server</span>
         
-        <span class="result"> extends <a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a></span>
+        <span class="result"> extends AnyRef</span>
       </span>
       </h4>
       
           <div class="fullcommenttop" id="comment"><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent">AnyRef, <span name="scala.Any" class="extype">Any</span></div>
         </div></div>
         
 
@@ -46,7 +46,7 @@
                 <span class="filtertype">Inherited</span>
                 <ol><li class="hideall out"><span>Hide All</span></li>
                 <li class="showall in"><span>Show all</span></li></ol>
-                <ol id="linearization"><li name="geotrellis.process.Server" class="in"><span>Server</span></li><li name="geotrellis.process.FileCaching" class="in"><span>FileCaching</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+                <ol id="linearization"><li name="geotrellis.process.Server" class="in"><span>Server</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
               </div>
           <div id="visbl">
               <span class="filtertype">Visibility</span>
@@ -153,50 +153,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.FileCaching#cache" data-isabs="false">
-      <a id="cache:CacheStrategy[String, Array[Byte]]"></a>
-      <h4 class="signature">
-      <span class="kind">val</span>
-      <span class="symbol"> 
-        <span class="name">cache</span>
-        
-        <span class="result">: <a name="geotrellis.process.CacheStrategy" class="extype" href="CacheStrategy.html">CacheStrategy</a>[String, <span name="scala.Array" class="extype">Array</span>[<span name="scala.Byte" class="extype">Byte</span>]]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a></dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.FileCaching#cacheRasters" data-isabs="false">
-      <a id="cacheRasters():Unit"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">cacheRasters</span>
-        
-        <span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a></dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.FileCaching#cacheSize" data-isabs="false">
-      <a id="cacheSize:Int"></a>
-      <h4 class="signature">
-      <span class="kind">var</span>
-      <span class="symbol"> 
-        <span class="name">cacheSize</span>
-        
-        <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a></dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.FileCaching#caching" data-isabs="false">
-      <a id="caching:Boolean"></a>
-      <h4 class="signature">
-      <span class="kind">var</span>
-      <span class="symbol"> 
-        <span class="name">caching</span>
-        
-        <span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a></dd></dl></div>
     </li><li visbl="pub" name="geotrellis.process.Server#catalog" data-isabs="false">
       <a id="catalog:Catalog"></a>
       <h4 class="signature">
@@ -207,7 +163,7 @@
         <span class="result">: <a name="geotrellis.process.Catalog" class="extype" href="Catalog.html">Catalog</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.Server" class="extype" href="">Server</a> → <a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a></dd></dl></div>
+      
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
@@ -291,7 +247,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.FileCaching#getRaster" data-isabs="false">
+    </li><li visbl="pub" name="geotrellis.process.Server#getRaster" data-isabs="false">
       <a id="getRaster(String,Option[RasterLayer],Option[RasterExtent]):IntRaster"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -301,9 +257,8 @@
         <span class="params">(<span name="path">path: String</span>, <span name="layerOpt">layerOpt: <span name="scala.Option" class="extype">Option</span>[<a name="geotrellis.process.RasterLayer" class="extype" href="RasterLayer.html">RasterLayer</a>]</span>, <span name="reOpt">reOpt: <span name="scala.Option" class="extype">Option</span>[<a name="geotrellis.RasterExtent" class="extype" href="../RasterExtent.html">RasterExtent</a>]</span>)</span><span class="result">: <a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">THIS is the new thing that we are wanting to use.</p><div class="fullcomment"><div class="comment cmt"><p>THIS is the new thing that we are wanting to use.
-</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a></dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.FileCaching#getRasterByName" data-isabs="false">
+      
+    </li><li visbl="pub" name="geotrellis.process.Server#getRasterByName" data-isabs="false">
       <a id="getRasterByName(String,Option[RasterExtent]):IntRaster"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -313,8 +268,19 @@
         <span class="params">(<span name="name">name: String</span>, <span name="reOpt">reOpt: <span name="scala.Option" class="extype">Option</span>[<a name="geotrellis.RasterExtent" class="extype" href="../RasterExtent.html">RasterExtent</a>]</span>)</span><span class="result">: <a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a></dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.FileCaching#getReader" data-isabs="false">
+      
+    </li><li visbl="pub" name="geotrellis.process.Server#getRasterExtentByName" data-isabs="false">
+      <a id="getRasterExtentByName(String):RasterExtent"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">getRasterExtentByName</span>
+        
+        <span class="params">(<span name="name">name: String</span>)</span><span class="result">: <a name="geotrellis.RasterExtent" class="extype" href="../RasterExtent.html">RasterExtent</a></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.process.Server#getReader" data-isabs="false">
       <a id="getReader(String):FileReader"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -324,7 +290,7 @@
         <span class="params">(<span name="path">path: String</span>)</span><span class="result">: <a name="geotrellis.data.FileReader" class="extype" href="../data/FileReader.html">FileReader</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a></dd></dl></div>
+      <p class="shortcomment cmt">Return the appropriate reader object for the given path.</p>
     </li><li visbl="pub" name="geotrellis.process.Server#getResult" data-isabs="false">
       <a id="getResult[T](Op[T])(Manifest[T]):Product with Serializable with CalculationResult[T]"></a>
       <h4 class="signature">
@@ -347,6 +313,17 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.Server#initStaticCache" data-isabs="false">
+      <a id="initStaticCache():Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">initStaticCache</span>
+        
+        <span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
@@ -358,7 +335,18 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.FileCaching#loadRaster" data-isabs="false">
+    </li><li visbl="pub" name="geotrellis.process.Server#loadInStaticCache" data-isabs="false">
+      <a id="loadInStaticCache(RasterLayer):Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">loadInStaticCache</span>
+        
+        <span class="params">(<span name="layer">layer: <a name="geotrellis.process.RasterLayer" class="extype" href="RasterLayer.html">RasterLayer</a></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.process.Server#loadRaster" data-isabs="false">
       <a id="loadRaster(String,RasterExtent):IntRaster"></a>
       <h4 class="signature">
       <span class="kind">def</span>
@@ -368,7 +356,7 @@
         <span class="params">(<span name="path">path: String</span>, <span name="g">g: <a name="geotrellis.RasterExtent" class="extype" href="../RasterExtent.html">RasterExtent</a></span>)</span><span class="result">: <a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a></dd></dl></div>
+      
     </li><li visbl="pub" name="geotrellis.process.Server#log" data-isabs="false">
       <a id="log(String):Unit"></a>
       <h4 class="signature">
@@ -380,28 +368,6 @@
       </span>
       </h4>
       
-    </li><li visbl="pub" name="geotrellis.process.FileCaching#maxBytesInCache" data-isabs="false">
-      <a id="maxBytesInCache:Int"></a>
-      <h4 class="signature">
-      <span class="kind">val</span>
-      <span class="symbol"> 
-        <span class="name">maxBytesInCache</span>
-        
-        <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a></dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.FileCaching#mb" data-isabs="false">
-      <a id="mb:Int"></a>
-      <h4 class="signature">
-      <span class="kind">val</span>
-      <span class="symbol"> 
-        <span class="name">mb</span>
-        
-        <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
@@ -435,28 +401,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.FileCaching#rasterCache" data-isabs="false">
-      <a id="rasterCache:HashBackedCache[String, IntRaster]"></a>
-      <h4 class="signature">
-      <span class="kind">val</span>
-      <span class="symbol"> 
-        <span class="name">rasterCache</span>
-        
-        <span class="result">: <a name="geotrellis.process.HashBackedCache" class="extype" href="HashBackedCache.html">HashBackedCache</a>[String, <a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a>]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a></dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.FileCaching#recursiveListFiles" data-isabs="false">
-      <a id="recursiveListFiles(File,Regex):Array[File]"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">recursiveListFiles</span>
-        
-        <span class="params">(<span name="f">f: <span name="java.io.File" class="extype">File</span></span>, <span name="r">r: <span name="scala.util.matching.Regex" class="extype">Regex</span></span>)</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[<span name="java.io.File" class="extype">File</span>]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a></dd></dl></div>
     </li><li visbl="pub" name="geotrellis.process.Server#run" data-isabs="false">
       <a id="run[T](Op[T])(Manifest[T]):T"></a>
       <h4 class="signature">
@@ -476,6 +420,17 @@
         <span class="name">shutdown</span>
         
         <span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.process.Server#startUp" data-isabs="false">
+      <a id="startUp:Unit"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">startUp</span>
+        
+        <span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
       
@@ -559,9 +514,7 @@
 
         
 
-        <div name="geotrellis.process.FileCaching" class="parent">
-              <h3>Inherited from <a name="geotrellis.process.FileCaching" class="extype" href="FileCaching.html">FileCaching</a></h3>
-            </div><div name="scala.AnyRef" class="parent">
+        <div name="scala.AnyRef" class="parent">
               <h3>Inherited from AnyRef</h3>
             </div><div name="scala.Any" class="parent">
               <h3>Inherited from <span name="scala.Any" class="extype">Any</span></h3>

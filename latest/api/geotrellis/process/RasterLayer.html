@@ -24,7 +24,7 @@
       <span class="symbol"> 
         <span class="name">RasterLayer</span>
         
-        <span class="params">(<span name="name">name: String</span>, <span name="rasterExtent">rasterExtent: <a name="geotrellis.RasterExtent" class="extype" href="../RasterExtent.html">RasterExtent</a></span>)</span><span class="result"> extends <a name="geotrellis.process.Layer" class="extype" href="Layer.html">Layer</a> with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+        <span class="params">(<span name="name">name: String</span>, <span name="typ">typ: String</span>, <span name="basePath">basePath: String</span>, <span name="rasterExtent">rasterExtent: <a name="geotrellis.RasterExtent" class="extype" href="../RasterExtent.html">RasterExtent</a></span>)</span><span class="result"> extends <a name="geotrellis.process.Layer" class="extype" href="Layer.html">Layer</a> with <span name="scala.Product" class="extype">Product</span> with <span name="scala.Serializable" class="extype">Serializable</span></span>
       </span>
       </h4>
       
@@ -63,7 +63,7 @@
       <span class="symbol"> 
         <span class="name">RasterLayer</span>
         
-        <span class="params">(<span name="name">name: String</span>, <span name="rasterExtent">rasterExtent: <a name="geotrellis.RasterExtent" class="extype" href="../RasterExtent.html">RasterExtent</a></span>)</span>
+        <span class="params">(<span name="name">name: String</span>, <span name="typ">typ: String</span>, <span name="basePath">basePath: String</span>, <span name="rasterExtent">rasterExtent: <a name="geotrellis.RasterExtent" class="extype" href="../RasterExtent.html">RasterExtent</a></span>)</span>
       </span>
       </h4>
       
@@ -142,14 +142,14 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.process.RasterLayer#buildRaster" data-isabs="false">
-      <a id="buildRaster():IntRaster"></a>
+    </li><li visbl="pub" name="geotrellis.process.RasterLayer#basePath" data-isabs="false">
+      <a id="basePath:String"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
+      <span class="kind">val</span>
       <span class="symbol"> 
-        <span class="name">buildRaster</span>
+        <span class="name">basePath</span>
         
-        <span class="params">()</span><span class="result">: <a name="geotrellis.IntRaster" class="extype" href="../IntRaster.html">IntRaster</a></span>
+        <span class="result">: String</span>
       </span>
       </h4>
       
@@ -247,6 +247,17 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.RasterLayer#jsonPath" data-isabs="false">
+      <a id="jsonPath:String"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">jsonPath</span>
+        
+        <span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="geotrellis.process.RasterLayer#name" data-isabs="false">
       <a id="name:String"></a>
       <h4 class="signature">
@@ -346,6 +357,17 @@
       </span>
       </h4>
       
+    </li><li visbl="pub" name="geotrellis.process.RasterLayer#rasterPath" data-isabs="false">
+      <a id="rasterPath:String"></a>
+      <h4 class="signature">
+      <span class="kind">def</span>
+      <span class="symbol"> 
+        <span class="name">rasterPath</span>
+        
+        <span class="result">: <span name="java.lang.String" class="extype">String</span></span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">
@@ -368,6 +390,17 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.process.RasterLayer" class="extype" href="">RasterLayer</a> → AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.process.RasterLayer#typ" data-isabs="false">
+      <a id="typ:String"></a>
+      <h4 class="signature">
+      <span class="kind">val</span>
+      <span class="symbol"> 
+        <span class="name">typ</span>
+        
+        <span class="result">: String</span>
+      </span>
+      </h4>
+      
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">
