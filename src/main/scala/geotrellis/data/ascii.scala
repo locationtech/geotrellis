@@ -140,7 +140,7 @@ object AsciiReader extends FileReader {
   override def readMetadata(path:String) = {
     val state = new AsciiReadState(path, null, null)
     val (base, typ) = Filesystem.split(path)
-    RasterLayer("", typ, base, state.loadRasterExtent())
+    RasterLayer("", typ, "", base, state.loadRasterExtent(), 3857, 0.0, 0.0)
   }
 }
 

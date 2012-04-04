@@ -111,7 +111,7 @@ class Arg8ReadState(data:Either[String, Array[Byte]],
   val width = 1
 }
 
-class Arg8Reader extends FileReader {
+object Arg8Reader extends FileReader {
   def readStateFromCache(b:Array[Byte], rl:RasterLayer, re:RasterExtent) = new Arg8ReadState(Right(b), rl, re)
   def readStateFromPath(p:String, rl:RasterLayer, re:RasterExtent) = new Arg8ReadState(Left(p), rl, re)
 }

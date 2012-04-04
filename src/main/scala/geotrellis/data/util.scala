@@ -8,7 +8,6 @@ import scala.util.matching.Regex
   */
 object FileExtensionRegexes {
   val ArgPattern  =  new Regex(""".*\.arg$""")
-  val Arg32Pattern  =  new Regex(""".*\.arg32$""")
   val GeoTiffPattern =  new Regex(""".*\.tif$""")
   val AsciiPattern  =  new Regex(""".*\.(asc|grd)$""")
 }

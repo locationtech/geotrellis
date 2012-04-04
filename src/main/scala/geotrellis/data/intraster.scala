@@ -7,7 +7,7 @@ import geotrellis.util._
 
 final class IntRasterReadState(raster:IntRaster,
                                val target:RasterExtent) extends ReadState {
-  val layer = RasterLayer(raster.name, "intraster", "", raster.rasterExtent)
+  val layer = RasterLayer(raster.name, "intraster", "", "", raster.rasterExtent, 3857, 0.0, 0.0)
   var src:IntBuffer = null
 
   def getNoDataValue = NODATA

@@ -102,12 +102,12 @@ object GeoTiffReader extends FileReader {
   override def readMetadata(path:String) = {
     val state = new GeoTiffReadState(path, null, null)
     val (base, typ) = Filesystem.split(path)
-    RasterLayer("", typ, base, state.loadRasterExtent())
+    RasterLayer("", typ, "", base, state.loadRasterExtent(), 3857, 0.0, 0.0)
   }
 }
 
 object GeoTiffWriter extends Writer {
-  def rasterType = "arg32"
+  def rasterType = "geotiff" 
 
   def write(path:String, raster:IntRaster, name:String) {
     val re = raster.rasterExtent
