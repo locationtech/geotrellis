@@ -1,0 +1,110 @@
+#!/usr/bin/env python
+
+import array
+from lxml import etree
+import json
+import os
+from os.path import basename, splitext, join
+import sys
+
+def convert_old_xml(path):
+    tree = etree.parse(path)
+    name = basename(splitext(path)[0])
+    d = {
+        'layer': name,
+        'type': 'arg',
+        'datatype': 'int8',
+        'cellwidth': float(grab(tree, '/METADATA/CELLWIDTH/@value')),
+        'cellheight': float(grab(tree, '/METADATA/CELLHEIGHT/@value')),
+        'cols': int(grab(tree, '/METADATA/DIMENSIONS/@width')),
+        'rows': int(grab(tree, '/METADATA/DIMENSIONS/@height')),
+        'xmin': float(grab(tree, '/METADATA/ORIGIN/@xMin')),
+        'ymin': float(grab(tree, '/METADATA/ORIGIN/@yMin')),
+        'epsg': 3785,
+        'xskew': 0.0,
+        'yskew': 0.0,
+    }
+    d['xmax'] = d['xmin'] + (d['cellwidth'] * d['cols'])
+    d['ymax'] = d['ymin'] + (d['cellheight'] * d['rows'])
+    return d
+
+def grab(tree, xpath, default=None):
+    results = tree.xpath(xpath)
+    if results:
+        return results[0]
+    elif default is None:
+        raise Exception("couldn't find %r" % xpath)
+    else:
+        return default
+
+def convert_old_json(path):
+    d = json.load(open(path, 'r'))
+    name = basename(splitext(path)[0])
+    d['type'] = 'arg'
+    d['datatype'] = 'int32'
+    d['epsg'] = 3785
+    d['xskew'] = 0.0
+    d['yskew'] = 0.0
+    return d
+
+def check_json(d):
+    required = ['layer', 'type', 'datatype', 'cellwidth', 'cellheight',
+                'cols', 'rows', 'xmin', 'ymin', 'xmax', 'ymax']
+    missing = []
+    for name in required:
+        if name not in d: missing.append(name)
+
+    if missing:
+        raise Exception("missing required names: %s" % ", ".join(missing))
+
+def subext(path, ext):
+    return splitext(path)[0] + "." + ext
+
+def mkarray(code):
+    a = array.array(code)
+    if sys.byteorder == 'little': a.byteswap()
+    return a
+
+def flip(code, path, outpath, cols, rows):
+    a = mkarray(code)
+    f = open(path, 'r')
+    a.fromfile(f, cols * rows)
+    
+    a2 = mkarray(code)
+    for y in range(0, rows):
+        span = (rows - y - 1) * cols
+        for x in range(0, cols):
+            z = a[span + x]
+            # map no-data for legacy arg
+            if (code == 'b' and z == 0): z = -128
+            a2.append(z)
+
+    f2 = open(outpath, 'w')
+    a2.tofile(f2)
+
+def write_json(d, path):
+    f = open(path, 'w')
+    json.dump(d, f, sort_keys=True, indent=2)
+
+if __name__ == "__main__":
+    for path in sys.argv[1:]:
+        bpath = splitext(path)[0]
+
+        if True:
+            bpath2 = bpath
+        else:
+            bpath2 = bpath + ".conv"
+
+        if path.endswith('arg32'):
+            cell = 'i'
+            d = convert_old_json(bpath + '.json')
+        elif path.endswith('arg'):
+            cell = 'b'
+            d = convert_old_xml(bpath + '.xml')
+        else:
+            print "unknown format: %s" % path
+            continue
+
+        flip(cell, path, bpath2 + ".arg", d['cols'], d['rows'])
+        write_json(d, bpath2 + ".json")
+        print "updated %s" % path

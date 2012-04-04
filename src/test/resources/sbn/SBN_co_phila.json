@@ -1,12 +1,16 @@
 {
-  "layer": "co_Phila.img",
-  "type": "arg",
-  "xmin": -8475497.88486,
-  "xmax": -8317922.88486,
-  "ymin": 4825540.69147,
-  "ymax": 4954765.69147,
-  "rows": 1723,
-  "cols": 2101,
-  "cellwidth": 75.0,
-  "cellheight": 75.0
+  "cellheight": 75.0, 
+  "cellwidth": 75.0, 
+  "cols": 2101, 
+  "datatype": "int8", 
+  "epsg": 3785, 
+  "layer": "SBN_co_phila", 
+  "rows": 1723, 
+  "type": "arg", 
+  "xmax": -8317922.884859569, 
+  "xmin": -8475497.88485957, 
+  "xskew": 0.0, 
+  "ymax": 4954765.69147447, 
+  "ymin": 4825540.69147447, 
+  "yskew": 0.0
 }

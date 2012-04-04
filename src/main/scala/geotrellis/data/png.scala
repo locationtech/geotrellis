@@ -22,7 +22,7 @@ case class PNGRenderer(raster:IntRaster, path:String, colorMap:Int=>Int, bg:Int,
     var y = 0
     var x = 0
     while (i < rows) {
-      y = rows - i - 1
+      y = i
       x = 0
       while (x < cols) {
         val z = colorMap(data(y * cols + x))
@@ -61,7 +61,7 @@ case class PNGWriterRGB2(raster:IntRaster, path:String, bg:Int, transparent:Bool
     var y = 0
     var x = 0
     while (i < rows) {
-      y = rows - i - 1
+      y = i 
       x = 0
       while (x < cols) {
         val z = data(y * cols + x)

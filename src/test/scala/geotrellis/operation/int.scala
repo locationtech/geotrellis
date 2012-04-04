@@ -62,41 +62,31 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
     it("LoadFile") {
       val L = LoadFile("src/test/resources/fake.img.arg")
-      //println("abc")
       val raster = server.run(L)
-      //println("xyz")
 
-      raster.get(0, 0) must be === 1
-      raster.get(3, 3) must be === 52
+      raster.get(0, 0) must be === 49 
+      raster.get(3, 3) must be === 4 
     }
 
 
     it("LoadFile, take 2") {
       val L2 = LoadFile("src/test/resources/fake.img.arg")
       val raster2 = server.run(L2)
-      raster2.get(0, 0) must be === 1
-      raster2.get(3, 3) must be === 52
+      raster2.get(0, 0) must be === 49
+      raster2.get(3, 3) must be === 4 
     }
 
     it("LoadFile, w/ resampling") {
-      //println("AAAAAA")
       val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img.arg")
       val geo1 = server.run(G1)
 
-      //println("BBBBBBBB")
       val G2 = BuildRasterExtent( geo1.extent.xmin, geo1.extent.ymin, geo1.extent.xmax, geo1.extent.ymax, 2, 2) 
       val L = LoadFile("src/test/resources/fake.img.arg", G2)
       val raster = server.run(L)
-      //println("CCC %s cols=%d rows=%d (len=%d)".format(raster, raster.cols, raster.rows, raster.data.length))
-      //println(raster.asciiDraw)
-      raster.get(0, 0) must be === 18
-      //println("D1")
-      raster.get(1, 0) must be === 20
-      //println("D2")
-      raster.get(0, 1) must be === 50
-      //println("D3")
-      raster.get(1, 1) must be === 52
-      //println("D4")
+      raster.get(0, 0) must be === 34
+      raster.get(1, 0) must be === 36
+      raster.get(0, 1) must be === 2
+      raster.get(1, 1) must be === 4
     }
     it("BuildRasterExtent") {
       val e = Extent(xmin = -90, ymin = 20,
@@ -115,11 +105,12 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val L = LoadFile("src/test/resources/fake.img.arg", G2)
       val raster = server.run(L)
 
-      raster.get(0, 0) must be === 18
-      raster.get(1, 0) must be === 20
-      raster.get(0, 1) must be === 50
-      raster.get(1, 1) must be === 52
+      raster.get(0, 0) must be === 34
+      raster.get(1, 0) must be === 36
+      raster.get(0, 1) must be === 2 
+      raster.get(1, 1) must be === 4
     }
+
 
     it("ResampleRaster") {
       val L = LoadFile("src/test/resources/quad.arg")
@@ -148,7 +139,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
                             xmax = -80, ymax = 40,
                             cols = 1, rows = 1)
       val L = LoadFile("src/test/resources/fake2.img.arg", G)
-      //println(L.toString)
     }
 
     it("CopyRaster") {
@@ -221,7 +211,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val R = LoadFile("src/test/resources/quad.arg")
       val S = GenerateStatistics(BuildMapHistogram(R))
       val stats = server.run(S)
-      println(stats)
 
       val dev = sqrt((2 * (0.5 * 0.5) + 2 * (1.5 * 1.5)) / 4)
       val expected = Statistics(2.5, 3, 1, dev, 1, 4)
@@ -242,7 +231,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       raster.data(200) must be === 447
       raster.data(210) must be === 1341
     }
-
 
 /*
     it("FindMinMax") {
@@ -567,7 +555,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     it ("DoCell") {
       server.run(DoCell(R, _ + 1)).data.asArray must be === a.map { _ + 1 }
     }
-
     // binary local
 
 
