@@ -51,7 +51,7 @@ object Tiler {
   def tileName(name:String, col:Int, row:Int) = "%s_%d_%d".format(name, col, row)
 
   def tilePath(path:String, name:String, col:Int, row:Int) = {
-    "%s/%s_%d_%d.arg32".format(path, name, col, row)
+    "%s/%s_%d_%d.arg".format(path, name, col, row)
   }
   
   def writeTiles(tiles:TileRasterData, name:String, path:String) = {

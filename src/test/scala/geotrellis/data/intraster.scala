@@ -16,7 +16,7 @@ class IntRasterReaderSpec extends Spec with MustMatchers with ShouldMatchers {
       val geo = RasterExtent(e, 8.0, 8.0, 10, 10)
 
       val server = TestServer()
-      val raster = server.loadRaster("src/test/resources/quad.arg", geo)
+      val raster = server.loadRaster("src/test/resources/quad8.arg", geo)
 
       val raster2 = IntRasterReader.read(raster, None)
       

@@ -145,7 +145,8 @@ object AsciiReader extends FileReader {
 }
 
 object AsciiWriter extends Writer {
-  def rasterType = "arg32"
+  def rasterType = "ascii"
+  def dataType = ""
 
   def write(path:String, raster:IntRaster, name:String) {
     write(path, raster, name, NODATA)

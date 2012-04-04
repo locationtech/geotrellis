@@ -46,6 +46,7 @@ object ArgReader extends FileReader {
 
 object ArgWriter extends Writer {
   def rasterType = "arg"
+  def dataType = "legacy"
 
   def write(path:String, raster:IntRaster, name:String) {
     val i = path.lastIndexOf(".")

@@ -43,11 +43,13 @@ trait ArgNWriter extends Writer {
   def width:Int
   def rasterType:String
 
+  def dataType = "Int" + (width * 8).toString
+
   def write(path:String, raster:IntRaster, name:String) {
     val i = path.lastIndexOf(".")
     val base = path.substring(0, i)
     writeMetadataJSON(base + ".json", name, raster.rasterExtent)
-    writeData(base + "." + rasterType, raster)
+    writeData(base + ".arg", raster)
   }
 
   private def writeData(path:String, raster:IntRaster) {

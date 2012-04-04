@@ -108,6 +108,7 @@ object GeoTiffReader extends FileReader {
 
 object GeoTiffWriter extends Writer {
   def rasterType = "geotiff" 
+  def dataType = ""
 
   def write(path:String, raster:IntRaster, name:String) {
     val re = raster.rasterExtent
