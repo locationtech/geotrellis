@@ -74,24 +74,8 @@ When sbt is done loading and compiling, you’ll see an sbt prompt:
 requests.  Go to 
 </p><p><a  href="http://localhost:8888/template">http://localhost:8888/template</a>
 </p><p>to see the template web service, which just shows HTML of “Hello GeoTrellis!”
-</p><h2 id="Step+2%3A+Edit+the+configuration+file">Step 2: Edit the configuration file</h2><p>There’s a configuration file you can edit at src/main/resources/application.conf.  For example, some settings include:
-</p><pre><code class="">geotrellis.host = &quot;0.0.0.0&quot; // IP address to which the server will listen
-                         // (0.0.0.0 means listen to all ports)
-geotrellis.port = 8888      // The server port 
-geotrellis.rest-package = &quot;geotrellis.rest&quot; // The package that will be searched for
-                                      // for rest services
-geotrellis.tmp = &quot;/tmp&quot;     // A temporary directory to be used for scratch files
-</code></pre><h2 id="Step+3%3A+Import+data">Step 3: Import data</h2><p>There is a script in the /scripts directory that you can use to convert raster data in
-GeoTiff format to the ARG32 format.  It assumes that you are using a Unix shell (Linux/Mac) and have installed “wget”.
-</p><p>For example, to convert <code>`your_geotiff.tif</code><code> to </code><code>output.arg32</code>`, change to the
-directory you’ve checked out the template and run:
-</p><pre><code class="prettyprint lang-bash">scripts/geotrellis_import_geotiff your_geotiff.tif output.arg32
-</code></pre><p>The first time you run the script it will download the necessary GeoTrellis libraries to your
-system.
-</p><h2 id="Step+4%3A+Edit+the+catalog.json+file">Step 4: Edit the catalog.json file</h2><p>The catalog.json file (in src/main/resources) defines the data sources that are
-available to the GeoTrellis service.  You can move it to an alternate location if you
-define the file path in the configuration file.
-</p><h2 id="Step+5%3A+Create+your+service">Step 5: Create your service</h2><p>The blank REST service is in the file src/main/scala/geotrellis/rest/TemplateResource.scala.  Edit that file to change the existing service, or create a similar 
+</p><h2 id="Step+2%3A+Configuration+and+data+import">Step 2: Configuration and data import</h2><p>See the <a  href="http://azavea.github.com/geotrellis/getting_started/Setting+up+GeoTrellis.html">Setting Up GeoTrellis page</a> for information about configuring your GeoTrellis instance and importing your data.
+</p><h2 id="Step+3%3A+Create+your+service">Step 3: Create your service</h2><p>The blank REST service is in the file src/main/scala/geotrellis/rest/TemplateResource.scala.  Edit that file to change the existing service, or create a similar 
 class in the <code>geotrellis.rest</code> package to create a new service.
 </p><p>If you are using the <a  href="http://scala-ide.org/">ScalaIDE for Eclipse</a>, you should
 type <code>eclipse</code> at the sbt prompt, and then import the project into Eclipse.
