@@ -73,7 +73,7 @@ with GeoTrellis and a recent version of GDAL installed.
 </p><p>While the GDAL method is much more reliable, there is also command line script that you can use in a checkout of the 
 geotrellis project to convert raster data in GeoTiff format to the ARG Int32 format.  
 <br/>
-For example, to convert <code>`myraster.tif</code><code> to </code><code>myraster.arg</code><code>, run the </code><code>start-script</code> sbt task, and then run
+For example, to convert <code>myraster.tif</code> to <code>myraster.arg</code>, run the <code>start-script</code> sbt task, and then run
 the following command in your geotrellis checkout:
 </p><pre><code class="prettyprint lang-bash">./geotrellis geotiff_convert -i myraster.tif -n myraster -o myraster.arg
 </code></pre><p>The first time you run the script it will download the necessary GeoTrellis libraries to your
