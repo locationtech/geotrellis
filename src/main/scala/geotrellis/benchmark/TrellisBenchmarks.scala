@@ -15,7 +15,7 @@ import geotrellis.raster._
 import com.google.caliper.Runner 
 import com.google.caliper.SimpleBenchmark
 
-class MiniAddBenchmark(raster:IntRaster) {
+class MiniAddTest(raster:IntRaster) {
   val op = AddConstant(raster, 13)
   def run(reps:Int, server:Server) {
     var r:IntRaster = null
@@ -23,15 +23,15 @@ class MiniAddBenchmark(raster:IntRaster) {
   }
 }
 
-object MiniAddBenchmark {
-  def apply(server:Server, path:String, extent:Extent, size:Int) = {
-    val e = server.run(LoadRasterExtentFromFile(path)).extent
-    val r = server.run(LoadFile(path, BuildRasterExtent(e, size, size)))
-    new MiniAddBenchmark(r)
+object MiniAddTest {
+  def apply(server:Server, name:String, extent:Extent, size:Int) = {
+    val e = server.run(LoadRasterExtent(name)).extent
+    val r = server.run(LoadRaster(name, BuildRasterExtent(e, size, size)))
+    new MiniAddTest(r)
   }
 }
 
-class TiledMiniAddBenchmark(raster:IntRaster) {
+class TiledMiniAddTest(raster:IntRaster) {
   val op = ForEachTile(raster)(AddConstant(_, 13))
   def run(reps:Int, server:Server) {
     var r:IntRaster = null
@@ -39,16 +39,16 @@ class TiledMiniAddBenchmark(raster:IntRaster) {
   }
 }
 
-object TiledMiniAddBenchmark {
-  def apply(server:Server, path:String, extent:Extent, size:Int, pixels:Int) = {
-    val e = server.run(LoadRasterExtentFromFile(path)).extent
-    val r = server.run(LoadFile(path, BuildRasterExtent(e, size, size)))
+object TiledMiniAddTest {
+  def apply(server:Server, name:String, extent:Extent, size:Int, pixels:Int) = {
+    val e = server.run(LoadRasterExtentFromFile(name)).extent
+    val r = server.run(LoadFile(name, BuildRasterExtent(e, size, size)))
     val t = Tiler.createTileRaster(r, pixels)
-    new TiledMiniAddBenchmark(t)
+    new TiledMiniAddTest(t)
   }
 }
 
-class MiniWoBenchmark(raster1:IntRaster, weight1:Int, raster2:IntRaster, weight2:Int) {
+class MiniWoTest(raster1:IntRaster, weight1:Int, raster2:IntRaster, weight2:Int) {
   val op = Add(MultiplyConstant(raster1, weight1),
                MultiplyConstant(raster2, weight2))
   def run(reps:Int, server:Server) {
@@ -57,26 +57,26 @@ class MiniWoBenchmark(raster1:IntRaster, weight1:Int, raster2:IntRaster, weight2
   }
 }
 
-object MiniWoBenchmark {
+object MiniWoTest {
   def apply(server:Server, pair1:(String, Int), pair2:(String, Int),
             extent:Extent, size:Int) = {
-    val (path1, weight1) = pair1
-    val (path2, weight2) = pair2
+    val (name1, weight1) = pair1
+    val (name2, weight2) = pair2
 
-    val e = server.run(LoadRasterExtentFromFile(path1)).extent
-    val r1 = server.run(LoadFile(path1, BuildRasterExtent(e, size, size)))
-    val r2 = server.run(LoadFile(path2, BuildRasterExtent(e, size, size)))
-    new MiniWoBenchmark(r1, weight1, r2, weight2)
+    val e = server.run(LoadRasterExtentFromFile(name1)).extent
+    val r1 = server.run(LoadFile(name1, BuildRasterExtent(e, size, size)))
+    val r2 = server.run(LoadFile(name2, BuildRasterExtent(e, size, size)))
+    new MiniWoTest(r1, weight1, r2, weight2)
   }
 }
 
-class WoBenchmark(size:Int, extent:Extent, pairs:Seq[(String, Int)],
+class WoTest(size:Int, extent:Extent, pairs:Seq[(String, Int)],
                   total:Int, colors:Array[Int]) {
 
   val re = BuildRasterExtent(extent, size, size)
 
-  def buildScaleRasterOp(path:String, weight:Int) = {
-    MultiplyConstant(LoadFile(path, re), weight)
+  def buildScaleRasterOp(name:String, weight:Int) = {
+    MultiplyConstant(LoadRaster(name, re), weight)
   }
 
   def buildWoOp = {
@@ -105,7 +105,7 @@ class WoBenchmark(size:Int, extent:Extent, pairs:Seq[(String, Int)],
 /**
  *
  */
-class AddRastersBenchmark(raster:IntRaster) {
+class AddRastersTest(raster:IntRaster) {
   val r1 = AddConstant(raster, 1)
   val r2 = AddConstant(raster, 2)
   val r3 = AddConstant(raster, 3)
@@ -121,11 +121,11 @@ class AddRastersBenchmark(raster:IntRaster) {
   }
 }
 
-object AddRastersBenchmark {
-  def apply(server:Server, path:String, extent:Extent, size:Int) = {
-    val e = server.run(LoadRasterExtentFromFile(path)).extent
-    val r = server.run(LoadFile(path, BuildRasterExtent(e, size, size)))
-    new AddRastersBenchmark(r)
+object AddRastersTest {
+  def apply(server:Server, name:String, extent:Extent, size:Int) = {
+    val e = server.run(LoadRasterExtentFromFile(name)).extent
+    val r = server.run(LoadRaster(name, BuildRasterExtent(e, size, size)))
+    new AddRastersTest(r)
   }
 }
 
@@ -133,7 +133,7 @@ object AddRastersBenchmark {
 /**
  *
  */
-class SubtractRastersBenchmark(raster1:IntRaster, raster2:IntRaster) {
+class SubtractRastersTest(raster1:IntRaster, raster2:IntRaster) {
   val r1 = AddConstant(raster1, 10)
   val r2 = AddConstant(raster2, 2)
 
@@ -146,146 +146,193 @@ class SubtractRastersBenchmark(raster1:IntRaster, raster2:IntRaster) {
   }
 }
 
-object SubtractRastersBenchmark {
-  def apply(server:Server, path:String, extent:Extent, size:Int) = {
-    val e = server.run(LoadRasterExtentFromFile(path)).extent
-    val r1 = server.run(LoadFile(path, BuildRasterExtent(e, size, size)))
-    val r2 = server.run(LoadFile(path, BuildRasterExtent(e, size, size)))
-    new SubtractRastersBenchmark(r1, r2)
+object SubtractRastersTest {
+  def apply(server:Server, name:String, extent:Extent, size:Int) = {
+    val e = server.run(LoadRasterExtentFromFile(name)).extent
+    val r1 = server.run(LoadRaster(name, BuildRasterExtent(e, size, size)))
+    val r2 = server.run(LoadRaster(name, BuildRasterExtent(e, size, size)))
+    new SubtractRastersTest(r1, r2)
   }
 }
 
 
+//TODO: add benchmarks for WO at 2048,4096,8192,etc
+class WoBenchmark extends GeoTrellisBenchmark {
+  var s64:WoTest = null
+  var s128:WoTest = null
+  var s256:WoTest = null
+  var s512:WoTest = null
+  var s1024:WoTest = null
 
-class TrellisBenchmarks extends SimpleBenchmark {
-  def buildPairs(ts:(String, Int)*) = ts.map { case (s, w) => (base + s + ".arg", w) }
+  override def testSetup() {
+    val name = pairs(0)._1
+    val extent = server.run(LoadRasterExtent(name)).extent
 
-  val base = "src/test/resources/sbn/SBN_"
-  val pairs = buildPairs(("farm_mkt", 2), ("RR_stops_walk", 1), ("inc_percap", 5), ("street_den_1k", 2))
-  val total = pairs.map(_._2).sum
-  val colors = Array(0x0000FF, 0x0080FF, 0x00FF80, 0xFFFF00, 0xFF8000, 0xFF0000)
-
-  var server:Server = null
-
-  var s64:WoBenchmark = null
-  var s128:WoBenchmark = null
-  var s256:WoBenchmark = null
-  var s512:WoBenchmark = null
-  var s1024:WoBenchmark = null
-  var s2048:WoBenchmark = null
-  var s4096:WoBenchmark = null
-  var s8192:WoBenchmark = null
-
-  var m100:MiniWoBenchmark = null
-  var m1000:MiniWoBenchmark = null
-  var m10000:MiniWoBenchmark = null
-
-  var a64:MiniAddBenchmark = null
-  var a128:MiniAddBenchmark = null
-  var a256:MiniAddBenchmark = null
-  var a512:MiniAddBenchmark = null
-  var a1024:MiniAddBenchmark = null
-  var a2048:MiniAddBenchmark = null
-  var a4096:MiniAddBenchmark = null
-  var a8192:MiniAddBenchmark = null
-
-  var t_a4096:TiledMiniAddBenchmark = null
-  var t_a8192_512:TiledMiniAddBenchmark = null
-
-  var ma256:AddRastersBenchmark = null
-  var ma512:AddRastersBenchmark = null
-  var ma1024:AddRastersBenchmark = null
-  var ma2048:AddRastersBenchmark = null
-
-  var sb256:SubtractRastersBenchmark = null
-  var sb512:SubtractRastersBenchmark = null
-  var sb1024:SubtractRastersBenchmark = null
-  var sb2048:SubtractRastersBenchmark = null
-
-  override def setUp() {
-    server = TestServer()
-
-    val path = pairs(0)._1
-    val extent = server.run(LoadRasterExtentFromFile(path)).extent
-
-    m100 = MiniWoBenchmark(server, pairs(0), pairs(1), extent, 100)
-    m1000 = MiniWoBenchmark(server, pairs(0), pairs(1), extent, 1000)
-    //m10000 = MiniWoBenchmark(server, pairs(0), pairs(1), extent, 10000)
-    //
-    s64 = new WoBenchmark(64, extent, pairs, total, colors)
-    s128 = new WoBenchmark(128, extent, pairs, total, colors)
-    s256 = new WoBenchmark(256, extent, pairs, total, colors)
-    s512 = new WoBenchmark(512, extent, pairs, total, colors)
-    s1024 = new WoBenchmark(1024, extent, pairs, total, colors)
-   // s2048 = new WoBenchmark(2048, extent, pairs, total, colors)
-    //s4096 = new WoBenchmark(4096, extent, pairs, total, colors)
-    //s8192 = new WoBenchmark(8192, extent, pairs, total, colors)
-    //
-    a64 = MiniAddBenchmark(server, path, extent, 64)
-    a128 = MiniAddBenchmark(server, path, extent, 128)
-    a256 = MiniAddBenchmark(server, path, extent, 256)
-    a512 = MiniAddBenchmark(server, path, extent, 512)
-    a1024 = MiniAddBenchmark(server, path, extent, 1024)
-    a2048 = MiniAddBenchmark(server, path, extent, 2048)
-    //a4096 = MiniAddBenchmark(server, path, extent, 4096)
-    ////a8192 = MiniAddBenchmark(server, path, extent, 8192)
-
-    //t_a4096 = TiledMiniAddBenchmark(server, path, extent, 4096, 512)
-    //t_a8192_512 = TiledMiniAddBenchmark(server, path, extent, 8192, 512)
-
-    ma256 = AddRastersBenchmark(server, path, extent, 256)
-    ma512 = AddRastersBenchmark(server, path, extent, 512)
-    ma1024 = AddRastersBenchmark(server, path, extent, 1024)
-    ma2048 = AddRastersBenchmark(server, path, extent, 2048)
-
-    sb256 = SubtractRastersBenchmark(server, path, extent, 256)
-    sb512 = SubtractRastersBenchmark(server, path, extent, 512)
-    sb1024 = SubtractRastersBenchmark(server, path, extent, 1024)
-    sb2048 = SubtractRastersBenchmark(server, path, extent, 2048)
+    s64 = new WoTest(64, extent, pairs, total, colors)
+    s128 = new WoTest(128, extent, pairs, total, colors)
+    s256 = new WoTest(256, extent, pairs, total, colors)
+    s512 = new WoTest(512, extent, pairs, total, colors)
+    s1024 = new WoTest(1024, extent, pairs, total, colors)
   }
-
-  def timeBasicWeightedOverlay_100(reps:Int) = m100.run(reps, server)
-  def timeBasicWeightedOverlay_1000(reps:Int) = m1000.run(reps, server)
-  //def timeBasicWeightedOverlay_10000(reps:Int) = m10000.run(reps, server)
-  //
   def timeWeightedOverlayPNG_64(reps:Int) = s64.run(reps, server)
   def timeWeightedOverlayPNG_128(reps:Int) = s128.run(reps, server)
   def timeWeightedOverlayPNG_256(reps:Int) = s256.run(reps, server)
   def timeWeightedOverlayPNG_512(reps:Int) = s512.run(reps, server)
   def timeWeightedOverlayPNG_1024(reps:Int) = s1024.run(reps, server)
-  //def timeWeightedOverlayPNG_2048(reps:Int) = s2048.run(reps, server)
-  //def timeWeightedOverlayPNG_4096(reps:Int) = s4096.run(reps, server)
-  //// disabled
-  ////def timeWeightedOverlayPNG_8192(reps:Int) = s8192.run(reps, server)
-  //
+}
+
+class BasicWoBenchmark extends GeoTrellisBenchmark {
+  var m100:MiniWoTest = null
+  var m1000:MiniWoTest = null
+
+  override def testSetup() {
+    val name = pairs(0)._1
+    val extent = server.run(LoadRasterExtent(name)).extent
+
+    m100 = MiniWoTest(server, pairs(0), pairs(1), extent, 100)
+    m1000 = MiniWoTest(server, pairs(0), pairs(1), extent, 1000)
+  }
+
+  def timeBasicWeightedOverlay_100(reps:Int) = m100.run(reps, server)
+  def timeBasicWeightedOverlay_1000(reps:Int) = m1000.run(reps, server)
+}
+
+class AddConstantBenchmark extends GeoTrellisBenchmark {
+  var a64:MiniAddTest = null
+  var a128:MiniAddTest = null
+  var a256:MiniAddTest = null
+  var a512:MiniAddTest = null
+  var a1024:MiniAddTest = null
+
+  override def testSetup() {
+    val name = pairs(0)._1
+    val extent = server.run(LoadRasterExtent(name)).extent
+    
+    a64 = MiniAddTest(server, name, extent, 64)
+    a128 = MiniAddTest(server, name, extent, 128)
+    a256 = MiniAddTest(server, name, extent, 256)
+    a512 = MiniAddTest(server, name, extent, 512)
+    a1024 = MiniAddTest(server, name, extent, 1024)
+  }
+
   def timeAddConstant_64(reps:Int) = a64.run(reps, server)
   def timeAddConstant_128(reps:Int) = a128.run(reps, server)
   def timeAddConstant_256(reps:Int) = a256.run(reps, server)
   def timeAddConstant_512(reps:Int) = a512.run(reps, server)
   def timeAddConstant_1024(reps:Int) = a1024.run(reps, server)
-  def timeAddConstant_2048(reps:Int) = a2048.run(reps, server)
-  //def timeAddConstant_4086(reps:Int) = a4096.run(reps, server)
-  /// disabled
-  ////def timeAddConstant_8192(reps:Int) = a8192.run(reps, server)
 
-  //def timeTiledAddConstant_4086(reps:Int) = t_a4096.run(reps, server)
-  //def timeTiledAddConstant_8196_10k(reps:Int) = t_a8192_512.run(reps, server)
- 
+}
+
+class TiledAddConstantBenchmark extends GeoTrellisBenchmark {
+  var t_a4096:TiledMiniAddTest = null
+  var t_a8192_512:TiledMiniAddTest = null
+  override def testSetup() {
+    val name = pairs(0)._1
+    val extent = server.run(LoadRasterExtent(name)).extent
+    t_a4096 = TiledMiniAddTest(server, name, extent, 4096, 512)
+    t_a8192_512 = TiledMiniAddTest(server, name, extent, 8192, 512)
+  }
+  def timeTiledAddConstant_4086(reps:Int) = t_a4096.run(reps, server)
+  def timeTiledAddConstant_8196_512(reps:Int) = t_a8192_512.run(reps, server)
+}
+
+class AddRastersBenchmark extends GeoTrellisBenchmark {
+  var ma256:AddRastersTest = null
+  var ma512:AddRastersTest = null
+  var ma1024:AddRastersTest = null
+  override def testSetup() {
+    val name = pairs(0)._1
+    val extent = server.run(LoadRasterExtent(name)).extent
+    ma256 = AddRastersTest(server, name, extent, 256)
+    ma512 = AddRastersTest(server, name, extent, 512)
+    ma1024 = AddRastersTest(server, name, extent, 1024)
+  }
   def timeAddRasters_256(reps:Int) = ma256.run(reps, server)
   def timeAddRasters_512(reps:Int) = ma512.run(reps, server)
   def timeAddRasters_1024(reps:Int) = ma1024.run(reps, server)
-  def timeAddRasters_2048(reps:Int) = ma2048.run(reps, server)
+}
 
+class SubtractRastersBenchmark extends GeoTrellisBenchmark {
+  var sb256:SubtractRastersTest = null
+  var sb512:SubtractRastersTest = null
+  var sb1024:SubtractRastersTest = null
+  override def testSetup() {
+    val name = pairs(0)._1
+    val extent = server.run(LoadRasterExtent(name)).extent
+    sb256 = SubtractRastersTest(server, name, extent, 256)
+    sb512 = SubtractRastersTest(server, name, extent, 512)
+    sb1024 = SubtractRastersTest(server, name, extent, 1024)
+  }
+ 
   def timeSubtractRasters_256(reps:Int) = sb256.run(reps, server)
   def timeSubtractRasters_512(reps:Int) = sb512.run(reps, server)
   def timeSubtractRasters_1024(reps:Int) = sb1024.run(reps, server)
-  def timeSubtractRasters_2048(reps:Int) = sb2048.run(reps, server)
 }
 
-object TrellisBenchmarks {
+abstract class GeoTrellisBenchmark extends SimpleBenchmark {
+  val pairs = List(("SBN_farm_mkt", 2), ("SBN_RR_stops_walk", 1), ("SBN_inc_percap", 5), ("SBN_street_den_1k", 2))
+  val total = pairs.map(_._2).sum
+  val colors = Array(0x0000FF, 0x0080FF, 0x00FF80, 0xFFFF00, 0xFF8000, 0xFF0000)
+
+  var server:Server = null
+  def testSetup() {}
+
+  override def setUp() {
+    val catalogPath = "src/test/resources/demo-catalog.json"
+    val catalog = Catalog.fromPath(catalogPath)
+    server = Server("demo", catalog)
+
+    testSetup()
+  }
+
+ }
+
+object BenchmarkWo {
   def main(args:Array[String]) {
-    println("starting benchmarks...")
-    Runner.main(classOf[TrellisBenchmarks], args:_*)
+    println("starting weighted overlay -> png benchmarks...")
+    Runner.main(classOf[WoBenchmark], args:_*)
     println("completed benchmarks.")
   }
 }
+
+object BenchmarkBasicWo {
+  def main(args:Array[String]) {
+    println("starting basic weighted overlay benchmarks.")
+    Runner.main(classOf[BasicWoBenchmark], args:_*)
+    println("completed benchmarks.")
+  }
+}
+
+object BenchmarkAddConstant {
+  def main(args:Array[String]) {
+    println("starting benchmarks.")
+    Runner.main(classOf[AddConstantBenchmark], args:_*)
+    println("completed benchmarks.")
+  }
+}
+
+object BenchmarkTiledAddConstant {
+  def main(args:Array[String]) {
+    println("starting benchmarks.")
+    Runner.main(classOf[AddConstantBenchmark], args:_*)
+    println("completed benchmarks.")
+  }
+}
+
+object BenchmarkAddRasters {
+  def main(args:Array[String]) {
+    println("starting benchmarks.")
+    Runner.main(classOf[AddConstantBenchmark], args:_*)
+    println("completed benchmarks.")
+  }
+}
+
+object BenchmarkSubtractRasters {
+  def main(args:Array[String]) {
+    println("starting benchmarks.")
+    Runner.main(classOf[AddConstantBenchmark], args:_*)
+    println("completed benchmarks.")
+  }
+}
+
+
