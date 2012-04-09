@@ -8,6 +8,7 @@ package geotrellis.benchmark
 
 import geotrellis._
 import geotrellis.data._
+import geotrellis.data.png._
 import geotrellis.operation._
 import geotrellis.process._
 import geotrellis.raster._

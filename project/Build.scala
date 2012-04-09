@@ -11,9 +11,10 @@ object MyBuild extends Build {
     scalaVersion := "2.9.1",
 
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-optimize"),
-
     parallelExecution := false,
     testListeners <+= target.map(tgt => new eu.henkelmann.sbt.JUnitXmlTestsListener(tgt.toString)),
+
+    javaOptions in run += "-Xmx4G",
 
     libraryDependencies ++= Seq(
       "org.scalatest" %% "scalatest" % "1.6.1" % "test",
