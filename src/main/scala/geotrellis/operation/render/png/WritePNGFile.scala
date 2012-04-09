@@ -2,6 +2,7 @@ package geotrellis.operation.render.png
 
 import geotrellis._
 import geotrellis.data._
+import geotrellis.data.png._
 import geotrellis.operation._
 import geotrellis.process._
 
@@ -12,10 +13,9 @@ import geotrellis.process._
 case class WritePNGFile(r:Op[IntRaster], path:Op[String], breaks:Op[Array[(Int, Int)]],
                         noDataColor:Op[Int], transparent:Op[Boolean]) 
 extends Op5(r,path,breaks,noDataColor,transparent) ({
-    (r,path,breaks,noDataColor,transparent) => {
+    (r, path, breaks, noDataColor, transparent) => {
     val f = ColorMapper(ColorBreaks(breaks), noDataColor)
-    val writer = new PNGRenderer(r, path, f, noDataColor, transparent)
-    writer.write
+    RgbaEncoder().writePath(path, r.map(f))
     Result(Unit)
   }
 })
@@ -23,9 +23,8 @@ extends Op5(r,path,breaks,noDataColor,transparent) ({
 //TODO: rename this to WritePNGFile?
 case class WritePNGFile2(r:Op[IntRaster], path:String, noDataColor:Int, transparent:Boolean) 
 extends Op4(r,path,noDataColor,transparent)({
-  (r,path,noDataColor,transparent) => {
-    val writer = new PNGWriterRGB2(r, path, noDataColor, transparent)
-    writer.write
+  (r, path, noDataColor, transparent) => {
+    RgbaEncoder().writePath(path, r)
     Result(Unit)
   }
 })

@@ -155,6 +155,7 @@ class DemoService1 {
     /**
      * Render the acutal PNG image.
      */
+    //val pngOp = RenderPNG(outputOp, breaksOp, 0, true)
     val pngOp = RenderPNG(outputOp, breaksOp, 0, true)
 
     if (format == "hello") {
