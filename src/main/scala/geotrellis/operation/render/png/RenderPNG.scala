@@ -12,12 +12,17 @@ import geotrellis._
 case class RenderPNG(r:Op[IntRaster], colorBreaks:Op[ColorBreaks], noDataColor:Op[Int], transparent:Op[Boolean])
 extends Op4(r,colorBreaks,noDataColor, transparent)({
   (r, breaks, noDataColor, transparent) => {
-    val f = ColorMapper(breaks, noDataColor)
-    Result(RgbaEncoder().writeByteArray(r.map(f)))
+    val mapper = ColorMapper(breaks, noDataColor)
+    val ndc = if (transparent) 0 else noDataColor
+    val r2 = r.map(n => if (n == NODATA) ndc else (mapper(n) << 8) + 25)
+    Result(RgbaEncoder().writeByteArray(r2))
   }
 })
 
 //TODO: documentation, rename
-case class RenderPNG3(r:Op[IntRaster], mapper:Op[ColorMapper]) extends Op2(r,mapper) ({
-  (r, f) => Result(RgbaEncoder().writeByteArray(r.map(f)))
+case class RenderPNG3(r:Op[IntRaster], mapper:Op[ColorMapper]) extends Op2(r, mapper) ({
+  (r, mapper) => {
+    val r2 = r.map(n => if (n == NODATA) 0 else (mapper(n) << 8) + 255)
+    Result(RgbaEncoder().writeByteArray(r2))
+  }
 })
