@@ -1,6 +1,6 @@
 package geotrellis.operation
 
-
+import geotrellis.data.png._
 import geotrellis.data._
 import geotrellis.process._
 import geotrellis._
@@ -11,17 +11,13 @@ import geotrellis._
  */
 case class RenderPNG(r:Op[IntRaster], colorBreaks:Op[ColorBreaks], noDataColor:Op[Int], transparent:Op[Boolean])
 extends Op4(r,colorBreaks,noDataColor, transparent)({
-  (raster, breaks, noDataColor, transparent) => {
+  (r, breaks, noDataColor, transparent) => {
     val f = ColorMapper(breaks, noDataColor)
-    val w = new PNGRenderer(raster, "/dev/null", f, noDataColor, transparent)
-    Result(w.render)
+    Result(RgbaEncoder().writeByteArray(r.map(f)))
   }
 })
 
 //TODO: documentation, rename
 case class RenderPNG3(r:Op[IntRaster], mapper:Op[ColorMapper]) extends Op2(r,mapper) ({
-  (raster,mapper) => {
-    val w = new PNGRenderer(raster, "/dev/null", mapper, mapper.nodataColor, true)
-    Result(w.render)
-  }
+  (r, f) => Result(RgbaEncoder().writeByteArray(r.map(f)))
 })
