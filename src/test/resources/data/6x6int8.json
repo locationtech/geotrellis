@@ -1,5 +1,5 @@
 {
-  "layer": "6x6int32",
+  "layer": "6x6int8",
   "type": "arg",
   "datatype": "int8",
   "xmin": 1000.0,
