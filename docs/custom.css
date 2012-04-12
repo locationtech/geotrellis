@@ -8,7 +8,8 @@ h4 { font-family: 'Lato',sans-serif; font-size: 16px; color: #145499; font-weigh
 	text-transform: uppercase; text-shadow: 0 1px 1px rgba(0,0,0,.25); padding-top: 10px; margin: 0 0 8px; }
 p { color: #777; margin-bottom: 20px; width: 100%; }
 p + p { margin-top: 0; text-indent: 0; }
-pre { white-space: pre-line; }
+pre, pre code { background-color: #F9F9F9; }
+pre { border-radius: 7px 7px 7px 7px; padding: 5px; }
 
 a.fork { position: fixed; z-index: 999; }
 a.page { width: 45%; }
