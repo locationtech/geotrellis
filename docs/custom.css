@@ -1,45 +1,42 @@
-h1, h2, h3, h4, h5, h6, .title span, .nav span, p code {
-    color: #AB1979;
-    /*color: #7B0079;*/
+@import url("http://fonts.googleapis.com/css?family=Lato:900|Signika:400,600");
+
+body { font-family: Helvetica, Arial, sans-serif; font-size: 14px; line-height: 24px;
+	background: url("http://auto2.cdn.azavea.com/themes/GeoTrellis/images/bg-iso-grid.png") repeat scroll 0 0 transparent; }
+h1 { font-family: 'Signika',sans-serif; font-size: 32px; font-weight: 400; color: #393939; }
+h2 { font-family: 'Signika',sans-serif; font-size: 18px; font-weight: 600; color: #393939; }
+h4 { font-family: 'Lato',sans-serif; font-size: 16px; color: #145499; font-weight: 900; 
+	text-transform: uppercase; text-shadow: 0 1px 1px rgba(0,0,0,.25); padding-top: 10px; margin: 0 0 8px; }
+p { color: #777; margin-bottom: 20px; width: 100%; }
+p + p { margin-top: 0; text-indent: 0; }
+pre { white-space: pre-line; }
+
+a.fork { position: fixed; z-index: 999; }
+a.page { width: 45%; }
+a.page:hover { background: #25B8DA; background: rgba(37, 184, 218, .5); color: white; }
+a.page span.space { height: 50%; }
+a.page span:last-child { font-size: 60px; font-weight: bold; }
+
+div.container { background: transparent; }
+div.top.nav.title { 
+	background: none repeat scroll 0% 0% #192A39; 
+	height: 100px; 
+	left: 0; 
+	top: 0; 
+	position: fixed; 
+	width: 100%;
+	color: transparent;
 }
-
-.nav:hover span {
-    color: #B90808;
+div.top.nav.title span { 
+	margin: 28px auto; 
+	text-indent: -9999px; 
+	width: 710px; 
+	height: 50px; 
+	background: url("http://auto2.cdn.azavea.com/themes/GeoTrellis/images/logo-geotrellis.png") no-repeat scroll 0pt 0pt transparent; 
+	display: block;
 }
-
-.contents p {
-    text-indent: 0;
-    margin-top: -1em;
-}
-
-li p, li pre {
-    margin: 0 !important;
-}
-
-p, li {
-    font-size: 110%
-}
-
-li pre {
-    font-size: 90%
-}
-
-.prettyprint {
-    font-size: 90%
-}
-
-p code {
-    font-size: 90%;
-}
-
-pre, pre code {
-    background-color: #F9F9F9;
-}
-
-pre {
-    padding: 5px;
-
-    -webkit-border-radius: 7px;
-    -moz-border-radius: 7px;
-    border-radius: 7px;
+div.contents {
+	background: white;
+	border: 5px solid rgba(0,0,0,.4);
+	margin: 130px 0 50px;
+	padding: 35px;
 }
