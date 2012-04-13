@@ -47,9 +47,10 @@ class CompressedArrayHistogram(counts:Array[Int], total:Int,
     (zmin until zmax).filter(getItemCount(_) > 0).toArray
   }
 
+  override def setItem(i:Int, count:Int) { super.setItem(compress(i), count) }
   override def countItem(i:Int, count:Int=1) { super.countItem(compress(i), count) }
   override def uncountItem(i:Int) { super.uncountItem(compress(i)) }
-  //override def getItemCount(i:Int) = super.getItemCount(compress(i))
+
   override def getItemCount(i:Int) = {
     // once we compress, all values become equal to the maximum value of their
     // range, e.g. [0-9] becomes 9; this means that if our inputs are:

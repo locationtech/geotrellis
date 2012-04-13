@@ -18,7 +18,6 @@ class HistogramSpec extends Spec with MustMatchers with ShouldMatchers {
   val kinds = List(("ArrayHistogram", ArrayHistogram, () => {ArrayHistogram(100)}),
                    ("MapHistogram", MapHistogram, () => {MapHistogram()}),
                    ("FastMapHistogram", FastMapHistogram, () => {FastMapHistogram()}))
-
   kinds.foreach {
     case (name, cls, builder) => {
       describe("A " + name) {
@@ -88,10 +87,10 @@ class HistogramSpec extends Spec with MustMatchers with ShouldMatchers {
           stringToInts(s).foreach { i => h.countItem(i) }
           
           h.getQuantileBreaks(6) must be === Array(23, 67, 71, 73, 78, 90)
-
+  
           //println(h.generateStatistics)
         }
-
+  
         it("should handle quantile breaks with extreme values") {
           val h = ArrayHistogram(10)
           h.countItem(1, 10)
@@ -139,16 +138,6 @@ class HistogramSpec extends Spec with MustMatchers with ShouldMatchers {
         //  evaluating { h.getQuantileBreaks(2, 'bad) } should produce [Exception];
         //}
         
-        it("should serialize to txt") {
-          val h = ArrayHistogram(10)
-          h.sparseString must be === "{}"
-    
-          h.countItem(3, 2)
-          h.countItem(5, 3)
-          h.countItem(8, 5)
-          h.sparseString must be === "{\n 3:2\n 5:3\n 8:5\n}"
-        }
-        
         it("should serialize to json") {
           val h = ArrayHistogram(10)
           h.countItem(3, 2)
@@ -171,7 +160,7 @@ class HistogramSpec extends Spec with MustMatchers with ShouldMatchers {
       h.countItem(5, 10)
       h.getQuantileBreaks(4) must be === Array(0, 1, 2, 5)
     }
-
+  
     it("should handle a tricky double unbalanced later values") {
       val h = ArrayHistogram(10)
       h.countItem(0, 10)
@@ -181,6 +170,28 @@ class HistogramSpec extends Spec with MustMatchers with ShouldMatchers {
       h.countItem(4, 10)
       h.countItem(5, 5)
       h.getQuantileBreaks(4) must be === Array(0, 1, 2, 5)
+    }
+  }
+
+  describe("A Histogram") {
+    it("should be able to handle any number of quantiles") {
+      val h = ArrayHistogram(10)
+      h.countItem(1, 10)
+      h.countItem(2, 10)
+      h.countItem(3, 10)
+      h.countItem(4, 10)
+      h.countItem(5, 10)
+
+      h.getQuantileBreaks(1) must be === Array(5)
+      h.getQuantileBreaks(2) must be === Array(2,5)
+      h.getQuantileBreaks(3) must be === Array(2,3,5)
+      h.getQuantileBreaks(4) must be === Array(1,2,4,5)
+      h.getQuantileBreaks(5) must be === Array(1,2,3,4,5)
+      h.getQuantileBreaks(6) must be === Array(1,2,3,3,4,5)
+      h.getQuantileBreaks(7) must be === Array(1,2,2,3,4,4,5)
+      h.getQuantileBreaks(8) must be === Array(1,1,2,3,3,4,5,5)
+      h.getQuantileBreaks(9) must be === Array(1,1,2,2,3,4,4,5,5)
+      h.getQuantileBreaks(10) must be === Array(1,1,2,2,3,3,4,4,5,5)
     }
   }
 
@@ -197,7 +208,7 @@ class HistogramSpec extends Spec with MustMatchers with ShouldMatchers {
       h.countItem(7, 2)
       h.countItem(8, 0)
       h.countItem(9, 0)
-
+  
       val stats = h.generateStatistics
       //println(stats)
       "%.3f".format(stats.mean) must be === "4.130"
@@ -261,7 +272,7 @@ class HistogramSpec extends Spec with MustMatchers with ShouldMatchers {
       h.getItemCount(15) must be === 0
       h.getItemCount(19) must be === 3
     }
-
+  
     it("should handle large values") {
       val seed = 0xdeadbeef
       val rng  = new Random(seed)
@@ -273,9 +284,9 @@ class HistogramSpec extends Spec with MustMatchers with ShouldMatchers {
       val vmin = 0
       val vmax = 4000
       //val h = CompressedArrayHistogram(vmin, vmax)
-
+  
       //val h = MapHistogram()
-
+  
       val h = FastMapHistogram()
     
       val t0 = System.currentTimeMillis()

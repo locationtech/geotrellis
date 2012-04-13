@@ -77,6 +77,23 @@ class FastMapHistogram(_size:Int, _buckets:Array[Int], _used:Int, _total:Int) ex
     -1
   }
 
+  def setItem(item:Int, count:Int) {
+    // we use our hashing strategy to figure out which bucket this item gets.
+    // if the bucket is empty, we're adding the item, whereas if its not we
+    // are just inreasing the item's count.
+    val i = hashItem(item, mask, buckets)
+    if (buckets(i) == UNSET) {
+      buckets(i) = item
+      buckets(i + 1) = count
+      used += 1
+      if (used > limit) resize()
+      total += count
+    } else {
+      total = total - buckets(i + 1) + count
+      buckets(i + 1) = count
+    }
+  }
+
   def countItem(item:Int, count:Int = 1) {
     // we use our hashing strategy to figure out which bucket this item gets.
     // if the bucket is empty, we're adding the item, whereas if its not we
