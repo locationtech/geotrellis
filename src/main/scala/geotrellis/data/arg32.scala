@@ -20,7 +20,7 @@ abstract class ArgNReadState(data:Either[String, Array[Byte]],
                            val target:RasterExtent) extends ReadState {
   def width:Int // byte width, e.g. 4 for arg32 with 32bit values
 
-  private var src:ByteBuffer = null
+  protected[this] var src:ByteBuffer = null
 
   // NoData value is the minimum value storable w/ this bitwidth (-1 for sign)
   def getNoDataValue:Int = ArgFormat.noData(width)
@@ -32,11 +32,7 @@ abstract class ArgNReadState(data:Either[String, Array[Byte]],
     }
   }
 
-  @inline
-  def assignFromSource(sourceIndex:Int, dest:Array[Int], destIndex:Int) {
-    dest(destIndex) = src.getInt(sourceIndex * width)
   }
-}
 
 
 trait ArgNWriter extends Writer {
@@ -95,6 +91,12 @@ class Arg32ReadState(data:Either[String, Array[Byte]],
                            layer:RasterLayer,
                            target:RasterExtent)  extends ArgNReadState (data,layer,target) {
   val width = 4
+
+  @inline
+  def assignFromSource(sourceIndex:Int, dest:Array[Int], destIndex:Int) {
+    dest(destIndex) = src.getInt(sourceIndex * width)
+  }
+
 }
 
 object Arg32Reader extends FileReader {
@@ -111,7 +113,14 @@ class Arg8ReadState(data:Either[String, Array[Byte]],
                     layer:RasterLayer,
                     target:RasterExtent) extends ArgNReadState(data,layer,target) {
   val width = 1
+
+  @inline
+  def assignFromSource(sourceIndex:Int, dest:Array[Int], destIndex:Int) {
+    dest(destIndex) = src.get(sourceIndex * width)
+  }
+
 }
+
 
 object Arg8Reader extends FileReader {
   def readStateFromCache(b:Array[Byte], rl:RasterLayer, re:RasterExtent) = new Arg8ReadState(Right(b), rl, re)
