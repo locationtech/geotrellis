@@ -145,7 +145,6 @@ akka {
           throw new Exception("Unsupported raster layer: with type %s, datatype %s".format(typ,datatyp))
       } 
     }
-ArgReader
     case GeoTiffPattern() => GeoTiffReader
     case AsciiPattern() => AsciiReader
     case _ => sys.error("unknown path type %s".format(path))
@@ -252,6 +251,7 @@ ArgReader
 object Server {
   val config = ConfigFactory.load()
   val catalogPath = config.getString("geotrellis.catalog")
+  println("Loading catalog: " + catalogPath)
 
   def apply(id:String) = new Server(id, Catalog.fromPath(catalogPath))
   def apply(id:String, path:String) = new Server(id, Catalog.fromPath(path))

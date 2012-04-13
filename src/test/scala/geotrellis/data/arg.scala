@@ -18,7 +18,7 @@ class ArgSpec extends Spec with MustMatchers with ShouldMatchers {
     val path1 = "src/test/resources/fake.img8.arg"
     	 
     it("should build a valid raster") {
-      val raster = ArgReader.readPath(path1, None, None)
+      val raster = Arg8Reader.readPath(path1, None, None)
 
       raster.cols must be === 4
       raster.rows must be === 4
@@ -31,12 +31,12 @@ class ArgSpec extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("should write out args") {
-      val raster = ArgReader.readPath(path1, None, None)
+      val raster = Arg8Reader.readPath(path1, None, None)
 
       val fh = java.io.File.createTempFile("foog", ".arg")
       val path2 = fh.getPath
 
-      ArgWriter.write(path2, raster)
+      Arg8Writer.write(path2, raster)
 
       val data1 = io.Source.fromFile(path2).mkString
       val data2 = io.Source.fromFile("src/test/resources/fake.img8.arg").mkString
@@ -55,7 +55,7 @@ class ArgSpec extends Spec with MustMatchers with ShouldMatchers {
       val cellheight = abs(ymax - ymin) / cols
       val e = Extent(xmin, ymin, xmax, ymax)
       val re = RasterExtent(e, cellwidth, cellheight, cols, rows)
-      ArgReader.readPath("src/test/resources/quad8.arg", None, Some(re))
+      Arg8Reader.readPath("src/test/resources/quad8.arg", None, Some(re))
     }
 
     // helper function
