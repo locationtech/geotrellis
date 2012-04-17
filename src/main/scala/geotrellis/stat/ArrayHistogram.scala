@@ -14,31 +14,36 @@ object ArrayHistogram {
   * Data object representing a histogram that uses an array for internal storage. 
   */
 class ArrayHistogram(val counts:Array[Int], var total:Int) extends Histogram {
-  def getTotalCount = this.total
+  def getTotalCount = total
 
-  def copy = ArrayHistogram(this.counts.clone, this.total)
+  def copy = ArrayHistogram(counts.clone, total)
 
-  //def getValues = (0 until this.counts.length).toArray
-  def getValues = (0 until this.counts.length).filter(this.counts(_) > 0).toArray
+  //def getValues = (0 until counts.length).toArray
+  def getValues = (0 until counts.length).filter(counts(_) > 0).toArray
+
+  def setItem(i:Int, count:Int) {
+    total = total - counts(i) + count
+    counts(i) = count
+  }
 
   def uncountItem(i:Int) {
-    this.total -= counts(i)
-    this.counts(i) = 0
+    total -= counts(i)
+    counts(i) = 0
   }
 
   def countItem(i:Int, count:Int=1) {
-    this.total += count
-    this.counts(i) += count
+    total += count
+    counts(i) += count
   }
 
-  def getItemCount(i:Int) = this.counts(i)
+  def getItemCount(i:Int) = counts(i)
 
   // REFACTOR: use Option
   def getMinValue:Int = {
     var i = 0
-    val limit = this.counts.length
+    val limit = counts.length
     while (i < limit) {
-      if (this.counts(i) > 0) return i
+      if (counts(i) > 0) return i
       i += 1
     }
     return Int.MaxValue
@@ -46,9 +51,9 @@ class ArrayHistogram(val counts:Array[Int], var total:Int) extends Histogram {
 
   // REFACTOR: use Option
   def getMaxValue:Int = {
-    var i = this.counts.length - 1
+    var i = counts.length - 1
     while (i >= 0) {
-      if (this.counts(i) > 0) return i
+      if (counts(i) > 0) return i
       i -= 1
     }
     return Int.MinValue

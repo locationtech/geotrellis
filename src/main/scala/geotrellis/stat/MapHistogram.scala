@@ -45,6 +45,18 @@ class MapHistogram(counts:Map[Int, Int], var total:Int) extends Histogram {
     }
   }
 
+  def setItem(i:Int, count:Int) {
+    if (i != NODATA) {
+      if (this.counts.contains(i)) {
+        this.total = this.total + count - this.counts(i)
+        this.counts(i) = count
+      } else {
+        this.counts(i) = count
+        this.total += count
+      }
+    }
+  }
+
   def getItemCount(i:Int) = this.counts.getOrElse(i, 0)
 
   //def getMinValue:Int = this.counts.keys.foldLeft(Int.MaxValue)(min)
