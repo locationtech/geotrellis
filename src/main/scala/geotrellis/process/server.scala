@@ -256,6 +256,8 @@ object Server {
   def apply(id:String) = new Server(id, Catalog.fromPath(catalogPath))
   def apply(id:String, path:String) = new Server(id, Catalog.fromPath(path))
   def apply(id:String, catalog:Catalog) = new Server(id, catalog)
+
+  def empty(id:String) = new Server(id, Catalog.empty(id))
 }
 
 object TestServer {
