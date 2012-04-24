@@ -26,3 +26,6 @@ case class SplitOnComma(s:Op[String]) extends Op1(s)(s => Result(s split ","))
  * Parse a string as a base-16 integer. Often useful when dealing with colors.
  */
 case class ParseHexInt(s:Op[String]) extends Op1(s)(s => Result(Integer.parseInt(s, 16)))
+
+case class Concat(strings:Op[String]*) extends Op1(Collect(strings)) (strings => Result(strings.mkString("")))
+
