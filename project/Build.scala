@@ -2,7 +2,7 @@ import sbt._
 import sbt.Keys._
 
 object MyBuild extends Build {
-  val geotoolsVersion = "2.7.4"
+  val geotoolsVersion = "8.0-M4"
 
   lazy val project = Project("root", file(".")) settings(
     organization := "azavea",
@@ -27,7 +27,7 @@ object MyBuild extends Build {
       "org.geotools" % "gt-jdbc" % geotoolsVersion,
       "org.geotools.jdbc" % "gt-jdbc-postgis" % geotoolsVersion,
       "org.geotools" % "gt-coverage" % geotoolsVersion,
-      "org.geotools" % "gt-coverageio" % geotoolsVersion,
+      //"org.geotools" % "gt-coverageio" % geotoolsVersion,
       "org.geotools" % "gt-coveragetools" % geotoolsVersion,
       "org.postgis" % "postgis-jdbc" % "1.3.3",
       "javax.media" % "jai_core" % "1.1.3",
