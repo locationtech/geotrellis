@@ -33,6 +33,9 @@ case class ColorBreaks(breaks:Array[(Int, Int)]) {
     breaks.foreach { case (limit, color) => if (z <= limit) return color }
     lastColor
   }
+  override def toString = {
+    "ColorBreaks(%s)" format breaks.map(t => "(%s, %06x)" format (t._1, t._2)).mkString(", ")
+  }
 }
 
 /**
