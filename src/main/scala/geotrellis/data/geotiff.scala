@@ -15,7 +15,7 @@ import org.geotools.coverage.grid.GridCoordinates2D
 import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder
 import org.geotools.coverage.grid.io.imageio.IIOMetadataDumper
 import org.geotools.factory.Hints
-import org.geotools.gce.geotiff
+import org.geotools.gce
 import org.geotools.geometry.Envelope2D
 import org.geotools.referencing.CRS
 import org.geotools.coverage.Category
@@ -37,7 +37,7 @@ final class GeoTiffReadState(path:String,
 
   private def getReader = {
     val fh    = new File(path)
-    val gtf   = new geotiff.GeoTiffFormat
+    val gtf   = new gce.geotiff.GeoTiffFormat
     val hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:3785"))
 
     if (!fh.canRead) sys.error("can't read %s".format(path))
@@ -45,7 +45,7 @@ final class GeoTiffReadState(path:String,
     gtf.getReader(fh, hints)
   }
 
-  private def initializeNoData(reader:geotiff.GeoTiffReader) = {
+  private def initializeNoData(reader:gce.geotiff.GeoTiffReader) = {
     val z = reader.getMetadata.getNoData.toInt
     val bits = reader.read(null).getRenderedImage.getSampleModel.getSampleSize(0)
     noData = if (z < 0) { z + (1 << bits) } else { z }
@@ -106,46 +106,19 @@ object GeoTiffReader extends FileReader {
   }
 }
 
+/**
+ * This GeoTiffWriter is deprecated.
+ *
+ * See geotrellis.data.geotiff.Encoder for the preferred approach to
+ * encoding rasters to geotiff files.
+ */
 object GeoTiffWriter extends Writer {
   def rasterType = "geotiff" 
   def dataType = ""
 
+  import geotrellis.data.geotiff._
+
   def write(path:String, raster:IntRaster, name:String) {
-    val re = raster.rasterExtent
-    val e = raster.rasterExtent.extent
-
-    val crs = CRS.decode("EPSG:3785")
-    val envelope = new Envelope2D(crs, e.xmin, e.ymin, e.xmax - e.xmin, e.ymax - e.ymin)
-
-    val dest = new File(path)
-    val hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, crs)
-    val writer = new geotiff.GeoTiffWriter(dest, hints)
-
-    // nodata tag id?
-    //writer.setMetadataValue("42113", NODATA.toString)
-
-    val factory = new GridCoverageFactory(hints)
-
-   // val img = new BufferedImage(re.cols, re.rows, BufferedImage.TYPE_4BYTE_ABGR)
-    var r = Raster.createBandedRaster(java.awt.image.DataBuffer.TYPE_INT, re.cols, re.rows, 1, new Point(0,0))
-    
-    var row = 0
-    while (row < re.rows) {
-      var col = 0
-      while (col < re.cols) {
-        //img.setRGB(col, row, raster.get(col, row))
-        r.setSample(col,row,0,raster.get(col,row) - 1)
-        col += 1
-      }
-      row += 1
-    }
-    
-     val nodata = new Category("no data",  Array(new java.awt.Color(5,5,5)), Int.MinValue, Int.MinValue+1, 1, 1)
-    //val rest = new Category("data",  Array(new Color(255,255,255)), Int.MinValue+1, Int.MaxValue, 1, 1)
-
-    val gsd = new GridSampleDimension("categories", Array(nodata), null)
-    val coverage = factory.create(name, r, envelope, Array(gsd))
-    writer.write(coverage, null)
-    writer.dispose()
+    Encoder.writePath(path, raster, Settings(IntSample, Signed))
   }
 }
