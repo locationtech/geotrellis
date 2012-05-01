@@ -106,6 +106,12 @@ object GeoTiffReader extends FileReader {
   }
 }
 
+/**
+ * This GeoTiffWriter is deprecated.
+ *
+ * See geotrellis.data.geotiff.Encoder for the preferred approach to
+ * encoding rasters to geotiff files.
+ */
 object GeoTiffWriter extends Writer {
   def rasterType = "geotiff" 
   def dataType = ""

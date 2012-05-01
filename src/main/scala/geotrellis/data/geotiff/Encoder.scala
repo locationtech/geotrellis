@@ -4,14 +4,6 @@ import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.io.OutputStream
-import java.nio.ByteBuffer
-import java.util.zip.CRC32
-import java.util.zip.CheckedOutputStream
-import java.util.zip.Deflater
-import java.util.zip.DeflaterOutputStream
-
-import scala.math.abs
 
 import geotrellis._
 
@@ -20,52 +12,26 @@ import geotrellis._
 // TODO: color?
 
 /**
- * tag types
- *  1: 8-bit unsigned int
- *  2: 7-bit ascii code (must end in NUL)
- *  3: 16-bit unsigned int
- *  4: 32-bit unsigned int
- *  5: rational: 32-bit unsigned numerator and denominator
- *  6: 8-bit signed int
- *  7: undefined 8-bit
- *  8: 16-bit signed int
- *  9: 32-bit signed int
- * 10: signed rational (like 5 but signed)
- * 11: 32-bit floating point
- * 12: 64-bit floating point
+ * Class for writing GeoTIFF data to a given DataOutputStream.
+ *
+ * This class implements the basic TIFF spec [1] and also supports the GeoTIFF
+ * extension tags. It is not a general purpose TIFF encoder (in particular it
+ * always writes the data into a single strip) but should work well for
+ * encoding raster data.
+ *
+ * In addition to using one strip it uses a single sample per pixel and encodes
+ * the data in one band. This means that files using more than 8-bit samples
+ * will often not render correctly in image programs like the Gimp. It also
+ * does not implement compression.
+ *
+ * Future work may add compression options, as well as options related to the
+ * color palette, multiple bands, etc.
+ *
+ * Encoders are not thread-safe and can only be used to write a single raster
+ * to single output stream.
+ *
+ * [1] http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf
  */
-object Const {
-  final def uint8 = 1      // 8-bit unsigned int
-  final def ascii = 2      // 7-bit ascii code (must end in NUL)
-  final def uint16 = 3     // 16-bit unsigned int
-  final def uint32 = 4     // 32-bit unsigned int
-  final def rational = 5   // rational: 2 uint32 values (numerator/denominator)
-  final def sint8 = 6      // 8-bit signed int
-  final def undef8 = 7     // undefined 8-bit
-  final def sint16 = 8     // 16-bit signed int
-  final def sint32 = 9     // 32-bit signed int
-  final def srational = 10 // signed rational: 2 sint32 values (n/d)
-  final def float32 = 11   // 32-bit floating point
-  final def float64 = 12   // 64-bit floating point
-
-  final def unsigned = 1
-  final def signed = 2
-  final def floating = 3
-}
-
-sealed abstract class SampleSize(val bits:Int)
-case object BitSample extends SampleSize(1)
-case object ByteSample extends SampleSize(8)
-case object ShortSample extends SampleSize(16)
-case object IntSample extends SampleSize(32)
-
-sealed abstract class SampleFormat(val kind:Int)
-case object Unsigned extends SampleFormat(Const.unsigned)
-case object Signed extends SampleFormat(Const.signed)
-case object Floating extends SampleFormat(Const.floating)
-
-case class Settings(size:SampleSize, format:SampleFormat)
-
 class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
   val data = raster.data
   val re = raster.rasterExtent
@@ -73,33 +39,42 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
   val rows = re.rows
   val e = re.extent
 
-  //final def bitsPerSample = 1
-  //final def bitsPerSample = 8
-  //final def bitsPerSample = 16
-  //final def bitsPerSample = 32
-  final def bitsPerSample = settings.size.bits
+  /**
+   * Number of bits per sample. Should either be a multiple of 8, or evenly
+   * divide 8 (i.e. 1, 2 or 4).
+   */ 
+  final def bitsPerSample:Int = settings.size.bits
 
-  //final def sampleFormat = Const.unsigned
-  //final def sampleFormat = Const.signed
-  final def sampleFormat = settings.format.kind
+  /**
+   * Type of samples, using numeric constants from the TIFF spec.
+   */
+  final def sampleFormat:Int = settings.format.kind
 
-  // no data value used in the actual raster
-  final def noDataValue = {
-    if (sampleFormat == Const.signed) (1L << (bitsPerSample - 1)).toInt
-    else if (sampleFormat == Const.unsigned) ((1L << bitsPerSample) - 1).toInt
-    else if (sampleFormat == Const.floating) sys.error("float not supported")
-    else sys.error("unknown sample format: %s" format sampleFormat)
+  /**
+   * Int nodata value to use when writing raster.
+   */
+  final def noDataValue:Int = settings.format match {
+    case Signed => (1L << (bitsPerSample - 1)).toInt
+    case Unsigned => ((1L << bitsPerSample) - 1).toInt
+    case Floating => sys.error("floating point not supported")
   }
 
-  // no data value represented as a string
-  final def noDataString = {
-    if (sampleFormat == Const.signed) "-" + (1L << (bitsPerSample - 1)).toString
-    else if (sampleFormat == Const.unsigned) ((1L << bitsPerSample) - 1).toString
-    else if (sampleFormat == Const.floating) sys.error("float not supported")
-    else sys.error("unknown sample format: %s" format sampleFormat)
+  /**
+   * String nodata value to use in GeoTIFF metadata.
+   */
+  final def noDataString:String = settings.format match {
+    case Signed => "-" + (1L << (bitsPerSample - 1)).toString
+    case Unsigned => ((1L << bitsPerSample) - 1).toString
+    case Floating => sys.error("floating point not supported")
   }
 
-  // the number of TIFF headers we want to write
+  /**
+   * The number of TIFF tags to be written.
+   *
+   * If we update the writer to support additional TIFF tags this number needs
+   * to be increased also. The writeTag calls in write are numbered to help
+   * make this process easier.
+   */
   final def numEntries = 18
 
   // we often need to "defer" writing data blocks, but keep track of how much
@@ -109,24 +84,24 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
   val baos = new ByteArrayOutputStream()
   val todo = new DataOutputStream(baos)
 
-  // the address we will start writing the image to
-  final def imageStartOffset = 8
+  // The address we will start writing the image to.
+  final def imageStartOffset:Int = 8
 
-  // the addres we expect to see IFD information at
+  // The addres we expect to see IFD information at.
   final def ifdOffset = imageStartOffset + img.size
 
-  // the current address we will write (non-image) "data blocks" to
+  // The current address we will write (non-image) "data blocks" to.
   final def dataOffset = ifdOffset + 2 + (numEntries * 12) + 4 + baos.size
 
-  // the byte array we will write all out 'strips' of image data to. we need
+  // The byte array we will write all out 'strips' of image data to. We need
   // this to correctly compute addresses beyond the image (i.e. TIFF headers
   // and data blocks).
   val img = new ByteArrayOutputStream()
 
-  // the number of bytes we've written to our 'dos'. only used for debugging.
+  // The number of bytes we've written to our 'dos'. Only used for debugging.
   var index:Int = 0
 
-  // used to immediately write values to our ultimate destination.
+  // Used to immediately write values to our ultimate destination.
   def writeByte(value:Int) { dos.writeByte(value); index += 1 }
   def writeShort(value:Int) { dos.writeShort(value); index += 2 }
   def writeInt(value:Int) { dos.writeInt(value); index += 4 }
@@ -134,7 +109,7 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
   def writeFloat(value:Float) { dos.writeFloat(value); index += 4 }
   def writeDouble(value:Double) { dos.writeDouble(value); index += 8 }
 
-  // used to write data blocks to our "deferred" byte array.
+  // Used to write data blocks to our "deferred" byte array.
   def todoByte(value:Int) { todo.writeByte(value) }
   def todoShort(value:Int) { todo.writeShort(value) }
   def todoInt(value:Int) { todo.writeInt(value) }
@@ -142,7 +117,7 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
   def todoFloat(value:Float) { todo.writeFloat(value) }
   def todoDouble(value:Double) { todo.writeDouble(value) }
 
-  // high-level function to defer writing geotiff tags
+  // High-level function to defer writing geotiff tags.
   def todoGeoTag(tag:Int, loc:Int, count:Int, offset:Int) {
     todoShort(tag)
     todoShort(loc)
@@ -150,7 +125,7 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
     todoShort(offset)
   }
 
-  // high-level function to write strings (char arrays). this will do immediate
+  // High-level function to write strings (char arrays). This will do immediate
   // writes for the header information, and possibly also do deferred writes to
   // the data blocks (if the null-terminated string data can't fit in 4 bytes).
   def writeString(tag:Int, s:String) {
@@ -169,7 +144,7 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
     }
   }
 
-  // high-level function to immediately write a TIFF tag. if value is an offset
+  // High-level function to immediately write a TIFF tag. if value is an offset
   // then the user is responsible for making sure it is valid.
   def writeTag(tag:Int, typ:Int, count:Int, value:Int) {
     writeShort(tag)
@@ -189,12 +164,15 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
     }
   }
 
-  // immediately write a byte array to the output
+  // Immediately write a byte array to the output.
   def writeByteArrayOutputStream(b:ByteArrayOutputStream) {
     b.writeTo(dos)
     index += b.size
   }
 
+  // Render the raster data into strips, and return an array of file offsets
+  // for each strip. Currently we write all the data into one strip so we just
+  // return an array of one item.
   def renderImage():Array[Int] = {
     val dmg = new DataOutputStream(img)
     var row = 0
@@ -219,6 +197,14 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
     Array(imageStartOffset)
   }
 
+  /**
+   * Encodes the raster to GeoTIFF, and writes the data to the output stream.
+   *
+   * This method does not return a result; the result is written into the
+   * output stream provided to Encoder's constructor. Many of the methods used
+   * by write mutate the object, and Encoder is not thread-safe, so it's
+   * important not to call this more than once.
+   */
   def write() {
     // 0x0000: first 4 bytes of signature
     writeInt(0x4d4d002a)
@@ -323,7 +309,15 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
   }
 }
 
+/**
+ * The Encoder object provides several useful static methods for encoding 
+ * raster data, which create Encoder instances on demand.
+ */
 object Encoder {
+
+  /**
+   * Encode raster as GeoTIFF and return an array of bytes.
+   */
   def writeBytes(raster:IntRaster, settings:Settings) = {
     val baos = new ByteArrayOutputStream()
     val dos = new DataOutputStream(baos)
@@ -332,6 +326,9 @@ object Encoder {
     baos.toByteArray
   }
 
+  /**
+   * Encode raster as GeoTIFF and write the data to the given path.
+   */
   def writePath(path:String, raster:IntRaster, settings:Settings) {
     val fos = new FileOutputStream(new File(path))
     val dos = new DataOutputStream(fos)
