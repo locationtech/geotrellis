@@ -1,20 +1,14 @@
 package geotrellis.operation
 
+import geotrellis._
 import geotrellis.process._
-import geotrellis.RasterExtent
-import geotrellis.IntRaster
 import geotrellis.data.IntRasterReader
 
-
-//TODO: Is this really what this operation is doing?
 /**
- * Crop a raster to a given extent, using a nearest neighbor algorithm to resample.
+ * Crop and resample a raster to the given raster extent.
+ *
+ * This may change the geographic extent, and also the grid resolution.
  */
-case class WarpRaster(r:Op[IntRaster], e:Op[RasterExtent]) extends Op2(r,e) ({
-  (raster,rasterExtent) => {
-    // this object will read from a raster as a data source
-    // (instead of using an arg32/tif/etc) to load a new
-    // raster
-    Result(IntRasterReader.read(raster, Option(rasterExtent)))
-  }
+case class WarpRaster(r:Op[IntRaster], e:Op[RasterExtent]) extends Op2(r, re) ({
+  (r, re) => Result(IntRasterReader.read(r, Option(re)))
 })
