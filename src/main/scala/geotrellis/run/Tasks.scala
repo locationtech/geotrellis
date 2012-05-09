@@ -10,7 +10,7 @@ import  scala.collection._
 // ./target/start geotrellis.run.Tasks geotiff_convert -i src/test/resources/econic.tif -n econic -o /tmp/econic.arg32
 
 
-/** 
+/**
  * Task for command line execution.
  *
  * Each task is defined as a JCommander 'command' (http://jcommander.org/) with annotations
