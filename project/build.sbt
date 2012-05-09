@@ -11,3 +11,5 @@ addSbtPlugin("cc.spray" % "sbt-revolver" % "0.6.0-SNAPSHOT" from "http://n0d.es/
 
 addSbtPlugin("com.typesafe.startscript" % "xsbt-start-script-plugin" % "0.5.1")
 
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.0")
+
