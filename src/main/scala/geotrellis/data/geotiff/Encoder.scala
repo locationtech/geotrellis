@@ -5,9 +5,10 @@ import java.io.DataOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
+import scala.math.{ceil, min}
+
 import geotrellis._
 
-// TODO: support writing more than one strip
 // TODO: compression?
 // TODO: color?
 
@@ -40,10 +41,30 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
   val e = re.extent
 
   /**
+   * Here we do a bunch of calculations around strip size. We limit each strip
+   * to 65K in size. Given that constraint, we can determine how many strips we
+   * need, how large each strip is, how many rows per strip we'll write, etc.
+   */
+
+  final def maxRowsPerStrip:Int = 65535 / (cols * bytesPerSample)
+  final def rowsPerStrip:Int = min(rows, maxRowsPerStrip)
+  final def bytesPerRow:Int = cols * bytesPerSample
+  final def bytesPerStrip:Int = rowsPerStrip * bytesPerRow
+  final def numStrips:Int = ceil((1.0 * rows) / rowsPerStrip).toInt
+  final def leftOverRows:Int = rows % rowsPerStrip
+
+  /**
+   * ESRI compatibility changes the data we write out. It results in some extra
+   * TIFF tags and many extra GeoTIFF tags.
+   */
+  final def esriCompat:Boolean = settings.esriCompat
+
+  /**
    * Number of bits per sample. Should either be a multiple of 8, or evenly
    * divide 8 (i.e. 1, 2 or 4).
    */ 
   final def bitsPerSample:Int = settings.size.bits
+  final def bytesPerSample:Int = settings.size.bits / 8
 
   /**
    * Type of samples, using numeric constants from the TIFF spec.
@@ -75,7 +96,14 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
    * to be increased also. The writeTag calls in write are numbered to help
    * make this process easier.
    */
-  final def numEntries = 18
+  final def numEntries = if (esriCompat) 20 else 18
+
+  /**
+   * The number of GeoTags to be written.
+   *
+   * If we write extra GeoTIFF tags this number needs to be increased.
+   */
+  final def numGeoTags = if (esriCompat) 21 else 4
 
   // we often need to "defer" writing data blocks, but keep track of how much
   // data would be written, to correctly compute future data block addresses.
@@ -176,13 +204,14 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
   def renderImage():Array[Int] = {
     val dmg = new DataOutputStream(img)
     var row = 0
+    var col = 0
 
     val bits = bitsPerSample
     val nd = noDataValue
 
     while (row < rows) {
       val rowspan = row * cols
-      var col = 0
+      col = 0
       while (col < cols) {
         var z = data(rowspan + col)
         if (z == Int.MinValue) z = nd
@@ -194,7 +223,8 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
       }
       row += 1
     }
-    Array(imageStartOffset)
+
+    (0 until numStrips).map(n => imageStartOffset + n * bytesPerStrip).toArray
   }
 
   /**
@@ -237,12 +267,13 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
     writeTag(0x0106, Const.uint16, 1, 1)
 
     // 6. strip offsets (actual image data)
-    if (stripOffsets.length == 1) {
+    val numStrips = stripOffsets.length
+    if (numStrips == 1) {
       // if we have one strip, write it's address in the tag
       writeTag(0x0111, Const.uint32, 1, stripOffsets(0))
     } else {
       // if we have multiple strips, write each addr to a data block
-      writeTag(0x0111, Const.uint32, stripOffsets.length, dataOffset)
+      writeTag(0x0111, Const.uint32, numStrips, dataOffset)
       stripOffsets.foreach(addr => todoInt(addr))
     }
 
@@ -250,10 +281,16 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
     writeTag(0x0115, Const.uint16, 1, 1)
 
     // 8. 'rows' rows per strip
-    writeTag(0x0116, Const.uint32, 1, rows)
+    writeTag(0x0116, Const.uint32, 1, rowsPerStrip)
 
-    // 9. strip byte counts (1 strip)
-    writeTag(0x0117, Const.uint16, 1, img.size)
+    // 9. strip byte counts
+    if (numStrips == 1) {
+      writeTag(0x0117, Const.uint32, 1, bytesPerStrip)
+    } else {
+      writeTag(0x0117, Const.uint32, numStrips, dataOffset)
+      for (i <- 0 until numStrips - 1) todoInt(bytesPerStrip)
+      todoInt(bytesPerRow * leftOverRows)
+    }
 
     // 10. y resolution, 1 pixel per unit
     writeTag(0x011a, Const.rational, 1, dataOffset)
@@ -290,13 +327,58 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
     todoDouble(0.0)    // z = 0.0
 
     // 17. geo key directory tag (4 geotags each with 4 short values)
-    writeTag(0x87af, Const.uint16, 4 * 4, dataOffset)
-    todoGeoTag(1, 1, 2, 3)       // geotif 1.2, 3 more tags
-    todoGeoTag(1024, 0, 1, 1)    // projected data (undef=0, projected=1, geographic=2, geocenteric=3)
-    todoGeoTag(1025, 0, 1, 1)    // area data (undef=0, area=1, point=2)
-    todoGeoTag(3072, 0, 1, 3857) // gt projected cs type (3857)
+    writeTag(0x87af, Const.uint16, numGeoTags * 4, dataOffset)
 
-    // 18. nodata as string
+    // write out GeoTags. this varies a lot depending on whether we are trying
+    // to be compatible with ESRI (esriCompat is true) or whether we are just
+    // going by the GeoTIFF spec (i.e. GDAL).
+    if (esriCompat) {
+      // ESRI actually defines the projection, etc, inline
+      todoGeoTag(0x0001, 1, 2, numGeoTags) //  1. geotif 1.2, N more tags
+      todoGeoTag(0x0400, 0, 1, 1)          //  2. projected data (undef=0, projected=1, geographic=2, geocenteric=3)
+      todoGeoTag(0x0401, 0, 1, 1)          //  3. area data (undef=0, area=1, point=2)
+      todoGeoTag(0x0402, 0x87b1, 33, 0)    //  4. gt citation citation
+      todoGeoTag(0x0800, 0, 1, 0x7fff)     //  5. user-defined geog type
+      todoGeoTag(0x0801, 0x87b1, 151, 33)  //  6. geog citation
+      todoGeoTag(0x0802, 0, 1, 0x7fff)     //  7. user-defined gcs type
+      todoGeoTag(0x0806, 0, 1, 0x238e)     //  8. angular units: degree
+      todoGeoTag(0x0808, 0, 1, 0x7fff)     //  9. user-defined ellipsoid geokey
+      todoGeoTag(0x0809, 0x87b0, 1, 5)     // 10. ellipsoid geokey
+      todoGeoTag(0x080a, 0x87b0, 1, 6)     // 11. semi major axis geokey
+      todoGeoTag(0x080d, 0x87b0, 1, 7)     // 12. prime meridian geokey
+      todoGeoTag(0x0c00, 0, 1, 3857)       // 13. gt projected cs type (3857)
+      todoGeoTag(0x0c02, 0, 1, 0x7fff)     // 14. user-defined projection code
+      todoGeoTag(0x0c03, 0, 1, 7)          // 15. mercator coordinate transformation
+      todoGeoTag(0x0c04, 0, 1, 0x2329)     // 16. linear unit size in meters
+      todoGeoTag(0x0c08, 0x87b0, 1, 1)     // 17. nat origin long geokey
+      todoGeoTag(0x0c09, 0x87b0, 1, 0)     // 18. nat origin lat geokey
+      todoGeoTag(0x0c0a, 0x87b0, 1, 3)     // 19. false easting geokey
+      todoGeoTag(0x0c0b, 0x87b0, 1, 4)     // 20. false northing geokey
+      todoGeoTag(0x0c14, 0x87b0, 1, 2)     // 21. scale at nat origin geokey
+
+      // 18. geotiff double params (tag only needed when esriCompat is true)
+      writeTag(0x87b0, Const.float64, 8, dataOffset)
+      todoDouble(0.0)       // nat origin lat
+      todoDouble(0.0)       // nat origin lon
+      todoDouble(1.0)       // scale at nat origin
+      todoDouble(0.0)       // false easting
+      todoDouble(0.0)       // false northing
+      todoDouble(6378137.0) // ellipsoid
+      todoDouble(6378137.0) // semi major axis
+      todoDouble(0.0)       // prime meridian
+      
+      // 19.esri citation junk (tag is only needed when esriCompat is true)
+      writeString(0x87b1, "PCS Name = WGS_1984_Web_Mercator|GCS Name = GCS_WGS_1984_Major_Auxiliary_Sphere|Datum = WGS_1984_Major_Auxiliary_Sphere|Ellipsoid = WGS_1984_Major_Auxiliary_Sphere|Primem = Greenwich||")
+
+    } else {
+      // GDAL only needs these 4 GeoTags
+      todoGeoTag(0x0001, 1, 2, numGeoTags) // 1. geotif 1.2, N more tags
+      todoGeoTag(0x0400, 0, 1, 1)          // 2. projected data (undef=0, projected=1, geographic=2, geocenteric=3)
+      todoGeoTag(0x0401, 0, 1, 1)          // 3. area data (undef=0, area=1, point=2)
+      todoGeoTag(0x0c00, 0, 1, 3857)       // 4. gt projected cs type (3857)
+    }
+
+    // 20. nodata as string (#18 if esriCompat is false)
     writeString(0xa481, noDataString)
 
     // no more ifd entries
