@@ -118,7 +118,9 @@ object GeoTiffWriter extends Writer {
 
   import geotrellis.data.geotiff._
 
+  val geoTiffSettings = Settings(IntSample, Signed, esriCompat = false)
+
   def write(path:String, raster:IntRaster, name:String) {
-    Encoder.writePath(path, raster, Settings(IntSample, Signed))
+    Encoder.writePath(path, raster, geoTiffSettings)
   }
 }
