@@ -1,6 +1,8 @@
 import sbt._
 import sbt.Keys._
 
+import com.typesafe.startscript.StartScriptPlugin
+
 object MyBuild extends Build {
   val geotoolsVersion = "8.0-M4"
 
@@ -13,6 +15,10 @@ object MyBuild extends Build {
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-optimize"),
     parallelExecution := false,
     testListeners <+= target.map(tgt => new eu.henkelmann.sbt.JUnitXmlTestsListener(tgt.toString)),
+
+    mainClass := Some("geotrellis.rest.WebRunner"),
+
+    StartScriptPlugin.stage in Compile := Unit,
 
     javaOptions in run += "-Xmx4G",
 
@@ -60,8 +66,11 @@ object MyBuild extends Build {
   def tasksSettings = Seq(
     libraryDependencies ++= Seq(
       "com.beust" % "jcommander" % "1.23"
-    )
-  )
+    ),
+
+    mainClass in Compile := Some("geotrellis.run.Tasks")
+
+  )// ++ StartScriptPlugin.startScriptForClassesSettings
 
   lazy val benchmark: Project = Project("benchmark", file("benchmark")) settings (benchmarkSettings: _*) dependsOn (root)
 
