@@ -4,7 +4,7 @@ import sbt.Keys._
 object MyBuild extends Build {
   val geotoolsVersion = "8.0-M4"
 
-  lazy val project = Project("root", file(".")) settings(
+  lazy val root = Project("root", file(".")) settings(
     organization := "azavea",
     name := "geotrellis",
     version := "0.6",
@@ -34,19 +34,19 @@ object MyBuild extends Build {
       "postgresql" % "postgresql" % "8.4-701.jdbc4",
       "net.liftweb" %% "lift-json" % "2.4-M5",
       "com.typesafe.akka" % "akka-kernel" % "2.0-M2" excludeAll(
-      ExclusionRule(organization = "com.sun.jdmk"),
-      ExclusionRule(organization = "com.sun.jmx"),
-      ExclusionRule(organization = "javax.jms")
+        ExclusionRule(organization = "com.sun.jdmk"),
+        ExclusionRule(organization = "com.sun.jmx"),
+        ExclusionRule(organization = "javax.jms")
       ),
       "com.typesafe.akka" % "akka-remote" % "2.0-M2" excludeAll(
-      ExclusionRule(organization = "com.sun.jdmk"),
-      ExclusionRule(organization = "com.sun.jmx"),
-      ExclusionRule(organization = "javax.jms")
+        ExclusionRule(organization = "com.sun.jdmk"),
+        ExclusionRule(organization = "com.sun.jmx"),
+        ExclusionRule(organization = "javax.jms")
       ),
       "com.typesafe.akka" % "akka-actor"  % "2.0-M2",
-      "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
-      "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
-      "com.google.code.gson" % "gson" % "1.7.1",
+      //"com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
+      //"com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
+      //"com.google.code.gson" % "gson" % "1.7.1",
       "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
       "com.sun.jersey" % "jersey-bundle" % "1.11",
       "com.azavea.math" %% "numeric" % "0.1" from "http://plastic-idolatry.com/jars/numeric_2.9.1-0.1.jar",
@@ -65,15 +65,63 @@ object MyBuild extends Build {
       "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
       "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
       "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
-    ),
+    )//,
 
-    // caliper stuff stolen shamelessly from scala-benchmarking-template
+    //// caliper stuff stolen shamelessly from scala-benchmarking-template
+    //
+    //// enable forking in run
+    //fork in run := true,
+    //
+    //// custom kludge to get caliper to see the right classpath
+    //
+    //// define the onLoad hook
+    //onLoad in Global <<= (onLoad in Global) ?? identity[State],
+    //{
+    //  // attribute key to prevent circular onLoad hook
+    //  val key = AttributeKey[Boolean]("loaded")
+    //  val f = (s: State) => {
+    //    val loaded: Boolean = s get key getOrElse false
+    //    if (!loaded) {
+    //      var cpString: String = ""
+    //      // get the runtime classpath
+    //      Project.evaluateTask(fullClasspath.in(Runtime), s) match {
+    //        // make a colon-delimited string of the classpath
+    //        case Some(Value(cp)) => cpString = cp.files.mkString(":")
+    //        // probably should handle an error here, but not sure you can
+    //        //  ever get here with a working sbt
+    //        case _ => Nil
+    //      }
+    //      val extracted: Extracted = Project.extract(s)
+    //      // return a state with loaded = true and javaOptions set correctly
+    //      extracted.append(Seq(javaOptions in run ++= Seq("-cp", cpString)), s.put(key, true))
+    //    } else {
+    //      // return the state, unmodified
+    //      s
+    //    }
+    //  }
+    //  onLoad in Global ~= (f compose _)
+    //}
+  )
+
+
+  lazy val benchmark: Project = Project("benchmark", file("benchmark")) settings (benchmarkSettings: _*) dependsOn (root)
+
+  def benchmarkSettings = Seq(
+    // raise memory limits here if necessary
+    javaOptions in run += "-Xmx4G",
+
+    libraryDependencies ++= Seq(
+      "com.google.guava" % "guava" % "r09",
+      "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
+      "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
+      "com.google.code.gson" % "gson" % "1.7.1"
+    ),
 
     // enable forking in run
     fork in run := true,
 
     // custom kludge to get caliper to see the right classpath
-
+    
     // define the onLoad hook
     onLoad in Global <<= (onLoad in Global) ?? identity[State],
     {
@@ -102,6 +150,7 @@ object MyBuild extends Build {
       onLoad in Global ~= (f compose _)
     }
   )
+
 }
 
 
