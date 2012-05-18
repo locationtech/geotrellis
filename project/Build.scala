@@ -22,11 +22,9 @@ object MyBuild extends Build {
       "com.vividsolutions" % "jts" % "1.8",
       "java3d" % "j3d-core" % "1.3.1",
       "org.geotools" % "gt-main" % geotoolsVersion,
-//      "org.geotools" % "gt-epsg-hsql" % geotoolsVersion,
       "org.geotools" % "gt-jdbc" % geotoolsVersion,
       "org.geotools.jdbc" % "gt-jdbc-postgis" % geotoolsVersion,
       "org.geotools" % "gt-coverage" % geotoolsVersion,
-      //"org.geotools" % "gt-coverageio" % geotoolsVersion,
       "org.geotools" % "gt-coveragetools" % geotoolsVersion,
       "org.postgis" % "postgis-jdbc" % "1.3.3",
       "javax.media" % "jai_core" % "1.1.3",
@@ -39,7 +37,7 @@ object MyBuild extends Build {
       "com.sun.jersey" % "jersey-bundle" % "1.11",
       "com.azavea.math" %% "numeric" % "0.1" from "http://plastic-idolatry.com/jars/numeric_2.9.1-0.1.jar",
       "com.azavea.math.plugin" %% "optimized-numeric" % "0.1" from "http://plastic-idolatry.com/jars/optimized-numeric-plugin_2.9.1-0.1.jar",
-      "com.beust" % "jcommander" % "1.23", 
+      //"com.beust" % "jcommander" % "1.23", 
       "org.reflections" % "reflections" % "0.9.5",
       "org.slf4j" % "slf4j-api" % "1.6.0",
       "org.slf4j" % "slf4j-nop" % "1.6.0"
@@ -53,44 +51,17 @@ object MyBuild extends Build {
       "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
       "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
       "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
-    )//,
-
-    //// caliper stuff stolen shamelessly from scala-benchmarking-template
-    //
-    //// enable forking in run
-    //fork in run := true,
-    //
-    //// custom kludge to get caliper to see the right classpath
-    //
-    //// define the onLoad hook
-    //onLoad in Global <<= (onLoad in Global) ?? identity[State],
-    //{
-    //  // attribute key to prevent circular onLoad hook
-    //  val key = AttributeKey[Boolean]("loaded")
-    //  val f = (s: State) => {
-    //    val loaded: Boolean = s get key getOrElse false
-    //    if (!loaded) {
-    //      var cpString: String = ""
-    //      // get the runtime classpath
-    //      Project.evaluateTask(fullClasspath.in(Runtime), s) match {
-    //        // make a colon-delimited string of the classpath
-    //        case Some(Value(cp)) => cpString = cp.files.mkString(":")
-    //        // probably should handle an error here, but not sure you can
-    //        //  ever get here with a working sbt
-    //        case _ => Nil
-    //      }
-    //      val extracted: Extracted = Project.extract(s)
-    //      // return a state with loaded = true and javaOptions set correctly
-    //      extracted.append(Seq(javaOptions in run ++= Seq("-cp", cpString)), s.put(key, true))
-    //    } else {
-    //      // return the state, unmodified
-    //      s
-    //    }
-    //  }
-    //  onLoad in Global ~= (f compose _)
-    //}
+    )
   )
 
+
+  lazy val tasks: Project = Project("tasks", file("tasks")) settings (tasksSettings: _*) dependsOn (root)
+
+  def tasksSettings = Seq(
+    libraryDependencies ++= Seq(
+      "com.beust" % "jcommander" % "1.23"
+    )
+  )
 
   lazy val benchmark: Project = Project("benchmark", file("benchmark")) settings (benchmarkSettings: _*) dependsOn (root)
 
@@ -138,7 +109,4 @@ object MyBuild extends Build {
       onLoad in Global ~= (f compose _)
     }
   )
-
 }
-
-
