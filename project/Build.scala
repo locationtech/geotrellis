@@ -5,11 +5,11 @@ object MyBuild extends Build {
   val geotoolsVersion = "8.0-M4"
 
   lazy val root = Project("root", file(".")) settings(
-    organization := "azavea",
+    organization := "com.azavea.geotrellis",
     name := "geotrellis",
     version := "0.6.0",
     scalaVersion := "2.9.2",
-
+    
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-optimize"),
     parallelExecution := false,
     testListeners <+= target.map(tgt => new eu.henkelmann.sbt.JUnitXmlTestsListener(tgt.toString)),
@@ -52,8 +52,42 @@ object MyBuild extends Build {
       "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
       "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
       "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
-    )
-  ) 
+    ),
+
+    // Settings to publish to Sonatype
+    publishMavenStyle := true,
+  
+    publishTo <<= version { (v: String) => 
+      val nexus = "https://oss.sonatype.org/"
+      if (v.trim.endsWith("SNAPSHOT")) 
+        Some("snapshots" at nexus + "content/repositories/snapshots") 
+      else
+        Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+    },
+
+    publishArtifact in Test := false,
+    pomIncludeRepository := { _ => false },
+    licenses := Seq("GPL3" -> url("http://www.gnu.org/licenses/gpl-3.0-standalone.html")),
+    homepage := Some(url("http://github.com/azavea/geotrellis")),
+
+    pomExtra := (
+      <scm>
+        <url>git@github.com:azavea/geotrellis.git</url>
+        <connection>scm:git:git@github.com:azavea/geotrellis.git</connection>
+      </scm>
+      <developers>
+        <developer>
+          <id>non</id>
+          <name>Erik Osheim</name>
+          <url>http://github.com/non/</url>
+        </developer>
+        <developer>
+          <id>josh.marcus</id>
+          <name>Josh Marcus</name>
+          <url>http://github.com/josh.marcus/</url>
+        </developer>
+      </developers>)
+        ) 
 
   lazy val tasks: Project = Project("tasks", file("tasks")) settings (tasksSettings: _*) dependsOn (root)
 
