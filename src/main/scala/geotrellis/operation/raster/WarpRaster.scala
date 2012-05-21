@@ -9,6 +9,6 @@ import geotrellis.data.IntRasterReader
  *
  * This may change the geographic extent, and also the grid resolution.
  */
-case class WarpRaster(r:Op[IntRaster], e:Op[RasterExtent]) extends Op2(r, re) ({
+case class WarpRaster(r:Op[IntRaster], re:Op[RasterExtent]) extends Op2(r, re) ({
   (r, re) => Result(IntRasterReader.read(r, Option(re)))
 })
