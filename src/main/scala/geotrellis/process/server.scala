@@ -17,6 +17,7 @@ import akka.routing._
 import akka.dispatch.Await
 import akka.util.duration._
 import akka.util.Timeout
+import akka.pattern.ask
 
 class Context (server:Server) {
   val timer = new Timer()

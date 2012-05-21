@@ -14,12 +14,11 @@ assemblySettings
 
 git.remoteRepo := "git@github.com:azavea/geotrellis.git"
 
-mainClass := Some("geotrellis.rest.WebRunner")
+//mainClass := Some("geotrellis.rest.WebRunner")
 
 addCompilerPlugin("com.azavea.math.plugin" %% "optimized-numeric" % "0.1")
 
 seq(StartScriptPlugin.startScriptForClassesSettings: _*)
-
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
