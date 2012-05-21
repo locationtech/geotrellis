@@ -1,24 +1,20 @@
 import sbt._
 import sbt.Keys._
 
-import com.typesafe.startscript.StartScriptPlugin
-
 object MyBuild extends Build {
   val geotoolsVersion = "8.0-M4"
 
   lazy val root = Project("root", file(".")) settings(
     organization := "azavea",
     name := "geotrellis",
-    version := "0.6",
-    scalaVersion := "2.9.1",
+    version := "0.6.0",
+    scalaVersion := "2.9.2",
 
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-optimize"),
     parallelExecution := false,
     testListeners <+= target.map(tgt => new eu.henkelmann.sbt.JUnitXmlTestsListener(tgt.toString)),
 
     mainClass := Some("geotrellis.rest.WebRunner"),
-
-    StartScriptPlugin.stage in Compile := Unit,
 
     javaOptions in run += "-Xmx4G",
 
@@ -35,7 +31,7 @@ object MyBuild extends Build {
       "org.postgis" % "postgis-jdbc" % "1.3.3",
       "javax.media" % "jai_core" % "1.1.3",
       "postgresql" % "postgresql" % "8.4-701.jdbc4",
-      "net.liftweb" %% "lift-json" % "2.4-M5",
+      "net.liftweb" % "lift-json_2.9.1" % "2.4",
       "com.typesafe.akka" % "akka-kernel" % "2.0.1",
       "com.typesafe.akka" % "akka-remote" % "2.0.1",
       "com.typesafe.akka" % "akka-actor"  % "2.0.1",
@@ -43,7 +39,6 @@ object MyBuild extends Build {
       "com.sun.jersey" % "jersey-bundle" % "1.11",
       "com.azavea.math" %% "numeric" % "0.1" from "http://plastic-idolatry.com/jars/numeric_2.9.1-0.1.jar",
       "com.azavea.math.plugin" %% "optimized-numeric" % "0.1" from "http://plastic-idolatry.com/jars/optimized-numeric-plugin_2.9.1-0.1.jar",
-      //"com.beust" % "jcommander" % "1.23", 
       "org.reflections" % "reflections" % "0.9.5",
       "org.slf4j" % "slf4j-api" % "1.6.0",
       "org.slf4j" % "slf4j-nop" % "1.6.0"
@@ -58,8 +53,7 @@ object MyBuild extends Build {
       "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
       "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
     )
-  )
-
+  ) 
 
   lazy val tasks: Project = Project("tasks", file("tasks")) settings (tasksSettings: _*) dependsOn (root)
 
@@ -69,8 +63,7 @@ object MyBuild extends Build {
     ),
 
     mainClass in Compile := Some("geotrellis.run.Tasks")
-
-  )// ++ StartScriptPlugin.startScriptForClassesSettings
+  )
 
   lazy val benchmark: Project = Project("benchmark", file("benchmark")) settings (benchmarkSettings: _*) dependsOn (root)
 
@@ -119,3 +112,5 @@ object MyBuild extends Build {
     }
   )
 }
+
+// vim: set ts=4 sw=4 et:
