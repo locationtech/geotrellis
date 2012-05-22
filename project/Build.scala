@@ -37,6 +37,7 @@ object MyBuild extends Build {
       "com.typesafe.akka" % "akka-actor"  % "2.0.1",
       "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
       "com.sun.jersey" % "jersey-bundle" % "1.11",
+      "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0", 
       "com.azavea.math" %% "numeric" % "0.1" from "http://plastic-idolatry.com/jars/numeric_2.9.1-0.1.jar",
       "com.azavea.math.plugin" %% "optimized-numeric" % "0.1" from "http://plastic-idolatry.com/jars/optimized-numeric-plugin_2.9.1-0.1.jar",
       "org.reflections" % "reflections" % "0.9.5",
