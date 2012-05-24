@@ -96,7 +96,8 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
    * to be increased also. The writeTag calls in write are numbered to help
    * make this process easier.
    */
-  final def numEntries = if (esriCompat) 20 else 18
+  //final def numEntries = if (esriCompat) 20 else 18
+  final def numEntries = if (esriCompat) 22 else 20
 
   /**
    * The number of GeoTags to be written.
@@ -125,6 +126,10 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
   // this to correctly compute addresses beyond the image (i.e. TIFF headers
   // and data blocks).
   val img = new ByteArrayOutputStream()
+
+  // The minimum and maximum sample values.
+  var zmin:Int = 0
+  var zmax:Int = 0
 
   // The number of bytes we've written to our 'dos'. Only used for debugging.
   var index:Int = 0
@@ -209,12 +214,20 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
     val bits = bitsPerSample
     val nd = noDataValue
 
+    var seenData = false
+    zmin = 0
+    zmax = 0
+
     while (row < rows) {
       val rowspan = row * cols
       col = 0
       while (col < cols) {
         var z = data(rowspan + col)
         if (z == Int.MinValue) z = nd
+        else if (!seenData) { zmin = z; zmax = z; seenData = true }
+        else if (z < zmin) zmin = z
+        else if (z > zmax) zmax = z
+
         if (bits == 8) dmg.writeByte(z)
         else if (bits == 16) dmg.writeShort(z)
         else if (bits == 32) dmg.writeInt(z)
@@ -292,32 +305,41 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
       todoInt(bytesPerRow * leftOverRows)
     }
 
-    // 10. y resolution, 1 pixel per unit
+    // TODO: use settings to figure out which field type to use for min/max
+
+    println("zmin=%s zmax=%s" format (zmin, zmax))
+    // 10. 0x0118 minimum sample value
+    writeTag(0x0118, Const.sint32, 1, zmin)
+
+    // 11. 0x0119 maximum sample value
+    writeTag(0x0119, Const.sint32, 1, zmax)
+
+    // 12. y resolution, 1 pixel per unit
     writeTag(0x011a, Const.rational, 1, dataOffset)
     todoInt(1)
     todoInt(1)
 
-    // 11. x resolution, 1 pixel per unit
+    // 13. x resolution, 1 pixel per unit
     writeTag(0x011b, Const.rational, 1, dataOffset)
     todoInt(1)
     todoInt(1)
 
-    // 12. single image plane (1)
+    // 14. single image plane (1)
     writeTag(0x011c, Const.uint16, 1, 1)
 
-    // 13. resolution unit is undefined (1)
+    // 15. resolution unit is undefined (1)
     writeTag(0x0128, Const.uint16, 1, 1)
 
-    // 14. sample format (1=unsigned, 2=signed, 3=floating point)
+    // 16. sample format (1=unsigned, 2=signed, 3=floating point)
     writeTag(0x0153, Const.uint16, 1, sampleFormat)
 
-    // 15. model pixel scale tag (points to doubles sX, sY, sZ with sZ = 0)
+    // 17. model pixel scale tag (points to doubles sX, sY, sZ with sZ = 0)
     writeTag(0x830e, Const.float64, 3, dataOffset)
     todoDouble(re.cellwidth)  // sx
     todoDouble(re.cellheight) // sy
     todoDouble(0.0)           // sz = 0.0
 
-    // 16. model tie point (doubles I,J,K (grid) and X,Y,Z (geog) with K = Z = 0.0)
+    // 18. model tie point (doubles I,J,K (grid) and X,Y,Z (geog) with K = Z = 0.0)
     writeTag(0x8482, Const.float64, 6, dataOffset)
     todoDouble(0.0)    // i
     todoDouble(0.0)    // j
@@ -326,7 +348,7 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
     todoDouble(e.ymax) // y
     todoDouble(0.0)    // z = 0.0
 
-    // 17. geo key directory tag (4 geotags each with 4 short values)
+    // 19. geo key directory tag (4 geotags each with 4 short values)
     writeTag(0x87af, Const.uint16, numGeoTags * 4, dataOffset)
 
     // write out GeoTags. this varies a lot depending on whether we are trying
@@ -335,8 +357,8 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
     if (esriCompat) {
       // ESRI actually defines the projection, etc, inline
       todoGeoTag(0x0001, 1, 2, numGeoTags) //  1. geotif 1.2, N more tags
-      todoGeoTag(0x0400, 0, 1, 1)          //  2. projected data (undef=0, projected=1, geographic=2, geocenteric=3)
-      todoGeoTag(0x0401, 0, 1, 1)          //  3. area data (undef=0, area=1, point=2)
+      todoGeoTag(0x0400, 0, 1, 1)          //  2. projected data (1)
+      todoGeoTag(0x0401, 0, 1, 1)          //  3. area data (1)
       todoGeoTag(0x0402, 0x87b1, 33, 0)    //  4. gt citation citation
       todoGeoTag(0x0800, 0, 1, 0x7fff)     //  5. user-defined geog type
       todoGeoTag(0x0801, 0x87b1, 151, 33)  //  6. geog citation
@@ -348,7 +370,7 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
       todoGeoTag(0x080d, 0x87b0, 1, 7)     // 12. prime meridian geokey
       todoGeoTag(0x0c00, 0, 1, 3857)       // 13. gt projected cs type (3857)
       todoGeoTag(0x0c02, 0, 1, 0x7fff)     // 14. user-defined projection code
-      todoGeoTag(0x0c03, 0, 1, 7)          // 15. mercator coordinate transformation
+      todoGeoTag(0x0c03, 0, 1, 7)          // 15. mercator coordinate transform
       todoGeoTag(0x0c04, 0, 1, 0x2329)     // 16. linear unit size in meters
       todoGeoTag(0x0c08, 0x87b0, 1, 1)     // 17. nat origin long geokey
       todoGeoTag(0x0c09, 0x87b0, 1, 0)     // 18. nat origin lat geokey
@@ -356,7 +378,7 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
       todoGeoTag(0x0c0b, 0x87b0, 1, 4)     // 20. false northing geokey
       todoGeoTag(0x0c14, 0x87b0, 1, 2)     // 21. scale at nat origin geokey
 
-      // 18. geotiff double params (tag only needed when esriCompat is true)
+      // 20. geotiff double params (tag only needed when esriCompat is true)
       writeTag(0x87b0, Const.float64, 8, dataOffset)
       todoDouble(0.0)       // nat origin lat
       todoDouble(0.0)       // nat origin lon
@@ -367,18 +389,18 @@ class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
       todoDouble(6378137.0) // semi major axis
       todoDouble(0.0)       // prime meridian
       
-      // 19.esri citation junk (tag is only needed when esriCompat is true)
+      // 21. esri citation junk (tag is only needed when esriCompat is true)
       writeString(0x87b1, "PCS Name = WGS_1984_Web_Mercator|GCS Name = GCS_WGS_1984_Major_Auxiliary_Sphere|Datum = WGS_1984_Major_Auxiliary_Sphere|Ellipsoid = WGS_1984_Major_Auxiliary_Sphere|Primem = Greenwich||")
 
     } else {
       // GDAL only needs these 4 GeoTags
       todoGeoTag(0x0001, 1, 2, numGeoTags) // 1. geotif 1.2, N more tags
-      todoGeoTag(0x0400, 0, 1, 1)          // 2. projected data (undef=0, projected=1, geographic=2, geocenteric=3)
-      todoGeoTag(0x0401, 0, 1, 1)          // 3. area data (undef=0, area=1, point=2)
+      todoGeoTag(0x0400, 0, 1, 1)          // 2. projected data (1)
+      todoGeoTag(0x0401, 0, 1, 1)          // 3. area data (1)
       todoGeoTag(0x0c00, 0, 1, 3857)       // 4. gt projected cs type (3857)
     }
 
-    // 20. nodata as string (#18 if esriCompat is false)
+    // 22. nodata as string (#20 if esriCompat is false)
     writeString(0xa481, noDataString)
 
     // no more ifd entries
