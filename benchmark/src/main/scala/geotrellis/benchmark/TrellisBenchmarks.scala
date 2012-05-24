@@ -279,7 +279,7 @@ abstract class GeoTrellisBenchmark extends SimpleBenchmark {
   def testSetup() {}
 
   override def setUp() {
-    val catalogPath = "src/test/resources/demo-catalog.json"
+    val catalogPath = "src/main/resources/catalog.json"
     val catalog = Catalog.fromPath(catalogPath)
     server = Server("demo", catalog)
 

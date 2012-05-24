@@ -1,0 +1,15 @@
+{
+ "catalog": "Catalog of Benchmarking Data",
+ "stores": [
+  {
+   "store": "test:fs",
+   "params": {
+     "type": "fs",
+     "path": "src/main/resources/sbn",
+     "cacheAll": "yes"
+   }
+  }
+ ]
+}
+
+
