@@ -4,6 +4,8 @@ import sbt.Keys._
 object MyBuild extends Build {
   val geotoolsVersion = "8.0-M4"
 
+  val key = AttributeKey[Boolean]("javaOptionsPatched")
+
   lazy val root = Project("root", file(".")) settings(
     organization := "com.azavea.geotrellis",
     name := "geotrellis",
@@ -103,6 +105,8 @@ object MyBuild extends Build {
   lazy val benchmark: Project = Project("benchmark", file("benchmark")) settings (benchmarkSettings: _*) dependsOn (root)
 
   def benchmarkSettings = Seq(
+    scalaVersion := "2.9.2",
+
     // raise memory limits here if necessary
     javaOptions in run += "-Xmx4G",
 
@@ -119,31 +123,18 @@ object MyBuild extends Build {
     // custom kludge to get caliper to see the right classpath
     
     // define the onLoad hook
-    onLoad in Global <<= (onLoad in Global) ?? identity[State],
-    {
-      // attribute key to prevent circular onLoad hook
-      val key = AttributeKey[Boolean]("loaded")
-      val f = (s: State) => {
-        val loaded: Boolean = s get key getOrElse false
-        if (!loaded) {
-          var cpString: String = ""
-          // get the runtime classpath
-          Project.evaluateTask(fullClasspath.in(Runtime), s) match {
-            // make a colon-delimited string of the classpath
-            case Some(Value(cp)) => cpString = cp.files.mkString(":")
-            // probably should handle an error here, but not sure you can
-            //  ever get here with a working sbt
-            case _ => Nil
-          }
-          val extracted: Extracted = Project.extract(s)
-          // return a state with loaded = true and javaOptions set correctly
-          extracted.append(Seq(javaOptions in run ++= Seq("-cp", cpString)), s.put(key, true))
-        } else {
-          // return the state, unmodified
-          s
+    onLoad in Global ~= { previous => state =>
+      previous {
+        state.get(key) match {
+          case None =>
+            // get the runtime classpath, turn into a colon-delimited string
+            val classPath = Project.runTask(fullClasspath in Runtime in benchmark, state).get._2.toEither.right.get.files.mkString(":")
+            // return a state with javaOptionsPatched = true and javaOptions set correctly
+            Project.extract(state).append(Seq(javaOptions in (benchmark, run) ++= Seq("-cp", classPath)), state.put(key, true))
+          case Some(_) =>
+            state // the javaOptions are already patched
         }
       }
-      onLoad in Global ~= (f compose _)
     }
   )
 }

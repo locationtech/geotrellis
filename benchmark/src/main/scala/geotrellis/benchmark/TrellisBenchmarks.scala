@@ -42,8 +42,8 @@ class TiledMiniAddTest(raster:IntRaster) {
 
 object TiledMiniAddTest {
   def apply(server:Server, name:String, extent:Extent, size:Int, pixels:Int) = {
-    val e = server.run(LoadRasterExtentFromFile(name)).extent
-    val r = server.run(LoadFile(name, BuildRasterExtent(e, size, size)))
+    val e = server.run(LoadRasterExtent(name)).extent
+    val r = server.run(LoadRaster(name, BuildRasterExtent(e, size, size)))
     val t = Tiler.createTileRaster(r, pixels)
     new TiledMiniAddTest(t)
   }
@@ -64,9 +64,9 @@ object MiniWoTest {
     val (name1, weight1) = pair1
     val (name2, weight2) = pair2
 
-    val e = server.run(LoadRasterExtentFromFile(name1)).extent
-    val r1 = server.run(LoadFile(name1, BuildRasterExtent(e, size, size)))
-    val r2 = server.run(LoadFile(name2, BuildRasterExtent(e, size, size)))
+    val e = server.run(LoadRasterExtent(name1)).extent
+    val r1 = server.run(LoadRaster(name1, BuildRasterExtent(e, size, size)))
+    val r2 = server.run(LoadRaster(name2, BuildRasterExtent(e, size, size)))
     new MiniWoTest(r1, weight1, r2, weight2)
   }
 }
@@ -124,7 +124,7 @@ class AddRastersTest(raster:IntRaster) {
 
 object AddRastersTest {
   def apply(server:Server, name:String, extent:Extent, size:Int) = {
-    val e = server.run(LoadRasterExtentFromFile(name)).extent
+    val e = server.run(LoadRasterExtent(name)).extent
     val r = server.run(LoadRaster(name, BuildRasterExtent(e, size, size)))
     new AddRastersTest(r)
   }
@@ -149,7 +149,7 @@ class SubtractRastersTest(raster1:IntRaster, raster2:IntRaster) {
 
 object SubtractRastersTest {
   def apply(server:Server, name:String, extent:Extent, size:Int) = {
-    val e = server.run(LoadRasterExtentFromFile(name)).extent
+    val e = server.run(LoadRasterExtent(name)).extent
     val r1 = server.run(LoadRaster(name, BuildRasterExtent(e, size, size)))
     val r2 = server.run(LoadRaster(name, BuildRasterExtent(e, size, size)))
     new SubtractRastersTest(r1, r2)
@@ -279,7 +279,7 @@ abstract class GeoTrellisBenchmark extends SimpleBenchmark {
   def testSetup() {}
 
   override def setUp() {
-    val catalogPath = "src/test/resources/demo-catalog.json"
+    val catalogPath = "src/main/resources/catalog.json"
     val catalog = Catalog.fromPath(catalogPath)
     server = Server("demo", catalog)
 
