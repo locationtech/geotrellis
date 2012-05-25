@@ -1,8 +1,7 @@
 package geotrellis.process
 
-import scala.collection.mutable.{Map => MMap}
+import scala.collection.mutable
 import scala.io.Source
-import scala.util.matching.Regex
 import java.io.File
 
 import net.liftweb.json.{parse, DefaultFormats}
@@ -11,15 +10,12 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.util._
 
-// this is a work in progress. the definitions for Layer, DataStore and Catalog
-// are not complete, and we will likely need more objects.
-//
-// example json is available in the geotrellis.process.catalog tests. please keep
-// it up-to-date with changes you make here.
+// example json is available in the geotrellis.process.catalog tests. please
+// keep it up-to-date with changes you make here.
 
 /**
  * Represents a layer of raster data, or a feature layer (e.g. a postgis table
- * of polygons.
+ * of polygons).
  */
 trait Layer { 
   def name:String
@@ -31,40 +27,51 @@ trait Layer {
  */
 case class DataStore(name:String, params:Map[String, String]) {
 
-  val layers = MMap.empty[String, (String, RasterLayer)]
-  val paths = MMap.empty[String, RasterLayer]
+  private val layers = mutable.Map.empty[String, RasterLayer]
+  private val paths = mutable.Map.empty[String, RasterLayer]
 
-  findRasterLayers.foreach {
-    layer =>
-    val path = layer.jsonPath
-    layers(layer.name) = (path, layer)
-    paths(path) = layer
-  }
-
-  def cacheAll = params.contains("cacheAll")
-
-  def getLayer(name:String) = layers(name)
+  initRasterLayers()
 
   /**
-   * Recursively find RasterLayers defined in the DataStore path.
+   * Initialize raster layers from the directory specified by the 'path' param.
    */
-  def findRasterLayers: Array[RasterLayer] = {
-    val path = new java.io.File(params("path"))
-    if (!path.isDirectory) return Array.empty[RasterLayer]
-
-    val layerJson = recursiveListFiles(path, """^.*\.json$""".r)
-    layerJson.map(_.getAbsolutePath).map {
-      p => RasterLayer.fromPath(p)
-      //p => (p, RasterLayer.fromPath(p))
-    }
+  private def initRasterLayers() {
+    val path = params("path")
+    val f = new java.io.File(path)
+    if (!f.isDirectory) sys.error("store %s is not a dirctory" format path)
+    find(f, ".json", initRasterLayer _)
   }
 
-  def recursiveListFiles(f: File, r: Regex): Array[File] = {
-    val these = f.listFiles
-    val good = these.filter(  _.getPath.endsWith(".json") )
-    good ++ these.filter(_.isDirectory).flatMap(recursiveListFiles(_,r))
+  /**
+   * Initialize a raster layer from its JSON metadata file.
+   */
+  private def initRasterLayer(f:File) {
+    val layer = RasterLayer.fromFile(f)
+    layers(layer.name) = layer
+    paths(layer.rasterPath) = layer
   }
 
+  /**
+   * Find files based on an extension. Directories will be searched recursively
+   * and matching files will run the provided callback 'action'.
+   */
+  private def find(f:File, ext:String, action:File => Unit) {
+    val fs = f.listFiles
+    fs.filter(_.getPath.endsWith(ext)).foreach(f => action(f))
+    fs.filter(_.isDirectory).foreach(f => find(f, ext, action))
+  }
+
+  def getNames = layers.keys
+  def getPaths = paths.keys
+  def getLayers = layers.values
+
+  def hasCacheAll = params.contains("cacheAll")
+
+  def getRasterLayer(path:String): Option[RasterLayer] = paths.get(path)
+
+  def getRasterLayerByName(name:String):Option[RasterLayer] = {
+    layers.get(name)
+  }
 }
 
 
@@ -74,29 +81,12 @@ case class DataStore(name:String, params:Map[String, String]) {
  */
 case class Catalog(name:String, stores:Map[String, DataStore]) {
 
-  def findRasterLayer(path:String): Option[RasterLayer] = {
-    stores.values.flatMap(_.paths.get(path)).headOption
+  def getRasterLayer(path:String): Option[RasterLayer] = {
+    stores.values.flatMap(_.getRasterLayer(path)).headOption
   }
 
-  private def exists(path:String) = if (new java.io.File(path).exists) Some(path) else None
-
-  def findPath(base:String) = exists(base + ".arg32") orElse exists(base + ".arg")
-
-  def getRasterLayerByName(layerName:String):Option[(String, RasterLayer)] = {
-    stores.values.foreach {
-      store => {
-        if (store.layers.contains(layerName)) {
-          val (jsonPath, layer) = store.layers(layerName)
-  
-          // fixme
-          val base = jsonPath.substring(0, jsonPath.length - 5)
-          return findPath(base).map(s => (s, layer))
-          //val path = jsonPath.substring(0, jsonPath.length - 5) + ".arg32"
-          //return Some((path, layer))
-        }
-      }
-    }
-    None
+  def getRasterLayerByName(name:String):Option[RasterLayer] = {
+    stores.values.flatMap(_.getRasterLayerByName(name)).headOption
   }
 }
 
@@ -154,6 +144,8 @@ object RasterLayer {
     fromJSON(data, base)
   }
 
+  def fromFile(f:File) = RasterLayer.fromPath(f.getAbsolutePath)
+
   /**
    * Build a RasterLayer instance given a JSON string.
    */
@@ -162,8 +154,9 @@ object RasterLayer {
   }
 }
 
-case class RasterLayer(name:String, typ:String, datatyp:String, basePath:String,
-                       rasterExtent:RasterExtent, epsg:Int, xskew:Double, yskew:Double) extends Layer {
+case class RasterLayer(name:String, typ:String, datatyp:String,
+                       basePath:String, rasterExtent:RasterExtent,
+                       epsg:Int, xskew:Double, yskew:Double) extends Layer {
   def jsonPath = basePath + ".json"
   def rasterPath = basePath + "." + typ
 }

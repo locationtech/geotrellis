@@ -72,8 +72,8 @@ val json0 = """
     it("should find Arg32s in a source directory") {
       val catalog = Catalog.fromJSON(json1)
       val store = catalog.stores("stroud:fs")
-      val layers = store.findRasterLayers
-      layers.length must be === 3
+      val layers = store.getLayers
+      layers.toList.length must be === 3
     } 
   }
 
