@@ -88,9 +88,9 @@ akka {
   def startUp:Unit = ()
 
   def initStaticCache():Unit = {
-    catalog.stores.values.filter(_.cacheAll).flatMap(_.paths.values).foreach {
-      layer => loadInStaticCache(layer)
-    }
+    val cacheStores = catalog.stores.values.filter(_.hasCacheAll)
+    cacheStores.foreach(_.getLayers.foreach(l => loadInStaticCache(l)))
+
     val n = staticCache.size
     val (amt, units) = Units.bytes(staticCache.foldLeft(0)(_ + _._2.length))
     println("loaded %d layers (%.2f %s) into static cache" format (n, amt, units))
@@ -132,25 +132,30 @@ akka {
     }
   }
 
-  def metadataPath(path:String) = path.substring(0, path.lastIndexOf(".")) + ".json"
+  def metadataPath(path:String) = {
+    path.substring(0, path.lastIndexOf(".")) + ".json"
+  }
+
   /**
    * Return the appropriate reader object for the given path.
    */
-  def getReader(path:String, layerOpt:Option[RasterLayer]): FileReader = path match {
-    case ArgPattern() => {
-      //REVIEW: replace with unified ARG reader
-      layerOpt.getOrElse(RasterLayer.fromPath(metadataPath(path))) match {
-        case RasterLayer(_, "arg", "int32", _, _, _, _, _) => Arg32Reader
-        case RasterLayer(_, "arg", "int8",  _, _, _, _, _) => Arg8Reader
-        case RasterLayer(_, typ, datatyp,   _, _, _, _, _) => 
+  def getReader(path:String, layerOpt:Option[RasterLayer]): FileReader = {
+    path match {
+      case ArgPattern() => {
+        //REVIEW: replace with unified ARG reader
+        layerOpt.getOrElse(RasterLayer.fromPath(metadataPath(path))) match {
+          case RasterLayer(_, "arg", "int32", _, _, _, _, _) => Arg32Reader
+          case RasterLayer(_, "arg", "int8",  _, _, _, _, _) => Arg8Reader
+          case RasterLayer(_, typ, datatyp,   _, _, _, _, _) => 
           throw new Exception("Unsupported raster layer: with type %s, datatype %s".format(typ,datatyp))
-      } 
+        } 
+      }
+      case GeoTiffPattern() => GeoTiffReader
+      case AsciiPattern() => AsciiReader
+      case _ => sys.error("unknown path type %s".format(path))
     }
-    case GeoTiffPattern() => GeoTiffReader
-    case AsciiPattern() => AsciiReader
-    case _ => sys.error("unknown path type %s".format(path))
   }
-
+    
   def getRaster(path:String, layerOpt:Option[RasterLayer], reOpt:Option[RasterExtent]):IntRaster = {
     getReader(path, layerOpt).readPath(path, layerOpt, reOpt)  
   }
@@ -160,15 +165,16 @@ akka {
 
   def getRasterExtentByName(name:String):RasterExtent = {
     catalog.getRasterLayerByName(name) match {
-      case Some((path, layer)) => layer.rasterExtent
+      case Some(layer) => layer.rasterExtent
       case None => sys.error("couldn't find %s" format name)
     }
   }
 
   def getRasterByName(name:String, reOpt:Option[RasterExtent]):IntRaster = {
     catalog.getRasterLayerByName(name) match {
-      case Some((path, layer)) => {
-        val reader = getReader(path,Some(layer))
+      case Some(layer) => {
+        val path = layer.rasterPath
+        val reader = getReader(path, Some(layer))
         staticCache.get(layer.name) match {
           case Some(bytes) => reader.readCache(bytes, layer, reOpt)
           case None => reader.readPath(path, Some(layer), reOpt)
@@ -177,77 +183,7 @@ akka {
       case None => sys.error("couldn't find '%s'" format name)
     }
   }
-
 }
-
-//trait FileCaching {
-//  val mb = 1<<20
-//
-//  // TODO: set this in config file
-//  val maxBytesInCache = 1000 * mb // 2G
-//  //var caching = true //xyz
-//  var caching = false //xyz
-//  var cacheSize:Int = 0
-//
-//  val rasterCache:HashBackedCache[String,IntRaster] = new LRUCache(maxBytesInCache, _.length * 4)
-//
-//  val catalog:Catalog
-//
-//  var id = "default"
-//
-//  //// TODO: remove this and add cache configuration to server's JSON config
-//  ////       and/or constructor arguments
-//  //def enableCaching() { caching = true }
-//  //def disableCaching() { caching = false }
-//
-//  def getRasterExtentByName(name:String):RasterExtent = {
-//    catalog.getRasterLayerByName(name) match {
-//      case Some((path, layer)) => layer.rasterExtent
-//      case None => sys.error("couldn't find %s" format name)
-//    }
-//  }
-//
-//  def getRasterByName(name:String, reOpt:Option[RasterExtent]):IntRaster = {
-//    catalog.getRasterLayerByName(name) match {
-//      case Some((path, layer)) => getRaster(path, Option(layer), reOpt)
-//      case None => sys.error("couldn't find %s" format name)
-//    }
-//  }
-//
-//  def loadRaster(path:String, g:RasterExtent):IntRaster = getRaster(path, None, Option(g))
-//
-//  /**
-//   * THIS is the new thing that we are wanting to use.
-//   */
-//  def getRaster(path:String, layerOpt:Option[RasterLayer], reOpt:Option[RasterExtent]):IntRaster = {
-//
-//    def xyz(path:String, layerOpt:Option[RasterLayer]) = {
-//      getReader(path).read(path, layerOpt, None)
-//    }
-//
-//    if (this.caching) {
-//      val t0 = System.currentTimeMillis
-//      val raster = rasterCache.getOrInsert(path, xyz(path, layerOpt))
-//      val t = System.currentTimeMillis - t0
-//      if (t > 10) println("rasterCache.getOrInsert(%s) took %d ms" format (path, t))
-//      IntRasterReader.read(raster, reOpt)
-//    } else {
-//      getReader(path).read(path, layerOpt, reOpt)
-//    }
-//  }
-//
-//  def recursiveListFiles(f: File, r: Regex): Array[File] = {
-//    val these = f.listFiles
-//    val good = these.filter(f => r.findFirstIn(f.getName).isDefined)
-//    good ++ these.filter(_.isDirectory).flatMap(recursiveListFiles(_,r))
-//  }
-//
-//  def cacheRasters() = catalog.stores.foreach {
-//    case (name, store) => store.layers.values.foreach {
-//      case (path, layer) => getRaster(path, Some(layer), None)
-//    }
-//  }
-//}
 
 object Server {
   val config = ConfigFactory.load()
