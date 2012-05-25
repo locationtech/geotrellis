@@ -1,0 +1,16 @@
+{
+  "cellheight": 75.0, 
+  "cellwidth": 75.0, 
+  "cols": 479, 
+  "datatype": "int8", 
+  "epsg": 3785, 
+  "layer": "SBN_recycle", 
+  "rows": 539, 
+  "type": "arg", 
+  "xmax": -8343857.57150724, 
+  "xmin": -8379782.57150724, 
+  "xskew": 0.0, 
+  "ymax": 4886861.32082172, 
+  "ymin": 4846436.32082172, 
+  "yskew": 0.0
+}
