@@ -73,13 +73,16 @@ abstract class MyRunner(cls:java.lang.Class[_ <: Benchmark]) {
  */
 object DataMap extends MyRunner(classOf[DataMap])
 class DataMap extends MyBenchmark {
-  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
+  //@Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
+  @Param(Array("1024"))
   var size:Int = 0
 
   var ints:Array[Int] = null
   var doubles:Array[Double] = null
   var raster:IntRaster = null
   var op:Op[IntRaster] = null
+  var op2:Op[IntRaster] = null
+  var op3:Op[IntRaster] = null
 
   override def setUp() {
     server = initServer()
@@ -88,7 +91,10 @@ class DataMap extends MyBenchmark {
     doubles = init(len)(Random.nextDouble)
     val re = RasterExtent(Extent(0, 0, size, size), 1.0, 1.0, size, size)
     raster = IntRaster(init(len)(Random.nextInt), re)
+
     op = MultiplyConstant(raster, 2)
+    op2 = MultiplyConstantMapIfSet(raster, 2)
+    op3 = MultiplyConstantWhileLoop(raster, 2)
   }
 
   def timeIntArray(reps:Int) = run(reps)(intArray)
@@ -99,7 +105,7 @@ class DataMap extends MyBenchmark {
     while (i < len) { goal(i) = goal(i) * 2; i += 1 }
     goal
   }
-
+  
   def timeDoubleArray(reps:Int) = run(reps)(doubleArray)
   def doubleArray = {
     val goal = doubles.clone
@@ -108,7 +114,7 @@ class DataMap extends MyBenchmark {
     while (i < len) { goal(i) = goal(i) * 2.0; i += 1 }
     goal
   }
-
+  
   def timeDirectRaster(reps:Int) = run(reps)(directRaster)
   def directRaster = {
     val rcopy = raster.copy
@@ -118,12 +124,21 @@ class DataMap extends MyBenchmark {
     while (i < len) { goal(i) = goal(i) * 2; i += 1 }
     rcopy
   }
-
+  
   def timeIndirectRaster(reps:Int) = run(reps)(indirectRaster)
   def indirectRaster = raster.map(z => z * 2)
+  
+  def timeRasterOperationUnary(reps:Int) = run(reps)(rasterOperationUnary)
+  def rasterOperationUnary = server.run(op)
 
-  def timeRasterOperation(reps:Int) = run(reps)(rasterOperation)
-  def rasterOperation = server.run(op)
+  def timeRasterOperationCustomWithInt(reps:Int) = run(reps)(rasterOperationCustomWithInt)
+  def rasterOperationCustomWithInt = server.run(op2)
+
+  def timeRasterOperationMapIfSet(reps:Int) = run(reps)(rasterOperationMapIfSet)
+  def rasterOperationMapIfSet = server.run(op2)
+
+  def timeRasterOperationWhileLoop(reps:Int) = run(reps)(rasterOperationWhileLoop)
+  def rasterOperationWhileLoop = server.run(op3)
 }
 
 object WeightedOverlay extends MyRunner(classOf[WeightedOverlay])
