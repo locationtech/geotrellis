@@ -24,6 +24,27 @@ import scala.util.Random
  * Extend this to create an actual benchmarking class.
  */
 trait MyBenchmark extends SimpleBenchmark {
+  var server:Server = null
+
+  def getRasterExtentOp(name:String, w:Int, h:Int) = {
+    val extent = server.run(LoadRasterExtent(name)).extent
+    BuildRasterExtent(extent, w, h)
+  }
+
+  /**
+   * Loads a given raster with a particular height/width.
+   */
+  def loadRaster(name:String, w:Int, h:Int) = {
+    server.run(LoadRaster(name, getRasterExtentOp(name, w, h)))
+  }
+
+  /**
+   * Load a server with the GeoTrellis benchmarking catalog.
+   */
+  def initServer():Server = {
+    val catalog = Catalog.fromPath("src/main/resources/catalog.json")
+    Server("demo", catalog)
+  }
 
   /**
    * Sugar for building arrays using a per-cell init function.
@@ -52,32 +73,22 @@ abstract class MyRunner(cls:java.lang.Class[_ <: Benchmark]) {
  */
 object DataMap extends MyRunner(classOf[DataMap])
 class DataMap extends MyBenchmark {
-  @Param(Array("512/512", "512/1024", "1024/1024", "1024/2048", "2048/2048"))
-  var dims:String = null
-
+  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
   var size:Int = 0
+
   var ints:Array[Int] = null
   var doubles:Array[Double] = null
   var raster:IntRaster = null
   var op:Op[IntRaster] = null
 
-  var server:Server = null
-
   override def setUp() {
-    val Array(h, w) = dims.split("/").map(_.toInt)
-    size = h * w
-
-    ints = init(size)(Random.nextInt)
-    doubles = init(size)(Random.nextDouble)
-
-    val re = RasterExtent(Extent(0, 0, w, h), 1.0, 1.0, w, h)
-    raster = IntRaster(init(size)(Random.nextInt), re)
-
+    server = initServer()
+    val len = size * size
+    ints = init(len)(Random.nextInt)
+    doubles = init(len)(Random.nextDouble)
+    val re = RasterExtent(Extent(0, 0, size, size), 1.0, 1.0, size, size)
+    raster = IntRaster(init(len)(Random.nextInt), re)
     op = MultiplyConstant(raster, 2)
-
-    val catalogPath = "src/main/resources/catalog.json"
-    val catalog = Catalog.fromPath(catalogPath)
-    server = Server("demo", catalog)
   }
 
   def timeIntArray(reps:Int) = run(reps)(intArray)
@@ -113,4 +124,130 @@ class DataMap extends MyBenchmark {
 
   def timeRasterOperation(reps:Int) = run(reps)(rasterOperation)
   def rasterOperation = server.run(op)
+}
+
+object WeightedOverlay extends MyRunner(classOf[WeightedOverlay])
+class WeightedOverlay extends MyBenchmark {
+  val n = 4
+  val names = Array("SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k")
+  val weights = Array(2, 1, 5, 2)
+  val colors = Array(0x0000FF, 0x0080FF, 0x00FF80, 0xFFFF00, 0xFF8000, 0xFF0000)
+
+  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
+  var size:Int = 0
+
+  var op:Op[Array[Byte]] = null
+
+  override def setUp() {
+    server = initServer()
+    val reOp = getRasterExtentOp(names(0), size, size)
+    val total = weights.sum
+    val rs = (0 until n).map(i => MultiplyConstant(LoadRaster(names(i), reOp), weights(i)))
+    val rasterOp = Normalize(DivideConstant(Add(rs: _*), total), (1, 100))
+    val breaksOp = FindColorBreaks(BuildArrayHistogram(rasterOp, 101), colors)
+    op = RenderPNG(rasterOp, breaksOp, 0, true)
+  }
+
+  def timeWeightedOverlay(reps:Int) = run(reps)(weightedOverlay)
+  def weightedOverlay = server.run(op)
+}
+
+object AddRasters extends MyRunner(classOf[AddRasters])
+class AddRasters extends MyBenchmark {
+  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
+  var size:Int = 0
+
+  var op:Op[IntRaster] = null
+
+  override def setUp() {
+    server = initServer()
+    val r:IntRaster = loadRaster("SBN_farm_mkt", size, size)
+    val r1 = AddConstant(r, 1)
+    val r2 = AddConstant(r, 2)
+    val r3 = AddConstant(r, 3)
+    val r4 = AddConstant(r, 4)
+    val r5 = AddConstant(r, 5)
+    op = Add(r1, r2, r3, r4, r5)
+  }
+
+  def timeAddRasters(reps:Int) = run(reps)(addRasters)
+  def addRasters = server.run(op)
+}
+
+object SubtractRasters extends MyRunner(classOf[SubtractRasters])
+class SubtractRasters extends MyBenchmark {
+  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
+  var size:Int = 0
+
+  var op:Op[IntRaster] = null
+
+  override def setUp() {
+    server = initServer()
+    val r:IntRaster = loadRaster("SBN_farm_mkt", size, size)
+    val r1 = MultiplyConstant(r, 2)
+    val r2 = AddConstant(r, 2)
+    op = Subtract(r1, r2)
+  }
+
+  def timeSubtractRasters(reps:Int) = run(reps)(subtractRasters)
+  def subtractRasters = server.run(op)
+}
+
+
+object ConstantAdd extends MyRunner(classOf[ConstantAdd])
+class ConstantAdd extends MyBenchmark {
+  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "10000"))
+  var size:Int = 0
+
+  var op:Op[IntRaster] = null
+
+  override def setUp() {
+    server = initServer()
+    val r:IntRaster = loadRaster("SBN_farm_mkt", size, size)
+    op = AddConstant(r, 13)
+  }
+
+  def timeConstantAdd(reps:Int) = run(reps)(constantAdd)
+  def constantAdd = server.run(op)
+}
+
+
+object TiledConstantAdd extends MyRunner(classOf[TiledConstantAdd])
+class TiledConstantAdd extends MyBenchmark {
+  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
+  var size:Int = 0
+
+  @Param(Array("64", "128", "256", "512"))
+  var pixels:Int = 0
+  
+  var op:Op[IntRaster] = null
+
+  override def setUp() {
+    server = initServer()
+    val r:IntRaster = loadRaster("SBN_farm_mkt", size, size)
+    val t = Tiler.createTileRaster(r, pixels)
+    op = ForEachTile(t)(AddConstant(_, 13))
+  }
+
+  def timeTiledConstantAdd(reps:Int) = run(reps)(tiledConstantAdd)
+  def tiledConstantAdd = server.run(op)
+}
+
+
+object MiniWeightedOverlay extends MyRunner(classOf[MiniWeightedOverlay])
+class MiniWeightedOverlay extends MyBenchmark {
+  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "8192", "10000"))
+  var size:Int = 0
+  
+  var op:Op[IntRaster] = null
+
+  override def setUp() {
+    server = initServer()
+    val r1:IntRaster = loadRaster("SBN_farm_mkt", size, size)
+    val r2:IntRaster = loadRaster("SBN_RR_stops_walk", size, size)
+    op = Add(MultiplyConstant(r1, 5), MultiplyConstant(r2, 2))
+  }
+
+  def timeMiniWeightedOverlay(reps:Int) = run(reps)(miniWeightedOverlay)
+  def miniWeightedOverlay = server.run(op)
 }
