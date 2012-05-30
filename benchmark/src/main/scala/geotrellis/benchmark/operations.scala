@@ -32,10 +32,33 @@ case class MultiplyConstantCustomWithInt(r:Op[IntRaster], c:Op[Int]) extends Cus
 case class MultiplyConstantMapIfSet(r:Op[IntRaster], c:Op[Int]) extends Op[IntRaster] {
   def _run(context:Context) = runAsync(r :: c :: Nil)
 
+  final def _finish(raster:IntRaster, n:Int) = raster.mapIfSet(_ * n)
+
   val nextSteps:Steps = {
-    case (raster:IntRaster) :: (n:Int) :: Nil => Result(raster.mapIfSet(_ * n))
+    case (raster:IntRaster) :: (n:Int) :: Nil => Result(_finish(raster, n))
   }
 }
+
+/**
+ * Here is a MultiplyConstant implementation in terms of raster.mapIfSet and Op2.
+ */
+case class MultiplyConstantMapIfSetSugar(r:Op[IntRaster], c:Op[Int]) extends Op2(r, c)({
+  (r, c) => Result(r.mapIfSet(_ * c))
+})
+
+/**
+ * Here is a MultiplyConstant implementation in terms of raster.mapIfSet and Op2.
+ */
+case class MultiplyConstantMapSugar(r:Op[IntRaster], c:Op[Int]) extends Op2(r, c)({
+  (r, c) => Result(r.map(z => if (z != NODATA) z * c else NODATA))
+})
+
+/**
+ * Here is a MultiplyConstant implementation in terms of raster.mapIfSet and Op2.
+ */
+case class MultiplyConstantMapIfSetSugarWithLiteral(r:Op[IntRaster], c:Int) extends Op1(r)({
+  r => Result(r.mapIfSet(_ * c))
+})
 
 /**
  * Here is a MultiplyConstant implementation in terms of a while-loop.

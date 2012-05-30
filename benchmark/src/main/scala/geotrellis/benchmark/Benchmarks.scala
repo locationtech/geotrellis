@@ -74,15 +74,20 @@ abstract class MyRunner(cls:java.lang.Class[_ <: Benchmark]) {
 object DataMap extends MyRunner(classOf[DataMap])
 class DataMap extends MyBenchmark {
   //@Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
-  @Param(Array("1024"))
+  @Param(Array("2048"))
   var size:Int = 0
 
   var ints:Array[Int] = null
   var doubles:Array[Double] = null
   var raster:IntRaster = null
-  var op:Op[IntRaster] = null
-  var op2:Op[IntRaster] = null
-  var op3:Op[IntRaster] = null
+
+  var mc:Op[IntRaster] = null
+  var mcCustomWithInt:Op[IntRaster] = null
+  var mcMapSugar:Op[IntRaster] = null
+  var mcMapIfSetSugar:Op[IntRaster] = null
+  var mcMapIfSetSugarWithLiteral:Op[IntRaster] = null
+  var mcMapIfSet:Op[IntRaster] = null
+  var mcWhileLoop:Op[IntRaster] = null
 
   override def setUp() {
     server = initServer()
@@ -92,53 +97,81 @@ class DataMap extends MyBenchmark {
     val re = RasterExtent(Extent(0, 0, size, size), 1.0, 1.0, size, size)
     raster = IntRaster(init(len)(Random.nextInt), re)
 
-    op = MultiplyConstant(raster, 2)
-    op2 = MultiplyConstantMapIfSet(raster, 2)
-    op3 = MultiplyConstantWhileLoop(raster, 2)
+    mc = MultiplyConstant(raster, 2)
+    mcCustomWithInt = MultiplyConstantCustomWithInt(raster, 2)
+    mcMapIfSet = MultiplyConstantMapIfSet(raster, 2)
+    mcMapSugar = MultiplyConstantMapSugar(raster, 2)
+    mcMapIfSetSugar = MultiplyConstantMapIfSetSugar(raster, 2)
+    mcMapIfSetSugarWithLiteral = MultiplyConstantMapIfSetSugarWithLiteral(raster, 2)
+    mcWhileLoop = MultiplyConstantWhileLoop(raster, 2)
   }
 
-  def timeIntArray(reps:Int) = run(reps)(intArray)
-  def intArray = {
+  def timeIntArrayWhileLoop(reps:Int) = run(reps)(intArrayWhileLoop)
+  def intArrayWhileLoop = {
     val goal = ints.clone
     var i = 0
     val len = goal.length
-    while (i < len) { goal(i) = goal(i) * 2; i += 1 }
+    while (i < len) {
+      val z = goal(i)
+      if (z != NODATA) goal(i) = z * 2
+      i += 1
+    }
     goal
   }
   
-  def timeDoubleArray(reps:Int) = run(reps)(doubleArray)
-  def doubleArray = {
+  def timeDoubleArrayWhileLoop(reps:Int) = run(reps)(doubleArrayWhileLoop)
+  def doubleArrayWhileLoop = {
     val goal = doubles.clone
     var i = 0
     val len = goal.length
-    while (i < len) { goal(i) = goal(i) * 2.0; i += 1 }
+    while (i < len) {
+      val z = goal(i)
+      if (z != NODATA) goal(i) = z * 2.0
+      i += 1
+    }
     goal
   }
   
-  def timeDirectRaster(reps:Int) = run(reps)(directRaster)
-  def directRaster = {
+  def timeRasterWhileLoop(reps:Int) = run(reps)(rasterWhileLoop)
+  def rasterWhileLoop = {
     val rcopy = raster.copy
     val goal = rcopy.data
     var i = 0
     val len = goal.length
-    while (i < len) { goal(i) = goal(i) * 2; i += 1 }
+    while (i < len) {
+      val z = goal(i)
+      if (z != NODATA) goal(i) = goal(i) * 2
+      i += 1
+    }
     rcopy
   }
   
-  def timeIndirectRaster(reps:Int) = run(reps)(indirectRaster)
-  def indirectRaster = raster.map(z => z * 2)
+  def timeRasterMap(reps:Int) = run(reps)(rasterMap)
+  def rasterMap = raster.map(z => if (z != NODATA) z * 2 else NODATA)
+
+  def timeRasterMapIfSet(reps:Int) = run(reps)(rasterMapIfSet)
+  def rasterMapIfSet = raster.mapIfSet(z => z * 2)
   
   def timeRasterOperationUnary(reps:Int) = run(reps)(rasterOperationUnary)
-  def rasterOperationUnary = server.run(op)
-
+  def rasterOperationUnary = server.run(mc)
+  
   def timeRasterOperationCustomWithInt(reps:Int) = run(reps)(rasterOperationCustomWithInt)
-  def rasterOperationCustomWithInt = server.run(op2)
+  def rasterOperationCustomWithInt = server.run(mcCustomWithInt)
+  
+  def timeRasterOperationMapSugar(reps:Int) = run(reps)(rasterOperationMapSugar)
+  def rasterOperationMapSugar = server.run(mcMapSugar)
+
+  def timeRasterOperationMapIfSetSugar(reps:Int) = run(reps)(rasterOperationMapIfSetSugar)
+  def rasterOperationMapIfSetSugar = server.run(mcMapIfSetSugar)
+
+  def timeRasterOperationMapIfSetSugarWithLiteral(reps:Int) = run(reps)(rasterOperationMapIfSetSugarWithLiteral)
+  def rasterOperationMapIfSetSugarWithLiteral = server.run(mcMapIfSetSugarWithLiteral)
 
   def timeRasterOperationMapIfSet(reps:Int) = run(reps)(rasterOperationMapIfSet)
-  def rasterOperationMapIfSet = server.run(op2)
+  def rasterOperationMapIfSet = server.run(mcMapIfSet)
 
   def timeRasterOperationWhileLoop(reps:Int) = run(reps)(rasterOperationWhileLoop)
-  def rasterOperationWhileLoop = server.run(op3)
+  def rasterOperationWhileLoop = server.run(mcWhileLoop)
 }
 
 object WeightedOverlay extends MyRunner(classOf[WeightedOverlay])
