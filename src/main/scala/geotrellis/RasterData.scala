@@ -19,19 +19,53 @@ trait RasterData {
 
   override def toString = "RasterData(<%d values>)" format length
 
-  override def equals(other:Any):Boolean = other match {
-    case r:RasterData => {
-      if (r == null) return false
-      if (length != r.length) return false
-      var i = 0
-      val len = length
-      while (i < len) {
-        if (apply(i) != r(i)) return false
-        i += 1
-      }
-      true
+  // currently disabled.
+  // TODO: fix tests or reenable
+  //override def equals(other:Any):Boolean = other match {
+  //  case r:RasterData => {
+  //    if (r == null) return false
+  //    val len = length
+  //    if (len != r.length) return false
+  //    var i = 0
+  //    while (i < len) {
+  //      if (apply(i) != r(i)) return false
+  //      i += 1
+  //    }
+  //    true
+  //  }
+  //  case _ => false
+  //}
+
+  def foreach(f: Int => Unit):Unit = {
+    var i = 0
+    val len = length
+    while(i < len) {
+      f(apply(i))
+      i += 1
     }
-    case _ => false
+  }
+
+  def map(f:Int => Int) = {
+    val data = this.copy
+    var i = 0
+    val len = length
+    while (i < len) {
+      data(i) = f(data(i))
+      i += 1
+    }
+    data
+  }
+
+  def mapIfSet(f:Int => Int) = {
+    val data = this.copy
+    var i = 0
+    val len = length
+    while (i < len) {
+      val z = data(i)
+      if (z != NODATA) data(i) = f(z)
+      i += 1
+    }
+    data
   }
 }
 
