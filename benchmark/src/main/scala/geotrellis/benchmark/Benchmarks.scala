@@ -80,6 +80,9 @@ class DataMap extends MyBenchmark {
   var ints:Array[Int] = null
   var doubles:Array[Double] = null
   var raster:IntRaster = null
+  var bitData:BitArrayRasterData = null
+  var byteData:ByteArrayRasterData = null
+  var shortData:ShortArrayRasterData = null
 
   var mc:Op[IntRaster] = null
   var mcCustomWithInt:Op[IntRaster] = null
@@ -96,6 +99,10 @@ class DataMap extends MyBenchmark {
     doubles = init(len)(Random.nextDouble)
     val re = RasterExtent(Extent(0, 0, size, size), 1.0, 1.0, size, size)
     raster = IntRaster(init(len)(Random.nextInt), re)
+
+    bitData = new BitArrayRasterData(init((len + 7) / 8)(Random.nextInt.toByte), len)
+    byteData = new ByteArrayRasterData(init(len)(Random.nextInt.toByte))
+    shortData = new ShortArrayRasterData(init(len)(Random.nextInt.toShort))
 
     mc = MultiplyConstant(raster, 2)
     mcCustomWithInt = MultiplyConstantCustomWithInt(raster, 2)
@@ -151,6 +158,56 @@ class DataMap extends MyBenchmark {
 
   def timeRasterMapIfSet(reps:Int) = run(reps)(rasterMapIfSet)
   def rasterMapIfSet = raster.mapIfSet(z => z * 2)
+
+  // xyz
+  def timeBitDataWhileLoop(reps:Int) = run(reps)(bitDataWhileLoop)
+  def bitDataWhileLoop = {
+    val data = bitData.copy
+    var i = 0
+    val len = data.length
+    while (i < len) {
+      val z = data(i)
+      if (z != NODATA) data(i) = data(i) * 2
+      i += 1
+    }
+    data
+  }
+
+  def timeBitDataMap(reps:Int) = run(reps)(bitDataMap)
+  def bitDataMap = bitData.map(z => if (z != NODATA) z * 2 else NODATA)
+
+  def timeByteDataWhileLoop(reps:Int) = run(reps)(byteDataWhileLoop)
+  def byteDataWhileLoop = {
+    val data = byteData.copy
+    var i = 0
+    val len = data.length
+    while (i < len) {
+      val z = data(i)
+      if (z != NODATA) data(i) = data(i) * 2
+      i += 1
+    }
+    data
+  }
+  
+  def timeByteDataMap(reps:Int) = run(reps)(byteDataMap)
+  def byteDataMap = byteData.map(z => if (z != NODATA) z * 2 else NODATA)
+
+  def timeShortDataWhileLoop(reps:Int) = run(reps)(shortDataWhileLoop)
+  def shortDataWhileLoop = {
+    val data = shortData.copy
+    var i = 0
+    val len = data.length
+    while (i < len) {
+      val z = data(i)
+      if (z != NODATA) data(i) = data(i) * 2
+      i += 1
+    }
+    data
+  }
+  
+  def timeShortDataMap(reps:Int) = run(reps)(shortDataMap)
+  def shortDataMap = shortData.map(z => if (z != NODATA) z * 2 else NODATA)
+  // xyz
   
   def timeRasterOperationUnary(reps:Int) = run(reps)(rasterOperationUnary)
   def rasterOperationUnary = server.run(mc)
