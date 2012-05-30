@@ -3,6 +3,7 @@ package geotrellis.operation
 import geotrellis._
 import geotrellis.process._
 import geotrellis.raster._
+import geotrellis.Implicits._
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -34,8 +35,6 @@ class OperationsTest extends FunSuite {
   }
   
   run(AddConstant(r3, 6), r9)
-  run(AddInlinedConstant(r3, 6), r9)
-  run(AddLiteralConstant(r6, 3), r9)
 
   run(Bitmask(r9, 3), r1)
 

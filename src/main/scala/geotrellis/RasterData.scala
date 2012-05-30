@@ -21,20 +21,20 @@ trait RasterData {
 
   // currently disabled.
   // TODO: fix tests or reenable
-  //override def equals(other:Any):Boolean = other match {
-  //  case r:RasterData => {
-  //    if (r == null) return false
-  //    val len = length
-  //    if (len != r.length) return false
-  //    var i = 0
-  //    while (i < len) {
-  //      if (apply(i) != r(i)) return false
-  //      i += 1
-  //    }
-  //    true
-  //  }
-  //  case _ => false
-  //}
+  override def equals(other:Any):Boolean = other match {
+    case r:RasterData => {
+      if (r == null) return false
+      val len = length
+      if (len != r.length) return false
+      var i = 0
+      while (i < len) {
+        if (apply(i) != r(i)) return false
+        i += 1
+      }
+      true
+    }
+    case _ => false
+  }
 
   def foreach(f: Int => Unit):Unit = {
     var i = 0

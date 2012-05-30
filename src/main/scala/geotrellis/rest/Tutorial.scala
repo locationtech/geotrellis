@@ -7,6 +7,7 @@ import javax.ws.rs.core.{Response, Context}
 import geotrellis._
 import geotrellis.operation._
 import geotrellis.process._
+import geotrellis.Implicits._
 
 object MyApp {
   val server = Server("myapp", "src/main/resources/myapp-catalog.json")

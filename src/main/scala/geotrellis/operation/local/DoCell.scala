@@ -12,6 +12,6 @@ import geotrellis.process._
  * val D = DoCell(R, x => x + 3 ) // add 3 to every cell in the raster  
  * </pre>
  */
-case class DoCell(r:Op[IntRaster], f:(Int) => Int) extends SimpleUnaryLocal {
-  def handleCell(z:Int) = f(z)
-}
+case class DoCell(r:Op[IntRaster], f:(Int) => Int) extends Op1(r)({
+  (r) => Result(r map f)
+})

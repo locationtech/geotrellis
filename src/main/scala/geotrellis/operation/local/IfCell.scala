@@ -6,10 +6,9 @@ import geotrellis._
 /**
  * Maps all cells matching `cond` to `trueValue`.
  */
-case class IfCell(r:Op[IntRaster], cond:Int => Boolean, trueValue:Int) extends SimpleUnaryLocal {
-  def handleCell(z:Int) = if (cond(z)) trueValue else z
-  //def getCallback = (z:Int) => if (cond(z)) trueValue else z
-} 
+case class IfCell(r:Op[IntRaster], cond:Int => Boolean, trueValue:Int) extends Op1(r)({
+  (r) => Result(r.map(z => if (cond(z)) trueValue else z)) 
+}) 
 
 object IfCell {
   def apply(r:Op[IntRaster], cond:Int => Boolean, trueValue:Int, falseValue: Int) = {
