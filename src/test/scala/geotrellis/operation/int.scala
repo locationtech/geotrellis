@@ -515,9 +515,6 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
 */
     // unary local
-    it("Identity") {
-      server.run(Identity(R)).data.asArray must be === a
-    }
     it("Negate") {
       server.run(Negate(R)).data.asArray must be === a.map { _ * -1 }
     }

@@ -8,11 +8,6 @@ import geotrellis.process._
  * condition is true or false.
  */
 case class IfElseCell(r:Op[IntRaster], cond:Int => Boolean, trueValue:Int,
-                      falseValue:Int) extends SimpleUnaryLocal {
-  def handleCell(z:Int) = if (cond(z)) trueValue else falseValue
-  //def getCallback = (z:Int) => if (cond(z)) {
-  //  trueValue
-  //} else {
-  //  falseValue
-  //}
-}
+                      falseValue:Int) extends Op1(r)({
+  (r) => Result(r.map(z => if (cond(z)) trueValue else falseValue))
+})

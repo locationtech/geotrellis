@@ -11,12 +11,21 @@ package object operation {
 
   // TODO: consider adding things like type PNG = Array[Byte]?
 
+  // TODO: Doubles, **, unary_-, min, max, &, |, ^, %
+
+  // TODO maybe: some kind of mask operator?
+}
+
+
+object Implicits {
+  import geotrellis.operation._
+
   /**
    * Addition-operator implicits for Int, IntRaster and Op[IntRaster].
    */
   implicit def addOpIntRasterTo1(lhs:Op[IntRaster]) = new {
-    def +(rhs:Int):Op[IntRaster] = AddConstant(lhs, Literal(rhs))
-    def +(rhs:Op[Int]):Op[IntRaster] = AddConstant(lhs, rhs)
+    def +(rhs:Int):Op[IntRaster] = new AddConstant(lhs, Literal(rhs))
+    def +(rhs:Op[Int]):Op[IntRaster] = new AddConstant(lhs, rhs)
   }
   implicit def addOpIntRasterTo2(lhs:Op[IntRaster]) = new {
     def +(rhs:IntRaster):Op[IntRaster] = Add(lhs, Literal(rhs))
@@ -24,8 +33,8 @@ package object operation {
   }
 
   implicit def addIntRasterTo1(lhs:IntRaster) = new {
-    def +(rhs:Int):Op[IntRaster] = AddConstant(Literal(lhs), Literal(rhs))
-    def +(rhs:Op[Int]):Op[IntRaster] = AddConstant(Literal(lhs), rhs)
+    def +(rhs:Int):Op[IntRaster] = new AddConstant(Literal(lhs), Literal(rhs))
+    def +(rhs:Op[Int]):Op[IntRaster] = new AddConstant(Literal(lhs), rhs)
   }
   implicit def addIntRasterTo2(lhs:IntRaster) = new {
     def +(rhs:IntRaster):Op[IntRaster] = Add(Literal(lhs), Literal(rhs))
@@ -150,6 +159,7 @@ package object operation {
     def /(rhs:Int):Op[Int] = Map1(lhs)(_ / rhs)
     def /(rhs:Op[Int]):Op[Int] = Map2(lhs, rhs)(_ / _)
   }
+
   implicit def divideOpIntBy2(lhs:Op[Int]) = new {
     def /(rhs:IntRaster):Op[IntRaster] = DivideConstantBy(lhs, Literal(rhs))
     def /(rhs:Op[IntRaster]):Op[IntRaster] = DivideConstantBy(lhs, rhs)
@@ -162,8 +172,5 @@ package object operation {
     def /(rhs:IntRaster):Op[IntRaster] = DivideConstantBy(Literal(lhs), Literal(rhs))
     def /(rhs:Op[IntRaster]):Op[IntRaster] = DivideConstantBy(Literal(lhs), rhs)
   }
-
-  // TODO: Doubles, **, unary_-, min, max, &, |, ^, %
-
-  // TODO maybe: some kind of mask operator?
 }
+

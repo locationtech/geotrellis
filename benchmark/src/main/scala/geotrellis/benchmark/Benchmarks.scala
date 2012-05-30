@@ -73,8 +73,8 @@ abstract class MyRunner(cls:java.lang.Class[_ <: Benchmark]) {
  */
 object DataMap extends MyRunner(classOf[DataMap])
 class DataMap extends MyBenchmark {
-  //@Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
-  @Param(Array("2048"))
+  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
+  //@Param(Array("2048"))
   var size:Int = 0
 
   var ints:Array[Int] = null

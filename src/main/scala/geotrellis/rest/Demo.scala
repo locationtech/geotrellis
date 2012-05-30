@@ -9,6 +9,7 @@ import geotrellis._
 import geotrellis.data.MultiColorRangeChooser
 import geotrellis.operation._
 import geotrellis.process._
+import geotrellis.Implicits._
 
 /**
  * Operation to perform the basic weighted overlay calculation.
