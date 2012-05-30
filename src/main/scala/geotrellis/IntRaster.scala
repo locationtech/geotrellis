@@ -132,36 +132,22 @@ class IntRaster(val data:RasterData, val rasterExtent:RasterExtent,
     s
   }
 
-  def foreach(f: Int => Unit):Unit = {
-    var i = 0
-    while(i < length) {
-      f(data(i))
-      i += 1
-    }
-  }
+  def foreach(f: Int => Unit):Unit = data.foreach(f)
 
-  def map(f:Int => Int) = {
-    val data = this.data
-    val output = data.copy //Array.ofDim[Int](length)
-    var i = 0
-    while (i < length) {
-      output(i) = f(data(i))
-      i += 1
-    }
-    new IntRaster(output, rasterExtent, name + "_map")
-  }
+  def map(f:Int => Int) = IntRaster(data.map(f), rasterExtent)
 
-  //TODO: optimize (replace length?, don't copy?)
+  //TODO: implement RasterData.ofDim and use that instead
   def combine2(r2:IntRaster)(f:(Int,Int) => Int) = {
-    val data = this.data
+    val data1 = this.data
     val data2 = r2.data
-    val output = data.copy // Array.ofDim[Int](length)
+    val output = data1.copy // RasterData.ofDim[Int](length)
     var i = 0
-    while (i < length) {
-      output(i) = f(data(i), data2(i))
+    val len = length
+    while (i < len) {
+      output(i) = f(data1(i), data2(i))
       i += 1
     }
-    new IntRaster(output, this.rasterExtent, this.name + "_map")
+    IntRaster(output, rasterExtent)
   }
 
   def normalize(zmin:Int, zmax:Int, gmin:Int, gmax:Int) = {
@@ -174,16 +160,5 @@ class IntRaster(val data:RasterData, val rasterExtent:RasterExtent,
     }
   }
 
-  def mapIfSet(f:Int => Int) = {
-    val data = this.data
-    val data2 = this.data.copy
-  
-    var i = 0
-    while (i < length) {
-      val z = data(i)
-      if (z != NODATA) data2(i) = f(z)
-      i += 1
-    }
-    new IntRaster(data2, rasterExtent, name + "_map")
-  }
+  def mapIfSet(f:Int => Int) = IntRaster(data.mapIfSet(f), rasterExtent)
 }
