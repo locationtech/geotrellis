@@ -6,7 +6,7 @@ import geotrellis.process._
 import geotrellis.util._
 
 final class RasterReadState(raster:Raster,
-                               val target:RasterExtent) extends ReadState {
+                            val target:RasterExtent) extends ReadState {
   val layer = RasterLayer("raster", "intraster", "", "", raster.rasterExtent, 3857, 0.0, 0.0)
   var src:IntBuffer = null
 
@@ -17,11 +17,11 @@ final class RasterReadState(raster:Raster,
   }
 
   @inline
-  def assignFromSource(sourceIndex:Int, dest:Array[Int], destIndex:Int) {
-    dest(destIndex) = this.src.get(sourceIndex)
+  def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
+    dest(destIndex) = src.get(sourceIndex)
   }
 
-  override def translate(data:Array[Int]) = data.clone()
+  override def translate(data:StrictRasterData) = data.copy()
 }
 
 object RasterReader extends Reader {

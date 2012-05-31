@@ -79,13 +79,17 @@ trait RasterData {
 }
 
 // TODO: move update to only exist in StrictRasterData
-trait StrictRasterData extends RasterData
+trait StrictRasterData extends RasterData with Serializable {
+  override def copy():StrictRasterData
+}
 
 trait LazyRasterData extends RasterData {
   def update(i:Int, x:Int) = sys.error("immutable")
 
   override def equals(other:Any):Boolean = sys.error("todo")
 }
+
+// strict implementations follow
 
 /**
  * RasterData based on Array[Int] (each cell as an Int).
@@ -96,7 +100,7 @@ object IntArrayRasterData {
   def empty(size:Int) = new IntArrayRasterData(Array.fill[Int](size)(NODATA))
 }
 
-final class IntArrayRasterData(array:Array[Int]) extends RasterData with Serializable {
+final class IntArrayRasterData(array:Array[Int]) extends StrictRasterData {
   def length = array.length
   def apply(i:Int) = array(i)
   def update(i:Int, x: Int): Unit = array(i) = x
@@ -104,8 +108,98 @@ final class IntArrayRasterData(array:Array[Int]) extends RasterData with Seriali
   def asArray = array
 }
 
+/**
+ * RasterData based on an Array[Byte] as a bitmask; values are 0 and 1.
+ */
+object BitArrayRasterData {
+  def apply(array:Array[Byte], size:Int) = new BitArrayRasterData(array, size)
+  def ofDim(size:Int) = new BitArrayRasterData(Array.ofDim[Byte]((size + 7) / 8), size)
+  def empty(size:Int) = ofDim(size)
+}
 
-// xyz
+final class BitArrayRasterData(array:Array[Byte], size:Int) extends StrictRasterData {
+  assert(array.length == (size + 7) / 8)
+  def length = size
+  def apply(i:Int) = ((array(i >> 3) >> (i & 7)) & 1).asInstanceOf[Int]
+  def update(i:Int, x:Int): Unit = array(i >> 3) = ((x & 1) << (i & 7)).asInstanceOf[Byte]
+  def copy = BitArrayRasterData(array.clone, size)
+  def asArray = {
+    val len = size
+    val arr = Array.ofDim[Int](len)
+    var i = 0
+    while (i < len) {
+      arr(i) = apply(i)
+      i += 1
+    }
+    arr
+  }
+
+  override def map(f:Int => Int) = {
+    val f0 = f(0) & 1
+    val f1 = f(1) & 1
+    val arr = if (f0 == 0 && f1 == 0) {
+      Array.ofDim[Byte](array.length)
+    } else if (f0 == 1 && f1 == 1) {
+      Array.fill[Byte](array.length)(7.asInstanceOf[Byte])
+    } else if (f0 == 0 && f1 == 1) {
+      array.clone
+    } else {
+      val arr = array.clone
+      val len = array.length
+      var i = 0
+      while (i < len) {
+        arr(i) = (~arr(i)).asInstanceOf[Byte]
+        i += 1
+      }
+      arr
+    }
+    BitArrayRasterData(arr, size)
+  }
+
+  override def mapIfSet(f:Int => Int) = map(f)
+}
+
+/**
+ * RasterData based on Array[Byte] (each cell as a Byte).
+ */
+object ByteArrayRasterData {
+  def apply(array:Array[Byte]) = new ByteArrayRasterData(array)
+  def ofDim(size:Int) = new ByteArrayRasterData(Array.ofDim[Byte](size))
+  def empty(size:Int) = new ByteArrayRasterData(Array.fill[Byte](size)(Byte.MinValue))
+}
+
+final class ByteArrayRasterData(array:Array[Byte]) extends StrictRasterData {
+  def length = array.length
+  def apply(i:Int) = array(i).asInstanceOf[Int]
+  def update(i:Int, x: Int): Unit = array(i) = x.asInstanceOf[Byte]
+  def copy = ByteArrayRasterData(array.clone)
+  def asArray = array.map(_.asInstanceOf[Int])
+}
+
+/**
+ * RasterData based on Array[Short] (each cell as a Short).
+ */
+object ShortArrayRasterData {
+  def apply(array:Array[Short]) = new ShortArrayRasterData(array)
+  def ofDim(size:Int) = new ShortArrayRasterData(Array.ofDim[Short](size))
+  def empty(size:Int) = new ShortArrayRasterData(Array.fill[Short](size)(Short.MinValue))
+}
+
+final class ShortArrayRasterData(array:Array[Short]) extends StrictRasterData {
+  def length = array.length
+  def apply(i:Int) = array(i).asInstanceOf[Int]
+  def update(i:Int, x: Int): Unit = array(i) = x.asInstanceOf[Short]
+  def copy = ShortArrayRasterData(array.clone)
+  def asArray = array.map(_.asInstanceOf[Int])
+}
+
+
+// lazy implementations follow
+
+/**
+ * This class is a lazy wrapper for any RasterData. It's only function is to
+ * defer functions like map/mapIfSet/combine2 to produce other lazy instances.
+ */
 final class LazyWrapper(data:RasterData) extends LazyRasterData {
   def length = data.length
   def apply(i:Int) = data(i)
@@ -204,89 +298,5 @@ object LazyCombine2 {
     new LazyCombine2(data1, data2)(g)
   }
 }
-// xyz
 
-/**
- * RasterData based on an Array[Byte] as a bitmask; values are 0 and 1.
- */
-object BitArrayRasterData {
-  def apply(array:Array[Byte], size:Int) = new BitArrayRasterData(array, size)
-  def ofDim(size:Int) = new BitArrayRasterData(Array.ofDim[Byte]((size + 7) / 8), size)
-  def empty(size:Int) = ofDim(size)
-}
 
-final class BitArrayRasterData(array:Array[Byte], size:Int) extends RasterData with Serializable {
-  assert(array.length == (size + 7) / 8)
-  def length = size
-  def apply(i:Int) = ((array(i >> 3) >> (i & 7)) & 1).asInstanceOf[Int]
-  def update(i:Int, x:Int): Unit = array(i >> 3) = ((x & 1) << (i & 7)).asInstanceOf[Byte]
-  def copy = BitArrayRasterData(array.clone, size)
-  def asArray = {
-    val len = size
-    val arr = Array.ofDim[Int](len)
-    var i = 0
-    while (i < len) {
-      arr(i) = apply(i)
-      i += 1
-    }
-    arr
-  }
-
-  override def map(f:Int => Int) = {
-    val f0 = f(0) & 1
-    val f1 = f(1) & 1
-    val arr = if (f0 == 0 && f1 == 0) {
-      Array.ofDim[Byte](array.length)
-    } else if (f0 == 1 && f1 == 1) {
-      Array.fill[Byte](array.length)(7.asInstanceOf[Byte])
-    } else if (f0 == 0 && f1 == 1) {
-      array.clone
-    } else {
-      val arr = array.clone
-      val len = array.length
-      var i = 0
-      while (i < len) {
-        arr(i) = (~arr(i)).asInstanceOf[Byte]
-        i += 1
-      }
-      arr
-    }
-    BitArrayRasterData(arr, size)
-  }
-
-  override def mapIfSet(f:Int => Int) = map(f)
-}
-
-/**
- * RasterData based on Array[Byte] (each cell as a Byte).
- */
-object ByteArrayRasterData {
-  def apply(array:Array[Byte]) = new ByteArrayRasterData(array)
-  def ofDim(size:Int) = new ByteArrayRasterData(Array.ofDim[Byte](size))
-  def empty(size:Int) = new ByteArrayRasterData(Array.fill[Byte](size)(Byte.MinValue))
-}
-
-final class ByteArrayRasterData(array:Array[Byte]) extends RasterData with Serializable {
-  def length = array.length
-  def apply(i:Int) = array(i).asInstanceOf[Int]
-  def update(i:Int, x: Int): Unit = array(i) = x.asInstanceOf[Byte]
-  def copy = ByteArrayRasterData(array.clone)
-  def asArray = array.map(_.asInstanceOf[Int])
-}
-
-/**
- * RasterData based on Array[Short] (each cell as a Short).
- */
-object ShortArrayRasterData {
-  def apply(array:Array[Short]) = new ShortArrayRasterData(array)
-  def ofDim(size:Int) = new ShortArrayRasterData(Array.ofDim[Short](size))
-  def empty(size:Int) = new ShortArrayRasterData(Array.fill[Short](size)(Short.MinValue))
-}
-
-final class ShortArrayRasterData(array:Array[Short]) extends RasterData with Serializable {
-  def length = array.length
-  def apply(i:Int) = array(i).asInstanceOf[Int]
-  def update(i:Int, x: Int): Unit = array(i) = x.asInstanceOf[Short]
-  def copy = ShortArrayRasterData(array.clone)
-  def asArray = array.map(_.asInstanceOf[Int])
-}

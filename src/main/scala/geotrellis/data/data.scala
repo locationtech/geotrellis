@@ -54,7 +54,7 @@ trait ReadState {
     
     // this is the resampled destination array
     val dst_size = dst_cols * dst_rows
-    val resampled = Array.fill[Int](dst_size)(NODATA)
+    val resampled = IntArrayRasterData.empty(dst_size)
 
     // these are the min and max columns we will access on this row
     val min_col = (xbase / src_cellwidth).asInstanceOf[Int]
@@ -114,7 +114,7 @@ trait ReadState {
   }
 
   // don't usually override
-  protected[this] def createRaster(data:Array[Int]) = {
+  protected[this] def createRaster(data:StrictRasterData) = {
     Raster(translate(data), target)
   }
 
@@ -125,13 +125,13 @@ trait ReadState {
   protected[this] def initSource(position:Int, size:Int):Unit
 
   // must override
-  protected[this] def assignFromSource(sourceIndex:Int, dest:Array[Int], destIndex:Int):Unit
+  protected[this] def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int):Unit
 
   // maybe override
   def destroy() {}
 
   // maybe need to override
-  protected[this] def translate(data:Array[Int]) = {
+  protected[this] def translate(data:StrictRasterData) = {
     var i = 0
     val nd = getNoDataValue
     val len = data.length

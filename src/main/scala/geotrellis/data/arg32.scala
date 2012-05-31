@@ -93,7 +93,7 @@ class Arg32ReadState(data:Either[String, Array[Byte]],
   final val width = 4
 
   @inline
-  def assignFromSource(sourceIndex:Int, dest:Array[Int], destIndex:Int) {
+  def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
     dest(destIndex) = src.getInt(sourceIndex * width)
   }
 }
@@ -114,7 +114,7 @@ class Arg8ReadState(data:Either[String, Array[Byte]],
   val width = 1
 
   @inline
-  def assignFromSource(sourceIndex:Int, dest:Array[Int], destIndex:Int) {
+  def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
     dest(destIndex) = src.get(sourceIndex * width)
   }
 

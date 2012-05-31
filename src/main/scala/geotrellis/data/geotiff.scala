@@ -57,7 +57,7 @@ final class GeoTiffReadState(path:String,
     val w = layer.rasterExtent.cols
     val h = size / layer.rasterExtent.cols
 
-    ints = Array.fill(w * h)(noData)
+    ints = Array.fill(w * h)(NODATA)
 
     val reader = getReader
     initializeNoData(reader)
@@ -67,7 +67,7 @@ final class GeoTiffReadState(path:String,
   }
 
   @inline
-  def assignFromSource(sourceIndex:Int, dest:Array[Int], destIndex:Int) {
+  def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
     dest(destIndex) = ints(sourceIndex)
   }
 
