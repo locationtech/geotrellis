@@ -13,6 +13,9 @@ trait ReadState {
   val layer:RasterLayer
   val target:RasterExtent
 
+  //def createRasterData(size:Int):StrictRasterData = IntArrayRasterData.empty(size)
+  def createRasterData(size:Int):StrictRasterData
+
   // don't override
   def loadRaster(): Raster = {
     val re = layer.rasterExtent
@@ -54,7 +57,7 @@ trait ReadState {
     
     // this is the resampled destination array
     val dst_size = dst_cols * dst_rows
-    val resampled = IntArrayRasterData.empty(dst_size)
+    val resampled = createRasterData(dst_size)
 
     // these are the min and max columns we will access on this row
     val min_col = (xbase / src_cellwidth).asInstanceOf[Int]

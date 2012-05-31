@@ -87,10 +87,14 @@ trait ArgNWriter extends Writer {
 //REFACTOR: Create a single ArgReader/Writer that passes through bitwidth as an argument.
 //          This would require refactoring the Writer/Reader traits.
 
+// arg 32
+
 class Arg32ReadState(data:Either[String, Array[Byte]],
                      layer:RasterLayer,
                      target:RasterExtent)  extends ArgNReadState(data, layer, target) {
   final val width = 4
+
+  def createRasterData(size:Int) = IntArrayRasterData.empty(size)
 
   @inline
   def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
@@ -104,20 +108,48 @@ object Arg32Reader extends FileReader {
 }
 
 object Arg32Writer extends ArgNWriter {
-  def width = 4
-  def rasterType = "arg32"
+  final val width = 4
+  final val rasterType = "arg32"
 }
 
-class Arg8ReadState(data:Either[String, Array[Byte]],
+// arg 16
+
+class Arg16ReadState(data:Either[String, Array[Byte]],
                     layer:RasterLayer,
                     target:RasterExtent) extends ArgNReadState(data,layer,target) {
-  val width = 1
+  final val width = 2
+
+  def createRasterData(size:Int) = ShortArrayRasterData.empty(size)
 
   @inline
   def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
     dest(destIndex) = src.get(sourceIndex * width)
   }
+}
 
+object Arg16Reader extends FileReader {
+  def readStateFromCache(b:Array[Byte], rl:RasterLayer, re:RasterExtent) = new Arg16ReadState(Right(b), rl, re)
+  def readStateFromPath(p:String, rl:RasterLayer, re:RasterExtent) = new Arg16ReadState(Left(p), rl, re)
+}
+
+object Arg16Writer extends ArgNWriter {
+  final val width = 2
+  final val rasterType = "arg16"
+}
+
+// arg 8
+
+class Arg8ReadState(data:Either[String, Array[Byte]],
+                    layer:RasterLayer,
+                    target:RasterExtent) extends ArgNReadState(data,layer,target) {
+  final val width = 1
+
+  def createRasterData(size:Int) = ByteArrayRasterData.empty(size)
+
+  @inline
+  def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
+    dest(destIndex) = src.get(sourceIndex * width)
+  }
 }
 
 
@@ -127,6 +159,6 @@ object Arg8Reader extends FileReader {
 }
 
 object Arg8Writer extends ArgNWriter {
-  def width = 1
-  def rasterType = "arg8"
+  final val width = 1
+  final val rasterType = "arg8"
 }

@@ -21,6 +21,8 @@ final class AsciiReadState(path:String,
 
   var ints:IntArrayRasterData = null
 
+  def createRasterData(size:Int) = IntArrayRasterData.empty(size)
+
   def getNoDataValue = nodata_value
 
   val intRe = """^(-?[0-9]+)$""".r

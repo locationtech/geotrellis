@@ -73,24 +73,24 @@ abstract class MyRunner(cls:java.lang.Class[_ <: Benchmark]) {
  */
 object DataMap extends MyRunner(classOf[DataMap])
 class DataMap extends MyBenchmark {
-  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
-  //@Param(Array("2048"))
+  //@Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
+  @Param(Array("2048"))
   var size:Int = 0
 
   var ints:Array[Int] = null
   var doubles:Array[Double] = null
-  var raster:IntRaster = null
+  var raster:Raster = null
   var bitData:BitArrayRasterData = null
   var byteData:ByteArrayRasterData = null
   var shortData:ShortArrayRasterData = null
 
-  var mc:Op[IntRaster] = null
-  var mcCustomWithInt:Op[IntRaster] = null
-  var mcMapSugar:Op[IntRaster] = null
-  var mcMapIfSetSugar:Op[IntRaster] = null
-  var mcMapIfSetSugarWithLiteral:Op[IntRaster] = null
-  var mcMapIfSet:Op[IntRaster] = null
-  var mcWhileLoop:Op[IntRaster] = null
+  var mc:Op[Raster] = null
+  var mcCustomWithInt:Op[Raster] = null
+  var mcMapSugar:Op[Raster] = null
+  var mcMapIfSetSugar:Op[Raster] = null
+  var mcMapIfSetSugarWithLiteral:Op[Raster] = null
+  var mcMapIfSet:Op[Raster] = null
+  var mcWhileLoop:Op[Raster] = null
 
   override def setUp() {
     server = initServer()
@@ -98,7 +98,7 @@ class DataMap extends MyBenchmark {
     ints = init(len)(Random.nextInt)
     doubles = init(len)(Random.nextDouble)
     val re = RasterExtent(Extent(0, 0, size, size), 1.0, 1.0, size, size)
-    raster = IntRaster(init(len)(Random.nextInt), re)
+    raster = Raster(init(len)(Random.nextInt), re)
 
     bitData = new BitArrayRasterData(init((len + 7) / 8)(Random.nextInt.toByte), len)
     byteData = new ByteArrayRasterData(init(len)(Random.nextInt.toByte))
@@ -262,11 +262,11 @@ class AddRasters extends MyBenchmark {
   @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
   var size:Int = 0
 
-  var op:Op[IntRaster] = null
+  var op:Op[Raster] = null
 
   override def setUp() {
     server = initServer()
-    val r:IntRaster = loadRaster("SBN_farm_mkt", size, size)
+    val r:Raster = loadRaster("SBN_farm_mkt", size, size)
     val r1 = AddConstant(r, 1)
     val r2 = AddConstant(r, 2)
     val r3 = AddConstant(r, 3)
@@ -284,11 +284,11 @@ class SubtractRasters extends MyBenchmark {
   @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
   var size:Int = 0
 
-  var op:Op[IntRaster] = null
+  var op:Op[Raster] = null
 
   override def setUp() {
     server = initServer()
-    val r:IntRaster = loadRaster("SBN_farm_mkt", size, size)
+    val r:Raster = loadRaster("SBN_farm_mkt", size, size)
     val r1 = MultiplyConstant(r, 2)
     val r2 = AddConstant(r, 2)
     op = Subtract(r1, r2)
@@ -304,11 +304,11 @@ class ConstantAdd extends MyBenchmark {
   @Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "10000"))
   var size:Int = 0
 
-  var op:Op[IntRaster] = null
+  var op:Op[Raster] = null
 
   override def setUp() {
     server = initServer()
-    val r:IntRaster = loadRaster("SBN_farm_mkt", size, size)
+    val r:Raster = loadRaster("SBN_farm_mkt", size, size)
     op = AddConstant(r, 13)
   }
 
@@ -325,11 +325,11 @@ class TiledConstantAdd extends MyBenchmark {
   @Param(Array("64", "128", "256", "512"))
   var pixels:Int = 0
   
-  var op:Op[IntRaster] = null
+  var op:Op[Raster] = null
 
   override def setUp() {
     server = initServer()
-    val r:IntRaster = loadRaster("SBN_farm_mkt", size, size)
+    val r:Raster = loadRaster("SBN_farm_mkt", size, size)
     val t = Tiler.createTileRaster(r, pixels)
     op = ForEachTile(t)(AddConstant(_, 13))
   }
@@ -344,12 +344,12 @@ class MiniWeightedOverlay extends MyBenchmark {
   @Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "8192", "10000"))
   var size:Int = 0
   
-  var op:Op[IntRaster] = null
+  var op:Op[Raster] = null
 
   override def setUp() {
     server = initServer()
-    val r1:IntRaster = loadRaster("SBN_farm_mkt", size, size)
-    val r2:IntRaster = loadRaster("SBN_RR_stops_walk", size, size)
+    val r1:Raster = loadRaster("SBN_farm_mkt", size, size)
+    val r2:Raster = loadRaster("SBN_RR_stops_walk", size, size)
     op = Add(MultiplyConstant(r1, 5), MultiplyConstant(r2, 2))
   }
 

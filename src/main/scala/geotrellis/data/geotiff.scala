@@ -33,6 +33,8 @@ final class GeoTiffReadState(path:String,
   private var noData:Int = 0
   private var ints:Array[Int] = null
 
+  def createRasterData(size:Int) = IntArrayRasterData.empty(size)
+
   private def getReader = {
     val fh    = new File(path)
     val gtf   = new gce.geotiff.GeoTiffFormat

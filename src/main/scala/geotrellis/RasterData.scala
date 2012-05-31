@@ -169,11 +169,30 @@ object ByteArrayRasterData {
 }
 
 final class ByteArrayRasterData(array:Array[Byte]) extends StrictRasterData {
+  final val nd = Byte.MinValue
   def length = array.length
-  def apply(i:Int) = array(i).asInstanceOf[Int]
-  def update(i:Int, x: Int): Unit = array(i) = x.asInstanceOf[Byte]
+  def apply(i:Int) = {
+    val z = array(i)
+    if (z == nd) NODATA else z
+  }
+  def update(i:Int, x: Int) {
+    val z = if (x == NODATA) nd else x.asInstanceOf[Byte]
+    array(i) = z
+  }
   def copy = ByteArrayRasterData(array.clone)
   def asArray = array.map(_.asInstanceOf[Int])
+
+  override def mapIfSet(f:Int => Int) = {
+    val arr = array.clone
+    var i = 0
+    val len = length
+    while (i < len) {
+      val z = arr(i)
+      if (z != nd) arr(i) = f(z).asInstanceOf[Byte]
+      i += 1
+    }
+    ByteArrayRasterData(arr)
+  }
 }
 
 /**
@@ -186,11 +205,30 @@ object ShortArrayRasterData {
 }
 
 final class ShortArrayRasterData(array:Array[Short]) extends StrictRasterData {
+  final val nd = Byte.MinValue
   def length = array.length
-  def apply(i:Int) = array(i).asInstanceOf[Int]
-  def update(i:Int, x: Int): Unit = array(i) = x.asInstanceOf[Short]
+  def apply(i:Int) = {
+    val z = array(i)
+    if (z == nd) NODATA else z
+  }
+  def update(i:Int, x: Int) {
+    val z = if (x == NODATA) nd else x.asInstanceOf[Short]
+    array(i) = z
+  }
   def copy = ShortArrayRasterData(array.clone)
   def asArray = array.map(_.asInstanceOf[Int])
+
+  override def mapIfSet(f:Int => Int) = {
+    val arr = array.clone
+    var i = 0
+    val len = length
+    while (i < len) {
+      val z = arr(i)
+      if (z != nd) arr(i) = f(z).asInstanceOf[Short]
+      i += 1
+    }
+    ShortArrayRasterData(arr)
+  }
 }
 
 
@@ -298,5 +336,3 @@ object LazyCombine2 {
     new LazyCombine2(data1, data2)(g)
   }
 }
-
-
