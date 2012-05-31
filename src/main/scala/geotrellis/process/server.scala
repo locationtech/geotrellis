@@ -145,6 +145,7 @@ akka {
         //REVIEW: replace with unified ARG reader
         layerOpt.getOrElse(RasterLayer.fromPath(metadataPath(path))) match {
           case RasterLayer(_, "arg", "int32", _, _, _, _, _) => Arg32Reader
+          case RasterLayer(_, "arg", "int16", _, _, _, _, _) => Arg16Reader
           case RasterLayer(_, "arg", "int8",  _, _, _, _, _) => Arg8Reader
           case RasterLayer(_, typ, datatyp,   _, _, _, _, _) => 
           throw new Exception("Unsupported raster layer: with type %s, datatype %s".format(typ,datatyp))
