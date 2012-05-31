@@ -1,6 +1,6 @@
 package geotrellis.geometry.rasterizer
 
-import geotrellis.{IntRaster,RasterData}
+import geotrellis.{Raster,RasterData}
 import geotrellis.geometry.{Polygon}
 import geotrellis.geometry.grid.{GridPoint, GridLine, GridPolygon}
 
@@ -21,7 +21,7 @@ object Rasterizer {
    * quantize an array of polygons based on a raster's extent, and then draw
    * them into the provided raster.
    */
-  def rasterize(raster:IntRaster, polygons:Array[Polygon]) {
+  def rasterize(raster:Raster, polygons:Array[Polygon]) {
     val gridPolygons = polygons.flatMap(_.translateToGrid(raster.rasterExtent))
 
     //gridPolygons(0).edges.filter(_.interceptsY(DBG)).foreach(printf("  %s\n", _))
@@ -30,7 +30,7 @@ object Rasterizer {
     this.rasterize(raster, gridPolygons, values)
   }
 
-  def rasterize(raster:IntRaster, polygons:Array[Polygon],
+  def rasterize(raster:Raster, polygons:Array[Polygon],
                 fs:Array[Int => Int]) {
     val gridPolygons = polygons.flatMap(_.translateToGrid(raster.rasterExtent))
     this.rasterize(raster, gridPolygons, fs)
@@ -39,7 +39,7 @@ object Rasterizer {
   /**
    * draw an array of polygons (with corresponding values) into raster.
    */
-  def rasterize(raster:IntRaster, polygons:Array[GridPolygon],
+  def rasterize(raster:Raster, polygons:Array[GridPolygon],
                 values:Array[Int]) {
     //polygons.foreach { p => println(p.edges.toList) }
 
@@ -47,7 +47,7 @@ object Rasterizer {
     rasterize(raster.cols, raster.rows, polygons, fs, raster.data)
   }
 
-  def rasterize(raster:IntRaster, polygons:Array[GridPolygon],
+  def rasterize(raster:Raster, polygons:Array[GridPolygon],
                 fs:Array[Int => Int]) {
     rasterize(raster.cols, raster.rows, polygons, fs, raster.data)
   }

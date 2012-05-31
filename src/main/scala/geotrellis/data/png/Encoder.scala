@@ -35,7 +35,7 @@ class Encoder(settings:Settings) {
   // how many bits to shift to get the uppermost byte.
   final val SHIFT:Int = (DEPTH - 1) * 8
 
-  def writeHeader(dos:DataOutputStream, raster:IntRaster) {
+  def writeHeader(dos:DataOutputStream, raster:Raster) {
     val width = raster.rasterExtent.cols
     val height = raster.rasterExtent.rows
 
@@ -78,7 +78,7 @@ class Encoder(settings:Settings) {
     }
   }
 
-  def createByteBuffer(raster:IntRaster) = {
+  def createByteBuffer(raster:Raster) = {
     val size = raster.length
     val data = raster.data
     val bb = ByteBuffer.allocate(size * DEPTH)
@@ -93,7 +93,7 @@ class Encoder(settings:Settings) {
   }
 
   // TODO: figure out how to share code without impacting performance
-  def writePixelData(dos:DataOutputStream, raster:IntRaster) {
+  def writePixelData(dos:DataOutputStream, raster:Raster) {
     settings.filter match {
       case PaethFilter => writePixelDataPaeth(dos, raster)
       case NoFilter => writePixelDataNoFilter(dos, raster)
@@ -101,7 +101,7 @@ class Encoder(settings:Settings) {
     }
   }
 
-  def writePixelDataNoFilter(dos:DataOutputStream, raster:IntRaster) {
+  def writePixelDataNoFilter(dos:DataOutputStream, raster:Raster) {
     // dereference some useful information from the raster
     val cols = raster.cols
     val size = cols * raster.rows
@@ -158,7 +158,7 @@ class Encoder(settings:Settings) {
     cIDAT.writeTo(dos)
   }
 
-  def writePixelDataPaeth(dos:DataOutputStream, raster:IntRaster) {
+  def writePixelDataPaeth(dos:DataOutputStream, raster:Raster) {
     // dereference some useful information from the raster
     val cols = raster.cols
     val size = cols * raster.rows
@@ -246,7 +246,7 @@ class Encoder(settings:Settings) {
     cIEND.writeTo(dos)
   }
 
-  def writeOutputStream(os:OutputStream, raster:IntRaster) {
+  def writeOutputStream(os:OutputStream, raster:Raster) {
     // wrap our actual OutputStream to enable us to write bytes and such.
     val dos = new DataOutputStream(os)
 
@@ -264,13 +264,13 @@ class Encoder(settings:Settings) {
     dos.flush()
   }
 
-  def writeByteArray(raster:IntRaster) = {
+  def writeByteArray(raster:Raster) = {
     val baos = new ByteArrayOutputStream()
     writeOutputStream(baos, raster)
     baos.toByteArray
   }
 
-  def writePath(path:String, raster:IntRaster) {
+  def writePath(path:String, raster:Raster) {
     val fos = new FileOutputStream(new File(path))
     writeOutputStream(fos, raster)
     fos.close()

@@ -169,7 +169,7 @@ case class GridPolygon(val edges:Seq[GridLine]) {
   //   throw new Exception("negative indices not supported")
   // }
 
-  def rasterize(raster:IntRaster, value:Int) {
+  def rasterize(raster:Raster, value:Int) {
     this.rasterize(raster.cols, raster.rows, value, raster.data, 0, 0)
   }
   /**

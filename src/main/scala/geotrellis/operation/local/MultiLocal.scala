@@ -7,18 +7,18 @@ import geotrellis.process._
 /**
  *
  */
-trait MultiLocalArray extends Op[IntRaster] {
-  def op:Op[Array[IntRaster]]
+trait MultiLocalArray extends Op[Raster] {
+  def op:Op[Array[Raster]]
 
   def _run(context:Context) = runAsync(op :: Nil)
 
   val nextSteps:Steps = {
-    case (rasters:Array[IntRaster]) :: Nil => handleRasters(rasters)
+    case (rasters:Array[Raster]) :: Nil => handleRasters(rasters)
   }
 
   def handle(z1:Int, z2:Int):Int
 
-  def handleRasters(rasters:Array[IntRaster]) = {
+  def handleRasters(rasters:Array[Raster]) = {
     val output = rasters(0).copy()
     val outdata = output.data
     
@@ -48,13 +48,13 @@ trait MultiLocalArray extends Op[IntRaster] {
  *
  */
 trait MultiLocal extends LocalOperation {
-  def ops:Array[Op[IntRaster]]
+  def ops:Array[Op[Raster]]
 
   def _run(context:Context) = runAsync(ops.toList)
 
   val nextSteps:Steps = {
     case rasters:List[_] => {
-      handleRasters(rasters.asInstanceOf[List[IntRaster]].toArray)
+      handleRasters(rasters.asInstanceOf[List[Raster]].toArray)
     }
   }
 
@@ -68,7 +68,7 @@ trait MultiLocal extends LocalOperation {
     }
   }
   
-  def handleRasters(rasters:Array[IntRaster]) = {
+  def handleRasters(rasters:Array[Raster]) = {
     val output = rasters(0).copy()
     val outdata = output.data
     var j = 1

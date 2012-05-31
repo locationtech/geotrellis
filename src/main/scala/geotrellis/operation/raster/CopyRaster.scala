@@ -1,7 +1,7 @@
 package geotrellis.operation
 
 import geotrellis.process._
-import geotrellis.IntRaster
+import geotrellis.Raster
 
 /**
  * Given an operation producing a raster, returns a copy of this raster.
@@ -9,6 +9,6 @@ import geotrellis.IntRaster
  * Useful because some operations currently mutate one or more of their
  * arguments.
  */
-case class CopyRaster(r:Op[IntRaster]) extends Op1(r)({
+case class CopyRaster(r:Op[Raster]) extends Op1(r)({
   (r) => Result(r.copy)
 })

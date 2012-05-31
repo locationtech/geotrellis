@@ -6,8 +6,6 @@ import java.io.{File, FileInputStream, FileOutputStream}
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel.MapMode._
 import javax.imageio.ImageIO
-import java.awt.image.WritableRaster
-import java.awt.image.Raster
 import java.awt.Point
 
 import org.geotools.coverage.grid.GridCoverageFactory
@@ -120,7 +118,7 @@ object GeoTiffWriter extends Writer {
 
   val geoTiffSettings = Settings(IntSample, Signed, esriCompat = false)
 
-  def write(path:String, raster:IntRaster, name:String) {
+  def write(path:String, raster:Raster, name:String) {
     Encoder.writePath(path, raster, geoTiffSettings)
   }
 }

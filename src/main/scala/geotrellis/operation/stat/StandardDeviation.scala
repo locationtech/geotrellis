@@ -1,6 +1,6 @@
 package geotrellis.operation
 
-import geotrellis.IntRaster
+import geotrellis.Raster
 import geotrellis.stat.{Histogram, Statistics}
 import geotrellis.process._
 
@@ -8,16 +8,16 @@ import geotrellis.process._
 /*
  * Calculate a raster in which each value is set to the standard deviation of that cell's value.
  */
-case class StandardDeviation(r:Op[IntRaster], h:Op[Histogram], factor:Int) extends Op[IntRaster] {
+case class StandardDeviation(r:Op[Raster], h:Op[Histogram], factor:Int) extends Op[Raster] {
   val g = GenerateStatistics(h)
 
   def _run(context:Context) = runAsync(List(g, r))
 
   val nextSteps:Steps = {
-    case (stats:Statistics) :: (raster:IntRaster) :: Nil => step2(stats, raster)
+    case (stats:Statistics) :: (raster:Raster) :: Nil => step2(stats, raster)
   }
 
-  def step2(stats:Statistics, raster:IntRaster) = {
+  def step2(stats:Statistics, raster:Raster) = {
     val indata = raster.data
     val len = indata.length
     val outdata = Array.ofDim[Int](len)
@@ -31,7 +31,7 @@ case class StandardDeviation(r:Op[IntRaster], h:Op[Histogram], factor:Int) exten
       outdata(i) = (delta * factor / stddev).toInt
       i += 1
     }
-    val output = IntRaster(outdata, raster.rasterExtent)
+    val output = Raster(outdata, raster.rasterExtent)
     Result(output)
   }
 }

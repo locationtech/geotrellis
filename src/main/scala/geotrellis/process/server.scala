@@ -22,15 +22,15 @@ import akka.pattern.ask
 class Context (server:Server) {
   val timer = new Timer()
 
-  def loadRaster(path:String, g:RasterExtent):IntRaster = {
+  def loadRaster(path:String, g:RasterExtent):Raster = {
     server.getRaster(path, None, Option(g))
   }
 
-  def getRaster(path:String, layer:RasterLayer, re:RasterExtent):IntRaster = {
+  def getRaster(path:String, layer:RasterLayer, re:RasterExtent):Raster = {
     server.getRaster(path, Option(layer), Option(re))
   }
 
-  def getRasterByName(name:String, re:RasterExtent):IntRaster = {
+  def getRasterByName(name:String, re:RasterExtent):Raster = {
     server.getRasterByName(name, Option(re))
   }
 
@@ -156,12 +156,12 @@ akka {
     }
   }
     
-  def getRaster(path:String, layerOpt:Option[RasterLayer], reOpt:Option[RasterExtent]):IntRaster = {
+  def getRaster(path:String, layerOpt:Option[RasterLayer], reOpt:Option[RasterExtent]):Raster = {
     getReader(path, layerOpt).readPath(path, layerOpt, reOpt)  
   }
 
   // TODO: rewrite calls to loadRaster to getRaster. then remove?
-  def loadRaster(path:String, g:RasterExtent):IntRaster = getRaster(path, None, Option(g))
+  def loadRaster(path:String, g:RasterExtent):Raster = getRaster(path, None, Option(g))
 
   def getRasterExtentByName(name:String):RasterExtent = {
     catalog.getRasterLayerByName(name) match {
@@ -170,7 +170,7 @@ akka {
     }
   }
 
-  def getRasterByName(name:String, reOpt:Option[RasterExtent]):IntRaster = {
+  def getRasterByName(name:String, reOpt:Option[RasterExtent]):Raster = {
     catalog.getRasterLayerByName(name) match {
       case Some(layer) => {
         val path = layer.rasterPath

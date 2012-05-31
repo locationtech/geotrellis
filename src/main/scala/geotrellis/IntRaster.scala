@@ -2,48 +2,23 @@ package geotrellis
 
 import scala.math.{min, max}
 
-//?TODO: remove rows & cols from IntRaster constructor
-object IntRaster {
-  def apply(data:RasterData, rasterExtent:RasterExtent):IntRaster = {
-    new IntRaster(data, rasterExtent, "")
+object Raster {
+  def apply(arr:Array[Int], re:RasterExtent):Raster = {
+    new Raster(IntArrayRasterData(arr), re)
   }
 
-  def apply(data:RasterData, rasterExtent:RasterExtent, name:String) = {
-    new IntRaster(data, rasterExtent, name)
-  } 
-   
-  def apply(array:Array[Int], rasterExtent:RasterExtent):IntRaster = {
-    new IntRaster(ArrayRasterData(array), rasterExtent, "")
-  }
-
-  def apply(array:Array[Int], rasterExtent:RasterExtent, name:String):IntRaster = {
-    new IntRaster(ArrayRasterData(array), rasterExtent, name)
-  }
-
-  def createEmpty(geo:RasterExtent) = {
-    val size = geo.rows * geo.cols
-    val data = Array.fill[Int](size)(NODATA)
-    IntRaster(ArrayRasterData(data), geo, "")
+  def empty(re:RasterExtent) = {
+    Raster(IntArrayRasterData.empty(re.rows * re.cols), re)
   }
 }
 
 /**
  * 
  */
-class IntRaster(val data:RasterData, val rasterExtent:RasterExtent,
-                val name:String) extends Serializable {
-
-  override def toString = "IntRaster(%s, %s, %s, %s, %s)" format (data, rows, cols, rasterExtent, name)
-
-  override def equals(other:Any) = other match {
-    case r:IntRaster => data == r.data && rows == r.rows && cols == r.cols && rasterExtent == r.rasterExtent
-    case _ => false
-  }
+case class Raster(data:RasterData, rasterExtent:RasterExtent) {
 
   def cols = rasterExtent.cols
-
   def rows = rasterExtent.rows
- 
   def length = rasterExtent.size
 
   /**
@@ -85,14 +60,12 @@ class IntRaster(val data:RasterData, val rasterExtent:RasterExtent,
   /**
     * Test [[geotrellis.RasterExtent]] of other raster w/ our own geographic attributes.
     */
-  def compare(other:IntRaster) = this.rasterExtent.compare(other.rasterExtent)
+  def compare(other:Raster) = this.rasterExtent.compare(other.rasterExtent)
 
   /**
     * Clone this raster.
     */
-  def copy() = {
-    new IntRaster(data.copy, rasterExtent, name + "_copy")
-  }
+  def copy() = new Raster(data.copy, rasterExtent)
 
   /**
     * Return ascii art of this raster.
@@ -134,31 +107,17 @@ class IntRaster(val data:RasterData, val rasterExtent:RasterExtent,
 
   def foreach(f: Int => Unit):Unit = data.foreach(f)
 
-  def map(f:Int => Int) = IntRaster(data.map(f), rasterExtent)
+  def map(f:Int => Int) = Raster(data.map(f), rasterExtent)
 
-  //TODO: implement RasterData.ofDim and use that instead
-  def combine2(r2:IntRaster)(f:(Int,Int) => Int) = {
-    val data1 = this.data
-    val data2 = r2.data
-    val output = data1.copy // RasterData.ofDim[Int](length)
-    var i = 0
-    val len = length
-    while (i < len) {
-      output(i) = f(data1(i), data2(i))
-      i += 1
-    }
-    IntRaster(output, rasterExtent)
+  def combine2(r2:Raster)(f:(Int,Int) => Int) = {
+    Raster(data.combine2(r2.data)(f), rasterExtent)
   }
 
-  def normalize(zmin:Int, zmax:Int, gmin:Int, gmax:Int) = {
-    val grange = gmax - gmin
-    val zrange = zmax - zmin
-    if (zrange <= 0) {
-      copy()
-    } else {
-      mapIfSet(z => (z - zmin) * (grange / zrange) + gmin)
-    }
+  def normalize(zmin:Int, zmax:Int, gmin:Int, gmax:Int): Raster = {
+    val dg = gmax - gmin
+    val dz = zmax - zmin
+    if (dz > 0) mapIfSet(z => ((z - zmin) * dg) / dz + gmin) else copy()
   }
 
-  def mapIfSet(f:Int => Int) = IntRaster(data.mapIfSet(f), rasterExtent)
+  def mapIfSet(f:Int => Int) = Raster(data.mapIfSet(f), rasterExtent)
 }

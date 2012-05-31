@@ -16,8 +16,8 @@ object ArgFormat {
 }
 
 abstract class ArgNReadState(data:Either[String, Array[Byte]],
-                           val layer:RasterLayer,
-                           val target:RasterExtent) extends ReadState {
+                             val layer:RasterLayer,
+                             val target:RasterExtent) extends ReadState {
   def width:Int // byte width, e.g. 4 for arg32 with 32bit values
 
   protected[this] var src:ByteBuffer = null
@@ -32,7 +32,7 @@ abstract class ArgNReadState(data:Either[String, Array[Byte]],
     }
   }
 
-  }
+}
 
 
 trait ArgNWriter extends Writer {
@@ -41,14 +41,14 @@ trait ArgNWriter extends Writer {
 
   def dataType = "Int" + (width * 8).toString
 
-  def write(path:String, raster:IntRaster, name:String) {
+  def write(path:String, raster:Raster, name:String) {
     val i = path.lastIndexOf(".")
     val base = path.substring(0, i)
     writeMetadataJSON(base + ".json", name, raster.rasterExtent)
     writeData(base + ".arg", raster)
   }
 
-  private def writeData(path:String, raster:IntRaster) {
+  private def writeData(path:String, raster:Raster) {
     val re = raster.rasterExtent
     val cols = re.cols
     val rows = re.rows
@@ -88,15 +88,14 @@ trait ArgNWriter extends Writer {
 //          This would require refactoring the Writer/Reader traits.
 
 class Arg32ReadState(data:Either[String, Array[Byte]],
-                           layer:RasterLayer,
-                           target:RasterExtent)  extends ArgNReadState (data,layer,target) {
-  val width = 4
+                     layer:RasterLayer,
+                     target:RasterExtent)  extends ArgNReadState(data, layer, target) {
+  final val width = 4
 
   @inline
   def assignFromSource(sourceIndex:Int, dest:Array[Int], destIndex:Int) {
     dest(destIndex) = src.getInt(sourceIndex * width)
   }
-
 }
 
 object Arg32Reader extends FileReader {

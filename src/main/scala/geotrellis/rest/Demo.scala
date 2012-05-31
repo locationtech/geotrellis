@@ -15,12 +15,12 @@ import geotrellis.Implicits._
  * Operation to perform the basic weighted overlay calculation.
  */
 object WeightedOverlay2 {
-  def apply(raster1:Op[IntRaster], weight1:Op[Int],
-            raster2:Op[IntRaster], weight2:Op[Int]) = {
+  def apply(raster1:Op[Raster], weight1:Op[Int],
+            raster2:Op[Raster], weight2:Op[Int]) = {
 
-    val x:Op[IntRaster] = raster1 * weight1
-    val y:Op[IntRaster] = raster2 * weight2
-    val z:Op[IntRaster] = x + y
+    val x:Op[Raster] = raster1 * weight1
+    val y:Op[Raster] = raster2 * weight2
+    val z:Op[Raster] = x + y
 
     val weightSum:Op[Int] = weight1 + weight2
 
@@ -29,9 +29,9 @@ object WeightedOverlay2 {
 }
 
 object WeightedOverlayArray {
-  def apply(rasters:Op[Array[IntRaster]], weights:Op[Array[Int]]) = {
+  def apply(rasters:Op[Array[Raster]], weights:Op[Array[Int]]) = {
 
-    val rs:Op[Array[IntRaster]] = ForEach2(rasters, weights)(_ * _)
+    val rs:Op[Array[Raster]] = ForEach2(rasters, weights)(_ * _)
 
     val weightSum:Op[Int] = Map1(weights)(_.sum)
 

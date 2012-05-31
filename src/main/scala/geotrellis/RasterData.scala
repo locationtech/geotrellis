@@ -67,20 +67,33 @@ trait RasterData {
     }
     data
   }
+
+  def combine2(other:RasterData)(f:(Int,Int) => Int) = {
+    val output = other.copy
+    var i = 0
+    val len = length
+    while (i < len) {
+      output(i) = f(this(i), output(i))
+      i += 1
+    }
+    output
+  }
 }
 
 /**
  * RasterData based on Array[Int] (each cell as an Int).
  */
-object ArrayRasterData {
-  def apply(array:Array[Int]) = new ArrayRasterData(array)
+object IntArrayRasterData {
+  def apply(array:Array[Int]) = new IntArrayRasterData(array)
+  def ofDim(size:Int) = new IntArrayRasterData(Array.ofDim[Int](size))
+  def empty(size:Int) = new IntArrayRasterData(Array.fill[Int](size)(NODATA))
 }
 
-final class ArrayRasterData(array:Array[Int]) extends RasterData with Serializable {
+final class IntArrayRasterData(array:Array[Int]) extends RasterData with Serializable {
   def length = array.length
   def apply(i:Int) = array(i)
   def update(i:Int, x: Int): Unit = array(i) = x
-  def copy = ArrayRasterData(this.array.clone)
+  def copy = IntArrayRasterData(this.array.clone)
   def asArray = array
 }
 
@@ -89,6 +102,8 @@ final class ArrayRasterData(array:Array[Int]) extends RasterData with Serializab
  */
 object BitArrayRasterData {
   def apply(array:Array[Byte], size:Int) = new BitArrayRasterData(array, size)
+  def ofDim(size:Int) = new BitArrayRasterData(Array.ofDim[Byte]((size + 7) / 8), size)
+  def empty(size:Int) = ofDim(size)
 }
 
 final class BitArrayRasterData(array:Array[Byte], size:Int) extends RasterData with Serializable {
@@ -138,6 +153,8 @@ final class BitArrayRasterData(array:Array[Byte], size:Int) extends RasterData w
  */
 object ByteArrayRasterData {
   def apply(array:Array[Byte]) = new ByteArrayRasterData(array)
+  def ofDim(size:Int) = new ByteArrayRasterData(Array.ofDim[Byte](size))
+  def empty(size:Int) = new ByteArrayRasterData(Array.fill[Byte](size)(Byte.MinValue))
 }
 
 class ByteArrayRasterData(array:Array[Byte]) extends RasterData with Serializable {
@@ -153,6 +170,8 @@ class ByteArrayRasterData(array:Array[Byte]) extends RasterData with Serializabl
  */
 object ShortArrayRasterData {
   def apply(array:Array[Short]) = new ShortArrayRasterData(array)
+  def ofDim(size:Int) = new ShortArrayRasterData(Array.ofDim[Short](size))
+  def empty(size:Int) = new ShortArrayRasterData(Array.fill[Short](size)(Short.MinValue))
 }
 
 class ShortArrayRasterData(array:Array[Short]) extends RasterData with Serializable {

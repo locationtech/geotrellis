@@ -14,6 +14,6 @@ import geotrellis._
  * val D = BinaryDoCell(R, (a, b) => a + b )
  * </pre>
  */
-case class BinaryDoCell(r1:Op[IntRaster], r2:Op[IntRaster], f:(Int, Int) => Int) extends BinaryLocal {
+case class BinaryDoCell(r1:Op[Raster], r2:Op[Raster], f:(Int, Int) => Int) extends BinaryLocal {
   def handleCells(z1:Int, z2:Int) = f(z1, z2)
 }

@@ -6,7 +6,7 @@ import scala.math.{max,min,sqrt}
 import geotrellis.geometry.Polygon
 
 import geotrellis.data.ColorBreaks
-import geotrellis.IntRaster
+import geotrellis.Raster
 import geotrellis.{Extent,RasterExtent}
 
 import geotrellis.stat._
@@ -26,7 +26,7 @@ class WarpRasterSpec extends Spec with MustMatchers with ShouldMatchers {
                      2, 2, 2, 2,
                      3, 3, 3, 3,
                      4, 4, 4, 4)
-    val raster = IntRaster(data, baseGeo)
+    val raster = Raster(data, baseGeo)
 
     it("should load the full raster on its own extent") {
       val op = WarpRaster(Literal(raster), baseGeo)

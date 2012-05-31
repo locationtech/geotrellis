@@ -11,7 +11,7 @@ import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class BinaryLocalSpec extends Spec with MustMatchers with ShouldMatchers {
-  def f(op:Op[IntRaster]) = AddConstant(op, 1)
+  def f(op:Op[Raster]) = AddConstant(op, 1)
 
   describe("The BinaryLocal operation (Subtract)") {
     val cols = 100
@@ -22,7 +22,7 @@ class BinaryLocalSpec extends Spec with MustMatchers with ShouldMatchers {
     val re = RasterExtent(e, e.width / cols, e.height / rows, cols, rows)
 
     def makeData(c:Int) = Array.fill(re.cols * re.rows)(c)
-    def makeRaster(c:Int) = IntRaster(makeData(c), re)
+    def makeRaster(c:Int) = Raster(makeData(c), re)
 
     val r63 = makeRaster(63)
     val r46 = makeRaster(46)

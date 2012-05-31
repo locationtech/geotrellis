@@ -7,7 +7,7 @@ import geotrellis._
   * Local operation.
   * Binary operation.
   */
-case class Divide(r1:Op[IntRaster], r2:Op[IntRaster]) extends BinaryLocal {
+case class Divide(r1:Op[Raster], r2:Op[Raster]) extends BinaryLocal {
   def handleCells(z1:Int, z2:Int) = if (z2 == NODATA || z2 == 0 || z1 == NODATA) {
     NODATA
   } else {

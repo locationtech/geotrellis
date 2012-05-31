@@ -148,11 +148,11 @@ object AsciiWriter extends Writer {
   def rasterType = "ascii"
   def dataType = ""
 
-  def write(path:String, raster:IntRaster, name:String) {
+  def write(path:String, raster:Raster, name:String) {
     write(path, raster, name, NODATA)
   }
 
-  def write(path:String, raster:IntRaster, name:String, noData:Int) {
+  def write(path:String, raster:Raster, name:String, noData:Int) {
     val g = raster.rasterExtent
     val e = raster.rasterExtent.extent
 

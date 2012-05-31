@@ -4,8 +4,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.math.{min, max, round}
 
 import geotrellis.geometry.grid.{GridPoint, GridLine, GridPolygon}
-import geotrellis.{Extent,RasterExtent}
-import geotrellis.{IntRaster}
+import geotrellis._
 
 import com.vividsolutions.jts.geom.{GeometryFactory,Geometry}
 import com.vividsolutions.jts.geom.{Coordinate => JtsCoordinate}

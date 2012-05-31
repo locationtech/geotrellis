@@ -14,7 +14,7 @@ trait ReadState {
   val target:RasterExtent
 
   // don't override
-  def loadRaster(): IntRaster = {
+  def loadRaster(): Raster = {
     val re = layer.rasterExtent
 
     // keep track of cell size in our source raster
@@ -115,7 +115,7 @@ trait ReadState {
 
   // don't usually override
   protected[this] def createRaster(data:Array[Int]) = {
-    IntRaster(translate(data), target, layer.name)
+    Raster(translate(data), target)
   }
 
   // must override
@@ -152,7 +152,7 @@ trait FileReader extends Reader {
 
   def readStateFromCache(bytes:Array[Byte], layer:RasterLayer, target:RasterExtent):ReadState
 
-  def readCache(bytes:Array[Byte], layer:RasterLayer, targetOpt:Option[RasterExtent]): IntRaster = {
+  def readCache(bytes:Array[Byte], layer:RasterLayer, targetOpt:Option[RasterExtent]): Raster = {
     val target = targetOpt.getOrElse(layer.rasterExtent)
     val readState = readStateFromCache(bytes, layer, target)
     val raster = readState.loadRaster() // all the work is here
@@ -162,7 +162,7 @@ trait FileReader extends Reader {
 
   def readStateFromPath(path:String, layer:RasterLayer, target:RasterExtent):ReadState
 
-  def readPath(path:String, layerOpt:Option[RasterLayer], targetOpt:Option[RasterExtent]): IntRaster = {
+  def readPath(path:String, layerOpt:Option[RasterLayer], targetOpt:Option[RasterExtent]): Raster = {
     val layer = layerOpt.getOrElse(readMetadata(path))
     val target = targetOpt.getOrElse(layer.rasterExtent)
     val readState = readStateFromPath(path, layer, target)
@@ -174,9 +174,9 @@ trait FileReader extends Reader {
 
 trait Writer {
 
-  def write(path:String, raster:IntRaster) { write(path, raster, raster.name) }
+  //def write(path:String, raster:Raster) { write(path, raster, raster.name) }
 
-  def write(path:String, raster:IntRaster, name:String):Unit
+  def write(path:String, raster:Raster, name:String):Unit
 
   def rasterType: String
   def dataType:String
