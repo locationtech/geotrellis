@@ -143,6 +143,8 @@ case class TileRasterData(tileSet:TileSet, rasters:Array[Option[Raster]]) extend
     
   val tileExtent = RasterExtent(rasterExtent.extent, tileCellwidth, tileCellheight, tileCols, tileRows)
 
+  def getType = TypeInt //fixme
+
   /**
    * Get value at given coordinates.
    */
@@ -170,9 +172,9 @@ case class TileRasterData(tileSet:TileSet, rasters:Array[Option[Raster]]) extend
   /**
     * Copy: not implemented
     */
-  def copy:RasterData = { this }
+  def copy():RasterData = this
 
-  def length:Int = { rasterExtent.cols * rasterExtent.rows }
+  def length:Int = rasterExtent.cols * rasterExtent.rows
 
   def asArray():Array[Int] = {
     throw new Exception("not implemented yet");
