@@ -341,18 +341,191 @@ class TiledConstantAdd extends MyBenchmark {
 
 object MiniWeightedOverlay extends MyRunner(classOf[MiniWeightedOverlay])
 class MiniWeightedOverlay extends MyBenchmark {
-  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "8192", "10000"))
+  //@Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "8192", "10000"))
+  @Param(Array("100", "1000", "10000"))
   var size:Int = 0
   
   var op:Op[Raster] = null
+
+  var strictOp:Op[Raster] = null
+  var lazyOp:Op[Raster] = null
 
   override def setUp() {
     server = initServer()
     val r1:Raster = loadRaster("SBN_farm_mkt", size, size)
     val r2:Raster = loadRaster("SBN_RR_stops_walk", size, size)
+
+    // TODO: op should use AddOld
     op = Add(MultiplyConstant(r1, 5), MultiplyConstant(r2, 2))
+
+    strictOp = Add(MultiplyConstantMapSugar(r1, 5), MultiplyConstantMapSugar(r2, 2))
+    lazyOp = Force(Add(MultiplyConstantMapSugar(r1.defer, 5), MultiplyConstantMapSugar(r2.defer, 2)))
   }
 
   def timeMiniWeightedOverlay(reps:Int) = run(reps)(miniWeightedOverlay)
   def miniWeightedOverlay = server.run(op)
+
+  def timeMiniWeightedOverlayStrict(reps:Int) = run(reps)(miniWeightedOverlayStrict)
+  def miniWeightedOverlayStrict = server.run(strictOp)
+
+  def timeMiniWeightedOverlayLazy(reps:Int) = run(reps)(miniWeightedOverlayLazy)
+  def miniWeightedOverlayLazy = server.run(lazyOp)
+}
+
+
+object NewAddOperations extends MyRunner(classOf[NewAddOperations])
+class NewAddOperations extends MyBenchmark {
+  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "8192", "10000"))
+  var size:Int = 0
+  
+  var strictOld:Op[Raster] = null
+  var strictNew:Op[Raster] = null
+  var lazyNew:Op[Raster] = null
+
+  override def setUp() {
+    server = initServer()
+
+    val r1:Raster = loadRaster("SBN_farm_mkt", size, size)
+    val r2:Raster = loadRaster("SBN_RR_stops_walk", size, size)
+
+    val l1:Raster = r1.defer
+    val l2:Raster = r2.defer
+
+    // FIXME: strictOld should use AddOld
+    strictOld = Force(Add(Add(r1, r2), Add(r1, r2)))
+    strictNew = Force(Add(Add(r1, r2), Add(r1, r2)))
+    lazyNew = Force(Add(Add(l1, l2), Add(l1, l2)))
+  }
+
+  def timeStrictOld(reps:Int) = run(reps)(runStrictOld)
+  def runStrictOld = server.run(strictOld)
+
+  def timeStrictNew(reps:Int) = run(reps)(runStrictNew)
+  def runStrictNew = server.run(strictNew)
+
+  def timeLazyNew(reps:Int) = run(reps)(runLazyNew)
+  def runLazyNew = server.run(lazyNew)
+}
+
+
+object LazyIteration extends MyRunner(classOf[LazyIteration])
+class LazyIteration extends MyBenchmark {
+  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "8192", "10000"))
+  var size:Int = 0
+  
+  @Param(Array("1", "2", "3", "4"))
+  var iterations:Int = 0
+
+  var simpleOp:Op[Raster] = null
+  var mediumOp:Op[Raster] = null
+  var complexOp:Op[Raster] = null
+
+  override def setUp() {
+    server = initServer()
+
+    val r1:Raster = loadRaster("SBN_farm_mkt", size, size).defer
+    val r2:Raster = loadRaster("SBN_RR_stops_walk", size, size).defer
+    val r3:Raster = loadRaster("SBN_inc_percap", size, size).defer
+
+    simpleOp = AddConstant(r1, 6) 
+    mediumOp = Add(MultiplyConstant(r1, 2), MultiplyConstant(r2, 3))
+    complexOp = Add(DivideConstant(Add(MultiplyConstant(r1, 2),
+                                       MultiplyConstant(r2, 3),
+                                       MultiplyConstant(r3, 4)), 9), mediumOp)
+  }
+
+  def timeSimpleOpLazyIteration(reps:Int) = run(reps)(simpleOpLazyIteration)
+  def simpleOpLazyIteration = {
+    val r = server.run(simpleOp)
+    var t = 0
+    for (i <- 0 until iterations) {
+      r.foreach(z => t = t + z)
+    }
+    t
+  }
+
+  def timeSimpleOpStrictIteration(reps:Int) = run(reps)(simpleOpStrictIteration)
+  def simpleOpStrictIteration = {
+    val r = server.run(simpleOp).force
+    var t = 0
+    for (i <- 0 until iterations) {
+      r.foreach(z => t = t + z)
+    }
+    t
+  }
+
+  def timeMediumOpLazyIteration(reps:Int) = run(reps)(mediumOpLazyIteration)
+  def mediumOpLazyIteration = {
+    val r = server.run(mediumOp)
+    var t = 0
+    for (i <- 0 until iterations) {
+      r.foreach(z => t = t + z)
+    }
+    t
+  }
+
+  def timeMediumOpStrictIteration(reps:Int) = run(reps)(mediumOpStrictIteration)
+  def mediumOpStrictIteration = {
+    val r = server.run(mediumOp).force
+    var t = 0
+    for (i <- 0 until iterations) {
+      r.foreach(z => t = t + z)
+    }
+    t
+  }
+
+  def timeComplexOpLazyIteration(reps:Int) = run(reps)(complexOpLazyIteration)
+  def complexOpLazyIteration = {
+    val r = server.run(complexOp)
+    var t = 0
+    for (i <- 0 until iterations) {
+      r.foreach(z => t = t + z)
+    }
+    t
+  }
+
+  def timeComplexOpStrictIteration(reps:Int) = run(reps)(complexOpStrictIteration)
+  def complexOpStrictIteration = {
+    val r = server.run(complexOp).force
+    var t = 0
+    for (i <- 0 until iterations) {
+      r.foreach(z => t = t + z)
+    }
+    t
+  }
+}
+
+
+object RasterForeach extends MyRunner(classOf[RasterForeach])
+class RasterForeach extends MyBenchmark {
+  //@Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "8192", "10000"))
+  @Param(Array("64", "128", "256", "512", "1024"))
+  var size:Int = 0
+  
+  var r:Raster = null
+
+  override def setUp() {
+    server = initServer()
+    r = server.run(loadRaster("SBN_farm_mkt", size, size))
+  }
+
+  def timeRasterForeach(reps:Int) = run(reps)(rasterForeach)
+  def rasterForeach = {
+    var t = 0
+    r.foreach(z => t += z)
+    t
+  }
+
+  def timeRasterWhile(reps:Int) = run(reps)(rasterWhile)
+  def rasterWhile = {
+    var t = 0
+    var i = 0
+    val d = r.data
+    val len = r.length
+    while (i < len) {
+      t += d(i)
+      i += 1
+    }
+    t
+  }
 }

@@ -144,6 +144,8 @@ case class TileRasterData(tileSet:TileSet, rasters:Array[Option[Raster]]) extend
   val tileExtent = RasterExtent(rasterExtent.extent, tileCellwidth, tileCellheight, tileCols, tileRows)
 
   def getType = TypeInt //fixme
+  def alloc(size:Int):StrictRasterData = sys.error("fixme")
+  def force:StrictRasterData = sys.error("fixme")
 
   /**
    * Get value at given coordinates.

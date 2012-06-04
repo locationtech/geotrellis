@@ -22,20 +22,20 @@ case class Raster(data:RasterData, rasterExtent:RasterExtent) {
   def length = rasterExtent.size
 
   /**
-    * Get value at given coordinates.
-    */
+   * Get value at given coordinates.
+   */
   def get(col:Int, row:Int) = this.data(row * this.cols + col)
 
   /**
-    * Set value at given coordinates.
-    */
+   * Set value at given coordinates.
+   */
   def set(col:Int, row:Int, value:Int) {
     this.data(row * this.cols + col) = value
   }
 
   /**
-    * Return tuple of highest and lowest value in raster.
-    */
+   * Return tuple of highest and lowest value in raster.
+   */
   def findMinMax = {
     var zmin = Int.MaxValue
     var zmax = Int.MinValue
@@ -53,23 +53,24 @@ case class Raster(data:RasterData, rasterExtent:RasterExtent) {
   }      
 
   /**
-    * Return data in this raster as a one-dimensional array (row by row).
-    */
+   * Return data in this raster as a one-dimensional array (row by row).
+   */
   def asArray = this.data.asArray
 
   /**
-    * Test [[geotrellis.RasterExtent]] of other raster w/ our own geographic attributes.
-    */
+   * Test [[geotrellis.RasterExtent]] of other raster w/ our own geographic
+   *attributes.
+   */
   def compare(other:Raster) = this.rasterExtent.compare(other.rasterExtent)
 
   /**
-    * Clone this raster.
-    */
+   * Clone this raster.
+   */
   def copy() = new Raster(data.copy, rasterExtent)
 
   /**
-    * Return ascii art of this raster.
-    */
+   * Return ascii art of this raster.
+   */
   def asciiDraw() = {
     var s = "";
     for (row <- 0 until this.rows) {
@@ -87,8 +88,8 @@ case class Raster(data:RasterData, rasterExtent:RasterExtent) {
   }
 
   /**
-    * Return ascii art of a range from this raster.
-    */
+   * Return ascii art of a range from this raster.
+   */
   def asciiDrawRange(colMin:Int, colMax:Int, rowMin:Int, rowMax:Int) = {
     var s = "";
     for (row <- rowMin to rowMax) {
@@ -120,4 +121,7 @@ case class Raster(data:RasterData, rasterExtent:RasterExtent) {
   }
 
   def mapIfSet(f:Int => Int) = Raster(data.mapIfSet(f), rasterExtent)
+
+  def force = Raster(data.force, rasterExtent)
+  def defer = Raster(data.defer, rasterExtent)
 }

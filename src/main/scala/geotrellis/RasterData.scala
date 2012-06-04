@@ -11,6 +11,7 @@ import geotrellis.raster._
  */
 trait RasterData {
   def getType: RasterType
+  def alloc(size:Int): StrictRasterData
 
   def apply(i: Int):Int
   def copy():RasterData
@@ -103,18 +104,30 @@ trait RasterData {
     output
 
   }
+
+  def force:StrictRasterData
+  def defer:LazyRasterData = LazyWrapper(this)
 }
 
 // TODO: move update to only exist in StrictRasterData
 trait StrictRasterData extends RasterData with Serializable {
   override def copy():StrictRasterData
+  def force = this
 }
 
 // TODO: also extend serializable?
 trait LazyRasterData extends RasterData {
   def update(i:Int, x:Int) = sys.error("immutable")
-
-  override def equals(other:Any):Boolean = sys.error("todo")
+  def force = {
+    val len = length
+    val d = alloc(len)
+    var i = 0
+    while (i < len) {
+      d(i) = apply(i)
+      i += 1
+    }
+    d
+  }
 }
 
 // strict implementations follow
@@ -130,6 +143,7 @@ object IntArrayRasterData {
 
 final class IntArrayRasterData(array:Array[Int]) extends StrictRasterData {
   def getType = TypeInt
+  def alloc(size:Int) = IntArrayRasterData.ofDim(size)
   def length = array.length
   def apply(i:Int) = array(i)
   def update(i:Int, x: Int): Unit = array(i) = x
@@ -163,6 +177,7 @@ final class BitArrayRasterData(array:Array[Byte], size:Int) extends StrictRaster
   // 3 ^ 9 -> 10, that is 00000011 ^ 00001001 -> 00001010
   assert(array.length == (size + 7) / 8)
   def getType = TypeBit
+  def alloc(size:Int) = BitArrayRasterData.ofDim(size)
   def length = size
   def apply(i:Int) = ((array(i >> 3) >> (i & 7)) & 1).asInstanceOf[Int]
   def update(i:Int, x:Int): Unit = {
@@ -228,6 +243,7 @@ object ByteArrayRasterData {
 final class ByteArrayRasterData(array:Array[Byte]) extends StrictRasterData {
   final val nd = Byte.MinValue
   def getType = TypeByte
+  def alloc(size:Int) = ByteArrayRasterData.ofDim(size)
   def length = array.length
   def apply(i:Int) = {
     val z = array(i)
@@ -264,6 +280,7 @@ object ShortArrayRasterData {
 final class ShortArrayRasterData(array:Array[Short]) extends StrictRasterData {
   final val nd = Byte.MinValue
   def getType = TypeShort
+  def alloc(size:Int) = ShortArrayRasterData.ofDim(size)
   def length = array.length
   def apply(i:Int) = {
     val z = array(i)
@@ -301,6 +318,7 @@ object FloatArrayRasterData {
 
 final class FloatArrayRasterData(array:Array[Float]) extends StrictRasterData {
   def getType = TypeFloat
+  def alloc(size:Int) = FloatArrayRasterData.ofDim(size)
   def length = array.length
   def apply(i:Int) = {
     val z = array(i)
@@ -393,6 +411,7 @@ object DoubleArrayRasterData {
 
 final class DoubleArrayRasterData(array:Array[Double]) extends StrictRasterData {
   def getType = TypeDouble
+  def alloc(size:Int) = DoubleArrayRasterData.ofDim(size)
   def length = array.length
   def apply(i:Int) = {
     val z = array(i)
@@ -493,6 +512,7 @@ final class DoubleArrayRasterData(array:Array[Double]) extends StrictRasterData 
  */
 final class LazyWrapper(data:RasterData) extends LazyRasterData {
   def getType = data.getType
+  def alloc(size:Int) = data.alloc(size)
   def length = data.length
   def apply(i:Int) = data(i)
   def copy = this
@@ -505,14 +525,15 @@ final class LazyWrapper(data:RasterData) extends LazyRasterData {
 }
 
 object LazyWrapper {
-  def apply(data:RasterData) = data match {
-    case _:LazyRasterData => data
-    case _ => new LazyWrapper(data)
+  def apply(data:RasterData):LazyRasterData = data match {
+    case d:LazyRasterData => d
+    case d => new LazyWrapper(d)
   }
 }
 
 final class LazyMap(data:RasterData, g:Int => Int) extends LazyRasterData {
   def getType = data.getType
+  def alloc(size:Int) = data.alloc(size)
   def length = data.length
   def apply(i:Int) = g(data(i))
   def copy = this
@@ -538,6 +559,7 @@ final class LazyMapIfSet(data:RasterData, g:Int => Int) extends LazyRasterData {
   def gIfSet(z:Int) = if (z == NODATA) NODATA else g(z)
 
   def getType = data.getType
+  def alloc(size:Int) = data.alloc(size)
   def length = data.length
   def apply(i:Int) = gIfSet(data(i))
   def copy = this
@@ -557,6 +579,7 @@ object LazyMapIfSet {
 
 final class LazyCombine2(data1:RasterData, data2:RasterData, g:(Int, Int) => Int) extends LazyRasterData {
   def getType = data1.getType
+  def alloc(size:Int) = data1.alloc(size) //FIXME
   def length = data1.length
   def apply(i:Int) = g(data1(i), data2(i))
   def copy = this
@@ -570,6 +593,7 @@ final class LazyCombine2(data1:RasterData, data2:RasterData, g:(Int, Int) => Int
     }
     arr
   }
+
   override def foreach(f:Int => Unit) = {
     var i = 0
     val len = length

@@ -19,27 +19,15 @@ trait MultiLocalArray extends Op[Raster] {
   def handle(z1:Int, z2:Int):Int
 
   def handleRasters(rasters:Array[Raster]) = {
-    val output = rasters(0).copy()
-    val outdata = output.data
-    
-    val rlen = rasters.length
-    val dlen = outdata.length
-
+    val re = rasters(0).rasterExtent
     val datas = rasters.map(_.data)
-
-    var i = 0
-    var j = 1
-    while (j < rlen) {
-      val data = rasters(j).data
-      i = 0
-      while (i < dlen) {
-        outdata(i) = handle(outdata(i), data(i))
-        i += 1
-      }
-      j += 1
+    var d:RasterData = datas(0)
+    var i = 1
+    while (i < datas.length) {
+      d = d.combine2(datas(i))(handle)
+      i += 1
     }
-
-    Result(output)
+    Result(Raster(d, re))
   }
 }
 
@@ -59,23 +47,16 @@ trait MultiLocal extends LocalOperation {
   }
 
   def handle(z1:Int, z2:Int):Int
-
-  def handleRaster(outdata:RasterData, data:RasterData) {
-    var i = 0
-    while (i < outdata.length) {
-      outdata(i) = handle(outdata(i), data(i))
-      i += 1
-    }
-  }
   
   def handleRasters(rasters:Array[Raster]) = {
-    val output = rasters(0).copy()
-    val outdata = output.data
-    var j = 1
-    while (j < rasters.length) {
-      handleRaster(outdata, rasters(j).data)
-      j += 1
+    val re = rasters(0).rasterExtent
+    val datas = rasters.map(_.data)
+    var d:RasterData = datas(0)
+    var i = 1
+    while (i < datas.length) {
+      d = d.combine2(datas(i))(handle)
+      i += 1
     }
-    Result(output)
+    Result(Raster(d, re))
   }
 }
