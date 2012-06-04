@@ -11,7 +11,7 @@ import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class UnaryLocalSpec extends Spec with MustMatchers with ShouldMatchers {
-  def f(op:Op[IntRaster]) = AddConstant(op, 1)
+  def f(op:Op[Raster]) = AddConstant(op, 1)
 
   describe("The UnaryLocal operation (AddConstant)") {
     val cols = 1000
@@ -21,7 +21,7 @@ class UnaryLocalSpec extends Spec with MustMatchers with ShouldMatchers {
     val e = Extent(0.0, 0.0, 100.0, 100.0)
     val re = RasterExtent(e, e.width / cols, e.height / rows, cols, rows)
     val data = Array.fill(re.cols * re.rows)(100)
-    val raster = IntRaster(data, re)
+    val raster = Raster(data, re)
 
     it("should produce correct results") {
       val op = AddConstant(raster, 33)

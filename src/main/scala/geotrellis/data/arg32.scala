@@ -16,8 +16,8 @@ object ArgFormat {
 }
 
 abstract class ArgNReadState(data:Either[String, Array[Byte]],
-                           val layer:RasterLayer,
-                           val target:RasterExtent) extends ReadState {
+                             val layer:RasterLayer,
+                             val target:RasterExtent) extends ReadState {
   def width:Int // byte width, e.g. 4 for arg32 with 32bit values
 
   protected[this] var src:ByteBuffer = null
@@ -32,7 +32,7 @@ abstract class ArgNReadState(data:Either[String, Array[Byte]],
     }
   }
 
-  }
+}
 
 
 trait ArgNWriter extends Writer {
@@ -41,14 +41,14 @@ trait ArgNWriter extends Writer {
 
   def dataType = "Int" + (width * 8).toString
 
-  def write(path:String, raster:IntRaster, name:String) {
+  def write(path:String, raster:Raster, name:String) {
     val i = path.lastIndexOf(".")
     val base = path.substring(0, i)
     writeMetadataJSON(base + ".json", name, raster.rasterExtent)
     writeData(base + ".arg", raster)
   }
 
-  private def writeData(path:String, raster:IntRaster) {
+  private def writeData(path:String, raster:Raster) {
     val re = raster.rasterExtent
     val cols = re.cols
     val rows = re.rows
@@ -87,16 +87,19 @@ trait ArgNWriter extends Writer {
 //REFACTOR: Create a single ArgReader/Writer that passes through bitwidth as an argument.
 //          This would require refactoring the Writer/Reader traits.
 
+// arg int32
+
 class Arg32ReadState(data:Either[String, Array[Byte]],
-                           layer:RasterLayer,
-                           target:RasterExtent)  extends ArgNReadState (data,layer,target) {
-  val width = 4
+                     layer:RasterLayer,
+                     target:RasterExtent)  extends ArgNReadState(data, layer, target) {
+  final val width = 4
+
+  def createRasterData(size:Int) = IntArrayRasterData.empty(size)
 
   @inline
-  def assignFromSource(sourceIndex:Int, dest:Array[Int], destIndex:Int) {
+  def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
     dest(destIndex) = src.getInt(sourceIndex * width)
   }
-
 }
 
 object Arg32Reader extends FileReader {
@@ -105,20 +108,48 @@ object Arg32Reader extends FileReader {
 }
 
 object Arg32Writer extends ArgNWriter {
-  def width = 4
-  def rasterType = "arg32"
+  final val width = 4
+  final val rasterType = "arg32"
 }
+
+// arg int16
+
+class Arg16ReadState(data:Either[String, Array[Byte]],
+                    layer:RasterLayer,
+                    target:RasterExtent) extends ArgNReadState(data,layer,target) {
+  final val width = 2
+
+  def createRasterData(size:Int) = ShortArrayRasterData.empty(size)
+
+  @inline
+  def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
+    dest(destIndex) = src.get(sourceIndex * width)
+  }
+}
+
+object Arg16Reader extends FileReader {
+  def readStateFromCache(b:Array[Byte], rl:RasterLayer, re:RasterExtent) = new Arg16ReadState(Right(b), rl, re)
+  def readStateFromPath(p:String, rl:RasterLayer, re:RasterExtent) = new Arg16ReadState(Left(p), rl, re)
+}
+
+object Arg16Writer extends ArgNWriter {
+  final val width = 2
+  final val rasterType = "arg16"
+}
+
+// arg int8
 
 class Arg8ReadState(data:Either[String, Array[Byte]],
                     layer:RasterLayer,
                     target:RasterExtent) extends ArgNReadState(data,layer,target) {
-  val width = 1
+  final val width = 1
+
+  def createRasterData(size:Int) = ByteArrayRasterData.empty(size)
 
   @inline
-  def assignFromSource(sourceIndex:Int, dest:Array[Int], destIndex:Int) {
+  def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
     dest(destIndex) = src.get(sourceIndex * width)
   }
-
 }
 
 
@@ -128,6 +159,66 @@ object Arg8Reader extends FileReader {
 }
 
 object Arg8Writer extends ArgNWriter {
-  def width = 1
-  def rasterType = "arg8"
+  final val width = 1
+  final val rasterType = "arg8"
+}
+
+// arg float64
+
+abstract class FloatNReadState(data:Either[String, Array[Byte]],
+                               val layer:RasterLayer,
+                               val target:RasterExtent) extends ReadState {
+
+  def width:Int
+
+  protected[this] var src:ByteBuffer = null
+
+  def getNoDataValue = sys.error("not used") // REFACTOR: ugh
+
+  override def translate(data:StrictRasterData) = data
+
+  def initSource(pos:Int, size:Int) {
+    src = data match {
+      case Left(path) => Filesystem.slurpToBuffer(path, pos * width, size * width)
+      case Right(bytes) => ByteBuffer.wrap(bytes, pos * width, size * width)
+    }
+  }
+}
+
+
+class Float64ReadState(data:Either[String, Array[Byte]],
+                       layer:RasterLayer,
+                       target:RasterExtent)  extends FloatNReadState(data, layer, target) {
+  final val width = 8
+
+  def createRasterData(size:Int) = DoubleArrayRasterData.empty(size)
+
+  @inline
+  def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
+    dest.updateDouble(destIndex, src.getDouble(sourceIndex * width))
+  }
+}
+
+object Float64Reader extends FileReader {
+  def readStateFromCache(b:Array[Byte], rl:RasterLayer, re:RasterExtent) = new Float64ReadState(Right(b), rl, re)
+  def readStateFromPath(p:String, rl:RasterLayer, re:RasterExtent) = new Float64ReadState(Left(p), rl, re)
+}
+
+
+class Float32ReadState(data:Either[String, Array[Byte]],
+                       layer:RasterLayer,
+                       target:RasterExtent)  extends FloatNReadState(data, layer, target) {
+  final val width = 4
+
+  def createRasterData(size:Int) = FloatArrayRasterData.empty(size)
+
+  @inline
+  def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
+    dest.updateDouble(destIndex, src.getFloat(sourceIndex * width))
+  }
+}
+
+object Float32Reader extends FileReader {
+  def readStateFromCache(b:Array[Byte], rl:RasterLayer, re:RasterExtent) = new Float32ReadState(Right(b), rl, re)
+  def readStateFromPath(p:String, rl:RasterLayer, re:RasterExtent) = new Float32ReadState(Left(p), rl, re)
 }

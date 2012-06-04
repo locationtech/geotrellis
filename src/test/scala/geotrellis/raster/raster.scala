@@ -13,7 +13,7 @@ class RasterSpec extends Spec with MustMatchers {
     val data = Array(1, 2, 3,
                      4, 5, 6,
                      7, 8, 9)
-    val raster = IntRaster(data, rasterExtent=g)
+    val raster = Raster(data, g)
 
     it("should preserve the data") {
       raster.asArray must be === data
@@ -24,18 +24,18 @@ class RasterSpec extends Spec with MustMatchers {
     }
 
     it("should create empty rasters") {
-      val r = IntRaster.createEmpty(g)
+      val r = Raster.empty(g)
       for(i <- 0 until g.cols * g.rows) {
         r.data(i) must be === NODATA
       }
     }
 
     it("should be comparable to others") {
-      val r0:IntRaster = null
-      val r1 = IntRaster(Array(1,2,3,4), g)
-      val r2 = IntRaster(Array(1,2,3,5), g)
-      val r3 = IntRaster(Array(1,2,3,4), g)
-      val r4 = IntRaster(Array(1,2,3,4), g)
+      val r0:Raster = null
+      val r1 = Raster(Array(1,2,3,4), g)
+      val r2 = Raster(Array(1,2,3,5), g)
+      val r3 = Raster(Array(1,2,3,4), g)
+      val r4 = Raster(Array(1,2,3,4), g)
 
       r1 must not be r0
       r1 must be === r1

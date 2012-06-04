@@ -53,7 +53,7 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
       val base = path.substring(0, path.length - 4)
       println("base path: " + base)
 
-      Arg32Writer.write(path, raster)
+      Arg32Writer.write(path, raster, "foog")
 
       val data1 = io.Source.fromFile(path).mkString
       val data2 = io.Source.fromFile("src/test/resources/fake.img32.arg").mkString
@@ -67,13 +67,13 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
       val e = Extent(0.0, 0.0, 40.0, 40.0)
       val geo = RasterExtent(e, 10.0, 10.0, 4, 4)
       val data1 = Array.fill[Int](16)(nd)
-      val raster = IntRaster(data1, geo)
+      val raster = Raster(data1, geo)
       
       val fh = java.io.File.createTempFile("nodata", ".arg")
       val path = fh.getPath
       val base = path.substring(0, path.length - 4)
 
-      Arg32Writer.write(path, raster)
+      Arg32Writer.write(path, raster, "nodata")
 
       val data2 = Array.ofDim[Int](16)
       val dis = new DataInputStream(new FileInputStream(path))

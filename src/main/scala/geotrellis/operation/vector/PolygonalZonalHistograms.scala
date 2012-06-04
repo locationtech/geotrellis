@@ -5,7 +5,7 @@ import scala.math.{min, max}
 import geotrellis._
 import geotrellis.geometry.rasterizer.Rasterizer
 import geotrellis.process._
-import geotrellis.IntRaster
+import geotrellis.Raster
 import geotrellis.stat.{Histogram, ArrayHistogram, MapHistogram, CompressedArrayHistogram, Statistics}
 import geotrellis.geometry.Polygon
 
@@ -13,17 +13,17 @@ import geotrellis.geometry.Polygon
  * Given a raster and an array of polygons, return a histogram summary of the cells
  * within each polygon.
  */
-case class PolygonalZonalHistograms(ps:Array[Op[Polygon]], r:Op[IntRaster],
+case class PolygonalZonalHistograms(ps:Array[Op[Polygon]], r:Op[Raster],
                                     size:Int) extends Op[Array[Histogram]] {
   def _run(context:Context) = runAsync(r :: ps.toList)
 
   val nextSteps:Steps = {
     case raster :: polygons => {
-      step2(raster.asInstanceOf[IntRaster], polygons.asInstanceOf[List[Polygon]])
+      step2(raster.asInstanceOf[Raster], polygons.asInstanceOf[List[Polygon]])
     }
   }
 
-  def step2(raster:IntRaster, polygons:List[Polygon]) = {
+  def step2(raster:Raster, polygons:List[Polygon]) = {
     // build our map to hold results
     val histmap = Array.ofDim[Histogram](size)
 
@@ -60,7 +60,7 @@ case class PolygonalZonalHistograms(ps:Array[Op[Polygon]], r:Op[IntRaster],
     val (col2, row2) = geo.mapToGrid(xmax, ymax)
 
     // burn our polygons onto a raster
-    val zones = IntRaster.createEmpty(geo)
+    val zones = Raster.empty(geo)
     val zdata = zones.data
     Rasterizer.rasterize(zones, polygons.toArray)
 

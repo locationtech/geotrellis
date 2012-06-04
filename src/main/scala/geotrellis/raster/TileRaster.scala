@@ -8,14 +8,14 @@ import geotrellis.process._
  * Used to create a tileset (TileRasterData) from a source raster.
  */
 object Tiler {
-  def createTileRaster(src: IntRaster, pixels: Int) = {
+  def createTileRaster(src: Raster, pixels: Int) = {
     val srcExtent = src.rasterExtent
     val tileExtent = srcExtent
     val tileRasterData = createTileRasterData(src, pixels)
-    IntRaster(tileRasterData, tileExtent)
+    Raster(tileRasterData, tileExtent)
   }
 
-  def createTileRasterData(src: IntRaster, pixels: Int): TileRasterData = {
+  def createTileRasterData(src: Raster, pixels: Int): TileRasterData = {
     val srcExtent = src.rasterExtent
     //val tileExtent = srcExtent
 
@@ -42,7 +42,7 @@ object Tiler {
         data(y * pixels + x) = if (xsrc >= srcExtent.cols || ysrc >= srcExtent.rows)
           NODATA else src.get(xsrc, ysrc)
       }
-      Some(IntRaster(data, rasterExtent))
+      Some(Raster(data, rasterExtent))
     }
     val tileRasterData = TileRasterData(TileSet(srcExtent, pixels), rasters.toArray)
     tileRasterData
@@ -57,7 +57,7 @@ object Tiler {
   def writeTiles(tiles:TileRasterData, name:String, path:String) = {
     for (trow <- 0 until tiles.tileRows; tcol <- 0 until tiles.tileCols) {  
       tiles.rasters(trow * tiles.tileCols + tcol) match {
-        case Some(r:IntRaster) => {
+        case Some(r:Raster) => {
           val name2 = tileName(name, tcol, trow)
           val path2 = tilePath(path, name, tcol, trow)
           Arg32Writer.write(path2, r, name2)
@@ -70,7 +70,7 @@ object Tiler {
   def deleteTiles(tiles:TileRasterData, name:String, path:String) {
     for (trow <- 0 until tiles.tileRows; tcol <- 0 until tiles.tileCols) {  
       tiles.rasters(trow * tiles.tileCols + tcol) match {
-        case Some(r:IntRaster) => tilePath(path,name,tcol,trow)
+        case Some(r:Raster) => tilePath(path,name,tcol,trow)
         case None => {}
       }
     }
@@ -119,7 +119,7 @@ case class TileSet(rasterExtent:RasterExtent, tileSize:Int) {
 
 object TileRasterData {
   def apply(tileset: TileSet, loadExtent: Extent,
-            loader: (Int, Int) => Option[IntRaster]): TileRasterData = {
+            loader: (Int, Int) => Option[Raster]): TileRasterData = {
     val tileExtent = tileset.tileRange(loadExtent);
     val rasters = for (y <- 0 until tileset.tileRows;
                        x <- 0 until tileset.tileCols) yield {
@@ -132,7 +132,7 @@ object TileRasterData {
 /**
   * TileRasterData provides a data source that is backed by a grid of sub-rasters.
   */
-case class TileRasterData(tileSet:TileSet, rasters:Array[Option[IntRaster]]) extends RasterData {
+case class TileRasterData(tileSet:TileSet, rasters:Array[Option[Raster]]) extends RasterData {
   val rasterExtent = tileSet.rasterExtent;
   val pixels = tileSet.tileSize;
   
@@ -142,6 +142,10 @@ case class TileRasterData(tileSet:TileSet, rasters:Array[Option[IntRaster]]) ext
   val tileCellheight = rasterExtent.cellheight / pixels
     
   val tileExtent = RasterExtent(rasterExtent.extent, tileCellwidth, tileCellheight, tileCols, tileRows)
+
+  def getType = TypeInt //fixme
+  def alloc(size:Int):StrictRasterData = sys.error("fixme")
+  def force:StrictRasterData = sys.error("fixme")
 
   /**
    * Get value at given coordinates.
@@ -170,9 +174,9 @@ case class TileRasterData(tileSet:TileSet, rasters:Array[Option[IntRaster]]) ext
   /**
     * Copy: not implemented
     */
-  def copy:RasterData = { this }
+  def copy():RasterData = this
 
-  def length:Int = { rasterExtent.cols * rasterExtent.rows }
+  def length:Int = rasterExtent.cols * rasterExtent.rows
 
   def asArray():Array[Int] = {
     throw new Exception("not implemented yet");

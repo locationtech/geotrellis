@@ -21,24 +21,24 @@ object Implicits {
   import geotrellis.operation._
 
   /**
-   * Addition-operator implicits for Int, IntRaster and Op[IntRaster].
+   * Addition-operator implicits for Int, Raster and Op[Raster].
    */
-  implicit def addOpIntRasterTo1(lhs:Op[IntRaster]) = new {
-    def +(rhs:Int):Op[IntRaster] = new AddConstant(lhs, Literal(rhs))
-    def +(rhs:Op[Int]):Op[IntRaster] = new AddConstant(lhs, rhs)
+  implicit def addOpRasterTo1(lhs:Op[Raster]) = new {
+    def +(rhs:Int):Op[Raster] = new AddConstant(lhs, Literal(rhs))
+    def +(rhs:Op[Int]):Op[Raster] = new AddConstant(lhs, rhs)
   }
-  implicit def addOpIntRasterTo2(lhs:Op[IntRaster]) = new {
-    def +(rhs:IntRaster):Op[IntRaster] = Add(lhs, Literal(rhs))
-    def +(rhs:Op[IntRaster]):Op[IntRaster] = Add(lhs, rhs)
+  implicit def addOpRasterTo2(lhs:Op[Raster]) = new {
+    def +(rhs:Raster):Op[Raster] = Add(lhs, Literal(rhs))
+    def +(rhs:Op[Raster]):Op[Raster] = Add(lhs, rhs)
   }
 
-  implicit def addIntRasterTo1(lhs:IntRaster) = new {
-    def +(rhs:Int):Op[IntRaster] = new AddConstant(Literal(lhs), Literal(rhs))
-    def +(rhs:Op[Int]):Op[IntRaster] = new AddConstant(Literal(lhs), rhs)
+  implicit def addRasterTo1(lhs:Raster) = new {
+    def +(rhs:Int):Op[Raster] = new AddConstant(Literal(lhs), Literal(rhs))
+    def +(rhs:Op[Int]):Op[Raster] = new AddConstant(Literal(lhs), rhs)
   }
-  implicit def addIntRasterTo2(lhs:IntRaster) = new {
-    def +(rhs:IntRaster):Op[IntRaster] = Add(Literal(lhs), Literal(rhs))
-    def +(rhs:Op[IntRaster]):Op[IntRaster] = Add(Literal(lhs), rhs)
+  implicit def addRasterTo2(lhs:Raster) = new {
+    def +(rhs:Raster):Op[Raster] = Add(Literal(lhs), Literal(rhs))
+    def +(rhs:Op[Raster]):Op[Raster] = Add(Literal(lhs), rhs)
   }
 
   implicit def addOpIntTo1(lhs:Op[Int]) = new {
@@ -46,37 +46,37 @@ object Implicits {
     def +(rhs:Op[Int]):Op[Int] = Map2(lhs, rhs)(_ + _)
   }
   implicit def addOpIntTo2(lhs:Op[Int]) = new {
-    def +(rhs:IntRaster):Op[IntRaster] = AddConstant(Literal(rhs), lhs)
-    def +(rhs:Op[IntRaster]):Op[IntRaster] = AddConstant(rhs, lhs)
+    def +(rhs:Raster):Op[Raster] = AddConstant(Literal(rhs), lhs)
+    def +(rhs:Op[Raster]):Op[Raster] = AddConstant(rhs, lhs)
   }
 
   implicit def addIntTo1(lhs:Int) = new {
     def +(rhs:Op[Int]):Op[Int] = Map1(rhs)(_ + lhs)
   }
   implicit def addIntTo2(lhs:Int) = new {
-    def +(rhs:IntRaster):Op[IntRaster] = AddConstant(Literal(rhs), Literal(lhs))
-    def +(rhs:Op[IntRaster]):Op[IntRaster] = AddConstant(rhs, Literal(lhs))
+    def +(rhs:Raster):Op[Raster] = AddConstant(Literal(rhs), Literal(lhs))
+    def +(rhs:Op[Raster]):Op[Raster] = AddConstant(rhs, Literal(lhs))
   }
 
   /**
-   * Multiplication-operator implicits for Int, IntRaster and Op[IntRaster].
+   * Multiplication-operator implicits for Int, Raster and Op[Raster].
    */
-  implicit def multiplyOpIntRasterBy1(lhs:Op[IntRaster]) = new {
-    def *(rhs:Int):Op[IntRaster] = MultiplyConstant(lhs, Literal(rhs))
-    def *(rhs:Op[Int]):Op[IntRaster] = MultiplyConstant(lhs, rhs)
+  implicit def multiplyOpRasterBy1(lhs:Op[Raster]) = new {
+    def *(rhs:Int):Op[Raster] = MultiplyConstant(lhs, Literal(rhs))
+    def *(rhs:Op[Int]):Op[Raster] = MultiplyConstant(lhs, rhs)
   }
-  implicit def multiplyOpIntRasterBy2(lhs:Op[IntRaster]) = new {
-    def *(rhs:IntRaster):Op[IntRaster] = Multiply(lhs, Literal(rhs))
-    def *(rhs:Op[IntRaster]):Op[IntRaster] = Multiply(lhs, rhs)
+  implicit def multiplyOpRasterBy2(lhs:Op[Raster]) = new {
+    def *(rhs:Raster):Op[Raster] = Multiply(lhs, Literal(rhs))
+    def *(rhs:Op[Raster]):Op[Raster] = Multiply(lhs, rhs)
   }
 
-  implicit def multiplyIntRasterBy1(lhs:IntRaster) = new {
-    def *(rhs:Int):Op[IntRaster] = MultiplyConstant(Literal(lhs), Literal(rhs))
-    def *(rhs:Op[Int]):Op[IntRaster] = MultiplyConstant(Literal(lhs), rhs)
+  implicit def multiplyRasterBy1(lhs:Raster) = new {
+    def *(rhs:Int):Op[Raster] = MultiplyConstant(Literal(lhs), Literal(rhs))
+    def *(rhs:Op[Int]):Op[Raster] = MultiplyConstant(Literal(lhs), rhs)
   }
-  implicit def multiplyIntRasterBy2(lhs:IntRaster) = new {
-    def *(rhs:IntRaster):Op[IntRaster] = Multiply(Literal(lhs), Literal(rhs))
-    def *(rhs:Op[IntRaster]):Op[IntRaster] = Multiply(Literal(lhs), rhs)
+  implicit def multiplyRasterBy2(lhs:Raster) = new {
+    def *(rhs:Raster):Op[Raster] = Multiply(Literal(lhs), Literal(rhs))
+    def *(rhs:Op[Raster]):Op[Raster] = Multiply(Literal(lhs), rhs)
   }
 
   implicit def multiplyOpIntBy1(lhs:Op[Int]) = new {
@@ -84,37 +84,37 @@ object Implicits {
     def *(rhs:Op[Int]):Op[Int] = Map2(lhs, rhs)(_ * _)
   }
   implicit def multiplyOpIntBy2(lhs:Op[Int]) = new {
-    def *(rhs:IntRaster):Op[IntRaster] = MultiplyConstant(Literal(rhs), lhs)
-    def *(rhs:Op[IntRaster]):Op[IntRaster] = MultiplyConstant(rhs, lhs)
+    def *(rhs:Raster):Op[Raster] = MultiplyConstant(Literal(rhs), lhs)
+    def *(rhs:Op[Raster]):Op[Raster] = MultiplyConstant(rhs, lhs)
   }
 
   implicit def multiplyIntBy1(lhs:Int) = new {
     def *(rhs:Op[Int]):Op[Int] = Map1(rhs)(_ * lhs)
   }
   implicit def multiplyIntBy2(lhs:Int) = new {
-    def *(rhs:IntRaster):Op[IntRaster] = MultiplyConstant(Literal(rhs), Literal(lhs))
-    def *(rhs:Op[IntRaster]):Op[IntRaster] = MultiplyConstant(rhs, Literal(lhs))
+    def *(rhs:Raster):Op[Raster] = MultiplyConstant(Literal(rhs), Literal(lhs))
+    def *(rhs:Op[Raster]):Op[Raster] = MultiplyConstant(rhs, Literal(lhs))
   }
 
   /**
-   * Subtraction-operator implicits for Int, IntRaster and Op[IntRaster].
+   * Subtraction-operator implicits for Int, Raster and Op[Raster].
    */
-  implicit def subtractOpIntRasterBy1(lhs:Op[IntRaster]) = new {
-    def -(rhs:Int):Op[IntRaster] = SubtractConstant(lhs, Literal(rhs))
-    def -(rhs:Op[Int]):Op[IntRaster] = SubtractConstant(lhs, rhs)
+  implicit def subtractOpRasterBy1(lhs:Op[Raster]) = new {
+    def -(rhs:Int):Op[Raster] = SubtractConstant(lhs, Literal(rhs))
+    def -(rhs:Op[Int]):Op[Raster] = SubtractConstant(lhs, rhs)
   }
-  implicit def subtractOpIntRasterBy2(lhs:Op[IntRaster]) = new {
-    def -(rhs:IntRaster):Op[IntRaster] = Subtract(lhs, Literal(rhs))
-    def -(rhs:Op[IntRaster]):Op[IntRaster] = Subtract(lhs, rhs)
+  implicit def subtractOpRasterBy2(lhs:Op[Raster]) = new {
+    def -(rhs:Raster):Op[Raster] = Subtract(lhs, Literal(rhs))
+    def -(rhs:Op[Raster]):Op[Raster] = Subtract(lhs, rhs)
   }
 
-  implicit def subtractIntRasterBy1(lhs:IntRaster) = new {
-    def -(rhs:Int):Op[IntRaster] = SubtractConstant(Literal(lhs), Literal(rhs))
-    def -(rhs:Op[Int]):Op[IntRaster] = SubtractConstant(Literal(lhs), rhs)
+  implicit def subtractRasterBy1(lhs:Raster) = new {
+    def -(rhs:Int):Op[Raster] = SubtractConstant(Literal(lhs), Literal(rhs))
+    def -(rhs:Op[Int]):Op[Raster] = SubtractConstant(Literal(lhs), rhs)
   }
-  implicit def subtractIntRasterBy2(lhs:IntRaster) = new {
-    def -(rhs:IntRaster):Op[IntRaster] = Subtract(Literal(lhs), Literal(rhs))
-    def -(rhs:Op[IntRaster]):Op[IntRaster] = Subtract(Literal(lhs), rhs)
+  implicit def subtractRasterBy2(lhs:Raster) = new {
+    def -(rhs:Raster):Op[Raster] = Subtract(Literal(lhs), Literal(rhs))
+    def -(rhs:Op[Raster]):Op[Raster] = Subtract(Literal(lhs), rhs)
   }
 
   implicit def subtractOpIntBy1(lhs:Int) = new {
@@ -122,37 +122,37 @@ object Implicits {
     def -(rhs:Op[Int]):Op[Int] = Map2(lhs, rhs)(_ - _)
   }
   implicit def subtractOpIntBy2(lhs:Int) = new {
-    def -(rhs:IntRaster):Op[IntRaster] = SubtractConstantBy(lhs, Literal(rhs))
-    def -(rhs:Op[IntRaster]):Op[IntRaster] = SubtractConstantBy(lhs, rhs)
+    def -(rhs:Raster):Op[Raster] = SubtractConstantBy(lhs, Literal(rhs))
+    def -(rhs:Op[Raster]):Op[Raster] = SubtractConstantBy(lhs, rhs)
   }
 
   implicit def subtractIntBy1(lhs:Int) = new {
     def -(rhs:Op[Int]):Op[Int] = Map1(rhs)(lhs - _)
   }
   implicit def subtractIntBy2(lhs:Int) = new {
-    def -(rhs:IntRaster):Op[IntRaster] = SubtractConstantBy(Literal(lhs), Literal(rhs))
-    def -(rhs:Op[IntRaster]):Op[IntRaster] = SubtractConstantBy(Literal(lhs), rhs)
+    def -(rhs:Raster):Op[Raster] = SubtractConstantBy(Literal(lhs), Literal(rhs))
+    def -(rhs:Op[Raster]):Op[Raster] = SubtractConstantBy(Literal(lhs), rhs)
   }
 
   /**
-   * Division-operator implicits for Int, IntRaster and Op[IntRaster].
+   * Division-operator implicits for Int, Raster and Op[Raster].
    */
-  implicit def divideOpIntRasterBy1(lhs:Op[IntRaster]) = new {
-    def /(rhs:Int):Op[IntRaster] = DivideConstant(lhs, Literal(rhs))
-    def /(rhs:Op[Int]):Op[IntRaster] = DivideConstant(lhs, rhs)
+  implicit def divideOpRasterBy1(lhs:Op[Raster]) = new {
+    def /(rhs:Int):Op[Raster] = DivideConstant(lhs, Literal(rhs))
+    def /(rhs:Op[Int]):Op[Raster] = DivideConstant(lhs, rhs)
   }
-  implicit def divideOpIntRasterBy2(lhs:Op[IntRaster]) = new {
-    def /(rhs:IntRaster):Op[IntRaster] = Divide(lhs, Literal(rhs))
-    def /(rhs:Op[IntRaster]):Op[IntRaster] = Divide(lhs, rhs)
+  implicit def divideOpRasterBy2(lhs:Op[Raster]) = new {
+    def /(rhs:Raster):Op[Raster] = Divide(lhs, Literal(rhs))
+    def /(rhs:Op[Raster]):Op[Raster] = Divide(lhs, rhs)
   }
 
-  implicit def divideIntRasterBy1(lhs:IntRaster) = new {
-    def /(rhs:Int):Op[IntRaster] = DivideConstant(Literal(lhs), Literal(rhs))
-    def /(rhs:Op[Int]):Op[IntRaster] = DivideConstant(Literal(lhs), rhs)
+  implicit def divideRasterBy1(lhs:Raster) = new {
+    def /(rhs:Int):Op[Raster] = DivideConstant(Literal(lhs), Literal(rhs))
+    def /(rhs:Op[Int]):Op[Raster] = DivideConstant(Literal(lhs), rhs)
   }
-  implicit def divideIntRasterBy2(lhs:IntRaster) = new {
-    def /(rhs:IntRaster):Op[IntRaster] = Divide(Literal(lhs), Literal(rhs))
-    def /(rhs:Op[IntRaster]):Op[IntRaster] = Divide(Literal(lhs), rhs)
+  implicit def divideRasterBy2(lhs:Raster) = new {
+    def /(rhs:Raster):Op[Raster] = Divide(Literal(lhs), Literal(rhs))
+    def /(rhs:Op[Raster]):Op[Raster] = Divide(Literal(lhs), rhs)
   }
 
   implicit def divideOpIntBy1(lhs:Op[Int]) = new {
@@ -161,16 +161,16 @@ object Implicits {
   }
 
   implicit def divideOpIntBy2(lhs:Op[Int]) = new {
-    def /(rhs:IntRaster):Op[IntRaster] = DivideConstantBy(lhs, Literal(rhs))
-    def /(rhs:Op[IntRaster]):Op[IntRaster] = DivideConstantBy(lhs, rhs)
+    def /(rhs:Raster):Op[Raster] = DivideConstantBy(lhs, Literal(rhs))
+    def /(rhs:Op[Raster]):Op[Raster] = DivideConstantBy(lhs, rhs)
   }
 
   implicit def divideIntBy1(lhs:Int) = new {
     def /(rhs:Op[Int]):Op[Int] = Map1(rhs)(lhs / _)
   }
   implicit def divideIntBy2(lhs:Int) = new {
-    def /(rhs:IntRaster):Op[IntRaster] = DivideConstantBy(Literal(lhs), Literal(rhs))
-    def /(rhs:Op[IntRaster]):Op[IntRaster] = DivideConstantBy(Literal(lhs), rhs)
+    def /(rhs:Raster):Op[Raster] = DivideConstantBy(Literal(lhs), Literal(rhs))
+    def /(rhs:Op[Raster]):Op[Raster] = DivideConstantBy(Literal(lhs), rhs)
   }
 }
 

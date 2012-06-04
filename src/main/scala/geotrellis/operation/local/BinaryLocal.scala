@@ -9,15 +9,15 @@ import geotrellis.process._
  * we mean that the input includes two rasters (as opposed to 'unary' or 'multi').
  */
 trait BinaryLocal extends LocalOperation {
-  def r1:Op[IntRaster]
-  def r2:Op[IntRaster]
+  def r1:Op[Raster]
+  def r2:Op[Raster]
 
   def handleCells(z1:Int, z2:Int):Int
 
   def _run(context:Context) = runAsync(r1 :: r2 :: Nil)
 
   val nextSteps:Steps = {
-    case (r1:IntRaster) :: (r2:IntRaster) :: Nil => {
+    case (r1:Raster) :: (r2:Raster) :: Nil => {
       Result(r1.combine2(r2)(handleCells _))
     }
   }

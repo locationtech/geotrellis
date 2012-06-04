@@ -10,7 +10,7 @@ import geotrellis._
  * Local operation.
  * Binary operation (input includes two rasters).
  */
-case class BinaryIfCell(r1:Op[IntRaster], r2:Op[IntRaster],
+case class BinaryIfCell(r1:Op[Raster], r2:Op[Raster],
                         cond: (Int,Int) => Boolean, trueValue: Int) extends BinaryLocal {
   def handleCells(z1:Int, z2:Int): Int = if (cond(z1,z2)) trueValue else z1
 }

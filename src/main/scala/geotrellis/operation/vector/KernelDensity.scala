@@ -116,7 +116,7 @@ object Kernel {
 }
 
 object KernelDensityHelper {
-    private[operation] def stampNeigh(raster: IntRaster, v: Int, x: Int, y: Int,
+    private[operation] def stampNeigh(raster: Raster, v: Int, x: Int, y: Int,
                                  dx: Int, dy: Int, kernel: Array[Int]):Unit = {
       var k = 0
       val nr = raster.rows
@@ -166,7 +166,7 @@ case class KernelDensity(outputRasterExtent: Op[RasterExtent],
                          kernel: Op[Kernel], points: Op[Array[Point]])
 extends Op3(outputRasterExtent, kernel, points) ({
   (re, kernel, pts) => {
-    val raster = IntRaster.createEmpty(re)
+    val raster = Raster.empty(re)
     val k = kernel.data
 
     val w = math.sqrt(k.length).toInt

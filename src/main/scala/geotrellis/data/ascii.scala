@@ -19,7 +19,9 @@ final class AsciiReadState(path:String,
   var cellsize:Double = 0.0
   var nodata_value:Int = -9999
 
-  var ints:Array[Int] = null
+  var ints:IntArrayRasterData = null
+
+  def createRasterData(size:Int) = IntArrayRasterData.empty(size)
 
   def getNoDataValue = nodata_value
 
@@ -44,7 +46,7 @@ final class AsciiReadState(path:String,
     val xmax = xllcorner + ncols * cellsize
     val ymax = yllcorner + nrows * cellsize
 
-    ints = Array.ofDim[Int](size)
+    ints = IntArrayRasterData.ofDim(size)
     val br = getBufferedReader()
     try {
       var done = false
@@ -80,7 +82,7 @@ final class AsciiReadState(path:String,
   }
 
   @inline
-  def assignFromSource(sourceIndex:Int, dest:Array[Int], destIndex:Int) {
+  def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
     dest(destIndex) = ints(sourceIndex)
   }
 
@@ -148,11 +150,11 @@ object AsciiWriter extends Writer {
   def rasterType = "ascii"
   def dataType = ""
 
-  def write(path:String, raster:IntRaster, name:String) {
+  def write(path:String, raster:Raster, name:String) {
     write(path, raster, name, NODATA)
   }
 
-  def write(path:String, raster:IntRaster, name:String, noData:Int) {
+  def write(path:String, raster:Raster, name:String, noData:Int) {
     val g = raster.rasterExtent
     val e = raster.rasterExtent.extent
 

@@ -13,8 +13,11 @@ trait ReadState {
   val layer:RasterLayer
   val target:RasterExtent
 
+  //def createRasterData(size:Int):StrictRasterData = IntArrayRasterData.empty(size)
+  def createRasterData(size:Int):StrictRasterData
+
   // don't override
-  def loadRaster(): IntRaster = {
+  def loadRaster(): Raster = {
     val re = layer.rasterExtent
 
     // keep track of cell size in our source raster
@@ -54,7 +57,7 @@ trait ReadState {
     
     // this is the resampled destination array
     val dst_size = dst_cols * dst_rows
-    val resampled = Array.fill[Int](dst_size)(NODATA)
+    val resampled = createRasterData(dst_size)
 
     // these are the min and max columns we will access on this row
     val min_col = (xbase / src_cellwidth).asInstanceOf[Int]
@@ -114,8 +117,8 @@ trait ReadState {
   }
 
   // don't usually override
-  protected[this] def createRaster(data:Array[Int]) = {
-    IntRaster(translate(data), target, layer.name)
+  protected[this] def createRaster(data:StrictRasterData) = {
+    Raster(translate(data), target)
   }
 
   // must override
@@ -125,13 +128,13 @@ trait ReadState {
   protected[this] def initSource(position:Int, size:Int):Unit
 
   // must override
-  protected[this] def assignFromSource(sourceIndex:Int, dest:Array[Int], destIndex:Int):Unit
+  protected[this] def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int):Unit
 
   // maybe override
   def destroy() {}
 
   // maybe need to override
-  protected[this] def translate(data:Array[Int]) = {
+  protected[this] def translate(data:StrictRasterData) = {
     var i = 0
     val nd = getNoDataValue
     val len = data.length
@@ -152,7 +155,7 @@ trait FileReader extends Reader {
 
   def readStateFromCache(bytes:Array[Byte], layer:RasterLayer, target:RasterExtent):ReadState
 
-  def readCache(bytes:Array[Byte], layer:RasterLayer, targetOpt:Option[RasterExtent]): IntRaster = {
+  def readCache(bytes:Array[Byte], layer:RasterLayer, targetOpt:Option[RasterExtent]): Raster = {
     val target = targetOpt.getOrElse(layer.rasterExtent)
     val readState = readStateFromCache(bytes, layer, target)
     val raster = readState.loadRaster() // all the work is here
@@ -162,7 +165,7 @@ trait FileReader extends Reader {
 
   def readStateFromPath(path:String, layer:RasterLayer, target:RasterExtent):ReadState
 
-  def readPath(path:String, layerOpt:Option[RasterLayer], targetOpt:Option[RasterExtent]): IntRaster = {
+  def readPath(path:String, layerOpt:Option[RasterLayer], targetOpt:Option[RasterExtent]): Raster = {
     val layer = layerOpt.getOrElse(readMetadata(path))
     val target = targetOpt.getOrElse(layer.rasterExtent)
     val readState = readStateFromPath(path, layer, target)
@@ -174,9 +177,9 @@ trait FileReader extends Reader {
 
 trait Writer {
 
-  def write(path:String, raster:IntRaster) { write(path, raster, raster.name) }
+  //def write(path:String, raster:Raster) { write(path, raster, raster.name) }
 
-  def write(path:String, raster:IntRaster, name:String):Unit
+  def write(path:String, raster:Raster, name:String):Unit
 
   def rasterType: String
   def dataType:String

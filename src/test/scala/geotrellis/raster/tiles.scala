@@ -31,69 +31,69 @@ class TileSpec extends Spec with MustMatchers {
   val d00 = Array(1, 2, 6, 7)
   val e00 = Extent(0, 60, 40, 100)
   val g00 = RasterExtent(e00, 20.0, 20.0, 2, 2)
-  val r00 = IntRaster(d00, g00)
+  val r00 = Raster(d00, g00)
 
   // tile (1,0)
   val d10 = Array(3, 4, 8, 9);
   val e10 = Extent(40, 60, 80, 100)
   val g10 = RasterExtent(e10, 20.0, 20.0, 2, 2)
-  val r10 = IntRaster(d10, g10)
+  val r10 = Raster(d10, g10)
 
   // tile (2,0)
   val d20 = Array(5, NODATA, 10, NODATA)
   val e20 = Extent(80, 60, 120, 100)
   val g20 = RasterExtent(e20, 20.0, 20, 2, 2)
-  val r20 = IntRaster(d20, g10)
+  val r20 = Raster(d20, g10)
 
   // tile (0,1)
   val d01 = Array(11, 12, 16, 17)
   val e01 = Extent(0, 20, 40, 60)
   val g01 = RasterExtent(e01, 20.0, 20.0, 2, 2)
-  val r01 = IntRaster(d01, g10)
+  val r01 = Raster(d01, g10)
 
   // tile (1,1)
   val d11 = Array(13, 14, 18, 19)
   val e11 = Extent(40, 20, 80, 60)
   val g11 = RasterExtent(e11, 1.0, 1.0, 2, 2)
-  val r11 = IntRaster(d11, g10)
+  val r11 = Raster(d11, g10)
 
   // tile (2,1)
   val d21 = Array(15, NODATA, 20, NODATA)
   val e21 = Extent(80, 20, 120, 60)
   val g21 = RasterExtent(e21, 1.0, 1.0, 2, 2)
-  val r21 = IntRaster(d21, g10)
+  val r21 = Raster(d21, g10)
 
   // tile (0,2)
   val d02 = Array(21, 22, NODATA, NODATA)
   val e02 = Extent(0, -20, 40, 20)
   val g02 = RasterExtent(e02, 20.0, 20.0, 2, 2)
-  val r02 = IntRaster(d02, g11)
+  val r02 = Raster(d02, g11)
 
   // tile (1,2)
   val d12 = Array(23, 24, NODATA, NODATA)
   val e12 = Extent(40, -20, 80, 20)
   val g12 = RasterExtent(e12, 20.0, 20.0, 2, 2)
-  val r12 = IntRaster(d12, g12)
+  val r12 = Raster(d12, g12)
 
   // tile (2,2)
   val d22 = Array(25, NODATA, NODATA, NODATA)
   val e22 = Extent(80, -20, 120, 20)
   val g22 = RasterExtent(e22, 20.0, 20.0, 2, 2)
-  val r22 = IntRaster(d22, g10)
+  val r22 = Raster(d22, g10)
 
   val tiles = Array(r00, r10, r20, r01, r11, r21, r02, r12, r22) map { Option(_) }
-  val raster = IntRaster(data, g)
+  val raster = Raster(data, g)
 
   val tileset = TileSet(g, 2)
   val tileData = TileRasterData(tileset, tiles)
-  val tileRaster = IntRaster(tileData, g)
+  val tileRaster = Raster(tileData, g)
 
   val server = TestServer()
   
   val largeData = Array.fill(largeSize * largeSize)(0)
-  val largeRaster = IntRaster(largeData, rasterExtent = gLarge)
+  val largeRaster = Raster(largeData, gLarge)
 
-  def loader(col: Int, row: Int): Option[IntRaster] = {
+  def loader(col: Int, row: Int): Option[Raster] = {
     val r = tiles(row * 3 + col)
     r
   }
@@ -110,7 +110,7 @@ class TileSpec extends Spec with MustMatchers {
       // Loading tiles (0,1) & (1,1)
       val extent = Extent(1, 21, 79, 59)
       val tileRasterData = TileRasterData(tileset, extent, loader)
-      val raster3 = IntRaster(tileRasterData, rasterExtent = g)
+      val raster3 = Raster(tileRasterData, g)
       for (y <- 2 to 3; x <- 0 to 3) {
         raster3.get(x, y) must be === ((y * 5) + x) + 1
       }
@@ -143,7 +143,7 @@ class TileSpec extends Spec with MustMatchers {
       val extent = Extent(1, 21, 79, 59)
       val loader = Tiler.makeTileLoader("testraster", "/tmp", s)
       val tileRasterData = TileRasterData(tileset, extent, loader)
-      val raster4 = IntRaster(tileRasterData, rasterExtent = g)
+      val raster4 = Raster(tileRasterData, g)
       for (y <- 2 to 3; x <- 0 to 3) {
         raster4.get(x, y) must be === ((y * 5) + x) + 1
       }

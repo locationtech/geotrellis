@@ -36,7 +36,7 @@ class ArgSpec extends Spec with MustMatchers with ShouldMatchers {
       val fh = java.io.File.createTempFile("foog", ".arg")
       val path2 = fh.getPath
 
-      Arg8Writer.write(path2, raster)
+      Arg8Writer.write(path2, raster, "name")
 
       val data1 = io.Source.fromFile(path2).mkString
       val data2 = io.Source.fromFile("src/test/resources/fake.img8.arg").mkString
@@ -83,7 +83,7 @@ class ArgSpec extends Spec with MustMatchers with ShouldMatchers {
       ok must be === true
     }
 
-    val nd = NODATA
+    val nd = -128
 
     it("should handle simple chunks") {
       dotest(-9.5, 43.8, 150.5, 123.8, 10, 5, Array(1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 
