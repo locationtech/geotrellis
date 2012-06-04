@@ -7,7 +7,7 @@ import geotrellis.stat._
 /**
  * Given a raster, return a histogram summary of the cells within each zone.
  */
-case class ZonalHistogram(data: Op[IntRaster], zones: Op[IntRaster],
+case class ZonalHistogram(data: Op[Raster], zones: Op[Raster],
                            zonesArraySize: Op[Int], histArraySize: Op[Int]) 
 extends Op4(data, zones, zonesArraySize, histArraySize) ({
   (raster, zones, zonesArraySize, histArraySize) => {

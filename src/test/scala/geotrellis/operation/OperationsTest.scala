@@ -14,16 +14,16 @@ class OperationsTest extends FunSuite {
   val e = Extent(0.0, 0.0, 10.0, 10.0)
   val re = RasterExtent(e, 1.0, 1.0, 10, 10)
 
-  val r1 = IntRaster(Array.fill(100)(1), re)
-  val r2 = IntRaster(Array.fill(100)(2), re)
-  val r3 = IntRaster(Array.fill(100)(3), re)
-  val r6 = IntRaster(Array.fill(100)(6), re)
-  val r9 = IntRaster(Array.fill(100)(9), re)
+  val r1 = Raster(Array.fill(100)(1), re)
+  val r2 = Raster(Array.fill(100)(2), re)
+  val r3 = Raster(Array.fill(100)(3), re)
+  val r6 = Raster(Array.fill(100)(6), re)
+  val r9 = Raster(Array.fill(100)(9), re)
 
   val server = TestServer()
   var n:Int = 1
 
-  def run(op:Op[IntRaster], expected:IntRaster) {
+  def run(op:Op[Raster], expected:Raster) {
     test("%d:%s" format (n, op.name)) {
       val got = server.run(op)
       //println("op " + op)

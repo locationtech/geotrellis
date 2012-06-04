@@ -6,7 +6,7 @@ import scala.math.{max,min,sqrt}
 import geotrellis.geometry.{Polygon}
 
 import geotrellis.data.ColorBreaks
-import geotrellis.IntRaster
+import geotrellis.Raster
 
 import geotrellis.stat._
 import geotrellis.process._

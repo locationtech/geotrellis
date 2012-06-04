@@ -8,7 +8,7 @@ import geotrellis.stat._
  * Build a histogram (using the [[geotrellis.stat.MapHistogram]] strategy) from
  * this raster.
  */
-case class BuildMapHistogram(r:Op[IntRaster]) extends Op1(r) ({
+case class BuildMapHistogram(r:Op[Raster]) extends Op1(r) ({
     (raster) => {
       val histogram = FastMapHistogram()
       val data = raster.data

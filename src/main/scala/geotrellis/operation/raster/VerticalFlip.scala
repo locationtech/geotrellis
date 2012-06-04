@@ -8,7 +8,7 @@ import geotrellis.process._
  *
  * The geographic extent will remain unchanged.
  */
-case class VerticalFlip(r:Op[IntRaster]) extends Op1(r) ({
+case class VerticalFlip(r:Op[Raster]) extends Op1(r) ({
   r =>
   val cols = r.cols
   val rows = r.cols

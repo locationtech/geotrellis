@@ -33,7 +33,7 @@ import geotrellis._
  *
  * [1] http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf
  */
-class Encoder(dos:DataOutputStream, raster:IntRaster, settings:Settings) {
+class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
   val data = raster.data
   val re = raster.rasterExtent
   val cols = re.cols
@@ -422,7 +422,7 @@ object Encoder {
   /**
    * Encode raster as GeoTIFF and return an array of bytes.
    */
-  def writeBytes(raster:IntRaster, settings:Settings) = {
+  def writeBytes(raster:Raster, settings:Settings) = {
     val baos = new ByteArrayOutputStream()
     val dos = new DataOutputStream(baos)
     val encoder = new Encoder(dos, raster, settings)
@@ -433,7 +433,7 @@ object Encoder {
   /**
    * Encode raster as GeoTIFF and write the data to the given path.
    */
-  def writePath(path:String, raster:IntRaster, settings:Settings) {
+  def writePath(path:String, raster:Raster, settings:Settings) {
     val fos = new FileOutputStream(new File(path))
     val dos = new DataOutputStream(fos)
     val encoder = new Encoder(dos, raster, settings)

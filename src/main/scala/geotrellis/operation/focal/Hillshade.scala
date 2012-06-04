@@ -2,7 +2,7 @@ package geotrellis.operation
 
 import geotrellis._
 import geotrellis.process._
-import geotrellis.IntRaster
+import geotrellis.Raster
 
 object HillshadeHelper {
   def hillshade(zenith:Double, slope:Double, azimuth:Double, aspect:Double):Int = {
@@ -36,7 +36,7 @@ object HillshadeHelper {
  * 
  */
  // TODO: add optional shadows, zfactor to scale altitude
-case class Hillshade(r:Op[IntRaster], azimuth:Op[Double], altitude:Op[Double]) 
+case class Hillshade(r:Op[Raster], azimuth:Op[Double], altitude:Op[Double]) 
   extends Op3(r, azimuth, altitude) ({
   (r,azimuthCompass, altitude) => {
     val zenith = HillshadeHelper.zenith(altitude)
@@ -70,6 +70,6 @@ case class Hillshade(r:Op[IntRaster], azimuth:Op[Double], altitude:Op[Double])
         }
         data(y * r.rasterExtent.cols + x) = h  
       }
-    Result(IntRaster(data, r.rasterExtent))
+    Result(Raster(data, r.rasterExtent))
   }
 }) 

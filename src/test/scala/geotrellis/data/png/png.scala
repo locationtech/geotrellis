@@ -50,7 +50,7 @@ c5 04 9e f8 03 17 ee 04 00 12 3a 47 85 ae b3 00
 
   val e = Extent(0.0, 0.0, w.toDouble, h.toDouble)
   val rasterExtent = RasterExtent(e, 1.0, 1.0, w, h)
-  val raster = IntRaster(data, rasterExtent)
+  val raster = Raster(data, rasterExtent)
 
   describe("RgbaEncoder") {
     val fh = File.createTempFile("rgba-", ".png")

@@ -67,10 +67,10 @@ class GridPolygonSpec extends Spec with MustMatchers with ShouldMatchers {
     var height = p.ymax + 1
 
     val e = Extent(0.0, 0.0, width.toDouble, height.toDouble)
-    val g = RasterExtent(e, 1.0, 1.0, width, height)
+    val re = RasterExtent(e, 1.0, 1.0, width, height)
 
     val data = Array.fill[Int](width * height)(NODATA)
-    val raster = IntRaster(data, rasterExtent=g)
+    val raster = Raster(data, re)
 
     p.rasterize(raster, 1)
     println(raster.asciiDraw)
@@ -104,7 +104,7 @@ class GridPolygonSpec extends Spec with MustMatchers with ShouldMatchers {
         val width = 6
         val height = 6
         val data = Array.ofDim[Int](width * height)
-        p.rasterize(width, height, 1, ArrayRasterData(data), 0, 0)
+        p.rasterize(width, height, 1, IntArrayRasterData(data), 0, 0)
       } should produce [Exception];
     }
 

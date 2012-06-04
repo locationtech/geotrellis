@@ -35,7 +35,7 @@ class ExampleTwoSpec extends Spec with MustMatchers {
   //    val ymax =  4907446.971885979
   //
   //    // load the files
-  //    var Rs:Seq[Op[IntRaster]] = paths.map {
+  //    var Rs:Seq[Op[Raster]] = paths.map {
   //      path => LoadArgFileChunk(path, BuildRasterExtent(xmin = xmin, ymin = ymin,
   //                                                   xmax = xmax, ymax = ymax,
   //                                                   cols = width, rows = width,

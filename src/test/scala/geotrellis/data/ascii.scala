@@ -18,7 +18,7 @@ class AsciiSpec extends Spec with MustMatchers with ShouldMatchers {
 
   val e = Extent(19.0, 9.0, 49.0, 39.0)
   val g = RasterExtent(e, 3.0, 3.0, 10, 10)
-  val r = IntRaster(data, g)
+  val r = Raster(data, g)
 
   describe("An AsciiReader") {
     it ("should fail on non-existent files") {
@@ -27,7 +27,7 @@ class AsciiSpec extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it ("should write ASCII") {
-      AsciiWriter.write("/tmp/foo.asc", r)
+      AsciiWriter.write("/tmp/foo.asc", r, "foo")
     }
 
     it ("should read ASCII") {
@@ -37,7 +37,7 @@ class AsciiSpec extends Spec with MustMatchers with ShouldMatchers {
 
     it ("should translate GeoTiff") {
       val r2 = GeoTiffReader.readPath("src/test/resources/econic.tif", None, None)
-      AsciiWriter.write("/tmp/econic-geotrellis.asc", r2)
+      AsciiWriter.write("/tmp/econic-geotrellis.asc", r2, "econic-geotrellis")
     }
   }
 }

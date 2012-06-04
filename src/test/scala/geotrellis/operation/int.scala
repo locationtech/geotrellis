@@ -27,19 +27,19 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
                       44, 91, nd, 11, 95,
                       12, 13, 56, 66, 66,
                       44, 91, nd, 11, 95)
-    val raster1 = IntRaster(data1, rasterExtent)
+    val raster1 = Raster(data1, rasterExtent)
 
     val data2 = Array(nd, nd, nd, 1, 1,
                       nd, nd, nd, 1, 1,
                       nd, nd, nd, 1, 1,
                       nd, nd, nd, 1, 1)
-    val raster2 = IntRaster(data2, rasterExtent)
+    val raster2 = Raster(data2, rasterExtent)
 
     val data3 = Array(nd, nd, 33, 1, 1,
                       18, 88, 11, 1, 14,
                       33, 3, 10, 1, 17,
                       18, 12, nd, 34, 77)
-    val raster3 = IntRaster(data3, rasterExtent)
+    val raster3 = Raster(data3, rasterExtent)
 
     it("dispatch is not yet implemented") {
       val G = BuildRasterExtent(0.0, 0.0, 100.0, 100.0, 100, 100)
@@ -283,7 +283,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val data = Array.ofDim[Int](h * w)
       for (i <- 0 until h * w) { data(i) = i % w }
 
-      val R = Literal(IntRaster(data, w, h, geo))
+      val R = Literal(Raster(data, w, h, geo))
       val C = CropRaster(R, 23.4, 49.3, 88.3, 93.2)
       val raster = C.run(server)
 
@@ -322,7 +322,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
              cellsize:Double, srs:Int) => {
       val g = RasterExtent(Extent(xmin, ymin, xmin + cellsize * cols, ymin + cellsize * rows),
                                cellsize, cellsize, cols, rows)
-      IntRaster(a, g)
+      Raster(a, g)
     }
 
     val f = (a:Array[Int], cols:Int, rows:Int, xmin:Double, ymin:Double,
@@ -412,7 +412,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
                        3, 3, 4, 4, 4), 5, 5, 0.0, 0.0, 3.0)
       
       val Rs = Array(r1, r2, r3, r4).map { Literal(_) }
-      val S  = StitchIntRasters(Rs)
+      val S  = StitchRasters(Rs)
       val rOut = S.run(server)
       rOut.equal(rG) must be === true
     }
@@ -421,7 +421,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val r1 = f(Array(1), 1, 1, 0.0, 0.0, 3.0)
       val r2 = f(Array(2), 1, 1, 2.0, 0.0, 4.0)
       
-      val S = StitchIntRasters(Array(r1, r2).map { Literal(_) })
+      val S = StitchRasters(Array(r1, r2).map { Literal(_) })
       evaluating { S.run(server) } should produce [Exception];
     }
 
@@ -429,7 +429,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val r1 = f2(Array(1), 1, 1, 0.0, 0.0, 4.0, 999)
       val r2 = f2(Array(2), 1, 1, 2.0, 0.0, 4.0, 998)
       
-      val S = StitchIntRasters(Array(r1, r2).map { Literal(_) })
+      val S = StitchRasters(Array(r1, r2).map { Literal(_) })
       evaluating { S.run(server) } should produce [Exception];
     }
 
@@ -452,7 +452,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
                        2, 2, 2, nd, nd, nd, nd, nd, nd,
                        2, 2, 2, nd, nd, nd, nd, nd, nd), 9, 9, 0.0, 1.0, 1.0)
       
-      val S = StitchIntRasters(Array(r1, r2, r3).map { Literal(_) })
+      val S = StitchRasters(Array(r1, r2, r3).map { Literal(_) })
       val rOut = S.run(server)
       rOut.equal(rG) must be === true
     }

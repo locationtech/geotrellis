@@ -21,10 +21,10 @@ object RasterizerSpec {
     val polygons = polypts.map(Polygon(_, 0, null))
 
     val e = Extent(0.0, 0.0, cols, rows)
-    val g = RasterExtent(e, cellwidth=1.0, cellheight=1.0, cols=cols, rows=rows)
+    val re = RasterExtent(e, cellwidth=1.0, cellheight=1.0, cols=cols, rows=rows)
 
     val data   = Array.fill[Int](cols * rows)(NODATA)
-    val raster = IntRaster(data, rasterExtent=g)
+    val raster = Raster(data, re)
 
     Rasterizer.rasterize(raster, polygons, fs)
     println(raster.asciiDraw)
@@ -42,10 +42,10 @@ class RasterizerSpec extends Spec with MustMatchers with ShouldMatchers {
     var height = p.ymax + 1
 
     val e = Extent(0.0, 0.0, width.toDouble, height.toDouble)
-    val g = RasterExtent(e, cellwidth=1.0, cellheight=1.0, cols=width, rows=height)
+    val re = RasterExtent(e, cellwidth=1.0, cellheight=1.0, cols=width, rows=height)
 
     val data = Array.fill[Int](width * height)(NODATA)
-    val raster = IntRaster(data, rasterExtent=g)
+    val raster = Raster(data, re)
 
     val polygons = Array(p)
     val values   = Array(19)

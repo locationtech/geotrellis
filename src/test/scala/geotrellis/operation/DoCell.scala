@@ -6,7 +6,7 @@ import scala.math.{max,min,sqrt}
 import geotrellis.geometry.Polygon
 
 import geotrellis.data.ColorBreaks
-import geotrellis.IntRaster
+import geotrellis.Raster
 import geotrellis.{Extent,RasterExtent}
 
 import geotrellis._
@@ -33,7 +33,7 @@ class DoCellSpec extends Spec with MustMatchers with ShouldMatchers {
              cellsize:Double, srs:Int) => {
       val g = RasterExtent(Extent(xmin, ymin, xmin + cellsize * cols, ymin + cellsize * rows),
                                cellsize, cellsize, cols, rows)
-      IntRaster(a, g)
+      Raster(a, g)
     }
     val f = (a:Array[Int], cols:Int, rows:Int, xmin:Double, ymin:Double,
              cellsize:Double) => f2(a, cols, rows, xmin, ymin, cellsize, 999)

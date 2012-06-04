@@ -6,8 +6,6 @@ import java.io.{File, FileInputStream, FileOutputStream}
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel.MapMode._
 import javax.imageio.ImageIO
-import java.awt.image.WritableRaster
-import java.awt.image.Raster
 import java.awt.Point
 
 import org.geotools.coverage.grid.GridCoverageFactory
@@ -35,6 +33,8 @@ final class GeoTiffReadState(path:String,
   private var noData:Int = 0
   private var ints:Array[Int] = null
 
+  def createRasterData(size:Int) = IntArrayRasterData.empty(size)
+
   private def getReader = {
     val fh    = new File(path)
     val gtf   = new gce.geotiff.GeoTiffFormat
@@ -59,7 +59,7 @@ final class GeoTiffReadState(path:String,
     val w = layer.rasterExtent.cols
     val h = size / layer.rasterExtent.cols
 
-    ints = Array.fill(w * h)(noData)
+    ints = Array.fill(w * h)(NODATA)
 
     val reader = getReader
     initializeNoData(reader)
@@ -69,7 +69,7 @@ final class GeoTiffReadState(path:String,
   }
 
   @inline
-  def assignFromSource(sourceIndex:Int, dest:Array[Int], destIndex:Int) {
+  def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
     dest(destIndex) = ints(sourceIndex)
   }
 
@@ -120,7 +120,7 @@ object GeoTiffWriter extends Writer {
 
   val geoTiffSettings = Settings(IntSample, Signed, esriCompat = false)
 
-  def write(path:String, raster:IntRaster, name:String) {
+  def write(path:String, raster:Raster, name:String) {
     Encoder.writePath(path, raster, geoTiffSettings)
   }
 }

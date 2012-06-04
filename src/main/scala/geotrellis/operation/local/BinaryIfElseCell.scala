@@ -17,7 +17,7 @@ import geotrellis._
  * val C = BinaryIfElseCell(A,B, (a,b) => a > b, 1, 0) 
  * </pre> 
  */
-case class BinaryIfElseCell(r1:Op[IntRaster], r2:Op[IntRaster],
+case class BinaryIfElseCell(r1:Op[Raster], r2:Op[Raster],
                             cond: (Int,Int) => Boolean, trueValue:Int,
                             falseValue:Int) extends BinaryLocal {
   def handleCells(z1:Int, z2:Int): Int = if(cond(z1,z2)) trueValue else falseValue

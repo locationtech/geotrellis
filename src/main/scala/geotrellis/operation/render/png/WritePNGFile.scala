@@ -10,7 +10,7 @@ import geotrellis.process._
  * Write out a PNG graphic file to the file system at the specified path.
  */
 //TODO: rename this to RenderPNGFile?
-case class WritePNGFile(r:Op[IntRaster], path:Op[String], breaks:Op[Array[(Int, Int)]],
+case class WritePNGFile(r:Op[Raster], path:Op[String], breaks:Op[Array[(Int, Int)]],
                         noDataColor:Op[Int], transparent:Op[Boolean]) 
 extends Op5(r,path,breaks,noDataColor,transparent) ({
     (r, path, breaks, noDataColor, transparent) => {
@@ -21,7 +21,7 @@ extends Op5(r,path,breaks,noDataColor,transparent) ({
 })
 
 //TODO: rename this to WritePNGFile?
-case class WritePNGFile2(r:Op[IntRaster], path:String, noDataColor:Int, transparent:Boolean) 
+case class WritePNGFile2(r:Op[Raster], path:String, noDataColor:Int, transparent:Boolean) 
 extends Op4(r,path,noDataColor,transparent)({
   (r, path, noDataColor, transparent) => {
     RgbaEncoder().writePath(path, r)

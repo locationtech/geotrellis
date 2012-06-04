@@ -9,14 +9,14 @@ import geotrellis.stat._
  * Generic trait used by the various histogram-building operations.
  */
 trait BuildHistogram extends Operation[Histogram] {
-  val r:Op[IntRaster]
+  val r:Op[Raster]
 
   protected[this] def createHistogram:Histogram
 
   def _run(context:Context) = runAsync(List(r))
 
   val nextSteps:Steps = {
-    case (raster:IntRaster) :: Nil => {
+    case (raster:Raster) :: Nil => {
       val h = createHistogram
 
       val data   = raster.data

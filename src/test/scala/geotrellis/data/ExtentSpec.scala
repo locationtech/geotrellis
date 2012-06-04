@@ -31,7 +31,7 @@ class ExtentSpec extends Spec with MustMatchers with ShouldMatchers {
   describe("An Extent") {
     val server = TestServer("src/test/resources/catalog.json")
 
-    def confirm(op:Op[IntRaster], expected:Array[Int]) {
+    def confirm(op:Op[Raster], expected:Array[Int]) {
       val r = server.run(op)
       //println(r.asciiDraw)
       r.data.asArray must be === expected

@@ -9,7 +9,7 @@ import geotrellis.stat._
  * Build an array histogram (see [[geotrellis.stat.ArrayHistogram]] of values from
  * a raster.
  */
-case class BuildArrayHistogram(r:Op[IntRaster], size:Op[Int]) extends Op2(r,size) ({
+case class BuildArrayHistogram(r:Op[Raster], size:Op[Int]) extends Op2(r,size) ({
   (raster, size) => {
     val histogram = ArrayHistogram(size)
 

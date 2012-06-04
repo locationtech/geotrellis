@@ -15,12 +15,12 @@ import geotrellis.RasterExtent
   * val t2 = DoTile(R, AddConstant(_, 3)) // _ is in place of a raster operation
   * </pre>
   */
-case class ForEachTile(r:Op[IntRaster])(f:(Op[IntRaster] => Op[IntRaster])) extends Op[IntRaster] {
+case class ForEachTile(r:Op[Raster])(f:(Op[Raster] => Op[Raster])) extends Op[Raster] {
   def _run(context:Context) = runAsync(r :: Nil)
 
   val nextSteps:Steps = { 
-    case (tr:IntRaster) :: Nil => { 
-      val (ops:List[Op[IntRaster]], tileSet:Option[_]) = 
+    case (tr:Raster) :: Nil => { 
+      val (ops:List[Op[Raster]], tileSet:Option[_]) = 
         tr.data match {
       	  case trData:TileRasterData => {
       		  val ops = trData.rasters.toList.flatten 
@@ -34,10 +34,10 @@ case class ForEachTile(r:Op[IntRaster])(f:(Op[IntRaster] => Op[IntRaster])) exte
     }
   
     case rasterExtent :: tileSet :: rasters => {
-      val rs:Array[Option[IntRaster]] = rasters map { case r:IntRaster => Some(r) } toArray
+      val rs:Array[Option[Raster]] = rasters map { case r:Raster => Some(r) } toArray
       val outputRaster = tileSet match { 
         case Some(tileSet:TileSet) => { 
-          IntRaster(TileRasterData(tileSet, rs), rasterExtent.asInstanceOf[RasterExtent])
+          Raster(TileRasterData(tileSet, rs), rasterExtent.asInstanceOf[RasterExtent])
         }
         case None => rs.head.get
       }
