@@ -355,8 +355,7 @@ class MiniWeightedOverlay extends MyBenchmark {
     val r1:Raster = loadRaster("SBN_farm_mkt", size, size)
     val r2:Raster = loadRaster("SBN_RR_stops_walk", size, size)
 
-    // TODO: op should use AddOld
-    op = Add(MultiplyConstant(r1, 5), MultiplyConstant(r2, 2))
+    op = AddOld(MultiplyConstant(r1, 5), MultiplyConstant(r2, 2))
 
     strictOp = Add(MultiplyConstantMapSugar(r1, 5), MultiplyConstantMapSugar(r2, 2))
     lazyOp = Force(Add(MultiplyConstantMapSugar(r1.defer, 5), MultiplyConstantMapSugar(r2.defer, 2)))
@@ -391,8 +390,7 @@ class NewAddOperations extends MyBenchmark {
     val l1:Raster = r1.defer
     val l2:Raster = r2.defer
 
-    // FIXME: strictOld should use AddOld
-    strictOld = Force(Add(Add(r1, r2), Add(r1, r2)))
+    strictOld = Force(AddOld(AddOld(r1, r2), AddOld(r1, r2)))
     strictNew = Force(Add(Add(r1, r2), Add(r1, r2)))
     lazyNew = Force(Add(Add(l1, l2), Add(l1, l2)))
   }

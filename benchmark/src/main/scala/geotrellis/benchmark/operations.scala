@@ -81,3 +81,48 @@ case class MultiplyConstantWhileLoop(r:Op[Raster], c:Op[Int]) extends Op[Raster]
     }
   }
 }
+
+
+/**
+ * older version of the MultiLocal trait
+ */
+trait MultiLocalOld extends LocalOperation {
+  def ops:Array[Op[Raster]]
+
+  def _run(context:Context) = runAsync(ops.toList)
+
+  val nextSteps:Steps = {
+    case rasters:List[_] => {
+      handleRasters(rasters.asInstanceOf[List[Raster]].toArray)
+    }
+  }
+
+  def handle(z1:Int, z2:Int):Int
+
+  def handleRaster(outdata:RasterData, data:RasterData) {
+    var i = 0
+    while (i < outdata.length) {
+      outdata(i) = handle(outdata(i), data(i))
+      i += 1
+    }
+  }
+  
+  def handleRasters(rasters:Array[Raster]) = {
+    val output = rasters(0).copy()
+    val outdata = output.data
+    var j = 1
+    while (j < rasters.length) {
+      handleRaster(outdata, rasters(j).data)
+      j += 1
+    }
+    Result(output)
+  }
+}
+
+/**
+ * older version of Add, based on MultiLocalOld
+ */
+case class AddOld(rs:Op[Raster]*) extends MultiLocalOld {
+  final def ops = rs.toArray
+  final def handle(a:Int, b:Int) = if (a == NODATA) b else if (b == NODATA) a else a + b
+}
