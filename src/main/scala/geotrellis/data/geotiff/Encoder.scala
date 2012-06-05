@@ -34,7 +34,7 @@ import geotrellis._
  * [1] http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf
  */
 class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
-  val data = raster.data
+  val data = raster.data.asArray
   val re = raster.rasterExtent
   val cols = re.cols
   val rows = re.rows

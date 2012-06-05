@@ -42,7 +42,7 @@ class DoCellSpec extends Spec with MustMatchers with ShouldMatchers {
     val r = CopyRaster(Literal(f(a, 3, 3, 0.0, 0.0, 1.0)))
 
     it ("DoCell") {
-      server.run(DoCell(r, _ + 1)).data.asArray must be === a.map { _ + 1 }
+      server.run(DoCell(r, _ + 1)).data.asArray.toArray must be === a.map { _ + 1 }
     }
   }
 }

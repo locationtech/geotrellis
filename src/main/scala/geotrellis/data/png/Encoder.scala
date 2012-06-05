@@ -80,7 +80,7 @@ class Encoder(settings:Settings) {
 
   def createByteBuffer(raster:Raster) = {
     val size = raster.length
-    val data = raster.data
+    val data = raster.data.asArray
     val bb = ByteBuffer.allocate(size * DEPTH)
 
     if (DEPTH == 4) initByteBuffer32(bb, data, size)
@@ -105,7 +105,7 @@ class Encoder(settings:Settings) {
     // dereference some useful information from the raster
     val cols = raster.cols
     val size = cols * raster.rows
-    val data = raster.data
+    val data = raster.data.asArray
 
     // allocate a data chunk for our pixel data
     val cIDAT = new Chunk(IDAT)
@@ -162,7 +162,7 @@ class Encoder(settings:Settings) {
     // dereference some useful information from the raster
     val cols = raster.cols
     val size = cols * raster.rows
-    val data = raster.data
+    val data = raster.data.asArray
 
     // allocate a data chunk for our pixel data
     val cIDAT = new Chunk(IDAT)

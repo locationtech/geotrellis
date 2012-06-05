@@ -11,7 +11,8 @@ object Util {
   /**
    * ByteBuffer boiler-plate stuff below.
    */
-  def initByteBuffer32(bb:ByteBuffer, data:RasterData, size:Int) {
+  def initByteBuffer32(bb:ByteBuffer, _data:RasterData, size:Int) {
+    val data = _data.asArray 
     var j = 0
     while (j < size) {
       val z = data(j)
@@ -23,7 +24,8 @@ object Util {
     }
   }
 
-  def initByteBuffer24(bb:ByteBuffer, data:RasterData, size:Int) {
+  def initByteBuffer24(bb:ByteBuffer, _data:RasterData, size:Int) {
+    val data = _data.asArray
     var j = 0
     while (j < size) {
       val z = data(j)
@@ -34,7 +36,8 @@ object Util {
     }
   }
 
-  def initByteBuffer16(bb:ByteBuffer, data:RasterData, size:Int) {
+  def initByteBuffer16(bb:ByteBuffer, _data:RasterData, size:Int) {
+    val data = _data.asArray
     var j = 0
     while (j < size) {
       val z = data(j)
@@ -44,7 +47,8 @@ object Util {
     }
   }
 
-  def initByteBuffer8(bb:ByteBuffer, data:RasterData, size:Int) {
+  def initByteBuffer8(bb:ByteBuffer, _data:RasterData, size:Int) {
+    val data = _data.asArray
     var j = 0
     while (j < size) {
       val z = data(j)

@@ -15,7 +15,7 @@ final class RasterReadState(raster:Raster,
   def createRasterData(size:Int) = IntArrayRasterData.empty(size)
 
   def initSource(position:Int, size:Int) {
-    src = IntBuffer.wrap(raster.data.asArray, position, size)
+    src = IntBuffer.wrap(raster.toArray, position, size)
   }
 
   @inline

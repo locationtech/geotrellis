@@ -119,10 +119,10 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
       raster.cols must be === 4
       raster.rows must be === 4
-      raster.data(0) must be === 1
-      raster.data(3) must be === 2
-      raster.data(8) must be === 3
-      raster.data(11) must be === 4
+      raster.data.asArray.asArray(0) must be === 1
+      raster.data.asArray.asArray(3) must be === 2
+      raster.data.asArray.asArray(8) must be === 3
+      raster.data.asArray.asArray(11) must be === 4
     }
 
     it("test Literal implicit") {
@@ -226,10 +226,10 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val S = StandardDeviation(R2, H, 1000)
       val raster = newServer.run(S)
 
-      raster.data(0) must be === -1341
-      raster.data(10) must be === -447
-      raster.data(200) must be === 447
-      raster.data(210) must be === 1341
+      raster.data.asArray.asArray(0) must be === -1341
+      raster.data.asArray.asArray(10) must be === -447
+      raster.data.asArray.asArray(200) must be === 447
+      raster.data.asArray.asArray(210) must be === 1341
     }
 
 /*
@@ -293,8 +293,8 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       raster.rasterExtent.extent.xmax must be === 89.0
       raster.rasterExtent.extent.ymax must be === 94.0
 
-      raster.data(0) must be === 23
-      raster.data(67) must be === 24
+      raster.data.asArray.asArray(0) must be === 23
+      raster.data.asArray.asArray(67) must be === 24
     }
 
     it("ChunkRasterExtent") {
@@ -516,41 +516,41 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 */
     // unary local
     it("Negate") {
-      server.run(Negate(R)).data.asArray must be === a.map { _ * -1 }
+      server.run(Negate(R)).data.asArray.toArray must be === a.map { _ * -1 }
     }
     it("AddConstant") {
-      server.run(AddConstant(R, 10)).data.asArray must be === a.map { _ + 10 }
+      server.run(AddConstant(R, 10)).data.asArray.toArray must be === a.map { _ + 10 }
     }
     it("MultiplyConstant") {
-      server.run(MultiplyConstant(R, 8)).data.asArray must be === a.map { _ * 8 }
+      server.run(MultiplyConstant(R, 8)).data.asArray.toArray must be === a.map { _ * 8 }
     }
     it("SubtractConstant") {
-      server.run(SubtractConstant(R, 5)).data.asArray must be === a.map { _ - 5 }
+      server.run(SubtractConstant(R, 5)).data.asArray.toArray must be === a.map { _ - 5 }
     }
     it("DivideConstant") {
-      server.run(DivideConstant(R, 2)).data.asArray must be === a.map { _ / 2 }
+      server.run(DivideConstant(R, 2)).data.asArray.toArray must be === a.map { _ / 2 }
     }
     it("MaxConstant") {
-      server.run(MaxConstant(R, 6)).data.asArray must be === a.map { max(_, 6) }
+      server.run(MaxConstant(R, 6)).data.asArray.toArray must be === a.map { max(_, 6) }
     }
     it("MinConstant") {
-      server.run(MinConstant(R, 6)).data.asArray must be === a.map { min(_, 6) }
+      server.run(MinConstant(R, 6)).data.asArray.toArray must be === a.map { min(_, 6) }
     }
 
     it("IfCell") {
-      server.run(IfCell(R, _ > 6, 6)).data.asArray must be === a.map { min(_, 6) } 
+      server.run(IfCell(R, _ > 6, 6)).data.asArray.toArray must be === a.map { min(_, 6) } 
     }
 
     it ("IfCell, second test") {
-      server.run(IfCell(R, x => x > 3, 3)).data.asArray must be === a.map { min(_, 3) } 
+      server.run(IfCell(R, x => x > 3, 3)).data.asArray.toArray must be === a.map { min(_, 3) } 
     }
 
     it ("IfCell with an else clause (IfElse)") {
-      server.run(IfCell(R, _ > 3, 1, 0)).data.asArray must be === a.map { x:Int => if (x > 3) 1 else 0 } 
+      server.run(IfCell(R, _ > 3, 1, 0)).data.asArray.toArray must be === a.map { x:Int => if (x > 3) 1 else 0 } 
     }
 
     it ("DoCell") {
-      server.run(DoCell(R, _ + 1)).data.asArray must be === a.map { _ + 1 }
+      server.run(DoCell(R, _ + 1)).data.asArray.toArray must be === a.map { _ + 1 }
     }
     // binary local
 

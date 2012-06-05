@@ -187,11 +187,13 @@ case class GridPolygon(val edges:Seq[GridLine]) {
     * sign (e.g. they are both falling or rising). in this case, we only want
     * one of their X coordinates, not the other.
     */
-  def rasterize(cols:Int, rows:Int, value:Int, data:RasterData, xoffset:Int, yoffset:Int) {
+  def rasterize(cols:Int, rows:Int, value:Int, _data:RasterData, xoffset:Int, yoffset:Int) {
     if (cols <= this.xmax || rows <= this.ymax) {
       val msg = "raster is not big enough (%d <= %d || %d <= %d)"
       throw new Exception(msg.format(cols, xmax, rows, ymax))
     }
+  
+    val data = _data.asArray
 
     // we sort our line segments by pmin (which is the upper (leftmost) point
     // on the line). we do this to make it easier to know when we need to start

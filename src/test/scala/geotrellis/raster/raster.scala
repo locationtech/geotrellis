@@ -16,7 +16,7 @@ class RasterSpec extends Spec with MustMatchers {
     val raster = Raster(data, g)
 
     it("should preserve the data") {
-      raster.asArray must be === data
+      raster.toArray must be === data
     }
 
     it("should get coordinate values") {
@@ -26,7 +26,7 @@ class RasterSpec extends Spec with MustMatchers {
     it("should create empty rasters") {
       val r = Raster.empty(g)
       for(i <- 0 until g.cols * g.rows) {
-        r.data(i) must be === NODATA
+        r.data.asArray(i) must be === NODATA
       }
     }
 

@@ -129,10 +129,11 @@ object TileRasterData {
   }
 }
 
+//FIXME: extends ArrayRasterData as temporary hack to compile
 /**
   * TileRasterData provides a data source that is backed by a grid of sub-rasters.
   */
-case class TileRasterData(tileSet:TileSet, rasters:Array[Option[Raster]]) extends RasterData {
+case class TileRasterData(tileSet:TileSet, rasters:Array[Option[Raster]]) extends ArrayRasterData { 
   val rasterExtent = tileSet.rasterExtent;
   val pixels = tileSet.tileSize;
   
@@ -174,11 +175,11 @@ case class TileRasterData(tileSet:TileSet, rasters:Array[Option[Raster]]) extend
   /**
     * Copy: not implemented
     */
-  def copy():RasterData = this
+  def copy() = this
 
   def length:Int = rasterExtent.cols * rasterExtent.rows
 
-  def asArray():Array[Int] = {
+  def toArray():Array[Int] = {
     throw new Exception("not implemented yet");
     return null;
   }

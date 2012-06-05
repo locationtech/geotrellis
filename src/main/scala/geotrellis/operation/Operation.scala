@@ -10,7 +10,7 @@ import akka.actor._
  * Base Operation for all Trellis functionality. All other operations must
  * extend this trait.
  */
-abstract class Operation[T] extends Product {
+abstract class Operation[+T] extends Product {
   type Steps = PF[Any, StepOutput[T]]
 
   val nextSteps:PF[Any, StepOutput[T]]
@@ -53,12 +53,12 @@ abstract class Operation[T] extends Product {
   }
 }
 
-abstract class OperationWrapper[T](op:Op[T]) extends Operation[T] {
+abstract class OperationWrapper[+T](op:Op[T]) extends Operation[T] {
   def _run(context:Context) = op._run(context)
   val nextSteps:Steps = op.nextSteps
 }
 
-case class DispatchedOperation[T](val op:Op[T], val dispatcher:ActorRef)
+case class DispatchedOperation[+T](val op:Op[T], val dispatcher:ActorRef)
 extends OperationWrapper(op) {}
 
 object Operation {

@@ -11,7 +11,7 @@ import geotrellis.stat._
 case class BuildMapHistogram(r:Op[Raster]) extends Op1(r) ({
     (raster) => {
       val histogram = FastMapHistogram()
-      val data = raster.data
+      val data = raster.data.asArray
 
       var i = 0
       val len = raster.length

@@ -26,25 +26,25 @@ class UnaryLocalSpec extends Spec with MustMatchers with ShouldMatchers {
     it("should produce correct results") {
       val op = AddConstant(raster, 33)
       val raster2 = server.run(op)
-      raster2.data(0) must be === raster.data(0) + 33
+      raster2.data.asArray.asArray(0) must be === raster.data.asArray(0) + 33
     }
 
     it("should compose 2 local operations") {
-      server.run(f(f(raster))).data(0) must be === raster.data(0) + 2
+      server.run(f(f(raster))).data.asArray(0) must be === raster.data.asArray(0) + 2
     }
 
     it("should compose 3 local operations") {
-      server.run(f(f(f(raster)))).data(0) must be === raster.data(0) + 3
+      server.run(f(f(f(raster)))).data.asArray(0) must be === raster.data.asArray(0) + 3
     }
 
     it("should compose 4 local operations") {
-      server.run(f(f(f(f(raster))))).data(0) must be === raster.data(0) + 4
+      server.run(f(f(f(f(raster))))).data.asArray(0) must be === raster.data.asArray(0) + 4
     }
 
     it("should compose multiple operations") {
       val Complete(raster2, history) = server.getResult(f(f(f(f(f(raster))))))
       println(history.toPretty)
-      raster2.data(0) must be === raster.data(0) + 5
+      raster2.data.asArray.asArray(0) must be === raster.data.asArray(0) + 5
     }
   }
 }

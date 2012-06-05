@@ -12,10 +12,8 @@ case class VerticalFlip(r:Op[Raster]) extends Op1(r) ({
   r =>
   val cols = r.cols
   val rows = r.cols
-  val data = r.data
-
-  val r2 = r.copy()
-  val data2 = r2.data
+  val data = r.data.asArray
+  val data2 = data.copy
 
   var y = 0
   var x = 0
@@ -29,5 +27,5 @@ case class VerticalFlip(r:Op[Raster]) extends Op1(r) ({
     }
     y += 1
   }
-  Result(r2)
+  Result(Raster(data2,r.rasterExtent))
 })
