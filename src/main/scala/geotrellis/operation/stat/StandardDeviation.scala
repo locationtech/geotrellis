@@ -17,8 +17,8 @@ case class StandardDeviation(r:Op[Raster], h:Op[Histogram], factor:Int) extends 
     case (stats:Statistics) :: (raster:Raster) :: Nil => step2(stats, raster)
   }
 
-  def step2(stats:Statistics, raster:Raster) = {
-    val indata = raster.data
+  def step2(stats:Statistics, raster:Raster):StepOutput[Raster] = {
+    val indata = raster.data.asArray
     val len = indata.length
     val outdata = Array.ofDim[Int](len)
 

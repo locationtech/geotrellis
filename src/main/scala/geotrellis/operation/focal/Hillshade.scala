@@ -46,15 +46,15 @@ case class Hillshade(r:Op[Raster], azimuth:Op[Double], altitude:Op[Double])
  //   println ("cols: %d".format(r.rasterExtent.cols))
      
     val data = Array.fill(r.rasterExtent.rows * r.rasterExtent.cols)(NODATA)
-
+    val elev = r.data.asArray
     // skip border cells
     for (y <- 1 until r.rows - 1; x <- 1 until r.cols - 1) {
-        val h = if (r.data(y * r.cols + x) == NODATA) {
+        val h = if (elev(y * r.cols + x) == NODATA) {
            NODATA 
         } else {
           // using simple horizontal rate of change, as opposed to weighting neighbors (corner + 2mid + corner)
-          val dx = (r.data(y * r.cols + x + 1) - r.data(y * r.cols + x - 1)) / (2 * r.rasterExtent.cellwidth)
-          val dy = (r.data((y - 1) * r.cols + x) - r.data((y + 1) * r.cols + x)) / (2 * r.rasterExtent.cellheight)
+          val dx = (elev(y * r.cols + x + 1) - elev(y * r.cols + x - 1)) / (2 * r.rasterExtent.cellwidth)
+          val dy = (elev((y - 1) * r.cols + x) - elev((y + 1) * r.cols + x)) / (2 * r.rasterExtent.cellheight)
           val slope = math.atan(math.sqrt(math.pow(dx, 2) + math.pow(dy,2))) // add z factor (multiplied in) if values are not in map units
           val aspect = if (dx != 0) {
             val aspect1 = math.atan2(dy, 0-dx) 

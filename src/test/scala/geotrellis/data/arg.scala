@@ -73,10 +73,10 @@ class ArgSpec extends Spec with MustMatchers with ShouldMatchers {
     val dotest = (xmin:Double, ymin:Double, xmax:Double, ymax:Double,
                   cols:Int, rows:Int, expect:Array[Int]) => {
       val result = chunker(xmin, ymin, xmax, ymax, cols, rows)
-      val ok = dcmp(result.data.asArray, expect)
+      val ok = dcmp(result.data.asArray.toArray, expect)
       if (!ok) {
         println("got:")
-        println(result.data.asArray.toList)
+        println(result.data.asArray.toArray.toList)
         println("\nexpected:")
         println(expect.toList)
       }

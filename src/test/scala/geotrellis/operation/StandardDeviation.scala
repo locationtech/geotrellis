@@ -19,10 +19,10 @@ class DeviationRasterSpec extends Spec with MustMatchers with ShouldMatchers {
       val s = StandardDeviation(r2, h, 1000)
       val raster = server.run(s)
   
-      raster.data(0) must be === -1341
-      raster.data(10) must be === -447
-      raster.data(200) must be === 447
-      raster.data(210) must be === 1341
+      raster.data.asArray(0) must be === -1341
+      raster.data.asArray(10) must be === -447
+      raster.data.asArray(200) must be === 447
+      raster.data.asArray(210) must be === 1341
     }
   }
 }

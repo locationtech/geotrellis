@@ -36,7 +36,7 @@ case class PolygonalZonalHistograms(ps:Array[Op[Polygon]], r:Op[Raster],
 
     // dereference some useful variables
     val geo   = raster.rasterExtent
-    val rdata = raster.data
+    val rdata = raster.data.asArray
     val p0    = polygons(0)
     val rows  = geo.rows
     val cols  = geo.cols
@@ -61,7 +61,7 @@ case class PolygonalZonalHistograms(ps:Array[Op[Polygon]], r:Op[Raster],
 
     // burn our polygons onto a raster
     val zones = Raster.empty(geo)
-    val zdata = zones.data
+    val zdata = zones.data.asArray
     Rasterizer.rasterize(zones, polygons.toArray)
 
     // iterate over the cells in our bounding box; determine its zone, then

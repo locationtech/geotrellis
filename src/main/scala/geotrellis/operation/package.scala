@@ -5,9 +5,9 @@ import geotrellis.geometry.Polygon
 
 package object operation {
   // Operation is such a long word :(
-  type Op[A] = Operation[A]
+  type Op[+A] = Operation[A]
   type LocalOp = LocalOperation
-  type DispatchedOp[T] = DispatchedOperation[T]
+  type DispatchedOp[+T] = DispatchedOperation[T]
 
   // TODO: consider adding things like type PNG = Array[Byte]?
 

@@ -142,7 +142,7 @@ class DataMap extends MyBenchmark {
   def timeRasterWhileLoop(reps:Int) = run(reps)(rasterWhileLoop)
   def rasterWhileLoop = {
     val rcopy = raster.copy
-    val goal = rcopy.data
+    val goal = rcopy.data.asArray
     var i = 0
     val len = goal.length
     while (i < len) {
@@ -518,7 +518,7 @@ class RasterForeach extends MyBenchmark {
   def rasterWhile = {
     var t = 0
     var i = 0
-    val d = r.data
+    val d = r.data.asArray
     val len = r.length
     while (i < len) {
       t += d(i)

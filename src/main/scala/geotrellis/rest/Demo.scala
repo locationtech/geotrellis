@@ -140,7 +140,8 @@ class DemoService1 {
     /**
      * Build a histogram of the output raster values.
      */
-    val histogramOp = BuildMapHistogram(outputOp)
+    //FIXME: remove this temporary cast
+    val histogramOp = BuildMapHistogram(outputOp.asInstanceOf[Operation[Raster]])
 
     /**
      * Parse the user's color palette and allocate colors.

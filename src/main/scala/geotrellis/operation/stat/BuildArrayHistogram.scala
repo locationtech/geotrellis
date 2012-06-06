@@ -13,7 +13,7 @@ case class BuildArrayHistogram(r:Op[Raster], size:Op[Int]) extends Op2(r,size) (
   (raster, size) => {
     val histogram = ArrayHistogram(size)
 
-    val data = raster.data
+    val data = raster.data.asArray
 
     var i = 0
     val len = data.length

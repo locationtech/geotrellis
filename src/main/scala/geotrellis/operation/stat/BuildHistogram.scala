@@ -19,7 +19,7 @@ trait BuildHistogram extends Operation[Histogram] {
     case (raster:Raster) :: Nil => {
       val h = createHistogram
 
-      val data   = raster.data
+      val data = raster.data.asArray
 
       var i = 0
       val limit = raster.length

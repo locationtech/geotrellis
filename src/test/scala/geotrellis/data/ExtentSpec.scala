@@ -34,7 +34,7 @@ class ExtentSpec extends Spec with MustMatchers with ShouldMatchers {
     def confirm(op:Op[Raster], expected:Array[Int]) {
       val r = server.run(op)
       //println(r.asciiDraw)
-      r.data.asArray must be === expected
+      r.data.asArray.toArray must be === expected
     }
 
     val origin1 = (1100.0, 1200.0)

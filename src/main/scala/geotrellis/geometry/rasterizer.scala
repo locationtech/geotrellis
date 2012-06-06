@@ -1,6 +1,6 @@
 package geotrellis.geometry.rasterizer
 
-import geotrellis.{Raster,RasterData}
+import geotrellis.{RasterData,Raster}
 import geotrellis.geometry.{Polygon}
 import geotrellis.geometry.grid.{GridPoint, GridLine, GridPolygon}
 
@@ -305,9 +305,9 @@ object Rasterizer {
    * array with the dimensions: cols x rows.
    */
   def rasterize(cols:Int, rows:Int, polygons:Array[GridPolygon],
-                fs:Array[Int => Int], data:RasterData) {
+                fs:Array[Int => Int], _data:RasterData) {
     //printf("rasterize called with cols=%d and rows=%d\n", cols, rows)
-
+    val data = _data.asArray
     val lastrow = rows - 1
     val lastcol = cols - 1
 
