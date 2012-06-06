@@ -9,7 +9,7 @@ object MyBuild extends Build {
   lazy val root = Project("root", file(".")) settings(
     organization := "com.azavea.geotrellis",
     name := "geotrellis",
-    version := "0.6.0",
+    version := "0.7.0-SNAPSHOT",
     scalaVersion := "2.9.2",
     
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-optimize"),
