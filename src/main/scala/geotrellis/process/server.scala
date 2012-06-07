@@ -164,6 +164,7 @@ akka {
   }
 
   // TODO: rewrite calls to loadRaster to getRaster. then remove?
+  def loadRaster(path:String):Raster = getRaster(path, None, None)
   def loadRaster(path:String, g:RasterExtent):Raster = getRaster(path, None, Option(g))
 
   def getRasterExtentByName(name:String):RasterExtent = {

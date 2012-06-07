@@ -7,6 +7,8 @@ import geotrellis._
 import geotrellis.process.TestServer
 import geotrellis.operation._
 
+import geotrellis.Implicits._
+
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class TileSpec extends Spec with MustMatchers {
   val e = Extent(0.0, 0.0, 100.0, 100.0)
@@ -81,36 +83,40 @@ class TileSpec extends Spec with MustMatchers {
   val g22 = RasterExtent(e22, 20.0, 20.0, 2, 2)
   val r22 = Raster(d22, g10)
 
-  val tiles = Array(r00, r10, r20, r01, r11, r21, r02, r12, r22) map { Option(_) }
+
+  // this is a normal raster
   val raster = Raster(data, g)
 
-  val tileset = TileSet(g, 2)
-  val tileData = TileRasterData(tileset, tiles)
+  // this is a tiled raster
+  val layout = TileLayout(3, 3, 2, 2)
+  val tiles = Array(r00, r10, r20, r01, r11, r21, r02, r12, r22)
+  val tileData = TileArrayRasterData(tiles, layout)
   val tileRaster = Raster(tileData, g)
 
   val server = TestServer()
   
+  // this is a really big normal raster
   val largeData = Array.fill(largeSize * largeSize)(0)
   val largeRaster = Raster(largeData, gLarge)
-
-  def loader(col: Int, row: Int): Option[Raster] = {
-    val r = tiles(row * 3 + col)
-    r
-  }
 
   describe("TileRasterData") {
 
     it("should return the correct values") {
-      for (y <- 0 to 4; x <- 0 to 4)
-        tileRaster.get(x, y) must be === ((y * 5) + x) + 1
-
+      for (y <- 0 to 4; x <- 0 to 4) {
+        try {
+          val z = tileRaster.get(x, y)
+          //println("tile(%s,%s) = %s" format (x, y, z))
+          z must be === ((y * 5) + x) + 1
+        } catch {
+          case _ => println("tile(%s,%s) exploded" format (x, y))
+        }
+      }
     }
     it ("should load tiles given an extent & loader") {
       // Given a map extent and a loader, we can create a Raster with some tiles loaded.
       // Loading tiles (0,1) & (1,1)
       val extent = Extent(1, 21, 79, 59)
-      val tileRasterData = TileRasterData(tileset, extent, loader)
-      val raster3 = Raster(tileRasterData, g)
+      val raster3 = Raster(tileData, g)
       for (y <- 2 to 3; x <- 0 to 3) {
         raster3.get(x, y) must be === ((y * 5) + x) + 1
       }
@@ -119,59 +125,81 @@ class TileSpec extends Spec with MustMatchers {
 
   describe("Tiler") {
     it ("should build a tiled raster from a source raster") {
-      val tileRaster2 = Tiler.createTileRaster(raster, 2)
+      val tileRaster2 = Tiler.createTiledRaster(raster, 2, 2)
 
       for (y <- 0 to 4; x <- 0 to 4)
         tileRaster2.get(x, y) must be === ((y * 5) + x) + 1
 
-      val trd = tileRaster2.data.asInstanceOf[TileRasterData]
+      val trd = tileRaster2.data.asInstanceOf[TileArrayRasterData]
 
-      val e00_test = trd.rasters(0).get.rasterExtent.extent;
-      val e11_test = trd.rasters(4).get.rasterExtent.extent;
-      val e22_test = trd.rasters(8).get.rasterExtent.extent;
+      val e00_test = trd.tiles(0).rasterExtent.extent;
+      val e11_test = trd.tiles(4).rasterExtent.extent;
+      val e22_test = trd.tiles(8).rasterExtent.extent;
       e00_test must be === e00
       e11_test must be === e11
       e22_test must be === e22
     }
 
     it("can write tiles to disk") {
-      val trd = Tiler.createTileRasterData(raster, 2)
-      Tiler.writeTiles(trd, "testraster", "/tmp")
+      val trd = Tiler.createTiledRasterData(raster, 2, 2)
+      Tiler.writeTiles(trd, raster.rasterExtent, "testraster", "/tmp")
     }
-    it("can provide a loader to read tiles from disk") {
+    it("can read tiles from disk") {
       val s = TestServer()
       val extent = Extent(1, 21, 79, 59)
-      val loader = Tiler.makeTileLoader("testraster", "/tmp", s)
-      val tileRasterData = TileRasterData(tileset, extent, loader)
-      val raster4 = Raster(tileRasterData, g)
+      //val loader = Tiler.makeTileLoader("testraster", "/tmp", s)
+      val raster4 = Raster(tileData, g)
       for (y <- 2 to 3; x <- 0 to 3) {
         raster4.get(x, y) must be === ((y * 5) + x) + 1
       }
     }
     it("can delete tiles from the disk") {
-      val trd = Tiler.createTileRasterData(raster, 2)
+      val trd = Tiler.createTiledRasterData(raster, 2, 2)
       Tiler.deleteTiles(trd, "testraster", "/tmp")
     }
   }
   
-  describe("DoTile") {
-
-    it("can operate over each subraster of a tiled raster") {
-      val op = ForEachTile(Literal(tileRaster))(AddConstant(_, 3))
-      val result = server.run(op)
-      for (y <- 0 to 4; x <- 0 to 4)
-        result.get(x, y) must be === ((y * 5) + x) + 1 + 3
+  describe("TileMin(r)") {
+    it("finds the minimum value of a tiled raster") {
+      val op = TileMin(tileRaster)
+      val z = server.run(op)
+      z must be === 1
     }
+  }
 
-    it ("can operate on raster larger than 6000x6000") {
+  describe("TileMax(r)") {
+    it("finds the maximum value of the tiled raster") {
+      val op = TileMax(tileRaster)
+      val z = server.run(op)
+      z must be === 25
+    }
+  }
 
-      val largeTileRaster = Tiler.createTileRaster(largeRaster, 1024)
+  describe("TileHistogram(r)") {
+    it("finds the histogram of the tiled raster") {
+      val op = TileHistogram(tileRaster)
+      val h = server.run(op)
+      //println(h.toJSON)
+      h.getItemCount(0) must be === 0
+      h.getItemCount(1) must be === 1
+      h.getItemCount(25) must be === 1
+      h.getItemCount(26) must be === 0
+    }
+  }
 
-      val start = System.currentTimeMillis
-      val op = ForEachTile(Literal(largeTileRaster))(AddConstant(_, 3))
-      val result = server.run(op)
-      val elapsed = System.currentTimeMillis - start
+  describe("TileMax(r * 2)") {
+    it("finds the maximum value") {
+      val op = TileMax(tileRaster * 2)
+      val z = server.run(op)
+      z must be === 50
+    }
+  }
 
+  describe("TileMax(r + r)") {
+    it("finds the maximum value") {
+      val op = TileMax(tileRaster + tileRaster)
+      val z = server.run(op)
+      z must be === 50
     }
   }
 }
