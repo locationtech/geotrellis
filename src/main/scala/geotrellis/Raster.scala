@@ -1,5 +1,7 @@
 package geotrellis
 
+import geotrellis.raster.TiledRasterData
+
 import scala.math.{min, max}
 
 object Raster {
@@ -140,4 +142,14 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
 
   def force = Raster(data.force, rasterExtent)
   def defer = Raster(data.defer, rasterExtent)
+
+  def getTiles:Array[Raster] = data match {
+    case t:TiledRasterData => t.getTiles(rasterExtent)
+    case _ => Array(this)
+  }
+
+  def getTileList:List[Raster] = data match {
+    case t:TiledRasterData => t.getTileList(rasterExtent)
+    case _ => this :: Nil
+  }
 }
