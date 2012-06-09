@@ -113,6 +113,14 @@ abstract trait Histogram {
 
   def getValues:Array[Int]
 
+  def foreach(f:(Int, Int) => Unit) {
+    getValues.foreach(z => f(z, getItemCount(z)))
+  }
+
+  def update(other:Histogram) {
+    other.foreach((z, count) => countItem(z, count))
+  }
+
   /**
    * The basic idea here is to try to "evenly" split 'b' values across 'q'
    * slots. The goal is to drop or duplicate values as evenly as possible.

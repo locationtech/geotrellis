@@ -14,6 +14,18 @@ object FastMapHistogram {
 
   def apply() = new FastMapHistogram(SIZE, buckets(SIZE), 0, 0)
   def apply(size:Int) = new FastMapHistogram(size, buckets(size), 0, 0)
+
+  def fromRaster(r:Raster) = {
+    val h = FastMapHistogram()
+    r.foreach(z => if (z != NODATA) h.countItem(z, 1))
+    h
+  }
+
+  def fromHistograms(hs:List[Histogram]) = {
+    val total:Histogram = FastMapHistogram()
+    hs.foreach(h => total.update(h))
+    total
+  }
 }
 
 class FastMapHistogram(_size:Int, _buckets:Array[Int], _used:Int, _total:Int) extends Histogram {
