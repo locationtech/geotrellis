@@ -317,26 +317,26 @@ class ConstantAdd extends MyBenchmark {
 }
 
 
-object TiledConstantAdd extends MyRunner(classOf[TiledConstantAdd])
-class TiledConstantAdd extends MyBenchmark {
-  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
-  var size:Int = 0
-
-  @Param(Array("64", "128", "256", "512"))
-  var pixels:Int = 0
-  
-  var op:Op[Raster] = null
-
-  override def setUp() {
-    server = initServer()
-    val r:Raster = loadRaster("SBN_farm_mkt", size, size)
-    val t = Tiler.createTileRaster(r, pixels)
-    op = ForEachTile(t)(AddConstant(_, 13))
-  }
-
-  def timeTiledConstantAdd(reps:Int) = run(reps)(tiledConstantAdd)
-  def tiledConstantAdd = server.run(op)
-}
+//object TiledConstantAdd extends MyRunner(classOf[TiledConstantAdd])
+//class TiledConstantAdd extends MyBenchmark {
+//  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
+//  var size:Int = 0
+//
+//  @Param(Array("64", "128", "256", "512"))
+//  var pixels:Int = 0
+//  
+//  var op:Op[Raster] = null
+//
+//  override def setUp() {
+//    server = initServer()
+//    val r:Raster = loadRaster("SBN_farm_mkt", size, size)
+//    val t = Tiler.createTileRaster(r, pixels)
+//    op = ForEachTile(t)(AddConstant(_, 13))
+//  }
+//
+//  def timeTiledConstantAdd(reps:Int) = run(reps)(tiledConstantAdd)
+//  def tiledConstantAdd = server.run(op)
+//}
 
 
 object MiniWeightedOverlay extends MyRunner(classOf[MiniWeightedOverlay])

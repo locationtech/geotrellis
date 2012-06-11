@@ -37,6 +37,7 @@ trait RasterData {
   def copy:RasterData
   def length:Int
   def lengthLong:Long 
+  def convert(typ:RasterType):RasterData = sys.error("unimplemented")
 
   //override def toString = "RasterData(<%d values>, type=%s)" format (length,getType)
 
@@ -79,6 +80,7 @@ trait RasterData {
 trait ArrayRasterData extends RasterData {
   //override def toString = "ArrayRasterData(<%d values>, type=%s)" format (length,getType)
   def copy:ArrayRasterData 
+  override def convert(typ:RasterType):ArrayRasterData = LazyConvert(this, typ)
 
   //TODO: RasterData should be lazy by default.
   //def defer:LazyRasterData = LazyArrayWrapper(this)
@@ -731,4 +733,23 @@ object LazyCombine2 {
   def apply(data1:ArrayRasterData, data2:ArrayRasterData, g:(Int, Int) => Int) = {
     new LazyCombine2(data1, data2, g)
   }
+}
+
+final case class LazyConvert(data:ArrayRasterData, typ:RasterType) extends LazyRasterData {
+  def getType = typ
+  def alloc(size:Int) = RasterData.allocByType(typ, size)
+  def length = data.length
+  def apply(i:Int) = data(i)
+  // TODO: if we stop using copy when we mean alloc, we could just return this
+  def copy = {
+    val len = length
+    val d = alloc(len)
+    var i = 0
+    while (i < len) {
+      d(i) = data(i)
+      i += 1
+    }
+    d
+  }
+  def toArray = data.toArray
 }

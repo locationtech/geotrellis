@@ -85,6 +85,7 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
    * Clone this raster.
    */
   def copy() = Raster(data.copy, rasterExtent)
+  def convert(typ:RasterType) = Raster(data.convert(typ), rasterExtent)
 
   /**
    * Return ascii art of this raster.
