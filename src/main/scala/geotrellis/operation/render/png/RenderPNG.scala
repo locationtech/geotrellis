@@ -14,7 +14,7 @@ extends Op4(r,colorBreaks,noDataColor, transparent)({
   (r, breaks, noDataColor, transparent) => {
     val mapper = ColorMapper(breaks, noDataColor)
     val ndc = if (transparent) 0 else noDataColor
-    val r2 = r.map(n => if (n == NODATA) ndc else (mapper(n) << 8) + 255)
+    val r2 = r.convert(TypeInt).map(n => if (n == NODATA) ndc else (mapper(n) << 8) + 255)
     Result(RgbaEncoder().writeByteArray(r2))
   }
 })
