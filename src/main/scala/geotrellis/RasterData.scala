@@ -740,6 +740,16 @@ final case class LazyConvert(data:ArrayRasterData, typ:RasterType) extends LazyR
   def alloc(size:Int) = RasterData.allocByType(typ, size)
   def length = data.length
   def apply(i:Int) = data(i)
-  def copy = this
+  // TODO: if we stop using copy when we mean alloc, we could just return this
+  def copy = {
+    val len = length
+    val d = alloc(len)
+    var i = 0
+    while (i < len) {
+      d(i) = data(i)
+      i += 1
+    }
+    d
+  }
   def toArray = data.toArray
 }

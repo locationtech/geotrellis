@@ -6,7 +6,7 @@ object MyBuild extends Build {
 
   val key = AttributeKey[Boolean]("javaOptionsPatched")
 
-  lazy val root = Project("root", file(".")) settings(
+  lazy val root = Project("root", file(".")).settings(
     organization := "com.azavea.geotrellis",
     name := "geotrellis",
     version := "0.7.0-SNAPSHOT",
@@ -74,35 +74,42 @@ object MyBuild extends Build {
     homepage := Some(url("http://github.com/azavea/geotrellis")),
 
     pomExtra := (
-      <scm>
-        <url>git@github.com:azavea/geotrellis.git</url>
-        <connection>scm:git:git@github.com:azavea/geotrellis.git</connection>
-      </scm>
-      <developers>
-        <developer>
-          <id>non</id>
-          <name>Erik Osheim</name>
-          <url>http://github.com/non/</url>
-        </developer>
-        <developer>
-          <id>josh.marcus</id>
-          <name>Josh Marcus</name>
-          <url>http://github.com/josh.marcus/</url>
-        </developer>
-      </developers>)
-        ) 
 
-  lazy val tasks: Project = Project("tasks", file("tasks")) settings (tasksSettings: _*) dependsOn (root)
+<scm>
+  <url>git@github.com:azavea/geotrellis.git</url>
+  <connection>scm:git:git@github.com:azavea/geotrellis.git</connection>
+</scm>
+<developers>
+  <developer>
+    <id>non</id>
+    <name>Erik Osheim</name>
+    <url>http://github.com/non/</url>
+  </developer>
+  <developer>
+    <id>josh.marcus</id>
+    <name>Josh Marcus</name>
+    <url>http://github.com/josh.marcus/</url>
+  </developer>
+</developers>
 
-  def tasksSettings = Seq(
-    libraryDependencies ++= Seq(
-      "com.beust" % "jcommander" % "1.23"
-    ),
-
-    mainClass in Compile := Some("geotrellis.run.Tasks")
+    )
   )
 
-  lazy val benchmark: Project = Project("benchmark", file("benchmark")) settings (benchmarkSettings: _*) dependsOn (root)
+  lazy val tasks:Project = Project("tasks", file("tasks")).
+    settings(
+      scalaVersion := "2.9.2",
+      libraryDependencies ++= Seq("com.beust" % "jcommander" % "1.23"),
+      mainClass in Compile := Some("geotrellis.run.Tasks")
+    ).
+    dependsOn(root)
+
+  lazy val demo:Project = Project("demo", file("demo")).
+    settings(scalaVersion := "2.9.2").
+    dependsOn(root)
+
+  lazy val benchmark:Project = Project("benchmark", file("benchmark")).
+    settings(benchmarkSettings: _*).
+    dependsOn(root)
 
   def benchmarkSettings = Seq(
     scalaVersion := "2.9.2",
