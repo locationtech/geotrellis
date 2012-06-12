@@ -8,6 +8,7 @@ object ArgReader extends FileReader {
   def makeReadState(d:Either[String, Array[Byte]],
                     rl:RasterLayer,
                     re:RasterExtent): ReadState = rl.datatyp match {
+    case "bool" => new Int1ReadState(d, rl, re)
     case "int8" => new Int8ReadState(d, rl, re)
     case "int16" => new Int16ReadState(d, rl, re)
     case "int32" => new Int32ReadState(d, rl, re)
