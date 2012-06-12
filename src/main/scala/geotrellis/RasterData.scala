@@ -23,6 +23,15 @@ object RasterData {
     case TypeFloat => FloatArrayRasterData.ofDim(size)
     case TypeDouble => DoubleArrayRasterData.ofDim(size)
   }
+
+  def emptyByType(t:RasterType, size:Int):StrictRasterData = t match {
+    case TypeBit => BitArrayRasterData.empty(size)
+    case TypeByte => ByteArrayRasterData.empty(size)
+    case TypeShort => ShortArrayRasterData.empty(size)
+    case TypeInt => IntArrayRasterData.empty(size)
+    case TypeFloat => FloatArrayRasterData.empty(size)
+    case TypeDouble => DoubleArrayRasterData.empty(size)
+  }
 }
 
 /**
@@ -93,9 +102,16 @@ trait ArrayRasterData extends RasterData {
   def toList = toArray.toList
 
   // alternate double-based implementations
-  def applyDouble(i:Int):Double = apply(i).toDouble
-  def updateDouble(i:Int, x:Double):Unit = update(i, x.toInt)
-  def toArrayDouble:Array[Double] = toArray.map(_.toDouble)
+  def applyDouble(i:Int):Double = {
+    val z = apply(i)
+    if (z == NODATA) Double.NaN else z
+  }
+  def updateDouble(i:Int, x:Double):Unit = {
+    if (java.lang.Double.isNaN(x)) update(i, NODATA) else update(i, x.toInt)
+  }
+  def toArrayDouble:Array[Double] = {
+    toArray.map(z => if (z == NODATA) Double.NaN else z.toDouble)
+  }
   def toListDouble = toArrayDouble.toList
 
   def foreach(f:Int => Unit):Unit = {
@@ -359,7 +375,7 @@ final class ByteArrayRasterData(array:Array[Byte]) extends StrictRasterData {
     array(i) = if (x == NODATA) nd else x.asInstanceOf[Byte]
   }
   def copy = ByteArrayRasterData(array.clone)
-  def toArray = array.map(_.asInstanceOf[Int])
+  def toArray = array.map(z => (if (z == nd) NODATA else z).asInstanceOf[Int])
 
   override def mapIfSet(f:Int => Int) = {
     val arr = array.clone
@@ -384,7 +400,7 @@ object ShortArrayRasterData {
 }
 
 final class ShortArrayRasterData(array:Array[Short]) extends StrictRasterData {
-  final val nd = Byte.MinValue
+  final val nd = Short.MinValue
   def getType = TypeShort
   def alloc(size:Int) = ShortArrayRasterData.ofDim(size)
   def length = array.length
@@ -396,7 +412,7 @@ final class ShortArrayRasterData(array:Array[Short]) extends StrictRasterData {
     array(i) = if (x == NODATA) nd else x.asInstanceOf[Short]
   }
   def copy = ShortArrayRasterData(array.clone)
-  def toArray = array.map(_.asInstanceOf[Int])
+  def toArray = array.map(z => (if (z == nd) NODATA else z).asInstanceOf[Int])
 
   override def mapIfSet(f:Int => Int) = {
     val arr = array.clone

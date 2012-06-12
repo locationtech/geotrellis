@@ -1,11 +1,8 @@
-package geotrellis.data
+package geotrellis.data.arg
 
-import geotrellis.process.TestServer
-
-import geotrellis.Extent
 import geotrellis._
+import geotrellis.process._
 import geotrellis.raster._
-
 
 import java.io.{DataInputStream, FileInputStream}
 
@@ -13,7 +10,7 @@ import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
-import scala.math.{abs}
+import scala.math.abs
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
@@ -25,15 +22,18 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
     val path1 = "src/test/resources/fake.img32.arg"
 
     it("should use correct no data values") {
-      ArgFormat.noData(1) must be === -128
-      ArgFormat.noData(2) must be === -32768
-      ArgFormat.noData(3) must be === -8388608
-      ArgFormat.noData(4) must be === -2147483648
+      //ArgFormat.noData(1) must be === -128
+      //ArgFormat.noData(2) must be === -32768
+      //ArgFormat.noData(4) must be === -2147483648
+
+      import geotrellis.data.arg
+      new Int8ReadState(Left(""), null, null).getNoDataValue must be === -128
+      new Int16ReadState(Left(""), null, null).getNoDataValue must be === -32768
+      new Int32ReadState(Left(""), null, null).getNoDataValue must be === -2147483648
     }
 
     it("should build a valid raster") {
-      val raster = Arg32Reader.readPath(path1, None, None)
-      //val raster = reader.getRaster
+      val raster = ArgReader.readPath(path1, None, None)
 
       raster.cols must be === 4
       raster.rows must be === 4
@@ -45,7 +45,7 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
       }
     }
 
-    val raster = Arg32Reader.readPath(path1, None, None)
+    val raster = ArgReader.readPath(path1, None, None)
 
     it("should write to full paths ") {
       val fh = java.io.File.createTempFile("foog", ".arg")
@@ -53,7 +53,7 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
       val base = path.substring(0, path.length - 4)
       println("base path: " + base)
 
-      Arg32Writer.write(path, raster, "foog")
+      ArgWriter(TypeInt).write(path, raster, "foog")
 
       val data1 = io.Source.fromFile(path).mkString
       val data2 = io.Source.fromFile("src/test/resources/fake.img32.arg").mkString
@@ -73,11 +73,11 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
       val path = fh.getPath
       val base = path.substring(0, path.length - 4)
 
-      Arg32Writer.write(path, raster, "nodata")
+      ArgWriter(TypeInt).write(path, raster, "nodata")
 
       val data2 = Array.ofDim[Int](16)
       val dis = new DataInputStream(new FileInputStream(path))
-      for(i <-0 until 16) { data2(i) = dis.readInt() }
+      for (i <- 0 until 16) data2(i) = dis.readInt()
       dis.close
 
       new java.io.File(path).delete() must be === true
@@ -93,7 +93,7 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
       val e = Extent(xmin, ymin, xmax, ymax)
       val re = RasterExtent(e, cellwidth, cellheight, cols, rows)
 
-      Arg32Reader.readPath("src/test/resources/quad32.arg", None, Some(re))
+      ArgReader.readPath("src/test/resources/quad32.arg", None, Some(re))
     }
     
     // helper function
@@ -150,7 +150,6 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
                                                   3, 3, 3, 4, 4, 4, 4, 4))
     }
     
-    //TODO: request region totally outside raster
     it("should handle crazy out-of-bounds requests") {
       dotest(-100.0, -100.0, -10.0, -10.0, 2, 2, Array(nd, nd,
                                                        nd, nd))

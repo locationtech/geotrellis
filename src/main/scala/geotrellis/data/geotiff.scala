@@ -29,11 +29,12 @@ import geotrellis.util._
 
 final class GeoTiffReadState(path:String,
                              val layer:RasterLayer,
-                             val target:RasterExtent) extends ReadState {
+                             val target:RasterExtent) extends IntReadState {
   private var noData:Int = 0
   private var ints:Array[Int] = null
 
-  def createRasterData(size:Int) = IntArrayRasterData.empty(size)
+  def getType = TypeInt
+  //def createRasterData(size:Int) = IntArrayRasterData.empty(size)
 
   private def getReader = {
     val fh    = new File(path)
