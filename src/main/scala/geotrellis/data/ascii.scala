@@ -11,7 +11,7 @@ import geotrellis.util._
 
 final class AsciiReadState(path:String,
                            val layer:RasterLayer,
-                           val target:RasterExtent) extends ReadState {
+                           val target:RasterExtent) extends IntReadState {
   var ncols:Int = 0
   var nrows:Int = 0
   var xllcorner:Double = 0.0
@@ -21,7 +21,8 @@ final class AsciiReadState(path:String,
 
   var ints:IntArrayRasterData = null
 
-  def createRasterData(size:Int) = IntArrayRasterData.empty(size)
+  def getType = TypeInt
+  //def createRasterData(size:Int) = IntArrayRasterData.empty(size)
 
   def getNoDataValue = nodata_value
 

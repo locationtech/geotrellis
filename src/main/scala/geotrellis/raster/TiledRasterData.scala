@@ -1,7 +1,7 @@
 package geotrellis.raster
 
 import geotrellis._
-import geotrellis.data.{Arg32Writer, Arg32Reader}
+import geotrellis.data.arg.ArgWriter
 import geotrellis.process._
 
 case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int)
@@ -287,7 +287,8 @@ object Tiler {
 
       val tileExtent = Extent(xmin, ymin, xmax, ymax)
       val rasterExtent = RasterExtent(tileExtent, cw, ch, pixelCols, pixelRows)
-      val data = Array.ofDim[Int](pixelCols * pixelRows)
+      //val data = Array.ofDim[Int](pixelCols * pixelRows)
+      val data = RasterData.allocByType(src.data.getType, pixelCols * pixelRows)
 
       // TODO: if this code ends up being a performance bottleneck, we should
       // refactor away from using raster.get and for-comprehensions.
@@ -311,7 +312,7 @@ object Tiler {
       val r = tiles(i)
       val name2 = tileName(name, col, row)
       val path2 = tilePath(path, name, col, row)
-      Arg32Writer.write(path2, r, name2)
+      ArgWriter(data.getType).write(path2, r, name2)
     }
   }
   

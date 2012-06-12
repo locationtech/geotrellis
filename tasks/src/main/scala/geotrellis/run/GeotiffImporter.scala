@@ -2,10 +2,10 @@ package geotrellis.run
 
 import com.beust.jcommander._
 
-import geotrellis.data.GeoTiffReader
-import geotrellis.data.Arg32Writer
-import geotrellis.process.{Server}
-import geotrellis.operation.LoadFile
+import geotrellis._
+import geotrellis.data._
+import geotrellis.data.arg._
+import geotrellis.operation._
 import geotrellis.process._
 
 
@@ -53,7 +53,7 @@ object GeotiffImporter {
     val version = "1.0"
     
     println("Converting geotiff: " + inpath)
-    val writer = Arg32Writer.write(outpath, raster, name)
+    val writer = ArgWriter(TypeInt).write(outpath, raster, name)
 
     println("ARG file generated: " + outpath )
 
