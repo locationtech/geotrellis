@@ -13,8 +13,26 @@ trait ReadState {
   val layer:RasterLayer
   val target:RasterExtent
 
-  //def createRasterData(size:Int):StrictRasterData = IntArrayRasterData.empty(size)
-  def createRasterData(size:Int):StrictRasterData
+  // must override
+  def getType: RasterType
+
+  // must override
+  def createRasterData(size:Int):StrictRasterData = RasterData.emptyByType(getType, size)
+
+  // must override
+  protected[this] def initSource(position:Int, size:Int):Unit
+
+  // must override
+  protected[this] def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int):Unit
+
+  // don't usually override
+  protected[this] def createRaster(data:StrictRasterData) = Raster(data, target)
+
+  // maybe override
+  def destroy() {}
+
+  // maybe need to override; currently a noop
+  protected[this] def translate(data:StrictRasterData): Unit = ()
 
   // don't override
   def loadRaster(): Raster = {
@@ -40,11 +58,7 @@ trait ReadState {
 
     // save "normalized map coordinates" for destination cell (0, 0)
     val xbase = target.extent.xmin - src_xmin + (dst_cellwidth / 2)
-
     val ybase = target.extent.ymax - src_ymin - (dst_cellheight / 2)
-    // find map coordinates for destination cell (0,0)
-    //    val destOrigin = target.extent.ymax - (dst_cellheight / 2)
-    //val ybase = src_ymax - (target.extent.ymax - (dst_cellheight / 2))
 
     // track height/width in map units
     val src_map_width  = src_xmax - src_xmin
@@ -113,36 +127,23 @@ trait ReadState {
     }
 
     // build a raster object from our array and return
+    translate(resampled)
     createRaster(resampled)
   }
+}
 
-  // don't usually override
-  protected[this] def createRaster(data:StrictRasterData) = {
-    Raster(translate(data), target)
-  }
-
+trait IntReadState extends ReadState {
   // must override
   def getNoDataValue:Int
 
-  // must override
-  protected[this] def initSource(position:Int, size:Int):Unit
-
-  // must override
-  protected[this] def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int):Unit
-
-  // maybe override
-  def destroy() {}
-
-  // maybe need to override
-  protected[this] def translate(data:StrictRasterData) = {
+  protected[this] override def translate(data:StrictRasterData) {
     var i = 0
-    val nd = getNoDataValue
     val len = data.length
+    val nd = getNoDataValue
     while (i < len) {
       if (data(i) == nd) data(i) = NODATA
       i += 1
     }
-    data
   }
 }
 
@@ -176,9 +177,6 @@ trait FileReader extends Reader {
 }
 
 trait Writer {
-
-  //def write(path:String, raster:Raster) { write(path, raster, raster.name) }
-
   def write(path:String, raster:Raster, name:String):Unit
 
   def rasterType: String
