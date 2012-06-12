@@ -30,7 +30,7 @@ trait TiledRasterData extends RasterData {
     val xs = Array.ofDim[Double](tileCols + 1)
     val cw = re.cellwidth
     val x1 = re.extent.xmin
-    for (i <- 0 until tileCols) xs(i) = x1 + i * cw
+    for (i <- 0 until tileCols) xs(i) = x1 + i * cw * pixelCols
     xs(tileCols) = re.extent.xmax
     xs
   }
@@ -43,7 +43,7 @@ trait TiledRasterData extends RasterData {
     val ys = Array.ofDim[Double](tileRows + 1)
     val ch = re.cellheight
     val y1 = re.extent.ymin
-    for (i <- 0 until tileRows) ys(i) = y1 + i * ch
+    for (i <- 0 until tileRows) ys(i) = y1 + i * ch * pixelRows
     ys(tileRows) = re.extent.ymax
     ys
   }
@@ -58,7 +58,7 @@ trait TiledRasterData extends RasterData {
 
   def getTileRasterExtent(xs:Array[Double], ys:Array[Double],
                           re:RasterExtent, c:Int, r:Int) = {
-    RasterExtent(getTileExtent(ys, xs, c, r), re.cellwidth, re.cellheight,
+    RasterExtent(getTileExtent(xs, ys, c, r), re.cellwidth, re.cellheight,
                  pixelCols, pixelRows)
   }
 
@@ -312,6 +312,7 @@ object Tiler {
       val r = tiles(i)
       val name2 = tileName(name, col, row)
       val path2 = tilePath(path, name, col, row)
+
       ArgWriter(data.getType).write(path2, r, name2)
     }
   }

@@ -105,7 +105,6 @@ class TileSpec extends Spec with MustMatchers {
       for (y <- 0 to 4; x <- 0 to 4) {
         try {
           val z = tileRaster.get(x, y)
-          //println("tile(%s,%s) = %s" format (x, y, z))
           z must be === ((y * 5) + x) + 1
         } catch {
           case _ => println("tile(%s,%s) exploded" format (x, y))
@@ -140,11 +139,7 @@ class TileSpec extends Spec with MustMatchers {
       e22_test must be === e22
     }
 
-    it("can write tiles to disk") {
-      val trd = Tiler.createTiledRasterData(raster, 2, 2)
-      Tiler.writeTiles(trd, raster.rasterExtent, "testraster", "/tmp")
-    }
-    it("can read tiles from disk") {
+    it("can be built from in-memory tiles") {
       val s = TestServer()
       val extent = Extent(1, 21, 79, 59)
       //val loader = Tiler.makeTileLoader("testraster", "/tmp", s)
@@ -153,9 +148,27 @@ class TileSpec extends Spec with MustMatchers {
         raster4.get(x, y) must be === ((y * 5) + x) + 1
       }
     }
+
+    it("can write and read tiles to disk") {
+      val trd = Tiler.createTiledRasterData(raster, 2, 2)
+      Tiler.writeTiles(trd, raster.rasterExtent, "testraster", "/tmp")
+
+      val s = TestServer()
+      val extent = Extent(1, 21, 79, 59)
+      //val loader = Tiler.makeTileLoader("testraster", "/tmp", s)
+      val tileSetRD = TileSetRasterData(
+        "/tmp", "testraster", layout, s
+      )
+      val raster4 = Raster(tileSetRD, g)
+      for (y <- 0 to 3; x <- 0 to 3) {
+        val expected = ((y * 5) + x) + 1
+        raster4.get(x, y) must be === ((y * 5) + x) + 1
+      }
+    }
+
     it("can delete tiles from the disk") {
       val trd = Tiler.createTiledRasterData(raster, 2, 2)
-      Tiler.deleteTiles(trd, "testraster", "/tmp")
+      //Tiler.deleteTiles(trd, "testraster", "/tmp")
     }
   }
   
