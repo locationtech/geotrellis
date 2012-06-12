@@ -1,40 +1,74 @@
 package geotrellis.run
 
-import java.util.Calendar
+import com.beust.jcommander._
 
-import geotrellis._
 import geotrellis.data._
+import geotrellis.operation.LoadFile
 import geotrellis.process._
-import geotrellis.operation._
 import geotrellis.raster._
 
-object TileRaster {
-  def error(msg:String) {
-    if (msg.length > 0) Console.printf("ERROR: %s\n\n", msg)
-    Console.printf("usage: geotif-to-arg32.scala INPATH NAME OUTPATH\n")
-    sys.exit(1)
-  }
+/**
+ * Task that writes a tile set to disk from a standard raster.
+ *
+ * See trellis.run.Task for more information on Tasks.
+ */
+@Parameters(commandNames = Array("tile_raster"), commandDescription ="Generate a tiled raster from an raster in ARG format.")
+class TileRasterTask extends Task { 
+  @Parameter( 
+    names = Array("--input", "-i"),  
+    description = "Path of raster file",  
+    required=true) 
+  var inPath:String = _  
+ 
+  @Parameter( 
+    names = Array("--dir", "-d"),   
+    description = "Path of output directory",
+    required=true) 
+  var outDir:String = _ 
+ 
+  @Parameter( 
+    names = Array("--name", "-n"),  
+    description = "Name of output raster",
+    required=true 
+  ) 
+  var name:String = _ 
 
-  def main(args:Array[String]) {
-    if (args.length != 3) error("wrong number of arguments (%d)".format(args.length));
+  @Parameter(
+    names = Array("--cols", "-c"),
+    description = "Pixel columns per tile (width of each tile in pixels)",
+   required=true
+  )
+  var cols:Int = _
 
-    val inpath  = args(0)
-    val name    = args(1)
-    val outpath  = args(2)
-   
-    execute(inpath, name, outpath)
+  @Parameter(
+    names = Array("--rows", "-r"),
+    description = "Pixel rows per tile (height of each tile in pixels)",
+    required=true
+  )
+  var rows:Int = _
+
+  val taskName = "tile_raster"
+ 
+  def execute = { 
+    TileRasterTask.execute(inPath, outDir, name, cols, rows)  
   } 
+} 
 
-  def execute(inpath:String, name:String, outpath:String) {
+object TileRasterTask {
+  def execute(inPath:String, outDir:String, name:String, cols:Int, rows:Int) {    
     val server = Server("script", Catalog.empty("script"))
-    println("Loading file: " + inpath)
-    val raster = server.run(LoadFile(inpath))
 
-    val trd = Tiler.createTiledRasterData(raster, 256, 256)
-    Tiler.writeTiles(trd, raster.rasterExtent, name, outpath)
+    println("Loading raster at path: " + inPath)
+    val raster = server.run(LoadFile(inPath))
 
-    println("Creating tiled raster: " + inpath)
+    println("Generating tiles in directory: " + outDir)
+
+    val trd = Tiler.createTiledRasterData(raster, cols, rows)
+    Tiler.writeTiles(trd, raster.rasterExtent, name, outDir)
+ 
     server.shutdown()
+
+    println("Tiles generated.") 
   }
 }
 
