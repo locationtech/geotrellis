@@ -83,7 +83,7 @@ class ArgSpec extends Spec with MustMatchers with ShouldMatchers {
       ok must be === true
     }
 
-    val nd = -128
+    val nd = NODATA
 
     it("should handle simple chunks") {
       dotest(-9.5, 43.8, 150.5, 123.8, 10, 5, Array(1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 
