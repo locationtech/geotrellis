@@ -9,6 +9,7 @@ import geotrellis.process._
 
 object CellWriter {
   def byType(typ:RasterType): CellWriter = typ match {
+    case TypeBit => BoolCellWriter
     case TypeByte => Int8CellWriter
     case TypeShort => Int16CellWriter
     case TypeInt => Int32CellWriter
@@ -38,7 +39,7 @@ trait CellWriter {
   }
 }
 
-object BitCellWriter extends CellWriter {
+object BoolCellWriter extends CellWriter {
   override def writeCells(raster:Raster, dos:DataOutputStream) {
     val data = raster.data
     val cols = raster.rasterExtent.cols
@@ -50,13 +51,13 @@ object BitCellWriter extends CellWriter {
     while (row < rows) {
       var col = 0
       while (col < cols) {
-        z = (z << 1) | data.get(col, row, cols)
+        z += (data.get(col, row, cols) & 1) << i
         i += 1
         col += 1
-        if (i == 8) {
+        if (i > 7) {
+          dos.writeByte(z)
           i = 0
           z = 0
-          dos.writeByte(z)
         }
       }
       row += 1

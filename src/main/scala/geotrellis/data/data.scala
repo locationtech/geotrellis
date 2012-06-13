@@ -17,22 +17,22 @@ trait ReadState {
   def getType: RasterType
 
   // must override
-  def createRasterData(size:Int):StrictRasterData = RasterData.emptyByType(getType, size)
-
-  // must override
   protected[this] def initSource(position:Int, size:Int):Unit
 
   // must override
   protected[this] def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int):Unit
 
-  // don't usually override
-  protected[this] def createRaster(data:StrictRasterData) = Raster(data, target)
-
   // maybe override
   def destroy() {}
 
-  // maybe need to override; currently a noop
+  // may need to override; currently a noop
   protected[this] def translate(data:StrictRasterData): Unit = ()
+
+  // don't usually override
+  protected[this] def createRaster(data:StrictRasterData) = Raster(data, target)
+
+  // don't usually override
+  def createRasterData(size:Int):StrictRasterData = RasterData.emptyByType(getType, size)
 
   // don't override
   def loadRaster(): Raster = {
