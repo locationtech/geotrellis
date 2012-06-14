@@ -13,33 +13,10 @@ object Raster {
     Raster(IntArrayRasterData.empty(re.rows * re.cols), re)
 }
 
-/*case class Raster(data:RasterData, rasterExtent:RasterExtent) extends Raster {
-  def asArray = this.data.asArray
-
-  def get(col:Int, row:Int) = this.data(row * this.cols + col)
-
-  def set(col:Int, row:Int, value:Int) {
-    this.data(row * this.cols + col) = value
-  }
-
-  def copy() = data.copy.makeRaster(rasterExtent)
-}
-
-object Raster {
-  def apply(arr:Array[Int], re:RasterExtent) =
-    new Raster(IntArrayRasterData(arr), re)
-
-  def empty(re:RasterExtent) =
-    new Raster(IntArrayRasterData.empty(re.rows * re.cols), re)
-}
-*/
-
 /**
  * 
  */
 case class Raster (data:RasterData, rasterExtent:RasterExtent) {
-  //def data:RasterData
-  //def rasterExtent:RasterExtent
 
   def cols = rasterExtent.cols
   def rows = rasterExtent.rows
@@ -51,11 +28,6 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
    * Get value at given coordinates.
    */
   def get(col:Int, row:Int):Int = data.get(col, row, cols)
-
-  /**
-   * Set value at given coordinates.
-   */
-  def set(col:Int, row:Int, value:Int):Unit = data.set(col, row, value, cols)
 
   /**
    * Return tuple of highest and lowest value in raster.
@@ -144,7 +116,11 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
 
   def mapIfSet(f:Int => Int) = Raster(data.mapIfSet(f), rasterExtent)
 
-  def force = Raster(data.force, rasterExtent)
+  def force = data match {
+    case a:ArrayRasterData => Raster(a.force, rasterExtent)
+    case _ => sys.error("force called on non-array raster data")
+  }
+
   def defer = Raster(data.defer, rasterExtent)
 
   def getTiles:Array[Raster] = data match {

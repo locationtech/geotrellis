@@ -116,35 +116,40 @@ object Kernel {
 }
 
 object KernelDensityHelper {
-    private[operation] def stampNeigh(raster: Raster, v: Int, x: Int, y: Int,
-                                 dx: Int, dy: Int, kernel: Array[Int]):Unit = {
-      var k = 0
-      val nr = raster.rows
-      val nc = raster.cols
-      var c:Int = x - dx / 2
-      var r:Int = 0
+  private[operation] def stampNeigh(raster: Raster, v: Int, x: Int, y: Int,
+                                    dx: Int, dy: Int, kernel: Array[Int]):Unit = {
+    var k = 0
+    val nr = raster.rows
+    val nc = raster.cols
+    var c:Int = x - dx / 2
+    var r:Int = 0
 
-      while(c <= x + dx / 2) {
-        r = y - dy / 2
+    val data = raster.data match {
+      case a:ArrayRasterData => a.force
+      case _ => sys.error("force called on non-array raster data")
+    }
 
-        while(r <= y + dy / 2) {
-          if (c >= 0 && c < nc && r >= 0 && r < nr) {
-            val i = kernel(k) * v
-            // Don't stamp zero values
-            if (i > 0) {
-              val z = raster.get(c, r)
-              raster.set(c, r, if (z == NODATA) i else z + i)
-            }
+    while(c <= x + dx / 2) {
+      r = y - dy / 2
+      
+      while(r <= y + dy / 2) {
+        if (c >= 0 && c < nc && r >= 0 && r < nr) {
+          val i = kernel(k) * v
+          // Don't stamp zero values
+          if (i > 0) {
+            val z = raster.get(c, r)
+            data.set(c, r, if (z == NODATA) i else z + i, nc)
           }
-         
-          k += 1
-          r += 1
         }
-        
-        c += 1
+         
+        k += 1
+        r += 1
       }
+      
+      c += 1
     }
   }
+}
 
 /**
  * Compute the kernel density of a set of points onto a raster

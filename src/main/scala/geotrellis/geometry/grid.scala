@@ -192,8 +192,11 @@ case class GridPolygon(val edges:Seq[GridLine]) {
       val msg = "raster is not big enough (%d <= %d || %d <= %d)"
       throw new Exception(msg.format(cols, xmax, rows, ymax))
     }
-  
-    val data = _data.asArray
+
+    val data = _data match {
+      case s:StrictRasterData => s
+      case o => sys.error("can't rasterize to non-strict raster data")
+    }
 
     // we sort our line segments by pmin (which is the upper (leftmost) point
     // on the line). we do this to make it easier to know when we need to start

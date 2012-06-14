@@ -48,8 +48,6 @@ trait RasterData {
   def lengthLong:Long 
   def convert(typ:RasterType):RasterData = sys.error("unimplemented")
 
-  //override def toString = "RasterData(<%d values>, type=%s)" format (length,getType)
-
   def combine2(other:RasterData)(f:(Int,Int) => Int):RasterData
   def foreach(f: Int => Unit):Unit
   def map(f:Int => Int):RasterData
@@ -64,24 +62,13 @@ trait RasterData {
 
   def fold[A](a: =>A)(f:(A, Int) => A):A 
 
-  /**
-   * Return the current RasterData values as a strict (calculated) ArrayRasterData.
-   *
-   * If your RasterData cannot be represented as an array, bad things will happen.
-   * If your RasterData is lazy, any deferred calculations will be executed.
-   */
-  def force:StrictRasterData
-
   //TODO: RasterData should be lazy by default.
   def defer:LazyRasterData = LazyArrayWrapper(asArray)
 
   def asArray:ArrayRasterData
 
   def get(x:Int, y:Int, cols:Int):Int
-  def set(x:Int, y:Int, z:Int, cols:Int):Unit 
-
   def getDouble(x:Int, y:Int, cols:Int):Double
-  def setDouble(x:Int, y:Int, z:Double, cols:Int):Unit
 }
 
 /**
@@ -95,6 +82,14 @@ trait ArrayRasterData extends RasterData {
   def copy:ArrayRasterData 
   override def convert(typ:RasterType):ArrayRasterData = LazyConvert(this, typ)
   def lengthLong = length
+
+  /**
+   * Return the current RasterData values as a strict (calculated) ArrayRasterData.
+   *
+   * If your RasterData cannot be represented as an array, bad things will happen.
+   * If your RasterData is lazy, any deferred calculations will be executed.
+   */
+  def force:StrictRasterData
 
   override def equals(other:Any):Boolean = other match {
     case r:ArrayRasterData => {
@@ -123,10 +118,8 @@ trait ArrayRasterData extends RasterData {
   }
 
   def apply(i: Int):Int
-  def update(i:Int, x:Int)
 
   def get(col:Int, row:Int, cols:Int) = apply(row * cols + col)
-  def set(col:Int, row:Int, value:Int, cols:Int) = update(row * cols + col, value) 
 
   def toArray:Array[Int] = {
     val len = length
@@ -214,12 +207,7 @@ trait ArrayRasterData extends RasterData {
     if (z == NODATA) Double.NaN else z
   }
 
-  def updateDouble(i:Int, x:Double):Unit = {
-    if (java.lang.Double.isNaN(x)) update(i, NODATA) else update(i, x.toInt)
-  }
-
   def getDouble(col:Int, row:Int, cols:Int) = applyDouble(row * cols + col)
-  def setDouble(col:Int, row:Int, value:Double, cols:Int) = updateDouble(row * cols + col, value) 
 
   override def mapDouble(f:Double => Double):ArrayRasterData = {
     val len = length
@@ -262,15 +250,22 @@ trait ArrayRasterData extends RasterData {
 }
 
 
-// TODO: move update to only exist in StrictRasterData
 trait StrictRasterData extends ArrayRasterData with Serializable {
   override def copy:StrictRasterData
   def force = this
+  def update(i:Int, x:Int): Unit
+  def updateDouble(i:Int, x:Double):Unit = {
+    if (java.lang.Double.isNaN(x)) update(i, NODATA) else update(i, x.toInt)
+  }
+
+  def set(col:Int, row:Int, value:Int, cols:Int) { update(row * cols + col, value) }
+  def setDouble(col:Int, row:Int, value:Double, cols:Int) {
+    updateDouble(row * cols + col, value)
+  }
 }
 
 // TODO: also extend serializable?
 trait LazyRasterData extends ArrayRasterData {
-  def update(i:Int, x:Int) = sys.error("immutable")
   def force:StrictRasterData = {
     val len = length
     val d = alloc(len)

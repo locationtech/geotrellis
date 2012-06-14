@@ -197,7 +197,7 @@ trait TiledRasterData extends RasterData {
     getTile(tcol, trow).get(pcol, prow, pixelCols)
   }
 
-  def set(col:Int, row:Int, z:Int, cols:Int) = sys.error("immutable")
+  //def set(col:Int, row:Int, z:Int, cols:Int) = sys.error("immutable")
 
   def getDouble(col:Int, row:Int, cols:Int) = {
     val tcol = col / pixelCols
@@ -207,7 +207,7 @@ trait TiledRasterData extends RasterData {
     getTile(tcol, trow).getDouble(pcol, prow, pixelCols)
   }
 
-  def setDouble(col:Int, row:Int, z:Double, cols:Int) = sys.error("immutable")
+  //def setDouble(col:Int, row:Int, z:Double, cols:Int) = sys.error("immutable")
 }
 
 
