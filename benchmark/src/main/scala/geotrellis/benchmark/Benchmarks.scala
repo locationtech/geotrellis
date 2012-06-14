@@ -12,6 +12,7 @@ import geotrellis.data.png._
 import geotrellis.operation._
 import geotrellis.process._
 import geotrellis.raster._
+import geotrellis.stat._
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Param
@@ -36,6 +37,27 @@ trait MyBenchmark extends SimpleBenchmark {
    */
   def loadRaster(name:String, w:Int, h:Int) = {
     server.run(LoadRaster(name, getRasterExtentOp(name, w, h)))
+  }
+
+  /**
+   * Write out a tiled raster in /tmp; return a raster w/ a TiledRasterData
+   */
+  def createTiledRaster(r:Raster, pixelCols:Int, pixelRows:Int) = {
+    val re = r.rasterExtent
+
+    val trd = Tiler.createTiledRasterData(r, pixelCols, pixelRows)
+    val tiledArrayRaster = Raster(trd, re)
+
+    val layout = trd.tileLayout 
+    Tiler.writeTiles(trd, re, "benchmark_raster", "/tmp")
+    val tileSetRD = TileSetRasterData("/tmp", "benchmark_raster", TypeInt, layout, server)
+
+    val tiledRaster = Raster(tileSetRD, re)
+
+    val lazyRasterData = LazyTiledWrapper(r.data.asArray, layout)
+    val lazyRaster = Raster(lazyRasterData, re)
+
+    (tiledRaster, tiledArrayRaster, lazyRaster)
   }
 
   /**
@@ -316,27 +338,129 @@ class ConstantAdd extends MyBenchmark {
   def constantAdd = server.run(op)
 }
 
+object MinTiled extends MyRunner(classOf[MinTiled])
+class MinTiled extends MyBenchmark {
+  @Param(Array("4096"))
+  var size:Int = 0
 
-//object TiledConstantAdd extends MyRunner(classOf[TiledConstantAdd])
-//class TiledConstantAdd extends MyBenchmark {
-//  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
-//  var size:Int = 0
-//
-//  @Param(Array("64", "128", "256", "512"))
-//  var pixels:Int = 0
-//  
-//  var op:Op[Raster] = null
-//
-//  override def setUp() {
-//    server = initServer()
-//    val r:Raster = loadRaster("SBN_farm_mkt", size, size)
-//    val t = Tiler.createTileRaster(r, pixels)
-//    op = ForEachTile(t)(AddConstant(_, 13))
-//  }
-//
-//  def timeTiledConstantAdd(reps:Int) = run(reps)(tiledConstantAdd)
-//  def tiledConstantAdd = server.run(op)
-//}
+  //@Param(Array("256", "512"))
+  var pixels:Int = 1024
+
+  var tiledOp:Op[Int] = null
+  var tiledArrayOp:Op[Int] = null
+  var tiledLazyOp:Op[Int] = null
+  var rawOp:Op[Raster] = null
+
+  var normalUntiledOp:Op[Int] = null
+  var normalTiledOp:Op[Int] = null 
+
+  //def makeOp(r:Op[Raster]):Operation[Raster] = r
+  def makeOp(r:Op[Raster]) = Add(AddConstant(r, 5),r)
+
+  override def setUp() {
+    server = initServer()
+    val r:Raster = loadRaster("SBN_farm_mkt", size, size)
+    val (tiledRaster, tiledArrayRaster, lazyRaster) = createTiledRaster(r, pixels, pixels)
+
+    tiledOp = BTileMin(makeOp(tiledRaster))
+    tiledArrayOp = BTileMin(makeOp(tiledArrayRaster))
+    tiledLazyOp = TileMin(makeOp(lazyRaster))
+
+    // run on a normal raster
+    normalUntiledOp = UntiledMin(makeOp(r))
+    normalTiledOp = BTileMin(makeOp(r))
+
+    rawOp = Force(makeOp(r))
+  }
+
+  //def timeTiledMin(reps:Int) = run(reps)(tiledMin)
+  def tiledMin = server.run(tiledOp)
+ 
+  def timeTiledArrayMinOp(reps:Int) = run(reps)(tiledArrayMin)
+  def tiledArrayMin = server.run(tiledArrayOp)
+
+  //def timeTiledLazyOp(reps:Int) = run(reps)(tiledLazyMin)
+  // def tiledLazyMin = server.run(tiledLazyOp)
+
+  def timeNormalUntiledOp(reps:Int) = run(reps)(runNormalUntiledOp)
+  def runNormalUntiledOp = server.run(normalUntiledOp)
+
+  def timeRawOp(reps:Int) = run(reps)(runRawOp)
+  def runRawOp = server.run(rawOp)
+
+  def timeNormalTiledOp(reps:Int) = run(reps)(runNormalTiledOp)
+  def runNormalTiledOp = server.run(normalTiledOp)
+}
+
+
+object HistogramTiled extends MyRunner(classOf[HistogramTiled])
+class HistogramTiled extends MyBenchmark {
+  @Param(Array("6000"))
+  var size:Int = 0
+
+  //@Param(Array("256", "512"))
+  var pixels:Int = 1500
+
+  var tiledOp:Op[Histogram] = null
+  var tiledArrayOp:Op[Histogram] = null
+  var tiledArrayForceOp:Op[Histogram] = null
+
+  var tiledLazyOp:Op[Histogram] = null
+  var rawOp:Op[Raster] = null
+
+  var normalUntiledOp:Op[Histogram] = null
+  var normalUntiledLazyOp:Op[Histogram] = null
+
+  var normalTiledOp:Op[Histogram] = null 
+
+  //def makeOp(r:Raster) = Add(AddConstant(r, 5), r)
+  def makeOp(r:Raster) = Add(r, r)
+  //def makeOp(r:Raster) = AddConstant(r, 5)
+  //def makeOp(r:Raster) = Literal(r)
+
+  override def setUp() {
+    server = initServer()
+    val r:Raster = loadRaster("SBN_farm_mkt", size, size)
+    val (tiledRaster, tiledArrayRaster, lazyRaster) = createTiledRaster(r, pixels, pixels)
+
+    tiledOp = BTileHistogram(makeOp(tiledRaster))
+    tiledArrayOp = BTileHistogram(makeOp(tiledArrayRaster))
+    tiledArrayForceOp = BTileForceHistogram(makeOp(tiledArrayRaster))
+    tiledLazyOp = TileHistogram(makeOp(lazyRaster))
+
+    // run on a normal raster
+    normalUntiledOp = BUntiledHistogram(makeOp(r))
+    normalUntiledLazyOp = BUntiledHistogram(makeOp(r.defer))
+    
+    normalTiledOp = BTileHistogram(makeOp(r.defer))
+
+    rawOp = Force(makeOp(r))
+  }
+
+  def timeTiledHistogram(reps:Int) = run(reps)(tiledHistogram)
+  def tiledHistogram = server.run(tiledOp)
+  
+  def timeRawOp(reps:Int) = run(reps)(runRawOp)
+  def runRawOp = server.run(rawOp)
+  
+  def timeNormalUntiledOp(reps:Int) = run(reps)(runNormalUntiledOp)
+  def runNormalUntiledOp = server.run(normalUntiledOp)
+  
+  def timeNormalUntiledLazyOp(reps:Int) = run(reps)(runNormalUntiledLazyOp)
+  def runNormalUntiledLazyOp = server.run(normalUntiledLazyOp)
+  
+  def timeTiledArrayHistogramOp(reps:Int) = run(reps)(tiledArrayHistogram)
+  def tiledArrayHistogram = server.run(tiledArrayOp)
+
+  def timeTiledArrayForce(reps:Int) = run(reps)(tiledArrayForce)
+  def tiledArrayForce = server.run(tiledArrayForceOp)
+
+  def timeTiledLazyOp(reps:Int) = run(reps)(tiledLazyHistogram)
+  def tiledLazyHistogram = server.run(tiledLazyOp)
+  
+  def timeNormalTiledOp(reps:Int) = run(reps)(runNormalTiledOp)
+  def runNormalTiledOp = server.run(normalTiledOp)
+}
 
 
 object MiniWeightedOverlay extends MyRunner(classOf[MiniWeightedOverlay])

@@ -3,6 +3,9 @@ package geotrellis.benchmark
 import geotrellis._
 import geotrellis.operation._
 import geotrellis.process._
+import geotrellis.stat._
+import scala.math._
+import geotrellis.raster._
 
 /**
  * Here is a MultiplyConstant implementation in terms of a re-imaginined
@@ -83,6 +86,23 @@ case class MultiplyConstantWhileLoop(r:Op[Raster], c:Op[Int]) extends Op[Raster]
 }
 
 
+case class UntiledMin(r:Op[Raster]) extends Operation[Int] {
+  def _run(context:Context) = runAsync(r :: Nil)
+  val nextSteps:Steps = {
+    case (raster:Raster) :: Nil => {
+      var zmin = Int.MaxValue 
+      raster.foreach {
+        data => {
+          z:Int => if (z != NODATA) {
+            zmin = min(zmin, z)
+          }
+        }
+      }
+      Result(zmin)
+    }
+  }
+}
+
 /**
  * older version of the MultiLocal trait
  */
@@ -128,3 +148,59 @@ case class AddOld(rs:Op[Raster]*) extends MultiLocalOld {
   final def ops = rs.toArray
   final def handle(a:Int, b:Int) = if (a == NODATA) b else if (b == NODATA) a else a + b
 }
+
+// the winner!
+case class BTileForceHistogram(r:Op[Raster]) extends BReducer1(r)({
+  r => FastMapHistogram.fromRaster(r.force)
+})({
+  hs => FastMapHistogram.fromHistograms(hs)
+})
+
+
+/**
+ *
+ */
+case class BTileHistogram(r:Op[Raster]) extends BReducer1(r)({
+  r => FastMapHistogram.fromRaster(r)
+})({
+  hs => FastMapHistogram.fromHistograms(hs)
+})
+
+case class BUntiledHistogram(r:Op[Raster]) extends Op1(r) ({
+  r => {
+    Result( FastMapHistogram.fromHistograms(FastMapHistogram.fromRaster(r):: Nil))
+  }
+})
+
+case class BTileMin(r:Op[Raster]) extends BReducer1(r)({
+  r => {
+    var zmin = Int.MaxValue
+    r.foreach {
+      z => if (z != NODATA) zmin = min(z,zmin)
+    }
+    zmin
+  }
+})({
+  zs => zs.reduceLeft((x,y) => min(x,y))
+})
+
+abstract class BReducer1[B:Manifest, C:Manifest](r:Op[Raster])(handle:Raster => B)(reducer:List[B] => C) extends Op[C] {
+  def _run(context:Context) = runAsync('init :: r :: Nil)
+
+  val nextSteps:Steps = {
+    //case _ => Result(null.asInstanceOf[C])
+    case 'init :: (r:Raster) :: Nil => init(r)
+    case 'reduce :: (bs:List[_]) => Result(reducer(bs.asInstanceOf[List[B]]))
+  }
+
+  def init(r:Raster) = {
+    r.data match {
+      //case _ => runAsync('reduce :: r.getTileList.map(mapper))
+      case _:TiledRasterData => runAsync('reduce :: r.getTileOpList.map(mapper))
+      case _ => Result(reducer(handle(r) :: Nil))
+    }
+  }
+
+  def mapper(r:Op[Raster]):Op[B] = Map1(r)(handle)
+}
+

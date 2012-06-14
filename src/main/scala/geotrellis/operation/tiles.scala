@@ -15,12 +15,24 @@ abstract class Reducer1[B:Manifest, C:Manifest](r:Op[Raster])(handle:Raster => B
     case 'reduce :: (bs:List[_]) => Result(reducer(bs.asInstanceOf[List[B]]))
   }
 
-  def init(r:Raster) = runAsync('reduce :: r.getTileList.map(mapper))
+  def init(r:Raster) = {
+    r.data match {
+      case _:TiledRasterData => runAsync('reduce :: r.getTileList.map(mapper))
+      case _ => Result(reducer(handle(r) :: Nil))
+    }
+  }
+
   def mapper(r:Raster):Op[B] = Map1(r)(handle)
 }
 
 case class TileMin(r:Op[Raster]) extends Reducer1(r)({
-  r => r.findMinMax._1
+  r => {
+    var zmin = Int.MaxValue
+    r.foreach {
+      z => if (z != NODATA) zmin = min(z,zmin)
+    }
+    zmin
+  }
 })({
   zs => zs.reduceLeft((x,y) => min(x,y))
 })

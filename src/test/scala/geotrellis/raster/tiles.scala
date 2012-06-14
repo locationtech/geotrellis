@@ -125,9 +125,13 @@ class TileSpec extends Spec with MustMatchers {
   describe("Tiler") {
     it ("should build a tiled raster from a source raster") {
       val tileRaster2 = Tiler.createTiledRaster(raster, 2, 2)
+      println(raster.asciiDraw)
+      println(tileRaster2.asciiDraw)
 
-      for (y <- 0 to 4; x <- 0 to 4)
+      for (y <- 0 to 4; x <- 0 to 4) {
+        println("x=%s y=%s" format (x, y))
         tileRaster2.get(x, y) must be === ((y * 5) + x) + 1
+      }
 
       val trd = tileRaster2.data.asInstanceOf[TileArrayRasterData]
 
@@ -155,10 +159,8 @@ class TileSpec extends Spec with MustMatchers {
 
       val s = TestServer()
       val extent = Extent(1, 21, 79, 59)
-      //val loader = Tiler.makeTileLoader("testraster", "/tmp", s)
-      val tileSetRD = TileSetRasterData(
-        "/tmp", "testraster", layout, s
-      )
+      val tileSetRD = TileSetRasterData("/tmp", "testraster", TypeInt, layout, s)
+
       val raster4 = Raster(tileSetRD, g)
       for (y <- 0 to 3; x <- 0 to 3) {
         val expected = ((y * 5) + x) + 1
@@ -168,7 +170,7 @@ class TileSpec extends Spec with MustMatchers {
 
     it("can delete tiles from the disk") {
       val trd = Tiler.createTiledRasterData(raster, 2, 2)
-      //Tiler.deleteTiles(trd, "testraster", "/tmp")
+      Tiler.deleteTiles(trd, "testraster", "/tmp")
     }
   }
   
