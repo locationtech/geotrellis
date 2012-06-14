@@ -43,17 +43,19 @@ trait MyBenchmark extends SimpleBenchmark {
    * Write out a tiled raster in /tmp; return a raster w/ a TiledRasterData
    */
   def createTiledRaster(r:Raster, pixelCols:Int, pixelRows:Int) = {
+    val re = r.rasterExtent
+
     val trd = Tiler.createTiledRasterData(r, pixelCols, pixelRows)
-    val tiledArrayRaster = Raster(trd, r.rasterExtent)
+    val tiledArrayRaster = Raster(trd, re)
 
     val layout = trd.tileLayout 
-    Tiler.writeTiles(trd, r.rasterExtent, "benchmark_raster", "/tmp")
-    val tileSetRD = TileSetRasterData("/tmp", "benchmark_raster", layout, server)
+    Tiler.writeTiles(trd, re, "benchmark_raster", "/tmp")
+    val tileSetRD = TileSetRasterData("/tmp", "benchmark_raster", TypeInt, layout, server)
 
-    val tiledRaster = Raster(tileSetRD, r.rasterExtent)
+    val tiledRaster = Raster(tileSetRD, re)
 
     val lazyRasterData = LazyTiledWrapper(r.data.asArray, layout)
-    val lazyRaster = Raster(lazyRasterData, r.rasterExtent)
+    val lazyRaster = Raster(lazyRasterData, re)
 
     (tiledRaster, tiledArrayRaster, lazyRaster)
   }
@@ -403,7 +405,7 @@ class HistogramTiled extends MyBenchmark {
   var tiledArrayOp:Op[Histogram] = null
   var tiledArrayForceOp:Op[Histogram] = null
 
-  //var tiledLazyOp:Op[Histogram] = null
+  var tiledLazyOp:Op[Histogram] = null
   var rawOp:Op[Raster] = null
 
   var normalUntiledOp:Op[Histogram] = null
@@ -411,8 +413,9 @@ class HistogramTiled extends MyBenchmark {
 
   var normalTiledOp:Op[Histogram] = null 
 
-  //def makeOp(r:Raster) = Force(AddConstant(r,5))
-  def makeOp(r:Raster) = Add(AddConstant(r, 5),r)
+  //def makeOp(r:Raster) = Add(AddConstant(r, 5), r)
+  def makeOp(r:Raster) = Add(r, r)
+  //def makeOp(r:Raster) = AddConstant(r, 5)
   //def makeOp(r:Raster) = Literal(r)
 
   override def setUp() {
@@ -423,7 +426,7 @@ class HistogramTiled extends MyBenchmark {
     tiledOp = BTileHistogram(makeOp(tiledRaster))
     tiledArrayOp = BTileHistogram(makeOp(tiledArrayRaster))
     tiledArrayForceOp = BTileForceHistogram(makeOp(tiledArrayRaster))
-   // tiledLazyOp = TileHistogram(makeOp(lazyRaster))
+    tiledLazyOp = TileHistogram(makeOp(lazyRaster))
 
     // run on a normal raster
     normalUntiledOp = BUntiledHistogram(makeOp(r))
@@ -436,24 +439,25 @@ class HistogramTiled extends MyBenchmark {
 
   def timeTiledHistogram(reps:Int) = run(reps)(tiledHistogram)
   def tiledHistogram = server.run(tiledOp)
-
+  
   def timeRawOp(reps:Int) = run(reps)(runRawOp)
   def runRawOp = server.run(rawOp)
-
+  
   def timeNormalUntiledOp(reps:Int) = run(reps)(runNormalUntiledOp)
   def runNormalUntiledOp = server.run(normalUntiledOp)
-
+  
   def timeNormalUntiledLazyOp(reps:Int) = run(reps)(runNormalUntiledLazyOp)
   def runNormalUntiledLazyOp = server.run(normalUntiledLazyOp)
-
+  
   def timeTiledArrayHistogramOp(reps:Int) = run(reps)(tiledArrayHistogram)
   def tiledArrayHistogram = server.run(tiledArrayOp)
 
   def timeTiledArrayForce(reps:Int) = run(reps)(tiledArrayForce)
   def tiledArrayForce = server.run(tiledArrayForceOp)
-  //def timeTiledLazyOp(reps:Int) = run(reps)(tiledLazyHistogram)
-  //def tiledLazyHistogram = server.run(tiledLazyOp)
 
+  def timeTiledLazyOp(reps:Int) = run(reps)(tiledLazyHistogram)
+  def tiledLazyHistogram = server.run(tiledLazyOp)
+  
   def timeNormalTiledOp(reps:Int) = run(reps)(runNormalTiledOp)
   def runNormalTiledOp = server.run(normalTiledOp)
 }

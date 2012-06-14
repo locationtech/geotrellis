@@ -156,6 +156,7 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
     case t:TiledRasterData => t.getTileList(rasterExtent)
     case _ => this :: Nil
   }
+
   def getTileOpList:List[Op[Raster]] = data match {
     case t:TiledRasterData => t.getTileOpList(rasterExtent)
     case _ => Literal(this) :: Nil

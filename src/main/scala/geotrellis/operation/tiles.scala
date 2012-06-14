@@ -11,7 +11,8 @@ abstract class Reducer1[B:Manifest, C:Manifest](r:Op[Raster])(handle:Raster => B
   def _run(context:Context) = runAsync('init :: r :: Nil)
 
   val nextSteps:Steps = {
-    case 'init :: (r:Raster) :: Nil => init(r) case 'reduce :: (bs:List[_]) => Result(reducer(bs.asInstanceOf[List[B]]))
+    case 'init :: (r:Raster) :: Nil => init(r)
+    case 'reduce :: (bs:List[_]) => Result(reducer(bs.asInstanceOf[List[B]]))
   }
 
   def init(r:Raster) = {
