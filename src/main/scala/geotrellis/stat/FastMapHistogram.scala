@@ -18,6 +18,7 @@ object FastMapHistogram {
   def fromRaster(r:Raster) = {
     val h = FastMapHistogram()
     r.foreach(z => if (z != NODATA) h.countItem(z, 1))
+    //var x = 0; r.foreach(z => if (z != NODATA) x = z)
     h
   }
 
@@ -61,17 +62,20 @@ class FastMapHistogram(_size:Int, _buckets:Array[Int], _used:Int, _total:Int) ex
    * The hashing strategy we use is based on Python's dictionary.
    */
   private final def hashItem(item:Int, mask:Int, bins:Array[Int]):Int = {
-    // (x & mod) * 2 ensures that the result is non-negative and even
-    var i = item
-    var j = (i & mask) * 2
+    var i = item & 0x7fffffff // need base hashcode to be non-negative.
+    var j = (i & mask) * 2 // need result to be non-negative and even.
 
     // if we found our own bucket, or an empty bucket, then we're done
     var key = bins(j)
     if (key == UNSET || key == item) return j
 
+    var failsafe = 0
+
     // we collided with a different item
     var perturb = i
-    while (true) {
+    //while (true) {
+    while (failsafe < 100000000) {
+      failsafe += 1
       // i stole this whole perturbation/rehashing strategy from python
       i = (i << 2) + i + perturb + 1
       j = (i & mask) * 2
@@ -85,7 +89,7 @@ class FastMapHistogram(_size:Int, _buckets:Array[Int], _used:Int, _total:Int) ex
     }
 
     // should never happen
-    error("should not happen")
+    error("should not happen: item=%s mask=%s" format (item, mask))
     -1
   }
 
