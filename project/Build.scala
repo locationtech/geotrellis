@@ -18,7 +18,7 @@ object MyBuild extends Build {
 
     mainClass := Some("geotrellis.rest.WebRunner"),
 
-    javaOptions in run += "-Xmx4G",
+    javaOptions in run += "-Xmx6G",
 
     libraryDependencies ++= Seq(
       "org.scalatest" %% "scalatest" % "1.6.1" % "test",

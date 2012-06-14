@@ -1,6 +1,7 @@
 package geotrellis
 
 import geotrellis.raster.TiledRasterData
+import geotrellis.operation._
 
 import scala.math.{min, max}
 
@@ -128,7 +129,9 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
   def foreach(f: Int => Unit):Unit = data.foreach(f)
 
   def map(f:Int => Int) = Raster(data.map(f),rasterExtent)
- 
+
+  def fold[A](a: =>A)(f:(A,Int) => A):A = data.fold(a)(f)
+
   def combine2(r2:Raster)(f:(Int,Int) => Int) = {
     Raster(data.combine2(r2.data)(f), rasterExtent)
   }
@@ -152,5 +155,9 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
   def getTileList:List[Raster] = data match {
     case t:TiledRasterData => t.getTileList(rasterExtent)
     case _ => this :: Nil
+  }
+  def getTileOpList:List[Op[Raster]] = data match {
+    case t:TiledRasterData => t.getTileOpList(rasterExtent)
+    case _ => Literal(this) :: Nil
   }
 }

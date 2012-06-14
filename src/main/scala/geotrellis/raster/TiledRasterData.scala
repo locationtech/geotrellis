@@ -3,6 +3,7 @@ package geotrellis.raster
 import geotrellis._
 import geotrellis.data.arg.ArgWriter
 import geotrellis.process._
+import geotrellis.operation._
 
 case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int)
 
@@ -15,7 +16,6 @@ trait TiledRasterData extends RasterData {
   def tileRows:Int = tileLayout.tileRows
 
   def getTile(col:Int, row:Int):RasterData
-
   /**
    * Given an extent and resolution (RasterExtent), return the geographic
    * X-coordinates for each tile boundary in this raster data. For example,
@@ -86,6 +86,19 @@ trait TiledRasterData extends RasterData {
     tiles
   }
 
+  def getTileOp(xs:Array[Double], ys:Array[Double], re:RasterExtent, c:Int, r:Int):Op[Raster] = 
+    Literal(getTileRaster(xs, ys, re, c, r))
+ 
+  def getTileOpList(re:RasterExtent): List[Op[Raster]] = {
+    val xs = getXCoords(re)
+    val ys = getYCoords(re)
+    var tiles:List[Op[Raster]] = Nil
+    for (r <- 0 until tileRows; c <- 0 until tileCols) {
+      tiles = getTileOp(xs, ys, re, c, r) :: tiles
+    }
+    tiles
+  }
+
   def cellToTile(col:Int, row:Int) = (col / pixelCols, row / pixelRows)
 
   def copy = this
@@ -111,6 +124,13 @@ trait TiledRasterData extends RasterData {
   def map(f: Int => Int):LazyTiledRasterData = LazyTiledMap(this, f)
   def mapIfSet(f:Int => Int):LazyTiledRasterData = LazyTiledMapIfSet(this, f)
 
+  def fold[A](a: =>A)(f:(A,Int) => A):A = {
+    var result = a
+    for (c <- 0 until tileCols; r <- 0 until tileRows)
+      result = getTile(c, r).fold(result)(f)
+    result
+  }
+
   def force:StrictRasterData = sys.error("fixme")
   def asArray:ArrayRasterData = sys.error("fixme")
 
@@ -135,10 +155,19 @@ case class TileSetRasterData(basePath:String, name:String,
                              server:Server) extends TiledRasterData {
   def alloc(size:Int) = IntArrayRasterData.ofDim(size) //fixme
   def getType = TypeInt
+
   def getTile(col:Int, row:Int) = {
     val path = Tiler.tilePath(basePath, name, col, row)
-    server.loadRaster(path).data
+    server.loadRaster(path).data match {
+      case a:ArrayRasterData => LazyArrayWrapper(a)
+      case o => o
+    }
   }
+
+  override def getTileOp(xs:Array[Double], ys:Array[Double], re:RasterExtent, c:Int, r:Int) = {
+    val path = Tiler.tilePath(basePath, name, c, r)
+    Map1(LoadFile(path))(_.defer)    
+  }  
 }
 
 case class TileArrayRasterData(tiles:Array[Raster],
@@ -146,7 +175,10 @@ case class TileArrayRasterData(tiles:Array[Raster],
   val typ = tiles(0).data.getType
   def alloc(size:Int) = RasterData.allocByType(typ, size)
   def getType = typ
-  def getTile(col:Int, row:Int) = tiles(row * tileCols + col).data
+  def getTile(col:Int, row:Int) = tiles(row * tileCols + col).data match {
+    case a:ArrayRasterData => LazyArrayWrapper(a)
+    case o => o
+  }
 }
 
 object LazyTiledWrapper {
@@ -203,6 +235,8 @@ trait LazyTiledRasterData extends TiledRasterData {
 
 case class LazyTiledMap(data:TiledRasterData, g:Int => Int) extends LazyTiledRasterData {
   def getTile(col:Int, row:Int) = data.getTile(col, row).map(g)
+    override def getTileOp(xs:Array[Double], ys:Array[Double], re:RasterExtent, c:Int, r:Int) = 
+      Map1(data.getTileOp(xs,ys,re,c,r))(_.map(g))
 
   override def map(f:Int => Int) = LazyTiledMap(data, z => f(g(z)))
 }
@@ -212,7 +246,10 @@ case class LazyTiledMapIfSet(data:TiledRasterData, g:Int => Int) extends LazyTil
 
   def getTile(col:Int, row:Int) = data.getTile(col, row).mapIfSet(g)
 
+  override def getTileOp(xs:Array[Double], ys:Array[Double], re:RasterExtent, c:Int, r:Int) = Map1(data.getTileOp(xs,ys,re,c,r))(_.mapIfSet(g))
+
   override def map(f:Int => Int) = LazyTiledMap(data, z => f(gIfSet(z)))
+
   override def mapIfSet(f:Int => Int) = LazyTiledMapIfSet(this, z => f(g(z)))
 }
 
@@ -229,6 +266,12 @@ extends LazyTiledRasterData {
     val r1 = data1.getTile(col, row)
     val r2 = data2.getTile(col, row)
     r1.combine2(r2)(g)
+  }
+
+  override def getTileOp(xs:Array[Double], ys:Array[Double], re:RasterExtent, c:Int, r:Int) = {
+    val r1 = data1.getTileOp(xs,ys,re,c,r)
+    val r2 = data2.getTileOp(xs,ys,re,c,r)
+    Map2(r1, r2)((r1,r2) => r1.combine2(r2)(g)) 
   }
 
   override def map(f:Int => Int) = {

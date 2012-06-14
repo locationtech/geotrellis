@@ -55,6 +55,8 @@ trait RasterData {
   def map(f:Int => Int):RasterData
   def mapIfSet(f:Int => Int):RasterData
 
+  def fold[A](a: =>A)(f:(A,Int) => A):A 
+
   def combineDouble2(other:RasterData)(f:(Double,Double) => Double) = {
     combine2(other)((a, b) => f(a, b).toInt)
   }
@@ -131,48 +133,59 @@ trait ArrayRasterData extends RasterData {
     }
   }
 
-  def map(f:Int => Int) = {
-    val data = copy
-    var i = 0
+  def map(f:Int => Int):ArrayRasterData = {
     val len = length
+    val data = alloc(len)
+    var i = 0
     while (i < len) {
-      data(i) = f(data(i))
+      data(i) = f(apply(i))
       i += 1
     }
     data
   }
-  override def mapDouble(f:Double => Double) = {
-    val data = copy
-    var i = 0
+  override def mapDouble(f:Double => Double):ArrayRasterData = {
     val len = length
+    val data = alloc(len)
+    var i = 0
     while (i < len) {
-      data.updateDouble(i, f(data.applyDouble(i)))
+      data.updateDouble(i, f(applyDouble(i)))
       i += 1
     }
     data
   }
 
-  def mapIfSet(f:Int => Int) = {
-    val data = copy
-    var i = 0
+  def mapIfSet(f:Int => Int):ArrayRasterData = {
     val len = length
+    val data = alloc(len)
+    var i = 0
     while (i < len) {
-      val z = data(i)
+      val z = apply(i)
       if (z != NODATA) data(i) = f(z)
       i += 1
     }
     data
   }
-  override def mapIfSetDouble(f:Double => Double) = {
-    val data = copy
-    var i = 0
+  override def mapIfSetDouble(f:Double => Double):ArrayRasterData = {
     val len = length
+    val data = alloc(len)
+    var i = 0
     while (i < len) {
-      val z = data.applyDouble(i)
+      val z = applyDouble(i)
       if (java.lang.Double.isNaN(z)) data.updateDouble(i, f(z))
       i += 1
     }
     data
+  }
+
+  def fold[A](a: =>A)(f:(A,Int) => A):A = {
+    var result = a
+    var i = 0
+    val len = length
+    while (i < len) {
+      result = f(result,apply(i))
+      i += 1
+    } 
+    result
   }
 
   // TODO: if profiling finds this to be slow, we could do the trick

@@ -168,7 +168,7 @@ class TileSpec extends Spec with MustMatchers {
 
     it("can delete tiles from the disk") {
       val trd = Tiler.createTiledRasterData(raster, 2, 2)
-      //Tiler.deleteTiles(trd, "testraster", "/tmp")
+      Tiler.deleteTiles(trd, "testraster", "/tmp")
     }
   }
   
