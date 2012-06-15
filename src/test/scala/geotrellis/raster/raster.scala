@@ -25,8 +25,9 @@ class RasterSpec extends Spec with MustMatchers {
 
     it("should create empty rasters") {
       val r = Raster.empty(g)
+      val d = r.data.asArray.getOrElse(sys.error("argh"))
       for(i <- 0 until g.cols * g.rows) {
-        r.data.asArray(i) must be === NODATA
+        d(i) must be === NODATA
       }
     }
 
@@ -43,13 +44,5 @@ class RasterSpec extends Spec with MustMatchers {
       r1 must be === r3
       r1 must be === r4
     }
-
-    it("should set coordinates") {
-      raster.set(0, 0, 10)
-      raster.get(0, 0) must be === 10
-      raster.set(0, 0, 1)
-      raster.get(0, 0) must be === 1
-    }
-
   }
 }

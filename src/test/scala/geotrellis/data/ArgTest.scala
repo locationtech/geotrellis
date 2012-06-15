@@ -10,8 +10,10 @@ import org.scalatest.junit.JUnitRunner
 class ArgTest extends FunSuite {
   var r:Raster = null
 
+  var d:MutableRasterData = null
+
   test("create a float32 raster of zeros") {
-    val d = FloatArrayRasterData.ofDim(100)
+    d = FloatArrayRasterData.ofDim(100)
     val e = Extent(0.0, 0.0, 10.0, 10.0)
     val re = RasterExtent(e, 1.0, 1.0, 10, 10)
     r = Raster(d, re)
@@ -22,21 +24,21 @@ class ArgTest extends FunSuite {
   }
 
   test("make sure it's an array of zeros") {
-    assert(r.data.asArray.toArrayDouble === Array.fill(100)(0.0))
+    assert(d.toArrayDouble === Array.fill(100)(0.0))
   }
 
   test("update raster.data(3)") {
-    assert(r.data.asArray.applyDouble(3) === 0.0)
-    r.data.asArray.updateDouble(3, 99.0)
-    assert(r.data.asArray.applyDouble(3) === 99.0)
+    assert(d.applyDouble(3) === 0.0)
+    d.updateDouble(3, 99.0)
+    assert(d.applyDouble(3) === 99.0)
   }
 
   test("update all raster values") {
-    for (i <- 0 until 100) r.data.asArray.updateDouble(i, i.toDouble)
+    for (i <- 0 until 100) d.updateDouble(i, i.toDouble)
   }
 
   test("map over raster values") {
-    val data2 = r.data.mapDouble(_ % 3.0).asArray
+    val data2 = d.mapDouble(_ % 3.0)
     assert(data2.applyDouble(0) === 0.0)
     assert(data2.applyDouble(1) === 1.0)
     assert(data2.applyDouble(2) === 2.0)

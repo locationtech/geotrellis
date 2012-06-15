@@ -23,28 +23,35 @@ class UnaryLocalSpec extends Spec with MustMatchers with ShouldMatchers {
     val data = Array.fill(re.cols * re.rows)(100)
     val raster = Raster(data, re)
 
+    val d = raster.data.asArray.getOrElse(sys.error("argh"))
+
     it("should produce correct results") {
       val op = AddConstant(raster, 33)
       val raster2 = server.run(op)
-      raster2.data.asArray.asArray(0) must be === raster.data.asArray(0) + 33
+      val d2 = raster2.data.asArray.getOrElse(sys.error("argh"))
+      d2(0) must be === d(0) + 33
     }
 
     it("should compose 2 local operations") {
-      server.run(f(f(raster))).data.asArray(0) must be === raster.data.asArray(0) + 2
+      val d2 = server.run(f(f(raster))).data.asArray.getOrElse(sys.error("argh"))
+      d2(0) must be === d(0) + 2
     }
 
     it("should compose 3 local operations") {
-      server.run(f(f(f(raster)))).data.asArray(0) must be === raster.data.asArray(0) + 3
+      val d2 = server.run(f(f(f(raster)))).data.asArray.getOrElse(sys.error("argh"))
+      d2(0) must be === d(0) + 3
     }
 
     it("should compose 4 local operations") {
-      server.run(f(f(f(f(raster))))).data.asArray(0) must be === raster.data.asArray(0) + 4
+      val d2 = server.run(f(f(f(f(raster))))).data.asArray.getOrElse(sys.error("argh"))
+      d2(0) must be === d(0) + 4
     }
 
     it("should compose multiple operations") {
       val Complete(raster2, history) = server.getResult(f(f(f(f(f(raster))))))
       println(history.toPretty)
-      raster2.data.asArray.asArray(0) must be === raster.data.asArray(0) + 5
+      val d2 = raster2.data.asArray.getOrElse(sys.error("argh"))
+      d2(0) must be === d(0) + 5
     }
   }
 }

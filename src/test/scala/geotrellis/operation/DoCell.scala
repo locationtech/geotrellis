@@ -42,7 +42,9 @@ class DoCellSpec extends Spec with MustMatchers with ShouldMatchers {
     val r = Literal(f(a, 3, 3, 0.0, 0.0, 1.0))
 
     it ("DoCell") {
-      server.run(DoCell(r, _ + 1)).data.asArray.toArray must be === a.map { _ + 1 }
+      val r2 = server.run(DoCell(r, _ + 1))
+      val d = r2.data.asArray.getOrElse(sys.error("argh"))
+      d.toArray must be === a.map { _ + 1 }
     }
   }
 }

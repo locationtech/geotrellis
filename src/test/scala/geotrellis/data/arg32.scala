@@ -111,11 +111,12 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
     val dotest = (xmin:Double, ymin:Double, xmax:Double, ymax:Double,
                   cols:Int, rows:Int, expect:Array[Int]) => {
       val result = chunker(xmin, ymin, xmax, ymax, cols, rows)
-      val ok = dcmp(result.data.asArray.toArray, expect)
+      val d = result.data.asArray.getOrElse(sys.error("argh"))
+      val ok = dcmp(d.toArray, expect)
       if (!ok) {
         println(result.asciiDraw)
         println("got:")
-        println(result.data.asArray.toArray.toList)
+        println(d.toArray.toList)
         println("\nexpected:")
         println(expect.toList)
       }

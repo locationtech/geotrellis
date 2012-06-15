@@ -22,7 +22,7 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
   def rows = rasterExtent.rows
   def length = rasterExtent.size
 
-  def toArray = data.asArray.toArray
+  def toArray = data.asArray.getOrElse(sys.error("argh")).toArray
 
   /**
    * Get value at given coordinates.

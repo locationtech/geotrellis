@@ -18,11 +18,13 @@ class DeviationRasterSpec extends Spec with MustMatchers with ShouldMatchers {
       val h = BuildMapHistogram(r1)
       val s = StandardDeviation(r2, h, 1000)
       val raster = server.run(s)
+
+      val d = raster.data.asArray.getOrElse(sys.error("argh"))
   
-      raster.data.asArray(0) must be === -1341
-      raster.data.asArray(10) must be === -447
-      raster.data.asArray(200) must be === 447
-      raster.data.asArray(210) must be === 1341
+      d(0) must be === -1341
+      d(10) must be === -447
+      d(200) must be === 447
+      d(210) must be === 1341
     }
   }
 }
