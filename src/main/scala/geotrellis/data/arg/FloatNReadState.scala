@@ -28,7 +28,7 @@ class Float64ReadState(data:Either[String, Array[Byte]],
                        layer:RasterLayer,
                        target:RasterExtent)
 extends ArgFloatNReadState(data, layer, target, TypeDouble) {
-  @inline final def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
+  @inline final def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int) {
     dest.updateDouble(destIndex, src.getDouble(sourceIndex * width))
   }
 }
@@ -37,7 +37,7 @@ class Float32ReadState(data:Either[String, Array[Byte]],
                        layer:RasterLayer,
                        target:RasterExtent)
 extends ArgFloatNReadState(data, layer, target, TypeFloat) {
-  @inline final def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
+  @inline final def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int) {
     dest.updateDouble(destIndex, src.getFloat(sourceIndex * width))
   }
 }

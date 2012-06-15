@@ -46,7 +46,7 @@ case class Hillshade(r:Op[Raster], azimuth:Op[Double], altitude:Op[Double])
  //   println ("cols: %d".format(r.rasterExtent.cols))
      
     val data = Array.fill(r.rasterExtent.rows * r.rasterExtent.cols)(NODATA)
-    val elev = r.data.asArray
+    val elev = r.data.asArray.getOrElse(sys.error("can't get data array"))
     // skip border cells
     for (y <- 1 until r.rows - 1; x <- 1 until r.cols - 1) {
         val h = if (elev(y * r.cols + x) == NODATA) {

@@ -54,7 +54,8 @@ trait MyBenchmark extends SimpleBenchmark {
 
     val tiledRaster = Raster(tileSetRD, re)
 
-    val lazyRasterData = LazyTiledWrapper(r.data.asArray, layout)
+    val d = r.data.asArray.getOrElse(sys.error("argh"))
+    val lazyRasterData = LazyTiledWrapper(d, layout)
     val lazyRaster = Raster(lazyRasterData, re)
 
     (tiledRaster, tiledArrayRaster, lazyRaster)
@@ -164,7 +165,8 @@ class DataMap extends MyBenchmark {
   def timeRasterWhileLoop(reps:Int) = run(reps)(rasterWhileLoop)
   def rasterWhileLoop = {
     val rcopy = raster.copy
-    val goal = rcopy.data.asArray
+    val goal = rcopy.data.mutable.getOrElse(sys.error("argh"))
+
     var i = 0
     val len = goal.length
     while (i < len) {
@@ -642,7 +644,7 @@ class RasterForeach extends MyBenchmark {
   def rasterWhile = {
     var t = 0
     var i = 0
-    val d = r.data.asArray
+    val d = r.data.asArray.getOrElse(sys.error("argh"))
     val len = r.length
     while (i < len) {
       t += d(i)

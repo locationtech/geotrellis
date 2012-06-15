@@ -70,7 +70,7 @@ final class GeoTiffReadState(path:String,
   }
 
   @inline
-  def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
+  def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int) {
     dest(destIndex) = ints(sourceIndex)
   }
 

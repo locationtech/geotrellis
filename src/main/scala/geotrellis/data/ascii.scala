@@ -83,7 +83,7 @@ final class AsciiReadState(path:String,
   }
 
   @inline
-  def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
+  def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int) {
     dest(destIndex) = ints(sourceIndex)
   }
 
@@ -170,7 +170,7 @@ object AsciiWriter extends Writer {
     pw.write("cellsize %.12f\n".format(g.cellwidth))
     pw.write("nodata_value %d\n".format(noData))
 
-    val data = raster.data.asArray
+    val data = raster.data.asArray.getOrElse(sys.error("explode"))
 
     var y = 0
     while (y < g.rows) {

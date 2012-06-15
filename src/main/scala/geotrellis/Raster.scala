@@ -116,12 +116,12 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
 
   def mapIfSet(f:Int => Int) = Raster(data.mapIfSet(f), rasterExtent)
 
-  def force = data match {
-    case a:ArrayRasterData => Raster(a.force, rasterExtent)
-    case _ => sys.error("force called on non-array raster data")
+  def force = {
+    val opt = data.force.map(d => Raster(d, rasterExtent))
+    opt.getOrElse(sys.error("force called on non-array raster data"))
   }
 
-  def defer = Raster(data.defer, rasterExtent)
+  def defer = data.asArray.map(d => Raster(LazyArrayWrapper(d), rasterExtent)).getOrElse(this)
 
   def getTiles:Array[Raster] = data match {
     case t:TiledRasterData => t.getTiles(rasterExtent)

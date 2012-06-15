@@ -19,7 +19,7 @@ extends Op4(data, zones, zonesArraySize, histArraySize) ({
 
     // dereference some useful variables
     val geo   = raster.rasterExtent
-    val rdata = raster.data.asArray
+    val rdata = raster.data.asArray.getOrElse(sys.error("need array"))
     val rows  = geo.rows
     val cols  = geo.cols
 
@@ -33,7 +33,7 @@ extends Op4(data, zones, zonesArraySize, histArraySize) ({
     val (col1, row1) = geo.mapToGrid(xmin, ymin)
     val (col2, row2) = geo.mapToGrid(xmax, ymax)
 
-    val zdata = zones.data.asArray
+    val zdata = zones.data.asArray.getOrElse(sys.error("need array"))
 
     // iterate over the cells in our bounding box; determine its zone, then
     // looking in the raster for a value to add to the zonal histogram.

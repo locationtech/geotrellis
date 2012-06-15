@@ -12,7 +12,7 @@ case class VerticalFlip(r:Op[Raster]) extends Op1(r) ({
   r =>
   val cols = r.cols
   val rows = r.cols
-  val data = r.data.asArray
+  val data = r.data.asArray.getOrElse(sys.error("can't get data array"))
   val data2 = data.alloc(data.length)
 
   var y = 0

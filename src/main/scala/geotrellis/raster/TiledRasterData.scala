@@ -183,11 +183,21 @@ trait TiledRasterData extends RasterData {
     result
   }
 
-  // TODO: ideally the force method would be removed from RasterData
-  def force:StrictRasterData = sys.error("force not allowed on tiled data")
-
   // TODO: ideally the asArray method would be removed from RasterData
-  def asArray:ArrayRasterData = sys.error("asArray not allowed on tiled data")
+  def asArray = {
+    if (lengthLong > 2147483647L) None
+    val len = length
+    val d = IntArrayRasterData.ofDim(len)
+    var i = 0
+    foreach { z => d(i) = z; i += 1 }
+    Some(d)
+  }
+
+  // TODO: fix, maybe?
+  def force = mutable
+
+  // TODO: fix, maybe?
+  def mutable:Option[MutableRasterData] = None
 
   def get(col:Int, row:Int, cols:Int) = {
     val tcol = col / pixelCols
@@ -197,8 +207,6 @@ trait TiledRasterData extends RasterData {
     getTile(tcol, trow).get(pcol, prow, pixelCols)
   }
 
-  //def set(col:Int, row:Int, z:Int, cols:Int) = sys.error("immutable")
-
   def getDouble(col:Int, row:Int, cols:Int) = {
     val tcol = col / pixelCols
     val trow = row / pixelRows
@@ -206,8 +214,6 @@ trait TiledRasterData extends RasterData {
     val prow = row % pixelRows
     getTile(tcol, trow).getDouble(pcol, prow, pixelCols)
   }
-
-  //def setDouble(col:Int, row:Int, z:Double, cols:Int) = sys.error("immutable")
 }
 
 

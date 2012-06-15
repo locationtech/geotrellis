@@ -36,7 +36,7 @@ class Int8ReadState(data:Either[String, Array[Byte]],
                     layer:RasterLayer,
                     target:RasterExtent)
 extends IntNReadState(data, layer, target, TypeByte) {
-  @inline final def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
+  @inline final def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int) {
     dest(destIndex) = src.get(sourceIndex)
   }
 }
@@ -45,7 +45,7 @@ class Int16ReadState(data:Either[String, Array[Byte]],
                      layer:RasterLayer,
                      target:RasterExtent)
 extends IntNReadState(data, layer, target, TypeShort) {
-  @inline final def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
+  @inline final def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int) {
     dest(destIndex) = src.getShort(sourceIndex * 2)
   }
 }
@@ -54,7 +54,7 @@ class Int32ReadState(data:Either[String, Array[Byte]],
                      layer:RasterLayer,
                      target:RasterExtent)
 extends IntNReadState(data, layer, target, TypeInt) {
-  @inline final def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
+  @inline final def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int) {
     dest(destIndex) = src.getInt(sourceIndex * 4)
   }
 }

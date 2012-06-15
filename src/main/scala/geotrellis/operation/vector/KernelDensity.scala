@@ -124,10 +124,7 @@ object KernelDensityHelper {
     var c:Int = x - dx / 2
     var r:Int = 0
 
-    val data = raster.data match {
-      case a:ArrayRasterData => a.force
-      case _ => sys.error("force called on non-array raster data")
-    }
+    val data = raster.data.mutable.getOrElse(sys.error("need mutable data"))
 
     while(c <= x + dx / 2) {
       r = y - dy / 2

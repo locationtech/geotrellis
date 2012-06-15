@@ -80,7 +80,7 @@ class Encoder(settings:Settings) {
 
   def createByteBuffer(raster:Raster) = {
     val size = raster.length
-    val data = raster.data.asArray
+    val data = raster.data.asArray.getOrElse(sys.error("explode"))
     val bb = ByteBuffer.allocate(size * DEPTH)
 
     if (DEPTH == 4) initByteBuffer32(bb, data, size)

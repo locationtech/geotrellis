@@ -25,7 +25,7 @@ final class RasterReadState(raster:Raster,
     //src = IntBuffer.wrap(raster.toArray, position, size)
   }
 
-  @inline def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
+  @inline def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int) {
     //dest(destIndex) = src.get(sourceIndex)
     dest(destIndex) = data.apply(sourceIndex + pos)
   }

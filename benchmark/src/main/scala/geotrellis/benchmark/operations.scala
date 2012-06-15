@@ -72,7 +72,8 @@ case class MultiplyConstantWhileLoop(r:Op[Raster], c:Op[Int]) extends Op[Raster]
   val nextSteps:Steps = {
     case (raster:Raster) :: (n:Int) :: Nil => {
       val r2 = raster.copy
-      val data = r2.data.asArray
+      val data = r2.data.mutable.getOrElse(sys.error("argh"))
+
       val len = r2.length
       var i = 0
       while (i < len) {
@@ -120,8 +121,8 @@ trait MultiLocalOld extends LocalOperation {
   def handle(z1:Int, z2:Int):Int
 
   def handleRaster(_outdata:RasterData, _data:RasterData) {
-    val outdata = _outdata.asArray
-    val data = _data.asArray
+    val data = _data.asArray.getOrElse(sys.error("argh"))
+    val outdata = _outdata.mutable.getOrElse(sys.error("argh"))
     var i = 0
     while (i < outdata.length) {
       outdata(i) = handle(outdata(i), data(i))
@@ -131,7 +132,7 @@ trait MultiLocalOld extends LocalOperation {
   
   def handleRasters(rasters:Array[Raster]) = {
     val output = rasters(0).copy() 
-    val outdata = output.data.asArray
+    val outdata = output.data.asArray.getOrElse(sys.error("argh"))
     var j = 0
     while (j < rasters.length) {
       handleRaster(outdata, rasters(j).data)

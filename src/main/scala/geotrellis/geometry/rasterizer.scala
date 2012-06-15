@@ -307,10 +307,7 @@ object Rasterizer {
   def rasterize(cols:Int, rows:Int, polygons:Array[GridPolygon],
                 fs:Array[Int => Int], _data:RasterData) {
     //printf("rasterize called with cols=%d and rows=%d\n", cols, rows)
-    val data = _data match {
-      case s:StrictRasterData => s
-      case _ => sys.error("strict raster data required")
-    }
+    val data = _data.mutable.getOrElse(sys.error("can't get mutable data array"))
 
     val lastrow = rows - 1
     val lastcol = cols - 1
