@@ -22,11 +22,6 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
    */
   def size = cols * rows
 
-  ///**
-  // * Create a copy of this instance
-  // */
-  //def copy = RasterExtent(extent, cellwidth, cellheight, cols, rows)
-
   /**
    * Compare this object with another GeoAttrs object, as per the comparison
    * rules in Extent#compare.

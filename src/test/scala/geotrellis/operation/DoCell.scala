@@ -39,7 +39,7 @@ class DoCellSpec extends Spec with MustMatchers with ShouldMatchers {
              cellsize:Double) => f2(a, cols, rows, xmin, ymin, cellsize, 999)
   
     val a = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    val r = CopyRaster(Literal(f(a, 3, 3, 0.0, 0.0, 1.0)))
+    val r = Literal(f(a, 3, 3, 0.0, 0.0, 1.0))
 
     it ("DoCell") {
       server.run(DoCell(r, _ + 1)).data.asArray.toArray must be === a.map { _ + 1 }
