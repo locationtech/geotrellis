@@ -78,7 +78,7 @@ final class Int1ReadState(data:Either[String, Array[Byte]],
     }
   }
 
-  @inline final def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
+  @inline final def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int) {
     val i = (sourceIndex + remainder)
     dest(destIndex) = (src.get(i >> 3) >> (i & 7)) & 1
   }
