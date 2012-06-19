@@ -58,3 +58,28 @@ extends IntNReadState(data, layer, target, TypeInt) {
     dest(destIndex) = src.getInt(sourceIndex * 4)
   }
 }
+
+
+final class Int1ReadState(data:Either[String, Array[Byte]],
+                          val layer:RasterLayer,
+                          val target:RasterExtent) extends ReadState {
+  private var src:ByteBuffer = null
+  private var remainder:Int = 0
+
+  def getType = TypeBit
+
+  def initSource(pos:Int, size:Int) {
+    val p = pos / 8
+    val s = (size + 7) / 8
+    remainder = pos % 8
+    src = data match {
+      case Left(path) => Filesystem.slurpToBuffer(path, p, s)
+      case Right(bytes) => ByteBuffer.wrap(bytes, p, s)
+    }
+  }
+
+  @inline final def assignFromSource(sourceIndex:Int, dest:StrictRasterData, destIndex:Int) {
+    val i = (sourceIndex + remainder)
+    dest(destIndex) = (src.get(i >> 3) >> (i & 7)) & 1
+  }
+}

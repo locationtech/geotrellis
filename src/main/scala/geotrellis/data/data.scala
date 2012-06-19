@@ -34,6 +34,12 @@ trait ReadState {
   // maybe need to override; currently a noop
   protected[this] def translate(data:MutableRasterData): Unit = ()
 
+  // don't usually override
+  protected[this] def createRaster(data:StrictRasterData) = Raster(data, target)
+
+  // don't usually override
+  def createRasterData(size:Int):StrictRasterData = RasterData.emptyByType(getType, size)
+
   // don't override
   def loadRaster(): Raster = {
     val re = layer.rasterExtent
