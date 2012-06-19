@@ -340,6 +340,64 @@ class ConstantAdd extends MyBenchmark {
   def constantAdd = server.run(op)
 }
 
+object BigMinTiled {
+  def main(args:Array[String]) = {
+    val tileN = args(0).toInt
+    val test = new BigMinTiled
+    test.tileN = tileN
+    val runs = 2
+    println("Starting setup.")
+    test.setUp()
+    for (i <- 0 until 3) {
+      println("Starting test.")
+      val start = System.currentTimeMillis
+      //test.min
+      test.histogram
+      val elapsed = System.currentTimeMillis - start
+      println("Test complete: %d millis" format (elapsed))
+      val cells = tileN * 2000L * tileN * 2000L
+      val rate = cells / elapsed / 1000L
+      println("Rate: %d k/ms" format (rate) )
+    }
+
+    test.server.shutdown
+  }
+}
+
+class BigMinTiled extends MyBenchmark{ 
+  var tiledMinOp:Op[Int] = null
+  var tiledHistogramOp:Op[Histogram] = null
+
+  var tileN = 10
+
+  override def setUp() {
+    server = initServer()
+    val size = tileN * 2000
+    println("Setting up raster of size %d x %d." format (size, size))
+    val layout = TileLayout(tileN,tileN,2000,2000)
+    val tileSetRD = TileSetRasterData("/tmp", "big", TypeByte, layout, server)
+    val e = Extent(0.0, 0.0, (tileN * 2000.0), (tileN * 2000.0))
+    val re = RasterExtent(e, 1.0, 1.0, tileN * 2000, tileN * 2000)
+    val raster = Raster(tileSetRD, re)
+    tiledMinOp = BTileMin(Add(AddConstant(raster,2), raster))
+    //tiledHistogramOp = BTileHistogram(AddConstant(raster,2))
+    tiledHistogramOp = BTileHistogram(raster)
+  }
+
+  def timeMin(reps:Int) = run(reps)(min)
+  def min = { 
+    val min = server.run(tiledMinOp)
+    println("Found min: %d" format (min))
+  }
+  
+  def timeHistogram(reps:Int) = run(reps)(histogram)
+  def histogram = {
+    val h = server.run(tiledHistogramOp)
+    println("Found histogram: %s" format (h.toJSON))
+  }
+}
+
+
 object MinTiled extends MyRunner(classOf[MinTiled])
 class MinTiled extends MyBenchmark {
   @Param(Array("4096"))
@@ -651,5 +709,38 @@ class RasterForeach extends MyBenchmark {
       i += 1
     }
     t
+  }
+}
+
+
+object WriteHugeTiledRaster {
+  def main(args:Array[String]) {
+    if (args.length < 6) {
+      println("usage: PATH NAME COLS ROWS PIXELCOLS PIXELROWS")
+      println("e.g. /tmp hugeraster 1024 1024 256 256")
+    }
+    val path = args(0)
+    val name = args(1)
+    val cols = args(2).toInt
+    val rows  = args(3).toInt
+    val pixelCols = args(4).toInt
+    val pixelRows = args(5).toInt
+    println("Creating raster (%d, %d) with tiles (%d, %d)" format (cols, rows, pixelCols, pixelRows))
+
+    // map units = pixels
+    val extent = Extent(0, 0, cols, rows)
+    val re = RasterExtent(extent, 1.0, 1.0, cols, rows)
+    
+    Tiler.writeTilesFromFunction(pixelCols, pixelRows, re, name, path, f)
+  }
+  
+  def f(tileCol:Int, tileRow:Int, layout:TileLayout, re:RasterExtent):Raster = {
+    val rl = layout.getResolutionLayout(re)
+    val tileRasterExtent = rl.getRasterExtent(tileCol,tileRow)
+
+    val value:Byte = ((tileCol % 50) + 1).toByte
+    val size = layout.pixelCols * layout.pixelRows
+    val a = ByteArrayRasterData(Array.fill[Byte](size)(value))
+    Raster(a,tileRasterExtent)
   }
 }

@@ -18,7 +18,7 @@ object MyBuild extends Build {
 
     mainClass := Some("geotrellis.rest.WebRunner"),
 
-    javaOptions in run += "-Xmx4G",
+    javaOptions in run += "-Xmx2G",
 
     libraryDependencies ++= Seq(
       "org.scalatest" %% "scalatest" % "1.6.1" % "test",
@@ -115,7 +115,7 @@ object MyBuild extends Build {
     scalaVersion := "2.9.2",
 
     // raise memory limits here if necessary
-    javaOptions in run += "-Xmx4G",
+    javaOptions in run += "-Xmx8G",
 
     libraryDependencies ++= Seq(
       "com.google.guava" % "guava" % "r09",

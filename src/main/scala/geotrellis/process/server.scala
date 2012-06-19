@@ -117,14 +117,14 @@ akka {
   private[process] def _run[T:Manifest](op:Op[T]) = {
     log("server._run called with %s" format op)
 
-    implicit val timeout = Timeout(60 seconds)
+    implicit val timeout = Timeout(3660 seconds)
 
     val future = op match {
       case op:DispatchedOp[_] => (actor ? RunDispatched(op.op, op.dispatcher)).mapTo[OperationResult[T]]
       case op:Op[_]           => (actor ? Run(op)).mapTo[OperationResult[T]]
     }
 
-    val result = Await.result(future, 60 seconds)
+    val result = Await.result(future, 3660 seconds)
 
     result match {
       case OperationResult(c:Complete[_], _) => c.asInstanceOf[Complete[T]]

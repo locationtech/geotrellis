@@ -9,40 +9,7 @@ import geotrellis.operation._
  * This class stores the layout of a tiled raster: the number of tiles (in
  * cols/rows) and also the size of each tile (in cols/rows of pixels).
  */
-case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int)
-
-/**
- * For a particular resolution and tile layout, this class stores the
- * geographical boundaries of each tile extent.
- */
-case class ResolutionLayout(xs:Array[Double], ys:Array[Double],
-                        cw:Double, ch:Double, pcols:Int, prows:Int) {
-
-  def getExtent(c:Int, r:Int) = Extent(xs(c), ys(r), xs(c + 1), ys(r + 1))
-
-  def getRasterExtent(c:Int, r:Int) = {
-    RasterExtent(getExtent(c, r), cw, ch, pcols, prows)
-  }
-}
-
-/**
- *
- */
-trait TiledRasterData extends RasterData {
-  /**
-   * Returns the particular layout of this TiledRasterData's tiles.
-   */
-  def tileLayout:TileLayout
-
-  def pixelCols:Int = tileLayout.pixelCols
-  def pixelRows:Int = tileLayout.pixelRows
-  def tileCols:Int = tileLayout.tileCols
-  def tileRows:Int = tileLayout.tileRows
-
-  /**
-   * Get a RasterData instance for a particular tile.
-   */
-  def getTile(col:Int, row:Int):RasterData
+case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int) {
 
   /**
    * Given an extent and resolution (RasterExtent), return the geographic
@@ -87,6 +54,41 @@ trait TiledRasterData extends RasterData {
     val ys = getYCoords(re)
     ResolutionLayout(xs, ys, re.cellwidth, re.cellheight, pixelCols, pixelRows)
   }
+}
+
+
+/**
+ * For a particular resolution and tile layout, this class stores the
+ * geographical boundaries of each tile extent.
+ */
+case class ResolutionLayout(xs:Array[Double], ys:Array[Double],
+                        cw:Double, ch:Double, pcols:Int, prows:Int) {
+
+  def getExtent(c:Int, r:Int) = Extent(xs(c), ys(r), xs(c + 1), ys(r + 1))
+
+  def getRasterExtent(c:Int, r:Int) = {
+    RasterExtent(getExtent(c, r), cw, ch, pcols, prows)
+  }
+}
+
+/**
+ *
+ */
+trait TiledRasterData extends RasterData {
+  /**
+   * Returns the particular layout of this TiledRasterData's tiles.
+   */
+  def tileLayout:TileLayout
+
+  def pixelCols:Int = tileLayout.pixelCols
+  def pixelRows:Int = tileLayout.pixelRows
+  def tileCols:Int = tileLayout.tileCols
+  def tileRows:Int = tileLayout.tileRows
+
+  /**
+   * Get a RasterData instance for a particular tile.
+   */
+  def getTile(col:Int, row:Int):RasterData
 
   /**
    * Given a resolution layout, and a particular tile's column/row, return a
@@ -104,7 +106,7 @@ trait TiledRasterData extends RasterData {
    * of Rasters which represent that area as tiles.
    */
   def getTiles(re:RasterExtent): Array[Raster] = {
-    val rl = getResolutionLayout(re)
+    val rl = tileLayout.getResolutionLayout(re)
     val tiles = Array.ofDim[Raster](tileCols * tileRows)
     for (r <- 0 until tileRows; c <- 0 until tileCols) {
       tiles(r * tileCols + c) = getTileRaster(rl, c, r)
@@ -116,7 +118,7 @@ trait TiledRasterData extends RasterData {
    * Function like getTiles but returns a list instead.
    */
   def getTileList(re:RasterExtent): List[Raster] = {
-    val rl = getResolutionLayout(re)
+    val rl = tileLayout.getResolutionLayout(re)
     var tiles:List[Raster] = Nil
     for (r <- 0 until tileRows; c <- 0 until tileCols) {
       tiles = getTileRaster(rl, c, r) :: tiles
@@ -133,7 +135,7 @@ trait TiledRasterData extends RasterData {
   * Return a list of operations; each operation will load a tile's raster.
    */
   def getTileOpList(re:RasterExtent): List[Op[Raster]] = {
-    val rl = getResolutionLayout(re)
+    val rl = tileLayout.getResolutionLayout(re)
     var tiles:List[Op[Raster]] = Nil
     for (r <- 0 until tileRows; c <- 0 until tileCols) {
       tiles = getTileOp(rl, c, r) :: tiles
@@ -476,6 +478,29 @@ object Tiler {
     val data = createTiledRasterData(src, pixelCols, pixelRows)
     Raster(data, src.rasterExtent)
   }
+ 
+  def buildTileLayout(re:RasterExtent, pixelCols:Int, pixelRows:Int) = {
+    val tileCols = (re.cols + pixelCols - 1) / pixelCols
+    val tileRows = (re.rows + pixelRows - 1) / pixelRows
+    TileLayout(tileCols, tileRows, pixelCols, pixelRows)
+  }
+
+  def buildTileRasterExtent(tx:Int, ty:Int, re:RasterExtent, pixelCols:Int, pixelRows:Int) = {
+    val cw = re.cellwidth
+    val ch = re.cellheight
+    val e = re.extent
+    // Note that since tile (0,0) is in the upper-left corner of our map,
+    // we need to fix xmin and ymax to e.xmin and e.ymax. This asymmetry
+    // will seem strange until you consider that fact.
+    val xmin = e.xmin + (cw * tx * pixelCols)
+    val ymax = e.ymax - (ch * ty * pixelRows)
+    val xmax = xmin + (cw * pixelCols)
+    val ymin = ymax - (cw * pixelRows)
+
+    val te = Extent(xmin, ymin, xmax, ymax)
+    val tre = RasterExtent(te, cw, ch, pixelCols, pixelRows)
+    tre
+  }
 
   /**
    * From a raster, makes a new TiledArrayRaster (an array of tiles in memory).
@@ -483,9 +508,10 @@ object Tiler {
   def createTiledRasterData(src:Raster, pixelCols:Int, pixelRows:Int) = {
     val re = src.rasterExtent
     val e = re.extent
-
-    val tileCols = (re.cols + pixelCols - 1) / pixelCols
-    val tileRows = (re.rows + pixelRows - 1) / pixelRows
+  
+    val layout = buildTileLayout(re, pixelCols, pixelRows)
+    val tileCols = layout.tileCols
+    val tileRows = layout.tileRows
 
     val cw = re.cellwidth
     val ch = re.cellheight
@@ -493,14 +519,6 @@ object Tiler {
     val rasters = Array.ofDim[Raster](tileCols * tileRows)
 
     for (ty <- 0 until tileRows; tx <- 0 until tileCols) yield {
-      // Note that since tile (0,0) is in the upper-left corner of our map,
-      // we need to fix xmin and ymax to e.xmin and e.ymax. This asymmetry
-      // will seem strange until you consider that fact.
-      val xmin = e.xmin + (cw * tx * pixelCols)
-      val ymax = e.ymax - (ch * ty * pixelRows)
-      val xmax = xmin + (cw * pixelCols)
-      val ymin = ymax - (cw * pixelRows)
-
       val data = RasterData.allocByType(src.data.getType, pixelCols * pixelRows)
 
       // TODO: if this code ends up being a performance bottleneck, we should
@@ -511,13 +529,10 @@ object Tiler {
         val i = y * pixelCols + x
         data(i) = if (xsrc >= re.cols || ysrc >= re.rows) NODATA else src.get(xsrc, ysrc)
       }
-
-      val te = Extent(xmin, ymin, xmax, ymax)
-      val tre = RasterExtent(te, cw, ch, pixelCols, pixelRows)
+      val tre = buildTileRasterExtent(tx,ty,re,pixelCols,pixelRows)
       rasters(ty * tileCols + tx) = Raster(data, tre)
     }
 
-    val layout = TileLayout(tileCols, tileRows, pixelCols, pixelRows)
     TileArrayRasterData(rasters, layout)
   }
 
@@ -537,6 +552,26 @@ object Tiler {
     }
   }
 
+  /**
+   * Write a TiledRasterData to disk as a tile set, creating each tile's data
+   * by executing a function that returns a raster.
+   *
+   * Note that the function will need to generate its RasterExtent from the ResolutionLayout,
+   * e.g.
+   * val rl = tileLayout.getResolutionLayout(re)
+   * val tileRasterExtent = rl.getRasterExtent(col, row)
+   */ 
+  def writeTilesFromFunction(pixelCols:Int, pixelRows:Int, re:RasterExtent, name:String, path:String,
+    f:(Int,Int,TileLayout,RasterExtent) => Raster) {
+    val layout = buildTileLayout(re, pixelCols, pixelRows)
+    for (row <- 0 until layout.tileRows; col <- 0 until layout.tileCols) {
+      val raster = f(col, row, layout, re)
+      val name2 = tileName(name, col, row)
+      val path2 = tilePath(path, name, col, row) 
+      ArgWriter(raster.data.getType).write(path2, raster, name2)
+    }
+  }
+ 
   /**
    * Given a path and name, deletes the relevant tileset from the disk.
    */  
