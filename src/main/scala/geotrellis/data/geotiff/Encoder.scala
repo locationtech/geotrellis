@@ -86,7 +86,8 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
   final def noDataString:String = settings.format match {
     case Signed => "-" + (1L << (bitsPerSample - 1)).toString
     case Unsigned => ((1L << bitsPerSample) - 1).toString
-    case Floating => sys.error("floating point not supported")
+    //case Floating => sys.error("floating point not supported")
+    case Floating => Double.NaN.toString
   }
 
   /**
@@ -128,8 +129,10 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
   val img = new ByteArrayOutputStream()
 
   // The minimum and maximum sample values.
-  var zmin:Int = 0
-  var zmax:Int = 0
+  var minValue:Any = null
+  var maxValue:Any = null
+  //var zmin:Int = 0
+  //var zmax:Int = 0
 
   // The number of bytes we've written to our 'dos'. Only used for debugging.
   var index:Int = 0
@@ -185,15 +188,29 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
     writeInt(count)
     if (count > 1) {
       writeInt(value)
-    } else if (typ == 1 || typ == 6) {
+    } else if (typ == Const.uint8 || typ == Const.sint8) {
       writeByte(value)
       writeByte(0)
       writeShort(0)
-    } else if (typ == 3 || typ == 8) {
+    } else if (typ == Const.uint16 || typ == Const.sint16) {
       writeShort(value)
       writeShort(0)
     } else {
       writeInt(value)
+    }
+  }
+
+  // High-level function to immediately write a TIFF tag. if value is an offset
+  // then the user is responsible for making sure it is valid.
+  def writeTagDouble(tag:Int, typ:Int, value:Double) {
+    writeShort(tag)
+    writeShort(typ)
+    writeInt(1)
+    if (typ == Const.float32) {
+      writeFloat(value.toFloat)
+    } else {
+      writeInt(dataOffset)
+      todoDouble(value)
     }
   }
 
@@ -206,7 +223,48 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
   // Render the raster data into strips, and return an array of file offsets
   // for each strip. Currently we write all the data into one strip so we just
   // return an array of one item.
-  def renderImage():Array[Int] = {
+  def renderImage():Array[Int] = settings.format match {
+    case Floating => renderImageFloat()
+    case _ => renderImageInt()
+  }
+
+  def renderImageFloat():Array[Int] = {
+    println("YESSS")
+    val dmg = new DataOutputStream(img)
+    var row = 0
+    var col = 0
+
+    val bits = bitsPerSample
+
+    var seenData = false
+    var zmin = 0.0
+    var zmax = 0.0
+
+    while (row < rows) {
+      val rowspan = row * cols
+      col = 0
+      while (col < cols) {
+        var z = data.applyDouble(rowspan + col)
+        if (java.lang.Double.isNaN(z)) {}
+        else if (!seenData) { zmin = z; zmax = z; seenData = true }
+        else if (z < zmin) zmin = z
+        else if (z > zmax) zmax = z
+
+        if (bits == 32) dmg.writeFloat(z.toFloat)
+        else if (bits == 64) dmg.writeDouble(z)
+        else sys.error("unsupported bits/sample: %s" format bits)
+        col += 1
+      }
+      row += 1
+    }
+
+    minValue = zmin
+    maxValue = zmax
+
+    (0 until numStrips).map(n => imageStartOffset + n * bytesPerStrip).toArray
+  }
+
+  def renderImageInt():Array[Int] = {
     val dmg = new DataOutputStream(img)
     var row = 0
     var col = 0
@@ -215,8 +273,8 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
     val nd = noDataValue
 
     var seenData = false
-    zmin = 0
-    zmax = 0
+    var zmin = 0
+    var zmax = 0
 
     while (row < rows) {
       val rowspan = row * cols
@@ -236,6 +294,9 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
       }
       row += 1
     }
+
+    minValue = zmin
+    maxValue = zmax
 
     (0 until numStrips).map(n => imageStartOffset + n * bytesPerStrip).toArray
   }
@@ -271,6 +332,7 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
     writeTag(0x0101, Const.uint32, 1, rows)
 
     // 3. bits per sample
+    println("bits-per-sample is %s" format bitsPerSample)
     writeTag(0x0102, Const.uint16, 1, bitsPerSample)
 
     // 4. compression is off (1)
@@ -305,14 +367,27 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
       todoInt(bytesPerRow * leftOverRows)
     }
 
-    // TODO: use settings to figure out which field type to use for min/max
+    val kind = (settings.format, settings.size.bits) match {
+      case (Floating, 32) => Const.float32
+      case (Floating, 64) => Const.float64
+      case (Signed, 8) => Const.sint8
+      case (Signed, 16) => Const.sint16
+      case (Signed, 32) => Const.sint32
+      case (Unsigned, 8) => Const.sint8
+      case (Unsigned, 16) => Const.sint16
+      case (Unsigned, 32) => Const.sint32
+      case tpl => sys.error("unsupported: %s" format tpl)
+    }
 
-    println("zmin=%s zmax=%s" format (zmin, zmax))
     // 10. 0x0118 minimum sample value
-    writeTag(0x0118, Const.sint32, 1, zmin)
-
     // 11. 0x0119 maximum sample value
-    writeTag(0x0119, Const.sint32, 1, zmax)
+    if (kind == Const.float32 || kind == Const.float64) {
+      writeTagDouble(0x0118, kind, minValue.asInstanceOf[Double])
+      writeTagDouble(0x0119, kind, maxValue.asInstanceOf[Double])
+    } else {
+      writeTag(0x0118, kind, 1, minValue.asInstanceOf[Int])
+      writeTag(0x0119, kind, 1, maxValue.asInstanceOf[Int])
+    }
 
     // 12. y resolution, 1 pixel per unit
     writeTag(0x011a, Const.rational, 1, dataOffset)
@@ -331,6 +406,7 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
     writeTag(0x0128, Const.uint16, 1, 1)
 
     // 16. sample format (1=unsigned, 2=signed, 3=floating point)
+    println("sample format is %s" format sampleFormat)
     writeTag(0x0153, Const.uint16, 1, sampleFormat)
 
     // 17. model pixel scale tag (points to doubles sX, sY, sZ with sZ = 0)
