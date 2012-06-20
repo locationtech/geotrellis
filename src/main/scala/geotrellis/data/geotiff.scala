@@ -119,9 +119,16 @@ object GeoTiffWriter extends Writer {
 
   import geotrellis.data.geotiff._
 
-  val geoTiffSettings = Settings(IntSample, Signed, esriCompat = false)
+  //val geoTiffSettings = Settings(IntSample, Signed, esriCompat = false)
 
   def write(path:String, raster:Raster, name:String) {
-    Encoder.writePath(path, raster, geoTiffSettings)
+    val settings = raster.data.getType match {
+      case TypeBit | TypeByte => Settings(ByteSample, Signed, false)
+      case TypeShort => Settings(ShortSample, Signed, false)
+      case TypeInt => Settings(IntSample, Signed, false)
+      case TypeFloat => Settings(IntSample, Floating, false)
+      case TypeDouble => Settings(LongSample, Floating, false)
+    }
+    Encoder.writePath(path, raster, settings)
   }
 }

@@ -1,5 +1,7 @@
 package geotrellis.data.geotiff
 
+//TODO: should probably not be named Int/Long since Float/Double use those too.
+
 /**
  * SampleSize is used by geotiff.Settings to indicate how wide each sample
  * (i.e. each raster cell) will be. Currently we only support 8-, 16-, and
@@ -10,3 +12,4 @@ sealed abstract class SampleSize(val bits:Int)
 case object ByteSample extends SampleSize(8)
 case object ShortSample extends SampleSize(16)
 case object IntSample extends SampleSize(32)
+case object LongSample extends SampleSize(64)
