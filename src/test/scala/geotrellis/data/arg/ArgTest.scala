@@ -43,6 +43,8 @@ class ArgTest extends FunSuite {
 
   test("check int8") {
     assert(loadRasterData("/tmp/foo-int8.arg") === data)
+    val l = loadRaster("/tmp/foo-int8.arg")
+    println(l.asciiDraw)
   }
 
   test("check int16") {
@@ -65,5 +67,42 @@ class ArgTest extends FunSuite {
     assert(java.lang.Double.isNaN(d.applyDouble(0)))
     assert(d.applyDouble(1) === -1.0)
     assert(d.applyDouble(2) === 2.0)
+  }
+
+  test("check c# test") {
+    var xmin = 0
+    var ymin = 0
+    var xmax = 15
+    var ymax = 11
+
+    var cellwidth = 1.5
+    var cellheight = 1.0
+
+    var cols = 10
+    var rows = 11
+    var A = 50.toByte
+    var o = -128.toByte
+    val byteArr:Array[Byte] = Array[Byte](
+      o,o,o,o,o,o,o,o,o,o, 
+      o,o,o,o,o,o,o,o,o,o, 
+      o,o,o,o,A,A,o,o,o,o,
+      o,o,o,A,o,o,A,o,o,o,
+      o,o,A,o,o,o,o,A,o,o,
+      o,A,o,o,o,o,o,o,A,o,
+      A,A,A,A,A,A,A,A,A,A,
+      o,o,o,o,o,o,o,o,o,o,
+      o,o,o,o,o,o,o,o,o,o,
+      o,o,o,o,o,o,o,o,o,o,
+      o,A,A,A,A,A,A,A,A,o)
+
+    val data = ByteArrayRasterData(byteArr)
+    val e = Extent(xmin, ymin, xmax, ymax)
+    val re = RasterExtent(e, cellwidth, cellheight, cols, rows)
+    val raster = Raster(data, re)
+    ArgWriter(TypeByte).write("/tmp/fooc-int8.arg", raster, "foo-int8")
+    val r2 = loadRaster("/tmp/fooc-int8.arg")
+    println(raster.asciiDraw)
+    println(r2.asciiDraw)
+    assert(r2.data === raster.data)
   }
 }

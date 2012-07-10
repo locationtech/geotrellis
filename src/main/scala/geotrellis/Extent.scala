@@ -8,7 +8,7 @@ case class ExtentRangeError(msg:String) extends Exception(msg)
 /**
  * An Extent represents a rectangular region of geographic space (with a
  * particular projection). It is expressed in map coordinates. It is not
- * concerned with details of e.g. cell sizes (for that, see GeoAttrs).
+ * concerned with details of e.g. cell sizes (for that, see RasterExtent).
  */
 case class Extent(xmin:Double, ymin:Double, xmax:Double, ymax:Double) {
   if (xmin > xmax) throw ExtentRangeError("x: %s to %s".format(xmin, xmax))

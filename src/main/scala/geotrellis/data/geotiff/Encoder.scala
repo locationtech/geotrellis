@@ -97,8 +97,8 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
    * to be increased also. The writeTag calls in write are numbered to help
    * make this process easier.
    */
-  //final def numEntries = if (esriCompat) 20 else 18
-  final def numEntries = if (esriCompat) 22 else 20
+  final def numEntries = if (esriCompat) 20 else 18
+  //final def numEntries = if (esriCompat) 22 else 20
 
   /**
    * The number of GeoTags to be written.
@@ -229,7 +229,6 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
   }
 
   def renderImageFloat():Array[Int] = {
-    println("YESSS")
     val dmg = new DataOutputStream(img)
     var row = 0
     var col = 0
@@ -381,14 +380,15 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
 
     // 10. 0x0118 minimum sample value
     // 11. 0x0119 maximum sample value
-    if (kind == Const.float32 || kind == Const.float64) {
+    println("writing min/max values, kind is: " + kind)
+    /*if (kind == Const.float32 || kind == Const.float64) {
       writeTagDouble(0x0118, kind, minValue.asInstanceOf[Double])
       writeTagDouble(0x0119, kind, maxValue.asInstanceOf[Double])
     } else {
       writeTag(0x0118, kind, 1, minValue.asInstanceOf[Int])
       writeTag(0x0119, kind, 1, maxValue.asInstanceOf[Int])
     }
-
+    */ 
     // 12. y resolution, 1 pixel per unit
     writeTag(0x011a, Const.rational, 1, dataOffset)
     todoInt(1)
