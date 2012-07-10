@@ -1,7 +1,5 @@
 package geotrellis
 
-import sys.error
-
 import geotrellis.raster._
 
 object RasterData {
