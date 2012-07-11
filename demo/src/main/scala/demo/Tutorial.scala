@@ -7,7 +7,7 @@ import javax.ws.rs.core.{Response, Context}
 import geotrellis.{Extent, Raster}
 import geotrellis.data.{ColorBreaks}
 import geotrellis.stat.{Histogram}
-import geotrellis.operation._
+import geotrellis.op._
 import geotrellis.process.{Server}
 import geotrellis.Implicits._
 

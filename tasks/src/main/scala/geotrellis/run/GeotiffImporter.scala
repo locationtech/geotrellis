@@ -5,7 +5,7 @@ import com.beust.jcommander._
 import geotrellis._
 import geotrellis.data._
 import geotrellis.data.arg._
-import geotrellis.operation._
+import geotrellis.op._
 import geotrellis.process._
 
 

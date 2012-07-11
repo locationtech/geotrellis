@@ -6,7 +6,7 @@ import akka.routing._
 import akka.dispatch.Await
 import akka.util.duration._
 
-import geotrellis.operation.Operation
+import geotrellis.op.Operation
 
 /**
  * CalculationResult contains an operation's results.

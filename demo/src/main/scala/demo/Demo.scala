@@ -7,7 +7,7 @@ import javax.ws.rs.core.{Response, Context}
 
 import geotrellis._
 import geotrellis.data.MultiColorRangeChooser
-import geotrellis.operation._
+import geotrellis.op._
 import geotrellis.process._
 import geotrellis.Implicits._
 
