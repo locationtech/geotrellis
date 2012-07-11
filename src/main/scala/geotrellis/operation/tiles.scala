@@ -22,7 +22,7 @@ abstract class Reducer1[B:Manifest, C:Manifest](r:Op[Raster])(handle:Raster => B
     }
   }
 
-  def mapper(r:Raster):Op[B] = Map1(r)(handle)
+  def mapper(r:Raster):Op[B] = logic.Do1(r)(handle)
 }
 
 case class TileMin(r:Op[Raster]) extends Reducer1(r)({

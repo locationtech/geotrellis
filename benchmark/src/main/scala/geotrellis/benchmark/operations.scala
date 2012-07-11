@@ -202,6 +202,6 @@ abstract class BReducer1[B:Manifest, C:Manifest](r:Op[Raster])(handle:Raster => 
     }
   }
 
-  def mapper(r:Op[Raster]):Op[B] = Map1(r)(handle)
+  def mapper(r:Op[Raster]):Op[B] = logic.Do(r)(handle)
 }
 
