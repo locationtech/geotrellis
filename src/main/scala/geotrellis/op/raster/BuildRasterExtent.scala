@@ -3,6 +3,7 @@ package geotrellis.op.raster
 import geotrellis.Extent
 import geotrellis.RasterExtent
 import geotrellis.process._
+import geotrellis.op.raster.extent._
 import geotrellis.op.{Op,Op3}
 import geotrellis.op.util.string.ParseInt
 

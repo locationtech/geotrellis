@@ -2,7 +2,7 @@ package geotrellis
 
 import geotrellis._
 import geotrellis.geometry.Polygon
-import geotrellis.op.local._
+import geotrellis.op.raster.local._
 
 import geotrellis.op.logic.{Do1,Do2}
 
