@@ -3,6 +3,8 @@ package geotrellis
 import geotrellis._
 import geotrellis.geometry.Polygon
 
+import geotrellis.operation.logic.{Do1,Do2}
+
 package object operation {
   // Operation is such a long word :(
   type Op[+A] = Operation[A]
@@ -42,8 +44,8 @@ object Implicits {
   }
 
   implicit def addOpIntTo1(lhs:Op[Int]) = new {
-    def +(rhs:Int):Op[Int] = Map1(lhs)(_ + rhs)
-    def +(rhs:Op[Int]):Op[Int] = Map2(lhs, rhs)(_ + _)
+    def +(rhs:Int):Op[Int] = Do1(lhs)(_ + rhs)
+    def +(rhs:Op[Int]):Op[Int] = Do2(lhs, rhs)(_ + _)
   }
   implicit def addOpIntTo2(lhs:Op[Int]) = new {
     def +(rhs:Raster):Op[Raster] = AddConstant(Literal(rhs), lhs)
@@ -51,7 +53,7 @@ object Implicits {
   }
 
   implicit def addIntTo1(lhs:Int) = new {
-    def +(rhs:Op[Int]):Op[Int] = Map1(rhs)(_ + lhs)
+    def +(rhs:Op[Int]):Op[Int] = Do1(rhs)(_ + lhs)
   }
   implicit def addIntTo2(lhs:Int) = new {
     def +(rhs:Raster):Op[Raster] = AddConstant(Literal(rhs), Literal(lhs))
@@ -80,8 +82,8 @@ object Implicits {
   }
 
   implicit def multiplyOpIntBy1(lhs:Op[Int]) = new {
-    def *(rhs:Int):Op[Int] = Map1(lhs)(_ * rhs)
-    def *(rhs:Op[Int]):Op[Int] = Map2(lhs, rhs)(_ * _)
+    def *(rhs:Int):Op[Int] = Do1(lhs)(_ * rhs)
+    def *(rhs:Op[Int]):Op[Int] = Do2(lhs, rhs)(_ * _)
   }
   implicit def multiplyOpIntBy2(lhs:Op[Int]) = new {
     def *(rhs:Raster):Op[Raster] = MultiplyConstant(Literal(rhs), lhs)
@@ -89,7 +91,7 @@ object Implicits {
   }
 
   implicit def multiplyIntBy1(lhs:Int) = new {
-    def *(rhs:Op[Int]):Op[Int] = Map1(rhs)(_ * lhs)
+    def *(rhs:Op[Int]):Op[Int] = Do1(rhs)(_ * lhs)
   }
   implicit def multiplyIntBy2(lhs:Int) = new {
     def *(rhs:Raster):Op[Raster] = MultiplyConstant(Literal(rhs), Literal(lhs))
@@ -118,8 +120,8 @@ object Implicits {
   }
 
   implicit def subtractOpIntBy1(lhs:Int) = new {
-    def -(rhs:Int):Op[Int] = Map1(lhs)(_ - rhs)
-    def -(rhs:Op[Int]):Op[Int] = Map2(lhs, rhs)(_ - _)
+    def -(rhs:Int):Op[Int] = Do1(lhs)(_ - rhs)
+    def -(rhs:Op[Int]):Op[Int] = Do2(lhs, rhs)(_ - _)
   }
   implicit def subtractOpIntBy2(lhs:Int) = new {
     def -(rhs:Raster):Op[Raster] = SubtractConstantBy(lhs, Literal(rhs))
@@ -127,7 +129,7 @@ object Implicits {
   }
 
   implicit def subtractIntBy1(lhs:Int) = new {
-    def -(rhs:Op[Int]):Op[Int] = Map1(rhs)(lhs - _)
+    def -(rhs:Op[Int]):Op[Int] = Do1(rhs)(lhs - _)
   }
   implicit def subtractIntBy2(lhs:Int) = new {
     def -(rhs:Raster):Op[Raster] = SubtractConstantBy(Literal(lhs), Literal(rhs))
@@ -156,8 +158,8 @@ object Implicits {
   }
 
   implicit def divideOpIntBy1(lhs:Op[Int]) = new {
-    def /(rhs:Int):Op[Int] = Map1(lhs)(_ / rhs)
-    def /(rhs:Op[Int]):Op[Int] = Map2(lhs, rhs)(_ / _)
+    def /(rhs:Int):Op[Int] = Do1(lhs)(_ / rhs)
+    def /(rhs:Op[Int]):Op[Int] = Do2(lhs, rhs)(_ / _)
   }
 
   implicit def divideOpIntBy2(lhs:Op[Int]) = new {
@@ -166,11 +168,14 @@ object Implicits {
   }
 
   implicit def divideIntBy1(lhs:Int) = new {
-    def /(rhs:Op[Int]):Op[Int] = Map1(rhs)(lhs / _)
+    def /(rhs:Op[Int]):Op[Int] = Do1(rhs)(lhs / _)
   }
   implicit def divideIntBy2(lhs:Int) = new {
     def /(rhs:Raster):Op[Raster] = DivideConstantBy(Literal(lhs), Literal(rhs))
     def /(rhs:Op[Raster]):Op[Raster] = DivideConstantBy(Literal(lhs), rhs)
   }
+
+  type Do1[A,B] = logic.Do1[A,B]
+  type Do2[A,B,C] = logic.Do2[A,B,C]
 }
 

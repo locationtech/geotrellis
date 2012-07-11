@@ -27,5 +27,5 @@ case class SplitOnComma(s:Op[String]) extends Op1(s)(s => Result(s split ","))
  */
 case class ParseHexInt(s:Op[String]) extends Op1(s)(s => Result(Integer.parseInt(s, 16)))
 
-case class Concat(strings:Op[String]*) extends Op1(Collect(strings)) (strings => Result(strings.mkString("")))
+case class Concat(strings:Op[String]*) extends Op1(logic.Collect(strings)) (strings => Result(strings.mkString("")))
 

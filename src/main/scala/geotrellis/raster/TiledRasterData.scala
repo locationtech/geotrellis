@@ -242,7 +242,7 @@ case class TileSetRasterData(basePath:String, name:String, typ:RasterType,
 
   override def getTileOp(rl:ResolutionLayout, c:Int, r:Int) = {
     val path = Tiler.tilePath(basePath, name, c, r)
-    Map1(LoadFile(path))(_.defer)    
+    logic.Do(LoadFile(path))(_.defer)    
   }  
 }
 
@@ -376,7 +376,7 @@ case class LazyTiledMap(data:TiledRasterData, g:Int => Int) extends LazyTiledRas
   def getTile(col:Int, row:Int) = data.getTile(col, row).map(g)
 
   override def getTileOp(rl:ResolutionLayout, c:Int, r:Int) = 
-      Map1(data.getTileOp(rl, c, r))(_.map(g))
+      logic.Do(data.getTileOp(rl, c, r))(_.map(g))
 
   override def map(f:Int => Int) = LazyTiledMap(data, z => f(g(z)))
 }
@@ -391,7 +391,7 @@ case class LazyTiledMapIfSet(data:TiledRasterData, g:Int => Int) extends LazyTil
   def getTile(col:Int, row:Int) = data.getTile(col, row).mapIfSet(g)
 
   override def getTileOp(rl:ResolutionLayout, c:Int, r:Int) =
-    Map1(data.getTileOp(rl, c, r))(_.mapIfSet(g))
+    logic.Do(data.getTileOp(rl, c, r))(_.mapIfSet(g))
 
   override def map(f:Int => Int) = LazyTiledMap(data, z => f(gIfSet(z)))
 
@@ -426,7 +426,7 @@ case class LazyTiledCombine2(data1:TiledRasterData, data2:TiledRasterData,
   override def getTileOp(rl:ResolutionLayout, c:Int, r:Int) = {
     val r1 = data1.getTileOp(rl, c, r)
     val r2 = data2.getTileOp(rl, c, r)
-    Map2(r1, r2)((r1,r2) => r1.combine2(r2)(g))
+    logic.Do(r1, r2)((r1,r2) => r1.combine2(r2)(g))
   }
 
   override def map(f:Int => Int) = {

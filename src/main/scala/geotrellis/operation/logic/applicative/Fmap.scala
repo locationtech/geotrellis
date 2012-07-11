@@ -1,4 +1,4 @@
-package geotrellis.operation.applicative
+package geotrellis.operation.logic.applicative
 
 import geotrellis.operation._
 import geotrellis.process._
