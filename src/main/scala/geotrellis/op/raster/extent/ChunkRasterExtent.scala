@@ -1,9 +1,9 @@
-package geotrellis.op.raster
+package geotrellis.op.raster.extent
 
-import geotrellis._
-import geotrellis.process._
-import geotrellis._
 import geotrellis.op._
+import geotrellis.process.Result
+import geotrellis.Extent
+import geotrellis.RasterExtent
 
 // ny=4    nx=4    nx=2 ny=2
 // AAAA    ABCD    AABB

@@ -3,7 +3,7 @@ package geotrellis.op
 import geotrellis._
 import geotrellis.process._
 import geotrellis.raster._
-import local.AddArray
+import raster.local.AddArray
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite

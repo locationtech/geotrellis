@@ -1,9 +1,8 @@
-package geotrellis.op.raster
+package geotrellis.op.raster.extent
 
-import geotrellis._
-import geotrellis.process._
-import geotrellis._
 import geotrellis.op._
+import geotrellis.process.Result
+import geotrellis.Raster
 
 /**
  * Get the [[geotrellis.geoattrs.RasterExtent]] from a given raster.

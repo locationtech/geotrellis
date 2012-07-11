@@ -1,9 +1,8 @@
-package geotrellis.op.raster
+package geotrellis.op.raster.extent
 
-import geotrellis.Extent
-import geotrellis._
 import geotrellis.op._
 import geotrellis.process._
+import geotrellis._
 
 /**
  *
