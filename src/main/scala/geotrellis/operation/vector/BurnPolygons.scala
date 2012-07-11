@@ -28,7 +28,7 @@ object Util {
 // different kinds of arguments.
 object BurnPolygons {
   def apply(r:Op[Raster], ps:Array[Op[Polygon]]):BurnPolygons = {
-    BurnPolygons(r, CollectArray(ps))
+    BurnPolygons(r, logic.CollectArray(ps))
   }
 }
 
@@ -46,7 +46,7 @@ extends Op2(r, ps)({
  */
 case class BurnPolygonsWithTransform(r:Op[Raster], ps:Array[Op[Polygon]], fs:Array[Int => Int])
 extends Op[Raster] {
-  def _run(context:Context) = runAsync(r :: CollectArray(ps) :: Nil)
+  def _run(context:Context) = runAsync(r :: logic.CollectArray(ps) :: Nil)
 
   val nextSteps:Steps = {
     case (r:Raster) :: (ps:Array[Polygon]) :: Nil => Util.rasterize(r, ps, fs)
@@ -70,7 +70,7 @@ object BurnMultiPolygon {
 
 object BurnMultiPolygons {
   def apply(r:Op[Raster], mps:Array[Op[MultiPolygon]]):BurnMultiPolygons = {
-    BurnMultiPolygons(r, CollectArray(mps))
+    BurnMultiPolygons(r, logic.CollectArray(mps))
   }
 }
 
