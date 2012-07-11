@@ -1,8 +1,9 @@
 package geotrellis.data
 
 import geotrellis._
-import geotrellis.operation._
+import geotrellis.op._
 import geotrellis.process._
+import geotrellis.op.raster._
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers

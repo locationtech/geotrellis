@@ -3,8 +3,10 @@ package geotrellis.data.arg
 import geotrellis._
 import geotrellis.data._
 import geotrellis.data.arg._
-import geotrellis.operation._
+import geotrellis.op._
+
 import geotrellis.process._
+import geotrellis.raster._
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -22,7 +24,7 @@ class ArgTest extends FunSuite {
   val re = RasterExtent(e, 1.0, 1.0, 4, 4)
   val raster = Raster(data, re)
 
-  def loadRaster(path:String) = server.run(LoadFile(path))
+  def loadRaster(path:String) = server.run(op.raster.LoadFile(path))
   def loadRasterData(path:String) = loadRaster(path).data.asArray.getOrElse(sys.error("argh"))
 
   test("test float compatibility") {

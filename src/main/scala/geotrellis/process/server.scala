@@ -5,11 +5,12 @@ import scala.util.matching.Regex
 import scala.collection.mutable
 
 import geotrellis._
+import geotrellis.op._
 import geotrellis.data._
 import geotrellis.data.arg._
 import geotrellis.data.FileExtensionRegexes._
 import geotrellis.RasterExtent
-import geotrellis.operation._
+import geotrellis.op._
 import geotrellis.util._
 
 // akka imports

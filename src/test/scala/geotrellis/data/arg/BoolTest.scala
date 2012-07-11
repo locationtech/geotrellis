@@ -3,7 +3,7 @@ package geotrellis.data.arg
 import geotrellis._
 import geotrellis.data._
 import geotrellis.data.arg._
-import geotrellis.operation._
+import geotrellis.op._
 import geotrellis.process._
 
 import org.junit.runner.RunWith
@@ -22,7 +22,7 @@ class Int1Test extends FunSuite {
   val re = RasterExtent(e, 1.0, 1.0, 4, 4)
   val raster = Raster(data, re)
 
-  def loadRaster(path:String) = server.run(LoadFile(path))
+  def loadRaster(path:String) = server.run(op.raster.LoadFile(path))
 
   test("write out the bit raster") {
     ArgWriter(TypeBit).write("/tmp/foo-bool.arg", raster, "foo-bool")
