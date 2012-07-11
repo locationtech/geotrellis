@@ -178,14 +178,6 @@ trait TiledRasterData extends RasterData {
       getTile(c, r).foreach(f)
   }
 
-  // NOTE: not parallel. should do fold on tiles in parallel when possible.
-  def fold[A](a: =>A)(f:(A,Int) => A):A = {
-    var result = a
-    for (c <- 0 until tileCols; r <- 0 until tileRows)
-      result = getTile(c, r).fold(result)(f)
-    result
-  }
-
   def mapDouble(f:Double => Double):TiledRasterData = LazyTiledMap(this, z => f(z).toInt)
 
   def mapIfSetDouble(f:Double => Double):TiledRasterData = LazyTiledMapIfSet(this, z => f(z).toInt)

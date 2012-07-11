@@ -88,7 +88,17 @@ trait RasterData {
   def mapDouble(f:Double => Double):RasterData
   def mapIfSetDouble(f:Double => Double):RasterData
 
-  def fold[A](a: =>A)(f:(A, Int) => A):A
+  // TODO: these should probably be removed
+  def fold[A](a: =>A)(f:(A, Int) => A):A = {
+    var aa = a
+    foreach(z => aa = f(aa, z))
+    aa
+  }
+  def foldDouble[A](a: =>A)(f:(A, Double) => A):A = {
+    var aa = a
+    foreach(z => aa = f(aa, z))
+    aa
+  }
 
   ////TODO: RasterData should be lazy by default.
   //def defer:LazyRasterData = LazyArrayWrapper(asArray)
@@ -141,17 +151,6 @@ trait ArrayRasterData extends RasterData {
       true
     }
     case _ => false
-  }
-
-  def fold[A](a: =>A)(f:(A, Int) => A):A = {
-    var result = a
-    var i = 0
-    val len = length
-    while (i < len) {
-      result = f(result,apply(i))
-      i += 1
-    } 
-    result
   }
 
   def apply(i: Int):Int
