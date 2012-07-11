@@ -152,6 +152,8 @@ trait TiledRasterData extends RasterData {
    */
   def cellToTile(col:Int, row:Int) = (col / pixelCols, row / pixelRows)
 
+  def convert(typ:RasterType):RasterData = sys.error("can't convert tiled data")
+
   def copy = this
 
   def length:Int = {

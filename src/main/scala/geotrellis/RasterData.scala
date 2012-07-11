@@ -76,8 +76,9 @@ trait RasterData {
   def copy:RasterData
   def length:Int
   def lengthLong:Long 
-  def convert(typ:RasterType):RasterData = sys.error("unimplemented")
+  def convert(typ:RasterType):RasterData
 
+  //TODO: RasterData should be lazy by default?
   def combine2(other:RasterData)(f:(Int,Int) => Int):RasterData
   def foreach(f: Int => Unit):Unit
   def map(f:Int => Int):RasterData
@@ -99,10 +100,6 @@ trait RasterData {
     foreach(z => aa = f(aa, z))
     aa
   }
-
-  ////TODO: RasterData should be lazy by default.
-  //def defer:LazyRasterData = LazyArrayWrapper(asArray)
-  //def defer:LazyRasterData = asArray.map(d => LazyArrayWrapper(d)).getOrElse(sys
 
   /**
    * Return the current RasterData as an array.
@@ -134,7 +131,7 @@ trait RasterData {
  */ 
 trait ArrayRasterData extends RasterData {
 
-  override def convert(typ:RasterType):ArrayRasterData = LazyConvert(this, typ)
+  def convert(typ:RasterType):ArrayRasterData = LazyConvert(this, typ)
 
   def lengthLong = length
 
