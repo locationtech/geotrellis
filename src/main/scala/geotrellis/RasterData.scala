@@ -549,14 +549,15 @@ final class DoubleArrayRasterData(array:Array[Double]) extends MutableRasterData
 
 
 // lazy implementations follow
-trait LazyWrapper extends LazyRasterData {
+trait Wrapper {
+  self:RasterData =>
   protected[this] def underlying:ArrayRasterData
   final def getType = underlying.getType
   final def alloc(size:Int) = underlying.alloc(size)
   final def length = underlying.length
   final def apply(i:Int) = underlying.apply(i)
   final def applyDouble(i:Int) = underlying.applyDouble(i)
-  final def copy = this
+  final def copy:RasterData = self
 }
 
 //REVIEW: create abstract Lazy classes for non-array implementations to share?
@@ -564,7 +565,7 @@ trait LazyWrapper extends LazyRasterData {
  * This class is a lazy wrapper for any RasterData. It's only function is to
  * defer functions like map/mapIfSet/combine2 to produce other lazy instances.
  */
-final class LazyArrayWrapper(data:ArrayRasterData) extends LazyWrapper {
+final class LazyArrayWrapper(data:ArrayRasterData) extends LazyRasterData with Wrapper {
   def underlying = data
   override def toArray = data.toArray
 
@@ -584,7 +585,7 @@ object LazyArrayWrapper {
   }
 }
 
-final class LazyMap(data:ArrayRasterData, g:Int => Int) extends LazyWrapper {
+final class LazyMap(data:ArrayRasterData, g:Int => Int) extends LazyRasterData with Wrapper {
   def underlying = data
   override def toArray = data.toArray.map(g)
 
@@ -605,7 +606,7 @@ object LazyMap {
  * g is the function that we will call on all cells that have data, and g0 is
  * the value that we will map all NODATA cells to.
  */
-final class LazyMapIfSet(data:ArrayRasterData, g:Int => Int) extends LazyWrapper {
+final class LazyMapIfSet(data:ArrayRasterData, g:Int => Int) extends LazyRasterData with Wrapper {
   def underlying = data
   override def toArray = data.toArray.map(gIfSet)
 
