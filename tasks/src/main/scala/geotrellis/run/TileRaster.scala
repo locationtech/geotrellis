@@ -3,7 +3,7 @@ package geotrellis.run
 import com.beust.jcommander._
 
 import geotrellis.data._
-import geotrellis.operation.LoadFile
+import geotrellis.op.LoadFile
 import geotrellis.process._
 import geotrellis.raster._
 

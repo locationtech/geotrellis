@@ -5,7 +5,7 @@ import org.scalatest.matchers.MustMatchers
 
 import geotrellis._
 import geotrellis.process.TestServer
-import geotrellis.operation._
+import geotrellis.op._
 
 import geotrellis.Implicits._
 

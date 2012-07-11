@@ -1,7 +1,7 @@
 package geotrellis
 
 import geotrellis.raster.TiledRasterData
-import geotrellis.operation._
+import geotrellis.op._
 
 import scala.math.{min, max}
 

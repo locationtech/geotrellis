@@ -5,7 +5,7 @@ import scala.util.Random
 
 import com.typesafe.config.ConfigFactory
 import akka.actor.{ ActorRef, Props, Actor, ActorSystem }
-import geotrellis.operation._
+import geotrellis.op._
 import geotrellis.process._
 import geotrellis._
 

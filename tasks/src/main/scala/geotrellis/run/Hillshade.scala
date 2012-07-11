@@ -1,8 +1,8 @@
 package geotrellis.run 
 
 import geotrellis._
-import geotrellis.operation.render.png._
-import geotrellis.operation._
+import geotrellis.op.render.png._
+import geotrellis.op._
 import geotrellis.process._
 import geotrellis.data._
 

@@ -24,7 +24,7 @@ while (<$fh>) {
   if ($_ =~ /class="name">([^<]*)</) {
     my $class_name = $1;
     $simple_name = $class_name;
-    $name = "<a href=\"http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.operation.$class_name\">$class_name</a>";
+    $name = "<a href=\"http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.op.$class_name\">$class_name</a>";
     $output = '';
     $description = '';
 #    print ("name: " . $name . "\n");
