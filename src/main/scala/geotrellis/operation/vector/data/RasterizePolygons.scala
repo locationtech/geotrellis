@@ -24,18 +24,28 @@ object Util {
   }
 }
 
-// TODO: BurnPolygons should support many different apply() methods for
-// different kinds of arguments.
-object BurnPolygons {
-  def apply(r:Op[Raster], ps:Array[Op[Polygon]]):BurnPolygons = {
-    BurnPolygons(r, logic.CollectArray(ps))
+object RasterizePolygons {
+  /**
+   * Rasterize an array of operations and then draw them into the provided raster.
+   *
+   */
+  def apply(r:Op[Raster], ps:Array[Op[Polygon]]):RasterizePolygons = {
+    RasterizePolygons(r, logic.CollectArray(ps))
   }
+
+  /**
+   * Rasterize an array of polygons and then draw them into the provided raster.
+   *
+   * Use an array of transform functions to determine the value of cells.
+   */
+  def apply(r:Op[Raster], ps:Array[Op[Polygon]], fs:Array[Int => Int]) = 
+    RasterizePolygonsWithTransform(r, ps, fs)
 }
 
 /**
   * Rasterize an array of polygons and then draw them into the provided raster.
   */
-case class BurnPolygons(r:Op[Raster], ps:Op[Array[Polygon]])
+case class RasterizePolygons(r:Op[Raster], ps:Op[Array[Polygon]])
 extends Op2(r, ps)({
   (r, ps) => Util.rasterize(r, ps)
 })
@@ -44,7 +54,7 @@ extends Op2(r, ps)({
 /**
  * Rasterize an array of polygons and then draw them into the provided raster.
  */
-case class BurnPolygonsWithTransform(r:Op[Raster], ps:Array[Op[Polygon]], fs:Array[Int => Int])
+case class RasterizePolygonsWithTransform(r:Op[Raster], ps:Array[Op[Polygon]], fs:Array[Int => Int])
 extends Op[Raster] {
   def _run(context:Context) = runAsync(r :: logic.CollectArray(ps) :: Nil)
 
@@ -57,24 +67,24 @@ extends Op[Raster] {
 /**
  * Rasterize an array of polygons and then draw them into the provided raster.
  */
-case class BurnPolygonsWithValue(r:Op[Raster], ps:Op[Array[Polygon]], v:Op[Int])
+case class RasterizePolygonsWithValue(r:Op[Raster], ps:Op[Array[Polygon]], v:Op[Int])
 extends Op3(r, ps, v)({
   (r, ps, v) => Util.rasterize(r, ps, ps.map(p => (z:Int) => v))
 })
 
-object BurnMultiPolygon {
+object RasterizeMultiPolygon {
   def apply(r:Op[Raster], m:Op[MultiPolygon]) = {
-    BurnPolygons(r, SplitMultiPolygon(m))
+    RasterizePolygons(r, SplitMultiPolygon(m))
   }
 }
 
-object BurnMultiPolygons {
-  def apply(r:Op[Raster], mps:Array[Op[MultiPolygon]]):BurnMultiPolygons = {
-    BurnMultiPolygons(r, logic.CollectArray(mps))
+object RasterizeMultiPolygons {
+  def apply(r:Op[Raster], mps:Array[Op[MultiPolygon]]):RasterizeMultiPolygons = {
+    RasterizeMultiPolygons(r, logic.CollectArray(mps))
   }
 }
 
-case class BurnMultiPolygons(r:Op[Raster], mps:Op[Array[MultiPolygon]])
+case class RasterizeMultiPolygons(r:Op[Raster], mps:Op[Array[MultiPolygon]])
 extends Op2(r, mps)({
   (r, mps) => Util.rasterize(r, mps.flatMap(_.polygons))
 })
