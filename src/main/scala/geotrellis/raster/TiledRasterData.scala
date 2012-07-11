@@ -186,6 +186,19 @@ trait TiledRasterData extends RasterData {
     result
   }
 
+  def mapDouble(f:Double => Double):TiledRasterData = LazyTiledMap(this, z => f(z).toInt)
+
+  def mapIfSetDouble(f:Double => Double):TiledRasterData = LazyTiledMapIfSet(this, z => f(z).toInt)
+
+  def combineDouble2(other:RasterData)(f:(Double, Double) => Double) = {
+    LazyTiledCombine2(this, LazyTiledWrapper(other, tileLayout), (z1,z2) => f(z1,z2).toInt)
+  }
+
+  def foreachDouble(f: Double => Unit) = {
+    for (c <- 0 until tileCols; r <- 0 until tileRows)
+      getTile(c, r).foreach(z => f(z))
+  }
+
   // TODO: ideally the asArray method would be removed from RasterData
   def asArray = {
     if (lengthLong > 2147483647L) None
@@ -336,6 +349,32 @@ case class LazyViewWrapper(data:ArrayRasterData, cols:Int, rows:Int,
   }
 
   override final def foreach(f:Int => Unit) = {
+    var r = row1
+    val rlimit = row2
+    val climit = col2
+    val width = cols
+    while (r < rlimit) {
+      var c = col1
+      while (c < climit) {
+        f(data(r * width + c))
+        c += 1
+      }
+      r += 1
+    }
+  }
+
+  final def applyDouble(i:Int) = data.applyDouble(translate(i))
+
+  override final def mapDouble(f:Double => Double) = LazyMap(this, z => f(z).toInt)
+
+  override final def mapIfSetDouble(f:Double => Double) = LazyMapIfSet(this, z => f(z).toInt)
+
+  override final def combineDouble2(other:RasterData)(f:(Double, Double) => Double) = other match {
+    case a:ArrayRasterData => LazyCombine2(this, a, (z1,z2) => f(z1,z2).toInt)
+    case o => o.combine2(this)((z2, z1) => f(z1, z2).toInt)
+  }
+
+  override final def foreachDouble(f:Double => Unit) = {
     var r = row1
     val rlimit = row2
     val climit = col2

@@ -5,6 +5,7 @@ import geotrellis._
 final case class IntConstant(n:Int, size:Int) extends StrictRasterData {
   def getType = TypeInt
   def apply(i:Int) = n
+  def applyDouble(i:Int) = n.toDouble
   def length = size
   def alloc(size:Int) = IntArrayRasterData.empty(size)
   def mutable = Option(IntArrayRasterData(Array.fill(size)(n)))
