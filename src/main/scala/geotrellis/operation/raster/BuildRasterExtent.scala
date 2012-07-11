@@ -25,6 +25,6 @@ object BuildRasterExtent {
 
 object ParseRasterExtent {
   def apply(bbox:Op[String], colsOp:Op[String], rowsOp:Op[String]) = {
-    BuildRasterExtent(ParseExtent(bbox), ParseInt(colsOp), ParseInt(rowsOp))
+    BuildRasterExtent(ParseExtent(bbox), util.string.ParseInt(colsOp), util.string.ParseInt(rowsOp))
   }
 }
