@@ -14,7 +14,7 @@ import geotrellis.op.raster._
 import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.stat._
-import geotrellis.op.local._
+import geotrellis.op.raster.local._
 import geotrellis.op.stat.BuildArrayHistogram
 import geotrellis.op.render.png.RenderPNG
 
@@ -33,7 +33,7 @@ trait MyBenchmark extends SimpleBenchmark {
 
   def getRasterExtentOp(name:String, w:Int, h:Int) = {
     val extent = server.run(LoadRasterExtent(name)).extent
-    BuildRasterExtent(extent, w, h)
+    geotrellis.op.raster.extent.BuildRasterExtent(extent, w, h)
   }
 
   /**

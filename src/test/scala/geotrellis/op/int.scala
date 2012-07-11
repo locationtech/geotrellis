@@ -10,6 +10,7 @@ import geotrellis.stat._
 import geotrellis.process._
 import geotrellis.data.ColorBreaks
 import geotrellis.op.raster._
+import geotrellis.op.raster.extent._
 import geotrellis.op.raster.local._
 import geotrellis.op.logic._
 import geotrellis.op.stat._

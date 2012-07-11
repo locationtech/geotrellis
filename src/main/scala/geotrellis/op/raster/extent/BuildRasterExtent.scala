@@ -1,10 +1,9 @@
-package geotrellis.op.raster
+package geotrellis.op.raster.extent
 
+import geotrellis.op._
+import geotrellis.process.Result
 import geotrellis.Extent
 import geotrellis.RasterExtent
-import geotrellis.process._
-import geotrellis.op.raster.extent._
-import geotrellis.op.{Op,Op3}
 import geotrellis.op.util.string.ParseInt
 
 

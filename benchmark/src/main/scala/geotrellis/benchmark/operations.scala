@@ -2,7 +2,7 @@ package geotrellis.benchmark
 
 import geotrellis._
 import geotrellis.op._
-import geotrellis.op.local._
+import geotrellis.op.raster.local._
 import geotrellis.process._
 import geotrellis.stat._
 import scala.math._

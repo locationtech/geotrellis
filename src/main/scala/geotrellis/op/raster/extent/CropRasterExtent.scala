@@ -1,10 +1,10 @@
-package geotrellis.op.raster
+package geotrellis.op.raster.extent
 
-import scala.math.{ceil, floor}
-import geotrellis.{Extent,RasterExtent}
-import geotrellis.process._
-import geotrellis._
 import geotrellis.op._
+import geotrellis.process.Result
+import geotrellis._
+import scala.math.ceil
+import scala.math.floor
 
 
 /**
