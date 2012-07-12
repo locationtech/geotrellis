@@ -92,12 +92,12 @@ trait RasterData {
   def convert(typ:RasterType):RasterData
 
   //TODO: RasterData should be lazy by default?
-  def combine2(other:RasterData)(f:(Int,Int) => Int):RasterData
+  def combine(other:RasterData)(f:(Int,Int) => Int):RasterData
   def foreach(f: Int => Unit):Unit
   def map(f:Int => Int):RasterData
   def mapIfSet(f:Int => Int):RasterData
 
-  def combineDouble2(other:RasterData)(f:(Double,Double) => Double):RasterData
+  def combineDouble(other:RasterData)(f:(Double,Double) => Double):RasterData
   def foreachDouble(f: Double => Unit):Unit
   def mapDouble(f:Double => Double):RasterData
   def mapIfSetDouble(f:Double => Double):RasterData
@@ -233,7 +233,7 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
     data
   }
 
-  def combine2(rhs:RasterData)(f:(Int,Int) => Int):RasterData = rhs match {
+  def combine(rhs:RasterData)(f:(Int,Int) => Int):RasterData = rhs match {
     case other:ArrayRasterData => {
       val output = RasterData.largestAlloc(this, other, length)
       var i = 0
@@ -244,7 +244,7 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
       }
       output
     }
-    case _ => rhs.combine2(this)((b, a) => f(a, b))
+    case _ => rhs.combine(this)((b, a) => f(a, b))
   }
 
   def foreachDouble(f:Double => Unit):Unit = {
@@ -280,7 +280,7 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
     data
   }
 
-  def combineDouble2(rhs:RasterData)(f:(Double,Double) => Double) = rhs match {
+  def combineDouble(rhs:RasterData)(f:(Double,Double) => Double) = rhs match {
     case other:ArrayRasterData => {
       val output = RasterData.largestAlloc(this, other, length)
       var i = 0
@@ -291,7 +291,7 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
       }
       output
     }
-    case _ => rhs.combineDouble2(this)((b, a) => f(a, b))
+    case _ => rhs.combineDouble(this)((b, a) => f(a, b))
   }
 }
 
@@ -563,7 +563,7 @@ trait Wrapper {
 //REVIEW: create abstract Lazy classes for non-array implementations to share?
 /**
  * This class is a lazy wrapper for any RasterData. It's only function is to
- * defer functions like map/mapIfSet/combine2 to produce other lazy instances.
+ * defer functions like map/mapIfSet/combine to produce other lazy instances.
  */
 final class LazyArrayWrapper(data:ArrayRasterData)
 extends LazyRasterData with Wrapper {
@@ -578,17 +578,17 @@ extends LazyRasterData with Wrapper {
   def foreach(f:Int => Unit) = data.foreach(f)
   def map(f:Int => Int) = LazyMap(underlying, f)
   def mapIfSet(f:Int => Int) = LazyMapIfSet(underlying, f)
-  def combine2(other:RasterData)(f:(Int, Int) => Int) = other match {
-    case a:ArrayRasterData => LazyCombine2(underlying, a, f)
-    case o => o.combine2(underlying)((z2, z1) => f(z1, z2))
+  def combine(other:RasterData)(f:(Int, Int) => Int) = other match {
+    case a:ArrayRasterData => LazyCombine(underlying, a, f)
+    case o => o.combine(underlying)((z2, z1) => f(z1, z2))
   }
 
   def foreachDouble(f:Double => Unit) = data.foreachDouble(f)
   def mapDouble(f:Double => Double) = LazyMapDouble(underlying, f)
   def mapIfSetDouble(f:Double => Double) = LazyMapIfSetDouble(underlying, f)
-  def combineDouble2(other:RasterData)(f:(Double, Double) => Double) = other match {
-    case a:ArrayRasterData => LazyCombine2(underlying, a, (z1,z2) => d2i(f(z1,z2)))
-    case o => o.combine2(underlying)((z2, z1) => d2i(f(z1, z2)))
+  def combineDouble(other:RasterData)(f:(Double, Double) => Double) = other match {
+    case a:ArrayRasterData => LazyCombine(underlying, a, (z1,z2) => d2i(f(z1,z2)))
+    case o => o.combine(underlying)((z2, z1) => d2i(f(z1, z2)))
   }
 }
 
@@ -611,17 +611,17 @@ extends LazyRasterData with Wrapper {
   def foreach(f:Int => Unit) = data.foreach(z => f(g(z)))
   def map(f:Int => Int) = LazyMap(data, z => f(g(z)))
   def mapIfSet(f:Int => Int) = LazyMapIfSet(underlying, f)
-  def combine2(other:RasterData)(f:(Int, Int) => Int) = other match {
-    case a:ArrayRasterData => LazyCombine2(data, a, (z1, z2) => f(g(z1), z2))
-    case o => o.combine2(data)((z2, z1) => f(g(z1), z2))
+  def combine(other:RasterData)(f:(Int, Int) => Int) = other match {
+    case a:ArrayRasterData => LazyCombine(data, a, (z1, z2) => f(g(z1), z2))
+    case o => o.combine(data)((z2, z1) => f(g(z1), z2))
   }
 
   def foreachDouble(f:Double => Unit) = data.foreachDouble(z => f(g(d2i(z))))
   def mapDouble(f:Double => Double) = LazyMapDouble(data, z => f(i2d(g(d2i(z)))))
   def mapIfSetDouble(f:Double => Double) = LazyMapIfSetDouble(underlying, f)
-  def combineDouble2(other:RasterData)(f:(Double, Double) => Double) = other match {
-    case a:ArrayRasterData => LazyCombineDouble2(data, a, (z1, z2) => f(i2d(g(d2i(z1))), z2))
-    case o => o.combineDouble2(data)((z2, z1) => f(i2d(g(d2i(z1))), z2))
+  def combineDouble(other:RasterData)(f:(Double, Double) => Double) = other match {
+    case a:ArrayRasterData => LazyCombineDouble(data, a, (z1, z2) => f(i2d(g(d2i(z1))), z2))
+    case o => o.combineDouble(data)((z2, z1) => f(i2d(g(d2i(z1))), z2))
   }
 }
 
@@ -649,17 +649,17 @@ final class LazyMapIfSet(data:ArrayRasterData, g:Int => Int) extends LazyRasterD
   def foreach(f:Int => Unit) = data.foreach(z => f(gIfSet(z)))
   def map(f:Int => Int) = LazyMap(data, z => f(gIfSet(z)))
   def mapIfSet(f:Int => Int) = LazyMapIfSet(data, z => f(g(z)))
-  def combine2(other:RasterData)(f:(Int, Int) => Int) = other match {
-    case a:ArrayRasterData => LazyCombine2(data, a, (z1, z2) => f(gIfSet(z1), z2))
-    case o => o.combine2(data)((z2, z1) => f(gIfSet(z1), z2))
+  def combine(other:RasterData)(f:(Int, Int) => Int) = other match {
+    case a:ArrayRasterData => LazyCombine(data, a, (z1, z2) => f(gIfSet(z1), z2))
+    case o => o.combine(data)((z2, z1) => f(gIfSet(z1), z2))
   }
 
   def foreachDouble(f:Double => Unit) = data.foreachDouble(z => f(i2d(gIfSet(d2i(z)))))
   def mapDouble(f:Double => Double) = LazyMapDouble(data, z => f(i2d(gIfSet(d2i(z)))))
   def mapIfSetDouble(f:Double => Double) = LazyMapIfSetDouble(data, z => f(i2d(g(d2i(z)))))
-  def combineDouble2(other:RasterData)(f:(Double, Double) => Double) = other match {
-    case a:ArrayRasterData => LazyCombineDouble2(data, a, (z1, z2) => f(i2d(gIfSet(d2i(z1))), z2))
-    case o => o.combineDouble2(data)((z2, z1) => f(i2d(gIfSet(d2i(z1))), z2))
+  def combineDouble(other:RasterData)(f:(Double, Double) => Double) = other match {
+    case a:ArrayRasterData => LazyCombineDouble(data, a, (z1, z2) => f(i2d(gIfSet(d2i(z1))), z2))
+    case o => o.combineDouble(data)((z2, z1) => f(i2d(gIfSet(d2i(z1))), z2))
   }
 }
 
@@ -671,7 +671,7 @@ object LazyMapIfSetDouble {
   def apply(data:ArrayRasterData, g:Double => Double) = new LazyMapIfSet(data, z => d2i(g(i2d(z))))
 }
 
-final class LazyCombine2(data1:ArrayRasterData,
+final class LazyCombine(data1:ArrayRasterData,
                          data2:ArrayRasterData, g:(Int, Int) => Int) extends LazyRasterData {
 
   def getType = RasterData.largestType(data1, data2)
@@ -691,19 +691,19 @@ final class LazyCombine2(data1:ArrayRasterData,
     }
   }
 
-  def map(f:Int => Int) = LazyCombine2(data1, data2, (a, b) => f(g(a, b)))
+  def map(f:Int => Int) = LazyCombine(data1, data2, (a, b) => f(g(a, b)))
 
   def mapIfSet(f:Int => Int) = {
     def h(a:Int, b:Int) = {
       val z = g(a, b)
       if (z != NODATA) f(z) else NODATA
     }
-    LazyCombine2(data1, data2, h)
+    LazyCombine(data1, data2, h)
   }
 
-  def combine2(other:RasterData)(f:(Int, Int) => Int) = other match {
-    case a:ArrayRasterData => LazyCombine2(this, a, f)
-    case o => o.combine2(this)((z2, z1) => f(z1, z2))
+  def combine(other:RasterData)(f:(Int, Int) => Int) = other match {
+    case a:ArrayRasterData => LazyCombine(this, a, f)
+    case o => o.combine(this)((z2, z1) => f(z1, z2))
   }
 
   def foreachDouble(f:Double => Unit) = {
@@ -716,7 +716,7 @@ final class LazyCombine2(data1:ArrayRasterData,
   }
 
   def mapDouble(f:Double => Double) = {
-    LazyCombineDouble2(data1, data2, (a, b) => f(i2d(g(d2i(a), d2i(b)))))
+    LazyCombineDouble(data1, data2, (a, b) => f(i2d(g(d2i(a), d2i(b)))))
   }
 
   def mapIfSetDouble(f:Double => Double) = {
@@ -724,24 +724,24 @@ final class LazyCombine2(data1:ArrayRasterData,
       val z = i2d(g(d2i(a), d2i(b)))
       if (z != NODATA) f(z) else Double.NaN
     }
-    LazyCombineDouble2(data1, data2, h)
+    LazyCombineDouble(data1, data2, h)
   }
 
-  def combineDouble2(other:RasterData)(f:(Double, Double) => Double) = other match {
-    case a:ArrayRasterData => LazyCombineDouble2(this, a, f)
-    case o => o.combineDouble2(this)((z2, z1) => f(z1, z2))
+  def combineDouble(other:RasterData)(f:(Double, Double) => Double) = other match {
+    case a:ArrayRasterData => LazyCombineDouble(this, a, f)
+    case o => o.combineDouble(this)((z2, z1) => f(z1, z2))
   }
 }
 
-object LazyCombine2 {
+object LazyCombine {
   def apply(data1:ArrayRasterData, data2:ArrayRasterData, g:(Int, Int) => Int) = {
-    new LazyCombine2(data1, data2, g)
+    new LazyCombine(data1, data2, g)
   }
 }
 
-object LazyCombineDouble2 {
+object LazyCombineDouble {
   def apply(data1:ArrayRasterData, data2:ArrayRasterData, g:(Double, Double) => Double) = {
-    new LazyCombine2(data1, data2, (z1, z2) => d2i(g(i2d(z1), i2d(z2))))
+    new LazyCombine(data1, data2, (z1, z2) => d2i(g(i2d(z1), i2d(z2))))
   }
 }
 
@@ -759,16 +759,16 @@ extends LazyRasterData {
   def foreach(f:Int => Unit) = data.foreach(f)
   def map(f:Int => Int) = LazyMap(data, f)
   def mapIfSet(f:Int => Int) = LazyMapIfSet(data, f)
-  def combine2(other:RasterData)(f:(Int, Int) => Int) = other match {
-    case a:ArrayRasterData => LazyCombine2(data, a, f)
-    case o => o.combine2(data)((z2, z1) => f(z1, z2))
+  def combine(other:RasterData)(f:(Int, Int) => Int) = other match {
+    case a:ArrayRasterData => LazyCombine(data, a, f)
+    case o => o.combine(data)((z2, z1) => f(z1, z2))
   }
 
   def foreachDouble(f:Double => Unit) = data.foreachDouble(f)
   def mapDouble(f:Double => Double) = LazyMapDouble(data, f)
   def mapIfSetDouble(f:Double => Double) = LazyMapIfSetDouble(data, f)
-  def combineDouble2(other:RasterData)(f:(Double, Double) => Double) = other match {
-    case a:ArrayRasterData => LazyCombine2(data, a, (z1,z2) => d2i(f(z1,z2)))
-    case o => o.combineDouble2(data)((z2, z1) => f(z1, z2))
+  def combineDouble(other:RasterData)(f:(Double, Double) => Double) = other match {
+    case a:ArrayRasterData => LazyCombine(data, a, (z1,z2) => d2i(f(z1,z2)))
+    case o => o.combineDouble(data)((z2, z1) => f(z1, z2))
   }
 }

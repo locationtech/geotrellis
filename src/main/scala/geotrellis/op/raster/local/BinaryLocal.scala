@@ -19,7 +19,7 @@ trait BinaryLocal extends LocalOperation {
 
   val nextSteps:Steps = {
     case (r1:Raster) :: (r2:Raster) :: Nil => {
-      Result(r1.combine2(r2)(handleCells _))
+      Result(r1.combine(r2)(handleCells _))
     }
   }
 }

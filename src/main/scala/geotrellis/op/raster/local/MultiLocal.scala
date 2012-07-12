@@ -27,7 +27,7 @@ trait MultiLocalArray extends Op[Raster] {
     var d:RasterData = datas(0)
     var i = 1
     while (i < datas.length) {
-      d = d.combine2(datas(i))(handle)
+      d = d.combine(datas(i))(handle)
       i += 1
     }
     Result(Raster(d, re))
@@ -52,7 +52,7 @@ trait MultiLocal extends LocalOperation {
   @tailrec final def reduce(d:RasterData, rasters:List[Raster]):RasterData = {
     rasters match {
       case Nil => d
-      case r :: rs => reduce(d.combine2(r.data)(handle), rs)
+      case r :: rs => reduce(d.combine(r.data)(handle), rs)
     }
   }
 

@@ -104,8 +104,8 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
 
   def fold[A](a: =>A)(f:(A,Int) => A):A = data.fold(a)(f)
 
-  def combine2(r2:Raster)(f:(Int,Int) => Int) = {
-    Raster(data.combine2(r2.data)(f), rasterExtent)
+  def combine(r2:Raster)(f:(Int,Int) => Int) = {
+    Raster(data.combine(r2.data)(f), rasterExtent)
   }
 
   def normalize(zmin:Int, zmax:Int, gmin:Int, gmax:Int): Raster = {
