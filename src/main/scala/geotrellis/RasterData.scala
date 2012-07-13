@@ -2,6 +2,51 @@ package geotrellis
 
 import geotrellis.raster._
 
+object RasterUtil {
+  final val byteNodata = Byte.MinValue
+  final val shortNodata = Short.MinValue
+
+  // byte
+  @inline final def b2i(n:Byte):Int = if (n == byteNodata) NODATA else n.toInt
+  @inline final def i2b(n:Int):Byte = if (n == NODATA) byteNodata else n.toByte
+
+  // short
+  @inline final def s2i(n:Short):Int = if (n == shortNodata) NODATA else n.toInt
+  @inline final def i2s(n:Int):Short = if (n == NODATA) shortNodata else n.toShort
+
+  // int
+  @inline final def i2f(n:Int):Float = if (n == NODATA) Float.NaN else n.toFloat
+  @inline final def f2i(n:Float):Int = if (java.lang.Float.isNaN(n)) NODATA else n.toInt
+
+  // double
+  @inline final def i2d(n:Int):Double = if (n == NODATA) Double.NaN else n.toDouble
+  @inline final def d2i(n:Double):Int = if (java.lang.Double.isNaN(n)) NODATA else n.toInt
+}
+
+import RasterUtil._
+
+// helper traits
+trait IntBasedArray {
+  def apply(i:Int):Int
+  def update(i:Int, z:Int):Unit
+
+  def applyDouble(i:Int):Double = i2d(apply(i))
+  def updateDouble(i:Int, z:Double):Unit = update(i, d2i(z))
+}
+
+trait DoubleBasedArray {
+  def apply(i:Int):Int = d2i(applyDouble(i))
+  def update(i:Int, z:Int):Unit = updateDouble(i, i2d(z))
+
+  def applyDouble(i:Int):Double
+  def updateDouble(i:Int, z:Double):Unit
+}
+
+
+/**
+ *
+ */
+
 object RasterData {
   def largestType(lhs:RasterData, rhs:RasterData) = {
     lhs.getType.union(rhs.getType)
@@ -40,29 +85,35 @@ object RasterData {
 trait RasterData {
   def getType: RasterType
   def alloc(size:Int): MutableRasterData
+  def isFloat = getType.float
 
   def copy:RasterData
   def length:Int
   def lengthLong:Long 
-  def convert(typ:RasterType):RasterData = sys.error("unimplemented")
+  def convert(typ:RasterType):RasterData
 
-  def combine2(other:RasterData)(f:(Int,Int) => Int):RasterData
+  //TODO: RasterData should be lazy by default?
+  def combine(other:RasterData)(f:(Int,Int) => Int):RasterData
   def foreach(f: Int => Unit):Unit
   def map(f:Int => Int):RasterData
   def mapIfSet(f:Int => Int):RasterData
 
-  def combineDouble2(other:RasterData)(f:(Double,Double) => Double) = {
-    combine2(other)((a, b) => f(a, b).toInt)
+  def combineDouble(other:RasterData)(f:(Double,Double) => Double):RasterData
+  def foreachDouble(f: Double => Unit):Unit
+  def mapDouble(f:Double => Double):RasterData
+  def mapIfSetDouble(f:Double => Double):RasterData
+
+  // TODO: these should probably be removed
+  def fold[A](a: =>A)(f:(A, Int) => A):A = {
+    var aa = a
+    foreach(z => aa = f(aa, z))
+    aa
   }
-  def foreachDouble(f: Double => Unit) = foreach(z => f(z))
-  def mapDouble(f:Double => Double) = map(z => f(z).toInt)
-  def mapIfSetDouble(f:Double => Double) = mapIfSet(z => f(z).toInt)
-
-  def fold[A](a: =>A)(f:(A, Int) => A):A 
-
-  ////TODO: RasterData should be lazy by default.
-  //def defer:LazyRasterData = LazyArrayWrapper(asArray)
-  //def defer:LazyRasterData = asArray.map(d => LazyArrayWrapper(d)).getOrElse(sys
+  def foldDouble[A](a: =>A)(f:(A, Double) => A):A = {
+    var aa = a
+    foreach(z => aa = f(aa, z))
+    aa
+  }
 
   /**
    * Return the current RasterData as an array.
@@ -93,9 +144,10 @@ trait RasterData {
  * with more cells than the maximum size of a java array: 2.14 billion.
  */ 
 trait ArrayRasterData extends RasterData {
-  //def copy:ArrayRasterData 
 
-  override def convert(typ:RasterType):ArrayRasterData = LazyConvert(this, typ)
+  def asArray = Some(this)
+
+  def convert(typ:RasterType):ArrayRasterData = LazyConvert(this, typ)
 
   def lengthLong = length
 
@@ -114,20 +166,14 @@ trait ArrayRasterData extends RasterData {
     case _ => false
   }
 
-  def fold[A](a: =>A)(f:(A, Int) => A):A = {
-    var result = a
-    var i = 0
-    val len = length
-    while (i < len) {
-      result = f(result,apply(i))
-      i += 1
-    } 
-    result
-  }
-
   def apply(i: Int):Int
+  def applyDouble(i:Int):Double
 
   def get(col:Int, row:Int, cols:Int) = apply(row * cols + col)
+  def getDouble(col:Int, row:Int, cols:Int) = applyDouble(row * cols + col)
+
+  def toList = toArray.toList
+  def toListDouble = toArrayDouble.toList
 
   def toArray:Array[Int] = {
     val len = length
@@ -140,7 +186,21 @@ trait ArrayRasterData extends RasterData {
     arr
   }
 
-  def toList = toArray.toList
+  def toArrayDouble:Array[Double] = {
+    val len = length
+    val arr = Array.ofDim[Double](len)
+    var i = 0
+    while (i < len) {
+      arr(i) = applyDouble(i)
+      i += 1
+    }
+    arr
+  }
+}
+
+
+trait StrictRasterData extends ArrayRasterData with Serializable {
+  def force = Some(this)
 
   def foreach(f:Int => Unit):Unit = {
     var i = 0
@@ -174,7 +234,7 @@ trait ArrayRasterData extends RasterData {
     data
   }
 
-  def combine2(rhs:RasterData)(f:(Int,Int) => Int):RasterData = rhs match {
+  def combine(rhs:RasterData)(f:(Int,Int) => Int):RasterData = rhs match {
     case other:ArrayRasterData => {
       val output = RasterData.largestAlloc(this, other, length)
       var i = 0
@@ -185,23 +245,10 @@ trait ArrayRasterData extends RasterData {
       }
       output
     }
-    case _ => rhs.combine2(this)((b, a) => f(a, b))
+    case _ => rhs.combine(this)((b, a) => f(a, b))
   }
 
-  def toArrayDouble:Array[Double] = {
-    val len = length
-    val arr = Array.ofDim[Double](len)
-    var i = 0
-    while (i < len) {
-      arr(i) = applyDouble(i)
-      i += 1
-    }
-    arr
-  }
-
-  def toListDouble = toArrayDouble.toList
-
-  override def foreachDouble(f:Double => Unit):Unit = {
+  def foreachDouble(f:Double => Unit):Unit = {
     var i = 0
     val len = length
     while(i < len) {
@@ -210,14 +257,8 @@ trait ArrayRasterData extends RasterData {
     }
   }
 
-  def applyDouble(i:Int):Double = {
-    val z = apply(i)
-    if (z == NODATA) Double.NaN else z
-  }
 
-  def getDouble(col:Int, row:Int, cols:Int) = applyDouble(row * cols + col)
-
-  override def mapDouble(f:Double => Double):ArrayRasterData = {
+  def mapDouble(f:Double => Double):ArrayRasterData = {
     val len = length
     val data = alloc(len)
     var i = 0
@@ -228,19 +269,19 @@ trait ArrayRasterData extends RasterData {
     data
   }
 
-  override def mapIfSetDouble(f:Double => Double):ArrayRasterData = {
+  def mapIfSetDouble(f:Double => Double):ArrayRasterData = {
     val len = length
     val data = alloc(len)
     var i = 0
     while (i < len) {
       val z = applyDouble(i)
-      if (java.lang.Double.isNaN(z)) data.updateDouble(i, f(z))
+      if (!java.lang.Double.isNaN(z)) data.updateDouble(i, f(z))
       i += 1
     }
     data
   }
 
-  override def combineDouble2(rhs:RasterData)(f:(Double,Double) => Double) = rhs match {
+  def combineDouble(rhs:RasterData)(f:(Double,Double) => Double) = rhs match {
     case other:ArrayRasterData => {
       val output = RasterData.largestAlloc(this, other, length)
       var i = 0
@@ -251,27 +292,20 @@ trait ArrayRasterData extends RasterData {
       }
       output
     }
-    case _ => rhs.combineDouble2(this)((b, a) => f(a, b))
+    case _ => rhs.combineDouble(this)((b, a) => f(a, b))
   }
-
-  def asArray = Some(this)
-}
-
-
-trait StrictRasterData extends ArrayRasterData with Serializable {
-  def force = Some(this)
 }
 
 
 trait MutableRasterData extends StrictRasterData {
   def mutable = Some(this)
 
-  def update(i:Int, x:Int): Unit
-  def updateDouble(i:Int, x:Double):Unit = {
-    if (java.lang.Double.isNaN(x)) update(i, NODATA) else update(i, x.toInt)
-  }
+  def update(i:Int, z:Int): Unit
+  def updateDouble(i:Int, z:Double):Unit
 
-  def set(col:Int, row:Int, value:Int, cols:Int) { update(row * cols + col, value) }
+  def set(col:Int, row:Int, value:Int, cols:Int) {
+    update(row * cols + col, value)
+  }
   def setDouble(col:Int, row:Int, value:Double, cols:Int) {
     updateDouble(row * cols + col, value)
   }
@@ -304,12 +338,12 @@ object IntArrayRasterData {
   def empty(size:Int) = new IntArrayRasterData(Array.fill[Int](size)(NODATA))
 }
 
-final class IntArrayRasterData(array:Array[Int]) extends MutableRasterData {
+final class IntArrayRasterData(array:Array[Int]) extends MutableRasterData with IntBasedArray {
   def getType = TypeInt
   def alloc(size:Int) = IntArrayRasterData.ofDim(size)
   def length = array.length
   def apply(i:Int) = array(i)
-  def update(i:Int, x: Int): Unit = array(i) = x
+  def update(i:Int, z:Int) { array(i) = z }
   def copy = IntArrayRasterData(array.clone)
   override def toArray = array.clone
 }
@@ -330,7 +364,8 @@ object BitArrayRasterData {
   def empty(size:Int) = ofDim(size)
 }
 
-final class BitArrayRasterData(array:Array[Byte], size:Int) extends MutableRasterData {
+final class BitArrayRasterData(array:Array[Byte], size:Int)
+extends MutableRasterData with IntBasedArray {
   // i >> 3 is the same as i / 8 but faster
   // i & 7 is the same as i % 8 but faster
   // i & 1 is the same as i % 2 but faster
@@ -343,9 +378,9 @@ final class BitArrayRasterData(array:Array[Byte], size:Int) extends MutableRaste
   def alloc(size:Int) = BitArrayRasterData.ofDim(size)
   def length = size
   def apply(i:Int) = ((array(i >> 3) >> (i & 7)) & 1).asInstanceOf[Int]
-  def update(i:Int, x:Int): Unit = {
+  def update(i:Int, z:Int): Unit = {
     val div = i >> 3 
-    if ((x & 1) == 0) {
+    if ((z & 1) == 0) {
       // unset the nth bit
       array(div) = (array(div) & ~(1 << (i & 7))).toByte
     } else {
@@ -383,8 +418,7 @@ final class BitArrayRasterData(array:Array[Byte], size:Int) extends MutableRaste
 
   override def mapIfSet(f:Int => Int) = map(f)
 
-  override def mapDouble(f:Double => Double) = map(z => f(z.toDouble).toInt)
-
+  override def mapDouble(f:Double => Double) = map(z => d2i(f(i2d(z))))
   override def mapIfSetDouble(f:Double => Double) = mapDouble(f)
 }
 
@@ -397,18 +431,13 @@ object ByteArrayRasterData {
   def empty(size:Int) = new ByteArrayRasterData(Array.fill[Byte](size)(Byte.MinValue))
 }
 
-final class ByteArrayRasterData(array:Array[Byte]) extends MutableRasterData {
-  final val nd = Byte.MinValue
+final class ByteArrayRasterData(array:Array[Byte])
+extends MutableRasterData with IntBasedArray {
   def getType = TypeByte
   def alloc(size:Int) = ByteArrayRasterData.ofDim(size)
   def length = array.length
-  def apply(i:Int) = {
-    val z = array(i)
-    if (z == nd) NODATA else z
-  }
-  def update(i:Int, x: Int) {
-    array(i) = if (x == NODATA) nd else x.asInstanceOf[Byte]
-  }
+  def apply(i:Int) = b2i(array(i))
+  def update(i:Int, z:Int) { array(i) = i2b(z) }
   def copy = ByteArrayRasterData(array.clone)
 
   override def mapIfSet(f:Int => Int) = {
@@ -417,7 +446,7 @@ final class ByteArrayRasterData(array:Array[Byte]) extends MutableRasterData {
     val len = length
     while (i < len) {
       val z = arr(i)
-      if (z != nd) arr(i) = f(z).asInstanceOf[Byte]
+      if (z != byteNodata) arr(i) = f(z).asInstanceOf[Byte]
       i += 1
     }
     ByteArrayRasterData(arr)
@@ -433,18 +462,13 @@ object ShortArrayRasterData {
   def empty(size:Int) = new ShortArrayRasterData(Array.fill[Short](size)(Short.MinValue))
 }
 
-final class ShortArrayRasterData(array:Array[Short]) extends MutableRasterData {
-  final val nd = Short.MinValue
+final class ShortArrayRasterData(array:Array[Short])
+extends MutableRasterData with IntBasedArray {
   def getType = TypeShort
   def alloc(size:Int) = ShortArrayRasterData.ofDim(size)
   def length = array.length
-  def apply(i:Int) = {
-    val z = array(i)
-    if (z == nd) NODATA else z
-  }
-  def update(i:Int, x: Int) {
-    array(i) = if (x == NODATA) nd else x.asInstanceOf[Short]
-  }
+  def apply(i:Int) = s2i(array(i))
+  def update(i:Int, z:Int) { array(i) = i2s(z) }
   def copy = ShortArrayRasterData(array.clone)
 
   override def mapIfSet(f:Int => Int) = {
@@ -453,7 +477,7 @@ final class ShortArrayRasterData(array:Array[Short]) extends MutableRasterData {
     val len = length
     while (i < len) {
       val z = arr(i)
-      if (z != nd) arr(i) = f(z).asInstanceOf[Short]
+      if (z != shortNodata) arr(i) = f(z).asInstanceOf[Short]
       i += 1
     }
     ShortArrayRasterData(arr)
@@ -471,36 +495,26 @@ object FloatArrayRasterData {
   def empty(size:Int) = new FloatArrayRasterData(Array.fill[Float](size)(Float.NaN))
 }
 
-final class FloatArrayRasterData(array:Array[Float]) extends MutableRasterData {
+final class FloatArrayRasterData(array:Array[Float])
+extends MutableRasterData with DoubleBasedArray {
   def getType = TypeFloat
   def alloc(size:Int) = FloatArrayRasterData.ofDim(size)
   def length = array.length
-
-  def apply(i:Int) = {
-    val z = array(i)
-    if (java.lang.Float.isNaN(z)) NODATA else z.toInt
-  }
-  def update(i:Int, x:Int) {
-    array(i) = if (x == NODATA) Float.NaN else x.toFloat
-  }
-
-  override def applyDouble(i:Int) = array(i).toDouble
-  override def updateDouble(i:Int, x:Double) = array(i) = x.toFloat
-
+  def applyDouble(i:Int) = array(i).toDouble
+  def updateDouble(i:Int, z:Double) = array(i) = z.toFloat
   def copy = FloatArrayRasterData(array.clone)
 
   override def mapIfSet(f:Int => Int) = {
-    val len = length
-    val data = IntArrayRasterData.empty(len)
+    val arr = array.clone
     var i = 0
+    val len = length
     while (i < len) {
-      val z = array(i)
-      if (!java.lang.Float.isNaN(z)) data(i) = f(z.toInt)
+      val z = arr(i)
+      if (!java.lang.Float.isNaN(z)) arr(i) = i2f(f(f2i(z)))
       i += 1
     }
-    data
+    FloatArrayRasterData(arr)
   }
-
 }
 
 
@@ -513,65 +527,69 @@ object DoubleArrayRasterData {
   def empty(size:Int) = new DoubleArrayRasterData(Array.fill[Double](size)(Double.NaN))
 }
 
-final class DoubleArrayRasterData(array:Array[Double]) extends MutableRasterData {
+final class DoubleArrayRasterData(array:Array[Double])
+extends MutableRasterData with DoubleBasedArray {
   def getType = TypeDouble
   def alloc(size:Int) = DoubleArrayRasterData.ofDim(size)
   def length = array.length
-
+  def applyDouble(i:Int) = array(i)
+  def updateDouble(i:Int, z:Double) = array(i) = z
   def copy = DoubleArrayRasterData(array.clone)
-
-  def apply(i:Int) = {
-    val z = array(i)
-    if (java.lang.Double.isNaN(z)) NODATA else z.toInt
-  }
-  def update(i:Int, x:Int) {
-    array(i) = if (x == NODATA) Double.NaN else x.toDouble
-  }
+  override def toArrayDouble = array.clone
 
   override def mapIfSet(f:Int => Int) = {
-    val arr = Array.fill(length)(NODATA)
+    val arr = array.clone
     var i = 0
     val len = length
     while (i < len) {
-      val z = array(i)
-      if (!java.lang.Double.isNaN(z)) arr(i) = f(z.toInt)
+      val z = arr(i)
+      if (!java.lang.Double.isNaN(z)) arr(i) = i2d(f(d2i(z)))
       i += 1
     }
-    IntArrayRasterData(arr)
+    DoubleArrayRasterData(arr)
   }
 
-  override def applyDouble(i:Int) = array(i)
-  override def updateDouble(i:Int, x:Double) = array(i) = x
-
-  override def toArrayDouble = array.clone
 }
 
 
 // lazy implementations follow
-trait LazyWrapper extends LazyRasterData {
+trait Wrapper {
   protected[this] def underlying:ArrayRasterData
   final def getType = underlying.getType
   final def alloc(size:Int) = underlying.alloc(size)
   final def length = underlying.length
-  final def apply(i:Int) = underlying(i)
-  final def copy = this
 }
+
 
 //REVIEW: create abstract Lazy classes for non-array implementations to share?
 /**
  * This class is a lazy wrapper for any RasterData. It's only function is to
- * defer functions like map/mapIfSet/combine2 to produce other lazy instances.
+ * defer functions like map/mapIfSet/combine to produce other lazy instances.
  */
-final class LazyArrayWrapper(data:ArrayRasterData) extends LazyWrapper {
+final class LazyArrayWrapper(data:ArrayRasterData)
+extends LazyRasterData with Wrapper {
+  def copy = this
   def underlying = data
   override def toArray = data.toArray
+  override def toArrayDouble = data.toArrayDouble
 
-  override def foreach(f:Int => Unit) = data.foreach(f)
-  override def map(f:Int => Int) = LazyMap(data, f)
-  override def mapIfSet(f:Int => Int) = LazyMapIfSet(data, f)
-  override def combine2(other:RasterData)(f:(Int, Int) => Int) = other match {
-    case a:ArrayRasterData => LazyCombine2(data, a, f)
-    case o => o.combine2(data)((z2, z1) => f(z1, z2))
+  final def apply(i:Int) = underlying.apply(i)
+  final def applyDouble(i:Int) = underlying.applyDouble(i)
+
+  def foreach(f:Int => Unit) = data.foreach(f)
+  def map(f:Int => Int) = LazyMap(underlying, f)
+  def mapIfSet(f:Int => Int) = LazyMapIfSet(underlying, f)
+  def combine(other:RasterData)(f:(Int, Int) => Int) = other match {
+    case a:ArrayRasterData => LazyCombine(underlying, a, f)
+    case o => o.combine(underlying)((z2, z1) => f(z1, z2))
+  }
+
+  def foreachDouble(f:Double => Unit) = data.foreachDouble(f)
+  def mapDouble(f:Double => Double) = LazyMapDouble(underlying, f)
+  def mapIfSetDouble(f:Double => Double) = LazyMapIfSetDouble(underlying, f)
+  def combineDouble(other:RasterData)(f:(Double, Double) => Double) = other match {
+    case a:ArrayRasterData => LazyCombine(underlying, a, (z1,z2) => d2i(f(z1,z2)))
+    case o => o.combine(underlying)((z2, z1) => d2i(f(z1, z2)))
   }
 }
 
@@ -582,16 +600,29 @@ object LazyArrayWrapper {
   }
 }
 
-final class LazyMap(data:ArrayRasterData, g:Int => Int) extends LazyWrapper {
-  def underlying = data
-  override def toArray = data.toArray.map(g)
+final class LazyMap(data:ArrayRasterData, g:Int => Int)
+extends LazyRasterData with Wrapper {
 
-  override def foreach(f:Int => Unit) = data.foreach(z => f(g(z)))
-  override def map(f:Int => Int) = LazyMap(data, z => f(g(z)))
-  override def mapIfSet(f:Int => Int) = LazyMapIfSet(this, f)
-  override def combine2(other:RasterData)(f:(Int, Int) => Int) = other match {
-    case a:ArrayRasterData => LazyCombine2(data, a, (z1, z2) => f(g(z1), z2))
-    case o => o.combine2(data)((z2, z1) => f(g(z1), z2))
+  def copy = this
+  def underlying = data
+
+  final def apply(i:Int) = g(data(i))
+  final def applyDouble(i:Int) = i2d(g(data(i)))
+
+  def foreach(f:Int => Unit) = data.foreach(z => f(g(z)))
+  def map(f:Int => Int) = LazyMap(data, z => f(g(z)))
+  def mapIfSet(f:Int => Int) = LazyMapIfSet(underlying, f)
+  def combine(other:RasterData)(f:(Int, Int) => Int) = other match {
+    case a:ArrayRasterData => LazyCombine(data, a, (z1, z2) => f(g(z1), z2))
+    case o => o.combine(data)((z2, z1) => f(g(z1), z2))
+  }
+
+  def foreachDouble(f:Double => Unit) = data.foreachDouble(z => f(g(d2i(z))))
+  def mapDouble(f:Double => Double) = LazyMapDouble(data, z => f(i2d(g(d2i(z)))))
+  def mapIfSetDouble(f:Double => Double) = LazyMapIfSetDouble(underlying, f)
+  def combineDouble(other:RasterData)(f:(Double, Double) => Double) = other match {
+    case a:ArrayRasterData => LazyCombineDouble(data, a, (z1, z2) => f(i2d(g(d2i(z1))), z2))
+    case o => o.combineDouble(data)((z2, z1) => f(i2d(g(d2i(z1))), z2))
   }
 }
 
@@ -599,22 +630,37 @@ object LazyMap {
   def apply(data:ArrayRasterData, g:Int => Int) = new LazyMap(data, g)
 }
 
+object LazyMapDouble {
+  def apply(data:ArrayRasterData, g:Double => Double) = new LazyMap(data, z => d2i(g(i2d(z))))
+}
+
 /**
  * g is the function that we will call on all cells that have data, and g0 is
  * the value that we will map all NODATA cells to.
  */
-final class LazyMapIfSet(data:ArrayRasterData, g:Int => Int) extends LazyWrapper {
+final class LazyMapIfSet(data:ArrayRasterData, g:Int => Int) extends LazyRasterData with Wrapper {
   def underlying = data
-  override def toArray = data.toArray.map(gIfSet)
+  def copy = this
 
   def gIfSet(z:Int) = if (z == NODATA) NODATA else g(z)
 
-  override def foreach(f:Int => Unit) = data.foreach(z => f(gIfSet(z)))
-  override def map(f:Int => Int) = LazyMap(data, z => f(gIfSet(z)))
-  override def mapIfSet(f:Int => Int) = LazyMapIfSet(data, z => f(g(z)))
-  override def combine2(other:RasterData)(f:(Int, Int) => Int) = other match {
-    case a:ArrayRasterData => LazyCombine2(data, a, (z1, z2) => f(gIfSet(z1), z2))
-    case o => o.combine2(data)((z2, z1) => f(gIfSet(z1), z2))
+  final def apply(i:Int) = gIfSet(data(i))
+  final def applyDouble(i:Int) = i2d(gIfSet(data(i)))
+
+  def foreach(f:Int => Unit) = data.foreach(z => f(gIfSet(z)))
+  def map(f:Int => Int) = LazyMap(data, z => f(gIfSet(z)))
+  def mapIfSet(f:Int => Int) = LazyMapIfSet(data, z => f(g(z)))
+  def combine(other:RasterData)(f:(Int, Int) => Int) = other match {
+    case a:ArrayRasterData => LazyCombine(data, a, (z1, z2) => f(gIfSet(z1), z2))
+    case o => o.combine(data)((z2, z1) => f(gIfSet(z1), z2))
+  }
+
+  def foreachDouble(f:Double => Unit) = data.foreachDouble(z => f(i2d(gIfSet(d2i(z)))))
+  def mapDouble(f:Double => Double) = LazyMapDouble(data, z => f(i2d(gIfSet(d2i(z)))))
+  def mapIfSetDouble(f:Double => Double) = LazyMapIfSetDouble(data, z => f(i2d(g(d2i(z)))))
+  def combineDouble(other:RasterData)(f:(Double, Double) => Double) = other match {
+    case a:ArrayRasterData => LazyCombineDouble(data, a, (z1, z2) => f(i2d(gIfSet(d2i(z1))), z2))
+    case o => o.combineDouble(data)((z2, z1) => f(i2d(gIfSet(d2i(z1))), z2))
   }
 }
 
@@ -622,57 +668,110 @@ object LazyMapIfSet {
   def apply(data:ArrayRasterData, f:Int => Int) = new LazyMapIfSet(data, f)
 }
 
-final class LazyCombine2(data1:ArrayRasterData,
-                         data2:ArrayRasterData, g:(Int, Int) => Int) extends LazyRasterData {
-
-  if (data1.length != data2.length) {
-    sys.error("invalid combine2: %s/%s and %s/%s" format (data1, data1.length, data2, data2.length))
+object LazyMapIfSetDouble {
+  def apply(data:ArrayRasterData, g:Double => Double) = {
+    new LazyMapIfSet(data, z => d2i(g(i2d(z))))
   }
+}
+
+final class LazyCombine(data1:ArrayRasterData,
+                         data2:ArrayRasterData, g:(Int, Int) => Int) extends LazyRasterData {
 
   def getType = RasterData.largestType(data1, data2)
   def alloc(size:Int) = RasterData.largestAlloc(data1, data2, size)
   def length = data1.length
 
-  def apply(i:Int) = g(data1(i), data2(i))
+  def apply(i:Int) = g(data1.apply(i), data2.apply(i))
+  def applyDouble(i:Int) = i2d(g(data1.apply(i), data2.apply(i)))
   def copy = this
 
-  override def foreach(f:Int => Unit) = {
+  def foreach(f:Int => Unit) = {
     var i = 0
     val len = length
     while (i < len) {
-      val z1 = data1(i)
-      val z2 = data2(i)
-      f(g(z1, z2))
+      f(g(data1(i), data2(i)))
       i += 1
     }
   }
-  override def map(f:Int => Int) = {
-    LazyCombine2(data1, data2, (a, b) => f(g(a, b)))
+
+  def map(f:Int => Int) = LazyCombine(data1, data2, (a, b) => f(g(a, b)))
+
+  def mapIfSet(f:Int => Int) = {
+    def h(a:Int, b:Int) = {
+      val z = g(a, b)
+      if (z != NODATA) f(z) else NODATA
+    }
+    LazyCombine(data1, data2, h)
   }
 
-  override def mapIfSet(f:Int => Int) = {
-    def h(a:Int, b:Int) = { val z = g(a, b); if (z != NODATA) f(z) else NODATA }
-    LazyCombine2(data1, data2, h)
+  def combine(other:RasterData)(f:(Int, Int) => Int) = other match {
+    case a:ArrayRasterData => LazyCombine(this, a, f)
+    case o => o.combine(this)((z2, z1) => f(z1, z2))
   }
 
-  override def combine2(other:RasterData)(f:(Int, Int) => Int) = other match {
-    case a:ArrayRasterData => LazyCombine2(this, a, f)
-    case o => o.combine2(this)((z2, z1) => f(z1, z2))
+  def foreachDouble(f:Double => Unit) = {
+    var i = 0
+    val len = length
+    while (i < len) {
+      f(g(data1(i), data2(i)))
+      i += 1
+    }
+  }
+
+  def mapDouble(f:Double => Double) = {
+    LazyCombineDouble(data1, data2, (a, b) => f(i2d(g(d2i(a), d2i(b)))))
+  }
+
+  def mapIfSetDouble(f:Double => Double) = {
+    def h(a:Double, b:Double) = {
+      val z = i2d(g(d2i(a), d2i(b)))
+      if (z != NODATA) f(z) else Double.NaN
+    }
+    LazyCombineDouble(data1, data2, h)
+  }
+
+  def combineDouble(other:RasterData)(f:(Double, Double) => Double) = other match {
+    case a:ArrayRasterData => LazyCombineDouble(this, a, f)
+    case o => o.combineDouble(this)((z2, z1) => f(z1, z2))
   }
 }
 
-object LazyCombine2 {
+object LazyCombine {
   def apply(data1:ArrayRasterData, data2:ArrayRasterData, g:(Int, Int) => Int) = {
-    new LazyCombine2(data1, data2, g)
+    new LazyCombine(data1, data2, g)
   }
 }
 
-final case class LazyConvert(data:ArrayRasterData, typ:RasterType) extends LazyRasterData {
+object LazyCombineDouble {
+  def apply(data1:ArrayRasterData, data2:ArrayRasterData, g:(Double, Double) => Double) = {
+    new LazyCombine(data1, data2, (z1, z2) => d2i(g(i2d(z1), i2d(z2))))
+  }
+}
+
+final case class LazyConvert(data:ArrayRasterData, typ:RasterType)
+extends LazyRasterData {
   def getType = typ
   def alloc(size:Int) = RasterData.allocByType(typ, size)
   def length = data.length
-  def apply(i:Int) = data(i)
+  def apply(i:Int) = data.apply(i)
+  def applyDouble(i:Int) = data.applyDouble(i)
   def copy = this
   override def toArray = data.toArray
   override def toArrayDouble = data.toArrayDouble
+
+  def foreach(f:Int => Unit) = data.foreach(f)
+  def map(f:Int => Int) = LazyMap(data, f)
+  def mapIfSet(f:Int => Int) = LazyMapIfSet(data, f)
+  def combine(other:RasterData)(f:(Int, Int) => Int) = other match {
+    case a:ArrayRasterData => LazyCombine(data, a, f)
+    case o => o.combine(data)((z2, z1) => f(z1, z2))
+  }
+
+  def foreachDouble(f:Double => Unit) = data.foreachDouble(f)
+  def mapDouble(f:Double => Double) = LazyMapDouble(data, f)
+  def mapIfSetDouble(f:Double => Double) = LazyMapIfSetDouble(data, f)
+  def combineDouble(other:RasterData)(f:(Double, Double) => Double) = other match {
+    case a:ArrayRasterData => LazyCombine(data, a, (z1,z2) => d2i(f(z1,z2)))
+    case o => o.combineDouble(data)((z2, z1) => f(z1, z2))
+  }
 }

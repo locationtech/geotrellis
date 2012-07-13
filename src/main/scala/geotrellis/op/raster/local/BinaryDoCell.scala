@@ -16,5 +16,6 @@ import geotrellis.op._
  * </pre>
  */
 case class BinaryDoCell(r1:Op[Raster], r2:Op[Raster], f:(Int, Int) => Int) extends BinaryLocal {
-  def handleCells(z1:Int, z2:Int) = f(z1, z2)
+  def handle(z1:Int, z2:Int) = f(z1, z2)
+  def handleDouble(z1:Double, z2:Double) = f(RasterUtil.d2i(z1), RasterUtil.d2i(z2))
 }
