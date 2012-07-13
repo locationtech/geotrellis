@@ -8,7 +8,11 @@ import geotrellis.op._
  */
 case class Add(rs:Op[Raster]*) extends MultiLocal {
   final def ops = rs.toArray
+
   final def handle(a:Int, b:Int) = if (a == NODATA) b else if (b == NODATA) a else a + b
+
+  final def handleDouble(a:Double, b:Double) =
+    if (java.lang.Double.isNaN(a)) b else if (java.lang.Double.isNaN(b)) a else a + b
 }
 
 /**
@@ -16,4 +20,7 @@ case class Add(rs:Op[Raster]*) extends MultiLocal {
  */
 case class AddArray(op:Op[Array[Raster]]) extends MultiLocalArray {
   final def handle(a:Int, b:Int) = if (a == NODATA) b else if (b == NODATA) a else a + b
+
+  final def handleDouble(a:Double, b:Double) =
+    if (java.lang.Double.isNaN(a)) b else if (java.lang.Double.isNaN(b)) a else a + b
 }
