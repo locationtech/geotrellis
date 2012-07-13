@@ -9,6 +9,9 @@ object Raster {
   def apply(arr:Array[Int], re:RasterExtent):Raster = 
     Raster(IntArrayRasterData(arr), re)
 
+  def apply(arr:Array[Double], re:RasterExtent):Raster = 
+    Raster(DoubleArrayRasterData(arr), re)
+
   def empty(re:RasterExtent):Raster = 
     Raster(IntArrayRasterData.empty(re.rows * re.cols), re)
 }
@@ -21,6 +24,8 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
   def cols = rasterExtent.cols
   def rows = rasterExtent.rows
   def length = rasterExtent.size
+
+  def isFloat = data.getType.float
 
   def toArray = data.asArray.getOrElse(sys.error("argh")).toArray
 
@@ -98,14 +103,36 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
     s
   }
 
-  def foreach(f: Int => Unit):Unit = data.foreach(f)
+  def dualForeach(f:Int => Unit)(g:Double => Unit):Unit =
+    if (isFloat) foreachDouble(g) else foreach(f)
+
+  def dualMap(f:Int => Int)(g:Double => Double) =
+    if (isFloat) mapDouble(g) else map(f)
+
+  def dualMapIfSet(f:Int => Int)(g:Double => Double) =
+    if (isFloat) mapIfSetDouble(g) else mapIfSet(f)
+
+  def dualCombine(r2:Raster)(f:(Int, Int) => Int)(g:(Double, Double) => Double) =
+    if (isFloat || r2.isFloat) combineDouble(r2)(g) else combine(r2)(f)
+
+  def foreach(f:Int => Unit):Unit = data.foreach(f)
 
   def map(f:Int => Int) = Raster(data.map(f),rasterExtent)
 
-  def fold[A](a: =>A)(f:(A,Int) => A):A = data.fold(a)(f)
+  def mapIfSet(f:Int => Int) = Raster(data.mapIfSet(f), rasterExtent)
 
-  def combine(r2:Raster)(f:(Int,Int) => Int) = {
+  def combine(r2:Raster)(f:(Int, Int) => Int) = {
     Raster(data.combine(r2.data)(f), rasterExtent)
+  }
+
+  def foreachDouble(f:Double => Unit):Unit = data.foreachDouble(f)
+
+  def mapDouble(f:Double => Double) = Raster(data.mapDouble(f), rasterExtent)
+
+  def mapIfSetDouble(f:Double => Double) = Raster(data.mapIfSetDouble(f), rasterExtent)
+
+  def combineDouble(r2:Raster)(f:(Double, Double) => Double) = {
+    Raster(data.combineDouble(r2.data)(f), rasterExtent)
   }
 
   def normalize(zmin:Int, zmax:Int, gmin:Int, gmax:Int): Raster = {
@@ -113,8 +140,6 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
     val dz = zmax - zmin
     if (dz > 0) mapIfSet(z => ((z - zmin) * dg) / dz + gmin) else copy()
   }
-
-  def mapIfSet(f:Int => Int) = Raster(data.mapIfSet(f), rasterExtent)
 
   def force = {
     val opt = data.force.map(d => Raster(d, rasterExtent))

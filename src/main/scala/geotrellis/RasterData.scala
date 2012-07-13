@@ -85,6 +85,7 @@ object RasterData {
 trait RasterData {
   def getType: RasterType
   def alloc(size:Int): MutableRasterData
+  def isFloat = getType.float
 
   def copy:RasterData
   def length:Int
@@ -274,7 +275,7 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
     var i = 0
     while (i < len) {
       val z = applyDouble(i)
-      if (java.lang.Double.isNaN(z)) data.updateDouble(i, f(z))
+      if (!java.lang.Double.isNaN(z)) data.updateDouble(i, f(z))
       i += 1
     }
     data
@@ -668,7 +669,9 @@ object LazyMapIfSet {
 }
 
 object LazyMapIfSetDouble {
-  def apply(data:ArrayRasterData, g:Double => Double) = new LazyMapIfSet(data, z => d2i(g(i2d(z))))
+  def apply(data:ArrayRasterData, g:Double => Double) = {
+    new LazyMapIfSet(data, z => d2i(g(i2d(z))))
+  }
 }
 
 final class LazyCombine(data1:ArrayRasterData,

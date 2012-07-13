@@ -3,6 +3,8 @@ package geotrellis.op.raster.local
 import geotrellis._
 import geotrellis.op._
 
+import RasterUtil._
+
 /**
  * Given a condition over two rasters, set the value of each cell in the output
  * to a specified true or false value after testing the specified condition on 
@@ -19,7 +21,11 @@ import geotrellis.op._
  * </pre> 
  */
 case class BinaryIfElseCell(r1:Op[Raster], r2:Op[Raster],
-                            cond: (Int,Int) => Boolean, trueValue:Int,
+                            cond: (Int, Int) => Boolean, trueValue:Int,
                             falseValue:Int) extends BinaryLocal {
-  def handleCells(z1:Int, z2:Int): Int = if(cond(z1,z2)) trueValue else falseValue
+
+  def handle(z1:Int, z2:Int): Int = if(cond(z1,z2)) trueValue else falseValue
+
+  def handleDouble(z1:Double, z2:Double): Double =
+    if (cond(d2i(z1), d2i(z2))) i2d(trueValue) else i2d(falseValue)
 }
