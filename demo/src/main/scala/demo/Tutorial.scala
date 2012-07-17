@@ -11,6 +11,13 @@ import geotrellis.op._
 import geotrellis.process.{Server}
 import geotrellis.Implicits._
 
+import geotrellis.op.raster.data.{LoadFile, LoadRaster}
+import geotrellis.op.logic.{Do, ForEach}
+import geotrellis.op.util.string.{ParseInt, ParseHexInt, SplitOnComma}
+import geotrellis.op.raster.stat.{Histogram}
+import geotrellis.op.stat.{ColorBreaks => FindColorBreaks, ColorsFromPalette}
+import geotrellis.op.raster.extent.{ParseExtent, CombineExtents}
+
 
 //object Demo {
 //  val server = Server("myapp", "src/main/resources/myapp-catalog.json")
@@ -93,11 +100,11 @@ class DrawRaster {
     val colorsOp:Op[Array[Int]] = ColorsFromPalette(paletteOp, numOp)
 
     // find the appropriate quantile class breaks to use
-    val histogramOp:Op[Histogram] = BuildMapHistogram(rasterOp)
+    val histogramOp:Op[Histogram] = Histogram(rasterOp)
     val breaksOp:Op[ColorBreaks] = FindColorBreaks(histogramOp, colorsOp)
 
     // render the png
-    val pngOp:Op[Array[Byte]] = RenderPNG(rasterOp, breaksOp, 0, true)
+    val pngOp:Op[Array[Byte]] = render.png.RenderPNG(rasterOp, breaksOp, 0, true)
 
     // run the operation
     try {
