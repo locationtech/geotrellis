@@ -9,9 +9,11 @@ import geotrellis.op._
   * Binary operation.
   */
 case class Divide(r1:Op[Raster], r2:Op[Raster]) extends BinaryLocal {
-  def handleCells(z1:Int, z2:Int) = if (z2 == NODATA || z2 == 0 || z1 == NODATA) {
+  def handle(z1:Int, z2:Int) = if (z2 == NODATA || z2 == 0 || z1 == NODATA) {
     NODATA
   } else {
     z1 / z2
   }
+
+  def handleDouble(z1:Double, z2:Double) = z1 / z2
 }

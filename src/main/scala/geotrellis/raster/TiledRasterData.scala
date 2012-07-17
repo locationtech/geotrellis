@@ -152,6 +152,8 @@ trait TiledRasterData extends RasterData {
    */
   def cellToTile(col:Int, row:Int) = (col / pixelCols, row / pixelRows)
 
+  def convert(typ:RasterType):RasterData = sys.error("can't convert tiled data")
+
   def copy = this
 
   def length:Int = {
@@ -168,8 +170,8 @@ trait TiledRasterData extends RasterData {
 
   def mapIfSet(f:Int => Int):TiledRasterData = LazyTiledMapIfSet(this, f)
 
-  def combine2(other:RasterData)(f:(Int,Int) => Int) = {
-    LazyTiledCombine2(this, LazyTiledWrapper(other, tileLayout), f)
+  def combine(other:RasterData)(f:(Int,Int) => Int) = {
+    LazyTiledCombine(this, LazyTiledWrapper(other, tileLayout), f)
   }
 
   // NOTE: not parallel. should do foreach on tiles in parallel when possible.
@@ -178,12 +180,17 @@ trait TiledRasterData extends RasterData {
       getTile(c, r).foreach(f)
   }
 
-  // NOTE: not parallel. should do fold on tiles in parallel when possible.
-  def fold[A](a: =>A)(f:(A,Int) => A):A = {
-    var result = a
+  def mapDouble(f:Double => Double):TiledRasterData = LazyTiledMap(this, z => f(z).toInt)
+
+  def mapIfSetDouble(f:Double => Double):TiledRasterData = LazyTiledMapIfSet(this, z => f(z).toInt)
+
+  def combineDouble(other:RasterData)(f:(Double, Double) => Double) = {
+    LazyTiledCombine(this, LazyTiledWrapper(other, tileLayout), (z1,z2) => f(z1,z2).toInt)
+  }
+
+  def foreachDouble(f: Double => Unit) = {
     for (c <- 0 until tileCols; r <- 0 until tileRows)
-      result = getTile(c, r).fold(result)(f)
-    result
+      getTile(c, r).foreach(z => f(z))
   }
 
   // TODO: ideally the asArray method would be removed from RasterData
@@ -330,12 +337,38 @@ case class LazyViewWrapper(data:ArrayRasterData, cols:Int, rows:Int,
 
   override final def mapIfSet(f:Int => Int) = LazyMapIfSet(this, f)
 
-  override final def combine2(other:RasterData)(f:(Int, Int) => Int) = other match {
-    case a:ArrayRasterData => LazyCombine2(this, a, f)
-    case o => o.combine2(this)((z2, z1) => f(z1, z2))
+  override final def combine(other:RasterData)(f:(Int, Int) => Int) = other match {
+    case a:ArrayRasterData => LazyCombine(this, a, f)
+    case o => o.combine(this)((z2, z1) => f(z1, z2))
   }
 
   override final def foreach(f:Int => Unit) = {
+    var r = row1
+    val rlimit = row2
+    val climit = col2
+    val width = cols
+    while (r < rlimit) {
+      var c = col1
+      while (c < climit) {
+        f(data(r * width + c))
+        c += 1
+      }
+      r += 1
+    }
+  }
+
+  final def applyDouble(i:Int) = data.applyDouble(translate(i))
+
+  override final def mapDouble(f:Double => Double) = LazyMap(this, z => f(z).toInt)
+
+  override final def mapIfSetDouble(f:Double => Double) = LazyMapIfSet(this, z => f(z).toInt)
+
+  override final def combineDouble(other:RasterData)(f:(Double, Double) => Double) = other match {
+    case a:ArrayRasterData => LazyCombine(this, a, (z1,z2) => f(z1,z2).toInt)
+    case o => o.combine(this)((z2, z1) => f(z1, z2).toInt)
+  }
+
+  override final def foreachDouble(f:Double => Unit) = {
     var r = row1
     val rlimit = row2
     val climit = col2
@@ -404,7 +437,7 @@ case class LazyTiledMapIfSet(data:TiledRasterData, g:Int => Int) extends LazyTil
  * This lazy, tiled raster data represents two tiled raster data objects
  * combined with a function.
  */
-case class LazyTiledCombine2(data1:TiledRasterData, data2:TiledRasterData,
+case class LazyTiledCombine(data1:TiledRasterData, data2:TiledRasterData,
                              g:(Int, Int) => Int) extends TiledRasterData {
   val typ = RasterData.largestType(data1, data2)
   val layout = data1.tileLayout // TODO: must handle different tile layouts
@@ -421,17 +454,17 @@ case class LazyTiledCombine2(data1:TiledRasterData, data2:TiledRasterData,
   def getTile(col:Int, row:Int) = {
     val r1 = data1.getTile(col, row)
     val r2 = data2.getTile(col, row)
-    r1.combine2(r2)(g)
+    r1.combine(r2)(g)
   }
 
   override def getTileOp(rl:ResolutionLayout, c:Int, r:Int) = {
     val r1 = data1.getTileOp(rl, c, r)
     val r2 = data2.getTileOp(rl, c, r)
-    logic.Do(r1, r2)((r1,r2) => r1.combine2(r2)(g))
+    logic.Do(r1, r2)((r1,r2) => r1.combine(r2)(g))
   }
 
   override def map(f:Int => Int) = {
-    LazyTiledCombine2(data1, data2, (a, b) => f(g(a, b)))
+    LazyTiledCombine(data1, data2, (a, b) => f(g(a, b)))
   }
 
   override def mapIfSet(f:Int => Int) = {
@@ -439,7 +472,7 @@ case class LazyTiledCombine2(data1:TiledRasterData, data2:TiledRasterData,
       val z = g(a, b)
       if (z != NODATA) f(z) else NODATA
     }
-    LazyTiledCombine2(data1, data2, h)
+    LazyTiledCombine(data1, data2, h)
   }
 }
 
