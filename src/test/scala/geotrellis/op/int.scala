@@ -14,6 +14,7 @@ import geotrellis.op.raster.extent._
 import geotrellis.op.raster.local._
 import geotrellis.op.logic._
 import geotrellis.op.stat._
+import geotrellis.op.raster.data.{LoadRaster,LoadRasterExtent,LoadFile,ResampleRaster,LoadRasterExtentFromFile,CreateRaster}
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers

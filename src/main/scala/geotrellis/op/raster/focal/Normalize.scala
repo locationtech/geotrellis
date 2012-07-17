@@ -1,8 +1,8 @@
-package geotrellis.op.raster
+package geotrellis.op.raster.focal
 
+import geotrellis.op.{Op,Op2,Op3}
 import geotrellis.process._
-import geotrellis._
-import geotrellis.op._
+import geotrellis.Raster
 
 /**
  * We'd like to use the normalize name both when we want to automatically
