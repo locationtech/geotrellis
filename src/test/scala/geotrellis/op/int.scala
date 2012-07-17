@@ -15,6 +15,7 @@ import geotrellis.op.raster.local._
 import geotrellis.op.logic._
 import geotrellis.op.stat._
 import geotrellis.op.raster.data.{LoadRaster,LoadRasterExtent,LoadFile,ResampleRaster,LoadRasterExtentFromFile,CreateRaster}
+import geotrellis.op.raster.stat.Histogram
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
@@ -151,8 +152,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("BuildArrayHistogram") {
-      val H = op.stat.ArrayHistogram(Literal(raster1), 101)
-      val histo = server.run(H)
+      val histo = server.run(Histogram(raster1, 101))
       //println(histo.toJSON)
       //println(histo.getValues.toList)
 
@@ -163,23 +163,8 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       histo.getQuantileBreaks(4) must be === Array(12, 15, 66, 95)
     }
 
-    it("BuildCompressedArrayHistogram") {
-      val H = op.stat.CompressedArrayHistogram(Literal(raster1), 1, 101, 50)
-      val histo = server.run(H)
-      //println(histo.toJSON)
-      //println(histo.getValues.toList)
-      //println(histo.getTotalCount)
-
-      histo.getTotalCount must be === 18
-      histo.getItemCount(11) must be === 5
-
-      histo.getQuantileBreaks(4) must be === Array(11, 15, 65, 95)
-    }
-
-    it("MapHistogram") {
-      //println(raster1)
-      val H = op.stat.MapHistogram(Literal(raster1))
-      val histo = server.run(H)
+    it("BuildMapHistogram") {
+      val histo = server.run(Histogram(raster1))
 
       //println(histo.toJSON)
       //println(histo.getValues.toList)
@@ -192,13 +177,13 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("FindClassBreaks") {
-      val H = op.stat.ArrayHistogram(Literal(raster1), 101)
+      val H = Histogram(Literal(raster1), 101)
       val F = op.stat.ClassBreaks(H, 4)
       server.run(F) must be === Array(12, 15, 66, 95)
     }
 
     it("FindColorBreaks") {
-      val H = op.stat.ArrayHistogram(Literal(raster1), 101)
+      val H = Histogram(Literal(raster1), 101)
       val (g, y, o, r) = (0x00FF00, 0xFFFF00, 0xFF7F00, 0xFF0000)
       val colors = Array(g, y, o, r)
       val F = op.stat.ColorBreaks(H, colors)
@@ -208,7 +193,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
     it("GenerateStatistics") {
       val R = LoadFile("src/test/resources/quad8.arg")
-      val S = op.stat.Statistics(op.stat.MapHistogram(R))
+      val S = op.stat.Statistics(Histogram(R))
       val stats = server.run(S)
 
       val dev = sqrt((2 * (0.5 * 0.5) + 2 * (1.5 * 1.5)) / 4)
@@ -221,7 +206,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val newServer = TestServer()
       val R1 = LoadFile("src/test/resources/quad8.arg")
       val R2 = LoadFile("src/test/resources/quad8.arg")
-      val H = geotrellis.op.stat.MapHistogram(R1)
+      val H = Histogram(R1)
       val S = StandardDeviation(R2, H, 1000)
       val raster = newServer.run(S)
 
