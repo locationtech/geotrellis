@@ -1,7 +1,7 @@
 package geotrellis.op.stat
 
 import geotrellis.process._
-import geotrellis.stat._
+import geotrellis.stat.{Histogram=>HistogramObj}
 import geotrellis._
 import geotrellis.op._
 
@@ -11,6 +11,6 @@ import geotrellis.op._
  *
  * This includes mean, median, mode, stddev, and min and max values.
  */
-case class GenerateStatistics(h:Op[Histogram]) extends Op1(h) ({
+case class Statistics(h:Op[HistogramObj]) extends Op1(h) ({
   (h) => Result(h.generateStatistics)
 })

@@ -4,6 +4,7 @@ import geotrellis._
 import geotrellis.op._
 import geotrellis.process._
 import geotrellis.op.raster._
+import geotrellis.op.raster.data.{WarpRaster,LoadFile}
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
@@ -19,9 +20,9 @@ class ExtentSpec extends Spec with MustMatchers with ShouldMatchers {
     RasterExtent(e, cw, ch, ncols, nrows)
   }
 
-  def load(name:String) = LoadRaster(name)
+  def load(name:String) = op.raster.data.LoadRaster(name)
   def load(name:String, pt:(Double, Double), cs:(Double, Double), ncols:Int, nrows:Int) = {
-    LoadRaster(name, re(pt, cs, ncols, nrows))
+    op.raster.data.LoadRaster(name, re(pt, cs, ncols, nrows))
   }
 
   def xload(path:String) = LoadFile(path)

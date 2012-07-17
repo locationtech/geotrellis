@@ -13,7 +13,7 @@ class LoadRasterTest extends FunSuite {
   val server = TestServer("src/test/resources/catalog.json")
 
   test("load valid raster") {
-    server.run(raster.LoadRaster("quadborder"))
+    server.run(raster.data.LoadRaster("quadborder"))
   }
 
   //test("fail to load invalid raster") {

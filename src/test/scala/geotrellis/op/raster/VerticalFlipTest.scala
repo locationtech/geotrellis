@@ -2,7 +2,7 @@ package geotrellis.op
 
 
 import geotrellis._
-import geotrellis.op.raster.LoadRaster;
+import geotrellis.op.raster.data.LoadRaster;
 import geotrellis.op.raster.VerticalFlip;
 import geotrellis.process._
 import geotrellis.raster._
@@ -16,7 +16,7 @@ class VerticalFlipTest extends FunSuite {
   val server = TestServer("src/test/resources/catalog.json")
 
   test("load valid raster") {
-    val op1 = LoadRaster("quadborder")
+    val op1 = raster.data.LoadRaster("quadborder")
     val op2 = VerticalFlip(op1)
     val op3 = VerticalFlip(op2)
 

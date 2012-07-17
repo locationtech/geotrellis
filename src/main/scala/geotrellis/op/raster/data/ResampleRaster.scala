@@ -1,9 +1,10 @@
-package geotrellis.op.raster
+package geotrellis.op.raster.data
 
-import geotrellis._
-import geotrellis.op._
-import geotrellis.process._
 import geotrellis.data.RasterReader
+import geotrellis.op.{Op,Op3}
+import geotrellis.process.Result
+import geotrellis.Raster
+import geotrellis.RasterExtent
 
 /**
  * This uses a nearest-neighbor algorithm to resample a raster.

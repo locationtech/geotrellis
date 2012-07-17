@@ -14,6 +14,7 @@ import geotrellis.op.raster.extent._
 import geotrellis.op.raster.local._
 import geotrellis.op.logic._
 import geotrellis.op.stat._
+import geotrellis.op.raster.data.{LoadRaster,LoadRasterExtent,LoadFile,ResampleRaster,LoadRasterExtentFromFile,CreateRaster}
 import geotrellis.op.raster.stat.Histogram
 
 import org.scalatest.Spec
@@ -176,27 +177,27 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("FindClassBreaks") {
-      val h = Histogram(raster1, 101)
-      val f = stat.FindClassBreaks(h, 4)
-      server.run(f) must be === Array(12, 15, 66, 95)
+      val H = Histogram(Literal(raster1), 101)
+      val F = op.stat.ClassBreaks(H, 4)
+      server.run(F) must be === Array(12, 15, 66, 95)
     }
 
     it("FindColorBreaks") {
-      val h = Histogram(raster1, 101)
+      val H = Histogram(Literal(raster1), 101)
       val (g, y, o, r) = (0x00FF00, 0xFFFF00, 0xFF7F00, 0xFF0000)
       val colors = Array(g, y, o, r)
-      val f = FindColorBreaks(h, colors)
-      val cb = server.run(f)
+      val F = op.stat.ColorBreaks(H, colors)
+      val cb = server.run(F)
       cb.breaks.toList must be === List((12, g), (15, y), (66, o), (95, r))
     }
 
     it("GenerateStatistics") {
-      val r = LoadFile("src/test/resources/quad8.arg")
-      val s = GenerateStatistics(Histogram(r))
-      val stats = server.run(s)
+      val R = LoadFile("src/test/resources/quad8.arg")
+      val S = op.stat.Statistics(Histogram(R))
+      val stats = server.run(S)
 
       val dev = sqrt((2 * (0.5 * 0.5) + 2 * (1.5 * 1.5)) / 4)
-      val expected = Statistics(2.5, 3, 1, dev, 1, 4)
+      val expected = geotrellis.stat.Statistics(2.5, 3, 1, dev, 1, 4)
 
       stats must be === expected
     }

@@ -10,7 +10,7 @@ import geotrellis.Raster
 import geotrellis.{Extent,RasterExtent}
 
 import geotrellis.stat._
-import geotrellis.op.raster.WarpRaster;
+import geotrellis.op.raster.data.WarpRaster;
 import geotrellis.op.raster._;
 import geotrellis.process._
 
@@ -31,8 +31,8 @@ class WarpRasterSpec extends Spec with MustMatchers with ShouldMatchers {
     val raster = Raster(data, baseGeo)
 
     it("should load the full raster on its own extent") {
-      val op = WarpRaster(Literal(raster), baseGeo)
-      val raster2 = server.run(op)
+      val warpOp = WarpRaster(Literal(raster), baseGeo)
+      val raster2 = server.run(warpOp)
 
       println(raster.rasterExtent)
       println(raster2.rasterExtent)
