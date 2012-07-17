@@ -1,11 +1,24 @@
 package geotrellis.stat
 
+import geotrellis._
 import math.{abs, ceil, min, max, sqrt}
 
 object ArrayHistogram {
   def apply(size:Int) = new ArrayHistogram(Array.fill[Int](size)(0), 0)
 
   def apply(counts:Array[Int], total:Int) = new ArrayHistogram(counts, total)
+
+  def fromRaster(r:Raster, n:Int) = {
+    val h = ArrayHistogram(n)
+    r.foreach(z => if (z != NODATA) h.countItem(z, 1))
+    h
+  }
+
+  def fromHistograms(hs:List[Histogram], n:Int) = {
+    val total:Histogram = ArrayHistogram(n)
+    hs.foreach(h => total.update(h))
+    total
+  }
 }
 
 // TODO: can currently only handle non-negative integers
@@ -14,6 +27,8 @@ object ArrayHistogram {
   * Data object representing a histogram that uses an array for internal storage. 
   */
 class ArrayHistogram(val counts:Array[Int], var total:Int) extends Histogram {
+  def size = counts.length
+
   def getTotalCount = total
 
   def copy = ArrayHistogram(counts.clone, total)
