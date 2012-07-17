@@ -150,7 +150,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("BuildArrayHistogram") {
-      val H = op.stat.BuildArrayHistogram(Literal(raster1), 101)
+      val H = op.stat.ArrayHistogram(Literal(raster1), 101)
       val histo = server.run(H)
       //println(histo.toJSON)
       //println(histo.getValues.toList)
@@ -163,7 +163,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("BuildCompressedArrayHistogram") {
-      val H = op.stat.BuildCompressedArrayHistogram(Literal(raster1), 1, 101, 50)
+      val H = op.stat.CompressedArrayHistogram(Literal(raster1), 1, 101, 50)
       val histo = server.run(H)
       //println(histo.toJSON)
       //println(histo.getValues.toList)
@@ -175,9 +175,9 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       histo.getQuantileBreaks(4) must be === Array(11, 15, 65, 95)
     }
 
-    it("BuildMapHistogram") {
+    it("MapHistogram") {
       //println(raster1)
-      val H = op.stat.BuildMapHistogram(Literal(raster1))
+      val H = op.stat.MapHistogram(Literal(raster1))
       val histo = server.run(H)
 
       //println(histo.toJSON)
@@ -191,27 +191,27 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("FindClassBreaks") {
-      val H = stat.BuildArrayHistogram(Literal(raster1), 101)
-      val F = stat.FindClassBreaks(H, 4)
+      val H = op.stat.ArrayHistogram(Literal(raster1), 101)
+      val F = op.stat.ClassBreaks(H, 4)
       server.run(F) must be === Array(12, 15, 66, 95)
     }
 
     it("FindColorBreaks") {
-      val H = BuildArrayHistogram(Literal(raster1), 101)
+      val H = op.stat.ArrayHistogram(Literal(raster1), 101)
       val (g, y, o, r) = (0x00FF00, 0xFFFF00, 0xFF7F00, 0xFF0000)
       val colors = Array(g, y, o, r)
-      val F = FindColorBreaks(H, colors)
+      val F = op.stat.ColorBreaks(H, colors)
       val cb = server.run(F)
       cb.breaks.toList must be === List((12, g), (15, y), (66, o), (95, r))
     }
 
     it("GenerateStatistics") {
       val R = LoadFile("src/test/resources/quad8.arg")
-      val S = GenerateStatistics(BuildMapHistogram(R))
+      val S = op.stat.Statistics(op.stat.MapHistogram(R))
       val stats = server.run(S)
 
       val dev = sqrt((2 * (0.5 * 0.5) + 2 * (1.5 * 1.5)) / 4)
-      val expected = Statistics(2.5, 3, 1, dev, 1, 4)
+      val expected = geotrellis.stat.Statistics(2.5, 3, 1, dev, 1, 4)
 
       stats must be === expected
     }
@@ -220,7 +220,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val newServer = TestServer()
       val R1 = LoadFile("src/test/resources/quad8.arg")
       val R2 = LoadFile("src/test/resources/quad8.arg")
-      val H = BuildMapHistogram(R1)
+      val H = geotrellis.op.stat.MapHistogram(R1)
       val S = StandardDeviation(R2, H, 1000)
       val raster = newServer.run(S)
 

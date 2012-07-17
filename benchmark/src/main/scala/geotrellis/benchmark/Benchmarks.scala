@@ -15,7 +15,7 @@ import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.stat._
 import geotrellis.op.raster.local._
-import geotrellis.op.stat.BuildArrayHistogram
+import geotrellis.op.stat.ArrayHistogram
 import geotrellis.op.render.png.RenderPNG
 
 import com.google.caliper.Benchmark
@@ -277,7 +277,7 @@ class WeightedOverlay extends MyBenchmark {
     val total = weights.sum
     val rs = (0 until n).map(i => MultiplyConstant(LoadRaster(names(i), reOp), weights(i)))
     val rasterOp = Normalize(DivideConstant(Add(rs: _*), total), (1, 100))
-    val breaksOp = geotrellis.op.stat.FindColorBreaks(BuildArrayHistogram(rasterOp, 101), colors)
+    val breaksOp = geotrellis.op.stat.ColorBreaks(ArrayHistogram(rasterOp, 101), colors)
     op = RenderPNG(rasterOp, breaksOp, 0, true)
   }
 

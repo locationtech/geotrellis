@@ -7,7 +7,7 @@ import geotrellis.op._
 import geotrellis.geometry.rasterizer.Rasterizer
 import geotrellis.process._
 import geotrellis.Raster
-import geotrellis.stat.{Histogram, ArrayHistogram, MapHistogram, CompressedArrayHistogram, Statistics}
+import geotrellis.stat.{Histogram => HistogramObj, ArrayHistogram => ArrayHistogramObj, MapHistogram => MapHistogramObj, CompressedArrayHistogram => CompressedArrayHistogramObj, Statistics => StatisticsObj}
 import geotrellis.geometry.Polygon
 
 /**
@@ -15,7 +15,7 @@ import geotrellis.geometry.Polygon
  * within each polygon.
  */
 case class PolygonalZonalHistograms(ps:Array[Op[Polygon]], r:Op[Raster],
-                                    size:Int) extends Op[Array[Histogram]] {
+                                    size:Int) extends Op[Array[HistogramObj]] {
   def _run(context:Context) = runAsync(r :: ps.toList)
 
   val nextSteps:Steps = {
@@ -26,12 +26,12 @@ case class PolygonalZonalHistograms(ps:Array[Op[Polygon]], r:Op[Raster],
 
   def step2(raster:Raster, polygons:List[Polygon]) = {
     // build our map to hold results
-    val histmap = Array.ofDim[Histogram](size)
+    val histmap = Array.ofDim[HistogramObj](size)
 
     // find all the unique values
     polygons.foreach {
       p => if (histmap(p.value) == null) {
-        histmap(p.value) = ArrayHistogram(this.size)
+        histmap(p.value) = ArrayHistogramObj(this.size)
       }
     }
 

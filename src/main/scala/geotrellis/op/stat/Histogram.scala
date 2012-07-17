@@ -10,10 +10,10 @@ import geotrellis.stat._
 /**
  * Generic trait used by the various histogram-building operations.
  */
-trait BuildHistogram extends Operation[Histogram] {
+trait Histogram extends Operation[geotrellis.stat.Histogram] {
   val r:Op[Raster]
 
-  protected[this] def createHistogram:Histogram
+  protected[this] def createHistogram:geotrellis.stat.Histogram
 
   def _run(context:Context) = runAsync(List(r))
 
