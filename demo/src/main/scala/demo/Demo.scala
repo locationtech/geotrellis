@@ -11,6 +11,13 @@ import geotrellis.op._
 import geotrellis.process._
 import geotrellis.Implicits._
 
+import geotrellis.op.raster.data.{LoadFile, LoadRaster}
+import geotrellis.op.logic.{Do, ForEach, ForEach2}
+import geotrellis.op.util.string.{ParseInt, ParseHexInt, SplitOnComma}
+import geotrellis.op.raster.stat.{Histogram}
+import geotrellis.op.stat.{ColorBreaks => FindColorBreaks, ColorsFromPalette}
+import geotrellis.op.raster.extent.{ParseExtent, CombineExtents}
+
 object response {
   def apply(mime:String)(data:Any) = Response.ok(data).`type`(mime).build()
 }
@@ -35,11 +42,11 @@ object WeightedOverlayBasic {
 object WeightedOverlayArray {
   def apply(rasters:Op[Array[Raster]], weights:Op[Array[Int]]) = {
 
-    val rs:Op[Array[Raster]] = ForEach2(rasters, weights)(_ * _)
+    val rs:Op[Array[Raster]] = ForEach(rasters, weights)(_ * _)
 
-    val weightSum:Op[Int] = Map1(weights)(_.sum)
+    val weightSum:Op[Int] = Do(weights)(_.sum)
 
-    AddArray(rs) / weightSum
+    op.raster.local.AddArray(rs) / weightSum
   }
 }
 
@@ -105,7 +112,7 @@ class DemoService1 {
     val colsOp = ParseInt(cols)
     val rowsOp = ParseInt(rows)
     val extentOp = ParseExtent(bbox)
-    val reOp = BuildRasterExtent(extentOp, colsOp, rowsOp)
+    val reOp = op.raster.extent.BuildRasterExtent(extentOp, colsOp, rowsOp)
 
     // Figure out which rasters and weights the user wants to use.
     val layerOps = ForEach(SplitOnComma(layers))(LoadRaster(_, reOp))
@@ -118,11 +125,11 @@ class DemoService1 {
     val outputOp = if (mask.isEmpty) {
       overlayOp
     } else {
-      Mask(overlayOp, LoadRaster(mask, reOp), NODATA, NODATA)
+      op.raster.local.Mask(overlayOp, LoadRaster(mask, reOp), NODATA, NODATA)
     }
 
     // Build a histogram of the output raster values.
-    val histogramOp = BuildMapHistogram(outputOp)
+    val histogramOp = op.raster.stat.Histogram(outputOp)
 
     // Parse the user's color palette and allocate colors.
     val paletteColorsOp = ForEach(SplitOnComma(palette))(s => ParseHexInt(s))
@@ -135,7 +142,7 @@ class DemoService1 {
     //println("breaks are: " + brks.map{case (n, c) => "%d:%08x" format (n, c)})
 
     // Render the acutal PNG image.
-    val pngOp = RenderPNG(outputOp, breaksOp, 0, true)
+    val pngOp = op.render.png.RenderPNG(outputOp, breaksOp, 0, true)
 
     format match {
       case "hello" => response("text/plain")("hello world")
