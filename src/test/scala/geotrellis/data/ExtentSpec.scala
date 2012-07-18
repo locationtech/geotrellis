@@ -4,7 +4,6 @@ import geotrellis._
 import geotrellis.op._
 import geotrellis.process._
 import geotrellis.op.raster._
-import geotrellis.op.raster.transform.WarpRaster
 import geotrellis.op.io.LoadFile
 
 import org.scalatest.Spec
@@ -60,20 +59,12 @@ class ExtentSpec extends Spec with MustMatchers with ShouldMatchers {
 
     val op1 = load(name)
     val op2 = load(name, origin1, cellSizes1, 3, 3)
-    val op3 = WarpRaster(op1, re(origin1, cellSizes1, 3, 3))
-    val op4 = WarpRaster(op2, re(origin1, cellSizes1, 2, 2))
     confirm(op1, expected1)
     confirm(op2, expected23)
-    confirm(op3, expected23)
-    confirm(op4, expected4)
 
     val xop1 = xload(path)
     val xop2 = xload(path, origin1, cellSizes1, 3, 3)
-    val xop3 = WarpRaster(xop1, re(origin1, cellSizes1, 3, 3))
-    val xop4 = WarpRaster(xop2, re(origin1, cellSizes1, 2, 2))
     confirm(xop1, expected1)
     confirm(xop2, expected23)
-    confirm(xop3, expected23)
-    confirm(xop4, expected4)
   }
 }
