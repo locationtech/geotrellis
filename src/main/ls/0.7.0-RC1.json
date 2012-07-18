@@ -1,7 +1,7 @@
 {
   "organization" : "com.azavea.geotrellis",
   "name" : "geotrellis",
-  "version" : "0.7.0-SNAPSHOT",
+  "version" : "0.7.0-RC1",
   "description" : "GeoTrellis is an open source geographic data processing engine for high performance applications.",
   "site" : "http://github.com/azavea/geotrellis",
   "tags" : [ "maps", "gis", "geographic", "data", "raster", "processing" ],
