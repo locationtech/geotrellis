@@ -10,11 +10,13 @@ import geotrellis.stat._
 import geotrellis.process._
 import geotrellis.data.ColorBreaks
 import geotrellis.op.raster._
-import geotrellis.op.raster.extent._
 import geotrellis.op.raster.local._
+import geotrellis.op.raster.extent.BuildRasterExtent
 import geotrellis.op.logic._
 import geotrellis.op.stat._
-import geotrellis.op.raster.data.{LoadRaster,LoadRasterExtent,LoadFile,ResampleRaster,LoadRasterExtentFromFile,CreateRaster}
+import geotrellis.op.io.{LoadRaster,LoadRasterExtent,LoadFile,LoadRasterExtentFromFile}
+import geotrellis.op.raster.transform.{ResampleRaster}
+import geotrellis.op.raster.CreateRaster
 import geotrellis.op.raster.stat.Histogram
 
 import org.scalatest.Spec
@@ -249,13 +251,13 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
     // unary local
     it("Negate") {
-      runArray(Negate(r)) must be === a.map { _ * -1 }
+      runArray(raster.local.Negate(r)) must be === a.map { _ * -1 }
     }
     it("AddConstant") {
-      runArray(AddConstant(r, 10)) must be === a.map { _ + 10 }
+      runArray(raster.local.AddConstant(r, 10)) must be === a.map { _ + 10 }
     }
     it("MultiplyConstant") {
-      runArray(MultiplyConstant(r, 8)) must be === a.map { _ * 8 }
+      runArray(raster.local.MultiplyConstant(r, 8)) must be === a.map { _ * 8 }
     }
     it("SubtractConstant") {
       runArray(SubtractConstant(r, 5)) must be === a.map { _ - 5 }

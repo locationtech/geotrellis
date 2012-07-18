@@ -10,7 +10,7 @@ import geotrellis.Raster
 import geotrellis.{Extent,RasterExtent}
 
 import geotrellis.stat._
-import geotrellis.op.raster.data.WarpRaster;
+import geotrellis.op.raster.transform.WarpRaster;
 import geotrellis.op.raster._;
 import geotrellis.process._
 

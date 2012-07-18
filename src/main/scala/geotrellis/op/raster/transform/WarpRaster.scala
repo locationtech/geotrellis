@@ -1,10 +1,9 @@
-package geotrellis.op.raster.data
+package geotrellis.op.raster.transform
 
-import geotrellis.data.RasterReader
 import geotrellis.op.{Op,Op2}
-import geotrellis.process.Result
-import geotrellis.Raster
-import geotrellis.RasterExtent
+import geotrellis._
+import geotrellis.process._
+import geotrellis.data._
 
 /**
  * Crop and resample a raster to the given raster extent.

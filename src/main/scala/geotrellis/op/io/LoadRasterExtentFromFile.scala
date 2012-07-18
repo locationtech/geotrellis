@@ -1,11 +1,9 @@
-package geotrellis.op.raster.data
+package geotrellis.op.io
 
-import geotrellis.op.Operation.implicitLiteral
-import geotrellis.op.{Op,Op1}
 import geotrellis.process.Context
-import geotrellis.process.RasterLayer
-import geotrellis.process.Result
-import geotrellis.RasterExtent
+import geotrellis.op.{Op,Op1}
+import geotrellis._
+import geotrellis.process._
 
 /**
   * Load the [[geotrellis.geoattrs.RasterExtent]] from the raster in the specified file.
