@@ -4,12 +4,18 @@ import scala.{PartialFunction => PF}
 import geotrellis.process._
 import geotrellis.op._
 
+object ForEach {
+  def apply[A, Z:Manifest](a:Op[Array[A]])(f:(A) => Op[Z]) = ForEach1(a)(f)
+  def apply[A, B, Z:Manifest](a:Op[Array[A]], b:Op[Array[B]])(f:(A, B) => Op[Z]) = ForEach2(a, b)(f)
+  def apply[A, B, C, Z:Manifest](a:Op[Array[A]], b:Op[Array[B]], c:Op[Array[C]])(f:(A, B, C) => Op[Z]) = ForEach3(a, b, c)(f)
+}
+
 /**
  * Evaluates the given operation (op) to get an array of A's. Then, applies
  * the given function (f) to each item in the array in. The resulting array of
  * Z's is returned.
  */
-case class ForEach[A, Z:Manifest](op:Op[Array[A]])(f:(A) => Op[Z]) extends Op[Array[Z]] {
+case class ForEach1[A, Z:Manifest](op:Op[Array[A]])(f:(A) => Op[Z]) extends Op[Array[Z]] {
 
   def _run(context:Context) = runAsync(List(op, context))
 
