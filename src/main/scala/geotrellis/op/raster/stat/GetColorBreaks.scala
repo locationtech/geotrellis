@@ -1,22 +1,25 @@
-package geotrellis.op.stat
+package geotrellis.op.raster.stat
 
-import geotrellis.data.{ColorBreaks => ColorBreaksObj, ColorMapper => ColorMapperObj, MultiColorRangeChooser}
-import geotrellis.process._
-import geotrellis.stat.{Histogram => HistogramObj}
-import geotrellis._
+import geotrellis.data.{ColorBreaks,ColorMapper}
 import geotrellis.op._
+import geotrellis._
+import geotrellis.stat._
+import geotrellis.data._
+import geotrellis.process.Context
+import geotrellis.process.Result
+import scala.Array.canBuildFrom
 
 
-case class BuildColorMapper(colorBreaks:Op[ColorBreaksObj], noDataColor:Op[Int])
-extends Op2(colorBreaks, noDataColor)((bs, c) => Result(ColorMapperObj(bs, c)))
+case class BuildColorMapper(colorBreaks:Op[ColorBreaks], noDataColor:Op[Int])
+extends Op2(colorBreaks, noDataColor)((bs, c) => Result(ColorMapper(bs, c)))
 
 case class BuildColorBreaks(breaks:Op[Array[Int]], colors:Op[Array[Int]])
-extends Op2(breaks, colors)((bs, cs) => Result(ColorBreaksObj(bs.zip(cs))))
+extends Op2(breaks, colors)((bs, cs) => Result(ColorBreaks(bs.zip(cs))))
 
 /**
  * Generate quantile class breaks with assigned colors.
  */
-case class GetColorBreaks(h:Op[HistogramObj], cs:Op[Array[Int]]) extends Op[ColorBreaksObj] {
+case class GetColorBreaks(h:Op[Histogram], cs:Op[Array[Int]]) extends Op[ColorBreaks] {
 
   def _run(context:Context) = runAsync(List(h, cs))
 
@@ -28,7 +31,7 @@ case class GetColorBreaks(h:Op[HistogramObj], cs:Op[Array[Int]]) extends Op[Colo
 
   def step2(histogram:geotrellis.stat.Histogram, colors:Array[Int]) = {
     val breaks = histogram.getQuantileBreaks(colors.length)
-    Result(ColorBreaksObj(breaks.zip(colors)))
+    Result(ColorBreaks(breaks.zip(colors)))
   }
 }
 

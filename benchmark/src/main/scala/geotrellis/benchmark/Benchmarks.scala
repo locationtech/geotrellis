@@ -17,7 +17,7 @@ import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.stat._
 import geotrellis.op.raster.local._
-import geotrellis.op.raster.stat.Histogram
+import geotrellis.op.raster.stat.GetHistogram
 import geotrellis.op.render.png.RenderPNG
 
 import com.google.caliper.Benchmark
@@ -35,7 +35,7 @@ trait MyBenchmark extends SimpleBenchmark {
 
   def getRasterExtentOp(name:String, w:Int, h:Int) = {
     val extent = server.run(LoadRasterExtent(name)).extent
-    geotrellis.op.raster.extent.BuildRasterExtent(extent, w, h)
+    geotrellis.op.raster.extent.GetRasterExtent(extent, w, h)
   }
 
   /**
@@ -279,7 +279,7 @@ class WeightedOverlay extends MyBenchmark {
     val total = weights.sum
     val rs = (0 until n).map(i => MultiplyConstant(LoadRaster(names(i), reOp), weights(i)))
     val rasterOp = Normalize(DivideConstant(Add(rs: _*), total), (1, 100))
-    val breaksOp = geotrellis.op.stat.GetColorBreaks(Histogram(rasterOp, 101), colors)
+    val breaksOp = geotrellis.op.raster.stat.GetColorBreaks(GetHistogram(rasterOp, 101), colors)
     op = RenderPNG(rasterOp, breaksOp, 0, true)
   }
 

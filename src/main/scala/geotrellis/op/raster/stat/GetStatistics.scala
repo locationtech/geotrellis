@@ -1,9 +1,10 @@
-package geotrellis.op.stat
+package geotrellis.op.raster.stat
 
-import geotrellis.process._
-import geotrellis.stat.{Histogram=>HistogramObj}
 import geotrellis._
 import geotrellis.op._
+
+import geotrellis.process.Result
+import geotrellis.stat.{Histogram => HistogramObj}
 
 
 /** 

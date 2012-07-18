@@ -7,7 +7,7 @@ import geotrellis._
 /**
  *
  */
-case class BuildExtent(xmin:Op[Double], ymin:Op[Double], xmax:Op[Double], ymax:Op[Double])
+case class GetExtent(xmin:Op[Double], ymin:Op[Double], xmax:Op[Double], ymax:Op[Double])
 extends Op4 (xmin, ymin, xmax, ymax) ((x1,y1,x2,y2) => Result(Extent(x1,y1,x2,y2)))
 
 case class ParseExtent(s:Op[String]) extends Op1(s)({

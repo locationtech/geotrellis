@@ -9,15 +9,15 @@ import geotrellis._
 import geotrellis.stat._
 import geotrellis.process._
 import geotrellis.data.ColorBreaks
+import geotrellis.op._
 import geotrellis.op.raster._
 import geotrellis.op.raster.local._
-import geotrellis.op.raster.extent.BuildRasterExtent
+import geotrellis.op.raster.extent.GetRasterExtent
 import geotrellis.op.logic._
-import geotrellis.op.stat._
 import geotrellis.op.io.{LoadRaster,LoadRasterExtent,LoadFile,LoadRasterExtentFromFile}
 import geotrellis.op.raster.transform.{ResampleRaster}
 import geotrellis.op.raster.CreateRaster
-import geotrellis.op.raster.stat.Histogram
+import geotrellis.op.raster.stat.{GetHistogram,GetStandardDeviation}
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
@@ -51,7 +51,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     val raster3 = Raster(data3, rasterExtent)
 
     it("dispatch is not yet implemented") {
-      val G = BuildRasterExtent(0.0, 0.0, 100.0, 100.0, 100, 100)
+      val G = GetRasterExtent(0.0, 0.0, 100.0, 100.0, 100, 100)
       //evaluating { G.dispatch(server) } should produce [Exception];
     }
 
@@ -61,7 +61,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("CreateRaster") {
-      val G = BuildRasterExtent(0.0, 0.0, 100.0, 100.0, 100, 100)
+      val G = GetRasterExtent(0.0, 0.0, 100.0, 100.0, 100, 100)
       val C = CreateRaster(G)
       val raster = server.run(C)
       raster.get(0, 0) must be === NODATA
@@ -89,7 +89,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img8.arg")
       val geo1 = server.run(G1)
 
-      val G2 = BuildRasterExtent( geo1.extent.xmin, geo1.extent.ymin, geo1.extent.xmax, geo1.extent.ymax, 2, 2) 
+      val G2 = GetRasterExtent( geo1.extent.xmin, geo1.extent.ymin, geo1.extent.xmax, geo1.extent.ymax, 2, 2) 
       val L = LoadFile("src/test/resources/fake.img8.arg", G2)
       val raster = server.run(L)
       raster.get(0, 0) must be === 34
@@ -97,10 +97,10 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       raster.get(0, 1) must be === 2
       raster.get(1, 1) must be === 4
     }
-    it("BuildRasterExtent") {
+    it("GetRasterExtent") {
       val e = Extent(xmin = -90, ymin = 20,
                      xmax = -80, ymax = 40)
-      val op = BuildRasterExtent(e, 20, 30)
+      val op = GetRasterExtent(e, 20, 30)
       val re = server.run(op)
       re.extent.xmin must be === -90
       re.cols must be === 20
@@ -110,7 +110,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img8.arg")
       val geo1 = server.run(G1)
 
-      val G2 = BuildRasterExtent( geo1.extent.xmin, geo1.extent.ymin, geo1.extent.xmax, geo1.extent.ymax, 2, 2) 
+      val G2 = GetRasterExtent( geo1.extent.xmin, geo1.extent.ymin, geo1.extent.xmax, geo1.extent.ymax, 2, 2) 
       val L = LoadFile("src/test/resources/fake.img8.arg", G2)
       val raster = server.run(L)
 
@@ -147,14 +147,14 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     it("should LoadArgFileChunk with subextents that are within the arg extent") {
       // fake2 is 4x4, has a cellwidth of 10, and an origin of x = -100, y = 100
       // load the files, and do the basic constant multiplication for weighting
-      val G = BuildRasterExtent(xmin = -90, ymin = 20,
+      val G = GetRasterExtent(xmin = -90, ymin = 20,
                             xmax = -80, ymax = 40,
                             cols = 1, rows = 1)
       val L = LoadFile("src/test/resources/fake2.img8.arg", G)
     }
 
     it("BuildArrayHistogram") {
-      val histo = server.run(Histogram(raster1, 101))
+      val histo = server.run(GetHistogram(raster1, 101))
       //println(histo.toJSON)
       //println(histo.getValues.toList)
 
@@ -166,7 +166,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("BuildMapHistogram") {
-      val histo = server.run(Histogram(raster1))
+      val histo = server.run(GetHistogram(raster1))
 
       //println(histo.toJSON)
       //println(histo.getValues.toList)
@@ -179,23 +179,23 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("FindClassBreaks") {
-      val H = Histogram(Literal(raster1), 101)
-      val F = op.stat.GetClassBreaks(H, 4)
+      val H = GetHistogram(Literal(raster1), 101)
+      val F = raster.stat.GetClassBreaks(H, 4)
       server.run(F) must be === Array(12, 15, 66, 95)
     }
 
     it("FindColorBreaks") {
-      val H = Histogram(Literal(raster1), 101)
+      val H = GetHistogram(Literal(raster1), 101)
       val (g, y, o, r) = (0x00FF00, 0xFFFF00, 0xFF7F00, 0xFF0000)
       val colors = Array(g, y, o, r)
-      val F = op.stat.GetColorBreaks(H, colors)
+      val F = raster.stat.GetColorBreaks(H, colors)
       val cb = server.run(F)
       cb.breaks.toList must be === List((12, g), (15, y), (66, o), (95, r))
     }
 
     it("GenerateStatistics") {
       val R = LoadFile("src/test/resources/quad8.arg")
-      val S = op.stat.GetStatistics(Histogram(R))
+      val S = raster.stat.GetStatistics(GetHistogram(R))
       val stats = server.run(S)
 
       val dev = sqrt((2 * (0.5 * 0.5) + 2 * (1.5 * 1.5)) / 4)
@@ -208,8 +208,9 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val newServer = TestServer()
       val R1 = LoadFile("src/test/resources/quad8.arg")
       val R2 = LoadFile("src/test/resources/quad8.arg")
-      val H = Histogram(R1)
-      val S = StandardDeviation(R2, H, 1000)
+      val H = GetHistogram(R1)
+      val S:GetStandardDeviation = op.raster.stat.GetStandardDeviation(R2, H, 1000)
+     
       val raster = newServer.run(S)
 
       val d = raster.data.asArray.getOrElse(sys.error("argh"))

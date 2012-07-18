@@ -1,17 +1,18 @@
-package geotrellis.op.stat
+package geotrellis.op.raster.stat
 
-import geotrellis.Raster
-import geotrellis.stat.{Histogram => HistogramObj, Statistics => StatisticsObj}
-import geotrellis.process._
-import geotrellis._
 import geotrellis.op._
+import geotrellis.process.StepOutput
+import geotrellis.process.Context
+import geotrellis.process.Result
+import geotrellis.stat.{Statistics => StatisticsObj}
+import geotrellis.Raster
 
 
 // TODO: rewrite this in terms of Op[Statistics].
 /*
  * Calculate a raster in which each value is set to the standard deviation of that cell's value.
  */
-case class StandardDeviation(r:Op[Raster], h:Op[geotrellis.stat.Histogram], factor:Int) extends Op[Raster] {
+case class GetStandardDeviation(r:Op[Raster], h:Op[geotrellis.stat.Histogram], factor:Int) extends Op[Raster] {
   val g = GetStatistics(h)
 
   def _run(context:Context) = runAsync(List(g, r))

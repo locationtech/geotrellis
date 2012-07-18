@@ -1,9 +1,8 @@
-package geotrellis.op.stat
+package geotrellis.op.raster.stat
 
-import geotrellis._
-import geotrellis.op._
-import geotrellis.process._
-import geotrellis.stat._
+import geotrellis.op.Op
+import geotrellis.process.Context
+import geotrellis.process.Result
 
 /**
   * Generate quantile class breaks for a given raster.
