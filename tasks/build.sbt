@@ -1,6 +1,6 @@
 import AssemblyKeys._
 
-seq(Revolver.settings: _*)
+//seq(Revolver.settings: _*)
 
 assemblySettings
 
