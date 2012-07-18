@@ -13,7 +13,7 @@ import geotrellis.op._
 case class CsvIntMap(path:String,
                      delimiter:String) extends Op2(path, delimiter) ({
     (path, delimiter) => {
-      val source = io.Source.fromFile(path)
+      val source = scala.io.Source.fromFile(path)
       val lines  = source.getLines.toArray.filter {
         s => s.length > 0
       }.map {

@@ -1,10 +1,9 @@
-package geotrellis.op.raster.data
+package geotrellis.op.io
 
-import geotrellis.op.Op
-import geotrellis.op.Literal
-import geotrellis.process.Context
-import geotrellis.process.Result
-import geotrellis.Raster
+import geotrellis._
+import geotrellis.process._
+
+import geotrellis.op._
 import geotrellis.RasterExtent
 
 

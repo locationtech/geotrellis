@@ -22,7 +22,7 @@ class Int1Test extends FunSuite {
   val re = RasterExtent(e, 1.0, 1.0, 4, 4)
   val raster = Raster(data, re)
 
-  def loadRaster(path:String) = server.run(op.raster.data.LoadFile(path))
+  def loadRaster(path:String) = server.run(io.LoadFile(path))
 
   test("write out the bit raster") {
     ArgWriter(TypeBit).write("/tmp/foo-bool.arg", raster, "foo-bool")

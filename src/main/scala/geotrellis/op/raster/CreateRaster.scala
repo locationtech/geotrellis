@@ -1,10 +1,8 @@
-package geotrellis.op.raster.data
+package geotrellis.op.raster
 
-import geotrellis.op.{Op,Op1}
-import geotrellis.process.Result
-import geotrellis.Raster
-import geotrellis.RasterExtent
-
+import geotrellis._
+import geotrellis.op._
+import geotrellis.process._
 
 /**
  * Creates an empty raster object based on the given raster properties.

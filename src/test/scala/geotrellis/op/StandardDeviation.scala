@@ -5,7 +5,8 @@ import geotrellis.op._
 import geotrellis.op.raster._
 import geotrellis.op.raster.stat.Histogram
 import geotrellis.op.stat._
-import geotrellis.op.raster.data.LoadFile
+import geotrellis.op.io.LoadFile
+
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
