@@ -12,7 +12,7 @@ import geotrellis.op._
  * Calculate a raster in which each value is set to the standard deviation of that cell's value.
  */
 case class StandardDeviation(r:Op[Raster], h:Op[geotrellis.stat.Histogram], factor:Int) extends Op[Raster] {
-  val g = Statistics(h)
+  val g = GetStatistics(h)
 
   def _run(context:Context) = runAsync(List(g, r))
 

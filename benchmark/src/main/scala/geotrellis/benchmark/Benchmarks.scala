@@ -279,7 +279,7 @@ class WeightedOverlay extends MyBenchmark {
     val total = weights.sum
     val rs = (0 until n).map(i => MultiplyConstant(LoadRaster(names(i), reOp), weights(i)))
     val rasterOp = Normalize(DivideConstant(Add(rs: _*), total), (1, 100))
-    val breaksOp = geotrellis.op.stat.ColorBreaks(Histogram(rasterOp, 101), colors)
+    val breaksOp = geotrellis.op.stat.GetColorBreaks(Histogram(rasterOp, 101), colors)
     op = RenderPNG(rasterOp, breaksOp, 0, true)
   }
 

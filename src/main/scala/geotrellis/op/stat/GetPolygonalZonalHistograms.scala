@@ -14,7 +14,7 @@ import geotrellis.geometry.Polygon
  * Given a raster and an array of polygons, return a histogram summary of the cells
  * within each polygon.
  */
-case class PolygonalZonalHistograms(ps:Array[Op[Polygon]], r:Op[Raster],
+case class GetPolygonalZonalHistograms(ps:Array[Op[Polygon]], r:Op[Raster],
                                     size:Int) extends Op[Array[HistogramObj]] {
   def _run(context:Context) = runAsync(r :: ps.toList)
 

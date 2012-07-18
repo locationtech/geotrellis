@@ -180,7 +180,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
     it("FindClassBreaks") {
       val H = Histogram(Literal(raster1), 101)
-      val F = op.stat.ClassBreaks(H, 4)
+      val F = op.stat.GetClassBreaks(H, 4)
       server.run(F) must be === Array(12, 15, 66, 95)
     }
 
@@ -188,14 +188,14 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val H = Histogram(Literal(raster1), 101)
       val (g, y, o, r) = (0x00FF00, 0xFFFF00, 0xFF7F00, 0xFF0000)
       val colors = Array(g, y, o, r)
-      val F = op.stat.ColorBreaks(H, colors)
+      val F = op.stat.GetColorBreaks(H, colors)
       val cb = server.run(F)
       cb.breaks.toList must be === List((12, g), (15, y), (66, o), (95, r))
     }
 
     it("GenerateStatistics") {
       val R = LoadFile("src/test/resources/quad8.arg")
-      val S = op.stat.Statistics(Histogram(R))
+      val S = op.stat.GetStatistics(Histogram(R))
       val stats = server.run(S)
 
       val dev = sqrt((2 * (0.5 * 0.5) + 2 * (1.5 * 1.5)) / 4)

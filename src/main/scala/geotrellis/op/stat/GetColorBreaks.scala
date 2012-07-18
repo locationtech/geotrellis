@@ -16,7 +16,7 @@ extends Op2(breaks, colors)((bs, cs) => Result(ColorBreaksObj(bs.zip(cs))))
 /**
  * Generate quantile class breaks with assigned colors.
  */
-case class ColorBreaks(h:Op[HistogramObj], cs:Op[Array[Int]]) extends Op[ColorBreaksObj] {
+case class GetColorBreaks(h:Op[HistogramObj], cs:Op[Array[Int]]) extends Op[ColorBreaksObj] {
 
   def _run(context:Context) = runAsync(List(h, cs))
 
@@ -32,6 +32,6 @@ case class ColorBreaks(h:Op[HistogramObj], cs:Op[Array[Int]]) extends Op[ColorBr
   }
 }
 
-case class ColorsFromPalette(palette:Op[Array[Int]], num:Op[Int]) extends Op2(palette, num)({
+case class GetColorsFromPalette(palette:Op[Array[Int]], num:Op[Int]) extends Op2(palette, num)({
   (palette, num) => Result(new MultiColorRangeChooser(palette).getColors(num).toArray)
 })
