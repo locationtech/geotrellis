@@ -24,7 +24,7 @@ class ArgTest extends FunSuite {
   val re = RasterExtent(e, 1.0, 1.0, 4, 4)
   val raster = Raster(data, re)
 
-  def loadRaster(path:String) = server.run(op.raster.data.LoadFile(path))
+  def loadRaster(path:String) = server.run(io.LoadFile(path))
   def loadRasterData(path:String) = loadRaster(path).data.asArray.getOrElse(sys.error("argh"))
 
   test("test float compatibility") {

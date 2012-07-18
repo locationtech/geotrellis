@@ -11,7 +11,7 @@ import geotrellis.data._
 import geotrellis.data.png._
 import geotrellis.op._
 import geotrellis.op.raster._
-import geotrellis.op.raster.data.{LoadRasterExtent,LoadRaster}
+import geotrellis.op.io._
 import geotrellis.op.raster.focal.Normalize
 import geotrellis.process._
 import geotrellis.raster._
