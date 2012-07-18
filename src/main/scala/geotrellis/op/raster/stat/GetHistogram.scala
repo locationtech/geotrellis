@@ -10,15 +10,15 @@ import geotrellis.process._
 /**
  * Contains several different operations for building a histograms of a raster.
  */
-object Histogram {
-  def apply(r:Op[Raster]):Op[Histogram] = HistogramMap(r)
-  def apply(r:Op[Raster], size:Op[Int]):Op[Histogram] = HistogramMap(r)
+object GetHistogram {
+  def apply(r:Op[Raster]):Op[Histogram] = GetHistogramMap(r)
+  def apply(r:Op[Raster], size:Op[Int]):Op[Histogram] = GetHistogramMap(r)
 }
 
 /**
  * Implements a histogram in terms of a map.
  */
-case class HistogramMap(r:Op[Raster]) extends Reducer1(r)({
+case class GetHistogramMap(r:Op[Raster]) extends Reducer1(r)({
   r => FastMapHistogram.fromRaster(r.force)
 })({
   hs => FastMapHistogram.fromHistograms(hs)
@@ -27,7 +27,7 @@ case class HistogramMap(r:Op[Raster]) extends Reducer1(r)({
 /**
  * Implements a histogram in terms of an array of the given size.
  */
-case class HistogramArray(r:Op[Raster], n:Op[Int]) extends Reducer2(r, n)({
+case class GetHistogramArray(r:Op[Raster], n:Op[Int]) extends Reducer2(r, n)({
   (r, n) => ArrayHistogram.fromRaster(r.force, n)
 })({
   (hs, n) => ArrayHistogram.fromHistograms(hs, n)

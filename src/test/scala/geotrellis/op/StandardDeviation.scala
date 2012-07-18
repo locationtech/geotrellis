@@ -3,8 +3,8 @@ package geotrellis.op
 import geotrellis.process._
 import geotrellis.op._
 import geotrellis.op.raster._
-import geotrellis.op.raster.stat.Histogram
-import geotrellis.op.stat._
+import geotrellis.op.raster.stat.GetHistogram
+import geotrellis.op.raster.stat._
 import geotrellis.op.io.LoadFile
 
 
@@ -20,8 +20,8 @@ class DeviationRasterSpec extends Spec with MustMatchers with ShouldMatchers {
     it("should work") {
       val r1 = LoadFile("src/test/resources/quad8.arg")
       val r2 = LoadFile("src/test/resources/quad8.arg")
-      val h = Histogram(r1)
-      val s = StandardDeviation(r2, h, 1000)
+      val h = GetHistogram(r1)
+      val s = GetStandardDeviation(r2, h, 1000)
       val raster = server.run(s)
 
       val d = raster.data.asArray.getOrElse(sys.error("argh"))
