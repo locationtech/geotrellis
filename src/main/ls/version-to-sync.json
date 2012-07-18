@@ -1,0 +1,29 @@
+{
+ "organization":"org.yourdomain",
+ "name":"geotrellis",
+ "version":"0.7",
+ "description":"GeoTrellis is an open source geographic data processing engine for high performance applications.",
+ "site":"http://www.azavea.com/products/geotrellis/",
+ "tags": ["map", "analysis", "raster", "gis", "geographic", "geoprocessing", "data"],
+ "docs":"http://yourdomain.org/awesome-library-docs",
+ # licenses if you care for them
+ "licenses": [{
+   "name": "MIT",
+   "url":"https://yourdomain.org/awesome-library/LICENSE"
+  }],
+ # where can your library be downloaded from
+ "resolvers": ["http://repo.yourdomain.org/"],
+ # what does your library depend on
+ "dependencies": [{
+   "organization":"org.otherdomain",
+   "name": "my-awesome-dependency",
+   "version": "0.1.0"
+  }],
+ # scala cross-binary dialects
+ "scalas": [
+   "2.8.0","2.8.1","2.8.2",
+   "2.9.0","2.9.0-1","2.9.1"
+  ],
+ # is this an sbt plugin?
+ "sbt": false
+}

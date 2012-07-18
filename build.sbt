@@ -1,6 +1,6 @@
 import AssemblyKeys._
 
-seq(Revolver.settings: _*)
+//seq(Revolver.settings: _*)
 
 assemblySettings
 
@@ -12,3 +12,13 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) {
     case _ => MergeStrategy.first
   }
 }
+
+seq(lsSettings :_*)
+
+(LsKeys.tags in LsKeys.lsync) :=
+Seq("maps", "gis", "geographic", "data", "raster", "processing")
+
+(LsKeys.docsUrl in LsKeys.lsync) := Some(new URL("http://azavea.github.com/geotrellis/getting_started/"))
+
+(description in LsKeys.lsync) :=
+"GeoTrellis is an open source geographic data processing engine for high performance applications."
