@@ -99,5 +99,12 @@ class GeoTiffSpec extends Spec with MustMatchers with ShouldMatchers {
       val r = Raster(data, re)
       GeoTiffWriter.write("/tmp/float.tif", r, "float")
     }
+
+    it ("should write bennet's geotiff") {
+      import geotiff._
+      val r = server.run(io.LoadFile("src/test/resources/quadborder8.arg"))
+      val settings = Settings(LongSample, Floating, true)
+      Encoder.writePath("/tmp/bennet.tif", r, settings)
+    }
   }
 }
