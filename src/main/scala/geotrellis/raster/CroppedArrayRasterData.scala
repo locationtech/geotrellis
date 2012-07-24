@@ -44,8 +44,8 @@ case class CroppedArrayRasterData(underlying:ArrayRasterData,
 
   override def getDouble(col:Int, row:Int):Double = {
     val c = col - colOffset
-    val r = row - rowOffset
     if (c < 0 || c >= underlying.cols) return NODATA
+    val r = row - rowOffset
     if (r < 0 || r >= underlying.rows) return NODATA
     underlying.getDouble(c, r)
   }
@@ -69,25 +69,4 @@ case class CroppedArrayRasterData(underlying:ArrayRasterData,
     case a:ArrayRasterData => LazyCombineDouble(this, a, f)
     case o => o.combineDouble(this)((z2, z1) => f(z1, z2))
   }
-
-  //def foreach(f:Int => Unit) = sys.error("undefined")
-  //def map(f:Int => Int) = sys.error("undefined")
-  //def mapIfSet(f:Int => Int) = sys.error("undefined")
-  //def combine(other:RasterData)(f:(Int, Int) => Int) = sys.error("undefined")
-  //
-  //def foreachDouble(f:Double => Unit) = sys.error("undefined")
-  //def mapDouble(f:Double => Double) = sys.error("undefined")
-  //def mapIfSetDouble(f:Double => Double) = sys.error("undefined")
-  //def combineDouble(other:RasterData)(f:(Double, Double) => Double) = sys.error("undefined")
-
-
-  //def foreach(f:Int => Unit) = sys.error("undefined")
-  //def map(f:Int => Int) = sys.error("undefined")
-  //def mapIfSet(f:Int => Int) = sys.error("undefined")
-  //def combine(other:RasterData)(f:(Int, Int) => Int) = sys.error("undefined")
-  //
-  //def foreachDouble(f:Double => Unit) = sys.error("undefined")
-  //def mapDouble(f:Double => Double) = sys.error("undefined")
-  //def mapIfSetDouble(f:Double => Double) = sys.error("undefined")
-  //def combineDouble(other:RasterData)(f:(Double, Double) => Double) = sys.error("undefined")
 }
