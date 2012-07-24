@@ -21,7 +21,6 @@ import geotrellis.raster.op.tiles._
 import geotrellis.statistics.op._
 import geotrellis.raster.op.extent.GetRasterExtent
 import geotrellis.statistics.op.stat.GetHistogram
-import geotrellis.op.render.png.RenderPNG
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Param

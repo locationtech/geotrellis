@@ -1,9 +1,8 @@
 package geotrellis.raster
 
 import geotrellis._
-import geotrellis.data.arg.ArgWriter
 import geotrellis.process._
-import geotrellis._
+import geotrellis.data.arg.ArgWriter
 
 /**
  * This class stores the layout of a tiled raster: the number of tiles (in
