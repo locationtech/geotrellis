@@ -1,6 +1,5 @@
-package geotrellis.op.util.string
+package geotrellis.rest.op.string
 
-import geotrellis.process._
 import geotrellis._
 
 /**

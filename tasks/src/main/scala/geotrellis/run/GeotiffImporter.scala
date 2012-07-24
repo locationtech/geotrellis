@@ -5,7 +5,6 @@ import com.beust.jcommander._
 import geotrellis._
 import geotrellis.data._
 import geotrellis.data.arg._
-import geotrellis.op._
 import geotrellis.process._
 
 
@@ -47,7 +46,7 @@ object GeotiffImporter {
     val server = Server("script", Catalog.empty("script"))
 
     println("Loading file: " + inpath)
-    val raster = server.run(LoadFile(inpath))
+    val raster = server.run(io.LoadFile(inpath))
     server.shutdown()
     
     val version = "1.0"

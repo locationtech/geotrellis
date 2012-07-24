@@ -1,9 +1,7 @@
 package geotrellis.raster.op.extent
 
 import geotrellis._
-import geotrellis.op.util.string.ParseInt
-
-
+import geotrellis.rest.op.string.ParseInt
 
 /**
  * Get the [[geotrellis.geoattrs.RasterExtent]] from a given raster.
@@ -31,10 +29,4 @@ object GetRasterExtent {
     GetRasterExtent(Extent(xmin,ymin,xmax,ymax),cols,rows)
   }
   def apply(r:Op[Raster]) = GetRasterExtentFromRaster(r)
-}
-
-object ParseRasterExtent {
-  def apply(bbox:Op[String], colsOp:Op[String], rowsOp:Op[String]) = {
-    GetRasterExtent(ParseExtent(bbox), ParseInt(colsOp), ParseInt(rowsOp))
-  }
 }
