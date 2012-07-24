@@ -1,8 +1,8 @@
 package geotrellis.op
 
 import geotrellis.process._
-import geotrellis.op._
-import geotrellis.op.raster.local._
+import geotrellis._
+import geotrellis.raster.op.local._
 
 import geotrellis.raster._
 import geotrellis._

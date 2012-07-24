@@ -1,4 +1,4 @@
-package geotrellis.op.logic
+package geotrellis.logic
 
 import java.io.{File,FileInputStream,FileOutputStream}
 import scala.math.{max,min,sqrt}
@@ -8,9 +8,9 @@ import geotrellis.geometry.{Polygon}
 import geotrellis.data.ColorBreaks
 import geotrellis.Raster
 
-import geotrellis.stat._
+import geotrellis.statistics._
 import geotrellis.process._
-import geotrellis.op._
+import geotrellis._
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers

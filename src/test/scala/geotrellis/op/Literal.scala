@@ -1,7 +1,7 @@
 package geotrellis.op
 
 import geotrellis.process._
-import geotrellis.op._
+import geotrellis._
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers

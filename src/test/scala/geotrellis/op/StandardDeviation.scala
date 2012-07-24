@@ -1,13 +1,10 @@
 package geotrellis.op
 
 import geotrellis.process._
-import geotrellis.op._
-import geotrellis.op.raster._
-import geotrellis.op.raster.stat.GetHistogram
-import geotrellis.op.raster.stat._
-import geotrellis.op.io.LoadFile
-
-
+import geotrellis._
+import geotrellis.raster.op._
+import geotrellis.statistics.op.stat._
+import geotrellis.io.LoadFile
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers

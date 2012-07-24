@@ -1,6 +1,6 @@
 package geotrellis.ExampleTwo
 
-import geotrellis.op._
+import geotrellis._
 
 import geotrellis.process._
 

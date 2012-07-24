@@ -2,10 +2,9 @@ package geotrellis.op
 
 
 import geotrellis._
-import geotrellis.op.io.LoadRaster
-import geotrellis.op.raster.VerticalFlip
 import geotrellis.process._
 import geotrellis.raster._
+import geotrellis.raster.op.VerticalFlip
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite

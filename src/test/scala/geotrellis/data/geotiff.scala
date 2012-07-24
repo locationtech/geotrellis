@@ -4,7 +4,7 @@ import geotrellis.process.TestServer
 import geotrellis._
 import geotrellis.raster._
 
-import geotrellis.op._
+import geotrellis._
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers

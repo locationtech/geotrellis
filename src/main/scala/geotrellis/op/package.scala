@@ -2,15 +2,11 @@ package geotrellis
 
 import geotrellis._
 import geotrellis.geometry.Polygon
-import geotrellis.op.raster.local._
-
-import geotrellis.op.logic.{Do1,Do2}
+import geotrellis.raster.op.local._
+import geotrellis.logic.{Do1,Do2}
 
 package object op {
   // Operation is such a long word :(
-  type Op[+A] = Operation[A]
-  type LocalOp = LocalOperation
-  type DispatchedOp[+T] = DispatchedOperation[T]
 
   // TODO: consider adding things like type PNG = Array[Byte]?
 
@@ -21,7 +17,7 @@ package object op {
 
 
 object Implicits {
-  import geotrellis.op._
+  import geotrellis._
 
   /**
    * Addition-operator implicits for Int, Raster and Op[Raster].

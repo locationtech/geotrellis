@@ -1,9 +1,8 @@
 package geotrellis.op
 
 import geotrellis.process._
-import geotrellis.op._
-import geotrellis.op.raster._
-import geotrellis.op.raster.local.{AddConstant,MultiplyConstant}
+import geotrellis.raster.op._
+import geotrellis.raster.op.local.{AddConstant,MultiplyConstant}
 import geotrellis.raster._
 import geotrellis._
 
@@ -13,7 +12,7 @@ import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class BinaryLocalSpec extends Spec with MustMatchers with ShouldMatchers {
-  def f(op:Op[Raster]) = raster.local.AddConstant(op, 1)
+  def f(op:Op[Raster]) = local.AddConstant(op, 1)
 
   describe("The BinaryLocal operation (Subtract)") {
     val cols = 100
@@ -33,14 +32,14 @@ class BinaryLocalSpec extends Spec with MustMatchers with ShouldMatchers {
     val r13 = makeRaster(13)
 
     it("should produce correct results") {
-      val r = server.run(raster.local.Subtract(r63, r17))
+      val r = server.run(local.Subtract(r63, r17))
       r.get(0, 0) must be === r46.get(0, 0)
     }
 
     it("should collapse operations") {
       val a = AddConstant(MultiplyConstant(AddConstant(r13, 1), 3), 5)
       val b = AddConstant(MultiplyConstant(AddConstant(r13, 1), 2), 3)
-      val op = raster.local.Subtract(a, b)
+      val op = local.Subtract(a, b)
 
       val Complete(r, history) = server.getResult(op)
       println(history.toPretty)

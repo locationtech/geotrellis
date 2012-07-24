@@ -6,6 +6,9 @@ package object geotrellis {
   // TOOD: phase out geotrellis.contants package
   final val NODATA = Int.MinValue
 
+  type Op[+A] = Operation[A]
+  //type DispatchedOp[+T] = DispatchedOperation[T]
+
   //@implicitNotFound(msg = "Cannot find NoData type class for ${T}")
   //trait NoData[T] {
   //  def value:T
