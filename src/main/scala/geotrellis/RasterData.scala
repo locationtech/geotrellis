@@ -196,7 +196,7 @@ object RasterData {
  */ 
 trait ArrayRasterData extends RasterData {
 
-  def asArray = Some(this)
+  def asArray = Option(this)
 
   def convert(typ:RasterType):ArrayRasterData = LazyConvert(this, typ)
 
@@ -258,7 +258,7 @@ trait ArrayRasterData extends RasterData {
  * foreach, and combine.
  */
 trait StrictRasterData extends ArrayRasterData with Serializable {
-  def force = Some(this)
+  def force = Option(this)
 
   def foreach(f:Int => Unit):Unit = {
     var i = 0
@@ -360,7 +360,7 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
  * (mutated).
  */
 trait MutableRasterData extends StrictRasterData {
-  def mutable = Some(this)
+  def mutable = Option(this)
 
   def update(i:Int, z:Int): Unit
   def updateDouble(i:Int, z:Double):Unit
@@ -614,7 +614,7 @@ trait LazyRasterData extends ArrayRasterData {
       d(i) = apply(i)
       i += 1
     }
-    Some(d)
+    Option(d)
   }
 }
 
