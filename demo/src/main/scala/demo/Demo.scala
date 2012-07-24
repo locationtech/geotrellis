@@ -5,18 +5,16 @@ import javax.ws.rs.core.Response
 import javax.ws.rs.{GET, Path, DefaultValue, QueryParam}
 import javax.ws.rs.core.{Response, Context}
 
+// import core geotrellis types
 import geotrellis._
-import geotrellis.data.MultiColorRangeChooser
-import geotrellis.op._
-import geotrellis.process._
-import geotrellis.Implicits._
 
-import geotrellis.op.raster.data.{LoadFile, LoadRaster}
-import geotrellis.op.logic.{Do, ForEach, ForEach2}
-import geotrellis.op.util.string.{ParseInt, ParseHexInt, SplitOnComma}
-import geotrellis.op.raster.stat.{Histogram}
-import geotrellis.op.stat.{ColorBreaks => FindColorBreaks, ColorsFromPalette}
-import geotrellis.op.raster.extent.{ParseExtent, CombineExtents}
+// import some useful operations
+import geotrellis.raster.op._
+import geotrellis.statistics.op._
+import geotrellis.rest.op._
+
+// import syntax implicits like "raster + raster"
+import geotrellis.Implicits._
 
 object response {
   def apply(mime:String)(data:Any) = Response.ok(data).`type`(mime).build()
@@ -42,20 +40,16 @@ object WeightedOverlayBasic {
 object WeightedOverlayArray {
   def apply(rasters:Op[Array[Raster]], weights:Op[Array[Int]]) = {
 
-    val rs:Op[Array[Raster]] = ForEach(rasters, weights)(_ * _)
+    val rs:Op[Array[Raster]] = logic.ForEach(rasters, weights)(_ * _)
 
-    val weightSum:Op[Int] = Do(weights)(_.sum)
+    val weightSum:Op[Int] = logic.Do(weights)(_.sum)
 
-    op.raster.local.AddArray(rs) / weightSum
+    local.AddArray(rs) / weightSum
   }
 }
 
 object Demo {
-  //val server = Server("demo", "src/main/resources/myapp-catalog.json")
-  //val catalogPath = "src/test/resources/demo-catalog.json"
-  //val catalog = Catalog.fromPath(catalogPath)
-  //val server = Server("demo", catalog)
-  val server = Server("demo", "src/test/resources/demo-catalog.json")
+  val server = process.Server("demo", "src/test/resources/demo-catalog.json")
 
   def errorPage(msg:String, traceback:String) = """
 <html>
@@ -109,14 +103,14 @@ class DemoService1 {
 
     // First let's figure out what geographical area we're interestd in, as
     // well as the resolution we want to use.
-    val colsOp = ParseInt(cols)
-    val rowsOp = ParseInt(rows)
-    val extentOp = ParseExtent(bbox)
-    val reOp = op.raster.extent.BuildRasterExtent(extentOp, colsOp, rowsOp)
+    val colsOp = string.ParseInt(cols)
+    val rowsOp = string.ParseInt(rows)
+    val extentOp = string.ParseExtent(bbox)
+    val reOp = extent.GetRasterExtent(extentOp, colsOp, rowsOp)
 
     // Figure out which rasters and weights the user wants to use.
-    val layerOps = ForEach(SplitOnComma(layers))(LoadRaster(_, reOp))
-    val weightOps = ForEach(SplitOnComma(weights))(ParseInt(_))
+    val layerOps = logic.ForEach(string.SplitOnComma(layers))(io.LoadRaster(_, reOp))
+    val weightOps = logic.ForEach(string.SplitOnComma(weights))(string.ParseInt(_))
 
     // Do the actual weighted overlay operation
     val overlayOp = WeightedOverlayArray(layerOps, weightOps)
@@ -125,42 +119,43 @@ class DemoService1 {
     val outputOp = if (mask.isEmpty) {
       overlayOp
     } else {
-      op.raster.local.Mask(overlayOp, LoadRaster(mask, reOp), NODATA, NODATA)
+      local.Mask(overlayOp, io.LoadRaster(mask, reOp), NODATA, NODATA)
     }
 
     // Build a histogram of the output raster values.
-    val histogramOp = op.raster.stat.Histogram(outputOp)
+    val histogramOp = stat.GetHistogram(outputOp)
 
     // Parse the user's color palette and allocate colors.
-    val paletteColorsOp = ForEach(SplitOnComma(palette))(s => ParseHexInt(s))
-    val numColorsOp = ParseInt(numColors)
-    val colorsOp = ColorsFromPalette(paletteColorsOp, numColorsOp)
+    val paletteColorsOp = logic.ForEach(string.SplitOnComma(palette))(s => string.ParseHexInt(s))
+    val numColorsOp = string.ParseInt(numColors)
+    val colorsOp = stat.GetColorsFromPalette(paletteColorsOp, numColorsOp)
 
     // Determine some good quantile breaks to use for coloring output.
-    val breaksOp = FindColorBreaks(histogramOp, colorsOp)
-    val brks = Demo.server.run(breaksOp).breaks.toList
-    //println("breaks are: " + brks.map{case (n, c) => "%d:%08x" format (n, c)})
+    val breaksOp = stat.GetColorBreaks(histogramOp, colorsOp)
 
-    // Render the acutal PNG image.
-    val pngOp = op.render.png.RenderPNG(outputOp, breaksOp, 0, true)
+    // Render the actual PNG image.
+    val pngOp = io.RenderPNG(outputOp, breaksOp, 0, true)
 
     format match {
       case "hello" => response("text/plain")("hello world")
       case "info" => Demo.server.getResult(pngOp) match {
-        case Complete(img, h) => {
+        case process.Complete(img, h) => {
           val ms = h.elapsedTime
           val query = req.getQueryString + "&format=png"
-          //val url = "/demo1?" + query.replaceAll("format=info", "format=png")
           val url = "/demo1?" + query + "&format=png"
           println(url)
           val html = Demo.infoPage(cols.toInt, rows.toInt, ms, url, h.toPretty)
           response("text/html")(html)
         }
-        case Error(msg, trace) => response("text/plain")("failed: %s\ntrace:\n%s".format(msg, trace))
+        case process.Error(msg, trace) => {
+          response("text/plain")("failed: %s\ntrace:\n%s".format(msg, trace))
+        }
       }
       case _ => Demo.server.getResult(pngOp) match {
-        case Complete(img, _) => response("image/png")(img)
-        case Error(msg, trace) => response("text/plain")("failed: %s\ntrace:\n%s".format(msg, trace))
+        case process.Complete(img, _) => response("image/png")(img)
+        case process.Error(msg, trace) => {
+          response("text/plain")("failed: %s\ntrace:\n%s".format(msg, trace))
+        }
       }
     }
   }
