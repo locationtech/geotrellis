@@ -23,7 +23,7 @@ case class ArgWriter(typ:RasterType) extends Writer {
     while (row < rows) {
       var col = 0
       while (col < cols) {
-        dos.writeByte(data.get(col, row, cols))
+        dos.writeByte(data.get(col, row))
         col += 1
       }
       row += 1

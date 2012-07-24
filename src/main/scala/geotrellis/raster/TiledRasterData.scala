@@ -11,6 +11,16 @@ import geotrellis.data.arg.ArgWriter
 case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int) {
 
   /**
+   * Return the total number of columns across all the tiles.
+   */
+  def totalCols = tileCols * pixelCols
+
+  /**
+   * Return the total number of rows across all the tiles.
+   */
+  def totalRows = tileRows * pixelRows
+
+  /**
    * Given an extent and resolution (RasterExtent), return the geographic
    * X-coordinates for each tile boundary in this raster data. For example,
    * if we have a 2x2 RasterData, with a raster extent whose X coordinates
@@ -78,6 +88,9 @@ trait TiledRasterData extends RasterData {
    * Returns the particular layout of this TiledRasterData's tiles.
    */
   def tileLayout:TileLayout
+
+  def cols = tileLayout.totalCols
+  def rows = tileLayout.totalRows
 
   def pixelCols:Int = tileLayout.pixelCols
   def pixelRows:Int = tileLayout.pixelRows
@@ -195,7 +208,7 @@ trait TiledRasterData extends RasterData {
   def asArray = {
     if (lengthLong > 2147483647L) None
     val len = length
-    val d = IntArrayRasterData.ofDim(len)
+    val d = IntArrayRasterData.ofDim(cols, rows)
     var i = 0
     foreach { z => d(i) = z; i += 1 }
     Some(d)
@@ -207,20 +220,20 @@ trait TiledRasterData extends RasterData {
   // TODO: fix, maybe?
   def mutable:Option[MutableRasterData] = None
 
-  def get(col:Int, row:Int, cols:Int) = {
+  def get(col:Int, row:Int) = {
     val tcol = col / pixelCols
     val trow = row / pixelRows
     val pcol = col % pixelCols
     val prow = row % pixelRows
-    getTile(tcol, trow).get(pcol, prow, pixelCols)
+    getTile(tcol, trow).get(pcol, prow)
   }
 
-  def getDouble(col:Int, row:Int, cols:Int) = {
+  def getDouble(col:Int, row:Int) = {
     val tcol = col / pixelCols
     val trow = row / pixelRows
     val pcol = col % pixelCols
     val prow = row % pixelRows
-    getTile(tcol, trow).getDouble(pcol, prow, pixelCols)
+    getTile(tcol, trow).getDouble(pcol, prow)
   }
 }
 
@@ -236,7 +249,7 @@ case class TileSetRasterData(basePath:String, name:String, typ:RasterType,
                              tileLayout:TileLayout,
                              server:Server) extends TiledRasterData {
   def getType = typ
-  def alloc(size:Int) = RasterData.allocByType(typ, size)
+  def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
 
   def getTile(col:Int, row:Int) = {
     val path = Tiler.tilePath(basePath, name, col, row)
@@ -261,7 +274,7 @@ case class TileSetRasterData(basePath:String, name:String, typ:RasterType,
 case class TileArrayRasterData(tiles:Array[Raster],
                                tileLayout:TileLayout) extends TiledRasterData{
   val typ = tiles(0).data.getType
-  def alloc(size:Int) = RasterData.allocByType(typ, size)
+  def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
   def getType = typ
   def getTile(col:Int, row:Int) = tiles(row * tileCols + col).data match {
     case a:ArrayRasterData => LazyArrayWrapper(a)
@@ -295,7 +308,7 @@ case class LazyTiledWrapper(data:ArrayRasterData,
 
   def getType = data.getType
 
-  def alloc(size:Int) = data.alloc(size)
+  def alloc(cols:Int, rows:Int) = data.alloc(cols, rows)
 
   def getTile(col:Int, row:Int) = {
     val col1 = pixelCols * col
@@ -323,7 +336,7 @@ case class LazyViewWrapper(data:ArrayRasterData, cols:Int, rows:Int,
   val myLen = myCols * myRows
 
   final def getType = data.getType
-  final def alloc(size:Int) = data.alloc(size)
+  final def alloc(cols:Int, rows:Int) = data.alloc(cols, rows)
   final def length = myLen
   final def copy = this
 
@@ -396,7 +409,7 @@ trait LazyTiledRasterData extends TiledRasterData {
   def tileLayout = data.tileLayout
 
   def getType = data.getType
-  def alloc(size:Int) = data.alloc(size)
+  def alloc(cols:Int, rows:Int) = data.alloc(cols, rows)
   override def lengthLong = data.lengthLong
 }
 
@@ -447,7 +460,7 @@ case class LazyTiledCombine(data1:TiledRasterData, data2:TiledRasterData,
   def tileLayout = layout
 
   def getType = typ
-  def alloc(size:Int) = RasterData.allocByType(typ, size)
+  def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
 
   def getTile(col:Int, row:Int) = {
     val r1 = data1.getTile(col, row)
@@ -551,7 +564,7 @@ object Tiler {
     val rasters = Array.ofDim[Raster](tileCols * tileRows)
 
     for (ty <- 0 until tileRows; tx <- 0 until tileCols) yield {
-      val data = RasterData.allocByType(src.data.getType, pixelCols * pixelRows)
+      val data = RasterData.allocByType(src.data.getType, pixelCols, pixelRows)
 
       // TODO: if this code ends up being a performance bottleneck, we should
       // refactor away from using raster.get and for-comprehensions.

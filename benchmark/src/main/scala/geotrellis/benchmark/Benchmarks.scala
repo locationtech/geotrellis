@@ -131,9 +131,9 @@ class DataMap extends MyBenchmark {
     val re = RasterExtent(Extent(0, 0, size, size), 1.0, 1.0, size, size)
     raster = Raster(init(len)(Random.nextInt), re)
 
-    bitData = new BitArrayRasterData(init((len + 7) / 8)(Random.nextInt.toByte), len)
-    byteData = new ByteArrayRasterData(init(len)(Random.nextInt.toByte))
-    shortData = new ShortArrayRasterData(init(len)(Random.nextInt.toShort))
+    bitData = new BitArrayRasterData(init((len + 7) / 8)(Random.nextInt.toByte), size, size)
+    byteData = new ByteArrayRasterData(init(len)(Random.nextInt.toByte), size, size)
+    shortData = new ShortArrayRasterData(init(len)(Random.nextInt.toShort), size, size)
 
     mc = MultiplyConstant(raster, 2)
     mcCustomWithInt = MultiplyConstantCustomWithInt(raster, 2)
@@ -748,7 +748,7 @@ object WriteHugeTiledRaster {
 
     val value:Byte = ((tileCol % 50) + 1).toByte
     val size = layout.pixelCols * layout.pixelRows
-    val a = ByteArrayRasterData(Array.fill[Byte](size)(value))
+    val a = ByteArrayRasterData(Array.fill[Byte](size)(value), layout.pixelCols, layout.pixelRows)
     Raster(a,tileRasterExtent)
   }
 }

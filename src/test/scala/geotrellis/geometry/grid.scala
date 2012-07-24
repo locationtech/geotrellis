@@ -101,10 +101,10 @@ class GridPolygonSpec extends Spec with MustMatchers with ShouldMatchers {
         val p = new GridPolygon(Array(mkline(0, 0, 2, 2),
                                       mkline(2, 2, 9, 9),
                                       mkline(9, 9, 0, 0)))
-        val width = 6
-        val height = 6
-        val data = Array.ofDim[Int](width * height)
-        p.rasterize(width, height, 1, IntArrayRasterData(data), 0, 0)
+        val cols = 6
+        val rows = 6
+        val data = Array.ofDim[Int](cols * rows)
+        p.rasterize(cols, rows, 1, IntArrayRasterData(data, cols, rows), 0, 0)
       } should produce [Exception];
     }
 

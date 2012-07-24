@@ -63,13 +63,16 @@ trait DoubleBasedArray {
  */
 trait RasterData {
   def getType: RasterType
-  def alloc(size:Int): MutableRasterData
+  def alloc(cols:Int, rows:Int): MutableRasterData
   def isFloat = getType.float
 
   def copy:RasterData
   def length:Int
   def lengthLong:Long 
   def convert(typ:RasterType):RasterData
+
+  def cols:Int
+  def rows:Int
 
   /**
    * Combine two RasterData's cells into new cells using the given integer
@@ -144,14 +147,14 @@ trait RasterData {
   def mutable:Option[MutableRasterData]
 
   /**
-   * Get a particular (x, y) cell's integer value, given a width in cols.
+   * Get a particular (x, y) cell's integer value.
    */
-  def get(x:Int, y:Int, cols:Int):Int
+  def get(x:Int, y:Int):Int
 
   /**
-   * Get a particular (x, y) cell's double value, given a width in cols.
+   * Get a particular (x, y) cell's double value.
    */
-  def getDouble(x:Int, y:Int, cols:Int):Double
+  def getDouble(x:Int, y:Int):Double
 }
 
 object RasterData {
@@ -161,26 +164,26 @@ object RasterData {
   def largestByType(lhs:RasterData, rhs:RasterData) = {
     if (largestType(lhs, rhs) == lhs.getType) lhs else rhs
   }
-  def largestAlloc(lhs:RasterData, rhs:RasterData, size:Int) = {
-    largestByType(lhs, rhs).alloc(size)
+  def largestAlloc(lhs:RasterData, rhs:RasterData, cols:Int, rows:Int) = {
+    largestByType(lhs, rhs).alloc(cols, rows)
   }
 
-  def allocByType(t:RasterType, size:Int):MutableRasterData = t match {
-    case TypeBit => BitArrayRasterData.ofDim(size)
-    case TypeByte => ByteArrayRasterData.ofDim(size)
-    case TypeShort => ShortArrayRasterData.ofDim(size)
-    case TypeInt => IntArrayRasterData.ofDim(size)
-    case TypeFloat => FloatArrayRasterData.ofDim(size)
-    case TypeDouble => DoubleArrayRasterData.ofDim(size)
+  def allocByType(t:RasterType, cols:Int, rows:Int):MutableRasterData = t match {
+    case TypeBit => BitArrayRasterData.ofDim(cols, rows)
+    case TypeByte => ByteArrayRasterData.ofDim(cols, rows)
+    case TypeShort => ShortArrayRasterData.ofDim(cols, rows)
+    case TypeInt => IntArrayRasterData.ofDim(cols, rows)
+    case TypeFloat => FloatArrayRasterData.ofDim(cols, rows)
+    case TypeDouble => DoubleArrayRasterData.ofDim(cols, rows)
   }
 
-  def emptyByType(t:RasterType, size:Int):MutableRasterData = t match {
-    case TypeBit => BitArrayRasterData.empty(size)
-    case TypeByte => ByteArrayRasterData.empty(size)
-    case TypeShort => ShortArrayRasterData.empty(size)
-    case TypeInt => IntArrayRasterData.empty(size)
-    case TypeFloat => FloatArrayRasterData.empty(size)
-    case TypeDouble => DoubleArrayRasterData.empty(size)
+  def emptyByType(t:RasterType, cols:Int, rows:Int):MutableRasterData = t match {
+    case TypeBit => BitArrayRasterData.empty(cols, rows)
+    case TypeByte => ByteArrayRasterData.empty(cols, rows)
+    case TypeShort => ShortArrayRasterData.empty(cols, rows)
+    case TypeInt => IntArrayRasterData.empty(cols, rows)
+    case TypeFloat => FloatArrayRasterData.empty(cols, rows)
+    case TypeDouble => DoubleArrayRasterData.empty(cols, rows)
   }
 }
 
@@ -217,8 +220,8 @@ trait ArrayRasterData extends RasterData {
   def apply(i: Int):Int
   def applyDouble(i:Int):Double
 
-  def get(col:Int, row:Int, cols:Int) = apply(row * cols + col)
-  def getDouble(col:Int, row:Int, cols:Int) = applyDouble(row * cols + col)
+  def get(col:Int, row:Int) = apply(row * cols + col)
+  def getDouble(col:Int, row:Int) = applyDouble(row * cols + col)
 
   def toList = toArray.toList
   def toListDouble = toArrayDouble.toList
@@ -268,7 +271,7 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
 
   def map(f:Int => Int):ArrayRasterData = {
     val len = length
-    val data = alloc(len)
+    val data = alloc(cols, rows)
     var i = 0
     while (i < len) {
       data(i) = f(apply(i))
@@ -279,7 +282,7 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
 
   def mapIfSet(f:Int => Int):ArrayRasterData = {
     val len = length
-    val data = alloc(len)
+    val data = alloc(cols, rows)
     var i = 0
     while (i < len) {
       val z = apply(i)
@@ -291,7 +294,7 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
 
   def combine(rhs:RasterData)(f:(Int, Int) => Int):RasterData = rhs match {
     case other:ArrayRasterData => {
-      val output = RasterData.largestAlloc(this, other, length)
+      val output = RasterData.largestAlloc(this, other, cols, rows)
       var i = 0
       val len = length
       while (i < len) {
@@ -315,7 +318,7 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
 
   def mapDouble(f:Double => Double):ArrayRasterData = {
     val len = length
-    val data = alloc(len)
+    val data = alloc(cols, rows)
     var i = 0
     while (i < len) {
       data.updateDouble(i, f(applyDouble(i)))
@@ -326,7 +329,7 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
 
   def mapIfSetDouble(f:Double => Double):ArrayRasterData = {
     val len = length
-    val data = alloc(len)
+    val data = alloc(cols, rows)
     var i = 0
     while (i < len) {
       val z = applyDouble(i)
@@ -338,7 +341,7 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
 
   def combineDouble(rhs:RasterData)(f:(Double, Double) => Double) = rhs match {
     case other:ArrayRasterData => {
-      val output = RasterData.largestAlloc(this, other, length)
+      val output = RasterData.largestAlloc(this, other, cols, rows)
       var i = 0
       val len = length
       while (i < len) {
@@ -374,20 +377,20 @@ trait MutableRasterData extends StrictRasterData {
 /**
  * RasterData based on Array[Int] (each cell as an Int).
  */
-final class IntArrayRasterData(array:Array[Int]) extends MutableRasterData with IntBasedArray {
+final case class IntArrayRasterData(array:Array[Int], cols:Int, rows:Int) extends MutableRasterData with IntBasedArray {
   def getType = TypeInt
-  def alloc(size:Int) = IntArrayRasterData.ofDim(size)
+  def alloc(cols:Int, rows:Int) = IntArrayRasterData.ofDim(cols, rows)
   def length = array.length
   def apply(i:Int) = array(i)
   def update(i:Int, z:Int) { array(i) = z }
-  def copy = IntArrayRasterData(array.clone)
+  def copy = IntArrayRasterData(array.clone, cols, rows)
   override def toArray = array.clone
 }
 
 object IntArrayRasterData {
-  def apply(array:Array[Int]) = new IntArrayRasterData(array)
-  def ofDim(size:Int) = new IntArrayRasterData(Array.ofDim[Int](size))
-  def empty(size:Int) = new IntArrayRasterData(Array.fill[Int](size)(NODATA))
+  //def apply(array:Array[Int]) = new IntArrayRasterData(array)
+  def ofDim(cols:Int, rows:Int) = new IntArrayRasterData(Array.ofDim[Int](cols * rows), cols, rows)
+  def empty(cols:Int, rows:Int) = new IntArrayRasterData(Array.fill[Int](cols * rows)(NODATA), cols, rows)
 }
 
 
@@ -401,8 +404,10 @@ object IntArrayRasterData {
  * explicitly told our size, since length=7 and length=8 will both need to
  * allocate an Array[Byte] with length=1.
  */
-final class BitArrayRasterData(array:Array[Byte], size:Int)
+final case class BitArrayRasterData(array:Array[Byte], cols:Int, rows:Int)
 extends MutableRasterData with IntBasedArray {
+  val size = cols * rows
+
   // i >> 3 is the same as i / 8 but faster
   // i & 7 is the same as i % 8 but faster
   // i & 1 is the same as i % 2 but faster
@@ -412,7 +417,7 @@ extends MutableRasterData with IntBasedArray {
   // 3 ^ 9 -> 10, that is 00000011 ^ 00001001 -> 00001010
   assert(array.length == (size + 7) / 8)
   def getType = TypeBit
-  def alloc(size:Int) = BitArrayRasterData.ofDim(size)
+  def alloc(cols:Int, rows:Int) = BitArrayRasterData.ofDim(cols, rows)
   def length = size
   def apply(i:Int) = ((array(i >> 3) >> (i & 7)) & 1).asInstanceOf[Int]
   def update(i:Int, z:Int): Unit = {
@@ -425,7 +430,7 @@ extends MutableRasterData with IntBasedArray {
       array(div) = (array(div) | (1 << (i & 7))).toByte
     }
   }
-  def copy = BitArrayRasterData(array.clone, size)
+  def copy = BitArrayRasterData(array.clone, cols, rows)
 
   override def map(f:Int => Int) = {
     val f0 = f(0) & 1
@@ -450,7 +455,7 @@ extends MutableRasterData with IntBasedArray {
       }
       arr
     }
-    BitArrayRasterData(arr, size)
+    BitArrayRasterData(arr, cols, rows)
   }
 
   override def mapIfSet(f:Int => Int) = map(f)
@@ -460,23 +465,22 @@ extends MutableRasterData with IntBasedArray {
 }
 
 object BitArrayRasterData {
-  def apply(array:Array[Byte], size:Int) = new BitArrayRasterData(array, size)
-  def ofDim(size:Int) = new BitArrayRasterData(Array.ofDim[Byte]((size + 7) / 8), size)
-  def empty(size:Int) = ofDim(size)
+  def ofDim(cols:Int, rows:Int) = new BitArrayRasterData(Array.ofDim[Byte](((cols * rows) + 7) / 8), cols, rows)
+  def empty(cols:Int, rows:Int) = ofDim(cols, rows)
 }
 
 
 /**
  * RasterData based on Array[Byte] (each cell as a Byte).
  */
-final class ByteArrayRasterData(array:Array[Byte])
+final case class ByteArrayRasterData(array:Array[Byte], cols:Int, rows:Int)
 extends MutableRasterData with IntBasedArray {
   def getType = TypeByte
-  def alloc(size:Int) = ByteArrayRasterData.ofDim(size)
+  def alloc(cols:Int, rows:Int) = ByteArrayRasterData.ofDim(cols, rows)
   def length = array.length
   def apply(i:Int) = b2i(array(i))
   def update(i:Int, z:Int) { array(i) = i2b(z) }
-  def copy = ByteArrayRasterData(array.clone)
+  def copy = ByteArrayRasterData(array.clone, cols, rows)
 
   override def mapIfSet(f:Int => Int) = {
     val arr = array.clone
@@ -487,28 +491,28 @@ extends MutableRasterData with IntBasedArray {
       if (z != byteNodata) arr(i) = f(z).asInstanceOf[Byte]
       i += 1
     }
-    ByteArrayRasterData(arr)
+    ByteArrayRasterData(arr, cols, rows)
   }
 }
 
 object ByteArrayRasterData {
-  def apply(array:Array[Byte]) = new ByteArrayRasterData(array)
-  def ofDim(size:Int) = new ByteArrayRasterData(Array.ofDim[Byte](size))
-  def empty(size:Int) = new ByteArrayRasterData(Array.fill[Byte](size)(Byte.MinValue))
+  //def apply(array:Array[Byte]) = new ByteArrayRasterData(array)
+  def ofDim(cols:Int, rows:Int) = new ByteArrayRasterData(Array.ofDim[Byte](cols * rows), cols, rows)
+  def empty(cols:Int, rows:Int) = new ByteArrayRasterData(Array.fill[Byte](cols * rows)(Byte.MinValue), cols, rows)
 }
 
 
 /**
  * RasterData based on Array[Short] (each cell as a Short).
  */
-final class ShortArrayRasterData(array:Array[Short])
+final case class ShortArrayRasterData(array:Array[Short], cols:Int, rows:Int)
 extends MutableRasterData with IntBasedArray {
   def getType = TypeShort
-  def alloc(size:Int) = ShortArrayRasterData.ofDim(size)
+  def alloc(cols:Int, rows:Int) = ShortArrayRasterData.ofDim(cols, rows)
   def length = array.length
   def apply(i:Int) = s2i(array(i))
   def update(i:Int, z:Int) { array(i) = i2s(z) }
-  def copy = ShortArrayRasterData(array.clone)
+  def copy = ShortArrayRasterData(array.clone, cols, rows)
 
   override def mapIfSet(f:Int => Int) = {
     val arr = array.clone
@@ -519,28 +523,28 @@ extends MutableRasterData with IntBasedArray {
       if (z != shortNodata) arr(i) = f(z).asInstanceOf[Short]
       i += 1
     }
-    ShortArrayRasterData(arr)
+    ShortArrayRasterData(arr, cols, rows)
   }
 }
 
 object ShortArrayRasterData {
-  def apply(array:Array[Short]) = new ShortArrayRasterData(array)
-  def ofDim(size:Int) = new ShortArrayRasterData(Array.ofDim[Short](size))
-  def empty(size:Int) = new ShortArrayRasterData(Array.fill[Short](size)(Short.MinValue))
+  //def apply(array:Array[Short]) = new ShortArrayRasterData(array)
+  def ofDim(cols:Int, rows:Int) = new ShortArrayRasterData(Array.ofDim[Short](cols * rows), cols, rows)
+  def empty(cols:Int, rows:Int) = new ShortArrayRasterData(Array.fill[Short](cols * rows)(Short.MinValue), cols, rows)
 }
 
 
 /**
  * RasterData based on Array[Float] (each cell as a Float).
  */
-final class FloatArrayRasterData(array:Array[Float])
+final case class FloatArrayRasterData(array:Array[Float], cols:Int, rows:Int)
 extends MutableRasterData with DoubleBasedArray {
   def getType = TypeFloat
-  def alloc(size:Int) = FloatArrayRasterData.ofDim(size)
+  def alloc(cols:Int, rows:Int) = FloatArrayRasterData.ofDim(cols, rows)
   def length = array.length
   def applyDouble(i:Int) = array(i).toDouble
   def updateDouble(i:Int, z:Double) = array(i) = z.toFloat
-  def copy = FloatArrayRasterData(array.clone)
+  def copy = FloatArrayRasterData(array.clone, cols, rows)
 
   override def mapIfSet(f:Int => Int) = {
     val arr = array.clone
@@ -551,28 +555,28 @@ extends MutableRasterData with DoubleBasedArray {
       if (!java.lang.Float.isNaN(z)) arr(i) = i2f(f(f2i(z)))
       i += 1
     }
-    FloatArrayRasterData(arr)
+    FloatArrayRasterData(arr, cols, rows)
   }
 }
 
 object FloatArrayRasterData {
-  def apply(array:Array[Float]) = new FloatArrayRasterData(array)
-  def ofDim(size:Int) = new FloatArrayRasterData(Array.ofDim[Float](size))
-  def empty(size:Int) = new FloatArrayRasterData(Array.fill[Float](size)(Float.NaN))
+  //def apply(array:Array[Float]) = new FloatArrayRasterData(array)
+  def ofDim(cols:Int, rows:Int) = new FloatArrayRasterData(Array.ofDim[Float](cols * rows), cols, rows)
+  def empty(cols:Int, rows:Int) = new FloatArrayRasterData(Array.fill[Float](cols * rows)(Float.NaN), cols, rows)
 }
 
 
 /**
  * RasterData based on Array[Double] (each cell as a Double).
  */
-final class DoubleArrayRasterData(array:Array[Double])
+final case class DoubleArrayRasterData(array:Array[Double], cols:Int, rows:Int)
 extends MutableRasterData with DoubleBasedArray {
   def getType = TypeDouble
-  def alloc(size:Int) = DoubleArrayRasterData.ofDim(size)
+  def alloc(cols:Int, rows:Int) = DoubleArrayRasterData.ofDim(cols, rows)
   def length = array.length
   def applyDouble(i:Int) = array(i)
   def updateDouble(i:Int, z:Double) = array(i) = z
-  def copy = DoubleArrayRasterData(array.clone)
+  def copy = DoubleArrayRasterData(array.clone, cols, rows)
   override def toArrayDouble = array.clone
 
   override def mapIfSet(f:Int => Int) = {
@@ -584,14 +588,14 @@ extends MutableRasterData with DoubleBasedArray {
       if (!java.lang.Double.isNaN(z)) arr(i) = i2d(f(d2i(z)))
       i += 1
     }
-    DoubleArrayRasterData(arr)
+    DoubleArrayRasterData(arr, cols, rows)
   }
 }
 
 object DoubleArrayRasterData {
-  def apply(array:Array[Double]) = new DoubleArrayRasterData(array)
-  def ofDim(size:Int) = new DoubleArrayRasterData(Array.ofDim[Double](size))
-  def empty(size:Int) = new DoubleArrayRasterData(Array.fill[Double](size)(Double.NaN))
+  //def apply(array:Array[Double]) = new DoubleArrayRasterData(array)
+  def ofDim(cols:Int, rows:Int) = new DoubleArrayRasterData(Array.ofDim[Double](cols * rows), cols, rows)
+  def empty(cols:Int, rows:Int) = new DoubleArrayRasterData(Array.fill[Double](cols * rows)(Double.NaN), cols, rows)
 }
 
 
@@ -604,7 +608,7 @@ trait LazyRasterData extends ArrayRasterData {
 
   def mutable = {
     val len = length
-    val d = alloc(len)
+    val d = alloc(cols, rows)
     var i = 0
     while (i < len) {
       d(i) = apply(i)
@@ -622,8 +626,11 @@ trait LazyRasterData extends ArrayRasterData {
 trait Wrapper {
   protected[this] def underlying:ArrayRasterData
   final def getType = underlying.getType
-  final def alloc(size:Int) = underlying.alloc(size)
+  final def alloc(cols:Int, rows:Int) = underlying.alloc(cols, rows)
   final def length = underlying.length
+
+  def cols = underlying.cols
+  def rows = underlying.rows
 }
 
 
@@ -795,8 +802,11 @@ final case class LazyCombine(data1:ArrayRasterData,
                              data2:ArrayRasterData,
                              g:(Int, Int) => Int) extends LazyRasterData {
 
+  def cols = data1.cols
+  def rows = data1.rows
+
   def getType = RasterData.largestType(data1, data2)
-  def alloc(size:Int) = RasterData.largestAlloc(data1, data2, size)
+  def alloc(cols:Int, rows:Int) = RasterData.largestAlloc(data1, data2, cols, rows)
   def length = data1.length
 
   def apply(i:Int) = g(data1.apply(i), data2.apply(i))
@@ -862,8 +872,11 @@ final case class LazyCombineDouble(data1:ArrayRasterData,
                                    data2:ArrayRasterData,
                                    g:(Double, Double) => Double) extends LazyRasterData {
 
+  def cols = data1.cols
+  def rows = data1.rows
+
   def getType = RasterData.largestType(data1, data2)
-  def alloc(size:Int) = RasterData.largestAlloc(data1, data2, size)
+  def alloc(cols:Int, rows:Int) = RasterData.largestAlloc(data1, data2, cols, rows)
   def length = data1.length
 
   def apply(i:Int) = d2i(g(data1.applyDouble(i), data2.applyDouble(i)))
@@ -927,8 +940,11 @@ final case class LazyCombineDouble(data1:ArrayRasterData,
  */
 final case class LazyConvert(data:ArrayRasterData, typ:RasterType)
 extends LazyRasterData {
+  def cols = data.cols
+  def rows = data.rows
+
   def getType = typ
-  def alloc(size:Int) = RasterData.allocByType(typ, size)
+  def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
   def length = data.length
   def apply(i:Int) = data.apply(i)
   def applyDouble(i:Int) = data.applyDouble(i)

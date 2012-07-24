@@ -47,7 +47,7 @@ final class AsciiReadState(path:String,
     val xmax = xllcorner + ncols * cellsize
     val ymax = yllcorner + nrows * cellsize
 
-    ints = IntArrayRasterData.ofDim(size)
+    ints = IntArrayRasterData.ofDim(ncols, nrows)
     val br = getBufferedReader()
     try {
       var done = false

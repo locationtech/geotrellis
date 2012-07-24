@@ -7,13 +7,13 @@ import scala.math.{min, max}
 
 object Raster {
   def apply(arr:Array[Int], re:RasterExtent):Raster = 
-    Raster(IntArrayRasterData(arr), re)
+    Raster(IntArrayRasterData(arr, re.cols, re.rows), re)
 
   def apply(arr:Array[Double], re:RasterExtent):Raster = 
-    Raster(DoubleArrayRasterData(arr), re)
+    Raster(DoubleArrayRasterData(arr, re.cols, re.rows), re)
 
   def empty(re:RasterExtent):Raster = 
-    Raster(IntArrayRasterData.empty(re.rows * re.cols), re)
+    Raster(IntArrayRasterData.empty(re.rows, re.cols), re)
 }
 
 /**
@@ -32,7 +32,7 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
   /**
    * Get value at given coordinates.
    */
-  def get(col:Int, row:Int):Int = data.get(col, row, cols)
+  def get(col:Int, row:Int):Int = data.get(col, row)
 
   /**
    * Return tuple of highest and lowest value in raster.

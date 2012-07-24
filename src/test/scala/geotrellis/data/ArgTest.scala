@@ -13,7 +13,7 @@ class ArgTest extends FunSuite {
   var d:MutableRasterData = null
 
   test("create a float32 raster of zeros") {
-    d = FloatArrayRasterData.ofDim(100)
+    d = FloatArrayRasterData.ofDim(10, 10)
     val e = Extent(0.0, 0.0, 10.0, 10.0)
     val re = RasterExtent(e, 1.0, 1.0, 10, 10)
     r = Raster(d, re)
