@@ -365,10 +365,10 @@ trait MutableRasterData extends StrictRasterData {
   def update(i:Int, z:Int): Unit
   def updateDouble(i:Int, z:Double):Unit
 
-  def set(col:Int, row:Int, value:Int, cols:Int) {
+  def set(col:Int, row:Int, value:Int) {
     update(row * cols + col, value)
   }
-  def setDouble(col:Int, row:Int, value:Double, cols:Int) {
+  def setDouble(col:Int, row:Int, value:Double) {
     updateDouble(row * cols + col, value)
   }
 }
