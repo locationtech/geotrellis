@@ -5,7 +5,7 @@ import scala.util.Random
 
 import com.typesafe.config.ConfigFactory
 import akka.actor.{ ActorRef, Props, Actor, ActorSystem }
-import geotrellis.op._
+import geotrellis.raster.op._
 import geotrellis.process._
 import geotrellis._
 
@@ -83,7 +83,7 @@ object RemoteClient {
     val r1 = Raster(Array.fill(cols * rows)(3), re)
     println("CLIENT: Started application.")
     while (true) {
-      val remoteOp = AddConstant(r1,3)
+      val remoteOp = local.AddConstant(r1,3)
       app.runRemote(remoteOp)
     }
   }

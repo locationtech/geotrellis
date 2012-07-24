@@ -1,4 +1,4 @@
-package geotrellis.op.render.png
+package geotrellis.io
 
 import geotrellis.data.png._
 import geotrellis.data._

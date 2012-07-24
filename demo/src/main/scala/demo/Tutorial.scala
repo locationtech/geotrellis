@@ -4,19 +4,23 @@ import javax.servlet.http.{HttpServletRequest}
 import javax.ws.rs.{GET, Path, DefaultValue, PathParam, QueryParam}
 import javax.ws.rs.core.{Response, Context}
 
-import geotrellis.{Extent, Raster}
+import geotrellis._
 import geotrellis.data.{ColorBreaks}
-import geotrellis.stat.{Histogram}
-import geotrellis.op._
+import geotrellis.statistics.{Histogram}
 import geotrellis.process.{Server}
 import geotrellis.Implicits._
 
-import geotrellis.op.raster.data.{LoadFile, LoadRaster}
-import geotrellis.op.logic.{Do, ForEach}
-import geotrellis.op.util.string.{ParseInt, ParseHexInt, SplitOnComma}
-import geotrellis.op.raster.stat.{Histogram}
-import geotrellis.op.stat.{ColorBreaks => FindColorBreaks, ColorsFromPalette}
-import geotrellis.op.raster.extent.{ParseExtent, CombineExtents}
+import geotrellis.raster.op._
+import geotrellis.rest.op._
+import geotrellis.statistics.op._
+
+
+//import geotrellis.op.raster.data.{LoadFile, LoadRaster}
+//import geotrellis.op.logic.{Do, ForEach}
+//import geotrellis.op.util.string.{ParseInt, ParseHexInt, SplitOnComma}
+//import geotrellis.op.raster.stat.{Histogram}
+//import geotrellis.op.stat.{ColorBreaks => FindColorBreaks, ColorsFromPalette}
+//import geotrellis.op.raster.extent.{ParseExtent, CombineExtents}
 
 
 //object Demo {
@@ -39,7 +43,7 @@ class AddOne {
   def get(@PathParam("x") s:String,
           @Context req:HttpServletRequest) = {
     // parse the given integer
-    val opX:Op[Int] = ParseInt(s)
+    val opX:Op[Int] = string.ParseInt(s)
 
     // add one
     val opY:Op[Int] = opX + 1
@@ -64,11 +68,11 @@ class BoundingBox {
           @PathParam("extent2") s2:String,
           @Context req:HttpServletRequest) = {
     // parse the given extents
-    val e1:Op[Extent] = ParseExtent(s1)
-    val e2:Op[Extent] = ParseExtent(s2)
+    val e1:Op[Extent] = string.ParseExtent(s1)
+    val e2:Op[Extent] = string.ParseExtent(s2)
 
     // combine the extents
-    val op:Op[Extent] = CombineExtents(e1, e2)
+    val op:Op[Extent] = extent.CombineExtents(e1, e2)
 
     // run the operation
     val data:String = try {
@@ -92,19 +96,19 @@ class DrawRaster {
           @Context req:HttpServletRequest) = {
 
     // load the raster
-    val rasterOp:Op[Raster] = LoadRaster(name)
+    val rasterOp:Op[Raster] = io.LoadRaster(name)
 
     // find the colors to use
-    val paletteOp:Op[Array[Int]] = ForEach(SplitOnComma(palette))(ParseHexInt(_))
-    val numOp:Op[Int] = ParseInt(shades)
-    val colorsOp:Op[Array[Int]] = ColorsFromPalette(paletteOp, numOp)
+    val paletteOp:Op[Array[Int]] = logic.ForEach(string.SplitOnComma(palette))(string.ParseHexInt(_))
+    val numOp:Op[Int] = string.ParseInt(shades)
+    val colorsOp:Op[Array[Int]] = stat.GetColorsFromPalette(paletteOp, numOp)
 
     // find the appropriate quantile class breaks to use
-    val histogramOp:Op[Histogram] = Histogram(rasterOp)
-    val breaksOp:Op[ColorBreaks] = FindColorBreaks(histogramOp, colorsOp)
+    val histogramOp:Op[Histogram] = stat.GetHistogram(rasterOp)
+    val breaksOp:Op[ColorBreaks] = stat.GetColorBreaks(histogramOp, colorsOp)
 
     // render the png
-    val pngOp:Op[Array[Byte]] = render.png.RenderPNG(rasterOp, breaksOp, 0, true)
+    val pngOp:Op[Array[Byte]] = io.RenderPNG(rasterOp, breaksOp, 0, true)
 
     // run the operation
     try {

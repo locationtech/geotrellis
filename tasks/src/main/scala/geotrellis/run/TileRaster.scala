@@ -2,8 +2,8 @@ package geotrellis.run
 
 import com.beust.jcommander._
 
+import geotrellis._
 import geotrellis.data._
-import geotrellis.op.LoadFile
 import geotrellis.process._
 import geotrellis.raster._
 
@@ -59,7 +59,7 @@ object TileRasterTask {
     val server = Server("script", Catalog.empty("script"))
 
     println("Loading raster at path: " + inPath)
-    val raster = server.run(LoadFile(inPath))
+    val raster = server.run(io.LoadFile(inPath))
 
     println("Generating tiles in directory: " + outDir)
 

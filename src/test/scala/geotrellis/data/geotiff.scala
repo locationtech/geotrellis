@@ -73,8 +73,7 @@ class GeoTiffSpec extends Spec with MustMatchers with ShouldMatchers {
       val colors = chooser.getColors(breaks.length)
       val pairs = breaks.zip(colors).toArray
 
-      import geotrellis.op.render.png.WritePNGFile
-      val png = WritePNGFile(raster, "/tmp/fromgeo.png", pairs, NODATA, false)
+      val png = io.WritePNGFile(raster, "/tmp/fromgeo.png", pairs, NODATA, false)
       server.run(png)
     }
 
