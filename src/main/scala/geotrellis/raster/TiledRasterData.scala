@@ -3,8 +3,7 @@ package geotrellis.raster
 import geotrellis._
 import geotrellis.data.arg.ArgWriter
 import geotrellis.process._
-import geotrellis.op._
-import geotrellis.op.io.LoadFile
+import geotrellis._
 
 /**
  * This class stores the layout of a tiled raster: the number of tiles (in
@@ -250,7 +249,7 @@ case class TileSetRasterData(basePath:String, name:String, typ:RasterType,
 
   override def getTileOp(rl:ResolutionLayout, c:Int, r:Int) = {
     val path = Tiler.tilePath(basePath, name, c, r)
-    logic.Do(LoadFile(path))(_.defer)    
+    logic.Do(io.LoadFile(path))(_.defer)    
   }  
 }
 

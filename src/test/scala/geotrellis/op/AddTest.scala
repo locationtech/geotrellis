@@ -6,7 +6,7 @@ import geotrellis.raster._
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import raster.local.Add
+import geotrellis.raster.op.local.Add
 
 @RunWith(classOf[JUnitRunner])
 class AddTest extends FunSuite {

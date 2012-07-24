@@ -6,18 +6,18 @@ import scala.math.{max,min,sqrt}
 import geotrellis.geometry.Polygon
 
 import geotrellis._
-import geotrellis.stat._
+import geotrellis.statistics._
 import geotrellis.process._
 import geotrellis.data.ColorBreaks
-import geotrellis.op._
-import geotrellis.op.raster._
-import geotrellis.op.raster.local._
-import geotrellis.op.raster.extent.GetRasterExtent
-import geotrellis.op.logic._
-import geotrellis.op.io.{LoadRaster,LoadRasterExtent,LoadFile,LoadRasterExtentFromFile}
-import geotrellis.op.raster.transform.{ResampleRaster}
-import geotrellis.op.raster.CreateRaster
-import geotrellis.op.raster.stat.{GetHistogram,GetStandardDeviation}
+import geotrellis._
+import geotrellis.raster.op._
+import geotrellis.raster.op.local._
+import geotrellis.raster.op.extent.GetRasterExtent
+import geotrellis.logic._
+import geotrellis.io._
+import geotrellis.raster.op.transform.{ResampleRaster}
+import geotrellis.raster.op.CreateRaster
+import geotrellis.statistics.op.stat._
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
@@ -86,7 +86,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("LoadFile, w/ resampling") {
-      val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img8.arg")
+      val G1 = io.LoadRasterExtentFromFile("src/test/resources/fake.img8.arg")
       val geo1 = server.run(G1)
 
       val G2 = GetRasterExtent( geo1.extent.xmin, geo1.extent.ymin, geo1.extent.xmax, geo1.extent.ymax, 2, 2) 
@@ -138,7 +138,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it("test Literal implicit") {
-      import geotrellis.op.Literal
+      import geotrellis.Literal
       val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img8.arg")
       val geo1 = server.run(G1)
       val L = LoadFile("src/test/resources/fake.img8.arg", geo1)
@@ -180,7 +180,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
     it("FindClassBreaks") {
       val H = GetHistogram(Literal(raster1), 101)
-      val F = raster.stat.GetClassBreaks(H, 4)
+      val F = GetClassBreaks(H, 4)
       server.run(F) must be === Array(12, 15, 66, 95)
     }
 
@@ -188,18 +188,18 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val H = GetHistogram(Literal(raster1), 101)
       val (g, y, o, r) = (0x00FF00, 0xFFFF00, 0xFF7F00, 0xFF0000)
       val colors = Array(g, y, o, r)
-      val F = raster.stat.GetColorBreaks(H, colors)
+      val F = GetColorBreaks(H, colors)
       val cb = server.run(F)
       cb.breaks.toList must be === List((12, g), (15, y), (66, o), (95, r))
     }
 
     it("GenerateStatistics") {
       val R = LoadFile("src/test/resources/quad8.arg")
-      val S = raster.stat.GetStatistics(GetHistogram(R))
+      val S = GetStatistics(GetHistogram(R))
       val stats = server.run(S)
 
       val dev = sqrt((2 * (0.5 * 0.5) + 2 * (1.5 * 1.5)) / 4)
-      val expected = geotrellis.stat.Statistics(2.5, 3, 1, dev, 1, 4)
+      val expected = Statistics(2.5, 3, 1, dev, 1, 4)
 
       stats must be === expected
     }
@@ -209,7 +209,7 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
       val R1 = LoadFile("src/test/resources/quad8.arg")
       val R2 = LoadFile("src/test/resources/quad8.arg")
       val H = GetHistogram(R1)
-      val S:GetStandardDeviation = op.raster.stat.GetStandardDeviation(R2, H, 1000)
+      val S:GetStandardDeviation = GetStandardDeviation(R2, H, 1000)
      
       val raster = newServer.run(S)
 
@@ -252,13 +252,13 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
     // unary local
     it("Negate") {
-      runArray(raster.local.Negate(r)) must be === a.map { _ * -1 }
+      runArray(local.Negate(r)) must be === a.map { _ * -1 }
     }
     it("AddConstant") {
-      runArray(raster.local.AddConstant(r, 10)) must be === a.map { _ + 10 }
+      runArray(local.AddConstant(r, 10)) must be === a.map { _ + 10 }
     }
     it("MultiplyConstant") {
-      runArray(raster.local.MultiplyConstant(r, 8)) must be === a.map { _ * 8 }
+      runArray(local.MultiplyConstant(r, 8)) must be === a.map { _ * 8 }
     }
     it("SubtractConstant") {
       runArray(SubtractConstant(r, 5)) must be === a.map { _ - 5 }

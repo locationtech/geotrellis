@@ -55,8 +55,8 @@ class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
 
       ArgWriter(TypeInt).write(path, raster, "foog")
 
-      val data1 = io.Source.fromFile(path).mkString
-      val data2 = io.Source.fromFile("src/test/resources/fake.img32.arg").mkString
+      val data1 = scala.io.Source.fromFile(path).mkString
+      val data2 = scala.io.Source.fromFile("src/test/resources/fake.img32.arg").mkString
     
       //new java.io.File(base + ".arg").delete() must be === true
       //new java.io.File(base + ".json").delete() must be === true

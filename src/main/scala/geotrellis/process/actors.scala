@@ -6,7 +6,7 @@ import akka.routing._
 import akka.dispatch.Await
 import akka.util.duration._
 
-import geotrellis.op.Operation
+import geotrellis._
 
 /**
  * CalculationResult contains an operation's results.
@@ -78,26 +78,6 @@ case class RunCallback[T](args:Args, pos:Int, cb:Callback[T], client:ActorRef, i
  * Message used to send result values. Used internally and externally.
  */
 case class OperationResult[T](result:CalculationResult[T], pos: Int)
-
-
-/**
- * When run, Operations will return a StepOutput. This will either indicate a
- * complete result (Result), an error (StepError), or indicate that it
- * needs other work performed asynchronously before it can continue.
- */
-sealed trait StepOutput[+T]
-
-case class Result[T](value:T) extends StepOutput[T]
-case class StepError(msg:String, trace:String) extends StepOutput[Nothing]
-case class StepRequiresAsync[T](args:Args, cb:Callback[T]) extends StepOutput[T]
-
-object StepError {
-  def fromException(e:Throwable) = {
-    val msg = e.getMessage
-    val trace = e.getStackTrace.map(_.toString).mkString("\n")
-    StepError(msg, trace)
-  }
-}
 
 /**
  * Actor responsible for dispatching and executing operations.

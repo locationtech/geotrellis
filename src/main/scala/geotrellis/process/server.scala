@@ -5,12 +5,12 @@ import scala.util.matching.Regex
 import scala.collection.mutable
 
 import geotrellis._
-import geotrellis.op._
+import geotrellis._
 import geotrellis.data._
 import geotrellis.data.arg._
 import geotrellis.data.FileExtensionRegexes._
 import geotrellis.RasterExtent
-import geotrellis.op._
+import geotrellis._
 import geotrellis.util._
 
 // akka imports
@@ -20,26 +20,6 @@ import akka.dispatch.Await
 import akka.util.duration._
 import akka.util.Timeout
 import akka.pattern.ask
-
-class Context (server:Server) {
-  val timer = new Timer()
-
-  def loadRaster(path:String, g:RasterExtent):Raster = {
-    server.getRaster(path, None, Option(g))
-  }
-
-  def getRaster(path:String, layer:RasterLayer, re:RasterExtent):Raster = {
-    server.getRaster(path, Option(layer), Option(re))
-  }
-
-  def getRasterByName(name:String, re:RasterExtent):Raster = {
-    server.getRasterByName(name, Option(re))
-  }
-
-  def getRasterExtentByName(name:String):RasterExtent = {
-    server.getRasterExtentByName(name)
-  }
-}
 
 import com.typesafe.config.ConfigFactory
 
@@ -121,7 +101,7 @@ akka {
     implicit val timeout = Timeout(3660 seconds)
 
     val future = op match {
-      case op:DispatchedOp[_] => (actor ? RunDispatched(op.op, op.dispatcher)).mapTo[OperationResult[T]]
+      case op:DispatchedOperation[_] => (actor ? RunDispatched(op.op, op.dispatcher)).mapTo[OperationResult[T]]
       case op:Op[_]           => (actor ? Run(op)).mapTo[OperationResult[T]]
     }
 

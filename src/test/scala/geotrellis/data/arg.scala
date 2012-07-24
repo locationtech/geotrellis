@@ -38,8 +38,8 @@ class ArgSpec extends Spec with MustMatchers with ShouldMatchers {
 
       ArgWriter(TypeByte).write(path2, raster, "name")
 
-      val data1 = io.Source.fromFile(path2).mkString
-      val data2 = io.Source.fromFile("src/test/resources/fake.img8.arg").mkString
+      val data1 = scala.io.Source.fromFile(path2).mkString
+      val data2 = scala.io.Source.fromFile("src/test/resources/fake.img8.arg").mkString
 
       val base = path2.substring(0, path2.lastIndexOf("."))
 

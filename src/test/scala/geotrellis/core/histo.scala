@@ -8,7 +8,7 @@ import Console.printf
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
-import geotrellis.stat._
+import geotrellis.statistics._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class HistogramSpec extends Spec with MustMatchers with ShouldMatchers {

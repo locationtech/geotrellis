@@ -3,7 +3,7 @@ package geotrellis.data.arg
 import geotrellis._
 import geotrellis.data._
 import geotrellis.data.arg._
-import geotrellis.op._
+import geotrellis._
 
 import geotrellis.process._
 import geotrellis.raster._

@@ -3,7 +3,7 @@ package geotrellis.process
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
 
-import geotrellis.op._
+import geotrellis._
 import geotrellis.process._
 
 case class Defenestrator(msg:String) extends Operation[Unit] {

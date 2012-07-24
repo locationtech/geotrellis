@@ -10,8 +10,8 @@ import geotrellis.Raster
 import geotrellis.{Extent,RasterExtent}
 
 import geotrellis._
-import geotrellis.stat._
-import geotrellis.op.raster._
+import geotrellis.statistics._
+import geotrellis.raster.op._
 import geotrellis.process._
 
 import org.scalatest.Spec
@@ -43,7 +43,7 @@ class DoCellSpec extends Spec with MustMatchers with ShouldMatchers {
     val r = Literal(f(a, 3, 3, 0.0, 0.0, 1.0))
 
     it ("DoCell") {
-      val r2 = server.run(raster.local.DoCell(r, _ + 1))
+      val r2 = server.run(local.DoCell(r, _ + 1))
       val d = r2.data.asArray.getOrElse(sys.error("argh"))
       d.toArray must be === a.map { _ + 1 }
     }
