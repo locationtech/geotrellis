@@ -2,11 +2,16 @@ package geotrellis.raster
 
 import geotrellis._
 
+object CroppedArrayRasterData {
+  
+}
+
 /**
  * This trait represents a raster data which represents a lazily-applied
  * cropping of an underlying raster data object.
  */
 case class CroppedArrayRasterData(underlying:ArrayRasterData,
+                                  rasterExtent:RasterExtent,
                                   colOffset:Int, rowOffset:Int,
                                   cols:Int, rows:Int) extends ArrayRasterData {
   def length = cols * rows
@@ -43,10 +48,10 @@ case class CroppedArrayRasterData(underlying:ArrayRasterData,
   }
 
   override def getDouble(col:Int, row:Int):Double = {
-    val c = col - colOffset
-    if (c < 0 || c >= underlying.cols) return NODATA
-    val r = row - rowOffset
-    if (r < 0 || r >= underlying.rows) return NODATA
+    val c = col + colOffset
+    if (c < 0 || c >= underlying.cols) return Double.NaN
+    val r = row + rowOffset
+    if (r < 0 || r >= underlying.rows) return Double.NaN
     underlying.getDouble(c, r)
   }
 

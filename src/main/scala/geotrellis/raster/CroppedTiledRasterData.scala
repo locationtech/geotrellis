@@ -6,10 +6,10 @@ import geotrellis._
  * This trait represents a raster data which represents a lazily-applied
  * cropping of an underlying raster data object.
  */
-class CroppedTiledRasterData(val underlying:TiledRasterData,
-                             val rasterExtent:RasterExtent,
-                             val colOffset:Int, val rowOffset:Int,
-                             val _cols:Int, val _rows:Int) extends TiledRasterData {
+case class CroppedTiledRasterData(underlying:TiledRasterData,
+                                  rasterExtent:RasterExtent,
+                                  colOffset:Int, rowOffset:Int,
+                                  _cols:Int, _rows:Int) extends TiledRasterData {
   override def cols = _cols
   override def rows = _rows
 
@@ -73,10 +73,10 @@ class CroppedTiledRasterData(val underlying:TiledRasterData,
   }
 
   override def getDouble(col:Int, row:Int):Double = {
-    val c = col - colOffset
-    val r = row - rowOffset
-    if (c < 0 || c >= underlying.cols) return NODATA
-    if (r < 0 || r >= underlying.rows) return NODATA
+    val c = col + colOffset
+    if (c < 0 || c >= underlying.cols) return Double.NaN
+    val r = row + rowOffset
+    if (r < 0 || r >= underlying.rows) return Double.NaN
     underlying.getDouble(c, r)
   }
 
