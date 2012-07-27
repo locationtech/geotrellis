@@ -72,4 +72,26 @@ $(function() {
             }
         }
     };
+    var show_message = "show table of contents";
+    var hide_message = "hide table of contents";
+    $(".collap").collapse({
+        "head": "h4",
+        show: function () {
+            this.animate({ 
+                height: "toggle"
+            }, 300);
+            this.prev(".toctitle").children("a").text(hide_message);
+        },
+        hide: function () {
+            this.animate({
+                height: "toggle"
+            }, 300);
+            this.prev(".toctitle").children("a").text(show_message); 
+        }
+    });
+    $(".collap a.tochead").show();
+    $(".collap a.tochead").click(function(event){
+        $(".toctitle").children("a").click();
+    });
+    $(".collap .toctitle a").text(show_message);
 });

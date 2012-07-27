@@ -1,4 +1,5 @@
-<html>
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html >
       <head>
         <title>GeoTrellis — Web Service Tutorial</title>
         <link type="text/css" media="screen, projection" rel="stylesheet" href="css/blueprint/screen.css"></link>
@@ -12,6 +13,7 @@
         <link type="text/css" media="screen and (min-device-width: 800px), projection" rel="stylesheet" href="css/pamflet-grid.css"></link>
         <link type="text/css" media="screen, projection" rel="stylesheet" href="css/custom.css"></link>
         <script src="js/jquery-1.6.2.min.js"></script>
+        <script src="js/jquery.collapse.js"></script>
         <script src="js/pamflet.js"></script>
         <script type="text/javascript" src="js/prettify/prettify.js"></script><script type="text/javascript" src="js/prettify/lang-scala.js"></script><link type="text/css" rel="stylesheet" href="css/prettify.css"></link><script type="text/javascript"><!--
         window.onload=function() { prettyPrint(); };
@@ -22,37 +24,36 @@
       <body>
         <a class="page prev nav" href="Get+started+with+the+template+project.html">
             <span class="space">&nbsp;</span>
-            <span class="flip">❧</span>
+            <span class="flip">&gt;</span>
           </a><a class="page next nav" href="Setting+up+GeoTrellis.html">
             <span class="space">&nbsp;</span>
-            <span>❧</span>
+            <span>&gt;</span>
           </a>
         <div class="container">
           <div class="span-16 prepend-1 append-1">
             <div class="top nav span-16 title">
-              <span>GeoTrellis</span>
-               — Web Service Tutorial
+              <span>GeoTrellis</span> — Web Service Tutorial
             </div>
           </div>
           <div class="span-16 prepend-1 append-1 contents">
             <h2 id="Web+Service+Tutorial">Web Service Tutorial</h2><p>GeoTrellis is commonly used to build web services.
-</p><p>Here we will show you how to build simple web services with Jetty that use
+</p><p>Here we will show you how to build simple web services with Jetty that uses
 GeoTrellis.
 </p><h3 id="Hello+World">Hello World</h3><p>This is the most basic web service—in fact, it doesn’t directly use GeoTrellis
 at all. However, it contains all the imports and objects that the other
 examples will need, as well as providing an example of writing a Jetty web
 service in Scala.
 </p><p>This service can be accessed at <code>http://localhost:8000/greeting</code> and should
-print “hello world”. You may want to substitude your own values for <code>myapp</code> and
-<code>endpoint</code>.
-</p><pre><code class="prettyprint lang-scala">package geotrellis.rest.myapp
+print “hello world”. You may want to substitude your own values for <code>mypackage</code>
+and <code>MyApp</code>.
+</p><pre><code class="prettyprint lang-scala">package mypackage
 
 import javax.servlet.http.HttpServletRequest
 import javax.ws.rs.{GET, Path, DefaultValue, PathParam, QueryParam}
 import javax.ws.rs.core.{Response, Context}
 
 import geotrellis._
-import geotrellis.operation._
+import geotrellis.op._
 import geotrellis.process._
 
 object MyApp {
@@ -83,7 +84,10 @@ you only need to guard your calls to <code>server.run</code>. Combining operatio
 the web service author to focus on correctly encoding application logic without
 having to handle errors at every possible point.
 </p><p>Calling <code>server.run</code> returns an integer value which can be passed to the user.
-</p><pre><code class="prettyprint lang-scala">@Path(&quot;/adder/&quot;)
+</p><pre><code class="prettyprint lang-scala">import geotrellis.op.util.string.ParseInt
+import geotrellis.Implicits._
+
+@Path(&quot;/adder/&quot;)
 class AddOne {
   @GET
   @Path(&quot;/{x}&quot;)
@@ -116,7 +120,9 @@ bounding box around Philadelphia might be encoded as:
 extent that contains both of them. For instance, the request:
 </p><p><code>http://localhost:8000/bbox/0,0,10,10/union/5,-10,15,0</code>
 </p><p>will result in <code>0,-10,15,10</code>.
-</p><pre><code class="prettyprint lang-scala">@Path(&quot;/bbox/&quot;)
+</p><pre><code class="prettyprint lang-scala">import geotrellis.op.raster.extent
+
+@Path(&quot;/bbox/&quot;)
 class BoundingBox {
   @GET
   @Path(&quot;/{extent1}/union/{extent2}&quot;)
@@ -124,11 +130,11 @@ class BoundingBox {
           @PathParam(&quot;extent2&quot;) s2:String,
           @Context req:HttpServletRequest) = {
     // parse the given extents
-    val e1:Op[Extent] = ParseExtent(s1)
-    val e2:Op[Extent] = ParseExtent(s2)
+    val e1:Op[Extent] = extent.ParseExtent(s1)
+    val e2:Op[Extent] = extent.ParseExtent(s2)
 
     // combine the extents
-    val op:Op[Extent] = CombineExtents(e1, e2)
+    val op:Op[Extent] = extent.CombineExtents(e1, e2)
 
     // run the operation
     val data = try {
@@ -162,7 +168,7 @@ use. For example:
 </li><li>blue (<code>0000ff</code>)
 </li></ul><p>The rest of the code builds a <code>geotrellis.stat.Histogram</code> object (using
 <code>BuildMapHistogram</code>) to determine what value ranges should map to which colors
-(using <code>FindColorsBreaks</code> to create a <code>geotrellis.data.ColorBreaks</code>). A full
+(using <code>GetColorsBreaks</code> to create a <code>geotrellis.data.ColorBreaks</code>). A full
 explanation of the methodology is beyond the scope of this tutorial, but the
 basic idea is to try to find ranges of equal size in the raster, so that the 5
 colors are evenly used. Thus, assuming our values ranged from 0-100, we might
@@ -184,7 +190,9 @@ resizing. In your own code, you will usually want to load raster data for a
 particular extent (e.g. a tile) at a particular resolution (e.g. 256x256). This
 services loads and renders the entire raster at its underlying resolution,
 which can be slower.
-</p><pre><code class="prettyprint lang-scala">@Path(&quot;/draw/&quot;)
+</p><pre><code class="prettyprint lang-scala">import geotrellis.op.util.string.{SplitOnComma,ParseInt}
+
+@Path(&quot;/draw/&quot;)
 class DrawRaster {
   @GET
   @Path(&quot;/{name}/palette/{palette}/shades/{shades}&quot;)
@@ -194,19 +202,19 @@ class DrawRaster {
           @Context req:HttpServletRequest) = {
 
     // load the raster
-    val rasterOp = LoadRaster(name)
+    val rasterOp = raster.data.LoadRaster(name)
 
     // find the colors to use
-    val paletteOp = ForEach(SplitOnComma(palette))(ParseHexInt(_))
+    val paletteOp = logic.ForEach(SplitOnComma(palette))(ParseInt(_,16))
     val numOp = ParseInt(shades)
-    val colorsOp = ColorsFromPalette(paletteOp, numOp)
+    val colorsOp = raster.stat.GetColorsFromPalette(paletteOp, numOp)
 
     // find the appropriate quantile class breaks to use
-    val histogramOp = BuildMapHistogram(rasterOp)
-    val breaksOp = FindColorBreaks(histogramOp, colorsOp)
+    val histogramOp = raster.stat.Histogram(rasterOp)
+    val breaksOp = raster.stat.GetColorBreaks(histogramOp, colorsOp)
 
     // render the png
-    val pngOp = RenderPNG(rasterOp, breaksOp, 0, true)
+    val pngOp = raster.data.RenderPNG(rasterOp, breaksOp, 0, true)
 
     // run the operation
     try {
@@ -217,10 +225,16 @@ class DrawRaster {
     }
   }
 }
-</code></pre><h3 id="Conclusion">Conclusion</h3><p>These services are all toys, but hopefully illustrate (and explain) some of the
-concepts and objects used by GeoTrellis. For a more complete example please see
-<code>geotrellis.rest.Demo</code> which implements a weighted overlay service.
-</p><h4>Contents</h4><div><a href="GeoTrellis.html">GeoTrellis</a></div><ol class="toc"> <li><div><a href="API+Reference.html">API Reference</a></div></li><li><div><a href="Get+started+with+the+template+project.html">Get started with the template project</a></div></li><li><div class="current">Web Service Tutorial</div></li><li><div><a href="Setting+up+GeoTrellis.html">Setting up GeoTrellis</a></div></li><li><div><a href="Operations.html">Operations</a></div></li><li><div><a href="Creating+new+operations.html">Creating new operations</a></div></li><li><div><a href="Parallel+and+distributed+execution.html">Parallel and distributed execution</a></div></li><li class="generated"><div><a href="Contents+in+Depth.html">Contents in Depth</a></div></li><li class="generated"><div><a href="Combined+Pages.html">Combined Pages</a></div></li> </ol>
+</code></pre><h3 id="Conclusion">Conclusion</h3><p>These services are all toys, but together they illustrate some of the concepts
+used by GeoTrellis. For a more complete example please see
+<code>geotrellis.rest.Demo</code> in the <code>demo</code> project which implements a more complete
+weighted overlay service.
+</p><div class="tocwrapper show">
+      <a class="tochead nav" style="display: none" href="#toc">❦</a>
+      <a name="toc"></a>
+      <h4 class="toctitle">Contents</h4>
+      <div class="tocbody">
+      <div><a href="GeoTrellis.html">GeoTrellis</a></div><ol class="toc"> <li><div><a href="API+Reference.html">API Reference</a></div></li><li><div><a href="Get+started+with+the+template+project.html">Get started with the template project</a></div></li><li><div class="current">Web Service Tutorial</div></li><li><div><a href="Setting+up+GeoTrellis.html">Setting up GeoTrellis</a></div></li><li><div><a href="Operations.html">Operations</a></div></li><li><div><a href="Creating+new+operations.html">Creating new operations</a></div></li><li><div><a href="Parallel+and+distributed+execution.html">Parallel and distributed execution</a></div></li><li class="generated"><div><a href="Contents+in+Depth.html">Contents in Depth</a></div></li><li class="generated"><div><a href="Combined+Pages.html">Combined Pages</a></div></li> </ol></div></div>
           </div>
         </div>
         <a class="fork nav" href="http://github.com/azavea/geotrellis"><img alt="Fork me on GitHub" src="img/fork.png"></img></a>

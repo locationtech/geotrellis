@@ -1,4 +1,5 @@
-<html>
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html >
       <head>
         <title>GeoTrellis — Get started with the template project</title>
         <link type="text/css" media="screen, projection" rel="stylesheet" href="css/blueprint/screen.css"></link>
@@ -12,80 +13,43 @@
         <link type="text/css" media="screen and (min-device-width: 800px), projection" rel="stylesheet" href="css/pamflet-grid.css"></link>
         <link type="text/css" media="screen, projection" rel="stylesheet" href="css/custom.css"></link>
         <script src="js/jquery-1.6.2.min.js"></script>
+        <script src="js/jquery.collapse.js"></script>
         <script src="js/pamflet.js"></script>
-        <script type="text/javascript" src="js/prettify/prettify.js"></script><link type="text/css" rel="stylesheet" href="css/prettify.css"></link><script type="text/javascript"><!--
-        window.onload=function() { prettyPrint(); };
-      --></script>
+        
         <meta charset="utf-8"></meta>
         <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
       </head>
       <body>
         <a class="page prev nav" href="API+Reference.html">
             <span class="space">&nbsp;</span>
-            <span class="flip">❧</span>
+            <span class="flip">&gt;</span>
           </a><a class="page next nav" href="Web+Service+Tutorial.html">
             <span class="space">&nbsp;</span>
-            <span>❧</span>
+            <span>&gt;</span>
           </a>
         <div class="container">
           <div class="span-16 prepend-1 append-1">
             <div class="top nav span-16 title">
-              <span>GeoTrellis</span>
-               — Get started with the template project
+              <span>GeoTrellis</span> — Get started with the template project
             </div>
           </div>
           <div class="span-16 prepend-1 append-1 contents">
             <h2 id="Get+started+with+the+template+project">Get started with the template project</h2><p>We have provided a sample project that provides a template for creating a 
-geoprocessing web service with GeoTrellis.  It is a blank 
-slate for your own 
-development that provides a development environment that is set up
-with the necessary dependencies in place, making it a little easier to get started.  
-<br/>
-The project loads GeoTrellis as a
-library, includes some basic configuration, and has a very simple “hello world” 
-web service in place for you 
-to edit.
-</p><p>If you are a first time user, you may want to use the template along with the tutorial
-included in this documentation to start exploring how to build your own geoprocessing service.  If you’re new to Scala, you’ll need to choose a text editor for editing Scala, but
-you won’t need to install Scala or any other files to get started.  The following 
-instructions assume you are running under Linux or OS X.
-</p><h2 id="Step+1%3A+Run+SBT">Step 1: Run SBT</h2><p>This project uses SBT, Simple Build Tool, for compilation and execution.
-</p><p>If you don’t have SBT installed already, you can run a script in the template
-directory (from https://github.com/paulp/sbt-extras) that will automatically download it for you.
-</p><p>At the command line, go to the directory where you’ve installed this template
-and run <code>./sbt</code>.  For example, to check out the repository and run sbt:
-</p><pre><code class="prettyprint lang-bash">git clone xxxx
-cd arpegeo-template
-./sbt
-</code></pre><p>The first time you run SBT, there will be a significant delay as all of the
-necessary libraries are downloaded.
-</p><p>If you get any sort of error that a library can’t be downloaded, please let us 
-know so we can fix the problem.  SBT downloads the libraries from where they
-are hosted on the internet, so problems can arise when repositories change.  
-<br/>
-When sbt is done loading and compiling, you’ll see an sbt prompt:
-</p><pre><code class="prettyprint lang-"> &gt;
-</code></pre><p>If you type <code>run</code>, you’ll see some messages from Jetty, the embedded webserver that responds to GeoTrellis requests. 
-</p><pre><code class=""> &gt; run
-[info] Starting server on port 8888.
-[error] 2012-02-06 14:17:08.255:INFO:oejs.Server:jetty-8.1.0.RC4
-[error] 2012-02-06 14:17:08.329:INFO:oejs.AbstractConnector:Started SelectChannelConnector@0.0.0.0:8888 STARTING
-</code></pre><p>This means that you are now running a webserver on port 8888 that responds to
-requests.  Go to 
-</p><p><a  href="http://localhost:8888/template">http://localhost:8888/template</a>
-</p><p>to see the template web service, which just shows HTML of “Hello GeoTrellis!”
-</p><h2 id="Step+2%3A+Configuration+and+data+import">Step 2: Configuration and data import</h2><p>See the <a  href="http://azavea.github.com/geotrellis/getting_started/Setting+up+GeoTrellis.html">Setting Up GeoTrellis page</a> for information about configuring your GeoTrellis instance and importing your data.
-</p><h2 id="Step+3%3A+Create+your+service">Step 3: Create your service</h2><p>The blank REST service is in the file src/main/scala/geotrellis/rest/TemplateResource.scala.  Edit that file to change the existing service, or create a similar 
-class in the <code>geotrellis.rest</code> package to create a new service.
-</p><p>If you are using the <a  href="http://scala-ide.org/">ScalaIDE for Eclipse</a>, you should
-type <code>eclipse</code> at the sbt prompt, and then import the project into Eclipse.
-If you are using emacs, you should consider using <a  href="https://github.com/aemoncannon/ensime">ENSIME</a>. 
-</p><h2 id="Additional+notes">Additional notes</h2><h3 id="Triggered+Restart">Triggered Restart</h3><p>Note: If you run … 
-</p><p> &gt; ~re-start
-</p><p>… at the sbt prompt, you will be in a ‘triggered restart’ mode.  As soon
-as you edit your source files, the application will re-compile and restart 
-with your updated code. 
-</p><h4>Contents</h4><div><a href="GeoTrellis.html">GeoTrellis</a></div><ol class="toc"> <li><div><a href="API+Reference.html">API Reference</a></div></li><li><div class="current">Get started with the template project</div></li><li><div><a href="Web+Service+Tutorial.html">Web Service Tutorial</a></div></li><li><div><a href="Setting+up+GeoTrellis.html">Setting up GeoTrellis</a></div></li><li><div><a href="Operations.html">Operations</a></div></li><li><div><a href="Creating+new+operations.html">Creating new operations</a></div></li><li><div><a href="Parallel+and+distributed+execution.html">Parallel and distributed execution</a></div></li><li class="generated"><div><a href="Contents+in+Depth.html">Contents in Depth</a></div></li><li class="generated"><div><a href="Combined+Pages.html">Combined Pages</a></div></li> </ol>
+geoprocessing web service with GeoTrellis. It is a blank slate for your own
+development that provides a development environment that is set up with the
+necessary dependencies in place, making it a little easier to get started.
+</p><p>The project loads GeoTrellis as a library, includes some basic configuration,
+and has a very simple “hello world” web service in place for you to edit.
+The template contains <a  href="https://github.com/azavea/geotrellis-template">step-by-step instructions</a>.
+</p><p>If you are a first time GeoTrellis user, you can use this template with the
+tutorial included in this documentation to start exploring how to build your
+own geoprocessing service.
+</p><div class="tocwrapper show">
+      <a class="tochead nav" style="display: none" href="#toc">❦</a>
+      <a name="toc"></a>
+      <h4 class="toctitle">Contents</h4>
+      <div class="tocbody">
+      <div><a href="GeoTrellis.html">GeoTrellis</a></div><ol class="toc"> <li><div><a href="API+Reference.html">API Reference</a></div></li><li><div class="current">Get started with the template project</div></li><li><div><a href="Web+Service+Tutorial.html">Web Service Tutorial</a></div></li><li><div><a href="Setting+up+GeoTrellis.html">Setting up GeoTrellis</a></div></li><li><div><a href="Operations.html">Operations</a></div></li><li><div><a href="Creating+new+operations.html">Creating new operations</a></div></li><li><div><a href="Parallel+and+distributed+execution.html">Parallel and distributed execution</a></div></li><li class="generated"><div><a href="Contents+in+Depth.html">Contents in Depth</a></div></li><li class="generated"><div><a href="Combined+Pages.html">Combined Pages</a></div></li> </ol></div></div>
           </div>
         </div>
         <a class="fork nav" href="http://github.com/azavea/geotrellis"><img alt="Fork me on GitHub" src="img/fork.png"></img></a>
