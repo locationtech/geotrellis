@@ -9,3 +9,5 @@
   local
   maven-central
   sonatype-releases: https://oss.sonatype.org/content/repositories/releases/
+  sonatype-snapshots: http://oss.sonatype.org/content/repositories/snapshots/
+
