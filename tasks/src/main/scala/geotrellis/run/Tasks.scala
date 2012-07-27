@@ -61,7 +61,11 @@ object Tasks {
      System.exit(0)
   }
 
-  def main(args:Array[String]) {
+  def main(args:Array[String]) = {
+    run(args)
+  }
+
+  def run(args:Array[String]):Int = {
     val baseArgs = new BaseArgs()
 
     val jc = new JCommander()
@@ -103,7 +107,17 @@ object Tasks {
       case _ => throw new Exception("getParsedCommand didn't return a string")
     }
 
-    System.exit(0)
+    0
   }
+
 }
+
+import xsbti.{ AppMain, AppConfiguration }
+
+class Script extends AppMain {
+  def run(conf: AppConfiguration) =
+    Exit(Tasks.run(conf.arguments))
+}
+
+case class Exit(val code: Int) extends xsbti.Exit
 

@@ -1,0 +1,11 @@
+[app]
+  version: 0.7.0-SNAPSHOT
+  org: com.azavea.geotrellis
+  name: geotrellis-tasks
+  class: geotrellis.run.Script
+[scala]
+  version: 2.9.2
+[repositories]
+  local
+  maven-central
+  sonatype-releases: https://oss.sonatype.org/content/repositories/releases/
