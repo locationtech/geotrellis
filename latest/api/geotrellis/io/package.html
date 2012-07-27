@@ -1,0 +1,257 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>geotrellis.io</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../lib/template.css" />
+      <script type="text/javascript" src="../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../lib/template.js"></script>
+      <script type="text/javascript" src="../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+      <div id="definition">
+        <img src="../../lib/package_big.png" />
+        <p id="owner"><a name="geotrellis" class="extype" href="../package.html">geotrellis</a></p>
+        <h1>io</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">io</span>
+      </span>
+      </h4>
+      
+      <div class="fullcommenttop" id="comment"></div>
+    
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="geotrellis.io.LoadFile" data-isabs="false">
+      <a id="LoadFile:LoadFile"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LoadFile.html"><span class="name">LoadFile</span></a><span class="params">(<span name="p">p: Op[String]</span>)</span><span class="result"> extends Operation[Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Load the raster data for a particular extent/resolution from the specified file.</p>
+    </li><li visbl="pub" name="geotrellis.io.LoadFileWithRasterExtent" data-isabs="false">
+      <a id="LoadFileWithRasterExtent:LoadFileWithRasterExtent"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LoadFileWithRasterExtent.html"><span class="name">LoadFileWithRasterExtent</span></a><span class="params">(<span name="p">p: Op[String]</span>, <span name="e">e: Op[RasterExtent]</span>)</span><span class="result"> extends Operation[Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.io.LoadRaster" data-isabs="false">
+      <a id="LoadRaster:LoadRaster"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LoadRaster.html"><span class="name">LoadRaster</span></a><span class="params">(<span name="n">n: Op[String]</span>, <span name="r">r: Op[RasterExtent]</span>)</span><span class="result"> extends Op[Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Load the raster data for a particular extent/resolution from the specified file.</p>
+    </li><li visbl="pub" name="geotrellis.io.LoadRasterExtent" data-isabs="false">
+      <a id="LoadRasterExtent:LoadRasterExtent"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LoadRasterExtent.html"><span class="name">LoadRasterExtent</span></a><span class="params">(<span name="nme">nme: Op[String]</span>)</span><span class="result"> extends Op[RasterExtent] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.io.LoadRasterExtentFromFile" data-isabs="false">
+      <a id="LoadRasterExtentFromFile:LoadRasterExtentFromFile"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LoadRasterExtentFromFile.html"><span class="name">LoadRasterExtentFromFile</span></a><span class="params">(<span name="path">path: String</span>)</span><span class="result"> extends Op1[String, RasterExtent] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Load the geotrellis.geoattrs.RasterExtent from the raster in the specified file.</p>
+    </li><li visbl="pub" name="geotrellis.io.LoadRasterMetadataFromFile" data-isabs="false">
+      <a id="LoadRasterMetadataFromFile:LoadRasterMetadataFromFile"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LoadRasterMetadataFromFile.html"><span class="name">LoadRasterMetadataFromFile</span></a><span class="params">(<span name="path">path: String</span>)</span><span class="result"> extends Op1[String, RasterExtent] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Load the <a name="geotrellis.process.RasterLayer" class="extype" href="../process/RasterLayer.html">RasterLayer</a>, a representation of the raster metadata,
+from the raster in the specified file.</p>
+    </li><li visbl="pub" name="geotrellis.io.ReclassifyColorsRgba" data-isabs="false">
+      <a id="ReclassifyColorsRgba:ReclassifyColorsRgba"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ReclassifyColorsRgba.html"><span class="name">ReclassifyColorsRgba</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="mapper">mapper: Op[ColorMapper]</span>)</span><span class="result"> extends Op2[Raster, ColorMapper, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.io.RenderPNG" data-isabs="false">
+      <a id="RenderPNG:RenderPNG"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="RenderPNG.html"><span class="name">RenderPNG</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="colorBreaks">colorBreaks: Op[ColorBreaks]</span>, <span name="noDataColor">noDataColor: Op[Int]</span>, <span name="transparent">transparent: Op[Boolean]</span>)</span><span class="result"> extends Op4[Raster, ColorBreaks, Int, Boolean, Array[Byte]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generate a PNG from a given raster and a set of color breaks.</p>
+    </li><li visbl="pub" name="geotrellis.io.RenderPngRgba" data-isabs="false">
+      <a id="RenderPngRgba:RenderPngRgba"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="RenderPngRgba.html"><span class="name">RenderPngRgba</span></a><span class="params">(<span name="r">r: Op[Raster]</span>)</span><span class="result"> extends Op1[Raster, Array[Byte]] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.io.WritePNGFile" data-isabs="false">
+      <a id="WritePNGFile:WritePNGFile"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="WritePNGFile.html"><span class="name">WritePNGFile</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="path">path: Op[String]</span>, <span name="breaks">breaks: Op[Array[(Int, Int)]]</span>, <span name="noDataColor">noDataColor: Op[Int]</span>, <span name="transparent">transparent: Op[Boolean]</span>)</span><span class="result"> extends Op5[Raster, String, Array[(Int, Int)], Int, Boolean, Unit.type] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Write out a PNG graphic file to the file system at the specified path.</p>
+    </li><li visbl="pub" name="geotrellis.io.WritePNGFile2" data-isabs="false">
+      <a id="WritePNGFile2:WritePNGFile2"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="WritePNGFile2.html"><span class="name">WritePNGFile2</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="path">path: String</span>, <span name="noDataColor">noDataColor: Int</span>, <span name="transparent">transparent: Boolean</span>)</span><span class="result"> extends Op4[Raster, String, Int, Boolean, Unit.type] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="geotrellis.io.LoadFile" data-isabs="false">
+      <a id="LoadFile:LoadFile"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="LoadFile$.html"><span class="name">LoadFile</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.io.LoadRaster" data-isabs="false">
+      <a id="LoadRaster:LoadRaster"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="LoadRaster$.html"><span class="name">LoadRaster</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.io.RenderPNG3" data-isabs="false">
+      <a id="RenderPNG3:RenderPNG3"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="RenderPNG3$.html"><span class="name">RenderPNG3</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.io.RenderPng32" data-isabs="false">
+      <a id="RenderPng32:RenderPng32"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="RenderPng32$.html"><span class="name">RenderPng32</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

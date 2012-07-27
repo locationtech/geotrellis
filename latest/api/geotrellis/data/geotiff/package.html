@@ -1,0 +1,233 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>geotrellis.data.geotiff</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../../lib/template.css" />
+      <script type="text/javascript" src="../../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+      <div id="definition">
+        <img src="../../../lib/package_big.png" />
+        <p id="owner"><a name="geotrellis" class="extype" href="../../package.html">geotrellis</a>.<a name="geotrellis.data" class="extype" href="../package.html">data</a></p>
+        <h1>geotiff</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">geotiff</span>
+      </span>
+      </h4>
+      
+      <div class="fullcommenttop" id="comment"></div>
+    
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="geotrellis.data.geotiff.Encoder" data-isabs="false">
+      <a id="Encoder:Encoder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Encoder.html"><span class="name">Encoder</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Class for writing GeoTIFF data to a given DataOutputStream.</p>
+    </li><li visbl="pub" name="geotrellis.data.geotiff.SampleFormat" data-isabs="true">
+      <a id="SampleFormat:SampleFormat"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SampleFormat.html"><span class="name">SampleFormat</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">SampleFormat is used by geotiff.</p>
+    </li><li visbl="pub" name="geotrellis.data.geotiff.SampleSize" data-isabs="true">
+      <a id="SampleSize:SampleSize"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="SampleSize.html"><span class="name">SampleSize</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">SampleSize is used by geotiff.</p>
+    </li><li visbl="pub" name="geotrellis.data.geotiff.Settings" data-isabs="false">
+      <a id="Settings:Settings"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Settings.html"><span class="name">Settings</span></a><span class="params">(<span name="size">size: SampleSize</span>, <span name="format">format: SampleFormat</span>, <span name="esriCompat">esriCompat: Boolean</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Used by geotiff.</p>
+    </li></ol>
+            </div>
+
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="geotrellis.data.geotiff.ByteSample" data-isabs="false">
+      <a id="ByteSample:ByteSample"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ByteSample$.html"><span class="name">ByteSample</span></a><span class="result"> extends SampleSize with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.data.geotiff.Const" data-isabs="false">
+      <a id="Const:Const"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Const$.html"><span class="name">Const</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This object is contains useful geotiff-related constants.</p>
+    </li><li visbl="pub" name="geotrellis.data.geotiff.Encoder" data-isabs="false">
+      <a id="Encoder:Encoder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Encoder$.html"><span class="name">Encoder</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">The Encoder object provides several useful static methods for encoding
+raster data, which create Encoder instances on demand.</p>
+    </li><li visbl="pub" name="geotrellis.data.geotiff.Floating" data-isabs="false">
+      <a id="Floating:Floating"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Floating$.html"><span class="name">Floating</span></a><span class="result"> extends SampleFormat with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.data.geotiff.IntSample" data-isabs="false">
+      <a id="IntSample:IntSample"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="IntSample$.html"><span class="name">IntSample</span></a><span class="result"> extends SampleSize with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.data.geotiff.LongSample" data-isabs="false">
+      <a id="LongSample:LongSample"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="LongSample$.html"><span class="name">LongSample</span></a><span class="result"> extends SampleSize with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.data.geotiff.ShortSample" data-isabs="false">
+      <a id="ShortSample:ShortSample"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ShortSample$.html"><span class="name">ShortSample</span></a><span class="result"> extends SampleSize with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.data.geotiff.Signed" data-isabs="false">
+      <a id="Signed:Signed"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Signed$.html"><span class="name">Signed</span></a><span class="result"> extends SampleFormat with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.data.geotiff.Unsigned" data-isabs="false">
+      <a id="Unsigned:Unsigned"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Unsigned$.html"><span class="name">Unsigned</span></a><span class="result"> extends SampleFormat with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

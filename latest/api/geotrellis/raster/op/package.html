@@ -1,0 +1,196 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>geotrellis.raster.op</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../../lib/template.css" />
+      <script type="text/javascript" src="../../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+      <div id="definition">
+        <img src="../../../lib/package_big.png" />
+        <p id="owner"><a name="geotrellis" class="extype" href="../../package.html">geotrellis</a>.<a name="geotrellis.raster" class="extype" href="../package.html">raster</a></p>
+        <h1>op</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">op</span>
+      </span>
+      </h4>
+      
+      <div class="fullcommenttop" id="comment"></div>
+    
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="geotrellis.raster.op.CreateRaster" data-isabs="false">
+      <a id="CreateRaster:CreateRaster"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="CreateRaster.html"><span class="name">CreateRaster</span></a><span class="params">(<span name="re">re: Op[RasterExtent]</span>)</span><span class="result"> extends Op1[RasterExtent, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Creates an empty raster object based on the given raster properties.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.Force" data-isabs="false">
+      <a id="Force:Force"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Force.html"><span class="name">Force</span></a><span class="params">(<span name="r">r: Op[Raster]</span>)</span><span class="result"> extends Op1[Raster, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.VerticalFlip" data-isabs="false">
+      <a id="VerticalFlip:VerticalFlip"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="VerticalFlip.html"><span class="name">VerticalFlip</span></a><span class="params">(<span name="r">r: Op[Raster]</span>)</span><span class="result"> extends Op1[Raster, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Flip the data for a raster along the X-axis.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.ZonalHistogram" data-isabs="false">
+      <a id="ZonalHistogram:ZonalHistogram"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ZonalHistogram.html"><span class="name">ZonalHistogram</span></a><span class="params">(<span name="data">data: Op[Raster]</span>, <span name="zones">zones: Op[Raster]</span>, <span name="zonesArraySize">zonesArraySize: Op[Int]</span>, <span name="histArraySize">histArraySize: Op[Int]</span>)</span><span class="result"> extends Op4[Raster, Raster, Int, Int, Array[Histogram]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a raster, return a histogram summary of the cells within each zone.</p>
+    </li></ol>
+            </div>
+
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="geotrellis.raster.op.data" data-isabs="false">
+      <a id="data:data"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="data/package.html"><span class="name">data</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.extent" data-isabs="false">
+      <a id="extent:extent"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="extent/package.html"><span class="name">extent</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.focal" data-isabs="false">
+      <a id="focal:focal"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="focal/package.html"><span class="name">focal</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.local" data-isabs="false">
+      <a id="local:local"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="local/package.html"><span class="name">local</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.tiles" data-isabs="false">
+      <a id="tiles:tiles"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="tiles/package.html"><span class="name">tiles</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.transform" data-isabs="false">
+      <a id="transform:transform"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="transform/package.html"><span class="name">transform</span></a>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

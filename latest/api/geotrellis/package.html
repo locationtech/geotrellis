@@ -12,7 +12,7 @@
       <script type="text/javascript" src="../lib/tools.tooltip.js"></script>
     
         </head>
-        <body class="value">
+        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
       <div id="definition">
         <img src="../lib/package_big.png" />
         
@@ -20,63 +20,127 @@
       </div>
 
       <h4 class="signature" id="signature">
-      <span class="kind">package</span>
-      <span class="symbol"> 
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
         <span class="name">geotrellis</span>
-        
-        
       </span>
       </h4>
       
-          <div class="fullcommenttop" id="comment"></div>
+      <div class="fullcommenttop" id="comment"></div>
+    
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
         
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
 
       <div id="template">
-
-        <div id="mbrsel">
-          <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
-          
-          
-          <div id="visbl">
-              <span class="filtertype">Visibility</span>
-              <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
-            </div>
-        </div>
-
+        <div id="allMembers">
         
 
         <div class="types members" id="types">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="geotrellis.ArrayGenRasterData" data-isabs="false">
-      <a id="ArrayGenRasterData:ArrayGenRasterData[T]"></a>
-      <h4 class="signature">
-      <span class="kind">class</span>
-      <span class="symbol"> 
-        <a href="ArrayGenRasterData.html"><span class="name">ArrayGenRasterData</span></a>
-        <span class="tparams">[<span name="T">T</span>]</span>
-        <span class="result"> extends GenRasterData[T] with Serializable</span>
-      </span>
-      </h4>
-      
-    </li><li visbl="pub" name="geotrellis.ArrayRasterData" data-isabs="false">
+              <ol><li visbl="pub" name="geotrellis.ArrayRasterData" data-isabs="true">
       <a id="ArrayRasterData:ArrayRasterData"></a>
       <h4 class="signature">
-      <span class="kind">class</span>
-      <span class="symbol"> 
-        <a href="ArrayRasterData.html"><span class="name">ArrayRasterData</span></a>
-        
-        <span class="result"> extends RasterData with Serializable</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ArrayRasterData.html"><span class="name">ArrayRasterData</span></a><span class="result"> extends RasterData</span>
+      </span>
+      </h4>
+      <p class="comment cmt">ArrayRasterData provides array-like access to the grid data of a raster.</p>
+    </li><li visbl="pub" name="geotrellis.BitArrayRasterData" data-isabs="false">
+      <a id="BitArrayRasterData:BitArrayRasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="BitArrayRasterData.html"><span class="name">BitArrayRasterData</span></a><span class="result"> extends MutableRasterData with IntBasedArray</span>
+      </span>
+      </h4>
+      <p class="comment cmt">RasterData based on an Array[Byte] as a bitmask; values are 0 and 1.</p>
+    </li><li visbl="pub" name="geotrellis.ByteArrayRasterData" data-isabs="false">
+      <a id="ByteArrayRasterData:ByteArrayRasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ByteArrayRasterData.html"><span class="name">ByteArrayRasterData</span></a><span class="result"> extends MutableRasterData with IntBasedArray</span>
+      </span>
+      </h4>
+      <p class="comment cmt">RasterData based on Array[Byte] (each cell as a Byte).</p>
+    </li><li visbl="pub" name="geotrellis.Context" data-isabs="false">
+      <a id="Context:Context"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Context.html"><span class="name">Context</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       
+    </li><li visbl="pub" name="geotrellis.DispatchedOperation" data-isabs="false">
+      <a id="DispatchedOperation:DispatchedOperation[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DispatchedOperation.html"><span class="name">DispatchedOperation</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="params">(<span name="op">op: Op[T]</span>, <span name="dispatcher">dispatcher: ActorRef</span>)</span><span class="result"> extends OperationWrapper[T] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.DoubleArrayRasterData" data-isabs="false">
+      <a id="DoubleArrayRasterData:DoubleArrayRasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DoubleArrayRasterData.html"><span class="name">DoubleArrayRasterData</span></a><span class="result"> extends MutableRasterData with DoubleBasedArray</span>
+      </span>
+      </h4>
+      <p class="comment cmt">RasterData based on Array[Double] (each cell as a Double).</p>
+    </li><li visbl="pub" name="geotrellis.DoubleBasedArray" data-isabs="true">
+      <a id="DoubleBasedArray:DoubleBasedArray"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="DoubleBasedArray.html"><span class="name">DoubleBasedArray</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This trait defines apply/update in terms of applyDouble/updateDouble.</p>
     </li><li visbl="pub" name="geotrellis.Extent" data-isabs="false">
       <a id="Extent:Extent"></a>
       <h4 class="signature">
-      <span class="kind">case class</span>
-      <span class="symbol"> 
-        <a href="Extent.html"><span class="name">Extent</span></a>
-        
-        <span class="params">(<span name="xmin">xmin: Double</span>, <span name="ymin">ymin: Double</span>, <span name="xmax">xmax: Double</span>, <span name="ymax">ymax: Double</span>)</span><span class="result"> extends Product with Serializable</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Extent.html"><span class="name">Extent</span></a><span class="params">(<span name="xmin">xmin: Double</span>, <span name="ymin">ymin: Double</span>, <span name="xmax">xmax: Double</span>, <span name="ymax">ymax: Double</span>)</span><span class="result"> extends Product with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">An Extent represents a rectangular region of geographic space (with a
@@ -84,272 +148,828 @@ particular projection).</p>
     </li><li visbl="pub" name="geotrellis.ExtentRangeError" data-isabs="false">
       <a id="ExtentRangeError:ExtentRangeError"></a>
       <h4 class="signature">
-      <span class="kind">case class</span>
-      <span class="symbol"> 
-        <a href="ExtentRangeError.html"><span class="name">ExtentRangeError</span></a>
-        
-        <span class="params">(<span name="msg">msg: String</span>)</span><span class="result"> extends Exception with Product with Serializable</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ExtentRangeError.html"><span class="name">ExtentRangeError</span></a><span class="params">(<span name="msg">msg: String</span>)</span><span class="result"> extends Exception with Product with Serializable</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="geotrellis.GenRaster" data-isabs="false">
-      <a id="GenRaster:GenRaster[T]"></a>
+    </li><li visbl="pub" name="geotrellis.FloatArrayRasterData" data-isabs="false">
+      <a id="FloatArrayRasterData:FloatArrayRasterData"></a>
       <h4 class="signature">
-      <span class="kind">class</span>
-      <span class="symbol"> 
-        <a href="GenRaster.html"><span class="name">GenRaster</span></a>
-        <span class="tparams">[<span name="T">T</span>]</span>
-        <span class="result"> extends Serializable</span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FloatArrayRasterData.html"><span class="name">FloatArrayRasterData</span></a><span class="result"> extends MutableRasterData with DoubleBasedArray</span>
       </span>
       </h4>
-      <p class="comment cmt"></p>
-    </li><li visbl="pub" name="geotrellis.GenRasterData" data-isabs="true">
-      <a id="GenRasterData:GenRasterData[T]"></a>
-      <h4 class="signature">
-      <span class="kind">trait</span>
-      <span class="symbol"> 
-        <a href="GenRasterData.html"><span class="name">GenRasterData</span></a>
-        <span class="tparams">[<span name="T">T</span>]</span>
-        <span class="result"> extends AnyRef</span>
-      </span>
-      </h4>
-      <p class="comment cmt">GenRasterData provides access and update to the grid data of a raster.</p>
+      <p class="comment cmt">RasterData based on Array[Float] (each cell as a Float).</p>
     </li><li visbl="pub" name="geotrellis.GeoAttrsError" data-isabs="false">
       <a id="GeoAttrsError:GeoAttrsError"></a>
       <h4 class="signature">
-      <span class="kind">case class</span>
-      <span class="symbol"> 
-        <a href="GeoAttrsError.html"><span class="name">GeoAttrsError</span></a>
-        
-        <span class="params">(<span name="msg">msg: String</span>)</span><span class="result"> extends Exception with Product with Serializable</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="GeoAttrsError.html"><span class="name">GeoAttrsError</span></a><span class="params">(<span name="msg">msg: String</span>)</span><span class="result"> extends Exception with Product with Serializable</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="geotrellis.IntRaster" data-isabs="false">
-      <a id="IntRaster:IntRaster"></a>
+    </li><li visbl="pub" name="geotrellis.IntArrayRasterData" data-isabs="false">
+      <a id="IntArrayRasterData:IntArrayRasterData"></a>
       <h4 class="signature">
-      <span class="kind">class</span>
-      <span class="symbol"> 
-        <a href="IntRaster.html"><span class="name">IntRaster</span></a>
-        
-        <span class="result"> extends Serializable</span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="IntArrayRasterData.html"><span class="name">IntArrayRasterData</span></a><span class="result"> extends MutableRasterData with IntBasedArray</span>
+      </span>
+      </h4>
+      <p class="comment cmt">RasterData based on Array[Int] (each cell as an Int).</p>
+    </li><li visbl="pub" name="geotrellis.IntBasedArray" data-isabs="true">
+      <a id="IntBasedArray:IntBasedArray"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="IntBasedArray.html"><span class="name">IntBasedArray</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This trait defines applyDouble/updateDouble in terms of apply/update.</p>
+    </li><li visbl="pub" name="geotrellis.LazyArrayWrapper" data-isabs="false">
+      <a id="LazyArrayWrapper:LazyArrayWrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyArrayWrapper.html"><span class="name">LazyArrayWrapper</span></a><span class="result"> extends LazyRasterData with Wrapper</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This class is a lazy wrapper for any RasterData.</p>
+    </li><li visbl="pub" name="geotrellis.LazyCombine" data-isabs="false">
+      <a id="LazyCombine:LazyCombine"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyCombine.html"><span class="name">LazyCombine</span></a><span class="params">(<span name="data1">data1: ArrayRasterData</span>, <span name="data2">data2: ArrayRasterData</span>, <span name="g">g: (Int, Int) ⇒ Int</span>)</span><span class="result"> extends LazyRasterData with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">LazyCombine represents a lazily-applied combine method.</p>
+    </li><li visbl="pub" name="geotrellis.LazyCombineDouble" data-isabs="false">
+      <a id="LazyCombineDouble:LazyCombineDouble"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyCombineDouble.html"><span class="name">LazyCombineDouble</span></a><span class="params">(<span name="data1">data1: ArrayRasterData</span>, <span name="data2">data2: ArrayRasterData</span>, <span name="g">g: (Double, Double) ⇒ Double</span>)</span><span class="result"> extends LazyRasterData with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">LazyCombineDouble represents a lazily-applied combineDouble method.</p>
+    </li><li visbl="pub" name="geotrellis.LazyConvert" data-isabs="false">
+      <a id="LazyConvert:LazyConvert"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyConvert.html"><span class="name">LazyConvert</span></a><span class="params">(<span name="data">data: ArrayRasterData</span>, <span name="typ">typ: RasterType</span>)</span><span class="result"> extends LazyRasterData with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">LazyCombineDouble represents a lazily-applied conversion between types.</p>
+    </li><li visbl="pub" name="geotrellis.LazyMap" data-isabs="false">
+      <a id="LazyMap:LazyMap"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyMap.html"><span class="name">LazyMap</span></a><span class="params">(<span name="data">data: ArrayRasterData</span>, <span name="g">g: (Int) ⇒ Int</span>)</span><span class="result"> extends LazyRasterData with Wrapper with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">LazyMap represents a lazily-applied map method.</p>
+    </li><li visbl="pub" name="geotrellis.LazyMapDouble" data-isabs="false">
+      <a id="LazyMapDouble:LazyMapDouble"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyMapDouble.html"><span class="name">LazyMapDouble</span></a><span class="params">(<span name="data">data: ArrayRasterData</span>, <span name="g">g: (Double) ⇒ Double</span>)</span><span class="result"> extends LazyRasterData with Wrapper with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">LazyMapDouble represents a lazily-applied mapDouble method.</p>
+    </li><li visbl="pub" name="geotrellis.LazyMapIfSet" data-isabs="false">
+      <a id="LazyMapIfSet:LazyMapIfSet"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyMapIfSet.html"><span class="name">LazyMapIfSet</span></a><span class="params">(<span name="data">data: ArrayRasterData</span>, <span name="g">g: (Int) ⇒ Int</span>)</span><span class="result"> extends LazyRasterData with Wrapper with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">LazyMapIfSet represents a lazily-applied mapIfSet method.</p>
+    </li><li visbl="pub" name="geotrellis.LazyMapIfSetDouble" data-isabs="false">
+      <a id="LazyMapIfSetDouble:LazyMapIfSetDouble"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyMapIfSetDouble.html"><span class="name">LazyMapIfSetDouble</span></a><span class="params">(<span name="data">data: ArrayRasterData</span>, <span name="g">g: (Double) ⇒ Double</span>)</span><span class="result"> extends LazyRasterData with Wrapper with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">LazyMapIfSetDouble represents a lazily-applied mapIfSet method.</p>
+    </li><li visbl="pub" name="geotrellis.LazyRasterData" data-isabs="true">
+      <a id="LazyRasterData:LazyRasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyRasterData.html"><span class="name">LazyRasterData</span></a><span class="result"> extends ArrayRasterData</span>
+      </span>
+      </h4>
+      <p class="comment cmt">LazyRasterData is an ArrayRasterData which (may) be lazily evaluated, and
+which will perform other operations lazily.</p>
+    </li><li visbl="pub" name="geotrellis.Literal" data-isabs="false">
+      <a id="Literal:Literal[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Literal.html"><span class="name">Literal</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="a">a: A</span>, <span name="evidence$1">evidence$1: Manifest[A]</span>)</span><span class="result"> extends Op[A] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Return the literal value specified.</p>
+    </li><li visbl="pub" name="geotrellis.MutableRasterData" data-isabs="true">
+      <a id="MutableRasterData:MutableRasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="MutableRasterData.html"><span class="name">MutableRasterData</span></a><span class="result"> extends StrictRasterData</span>
+      </span>
+      </h4>
+      <p class="comment cmt">MutableRasterData is a StrictRasterData whose cells can be written to
+(mutated).</p>
+    </li><li visbl="pub" name="geotrellis.package#Op" data-isabs="false">
+      <a id="Op:Op[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Op</span><span class="tparams">[<span name="A">+A</span>]</span><span class="result"> = <a name="geotrellis.Operation" class="extype" href="Operation.html">Operation</a>[A]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.Op0" data-isabs="true">
+      <a id="Op0:Op0[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Op0.html"><span class="name">Op0</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Below are the Op0 - Op6 abstract classes.</p>
+    </li><li visbl="pub" name="geotrellis.Op1" data-isabs="true">
+      <a id="Op1:Op1[A, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Op1.html"><span class="name">Op1</span></a><span class="tparams">[<span name="A">A</span>, <span name="T">T</span>]</span><span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.Op2" data-isabs="true">
+      <a id="Op2:Op2[A, B, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Op2.html"><span class="name">Op2</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="T">T</span>]</span><span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.Op3" data-isabs="true">
+      <a id="Op3:Op3[A, B, C, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Op3.html"><span class="name">Op3</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="T">T</span>]</span><span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.Op4" data-isabs="true">
+      <a id="Op4:Op4[A, B, C, D, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Op4.html"><span class="name">Op4</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="T">T</span>]</span><span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.Op5" data-isabs="true">
+      <a id="Op5:Op5[A, B, C, D, E, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Op5.html"><span class="name">Op5</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="T">T</span>]</span><span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.Op6" data-isabs="true">
+      <a id="Op6:Op6[A, B, C, D, E, F, T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Op6.html"><span class="name">Op6</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="D">D</span>, <span name="E">E</span>, <span name="F">F</span>, <span name="T">T</span>]</span><span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.Operation" data-isabs="true">
+      <a id="Operation:Operation[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Operation.html"><span class="name">Operation</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends Product</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Base Operation for all Trellis functionality.</p>
+    </li><li visbl="pub" name="geotrellis.OperationWrapper" data-isabs="true">
+      <a id="OperationWrapper:OperationWrapper[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="OperationWrapper.html"><span class="name">OperationWrapper</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends Operation[T]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.Raster" data-isabs="false">
+      <a id="Raster:Raster"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Raster.html"><span class="name">Raster</span></a><span class="params">(<span name="data">data: RasterData</span>, <span name="rasterExtent">rasterExtent: RasterExtent</span>)</span><span class="result"> extends Product with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt"></p>
-    </li><li visbl="pub" name="geotrellis.NoData" data-isabs="true">
-      <a id="NoData:NoData[T]"></a>
-      <h4 class="signature">
-      <span class="kind">trait</span>
-      <span class="symbol"> 
-        <a href="NoData.html"><span class="name">NoData</span></a>
-        <span class="tparams">[<span name="T">T</span>]</span>
-        <span class="result"> extends AnyRef</span>
-      </span>
-      </h4>
-      <p class="comment cmt">Used to associate a type parameter T with a particular value which geotrellis
-uses as the &quot;nodata value&quot;.</p>
     </li><li visbl="pub" name="geotrellis.RasterData" data-isabs="true">
       <a id="RasterData:RasterData"></a>
       <h4 class="signature">
-      <span class="kind">trait</span>
-      <span class="symbol"> 
-        <a href="RasterData.html"><span class="name">RasterData</span></a>
-        
-        <span class="result"> extends AnyRef</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="RasterData.html"><span class="name">RasterData</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       <p class="comment cmt">RasterData provides access and update to the grid data of a raster.</p>
     </li><li visbl="pub" name="geotrellis.RasterExtent" data-isabs="false">
       <a id="RasterExtent:RasterExtent"></a>
       <h4 class="signature">
-      <span class="kind">case class</span>
-      <span class="symbol"> 
-        <a href="RasterExtent.html"><span class="name">RasterExtent</span></a>
-        
-        <span class="params">(<span name="extent">extent: Extent</span>, <span name="cellwidth">cellwidth: Double</span>, <span name="cellheight">cellheight: Double</span>, <span name="cols">cols: Int</span>, <span name="rows">rows: Int</span>)</span><span class="result"> extends Product with Serializable</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="RasterExtent.html"><span class="name">RasterExtent</span></a><span class="params">(<span name="extent">extent: Extent</span>, <span name="cellwidth">cellwidth: Double</span>, <span name="cellheight">cellheight: Double</span>, <span name="cols">cols: Int</span>, <span name="rows">rows: Int</span>)</span><span class="result"> extends Product with Serializable</span>
       </span>
       </h4>
       <p class="comment cmt">RasterExtent objects represent the geographic extent (envelope) of a raster.</p>
+    </li><li visbl="pub" name="geotrellis.RasterType" data-isabs="true">
+      <a id="RasterType:RasterType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="RasterType.html"><span class="name">RasterType</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.Result" data-isabs="false">
+      <a id="Result:Result[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Result.html"><span class="name">Result</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="value">value: T</span>)</span><span class="result"> extends StepOutput[T] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.ShortArrayRasterData" data-isabs="false">
+      <a id="ShortArrayRasterData:ShortArrayRasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ShortArrayRasterData.html"><span class="name">ShortArrayRasterData</span></a><span class="result"> extends MutableRasterData with IntBasedArray</span>
+      </span>
+      </h4>
+      <p class="comment cmt">RasterData based on Array[Short] (each cell as a Short).</p>
+    </li><li visbl="pub" name="geotrellis.StepError" data-isabs="false">
+      <a id="StepError:StepError"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="StepError.html"><span class="name">StepError</span></a><span class="params">(<span name="msg">msg: String</span>, <span name="trace">trace: String</span>)</span><span class="result"> extends StepOutput[Nothing] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.StepOutput" data-isabs="true">
+      <a id="StepOutput:StepOutput[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="StepOutput.html"><span class="name">StepOutput</span></a><span class="tparams">[<span name="T">+T</span>]</span><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">When run, Operations will return a StepOutput.</p>
+    </li><li visbl="pub" name="geotrellis.StepRequiresAsync" data-isabs="false">
+      <a id="StepRequiresAsync:StepRequiresAsync[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="StepRequiresAsync.html"><span class="name">StepRequiresAsync</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="args">args: Args</span>, <span name="cb">cb: (List[Any]) ⇒ StepOutput[T]</span>)</span><span class="result"> extends StepOutput[T] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.StrictRasterData" data-isabs="true">
+      <a id="StrictRasterData:StrictRasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="StrictRasterData.html"><span class="name">StrictRasterData</span></a><span class="result"> extends ArrayRasterData with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">StrictRasterData is an ArrayRasterData which has already allocated its
+values and which evaluates eagerly.</p>
+    </li><li visbl="pub" name="geotrellis.Wrapper" data-isabs="true">
+      <a id="Wrapper:Wrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Wrapper.html"><span class="name">Wrapper</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Wrapper is a mixin which implements some RasterData methods in terms of an
+underlying raster data.</p>
     </li></ol>
             </div>
-        
+
         
 
         <div class="values members" id="values">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="geotrellis.ArrayGenRasterData" data-isabs="false">
-      <a id="ArrayGenRasterData:ArrayGenRasterData"></a>
+              <ol><li visbl="pub" name="geotrellis.BitArrayRasterData" data-isabs="false">
+      <a id="BitArrayRasterData:BitArrayRasterData"></a>
       <h4 class="signature">
-      <span class="kind">object</span>
-      <span class="symbol"> 
-        <a href="ArrayGenRasterData$.html"><span class="name">ArrayGenRasterData</span></a>
-        
-        <span class="result"> extends Serializable</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="BitArrayRasterData$.html"><span class="name">BitArrayRasterData</span></a><span class="result"> extends Serializable</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="geotrellis.ArrayRasterData" data-isabs="false">
-      <a id="ArrayRasterData:ArrayRasterData"></a>
+    </li><li visbl="pub" name="geotrellis.ByteArrayRasterData" data-isabs="false">
+      <a id="ByteArrayRasterData:ByteArrayRasterData"></a>
       <h4 class="signature">
-      <span class="kind">object</span>
-      <span class="symbol"> 
-        <a href="ArrayRasterData$.html"><span class="name">ArrayRasterData</span></a>
-        
-        <span class="result"> extends Serializable</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ByteArrayRasterData$.html"><span class="name">ByteArrayRasterData</span></a><span class="result"> extends Serializable</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="geotrellis.GenRaster" data-isabs="false">
-      <a id="GenRaster:GenRaster"></a>
+    </li><li visbl="pub" name="geotrellis.DoubleArrayRasterData" data-isabs="false">
+      <a id="DoubleArrayRasterData:DoubleArrayRasterData"></a>
       <h4 class="signature">
-      <span class="kind">object</span>
-      <span class="symbol"> 
-        <a href="GenRaster$.html"><span class="name">GenRaster</span></a>
-        
-        <span class="result"> extends Serializable</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DoubleArrayRasterData$.html"><span class="name">DoubleArrayRasterData</span></a><span class="result"> extends Serializable</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="geotrellis.IntRaster" data-isabs="false">
-      <a id="IntRaster:IntRaster"></a>
+    </li><li visbl="pub" name="geotrellis.FloatArrayRasterData" data-isabs="false">
+      <a id="FloatArrayRasterData:FloatArrayRasterData"></a>
       <h4 class="signature">
-      <span class="kind">object</span>
-      <span class="symbol"> 
-        <a href="IntRaster$.html"><span class="name">IntRaster</span></a>
-        
-        <span class="result"> extends Serializable</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="FloatArrayRasterData$.html"><span class="name">FloatArrayRasterData</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.Implicits" data-isabs="false">
+      <a id="Implicits:Implicits"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Implicits$.html"><span class="name">Implicits</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.IntArrayRasterData" data-isabs="false">
+      <a id="IntArrayRasterData:IntArrayRasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="IntArrayRasterData$.html"><span class="name">IntArrayRasterData</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.LazyArrayWrapper" data-isabs="false">
+      <a id="LazyArrayWrapper:LazyArrayWrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyArrayWrapper$.html"><span class="name">LazyArrayWrapper</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       
     </li><li visbl="pub" name="geotrellis.package#NODATA" data-isabs="false">
       <a id="NODATA:Int(-2147483648)"></a>
       <h4 class="signature">
-      <span class="kind">val</span>
-      <span class="symbol"> 
-        <span class="name">NODATA</span>
-        
-        <span class="result">: Int(-2147483648)</span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">NODATA</span><span class="result">: Int(-2147483648)</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd><a name="geotrellis.package" class="extype" href="package$.html">package</a></dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.NoData" data-isabs="false">
-      <a id="NoData:NoData"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.package" class="extype" href="package$.html">package</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.Operation" data-isabs="false">
+      <a id="Operation:Operation"></a>
       <h4 class="signature">
-      <span class="kind">object</span>
-      <span class="symbol"> 
-        <a href="NoData$.html"><span class="name">NoData</span></a>
-        
-        <span class="result"> extends AnyRef</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Operation$.html"><span class="name">Operation</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
-      <p class="comment cmt">Companion object containing some no data values for types geotrellis supports.</p>
-    </li><li visbl="pub" name="geotrellis.benchmark" data-isabs="false">
-      <a id="benchmark:benchmark"></a>
+      
+    </li><li visbl="pub" name="geotrellis.Raster" data-isabs="false">
+      <a id="Raster:Raster"></a>
       <h4 class="signature">
-      <span class="kind">package</span>
-      <span class="symbol"> 
-        <a href="benchmark/package.html"><span class="name">benchmark</span></a>
-        
-        
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Raster$.html"><span class="name">Raster</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.RasterData" data-isabs="false">
+      <a id="RasterData:RasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="RasterData$.html"><span class="name">RasterData</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.RasterUtil" data-isabs="false">
+      <a id="RasterUtil:RasterUtil"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="RasterUtil$.html"><span class="name">RasterUtil</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">The RasterUtil object contains a bunch of final values and methods used for
+no data checks and conversions.</p>
+    </li><li visbl="pub" name="geotrellis.ShortArrayRasterData" data-isabs="false">
+      <a id="ShortArrayRasterData:ShortArrayRasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ShortArrayRasterData$.html"><span class="name">ShortArrayRasterData</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.StepError" data-isabs="false">
+      <a id="StepError:StepError"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="StepError$.html"><span class="name">StepError</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.TypeBit" data-isabs="false">
+      <a id="TypeBit:TypeBit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypeBit$.html"><span class="name">TypeBit</span></a><span class="result"> extends RasterType with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.TypeByte" data-isabs="false">
+      <a id="TypeByte:TypeByte"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypeByte$.html"><span class="name">TypeByte</span></a><span class="result"> extends RasterType with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.TypeDouble" data-isabs="false">
+      <a id="TypeDouble:TypeDouble"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypeDouble$.html"><span class="name">TypeDouble</span></a><span class="result"> extends RasterType with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.TypeFloat" data-isabs="false">
+      <a id="TypeFloat:TypeFloat"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypeFloat$.html"><span class="name">TypeFloat</span></a><span class="result"> extends RasterType with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.TypeInt" data-isabs="false">
+      <a id="TypeInt:TypeInt"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypeInt$.html"><span class="name">TypeInt</span></a><span class="result"> extends RasterType with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.TypeShort" data-isabs="false">
+      <a id="TypeShort:TypeShort"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TypeShort$.html"><span class="name">TypeShort</span></a><span class="result"> extends RasterType with Product with Serializable</span>
       </span>
       </h4>
       
     </li><li visbl="pub" name="geotrellis.data" data-isabs="false">
       <a id="data:data"></a>
       <h4 class="signature">
-      <span class="kind">package</span>
-      <span class="symbol"> 
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
         <a href="data/package.html"><span class="name">data</span></a>
-        
-        
       </span>
       </h4>
       
     </li><li visbl="pub" name="geotrellis.geometry" data-isabs="false">
       <a id="geometry:geometry"></a>
       <h4 class="signature">
-      <span class="kind">package</span>
-      <span class="symbol"> 
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
         <a href="geometry/package.html"><span class="name">geometry</span></a>
-        
-        
       </span>
       </h4>
       
-    </li><li visbl="pub" name="geotrellis.operation" data-isabs="false">
-      <a id="operation:operation"></a>
+    </li><li visbl="pub" name="geotrellis.io" data-isabs="false">
+      <a id="io:io"></a>
       <h4 class="signature">
-      <span class="kind">package</span>
-      <span class="symbol"> 
-        <a href="operation/package.html"><span class="name">operation</span></a>
-        
-        
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="io/package.html"><span class="name">io</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.logic" data-isabs="false">
+      <a id="logic:logic"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="logic/package.html"><span class="name">logic</span></a>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.op" data-isabs="false">
+      <a id="op:op"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="op/package.html"><span class="name">op</span></a>
       </span>
       </h4>
       
     </li><li visbl="pub" name="geotrellis.process" data-isabs="false">
       <a id="process:process"></a>
       <h4 class="signature">
-      <span class="kind">package</span>
-      <span class="symbol"> 
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
         <a href="process/package.html"><span class="name">process</span></a>
-        
-        
       </span>
       </h4>
       
     </li><li visbl="pub" name="geotrellis.raster" data-isabs="false">
       <a id="raster:raster"></a>
       <h4 class="signature">
-      <span class="kind">package</span>
-      <span class="symbol"> 
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
         <a href="raster/package.html"><span class="name">raster</span></a>
-        
-        
       </span>
       </h4>
       
     </li><li visbl="pub" name="geotrellis.rest" data-isabs="false">
       <a id="rest:rest"></a>
       <h4 class="signature">
-      <span class="kind">package</span>
-      <span class="symbol"> 
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
         <a href="rest/package.html"><span class="name">rest</span></a>
-        
-        
       </span>
       </h4>
       
-    </li><li visbl="pub" name="geotrellis.run" data-isabs="false">
-      <a id="run:run"></a>
+    </li><li visbl="pub" name="geotrellis.statistics" data-isabs="false">
+      <a id="statistics:statistics"></a>
       <h4 class="signature">
-      <span class="kind">package</span>
-      <span class="symbol"> 
-        <a href="run/package.html"><span class="name">run</span></a>
-        
-        
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
       </span>
-      </h4>
-      
-    </li><li visbl="pub" name="geotrellis.stat" data-isabs="false">
-      <a id="stat:stat"></a>
-      <h4 class="signature">
-      <span class="kind">package</span>
-      <span class="symbol"> 
-        <a href="stat/package.html"><span class="name">stat</span></a>
-        
-        
+      <span class="symbol">
+        <a href="statistics/package.html"><span class="name">statistics</span></a>
       </span>
       </h4>
       
     </li><li visbl="pub" name="geotrellis.util" data-isabs="false">
       <a id="util:util"></a>
       <h4 class="signature">
-      <span class="kind">package</span>
-      <span class="symbol"> 
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
         <a href="util/package.html"><span class="name">util</span></a>
-        
-        
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.vector" data-isabs="false">
+      <a id="vector:vector"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="vector/package.html"><span class="name">vector</span></a>
       </span>
       </h4>
       
@@ -357,12 +977,18 @@ uses as the &quot;nodata value&quot;.</p>
             </div>
 
         
+        </div>
 
+        <div id="inheritedMembers">
         
+        </div>
 
       </div>
-      
+
       <div id="tooltip"></div>
-      
+
+      <div id="footer">  </div>
+
+
     </body>
       </html>

@@ -12,379 +12,669 @@
       <script type="text/javascript" src="../lib/tools.tooltip.js"></script>
     
         </head>
-        <body class="type">
+        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="type">
       <div id="definition">
-        <a title="Go to companion" href="ArrayRasterData$.html"><img src="../lib/class_to_object_big.png" /></a>
+        <img src="../lib/trait_big.png" />
         <p id="owner"><a name="geotrellis" class="extype" href="package.html">geotrellis</a></p>
-        <h1><a title="Go to companion" href="ArrayRasterData$.html">ArrayRasterData</a></h1>
+        <h1>ArrayRasterData</h1>
       </div>
 
       <h4 class="signature" id="signature">
-      <span class="kind">class</span>
-      <span class="symbol"> 
-        <span class="name">ArrayRasterData</span>
-        
-        <span class="result"> extends <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a> with <span name="scala.Serializable" class="extype">Serializable</span></span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ArrayRasterData</span><span class="result"> extends <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></span>
       </span>
       </h4>
       
-          <div class="fullcommenttop" id="comment"><div class="toggleContainer block">
+      <div class="fullcommenttop" id="comment"><div class="comment cmt"><p>ArrayRasterData provides array-like access to the grid data of a raster.</p><p>While often backed with a real Array for speed, it cannot be used for rasters
+with more cells than the maximum size of a java array: 2.14 billion.
+</p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span name="scala.Serializable" class="extype">Serializable</span>, <span name="java.io.Serializable" class="extype">Serializable</span>, <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+          <div class="superTypes hiddenContent"><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a>, AnyRef, <span name="scala.Any" class="extype">Any</span></div>
+        </div><div class="toggleContainer block">
+          <span class="toggle">Known Subclasses</span>
+          <div class="subClasses hiddenContent"><a name="geotrellis.BitArrayRasterData" class="extype" href="BitArrayRasterData.html">BitArrayRasterData</a>, <a name="geotrellis.ByteArrayRasterData" class="extype" href="ByteArrayRasterData.html">ByteArrayRasterData</a>, <a name="geotrellis.DoubleArrayRasterData" class="extype" href="DoubleArrayRasterData.html">DoubleArrayRasterData</a>, <a name="geotrellis.raster.DoubleConstant" class="extype" href="raster/DoubleConstant.html">DoubleConstant</a>, <a name="geotrellis.FloatArrayRasterData" class="extype" href="FloatArrayRasterData.html">FloatArrayRasterData</a>, <a name="geotrellis.IntArrayRasterData" class="extype" href="IntArrayRasterData.html">IntArrayRasterData</a>, <a name="geotrellis.raster.IntConstant" class="extype" href="raster/IntConstant.html">IntConstant</a>, <a name="geotrellis.LazyArrayWrapper" class="extype" href="LazyArrayWrapper.html">LazyArrayWrapper</a>, <a name="geotrellis.LazyCombine" class="extype" href="LazyCombine.html">LazyCombine</a>, <a name="geotrellis.LazyCombineDouble" class="extype" href="LazyCombineDouble.html">LazyCombineDouble</a>, <a name="geotrellis.LazyConvert" class="extype" href="LazyConvert.html">LazyConvert</a>, <a name="geotrellis.LazyMap" class="extype" href="LazyMap.html">LazyMap</a>, <a name="geotrellis.LazyMapDouble" class="extype" href="LazyMapDouble.html">LazyMapDouble</a>, <a name="geotrellis.LazyMapIfSet" class="extype" href="LazyMapIfSet.html">LazyMapIfSet</a>, <a name="geotrellis.LazyMapIfSetDouble" class="extype" href="LazyMapIfSetDouble.html">LazyMapIfSetDouble</a>, <a name="geotrellis.LazyRasterData" class="extype" href="LazyRasterData.html">LazyRasterData</a>, <a name="geotrellis.raster.LazyViewWrapper" class="extype" href="raster/LazyViewWrapper.html">LazyViewWrapper</a>, <a name="geotrellis.MutableRasterData" class="extype" href="MutableRasterData.html">MutableRasterData</a>, <a name="geotrellis.ShortArrayRasterData" class="extype" href="ShortArrayRasterData.html">ShortArrayRasterData</a>, <a name="geotrellis.StrictRasterData" class="extype" href="StrictRasterData.html">StrictRasterData</a></div>
         </div></div>
-        
+    
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol><li class="alpha in"><span>Alphabetic</span></li><li class="inherit out"><span>By inheritance</span></li></ol>
+            </div>
+        <div id="ancestors">
+              <span class="filtertype">Inherited</span>
+              <ol><li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li></ol>
+              <ol id="linearization"><li name="geotrellis.ArrayRasterData" class="in"><span>ArrayRasterData</span></li><li name="geotrellis.RasterData" class="in"><span>RasterData</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
+            </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
 
       <div id="template">
-
-        <div id="mbrsel">
-          <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
-          <div id="order">
-                <span class="filtertype">Ordering</span>
-                <ol><li class="alpha in"><span>Alphabetic</span></li><li class="inherit out"><span>By inheritance</span></li></ol>
-              </div>
-          <div id="ancestors">
-                <span class="filtertype">Inherited</span>
-                <ol><li class="hideall out"><span>Hide All</span></li>
-                <li class="showall in"><span>Show all</span></li></ol>
-                <ol id="linearization"><li name="geotrellis.ArrayRasterData" class="in"><span>ArrayRasterData</span></li><li name="scala.Serializable" class="in"><span>Serializable</span></li><li name="java.io.Serializable" class="in"><span>Serializable</span></li><li name="geotrellis.RasterData" class="in"><span>RasterData</span></li><li name="scala.AnyRef" class="in"><span>AnyRef</span></li><li name="scala.Any" class="in"><span>Any</span></li></ol>
-              </div>
-          <div id="visbl">
-              <span class="filtertype">Visibility</span>
-              <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
-            </div>
-        </div>
-
-        <div class="members" id="constructors">
-              <h3>Instance Constructors</h3>
-              <ol><li visbl="pub" name="geotrellis.ArrayRasterData#this" data-isabs="false">
-      <a id="this:ArrayRasterData"></a>
-      <h4 class="signature">
-      <span class="kind">new</span>
-      <span class="symbol"> 
-        <span class="name">ArrayRasterData</span>
+        <div id="allMembers">
         
-        <span class="params">(<span name="array">array: <span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]</span>)</span>
-      </span>
-      </h4>
-      
-    </li></ol>
-            </div>
 
-        
-        
         
 
         <div class="values members" id="values">
-              <h3>Value Members</h3>
-              <ol><li visbl="pub" name="scala.AnyRef#!=" data-isabs="false">
-      <a id="!=(AnyRef):Boolean"></a>
+              <h3>Abstract Value Members</h3>
+              <ol><li visbl="pub" name="geotrellis.RasterData#alloc" data-isabs="true">
+      <a id="alloc(Int):MutableRasterData"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">!=</span>
-        
-        <span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#!=" data-isabs="false">
-      <a id="!=(Any):Boolean"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">!=</span>
-        
-        <span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef###" data-isabs="false">
-      <a id="##():Int"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">##</span>
-        
-        <span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#==" data-isabs="false">
-      <a id="==(AnyRef):Boolean"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">==</span>
-        
-        <span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#==" data-isabs="false">
-      <a id="==(Any):Boolean"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">==</span>
-        
-        <span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.ArrayRasterData#apply" data-isabs="false">
-      <a id="apply(Int):Int"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">apply</span>
-        
-        <span class="params">(<span name="i">i: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.ArrayRasterData" class="extype" href="">ArrayRasterData</a> → <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.ArrayRasterData#asArray" data-isabs="false">
-      <a id="asArray:Array[Int]"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">asArray</span>
-        
-        <span class="result">: <span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.ArrayRasterData" class="extype" href="">ArrayRasterData</a> → <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
-    </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
-      <a id="asInstanceOf[T0]:T0"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">asInstanceOf</span>
-        <span class="tparams">[<span name="T0">T0</span>]</span>
-        <span class="result">: T0</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.RasterData#asList" data-isabs="false">
-      <a id="asList:List[Int]"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">asList</span>
-        
-        <span class="result">: List[<span name="scala.Int" class="extype">Int</span>]</span>
+      <span class="symbol">
+        <span class="name">alloc</span><span class="params">(<span name="size">size: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <a name="geotrellis.MutableRasterData" class="extype" href="MutableRasterData.html">MutableRasterData</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.ArrayRasterData#apply" data-isabs="true">
+      <a id="apply(Int):Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">apply</span><span class="params">(<span name="i">i: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.ArrayRasterData#applyDouble" data-isabs="true">
+      <a id="applyDouble(Int):Double"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">applyDouble</span><span class="params">(<span name="i">i: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Double" class="extype">Double</span></span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.RasterData#combine" data-isabs="true">
+      <a id="combine(RasterData)((Int, Int) ⇒ Int):RasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">combine</span><span class="params">(<span name="other">other: <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></span>)</span><span class="params">(<span name="f">f: (<span name="scala.Int" class="extype">Int</span>, <span name="scala.Int" class="extype">Int</span>) ⇒ <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Combine two RasterData's cells into new cells using the given integer
+function.</p><div class="fullcomment"><div class="comment cmt"><p>Combine two RasterData's cells into new cells using the given integer
+function. For every (x,y) cell coordinate, get each RasterData's integer
+value, map them to a new value, and assign it to the output's (x,y) cell.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.RasterData#combineDouble" data-isabs="true">
+      <a id="combineDouble(RasterData)((Double, Double) ⇒ Double):RasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">combineDouble</span><span class="params">(<span name="other">other: <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></span>)</span><span class="params">(<span name="f">f: (<span name="scala.Double" class="extype">Double</span>, <span name="scala.Double" class="extype">Double</span>) ⇒ <span name="scala.Double" class="extype">Double</span></span>)</span><span class="result">: <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Combine two RasterData's cells into new cells using the given double
+function.</p><div class="fullcomment"><div class="comment cmt"><p>Combine two RasterData's cells into new cells using the given double
+function. For every (x,y) cell coordinate, get each RasterData's double
+value, map them to a new value, and assign it to the output's (x,y) cell.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.RasterData#copy" data-isabs="true">
+      <a id="copy:RasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">copy</span><span class="result">: <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.RasterData#force" data-isabs="true">
+      <a id="force:Option[StrictRasterData]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">force</span><span class="result">: <span name="scala.Option" class="extype">Option</span>[<a name="geotrellis.StrictRasterData" class="extype" href="StrictRasterData.html">StrictRasterData</a>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Return the current RasterData values as a strict (calculated) ArrayRasterData.</p><div class="fullcomment"><div class="comment cmt"><p>Return the current RasterData values as a strict (calculated) ArrayRasterData.</p><p>If your RasterData cannot be represented as an array, bad things will happen.
+If your RasterData is lazy, any deferred calculations will be executed.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.RasterData#foreach" data-isabs="true">
+      <a id="foreach((Int) ⇒ Unit):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">foreach</span><span class="params">(<span name="f">f: (<span name="scala.Int" class="extype">Int</span>) ⇒ <span name="scala.Unit" class="extype">Unit</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For every cell in the given raster, run the given integer function.</p><div class="fullcomment"><div class="comment cmt"><p>For every cell in the given raster, run the given integer function.</p><p>The order of the traversal from the lowest to highest columns, across each
+row, but this should probably not be relied upon. In the future we'd like
+to be able to parallelize foreach.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.RasterData#foreachDouble" data-isabs="true">
+      <a id="foreachDouble((Double) ⇒ Unit):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">foreachDouble</span><span class="params">(<span name="f">f: (<span name="scala.Double" class="extype">Double</span>) ⇒ <span name="scala.Unit" class="extype">Unit</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">For every cell in the given raster, run the given double function.</p><div class="fullcomment"><div class="comment cmt"><p>For every cell in the given raster, run the given double function.</p><p>The order of the traversal from the lowest to highest columns, across each
+row, but this should probably not be relied upon. In the future we'd like
+to be able to parallelize foreach.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.RasterData#getType" data-isabs="true">
+      <a id="getType:RasterType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getType</span><span class="result">: <a name="geotrellis.RasterType" class="extype" href="RasterType.html">RasterType</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.RasterData#length" data-isabs="true">
+      <a id="length:Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">length</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.RasterData#map" data-isabs="true">
+      <a id="map((Int) ⇒ Int):RasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">map</span><span class="params">(<span name="f">f: (<span name="scala.Int" class="extype">Int</span>) ⇒ <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Map each cell in the given raster to a new one, using the given function.</p><div class="fullcomment"><div class="comment cmt"><p>Map each cell in the given raster to a new one, using the given function.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.RasterData#mapDouble" data-isabs="true">
+      <a id="mapDouble((Double) ⇒ Double):RasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mapDouble</span><span class="params">(<span name="f">f: (<span name="scala.Double" class="extype">Double</span>) ⇒ <span name="scala.Double" class="extype">Double</span></span>)</span><span class="result">: <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Map each cell in the given raster to a new one, using the given function.</p><div class="fullcomment"><div class="comment cmt"><p>Map each cell in the given raster to a new one, using the given function.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.RasterData#mapIfSet" data-isabs="true">
+      <a id="mapIfSet((Int) ⇒ Int):RasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mapIfSet</span><span class="params">(<span name="f">f: (<span name="scala.Int" class="extype">Int</span>) ⇒ <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Similar to map, except that this method passes through &quot;nodata&quot; cells
+without calling the provided function.</p><div class="fullcomment"><div class="comment cmt"><p>Similar to map, except that this method passes through &quot;nodata&quot; cells
+without calling the provided function.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.RasterData#mapIfSetDouble" data-isabs="true">
+      <a id="mapIfSetDouble((Double) ⇒ Double):RasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mapIfSetDouble</span><span class="params">(<span name="f">f: (<span name="scala.Double" class="extype">Double</span>) ⇒ <span name="scala.Double" class="extype">Double</span></span>)</span><span class="result">: <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Similar to map, except that this method passes through &quot;nodata&quot; cells
+without calling the provided function.</p><div class="fullcomment"><div class="comment cmt"><p>Similar to map, except that this method passes through &quot;nodata&quot; cells
+without calling the provided function.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.RasterData#mutable" data-isabs="true">
+      <a id="mutable:Option[MutableRasterData]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mutable</span><span class="result">: <span name="scala.Option" class="extype">Option</span>[<a name="geotrellis.MutableRasterData" class="extype" href="MutableRasterData.html">MutableRasterData</a>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Return a mutable version of the current raster.</p><div class="fullcomment"><div class="comment cmt"><p>Return a mutable version of the current raster.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li></ol>
+            </div>
+
+        <div class="values members" id="values">
+              <h3>Concrete Value Members</h3>
+              <ol><li visbl="pub" name="scala.AnyRef#!=" data-isabs="false">
+      <a id="!=(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#!=" data-isabs="false">
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $bang$eq">!=</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef###" data-isabs="false">
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $hash$hash">##</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#==" data-isabs="false">
+      <a id="==(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#==" data-isabs="false">
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name" title="gt4s: $eq$eq">==</span><span class="params">(<span name="arg0">arg0: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.ArrayRasterData#asArray" data-isabs="false">
+      <a id="asArray:Some[ArrayRasterData]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asArray</span><span class="result">: <span name="scala.Some" class="extype">Some</span>[<a name="geotrellis.ArrayRasterData" class="extype" href="">ArrayRasterData</a>]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Return the current RasterData as an array.</p><div class="fullcomment"><div class="comment cmt"><p>Return the current RasterData as an array.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.ArrayRasterData" class="extype" href="">ArrayRasterData</a> → <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li><li visbl="pub" name="scala.Any#asInstanceOf" data-isabs="false">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: T0</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#clone" data-isabs="false">
       <a id="clone():AnyRef"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">clone</span>
-        
-        <span class="params">()</span><span class="result">: AnyRef</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: AnyRef</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.ArrayRasterData#copy" data-isabs="false">
-      <a id="copy():ArrayRasterData"></a>
+    </li><li visbl="pub" name="geotrellis.ArrayRasterData#convert" data-isabs="false">
+      <a id="convert(RasterType):ArrayRasterData"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">copy</span>
-        
-        <span class="params">()</span><span class="result">: <a name="geotrellis.ArrayRasterData" class="extype" href="">ArrayRasterData</a></span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">convert</span><span class="params">(<span name="typ">typ: <a name="geotrellis.RasterType" class="extype" href="RasterType.html">RasterType</a></span>)</span><span class="result">: <a name="geotrellis.ArrayRasterData" class="extype" href="">ArrayRasterData</a></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.ArrayRasterData" class="extype" href="">ArrayRasterData</a> → <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#eq" data-isabs="false">
       <a id="eq(AnyRef):Boolean"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">eq</span>
-        
-        <span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.RasterData#equals" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.ArrayRasterData#equals" data-isabs="false">
       <a id="equals(Any):Boolean"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">equals</span>
-        
-        <span class="params">(<span name="other">other: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="other">other: <span name="scala.Any" class="extype">Any</span></span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a> → AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.ArrayRasterData" class="extype" href="">ArrayRasterData</a> → AnyRef → Any</dd></dl></div>
     </li><li visbl="prt" name="scala.AnyRef#finalize" data-isabs="false">
       <a id="finalize():Unit"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">finalize</span>
-        
-        <span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a name="java.lang" class="extype" href="../java/lang/package.html">lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.ArrayRasterData#get" data-isabs="false">
+      <a id="get(Int,Int,Int):Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">get</span><span class="params">(<span name="col">col: <span name="scala.Int" class="extype">Int</span></span>, <span name="row">row: <span name="scala.Int" class="extype">Int</span></span>, <span name="cols">cols: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Get a particular (x, y) cell's integer value, given a width in cols.</p><div class="fullcomment"><div class="comment cmt"><p>Get a particular (x, y) cell's integer value, given a width in cols.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.ArrayRasterData" class="extype" href="">ArrayRasterData</a> → <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#getClass" data-isabs="false">
       <a id="getClass():java.lang.Class[_]"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">getClass</span>
-        
-        <span class="params">()</span><span class="result">: java.lang.Class[_]</span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
       </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="scala.AnyRef#hashCode" data-isabs="false">
-      <a id="hashCode():Int"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">hashCode</span>
-        
-        <span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: java.lang.Class[_]</span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.ArrayRasterData#getDouble" data-isabs="false">
+      <a id="getDouble(Int,Int,Int):Double"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getDouble</span><span class="params">(<span name="col">col: <span name="scala.Int" class="extype">Int</span></span>, <span name="row">row: <span name="scala.Int" class="extype">Int</span></span>, <span name="cols">cols: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Double" class="extype">Double</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Get a particular (x, y) cell's double value, given a width in cols.</p><div class="fullcomment"><div class="comment cmt"><p>Get a particular (x, y) cell's double value, given a width in cols.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.ArrayRasterData" class="extype" href="">ArrayRasterData</a> → <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+    </li><li visbl="pub" name="scala.AnyRef#hashCode" data-isabs="false">
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.RasterData#isFloat" data-isabs="false">
+      <a id="isFloat:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isFloat</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
     </li><li visbl="pub" name="scala.Any#isInstanceOf" data-isabs="false">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">isInstanceOf</span>
-        <span class="tparams">[<span name="T0">T0</span>]</span>
-        <span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.ArrayRasterData#length" data-isabs="false">
-      <a id="length:Int"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.ArrayRasterData#lengthLong" data-isabs="false">
+      <a id="lengthLong:Long"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">length</span>
-        
-        <span class="result">: <span name="scala.Int" class="extype">Int</span></span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">lengthLong</span><span class="result">: <span name="scala.Long" class="extype">Long</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.ArrayRasterData" class="extype" href="">ArrayRasterData</a> → <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#ne" data-isabs="false">
       <a id="ne(AnyRef):Boolean"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">ne</span>
-        
-        <span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: AnyRef</span>)</span><span class="result">: <span name="scala.Boolean" class="extype">Boolean</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#notify" data-isabs="false">
       <a id="notify():Unit"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">notify</span>
-        
-        <span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#notifyAll" data-isabs="false">
       <a id="notifyAll():Unit"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">notifyAll</span>
-        
-        <span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#synchronized" data-isabs="false">
       <a id="synchronized[T0](⇒ T0):T0"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">synchronized</span>
-        <span class="tparams">[<span name="T0">T0</span>]</span>
-        <span class="params">(<span name="arg0">arg0: ⇒ T0</span>)</span><span class="result">: T0</span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ T0</span>)</span><span class="result">: T0</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.RasterData#toString" data-isabs="false">
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li visbl="pub" name="geotrellis.ArrayRasterData#toArray" data-isabs="false">
+      <a id="toArray:Array[Int]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toArray</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[<span name="scala.Int" class="extype">Int</span>]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.ArrayRasterData#toArrayDouble" data-isabs="false">
+      <a id="toArrayDouble:Array[Double]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toArrayDouble</span><span class="result">: <span name="scala.Array" class="extype">Array</span>[<span name="scala.Double" class="extype">Double</span>]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.ArrayRasterData#toList" data-isabs="false">
+      <a id="toList:List[Int]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toList</span><span class="result">: List[<span name="scala.Int" class="extype">Int</span>]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.ArrayRasterData#toListDouble" data-isabs="false">
+      <a id="toListDouble:List[Double]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toListDouble</span><span class="result">: List[<span name="scala.Double" class="extype">Double</span>]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="scala.AnyRef#toString" data-isabs="false">
       <a id="toString():String"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">toString</span>
-        
-        <span class="params">()</span><span class="result">: String</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span name="java.lang.String" class="extype">String</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a> → AnyRef → Any</dd></dl></div>
-    </li><li visbl="pub" name="geotrellis.ArrayRasterData#update" data-isabs="false">
-      <a id="update(Int,Int):Unit"></a>
-      <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">update</span>
-        
-        <span class="params">(<span name="i">i: <span name="scala.Int" class="extype">Int</span></span>, <span name="x">x: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a name="geotrellis.ArrayRasterData" class="extype" href="">ArrayRasterData</a> → <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait():Unit"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">wait</span>
-        
-        <span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait(Long,Int):Unit"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">wait</span>
-        
-        <span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>, <span name="arg1">arg1: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>, <span name="arg1">arg1: <span name="scala.Int" class="extype">Int</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
     </li><li visbl="pub" name="scala.AnyRef#wait" data-isabs="false">
       <a id="wait(Long):Unit"></a>
       <h4 class="signature">
-      <span class="kind">def</span>
-      <span class="symbol"> 
-        <span class="name">wait</span>
-        
-        <span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span name="scala.Long" class="extype">Long</span></span>)</span><span class="result">: <span name="scala.Unit" class="extype">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>final </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">()</span>
               
         </dd></dl></div>
@@ -392,22 +682,24 @@
             </div>
 
         
+        </div>
 
-        <div name="scala.Serializable" class="parent">
-              <h3>Inherited from <span name="scala.Serializable" class="extype">Serializable</span></h3>
-            </div><div name="java.io.Serializable" class="parent">
-              <h3>Inherited from <span name="java.io.Serializable" class="extype">Serializable</span></h3>
-            </div><div name="geotrellis.RasterData" class="parent">
+        <div id="inheritedMembers">
+        <div name="geotrellis.RasterData" class="parent">
               <h3>Inherited from <a name="geotrellis.RasterData" class="extype" href="RasterData.html">RasterData</a></h3>
             </div><div name="scala.AnyRef" class="parent">
               <h3>Inherited from AnyRef</h3>
             </div><div name="scala.Any" class="parent">
               <h3>Inherited from <span name="scala.Any" class="extype">Any</span></h3>
             </div>
+        </div>
 
       </div>
-      
+
       <div id="tooltip"></div>
-      
+
+      <div id="footer">  </div>
+
+
     </body>
       </html>

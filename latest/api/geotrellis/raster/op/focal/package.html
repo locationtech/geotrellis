@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>geotrellis.raster.op.focal</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../../../lib/template.css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+      <div id="definition">
+        <img src="../../../../lib/package_big.png" />
+        <p id="owner"><a name="geotrellis" class="extype" href="../../../package.html">geotrellis</a>.<a name="geotrellis.raster" class="extype" href="../../package.html">raster</a>.<a name="geotrellis.raster.op" class="extype" href="../package.html">op</a></p>
+        <h1>focal</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">focal</span>
+      </span>
+      </h4>
+      
+      <div class="fullcommenttop" id="comment"></div>
+    
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="geotrellis.raster.op.focal.AutomaticNormalize" data-isabs="false">
+      <a id="AutomaticNormalize:AutomaticNormalize"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="AutomaticNormalize.html"><span class="name">AutomaticNormalize</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="g">g: Op[(Int, Int)]</span>)</span><span class="result"> extends Op2[Raster, (Int, Int), Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Normalize the values in the given raster so that all values are within the
+specified minimum and maximum value range.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.focal.Hillshade" data-isabs="false">
+      <a id="Hillshade:Hillshade"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Hillshade.html"><span class="name">Hillshade</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="azimuth">azimuth: Op[Double]</span>, <span name="altitude">altitude: Op[Double]</span>)</span><span class="result"> extends Op3[Raster, Double, Double, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Hillshade creates a raster that, visually, adds a three dimensional appearance to an elevation raster.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.focal.Kernel" data-isabs="false">
+      <a id="Kernel:Kernel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Kernel.html"><span class="name">Kernel</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Used for Kernel Density calculation
+</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.focal.KernelDensity" data-isabs="false">
+      <a id="KernelDensity:KernelDensity"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="KernelDensity.html"><span class="name">KernelDensity</span></a><span class="params">(<span name="outputRasterExtent">outputRasterExtent: Op[RasterExtent]</span>, <span name="kernel">kernel: Op[Kernel]</span>, <span name="points">points: Op[Array[Point]]</span>)</span><span class="result"> extends Op3[RasterExtent, Kernel, Array[Point], Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Compute the kernel density of a set of points onto a raster</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.focal.PrecomputedNormalize" data-isabs="false">
+      <a id="PrecomputedNormalize:PrecomputedNormalize"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="PrecomputedNormalize.html"><span class="name">PrecomputedNormalize</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="c">c: Op[(Int, Int)]</span>, <span name="g">g: Op[(Int, Int)]</span>)</span><span class="result"> extends Op3[Raster, (Int, Int), (Int, Int), Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Normalize the values in the given raster.</p>
+    </li></ol>
+            </div>
+
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="geotrellis.raster.op.focal.HillshadeHelper" data-isabs="false">
+      <a id="HillshadeHelper:HillshadeHelper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="HillshadeHelper$.html"><span class="name">HillshadeHelper</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.focal.Kernel" data-isabs="false">
+      <a id="Kernel:Kernel"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Kernel$.html"><span class="name">Kernel</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Object used for generating kernels
+</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.focal.KernelDensityHelper" data-isabs="false">
+      <a id="KernelDensityHelper:KernelDensityHelper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="KernelDensityHelper$.html"><span class="name">KernelDensityHelper</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.focal.Normalize" data-isabs="false">
+      <a id="Normalize:Normalize"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Normalize$.html"><span class="name">Normalize</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      <p class="comment cmt">We'd like to use the normalize name both when we want to automatically
+detect the min/max values, and when we provide them explicitly.</p>
+    </li></ol>
+            </div>
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

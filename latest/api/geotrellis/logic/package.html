@@ -1,0 +1,222 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>geotrellis.logic</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../lib/template.css" />
+      <script type="text/javascript" src="../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../lib/template.js"></script>
+      <script type="text/javascript" src="../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+      <div id="definition">
+        <img src="../../lib/package_big.png" />
+        <p id="owner"><a name="geotrellis" class="extype" href="../package.html">geotrellis</a></p>
+        <h1>logic</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">logic</span>
+      </span>
+      </h4>
+      
+      <div class="fullcommenttop" id="comment"></div>
+    
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="geotrellis.logic.Collect" data-isabs="false">
+      <a id="Collect:Collect[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Collect.html"><span class="name">Collect</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="ops">ops: Seq[Op[A]]</span>)</span><span class="result"> extends Op[Seq[A]] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.logic.CollectArray" data-isabs="false">
+      <a id="CollectArray:CollectArray[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="CollectArray.html"><span class="name">CollectArray</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="ops">ops: Array[Op[A]]</span>, <span name="evidence$1">evidence$1: Manifest[A]</span>)</span><span class="result"> extends Op[Array[A]] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.logic.Do1" data-isabs="false">
+      <a id="Do1:Do1[A, Z]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Do1.html"><span class="name">Do1</span></a><span class="tparams">[<span name="A">A</span>, <span name="Z">Z</span>]</span><span class="params">(<span name="a">a: Op[A]</span>, <span name="call">call: (A) ⇒ Z</span>, <span name="evidence$6">evidence$6: Manifest[A]</span>, <span name="evidence$7">evidence$7: Manifest[Z]</span>)</span><span class="result"> extends Op[Z] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Invoke a function that takes one argument.</p>
+    </li><li visbl="pub" name="geotrellis.logic.Do2" data-isabs="false">
+      <a id="Do2:Do2[A, B, Z]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Do2.html"><span class="name">Do2</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="Z">Z</span>]</span><span class="params">(<span name="a">a: Op[A]</span>, <span name="b">b: Op[B]</span>, <span name="call">call: (A, B) ⇒ Z</span>, <span name="evidence$8">evidence$8: Manifest[A]</span>, <span name="evidence$9">evidence$9: Manifest[B]</span>, <span name="evidence$10">evidence$10: Manifest[Z]</span>)</span><span class="result"> extends Op[Z] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Invoke a function that takes two arguments.</p>
+    </li><li visbl="pub" name="geotrellis.logic.ForEach1" data-isabs="false">
+      <a id="ForEach1:ForEach1[A, Z]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ForEach1.html"><span class="name">ForEach1</span></a><span class="tparams">[<span name="A">A</span>, <span name="Z">Z</span>]</span><span class="params">(<span name="op">op: Op[Array[A]]</span>, <span name="f">f: (A) ⇒ Op[Z]</span>, <span name="evidence$4">evidence$4: Manifest[Z]</span>)</span><span class="result"> extends Op[Array[Z]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Evaluates the given operation (op) to get an array of A's.</p>
+    </li><li visbl="pub" name="geotrellis.logic.ForEach2" data-isabs="false">
+      <a id="ForEach2:ForEach2[A, B, Z]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ForEach2.html"><span class="name">ForEach2</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="Z">Z</span>]</span><span class="params">(<span name="opA">opA: Op[Array[A]]</span>, <span name="opB">opB: Op[Array[B]]</span>, <span name="f">f: (A, B) ⇒ Op[Z]</span>, <span name="evidence$5">evidence$5: Manifest[Z]</span>)</span><span class="result"> extends Op[Array[Z]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Evaluates the given operations (opA and opB) to get an array of A's and an
+array of B's.</p>
+    </li><li visbl="pub" name="geotrellis.logic.ForEach3" data-isabs="false">
+      <a id="ForEach3:ForEach3[A, B, C, Z]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ForEach3.html"><span class="name">ForEach3</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>, <span name="Z">Z</span>]</span><span class="params">(<span name="opA">opA: Op[Array[A]]</span>, <span name="opB">opB: Op[Array[B]]</span>, <span name="opC">opC: Op[Array[C]]</span>, <span name="f">f: (A, B, C) ⇒ Op[Z]</span>, <span name="evidence$6">evidence$6: Manifest[Z]</span>)</span><span class="result"> extends Op[Array[Z]] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Evaluates the given operations (opA opB, and opC) to get arrays of A's, B's
+and C's (which should be the same length).</p>
+    </li><li visbl="pub" name="geotrellis.logic.Reducer1" data-isabs="true">
+      <a id="Reducer1:Reducer1[B, C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Reducer1.html"><span class="name">Reducer1</span></a><span class="tparams">[<span name="B">B</span>, <span name="C">C</span>]</span><span class="result"> extends Op[C]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.logic.Reducer2" data-isabs="true">
+      <a id="Reducer2:Reducer2[A, B, C]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Reducer2.html"><span class="name">Reducer2</span></a><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>, <span name="C">C</span>]</span><span class="result"> extends Op[C]</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="geotrellis.logic.Do" data-isabs="false">
+      <a id="Do:Do"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Do$.html"><span class="name">Do</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.logic.ForEach" data-isabs="false">
+      <a id="ForEach:ForEach"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ForEach$.html"><span class="name">ForEach</span></a><span class="result"> extends AnyRef</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.logic.applicative" data-isabs="false">
+      <a id="applicative:applicative"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="applicative/package.html"><span class="name">applicative</span></a>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

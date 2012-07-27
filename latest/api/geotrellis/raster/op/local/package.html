@@ -1,0 +1,532 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>geotrellis.raster.op.local</title>
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link type="text/css" media="screen" rel="stylesheet" href="../../../../lib/template.css" />
+      <script type="text/javascript" src="../../../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../lib/tools.tooltip.js"></script>
+    
+        </head>
+        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
+      <div id="definition">
+        <img src="../../../../lib/package_big.png" />
+        <p id="owner"><a name="geotrellis" class="extype" href="../../../package.html">geotrellis</a>.<a name="geotrellis.raster" class="extype" href="../../package.html">raster</a>.<a name="geotrellis.raster.op" class="extype" href="../package.html">op</a></p>
+        <h1>local</h1>
+      </div>
+
+      <h4 class="signature" id="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">local</span>
+      </span>
+      </h4>
+      
+      <div class="fullcommenttop" id="comment"></div>
+    
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div class="types members" id="types">
+              <h3>Type Members</h3>
+              <ol><li visbl="pub" name="geotrellis.raster.op.local.Add" data-isabs="false">
+      <a id="Add:Add"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Add.html"><span class="name">Add</span></a><span class="params">(<span name="rs">rs: Op[Raster]*</span>)</span><span class="result"> extends Op[Raster] with MultiLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Add the values of each cell in each raster.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.AddArray" data-isabs="false">
+      <a id="AddArray:AddArray"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="AddArray.html"><span class="name">AddArray</span></a><span class="params">(<span name="op">op: Op[Array[Raster]]</span>)</span><span class="result"> extends Op[Raster] with MultiLocalArray with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Add the values of each cell in each raster.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.AddConstant" data-isabs="false">
+      <a id="AddConstant:AddConstant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="AddConstant.html"><span class="name">AddConstant</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op2[Raster, Int, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Add a constant value to each cell.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.BinaryDoCell" data-isabs="false">
+      <a id="BinaryDoCell:BinaryDoCell"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="BinaryDoCell.html"><span class="name">BinaryDoCell</span></a><span class="params">(<span name="r1">r1: Op[Raster]</span>, <span name="r2">r2: Op[Raster]</span>, <span name="f">f: (Int, Int) ⇒ Int</span>)</span><span class="result"> extends Op[Raster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Perform a function on every cell in a raster with the values from another raster.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.BinaryIfCell" data-isabs="false">
+      <a id="BinaryIfCell:BinaryIfCell"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="BinaryIfCell.html"><span class="name">BinaryIfCell</span></a><span class="params">(<span name="r1">r1: Op[Raster]</span>, <span name="r2">r2: Op[Raster]</span>, <span name="cond">cond: (Int, Int) ⇒ Boolean</span>, <span name="trueValue">trueValue: Int</span>)</span><span class="result"> extends Op[Raster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a condition over two rasters, set the value of each cell in the output
+to a specified value if the condition is true given the corresponding values in
+each of the two input rasters.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.BinaryIfElseCell" data-isabs="false">
+      <a id="BinaryIfElseCell:BinaryIfElseCell"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="BinaryIfElseCell.html"><span class="name">BinaryIfElseCell</span></a><span class="params">(<span name="r1">r1: Op[Raster]</span>, <span name="r2">r2: Op[Raster]</span>, <span name="cond">cond: (Int, Int) ⇒ Boolean</span>, <span name="trueValue">trueValue: Int</span>, <span name="falseValue">falseValue: Int</span>)</span><span class="result"> extends Op[Raster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Given a condition over two rasters, set the value of each cell in the output
+to a specified true or false value after testing the specified condition on
+the corresponding values in each of the two input rasters.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.BinaryLocal" data-isabs="true">
+      <a id="BinaryLocal:BinaryLocal"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="BinaryLocal.html"><span class="name">BinaryLocal</span></a><span class="result"> extends Op[Raster] with LocalOperation</span>
+      </span>
+      </h4>
+      <p class="comment cmt">BinaryLocal is an abstract class for all operations that are both local (operating
+on each cell in a raster without knowledge of other cells) and binary, by which
+we mean that the input includes two rasters (as opposed to 'unary' or 'multi').</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.BitwiseAndConstant" data-isabs="false">
+      <a id="BitwiseAndConstant:BitwiseAndConstant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="BitwiseAndConstant.html"><span class="name">BitwiseAndConstant</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op2[Raster, Int, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.local.BitwiseNotConstant" data-isabs="false">
+      <a id="BitwiseNotConstant:BitwiseNotConstant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="BitwiseNotConstant.html"><span class="name">BitwiseNotConstant</span></a><span class="params">(<span name="r">r: Op[Raster]</span>)</span><span class="result"> extends Op1[Raster, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.local.BitwiseOrConstant" data-isabs="false">
+      <a id="BitwiseOrConstant:BitwiseOrConstant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="BitwiseOrConstant.html"><span class="name">BitwiseOrConstant</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op2[Raster, Int, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.local.BitwiseXorConstant" data-isabs="false">
+      <a id="BitwiseXorConstant:BitwiseXorConstant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="BitwiseXorConstant.html"><span class="name">BitwiseXorConstant</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op2[Raster, Int, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.local.Divide" data-isabs="false">
+      <a id="Divide:Divide"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Divide.html"><span class="name">Divide</span></a><span class="params">(<span name="r1">r1: Op[Raster]</span>, <span name="r2">r2: Op[Raster]</span>)</span><span class="result"> extends Op[Raster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Divide each value of one raster with the values from another raster.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.DivideConstant" data-isabs="false">
+      <a id="DivideConstant:DivideConstant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DivideConstant.html"><span class="name">DivideConstant</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op2[Raster, Int, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Divide each cell by a constant value.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.DivideConstantBy" data-isabs="false">
+      <a id="DivideConstantBy:DivideConstantBy"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DivideConstantBy.html"><span class="name">DivideConstantBy</span></a><span class="params">(<span name="c">c: Op[Int]</span>, <span name="r">r: Op[Raster]</span>)</span><span class="result"> extends Op2[Int, Raster, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">For each cell, divide a constant value by that cell's value.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.DivideDoubleConstant" data-isabs="false">
+      <a id="DivideDoubleConstant:DivideDoubleConstant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DivideDoubleConstant.html"><span class="name">DivideDoubleConstant</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="c">c: Op[Double]</span>)</span><span class="result"> extends Op2[Raster, Double, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.local.DivideDoubleConstantBy" data-isabs="false">
+      <a id="DivideDoubleConstantBy:DivideDoubleConstantBy"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DivideDoubleConstantBy.html"><span class="name">DivideDoubleConstantBy</span></a><span class="params">(<span name="c">c: Op[Double]</span>, <span name="r">r: Op[Raster]</span>)</span><span class="result"> extends Op2[Double, Raster, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.local.DoCell" data-isabs="false">
+      <a id="DoCell:DoCell"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="DoCell.html"><span class="name">DoCell</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="f">f: (Int) ⇒ Int</span>)</span><span class="result"> extends Op1[Raster, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Perform a function on every cell in a raster.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.IfCell" data-isabs="false">
+      <a id="IfCell:IfCell"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="IfCell.html"><span class="name">IfCell</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="cond">cond: (Int) ⇒ Boolean</span>, <span name="trueValue">trueValue: Int</span>)</span><span class="result"> extends Op1[Raster, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Maps all cells matching <code>cond</code> to <code>trueValue</code>.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.IfElseCell" data-isabs="false">
+      <a id="IfElseCell:IfElseCell"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="IfElseCell.html"><span class="name">IfElseCell</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="cond">cond: (Int) ⇒ Boolean</span>, <span name="trueValue">trueValue: Int</span>, <span name="falseValue">falseValue: Int</span>)</span><span class="result"> extends Op1[Raster, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Set all values of output raster to one value or another based on whether a
+condition is true or false.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.InverseMask" data-isabs="false">
+      <a id="InverseMask:InverseMask"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="InverseMask.html"><span class="name">InverseMask</span></a><span class="params">(<span name="r1">r1: Op[Raster]</span>, <span name="r2">r2: Op[Raster]</span>, <span name="readMask">readMask: Int</span>, <span name="writeMask">writeMask: Int</span>)</span><span class="result"> extends Op[Raster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generate a raster with the values from the first raster, but only include
+cells in which the corresponding cell in the second raster is set to the
+&quot;readMask&quot; value.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.LocalOperation" data-isabs="true">
+      <a id="LocalOperation:LocalOperation"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LocalOperation.html"><span class="name">LocalOperation</span></a><span class="result"> extends Op[Raster]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Local operations involve each individual value in a raster without information
+about other values in the raster.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.Mask" data-isabs="false">
+      <a id="Mask:Mask"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Mask.html"><span class="name">Mask</span></a><span class="params">(<span name="r1">r1: Op[Raster]</span>, <span name="r2">r2: Op[Raster]</span>, <span name="readMask">readMask: Int</span>, <span name="writeMask">writeMask: Int</span>)</span><span class="result"> extends Op[Raster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Generate a raster with the values from the first raster, but only include
+cells in which the corresponding cell in the second raster *are not* set to the
+&quot;readMask&quot; value.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.MaxConstant" data-isabs="false">
+      <a id="MaxConstant:MaxConstant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="MaxConstant.html"><span class="name">MaxConstant</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op2[Raster, Int, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Set each cell to a constant number or the corresponding cell value, whichever is highest.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.MinConstant" data-isabs="false">
+      <a id="MinConstant:MinConstant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="MinConstant.html"><span class="name">MinConstant</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op2[Raster, Int, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Set each cell to a constant or its existing value, whichever is lowest.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.MultiLocal" data-isabs="true">
+      <a id="MultiLocal:MultiLocal"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="MultiLocal.html"><span class="name">MultiLocal</span></a><span class="result"> extends Op[Raster]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.local.MultiLocalArray" data-isabs="true">
+      <a id="MultiLocalArray:MultiLocalArray"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="MultiLocalArray.html"><span class="name">MultiLocalArray</span></a><span class="result"> extends Op[Raster]</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.local.Multiply" data-isabs="false">
+      <a id="Multiply:Multiply"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Multiply.html"><span class="name">Multiply</span></a><span class="params">(<span name="rs">rs: Op[Raster]*</span>)</span><span class="result"> extends Op[Raster] with MultiLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Multiply each cell of each raster.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.MultiplyArray" data-isabs="false">
+      <a id="MultiplyArray:MultiplyArray"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="MultiplyArray.html"><span class="name">MultiplyArray</span></a><span class="params">(<span name="op">op: Op[Array[Raster]]</span>)</span><span class="result"> extends Op[Raster] with MultiLocalArray with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Multiply each cell of each raster in array.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.MultiplyConstant" data-isabs="false">
+      <a id="MultiplyConstant:MultiplyConstant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="MultiplyConstant.html"><span class="name">MultiplyConstant</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op2[Raster, Int, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Multiply each cell by a constant.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.MultiplyDoubleConstant" data-isabs="false">
+      <a id="MultiplyDoubleConstant:MultiplyDoubleConstant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="MultiplyDoubleConstant.html"><span class="name">MultiplyDoubleConstant</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="c">c: Op[Double]</span>)</span><span class="result"> extends Op2[Raster, Double, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Multiply each cell by a constant (double).</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.Negate" data-isabs="false">
+      <a id="Negate:Negate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Negate.html"><span class="name">Negate</span></a><span class="params">(<span name="r">r: Op[Raster]</span>)</span><span class="result"> extends Op1[Raster, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Negate (multiply by -1) each value in a raster.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.PowConstant" data-isabs="false">
+      <a id="PowConstant:PowConstant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="PowConstant.html"><span class="name">PowConstant</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op2[Raster, Int, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Raise each cell to the cth power.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.PowDoubleConstant" data-isabs="false">
+      <a id="PowDoubleConstant:PowDoubleConstant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="PowDoubleConstant.html"><span class="name">PowDoubleConstant</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="c">c: Op[Double]</span>)</span><span class="result"> extends Op2[Raster, Double, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      
+    </li><li visbl="pub" name="geotrellis.raster.op.local.Subtract" data-isabs="false">
+      <a id="Subtract:Subtract"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Subtract.html"><span class="name">Subtract</span></a><span class="params">(<span name="r1">r1: Op[Raster]</span>, <span name="r2">r2: Op[Raster]</span>)</span><span class="result"> extends Op[Raster] with BinaryLocal with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Subtract each value in the second raster from the corresponding value in the first raster.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.SubtractConstant" data-isabs="false">
+      <a id="SubtractConstant:SubtractConstant"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SubtractConstant.html"><span class="name">SubtractConstant</span></a><span class="params">(<span name="r">r: Op[Raster]</span>, <span name="c">c: Op[Int]</span>)</span><span class="result"> extends Op2[Raster, Int, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Subtract a constant value from each cell.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op.local.SubtractConstantBy" data-isabs="false">
+      <a id="SubtractConstantBy:SubtractConstantBy"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SubtractConstantBy.html"><span class="name">SubtractConstantBy</span></a><span class="params">(<span name="c">c: Op[Int]</span>, <span name="r">r: Op[Raster]</span>)</span><span class="result"> extends Op2[Int, Raster, Raster] with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Subtract the value of each cell by a constant.</p>
+    </li></ol>
+            </div>
+
+        
+
+        <div class="values members" id="values">
+              <h3>Value Members</h3>
+              <ol><li visbl="pub" name="geotrellis.raster.op.local.IfCell" data-isabs="false">
+      <a id="IfCell:IfCell"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="IfCell$.html"><span class="name">IfCell</span></a><span class="result"> extends Serializable</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

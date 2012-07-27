@@ -12,7 +12,7 @@
       <script type="text/javascript" src="../../lib/tools.tooltip.js"></script>
     
         </head>
-        <body class="value">
+        <body onload="sh_highlightDocument('../lib/', '.min.js');" class="value">
       <div id="definition">
         <img src="../../lib/package_big.png" />
         <p id="owner"><a name="geotrellis" class="extype" href="../package.html">geotrellis</a></p>
@@ -20,138 +20,268 @@
       </div>
 
       <h4 class="signature" id="signature">
-      <span class="kind">package</span>
-      <span class="symbol"> 
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
         <span class="name">raster</span>
-        
-        
       </span>
       </h4>
       
-          <div class="fullcommenttop" id="comment"></div>
+      <div class="fullcommenttop" id="comment"></div>
+    
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
         
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
 
       <div id="template">
-
-        <div id="mbrsel">
-          <div id="textfilter"><span class="pre"></span><span class="input"><input accesskey="/" type="text" /></span><span class="post"></span></div>
-          
-          
-          <div id="visbl">
-              <span class="filtertype">Visibility</span>
-              <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
-            </div>
-        </div>
-
+        <div id="allMembers">
         
 
         <div class="types members" id="types">
               <h3>Type Members</h3>
-              <ol><li visbl="pub" name="geotrellis.raster.DoubleRaster" data-isabs="false">
-      <a id="DoubleRaster:DoubleRaster"></a>
+              <ol><li visbl="pub" name="geotrellis.raster.DoubleConstant" data-isabs="false">
+      <a id="DoubleConstant:DoubleConstant"></a>
       <h4 class="signature">
-      <span class="kind">class</span>
-      <span class="symbol"> 
-        <a href="DoubleRaster.html"><span class="name">DoubleRaster</span></a>
-        
-        <span class="result"> extends Serializable</span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
       </span>
-      </h4>
-      <p class="comment cmt">Core data object that represents a raster with double values.</p>
-    </li><li visbl="pub" name="geotrellis.raster.TileExtent" data-isabs="false">
-      <a id="TileExtent:TileExtent"></a>
-      <h4 class="signature">
-      <span class="kind">case class</span>
-      <span class="symbol"> 
-        <a href="TileExtent.html"><span class="name">TileExtent</span></a>
-        
-        <span class="params">(<span name="minCol">minCol: Int</span>, <span name="minRow">minRow: Int</span>, <span name="maxCol">maxCol: Int</span>, <span name="maxRow">maxRow: Int</span>)</span><span class="result"> extends Product with Serializable</span>
+      <span class="symbol">
+        <a href="DoubleConstant.html"><span class="name">DoubleConstant</span></a><span class="params">(<span name="n">n: Double</span>, <span name="size">size: Int</span>)</span><span class="result"> extends StrictRasterData with Product with Serializable</span>
       </span>
       </h4>
       
-    </li><li visbl="pub" name="geotrellis.raster.TileRasterData" data-isabs="false">
-      <a id="TileRasterData:TileRasterData"></a>
+    </li><li visbl="pub" name="geotrellis.raster.IntConstant" data-isabs="false">
+      <a id="IntConstant:IntConstant"></a>
       <h4 class="signature">
-      <span class="kind">case class</span>
-      <span class="symbol"> 
-        <a href="TileRasterData.html"><span class="name">TileRasterData</span></a>
-        
-        <span class="params">(<span name="tileSet">tileSet: TileSet</span>, <span name="rasters">rasters: Array[Option[IntRaster]]</span>)</span><span class="result"> extends RasterData with Product with Serializable</span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="IntConstant.html"><span class="name">IntConstant</span></a><span class="params">(<span name="n">n: Int</span>, <span name="size">size: Int</span>)</span><span class="result"> extends StrictRasterData with Product with Serializable</span>
       </span>
       </h4>
-      <p class="comment cmt">TileRasterData provides a data source that is backed by a grid of sub-rasters.</p>
-    </li><li visbl="pub" name="geotrellis.raster.TileSet" data-isabs="false">
-      <a id="TileSet:TileSet"></a>
+      
+    </li><li visbl="pub" name="geotrellis.raster.LazyTiledCombine" data-isabs="false">
+      <a id="LazyTiledCombine:LazyTiledCombine"></a>
       <h4 class="signature">
-      <span class="kind">case class</span>
-      <span class="symbol"> 
-        <a href="TileSet.html"><span class="name">TileSet</span></a>
-        
-        <span class="params">(<span name="rasterExtent">rasterExtent: RasterExtent</span>, <span name="tileSize">tileSize: Int</span>)</span><span class="result"> extends Product with Serializable</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyTiledCombine.html"><span class="name">LazyTiledCombine</span></a><span class="params">(<span name="data1">data1: TiledRasterData</span>, <span name="data2">data2: TiledRasterData</span>, <span name="g">g: (Int, Int) ⇒ Int</span>)</span><span class="result"> extends TiledRasterData with Product with Serializable</span>
       </span>
       </h4>
-      <p class="comment cmt">A large raster that has been split into smaller rasters.</p>
+      <p class="comment cmt">This lazy, tiled raster data represents two tiled raster data objects
+combined with a function.</p>
+    </li><li visbl="pub" name="geotrellis.raster.LazyTiledMap" data-isabs="false">
+      <a id="LazyTiledMap:LazyTiledMap"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyTiledMap.html"><span class="name">LazyTiledMap</span></a><span class="params">(<span name="data">data: TiledRasterData</span>, <span name="g">g: (Int) ⇒ Int</span>)</span><span class="result"> extends LazyTiledRasterData with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This lazy, tiled raster data represents a map over a tiled raster data.</p>
+    </li><li visbl="pub" name="geotrellis.raster.LazyTiledMapIfSet" data-isabs="false">
+      <a id="LazyTiledMapIfSet:LazyTiledMapIfSet"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyTiledMapIfSet.html"><span class="name">LazyTiledMapIfSet</span></a><span class="params">(<span name="data">data: TiledRasterData</span>, <span name="g">g: (Int) ⇒ Int</span>)</span><span class="result"> extends LazyTiledRasterData with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This lazy, tiled raster data represents a mapIfSet over a tiled raster data.</p>
+    </li><li visbl="pub" name="geotrellis.raster.LazyTiledRasterData" data-isabs="true">
+      <a id="LazyTiledRasterData:LazyTiledRasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyTiledRasterData.html"><span class="name">LazyTiledRasterData</span></a><span class="result"> extends TiledRasterData</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This trait provides some methods in terms of underlying raster data.</p>
+    </li><li visbl="pub" name="geotrellis.raster.LazyTiledWrapper" data-isabs="false">
+      <a id="LazyTiledWrapper:LazyTiledWrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyTiledWrapper.html"><span class="name">LazyTiledWrapper</span></a><span class="params">(<span name="data">data: ArrayRasterData</span>, <span name="tileLayout">tileLayout: TileLayout</span>)</span><span class="result"> extends TiledRasterData with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This RasterData warps an existing ArrayRasterData so as to allow operations
+on it to be executed in parallel.</p>
+    </li><li visbl="pub" name="geotrellis.raster.LazyViewWrapper" data-isabs="false">
+      <a id="LazyViewWrapper:LazyViewWrapper"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LazyViewWrapper.html"><span class="name">LazyViewWrapper</span></a><span class="params">(<span name="data">data: ArrayRasterData</span>, <span name="cols">cols: Int</span>, <span name="rows">rows: Int</span>, <span name="col1">col1: Int</span>, <span name="row1">row1: Int</span>, <span name="col2">col2: Int</span>, <span name="row2">row2: Int</span>)</span><span class="result"> extends LazyRasterData with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This RasterData class is used by LazyTiledWrapper to encompass a particular
+chunk of an underlying ArrayRaster.</p>
+    </li><li visbl="pub" name="geotrellis.raster.ResolutionLayout" data-isabs="false">
+      <a id="ResolutionLayout:ResolutionLayout"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ResolutionLayout.html"><span class="name">ResolutionLayout</span></a><span class="params">(<span name="xs">xs: Array[Double]</span>, <span name="ys">ys: Array[Double]</span>, <span name="cw">cw: Double</span>, <span name="ch">ch: Double</span>, <span name="pcols">pcols: Int</span>, <span name="prows">prows: Int</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">For a particular resolution and tile layout, this class stores the
+geographical boundaries of each tile extent.</p>
+    </li><li visbl="pub" name="geotrellis.raster.TileArrayRasterData" data-isabs="false">
+      <a id="TileArrayRasterData:TileArrayRasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="TileArrayRasterData.html"><span class="name">TileArrayRasterData</span></a><span class="params">(<span name="tiles">tiles: Array[Raster]</span>, <span name="tileLayout">tileLayout: TileLayout</span>)</span><span class="result"> extends TiledRasterData with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This RasterData wraps an array of tile Rasters in memory.</p>
+    </li><li visbl="pub" name="geotrellis.raster.TileLayout" data-isabs="false">
+      <a id="TileLayout:TileLayout"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="TileLayout.html"><span class="name">TileLayout</span></a><span class="params">(<span name="tileCols">tileCols: Int</span>, <span name="tileRows">tileRows: Int</span>, <span name="pixelCols">pixelCols: Int</span>, <span name="pixelRows">pixelRows: Int</span>)</span><span class="result"> extends Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This class stores the layout of a tiled raster: the number of tiles (in
+cols/rows) and also the size of each tile (in cols/rows of pixels).</p>
+    </li><li visbl="pub" name="geotrellis.raster.TileSetRasterData" data-isabs="false">
+      <a id="TileSetRasterData:TileSetRasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="TileSetRasterData.html"><span class="name">TileSetRasterData</span></a><span class="params">(<span name="basePath">basePath: String</span>, <span name="name">name: String</span>, <span name="typ">typ: RasterType</span>, <span name="tileLayout">tileLayout: TileLayout</span>, <span name="server">server: Server</span>)</span><span class="result"> extends TiledRasterData with Product with Serializable</span>
+      </span>
+      </h4>
+      <p class="comment cmt">This RasterData uses no in-memory caching and loads all tile data from disk
+when needed.</p>
+    </li><li visbl="pub" name="geotrellis.raster.TiledRasterData" data-isabs="true">
+      <a id="TiledRasterData:TiledRasterData"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TiledRasterData.html"><span class="name">TiledRasterData</span></a><span class="result"> extends RasterData</span>
+      </span>
+      </h4>
+      <p class="comment cmt"></p>
     </li></ol>
             </div>
-        
+
         
 
         <div class="values members" id="values">
               <h3>Value Members</h3>
-              <ol><li visbl="pub" name="geotrellis.raster.DoubleRaster" data-isabs="false">
-      <a id="DoubleRaster:DoubleRaster"></a>
+              <ol><li visbl="pub" name="geotrellis.raster.LazyTiledWrapper" data-isabs="false">
+      <a id="LazyTiledWrapper:LazyTiledWrapper"></a>
       <h4 class="signature">
-      <span class="kind">object</span>
-      <span class="symbol"> 
-        <a href="DoubleRaster$.html"><span class="name">DoubleRaster</span></a>
-        
-        <span class="result"> extends Serializable</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
       </span>
-      </h4>
-      
-    </li><li visbl="pub" name="geotrellis.raster.TileRasterData" data-isabs="false">
-      <a id="TileRasterData:TileRasterData"></a>
-      <h4 class="signature">
-      <span class="kind">object</span>
-      <span class="symbol"> 
-        <a href="TileRasterData$.html"><span class="name">TileRasterData</span></a>
-        
-        <span class="result"> extends Serializable</span>
+      <span class="symbol">
+        <a href="LazyTiledWrapper$.html"><span class="name">LazyTiledWrapper</span></a><span class="result"> extends Serializable</span>
       </span>
       </h4>
       
     </li><li visbl="pub" name="geotrellis.raster.TileUtils" data-isabs="false">
       <a id="TileUtils:TileUtils"></a>
       <h4 class="signature">
-      <span class="kind">object</span>
-      <span class="symbol"> 
-        <a href="TileUtils$.html"><span class="name">TileUtils</span></a>
-        
-        <span class="result"> extends AnyRef</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TileUtils$.html"><span class="name">TileUtils</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
       <p class="comment cmt">Utility functions for working with web mercator tile systems.</p>
     </li><li visbl="pub" name="geotrellis.raster.Tiler" data-isabs="false">
       <a id="Tiler:Tiler"></a>
       <h4 class="signature">
-      <span class="kind">object</span>
-      <span class="symbol"> 
-        <a href="Tiler$.html"><span class="name">Tiler</span></a>
-        
-        <span class="result"> extends AnyRef</span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Tiler$.html"><span class="name">Tiler</span></a><span class="result"> extends AnyRef</span>
       </span>
       </h4>
-      <p class="comment cmt">Used to create a tileset (TileRasterData) from a source raster.</p>
+      <p class="comment cmt">Used to create tiled rasters, as well as tilesets on the filesystem, based
+on a source raster.</p>
+    </li><li visbl="pub" name="geotrellis.raster.op" data-isabs="false">
+      <a id="op:op"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="op/package.html"><span class="name">op</span></a>
+      </span>
+      </h4>
+      
     </li></ol>
             </div>
 
         
+        </div>
 
+        <div id="inheritedMembers">
         
+        </div>
 
       </div>
-      
+
       <div id="tooltip"></div>
-      
+
+      <div id="footer">  </div>
+
+
     </body>
       </html>
