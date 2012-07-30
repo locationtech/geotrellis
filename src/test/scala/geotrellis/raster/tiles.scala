@@ -90,7 +90,7 @@ class TileSpec extends Spec with MustMatchers {
   // this is a tiled raster
   val layout = TileLayout(3, 3, 2, 2)
   val tiles = Array(r00, r10, r20, r01, r11, r21, r02, r12, r22)
-  val tileData = TileArrayRasterData(tiles, layout)
+  val tileData = TileArrayRasterData(tiles, layout, g)
   val tileRaster = Raster(tileData, g)
 
   val server = TestServer()
@@ -158,7 +158,7 @@ class TileSpec extends Spec with MustMatchers {
 
       val s = TestServer()
       val extent = Extent(1, 21, 79, 59)
-      val tileSetRD = TileSetRasterData("/tmp/foo", "testraster", TypeInt, layout, s)
+      val tileSetRD = TileSetRasterData("/tmp/foo", "testraster", TypeInt, layout, g, s)
 
       val raster4 = Raster(tileSetRD, g)
       for (y <- 0 to 3; x <- 0 to 3) {

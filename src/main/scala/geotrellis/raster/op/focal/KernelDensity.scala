@@ -136,7 +136,7 @@ object KernelDensityHelper {
           // Don't stamp zero values
           if (i > 0) {
             val z = raster.get(c, r)
-            data.set(c, r, if (z == NODATA) i else z + i, nc)
+            data.set(c, r, if (z == NODATA) i else z + i)
           }
         }
          

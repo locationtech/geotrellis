@@ -17,7 +17,7 @@ class Int1Test extends FunSuite {
   val arr = Array[Byte]((1 + 0 + 4 + 0 + 0 + 32 + 64 + 128).toByte,
                         (0 + 0 + 0 + 8 + 16 + 0 + 64 + 128).toByte)
 
-  val data = BitArrayRasterData(arr, 16)
+  val data = BitArrayRasterData(arr, 4, 4)
   val e = Extent(10.0, 11.0, 14.0, 15.0)
   val re = RasterExtent(e, 1.0, 1.0, 4, 4)
   val raster = Raster(data, re)

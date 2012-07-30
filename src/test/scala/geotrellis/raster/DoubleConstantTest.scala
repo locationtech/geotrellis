@@ -11,13 +11,13 @@ class DoubleConstantTest extends FunSuite {
   val size = 4
 
   test("building") {
-    val d1 = DoubleConstant(99.0, size)
-    val d2 = DoubleArrayRasterData(Array.fill(size)(99.0))
+    val d1 = DoubleConstant(99.0, 2, 2)
+    val d2 = DoubleArrayRasterData(Array.fill(size)(99.0), 2, 2)
     assert(d1 === d2)
   }
 
   test("basic operations") {
-    val d = DoubleConstant(99.0, size)
+    val d = DoubleConstant(99.0, 2, 2)
 
     assert(d.length === size)
     assert(d.getType === TypeDouble)
@@ -26,7 +26,7 @@ class DoubleConstantTest extends FunSuite {
   }
 
   test("map") {
-    val d1 = DoubleConstant(99.0, size)
+    val d1 = DoubleConstant(99.0, 2, 2)
     val d2 = d1.mapDouble(_ + 1.0)
 
     assert(d2.isInstanceOf[DoubleConstant])

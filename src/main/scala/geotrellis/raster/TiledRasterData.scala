@@ -14,6 +14,16 @@ import java.io.{FileOutputStream, BufferedOutputStream}
 case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int) {
 
   /**
+   * Return the total number of columns across all the tiles.
+   */
+  def totalCols = tileCols * pixelCols
+
+  /**
+   * Return the total number of rows across all the tiles.
+   */
+  def totalRows = tileRows * pixelRows
+
+  /**
    * Given an extent and resolution (RasterExtent), return the geographic
    * X-coordinates for each tile boundary in this raster data. For example,
    * if we have a 2x2 RasterData, with a raster extent whose X coordinates
@@ -64,7 +74,7 @@ case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int) 
  * geographical boundaries of each tile extent.
  */
 case class ResolutionLayout(xs:Array[Double], ys:Array[Double],
-                        cw:Double, ch:Double, pcols:Int, prows:Int) {
+                            cw:Double, ch:Double, pcols:Int, prows:Int) {
 
   def getExtent(c:Int, r:Int) = Extent(xs(c), ys(r), xs(c + 1), ys(r + 1))
 
@@ -81,6 +91,10 @@ trait TiledRasterData extends RasterData {
    * Returns the particular layout of this TiledRasterData's tiles.
    */
   def tileLayout:TileLayout
+  def rasterExtent:RasterExtent
+
+  def cols = tileLayout.totalCols
+  def rows = tileLayout.totalRows
 
   def pixelCols:Int = tileLayout.pixelCols
   def pixelRows:Int = tileLayout.pixelRows
@@ -90,6 +104,7 @@ trait TiledRasterData extends RasterData {
   /**
    * Get a RasterData instance for a particular tile.
    */
+  //def getTile(col:Int, row:Int):RasterData
   def getTile(col:Int, row:Int):RasterData
 
   /**
@@ -198,7 +213,7 @@ trait TiledRasterData extends RasterData {
   def asArray = {
     if (lengthLong > 2147483647L) None
     val len = length
-    val d = IntArrayRasterData.ofDim(len)
+    val d = IntArrayRasterData.ofDim(cols, rows)
     var i = 0
     foreach { z => d(i) = z; i += 1 }
     Some(d)
@@ -210,20 +225,20 @@ trait TiledRasterData extends RasterData {
   // TODO: fix, maybe?
   def mutable:Option[MutableRasterData] = None
 
-  def get(col:Int, row:Int, cols:Int) = {
+  def get(col:Int, row:Int) = {
     val tcol = col / pixelCols
     val trow = row / pixelRows
     val pcol = col % pixelCols
     val prow = row % pixelRows
-    getTile(tcol, trow).get(pcol, prow, pixelCols)
+    getTile(tcol, trow).get(pcol, prow)
   }
 
-  def getDouble(col:Int, row:Int, cols:Int) = {
+  def getDouble(col:Int, row:Int) = {
     val tcol = col / pixelCols
     val trow = row / pixelRows
     val pcol = col % pixelCols
     val prow = row % pixelRows
-    getTile(tcol, trow).getDouble(pcol, prow, pixelCols)
+    getTile(tcol, trow).getDouble(pcol, prow)
   }
 }
 
@@ -236,10 +251,10 @@ trait TiledRasterData extends RasterData {
  * too large to fit in memory.
  */
 case class TileSetRasterData(basePath:String, name:String, typ:RasterType,
-                             tileLayout:TileLayout,
+                             tileLayout:TileLayout, rasterExtent:RasterExtent,
                              server:Server) extends TiledRasterData {
   def getType = typ
-  def alloc(size:Int) = RasterData.allocByType(typ, size)
+  def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
 
   def getTile(col:Int, row:Int) = {
     val path = Tiler.tilePath(basePath, name, col, row)
@@ -262,9 +277,10 @@ case class TileSetRasterData(basePath:String, name:String, typ:RasterType,
  * Rasters.
  */
 case class TileArrayRasterData(tiles:Array[Raster],
-                               tileLayout:TileLayout) extends TiledRasterData{
+                               tileLayout:TileLayout,
+                               rasterExtent:RasterExtent) extends TiledRasterData {
   val typ = tiles(0).data.getType
-  def alloc(size:Int) = RasterData.allocByType(typ, size)
+  def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
   def getType = typ
   def getTile(col:Int, row:Int) = tiles(row * tileCols + col).data match {
     case a:ArrayRasterData => LazyArrayWrapper(a)
@@ -292,13 +308,14 @@ object LazyTiledWrapper {
  * a single array's worth of data (~2.1G).
  */
 case class LazyTiledWrapper(data:ArrayRasterData,
-                            tileLayout:TileLayout) extends TiledRasterData {
+                            tileLayout:TileLayout,
+                            rasterExtent:RasterExtent) extends TiledRasterData {
 
   if (data.length != length) sys.error("oh no!")
 
   def getType = data.getType
 
-  def alloc(size:Int) = data.alloc(size)
+  def alloc(cols:Int, rows:Int) = data.alloc(cols, rows)
 
   def getTile(col:Int, row:Int) = {
     val col1 = pixelCols * col
@@ -318,7 +335,8 @@ case class LazyTiledWrapper(data:ArrayRasterData,
  * chunk of an underlying ArrayRaster. For instance, a LazyViewWrapper might
  * represent a particular 256x256 chunk of underlying 4096x4096 raster.
  */
-case class LazyViewWrapper(data:ArrayRasterData, cols:Int, rows:Int,
+case class LazyViewWrapper(data:ArrayRasterData,
+                           cols:Int, rows:Int,
                            col1:Int, row1:Int,
                            col2:Int, row2:Int) extends LazyRasterData {
   val myCols = (col2 - col1)
@@ -326,7 +344,7 @@ case class LazyViewWrapper(data:ArrayRasterData, cols:Int, rows:Int,
   val myLen = myCols * myRows
 
   final def getType = data.getType
-  final def alloc(size:Int) = data.alloc(size)
+  final def alloc(cols:Int, rows:Int) = data.alloc(cols, rows)
   final def length = myLen
   final def copy = this
 
@@ -399,7 +417,7 @@ trait LazyTiledRasterData extends TiledRasterData {
   def tileLayout = data.tileLayout
 
   def getType = data.getType
-  def alloc(size:Int) = data.alloc(size)
+  def alloc(cols:Int, rows:Int) = data.alloc(cols, rows)
   override def lengthLong = data.lengthLong
 }
 
@@ -408,6 +426,8 @@ trait LazyTiledRasterData extends TiledRasterData {
  * This lazy, tiled raster data represents a map over a tiled raster data.
  */
 case class LazyTiledMap(data:TiledRasterData, g:Int => Int) extends LazyTiledRasterData {
+  def rasterExtent = data.rasterExtent
+
   def getTile(col:Int, row:Int) = data.getTile(col, row).map(g)
 
   override def getTileOp(rl:ResolutionLayout, c:Int, r:Int) = 
@@ -421,6 +441,8 @@ case class LazyTiledMap(data:TiledRasterData, g:Int => Int) extends LazyTiledRas
  * This lazy, tiled raster data represents a mapIfSet over a tiled raster data.
  */
 case class LazyTiledMapIfSet(data:TiledRasterData, g:Int => Int) extends LazyTiledRasterData {
+  def rasterExtent = data.rasterExtent
+
   def gIfSet(z:Int) = if (z == NODATA) NODATA else g(z)
 
   def getTile(col:Int, row:Int) = data.getTile(col, row).mapIfSet(g)
@@ -443,6 +465,8 @@ case class LazyTiledCombine(data1:TiledRasterData, data2:TiledRasterData,
   val typ = RasterData.largestType(data1, data2)
   val layout = data1.tileLayout // TODO: must handle different tile layouts
 
+  def rasterExtent = data1.rasterExtent
+
   if (data1.lengthLong != data2.lengthLong)
     sys.error("invalid raster sizes: %s, %s" format (data1.lengthLong,
                                                      data2.lengthLong))
@@ -450,7 +474,7 @@ case class LazyTiledCombine(data1:TiledRasterData, data2:TiledRasterData,
   def tileLayout = layout
 
   def getType = typ
-  def alloc(size:Int) = RasterData.allocByType(typ, size)
+  def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
 
   def getTile(col:Int, row:Int) = {
     val r1 = data1.getTile(col, row)
@@ -554,7 +578,7 @@ object Tiler {
     val rasters = Array.ofDim[Raster](tileCols * tileRows)
 
     for (ty <- 0 until tileRows; tx <- 0 until tileCols) yield {
-      val data = RasterData.allocByType(src.data.getType, pixelCols * pixelRows)
+      val data = RasterData.allocByType(src.data.getType, pixelCols, pixelRows)
 
       // TODO: if this code ends up being a performance bottleneck, we should
       // refactor away from using raster.get and for-comprehensions.
@@ -568,7 +592,7 @@ object Tiler {
       rasters(ty * tileCols + tx) = Raster(data, tre)
     }
 
-    TileArrayRasterData(rasters, layout)
+    TileArrayRasterData(rasters, layout, src.rasterExtent)
   }
 
   /**

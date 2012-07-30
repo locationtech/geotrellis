@@ -11,13 +11,13 @@ class IntConstantTest extends FunSuite {
   val size = 4
 
   test("building") {
-    val d1 = IntConstant(99, size)
-    val d2 = IntArrayRasterData(Array.fill(size)(99))
+    val d1 = IntConstant(99, 2, 2)
+    val d2 = IntArrayRasterData(Array.fill(size)(99), 2, 2)
     assert(d1 === d2)
   }
 
   test("basic operations") {
-    val d = IntConstant(99, size)
+    val d = IntConstant(99, 2, 2)
 
     assert(d.length === size)
     assert(d.getType === TypeInt)
@@ -26,7 +26,7 @@ class IntConstantTest extends FunSuite {
   }
 
   test("map") {
-    val d1 = IntConstant(99, size)
+    val d1 = IntConstant(99, 2, 2)
     val d2 = d1.map(_ + 1)
 
     assert(d2.isInstanceOf[IntConstant])
