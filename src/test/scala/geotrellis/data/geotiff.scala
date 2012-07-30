@@ -94,7 +94,7 @@ class GeoTiffSpec extends Spec with MustMatchers with ShouldMatchers {
     it ("should write floating point rasters") {
       val e = Extent(100.0, 400.0, 120.0, 420.0)
       val re = RasterExtent(e, 10.0, 10.0, 2, 2)
-      val data = DoubleArrayRasterData(Array(11.0, 22.0, 33.0, 44.0))
+      val data = DoubleArrayRasterData(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
       val r = Raster(data, re)
       GeoTiffWriter.write("/tmp/float.tif", r, "float")
     }

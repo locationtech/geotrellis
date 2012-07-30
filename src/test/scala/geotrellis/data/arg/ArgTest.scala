@@ -19,7 +19,7 @@ class ArgTest extends FunSuite {
   val data = IntArrayRasterData(Array(NODATA, -1, 2, -3,
                                       4, -5, 6, -7,
                                       8, -9, 10, -11,
-                                      12, -13, 14, -15))
+                                      12, -13, 14, -15), 4, 4)
   val e = Extent(10.0, 11.0, 14.0, 15.0)
   val re = RasterExtent(e, 1.0, 1.0, 4, 4)
   val raster = Raster(data, re)
@@ -97,7 +97,7 @@ class ArgTest extends FunSuite {
       o,o,o,o,o,o,o,o,o,o,
       o,A,A,A,A,A,A,A,A,o)
 
-    val data = ByteArrayRasterData(byteArr)
+    val data = ByteArrayRasterData(byteArr, cols, rows)
     val e = Extent(xmin, ymin, xmax, ymax)
     val re = RasterExtent(e, cellwidth, cellheight, cols, rows)
     val raster = Raster(data, re)

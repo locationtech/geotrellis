@@ -58,7 +58,7 @@ trait MyBenchmark extends SimpleBenchmark {
 
     val layout = trd.tileLayout 
     Tiler.writeTiles(trd, re, "benchmark_raster", "/tmp")
-    val tileSetRD = TileSetRasterData("/tmp", "benchmark_raster", TypeInt, layout, server)
+    val tileSetRD = TileSetRasterData("/tmp", "benchmark_raster", TypeInt, layout, re, server)
 
     val tiledRaster = Raster(tileSetRD, re)
 
@@ -131,9 +131,9 @@ class DataMap extends MyBenchmark {
     val re = RasterExtent(Extent(0, 0, size, size), 1.0, 1.0, size, size)
     raster = Raster(init(len)(Random.nextInt), re)
 
-    bitData = new BitArrayRasterData(init((len + 7) / 8)(Random.nextInt.toByte), len)
-    byteData = new ByteArrayRasterData(init(len)(Random.nextInt.toByte))
-    shortData = new ShortArrayRasterData(init(len)(Random.nextInt.toShort))
+    bitData = new BitArrayRasterData(init((len + 7) / 8)(Random.nextInt.toByte), size, size)
+    byteData = new ByteArrayRasterData(init(len)(Random.nextInt.toByte), size, size)
+    shortData = new ShortArrayRasterData(init(len)(Random.nextInt.toShort), size, size)
 
     mc = MultiplyConstant(raster, 2)
     mcCustomWithInt = MultiplyConstantCustomWithInt(raster, 2)
@@ -383,9 +383,9 @@ class BigMinTiled extends MyBenchmark{
     val size = tileN * 2000
     println("Setting up raster of size %d x %d." format (size, size))
     val layout = TileLayout(tileN,tileN,2000,2000)
-    val tileSetRD = TileSetRasterData("/tmp", "big", TypeByte, layout, server)
     val e = Extent(0.0, 0.0, (tileN * 2000.0), (tileN * 2000.0))
     val re = RasterExtent(e, 1.0, 1.0, tileN * 2000, tileN * 2000)
+    val tileSetRD = TileSetRasterData("/tmp", "big", TypeByte, layout, re, server)
     val raster = Raster(tileSetRD, re)
     tiledMinOp = BTileMin(Add(AddConstant(raster,2), raster))
     //tiledHistogramOp = BTileHistogram(AddConstant(raster,2))
@@ -748,7 +748,7 @@ object WriteHugeTiledRaster {
 
     val value:Byte = ((tileCol % 50) + 1).toByte
     val size = layout.pixelCols * layout.pixelRows
-    val a = ByteArrayRasterData(Array.fill[Byte](size)(value))
+    val a = ByteArrayRasterData(Array.fill[Byte](size)(value), layout.pixelCols, layout.pixelRows)
     Raster(a,tileRasterExtent)
   }
 }
