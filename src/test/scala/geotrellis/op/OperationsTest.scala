@@ -15,8 +15,9 @@ import org.scalatest.junit.JUnitRunner
 class OperationsTest extends FunSuite {
   val server = TestServer()
 
+  var counter = 1
   def run(prefix:String, op:Op[Raster], expected:Raster) {
-    test("%s:%s" format (prefix, op.name)) {
+    test("%s:%s:%s" format (prefix, op.name, counter)) {
       val got = server.run(op)
       if (got != expected) {
         println("got " + got.data.asInstanceOf[ArrayRasterData].applyDouble(0))
@@ -24,21 +25,45 @@ class OperationsTest extends FunSuite {
       }
       assert(got == expected)
     }
-    //n += 1
+    counter += 1
   }
 
   val e = Extent(0.0, 0.0, 10.0, 10.0)
   val re = RasterExtent(e, 1.0, 1.0, 10, 10)
 
+  val rn10 = Raster(Array.fill(100)(-10), re)
+  val r0 = Raster(Array.fill(100)(0), re)
   val r1 = Raster(Array.fill(100)(1), re)
   val r2 = Raster(Array.fill(100)(2), re)
   val r3 = Raster(Array.fill(100)(3), re)
   val r6 = Raster(Array.fill(100)(6), re)
   val r9 = Raster(Array.fill(100)(9), re)
+  val r10 = Raster(Array.fill(100)(10), re)
+  val r11 = Raster(Array.fill(100)(11), re)
   
   run("int", AddConstant(r3, 6), r9)
 
-  run("int", BitwiseAndConstant(r9, 3), r1)
+  run("int", And(r9, 3), r1)
+  run("int", And(9, r3), r1)
+  run("int", And(r9, r3), r1)
+
+  run("int", Or(r9, 3), r11)
+  run("int", Or(9, r3), r11)
+  run("int", Or(r9, r3), r11)
+
+  run("int", Xor(r9, 3), r10)
+  run("int", Xor(9, r3), r10)
+  run("int", Xor(r9, r3), r10)
+
+  run("int", Not(r9), rn10)
+  run("int", Defined(r9), r1)
+  run("int", Undefined(r9), r0)
+
+  run("int", Equal(r9, r9), r1)
+  run("int", Equal(r9, r3), r0)
+
+  run("int", Unequal(r9, r9), r0)
+  run("int", Unequal(r9, r3), r1)
 
   run("int", DivideConstant(r9, 3), r3)
   run("int", DivideDoubleConstant(r9, 3.0), r3)
@@ -76,7 +101,7 @@ class OperationsTest extends FunSuite {
 
   run("double", AddConstant(d3, 6), d9)
 
-  run("double", BitwiseAndConstant(d9, 3), d1)
+  run("double", And(d9, 3), d1)
   
   run("double", DivideConstant(d9_9, 3), d3_3)
   run("double", DivideDoubleConstant(d9_9, 3.0), d3_3)
