@@ -82,6 +82,8 @@ object Filesystem {
     ByteBuffer.wrap(slurp(path, bs), pos, size)
   }
 
+  def join(parts:String*) = parts.mkString(File.separator)
+
   //def findFiles(f:File, r:Regex):Array[File] = {
   //  val these = f.listFiles
   //  val good = these.filter(f => r.findFirstIn(f.getName).isDefined)

@@ -125,11 +125,11 @@ class TileSpec extends Spec with MustMatchers {
   describe("Tiler") {
     it ("should build a tiled raster from a source raster") {
       val tileRaster2 = Tiler.createTiledRaster(raster, 2, 2)
-      println(raster.asciiDraw)
-      println(tileRaster2.asciiDraw)
+      //println(raster.asciiDraw)
+      //println(tileRaster2.asciiDraw)
 
       for (y <- 0 to 4; x <- 0 to 4) {
-        println("x=%s y=%s" format (x, y))
+        //println("x=%s y=%s" format (x, y))
         tileRaster2.get(x, y) must be === ((y * 5) + x) + 1
       }
 
@@ -146,7 +146,6 @@ class TileSpec extends Spec with MustMatchers {
     it("can be built from in-memory tiles") {
       val s = TestServer()
       val extent = Extent(1, 21, 79, 59)
-      //val loader = Tiler.makeTileLoader("testraster", "/tmp", s)
       val raster4 = Raster(tileData, g)
       for (y <- 2 to 3; x <- 0 to 3) {
         raster4.get(x, y) must be === ((y * 5) + x) + 1
@@ -155,22 +154,34 @@ class TileSpec extends Spec with MustMatchers {
 
     it("can write and read tiles to disk") {
       val trd = Tiler.createTiledRasterData(raster, 2, 2)
-      Tiler.writeTiles(trd, raster.rasterExtent, "testraster", "/tmp")
+      Tiler.writeTiles(trd, raster.rasterExtent, "testraster", "/tmp/foo")
 
       val s = TestServer()
       val extent = Extent(1, 21, 79, 59)
-      val tileSetRD = TileSetRasterData("/tmp", "testraster", TypeInt, layout, s)
+      val tileSetRD = TileSetRasterData("/tmp/foo", "testraster", TypeInt, layout, s)
 
       val raster4 = Raster(tileSetRD, g)
       for (y <- 0 to 3; x <- 0 to 3) {
         val expected = ((y * 5) + x) + 1
         raster4.get(x, y) must be === ((y * 5) + x) + 1
       }
+
+      val raster5 = Raster.loadTileSet("/tmp/foo", server)
+      for (y <- 0 to 3; x <- 0 to 3) {
+        val expected = ((y * 5) + x) + 1
+        raster5.get(x, y) must be === ((y * 5) + x) + 1
+      }
+
+      val raster6 = server.run(io.LoadTileSet("/tmp/foo"))
+      for (y <- 0 to 3; x <- 0 to 3) {
+        val expected = ((y * 5) + x) + 1
+        raster6.get(x, y) must be === ((y * 5) + x) + 1
+      }
     }
 
     it("can delete tiles from the disk") {
       val trd = Tiler.createTiledRasterData(raster, 2, 2)
-      Tiler.deleteTiles(trd, "testraster", "/tmp")
+      Tiler.deleteTiles(trd, "testraster", "/tmp/foo")
     }
   }
   
