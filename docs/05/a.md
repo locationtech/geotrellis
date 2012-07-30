@@ -27,7 +27,13 @@ Raster operations that work on individual raster cells.  [Scala package geotrell
 <tr><td><code>local.And</code></td><td>Apply binary bitwise and to each cell.</td></tr>
 <tr><td><code>local.Not</code></td><td>Apply binary bitwise not to each cell.</td></tr>
 <tr><td><code>local.Or</code></td><td>Apply binary bitwise or to each cell.</td></tr>
-<tr><td><code>local.Xor</code></td><td>Apply binary bitwise xor to each cell.</td></tr>
+<tr><td><code>local.Defined</code></td><td>Set cell to 1 if defined, 0 if NoData.</td></tr>
+<tr><td><code>local.Equal</code></td><td>Set cell to 1 if equal to other cell, 0 if not.</td></tr>
+<tr><td><code>local.Unequal</code></td><td>Set cell to 1 if not equal to other cell, 0 if not.</td></tr>
+<tr><td><code>local.Greater</code></td><td>Set cell to 1 if cell is greater to other cell, 0 if not.</td></tr>
+<tr><td><code>local.GreaterOrEqual</code></td><td>Set cell to 1 if cell is greater than or equal to other cell, 0 if not.</td></tr>
+<tr><td><code>local.Less</code></td><td>Set cell to 1 if cell is less to other cell, 0 if not.</td></tr>
+<tr><td><code>local.LessOrEqual</code></td><td>Set cell to 1 if cell is less than or equal to other cell, 0 if not.</td></tr>
 </tbody>
 </table>
 
