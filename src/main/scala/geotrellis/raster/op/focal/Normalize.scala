@@ -12,6 +12,12 @@ object Normalize {
   def apply(r:Op[Raster], c:Op[(Int, Int)], g:Op[(Int, Int)]) = PrecomputedNormalize(r, c, g)
 }
 
+// TODO: deprecate normalize
+object Rescale {
+  def apply(r:Op[Raster], g:Op[(Int, Int)]) = AutomaticNormalize(r, g)
+  def apply(r:Op[Raster], c:Op[(Int, Int)], g:Op[(Int, Int)]) = PrecomputedNormalize(r, c, g)
+}
+
 /**
  * Normalize the values in the given raster so that all values are within the
  * specified minimum and maximum value range.
