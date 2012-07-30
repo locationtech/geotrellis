@@ -1,0 +1,88 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html manifest="pamflet.manifest">
+      <head>
+        <title>GeoTrellis — Logic and IO Operations</title>
+        <link type="text/css" media="screen, projection" rel="stylesheet" href="css/blueprint/screen.css"></link>
+        <link type="text/css" media="screen and (min-device-width: 800px), projection" rel="stylesheet" href="css/blueprint/grid.css"></link>
+        <link type="text/css" media="print" rel="stylesheet" href="css/blueprint/print.css"></link> 
+        <!--[if lt IE 8]>
+          <link rel="stylesheet" href="css/blueprint/ie.css" type="text/css" media="screen, projection"/>
+        <![endif]-->
+        <link type="text/css" media="screen, projection" rel="stylesheet" href="css/pamflet.css"></link>
+        <link type="text/css" media="print" rel="stylesheet" href="css/pamflet-print.css"></link>
+        <link type="text/css" media="screen and (min-device-width: 800px), projection" rel="stylesheet" href="css/pamflet-grid.css"></link>
+        <link type="text/css" media="screen, projection" rel="stylesheet" href="css/custom.css"></link>
+        <script src="js/jquery-1.6.2.min.js"></script>
+        <script src="js/jquery.collapse.js"></script>
+        <script src="js/pamflet.js"></script>
+        
+        <meta charset="utf-8"></meta>
+        <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+        
+      </head>
+      <body>
+        <a class="page prev nav" href="Raster+Operations.html">
+            <span class="space">&nbsp;</span>
+            <span class="flip">&gt;</span>
+          </a><a class="page next nav" href="Other+Operations.html">
+            <span class="space">&nbsp;</span>
+            <span>&gt;</span>
+          </a>
+        <div class="container">
+          <div class="span-16 prepend-1 append-1">
+            <div class="top nav span-16 title">
+              <span>GeoTrellis</span> — Logic and IO Operations
+            </div>
+          </div>
+          <div class="span-16 prepend-1 append-1 contents">
+            <h2 id="Logic+and+IO+Operations">Logic and IO Operations</h2><p>These sets of operation are relevant to all compound operations as they are used to load data, produce output formats, and as the functional programming constructs that are critical to operation composition.
+</p><h4 id="IO+operations">IO operations</h4><p>IO operations provide input, loading data, and output, translating the output of geoprocessing models
+into output formats.  <a  href="http://azavea.github.com/geotrellis/latest/api/#geotrellis.io.op.package">Scala package geotrellis.io.op.</a>
+</p><table class="bordered-table zebra-striped">
+      <thead>
+          <tr>
+            <th>Operation</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+<tr><td><code>io.LoadFile</code></td><td>Load a raster from the provide file path.</td></tr>
+<tr><td><code>io.LoadRaster</code></td><td>Load a raster by name from the catalog.</td></tr>
+<tr><td><code>io.LoadRasterExtent</code></td><td>Load the raster extent by name from the catalog.</td></tr>
+<tr><td><code>io.LoadRasterExtentFromFile</code></td><td>Load the raster extent by file path.</td></tr>
+<tr><td><code>io.ReclassifyColorsRgba</code></td><td>Reclassify data to output color values.</td></tr>
+<tr><td><code>io.RenderPNG</code></td><td>Generate a PNG from a given raster and a set of color breaks.</td></tr>
+<tr><td><code>io.WritePNGFile</code></td><td>Write a PNG to disk.</td></tr>
+<tr><td><code><i>io.LoadFeatures</i></code></td><td>Load vector features from catalog.</td></tr>
+</tbody>
+</table>
+<h4 id="Logic+operations">Logic operations</h4><p>Logical operations for composing compound operations.  <a  href="http://azavea.github.com/geotrellis/latest/api/#geotrellis.logic.op.package">Scala package geotrellis.logic.op.</a>
+</p><table class="bordered-table zebra-striped">
+      <thead>
+          <tr>
+            <th>Operation</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+<tr><td><code>logic.Collect</code></td><td>Maps a sequence of operations into an operation that returns a sequence.</td></tr>
+<tr><td><code>logic.Do</code></td><td>Perform a function on the input, like 'map' in functional programing.</td></tr>
+<tr><td><code>logic.ForEach</code></td><td>Perform an operation on each element in a sequence.</td></tr>
+</tbody>
+</table>
+<p>For Haskell-inspired syntax, see <a  href="http://azavea.github.com/geotrellis/latest/api/#geotrellis.logic.applicative.package">see geotrellis.logic.applicative</a> package.
+</p><div class="bottom nav">
+                        <em>Next Page</em>
+                        <span class="arrow">&gt;</span>
+                        <a href="Other+Operations.html"> Other Operations </a>
+                      </div><div class="tocwrapper show">
+      <a class="tochead nav" style="display: none" href="#toc">❦</a>
+      <a name="toc"></a>
+      <h4 class="toctitle">Contents</h4>
+      <div class="tocbody">
+      <div><a href="GeoTrellis.html">GeoTrellis</a></div><ol class="toc"> <li><div><a href="GeoTrellis+Resources.html">GeoTrellis Resources</a></div></li><li><div><a href="Web+Service+Tutorial.html">Web Service Tutorial</a></div></li><li><div><a href="Setting+up+GeoTrellis.html">Setting up GeoTrellis</a></div></li><li><div><a href="GeoTrellis+Operations.html">GeoTrellis Operations</a></div><ol class="toc"> <li><div><a href="Raster+Operations.html">Raster Operations</a></div></li><li><div class="current">Logic and IO Operations</div></li><li><div><a href="Other+Operations.html">Other Operations</a></div></li> </ol></li><li><div><a href="Creating+new+operations.html">Creating new operations</a></div></li><li><div><a href="Parallel+and+distributed+execution.html">Parallel and distributed execution</a></div></li><li class="generated"><div><a href="Contents+in+Depth.html">Contents in Depth</a></div></li><li class="generated"><div><a href="Combined+Pages.html">Combined Pages</a></div></li> </ol></div></div>
+          </div>
+        </div>
+        <a class="fork nav" href="http://github.com/azavea/geotrellis"><img alt="Fork me on GitHub" src="img/fork.png"></img></a>
+      </body>
+    </html>

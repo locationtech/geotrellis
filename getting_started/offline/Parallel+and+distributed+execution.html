@@ -1,0 +1,91 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html manifest="pamflet.manifest">
+      <head>
+        <title>GeoTrellis — Parallel and distributed execution</title>
+        <link type="text/css" media="screen, projection" rel="stylesheet" href="css/blueprint/screen.css"></link>
+        <link type="text/css" media="screen and (min-device-width: 800px), projection" rel="stylesheet" href="css/blueprint/grid.css"></link>
+        <link type="text/css" media="print" rel="stylesheet" href="css/blueprint/print.css"></link> 
+        <!--[if lt IE 8]>
+          <link rel="stylesheet" href="css/blueprint/ie.css" type="text/css" media="screen, projection"/>
+        <![endif]-->
+        <link type="text/css" media="screen, projection" rel="stylesheet" href="css/pamflet.css"></link>
+        <link type="text/css" media="print" rel="stylesheet" href="css/pamflet-print.css"></link>
+        <link type="text/css" media="screen and (min-device-width: 800px), projection" rel="stylesheet" href="css/pamflet-grid.css"></link>
+        <link type="text/css" media="screen, projection" rel="stylesheet" href="css/custom.css"></link>
+        <script src="js/jquery-1.6.2.min.js"></script>
+        <script src="js/jquery.collapse.js"></script>
+        <script src="js/pamflet.js"></script>
+        <script type="text/javascript" src="js/prettify/prettify.js"></script><script type="text/javascript" src="js/prettify/lang-scala.js"></script><link type="text/css" rel="stylesheet" href="css/prettify.css"></link><script type="text/javascript"><!--
+        window.onload=function() { prettyPrint(); };
+      --></script>
+        <meta charset="utf-8"></meta>
+        <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+        
+      </head>
+      <body>
+        <a class="page prev nav" href="Creating+new+operations.html">
+            <span class="space">&nbsp;</span>
+            <span class="flip">&gt;</span>
+          </a><a class="page next nav" href="Contents+in+Depth.html">
+            <span class="space">&nbsp;</span>
+            <span>&gt;</span>
+          </a>
+        <div class="container">
+          <div class="span-16 prepend-1 append-1">
+            <div class="top nav span-16 title">
+              <span>GeoTrellis</span> — Parallel and distributed execution
+            </div>
+          </div>
+          <div class="span-16 prepend-1 append-1 contents">
+            <h2 id="Parallel+and+distributed+execution">Parallel and distributed execution</h2><h4 id="Parallel+Execution">Parallel Execution</h4><p>Most operations have “child operations” which are the inputs or incoming data
+streams that the operation acts on. GeoTrellis will automatically run all child
+operations in parallel. For example, if you are adding each cell of five
+rasters together, the service will calculate each input raster in parallel (if
+resources allow).
+</p><p>If working with a single large data set (e.g. a large raster), it is usually
+beneficial to transform the raster into a tiled raster which allows the system
+to parallelize the work and to reduce I/O.
+</p><h4 id="Distributed+Execution">Distributed Execution</h4><p>With a single command, an operation can be transformed into a RemoteOperation
+that sends each of its child operations to a remote GeoTrellis server for
+execution.
+</p><pre><code class="prettyprint lang-scala">// calculate each input raster on remote cluster
+local.Add(r1,r2,r3).remote(cluster)
+</code></pre><p>The remote cluster or server is an Akka actor or load balancer, defined using
+the Akka library configuration. See the <a  href="http://akka.io/docs/akka/2.0-M4">Akka documenation</a>
+for more information. Akka configuration can be placed directly in your
+GeoTrellis configuration file (application.conf).
+</p><p>For operations that do not need to pass much data over the network, the
+overhead can be as low as a few milliseconds. When passing raster data, the
+time overhead depends on the network and the size of the rasters. 
+</p><h4 id="Architecture+Concepts">Architecture Concepts</h4><p>Behind the scenes, GeoTrellis is using the actor model for parallel and
+distributed computation—the primary abstraction is message passing instead of
+shared memory. This event-based model allows us to re-use the same threads by
+interleaving calculations for different processes on the same threads, but
+requires operations to be asynchronous. Operations are not allowed to block
+while waiting on another result because that would hold up the other work that
+is scheduled to execute on the same thread. 
+</p><p>By using the <a  href="http://en.wikipedia.org/wiki/Continuation-passing_style">continuation passing style</a>
+from functional programming we perform work in a series of stages:
+</p><ul><li>Calculation begins on a particular thread.
+</li><li>If calculation can complete, it does so (and we are done).
+</li><li>Otherwise, the calculation and its subsidiaries are sent to a dispatcher.
+</li><li>Calculation exits, freeing the thread.
+</li><li>Subsidiary calculations are sent to new threads to be processed.
+</li><li>When all subsidiary results are available, the next calculation step begins on a new thread.
+</li></ul><p>Thus, we can perform complex calculations across many threads, without ever
+blocking execution on an individual thread.
+</p><p>Operations are sent as immutable messages, and are referrentially transparent.
+This allows us to perform optimizations such as combining  
+<br/>
+local raster operations. 
+</p><div class="bottom nav end"></div><div class="tocwrapper show">
+      <a class="tochead nav" style="display: none" href="#toc">❦</a>
+      <a name="toc"></a>
+      <h4 class="toctitle">Contents</h4>
+      <div class="tocbody">
+      <div><a href="GeoTrellis.html">GeoTrellis</a></div><ol class="toc"> <li><div><a href="GeoTrellis+Resources.html">GeoTrellis Resources</a></div></li><li><div><a href="Web+Service+Tutorial.html">Web Service Tutorial</a></div></li><li><div><a href="Setting+up+GeoTrellis.html">Setting up GeoTrellis</a></div></li><li><div><a href="GeoTrellis+Operations.html">GeoTrellis Operations</a></div><ol class="toc"> <li><div><a href="Raster+Operations.html">Raster Operations</a></div></li><li><div><a href="Logic+and+IO+Operations.html">Logic and IO Operations</a></div></li><li><div><a href="Other+Operations.html">Other Operations</a></div></li> </ol></li><li><div><a href="Creating+new+operations.html">Creating new operations</a></div></li><li><div class="current">Parallel and distributed execution</div></li><li class="generated"><div><a href="Contents+in+Depth.html">Contents in Depth</a></div></li><li class="generated"><div><a href="Combined+Pages.html">Combined Pages</a></div></li> </ol></div></div>
+          </div>
+        </div>
+        <a class="fork nav" href="http://github.com/azavea/geotrellis"><img alt="Fork me on GitHub" src="img/fork.png"></img></a>
+      </body>
+    </html>

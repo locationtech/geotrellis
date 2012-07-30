@@ -1,0 +1,105 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html>
+      <head>
+        <title>GeoTrellis — Other Operations</title>
+        <link type="text/css" media="screen, projection" rel="stylesheet" href="css/blueprint/screen.css"></link>
+        <link type="text/css" media="screen and (min-device-width: 800px), projection" rel="stylesheet" href="css/blueprint/grid.css"></link>
+        <link type="text/css" media="print" rel="stylesheet" href="css/blueprint/print.css"></link> 
+        <!--[if lt IE 8]>
+          <link rel="stylesheet" href="css/blueprint/ie.css" type="text/css" media="screen, projection"/>
+        <![endif]-->
+        <link type="text/css" media="screen, projection" rel="stylesheet" href="css/pamflet.css"></link>
+        <link type="text/css" media="print" rel="stylesheet" href="css/pamflet-print.css"></link>
+        <link type="text/css" media="screen and (min-device-width: 800px), projection" rel="stylesheet" href="css/pamflet-grid.css"></link>
+        <link type="text/css" media="screen, projection" rel="stylesheet" href="css/custom.css"></link>
+        <script src="js/jquery-1.6.2.min.js"></script>
+        <script src="js/jquery.collapse.js"></script>
+        <script src="js/pamflet.js"></script>
+        
+        <meta charset="utf-8"></meta>
+        <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+        
+      </head>
+      <body>
+        <a class="page prev nav" href="Logic+and+IO+Operations.html">
+            <span class="space">&nbsp;</span>
+            <span class="flip">&gt;</span>
+          </a><a class="page next nav" href="Creating+new+operations.html">
+            <span class="space">&nbsp;</span>
+            <span>&gt;</span>
+          </a>
+        <div class="container">
+          <div class="span-16 prepend-1 append-1">
+            <div class="top nav span-16 title">
+              <span>GeoTrellis</span> — Other Operations
+            </div>
+          </div>
+          <div class="span-16 prepend-1 append-1 contents">
+            <h2 id="Other+Operations">Other Operations</h2><h4 id="Statistics+operations">Statistics operations</h4><p>Operations for computing statistics from geographic and non-geographic data. <a  href="http://azavea.github.com/geotrellis/latest/api/#geotrellis.statistics.op.package">Scala package geotrellis.statistics.op.stat.</a>
+</p><table class="bordered-table zebra-striped">
+      <thead>
+          <tr>
+            <th>Operation</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+<tr><td><code>stat.GetHistogram</code></td><td>Returns a histogram of input values.</td></tr>
+<tr><td><code>stat.GetMinMax</code></td><td>Returns minimum and maximum values.</td></tr>
+<tr><td><code>stat.GetStatistics</code></td><td>Returns mean, mode, stddev, min and max.</td></tr>
+<tr><td><code>stat.GetPolygonalZonalHistograms</code></td><td>Return a histogram of raster values within each zone.</td></tr>
+<tr><td><code>stat.GetStandardDeviation</code></td><td>Returns standard deviation of raster values.</td></tr>
+<tr><td><code><i>stat.GetVariance</i></code></td><td>Returns variance of raster values.</td></tr>
+<tr><td><code>stat.GetColorBreaks</code></td><td>Returns colors for representation of raster value ranges.</td></tr>
+<tr><td><code>stat.GetClassBreaks</code></td><td>Returns quantile class breaks for a given raster.</td></tr>
+<tr><td><code>stat.GetColorsFromPalette</code></td><td>Perform an operation on each element in a sequence.</td></tr>
+</tbody>
+</table>
+<h4 id="REST+Operations">REST Operations</h4><p>These operations are for use in construction of REST-style web services — the current operations are all focused on string processing.  <a  href="http://azavea.github.com/geotrellis/latest/api/#geotrellis.rest.op.string.package">Scala package geotrellis.rest.op.string.</a>
+</p><table class="bordered-table zebra-striped">
+      <thead>
+          <tr>
+            <th>Operation</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+<tr><td><code>string.Concat</code></td><td>Concatenate strings.</td></tr>
+<tr><td><code>string.ParseDouble</code></td><td>Parse a string as a double.</td></tr>
+<tr><td><code>string.ParseExtent</code></td><td>Parse a bounding box string as an extent.</td></tr>
+<tr><td><code>string.ParseInt</code></td><td>Parse a string as an integer.</td></tr>
+<tr><td><code>string.ParseHexInt</code></td><td>Parse a string as a hexidecimal integer.</td></tr>
+<tr><td><code>string.Split</code></td><td>Split a string on a delimeter.</td></tr>
+</tbody>
+</table>
+<h4 id="Vector+Operations+%280.7%29">Vector Operations (0.7)</h4><p>Vector operations operate over features such as polygons, lines, and points.  GeoTrellis vector feature
+support is scheduled for a major overhaul and expansion for release 0.8, and you should consider consulting with the development team and tracking the GeoTrellis development version if you are planning on relying on existing functionality and API.  A few sample vector operations are listed below.
+</p><table class="bordered-table zebra-striped">
+      <thead>
+          <tr>
+            <th>Operation</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+<tr><td><code>data.RasterizePolygon</code></td><td>Create raster representation of vector data.</td></tr>
+<tr><td><code>data.SplitMultiPolygon</code></td><td>Split multipolygon in to individual polygons.</td></tr>
+<tr><td><code>geometry.Intersect</code></td><td>Return the intersection of input geometries.</td></tr>
+<tr><td><code>extent.PolygonExtent</code></td><td>Return the bounding box of the input polygon.</td></tr>
+</tbody>
+</table>
+<div class="bottom nav">
+                        <em>Next Page</em>
+                        <span class="arrow">&gt;</span>
+                        <a href="Creating+new+operations.html"> Creating new operations </a>
+                      </div><div class="tocwrapper show">
+      <a class="tochead nav" style="display: none" href="#toc">❦</a>
+      <a name="toc"></a>
+      <h4 class="toctitle">Contents</h4>
+      <div class="tocbody">
+      <div><a href="GeoTrellis.html">GeoTrellis</a></div><ol class="toc"> <li><div><a href="GeoTrellis+Resources.html">GeoTrellis Resources</a></div></li><li><div><a href="Web+Service+Tutorial.html">Web Service Tutorial</a></div></li><li><div><a href="Setting+up+GeoTrellis.html">Setting up GeoTrellis</a></div></li><li><div><a href="GeoTrellis+Operations.html">GeoTrellis Operations</a></div><ol class="toc"> <li><div><a href="Raster+Operations.html">Raster Operations</a></div></li><li><div><a href="Logic+and+IO+Operations.html">Logic and IO Operations</a></div></li><li><div class="current">Other Operations</div></li> </ol></li><li><div><a href="Creating+new+operations.html">Creating new operations</a></div></li><li><div><a href="Parallel+and+distributed+execution.html">Parallel and distributed execution</a></div></li><li class="generated"><div><a href="Contents+in+Depth.html">Contents in Depth</a></div></li><li class="generated"><div><a href="Combined+Pages.html">Combined Pages</a></div></li> </ol></div></div>
+          </div>
+        </div>
+        <a class="fork nav" href="http://github.com/azavea/geotrellis"><img alt="Fork me on GitHub" src="img/fork.png"></img></a>
+      </body>
+    </html>
