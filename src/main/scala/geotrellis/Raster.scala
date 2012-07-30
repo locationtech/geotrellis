@@ -2,6 +2,9 @@ package geotrellis
 
 import geotrellis.raster.TiledRasterData
 import geotrellis._
+import geotrellis.util.Filesystem
+
+import java.io.File
 
 import scala.math.{min, max}
 
@@ -14,6 +17,52 @@ object Raster {
 
   def empty(re:RasterExtent):Raster = 
     Raster(IntArrayRasterData.empty(re.rows * re.cols), re)
+
+  /**
+   *
+   */
+  import geotrellis.process.Server
+  import com.typesafe.config.ConfigFactory
+  import geotrellis.raster._
+  def loadTileSet(dir:String, server:Server):Raster = {
+    val path = Filesystem.join(dir, "layout.json")
+    val json = ConfigFactory.parseFile(new File(path))
+
+    if (json.getString("type") != "tiled")
+      sys.error("directory '%s' does not contain a tileset" format dir)
+
+    val typ:RasterType = json.getString("datatype") match {
+      case "bool" => TypeBit
+      case "int8" => TypeByte
+      case "int16" => TypeShort
+      case "int32" => TypeInt
+      case "float32" => TypeFloat
+      case "float64" => TypeDouble
+      case s => sys.error("unsupported datatype '%s'" format s)
+    }
+
+    val xmin = json.getDouble("xmin")
+    val ymin = json.getDouble("ymin")
+    val xmax = json.getDouble("xmax")
+    val ymax = json.getDouble("ymax")
+    val e = Extent(xmin, ymin, xmax, ymax)
+
+    val tileBase:String = json.getString("tile_base")
+    val layoutCols = json.getInt("layout_cols")
+    val layoutRows = json.getInt("layout_rows")
+    val pixelCols = json.getInt("pixel_cols")
+    val pixelRows = json.getInt("pixel_rows")
+    val cols = layoutCols * pixelCols
+    val rows = layoutRows * pixelRows
+
+    val cw = json.getInt("cellwidth")
+    val ch = json.getInt("cellheight")
+
+    val re = RasterExtent(e, cw, ch, cols, rows)
+    val layout = TileLayout(layoutCols, layoutRows, pixelCols, pixelRows)
+    val data = TileSetRasterData(dir, tileBase, typ, layout, server)
+    Raster(data, re)
+  }
 }
 
 /**

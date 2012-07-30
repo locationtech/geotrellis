@@ -1,8 +1,11 @@
 package geotrellis.raster
 
 import geotrellis._
+import geotrellis.util.Filesystem
 import geotrellis.process._
 import geotrellis.data.arg.ArgWriter
+
+import java.io.{FileOutputStream, BufferedOutputStream}
 
 /**
  * This class stores the layout of a tiled raster: the number of tiles (in
@@ -500,7 +503,7 @@ object Tiler {
    * the correct name for this tile ("foo/bar_0_4").
    */
   def tilePath(path:String, name:String, col:Int, row:Int) = {
-    "%s/%s_%d_%d.arg".format(path, name, col, row)
+    Filesystem.join(path, tileName(name, col, row) + ".arg")
   }
 
   /**
@@ -573,6 +576,11 @@ object Tiler {
    * name to determine what filenames to use.
    */
   def writeTiles(data:TiledRasterData, re:RasterExtent, name:String, path:String) = {
+
+    val f = new java.io.File(path)
+    val ok = if (f.exists) f.isDirectory else f.mkdirs
+    if (!ok) sys.error("couldn't create directory %s" format path)
+
     val tiles = data.getTiles(re)
     for (row <- 0 until data.tileRows; col <- 0 until data.tileCols) {  
       val i = row * data.tileCols + col
@@ -582,6 +590,43 @@ object Tiler {
 
       ArgWriter(data.getType).write(path2, r, name2)
     }
+
+    writeLayout(data, re, name, path)
+  }
+
+  def writeLayout(data:TiledRasterData, re:RasterExtent, name:String, path:String) = {
+    val RasterExtent(Extent(xmin, ymin, xmax, ymax), cw, ch, _, _) = re
+    val TileLayout(lcols, lrows, pcols, prows) = data.tileLayout
+
+    val layout = """{
+  "layer": "%s",
+
+  "type": "tiled",
+  "datatype": "%s",
+
+  "xmin": %f,
+  "xmax": %f,
+  "ymin": %f,
+  "ymax": %f,
+
+  "cellwidth": %f,
+  "cellheight": %f,
+
+  "tile_base": "%s",
+  "layout_cols": %d,
+  "layout_rows": %d,
+  "pixel_cols": %d,
+  "pixel_rows": %d,
+
+  "yskew": 0.0,
+  "xskew": 0.0,
+  "epsg": 3785
+}""".format(name, data.getType.name, xmin, ymin, xmax, ymax, cw, ch, name, lcols, lrows, pcols, prows)
+
+    val layoutPath = Filesystem.join(path, "layout.json")
+    val bos = new BufferedOutputStream(new FileOutputStream(layoutPath))
+    bos.write(layout.getBytes)
+    bos.close
   }
 
   /**
