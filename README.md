@@ -3,6 +3,9 @@
 *GeoTrellis* is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
 user interaction with geospatial data by bringing the power of geospatial analysis to real time, interactive web applications.
 
+*Please see our 
+[getting started guide](http://azavea.github.com/geotrellis/getting_started/GeoTrellis.html) for more information about using GeoTrellis.* 
+
 GeoTrellis was designed to solve three core problems, with a focus on raster processing:
 
 - Creating scalable, high performance geoprocessing web services
@@ -11,9 +14,6 @@ GeoTrellis was designed to solve three core problems, with a focus on raster pro
 
 GeoTrellis is a project of Azavea (www.azavea.com), and was written by Josh Marcus (jmarcus@azavea.com) and Erik Osheim (eosheim@azavea.com).  Please contact us if you have any questions, find us on irc at #geotrellis on freenode, or join 
 the user mailing list at [https://groups.google.com/group/geotrellis-user](https://groups.google.com/group/geotrellis-user).
-
-Please see our 
-[getting started guide](http://azavea.github.com/geotrellis/getting_started/GeoTrellis.html) for more information. 
 
 ## Features
 
