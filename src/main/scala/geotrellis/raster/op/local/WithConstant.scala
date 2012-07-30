@@ -67,35 +67,19 @@ case class DivideDoubleConstantBy(c:Op[Double], r:Op[Raster]) extends Op2(c, r) 
   (c, r) => Result(r.dualMapIfSet(c.toInt / _)(c / _))
 })
 
-case class BitwiseAndConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
-  (r, c) => Result(r.mapIfSet(_ & c))
-})
-
-case class BitwiseOrConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
-  (r, c) => Result(r.mapIfSet(_ | c))
-})
-
-case class BitwiseNotConstant(r:Op[Raster]) extends Op1(r) ({
-  (r) => Result(r.mapIfSet(~_))
-})
-
-case class BitwiseXorConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
-  (r, c) => Result(r.mapIfSet(_ ^ c))
-})
+/**
+ * Set each cell to a constant number or the corresponding cell value, whichever is highest.
+ */
+object MaxConstant {
+  def apply(r:Op[Raster], c:Op[Int]) = Max(r, c)
+}
 
 /**
-  * Set each cell to a constant number or the corresponding cell value, whichever is highest.
-  */
-case class MaxConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
-  (r, c) => Result(r.dualMapIfSet(max(_, c))(max(_, c)))
-})
-
-/**
-  * Set each cell to a constant or its existing value, whichever is lowest.
-  */
-case class MinConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
-  (r, c) => Result(r.dualMapIfSet(min(_, c))(min(_, c)))
-})
+ * Set each cell to a constant or its existing value, whichever is lowest.
+ */
+object MinConstant {
+  def apply(r:Op[Raster], c:Op[Int]) = Min(r, c)
+}
 
 /**
  * Raise each cell to the cth power.
