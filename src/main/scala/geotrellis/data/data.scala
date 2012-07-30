@@ -17,7 +17,7 @@ trait ReadState {
   def getType: RasterType
 
   // must override
-  def createRasterData(size:Int):MutableRasterData = RasterData.emptyByType(getType, size)
+  def createRasterData(cols:Int, rows:Int):MutableRasterData = RasterData.emptyByType(getType, cols, rows)
 
   // must override
   protected[this] def initSource(position:Int, size:Int):Unit
@@ -71,7 +71,7 @@ trait ReadState {
     
     // this is the resampled destination array
     val dst_size = dst_cols * dst_rows
-    val resampled = createRasterData(dst_size)
+    val resampled = createRasterData(dst_cols, dst_rows)
 
     // these are the min and max columns we will access on this row
     val min_col = (xbase / src_cellwidth).asInstanceOf[Int]

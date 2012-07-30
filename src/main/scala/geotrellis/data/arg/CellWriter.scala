@@ -51,7 +51,7 @@ object BoolCellWriter extends CellWriter {
     while (row < rows) {
       var col = 0
       while (col < cols) {
-        z += (data.get(col, row, cols) & 1) << i
+        z += (data.get(col, row) & 1) << i
         i += 1
         col += 1
         if (i > 7) {
@@ -70,7 +70,7 @@ trait IntCellWriter extends CellWriter {
   def noDataValue:Int
   def writeValue(z:Int, dos:DataOutputStream): Unit
   @inline final def writeCell(data:RasterData, col:Int, row:Int, cols:Int, dos:DataOutputStream) {
-    val z = data.get(col, row, cols)
+    val z = data.get(col, row)
     if (z == NODATA) writeValue(noDataValue, dos) else writeValue(z, dos)
   }
 }
@@ -78,7 +78,7 @@ trait IntCellWriter extends CellWriter {
 trait FloatCellWriter extends CellWriter {
   def writeValue(z:Double, dos:DataOutputStream): Unit
   @inline final def writeCell(data:RasterData, col:Int, row:Int, cols:Int, dos:DataOutputStream) {
-    writeValue(data.getDouble(col, row, cols), dos)
+    writeValue(data.getDouble(col, row), dos)
   }
 }
 
