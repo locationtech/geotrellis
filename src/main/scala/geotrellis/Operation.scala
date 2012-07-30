@@ -92,6 +92,8 @@ class Context (server:Server) {
     server.getRaster(path, None, Option(g))
   }
 
+  def loadTileSet(path:String):Raster = Raster.loadTileSet(path, server)
+
   def getRaster(path:String, layer:RasterLayer, re:RasterExtent):Raster = {
     server.getRaster(path, Option(layer), Option(re))
   }
