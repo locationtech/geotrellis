@@ -1,5 +1,5 @@
 <!DOCTYPE html SYSTEM "about:legacy-compat">
-<html >
+<html>
       <head>
         <title>GeoTrellis — Creating new operations</title>
         <link type="text/css" media="screen, projection" rel="stylesheet" href="css/blueprint/screen.css"></link>
@@ -20,9 +20,10 @@
       --></script>
         <meta charset="utf-8"></meta>
         <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+        
       </head>
       <body>
-        <a class="page prev nav" href="Operations.html">
+        <a class="page prev nav" href="Other+Operations.html">
             <span class="space">&nbsp;</span>
             <span class="flip">&gt;</span>
           </a><a class="page next nav" href="Parallel+and+distributed+execution.html">
@@ -46,7 +47,7 @@ the full method creating new operations.
 operations take input and produce an output.  The inputs to all operations are 
 operations themselves.  You can think about this as a data pipeline, in which
 each operation’s output is connected to the input of its parent operations.
-</p><h3 id="Short+method">Short method</h3><p>Let’s create a simple operation that adds two integers together.
+</p><h4 id="Short+method">Short method</h4><p>Let’s create a simple operation that adds two integers together.
 </p><p>We’ll make an operation that can be instantiated with the following code:
 </p><pre><code class="prettyprint lang-scala">val a = AddInts(1, 2)
 val result = server.run(a)
@@ -77,7 +78,7 @@ operation had only 1 input, we’d use <code>Op1</code> instead of <code>Op2</co
 define the body of the function that does the actual work with the inputs
 between the two braces.
 </p><p>You can see lots of examples of Operations in <code>src/main/geotrellis/op</code>.
-</p><h3 id="Full+method">Full method</h3><p>Instead of the short syntax (in which operations extend <code>Op1</code>..<code>OpN</code>) you can
+</p><h4 id="Full+method">Full method</h4><p>Instead of the short syntax (in which operations extend <code>Op1</code>..<code>OpN</code>) you can
 create a class which extends <code>Op[T]</code>. This approach exposes the underlying
 methods that operations use to load data (via the <code>Context</code> object) and also to
 stage calculations across multipe steps.
@@ -108,12 +109,16 @@ executes the provide block of code.
 </p><p>If you want to understand more about the machinery at work here, see the
 <em>Architecture Concepts</em> section and the Server code
 (<code>geotrellis/process/server.scala</code> and <code>geotrellis/process/actors.scala</code>).
-</p><div class="tocwrapper show">
+</p><div class="bottom nav">
+                        <em>Next Page</em>
+                        <span class="arrow">&gt;</span>
+                        <a href="Parallel+and+distributed+execution.html"> Parallel and distributed execution </a>
+                      </div><div class="tocwrapper show">
       <a class="tochead nav" style="display: none" href="#toc">❦</a>
       <a name="toc"></a>
       <h4 class="toctitle">Contents</h4>
       <div class="tocbody">
-      <div><a href="GeoTrellis.html">GeoTrellis</a></div><ol class="toc"> <li><div><a href="API+Reference.html">API Reference</a></div></li><li><div><a href="Get+started+with+the+template+project.html">Get started with the template project</a></div></li><li><div><a href="Web+Service+Tutorial.html">Web Service Tutorial</a></div></li><li><div><a href="Setting+up+GeoTrellis.html">Setting up GeoTrellis</a></div></li><li><div><a href="Operations.html">Operations</a></div></li><li><div class="current">Creating new operations</div></li><li><div><a href="Parallel+and+distributed+execution.html">Parallel and distributed execution</a></div></li><li class="generated"><div><a href="Contents+in+Depth.html">Contents in Depth</a></div></li><li class="generated"><div><a href="Combined+Pages.html">Combined Pages</a></div></li> </ol></div></div>
+      <div><a href="GeoTrellis.html">GeoTrellis</a></div><ol class="toc"> <li><div><a href="GeoTrellis+Resources.html">GeoTrellis Resources</a></div></li><li><div><a href="Web+Service+Tutorial.html">Web Service Tutorial</a></div></li><li><div><a href="Setting+up+GeoTrellis.html">Setting up GeoTrellis</a></div></li><li><div><a href="GeoTrellis+Operations.html">GeoTrellis Operations</a></div><ol class="toc"> <li><div><a href="Raster+Operations.html">Raster Operations</a></div></li><li><div><a href="Logic+and+IO+Operations.html">Logic and IO Operations</a></div></li><li><div><a href="Other+Operations.html">Other Operations</a></div></li> </ol></li><li><div class="current">Creating new operations</div></li><li><div><a href="Parallel+and+distributed+execution.html">Parallel and distributed execution</a></div></li><li class="generated"><div><a href="Contents+in+Depth.html">Contents in Depth</a></div></li><li class="generated"><div><a href="Combined+Pages.html">Combined Pages</a></div></li> </ol></div></div>
           </div>
         </div>
         <a class="fork nav" href="http://github.com/azavea/geotrellis"><img alt="Fork me on GitHub" src="img/fork.png"></img></a>

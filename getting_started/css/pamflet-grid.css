@@ -49,6 +49,7 @@ span.flip {
 }
 
 a.fork {
+    display: inline;
     position: absolute;
     top: 0;
     right: 0;
