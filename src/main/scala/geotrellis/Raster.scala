@@ -77,11 +77,17 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
   def isFloat = data.getType.float
 
   def toArray = data.asArray.getOrElse(sys.error("argh")).toArray
+  def toArrayDouble = data.asArray.getOrElse(sys.error("argh")).toArrayDouble
 
   /**
    * Get value at given coordinates.
    */
   def get(col:Int, row:Int):Int = data.get(col, row)
+
+  /**
+   * Get value at given coordinates.
+   */
+  def getDouble(col:Int, row:Int):Double = data.getDouble(col, row)
 
   /**
    * Return tuple of highest and lowest value in raster.
