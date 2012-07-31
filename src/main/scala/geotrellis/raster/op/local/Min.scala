@@ -7,12 +7,12 @@ import geotrellis.process._
 
 object Min {
   def apply(x:Op[Int], y:Op[Int]) = logic.Do2(x, y)((z1, z2) => min(z1, z2))
-  def apply(r:Op[Raster], c:Op[Int]) = MinConstant1(r, c)
+  def apply(r:Op[Raster], c:Op[Int]) = MinConstant(r, c)
   def apply(c:Op[Int], r:Op[Raster]) = MinConstant2(c, r)
   def apply(r1:Op[Raster], r2:Op[Raster]) = MinRaster(r1, r2)
 }
 
-case class MinConstant1(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
+case class MinConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
   (r, c) => Result(r.mapIfSet(z => min(z, c)))
 })
 
