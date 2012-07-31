@@ -34,6 +34,12 @@ Raster operations that work on individual raster cells.  [Scala package geotrell
 <tr><td><code>local.GreaterOrEqual</code></td><td>Set cell to 1 if cell is greater than or equal to other cell, 0 if not.</td></tr>
 <tr><td><code>local.Less</code></td><td>Set cell to 1 if cell is less to other cell, 0 if not.</td></tr>
 <tr><td><code>local.LessOrEqual</code></td><td>Set cell to 1 if cell is less than or equal to other cell, 0 if not.</td></tr>
+<tr><td><code>local.Ceil</code></td><td>Round all values to integer ceiling.</td></tr>
+<tr><td><code>local.Floor</code></td><td>Round all values to integer floor.</td></tr>
+<tr><td><code>local.Log</code></td><td>Set all values to log(value).</td></tr>
+<tr><td><code>local.Pow</code></td><td>Raise all values to an exponent.</td></tr>
+<tr><td><code>local.Round</code></td><td>Round all values to nearest integer.</td></tr>
+<tr><td><code>local.Sqrt</code></td><td>Set all values to their square root.</td></tr>
 </tbody>
 </table>
 
@@ -51,6 +57,8 @@ Raster operations that work on raster cells and their neighbors.  [Scala package
 <tr><td><code>focal.Rescale</code></td><td>Rescale values between new min and max value.</td></tr>
 <tr><td><code>focal.Hillshade</code></td><td>Create a three dimensional appearance from an elevation raster.</td></tr>
 <tr><td><code>focal.KernelDensity</code></td><td>Compute the kernel density of a set of points onto a raster.</td></tr>
+<tr><td><code>focal.MoransI</code></td><td>Compute the Morans I of the input raster.</td></tr>
+<tr><td><code>focal.LocalMoransI</code></td><td>Set all cells to Local Morans I.</td></tr>
 <tr><td><code><i>focal.Aspect</i></code></td><td>Calculate downslope direction from each cell to its neighbors.</td></tr>
 <tr><td><code><i>focal.Slope</i></code></td><td>Calculate maximum rate of change cell to its neighbors.</td></tr>
 <tr><td><code><i>focal.FlowDirection</i></code></td><td>Calculate flow direction from input raster.</td></tr>
@@ -75,8 +83,8 @@ Raster operations that work on areas of cells that share the same value in an in
         </thead>
         <tbody>
 <tr><td><code>zonal.StandardDeviation</code></td><td>Set each cell to standard deviation within zone.</td></tr>
-<tr><td><code><i>focal.Mean</i></code></td><td>Set pixels to mean of their zone.</td></tr>
-<tr><td><code><i>focal.Max</i></code></td><td>Set pixels to maximum value in their zone.</td></tr>
-<tr><td><code><i>focal.Min</i></code></td><td>Set pixels to minimum value in their zone.</td></tr>
+<tr><td><code><i>zonal.Mean</i></code></td><td>Set pixels to mean of their zone.</td></tr>
+<tr><td><code><i>zonal.Max</i></code></td><td>Set pixels to maximum value in their zone.</td></tr>
+<tr><td><code><i>zonal.Min</i></code></td><td>Set pixels to minimum value in their zone.</td></tr>
 </tbody>
 </table>
