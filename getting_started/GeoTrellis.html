@@ -55,8 +55,7 @@ parallelize and optimize your geoprocessing models where possible.
 create new operations and compose new operations with existing operations.
 </li></ul><h2 id="Some+sample+GeoTrellis+code">Some sample GeoTrellis code</h2><pre><code class="prettyprint lang-scala">  // import the necessary stuff
   import geotrellis._
-  import geotrellis.op.io
-  import geotrellis.op.raster.local
+  import geotrellis.op.raster._
 
   // set up the rasters and weights we'll use
   val raster1 = io.LoadRaster(&quot;foo&quot;)
