@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# Mon Jul 30 17:13:11 EDT 2012
+# Wed Aug 01 10:14:20 EDT 2012
 css/custom.css
 GeoTrellis.html
 GeoTrellis+Resources.html
@@ -11,6 +11,7 @@ Logic+and+IO+Operations.html
 Other+Operations.html
 Creating+new+operations.html
 Parallel+and+distributed+execution.html
+Raster+data+types+and+data+conversions.html
 Contents+in+Depth.html
 Combined+Pages.html
 img/fork.png

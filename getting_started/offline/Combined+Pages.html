@@ -39,7 +39,7 @@
       <a name="toc"></a>
       <h4 class="toctitle">Contents</h4>
       <div class="tocbody">
-      <div><a href="#GeoTrellis">GeoTrellis</a></div><ol class="toc"> <li><div><a href="#GeoTrellis+Resources">GeoTrellis Resources</a></div></li><li><div><a href="#Web+Service+Tutorial">Web Service Tutorial</a></div></li><li><div><a href="#Setting+up+GeoTrellis">Setting up GeoTrellis</a></div></li><li><div><a href="#GeoTrellis+Operations">GeoTrellis Operations</a></div><ol class="toc"> <li><div><a href="#Raster+Operations">Raster Operations</a></div></li><li><div><a href="#Logic+and+IO+Operations">Logic and IO Operations</a></div></li><li><div><a href="#Other+Operations">Other Operations</a></div></li> </ol></li><li><div><a href="#Creating+new+operations">Creating new operations</a></div></li><li><div><a href="#Parallel+and+distributed+execution">Parallel and distributed execution</a></div></li> </ol></div></div><h1 id="GeoTrellis">GeoTrellis</h1><p><em>GeoTrellis</em> is a high performance geoprocessing engine and programming
+      <div><a href="#GeoTrellis">GeoTrellis</a></div><ol class="toc"> <li><div><a href="#GeoTrellis+Resources">GeoTrellis Resources</a></div></li><li><div><a href="#Web+Service+Tutorial">Web Service Tutorial</a></div></li><li><div><a href="#Setting+up+GeoTrellis">Setting up GeoTrellis</a></div></li><li><div><a href="#GeoTrellis+Operations">GeoTrellis Operations</a></div><ol class="toc"> <li><div><a href="#Raster+Operations">Raster Operations</a></div></li><li><div><a href="#Logic+and+IO+Operations">Logic and IO Operations</a></div></li><li><div><a href="#Other+Operations">Other Operations</a></div></li> </ol></li><li><div><a href="#Creating+new+operations">Creating new operations</a></div></li><li><div><a href="#Parallel+and+distributed+execution">Parallel and distributed execution</a></div></li><li><div><a href="#Raster+data+types+and+data+conversions">Raster data types and data conversions</a></div></li> </ol></div></div><h1 id="GeoTrellis">GeoTrellis</h1><p><em>GeoTrellis</em> is a high performance geoprocessing engine and programming
 toolkit. The goal of the project is to transform user interaction with
 geospatial data by bringing the power of geospatial analysis to real time,
 interactive web applications.
@@ -60,8 +60,7 @@ parallelize and optimize your geoprocessing models where possible.
 create new operations and compose new operations with existing operations.
 </li></ul><h2 id="Some+sample+GeoTrellis+code">Some sample GeoTrellis code</h2><pre><code class="prettyprint lang-scala">  // import the necessary stuff
   import geotrellis._
-  import geotrellis.op.io
-  import geotrellis.op.raster.local
+  import geotrellis.op.raster._
 
   // set up the rasters and weights we'll use
   val raster1 = io.LoadRaster(&quot;foo&quot;)
@@ -375,12 +374,18 @@ data loading operations are in the “io” package, and so the “LoadRaster”
 <tr><td><code>local.Not</code></td><td>Apply binary bitwise not to each cell.</td></tr>
 <tr><td><code>local.Or</code></td><td>Apply binary bitwise or to each cell.</td></tr>
 <tr><td><code>local.Defined</code></td><td>Set cell to 1 if defined, 0 if NoData.</td></tr>
-<tr><td><code>local.Equal</code></td><td>Set cell to 1 if equal with other cell, 0 if not.</td></tr>
-<tr><td><code>local.Unequal</code></td><td>Set cell to 1 if not equal with other cell, 0 if not.</td></tr>
-<tr><td><code>local.Greater</code></td><td>Set cell to 1 if cell is greater than other cell, 0 if not.</td></tr>
-<tr><td><code>local.GreaterOrEqual</code></td><td>Set cell to 1 if cell is greater than or equal than other cell, 0 if not.</td></tr>
-<tr><td><code>local.Less</code></td><td>Set cell to 1 if cell is less than other cell, 0 if not.</td></tr>
-<tr><td><code>local.LessOrEqual</code></td><td>Set cell to 1 if cell is less than or equal than other cell, 0 if not.</td></tr>
+<tr><td><code>local.Equal</code></td><td>Set cell to 1 if equal to other cell, 0 if not.</td></tr>
+<tr><td><code>local.Unequal</code></td><td>Set cell to 1 if not equal to other cell, 0 if not.</td></tr>
+<tr><td><code>local.Greater</code></td><td>Set cell to 1 if cell is greater to other cell, 0 if not.</td></tr>
+<tr><td><code>local.GreaterOrEqual</code></td><td>Set cell to 1 if cell is greater than or equal to other cell, 0 if not.</td></tr>
+<tr><td><code>local.Less</code></td><td>Set cell to 1 if cell is less to other cell, 0 if not.</td></tr>
+<tr><td><code>local.LessOrEqual</code></td><td>Set cell to 1 if cell is less than or equal to other cell, 0 if not.</td></tr>
+<tr><td><code>local.Ceil</code></td><td>Round all values to integer ceiling.</td></tr>
+<tr><td><code>local.Floor</code></td><td>Round all values to integer floor.</td></tr>
+<tr><td><code>local.Log</code></td><td>Set all values to log(value).</td></tr>
+<tr><td><code>local.Pow</code></td><td>Raise all values to an exponent.</td></tr>
+<tr><td><code>local.Round</code></td><td>Round all values to nearest integer.</td></tr>
+<tr><td><code>local.Sqrt</code></td><td>Set all values to their square root.</td></tr>
 </tbody>
 </table>
 <h4 id="Focal+operations">Focal operations</h4><p>Raster operations that work on raster cells and their neighbors.  <a  href="http://azavea.github.com/geotrellis/latest/api/#geotrellis.raster.op.focal.package">Scala package geotrellis.raster.op.focal.</a>
@@ -395,6 +400,8 @@ data loading operations are in the “io” package, and so the “LoadRaster”
 <tr><td><code>focal.Rescale</code></td><td>Rescale values between new min and max value.</td></tr>
 <tr><td><code>focal.Hillshade</code></td><td>Create a three dimensional appearance from an elevation raster.</td></tr>
 <tr><td><code>focal.KernelDensity</code></td><td>Compute the kernel density of a set of points onto a raster.</td></tr>
+<tr><td><code>focal.MoransI</code></td><td>Compute the Morans I of the input raster.</td></tr>
+<tr><td><code>focal.LocalMoransI</code></td><td>Set all cells to Local Morans I.</td></tr>
 <tr><td><code><i>focal.Aspect</i></code></td><td>Calculate downslope direction from each cell to its neighbors.</td></tr>
 <tr><td><code><i>focal.Slope</i></code></td><td>Calculate maximum rate of change cell to its neighbors.</td></tr>
 <tr><td><code><i>focal.FlowDirection</i></code></td><td>Calculate flow direction from input raster.</td></tr>
@@ -415,9 +422,9 @@ data loading operations are in the “io” package, and so the “LoadRaster”
         </thead>
         <tbody>
 <tr><td><code>zonal.StandardDeviation</code></td><td>Set each cell to standard deviation within zone.</td></tr>
-<tr><td><code><i>focal.Mean</i></code></td><td>Set pixels to mean of their zone.</td></tr>
-<tr><td><code><i>focal.Max</i></code></td><td>Set pixels to maximum value in their zone.</td></tr>
-<tr><td><code><i>focal.Min</i></code></td><td>Set pixels to minimum value in their zone.</td></tr>
+<tr><td><code><i>zonal.Mean</i></code></td><td>Set pixels to mean of their zone.</td></tr>
+<tr><td><code><i>zonal.Max</i></code></td><td>Set pixels to maximum value in their zone.</td></tr>
+<tr><td><code><i>zonal.Min</i></code></td><td>Set pixels to minimum value in their zone.</td></tr>
 </tbody>
 </table>
 <h2 id="Logic+and+IO+Operations">Logic and IO Operations</h2><p>These sets of operation are relevant to all compound operations as they are used to load data, produce output formats, and as the functional programming constructs that are critical to operation composition.
@@ -622,6 +629,46 @@ blocking execution on an individual thread.
 This allows us to perform optimizations such as combining  
 <br/>
 local raster operations. 
+</p><h2 id="Raster+data+types+and+data+conversions">Raster data types and data conversions</h2><h4 id="Data+Types">Data Types</h4><p>GeoTrellis currently supports six basic types of raster data:
+</p><ul><li>boolean: 1-bit true (1) or false (0)
+</li><li>byte: signed 8-bit integer
+</li><li>short: signed 16-bit integer
+</li><li>int: signed 32-bit integer
+</li><li>float: 32-bit floating point
+</li><li>double: 64-bit floating point
+</li></ul><p>The size (in bits) represents the amount of data used on the filesystem or in
+memory by each cell. Raster sizes can usually be estimated by the following
+equation:
+</p><pre><code>bits = rows * columns * size-per-cell
+bytes = bits / 8
+megabytes = bytes / 1,048,576
+</code></pre><p>Using this formula, a 3000 x 2000 raster of boolean cells would use 750K, but a
+1000 x 1000 double raster would require 64M of space (each double value
+requires 512 times as much space as a boolean).
+</p><h4 id="Calculation+Types">Calculation Types</h4><p>No matter what the underlying data type is, all rasters support both integral
+and floating-point calculations. All integral calculations are done in terms of
+<code>Int</code> and all floating-point calculations are done in terms of <code>Double</code>.
+Calculations resulting in data which cannot be exactly represented in the
+underlying type will be truncated or otherwise reduced. If this behavior is not
+desired, manual conversions to a wider type can be performed. 
+</p><p>Some calculations will use the raster’s underlying type while others will
+specify a particular type. For instance, bitwise operations will always occur
+on a cell’s integer value.
+</p><h4 id="Conversions+Between+Types">Conversions Between Types</h4><p>With a few exceptions, rasters retain their underlying type across operations,
+and must be explicitly converted to new types in some cases. GeoTrellis
+optimizes these conversions by performing them lazily. For instance:
+</p><pre><code class="prettyprint lang-scala">// Raster contains Int values.
+val raster = server.run(rasterOp)
+
+// Apply conversion to Double.
+val converted = raster.convert(TypeDouble)
+
+// No data has been converted yet; future operations will apply conversion.
+
+// result contains Double values.
+val result = converted.map(_ * 0.3)
+</code></pre><p>Along with other forms of laziness, this strategy avoids allocating
+intermediate raster objects, conserving memory and allowing faster execution.
 </p>
           </div>
         </div>
