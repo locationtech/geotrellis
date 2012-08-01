@@ -16,6 +16,7 @@ into output formats.  [Scala package geotrellis.io.op.](http://azavea.github.com
           </tr>
         </thead>
         <tbody>
+<tr><td><code><i>io.LoadFeatures</i></code></td><td>Load vector features from catalog.</td></tr>
 <tr><td><code>io.LoadFile</code></td><td>Load a raster from the provide file path.</td></tr>
 <tr><td><code>io.LoadRaster</code></td><td>Load a raster by name from the catalog.</td></tr>
 <tr><td><code>io.LoadRasterExtent</code></td><td>Load the raster extent by name from the catalog.</td></tr>
@@ -23,7 +24,6 @@ into output formats.  [Scala package geotrellis.io.op.](http://azavea.github.com
 <tr><td><code>io.ReclassifyColorsRgba</code></td><td>Reclassify data to output color values.</td></tr>
 <tr><td><code>io.RenderPNG</code></td><td>Generate a PNG from a given raster and a set of color breaks.</td></tr>
 <tr><td><code>io.WritePNGFile</code></td><td>Write a PNG to disk.</td></tr>
-<tr><td><code><i>io.LoadFeatures</i></code></td><td>Load vector features from catalog.</td></tr>
 </tbody>
 </table>
 
@@ -46,4 +46,3 @@ Logical operations for composing compound operations.  [Scala package geotrellis
 </table>
 
 For Haskell-inspired syntax, see [see geotrellis.logic.applicative](http://azavea.github.com/geotrellis/latest/api/#geotrellis.logic.applicative.package) package.
-
