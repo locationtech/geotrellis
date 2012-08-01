@@ -342,14 +342,23 @@ to convert data to the ARG format that GeoTrellis uses for raster data.
 </p><p>Please feel free to ask for advice on the mailing list on installing a recent
 version of GDAL. There is also an AMI Ubuntu instance for EC2 with GeoTrellis
 and a recent version of GDAL installed.  
-</p><h1 id="GeoTrellis+Operations">GeoTrellis Operations</h1><p>A geoprocessing model in GeoTrellis is composed of smaller geoprocessing operations with
-well-defined inputs and outputs.  The next section describes how to create your own operations, but it
-is usually better to compose an operation out of existing operations if that is possible.  The following
-is a list of some of the operations available.  Operations in italics are planned for the future. 
-</p><p>The GeoTrellis naming convention for operations namespaces every operation within a single package, and
-we commonly refer to the operation with the package name in the format “package.operation”.  For example, 
-data loading operations are in the “io” package, and so the “LoadRaster” operation is referred to as “io.LoadRaster”.
-</p><h2 id="Raster+Operations">Raster Operations</h2><h4 id="Local+operations">Local operations</h4><p>Raster operations that work on individual raster cells.  <a  href="http://azavea.github.com/geotrellis/latest/api/#geotrellis.raster.op.local.package">Scala package geotrellis.raster.op.local.</a>
+</p><h1 id="GeoTrellis+Operations">GeoTrellis Operations</h1><p>A geoprocessing model in GeoTrellis is composed of smaller geoprocessing
+operations with  well-defined inputs and outputs.  The next section describes
+how to create your own operations, but it is usually better to compose an
+operation out of existing operations if that is possible.  The following is a
+list of some of the operations available.  Operations in italics are planned
+for the future.
+</p><p>The GeoTrellis naming convention for operations namespaces every operation
+within a single package, and we commonly refer to the operation with the
+package name in the format <code>package.operation</code>.  For example, data loading
+operations are in the <code>io</code> package, and so the <code>LoadRaster</code> operation is
+referred to as <code>io.LoadRaster</code>.
+</p><h2 id="Raster+Operations">Raster Operations</h2><h4 id="Local+operations">Local operations</h4><p>Local operations process each raster cell individually, without considering
+other cells’ values. When combining multiple rasters, a local operation will
+map the value for each input’s <code>(x, y)</code> cell to a single value in the output
+raster’s <code>(x, y)</code> cell. These properties allow GeoTrellis to parallelize local
+operations very effectively.
+</p><p>Located in <a  href="http://azavea.github.com/geotrellis/latest/api/#geotrellis.raster.op.local.package">geotrellis.raster.op.local.</a>
 </p><table class="bordered-table zebra-striped">
       <thead>
           <tr>
@@ -359,36 +368,37 @@ data loading operations are in the “io” package, and so the “LoadRaster”
         </thead>
         <tbody>
 <tr><td><code>local.Add</code></td><td>Add the values of each cell in each raster.</td></tr>
-<tr><td><code>local.Subtract</code></td><td>Subtract the values of each cell in each raster.</td></tr>
-<tr><td><code>local.Multiply</code></td><td>Multiply the values of each cell in each raster.</td></tr>
-<tr><td><code>local.Divide</code></td><td>Divide the values of each cell in each raster.</td></tr>
-<tr><td><code>local.IfCell</code></td><td>Given a condition, set cell to value if true.</td></tr>
-<tr><td><code>local.IfElseCell</code></td><td>Given a condition, set cell to true or false value.</td></tr>
-<tr><td><code>local.DoCell</code></td><td>Apply a custom function to each cele.</td></tr>
-<tr><td><code>local.Mask</code></td><td>Set cells in raster to NoData based on values in other raster.</td></tr>
-<tr><td><code>local.Min</code></td><td>Set cells to the minimum value.</td></tr>
-<tr><td><code>local.Max</code></td><td>Set cells to the maximum value.</td></tr>
-<tr><td><code>local.Negate</code></td><td>Multiply cell values by -1.</td></tr>
-<tr><td><code>local.Pow</code></td><td>Raise each cell to the specified power.</td></tr>
-<tr><td><code>local.And</code></td><td>Apply binary bitwise and to each cell.</td></tr>
-<tr><td><code>local.Not</code></td><td>Apply binary bitwise not to each cell.</td></tr>
-<tr><td><code>local.Or</code></td><td>Apply binary bitwise or to each cell.</td></tr>
+<tr><td><code>local.And</code></td><td>Apply bitwise-and to each cell.</td></tr>
+<tr><td><code>local.Ceil</code></td><td>Round each cell's value up to the nearest integer.</td></tr>
 <tr><td><code>local.Defined</code></td><td>Set cell to 1 if defined, 0 if NoData.</td></tr>
+<tr><td><code>local.Divide</code></td><td>Divide the values of each cell in each raster.</td></tr>
+<tr><td><code>local.DoCell</code></td><td>Apply a custom function to each cell.</td></tr>
 <tr><td><code>local.Equal</code></td><td>Set cell to 1 if equal to other cell, 0 if not.</td></tr>
-<tr><td><code>local.Unequal</code></td><td>Set cell to 1 if not equal to other cell, 0 if not.</td></tr>
+<tr><td><code>local.Floor</code></td><td>Round each cell's value down to the nearest integer.</td></tr>
 <tr><td><code>local.Greater</code></td><td>Set cell to 1 if cell is greater to other cell, 0 if not.</td></tr>
 <tr><td><code>local.GreaterOrEqual</code></td><td>Set cell to 1 if cell is greater than or equal to other cell, 0 if not.</td></tr>
+<tr><td><code>local.IfCell</code></td><td>Given a condition, set cell to value if true.</td></tr>
+<tr><td><code>local.IfElseCell</code></td><td>Given a condition, set cell to true or false value.</td></tr>
 <tr><td><code>local.Less</code></td><td>Set cell to 1 if cell is less to other cell, 0 if not.</td></tr>
 <tr><td><code>local.LessOrEqual</code></td><td>Set cell to 1 if cell is less than or equal to other cell, 0 if not.</td></tr>
-<tr><td><code>local.Ceil</code></td><td>Round all values to integer ceiling.</td></tr>
-<tr><td><code>local.Floor</code></td><td>Round all values to integer floor.</td></tr>
-<tr><td><code>local.Log</code></td><td>Set all values to log(value).</td></tr>
-<tr><td><code>local.Pow</code></td><td>Raise all values to an exponent.</td></tr>
-<tr><td><code>local.Round</code></td><td>Round all values to nearest integer.</td></tr>
-<tr><td><code>local.Sqrt</code></td><td>Set all values to their square root.</td></tr>
+<tr><td><code>local.Log</code></td><td>Take the logarithm (base e) of each cell.</td></tr>
+<tr><td><code>local.Mask</code></td><td>Set cells in raster to NoData based on values in other raster.</td></tr>
+<tr><td><code>local.Max</code></td><td>Set cells to the maximum value.</td></tr>
+<tr><td><code>local.Min</code></td><td>Set cells to the minimum value.</td></tr>
+<tr><td><code>local.Multiply</code></td><td>Multiply the values of each cell in each raster.</td></tr>
+<tr><td><code>local.Negate</code></td><td>Multiply cell values by -1.</td></tr>
+<tr><td><code>local.Not</code></td><td>Apply bitwise-not to each cell.</td></tr>
+<tr><td><code>local.Or</code></td><td>Apply bitwise-or to each cell.</td></tr>
+<tr><td><code>local.Pow</code></td><td>Raise each cell to the specified power.</td></tr>
+<tr><td><code>local.Round</code></td><td>Round each cell's value to the nearest integer.</td></tr>
+<tr><td><code>local.Sqrt</code></td><td>Take the square root of each cell.</td></tr>
+<tr><td><code>local.Subtract</code></td><td>Subtract the values of each cell in each raster.</td></tr>
+<tr><td><code>local.Undefined</code></td><td>Set cell to 0 if defined, 1 if NoData.</td></tr>
+<tr><td><code>local.Unequal</code></td><td>Set cell to 1 if not equal to other cell, 0 if not.</td></tr>
+<tr><td><code>local.Xor</code></td><td>Apply bitwise-xor to each cell.</td></tr>
 </tbody>
 </table>
-<h4 id="Focal+operations">Focal operations</h4><p>Raster operations that work on raster cells and their neighbors.  <a  href="http://azavea.github.com/geotrellis/latest/api/#geotrellis.raster.op.focal.package">Scala package geotrellis.raster.op.focal.</a>
+<h4 id="Focal+operations">Focal operations</h4><p>Raster operations that work on raster cells and their neighbors. Located in <a  href="http://azavea.github.com/geotrellis/latest/api/#geotrellis.raster.op.focal.package">geotrellis.raster.op.focal.</a>
 </p><table class="bordered-table zebra-striped">
       <thead>
           <tr>
@@ -397,22 +407,29 @@ data loading operations are in the “io” package, and so the “LoadRaster”
           </tr>
         </thead>
         <tbody>
+<<<<<<< HEAD
 <tr><td><code>focal.Rescale</code></td><td>Rescale values between new min and max value.</td></tr>
 <tr><td><code>focal.Hillshade</code></td><td>Create a three dimensional appearance from an elevation raster.</td></tr>
 <tr><td><code>focal.KernelDensity</code></td><td>Compute the kernel density of a set of points onto a raster.</td></tr>
 <tr><td><code>focal.MoransI</code></td><td>Compute the Morans I of the input raster.</td></tr>
 <tr><td><code>focal.LocalMoransI</code></td><td>Set all cells to Local Morans I.</td></tr>
+=======
+>>>>>>> non/topic/doc-updates
 <tr><td><code><i>focal.Aspect</i></code></td><td>Calculate downslope direction from each cell to its neighbors.</td></tr>
-<tr><td><code><i>focal.Slope</i></code></td><td>Calculate maximum rate of change cell to its neighbors.</td></tr>
-<tr><td><code><i>focal.FlowDirection</i></code></td><td>Calculate flow direction from input raster.</td></tr>
 <tr><td><code><i>focal.CostDistance</i></code></td><td>Calculate cost distance raster.</td></tr>
-<tr><td><code><i>focal.Viewshed</i></code></td><td>Calculate viewshed from input points.</td></tr>
-<tr><td><code><i>focal.Mean</i></code></td><td>Set pixels to mean of specified neighborhood.</td></tr>
+<tr><td><code><i>focal.FlowDirection</i></code></td><td>Calculate flow direction from input raster.</td></tr>
+<tr><td><code>focal.Hillshade</code></td><td>Create a three dimensional appearance from an elevation raster.</td></tr>
+<tr><td><code>focal.KernelDensity</code></td><td>Compute the kernel density of a set of points onto a raster.</td></tr>
 <tr><td><code><i>focal.Max</i></code></td><td>Set pixels to maximum value in neighborhood.</td></tr>
+<tr><td><code><i>focal.Mean</i></code></td><td>Set pixels to mean of specified neighborhood.</td></tr>
 <tr><td><code><i>focal.Min</i></code></td><td>Set pixels to minimum value in neighborhood.</td></tr>
+<tr><td><code>focal.Rescale</code></td><td>Rescale values between new min and max value.</td></tr>
+<tr><td><code><i>focal.Slope</i></code></td><td>Calculate maximum rate of change cell to its neighbors.</td></tr>
+<tr><td><code><i>focal.StandardDeviation</i></code></td><td>Set each cell to standard deviation within the specified neighborhood.</td></tr>
+<tr><td><code><i>focal.Viewshed</i></code></td><td>Calculate viewshed from input points.</td></tr>
 </tbody>
 </table>
-<h4 id="Zonal+operations">Zonal operations</h4><p>Raster operations that work on areas of cells that share the same value in an input raster. <a  href="http://azavea.github.com/geotrellis/latest/api/#geotrellis.raster.op.zonal.package">Scala package geotrellis.raster.op.zonal.</a>
+<h4 id="Zonal+operations">Zonal operations</h4><p>Raster operations that work on areas of cells that share the same value in an input raster. Located in <a  href="http://azavea.github.com/geotrellis/latest/api/#geotrellis.raster.op.zonal.package">geotrellis.raster.op.zonal.</a>
 </p><table class="bordered-table zebra-striped">
       <thead>
           <tr>
@@ -421,12 +438,20 @@ data loading operations are in the “io” package, and so the “LoadRaster”
           </tr>
         </thead>
         <tbody>
+<<<<<<< HEAD
 <tr><td><code>zonal.StandardDeviation</code></td><td>Set each cell to standard deviation within zone.</td></tr>
 <tr><td><code><i>zonal.Mean</i></code></td><td>Set pixels to mean of their zone.</td></tr>
 <tr><td><code><i>zonal.Max</i></code></td><td>Set pixels to maximum value in their zone.</td></tr>
 <tr><td><code><i>zonal.Min</i></code></td><td>Set pixels to minimum value in their zone.</td></tr>
+=======
+<tr><td><code><i>zonal.Max</i></code></td><td>Set pixels to maximum value in their zone.</td></tr>
+<tr><td><code><i>zonal.Mean</i></code></td><td>Set pixels to mean of their zone.</td></tr>
+<tr><td><code><i>zonal.Min</i></code></td><td>Set pixels to minimum value in their zone.</td></tr>
+<tr><td><code><i>zonal.StandardDeviation</i></code></td><td>Set each cell to standard deviation within zone.</td></tr>
+>>>>>>> non/topic/doc-updates
 </tbody>
 </table>
+<i>(Italicized operations are not yet implemented.)</i>
 <h2 id="Logic+and+IO+Operations">Logic and IO Operations</h2><p>These sets of operation are relevant to all compound operations as they are used to load data, produce output formats, and as the functional programming constructs that are critical to operation composition.
 </p><h4 id="IO+operations">IO operations</h4><p>IO operations provide input, loading data, and output, translating the output of geoprocessing models
 into output formats.  <a  href="http://azavea.github.com/geotrellis/latest/api/#geotrellis.io.op.package">Scala package geotrellis.io.op.</a>
@@ -438,6 +463,7 @@ into output formats.  <a  href="http://azavea.github.com/geotrellis/latest/api/#
           </tr>
         </thead>
         <tbody>
+<tr><td><code><i>io.LoadFeatures</i></code></td><td>Load vector features from catalog.</td></tr>
 <tr><td><code>io.LoadFile</code></td><td>Load a raster from the provide file path.</td></tr>
 <tr><td><code>io.LoadRaster</code></td><td>Load a raster by name from the catalog.</td></tr>
 <tr><td><code>io.LoadRasterExtent</code></td><td>Load the raster extent by name from the catalog.</td></tr>
@@ -445,7 +471,6 @@ into output formats.  <a  href="http://azavea.github.com/geotrellis/latest/api/#
 <tr><td><code>io.ReclassifyColorsRgba</code></td><td>Reclassify data to output color values.</td></tr>
 <tr><td><code>io.RenderPNG</code></td><td>Generate a PNG from a given raster and a set of color breaks.</td></tr>
 <tr><td><code>io.WritePNGFile</code></td><td>Write a PNG to disk.</td></tr>
-<tr><td><code><i>io.LoadFeatures</i></code></td><td>Load vector features from catalog.</td></tr>
 </tbody>
 </table>
 <h4 id="Logic+operations">Logic operations</h4><p>Logical operations for composing compound operations.  <a  href="http://azavea.github.com/geotrellis/latest/api/#geotrellis.logic.op.package">Scala package geotrellis.logic.op.</a>
@@ -472,15 +497,15 @@ into output formats.  <a  href="http://azavea.github.com/geotrellis/latest/api/#
           </tr>
         </thead>
         <tbody>
+<tr><td><code>stat.GetClassBreaks</code></td><td>Returns quantile class breaks for a given raster.</td></tr>
+<tr><td><code>stat.GetColorBreaks</code></td><td>Returns colors for representation of raster value ranges.</td></tr>
+<tr><td><code>stat.GetColorsFromPalette</code></td><td>Perform an operation on each element in a sequence.</td></tr>
 <tr><td><code>stat.GetHistogram</code></td><td>Returns a histogram of input values.</td></tr>
 <tr><td><code>stat.GetMinMax</code></td><td>Returns minimum and maximum values.</td></tr>
-<tr><td><code>stat.GetStatistics</code></td><td>Returns mean, mode, stddev, min and max.</td></tr>
 <tr><td><code>stat.GetPolygonalZonalHistograms</code></td><td>Return a histogram of raster values within each zone.</td></tr>
 <tr><td><code>stat.GetStandardDeviation</code></td><td>Returns standard deviation of raster values.</td></tr>
+<tr><td><code>stat.GetStatistics</code></td><td>Returns mean, mode, stddev, min and max.</td></tr>
 <tr><td><code><i>stat.GetVariance</i></code></td><td>Returns variance of raster values.</td></tr>
-<tr><td><code>stat.GetColorBreaks</code></td><td>Returns colors for representation of raster value ranges.</td></tr>
-<tr><td><code>stat.GetClassBreaks</code></td><td>Returns quantile class breaks for a given raster.</td></tr>
-<tr><td><code>stat.GetColorsFromPalette</code></td><td>Perform an operation on each element in a sequence.</td></tr>
 </tbody>
 </table>
 <h4 id="REST+Operations">REST Operations</h4><p>These operations are for use in construction of REST-style web services — the current operations are all focused on string processing.  <a  href="http://azavea.github.com/geotrellis/latest/api/#geotrellis.rest.op.string.package">Scala package geotrellis.rest.op.string.</a>
@@ -495,8 +520,8 @@ into output formats.  <a  href="http://azavea.github.com/geotrellis/latest/api/#
 <tr><td><code>string.Concat</code></td><td>Concatenate strings.</td></tr>
 <tr><td><code>string.ParseDouble</code></td><td>Parse a string as a double.</td></tr>
 <tr><td><code>string.ParseExtent</code></td><td>Parse a bounding box string as an extent.</td></tr>
-<tr><td><code>string.ParseInt</code></td><td>Parse a string as an integer.</td></tr>
 <tr><td><code>string.ParseHexInt</code></td><td>Parse a string as a hexidecimal integer.</td></tr>
+<tr><td><code>string.ParseInt</code></td><td>Parse a string as an integer.</td></tr>
 <tr><td><code>string.Split</code></td><td>Split a string on a delimeter.</td></tr>
 </tbody>
 </table>
@@ -512,8 +537,8 @@ support is scheduled for a major overhaul and expansion for release 0.8, and you
         <tbody>
 <tr><td><code>data.RasterizePolygon</code></td><td>Create raster representation of vector data.</td></tr>
 <tr><td><code>data.SplitMultiPolygon</code></td><td>Split multipolygon in to individual polygons.</td></tr>
-<tr><td><code>geometry.Intersect</code></td><td>Return the intersection of input geometries.</td></tr>
 <tr><td><code>extent.PolygonExtent</code></td><td>Return the bounding box of the input polygon.</td></tr>
+<tr><td><code>geometry.Intersect</code></td><td>Return the intersection of input geometries.</td></tr>
 </tbody>
 </table>
 <h2 id="Creating+new+operations">Creating new operations</h2><p>Ideally, a new geoprocessing service can be composed with existing operations
