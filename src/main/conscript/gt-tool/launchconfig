@@ -1,5 +1,5 @@
 [app]
-  version: 0.7.0-SNAPSHOT
+  version: 0.7.0-RC2
   org: com.azavea.geotrellis
   name: geotrellis-tasks
   class: geotrellis.run.Script
