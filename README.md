@@ -15,6 +15,8 @@ GeoTrellis was designed to solve three core problems, with a focus on raster pro
 GeoTrellis is a project of Azavea (www.azavea.com), and was written by Josh Marcus (jmarcus@azavea.com) and Erik Osheim (eosheim@azavea.com).  Please contact us if you have any questions, find us on irc at #geotrellis on freenode, or join 
 the user mailing list at [https://groups.google.com/group/geotrellis-user](https://groups.google.com/group/geotrellis-user).
 
+We recommend using the most recent version of GeoTrellis, 0.7 (Asgard), which is currently available as a release candidate (0.7.0-RC2). The documentation currently reflects the 0.7 API.
+
 ## Features
 
 - GeoTrellis is designed to help a developer create simple, standard REST services that return the results of geoprocessing models.
@@ -25,27 +27,42 @@ operations with existing operations.
 ## Some sample GeoTrellis code
 
 ```scala
-  // create a new operation that multiplies each cell of 
+  // Import some libraries and operations we'll use
+  import geotrellis._
+  import geotrellis.op.raster._
+
+  // Set up the rasters and weights we'll use
+  val raster1 = io.LoadRaster("foo")
+  val raster2 = io.LoadRaster("bar")
+  val weight1 = 5
+  val weight2 = 2
+
+  val total = weight1 + weight2
+
+  // Create a new operation that multiplies each cell of
   // each raster by a weight, and then add those two new
-  // rasters together
-  val op = Add(MultiplyConstant(raster1, weight1),
-               MultiplyConstant(raster2, weight2))
+  // rasters together.
+  val op = local.Add(local.MultiplyConstant(raster1, weight1),
+                     local.MultiplyConstant(raster2, weight2))
 
-  // create a new operation that takes the result of the
-  // previous operation and divide each cell by the average 
-  // weight, creating a weighted overlay of our two rasters
-  val op2 = DivideConstant(op, (weight1 + weight2) / 2) 
+  // Create a new operation that takes the result of the
+  // previous operation and divides each cell by the total
+  // weight, creating a weighted overlay of our two rasters.
+  val wo1 = local.DivideConstant(op, total)
 
-  // or, we can use a simpler syntax:
-  val avg = (weight1 + weight2) / 2 
-  val wo = (raster1 * weight1) + (raster2 * weight2) / avg
+  // We can use a simpler syntax if we want. note that this
+  // is still just creating an operation.
+  import geotrellis.Implicits._
+  val wo2 = (raster1 * weight1 + raster2 * weight2) / total
 
   // To this point, we've only been composing new operations.
-  // To run an operation:
+  // Now, we will run them.
+  import geotrellis.process.Server
   val server = Server("example")
-  val result = server.run(wo)
+  val result1 = server.run(wo1)
+  val result2 = server.run(wo2)
+```
 
-``` 
 ## API Reference
 
 ### Scaladocs
