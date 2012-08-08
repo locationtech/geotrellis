@@ -33,8 +33,8 @@ class ArrayHistogram(val counts:Array[Int], var total:Int) extends Histogram {
 
   def copy = ArrayHistogram(counts.clone, total)
 
-  //def getValues = (0 until counts.length).toArray
-  def getValues = (0 until counts.length).filter(counts(_) > 0).toArray
+  def getValues() = rawValues()
+  def rawValues() = (0 until counts.length).filter(counts(_) > 0).toArray
 
   def setItem(i:Int, count:Int) {
     total = total - counts(i) + count
