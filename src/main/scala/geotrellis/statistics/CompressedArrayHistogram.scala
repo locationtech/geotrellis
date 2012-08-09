@@ -41,11 +41,13 @@ class CompressedArrayHistogram(counts:Array[Int], total:Int,
 
   override def copy = new CompressedArrayHistogram(counts.clone, getTotalCount, vmin, vmax)
 
-  override def getValues = {
+  override def rawValues = {
     val zmin = getMinValue
     val zmax = getMaxValue
     (zmin until zmax).filter(getItemCount(_) > 0).toArray
   }
+
+  override def getValues() = rawValues()
 
   override def setItem(i:Int, count:Int) { super.setItem(compress(i), count) }
   override def countItem(i:Int, count:Int=1) { super.countItem(compress(i), count) }

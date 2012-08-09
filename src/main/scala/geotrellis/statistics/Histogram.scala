@@ -111,7 +111,9 @@ abstract trait Histogram {
     h
   }
 
-  def getValues:Array[Int]
+  def getValues():Array[Int]
+
+  def rawValues():Array[Int]
 
   def foreach(f:(Int, Int) => Unit) {
     getValues.foreach(z => f(z, getItemCount(z)))
@@ -246,6 +248,44 @@ abstract trait Histogram {
     val realBreaks = breaks.slice(0, qIndex)
     splitBreaks(realBreaks, quantiles.length)
   }
+
+  def getMode() = {
+    val values = this.getValues
+    var mode = values(0)
+    var count = this.getItemCount(mode)
+    var i = 1
+    val len = values.length
+    while (i < len) {
+      val z = values(i)
+      val c = this.getItemCount(z)
+      if (c > count) {
+        count = c
+        mode = z
+      }
+      i += 1
+    }
+    mode
+  }
+
+  def getMedian() = if (getTotalCount == 0) {
+    geotrellis.NODATA
+  } else {
+    val values = getValues
+    values(values.length / 2)
+  }
+
+  def getMean():Double = {
+    val values = rawValues()
+    var t = 0.0
+    var i = 0
+    val len = values.length
+    while (i < len) {
+      t += getItemCount(values(i))
+      i += 1
+    }
+    t / getTotalCount
+  }
+    
 
   def generateStatistics() = {
     val values = this.getValues

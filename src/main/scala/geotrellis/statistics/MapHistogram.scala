@@ -19,11 +19,13 @@ class MapHistogram(counts:Map[Int, Int], var total:Int) extends Histogram {
 
   def copy = MapHistogram(this.counts.clone, this.total)
 
-  def getValues = {
-    var keys = this.counts.keys.toArray
+  def getValues() = {
+    var keys = rawValues()
     Sorting.quickSort(keys)
     keys
   }
+
+  def rawValues() = counts.keys.toArray
 
   def uncountItem(i:Int) {
     if (i != NODATA) {
