@@ -5,13 +5,14 @@ import scala.math._
 import geotrellis._
 
 case class Max(r:Op[Raster], f:Focus) extends Op1(r)({
-  r => Result(f.handle(r, new MaxContext(r), new MaxCell))
+  r => Result(f.handle(r, new MaxContext(r)))
 })
 
 protected[focal] class MaxContext(r:Raster) extends Context[Raster](Columnar) {
   val d = IntArrayRasterData.ofDim(r.cols, r.rows)
   def store(col:Int, row:Int, z:Int) { d.set(col, row, z) }
   def get = Raster(d, r.rasterExtent)
+  def makeCell() = new MaxCell
 }
 
 protected[focal] class MaxCell extends Cell {

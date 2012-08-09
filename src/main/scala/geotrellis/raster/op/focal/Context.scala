@@ -5,7 +5,6 @@ import geotrellis._
 trait Cell {
   def clear():Unit
   def get():Int
-  def copy():Cell
 
   def add(z:Int):Unit
   def remove(z:Int):Unit
@@ -18,4 +17,5 @@ trait Cell {
 abstract class Context[A](val focalType:FocalType) {
   def store(col:Int, row:Int, z:Int):Unit
   def get():A
+  def makeCell():Cell
 }

@@ -6,18 +6,19 @@ import geotrellis._
 
 trait Focus {
   def relativeBounds:(Int, Int, Int, Int)
-  def handle[A](r:Raster, c:Context[A], cc:Cell):A
+  def handle[A](r:Raster, c:Context[A]):A
 }
 
 case class Square(n:Int) extends Focus {
   def relativeBounds = (-n, -n, n, n)
 
-  def handle[A](r:Raster, c:Context[A], cc:Cell):A = c.focalType match {
-    case Aggregated => handleAggregated(r, c, cc)
-    case _ => handleDefault(r, c, cc)
+  def handle[A](r:Raster, c:Context[A]):A = c.focalType match {
+    case Aggregated => handleAggregated(r, c)
+    case _ => handleDefault(r, c)
   }
 
-  def handleDefault[A](r:Raster, c:Context[A], cc:Cell):A = {
+  def handleDefault[A](r:Raster, c:Context[A]):A = {
+    val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
     for (y <- 0 until rows) {
@@ -55,7 +56,8 @@ case class Square(n:Int) extends Focus {
     cc.get()
   }
 
-  def handleColumnar[A](r:Raster, c:Context[A], cc:Cell):A = {
+  def handleColumnar[A](r:Raster, c:Context[A]):A = {
+    val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
     val size = 2 * n + 1
@@ -83,7 +85,8 @@ case class Square(n:Int) extends Focus {
     c.get()
   }
 
-  def handleAggregated[A](r:Raster, c:Context[A], cc:Cell):A = {
+  def handleAggregated[A](r:Raster, c:Context[A]):A = {
+    val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
 
@@ -112,11 +115,12 @@ case class Square(n:Int) extends Focus {
 case class Circle(n:Int) extends Focus {
   def relativeBounds = (-n, -n, n, n)
 
-  def handle[A](r:Raster, c:Context[A], cc:Cell):A = c.focalType match {
-    case _ => handleDefault(r, c, cc)
+  def handle[A](r:Raster, c:Context[A]):A = c.focalType match {
+    case _ => handleDefault(r, c)
   }
 
-  def handleDefault[A](r:Raster, c:Context[A], cc:Cell):A = {
+  def handleDefault[A](r:Raster, c:Context[A]):A = {
+    val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
     val size = 2 * n + 1
@@ -145,7 +149,8 @@ case class Circle(n:Int) extends Focus {
     c.get()
   }
 
-  def handleAggregated[A](r:Raster, c:Context[A], cc:Cell):A = {
+  def handleAggregated[A](r:Raster, c:Context[A]):A = {
+    val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
 
