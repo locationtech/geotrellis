@@ -16,7 +16,7 @@ protected[focal] class ModeContext(r:Raster) extends Context[Raster, ModeCell](A
   def makeCell() = new ModeCell
 }
 
-protected[focal] class ModeCell extends Cell {
+protected[focal] class ModeCell extends Cell[ModeCell] {
   var h:Histogram = FastMapHistogram()
   def clear() { h = FastMapHistogram() }
   def add(z:Int) { h.countItem(z, 1) }

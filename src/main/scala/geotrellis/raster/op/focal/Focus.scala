@@ -6,18 +6,18 @@ import geotrellis._
 
 trait Focus {
   def relativeBounds:(Int, Int, Int, Int)
-  def handle[A, C <: Cell](r:Raster, c:Context[A, C]):A
+  def handle[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A
 }
 
 case class Square(n:Int) extends Focus {
   def relativeBounds = (-n, -n, n, n)
 
-  def handle[A, C <: Cell](r:Raster, c:Context[A, C]):A = c.focalType match {
+  def handle[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = c.focalType match {
     case Aggregated => handleAggregated(r, c)
     case _ => handleDefault(r, c)
   }
 
-  def handleDefault[A, C <: Cell](r:Raster, c:Context[A, C]):A = {
+  def handleDefault[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
@@ -38,22 +38,22 @@ case class Square(n:Int) extends Focus {
     c.get()
   }
 
-  def getColumn[A, C <: Cell](r:Raster, c:Context[A, C], xx:Int, yy1:Int, yy2:Int) = {
+  def getColumn[A, C <: Cell[C]](r:Raster, c:Context[A, C], xx:Int, yy1:Int, yy2:Int) = {
     val cc = c.makeCell()
     for (yy <- yy1 until yy2) cc.add(xx, yy, r)
     cc
   }
 
-  def emptyColumn[A, C <: Cell](c:Context[A, C]) = c.makeCell()
+  def emptyColumn[A, C <: Cell[C]](c:Context[A, C]) = c.makeCell()
 
-  def combineColumns[A, C <: Cell](r:Raster, c:Context[A, C], columns:Array[Int], size:Int) = {
+  def combineColumns[A, C <: Cell[C]](r:Raster, c:Context[A, C], columns:Array[Int], size:Int) = {
     val cc = c.makeCell()
     var i = 0
     while (i < size) { cc.add(columns(i)); i += 1 }
     cc
   }
 
-  def handleColumnar[A, C <: Cell](r:Raster, c:Context[A, C]):A = {
+  def handleColumnar[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
@@ -81,7 +81,7 @@ case class Square(n:Int) extends Focus {
     c.get()
   }
 
-  def handleAggregated[A, C <: Cell](r:Raster, c:Context[A, C]):A = {
+  def handleAggregated[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
@@ -111,11 +111,11 @@ case class Square(n:Int) extends Focus {
 case class Circle(n:Int) extends Focus {
   def relativeBounds = (-n, -n, n, n)
 
-  def handle[A, C <: Cell](r:Raster, c:Context[A, C]):A = c.focalType match {
+  def handle[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = c.focalType match {
     case _ => handleDefault(r, c)
   }
 
-  def handleDefault[A, C <: Cell](r:Raster, c:Context[A, C]):A = {
+  def handleDefault[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
@@ -145,7 +145,7 @@ case class Circle(n:Int) extends Focus {
     c.get()
   }
 
-  def handleAggregated[A, C <: Cell](r:Raster, c:Context[A, C]):A = {
+  def handleAggregated[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows

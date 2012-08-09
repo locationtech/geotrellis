@@ -13,7 +13,7 @@ protected[focal] class SumContext(r:Raster) extends Context[Raster, SumCell](Agg
   def makeCell() = new SumCell
 }
 
-protected[focal] class SumCell extends Cell {
+protected[focal] class SumCell extends Cell[SumCell] {
   var total = 0
   def clear() { total = 0 }
   def get() = total

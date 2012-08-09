@@ -16,7 +16,7 @@ protected[focal] class MedianContext(r:Raster) extends Context[Raster, MedianCel
   def makeCell() = new MedianCell
 }
 
-protected[focal] class MedianCell extends Cell {
+protected[focal] class MedianCell extends Cell[MedianCell] {
   var h:Histogram = FastMapHistogram()
   def clear() { h = FastMapHistogram() }
   def add(z:Int) { h.countItem(z, 1) }

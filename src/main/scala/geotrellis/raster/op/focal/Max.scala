@@ -15,7 +15,7 @@ protected[focal] class MaxContext(r:Raster) extends Context[Raster, MaxCell](Col
   def makeCell() = new MaxCell
 }
 
-protected[focal] class MaxCell extends Cell {
+protected[focal] class MaxCell extends Cell[MaxCell] {
   var zmax = Int.MinValue
   def clear() { zmax = Int.MinValue }
   def add(z:Int) { zmax = max(z, zmax) }

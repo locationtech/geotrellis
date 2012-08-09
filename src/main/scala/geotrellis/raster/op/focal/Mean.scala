@@ -15,7 +15,7 @@ protected[focal] class MeanContext(r:Raster) extends Context[Raster, MeanCell](A
   def makeCell() = new MeanCell
 }
 
-protected[focal] class MeanCell extends Cell {
+protected[focal] class MeanCell extends Cell[MeanCell] {
   var total:Double = 0.0
   var count:Int = 0
   def clear() { total = 0.0; count = 0 }
