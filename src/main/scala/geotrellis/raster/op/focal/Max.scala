@@ -18,8 +18,10 @@ protected[focal] class MaxContext(r:Raster) extends Context[Raster, MaxCell](Col
 protected[focal] class MaxCell extends Cell[MaxCell] {
   var zmax = Int.MinValue
   def clear() { zmax = Int.MinValue }
-  def add(z:Int) { zmax = max(z, zmax) }
-  def remove(z:Int) = sys.error("remove() not supported")
+  def add(cc:MaxCell) { zmax = max(cc.zmax, zmax) }
+  def add(col:Int, row:Int, r:Raster) { zmax = max(r.get(col, row), zmax) }
+  def remove(z:MaxCell) = sys.error("remove() not supported")
+  def remove(col:Int, row:Int, r:Raster) = sys.error("remove() not supported")
   def get() = zmax
   def copy() = new MaxCell
 }

@@ -18,7 +18,9 @@ protected[focal] class MinContext(r:Raster) extends Context[Raster, MinCell](Col
 protected[focal] class MinCell extends Cell[MinCell] {
   var zmin = Int.MaxValue
   def clear() { zmin = Int.MaxValue }
-  def add(z:Int) { zmin = min(z, zmin) }
-  def remove(z:Int) = sys.error("remove() not supported")
+  def add(col:Int, row:Int, r:Raster) { zmin = min(r.get(col, row), zmin) }
+  def add(cc:MinCell) { zmin = min(cc.zmin, zmin) }
+  def remove(col:Int, row:Int, r:Raster) = sys.error("remove() not supported")
+  def remove(z:MinCell) = sys.error("remove() not supported")
   def get() = zmin
 }

@@ -19,7 +19,9 @@ protected[focal] class MeanCell extends Cell[MeanCell] {
   var total:Double = 0.0
   var count:Int = 0
   def clear() { total = 0.0; count = 0 }
-  def add(z:Int) { total += z; count += 1 }
-  def remove(z:Int) { total -= z; count -= 1 }
+  def add(cc:MeanCell) { total += cc.total; count += cc.count }
+  def add(col:Int, row:Int, r:Raster) { total += r.get(col, row); count += 1 }
+  def remove(cc:MeanCell) { total -= cc.total; count -= cc.count }
+  def remove(col:Int, row:Int, r:Raster) { total -= r.get(col, row); count -= 1 }
   def get() = round(total / count).toInt
 }

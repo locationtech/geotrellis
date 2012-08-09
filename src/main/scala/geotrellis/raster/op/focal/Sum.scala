@@ -17,6 +17,8 @@ protected[focal] class SumCell extends Cell[SumCell] {
   var total = 0
   def clear() { total = 0 }
   def get() = total
-  def add(z:Int) { total += z }
-  def remove(z:Int) { total -= z }
+  def add(cc:SumCell) { total += cc.total }
+  def add(col:Int, row:Int, r:Raster) { total += r.get(col, row) }
+  def remove(cc:SumCell) { total -= cc.total }
+  def remove(col:Int, row:Int, r:Raster) { total -= r.get(col, row) }
 }

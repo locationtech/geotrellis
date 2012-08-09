@@ -19,7 +19,9 @@ protected[focal] class MedianContext(r:Raster) extends Context[Raster, MedianCel
 protected[focal] class MedianCell extends Cell[MedianCell] {
   var h:Histogram = FastMapHistogram()
   def clear() { h = FastMapHistogram() }
-  def add(z:Int) { h.countItem(z, 1) }
-  def remove(z:Int) { h.countItem(z, -1) }
+  def add(cc:MedianCell) { h.update(cc.h) }
+  def add(col:Int, row:Int, r:Raster) { h.countItem(r.get(col, row), 1) }
+  def remove(cc:MedianCell) = sys.error("unimplemented")
+  def remove(col:Int, row:Int, r:Raster) { h.countItem(r.get(col, row), -1) }
   def get() = h.getMedian()
 }

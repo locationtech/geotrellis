@@ -19,7 +19,9 @@ protected[focal] class ModeContext(r:Raster) extends Context[Raster, ModeCell](A
 protected[focal] class ModeCell extends Cell[ModeCell] {
   var h:Histogram = FastMapHistogram()
   def clear() { h = FastMapHistogram() }
-  def add(z:Int) { h.countItem(z, 1) }
-  def remove(z:Int) { h.countItem(z, -1) }
+  def add(cc:ModeCell) { h.update(cc.h) }
+  def add(col:Int, row:Int, r:Raster) { h.countItem(r.get(col, row), 1) }
+  def remove(cc:ModeCell) = sys.error("unimplemented")
+  def remove(col:Int, row:Int, r:Raster) { h.countItem(r.get(col, row), -1) }
   def get() = h.getMode()
 }

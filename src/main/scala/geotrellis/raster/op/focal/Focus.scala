@@ -46,25 +46,25 @@ case class Square(n:Int) extends Focus {
 
   def emptyColumn[A, C <: Cell[C]](c:Context[A, C]) = c.makeCell()
 
-  def combineColumns[A, C <: Cell[C]](r:Raster, c:Context[A, C], columns:Array[Int], size:Int) = {
+  def combineColumns[A, C <: Cell[C]](r:Raster, c:Context[A, C], columns:Array[C], size:Int)(implicit m:Manifest[C]) = {
     val cc = c.makeCell()
     var i = 0
     while (i < size) { cc.add(columns(i)); i += 1 }
     cc
   }
 
-  def handleColumnar[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = {
+  def handleColumnar[A, C <: Cell[C]](r:Raster, c:Context[A, C])(implicit m:Manifest[C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
     val size = 2 * n + 1
 
     for (y <- 0 until rows) {
-      val columns = new Array[Int](size)
+      val columns = new Array[C](size)
 
       val yy1 = max(0, y - n)
       val yy2 = min(rows, y + n + 1)
-      for (xx <- 0 until min(cols, n + 1)) columns(xx) = getColumn(r, c, xx, yy1, yy2).get()
+      for (xx <- 0 until min(cols, n + 1)) columns(xx) = getColumn(r, c, xx, yy1, yy2)
       c.store(0, y, combineColumns(r, c, columns, size))
 
       for (x <- 1 until cols) {
@@ -73,8 +73,8 @@ case class Square(n:Int) extends Focus {
         val xx1 = x - n - 1
         val xx2 = x + n
 
-        val old = columns(i)
-        columns(i) = (if (xx2 < cols) getColumn(r, c, xx2, yy1, yy2) else c.makeCell()).get()
+        //val old = columns(i)
+        columns(i) = (if (xx2 < cols) getColumn(r, c, xx2, yy1, yy2) else c.makeCell())
         c.store(x, y, combineColumns(r, c, columns, size))
       }
     }
