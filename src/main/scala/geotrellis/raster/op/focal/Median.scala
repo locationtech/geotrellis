@@ -9,7 +9,7 @@ case class Median(r:Op[Raster], f:Focus) extends Op1(r)({
   r => Result(f.handle(r, new MedianContext(r)))
 })
 
-protected[focal] class MedianContext(r:Raster) extends Context[Raster](Aggregated) {
+protected[focal] class MedianContext(r:Raster) extends Context[Raster, MedianCell](Aggregated) {
   val d = IntArrayRasterData.ofDim(r.cols, r.rows)
   def store(col:Int, row:Int, z:Int) { d.set(col, row, z) }
   def get = Raster(d, r.rasterExtent)

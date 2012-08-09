@@ -6,18 +6,18 @@ import geotrellis._
 
 trait Focus {
   def relativeBounds:(Int, Int, Int, Int)
-  def handle[A](r:Raster, c:Context[A]):A
+  def handle[A, C <: Cell](r:Raster, c:Context[A, C]):A
 }
 
 case class Square(n:Int) extends Focus {
   def relativeBounds = (-n, -n, n, n)
 
-  def handle[A](r:Raster, c:Context[A]):A = c.focalType match {
+  def handle[A, C <: Cell](r:Raster, c:Context[A, C]):A = c.focalType match {
     case Aggregated => handleAggregated(r, c)
     case _ => handleDefault(r, c)
   }
 
-  def handleDefault[A](r:Raster, c:Context[A]):A = {
+  def handleDefault[A, C <: Cell](r:Raster, c:Context[A, C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
@@ -56,7 +56,7 @@ case class Square(n:Int) extends Focus {
     cc.get()
   }
 
-  def handleColumnar[A](r:Raster, c:Context[A]):A = {
+  def handleColumnar[A, C <: Cell](r:Raster, c:Context[A, C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
@@ -85,7 +85,7 @@ case class Square(n:Int) extends Focus {
     c.get()
   }
 
-  def handleAggregated[A](r:Raster, c:Context[A]):A = {
+  def handleAggregated[A, C <: Cell](r:Raster, c:Context[A, C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
@@ -115,11 +115,11 @@ case class Square(n:Int) extends Focus {
 case class Circle(n:Int) extends Focus {
   def relativeBounds = (-n, -n, n, n)
 
-  def handle[A](r:Raster, c:Context[A]):A = c.focalType match {
+  def handle[A, C <: Cell](r:Raster, c:Context[A, C]):A = c.focalType match {
     case _ => handleDefault(r, c)
   }
 
-  def handleDefault[A](r:Raster, c:Context[A]):A = {
+  def handleDefault[A, C <: Cell](r:Raster, c:Context[A, C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
@@ -149,7 +149,7 @@ case class Circle(n:Int) extends Focus {
     c.get()
   }
 
-  def handleAggregated[A](r:Raster, c:Context[A]):A = {
+  def handleAggregated[A, C <: Cell](r:Raster, c:Context[A, C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows

@@ -8,7 +8,7 @@ case class Mean(r:Op[Raster], f:Focus) extends Op1(r)({
   r => Result(f.handle(r, new MeanContext(r)))
 })
 
-protected[focal] class MeanContext(r:Raster) extends Context[Raster](Aggregated) {
+protected[focal] class MeanContext(r:Raster) extends Context[Raster, MeanCell](Aggregated) {
   val d = IntArrayRasterData.ofDim(r.cols, r.rows)
   def store(col:Int, row:Int, z:Int) { d.set(col, row, z) }
   def get() = Raster(d, r.rasterExtent)
