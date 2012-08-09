@@ -22,6 +22,5 @@ protected[focal] class MaxCell extends Cell[MaxCell] {
   def add(col:Int, row:Int, r:Raster) { zmax = max(r.get(col, row), zmax) }
   def remove(z:MaxCell) = sys.error("remove() not supported")
   def remove(col:Int, row:Int, r:Raster) = sys.error("remove() not supported")
-  def get() = zmax
   def copy() = new MaxCell
 }

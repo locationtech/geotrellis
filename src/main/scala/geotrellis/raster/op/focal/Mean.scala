@@ -9,8 +9,8 @@ case class Mean(r:Op[Raster], f:Focus) extends Op1(r)({
 })
 
 protected[focal] class MeanContext(r:Raster) extends Context[Raster, MeanCell](Aggregated) {
-  val d = IntArrayRasterData.ofDim(r.cols, r.rows)
-  def store(col:Int, row:Int, cc:MeanCell) { d.set(col, row, cc.get()) }
+  val d = DoubleArrayRasterData.ofDim(r.cols, r.rows)
+  def store(col:Int, row:Int, cc:MeanCell) { d.setDouble(col, row, cc.get()) }
   def get() = Raster(d, r.rasterExtent)
   def makeCell() = new MeanCell
 }
@@ -23,5 +23,5 @@ protected[focal] class MeanCell extends Cell[MeanCell] {
   def add(col:Int, row:Int, r:Raster) { total += r.get(col, row); count += 1 }
   def remove(cc:MeanCell) { total -= cc.total; count -= cc.count }
   def remove(col:Int, row:Int, r:Raster) { total -= r.get(col, row); count -= 1 }
-  def get() = round(total / count).toInt
+  def get() = total / count
 }

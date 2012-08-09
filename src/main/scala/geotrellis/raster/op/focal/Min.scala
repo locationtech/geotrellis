@@ -22,5 +22,4 @@ protected[focal] class MinCell extends Cell[MinCell] {
   def add(cc:MinCell) { zmin = min(cc.zmin, zmin) }
   def remove(col:Int, row:Int, r:Raster) = sys.error("remove() not supported")
   def remove(z:MinCell) = sys.error("remove() not supported")
-  def get() = zmin
 }
