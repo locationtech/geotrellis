@@ -9,6 +9,33 @@ trait Focus {
   def handle[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A
 }
 
+case object Nesw extends Focus {
+  def relativeBounds = (-1, -1, 1, 1)
+
+  def handle[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = c.focalType match {
+    case _ => handleDefault(r, c)
+  }
+
+  def handleDefault[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = {
+    val cc = c.makeCell()
+    val cols = r.cols
+    val rows = r.rows
+    for (y <- 0 until rows) {
+      for (x <- 0 until cols) {
+        cc.clear()
+        cc.center(x, y, r)
+        cc.add(x, y, r)
+        if (x > 0) cc.add(x - 1, y, r)
+        if (x < cols - 1) cc.add(x + 1, y, r)
+        if (y > 0) cc.add(x, y - 1, r)
+        if (y < rows - 1) cc.add(x, y + 1, r)
+        c.store(x, y, cc)
+      }
+    }
+    c.get()
+  }
+}
+
 case class Square(n:Int) extends Focus {
   def relativeBounds = (-n, -n, n, n)
 
@@ -27,7 +54,7 @@ case class Square(n:Int) extends Focus {
 
       for (x <- 0 until cols) {
         cc.clear()
-        cc.center(x, y)
+        cc.center(x, y, r)
 
         val xx1 = max(0, x - n)
         val xx2 = min(cols, x + n + 1)
@@ -131,7 +158,7 @@ case class Circle(n:Int) extends Focus {
     
       for (x <- 0 until cols) {
         cc.clear()
-        cc.center(x, y)
+        cc.center(x, y, r)
     
         for (yy <- yy1 until yy2) {
           val i = (yy - y + n) % size
