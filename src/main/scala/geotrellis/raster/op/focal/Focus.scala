@@ -32,28 +32,25 @@ case class Square(n:Int) extends Focus {
         val xx1 = max(0, x - n)
         val xx2 = min(cols, x + n + 1)
         for (yy <- yy1 until yy2; xx <- xx1 until xx2) cc.add(xx, yy, r)
-        c.store(x, y, cc.get())
+        c.store(x, y, cc)
       }
     }
     c.get()
   }
 
-  def getColumn(r:Raster, cc:Cell, xx:Int, yy1:Int, yy2:Int):Int = {
-    cc.clear()
+  def getColumn[A, C <: Cell](r:Raster, c:Context[A, C], xx:Int, yy1:Int, yy2:Int) = {
+    val cc = c.makeCell()
     for (yy <- yy1 until yy2) cc.add(xx, yy, r)
-    cc.get()
+    cc
   }
 
-  def emptyColumn(cc:Cell) = {
-    cc.clear()
-    cc.get()
-  }
+  def emptyColumn[A, C <: Cell](c:Context[A, C]) = c.makeCell()
 
-  def combineColumns(r:Raster, cc:Cell, columns:Array[Int], size:Int) = {
-    cc.clear()
+  def combineColumns[A, C <: Cell](r:Raster, c:Context[A, C], columns:Array[Int], size:Int) = {
+    val cc = c.makeCell()
     var i = 0
     while (i < size) { cc.add(columns(i)); i += 1 }
-    cc.get()
+    cc
   }
 
   def handleColumnar[A, C <: Cell](r:Raster, c:Context[A, C]):A = {
@@ -67,8 +64,8 @@ case class Square(n:Int) extends Focus {
 
       val yy1 = max(0, y - n)
       val yy2 = min(rows, y + n + 1)
-      for (xx <- 0 until min(cols, n + 1)) columns(xx) = getColumn(r, cc, xx, yy1, yy2)
-      c.store(0, y, combineColumns(r, cc, columns, size))
+      for (xx <- 0 until min(cols, n + 1)) columns(xx) = getColumn(r, c, xx, yy1, yy2).get()
+      c.store(0, y, combineColumns(r, c, columns, size))
 
       for (x <- 1 until cols) {
         val i = x % size
@@ -77,9 +74,8 @@ case class Square(n:Int) extends Focus {
         val xx2 = x + n
 
         val old = columns(i)
-        val z = if (xx2 < cols) getColumn(r, cc, xx2, yy1, yy2) else emptyColumn(cc)
-        columns(i) = z
-        c.store(x, y, combineColumns(r, cc, columns, size))
+        columns(i) = (if (xx2 < cols) getColumn(r, c, xx2, yy1, yy2) else c.makeCell()).get()
+        c.store(x, y, combineColumns(r, c, columns, size))
       }
     }
     c.get()
@@ -96,7 +92,7 @@ case class Square(n:Int) extends Focus {
 
       cc.clear()
       for (yy <- yy1 until yy2; xx <- 0 until min(cols, n + 1)) cc.add(xx, yy, r)
-      c.store(0, y, cc.get())
+      c.store(0, y, cc)
 
       for (x <- 1 until cols) {
         val xx1 = x - n - 1
@@ -105,7 +101,7 @@ case class Square(n:Int) extends Focus {
         val xx2 = x + n
         if (xx2 < cols) for (yy <- yy1 until yy2) cc.add(xx2, yy, r)
 
-        c.store(x, y, cc.get())
+        c.store(x, y, cc)
       }
     }
     c.get()
@@ -143,7 +139,7 @@ case class Circle(n:Int) extends Focus {
           val xx2 = min(cols, x + xs(i) + 1)
           for (xx <- xx1 until xx2) cc.add(xx, yy, r)
         }
-        c.store(x, y, cc.get())
+        c.store(x, y, cc)
       }
     }
     c.get()
@@ -160,7 +156,7 @@ case class Circle(n:Int) extends Focus {
 
       cc.clear()
       for (yy <- yy1 until yy2; xx <- 0 until min(cols, n + 1)) cc.add(xx, yy, r)
-      c.store(0, y, cc.get())
+      c.store(0, y, cc)
 
       for (x <- 1 until cols) {
         val xx1 = x - n - 1
@@ -169,7 +165,7 @@ case class Circle(n:Int) extends Focus {
         val xx2 = x + n
         if (xx2 < cols) for (yy <- yy1 until yy2) cc.add(xx2, yy, r)
 
-        c.store(x, y, cc.get())
+        c.store(x, y, cc)
       }
     }
     c.get()

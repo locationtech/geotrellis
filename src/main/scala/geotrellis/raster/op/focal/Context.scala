@@ -15,7 +15,7 @@ trait Cell {
 }
 
 abstract class Context[A, C <: Cell](val focalType:FocalType) {
-  def store(col:Int, row:Int, z:Int):Unit
+  def store(col:Int, row:Int, cc:C):Unit
   def get():A
-  def makeCell():Cell
+  def makeCell():C
 }

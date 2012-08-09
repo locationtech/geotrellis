@@ -10,7 +10,7 @@ case class Min(r:Op[Raster], f:Focus) extends Op1(r)({
 
 protected[focal] class MinContext(r:Raster) extends Context[Raster, MinCell](Columnar) {
   val d = IntArrayRasterData.ofDim(r.cols, r.rows)
-  def store(col:Int, row:Int, z:Int) { d.set(col, row, z) }
+  def store(col:Int, row:Int, cc:MinCell) { d.set(col, row, cc.zmin) }
   def get() = Raster(d, r.rasterExtent)
   def makeCell() = new MinCell
 }

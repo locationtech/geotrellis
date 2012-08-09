@@ -8,9 +8,9 @@ case class Sum(r:Op[Raster], f:Focus) extends Op1(r)({
 
 protected[focal] class SumContext(r:Raster) extends Context[Raster, SumCell](Aggregated) {
   val d = IntArrayRasterData.ofDim(r.cols, r.rows)
-  def store(col:Int, row:Int, z:Int) { d.set(col, row, z) }
+  def store(col:Int, row:Int, cc:SumCell) { d.set(col, row, cc.total) }
   def get() = Raster(d, r.rasterExtent)
-  def makeCell():Cell = new SumCell
+  def makeCell() = new SumCell
 }
 
 protected[focal] class SumCell extends Cell {
