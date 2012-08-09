@@ -176,7 +176,7 @@ class FastMapHistogram(_size:Int, _buckets:Array[Int], _used:Int, _total:Int) ex
 
   def copy = new FastMapHistogram(size, buckets.clone(), used, total)
 
-  def getValues = {
+  def rawValues() = {
     val keys = Array.ofDim[Int](used)
     val len = size * 2
     var i = 0
@@ -188,6 +188,11 @@ class FastMapHistogram(_size:Int, _buckets:Array[Int], _used:Int, _total:Int) ex
       }
       i += 2
     }
+    keys
+  }
+
+  def getValues() = {
+    val keys = rawValues()
     Sorting.quickSort(keys)
     keys
   }
