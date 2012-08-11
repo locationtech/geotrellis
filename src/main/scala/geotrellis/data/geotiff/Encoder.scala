@@ -5,6 +5,7 @@ import java.io.DataOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
+import scala.collection.mutable
 import scala.annotation.switch
 
 import scala.math.{ceil, min}
@@ -18,20 +19,21 @@ import geotrellis._
  * Class for writing GeoTIFF data to a given DataOutputStream.
  *
  * This class implements the basic TIFF spec [1] and also supports the GeoTIFF
- * extension tags. It is not a general purpose TIFF encoder (in particular it
- * always writes the data into a single strip) but should work well for
+ * extension tags. It is not a general purpose TIFF encoder (it doesn't support
+ * renderings involving colors, multiband images, etc) but works well for
  * encoding raster data.
  *
- * In addition to using one strip it uses a single sample per pixel and encodes
- * the data in one band. This means that files using more than 8-bit samples
- * will often not render correctly in image programs like the Gimp. It also
- * does not implement compression.
+ * It uses a single sample per pixel and encodes the data in one band. This
+ * means that files using more than 8-bit samples will often not render
+ * correctly in image programs like the Gimp. It also does not implement
+ * compression yet.
  *
  * Future work may add compression options, as well as options related to the
  * color palette, multiple bands, etc.
  *
  * Encoders are not thread-safe and can only be used to write a single raster
- * to single output stream.
+ * to single output stream. This is a consequence of how reliant the TIFF
+ * format is on embedding data addresses.
  *
  * [1] http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf
  */
@@ -215,6 +217,171 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
   def writeByteArrayOutputStream(b:ByteArrayOutputStream) {
     b.writeTo(dos)
     index += b.size
+  }
+
+  def renderLzw():Array[Int] = settings.format match {
+    case Floating => sys.error("not supported yet")
+    case _ => renderLzwInt()
+  }
+
+  /**
+   * Implements LZW compression encoding.
+   *
+   * The algorithm is described in detail in the TIFF 6.0 spec, pages 58-61.
+   *
+   * Each code written out uses 9-12 bits (which explains some the buffering we
+   * have to do). Codes 0-255 are reserved for single bytes; code 256 is
+   * reserved as CLEAR and code 257 is reserved as END. Thus, all multi-byte
+   * codes span from 258 to 4095 (largest possible 12-bit value).
+   */
+  def renderLzwInt():Array[Int] = {
+    val dmg = new DataOutputStream(img)
+    var row = 0
+    val bits = bitsPerSample
+    val nd = noDataValue
+
+    var stringTable:mutable.Map[String, Int] = null
+    var nextCode:Int = 0
+    var codeBits:Int = 0
+    var omega:String = ""
+
+    var buffer:Int = 0
+    var bufpos:Int = 0
+
+    val offsets = Array.ofDim[Int](numStrips)
+    var offset = 0
+
+    /**
+     * Reinitializes all state related to the string table. After this happens
+     * codes will reset to 258 and being 9-bit.
+     *
+     * It's important to remember to flush the omega variable before calling
+     * this method, and also to call it while there is still room in the 12-bit
+     * string table (i.e. once 4094 has been added).
+     */
+    def initStringTable() {
+      stringTable = mutable.Map.empty[String, Int]
+      for (i <- 0 until 256) stringTable(i.toChar.toString) = i
+      nextCode = 258
+      codeBits = 9
+    }
+
+    /**
+     * Test if the given string is available in the table.
+     */
+    def hasCode(str:String): Boolean = stringTable.contains(str)
+
+    /**
+     * Retrieve the given string from the string table.
+     *
+     * This method will crash if the string can't be found.
+     */
+    def getCode(str:String): Int = stringTable(str)
+
+    /**
+     * Add the given string to the string table.
+     *
+     * If the string table fills up, this method will write out omega (as a
+     * 12-bit code) and then reset the string table and omega.
+     */
+    def addCode(str:String) {
+      val code = nextCode
+      stringTable(str) = code
+      nextCode += 1
+      nextCode match {
+        case 512 => { codeBits = 10 }
+        case 1024 => { codeBits = 11 }
+        case 2048 => { codeBits = 12 }
+        case 4094 => { writeCode(getCode(omega)); initStringTable() }
+        case _ => {}
+      }
+    }
+
+    /**
+     * Process a single byte of image data according to LZW.
+     *
+     * This is the heart of the LZW algorithm.
+     */
+    def handleByte(k:Int) {
+      val c = k.toChar
+      val s = omega + k
+      if (hasCode(s)) {
+        omega = s
+      } else {
+        writeCode(getCode(omega))
+        omega = c.toString
+        addCode(s)
+      }
+    }
+
+    /**
+     * Write a 9-12 bit code to our output.
+     *
+     * Due to byte-alignment issues we use a buffering strategy, writing out
+     * complete 2 byte "chunks" at a time.
+     */
+    def writeCode(code:Int) {
+      buffer |= code << (32 - codeBits - bufpos)
+      bufpos += codeBits
+      if (bufpos > 16) {
+        dmg.writeByte(((buffer >> 24) & 0xff).toByte)
+        dmg.writeByte(((buffer >> 16) & 0xff).toByte)
+        buffer <<= 16
+        bufpos -= 16
+        offset += 2
+      }
+    }
+
+    /**
+     * Write out all remaining buffered data. This will have the effect of
+     * possibly padding the last value up to a byte boundary.
+     */
+    def flushBuffer() {
+      while (bufpos > 0) {
+        dmg.writeByte(((buffer >> 24) & 0xff).toByte)
+        buffer <<= 8
+        bufpos -= 8
+        offset += 1
+      }
+    }
+
+    while (row < rows) {
+      val rowspan = row * cols
+      var col = 0
+
+      // store the start of this strip
+      offsets(row) = offset
+
+      initStringTable()
+      writeCode(256) // clear code
+
+      while (col < cols) {
+        var z = data(rowspan + col)
+        if (z == Int.MinValue) z = nd
+        (bits: @switch) match {
+          case 8 => handleByte(z)
+          case 16 => {
+            handleByte(z >> 8)
+            handleByte(z & 0xff)
+          }
+          case 32 => {
+            handleByte(z >> 24)
+            handleByte((z >> 16) & 0xff)
+            handleByte((z >> 8) & 0xff)
+            handleByte(z & 0xff)
+          }
+          case _ => sys.error("unsupported bits/sample: %s" format bits)
+        }
+        col += 1
+      }
+      if (omega.length > 0) writeCode(getCode(omega))
+      flushBuffer()
+      writeCode(257) // end-of-line code
+
+      row += 1
+    }
+
+    offsets
   }
 
   // Render the raster data into strips, and return an array of file offsets
