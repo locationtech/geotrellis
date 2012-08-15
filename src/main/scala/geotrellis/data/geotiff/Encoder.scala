@@ -5,6 +5,7 @@ import java.io.DataOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
+import scala.collection.mutable
 import scala.annotation.switch
 
 import scala.math.{ceil, min}
@@ -18,24 +19,25 @@ import geotrellis._
  * Class for writing GeoTIFF data to a given DataOutputStream.
  *
  * This class implements the basic TIFF spec [1] and also supports the GeoTIFF
- * extension tags. It is not a general purpose TIFF encoder (in particular it
- * always writes the data into a single strip) but should work well for
+ * extension tags. It is not a general purpose TIFF encoder (it doesn't support
+ * renderings involving colors, multiband images, etc) but works well for
  * encoding raster data.
  *
- * In addition to using one strip it uses a single sample per pixel and encodes
- * the data in one band. This means that files using more than 8-bit samples
- * will often not render correctly in image programs like the Gimp. It also
- * does not implement compression.
+ * It uses a single sample per pixel and encodes the data in one band. This
+ * means that files using more than 8-bit samples will often not render
+ * correctly in image programs like the Gimp. It also does not implement
+ * compression yet.
  *
  * Future work may add compression options, as well as options related to the
  * color palette, multiple bands, etc.
  *
  * Encoders are not thread-safe and can only be used to write a single raster
- * to single output stream.
+ * to single output stream. This is a consequence of how reliant the TIFF
+ * format is on embedding data addresses.
  *
  * [1] http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf
  */
-class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
+class Encoder(dos:DataOutputStream, raster:Raster, val settings:Settings) {
   val data = raster.data.asArray.getOrElse(sys.error("can't get data array"))
   val re = raster.rasterExtent
   val cols = re.cols
@@ -48,9 +50,9 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
    * need, how large each strip is, how many rows per strip we'll write, etc.
    */
 
-  final def maxRowsPerStrip:Int = 65535 / (cols * bytesPerSample)
-  final def rowsPerStrip:Int = min(rows, maxRowsPerStrip)
   final def bytesPerRow:Int = cols * bytesPerSample
+  final def maxRowsPerStrip:Int = 65535 / bytesPerRow
+  final def rowsPerStrip:Int = min(rows, maxRowsPerStrip)
   final def bytesPerStrip:Int = rowsPerStrip * bytesPerRow
   final def numStrips:Int = ceil((1.0 * rows) / rowsPerStrip).toInt
   final def leftOverRows:Int = rows % rowsPerStrip
@@ -76,7 +78,7 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
   /**
    * Int nodata value to use when writing raster.
    */
-  final def noDataValue:Int = settings.format match {
+  final def noDataInt:Int = settings.format match {
     case Signed => (1L << (bitsPerSample - 1)).toInt
     case Unsigned => ((1L << bitsPerSample) - 1).toInt
     case Floating => sys.error("floating point not supported")
@@ -101,7 +103,7 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
    * to be increased also. The writeTag calls in write are numbered to help
    * make this process easier.
    */
-  final def numEntries = if (esriCompat) 20 else 18
+  final def numEntries = if (esriCompat) 21 else 19
 
   /**
    * The number of GeoTags to be written.
@@ -211,69 +213,21 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
     }
   }
 
-  // Immediately write a byte array to the output.
+  /**
+   * Immediately write a byte array to the output stream.
+   */
   def writeByteArrayOutputStream(b:ByteArrayOutputStream) {
     b.writeTo(dos)
     index += b.size
   }
 
-  // Render the raster data into strips, and return an array of file offsets
-  // for each strip. Currently we write all the data into one strip so we just
-  // return an array of one item.
-  def renderImage():Array[Int] = settings.format match {
-    case Floating => renderImageFloat()
-    case _ => renderImageInt()
-  }
-
-  def renderImageFloat():Array[Int] = {
-    val dmg = new DataOutputStream(img)
-    var row = 0
-    val bits = bitsPerSample
-    val nd = if (settings.esriCompat) Double.MinValue else Double.NaN
-
-    while (row < rows) {
-      val rowspan = row * cols
-      var col = 0
-      while (col < cols) {
-        var z = data.applyDouble(rowspan + col)
-        if (java.lang.Double.isNaN(z)) z = nd
-        (bits: @switch) match {
-          case 32 => dmg.writeFloat(z.toFloat)
-          case 64 => dmg.writeDouble(z)
-          case _ => sys.error("unsupported bits/sample: %s" format bits)
-        }
-        col += 1
-      }
-      row += 1
-    }
-
-    (0 until numStrips).map(n => imageStartOffset + n * bytesPerStrip).toArray
-  }
-
-  def renderImageInt():Array[Int] = {
-    val dmg = new DataOutputStream(img)
-    var row = 0
-    val bits = bitsPerSample
-    val nd = noDataValue
-
-    while (row < rows) {
-      val rowspan = row * cols
-      var col = 0
-      while (col < cols) {
-        var z = data(rowspan + col)
-        if (z == Int.MinValue) z = nd
-        (bits: @switch) match {
-          case 8 => dmg.writeByte(z)
-          case 16 => dmg.writeShort(z)
-          case 32 => dmg.writeInt(z)
-          case _ => sys.error("unsupported bits/sample: %s" format bits)
-        }
-        col += 1
-      }
-      row += 1
-    }
-
-    (0 until numStrips).map(n => imageStartOffset + n * bytesPerStrip).toArray
+  /**
+   * Render the raster data into strips, and return an array of file offsets
+   * for each strip. The strips may (or may not) be compressed.
+   */
+  def renderImage():(Array[Int], Array[Int]) = settings.compression match {
+    case Uncompressed => RawEncoder.render(this)
+    case Lzw => LzwEncoder.render(this)
   }
 
   /**
@@ -289,7 +243,7 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
     writeInt(0x4d4d002a)
 
     // render image (does not write output)
-    val stripOffsets = renderImage()
+    val (stripOffsets, stripLengths) = renderImage()
 
     // 0x0004: offset to the first IFD
     writeInt(ifdOffset)
@@ -310,7 +264,10 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
     writeTag(0x0102, Const.uint16, 1, bitsPerSample)
 
     // 4. compression is off (1)
-    writeTag(0x0103, Const.uint16, 1, 1)
+    settings.compression match {
+      case Lzw => writeTag(0x0103, Const.uint16, 1, 5)
+      case Uncompressed => writeTag(0x0103, Const.uint16, 1, 1)
+    }
 
     // 5. photometric interpretation, black is zero (1)
     writeTag(0x0106, Const.uint16, 1, 1)
@@ -334,11 +291,10 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
 
     // 9. strip byte counts
     if (numStrips == 1) {
-      writeTag(0x0117, Const.uint32, 1, bytesPerStrip)
+      writeTag(0x0117, Const.uint32, 1, stripLengths(0))
     } else {
       writeTag(0x0117, Const.uint32, numStrips, dataOffset)
-      for (i <- 0 until numStrips - 1) todoInt(bytesPerStrip)
-      todoInt(bytesPerRow * leftOverRows)
+      stripLengths.foreach(n => todoInt(n))
     }
 
     val kind = (settings.format, settings.size.bits) match {
@@ -369,16 +325,23 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
     // 13. resolution unit is undefined (1)
     writeTag(0x0128, Const.uint16, 1, 1)
 
-    // 14. sample format (1=unsigned, 2=signed, 3=floating point)
+    // 14. Differencing Predictor (1=none, 2=horizontal)
+    settings.compression match {
+      //case Lzw => writeTag(0x013D, Const.uint16, 1, 2)
+      case Lzw => writeTag(0x013D, Const.uint16, 1, 1)
+      case Uncompressed => writeTag(0x013D, Const.uint16, 1, 1)
+    }
+
+    // 15. sample format (1=unsigned, 2=signed, 3=floating point)
     writeTag(0x0153, Const.uint16, 1, sampleFormat)
 
-    // 15. model pixel scale tag (points to doubles sX, sY, sZ with sZ = 0)
+    // 16. model pixel scale tag (points to doubles sX, sY, sZ with sZ = 0)
     writeTag(0x830e, Const.float64, 3, dataOffset)
     todoDouble(re.cellwidth)  // sx
     todoDouble(re.cellheight) // sy
     todoDouble(0.0)           // sz = 0.0
 
-    // 16. model tie point (doubles I,J,K (grid) and X,Y,Z (geog) with K = Z = 0.0)
+    // 17. model tie point (doubles I,J,K (grid) and X,Y,Z (geog) with K = Z = 0.0)
     writeTag(0x8482, Const.float64, 6, dataOffset)
     todoDouble(0.0)    // i
     todoDouble(0.0)    // j
@@ -387,7 +350,7 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
     todoDouble(e.ymax) // y
     todoDouble(0.0)    // z = 0.0
 
-    // 17. geo key directory tag (4 geotags each with 4 short values)
+    // 18. geo key directory tag (4 geotags each with 4 short values)
     writeTag(0x87af, Const.uint16, numGeoTags * 4, dataOffset)
 
     // write out GeoTags. this varies a lot depending on whether we are trying
@@ -417,7 +380,7 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
       todoGeoTag(0x0c0b, 0x87b0, 1, 4)     // 20. false northing geokey
       todoGeoTag(0x0c14, 0x87b0, 1, 2)     // 21. scale at nat origin geokey
 
-      // 18. geotiff double params (tag only needed when esriCompat is true)
+      // 19. geotiff double params (tag only needed when esriCompat is true)
       writeTag(0x87b0, Const.float64, 8, dataOffset)
       todoDouble(0.0)       // nat origin lat
       todoDouble(0.0)       // nat origin lon
@@ -428,7 +391,7 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
       todoDouble(6378137.0) // semi major axis
       todoDouble(0.0)       // prime meridian
       
-      // 19. esri citation junk (tag is only needed when esriCompat is true)
+      // 20. esri citation junk (tag is only needed when esriCompat is true)
       writeString(0x87b1, "PCS Name = WGS_1984_Web_Mercator|GCS Name = GCS_WGS_1984_Major_Auxiliary_Sphere|Datum = WGS_1984_Major_Auxiliary_Sphere|Ellipsoid = WGS_1984_Major_Auxiliary_Sphere|Primem = Greenwich||")
 
     } else {
@@ -439,7 +402,7 @@ class Encoder(dos:DataOutputStream, raster:Raster, settings:Settings) {
       todoGeoTag(0x0c00, 0, 1, 3857)       // 4. gt projected cs type (3857)
     }
 
-    // 20. nodata as string (#20 if esriCompat is false)
+    // 21. nodata as string (#19 if esriCompat is false)
     writeString(0xa481, noDataString)
 
     // no more ifd entries
