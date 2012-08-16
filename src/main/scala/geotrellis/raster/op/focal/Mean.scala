@@ -4,11 +4,11 @@ import scala.math._
 
 import geotrellis._
 
-case class Mean(r:Op[Raster], f:Focus) extends Op1(r)({
-  r => Result(f.handle(r, new MeanContext(r)))
+case class Mean(r:Op[Raster], f:Kernel) extends Op1(r)({
+  r => Result(f.handle(r, new MeanStrategy(r)))
 })
 
-protected[focal] class MeanContext(r:Raster) extends Context[Raster, MeanCell](Aggregated) {
+protected[focal] class MeanStrategy(r:Raster) extends Strategy[Raster, MeanCell](Aggregated) {
   val d = DoubleArrayRasterData.ofDim(r.cols, r.rows)
   def store(col:Int, row:Int, cc:MeanCell) { d.setDouble(col, row, cc.get()) }
   def get() = Raster(d, r.rasterExtent)

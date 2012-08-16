@@ -4,19 +4,19 @@ import scala.math._
 
 import geotrellis._
 
-trait Focus {
+trait Kernel {
   def relativeBounds:(Int, Int, Int, Int)
-  def handle[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A
+  def handle[A, C <: Cell[C]](r:Raster, c:Strategy[A, C]):A
 }
 
-case object Nesw extends Focus {
+case object Nesw extends Kernel {
   def relativeBounds = (-1, -1, 1, 1)
 
-  def handle[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = c.focalType match {
+  def handle[A, C <: Cell[C]](r:Raster, c:Strategy[A, C]):A = c.focalType match {
     case _ => handleDefault(r, c)
   }
 
-  def handleDefault[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = {
+  def handleDefault[A, C <: Cell[C]](r:Raster, c:Strategy[A, C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
@@ -36,15 +36,15 @@ case object Nesw extends Focus {
   }
 }
 
-case class Square(n:Int) extends Focus {
+case class Square(n:Int) extends Kernel {
   def relativeBounds = (-n, -n, n, n)
 
-  def handle[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = c.focalType match {
+  def handle[A, C <: Cell[C]](r:Raster, c:Strategy[A, C]):A = c.focalType match {
     case Aggregated => handleAggregated(r, c)
     case _ => handleDefault(r, c)
   }
 
-  def handleDefault[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = {
+  def handleDefault[A, C <: Cell[C]](r:Raster, c:Strategy[A, C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
@@ -65,22 +65,22 @@ case class Square(n:Int) extends Focus {
     c.get()
   }
 
-  def getColumn[A, C <: Cell[C]](r:Raster, c:Context[A, C], xx:Int, yy1:Int, yy2:Int) = {
+  def getColumn[A, C <: Cell[C]](r:Raster, c:Strategy[A, C], xx:Int, yy1:Int, yy2:Int) = {
     val cc = c.makeCell()
     for (yy <- yy1 until yy2) cc.add(xx, yy, r)
     cc
   }
 
-  def emptyColumn[A, C <: Cell[C]](c:Context[A, C]) = c.makeCell()
+  def emptyColumn[A, C <: Cell[C]](c:Strategy[A, C]) = c.makeCell()
 
-  def combineColumns[A, C <: Cell[C]](r:Raster, c:Context[A, C], columns:Array[C], size:Int)(implicit m:Manifest[C]) = {
+  def combineColumns[A, C <: Cell[C]](r:Raster, c:Strategy[A, C], columns:Array[C], size:Int)(implicit m:Manifest[C]) = {
     val cc = c.makeCell()
     var i = 0
     while (i < size) { cc.add(columns(i)); i += 1 }
     cc
   }
 
-  def handleColumnar[A, C <: Cell[C]](r:Raster, c:Context[A, C])(implicit m:Manifest[C]):A = {
+  def handleColumnar[A, C <: Cell[C]](r:Raster, c:Strategy[A, C])(implicit m:Manifest[C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
@@ -108,7 +108,7 @@ case class Square(n:Int) extends Focus {
     c.get()
   }
 
-  def handleAggregated[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = {
+  def handleAggregated[A, C <: Cell[C]](r:Raster, c:Strategy[A, C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
@@ -135,14 +135,14 @@ case class Square(n:Int) extends Focus {
   }
 }
 
-case class Circle(n:Int) extends Focus {
+case class Circle(n:Int) extends Kernel {
   def relativeBounds = (-n, -n, n, n)
 
-  def handle[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = c.focalType match {
+  def handle[A, C <: Cell[C]](r:Raster, c:Strategy[A, C]):A = c.focalType match {
     case _ => handleDefault(r, c)
   }
 
-  def handleDefault[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = {
+  def handleDefault[A, C <: Cell[C]](r:Raster, c:Strategy[A, C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
@@ -172,7 +172,7 @@ case class Circle(n:Int) extends Focus {
     c.get()
   }
 
-  def handleAggregated[A, C <: Cell[C]](r:Raster, c:Context[A, C]):A = {
+  def handleAggregated[A, C <: Cell[C]](r:Raster, c:Strategy[A, C]):A = {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
