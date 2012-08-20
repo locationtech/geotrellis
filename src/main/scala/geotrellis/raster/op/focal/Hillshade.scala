@@ -38,7 +38,7 @@ extends Op4(r, azimuth, altitude, zFactor) ({
 })
 
 class HillshadeStrategy(re:RasterExtent, azimuth:Double, zenith:Double, zFactor:Double, cw:Double, ch:Double)
-extends Strategy[Raster, HillshadeCell](Default) {
+extends Strategy[Raster, HillshadeCell](Sliding) {
   val d = IntArrayRasterData.ofDim(re.cols, re.rows)
   def store(col:Int, row:Int, cc:HillshadeCell) = d.set(col, row, cc.calc())
   def get() = Raster(d, re)
@@ -47,53 +47,44 @@ extends Strategy[Raster, HillshadeCell](Default) {
 
 class HillshadeCell(azimuth:Double, zenith:Double, zFactor:Double, cw:Double, ch:Double)
 extends Cell[HillshadeCell] {
-  var dx = 0 // east - west
-  var dy = 0 // south - north
-  var baseRow = 0
-  var baseCol = 0
-  var isUnset = false
+  var west = new Array[Int](3)
+  var base = new Array[Int](3)
+  var east = new Array[Int](3)
+
+  var northRow = 0
+
   override def center(col:Int, row:Int, r:Raster) {
-    baseCol = col
-    baseRow = row
-    isUnset = r.get(col, row) == NODATA
+    northRow = row - 1
+
+    val tmp = west
+    west = base
+    base = east
+    east = tmp
   }
   def clear() {
-    dx = 0
-    dy = 0
+    west = new Array[Int](3)
+    base = new Array[Int](3)
+    east = new Array[Int](3)
   }
+
   def add(cc:HillshadeCell) = sys.error("not supported")
   def remove(cc:HillshadeCell) = sys.error("not supported")
-  def remove(col:Int, row:Int, r:Raster) = sys.error("not supported")
+  def remove(col:Int, row:Int, r:Raster) {}
   def add(col:Int, row:Int, r:Raster) {
-    if (isUnset) return
-
-    // get the cell's value, then weight and apply to dx/dy
-    val z = r.get(col, row)
-    if (z == NODATA) return
-
-    // these weights will be -1, 0, or 1, and determine how the z value
-    // affects the relevant dx/dy. so wx=1, wy=1 would be the SE corner, and
-    // wx=0, wy=-1 would be directly N.
-    var wx = col - baseCol
-    var wy = row - baseRow
-
-    // if not on a diagonal, double the weight for the relevant direction
-    if (wx == 0) wy *= 2 else if (wy == 0) wx *= 2
-
-    dx += wx * z
-    dy += wy * z
+    east(row - northRow) = r.get(col, row)
   }
 
   def calc():Int = {
-    if (isUnset) return NODATA
+    if (base(1) == NODATA) return NODATA
 
-    // scale dx and dy by the total weights involved, times the cell sizes
-    val sx = dx / (8 * cw)
-    val sy = dy / (8 * ch)
+    // east - west
+    val sx = (east(0) + 2*east(1) + east(2) - west(0) - 2*west(1) - west(2)) / (8 * cw)
+
+    // south - north
+    val sy = (west(2) + 2*base(2) + east(2) - west(0) - 2*base(0) - east(0)) / (8 * ch)
 
     val slope = atan(zFactor * sqrt(sx * sx + sy * sy))
     val aspect = atan2(sy, -sx) // why are we negating sx again?
-
 
     val z = ((cos(zenith) * cos(slope)) + 
              (sin(zenith) * sin(slope) * cos(azimuth - aspect)))

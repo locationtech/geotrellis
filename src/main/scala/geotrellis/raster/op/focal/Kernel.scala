@@ -41,6 +41,7 @@ case class Square(n:Int) extends Kernel {
 
   def handle[A, C <: Cell[C]](r:Raster, c:Strategy[A, C]):A = c.focalType match {
     case Aggregated => handleAggregated(r, c)
+    case Sliding => handleSliding(r, c)
     case _ => handleDefault(r, c)
   }
 
@@ -128,6 +129,30 @@ case class Square(n:Int) extends Kernel {
         val xx2 = x + n
         if (xx2 < cols) for (yy <- yy1 until yy2) cc.add(xx2, yy, r)
 
+        c.store(x, y, cc)
+      }
+    }
+    c.get()
+  }
+
+  def handleSliding[A, C <: Cell[C]](r:Raster, c:Strategy[A, C]):A = {
+    val cc = c.makeCell()
+    val cols = r.cols
+    val rows = r.rows
+
+    val colBound = cols - n
+    for (y <- 0 until rows) {
+      val yy1 = max(0, y - n)
+      val yy2 = min(rows, y + n + 1)
+
+      cc.clear()
+      cc.center(0, y, r)
+      for (yy <- yy1 until yy2; xx <- 0 until min(cols, n + 1)) cc.add(xx, yy, r)
+      c.store(0, y, cc)
+
+      for (x <- 1 until cols) {
+        cc.center(x, y, r)
+        if (x < colBound) for (yy <- yy1 until yy2) cc.add(x + n, yy, r)
         c.store(x, y, cc)
       }
     }
