@@ -4,11 +4,11 @@ import scala.math._
 
 import geotrellis._
 
-case class Min(r:Op[Raster], f:Focus) extends Op1(r)({
-  r => Result(f.handle(r, new MinContext(r)))
+case class Min(r:Op[Raster], f:Kernel) extends Op1(r)({
+  r => Result(f.handle(r, new MinStrategy(r)))
 })
 
-protected[focal] class MinContext(r:Raster) extends Context[Raster, MinCell](Columnar) {
+protected[focal] class MinStrategy(r:Raster) extends Strategy[Raster, MinCell](Columnar) {
   val d = IntArrayRasterData.ofDim(r.cols, r.rows)
   def store(col:Int, row:Int, cc:MinCell) { d.set(col, row, cc.zmin) }
   def get() = Raster(d, r.rasterExtent)

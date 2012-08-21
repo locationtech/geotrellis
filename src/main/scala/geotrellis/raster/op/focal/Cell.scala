@@ -10,9 +10,3 @@ trait Cell[C <: Cell[C]] {
   def add(col:Int, row:Int, r:Raster):Unit
   def remove(col:Int, row:Int, r:Raster):Unit
 }
-
-abstract class Context[A, C <: Cell[C]](val focalType:FocalType) {
-  def store(col:Int, row:Int, cc:C):Unit
-  def get():A
-  def makeCell():C
-}

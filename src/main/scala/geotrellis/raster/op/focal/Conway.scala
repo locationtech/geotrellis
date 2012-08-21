@@ -3,10 +3,10 @@ package geotrellis.raster.op.focal
 import geotrellis._
 
 case class Conway(r:Op[Raster]) extends Op1(r)({
-  r => Result(Square(1).handle(r, new ConwayContext(r)))
+  r => Result(Square(1).handle(r, new ConwayStrategy(r)))
 })
 
-protected[focal] class ConwayContext(r:Raster) extends Context[Raster, ConwayCell](Aggregated) {
+protected[focal] class ConwayStrategy(r:Raster) extends Strategy[Raster, ConwayCell](Aggregated) {
   val d = ByteArrayRasterData.ofDim(r.cols, r.rows)
   def store(col:Int, row:Int, cc:ConwayCell) = {
     d.set(col, row, if (cc.count == 2 || cc.count == 3) 1 else NODATA)

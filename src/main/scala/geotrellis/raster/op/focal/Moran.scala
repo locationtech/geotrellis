@@ -4,17 +4,17 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.statistics._
 
-case class ScalarMoransI(r:Op[Raster], f:Focus) extends Op1(r)({
+case class ScalarMoransI(r:Op[Raster], f:Kernel) extends Op1(r)({
   r => {
     val h = FastMapHistogram.fromRaster(r)
     val Statistics(mean, _, _, stddev, _, _) = h.generateStatistics
     val v:Double = stddev * stddev
     val diff = r.convert(TypeDouble).force.mapDouble(_ - mean)
-    Result(f.handle(diff, new ScalarMoranContext(v)))
+    Result(f.handle(diff, new ScalarMoranStrategy(v)))
   }
 })
 
-protected[focal] class ScalarMoranContext(v:Double) extends Context[Double, MoranCell](Default) {
+protected[focal] class ScalarMoranStrategy(v:Double) extends Strategy[Double, MoranCell](Default) {
   var count:Double = 0.0
   var ws:Int = 0
   def store(col:Int, row:Int, cc:MoranCell) {
@@ -25,17 +25,17 @@ protected[focal] class ScalarMoranContext(v:Double) extends Context[Double, Mora
   def makeCell() = new MoranCell
 }
 
-case class RasterMoransI(r:Op[Raster], f:Focus) extends Op1(r)({
+case class RasterMoransI(r:Op[Raster], f:Kernel) extends Op1(r)({
   r => {
     val h = FastMapHistogram.fromRaster(r)
     val Statistics(mean, _, _, stddev, _, _) = h.generateStatistics
     val v:Double = stddev * stddev
     val diff = r.convert(TypeDouble).force.mapDouble(_ - mean)
-    Result(f.handle(diff, new RasterMoranContext(r.rasterExtent, v)))
+    Result(f.handle(diff, new RasterMoranStrategy(r.rasterExtent, v)))
   }
 })
 
-protected[focal] class RasterMoranContext(re:RasterExtent, v:Double) extends Context[Raster, MoranCell](Default) {
+protected[focal] class RasterMoranStrategy(re:RasterExtent, v:Double) extends Strategy[Raster, MoranCell](Default) {
   val d = DoubleArrayRasterData.ofDim(re.cols, re.rows)
   def store(col:Int, row:Int, cc:MoranCell) {
     d.setDouble(col, row, (cc.base / v * cc.z) / cc.w)
