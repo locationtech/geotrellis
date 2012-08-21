@@ -123,11 +123,11 @@ object GeoTiffWriter extends Writer {
 
   def write(path:String, raster:Raster, name:String) {
     val settings = raster.data.getType match {
-      case TypeBit | TypeByte => Settings(ByteSample, Signed, false)
-      case TypeShort => Settings(ShortSample, Signed, false)
-      case TypeInt => Settings(IntSample, Signed, false)
-      case TypeFloat => Settings(IntSample, Floating, false)
-      case TypeDouble => Settings(LongSample, Floating, false)
+      case TypeBit | TypeByte => Settings.int8
+      case TypeShort => Settings.int16
+      case TypeInt => Settings.int32
+      case TypeFloat => Settings.float32
+      case TypeDouble => Settings.float64
     }
     Encoder.writePath(path, raster, settings)
   }

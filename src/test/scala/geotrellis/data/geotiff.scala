@@ -78,17 +78,8 @@ class GeoTiffSpec extends Spec with MustMatchers with ShouldMatchers {
     }
 
     it ("should write") {
-      val inpath = "src/test/resources/econic.tif"
-      val raster = GeoTiffReader.readPath(inpath, None, None)
-      /*println(raster.asciiDrawRange(0,5,0,5))
-      println(raster.get(0,3))
-      println(raster.get(1,3))
-      println(raster.get(2,3))
-      println(raster.rasterExtent)
-      */
-      val name = "foo"
-      val outpath = "/tmp/written.tif"
-      GeoTiffWriter.write(outpath, raster, name)
+      val r = GeoTiffReader.readPath("src/test/resources/econic.tif", None, None)
+      GeoTiffWriter.write("/tmp/written.tif", r, "foo")
     }
 
     it ("should write floating point rasters") {
@@ -102,8 +93,38 @@ class GeoTiffSpec extends Spec with MustMatchers with ShouldMatchers {
     it ("should write bennet's geotiff") {
       import geotiff._
       val r = server.run(io.LoadFile("src/test/resources/quadborder8.arg"))
-      val settings = Settings(LongSample, Floating, true)
-      Encoder.writePath("/tmp/bennet.tif", r, settings)
+      Encoder.writePath("/tmp/bennet.tif", r, Settings.float64)
+    }
+
+    it ("should compress a toy 4x4 raster") {
+      import geotiff._
+
+      val cols = 4
+      val rows = 4
+
+      val e = Extent(10.0, 20.0, 10.0 + cols, 20.0 + rows)
+      val re = RasterExtent(e, 1.0, 1.0, cols, rows)
+      val data = ByteArrayRasterData((0 until 80 by 5).map(_.toByte).toArray, 4, 4)
+      val r = Raster(data, re)
+
+      Encoder.writePath("/tmp/lzw-4x4.tif", r, Settings(ByteSample, Signed, false, Lzw))
+      Encoder.writePath("/tmp/raw-4x4.tif", r, Settings(ByteSample, Signed, false, Uncompressed))
+    }
+
+    it ("should compress a large raster") {
+      import geotiff._
+
+      val r = server.run(io.LoadFile("src/test/resources/econic.tif"))
+      Encoder.writePath("/tmp/lzw-eco.tif", r, Settings(ByteSample, Signed, false, Lzw))
+      Encoder.writePath("/tmp/raw-eco.tif", r, Settings(ByteSample, Signed, false, Uncompressed))
+    }
+
+    it ("should compress a larger raster") {
+      import geotiff._
+    
+      val r = server.run(io.LoadFile("src/test/resources/sbn/SBN_inc_percap.arg"))
+      Encoder.writePath("/tmp/lzw-sbn.tif", r, Settings(ByteSample, Signed, false, Lzw))
+      Encoder.writePath("/tmp/raw-sbn.tif", r, Settings(ByteSample, Signed, false, Uncompressed))
     }
   }
 }
