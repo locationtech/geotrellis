@@ -118,23 +118,49 @@ case class Square(n:Int) extends Kernel {
     val cols = r.cols
     val rows = r.rows
 
-    for (y <- 0 until rows) {
+    var y = 0
+    while (y < rows) {
       val yy1 = max(0, y - n)
       val yy2 = min(rows, y + n + 1)
 
       cc.clear()
-      for (yy <- yy1 until yy2; xx <- 0 until min(cols, n + 1)) cc.add(xx, yy, r)
+      val xx2 = min(cols, n + 1)
+      var yy = yy1
+      while (yy < yy2) {
+        var xx = 0
+        while (xx < xx2) {
+          cc.add(xx, yy, r)
+          xx += 1
+        }
+        yy += 1
+      }
+
       c.store(0, y, cc)
 
-      for (x <- 1 until cols) {
+      var x = 1
+      while (x < cols) {
         val xx1 = x - n - 1
-        if (xx1 >= 0) for (yy <- yy1 until yy2) cc.remove(xx1, yy, r)
+        if (xx1 >= 0) {
+          var yy = yy1
+          while (yy < yy2) {
+            cc.remove(xx1, yy, r)
+            yy += 1
+          }
+        }
 
         val xx2 = x + n
-        if (xx2 < cols) for (yy <- yy1 until yy2) cc.add(xx2, yy, r)
+        if (xx2 < cols) {
+            var yy = yy1
+            while (yy < yy2) {
+              cc.add(xx2, yy, r)
+              yy += 1
+            }
+          }
 
         c.store(x, y, cc)
+        x += 1
       }
+      y += 1
     }
     c.get()
   }
