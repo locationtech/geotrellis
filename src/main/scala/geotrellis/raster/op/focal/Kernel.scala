@@ -20,8 +20,10 @@ case object Nesw extends Kernel {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
-    for (y <- 0 until rows) {
-      for (x <- 0 until cols) {
+    var y = 0
+    while (y < rows) {
+      var x = 0
+      while (x < cols) {
         cc.clear()
         cc.center(x, y, r)
         cc.add(x, y, r)
@@ -30,7 +32,9 @@ case object Nesw extends Kernel {
         if (y > 0) cc.add(x, y - 1, r)
         if (y < rows - 1) cc.add(x, y + 1, r)
         c.store(x, y, cc)
+        x += 1
       }
+      y += 1
     }
     c.get()
   }
@@ -139,22 +143,40 @@ case class Square(n:Int) extends Kernel {
     val cc = c.makeCell()
     val cols = r.cols
     val rows = r.rows
-
     val colBound = cols - n
-    for (y <- 0 until rows) {
+    var y = 0
+    val xx2 = min(cols, n + 1)
+
+    while (y < rows) {
       val yy1 = max(0, y - n)
       val yy2 = min(rows, y + n + 1)
 
       cc.clear()
       cc.center(0, y, r)
-      for (yy <- yy1 until yy2; xx <- 0 until min(cols, n + 1)) cc.add(xx, yy, r)
+      var yy = yy1
+      while (yy < yy2) {
+        var xx = 0
+        while (xx < xx2) { cc.add(xx, yy, r); xx += 1 }
+        yy += 1
+      }
       c.store(0, y, cc)
 
-      for (x <- 1 until cols) {
+      var x = 1
+      while (x < colBound) {
         cc.center(x, y, r)
-        if (x < colBound) for (yy <- yy1 until yy2) cc.add(x + n, yy, r)
+        var yy = yy1
+        while (yy < yy2) { cc.add(x + n, yy, r); yy += 1 }
         c.store(x, y, cc)
+        x += 1
       }
+      while (x < cols) {
+        cc.center(x, y, r)
+        var yy = yy1
+        while (yy < yy2) { cc.remove(x + n, yy, r); yy += 1 }
+        c.store(x, y, cc)
+        x += 1
+      }
+      y += 1
     }
     c.get()
   }
