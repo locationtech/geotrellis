@@ -2,11 +2,11 @@ package geotrellis.raster.op.focal
 
 import geotrellis._
 
-case class Sum(r:Op[Raster], f:Focus) extends Op1(r)({
-  r => Result(f.handle(r, new SumContext(r)))
+case class Sum(r:Op[Raster], f:Kernel) extends Op1(r)({
+  r => Result(f.handle(r, new SumStrategy(r)))
 })
 
-protected[focal] class SumContext(r:Raster) extends Context[Raster, SumCell](Aggregated) {
+protected[focal] class SumStrategy(r:Raster) extends Strategy[Raster, SumCell](Aggregated) {
   val d = IntArrayRasterData.ofDim(r.cols, r.rows)
   def store(col:Int, row:Int, cc:SumCell) = d.set(col, row, cc.total)
   def get() = Raster(d, r.rasterExtent)

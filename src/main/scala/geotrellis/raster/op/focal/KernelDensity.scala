@@ -10,7 +10,7 @@ import geotrellis.geometry._
  *
  * @see Kernel$
  */
-class Kernel(val data: Array[Int])
+class Kernelx(val data: Array[Int])
 
 
 
@@ -18,7 +18,7 @@ class Kernel(val data: Array[Int])
 /**
  * Object used for generating kernels
  */
-object Kernel {
+object Kernelx {
 
   /**
    * Type alias for our gaussian functions. (Double, Double) => Double.
@@ -30,7 +30,7 @@ object Kernel {
    *
    * @param data Array of integers representing the 2d kernel
    */
-  def apply(data: Array[Int]):Kernel = new Kernel(data)
+  def apply(data: Array[Int]):Kernelx = new Kernelx(data)
 
   /**
    * Creates a kernel
@@ -39,7 +39,7 @@ object Kernel {
    * @param f kernel generating function. If f(x,y) returns negative values
    * they will be ignored
    */
-  def apply(size: Int, f:Gaussian):Kernel = {
+  def apply(size: Int, f:Gaussian):Kernelx = {
     val r = Array.ofDim[Int](size*size)
     var row = 0
     var col = 0
@@ -58,7 +58,7 @@ object Kernel {
       row += 1
     }
     
-    Kernel(r)
+    Kernelx(r)
   }
 
   
@@ -166,7 +166,7 @@ object KernelDensityHelper {
  * @see geotrellis.op.Kernel$ for methods of creating the input kernel
  */
 case class KernelDensity(outputRasterExtent: Op[RasterExtent], 
-                         kernel: Op[Kernel], points: Op[Array[Point]])
+                         kernel: Op[Kernelx], points: Op[Array[Point]])
 extends Op3(outputRasterExtent, kernel, points) ({
   (re, kernel, pts) => {
     val raster = Raster.empty(re)
