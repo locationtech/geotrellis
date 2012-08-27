@@ -37,7 +37,8 @@ class HillshadeTest extends FunSuite {
   }
 
   test("hillshade") {
-    val path = "/Users/erik/elevation.arg"
+    //val path = "/var/trellis/stroud/elevation.arg"
+    val path = "src/test/resources/sbn/SBN_inc_percap.arg"
   
     println("Starting test Hillshade operation.")
     println("Loading raster")
