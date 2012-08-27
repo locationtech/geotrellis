@@ -48,25 +48,20 @@ class HillshadeTest extends FunSuite {
     val raster = server.run(io.LoadFile(path))
     println("loaded raster in %s ms" format (time() - t0))
   
-    server.run(io.WritePNGFile(raster, "/tmp/raster.png", grayscale(6), 0, true))
+    server.run(io.WritePng(raster, "/tmp/raster.png", grayscale(6), 0, true))
     println("raster: " + server.run(stat.GetHistogram(raster)).toJSON)
   
-    val t1 = System.currentTimeMillis
+    val t1 = time()
     val h1 = server.run(focal.Hillshade(raster))
     println("generated hillshade from memory in %s ms" format (time() - t1))
-    server.run(io.WritePNGFile(h1, "/tmp/hillshade1.png", grayscale(1), 0, true))
-  
-    val h2 = h1.map(z => (z << 24) | (z << 16) | (z << 8) | 255)
-    server.run(io.WritePNGFile2(h2, "/tmp/hillshade2.png", 0, true))
+
+    val t2 = time()
+    server.run(io.WritePng(h1, "/tmp/hillshade1.png", grayscale(1), 0, true))
+    println("wrote png in %s ms" format (time() - t2))
   
     println("hillshade: " + server.run(stat.GetHistogram(h1)).toJSON)
     println("  " + h1.data)
     println("  " + h1.data.getType)
-  
-    //val t2 = System.currentTimeMillis
-    //val h2 = server.run(focal.Hillshade(io.LoadFile(path), 45.0, 20.0, 1.0))
-    //println("generated hillshade from disk in %s ms" format (time() - t2))
-    //server.run(io.WritePNGFile(h2, "/tmp/hillshade2.png", Literal(grayscale), -1, true))
   
     server.shutdown()
   }

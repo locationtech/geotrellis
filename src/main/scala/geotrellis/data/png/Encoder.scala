@@ -17,11 +17,12 @@ import geotrellis._
 
 import Util._
 
-class Encoder(settings:Settings) {
+case class Encoder(settings:Settings) {
   // magic numbers from the PNG spec
   final val SIGNATURE:Array[Byte] = Array[Byte](137.asInstanceOf[Byte], 80, 78, 71, 13, 10, 26, 10)
   final val IHDR:Int = 0x49484452
   final val BKGD:Int = 0x624b4744
+  final val PLTE:Int = 0x504c5445
   final val TRNS:Int = 0x74524e53
   final val IDAT:Int = 0x49444154
   final val IEND:Int = 0x49454E44
@@ -46,35 +47,54 @@ class Encoder(settings:Settings) {
     cIHDR.writeInt(width)
     cIHDR.writeInt(height)
     cIHDR.writeByte(8); // 8 bits per component
-    cIHDR.writeByte(settings.color.n)
+    cIHDR.writeByte(settings.color.n) // color type (0,2,3,4,6)
     cIHDR.writeByte(0) // DEFLATE compression
     cIHDR.writeByte(0) // adaptive filtering
     cIHDR.writeByte(0) // no interlacing
     cIHDR.writeTo(dos)
   }
 
-  def write24To48LSB(chunk:Chunk, n:Int) {
-    var j = 16
-    while (j >= 0) {
-      chunk.writeByte(0x00)
-      chunk.writeByte(shift(n, j))
-      j -= 8
-    }
-  }
-
   def writeBackgroundInfo(dos:DataOutputStream) {
     settings.color match {
-      case Rgba => {}
-
-      case Rgb(b, t) => {
-        val cBKGD = new Chunk(BKGD)
-        write24To48LSB(cBKGD, b)
-        cBKGD.writeTo(dos)
-
+      case Grey(t) => {
+        // write a single 2-byte color value
         val cTRNS = new Chunk(TRNS)
-        write24To48LSB(cTRNS, t)
+        cTRNS.writeByte(0x00)
+        cTRNS.writeByte(byte(t))
         cTRNS.writeTo(dos)
       }
+
+      case Rgb(t) => {
+        // write three 2-byte color values
+        val cTRNS = new Chunk(TRNS)
+        cTRNS.writeByte(0x00)
+        cTRNS.writeByte(shift(t, 16))
+        cTRNS.writeByte(0x00)
+        cTRNS.writeByte(shift(t, 8))
+        cTRNS.writeByte(0x00)
+        cTRNS.writeByte(byte(t))
+        cTRNS.writeTo(dos)
+      }
+
+      case Indexed(rgbs, alphas) => {
+        // write 3-byte RGB values for every index entry
+        val cPLTE = new Chunk(PLTE)
+        rgbs.foreach {
+          rgb =>
+          cPLTE.writeByte(shift(rgb, 16))
+          cPLTE.writeByte(shift(rgb, 8))
+          cPLTE.writeByte(byte(rgb))
+        }
+        cPLTE.writeTo(dos)
+
+        // write 1-byte color values for every index entry
+        val cTRNS = new Chunk(TRNS)
+        alphas.foreach(a => cTRNS.writeByte(byte(a)))
+        cTRNS.writeTo(dos)
+      }
+
+      case Greya => {}
+      case Rgba => {}
     }
   }
 
@@ -121,10 +141,7 @@ class Encoder(settings:Settings) {
     val byteWidth = cols * DEPTH
 
     // allocate a buffer for one row's worth of bytes
-    val lineOut = Array.ofDim[Byte](byteWidth)
-    var prevLine = Array.ofDim[Byte](byteWidth)
     var currLine = Array.ofDim[Byte](byteWidth)
-    var tmp:Array[Byte] = null
 
     var yspan = 0
 
@@ -133,20 +150,9 @@ class Encoder(settings:Settings) {
       bb.position(yspan * DEPTH)
       bb.get(currLine)
 
-      j = 0
-      while (j < byteWidth) {
-        lineOut(j) = byte(currLine(j))
-        j += 1
-      }
-
       // write the "filter type" for this line, followed by the line itself.
       dfos.write(FILTER)
-      dfos.write(lineOut)
-
-      // swap the buffers
-      tmp = prevLine
-      prevLine = currLine
-      currLine = tmp
+      dfos.write(currLine)
 
       // proceed to the next row.
       yspan += cols

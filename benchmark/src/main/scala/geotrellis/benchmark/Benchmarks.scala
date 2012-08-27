@@ -282,7 +282,7 @@ class WeightedOverlay extends MyBenchmark {
     val rs = (0 until n).map(i => MultiplyConstant(LoadRaster(names(i), reOp), weights(i)))
     val rasterOp = Normalize(DivideConstant(Add(rs: _*), total), (1, 100))
     val breaksOp = stat.GetColorBreaks(GetHistogram(rasterOp, 101), colors)
-    op = RenderPNG(rasterOp, breaksOp, 0, true)
+    op = RenderPng(rasterOp, breaksOp, 0, true)
   }
 
   def timeWeightedOverlay(reps:Int) = run(reps)(weightedOverlay)

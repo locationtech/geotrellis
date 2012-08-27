@@ -20,14 +20,13 @@ class PNGSpec extends Spec with MustMatchers {
   val rgb = parseHexString("""
 89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52
 00 00 00 0a 00 00 00 0a 08 02 00 00 00 02 50 58
-ea 00 00 00 06 62 4b 47 44 00 00 00 00 00 00 f9
-43 bb 7f 00 00 00 06 74 52 4e 53 00 00 00 00 00
-00 6e a6 07 91 00 00 00 3c 49 44 41 54 78 01 7d
-cc 59 0e 00 20 08 03 d1 92 f4 fe 57 46 8c c6 05
-8b 84 bf 37 40 f4 b1 6a 09 38 2c 58 0f 61 fe 29
-06 c7 a9 fe b1 58 17 27 8b 22 71 2e 5e be 0a c9
-bb a8 78 16 0d 5b 6c 11 3b 06 db 3d 95 00 00 00
-00 49 45 4e 44 ae 42 60 82""")
+ea 00 00 00 06 74 52 4e 53 00 00 00 00 00 00 6e
+a6 07 91 00 00 00 3c 49 44 41 54 78 01 7d cc 59
+0e 00 20 08 03 d1 92 f4 fe 57 46 8c c6 05 8b 84
+bf 37 40 f4 b1 6a 09 38 2c 58 0f 61 fe 29 06 c7
+a9 fe b1 58 17 27 8b 22 71 2e 5e be 0a c9 bb a8
+78 16 0d 5b 6c 11 3b 06 db 3d 95 00 00 00 00 49
+45 4e 44 ae 42 60 82""")
 
   val rgba = parseHexString("""
 89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52
@@ -56,7 +55,7 @@ c5 04 9e f8 03 17 ee 04 00 12 3a 47 85 ae b3 00
     val fh = File.createTempFile("rgba-", ".png")
     val path = fh.getPath
 
-    val encoder = RgbaEncoder()
+    val encoder = Encoder(Settings(Rgba, PaethFilter))
 
     it("should render a PNG") {
       encoder.writeByteArray(raster)
@@ -88,7 +87,7 @@ c5 04 9e f8 03 17 ee 04 00 12 3a 47 85 ae b3 00
     val fh = File.createTempFile("rgb-", ".png")
     val path = fh.getPath
   
-    val encoder = RgbEncoder(Some(0), Some(0))
+    val encoder = Encoder(Settings(Rgb(0), PaethFilter))
   
     // map RGBA values into RGB
     val raster2 = raster.map(_ >> 8)
