@@ -15,7 +15,7 @@ GeoTrellis was designed to solve three core problems, with a focus on raster pro
 GeoTrellis is a project of Azavea (www.azavea.com), and was written by Josh Marcus (jmarcus@azavea.com) and Erik Osheim (eosheim@azavea.com).  Please contact us if you have any questions, find us on irc at #geotrellis on freenode, or join 
 the user mailing list at [https://groups.google.com/group/geotrellis-user](https://groups.google.com/group/geotrellis-user).
 
-We recommend using the most recent version of GeoTrellis, 0.7 (Asgard), which is currently available as a release candidate (0.7.0-RC2). The documentation currently reflects the 0.7 API.
+The current release version of GeoTrellis is 0.7.0 (Asgard).
 
 ## Features
 
