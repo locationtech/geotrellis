@@ -29,6 +29,11 @@ package geotrellis {
     def log(msg:String) = if (false) println(msg)
   }
 
+  package object feature {
+    import com.vividsolutions.jts.geom
+    type Geometry[D] = Feature[geom.Geometry,D]
+  }
+
   package object util {
     /**
      * This function uses an associative binary function "f" to combine the
