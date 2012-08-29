@@ -68,12 +68,12 @@ class GeoTiffSpec extends Spec with MustMatchers with ShouldMatchers {
 
       val (zmin, zmax) = raster.findMinMax
 
-      val chooser = new MultiColorRangeChooser(Array(0xFF0000, 0xFFFF00, 0x0000FF))
+      val chooser = new MultiColorRangeChooser(Array(0xFF0000FF, 0xFFFF00FF, 0x0000FFFF))
       val breaks = (zmin to zmax)
       val colors = chooser.getColors(breaks.length)
       val pairs = breaks.zip(colors).toArray
 
-      val png = io.WritePNGFile(raster, "/tmp/fromgeo.png", pairs, NODATA, false)
+      val png = io.WritePng(raster, "/tmp/fromgeo.png", pairs, NODATA, false)
       server.run(png)
     }
 

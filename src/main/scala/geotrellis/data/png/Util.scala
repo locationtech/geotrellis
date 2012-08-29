@@ -11,11 +11,11 @@ object Util {
   /**
    * ByteBuffer boiler-plate stuff below.
    */
-  def initByteBuffer32(bb:ByteBuffer, _data:RasterData, size:Int) {
-    val data = _data.asArray.getOrElse(sys.error("can't get data array")) 
+  def initByteBuffer32(bb:ByteBuffer, data:RasterData, size:Int) {
+    val d = data.asArray.getOrElse(sys.error("can't get data array")) 
     var j = 0
     while (j < size) {
-      val z = data(j)
+      val z = d(j)
       bb.put(byte(z >> 24))
       bb.put(byte(z >> 16))
       bb.put(byte(z >> 8))
@@ -24,11 +24,11 @@ object Util {
     }
   }
 
-  def initByteBuffer24(bb:ByteBuffer, _data:RasterData, size:Int) {
-    val data = _data.asArray.getOrElse(sys.error("can't get data array"))
+  def initByteBuffer24(bb:ByteBuffer, data:RasterData, size:Int) {
+    val d = data.asArray.getOrElse(sys.error("can't get data array"))
     var j = 0
     while (j < size) {
-      val z = data(j)
+      val z = d(j)
       bb.put(byte(z >> 16))
       bb.put(byte(z >> 8))
       bb.put(byte(z))
@@ -36,25 +36,23 @@ object Util {
     }
   }
 
-  def initByteBuffer16(bb:ByteBuffer, _data:RasterData, size:Int) {
-    val data = _data.asArray.getOrElse(sys.error("can't get data array"))
+  def initByteBuffer16(bb:ByteBuffer, data:RasterData, size:Int) {
+    val d = data.asArray.getOrElse(sys.error("can't get data array"))
     var j = 0
     while (j < size) {
-      val z = data(j)
+      val z = d(j)
       bb.put(byte(z >> 8))
       bb.put(byte(z))
       j += 1
     }
   }
 
-  def initByteBuffer8(bb:ByteBuffer, _data:RasterData, size:Int) {
-    val data = _data.asArray.getOrElse(sys.error("can't get data array"))
+  def initByteBuffer8(bb:ByteBuffer, data:RasterData, size:Int) {
+    val d = data.asArray.getOrElse(sys.error("can't get data array"))
     var j = 0
     while (j < size) {
-      val z = data(j)
-      bb.put(byte(z))
+      bb.put(byte(d(j)))
       j += 1
     }
   }
-
 }
