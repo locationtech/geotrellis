@@ -115,7 +115,8 @@ object MyBuild extends Build {
     scalaVersion := "2.9.2",
 
     // raise memory limits here if necessary
-    javaOptions in run += "-Xmx8G",
+    //javaOptions in run += "-Xmx8G",
+    javaOptions += "-Xmx8G",
 
     libraryDependencies ++= Seq(
       "com.google.guava" % "guava" % "r09",
@@ -127,23 +128,62 @@ object MyBuild extends Build {
     // enable forking in run
     fork in run := true,
 
+    runner in Compile in run <<= (thisProject, taskTemporaryDirectory, scalaInstance, baseDirectory, javaOptions, outputStrategy, javaHome, connectInput) map {
+      (tp, tmp, si, base, options, strategy, javaHomeDir, connectIn) =>
+      new MyRunner(tp.id, ForkOptions(scalaJars = si.jars,
+                                      javaHome = javaHomeDir,
+                                      connectInput = connectIn,
+                                      outputStrategy = strategy,
+                                      runJVMOptions = options,
+                                      workingDirectory = Some(base)))
+    }
+
     // custom kludge to get caliper to see the right classpath
     
-    // define the onLoad hook
-    onLoad in Global ~= { previous => state =>
-      previous {
-        state.get(key) match {
-          case None =>
-            // get the runtime classpath, turn into a colon-delimited string
-            val classPath = Project.runTask(fullClasspath in Runtime in benchmark, state).get._2.toEither.right.get.files.mkString(":")
-            // return a state with javaOptionsPatched = true and javaOptions set correctly
-            Project.extract(state).append(Seq(javaOptions in (benchmark, run) ++= Seq("-cp", classPath)), state.put(key, true))
-          case Some(_) =>
-            state // the javaOptions are already patched
-        }
-      }
-    }
+  //  // define the onLoad hook
+  //  onLoad in Global ~= { previous => state =>
+  //    previous {
+  //      state.get(key) match {
+  //        case None =>
+  //          // get the runtime classpath, turn into a colon-delimited string
+  //          val classPath = Project.runTask(fullClasspath in Runtime in benchmark, state).get._2.toEither.right.get.files.mkString(":")
+  //          // return a state with javaOptionsPatched = true and javaOptions set correctly
+  //          Project.extract(state).append(Seq(javaOptions in (benchmark, run) ++= Seq("-cp", classPath)), state.put(key, true))
+  //        case Some(_) =>
+  //          state // the javaOptions are already patched
+  //      }
+  //    }
+  //  }
   )
+}
+
+class MyRunner(subproject: String, config: ForkScalaRun) extends sbt.ScalaRun {
+  def run(mainClass: String, classpath: Seq[File], options: Seq[String], log: Logger): Option[String] = {
+    log.info("Running " + subproject + " " + mainClass + " " + options.mkString(" "))
+
+    val javaOptions = classpathOption(classpath) ::: mainClass :: options.toList
+    val strategy = config.outputStrategy getOrElse LoggedOutput(log)
+    val jvmopts = config.runJVMOptions ++ javaOptions
+    //println("jvmopts: %s" format jvmopts)
+    val process =  Fork.java.fork(config.javaHome,
+                                  jvmopts,
+                                  config.workingDirectory,
+                                  Map.empty,
+                                  config.connectInput,
+                                  strategy)
+    def cancel() = {
+      log.warn("Run canceled.")
+      process.destroy()
+      1
+    }
+    val exitCode = try process.exitValue() catch { case e: InterruptedException => cancel() }
+    processExitCode(exitCode, "runner")
+  }
+  private def classpathOption(classpath: Seq[File]) = "-classpath" :: Path.makeString(classpath) :: Nil
+  private def processExitCode(exitCode: Int, label: String) = {
+    if(exitCode == 0) None
+    else Some("Nonzero exit code returned from " + label + ": " + exitCode)
+  }
 }
 
 // vim: set ts=4 sw=4 et:
