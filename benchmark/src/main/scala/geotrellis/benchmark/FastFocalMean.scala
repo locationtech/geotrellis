@@ -2,14 +2,13 @@ package geotrellis.benchmark
 
 import geotrellis._
 import geotrellis.op._
+import geotrellis.raster.op.focal.Square
 import geotrellis.raster.op._
 import geotrellis.process._
 import geotrellis.raster._
 
-import scala.math.{min, max}
-
-case class FastFocalMean(r:Op[Raster], n:Int) extends Op1(r)({
-  r => new CalcFastFocalMean(r, n).calc
+case class FastFocalMean(r:Op[Raster], kernel:Square) extends Op1(r)({
+  r => new CalcFastFocalMean(r, kernel).calc
 })
 
 /**
@@ -21,7 +20,7 @@ case class FastFocalMean(r:Op[Raster], n:Int) extends Op1(r)({
  * the radius plus one. Thus, radius=1 means a 3x3 square kernel (9 cells), and
  * radius=3 means a 7x7 square kernel (49 cells).
  */
-final class CalcFastFocalMean(r:Raster, radius:Int) {
+final class CalcFastFocalMean(r:Raster, kernel:Square) {
   // get an array-like interface to the data
   final val data = r.data.asArray.getOrElse(sys.error("requires array"))
 
@@ -29,6 +28,7 @@ final class CalcFastFocalMean(r:Raster, radius:Int) {
   final val out = data.alloc(r.cols, r.rows)
 
   // this is the length of a side of the square kernel
+  final val radius = kernel.n
   final val diameter = 2 * radius + 1
 
   // we store one diameter's worth of row sums, and counts, for each cell.
@@ -41,6 +41,54 @@ final class CalcFastFocalMean(r:Raster, radius:Int) {
   // the usual way. this is because our inner loops must be in terms of rows.
   final val sumsByCol = Array.ofDim[Int](r.cols, diameter)
   final val countsByCol = Array.ofDim[Int](r.cols, diameter)
+
+  /**
+   * This is the function that manages the whole calculation.
+   */
+  final def calc = {
+    // dereference rows for faster access
+    val rows = r.rows
+
+    // at this point all we're doing is priming the row sums. until we reach
+    // the radius row, we don't have enough data to call sumall() yet. "pre" is
+    // the index for the "lower edge" of the calculation.
+    var pre = 0
+    while (pre < radius) {
+      precalc(pre)
+      pre += 1
+    }
+
+    // now we are starting to perform calculations as we continue to compute
+    // more row sums. "row" is the row whose focal means are being computed.
+    var row = 0
+    while (row < radius) {
+      precalc(pre)
+      sumall(row)
+      pre += 1
+      row += 1
+    }
+
+    // this is the same case as above; the distinguishing thing is that
+    // precalc() will be doing work to overwrite previous sums. we may want to
+    // distinguish these two cases at some point.
+    while (pre < rows) {
+      precalc(pre)
+      sumall(row)
+      row += 1
+      pre += 1
+    }
+
+    // we've hit the point where all row sums have been generated, and we
+    // now need to start removing them using zero().
+    while (row < rows) {
+      zero(row - radius - 1)
+      sumall(row)
+      row += 1
+    }
+
+    // we have all our data, so let's return it!
+    Result(Raster(out, r.rasterExtent))
+  }
 
   /**
    * For a particular row, we want to create all the horizontal sums for each
@@ -137,21 +185,6 @@ final class CalcFastFocalMean(r:Raster, radius:Int) {
   }
 
   /**
-   * Initialize a particular line to zeros. We need to do this once we're on
-   * the "right edge" of the raster and don't have new data to use.
-   */
-  final def zero(row:Int) {
-    var x = 0
-    val y = row % diameter
-    val cols = r.cols
-    while (x < cols) {
-      sumsByCol(x)(y) = 0
-      countsByCol(x)(y) = 0
-      x += 1
-    }
-  }
-
-  /**
    * For a particular row, sum all the available "row sums" and record the
    * results in the out. After we've called sumall() on all rows, the
    * calculation will be complete.
@@ -185,50 +218,17 @@ final class CalcFastFocalMean(r:Raster, radius:Int) {
   }
 
   /**
-   * This is the function that manages the whole calculation.
+   * Initialize a particular line to zeros. We need to do this once we're on
+   * the "right edge" of the raster and don't have new data to use.
    */
-  final def calc = {
-    // dereference rows for faster access
-    val rows = r.rows
-
-    // at this point all we're doing is priming the row sums. until we reach
-    // the radius row, we don't have enough data to call sumall() yet. "pre" is
-    // the index for the "lower edge" of the calculation.
-    var pre = 0
-    while (pre < radius) {
-      precalc(pre)
-      pre += 1
+  final def zero(row:Int) {
+    var x = 0
+    val y = row % diameter
+    val cols = r.cols
+    while (x < cols) {
+      sumsByCol(x)(y) = 0
+      countsByCol(x)(y) = 0
+      x += 1
     }
-
-    // now we are starting to perform calculations as we continue to compute
-    // more row sums. "row" is the row whose focal means are being computed.
-    var row = 0
-    while (row < radius) {
-      precalc(pre)
-      sumall(row)
-      pre += 1
-      row += 1
-    }
-
-    // this is the same case as above; the distinguishing thing is that
-    // precalc() will be doing work to overwrite previous sums. we may want to
-    // distinguish these two cases at some point.
-    while (pre < rows) {
-      precalc(pre)
-      sumall(row)
-      row += 1
-      pre += 1
-    }
-
-    // we've hit the point where all row sums have been generated, and we
-    // now need to start removing them using zero().
-    while (row < rows) {
-      zero(row - radius - 1)
-      sumall(row)
-      row += 1
-    }
-
-    // we have all our data, so let's return it!
-    Result(Raster(out, r.rasterExtent))
   }
 }
