@@ -15,7 +15,7 @@ case class WritePNGFile(r:Op[Raster], path:Op[String], breaks:Op[Array[(Int, Int
 extends Op5(r,path,breaks,noDataColor,transparent) ({
     (r, path, breaks, noDataColor, transparent) => {
     val f = ColorMapper(ColorBreaks(breaks), noDataColor)
-    RgbaEncoder().writePath(path, r.map(f))
+    RgbaEncoder().writePath(path, r.convert(TypeInt).map(f))
     Result(Unit)
   }
 })

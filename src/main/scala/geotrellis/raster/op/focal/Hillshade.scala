@@ -39,7 +39,8 @@ extends Op4(r, azimuth, altitude, zFactor) ({
 
 class HillshadeStrategy(re:RasterExtent, azimuth:Double, zenith:Double, zFactor:Double, cw:Double, ch:Double)
 extends Strategy[Raster, HillshadeCell](Sliding) {
-  val d = IntArrayRasterData.ofDim(re.cols, re.rows)
+  val d = ShortArrayRasterData.ofDim(re.cols, re.rows)
+  //val d = ByteArrayRasterData.ofDim(re.cols, re.rows)
   def store(col:Int, row:Int, cc:HillshadeCell) = d.set(col, row, cc.calc())
   def get() = Raster(d, re)
   def makeCell() = new HillshadeCell(azimuth, zenith, zFactor, cw, ch)

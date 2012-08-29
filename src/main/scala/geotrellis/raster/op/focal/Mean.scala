@@ -8,6 +8,7 @@ case class Mean(r:Op[Raster], f:Kernel) extends Op1(r)({
   r => Result(f.handle(r, new MeanStrategy(r)))
 })
 
+//protected[focal] class MeanStrategy(r:Raster) extends Strategy[Raster, MeanCell](Aggregated) {
 protected[focal] class MeanStrategy(r:Raster) extends Strategy[Raster, MeanCell](Aggregated) {
   val d = DoubleArrayRasterData.ofDim(r.cols, r.rows)
   def store(col:Int, row:Int, cc:MeanCell) { d.setDouble(col, row, cc.get()) }
