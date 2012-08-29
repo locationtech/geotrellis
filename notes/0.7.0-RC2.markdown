@@ -1,0 +1,14 @@
+* Powerful new support for extremely large rasters through tiled raster data classes
+* New map/reduce-style definition of operations for data parallelism on large raster data
+* Support for a range of new raster data types for efficient memory utilization and performance improvements
+* Significant speed improvements through lazy evaluation
+* Improved geoprocessing operation hierarchy and operation naming scheme
+* Modernized benchmark structure with many new performance benchmarks, including tiled raster tests
+* First class support for floating point raster data values, with:
+    + floating point raster interface
+    + support in core operations for floating point values
+    + implementation of floating point ARG formats
+* The [getting started documentation](azavea.github.com/geotrellis/getting_started/GeoTrellis.html) has been significantly expanded and improved
+* Executable GeoTrellis tools can now be installed via conscript
+* The GeoTrellis template has moved to the github repository geotrellis.g8, and
+  can now be installed using giter8
