@@ -21,3 +21,9 @@ extends Op4(r,colorBreaks,noDataColor, transparent)({
     Result(bytes)
   }
 })
+
+case class RenderPngRgba(r:Op[Raster]) extends Op1(r)({
+  r =>
+    val bytes = new Encoder(Settings(Rgba, PaethFilter)).writeByteArray(r)
+    Result(bytes)
+})
