@@ -40,8 +40,8 @@ class HillshadeTest extends FunSuite {
   }
 
   test("hillshade") {
-    val path = "/Users/erik/elevation.arg"
-    //val path = "src/test/resources/sbn/SBN_inc_percap.arg"
+    //val path = "/Users/erik/elevation.arg"
+    val path = "src/test/resources/sbn/SBN_inc_percap.arg"
 
     val grayBreaks = grayscale(1)
   
