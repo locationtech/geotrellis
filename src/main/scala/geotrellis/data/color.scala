@@ -1,5 +1,7 @@
 package geotrellis.data
 
+import scala.math.round
+
 import geotrellis._
 
 object Color {
@@ -21,6 +23,23 @@ object Color {
 
   // combine three color bands into one color value
   @inline final def zip(r:Int, g:Int, b:Int, a:Int) = (r << 24) + (g << 16) + (b << 8) + a
+
+  def spread(colors:Array[Int], n:Int): Array[Int] = {
+    if (colors.length == n) return colors
+
+    val colors2 = new Array[Int](n)
+    colors2(0) = colors(0)
+  
+    val b = n - 1
+    val c = colors.length - 1
+    var i = 1
+    while (i < n) {
+      colors2(i) = colors(round(i.toDouble * c / b).toInt)
+      i += 1
+    }
+
+    colors2
+  }
 }
 
 sealed trait Colors {
@@ -42,19 +61,48 @@ case class ColorMapper(cb:ColorBreaks, nodataColor:Int) extends Function1[Int, I
   def apply(z:Int):Int = if (z == NODATA) nodataColor else cb.get(z)
 }
 
-/**
- * Data object to represent class breaks, stored as an array of ranges.
- * Each individual range is stored as a tuple of (max value, color)
- */
-case class ColorBreaks(breaks:Array[(Int, Int)]) {
-  def firstColor = breaks(0)._2
-  def lastColor = breaks(breaks.length - 1)._2
+case class ColorBreaks(limits:Array[Int], colors:Array[Int]) {
+  assert(limits.length == colors.length)
+  assert(colors.length > 0)
+
+  val lastColor = colors(colors.length - 1)
+
+  def length = limits.length
+
   def get(z:Int):Int = {
-    breaks.foreach { case (limit, color) => if (z <= limit) return color }
+    var i = 0
+    val last = colors.length - 1
+    while (i < last) {
+      if (z <= limits(i)) return colors(i)
+      i += 1
+    }
     lastColor
   }
-  override def toString = {
-    "ColorBreaks(%s)" format breaks.map(t => "(%s, %06x)" format (t._1, t._2)).mkString(", ")
+
+  override def toString = "ColorBreaks(%s, %s)" format (
+    limits.mkString("Array(", ", ", ")"),
+    colors.map("%08x" format _).mkString("Array(", ", ", ")")
+  )
+}
+
+object ColorBreaks {
+  def assign(limits:Array[Int], colors:Array[Int]) = {
+    if (limits.length != colors.length) {
+      val used = new Array[Int](limits.length)
+      used(0) = colors(0)
+  
+      val b = limits.length - 1
+      val c = colors.length - 1
+      var i = 1
+      while (i < limits.length) {
+        used(i) = colors(round(i.toDouble * c / b).toInt)
+        i += 1
+      }
+  
+      new ColorBreaks(limits, used)
+    } else {
+      new ColorBreaks(limits, colors)
+    }
   }
 }
 
@@ -130,7 +178,7 @@ case class LinearColorRangeChooser(color1:Int, color2:Int) extends ColorRangeCho
  * Generates a range of colors from an array of initial colors. 
  */
 case class MultiColorRangeChooser(colors:Array[Int]) extends ColorRangeChooser {
-  def getRanges(masker:(Int) => Int, count:Int) = {
+  def getRanges(masker:Int => Int, count:Int) = {
     val hues = colors.map(masker)
     val mult = colors.length - 1
     val denom = count - 1

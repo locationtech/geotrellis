@@ -3,8 +3,8 @@ package geotrellis.data
 import geotrellis.process.TestServer
 import geotrellis._
 import geotrellis.raster._
-
-import geotrellis._
+import geotrellis.statistics.FastMapHistogram
+import geotrellis.statistics.op._
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
@@ -65,16 +65,16 @@ class GeoTiffSpec extends Spec with MustMatchers with ShouldMatchers {
     it ("should draw") {
       val path = "src/test/resources/econic.tif"
       val raster = GeoTiffReader.readPath(path, None, None)
+      val histogram = FastMapHistogram.fromRaster(raster)
 
       val (zmin, zmax) = raster.findMinMax
 
       val chooser = new MultiColorRangeChooser(Array(0xFF0000FF, 0xFFFF00FF, 0x0000FFFF))
-      val breaks = (zmin to zmax)
+      val breaks = (zmin to zmax).toArray
       val colors = chooser.getColors(breaks.length)
-      val pairs = breaks.zip(colors).toArray
+      val cb = ColorBreaks.assign(breaks, colors)
 
-      val png = io.WritePng(raster, "/tmp/fromgeo.png", pairs, NODATA, false)
-      server.run(png)
+      server.run(io.WritePng(raster, "/tmp/fromgeo.png", cb, histogram, NODATA))
     }
 
     it ("should write") {

@@ -17,7 +17,7 @@ object MapHistogram {
 class MapHistogram(counts:Map[Int, Int], var total:Int) extends Histogram {
   def getTotalCount = this.total
 
-  def copy = MapHistogram(this.counts.clone, this.total)
+  def copy() = MapHistogram(this.counts.clone, this.total)
 
   def getValues() = {
     var keys = rawValues()
@@ -26,6 +26,10 @@ class MapHistogram(counts:Map[Int, Int], var total:Int) extends Histogram {
   }
 
   def rawValues() = counts.keys.toArray
+
+  def foreachValue(f:Int => Unit) {
+    counts.keys.foreach(f)
+  }
 
   def uncountItem(i:Int) {
     if (i != NODATA) {

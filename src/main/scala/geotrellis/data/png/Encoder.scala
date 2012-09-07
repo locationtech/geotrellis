@@ -58,21 +58,23 @@ case class Encoder(settings:Settings) {
     settings.color match {
       case Grey(t) => {
         // write a single 2-byte color value
+        // our data is presumed to be in RGBA
         val cTRNS = new Chunk(TRNS)
         cTRNS.writeByte(0x00)
-        cTRNS.writeByte(byte(t))
+        cTRNS.writeByte(shift(t, 8))
         cTRNS.writeTo(dos)
       }
 
       case Rgb(t) => {
         // write three 2-byte color values
+        // our data is presumed to be in RGBA
         val cTRNS = new Chunk(TRNS)
+        cTRNS.writeByte(0x00)
+        cTRNS.writeByte(shift(t, 24))
         cTRNS.writeByte(0x00)
         cTRNS.writeByte(shift(t, 16))
         cTRNS.writeByte(0x00)
         cTRNS.writeByte(shift(t, 8))
-        cTRNS.writeByte(0x00)
-        cTRNS.writeByte(byte(t))
         cTRNS.writeTo(dos)
       }
 

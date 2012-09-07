@@ -9,13 +9,13 @@ import geotrellis.statistics._
  * Generate a PNG from a given raster and a set of color breaks. The background
  * can be set to a color or be made transparent.
  */
-case class RenderPng(r:Op[Raster], colorBreaks:Op[ColorBreaks],
-                     noDataColor:Op[Int], transparent:Op[Boolean])
-extends Op4(r,colorBreaks,noDataColor, transparent)({
-  (r, colorBreaks, noDataColor, transparent) => {
-    val breaks = colorBreaks.breaks.map(_._1)
-    val colors = colorBreaks.breaks.map(_._2)
-    val renderer = Renderer(breaks, colors, noDataColor)
+case class RenderPng(r:Op[Raster], colorBreaks:Op[ColorBreaks], h:Op[Histogram],
+                     noDataColor:Op[Int])
+extends Op4(r, colorBreaks, h, noDataColor)({
+  (r, colorBreaks, h, noDataColor) => {
+    val breaks = colorBreaks.limits
+    val colors = colorBreaks.colors
+    val renderer = Renderer(breaks, colors, h, noDataColor)
     val r2 = renderer.render(r)
     val bytes = new Encoder(renderer.settings).writeByteArray(r2)
     Result(bytes)
