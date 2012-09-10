@@ -1,0 +1,11 @@
+# see http://about.travis-ci.org/docs/user/build-configuration/
+language: scala
+scala:
+  - 2.9.2
+branches:
+  only:
+    - master
+notifications:
+  email:
+    recipients:
+      - jmarcus@azavea.com
