@@ -17,7 +17,7 @@ the user mailing list at [https://groups.google.com/group/geotrellis-user](https
 
 The current release version of GeoTrellis is 0.7.0 (Asgard).
 
-[![Build Status](https://secure.travis-ci.org/azavea/geotrellis.png)](http://travis-ci.org/azavea/geotrellis)]
+[![Build Status](https://secure.travis-ci.org/azavea/geotrellis.png)](http://travis-ci.org/azavea/geotrellis)
 
 ## Features
 
