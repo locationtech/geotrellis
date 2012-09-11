@@ -8,6 +8,7 @@ import java.nio.channels.FileChannel.MapMode._
 
 import geotrellis._
 import geotrellis.process._
+import geotrellis.raster.IntConstant
 
 trait ReadState {
   val layer:RasterLayer
@@ -169,10 +170,14 @@ trait FileReader extends Reader {
   def readPath(path:String, layerOpt:Option[RasterLayer], targetOpt:Option[RasterExtent]): Raster = {
     val layer = layerOpt.getOrElse(readMetadata(path))
     val target = targetOpt.getOrElse(layer.rasterExtent)
-    val readState = readStateFromPath(path, layer, target)
-    val raster = readState.loadRaster() // all the work is here
-    readState.destroy()
-    raster
+    if (! (new File(path)).exists() ) {
+      Raster(IntConstant(NODATA,target.cols,target.rows),target)
+    } else {
+      val readState = readStateFromPath(path, layer, target)
+      val raster = readState.loadRaster() // all the work is here
+      readState.destroy()
+      raster
+    }
   }
 }
 

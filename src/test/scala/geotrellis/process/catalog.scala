@@ -3,6 +3,7 @@ package geotrellis.process
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import geotrellis.{Extent,RasterExtent}
+import geotrellis.raster.IntConstant
 
 class CatalogSpec extends FunSpec with MustMatchers {
 
@@ -52,12 +53,18 @@ val json0 = """
   }
 
   describe("A DataSource") {
-    it("should find Arg32s in a source directory") {
-      val catalog = Catalog.fromJSON(json1)
-      val store = catalog.stores("stroud:fs")
-      val layers = store.getLayers
+   val catalog = Catalog.fromJSON(json1)
+   val store = catalog.stores("stroud:fs")
+   val layers = store.getLayers
+
+    it("should find Args in a source directory") {
       layers.toList.length must be === 4
     } 
-  }
 
+    it("should create IntConstant NODATA args") {
+      val s = Server("catalogtest", catalog)
+      val r = s.getRasterByName("constant", None)
+      assert(r.data.isInstanceOf[IntConstant])
+    }
+  }
 }
