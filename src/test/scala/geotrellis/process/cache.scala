@@ -1,12 +1,12 @@
 
 package geotrellis.process
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import scala.concurrent.Lock
 import scala.concurrent.ThreadRunner
 
-class LRUCacheSpec extends Spec with MustMatchers {
+class LRUCacheSpec extends FunSpec with MustMatchers {
   
   def f(x: Int):Int = x*100 
 

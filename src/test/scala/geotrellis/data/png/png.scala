@@ -8,10 +8,10 @@ import java.io.{File,FileInputStream}
 import geotrellis._
 import geotrellis.data.png._
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
-class PNGSpec extends Spec with MustMatchers {
+class PNGSpec extends FunSpec with MustMatchers {
 
   def parseHexByte(s:String) = Integer.parseInt(s, 16).toByte
   def parseHexBytes(cs:Array[String]) = cs.map(parseHexByte _)

@@ -4,7 +4,7 @@ import geotrellis._
 
 import geotrellis.process._
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
 case class Timer[T](f:() => T) {
@@ -14,4 +14,4 @@ case class Timer[T](f:() => T) {
   val time = t1 - t0
 }
 
-class ExampleTwoSpec extends Spec with MustMatchers {}
+class ExampleTwoSpec extends FunSpec with MustMatchers {}

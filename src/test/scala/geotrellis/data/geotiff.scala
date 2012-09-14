@@ -6,7 +6,7 @@ import geotrellis.raster._
 import geotrellis.statistics.FastMapHistogram
 import geotrellis.statistics.op._
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
@@ -36,7 +36,7 @@ import org.geotools.coverage.grid.{GridCoordinates2D}
 //xyz
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class GeoTiffSpec extends Spec with MustMatchers with ShouldMatchers {
+class GeoTiffSpec extends FunSpec with MustMatchers with ShouldMatchers {
   val server = TestServer()
 
   describe("A GeoTiffReader") {

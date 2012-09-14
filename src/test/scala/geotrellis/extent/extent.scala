@@ -1,13 +1,13 @@
 package geotrellis.extent
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.Extent;
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class ExtentSpec extends Spec with MustMatchers with ShouldMatchers {
+class ExtentSpec extends FunSpec with MustMatchers with ShouldMatchers {
   describe("An Extent object") {
     it("should die when invalid #1") {
       evaluating {

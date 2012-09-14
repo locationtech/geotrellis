@@ -5,12 +5,12 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.raster.op._
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class ExtentSpec extends Spec with MustMatchers with ShouldMatchers {
+class ExtentSpec extends FunSpec with MustMatchers with ShouldMatchers {
 
   def re(pt:(Double, Double), cs:(Double, Double), ncols:Int, nrows:Int) = {
     val (x1, y1) = pt

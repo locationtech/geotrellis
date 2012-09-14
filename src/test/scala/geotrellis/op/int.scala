@@ -19,12 +19,12 @@ import geotrellis.raster.op.transform.{ResampleRaster}
 import geotrellis.raster.op.CreateRaster
 import geotrellis.statistics.op.stat._
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
+class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
   val rasterExtent = RasterExtent(Extent(0.0, 0.0, 100.0, 80.0), 20.0, 20.0, 5, 4)
 
   describe("The operations include") {
