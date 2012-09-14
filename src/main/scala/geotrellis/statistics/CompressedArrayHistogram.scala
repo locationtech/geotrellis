@@ -39,7 +39,7 @@ class CompressedArrayHistogram(counts:Array[Int], total:Int,
   //@inline
   final def decompress(i:Int) = (i * divisor) + vmin
 
-  override def copy = new CompressedArrayHistogram(counts.clone, getTotalCount, vmin, vmax)
+  override def copy() = new CompressedArrayHistogram(counts.clone, getTotalCount, vmin, vmax)
 
   override def rawValues = {
     val zmin = getMinValue
@@ -48,6 +48,10 @@ class CompressedArrayHistogram(counts:Array[Int], total:Int,
   }
 
   override def getValues() = rawValues()
+
+  override def foreachValue(f:Int => Unit) {
+    getValues().foreach(f) //FIXME
+  }
 
   override def setItem(i:Int, count:Int) { super.setItem(compress(i), count) }
   override def countItem(i:Int, count:Int=1) { super.countItem(compress(i), count) }

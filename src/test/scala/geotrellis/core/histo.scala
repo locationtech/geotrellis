@@ -187,11 +187,11 @@ class HistogramSpec extends Spec with MustMatchers with ShouldMatchers {
       h.getQuantileBreaks(3) must be === Array(2,3,5)
       h.getQuantileBreaks(4) must be === Array(1,2,4,5)
       h.getQuantileBreaks(5) must be === Array(1,2,3,4,5)
-      h.getQuantileBreaks(6) must be === Array(1,2,3,3,4,5)
-      h.getQuantileBreaks(7) must be === Array(1,2,2,3,4,4,5)
-      h.getQuantileBreaks(8) must be === Array(1,1,2,3,3,4,5,5)
-      h.getQuantileBreaks(9) must be === Array(1,1,2,2,3,4,4,5,5)
-      h.getQuantileBreaks(10) must be === Array(1,1,2,2,3,3,4,4,5,5)
+      h.getQuantileBreaks(6) must be === Array(1,2,3,4,5)
+      h.getQuantileBreaks(7) must be === Array(1,2,3,4,5)
+      h.getQuantileBreaks(8) must be === Array(1,2,3,4,5)
+      h.getQuantileBreaks(9) must be === Array(1,2,3,4,5)
+      h.getQuantileBreaks(10) must be === Array(1,2,3,4,5)
     }
   }
 
