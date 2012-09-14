@@ -14,12 +14,12 @@ import geotrellis.statistics._
 import geotrellis.raster.op._
 import geotrellis.process._
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class DoCellSpec extends Spec with MustMatchers with ShouldMatchers {
+class DoCellSpec extends FunSpec with MustMatchers with ShouldMatchers {
   describe("the DoCell operation") {
     val rasterExtent = RasterExtent(Extent(0.0, 0.0, 100.0, 80.0), 20.0, 20.0, 5, 4)
     val server = TestServer()

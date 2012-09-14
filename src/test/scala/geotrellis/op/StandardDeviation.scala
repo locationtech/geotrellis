@@ -5,12 +5,12 @@ import geotrellis._
 import geotrellis.raster.op._
 import geotrellis.statistics.op.stat._
 import geotrellis.io.LoadFile
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class DeviationRasterSpec extends Spec with MustMatchers with ShouldMatchers {
+class DeviationRasterSpec extends FunSpec with MustMatchers with ShouldMatchers {
   val server = TestServer()
 
   describe("The DeviationRaster operation") {

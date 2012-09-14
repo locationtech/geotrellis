@@ -12,12 +12,12 @@ import geotrellis.statistics._
 import geotrellis.process._
 import geotrellis._
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class ForEachSpec extends Spec with MustMatchers with ShouldMatchers {
+class ForEachSpec extends FunSpec with MustMatchers with ShouldMatchers {
   val server = TestServer()
 
   describe("The ForEach operation") {

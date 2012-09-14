@@ -1,10 +1,10 @@
 package geotrellis.process
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import geotrellis.{Extent,RasterExtent}
 
-class CatalogSpec extends Spec with MustMatchers {
+class CatalogSpec extends FunSpec with MustMatchers {
 
 
 val json0 = """
@@ -56,7 +56,7 @@ val json0 = """
       val catalog = Catalog.fromJSON(json1)
       val store = catalog.stores("stroud:fs")
       val layers = store.getLayers
-      layers.toList.length must be === 3
+      layers.toList.length must be === 4
     } 
   }
 

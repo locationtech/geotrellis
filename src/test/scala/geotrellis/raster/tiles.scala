@@ -1,6 +1,6 @@
 package geotrellis.raster
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
 import geotrellis._
@@ -10,7 +10,7 @@ import geotrellis.raster.op.tiles._
 import geotrellis.Implicits._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class TileSpec extends Spec with MustMatchers {
+class TileSpec extends FunSpec with MustMatchers {
   val e = Extent(0.0, 0.0, 100.0, 100.0)
   val g = RasterExtent(e, 20.0, 20.0, 5, 5)
   

@@ -1,11 +1,11 @@
 package geotrellis.process
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
 import geotrellis.{Extent,RasterExtent}
 
-class ServerSpec extends Spec with MustMatchers {
+class ServerSpec extends FunSpec with MustMatchers {
 
 describe("A Server") {
 

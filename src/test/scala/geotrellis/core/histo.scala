@@ -5,13 +5,13 @@ import math.round
 import scala.util.Random
 import Console.printf
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 import geotrellis.statistics._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class HistogramSpec extends Spec with MustMatchers with ShouldMatchers {
+class HistogramSpec extends FunSpec with MustMatchers with ShouldMatchers {
   def stringToInts(s:String) = {
     s.toCharArray.map { _.toByte - 32 }
   }

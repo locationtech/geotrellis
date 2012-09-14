@@ -4,12 +4,19 @@
 # Author: Paul Phillips <paulp@typesafe.com>
 
 # todo - make this dynamic
-declare -r sbt_release_version=0.11.3
+declare -r sbt_release_version=0.12.0
 declare -r sbt_snapshot_version=0.13.0-SNAPSHOT
 
 unset sbt_jar sbt_dir sbt_create sbt_snapshot sbt_launch_dir
 unset scala_version java_home sbt_explicit_version
 unset verbose debug quiet
+
+for arg in "$@"; do
+  case $arg in
+    -q|-quiet)  quiet=1 ;;
+            *)          ;;
+  esac
+done
 
 build_props_sbt () {
   if [[ -f project/build.properties ]]; then
@@ -50,7 +57,7 @@ sbt_version () {
 }
 
 echoerr () {
-  echo 1>&2 "$@"
+  [[ -z $quiet ]] && echo 1>&2 "$@"
 }
 vlog () {
   [[ $verbose || $debug ]] && echoerr "$@"
@@ -81,7 +88,7 @@ get_mem_opts () {
   (( $perm > 256 )) || perm=256
   (( $perm < 1024 )) || perm=1024
   local codecache=$(( $perm / 2 ))
-  
+
   echo "-Xms${mem}m -Xmx${mem}m -XX:MaxPermSize=${perm}m -XX:ReservedCodeCacheSize=${codecache}m"
 }
 
@@ -94,7 +101,7 @@ make_url () {
   groupid="$1"
   category="$2"
   version="$3"
-  
+
   echo "http://typesafe.artifactoryonline.com/typesafe/ivy-$category/$groupid/sbt-launch/$version/sbt-launch.jar"
 }
 
@@ -105,7 +112,7 @@ declare -r noshare_opts="-Dsbt.global.base=project/.sbtboot -Dsbt.boot.directory
 declare -r sbt_opts_file=".sbtopts"
 declare -r jvm_opts_file=".jvmopts"
 declare -r latest_28="2.8.2"
-declare -r latest_29="2.9.1"
+declare -r latest_29="2.9.2"
 declare -r latest_210="2.10.0-SNAPSHOT"
 
 declare -r script_path=$(get_script_path "$BASH_SOURCE")
@@ -115,7 +122,9 @@ declare -r script_name="$(basename $script_path)"
 # some non-read-onlies set with defaults
 declare java_cmd=java
 declare sbt_launch_dir="$script_dir/.lib"
+declare sbt_universal_launcher="$script_dir/lib/sbt-launch.jar"
 declare sbt_mem=$default_sbt_mem
+declare sbt_jar=$sbt_universal_launcher
 
 # pull -J and -D options to give to java.
 declare -a residual_args
@@ -161,7 +170,7 @@ sbt_artifactory_list () {
   local version=${version0%-SNAPSHOT}
   local url="http://typesafe.artifactoryonline.com/typesafe/ivy-snapshots/$(sbt_groupid)/sbt-launch/"
   dlog "Looking for snapshot list at: $url "
-  
+
   curl -s --list-only "$url" | \
     grep -F $version | \
     perl -e 'print reverse <>' | \
@@ -200,7 +209,7 @@ jar_file () {
 download_url () {
   local url="$1"
   local jar="$2"
-  
+
   echo "Downloading sbt launcher $(sbt_version):"
   echo "  From  $url"
   echo "    To  $jar"
@@ -232,7 +241,7 @@ Usage: $script_name [options]
   -no-colors         disable ANSI color codes
   -sbt-create        start sbt even if current directory contains no sbt project
   -sbt-dir   <path>  path to global settings/plugins directory (default: ~/.sbt/<version>)
-  -sbt-boot  <path>  path to shared boot directory (default: ~/.sbt/boot in 0.11 series)
+  -sbt-boot  <path>  path to shared boot directory (default: ~/.sbt/boot in 0.11+)
   -ivy       <path>  path to local Ivy repository (default: ~/.ivy2)
   -mem    <integer>  set memory options (default: $sbt_mem, which is
                        $(get_mem_opts $sbt_mem) )
@@ -244,7 +253,7 @@ Usage: $script_name [options]
   # sbt version (default: from project/build.properties if present, else latest release)
   !!! The only way to accomplish this pre-0.12.0 if there is a build.properties file which
   !!! contains an sbt.version property is to update the file on disk.  That's what this does.
-  -sbt-version  <version>   use the specified version of sbt 
+  -sbt-version  <version>   use the specified version of sbt
   -sbt-jar      <path>      use the specified jar as the sbt launcher
   -sbt-snapshot             use a snapshot version of sbt
   -sbt-launch-dir <path>    directory to hold sbt launchers (default: $sbt_launch_dir)
@@ -308,7 +317,7 @@ process_args ()
     local type="$1"
     local opt="$2"
     local arg="$3"
-    
+
     if [[ -z "$arg" ]] || [[ "${arg:0:1}" == "-" ]]; then
       die "$opt requires <$type> argument"
     fi
@@ -350,16 +359,16 @@ process_args ()
               *) addResidual "$1" && shift ;;
     esac
   done
-  
+
   [[ $debug ]] && {
     case $(sbt_version) in
-     0.7.*) addSbt "debug" ;; 
+     0.7.*) addSbt "debug" ;;
          *) addSbt "set logLevel in Global := Level.Debug" ;;
     esac
   }
   [[ $quiet ]] && {
     case $(sbt_version) in
-     0.7.*) ;; 
+     0.7.*) ;;
          *) addSbt "set logLevel in Global := Level.Error" ;;
     esac
   }
@@ -385,7 +394,7 @@ argumentCount=$#
 
 # Update build.properties no disk to set explicit version - sbt gives us no choice
 [[ -n "$sbt_explicit_version" ]] && update_build_props_sbt "$sbt_explicit_version"
-echo "Detected sbt version $(sbt_version)"
+echoerr "Detected sbt version $(sbt_version)"
 
 [[ -n "$scala_version" ]] && echo "Overriding scala version to $scala_version"
 
@@ -416,7 +425,7 @@ EOM
 [[ -n "$sbt_dir" ]] || {
   sbt_dir=~/.sbt/$(sbt_version)
   addJava "-Dsbt.global.base=$sbt_dir"
-  echo "Using $sbt_dir as sbt dir, -sbt-dir to override."
+  echoerr "Using $sbt_dir as sbt dir, -sbt-dir to override."
 }
 
 # since sbt 0.7 doesn't understand iflast

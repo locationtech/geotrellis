@@ -3,7 +3,7 @@ package geotrellis.raster
 import geotrellis._
 import geotrellis.util.Filesystem
 import geotrellis.process._
-import geotrellis.data.arg.ArgWriter
+import geotrellis.data.arg.{ArgWriter,ArgReader}
 
 import java.io.{FileOutputStream, BufferedOutputStream}
 
@@ -672,7 +672,42 @@ object Tiler {
       ArgWriter(raster.data.getType).write(path2, raster, name2)
     }
   }
- 
+
+  def writeTilesWithGdal(pixelCols:Int, pixelRows:Int, re:RasterExtent, name:String, rasterType:RasterType, outputDir:String, inputARG:String) {
+    val layout = buildTileLayout(re, pixelCols, pixelRows)
+    val reLayout = layout.getResolutionLayout(re)
+    for (row <- 0 until layout.tileRows; col <- 0 until layout.tileCols) {
+      val name2 = tileName (name, col, row)
+      val outputPath = tilePath(outputDir, "tmp_" + name, col, row)  
+      val re = reLayout.getRasterExtent(col,row)
+      ArgWriter(rasterType).writeMetadataJSON(outputPath, name2,re)
+      val cmd = "gdal_translate -of ARG -srcwin %d %d %d %d %s %s".format(
+        col * pixelCols,
+        row * pixelRows,
+        pixelCols,
+        pixelRows,
+        inputARG,
+        outputPath
+      ) 
+      import sys.process._
+      val result = cmd !
+      val arg = ArgReader.readPath(outputPath,None,None)
+      var nodata = true
+      val outArg = arg.mapIfSet { z => {
+          if (z == NODATA + 1) NODATA else { nodata = false; z }
+        }
+      }
+      val finalPath = tilePath(outputDir, name, col, row)
+      if (nodata) {
+        println("found nodata arg: " + outputPath)
+        val jsonPath = Filesystem.join(outputDir, tileName(name, col, row)) + ".json"
+        ArgWriter(rasterType).writeMetadataJSON(jsonPath, name2,re)
+      } else {
+        ArgWriter(rasterType).write(finalPath, outArg, name2)
+      }
+    }
+  } 
+
   /**
    * Given a path and name, deletes the relevant tileset from the disk.
    */  

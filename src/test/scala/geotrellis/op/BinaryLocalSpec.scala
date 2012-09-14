@@ -6,12 +6,12 @@ import geotrellis.raster.op.local.{AddConstant,MultiplyConstant}
 import geotrellis.raster._
 import geotrellis._
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class BinaryLocalSpec extends Spec with MustMatchers with ShouldMatchers {
+class BinaryLocalSpec extends FunSpec with MustMatchers with ShouldMatchers {
   def f(op:Op[Raster]) = local.AddConstant(op, 1)
 
   describe("The BinaryLocal operation (Subtract)") {

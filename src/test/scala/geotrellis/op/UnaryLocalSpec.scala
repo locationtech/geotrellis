@@ -7,12 +7,12 @@ import geotrellis.raster.op.local._
 import geotrellis.raster._
 import geotrellis._
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class UnaryLocalSpec extends Spec with MustMatchers with ShouldMatchers {
+class UnaryLocalSpec extends FunSpec with MustMatchers with ShouldMatchers {
   def f(op:Op[Raster]) = AddConstant(op, 1)
 
   describe("The UnaryLocal operation (AddConstant)") {

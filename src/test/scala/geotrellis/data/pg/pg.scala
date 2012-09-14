@@ -1,6 +1,6 @@
 package geotrellis.data.pg
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
 import scala.collection.mutable.Map
@@ -16,7 +16,7 @@ import geotrellis.data._
 // This test is disabled for now because it won't work for most users.
 
 //@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-//class PgSpec extends Spec with MustMatchers {
+//class PgSpec extends FunSpec with MustMatchers {
 //  Class.forName("org.postgis.DriverWrapper")
 //  describe("postgis connection") {
 //    it ("should connect to a postgis server at 192.168.16.75") {

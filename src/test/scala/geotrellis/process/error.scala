@@ -1,6 +1,6 @@
 package geotrellis.process
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
 import geotrellis._
@@ -34,7 +34,7 @@ case class LargeWindow(a:Op[Unit], b:Op[Unit]) extends Op2(a,b) ({
   }
 })
 
-class FailingOpSpec extends Spec with MustMatchers {
+class FailingOpSpec extends FunSpec with MustMatchers {
 
 describe("A failing operation") {
     it("should return a StepError") {
