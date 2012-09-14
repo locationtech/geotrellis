@@ -186,11 +186,12 @@ class IntSpecX extends Spec with MustMatchers with ShouldMatchers {
 
     it("FindColorBreaks") {
       val H = GetHistogram(Literal(raster1), 101)
-      val (g, y, o, r) = (0x00FF00, 0xFFFF00, 0xFF7F00, 0xFF0000)
+      val (g, y, o, r) = (0x00ff00ff, 0xffff00ff, 0xff7f00ff, 0xff0000ff)
       val colors = Array(g, y, o, r)
       val F = GetColorBreaks(H, colors)
       val cb = server.run(F)
-      cb.breaks.toList must be === List((12, g), (15, y), (66, o), (95, r))
+      cb.limits must be === Array(12, 15, 66, 95)
+      cb.colors must be === Array(g, y, o, r)
     }
 
     it("GenerateStatistics") {

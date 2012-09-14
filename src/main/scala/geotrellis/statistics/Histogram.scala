@@ -33,27 +33,27 @@ abstract trait Histogram {
   /**
    * Return the total number of occurances for all items.
    */
-  def getTotalCount: Int
+  def getTotalCount(): Int
 
   /**
    * Return the smallest item seen.
    */
-  def getMinValue: Int
+  def getMinValue(): Int
 
   /**
    * Return the largest item seen.
    */
-  def getMaxValue: Int
+  def getMaxValue(): Int
 
   /**
    * Return the smallest and largest items seen as a tuple.
    */
-  def getMinMaxValues:(Int, Int) = (getMinValue, getMaxValue)
+  def getMinMaxValues():(Int, Int) = (getMinValue, getMaxValue)
 
   /**
    * Return a copy of this histogram.
    */
-  def copy: Histogram
+  def copy(): Histogram
 
   /**
    * This is a heuristic used by getQuantileBreaks, which mutates the
@@ -62,21 +62,21 @@ abstract trait Histogram {
    *
    */
   def normalizeExtremeValues(num:Int, cutoff:Int): Histogram = {
-    val (zmin, zmax) = getMinMaxValues
+    val (zmin, zmax) = getMinMaxValues()
 
     // see how many (if any) extreme values we have, and store their indices
-    val values:Array[Int] = getValues
-    val vLen:Int = values.length
+    val values:Array[Int] = getValues()
+    val vLen = values.length
 
     val eItems:List[Int] = values.foldLeft(Nil:List[Int]) {
       (is, i) => if (getItemCount(i) > cutoff) i :: is else is
     }
-    val eLen:Int = eItems.length
+    val eLen = eItems.length
 
     // if we don't have extreme values we're done
     if (eLen == 0) return this
 
-    val h = this.copy
+    val h = copy()
 
     // if we only have extreme values, just set all histogram counts to 1.
     if (eLen == vLen) {
@@ -119,48 +119,10 @@ abstract trait Histogram {
     getValues.foreach(z => f(z, getItemCount(z)))
   }
 
+  def foreachValue(f:Int => Unit): Unit
+
   def update(other:Histogram) {
     other.foreach((z, count) => countItem(z, count))
-  }
-
-  /**
-   * The basic idea here is to try to "evenly" split 'b' values across 'q'
-   * slots. The goal is to drop or duplicate values as evenly as possible.
-   * Here are some examples:
-   *
-   * splitBreakIndices(1, 1) -> Array(0)
-   * splitBreakIndices(3, 5) -> Array(1,2,4)
-   * splitBreakIndices(4, 5) -> Array(0,1,3,4)
-   * splitBreakIndices(5, 5) -> Array(0,1,2,3,4)
-   * splitBreakIndices(7, 5) -> Array(0,1,1,2,3,3,4)
-   * splitBreakIndices(10,5) -> Array(0,0,1,1,2,2,3,3,4,4)
-   */
-  def splitBreakIndices(b:Int, q:Int):Array[Int] = {
-    val ratio = q.toDouble / b
-    (0 until b).map(i => scala.math.round(i * ratio).toInt).toArray
-  }
-
-  /**
-   * Take an existing array of class breaks (values that define the maximum for
-   * a particular class) and "stretch" them over a larger range.
-   * The idea is that a user might want 6 classes, but only 4 could be created.
-   * In these cases we will streth the 4 breaks into 6 (with some breaks being
-   * unused) to better map onto a users' preferred colors.
-   */
-  def splitBreaks(breaks:Array[Int], q:Int):Array[Int] = {
-    val indices = splitBreakIndices(breaks.length, q)
-    var out = Array.ofDim[Int](q)
-
-    var i = 0
-    var j = 0
-
-    while (i < q) {
-      if (j < indices.length - 1 && indices(j + 1) == i) j += 1
-      out(i) = breaks(j)
-      i += 1
-    }
-
-    out
   }
 
   /**
@@ -174,19 +136,19 @@ abstract trait Histogram {
   def getQuantileBreaks(num:Int):Array[Int] = {
     // first, we create a list of percentages to use, along with determining
     // how many cells should fit in one "ideal" quantile bucket.
-    val quantiles = this.getEvenQuantiles(num)
-    val size = (quantiles(0) * this.getTotalCount).toInt
+    val quantiles:Array[Double] = getEvenQuantiles(num)
+    val size:Int = (quantiles(0) * getTotalCount).toInt
 
     // then we need to make a copy of ourself to do some preprocessing on to
     // remove extreme values. an extreme value is one that would automatically
     // overflow any bucket it is in (even alone). if size=100, and there are
     // 200 cells with the value "1" then 1 would be an extreme value.
-    val h = normalizeExtremeValues(num, size)
+    val h:Histogram = normalizeExtremeValues(num, size)
 
     // now we'll store some data about the histogram, our quantiles, etc, for
     // future use and fast access.
     val total    = h.getTotalCount
-    val limits   = quantiles.map { q => q * total }.toArray
+    val limits   = quantiles.map(_ * total)
     val maxValue = h.getMaxValue
 
     // this is the array of breaks we will return
@@ -197,9 +159,7 @@ abstract trait Histogram {
 
     // the value we're currently working on
     var j = 0
-    val t0 = System.currentTimeMillis()
-    val values = this.getValues
-    val t1 = System.currentTimeMillis()
+    val values = getValues()
 
     // the current total of all previous values we've seen
     var currTotal = 0
@@ -244,20 +204,19 @@ abstract trait Histogram {
       qIndex += 1
     }
 
-    // figure out which breaks got filled
-    val realBreaks = breaks.slice(0, qIndex)
-    splitBreaks(realBreaks, quantiles.length)
+    // figure out which breaks got filled, and only return those
+    breaks.slice(0, qIndex)
   }
 
   def getMode() = {
-    val values = this.getValues
+    val values = getValues()
     var mode = values(0)
-    var count = this.getItemCount(mode)
+    var count = getItemCount(mode)
     var i = 1
     val len = values.length
     while (i < len) {
       val z = values(i)
-      val c = this.getItemCount(z)
+      val c = getItemCount(z)
       if (c > count) {
         count = c
         mode = z
@@ -288,7 +247,7 @@ abstract trait Histogram {
     
 
   def generateStatistics() = {
-    val values = this.getValues
+    val values = getValues()
 
     var mode = 0
     var modeCount = 0
@@ -298,14 +257,14 @@ abstract trait Histogram {
 
     var median = 0
     var needMedian = true
-    val limit = this.getTotalCount / 2
+    val limit = getTotalCount() / 2
 
     var i = 0
     val len = values.length;
 
     while (i < len) {
       val value = values(i)
-      val count = this.getItemCount(value)
+      val count = getItemCount(value)
       if (count != 0) {
         // update the mode
         if (count > modeCount) {
@@ -328,10 +287,10 @@ abstract trait Histogram {
     }
 
     // find the min value
-    val zmin = if (values.length > 0) values(0) else 0
+    val zmin = if (values.length > 0) values(0) else Int.MaxValue
 
     // find the max value
-    val zmax = if (values.length > 0) values(len - 1) else 0
+    val zmax = if (values.length > 0) values(len - 1) else Int.MinValue
 
     // find stddev
     i = 0
@@ -339,7 +298,7 @@ abstract trait Histogram {
     var mean2 = 0.0
     while (i < len) {
       val value = values(i)
-      val count = this.getItemCount(value)
+      val count = getItemCount(value)
 
       if (count > 0) {
         val x = value - mean
@@ -365,7 +324,7 @@ abstract trait Histogram {
     val values = getValues
     var i = 0
     while (i < values.length) {
-      val count = this.getItemCount(values(i))
+      val count = getItemCount(values(i))
       if (count > 0) {
         if (first) first = false else sb.append(",")
         sb.append("[%d,%d]".format(values(i), count))

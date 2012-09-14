@@ -72,9 +72,11 @@ class ColorSpec extends Spec with MustMatchers {
 
   describe("ColorBreaks") {
     it("should map breaks to colors") {
-      val a = Array((2, 0xff0000), (4, 0x00ff00), (6, 0x0000ff))
-      val cb = ColorBreaks(a)
-      cb.breaks must be === a
+      val limits = Array(2, 4, 6)
+      val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
+      val cb = ColorBreaks(limits, colors)
+      cb.limits must be === limits
+      cb.colors must be === colors
     }
   }
 }
