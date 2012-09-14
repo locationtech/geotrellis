@@ -29,23 +29,6 @@ val json0 = """
 }
 """
 
-  val json2 = """
-   {  
-    "params": {
-    "xmin": 0.0,
-    "xmax": 100.0,
-    "ymin": 0.0,
-    "ymax": 100.0,
-    "cellwidth": 20.0,
-    "cellheight": 20.0,
-    "cols": 5,
-    "rows": 5,
-    "epsg": 3785,
-    "xskew": 0.0,
-    "yskew": 0.0 
-    }
-   }
-"""
   describe("A Catalog") {
     it("should load when empty") {
       val found = Catalog.fromJSON(json0)

@@ -163,7 +163,6 @@ akka {
 object Server {
   val config = ConfigFactory.load()
   val catalogPath = config.getString("geotrellis.catalog")
-  println("Loading catalog: " + catalogPath)
 
   def apply(id:String) = new Server(id, Catalog.fromPath(catalogPath))
   def apply(id:String, path:String) = new Server(id, Catalog.fromPath(path))
