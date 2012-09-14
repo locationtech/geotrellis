@@ -80,8 +80,9 @@ akka {
 
   def loadInStaticCache(layer:RasterLayer):Unit = {
     val path = layer.rasterPath
-    val bytes = Filesystem.slurp(path)
-    staticCache(layer.name) = bytes
+    if (new File(path).exists) {
+      staticCache(layer.name) = Filesystem.slurp(path)
+    }
   }
 
   def shutdown():Unit = system.shutdown()
@@ -162,7 +163,7 @@ akka {
 
 object Server {
   val config = ConfigFactory.load()
-  val catalogPath = config.getString("geotrellis.catalog")
+  def catalogPath = config.getString("geotrellis.catalog")
 
   def apply(id:String) = new Server(id, Catalog.fromPath(catalogPath))
   def apply(id:String, path:String) = new Server(id, Catalog.fromPath(path))
