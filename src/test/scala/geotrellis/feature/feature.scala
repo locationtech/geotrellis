@@ -1,18 +1,18 @@
 package geotrellis.feature
 
 import geotrellis._
-import geotrellis.feature.op.geometry._
+import geotrellis.feature.op.geometry.{Buffer,GetCentroid}
 import geotrellis.process._
 import geotrellis.feature._
-
 import math.{max,min,round}
-
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
+import geotrellis.feature.op.geometry.GetEnvelope
+import geotrellis.feature.op.geometry.Intersect
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class FeatureSpec extends Spec with MustMatchers with ShouldMatchers {
+class FeatureSpec extends FunSpec with MustMatchers with ShouldMatchers {
   describe("Buffer") {
     it("should buffer") {
       val s = TestServer()

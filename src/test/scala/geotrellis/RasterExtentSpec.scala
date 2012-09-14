@@ -1,12 +1,12 @@
 package geotrellis
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 //import org.junit.runner.RunWith
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class RasterExtentSpec extends Spec with MustMatchers with ShouldMatchers {
+class RasterExtentSpec extends FunSpec with MustMatchers with ShouldMatchers {
   describe("A RasterExtent object") {
     val e1 = Extent(0.0, 0.0, 1.0, 1.0)
     val e2 = Extent(0.0, 0.0, 20.0, 20.0)

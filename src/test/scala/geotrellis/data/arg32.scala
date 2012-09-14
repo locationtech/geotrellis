@@ -6,14 +6,14 @@ import geotrellis.raster._
 
 import java.io.{DataInputStream, FileInputStream}
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
 import scala.math.abs
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class Arg32Spec extends Spec with MustMatchers with ShouldMatchers {
+class Arg32Spec extends FunSpec with MustMatchers with ShouldMatchers {
   val nd = NODATA
 
   describe("An Arg32Reader") {

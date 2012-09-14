@@ -1,13 +1,13 @@
 package geotrellis.core
 
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
 import geotrellis.raster.TileUtils._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class TileSpec extends Spec with MustMatchers {
+class TileSpec extends FunSpec with MustMatchers {
   describe("Web Mercator Tile Utilities") {
 
     // 340 n 12th St

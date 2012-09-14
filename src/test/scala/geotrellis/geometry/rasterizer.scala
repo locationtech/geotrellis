@@ -6,7 +6,7 @@ import geotrellis._
 import geotrellis.geometry.{Polygon}
 import geotrellis.geometry.grid.{GridPoint, GridLine, GridPolygon}
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
@@ -31,7 +31,7 @@ object RasterizerSpec {
   }
 }
 
-class RasterizerSpec extends Spec with MustMatchers with ShouldMatchers {
+class RasterizerSpec extends FunSpec with MustMatchers with ShouldMatchers {
   val mkline = (x1:Int, y1:Int, x2:Int, y2:Int) => {
     new GridLine(new GridPoint(x1, y1), new GridPoint(x2, y2))
   }

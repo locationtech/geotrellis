@@ -6,11 +6,11 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.{Extent,RasterExtent}
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
-class GridPolygonSpec extends Spec with MustMatchers with ShouldMatchers {
+class GridPolygonSpec extends FunSpec with MustMatchers with ShouldMatchers {
   describe("A GridPoint") {
     it("should build") {
       val p1 = new GridPoint(0, 0)

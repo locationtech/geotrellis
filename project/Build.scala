@@ -21,7 +21,7 @@ object MyBuild extends Build {
     javaOptions in run += "-Xmx2G",
 
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "1.6.1" % "test",
+      "org.scalatest" %% "scalatest" % "2.0.M4" % "test",
       "junit" % "junit" % "4.5" % "test",
       "com.vividsolutions" % "jts" % "1.8",
       "java3d" % "j3d-core" % "1.3.1",

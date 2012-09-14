@@ -2,12 +2,12 @@ package geotrellis.geometry
 
 import math.{max,min,round}
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class GeometrySpec extends Spec with MustMatchers with ShouldMatchers {
+class GeometrySpec extends FunSpec with MustMatchers with ShouldMatchers {
   describe("A Point") {
     it("should build #1") {
       val p = Point(3.0, 4.0, 0, null)

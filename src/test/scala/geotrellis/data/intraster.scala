@@ -1,6 +1,6 @@
 package geotrellis.data
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
@@ -9,7 +9,7 @@ import geotrellis.process.TestServer
 import geotrellis.{Extent,RasterExtent}
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class RasterReaderSpec extends Spec with MustMatchers with ShouldMatchers {
+class RasterReaderSpec extends FunSpec with MustMatchers with ShouldMatchers {
   describe("An RasterReader") {
     it ("should work") {
       val e = Extent(-9.5, 3.8, 80 + -9.5, 80 + 3.8)

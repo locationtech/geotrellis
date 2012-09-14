@@ -1,10 +1,10 @@
 package geotrellis.data
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class ColorSpec extends Spec with MustMatchers {
+class ColorSpec extends FunSpec with MustMatchers {
   describe("LinearColorRangeChooser(FF0000,0000FF)") {
     val c = new LinearColorRangeChooser(0xFF0000, 0x0000FF)
     val c2 = new MultiColorRangeChooser(Array(0xFF0000, 0x0000FF))

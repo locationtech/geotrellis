@@ -1,10 +1,10 @@
 package geotrellis.util
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class UtilSpec extends Spec with MustMatchers {
+class UtilSpec extends FunSpec with MustMatchers {
   describe("Util package") {
     it("implements time()") {
       val (n, t) = Timer.time { Thread.sleep(100); 99 }

@@ -1,6 +1,6 @@
 package geotrellis.data.arg
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
@@ -12,7 +12,7 @@ import geotrellis.raster._
 import geotrellis.data._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class ArgSpec extends Spec with MustMatchers with ShouldMatchers {
+class ArgSpec extends FunSpec with MustMatchers with ShouldMatchers {
   describe("An ArgReader") {
     val server = TestServer()
     val path1 = "src/test/resources/fake.img8.arg"
