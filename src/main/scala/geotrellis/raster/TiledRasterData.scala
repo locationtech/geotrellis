@@ -276,9 +276,9 @@ case class TileSetRasterData(basePath:String, name:String, typ:RasterType,
  * of the TileRasterData classes but requires all the tiles to be loaded as
  * Rasters.
  */
-case class TileArrayRasterData(tiles:Array[Raster],
-                               tileLayout:TileLayout,
-                               rasterExtent:RasterExtent) extends TiledRasterData {
+class TileArrayRasterData(val tiles:Array[Raster],
+                               val tileLayout:TileLayout,
+                               val rasterExtent:RasterExtent) extends TiledRasterData  {
   val typ = tiles(0).data.getType
   def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
   def getType = typ
@@ -289,6 +289,25 @@ case class TileArrayRasterData(tiles:Array[Raster],
   def getTileOp(rl:ResolutionLayout, c:Int, r:Int):Op[Raster] =
     Literal(getTileRaster(rl, c, r))
 }
+
+object TileArrayRasterData {
+  def apply(tiles:Array[Raster], tileLayout:TileLayout, rasterExtent:RasterExtent) = 
+    new TileArrayRasterData(tiles, tileLayout, rasterExtent)
+  /**
+   * Create a TileArrayRasterData by loading all tiles from disk.
+   */
+  def apply(basePath:String, name:String, typ:RasterType, tileLayout:TileLayout, 
+      rasterExtent:RasterExtent, server:Server) = {
+    val rl = tileLayout.getResolutionLayout(rasterExtent)
+    
+    var tiles:List[Raster] = Nil
+    for (r <- 0 until tileLayout.tileRows; c <- 0 until tileLayout.tileCols) {
+      val path = Tiler.tilePath(basePath, name, c, r)
+      tiles = tiles ::: List(server.loadRaster(path))
+    }
+    new TileArrayRasterData(tiles.toArray, tileLayout, rasterExtent)
+  }
+} 
 
 object LazyTiledWrapper {
   def apply(data:RasterData, tileLayout:TileLayout):TiledRasterData = {
