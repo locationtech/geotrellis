@@ -134,7 +134,7 @@ class DemoService1 {
     val breaksOp = stat.GetColorBreaks(histogramOp, colorsOp)
 
     // Render the actual PNG image.
-    val pngOp = io.RenderPNG(outputOp, breaksOp, 0, true)
+    val pngOp = io.RenderPng(outputOp, breaksOp, histogramOp, Literal(0))
 
     format match {
       case "hello" => response("text/plain")("hello world")

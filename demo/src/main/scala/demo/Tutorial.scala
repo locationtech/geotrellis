@@ -15,18 +15,6 @@ import geotrellis.rest.op._
 import geotrellis.statistics.op._
 
 
-//import geotrellis.op.raster.data.{LoadFile, LoadRaster}
-//import geotrellis.op.logic.{Do, ForEach}
-//import geotrellis.op.util.string.{ParseInt, ParseHexInt, SplitOnComma}
-//import geotrellis.op.raster.stat.{Histogram}
-//import geotrellis.op.stat.{ColorBreaks => FindColorBreaks, ColorsFromPalette}
-//import geotrellis.op.raster.extent.{ParseExtent, CombineExtents}
-
-
-//object Demo {
-//  val server = Server("myapp", "src/main/resources/myapp-catalog.json")
-//}
-
 @Path("/greeting")
 class HelloWorld {
   @GET
@@ -108,7 +96,7 @@ class DrawRaster {
     val breaksOp:Op[ColorBreaks] = stat.GetColorBreaks(histogramOp, colorsOp)
 
     // render the png
-    val pngOp:Op[Array[Byte]] = io.RenderPNG(rasterOp, breaksOp, 0, true)
+    val pngOp:Op[Array[Byte]] = io.RenderPng(rasterOp, breaksOp, histogramOp, Literal(0))
 
     // run the operation
     try {
