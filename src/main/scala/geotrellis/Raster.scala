@@ -16,7 +16,7 @@ object Raster {
     Raster(DoubleArrayRasterData(arr, re.cols, re.rows), re)
 
   def empty(re:RasterExtent):Raster = 
-    Raster(IntArrayRasterData.empty(re.rows, re.cols), re)
+    Raster(IntArrayRasterData.empty(re.cols, re.rows), re)
 
   /**
    *
