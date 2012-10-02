@@ -228,4 +228,21 @@ class TileSpec extends FunSpec with MustMatchers {
       z must be === 50
     }
   }
+  
+  describe("Tile layout") {
+    it("has an origin of 0,0") {
+      val xmin = -180.0044642857
+      val ymax = 90.00892799539997
+      val worldExtent = Extent(xmin,-90.0,180.00446313369997,90.00892799539997)
+      val re = RasterExtent(worldExtent, 0.0089285714,0.0089285714,40321,20161)
+      val tileLayout = Tiler.buildTileLayout(re, 2048, 2048)
+      val xCoords = tileLayout.getXCoords(re)
+      val yCoords = tileLayout.getYCoords(re)
+      assert(xCoords(0) === xmin)
+      assert(yCoords(0) === ymax)
+      
+    }
+  }
+  
+  
 }
