@@ -45,13 +45,16 @@ case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int) 
   /**
    * This method is identical to getXCoords except that it functions on the
    * Y-axis instead.
+   * 
+   * Note that the origin tile (0,0) is in the upper left of the extent, so the
+   * upper left corner of the origin tile is (xmin, ymax).
    */
   def getYCoords(re:RasterExtent):Array[Double] = {
     val ys = Array.ofDim[Double](tileRows + 1)
     val ch = re.cellheight
-    val y1 = re.extent.ymin
-    for (i <- 0 until tileRows) ys(i) = y1 + i * ch * pixelRows
-    ys(tileRows) = re.extent.ymax
+    val y1 = re.extent.ymax
+    for (i <- 0 until tileRows) ys(i) = y1 - i * ch * pixelRows
+    ys(tileRows) = re.extent.ymin
     ys
   }
 
@@ -76,7 +79,7 @@ case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int) 
 case class ResolutionLayout(xs:Array[Double], ys:Array[Double],
                             cw:Double, ch:Double, pcols:Int, prows:Int) {
 
-  def getExtent(c:Int, r:Int) = Extent(xs(c), ys(r), xs(c + 1), ys(r + 1))
+  def getExtent(c:Int, r:Int) = Extent(xs(c), ys(r + 1), xs(c + 1), ys(r))
 
   def getRasterExtent(c:Int, r:Int) = {
     RasterExtent(getExtent(c, r), cw, ch, pcols, prows)
@@ -707,7 +710,7 @@ object Tiler {
         pixelRows,
         inputARG,
         outputPath
-      ) 
+      )
       import sys.process._
       val result = cmd !
       val arg = ArgReader.readPath(outputPath,None,None)
