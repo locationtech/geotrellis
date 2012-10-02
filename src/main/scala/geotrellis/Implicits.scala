@@ -5,16 +5,6 @@ import geotrellis.geometry.Polygon
 import geotrellis.raster.op.local._
 import geotrellis.logic.{Do1,Do2}
 
-package object op {
-  // Operation is such a long word :(
-
-  // TODO: consider adding things like type PNG = Array[Byte]?
-
-  // TODO: Doubles, **, unary_-, min, max, &, |, ^, %
-
-  // TODO maybe: some kind of mask operator?
-}
-
 
 object Implicits {
   import geotrellis._

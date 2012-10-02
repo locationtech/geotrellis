@@ -2,6 +2,7 @@ package geotrellis
 
 import scala.math.{min,max}
 
+import geotrellis.feature.Polygon
 
 case class ExtentRangeError(msg:String) extends Exception(msg)
 
@@ -68,9 +69,27 @@ case class Extent(xmin:Double, ymin:Double, xmax:Double, ymax:Double) {
    * Return SW corner (xmin, ymin) as tuple.
    */
   def southWest = (xmin, ymin)
-  
+
+  /**
+   * Return SE corner (xmax, ymin) as tuple.
+   */
+  def southEast = (xmax, ymin)
+ 
   /**
    * Return NE corner (xmax, ymax) as tuple.
    */
   def northEast = (xmax, ymax)
+
+  /**
+   * Return NW corner (xmin, ymax) as tuple.
+   */
+  def northWest = (xmin, ymax)
+
+  /**
+   * Return extent as feature.
+   */
+  def asFeature[D](data:D) = Polygon(
+    List(northEast, southEast, southWest, northWest, northEast),
+    data
+  )
 }

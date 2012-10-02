@@ -144,10 +144,52 @@ case class JtsLineString[D](geom: jts.LineString, data: D) extends LineString[D]
 
 /// Polygon implementation
 object Polygon {
-  def apply[D](g: jts.Geometry, data: D): Polygon[D] with Dim2 = 
-    JtsPolygon(g.asInstanceOf[jts.Polygon], data)
+  val factory = new jts.GeometryFactory()
+
+  /**
+   * Create a polgyon feature from a JTS Polygon object.
+   */
   def apply[D](p: jts.Polygon, data: D): Polygon[D] with Dim2 = 
     JtsPolygon(p, data)
+
+  /**
+   * Create a polgyon feature from a JTS Geometry object.
+   *
+   * Only use when you are certain the Geometry object 
+   * is a polygon.
+   */ 
+  def apply[D](g: jts.Geometry, data: D): Polygon[D] with Dim2 = 
+    JtsPolygon(g.asInstanceOf[jts.Polygon], data)
+
+  /**
+   * Create a polygon using a list of tuples.
+   *
+   * This method is not very efficient -- use only for small polygons.
+   */
+  def apply[D](tpls:List[(Double,Double)], data:D): Polygon[D] with Dim2 =  {
+    val jtsCoords = tpls.map { case (x,y) => new jts.Coordinate(x,y) }.toArray
+    Polygon(jtsCoords, data) 
+  }
+
+  /**
+   * Create a polygon using a one-dimensional array with alternating x and y values.
+   */
+  def apply[D](coords:Array[Double], data:D):Polygon[D] with Dim2 = {
+    val jtsCoords = (0 until (coords.length / 2)).map { 
+      (i) =>
+        new jts.Coordinate(coords(i), coords(i+1))
+    }.toArray
+    Polygon(jtsCoords, data)
+  }
+
+  /**
+   * Create a polygon with an array of JTS Coordinate objects.
+   */
+  def apply[D](coords:Array[jts.Coordinate], data:D):Polygon[D] with Dim2 = {
+    val shell  = factory.createLinearRing(coords)
+    val jts    = factory.createPolygon(shell, Array())
+    JtsPolygon(jts, data)
+  } 
 }
 
 case class JtsPolygon[D](geom: jts.Polygon, data: D) extends Polygon[D] {
