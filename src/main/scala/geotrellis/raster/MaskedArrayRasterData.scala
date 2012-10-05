@@ -28,7 +28,7 @@ extends LazyRasterData with Wrapper {
   final def apply(i:Int) = {
     val row = i / data.cols
     val col = i % data.cols
-    if (col < col1 || col2 <= col || row < row1 || row <= row2) NODATA
+    if (col < col1 || col2 <= col || row < row1 || row2 <= row) NODATA
     else underlying.apply(i)
   }
 
