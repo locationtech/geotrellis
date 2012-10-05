@@ -145,7 +145,9 @@ case class CroppedTiledRasterData(underlying:TiledRasterData,
     val underlyingCol = col + leftBorder
     val underlyingRow = row + topBorder
 
-    val tile = underlying.getTile(col + leftBorder, row + topBorder)
+    println("getTile request for tile: %d, %d".format(col,row))
+    println("underlying request for tile: %d, %d".format(underlyingCol,underlyingRow))
+    val tile = underlying.getTile(underlyingCol, underlyingRow)
 
     val (col1, row1, col2, row2) = getTileBounds(underlyingCol, underlyingRow)
 
@@ -153,7 +155,9 @@ case class CroppedTiledRasterData(underlying:TiledRasterData,
     // our data to the relevant box. otherwise, return the whole tile.
     if (col1 != 0 || row1 != 0 || col2 != pCols || row2 != pRows) {
       // TODO: fix me please! getTile should return ArrayRasterData
-      MaskedArrayRasterData(tile.asInstanceOf[ArrayRasterData], col1, row1, col2, row2)
+      // temporarily turned off
+      //MaskedArrayRasterData(tile.asInstanceOf[ArrayRasterData], col1, row1, col2, row2)
+      tile
     } else {
       tile
     }
