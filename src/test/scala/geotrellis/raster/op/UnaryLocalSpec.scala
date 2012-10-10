@@ -1,4 +1,4 @@
-package geotrellis.op
+package geotrellis.raster.op
 
 import geotrellis.process._
 import geotrellis._

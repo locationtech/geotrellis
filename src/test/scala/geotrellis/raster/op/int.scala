@@ -1,4 +1,4 @@
-package geotrellis.op
+package geotrellis.raster.op
 
 import java.io.{File,FileInputStream,FileOutputStream}
 import scala.math.{max,min,sqrt}
@@ -10,7 +10,6 @@ import geotrellis.statistics._
 import geotrellis.process._
 import geotrellis.data.ColorBreaks
 import geotrellis._
-import geotrellis.raster.op._
 import geotrellis.raster.op.local._
 import geotrellis.raster.op.extent.GetRasterExtent
 import geotrellis.logic._

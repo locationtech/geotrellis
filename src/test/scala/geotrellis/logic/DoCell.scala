@@ -1,4 +1,4 @@
-package geotrellis.op
+package geotrellis.logic
 
 import java.io.{File,FileInputStream,FileOutputStream}
 import scala.math.{max,min,sqrt}
