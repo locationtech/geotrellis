@@ -84,6 +84,10 @@ abstract class Operation[+T] extends Product {
   * Same as flatMap.
   */
  def withResult[U](f:T=>Operation[U]):Operation[U] = flatMap(f)
+
+
+ //TODO: how should filter be implemented for list comprehensions?
+ def filter(f:(T) => Boolean) = this
 }
 
 
