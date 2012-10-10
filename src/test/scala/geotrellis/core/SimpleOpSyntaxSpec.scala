@@ -1,4 +1,4 @@
-package geotrellis.foo
+package geotrellis.core
 
 import geotrellis._
 import geotrellis.process._
@@ -83,6 +83,31 @@ class SimpleOpSyntaxSpec extends FunSpec with MustMatchers with ShouldMatchers {
     it("should accept 4 argument functions that return StepResult") {
       val sumOpResult = op { (a:Int, b:Int, c:Int, d:Int) => Result(a + b + c + d)}
       testOp(sumOpResult(1,2,3,4), 10)
+    }
+
+  }
+ 
+  describe("Operation flatMap") {
+    it("should compound operations") {
+    	val AddOneOp = op { (x:Int) => x + 1 }
+    	val addThree = AddOneOp(1).flatMap( (y:Int) => y + 2 )
+        testOp(addThree,4)
+    }
+    it("is one way to define multi-step operations") {      
+      val addOneOp = op { (x:Int) => x + 1 }
+      val x = addOneOp(2).flatMap( (a:Int) => addOneOp(a + 3) ).flatMap( (b:Int) => b + 4 )
+      testOp(x,11)
+      
+      val y = addOneOp(2).withResult( (a:Int) => addOneOp(a + 3) ).withResult( (b:Int) => b + 4 )
+      testOp(x,11)
+
+    }
+    it("can be used with for comprehensions") {
+      val la = for (x <- Literal(5); 
+                    y <- Literal(x + 1); 
+                    z <- Literal(y + 3)
+                   ) yield z - 2
+      testOp(la, 7)
     }
   }
 }

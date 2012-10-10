@@ -7,13 +7,13 @@ import scala.{PartialFunction => PF}
 import akka.actor._
 
 /**
- * Base Operation for all Trellis functionality. All other operations must
+ * Base Operation for all GeoTrellis functionality. All other operations must
  * extend this trait.
  */
 abstract class Operation[+T] extends Product {
-  type Steps = PF[Any, StepOutput[T]]
+  type Steps = PartialFunction[Any, StepOutput[T]]
   type Args = List[Any]
-  val nextSteps:PF[Any, StepOutput[T]]
+  val nextSteps:PartialFunction[Any,StepOutput[T]]
 
   val debug = false
   private def log(msg:String) = if(debug) println(msg)
@@ -39,7 +39,7 @@ abstract class Operation[+T] extends Product {
     log("Operation.runAsync called with %s" format args)
     val f = (args2:Args) => {
       log("*** runAsync-generated callback called with %s" format args2)
-      val stepOutput:StepOutput[T] = nextSteps(args2)
+      val stepOutput:StepOutput[T] = processNextSteps(args2)
       log("*** step output from nextSteps was %s" format stepOutput)
       stepOutput
     }
@@ -48,9 +48,58 @@ abstract class Operation[+T] extends Product {
     o
   }
 
+  def processNextSteps(args:Args):StepOutput[T] = nextSteps(args)
+
   def dispatch(dispatcher:ActorRef) = {
     DispatchedOperation(this, dispatcher)    
   }
+
+ /**
+  * Create a new operation with a function that takes the result of this operation
+  * and returns a new operation.
+  */
+ def flatMap[U](f:T=>Operation[U]):Operation[U] = new CompositeOperation(this,f) 
+
+ /**
+  * Create a new operation that returns the result of the provided function that
+  * takes this operation's result as its argument.
+  */
+ def map[U](f:(T)=>U):Operation[U] = logic.Do1(this)(f) 
+
+ /**
+  * Create an operation that applies the function f to the result of this operation,
+  * but returns nothing.
+  */
+ def foreach[U](f:(T)=>U):Unit = logic.Do1(this) {
+    (t:T) => {
+      f(t)
+      ()
+    }
+ }
+
+ /**
+  * Create a new operation with a function that takes the result of this operation
+  * and returns a new operation.
+  *
+  * Same as flatMap.
+  */
+ def withResult[U](f:T=>Operation[U]):Operation[U] = flatMap(f)
+}
+
+
+/**
+ * Given an operation and a function that takes the result of that operation and returns
+ * a new operation, return an operation of the return type of the function.
+ * 
+ * If the initial operation is g, you can think of this operation as f(g(x)) 
+ */
+case class CompositeOperation[+T,U](gOp:Op[U], f:(U) => Op[T]) extends Operation[T] {
+  def _run(context:Context) = runAsync('firstOp :: gOp :: Nil)
+
+  val nextSteps:Steps = {
+    case 'firstOp :: u :: Nil => runAsync('result :: f(u.asInstanceOf[U]) :: Nil) 
+    case 'result :: t :: Nil => Result(t.asInstanceOf[T])
+  } 
 }
 
 abstract class OperationWrapper[+T](op:Op[T]) extends Operation[T] {
@@ -130,9 +179,10 @@ class Op1[A,T](a:Op[A])(f:(A)=>StepOutput[T]) extends Operation[T] {
   def productArity = 1
   def canEqual(other:Any) = other.isInstanceOf[Op1[_,_]]
   def productElement(n:Int) = if (n == 0) a else throw new IndexOutOfBoundsException()
-  val nextSteps:Steps = {
+  val myNextSteps:PartialFunction[Any,StepOutput[T]] = {
     case a :: Nil => f(a.asInstanceOf[A])
   }
+  val nextSteps = myNextSteps
 }
 
 object OpX {
@@ -176,7 +226,6 @@ object OpX {
    */
   def op[A,T](f:(A)=>Op[T])(implicit m:Manifest[T], n:DI):(Op[A]) => Op1[A,T] = 
     (a:Op[A]) => new Op1(a)((a) => StepRequiresAsync(List(f(a)), (l) => Result(l.head.asInstanceOf[T])))
-  
  
   /**
    * Create an operation from a 1-arg function that returns a literal value.
