@@ -10,14 +10,14 @@ object Do {
    * 
    * See Do1.
    */
-  def apply[A:Manifest,Z:Manifest](a:Op[A])(call:A => Z) = Do1(a)(call)
+  def apply[A,Z](a:Op[A])(call:A => Z) = Do1(a)(call)
 
   /**
    * Invoke a function that takes two arguments.
    *
    * See Do2.
    */
-  def apply[A:Manifest,B:Manifest,Z:Manifest](a:Op[A], b:Op[B])(call:(A,B) => Z) = 
+  def apply[A,B,Z](a:Op[A], b:Op[B])(call:(A,B) => Z) = 
     Do2(a,b)(call)
 }
 
@@ -28,7 +28,7 @@ object Do {
  * Functionally speaking: Map an Op[A] into an Op[Z] 
  * using a function from A => Z.
  */
-case class Do1[A:Manifest, Z:Manifest](a:Op[A])(call:A => Z) extends Op[Z] {
+case class Do1[A, Z](a:Op[A])(call:A => Z) extends Op[Z] {
   def _run(context:Context) = runAsync(a :: Nil)
   val nextSteps:Steps = {
     case a :: Nil => Result(call(a.asInstanceOf[A]))
@@ -41,7 +41,7 @@ case class Do1[A:Manifest, Z:Manifest](a:Op[A])(call:A => Z) extends Op[Z] {
  * Functionally speaking: Map an Op[A] and Op[B] into an Op[Z] using a 
  * function from (A,B) => Z.
  */
-case class Do2[A:Manifest, B:Manifest, Z:Manifest]
+case class Do2[A, B, Z]
 (a:Op[A], b:Op[B])(call:(A,B) => Z) extends Op[Z] {
   def _run(context:Context) = runAsync(a :: b :: Nil)
   val nextSteps:Steps = {
