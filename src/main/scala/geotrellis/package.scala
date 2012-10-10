@@ -15,13 +15,13 @@ package object geotrellis {
    * Define a function after op function that returns:
    *
    * 1) A literal value, e.g.
-   *   val PlusOne = op { (i:Int) => i + 1 }
+   *   val plusOne = op { (i:Int) => i + 1 }
    *
    * 2) An operation to be executed:
-   *   val LocalPlusOne ( (r:Raster, i:Int) => local.Add(r,i + 1) )
+   *   val localPlusOne ( (r:Raster, i:Int) => local.Add(r,i + 1) )
    *
    * 3) Or a StepResult (which indicates success or failure)
-   *   val PlusOne = op { (i:Int) => Result(i + 1) }
+   *   val plusOne = op { (i:Int) => Result(i + 1) }
    *
    */
 
@@ -32,7 +32,7 @@ package object geotrellis {
    *
    * For example:
    *
-   * val PlusOne = op { (i:Int) => Result(i + 1) }
+   * val plusOne = op { (i:Int) => Result(i + 1) }
    */
   def op[A, T](f: (A) => StepOutput[T])(implicit m: Manifest[T]): (Op[A]) => Op1[A, T] =
     (a: Op[A]) => new Op1(a)((a) => f(a))
@@ -42,7 +42,7 @@ package object geotrellis {
    *
    * For example:
    *
-   * val LocalPlusOne ( (r:Raster, i:Int) => local.Add(r,i + 1) )
+   * val localPlusOne ( (r:Raster, i:Int) => local.Add(r,i + 1) )
    *
    */
   def op[A, T](f: (A) => Op[T])(implicit m: Manifest[T], n: DI): (Op[A]) => Op1[A, T] =
@@ -53,7 +53,7 @@ package object geotrellis {
    *
    * For example:
    *
-   * val PlusOne = op { (i:Int) => i + 1 }
+   * val plusOne = op { (i:Int) => i + 1 }
    */
   def op[A, T](f: (A) => T)(implicit m: Manifest[T], n: DI, o: DI): (Op[A]) => Op1[A, T] =
     (a: Op[A]) => new Op1(a)((a) => Result(f(a)))
@@ -105,7 +105,7 @@ package object geotrellis {
    */
   def op[A, B, C, D, T](f: (A, B, C, D) => StepOutput[T])(implicit m: Manifest[T]): (Op[A], Op[B], Op[C], Op[D]) => Op4[A, B, C, D, T] =
     (a: Op[A], b: Op[B], c: Op[C], d: Op[D]) => new Op4(a, b, c, d)((a, b, c, d) => f(a, b, c, d))
-
+      
   /**
    * Create an operation from a 4-arg function that returns an operation.
    */
