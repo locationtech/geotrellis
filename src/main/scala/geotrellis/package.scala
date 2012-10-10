@@ -3,7 +3,6 @@ import scala.annotation.tailrec
 //import annotation.implicitNotFound
 
 package object geotrellis {
-  // TODO: phase out geotrellis.contants package
   final val NODATA = Int.MinValue
 
   type Op[+A] = Operation[A]
