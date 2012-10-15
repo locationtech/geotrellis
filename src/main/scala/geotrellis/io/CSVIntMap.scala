@@ -1,4 +1,4 @@
-package geotrellis.op.table
+package geotrellis.io
 
 import scala.collection.mutable.Map
 import geotrellis.process._

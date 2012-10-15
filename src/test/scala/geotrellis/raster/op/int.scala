@@ -1,4 +1,4 @@
-package geotrellis.op
+package geotrellis.raster.op
 
 import java.io.{File,FileInputStream,FileOutputStream}
 import scala.math.{max,min,sqrt}
@@ -10,13 +10,10 @@ import geotrellis.statistics._
 import geotrellis.process._
 import geotrellis.data.ColorBreaks
 import geotrellis._
-import geotrellis.raster.op._
 import geotrellis.raster.op.local._
 import geotrellis.raster.op.extent.GetRasterExtent
 import geotrellis.logic._
-import geotrellis.io._
 import geotrellis.raster.op.transform.{ResampleRaster}
-import geotrellis.raster.op.CreateRaster
 import geotrellis.statistics.op.stat._
 
 import org.scalatest.FunSpec
@@ -70,7 +67,7 @@ class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
     }
 
     it("LoadFile") {
-      val L = LoadFile("src/test/resources/fake.img8.arg")
+      val L = io.LoadFile("src/test/resources/fake.img8.arg")
       val raster = server.run(L)
 
       raster.get(0, 0) must be === 49 
@@ -79,7 +76,7 @@ class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
 
 
     it("LoadFile, take 2") {
-      val L2 = LoadFile("src/test/resources/fake.img8.arg")
+      val L2 = io.LoadFile("src/test/resources/fake.img8.arg")
       val raster2 = server.run(L2)
       raster2.get(0, 0) must be === 49
       raster2.get(3, 3) must be === 4 
@@ -90,7 +87,7 @@ class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
       val geo1 = server.run(G1)
 
       val G2 = GetRasterExtent( geo1.extent.xmin, geo1.extent.ymin, geo1.extent.xmax, geo1.extent.ymax, 2, 2) 
-      val L = LoadFile("src/test/resources/fake.img8.arg", G2)
+      val L = io.LoadFile("src/test/resources/fake.img8.arg", G2)
       val raster = server.run(L)
       raster.get(0, 0) must be === 34
       raster.get(1, 0) must be === 36
@@ -107,11 +104,11 @@ class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
     }
  
     it("LoadResampledArgFile, take 2") {
-      val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img8.arg")
+      val G1 = io.LoadRasterExtentFromFile("src/test/resources/fake.img8.arg")
       val geo1 = server.run(G1)
 
       val G2 = GetRasterExtent( geo1.extent.xmin, geo1.extent.ymin, geo1.extent.xmax, geo1.extent.ymax, 2, 2) 
-      val L = LoadFile("src/test/resources/fake.img8.arg", G2)
+      val L = io.LoadFile("src/test/resources/fake.img8.arg", G2)
       val raster = server.run(L)
 
       raster.get(0, 0) must be === 34
@@ -122,8 +119,8 @@ class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
 
 
     it("ResampleRaster") {
-      val L = LoadFile("src/test/resources/quad8.arg")
-      val F = ResampleRaster(L, 4, 4)
+      val L = io.LoadFile("src/test/resources/quad8.arg")
+      val F = transform.ResampleRaster(L, 4, 4)
       val raster = server.run(F)
 
       raster.cols must be === 4
@@ -139,9 +136,9 @@ class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
 
     it("test Literal implicit") {
       import geotrellis.Literal
-      val G1 = LoadRasterExtentFromFile("src/test/resources/fake.img8.arg")
+      val G1 = io.LoadRasterExtentFromFile("src/test/resources/fake.img8.arg")
       val geo1 = server.run(G1)
-      val L = LoadFile("src/test/resources/fake.img8.arg", geo1)
+      val L = io.LoadFile("src/test/resources/fake.img8.arg", geo1)
     }
 
     it("should LoadArgFileChunk with subextents that are within the arg extent") {
@@ -150,7 +147,7 @@ class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
       val G = GetRasterExtent(xmin = -90, ymin = 20,
                             xmax = -80, ymax = 40,
                             cols = 1, rows = 1)
-      val L = LoadFile("src/test/resources/fake2.img8.arg", G)
+      val L = io.LoadFile("src/test/resources/fake2.img8.arg", G)
     }
 
     it("BuildArrayHistogram") {
@@ -195,7 +192,7 @@ class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
     }
 
     it("GenerateStatistics") {
-      val R = LoadFile("src/test/resources/quad8.arg")
+      val R = io.LoadFile("src/test/resources/quad8.arg")
       val S = GetStatistics(GetHistogram(R))
       val stats = server.run(S)
 
@@ -207,8 +204,8 @@ class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
 
     it("StandardDeviation") {
       val newServer = TestServer()
-      val R1 = LoadFile("src/test/resources/quad8.arg")
-      val R2 = LoadFile("src/test/resources/quad8.arg")
+      val R1 = io.LoadFile("src/test/resources/quad8.arg")
+      val R2 = io.LoadFile("src/test/resources/quad8.arg")
       val H = GetHistogram(R1)
       val S:GetStandardDeviation = GetStandardDeviation(R2, H, 1000)
      

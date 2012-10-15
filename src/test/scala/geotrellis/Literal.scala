@@ -1,4 +1,4 @@
-package geotrellis.op
+package geotrellis
 
 import geotrellis.process._
 import geotrellis._
