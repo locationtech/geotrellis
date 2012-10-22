@@ -117,6 +117,18 @@ object Point {
   def apply(x: Double, y: Double) = {
     JtsPoint(Factory.f.createPoint(new jts.Coordinate(x, y)), Unit)
   }
+  
+  def apply[D](p:jts.Point, data:D) = new JtsPoint(p,data) 
+  
+  def pointToGridCoords(p:Point[_], rasterExtent:RasterExtent) = {
+    val geom = p.geom 
+    rasterExtent.mapToGrid(geom.getX(), geom.getY())
+  }
+  
+ def pointToRasterValue(p:Feature[jts.Point, _], raster:Raster) = {
+    val re = raster.rasterExtent
+    raster.get( re.mapXToGrid(p.geom.getX()), re.mapYToGrid(p.geom.getY()))
+  }
 }
 
 /**
@@ -128,6 +140,8 @@ case class JtsPoint[D](geom: jts.Point, data: D) extends Point[D] {
 
 /// Line implementation
 object LineString {
+  val factory = new jts.GeometryFactory()
+
   def apply[D](g: jts.Geometry, data: D): LineString[D] with Dim1 = 
     JtsLineString(g.asInstanceOf[jts.LineString],data)
 
@@ -136,6 +150,11 @@ object LineString {
 
   def apply[D](g:jts.LineString):LineString[Unit] with Dim1 = 
     JtsLineString(g,Unit)
+    
+  def apply[D](x0:Int,y0:Int,x1:Int,y1:Int, data:D):LineString[D] with Dim1 = {
+    val g = factory.createLineString(Array( new jts.Coordinate(x0, y0), new jts.Coordinate(x1, y1)))
+    JtsLineString(g, data)
+  }
 }
 
 case class JtsLineString[D](geom: jts.LineString, data: D) extends LineString[D] {
@@ -170,6 +189,10 @@ object Polygon {
     val jtsCoords = tpls.map { case (x,y) => new jts.Coordinate(x,y) }.toArray
     Polygon(jtsCoords, data) 
   }
+
+  def apply[D](tpls:List[(Int,Int)], data:D) (implicit di:DummyImplicit): Polygon[D] with Dim2 = 
+    Polygon(tpls.map { case (x,y) => (x.toDouble, y.toDouble) }, data)
+  
 
   /**
    * Create a polygon using a one-dimensional array with alternating x and y values.
@@ -238,7 +261,7 @@ trait UsesCoords {
 
 trait FeatureSet[D] {
   type Geom <: jts.Geometry
-  type Feat = ({ type Feat = Feature[Geom, D] })#Feat
+  type Feat // = ({ type Feat = Feature[Geom, D] })#Feat
   type Data = D
 
   def length: Int
@@ -263,19 +286,24 @@ trait SetBuilder[-F, +FS] {
 }
 
 object SetBuilder {
-  implicit def buildPointSet[D] = new SetBuilder[Feature[jts.Point, D], PointSet[D]] {
-    def build[G <: Feature[jts.Point, D]](array: Array[G]) = PointArray(array.asInstanceOf[Array[Feature[jts.Point, D]]])
+  implicit def buildPointSet[D] = new SetBuilder[Point[D], PointSet[D]] {
+    def build[G <: Point[D]] (array: Array[G]) = PointArray(array.asInstanceOf[Array[Point[D]]] )
   }
 }
 
 trait PointSet[D] extends FeatureSet[D] {
   type Geom = jts.Point
+  type Feat = Point[D]
 }
 
 object PointSet {
+  def apply[D] (points:List[Point[D]]) = PointArray(points.toArray)
+  
+  def apply[D:Manifest](xs: Array[Double], ys: Array[Double], ds: Array[D]) = 
+    new UnboxedPointSet(xs, ys, ds)
 }
 
-case class PointArray[D](points: Array[Feature[jts.Point, D]]) extends PointSet[D] {
+case class PointArray[D](points: Array[Point[D]]) extends PointSet[D] {
   def length = points.length
   def lengthLong = length.toLong
 
@@ -284,7 +312,7 @@ case class PointArray[D](points: Array[Feature[jts.Point, D]]) extends PointSet[
     val full_chunks = length / n
     val remainder = length % n
     for (j <- 0 until full_chunks) {
-      val a = Array.ofDim[Feat](n)
+      val a = Array.ofDim[Point[D]](n)
       System.arraycopy(points, j * n, a, 0, n)
       arrays = PointArray(a) :: arrays
       //arrays = PointArray(a.toList) :: arrays

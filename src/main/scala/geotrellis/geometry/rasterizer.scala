@@ -14,8 +14,8 @@ import math.{abs,min,max,round}
  * array of data.
  */
 object Rasterizer {
-  //val DBG = 719
-  val DBG = -1
+  val DBG = 359
+  //val DBG = -1
 
   /**
    * quantize an array of polygons based on a raster's extent, and then draw
@@ -129,6 +129,7 @@ object Rasterizer {
       intercepts.foreach(printf("  %s\n", _))
     }
 
+    intercepts.foreach(printf("  %s\n", _))
     var j = 0
     while (j < limit && intercepts(j).horizontal) { j += 1}
 
@@ -164,7 +165,7 @@ object Rasterizer {
     while(i < intercepts2.length - 1) {
       val c1 = intercepts2(i)
       val c2 = intercepts2(i + 1)
-      //printf("  handling %s and %s (%s)\n", c1, c2, intercepts2)
+      printf("  handling %s and %s\n", c1, c2)
       
       val update:Option[Intercept] = (c1, c2) match {
         case (InterceptStart(x1), InterceptStart(x2)) => Some(InterceptSpikeHorizontal(x1, x2))
@@ -185,7 +186,7 @@ object Rasterizer {
         case (InterceptEHorizontal(x1, _), InterceptEnd(x2)) => Some(InterceptSpikeHorizontal(x1, x2))
         case (InterceptEHorizontal(x1, _), InterceptStart(x2)) => Some(InterceptFlowHorizontal(x1, x2))
         case (InterceptEHorizontal(x1, _), InterceptHorizontal(_, x2)) => Some(InterceptEHorizontal(x1, x2))
-        case (InterceptEHorizontal(_, _), _) => throw new Exception("unpossible4()")
+        case (InterceptEHorizontal(_, _), _) => throw new Exception("unpossible4(%d): %s".format(i, intercepts2.toList))
         
         //case (InterceptHorizontal(_, _), _) => throw new Exception("unpossible5(%d): %s %s".format(i, intercepts.toList, intercepts2.toList))
         case (InterceptHorizontal(_, _), _) => Some(c2)
@@ -196,13 +197,14 @@ object Rasterizer {
         case _ => None
       }
 
-      update match {
+      val result = update match {
         case None => i += 1
         case Some(c) => {
           intercepts2(i) = c
           intercepts2.remove(i + 1)
         }
       }
+      println("rewritten to: %s".format(result))
     }
 
     // FIXME... we need something like this... but better
@@ -210,7 +212,7 @@ object Rasterizer {
     //   intercepts2.remove(0)
     //   intercepts2.remove(0)
     // }
-
+    println("intercepts (here is final result): %s".format(intercepts2))
     intercepts2
   }
 
@@ -343,13 +345,13 @@ object Rasterizer {
     // cover up later ones.
     var row = 0
 
-    // println("sorted edges:")
-    // for (edge <- groups(0)) {
-    //   printf("  %d/%d %s\n", edge.pmin.y, edge.pmax.y, edge)
-    // }
+     println("sorted edges:")
+     for (edge <- groups(0)) {
+       printf("  %d/%d %s\n", edge.pmin.y, edge.pmax.y, edge)
+     }
 
     while (row < rows) {
-      //printf("row %d\n", row)
+      printf("row %d\n\n", row)
 
       //assert(groups.length == gfs.length)
       //assert(groups.length == glimits.length)

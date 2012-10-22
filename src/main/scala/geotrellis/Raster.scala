@@ -89,6 +89,7 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
    */
   def getDouble(col:Int, row:Int):Double = data.getDouble(col, row)
 
+  
   /**
    * Return tuple of highest and lowest value in raster.
    */
