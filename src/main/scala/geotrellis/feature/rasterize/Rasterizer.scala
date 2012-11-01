@@ -22,6 +22,7 @@ object Rasterizer {
     val cols = rasterExtent.cols
     val array = Array.fill[Int](rasterExtent.cols * rasterExtent.rows)(NODATA)
     val f2 = (col:Int,row:Int,polygon:Polygon[D]) => array(row * cols + col) = f(feature.data) 
+    println("about to call foreachCellByPolygon")
     foreachCellByPolygon(feature, rasterExtent, f2) 
     Raster(array,rasterExtent)
   } 
