@@ -80,7 +80,7 @@ abstract class Operation[+T] extends Product {
  /**
   * Create a new operation with a function that takes the result of this operation
   * and returns a new operation.
-  *
+  * 
   * Same as flatMap.
   */
  def withResult[U](f:T=>Operation[U]):Operation[U] = flatMap(f)
