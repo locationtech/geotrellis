@@ -155,6 +155,11 @@ object LineString {
     val g = factory.createLineString(Array( new jts.Coordinate(x0, y0), new jts.Coordinate(x1, y1)))
     JtsLineString(g, data)
   }
+  
+  def apply[D](x0:Double,y0:Double,x1:Double,y1:Double,data:D):LineString[D] with Dim1 = {
+    val g = factory.createLineString(Array( new jts.Coordinate(x0, y0), new jts.Coordinate(x1, y1)))
+    JtsLineString(g, data)
+  }
 }
 
 case class JtsLineString[D](geom: jts.LineString, data: D) extends LineString[D] {

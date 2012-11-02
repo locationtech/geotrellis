@@ -5,29 +5,26 @@ import geotrellis.feature._
 import com.vividsolutions.jts.{ geom => jts }
 import collection.immutable.TreeMap
 
-// 1) Add each line to a global edge table.
-
-//    a) Calculate minimum and maximum row of target raster in which a line through the 
-//       center intersects with the edge.
-
 object PolygonRasterizer {
   /**
-   *
+   * Apply a function to each raster cell that intersects with a polygon.
    */
-  def foreachCellByPolygon[D](p:Polygon[D], re:RasterExtent, f:(Int,Int,Polygon[D]) => Unit, includeExterior:Boolean = true) {
+  def foreachCellByPolygon[D](p:Polygon[D], re:RasterExtent, f:(Int,Int,Polygon[D]) => Unit, includeExterior:Boolean = false) {
     println("starting foreachCellByPolygon")
+
+    // Create a global edge table which tracks the minimum and maximum row 
+    // for which each edge is relevant.
     val edgeTable = buildEdgeTable(p, re)
     val activeEdgeTable = ActiveEdgeTable.empty
 
-    println("edgeTable: " + edgeTable)
-    println("edgeTable, rowMin: " + edgeTable.rowMin)
-    println("edgeTable, rowMax: " + edgeTable.rowMax)
+    // Process each row in the raster that intersects with the polygon.
     for(row <- edgeTable.rowMin to edgeTable.rowMax) {
-     println("processing row: " + row)
-     activeEdgeTable.update(row, edgeTable, re)
-     activeEdgeTable.updateIntercepts(row, re)
 
-     println("after activeEdgeTable update: " + activeEdgeTable)
+     // Update our active edge table to reflect the current row.
+     activeEdgeTable.update(row, edgeTable, re)
+     
+    // activeEdgeTable.updateIntercepts(row, re)
+
 
       //TODO: exclude col0 & col1
       // call function on included cells
@@ -42,24 +39,19 @@ object PolygonRasterizer {
     }
   }
 
-  def processRanges(fillRanges:List[(Double,Double)]):List[(Int,Int)] = {
+  /** Return columns to be included in this range.
+   * 
+   * If includeTouched is true, all cells touched by the polygon will be included.
+   * If includeTouched is false, only cells whose center point is within the polygon will be included.
+   */
+  def processRanges(fillRanges:List[(Double,Double)], includeTouched:Boolean = false):List[(Int,Int)] = {
     for ( (x0, x1) <- fillRanges) yield {
-      println("processing range: " + x0 + "," + x1)
       val cellWidth = 1
-      val minCol = (math.floor(x0 + 0.5)).toInt
-      val maxCol = (math.floor(x1 - 0.5)).toInt
-      //val col0:Int = if (x0 % cellWidth >= .5) {
-      //  math.ceil(x0).toInt
-      //} else {
-      //  math.floor(x0).toInt
-     // }
-      //val col1:Int = if (x1 % cellWidth <= .5) {
-      //  math.floor(x1).toInt
-      //} else {
-      //  math.ceil(x1).toInt
-      //}.toInt
-      println("result range: " + minCol + "," + maxCol)
-      (minCol,maxCol)
+      if (includeTouched) {
+        ( (math.floor(x0)).toInt, (math.ceil(x1)).toInt )
+      } else {
+        ( (math.floor(x0 + 0.5)).toInt,  (math.floor(x1 - 0.5)).toInt )
+      }
     }
   }
 
@@ -74,25 +66,19 @@ object PolygonRasterizer {
       //    -- move from ET to AET those edges whose rowMin = row
       val (_, y) = re.gridToMap(0, row)
       println("running update for row: " + row + ", at y: " + y)
-
+      this.updateIntercepts(row, re)
       val newEdges = edgeTable.edges
         .getOrElse(row, List[Line]())
         .map( line => Intercept(line, y, re) )
-      //println("new edges will be: " + newEdges)
       val allEdges:List[Intercept] = edges ++ newEdges
-      //println("new edges plus old edges is: " + allEdges)
 
       // ** Remove from AET those entries for which row = rowMax 
       //     (Important to handle intercepts between two lines that are monotonically increasing/decreasing, as well
       //      y maxima, as well simply to drop edges that are no longer relevant)
-      //println("about to filter for row: " + row)
-     // println("filteredEdges: "  + filteredEdges)
       val sortedEdges = allEdges.sortWith( _.x < _.x ) // <-- looks crazy
       println("sortedEdges: " + sortedEdges)
-      edges = //if (includeExterior)
+      edges =
         sortedEdges
-      //else 
-      //  sortedEdges.filter( edge => row != edge.line.rowMax ) 
     }
 
     /**
@@ -104,6 +90,9 @@ object PolygonRasterizer {
     } 
 
     def fillRanges(row:Int, includeExterior:Boolean):List[(Double,Double)] = {
+      println("fillRanges, with ranges: ")
+      edges.grouped(2).foreach { r=> println(r) 
+        }
       val doubleRange = edges.grouped(2).map {r => (r(0).colDouble, r(1).colDouble)}.toList
       //else { 
       // edges.grouped(2).map {r => (r(0).col + 1, r(1).col - 1)}.filter( a => a._1 <= a._2 ).toList
@@ -158,7 +147,7 @@ object PolygonRasterizer {
       val maxRow = (math.floor(re.mapYToGridDouble(y0) - 0.5)).toInt
       val inverseSlope = (x1 - x0).toDouble / (y1 - y0).toDouble
 
-      if (c0.y == c1.y || inverseSlope == java.lang.Double.POSITIVE_INFINITY || inverseSlope == java.lang.Double.NEGATIVE_INFINITY ) // drop horizontal lines 
+      if (minRow > maxRow || c0.y == c1.y || inverseSlope == java.lang.Double.POSITIVE_INFINITY || inverseSlope == java.lang.Double.NEGATIVE_INFINITY ) // drop horizontal lines 
         None
       else {
         Some(Line(minRow, maxRow, x0, y0, x1, y1, inverseSlope))
