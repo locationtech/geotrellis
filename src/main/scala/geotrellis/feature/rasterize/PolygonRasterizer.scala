@@ -10,7 +10,6 @@ object PolygonRasterizer {
    * Apply a function to each raster cell that intersects with a polygon.
    */
   def foreachCellByPolygon[D](p:Polygon[D], re:RasterExtent, f:(Int,Int,Polygon[D]) => Unit, includeExterior:Boolean = false) {
-    println("starting foreachCellByPolygon")
 
     // Create a global edge table which tracks the minimum and maximum row 
     // for which each edge is relevant.
@@ -29,7 +28,6 @@ object PolygonRasterizer {
       //TODO: exclude col0 & col1
       // call function on included cells
       val fillRanges = activeEdgeTable.fillRanges(row,includeExterior)
-      println("fillRanges: " + fillRanges)
       val cellRanges = processRanges(fillRanges)
       for ( (col0, col1) <- cellRanges;
             col          <- col0 to col1
@@ -65,7 +63,6 @@ object PolygonRasterizer {
       // ** add entering edges.
       //    -- move from ET to AET those edges whose rowMin = row
       val (_, y) = re.gridToMap(0, row)
-      println("running update for row: " + row + ", at y: " + y)
       this.updateIntercepts(row, re)
       val newEdges = edgeTable.edges
         .getOrElse(row, List[Line]())
@@ -76,7 +73,6 @@ object PolygonRasterizer {
       //     (Important to handle intercepts between two lines that are monotonically increasing/decreasing, as well
       //      y maxima, as well simply to drop edges that are no longer relevant)
       val sortedEdges = allEdges.sortWith( _.x < _.x ) // <-- looks crazy
-      println("sortedEdges: " + sortedEdges)
       edges =
         sortedEdges
     }
@@ -90,13 +86,7 @@ object PolygonRasterizer {
     } 
 
     def fillRanges(row:Int, includeExterior:Boolean):List[(Double,Double)] = {
-      println("fillRanges, with ranges: ")
-      edges.grouped(2).foreach { r=> println(r) 
-        }
       val doubleRange = edges.grouped(2).map {r => (r(0).colDouble, r(1).colDouble)}.toList
-      //else { 
-      // edges.grouped(2).map {r => (r(0).col + 1, r(1).col - 1)}.filter( a => a._1 <= a._2 ).toList
-      //}
       doubleRange
     }
       
@@ -167,7 +157,6 @@ object PolygonRasterizer {
   object Intercept {
     def apply(line:Line, y:Double, re:RasterExtent) = {
       val x = line.intercept(y) 
-      println("creating intercept for y: " + y +  " --> " + x)
 
       val colDouble = re.mapXToGridDouble(x) 
       new Intercept(x, colDouble, line)
