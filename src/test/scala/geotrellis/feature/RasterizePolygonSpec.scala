@@ -142,6 +142,20 @@ class RasterizePolygonSpec extends FunSuite {
   }
   
   test("Rasterization tests from directory of WKT files") {
+
+    // This test loads WKT text files from src/test/resources/feature which are
+    // named xxx_nnn.wkt, where nnn is the number of cells we expect rasterization
+    // to determine to be within the defined feature in the raster extent defined
+    // below.
+ 
+    // To create a new test, create a .wkt and a GeoJSON file of the polygon
+    // in the directory, with the same name (except for extension).
+    // For example, one quick way to do this: http://openlayers.org/dev/examples/vector-formats.html
+
+    // Run the gdaltest.sh script with the name of the two files (without extension).
+    // The final line is the number of cells included by GDAL (center of cell mode).
+    // Rename the .wkt file to end with _N (where N is the number).
+
     val f = new java.io.File("src/test/resources/feature/")
     val fs = f.listFiles.filter(_.getPath().endsWith(".wkt"))
     //.foreach {
