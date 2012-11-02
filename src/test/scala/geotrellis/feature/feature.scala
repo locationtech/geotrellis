@@ -35,7 +35,7 @@ class FeatureSpec extends FunSpec with MustMatchers with ShouldMatchers {
       val i = Intersect(Literal(p),b) 
       println("i is: " + i)
       val r4 = s.run(i)
-      println("interesect1: " + r4)
+      println("intersect: " + r4)
 
       //val i2 = Intersect(p,b, (_:String) + (_:String))
       //val r5 = s.run(i2)

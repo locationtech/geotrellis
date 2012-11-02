@@ -1,9 +1,10 @@
-package geotrellis.geometry.rasterizer
+package geotrellis.geometry
 
 import geotrellis._
-import geotrellis.geometry.{Polygon}
+//import geotrellis.geometry.{Polygon}
 import geotrellis.geometry.grid.{GridPoint, GridLine, GridPolygon}
 
+import scala.{specialized => spec}
 
 import scala.collection.mutable.{ArrayBuffer}
 import scala.util.Sorting
@@ -13,43 +14,40 @@ import math.{abs,min,max,round}
  * This object takes polygons and values and draws them into a given raster or
  * array of data.
  */
-object Rasterizer {
-  val DBG = 359
+object ARasterizer {
+   //trait CB[S] {
+   trait CB[@spec S] {
+     def apply(d: Int, z: Int, t: S):S
+   }
+
+  val DBG = -1
   //val DBG = -1
 
   /**
    * quantize an array of polygons based on a raster's extent, and then draw
    * them into the provided raster.
    */
-  def rasterize(raster:Raster, polygons:Array[Polygon]) {
-    val gridPolygons = polygons.flatMap(_.translateToGrid(raster.rasterExtent))
+  def rasterize[@spec Q](cb: CB[Q], q:Q , ext: RasterExtent, polygons:Array[Polygon]) {
+    val gridPolygons = polygons.flatMap(_.translateToGrid(ext))
 
     //gridPolygons(0).edges.filter(_.interceptsY(DBG)).foreach(printf("  %s\n", _))
 
     val values = polygons.map(_.value)
-    this.rasterize(raster, gridPolygons, values)
+    this.rasterize(cb, q, ext, gridPolygons, values)
   }
 
-  def rasterize(raster:Raster, polygons:Array[Polygon],
-                fs:Array[Int => Int]) {
-    val gridPolygons = polygons.flatMap(_.translateToGrid(raster.rasterExtent))
-    this.rasterize(raster, gridPolygons, fs)
+  def rasterize[@spec Q](cb: CB[Q], q: Q, ext: RasterExtent, polygons:Array[Polygon],
+                fs:Array[Int]) {
+    val gridPolygons = polygons.flatMap(_.translateToGrid(ext))
+    this.rasterize(cb, q, ext, gridPolygons, fs)
   }
 
   /**
    * draw an array of polygons (with corresponding values) into raster.
    */
-  def rasterize(raster:Raster, polygons:Array[GridPolygon],
-                values:Array[Int]) {
-    //polygons.foreach { p => println(p.edges.toList) }
-
-    val fs = values.map((x:Int) => _)
-    rasterize(raster.cols, raster.rows, polygons, fs, raster.data)
-  }
-
-  def rasterize(raster:Raster, polygons:Array[GridPolygon],
-                fs:Array[Int => Int]) {
-    rasterize(raster.cols, raster.rows, polygons, fs, raster.data)
+  def rasterize[@spec Q](cb: CB[Q], q: Q, ext: RasterExtent, polygons:Array[GridPolygon],
+                fs:Array[Int]) {
+    rasterize(ext.cols, ext.rows, polygons, fs, cb, q)
   }
 
   /* ... */
@@ -129,7 +127,6 @@ object Rasterizer {
       intercepts.foreach(printf("  %s\n", _))
     }
 
-    intercepts.foreach(printf("  %s\n", _))
     var j = 0
     while (j < limit && intercepts(j).horizontal) { j += 1}
 
@@ -152,7 +149,7 @@ object Rasterizer {
 
   /**
    * Process an array of intercepts, creating synthetic intercepts out of
-   * the relevant combinatios of simple intercepts.
+   * the relevant combinations of simple intercepts.
    *
    * Examples:
    *   Start + End -> Hinge
@@ -165,7 +162,6 @@ object Rasterizer {
     while(i < intercepts2.length - 1) {
       val c1 = intercepts2(i)
       val c2 = intercepts2(i + 1)
-      printf("  handling %s and %s\n", c1, c2)
       
       val update:Option[Intercept] = (c1, c2) match {
         case (InterceptStart(x1), InterceptStart(x2)) => Some(InterceptSpikeHorizontal(x1, x2))
@@ -186,7 +182,9 @@ object Rasterizer {
         case (InterceptEHorizontal(x1, _), InterceptEnd(x2)) => Some(InterceptSpikeHorizontal(x1, x2))
         case (InterceptEHorizontal(x1, _), InterceptStart(x2)) => Some(InterceptFlowHorizontal(x1, x2))
         case (InterceptEHorizontal(x1, _), InterceptHorizontal(_, x2)) => Some(InterceptEHorizontal(x1, x2))
-        case (InterceptEHorizontal(_, _), _) => throw new Exception("unpossible4(%d): %s".format(i, intercepts2.toList))
+        case (InterceptEHorizontal(_, _), _) => {
+          throw new Exception("unpossible4") 
+        }
         
         //case (InterceptHorizontal(_, _), _) => throw new Exception("unpossible5(%d): %s %s".format(i, intercepts.toList, intercepts2.toList))
         case (InterceptHorizontal(_, _), _) => Some(c2)
@@ -197,14 +195,13 @@ object Rasterizer {
         case _ => None
       }
 
-      val result = update match {
+      update match {
         case None => i += 1
         case Some(c) => {
           intercepts2(i) = c
           intercepts2.remove(i + 1)
         }
       }
-      println("rewritten to: %s".format(result))
     }
 
     // FIXME... we need something like this... but better
@@ -212,7 +209,7 @@ object Rasterizer {
     //   intercepts2.remove(0)
     //   intercepts2.remove(0)
     // }
-    println("intercepts (here is final result): %s".format(intercepts2))
+
     intercepts2
   }
 
@@ -221,13 +218,13 @@ object Rasterizer {
    * Regions represent areas of the raster where we want to draw our
    * polygon. They contain two X coordinates and the callback to use.
    */
-  case class Region(x1:Int, x2:Int, f:Int => Int)
+  case class Region(x1:Int, x2:Int, f:Int)
 
   /**
    * Given a row, a function, and an array of intercepts, create
    * regions wherever the polygon is visible on this row.
    */
-  def createRegions(row:Int, f:Int => Int, intercepts2:ArrayBuffer[Intercept]) = {
+  def createRegions(row:Int, f:Int, intercepts2:ArrayBuffer[Intercept]) = {
     val rtpls = ArrayBuffer.empty[Region]
     def lastregion() = if (rtpls.length > 0) Some(rtpls.last) else None
     var lastx:Option[Int] = None
@@ -306,11 +303,10 @@ object Rasterizer {
    * draw an array of polygons (with corresponding values) into an integer
    * array with the dimensions: cols x rows.
    */
-  def rasterize(cols:Int, rows:Int, polygons:Array[GridPolygon],
-                fs:Array[Int => Int], _data:RasterData) {
+  def rasterize[Q](cols:Int, rows:Int, polygons:Array[GridPolygon],
+                fs:Array[Int], cb: CB[Q], q: Q) {
     //printf("rasterize called with cols=%d and rows=%d\n", cols, rows)
-    val data = _data.mutable.getOrElse(sys.error("can't get mutable data array"))
-
+    var qq = q
     val lastrow = rows - 1
     val lastcol = cols - 1
 
@@ -337,7 +333,7 @@ object Rasterizer {
     // which that polygon will be filled to. glimits(i) is the limit of the
     // currently relevant edges (one beyond the last index).
     val groups  = ArrayBuffer[ArrayBuffer[GridLine]](g:_*)
-    val gfs = ArrayBuffer[Int => Int](fs:_*)
+    val gfs = ArrayBuffer[Int](fs:_*)
     var glimits = ArrayBuffer.fill[Int](groups.length)(0)
 
     // loop over each row (Y coordinate) drawing horizontal lines where
@@ -345,13 +341,13 @@ object Rasterizer {
     // cover up later ones.
     var row = 0
 
-     println("sorted edges:")
-     for (edge <- groups(0)) {
-       printf("  %d/%d %s\n", edge.pmin.y, edge.pmax.y, edge)
-     }
+    // println("sorted edges:")
+    // for (edge <- groups(0)) {
+    //   printf("  %d/%d %s\n", edge.pmin.y, edge.pmax.y, edge)
+    // }
 
     while (row < rows) {
-      printf("row %d\n\n", row)
+      //printf("row %d\n", row)
 
       //assert(groups.length == gfs.length)
       //assert(groups.length == glimits.length)
@@ -457,7 +453,7 @@ object Rasterizer {
       }
 
       if (row == DBG) printf("xregions: %s\n", xtpls.toList)
-
+      
       // now we can just loop over our bounds, drawing the pixels as
       // appropriate. whew!
       xtpls.foreach {
@@ -467,8 +463,8 @@ object Rasterizer {
           if (row == DBG) printf("handling: %s (starting at %d, until %d/%d)\n", t, col, x2, lastcol)
           while (col <= x2 && col <= lastcol) {
             val k = (lastrow - row) * cols + col
-            data(k) = f(data(k))
-            if (row == DBG) printf("  writing %d into %d (%d)\n", data(k), col, k)
+            qq = cb(k, f, qq)
+            //if (row == DBG) printf("  writing %d into %d (%d)\n", data(k), col, k)
             col += 1
           }
         }
@@ -476,6 +472,8 @@ object Rasterizer {
 
       row += 1
     }
+
+    qq
   }
 
   /**
