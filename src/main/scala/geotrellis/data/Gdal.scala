@@ -90,7 +90,8 @@ object Gdal {
    * Runs gdal_translate to convert a raster data file into ARG format.
    */
   def translate(inPath: String, outPath: String, rasterType: RasterType) = {
-    gdal_translate :: "-of" :: " ARG" :: "-ot" :: convertToGdalType(rasterType) :: inPath :: outPath :: Nil !
+    val cmd = gdal_translate :: "-of" :: "ARG" :: "-ot" :: convertToGdalType(rasterType) :: inPath :: outPath :: Nil
+    cmd !
   }
 
   /**
