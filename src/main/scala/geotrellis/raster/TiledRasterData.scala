@@ -4,6 +4,7 @@ import geotrellis._
 import geotrellis.util.Filesystem
 import geotrellis.process._
 import geotrellis.data.arg.{ArgWriter,ArgReader}
+import geotrellis.data.Gdal
 
 import java.io.{FileOutputStream, BufferedOutputStream}
 
@@ -70,7 +71,6 @@ case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int) 
     ResolutionLayout(xs, ys, re.cellwidth, re.cellheight, pixelCols, pixelRows)
   }
 }
-
 
 /**
  * For a particular resolution and tile layout, this class stores the
@@ -253,9 +253,8 @@ trait TiledRasterData extends RasterData {
  * Currently this is the only TileRasterData that can be reliably used on data
  * too large to fit in memory.
  */
-case class TileSetRasterData(basePath:String, name:String, typ:RasterType,
-                             tileLayout:TileLayout, rasterExtent:RasterExtent,
-                             server:Server) extends TiledRasterData {
+case class TileSetRasterData(basePath:String, name:String, typ:RasterType, tileLayout:TileLayout,
+                             rasterExtent:RasterExtent, server:Server) extends TiledRasterData {
   def getType = typ
   def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
 
@@ -424,7 +423,6 @@ case class LazyViewWrapper(data:ArrayRasterData,
     }
   }
 }
-
 
 /**
  * This trait provides some methods in terms of underlying raster data.
@@ -637,12 +635,12 @@ object Tiler {
       ArgWriter(data.getType).write(path2, r, name2)
     }
 
-    writeLayout(data, re, name, path)
+    writeLayout(data.getType, data.tileLayout, re, name, path)
   }
 
-  def writeLayout(data:TiledRasterData, re:RasterExtent, name:String, path:String) = {
+  def writeLayout(rasterType:RasterType, tileLayout:TileLayout, re:RasterExtent, name:String, path:String) = {
     val RasterExtent(Extent(xmin, ymin, xmax, ymax), cw, ch, _, _) = re
-    val TileLayout(lcols, lrows, pcols, prows) = data.tileLayout
+    val TileLayout(lcols, lrows, pcols, prows) = tileLayout
 
     val layout = """{
   "layer": "%s",
@@ -667,7 +665,7 @@ object Tiler {
   "yskew": 0.0,
   "xskew": 0.0,
   "epsg": 3785
-}""".format(name, data.getType.name, xmin, ymin, xmax, ymax, cw, ch, name, lcols, lrows, pcols, prows)
+}""".format(name, rasterType.name, xmin, xmax, ymin, ymax, cw, ch, name, lcols, lrows, pcols, prows)
 
     val layoutPath = Filesystem.join(path, "layout.json")
     val bos = new BufferedOutputStream(new FileOutputStream(layoutPath))
@@ -695,24 +693,30 @@ object Tiler {
     }
   }
 
-  def writeTilesWithGdal(pixelCols:Int, pixelRows:Int, re:RasterExtent, name:String, rasterType:RasterType, outputDir:String, inputARG:String) {
+  def writeTilesWithGdal(inPath: String, name:String, outputDir:String, pixelCols:Int, pixelRows:Int) {
+    val rasterInfo = Gdal.info(inPath)
+    val re = rasterInfo.rasterExtent
+
+    val rasterType = rasterInfo.rasterType match {
+      case Some(rt) => rt
+      case None => TypeDouble   // What should be default if source raster data file has unsupported type?
+    }
     val layout = buildTileLayout(re, pixelCols, pixelRows)
+
+    println("Writing layout...")
+    val dir = new java.io.File(outputDir)
+    if (!dir.exists()) dir.mkdir()
+    writeLayout(rasterType, layout, re, name, outputDir)
+
     val reLayout = layout.getResolutionLayout(re)
     for (row <- 0 until layout.tileRows; col <- 0 until layout.tileCols) {
       val name2 = tileName (name, col, row)
       val outputPath = tilePath(outputDir, "tmp_" + name, col, row)  
       val re = reLayout.getRasterExtent(col,row)
+
       ArgWriter(rasterType).writeMetadataJSON(outputPath, name2,re)
-      val cmd = "gdal_translate -of ARG -srcwin %d %d %d %d %s %s".format(
-        col * pixelCols,
-        row * pixelRows,
-        pixelCols,
-        pixelRows,
-        inputARG,
-        outputPath
-      )
-      import sys.process._
-      val result = cmd !
+      Gdal.translate(inPath, outputPath, rasterType, col * pixelCols, row * pixelRows, pixelCols, pixelRows)
+
       val arg = ArgReader.readPath(outputPath,None,None)
       var nodata = true
       val outArg = arg.mapIfSet { z => {
@@ -727,6 +731,9 @@ object Tiler {
       } else {
         ArgWriter(rasterType).write(finalPath, outArg, name2)
       }
+      
+      // Clean up temporary files
+      new java.io.File(outputPath).delete() ; new java.io.File(outputPath.replace(".arg", ".json")).delete()
     }
   } 
 
