@@ -1,8 +1,8 @@
 package geotrellis.statistics.op.stat
 
 import geotrellis._
-import geotrellis.geometry._
-import geotrellis.geometry.rasterizer.Rasterizer
+import geotrellis.feature._
+import geotrellis.feature.rasterize._
 import geotrellis.data._
 import geotrellis.statistics._
 import geotrellis.raster.IntConstant
@@ -22,12 +22,9 @@ object TiledPolygonalZonalCount {
     sum
   }
 
-  def rasterize (cb:(Int) => Unit, ext: RasterExtent, polygons:Array[Polygon]) = {
-
-  }            
 }
 
-case class TiledPolygonalZonalCount(p: Polygon, r: Op[Raster], tileSums:Map[RasterExtent,Long] = Map(), threshold:Int = 30) extends raster.op.tiles.ThoroughputLimitedReducer1(r, threshold)({
+case class TiledPolygonalZonalCount[D](p: Polygon[D], r: Op[Raster], tileSums:Map[RasterExtent,Long] = Map(), threshold:Int = 30) extends raster.op.tiles.ThoroughputLimitedReducer1(r, threshold)({
   r =>
     {
       val r2 = r.force
@@ -38,7 +35,7 @@ case class TiledPolygonalZonalCount(p: Polygon, r: Op[Raster], tileSums:Map[Rast
         }
         case rdata: ArrayRasterData => {
           val tileExtent = r.rasterExtent.extent.asFeature(())
-          val jtsPolygon = p.jts
+          val jtsPolygon = p.geom
           val jtsExtent = tileExtent.geom
           if (jtsPolygon.contains(jtsExtent)) {
             tileSums.get(r.rasterExtent).getOrElse( {
@@ -66,7 +63,7 @@ case class TiledPolygonalZonalCount(p: Polygon, r: Op[Raster], tileSums:Map[Rast
             val p2 = tilePolygon match {
               case t: com.vividsolutions.jts.geom.Polygon => {
                 //println("we have a polygon")
-                val pp = new Polygon(t, 1, null)
+                val pp = geotrellis.feature.Polygon(t, ())
                 //val w = new com.vividsolutions.jts.io.WKTWriter()
                 //println("tile: " + w.write(jtsExtent) + " /// polygon: " + w.write(t))
             	  pp
@@ -78,18 +75,11 @@ case class TiledPolygonalZonalCount(p: Polygon, r: Op[Raster], tileSums:Map[Rast
               }
             }
             var sum: Long = 0L
-            val cb = new ARasterizer.CB[Long] {
-              def apply(d: Int, value: Int, oldSum: Long): Long = {
-                //println("in apply of rasterizer callback: " + d)
-                val inp = rdata(d)
-                if (inp != NODATA) {
-                  sum += inp.asInstanceOf[Long]
-                }
-                sum
-              }
-            }
-            //TiledPolygonalZonalCount.rasterize(cb, 0L, rasterExtent, Array(p2))
-            ARasterizer.rasterize(cb, 0L, rasterExtent, Array(p2))
+            val f = (col:Int, row:Int, p:Polygon[Unit]) => { sum = sum + r2.get(col,row) }
+            geotrellis.feature.rasterize.PolygonRasterizer.foreachCellByPolygon(
+              p2,
+              rasterExtent,
+              f)
             sum
           }
         }
@@ -103,11 +93,13 @@ case class TiledPolygonalZonalCount(p: Polygon, r: Op[Raster], tileSums:Map[Rast
 })
 
 
+
 /**
  * Given a raster and an array of polygons, return a histogram summary of the cells
  * within each polygon.
  */
-case class PolygonalZonalCount(ps: Array[Polygon], r: Op[Raster]) extends Op[Long] {
+
+/*case class PolygonalZonalCount(ps: Array[Polygon], r: Op[Raster]) extends Op[Long] {
   def _run(context: Context) = runAsync(r :: ps.toList)
 
   val nextSteps: Steps = {
@@ -193,6 +185,7 @@ case class PolygonalZonalCount(ps: Array[Polygon], r: Op[Raster]) extends Op[Lon
     Result(total)
     // iterate over the cells in our bounding box; determine its zone, then
     // looking in the raster for a value to add to the zonal histogram.
+*/
     /*
     var row = row1
     while (row < row2) {
@@ -218,6 +211,8 @@ case class PolygonalZonalCount(ps: Array[Polygon], r: Op[Raster]) extends Op[Lon
        (m, pgon) => m + (pgon.value -> histmap(pgon.value))
     })
     */
+/*
   }
 
 }
+*/
