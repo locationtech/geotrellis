@@ -720,7 +720,7 @@ object Tiler {
       val arg = ArgReader.readPath(outputPath,None,None)
       var nodata = true
       val outArg = arg.mapIfSet { z => {
-          if (z == NODATA + 1) NODATA else { nodata = false; z }
+          if (z == NODATA + 1) NODATA else { if (z != NODATA) nodata = false; z }
         }
       }
       val finalPath = tilePath(outputDir, name, col, row)
