@@ -24,7 +24,7 @@ object Raster {
   import geotrellis.process.Server
   import com.typesafe.config.ConfigFactory
   import geotrellis.raster._
-  def loadTileSet(dir:String, server:Server):Raster = {
+  private def loadTileSetInfo(dir:String, server:Server) = {
     val path = Filesystem.join(dir, "layout.json")
     val json = ConfigFactory.parseFile(new File(path))
 
@@ -60,8 +60,17 @@ object Raster {
 
     val re = RasterExtent(e, cw, ch, cols, rows)
     val layout = TileLayout(layoutCols, layoutRows, pixelCols, pixelRows)
+    (tileBase, typ, layout, re)
+  }
+  def loadTileSet(dir:String, server:Server):Raster = {
+    val (tileBase, typ, layout, re) = loadTileSetInfo(dir, server)
     val data = TileArrayRasterData(dir, tileBase, typ, layout, re, server)
     Raster(data, re)
+  }
+  def loadUncachedTileSet(dir:String, server:Server):Raster = {
+    val (tileBase, typ, layout, re) = loadTileSetInfo(dir, server)
+    val data = TileSetRasterData(dir, tileBase, typ, layout, re, server)
+    Raster(data, re) 
   }
 }
 
