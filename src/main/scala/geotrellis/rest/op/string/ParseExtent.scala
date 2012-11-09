@@ -7,6 +7,6 @@ case class ParseExtent(s:Op[String]) extends Op1(s)({
     val Array(x1, y1, x2, y2) = s.split(",").map(_.toDouble)
     Result(Extent(x1, y1, x2, y2))
   } catch {
-    case _ => sys.error("couldn't parse %s")
+    case _:Exception => sys.error("couldn't parse %s")
   }
 })
