@@ -55,12 +55,12 @@ object Raster {
     val cols = layoutCols * pixelCols
     val rows = layoutRows * pixelRows
 
-    val cw = json.getInt("cellwidth")
-    val ch = json.getInt("cellheight")
+    val cw = json.getDouble("cellwidth")
+    val ch = json.getDouble("cellheight")
 
     val re = RasterExtent(e, cw, ch, cols, rows)
     val layout = TileLayout(layoutCols, layoutRows, pixelCols, pixelRows)
-    val data = TileSetRasterData(dir, tileBase, typ, layout, re, server)
+    val data = TileArrayRasterData(dir, tileBase, typ, layout, re, server)
     Raster(data, re)
   }
 }
