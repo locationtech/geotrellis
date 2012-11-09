@@ -24,10 +24,11 @@ object TiledPolygonalZonalCount {
 
 }
 
-case class TiledPolygonalZonalCount[D](p: Polygon[D], r: Op[Raster], tileSums:Map[RasterExtent,Long] = Map(), threshold:Int = 30) extends raster.op.tiles.ThoroughputLimitedReducer1(r, threshold)({
+case class TiledPolygonalZonalCount[D](p: Polygon[D], override val r: Op[Raster], tileSums:Map[RasterExtent,Long] = Map(), threshold:Int = 30) extends raster.op.tiles.ThoroughputLimitedReducer1(r, threshold)({
   r =>
     {
       val r2 = r.force
+      println("tile is: " + r2)
       val s: Long = r2.data match {
         case x: IntConstant if x.n == NODATA => { // TODO: test for NODATA 
           //println("empty tile")
@@ -47,35 +48,27 @@ case class TiledPolygonalZonalCount[D](p: Polygon[D], r: Op[Raster], tileSums:Ma
           )
           
           } else if (jtsPolygon.disjoint(jtsExtent)) {
-            val w = new com.vividsolutions.jts.io.WKTWriter()
-            //println(w.write(jtsExtent))
-            //println(w.write(jtsPolygon))
-  
-            //println("tile is disjoint from polygon!")
-            //println("jtsExtent is: " + jtsExtent)
-            //println("jtsPolygon is: " + jtsPolygon)
             0L
           } else {
-            //println("tile is *not* disjoint")
             val tilePolygonOrig = jtsPolygon.intersection(jtsExtent)
             val tilePolygon = com.vividsolutions.jts.simplify.TopologyPreservingSimplifier.simplify(tilePolygonOrig, r.rasterExtent.cellwidth)
             val rasterExtent = r.rasterExtent
             val p2 = tilePolygon match {
               case t: com.vividsolutions.jts.geom.Polygon => {
-                //println("we have a polygon")
                 val pp = geotrellis.feature.Polygon(t, ())
-                //val w = new com.vividsolutions.jts.io.WKTWriter()
-                //println("tile: " + w.write(jtsExtent) + " /// polygon: " + w.write(t))
             	  pp
               }
               case x => {
-                //println("tilePolygon is: " + x)
                 throw new Exception("tilePolygon is: " + x)
                 null
               }
             }
             var sum: Long = 0L
-            val f = (col:Int, row:Int, p:Polygon[Unit]) => { sum = sum + r2.get(col,row) }
+            val f = (col:Int, row:Int, p:Polygon[Unit]) => { 
+              println("executing %d, %d, %s".format(col,row, r2))
+              val z = r2.get(col,row)
+              if (z != NODATA) { sum = sum + z; println("value!  %d".format(z) ) } 
+            }
             geotrellis.feature.rasterize.PolygonRasterizer.foreachCellByPolygon(
               p2,
               rasterExtent,
@@ -84,7 +77,7 @@ case class TiledPolygonalZonalCount[D](p: Polygon[D], r: Op[Raster], tileSums:Ma
           }
         }
       }
-      //println("tile result is: " + s)
+      println("tile result is: " + s)
       s
       //var histmap = Array.ofDim[Int](1)
     }

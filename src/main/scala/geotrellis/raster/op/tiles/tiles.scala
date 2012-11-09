@@ -25,7 +25,7 @@ abstract class Reducer1[B: Manifest, C: Manifest](r: Op[Raster])(handle: Raster 
   def mapper(r: Raster): Op[B] = logic.Do1(r)(handle)
 }
 
-abstract class ThoroughputLimitedReducer1[B: Manifest, C: Manifest](r: Op[Raster], limit: Int = 30)(handle: Raster => B)(reducer: List[B] => C) extends Op[C] {
+case class ThoroughputLimitedReducer1[B: Manifest, C: Manifest](r: Op[Raster], limit: Int = 30)(handle: Raster => B)(reducer: List[B] => C) extends Op[C] {
   def _run(context: Context) = {
     runAsync('init :: r :: Nil)
   }
