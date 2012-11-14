@@ -1,7 +1,9 @@
 package geotrellis.raster.op.zonal
 
 import geotrellis._
+import geotrellis.raster.op.tiles._
 import geotrellis.feature._
+import geotrellis.feature.op.geometry._
 import geotrellis.feature.rasterize._
 import geotrellis.data._
 import geotrellis.statistics._
@@ -9,92 +11,75 @@ import geotrellis.raster.IntConstant
 import scala.math.{ max, min }
 import geotrellis.raster.TileArrayRasterData
 import geotrellis.raster.TiledRasterData
+import geotrellis.logic._
+import geotrellis.{ op => liftOp }
+import com.vividsolutions.jts.{ geom => jts }
 
-object TiledPolygonalZonalSum {
-  def createTileSums(trd:TiledRasterData, re:RasterExtent) = {
-    val tiles = trd.getTileList(re)
-    tiles map { r => (r.rasterExtent, sumRaster(r))} toMap
-  }
+trait TiledPolygonalZonalSummary[C] extends ThroughputLimitedReducer1[C] {
+
+  type D
+  val zonePolygon: Op[Polygon[D]]
+
+  implicit val mB:Manifest[B]
+  implicit val mD:Manifest[D]
+
+  /**
+   * Compute the intermediate product of a given raster
+   * tile and a polygon
+   *
+   * @param r A raster tile
+   * @param p Polygon that intersects r's extent
+   * @return intermediate product
+   */
+  def handlePartialTileIntersection(r: Op[Raster], p: Op[Geometry[D]]):Op[B]
+
+  /**
+   * Compute an intermediate product of a given raster tile
+   * (given that the entire raster is in the zone)
+   *
+   * @param r A tile contained fully in the zone
+   * @return intermediate product
+   */
+  def handleFullTile(r: Op[Raster]):Op[B]
+
+  /**
+   * Value to use for a raster that contains only
+   * no data cells
+   */
+  def handleNoDataTile():Op[B]
+
+  /**
+   * Value to use for tiles that are completely
+   * outside of the zone
+   */
+  def handleDisjointTile():Op[B]  
   
-  def sumRaster (r:Raster):Long =  {
-    var sum = 0L
-    r.foreach( (x) => if (x != NODATA) sum = sum + x )
-    sum
-  }
+  def mapper(rasterOp: Op[Raster]):Op[List[B]] = 
+    raster.op.Force(rasterOp).flatMap(
+      strictRaster => 
+        strictRaster data match {
+          case x: IntConstant if x.n == NODATA => {
+            AsList(handleNoDataTile())
+          }
+          case rdata: ArrayRasterData => {
+            val tileExtent = AsFeature(GetExtent(strictRaster))
+            val intersections = AsPolygonSet(Intersection(zonePolygon, tileExtent))
+            val handlePartialTile = handlePartialTileWithIntersections(strictRaster, intersections)
 
-  def f[D](raster:Raster, polygon:Polygon[D]) = {
-    var sum: Long = 0L
-    val f = (col:Int, row:Int, p:Polygon[D]) => { 
-      val z = raster.get(col,row)
-      if (z != NODATA) { sum = sum + z; } 
-    }
-    geotrellis.feature.rasterize.PolygonRasterizer.foreachCellByPolygon(
-      polygon,
-      raster.rasterExtent,
-      f)
-    sum
-  }
-
-  val reducer =  (ints:List[Long]) => ints.reduceLeft((x, y) => x + y)
-
-  def apply[D](p: Polygon[D], r: Op[Raster], tileSums:Map[RasterExtent,Long] = Map(), threshold:Int = 30) = {
-    val f = (r2:Raster, polygon:Polygon[D]) => {
-      var sum: Long = 0L
-      val f2 = (col:Int, row:Int, pz:Polygon[D]) => {
-        val z = r2.get(col,row)
-        if (z != NODATA) sum = sum + z
-      }
-      geotrellis.feature.rasterize.PolygonRasterizer.foreachCellByPolygon(
-        polygon,
-        r2.rasterExtent,
-        f2)
-      sum
-    }
-
-    TiledPolygonalZonalSummary2(p, r, f, sumRaster, 0L, reducer, tileSums, threshold) 
-  }
-}
-
-object TiledPolygonalZonalSummary2 {
-  def apply[R:Manifest, Z:Manifest, D](p: Polygon[D], r: Op[Raster], f:(Raster,Polygon[D]) => R, g:(Raster) => R, empty:R, reducer:List[R] => Z, tileResults:Map[RasterExtent,R] = Map(), threshold:Int = 30):Op[Z]= {
-  raster.op.tiles.ThoroughputLimitedReducer1(r, threshold)({ r =>
-    {
-      val r2 = r.force
-      val s: R = r2.data match {
-        case x: IntConstant if x.n == NODATA => { // TODO: test for NODATA 
-          //println("empty tile")
-          empty
-        }
-        case rdata: ArrayRasterData => {
-          val tileExtent = r.rasterExtent.extent.asFeature(())
-          val jtsPolygon = p.geom
-          val jtsExtent = tileExtent.geom
-          if (jtsPolygon.contains(jtsExtent)) {
-            tileResults.get(r2.rasterExtent).getOrElse( g(r2) )
-          } else if (jtsPolygon.disjoint(jtsExtent)) {
-            empty
-          } else {
-            val tilePolygonOrig = jtsPolygon.intersection(jtsExtent)
-            //val tilePolygon = com.vividsolutions.jts.simplify.TopologyPreservingSimplifier.simplify(tilePolygonOrig, r.rasterExtent.cellwidth)
-            val rasterExtent = r.rasterExtent
-            val p2 = tilePolygonOrig match {
-              case t: com.vividsolutions.jts.geom.Polygon => {
-                val pp = geotrellis.feature.Polygon(t, p.data)
-            	  pp
+            If( Contains(zonePolygon, tileExtent),
+               AsList(handleFullTile(strictRaster)),
+               If( Disjoint(zonePolygon, tileExtent),
+                  AsList(handleDisjointTile), 
+                  handlePartialTile))
               }
-              case x => {
-                throw new Exception("tilePolygon is: " + x)
-                null
-              }
-            }
-            f(r2,p2)
-          } 
-        }
-      }
-      s
-      //var histmap = Array.ofDim[Int](1)
-    }
-})(reducer)
-}
-}
+        })
 
+  def handlePartialTileWithIntersections(
+    r: Op[Raster], p: Op[List[Geometry[D]]]):Op[List[B]] =
+    p.flatMap(
+      polygons =>
+        Collect(polygons.map(
+          polygon => 
+            handlePartialTileIntersection(r, polygon))).map(_.toList))
+  
+}    

@@ -12,7 +12,7 @@ abstract class Reducer1[B: Manifest, C: Manifest](r: Op[Raster])(handle: Raster 
 
   val nextSteps: Steps = {
     case 'init :: (r: Raster) :: Nil => init(r)
-    case 'reduce :: (bs: List[_]) => Result(reducer(bs.asInstanceOf[List[B]]))
+    case 'reduce :: (bs:  List[_]) => Result(reducer(bs.asInstanceOf[List[B]]))
   }
 
   def init(r: Raster) = {
@@ -25,15 +25,23 @@ abstract class Reducer1[B: Manifest, C: Manifest](r: Op[Raster])(handle: Raster 
   def mapper(r: Raster): Op[B] = logic.Do1(r)(handle)
 }
 
-case class ThoroughputLimitedReducer1[B: Manifest, C: Manifest](r: Op[Raster], limit: Int = 30)(handle: Raster => B)(reducer: List[B] => C) extends Op[C] {
+trait ThroughputLimitedReducer1[C] extends Op[C] {
+  type B
+  
+  val r: Op[Raster]
+  val limit: Int = 30
+
+  def mapper(r: Op[Raster]): Op[List[B]]
+  def reducer(mapResults: List[B]): C
+
   def _run(context: Context) = {
     runAsync('init :: r :: Nil)
   }
   val nextSteps: Steps = {
     case 'init :: (r: Raster) :: Nil => init(r)
     case 'reduce :: (bs: List[_]) => Result(reducer(bs.asInstanceOf[List[B]]))
-    case 'runGroup :: (oldResults: List[_]) :: (bs: List[_]) :: (newResults: List[_]) => {
-      val results = oldResults ::: newResults
+    case 'runGroup :: (oldResults: List[_]) :: (bs: List[_]) :: (newResults: List[List[_]]) => {
+      val results = oldResults ::: newResults.flatten
       bs match {
         case Nil => Result(reducer(results.asInstanceOf[List[B]]))
         case (head: List[_]) :: tail => {
@@ -54,12 +62,10 @@ case class ThoroughputLimitedReducer1[B: Manifest, C: Manifest](r: Op[Raster], l
         runAsync('runGroup :: List[B]() :: tail :: head)
       }
       case _ => {
-        Result(reducer(handle(r) :: Nil))
+        runAsync('runGroup :: List[B]() :: List[B]() :: mapper(r) :: Nil)
       }
     }
   }
-
-  def mapper(r: Op[Raster]): Op[B] = logic.Do(r)(handle)
 }
 
 case class TileMin(r: Op[Raster]) extends Reducer1(r)({
