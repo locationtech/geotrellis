@@ -7,14 +7,8 @@ import com.vividsolutions.jts.{ geom => jts }
 
 package object geometry {
 
-  val Contains = liftOp { (a: Geometry[_], b: Geometry[_]) => a.geom.contains(b.geom) }
-  val Disjoint = liftOp { (a: Geometry[_], b: Geometry[_]) => a.geom.disjoint(b.geom) }
   val GetExtent = liftOp { (a: Raster) => a.rasterExtent.extent }
   val AsFeature = liftOp { (e: Extent) => e.asFeature(()) }
-
-  case class Intersection[D](g1: Op[Geometry[D]], g2: Op[Geometry[_]])
-      extends Op2(g1,g2)(
-    (g1,g2) => Result(g1.mapGeom(g => g.intersection(g2.geom))))
 
   /**
    * Given a Geometry object, inspect the underlying geometry type
