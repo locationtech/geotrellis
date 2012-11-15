@@ -63,7 +63,7 @@ trait TiledPolygonalZonalSummary[C] extends ThroughputLimitedReducer1[C] {
           }
           case rdata: ArrayRasterData => {
             val tileExtent = AsFeature(GetExtent(strictRaster))
-            val intersections = AsPolygonSet(Intersection(zonePolygon, tileExtent))
+            val intersections = AsPolygonSet(Intersect(zonePolygon, tileExtent))
             val handlePartialTile = handlePartialTileWithIntersections(strictRaster, intersections)
 
             If( Contains(zonePolygon, tileExtent),
