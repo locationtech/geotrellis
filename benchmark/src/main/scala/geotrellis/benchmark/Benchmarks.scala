@@ -11,7 +11,7 @@ import geotrellis.data._
 import geotrellis.data.png._
 import geotrellis.raster.op._
 import geotrellis.io._
-import geotrellis.raster.op.focal.Normalize
+import geotrellis.raster.op.focal.{Normalize, Aggregated}
 import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.statistics._
@@ -778,39 +778,72 @@ class FocalOperations extends MyBenchmark {
                           (2101 * scale).toInt, (1723 * scale).toInt)
     val path = "src/main/resources/sbn/SBN_inc_percap.arg"
     r = server.run(io.LoadFile(path, re))
-
-    //val e = Extent(-8507622.499984, 4804712.742839, -8342022.499984, 4996142.742839)
-    ////val re = RasterExtent(e, 60.0, 60.0, 2760, 3190)
-    ////val re = RasterExtent(e, 120.0, 120.0, 1380, 1595)
-    //val re = RasterExtent(e, 240.0, 240.0, 690, 797)
-    //r = server.run(io.LoadFile("/Users/erik/elevation.arg", re))
-
-    //r = server.run(io.LoadFile("/Users/erik/elevation.arg"))
   }
 
-  //def timeNaiveMean1(reps:Int) = run(reps)(server.run(NaiveFocalMean(r, focal.Square(1))))
-  //def timeNaiveMean2(reps:Int) = run(reps)(server.run(NaiveFocalMean(r, focal.Square(2))))
-  //def timeNaiveMean3(reps:Int) = run(reps)(server.run(NaiveFocalMean(r, focal.Square(3))))
-  //def timeNaiveMean5(reps:Int) = run(reps)(server.run(NaiveFocalMean(r, focal.Square(5))))
-  //def timeNaiveMean7(reps:Int) = run(reps)(server.run(NaiveFocalMean(r, focal.Square(7))))
-  //def timeNaiveMean8(reps:Int) = run(reps)(server.run(NaiveFocalMean(r, focal.Square(8))))
-  //def timeNaiveMean13(reps:Int) = run(reps)(server.run(NaiveFocalMean(r, focal.Square(13))))
+  def timeMeanSquare1(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square2(1))))
+  def timeMeanSquare2(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square2(2))))
+  def timeMeanSquare3(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square2(3))))
+  def timeMeanSquare5(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square2(5))))
+  def timeMeanSquare7(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square2(7))))
+  def timeMeanSquare8(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square2(8))))
+  def timeMeanSquare13(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square2(13))))
 
-  def timeMeanSquare1(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(1))))
-  def timeMeanSquare2(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(2))))
-  def timeMeanSquare3(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(3))))
-  def timeMeanSquare5(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(5))))
-  def timeMeanSquare7(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(7))))
-  def timeMeanSquare8(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(8))))
-  def timeMeanSquare13(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(13))))
-
-  def timeFastMean1(reps:Int) = run(reps)(server.run(FastFocalMean(r, focal.Square(1))))
-  def timeFastMean2(reps:Int) = run(reps)(server.run(FastFocalMean(r, focal.Square(2))))
-  def timeFastMean3(reps:Int) = run(reps)(server.run(FastFocalMean(r, focal.Square(3))))
-  def timeFastMean5(reps:Int) = run(reps)(server.run(FastFocalMean(r, focal.Square(5))))
-  def timeFastMean7(reps:Int) = run(reps)(server.run(FastFocalMean(r, focal.Square(7))))
-  def timeFastMean8(reps:Int) = run(reps)(server.run(FastFocalMean(r, focal.Square(8))))
-  def timeFastMean13(reps:Int) = run(reps)(server.run(FastFocalMean(r, focal.Square(13))))
+  def timeFastMean1(reps:Int) = run(reps)(server.run(FastFocalMean(r, 1)))
+  def timeFastMean2(reps:Int) = run(reps)(server.run(FastFocalMean(r, 2)))
+  def timeFastMean3(reps:Int) = run(reps)(server.run(FastFocalMean(r, 3)))
+  def timeFastMean5(reps:Int) = run(reps)(server.run(FastFocalMean(r, 5)))
+  def timeFastMean7(reps:Int) = run(reps)(server.run(FastFocalMean(r, 7)))
+  def timeFastMean8(reps:Int) = run(reps)(server.run(FastFocalMean(r, 8)))
+  def timeFastMean13(reps:Int) = run(reps)(server.run(FastFocalMean(r, 13)))
 
   def timeHillshade(reps:Int) = run(reps)(server.run(focal.Hillshade(r)))
 }
+
+object FocalMinOperation extends MyRunner(classOf[FocalMinOperation])
+class FocalMinOperation extends MyBenchmark {
+  
+  var r:Raster = null
+
+  override def setUp() {
+    server = TestServer()
+
+    val scale = 1
+    //val scale = 0.1 // used to allow naive version to run fast enough
+
+    val e = Extent(-8475497.88485957, 4825540.69147447,
+                   -8317922.884859569, 4954765.69147447)
+    val re = RasterExtent(e, 75.0 / scale, 75.0 / scale,
+                          (2101 * scale).toInt, (1723 * scale).toInt)
+    val path = "src/main/resources/sbn/SBN_inc_percap.arg"
+    r = server.run(io.LoadFile(path, re))
+  }
+
+  import geotrellis.raster.op.focal._
+
+  def timeNewMinSquare1(reps:Int) = run(reps)(server.run(Min2(r, Square2(1))))
+  //def timeNewMinSquare2(reps:Int) = run(reps)(server.run(Min2(r, Square2(2))))
+  def timeNewMinSquare3(reps:Int) = run(reps)(server.run(Min2(r, Square2(3))))
+  // def timeNewMinSquare5(reps:Int) = run(reps)(server.run(Min2(r, Square2(5))))
+  // def timeNewMinSquare7(reps:Int) = run(reps)(server.run(Min2(r, Square2(7))))
+  // def timeNewMinSquare8(reps:Int) = run(reps)(server.run(Min2(r, Square2(8))))
+  //def timeNewMinSquare13(reps:Int) = run(reps)(server.run(Min2(r, Square2(13))))
+
+  def timeOldMinSquared1(reps:Int) = run(reps)(server.run(Min(r, Square(1))))
+  //def timeOldMinSquared2(reps:Int) = run(reps)(server.run(Min(r, Square(2))))
+  def timeOldMinSquared3(reps:Int) = run(reps)(server.run(Min(r, Square(3)))) 
+  // def timeOldMinSquared5(reps:Int) = run(reps)(server.run(Min(r, Square(5))))
+  // def timeOldMinSquared7(reps:Int) = run(reps)(server.run(Min(r, Square(7))))
+  // def timeOldMinSquared8(reps:Int) = run(reps)(server.run(Min(r, Square(8))))
+  //def timeOldMinSquared13(reps:Int) = run(reps)(server.run(Min(r, Square(13))))
+   
+  def timeNewMinCircle1(reps:Int) = run(reps)(server.run(Min2(r, Circle2(1))))
+  // def timeNewMinCircle2(reps:Int) = run(reps)(server.run(Min2(r, Circle2(2))))
+  def timeNewMinCircle3(reps:Int) = run(reps)(server.run(Min2(r, Circle2(3))))
+  //def timeNewMinCircle3(reps:Int) = run(reps)(server.run(Min2(r, Circle2(4))))
+
+  def timeOldMinCircle1(reps:Int) = run(reps)(server.run(Min(r, Circle(1))))
+  // def timeOldMinCircle2(reps:Int) = run(reps)(server.run(Min(r, Circle(2))))
+  def timeOldMinCircle3(reps:Int) = run(reps)(server.run(Min(r, Circle(3))))
+  //def timeOldMinCircle3(reps:Int) = run(reps)(server.run(Min(r, Circle(4))))
+}
+

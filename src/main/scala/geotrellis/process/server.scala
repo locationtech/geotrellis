@@ -75,7 +75,7 @@ akka {
 
     val n = staticCache.size
     val (amt, units) = Units.bytes(staticCache.foldLeft(0)(_ + _._2.length))
-    println("loaded %d layers (%.2f %s) into static cache" format (n, amt, units))
+    log("loaded %d layers (%.2f %s) into static cache" format (n, amt, units))
   }
 
   def loadInStaticCache(layer:RasterLayer):Unit = {

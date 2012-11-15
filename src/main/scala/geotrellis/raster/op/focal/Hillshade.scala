@@ -9,6 +9,7 @@ import scala.math._
 
 object Angles {
   @inline final def radians(d:Double) = d * Pi / 180.0
+  @inline final def degrees(r:Double) = r * 180.0 / Pi
 }
 import Angles._
 
@@ -29,64 +30,32 @@ extends Op4(r, azimuth, altitude, zFactor) ({
   val azimuth = radians(90.0 - az)
 
   // grab some raster attributes
-  val re = r.rasterExtent
-  val cw = re.cellwidth
-  val ch = re.cellheight
+  val cw = r.rasterExtent.cellwidth
+  val ch = r.rasterExtent.cellheight
 
-  val strategy = new HillshadeStrategy(re, azimuth, zenith, zf, cw, ch)
-  Result(Square(1).handle(r, strategy))
+  val dfn = HillshadeFocalOpDef(azimuth, zenith, zf, cw, ch)
+  FocalOp.getResult(r, Sliding, Square(1), dfn)
 })
 
-class HillshadeStrategy(re:RasterExtent, azimuth:Double, zenith:Double, zFactor:Double, cw:Double, ch:Double)
-extends Strategy[Raster, HillshadeCell](Sliding) {
-  val d = ShortArrayRasterData.ofDim(re.cols, re.rows)
-  //val d = ByteArrayRasterData.ofDim(re.cols, re.rows)
-  def store(col:Int, row:Int, cc:HillshadeCell) = d.set(col, row, cc.calc())
-  def get() = Raster(d, re)
-  def makeCell() = new HillshadeCell(azimuth, zenith, zFactor, cw, ch)
+protected[focal] case class HillshadeFocalOpDef(azimuth:Double, 
+						zenith:Double, 
+						zFactor:Double, 
+						cw:Double, 
+						ch:Double) extends IntFocalOpDefinition {
+  def newCalc = new HillshadeCalc(azimuth,zenith,zFactor,cw,ch)
+  override def newData(r: Raster) = ShortFocalOpData(r.rasterExtent)
 }
 
-class HillshadeCell(azimuth:Double, zenith:Double, zFactor:Double, cw:Double, ch:Double)
-extends Cell[HillshadeCell] {
-  var west = new Array[Int](3)
-  var base = new Array[Int](3)
-  var east = new Array[Int](3)
-
-  var northRow = 0
-
-  override def center(col:Int, row:Int, r:Raster) {
-    northRow = row - 1
-
-    val tmp = west
-    west = base
-    base = east
-    east = tmp
-  }
-  def clear() {
-    west = new Array[Int](3)
-    base = new Array[Int](3)
-    east = new Array[Int](3)
-  }
-
-  def add(cc:HillshadeCell) = sys.error("not supported")
-  def remove(cc:HillshadeCell) = sys.error("not supported")
-  def remove(col:Int, row:Int, r:Raster) {}
-  def add(col:Int, row:Int, r:Raster) {
-    east(row - northRow) = r.get(col, row)
-  }
-
-  def calc():Int = {
+protected[focal] case class HillshadeCalc(azimuth:Double, 
+					  zenith:Double,
+					  zFactor:Double, 
+					  cw:Double, 
+					  ch:Double) extends SlopeAspectCalculator[Int](zFactor,cw,ch) {
+  def getResult:Int = {
     if (base(1) == NODATA) return NODATA
 
-    // east - west
-    val sx = (east(0) + 2*east(1) + east(2) - west(0) - 2*west(1) - west(2)) / (8 * cw)
-
-    // south - north
-    val sy = (west(2) + 2*base(2) + east(2) - west(0) - 2*base(0) - east(0)) / (8 * ch)
-
-    val slope = atan(zFactor * sqrt(sx * sx + sy * sy))
-    val aspect = atan2(sy, -sx) // why are we negating sx again?
-
+    val (slope,aspect) = getSlopeAndAspect
+      
     val z = ((cos(zenith) * cos(slope)) + 
              (sin(zenith) * sin(slope) * cos(azimuth - aspect)))
 

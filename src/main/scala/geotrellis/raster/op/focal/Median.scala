@@ -5,22 +5,14 @@ import scala.math._
 import geotrellis._
 import geotrellis.statistics._
 
-case class Median(r:Op[Raster], f:Kernel) extends Op1(r)({
-  r => Result(f.handle(r, new MedianStrategy(r)))
+case class Median(r:Op[Raster], neighborhoodType: NeighborhoodType) extends Op1(r)({
+  r => FocalOp.getResultInt(r, Default, neighborhoodType, () => new MedianCalc)
 })
 
-protected[focal] class MedianStrategy(r:Raster) extends Strategy[Raster, MedianCell](Aggregated) {
-  val d = IntArrayRasterData.ofDim(r.cols, r.rows)
-  def store(col:Int, row:Int, cc:MedianCell) = d.set(col, row, cc.h.getMedian)
-  def get = Raster(d, r.rasterExtent)
-  def makeCell() = new MedianCell
-}
-
-protected[focal] class MedianCell extends Cell[MedianCell] {
+protected[focal] class MedianCalc extends FocalCalculation[Int] {
   var h:Histogram = FastMapHistogram()
   def clear() { h = FastMapHistogram() }
-  def add(cc:MedianCell) { h.update(cc.h) }
   def add(col:Int, row:Int, r:Raster) { h.countItem(r.get(col, row), 1) }
-  def remove(cc:MedianCell) = sys.error("unimplemented")
   def remove(col:Int, row:Int, r:Raster) { h.countItem(r.get(col, row), -1) }
+  def getResult = h.getMedian
 }
