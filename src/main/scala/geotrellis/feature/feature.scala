@@ -93,10 +93,13 @@ object Feature {
    * Returns a subclass of Feature given a geometry and data component.
    */
   def apply[D](p: jts.Geometry, data: D) = {
-
     p match {
       case point: jts.Point => JtsPoint(point, data)
       case polygon: jts.Polygon => JtsPolygon(polygon, data)
+      case multiPoint: jts.MultiPoint => JtsMultiPoint(multiPoint, data)
+      case multiPolygon: jts.MultiPolygon => JtsMultiPolygon(multiPolygon, data)
+      case line: jts.LineString => JtsLineString(line,data)
+      case multiLine: jts.MultiLineString => JtsMultiLineString(multiLine, data)
       case _ => JtsGeometry(p, data)
     }
   }
