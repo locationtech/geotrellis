@@ -169,4 +169,12 @@ class FeatureSpec extends FunSpec with MustMatchers with ShouldMatchers {
     }
   } 
 
+  describe("Distance") {
+    it("should return the correct distance") {
+      val dOp = Distance(p,p2)
+      val d = s.run(dOp)
+      val expected = 2.0
+      assert(d === expected) 
+    }
+  }
 }
