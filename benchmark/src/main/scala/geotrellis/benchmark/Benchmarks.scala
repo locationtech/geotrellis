@@ -9,7 +9,6 @@ package geotrellis.benchmark
 import geotrellis._
 import geotrellis.data._
 import geotrellis.data.png._
-import geotrellis.op._
 import geotrellis.raster.op._
 import geotrellis.io._
 import geotrellis.raster.op.focal.Normalize

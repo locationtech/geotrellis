@@ -3,7 +3,6 @@ package geotrellis.benchmark
 import scala.math.{min, max}
 
 import geotrellis._
-import geotrellis.op._
 import geotrellis.raster.op.focal.Square
 import geotrellis.raster.op._
 import geotrellis.process._
