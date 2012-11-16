@@ -16,9 +16,9 @@ class FeatureSpec extends FunSpec with MustMatchers with ShouldMatchers {
 
   val s = TestServer()
   val p = Point(1.0,2.0,"hi")
-  val b = Buffer(p, 5.0, 8)
+  val b = Buffer(p, 5.0, 8, EndCapRound) // same as Buffer(p, 5.0)
   val p2 = Point (3.0,2.0,"goodbye")
-  val b2 = Buffer(p2, 5.0, 8)
+  val b2 = Buffer(p2, 5.0)
   val p3 = Point (4.0, 5.0, "foo")
 
   describe("Buffer") {
