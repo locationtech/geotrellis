@@ -11,7 +11,6 @@ import com.vividsolutions.jts.geom
   * 
   *  @see [[http://tsusiatsoftware.net/jts/javadoc/com/vividsolutions/jts/geom/Geometry.html#distance(com.vividsolutions.jts.geom.Geometry) "JTS documentation"]]
   */
-case class Distance(g:Op[Geometry[_]], other:Op[Geometry[_]]) extends Op2(g,other) ({
+case class GetDistance(g:Op[Geometry[_]], other:Op[Geometry[_]]) extends Op2(g,other) ({
   (g,other) => Result(g.geom.distance(other.geom))
 })
-
