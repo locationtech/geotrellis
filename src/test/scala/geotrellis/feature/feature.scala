@@ -16,9 +16,9 @@ class FeatureSpec extends FunSpec with MustMatchers with ShouldMatchers {
 
   val s = TestServer()
   val p = Point(1.0,2.0,"hi")
-  val b = Buffer(p, 5.0, 8)
+  val b = Buffer(p, 5.0, 8, EndCapRound) // same as Buffer(p, 5.0)
   val p2 = Point (3.0,2.0,"goodbye")
-  val b2 = Buffer(p2, 5.0, 8)
+  val b2 = Buffer(p2, 5.0)
   val p3 = Point (4.0, 5.0, "foo")
 
   describe("Buffer") {
@@ -169,4 +169,33 @@ class FeatureSpec extends FunSpec with MustMatchers with ShouldMatchers {
     }
   } 
 
+  describe("GetDistance") {
+    it("should return the correct distance") {
+      val dOp = GetDistance(p,p2)
+      val d = s.run(dOp)
+      val expected = 2.0
+      assert(d === expected) 
+    }
+  }
+
+  describe("GetArea") {
+    it("should return the correct area") {
+      val aOp = GetArea(b)
+      val a = s.run(aOp)
+      val expected = 78.03612880645132
+      assert(a === expected) 
+    }
+  }
+
+  describe("FlattenGeometry and Filter") {
+    it("can split and filter a multipolygon") {
+       val flattenOp = FlattenGeometry(GetSymDifference(b,b2)) 
+       val polygonSeq = s.run(flattenOp)
+       val expected = List()
+       assert(polygonSeq.length === 2)
+       val filterOp = logic.Filter(flattenOp, Contains(_:Geometry[_],Point(-3.5, 1.5))) 
+       val filteredSeq = s.run(filterOp)
+       assert(filteredSeq.length === 1)
+    }
+  }
 }
