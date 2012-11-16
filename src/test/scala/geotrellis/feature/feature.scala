@@ -187,4 +187,15 @@ class FeatureSpec extends FunSpec with MustMatchers with ShouldMatchers {
     }
   }
 
+  describe("FlattenGeometry and Filter") {
+    it("can split and filter a multipolygon") {
+       val flattenOp = FlattenGeometry(GetSymDifference(b,b2)) 
+       val polygonSeq = s.run(flattenOp)
+       val expected = List()
+       assert(polygonSeq.length === 2)
+       val filterOp = logic.Filter(flattenOp, Contains(_:Geometry[_],Point(-3.5, 1.5))) 
+       val filteredSeq = s.run(filterOp)
+       assert(filteredSeq.length === 1)
+    }
+  }
 }
