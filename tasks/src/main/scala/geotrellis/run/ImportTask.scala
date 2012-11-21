@@ -50,6 +50,3 @@ object ImportTask {
     Importer.importWithGdal(inPath, name, outDir)
   }
 }
-
-
-

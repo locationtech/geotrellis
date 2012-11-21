@@ -39,8 +39,7 @@ class HillshadeTest extends FunSuite {
     assert(h.get(2, 2) === 77)
   }
 
-  test("hillshade") {
-    //val path = "/Users/erik/elevation.arg"
+  test("can write hillshade") {
     val path = "src/test/resources/sbn/SBN_inc_percap.arg"
 
     val grayBreaks = grayscale(1)
@@ -55,7 +54,6 @@ class HillshadeTest extends FunSuite {
     println("loaded raster in %s ms" format (time() - t0))
   
     server.run(io.WritePng(r, "/tmp/raster.png", grayscale(6), h, 0))
-    //println("histogram: " + h.toJSON)
   
     val t1 = time()
     val r1 = server.run(focal.Hillshade(r))
@@ -91,10 +89,6 @@ class HillshadeTest extends FunSuite {
     server.run(io.WritePng(r, "/tmp/raster6.png", stat.GetColorBreaks(h, colors638), h, 0))
     println("[6] wrote png in %s ms" format (time() - t6))
 
-    //println("hillshade: " + server.run(stat.GetHistogram(r1)).toJSON)
-    //println("  " + r1.data)
-    //println("  " + r1.data.getType)
-  
     server.shutdown()
   }
 }

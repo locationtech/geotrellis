@@ -22,26 +22,23 @@ class MoranTest extends FunSuite {
   import geotrellis.process._
   val server = TestServer()
 
-  test("global square moran (chess)") {
-    //val n = server.run(MoransI(chess))
-    val n = server.run(ScalarMoransI(chess, Nesw))
-    assert(n === -1.0)
-  }
+  // TODO: Reimplement Scalar Moran's I
+  // test("global square moran (chess)") {
+  //   val n = server.run(ScalarMoransI(chess, Nesw))
+  //   assert(n === -1.0)
+  // }
+
+  // test("global diagonal moran (chess)") {
+  //   val n = server.run(ScalarMoransI(chess, Square(1)))
+  //   assert(n === (-2.0 / 30))
+  // }
 
   test("raster square moran (chess)") {
-    //val r = server.run(LocalMoransI(chess))
-    val r = server.run(RasterMoransI(chess, Nesw))
+    val r = server.run(RasterMoransI(chess, Nesw()))
     assert(r.toArrayDouble === Array.fill(64)(-1.0))
-  }
-
-  test("global diagonal moran (chess)") {
-    //val n = server.run(QueensMoransI(chess))
-    val n = server.run(ScalarMoransI(chess, Square(1)))
-    assert(n === (-2.0 / 30))
   }
   
   test("raster diagonal moran (chess)") {
-    //val r = server.run(LocalQueensMoransI(chess))
     val r = server.run(RasterMoransI(chess, Square(1)))
     assert(r.getDouble(0, 0) === (-1.0 / 3))
     assert(r.getDouble(1, 0) === -0.2)

@@ -4,22 +4,45 @@ import scala.math._
 
 import geotrellis._
 
-case class Min(r:Op[Raster], f:Kernel) extends Op1(r)({
-  r => Result(f.handle(r, new MinStrategy(r)))
-})
-
-protected[focal] class MinStrategy(r:Raster) extends Strategy[Raster, MinCell](Columnar) {
-  val d = IntArrayRasterData.ofDim(r.cols, r.rows)
-  def store(col:Int, row:Int, cc:MinCell) { d.set(col, row, cc.zmin) }
-  def get() = Raster(d, r.rasterExtent)
-  def makeCell() = new MinCell
+case class Min2(r:Op[Raster], n:Neighborhood) extends IntCursorFocalOp1(r,n) {
+  def calc(cursor:Cursor[Int]):Int= {
+    cursor.foldLeft(Int.MinValue) { (a,b) => min(a,b) }
+  }
 }
 
-protected[focal] class MinCell extends Cell[MinCell] {
-  var zmin = Int.MaxValue
-  def clear() { zmin = Int.MaxValue }
-  def add(col:Int, row:Int, r:Raster) { zmin = min(r.get(col, row), zmin) }
-  def add(cc:MinCell) { zmin = min(cc.zmin, zmin) }
+case class Min(r:Op[Raster], neighborhoodType: NeighborhoodType) extends Op1(r)({
+  r => FocalOp.getResult(r, Default, neighborhoodType, MinFocalOpDef)
+})
+
+protected[focal] object MinFocalOpDef extends MultiTypeFocalOpDefinition {
+  def newIntCalc = new IntMinCalc
+  def newDoubleCalc = new DoubleMinCalc
+}
+
+protected[focal] class IntMinCalc extends FocalCalculation[Int] {
+  var zmin = NODATA
+  def clear() { zmin = NODATA }
+  def add(col:Int, row:Int, r:Raster) { 
+    if(zmin == NODATA) {
+      zmin = r.get(col,row)
+    } else {
+      zmin = min(r.get(col, row), zmin) 
+    }
+  }
   def remove(col:Int, row:Int, r:Raster) = sys.error("remove() not supported")
-  def remove(z:MinCell) = sys.error("remove() not supported")
+  def getResult = zmin
+}
+
+protected[focal] class DoubleMinCalc extends FocalCalculation[Double] {
+  var zmin = Double.NaN
+  def clear() { zmin = Int.MaxValue }
+  def add(col:Int, row:Int, r:Raster) { 
+    if(zmin == Double.NaN) {
+      zmin == r.getDouble(col, row)
+    } else {
+      zmin = min(r.getDouble(col, row), zmin)
+    }
+  }
+  def remove(col:Int, row:Int, r:Raster) = sys.error("remove() not supported")
+  def getResult = zmin
 }
