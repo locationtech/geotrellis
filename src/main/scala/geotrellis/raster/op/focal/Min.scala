@@ -6,7 +6,7 @@ import geotrellis._
 
 case class Min2(r:Op[Raster], n:Neighborhood) extends IntCursorFocalOp1(r,n) {
   def calc(cursor:Cursor[Int]):Int= {
-    cursor.foldLeft(Int.MinValue) { (a,b) => min(a,b) }
+    cursor.foldLeft(Int.MaxValue) { (a,b) => min(a,b) }
   }
 }
 

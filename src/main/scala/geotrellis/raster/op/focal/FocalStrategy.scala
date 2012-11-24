@@ -23,9 +23,10 @@ object CursorStrategy {
 	direction *= -1
 	focalY += 1
 	focalX += direction
-	cursor.moveY(1)
+	cursor.moveDown()
       } else {
-	cursor.moveX(direction)
+        if(direction == 1) { cursor.moveRight() }
+        else { cursor.moveLeft() }
       }
     }
 
@@ -154,9 +155,10 @@ trait FocalStrategy2[@specialized(Int,Double) D] { // extends Operation[Raster] 
 	direction *= -1
 	focalY += 1
 	focalX += direction
-	cursor.moveY(1)
+	cursor.moveDown()
       } else {
-	cursor.moveX(direction)
+        if(direction == 1) { cursor.moveRight() }
+        else { cursor.moveLeft() }
       }
     }
 

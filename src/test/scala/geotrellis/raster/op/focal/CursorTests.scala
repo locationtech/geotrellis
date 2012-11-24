@@ -3,6 +3,7 @@ package geotrellis.raster.op.focal
 import geotrellis._
 
 import scala.collection.mutable.Set
+import scala.math._
 
 import org.scalatest.FunSpec
 import org.scalatest.ShouldMatchers
@@ -90,7 +91,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(1,1)
-      cursor.moveX(1)
+      cursor.moveRight()
       val s = Set[Int]()
       cursor.foreachNew { x => s += x }
       s.toSeq.sorted should equal (Seq(4,14,24))
@@ -100,7 +101,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(2,1)
-      cursor.moveX(-1)
+      cursor.moveLeft()
       val s = Set[Int]()
       cursor.foreachNew { x => s += x }
       s.toSeq.sorted should equal (Seq(1,11,21))
@@ -110,7 +111,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(1,1)
-      cursor.moveY(1)
+      cursor.moveDown()
       val s = Set[Int]()
       cursor.foreachNew { x => s += x }
       s.toSeq.sorted should equal (Seq(31,32,33))
@@ -120,7 +121,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(1,2)
-      cursor.moveY(-1)
+      cursor.moveUp()
       val s = Set[Int]()
       cursor.foreachNew { x => s += x }
       s.toSeq.sorted should equal (Seq(1,2,3))
@@ -130,7 +131,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(1,1)
-      cursor.moveX(-1)
+      cursor.moveLeft()
       val s = Set[Int]()
       cursor.foreachNew { x => s += x }
       s.toSeq.sorted should equal (Seq())
@@ -140,7 +141,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(8,0)
-      cursor.moveX(1)
+      cursor.moveRight()
       val s = Set[Int]()
       cursor.foreachNew { x => s += x }
       s.toSeq.sorted should equal (Seq())
@@ -150,7 +151,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(0,1)
-      cursor.moveY(-1)
+      cursor.moveUp()
       val s = Set[Int]()
       cursor.foreachNew { x => s += x }
       s.toSeq.sorted should equal (Seq())
@@ -160,7 +161,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(1,8)
-      cursor.moveY(1)
+      cursor.moveDown()
       val s = Set[Int]()
       cursor.foreachNew { x => s += x }
       s.toSeq.sorted should equal (Seq())
@@ -170,7 +171,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(1,1)
-      cursor.moveX(1)
+      cursor.moveRight()
       val s = Set[Int]()
       cursor.foreachOld { x => s += x }
       s.toSeq.sorted should equal (Seq(1,11,21))
@@ -180,7 +181,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(2,1)
-      cursor.moveX(-1)
+      cursor.moveLeft()
       val s = Set[Int]()
       cursor.foreachOld { x => s += x }
       s.toSeq.sorted should equal (Seq(4,14,24))
@@ -190,7 +191,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(1,1)
-      cursor.moveY(1)
+      cursor.moveDown()
       val s = Set[Int]()
       cursor.foreachOld { x => s += x }
       s.toSeq.sorted should equal (Seq(1,2,3))
@@ -200,7 +201,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(1,2)
-      cursor.moveY(-1)
+      cursor.moveUp()
       val s = Set[Int]()
       cursor.foreachOld { x => s += x }
       s.toSeq.sorted should equal (Seq(31,32,33))
@@ -210,7 +211,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(0,4)
-      cursor.moveX(1)
+      cursor.moveRight()
       val s = Set[Int]()
       cursor.foreachOld { x => s += x }
       s.toSeq.sorted should equal (Seq())
@@ -220,7 +221,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1) 
       cursor.centerOn(9,0)
-      cursor.moveX(-1)
+      cursor.moveLeft()
       val s = Set[Int]()
       cursor.foreachOld { x => s += x }
       s.toSeq.sorted should equal (Seq())
@@ -230,7 +231,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(1,0)
-      cursor.moveY(1)
+      cursor.moveDown()
       val s = Set[Int]()
       cursor.foreachOld { x => s += x }
       s.toSeq.sorted should equal (Seq())
@@ -240,7 +241,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(1,9)
-      cursor.moveY(-1)
+      cursor.moveUp()
       val s = Set[Int]()
       cursor.foreachOld { x => s += x }
       s.toSeq.sorted should equal (Seq())
@@ -252,17 +253,30 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       cursor.setMask { (x,y) => x == 0 || y == 0 }
       cursor.centerOn(1,1)
       cursor.getAll.sorted should equal(Seq(12,13,22,23))
+      cursor.centerOn(9,9)
+      cursor.getAll.sorted should equal(Seq(100))
+      cursor.centerOn(5,9) 
+      cursor.getAll.sorted should equal(Seq(96,97))
+      cursor.centerOn(9,5)
+      cursor.getAll.sorted should equal(Seq(60,70))
     }
 
     it("should be able to mask a corner for tracking new cells") {
+      val s = Set[Int]()
+
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.setMask { (x,y) => x == 0 || y == 0 }
       cursor.centerOn(1,1)
-      cursor.moveY(1)
-      val s = Set[Int]()
+      cursor.moveDown()
       cursor.foreachNew { x => s += x }
       s.toSeq.sorted should equal (Seq(32,33))
+
+      s.clear
+      cursor.centerOn(9,9)
+      cursor.moveUp()
+      cursor.foreachNew { x => s += x }
+      s.toSeq.sorted should equal (Seq(90))
     }
 
     it("should be able to mask a corner for tracking old cells") {
@@ -270,7 +284,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val cursor = new IntCursor(r,1)
       cursor.setMask { (x,y) => x == 0 || y == 0 }
       cursor.centerOn(8,5)
-      cursor.moveY(-1)
+      cursor.moveUp()
       val s = Set[Int]()
       cursor.foreachOld { x => s += x }
       s.toSeq.sorted should equal (Seq(69,70))
@@ -284,5 +298,62 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       // 12+13+14+22+23+32
       cursor.foldLeft(0) { (a,b) => a + b } should be (116)
     }
+
+    it("should be able to mask circle and foldLeft with min") {
+      val r = createRaster
+      val n = Circle2(3)
+      val cursor = Cursor.getInt(r,n)
+      cursor.centerOn(4,4)
+      cursor.foldLeft(Int.MaxValue) { (a,b) => min(a,b) } should be (15)
+    }
+    
+    it("should be able to mask circle and foldLeft with min for edge case") {
+      val r = createRaster
+      val n = Circle2(3)
+      val cursor = Cursor.getInt(r,n)
+      cursor.centerOn(9,9)
+      cursor.foldLeft(Int.MaxValue) { (a,b) => min(a,b) } should be (70)
+    }
+
+    it("should be able to mask triangle and calculate sum using new and old values when moving right.") {
+      val r = createRaster
+      val cursor = new IntCursor(r,1)
+      cursor.setMask { (x,y) => x+y > 2 }
+      cursor.centerOn(2,2)
+      
+      val s = Set[Int]()
+      cursor.foreach { x => s += x }
+      s.toSeq.sorted should equal (Seq(12,13,14,22,23,32))
+
+      cursor.moveRight()
+      val news = Set[Int]()
+      val olds = Set[Int]()
+      cursor.foreachNew { x => news += x }
+      cursor.foreachOld { x => olds += x }
+
+      news.toSeq.sorted should equal (Seq(15,24,33))
+      olds.toSeq.sorted should equal (Seq(12,22,32))
+    }
+
+    it("should be able to mask triangle and calculate sum using new and old values when moving left.") {
+      val r = createRaster
+      val cursor = new IntCursor(r,1)
+      cursor.setMask { (x,y) => x+y > 2 }
+      cursor.centerOn(2,2)
+      
+      val s = Set[Int]()
+      cursor.foreach { x => s += x }
+      s.toSeq.sorted should equal (Seq(12,13,14,22,23,32))
+
+      cursor.moveLeft()
+      val news = Set[Int]()
+      val olds = Set[Int]()
+      cursor.foreachNew { x => news += x }
+      cursor.foreachOld { x => olds += x }
+
+      news.toSeq.sorted should equal (Seq(11,21,31))
+      olds.toSeq.sorted should equal (Seq(14,23,32))
+    }
+
   }
 }
