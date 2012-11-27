@@ -2,7 +2,7 @@ package geotrellis.raster.op.focal
 
 import geotrellis._
 
-case class Sum(r:Op[Raster], neighborhoodType: NeighborhoodType) extends Op1(r) ({
+case class Sum(r:Op[Raster], neighborhoodType: Neighborhood) extends Op1(r) ({
   r => FocalOp.getResult(r, Aggregated, neighborhoodType, SumFocalOpDef)
 })
 

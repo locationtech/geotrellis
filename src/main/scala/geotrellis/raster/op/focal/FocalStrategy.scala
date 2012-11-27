@@ -5,6 +5,13 @@ import scala.math._
 import geotrellis._
 import geotrellis.raster._
 
+/*
+ * Focal strategy which moves a Cursor across the raster,
+ * allowing a calculation to be done on each cell using the Cursor
+ * to determine what neighboring cells are inside the focus's
+ * neighborhood, what cells have been added since the last move, and
+ * what cells have been removed since the last move.
+ */
 object CursorStrategy {
   def execute[@specialized(Int,Double)D](r:Raster,b:RasterBuilder[D],cursor:Cursor[D])
                                         (calc:Cursor[D]=>D):Raster = {
@@ -23,10 +30,10 @@ object CursorStrategy {
 	direction *= -1
 	focalY += 1
 	focalX += direction
-	cursor.moveDown()
+	cursor.move(Movement.Down)
       } else {
-        if(direction == 1) { cursor.moveRight() }
-        else { cursor.moveLeft() }
+        if(direction == 1) { cursor.move(Movement.Right) }
+        else { cursor.move(Movement.Left) }
       }
     }
 
@@ -41,12 +48,18 @@ trait CellwiseCalculator[@specialized(Int,Double)D] {
   def getValue:D
 }
 
+/*
+ * Focal strategy that implements a more strict mechanism that informs the user
+ * what cells have been added or removed. This strategy is more performant,
+ * but can only be used for Square or Circle neighborhoods.
+ */ 
 object CellwiseStrategy {
   def execute[@specialized(Int,Double)D](r:Raster,b:RasterBuilder[D],n:Neighborhood)
                                         (op:CellwiseCalculator[D]):Raster = {
     n match {
-      case Square2(extent) => executeSquare(r,b,extent)(op)
-      case c:Circle2 => executeCircle(r,b,c.extent)(op)
+      case Square(extent) => executeSquare(r,b,extent)(op)
+      case c:Circle => executeCircle(r,b,c.extent)(op)
+      case _ => throw new Exception("CellwiseStrategy cannot be used with this neighborhood type.")
     }
   }
 
@@ -155,10 +168,10 @@ trait FocalStrategy2[@specialized(Int,Double) D] { // extends Operation[Raster] 
 	direction *= -1
 	focalY += 1
 	focalX += direction
-	cursor.moveDown()
+	cursor.move(Movement.Down)
       } else {
-        if(direction == 1) { cursor.moveRight() }
-        else { cursor.moveLeft() }
+        if(direction == 1) { cursor.move(Movement.Right) }
+        else { cursor.move(Movement.Left) }
       }
     }
 
@@ -190,12 +203,12 @@ trait FocalStrategy[@specialized(Int,Double) D] {
 }
 
 object FocalStrategy {
-  def get[@specialized(Int,Double) D](strategyType: FocalStrategyType, nhType: NeighborhoodType): FocalStrategy[D] = {
+  def get[@specialized(Int,Double) D](strategyType: FocalStrategyType, nhType: Neighborhood): FocalStrategy[D] = {
     nhType match {
       case Square(ext) => 
 	SquareStrategy[D](ext, strategyType)
-      case Circle(ext) =>
-	CircleStrategy[D](ext, strategyType)
+      case c: Circle =>
+	CircleStrategy[D](c.extent, strategyType)
       case t: Nesw =>
 	NeswStrategy[D](strategyType)
     }
@@ -404,4 +417,3 @@ case class CircleStrategy[@specialized(Int,Double) D](n:Int, strategyType:FocalS
     data.get()
   }
 }
-

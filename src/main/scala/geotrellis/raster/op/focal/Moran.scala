@@ -26,7 +26,7 @@ import geotrellis.statistics._
 //   def get() = count / ws
 // }
 
-case class RasterMoransI(r:Op[Raster], neighborhoodType: NeighborhoodType) extends Op1(r)({
+case class RasterMoransI(r:Op[Raster], neighborhoodType: Neighborhood) extends Op1(r)({
   r => {
     val h = FastMapHistogram.fromRaster(r)
     val Statistics(mean, _, _, stddev, _, _) = h.generateStatistics

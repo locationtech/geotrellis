@@ -10,11 +10,11 @@ case class CursorMean(r:Op[Raster], n:Neighborhood) extends DoubleCursorFocalOp1
   var sum:Double = 0.0
 
   def calc(c:Cursor[Double]):Double = {
-    c.foreachOld { z =>
+    c.foreachRemoved { z =>
       count -= 1
       sum -= z
     }
-    c.foreachNew { z =>
+    c.foreachAdded { z =>
       count += 1
       sum += z
     }

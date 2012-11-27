@@ -1,26 +1,40 @@
 package geotrellis.raster.op.focal
 
 import scala.math.{min,max}
+import scala.collection.mutable.LinkedList
+
+import Movement._
 
 /*
- * CursorMask structure:
- * A one dimension array of size d x d+1, masquerading as 2d array,
- * with the first element in each row being the number of values for
- * that row. Those values represent the unmasked indexes.
- * A lot of precomputation of different mask and unmask values are
- * used so that determining what has been masked or unmasked by a cursor
- * move can be fast.
+ * Represents a mask over a cursor. The CursorMask
+ * helps the cursor keep track of the state of masking
+ * and unmasking of cells between moves.
  */
 class CursorMask(d:Int,f:(Int,Int)=>Boolean) {
-  val maskFunc = f
+  private class MaskSet {
+    private var data = Array.ofDim[LinkedList[Int]](d)
+    for(i <- 0 to d-1) { data(i) = new LinkedList[Int]() }
 
-  private val m = Array.ofDim[Int](d*(d+1))
+    def add(i:Int,v:Int) = { data(i) = data(i) :+ v }
 
-  val maskedUp = Array.ofDim[Int](d*d)
-  val unmaskedUp = Array.ofDim[Int](d*d)
-  val maskedLeft = Array.ofDim[Int](d*d)
-  val unmaskedLeft = Array.ofDim[Int](d*d)
+    def foreachAt(i:Int)(f:Int=>Unit) = {
+      data(i).foreach(v => f(v))
+    }
+
+    def apply(i:Int) = data(i)
+  }
   
+  // Holds data about what cells are unmasked
+  private val unmasked = new MaskSet
+  private var westColumnUnmasked = new LinkedList[Int]
+  private var eastColumnUnmasked = new LinkedList[Int]
+
+  // Holds data about what cells are masked or unmasked by moving the cursor.
+  private val maskedAfterMoveUp = new MaskSet
+  private val unmaskedAfterMoveUp = new MaskSet
+  private val maskedAfterMoveLeft = new MaskSet
+  private val unmaskedAfterMoveLeft = new MaskSet
+
   // Record the mask values
   var x = 0
   var y = 0
@@ -31,234 +45,96 @@ class CursorMask(d:Int,f:(Int,Int)=>Boolean) {
     x = 0
     len = 0
     while(x < d) {
-      isMasked = maskFunc(x,y)
+      isMasked = f(x,y)
       if(!isMasked) {
-        len += 1
-        m(y*(d+1) + len) = x
+        unmasked.add(y,x)
+
+        // Record the border columns, they are a special case to be tracked.
+        if(x == 0) {
+          westColumnUnmasked = westColumnUnmasked :+ y
+        }
+        if(x == d - 1) {
+          eastColumnUnmasked = eastColumnUnmasked :+ y
+        }
       }
 
       // Check if moving left yeilds a different mask result,
       // so we can tell if moving horizontally has changed the
       // masked value for a cell.
       if(x > 0) {
+        val leftIsMasked = f(x-1,y)
+
         if(leftIsMasked && !isMasked) {
           // Moving left will unmask
-          val len2 = unmaskedLeft(y*d) + 1
-          unmaskedLeft(y*d + len2) = x
-          unmaskedLeft(y*d) = len2
+          unmaskedAfterMoveLeft.add(y,x)
         } else if(!leftIsMasked && isMasked) {
           // Moving left will mask
-          val len2 = maskedLeft(y*d) + 1
-          maskedLeft(y*d + len2) = x
-          maskedLeft(y*d) = len2
+          maskedAfterMoveLeft.add(y,x)
         }
       }
       
       //Check if moving up yeilds different mask result
       if(y > 0) {
-        val upIsMasked = maskFunc(x,y-1)
+        val upIsMasked = f(x,y-1)
         
         if(upIsMasked && !isMasked) {
           // Moving up will unmask
-          val len2 = unmaskedUp((y-1)*d) + 1
-          unmaskedUp((y-1)*d + len2) = x
-          unmaskedUp((y-1)*d) = len2
+          unmaskedAfterMoveUp.add(y,x)
         } else if(!upIsMasked && isMasked) {
           // Moving up will mask
-          val len2 = maskedUp((y-1)*d) + 1
-          maskedUp((y-1)*d + len2) = x
-          maskedUp((y-1)*d) = len2
+          maskedAfterMoveUp.add(y,x)
         }
       }
-      m(y*(d+1)) = len
-      leftIsMasked = isMasked
       x += 1
     }
     y += 1
   }
  
-  def foreachX(row:Int,xmin:Int,xdelta:Int)(f:Int=>Unit) {
-    val len = m(row*(d+1))
-    if(len > 0) {
-      var x = 0
-      while(m(row*(d+1) + x + 1) < xmin && x < len) {
-        x += 1
-      }
-      while(x < len && m(row*(d+1) + x + 1) <= xmin + xdelta) {
-        f(m(row*(d+1) + x + 1))
-        x += 1
-      }
-    }
+  def foreachX(row:Int)(f:Int=>Unit) = {
+    unmasked.foreachAt(row)(f)
+  }
+ 
+  def foreachWestColumn(f:Int=>Unit) = {
+    westColumnUnmasked.foreach(f)
   }
 
-  def foreachMaskedUp(xmin:Int,xdelta:Int,ymin:Int,ydelta:Int)(f:(Int,Int)=>Unit) {
-    var y = max(1,ymin)
-    var x = 0
-    var len = 0
-    while(y <= ymin+ydelta) {
-      len = maskedUp((y-1)*d)
-      if(len > 0) {
-        x = 0
-        while(maskedUp((y-1)*d + x + 1) < xmin && x < len) {
-          x += 1
-        }
-        while(x < len && maskedUp((y-1)*d + x + 1) <= xmin + xdelta) {
-          f(maskedUp((y-1)*d + x + 1), y)
-          x += 1
-        }
-      }
+  def foreachEastColumn(f:Int=>Unit) = {
+    eastColumnUnmasked.foreach(f)
+  }
+
+  private def foreach(xOffset:Int,yOffset:Int,startY:Int,set:MaskSet)(f:(Int,Int)=>Unit) = {
+    var y = startY
+    while(y < d) {
+      set.foreachAt(y) { x => f(x - xOffset, y - yOffset) }
       y += 1
     }
   }
 
-  def foreachUnmaskedUp(xmin:Int,xdelta:Int,ymin:Int,ydelta:Int)(f:(Int,Int)=>Unit) {
-    var y = max(1,ymin)
-    var x = 0
-    var len = 0
-    while(y <= ymin+ydelta) {
-      len = unmaskedUp((y-1)*d)
-      if(len > 0) {
-        x = 0
-        while(unmaskedUp((y-1)*d + x + 1) < xmin && x < len) {
-          x += 1
-        }
-        while(x < len && unmaskedUp((y-1)*d + x + 1) <= xmin + xdelta) {
-          f(unmaskedUp((y-1)*d + x + 1), y)
-          x += 1
-        }
-      }
-      y += 1
+  def foreachMasked(mv:Movement)(f:(Int,Int)=>Unit) {
+    mv match {
+      case Left => foreach(0,0,0,maskedAfterMoveLeft)(f)
+      case Right => foreach(1,0,0,unmaskedAfterMoveLeft)(f)
+      case Up => foreach(0,0,1,maskedAfterMoveUp)(f)
+      case Down => foreach(0,1,1,unmaskedAfterMoveUp)(f)
+      case _ =>
     }
   }
 
-  def foreachMaskedDown(xmin:Int,xdelta:Int,ymin:Int,ydelta:Int)(f:(Int,Int)=>Unit) {
-    var y = max(0,ymin)
-    var ymax = min(ymin+ydelta, d - 2)
-    var x = 0
-    var len = 0
-    while(y <= ymax) {
-      len = unmaskedUp(y*d)
-      x = 0
-      while(unmaskedUp(y*d + x + 1) < xmin && x < len) {
-        x += 1
-      }
-      while(x < len && unmaskedUp(y*d + x + 1) <= xmin + xdelta) {
-        f(unmaskedUp(y*d + x + 1), y)
-        x += 1
-      }
-      y += 1
-    }
-  }
-
-  def foreachUnmaskedDown(xmin:Int,xdelta:Int,ymin:Int,ydelta:Int)(f:(Int,Int)=>Unit) {
-    var y = max(0,ymin)
-    var ymax = min(ymin+ydelta, d - 2)
-    var x = 0
-    var len = 0
-    while(y <= ymax) {
-      len = maskedUp(y*d)
-      x = 0
-      while(maskedUp(y*d + x + 1) < xmin && x < len) {
-        x += 1
-      }
-      while(x < len && maskedUp(y*d + x + 1) <= xmin + xdelta) {
-        f(maskedUp(y*d + x + 1), y)
-        x += 1
-      }
-      y += 1
-    }
-  }  
-
-  def foreachMaskedLeft(xmin:Int,xdelta:Int,ymin:Int,ydelta:Int)(f:(Int,Int)=>Unit) {
-    var y = max(0,ymin)
-    var ymax = ymin+ydelta
-    var x = 0
-    var len = 0
-    while(y <= ymax) {
-      len = maskedLeft(y*d)
-      if(len > 0) {
-        x = 0
-        while(maskedLeft(y*d + x + 1) <= xmin && x < len) {
-          x += 1
-        }
-        while(x < len && maskedLeft(y*d + x + 1) <= xmin + xdelta) {
-          f(maskedLeft(y*d + x + 1), y)
-          x += 1
-        }
-      }
-      y += 1
-    }
-  }
-
-  def foreachUnmaskedLeft(xmin:Int,xdelta:Int,ymin:Int,ydelta:Int)(f:(Int,Int)=>Unit) {
-    var y = max(ymin,0)
-    var ymax = ymin+ydelta
-    var x = 0
-    var len = 0
-    while(y <= ymax) {
-      len = unmaskedLeft(y*d)
-      if(len > 0) {
-        x = 0
-        while(unmaskedLeft(y*d + x + 1) <= xmin && x < len) {
-          x += 1
-        }
-        while(x < len && unmaskedLeft(y*d + x + 1) <= xmin + xdelta) {
-          f(unmaskedLeft(y*d + x + 1), y)
-          x += 1
-        }
-      }
-      y += 1
-    }
-  }  
-
-  def foreachMaskedRight(xmin:Int,xdelta:Int,ymin:Int,ydelta:Int)(f:(Int,Int)=>Unit) {
-    var y = max(0,ymin)
-    var ymax = ymin+ydelta
-    var x = 0
-    var len = 0
-    while(y <= ymax) {
-      len = unmaskedLeft(y*d)
-      if(len > 0) {
-        x = 0
-        while(unmaskedLeft(y*d + x + 1)-1 < xmin && x < len) {
-          x += 1
-        }
-        while(x < len && unmaskedLeft(y*d + x + 1) - 1 <= xmin + xdelta) {
-          f(unmaskedLeft(y*d + x+1)-1, y)
-          x += 1
-        }
-      }
-      y += 1
-    }
-  }
-
-  def foreachUnmaskedRight(xmin:Int,xdelta:Int,ymin:Int,ydelta:Int)(f:(Int,Int)=>Unit) {
-    var y = max(ymin,0)
-    var ymax = ymin+ydelta
-    var x = 0
-    var len = 0
-    while(y <= ymax) {
-      len = maskedLeft(y*d)
-      if(len > 0) {
-        x = 0
-        while(maskedLeft(y*d + x + 1)-1 < xmin && x < len) {
-          x += 1
-        }
-        while(x < len && maskedLeft(y*d + x + 1)-1 <= xmin + xdelta) {
-          f(maskedLeft(y*d + x + 1)-1, y)
-          x += 1
-        }
-      }
-      y += 1
+  def foreachUnmasked(mv:Movement)(f:(Int,Int)=>Unit) {
+    mv match {
+      case Left => foreach(0,0,0,unmaskedAfterMoveLeft)(f)
+      case Right => foreach(1,0,0,maskedAfterMoveLeft)(f)
+      case Up => foreach(0,0,1,unmaskedAfterMoveUp)(f)
+      case Down => foreach(0,1,1,maskedAfterMoveUp)(f)
+      case _ =>
     }
   }
 
   def asciiDraw:String = {
     var r = ""
     for(y <- 0 to d - 1) {
-      val l = for(i <- 1 to m(y*(d+1))) yield m(y*(d+1) +  i)
       for(x <- 0 to d - 1) {
-        if(l.contains(x)) { r += " O " } else { r += " X " }
+        if(unmasked(y).contains(x)) { r += " O " } else { r += " X " }
       }
       r += "\n"
     }

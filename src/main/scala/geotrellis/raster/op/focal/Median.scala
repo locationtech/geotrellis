@@ -5,7 +5,7 @@ import scala.math._
 import geotrellis._
 import geotrellis.statistics._
 
-case class Median(r:Op[Raster], neighborhoodType: NeighborhoodType) extends Op1(r)({
+case class Median(r:Op[Raster], neighborhoodType: Neighborhood) extends Op1(r)({
   r => FocalOp.getResultInt(r, Default, neighborhoodType, () => new MedianCalc)
 })
 

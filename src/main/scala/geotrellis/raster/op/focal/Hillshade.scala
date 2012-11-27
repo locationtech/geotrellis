@@ -7,10 +7,6 @@ import geotrellis.Raster
 
 import scala.math._
 
-object Angles {
-  @inline final def radians(d:Double) = d * Pi / 180.0
-  @inline final def degrees(r:Double) = r * 180.0 / Pi
-}
 import Angles._
 
 object Hillshade {

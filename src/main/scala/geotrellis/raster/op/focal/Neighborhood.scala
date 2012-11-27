@@ -2,6 +2,13 @@ package geotrellis.raster.op.focal
 
 import scala.math._
 
+object Angles {
+  @inline final def radians(d:Double) = d * Pi / 180.0
+  @inline final def degrees(r:Double) = r * 180.0 / Pi
+}
+
+import Angles._
+
 /**
  * Allows users of focal operations specify the shape and size
  * of the neighborhood the focal operation should use. 
@@ -15,11 +22,11 @@ trait Neighborhood {
   def mask(x:Int,y:Int):Boolean = { false }
 }
 
-case class Square2(extent:Int) extends Neighborhood {
+case class Square(extent:Int) extends Neighborhood {
   val hasMask = false
 }
 
-case class Circle2(radius:Double) extends Neighborhood {
+case class Circle(radius:Double) extends Neighborhood {
   val extent = ceil(radius).toInt
   val hasMask = true
   override def mask(x:Int,y:Int):Boolean = {
@@ -29,19 +36,62 @@ case class Circle2(radius:Double) extends Neighborhood {
   }
 }
 
-
-sealed trait NeighborhoodType
-
-/** Defines a neighborhood consisting of only horizontal and vertical neighbors */
-case class Nesw() extends NeighborhoodType
-
-sealed trait ExtendableNeighborhoodType { 
-  /** A one dimensional description of the size of the neighborhood */
-  val extent:Int 
+/**
+ * Simple neighborhood that goes through the center of the focus
+ * along the x any y axis of the raster
+ */
+case class Nesw(extent:Int) extends Neighborhood {
+  val hasMask = true
+  override def mask(x:Int,y:Int) = { x == extent || y == extent  }
 }
 
-/** Defines a square neighborhood */
-case class Square(extent: Int) extends NeighborhoodType
-/** Defines a circular neighborhood */
-case class Circle(extent: Int) extends NeighborhoodType
+/**
+ * Wedge neighborhood.
+ *
+ * @param     radius       The radius of the wedge, in raster cell units.
+ * @param     startAngle   The starting angle of the wedge (in degrees).
+ * @param     endAngle     The ending angle of the wedge (in degrees).
+ */
+case class Wedge(radius:Double,startAngle:Double,endAngle:Double) extends Neighborhood {
+  val extent = ceil(radius).toInt
+  val startRad = radians(startAngle)
+  val endRad = radians(endAngle)
+
+  val isInAngle = if(startRad > endRad) {
+                    (rads:Double) => startRad <= rads || rads <= endRad
+                  } else {
+                    (rads:Double) => startRad <= rads && rads <= endRad
+                  }
+
+  val hasMask = true
+  override def mask(x:Int,y:Int) = {
+    val xx = x - extent
+    val yy = extent - y
+
+    var angle = atan2(yy,xx)
+    if(angle < 0 ) angle += 2*Pi
+
+    (sqrt(xx*xx+yy*yy) > radius || !isInAngle(angle)) &&
+     !(xx == 0 && yy == 0)
+  }
+}
+
+/**
+ * Annulus neighborhood.
+ *
+ * @param     innerRadius   The radius of the inner circle of the Annulus.
+ * @param     outerRadius   The radius of the outer circle of the Annulus.
+ */
+case class Annulus(innerRadius:Double,outerRadius:Double) extends Neighborhood {
+  val extent = ceil(outerRadius).toInt
+
+  val hasMask = true
+  override def mask(x:Int,y:Int) = {
+    val xx = x - extent
+    val yy = y - extent
+    val len = sqrt(xx*xx+yy*yy)
+    len < innerRadius || outerRadius < len
+  }
+}
+
 
