@@ -4,7 +4,6 @@ import scala.collection.mutable.ArrayBuffer
 import scala.math.{ min, max, round }
 
 import com.vividsolutions.jts.{ geom => jts }
-
 import geotrellis._
 
 /**
@@ -32,13 +31,13 @@ trait Feature[+G <: jts.Geometry, D] {
    * Returns the data component.
    */
   def data(): D
-  
+
   /**
    * Returns a new Feature given a function that takes a Geometry object
    * and returns a new geometry object.  The data component remains the same.
    */
   def mapGeom[H <: jts.Geometry](f: G => H) = Feature(f(geom), data)
-  
+
   /**
    * Returns a FeatureSet containing only this feature.
    */
@@ -58,11 +57,11 @@ trait Point[D] extends SingleGeometry[jts.Point, D] with Dim0 {
   type Set = PointSet[D]
 }
 
-trait LineString[D] extends SingleGeometry[jts.LineString, D] with Dim1 {
+trait LineString[D] extends SingleGeometry[jts.LineString, D]  {
   type Set = LineStringSet[D]
 }
 
-trait Polygon[D] extends SingleGeometry[jts.Polygon, D] with Dim2 {
+trait Polygon[D] extends SingleGeometry[jts.Polygon, D]  {
   type Set = PolygonSet[D]
 }
 
@@ -74,11 +73,11 @@ trait MultiPoint[D] extends GeometryCollection[jts.MultiPoint, D] with Dim0 {
   type Set = MultiPointSet[D]
 }
 
-trait MultiLineString[D] extends GeometryCollection[jts.MultiLineString, D] with Dim1 {
+trait MultiLineString[D] extends GeometryCollection[jts.MultiLineString, D]  {
   type Set = MultiLineStringSet[D]
 }
 
-trait MultiPolygon[D] extends GeometryCollection[jts.MultiPolygon, D] with Dim2 {
+trait MultiPolygon[D] extends GeometryCollection[jts.MultiPolygon, D]  {
   type Set = MultiPolygonSet[D]
 }
 
@@ -89,48 +88,83 @@ case class JtsGeometry[D](geom: jts.Geometry, data: D) extends Feature[jts.Geome
 /// Implementations
 
 object Feature {
+
+  val factory = new jts.GeometryFactory()
+
   /**
    * Returns a subclass of Feature given a geometry and data component.
    */
   def apply[D](p: jts.Geometry, data: D) = {
     p match {
-      case point: jts.Point => JtsPoint(point, data)
-      case polygon: jts.Polygon => JtsPolygon(polygon, data)
-      case multiPoint: jts.MultiPoint => JtsMultiPoint(multiPoint, data)
+      case point: jts.Point               => JtsPoint(point, data)
+      case polygon: jts.Polygon           => JtsPolygon(polygon, data)
+      case multiPoint: jts.MultiPoint     => JtsMultiPoint(multiPoint, data)
       case multiPolygon: jts.MultiPolygon => JtsMultiPolygon(multiPolygon, data)
-      case line: jts.LineString => JtsLineString(line,data)
+      case line: jts.LineString           => JtsLineString(line, data)
       case multiLine: jts.MultiLineString => JtsMultiLineString(multiLine, data)
-      case _ => JtsGeometry(p, data)
+      case _                              => JtsGeometry(p, data)
     }
   }
 }
-
 
 /// Point implementation 
 
 /**
  * Point represents a simple (x,y) coordinate.
+ *
+ *
  */
 object Point {
-  def apply[A](x: Double, y: Double, z: A) = {
+  /**
+   * Create a point feature.
+   *
+   * @param   x   x coordinate
+   * @param   y   y coordinate
+   * @param   d   Data of this feature
+   */
+  def apply[D](x: Double, y: Double, data: D) = {
     val p = Factory.f.createPoint(new jts.Coordinate(x, y))
-    JtsPoint(p, z)
+    JtsPoint(p, data)
   }
 
+  /**
+   * Create a point feature without data.
+   *
+   * @param   x   x coordinate
+   * @param   y   y coordinate
+   */
   def apply(x: Double, y: Double) = {
     JtsPoint(Factory.f.createPoint(new jts.Coordinate(x, y)), Unit)
   }
-  
-  def apply[D](p:jts.Point, data:D) = new JtsPoint(p,data) 
-  
-  def pointToGridCoords(p:Point[_], rasterExtent:RasterExtent) = {
-    val geom = p.geom 
+
+  /**
+   * Create a point feature from a JTS point instance.
+   *
+   * @param p     JTS Point instance
+   * @param data  Data of this feature.
+   */
+  def apply[D](p: jts.Point, data: D) = new JtsPoint(p, data)
+
+  /**
+   * Calculate row and column of this point in given raster extent.
+   *
+   * @param p             Point feature
+   * @param rasterExtent  Raster extent to place feature within
+   */
+  def pointToGridCoords(p: Point[_], rasterExtent: RasterExtent) = {
+    val geom = p.geom
     rasterExtent.mapToGrid(geom.getX(), geom.getY())
   }
-  
- def pointToRasterValue(p:Feature[jts.Point, _], raster:Raster) = {
+
+  /**
+   * Get value from raster at cell corresponding to given point.
+   *
+   * @param p       Point feature
+   * @param raster  Raster to get value from
+   */
+  def pointToRasterValue(p: Feature[jts.Point, _], raster: Raster) = {
     val re = raster.rasterExtent
-    raster.get( re.mapXToGrid(p.geom.getX()), re.mapYToGrid(p.geom.getY()))
+    raster.get(re.mapXToGrid(p.geom.getX()), re.mapYToGrid(p.geom.getY()))
   }
 }
 
@@ -145,95 +179,204 @@ case class JtsPoint[D](geom: jts.Point, data: D) extends Point[D] {
 object LineString {
   val factory = new jts.GeometryFactory()
 
-  def apply[D](g: jts.Geometry, data: D): LineString[D] with Dim1 = 
-    JtsLineString(g.asInstanceOf[jts.LineString],data)
+  /**
+   * Create a LineString (aka a line) feature.
+   *
+   * @param   g     jts.Geometry object
+   * @param   data  Data of this feature
+   */
+  def apply[D](g: jts.Geometry, data: D): LineString[D]  =
+    JtsLineString(g.asInstanceOf[jts.LineString], data)
 
-  def apply[D](g:jts.LineString, data:D):LineString[D] with Dim1 = 
-    JtsLineString(g,data)
+  /**
+   * Create a LineString (aka a line) feature.
+   *
+   * @param   g     JTS LineString object
+   * @param   data  Data of this feature
+   */
+  def apply[D](g: jts.LineString, data: D): LineString[D]  =
+    JtsLineString(g, data)
 
-  def apply[D](g:jts.LineString):LineString[Unit] with Dim1 = 
-    JtsLineString(g,Unit)
-    
-  def apply[D](x0:Int,y0:Int,x1:Int,y1:Int, data:D):LineString[D] with Dim1 = {
-    val g = factory.createLineString(Array( new jts.Coordinate(x0, y0), new jts.Coordinate(x1, y1)))
+  /**
+   * Create a LineString (aka a line) given x and y coordinates, as integers.
+   *
+   * @param x0  x coordinate of first point
+   * @param y0  y coordinate of first point
+   * @param x1  x coordinate of second point
+   * @param y1  y coordinate of second point
+   * @param data  Data value of this feature
+   */
+  def apply[D](x0: Double, y0: Double, x1: Double, y1: Double, data: D): LineString[D]  = {
+    val g = factory.createLineString(Array(new jts.Coordinate(x0, y0), new jts.Coordinate(x1, y1)))
     JtsLineString(g, data)
   }
-  
-  def apply[D](x0:Double,y0:Double,x1:Double,y1:Double,data:D):LineString[D] with Dim1 = {
-    val g = factory.createLineString(Array( new jts.Coordinate(x0, y0), new jts.Coordinate(x1, y1)))
+
+  /**
+   * Create a LineString (aka a line) given x and y coordinates, as integers.
+   *
+   * @param x0  x coordinate of first point
+   * @param y0  y coordinate of first point
+   * @param x1  x coordinate of second point
+   * @param y1  y coordinate of second point
+   * @param data  Data value of this feature
+   */
+  def apply[D](x0: Int, y0: Int, x1: Int, y1: Int, data: D): LineString[D] = {
+    val g = factory.createLineString(Array(new jts.Coordinate(x0, y0), new jts.Coordinate(x1, y1)))
     JtsLineString(g, data)
   }
 }
 
+/**
+ * Implementation of LineString feature with underlying jts instance.
+ */
 case class JtsLineString[D](geom: jts.LineString, data: D) extends LineString[D] {
   def toSet = sys.error("unimplemented")
 }
 
 /// Polygon implementation
 object Polygon {
-  val factory = new jts.GeometryFactory()
 
   /**
    * Create a polgyon feature from a JTS Polygon object.
-   */
-  def apply[D](p: jts.Polygon, data: D): Polygon[D] with Dim2 = 
-    JtsPolygon(p, data)
-
-  /**
-   * Create a polgyon feature from a JTS Geometry object.
    *
-   * Only use when you are certain the Geometry object 
-   * is a polygon.
-   */ 
-  def apply[D](g: jts.Geometry, data: D): Polygon[D] with Dim2 = 
-    JtsPolygon(g.asInstanceOf[jts.Polygon], data)
+   * @param   p     JTS Polygon object
+   * @param   data  The data of this feature
+   */
+  def apply[D](p: jts.Polygon, data: D): Polygon[D]  =
+    JtsPolygon(p, data)
 
   /**
    * Create a polygon using a list of tuples.
    *
    * This method is not very efficient -- use only for small polygons.
+   *
+   * @param tpls  List of (x,y) tuples
+   * @param data  The data of this feature
    */
-  def apply[D](tpls:List[(Double,Double)], data:D): Polygon[D] with Dim2 =  {
-    val jtsCoords = tpls.map { case (x,y) => new jts.Coordinate(x,y) }.toArray
-    Polygon(jtsCoords, data) 
+  def apply[D](tpls: List[(Double, Double)], data: D): Polygon[D]  = {
+    val jtsCoords = tpls.map { case (x, y) => new jts.Coordinate(x, y) }.toArray
+    Polygon(jtsCoords, data)
   }
 
-  def apply[D](tpls:List[(Int,Int)], data:D) (implicit di:DummyImplicit): Polygon[D] with Dim2 = 
-    Polygon(tpls.map { case (x,y) => (x.toDouble, y.toDouble) }, data)
-  
+  def apply[D](tpls: List[(Int, Int)], data: D)(implicit di: DummyImplicit): Polygon[D]  =
+    Polygon(tpls.map { case (x, y) => (x.toDouble, y.toDouble) }, data)
 
   /**
    * Create a polygon using a one-dimensional array with alternating x and y values.
+   *
+   * @param coords  Array of alternating x and y values
+   * @param data    The data of this feature
    */
-  def apply[D](coords:Array[Double], data:D):Polygon[D] with Dim2 = {
-    val jtsCoords = (0 until (coords.length / 2)).map { 
+  def apply[D](coords: Array[Double], data: D): Polygon[D]  = {
+    val jtsCoords = (0 until (coords.length / 2)).map {
       (i) =>
-        new jts.Coordinate(coords(i), coords(i+1))
+        new jts.Coordinate(coords(i), coords(i + 1))
     }.toArray
     Polygon(jtsCoords, data)
   }
 
   /**
    * Create a polygon with an array of JTS Coordinate objects.
+   *
+   * @param coords  Coordinates of the polygon exterior
+   * @param data    The data of this feature
    */
-  def apply[D](coords:Array[jts.Coordinate], data:D):Polygon[D] with Dim2 = {
-    val shell  = factory.createLinearRing(coords)
-    val jts    = factory.createPolygon(shell, Array())
+  def apply[D](coords: Array[jts.Coordinate], data: D): Polygon[D]  = {
+    val shell = Factory.f.createLinearRing(coords)
+    val jts = Factory.f.createPolygon(shell, Array())
     JtsPolygon(jts, data)
-  } 
+  }
 
-   /**
+  /**
+   * Create a polygon with arrays of JTS coordinate objects.
+   *
+   * @param exterior  Coordinates of the exterior shell
+   * @param holes     Interior holes represented by array of coordinate arrays
+   * @param data      The data of this feature
+   */
+  def apply[D](exterior: Array[jts.Coordinate], holes: Array[Array[jts.Coordinate]], data: D): Polygon[D]  = {
+    val shellRing = Factory.f.createLinearRing(exterior)
+    val holeRings = holes.map(Factory.f.createLinearRing(_)).toArray
+    val jts = Factory.f.createPolygon(shellRing, holeRings)
+    JtsPolygon(createJtsPolygon(exterior, holes), data)
+  }
+
+  protected[geotrellis] def createJtsPolygon(exterior: Array[jts.Coordinate], holes: Array[Array[jts.Coordinate]]) = {
+    val shellRing = Factory.f.createLinearRing(exterior)
+    val holeRings = holes.map(Factory.f.createLinearRing(_)).toArray
+    Factory.f.createPolygon(shellRing, holeRings)
+  }
+
+  protected[geotrellis] def createJtsPolygonFromArrays(exterior: Array[Array[Double]], holes: Array[Array[Array[Double]]]) = {
+    val shellRing = (0 until exterior.length).map {
+      (i) => new jts.Coordinate(exterior(i)(0), exterior(i)(1))
+    }.toArray
+    val holeRings = holes.map(
+      ring => ring.map(
+        coordArray => {
+          new jts.Coordinate(coordArray(0), coordArray(1))
+        }))
+    val polygon = createJtsPolygon(shellRing, holeRings)
+    polygon
+  }
+
+  protected[geotrellis] def createJtsPolygonFromSeqs(exterior: Seq[Seq[Double]], holes: Seq[Seq[Seq[Double]]]) = {
+    val shellRing = (0 until exterior.length).map {
+      (i) => new jts.Coordinate(exterior(i)(0), exterior(i)(1))
+    }.toArray
+    val holeRings = holes.map(
+      ring => ring.map(
+        coordArray => {
+          new jts.Coordinate(coordArray(0), coordArray(1))
+        }).toArray).toArray
+    createJtsPolygon(shellRing, holeRings)
+  }
+
+  /**
    * Create a polygon using an array of rings, the first being the exterior ring.
-   * 
+   *
    * Each ring array is an array of two element coordinate arrays, e.g. Array(x,y)
    */
-  def apply[D](coords:Array[Array[Array[Double]]], data:D):Polygon[D] with Dim2 = {
-    val exteriorRing = coords(0)
-    val jtsCoords = (0 until exteriorRing.length).map {
-      (i) => new jts.Coordinate(exteriorRing(i)(0), exteriorRing(i)(1))
+  def apply[D](coords: Array[Array[Array[Double]]], data: D): Polygon[D]  =
+    Polygon(createJtsPolygonFromArrays(coords.head, coords.tail), data)
+
+  /**
+   * Create a polygon using an array of rings, the first being the exterior ring.
+   *
+   * Each ring array is an array of two element coordinate arrays, e.g. Array(1.0, 2.0)
+   *
+   * The top level list is the list of rings, the first inner list is a list of coordinates,
+   * and each inner list has two elements, x and y.
+   *
+   * @param coords   A list of polygon rings, represented as a list of two element lists.
+   * @param data     The data for this feature.
+   */
+  def apply[D](coords: List[List[List[Double]]], data: D)(implicit dummy: DI, dummy2: DI): Polygon[D]  = {
+    val exterior = coords.head
+    val shellRing = (0 until exterior.length).map {
+      (i) => new jts.Coordinate(exterior(i)(0), exterior(i)(1))
     }.toArray
-    Polygon(jtsCoords,data)
+    val holeRings = coords.tail.map(
+      ring => ring.map(
+        coordArray => {
+          new jts.Coordinate(coordArray(0), coordArray(1))
+        }).toArray).toArray
+
+    Polygon(shellRing, holeRings, data)
   }
+
+  /**
+   * Create a polgyon feature from a JTS Geometry object.
+   *
+   * Beware: Only use when you are certain the Geometry object
+   * is a polygon.
+   *
+   * @param g   JTS Geometry
+   * @param d   The data of this feature
+   */
+  def apply[D](g: jts.Geometry, data: D): Polygon[D]  =
+    JtsPolygon(g.asInstanceOf[jts.Polygon], data)
+
 }
 
 case class JtsPolygon[D](geom: jts.Polygon, data: D) extends Polygon[D] {
@@ -260,8 +403,30 @@ case class JtsMultiLineString[D](geom: jts.MultiLineString, data: D) extends Mul
 
 /// MultiPolygon implementation
 object MultiPolygon {
-  def apply[D](g: jts.Geometry, data: D): MultiPolygon[D] = JtsMultiPolygon(g.asInstanceOf[jts.MultiPolygon], data)
+  def apply[D](g: jts.Geometry, data: D): MultiPolygon[D] =
+    JtsMultiPolygon(g.asInstanceOf[jts.MultiPolygon], data)
   def apply[D](g: jts.MultiPolygon, data: D): MultiPolygon[D] = JtsMultiPolygon(g, data)
+
+  /**
+   * Create a MultiPolygon using four nested lists.
+   *
+   * The first list represents each polygon.
+   *
+   * The second list represents each ring of the polygon, the first being
+   * the exterior ring.
+   *
+   * The third list is a list of coordinates in the ring.
+   *
+   * The fourth list represents a single coordinate, which is two double values.
+   */
+  def apply[D](coords: List[List[List[List[Double]]]], data: D)(implicit dummy: DI, dummy2: DI):MultiPolygon[D] = {
+    val polygons = coords.map(
+      polygonCoords => {
+        Polygon.createJtsPolygonFromSeqs(polygonCoords.head, polygonCoords.tail)
+      }).toArray
+    MultiPolygon(Factory.f.createMultiPolygon(polygons), data)
+  }
+
 }
 
 case class JtsMultiPolygon[D](geom: jts.MultiPolygon, data: D) extends MultiPolygon[D] {
@@ -278,7 +443,6 @@ trait UsesCoords {
     tpls.map { pt => makeCoord(pt._1, pt._2) }.toArray
   }
 }
-
 
 trait FeatureSet[D] {
   type Geom <: jts.Geometry
@@ -308,7 +472,7 @@ trait SetBuilder[-F, +FS] {
 
 object SetBuilder {
   implicit def buildPointSet[D] = new SetBuilder[Point[D], PointSet[D]] {
-    def build[G <: Point[D]] (array: Array[G]) = PointArray(array.asInstanceOf[Array[Point[D]]] )
+    def build[G <: Point[D]](array: Array[G]) = PointArray(array.asInstanceOf[Array[Point[D]]])
   }
 }
 
@@ -318,9 +482,9 @@ trait PointSet[D] extends FeatureSet[D] {
 }
 
 object PointSet {
-  def apply[D] (points:List[Point[D]]) = PointArray(points.toArray)
-  
-  def apply[D:Manifest](xs: Array[Double], ys: Array[Double], ds: Array[D]) = 
+  def apply[D](points: List[Point[D]]) = PointArray(points.toArray)
+
+  def apply[D: Manifest](xs: Array[Double], ys: Array[Double], ds: Array[D]) =
     new UnboxedPointSet(xs, ys, ds)
 }
 
