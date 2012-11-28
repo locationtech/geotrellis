@@ -32,6 +32,7 @@ object Cursor {
 
 trait CellSet[@specialized(Int,Double)D] {
   def foreach(f:D=>Unit):Unit
+  def foreach(f:(Int,Int,D)=>Unit):Unit
 }
 
 /**
@@ -55,17 +56,19 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
 
   val addedCells = new CellSet[D] {
     def foreach(f:D=>Unit) = Cursor.this.foreachAdded(f)
+    def foreach(f:(Int,Int,D)=>Unit) = Cursor.this.foreachAdded(f)
   }
 
   val removedCells = new CellSet[D] {
     def foreach(f:D=>Unit) = Cursor.this.foreachRemoved(f)
+    def foreach(f:(Int,Int,D)=>Unit) = Cursor.this.foreachRemoved(f)
   }
 
   // Values to track the bound of the cursor
-  private var xmin = 0
-  private var xmax = 0
-  private var ymin = 0
-  private var ymax = 0
+  private var _xmin = 0
+  private var _xmax = 0
+  private var _ymin = 0
+  private var _ymax = 0
 
   // Values to track added\removed values
   private var addedCol = 0
@@ -80,10 +83,18 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
   private var _focusX = 0
   private var _focusY = 0
 
-  protected def get(x:Int,y:Int):D
-
   def focusX = _focusX
   def focusY = _focusY
+  def focusValue:D = get(focusX,focusY)
+
+  def xmin = _xmin
+  def xmax = _xmax
+  def ymin = _ymin
+  def ymax = _ymax
+
+  def isReset = movement == NoMovement
+
+  def get(x:Int,y:Int):D
 
   /*
    * Centers the cursor on a cell of the raster.
@@ -116,19 +127,19 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
     movement = m
     m match {
       case Up => 
-        addedRow = ymin - 1
+        addedRow = _ymin - 1
         removedRow = _focusY + dim
         _focusY -= 1
       case Down =>
-        addedRow = ymax + 1
+        addedRow = _ymax + 1
         removedRow = _focusY - dim
         _focusY += 1
       case Left =>
-        addedCol = xmin - 1
+        addedCol = _xmin - 1
         removedCol = _focusX + dim
         _focusX -= 1
       case Right =>
-        addedCol = xmax + 1
+        addedCol = _xmax + 1
         removedCol = _focusX - dim
         _focusX += 1
       case _ => 
@@ -138,10 +149,10 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
   }
 
   @inline final private def setBounds() = {
-    xmin = max(0,_focusX - dim)
-    xmax = min(r.cols - 1, _focusX + dim)
-    ymin = max(0, _focusY - dim)
-    ymax = min(r.rows - 1, _focusY + dim)
+    _xmin = max(0,_focusX - dim)
+    _xmax = min(r.cols - 1, _focusX + dim)
+    _ymin = max(0, _focusY - dim)
+    _ymax = min(r.rows - 1, _focusY + dim)
   }
 
   def setMask(f:(Int,Int) => Boolean) = {
@@ -177,16 +188,17 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
    * Iterates over all cell values of the raster which
    * are covered by the cursor and not masked.
    *
-   * @param     f         Function that receives each cell value.
+   * @param     f         Function that receives from each cell
+   *                      it's x and y coordinates and it's value.
    */
-  def foreach(f: D => Unit):Unit = {
+  def foreach(f: (Int,Int,D) => Unit):Unit = {
     if(!hasMask) {
-      var y = ymin
+      var y = _ymin
       var x = 0
-      while(y <= ymax) {
-        x = xmin
-        while(x <= xmax) {
-          f(get(x,y))
+      while(y <= _ymax) {
+        x = _xmin
+        while(x <= _xmax) {
+          f(x,y,get(x,y))
           x += 1
         }
         y += 1
@@ -197,14 +209,16 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
         mask.foreachX(y) { x =>
           val xRaster = x + (_focusX-dim)
           val yRaster = y + (_focusY-dim)
-          if(xmin <= xRaster && xRaster <= xmax && ymin <= yRaster && yRaster <= ymax) {
-            f(get(xRaster,yRaster))
+          if(_xmin <= xRaster && xRaster <= _xmax && _ymin <= yRaster && yRaster <= _ymax) {
+            f(xRaster,yRaster,get(xRaster,yRaster))
           }
         }
         y += 1
       }
     }
   }
+
+  def foreach(f: D => Unit):Unit = foreach { (_,_,v) => f(v) }
 
   /*
    * Iterates over all cell values of the raster which
@@ -217,24 +231,25 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
    * iterations of this function, as well any previously masked
    * cell values that were unmasked as part of the move.
    *
-   * @param     f         Function that receives each cell value.
+   * @param     f         Function that receives from each cell it's
+   *                      x and y coordinates and it's value.
    */
-  def foreachAdded(f: D => Unit):Unit = {
+  def foreachAdded(f: (Int,Int,D) => Unit):Unit = {
     if(movement == NoMovement) {
       foreach(f) 
     } else if (movement.isVertical) {
       if(0 <= addedRow && addedRow < r.rows) {
         if(!hasMask) {
-          var x = xmin
-          while(x <= xmax) {
-            f(get(x,addedRow))
+          var x = _xmin
+          while(x <= _xmax) {
+            f(x,addedRow,get(x,addedRow))
             x += 1
           }
         } else {
           mask.foreachX(addedRow-(_focusY-dim)) { x =>
             val xRaster = x+(_focusX-dim)
             if(0 <= xRaster && xRaster <= r.rows) {
-              f(get(xRaster,addedRow))
+              f(xRaster,addedRow,get(xRaster,addedRow))
             }
           }
         }
@@ -242,9 +257,9 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
     } else { // Horizontal
       if(0 <= addedCol && addedCol < r.cols) {
         if(!hasMask) {
-          var y = ymin
-          while(y <= ymax) {
-            f(get(addedCol,y))
+          var y = _ymin
+          while(y <= _ymax) {
+            f(addedCol,y,get(addedCol,y))
             y += 1
           }
         } else {
@@ -252,14 +267,14 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
             mask.foreachWestColumn { y =>
               val yRaster = y+(_focusY-dim)
               if(0 <= yRaster && yRaster < r.cols) {
-                f(get(addedCol,yRaster))
+                f(addedCol,yRaster,get(addedCol,yRaster))
               }
             }
           } else { // Right
             mask.foreachEastColumn { y =>
               val yRaster = y+(_focusY-dim)
               if(0 <= yRaster && yRaster < r.cols) {
-                f(get(addedCol,yRaster))
+                f(addedCol,yRaster,get(addedCol,yRaster))
               }
             }
           }
@@ -272,11 +287,13 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
         val xRaster = x+(_focusX-dim)
         val yRaster = y+(_focusY-dim)
         if(0 <= xRaster && xRaster < r.cols && 0 <= yRaster && yRaster < r.rows) {
-          f(get(xRaster,yRaster))
+          f(xRaster,yRaster,get(xRaster,yRaster))
         }
       }
     }
   }
+
+  def foreachAdded(f: D => Unit):Unit = foreachAdded { (_,_,v) => f(v) }
 
   /*
    * Iterates over all cell values of the raster which
@@ -290,17 +307,18 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
    * iterations of this function, as well any previously unmasked
    * cell values that were masked as part of the move.
    *
-   * @param     f         Function that receives each cell value.
+   * @param     f         Function that receives from each cell it's
+   *                      x and y coordinates and it's value.
    */
-  def foreachRemoved(f: D => Unit):Unit = {
+  def foreachRemoved(f: (Int,Int,D) => Unit):Unit = {
     if(movement == NoMovement) { return }
 
     if(movement.isVertical) {
       if(0 <= removedRow && removedRow < r.cols) {
         if(!hasMask) {
-          var x = xmin
-          while(x <= xmax) {
-            f(get(x,removedRow))
+          var x = _xmin
+          while(x <= _xmax) {
+            f(x,removedRow,get(x,removedRow))
             x += 1
           }
         } else {
@@ -308,7 +326,7 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
             mask.foreachX(d-1) { x =>
               val xRaster = x+(_focusX-dim)
               if(0 <= xRaster && xRaster < r.cols) {
-                f(get(xRaster,removedRow))
+                f(xRaster,removedRow,get(xRaster,removedRow))
               }
             }
           }
@@ -316,7 +334,7 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
             mask.foreachX(0) { x =>
               val xRaster = x+(_focusX-dim)
               if(0 <= xRaster && xRaster < r.cols) {
-                f(get(xRaster,removedRow))
+                f(xRaster,removedRow,get(xRaster,removedRow))
               }
             }
           }
@@ -325,9 +343,9 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
     } else { // Horizontal
       if(0 <= removedCol && removedCol < r.rows) {
         if(!hasMask) {
-          var y = ymin
-          while(y <= ymax) {
-            f(get(removedCol,y))
+          var y = _ymin
+          while(y <= _ymax) {
+            f(removedCol,y,get(removedCol,y))
             y += 1
           }
         } else {
@@ -335,14 +353,14 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
             mask.foreachEastColumn { y =>
               val yRaster = y+(_focusY-dim)
               if(0 <= yRaster && yRaster < r.cols) {
-                f(get(removedCol,yRaster))
+                f(removedCol,yRaster,get(removedCol,yRaster))
               }
             }
           } else { //Right
             mask.foreachWestColumn { y =>
               val yRaster = y+(_focusY-dim)
               if(0 <= yRaster && yRaster < r.cols) {
-                f(get(removedCol,yRaster))
+                f(removedCol,yRaster,get(removedCol,yRaster))
               }
             }
           }
@@ -355,22 +373,24 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
         val xRaster = x+(_focusX-dim)
         val yRaster = y+(_focusY-dim)
         if(0 <= xRaster && xRaster < r.cols && 0 <= yRaster && yRaster < r.rows) {
-          f(get(xRaster,yRaster))
+          f(xRaster,yRaster,get(xRaster,yRaster))
         }
       }
     }
   }
 
+  def foreachRemoved(f: D => Unit):Unit = foreachRemoved { (_,_,v) => f(v) }
+
   def asciiDraw:String = {
-    var x = xmin
-    var y = ymin
+    var x = _xmin
+    var y = _ymin
     var result = ""
 
     val mark = (x:Int, y:Int) => result += " " + getStr(x,y) + " "
 
-    while(y <= ymax) {
-      x = xmin
-      while(x <= xmax) {
+    while(y <= _ymax) {
+      x = _xmin
+      while(x <= _xmax) {
         mark(x,y)
 	x += 1
       }

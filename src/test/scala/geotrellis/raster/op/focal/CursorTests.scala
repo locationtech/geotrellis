@@ -181,6 +181,33 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       cursor.getAll.sorted should equal (Seq(81,91,92))
     }
 
+    it("should give correct x and y values through a foreach") {
+      val r = createRaster
+      val cursor = TestCursor.fromString(r,"""
+                         X0X
+                         000
+                         X0X
+                                         """)
+      val s = Set[(Int,Int)]()
+
+      // Middle 
+      cursor.centerOn(4,4)
+      cursor.foreach { (x,y,_) => s += ((x,y)) }
+      s should equal (Set((4,4),(3,4),(4,3),(5,4),(4,5)))
+
+      // Added
+      cursor.move(Movement.Up)
+      s.clear()
+      cursor.addedCells.foreach { (x,y,_) => s += ((x,y)) }
+      s should equal (Set((4,2),(3,3),(5,3)))
+      // Removed
+      cursor.centerOn(4,4)
+      cursor.move(Movement.Right)
+      s.clear()
+      cursor.removedCells.foreach { (x,y,_) => s += ((x,y)) }
+      s should equal (Set((3,4),(4,3),(4,5)))
+    }
+
     /**                     Tracking Movement                         */
 
     // Moves up

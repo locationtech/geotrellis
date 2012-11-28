@@ -48,28 +48,31 @@ class SumTest extends FunSuite {
   }
 
   test("circle sum r=1") {
-    assert(runx(Sum(r, Circle(1))) === Array(4, 6, 6, 4,
-                                             6, 9, 9, 6,
-                                             6, 9, 9, 6,
-                                             4, 6, 6, 4))
+    assert(runx(Sum(r, Circle(1))) === Array(3, 4, 4, 3,
+                                             4, 5, 5, 4,
+                                             4, 5, 5, 4,
+                                             3, 4, 4, 3))
   }
 
   test("circle sum r=2") {
-    assert(runx(Sum(r, Circle(2))) === Array(8, 11, 11, 8,
-                                             11, 15, 15, 11,
-                                             11, 15, 15, 11,
-                                             8, 11, 11, 8))
+    assert(runx(Sum(r, Circle(2))) === Array(6, 8, 8, 6,
+                                             8, 11, 11, 8,
+                                             8, 11, 11, 8,
+                                             6, 8, 8, 6))
   }
 
   test("circle sum r=3") {
-    assert(runx(Sum(r, Circle(3))) === Array(13, 15, 15, 13,
-                                             15, 16, 16, 15,
-                                             15, 16, 16, 15,
-                                             13, 15, 15, 13))
+    assert(runx(Sum(r, Circle(3))) === Array(11, 13, 13, 11,
+                                             13, 16, 16, 13,
+                                             13, 16, 16, 13,
+                                             11, 13, 13, 11))
   }
 
   test("circle sum r=4+") {
-    assert(runx(Sum(r, Circle(4))) === data16)
+    assert(runx(Sum(r, Circle(4))) === Array(15, 16, 16, 15,
+                                             16, 16, 16, 16,
+                                             16, 16, 16, 16,
+                                             15, 16, 16, 15))
     assert(runx(Sum(r, Circle(5))) === data16)
     assert(runx(Sum(r, Circle(6))) === data16)
   }

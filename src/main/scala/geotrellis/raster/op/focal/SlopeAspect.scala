@@ -1,7 +1,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.process._
 import geotrellis.Raster
 
@@ -9,95 +9,148 @@ import scala.math._
 
 import Angles._
 
-protected[focal] abstract class SlopeAspectCalculator[@specialized(Int,Double) D](zFactor:Double,
-										  cellWidth:Double,
-										  cellHeight:Double) extends FocalCalculation[D] {
-  var west = new Array[Int](3)
-  var base = new Array[Int](3)
-  var east = new Array[Int](3)
+trait SlopeAspectCalculator {
+  def getSlopeAndAspect(cursor:Cursor[Int],zFactor:Double,cellWidth:Double,cellHeight:Double):(Double,Double) = {
+    if(cursor.focusValue == NODATA) { return (Double.NaN,Double.NaN) }
+    
+    var east=0
+    var west=0
+    var north=0
+    var south=0
 
-  var northRow = 0
+    val fX = cursor.focusX
+    val fY = cursor.focusY
 
-  override def center(col:Int, row:Int, r:Raster) {
-    northRow = row - 1
-
-    val tmp = west
-    west = base
-    base = east
-    east = tmp
-  }
-
-  def clear() {
-    west = new Array[Int](3)
-    base = new Array[Int](3)
-    east = new Array[Int](3)
-  }
-
-  def remove(col:Int, row:Int, r:Raster) {}
-  def add(col:Int, row:Int, r:Raster) {
-    east(row - northRow) = r.get(col, row)
-  }
-
-  def getSlopeAndAspect: (Double, Double) = {
-    if (base(1) == NODATA) return (Double.NaN, Double.NaN)
-
+    var y = cursor.ymin
+    var x = 0
+    while(y <= cursor.ymax) {
+      x = cursor.xmin
+      while(x <= cursor.xmax) {
+        if(fX < x) {
+          if(fY == y) { east += 2*cursor.get(x,y) }
+          else { east += cursor.get(x,y) }
+        }
+        if(x < fX) { 
+          if(fY == y) { west += 2*cursor.get(x,y) }
+          else { west += cursor.get(x,y) }
+        }
+        if(fY < y) { 
+          if(fX == x) { south += 2*cursor.get(x,y) }
+          else { south += cursor.get(x,y) }
+        }
+        if(y < fY) { 
+          if(fX == x) { north += 2*cursor.get(x,y) }
+          else { north += cursor.get(x,y) }
+        }
+        x += 1
+      }
+      y += 1
+    }
     // east - west
-    val `dz/dx` = (east(0) + 2*east(1) + east(2) - west(0) - 2*west(1) - west(2)) / (8 * cellWidth)
+    val `dz/dx` = (east - west) / (8 * cellWidth)
 
     // south - north
-    val `dz/dy` = (west(2) + 2*base(2) + east(2) - west(0) - 2*base(0) - east(0)) / (8 * cellHeight)
+    val `dz/dy` = (south - north) / (8 * cellHeight)
 
     val slope = atan(zFactor * sqrt(`dz/dx` * `dz/dx` + `dz/dy` * `dz/dy`))
     
     // Determine aspect based off of dz/dx and dz/dy
     var aspect = atan2(`dz/dy`, -`dz/dx`)
-    if(`dz/dx` != 0) {
-      if(aspect < 0) {
-	aspect = (2*Pi) + aspect
+    
+    return (slope,aspect)
+  }
+
+ def getSlopeAndAspectDouble(cursor:Cursor[Double],zFactor:Double,cellWidth:Double,cellHeight:Double):(Double,Double) = {
+    if(cursor.focusValue == Double.NaN) { return (Double.NaN,Double.NaN) }
+    
+    var east=0.0
+    var west=0.0
+    var north=0.0
+    var south=0.0
+
+    val fX = cursor.focusX
+    val fY = cursor.focusY
+
+    var y = cursor.ymin
+    var x = 0
+    while(y <= cursor.ymax) {
+      x = cursor.xmin
+      while(x <= cursor.xmax) {
+        if(fX < x) {
+          if(fY == y) { east += 2*cursor.get(x,y) }
+          else { east += cursor.get(x,y) }
+        }
+        if(x < fX) { 
+          if(fY == y) { west += 2*cursor.get(x,y) }
+          else { west += cursor.get(x,y) }
+        }
+        if(fY < y) { 
+          if(fX == x) { south += 2*cursor.get(x,y) }
+          else { south += cursor.get(x,y) }
+        }
+        if(y < fY) { 
+          if(fX == x) { north += 2*cursor.get(x,y) }
+          else { north += cursor.get(x,y) }
+        }
+        x += 1
       }
-    } else {
-      if(`dz/dy` > 0) {
-	aspect = (Pi / 2)
-      } else if(`dz/dy` < 0) {
-	aspect = (2*Pi) - (Pi / 2)
-      }
+      y += 1
     }
 
-    (slope,aspect)
+    // east - west
+    val `dz/dx` = (east - west) / (8 * cellWidth)
+
+    // south - north
+    val `dz/dy` = (south - north) / (8 * cellHeight)
+
+    val slope = atan(zFactor * sqrt(`dz/dx` * `dz/dx` + `dz/dy` * `dz/dy`))
+    
+    // Determine aspect based off of dz/dx and dz/dy
+    var aspect = atan2(`dz/dy`, -`dz/dx`)
+    
+    return (slope,aspect)
   }
 }
 
-case class Aspect(r:Op[Raster], zFactor:Op[Double]) extends Op2(r, zFactor) ({
-  (r, zf) =>
-    val newCalc = () => new AspectCalc(zf, r.rasterExtent.cellwidth, r.rasterExtent.cellheight)
-    FocalOp.getResultDouble(r, Sliding, Square(1), newCalc)
-})
 
-protected[focal] case class AspectCalc(zFactor:Double, 
-				       cellWidth:Double, 
-				       cellHeight:Double) extends SlopeAspectCalculator[Double](zFactor,cellWidth,cellHeight) {
-  def getResult:Double = {
-    if (base(1) == NODATA) return NODATA
+case class Slope(r:Op[Raster], zFactorOp:Op[Double]) extends DoubleFocalOp1[Double,Raster](r,Square(1),zFactorOp) 
+    with SlopeAspectCalculator {
+  def createBuilder(r:Raster) = new DoubleRasterBuilder(r.rasterExtent)
 
-    val (_,aspect) = getSlopeAndAspect
-    degrees(aspect)
+  var zFactor = 0.0
+  var cellWidth = 0.0
+  var cellHeight = 0.0
+
+  def init(r:Raster,z:Double) = {
+    zFactor = z
+    cellWidth = r.rasterExtent.cellwidth
+    cellHeight = r.rasterExtent.cellheight
+  }
+
+  def calc(cursor:Cursor[Double]) = {
+    val (slope,_) = getSlopeAndAspectDouble(cursor,zFactor,cellWidth,cellHeight)
+    slope
   }
 }
 
-case class Slope(r:Op[Raster], zFactor:Op[Double]) extends Op2(r, zFactor) ({
-  (r, zf) =>
-    val newCalc = () => new SlopeCalc(zf, r.rasterExtent.cellwidth, r.rasterExtent.cellheight)
-    FocalOp.getResultDouble(r, Sliding, Square(1), newCalc)
-})
+case class Aspect(r:Op[Raster], zFactorOp:Op[Double]) extends DoubleFocalOp1[Double,Raster](r,Square(1),zFactorOp) 
+    with SlopeAspectCalculator {
+  def createBuilder(r:Raster) = new DoubleRasterBuilder(r.rasterExtent)
 
-protected[focal] case class SlopeCalc(zFactor:Double,
-				      cellWidth:Double,
-				      cellHeight:Double) extends SlopeAspectCalculator[Double](zFactor,cellWidth,cellHeight) {
-  def getResult:Double = {
-    if(base(1) == NODATA) return NODATA
-    val (slope,_) = getSlopeAndAspect
-    degrees(slope)
+  var zFactor = 0.0
+  var cellWidth = 0.0
+  var cellHeight = 0.0
 
+  def init(r:Raster,z:Double) = {
+    zFactor = z
+    cellWidth = r.rasterExtent.cellwidth
+    cellHeight = r.rasterExtent.cellheight
+  }
+
+  def calc(cursor:Cursor[Double]) = {
+    val (_,aspect) = getSlopeAndAspectDouble(cursor,zFactor,cellWidth,cellHeight)
+    aspect
   }
 }
+
 

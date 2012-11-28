@@ -5,7 +5,7 @@ import scala.math._
 import geotrellis._
 import geotrellis.raster._
 
-case class CursorMean(r:Op[Raster], n:Neighborhood) extends DoubleCursorFocalOp1[Raster](r,n) {
+case class CursorMean(r:Op[Raster], n:Op[Neighborhood]) extends DoubleFocalOp[Raster](r,n) {
   var count:Int = 0
   var sum:Double = 0.0
 
@@ -24,7 +24,7 @@ case class CursorMean(r:Op[Raster], n:Neighborhood) extends DoubleCursorFocalOp1
   def createBuilder(r:Raster) = new DoubleRasterBuilder(r.rasterExtent)
 }
 
-case class Mean(r:Op[Raster], n:Neighborhood) extends CellwiseFocalOp1[Raster,Double](r,n) {
+case class Mean(r:Op[Raster], n:Op[Neighborhood]) extends CellwiseFocalOp[Raster,Double](r,n) {
   var count:Int = 0
   var sum:Double = 0.0
 
