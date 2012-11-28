@@ -34,7 +34,7 @@ class MoranTest extends FunSuite {
   // }
 
   test("raster square moran (chess)") {
-    val r = server.run(RasterMoransI(chess, Nesw()))
+    val r = server.run(RasterMoransI(chess, Nesw(1)))
     assert(r.toArrayDouble === Array.fill(64)(-1.0))
   }
   

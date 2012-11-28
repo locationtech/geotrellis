@@ -67,7 +67,7 @@ object FocalOp {
    * @param dfn The FocalOpDefinition that defines the FocalOpData and FocalCalculation
    *            for this operation.
    */
-  def getResult(r:Raster, s:FocalStrategyType, n:NeighborhoodType, dfn: FocalOpDefinition) = {
+  def getResult(r:Raster, s:FocalStrategyType, n:Neighborhood, dfn: FocalOpDefinition) = {
     dfn match {
       case d: IntFocalOpDefinition =>
 	val strategy = FocalStrategy.get[Int](s,n)
@@ -91,7 +91,7 @@ object FocalOp {
    *  a new FocalCalculation[Int] */
   def getResultInt(r:Raster, 
 		 s:FocalStrategyType, 
-		 n:NeighborhoodType, 
+		 n:Neighborhood, 
 		 newCalcFunc: () => FocalCalculation[Int]):Result[Raster] = {
     val dfn = new IntFocalOpDefinition { def newCalc = newCalcFunc() }
     getResult(r,s,n,dfn)
@@ -101,7 +101,7 @@ object FocalOp {
    *  a new FocalCalculation[Double] */
   def getResultDouble(r:Raster, 
 		 s:FocalStrategyType, 
-		 n:NeighborhoodType, 
+		 n:Neighborhood, 
 		 newCalcFunc: () => FocalCalculation[Double]):Result[Raster] = {
     val dfn = new DoubleFocalOpDefinition { def newCalc = newCalcFunc() }
     getResult(r,s,n,dfn)
