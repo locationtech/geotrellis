@@ -780,21 +780,21 @@ class FocalOperations extends MyBenchmark {
     r = server.run(io.LoadFile(path, re))
   }
 
-  def timeCursorMeanSquare1(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square2(1))))
-  def timeCursorMeanSquare2(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square2(2))))
-  def timeCursorMeanSquare3(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square2(3))))
-  def timeCursorMeanSquare5(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square2(5))))
-  def timeCursorMeanSquare7(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square2(7))))
-  def timeCursorMeanSquare8(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square2(8))))
-  def timeCursorMeanSquare13(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square2(13))))
+  def timeCursorMeanSquare1(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square(1))))
+  def timeCursorMeanSquare2(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square(2))))
+  def timeCursorMeanSquare3(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square(3))))
+  def timeCursorMeanSquare5(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square(5))))
+  def timeCursorMeanSquare7(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square(7))))
+  def timeCursorMeanSquare8(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square(8))))
+  def timeCursorMeanSquare13(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square(13))))
 
-  def timeMeanSquare1(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square2(1))))
-  def timeMeanSquare2(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square2(2))))
-  def timeMeanSquare3(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square2(3))))
-  def timeMeanSquare5(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square2(5))))
-  def timeMeanSquare7(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square2(7))))
-  def timeMeanSquare8(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square2(8))))
-  def timeMeanSquare13(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square2(13))))
+  def timeMeanSquare1(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(1))))
+  def timeMeanSquare2(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(2))))
+  def timeMeanSquare3(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(3))))
+  def timeMeanSquare5(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(5))))
+  def timeMeanSquare7(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(7))))
+  def timeMeanSquare8(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(8))))
+  def timeMeanSquare13(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(13))))
 
   def timeFastMean1(reps:Int) = run(reps)(server.run(FastFocalMean(r, 1)))
   def timeFastMean2(reps:Int) = run(reps)(server.run(FastFocalMean(r, 2)))
@@ -804,15 +804,15 @@ class FocalOperations extends MyBenchmark {
   def timeFastMean8(reps:Int) = run(reps)(server.run(FastFocalMean(r, 8)))
   def timeFastMean13(reps:Int) = run(reps)(server.run(FastFocalMean(r, 13)))
 
-  def timeCursorMeanCircle1(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Circle2(1))))
-  def timeCursorMeanCircle2(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Circle2(2))))
-  def timeCursorMeanCircle3(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Circle2(3))))
-  def timeCursorMeanCircle5(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Circle2(5))))
+  def timeCursorMeanCircle1(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Circle(1))))
+  def timeCursorMeanCircle2(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Circle(2))))
+  def timeCursorMeanCircle3(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Circle(3))))
+  def timeCursorMeanCircle5(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Circle(5))))
   
-  def timeMeanCircle1(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Circle2(1))))
-  def timeMeanCircle2(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Circle2(2))))
-  def timeMeanCircle3(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Circle2(3))))
-  def timeMeanCircle5(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Circle2(5))))
+  def timeMeanCircle1(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Circle(1))))
+  def timeMeanCircle2(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Circle(2))))
+  def timeMeanCircle3(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Circle(3))))
+  def timeMeanCircle5(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Circle(5))))
 
   def timeHillshade(reps:Int) = run(reps)(server.run(focal.Hillshade(r))) 
 }
@@ -838,20 +838,20 @@ class FocalMinOperation extends MyBenchmark {
 
   import geotrellis.raster.op.focal._
 
-  def timeNewMinSquare1(reps:Int) = run(reps)(server.run(Min2(r, Square2(1))))
-  def timeNewMinSquare2(reps:Int) = run(reps)(server.run(Min2(r, Square2(2))))
-  def timeNewMinSquare3(reps:Int) = run(reps)(server.run(Min2(r, Square2(3))))
+  def timeNewMinSquare1(reps:Int) = run(reps)(server.run(Min(r, Square(1))))
+  def timeNewMinSquare(reps:Int) = run(reps)(server.run(Min(r, Square(2))))
+  def timeNewMinSquare3(reps:Int) = run(reps)(server.run(Min(r, Square(3))))
 
   def timeOldMinSquared1(reps:Int) = run(reps)(server.run(Min(r, Square(1))))
-  def timeOldMinSquared2(reps:Int) = run(reps)(server.run(Min(r, Square(2))))
+  def timeOldMinSquared(reps:Int) = run(reps)(server.run(Min(r, Square(2))))
   def timeOldMinSquared3(reps:Int) = run(reps)(server.run(Min(r, Square(3)))) 
    
-  def timeNewMinCircle1(reps:Int) = run(reps)(server.run(Min2(r, Circle2(1))))
-  def timeNewMinCircle2(reps:Int) = run(reps)(server.run(Min2(r, Circle2(2))))
-  def timeNewMinCircle3(reps:Int) = run(reps)(server.run(Min2(r, Circle2(3))))
+  def timeNewMinCircle1(reps:Int) = run(reps)(server.run(Min(r, Circle(1))))
+  def timeNewMinCircle(reps:Int) = run(reps)(server.run(Min(r, Circle(2))))
+  def timeNewMinCircle3(reps:Int) = run(reps)(server.run(Min(r, Circle(3))))
 
   def timeOldMinCircle1(reps:Int) = run(reps)(server.run(Min(r, Circle(1))))
-  def timeOldMinCircle2(reps:Int) = run(reps)(server.run(Min(r, Circle(2))))
+  def timeOldMinCircle(reps:Int) = run(reps)(server.run(Min(r, Circle(2))))
   def timeOldMinCircle3(reps:Int) = run(reps)(server.run(Min(r, Circle(3))))
 }
 

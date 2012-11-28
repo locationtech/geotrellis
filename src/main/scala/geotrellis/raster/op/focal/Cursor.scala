@@ -77,12 +77,13 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
   private var movement = NoMovement
 
   // Values to track the focus of the cursor
-  private var focusX = 0
-  private var focusY = 0
+  private var _focusX = 0
+  private var _focusY = 0
 
   protected def get(x:Int,y:Int):D
 
-  def focus:(Int,Int) = (focusX,focusY)
+  def focusX = _focusX
+  def focusY = _focusY
 
   /*
    * Centers the cursor on a cell of the raster.
@@ -91,8 +92,8 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
    */
   def centerOn(x:Int,y:Int) = { 
     movement = NoMovement
-    focusX = x
-    focusY = y
+    _focusX = x
+    _focusY = y
 
     setBounds()
   }
@@ -116,20 +117,20 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
     m match {
       case Up => 
         addedRow = ymin - 1
-        removedRow = focusY + dim
-        focusY -= 1
+        removedRow = _focusY + dim
+        _focusY -= 1
       case Down =>
         addedRow = ymax + 1
-        removedRow = focusY - dim
-        focusY += 1
+        removedRow = _focusY - dim
+        _focusY += 1
       case Left =>
         addedCol = xmin - 1
-        removedCol = focusX + dim
-        focusX -= 1
+        removedCol = _focusX + dim
+        _focusX -= 1
       case Right =>
         addedCol = xmax + 1
-        removedCol = focusX - dim
-        focusX += 1
+        removedCol = _focusX - dim
+        _focusX += 1
       case _ => 
     }
 
@@ -137,10 +138,10 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
   }
 
   @inline final private def setBounds() = {
-    xmin = max(0,focusX - dim)
-    xmax = min(r.cols - 1, focusX + dim)
-    ymin = max(0, focusY - dim)
-    ymax = min(r.rows - 1, focusY + dim)
+    xmin = max(0,_focusX - dim)
+    xmax = min(r.cols - 1, _focusX + dim)
+    ymin = max(0, _focusY - dim)
+    ymax = min(r.rows - 1, _focusY + dim)
   }
 
   def setMask(f:(Int,Int) => Boolean) = {
@@ -194,8 +195,8 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
       var y = 0
       while(y < d) {
         mask.foreachX(y) { x =>
-          val xRaster = x + (focusX-dim)
-          val yRaster = y + (focusY-dim)
+          val xRaster = x + (_focusX-dim)
+          val yRaster = y + (_focusY-dim)
           if(xmin <= xRaster && xRaster <= xmax && ymin <= yRaster && yRaster <= ymax) {
             f(get(xRaster,yRaster))
           }
@@ -230,8 +231,8 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
             x += 1
           }
         } else {
-          mask.foreachX(addedRow-(focusY-dim)) { x =>
-            val xRaster = x+(focusX-dim)
+          mask.foreachX(addedRow-(_focusY-dim)) { x =>
+            val xRaster = x+(_focusX-dim)
             if(0 <= xRaster && xRaster <= r.rows) {
               f(get(xRaster,addedRow))
             }
@@ -249,14 +250,14 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
         } else {
           if(movement == Left) {
             mask.foreachWestColumn { y =>
-              val yRaster = y+(focusY-dim)
+              val yRaster = y+(_focusY-dim)
               if(0 <= yRaster && yRaster < r.cols) {
                 f(get(addedCol,yRaster))
               }
             }
           } else { // Right
             mask.foreachEastColumn { y =>
-              val yRaster = y+(focusY-dim)
+              val yRaster = y+(_focusY-dim)
               if(0 <= yRaster && yRaster < r.cols) {
                 f(get(addedCol,yRaster))
               }
@@ -268,8 +269,8 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
 
     if(hasMask) {
       mask.foreachUnmasked(movement) { (x,y) =>
-        val xRaster = x+(focusX-dim)
-        val yRaster = y+(focusY-dim)
+        val xRaster = x+(_focusX-dim)
+        val yRaster = y+(_focusY-dim)
         if(0 <= xRaster && xRaster < r.cols && 0 <= yRaster && yRaster < r.rows) {
           f(get(xRaster,yRaster))
         }
@@ -305,7 +306,7 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
         } else {
           if(movement == Up) {
             mask.foreachX(d-1) { x =>
-              val xRaster = x+(focusX-dim)
+              val xRaster = x+(_focusX-dim)
               if(0 <= xRaster && xRaster < r.cols) {
                 f(get(xRaster,removedRow))
               }
@@ -313,7 +314,7 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
           }
           else { // Down
             mask.foreachX(0) { x =>
-              val xRaster = x+(focusX-dim)
+              val xRaster = x+(_focusX-dim)
               if(0 <= xRaster && xRaster < r.cols) {
                 f(get(xRaster,removedRow))
               }
@@ -332,14 +333,14 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
         } else {
           if(movement == Left) {
             mask.foreachEastColumn { y =>
-              val yRaster = y+(focusY-dim)
+              val yRaster = y+(_focusY-dim)
               if(0 <= yRaster && yRaster < r.cols) {
                 f(get(removedCol,yRaster))
               }
             }
           } else { //Right
             mask.foreachWestColumn { y =>
-              val yRaster = y+(focusY-dim)
+              val yRaster = y+(_focusY-dim)
               if(0 <= yRaster && yRaster < r.cols) {
                 f(get(removedCol,yRaster))
               }
@@ -351,8 +352,8 @@ abstract class Cursor[@specialized(Int,Double) D](r:Raster, distanceFromCenter:I
 
     if(hasMask) {
       mask.foreachMasked(movement) { (x,y) =>
-        val xRaster = x+(focusX-dim)
-        val yRaster = y+(focusY-dim)
+        val xRaster = x+(_focusX-dim)
+        val yRaster = y+(_focusY-dim)
         if(0 <= xRaster && xRaster < r.cols && 0 <= yRaster && yRaster < r.rows) {
           f(get(xRaster,yRaster))
         }

@@ -2,10 +2,12 @@ package geotrellis.raster
 
 import geotrellis._
 
-trait RasterBuilder[@specialized(Int,Double) D] {
+trait ResultBuilder[T,@specialized(Int,Double) D] {
   def set(x:Int,y:Int,v:D)
-  def build:Raster
+  def build:T
 }
+
+trait RasterBuilder[@specialized(Int,Double) D] extends ResultBuilder[Raster,D]
 
 case class BitRasterBuilder(rasterExtent: RasterExtent) extends RasterBuilder[Int] {
   val d = BitArrayRasterData.ofDim(rasterExtent.cols, rasterExtent.rows)
@@ -42,4 +44,3 @@ case class DoubleRasterBuilder(rasterExtent: RasterExtent) extends RasterBuilder
   def set(col:Int, row:Int, value: Double) = d.setDouble(col, row, value)
   def build = Raster(d, rasterExtent)
 }
-
