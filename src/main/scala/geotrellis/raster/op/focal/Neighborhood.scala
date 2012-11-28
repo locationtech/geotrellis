@@ -42,7 +42,7 @@ case class Circle(radius:Double) extends Neighborhood {
  */
 case class Nesw(extent:Int) extends Neighborhood {
   val hasMask = true
-  override def mask(x:Int,y:Int) = { x == extent || y == extent  }
+  override def mask(x:Int,y:Int) = { x != extent && y != extent  }
 }
 
 /**

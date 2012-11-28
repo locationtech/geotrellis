@@ -4,56 +4,46 @@ import geotrellis._
 import geotrellis.raster._
 import scala.math._
 
-abstract class FocalOp1(r:Op[Raster],n:Neighborhood) extends Operation[Raster] {
+abstract class FocalOp1[T](r:Op[Raster],n:Neighborhood) extends Operation[T] {
   def _run(context:Context) = runAsync(List('init,r))
   def productArity = 1
-  def canEqual(other:Any) = other.isInstanceOf[FocalOp1]
+  def canEqual(other:Any) = other.isInstanceOf[FocalOp1[_]]
   def productElement(n:Int) = if (n == 0) r else throw new IndexOutOfBoundsException()
-  val nextSteps:PartialFunction[Any,StepOutput[Raster]] = {
+  val nextSteps:PartialFunction[Any,StepOutput[T]] = {
     case 'init :: (r:Raster) :: Nil => execute(r,n)
   }
   
-  def execute(r:Raster, n:Neighborhood):Result[Raster]
+  def execute(r:Raster, n:Neighborhood):Result[T]
 }
 
-abstract class CursorFocalOp1[@specialized(Int,Double)D](r:Op[Raster],n:Neighborhood) extends FocalOp1(r,n) {
+abstract class CursorFocalOp1[T,@specialized(Int,Double)D](r:Op[Raster],n:Neighborhood) extends FocalOp1[T](r,n) {
   def execute(r:Raster,n:Neighborhood) = 
     Result(CursorStrategy.execute(r,createBuilder(r),createCursor(r,n))(calc))
 
   def createCursor(r:Raster,n:Neighborhood):Cursor[D]
-  def createBuilder(r:Raster):RasterBuilder[D]
+  def createBuilder(r:Raster):ResultBuilder[T,D]
 
   def calc(cursor:Cursor[D]):D
 }
 
-abstract class IntCursorFocalOp1(r:Op[Raster],n:Neighborhood) extends CursorFocalOp1[Int](r,n) {
+abstract class IntCursorFocalOp1[T](r:Op[Raster],n:Neighborhood) extends CursorFocalOp1[T,Int](r,n) {
   def createCursor(r:Raster,n:Neighborhood) = Cursor.getInt(r,n)
-  def createBuilder(r:Raster) = new IntRasterBuilder(r.rasterExtent)
 }
 
-abstract class DoubleCursorFocalOp1(r:Op[Raster],n:Neighborhood) extends CursorFocalOp1[Double](r,n) {
+abstract class DoubleCursorFocalOp1[T](r:Op[Raster],n:Neighborhood) extends CursorFocalOp1[T,Double](r,n) {
   def createCursor(r:Raster,n:Neighborhood) = Cursor.getDouble(r,n)
-  def createBuilder(r:Raster) = new DoubleRasterBuilder(r.rasterExtent)
 }
 
-abstract class CellwiseFocalOp1[@specialized(Int,Double) D](r:Op[Raster],n:Neighborhood) 
-         extends FocalOp1(r,n) with CellwiseCalculator[D] {
+abstract class CellwiseFocalOp1[T,@specialized(Int,Double) D](r:Op[Raster],n:Neighborhood) 
+         extends FocalOp1[T](r,n) with CellwiseCalculator[D] {
   def execute(r:Raster, n:Neighborhood) = Result(CellwiseStrategy.execute(r,createBuilder(r),n)(this))
 
-  def createBuilder(r:Raster):RasterBuilder[D]
+  def createBuilder(r:Raster):ResultBuilder[T,D]
 
   def add(r:Raster, x:Int, y:Int)
   def remove(r:Raster, x:Int, y:Int)
   def reset()
   def getValue:D
-}
-
-abstract class IntCellwiseFocalOp1(r:Op[Raster],n:Neighborhood) extends CellwiseFocalOp1[Int](r,n) {
-  def createBuilder(r:Raster) = new IntRasterBuilder(r.rasterExtent)
-}
-
-abstract class DoubleCellwiseFocalOp1(r:Op[Raster],n:Neighborhood) extends CellwiseFocalOp1[Double](r,n) {
-  def createBuilder(r:Raster) = new DoubleRasterBuilder(r.rasterExtent)
 }
 
 object FocalOp {

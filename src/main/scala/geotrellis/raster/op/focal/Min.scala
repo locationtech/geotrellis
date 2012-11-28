@@ -3,11 +3,14 @@ package geotrellis.raster.op.focal
 import scala.math._
 
 import geotrellis._
+import geotrellis.raster._
 
-case class Min2(r:Op[Raster], n:Neighborhood) extends IntCursorFocalOp1(r,n) {
+case class Min2(r:Op[Raster], n:Neighborhood) extends IntCursorFocalOp1[Raster](r,n) {
   def calc(cursor:Cursor[Int]):Int= {
     cursor.foldLeft(Int.MaxValue) { (a,b) => min(a,b) }
   }
+
+  def createBuilder(r:Raster) = new IntRasterBuilder(r.rasterExtent)
 }
 
 case class Min(r:Op[Raster], neighborhoodType: Neighborhood) extends Op1(r)({
