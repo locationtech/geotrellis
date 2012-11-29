@@ -42,7 +42,9 @@ object MyBuild extends Build {
       "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0", 
       "org.reflections" % "reflections" % "0.9.5",
       "org.slf4j" % "slf4j-api" % "1.6.0",
-      "org.slf4j" % "slf4j-nop" % "1.6.0"
+      "org.slf4j" % "slf4j-nop" % "1.6.0",
+      "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
+      "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1"
     ),
 
     resolvers ++= Seq(
