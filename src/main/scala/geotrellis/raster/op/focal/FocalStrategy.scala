@@ -13,8 +13,8 @@ import geotrellis.raster._
  * what cells have been removed since the last move.
  */
 object CursorStrategy {
-  def execute[@specialized(Int,Double)D](r:Raster,b:RasterBuilder[D],cursor:Cursor[D])
-                                        (calc:Cursor[D]=>D):Raster = {
+  def execute[T,@specialized(Int,Double)D](r:Raster,b:ResultBuilder[T,D],cursor:Cursor[D])
+                                        (calc:Cursor[D]=>D):T = {
     val maxX = r.cols - 1
     val maxY = r.rows - 1
     var focalX = 0
@@ -54,8 +54,8 @@ trait CellwiseCalculator[@specialized(Int,Double)D] {
  * but can only be used for Square or Circle neighborhoods.
  */ 
 object CellwiseStrategy {
-  def execute[@specialized(Int,Double)D](r:Raster,b:RasterBuilder[D],n:Neighborhood)
-                                        (op:CellwiseCalculator[D]):Raster = {
+  def execute[T,@specialized(Int,Double)D](r:Raster,b:ResultBuilder[T,D],n:Neighborhood)
+                                        (op:CellwiseCalculator[D]):T = {
     n match {
       case Square(extent) => executeSquare(r,b,extent)(op)
       case c:Circle => executeCircle(r,b,c.extent)(op)
@@ -63,8 +63,8 @@ object CellwiseStrategy {
     }
   }
 
-  def executeSquare[@specialized(Int,Double)D](r:Raster,b:RasterBuilder[D],n:Int)
-                                              (op:CellwiseCalculator[D]):Raster = {
+  def executeSquare[T,@specialized(Int,Double)D](r:Raster,b:ResultBuilder[T,D],n:Int)
+                                              (op:CellwiseCalculator[D]):T = {
     val cols = r.cols
     val rows = r.rows
 
@@ -115,8 +115,8 @@ object CellwiseStrategy {
     b.build
   }
 
-  def executeCircle[@specialized(Int,Double)D](r:Raster,b:RasterBuilder[D],n:Int)
-                                              (op:CellwiseCalculator[D]):Raster = {
+  def executeCircle[T,@specialized(Int,Double)D](r:Raster,b:ResultBuilder[T,D],n:Int)
+                                              (op:CellwiseCalculator[D]):T = {
     val cols = r.cols
     val rows = r.rows
     val size = 2 * n + 1
@@ -146,7 +146,7 @@ object CellwiseStrategy {
   }
 }
 
-trait FocalStrategy2[@specialized(Int,Double) D] { // extends Operation[Raster] {
+trait FocalStrategy2[@specialized(Int,Double) D] {
  
   def execute(r:Raster, b:RasterBuilder[D])(calc:Cursor[D] => D):Raster = 
     execute(r,b,1)(calc)
