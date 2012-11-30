@@ -252,15 +252,15 @@ object Polygon {
    *
    * This method is not very efficient -- use only for small polygons.
    *
-   * @param tpls  List of (x,y) tuples
+   * @param tpls  Seq of (x,y) tuples
    * @param data  The data of this feature
    */
-  def apply[D](tpls: List[(Double, Double)], data: D): Polygon[D] = {
+  def apply[D](tpls: Seq[(Double, Double)], data: D): Polygon[D] = {
     val jtsCoords = tpls.map { case (x, y) => new jts.Coordinate(x, y) }.toArray
     Polygon(jtsCoords, data)
   }
 
-  def apply[D](tpls: List[(Int, Int)], data: D)(implicit di: DummyImplicit): Polygon[D] =
+  def apply[D](tpls: Seq[(Int, Int)], data: D)(implicit di: DummyImplicit): Polygon[D] =
     Polygon(tpls.map { case (x, y) => (x.toDouble, y.toDouble) }, data)
 
   /**
@@ -353,7 +353,7 @@ object Polygon {
    * @param coords   A list of polygon rings, represented as a list of two element lists.
    * @param data     The data for this feature.
    */
-  def apply[D](coords: List[List[List[Double]]], data: D)(implicit dummy: DI, dummy2: DI): Polygon[D] = {
+  def apply[D](coords: Seq[Seq[Seq[Double]]], data: D)(implicit dummy: DI, dummy2: DI): Polygon[D] = {
     val exterior = coords.head
     val shellRing = (0 until exterior.length).map {
       (i) => new jts.Coordinate(exterior(i)(0), exterior(i)(1))
@@ -387,7 +387,25 @@ case class JtsPolygon[D](geom: jts.Polygon, data: D) extends Polygon[D] {
 
 /// MultiPoint implementation
 object MultiPoint {
-  def apply[D](g: jts.MultiPoint, data: D) = JtsMultiPoint(g, data)
+  val factory = Feature.factory
+
+  def apply[D](g: jts.MultiPoint, data: D):JtsMultiPoint[D] = JtsMultiPoint(g, data)
+  /**
+   * Create a MultiPoint feature with sequences of coordinate values.
+   *
+   * The coordinate values are represented as a sequence of coordinates, each
+   * represented as a sequence of two double values (x and y).
+   *
+   * @param coords    Sequence of x and y sequences
+   * @param data      The data of this feature
+   */
+  def apply[D](coords: Seq[Seq[Double]], data: D):JtsMultiPoint[D] = {
+    val jtsMP = factory.createMultiPoint (
+      coords.map ( coord => { 
+        new jts.Coordinate(coord(0),coord(1))}).toArray
+    )
+    MultiPoint(jtsMP, data)    
+  }
 }
 
 case class JtsMultiPoint[D](geom: jts.MultiPoint, data: D) extends MultiPoint[D] {
@@ -395,8 +413,34 @@ case class JtsMultiPoint[D](geom: jts.MultiPoint, data: D) extends MultiPoint[D]
 }
 
 /// MultiLineString implementation
+/**
+ * A MultiLineString feature is a set of lines with associated data.
+ */
 object MultiLineString {
+  val factory = Feature.factory 
+
   def apply[D](g: jts.MultiLineString, data: D) = JtsMultiLineString(g, data)
+
+  /**
+   * Create a MultiLineString feature with sequences of coordinate values.
+   *
+   * A MultiLineString feature is *
+   * The coordinate values are represented as a sequence of coordinates, each
+   * represented as a sequence of two double values (x and y).
+   *
+   * @param coords    Sequence of x and y sequences
+   * @param data      The data of this feature
+   */
+  def apply[D](multiLineCoords: Seq[Seq[Seq[Double]]], data: D):MultiLineString[D] = {
+    val jtsLines = multiLineCoords.map( coords => {
+      val coordArray = Array (
+          new jts.Coordinate(coords(0)(0), coords(0)(1)),
+          new jts.Coordinate(coords(1)(0), coords(1)(1))
+      )
+      factory.createLineString (coordArray)
+    }).toArray
+    MultiLineString(factory.createMultiLineString(jtsLines), data) 
+  }
 }
 
 case class JtsMultiLineString[D](geom: jts.MultiLineString, data: D) extends MultiLineString[D] {
@@ -423,8 +467,11 @@ object MultiPolygon {
    * The third list is a list of coordinates in the ring.
    *
    * The fourth list represents a single coordinate, which is two double values.
+   *
+   * @param coords  Nested sequence of polygon coordinates
+   * @param data    The data of this feature
    */
-  def apply[D](coords: List[List[List[List[Double]]]], data: D)(implicit dummy: DI, dummy2: DI): MultiPolygon[D] = {
+  def apply[D](coords: Seq[Seq[Seq[Seq[Double]]]], data: D)(implicit dummy: DI, dummy2: DI): MultiPolygon[D] = {
     val polygons = coords.map(
       polygonCoords => {
         Polygon.createJtsPolygonFromSeqs(polygonCoords.head, polygonCoords.tail)
