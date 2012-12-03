@@ -11,7 +11,7 @@ import geotrellis.data._
 import geotrellis.data.png._
 import geotrellis.raster.op._
 import geotrellis.io._
-import geotrellis.raster.op.focal.{Normalize, Aggregated}
+import geotrellis.raster.op.focal.Normalize
 import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.statistics._

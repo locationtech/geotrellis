@@ -1,4 +1,4 @@
-package geotrellis.raster.op.focal
+package geotrellis.benchmark.oldfocal
 
 import geotrellis._
 
@@ -43,7 +43,6 @@ case class DoubleFocalOpData(rasterExtent: RasterExtent) extends FocalOpData[Dou
   def store(col:Int, row:Int, value: Double) = d.setDouble(col, row, value)
   def get = Raster(d, rasterExtent)
 }
-
 
 
 

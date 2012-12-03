@@ -1,17 +1,15 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.statistics._
 
-case class Mode(r:Op[Raster], neighborhoodType: Neighborhood) extends Op1(r)({
-  r => FocalOp.getResultInt(r, Default, neighborhoodType, () => new ModeCalc)
-})
+case class Mode(r:Op[Raster],n:Op[Neighborhood]) extends IntFocalOp[Raster](r,n) {
+  def createBuilder(r:Raster) = new IntRasterBuilder(r.rasterExtent)
 
-protected[focal] class ModeCalc extends FocalCalculation[Int] {
-  var h:Histogram = FastMapHistogram()
-  def clear() { h = FastMapHistogram() }
-  def add(col:Int, row:Int, r:Raster) { h.countItem(r.get(col, row), 1) }
-  def remove(col:Int, row:Int, r:Raster) { h.countItem(r.get(col, row), -1) }
-  def getResult = h.getMode
+  def calc(cursor:Cursor[Int]) = {
+    val h = FastMapHistogram()
+    for(v <- cursor) { h.countItem(v,1) }
+    h.getMode
+  }
 }
-

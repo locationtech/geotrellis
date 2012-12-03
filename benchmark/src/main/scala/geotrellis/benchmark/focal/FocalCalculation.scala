@@ -1,6 +1,8 @@
-package geotrellis.raster.op.focal
+package geotrellis.benchmark.oldfocal
 
 import geotrellis._
+import geotrellis.raster._
+import geotrellis.raster.op.focal._
 
 trait FocalCalculation[@specialized(Int,Double)D] {
   def center(col:Int, row:Int, r:Raster) {}
