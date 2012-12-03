@@ -5,7 +5,7 @@ import scala.math._
 import geotrellis._
 import geotrellis.raster._
 
-case class OldMax(r:Op[Raster], neighborhoodType: Neighborhood) extends Op1(r)({
+case class Max(r:Op[Raster], neighborhoodType: Neighborhood) extends Op1(r)({
   r => FocalOp.getResult(r, Default, neighborhoodType, MaxFocalOpDef)
 })
 
