@@ -817,41 +817,40 @@ class FocalOperations extends MyBenchmark {
   def timeHillshade(reps:Int) = run(reps)(server.run(focal.Hillshade(r))) 
 }
 
-object FocalMinOperation extends MyRunner(classOf[FocalMinOperation])
-class FocalMinOperation extends MyBenchmark {
+// object FocalMinOperation extends MyRunner(classOf[FocalMinOperation])
+// class FocalMinOperation extends MyBenchmark {
   
-  var r:Raster = null
+//   var r:Raster = null
 
-  override def setUp() {
-    server = TestServer()
+//   override def setUp() {
+//     val path = "src/main/resources/sbn/SBN_inc_percap.arg"
+//     server = TestServer()
 
-    val scale = 1
-    //val scale = 0.1 // used to allow naive version to run fast enough
+//     val scale = 1
 
-    val e = Extent(-8475497.88485957, 4825540.69147447,
-                   -8317922.884859569, 4954765.69147447)
-    val re = RasterExtent(e, 75.0 / scale, 75.0 / scale,
-                          (2101 * scale).toInt, (1723 * scale).toInt)
-    val path = "src/main/resources/sbn/SBN_inc_percap.arg"
-    r = server.run(io.LoadFile(path, re))
-  }
+//     val e = Extent(-8475497.88485957, 4825540.69147447,
+//                    -8317922.884859569, 4954765.69147447)
+//     val re = RasterExtent(e, 75.0 / scale, 75.0 / scale,
+//                           (2101 * scale).toInt, (1723 * scale).toInt)
+//     r = server.run(io.LoadFile(path, re))
+//   }
 
-  import geotrellis.raster.op.focal._
+//   import geotrellis.raster.op.focal._
 
-  def timeNewMinSquare1(reps:Int) = run(reps)(server.run(Min(r, Square(1))))
-  def timeNewMinSquare(reps:Int) = run(reps)(server.run(Min(r, Square(2))))
-  def timeNewMinSquare3(reps:Int) = run(reps)(server.run(Min(r, Square(3))))
+//   def timeNewMinSquare1(reps:Int) = run(reps)(server.run(Min(r, Square(1))))
+//   def timeNewMinSquare(reps:Int) = run(reps)(server.run(Min(r, Square(2))))
+//   def timeNewMinSquare3(reps:Int) = run(reps)(server.run(Min(r, Square(3))))
 
-  def timeOldMinSquared1(reps:Int) = run(reps)(server.run(Min(r, Square(1))))
-  def timeOldMinSquared(reps:Int) = run(reps)(server.run(Min(r, Square(2))))
-  def timeOldMinSquared3(reps:Int) = run(reps)(server.run(Min(r, Square(3)))) 
+//   def timeOldMinSquared1(reps:Int) = run(reps)(server.run(Min(r, Square(1))))
+//   def timeOldMinSquared(reps:Int) = run(reps)(server.run(Min(r, Square(2))))
+//   def timeOldMinSquared3(reps:Int) = run(reps)(server.run(Min(r, Square(3)))) 
    
-  def timeNewMinCircle1(reps:Int) = run(reps)(server.run(Min(r, Circle(1))))
-  def timeNewMinCircle(reps:Int) = run(reps)(server.run(Min(r, Circle(2))))
-  def timeNewMinCircle3(reps:Int) = run(reps)(server.run(Min(r, Circle(3))))
+//   def timeNewMinCircle1(reps:Int) = run(reps)(server.run(Min(r, Circle(1))))
+//   def timeNewMinCircle(reps:Int) = run(reps)(server.run(Min(r, Circle(2))))
+//   def timeNewMinCircle3(reps:Int) = run(reps)(server.run(Min(r, Circle(3))))
 
-  def timeOldMinCircle1(reps:Int) = run(reps)(server.run(Min(r, Circle(1))))
-  def timeOldMinCircle(reps:Int) = run(reps)(server.run(Min(r, Circle(2))))
-  def timeOldMinCircle3(reps:Int) = run(reps)(server.run(Min(r, Circle(3))))
-}
+//   def timeOldMinCircle1(reps:Int) = run(reps)(server.run(Min(r, Circle(1))))
+//   def timeOldMinCircle(reps:Int) = run(reps)(server.run(Min(r, Circle(2))))
+//   def timeOldMinCircle3(reps:Int) = run(reps)(server.run(Min(r, Circle(3))))
+// }
 

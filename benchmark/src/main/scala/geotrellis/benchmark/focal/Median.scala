@@ -6,7 +6,7 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.statistics._
 
-case class OldMedian(r:Op[Raster], neighborhoodType: Neighborhood) extends Op1(r)({
+case class Median(r:Op[Raster], neighborhoodType: Neighborhood) extends Op1(r)({
   r => FocalOp.getResultInt(r, Default, neighborhoodType, () => new MedianCalc)
 })
 
