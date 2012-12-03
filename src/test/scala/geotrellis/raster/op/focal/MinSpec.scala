@@ -48,21 +48,26 @@ class MinTest extends FunSuite {
 
   test("circle min r=2") {
     assert(runx(Min(r, Circle(2))) === Array(0, 0, 0, 1,
-                                             0, 0, 0, 1,
                                              0, 0, 1, 2,
-                                             4, 4, 5, 6))
+                                             0, 1, 2, 3,
+                                             4, 5, 6, 7))
   }
 
-  test("square min r=3") {
+  test("circle min r=3") {
+    val mask = new CursorMask(7,Circle(3).mask)
+    println(mask.asciiDraw)
     assert(runx(Min(r, Circle(3))) === Array(0, 0, 0, 0,
-                                             0, 0, 0, 0,
                                              0, 0, 0, 1,
-                                             0, 0, 1, 2))
+                                             0, 0, 0, 1,
+                                             0, 1, 2, 3))
   }
 
-  test("square min r=4+") {
+  test("circle min r=4+") {
     val data0 = (0 until 16).map(z => 0).toArray
-    assert(runx(Min(r, Circle(4))) === data0)
+    assert(runx(Min(r, Circle(4))) === Array(0, 0, 0, 0,
+                                             0, 0, 0, 0,
+                                             0, 0, 0, 0,
+                                             0, 0, 0, 1))
     assert(runx(Min(r, Circle(5))) === data0)
     assert(runx(Min(r, Circle(6))) === data0)
   }

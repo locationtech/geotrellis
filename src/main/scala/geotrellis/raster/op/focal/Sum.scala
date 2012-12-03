@@ -1,28 +1,16 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.raster._
 
-case class Sum(r:Op[Raster], neighborhoodType: Neighborhood) extends Op1(r) ({
-  r => FocalOp.getResult(r, Aggregated, neighborhoodType, SumFocalOpDef)
-})
-
-protected[focal] object SumFocalOpDef extends MultiTypeFocalOpDefinition {
-  def newIntCalc = new IntSumCalc
-  def newDoubleCalc = new DoubleSumCalc
-}
-
-protected[focal] class IntSumCalc extends FocalCalculation[Int] {
+case class Sum(r:Op[Raster], n:Op[Neighborhood]) extends IntFocalOp[Raster](r,n) {
   var total = 0
-  def clear() { total = 0 }
-  def add(col:Int, row:Int, r:Raster) { total += r.get(col, row) }
-  def remove(col:Int, row:Int, r:Raster) { total -= r.get(col, row) }
-  def getResult = total
-}
 
-protected[focal] class DoubleSumCalc extends FocalCalculation[Double] {
-  var total = 0.0
-  def clear() { total = 0.0 }
-  def add(col:Int, row:Int, r:Raster) { total += r.getDouble(col, row) }
-  def remove(col:Int, row:Int, r:Raster) { total -= r.getDouble(col, row) }
-  def getResult = total
+  def createBuilder(r:Raster) = new IntRasterBuilder(r.rasterExtent)
+
+  def calc(cursor:Cursor[Int]) = {
+    for(v <- cursor.addedCells) { total += v }
+    for(v <- cursor.removedCells) { total -= v }
+    total
+  }
 }

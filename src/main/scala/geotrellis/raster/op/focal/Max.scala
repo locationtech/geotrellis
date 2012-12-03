@@ -3,34 +3,12 @@ package geotrellis.raster.op.focal
 import scala.math._
 
 import geotrellis._
+import geotrellis.raster._
 
-case class Max(r:Op[Raster], neighborhoodType: Neighborhood) extends Op1(r)({
-  r => FocalOp.getResult(r, Default, neighborhoodType, MaxFocalOpDef)
-})
+case class Max(r:Op[Raster], n: Op[Neighborhood]) extends IntFocalOp[Raster](r,n) {
+  def createBuilder(r:Raster) = new IntRasterBuilder(r.rasterExtent)
 
-protected[focal] object MaxFocalOpDef extends MultiTypeFocalOpDefinition {
-  def newIntCalc = new IntMaxCalc
-  def newDoubleCalc = new DoubleMaxCalc
-}
-
-protected[focal] class IntMaxCalc extends FocalCalculation[Int] {
-  var zmax = NODATA
-  def clear() { zmax = NODATA }
-  def add(col:Int, row:Int, r:Raster) { 
-    if(zmax == NODATA) { zmax = r.get(col,row) }
-    else { zmax = max(r.get(col, row), zmax) }
+  def calc(cursor:Cursor[Int]) = {
+    cursor.foldLeft(Int.MinValue) { (a,v) => max(a,v) }
   }
-  def remove(col:Int, row:Int, r:Raster) = sys.error("remove() not supported")
-  def getResult = zmax
-}
-
-protected[focal] class DoubleMaxCalc extends FocalCalculation[Double] {
-  var zmax = Double.NaN
-  def clear() { zmax = Double.NaN }
-  def add(col:Int, row:Int, r:Raster) { 
-    if(zmax == Double.NaN) { zmax = r.get(col,row) }
-    else { zmax = max(r.get(col, row), zmax) }
-  }
-  def remove(col:Int, row:Int, r:Raster) = sys.error("remove() not supported")
-  def getResult = zmax
 }

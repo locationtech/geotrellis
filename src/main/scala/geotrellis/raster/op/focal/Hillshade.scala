@@ -1,7 +1,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.process._
 import geotrellis.Raster
 
@@ -16,45 +16,30 @@ object Hillshade {
   def apply(r:Op[Raster]):Hillshade = Hillshade(r, 315.0, 45.0, 1.0)
 }
 
-case class Hillshade(r:Op[Raster], azimuth:Op[Double],
-                     altitude:Op[Double], zFactor:Op[Double])
-extends Op4(r, azimuth, altitude, zFactor) ({
-  (r, az, alt, zf) =>
+case class Hillshade(r:Op[Raster], azimuthOp:Op[Double], altitudeOp:Op[Double], zFactorOp:Op[Double]) 
+     extends IntFocalOp3[Double,Double,Double,Raster](r,Square(1),azimuthOp,altitudeOp,zFactorOp)
+     with SlopeAspectCalculator {
 
-  // convert angles from degrees (N=0) to to pi radians
-  val zenith = radians(90.0 - alt)
-  val azimuth = radians(90.0 - az)
+  var azimuth = 0.0
+  var zenith = 0.0
+  var zFactor = 0.0
+  var cellWidth = 0.0
+  var cellHeight = 0.0
 
-  // grab some raster attributes
-  val cw = r.rasterExtent.cellwidth
-  val ch = r.rasterExtent.cellheight
+  def createBuilder(r:Raster) = new ShortRasterBuilder(r.rasterExtent)
 
-  val dfn = HillshadeFocalOpDef(azimuth, zenith, zf, cw, ch)
-  FocalOp.getResult(r, Sliding, Square(1), dfn)
-})
+  def init(r:Raster,az:Double,al:Double,z:Double) = {
+    azimuth = radians(90.0 - az)
+    zenith = radians(90.0 - al)
+    zFactor = z
+    cellWidth = r.rasterExtent.cellwidth
+    cellHeight = r.rasterExtent.cellheight
+  }
 
-protected[focal] case class HillshadeFocalOpDef(azimuth:Double, 
-						zenith:Double, 
-						zFactor:Double, 
-						cw:Double, 
-						ch:Double) extends IntFocalOpDefinition {
-  def newCalc = new HillshadeCalc(azimuth,zenith,zFactor,cw,ch)
-  override def newData(r: Raster) = ShortFocalOpData(r.rasterExtent)
-}
-
-protected[focal] case class HillshadeCalc(azimuth:Double, 
-					  zenith:Double,
-					  zFactor:Double, 
-					  cw:Double, 
-					  ch:Double) extends SlopeAspectCalculator[Int](zFactor,cw,ch) {
-  def getResult:Int = {
-    if (base(1) == NODATA) return NODATA
-
-    val (slope,aspect) = getSlopeAndAspect
-      
-    val z = ((cos(zenith) * cos(slope)) + 
+  def calc(cursor:Cursor[Int]) = {
+    val (slope,aspect) = getSlopeAndAspect(cursor,zFactor,cellWidth,cellHeight)
+    val z = ((cos(zenith) * cos(slope)) +
              (sin(zenith) * sin(slope) * cos(azimuth - aspect)))
-
     round(127.0 * max(0.0, z)).toInt
   }
 }
