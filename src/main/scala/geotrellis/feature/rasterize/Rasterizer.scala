@@ -31,7 +31,7 @@ object Rasterizer {
   /**
    * Immutable/fold function version.
    */
-  def aggregrateCellsByFeature[D:Manifest,Z]( feature:Feature[_,D], r:Raster, start:Z, f:(Int,D,Z) => Z):Z = {
+  def aggregrateCellsByFeature[D:Manifest,Z]( feature:Geometry[D], r:Raster, start:Z, f:(Int,D,Z) => Z):Z = {
     feature match {
       case p:Point[_] => aggregrateCellsByPoint[D,Z](p.asInstanceOf[Point[D]],r,start,f)
     }
@@ -46,7 +46,7 @@ object Rasterizer {
    * 
    * @param f A function that takes (col:Int, row:Int, rasterValue:Int, feature:Feature)
    */
-  def foreachCellByFeature[D:Manifest](feature:Feature[_,D], re:RasterExtent, f:(Int,Int,Feature[_,D]) => Unit):Unit = {
+  def foreachCellByFeature[D:Manifest](feature:Geometry[_], re:RasterExtent, f:(Int,Int,Feature[_,D]) => Unit):Unit = {
     feature match {
       case p:Point[_] => foreachCellByPoint[D](p.asInstanceOf[Point[D]])(re,f)
       case p:PointSet[_] => foreachCellByPointSet[D](p.asInstanceOf[PointSet[D]])(re,f)
