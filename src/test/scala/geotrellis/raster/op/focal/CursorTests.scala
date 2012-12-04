@@ -20,7 +20,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     Raster(arr, RasterExtent(Extent(0,0,10,10),1,1,10,10))
   }
 
-  def checkSet(set:CellSet[Int],cursor:IntCursor,m:Movement,center:(Int,Int),expected:Seq[Int]) = {
+  def checkSet(set:IntCellSet,cursor:IntCursor,m:Movement,center:(Int,Int),expected:Seq[Int]) = {
     center match { 
       case (x,y) =>
         val s = Set[Int]()
@@ -44,66 +44,66 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(5,5)
-      cursor.getAll.sorted should equal (Seq(45,46,47,55,56,57,65,66,67))
+      cursor.allCells.getAll.sorted should equal (Seq(45,46,47,55,56,57,65,66,67))
     }
 
     it("should get all values for corner cursors and no mask") {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(0,0)
-      cursor.getAll.sorted should equal (Seq(1,2,11,12))
+      cursor.allCells.getAll.sorted should equal (Seq(1,2,11,12))
       cursor.centerOn(9,0)
-      cursor.getAll.sorted should equal (Seq(9,10,19,20))
+      cursor.allCells.getAll.sorted should equal (Seq(9,10,19,20))
       cursor.centerOn(0,9)
-      cursor.getAll.sorted should equal (Seq(81,82,91,92))
+      cursor.allCells.getAll.sorted should equal (Seq(81,82,91,92))
       cursor.centerOn(9,9)
-      cursor.getAll.sorted should equal (Seq(89,90,99,100))
+      cursor.allCells.getAll.sorted should equal (Seq(89,90,99,100))
      }
 
     it("should get all values for edge cursors and no mask") {
       val r = createRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(5,0)
-      cursor.getAll.sorted should equal (Seq(5,6,7,15,16,17))
+      cursor.allCells.getAll.sorted should equal (Seq(5,6,7,15,16,17))
       cursor.centerOn(0,5)
-      cursor.getAll.sorted should equal (Seq(41,42,51,52,61,62))
+      cursor.allCells.getAll.sorted should equal (Seq(41,42,51,52,61,62))
       cursor.centerOn(9,5)
-      cursor.getAll.sorted should equal (Seq(49,50,59,60,69,70))
+      cursor.allCells.getAll.sorted should equal (Seq(49,50,59,60,69,70))
       cursor.centerOn(5,9)
-      cursor.getAll.sorted should equal (Seq(85,86,87,95,96,97))
+      cursor.allCells.getAll.sorted should equal (Seq(85,86,87,95,96,97))
      }
 
     it("should fold left on corners with no mask") {
       val r = createOnesRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(0,0)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (4)
+      cursor.allCells.foldLeft(0) { (a,b) => a + b } should be (4)
       cursor.centerOn(9,0)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (4)
+      cursor.allCells.foldLeft(0) { (a,b) => a + b } should be (4)
       cursor.centerOn(0,9)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (4)
+      cursor.allCells.foldLeft(0) { (a,b) => a + b } should be (4)
       cursor.centerOn(9,9)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (4)
+      cursor.allCells.foldLeft(0) { (a,b) => a + b } should be (4)
     }
 
     it("should fold left on edges and no mask") {
       val r = createOnesRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(5,0)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (6)
+      cursor.allCells.foldLeft(0) { (a,b) => a + b } should be (6)
       cursor.centerOn(0,5)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (6)
+      cursor.allCells.foldLeft(0) { (a,b) => a + b } should be (6)
       cursor.centerOn(9,5)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (6)
+      cursor.allCells.foldLeft(0) { (a,b) => a + b } should be (6)
       cursor.centerOn(5,9)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (6)
+      cursor.allCells.foldLeft(0) { (a,b) => a + b } should be (6)
     }
     
     it("should fold left for middle cursor and no mask") {
       val r = createOnesRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(5,5)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (9)
+      cursor.allCells.foldLeft(0) { (a,b) => a + b } should be (9)
     }
 
     it("should be able to mask triangle and foldLeft with sum") {
@@ -112,7 +112,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       cursor.setMask { (x,y) => x+y > 2 }
       cursor.centerOn(2,2)
       // 12+13+14+22+23+32
-      cursor.foldLeft(0) { (a,b) => a + b } should be (116)
+      cursor.allCells.foldLeft(0) { (a,b) => a + b } should be (116)
     }
 
     it("should be able to mask circle and foldLeft with min") {
@@ -120,7 +120,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val n = Circle(3)
       val cursor = Cursor.getInt(r,n)
       cursor.centerOn(4,4)
-      cursor.foldLeft(Int.MaxValue) { (a,b) => min(a,b) } should be (15)
+      cursor.allCells.foldLeft(Int.MaxValue) { (a,b) => min(a,b) } should be (15)
     }
     
     it("should be able to mask circle and foldLeft with min for edge case") {
@@ -128,7 +128,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val n = Circle(3)
       val cursor = Cursor.getInt(r,n)
       cursor.centerOn(9,9)
-      cursor.foldLeft(Int.MaxValue) { (a,b) => min(a,b) } should be (70)
+      cursor.allCells.foldLeft(Int.MaxValue) { (a,b) => min(a,b) } should be (70)
     }
 
     it("should mask edge cases correctly") {
@@ -140,19 +140,19 @@ class CursorSpec extends FunSpec with ShouldMatchers {
                                          """)
       // Mask cursor on left edge
       cursor.centerOn(0,2)
-      cursor.getAll.sorted should equal (Seq(11,22,31))
+      cursor.allCells.getAll.sorted should equal (Seq(11,22,31))
 
       // Mask cursor on right edge
       cursor.centerOn(9,8)
-      cursor.getAll.sorted should equal (Seq(80,89,100))
+      cursor.allCells.getAll.sorted should equal (Seq(80,89,100))
 
       // Mask cursor on top edge
       cursor.centerOn(4,0)
-      cursor.getAll.sorted should equal (Seq(4,6,15))
+      cursor.allCells.getAll.sorted should equal (Seq(4,6,15))
 
       // Mask cursor on bottom edge
       cursor.centerOn(4,9)
-      cursor.getAll.sorted should equal (Seq(85,94,96))
+      cursor.allCells.getAll.sorted should equal (Seq(85,94,96))
     }
 
     it("should mask corner cases correctly") {
@@ -166,19 +166,19 @@ class CursorSpec extends FunSpec with ShouldMatchers {
                                            """)
       // Mask cursor at top left corner
       cursor.centerOn(0,0)
-      cursor.getAll.sorted should equal (Seq(1,2,11,12,13,22,23))
+      cursor.allCells.getAll.sorted should equal (Seq(1,2,11,12,13,22,23))
 
       // Mask cursor at top right corner
       cursor.centerOn(9,0)
-      cursor.getAll.sorted should equal (Seq(9,10,20))
+      cursor.allCells.getAll.sorted should equal (Seq(9,10,20))
 
       // Mask cursor at bottom right corner
       cursor.centerOn(9,9)
-      cursor.getAll.sorted should equal (Seq(78,79,88,89,90,99,100))
+      cursor.allCells.getAll.sorted should equal (Seq(78,79,88,89,90,99,100))
 
       // Mask cursor at bottom left corner
       cursor.centerOn(0,9)
-      cursor.getAll.sorted should equal (Seq(81,91,92))
+      cursor.allCells.getAll.sorted should equal (Seq(81,91,92))
     }
 
     it("should give correct x and y values through a foreach") {
@@ -192,7 +192,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
 
       // Middle 
       cursor.centerOn(4,4)
-      cursor.foreach { (x,y,_) => s += ((x,y)) }
+      cursor.allCells.foreach { (x,y,_) => s += ((x,y)) }
       s should equal (Set((4,4),(3,4),(4,3),(5,4),(4,5)))
 
       // Added

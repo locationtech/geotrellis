@@ -10,7 +10,7 @@ import scala.math._
 import Angles._
 
 trait SlopeAspectCalculator {
-  def getSlopeAndAspect(cursor:Cursor[Int],zFactor:Double,cellWidth:Double,cellHeight:Double):(Double,Double) = {
+  def getSlopeAndAspect(cursor:IntCursor,zFactor:Double,cellWidth:Double,cellHeight:Double):(Double,Double) = {
     if(cursor.focusValue == NODATA) { return (Double.NaN,Double.NaN) }
     
     var east=0
@@ -60,7 +60,7 @@ trait SlopeAspectCalculator {
     return (slope,aspect)
   }
 
- def getSlopeAndAspectDouble(cursor:Cursor[Double],zFactor:Double,cellWidth:Double,cellHeight:Double):(Double,Double) = {
+ def getSlopeAndAspectDouble(cursor:DoubleCursor,zFactor:Double,cellWidth:Double,cellHeight:Double):(Double,Double) = {
     if(cursor.focusValue == Double.NaN) { return (Double.NaN,Double.NaN) }
     
     var east=0.0
@@ -127,7 +127,7 @@ case class Slope(r:Op[Raster], zFactorOp:Op[Double]) extends DoubleFocalOp1[Doub
     cellHeight = r.rasterExtent.cellheight
   }
 
-  def calc(cursor:Cursor[Double]) = {
+  def calc(cursor:DoubleCursor) = {
     val (slope,_) = getSlopeAndAspectDouble(cursor,zFactor,cellWidth,cellHeight)
     slope
   }
@@ -147,7 +147,7 @@ case class Aspect(r:Op[Raster], zFactorOp:Op[Double]) extends DoubleFocalOp1[Dou
     cellHeight = r.rasterExtent.cellheight
   }
 
-  def calc(cursor:Cursor[Double]) = {
+  def calc(cursor:DoubleCursor) = {
     val (_,aspect) = getSlopeAndAspectDouble(cursor,zFactor,cellWidth,cellHeight)
     aspect
   }

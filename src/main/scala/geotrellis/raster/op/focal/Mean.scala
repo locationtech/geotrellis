@@ -9,7 +9,7 @@ case class CursorMean(r:Op[Raster], n:Op[Neighborhood]) extends DoubleFocalOp[Ra
   var count:Int = 0
   var sum:Double = 0.0
 
-  def calc(c:Cursor[Double]):Double = {
+  def calc(c:DoubleCursor):Double = {
     for(z <- c.removedCells) {
       count -= 1
       sum -= z
@@ -24,7 +24,7 @@ case class CursorMean(r:Op[Raster], n:Op[Neighborhood]) extends DoubleFocalOp[Ra
   def createBuilder(r:Raster) = new DoubleRasterBuilder(r.rasterExtent)
 }
 
-case class Mean(r:Op[Raster], n:Op[Neighborhood]) extends CellwiseFocalOp[Raster,Double](r,n) {
+case class Mean(r:Op[Raster], n:Op[Neighborhood]) extends DoubleCellwiseFocalOp[Raster](r,n) {
   var count:Int = 0
   var sum:Double = 0.0
 
