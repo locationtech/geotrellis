@@ -24,7 +24,7 @@ object Raster {
   import geotrellis.process.Server
   import com.typesafe.config.ConfigFactory
   import geotrellis.raster._
-  def loadTileSet(dir:String, server:Server):Raster = {
+  private def loadTileSetInfo(dir:String, server:Server) = {
     val path = Filesystem.join(dir, "layout.json")
     val json = ConfigFactory.parseFile(new File(path))
 
@@ -55,13 +55,22 @@ object Raster {
     val cols = layoutCols * pixelCols
     val rows = layoutRows * pixelRows
 
-    val cw = json.getInt("cellwidth")
-    val ch = json.getInt("cellheight")
+    val cw = json.getDouble("cellwidth")
+    val ch = json.getDouble("cellheight")
 
     val re = RasterExtent(e, cw, ch, cols, rows)
     val layout = TileLayout(layoutCols, layoutRows, pixelCols, pixelRows)
-    val data = TileSetRasterData(dir, tileBase, typ, layout, re, server)
+    (tileBase, typ, layout, re)
+  }
+  def loadTileSet(dir:String, server:Server):Raster = {
+    val (tileBase, typ, layout, re) = loadTileSetInfo(dir, server)
+    val data = TileArrayRasterData(dir, tileBase, typ, layout, re, server)
     Raster(data, re)
+  }
+  def loadUncachedTileSet(dir:String, server:Server):Raster = {
+    val (tileBase, typ, layout, re) = loadTileSetInfo(dir, server)
+    val data = TileSetRasterData(dir, tileBase, typ, layout, re, server)
+    Raster(data, re) 
   }
 }
 
@@ -89,6 +98,7 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
    */
   def getDouble(col:Int, row:Int):Double = data.getDouble(col, row)
 
+  
   /**
    * Return tuple of highest and lowest value in raster.
    */

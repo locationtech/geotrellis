@@ -1,14 +1,13 @@
 package geotrellis.benchmark
 
 import geotrellis._
-import geotrellis.op._
 import geotrellis.raster.op.focal.Square
 import geotrellis.raster.op._
 import geotrellis.process._
 import geotrellis.raster._
 
-case class FastFocalMean(r:Op[Raster], kernel:Square) extends Op1(r)({
-  r => new CalcFastFocalMean(r, kernel).calc
+case class FastFocalMean(r:Op[Raster], n:Int) extends Op1(r)({
+  r => new CalcFastFocalMean(r, n).calc
 })
 
 /**
@@ -20,7 +19,7 @@ case class FastFocalMean(r:Op[Raster], kernel:Square) extends Op1(r)({
  * the radius plus one. Thus, radius=1 means a 3x3 square kernel (9 cells), and
  * radius=3 means a 7x7 square kernel (49 cells).
  */
-final class CalcFastFocalMean(r:Raster, kernel:Square) {
+final class CalcFastFocalMean(r:Raster, n:Int) {
   // get an array-like interface to the data
   final val data = r.data.asArray.getOrElse(sys.error("requires array"))
 
@@ -28,7 +27,7 @@ final class CalcFastFocalMean(r:Raster, kernel:Square) {
   final val out = data.alloc(r.cols, r.rows)
 
   // this is the length of a side of the square kernel
-  final val radius = kernel.n
+  final val radius = n
   final val diameter = 2 * radius + 1
 
   // we store one diameter's worth of row sums, and counts, for each cell.

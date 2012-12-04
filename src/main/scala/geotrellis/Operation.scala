@@ -7,13 +7,13 @@ import scala.{PartialFunction => PF}
 import akka.actor._
 
 /**
- * Base Operation for all Trellis functionality. All other operations must
+ * Base Operation for all GeoTrellis functionality. All other operations must
  * extend this trait.
  */
 abstract class Operation[+T] extends Product {
-  type Steps = PF[Any, StepOutput[T]]
+  type Steps = PartialFunction[Any, StepOutput[T]]
   type Args = List[Any]
-  val nextSteps:PF[Any, StepOutput[T]]
+  val nextSteps:PartialFunction[Any,StepOutput[T]]
 
   val debug = false
   private def log(msg:String) = if(debug) println(msg)
@@ -39,7 +39,7 @@ abstract class Operation[+T] extends Product {
     log("Operation.runAsync called with %s" format args)
     val f = (args2:Args) => {
       log("*** runAsync-generated callback called with %s" format args2)
-      val stepOutput:StepOutput[T] = nextSteps(args2)
+      val stepOutput:StepOutput[T] = processNextSteps(args2)
       log("*** step output from nextSteps was %s" format stepOutput)
       stepOutput
     }
@@ -48,9 +48,62 @@ abstract class Operation[+T] extends Product {
     o
   }
 
+  def processNextSteps(args:Args):StepOutput[T] = nextSteps(args)
+
   def dispatch(dispatcher:ActorRef) = {
     DispatchedOperation(this, dispatcher)    
   }
+
+ /**
+  * Create a new operation with a function that takes the result of this operation
+  * and returns a new operation.
+  */
+ def flatMap[U](f:T=>Operation[U]):Operation[U] = new CompositeOperation(this,f) 
+
+ /**
+  * Create a new operation that returns the result of the provided function that
+  * takes this operation's result as its argument.
+  */
+ def map[U](f:(T)=>U):Operation[U] = logic.Do1(this)(f) 
+
+ /**
+  * Create an operation that applies the function f to the result of this operation,
+  * but returns nothing.
+  */
+ def foreach[U](f:(T)=>U):Unit = logic.Do1(this) {
+    (t:T) => {
+      f(t)
+      ()
+    }
+ }
+
+ /**
+  * Create a new operation with a function that takes the result of this operation
+  * and returns a new operation.
+  * 
+  * Same as flatMap.
+  */
+ def withResult[U](f:T=>Operation[U]):Operation[U] = flatMap(f)
+
+
+ //TODO: how should filter be implemented for list comprehensions?
+ def filter(f:(T) => Boolean) = this
+}
+
+
+/**
+ * Given an operation and a function that takes the result of that operation and returns
+ * a new operation, return an operation of the return type of the function.
+ * 
+ * If the initial operation is g, you can think of this operation as f(g(x)) 
+ */
+case class CompositeOperation[+T,U](gOp:Op[U], f:(U) => Op[T]) extends Operation[T] {
+  def _run(context:Context) = runAsync('firstOp :: gOp :: Nil)
+
+  val nextSteps:Steps = {
+    case 'firstOp :: u :: Nil => runAsync('result :: f(u.asInstanceOf[U]) :: Nil) 
+    case 'result :: t :: Nil => Result(t.asInstanceOf[T])
+  } 
 }
 
 abstract class OperationWrapper[+T](op:Op[T]) extends Operation[T] {
@@ -125,15 +178,141 @@ abstract class Op0[T](f:()=>StepOutput[T]) extends Operation[T] {
   }
 }
 
-abstract class Op1[A,T](a:Op[A])(f:(A)=>StepOutput[T]) extends Operation[T] {
+class Op1[A,T](a:Op[A])(f:(A)=>StepOutput[T]) extends Operation[T] {
   def _run(context:Context) = runAsync(List(a))
-  val nextSteps:Steps = {
+  def productArity = 1
+  def canEqual(other:Any) = other.isInstanceOf[Op1[_,_]]
+  def productElement(n:Int) = if (n == 0) a else throw new IndexOutOfBoundsException()
+  val myNextSteps:PartialFunction[Any,StepOutput[T]] = {
     case a :: Nil => f(a.asInstanceOf[A])
   }
+  val nextSteps = myNextSteps
 }
 
-abstract class Op2[A,B,T](a:Op[A],b:Op[B])
-(f:(A,B)=>StepOutput[T]) extends Operation[T] {
+object OpX {
+  /**
+   * Add simple syntax for creating an operation.
+   *
+   * Define a function after op function that returns:
+   * 
+   * 1) A literal value, e.g. 
+   *   val PlusOne = op { (i:Int) => i + 1 }
+   *
+   * 2) An operation to be executed:
+   *   val LocalPlusOne ( (r:Raster, i:Int) => local.Add(r,i + 1) )
+   *
+   * 3) Or a StepResult (which indicates success or failure)
+   *   val PlusOne = op { (i:Int) => Result(i + 1) }
+   *
+   */
+  type DI = DummyImplicit
+
+  
+  // Op1 methods for op //
+
+  /**
+   * Create an operation from a 1-arg function that returns StepOutput. 
+   * 
+   * For example:
+   *
+   * val PlusOne = op { (i:Int) => Result(i + 1) }
+   */
+  def op[A,T](f:(A)=>StepOutput[T])(implicit m:Manifest[T]):(Op[A]) => Op1[A,T] = 
+    (a:Op[A]) => new Op1(a)((a) => f(a))
+ 
+  /**
+   * Create an operation from a 1-arg function that returns an operation to be executed.
+   *
+   * For example:
+   *
+   * val LocalPlusOne ( (r:Raster, i:Int) => local.Add(r,i + 1) )
+   *
+   */
+  def op[A,T](f:(A)=>Op[T])(implicit m:Manifest[T], n:DI):(Op[A]) => Op1[A,T] = 
+    (a:Op[A]) => new Op1(a)((a) => StepRequiresAsync(List(f(a)), (l) => Result(l.head.asInstanceOf[T])))
+ 
+  /**
+   * Create an operation from a 1-arg function that returns a literal value.
+   *
+   * For example:
+   * 
+   * val PlusOne = op { (i:Int) => i + 1 }
+   */ 
+  def op[A,T](f:(A)=>T)(implicit m:Manifest[T], n:DI, o:DI):(Op[A]) => Op1[A,T] = 
+    (a:Op[A]) => new Op1(a)((a) => Result(f(a)))
+
+
+  // Op2 methods for op() //
+
+  /**
+   * Create an operation from a 2-arg function that returns StepOutput. 
+   */ 
+  def op[A,B,T](f:(A,B)=>StepOutput[T])(implicit m:Manifest[T]):(Op[A],Op[B]) => Op2[A,B,T] = 
+    (a:Op[A],b:Op[B]) => new Op2(a,b)((a,b) => f(a,b))
+
+  /**
+   * Create an operation from a 2-arg function that returns an operation.
+   */ 
+  def op[A,B,T](f:(A,B)=>Op[T])(implicit m:Manifest[T], n:DI):(Op[A],Op[B]) => Op2[A,B,T] = 
+    (a:Op[A],b:Op[B]) => new Op2(a,b)((a,b) => StepRequiresAsync(List(f(a,b)), (l) => Result(l.head.asInstanceOf[T])))
+ 
+  /**
+   * Create an operation from a 2-arg function that returns a literal value.
+   */ 
+  def op[A,B,T](f:(A,B)=>T)(implicit m:Manifest[T], n:DI, o:DI):(Op[A],Op[B]) => Op2[A,B,T] = 
+    (a:Op[A],b:Op[B]) => new Op2(a,b)((a,b) => Result(f(a,b)))
+ 
+
+  // Op3 methods for op() //
+
+  /**
+   * Create an operation from a 3-arg function that returns StepOutput. 
+   */
+  def op[A,B,C,T](f:(A,B,C)=>StepOutput[T])(implicit m:Manifest[T]):(Op[A],Op[B],Op[C]) => Op3[A,B,C,T] =
+    (a:Op[A],b:Op[B],c:Op[C]) => new Op3(a,b,c)((a,b,c) => f(a,b,c))
+
+  /**
+   * Create an operation from a 3-arg function that returns an operation.
+   */
+  def op[A,B,C,T](f:(A,B,C)=>Op[T])(implicit m:Manifest[T], n:DI):(Op[A],Op[B],Op[C]) => Op3[A,B,C,T] =
+    (a:Op[A],b:Op[B],c:Op[C]) => new Op3(a,b,c)((a,b,c) => StepRequiresAsync(List(f(a,b,c)), (l) => Result(l.head.asInstanceOf[T])))
+
+  /**
+   * Create an operation from a 3-arg function that returns a literal value.
+   */
+  def op[A,B,C,T](f:(A,B,C)=>T)(implicit m:Manifest[T], n:DI, o:DI):(Op[A],Op[B],Op[C]) => Op3[A,B,C,T] =
+    (a:Op[A],b:Op[B],c:Op[C]) => new Op3(a,b,c)((a,b,c) => Result(f(a,b,c)))
+ 
+  // Op4 methods for op() //
+
+  /**
+   * Create an operation from a 4-arg function that returns StepOutput. 
+   */
+  def op[A,B,C,D,T](f:(A,B,C,D)=>StepOutput[T])(implicit m:Manifest[T]):(Op[A],Op[B],Op[C],Op[D]) => Op4[A,B,C,D,T] =
+    (a:Op[A],b:Op[B],c:Op[C],d:Op[D]) => new Op4(a,b,c,d)((a,b,c,d) => f(a,b,c,d))
+
+  /**
+   * Create an operation from a 4-arg function that returns an operation.
+   */
+  def op[A,B,C,D,T](f:(A,B,C,D)=>Op[T])(implicit m:Manifest[T], n:DI):(Op[A],Op[B],Op[C],Op[D]) => Op4[A,B,C,D,T] =
+    (a:Op[A],b:Op[B],c:Op[C],d:Op[D]) => new Op4(a,b,c,d)((a,b,c,d) => StepRequiresAsync(List(f(a,b,c,d)), (l) => Result(l.head.asInstanceOf[T])))
+
+  /**
+   * Create an operation from a 4-arg function that returns a literal value.
+   */
+  def op[A,B,C,D,T](f:(A,B,C,D)=>T)(implicit m:Manifest[T], n:DI, o:DI):(Op[A],Op[B],Op[C],Op[D]) => Op4[A,B,C,D,T] =
+    (a:Op[A],b:Op[B],c:Op[C],d:Op[D]) => new Op4(a,b,c,d)((a,b,c,d) => Result(f(a,b,c,d)))
+ 
+}
+
+class Op2[A,B,T](a:Op[A],b:Op[B]) (f:(A,B)=>StepOutput[T]) extends Operation[T] {
+  def productArity = 2
+  def canEqual(other:Any) = other.isInstanceOf[Op2[_,_,_]]
+  def productElement(n:Int) = n match {
+    case 0 => a
+    case 1 => b
+    case _ => throw new IndexOutOfBoundsException()
+  }
   def _run(context:Context) = runAsync(List(a,b))
   val nextSteps:Steps = { 
     case a :: b :: Nil => f(a.asInstanceOf[A], b.asInstanceOf[B])
@@ -141,8 +320,16 @@ abstract class Op2[A,B,T](a:Op[A],b:Op[B])
 }
 
 
-abstract class Op3[A,B,C,T](a:Op[A],b:Op[B],c:Op[C])
+class Op3[A,B,C,T](a:Op[A],b:Op[B],c:Op[C])
 (f:(A,B,C)=>StepOutput[T]) extends Operation[T] {
+  def productArity = 3
+  def canEqual(other:Any) = other.isInstanceOf[Op3[_,_,_,_]]
+  def productElement(n:Int) = n match {
+    case 0 => a
+    case 1 => b
+    case 2 => c
+    case _ => throw new IndexOutOfBoundsException()
+  }
   def _run(context:Context) = runAsync(List(a,b,c))
   val nextSteps:Steps = { 
     case a :: b :: c :: Nil => {
@@ -151,8 +338,17 @@ abstract class Op3[A,B,C,T](a:Op[A],b:Op[B],c:Op[C])
   }
 }
 
-abstract class Op4[A,B,C,D,T](a:Op[A],b:Op[B],c:Op[C],d:Op[D])
+class Op4[A,B,C,D,T](a:Op[A],b:Op[B],c:Op[C],d:Op[D])
 (f:(A,B,C,D)=>StepOutput[T]) extends Operation[T] {
+  def productArity = 4
+  def canEqual(other:Any) = other.isInstanceOf[Op4[_,_,_,_,_]]
+  def productElement(n:Int) = n match {
+    case 0 => a
+    case 1 => b
+    case 2 => c
+    case 3 => d
+    case _ => throw new IndexOutOfBoundsException()
+  }
   def _run(context:Context) = runAsync(List(a,b,c,d))
   val nextSteps:Steps = { 
     case a :: b :: c :: d :: Nil => {

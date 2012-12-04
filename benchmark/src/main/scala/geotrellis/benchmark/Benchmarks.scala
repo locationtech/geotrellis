@@ -9,7 +9,6 @@ package geotrellis.benchmark
 import geotrellis._
 import geotrellis.data._
 import geotrellis.data.png._
-import geotrellis.op._
 import geotrellis.raster.op._
 import geotrellis.io._
 import geotrellis.raster.op.focal.Normalize
@@ -758,60 +757,4 @@ object WriteHugeTiledRaster {
                                 layout.pixelCols, layout.pixelRows)
     Raster(a,tileRasterExtent)
   }
-}
-
-
-
-object FocalOperations extends MyRunner(classOf[FocalOperations])
-class FocalOperations extends MyBenchmark {
-  
-  var r:Raster = null
-
-  override def setUp() {
-    server = TestServer()
-
-    val scale = 1
-    //val scale = 0.1 // used to allow naive version to run fast enough
-
-    val e = Extent(-8475497.88485957, 4825540.69147447,
-                   -8317922.884859569, 4954765.69147447)
-    val re = RasterExtent(e, 75.0 / scale, 75.0 / scale,
-                          (2101 * scale).toInt, (1723 * scale).toInt)
-    val path = "src/main/resources/sbn/SBN_inc_percap.arg"
-    r = server.run(io.LoadFile(path, re))
-
-    //val e = Extent(-8507622.499984, 4804712.742839, -8342022.499984, 4996142.742839)
-    ////val re = RasterExtent(e, 60.0, 60.0, 2760, 3190)
-    ////val re = RasterExtent(e, 120.0, 120.0, 1380, 1595)
-    //val re = RasterExtent(e, 240.0, 240.0, 690, 797)
-    //r = server.run(io.LoadFile("/Users/erik/elevation.arg", re))
-
-    //r = server.run(io.LoadFile("/Users/erik/elevation.arg"))
-  }
-
-  //def timeNaiveMean1(reps:Int) = run(reps)(server.run(NaiveFocalMean(r, focal.Square(1))))
-  //def timeNaiveMean2(reps:Int) = run(reps)(server.run(NaiveFocalMean(r, focal.Square(2))))
-  //def timeNaiveMean3(reps:Int) = run(reps)(server.run(NaiveFocalMean(r, focal.Square(3))))
-  //def timeNaiveMean5(reps:Int) = run(reps)(server.run(NaiveFocalMean(r, focal.Square(5))))
-  //def timeNaiveMean7(reps:Int) = run(reps)(server.run(NaiveFocalMean(r, focal.Square(7))))
-  //def timeNaiveMean8(reps:Int) = run(reps)(server.run(NaiveFocalMean(r, focal.Square(8))))
-  //def timeNaiveMean13(reps:Int) = run(reps)(server.run(NaiveFocalMean(r, focal.Square(13))))
-
-  def timeMeanSquare1(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(1))))
-  def timeMeanSquare2(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(2))))
-  def timeMeanSquare3(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(3))))
-  def timeMeanSquare5(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(5))))
-  def timeMeanSquare7(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(7))))
-  def timeMeanSquare8(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(8))))
-  def timeMeanSquare13(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(13))))
-
-  def timeFastMean1(reps:Int) = run(reps)(server.run(FastFocalMean(r, focal.Square(1))))
-  def timeFastMean2(reps:Int) = run(reps)(server.run(FastFocalMean(r, focal.Square(2))))
-  def timeFastMean3(reps:Int) = run(reps)(server.run(FastFocalMean(r, focal.Square(3))))
-  def timeFastMean5(reps:Int) = run(reps)(server.run(FastFocalMean(r, focal.Square(5))))
-  def timeFastMean7(reps:Int) = run(reps)(server.run(FastFocalMean(r, focal.Square(7))))
-  def timeFastMean8(reps:Int) = run(reps)(server.run(FastFocalMean(r, focal.Square(8))))
-  def timeFastMean13(reps:Int) = run(reps)(server.run(FastFocalMean(r, focal.Square(13))))
-
-  def timeHillshade(reps:Int) = run(reps)(server.run(focal.Hillshade(r)))
 }

@@ -3,26 +3,50 @@ package geotrellis.raster.op.focal
 import scala.math._
 
 import geotrellis._
+import geotrellis.raster._
 
-case class Mean(r:Op[Raster], f:Kernel) extends Op1(r)({
-  r => Result(f.handle(r, new MeanStrategy(r)))
-})
+case class CursorMean(r:Op[Raster], n:Op[Neighborhood]) extends DoubleFocalOp[Raster](r,n) {
+  var count:Int = 0
+  var sum:Double = 0.0
 
-//protected[focal] class MeanStrategy(r:Raster) extends Strategy[Raster, MeanCell](Aggregated) {
-protected[focal] class MeanStrategy(r:Raster) extends Strategy[Raster, MeanCell](Aggregated) {
-  val d = DoubleArrayRasterData.ofDim(r.cols, r.rows)
-  def store(col:Int, row:Int, cc:MeanCell) { d.setDouble(col, row, cc.get()) }
-  def get() = Raster(d, r.rasterExtent)
-  def makeCell() = new MeanCell
+  def calc(c:DoubleCursor):Double = {
+    for(z <- c.removedCells) {
+      count -= 1
+      sum -= z
+    }
+    for(z <- c.addedCells) {
+      count += 1
+      sum += z
+    }
+    sum / count
+  }
+
+  def createBuilder(r:Raster) = new DoubleRasterBuilder(r.rasterExtent)
 }
 
-protected[focal] class MeanCell extends Cell[MeanCell] {
-  var total:Double = 0.0
+case class Mean(r:Op[Raster], n:Op[Neighborhood]) extends DoubleCellwiseFocalOp[Raster](r,n) {
   var count:Int = 0
-  def clear() { total = 0.0; count = 0 }
-  def add(cc:MeanCell) { total += cc.total; count += cc.count }
-  def add(col:Int, row:Int, r:Raster) { total += r.get(col, row); count += 1 }
-  def remove(cc:MeanCell) { total -= cc.total; count -= cc.count }
-  def remove(col:Int, row:Int, r:Raster) { total -= r.get(col, row); count -= 1 }
-  def get() = total / count
+  var sum:Double = 0.0
+
+  def add(r:Raster, x:Int, y:Int) = {
+    val z = r.get(x,y)
+    if (z != NODATA) {
+      count += 1
+      sum   += z
+    }
+  }
+
+  def remove(r:Raster, x:Int, y:Int) = {
+    val z = r.get(x,y)
+    if (z != NODATA) {
+      count -= 1
+      sum -= z
+    }
+  } 
+
+  def getValue = sum / count
+
+  def reset() = { count = 0 ; sum = 0 }
+
+  def createBuilder(r:Raster) = new DoubleRasterBuilder(r.rasterExtent)
 }

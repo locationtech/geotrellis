@@ -9,7 +9,7 @@ object MyBuild extends Build {
   lazy val root = Project("root", file(".")).settings(
     organization := "com.azavea.geotrellis",
     name := "geotrellis",
-    version := "0.7.0-SNAPSHOT",
+    version := "0.8.0-SNAPSHOT",
     scalaVersion := "2.10.0-RC2",
     
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-optimize"),
@@ -42,11 +42,11 @@ object MyBuild extends Build {
       "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
       "com.sun.jersey" % "jersey-bundle" % "1.11",
       "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0", 
-//      "com.azavea.math" %% "numeric" % "0.1" from "http://plastic-idolatry.com/jars/numeric_2.9.1-0.1.jar",
-//      "com.azavea.math.plugin" %% "optimized-numeric" % "0.1" from "http://plastic-idolatry.com/jars/optimized-numeric-plugin_2.9.1-0.1.jar",
       "org.reflections" % "reflections" % "0.9.5",
       "org.slf4j" % "slf4j-api" % "1.6.0",
-      "org.slf4j" % "slf4j-nop" % "1.6.0"
+      "org.slf4j" % "slf4j-nop" % "1.6.0",
+      "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
+      "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1"
     ),
 
     resolvers ++= Seq(
@@ -124,11 +124,15 @@ object MyBuild extends Build {
       "com.google.guava" % "guava" % "r09",
       "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
       "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
-      "com.google.code.gson" % "gson" % "1.7.1"
+      "com.google.code.gson" % "gson" % "1.7.1",
+      "org.scalatest" %% "scalatest" % "2.0.M4" % "test",
+      "junit" % "junit" % "4.5" % "test"
     ),
 
-    // enable forking in run
-    fork in run := true,
+    // enable forking in both run and test
+    fork := true,
+
+    // set the correct working directory for acces to resources in test
 
     runner in Compile in run <<= (thisProject, taskTemporaryDirectory, scalaInstance, baseDirectory, javaOptions, outputStrategy, javaHome, connectInput) map {
       (tp, tmp, si, base, options, strategy, javaHomeDir, connectIn) =>
@@ -139,23 +143,6 @@ object MyBuild extends Build {
                                       runJVMOptions = options,
                                       workingDirectory = Some(base)))
     }
-
-    // custom kludge to get caliper to see the right classpath
-    
-  //  // define the onLoad hook
-  //  onLoad in Global ~= { previous => state =>
-  //    previous {
-  //      state.get(key) match {
-  //        case None =>
-  //          // get the runtime classpath, turn into a colon-delimited string
-  //          val classPath = Project.runTask(fullClasspath in Runtime in benchmark, state).get._2.toEither.right.get.files.mkString(":")
-  //          // return a state with javaOptionsPatched = true and javaOptions set correctly
-  //          Project.extract(state).append(Seq(javaOptions in (benchmark, run) ++= Seq("-cp", classPath)), state.put(key, true))
-  //        case Some(_) =>
-  //          state // the javaOptions are already patched
-  //      }
-  //    }
-  //  }
   )
 }
 

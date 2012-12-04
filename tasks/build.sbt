@@ -19,13 +19,11 @@ name := "geotrellis-tasks"
 
 organization := "com.azavea.geotrellis"
 
-version := "0.7.0-SNAPSHOT"
+version := "0.8.0-M4-SNAPSHOT"
 
 //seq(Revolver.settings: _*)
 
 assemblySettings
-
-addCompilerPlugin("com.azavea.math.plugin" %% "optimized-numeric" % "0.1")
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) {
   (old) => {

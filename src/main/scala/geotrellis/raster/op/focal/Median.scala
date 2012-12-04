@@ -3,24 +3,15 @@ package geotrellis.raster.op.focal
 import scala.math._
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.statistics._
 
-case class Median(r:Op[Raster], f:Kernel) extends Op1(r)({
-  r => Result(f.handle(r, new MedianStrategy(r)))
-})
+case class Median(r:Op[Raster], n:Op[Neighborhood]) extends IntFocalOp[Raster](r,n) {
+  def createBuilder(r:Raster) = new IntRasterBuilder(r.rasterExtent)
 
-protected[focal] class MedianStrategy(r:Raster) extends Strategy[Raster, MedianCell](Aggregated) {
-  val d = IntArrayRasterData.ofDim(r.cols, r.rows)
-  def store(col:Int, row:Int, cc:MedianCell) = d.set(col, row, cc.h.getMedian)
-  def get = Raster(d, r.rasterExtent)
-  def makeCell() = new MedianCell
-}
-
-protected[focal] class MedianCell extends Cell[MedianCell] {
-  var h:Histogram = FastMapHistogram()
-  def clear() { h = FastMapHistogram() }
-  def add(cc:MedianCell) { h.update(cc.h) }
-  def add(col:Int, row:Int, r:Raster) { h.countItem(r.get(col, row), 1) }
-  def remove(cc:MedianCell) = sys.error("unimplemented")
-  def remove(col:Int, row:Int, r:Raster) { h.countItem(r.get(col, row), -1) }
+  def calc(cursor:IntCursor) = {
+    val h = FastMapHistogram()
+    for(v <- cursor.allCells) { h.countItem(v, 1) }
+    h.getMedian
+  }
 }
