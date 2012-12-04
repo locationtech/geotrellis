@@ -20,20 +20,36 @@ import TraversalStrategy._
  * what cells have been removed since the last move.
  */
 object CursorStrategy {
-  def execute[T,@specialized(Int,Double)D](r:Raster,b:ResultBuilder[T,D],cursor:Cursor[D])
-                                        (calc:Cursor[D]=>D):T = 
-      execute(r,b,cursor,ZigZag)(calc)
+  def execute[T](r:Raster,b:IntResultBuilder[T],cursor:IntCursor)
+                (calc:IntCursor=>Int):T = 
+    execute(r,b,cursor,ZigZag)(calc)
 
-  def execute[T,@specialized(Int,Double)D](r:Raster,b:ResultBuilder[T,D],cursor:Cursor[D], t:TraversalStrategy)
-                                        (calc:Cursor[D]=>D):T = {
+  def execute[T](r:Raster,b:DoubleResultBuilder[T],cursor:DoubleCursor)
+                (calc:DoubleCursor=>Double):T =
+    execute(r,b,cursor,ZigZag)(calc)
+
+  def execute[T](r:Raster,b:IntResultBuilder[T],cursor:IntCursor,t:TraversalStrategy)
+                (calc:IntCursor=>Int):T = {
+    val setFunc = () => b.set(cursor.focusX,cursor.focusY,calc(cursor))
+    _execute(r,b,cursor,t)(setFunc)
+  }
+
+  def execute[T](r:Raster,b:DoubleResultBuilder[T],cursor:DoubleCursor,t:TraversalStrategy)
+                (calc:DoubleCursor=>Double):T = {
+    val setFunc = () => b.set(cursor.focusX,cursor.focusY,calc(cursor))
+    _execute(r,b,cursor,t)(setFunc)
+  }
+
+  private def _execute[T](r:Raster,b:Builder[T],cursor:Cursor, t:TraversalStrategy)
+                                                   (setFunc:()=>Unit):T = {
     t match {
-      case ScanLine => handleScanLine(r,b,cursor)(calc)
-      case _ => handleZigZag(r,b,cursor)(calc)
+      case ScanLine => handleScanLine(r,b,cursor)(setFunc)
+      case _ => handleZigZag(r,b,cursor)(setFunc)
     }
   }
 
-  private def handleZigZag[T,@specialized(Int,Double)D](r:Raster,b:ResultBuilder[T,D],cursor:Cursor[D])
-                                        (calc:Cursor[D]=>D):T = {
+  private def handleZigZag[T](r:Raster,b:Builder[T],cursor:Cursor)
+                             (setFunc:()=>Unit):T = {
     val maxX = r.cols - 1
     val maxY = r.rows - 1
     var focalX = 0
@@ -43,7 +59,7 @@ object CursorStrategy {
     cursor.centerOn(0, 0)
 
     while(focalY < r.rows) {
-      b.set(focalX, focalY, calc(cursor))
+      setFunc()
       focalX += direction
       if(focalX < 0 || maxX < focalX) {
 	direction *= -1
@@ -59,8 +75,8 @@ object CursorStrategy {
     b.build
   }
 
-  private def handleScanLine[T,@specialized(Int,Double)D](r:Raster,b:ResultBuilder[T,D],cursor:Cursor[D])
-                                        (calc:Cursor[D]=>D):T = {
+  private def handleScanLine[T](r:Raster,b:Builder[T],cursor:Cursor)
+                               (setFunc:()=>Unit):T = {
     val maxX = r.cols - 1
     val maxY = r.rows - 1
     var focalX = 0
@@ -69,7 +85,7 @@ object CursorStrategy {
     cursor.centerOn(0, 0)
 
     while(focalY < r.rows) {
-      b.set(focalX, focalY, calc(cursor))
+      setFunc()
       focalX += 1
       if(maxX < focalX) {
 	focalY += 1
@@ -84,11 +100,18 @@ object CursorStrategy {
   }
 }
 
-trait CellwiseCalculator[@specialized(Int,Double)D] {
+trait CellwiseCalculator {
   def add(r:Raster,x:Int,y:Int)
   def remove(r:Raster,x:Int,y:Int)
   def reset()
-  def getValue:D
+}
+
+trait IntCellwiseCalculator extends CellwiseCalculator {
+  def getValue:Int
+}
+
+trait DoubleCellwiseCalculator extends CellwiseCalculator {
+  def getValue:Double
 }
 
 /*
@@ -97,17 +120,27 @@ trait CellwiseCalculator[@specialized(Int,Double)D] {
  * but can only be used for Square or Circle neighborhoods.
  */ 
 object CellwiseStrategy {
-  def execute[T,@specialized(Int,Double)D](r:Raster,b:ResultBuilder[T,D],n:Neighborhood)
-                                        (op:CellwiseCalculator[D]):T = {
+  def execute[T](r:Raster,n:Neighborhood,b:IntResultBuilder[T],op:IntCellwiseCalculator):T = {
+    val setFunc = (x:Int,y:Int) => b.set(x,y,op.getValue)
+    _execute(r,n,b,op)(setFunc)
+  }
+
+  def execute[T](r:Raster,n:Neighborhood,b:DoubleResultBuilder[T],op:DoubleCellwiseCalculator):T = {
+    val setFunc = (x:Int,y:Int) => b.set(x,y,op.getValue)
+    _execute(r,n,b,op)(setFunc)
+  }
+
+  private def _execute[T](r:Raster,n:Neighborhood,b:Builder[T],op:CellwiseCalculator)
+             (setFunc:(Int,Int) => Unit):T = {
     n match {
-      case Square(extent) => executeSquare(r,b,extent)(op)
-      case c:Circle => executeCircle(r,b,c.extent)(op)
+      case Square(extent) => _executeSquare(r,b,extent,op)(setFunc)
+      case c:Circle => _executeCircle(r,b,c.extent,op)(setFunc)
       case _ => throw new Exception("CellwiseStrategy cannot be used with this neighborhood type.")
     }
   }
 
-  def executeSquare[T,@specialized(Int,Double)D](r:Raster,b:ResultBuilder[T,D],n:Int)
-                                              (op:CellwiseCalculator[D]):T = {
+  private def _executeSquare[T](r:Raster,b:Builder[T],n:Int, op:CellwiseCalculator)
+                      (setFunc:(Int,Int)=>Unit):T = {
     val cols = r.cols
     val rows = r.rows
 
@@ -128,7 +161,7 @@ object CellwiseStrategy {
         yy += 1
       }
 
-      b.set(0, y, op.getValue)
+      setFunc(0, y)
 
       var x = 1
       while (x < cols) {
@@ -150,7 +183,7 @@ object CellwiseStrategy {
             }
           }
 
-        b.set(x, y, op.getValue)
+        setFunc(x, y)
         x += 1
       }
       y += 1
@@ -158,8 +191,8 @@ object CellwiseStrategy {
     b.build
   }
 
-  def executeCircle[T,@specialized(Int,Double)D](r:Raster,b:ResultBuilder[T,D],n:Int)
-                                              (op:CellwiseCalculator[D]):T = {
+  private def _executeCircle[T](r:Raster,b:Builder[T],n:Int, op:CellwiseCalculator)
+                      (setFunc:(Int,Int)=>Unit):T = {
     val cols = r.cols
     val rows = r.rows
     val size = 2 * n + 1
@@ -181,7 +214,7 @@ object CellwiseStrategy {
           val xx2 = min(cols, x + xs(i) + 1)
           for (xx <- xx1 until xx2) op.add(r, xx, yy)
         }
-        b.set(x, y, op.getValue)
+        setFunc(x, y)
       }
     }
 

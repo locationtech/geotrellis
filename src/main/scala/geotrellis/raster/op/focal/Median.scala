@@ -9,9 +9,9 @@ import geotrellis.statistics._
 case class Median(r:Op[Raster], n:Op[Neighborhood]) extends IntFocalOp[Raster](r,n) {
   def createBuilder(r:Raster) = new IntRasterBuilder(r.rasterExtent)
 
-  def calc(cursor:Cursor[Int]) = {
+  def calc(cursor:IntCursor) = {
     val h = FastMapHistogram()
-    for(v <- cursor) { h.countItem(v, 1) }
+    for(v <- cursor.allCells) { h.countItem(v, 1) }
     h.getMedian
   }
 }
