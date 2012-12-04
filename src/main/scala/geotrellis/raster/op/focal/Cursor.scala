@@ -86,6 +86,7 @@ trait DoubleCellSet {
    * @param     f         Function that takes in the seed, or previous computed value,
    *                      and computes a value to be passed into the next iteration.
    */
+
   protected def foldLeft(seed:Double)(f:(Double,Double)=>Double) = {
     var a = seed
     foreach { v => a = f(a,v) }
@@ -421,8 +422,6 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
 
 trait IntFocalCellCB { def apply(x:Int,y:Int,v:Int):Unit }
 trait DoubleFocalCellCB { def apply(x:Int,y:Int,v:Double):Unit }
-
-trait CursorCellCB { def apply(x:Int,y:Int):Unit }
 
 class IntCursor(r:Raster, dim:Int) extends BaseCursor(r,dim) {
   val raster = r
