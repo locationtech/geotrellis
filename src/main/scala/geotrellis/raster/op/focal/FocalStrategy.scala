@@ -41,7 +41,7 @@ object CursorStrategy {
   }
 
   private def _execute[T](r:Raster,b:Builder[T],cursor:Cursor, t:TraversalStrategy)
-                                                   (setFunc:()=>Unit):T = {
+                         (setFunc:()=>Unit):T = {
     t match {
       case ScanLine => handleScanLine(r,b,cursor)(setFunc)
       case _ => handleZigZag(r,b,cursor)(setFunc)
