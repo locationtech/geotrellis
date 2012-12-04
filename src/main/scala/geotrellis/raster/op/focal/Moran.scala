@@ -18,12 +18,12 @@ case class RasterMoransI(r:Op[Raster],n:Op[Neighborhood]) extends DoubleFocalOp[
     `stddev^2` = s*s
   }
 
-  def calc(cursor:Cursor[Double]) = {
+  def calc(cursor:DoubleCursor) = {
     var z = 0.0
     var w = 0
     var base = 0.0
 
-    cursor.foreach { (x,y,v) =>
+    cursor.allCells.foreach { (x,y,v) =>
       if(x == cursor.focusX && y == cursor.focusY) {
         base = v-mean
       } else {
@@ -37,7 +37,7 @@ case class RasterMoransI(r:Op[Raster],n:Op[Neighborhood]) extends DoubleFocalOp[
 
 // Scalar version:
 
-class NoopResultBuilder extends ResultBuilder[Double,Double] {
+class NoopResultBuilder extends DoubleResultBuilder[Double] {
   def set(x:Int,y:Int,v:Double) = { }
   def build = 0.0
 }
@@ -57,7 +57,7 @@ case class ScalarMoransI(r:Op[Raster], n:Neighborhood) extends Op1(r)({
       var base = diff.getDouble(cursor.focusX,cursor.focusY)
       var z = -base
 
-      for(v <- cursor) {
+      for(v <- cursor.allCells) {
         z += v
         ws += 1
       }

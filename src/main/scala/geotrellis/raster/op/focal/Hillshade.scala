@@ -36,7 +36,7 @@ case class Hillshade(r:Op[Raster], azimuthOp:Op[Double], altitudeOp:Op[Double], 
     cellHeight = r.rasterExtent.cellheight
   }
 
-  def calc(cursor:Cursor[Int]) = {
+  def calc(cursor:IntCursor) = {
     val (slope,aspect) = getSlopeAndAspect(cursor,zFactor,cellWidth,cellHeight)
     val z = ((cos(zenith) * cos(slope)) +
              (sin(zenith) * sin(slope) * cos(azimuth - aspect)))

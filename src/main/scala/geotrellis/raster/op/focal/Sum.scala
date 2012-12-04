@@ -8,7 +8,7 @@ case class Sum(r:Op[Raster], n:Op[Neighborhood]) extends IntFocalOp[Raster](r,n)
 
   def createBuilder(r:Raster) = new IntRasterBuilder(r.rasterExtent)
 
-  def calc(cursor:Cursor[Int]) = {
+  def calc(cursor:IntCursor) = {
     for(v <- cursor.addedCells) { total += v }
     for(v <- cursor.removedCells) { total -= v }
     total
