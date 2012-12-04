@@ -10,7 +10,7 @@ object MyBuild extends Build {
     organization := "com.azavea.geotrellis",
     name := "geotrellis",
     version := "0.8.0-SNAPSHOT",
-    scalaVersion := "2.10.0-RC2",
+    scalaVersion := "2.10.0-RC3",
     
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-optimize"),
     parallelExecution := false,
@@ -22,7 +22,7 @@ object MyBuild extends Build {
 
     libraryDependencies ++= Seq(
       //"org.scalatest" %% "scalatest" % "2.0.M4" % "test",
-      "org.scalatest" % "scalatest_2.10.0-M7" % "1.9-2.10.0-M7-B1" % "test",
+      "org.scalatest" % "scalatest_2.10.0-RC3" % "1.8-B1" % "test",
       //"org.scalatest" %% "scalatest" % "2.0.M4" % "test",
       "junit" % "junit" % "4.5" % "test",
       "com.vividsolutions" % "jts" % "1.8",
@@ -35,7 +35,10 @@ object MyBuild extends Build {
       "org.postgis" % "postgis-jdbc" % "1.3.3",
       "javax.media" % "jai_core" % "1.1.3",
       "postgresql" % "postgresql" % "8.4-701.jdbc4",
-      "net.liftweb" % "lift-json_2.10.0-RC1" % "2.5-SNAPSHOT",
+      "net.liftweb" % "lift-json_2.10.0-RC2" % "2.5-SNAPSHOT" from "http://n0d.es/jars/lift-json_2.10.0-RC2.jar",
+      // lift-json dependency included so we can get jar directly
+      "com.thoughtworks.paranamer" % "paranamer" % "2.4.1",
+      "org.scalatest" % "scalatest_2.10.0-M7" % "1.9-2.10.0-M7-B1" % "test",
       "com.typesafe.akka" % "akka-kernel_2.10.0-RC1" % "2.1.0-RC1",
       "com.typesafe.akka" % "akka-remote_2.10.0-RC1" % "2.1.0-RC1",
       "com.typesafe.akka" % "akka-actor_2.10.0-RC1" % "2.1.0-RC1",
@@ -99,14 +102,14 @@ object MyBuild extends Build {
 
   lazy val tasks:Project = Project("tasks", file("tasks")).
     settings(
-      scalaVersion := "2.10.0-RC2",
+      scalaVersion := "2.10.0-RC3",
       libraryDependencies ++= Seq("com.beust" % "jcommander" % "1.23"),
       mainClass in Compile := Some("geotrellis.run.Tasks")
     ).
     dependsOn(root)
 
   lazy val demo:Project = Project("demo", file("demo")).
-    settings(scalaVersion := "2.10.0-RC2").
+    settings(scalaVersion := "2.10.0-RC3").
     dependsOn(root)
 
   lazy val benchmark:Project = Project("benchmark", file("benchmark")).
@@ -114,7 +117,7 @@ object MyBuild extends Build {
     dependsOn(root)
 
   def benchmarkSettings = Seq(
-    scalaVersion := "2.10.0-RC2",
+    scalaVersion := "2.10.0-RC3",
 
     // raise memory limits here if necessary
     //javaOptions in run += "-Xmx8G",
