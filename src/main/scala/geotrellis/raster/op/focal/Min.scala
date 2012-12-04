@@ -9,6 +9,6 @@ case class Min(r:Op[Raster], n:Op[Neighborhood]) extends IntFocalOp[Raster](r,n)
   def createBuilder(r:Raster) = new IntRasterBuilder(r.rasterExtent)
 
   def calc(cursor:IntCursor):Int= {
-    cursor.allCells.foldLeft(Int.MaxValue) { (a,b) => min(a,b) }
+    cursor.allCells.foldLeft(Int.MaxValue) { (a,v) => min(a,v) }
   }
 }

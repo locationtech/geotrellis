@@ -11,7 +11,7 @@ case class Median(r:Op[Raster], n:Op[Neighborhood]) extends IntFocalOp[Raster](r
 
   def calc(cursor:IntCursor) = {
     val h = FastMapHistogram()
-    for(v <- cursor.allCells) { h.countItem(v, 1) }
+    for(v <- cursor.allCells) { h.countItem(v,1) }
     h.getMedian
   }
 }
