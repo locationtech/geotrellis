@@ -9,17 +9,9 @@ case class CursorMean(r:Op[Raster], n:Op[Neighborhood]) extends DoubleFocalOp[Ra
   var count:Int = 0
   var sum:Double = 0.0
 
-  val removedCB = new DoubleFocalValueCB { 
-    def apply(z:Double) = { if(z != Double.NaN) { count -= 1; sum -= z } }
-  }
-
-  val addedCB = new DoubleFocalValueCB { 
-    def apply(z:Double) = { if(z != Double.NaN) { count += 1; sum += z } }
-  }
-
   def calc(c:DoubleCursor):Double = {
-    c.removedCells.foreach(removedCB)
-    c.addedCells.foreach(addedCB)
+    for(v <- c.removedCells) { if(v != Double.NaN) { count -= 1; sum -= v } }
+    for(v <- c.addedCells) { if(v != Double.NaN) { count += 1; sum += v } }
     sum / count
   }
 

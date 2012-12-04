@@ -62,9 +62,7 @@ case class ScalarMoransI(r:Op[Raster], n:Neighborhood) extends Op1(r)({
         var base = diff.getDouble(cursor.focusX,cursor.focusY)
         var z = -base
 
-        val valueCB = new DoubleFocalValueCB { def apply(v:Double) = { z += v ; ws += 1 } }
-
-        cursor.allCells.foreach(valueCB)
+        for(v <- cursor.allCells) { z += v ; ws += 1 }
 
         count += base / std2 * z
         ws -= 1 // for focus

@@ -36,7 +36,7 @@ trait Cursor {
 }
 
 trait IntCellSet {
-  def foreach(cb:IntFocalValueCB):Unit
+  def foreach(f:Int=>Unit):Unit
   def foreach(cb:IntFocalCellCB):Unit
 
   /*
@@ -45,7 +45,7 @@ trait IntCellSet {
    */
   def getAll:Seq[Int] = {
     val result = mutable.Set[Int]()
-    foreach(new IntFocalValueCB { def apply(v:Int) = { result += v } })
+    foreach { v => result += v }
     result.toSeq
   }
 
@@ -57,15 +57,15 @@ trait IntCellSet {
    * @param     f         Function that takes in the seed, or previous computed value,
    *                      and computes a value to be passed into the next iteration.
    */
-  def foldLeft(seed:Int)(cb:IntFocalFoldCB) = {
+  def foldLeft(seed:Int)(f:(Int,Int)=>Int) = {
     var a = seed
-    foreach(new IntFocalValueCB { def apply(v:Int) = { a = cb(a,v) } })
+    foreach { v => a = f(a,v) }
     a
   }
 }
 
 trait DoubleCellSet {
-  def foreach(cb:DoubleFocalValueCB):Unit
+  def foreach(f:Double=>Unit):Unit
   def foreach(cb:DoubleFocalCellCB):Unit
 
   /*
@@ -74,7 +74,7 @@ trait DoubleCellSet {
    */
   protected def getAll:Seq[Double] = {
     val result = mutable.Set[Double]()
-    foreach(new DoubleFocalValueCB { def apply(v:Double) = { result += v } })
+    foreach { v => result += v }
     result.toSeq
   }
 
@@ -86,9 +86,10 @@ trait DoubleCellSet {
    * @param     f         Function that takes in the seed, or previous computed value,
    *                      and computes a value to be passed into the next iteration.
    */
-  protected def foldLeft(seed:Double)(cb:DoubleFocalFoldCB) = {
+
+  protected def foldLeft(seed:Double)(f:(Double,Double)=>Double) = {
     var a = seed
-    foreach(new DoubleFocalValueCB { def apply(v:Double) = { a = cb(a,v) } })
+    foreach { v => a = f(a,v) }
     a
   }
 }
@@ -213,14 +214,14 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
    * @param     f         Function that receives from each cell
    *                      it's x and y coordinates and it's value.
    */
-  protected def foreach(cb: CursorCellCB):Unit = {
+  protected def foreach(f: (Int,Int)=>Unit):Unit = {
     if(!hasMask) {
       var y = _ymin
       var x = 0
       while(y <= _ymax) {
         x = _xmin
         while(x <= _xmax) {
-          cb(x,y)
+          f(x,y)
           x += 1
         }
         y += 1
@@ -232,7 +233,7 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
           val xRaster = x + (_focusX-dim)
           val yRaster = y + (_focusY-dim)
           if(_xmin <= xRaster && xRaster <= _xmax && _ymin <= yRaster && yRaster <= _ymax) {
-            cb(xRaster,yRaster)
+            f(xRaster,yRaster)
           }
         }
         y += 1
@@ -254,22 +255,22 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
    * @param     f         Function that receives from each cell it's
    *                      x and y coordinates and it's value.
    */
-  protected def foreachAdded(cb: CursorCellCB):Unit = {
+  protected def foreachAdded(f:(Int,Int)=>Unit):Unit = {
     if(movement == NoMovement) {
-      foreach(cb) 
+      foreach(f) 
     } else if (movement.isVertical) {
       if(0 <= addedRow && addedRow < rows) {
         if(!hasMask) {
           var x = _xmin
           while(x <= _xmax) {
-            cb(x,addedRow)
+            f(x,addedRow)
             x += 1
           }
         } else {
           mask.foreachX(addedRow-(_focusY-dim)) { x =>
             val xRaster = x+(_focusX-dim)
             if(0 <= xRaster && xRaster <= rows) {
-              cb(xRaster,addedRow)
+              f(xRaster,addedRow)
             }
           }
         }
@@ -279,7 +280,7 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
         if(!hasMask) {
           var y = _ymin
           while(y <= _ymax) {
-            cb(addedCol,y)
+            f(addedCol,y)
             y += 1
           }
         } else {
@@ -287,14 +288,14 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
             mask.foreachWestColumn { y =>
               val yRaster = y+(_focusY-dim)
               if(0 <= yRaster && yRaster < cols) {
-                cb(addedCol,yRaster)
+                f(addedCol,yRaster)
               }
             }
           } else { // Right
             mask.foreachEastColumn { y =>
               val yRaster = y+(_focusY-dim)
               if(0 <= yRaster && yRaster < cols) {
-                cb(addedCol,yRaster)
+                f(addedCol,yRaster)
               }
             }
           }
@@ -307,7 +308,7 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
         val xRaster = x+(_focusX-dim)
         val yRaster = y+(_focusY-dim)
         if(0 <= xRaster && xRaster < cols && 0 <= yRaster && yRaster < rows) {
-          cb(xRaster,yRaster)
+          f(xRaster,yRaster)
         }
       }
     }
@@ -328,7 +329,7 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
    * @param     f         Function that receives from each cell it's
    *                      x and y coordinates and it's value.
    */
-  protected def foreachRemoved(cb: CursorCellCB):Unit = {
+  protected def foreachRemoved(f:(Int,Int)=>Unit):Unit = {
     if(movement == NoMovement) { return }
 
     if(movement.isVertical) {
@@ -336,7 +337,7 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
         if(!hasMask) {
           var x = _xmin
           while(x <= _xmax) {
-            cb(x,removedRow)
+            f(x,removedRow)
             x += 1
           }
         } else {
@@ -344,7 +345,7 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
             mask.foreachX(d-1) { x =>
               val xRaster = x+(_focusX-dim)
               if(0 <= xRaster && xRaster < cols) {
-                cb(xRaster,removedRow)
+                f(xRaster,removedRow)
               }
             }
           }
@@ -352,7 +353,7 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
             mask.foreachX(0) { x =>
               val xRaster = x+(_focusX-dim)
               if(0 <= xRaster && xRaster < cols) {
-                cb(xRaster,removedRow)
+                f(xRaster,removedRow)
               }
             }
           }
@@ -363,7 +364,7 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
         if(!hasMask) {
           var y = _ymin
           while(y <= _ymax) {
-            cb(removedCol,y)
+            f(removedCol,y)
             y += 1
           }
         } else {
@@ -371,14 +372,14 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
             mask.foreachEastColumn { y =>
               val yRaster = y+(_focusY-dim)
               if(0 <= yRaster && yRaster < cols) {
-                cb(removedCol,yRaster)
+                f(removedCol,yRaster)
               }
             }
           } else { //Right
             mask.foreachWestColumn { y =>
               val yRaster = y+(_focusY-dim)
               if(0 <= yRaster && yRaster < cols) {
-                cb(removedCol,yRaster)
+                f(removedCol,yRaster)
               }
             }
           }
@@ -391,7 +392,7 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
         val xRaster = x+(_focusX-dim)
         val yRaster = y+(_focusY-dim)
         if(0 <= xRaster && xRaster < cols && 0 <= yRaster && yRaster < rows) {
-          cb(xRaster,yRaster)
+          f(xRaster,yRaster)
         }
       }
     }
@@ -419,44 +420,25 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
   def getStr(x:Int,y:Int):String
 }
 
-trait IntFocalValueCB { def apply(v:Int):Unit }
-trait IntFocalFoldCB { def apply(a:Int,v:Int):Int }
 trait IntFocalCellCB { def apply(x:Int,y:Int,v:Int):Unit }
-trait DoubleFocalValueCB { def apply(v:Double):Unit }
 trait DoubleFocalCellCB { def apply(x:Int,y:Int,v:Double):Unit }
-trait DoubleFocalFoldCB { def apply(a:Double,v:Double):Double }
-
-trait CursorCellCB { def apply(x:Int,y:Int):Unit }
 
 class IntCursor(r:Raster, dim:Int) extends BaseCursor(r,dim) {
   val raster = r
 
   val allCells = new IntCellSet {
-    def foreach(cb:IntFocalValueCB) = IntCursor.this.foreach(new CursorCellCB {
-                                      def apply(x:Int,y:Int) = { cb(get(x,y)) }
-                                    })
-
-    def foreach(cb:IntFocalCellCB) = IntCursor.this.foreach(new CursorCellCB {
-                                      def apply(x:Int,y:Int) = { cb(x,y,get(x,y)) }
-                                    })
+    def foreach(f:Int=>Unit) = IntCursor.this.foreach { (x,y) => f(get(x,y)) }
+    def foreach(cb:IntFocalCellCB) = IntCursor.this.foreach { (x,y) => cb(x,y,get(x,y)) }
   }
 
   val addedCells = new IntCellSet {
-    def foreach(cb:IntFocalValueCB) = IntCursor.this.foreachAdded(new CursorCellCB { 
-                                      def apply(x:Int,y:Int) = { cb(get(x,y)) }
-                                     })
-    def foreach(cb:IntFocalCellCB) = IntCursor.this.foreachAdded(new CursorCellCB { 
-                                      def apply(x:Int,y:Int) = { cb(x,y,get(x,y)) }
-                                    })
+    def foreach(f:Int=>Unit) = IntCursor.this.foreachAdded { (x,y) => f(get(x,y)) }
+    def foreach(cb:IntFocalCellCB) = IntCursor.this.foreachAdded { (x,y) => cb(x,y,get(x,y)) }
   }
 
   val removedCells = new IntCellSet {
-    def foreach(cb:IntFocalValueCB) = IntCursor.this.foreachRemoved(new CursorCellCB { 
-                                      def apply(x:Int,y:Int) = { cb(get(x,y)) }
-                                     })
-    def foreach(cb:IntFocalCellCB) = IntCursor.this.foreachRemoved(new CursorCellCB { 
-                                      def apply(x:Int,y:Int) = { cb(x,y,get(x,y)) }
-                                    })
+    def foreach(f:Int=>Unit) = IntCursor.this.foreachRemoved { (x,y) => f(get(x,y)) }
+    def foreach(cb:IntFocalCellCB) = IntCursor.this.foreachRemoved { (x,y) => cb(x,y,get(x,y)) }
   }
 
   def focusValue:Int = get(focusX,focusY)
@@ -468,30 +450,18 @@ class DoubleCursor(r:Raster, dim:Int) extends BaseCursor(r,dim) {
   val raster = r
 
   val allCells = new DoubleCellSet {
-    def foreach(cb:DoubleFocalValueCB) = DoubleCursor.this.foreach(new CursorCellCB { 
-                                         def apply(x:Int,y:Int) = cb(get(x,y)) 
-                                        })
-    def foreach(cb:DoubleFocalCellCB) = DoubleCursor.this.foreach(new CursorCellCB { 
-                                         def apply(x:Int,y:Int) = cb(x,y,get(x,y)) 
-                                       })
+    def foreach(f:Double=>Unit) = DoubleCursor.this.foreach { (x,y) => f(get(x,y)) }
+    def foreach(cb:DoubleFocalCellCB) = DoubleCursor.this.foreach { (x,y) => cb(x,y,get(x,y)) }
   }
 
   val addedCells = new DoubleCellSet {
-    def foreach(cb:DoubleFocalValueCB) = DoubleCursor.this.foreachAdded(new CursorCellCB { 
-                                         def apply(x:Int,y:Int) = cb(get(x,y)) 
-                                        })
-    def foreach(cb:DoubleFocalCellCB) = DoubleCursor.this.foreachAdded(new CursorCellCB { 
-                                         def apply(x:Int,y:Int) = cb(x,y,get(x,y)) 
-                                       })
+    def foreach(f:Double=>Unit) = DoubleCursor.this.foreachAdded { (x,y) => f(get(x,y)) }
+    def foreach(cb:DoubleFocalCellCB) = DoubleCursor.this.foreachAdded { (x,y) => cb(x,y,get(x,y)) }
   }
 
   val removedCells = new DoubleCellSet { 
-    def foreach(cb:DoubleFocalValueCB) = DoubleCursor.this.foreachRemoved(new CursorCellCB { 
-                                         def apply(x:Int,y:Int) = cb(get(x,y)) 
-                                        })
-    def foreach(cb:DoubleFocalCellCB) = DoubleCursor.this.foreachRemoved(new CursorCellCB { 
-                                         def apply(x:Int,y:Int) = cb(x,y,get(x,y)) 
-                                       })
+    def foreach(f:Double=>Unit) = DoubleCursor.this.foreachRemoved { (x,y) => f(get(x,y)) }
+    def foreach(cb:DoubleFocalCellCB) = DoubleCursor.this.foreachRemoved { (x,y) => cb(x,y,get(x,y)) }
   }
 
   def focusValue:Double = get(focusX,focusY)
