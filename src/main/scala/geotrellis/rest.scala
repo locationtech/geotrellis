@@ -7,7 +7,7 @@ object ParamParser {
   def tryIt[A](a: => A):Option[A] = try {
     Some(a)
   } catch {
-    case _ => None
+    case _:Exception => None
   }
 
   /**
