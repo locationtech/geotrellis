@@ -40,12 +40,13 @@ trait ThroughputLimitedReducer1[C] extends Op[C] {
   def _run(context: Context) = {
     loadTileExtent match {
       case None => runAsync('init :: r :: Nil)
-      case op:Some[Op[_]] => runAsync('initWithTileExtent :: r :: op :: Nil)
+      case Some(op) => runAsync('initWithTileExtent :: r :: op :: Nil)
     }
   }
+
   val nextSteps: Steps = {
     case 'init :: (r: Raster) :: Nil => init(r, None)
-    case 'initWithTileExtent :: (r: Raster) :: (re:RasterExtent) :: Nil => init(r,Some(re))
+    case 'initWithTileExtent :: (r: Raster) :: (p:Polygon[_]) :: Nil => init(r,Some(p))
     case 'reduce :: (bs: List[_]) => Result(reducer(bs.asInstanceOf[List[B]]))
     case 'runGroup :: (oldResults: List[_]) :: (bs: List[_]) :: (newResults: List[List[_]]) => {
       val results = oldResults ::: newResults.flatten
@@ -59,12 +60,12 @@ trait ThroughputLimitedReducer1[C] extends Op[C] {
     }
   }
 
-  def init(r: Raster, tileExtent:Option[RasterExtent]) = {
+  def init(r: Raster, cropPolygon:Option[Polygon[_]]) = {
     r.data match {
       case _: TiledRasterData => {
-        val ops = tileExtent match {
+        val ops = cropPolygon match {
           case None => r.getTileOpList().map(mapper)
-          case Some(re) => r.getTileOpList(re.extent.asFeature(())).map(mapper)
+          case Some(p) => r.getTileOpList(p).map(mapper)
         }
         val groups = ops grouped (limit) toList
         val tail = groups.tail

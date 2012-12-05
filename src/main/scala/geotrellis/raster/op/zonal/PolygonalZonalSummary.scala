@@ -23,6 +23,8 @@ trait TiledPolygonalZonalSummary[C] extends ThroughputLimitedReducer1[C] {
   implicit val mB:Manifest[B]
   implicit val mD:Manifest[D]
 
+  override def loadTileExtent = Some(zonePolygon)
+
   /**
    * Compute the intermediate product of a given raster
    * tile and a polygon

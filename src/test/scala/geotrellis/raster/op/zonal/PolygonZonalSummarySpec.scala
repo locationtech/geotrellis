@@ -93,8 +93,8 @@ class TiledPolygonalZonalSummarySpec extends FunSpec with ShouldMatchers {
       val result = server.run(summaryOp).toSet
 
       val e = Extent(15,10,20,20).asFeature(()).mapGeom(a => {a.normalize(); a})
-      Set(DisjointTile,
-          FullTile(RasterExtent(Extent(20,10,30,20),1,1,10,10)),
+
+      Set(FullTile(RasterExtent(Extent(20,10,30,20),1,1,10,10)),
           PartialTile(RasterExtent(Extent(10,10,20,20),1,1,10,10),e)) should equal (result)
 
       val tileSums = zonal.Sum.createTileResults(rData, rasterExtent) 
