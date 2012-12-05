@@ -10,9 +10,6 @@ import org.scalatest.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class CursorSpec extends FunSpec with ShouldMatchers {
-  val foldLeftCB = new IntFocalFoldCB { def apply(a:Int,v:Int) = a + v }
-  val foldLeftMinCB = new IntFocalFoldCB { def apply(a:Int,v:Int) = min(a,v) }
-
   def createRaster:Raster = {
     val arr = (for(i <- 1 to 100) yield i).toArray
     Raster(arr, RasterExtent(Extent(0,0,10,10),1,1,10,10))
@@ -27,10 +24,9 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     center match { 
       case (x,y) =>
         val s = Set[Int]()
-        val cb = new IntFocalValueCB { def apply(v:Int) = { s += v } }
         cursor.centerOn(x,y)
         cursor.move(m)
-        set.foreach(cb)
+        set.foreach { v => s += v }
         s.toSeq.sorted should equal (expected)
       case _ => throw new Exception()
     }
@@ -80,33 +76,33 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val r = createOnesRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(0,0)
-      cursor.allCells.foldLeft(0)(foldLeftCB) should be (4)
+      cursor.allCells.foldLeft(0) { (a,v) => a + v } should be (4)
       cursor.centerOn(9,0)
-      cursor.allCells.foldLeft(0)(foldLeftCB) should be (4)
+      cursor.allCells.foldLeft(0) { (a,v) => a + v } should be (4)
       cursor.centerOn(0,9)
-      cursor.allCells.foldLeft(0)(foldLeftCB) should be (4)
+      cursor.allCells.foldLeft(0) { (a,v) => a + v } should be (4)
       cursor.centerOn(9,9)
-      cursor.allCells.foldLeft(0)(foldLeftCB) should be (4)
+      cursor.allCells.foldLeft(0) { (a,v) => a + v } should be (4)
     }
 
     it("should fold left on edges and no mask") {
       val r = createOnesRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(5,0)
-      cursor.allCells.foldLeft(0)(foldLeftCB) should be (6)
+      cursor.allCells.foldLeft(0) { (a,v) => a + v } should be (6)
       cursor.centerOn(0,5)
-      cursor.allCells.foldLeft(0)(foldLeftCB) should be (6)
+      cursor.allCells.foldLeft(0) { (a,v) => a + v } should be (6)
       cursor.centerOn(9,5)
-      cursor.allCells.foldLeft(0)(foldLeftCB) should be (6)
+      cursor.allCells.foldLeft(0) { (a,v) => a + v } should be (6)
       cursor.centerOn(5,9)
-      cursor.allCells.foldLeft(0)(foldLeftCB) should be (6)
+      cursor.allCells.foldLeft(0) { (a,v) => a + v } should be (6)
     }
     
     it("should fold left for middle cursor and no mask") {
       val r = createOnesRaster
       val cursor = new IntCursor(r,1)
       cursor.centerOn(5,5)
-      cursor.allCells.foldLeft(0)(foldLeftCB) should be (9)
+      cursor.allCells.foldLeft(0) { (a,v) => a + v } should be (9)
     }
 
     it("should be able to mask triangle and foldLeft with sum") {
@@ -115,7 +111,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       cursor.setMask { (x,y) => x+y > 2 }
       cursor.centerOn(2,2)
       // 12+13+14+22+23+32
-      cursor.allCells.foldLeft(0)(foldLeftCB) should be (116)
+      cursor.allCells.foldLeft(0) { (a,v) => a + v } should be (116)
     }
 
     it("should be able to mask circle and foldLeft with min") {
@@ -123,7 +119,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val n = Circle(3)
       val cursor = Cursor.getInt(r,n)
       cursor.centerOn(4,4)
-      cursor.allCells.foldLeft(Int.MaxValue)(foldLeftMinCB) should be (15)
+      cursor.allCells.foldLeft(Int.MaxValue) { (a,v) => min(a,v) } should be (15)
     }
     
     it("should be able to mask circle and foldLeft with min for edge case") {
@@ -131,7 +127,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
       val n = Circle(3)
       val cursor = Cursor.getInt(r,n)
       cursor.centerOn(9,9)
-      cursor.allCells.foldLeft(Int.MaxValue)(foldLeftMinCB) should be (70)
+      cursor.allCells.foldLeft(Int.MaxValue) { (a,v) => min(a,v) } should be (70)
     }
 
     it("should mask edge cases correctly") {
