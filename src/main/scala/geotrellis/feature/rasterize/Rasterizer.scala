@@ -36,7 +36,8 @@ object Rasterizer {
       case p:Point[_] => aggregrateCellsByPoint[D,Z](p.asInstanceOf[Point[D]],r,start,f)
     }
   }
-  
+ 
+   
   /**
    * Perform a zonal summary by invoking a function on each cell under provided features.
    *
@@ -46,12 +47,12 @@ object Rasterizer {
    * 
    * @param f A function that takes (col:Int, row:Int, rasterValue:Int, feature:Feature)
    */
-  def foreachCellByFeature[D:Manifest](feature:Feature[_,D], re:RasterExtent, f:(Int,Int,Feature[_,D]) => Unit):Unit = {
+  def foreachCellByFeature[D:Manifest](feature:Geometry[D], re:RasterExtent, f:(Int,Int,Geometry[D]) => Unit):Unit = {
     feature match {
       case p:Point[_] => foreachCellByPoint[D](p.asInstanceOf[Point[D]])(re,f)
       case p:PointSet[_] => foreachCellByPointSet[D](p.asInstanceOf[PointSet[D]])(re,f)
-      //case p:LineString[_] => foreachCellByLineString[D](p.asInstanceOf[Line[D])(re,f)
-      //case p:MultiLine[_] => foreachCellByMultiLine[D](p.asInstanceOf[Line[D]])(re,f)
+      //case p:LineString[_] => foreachCellByLineString[D](p.asInstanceOf[LineString[D]])(re,f)
+      case p:Polygon[_] => PolygonRasterizer.foreachCellByPolygon[D](p.asInstanceOf[Polygon[D]],re,f)
     }
   }
   
