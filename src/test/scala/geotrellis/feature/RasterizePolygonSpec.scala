@@ -58,7 +58,7 @@ class RasterizePolygonSpec extends FunSuite {
       val f1 = (col:Int, row:Int, p:Polygon[Unit]) => 
         println("xx col: %d, row: %d".format(col,row))
 
-      val r1 = Rasterizer.rasterize(square,re, (a:Unit) => 0x11) 
+      val r1 = Rasterizer.rasterizeWithValue(square,re)((a:Unit) => 0x11) 
       println(r1.asciiDraw)
 
       // values match gdal
@@ -70,7 +70,7 @@ class RasterizePolygonSpec extends FunSuite {
       r1.foreach(f => if (f != NODATA) sum = sum + 1 )
       assert(sum === 9)
       
-      val r2 = Rasterizer.rasterize(diamond, re, (a:Unit) => 0x22)
+      val r2 = Rasterizer.rasterizeWithValue(diamond, re)((a:Unit) => 0x22)
       println(r2.asciiDraw())
       assert(r2.get(3,3) === 0x22)
       for (i <- 2 to 4) { assert(r2.get(i,4) === 0x22) }
@@ -83,7 +83,7 @@ class RasterizePolygonSpec extends FunSuite {
       r2.foreach(f => if (f != NODATA) sum = sum + 1 )
       assert(sum === 18)
 
-      val r3 = Rasterizer.rasterize(triangle, re, (a:Unit) => 0x33)  
+      val r3 = Rasterizer.rasterizeWithValue(triangle, re)((a:Unit) => 0x33)  
       println(r3.asciiDraw())
       
       assert(r3.get(3,2) === 0x33)
@@ -93,7 +93,7 @@ class RasterizePolygonSpec extends FunSuite {
       r3.foreach(f => if (f != NODATA) sum = sum + 1 )
       assert(sum === 3)
 
-      val r4 = Rasterizer.rasterize(square2, re, (a:Unit) => 0x44)
+      val r4 = Rasterizer.rasterizeWithValue(square2, re)((a:Unit) => 0x44)
       println(r4.asciiDraw())
       
      // LoadWKT()
@@ -131,7 +131,7 @@ class RasterizePolygonSpec extends FunSuite {
        // 390, 332
        // 390, 333
        
-       val r1 = Rasterizer.rasterize(p1, rasterExtent, (a:Unit) => 0x55)
+       val r1 = Rasterizer.rasterizeWithValue(p1, rasterExtent)((a:Unit) => 0x55)
       var sum = 0
       r1.foreach(f => if (f != NODATA) sum = sum + 1 ) 
       assert(sum === 3)
@@ -170,7 +170,7 @@ class RasterizePolygonSpec extends FunSuite {
       val p1 = Polygon(g1.geom, ())
       var sum = 0
       val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)
-      val r = foreachCellByPolygon(p1, re, (x:Int, y:Int, p:Polygon[Unit]) => ( sum = sum + 1 ) )
+      val r = foreachCellByPolygon(p1, re)((x:Int, y:Int, p:Polygon[Unit]) => ( sum = sum + 1 ))
       assert(sum === count)
     } )
     //val data1 = scala.io.Source.fromFile("src/test/resources/feature/polygon1.wkt").mkString

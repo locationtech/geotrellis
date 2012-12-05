@@ -3,6 +3,7 @@ package geotrellis
 import geotrellis.raster.TiledRasterData
 import geotrellis._
 import geotrellis.util.Filesystem
+import geotrellis.feature.Polygon
 
 import java.io.File
 
@@ -206,25 +207,31 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
     if (dz > 0) mapIfSet(z => ((z - zmin) * dg) / dz + gmin) else copy()
   }
 
-  def force = {
+  def force() = {
     val opt = data.force.map(d => Raster(d, rasterExtent))
     opt.getOrElse(sys.error("force called on non-array raster data"))
   }
 
-  def defer = data.asArray.map(d => Raster(LazyArrayWrapper(d), rasterExtent)).getOrElse(this)
+  def defer() = data.asArray.map(d => Raster(LazyArrayWrapper(d), rasterExtent)).getOrElse(this)
 
-  def getTiles:Array[Raster] = data match {
+  def getTiles():Array[Raster] = data match {
     case t:TiledRasterData => t.getTiles(rasterExtent)
     case _ => Array(this)
   }
 
-  def getTileList:List[Raster] = data match {
+  def getTileList():List[Raster] = data match {
     case t:TiledRasterData => t.getTileList(rasterExtent)
     case _ => this :: Nil
   }
 
-  def getTileOpList:List[Op[Raster]] = data match {
+  def getTileOpList():List[Op[Raster]] = data match {
     case t:TiledRasterData => t.getTileOpList(rasterExtent)
+    case _ => Literal(this) :: Nil
+  }
+
+  //TODO: update Literal() case to return empty list if necessary
+  def getTileOpList(clipExtent:Polygon[_]):List[Op[Raster]] = data match {
+    case t:TiledRasterData => t.getTileOpList(rasterExtent, clipExtent)
     case _ => Literal(this) :: Nil
   }
 }

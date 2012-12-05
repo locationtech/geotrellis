@@ -5,6 +5,7 @@ import geotrellis.util.Filesystem
 import geotrellis.process._
 import geotrellis.data.arg.{ArgWriter,ArgReader}
 import geotrellis.data.Gdal
+import geotrellis.feature.Polygon
 
 import java.io.{FileOutputStream, BufferedOutputStream}
 
@@ -81,9 +82,9 @@ case class ResolutionLayout(xs:Array[Double], ys:Array[Double],
 
   def getExtent(c:Int, r:Int) = Extent(xs(c), ys(r + 1), xs(c + 1), ys(r))
 
-  def getRasterExtent(c:Int, r:Int) = {
+  def getRasterExtent(c:Int, r:Int) = 
     RasterExtent(getExtent(c, r), cw, ch, pcols, prows)
-  }
+  
 }
 
 /**
@@ -159,6 +160,30 @@ trait TiledRasterData extends RasterData {
     var tiles:List[Op[Raster]] = Nil
     for (r <- 0 until tileRows; c <- 0 until tileCols) {
       tiles = getTileOp(rl, c, r) :: tiles
+    }
+    tiles
+  }
+
+  /**
+   * Return a list of operations that load a tile's raster, filtered by a clip extent.
+   * If any tile does not touch the clip extent, it will not be included in the list. 
+   *
+   * @param re          RasterExtent of this tileset
+   * @param clipExtent  Polygon to be used to determine which tiles to return 
+   */
+  def getTileOpList(re:RasterExtent, clipExtent:Polygon[_]):List[Op[Raster]] = {
+    val rl:ResolutionLayout = tileLayout.getResolutionLayout(re)
+  
+    var tiles:List[Op[Raster]] = Nil
+    for (r <- 0 until tileRows; c <- 0 until tileCols) {
+
+      val tileExtent:RasterExtent = rl.getRasterExtent(c,r)
+
+      val tilePolygon = tileExtent.extent.asFeature(())
+
+      if (tilePolygon.geom.intersects(clipExtent.geom)) {
+        tiles = getTileOp(rl, c, r) :: tiles
+      } 
     }
     tiles
   }

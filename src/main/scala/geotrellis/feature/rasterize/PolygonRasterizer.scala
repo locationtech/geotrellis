@@ -9,8 +9,7 @@ object PolygonRasterizer {
   /**
    * Apply a function to each raster cell that intersects with a polygon.
    */
-  def foreachCellByPolygon[D](p:Polygon[D], re:RasterExtent, f:(Int,Int,Polygon[D]) => Unit, includeExterior:Boolean = false) {
-
+  def foreachCellByPolygon[D](p:Polygon[D], re:RasterExtent, includeExterior:Boolean=false)( f:(Int,Int,Polygon[D]) => Unit) {
     // Create a global edge table which tracks the minimum and maximum row 
     // for which each edge is relevant.
     val edgeTable = buildEdgeTable(p, re)
@@ -22,10 +21,8 @@ object PolygonRasterizer {
      // Update our active edge table to reflect the current row.
      activeEdgeTable.update(row, edgeTable, re)
      
-    // activeEdgeTable.updateIntercepts(row, re)
+      // activeEdgeTable.updateIntercepts(row, re)
 
-
-      //TODO: exclude col0 & col1
       // call function on included cells
       val fillRanges = activeEdgeTable.fillRanges(row,includeExterior)
       val cellRanges = processRanges(fillRanges)
@@ -185,5 +182,3 @@ object PolygonRasterizer {
   }
   
 }
-
-// vim: set ts=4 sw=4 et:

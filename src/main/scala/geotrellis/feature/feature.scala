@@ -71,14 +71,27 @@ trait GeometryCollection[G <: jts.GeometryCollection, D] extends Feature[G, D]
 
 trait MultiPoint[D] extends GeometryCollection[jts.MultiPoint, D] with Dim0 {
   type Set = MultiPointSet[D]
+
+  def flatten:List[Point[D]] =
+    (0 until geom.getNumGeometries).map(
+      i => new JtsPoint(geom.getGeometryN(i).asInstanceOf[jts.Point],data)).toList
+
 }
 
 trait MultiLineString[D] extends GeometryCollection[jts.MultiLineString, D] {
   type Set = MultiLineStringSet[D]
+
+  def flatten:List[LineString[D]] = 
+    (0 until geom.getNumGeometries).map( 
+      i => new JtsLineString(geom.getGeometryN(i).asInstanceOf[jts.LineString],data)).toList
 }
 
 trait MultiPolygon[D] extends GeometryCollection[jts.MultiPolygon, D] {
   type Set = MultiPolygonSet[D]
+  def flatten:List[Polygon[D]] =
+    (0 until geom.getNumGeometries).map(
+      i => new JtsPolygon(geom.getGeometryN(i).asInstanceOf[jts.Polygon],data)).toList
+
 }
 
 case class JtsGeometry[D](geom: jts.Geometry, data: D) extends Feature[jts.Geometry, D] {
