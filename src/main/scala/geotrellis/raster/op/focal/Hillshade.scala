@@ -17,8 +17,10 @@ object Hillshade {
 }
 
 case class Hillshade(r:Op[Raster], azimuthOp:Op[Double], altitudeOp:Op[Double], zFactorOp:Op[Double]) 
-     extends IntFocalOp3[Double,Double,Double,Raster](r,Square(1),azimuthOp,altitudeOp,zFactorOp)
+     extends CursorFocalOp3[Double,Double,Double,Raster](r,Square(1),azimuthOp,altitudeOp,zFactorOp)
      with SlopeAspectCalculator {
+  var data:ShortArrayRasterData = null
+  var rExtent:RasterExtent = null
 
   var azimuth = 0.0
   var zenith = 0.0
@@ -26,9 +28,10 @@ case class Hillshade(r:Op[Raster], azimuthOp:Op[Double], altitudeOp:Op[Double], 
   var cellWidth = 0.0
   var cellHeight = 0.0
 
-  def createBuilder(r:Raster) = new ShortRasterBuilder(r.rasterExtent)
-
   def init(r:Raster,az:Double,al:Double,z:Double) = {
+    rExtent = r.rasterExtent
+    data = ShortArrayRasterData.ofDim(rExtent.cols,rExtent.rows)
+
     azimuth = radians(90.0 - az)
     zenith = radians(90.0 - al)
     zFactor = z
@@ -36,10 +39,12 @@ case class Hillshade(r:Op[Raster], azimuthOp:Op[Double], altitudeOp:Op[Double], 
     cellHeight = r.rasterExtent.cellheight
   }
 
-  def calc(cursor:IntCursor) = {
-    val (slope,aspect) = getSlopeAndAspect(cursor,zFactor,cellWidth,cellHeight)
+  def calc(r:Raster,cursor:Cursor) = {
+    val (slope,aspect) = getSlopeAndAspect(r,cursor,zFactor,cellWidth,cellHeight)
     val z = ((cos(zenith) * cos(slope)) +
              (sin(zenith) * sin(slope) * cos(azimuth - aspect)))
-    round(127.0 * max(0.0, z)).toInt
+    data.set(cursor.focusX,cursor.focusY, round(127.0 * max(0.0, z)).toInt)
   }
+
+  def getResult = Raster(data,rExtent)
 }
