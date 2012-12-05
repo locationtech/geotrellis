@@ -3,7 +3,7 @@ package geotrellis.raster.op.focal
 import geotrellis._
 import scala.math.{max,min}
 
-case class Gaussian(size: Op[Int], cellWidth: Op[Double], sigma: Op[Double], amp: Op[Double]) 
+case class CreateGaussianRaster(size: Op[Int], cellWidth: Op[Double], sigma: Op[Double], amp: Op[Double]) 
      extends Op4[Int,Double,Double,Double,Raster](size, cellWidth, sigma, amp)((n,w,sigma,amp) => {
        val extent = Extent(0,0,n*w,n*w)
        val rasterExtent = RasterExtent(extent, w, w, n, n)
@@ -26,6 +26,30 @@ case class Gaussian(size: Op[Int], cellWidth: Op[Double], sigma: Op[Double], amp
 
        Result(outputR)
      })
+
+case class CreateCircleRaster(size: Op[Int], cellWidth: Op[Double], rad: Op[Int]) 
+    extends Op3[Int,Double,Int,Raster](size, cellWidth,rad)(
+  { (size, cellWidth, rad) =>
+
+    val extent = Extent(0,0,size*cellWidth,size*cellWidth)
+    val rasterExtent = RasterExtent(extent, cellWidth, cellWidth, size, size)
+    val outputR = Raster.empty(rasterExtent)
+    val output = outputR.data.mutable.get
+
+    var r = 0
+    var c = 0
+    val rad2 = rad*rad
+    while(r < size) {
+      while(c < size) {
+        output.set(c,r, if (r*r + c*c < rad2) 1 else 0)
+        c += 1
+      }
+      c = 0
+      r += 1
+    }
+
+    Result(outputR)
+  })
 
 case class Convolve(raster: Op[Raster], kernel: Op[Raster]) 
      extends Op2[Raster, Raster, Raster](raster, kernel)((raster, kernel) => {
