@@ -23,6 +23,8 @@ trait TiledPolygonalZonalSummary[C] extends ThroughputLimitedReducer1[C] {
   implicit val mB:Manifest[B]
   implicit val mD:Manifest[D]
 
+  override def loadTileExtent = Some(zonePolygon)
+
   /**
    * Compute the intermediate product of a given raster
    * tile and a polygon
@@ -48,12 +50,6 @@ trait TiledPolygonalZonalSummary[C] extends ThroughputLimitedReducer1[C] {
    */
   def handleNoDataTile():Op[B]
 
-  /**
-   * Value to use for tiles that are completely
-   * outside of the zone
-   */
-  def handleDisjointTile():Op[B]  
-  
   def mapper(rasterOp: Op[Raster]):Op[List[B]] = 
     raster.op.Force(rasterOp).flatMap(
       strictRaster => 
@@ -68,10 +64,8 @@ trait TiledPolygonalZonalSummary[C] extends ThroughputLimitedReducer1[C] {
 
             If( Contains(zonePolygon, tileExtent),
                AsList(handleFullTile(strictRaster)),
-               If( Disjoint(zonePolygon, tileExtent),
-                  AsList(handleDisjointTile), 
-                  handlePartialTile))
-              }
+               handlePartialTile) 
+          }
         })
 
   def handlePartialTileWithIntersections(

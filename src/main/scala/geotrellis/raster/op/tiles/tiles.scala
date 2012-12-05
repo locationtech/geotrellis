@@ -6,6 +6,7 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.statistics._
 import geotrellis.raster._
+import geotrellis.feature.Polygon
 
 abstract class Reducer1[B: Manifest, C: Manifest](r: Op[Raster])(handle: Raster => B)(reducer: List[B] => C) extends Op[C] {
   def _run(context: Context) = runAsync('init :: r :: Nil)
@@ -31,14 +32,21 @@ trait ThroughputLimitedReducer1[C] extends Op[C] {
   val r: Op[Raster]
   val limit: Int = 30
 
+  def loadTileExtent:Option[Op[Polygon[_]]] = None
+
   def mapper(r: Op[Raster]): Op[List[B]]
   def reducer(mapResults: List[B]): C
 
   def _run(context: Context) = {
-    runAsync('init :: r :: Nil)
+    loadTileExtent match {
+      case None => runAsync('init :: r :: Nil)
+      case Some(op) => runAsync('initWithTileExtent :: r :: op :: Nil)
+    }
   }
+
   val nextSteps: Steps = {
-    case 'init :: (r: Raster) :: Nil => init(r)
+    case 'init :: (r: Raster) :: Nil => init(r, None)
+    case 'initWithTileExtent :: (r: Raster) :: (p:Polygon[_]) :: Nil => init(r,Some(p))
     case 'reduce :: (bs: List[_]) => Result(reducer(bs.asInstanceOf[List[B]]))
     case 'runGroup :: (oldResults: List[_]) :: (bs: List[_]) :: (newResults: List[List[_]]) => {
       val results = oldResults ::: newResults.flatten
@@ -52,10 +60,13 @@ trait ThroughputLimitedReducer1[C] extends Op[C] {
     }
   }
 
-  def init(r: Raster) = {
+  def init(r: Raster, cropPolygon:Option[Polygon[_]]) = {
     r.data match {
       case _: TiledRasterData => {
-        val ops = r.getTileOpList.map(mapper)
+        val ops = cropPolygon match {
+          case None => r.getTileOpList().map(mapper)
+          case Some(p) => r.getTileOpList(p).map(mapper)
+        }
         val groups = ops grouped (limit) toList
         val tail = groups.tail
         val head = groups.head
