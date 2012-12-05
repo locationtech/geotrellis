@@ -37,28 +37,18 @@ class FocalOperationsBenchmark extends MyBenchmark {
 
   // Mean operation, compare it against the FastFocalMean
   def timeCursorMeanSquare1(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square(1))))
-  def timeCursorMeanSquare2(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square(2))))
   def timeCursorMeanSquare3(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square(3))))
-  def timeCursorMeanSquare5(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square(5))))
   def timeCursorMeanSquare7(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square(7))))
-  def timeCursorMeanSquare8(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square(8))))
-  def timeCursorMeanSquare13(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Square(13))))
 
   def timeMeanSquare1(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(1))))
-  def timeMeanSquare2(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(2))))
   def timeMeanSquare3(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(3))))
-  def timeMeanSquare5(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(5))))
   def timeMeanSquare7(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(7))))
-  def timeMeanSquare8(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(8))))
-  def timeMeanSquare13(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(13))))
+
+
 
   def timeFastMean1(reps:Int) = run(reps)(server.run(FastFocalMean(r, 1)))
-  def timeFastMean2(reps:Int) = run(reps)(server.run(FastFocalMean(r, 2)))
   def timeFastMean3(reps:Int) = run(reps)(server.run(FastFocalMean(r, 3)))
-  def timeFastMean5(reps:Int) = run(reps)(server.run(FastFocalMean(r, 5)))
   def timeFastMean7(reps:Int) = run(reps)(server.run(FastFocalMean(r, 7)))
-  def timeFastMean8(reps:Int) = run(reps)(server.run(FastFocalMean(r, 8)))
-  def timeFastMean13(reps:Int) = run(reps)(server.run(FastFocalMean(r, 13)))
 
   def timeCursorMeanCircle1(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Circle(1))))
   def timeCursorMeanCircle2(reps:Int) = run(reps)(server.run(focal.CursorMean(r, focal.Circle(2))))
@@ -73,21 +63,17 @@ class FocalOperationsBenchmark extends MyBenchmark {
   def timeCellwiseMedian(reps:Int) = run(reps)(server.run(oldfocal.Median(r,oldfocal.Square(1))))
   def timeCursorMedian(reps:Int) = run(reps)(server.run(focal.Median(r,focal.Square(1))))
 
-  def timeOldMinSquared1(reps:Int) = run(reps)(server.run(oldfocal.Min(r, oldfocal.Square(1))))
-  def timeOldMinSquared(reps:Int) = run(reps)(server.run(oldfocal.Min(r, oldfocal.Square(2))))
-  def timeOldMinSquared3(reps:Int) = run(reps)(server.run(oldfocal.Min(r, oldfocal.Square(3)))) 
+  def timeOldMinSquare1(reps:Int) = run(reps)(server.run(oldfocal.Min(r, oldfocal.Square(1))))
+  def timeOldMinSquare2(reps:Int) = run(reps)(server.run(oldfocal.Min(r, oldfocal.Square(2))))
 
   def timeMinSquare1(reps:Int) = run(reps)(server.run(focal.Min(r, focal.Square(1))))
-  def timeMinSquare(reps:Int) = run(reps)(server.run(focal.Min(r, focal.Square(2))))
-  def timeMinSquare3(reps:Int) = run(reps)(server.run(focal.Min(r, focal.Square(3))))
+  def timeMinSquare2(reps:Int) = run(reps)(server.run(focal.Min(r, focal.Square(2))))
 
   def timeOldMinCircle1(reps:Int) = run(reps)(server.run(oldfocal.Min(r, oldfocal.Circle(1))))
   def timeOldMinCircle2(reps:Int) = run(reps)(server.run(oldfocal.Min(r, oldfocal.Circle(2))))
-  def timeOldMinCircle3(reps:Int) = run(reps)(server.run(oldfocal.Min(r, oldfocal.Circle(3))))
 
   def timeMinCircle1(reps:Int) = run(reps)(server.run(focal.Min(r, focal.Circle(1))))
   def timeMinCircle2(reps:Int) = run(reps)(server.run(focal.Min(r, focal.Circle(2))))
-  def timeMinCircle3(reps:Int) = run(reps)(server.run(focal.Min(r, focal.Circle(3))))
 
   def timeCellwiseMode(reps:Int) = run(reps)(server.run(oldfocal.Mode(r,oldfocal.Square(1))))
   def timeCursorMode(reps:Int) = run(reps)(server.run(focal.Mode(r,focal.Square(1))))

@@ -16,81 +16,15 @@ object Movement {
 }
 import Movement._
 
+trait CellSet {
+  def foreach(f:(Int,Int)=>Unit):Unit
+}
+
 object Cursor {
-  def getInt(r:Raster,n:Neighborhood) = {
-    val cur = new IntCursor(r,n.extent)
-    if(n.hasMask) { cur.setMask(n.mask) }
-    cur
-  }
-
-  def getDouble(r:Raster,n:Neighborhood) = {
-    val cur = new DoubleCursor(r,n.extent)
-    if(n.hasMask) { cur.setMask(n.mask) }
-    cur
-  }
-}
-
-trait Cursor {
-  def centerOn(x:Int,y:Int):Unit
-  def move(m:Movement):Unit
-}
-
-trait IntCellSet {
-  def foreach(f:Int=>Unit):Unit
-  def foreach(cb:IntFocalCellCB):Unit
-
-  /*
-   * Get all unmasked cell values covered by the cursor
-   * in a sequence. (Non-performant)
-   */
-  def getAll:Seq[Int] = {
-    val result = mutable.Set[Int]()
-    foreach { v => result += v }
-    result.toSeq
-  }
-
-  /*
-   * Fold left along all the cell values of the raster
-   * which are covered by the cursor and not masked.
-   *
-   * @param     seed      Seed for the fold operation.
-   * @param     f         Function that takes in the seed, or previous computed value,
-   *                      and computes a value to be passed into the next iteration.
-   */
-  def foldLeft(seed:Int)(f:(Int,Int)=>Int) = {
-    var a = seed
-    foreach { v => a = f(a,v) }
-    a
-  }
-}
-
-trait DoubleCellSet {
-  def foreach(f:Double=>Unit):Unit
-  def foreach(cb:DoubleFocalCellCB):Unit
-
-  /*
-   * Get all unmasked cell values covered by the cursor
-   * in a sequence. (Non-performant)
-   */
-  protected def getAll:Seq[Double] = {
-    val result = mutable.Set[Double]()
-    foreach { v => result += v }
-    result.toSeq
-  }
-
-  /*
-   * Fold left along all the cell values of the raster
-   * which are covered by the cursor and not masked.
-   *
-   * @param     seed      Seed for the fold operation.
-   * @param     f         Function that takes in the seed, or previous computed value,
-   *                      and computes a value to be passed into the next iteration.
-   */
-
-  protected def foldLeft(seed:Double)(f:(Double,Double)=>Double) = {
-    var a = seed
-    foreach { v => a = f(a,v) }
-    a
+  def apply(r:Raster,n:Neighborhood) = {
+    val result = new Cursor(r,n.extent)
+    if(n.hasMask) { result.setMask(n.mask) }
+    result
   }
 }
 
@@ -104,11 +38,11 @@ trait DoubleCellSet {
  *                                   e.g. if the bounding box is 9x9, then
  *                                   the distance from center is 1.
  */
-sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Cursor {
+class Cursor(r:Raster, extent:Int) {
   private val rows = r.rows
   private val cols = r.cols
 
-  val dim = distanceFromCenter
+  val dim = extent
   private val d = 2*dim + 1
 
   var mask:CursorMask = null
@@ -153,7 +87,10 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
     _focusX = x
     _focusY = y
 
-    setBounds()
+    _xmin = max(0,_focusX - dim)
+    _xmax = min(cols - 1, _focusX + dim)
+    _ymin = max(0, _focusY - dim)
+    _ymax = min(rows - 1, _focusY + dim)
   }
 
   /*
@@ -192,10 +129,6 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
       case _ => 
     }
 
-    setBounds()
-  }
-
-  @inline final private def setBounds() = {
     _xmin = max(0,_focusX - dim)
     _xmax = min(cols - 1, _focusX + dim)
     _ymin = max(0, _focusY - dim)
@@ -205,6 +138,18 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
   def setMask(f:(Int,Int) => Boolean) = {
     hasMask = true
     mask = new CursorMask(d,f)
+  }
+
+  val allCells = new CellSet {
+    def foreach(f:(Int,Int)=>Unit) = Cursor.this.foreach(f)
+  }
+
+  val addedCells = new CellSet {
+    def foreach(f:(Int,Int)=>Unit) = Cursor.this.foreachAdded(f)
+  }
+
+  val removedCells = new CellSet {
+    def foreach(f:(Int,Int)=>Unit) = Cursor.this.foreachRemoved(f)
   }
 
   /*
@@ -333,7 +278,7 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
     if(movement == NoMovement) { return }
 
     if(movement.isVertical) {
-      if(0 <= removedRow && removedRow < cols) {
+      if(0 <= removedRow && removedRow < rows) {
         if(!hasMask) {
           var x = _xmin
           while(x <= _xmax) {
@@ -360,7 +305,7 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
         }
       }
     } else { // Horizontal
-      if(0 <= removedCol && removedCol < rows) {
+      if(0 <= removedCol && removedCol < cols) {
         if(!hasMask) {
           var y = _ymin
           while(y <= _ymax) {
@@ -397,75 +342,5 @@ sealed abstract class BaseCursor(r:Raster, distanceFromCenter:Int) extends Curso
       }
     }
   }
-
-  def asciiDraw:String = {
-    var x = _xmin
-    var y = _ymin
-    var result = ""
-
-    val mark = (x:Int, y:Int) => result += " " + getStr(x,y) + " "
-
-    while(y <= _ymax) {
-      x = _xmin
-      while(x <= _xmax) {
-        mark(x,y)
-	x += 1
-      }
-      y += 1
-      result += "\n"
-    }
-    result
-  }
-
-  def getStr(x:Int,y:Int):String
-}
-
-trait IntFocalCellCB { def apply(x:Int,y:Int,v:Int):Unit }
-trait DoubleFocalCellCB { def apply(x:Int,y:Int,v:Double):Unit }
-
-class IntCursor(r:Raster, dim:Int) extends BaseCursor(r,dim) {
-  val raster = r
-
-  val allCells = new IntCellSet {
-    def foreach(f:Int=>Unit) = IntCursor.this.foreach { (x,y) => f(get(x,y)) }
-    def foreach(cb:IntFocalCellCB) = IntCursor.this.foreach { (x,y) => cb(x,y,get(x,y)) }
-  }
-
-  val addedCells = new IntCellSet {
-    def foreach(f:Int=>Unit) = IntCursor.this.foreachAdded { (x,y) => f(get(x,y)) }
-    def foreach(cb:IntFocalCellCB) = IntCursor.this.foreachAdded { (x,y) => cb(x,y,get(x,y)) }
-  }
-
-  val removedCells = new IntCellSet {
-    def foreach(f:Int=>Unit) = IntCursor.this.foreachRemoved { (x,y) => f(get(x,y)) }
-    def foreach(cb:IntFocalCellCB) = IntCursor.this.foreachRemoved { (x,y) => cb(x,y,get(x,y)) }
-  }
-
-  def focusValue:Int = get(focusX,focusY)
-  def get(x:Int,y:Int) = { raster.get(x,y) }
-  def getStr(x:Int,y:Int):String = { "%d".format(get(x,y)) }
-}
-
-class DoubleCursor(r:Raster, dim:Int) extends BaseCursor(r,dim) {
-  val raster = r
-
-  val allCells = new DoubleCellSet {
-    def foreach(f:Double=>Unit) = DoubleCursor.this.foreach { (x,y) => f(get(x,y)) }
-    def foreach(cb:DoubleFocalCellCB) = DoubleCursor.this.foreach { (x,y) => cb(x,y,get(x,y)) }
-  }
-
-  val addedCells = new DoubleCellSet {
-    def foreach(f:Double=>Unit) = DoubleCursor.this.foreachAdded { (x,y) => f(get(x,y)) }
-    def foreach(cb:DoubleFocalCellCB) = DoubleCursor.this.foreachAdded { (x,y) => cb(x,y,get(x,y)) }
-  }
-
-  val removedCells = new DoubleCellSet { 
-    def foreach(f:Double=>Unit) = DoubleCursor.this.foreachRemoved { (x,y) => f(get(x,y)) }
-    def foreach(cb:DoubleFocalCellCB) = DoubleCursor.this.foreachRemoved { (x,y) => cb(x,y,get(x,y)) }
-  }
-
-  def focusValue:Double = get(focusX,focusY)
-  def get(x:Int,y:Int) = { raster.getDouble(x,y) }
-  def getStr(x:Int,y:Int):String = { "%f".format(get(x,y)) }
 }
 

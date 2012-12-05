@@ -9,6 +9,7 @@ sealed trait TraversalStrategy
 object TraversalStrategy {
   val ZigZag = new TraversalStrategy { }
   val ScanLine = new TraversalStrategy { }
+  val SpiralZag = new TraversalStrategy { }
 }
 import TraversalStrategy._
 
@@ -20,83 +21,142 @@ import TraversalStrategy._
  * what cells have been removed since the last move.
  */
 object CursorStrategy {
-  def execute[T](r:Raster,b:IntResultBuilder[T],cursor:IntCursor)
-                (calc:IntCursor=>Int):T = 
-    execute(r,b,cursor,ZigZag)(calc)
+  def execute(r:Raster,cursor:Cursor)
+                (c:(Raster,Cursor)=>Unit):Unit = 
+    execute(r,cursor,ZigZag)(c)
 
-  def execute[T](r:Raster,b:DoubleResultBuilder[T],cursor:DoubleCursor)
-                (calc:DoubleCursor=>Double):T =
-    execute(r,b,cursor,ZigZag)(calc)
-
-  def execute[T](r:Raster,b:IntResultBuilder[T],cursor:IntCursor,t:TraversalStrategy)
-                (calc:IntCursor=>Int):T = {
-    val setFunc = () => b.set(cursor.focusX,cursor.focusY,calc(cursor))
-    _execute(r,b,cursor,t)(setFunc)
-  }
-
-  def execute[T](r:Raster,b:DoubleResultBuilder[T],cursor:DoubleCursor,t:TraversalStrategy)
-                (calc:DoubleCursor=>Double):T = {
-    val setFunc = () => b.set(cursor.focusX,cursor.focusY,calc(cursor))
-    _execute(r,b,cursor,t)(setFunc)
-  }
-
-  private def _execute[T](r:Raster,b:Builder[T],cursor:Cursor, t:TraversalStrategy)
-                         (setFunc:()=>Unit):T = {
+  def execute(r:Raster,cursor:Cursor,t:TraversalStrategy)
+                (c:(Raster,Cursor)=>Unit):Unit = {
     t match {
-      case ScanLine => handleScanLine(r,b,cursor)(setFunc)
-      case _ => handleZigZag(r,b,cursor)(setFunc)
+      case ScanLine => handleScanLine(r,cursor)(c)
+      case SpiralZag => handleSpiralZag(r,cursor)(c)
+      case _ => handleZigZag(r,cursor)(c)
     }
   }
 
-  private def handleZigZag[T](r:Raster,b:Builder[T],cursor:Cursor)
-                             (setFunc:()=>Unit):T = {
-    val maxX = r.cols - 1
-    val maxY = r.rows - 1
-    var focalX = 0
-    var focalY = 0
+  private def handleSpiralZag(r:Raster,cursor:Cursor) 
+                             (c:(Raster,Cursor)=>Unit) = {
+    var xmin = 0
+    var ymin = 0
+    var xmax = r.cols - 1
+    var ymax = r.rows - 1
+    var x = 0
+    var y = 0
+    var xdirection = 1
+    var ydirection = 1
+    var done = false
+    var zagTime = false
+
+    cursor.centerOn(0,0)
+    
+    // Spiral around the raster.
+    // Once we get down with dealing with borders,
+    // turn on fast mode for the cursor.
+    while(!(done || zagTime)) {
+      //Move right across top
+      while(x < xmax) {
+        c(r,cursor)
+        cursor.move(Movement.Right)
+        x += 1
+      }
+      // Move down along right edge
+      while(y < ymax) {
+        c(r,cursor)
+        cursor.move(Movement.Down)
+        y += 1
+      }
+      //Move left across bottom
+      while(x > xmin) {
+        c(r,cursor)
+        cursor.move(Movement.Left)
+        x -= 1
+      }
+      // Move up along left edge
+      while(y > ymin+1) {
+        c(r,cursor)
+        cursor.move(Movement.Up)
+        y -= 1
+      }
+      c(r,cursor)
+      ymin += 1
+      ymax -= 1
+      xmin += 1
+      xmax -= 1
+
+      if(ymin == ymax || xmin == xmax) { 
+        done = true 
+      } else {
+        cursor.move(Movement.Right)
+        x += 1
+        if(x - cursor.dim >= 0) {
+          zagTime = true
+        }
+      }
+    }
+
     var direction = 1
 
-    cursor.centerOn(0, 0)
-
-    while(focalY < r.rows) {
-      setFunc()
-      focalX += direction
-      if(focalX < 0 || maxX < focalX) {
+    // Now zig zag across interior.
+    while(y <= ymax) {
+      c(r,cursor)
+      x += direction
+      if(x < xmin || xmax < x) {
 	direction *= -1
-	focalY += 1
-	focalX += direction
+	y += 1
+	x += direction
 	cursor.move(Movement.Down)
       } else {
         if(direction == 1) { cursor.move(Movement.Right) }
         else { cursor.move(Movement.Left) }
       }
     }
-
-    b.build
   }
 
-  private def handleScanLine[T](r:Raster,b:Builder[T],cursor:Cursor)
-                               (setFunc:()=>Unit):T = {
+  private def handleZigZag(r:Raster,cursor:Cursor)
+                             (c:(Raster,Cursor)=>Unit) = {
     val maxX = r.cols - 1
     val maxY = r.rows - 1
-    var focalX = 0
-    var focalY = 0
+    var x = 0
+    var y = 0
+    var direction = 1
 
     cursor.centerOn(0, 0)
 
-    while(focalY < r.rows) {
-      setFunc()
-      focalX += 1
-      if(maxX < focalX) {
-	focalY += 1
-	focalX = 0
-	cursor.centerOn(focalX,focalY)
+    while(y < r.rows) {
+      c(r,cursor)
+      x += direction
+      if(x < 0 || maxX < x) {
+	direction *= -1
+	y += 1
+	x += direction
+	cursor.move(Movement.Down)
+      } else {
+        if(direction == 1) { cursor.move(Movement.Right) }
+        else { cursor.move(Movement.Left) }
+      }
+    }
+  }
+
+  private def handleScanLine(r:Raster,cursor:Cursor)
+                               (c:(Raster,Cursor)=>Unit) = {
+    val maxX = r.cols - 1
+    val maxY = r.rows - 1
+    var x = 0
+    var y = 0
+
+    cursor.centerOn(0, 0)
+
+    while(y < r.rows) {
+      c(r,cursor)
+      x += 1
+      if(maxX < x) {
+	y += 1
+	x = 0
+	cursor.centerOn(x,y)
       } else {
         cursor.move(Movement.Right)
       }
     }
-
-    b.build
   }
 }
 
@@ -104,14 +164,7 @@ trait CellwiseCalculator {
   def add(r:Raster,x:Int,y:Int)
   def remove(r:Raster,x:Int,y:Int)
   def reset()
-}
-
-trait IntCellwiseCalculator extends CellwiseCalculator {
-  def getValue:Int
-}
-
-trait DoubleCellwiseCalculator extends CellwiseCalculator {
-  def getValue:Double
+  def setValue(x:Int,y:Int)
 }
 
 /*
@@ -120,27 +173,15 @@ trait DoubleCellwiseCalculator extends CellwiseCalculator {
  * but can only be used for Square or Circle neighborhoods.
  */ 
 object CellwiseStrategy {
-  def execute[T](r:Raster,n:Neighborhood,b:IntResultBuilder[T],op:IntCellwiseCalculator):T = {
-    val setFunc = (x:Int,y:Int) => b.set(x,y,op.getValue)
-    _execute(r,n,b,op)(setFunc)
-  }
-
-  def execute[T](r:Raster,n:Neighborhood,b:DoubleResultBuilder[T],op:DoubleCellwiseCalculator):T = {
-    val setFunc = (x:Int,y:Int) => b.set(x,y,op.getValue)
-    _execute(r,n,b,op)(setFunc)
-  }
-
-  private def _execute[T](r:Raster,n:Neighborhood,b:Builder[T],op:CellwiseCalculator)
-             (setFunc:(Int,Int) => Unit):T = {
+  def execute(r:Raster,n:Neighborhood,calc:CellwiseCalculator):Unit = {
     n match {
-      case Square(extent) => _executeSquare(r,b,extent,op)(setFunc)
-      case c:Circle => _executeCircle(r,b,c.extent,op)(setFunc)
+      case Square(extent) => _executeSquare(r,extent,calc)
+      case c:Circle => _executeCircle(r,c.extent,calc)
       case _ => throw new Exception("CellwiseStrategy cannot be used with this neighborhood type.")
     }
   }
 
-  private def _executeSquare[T](r:Raster,b:Builder[T],n:Int, op:CellwiseCalculator)
-                      (setFunc:(Int,Int)=>Unit):T = {
+  private def _executeSquare[T](r:Raster,n:Int, calc:CellwiseCalculator) = {
     val cols = r.cols
     val rows = r.rows
 
@@ -149,19 +190,19 @@ object CellwiseStrategy {
       val yy1 = max(0, y - n)
       val yy2 = min(rows, y + n + 1)
 
-      op.reset()
+      calc.reset()
       val xx2 = min(cols, n + 1)
       var yy = yy1
       while (yy < yy2) {
         var xx = 0
         while (xx < xx2) {
-          op.add(r, xx, yy)
+          calc.add(r, xx, yy)
           xx += 1
         }
         yy += 1
       }
 
-      setFunc(0, y)
+      calc.setValue(0, y)
 
       var x = 1
       while (x < cols) {
@@ -169,7 +210,7 @@ object CellwiseStrategy {
         if (xx1 >= 0) {
           var yy = yy1
           while (yy < yy2) {
-            op.remove(r, xx1, yy)
+            calc.remove(r, xx1, yy)
             yy += 1
           }
         }
@@ -178,46 +219,42 @@ object CellwiseStrategy {
         if (xx2 < cols) {
             var yy = yy1
             while (yy < yy2) {
-              op.add(r, xx2, yy)
+              calc.add(r, xx2, yy)
               yy += 1
             }
           }
 
-        setFunc(x, y)
+        calc.setValue(x, y)
         x += 1
       }
       y += 1
     }
-    b.build
   }
 
-  private def _executeCircle[T](r:Raster,b:Builder[T],n:Int, op:CellwiseCalculator)
-                      (setFunc:(Int,Int)=>Unit):T = {
+  private def _executeCircle[T](r:Raster,n:Int,calc:CellwiseCalculator) = {
     val cols = r.cols
     val rows = r.rows
     val size = 2 * n + 1
 
     val xs = new Array[Int](size)
     val nn = n + 0.5
-    for (y <- -n to n) xs(y + n) = floor(sqrt(nn * nn - y * y)).toInt
+    for (y <- -n to n) xs(y + n) = floor(sqrt(n * n - y * y)).toInt
 
     for (y <- 0 until rows) {
       val yy1 = max(0, y - n)
       val yy2 = min(rows, y + n + 1)
     
       for (x <- 0 until cols) {
-        op.reset()
+        calc.reset()
     
         for (yy <- yy1 until yy2) {
           val i = (yy - y + n) % size
           val xx1 = max(0, x - xs(i))
           val xx2 = min(cols, x + xs(i) + 1)
-          for (xx <- xx1 until xx2) op.add(r, xx, yy)
+          for (xx <- xx1 until xx2) calc.add(r, xx, yy)
         }
-        setFunc(x, y)
+        calc.setValue(x, y)
       }
     }
-
-    b.build
   }
 }
