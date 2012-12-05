@@ -40,7 +40,7 @@ class ConvolveTest extends FunSuite {
   
   test("gaussian") {
     // Create and sample a 5x5 guassian
-    val op = Gaussian(5,5.0,2.0,100.0)
+    val op = CreateGaussianRaster(5,5.0,2.0,100.0)
     val r1 = server.run(op)
     val r1d = r1.data.asArray.get
 
@@ -55,7 +55,7 @@ class ConvolveTest extends FunSuite {
     assert(r1d.get(1,1) === 77)
 
     // Make sure amp and sigma do stuff
-    val op2 = Gaussian(5,5.0,4.0,50.0)
+    val op2 = CreateGaussianRaster(5,5.0,4.0,50.0)
     val r2 = server.run(op2)
     val r2d = r2.data.asArray.get
 
