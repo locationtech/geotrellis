@@ -52,7 +52,7 @@ operations with existing operations.
   // weight, creating a weighted overlay of our two rasters.
   val wo1 = local.DivideConstant(op, total)
 
-  // We can use a simpler syntax if we want. note that this
+  // We can use a simpler syntax if we want.  Note that this
   // is still just creating an operation.
   import geotrellis.Implicits._
   val wo2 = (raster1 * weight1 + raster2 * weight2) / total
