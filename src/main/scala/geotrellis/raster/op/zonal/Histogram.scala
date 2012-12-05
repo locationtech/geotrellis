@@ -41,8 +41,7 @@ case class Histogram[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
       }
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
-        raster.rasterExtent,
-        f)
+        raster.rasterExtent) (f)
       histogram
     }))
   }
@@ -59,5 +58,3 @@ case class Histogram[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
 
   def reducer(mapResults: List[HistogramObj]):HistogramObj = FastMapHistogram.fromHistograms(mapResults)
 }
-
-

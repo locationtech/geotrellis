@@ -44,8 +44,7 @@ case class Min[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[R
       }
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
-        r.rasterExtent,
-        f)
+        r.rasterExtent)(f)
       min
     }))
   }
@@ -99,8 +98,7 @@ case class MinDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
       }
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
-        r.rasterExtent,
-        f)
+        r.rasterExtent)(f)
       min
     }))
   }

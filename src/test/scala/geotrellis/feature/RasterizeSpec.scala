@@ -35,19 +35,19 @@ class RasterizeSpec extends FunSuite {
         val z = raster.get(col,row)
         f2output = f2output + feature.data + z.toString
       }
-      Rasterizer.foreachCellByPoint(p, re, f2)
+      Rasterizer.foreachCellByPoint(p, re)(f2)
       assert(f2output === "point one: 81")
 
       f2output = ""
-      Rasterizer.foreachCellByPoint(p2, re, f2)
+      Rasterizer.foreachCellByPoint(p2, re)(f2)
       assert( f2output === "point two: 9")
      
       f2output = ""
-      Rasterizer.foreachCellByPoint(p3, re, f2) 
+      Rasterizer.foreachCellByPoint(p3, re)(f2) 
       assert( f2output === "point three: 0")
 
       f2output = ""
-      Rasterizer.foreachCellByPointSet(pointSet1, re, f2) 
+      Rasterizer.foreachCellByPointSet(pointSet1, re)(f2) 
       assert (f2output === "point one: 81point two: 9point three: 0")
       
       var lineOutput = ""
@@ -56,22 +56,22 @@ class RasterizeSpec extends FunSuite {
       }
       
       val line = LineString(0,0,9,9,"diagonal line")
-      Rasterizer.foreachCellByLineString(line, re, f3)
+      Rasterizer.foreachCellByLineString(line, re)(f3)
       
       // Some examples of immutable/fold interface
       val f1 = (z:Int, d:String, output:String) => output + d + z.toString
       
-      val o = rasterize.Rasterizer.aggregrateCellsByPoint(p, raster, "", f1)
+      val o = rasterize.Rasterizer.aggregrateCellsByPoint(p, raster, "")(f1)
       assert(o === "point one: 81")
       
-      val o2 = rasterize.Rasterizer.aggregrateCellsByPoint(p2, raster, "", f1)
+      val o2 = rasterize.Rasterizer.aggregrateCellsByPoint(p2, raster, "")(f1)
       assert(o2 === "point two: 9")
       
-      val o3 = rasterize.Rasterizer.aggregrateCellsByPoint(p3, raster, "", f1)
+      val o3 = rasterize.Rasterizer.aggregrateCellsByPoint(p3, raster, "")(f1)
       assert(o3 === "point three: 0")
 
       
-      val o4 = rasterize.Rasterizer.aggregrateCellsByPointSet(pointSet1, raster, "", f1)
+      val o4 = rasterize.Rasterizer.aggregrateCellsByPointSet(pointSet1, raster, "")(f1)
       assert(o4 === "point one: 81point two: 9point three: 0")
       println(o4)
       

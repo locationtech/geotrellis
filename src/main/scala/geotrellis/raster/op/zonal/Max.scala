@@ -44,8 +44,7 @@ case class Max[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[R
       }
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
-        r.rasterExtent,
-        f)
+        r.rasterExtent)(f)
       max
     }))
   }
@@ -98,8 +97,7 @@ case class MaxDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
       }
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
-        r.rasterExtent,
-        f)
+        r.rasterExtent)(f)
       max
     }))
   }

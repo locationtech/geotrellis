@@ -44,8 +44,7 @@ case class Sum[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[R
       }
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
-        r.rasterExtent,
-        f)
+        r.rasterExtent)(f)
       sum
     }))
   }
@@ -98,8 +97,7 @@ case class SumDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
       }
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
-        r.rasterExtent,
-        f)
+        r.rasterExtent)(f)
       sum
     }))
   }
