@@ -282,7 +282,7 @@ trait AtomicCache[K,V] extends CacheStrategy[K,V] {
               vv
 
             } catch {
-              case t => { println("error"); t.printStackTrace(); println("rethrow..."); throw t }
+              case t:Throwable => { println("error"); t.printStackTrace(); println("rethrow..."); throw t }
             } finally {
               smallLock.unlock()
             }
@@ -294,7 +294,7 @@ trait AtomicCache[K,V] extends CacheStrategy[K,V] {
         }
       }
     } catch {
-      case t => {
+      case t:Throwable => {
         bigLock.unlock()
         throw t
       }

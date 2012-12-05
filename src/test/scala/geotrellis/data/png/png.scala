@@ -1,7 +1,6 @@
 package geotrellis.data.png
 
 import scala.io.{Source}
-import scala.tools.nsc.io.{PlainFile}
 
 import java.io.{File,FileInputStream}
 

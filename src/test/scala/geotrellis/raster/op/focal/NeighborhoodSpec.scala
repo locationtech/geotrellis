@@ -6,7 +6,7 @@ import scala.collection.mutable.Set
 import scala.math._
 
 import org.scalatest.FunSpec
-import org.scalatest.ShouldMatchers
+import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class NeighborhoodSpec extends FunSpec with ShouldMatchers {

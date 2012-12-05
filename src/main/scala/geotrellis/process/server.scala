@@ -16,8 +16,8 @@ import geotrellis.util._
 // akka imports
 import akka.actor._
 import akka.routing._
-import akka.dispatch.Await
-import akka.util.duration._
+import scala.concurrent.Await
+import scala.concurrent.duration._
 import akka.util.Timeout
 import akka.pattern.ask
 
