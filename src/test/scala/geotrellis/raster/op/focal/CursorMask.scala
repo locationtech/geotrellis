@@ -6,7 +6,7 @@ import scala.collection.mutable.Set
 import scala.math._
 
 import org.scalatest.FunSpec
-import org.scalatest.ShouldMatchers
+import org.scalatest.matchers.ShouldMatchers
 
 import Movement._
 

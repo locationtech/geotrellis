@@ -5,28 +5,44 @@ import scala.math._
 import geotrellis._
 import geotrellis.raster._
 
-case class CursorMean(r:Op[Raster], n:Op[Neighborhood]) extends DoubleFocalOp[Raster](r,n) {
+case class CursorMean(r:Op[Raster], n:Op[Neighborhood]) extends CursorFocalOp[Raster](r,n) {
+  var data:DoubleArrayRasterData = null
+  var rExtent:RasterExtent = null
+
   var count:Int = 0
   var sum:Double = 0.0
 
-  def calc(c:Cursor[Double]):Double = {
-    for(z <- c.removedCells) {
-      count -= 1
-      sum -= z
-    }
-    for(z <- c.addedCells) {
-      count += 1
-      sum += z
-    }
-    sum / count
+  def init(r:Raster) = {
+    rExtent = r.rasterExtent
+    data = DoubleArrayRasterData.ofDim(rExtent.cols,rExtent.rows)
   }
 
-  def createBuilder(r:Raster) = new DoubleRasterBuilder(r.rasterExtent)
+  def calc(r:Raster,c:Cursor) = {
+    c.removedCells.foreach { (x,y) => 
+      var v = r.get(x,y)
+      if(v != Double.NaN) { count -= 1; sum -= v } 
+    }
+    c.addedCells.foreach { (x,y) => 
+      var v = r.get(x,y)
+      if(v != Double.NaN) { count += 1; sum += v } 
+    }
+    data.setDouble(c.focusX,c.focusY,sum / count)
+  }
+
+  def getResult = Raster(data,rExtent)
 }
 
-case class Mean(r:Op[Raster], n:Op[Neighborhood]) extends CellwiseFocalOp[Raster,Double](r,n) {
+case class Mean(r:Op[Raster], n:Op[Neighborhood]) extends CellwiseFocalOp[Raster](r,n) {
+  var rExtent:RasterExtent = null
+  var data:DoubleArrayRasterData=null
+
   var count:Int = 0
   var sum:Double = 0.0
+
+  def init(r:Raster) = {
+    rExtent = r.rasterExtent
+    data = DoubleArrayRasterData.ofDim(rExtent.cols, rExtent.rows)
+  }
 
   def add(r:Raster, x:Int, y:Int) = {
     val z = r.get(x,y)
@@ -44,9 +60,9 @@ case class Mean(r:Op[Raster], n:Op[Neighborhood]) extends CellwiseFocalOp[Raster
     }
   } 
 
-  def getValue = sum / count
+  def setValue(x:Int,y:Int) = { data.setDouble(x,y, sum / count) }
 
   def reset() = { count = 0 ; sum = 0 }
 
-  def createBuilder(r:Raster) = new DoubleRasterBuilder(r.rasterExtent)
+  def getResult = Raster(data,rExtent)
 }

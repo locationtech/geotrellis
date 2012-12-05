@@ -6,7 +6,7 @@ import scala.collection.mutable.Set
 import scala.math._
 
 import org.scalatest.FunSpec
-import org.scalatest.ShouldMatchers
+import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class CursorSpec extends FunSpec with ShouldMatchers {
@@ -20,116 +20,63 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     Raster(arr, RasterExtent(Extent(0,0,10,10),1,1,10,10))
   }
 
-  def checkSet(set:CellSet[Int],cursor:IntCursor,m:Movement,center:(Int,Int),expected:Seq[Int]) = {
+  def checkSet(r:Raster,set:CellSet,cursor:Cursor,m:Movement,center:(Int,Int),expected:Seq[Int]) = {
     center match { 
       case (x,y) =>
         val s = Set[Int]()
         cursor.centerOn(x,y)
         cursor.move(m)
-        for(v <- set) { s += v }
+        set.foreach { (x,y) => s += r.get(x,y) }
         s.toSeq.sorted should equal (expected)
       case _ => throw new Exception()
     }
   }
 
-  def checkAdded(cursor:IntCursor,m:Movement,center:(Int,Int),expected:Seq[Int]) =
-    checkSet(cursor.addedCells,cursor,m,center,expected)
+  def checkAdded(r:Raster,cursor:Cursor,m:Movement,center:(Int,Int),expected:Seq[Int]) =
+    checkSet(r,cursor.addedCells,cursor,m,center,expected)
   
-  def checkRemoved(cursor:IntCursor,m:Movement,center:(Int,Int),expected:Seq[Int]) =
-    checkSet(cursor.removedCells,cursor,m,center,expected)
+  def checkRemoved(r:Raster,cursor:Cursor,m:Movement,center:(Int,Int),expected:Seq[Int]) =
+    checkSet(r,cursor.removedCells,cursor,m,center,expected)
 
+  def getAll(s:CellSet,r:Raster) = {
+    val all = Set[Int]()
+    s.foreach { (x,y) => all += r.get(x,y) }
+    all.toSeq.sorted
+  }
 
   describe("Cursor") {
     it("should get all values for middle cursor and no mask") {
       val r = createRaster
-      val cursor = new IntCursor(r,1)
+      val cursor = new Cursor(r,1)
       cursor.centerOn(5,5)
-      cursor.getAll.sorted should equal (Seq(45,46,47,55,56,57,65,66,67))
+      getAll(cursor.allCells,r) should equal (Seq(45,46,47,55,56,57,65,66,67))
     }
 
     it("should get all values for corner cursors and no mask") {
       val r = createRaster
-      val cursor = new IntCursor(r,1)
+      val cursor = new Cursor(r,1)
       cursor.centerOn(0,0)
-      cursor.getAll.sorted should equal (Seq(1,2,11,12))
+      getAll(cursor.allCells,r) should equal (Seq(1,2,11,12))
       cursor.centerOn(9,0)
-      cursor.getAll.sorted should equal (Seq(9,10,19,20))
+      getAll(cursor.allCells,r) should equal (Seq(9,10,19,20))
       cursor.centerOn(0,9)
-      cursor.getAll.sorted should equal (Seq(81,82,91,92))
+      getAll(cursor.allCells,r) should equal (Seq(81,82,91,92))
       cursor.centerOn(9,9)
-      cursor.getAll.sorted should equal (Seq(89,90,99,100))
+      getAll(cursor.allCells,r) should equal (Seq(89,90,99,100))
      }
 
     it("should get all values for edge cursors and no mask") {
       val r = createRaster
-      val cursor = new IntCursor(r,1)
+      val cursor = new Cursor(r,1)
       cursor.centerOn(5,0)
-      cursor.getAll.sorted should equal (Seq(5,6,7,15,16,17))
+      getAll(cursor.allCells,r) should equal (Seq(5,6,7,15,16,17))
       cursor.centerOn(0,5)
-      cursor.getAll.sorted should equal (Seq(41,42,51,52,61,62))
+      getAll(cursor.allCells,r) should equal (Seq(41,42,51,52,61,62))
       cursor.centerOn(9,5)
-      cursor.getAll.sorted should equal (Seq(49,50,59,60,69,70))
+      getAll(cursor.allCells,r) should equal (Seq(49,50,59,60,69,70))
       cursor.centerOn(5,9)
-      cursor.getAll.sorted should equal (Seq(85,86,87,95,96,97))
+      getAll(cursor.allCells,r) should equal (Seq(85,86,87,95,96,97))
      }
-
-    it("should fold left on corners with no mask") {
-      val r = createOnesRaster
-      val cursor = new IntCursor(r,1)
-      cursor.centerOn(0,0)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (4)
-      cursor.centerOn(9,0)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (4)
-      cursor.centerOn(0,9)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (4)
-      cursor.centerOn(9,9)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (4)
-    }
-
-    it("should fold left on edges and no mask") {
-      val r = createOnesRaster
-      val cursor = new IntCursor(r,1)
-      cursor.centerOn(5,0)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (6)
-      cursor.centerOn(0,5)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (6)
-      cursor.centerOn(9,5)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (6)
-      cursor.centerOn(5,9)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (6)
-    }
-    
-    it("should fold left for middle cursor and no mask") {
-      val r = createOnesRaster
-      val cursor = new IntCursor(r,1)
-      cursor.centerOn(5,5)
-      cursor.foldLeft(0) { (a,b) => a + b } should be (9)
-    }
-
-    it("should be able to mask triangle and foldLeft with sum") {
-      val r = createRaster
-      val cursor = new IntCursor(r,1)
-      cursor.setMask { (x,y) => x+y > 2 }
-      cursor.centerOn(2,2)
-      // 12+13+14+22+23+32
-      cursor.foldLeft(0) { (a,b) => a + b } should be (116)
-    }
-
-    it("should be able to mask circle and foldLeft with min") {
-      val r = createRaster
-      val n = Circle(3)
-      val cursor = Cursor.getInt(r,n)
-      cursor.centerOn(4,4)
-      cursor.foldLeft(Int.MaxValue) { (a,b) => min(a,b) } should be (15)
-    }
-    
-    it("should be able to mask circle and foldLeft with min for edge case") {
-      val r = createRaster
-      val n = Circle(3)
-      val cursor = Cursor.getInt(r,n)
-      cursor.centerOn(9,9)
-      cursor.foldLeft(Int.MaxValue) { (a,b) => min(a,b) } should be (70)
-    }
 
     it("should mask edge cases correctly") {
       val r = createRaster
@@ -140,19 +87,19 @@ class CursorSpec extends FunSpec with ShouldMatchers {
                                          """)
       // Mask cursor on left edge
       cursor.centerOn(0,2)
-      cursor.getAll.sorted should equal (Seq(11,22,31))
+      getAll(cursor.allCells,r) should equal (Seq(11,22,31))
 
       // Mask cursor on right edge
       cursor.centerOn(9,8)
-      cursor.getAll.sorted should equal (Seq(80,89,100))
+      getAll(cursor.allCells,r) should equal (Seq(80,89,100))
 
       // Mask cursor on top edge
       cursor.centerOn(4,0)
-      cursor.getAll.sorted should equal (Seq(4,6,15))
+      getAll(cursor.allCells,r) should equal (Seq(4,6,15))
 
       // Mask cursor on bottom edge
       cursor.centerOn(4,9)
-      cursor.getAll.sorted should equal (Seq(85,94,96))
+      getAll(cursor.allCells,r) should equal (Seq(85,94,96))
     }
 
     it("should mask corner cases correctly") {
@@ -166,19 +113,19 @@ class CursorSpec extends FunSpec with ShouldMatchers {
                                            """)
       // Mask cursor at top left corner
       cursor.centerOn(0,0)
-      cursor.getAll.sorted should equal (Seq(1,2,11,12,13,22,23))
+      getAll(cursor.allCells,r) should equal (Seq(1,2,11,12,13,22,23))
 
       // Mask cursor at top right corner
       cursor.centerOn(9,0)
-      cursor.getAll.sorted should equal (Seq(9,10,20))
+      getAll(cursor.allCells,r) should equal (Seq(9,10,20))
 
       // Mask cursor at bottom right corner
       cursor.centerOn(9,9)
-      cursor.getAll.sorted should equal (Seq(78,79,88,89,90,99,100))
+      getAll(cursor.allCells,r) should equal (Seq(78,79,88,89,90,99,100))
 
       // Mask cursor at bottom left corner
       cursor.centerOn(0,9)
-      cursor.getAll.sorted should equal (Seq(81,91,92))
+      getAll(cursor.allCells,r) should equal (Seq(81,91,92))
     }
 
     it("should give correct x and y values through a foreach") {
@@ -189,22 +136,21 @@ class CursorSpec extends FunSpec with ShouldMatchers {
                          X0X
                                          """)
       val s = Set[(Int,Int)]()
-
       // Middle 
       cursor.centerOn(4,4)
-      cursor.foreach { (x,y,_) => s += ((x,y)) }
+      cursor.allCells.foreach { (x,y) => s += ((x,y)) }
       s should equal (Set((4,4),(3,4),(4,3),(5,4),(4,5)))
 
       // Added
       cursor.move(Movement.Up)
       s.clear()
-      cursor.addedCells.foreach { (x,y,_) => s += ((x,y)) }
+      cursor.addedCells.foreach { (x,y) => s += ((x,y)) }
       s should equal (Set((4,2),(3,3),(5,3)))
       // Removed
       cursor.centerOn(4,4)
       cursor.move(Movement.Right)
       s.clear()
-      cursor.removedCells.foreach { (x,y,_) => s += ((x,y)) }
+      cursor.removedCells.foreach { (x,y) => s += ((x,y)) }
       s should equal (Set((3,4),(4,3),(4,5)))
     }
 
@@ -214,8 +160,8 @@ class CursorSpec extends FunSpec with ShouldMatchers {
 
     it("should calculate added values correctly for a move up and no mask") {
       val r = createRaster
-      val cursor = new IntCursor(r,1)
-      val check = Function.uncurried((checkAdded _).curried(cursor)(Movement.Up))
+      val cursor = new Cursor(r,1)
+      val check = Function.uncurried((checkAdded _).curried(r)(cursor)(Movement.Up))
 
       check((4,5), Seq(34,35,36))
 
@@ -234,8 +180,8 @@ class CursorSpec extends FunSpec with ShouldMatchers {
 
     it("should calculate removed values correctly for a move up and no mask") {
       val r = createRaster
-      val cursor = new IntCursor(r,1)
-      val check = Function.uncurried((checkRemoved _).curried(cursor)(Movement.Up))
+      val cursor = new Cursor(r,1)
+      val check = Function.uncurried((checkRemoved _).curried(r)(cursor)(Movement.Up))
 
       check((4,5), Seq(64,65,66))
 
@@ -261,7 +207,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
                  0 X 0 X 0              / \
                  X X 0 X X
                                          """)
-      val check = Function.uncurried((checkAdded _).curried(cursor)(Movement.Up))
+      val check = Function.uncurried((checkAdded _).curried(r)(cursor)(Movement.Up))
 
       check((4,5), Seq(25,33,37,44,46,55))
 
@@ -287,7 +233,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
                  0 X 0 X 0         
                  0 0 X 0 0
                                          """)
-      val check = Function.uncurried((checkRemoved _).curried(cursor)(Movement.Up))
+      val check = Function.uncurried((checkRemoved _).curried(r)(cursor)(Movement.Up))
 
       check((4,5), Seq(34,36,45,54,56,65,73,74,76,77))
 
@@ -308,8 +254,8 @@ class CursorSpec extends FunSpec with ShouldMatchers {
 
     it("should calculate added values correctly for a move down and no mask") {
       val r = createRaster
-      val cursor = new IntCursor(r,1)
-      val check = Function.uncurried((checkAdded _).curried(cursor)(Movement.Down))
+      val cursor = new Cursor(r,1)
+      val check = Function.uncurried((checkAdded _).curried(r)(cursor)(Movement.Down))
 
       check((4,5), Seq(74,75,76))
 
@@ -328,8 +274,8 @@ class CursorSpec extends FunSpec with ShouldMatchers {
 
     it("should calculate removed values correctly for a move down and no mask") {
       val r = createRaster
-      val cursor = new IntCursor(r,1)
-      val check = Function.uncurried((checkRemoved _).curried(cursor)(Movement.Down))
+      val cursor = new Cursor(r,1)
+      val check = Function.uncurried((checkRemoved _).curried(r)(cursor)(Movement.Down))
 
       check((4,5), Seq(44,45,46))
 
@@ -355,7 +301,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
                  X 0 0 0 X
                  X X 0 X X
                                          """)
-      val check = Function.uncurried((checkAdded _).curried(cursor)(Movement.Down))
+      val check = Function.uncurried((checkAdded _).curried(r)(cursor)(Movement.Down))
 
       check((4,5), Seq(63,67,74,76,85))
 
@@ -381,7 +327,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
                  X 0 X 0 X
                  X X 0 X X
                                          """)
-      val check = Function.uncurried((checkRemoved _).curried(cursor)(Movement.Down))
+      val check = Function.uncurried((checkRemoved _).curried(r)(cursor)(Movement.Down))
 
       check((4,5), Seq(35,44,46,53,55,57,64,66,75))
 
@@ -403,8 +349,8 @@ class CursorSpec extends FunSpec with ShouldMatchers {
 
     it("should calculate added values correctly for a move left and no mask") {
       val r = createRaster
-      val cursor = new IntCursor(r,1)
-      val check = Function.uncurried((checkAdded _).curried(cursor)(Movement.Left))
+      val cursor = new Cursor(r,1)
+      val check = Function.uncurried((checkAdded _).curried(r)(cursor)(Movement.Left))
 
       check((4,5), Seq(43,53,63))
 
@@ -423,8 +369,8 @@ class CursorSpec extends FunSpec with ShouldMatchers {
 
     it("should calculate removed values correctly for a move left and no mask") {
       val r = createRaster
-      val cursor = new IntCursor(r,1)
-      val check = Function.uncurried((checkRemoved _).curried(cursor)(Movement.Left))
+      val cursor = new Cursor(r,1)
+      val check = Function.uncurried((checkRemoved _).curried(r)(cursor)(Movement.Left))
 
       check((4,5), Seq(46,56,66))
 
@@ -450,7 +396,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
                  X X X X X
                  0 X 0 X 0
                                          """)
-      val check = Function.uncurried((checkAdded _).curried(cursor)(Movement.Left))
+      val check = Function.uncurried((checkAdded _).curried(r)(cursor)(Movement.Left))
 
       check((4,5), Seq(32,34,36,52,54,56,72,74,76))
 
@@ -476,7 +422,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
                  X 0 0 0 X
                  0 X X X 0
                                          """)
-      val check = Function.uncurried((checkRemoved _).curried(cursor)(Movement.Left))
+      val check = Function.uncurried((checkRemoved _).curried(r)(cursor)(Movement.Left))
 
       check((4,5), Seq(33,37,46,54,56,66,73,77))
 
@@ -497,8 +443,8 @@ class CursorSpec extends FunSpec with ShouldMatchers {
 
     it("should calculate added values correctly for a move right and no mask") {
       val r = createRaster
-      val cursor = new IntCursor(r,1)
-      val check = Function.uncurried((checkAdded _).curried(cursor)(Movement.Right))
+      val cursor = new Cursor(r,1)
+      val check = Function.uncurried((checkAdded _).curried(r)(cursor)(Movement.Right))
 
       check((4,5), Seq(47,57,67))
 
@@ -517,8 +463,8 @@ class CursorSpec extends FunSpec with ShouldMatchers {
 
     it("should calculate removed values correctly for a move right and no mask") {
       val r = createRaster
-      val cursor = new IntCursor(r,1)
-      val check = Function.uncurried((checkRemoved _).curried(cursor)(Movement.Right))
+      val cursor = new Cursor(r,1)
+      val check = Function.uncurried((checkRemoved _).curried(r)(cursor)(Movement.Right))
 
       check((4,5), Seq(44,54,64))
 
@@ -544,7 +490,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
                  X 0 X 0 0
                  0 X 0 0 0
                                          """)
-      val check = Function.uncurried((checkAdded _).curried(cursor)(Movement.Right))
+      val check = Function.uncurried((checkAdded _).curried(r)(cursor)(Movement.Right))
 
       check((4,5), Seq(36,38,45,47,54,58,65,68,74,78))
 
@@ -570,10 +516,9 @@ class CursorSpec extends FunSpec with ShouldMatchers {
                  X 0 X 0 0
                  0 X 0 X 0
                                          """)
-      val check = Function.uncurried((checkRemoved _).curried(cursor)(Movement.Right))
+      val check = Function.uncurried((checkRemoved _).curried(r)(cursor)(Movement.Right))
 
       cursor.centerOn(4,5)
-      println(cursor.asciiDraw)
       check((4,5), Seq(33,35,37,43,46,53,57,64,66,73,75,77))
 
       // edge cases
