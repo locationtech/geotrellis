@@ -35,19 +35,19 @@ class RasterizeSpec extends FunSuite {
         val z = raster.get(col,row)
         f2output = f2output + feature.data + z.toString
       }
-      Rasterizer.foreachCellByPoint(p)(re, f2)
+      Rasterizer.foreachCellByPoint(p, re, f2)
       assert(f2output === "point one: 81")
 
       f2output = ""
-      Rasterizer.foreachCellByPoint(p2)(re,f2)
+      Rasterizer.foreachCellByPoint(p2, re, f2)
       assert( f2output === "point two: 9")
      
       f2output = ""
-      Rasterizer.foreachCellByPoint(p3)(re,f2) 
+      Rasterizer.foreachCellByPoint(p3, re, f2) 
       assert( f2output === "point three: 0")
 
       f2output = ""
-      Rasterizer.foreachCellByPointSet(pointSet1)(re,f2) 
+      Rasterizer.foreachCellByPointSet(pointSet1, re, f2) 
       assert (f2output === "point one: 81point two: 9point three: 0")
       
       var lineOutput = ""
