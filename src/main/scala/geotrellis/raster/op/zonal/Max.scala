@@ -59,7 +59,6 @@ case class Max[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[R
   
  
   def handleNoDataTile = Int.MinValue
-  def handleDisjointTile = Int.MinValue
 
   def reducer(mapResults: List[Int]):Int = mapResults.foldLeft(Int.MinValue)(math.max(_, _)) 
 }
@@ -114,7 +113,6 @@ case class MaxDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
   
  
   def handleNoDataTile = Double.NegativeInfinity
-  def handleDisjointTile = Double.NegativeInfinity
 
   def reducer(mapResults: List[Double]):Double = mapResults.foldLeft(Double.NegativeInfinity)(math.max(_, _)) 
 }

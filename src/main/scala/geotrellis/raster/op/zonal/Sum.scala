@@ -59,7 +59,6 @@ case class Sum[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[R
   
  
   def handleNoDataTile = 0L
-  def handleDisjointTile = 0L 
 
   def reducer(mapResults: List[Long]):Long = mapResults.foldLeft(0L)(_ + _) 
 }
@@ -114,7 +113,6 @@ case class SumDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
   
  
   def handleNoDataTile = 0.0
-  def handleDisjointTile = 0.0
 
   def reducer(mapResults: List[Double]):Double = mapResults.foldLeft(0.0)(_ + _) 
 }

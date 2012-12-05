@@ -21,7 +21,6 @@ class TiledPolygonalZonalSummarySpec extends FunSpec with ShouldMatchers {
 
   case class FullTile(re: RasterExtent) extends TestResultTile
   case class PartialTile(re: RasterExtent, poly: Geometry[_]) extends TestResultTile
-  case object DisjointTile extends TestResultTile
   case object NoDataTile extends TestResultTile
 
   object PartialTile {
@@ -45,7 +44,6 @@ class TiledPolygonalZonalSummarySpec extends FunSpec with ShouldMatchers {
     }
 
     def handleNoDataTile = NoDataTile
-    def handleDisjointTile = DisjointTile
 
     def reducer(mapResults: List[B]):Seq[B] = mapResults
   }

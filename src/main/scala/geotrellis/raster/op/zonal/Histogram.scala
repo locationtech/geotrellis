@@ -56,7 +56,6 @@ case class Histogram[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
   
  
   def handleNoDataTile = Literal(FastMapHistogram())
-  def handleDisjointTile = Literal(FastMapHistogram())
 
   def reducer(mapResults: List[HistogramObj]):HistogramObj = FastMapHistogram.fromHistograms(mapResults)
 }
