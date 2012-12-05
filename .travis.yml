@@ -1,7 +1,7 @@
 # see http://about.travis-ci.org/docs/user/build-configuration/
 language: scala
 scala:
-  - 2.10.0-RC3
+  - 2.9.2
 script: wget https://raw.github.com/paulp/sbt-extras/master/sbt && chmod u+x ./sbt && ./sbt -mem 1512 test
 notifications:
   email:
