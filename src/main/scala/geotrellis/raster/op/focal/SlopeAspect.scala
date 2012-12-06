@@ -9,7 +9,7 @@ import scala.math._
 
 import Angles._
 
-trait SlopeAspectCalculator {
+object SlopeAspectCalculator {
  def getSlopeAndAspect(r:Raster,cursor:Cursor,zFactor:Double,cellWidth:Double,cellHeight:Double):(Double,Double) = {
     if(r.getDouble(cursor.focusX,cursor.focusY) == Double.NaN) { return (Double.NaN,Double.NaN) }
     
@@ -62,57 +62,44 @@ trait SlopeAspectCalculator {
   }
 }
 
+case class Slope(r:Op[Raster], zFactorOp:Op[Double]) extends FocalOp1[Double,Raster](r,Square(1),zFactorOp)({
+  (r,n) => new CursorCalculation with DoubleRasterDataResult with Initialization1[Double] {
+    var zFactor = 0.0
+    var cellWidth = 0.0
+    var cellHeight = 0.0
+    
+    def init(r:Raster,z:Double) = {
+      super.init(r)
 
-case class Slope(r:Op[Raster], zFactorOp:Op[Double]) extends CursorFocalOp1[Double,Raster](r,Square(1),zFactorOp) 
-    with SlopeAspectCalculator {
-  var data:DoubleArrayRasterData = null
-  var rExtent:RasterExtent = null
+      zFactor = z
+      cellWidth = r.rasterExtent.cellwidth
+      cellHeight = r.rasterExtent.cellheight
+    }
 
-  var zFactor = 0.0
-  var cellWidth = 0.0
-  var cellHeight = 0.0
-
-  def init(r:Raster,z:Double) = {
-    rExtent = r.rasterExtent
-    data = DoubleArrayRasterData.ofDim(rExtent.cols,rExtent.rows)
-
-    zFactor = z
-    cellWidth = r.rasterExtent.cellwidth
-    cellHeight = r.rasterExtent.cellheight
+    def calc(r:Raster,cursor:Cursor) = {
+      val (slope,_) = SlopeAspectCalculator.getSlopeAndAspect(r,cursor,zFactor,cellWidth,cellHeight)
+      data.setDouble(cursor.focusX,cursor.focusY,slope)
+    }
   }
+})
 
-  def calc(r:Raster,cursor:Cursor) = {
-    val (slope,_) = getSlopeAndAspect(r,cursor,zFactor,cellWidth,cellHeight)
-    data.setDouble(cursor.focusX,cursor.focusY,slope)
+case class Aspect(r:Op[Raster], zFactorOp:Op[Double]) extends FocalOp1[Double,Raster](r,Square(1),zFactorOp)({
+  (r,n) => new CursorCalculation with DoubleRasterDataResult with Initialization1[Double] {
+    var zFactor = 0.0
+    var cellWidth = 0.0
+    var cellHeight = 0.0
+    
+    def init(r:Raster,z:Double) = {
+      super.init(r)
+
+      zFactor = z
+      cellWidth = r.rasterExtent.cellwidth
+      cellHeight = r.rasterExtent.cellheight
+    }
+
+    def calc(r:Raster,cursor:Cursor) = {
+      val (_,aspect) = SlopeAspectCalculator.getSlopeAndAspect(r,cursor,zFactor,cellWidth,cellHeight)
+      data.setDouble(cursor.focusX,cursor.focusY,aspect)
+    }
   }
-
-  def getResult = Raster(data,rExtent)
-}
-
-case class Aspect(r:Op[Raster], zFactorOp:Op[Double]) extends CursorFocalOp1[Double,Raster](r,Square(1),zFactorOp) 
-    with SlopeAspectCalculator {
-  var data:DoubleArrayRasterData = null
-  var rExtent:RasterExtent = null
-  
-  var zFactor = 0.0
-  var cellWidth = 0.0
-  var cellHeight = 0.0
-
-  def init(r:Raster,z:Double) = {
-    rExtent = r.rasterExtent
-    data = DoubleArrayRasterData.ofDim(rExtent.cols,rExtent.rows)
-
-    zFactor = z
-    cellWidth = r.rasterExtent.cellwidth
-    cellHeight = r.rasterExtent.cellheight
-  }
-
-  def calc(r:Raster,cursor:Cursor) = {
-    val (_,aspect) = getSlopeAndAspect(r,cursor,zFactor,cellWidth,cellHeight)
-    data.setDouble(cursor.focusX,cursor.focusY,aspect)
-  }
-
-  def getResult = Raster(data,rExtent)
-}
-
-
+})
