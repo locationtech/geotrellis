@@ -21,21 +21,18 @@ import TraversalStrategy._
  * what cells have been removed since the last move.
  */
 object CursorStrategy {
-  def execute(r:Raster,cursor:Cursor)
-                (c:(Raster,Cursor)=>Unit):Unit = 
-    execute(r,cursor,ZigZag)(c)
+  def execute(r:Raster,cursor:Cursor,c:CursorCalculation):Unit =
+    execute(r,cursor,c,ZigZag)
 
-  def execute(r:Raster,cursor:Cursor,t:TraversalStrategy)
-                (c:(Raster,Cursor)=>Unit):Unit = {
+  def execute(r:Raster,cursor:Cursor,c:CursorCalculation,t:TraversalStrategy):Unit = {
     t match {
-      case ScanLine => handleScanLine(r,cursor)(c)
-      case SpiralZag => handleSpiralZag(r,cursor)(c)
-      case _ => handleZigZag(r,cursor)(c)
+      case ScanLine => handleScanLine(r,cursor,c)
+      case SpiralZag => handleSpiralZag(r,cursor,c)
+      case _ => handleZigZag(r,cursor,c)
     }
   }
 
-  private def handleSpiralZag(r:Raster,cursor:Cursor) 
-                             (c:(Raster,Cursor)=>Unit) = {
+  private def handleSpiralZag(r:Raster,cursor:Cursor,c:CursorCalculation) = {
     var xmin = 0
     var ymin = 0
     var xmax = r.cols - 1
@@ -55,29 +52,29 @@ object CursorStrategy {
     while(!(done || zagTime)) {
       //Move right across top
       while(x < xmax) {
-        c(r,cursor)
+        c.calc(r,cursor)
         cursor.move(Movement.Right)
         x += 1
       }
       // Move down along right edge
       while(y < ymax) {
-        c(r,cursor)
+        c.calc(r,cursor)
         cursor.move(Movement.Down)
         y += 1
       }
       //Move left across bottom
       while(x > xmin) {
-        c(r,cursor)
+        c.calc(r,cursor)
         cursor.move(Movement.Left)
         x -= 1
       }
       // Move up along left edge
       while(y > ymin+1) {
-        c(r,cursor)
+        c.calc(r,cursor)
         cursor.move(Movement.Up)
         y -= 1
       }
-      c(r,cursor)
+      c.calc(r,cursor)
       ymin += 1
       ymax -= 1
       xmin += 1
@@ -98,7 +95,7 @@ object CursorStrategy {
 
     // Now zig zag across interior.
     while(y <= ymax) {
-      c(r,cursor)
+      c.calc(r,cursor)
       x += direction
       if(x < xmin || xmax < x) {
 	direction *= -1
@@ -112,8 +109,7 @@ object CursorStrategy {
     }
   }
 
-  private def handleZigZag(r:Raster,cursor:Cursor)
-                             (c:(Raster,Cursor)=>Unit) = {
+  private def handleZigZag(r:Raster,cursor:Cursor,c:CursorCalculation) = {
     val maxX = r.cols - 1
     val maxY = r.rows - 1
     var x = 0
@@ -123,7 +119,7 @@ object CursorStrategy {
     cursor.centerOn(0, 0)
 
     while(y < r.rows) {
-      c(r,cursor)
+      c.calc(r,cursor)
       x += direction
       if(x < 0 || maxX < x) {
 	direction *= -1
@@ -137,8 +133,7 @@ object CursorStrategy {
     }
   }
 
-  private def handleScanLine(r:Raster,cursor:Cursor)
-                               (c:(Raster,Cursor)=>Unit) = {
+  private def handleScanLine(r:Raster,cursor:Cursor,c:CursorCalculation) = {
     val maxX = r.cols - 1
     val maxY = r.rows - 1
     var x = 0
@@ -147,7 +142,7 @@ object CursorStrategy {
     cursor.centerOn(0, 0)
 
     while(y < r.rows) {
-      c(r,cursor)
+      c.calc(r,cursor)
       x += 1
       if(maxX < x) {
 	y += 1
@@ -160,28 +155,22 @@ object CursorStrategy {
   }
 }
 
-trait CellwiseCalculator {
-  def add(r:Raster,x:Int,y:Int)
-  def remove(r:Raster,x:Int,y:Int)
-  def reset()
-  def setValue(x:Int,y:Int)
-}
-
 /*
  * Focal strategy that implements a more strict mechanism that informs the user
  * what cells have been added or removed. This strategy is more performant,
  * but can only be used for Square or Circle neighborhoods.
  */ 
 object CellwiseStrategy {
-  def execute(r:Raster,n:Neighborhood,calc:CellwiseCalculator):Unit = {
-    n match {
-      case Square(extent) => _executeSquare(r,extent,calc)
-      case c:Circle => _executeCircle(r,c.extent,calc)
-      case _ => throw new Exception("CellwiseStrategy cannot be used with this neighborhood type.")
+  def execute(r:Raster,n:Square,calc:CellwiseCalculation):Unit = 
+    execute(r,n,calc,ScanLine)
+
+  def execute(r:Raster,n:Square,calc:CellwiseCalculation,t:TraversalStrategy):Unit = {
+    t match {
+      case _ => handleScanLine(r,n.extent,calc)
     }
   }
 
-  private def _executeSquare[T](r:Raster,n:Int, calc:CellwiseCalculator) = {
+  private def handleScanLine(r:Raster,n:Int, calc:CellwiseCalculation) = {
     val cols = r.cols
     val rows = r.rows
 
@@ -228,33 +217,6 @@ object CellwiseStrategy {
         x += 1
       }
       y += 1
-    }
-  }
-
-  private def _executeCircle[T](r:Raster,n:Int,calc:CellwiseCalculator) = {
-    val cols = r.cols
-    val rows = r.rows
-    val size = 2 * n + 1
-
-    val xs = new Array[Int](size)
-    val nn = n + 0.5
-    for (y <- -n to n) xs(y + n) = floor(sqrt(n * n - y * y)).toInt
-
-    for (y <- 0 until rows) {
-      val yy1 = max(0, y - n)
-      val yy2 = min(rows, y + n + 1)
-    
-      for (x <- 0 until cols) {
-        calc.reset()
-    
-        for (yy <- yy1 until yy2) {
-          val i = (yy - y + n) % size
-          val xx1 = max(0, x - xs(i))
-          val xx2 = min(cols, x + xs(i) + 1)
-          for (xx <- xx1 until xx2) calc.add(r, xx, yy)
-        }
-        calc.setValue(x, y)
-      }
     }
   }
 }
