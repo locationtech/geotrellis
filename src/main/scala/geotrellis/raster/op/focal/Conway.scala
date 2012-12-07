@@ -1,7 +1,6 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
-import geotrellis.raster._
 
 case class Conway(r:Op[Raster]) extends FocalOp[Raster](r,Square(1))({
   (r,n) => new CellwiseCalculation with ByteRasterDataResult {

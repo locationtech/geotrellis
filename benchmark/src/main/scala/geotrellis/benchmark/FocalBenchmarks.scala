@@ -31,6 +31,8 @@ class FocalOperationsBenchmark extends MyBenchmark {
 
   def timeOldHillshade(reps:Int) = run(reps)(server.run(oldfocal.Hillshade(r)))
   def timeHillshade(reps:Int) = run(reps)(server.run(focal.Hillshade(r)))
+  def timeSlope(reps:Int) = run(reps)(server.run(focal.Slope(r,1.0)))
+  def timeAspect(reps:Int) = run(reps)(server.run(focal.Aspect(r)))
 
   def timeOldMax(reps:Int) = run(reps)(server.run(oldfocal.Max(r,oldfocal.Square(1))))
   def timeMax(reps:Int) = run(reps)(server.run(focal.Max(r,focal.Square(1))))

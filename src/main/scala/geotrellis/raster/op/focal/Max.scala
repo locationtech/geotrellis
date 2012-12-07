@@ -1,9 +1,8 @@
 package geotrellis.raster.op.focal
 
-import scala.math._
-
 import geotrellis._
-import geotrellis.raster._
+
+import scala.math._
 
 case class Max(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp(r,n)({
   (r,n) => new CursorCalculation with IntRasterDataResult { 

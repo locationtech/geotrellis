@@ -2,7 +2,7 @@ package geotrellis.raster.op.focal
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.statistics._
+import geotrellis.statistics.FastMapHistogram
 
 case class Mode(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
   (r,n) => new CursorCalculation with IntRasterDataResult {
