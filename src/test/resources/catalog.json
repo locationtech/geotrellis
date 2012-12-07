@@ -7,14 +7,6 @@
      "type": "fs",
      "path": "src/test/resources/data",
      "cacheAll": "yes"
-   }},
-  {
-   "store": "grassbook:fs",
-   "params": {
-     "type": "fs",
-     "path": "src/test/resources/grassbook",
-     "cacheAll": "yes"
-   }
-  }
+   }}
  ]
 }

@@ -1,9 +1,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
-import geotrellis.raster._
-import geotrellis.process._
-import geotrellis.statistics._
+import geotrellis.statistics.{Statistics,FastMapHistogram}
 
 case class RasterMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
   (r,n) => new MoransCalc
@@ -70,4 +68,3 @@ case class ScalarMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp(r,n)({
     def getResult = count / ws
   }
 })
-

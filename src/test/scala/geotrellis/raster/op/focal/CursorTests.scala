@@ -2,6 +2,8 @@ package geotrellis.raster.op.focal
 
 import geotrellis._
 
+import geotrellis.testutil._
+
 import scala.collection.mutable.Set
 import scala.math._
 
@@ -9,16 +11,7 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class CursorSpec extends FunSpec with ShouldMatchers {
-  def createRaster:Raster = {
-    val arr = (for(i <- 1 to 100) yield i).toArray
-    Raster(arr, RasterExtent(Extent(0,0,10,10),1,1,10,10))
-  }
-
-  def createOnesRaster:Raster = {
-    val arr = (for(i <- 1 to 100) yield 1).toArray
-    Raster(arr, RasterExtent(Extent(0,0,10,10),1,1,10,10))
-  }
+class CursorSpec extends FunSpec with ShouldMatchers with RasterBuilders {
 
   def checkSet(r:Raster,set:CellSet,cursor:Cursor,m:Movement,center:(Int,Int),expected:Seq[Int]) = {
     center match { 
@@ -46,14 +39,14 @@ class CursorSpec extends FunSpec with ShouldMatchers {
 
   describe("Cursor") {
     it("should get all values for middle cursor and no mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = new Cursor(r,1)
       cursor.centerOn(5,5)
       getAll(cursor.allCells,r) should equal (Seq(45,46,47,55,56,57,65,66,67))
     }
 
     it("should get all values for corner cursors and no mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = new Cursor(r,1)
       cursor.centerOn(0,0)
       getAll(cursor.allCells,r) should equal (Seq(1,2,11,12))
@@ -66,7 +59,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
      }
 
     it("should get all values for edge cursors and no mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = new Cursor(r,1)
       cursor.centerOn(5,0)
       getAll(cursor.allCells,r) should equal (Seq(5,6,7,15,16,17))
@@ -79,7 +72,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
      }
 
     it("should mask edge cases correctly") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = TestCursor.fromString(r, """
                 X 0 X
                 0 X 0
@@ -103,7 +96,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     }
 
     it("should mask corner cases correctly") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = TestCursor.fromString(r, """
                   0 0 X X X
                   0 0 0 X X
@@ -129,7 +122,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     }
 
     it("should give correct x and y values through a foreach") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = TestCursor.fromString(r,"""
                          X0X
                          000
@@ -159,7 +152,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     // Moves up
 
     it("should calculate added values correctly for a move up and no mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = new Cursor(r,1)
       val check = Function.uncurried((checkAdded _).curried(r)(cursor)(Movement.Up))
 
@@ -179,7 +172,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     }
 
     it("should calculate removed values correctly for a move up and no mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = new Cursor(r,1)
       val check = Function.uncurried((checkRemoved _).curried(r)(cursor)(Movement.Up))
 
@@ -199,7 +192,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     }
 
     it("should calculate added values correctly for a move up and a mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = TestCursor.fromString(r, """
                  X X 0 X X
                  0 X 0 X 0              \ /
@@ -225,7 +218,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     }
 
     it("should calculate removed values correctly for a move up and a mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = TestCursor.fromString(r, """
                  0 0 X 0 0
                  0 X 0 X 0           
@@ -253,7 +246,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     // Moves down
 
     it("should calculate added values correctly for a move down and no mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = new Cursor(r,1)
       val check = Function.uncurried((checkAdded _).curried(r)(cursor)(Movement.Down))
 
@@ -273,7 +266,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     }
 
     it("should calculate removed values correctly for a move down and no mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = new Cursor(r,1)
       val check = Function.uncurried((checkRemoved _).curried(r)(cursor)(Movement.Down))
 
@@ -293,7 +286,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     }
 
     it("should calculate added values correctly for a move down and a mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = TestCursor.fromString(r, """
                  X X 0 X X
                  X 0 0 0 X
@@ -319,7 +312,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     }
 
     it("should calculate removed values correctly for a move down and a mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = TestCursor.fromString(r, """
                  X X 0 X X
                  X 0 X 0 X
@@ -348,7 +341,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     // Moves left
 
     it("should calculate added values correctly for a move left and no mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = new Cursor(r,1)
       val check = Function.uncurried((checkAdded _).curried(r)(cursor)(Movement.Left))
 
@@ -368,7 +361,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     }
 
     it("should calculate removed values correctly for a move left and no mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = new Cursor(r,1)
       val check = Function.uncurried((checkRemoved _).curried(r)(cursor)(Movement.Left))
 
@@ -388,7 +381,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     }
 
     it("should calculate added values correctly for a move left and a mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = TestCursor.fromString(r, """
                  0 X 0 X 0
                  X X X X X
@@ -414,7 +407,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     }
 
     it("should calculate removed values correctly for a move left and a mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = TestCursor.fromString(r, """
                  0 X X X 0
                  X 0 0 0 X
@@ -442,7 +435,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     // Moves right
 
     it("should calculate added values correctly for a move right and no mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = new Cursor(r,1)
       val check = Function.uncurried((checkAdded _).curried(r)(cursor)(Movement.Right))
 
@@ -462,7 +455,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     }
 
     it("should calculate removed values correctly for a move right and no mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = new Cursor(r,1)
       val check = Function.uncurried((checkRemoved _).curried(r)(cursor)(Movement.Right))
 
@@ -482,7 +475,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     }
 
     it("should calculate added values correctly for a move right and a mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = TestCursor.fromString(r, """
                  0 0 0 X 0
                  0 0 X 0 X
@@ -508,7 +501,7 @@ class CursorSpec extends FunSpec with ShouldMatchers {
     }
 
     it("should calculate removed values correctly for a move right and a mask") {
-      val r = createRaster
+      val r = createConsecutiveRaster(10)
       val cursor = TestCursor.fromString(r, """
                  0 X 0 X 0
                  0 0 X 0 X

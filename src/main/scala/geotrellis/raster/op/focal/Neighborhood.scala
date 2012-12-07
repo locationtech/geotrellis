@@ -10,8 +10,8 @@ object Angles {
 import Angles._
 
 /**
- * Allows users of focal operations specify the shape and size
- * of the neighborhood the focal operation should use. 
+ * A definition of the shape and size
+ * of the neighborhood (or kernel) to be used in a focal operation.
  */
 trait Neighborhood { 
   /* How many cells past the focus the bounding box goes (e.g., 1 for 9x9 square) */
