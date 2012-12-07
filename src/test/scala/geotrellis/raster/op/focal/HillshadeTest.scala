@@ -25,6 +25,7 @@ class HillshadeTest extends FunSuite {
 
   // for more information on how hillshade work, see: http://bit.ly/Qj0YPg.
   // note that we scale by 128 not 256, so our result is 77 instead of 154.
+
   test("esri hillshade") {
     val re = RasterExtent(Extent(0.0, 0.0, 25.0, 25.0), 5.0, 5.0, 5, 5)
     val arr = Array(0, 0, 0, 0, 0,
@@ -33,11 +34,13 @@ class HillshadeTest extends FunSuite {
                     0, 2447, 2455, 2477, 0,
                     0, 0, 0, 0, 0)
     val data = IntArrayRasterData(arr, 5, 5)
-    val raster = Raster(data, re)
+    val r = Raster(data, re)
 
-    val h = server.run(focal.Hillshade(raster))
+    val h = server.run(focal.Hillshade(Aspect(r),Slope(r,1.0),315.0,45.0))
+    val h2 = server.run(focal.Hillshade(r,315.0,45.0,1.0))
     assert(h.get(2, 2) === 77)
-  }
+    assert(h2.get(2,2) === 77)
+  } 
 
   test("can write hillshade") {
     val path = "src/test/resources/sbn/SBN_inc_percap.arg"

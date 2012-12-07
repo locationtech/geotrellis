@@ -161,14 +161,16 @@ object CursorStrategy {
  * but can only be used for Square or Circle neighborhoods.
  */ 
 object CellwiseStrategy {
-  def execute(r:Raster,n:Neighborhood,calc:CellwiseCalculation):Unit = {
-    n match {
-      case Square(extent) => _executeSquare(r,extent,calc)
-      case _ => throw new Exception("CellwiseStrategy cannot be used with a non-Square neighborhood.")
+  def execute(r:Raster,n:Square,calc:CellwiseCalculation):Unit = 
+    execute(r,n,calc,ScanLine)
+
+  def execute(r:Raster,n:Square,calc:CellwiseCalculation,t:TraversalStrategy):Unit = {
+    t match {
+      case _ => handleScanLine(r,n.extent,calc)
     }
   }
 
-  private def _executeSquare[T](r:Raster,n:Int, calc:CellwiseCalculation) = {
+  private def handleScanLine(r:Raster,n:Int, calc:CellwiseCalculation) = {
     val cols = r.cols
     val rows = r.rows
 
