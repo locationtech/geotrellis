@@ -55,17 +55,17 @@ class SurfacePoint() {
 trait SurfacePointCalculation {
   var lastY = -1
   
-  var west = new Array[Int](3)
-  var base = new Array[Int](3)
-  var east = new Array[Int](3)
+  var west = new Array[Double](3)
+  var base = new Array[Double](3)
+  var east = new Array[Double](3)
 
   var northRow = 0
   
   def resetCols(row:Int) = {
     northRow = row - 1
-    west = new Array[Int](3)
-    base = new Array[Int](3)
-    east = new Array[Int](3)
+    west = new Array[Double](3)
+    base = new Array[Double](3)
+    east = new Array[Double](3)
   }
 
   def moveRight(deleteEast:Boolean) = {
@@ -75,15 +75,15 @@ trait SurfacePointCalculation {
     east = tmp
 
     if(deleteEast) {
-      east = new Array[Int](3)
+      east = new Array[Double](3)
     }
   }
 
   def add(r:Raster,x:Int,y:Int) {
     if(x == 0) {
-      base(y - northRow) = r.get(x,y)
+      base(y - northRow) = r.getDouble(x,y)
     } else {
-      east(y - northRow) = r.get(x,y)
+      east(y - northRow) = r.getDouble(x,y)
     }
   }
 

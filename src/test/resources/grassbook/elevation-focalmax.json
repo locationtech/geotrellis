@@ -1,0 +1,1 @@
+{ "layer": "elevation-focalmax", "type": "arg", "datatype": "float32", "rows": 475, "cols": 527, "xmin": 629992.5, "ymax": 228513.0, "cellwidth": 28.5, "cellheight": 28.5, "xmax": 645012.0, "ymin": 214975.5, "xskew": 0.0, "yskew": 0.0, "epsg": 4269 }
