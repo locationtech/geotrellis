@@ -61,7 +61,7 @@ object Tasks {
      System.exit(0)
   }
 
-  def main(args:Array[String]) = {
+  def main(args:Array[String]):Unit = {
     run(args)
   }
 
@@ -89,7 +89,7 @@ object Tasks {
     try {
       jc.parse(args: _*)
     } catch {
-      case _ => { usage(Option(jc)) } 
+      case _:Throwable => { usage(Option(jc)) } 
     }
     
     if (baseArgs.help) {
