@@ -16,15 +16,6 @@ class MinSpec extends FunSpec with ShouldMatchers
                               with TestServer 
                               with RasterBuilders  {
   describe("Min") {
-    it("should agree with GRASS computed raster") {
-      // Expected data, from GRASS
-      val grassComputedMin = get("elevation-focalMax")
-      val elevationOp = get("elevation")
-      val minOp = Min(elevationOp,Square(1))
-
-      assertEqual(minOp, grassComputedMin)
-    }
-
     it("square min r=1") {
       val r = createRaster((0 until 16).toArray)
       assertEqual(Min(r, Square(1)), Array(0, 0, 1, 2,
