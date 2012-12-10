@@ -79,7 +79,7 @@ case class DataStore(name:String, params:Map[String, String]) {
  * Represents a named collection of data stores. We expect each JSON file to
  * correspond to one catalog.
  */
-case class Catalog(name:String, stores:Map[String, DataStore]) {
+case class Catalog(name:String, stores:Map[String, DataStore], json: String, source: String) { 
 
   def getRasterLayer(path:String): Option[RasterLayer] = {
     stores.values.flatMap(_.getRasterLayer(path)).headOption
@@ -125,7 +125,7 @@ case class DataStoreRec(store:String,
 
 case class CatalogRec(catalog:String,
                       stores:List[DataStoreRec]) extends Rec[Catalog] {
-  def create = Catalog(catalog, stores.map(s => s.name -> s.create).toMap)
+  def create(json:String, source:String) = Catalog(catalog, stores.map(s => s.name -> s.create).toMap, json, source)
   def name = catalog
 }
 
@@ -175,17 +175,17 @@ object Catalog {
     val src = Source.fromFile(path)
     val data = src.mkString
     src.close()
-    fromJSON(data)
+    parse(data).extract[CatalogRec].create(data, path)
   }
 
   /**
    * Build a Catalog instance given a string of JSON data.
    */
-  def fromJSON(data:String): Catalog = parse(data).extract[CatalogRec].create
+  def fromJSON(data:String): Catalog = parse(data).extract[CatalogRec].create(data, "unknown")
 
   /**
    * Builds an empty Catalog.
    */
-  def empty(name:String) = Catalog(name, Map.empty[String, DataStore])
+  def empty(name:String) = Catalog(name, Map.empty[String, DataStore], "{}", "empty()" )
 
 }
