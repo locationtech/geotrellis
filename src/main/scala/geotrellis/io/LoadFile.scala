@@ -12,7 +12,7 @@ case class LoadFile(p:Op[String]) extends Operation[Raster] {
   def _run(context:Context) = runAsync(List(p,context))
   val nextSteps:Steps = {
     case (path:String) :: (context:Context) :: Nil =>
-      Result(context.loadRaster(path, null))
+      context.getRasterStepOutput(path, None, None)
   }
 }
 
@@ -20,7 +20,7 @@ case class LoadFileWithRasterExtent(p:Op[String], e:Op[RasterExtent]) extends Op
   def _run(context:Context) = runAsync(List(p,e, context))
   val nextSteps:Steps = {
     case (path:String) :: (re:RasterExtent) :: (context:Context) :: Nil => 
-      Result(context.loadRaster(path, re))
+      context.getRasterStepOutput(path, None, Some(re))
   }
 }
 

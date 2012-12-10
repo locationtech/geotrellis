@@ -4,6 +4,7 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import geotrellis.{Extent,RasterExtent}
 import geotrellis.raster.IntConstant
+import geotrellis._
 
 class CatalogSpec extends FunSpec with MustMatchers {
 
@@ -33,7 +34,7 @@ val json0 = """
   describe("A Catalog") {
     it("should load when empty") {
       val found = Catalog.fromJSON(json0)
-      val expected = Catalog("catalog1", Map.empty[String, DataStore])
+      val expected = Catalog("catalog1", Map.empty[String, DataStore], json0, "unknown")
       found must be === expected
     }
 
@@ -46,7 +47,9 @@ val json0 = """
               "stroud:fs",
               Map("type" -> "fs", "path" -> "src/test/resources/data")
           )
-        )
+        ),
+        json1,
+        "unknown"
       )
       found must be === expected
     }
@@ -63,8 +66,8 @@ val json0 = """
 
     it("should create IntConstant NODATA args") {
       val s = Server("catalogtest", catalog)
-      val r = s.getRasterByName("constant", None)
-      assert(r.data.isInstanceOf[IntConstant])
+      val result = s.getRasterByName("constant", None).asInstanceOf[Result[Raster]]
+      assert(result.value.data.isInstanceOf[IntConstant])
     }
   }
 }

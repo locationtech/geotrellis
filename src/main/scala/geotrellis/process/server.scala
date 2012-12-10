@@ -23,6 +23,8 @@ import akka.pattern.ask
 
 import com.typesafe.config.ConfigFactory
 
+import scala.util.{Try,Success => TrySuccess, Failure => TryFailure}
+
 //class Server (id:String, val catalog:Catalog) extends FileCaching {
 class Server (id:String, val catalog:Catalog) {
   val debug = false
@@ -130,7 +132,15 @@ akka {
       case _ => sys.error("unknown path type %s".format(path))
     }
   }
-    
+   
+  def getRasterStepOutput(path:String, layerOpt:Option[RasterLayer], reOpt:Option[RasterExtent]) = {
+    val reader = getReader(path, layerOpt)
+    Try(reader.readPath(path, layerOpt, reOpt)) match { 
+      case TrySuccess(r) => Result(r)
+      case TryFailure(e) => StepError("Could not load raster from path: ${path}","")
+    }
+  }
+
   def getRaster(path:String, layerOpt:Option[RasterLayer], reOpt:Option[RasterExtent]):Raster = {
     getReader(path, layerOpt).readPath(path, layerOpt, reOpt)  
   }
@@ -146,17 +156,22 @@ akka {
     }
   }
 
-  def getRasterByName(name:String, reOpt:Option[RasterExtent]):Raster = {
+  def getRasterByName(name:String, reOpt:Option[RasterExtent]):StepOutput[Raster] = {
     catalog.getRasterLayerByName(name) match {
       case Some(layer) => {
         val path = layer.rasterPath
         val reader = getReader(path, Some(layer))
-        staticCache.get(layer.name) match {
+        val r = staticCache.get(layer.name) match {
           case Some(bytes) => reader.readCache(bytes, layer, reOpt)
           case None => reader.readPath(path, Some(layer), reOpt)
         }
+        Result(r)
       }
-      case None => sys.error("couldn't find '%s'" format name)
+      case None => {
+        val debugInfo = "Failed to load raster ${name} from catalog at ${catalog.source}" + 
+          " with json: \n" + catalog.json
+        StepError("Did not find raster \"${name}\" in catalog", debugInfo)
+      }
     }
   }
 }
