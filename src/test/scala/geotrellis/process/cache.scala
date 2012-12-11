@@ -4,7 +4,8 @@ package geotrellis.process
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import scala.concurrent.Lock
-import scala.concurrent.ThreadRunner
+import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.ExecutionContextExecutorService
 
 class LRUCacheSpec extends FunSpec with MustMatchers {
   
@@ -163,12 +164,14 @@ class LRUCacheSpec extends FunSpec with MustMatchers {
     val lock = new Lock()
 
     val x = 5
-  
-    def mkTask(t: () => Unit) = () => {
-      t()
-      lock.acquire
-      counter -= 1
-      lock.release
+
+    def mkTask(t: () => Unit) = new Runnable() {
+      def run() = {
+        t()
+        lock.acquire
+        counter -= 1
+        lock.release
+      }
     }
   
     def taskA = mkTask (() => {
@@ -191,7 +194,7 @@ class LRUCacheSpec extends FunSpec with MustMatchers {
     })
   
     it("should work") {
-      val t = new ThreadRunner()
+      val t = scala.concurrent.ExecutionContext.global
       t.execute(taskA)
       t.execute(taskB)
       t.execute(taskC)
@@ -207,7 +210,7 @@ class LRUCacheSpec extends FunSpec with MustMatchers {
       counter must equal(0)
       brokenEval must equal(false)
       
-      t.shutdown()
+      //t.shutdown()
     }
   }
 }
