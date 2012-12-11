@@ -20,8 +20,10 @@ class FocalStrategySpec extends FunSpec with ShouldMatchers {
       var lastY = 0
       var lastX = -1
 
-      CursorStrategy.execute(r,cur,TraversalStrategy.ZigZag) { (r,cursor) =>
-        if(cursor.focusY != 0 || cursor.focusX != 0 ) { cursor.isReset should equal(false) }
+      val calc = new CursorCalculation[Int] {
+        def getResult = 0
+        def calc(r:Raster,cursor:Cursor) = {
+          if(cursor.focusY != 0 || cursor.focusX != 0 ) { cursor.isReset should equal(false) }
           if(lastY != cursor.focusY) {
             cursor.focusY should be > lastY
             cursor.focusX should equal(lastX)
@@ -32,6 +34,9 @@ class FocalStrategySpec extends FunSpec with ShouldMatchers {
           }
           lastX = cursor.focusX
         }
+      }
+
+      CursorStrategy.execute(r,cur,calc, TraversalStrategy.ZigZag)
     }
 
     it("should execute the ScanLine traversal strategy correctly") {
@@ -43,17 +48,22 @@ class FocalStrategySpec extends FunSpec with ShouldMatchers {
       var lastY = -1
       var lastX = 0
 
-      CursorStrategy.execute(r,cur,TraversalStrategy.ScanLine) { (raster,cursor) =>
-        if(lastY != cursor.focusY) {
-          cursor.isReset should equal(true)
-          cursor.focusY should be > lastY
-          cursor.focusX should equal(0)
-          lastY = cursor.focusY
-        } else {
-          cursor.focusX should be  > lastX
+      val calc = new CursorCalculation[Int] {
+        def getResult = 0
+        def calc(r:Raster,cursor:Cursor) = {
+          if(lastY != cursor.focusY) {
+            cursor.isReset should equal(true)
+            cursor.focusY should be > lastY
+            cursor.focusX should equal(0)
+            lastY = cursor.focusY
+          } else {
+            cursor.focusX should be  > lastX
+          }
+          lastX = cursor.focusX
         }
-        lastX = cursor.focusX
       }
+
+      CursorStrategy.execute(r,cur,calc,TraversalStrategy.ScanLine)
     }
   }
 }
