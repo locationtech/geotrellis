@@ -21,9 +21,7 @@ object MyBuild extends Build {
     javaOptions in run += "-Xmx2G",
 
     libraryDependencies ++= Seq(
-      //"org.scalatest" %% "scalatest" % "2.0.M4" % "test",
       "org.scalatest" % "scalatest_2.10.0-RC3" % "1.8-B1" % "test",
-      //"org.scalatest" %% "scalatest" % "2.0.M4" % "test",
       "junit" % "junit" % "4.5" % "test",
       "com.vividsolutions" % "jts" % "1.8",
       "java3d" % "j3d-core" % "1.3.1",
@@ -128,7 +126,7 @@ object MyBuild extends Build {
       "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
       "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
       "com.google.code.gson" % "gson" % "1.7.1",
-      "org.scalatest" %% "scalatest" % "2.0.M4" % "test",
+      "org.scalatest" % "scalatest_2.10.0-RC3" % "1.8-B1" % "test",
       "junit" % "junit" % "4.5" % "test"
     ),
 
