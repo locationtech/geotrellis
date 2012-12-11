@@ -1,1 +1,0 @@
-{ "layer": "elevation-slope-gdal", "type": "arg", "datatype": "float32", "rows": 675, "cols": 750, "xmin": 630000.0, "ymax": 228500.0, "cellwidth": 10.0, "cellheight": 10.0, "xmax": 637500.0, "ymin": 221750.0, "xskew": 0.0, "yskew": 0.0, "epsg": 4269 }
