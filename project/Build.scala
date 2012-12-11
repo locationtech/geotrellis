@@ -12,7 +12,7 @@ object MyBuild extends Build {
     version := "0.8.0-SNAPSHOT",
     scalaVersion := "2.10.0-RC3",
     
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-optimize"),
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-optimize", "-language:implicitConversions"),
     parallelExecution := false,
     testListeners <+= target.map(tgt => new eu.henkelmann.sbt.JUnitXmlTestsListener(tgt.toString)),
 
