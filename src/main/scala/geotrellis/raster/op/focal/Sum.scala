@@ -1,7 +1,6 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
-import geotrellis.raster._
 
 case class Sum(r:Op[Raster], n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({ 
   (r,n) =>
@@ -16,13 +15,8 @@ class CursorSumCalc extends CursorCalculation
   var total = 0
 
   def calc(r:Raster,cursor:Cursor) = {
-    cursor.addedCells.foreach { (x,y) =>
-      total += r.get(x,y)
-    }
-
-    cursor.removedCells.foreach { (x,y) => 
-      total -= r.get(x,y)
-    }
+    cursor.addedCells.foreach { (x,y) => total += r.get(x,y) }
+    cursor.removedCells.foreach { (x,y) => total -= r.get(x,y) }
 
     data.set(cursor.focusX,cursor.focusY,total)
   }

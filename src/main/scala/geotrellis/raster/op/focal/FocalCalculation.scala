@@ -50,7 +50,7 @@ trait CellwiseCalculation extends FocalCalculation {
  * with a range of variables.
  */
 
-trait Initialization          { def init(r:Raster):Unit }
+trait Initialization           { def init(r:Raster):Unit }
 trait Initialization1[A]       { def init(r:Raster,a:A):Unit }
 trait Initialization2[A,B]     { def init(r:Raster,a:A,b:B):Unit }
 trait Initialization3[A,B,C]   { def init(r:Raster,a:A,b:B,c:C):Unit }
@@ -67,8 +67,7 @@ trait CalculationResult[T] { def getResult:T }
  * Mixin's that define common raster-result functionality
  * for FocalCalculations.
  * Access the resulting raster's array data through the 
- * 'data' member. Initialize the data through the
- * initData method.
+ * 'data' member.
  */
 
 trait BitRasterDataResult extends CalculationResult[Raster] with Initialization {

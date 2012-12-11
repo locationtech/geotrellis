@@ -1,8 +1,6 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
-import geotrellis.raster._
-import geotrellis.process._
 
 import scala.math._
 
@@ -63,6 +61,7 @@ trait SurfacePointCalculation {
   
   def resetCols(row:Int) = {
     northRow = row - 1
+
     west = new Array[Double](3)
     base = new Array[Double](3)
     east = new Array[Double](3)

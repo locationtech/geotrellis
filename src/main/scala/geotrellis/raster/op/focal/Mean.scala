@@ -1,9 +1,8 @@
 package geotrellis.raster.op.focal
 
-import scala.math._
-
 import geotrellis._
-import geotrellis.raster._
+
+import scala.math._
 
 case class Mean(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
   (r,n) =>
