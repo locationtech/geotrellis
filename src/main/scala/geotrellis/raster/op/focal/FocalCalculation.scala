@@ -6,14 +6,15 @@ import geotrellis._
  * A calculation that a FocalStrategy uses to complete
  * a focal operation.
  */
-trait FocalCalculation {
+trait FocalCalculation[T] {
   def execute(r:Raster, n:Neighborhood):Unit
+  def getResult:T
 }
 
 /*
  * A focal calculation that uses the Cursor focal strategy.
  */
-trait CursorCalculation extends FocalCalculation {
+trait CursorCalculation[T] extends FocalCalculation[T] {
   def traversalStrategy:Option[TraversalStrategy] = None
   def execute(r:Raster,n:Neighborhood):Unit = {
     traversalStrategy match {
@@ -27,7 +28,7 @@ trait CursorCalculation extends FocalCalculation {
 /*
  * A focal calculation that uses the Cellwise focal strategy
  */
-trait CellwiseCalculation extends FocalCalculation {
+trait CellwiseCalculation[T] extends FocalCalculation[T] {
   def traversalStrategy:Option[TraversalStrategy] = None
   def execute(r:Raster,n:Neighborhood) = {
     n match {
@@ -61,8 +62,6 @@ trait Initialization4[A,B,C,D] { def init(r:Raster,a:A,b:B,c:C,d:D):Unit }
  * of a focal calculation.
  */
 
-trait CalculationResult[T] { def getResult:T }
-
 /*
  * Mixin's that define common raster-result functionality
  * for FocalCalculations.
@@ -70,7 +69,7 @@ trait CalculationResult[T] { def getResult:T }
  * 'data' member.
  */
 
-trait BitRasterDataResult extends CalculationResult[Raster] with Initialization {
+trait BitRasterDataResult extends Initialization {
   var data:BitArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
@@ -82,7 +81,7 @@ trait BitRasterDataResult extends CalculationResult[Raster] with Initialization 
   def getResult = Raster(data,rasterExtent)
 }
 
-trait ByteRasterDataResult extends CalculationResult[Raster] with Initialization {
+trait ByteRasterDataResult extends Initialization {
   var data:ByteArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
@@ -94,7 +93,7 @@ trait ByteRasterDataResult extends CalculationResult[Raster] with Initialization
   def getResult = Raster(data,rasterExtent)
 }
 
-trait ShortRasterDataResult extends CalculationResult[Raster] with Initialization {
+trait ShortRasterDataResult extends Initialization {
   var data:ShortArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
@@ -106,7 +105,7 @@ trait ShortRasterDataResult extends CalculationResult[Raster] with Initializatio
   def getResult = Raster(data,rasterExtent)
 }
 
-trait IntRasterDataResult extends CalculationResult[Raster] with Initialization {
+trait IntRasterDataResult extends Initialization {
   var data:IntArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
@@ -118,7 +117,7 @@ trait IntRasterDataResult extends CalculationResult[Raster] with Initialization 
   def getResult = Raster(data,rasterExtent)
 }
 
-trait FloatRasterDataResult extends CalculationResult[Raster] with Initialization {
+trait FloatRasterDataResult extends Initialization {
   var data:FloatArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
@@ -130,7 +129,7 @@ trait FloatRasterDataResult extends CalculationResult[Raster] with Initializatio
   def getResult = Raster(data,rasterExtent)
 }
 
-trait DoubleRasterDataResult extends CalculationResult[Raster] with Initialization {
+trait DoubleRasterDataResult extends Initialization {
   var data:DoubleArrayRasterData = null
   var rasterExtent:RasterExtent = null
 

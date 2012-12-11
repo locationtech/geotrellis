@@ -3,9 +3,9 @@ package geotrellis.raster.op.focal
 import geotrellis._
 
 case class Slope(r:Op[Raster], zFactorOp:Op[Double]) extends FocalOp1[Double,Raster](r,Square(1),zFactorOp)({
-  (r,n) => new CellwiseCalculation with DoubleRasterDataResult 
-                                   with Initialization1[Double] 
-                                   with SurfacePointCalculation {
+  (r,n) => new CellwiseCalculation[Raster] with DoubleRasterDataResult 
+                                           with Initialization1[Double] 
+                                           with SurfacePointCalculation {
     var zFactor = 0.0
     var cellWidth = 0.0
     var cellHeight = 0.0

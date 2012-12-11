@@ -7,8 +7,7 @@ case class RasterMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster
   (r,n) => new MoransCalc
 })
 
-
-case class MoransCalc() extends CursorCalculation with DoubleRasterDataResult {
+case class MoransCalc() extends CursorCalculation[Raster] with DoubleRasterDataResult {
   var mean = 0.0
   var `stddev^2` = 0.0
 
@@ -41,7 +40,7 @@ case class MoransCalc() extends CursorCalculation with DoubleRasterDataResult {
 
 // Scalar version:
 case class ScalarMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp(r,n)({
-  (r,n) => new CursorCalculation with CalculationResult[Double] with Initialization {
+  (r,n) => new CursorCalculation[Double] with Initialization {
     var mean:Double = 0
     var `stddev^2`:Double = 0
 

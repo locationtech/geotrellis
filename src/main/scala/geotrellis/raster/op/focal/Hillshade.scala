@@ -21,9 +21,9 @@ object Hillshade {
 
 case class DirectHillshade(r:Op[Raster], azimuth:Op[Double],altitude:Op[Double],zFactor:Op[Double])
     extends FocalOp3[Double,Double,Double,Raster](r,Square(1),azimuth,altitude,zFactor)({
-  (raster,n) => new CellwiseCalculation with ShortRasterDataResult 
-                                        with Initialization3[Double,Double,Double] 
-                                        with SurfacePointCalculation {
+  (raster,n) => new CellwiseCalculation[Raster] with ShortRasterDataResult 
+                                                with Initialization3[Double,Double,Double] 
+                                                with SurfacePointCalculation {
     var azimuth = 0.0
     var zenith = 0.0
     var zFactor = 0.0

@@ -12,7 +12,7 @@ case class Mean(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
     }
 })
 
-case class CellwiseMeanCalc() extends CellwiseCalculation with DoubleRasterDataResult {
+case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleRasterDataResult {
   var count:Int = 0
   var sum:Double = 0.0
 
@@ -36,7 +36,7 @@ case class CellwiseMeanCalc() extends CellwiseCalculation with DoubleRasterDataR
   def reset() = { count = 0 ; sum = 0 }
 }
 
-case class CursorMeanCalc() extends CursorCalculation with DoubleRasterDataResult {
+case class CursorMeanCalc() extends CursorCalculation[Raster] with DoubleRasterDataResult {
   var count:Int = 0
   var sum:Double = 0.0
 

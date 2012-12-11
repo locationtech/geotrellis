@@ -3,8 +3,8 @@ package geotrellis.raster.op.focal
 import geotrellis._
 
 case class Aspect(r:Op[Raster]) extends FocalOp[Raster](r,Square(1))({
-  (r,n) => new CellwiseCalculation with DoubleRasterDataResult 
-                                 with SurfacePointCalculation {
+  (r,n) => new CellwiseCalculation[Raster] with DoubleRasterDataResult 
+                                           with SurfacePointCalculation {
     var cellWidth = 0.0
     var cellHeight = 0.0
     var cols = 0

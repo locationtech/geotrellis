@@ -10,7 +10,7 @@ case class Sum(r:Op[Raster], n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
     }
 })
 
-class CursorSumCalc extends CursorCalculation 
+class CursorSumCalc extends CursorCalculation[Raster] 
     with IntRasterDataResult {
   var total = 0
 
@@ -22,7 +22,7 @@ class CursorSumCalc extends CursorCalculation
   }
 }
 
-class CellwiseSumCalc extends CellwiseCalculation
+class CellwiseSumCalc extends CellwiseCalculation[Raster]
     with IntRasterDataResult {
   var total = 0
   

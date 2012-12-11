@@ -21,10 +21,10 @@ import TraversalStrategy._
  * what cells have been removed since the last move.
  */
 object CursorStrategy {
-  def execute(r:Raster,cursor:Cursor,c:CursorCalculation):Unit =
+  def execute(r:Raster,cursor:Cursor,c:CursorCalculation[_]):Unit =
     execute(r,cursor,c,ZigZag)
 
-  def execute(r:Raster,cursor:Cursor,c:CursorCalculation,t:TraversalStrategy):Unit = {
+  def execute(r:Raster,cursor:Cursor,c:CursorCalculation[_],t:TraversalStrategy):Unit = {
     t match {
       case ScanLine => handleScanLine(r,cursor,c)
       case SpiralZag => handleSpiralZag(r,cursor,c)
@@ -32,7 +32,7 @@ object CursorStrategy {
     }
   }
 
-  private def handleSpiralZag(r:Raster,cursor:Cursor,c:CursorCalculation) = {
+  private def handleSpiralZag(r:Raster,cursor:Cursor,c:CursorCalculation[_]) = {
     var xmin = 0
     var ymin = 0
     var xmax = r.cols - 1
@@ -109,7 +109,7 @@ object CursorStrategy {
     }
   }
 
-  private def handleZigZag(r:Raster,cursor:Cursor,c:CursorCalculation) = {
+  private def handleZigZag(r:Raster,cursor:Cursor,c:CursorCalculation[_]) = {
     val maxX = r.cols - 1
     val maxY = r.rows - 1
     var x = 0
@@ -133,7 +133,7 @@ object CursorStrategy {
     }
   }
 
-  private def handleScanLine(r:Raster,cursor:Cursor,c:CursorCalculation) = {
+  private def handleScanLine(r:Raster,cursor:Cursor,c:CursorCalculation[_]) = {
     val maxX = r.cols - 1
     val maxY = r.rows - 1
     var x = 0
@@ -161,16 +161,16 @@ object CursorStrategy {
  * but can only be used for Square or Circle neighborhoods.
  */ 
 object CellwiseStrategy {
-  def execute(r:Raster,n:Square,calc:CellwiseCalculation):Unit = 
+  def execute(r:Raster,n:Square,calc:CellwiseCalculation[_]):Unit = 
     execute(r,n,calc,ScanLine)
 
-  def execute(r:Raster,n:Square,calc:CellwiseCalculation,t:TraversalStrategy):Unit = {
+  def execute(r:Raster,n:Square,calc:CellwiseCalculation[_],t:TraversalStrategy):Unit = {
     t match {
       case _ => handleScanLine(r,n.extent,calc)
     }
   }
 
-  private def handleScanLine(r:Raster,n:Int, calc:CellwiseCalculation) = {
+  private def handleScanLine(r:Raster,n:Int, calc:CellwiseCalculation[_]) = {
     val cols = r.cols
     val rows = r.rows
 

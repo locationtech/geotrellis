@@ -4,36 +4,31 @@ import geotrellis._
 import scala.math._
 
 class FocalOp[T](r:Op[Raster],n:Op[Neighborhood])
-                (getCalc:(Raster,Neighborhood)=>CalculationResult[T] with Initialization 
-                                                                     with FocalCalculation)
+                (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization)                  
   extends FocalOperation[T](r,n) {
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
 class FocalOp1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A])
-                   (getCalc:(Raster,Neighborhood)=>CalculationResult[T] with Initialization1[A]
-                                                                        with FocalCalculation) 
+                   (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization1[A])
   extends FocalOperation1[A,T](r,n,a){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
 class FocalOp2[A,B,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B])
-                     (getCalc:(Raster,Neighborhood)=>CalculationResult[T] with Initialization2[A,B]
-                                                                          with FocalCalculation) 
+                     (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization2[A,B])
   extends FocalOperation2[A,B,T](r,n,a,b){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
 class FocalOp3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C])
-                       (getCalc:(Raster,Neighborhood)=>CalculationResult[T] with Initialization3[A,B,C]
-                                                                            with FocalCalculation) 
+                       (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization3[A,B,C])
   extends FocalOperation3[A,B,C,T](r,n,a,b,c){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
 class FocalOp4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],d:Op[D])
-                         (getCalc:(Raster,Neighborhood)=>CalculationResult[T] with Initialization4[A,B,C,D]
-                                                                              with FocalCalculation) 
+                         (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization4[A,B,C,D])
   extends FocalOperation4[A,B,C,D,T](r,n,a,b,c,d){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
@@ -57,8 +52,7 @@ abstract class FocalOperation[T](r:Op[Raster],n:Op[Neighborhood]) extends Operat
       Result(calc.getResult)
   }
   
-  def getCalculation(r:Raster,n:Neighborhood):CalculationResult[T] with Initialization 
-                                                                   with FocalCalculation
+  def getCalculation(r:Raster,n:Neighborhood):FocalCalculation[T] with Initialization 
 }
 
 /* Three arguments (the raster and neighborhoood and another) */
@@ -81,8 +75,7 @@ abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A]) ext
       Result(calc.getResult)
   }
   
-  def getCalculation(r:Raster,n:Neighborhood):CalculationResult[T] with Initialization1[A]
-                                                                   with FocalCalculation
+  def getCalculation(r:Raster,n:Neighborhood):FocalCalculation[T] with Initialization1[A]
 }
 
 /* Four arguments (the raster and neighborhoood and two others) */
@@ -108,8 +101,7 @@ abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:
       Result(calc.getResult)
   }
   
-  def getCalculation(r:Raster,n:Neighborhood):CalculationResult[T] with Initialization2[A,B]
-                                                                   with FocalCalculation
+  def getCalculation(r:Raster,n:Neighborhood):FocalCalculation[T] with Initialization2[A,B]
 }
 
 /* Five arguments (the raster and neighborhoood and three others) */
@@ -137,8 +129,7 @@ abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],
       Result(calc.getResult)
   }
   
-  def getCalculation(r:Raster,n:Neighborhood):CalculationResult[T] with Initialization3[A,B,C]
-                                                                   with FocalCalculation
+  def getCalculation(r:Raster,n:Neighborhood):FocalCalculation[T] with Initialization3[A,B,C]
 }
 
 /* Six arguments (the raster and neighborhoood and four others) */
@@ -168,6 +159,5 @@ abstract class FocalOperation4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A
       Result(calc.getResult)
   }
   
-  def getCalculation(r:Raster,n:Neighborhood):CalculationResult[T] with Initialization4[A,B,C,D]
-                                                                   with FocalCalculation
+  def getCalculation(r:Raster,n:Neighborhood):FocalCalculation[T] with Initialization4[A,B,C,D]
 }
