@@ -36,10 +36,9 @@ object MyBuild extends Build {
       "net.liftweb" % "lift-json_2.10.0-RC2" % "2.5-SNAPSHOT" from "http://n0d.es/jars/lift-json_2.10.0-RC2.jar",
       // lift-json dependency included so we can get jar directly
       "com.thoughtworks.paranamer" % "paranamer" % "2.4.1",
-      "org.scalatest" % "scalatest_2.10.0-M7" % "1.9-2.10.0-M7-B1" % "test",
-      "com.typesafe.akka" % "akka-kernel_2.10.0-RC1" % "2.1.0-RC1",
-      "com.typesafe.akka" % "akka-remote_2.10.0-RC1" % "2.1.0-RC1",
-      "com.typesafe.akka" % "akka-actor_2.10.0-RC1" % "2.1.0-RC1",
+      "com.typesafe.akka" % "akka-kernel_2.10.0-RC3" % "2.1.0-RC3",
+      "com.typesafe.akka" % "akka-remote_2.10.0-RC3" % "2.1.0-RC3",
+      "com.typesafe.akka" % "akka-actor_2.10.0-RC3" % "2.1.0-RC3",
       "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
       "com.sun.jersey" % "jersey-bundle" % "1.11",
       "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0", 
