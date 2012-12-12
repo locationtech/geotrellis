@@ -107,7 +107,7 @@ class TileSpec extends FunSpec with MustMatchers {
           val z = tileRaster.get(x, y)
           z must be === ((y * 5) + x) + 1
         } catch {
-          case _ => println("tile(%s,%s) exploded" format (x, y))
+          case _:Throwable => println("tile(%s,%s) exploded" format (x, y))
         }
       }
     }

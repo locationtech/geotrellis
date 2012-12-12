@@ -48,14 +48,16 @@ trait ThroughputLimitedReducer1[C] extends Op[C] {
     case 'init :: (r: Raster) :: Nil => init(r, None)
     case 'initWithTileExtent :: (r: Raster) :: (p:Polygon[_]) :: Nil => init(r,Some(p))
     case 'reduce :: (bs: List[_]) => Result(reducer(bs.asInstanceOf[List[B]]))
-    case 'runGroup :: (oldResults: List[_]) :: (bs: List[_]) :: (newResults: List[List[_]]) => {
-      val results = oldResults ::: newResults.flatten
+    case 'runGroup :: (oldResults: List[_]) :: (bs: List[_]) :: (newResults: List[_]) => {
+      val newResults2 = newResults.asInstanceOf[List[List[B]]]
+      val results = oldResults.asInstanceOf[List[B]] ::: newResults2.flatten
       bs match {
         case Nil => Result(reducer(results.asInstanceOf[List[B]]))
         case (head: List[_]) :: tail => {
           println("run next batch")
           runAsync('runGroup :: results :: tail :: head)
         }
+        case _ => throw new Exception("unexpected state in thoroughput reducer")
       }
     }
   }

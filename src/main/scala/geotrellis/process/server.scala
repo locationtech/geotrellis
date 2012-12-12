@@ -17,9 +17,10 @@ import geotrellis.util._
 import akka.actor._
 import akka.routing._
 import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.duration.Duration
 import akka.util.Timeout
 import akka.pattern.ask
+import java.util.concurrent.TimeUnit
 
 import com.typesafe.config.ConfigFactory
 
@@ -101,14 +102,15 @@ akka {
   private[process] def _run[T:Manifest](op:Op[T]) = {
     log("server._run called with %s" format op)
 
-    implicit val timeout = Timeout(3660 seconds)
-
+//    implicit val timeout = Timeout(Duration(3600, "millis"))
+    val d = Duration.create(600, TimeUnit.SECONDS)
+    implicit val t = Timeout(d)
     val future = op match {
       case op:DispatchedOperation[_] => (actor ? RunDispatched(op.op, op.dispatcher)).mapTo[OperationResult[T]]
       case op:Op[_]           => (actor ? Run(op)).mapTo[OperationResult[T]]
     }
 
-    val result = Await.result(future, 3660 seconds)
+    val result = Await.result(future, d)
 
     result match {
       case OperationResult(c:Complete[_], _) => c.asInstanceOf[Complete[T]]
