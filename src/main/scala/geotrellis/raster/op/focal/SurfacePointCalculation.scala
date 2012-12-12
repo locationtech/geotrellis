@@ -7,10 +7,27 @@ import scala.math._
 import Angles._
 
 class SurfacePoint() {
+  var isNaN = false
   var `dz/dx` = Double.NaN
   var `dz/dy` = Double.NaN
 
-  def aspect() = atan2(`dz/dy`, -`dz/dx`)
+  def aspect() = {
+    var a = atan2(`dz/dy`, -`dz/dx`)
+
+    if (`dz/dx` == 0 && `dz/dy` == 0)
+    {
+      /* Flat area */
+      a = Double.NaN
+    } 
+    else
+    {
+      if (a < 0) { a += 2*Pi }
+    }
+
+    if (a == 2*Pi) { a = 0.0 }
+    if (a == Pi) { a = Double.NaN }
+    a
+  }
   def slope(zFactor:Double):Double = atan(zFactor * sqrt(`dz/dx` * `dz/dx` + `dz/dy` * `dz/dy`))
   def slope():Double = slope(1.0)
 
@@ -86,7 +103,10 @@ trait SurfacePointCalculation {
   }
 
   def calcSurface(s:SurfacePoint,cellWidth:Double,cellHeight:Double):Unit = {
-    if(base(1) == NODATA) return 
+    if(base(1) == NODATA) {
+      s.`dz/dx` = Double.NaN
+      s.`dz/dy` = Double.NaN
+    }
 
     s.`dz/dx` = (east(0) + 2*east(1) + east(2) - west(0) - 2*west(1) - west(2)) / (8 * cellWidth)
     s.`dz/dy` = (west(2) + 2*base(2) + east(2) - west(0) - 2*base(0) - east(0)) / (8 * cellHeight)

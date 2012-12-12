@@ -208,7 +208,8 @@ abstract trait Histogram {
     breaks.slice(0, qIndex)
   }
 
-  def getMode() = {
+  def getMode():Int = {
+    if(getTotalCount == 0) { return geotrellis.NODATA }
     val values = getValues()
     var mode = values(0)
     var count = getItemCount(mode)
@@ -234,6 +235,7 @@ abstract trait Histogram {
   }
 
   def getMean():Double = {
+    if(getTotalCount == 0) { return geotrellis.NODATA }
     val values = rawValues()
     var t = 0.0
     var i = 0

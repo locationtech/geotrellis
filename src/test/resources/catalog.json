@@ -6,7 +6,16 @@
    "params": {
      "type": "fs",
      "path": "src/test/resources/data",
-     "cacheAll": "yes"
-   }}
+     "cacheAll": "no"
+    }
+  },
+  {
+   "store": "sbntest:fs",
+   "params": {
+     "type": "fs",
+     "path": "src/test/resources/sbn"
+     "cacheAll": "no"
+    }
+  }
  ]
 }

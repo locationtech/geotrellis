@@ -20,7 +20,7 @@ case class Conway(r:Op[Raster]) extends FocalOp[Raster](r,Square(1))({
       }
     } 
 
-    def setValue(x:Int,y:Int) = data.set(x,y, if(count == 2 || count == 1) 1 else NODATA)
+    def setValue(x:Int,y:Int) = data.set(x,y, if(count == 3 || count == 2) 1 else NODATA)
     def reset() = { count = 0 }
   }
 })

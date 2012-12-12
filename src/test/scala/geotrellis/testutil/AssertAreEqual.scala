@@ -13,8 +13,10 @@ case class AssertAreEqual(r1:Op[Raster], r2:Op[Raster],threshold:Double) extends
   }
 
   def handleDouble(z1:Double, z2:Double) = {
-    if (java.lang.Double.isNaN(z1)) { println("z1 has NaN") ; z2 should equal (Double.NaN) ; 0 }
-    else if (java.lang.Double.isNaN(z2)) { println("z2 has NaN") ;z1 should equal (Double.NaN) ; 0 }
+    if (z1.isNaN) { 
+      if(!z2.isNaN) { println(s"z1 = ${z1}  z2 = ${z2}") }
+      z2.isNaN should equal (true) ; 0 }
+    else if (z2.isNaN) { z1.isNaN should equal (true) ; 0 }
     else { (z1 - z2) should be <= (threshold) ; 0 }
   }
 }

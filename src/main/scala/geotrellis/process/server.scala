@@ -172,7 +172,7 @@ akka {
       case None => {
         val debugInfo = "Failed to load raster ${name} from catalog at ${catalog.source}" + 
           " with json: \n" + catalog.json
-        StepError("Did not find raster \"${name}\" in catalog", debugInfo)
+        StepError(s"Did not find raster '${name}' in catalog", debugInfo)
       }
     }
   }

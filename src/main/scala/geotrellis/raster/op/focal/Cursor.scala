@@ -22,7 +22,7 @@ trait CellSet {
 
 object Cursor {
   def apply(r:Raster,n:Neighborhood) = {
-    val result = new Cursor(r,n.extent)
+    val result = new Cursor(r.cols,r.rows,n.extent)
     if(n.hasMask) { result.setMask(n.mask) }
     result
   }
@@ -38,9 +38,9 @@ object Cursor {
  *                                   e.g. if the bounding box is 9x9, then
  *                                   the distance from center is 1.
  */
-class Cursor(r:Raster, extent:Int) {
-  private val rows = r.rows
-  private val cols = r.cols
+class Cursor(cols:Int,rows:Int, extent:Int) {
+  private val _cols = cols
+  private val _rows = rows
 
   val dim = extent
   private val d = 2*dim + 1
@@ -88,9 +88,9 @@ class Cursor(r:Raster, extent:Int) {
     _focusY = y
 
     _xmin = max(0,_focusX - dim)
-    _xmax = min(cols - 1, _focusX + dim)
+    _xmax = min(_cols - 1, _focusX + dim)
     _ymin = max(0, _focusY - dim)
-    _ymax = min(rows - 1, _focusY + dim)
+    _ymax = min(_rows - 1, _focusY + dim)
   }
 
   /*
@@ -130,9 +130,9 @@ class Cursor(r:Raster, extent:Int) {
     }
 
     _xmin = max(0,_focusX - dim)
-    _xmax = min(cols - 1, _focusX + dim)
+    _xmax = min(_cols - 1, _focusX + dim)
     _ymin = max(0, _focusY - dim)
-    _ymax = min(rows - 1, _focusY + dim)
+    _ymax = min(_rows - 1, _focusY + dim)
   }
 
   def setMask(f:(Int,Int) => Boolean) = {
@@ -204,7 +204,7 @@ class Cursor(r:Raster, extent:Int) {
     if(movement == NoMovement) {
       foreach(f) 
     } else if (movement.isVertical) {
-      if(0 <= addedRow && addedRow < rows) {
+      if(0 <= addedRow && addedRow < _rows) {
         if(!hasMask) {
           var x = _xmin
           while(x <= _xmax) {
@@ -214,14 +214,14 @@ class Cursor(r:Raster, extent:Int) {
         } else {
           mask.foreachX(addedRow-(_focusY-dim)) { x =>
             val xRaster = x+(_focusX-dim)
-            if(0 <= xRaster && xRaster <= rows) {
+            if(0 <= xRaster && xRaster <= _rows) {
               f(xRaster,addedRow)
             }
           }
         }
       }        
     } else { // Horizontal
-      if(0 <= addedCol && addedCol < cols) {
+      if(0 <= addedCol && addedCol < _cols) {
         if(!hasMask) {
           var y = _ymin
           while(y <= _ymax) {
@@ -232,14 +232,14 @@ class Cursor(r:Raster, extent:Int) {
           if(movement == Left) {
             mask.foreachWestColumn { y =>
               val yRaster = y+(_focusY-dim)
-              if(0 <= yRaster && yRaster < cols) {
+              if(0 <= yRaster && yRaster < _cols) {
                 f(addedCol,yRaster)
               }
             }
           } else { // Right
             mask.foreachEastColumn { y =>
               val yRaster = y+(_focusY-dim)
-              if(0 <= yRaster && yRaster < cols) {
+              if(0 <= yRaster && yRaster < _cols) {
                 f(addedCol,yRaster)
               }
             }
@@ -252,7 +252,7 @@ class Cursor(r:Raster, extent:Int) {
       mask.foreachUnmasked(movement) { (x,y) =>
         val xRaster = x+(_focusX-dim)
         val yRaster = y+(_focusY-dim)
-        if(0 <= xRaster && xRaster < cols && 0 <= yRaster && yRaster < rows) {
+        if(0 <= xRaster && xRaster < _cols && 0 <= yRaster && yRaster < _rows) {
           f(xRaster,yRaster)
         }
       }
@@ -278,7 +278,7 @@ class Cursor(r:Raster, extent:Int) {
     if(movement == NoMovement) { return }
 
     if(movement.isVertical) {
-      if(0 <= removedRow && removedRow < rows) {
+      if(0 <= removedRow && removedRow < _rows) {
         if(!hasMask) {
           var x = _xmin
           while(x <= _xmax) {
@@ -289,7 +289,7 @@ class Cursor(r:Raster, extent:Int) {
           if(movement == Up) {
             mask.foreachX(d-1) { x =>
               val xRaster = x+(_focusX-dim)
-              if(0 <= xRaster && xRaster < cols) {
+              if(0 <= xRaster && xRaster < _cols) {
                 f(xRaster,removedRow)
               }
             }
@@ -297,7 +297,7 @@ class Cursor(r:Raster, extent:Int) {
           else { // Down
             mask.foreachX(0) { x =>
               val xRaster = x+(_focusX-dim)
-              if(0 <= xRaster && xRaster < cols) {
+              if(0 <= xRaster && xRaster < _cols) {
                 f(xRaster,removedRow)
               }
             }
@@ -305,7 +305,7 @@ class Cursor(r:Raster, extent:Int) {
         }
       }
     } else { // Horizontal
-      if(0 <= removedCol && removedCol < cols) {
+      if(0 <= removedCol && removedCol < _cols) {
         if(!hasMask) {
           var y = _ymin
           while(y <= _ymax) {
@@ -316,14 +316,14 @@ class Cursor(r:Raster, extent:Int) {
           if(movement == Left) {
             mask.foreachEastColumn { y =>
               val yRaster = y+(_focusY-dim)
-              if(0 <= yRaster && yRaster < cols) {
+              if(0 <= yRaster && yRaster < _cols) {
                 f(removedCol,yRaster)
               }
             }
           } else { //Right
             mask.foreachWestColumn { y =>
               val yRaster = y+(_focusY-dim)
-              if(0 <= yRaster && yRaster < cols) {
+              if(0 <= yRaster && yRaster < _cols) {
                 f(removedCol,yRaster)
               }
             }
@@ -336,7 +336,7 @@ class Cursor(r:Raster, extent:Int) {
       mask.foreachMasked(movement) { (x,y) =>
         val xRaster = x+(_focusX-dim)
         val yRaster = y+(_focusY-dim)
-        if(0 <= xRaster && xRaster < cols && 0 <= yRaster && yRaster < rows) {
+        if(0 <= xRaster && xRaster < _cols && 0 <= yRaster && yRaster < _rows) {
           f(xRaster,yRaster)
         }
       }
