@@ -139,7 +139,7 @@ akka {
     val reader = getReader(path, layerOpt)
     Try(reader.readPath(path, layerOpt, reOpt)) match { 
       case TrySuccess(r) => Result(r)
-      case TryFailure(e) => StepError("Could not load raster from path: ${path}","")
+      case TryFailure(e) => StepError(s"Could not load raster from path: ${path}","")
     }
   }
 
@@ -172,7 +172,7 @@ akka {
       case None => {
         val debugInfo = "Failed to load raster ${name} from catalog at ${catalog.source}" + 
           " with json: \n" + catalog.json
-        StepError("Did not find raster \"${name}\" in catalog", debugInfo)
+        StepError(s"Did not find raster '${name}' in catalog", debugInfo)
       }
     }
   }
