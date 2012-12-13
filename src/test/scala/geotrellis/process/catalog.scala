@@ -6,30 +6,33 @@ import geotrellis.{Extent,RasterExtent}
 import geotrellis.raster.IntConstant
 import geotrellis._
 
+import scala.collection.JavaConversions._
+
 class CatalogSpec extends FunSpec with MustMatchers {
 
+  val datapath = "src/test/resources/data"
 
-val json0 = """
-{
- "catalog": "catalog1",
- "stores": []
-}
-"""
+  val json0 = """
+            {
+              "catalog": "catalog1",
+              "stores": []
+            }
+              """
 
-  val json1 = """
-{
- "catalog": "catalog2",
- "stores": [
-  {
-   "store": "stroud:fs",
-   "params": {
-     "type": "fs",
-     "path": "src/test/resources/data"
-   }
-  }
- ]
-}
-"""
+  val json1 = s"""
+              {
+                "catalog": "catalog2",
+                "stores": [
+                  {
+                    "store": "stroud:fs",
+                    "params": {
+                        "type": "fs",
+                        "path": "${datapath}"
+                    }
+                  }
+                ]
+              }
+            """
 
   describe("A Catalog") {
     it("should load when empty") {
@@ -61,7 +64,11 @@ val json0 = """
    val layers = store.getLayers
 
     it("should find Args in a source directory") {
-      layers.toList.length must be === 4
+      layers.toList.length must be === new java.io.File(datapath)
+                                                  .listFiles
+                                                  .filter { x => x.getName.endsWith(".json") }
+                                                  .map { x => 1 }
+                                                  .sum
     } 
 
     it("should create IntConstant NODATA args") {

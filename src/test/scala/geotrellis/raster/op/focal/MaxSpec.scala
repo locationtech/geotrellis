@@ -15,10 +15,19 @@ import org.scalatest.junit.JUnitRunner
 import scala.math._
 
 @RunWith(classOf[JUnitRunner])
-class MaxSpec extends FunSpec with ShouldMatchers 
-                              with TestServer 
-                              with RasterBuilders {
+class MaxSpec extends FunSpec with FocalOpSpec
+                              with ShouldMatchers 
+                              with TestServer {
+
+  val getMaxResult = Function.uncurried((getCursorResult _).curried((r,n) => focal.Max(r,n)))
+  val getMaxSetup = Function.uncurried((getSetup _).curried((r,n) => focal.Max(r,n)))
+  val squareSetup = getMaxSetup(defaultRaster,Square(1))
+
   describe("Max") {
+    it("should correctly compute a center neighborhood") {
+      squareSetup.getResult(2,2) should equal (4)
+    }
+
     it("should agree with a manually worked out example") {
       val r = createRaster(Array[Int](1,1,1,1,
                                       2,2,2,2,
@@ -32,16 +41,10 @@ class MaxSpec extends FunSpec with ShouldMatchers
                                     3,4,4,4))
     }
 
-    it("should handle NODATA") {
-      val r = createRaster(Array[Int](1,NODATA,1,NODATA,
-                                      NODATA,NODATA,NODATA,NODATA,
-                                      NODATA,NODATA,NODATA,NODATA,
-                                      NODATA,NODATA,NODATA,200))
-      val maxOp = focal.Max(r,Square(1))
-      assertEqual(maxOp,Array[Int](1,1,1,1,
-                                   1,1,1,1,
-                                   NODATA,NODATA,200,200,
-                                   NODATA,NODATA,200,200))
+    it("should match scala.math.max default sets") {      
+      for(s <- defaultTestSets) {
+        getMaxResult(Square(1),MockCursor.fromAll(s:_*)) should equal (s.max)
+      }
     }
   }
 }

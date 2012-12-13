@@ -12,9 +12,9 @@ import org.scalatest.matchers._
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class MinSpec extends FunSpec with ShouldMatchers
-                              with TestServer 
-                              with RasterBuilders  {
+class MinSpec extends FunSpec with FocalOpSpec
+                              with ShouldMatchers
+                              with TestServer {
   describe("Min") {
     it("square min r=1") {
       val r = createRaster((0 until 16).toArray)
@@ -73,6 +73,14 @@ class MinSpec extends FunSpec with ShouldMatchers
                                            0, 0, 0, 1))
       assertEqual(Min(r, Circle(5)), data0)
       assertEqual(Min(r, Circle(6)), data0)
+    }
+
+    val getMinResult = Function.uncurried((getCursorResult _).curried((r,n) => Min(r,n)))
+
+    it("should match scala.math.max default sets") {      
+      for(s <- defaultTestSets) {        
+        getMinResult(Square(1),MockCursor.fromAll(s:_*)) should equal (s.min)
+      }
     }
   }
 }

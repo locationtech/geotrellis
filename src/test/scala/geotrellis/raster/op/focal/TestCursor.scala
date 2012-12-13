@@ -53,7 +53,7 @@ object TestCursor {
       throw new Exception("Can't create a cursor with even dimension!")
     }
     val d = ((actualLines.length - 1)/2).toInt
-    val c = new Cursor(r,d)
+    val c = new Cursor(r.cols,r.rows,d)
     c.setMask(maskFuncFromString(s))
     c
   }
