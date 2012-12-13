@@ -120,8 +120,6 @@ class NeighborhoodSpec extends FunSpec with ShouldMatchers {
         }
       }
 
-      println((actual -- expected).toString)
-
       actual should equal (expected)
     }
   }

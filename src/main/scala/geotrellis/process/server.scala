@@ -139,7 +139,7 @@ akka {
     val reader = getReader(path, layerOpt)
     Try(reader.readPath(path, layerOpt, reOpt)) match { 
       case TrySuccess(r) => Result(r)
-      case TryFailure(e) => StepError("Could not load raster from path: ${path}","")
+      case TryFailure(e) => StepError(s"Could not load raster from path: ${path}","")
     }
   }
 
