@@ -12,8 +12,9 @@ GeoTrellis was designed to solve three core problems, with a focus on raster pro
 - Creating distributed geoprocessing services that can act on large data sets
 - Parallelizing geoprocessing operations to take full advantage of multi-core architecture 
 
-GeoTrellis is a project of Azavea (www.azavea.com), and was written by Josh Marcus (jmarcus@azavea.com) and Erik Osheim (eosheim@azavea.com).  Please contact us if you have any questions, find us on irc at #geotrellis on freenode, or join 
+Please contact us if you have any questions, find us on irc at #geotrellis on freenode, or join 
 the user mailing list at [https://groups.google.com/group/geotrellis-user](https://groups.google.com/group/geotrellis-user).
+More information is also available on the [http://www.azavea.com/products/geotrellis/](GeoTrellis website).
 
 The current release version of GeoTrellis is 0.7.0 (Asgard).
 
@@ -71,4 +72,13 @@ operations with existing operations.
 
 You can find *Scaladocs* for the latest version of the project here:
 
-[http://azavea.github.com/geotrellis/0.7.0/api/index.html#geotrellis.package](http://azavea.github.com/geotrellis/0.7.0/api/index.html#geotrellis.package)
+[http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.package](http://azavea.github.com/geotrellis/0.7.0/api/index.html#geotrellis.package)
+
+## Contributors
+
+ - Josh Marcus
+ - Erik Osheim
+ - Rob Emanuele 
+ - Adam Hinz
+ - Michael Tedeschi
+ - Justin Walgran
