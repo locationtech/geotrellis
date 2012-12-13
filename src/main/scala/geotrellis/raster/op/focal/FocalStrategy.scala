@@ -13,7 +13,7 @@ object TraversalStrategy {
 }
 import TraversalStrategy._
 
-/*
+/**
  * Focal strategy which moves a Cursor across the raster,
  * allowing a calculation to be done on each cell using the Cursor
  * to determine what neighboring cells are inside the focus's
@@ -85,7 +85,7 @@ object CursorStrategy {
       } else {
         cursor.move(Movement.Right)
         x += 1
-        if(x - cursor.dim >= 0) {
+        if(x - cursor.extent >= 0) {
           zagTime = true
         }
       }
@@ -155,7 +155,7 @@ object CursorStrategy {
   }
 }
 
-/*
+/**
  * Focal strategy that implements a more strict mechanism that informs the user
  * what cells have been added or removed. This strategy is more performant,
  * but can only be used for Square or Circle neighborhoods.

@@ -7,6 +7,9 @@ import geotrellis._
 
 sealed trait Movement { val isVertical:Boolean }
 
+/**
+ * Movements used to move a [[Cursor]] around, and to track it's movements.
+ */
 object Movement { 
   val Up = new Movement { val isVertical = true }
   val Down = new Movement { val isVertical = true }
@@ -16,11 +19,26 @@ object Movement {
 }
 import Movement._
 
+/** A lighweight wrapper around performing foreach calculations on a set of cell coordinates */
 trait CellSet {
+  /** Calls a funtion with the col and row coordinate of every cell contained in the CellSet.
+   *
+   * @param    f      Function that takes col and row coordinates, that will be called
+   *                  for each cell contained in this CellSet.
+   */
   def foreach(f:(Int,Int)=>Unit):Unit
 }
 
 object Cursor {
+  /** Creates a cursor from a raster and a neighborhood
+   *
+   * This will create a [[Cursor]] based on the raster and neighborhood extent,
+   * and will apply the neighborhood mask if it has one.
+   *
+   * @param    r    Raster the [[Cursor]] will be for.
+   * @param    n    Neighborhood this [[Cursor]] will be based on,
+   *                for extent and mask.
+   */
   def apply(r:Raster,n:Neighborhood) = {
     val result = new Cursor(r.cols,r.rows,n.extent)
     if(n.hasMask) { result.setMask(n.mask) }
@@ -32,27 +50,28 @@ object Cursor {
  * Represents a cursor that can be used to iterate over cells within a focal
  * neighborhood.
  *
- * @param      r                     Raster that this cursor runs over
- * @param      distanceFromCenter    The distance from the focus that the
+ * @param      cols                  Number of columns in the raster the Cursor is moving on.
+ * @param      rows                  Number of rows in the raster the Cursor is moving on.
+ * @param      ext                   The distance from the focus that the
  *                                   bounding box of this cursor extends.
  *                                   e.g. if the bounding box is 9x9, then
  *                                   the distance from center is 1.
  */
-class Cursor(cols:Int,rows:Int, extent:Int) {
+class Cursor(cols:Int,rows:Int, ext:Int) {
   private val _cols = cols
   private val _rows = rows
 
-  val dim = extent
-  private val d = 2*dim + 1
+  private val _extent = ext
+  private val d = 2*_extent + 1
 
-  var mask:CursorMask = null
+  private var mask:CursorMask = null
   private var hasMask = false
 
   // Values to track the bound of the cursor
-  private var _xmin = 0
-  private var _xmax = 0
-  private var _ymin = 0
-  private var _ymax = 0
+  private var _colmin = 0
+  private var _colmax = 0
+  private var _rowmin = 0
+  private var _rowmax = 0
 
   // Values to track added\removed values
   private var addedCol = 0
@@ -64,33 +83,42 @@ class Cursor(cols:Int,rows:Int, extent:Int) {
   private var movement = NoMovement
 
   // Values to track the focus of the cursor
-  private var _focusX = 0
-  private var _focusY = 0
+  private var _col = 0
+  private var _row = 0
 
-  def focusX = _focusX
-  def focusY = _focusY
+  /**  The distance from the focus that the
+   *   bounding box of this cursor extends.
+   *   e.g. if the bounding box is 9x9, then
+   *   the distance from center is 1.
+   */
+  def extent = _extent
 
-  def xmin = _xmin
-  def xmax = _xmax
-  def ymin = _ymin
-  def ymax = _ymax
+  /** The current column of the cursor focus */
+  def col = _col
+  /** The current row of the cursor focus */
+  def row = _row
 
+  /** Indicates whether or not this cursor has been moved and is tracking state between
+   *  the previous position and the current position */
   def isReset = movement == NoMovement
 
-  /*
+  /**
    * Centers the cursor on a cell of the raster.
    * Added\Removed cells are not kept track of between centering moves,
    * and centering the cursor resets the state.
+   *
+   * @param   col    Column of raster to center on.
+   * @param   row    Row of raster to center on.
    */
-  def centerOn(x:Int,y:Int) = { 
+  def centerOn(col:Int,row:Int) = { 
     movement = NoMovement
-    _focusX = x
-    _focusY = y
+    _col = col
+    _row = row
 
-    _xmin = max(0,_focusX - dim)
-    _xmax = min(_cols - 1, _focusX + dim)
-    _ymin = max(0, _focusY - dim)
-    _ymax = min(_rows - 1, _focusY + dim)
+    _colmin = max(0,_col - _extent)
+    _colmax = min(_cols - 1, _col + _extent)
+    _rowmin = max(0, _row - _extent)
+    _rowmax = min(_rows - 1, _row + _extent)
   }
 
   /*
@@ -111,61 +139,78 @@ class Cursor(cols:Int,rows:Int, extent:Int) {
     movement = m
     m match {
       case Up => 
-        addedRow = _ymin - 1
-        removedRow = _focusY + dim
-        _focusY -= 1
+        addedRow = _rowmin - 1
+        removedRow = _row + _extent
+        _row -= 1
       case Down =>
-        addedRow = _ymax + 1
-        removedRow = _focusY - dim
-        _focusY += 1
+        addedRow = _rowmax + 1
+        removedRow = _row - _extent
+        _row += 1
       case Left =>
-        addedCol = _xmin - 1
-        removedCol = _focusX + dim
-        _focusX -= 1
+        addedCol = _colmin - 1
+        removedCol = _col + _extent
+        _col -= 1
       case Right =>
-        addedCol = _xmax + 1
-        removedCol = _focusX - dim
-        _focusX += 1
+        addedCol = _colmax + 1
+        removedCol = _col - _extent
+        _col += 1
       case _ => 
     }
 
-    _xmin = max(0,_focusX - dim)
-    _xmax = min(_cols - 1, _focusX + dim)
-    _ymin = max(0, _focusY - dim)
-    _ymax = min(_rows - 1, _focusY + dim)
+    _colmin = max(0,_col - _extent)
+    _colmax = min(_cols - 1, _col + _extent)
+    _rowmin = max(0, _row - _extent)
+    _rowmax = min(_rows - 1, _row + _extent)
   }
 
+  /** Sets the mask for this cursor.
+   *
+   * @param     f    Function that takes a col and row of the neighborhood coordinates
+   *                 and returns true if that cell should be masked.
+   *                 The neighborhood coordinates are the size of the cursor's
+   *                 bounding box, with (0,0) being the top right corner.
+   */
   def setMask(f:(Int,Int) => Boolean) = {
     hasMask = true
     mask = new CursorMask(d,f)
   }
 
+  /** A [[CellSet]] reperesenting all unmasked cells that are within the cursor bounds. */
   val allCells = new CellSet {
     def foreach(f:(Int,Int)=>Unit) = Cursor.this.foreach(f)
   }
 
+  /** A [[CellSet]] reperesenting unmasked cells currently within the cursor bounds,
+   *  that were added by the previous cursor movement. If the cursor has not been moved
+   *  (i.e. if isReset == true) then addedCells represents the same thing
+   *  as allCells.
+   */
   val addedCells = new CellSet {
     def foreach(f:(Int,Int)=>Unit) = Cursor.this.foreachAdded(f)
   }
 
+  /** A [[CellSet]] reperesenting cells that were moved outside the cursor bounds,
+   *  or unmasked cells that were masked, by the previous cursor movement.
+   *  If the cursor has not been moved this will be a no-op.
+   */
   val removedCells = new CellSet {
     def foreach(f:(Int,Int)=>Unit) = Cursor.this.foreachRemoved(f)
   }
 
-  /*
+  /**
    * Iterates over all cell values of the raster which
    * are covered by the cursor and not masked.
    *
    * @param     f         Function that receives from each cell
-   *                      it's x and y coordinates and it's value.
+   *                      it's col and row coordinates and it's value.
    */
   protected def foreach(f: (Int,Int)=>Unit):Unit = {
     if(!hasMask) {
-      var y = _ymin
+      var y = _rowmin
       var x = 0
-      while(y <= _ymax) {
-        x = _xmin
-        while(x <= _xmax) {
+      while(y <= _rowmax) {
+        x = _colmin
+        while(x <= _colmax) {
           f(x,y)
           x += 1
         }
@@ -175,9 +220,9 @@ class Cursor(cols:Int,rows:Int, extent:Int) {
       var y = 0
       while(y < d) {
         mask.foreachX(y) { x =>
-          val xRaster = x + (_focusX-dim)
-          val yRaster = y + (_focusY-dim)
-          if(_xmin <= xRaster && xRaster <= _xmax && _ymin <= yRaster && yRaster <= _ymax) {
+          val xRaster = x + (_col-_extent)
+          val yRaster = y + (_row-_extent)
+          if(_colmin <= xRaster && xRaster <= _colmax && _rowmin <= yRaster && yRaster <= _rowmax) {
             f(xRaster,yRaster)
           }
         }
@@ -186,7 +231,7 @@ class Cursor(cols:Int,rows:Int, extent:Int) {
     }
   }
 
-  /*
+  /**
    * Iterates over all cell values of the raster which
    * are covered by the cursor and not masked, that were exposed
    * as part of the last move of the cursor.
@@ -198,7 +243,7 @@ class Cursor(cols:Int,rows:Int, extent:Int) {
    * cell values that were unmasked as part of the move.
    *
    * @param     f         Function that receives from each cell it's
-   *                      x and y coordinates and it's value.
+   *                      col and row coordinates and it's value.
    */
   protected def foreachAdded(f:(Int,Int)=>Unit):Unit = {
     if(movement == NoMovement) {
@@ -206,14 +251,14 @@ class Cursor(cols:Int,rows:Int, extent:Int) {
     } else if (movement.isVertical) {
       if(0 <= addedRow && addedRow < _rows) {
         if(!hasMask) {
-          var x = _xmin
-          while(x <= _xmax) {
+          var x = _colmin
+          while(x <= _colmax) {
             f(x,addedRow)
             x += 1
           }
         } else {
-          mask.foreachX(addedRow-(_focusY-dim)) { x =>
-            val xRaster = x+(_focusX-dim)
+          mask.foreachX(addedRow-(_row-_extent)) { x =>
+            val xRaster = x+(_col-_extent)
             if(0 <= xRaster && xRaster <= _rows) {
               f(xRaster,addedRow)
             }
@@ -223,22 +268,22 @@ class Cursor(cols:Int,rows:Int, extent:Int) {
     } else { // Horizontal
       if(0 <= addedCol && addedCol < _cols) {
         if(!hasMask) {
-          var y = _ymin
-          while(y <= _ymax) {
+          var y = _rowmin
+          while(y <= _rowmax) {
             f(addedCol,y)
             y += 1
           }
         } else {
           if(movement == Left) {
             mask.foreachWestColumn { y =>
-              val yRaster = y+(_focusY-dim)
+              val yRaster = y+(_row-_extent)
               if(0 <= yRaster && yRaster < _cols) {
                 f(addedCol,yRaster)
               }
             }
           } else { // Right
             mask.foreachEastColumn { y =>
-              val yRaster = y+(_focusY-dim)
+              val yRaster = y+(_row-_extent)
               if(0 <= yRaster && yRaster < _cols) {
                 f(addedCol,yRaster)
               }
@@ -250,8 +295,8 @@ class Cursor(cols:Int,rows:Int, extent:Int) {
 
     if(hasMask) {
       mask.foreachUnmasked(movement) { (x,y) =>
-        val xRaster = x+(_focusX-dim)
-        val yRaster = y+(_focusY-dim)
+        val xRaster = x+(_col-_extent)
+        val yRaster = y+(_row-_extent)
         if(0 <= xRaster && xRaster < _cols && 0 <= yRaster && yRaster < _rows) {
           f(xRaster,yRaster)
         }
@@ -259,7 +304,7 @@ class Cursor(cols:Int,rows:Int, extent:Int) {
     }
   }
 
-  /*
+  /**
    * Iterates over all cell values of the raster which
    * are no longer covered by the cursor that were not previously masked
    * not masked, or that were masked when previously unmasked,
@@ -272,7 +317,7 @@ class Cursor(cols:Int,rows:Int, extent:Int) {
    * cell values that were masked as part of the move.
    *
    * @param     f         Function that receives from each cell it's
-   *                      x and y coordinates and it's value.
+   *                      col and row coordinates and it's value.
    */
   protected def foreachRemoved(f:(Int,Int)=>Unit):Unit = {
     if(movement == NoMovement) { return }
@@ -280,15 +325,15 @@ class Cursor(cols:Int,rows:Int, extent:Int) {
     if(movement.isVertical) {
       if(0 <= removedRow && removedRow < _rows) {
         if(!hasMask) {
-          var x = _xmin
-          while(x <= _xmax) {
+          var x = _colmin
+          while(x <= _colmax) {
             f(x,removedRow)
             x += 1
           }
         } else {
           if(movement == Up) {
             mask.foreachX(d-1) { x =>
-              val xRaster = x+(_focusX-dim)
+              val xRaster = x+(_col-_extent)
               if(0 <= xRaster && xRaster < _cols) {
                 f(xRaster,removedRow)
               }
@@ -296,7 +341,7 @@ class Cursor(cols:Int,rows:Int, extent:Int) {
           }
           else { // Down
             mask.foreachX(0) { x =>
-              val xRaster = x+(_focusX-dim)
+              val xRaster = x+(_col-_extent)
               if(0 <= xRaster && xRaster < _cols) {
                 f(xRaster,removedRow)
               }
@@ -307,22 +352,22 @@ class Cursor(cols:Int,rows:Int, extent:Int) {
     } else { // Horizontal
       if(0 <= removedCol && removedCol < _cols) {
         if(!hasMask) {
-          var y = _ymin
-          while(y <= _ymax) {
+          var y = _rowmin
+          while(y <= _rowmax) {
             f(removedCol,y)
             y += 1
           }
         } else {
           if(movement == Left) {
             mask.foreachEastColumn { y =>
-              val yRaster = y+(_focusY-dim)
+              val yRaster = y+(_row-_extent)
               if(0 <= yRaster && yRaster < _cols) {
                 f(removedCol,yRaster)
               }
             }
           } else { //Right
             mask.foreachWestColumn { y =>
-              val yRaster = y+(_focusY-dim)
+              val yRaster = y+(_row-_extent)
               if(0 <= yRaster && yRaster < _cols) {
                 f(removedCol,yRaster)
               }
@@ -334,8 +379,8 @@ class Cursor(cols:Int,rows:Int, extent:Int) {
 
     if(hasMask) {
       mask.foreachMasked(movement) { (x,y) =>
-        val xRaster = x+(_focusX-dim)
-        val yRaster = y+(_focusY-dim)
+        val xRaster = x+(_col-_extent)
+        val yRaster = y+(_row-_extent)
         if(0 <= xRaster && xRaster < _cols && 0 <= yRaster && yRaster < _rows) {
           f(xRaster,yRaster)
         }

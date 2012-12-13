@@ -4,6 +4,16 @@ import geotrellis._
 
 import scala.math._
 
+/** Computes the mean value of a neighborhood for a given raster 
+ *
+ * @param    r      Raster on which to run the focal operation.
+ * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
+ *
+ * @note
+ * If the neighborhood is a [[Square]] neighborhood, the mean calucation will use
+ * the [[CellwiseMeanCalc]] to perform the calculation, because it is faster.
+ * If the neighborhood is of any other type, then [[CursorMeanCalc]] is used.
+ */
 case class Mean(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
   (r,n) =>
     n match {
@@ -49,6 +59,6 @@ case class CursorMeanCalc() extends CursorCalculation[Raster] with DoubleRasterD
       var v = r.get(x,y)
       if(v != NODATA) { count += 1; sum += v } 
     }
-    data.setDouble(c.focusX,c.focusY,sum / count)
+    data.setDouble(c.col,c.row,sum / count)
   }
 }

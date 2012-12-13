@@ -6,19 +6,52 @@ import scala.math._
 
 import Angles._
 
+/** Computes Hillshade (shaded relief) from a raster
+ *
+ * The resulting raster will be a shaded relief map (a hill shading)
+ * based on the sun altitude, azimuth, and the z factor. The z factor is
+ * a conversion factor from map units to elevation units. 
+ *
+ * This operation uses Horn's method for computing hill shading.
+ *
+ * @see [[http://goo.gl/DtVDQ Esri Desktop's description of Hillshade.]]
+ */
 object Hillshade {
   /**
-   * Create a default hillshade raster, using a default azimuth and altitude.
+   * Create a default hillshade raster, using a default azimuth of 315 degrees,
+   * altitude of 45 degrees, and z factor of 1.0.
+   *
+   * @param      r      Raster to for which to compute the hill shading.
    */
   def apply(r:Op[Raster]):DirectHillshade = DirectHillshade(r,315.0,45.0,1.0)
 
+  /**
+   * Creates a hillshade operation using a precomputed slope and aspect.
+   *
+   * @param   aspect      [[Aspect]] operation
+   * @param   slope       [[Slope]] operation
+   * @param   azimuth     Degrees clockwise from north of light source.
+   * @param   altitude    Degrees above horizon of the light source.
+   */
   def apply(aspect:Aspect,slope:Slope,azimuth:Op[Double],altitude:Op[Double]) =
     IndirectHillshade(aspect,slope,azimuth,altitude)
 
+  /**
+   * Creates a hillshade operation directly from azimuth, altitude, and zFactor parameters.
+   *
+   * @param   azimuth     Degrees clockwise from north of light source.
+   * @param   altitude    Degrees above horizon of the light source.
+   * @param   zFactor     Factor that convers altitude units to map units.
+   *                      (map units per elevation unit)
+   */
   def apply(r:Op[Raster],azimuth:Op[Double],altitude:Op[Double],zFactor:Op[Double]) =
     DirectHillshade(r,azimuth,altitude,zFactor)
 }
 
+/** Direct calculation of hill shading of a raster. Construct through the [[Hillshade]] object.
+ *
+ * @see [[Hillshade]]
+ */
 case class DirectHillshade(r:Op[Raster], azimuth:Op[Double],altitude:Op[Double],zFactor:Op[Double])
     extends FocalOp3[Double,Double,Double,Raster](r,Square(1),azimuth,altitude,zFactor)({
   (raster,n) => new SurfacePointCalculation[Raster] with ShortRasterDataResult 
@@ -57,6 +90,12 @@ case class DirectHillshade(r:Op[Raster], azimuth:Op[Double],altitude:Op[Double],
   }
 })
 
+/** Indirect calculation of hill shading of a raster that uses Aspect and Slope operation results.
+ *
+ * Construct through the [[Hillshade]] object.
+ *
+ * @see [[Hillshade]]
+ */
 case class IndirectHillshade(aspect:Aspect,slope:Slope,azimuth:Op[Double],altitude:Op[Double]) 
          extends Operation[Raster] {
   def _run(context:Context) = runAsync(List('init,aspect,slope,azimuth,altitude))

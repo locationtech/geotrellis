@@ -14,18 +14,32 @@ import Angles._
  * of the neighborhood (or kernel) to be used in a focal operation.
  */
 trait Neighborhood { 
-  /* How many cells past the focus the bounding box goes (e.g., 1 for 9x9 square) */
+  /** How many cells past the focus the bounding box goes. (e.g., 1 for 9x9 square) */
   val extent:Int 
-  /* Wether or not this neighborhood has a mask the cursor of it's bounding box */
+  /** Wether or not this neighborhood has a mask the cursor of it's bounding box */
   val hasMask:Boolean
-  /* Overridden to define the mask of Neighborhoods that have one */
+  /** Overridden to define the mask of Neighborhoods that have one */
   def mask(x:Int,y:Int):Boolean = { false }
 }
 
+/** A square neighborhood.
+ *
+ * @param   extent   Extent of the neighborhood.
+ *                   The extent is how many cells past the focus the bounding box goes.
+ *                   (e.g., 1 for 9x9 square)
+ */
 case class Square(extent:Int) extends Neighborhood {
   val hasMask = false
 }
 
+/** A circle neighborhood.
+ *
+ * @param   radius   Radius of the circle that defines which cells inside the bounding
+ *                   box will be considered part of the neighborhood.
+ *
+ * @note Cells who's distance from the center is exactly the radius '''are''' included
+ *       in the neighborhood.
+ */
 case class Circle(radius:Double) extends Neighborhood {
   val extent = ceil(radius).toInt
   val hasMask = true
@@ -36,21 +50,25 @@ case class Circle(radius:Double) extends Neighborhood {
   }
 }
 
-/**
- * Simple neighborhood that goes through the center of the focus
- * along the x any y axis of the raster
+/** A neighborhood that includes a column and row intersectin the focus.
+ *
+ * @param   extent   Extent of the neighborhood.
+ *                   The extent is how many cells past the focus the bounding box goes.
+ *                   (e.g., 1 for 9x9 square)
  */
 case class Nesw(extent:Int) extends Neighborhood {
   val hasMask = true
   override def mask(x:Int,y:Int) = { x != extent && y != extent  }
 }
 
-/**
- * Wedge neighborhood.
+/** Wedge neighborhood.
  *
  * @param     radius       The radius of the wedge, in raster cell units.
  * @param     startAngle   The starting angle of the wedge (in degrees).
  * @param     endAngle     The ending angle of the wedge (in degrees).
+ *
+ * @note Cells who's distance from the center is exactly the radius '''are''' included
+ *       in the neighborhood.
  */
 case class Wedge(radius:Double,startAngle:Double,endAngle:Double) extends Neighborhood {
   val extent = ceil(radius).toInt
@@ -76,11 +94,13 @@ case class Wedge(radius:Double,startAngle:Double,endAngle:Double) extends Neighb
   }
 }
 
-/**
- * Annulus neighborhood.
+/** Annulus neighborhood.
  *
  * @param     innerRadius   The radius of the inner circle of the Annulus.
  * @param     outerRadius   The radius of the outer circle of the Annulus.
+ *
+ * @note Cells who's distance from the center is exactly the inner or outer radius
+ *       '''are''' included in the neighborhood.
  */
 case class Annulus(innerRadius:Double,outerRadius:Double) extends Neighborhood {
   val extent = ceil(outerRadius).toInt
