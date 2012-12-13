@@ -7,21 +7,20 @@ import geotrellis._
  * a focal operation.
  */
 trait FocalCalculation[T] {
-  def execute(r:Raster, n:Neighborhood):Unit
+  /**
+   * @param re	Optional extent of the analysis area (where the focal operation will be executed)
+   */
+  def execute(r:Raster, n:Neighborhood, re:Option[RasterExtent]=None):Unit
   def getResult:T
 }
-
 /*
  * A focal calculation that uses the Cursor focal strategy.
  */
 trait CursorCalculation[T] extends FocalCalculation[T] {
   def traversalStrategy:Option[TraversalStrategy] = None
-  def execute(r:Raster,n:Neighborhood):Unit = {
-    traversalStrategy match {
-      case Some(t) => CursorStrategy.execute(r,Cursor(r,n),this,t)
-      case None => CursorStrategy.execute(r,Cursor(r,n),this)
-    }
-  }
+  def execute(r:Raster,n:Neighborhood, reOpt:Option[RasterExtent]=None):Unit = 
+    CursorStrategy.execute(r,Cursor(r,n,reOpt),this,traversalStrategy,reOpt)
+  
   def calc(r:Raster,cur:Cursor):Unit
 }
 
@@ -30,16 +29,11 @@ trait CursorCalculation[T] extends FocalCalculation[T] {
  */
 trait CellwiseCalculation[T] extends FocalCalculation[T] {
   def traversalStrategy:Option[TraversalStrategy] = None
-  def execute(r:Raster,n:Neighborhood) = {
-    n match {
-      case s:Square => 
-        traversalStrategy match {
-          case Some(t) => CellwiseStrategy.execute(r,s,this,t)
-          case None => CellwiseStrategy.execute(r,s,this)
-        }
+  def execute(r:Raster,n:Neighborhood,reOpt:Option[RasterExtent]=None) = n match {
+      case s:Square => CellwiseStrategy.execute(r,s,this,traversalStrategy,reOpt)
       case _ => sys.error("Cannot use cellwise calculation with this traversal strategy.")
     }
-  }
+  
   def add(r:Raster,x:Int,y:Int)
   def remove(r:Raster,x:Int,y:Int)
   def reset():Unit
@@ -51,11 +45,18 @@ trait CellwiseCalculation[T] extends FocalCalculation[T] {
  * with a range of variables.
  */
 
-trait Initialization           { def init(r:Raster):Unit }
-trait Initialization1[A]       { def init(r:Raster,a:A):Unit }
-trait Initialization2[A,B]     { def init(r:Raster,a:A,b:B):Unit }
-trait Initialization3[A,B,C]   { def init(r:Raster,a:A,b:B,c:C):Unit }
-trait Initialization4[A,B,C,D] { def init(r:Raster,a:A,b:B,c:C,d:D):Unit }
+trait Initialization { 
+  def init(r:Raster,reOpt:Option[RasterExtent]):Unit 
+
+  def getRasterExtent(r:Raster, reOpt:Option[RasterExtent]):RasterExtent = reOpt match {
+  	case None => r.rasterExtent
+  	case Some(re) => re 
+  }  
+}
+trait Initialization1[A]       { def init(r:Raster,a:A,reOpt:Option[RasterExtent]=None):Unit }
+trait Initialization2[A,B]     { def init(r:Raster,a:A,b:B,reOpt:Option[RasterExtent]=None):Unit }
+trait Initialization3[A,B,C]   { def init(r:Raster,a:A,b:B,c:C,reOpt:Option[RasterExtent]=None):Unit }
+trait Initialization4[A,B,C,D] { def init(r:Raster,a:A,b:B,c:C,d:D,reOpt:Option[RasterExtent]=None):Unit }
 
 /*
  * Trait defining the type and method for getting a result out
@@ -73,8 +74,8 @@ trait BitRasterDataResult extends Initialization {
   var data:BitArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
-  def init(r:Raster) = {
-    rasterExtent = r.rasterExtent
+  def init(r:Raster,reOpt:Option[RasterExtent]) = {
+    rasterExtent = getRasterExtent(r,reOpt)
     data = BitArrayRasterData.ofDim(rasterExtent.cols,rasterExtent.rows)
   }
 
@@ -85,8 +86,8 @@ trait ByteRasterDataResult extends Initialization {
   var data:ByteArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
-  def init(r:Raster) = {
-    rasterExtent = r.rasterExtent
+  def init(r:Raster, reOpt:Option[RasterExtent]) = {
+    rasterExtent = getRasterExtent(r,reOpt)
     data = ByteArrayRasterData.ofDim(rasterExtent.cols,rasterExtent.rows)
   }
 
@@ -97,8 +98,8 @@ trait ShortRasterDataResult extends Initialization {
   var data:ShortArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
-  def init(r:Raster) = {
-    rasterExtent = r.rasterExtent
+  def init(r:Raster, reOpt:Option[RasterExtent]) = {
+    rasterExtent = getRasterExtent(r,reOpt)
     data = ShortArrayRasterData.ofDim(rasterExtent.cols,rasterExtent.rows)
   }
 
@@ -109,8 +110,8 @@ trait IntRasterDataResult extends Initialization {
   var data:IntArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
-  def init(r:Raster) = {
-    rasterExtent = r.rasterExtent
+  def init(r:Raster,reOpt:Option[RasterExtent]) = {
+    rasterExtent = getRasterExtent(r,reOpt)
     data = IntArrayRasterData.ofDim(rasterExtent.cols,rasterExtent.rows)
   }
 
@@ -121,8 +122,8 @@ trait FloatRasterDataResult extends Initialization {
   var data:FloatArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
-  def init(r:Raster) = {
-    rasterExtent = r.rasterExtent
+  def init(r:Raster, reOpt:Option[RasterExtent]) = {
+    rasterExtent = getRasterExtent(r,reOpt)
     data = FloatArrayRasterData.ofDim(rasterExtent.cols,rasterExtent.rows)
   }
 
@@ -133,8 +134,8 @@ trait DoubleRasterDataResult extends Initialization {
   var data:DoubleArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
-  def init(r:Raster) = {
-    rasterExtent = r.rasterExtent
+  def init(r:Raster, reOpt:Option[RasterExtent]) = {
+    rasterExtent = getRasterExtent(r,reOpt)
     data = DoubleArrayRasterData.ofDim(rasterExtent.cols,rasterExtent.rows)
   }
 

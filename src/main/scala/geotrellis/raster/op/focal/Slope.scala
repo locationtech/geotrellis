@@ -15,8 +15,8 @@ case class Slope(r:Op[Raster], zFactorOp:Op[Double]) extends FocalOp1[Double,Ras
 
     override val traversalStrategy = Some(TraversalStrategy.ScanLine)
 
-    override def init(r:Raster,z:Double) = {
-      super.init(r)
+    override def init(r:Raster,z:Double,reOpt:Option[RasterExtent]) = {
+      super.init(r,reOpt)
       zFactor = z
       cols = r.cols
       cellWidth = r.rasterExtent.cellwidth

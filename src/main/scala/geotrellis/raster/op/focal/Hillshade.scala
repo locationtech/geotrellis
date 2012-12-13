@@ -42,8 +42,8 @@ case class DirectHillshade(r:Op[Raster], azimuth:Op[Double],altitude:Op[Double],
 
     override val traversalStrategy = Some(TraversalStrategy.ScanLine)
 
-    def init(r:Raster,az:Double,al:Double,z:Double) = {
-      super.init(r)
+    def init(r:Raster,az:Double,al:Double,z:Double,reOpt:Option[RasterExtent]) = {
+      super.init(r,None)
 
       azimuth = radians(90.0 - az)
       zenith = radians(90.0 - al)

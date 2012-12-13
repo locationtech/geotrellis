@@ -268,6 +268,16 @@ trait TiledRasterData extends RasterData {
     val prow = row % pixelRows
     getTile(tcol, trow).getDouble(pcol, prow)
   }
+  
+  /***
+   * Returns true if (col,row) is a valid tile in this tileset.
+   * 
+   * If the column or row is negative or higher than the number of columns or rows,
+   * returns false.
+   */
+  def withinBounds(col:Int,row:Int):Boolean = 
+    (col >= 0 && col < cols && row >= 0 && row < rows)
+
 }
 
 

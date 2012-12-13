@@ -13,8 +13,8 @@ case class Aspect(r:Op[Raster]) extends FocalOp[Raster](r,Square(1))({
 
     override val traversalStrategy = Some(TraversalStrategy.ScanLine)
 
-    override def init(r:Raster) = {
-      super.init(r)
+    override def init(r:Raster,reOpt:Option[RasterExtent]) = {
+      super.init(r,reOpt)
       cols = r.cols
       cellWidth = r.rasterExtent.cellwidth
       cellHeight = r.rasterExtent.cellheight

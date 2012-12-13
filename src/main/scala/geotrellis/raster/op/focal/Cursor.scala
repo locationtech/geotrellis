@@ -2,8 +2,9 @@ package geotrellis.raster.op.focal
 
 import scala.collection.mutable
 import scala.math.{min,max}
-
 import geotrellis._
+import Movement._
+import geotrellis.raster.CroppedRaster
 
 sealed trait Movement { val isVertical:Boolean }
 
@@ -14,18 +15,20 @@ object Movement {
   val Right = new Movement { val isVertical = false }
   val NoMovement = new Movement { val isVertical = false }
 }
-import Movement._
 
 trait CellSet {
   def foreach(f:(Int,Int)=>Unit):Unit
 }
 
+
 object Cursor {
-  def apply(r:Raster,n:Neighborhood) = {
-    val result = new Cursor(r,n.extent)
+  def apply(r:Raster,n:Neighborhood,reOpt:Option[RasterExtent] = None) = {
+    val result = new Cursor(r,n.extent,reOpt)
     if(n.hasMask) { result.setMask(n.mask) }
     result
   }
+  
+
 }
 
 /**
@@ -33,12 +36,16 @@ object Cursor {
  * neighborhood.
  *
  * @param      r                     Raster that this cursor runs over
+ * @param	   re                    Optional analysis area
  * @param      distanceFromCenter    The distance from the focus that the
  *                                   bounding box of this cursor extends.
  *                                   e.g. if the bounding box is 9x9, then
  *                                   the distance from center is 1.
  */
-class Cursor(r:Raster, extent:Int) {
+class Cursor(r:Raster,  extent:Int, reOpt:Option[RasterExtent] = None) {
+  
+  val analysisArea = FocalOperation.calculateAnalysisArea(r, reOpt)
+  
   private val rows = r.rows
   private val cols = r.cols
 
