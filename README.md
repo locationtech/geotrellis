@@ -14,7 +14,7 @@ GeoTrellis was designed to solve three core problems, with a focus on raster pro
 
 Please contact us if you have any questions, find us on irc at #geotrellis on freenode, or join 
 the user mailing list at [https://groups.google.com/group/geotrellis-user](https://groups.google.com/group/geotrellis-user).
-More information is also available on the [http://www.azavea.com/products/geotrellis/](GeoTrellis website).
+More information is also available on the [GeoTrellis website](http://www.azavea.com/products/geotrellis/).
 
 The current release version of GeoTrellis is 0.7.0 (Asgard).
 
