@@ -11,8 +11,8 @@ case class MoransCalc() extends CursorCalculation[Raster] with DoubleRasterDataR
   var mean = 0.0
   var `stddev^2` = 0.0
 
-  override def init(r:Raster) = {
-    super.init(r)
+  override def init(r:Raster,re:Option[RasterExtent]) = {
+    super.init(r,re)
 
     val h = FastMapHistogram.fromRaster(r)
     val Statistics(m,_,_,s,_,_) = h.generateStatistics
@@ -47,7 +47,7 @@ case class ScalarMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp(r,n)({
     var count:Double = 0.0
     var ws:Int = 0
 
-    def init(r:Raster) = {
+    def init(r:Raster, reOpt:Option[RasterExtent]) = {
       val h = FastMapHistogram.fromRaster(r)
       val Statistics(m,_,_,s,_,_) = h.generateStatistics
       mean = m

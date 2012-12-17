@@ -11,7 +11,7 @@ case class Median(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)(
         val v = r.get(x,y)
         if(v != NODATA) { h.countItem(r.get(x,y),1) }
       }
-      data.set(cursor.focusX,cursor.focusY,h.getMedian)
+      data.set(cursor.col,cursor.row,h.getMedian)
     }
   }
 })

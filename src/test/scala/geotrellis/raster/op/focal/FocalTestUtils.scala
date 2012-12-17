@@ -34,7 +34,7 @@ object MockCursor {
   }
 }
 
-case class MockCursor(all:Seq[Int],added:Seq[Int],removed:Seq[Int]) extends Cursor(Int.MaxValue,Int.MaxValue,1) {
+case class MockCursor(all:Seq[Int],added:Seq[Int],removed:Seq[Int]) extends Cursor(Raster.empty(RasterExtent(Extent(0,0,3,3),1,1,3,3)),1) {
   centerOn(0,0)
 
   override val allCells = new CellSet {
@@ -84,7 +84,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
   def getSetup[T <: FocalOp[Raster]](createOp:(Raster,Neighborhood)=>T,r:Raster,n:Neighborhood) = {
     val op = createOp(r,n)
     val calc = op.getCalculation(r,n).asInstanceOf[CursorCalculation[Raster] with Initialization]
-    calc.init(r)
+    calc.init(r,None)
     CursorSetup(r,calc,Cursor(r,n))
   }
 
@@ -92,7 +92,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
     val r = cursor.raster
     val op = createOp(r,n)
     val calc = op.getCalculation(r,n).asInstanceOf[CursorCalculation[Raster] with Initialization]
-    calc.init(r)
+    calc.init(r,None)
     calc.calc(r,cursor)
     calc.getResult.get(0,0)
   }
@@ -101,7 +101,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
     val r = cursor.raster
     val op = createOp(r,n)
     val calc = op.getCalculation(r,n).asInstanceOf[CursorCalculation[Raster] with Initialization]
-    calc.init(r)
+    calc.init(r,None)
     calc.calc(r,cursor)
     calc.getResult.getDouble(0,0)
   }
@@ -114,7 +114,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
     var init = true
     for(setup <- setups) {
       val mockCursor = MockCursor.fromAddRemove(setup.adds,setup.removes)
-      if(init) { calc.init(mockCursor.raster) ; init = false }
+      if(init) { calc.init(mockCursor.raster,None) ; init = false }
       calc.calc(mockCursor.raster,mockCursor)
       calc.getResult.get(0,0) should equal(setup.result)
     }
@@ -128,7 +128,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
     var init = true
     for(setup <- setups) {
       val r = MockCursor.fromAddRemove(setup.adds,setup.removes).raster
-      if(init) { calc.init(r) ; init = false }
+      if(init) { calc.init(r,None) ; init = false }
       var i = 0
       for(x <- setup.adds) {
         calc.add(r,i,1)
@@ -152,7 +152,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
     var init = true
     for(setup <- setups) {
       val mockCursor = MockCursor.fromAddRemove(setup.adds,setup.removes)
-      if(init) { calc.init(mockCursor.raster) ; init = false }
+      if(init) { calc.init(mockCursor.raster,None) ; init = false }
       calc.calc(mockCursor.raster,mockCursor)
       calc.getResult.getDouble(0,0) should equal(setup.result)
     }
@@ -166,7 +166,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
     var init = true
     for(setup <- setups) {
       val r = MockCursor.fromAddRemove(setup.adds,setup.removes).raster
-      if(init) { calc.init(r) ; init = false }
+      if(init) { calc.init(r,None) ; init = false }
       var i = 0
       for(x <- setup.adds) {
         calc.add(r,i,1)
@@ -188,7 +188,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
     val r = MockCursor.fromAddRemove(added,removed).raster
     val op = createOp(r,n)
     val calc = op.getCalculation(r,n).asInstanceOf[CellwiseCalculation[Raster] with Initialization]
-    calc.init(r)
+    calc.init(r,None)
     var i = 0
     for(x <- added) {
       calc.add(r,i,1)
@@ -209,7 +209,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
     val r = MockCursor.fromAddRemove(added,removed).raster
     val op = createOp(r,n)
     val calc = op.getCalculation(r,n).asInstanceOf[CellwiseCalculation[Raster] with Initialization]
-    calc.init(r)
+    calc.init(r,None)
     var i = 0
     for(x <- added) {
       calc.add(r,i,1)

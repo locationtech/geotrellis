@@ -9,8 +9,8 @@ case class Slope(r:Op[Raster], zFactorOp:Op[Double]) extends FocalOp1[Double,Ras
                                                with Initialization1[Double] {
     var zFactor = 0.0
 
-    override def init(r:Raster,z:Double) = {
-      super.init(r)
+    override def init(r:Raster,z:Double,reOpt:Option[RasterExtent]) = {
+      super.init(r,reOpt)
       zFactor = z
     }
 
