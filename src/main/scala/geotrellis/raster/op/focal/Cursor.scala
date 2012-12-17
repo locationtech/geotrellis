@@ -356,11 +356,9 @@ class Cursor(r:Raster,  extent:Int, reOpt:Option[RasterExtent] = None) {
    *  FocusX relative to the analysis area.
    *
    *  For example, if the analysis area starts at col 2 and the focusX is currently 3,
-   *  then the analysisCol should be 1. 
+   *  then the col should be 1. 
    */
-  def analysisCol = focusX - analysisOffsetCols
+  def col = focusX - analysisOffsetCols
 
   /** FocusY relative to the analysis area */
-  def analysisRow = focusY - analysisOffsetRows
-}
-
+  def row = focusY - analysisOffsetRows

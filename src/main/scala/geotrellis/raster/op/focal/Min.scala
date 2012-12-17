@@ -9,7 +9,7 @@ case class Min(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
     def calc(r:Raster,cursor:Cursor) = {
       var m = Int.MaxValue
       cursor.allCells.foreach { (col,row) => m = min(m,r.get(col,row)) }
-      data.set(cursor.analysisCol,cursor.analysisRow,m)
+      data.set(cursor.col,cursor.row,m)
     }
   }
 })
