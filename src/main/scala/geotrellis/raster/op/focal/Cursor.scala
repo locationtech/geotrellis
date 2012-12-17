@@ -362,3 +362,5 @@ class Cursor(r:Raster,  extent:Int, reOpt:Option[RasterExtent] = None) {
 
   /** FocusY relative to the analysis area */
   def row = focusY - analysisOffsetRows
+
+}
