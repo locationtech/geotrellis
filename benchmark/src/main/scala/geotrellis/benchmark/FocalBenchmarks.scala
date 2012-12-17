@@ -12,8 +12,8 @@ import com.google.caliper.SimpleBenchmark
 import scala.math.{min, max}
 import scala.util.Random
 
-object FocalOperationsBenchmark extends MyRunner(classOf[FocalOperationsBenchmark])
-class FocalOperationsBenchmark extends MyBenchmark {
+object FocalOperationsBenchmark extends BenchmarkRunner(classOf[FocalOperationsBenchmark])
+class FocalOperationsBenchmark extends OperationBenchmark {
   var r:Raster = null
 
   override def setUp() {
@@ -66,10 +66,13 @@ class FocalOperationsBenchmark extends MyBenchmark {
 
   def timeOldMode(reps:Int) = run(reps)(server.run(oldfocal.Mode(r,oldfocal.Square(1))))
   def timeMode(reps:Int) = run(reps)(server.run(focal.Mode(r,focal.Square(1))))
+  def timeModeCircle3(reps:Int) = run(reps)(server.run(focal.Mode(r,focal.Circle(3))))
 
   def timeOldMoran(reps:Int) = run(reps)(server.run(oldfocal.RasterMoransI(r,oldfocal.Square(1))))
   def timeMoranMoran(reps:Int) = run(reps)(server.run(focal.RasterMoransI(r,focal.Square(1))))
 
   def timeOldSum(reps:Int) = run(reps)(server.run(oldfocal.Sum(r,oldfocal.Square(1))))
   def timeSum(reps:Int) = run(reps)(server.run(focal.Sum(r,focal.Square(1))))
+
+  def timeConvolve(reps:Int) = run(reps)(server.run(focal.Convolve(r,focal.CreateGaussianRaster(5,5.0,4.0,50.0))))
 }
