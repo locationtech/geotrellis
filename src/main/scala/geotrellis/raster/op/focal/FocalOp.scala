@@ -83,7 +83,10 @@ object FocalOperation {
         val (colMin, rowMin) = CroppedRaster.findUpperLeft(inputRE, e.xmin, e.ymax) // north-west
         val (colMax, rowMax) = CroppedRaster.findLowerRight(inputRE, e.xmax, e.ymin) // south-east
        
-        AnalysisArea(colMin, rowMin, colMax, rowMax, re)
+        // colMax & rowMax of analysis area are inclusive, unlike results
+        // from CroppedRaster which are exclusive of the max bound,
+        // so we subtract 1 from each.
+        AnalysisArea(colMin, rowMin, colMax - 1, rowMax - 1, re)
       }
     }  
 }

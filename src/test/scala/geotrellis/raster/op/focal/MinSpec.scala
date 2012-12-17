@@ -79,5 +79,14 @@ class MinSpec extends FunSpec with ShouldMatchers
       assertEqual(Min(r, Circle(5)), data0)
       assertEqual(Min(r, Circle(6)), data0)
     }
+
+    it("should execute with an analysis area") {
+      val r = createRaster((0 until 16).toArray)
+      val min = Min(r, Square(1))
+      min.analysisAreaOp = Some(RasterExtent(Extent(0,1,3,4),1,1,3,3))
+      assertEqual(min, Array(0, 0, 1,
+                             0, 0, 1,
+                             4, 4, 5))
+    }
   }
 }
