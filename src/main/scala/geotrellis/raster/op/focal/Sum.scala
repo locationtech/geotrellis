@@ -24,7 +24,7 @@ class CursorSumCalc extends CursorCalculation[Raster]
       if(v != NODATA) { total -= r.get(x,y) }
     }
 
-    data.set(cursor.focusX,cursor.focusY,total)
+    data.set(cursor.col,cursor.row,total)
   }
 }
 

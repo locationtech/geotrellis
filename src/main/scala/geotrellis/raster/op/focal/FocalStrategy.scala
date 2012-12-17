@@ -4,6 +4,7 @@ import scala.math._
 
 import geotrellis._
 import geotrellis.raster._
+import geotrellis.raster.CroppedRaster
 
 sealed trait TraversalStrategy
 object TraversalStrategy {
@@ -21,71 +22,78 @@ import TraversalStrategy._
  * what cells have been removed since the last move.
  */
 object CursorStrategy {
-  def execute(r:Raster,cursor:Cursor,c:CursorCalculation[_]):Unit =
-    execute(r,cursor,c,ZigZag)
-
-  def execute(r:Raster,cursor:Cursor,c:CursorCalculation[_],t:TraversalStrategy):Unit = {
-    t match {
-      case ScanLine => handleScanLine(r,cursor,c)
-      case SpiralZag => handleSpiralZag(r,cursor,c)
-      case _ => handleZigZag(r,cursor,c)
-    }
+  def execute(r:Raster,cursor:Cursor,c:CursorCalculation[_],tOpt:Option[TraversalStrategy],reOpt:Option[RasterExtent]):Unit =  {
+    tOpt match {
+      case Some(t) => execute(r,cursor,c,t,reOpt)
+      case None    => execute(r,cursor,c,ZigZag,reOpt) 
+    } 
   }
 
-  private def handleSpiralZag(r:Raster,cursor:Cursor,c:CursorCalculation[_]) = {
-    var xmin = 0
-    var ymin = 0
-    var xmax = r.cols - 1
-    var ymax = r.rows - 1
-    var x = 0
-    var y = 0
+  def execute(r:Raster,cursor:Cursor,c:CursorCalculation[_],t:TraversalStrategy,reOpt:Option[RasterExtent]=None):Unit = {
+	val analysisArea = FocalOperation.calculateAnalysisArea(r, reOpt)
+    t match {
+      case ScanLine => handleScanLine(r, analysisArea, cursor,c)
+      case SpiralZag => handleSpiralZag(r,analysisArea,cursor,c)
+      case _ => handleZigZag(r,analysisArea,cursor,c)
+    }
+  }
+  
+  private def handleSpiralZag(r:Raster,analysisArea:AnalysisArea,cursor:Cursor,c:CursorCalculation[_]) = {
+    var colMax = analysisArea.colMax
+    var rowMax = analysisArea.rowMax
+    var colMin = analysisArea.colMin
+    var rowMin = analysisArea.rowMin
+
+    var col = colMin
+    var row = rowMin
+
     var xdirection = 1
     var ydirection = 1
     var done = false
     var zagTime = false
 
-    cursor.centerOn(0,0)
+    cursor.centerOn(col,row)
     
     // Spiral around the raster.
     // Once we get down with dealing with borders,
     // turn on fast mode for the cursor.
     while(!(done || zagTime)) {
       //Move right across top
-      while(x < xmax) {
+      while(col < colMax) {
         c.calc(r,cursor)
         cursor.move(Movement.Right)
-        x += 1
+        col += 1
       }
       // Move down along right edge
-      while(y < ymax) {
+      while(row < rowMax) {
         c.calc(r,cursor)
         cursor.move(Movement.Down)
-        y += 1
+        row += 1
       }
       //Move left across bottom
-      while(x > xmin) {
+      while(col > colMin) {
         c.calc(r,cursor)
         cursor.move(Movement.Left)
-        x -= 1
+        col -= 1
       }
       // Move up along left edge
-      while(y > ymin+1) {
+      while(row > rowMin+1) {
         c.calc(r,cursor)
         cursor.move(Movement.Up)
-        y -= 1
+        row -= 1
       }
       c.calc(r,cursor)
-      ymin += 1
-      ymax -= 1
-      xmin += 1
-      xmax -= 1
+      rowMin += 1
+      rowMax -= 1
+      colMin += 1
+      colMax -= 1
 
-      if(ymin == ymax || xmin == xmax) { 
+      if(rowMin == rowMax || colMin == colMax) { 
         done = true 
       } else {
         cursor.move(Movement.Right)
-        x += 1
-        if(x - cursor.dim >= 0) {
+        col += 1
+        if(col - cursor.dim >= 0) {
           zagTime = true
         }
       }
@@ -94,14 +102,14 @@ object CursorStrategy {
     var direction = 1
 
     // Now zig zag across interior.
-    while(y <= ymax) {
+    while(row <= rowMax) {
       c.calc(r,cursor)
-      x += direction
-      if(x < xmin || xmax < x) {
-	direction *= -1
-	y += 1
-	x += direction
-	cursor.move(Movement.Down)
+      col += direction
+      if(col < colMin || colMax < col) {
+        direction *= -1
+        row += 1
+        col += direction
+        cursor.move(Movement.Down)
       } else {
         if(direction == 1) { cursor.move(Movement.Right) }
         else { cursor.move(Movement.Left) }
@@ -109,23 +117,27 @@ object CursorStrategy {
     }
   }
 
-  private def handleZigZag(r:Raster,cursor:Cursor,c:CursorCalculation[_]) = {
-    val maxX = r.cols - 1
-    val maxY = r.rows - 1
-    var x = 0
-    var y = 0
+  private def handleZigZag(r:Raster,analysisArea:AnalysisArea,cursor:Cursor,c:CursorCalculation[_]) = {
+    val colMax = analysisArea.colMax
+    val rowMax = analysisArea.rowMax
+    val colMin = analysisArea.colMin
+    val rowMin = analysisArea.rowMin
+
+    var col = colMin
+    var row = rowMin
+
     var direction = 1
 
-    cursor.centerOn(0, 0)
+    cursor.centerOn(col, row)
 
-    while(y < r.rows) {
+    while(row <= rowMax) {
       c.calc(r,cursor)
-      x += direction
-      if(x < 0 || maxX < x) {
-	direction *= -1
-	y += 1
-	x += direction
-	cursor.move(Movement.Down)
+      col += direction
+      if(col < colMin || colMax < col) {
+        direction *= -1
+        row += 1
+        col += direction
+        cursor.move(Movement.Down)
       } else {
         if(direction == 1) { cursor.move(Movement.Right) }
         else { cursor.move(Movement.Left) }
@@ -133,21 +145,24 @@ object CursorStrategy {
     }
   }
 
-  private def handleScanLine(r:Raster,cursor:Cursor,c:CursorCalculation[_]) = {
-    val maxX = r.cols - 1
-    val maxY = r.rows - 1
-    var x = 0
-    var y = 0
+  private def handleScanLine(r:Raster,analysisArea:AnalysisArea,cursor:Cursor,c:CursorCalculation[_]) = {
+    val colMax = analysisArea.colMax
+    val rowMax = analysisArea.rowMax
+    val colMin = analysisArea.colMin
+    val rowMin = analysisArea.rowMin
 
-    cursor.centerOn(0, 0)
+    // set initial state of col and row
+    var col = colMin
+    var row = rowMin
+    cursor.centerOn(col, row)
 
-    while(y < r.rows) {
+    while(row <= rowMax) {
       c.calc(r,cursor)
-      x += 1
-      if(maxX < x) {
-	y += 1
-	x = 0
-	cursor.centerOn(x,y)
+      col += 1
+      if(colMax < col) {
+        row += 1
+        col = colMin
+        cursor.centerOn(col,row)
       } else {
         cursor.move(Movement.Right)
       }
@@ -161,62 +176,72 @@ object CursorStrategy {
  * but can only be used for Square or Circle neighborhoods.
  */ 
 object CellwiseStrategy {
-  def execute(r:Raster,n:Square,calc:CellwiseCalculation[_]):Unit = 
-    execute(r,n,calc,ScanLine)
+  def execute(r:Raster,n:Square,calc:CellwiseCalculation[_],tOpt:Option[TraversalStrategy], reOpt:Option[RasterExtent]):Unit = tOpt match {
+      case None => execute(r,n,calc,ScanLine,reOpt)
+      case Some(t) => execute(r,n,calc,t,reOpt)
+  }
 
-  def execute(r:Raster,n:Square,calc:CellwiseCalculation[_],t:TraversalStrategy):Unit = {
+ def execute(r:Raster,n:Square,calc:CellwiseCalculation[_],t:TraversalStrategy=ScanLine,reOpt:Option[RasterExtent]=None):Unit = {
+    val analysisArea = FocalOperation.calculateAnalysisArea(r, reOpt)
     t match {
-      case _ => handleScanLine(r,n.extent,calc)
+      case _ => handleScanLine(r,n.extent,calc,analysisArea)
     }
   }
 
-  private def handleScanLine(r:Raster,n:Int, calc:CellwiseCalculation[_]) = {
-    val cols = r.cols
-    val rows = r.rows
+  private def handleScanLine(r:Raster,n:Int, calc:CellwiseCalculation[_], analysisArea:AnalysisArea) = {
+    val rowMin = analysisArea.rowMin
+    val colMin = analysisArea.colMin
+    val rowMax = analysisArea.rowMax
+    val colMax = analysisArea.colMax
 
-    var y = 0
-    while (y < rows) {
-      val yy1 = max(0, y - n)
-      val yy2 = min(rows, y + n + 1)
+    val analysisOffsetCols = analysisArea.colMin
+    val analysisOffsetRows = analysisArea.rowMin
+
+    var row = 0
+    while (row <= rowMax) {
+      val curRowMin = max(rowMin, row - n) // was yy1
+      val curRowMax = min(rowMax, row + n ) // was yy2
 
       calc.reset()
-      val xx2 = min(cols, n + 1)
-      var yy = yy1
-      while (yy < yy2) {
-        var xx = 0
-        while (xx < xx2) {
+      val xx2 = min(colMax, colMin + n)
+      var yy = curRowMin
+      while (yy <= curRowMax) {
+        var xx = colMin
+        while (xx <= xx2) {
           calc.add(r, xx, yy)
           xx += 1
         }
         yy += 1
       }
 
-      calc.setValue(0, y)
+      // offset output col & row to analysis area coordinates
+      calc.setValue(0, row - rowMin)
 
-      var x = 1
-      while (x < cols) {
-        val xx1 = x - n - 1
+      var col = colMin + 1
+      while (col <= colMax) {
+        val xx1 = col - n - 1
         if (xx1 >= 0) {
-          var yy = yy1
-          while (yy < yy2) {
+          var yy = curRowMin
+          while (yy <= curRowMax) {
             calc.remove(r, xx1, yy)
             yy += 1
           }
         }
 
-        val xx2 = x + n
-        if (xx2 < cols) {
-            var yy = yy1
-            while (yy < yy2) {
+        val xx2 = col + n
+        if (xx2 <= colMax) {
+            var yy = curRowMin
+            while (yy <= curRowMax) {
               calc.add(r, xx2, yy)
               yy += 1
             }
           }
 
-        calc.setValue(x, y)
-        x += 1
+        // offset output col & row to analysis area coordinates
+        calc.setValue(col - colMin, row - rowMin)
+        col += 1
       }
-      y += 1
+      row += 1
     }
   }
 }

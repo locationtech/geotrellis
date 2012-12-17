@@ -111,7 +111,8 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
    * Assumes a Square(1) neighborhood.
    *
    */
-  def execute(r:Raster,n:Neighborhood) = {
+  //TODO: needs to be updated for analysis area
+  def execute(r:Raster,n:Neighborhood,reOpt:Option[RasterExtent]) = {
     val cols = r.cols
     val rows = r.rows
     cellWidth = r.rasterExtent.cellwidth
