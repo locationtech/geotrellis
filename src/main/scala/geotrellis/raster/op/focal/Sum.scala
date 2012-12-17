@@ -18,7 +18,7 @@ class CursorSumCalc extends CursorCalculation[Raster]
     cursor.addedCells.foreach { (x,y) => total += r.get(x,y) }
     cursor.removedCells.foreach { (x,y) => total -= r.get(x,y) }
 
-    data.set(cursor.focusX,cursor.focusY,total)
+    data.set(cursor.analysisCol,cursor.analysisRow,total)
   }
 }
 

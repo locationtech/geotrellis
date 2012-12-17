@@ -36,7 +36,7 @@ object Cursor {
  * neighborhood.
  *
  * @param      r                     Raster that this cursor runs over
- * @param	   re                    Optional analysis area
+ * @param	     re                    Optional analysis area
  * @param      distanceFromCenter    The distance from the focus that the
  *                                   bounding box of this cursor extends.
  *                                   e.g. if the bounding box is 9x9, then
@@ -45,9 +45,14 @@ object Cursor {
 class Cursor(r:Raster,  extent:Int, reOpt:Option[RasterExtent] = None) {
   
   val analysisArea = FocalOperation.calculateAnalysisArea(r, reOpt)
-  
-  private val rows = r.rows
-  private val cols = r.cols
+   
+  private val rows = analysisArea.rasterExtent.rows
+  private val cols = analysisArea.rasterExtent.cols
+
+  // How many columns from the left of the input raster does the analysis area begin?
+  // e.g. if the input raster is 10,10
+  val analysisOffsetCols = analysisArea.colMin
+  val analysisOffsetRows = analysisArea.rowMin
 
   val dim = extent
   private val d = 2*dim + 1
@@ -349,5 +354,17 @@ class Cursor(r:Raster,  extent:Int, reOpt:Option[RasterExtent] = None) {
       }
     }
   }
+
+
+  /** 
+   *  FocusX relative to the analysis area.
+   *
+   *  For example, if the analysis area starts at col 2 and the focusX is currently 3,
+   *  then the analysisCol should be 1. 
+   */
+  def analysisCol = focusX - analysisOffsetCols
+
+  /** FocusY relative to the analysis area */
+  def analysisRow = focusY - analysisOffsetRows
 }
 

@@ -11,6 +11,11 @@ import org.scalatest.matchers._
 
 import org.scalatest.junit.JUnitRunner
 
+// 0  1  2  3
+// 4  5  6  7
+// 8  9 10 11
+//12 13 14 15
+
 @RunWith(classOf[JUnitRunner])
 class MinSpec extends FunSpec with ShouldMatchers
                               with TestServer 

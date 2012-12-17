@@ -36,6 +36,13 @@ class FocalOp4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C
 
 /* Two arguments (the raster and neighborhoood) */
 
+abstract class FocalOperationBase {
+  var analysisArea:AnalysisArea
+  def setAnalysisArea(r:Raster,reOpt:Option[RasterExtent]) = {
+    analysisArea = FocalOperation.calculateAnalysisArea(r, reOpt) 
+  }
+} 
+
 abstract class FocalOperation[T](r:Op[Raster],n:Op[Neighborhood],reOpt:Op[Option[RasterExtent]] = Literal(None)) extends Operation[T] {
   def _run(context:Context) = runAsync(List('init,r,n,reOpt))
   def productArity = 2
@@ -62,7 +69,9 @@ case class AnalysisArea(colMin:Int, rowMin:Int, colMax:Int, rowMax:Int, rasterEx
 object FocalOperation {
     def calculateAnalysisArea(r:Raster,reOpt:Option[RasterExtent]) = 
     reOpt match {
-      case None => AnalysisArea(0, 0, r.cols - 1, r.rows - 1, r.rasterExtent)
+      case None => {
+        AnalysisArea(0, 0, r.cols - 1, r.rows - 1, r.rasterExtent)
+      }
       case Some(re) => {
         val inputRE = r.rasterExtent
         val e = re.extent
@@ -74,7 +83,7 @@ object FocalOperation {
         // translate the upper-left (xmin/ymax) and lower-right (xmax/ymin) points
         val (colMin, rowMin) = CroppedRaster.findUpperLeft(inputRE, e.xmin, e.ymax) // north-west
         val (colMax, rowMax) = CroppedRaster.findLowerRight(inputRE, e.xmax, e.ymin) // south-east
-        
+       
         AnalysisArea(colMin, rowMin, colMax, rowMax, re)
       }
     }  

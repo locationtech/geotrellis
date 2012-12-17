@@ -49,6 +49,6 @@ case class CursorMeanCalc() extends CursorCalculation[Raster] with DoubleRasterD
       var v = r.get(x,y)
       if(v != Double.NaN) { count += 1; sum += v } 
     }
-    data.setDouble(c.focusX,c.focusY,sum / count)
+    data.setDouble(c.analysisCol,c.analysisRow,sum / count)
   }
 }
