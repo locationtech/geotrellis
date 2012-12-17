@@ -36,20 +36,19 @@ class FocalOp4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C
 
 /* Two arguments (the raster and neighborhoood) */
 
-abstract class FocalOperationBase {
-  var analysisArea:AnalysisArea
-  def setAnalysisArea(r:Raster,reOpt:Option[RasterExtent]) = {
-    analysisArea = FocalOperation.calculateAnalysisArea(r, reOpt) 
-  }
+trait FocalOperationBase {
+  var analysisAreaOp:Operation[Option[RasterExtent]]
 } 
 
-abstract class FocalOperation[T](r:Op[Raster],n:Op[Neighborhood],reOpt:Op[Option[RasterExtent]] = Literal(None)) extends Operation[T] {
-  def _run(context:Context) = runAsync(List('init,r,n,reOpt))
-  def productArity = 2
+abstract class FocalOperation[T](r:Op[Raster],n:Op[Neighborhood],analysisArea:Op[Option[RasterExtent]] = Literal(None)) extends Operation[T] with FocalOperationBase {
+  var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
+  def _run(context:Context) = runAsync(List('init,r,n,analysisAreaOp))
+  def productArity = 3
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation[_]]
   def productElement(n:Int) = n match {
     case 0 => r
     case 1 => n
+    case 2 => analysisArea
     case _ => new IndexOutOfBoundsException()
   }
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {
@@ -91,7 +90,8 @@ object FocalOperation {
 
 /* Three arguments (the raster and neighborhoood and another) */
 
-abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A]) extends Operation[T] {
+abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],analysisArea:Op[Option[RasterExtent]]=None) extends Operation[T] with FocalOperationBase {
+  var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
   def _run(context:Context) = runAsync(List('init,r,n,a))
   def productArity = 3
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation1[_,_]]
@@ -102,36 +102,43 @@ abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A]) ext
     case _ => new IndexOutOfBoundsException()
   }
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {
-    case 'init :: (r:Raster) :: (n:Neighborhood) :: a :: Nil => 
+    case 'init :: (r:Raster) :: (n:Neighborhood) :: a :: (_analysisArea:Option[_]) :: Nil => 
+      val analysisArea = _analysisArea.asInstanceOf[Option[RasterExtent]]
       val calc = getCalculation(r,n)
-      calc.init(r,a.asInstanceOf[A])
-      calc.execute(r,n)
+      calc.init(r,a.asInstanceOf[A],analysisArea)
+      calc.execute(r,n,analysisArea)
       Result(calc.getResult)
   }
-  
+ 
   def getCalculation(r:Raster,n:Neighborhood):FocalCalculation[T] with Initialization1[A]
 }
 
 /* Four arguments (the raster and neighborhoood and two others) */
 
-abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B]) 
-         extends Operation[T] {
+abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],analysisArea:Op[Option[RasterExtent]]=None) 
+         extends Operation[T] with FocalOperationBase {
+  var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
   def _run(context:Context) = runAsync(List('init,r,n,a,b))
-  def productArity = 4
+  def productArity = 5
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation2[_,_,_]]
   def productElement(n:Int) = n match {
     case 0 => r
     case 1 => n
     case 2 => a
     case 3 => b
+    case 4 => analysisArea
     case _ => new IndexOutOfBoundsException()
   }
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {
-    case 'init :: (r:Raster) :: (n:Neighborhood) :: a :: b :: Nil => 
+    case 'init :: (r:Raster) :: (n:Neighborhood) :: a :: b :: (_analysisArea:Option[_]) :: Nil => 
+      val analysisArea = _analysisArea.asInstanceOf[Option[RasterExtent]]
       val calc = getCalculation(r,n)
-      calc.init(r,a.asInstanceOf[A],
-                  b.asInstanceOf[B])
-      calc.execute(r,n)
+      calc.init(r,
+                a.asInstanceOf[A],
+                b.asInstanceOf[B],
+                analysisArea
+      )
+      calc.execute(r,n,analysisArea)
       Result(calc.getResult)
   }
   
@@ -140,10 +147,11 @@ abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:
 
 /* Five arguments (the raster and neighborhoood and three others) */
 
-abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C]) 
-         extends Operation[T] {
+abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],analysisArea:Op[Option[RasterExtent]]=None) 
+         extends Operation[T] with FocalOperationBase {
+  var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
   def _run(context:Context) = runAsync(List('init,r,n,a,b,c))
-  def productArity = 5
+  def productArity = 6
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation3[_,_,_,_]]
   def productElement(n:Int) = n match {
     case 0 => r
@@ -151,15 +159,18 @@ abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],
     case 2 => a
     case 3 => b
     case 4 => c
+    case 5 => analysisArea
     case _ => new IndexOutOfBoundsException()
   }
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {
-    case 'init :: (r:Raster) :: (n:Neighborhood) :: a :: b :: c :: Nil => 
+    case 'init :: (r:Raster) :: (n:Neighborhood) :: a :: b :: c :: (_analysisArea:Option[_]) :: Nil => 
+      val analysisArea = _analysisArea.asInstanceOf[Option[RasterExtent]]
       val calc = getCalculation(r,n)
       calc.init(r,a.asInstanceOf[A],
                 b.asInstanceOf[B],
-                c.asInstanceOf[C])
-      calc.execute(r,n)
+                c.asInstanceOf[C],
+                analysisArea)
+      calc.execute(r,n,analysisArea)
       Result(calc.getResult)
   }
   
@@ -168,10 +179,11 @@ abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],
 
 /* Six arguments (the raster and neighborhoood and four others) */
 
-abstract class FocalOperation4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],d:Op[D]) 
-         extends Operation[T] {
+abstract class FocalOperation4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],d:Op[D],analysisArea:Op[Option[RasterExtent]]=None) 
+         extends Operation[T] with FocalOperationBase {
+  var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
   def _run(context:Context) = runAsync(List('init,r,n,a,b,c,d))
-  def productArity = 6
+  def productArity = 7
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation4[_,_,_,_,_]]
   def productElement(n:Int) = n match {
     case 0 => r
@@ -180,16 +192,19 @@ abstract class FocalOperation4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A
     case 3 => b
     case 4 => c
     case 5 => d
+    case 6 => analysisArea
     case _ => new IndexOutOfBoundsException()
   }
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {
-    case 'init :: (r:Raster) :: (n:Neighborhood) :: a :: b :: c :: d :: Nil => 
+    case 'init :: (r:Raster) :: (n:Neighborhood) :: a :: b :: c :: d :: (_analysisArea:Option[_]) :: Nil => 
+      val analysisArea = _analysisArea.asInstanceOf[Option[RasterExtent]]
       val calc = getCalculation(r,n)
       calc.init(r,a.asInstanceOf[A],
                   b.asInstanceOf[B],
                   c.asInstanceOf[C],
-                  d.asInstanceOf[D])
-      calc.execute(r,n)
+                  d.asInstanceOf[D],
+                  analysisArea)
+      calc.execute(r,n,analysisArea)
       Result(calc.getResult)
   }
   
