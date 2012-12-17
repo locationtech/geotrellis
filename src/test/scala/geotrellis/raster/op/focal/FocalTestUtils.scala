@@ -34,7 +34,7 @@ object MockCursor {
   }
 }
 
-case class MockCursor(all:Seq[Int],added:Seq[Int],removed:Seq[Int]) extends Cursor(Int.MaxValue,Int.MaxValue,1) {
+case class MockCursor(all:Seq[Int],added:Seq[Int],removed:Seq[Int]) extends Cursor(Raster.empty(RasterExtent(Extent(0,0,3,3),1,1,3,3)),1) {
   centerOn(0,0)
 
   override val allCells = new CellSet {
