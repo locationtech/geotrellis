@@ -92,7 +92,7 @@ object FocalOperation {
 
 abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],analysisArea:Op[Option[RasterExtent]]=None) extends Operation[T] with FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
-  def _run(context:Context) = runAsync(List('init,r,n,a))
+  def _run(context:Context) = runAsync(List('init,r,n,a,analysisAreaOp))
   def productArity = 3
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation1[_,_]]
   def productElement(n:Int) = n match {
@@ -118,7 +118,7 @@ abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],anal
 abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],analysisArea:Op[Option[RasterExtent]]=None) 
          extends Operation[T] with FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
-  def _run(context:Context) = runAsync(List('init,r,n,a,b))
+  def _run(context:Context) = runAsync(List('init,r,n,a,b,analysisAreaOp))
   def productArity = 5
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation2[_,_,_]]
   def productElement(n:Int) = n match {
@@ -150,7 +150,7 @@ abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:
 abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],analysisArea:Op[Option[RasterExtent]]=None) 
          extends Operation[T] with FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
-  def _run(context:Context) = runAsync(List('init,r,n,a,b,c))
+  def _run(context:Context) = runAsync(List('init,r,n,a,b,c,analysisAreaOp))
   def productArity = 6
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation3[_,_,_,_]]
   def productElement(n:Int) = n match {
@@ -182,7 +182,7 @@ abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],
 abstract class FocalOperation4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],d:Op[D],analysisArea:Op[Option[RasterExtent]]=None) 
          extends Operation[T] with FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
-  def _run(context:Context) = runAsync(List('init,r,n,a,b,c,d))
+  def _run(context:Context) = runAsync(List('init,r,n,a,b,c,d,analysisAreaOp))
   def productArity = 7
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation4[_,_,_,_,_]]
   def productElement(n:Int) = n match {
