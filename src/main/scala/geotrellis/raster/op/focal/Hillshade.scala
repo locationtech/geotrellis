@@ -21,36 +21,24 @@ object Hillshade {
 
 case class DirectHillshade(r:Op[Raster], azimuth:Op[Double],altitude:Op[Double],zFactor:Op[Double])
     extends FocalOp3[Double,Double,Double,Raster](r,Square(1),azimuth,altitude,zFactor)({
-  (raster,n) => new CellwiseCalculation[Raster] with ShortRasterDataResult 
-                                                with Initialization3[Double,Double,Double] 
-                                                with SurfacePointCalculation {
+  (raster,n) => new SurfacePointCalculation[Raster] with ShortRasterDataResult 
+                                                    with Initialization3[Double,Double,Double] {
     var azimuth = 0.0
     var zenith = 0.0
     var zFactor = 0.0
-    var cellWidth = 0.0
-    var cellHeight = 0.0
 
-    val s = new SurfacePoint
-
+    // Caches trig values for speed
     var cosZ = 0.0
     var sinZ = 0.0
     var cosAz = 0.0
     var sinAz = 0.0
 
-    var cols = 0
-    var y = -1
-
-    override val traversalStrategy = Some(TraversalStrategy.ScanLine)
-
     def init(r:Raster,az:Double,al:Double,z:Double,reOpt:Option[RasterExtent]) = {
-      super.init(r,None)
+      super.init(r,reOpt)
 
       azimuth = radians(90.0 - az)
       zenith = radians(90.0 - al)
       zFactor = z
-      cellWidth = r.rasterExtent.cellwidth
-      cellHeight = r.rasterExtent.cellheight
-      cols = r.cols
 
       cosZ = cos(zenith)
       sinZ = sin(zenith)
@@ -58,19 +46,13 @@ case class DirectHillshade(r:Op[Raster], azimuth:Op[Double],altitude:Op[Double],
       sinAz = sin(azimuth)
     }
 
-    def reset() = { y += 1 ; resetCols(y) }
-    def remove(r:Raster,x:Int,y:Int) = { }
-
-    def setValue(x:Int,y:Int) {
-      calcSurface(s,cellWidth,cellHeight)
+    def setValue(x:Int,y:Int,s:SurfacePoint) {
       val slope = s.slope(zFactor)
       val aspect = s.aspect
 
       val c = cosAz*s.cosAspect + sinAz*s.sinAspect // cos(azimuth - aspect)
       val v = (cosZ * s.cosSlope) + (sinZ * s.sinSlope * c)
       data.set(x,y,round(127.0 * max(0.0,v)).toInt)      
-
-      moveRight(x+1 == cols)
     }
   }
 })
@@ -95,8 +77,10 @@ case class IndirectHillshade(aspect:Aspect,slope:Slope,azimuth:Op[Double],altitu
       val sinZe = sin(ze)
       
       val hr = aspect.combineDouble(slope) { (aspectValue,slopeValue) =>
-        val v = (cosZe * cos(slopeValue)) +
-         (sinZe * sin(slopeValue) * cos(az - aspectValue))
+        val slopeRads = radians(slopeValue)
+        val aspectRads = radians(aspectValue)
+        val v = (cosZe * cos(slopeRads)) +
+         (sinZe * sin(slopeRads) * cos(az - aspectRads))
         round(127.0 * max(0.0,v))
       }
       Result(hr.convert(TypeShort))

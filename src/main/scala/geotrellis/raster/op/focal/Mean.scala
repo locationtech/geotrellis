@@ -43,11 +43,11 @@ case class CursorMeanCalc() extends CursorCalculation[Raster] with DoubleRasterD
   def calc(r:Raster,c:Cursor) = {
     c.removedCells.foreach { (x,y) => 
       var v = r.get(x,y)
-      if(v != Double.NaN) { count -= 1; sum -= v } 
+      if(v != NODATA) { count -= 1; sum -= v } 
     }
     c.addedCells.foreach { (x,y) => 
       var v = r.get(x,y)
-      if(v != Double.NaN) { count += 1; sum += v } 
+      if(v != NODATA) { count += 1; sum += v } 
     }
     data.setDouble(c.analysisCol,c.analysisRow,sum / count)
   }

@@ -2,34 +2,20 @@ package geotrellis.raster.op.focal
 
 import geotrellis._
 
-case class Slope(r:Op[Raster], zFactorOp:Op[Double]) extends FocalOp1[Double,Raster](r,Square(1),zFactorOp)({
-  (r,n) => new CellwiseCalculation[Raster] with DoubleRasterDataResult 
-                                           with Initialization1[Double] 
-                                           with SurfacePointCalculation {
-    var zFactor = 0.0
-    var cellWidth = 0.0
-    var cellHeight = 0.0
-    var cols = 0
-    val s = new SurfacePoint
-    var y = -1
+import Angles._
 
-    override val traversalStrategy = Some(TraversalStrategy.ScanLine)
+case class Slope(r:Op[Raster], zFactorOp:Op[Double]) extends FocalOp1[Double,Raster](r,Square(1),zFactorOp)({
+  (r,n) => new SurfacePointCalculation[Raster] with DoubleRasterDataResult 
+                                               with Initialization1[Double] {
+    var zFactor = 0.0
 
     override def init(r:Raster,z:Double,reOpt:Option[RasterExtent]) = {
       super.init(r,reOpt)
       zFactor = z
-      cols = r.cols
-      cellWidth = r.rasterExtent.cellwidth
-      cellHeight = r.rasterExtent.cellheight
     }
 
-    def reset() = { y += 1 ; resetCols(y) }
-    def remove(r:Raster,x:Int,y:Int) = { }
-
-    def setValue(x:Int,y:Int) {
-      calcSurface(s,cellWidth,cellHeight)
-      data.setDouble(x,y,s.slope(zFactor)) 
-      moveRight(x+1 == cols)
+    def setValue(x:Int,y:Int,s:SurfacePoint) {
+      data.setDouble(x,y,degrees(s.slope(zFactor)))
     }
   }
 })

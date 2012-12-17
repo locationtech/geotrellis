@@ -22,13 +22,11 @@ trait CellSet {
 
 
 object Cursor {
-  def apply(r:Raster,n:Neighborhood,reOpt:Option[RasterExtent] = None) = {
+  def apply(r:Raster,n:Neighborhood,reOpt:Option[RasterExtent]=None) = {
     val result = new Cursor(r,n.extent,reOpt)
     if(n.hasMask) { result.setMask(n.mask) }
     result
   }
-  
-
 }
 
 /**
@@ -43,14 +41,12 @@ object Cursor {
  *                                   the distance from center is 1.
  */
 class Cursor(r:Raster,  extent:Int, reOpt:Option[RasterExtent] = None) {
-  
   val analysisArea = FocalOperation.calculateAnalysisArea(r, reOpt)
-   
+
   private val rows = analysisArea.rasterExtent.rows
   private val cols = analysisArea.rasterExtent.cols
 
-  // How many columns from the left of the input raster does the analysis area begin?
-  // e.g. if the input raster is 10,10
+  // How many columns from the left/top of the input raster does the analysis area begin?
   val analysisOffsetCols = analysisArea.colMin
   val analysisOffsetRows = analysisArea.rowMin
 
