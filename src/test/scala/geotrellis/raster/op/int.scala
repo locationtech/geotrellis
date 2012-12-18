@@ -3,8 +3,6 @@ package geotrellis.raster.op
 import java.io.{File,FileInputStream,FileOutputStream}
 import scala.math.{max,min,sqrt}
 
-import geotrellis.geometry.Polygon
-
 import geotrellis._
 import geotrellis.statistics._
 import geotrellis.process._
