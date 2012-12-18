@@ -1,7 +1,6 @@
 package geotrellis
 
 import geotrellis._
-import geotrellis.geometry.Polygon
 import geotrellis.raster.op.local._
 import geotrellis.logic.{Do1,Do2}
 import language.implicitConversions
