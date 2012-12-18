@@ -19,9 +19,6 @@ import geotrellis._
  */
 trait Feature[+G <: jts.Geometry, D] {
 
-  // Corresponding FeatureSet to this kind of feature, e.g. Point[D] -> PointSet[D]
-  type Set <: FeatureSet[D]
-
   /**
    * Returns geometry as a JTS Geometry object.
    */
@@ -38,10 +35,6 @@ trait Feature[+G <: jts.Geometry, D] {
    */
   def mapGeom[H <: jts.Geometry](f: G => H) = Feature(f(geom), data)
 
-  /**
-   * Returns a FeatureSet containing only this feature.
-   */
-  def toSet(): FeatureSet[D]
 }
 /// Dimensionality marker traits
 
@@ -53,24 +46,17 @@ trait Dim2 // two-dimensional, e.g. Polygon or MultiPolygon
 
 trait SingleGeometry[G <: jts.Geometry, D] extends Feature[G, D]
 
-trait Point[D] extends SingleGeometry[jts.Point, D] with Dim0 {
-  type Set = PointSet[D]
-}
+trait Point[D] extends SingleGeometry[jts.Point, D] with Dim0 
 
-trait LineString[D] extends SingleGeometry[jts.LineString, D] {
-  type Set = LineStringSet[D]
-}
+trait LineString[D] extends SingleGeometry[jts.LineString, D] 
 
-trait Polygon[D] extends SingleGeometry[jts.Polygon, D] {
-  type Set = PolygonSet[D]
-}
+trait Polygon[D] extends SingleGeometry[jts.Polygon, D] 
 
 /// Multi feature traits
 
 trait GeometryCollection[G <: jts.GeometryCollection, D] extends Feature[G, D]
 
 trait MultiPoint[D] extends GeometryCollection[jts.MultiPoint, D] with Dim0 {
-  type Set = MultiPointSet[D]
 
   def flatten:List[Point[D]] =
     (0 until geom.getNumGeometries).map(
@@ -79,7 +65,6 @@ trait MultiPoint[D] extends GeometryCollection[jts.MultiPoint, D] with Dim0 {
 }
 
 trait MultiLineString[D] extends GeometryCollection[jts.MultiLineString, D] {
-  type Set = MultiLineStringSet[D]
 
   def flatten:List[LineString[D]] = 
     (0 until geom.getNumGeometries).map( 
@@ -87,16 +72,14 @@ trait MultiLineString[D] extends GeometryCollection[jts.MultiLineString, D] {
 }
 
 trait MultiPolygon[D] extends GeometryCollection[jts.MultiPolygon, D] {
-  type Set = MultiPolygonSet[D]
   def flatten:List[Polygon[D]] =
     (0 until geom.getNumGeometries).map(
       i => new JtsPolygon(geom.getGeometryN(i).asInstanceOf[jts.Polygon],data)).toList
 
 }
 
-case class JtsGeometry[D](geom: jts.Geometry, data: D) extends Feature[jts.Geometry, D] {
-  def toSet = sys.error("unimplemented")
-}
+case class JtsGeometry[D](geom: jts.Geometry, data: D) extends Feature[jts.Geometry, D] 
+
 
 /// Implementations
 
@@ -150,8 +133,7 @@ object Point {
    */
   def apply(x: Double, y: Double) = {
     JtsPoint(factory.createPoint(new jts.Coordinate(x, y)), Unit)
-  }
-
+  } 
   /**
    * Create a point feature from a JTS point instance.
    *
@@ -186,9 +168,7 @@ object Point {
 /**
  * Point feature with a JTS Point internal representation.
  */
-case class JtsPoint[D](geom: jts.Point, data: D) extends Point[D] {
-  def toSet() = PointArray(Array(this))
-}
+case class JtsPoint[D](geom: jts.Point, data: D) extends Point[D] 
 
 /// Line implementation
 object LineString {
@@ -244,9 +224,7 @@ object LineString {
 /**
  * Implementation of LineString feature with underlying jts instance.
  */
-case class JtsLineString[D](geom: jts.LineString, data: D) extends LineString[D] {
-  def toSet = sys.error("unimplemented")
-}
+case class JtsLineString[D](geom: jts.LineString, data: D) extends LineString[D]
 
 /// Polygon implementation
 object Polygon {
@@ -394,9 +372,7 @@ object Polygon {
 
 }
 
-case class JtsPolygon[D](geom: jts.Polygon, data: D) extends Polygon[D] {
-  def toSet = sys.error("unimplemented")
-}
+case class JtsPolygon[D](geom: jts.Polygon, data: D) extends Polygon[D] 
 
 /// MultiPoint implementation
 object MultiPoint {
@@ -421,9 +397,7 @@ object MultiPoint {
   }
 }
 
-case class JtsMultiPoint[D](geom: jts.MultiPoint, data: D) extends MultiPoint[D] {
-  def toSet = sys.error("unimplemented")
-}
+case class JtsMultiPoint[D](geom: jts.MultiPoint, data: D) extends MultiPoint[D]
 
 /// MultiLineString implementation
 /**
@@ -456,9 +430,7 @@ object MultiLineString {
   }
 }
 
-case class JtsMultiLineString[D](geom: jts.MultiLineString, data: D) extends MultiLineString[D] {
-  def toSet = sys.error("unimplemented")
-}
+case class JtsMultiLineString[D](geom: jts.MultiLineString, data: D) extends MultiLineString[D] 
 
 /// MultiPolygon implementation
 object MultiPolygon {
@@ -494,9 +466,7 @@ object MultiPolygon {
 
 }
 
-case class JtsMultiPolygon[D](geom: jts.MultiPolygon, data: D) extends MultiPolygon[D] {
-  def toSet = sys.error("unimplemented")
-}
+case class JtsMultiPolygon[D](geom: jts.MultiPolygon, data: D) extends MultiPolygon[D] 
 
 /**
  * Turn tuples into JtsCoordinates.
@@ -509,165 +479,4 @@ trait UsesCoords {
   }
 }
 
-trait FeatureSet[D] {
-  type Geom <: jts.Geometry
-  type Feat // = ({ type Feat = Feature[Geom, D] })#Feat
-  type Data = D
 
-  def length: Int
-  def lengthLong: Long
-
-  def chunk(n: Int): List[FeatureSet[D]]
-
-  def foreach(f: Feat => Unit): Unit
-  def foldLeft[A](initA: A)(f: (A, Feat) => A): A = {
-    var state = initA
-    foreach((feature) => state = f(state, feature))
-    state
-  }
-  def filter(f: Feat => Boolean): FeatureSet[D]
-
-  def map[F <: Feature[_, _], FS <: FeatureSet[_]](f: Feat => F)(implicit b: SetBuilder[F, FS], n: Manifest[F]): FS
-}
-
-trait SetBuilder[-F, +FS] {
-  type Set = FS
-  def build[G <: F](array: Array[G]): FS
-}
-
-object SetBuilder {
-  implicit def buildPointSet[D] = new SetBuilder[Point[D], PointSet[D]] {
-    def build[G <: Point[D]](array: Array[G]) = PointArray(array.asInstanceOf[Array[Point[D]]])
-  }
-}
-
-trait PointSet[D] extends FeatureSet[D] {
-  type Geom = jts.Point
-  type Feat = Point[D]
-}
-
-object PointSet {
-  def apply[D](points: List[Point[D]]) = PointArray(points.toArray)
-
-  def apply[D: Manifest](xs: Array[Double], ys: Array[Double], ds: Array[D]) =
-    new UnboxedPointSet(xs, ys, ds)
-}
-
-case class PointArray[D](points: Array[Point[D]]) extends PointSet[D] {
-  def length = points.length
-  def lengthLong = length.toLong
-
-  def chunk(n: Int) = {
-    var arrays: List[PointArray[D]] = Nil
-    val full_chunks = length / n
-    val remainder = length % n
-    for (j <- 0 until full_chunks) {
-      val a = Array.ofDim[Point[D]](n)
-      System.arraycopy(points, j * n, a, 0, n)
-      arrays = PointArray(a) :: arrays
-      //arrays = PointArray(a.toList) :: arrays
-    }
-    if (remainder != 0) {
-      val a = Array.ofDim[Feat](remainder)
-      System.arraycopy(points, full_chunks * n, a, 0, remainder)
-      //arrays = PointArray(a.toList) :: arrays
-      arrays = PointArray(a) :: arrays
-    }
-    arrays
-  }
-
-  def filter(f: Feat => Boolean) = PointArray(points.filter(f))
-  def foreach(f: Feat => Unit) = points.foreach(f)
-
-  def map[F <: Feature[_, _], FS <: FeatureSet[_]](f: Feat => F)(implicit b: SetBuilder[F, FS], n: Manifest[F]) = {
-    b.build(points.map(f))
-  }
-}
-
-case class UnboxedPointSet[D: Manifest](xs: Array[Double], ys: Array[Double], ds: Array[D]) extends PointSet[D] {
-  def length = xs.length
-  def lengthLong = xs.length.toLong
-  def chunk(n: Int) = {
-    var arrays: List[UnboxedPointSet[D]] = Nil
-    val full_chunks = length / n
-    val remainder = length % n
-    var i = 0
-    for (j <- 0 until full_chunks) {
-      val xs2 = Array.ofDim[Double](n)
-      val ys2 = Array.ofDim[Double](n)
-      val ds2 = Array.ofDim[D](n)
-      System.arraycopy(xs, j * n, xs2, 0, n)
-      System.arraycopy(ys, j * n, ys2, 0, n)
-      System.arraycopy(ds, j * n, ds2, 0, n)
-      arrays = UnboxedPointSet(xs2, ys2, ds2) :: arrays
-    }
-    if (remainder != 0) {
-      val a = Array.ofDim[Point[D]](remainder)
-      val xs2 = Array.ofDim[Double](n)
-      val ys2 = Array.ofDim[Double](n)
-      val ds2 = Array.ofDim[D](n)
-      System.arraycopy(xs, full_chunks * n, xs2, 0, remainder)
-      System.arraycopy(ys, full_chunks * n, ys2, 0, remainder)
-      System.arraycopy(ds, full_chunks * n, ds2, 0, remainder)
-      arrays = UnboxedPointSet(xs2, ys2, ds2) :: arrays
-    }
-    arrays
-  }
-
-  def foreach(f: Feat => Unit) {
-    var i = 0
-    val length = xs.length
-    while (i < length) {
-      f(Point(xs(i), ys(i), ds(i)))
-      i += 1
-    }
-  }
-
-  def filter(f: Feat => Boolean) = {
-    val xs2 = new ArrayBuffer[Double]()
-    val ys2 = new ArrayBuffer[Double]()
-    val ds2 = new ArrayBuffer[D]()
-
-    var i = 0
-    val length = xs.length
-    while (i < length) {
-      val x = xs(i)
-      val y = ys(i)
-      val d = ds(i)
-      if (f(Point(x, y, d))) {
-        xs2.append(x)
-        ys2.append(y)
-        ds2.append(d)
-      }
-      i += 1
-    }
-    UnboxedPointSet(xs2.toArray, ys2.toArray, ds2.toArray)
-  }
-
-  def map[F <: Feature[_, _], FS <: FeatureSet[_]](f: Feat => F)(implicit b: SetBuilder[F, FS], n: Manifest[F]) = {
-    val array = (0 until xs.length).map {
-      i => f(Point(xs(i), ys(i), ds(i)))
-    }.toArray
-    b.build(array)
-  }
-}
-
-trait PolygonSet[D] extends FeatureSet[D] {
-  type Geom = jts.Polygon
-}
-
-trait LineStringSet[D] extends FeatureSet[D] {
-  type Geom = jts.LineString
-}
-
-trait MultiPointSet[D] extends FeatureSet[D] {
-  type Geom = jts.MultiPoint
-}
-
-trait MultiLineStringSet[D] extends FeatureSet[D] {
-  type Geom = jts.MultiLineString
-}
-
-trait MultiPolygonSet[D] extends FeatureSet[D] {
-  type Geom = jts.MultiPolygon
-}
