@@ -54,15 +54,15 @@ object Slope {
 class Slope(r:Op[Raster], zFactor:Op[Double]) extends FocalOp1[Double,Raster](r,Square(1),zFactor)({
   (r,n) => new SurfacePointCalculation[Raster] with DoubleRasterDataResult 
                                                with Initialization1[Double] {
-    var _zFactor = 0.0
+    var zFactor = 0.0
 
-    override def init(r:Raster,z:Double) = {
-      super.init(r)
-      _zFactor = z
+    override def init(r:Raster,z:Double,reOpt:Option[RasterExtent]) = {
+      super.init(r,reOpt)
+      zFactor = z
     }
 
     def setValue(x:Int,y:Int,s:SurfacePoint) {
-      data.setDouble(x,y,degrees(s.slope(_zFactor)))
+      data.setDouble(x,y,degrees(s.slope(zFactor)))
     }
   }
 })
