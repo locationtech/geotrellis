@@ -84,6 +84,6 @@ case class ScalarMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp(r,n)({
       ws -= 1 // for focus     
     }
 
-    def getResult = count / ws
+    def result = count / ws
   }
 })

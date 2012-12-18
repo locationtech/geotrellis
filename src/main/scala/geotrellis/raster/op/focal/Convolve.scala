@@ -1,21 +1,34 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.feature.Point
+import geotrellis.feature.op._
 import scala.math.{max,min}
 
+/**
+ * Creates a Gaussian raster. Can be used with the [[Convolve]] or [[KernelDensity]] operations.
+ *
+ * @param    size           Number of rows of the resulting raster.
+ * @param    cellWidth      Cell width of the resulting raster
+ * @param    sigma          Sigma parameter for Gaussian
+ * @param    amp            Amplitude for Gaussian. Will be the value at the center of
+ *                          the resulting raster.
+ */
 case class CreateGaussianRaster(size: Op[Int], cellWidth: Op[Double], sigma: Op[Double], amp: Op[Double]) 
-     extends Op4[Int,Double,Double,Double,Raster](size, cellWidth, sigma, amp)((n,w,sigma,amp) => {
+     extends Op4[Int,Double,Double,Double,Raster](size, cellWidth, sigma, amp)({ (n,w,sigma,amp) => 
+
        val extent = Extent(0,0,n*w,n*w)
        val rasterExtent = RasterExtent(extent, w, w, n, n)
-       val outputR = Raster.empty(rasterExtent)
-       val output = outputR.data.mutable.get
+       val output = IntArrayRasterData.empty(rasterExtent.cols, rasterExtent.rows)
+
+       val denom = 2.0*sigma*sigma
 
        var r = 0
        var c = 0
        while(r < n) {
          while(c < n) {
            val rsqr = (c - n/2)*(c - n/2) + (r - n/2)*(r - n/2)
-           val g = (amp * (math.exp(-rsqr / (2.0*sigma*sigma)))).toInt
+           val g = (amp * (math.exp(-rsqr / denom))).toInt
            output.set(c,r,g)
 
            c += 1
@@ -24,21 +37,27 @@ case class CreateGaussianRaster(size: Op[Int], cellWidth: Op[Double], sigma: Op[
          r += 1
        }
 
-       Result(outputR)
+       Result(Raster(output,rasterExtent))
      })
 
+/**
+ * Creates a Circle raster. Can be used with the [[Convolve]] or [[KernelDensity]] operations.
+ *
+ * @param       size           Number of rows in the resulting raster.
+ * @param       cellWidth      Cell width of the resutling raster.
+ * @param       rad            Radius of the circle.
+ */
 case class CreateCircleRaster(size: Op[Int], cellWidth: Op[Double], rad: Op[Int]) 
-    extends Op3[Int,Double,Int,Raster](size, cellWidth,rad)(
-  { (size, cellWidth, rad) =>
+    extends Op3[Int,Double,Int,Raster](size, cellWidth,rad)({ (size, cellWidth, rad) =>
 
     val extent = Extent(0,0,size*cellWidth,size*cellWidth)
     val rasterExtent = RasterExtent(extent, cellWidth, cellWidth, size, size)
-    val outputR = Raster.empty(rasterExtent)
-    val output = outputR.data.mutable.get
+    val output = IntArrayRasterData.empty(rasterExtent.cols, rasterExtent.rows)
+
+    val rad2 = rad*rad
 
     var r = 0
     var c = 0
-    val rad2 = rad*rad
     while(r < size) {
       while(c < size) {
         output.set(c,r, if (r*r + c*c < rad2) 1 else 0)
@@ -48,77 +67,160 @@ case class CreateCircleRaster(size: Op[Int], cellWidth: Op[Double], rad: Op[Int]
       r += 1
     }
 
-    Result(outputR)
+    Result(Raster(output,rasterExtent))
   })
 
-case class Convolve(raster: Op[Raster], kernel: Op[Raster]) 
-     extends Op2[Raster, Raster, Raster](raster, kernel)((raster, kernel) => {
+/**
+ * Computes the convolution of two rasters.
+ *
+ * @param      r       Raster to convolve.
+ * @param      k       Kernel that represents the convolution filter.
+ */
+case class Convolve(r:Op[Raster], k:Op[Kernel]) extends FocalOp[Raster](r,k)({
+  (r,n) => 
+    n match {
+      case k:Kernel => new ConvolveCalculation(k)
+      case _ => sys.error("Convolve must take a Kernel neighborhood.")
+    }
+})
 
-       val e = raster.rasterExtent
-       val outputR = Raster.empty(e);
-       val output = outputR.data.mutable.get
+/**
+ * Computes the Kernel Density for a raster.
+ *
+ * @param      points           Sequence of point features who's values will be used to
+ *                              compute the density.
+ * @param      transform        Function that transforms the point feature's data into
+ *                              an Int value.
+ * @param      kernel           Kernel to be used in the computation.
+ * @param      rasterExtent     Raster extent of the resulting raster.
+ */
+case class KernelDensity[D](points:Op[Seq[Point[D]]], 
+                            transform:Op[D=>Int],
+                            kernel:Op[Kernel],
+                            rasterExtent:Op[RasterExtent])
+  extends Op4(points,transform,kernel,rasterExtent)({ (points,transform,kernel,rasterExtent) =>
+    val convolver = new Convolver { }
+    
+    convolver.initKernel(kernel)
+    convolver.init(rasterExtent)
+    for(point <- points) {
+      val col = convolver.rasterExtent.mapXToGrid(point.geom.getX())
+      val row = convolver.rasterExtent.mapYToGrid(point.geom.getY())
+      convolver.stampKernel(col,row,transform(point.data))
+    }                                                       
+    Result(convolver.result)
+ })
 
-       var r = 0
-       var c = 0
-       var r2 = 0 
-       var c2 = 0 
-       var kc = 0 
-       var kr = 0
+/**
+ * Supplies functionaltiy to operations that do convolution.
+ */
+trait Convolver extends IntRasterDataResult {
+  protected var kraster:Raster = null
+  protected var rows = 0
+  protected var cols = 0
+  protected var kernelrows = 0
+  protected var kernelcols = 0
 
-       val rows = raster.rows
-       val cols = raster.cols
+  def initKernel(k:Kernel) = {
+    kraster = k.raster
+    kernelrows = kraster.rows
+    kernelcols = kraster.cols
+  }
 
-       val rowsk = kernel.rows
-       val colsk = kernel.cols
+  override def init(r:Raster) = {
+    super.init(r)
+    rows = r.rows
+    cols = r.cols
+  }
 
-       while(r < rows) {
-         while(c < cols) {
-           val z = raster.get(c,r)
+  def init(re:RasterExtent) = {
+    rasterExtent = re
+    data = IntArrayRasterData.empty(rasterExtent.cols,rasterExtent.rows)
+    rows = re.rows
+    cols = re.cols
 
-           if (z != NODATA && z != 0) {
-             r2 = r - rowsk / 2
-             val c2base = c - colsk / 2
-             c2 = c2base
-             kc = 0
-             kr = 0
+  }
 
-             val maxr = math.min(r + rowsk / 2 + 1,rows)
-             val maxc = math.min(c + colsk / 2 + 1,cols)
+  def stampKernel(col:Int,row:Int,z:Int) = {
+    val rowmin = row - kernelrows / 2
+    val rowmax = math.min(row + kernelrows / 2 + 1, rows)
+ 
+    val colmin = col - kernelcols / 2
+    val colmax = math.min(col + kernelcols / 2 + 1, cols)
 
-             while(r2 < maxr) {
-               while(c2 < maxc) {               
-                 if (r2 >= 0 && c2 >= 0 && r2 < e.rows && c2 < e.cols &&
-                     kc >= 0 && kr >= 0 && kc < colsk && kr < rowsk) {
-                   val k = kernel.get(kc,kr)
-                   if (k != NODATA) {
-                     val o = output.get(c2,r2)
-                     val w = if (o == NODATA) {
-                       k * z
-                     } else {
-                       o + k*z
-                     }
-                     
-                     output.set(c2,r2,w)
-                   }
-                 } 
+    var kcol = 0
+    var krow = 0
 
-                 c2 += 1
-                 kc += 1
-               }
-               kc = 0
-               c2 = c2base
-               r2 += 1
-               kr += 1
-             }
-           }
+    var r = rowmin
+    var c = colmin
+    while(r < rowmax) {
+      while(c < colmax) {               
+        if (r >= 0 && c >= 0 && r < rows && c < cols &&
+            kcol >= 0 && krow >= 0 && kcol < kernelcols && krow < kernelrows) {
 
-           c += 1           
-         }
-         c = 0
-         r += 1
-       }
+          val k = kraster.get(kcol,krow)
+          if (k != NODATA) {
+            val o = data.get(c,r)
+            val w = if (o == NODATA) {
+              k * z
+            } else {
+              o + k*z
+            }
+            data.set(c,r,w)
+          }
+        } 
 
+        c += 1
+        kcol += 1
+      }
 
-       Result(outputR)
-     }) 
+      kcol = 0
+      c = colmin
+      r += 1
+      krow += 1
+    }
+  }
+}
 
+class ConvolveCalculation(k:Kernel) extends FocalCalculation[Raster] with Convolver {
+  initKernel(k)
+
+  def execute(r:Raster,n:Neighborhood) = {
+    n match {
+      case k:Kernel => execute(r,k)
+      case _ => sys.error("Convolve operation neighborhood must be of type Kernel")
+    }
+  }
+
+  def execute(r:Raster,kernel:Kernel) = {
+    val result = Raster.empty(r.rasterExtent);
+    val data = result.data.mutable.get
+
+    val rows = r.rows
+    val cols = r.cols
+
+    val kraster = kernel.raster
+
+    val kernelrows = kraster.rows
+    val kernelcols = kraster.cols
+
+    var focusRow = 0
+    var focusCol = 0
+
+    while(focusRow< rows) {
+      focusCol = 0
+      while(focusCol < cols) {
+        val z = r.get(focusCol,focusRow)
+
+        if (z != NODATA && z != 0) {
+          stampKernel(focusCol,focusRow,z)
+        }
+
+        focusCol += 1           
+      }
+      focusRow += 1
+    }
+
+    Result(result)    
+  }
+}

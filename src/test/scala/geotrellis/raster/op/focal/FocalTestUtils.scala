@@ -17,10 +17,10 @@ import scala.math._
 case class SeqTestSetup[@specialized(Int,Double)D](adds:Seq[Int],removes:Seq[Int],result:D)
 
 case class CursorSetup(r:Raster,calc:CursorCalculation[Raster],cursor:Cursor) {
-  def getResult(x:Int,y:Int) = {
+  def result(x:Int,y:Int) = {
     cursor.centerOn(x,y)
     calc.calc(r,cursor)
-    calc.getResult.get(x,y)
+    calc.result.get(x,y)
   }
 }
 
@@ -94,7 +94,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
     val calc = op.getCalculation(r,n).asInstanceOf[CursorCalculation[Raster] with Initialization]
     calc.init(r)
     calc.calc(r,cursor)
-    calc.getResult.get(0,0)
+    calc.result.get(0,0)
   }
 
   def getDoubleCursorResult[T <: FocalOp[Raster]](createOp:(Raster,Neighborhood)=>T,n:Neighborhood,cursor:MockCursor):Double = {
@@ -103,7 +103,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
     val calc = op.getCalculation(r,n).asInstanceOf[CursorCalculation[Raster] with Initialization]
     calc.init(r)
     calc.calc(r,cursor)
-    calc.getResult.getDouble(0,0)
+    calc.result.getDouble(0,0)
   }
 
   def testCursorSequence[T <: FocalOp[Raster]](createOp:(Raster,Neighborhood)=>T,n:Neighborhood,
@@ -116,7 +116,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
       val mockCursor = MockCursor.fromAddRemove(setup.adds,setup.removes)
       if(init) { calc.init(mockCursor.raster) ; init = false }
       calc.calc(mockCursor.raster,mockCursor)
-      calc.getResult.get(0,0) should equal(setup.result)
+      calc.result.get(0,0) should equal(setup.result)
     }
   }
 
@@ -140,7 +140,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
         i += 1
       }
       calc.setValue(0,0)
-      calc.getResult.get(0,0) should equal (setup.result)
+      calc.result.get(0,0) should equal (setup.result)
     }
   }
 
@@ -154,7 +154,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
       val mockCursor = MockCursor.fromAddRemove(setup.adds,setup.removes)
       if(init) { calc.init(mockCursor.raster) ; init = false }
       calc.calc(mockCursor.raster,mockCursor)
-      calc.getResult.getDouble(0,0) should equal(setup.result)
+      calc.result.getDouble(0,0) should equal(setup.result)
     }
   }
 
@@ -178,7 +178,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
         i += 1
       }
       calc.setValue(0,0)
-      calc.getResult.getDouble(0,0) should equal (setup.result)
+      calc.result.getDouble(0,0) should equal (setup.result)
     }
   }
 
@@ -201,7 +201,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
       i += 1
     }
     calc.setValue(0,0)
-    calc.getResult.get(0,0)
+    calc.result.get(0,0)
   }
 
   def getDoubleCellwiseResult[T <: FocalOp[Raster]](createOp:(Raster,Neighborhood)=>T, n:Neighborhood,
@@ -222,7 +222,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
       i += 1
     }
     calc.setValue(0,0)
-    calc.getResult.getDouble(0,0)
+    calc.result.getDouble(0,0)
   }
 
   // Default Raster for testing focal operations, constructed in a way

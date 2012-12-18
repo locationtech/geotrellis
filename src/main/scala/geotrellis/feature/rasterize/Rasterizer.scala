@@ -90,9 +90,9 @@ object Rasterizer {
    */
   def foreachCellByPoint[D](p:Point[D], re:RasterExtent)(f:(Int,Int,Point[D]) => Unit) {
     val geom = p.geom
-    val x = re.mapXToGrid(geom.getX())
-    val y = re.mapYToGrid(geom.getY())
-    f(x,y,p)
+    val col = re.mapXToGrid(geom.getX())
+    val row = re.mapYToGrid(geom.getY())
+    f(col,row,p)
   }
 
   def foreachCellByMultiPoint[D](p:MultiPoint[D], re:RasterExtent)(f:(Int,Int,Point[D]) => Unit) {

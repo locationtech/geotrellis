@@ -21,18 +21,18 @@ class FocalStrategySpec extends FunSpec with ShouldMatchers {
       var lastX = -1
 
       val calc = new CursorCalculation[Int] {
-        def getResult = 0
+        def result = 0
         def calc(r:Raster,cursor:Cursor) = {
-          if(cursor.focusY != 0 || cursor.focusX != 0 ) { cursor.isReset should equal(false) }
-          if(lastY != cursor.focusY) {
-            cursor.focusY should be > lastY
-            cursor.focusX should equal(lastX)
-            lastY = cursor.focusY
+          if(cursor.row != 0 || cursor.col != 0 ) { cursor.isReset should equal(false) }
+          if(lastY != cursor.row) {
+            cursor.row should be > lastY
+            cursor.col should equal(lastX)
+            lastY = cursor.row
           } else {
-            if(cursor.focusY % 2 == 0) { (cursor.focusX - lastX) should equal (1) }
-            else { (cursor.focusX - lastX) should equal (-1) }
+            if(cursor.row % 2 == 0) { (cursor.col - lastX) should equal (1) }
+            else { (cursor.col - lastX) should equal (-1) }
           }
-          lastX = cursor.focusX
+          lastX = cursor.col
         }
       }
 
@@ -49,17 +49,17 @@ class FocalStrategySpec extends FunSpec with ShouldMatchers {
       var lastX = 0
 
       val calc = new CursorCalculation[Int] {
-        def getResult = 0
+        def result = 0
         def calc(r:Raster,cursor:Cursor) = {
-          if(lastY != cursor.focusY) {
+          if(lastY != cursor.row) {
             cursor.isReset should equal(true)
-            cursor.focusY should be > lastY
-            cursor.focusX should equal(0)
-            lastY = cursor.focusY
+            cursor.row should be > lastY
+            cursor.col should equal(0)
+            lastY = cursor.row
           } else {
-            cursor.focusX should be  > lastX
+            cursor.col should be  > lastX
           }
-          lastX = cursor.focusX
+          lastX = cursor.col
         }
       }
 

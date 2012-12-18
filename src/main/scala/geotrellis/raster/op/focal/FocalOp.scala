@@ -111,7 +111,7 @@ abstract class FocalOperation[T](r:Op[Raster],n:Op[Neighborhood]) extends Operat
       val calc = getCalculation(r,n)
       calc.init(r)
       calc.execute(r,n)
-      Result(calc.getResult)
+      Result(calc.result)
   }
 
   /** Gets a calculation to be used with this focal operation for the given raster
@@ -154,7 +154,7 @@ abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A]) ext
       val calc = getCalculation(r,n)
       calc.init(r,a.asInstanceOf[A])
       calc.execute(r,n)
-      Result(calc.getResult)
+      Result(calc.result)
   }
 
   /** Gets a calculation to be used with this focal operation for the given raster
@@ -200,7 +200,7 @@ abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:
       calc.init(r,a.asInstanceOf[A],
                   b.asInstanceOf[B])
       calc.execute(r,n)
-      Result(calc.getResult)
+      Result(calc.result)
   }
 
   /** Gets a calculation to be used with this focal operation for the given raster
@@ -248,7 +248,7 @@ abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],
                 b.asInstanceOf[B],
                 c.asInstanceOf[C])
       calc.execute(r,n)
-      Result(calc.getResult)
+      Result(calc.result)
   }
   
   /** Gets a calculation to be used with this focal operation for the given raster
@@ -298,7 +298,7 @@ abstract class FocalOperation4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A
                   c.asInstanceOf[C],
                   d.asInstanceOf[D])
       calc.execute(r,n)
-      Result(calc.getResult)
+      Result(calc.result)
   }
   
   /** Gets a calculation to be used with this focal operation for the given raster

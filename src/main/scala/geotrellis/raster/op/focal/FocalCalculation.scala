@@ -3,12 +3,18 @@ package geotrellis.raster.op.focal
 import geotrellis._
 
 /**
+ * Declares that implementers have a result
+ */
+trait Resulting[T] {
+  def result:T
+}
+
+/**
  * A calculation that a FocalStrategy uses to complete
  * a focal operation.
  */
-trait FocalCalculation[T] {
+trait FocalCalculation[T] extends Resulting[T] {
   def execute(r:Raster, n:Neighborhood):Unit
-  def getResult:T
 }
 
 /**
@@ -69,17 +75,17 @@ trait Initialization4[A,B,C,D] { def init(r:Raster,a:A,b:B,c:C,d:D):Unit }
  * a [[Raster]] with [[BitArrayRasterData]], and defines
  * the [[Initialization]].init function for setting up the data.
  */
-trait BitRasterDataResult extends Initialization {
+trait BitRasterDataResult extends Initialization with Resulting[Raster] {
   /** [[BitArrayRasterData]] that will be returned by the focal calculation */
   var data:BitArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
   def init(r:Raster) = {
     rasterExtent = r.rasterExtent
-    data = BitArrayRasterData.ofDim(rasterExtent.cols,rasterExtent.rows)
+    data = BitArrayRasterData.empty(rasterExtent.cols,rasterExtent.rows)
   }
 
-  def getResult = Raster(data,rasterExtent)
+  def result = Raster(data,rasterExtent)
 }
 
 /**
@@ -87,17 +93,17 @@ trait BitRasterDataResult extends Initialization {
  * a [[Raster]] with [[ByteArrayRasterData]], and defines
  * the [[Initialization]].init function for setting up the data.
  */
-trait ByteRasterDataResult extends Initialization {
+trait ByteRasterDataResult extends Initialization with Resulting[Raster] {
   /** [[ByteArrayRasterData]] that will be returned by the focal calculation */
   var data:ByteArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
   def init(r:Raster) = {
     rasterExtent = r.rasterExtent
-    data = ByteArrayRasterData.ofDim(rasterExtent.cols,rasterExtent.rows)
+    data = ByteArrayRasterData.empty(rasterExtent.cols,rasterExtent.rows)
   }
 
-  def getResult = Raster(data,rasterExtent)
+  def result = Raster(data,rasterExtent)
 }
 
 /**
@@ -105,17 +111,17 @@ trait ByteRasterDataResult extends Initialization {
  * a [[Raster]] with [[ShortArrayRasterData]], and defines
  * the [[Initialization]].init function for setting up the data.
  */
-trait ShortRasterDataResult extends Initialization {
+trait ShortRasterDataResult extends Initialization with Resulting[Raster] {
   /** [[ShortArrayRasterData]] that will be returned by the focal calculation */
   var data:ShortArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
   def init(r:Raster) = {
     rasterExtent = r.rasterExtent
-    data = ShortArrayRasterData.ofDim(rasterExtent.cols,rasterExtent.rows)
+    data = ShortArrayRasterData.empty(rasterExtent.cols,rasterExtent.rows)
   }
 
-  def getResult = Raster(data,rasterExtent)
+  def result = Raster(data,rasterExtent)
 }
 
 /**
@@ -123,17 +129,17 @@ trait ShortRasterDataResult extends Initialization {
  * a [[Raster]] with [[IntArrayRasterData]], and defines
  * the [[Initialization]].init function for setting up the data.
  */
-trait IntRasterDataResult extends Initialization {
+trait IntRasterDataResult extends Initialization with Resulting[Raster] {
   /** [[IntArrayRasterData]] that will be returned by the focal calculation */
   var data:IntArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
   def init(r:Raster) = {
     rasterExtent = r.rasterExtent
-    data = IntArrayRasterData.ofDim(rasterExtent.cols,rasterExtent.rows)
+    data = IntArrayRasterData.empty(rasterExtent.cols,rasterExtent.rows)
   }
 
-  def getResult = Raster(data,rasterExtent)
+  def result = Raster(data,rasterExtent)
 }
 
 /**
@@ -141,17 +147,17 @@ trait IntRasterDataResult extends Initialization {
  * a [[Raster]] with [[FloatArrayRasterData]], and defines
  * the [[Initialization]].init function for setting up the data.
  */
-trait FloatRasterDataResult extends Initialization {
+trait FloatRasterDataResult extends Initialization with Resulting[Raster] {
   /** [[FloatArrayRasterData]] that will be returned by the focal calculation */
   var data:FloatArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
   def init(r:Raster) = {
     rasterExtent = r.rasterExtent
-    data = FloatArrayRasterData.ofDim(rasterExtent.cols,rasterExtent.rows)
+    data = FloatArrayRasterData.empty(rasterExtent.cols,rasterExtent.rows)
   }
 
-  def getResult = Raster(data,rasterExtent)
+  def result = Raster(data,rasterExtent)
 }
 
 /**
@@ -159,15 +165,15 @@ trait FloatRasterDataResult extends Initialization {
  * a [[Raster]] with [[DoubleArrayRasterData]], and defines
  * the [[Initialization]].init function for setting up the data.
  */
-trait DoubleRasterDataResult extends Initialization {
+trait DoubleRasterDataResult extends Initialization with Resulting[Raster] {
   /** [[DoubleArrayRasterData]] that will be returned by the focal calculation */
   var data:DoubleArrayRasterData = null
   var rasterExtent:RasterExtent = null
 
   def init(r:Raster) = {
     rasterExtent = r.rasterExtent
-    data = DoubleArrayRasterData.ofDim(rasterExtent.cols,rasterExtent.rows)
+    data = DoubleArrayRasterData.empty(rasterExtent.cols,rasterExtent.rows)
   }
 
-  def getResult = Raster(data,rasterExtent)
+  def result = Raster(data,rasterExtent)
 }
