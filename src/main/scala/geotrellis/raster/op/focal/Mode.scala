@@ -15,7 +15,7 @@ case class Mode(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
       case Square(ext) => new CellwiseModeCalc(ext)
       case _ => new CursorModeCalc(n.extent)
     }
-})
+}) with HasAnalysisArea[Mode]
 
 class CursorModeCalc(extent:Int) extends CursorCalculation[Raster] with IntRasterDataResult 
                                                                    with MedianModeCalculation {

@@ -17,4 +17,4 @@ case class Max(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp(r,n)({
       data.set(cursor.col,cursor.row,m)
     }
   }
-})
+}) with HasAnalysisArea[Max]

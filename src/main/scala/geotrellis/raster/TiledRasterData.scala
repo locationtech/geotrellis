@@ -183,7 +183,7 @@ trait TiledRasterData extends RasterData {
 
       if (tilePolygon.geom.intersects(clipExtent.geom)) {
         tiles = getTileOp(rl, c, r) :: tiles
-      } 
+      }
     }
     tiles
   }
@@ -242,8 +242,9 @@ trait TiledRasterData extends RasterData {
     if (lengthLong > 2147483647L) None
     val len = length
     val d = IntArrayRasterData.ofDim(cols, rows)
-    var i = 0
-    foreach { z => d(i) = z; i += 1 }
+    for( r <- 0 until rows; c <- 0 until cols) {
+      d(r * cols + c) = get(c,r)
+    }
     Some(d)
   }
 
