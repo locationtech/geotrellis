@@ -4,6 +4,7 @@ import geotrellis._
 import scala.math._
 import geotrellis.raster.CroppedRaster
 
+
 class FocalOp[T](r:Op[Raster],n:Op[Neighborhood],reOpt:Op[Option[RasterExtent]] = Literal(None))
                 (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization)                  
   extends FocalOperation[T](r,n) {
@@ -32,6 +33,15 @@ class FocalOp4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C
                          (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization4[A,B,C,D])
   extends FocalOperation4[A,B,C,D,T](r,n,a,b,c,d){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
+}
+
+trait HasAnalysisArea[SELF <: FocalOperationBase] extends Cloneable { this:SELF =>
+  def makeClone() = super.clone().asInstanceOf[SELF]
+  def setAnalysisArea(op:Operation[Option[RasterExtent]]) = {
+    val clone = this.makeClone()
+    clone.analysisAreaOp = op
+    clone
+  }
 }
 
 /* Two arguments (the raster and neighborhoood) */

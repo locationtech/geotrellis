@@ -43,8 +43,8 @@ object Cursor {
 class Cursor(r:Raster,  extent:Int, reOpt:Option[RasterExtent] = None) {
   val analysisArea = FocalOperation.calculateAnalysisArea(r, reOpt)
 
-  private val rows = analysisArea.rasterExtent.rows
-  private val cols = analysisArea.rasterExtent.cols
+  private val rows = r.rasterExtent.rows
+  private val cols = r.rasterExtent.cols
 
   // How many columns from the left/top of the input raster does the analysis area begin?
   val analysisOffsetCols = analysisArea.colMin
