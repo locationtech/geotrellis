@@ -2,6 +2,16 @@ package geotrellis.raster.op.focal
 
 import geotrellis._
 
+/** Computes the sum of values of a neighborhood for a given raster 
+ *
+ * @param    r      Raster on which to run the focal operation.
+ * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
+ *
+ * @note
+ * If the neighborhood is a [[Square]] neighborhood, the sum calucation will use
+ * the [[CellwiseSumCalc]] to perform the calculation, because it is faster.
+ * If the neighborhood is of any other type, then [[CursorSumCalc]] is used.
+ */
 case class Sum(r:Op[Raster], n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({ 
   (r,n) =>
     n match {
