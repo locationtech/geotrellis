@@ -10,14 +10,49 @@ import geotrellis.statistics.FastMapHistogram
  * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
  */
 case class Mode(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
-  (r,n) => new CursorCalculation[Raster] with IntRasterDataResult {
-    def calc(r:Raster,cursor:Cursor) = {
-      val h = FastMapHistogram()
-      cursor.allCells.foreach { (x,y) => 
-        val v = r.get(x,y)
-        if(v != NODATA) { h.countItem(r.get(x,y),1) }
+  (r,n) => 
+    n match {
+      case Square(ext) => new CellwiseModeCalc(ext)
+      case _ => new CursorModeCalc(n.extent)
+    }
+})
+
+class CursorModeCalc(extent:Int) extends CursorCalculation[Raster] with IntRasterDataResult 
+                                                                   with MedianModeCalculation {
+  initArray(extent)
+                                                         
+  def calc(r:Raster,cursor:Cursor) = {
+    cursor.removedCells.foreach { (x,y) =>
+      val v = r.get(x,y)
+      if(v != NODATA) {
+        removeValue(v)
       }
-      data.set(cursor.col,cursor.row,h.getMode)
+    }
+    cursor.addedCells.foreach { (x,y) =>
+      val v = r.get(x,y)
+      if(v != NODATA) addValue(v)
+    }
+    data.set(cursor.col,cursor.row,mode)
+  }
+}
+
+class CellwiseModeCalc(extent:Int) extends CellwiseCalculation[Raster] with IntRasterDataResult 
+                                                                       with MedianModeCalculation {
+  initArray(extent)
+
+  def add(r:Raster, x:Int, y:Int) = {
+    val v = r.get(x,y)
+    if (v != NODATA) {
+      addValue(v)
     }
   }
-})
+
+  def remove(r:Raster, x:Int, y:Int) = {
+    val v = r.get(x,y)
+    if (v != NODATA) {
+      removeValue(v)
+    }
+  } 
+
+  def setValue(x:Int,y:Int) = { data.setDouble(x,y,mode) }
+}

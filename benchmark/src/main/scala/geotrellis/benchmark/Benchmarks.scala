@@ -32,7 +32,7 @@ import scala.util.Random
 /**
  * Extend this to create an actual benchmarking class.
  */
-trait MyBenchmark extends SimpleBenchmark {
+trait OperationBenchmark extends SimpleBenchmark {
   var server:Server = null
 
   def getRasterExtentOp(name:String, w:Int, h:Int) = {
@@ -98,15 +98,15 @@ trait MyBenchmark extends SimpleBenchmark {
 /**
  * Extend this to create a main object which will run 'cls' (a benchmark).
  */
-abstract class MyRunner(cls:java.lang.Class[_ <: Benchmark]) {
+abstract class BenchmarkRunner(cls:java.lang.Class[_ <: Benchmark]) {
   def main(args:Array[String]): Unit = Runner.main(cls, args:_*)
 }
 
 /**
  *
  */
-object DataMap extends MyRunner(classOf[DataMap])
-class DataMap extends MyBenchmark {
+object DataMap extends BenchmarkRunner(classOf[DataMap])
+class DataMap extends OperationBenchmark {
   //@Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
   @Param(Array("2048"))
   var size:Int = 0
@@ -266,8 +266,8 @@ class DataMap extends MyBenchmark {
   def rasterOperationWhileLoop = server.run(mcWhileLoop)
 }
 
-object WeightedOverlay extends MyRunner(classOf[WeightedOverlay])
-class WeightedOverlay extends MyBenchmark {
+object WeightedOverlay extends BenchmarkRunner(classOf[WeightedOverlay])
+class WeightedOverlay extends OperationBenchmark {
   val n = 4
   val names = Array("SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k")
   val weights = Array(2, 1, 5, 2)
@@ -293,8 +293,8 @@ class WeightedOverlay extends MyBenchmark {
   def weightedOverlay = server.run(op)
 }
 
-object AddRasters extends MyRunner(classOf[AddRasters])
-class AddRasters extends MyBenchmark {
+object AddRasters extends BenchmarkRunner(classOf[AddRasters])
+class AddRasters extends OperationBenchmark {
   @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
   var size:Int = 0
 
@@ -315,8 +315,8 @@ class AddRasters extends MyBenchmark {
   def addRasters = server.run(op)
 }
 
-object SubtractRasters extends MyRunner(classOf[SubtractRasters])
-class SubtractRasters extends MyBenchmark {
+object SubtractRasters extends BenchmarkRunner(classOf[SubtractRasters])
+class SubtractRasters extends OperationBenchmark {
   @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
   var size:Int = 0
 
@@ -335,8 +335,8 @@ class SubtractRasters extends MyBenchmark {
 }
 
 
-object ConstantAdd extends MyRunner(classOf[ConstantAdd])
-class ConstantAdd extends MyBenchmark {
+object ConstantAdd extends BenchmarkRunner(classOf[ConstantAdd])
+class ConstantAdd extends OperationBenchmark {
   @Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "10000"))
   var size:Int = 0
 
@@ -376,7 +376,7 @@ object BigMinTiled {
   }
 }
 
-class BigMinTiled extends MyBenchmark{ 
+class BigMinTiled extends OperationBenchmark{ 
   var tiledMinOp:Op[Int] = null
   var tiledHistogramOp:Op[Histogram] = null
 
@@ -410,8 +410,8 @@ class BigMinTiled extends MyBenchmark{
 }
 
 
-object MinTiled extends MyRunner(classOf[MinTiled])
-class MinTiled extends MyBenchmark {
+object MinTiled extends BenchmarkRunner(classOf[MinTiled])
+class MinTiled extends OperationBenchmark {
   @Param(Array("4096"))
   var size:Int = 0
 
@@ -465,8 +465,8 @@ class MinTiled extends MyBenchmark {
 }
 
 
-object HistogramTiled extends MyRunner(classOf[HistogramTiled])
-class HistogramTiled extends MyBenchmark {
+object HistogramTiled extends BenchmarkRunner(classOf[HistogramTiled])
+class HistogramTiled extends OperationBenchmark {
   @Param(Array("6000"))
   var size:Int = 0
 
@@ -535,8 +535,8 @@ class HistogramTiled extends MyBenchmark {
 }
 
 
-object MiniWeightedOverlay extends MyRunner(classOf[MiniWeightedOverlay])
-class MiniWeightedOverlay extends MyBenchmark {
+object MiniWeightedOverlay extends BenchmarkRunner(classOf[MiniWeightedOverlay])
+class MiniWeightedOverlay extends OperationBenchmark {
   //@Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "8192", "10000"))
   @Param(Array("100", "1000", "10000"))
   var size:Int = 0
@@ -568,8 +568,8 @@ class MiniWeightedOverlay extends MyBenchmark {
 }
 
 
-object NewAddOperations extends MyRunner(classOf[NewAddOperations])
-class NewAddOperations extends MyBenchmark {
+object NewAddOperations extends BenchmarkRunner(classOf[NewAddOperations])
+class NewAddOperations extends OperationBenchmark {
   @Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "8192", "10000"))
   var size:Int = 0
   
@@ -602,8 +602,8 @@ class NewAddOperations extends MyBenchmark {
 }
 
 
-object LazyIteration extends MyRunner(classOf[LazyIteration])
-class LazyIteration extends MyBenchmark {
+object LazyIteration extends BenchmarkRunner(classOf[LazyIteration])
+class LazyIteration extends OperationBenchmark {
   @Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "8192", "10000"))
   var size:Int = 0
   
@@ -690,8 +690,8 @@ class LazyIteration extends MyBenchmark {
 }
 
 
-object RasterForeach extends MyRunner(classOf[RasterForeach])
-class RasterForeach extends MyBenchmark {
+object RasterForeach extends BenchmarkRunner(classOf[RasterForeach])
+class RasterForeach extends OperationBenchmark {
   //@Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "8192", "10000"))
   @Param(Array("64", "128", "256", "512", "1024"))
   var size:Int = 0
