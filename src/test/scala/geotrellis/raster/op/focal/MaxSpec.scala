@@ -25,7 +25,7 @@ class MaxSpec extends FunSpec with FocalOpSpec
 
   describe("Max") {
     it("should correctly compute a center neighborhood") {
-      squareSetup.getResult(2,2) should equal (4)
+      squareSetup.result(2,2) should equal (4)
     }
 
     it("should agree with a manually worked out example") {

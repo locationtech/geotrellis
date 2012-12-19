@@ -21,7 +21,7 @@ class FocalStrategySpec extends FunSpec with ShouldMatchers {
       var lastX = -1
 
       val calc = new CursorCalculation[Int] {
-        def getResult = 0
+        def result = 0
         def calc(r:Raster,cursor:Cursor) = {
           if(cursor.row != 0 || cursor.col != 0 ) { cursor.isReset should equal(false) }
           if(lastY != cursor.row) {
@@ -49,7 +49,7 @@ class FocalStrategySpec extends FunSpec with ShouldMatchers {
       var lastX = 0
 
       val calc = new CursorCalculation[Int] {
-        def getResult = 0
+        def result = 0
         def calc(r:Raster,cursor:Cursor) = {
           if(lastY != cursor.row) {
             cursor.isReset should equal(true)
