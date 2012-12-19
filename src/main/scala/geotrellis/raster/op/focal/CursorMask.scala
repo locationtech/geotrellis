@@ -5,12 +5,15 @@ import scala.collection.mutable.LinkedList
 
 import Movement._
 
-/*
- * Represents a mask over a cursor. The CursorMask
+/**
+ * A mask over a cursor. The CursorMask
  * helps the cursor keep track of the state of masking
  * and unmasking of cells between moves.
  */
 class CursorMask(d:Int,f:(Int,Int)=>Boolean) {
+
+  /** A fast data type that records the unmasked values
+   * of the cursor per cursor row */
   private class MaskSet {
     private var data = Array.ofDim[Int](d*(d+1))
 

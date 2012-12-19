@@ -4,7 +4,7 @@ import geotrellis._
 import geotrellis.rest.op.string.ParseInt
 
 /**
- * Get the [[geotrellis.geoattrs.RasterExtent]] from a given raster.
+ * Get the [[RasterExtent]] from a given raster.
  */
 case class GetRasterExtentFromRaster(r:Op[Raster]) extends Op1(r) ({
   (r) => Result(r.rasterExtent)

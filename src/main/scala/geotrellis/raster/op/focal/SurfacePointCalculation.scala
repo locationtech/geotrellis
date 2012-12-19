@@ -6,9 +6,19 @@ import scala.math._
 
 import Angles._
 
+/** A representation of the approximated partial derivatives of a raster cell,
+ *  and the slope and aspect that can be calculated from those values.
+ *  Trigonometric values of aspect and slope, computed using the partial derivatives
+ *  instead of library trigonometric functions, are also exposed for performance.
+ */
 class SurfacePoint() {
+  /** True if the partial derivatives at this point don't exist */
   var isNaN = false
+
+  /** Partial derivative of z with respect to x */
   var `dz/dx` = Double.NaN
+
+  /** Partial derivative of z with respect to y */
   var `dz/dy` = Double.NaN
 
   def aspect() = {
@@ -34,18 +44,24 @@ class SurfacePoint() {
   // Use these if you want to get the sine or cosine of the aspect or slope,
   // since they are a lot more performant than calling scala.math.sin or 
   // scala.math.cos
+
+  /** Cosine of the slope, computed using partial derivatives */
   def cosSlope = {
     val denom = sqrt(`dz/dx` * `dz/dx` + `dz/dy` * `dz/dy` + 1)
     if(denom == 0) Double.NaN else {
       1/denom
     }
   }
+
+  /** Sine of the slope, computed using partial derivatives */
   def sinSlope = {
     val denom = sqrt(`dz/dx` * `dz/dx` + `dz/dy` * `dz/dy` + 1)
     if(denom == 0) Double.NaN else {
       sqrt(`dz/dx` * `dz/dx` + `dz/dy` * `dz/dy`) / denom
     }
   }
+
+  /** Cosine of the aspect, computed using partial derivatives */
   def cosAspect = {
     if(`dz/dx` == 0) { if(`dz/dy` == 0) -1 else 0 } else {
       if(`dz/dy` == 0) {
@@ -55,6 +71,8 @@ class SurfacePoint() {
       }
     }
   }
+
+  /** Sine of the aspect, computed using partial derivatives */
   def sinAspect = {
     if(`dz/dy` == 0) 0 else {
       if(`dz/dx` == 0) {
@@ -66,6 +84,14 @@ class SurfacePoint() {
   }
 }
 
+/** Calculation used for surface point calculations such as Slope, Aspect, and Hillshade
+ *
+ * Uses a specific traversal strategy for performance benefits.
+ *
+ * @note
+ * For edge cells, the neighborhood points that lie outside the extent of the raster
+ * will be counted as having the same value as the focal point.
+ */
 trait SurfacePointCalculation[T] extends FocalCalculation[T] {
   var lastY = -1
 
@@ -78,6 +104,13 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
 
   val s = new SurfacePoint
 
+  /** Sets a result at (x,y) from a [[SurfacePoint]]
+   *
+   * Implementors need to provide this function to store the
+   * results of the surface point calculation.
+   *
+   * @see For an example, see [[Aspect]]
+   */
   def setValue(x:Int,y:Int,s:SurfacePoint):Unit
 
   def setValue(x:Int,y:Int):Unit = {
@@ -92,7 +125,7 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
     east = tmp
   }
   
-  def calcSurface():Unit = {
+  protected def calcSurface():Unit = {
     if(base(1) == NODATA) {
       s.`dz/dx` = Double.NaN
       s.`dz/dy` = Double.NaN
@@ -102,13 +135,16 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
     s.`dz/dy` = (west(2) + 2*base(2) + east(2) - west(0) - 2*base(0) - east(0)) / (8 * cellHeight)
   }
 
-  /*
+  /**
    * Executes a specific traversal strategy for SurfacePointCalculation.
    * The difference between this and ScanLine for CellwiseCalculation is that for edge cases,
    * the value at the focus is added in place of out-of-border neighborhood
    * values.
    *
-   * Assumes a Square(1) neighborhood.
+   * @param     r       Raster to execute against.
+   * @param     n       Neighborhood used (must be [[Square]] with dimension 1)
+   * 
+   * @note Assumes a [[Square]](1) neighborhood.
    *
    */
   //TODO: needs to be updated for analysis area
