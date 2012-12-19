@@ -10,7 +10,7 @@ import geotrellis.data.png._
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
-class PNGSpec extends FunSpec with MustMatchers {
+class EncoderSpec extends FunSpec with MustMatchers {
 
   def parseHexByte(s:String) = Integer.parseInt(s, 16).toByte
   def parseHexBytes(cs:Array[String]) = cs.map(parseHexByte _)
