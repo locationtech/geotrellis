@@ -11,6 +11,11 @@ import org.scalatest.matchers._
 
 import org.scalatest.junit.JUnitRunner
 
+// 0  1  2  3
+// 4  5  6  7
+// 8  9 10 11
+//12 13 14 15
+
 @RunWith(classOf[JUnitRunner])
 class MinSpec extends FunSpec with FocalOpSpec
                               with ShouldMatchers
@@ -73,6 +78,15 @@ class MinSpec extends FunSpec with FocalOpSpec
                                            0, 0, 0, 1))
       assertEqual(Min(r, Circle(5)), data0)
       assertEqual(Min(r, Circle(6)), data0)
+    }
+
+    it("should execute with an analysis area") {
+      val r = createRaster((0 until 16).toArray)
+      val min = Min(r, Square(1))
+      min.analysisAreaOp = Some(RasterExtent(Extent(0,1,3,4),1,1,3,3))
+      assertEqual(min, Array(0, 0, 1,
+                             0, 0, 1,
+                             4, 4, 5))
     }
 
     val getMinResult = Function.uncurried((getCursorResult _).curried((r,n) => Min(r,n)))

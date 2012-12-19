@@ -66,8 +66,8 @@ case class DirectHillshade(r:Op[Raster], azimuth:Op[Double],altitude:Op[Double],
     var cosAz = 0.0
     var sinAz = 0.0
 
-    def init(r:Raster,az:Double,al:Double,z:Double) = {
-      super.init(r)
+    def init(r:Raster,az:Double,al:Double,z:Double,reOpt:Option[RasterExtent]) = {
+      super.init(r,reOpt)
 
       azimuth = radians(90.0 - az)
       zenith = radians(90.0 - al)

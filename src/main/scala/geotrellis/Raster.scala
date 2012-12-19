@@ -234,4 +234,5 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
     case t:TiledRasterData => t.getTileOpList(rasterExtent, clipExtent)
     case _ => Literal(this) :: Nil
   }
+  
 }

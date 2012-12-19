@@ -50,7 +50,6 @@ object Rasterizer {
    */
   def foreachCellByFeature[D:Manifest](feature:Geometry[D], re:RasterExtent)(f:(Int,Int,Geometry[D]) => Unit):Unit = {
     feature match {
-      case p:PointSet[_] => foreachCellByPointSet[D](p.asInstanceOf[PointSet[D]],re)(f)
       case p:Point[_] => foreachCellByPoint[D](p.asInstanceOf[Point[D]],re)(f)
       case p:MultiPoint[_] => foreachCellByMultiPoint[D](p.asInstanceOf[MultiPoint[D]],re)(f)
       case p:MultiLineString[_] => foreachCellByMultiLineString[D](p.asInstanceOf[MultiLineString[D]],re)(f)
@@ -75,14 +74,6 @@ object Rasterizer {
   
     
   /**
-   * Aggregate all points in a PointSet with a fold function that takes data from the feature
-   * as well as the raster cell value at each point.
-   */
-  def aggregrateCellsByPointSet[D,Z](p:PointSet[D],r:Raster, start:Z)(f:(Int,D,Z) => Z):Z = {
-    p.foldLeft(start)((z,point) => f(Point.pointToRasterValue(point, r),point.data,z) )
-  }
- 
-  /**
    * Invoke a function on raster cells under a point feature.
    * 
    * The function f is a closure that should alter a mutable variable by side
@@ -98,29 +89,14 @@ object Rasterizer {
   def foreachCellByMultiPoint[D](p:MultiPoint[D], re:RasterExtent)(f:(Int,Int,Point[D]) => Unit) {
     p.flatten.foreach(foreachCellByPoint(_, re)(f))
   }
+
   /**
-   * Invoke a function on each point in a PointSet.
+   * Invoke a function on each point in a sequences of Points.
    */
-  def foreachCellByPointSet[D](pSet:PointSet[D], re:RasterExtent)(f:(Int,Int,Point[D]) => Unit) {
+  def foreachCellByPointSeq[D](pSet:Seq[Point[D]], re:RasterExtent)(f:(Int,Int,Point[D]) => Unit) {
     pSet.foreach(foreachCellByPoint(_,re)(f))
   }
   
-  /**
-   * Returns a new PointSet where each point in an input PointSet has its data value updated 
-   * by a function that takes as input the raster cell value under the point and the 
-   * data value of the feature. 
-   */
-  def aggregrateCellsByPoint[D,Z:Manifest](p:PointSet[D], r:Raster, start:Z)(f:(Int,D,Z) => Z):PointSet[Z] = {
-    val f2 = (p:Point[D]) => {
-      val geom = p.geom
-      val re = r.rasterExtent
-      val cellValue = r.get( re.mapXToGrid(geom.getX()), re.mapYToGrid(geom.getY()))
-      Point(p.geom, f(cellValue,p.data,start))
-    }
-    p.map(f2)
-  }
- 
-
   /**
    * Apply function f to every cell contained within MultiLineString.
    * @param g   MultiLineString used to define zone

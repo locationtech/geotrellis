@@ -127,8 +127,8 @@ trait Convolver extends IntRasterDataResult {
     kernelcols = kraster.cols
   }
 
-  override def init(r:Raster) = {
-    super.init(r)
+  override def init(r:Raster,reOpt:Option[RasterExtent]) = {
+    super.init(r,reOpt)
     rows = r.rows
     cols = r.cols
   }
@@ -185,14 +185,14 @@ trait Convolver extends IntRasterDataResult {
 class ConvolveCalculation(k:Kernel) extends FocalCalculation[Raster] with Convolver {
   initKernel(k)
 
-  def execute(r:Raster,n:Neighborhood) = {
+  def execute(r:Raster,n:Neighborhood,reOpt:Option[RasterExtent]):Unit = {
     n match {
-      case k:Kernel => execute(r,k)
+      case k:Kernel => execute(r,k,reOpt)
       case _ => sys.error("Convolve operation neighborhood must be of type Kernel")
     }
   }
 
-  def execute(r:Raster,kernel:Kernel) = {
+  def execute(r:Raster,kernel:Kernel,reOpt:Option[RasterExtent]):Unit = {
     val result = Raster.empty(r.rasterExtent);
     val data = result.data.mutable.get
 
