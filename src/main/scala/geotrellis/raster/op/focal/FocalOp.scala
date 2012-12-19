@@ -110,8 +110,6 @@ trait HasAnalysisArea[SELF <: FocalOperationBase] extends Cloneable { this:SELF 
   }
 }
 
-/* Two arguments (the raster and neighborhoood) */
-
 trait FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]]
 } 
