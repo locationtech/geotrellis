@@ -101,6 +101,17 @@ class FocalOp4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
+trait HasAnalysisArea[SELF <: FocalOperationBase] extends Cloneable { this:SELF =>
+  def makeClone() = super.clone().asInstanceOf[SELF]
+  def setAnalysisArea(op:Operation[Option[RasterExtent]]) = {
+    val clone = this.makeClone()
+    clone.analysisAreaOp = op
+    clone
+  }
+}
+
+/* Two arguments (the raster and neighborhoood) */
+
 trait FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]]
 } 
