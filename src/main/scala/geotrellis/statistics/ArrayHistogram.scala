@@ -38,7 +38,7 @@ class ArrayHistogram(val counts:Array[Int], var total:Int) extends Histogram {
     val len = counts.length
     while (i < len) {
       val z = counts(i)
-      if (z > 0) f(z)
+      if (z > 0) f(i)
       i += 1
     }
   }

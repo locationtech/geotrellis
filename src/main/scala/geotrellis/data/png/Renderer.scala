@@ -19,15 +19,14 @@ extends Function1[Int, Int] {
       colors(len)
     }
     histogram.foreachValue(z => ch.setItem(z, findColor(z)))
-    ch.setItem(NODATA, nodata)
     ch
   }
 
-  val colorMap = makeColorMap()
+  private val colorMap = makeColorMap()
 
   def settings = Settings(color, PaethFilter)
   def render(r:Raster) = r.convert(rasterType).map(this)
-  def apply(z:Int):Int = colorMap.getItemCount(z)
+  def apply(z:Int):Int = { if(z == NODATA) nodata else colorMap.getItemCount(z) }
 }
 
 object Renderer {

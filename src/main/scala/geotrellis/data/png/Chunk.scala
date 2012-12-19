@@ -13,8 +13,6 @@ import java.util.zip.DeflaterOutputStream
 
 import scala.math.abs
 
-//import geotrellis._
-
 import Util._
 
 final class Chunk(chunkType:Int) {

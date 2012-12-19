@@ -24,4 +24,14 @@ trait RasterBuilders {
     if(d > scala.math.round(d)) { sys.error("Array must be square") }
     Raster(arr, RasterExtent(Extent(0,0,d,d),1,1,d,d))
   }
+
+  /* prints out a raster to console */
+  def printR(r:Raster) {
+    for(row <- 0 until r.rows) {
+      for(col <- 0 until r.cols) {
+        print(s"    ${r.get(col,row)}")
+      }
+      println
+    }      
+  }
 }
