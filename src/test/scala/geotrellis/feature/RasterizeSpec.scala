@@ -27,7 +27,6 @@ class RasterizeSpec extends FunSuite {
       val p2 = Point(9.5, 9.5, "point two: ")
       val p3 = Point(0.1, 9.9, "point three: ")
       
-      val pointSet1 = PointSet(p :: p2 :: p3 :: Nil)
 
       var f2output:String = ""
       val f2 = (col:Int, row:Int, feature:Point[String]) => {
@@ -46,10 +45,6 @@ class RasterizeSpec extends FunSuite {
       Rasterizer.foreachCellByPoint(p3, re)(f2) 
       assert( f2output === "point three: 0")
 
-      f2output = ""
-      Rasterizer.foreachCellByPointSet(pointSet1, re)(f2) 
-      assert (f2output === "point one: 81point two: 9point three: 0")
-      
       var lineOutput = ""
       val f3 = (col:Int, row:Int, feature:LineString[String]) => {
         lineOutput = lineOutput + feature.data + raster.get(col,row) + "\n"
@@ -70,13 +65,6 @@ class RasterizeSpec extends FunSuite {
       val o3 = rasterize.Rasterizer.aggregrateCellsByPoint(p3, raster, "")(f1)
       assert(o3 === "point three: 0")
 
-      
-      val o4 = rasterize.Rasterizer.aggregrateCellsByPointSet(pointSet1, raster, "")(f1)
-      assert(o4 === "point one: 81point two: 9point three: 0")
-      println(o4)
-      
-      
-      
       s.shutdown()
     
   }
