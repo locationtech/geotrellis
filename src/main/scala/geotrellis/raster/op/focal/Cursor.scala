@@ -87,7 +87,7 @@ class Cursor(r:Raster,  val extent:Int, reOpt:Option[RasterExtent] = None) {
   private var addedRow = 0
   private var removedRow = 0
 
-  private var movement = NoMovement
+   var movement = NoMovement
 
   // Values to track the focus of the cursor
   private var _col = 0
@@ -192,7 +192,7 @@ class Cursor(r:Raster,  val extent:Int, reOpt:Option[RasterExtent] = None) {
    *  as allCells.
    */
   val addedCells = new CellSet {
-    def foreach(f:(Int,Int)=>Unit) = Cursor.this.foreachAdded(f)
+    def foreach(f:(Int,Int)=>Unit) = { Cursor.this.foreachAdded(f) }
   }
 
   /** A [[CellSet]] reperesenting cells that were moved outside the cursor bounds,

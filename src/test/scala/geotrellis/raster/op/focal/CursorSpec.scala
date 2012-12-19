@@ -38,6 +38,23 @@ class CursorSpec extends FunSpec with ShouldMatchers with RasterBuilders {
   }
 
   describe("Cursor") {
+    it("should have addedCells behave like allCells for a cursor that hasn't moved") {
+      val sAdded = Set[(Int,Int)]()
+      val sAll = Set[(Int,Int)]()
+      val r = createConsecutiveRaster(10)
+      val cursor = new Cursor(r,1)
+      for(row <- 0 until r.rows) {
+        for(col <- 0 until r.cols) {
+          sAdded.clear()
+          sAll.clear()
+          cursor.centerOn(col,row)
+          cursor.addedCells.foreach { (x,y) => sAdded.add((x,y)) }
+          cursor.allCells.foreach { (x,y) => sAll.add((x,y)) }
+          sAdded should equal (sAll)
+        }
+      }
+    }
+
     it("should get all values for middle cursor and no mask") {
       val r = createConsecutiveRaster(10)
       val cursor = new Cursor(r,1)

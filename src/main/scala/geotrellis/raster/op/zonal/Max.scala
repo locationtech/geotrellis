@@ -4,7 +4,6 @@ import geotrellis._
 import geotrellis.feature._
 import geotrellis.feature.rasterize._
 import geotrellis.data._
-//import geotrellis.statistics._
 import scala.math.{ max, min }
 import geotrellis.raster.TileArrayRasterData
 import geotrellis.raster.TiledRasterData
@@ -114,5 +113,3 @@ case class MaxDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
 
   def reducer(mapResults: List[Double]):Double = mapResults.foldLeft(Double.NegativeInfinity)(math.max(_, _)) 
 }
-
-

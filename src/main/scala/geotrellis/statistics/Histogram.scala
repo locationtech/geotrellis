@@ -231,7 +231,11 @@ abstract trait Histogram {
     geotrellis.NODATA
   } else {
     val values = getValues
-    values(values.length / 2)
+    if( values.length % 2 == 0) {
+      (values(values.length/2) + values(values.length/2-1)) / 2
+    } else {
+      values(values.length / 2)
+    }
   }
 
   def getMean():Double = {
