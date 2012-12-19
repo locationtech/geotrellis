@@ -3,6 +3,11 @@ package geotrellis.raster.op.focal
 import geotrellis._
 import geotrellis.statistics.FastMapHistogram
 
+/** Computes the median value of a neighborhood for a given raster 
+ *
+ * @param    r      Raster on which to run the focal operation.
+ * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
+ */
 case class Median(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
   (r,n) => new CursorCalculation[Raster] with IntRasterDataResult {
     def calc(r:Raster,cursor:Cursor) = {

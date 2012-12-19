@@ -4,42 +4,115 @@ import geotrellis._
 import scala.math._
 import geotrellis.raster.CroppedRaster
 
+/**
+ * Focal Operation that takes a raster and a neighborhood.
+ *
+ * @param        r           Raster the focal operation will run against.
+ * @param        n           Neighborhood to use with this focal operation.
+ * @param        reOpt       Optional raster that represents the analysis area.
+ * @param        getCalc     Function that returns a [[FocalCalculation]] based
+ *                           on the raster and neighborhood. This allows flexibility
+ *                           in what calculation to use; if some calculations are faster
+ *                           for some neighborhoods (e.g., using a [[CellwiseCalculation]]
+ *                           for [[Square]] neighborhoods and a [[CursorCalculation]] for
+ *                           all other neighborhoods), or if you want to change the calculation
+ *                           based on the raster's data type, you can do so by returning the
+ *                           correct [[FocalCalculation]] from this function.
+ *
+ * @tparam       T           Return type of the Operation.
+ */
 class FocalOp[T](r:Op[Raster],n:Op[Neighborhood],reOpt:Op[Option[RasterExtent]] = Literal(None))
                 (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization)                  
   extends FocalOperation[T](r,n) {
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
+/**
+ * Focal Operation that takes a raster, a neighborhood, and one other argument.
+ *
+ * @param        r           Raster the focal operation will run against.
+ * @param        n           Neighborhood to use with this focal operation.
+ * @param        a           Argument of type A.
+ * @param        reOpt       Optional raster that represents the analysis area.
+ * @param        getCalc     See notes for same parameter in [[FocalOp]]
+ *
+ * @tparam       T           Return type of the Operation.
+ */
 class FocalOp1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],reOpt:Op[Option[RasterExtent]] = Literal(None))
                    (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization1[A])
   extends FocalOperation1[A,T](r,n,a){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
+/**
+ * Focal Operation that takes a raster, a neighborhood, and two other arguments.
+ *
+ * @param        r           Raster the focal operation will run against.
+ * @param        n           Neighborhood to use with this focal operation.
+ * @param        a           Argument of type A.
+ * @param        b           Argument of type B.
+ * @param        reOpt       Optional raster that represents the analysis area.
+ * @param        getCalc     See notes for same parameter in [[FocalOp]]
+ *
+ * @tparam       T           Return type of the Operation.
+ */
 class FocalOp2[A,B,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],reOpt:Op[Option[RasterExtent]] = Literal(None))
                      (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization2[A,B])
   extends FocalOperation2[A,B,T](r,n,a,b){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
+/**
+ * Focal Operation that takes a raster, a neighborhood, and three other arguments.
+ *
+ * @param        r           Raster the focal operation will run against.
+ * @param        n           Neighborhood to use with this focal operation.
+ * @param        a           Argument of type A.
+ * @param        b           Argument of type B.
+ * @param        c           Argument of type C.
+ * @param        reOpt       Optional raster that represents the analysis area.
+ * @param        getCalc     See notes for same parameter in [[FocalOp]]
+ *
+ * @tparam       T           Return type of the Operation.
+ */
 class FocalOp3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],reOpt:Op[Option[RasterExtent]] = Literal(None))
                        (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization3[A,B,C])
   extends FocalOperation3[A,B,C,T](r,n,a,b,c){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
+/**
+ * Focal Operation that takes a raster, a neighborhood, and four other arguments.
+ *
+ * @param        r           Raster the focal operation will run against.
+ * @param        n           Neighborhood to use with this focal operation.
+ * @param        a           Argument of type A.
+ * @param        b           Argument of type B.
+ * @param        c           Argument of type C.
+ * @param        d           Argument of type D.
+ * @param        reOpt       Optional raster that represents the analysis area.
+ * @param        getCalc     See notes for same parameter in [[FocalOp]]
+ *
+ * @tparam       T           Return type of the Operation.
+ */
 class FocalOp4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],d:Op[D],reOpt:Op[Option[RasterExtent]] = Literal(None))
                          (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization4[A,B,C,D])
   extends FocalOperation4[A,B,C,D,T](r,n,a,b,c,d){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
-/* Two arguments (the raster and neighborhoood) */
-
 trait FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]]
 } 
 
+/**
+ * Base class for a focal operation that takes a raster and a neighborhood.
+ *
+ * @param        r           Raster the focal operation will run against.
+ * @param        n           Neighborhood to use with this focal operation.
+ *
+ * @tparam       T           Return type of the Operation.
+ */
 abstract class FocalOperation[T](r:Op[Raster],n:Op[Neighborhood],analysisArea:Op[Option[RasterExtent]] = Literal(None)) extends Operation[T] with FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
   def _run(context:Context) = runAsync(List('init,r,n,analysisAreaOp))
@@ -59,7 +132,21 @@ abstract class FocalOperation[T](r:Op[Raster],n:Op[Neighborhood],analysisArea:Op
       calc.execute(r,n,reOpt)
       Result(calc.getResult)
   }
-  
+
+  /** Gets a calculation to be used with this focal operation for the given raster
+   * neighborhood.
+   *
+   * Choosing the calculation based on on the raster and neighborhood allows flexibility
+   * in what calculation to use; if some calculations are faster
+   * for some neighborhoods (e.g., using a [[CellwiseCalculation]]
+   * for [[Square]] neighborhoods and a [[CursorCalculation]] for
+   * all other neighborhoods), or if you want to change the calculation
+   * based on the raster's data type, you can do so by returning the
+   * correct [[FocalCalculation]] from this function.
+   *
+   * @param     r       Raster that the focal calculation will run against.
+   * @param     n       Neighborhood that will be used in the focal operation.
+   */
   def getCalculation(r:Raster,n:Neighborhood):FocalCalculation[T] with Initialization 
 }
 
@@ -91,8 +178,17 @@ object FocalOperation {
     }  
 }
 
-/* Three arguments (the raster and neighborhoood and another) */
-
+/**
+ * Base class for a focal operation that takes a raster, a neighborhood, and one other argument.
+ *
+ * @param        r           Raster the focal operation will run against.
+ * @param        n           Neighborhood to use with this focal operation.
+ * @param        a           Argument of type A.
+ * @param        b           Argument of type B.
+ * @param        reOpt       Optional raster that represents the analysis area.
+ *
+ * @tparam       T           Return type of the Operation.
+ */
 abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],analysisArea:Op[Option[RasterExtent]]=None) extends Operation[T] with FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
   def _run(context:Context) = runAsync(List('init,r,n,a,analysisAreaOp))
@@ -112,12 +208,35 @@ abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],anal
       calc.execute(r,n,analysisArea)
       Result(calc.getResult)
   }
- 
+
+  /** Gets a calculation to be used with this focal operation for the given raster
+   * neighborhood.
+   *
+   * Choosing the calculation based on on the raster and neighborhood allows flexibility
+   * in what calculation to use; if some calculations are faster
+   * for some neighborhoods (e.g., using a [[CellwiseCalculation]]
+   * for [[Square]] neighborhoods and a [[CursorCalculation]] for
+   * all other neighborhoods), or if you want to change the calculation
+   * based on the raster's data type, you can do so by returning the
+   * correct [[FocalCalculation]] from this function.
+   *
+   * @param     r       Raster that the focal calculation will run against.
+   * @param     n       Neighborhood that will be used in the focal operation.
+   */  
   def getCalculation(r:Raster,n:Neighborhood):FocalCalculation[T] with Initialization1[A]
 }
 
-/* Four arguments (the raster and neighborhoood and two others) */
-
+/**
+ * Base class for a focal operation that takes a raster, a neighborhood, and two other argument.
+ *
+ * @param        r           Raster the focal operation will run against.
+ * @param        n           Neighborhood to use with this focal operation.
+ * @param        a           Argument of type A.
+ * @param        b           Argument of type B.
+ * @param        reOpt       Optional raster that represents the analysis area.
+ *
+ * @tparam       T           Return type of the Operation.
+ */
 abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],analysisArea:Op[Option[RasterExtent]]=None) 
          extends Operation[T] with FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
@@ -144,12 +263,36 @@ abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:
       calc.execute(r,n,analysisArea)
       Result(calc.getResult)
   }
-  
+
+  /** Gets a calculation to be used with this focal operation for the given raster
+   * neighborhood.
+   *
+   * Choosing the calculation based on on the raster and neighborhood allows flexibility
+   * in what calculation to use; if some calculations are faster
+   * for some neighborhoods (e.g., using a [[CellwiseCalculation]]
+   * for [[Square]] neighborhoods and a [[CursorCalculation]] for
+   * all other neighborhoods), or if you want to change the calculation
+   * based on the raster's data type, you can do so by returning the
+   * correct [[FocalCalculation]] from this function.
+   *
+   * @param     r       Raster that the focal calculation will run against.
+   * @param     n       Neighborhood that will be used in the focal operation.
+   */  
   def getCalculation(r:Raster,n:Neighborhood):FocalCalculation[T] with Initialization2[A,B]
 }
 
-/* Five arguments (the raster and neighborhoood and three others) */
-
+/**
+ * Base class for a focal operation that takes a raster, a neighborhood, and three other argument.
+ *
+ * @param        r           Raster the focal operation will run against.
+ * @param        n           Neighborhood to use with this focal operation.
+ * @param        a           Argument of type A.
+ * @param        b           Argument of type B.
+ * @param        c           Argument of type C.
+ * @param        reOpt       Optional raster that represents the analysis area.
+ *
+ * @tparam       T           Return type of the Operation.
+ */
 abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],analysisArea:Op[Option[RasterExtent]]=None) 
          extends Operation[T] with FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
@@ -177,11 +320,36 @@ abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],
       Result(calc.getResult)
   }
   
+  /** Gets a calculation to be used with this focal operation for the given raster
+   * neighborhood.
+   *
+   * Choosing the calculation based on on the raster and neighborhood allows flexibility
+   * in what calculation to use; if some calculations are faster
+   * for some neighborhoods (e.g., using a [[CellwiseCalculation]]
+   * for [[Square]] neighborhoods and a [[CursorCalculation]] for
+   * all other neighborhoods), or if you want to change the calculation
+   * based on the raster's data type, you can do so by returning the
+   * correct [[FocalCalculation]] from this function.
+   *
+   * @param     r       Raster that the focal calculation will run against.
+   * @param     n       Neighborhood that will be used in the focal operation.
+   */
   def getCalculation(r:Raster,n:Neighborhood):FocalCalculation[T] with Initialization3[A,B,C]
 }
 
-/* Six arguments (the raster and neighborhoood and four others) */
-
+/**
+ * Base class for a focal operation that takes a raster, a neighborhood, and four other argument.
+ *
+ * @param        r           Raster the focal operation will run against.
+ * @param        n           Neighborhood to use with this focal operation.
+ * @param        a           Argument of type A.
+ * @param        b           Argument of type B.
+ * @param        c           Argument of type C.
+ * @param        d           Argument of type D.
+ * @param        reOpt       Optional raster that represents the analysis area.
+ *
+ * @tparam       T           Return type of the Operation.
+ */
 abstract class FocalOperation4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],d:Op[D],analysisArea:Op[Option[RasterExtent]]=None) 
          extends Operation[T] with FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
@@ -211,5 +379,19 @@ abstract class FocalOperation4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A
       Result(calc.getResult)
   }
   
+  /** Gets a calculation to be used with this focal operation for the given raster
+   * neighborhood.
+   *
+   * Choosing the calculation based on on the raster and neighborhood allows flexibility
+   * in what calculation to use; if some calculations are faster
+   * for some neighborhoods (e.g., using a [[CellwiseCalculation]]
+   * for [[Square]] neighborhoods and a [[CursorCalculation]] for
+   * all other neighborhoods), or if you want to change the calculation
+   * based on the raster's data type, you can do so by returning the
+   * correct [[FocalCalculation]] from this function.
+   *
+   * @param     r       Raster that the focal calculation will run against.
+   * @param     n       Neighborhood that will be used in the focal operation.
+   */
   def getCalculation(r:Raster,n:Neighborhood):FocalCalculation[T] with Initialization4[A,B,C,D]
 }

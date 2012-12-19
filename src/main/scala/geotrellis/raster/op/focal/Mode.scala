@@ -4,6 +4,11 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.statistics.FastMapHistogram
 
+/** Computes the mode of a neighborhood for a given raster 
+ *
+ * @param    r      Raster on which to run the focal operation.
+ * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
+ */
 case class Mode(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
   (r,n) => new CursorCalculation[Raster] with IntRasterDataResult {
     def calc(r:Raster,cursor:Cursor) = {
