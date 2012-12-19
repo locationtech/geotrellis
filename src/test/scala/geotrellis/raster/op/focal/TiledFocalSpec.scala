@@ -30,16 +30,14 @@ class TiledZonalSpec extends FunSpec with FocalOpSpec
     }
   }
   describe("Min on a tiled raster") {
-
     it("square min r=1") {
       val r = createRaster((0 until 16).toArray)
       val tiledR = Tiler.createTiledRaster(r, 2, 2)
-      val tileZonalOp = TileZonalOp(tiledR, Min(_, Square(1)))
-      assertEqual(tileZonalOp, Array(0, 0, 1, 2,
+      val tileFocalOp = TileFocalOp(tiledR, Min(_, Square(1)))
+      assertEqual(tileFocalOp, Array(0, 0, 1, 2,
                                      0, 0, 1, 2,
                                      4, 4, 5, 6,
                                      8, 8, 9, 10))
     }
-
   }
 }
