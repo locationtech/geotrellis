@@ -18,7 +18,6 @@ object FastMapHistogram {
   def fromRaster(r:Raster) = {
     val h = FastMapHistogram()
     r.foreach(z => if (z != NODATA) h.countItem(z, 1))
-    //var x = 0; r.foreach(z => if (z != NODATA) x = z)
     h
   }
 
@@ -73,7 +72,6 @@ class FastMapHistogram(_size:Int, _buckets:Array[Int], _used:Int, _total:Int) ex
 
     // we collided with a different item
     var perturb = i
-    //while (true) {
     while (failsafe < 100000000) {
       failsafe += 1
       // i stole this whole perturbation/rehashing strategy from python
