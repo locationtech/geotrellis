@@ -96,5 +96,6 @@ class MinSpec extends FunSpec with FocalOpSpec
         getMinResult(Square(1),MockCursor.fromAll(s:_*)) should equal (s.min)
       }
     }
+
   }
 }
