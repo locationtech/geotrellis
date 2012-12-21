@@ -185,7 +185,4 @@ object Server {
   def empty(id:String) = new Server(id, Catalog.empty(id))
 }
 
-object TestServer {
-  def apply() = Server("test", Catalog.empty("test"))
-  def apply(path:String) = new Server("test", Catalog.fromPath(path))
-}
+
