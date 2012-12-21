@@ -1,6 +1,7 @@
 package geotrellis.data
 
 import geotrellis.util.Filesystem
+import geotrellis.util.Filesystem
 
 object Importer {
   def importWithGdal(inPath: String, name: String, outDir:String) {
