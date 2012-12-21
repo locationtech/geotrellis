@@ -61,19 +61,4 @@ case class Failure(id:String, startTime:Long, stopTime:Long,
                    children:List[History], message:String,
                    trace:String) extends History {}
 
-/**
- * Timers are used to accumulate child results, and create history objects.
- */
-class Timer {
-  private val histories = new ArrayBuffer[History]
 
-  def add(h:History) { histories.append(h) }
-  def children = histories.toList
-
-  def toSuccess(name:String, start:Long, stop:Long) = {
-    Success(name, start, stop, children)
-  }
-  def toFailure(name:String, start:Long, stop:Long, msg:String, trace:String) = {
-    Failure(name, start, stop, children, msg, trace)
-  }
-}
