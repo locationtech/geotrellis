@@ -2,47 +2,10 @@ package geotrellis.util
 
 import java.io.{File,FileInputStream}
 import java.nio.ByteBuffer
-import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel.MapMode._
-
 import scala.math.min
 
-object Units {
-  val bytesUnits = List("B", "K", "M", "G", "P")
-  def bytes(n:Long) = {
-    def xyz(amt:Double, units:List[String]): (Double, String) = units match {
-      case Nil => sys.error("invalid units list")
-      case u :: Nil => (amt, u)
-      case u :: us => if (amt < 1024) (amt, u) else xyz(amt / 1024, us)
-    }
-    xyz(n, bytesUnits)
-  }  
-}
 
-/**
-  * Utility class for timing the execution time of a function.
-  */
-object Timer {
-  def time[T](thunk: => T) = {
-    val t0 = System.currentTimeMillis()
-    val result = thunk
-    val t1 = System.currentTimeMillis()
-    (result, t1 - t0)
-  }
-
-  def run[T](thunk: => T) = {
-    val (result, t) = time { thunk }
-    printf("%s: %d ms\n", result, t)
-    result
-  }
-
-  def log[T](fmt:String, args:Any*)(thunk: => T) = {
-    val label = fmt.format(args:_*)
-    val (result, t) = time { thunk }
-    printf(label + ": %d ms\n".format(t))
-    result
-  }
-}
 
 object Filesystem {
   def slurp(path:String, bs:Int = 262144):Array[Byte] = {

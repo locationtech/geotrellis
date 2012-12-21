@@ -7,7 +7,6 @@ import java.nio.ByteBuffer
 import java.nio.channels.FileChannel.MapMode._
 import javax.imageio.ImageIO
 import java.awt.Point
-
 import org.geotools.coverage.grid.GridCoverageFactory
 import org.geotools.coverage.grid.GridCoordinates2D
 import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder
@@ -19,12 +18,11 @@ import org.geotools.referencing.CRS
 import org.geotools.coverage.Category
 import org.geotools.coverage.GridSampleDimension
 import org.geotools.coverage.GeophysicsCategory
-
 import scala.math.{abs, min, max, round}
-
 import geotrellis._
 import geotrellis.process._
 import geotrellis.util._
+import geotrellis.util.Filesystem
 
 
 final class GeoTiffReadState(path:String,

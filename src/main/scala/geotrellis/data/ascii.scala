@@ -2,12 +2,11 @@ package geotrellis.data
 
 import scala.math.{min, max}
 import java.io.{File, FileWriter, BufferedReader, BufferedWriter, PrintWriter}
-
 import Console.printf
-
 import geotrellis._
 import geotrellis.process._
 import geotrellis.util._
+import geotrellis.util.Filesystem
 
 final class AsciiReadState(path:String,
                            val layer:RasterLayer,
