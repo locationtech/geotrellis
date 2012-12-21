@@ -1,10 +1,10 @@
 package geotrellis.data
 
 import java.nio.ByteBuffer
-
 import geotrellis._
 import geotrellis.util._
 import geotrellis.process._
+import geotrellis.util.Filesystem
 
 abstract class ArgFloatNReadState(data:Either[String, Array[Byte]],
                                   val layer:RasterLayer,

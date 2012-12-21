@@ -3,12 +3,11 @@ package geotrellis.process
 import scala.collection.mutable
 import scala.io.Source
 import java.io.File
-
 import net.liftweb.json.{parse, DefaultFormats}
-
 import geotrellis._
 import geotrellis.process._
 import geotrellis.util._
+import geotrellis.util.Filesystem
 
 // example json is available in the geotrellis.process.catalog tests. please
 // keep it up-to-date with changes you make here.

@@ -6,8 +6,8 @@ import geotrellis.process._
 import geotrellis.data.arg.{ArgWriter,ArgReader}
 import geotrellis.data.Gdal
 import geotrellis.feature.Polygon
-
 import java.io.{FileOutputStream, BufferedOutputStream}
+import geotrellis.util.Filesystem
 
 /**
  * This class stores the layout of a tiled raster: the number of tiles (in

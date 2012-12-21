@@ -4,10 +4,9 @@ import geotrellis.raster.TiledRasterData
 import geotrellis._
 import geotrellis.util.Filesystem
 import geotrellis.feature.Polygon
-
 import java.io.File
-
 import scala.math.{min, max}
+import geotrellis.util.Filesystem
 
 object Raster {
   def apply(arr:Array[Int], re:RasterExtent):Raster = 

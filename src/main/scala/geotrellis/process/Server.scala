@@ -3,7 +3,6 @@ package geotrellis.process
 import java.io.File
 import scala.util.matching.Regex
 import scala.collection.mutable
-
 import geotrellis._
 import geotrellis._
 import geotrellis.data._
@@ -12,8 +11,6 @@ import geotrellis.data.FileExtensionRegexes._
 import geotrellis.RasterExtent
 import geotrellis._
 import geotrellis.util._
-
-// akka imports
 import akka.actor._
 import akka.routing._
 import scala.concurrent.Await
@@ -21,10 +18,9 @@ import scala.concurrent.duration.Duration
 import akka.util.Timeout
 import akka.pattern.ask
 import java.util.concurrent.TimeUnit
-
 import com.typesafe.config.ConfigFactory
-
 import scala.util.{Try,Success => TrySuccess, Failure => TryFailure}
+import geotrellis.util.Filesystem
 
 //class Server (id:String, val catalog:Catalog) extends FileCaching {
 class Server (id:String, val catalog:Catalog) {
@@ -189,7 +185,4 @@ object Server {
   def empty(id:String) = new Server(id, Catalog.empty(id))
 }
 
-object TestServer {
-  def apply() = Server("test", Catalog.empty("test"))
-  def apply(path:String) = new Server("test", Catalog.fromPath(path))
-}
+
