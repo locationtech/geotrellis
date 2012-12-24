@@ -41,7 +41,7 @@ class AddOne {
       val y:Int = Demo.server.run(opY)
       y.toString
     } catch {
-      case e => e.toString
+      case e:Throwable => e.toString
     }
 
     response("text/plain")(data)
@@ -67,7 +67,7 @@ class BoundingBox {
       val extent:Extent = Demo.server.run(op)
       extent.toString
     } catch {
-      case e => e.toString
+      case e:Throwable => e.toString
     }
 
     response("text/plain")(data)
@@ -103,7 +103,7 @@ class DrawRaster {
       val img:Array[Byte] = Demo.server.run(pngOp)
       response("image/png")(img)
     } catch {
-      case e => response("text/plain")(e.toString)
+      case e:Throwable => response("text/plain")(e.toString)
     }
   }
 }
