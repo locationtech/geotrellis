@@ -54,20 +54,25 @@ licenses := Seq("GPL3" -> url("http://www.gnu.org/licenses/gpl-3.0-standalone.ht
 homepage := Some(url("http://github.com/azavea/geotrellis"))
 
 pomExtra := (
-  <scm>
-    <url>git@github.com:azavea/geotrellis.git</url>
-    <connection>scm:git:git@github.com:azavea/geotrellis.git</connection>
-  </scm>
-  <developers>
-    <developer>
-      <id>non</id>
-      <name>Erik Osheim</name>
-      <url>http://github.com/non/</url>
-    </developer>
-    <developer>
-      <id>josh.marcus</id>
-      <name>Josh Marcus</name>
-      <url>http://github.com/josh.marcus/</url>
-    </developer>
-  </developers>
+<scm>
+  <url>git@github.com:azavea/geotrellis.git</url>
+  <connection>scm:git:git@github.com:azavea/geotrellis.git</connection>
+</scm>
+<developers>
+  <developer>
+    <id>non</id>
+    <name>Erik Osheim</name>
+    <url>http://github.com/non/</url>
+  </developer>
+  <developer>
+    <id>joshmarcus</id>
+    <name>Josh Marcus</name>
+    <url>http://github.com/joshmarcus/</url>
+  </developer>
+  <developer>
+    <id>lossyrob</id>
+    <name>Rob Emanuele</name>
+    <url>http://github.com/lossyrob/</url>
+  </developer>
+</developers>
 )
