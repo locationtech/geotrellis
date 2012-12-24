@@ -31,12 +31,7 @@ object GeotrellisBuild extends Build {
       "org.scalatest" %% "scalatest" % "2.0.M5b",
       "org.scala-lang" % "scala-reflect" % "2.10.0",
       "junit" % "junit" % "4.5" % "test",
-      "com.vividsolutions" % "jts" % "1.8",
-      "java3d" % "j3d-core" % "1.3.1",
-      "org.geotools" % "gt-main" % geotoolsVersion,
-      "org.geotools" % "gt-coverage" % geotoolsVersion,
-      "org.geotools" % "gt-coveragetools" % geotoolsVersion,
-      "javax.media" % "jai_core" % "1.1.3",
+      "com.vividsolutions" % "jts" % "1.12",
       "net.liftweb" % "lift-json_2.10.0-RC2" % "2.5-SNAPSHOT" from "http://n0d.es/jars/lift-json_2.10.0-RC2.jar",
       // lift-json dependency included so we can get jar directly
       "com.thoughtworks.paranamer" % "paranamer" % "2.4.1",
@@ -109,12 +104,28 @@ object GeotrellisBuild extends Build {
       libraryDependencies ++= Seq("com.beust" % "jcommander" % "1.23"),
       mainClass in Compile := Some("geotrellis.run.Tasks")
     ).
-    dependsOn(root)
+    dependsOn(root,geotools)
 
   lazy val demo:Project = Project("demo", file("demo")).
     settings(scalaVersion := "2.10.0").
     dependsOn(root)
 
+  lazy val geotools:Project = Project("geotools", file("geotools")).
+    settings(
+    scalaVersion := "2.10.0-RC3",
+    libraryDependencies ++= Seq(
+      "org.scalatest" % "scalatest_2.10.0-RC3" % "1.8-B1" % "test",
+      "java3d" % "j3d-core" % "1.3.1",
+      "org.geotools" % "gt-main" % geotoolsVersion,
+      "org.geotools" % "gt-jdbc" % geotoolsVersion,
+      "org.geotools.jdbc" % "gt-jdbc-postgis" % geotoolsVersion,
+      "org.geotools" % "gt-coverage" % geotoolsVersion,
+      "org.geotools" % "gt-coveragetools" % geotoolsVersion,
+      "org.postgis" % "postgis-jdbc" % "1.3.3",
+      "javax.media" % "jai_core" % "1.1.3")
+    ).
+    dependsOn(root)
+   
   lazy val benchmark:Project = Project("benchmark", file("benchmark")).
     settings(benchmarkSettings: _*).
     dependsOn(root)

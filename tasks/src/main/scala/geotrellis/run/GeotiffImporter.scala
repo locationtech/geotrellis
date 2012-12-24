@@ -7,7 +7,6 @@ import geotrellis.data._
 import geotrellis.data.arg._
 import geotrellis.process._
 
-
 /**
  * Task that converts geotiff rasters into arg32 rasters.
  *
@@ -43,11 +42,11 @@ class GeotiffImportTask extends Task {
 
 object GeotiffImporter {
   def execute(inpath:String, outpath:String, name:String) {    
-    val server = Server("script", Catalog.empty("script"))
+    //val server = Server("script", Catalog.empty("script"))
 
     println("Loading file: " + inpath)
-    val raster = server.run(io.LoadFile(inpath))
-    server.shutdown()
+    val raster = GeoTiffReader.readPath(inpath, None, None)
+    //server.shutdown()
     
     val version = "1.0"
     
