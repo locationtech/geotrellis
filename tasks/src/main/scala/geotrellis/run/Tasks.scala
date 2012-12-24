@@ -56,7 +56,7 @@ object Tasks {
      println("----------------------------------------------------")
      println("\n * before an option indicates that it is required.")
      println("\n\nExample:")
-     println("./geotrellis geotiff_convert -i src/test/resources/econic.tif -n econic -o /tmp/econic.arg32\n")
+     println("./geotrellis import -i src/test/resources/econic.tif -n econic -d /data/arg\n")
 
      System.exit(0)
   }
@@ -120,4 +120,3 @@ class Script extends AppMain {
 }
 
 case class Exit(val code: Int) extends xsbti.Exit
-
