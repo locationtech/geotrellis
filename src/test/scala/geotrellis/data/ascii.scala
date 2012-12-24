@@ -35,9 +35,5 @@ class AsciiSpec extends FunSpec with MustMatchers with ShouldMatchers {
       r2 must be === r
     }
 
-    it ("should translate GeoTiff") {
-      val r2 = GeoTiffReader.readPath("src/test/resources/econic.tif", None, None)
-      AsciiWriter.write("/tmp/econic-geotrellis.asc", r2, "econic-geotrellis")
-    }
   }
 }
