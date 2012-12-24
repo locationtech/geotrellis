@@ -10,9 +10,12 @@ object MyBuild extends Build {
     organization := "com.azavea.geotrellis",
     name := "geotrellis",
     version := "0.8.0-SNAPSHOT",
-    scalaVersion := "2.10.0-RC3",
+    scalaVersion := "2.10.0",
     
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-optimize", "-language:implicitConversions", "-language:postfixOps", "-language:existentials", "-feature"),
+    scalacOptions ++= Seq("-deprecation", 
+                          "-unchecked", 
+                          "-optimize", 
+                          "-language:implicitConversions", "-language:postfixOps", "-language:existentials", "-feature"),
     scalacOptions in Compile in doc ++= Seq("-diagrams", "-implicits"),
     parallelExecution := false,
     testListeners <+= target.map(tgt => new eu.henkelmann.sbt.JUnitXmlTestsListener(tgt.toString)),
@@ -22,7 +25,9 @@ object MyBuild extends Build {
     javaOptions in run += "-Xmx2G",
 
     libraryDependencies ++= Seq(
-      "org.scalatest" % "scalatest_2.10.0-RC3" % "1.8-B1" % "test",
+      "org.scalatest" % "scalatest_2.10" % "2.0.M5b",
+//      "org.scalatest" % "scalatest" %% "1.8" % "test",
+      "org.scala-lang" % "scala-reflect" % "2.10.0",
       "junit" % "junit" % "4.5" % "test",
       "com.vividsolutions" % "jts" % "1.8",
       "java3d" % "j3d-core" % "1.3.1",
@@ -100,14 +105,14 @@ object MyBuild extends Build {
 
   lazy val tasks:Project = Project("tasks", file("tasks")).
     settings(
-      scalaVersion := "2.10.0-RC3",
+      scalaVersion := "2.10.0",
       libraryDependencies ++= Seq("com.beust" % "jcommander" % "1.23"),
       mainClass in Compile := Some("geotrellis.run.Tasks")
     ).
     dependsOn(root)
 
   lazy val demo:Project = Project("demo", file("demo")).
-    settings(scalaVersion := "2.10.0-RC3").
+    settings(scalaVersion := "2.10.0").
     dependsOn(root)
 
   lazy val benchmark:Project = Project("benchmark", file("benchmark")).
@@ -115,7 +120,7 @@ object MyBuild extends Build {
     dependsOn(root)
 
   def benchmarkSettings = Seq(
-    scalaVersion := "2.10.0-RC3",
+    scalaVersion := "2.10.0",
 
     // raise memory limits here if necessary
     //javaOptions in run += "-Xmx8G",
