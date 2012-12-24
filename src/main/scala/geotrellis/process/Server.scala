@@ -125,7 +125,6 @@ akka {
   def getReader(path:String, layerOpt:Option[RasterLayer]): FileReader = {
     path match {
       case ArgPattern() => ArgReader
-      case GeoTiffPattern() => GeoTiffReader
       case AsciiPattern() => AsciiReader
       case _ => sys.error("unknown path type %s".format(path))
     }
