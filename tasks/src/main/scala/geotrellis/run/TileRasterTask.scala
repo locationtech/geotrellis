@@ -12,7 +12,7 @@ import geotrellis.raster._
  *
  * See trellis.run.Task for more information on Tasks.
  */
-@Parameters(commandNames = Array("tile_raster"), commandDescription ="Generate a tiled raster from an raster in ARG format.")
+@Parameters(commandNames = Array("tile-raster"), commandDescription ="Generate a tiled raster from an raster in ARG format.")
 class TileRasterTask extends Task { 
   @Parameter( 
     names = Array("--input", "-i"),  
@@ -47,7 +47,7 @@ class TileRasterTask extends Task {
   )
   var rows:Int = _
 
-  val taskName = "tile_raster"
+  val taskName = "tile-raster"
  
   def execute = { 
     TileRasterTask.execute(inPath, outDir, name, cols, rows)  
@@ -71,7 +71,3 @@ object TileRasterTask {
     println("Tiles generated.") 
   }
 }
-
-// vim: set ts=4 sw=4 et:
-
-
