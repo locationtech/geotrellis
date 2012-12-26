@@ -5,6 +5,9 @@ import geotrellis.feature._
 import geotrellis.{ op => liftOp }
 import com.vividsolutions.jts.{ geom => jts }
 
+import scala.reflect.runtime.currentMirror
+import scala.reflect.runtime.universe._
+
 package object geometry {
 
   val GetExtent = liftOp { (a: Raster) => a.rasterExtent.extent }
@@ -39,10 +42,12 @@ package object geometry {
    * selecting only geometries that match G
    */
   case class FilterGeometry[G <: jts.Geometry,D](s: Op[List[Geometry[D]]])(
-    implicit m: Manifest[G])
-      extends Op1(s)(
-    s => Result(
-      s.filter(g => reflect.ClassManifest.singleType(g.geom) <:< m)))
+    implicit t: TypeTag[G])
+      extends Op1(s)( s => {
+        val typeName = t.tpe.typeSymbol.name.toString()
+        val result = s.filter(_.geom.getGeometryType == typeName)
+        Result( result )
+      })
 
 
   case class AsPolygonSet[D](g: Op[Geometry[D]]) extends Operation[List[Geometry[D]]] {    
@@ -53,5 +58,4 @@ package object geometry {
       case a :: Nil => Result(a.asInstanceOf[List[Geometry[D]]])
     }
   }
-
 }
