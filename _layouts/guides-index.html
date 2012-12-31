@@ -1,0 +1,40 @@
+---
+layout: index
+---
+
+<div class="container">
+  <div class="row">
+    {% for pg in site.pages %}
+      {% if pg.layout == "guides-index" and pg.languages %}
+        {% assign languages = pg.languages %}
+      {% endif %}
+    {% endfor %}
+
+    {% if page.language %}
+      {% capture intermediate %}{{ page.url | remove_first: page.language }}{% endcapture %}
+      {% capture rootIndexURL %}{{ intermediate | remove_first: '/' }}{% endcapture %}
+    {% else %}
+      {% assign rootIndexURL = page.url %}
+    {% endif %}
+
+    <div class="span10">      
+      {{ content }}
+    </div>
+    
+    <div class="span6">
+    <!--  <div class="page-header-index">
+        <h1>About</h1>
+      </div>
+
+      <p></p>
+    -->  
+
+      {% if languages %}
+        <a href="{{ site.baseurl }}{{ rootIndexURL }}"><img src="{{ site.baseurl }}/resources/images/language/en.png" title="Language: en"/></a>
+        {% for l in languages %}
+          <a href="{{ site.baseurl }}/{{ l }}{{ rootIndexURL }}"><img src="{{ site.baseurl }}/resources/images/language/{{ l }}.png" title="Language: {{ l }}"/></a>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</div>

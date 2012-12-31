@@ -1,0 +1,19 @@
+<div id="scroller-anchor">
+  <div id="scroller">
+    <p class="contents">Contents</p>
+    <div id="toc"></div>
+    <p class="contents">Other Cheatsheets</p>
+    <ul>
+      {% for pg in site.pages %}
+        {% if pg.layout == 'cheatsheet' and pg.title != page.title %}   
+          <li><a href="{{ pg.url }}">{{ pg.title }}</a></li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+    {% for pg in site.pages %}
+      {% if pg.about %}   
+        </br><h6>About</h6><p id="about">{{ pg.about }}</p>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>

@@ -1,0 +1,25 @@
+---
+layout: default
+---
+{% include frontpage-header.txt %}    
+<div style="background:url(/resources/images/bg-home.png) no-repeat top center">
+  <div class="wrapper">
+    {% include topbar.txt %}
+
+
+    <header class="pageheader">
+      <h1>Search</h1>
+    </header>
+
+
+    <div class="bottom"> <!-- There is not fucking height on this -->
+      <div class="container">
+        <div class="row">
+          {{ content }}
+        </div>
+      </div>
+    </div>
+    <div class="push"></div>
+  </div>
+</div>
+{% include frontpage-footer.txt %}

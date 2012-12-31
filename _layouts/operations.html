@@ -1,0 +1,32 @@
+---
+layout: default
+---
+{% include frontpage-header.txt %}    
+<div style="background:url(/resources/images/bg-home.png) no-repeat top center">
+  <div class="wrapper">
+    {% include topbar.txt %}
+
+    <header class="pageheader">
+      <h1>Operations</h1>
+    </header>
+
+    <div class="bottom">
+      <div class="container">
+        <div class="row">
+          <div class="span12">
+            <div class="doc">
+              {{ content }}    
+            </div>
+          </div>
+          
+          <div class="span4">
+            {% include operations-toc.txt %}
+          </div>
+	  
+        </div>
+      </div>
+    </div>
+    <div class="push"></div> <!-- used for pushing down the footer -->
+  </div>
+</div>
+{% include frontpage-footer.txt %}

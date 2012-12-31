@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <title>{% if page.title %}{{ page.title }} - {% endif %}{{ site.title }}</title>
+    {% if page.description %}
+    <meta name="description" content="{{ page.description }}" />
+    {% endif %}
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+    <link rel="icon" type="image/png" href="{{ site.baseurl }}/resources/favicon.ico">
+
+    <!-- prettify js and CSS -->
+    <link rel="stylesheet" href="{{ site.baseurl }}/resources/stylesheets/prettify.css" type="text/css" />
+    <script src="{{ site.baseurl }}/resources/javascript/prettify/prettify.js" type="text/javascript" ></script>
+
+    <!-- jquery js -->
+    <script src="{{ site.baseurl }}/resources/javascript/jquery.js" type="text/javascript" ></script>
+
+    <!-- Bootstrap JS and CSS -->
+    <link rel="stylesheet" href="{{ site.baseurl }}/resources/stylesheets/bootstrap.css" type="text/css" />
+	<script src="{{ site.baseurl }}/resources/javascript/bootstrap-dropdown.js" type="text/javascript" ></script>
+	<script src="{{ site.baseurl }}/resources/javascript/bootstrap-dropdown-app.js" type="text/javascript" ></script>	
+	
+    <!-- Base stylesheet for all pages -->
+    <link rel="stylesheet" href="{{ site.baseurl }}/resources/stylesheets/base.css" type="text/css" />
+
+    <!-- table of contents js -->
+    <script src="{{ site.baseurl }}/resources/javascript/toc.js" type="text/javascript" ></script>
+
+    <!-- google analytics -->
+	<script type="text/javascript">
+
+	  var _gaq = _gaq || [];
+	  _gaq.push(['_setAccount', 'UA-574683-5']);
+	  _gaq.push(['_trackPageview']);
+
+	  (function() {
+	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	  })();
+
+	</script>
+
+
+    <!-- prettyprint js to prepend generated pre/code tags -->
+    <script type="text/javascript">
+      function styleCode() 
+        {
+          if (typeof disableStyleCode != "undefined") 
+          {
+              return;
+          }
+          var a = false;
+          $("pre code").parent().each(function() 
+          {
+              if (!$(this).hasClass("prettyprint")) 
+              {
+                  $(this).addClass("prettyprint lang-scala linenums");
+                  a = true
+              }
+          });
+          if (a) { prettyPrint() } 
+      }
+    </script>
+
+    <script type="text/javascript">
+      jQuery(document).ready(function($) {
+ 
+            $(".scroll").click(function(event){		
+              event.preventDefault();
+              $('html,body').animate({scrollTop:$(this.hash).offset().top}, 500);
+              $('html,body').animate({scrollTop:$(this.hash).offset().top-=50}, 500);
+            });
+      });
+    </script>
+
+    <script type="text/javascript">
+      jQuery(document).ready(function($) {
+ 
+            $(".bottom table tr").hover(
+	          function(){$(this).css("background-color", "#FFCC85");},
+		      function(){$(this).css("background-color", "#ffffff");}
+            );
+      });
+    </script>
+
+    <style type="text/css">
+      html, body {
+	     padding-top: 36px; 
+	     height: 100%;
+	     background:url({{ site.baseurl }}/resources/images/bg-short.jpg) no-repeat top center #310808; 	 	 
+		  -webkit-box-shadow: inset 0 10px 50px rgba(0,0,0,.6);
+		     -moz-box-shadow: inset 0 10px 50px rgba(0,0,0,.6);
+		/*          box-shadow: inset 0 10px 30px rgba(0,0,0,.3);*/
+	  }
+	  .scrollingmenu {
+		  width: 940px;
+		  margin-left: auto;
+		  margin-right: auto;
+		  height: 70px;
+		  zoom: 1;		
+	}
+	.scrollingmenu h1 {
+      padding-bottom: 30px;
+	  color: #ffffff;
+	  font-size: 42px;
+	  line-height: 1;
+	  text-shadow: 0 1px 2px rgba(0,0,0,.5);
+	}
+    .container {
+	   min-height: 100%;
+    }
+    .bottom {
+	   min-height: 100%;
+	   background-color: #ffffff;
+	   padding-top: 20px;
+	   border-top: 1px solid #8e397d;
+	}
+	.bottom h1,h2,h3 {
+		text-shadow: 0 1px 2px rgba(255,255,255,.5);
+	}
+	.bottom h1,h2,h3 a {
+                color: #404040;
+		text-shadow: 0 1px 2px rgba(255,255,255,.5);
+	}
+
+	.bottom small {
+                color: #808080;
+		text-shadow: 0 1px 1px rgba(255,255,255,.5);
+	}
+
+	.bottom p.under {
+                color: #808080;
+		text-shadow: 0 1px 1px rgba(255,255,255,.5);
+		font-size: 18px;
+		line-height: 36px;
+		margin-top: -25px;
+	}
+
+        .bottom ul {
+                margin: -4px 0 4px 25px;
+                list-style: square;
+        }
+
+        .bottom ul li {
+                color: #404040;
+                font-size: 18px;
+                line-height: 24px;
+                margin: 0px;
+         }
+
+       .bottom ul li.tour-of-scala {
+                font-size: 16px;
+                line-height: 22px;
+         }
+
+        .bottom ul li p {
+                color: #404040;
+                text-shadow: 0 1px 0 rgba(255, 255,255,.5);
+                font-size: 18px;
+                line-height: 24px;
+                margin: 0px;
+         }
+
+        .bottom ul li a {
+                color: #404040;
+            	text-shadow: 0 1px 0 rgba(255, 255,255,.5);
+         }
+
+        .bottom ul li a:hover {
+                color: #00408C;
+         }
+
+        .bottom ul li ul li {
+                font-size: 14px;
+                line-height: 18px;
+	        text-shadow: 0 1px 0 rgba(255, 255,255,.5);
+         }
+
+        .bottom ul li ul li a {
+                color: #606060;
+         }
+
+        .bottom ul li ul li ul {
+                margin-top: 3px;
+         }
+
+        .bottom ul li ul li ul li {
+                font-size: 12px;
+                line-height: 16px;
+	        text-shadow: 0 1px 0 rgba(255, 255,255,.5);
+         }
+
+        .bottom ul li ul li ul li a {
+                color: #707070;
+         }
+
+        .box {
+                position:relative;
+                padding:7px 15px;
+                margin-bottom:18px;
+                color:#ffffff;
+                background-color:#b12c67;
+                background-repeat:repeat-x;background-image:-khtml-gradient(linear, left top, left bottom, from(#b12c67), to(#340a06));
+                background-image:-moz-linear-gradient(top, #b12c67, #eedc94);background-image:-ms-linear-gradient(top, #b12c67, #340a06);
+                background-image:-webkit-gradient(linear, left top, left bottom, color-stop(0%, #b12c67), color-stop(100%, #340a06));
+                background-image:-webkit-linear-gradient(top, #b12c67, #340a06);
+                background-image:-o-linear-gradient(top, #b12c67, #340a06);
+                background-image:linear-gradient(top, #b12c67, #340a06);
+                filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#b12c67', endColorstr='#eedc94', GradientType=0);
+                text-shadow:0 -1px 0 rgba(0, 0, 0, 0.25);
+                border-color:#340a06 #340a06 #340a06;
+                border-color:rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+                text-shadow:0 1px 0 rgba(0, 0, 0, 0.5);
+                border-width:1px;border-style:solid;-webkit-border-radius:4px;
+                -moz-border-radius:4px;border-radius:4px;-webkit-box-shadow:inset 0 1px 0 rgba(255, 255, 255, 0.25);
+                -moz-box-shadow:inset 0 1px 0 rgba(255, 255, 255, 0.25);
+                box-shadow:inset 0 1px 0 rgba(255, 255, 255, 0.25);
+	    }
+	
+	    .box h2 {
+		  padding-bottom: 8px;
+		  color: #ffffff;
+		  font-size: 36px;
+		  line-height: 1;
+		  text-shadow: 0 1px 2px rgba(0,0,0,.5);		
+   	    }
+ 
+	    .box h3 {
+		  padding-bottom: 8px;
+		  color: #ffffff;
+		  font-size: 24px;
+		  line-height: 1;
+		  text-shadow: 0 1px 2px rgba(0,0,0,.5);		
+   	    }
+
+        .box ul li {
+          list-style-image: url({{ site.baseurl }}/resources/images/check-mark.png);
+ 	    }
+
+        .box ul li {
+          color: #cccccc;
+          font-weight: bold;
+          font-size: 26px;
+          line-height: 36px;
+          text-shadow: 0 1px 2px rgba(0,0,0,.5);		
+          margin: 0 0 0 150px;		  	
+        }
+
+        .box ul li a {
+          color: #cccccc;
+        }
+
+        .box ul li a:hover {
+          color: #aaaaaa;
+        }
+
+        .bottom table {
+          border-top: 0px;
+          border-left: 0px;
+          border-right: 0px;
+        }
+
+        .bottom table thead {
+          border: 0px;
+        }
+
+        .bottom table tbody {
+          border: 0px;
+        }
+
+        .bottom table th, .bottom table td {
+          padding: 0 0 0 20px;
+          line-height: 20px;
+          border-left: 0px;
+        }
+
+        .page-header-index{margin-bottom:17px;border-bottom:1px solid #808080;-webkit-box-shadow:0 1px 0 rgba(255, 255, 255, 0.5);-moz-box-shadow:0 1px 0 rgba(255, 255, 255, 0.5);box-shadow:0 1px 0 rgba(255, 255, 255, 0.5);}
+
+       p.contents {
+           margin-left: 15px;
+           font-weight: bold;
+           font-size: 16px;
+       }
+
+       div#toc ul {
+           list-style: none;
+           padding-bottom: 20px;
+       }
+
+       div#toc ul a {
+           display: block;
+           list-style: none;
+           line-height: 22px;
+           font-size: 14px;
+           color: #0069D6;
+           font-weight: bold;
+           width: 100%;
+       }
+
+      div#toc ul li ul {
+           list-style: disc;
+      }
+
+      div#toc ul li ul a {
+           line-height: 18px;
+           font-weight: normal;
+      }
+
+      div#toc ul li ul li ul {
+           list-style: square;
+      }
+       div#toc ul li ul li ul a {
+       }
+
+       div#scroller-anchor {
+           width: inherit;
+       }
+
+       div#scroller {
+           width: inherit;
+       }
+
+       div#scroller h6 {
+           padding-left: 14px;	
+       }
+
+       p#about {
+      	 margin-top: -8px;
+         padding-left: 14px;
+       }
+
+       input, textarea, select, .uneditable-input {
+	       width: 165px;
+	   }
+	
+	.bottom p.under {
+                color: #808080;
+		text-shadow: 0 1px 1px rgba(255,255,255,.5);
+		font-size: 18px;
+		line-height: 36px;
+		margin-top: -25px;
+	}
+
+   </style>
+
+</head>
+  <body>

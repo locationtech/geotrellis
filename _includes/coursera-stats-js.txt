@@ -1,0 +1,21 @@
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="../resources/javascript/bootstrap-twipsy.js"></script>
+
+<script src="../resources/javascript/coursera/bargraphs.js"></script>
+<script src="../resources/javascript/coursera/grades-breakdown.js"></script>
+
+<script src="../resources/javascript/coursera/jquery-jvectormap-1.1.1.min.js"></script>
+<script src="../resources/javascript/coursera/worldmap.js"></script>
+<script src="../resources/dat/worldmap-counts.js"></script>
+<script src="../resources/dat/worldmap-density-count.js"></script>
+<script src="../resources/dat/worldmap-density-pop.js"></script>
+<script src="../resources/dat/worldmap-density.js"></script>
+<script src="../resources/javascript/coursera/worldmap-density.js"></script>
+<script src="../resources/javascript/coursera/worldmap-population.js"></script>
+
+<script src="../resources/javascript/coursera/raphael.js"></script>
+<script src="../resources/javascript/coursera/g.raphael.js"></script>
+<script src="../resources/javascript/coursera/g.pie.js"></script>
+
+<script src="../resources/javascript/coursera/where-apply.js"></script>
+<script src="../resources/javascript/coursera/what-interested-you.js"></script>

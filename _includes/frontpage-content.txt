@@ -1,0 +1,51 @@
+<div class="bottom" style="padding-top106px;" >
+  <div class="container">
+    <div class="row">
+
+      <header class="contentheader">
+        <h2>Geotrellis Documentation</h2>
+        <div id=front-image>
+          <div id=grid-image>
+            <div class="tile lg"></div>
+            <div class="tile med m01"></div>
+            <div class="tile med m02"></div>
+            <div class="tile med m03"></div>
+            <div class="tile med m04"></div>
+            <div class="tile sm s01"></div>
+            <div class="tile sm s02"></div>
+            <div class="tile sm s03"></div>
+            <div class="tile sm s04"></div>
+            <div class="tile xs x01"></div>
+            <div class="tile xs x02"></div>
+            <div class="tile xs x03"></div>
+            <div class="tile xs x04"></div>
+          </div>
+        </div>
+      </header>
+
+
+      <div class="span16">
+
+	<h3><a href="{{ site.baseurl }}/gettingstarted">Getting Started Guide</a></h3>
+	<p>A guide that will get you started with using GeoTrellis.</p>
+	
+	<h3><a href="{{ site.baseurl }}/tutorials">Tutorials</a></h3>
+	<p>Tutorials that will guide you through using GeoTrellis</p>
+
+	<h3><a href="{{ site.baseurl }}/demos">Demos</a></h3>
+	<p>See GeoTrellis in action!</p>
+
+	<h3><a href="{{ site.baseurl }}/operations">Operations</a></h3>
+	<p>A list of GeoTrellis operations, and how to use them.</p>
+	
+	<h3><a href="{{ site.baseurl }}/glossary">Glossary</a></h3>
+	<p>A glossary of terms used in GeoTrellis, Map Algebra, and GIS.</p>			
+
+	<p> If you can't find what you need here, please find
+	  us on irc at <b>#geotrellis on freenode</b>, or join the user mailing list at <a href="https://groups.google.com/group/geotrellis-user" target="_blank">the geotrellis-user mailing list</a>
+	  and ask questions! <p>
+	<p>&nbsp;</p>
+      </div> 
+    </div>
+  </div>
+</div>

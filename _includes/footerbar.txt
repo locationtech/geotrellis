@@ -1,0 +1,38 @@
+<div class="footer">
+	<div class="container">
+		<ul>
+			<li><h5>API</h5></li>
+			<li><a href="http://azavea.github.com/geotrellis/0.7.0/api/#package" target="_blank">Current Release</a></li>
+			<li><a href="http://azavea.github.com/geotrellis/latest/api/#package" target="_blank">Latest</a></li>
+		</ul>
+		<ul>
+			<li><h5>Learn</h5></li>
+                        <li><a href="{{ site.baseurl }}/gettingstarted">Getting Started</a></li>
+                        <li><a href="{{ site.baseurl }}/tutorials">Tutorials</a></li>
+		</ul>
+		<ul>
+			<li><h5>Reference</h5></li>
+                        <li><a href="{{ site.baseurl }}/operations">Operations</a></li>
+                        <li><a href="{{ site.baseurl }}/glossary">Glossary</a></li>
+		</ul>
+		<ul>
+			<li><h5>Demos</h5></li>
+                        <li><a href="{{ site.baseurl }}/demos">Demos Home</a><li>
+                        <li><a href="http://azavea.github.com/geotrellis/0.7.0/api/#package">Weighted Overlay</a></li>
+                        <li><a href="http://azavea.github.com/geotrellis/latest/api/#package">Kernel Density</a></li>
+		</ul>
+		<ul>
+			<li><h5>Other Resources</h5></li>
+                        <li><a href="https://github.com/azavea/geotrellis/" target="_blank">Github</a></li>     
+                        <li><a href="https://github.com/azavea/geotrellis/wiki" target="_blank">Wiki</a></li>
+			<li><a href="http://www.azavea.com/" target="_blank">Azavea</a></li>				
+		</ul>						
+	</div>
+	<div class="container copyright">
+ 		<p>
+                  <a href="http://www.azavea.com" target="_blank"><img align="left" src="{{ site.baseurl }}/resources/images/by-azavea.png" alt="Azavea, Inc."></a>
+			<span style="position:relative;top:4px;left:50px">Copyright &copy; 2011-2013 Azavea Inc. All rights reserved.</span>
+			<a href="https://github.com/geotrellis/geotrellis.github.com/commits/gh-pages.atom" target="_blank"><img align="right" height="20px" width="20px" src="{{ site.baseurl }}/resources/images/rss.png" alt="RSS feed of updates to the github repo hosting this site"></a>
+		</p>		
+	</div>
+</div>

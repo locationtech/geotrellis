@@ -1,0 +1,35 @@
+---
+layout: default
+---
+
+{% include frontpage-header.txt %}    
+<div style="background:url(/resources/images/bg-home.png) no-repeat top center">
+  <div class="wrapper">
+    {% include topbar.txt %}
+
+
+    <header class="pageheader">
+      <h1>Demos</h1>
+    </header>
+
+    <div class="bottom">
+      <h1>Demos are on their way. In the meantime, check out this cat
+      <div id="demoMap" style="height:500px"></div>
+      <script src="http://www.openlayers.org/api/OpenLayers.js"></script>
+      <script>
+        map = new OpenLayers.Map("demoMap");
+        map.addLayer(new OpenLayers.Layer.OSM());
+        
+        bounds = new OpenLayers.Bounds(-8403736.1227081,4840156.9540526,-8329592.2052818,4878375.4681898)
+        map.zoomToExtent(bounds);
+        
+        imgUrl = 'http://www.thundershirtforcats.com/Content/images/Cat-On-Back.png';
+        imgOptions = { visibility: true, singleTile: true, isBaseLayer: false, alwaysInRange: true };
+        imgLayer = new OpenLayers.Layer.Image('test', imgUrl, bounds, new OpenLayers.Size(283, 189), imgOptions);
+        map.addLayer(imgLayer);
+      </script>
+    </div>
+    <div class="push"></div>
+  </div>
+</div>
+{% include frontpage-footer.txt %}

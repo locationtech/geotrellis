@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{% if page.title %}{{ page.title }} - {% endif %}{{ site.title }}</title>
+    {% if page.description %}
+    <meta name="description" content="{{ page.description }}" />
+    {% endif %}
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+    <link rel="icon" type="image/png" href="{{ site.baseurl }}/resources/favicon.ico">
+
+    <!-- prettify js and CSS -->
+    <link rel="stylesheet" href="{{ site.baseurl }}/resources/stylesheets/prettify.css" type="text/css" />
+    <script src="{{ site.baseurl }}/resources/javascript/prettify/prettify.js" type="text/javascript" ></script>
+
+    <!-- jquery js -->
+    <script src="{{ site.baseurl }}/resources/javascript/jquery.js" type="text/javascript" ></script>
+    <script src="{{ site.baseurl }}/resources/javascript/moveScroller.js" type="text/javascript" ></script>
+
+    <!-- table of contents js -->
+    <script src="{{ site.baseurl }}/resources/javascript/toc.js" type="text/javascript" ></script>
+
+    <!-- Bootstrap JS and CSS -->
+    <link rel="stylesheet" href="{{ site.baseurl }}/resources/stylesheets/bootstrap.css" type="text/css" />
+    <script src="{{ site.baseurl }}/resources/javascript/bootstrap-dropdown.js" type="text/javascript" ></script>
+    <script src="{{ site.baseurl }}/resources/javascript/bootstrap-dropdown-app.js" type="text/javascript" ></script>	
+
+    <!-- Base stylesheet for all pages -->
+    <link rel="stylesheet" href="{{ site.baseurl }}/resources/stylesheets/base.css" type="text/css" />
+    <link rel="stylesheet" href="{{ site.baseurl }}/resources/stylesheets/code.css" type="text/css" />
+
+    <!-- You may want to change the paths below, according to your own CSS and JavaScript setup -->
+    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/resources/stylesheets/frontpage.css" />
+    <script type="text/javascript" src="{{ site.baseurl }}/resources/javascript/jquery.easing.js"></script>
+    <script type="text/javascript" src="{{ site.baseurl }}/resources/javascript/jquery.accordionza.js"></script>
+    <script src="{{ site.baseurl }}/resources/javascript/frontpage.js" type="text/javascript" ></script>
+
+    <!-- google analytics 
+	<script type="text/javascript">
+
+	  var _gaq = _gaq || [];
+	  _gaq.push(['_setAccount', 'UA-574683-5']);
+	  _gaq.push(['_trackPageview']);
+
+	  (function() {
+	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	  })();
+
+	</script>
+    -->
+
+    <!-- prettyprint js to prepend generated pre/code tags -->
+    <script type="text/javascript">
+      function styleCode()
+        {
+          if (typeof disableStyleCode != "undefined")
+          {
+              return;
+          }
+          var a = false;
+          $("pre code").parent().each(function()
+          {
+              if (!$(this).hasClass("prettyprint"))
+              {
+                  $(this).addClass("prettyprint lang-scala");
+                  a = true
+              }
+          });
+          if (a) { prettyPrint() }
+      }
+    </script>
+
+    <script type="text/javascript">
+
+      $(document).ready(function() {
+		
+		var offset = $(".push").height() + $(".scrollingmenu").height();
+		if ( offset + $('.bottom').height() < $(window).height() ) {
+			var height = $(window).height() - offset;
+		   	$('.bottom').css("height", height);			
+		}
+		
+      });
+    </script>
+
+    <style type="text/css">
+    @import url("http://fonts.googleapis.com/css?family=Lato:900|Signika:400,600");
+
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 15px; line-height: 24px;
+	   background: url("http://auto2.cdn.azavea.com/themes/GeoTrellis/images/bg-iso-grid.png") repeat scroll 0 0 transparent; }
+    .contentheader h2 {
+	padding-left: 10px;
+	padding-bottom: 30px;
+	color: #393939;
+	font-size: 32px;
+	line-height: 1;
+	padding-left: 10px;
+	text-shadow: 0 1px 2px rgba(0,0,0,.5);
+    }
+    h1 { font-family: 'Signika',sans-serif; font-size: 32px; font-weight: 400; color: #393939; }
+    h2 { font-family: 'Signika',sans-serif; font-size: 18px; font-weight: 600; color: #393939; }
+    h4 { font-family: 'Lato',sans-serif; font-size: 16px; color: #145499; font-weight: 900; 
+	 text-transform: uppercase; text-shadow: 0 1px 1px rgba(0,0,0,.25); padding-top: 10px; margin: 0 0 8px; }
+    p { color: #777; margin-bottom: 20px; width: 100%; }
+    p + p { margin-top: 0; text-indent: 0; }
+    pre { border-radius: 7px 7px 7px 7px; padding: 5px; }
+
+    a.fork { position: fixed; z-index: 999; }
+    a.page { width: 45%; }
+    a.page:hover { background: #25B8DA; background: rgba(37, 184, 218, .5); color: white; }
+    a.page span.space { height: 50%; }
+    a.page span:last-child { font-size: 60px; font-weight: bold; }
+
+    div.container { background: transparent; }
+
+    div.contents {
+	border: 5px solid rgba(0,0,0,.4);
+	margin: 130px 0 50px;
+	padding: 35px;
+    }
+
+    a.btn-run {
+        font-family: 'Lato', sans-serif;
+        font-size: 13px;
+        text-transform: uppercase;
+        margin: 10px;
+        box-shadow: 4px 4px 0 rgba(0, 0, 0, .2);
+        font-weight: 900;
+        float: right;
+    }
+
+   </style>
+
+
+
+        <script src="http://openlayers.org/dev/OpenLayers.js" type="text/javascript"></script>
+
+
+
+        <style>
+        #map {
+            height: 500px;
+            border: 1px solid gray;
+            padding: 20px;
+        }
+n
+        </style>
+
+        <script defer="defer" type="text/javascript">
+    DEMOAPP = {}
+    function init() {
+        // set up some layers
+        var base = new OpenLayers.Layer.WMS("Basic", "http://demo.opengeo.org/geoserver/wms",
+                                           {
+                                               layers: 'topp:naturalearth'
+                                           });
+
+        // create the top map (with default overview map control)
+        var map = new OpenLayers.Map('map');
+        
+        map.addLayer(base);
+
+        OpenLayers.Feature.Vector.style['default']['strokeWidth'] = '2';
+
+        //allow testing of specific renderers via "?renderer=Canvas", etc
+
+        var renderer = OpenLayers.Util.getParameters(window.location.href).renderer;
+        renderer = (renderer) ? [renderer] : OpenLayers.Layer.Vector.prototype.renderers;
+
+        vectors = new OpenLayers.Layer.Vector("Vector Layer", {
+            renderers: renderer
+        });
+
+        map.addLayer(vectors);
+
+        map.addControl(new OpenLayers.Control.MousePosition());
+        
+        // Report on vector events
+        if (console && console.log) {
+            function report(event) {
+                console.log(event.type, event.feature ? event.feature.id : event.components);
+            }
+            vectors.events.on({
+                "beforefeaturemodified": report,
+                "featuremodified": report,
+                "afterfeaturemodified": report,
+                "vertexmodified": report,
+                "sketchmodified": report,
+                "sketchstarted": report,
+                "sketchcomplete": report
+            });
+        }
+
+        drawControl = new OpenLayers.Control.DrawFeature(vectors,
+                                                         OpenLayers.Handler.RegularPolygon,
+                                                         {handlerOptions: {sides: 50}});
+        modify = new OpenLayers.Control.ModifyFeature(vectors);
+        
+        modify.mode = OpenLayers.Control.ModifyFeature.RESIZE | OpenLayers.Control.ModifyFeature.DRAG;
+
+        map.addControls([modify,drawControl]);
+        map.addControl(new OpenLayers.Control.LayerSwitcher());
+
+        bounds = bounds = new OpenLayers.Bounds(-88.303985595705,32.272338867188,-70.330352783205,44.137573242188);
+        map.zoomToExtent(bounds);
+
+        drawControl.activate();
+        modify.activate();
+
+        DEMOAPP.drawControl = drawControl;
+        DEMOAPP.modify = modify;
+        DEMOAPP.map = map;
+        DEMOAPP.vectors = vectors;
+
+        $('a.runKD').click(function() {
+            extent = DEMOAPP.map.getExtent();
+
+            // json = { 
+            //     left: extent.left,
+            //     bottom: extent.bottom,
+            //     right: extent.right,
+            //     top: extent.top,        
+            //     points: DEMOAPP.vectors.features.map(getGeoJSONFeature)
+            // };
+
+            path = '/extent/'
+            path += extent.left + ',' + extent.bottom + ',' + extent.right + ',' + extent.top
+            path += '/features/'
+            path += DEMOAPP.vectors.features.map(getFeatureString).join(',')
+
+            $.ajax( { 
+                url: "http://localhost:8000/kerneldensity" + path,
+                dataType: "jsonp",
+                success: function(data) {
+                    // The data is the url of the image 
+                    // created by geotrellis
+                    addImageLayer(data.url,data.width,data.height);
+
+                }
+            });
+
+        });
+    }
+
+    function getFeatureString(feature) {
+        bounds = feature.geometry.bounds;
+
+        diameterX = bounds.right - bounds.left;
+        diameterY = bounds.top - bounds.bottom;
+
+        x = bounds.left + (diameterX/2);
+        y = bounds.bottom + (diameterY/2);
+        
+        size = Math.floor(diameterX*diameterX*Math.PI);                
+        return x + ',' + y + ',' + size
+    }
+
+    function getGeoJSONFeature(feature) {
+        bounds = feature.geometry.bounds;
+
+        diameterX = bounds.right - bounds.left;
+        diameterY = bounds.top - bounds.bottom;
+
+        x = bounds.left + (diameterX/2);
+        y = bounds.bottom + (diameterY/2);
+        
+        size = Math.floor(diameterX*diameterX*Math.PI);        
+        
+        return { type: "Feature",
+                 geometry: { type: "Point", coordinates: [x,y] },
+                 properties: { size: size }
+               };
+    }
+
+
+    function addImageLayer(url,width,height) {
+        if(DEMOAPP.rasterLayer) { 
+            DEMOAPP.map.removeLayer(DEMOAPP.rasterLayer);
+            delete DEMOAPP.raterLayer;
+        }
+        imgOptions = { visibility: true, singleTile: true, isBaseLayer: false, alwaysInRange: true };
+        imgLayer = new OpenLayers.Layer.Image('Kernel Density', url, DEMOAPP.map.getExtent(), new OpenLayers.Size(width, height), imgOptions);
+        DEMOAPP.map.addLayer(imgLayer);
+        DEMOAPP.rasterLayer = imgLayer;
+    }
+        </script>
+    </head>
+    <body onLoad="init()">
+      <div style="background:url(/resources/images/bg-home.png) no-repeat top center">
+        <div class="wrapper">
+          {% include topbar.txt %}
+
+
+          <header class="pageheader">
+            <h1>Demos</h1>
+          </header>
+
+          <div class="bottom">
+            <div class="span14 doc">
+              <h1 id="title">Kernel Density</h1>
+
+              <p>
+                This is a description of the demo.
+              </p>
+              <div id="map"></div>
+              <a class="runKD btn btn-run">Run Kernel Density</a>
+            </div>
+          </div>
+          <div class="push"></div>
+        </div>
+      </div>
+      {% include frontpage-footer.txt %}
+    </body>
+</html>

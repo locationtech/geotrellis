@@ -1,0 +1,52 @@
+
+.bottom .gsc-control-cse {
+  font-family: Arial, sans-serif;
+  background-color: #BCBCBC;
+  border: 0px solid #BCBCBC;
+}
+
+.bottom .gsc-webResult.gsc-result {
+  padding: 0 0 0 .5em;
+  border-left: 2px solid;
+  border-color: #BCBCBC;
+  border-bottom: 0px solid;
+  margin-bottom: 1em;
+}
+/* Result hover event styling */
+.bottom .gsc-webResult.gsc-result:hover {
+  border-left: 2px solid;
+  border-color: #73203a;
+  border-bottom: 0px solid;
+}
+
+.bottom table {
+  border: 0px solid #000000;
+  margin-bottom: -8px;
+}
+
+.bottom td {
+  border-left: 0px;
+}
+
+.bottom .gs-webResult.gs-result a.gs-title:link {
+  color: #404040;
+  text-shadow: 0 1px 0 rgba(255, 255,255,.5);
+  font-size: 18px;
+}
+
+.bottom .gs-webResult.gs-result a.gs-title:hover {
+  color: #00438a;
+}
+/* Snippet text color */
+.bottom .gs-webResult .gs-snippet,
+.gs-webResult .gs-snippet,
+.gs-imageResult .gs-snippet {
+  color: #404040;
+}
+
+.bottom .gsc-result-info {
+  border-bottom: 1px solid gray;
+  -webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  -moz-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}

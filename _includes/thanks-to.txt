@@ -1,0 +1,14 @@
+<div class="page-header-index">
+  <h1>Thank you</h1><p class="under">It helps many</p>
+</div>
+
+This site and the documentation it contains is the result of a tremendous amount of work by a large number of people over time, from the first Scala team members, to today’s newcomers. In an effort to only scratch the surface, we list some of those whose help was invaluable in the realization of this iteration of the Scala Documentation repository. 
+
+<ul class="thanks">
+  <li><a href="http://suereth.blogspot.com">Josh Suereth</a></li>
+  <li><a href="http://www.naildrivin5.com">Dave Copeland</a></li>
+  <li><a href="http://www.codecommit.com">Daniel Spiewak</a></li>
+  <li>Simon Ochsenreither</li>
+  <li><a href="http://brenocon.com/">Brendan O’Connor</a></li>
+  <li><a href="http://yuvimasory.com">Yuvi Masory</a></li>
+<ul>

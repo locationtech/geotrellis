@@ -1,0 +1,24 @@
+{% for pg in site.pages %}
+  {% if pg.tutorial == "tutorials" and pg.outof %}
+    {% unless pg.language %}
+      {% assign totalPages = pg.outof %}
+    {% endunless %}
+  {% endif %}
+{% endfor %}
+
+{% if totalPages %}
+  <ul>
+  {% for i in (1..totalPages) %}
+    {% for pg in site.pages %}
+      {% if pg.tutorial == "tutorials" and pg.num and pg.num == i %}
+         {% if pg.url == page.url %}
+             <li class="toc-current"><a href="{{ pg.url }}">{{ pg.title }}</a></li>     
+         {% else %}
+             <li class="toc-tutorials"><a href="{{ pg.url }}">{{ pg.title }}</a></li>
+         {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+  </ul>
+{% else %} **ERROR**. Couldn't find the total number of pages in this set of tutorial articles. Have you declared the `outof` tag in your YAML front matter?
+{% endif %}

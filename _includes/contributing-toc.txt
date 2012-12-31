@@ -1,0 +1,7 @@
+<div id="scroller-anchor">
+  <div id="scroller">
+    <p class="contents">Contents</p>
+    <div id="toc"></div>
+    {% include thanks-to.txt %}
+  </div>
+</div>

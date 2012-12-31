@@ -1,0 +1,15 @@
+    <!-- Topbar
+    ================================================== -->
+    <div class="topbar" >
+      <div class="topbar-inner">
+        <div class="container">
+          <a class="brand" href="{{ site.baseurl }}/sips/index.html"><img src="{{ site.baseurl }}/resources/images/scala-logo.png"> Improvement Process</a>
+          <ul class="nav">
+           <li><a href="{{ site.baseurl }}/sips/sip-submission.html">Submitting a new SIP</a></li>
+           <li><a href="{{ site.baseurl }}/sips/sip-list.html">SIP List</a></li>
+           <li><a href="{{ site.baseurl }}/sips/sip-tutorial.html">Tutorial: Writing a SIP</a></li>
+           <li><a href="https://groups.google.com/forum/#!forum/scala-sips">Mailing List</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>

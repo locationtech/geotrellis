@@ -1,0 +1,33 @@
+<div id="scroller-anchor">
+  <div id="scroller">
+    <p class="contents">Contents</p>
+    <div id="toc"></div>    
+      {% if page.vote-status %}        
+        {% if page.vote-status == 'accepted' %}
+          <p class="contents">SIP Committee Decision</p>
+          <div class="alert-message success" style="margin-left: 15px;">
+            <strong style="font-size: 15px;">Accepted</strong>
+            <p>{{ page.vote-text }}</p>
+          </div>  
+        {% elsif page.vote-status == 'deferred' %}  
+          <p class="contents">SIP Committee Decision</p>      
+          <div class="alert-message warning" style="margin-left: 15px;">
+            <strong style="font-size: 15px;">Decision Deferred Until Next SIP Committee Meeting</strong>
+            <p style="padding-top: 10px">{{ page.vote-text }}</p>
+          </div> 
+        {% elsif page.vote-status == 'postponed' %}
+          <p class="contents">SIP Committee Decision</p>
+          <div class="alert-message warning" style="margin-left: 15px;">
+            <strong style="font-size: 15px;">Postponed To A Future Release</strong>
+            <p style="padding-top: 10px">{{ page.vote-text }}</p>
+          </div>  
+        {% elsif page.vote-status == 'not accepted' %}
+          <p class="contents">SIP Committee Decision</p>
+          <div class="alert-message danger" style="margin-left: 15px;">
+            <strong style="font-size: 15px;">Not Accepted</strong>
+            <p style="padding-top: 10px">{{ page.vote-text }}</p>
+          </div>            
+        {% endif %}                
+      {% endif %}        
+  </div>
+</div>

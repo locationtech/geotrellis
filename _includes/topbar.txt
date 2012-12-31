@@ -1,0 +1,51 @@
+    <!-- Topbar
+    ================================================== -->
+<div class="topbar">
+    <div class="topbar-inner">
+        <div class="container">
+            <a class="brand" href="{{ site.baseurl }}/index.html"> <img src="http://auto2.cdn.azavea.com/themes/GeoTrellis/images/logo-geotrellis.png"> </a>
+            <ul class="nav">
+                <li class="menu">
+                      <a href="#" class="menu">Learn</a>
+                      <ul class="menu-dropdown">
+                        <li><a href="{{ site.baseurl }}/gettingstarted">Getting Started</a></li>
+                        <li><a href="{{ site.baseurl }}/tutorials">Tutorials</a></li>
+                      </ul>
+                </li>
+
+		 <li class="menu">
+                      <a href="#" class="menu">Demos</a>
+                      <ul class="menu-dropdown">
+                        <li><a href="{{ site.baseurl }}/demos">Demos Home</a></li>
+                        <li><a href="{{ site.baseurl }}/demos/weightedoverlay.html">Weighted Overlay</a></li>
+                        <li><a href="{{ site.baseurl }}/demos/kerneldensity.html">Kernel Density</a></li>
+                      </ul>
+                </li>
+
+                <li class="menu">
+                      <a href="#" class="menu">Reference</a>
+                      <ul class="menu-dropdown">
+                        <li><a href="{{ site.baseurl }}/operations">Operations</a></li>
+                        <li><a href="{{ site.baseurl }}/glossary">Glossary</a></li>
+                      </ul>
+                </li>
+
+                <li class="menu">
+                      <a href="#" class="menu">Scala Docs</a>
+                      <ul class="menu-dropdown">
+                        <li><a href="http://azavea.github.com/geotrellis/0.7.0/api/#package" target="_blank">Current Release</a></li>
+                        <li><a href="http://azavea.github.com/geotrellis/latest/api/#package" target="_blank">Latest</a></li>
+                      </ul>
+                </li>
+
+                <li><a href="https://github.com/azavea/geotrellis/" target="_blank">Github</a></li>
+                <li><a href="https://github.com/azavea/geotrellis/wiki" target="_blank">Wiki</a></li>
+          </ul>
+          <form method="get" id="searchform" action="{{ site.baseurl }}/search.html">
+            <input type="text" placeholder="Search"  class="field" name="q" id="q"/>
+          </form>
+           </li>
+          </ul>
+        </div>
+    </div>
+</div>

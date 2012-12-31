@@ -1,0 +1,19 @@
+<h3>Pending SIPs</h3>
+<ul class="post-list">
+  {% for post in site.categories.pending %}
+    <li><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a> <span class="date">( {{ post.date | date: "%b %Y" }} )</span>
+    {% if post.vote-status %}
+      {% if post.vote-status == 'accepted' %}
+      <span class="label success">Accepted</span>
+      {% elsif post.vote-status == 'deferred' %}
+        <span class="label warning">Deferred</span>
+      {% elsif post.vote-status == 'postponed' %}
+        <span class="label warning">Postponed</span>
+      {% elsif post.vote-status == 'not accepted' %}
+        <span class="label danger">Not Accepted</span>
+      {% endif %}
+    {% endif %}
+    </li>
+  {% endfor %}      
+</ul>
+

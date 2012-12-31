@@ -1,0 +1,6 @@
+pre {margin:1.5em 0;white-space:pre;}
+pre, code, tt {
+    font:1em 'andale mono', 'lucida console', monospace;
+    line-height:1.5;
+    font-family: 'andale mono', 'lucida console', monospace;
+}

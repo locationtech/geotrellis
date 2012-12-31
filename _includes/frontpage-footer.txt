@@ -1,0 +1,17 @@
+
+  {% include footerbar.txt %}
+
+<script type="text/javascript">
+  $('#toc').toc({exclude: 'h1, h5, h6', context: '', autoId: true, numerate: false});
+</script>
+
+<script type="text/javascript">
+  $(function() {
+    moveScroller();
+  });
+</script>
+
+
+  </body>
+</html>
+

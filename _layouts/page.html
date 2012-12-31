@@ -1,0 +1,33 @@
+---
+layout: default
+---
+
+{% include contributing-header.txt %}
+
+<div class="wrapper">
+  {% include topbar.txt %}
+
+  <header class="scrollingmenu">
+    <h1>{{ page.title }}</h1>
+  </header>
+
+  <div class="bottom">
+    <div class="container">
+      <div class="row">
+
+        <div class="span11">
+          {{ content }}
+        </div>
+
+        <div class="span5">
+          {% include gen-toc.txt %}
+        </div>
+    
+      </div>
+	
+    </div>
+  </div>
+  <div class="push"></div>
+</div>
+
+{% include footer.txt %}    

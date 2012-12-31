@@ -1,0 +1,28 @@
+---
+layout: default
+---
+{% include header.txt %}    
+{% include sips-topbar.txt %}
+
+<div class="wrapper">
+  <div class="container">
+    <div class="row">
+    
+      {% if page.title %}<h1>{{ page.title }}</h1>{% else %}<h1>{{ site.title }}</h1>{% endif %}    
+    
+      <div class="span10">
+        {{ content }}
+        {% if page.disqus == true %}{% include disqus.txt %}{% endif %}
+      </div>
+    
+      <div class="span6">
+        {% include allsids.txt %}
+      </div>
+    
+	
+    </div>
+  </div>
+  <div class="push"></div>
+</div>
+
+{% include footer.txt %}    

@@ -1,0 +1,22 @@
+
+/* for the front image */
+.contentheader { position: relative; }
+#front-image { position: absolute; top: -50px; left: 470px; }
+#front-image #grid-image { position: relative; width: 100%; }
+#front-image #grid-image .tile { position: absolute; }
+#front-image #grid-image .lg { width: 307px; height: 157px; background: url(/resources/images/bg-tile-lg.png) no-repeat; top: 80px; left: 80px; opacity: 0.7;}
+#front-image #grid-image .med { width: 152px; height: 81px; background: url(/resources/images/bg-tile-med.png) no-repeat; }
+#front-image #grid-image .m01 { top: 45px; left: 85px; }
+#front-image #grid-image .m02 { top: 46px; left: 232px; background-position: 0 -81px; }
+#front-image #grid-image .m03 { top: 155px; left: 307px; background-position: 0 -162px; }
+#front-image #grid-image .m04 { top: 193px; left: 84px; background-position: 0 -243px; }
+#front-image #grid-image .sm { width: 85px; height: 46px; background: url(/resources/images/bg-tile-sm.png) no-repeat; opacity: 0.7;}
+#front-image #grid-image .s01 { top: 43px; left: 45px; }
+#front-image #grid-image .s02 { top: 27px; left: 304px; background-position: 0 -46px; }
+#front-image #grid-image .s03 { top: 135px; left: 377px; background-position: 0 -92px; }
+#front-image #grid-image .s04 { top: 229px; left: 46px; background-position: 0 -138px; }
+#front-image #grid-image .xs { width: 43px; height: 25px; background: url(/resources/images/bg-tile-xsm.png) no-repeat; opacity: 0.7;}
+#front-image #grid-image .x01 { top: 72px; left: 50px; }
+#front-image #grid-image .x02 { top: 36px; left: 272px; background-position: 0 -25px; }
+#front-image #grid-image .x03 { top: 219px; left: 377px; background-position: 0 -50px; }
+#front-image #grid-image .x04 { top: 257px; left: 154px; background-position: 0 -75px; }

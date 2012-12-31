@@ -1,0 +1,17 @@
+title: "GeoTrellis Documentation"
+description: "Documentation for GeoTrellis"
+keywords:
+- GeoTrellis
+- Documentation
+- Tutorial
+- GIS
+- Raster
+- Guide
+- GeoProcessing
+- Distributed
+- Scalable
+
+pygments: true
+permalink: /:categories/:title.html
+
+# markdown: rdiscount
