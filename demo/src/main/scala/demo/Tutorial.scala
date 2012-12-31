@@ -87,7 +87,7 @@ class DrawRaster {
     val rasterOp:Op[Raster] = io.LoadRaster(name)
 
     // find the colors to use
-    val paletteOp:Op[Array[Int]] = logic.ForEach(string.SplitOnComma(palette))(string.ParseHexInt(_))
+    val paletteOp:Op[Array[Int]] = logic.ForEach(string.SplitOnComma(palette))(string.ParseColor(_))
     val numOp:Op[Int] = string.ParseInt(shades)
     val colorsOp:Op[Array[Int]] = stat.GetColorsFromPalette(paletteOp, numOp)
 
