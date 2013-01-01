@@ -197,7 +197,7 @@ object CellwiseStrategy {
     val analysisOffsetCols = analysisArea.colMin
     val analysisOffsetRows = analysisArea.rowMin
 
-    var row = 0
+    var row = rowMin
     while (row <= rowMax) {
       val curRowMin = max(rowMin, row - n) // was yy1
       val curRowMax = min(rowMax, row + n ) // was yy2
@@ -215,7 +215,7 @@ object CellwiseStrategy {
       }
 
       // offset output col & row to analysis area coordinates
-      calc.setValue(0, row - rowMin)
+      calc.setValue(0, row - rowMin) 
 
       var col = colMin + 1
       while (col <= colMax) {
