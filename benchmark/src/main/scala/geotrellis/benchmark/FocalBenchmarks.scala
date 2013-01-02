@@ -15,6 +15,8 @@ import scala.util.Random
 object FocalOperationsBenchmark extends BenchmarkRunner(classOf[FocalOperationsBenchmark])
 class FocalOperationsBenchmark extends OperationBenchmark {
   var r:Raster = null
+  var tiledR256:Raster = null
+  var tiledR512:Raster = null
 
   override def setUp() {
     val path = "src/main/resources/sbn/SBN_inc_percap.arg"
@@ -24,6 +26,9 @@ class FocalOperationsBenchmark extends OperationBenchmark {
                    -8317922.884859569, 4954765.69147447)
     val re = RasterExtent(e, 75.0, 75.0, 2101, 1723)
     r = server.run(io.LoadFile(path, re))
+
+    tiledR256 = raster.Tiler.createTiledRaster(r, 256, 256)
+    tiledR512 = raster.Tiler.createTiledRaster(r, 512, 512)
   }
 
   def timeOldConway(reps:Int) = run(reps)(server.run(oldfocal.Conway(r)))
@@ -41,6 +46,8 @@ class FocalOperationsBenchmark extends OperationBenchmark {
   def timeMeanSquare1(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(1))))
   def timeMeanSquare3(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(3))))
   def timeMeanSquare7(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(7))))
+  def timeMeanSquare7Tiled256(reps:Int) = run(reps)(server.run(focal.TileFocalOp(tiledR256, focal.Mean(_, focal.Square(3)))))
+  def timeMeanSquare7Tiled512(reps:Int) = run(reps)(server.run(focal.TileFocalOp(tiledR256, focal.Mean(_, focal.Square(3)))))
 
   def timeFastMean1(reps:Int) = run(reps)(server.run(FastFocalMean(r, 1)))
   def timeFastMean3(reps:Int) = run(reps)(server.run(FastFocalMean(r, 3)))
@@ -51,6 +58,8 @@ class FocalOperationsBenchmark extends OperationBenchmark {
   def timeMeanCircle3(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Circle(3))))
   def timeMeanCircle5(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Circle(5))))
 
+  def timeMeanCircle3Tiled256(reps:Int) = run(reps)(server.run(focal.TileFocalOp(tiledR256, focal.Mean(_, focal.Circle(3)))))
+
   def timeOldMedian(reps:Int) = run(reps)(server.run(oldfocal.Median(r,oldfocal.Square(1))))
   def timeMedian(reps:Int) = run(reps)(server.run(focal.Median(r,focal.Square(1))))
   def timeMedianCircle1(reps:Int) = run(reps)(server.run(focal.Median(r,focal.Circle(1))))
@@ -59,6 +68,7 @@ class FocalOperationsBenchmark extends OperationBenchmark {
   def timeOldMinSquare2(reps:Int) = run(reps)(server.run(oldfocal.Min(r, oldfocal.Square(2))))
 
   def timeMinSquare1(reps:Int) = run(reps)(server.run(focal.Min(r, focal.Square(1))))
+  def timeMinSquare1Tiled256(reps:Int) = run(reps)(server.run(focal.TileFocalOp(tiledR256, focal.Min(_, focal.Square(1)))))
   def timeMinSquare2(reps:Int) = run(reps)(server.run(focal.Min(r, focal.Square(2))))
 
   def timeMinCircle1(reps:Int) = run(reps)(server.run(focal.Min(r, focal.Circle(1))))
@@ -73,6 +83,10 @@ class FocalOperationsBenchmark extends OperationBenchmark {
 
   def timeOldSum(reps:Int) = run(reps)(server.run(oldfocal.Sum(r,oldfocal.Square(1))))
   def timeSum(reps:Int) = run(reps)(server.run(focal.Sum(r,focal.Square(1))))
+  def timeSumTiled256(reps:Int) = run(reps)(server.run(focal.TileFocalOp(tiledR256, focal.Sum(_, focal.Square(1)))))
+
+  def timeSumSquare22(reps:Int) = run(reps)(server.run(focal.Sum(r,focal.Square(22))))
+  def timeSumSquare22Tiled512(reps:Int) = run(reps)(server.run(focal.TileFocalOp(tiledR512, focal.Sum(_,focal.Square(22)))))
 
   def timeConvolve(reps:Int) = run(reps)(server.run(focal.Convolve(r,focal.CreateGaussianRaster(5,5.0,4.0,50.0))))
 }
