@@ -39,6 +39,9 @@ object Color {
   // combine three color bands into one color value
   @inline final def zip(r:Int, g:Int, b:Int, a:Int) = (r << 24) + (g << 16) + (b << 8) + a
 
+  // convert an RGB color integer to an opaque RGBA color integer
+  def rgbToRgba(rgb:Int) = { (rgb << 8) + 0xff }
+
   /**
    * This method is used for cases in which we are provided with a different
    * number of colors than we need.  This method will return a smaller list
@@ -256,3 +259,4 @@ case class MultiColorRangeChooser(colors:Array[Int]) extends ColorRangeChooser {
     }
   }
 }
+
