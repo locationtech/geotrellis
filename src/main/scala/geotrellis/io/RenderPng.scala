@@ -3,11 +3,35 @@ package geotrellis.io
 import geotrellis._
 import geotrellis.data._
 import geotrellis.data.png._
-import geotrellis.statistics._
+import geotrellis.statistics.op._
+import geotrellis.statistics.Histogram
+
 
 /**
- * Generate a PNG from a given raster and a set of color breaks. The background
- * can be set to a color or be made transparent.
+ * Generate a PNG image from a raster.
+ *
+ * Use this operation when you have a raster of data that you want to visualize
+ * with an image.
+ *
+ * To render a data raster into an image, the operation needs to know which
+ * values should be painted with which colors.  To that end, you'll need to
+ * generate a ColorBreaks object which represents the value ranges and the
+ * assigned color.  One way to create these color breaks is to use the
+ * [[geotrellis.statistics.op.stat.GetClassBreaks]] operation to generate
+ * quantile class breaks. 
+ *
+ * Example usage:
+ * {{{
+ *   import geotrellis.statistics.op._
+ *
+ *   val rOp = io.LoadRaster("foo") // get a data raster
+ *   val histogramOp = stat.GetHistogram(r)
+ *   val colors = Array(0xFF0000FF, 0x00FF00FF) // red and green in RGBA values
+ *   // generate a 6 color gradient between red and green
+ *   val colorsOp = stat.GetColorsFromPalette(colors, 6) 
+ *   val breaksOp = stat.GetColorBreaks(histogramOp, numColorsOp)
+ *   val pngOp = io.RenderPng(rOp, braeksOp, histogramOp, 0)
+ * }}}
  */
 case class RenderPng(r:Op[Raster], colorBreaks:Op[ColorBreaks], h:Op[Histogram],
                      noDataColor:Op[Int])
@@ -22,8 +46,3 @@ extends Op4(r, colorBreaks, h, noDataColor)({
   }
 })
 
-case class RenderPngRgba(r:Op[Raster]) extends Op1(r)({
-  r =>
-    val bytes = new Encoder(Settings(Rgba, PaethFilter)).writeByteArray(r)
-    Result(bytes)
-})
