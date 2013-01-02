@@ -5,7 +5,8 @@ import javax.ws.rs.{GET, Path, DefaultValue, PathParam, QueryParam}
 import javax.ws.rs.core.{Response, Context}
 
 import geotrellis._
-import geotrellis.data.{ColorBreaks}
+import geotrellis.data._
+import geotrellis.data.ColorRamps._
 import geotrellis.statistics.{Histogram}
 import geotrellis.process.{Server}
 import geotrellis.Implicits._
@@ -71,6 +72,23 @@ class BoundingBox {
     }
 
     response("text/plain")(data)
+  }
+}
+
+@Path("/simpleDraw")
+class SimpleDrawRaster {
+  @GET
+  @Path("/{name}")
+  def get(@PathParam("name") name:String) = {
+    val rasterOp:Op[Raster] = io.LoadRaster(name)
+    val pngOp:Op[Array[Byte]] = io.SimpleRenderPng(rasterOp, Literal(BlueToYellowToRed))
+    // run the operation
+    try {
+      val img:Array[Byte] = Demo.server.run(pngOp)
+      response("image/png")(img)
+    } catch {
+      case e:Throwable => response("text/plain")(e.toString)
+    }
   }
 }
 
