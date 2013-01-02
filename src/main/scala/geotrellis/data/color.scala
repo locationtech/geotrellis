@@ -186,7 +186,7 @@ abstract class ColorRangeChooser extends ColorChooser {
   // meant to be used with single numbesr, not RGB values
   def getRanges(masker:(Int) => Int, num:Int):Array[Int]
 
-  // returns a sequence of integers
+  // Returns a sequence of RGBA integer values
   def getColors(n:Int):Array[Int] = {
     val rs = getRanges(Color.unzipR, n)
     val gs = getRanges(Color.unzipG, n)
@@ -206,6 +206,8 @@ abstract class ColorRangeChooser extends ColorChooser {
 
 /**
  * Generates colors on a gradient between an initial color and an end color.
+ *
+ * Note that each band has its own gradient, including the alpha channel.
  */
 case class LinearColorRangeChooser(color1:Int, color2:Int) extends ColorRangeChooser {
   def getRanges(masker:(Int) => Int, n:Int) = {
