@@ -42,6 +42,7 @@ object GeotrellisBuild extends Build {
       "com.sun.jersey" % "jersey-bundle" % "1.11",
       "org.slf4j" % "slf4j-api" % "1.6.0",
       "org.slf4j" % "slf4j-nop" % "1.6.0",
+      "asm" % "asm" % "3.3.1",
       "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
       "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1"
     ),
@@ -107,7 +108,12 @@ object GeotrellisBuild extends Build {
     dependsOn(root,geotools)
 
   lazy val demo:Project = Project("demo", file("demo")).
-    settings(scalaVersion := "2.10.0").
+    settings(
+      scalaVersion := "2.10.0",
+      libraryDependencies ++= Seq(
+        "asm" % "asm" % "3.3.1"
+      )
+    ).
     dependsOn(root)
 
   lazy val geotools:Project = Project("geotools", file("geotools")).
