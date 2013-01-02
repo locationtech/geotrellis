@@ -4,16 +4,31 @@ import scala.math.round
 
 import geotrellis._
 
+/**
+ * All colors in geotrellis are encoded as RGBA integer values.
+ *
+ * This object provides utility methods that operate on RGBA integer values.
+ */ 
 object Color {
-  // read color bands from a color value
+  // Get red color band from RGBA color value.
   @inline final def unzipR(x:Int) = (x >> 24) & 0xff
+
+  // Get green color band from RGBA color value.
   @inline final def unzipG(x:Int) = (x >> 16) & 0xff
+
+  // Get blue color band from RGBA color value.
   @inline final def unzipB(x:Int) = (x >> 8) & 0xff
+
+  // Get alpha band from RGBA color balue.
   @inline final def unzipA(x:Int) = x & 0xff
 
+  // Returns true if the alpha of this color is 255 (opaque).
   @inline final def isOpaque(x:Int) = unzipA(x) == 255
+  
+  // Returns true if the alpha of this color is 0 (100% transparent).
   @inline final def isTransparent(x:Int) = unzipA(x) == 0
 
+  // Returns true if red, blue, and green band are equal.
   @inline final def isGrey(x:Int) = {
     Color.unzipR(x) == Color.unzipG(x) && Color.unzipG(x) == Color.unzipB(x)
   }
@@ -24,6 +39,20 @@ object Color {
   // combine three color bands into one color value
   @inline final def zip(r:Int, g:Int, b:Int, a:Int) = (r << 24) + (g << 16) + (b << 8) + a
 
+  /**
+   * This method is used for cases in which we are provided with a different
+   * number of colors than we need.  This method will return a smaller list
+   * of colors the provided list of colors, spaced out amongst the provided
+   * color list.  
+   *
+   * For example, if we are provided a list of 9 colors on a red
+   * to green gradient, but only need a list of 3, we expect to get back a 
+   * list of 3 colors with the first being red, the second color being the 5th
+   * color (between red and green), and the last being green.
+   *
+   * @param colors  Provided RGBA color values
+   * @param n       Length of list to return 
+   */
   def spread(colors:Array[Int], n:Int): Array[Int] = {
     if (colors.length == n) return colors
 
@@ -61,6 +90,15 @@ case class ColorMapper(cb:ColorBreaks, nodataColor:Int) extends Function1[Int, I
   def apply(z:Int):Int = if (z == NODATA) nodataColor else cb.get(z)
 }
 
+/**
+ * ColorBreaks describes a way to render a raster into a colored image.
+ *
+ * This class defines a set of value ranges and assigns a color to
+ * each value range.
+ *
+ * @param limits  An array with the maximum value of each range
+ * @param colors  An array with the color assigned to each range
+ */
 case class ColorBreaks(limits:Array[Int], colors:Array[Int]) {
   assert(limits.length == colors.length)
   assert(colors.length > 0)
@@ -86,6 +124,21 @@ case class ColorBreaks(limits:Array[Int], colors:Array[Int]) {
 }
 
 object ColorBreaks {
+  /**
+   * This method is used for cases in which we are provided with a different
+   * number of colors than we have value ranges.  This method will return a 
+   * return a ClassBreak object where the provided colors are spaced out amongst
+   * the ranges that exist.
+   *
+   * For example, if we are provided a list of 9 colors on a red
+   * to green gradient, but only have three maximum values for 3 value ranges, 
+   * we expect to get back a ColorBreaks object with three ranges and three colors, 
+   * with the first being red, the second color being the 5th
+   * color (between red and green), and the last being green.
+   *
+   * @param limits  An array of the maximum value of each range
+   * @param colors  An array of RGBA color values
+   */
   def assign(limits:Array[Int], colors:Array[Int]) = {
     if (limits.length != colors.length) {
       val used = new Array[Int](limits.length)
@@ -152,7 +205,7 @@ abstract class ColorRangeChooser extends ColorChooser {
 }
 
 /**
- * Generates colors between an initial color and an end color.
+ * Generates colors on a gradient between an initial color and an end color.
  */
 case class LinearColorRangeChooser(color1:Int, color2:Int) extends ColorRangeChooser {
   def getRanges(masker:(Int) => Int, n:Int) = {
