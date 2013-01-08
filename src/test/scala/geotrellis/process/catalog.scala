@@ -1,14 +1,14 @@
 package geotrellis.process
 
 import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
+import org.scalatest.matchers._
 import geotrellis.{Extent,RasterExtent}
 import geotrellis.raster.IntConstant
 import geotrellis._
 
 import scala.collection.JavaConversions._
 
-class CatalogSpec extends FunSpec with MustMatchers {
+class CatalogSpec extends FunSpec with MustMatchers with ShouldMatchers {
 
   val datapath = "src/test/resources/data"
 
@@ -34,6 +34,23 @@ class CatalogSpec extends FunSpec with MustMatchers {
               }
             """
 
+  val invalidJson1 = s"""
+             {
+               "stores" : [
+               { "store": "no!", "params": { "type": "fs", "path" : "${datapath}" } }
+               ]
+             }
+            """  
+
+  val invalidJson2 = s"""
+             {
+               "catalog",
+               "stores" : [
+               { "store": "no!", "params": { "type": "idunno" } }
+               ]
+             }
+            """  
+
   describe("A Catalog") {
     it("should load when empty") {
       val found = Catalog.fromJSON(json0)
@@ -55,6 +72,18 @@ class CatalogSpec extends FunSpec with MustMatchers {
         "unknown"
       )
       found must be === expected
+    }
+
+    it("should require a catalog name") {
+      evaluating {
+        Catalog.fromJSON(invalidJson1)
+      } should produce [Exception]
+    }
+
+    it("should require a data store path") {
+      evaluating {
+        Catalog.fromJSON(invalidJson2)
+      } should produce [Exception]
     }
   }
 
