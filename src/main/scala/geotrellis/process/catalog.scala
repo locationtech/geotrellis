@@ -3,7 +3,6 @@ package geotrellis.process
 import scala.collection.mutable
 import scala.io.Source
 import java.io.File
-import net.liftweb.json.{parse, DefaultFormats}
 import geotrellis._
 import geotrellis.process._
 import geotrellis.util._
@@ -130,8 +129,6 @@ case class CatalogRec(catalog:String,
 
 
 object RasterLayer {
-  implicit val formats = DefaultFormats
-
   /**
    * Build a RasterLayer instance given a path to a JSON file.
    */
@@ -149,7 +146,7 @@ object RasterLayer {
    * Build a RasterLayer instance given a JSON string.
    */
   def fromJSON(json:String, basePath:String) = {
-    parse(json).extract[RasterLayerRec].create(basePath)
+    RasterLayerJson.parse(json).create(basePath)
   }
 }
 
@@ -161,12 +158,6 @@ case class RasterLayer(name:String, typ:String, datatyp:String,
 }
 
 object Catalog {
-
-  /**
-   * Enable Lift-JSON type extractions.
-   */
-  implicit val formats = DefaultFormats
-
   /**
    * Build a Catalog instance given a path to a JSON file.
    */
@@ -174,17 +165,16 @@ object Catalog {
     val src = Source.fromFile(path)
     val data = src.mkString
     src.close()
-    parse(data).extract[CatalogRec].create(data, path)
+    CatalogJson.parse(data).create(data, path)
   }
 
   /**
    * Build a Catalog instance given a string of JSON data.
    */
-  def fromJSON(data:String): Catalog = parse(data).extract[CatalogRec].create(data, "unknown")
+  def fromJSON(data:String): Catalog = CatalogJson.parse(data).create(data, "unknown")
 
   /**
    * Builds an empty Catalog.
    */
   def empty(name:String) = Catalog(name, Map.empty[String, DataStore], "{}", "empty()" )
-
 }
