@@ -41,8 +41,7 @@ object GeotrellisBuild extends Build {
       "org.slf4j" % "slf4j-nop" % "1.6.0",
       "asm" % "asm" % "3.3.1",
       "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
-      "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1",
-      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.1.3"
+      "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1"
     ),
 
     resolvers ++= Seq(
