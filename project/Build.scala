@@ -32,9 +32,6 @@ object GeotrellisBuild extends Build {
       "org.scala-lang" % "scala-reflect" % "2.10.0",
       "junit" % "junit" % "4.5" % "test",
       "com.vividsolutions" % "jts" % "1.12",
-      "net.liftweb" % "lift-json_2.10.0-RC2" % "2.5-SNAPSHOT" from "http://n0d.es/jars/lift-json_2.10.0-RC2.jar",
-      // lift-json dependency included so we can get jar directly
-      "com.thoughtworks.paranamer" % "paranamer" % "2.4.1",
       "com.typesafe.akka" %% "akka-kernel" % "2.1.0",
       "com.typesafe.akka" %% "akka-remote" % "2.1.0",
       "com.typesafe.akka" %% "akka-actor" % "2.1.0",
