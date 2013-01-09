@@ -99,7 +99,9 @@ object GeotrellisBuild extends Build {
   lazy val tasks:Project = Project("tasks", file("tasks")).
     settings(
       scalaVersion := "2.10.0",
-      libraryDependencies ++= Seq("com.beust" % "jcommander" % "1.23"),
+      libraryDependencies ++= Seq(
+        "com.beust" % "jcommander" % "1.23",
+        "org.reflections" % "reflections" % "0.9.5"),
       mainClass in Compile := Some("geotrellis.run.Tasks")
     ).
     dependsOn(root,geotools)
