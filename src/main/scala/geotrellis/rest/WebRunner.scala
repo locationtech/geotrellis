@@ -3,9 +3,9 @@ package geotrellis.rest
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.nio.SelectChannelConnector
 import org.eclipse.jetty.servlet.{ServletHolder, ServletContextHandler}
-import org.eclipse.jetty.util.thread.QueuedThreadPool
+import org.eclipse.jetty.util.thread.{QueuedThreadPool,ExecutorThreadPool}
 import com.sun.jersey.spi.container.servlet.ServletContainer
-
+import java.util.concurrent.TimeUnit
 import com.typesafe.config.ConfigFactory
 
 /**
@@ -24,9 +24,13 @@ object WebRunner {
     val host = config.getString("geotrellis.host")
     val port = config.getInt("geotrellis.port")
 
+    val corePoolSize = config.getInt("geotrellis.jetty.corePoolSize")
+    val maximumPoolSize = config.getInt("geotrellis.jetty.maximumPoolSize")
+    val keepAliveTime =  config.getLong("geotrellis.jetty.keepAliveMilliseconds")
+
     println("Starting server on port %d.".format(port))
     val server = new Server()
-
+    server.setThreadPool(new ExecutorThreadPool(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS))
     val connector = new SelectChannelConnector()
     connector.setHost(host)
     connector.setPort(port)
