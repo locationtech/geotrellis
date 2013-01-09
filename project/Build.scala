@@ -78,11 +78,6 @@ object GeotrellisBuild extends Build {
 </scm>
 <developers>
   <developer>
-    <id>non</id>
-    <name>Erik Osheim</name>
-    <url>http://github.com/non/</url>
-  </developer>
-  <developer>
     <id>joshmarcus</id>
     <name>Josh Marcus</name>
     <url>http://github.com/joshmarcus/</url>
@@ -106,13 +101,20 @@ object GeotrellisBuild extends Build {
     ).
     dependsOn(root,geotools)
 
+  lazy val dev:Project = Project("dev", file("dev")).
+    settings(
+      scalaVersion := "2.10.0",
+      libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % "2.10.0"
+      )).
+    dependsOn(root)
+
   lazy val demo:Project = Project("demo", file("demo")).
     settings(
       scalaVersion := "2.10.0",
       libraryDependencies ++= Seq(
         "asm" % "asm" % "3.3.1"
-      )
-    ).
+      )).
     dependsOn(root)
 
   lazy val geotools:Project = Project("geotools", file("geotools")).
