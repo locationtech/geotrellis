@@ -1,4 +1,4 @@
-package geotrellis.run
+package geotrellis.dev
 
 import akka.kernel.Bootable
 import akka.actor.{ Props, Actor, ActorSystem }

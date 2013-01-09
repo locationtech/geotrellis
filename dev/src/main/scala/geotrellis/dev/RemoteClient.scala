@@ -1,4 +1,4 @@
-package geotrellis.run
+package geotrellis.dev
 
 import akka.kernel.Bootable
 import scala.util.Random
@@ -12,17 +12,19 @@ import geotrellis._
 class RemoteClientApplication extends Bootable {
 
 
-  val system = ActorSystem("RemoteClientApplication", ConfigFactory.load.getConfig("remoteClient"))
+  val config = ConfigFactory.load.getConfig("remoteClient")
+
+  val system = ActorSystem("RemoteClientApplication", config)
   val server = new Server("client", Catalog.empty("client"))
   val actor = system.actorOf(Props(new ServerActor("client", server)), "remoteClientActor")
 
   server.actor = actor
   server.system = system
 
-
   //val system = ActorSystem("RemoteClientApplication", ConfigFactory.load.getConfig("remoteClient"))
   //val actor = system.actorOf(Props[RemoteClientActor], "remoteClientActor")
-  val remoteActor = system.actorFor("akka://RemoteServerApplication@192.168.16.41:2552/user/remoteServer")
+  val clusterSeed = config.getString("geotrellis.clusterSeed")
+  val remoteActor = system.actorFor(s"akka://RemoteServerApplication@${clusterSeed}:8552/user/remoteServer")
 
 
   def sendRemote(op: Run) = {
