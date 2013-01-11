@@ -72,7 +72,7 @@ operations with existing operations.
 
 You can find *Scaladocs* for the latest version of the project here:
 
-[http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.package](http://azavea.github.com/geotrellis/0.7.0/api/index.html#geotrellis.package)
+[http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.package](http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.package)
 
 ## Contributors
 
