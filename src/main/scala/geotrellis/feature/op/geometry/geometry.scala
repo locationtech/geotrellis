@@ -50,12 +50,12 @@ package object geometry {
       })
 
 
-  case class AsPolygonSet[D](g: Op[Geometry[D]]) extends Operation[List[Geometry[D]]] {    
+  case class AsPolygonSet[D](g: Op[Geometry[D]]) extends Operation[List[Polygon[D]]] {    
     val compositeOp = FilterGeometry[jts.Polygon,D](FlattenGeometry(g))
 
     def _run(context:Context) = runAsync(List(compositeOp))
     val nextSteps:Steps = {
-      case a :: Nil => Result(a.asInstanceOf[List[Geometry[D]]])
+      case a :: Nil => Result(a.asInstanceOf[List[Polygon[D]]])
     }
   }
 }
