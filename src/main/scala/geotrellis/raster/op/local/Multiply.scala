@@ -30,7 +30,7 @@ case class MultiplyConstant2(c:Op[Int], r:Op[Raster]) extends Op2(c, r)({
  * Create with MultiplyConstant(raster, doubleValue).
  */
 case class MultiplyDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r, c)({
-  (r, c) => Result(r.dualMapIfSet(_ * c.toInt)(_ * c))
+  (r, c) => Result(r.dualMapIfSet((_ * c).toInt)(_ * c))
 })
 
 /**
