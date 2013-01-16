@@ -12,7 +12,7 @@ trait ThroughputLimitedReducer1[C] extends Op[C] {
   type B
   
   val r: Op[Raster]
-  val limit: Int = 30
+  var limit: Int = 30
 
   def loadTileExtent:Option[Op[Polygon[_]]] = None
 
