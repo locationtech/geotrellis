@@ -21,22 +21,23 @@ import geotrellis.statistics.Histogram
  * @param r   Raster to vizualize as an image
  * @param colorRamp   Colors to select from
  */
-case class SimpleRenderPng(r:Op[Raster],colorRamp:Op[ColorRamp] = ColorRamps.RedToAmberToGreen) extends Op[Array[Byte]] {
-    def _run(context:Context) = runAsync('step1 :: r :: Nil)
-    val nextSteps:Steps = {
-      case 'step1 :: (r:Raster) :: Nil => step2(r)
-      case 'step2 :: (h:Histogram) :: (r:Raster) :: (c:ColorRamp) :: Nil => step3(h, r, c)
-      case 'result :: (bytes:Array[_]) :: Nil => Result(bytes.asInstanceOf[Array[Byte]])
-    }
-    def step2(r:Raster) = {
-      val histogramOp = stat.GetHistogram(r)
-      runAsync('step2 :: histogramOp :: r :: colorRamp :: Nil)
-    } 
-    def step3(histogram:Histogram, r:Raster, colorRamp:ColorRamp) = {
-      val breaksOp = stat.GetColorBreaks(histogram, colorRamp.colors)
-      val renderOp = io.RenderPng(r, breaksOp, histogram, 0) 
-      runAsync('result :: renderOp :: Nil)
-    }
+case class SimpleRenderPng(r: Op[Raster], colorRamp: Op[ColorRamp] = ColorRamps.HeatmapBlueToYellowToRedSpectrum)
+  extends Op[Array[Byte]] {
+  def _run(context: Context) = runAsync('step1 :: r :: Nil)
+  val nextSteps: Steps = {
+    case 'step1 :: (r: Raster) :: Nil => step2(r)
+    case 'step2 :: (h: Histogram) :: (r: Raster) :: (c: ColorRamp) :: Nil => step3(h, r, c)
+    case 'result :: (bytes: Array[_]) :: Nil => Result(bytes.asInstanceOf[Array[Byte]])
+  }
+  def step2(r: Raster) = {
+    val histogramOp = stat.GetHistogram(r)
+    runAsync('step2 :: histogramOp :: r :: colorRamp :: Nil)
+  }
+  def step3(histogram: Histogram, r: Raster, colorRamp: ColorRamp) = {
+    val breaksOp = stat.GetColorBreaks(histogram, colorRamp.colors)
+    val renderOp = io.RenderPng(r, breaksOp, histogram, 0)
+    runAsync('result :: renderOp :: Nil)
+  }
 }
 
 
