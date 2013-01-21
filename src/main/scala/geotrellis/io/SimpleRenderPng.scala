@@ -34,7 +34,7 @@ case class SimpleRenderPng(r: Op[Raster], colorRamp: Op[ColorRamp] = ColorRamps.
     runAsync('step2 :: histogramOp :: r :: colorRamp :: Nil)
   }
   def step3(histogram: Histogram, r: Raster, colorRamp: ColorRamp) = {
-    val breaksOp = stat.GetColorBreaks(histogram, colorRamp.colors)
+    val breaksOp = stat.GetColorBreaks(histogram, Literal(colorRamp.toArray))
     val renderOp = io.RenderPng(r, breaksOp, histogram, 0)
     runAsync('result :: renderOp :: Nil)
   }

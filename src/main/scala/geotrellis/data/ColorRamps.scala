@@ -4,47 +4,6 @@ import scala.math.round
 
 import geotrellis._
 
-/**
- * *
- * List of colors for rendering a raster.
- *
- * In order to select colors for a raster, one often divides the values in
- * the raster into distinct ranges and selects a color for each range.  A
- * ColorRamp provides the colors from which to select.
- *
- * NB: The list of colors are RGBA values, which are usually represented
- *     as 8 character hex string, like "0x0000FFFF" where the last two
- *     character encode an alpha (transparency/opacity) value.
- *
- *     Usually on the web, you see "RGB" or "hex" color values,
- *     like 0x0000FF (blue).  If you have a list of RGB values,
- *     use the method ColorRamp.createWithRGBColors.
- *
- * @param colors  An array of RGBA integer values
- */
-class ColorRamp(val colors: Array[Int]) {
-  /**
-   * Generate n new colors using the existing color ramp as a guide.
-   *
-   * The first and last colors of the existing ramp will be preserved in the output
-   * ColorRamp.  For example, given a color ramp of two colors, red and yellow, a request
-   * for 5 colors would return Red, Yellowish-Red, Orange, Reddish-Yellow, Yellow.
-   */
-  def interpolate(nBreaks: Int): ColorRamp = ???
-  def alphaGradient(start: Int = 0, stop: Int = 0xFF): ColorRamp = ???
-  def setAlpha(a: Int): ColorRamp = ???
-}
-
-object ColorRamp {
-  def apply(colors: Int*) = new ColorRamp(colors.toArray)
-
-  /**
-   * Create a color camp with an array of RGB colors (e.g. 0xFF0000 for red).
-   */
-  def createWithRGBColors(rgbColors: Int*): ColorRamp = ???
-
-}
-
 object ColorRamps {
 
   /** Blue to orange color ramp. */

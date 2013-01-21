@@ -3,6 +3,10 @@ package geotrellis.data
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
+object ColorSpec {
+  def hexstringify(colors:Array[Int]) = colors.map{ "%08x".format(_) }.toList 
+}
+
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class ColorSpec extends FunSpec with MustMatchers {
   describe("LinearColorRangeChooser(FF0000,0000FF)") {
@@ -42,31 +46,47 @@ class ColorSpec extends FunSpec with MustMatchers {
 
   describe("MultiColorRangeChooser()") {
     it("should work 1") {
-      val baseColors = Array(0x0000ff)
+      val baseColors = Array(0x0000ffff)
       val chooser = new MultiColorRangeChooser(baseColors)
       val colors = chooser.getColors(baseColors.length)
       colors.toList must be === baseColors.toList
     }
 
     it("should work 2") {
-      val baseColors = Array(0x0000ff, 0xff0000)
+      val baseColors = Array(0x0000ffff, 0xff0000ff)
       val chooser = new MultiColorRangeChooser(baseColors)
       val colors = chooser.getColors(baseColors.length)
       colors.toList must be === baseColors.toList
     }
 
     it("should work 3") {
-      val baseColors = Array(0x0000ff, 0x00ff00, 0xff0000)
+      val baseColors = Array(0x0000ffff, 0x00ff00ff, 0xff0000ff)
       val chooser = new MultiColorRangeChooser(baseColors)
       val colors = chooser.getColors(baseColors.length)
       colors.map{ "%06x".format(_) }.toList must be === baseColors.map { "%06x".format(_) }.toList
     }
 
     it("should work 6") {
-      val baseColors = Array(0x0000ff, 0x0080ff, 0x00ff80, 0xffff00, 0xff8000, 0xff0000)
+      val baseColors = Array(0x0000ffff, 0x0080ffff, 0x00ff80ff, 0xffff00ff, 0xff8000ff, 0xff0000ff)
       val chooser = new MultiColorRangeChooser(baseColors)
       val colors = chooser.getColors(baseColors.length)
       colors.toList must be === baseColors.toList
+    }
+    
+    it ("should interpolate") {
+      val baseColors = Array(0x0000ffff, 0xff0000ff)
+      val expectedColors = Array(0x0000ffff, 0x7f0080ff, 0xff0000ff)
+      val chooser = new MultiColorRangeChooser(baseColors)
+      val colors = chooser.getColors(3)
+      ColorSpec.hexstringify(colors) must be === ColorSpec.hexstringify(expectedColors)
+    }
+    
+    it ("should interpolate 5 colors between 3 given") {
+      val baseColors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
+      val expected = Array(0xff0000ff, 0x807f00ff, 0x00ff00ff, 0x00807fff, 0x0000ffff)
+      val chooser = new MultiColorRangeChooser(baseColors)
+      val colors = chooser.getColors(5)
+      ColorSpec.hexstringify(colors) must be === ColorSpec.hexstringify(expected)
     }
   }
 
@@ -77,6 +97,34 @@ class ColorSpec extends FunSpec with MustMatchers {
       val cb = ColorBreaks(limits, colors)
       cb.limits must be === limits
       cb.colors must be === colors
+    }
+  }
+  
+  describe("ColorRamp") {
+    it("should return the correct colors") {
+      val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
+
+    }
+    it("should interpolate") {
+      val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
+      val expected = Array(0xff0000ff, 0x807f00ff, 0x00ff00ff, 0x00807fff, 0x0000ffff)
+      val interpolatedColors = ColorRamp(colors).interpolate(5)
+      println(interpolatedColors.colors)
+      ColorSpec.hexstringify(interpolatedColors.toArray) must be === ColorSpec.hexstringify(expected)
+    }
+    it("should set alpha values") {
+      val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
+      val expected = Array(0xff000080, 0x00ff0080, 0x0000ff80)
+      val interpolatedColors = ColorRamp(colors).setAlpha(0x80)
+      println(interpolatedColors.colors)
+      ColorSpec.hexstringify(interpolatedColors.toArray) must be === ColorSpec.hexstringify(expected)
+    }
+    
+    it("should create an alpha gradient") {
+      val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
+      val expected = Array(0xff000000, 0x00ff007f, 0x0000ffff)
+      val interpolatedColors = ColorRamp(colors).alphaGradient(0, 0xff)
+      ColorSpec.hexstringify(interpolatedColors.toArray) must be === ColorSpec.hexstringify(expected)
     }
   }
 }
