@@ -4,53 +4,73 @@ import scala.math.round
 
 import geotrellis._
 
-abstract class ColorRamp {
-  val colors:Array[Int]
-}
-
 object ColorRamps {
-  /**
-   * A 6 color sequential red-amber-green color ramp. 
-   */ 
-  case object RedToAmberToGreen extends ColorRamp {
-    val colors = Array(0xFA0000, 0xFB3300, 0xFC6600, 0xFD9900, 
-                       0xFECC00, 0xCCFF00, 0x99FF00, 0x66FF00, 
-                       0x33FF00, 0x00FF00).map(Color.rgbToRgba(_))
-  }
 
-  /**
-   * A 9 class divergent Blue to Yellow to Red color ramp.
-   */
-  case object BlueToYellowToRed extends ColorRamp { 
-    val colors = Array(0x4575B4,0x74ADD1,0xABD9E9,0xE0F3F8,0xFFFFBF,0xFEE090,0xFDAE61,0xF46D43,0xD73027).map(Color.rgbToRgba(_))
-  }
+  /** Blue to orange color ramp. */
+  val BlueToOrange = ColorRamp.createWithRGBColors(
+    0x2586AB, 0x4EA3C8, 0x7FB8D4, 0xADD8EA,
+    0xC8E1E7, 0xEDECEA, 0xF0E7BB, 0xF5CF7D,
+    0xF9B737, 0xE68F2D, 0xD76B27)
 
-  /**
-   * 9 class divergent cold to hot color ramp.
-   */
-  case object ColdToHot extends ColorRamp {
-    val colors = Array(0x3288BD,0x66C2A5,0xABDDA4,0xE6F598,0xFFFFBF,0xFEE08B,0xFDAE61,0xF46D43,0xD53E4F).map(Color.rgbToRgba(_))
-  }
+  /** Light yellow to orange color ramp. */
+  val LightYellowToOrange = ColorRamp.createWithRGBColors(
+    0x118C8C, 0x429D91, 0x61AF96, 0x75C59B,
+    0xA2CF9F, 0xC5DAA3, 0xE6E5A7, 0xE3D28F,
+    0xE0C078, 0xDDAD62, 0xD29953, 0xCA8746,
+    0xC2773B)
 
-  /**
-   * 9 class sequential orange to red color ramp.
-   */
-  case object OrangeToRed extends ColorRamp {
-    val colors = Array(0xFFFFCC,0xFFEDA0, 0xFED976,0xFEB24C,0xFD8D3C,0xFC4E2A,0xE31A1C,0xBD0026,0x800026).map(Color.rgbToRgba(_))
-  }
+  /** Blue to red color ramp. */
+  val BlueToRed = ColorRamp.createWithRGBColors(
+    0x2791C3, 0x5DA1CA, 0x83B2D1, 0xA8C5D8,
+    0xCCDBE0, 0xE9D3C1, 0xDCAD92, 0xD08B6C,
+    0xC66E4B, 0xBD4E2E)
 
-  /**
-   * 9 class sequential blue to purple color ramp.
-   */
-  case object BlueToPurple extends ColorRamp {
-    val colors = Array(0xFCFBFD, 0xEFEDF5, 0xDADAEB, 0xBCBDDC, 0x9E9AC8, 0x807DBA, 0x6A51A3, 0x54278F,0x3F007D).map(Color.rgbToRgba(_))
-  }
+  /** Green to red-orange color ramp. */
+  val GreenToRedOrange = ColorRamp.createWithRGBColors(
+    0x569543, 0x9EBD4D, 0xBBCA7A, 0xD9E2B2,
+    0xE4E7C4, 0xE6D6BE, 0xE3C193, 0xDFAC6C,
+    0xDB9842, 0xB96230)
 
-  /**
-   * 9 class divergent purple to orange color ramp.
-   */
-  case object PurpleToOrange extends ColorRamp {
-    val colors = Array(0xB35806,0xE08214,0xFDB863,0xFEE0B6,0xF7F7F7,0xD8DAEB,0xB2ABD2,0x8073AC,0x542788).map(Color.rgbToRgba(_))
-  }
-  
+  /** Light to dark (sunset) color ramp. */
+  val LightToDarkSunset = ColorRamp.createWithRGBColors(
+    0xFFFFFF, 0xFBEDD1, 0xF7E0A9, 0xEFD299,
+    0xE8C58B, 0xE0B97E, 0xF2924D, 0xC97877,
+    0x946196, 0x2AB7D6, 0x474040)
+
+  /** Light to dark (green) color ramp. */
+  val LightToDarkGreen = ColorRamp.createWithRGBColors(
+    0xE8EDDB, 0xDCE8D4, 0xBEDBAD, 0xA0CF88,
+    0x81C561, 0x4BAF48, 0x1CA049, 0x3A6D35)
+
+  /** Yellow to red color ramp, 0xfor use in heatmaps. */
+  val HeatmapYellowToRed = ColorRamp.createWithRGBColors(
+    0xF7DA22, 0xECBE1D, 0xE77124, 0xD54927,
+    0xCF3A27, 0xA33936, 0x7F182A, 0x68101A)
+
+  /** Blue to yellow to red spectrum color ramp, 0xfor use in heatmaps. */
+  val HeatmapBlueToYellowToRedSpectrum = ColorRamp.createWithRGBColors(
+    0x2A2E7F, 0x3D5AA9, 0x4698D3, 0x39C6F0,
+    0x76C9B3, 0xA8D050, 0xF6EB14, 0xFCB017,
+    0xF16022, 0xEE2C24, 0x7D1416)
+
+  /** Dark red to yellow white color ramp, 0xfor use in heatmaps. */
+  val HeatmapDarkRedToYellowWhite = ColorRamp.createWithRGBColors(
+    0x68101A, 0x7F182A, 0xA33936, 0xCF3A27,
+    0xD54927, 0xE77124, 0xECBE1D, 0xF7DA22,
+    0xF6EDB1, 0xFFFFFF)
+
+  /** Light purple to dark purple to white, 0xfor use in heatmaps. */
+  val HeatmapLightPurpleToDarkPurpleToWhite = ColorRamp.createWithRGBColors(
+    0xA52278, 0x993086, 0x8C3C97, 0x6D328A,
+    0x4E2B81, 0x3B264B, 0x180B11, 0xFFFFFF)
+
+  /** Bold Land Use color ramp, 0xfor use in land use classification. */
+  val ClassificationBoldLandUse = ColorRamp.createWithRGBColors(
+    0xB29CC3, 0x4F8EBB, 0x8F9238, 0xC18437,
+    0xB5D6B1, 0xD378A6, 0xD4563C, 0xF9BE47)
+
+  /** Muted terrain color ramp, 0xfor use in classification. */
+  val ClassificationMutedTerrain = ColorRamp.createWithRGBColors(
+    0xCEE1E8, 0x7CBCB5, 0x82B36D, 0x94C279,
+    0xD1DE8D, 0xEDECC3, 0xCCAFB4, 0xC99884)
 }

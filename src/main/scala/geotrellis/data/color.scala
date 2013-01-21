@@ -166,7 +166,10 @@ object ColorBreaks {
  * Color blender used for generating symbology for class breaks.
  */
 object Blender {
-  def blend(start:Int, end:Int, numerator:Int, denominator:Int) = {
+  /**
+    * Interpolate value for individual color band (0-255).  
+    */
+  def blend(start:Int, end:Int, numerator:Int, denominator:Int) = { 
     start + (((end - start) * numerator) / denominator)
   }
 }
@@ -186,7 +189,7 @@ abstract class ColorChooser {
  * Abstract class for generating a range of colors. 
  */
 abstract class ColorRangeChooser extends ColorChooser {
-  // meant to be used with single numbesr, not RGB values
+  // meant to be used with single numbers, not RGB values
   def getRanges(masker:(Int) => Int, num:Int):Array[Int]
 
   // Returns a sequence of RGBA integer values
@@ -250,6 +253,7 @@ case class MultiColorRangeChooser(colors:Array[Int]) extends ColorRangeChooser {
         val j = (i * mult) / denom
         ranges(i) = if (j < mult) {
           Blender.blend(hues(j), hues(j + 1), (i * mult) % denom, denom)
+          
         } else {
           hues(j)
         }
