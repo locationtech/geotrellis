@@ -37,10 +37,13 @@ case class Max[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[R
   def handlePartialTileIntersection(rOp: Op[Raster], gOp: Op[Geometry[D]]) = {
     rOp.flatMap ( r => gOp.flatMap ( g => {
       var max = Int.MinValue
-      val f = (col:Int, row:Int, g:Geometry[_]) => {
-        val z = r.get(col,row)
-        if (z != NODATA && z > max) { max = z }
-      }
+      val f = new Callback[Geometry,D] {
+          def apply(col:Int, row:Int, g:Geometry[D]) {
+            val z = r.get(col,row)
+            if (z != NODATA && z > max) { max = z }
+          }
+        }
+
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
         r.rasterExtent)(f)
@@ -90,10 +93,13 @@ case class MaxDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
   def handlePartialTileIntersection(rOp: Op[Raster], gOp: Op[Geometry[D]]) = {
     rOp.flatMap ( r => gOp.flatMap ( g => {
       var max = Double.NegativeInfinity
-      val f = (col:Int, row:Int, g:Geometry[_]) => {
-        val z = r.get(col,row)
-        if (z != NODATA && z > max) { max = z }
-      }
+      val f = new Callback[Geometry,D] {
+          def apply(col:Int, row:Int, g:Geometry[D]) {
+            val z = r.getDouble(col,row)
+            if (!z.isNaN && z > max) { max = z }
+          }
+        }
+
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
         r.rasterExtent)(f)

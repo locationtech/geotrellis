@@ -29,11 +29,14 @@ class RasterizeSpec extends FunSuite {
       
 
       var f2output:String = ""
-      val f2 = (col:Int, row:Int, feature:Point[String]) => {
-        println("in f2, feature is: " + feature)
-        val z = raster.get(col,row)
-        f2output = f2output + feature.data + z.toString
-      }
+      val f2 = new geotrellis.feature.rasterize.Callback[Point,String] {
+          def apply(col:Int, row:Int, feature:Point[String]) {
+            println("in f2, feature is: " + feature)
+            val z = raster.get(col,row)
+            f2output = f2output + feature.data + z.toString
+          }
+        }
+
       Rasterizer.foreachCellByPoint(p, re)(f2)
       assert(f2output === "point one: 81")
 
@@ -46,9 +49,11 @@ class RasterizeSpec extends FunSuite {
       assert( f2output === "point three: 0")
 
       var lineOutput = ""
-      val f3 = (col:Int, row:Int, feature:LineString[String]) => {
-        lineOutput = lineOutput + feature.data + raster.get(col,row) + "\n"
-      }
+      val f3 = new geotrellis.feature.rasterize.Callback[LineString,String] {
+          def apply(col:Int, row:Int, feature:LineString[String]) {
+            lineOutput = lineOutput + feature.data + raster.get(col,row) + "\n"
+          }
+        }
       
       val line = LineString(0,0,9,9,"diagonal line")
       Rasterizer.foreachCellByLineString(line, re)(f3)

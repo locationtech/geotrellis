@@ -35,10 +35,13 @@ case class Histogram[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
     rOp.flatMap ( r => gOp.flatMap ( g => {
       val raster = r.force
       var histogram = FastMapHistogram()
-      val f = (col:Int, row:Int, g:Geometry[_]) => {
-        val z = raster.get(col,row)
-        if (z != NODATA) histogram.countItem(z, 1)
-      }
+      val f = new Callback[Geometry,D] {
+          def apply (col:Int, row:Int, g:Geometry[D]) {
+            val z = raster.get(col,row)
+            if (z != NODATA) histogram.countItem(z, 1)
+          }
+        }
+
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
         raster.rasterExtent) (f)
