@@ -55,8 +55,11 @@ class RasterizePolygonSpec extends FunSuite {
       assert(triangleTable.rowMax === 4)
 
 
-      val f1 = (col:Int, row:Int, p:Polygon[Unit]) => 
-        println("xx col: %d, row: %d".format(col,row))
+      val f1 = new Callback[Polygon,Unit] {
+          def apply(col:Int, row:Int, p:Polygon[Unit]) {
+            println("xx col: %d, row: %d".format(col,row))
+          }
+        }
 
       val r1 = Rasterizer.rasterizeWithValue(square,re)((a:Unit) => 0x11) 
       println(r1.asciiDraw)
@@ -170,7 +173,13 @@ class RasterizePolygonSpec extends FunSuite {
       val p1 = Polygon(g1.geom, ())
       var sum = 0
       val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)
-      val r = foreachCellByPolygon(p1, re)((x:Int, y:Int, p:Polygon[Unit]) => ( sum = sum + 1 ))
+      val r = foreachCellByPolygon(p1, re)(
+          new Callback[Polygon,Unit] {
+            def apply(x:Int, y:Int, p:Polygon[Unit]) {
+              sum = sum + 1 
+            }
+          })
+
       assert(sum === count)
     } )
     //val data1 = scala.io.Source.fromFile("src/test/resources/feature/polygon1.wkt").mkString

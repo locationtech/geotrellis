@@ -38,10 +38,13 @@ case class Sum[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[R
   def handlePartialTileIntersection(rOp: Op[Raster], gOp: Op[Geometry[D]]) = {
     rOp.flatMap ( r => gOp.flatMap ( g => {
       var sum: Long = 0L
-      val f = (col:Int, row:Int, g:Geometry[_]) => {
-        val z = r.get(col,row)
-        if (z != NODATA) { sum = sum + z }
-      }
+      val f = new Callback[Geometry,D] {
+          def apply(col:Int, row:Int, g:Geometry[D]) {
+            val z = r.get(col,row)
+            if (z != NODATA) { sum = sum + z }
+          }
+        }
+
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
         r.rasterExtent)(f)
@@ -91,10 +94,12 @@ case class SumDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
   def handlePartialTileIntersection(rOp: Op[Raster], gOp: Op[Geometry[D]]) = {
     rOp.flatMap ( r => gOp.flatMap ( g => {
       var sum = 0.0
-      val f = (col:Int, row:Int, g:Geometry[_]) => {
-        val z = r.getDouble(col,row)
-        if (z != NODATA) { sum = sum + z }
-      }
+      val f = new Callback[Geometry,D] {
+          def apply(col:Int, row:Int, g:Geometry[D]) {
+            val z = r.getDouble(col,row)
+            if (!z.isNaN) { sum = sum + z }
+          }
+        }
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
         r.rasterExtent)(f)
