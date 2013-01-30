@@ -24,7 +24,6 @@ import org.geotools.coverage.grid.io.imageio.geotiff.{GeoTiffIIOMetadataDecoder}
 import org.geotools.coverage.grid.io.imageio.IIOMetadataDumper
 import java.awt.image.BufferedImage
 
-//xyz
 import Console.printf
 import java.awt.image.DataBuffer
 import java.awt.Transparency
@@ -33,7 +32,6 @@ import org.geotools.gce.geotiff.{GeoTiffFormat}
 import org.geotools.factory.{Hints}
 import org.geotools.referencing.{CRS}
 import org.geotools.coverage.grid.{GridCoordinates2D}
-//xyz
 
 class GeoTiffSpec extends FunSpec with MustMatchers with ShouldMatchers {
   val server = TestServer()
@@ -123,6 +121,33 @@ class GeoTiffSpec extends FunSpec with MustMatchers with ShouldMatchers {
       val r = server.run(io.LoadFile("src/test/resources/sbn/SBN_inc_percap.arg"))
       Encoder.writePath("/tmp/lzw-sbn.tif", r, Settings(ByteSample, Signed, false, Lzw))
       Encoder.writePath("/tmp/raw-sbn.tif", r, Settings(ByteSample, Signed, false, Uncompressed))
+    }
+
+    it ("should retain Float32 type when converting tif to arg") {
+      val path = "src/test/resources/aspect.tif"
+      val raster = GeoTiffReader.readPath(path,None,None)
+      raster.data.getType should be (TypeFloat)
+    }
+
+    it ("should translate NODATA correctly") {
+      // This test was set up by taking an ARG, slope.arg, and converting it to TIF using GDAL.
+      // Then gdalwarp was used to change the NoData value for slope.tif to -9999.
+      // If the NoData values are translated correctly, then all NoData values from the read in GTiff
+      // should correspond to NoData values of the directly read arg.
+      import geotiff._
+      val originalArg = server.run(io.LoadFile("src/test/resources/data/slope.arg"))
+      val translatedTif = GeoTiffReader.readPath("src/test/resources/slope.tif", None, None)
+
+      translatedTif.rows should be (originalArg.rows)
+      translatedTif.cols should be (originalArg.cols)
+      for(col <- 0 until originalArg.cols) {
+        for(row <- 0 until originalArg.rows) {
+          if(originalArg.getDouble(col,row).isNaN)
+             translatedTif.getDouble(col,row).isNaN should be (true)
+          else
+            translatedTif.getDouble(col,row) should be (originalArg.getDouble(col,row))
+        }
+      }
     }
   }
 }
