@@ -91,16 +91,6 @@ object GeotrellisBuild extends Build {
     )
   )
 
-  lazy val tasks:Project = Project("tasks", file("tasks")).
-    settings(
-      scalaVersion := "2.10.0",
-      libraryDependencies ++= Seq(
-        "com.beust" % "jcommander" % "1.23",
-        "org.reflections" % "reflections" % "0.9.5"),
-      mainClass in Compile := Some("geotrellis.run.Tasks")
-    ).
-    dependsOn(root,geotools)
-
   lazy val dev:Project = Project("dev", file("dev")).
     settings(
       scalaVersion := "2.10.0",
@@ -132,6 +122,17 @@ object GeotrellisBuild extends Build {
       "javax.media" % "jai_core" % "1.1.3")
     ).
     dependsOn(root)
+
+  lazy val tasks:Project = Project("tasks", file("tasks")).
+    settings(
+      scalaVersion := "2.10.0",
+      libraryDependencies ++= Seq(
+        "com.beust" % "jcommander" % "1.23",
+        "org.reflections" % "reflections" % "0.9.5"),
+      mainClass in Compile := Some("geotrellis.run.Tasks")
+    ).
+    dependsOn(root,geotools)
+
    
   lazy val benchmark:Project = Project("benchmark", file("benchmark")).
     settings(benchmarkSettings: _*).

@@ -176,11 +176,10 @@ abstract class LzwEncoder(encoder:Encoder) {
    */
   def getCode(s:String): Int = {
     if (!stringTable.contains(s)) {
-      println("no code found for %s" format xyz(s))
-      stringTable.toList.sorted.foreach {
-        case (k, v) => println("  k=%s v=%s" format (xyz(k), v))
-      }
-      sys.error("argh")
+      // stringTable.toList.sorted.foreach {
+      //   case (k, v) => println("  k=%s v=%s" format (xyz(k), v))
+      // }
+      sys.error(s"no code found for ${xyz(s)}")
     }
     stringTable(s)
   }
