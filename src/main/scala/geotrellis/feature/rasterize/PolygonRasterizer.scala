@@ -9,7 +9,7 @@ object PolygonRasterizer {
   /**
    * Apply a function to each raster cell that intersects with a polygon.
    */
-  def foreachCellByPolygon[D](p:Polygon[D], re:RasterExtent, includeExterior:Boolean=false)( f:(Int,Int,Polygon[D]) => Unit) {
+  def foreachCellByPolygon[D](p:Polygon[D], re:RasterExtent, includeExterior:Boolean=false)( f:Callback[Polygon,D]) {
     // Create a global edge table which tracks the minimum and maximum row 
     // for which each edge is relevant.
     val edgeTable = buildEdgeTable(p, re)
