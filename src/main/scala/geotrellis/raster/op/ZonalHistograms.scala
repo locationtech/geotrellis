@@ -7,10 +7,14 @@ import geotrellis.statistics._
 
 /**
  * Given a raster, return a histogram summary of the cells within each zone.
+ *
+ * @note    ZonalHistorgram does not currently support Double raster data.
+ *          If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *          the data values will be rounded to integers.
  */
 case class ZonalHistogram(data: Op[Raster], zones: Op[Raster],
                            zonesArraySize: Op[Int], histArraySize: Op[Int]) 
-extends Op4(data, zones, zonesArraySize, histArraySize) ({
+     extends Op4(data, zones, zonesArraySize, histArraySize) ({
   (raster, zones, zonesArraySize, histArraySize) => {
     // build our map to hold results
     val histmap = Array.ofDim[Histogram](zonesArraySize)

@@ -4,7 +4,6 @@ import geotrellis._
 import geotrellis.feature._
 import geotrellis.feature.rasterize._
 import geotrellis.data._
-//import geotrellis.statistics._
 import scala.math.{ max, min }
 import geotrellis.raster.TileArrayRasterData
 import geotrellis.raster.TiledRasterData
@@ -23,7 +22,9 @@ object Min {
 }
 
 /**
- * Perform a zonal summary that calculates the sum of all raster cells within a geometry.
+ * Perform a zonal summary that calculates the min of all raster cells within a geometry.
+ * This operation is for integer typed Rasters. If you want the Min for double type rasters
+ * (TypeFloat,TypeDouble) use [[MinDouble]]
  *
  * @param   r             Raster to summarize
  * @param   zonePolygon   Polygon that defines the zone
@@ -59,12 +60,10 @@ case class Min[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[R
       min
    }))
   
- 
   def handleNoDataTile = Int.MaxValue
 
   def reducer(mapResults: List[Int]):Int = mapResults.foldLeft(Int.MaxValue)(math.min(_, _)) 
 }
-
 
 object MinDouble {
   def createTileResults(trd:TiledRasterData, re:RasterExtent) = {
@@ -74,13 +73,13 @@ object MinDouble {
 
   def minRaster (r:Raster):Double = {
     var min = Double.PositiveInfinity
-    r.foreach( (x) => if (x != NODATA && x < min) min = x )
+    r.foreachDouble( x => if (!java.lang.Double.isNaN(x) && x < min) min = x )
     min
   }
 }
 
 /**
- * Perform a zonal summary that calculates the sum of all raster cells within a geometry.
+ * Perform a zonal summary that calculates the min of all raster cells within a geometry.
  *
  * @param   r             Raster to summarize
  * @param   zonePolygon   Polygon that defines the zone
@@ -98,7 +97,7 @@ case class MinDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
       val f = new Callback[Geometry,D] {
           def apply(col:Int, row:Int, g:Geometry[D]) {
             val z = r.getDouble(col,row)
-            if (!z.isNaN && z < min) { min = z }
+            if (!java.lang.Double.isNaN(z) && z < min) { min = z }
           }
         }
 
@@ -112,7 +111,7 @@ case class MinDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
   def handleFullTile(rOp:Op[Raster]) = rOp.map (r =>
     tileResults.get(r.rasterExtent).getOrElse({
       var min = Double.PositiveInfinity
-      r.force.foreach((x:Int) => if (x != NODATA && x < min) min = x )
+      r.force.foreachDouble((x:Double) => if (!java.lang.Double.isNaN(x) && x < min) min = x )
       min
    }))
   

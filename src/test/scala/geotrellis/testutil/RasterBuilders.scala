@@ -25,6 +25,13 @@ trait RasterBuilders {
     Raster(arr, RasterExtent(Extent(0,0,d,d),1,1,d,d))
   }
 
+  def createRaster(arr:Array[Double]) = {
+    val d = scala.math.sqrt(arr.length).toInt
+    if(d > scala.math.round(d)) { sys.error("Array must be square") }
+    
+    Raster(arr, RasterExtent(Extent(0,0,d,d),1,1,d,d))
+  }
+
   /* prints out a raster to console */
   def printR(r:Raster) {
     for(row <- 0 until r.rows) {

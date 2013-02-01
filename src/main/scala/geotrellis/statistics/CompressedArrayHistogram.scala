@@ -25,6 +25,8 @@ object CompressedArrayHistogram {
   * Data object representing a histogram using an array for internal storage,
   * which requires an initial minimum and maximum val and a specified number of 'breaks' which
   * are used to group values together into ranges.
+  *
+  * @note   CompressedArrayHistogram can currently only handle non-negative integers.
   */
 class CompressedArrayHistogram(counts:Array[Int], total:Int,
                                vmin:Int, vmax:Int) extends ArrayHistogram(counts, total) {

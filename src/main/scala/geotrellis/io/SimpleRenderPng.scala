@@ -39,5 +39,3 @@ case class SimpleRenderPng(r: Op[Raster], colorRamp: Op[ColorRamp] = ColorRamps.
     runAsync('result :: renderOp :: Nil)
   }
 }
-
-

@@ -3,7 +3,6 @@ package geotrellis.logic
 import geotrellis._
 import geotrellis.process._
 
-
 /**
  * Run a function on the result of an operation
  *

@@ -7,10 +7,13 @@ import geotrellis._
  * @param    r      Raster on which to run the focal operation.
  * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
  *
- * @note
- * If the neighborhood is a [[Square]] neighborhood, the sum calucation will use
- * the [[CellwiseSumCalc]] to perform the calculation, because it is faster.
- * If the neighborhood is of any other type, then [[CursorSumCalc]] is used.
+ * @note            If the neighborhood is a [[Square]] neighborhood, the sum calucation will use
+ *                  the [[CellwiseSumCalc]] to perform the calculation, because it is faster.
+ *                  If the neighborhood is of any other type, then [[CursorSumCalc]] is used.
+ *
+ * @note            Sum does not currently support Double raster data.
+ *                  If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *                  the data values will be rounded to integers.
  */
 case class Sum(r:Op[Raster], n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({ 
   (r,n) =>

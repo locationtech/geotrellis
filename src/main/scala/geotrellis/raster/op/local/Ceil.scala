@@ -14,6 +14,9 @@ case class CeilInt(x:Op[Int]) extends Op1(x)(x => Result(x))
 
 case class CeilDouble(x:Op[Double]) extends Op1(x)(x => Result(ceil(x)))
 
+/**
+ * Takes the Ceiling of each raster cell value.
+ */
 case class CeilRaster(r:Op[Raster]) extends Op1(r)({
   r => Result(r.dualMapIfSet(z => z)(ceil(_)))
 })

@@ -7,6 +7,10 @@ import geotrellis.statistics.FastMapHistogram
  *
  * @param    r      Raster on which to run the focal operation.
  * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
+ *
+ * @note    Median does not currently support Double raster data.
+ *          If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *          the data values will be rounded to integers.
  */
 case class Median(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
   (r,n) => 

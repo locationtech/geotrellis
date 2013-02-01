@@ -13,6 +13,7 @@ object MapHistogram {
 
 /**
   * Data object representing a histogram that uses a Map (as in hashtable map/dictionary) for internal storage.
+  *
   */
 class MapHistogram(counts:Map[Int, Int], var total:Int) extends Histogram {
   def getTotalCount = this.total
@@ -64,9 +65,6 @@ class MapHistogram(counts:Map[Int, Int], var total:Int) extends Histogram {
   }
 
   def getItemCount(i:Int) = this.counts.getOrElse(i, 0)
-
-  //def getMinValue:Int = this.counts.keys.foldLeft(Int.MaxValue)(min)
-  //def getMaxValue:Int = this.counts.keys.foldLeft(Int.MinValue)(max)
 
   def getMinValue = getMinMaxValues._1
   def getMaxValue = getMinMaxValues._2

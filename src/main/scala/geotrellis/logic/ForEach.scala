@@ -39,7 +39,7 @@ case class ForEach1[A, Z:Manifest](op:Op[Array[A]])(f:(A) => Op[Z]) extends Op[A
  * of Z's is returned.
  */
 case class ForEach2[A, B, Z:Manifest](opA:Op[Array[A]], opB:Op[Array[B]])
-(f:(A, B) => Op[Z]) extends Op[Array[Z]] {
+                                     (f:(A, B) => Op[Z]) extends Op[Array[Z]] {
 
   def _run(context:Context) = runAsync(List(opA, opB, context))
 

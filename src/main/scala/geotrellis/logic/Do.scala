@@ -3,7 +3,6 @@ package geotrellis.logic
 import geotrellis._
 import geotrellis.process._
 
-
 object Do {
   /**
    * Invoke a function that takes one argument.
@@ -20,7 +19,6 @@ object Do {
   def apply[A,B,Z](a:Op[A], b:Op[B])(call:(A,B) => Z) = 
     Do2(a,b)(call)
 }
-
 
 /**
  * Invoke a function that takes one argument.
@@ -49,4 +47,3 @@ case class Do2[A, B, Z]
                                       b.asInstanceOf[B]))
   }
 }
-

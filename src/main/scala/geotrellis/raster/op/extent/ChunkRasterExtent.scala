@@ -2,20 +2,14 @@ package geotrellis.raster.op.extent
 
 import geotrellis._
 
-// ny=4    nx=4    nx=2 ny=2
-// AAAA    ABCD    AABB
-// BBBB    ABCD    AABB
-// CCCC    ABCD    CCDD
-// DDDD    ABCD    CCDD
-
 /**
  * Used to chunk a RasterExtent object (geographical extent + grid information)
  * into many smaller contiguous pieces. The number of columns desired is
  * provided by `nx` and the number of rows by `ny`.
  */
 case class ChunkRasterExtent(re:Op[RasterExtent], nx:Op[Int], ny:Op[Int])
-extends Op3(re,nx,ny) ({
-  (re, nx, ny) => {
+     extends Op3(re,nx,ny) ({
+  (re, nx, ny) => 
     val a = Array.ofDim[RasterExtent](ny * nx)
 
     // calculate the break points along the X and Y axes
@@ -44,5 +38,4 @@ extends Op3(re,nx,ny) ({
       y += 1
     }
     Result(a)
-  }
 })
