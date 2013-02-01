@@ -81,7 +81,7 @@ class SimpleDrawRaster {
   @Path("/{name}")
   def get(@PathParam("name") name:String) = {
     val rasterOp:Op[Raster] = io.LoadRaster(name)
-    val pngOp:Op[Array[Byte]] = io.SimpleRenderPng(rasterOp, BlueToYellowToRed)
+    val pngOp:Op[Array[Byte]] = io.SimpleRenderPng(rasterOp, BlueToRed)
     // run the operation
     try {
       val img:Array[Byte] = Demo.server.run(pngOp)
