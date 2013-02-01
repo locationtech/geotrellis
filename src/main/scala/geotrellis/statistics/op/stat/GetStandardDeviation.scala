@@ -7,6 +7,12 @@ import geotrellis.statistics._
 // TODO: rewrite this in terms of Op[Statistics].
 /*
  * Calculate a raster in which each value is set to the standard deviation of that cell's value.
+ *
+ * @return        Raster of TypeInt data
+ *
+ * @note          Currently only supports working with integer types. If you pass in a Raster
+ *                with double type data (TypeFloat,TypeDouble) the values will be rounded to
+ *                Ints.
  */
 case class GetStandardDeviation(r:Op[Raster], h:Op[Histogram], factor:Int) extends Op[Raster] {
   val g = GetStatistics(h)

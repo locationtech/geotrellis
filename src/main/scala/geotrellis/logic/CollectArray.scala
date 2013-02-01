@@ -10,4 +10,3 @@ case class CollectArray[A:Manifest](ops:Array[Op[A]]) extends Op[Array[A]] {
     case as:List[_] => Result(as.asInstanceOf[List[A]].toArray)
   }
 }
-

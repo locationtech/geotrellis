@@ -8,6 +8,10 @@ import scala.math._
  *
  * @param    r      Raster on which to run the focal operation.
  * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
+ *
+ * @note               Maximum does not currently support Double raster data.
+ *                     If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *                     the data values will be rounded to integers.
  */
 case class Max(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp(r,n)({
   (r,n) => new CursorCalculation[Raster] with IntRasterDataResult { 

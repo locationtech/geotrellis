@@ -23,7 +23,7 @@ import geotrellis.raster.CroppedRaster
  */
 class FocalOp[T](r:Op[Raster],n:Op[Neighborhood],reOpt:Op[Option[RasterExtent]] = Literal(None))
                 (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization)                  
-  extends FocalOperation[T](r,n) {
+extends FocalOperation[T](r,n) {
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
@@ -40,7 +40,7 @@ class FocalOp[T](r:Op[Raster],n:Op[Neighborhood],reOpt:Op[Option[RasterExtent]] 
  */
 class FocalOp1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],reOpt:Op[Option[RasterExtent]] = Literal(None))
                    (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization1[A])
-  extends FocalOperation1[A,T](r,n,a){
+extends FocalOperation1[A,T](r,n,a){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
@@ -56,9 +56,10 @@ class FocalOp1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],reOpt:Op[Option[Rast
  *
  * @tparam       T           Return type of the Operation.
  */
-class FocalOp2[A,B,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],reOpt:Op[Option[RasterExtent]] = Literal(None))
+class FocalOp2[A,B,T](r:Op[Raster],n:Op[Neighborhood],
+                      a:Op[A],b:Op[B],reOpt:Op[Option[RasterExtent]] = Literal(None))
                      (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization2[A,B])
-  extends FocalOperation2[A,B,T](r,n,a,b){
+extends FocalOperation2[A,B,T](r,n,a,b){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
@@ -75,9 +76,10 @@ class FocalOp2[A,B,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],reOpt:Op[O
  *
  * @tparam       T           Return type of the Operation.
  */
-class FocalOp3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],reOpt:Op[Option[RasterExtent]] = Literal(None))
+class FocalOp3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],
+                        a:Op[A],b:Op[B],c:Op[C],reOpt:Op[Option[RasterExtent]] = Literal(None))
                        (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization3[A,B,C])
-  extends FocalOperation3[A,B,C,T](r,n,a,b,c){
+extends FocalOperation3[A,B,C,T](r,n,a,b,c){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
@@ -97,7 +99,7 @@ class FocalOp3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],
  */
 class FocalOp4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],d:Op[D],reOpt:Op[Option[RasterExtent]] = Literal(None))
                          (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization4[A,B,C,D])
-  extends FocalOperation4[A,B,C,D,T](r,n,a,b,c,d){
+extends FocalOperation4[A,B,C,D,T](r,n,a,b,c,d){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
@@ -122,7 +124,8 @@ trait FocalOperationBase {
  *
  * @tparam       T           Return type of the Operation.
  */
-abstract class FocalOperation[T](r:Op[Raster],n:Op[Neighborhood],analysisArea:Op[Option[RasterExtent]] = Literal(None)) extends Operation[T] with FocalOperationBase {
+abstract class FocalOperation[T](r:Op[Raster],n:Op[Neighborhood],analysisArea:Op[Option[RasterExtent]] = Literal(None)) 
+         extends Operation[T] with FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
   def _run(context:Context) = runAsync(List('init,r,n,analysisAreaOp))
   def productArity = 3
@@ -198,7 +201,9 @@ object FocalOperation {
  *
  * @tparam       T           Return type of the Operation.
  */
-abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],analysisArea:Op[Option[RasterExtent]]=None) extends Operation[T] with FocalOperationBase {
+abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood],
+                                    a:Op[A],analysisArea:Op[Option[RasterExtent]]=None) 
+extends Operation[T] with FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
   def _run(context:Context) = runAsync(List('init,r,n,a,analysisAreaOp))
   def productArity = 3
@@ -246,7 +251,8 @@ abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],anal
  *
  * @tparam       T           Return type of the Operation.
  */
-abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],analysisArea:Op[Option[RasterExtent]]=None) 
+abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],
+                                      a:Op[A],b:Op[B],analysisArea:Op[Option[RasterExtent]]=None) 
          extends Operation[T] with FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
   def _run(context:Context) = runAsync(List('init,r,n,a,b,analysisAreaOp))
@@ -302,7 +308,8 @@ abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:
  *
  * @tparam       T           Return type of the Operation.
  */
-abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],analysisArea:Op[Option[RasterExtent]]=None) 
+abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],
+                                        a:Op[A],b:Op[B],c:Op[C],analysisArea:Op[Option[RasterExtent]]=None) 
          extends Operation[T] with FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
   def _run(context:Context) = runAsync(List('init,r,n,a,b,c,analysisAreaOp))
@@ -359,7 +366,8 @@ abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],
  *
  * @tparam       T           Return type of the Operation.
  */
-abstract class FocalOperation4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],d:Op[D],analysisArea:Op[Option[RasterExtent]]=None) 
+abstract class FocalOperation4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],
+                                          a:Op[A],b:Op[B],c:Op[C],d:Op[D],analysisArea:Op[Option[RasterExtent]]=None) 
          extends Operation[T] with FocalOperationBase {
   var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
   def _run(context:Context) = runAsync(List('init,r,n,a,b,c,d,analysisAreaOp))

@@ -13,6 +13,10 @@ import geotrellis.statistics.{Statistics,FastMapHistogram}
  *
  * @param       r         Raster to perform the operation on.
  * @param       n         Neighborhood to use in this focal operation.
+ *
+ * @note                  Since mean and standard deviation are based off of an
+ *                        Int based Histogram, those values will come from rounded values
+ *                        of a double typed Raster (TypeFloat,TypeDouble).
  */
 case class RasterMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
   (r,n) => new CursorCalculation[Raster] with DoubleRasterDataResult {
@@ -57,6 +61,10 @@ case class RasterMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster
  *
  * @param       r         Raster to perform the operation on.
  * @param       n         Neighborhood to use in this focal operation.
+ *
+ * @note                  Since mean and standard deviation are based off of an
+ *                        Int based Histogram, those values will come from rounded values
+ *                        of a double typed Raster (TypeFloat,TypeDouble).
  */
 case class ScalarMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp(r,n)({
   (r,n) => new CursorCalculation[Double] with Initialization {
@@ -80,7 +88,7 @@ case class ScalarMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp(r,n)({
       cursor.allCells.foreach { (x,y) => z += r.getDouble(x,y) - mean; ws += 1 }
 
       count += base / `stddev^2` * z
-      ws -= 1 // for focus     
+      ws -= 1 // subtract one to account for focus
     }
 
     def result = count / ws

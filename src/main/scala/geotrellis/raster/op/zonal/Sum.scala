@@ -4,7 +4,6 @@ import geotrellis._
 import geotrellis.feature._
 import geotrellis.feature.rasterize._
 import geotrellis.data._
-//import geotrellis.statistics._
 import scala.math.{ max, min }
 import geotrellis.raster.TileArrayRasterData
 import geotrellis.raster.TiledRasterData
@@ -24,6 +23,8 @@ object Sum {
 
 /**
  * Perform a zonal summary that calculates the sum of all raster cells within a geometry.
+ * This operation is for integer typed Rasters. If you want the Sum for double type rasters
+ * (TypeFloat,TypeDouble) use [[SumDouble]]
  *
  * @param   r             Raster to summarize
  * @param   zonePolygon   Polygon that defines the zone
@@ -58,7 +59,6 @@ case class Sum[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[R
       r.force.foreach((x:Int) => if (s != NODATA) s = s + x)
       s
    }))
-  
  
   def handleNoDataTile = 0L
 
@@ -73,7 +73,7 @@ object SumDouble {
 
   def sumRaster (r:Raster):Double = {
     var sum = 0.0
-    r.foreachDouble( (x) => if (x != Double.NaN) sum = sum + x )
+    r.foreachDouble( (x) => if (!java.lang.Double.isNaN(x)) sum = sum + x)
     sum
   }
 }
@@ -85,7 +85,7 @@ object SumDouble {
  * @param   zonePolygon   Polygon that defines the zone
  * @param   tileResults   Cached results of full tiles created by createTileResults
  */
-case class SumDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[RasterExtent,Double]) 
+case class SumDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[RasterExtent,Double])
   (implicit val mB: Manifest[Double], val mD: Manifest[DD]) extends TiledPolygonalZonalSummary[Double] {
  
   type B = Double
@@ -97,7 +97,7 @@ case class SumDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
       val f = new Callback[Geometry,D] {
           def apply(col:Int, row:Int, g:Geometry[D]) {
             val z = r.getDouble(col,row)
-            if (!z.isNaN) { sum = sum + z }
+            if (!java.lang.Double.isNaN(z)) { sum = sum + z }
           }
         }
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
@@ -110,13 +110,11 @@ case class SumDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
   def handleFullTile(rOp:Op[Raster]) = rOp.map (r =>
     tileResults.get(r.rasterExtent).getOrElse({
       var s = 0.0
-      r.force.foreachDouble((x:Double) => if (s != Double.NaN) s = s + x)
+      r.force.foreachDouble((x:Double) => if (!java.lang.Double.isNaN(s)) s = s + x)
       s
    }))
   
- 
   def handleNoDataTile = 0.0
 
   def reducer(mapResults: List[Double]):Double = mapResults.foldLeft(0.0)(_ + _) 
 }
-

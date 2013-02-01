@@ -7,8 +7,13 @@ import java.util.PriorityQueue
   * Generate a Cost-Distance raster based on a set of starting points and a cost
   * raster
   *
-  * @param costOp Cost Raster (Int)
-  * @param pointsOp List of starting points as tuples
+  * @param costOp     Cost Raster (Int)
+  * @param pointsOp   List of starting points as tuples
+  *
+  * @note    Operation will only work with integer typed Cost Rasters (TypeBit,TypeByte,TypeShort,TypeInt).
+  *          If a double typed Cost Raster (TypeFloat,TypeDouble) is passed in, those costs will be rounded
+  *          to their floor integer values.
+  * 
   */
 final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int,Int)]]) extends Op[Raster] {
   def _run(context:Context) = runAsync(List(costOp,pointsOp))

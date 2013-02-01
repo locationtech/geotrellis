@@ -62,7 +62,3 @@ trait ThroughputLimitedReducer1[C] extends Op[C] {
     }
   }
 }
-
-/*
-
-*/

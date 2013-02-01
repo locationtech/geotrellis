@@ -8,16 +8,20 @@ import geotrellis.data._
 import scala.math.round
 
 case class BuildColorMapper(colorBreaks:Op[ColorBreaks], noDataColor:Op[Int])
-extends Op2(colorBreaks, noDataColor)((bs, c) => Result(ColorMapper(bs, c)))
+     extends Op2(colorBreaks, noDataColor)({
+       (bs, c) => Result(ColorMapper(bs, c))
+})
 
 case class BuildColorBreaks(breaks:Op[Array[Int]], colors:Op[Array[Int]])
-extends Op2(breaks, colors)((bs, cs) => Result(ColorBreaks.assign(bs, cs)))
+     extends Op2(breaks, colors)({
+       (bs, cs) => Result(ColorBreaks.assign(bs, cs))
+})
 
 /**
  * Generate quantile class breaks with assigned colors.
  */
 case class GetColorBreaks(h:Op[Histogram], cs:Op[Array[Int]])
-extends Op[ColorBreaks] {
+     extends Op[ColorBreaks] {
 
   def _run(context:Context) = runAsync(List(h, cs))
 
@@ -34,7 +38,7 @@ extends Op[ColorBreaks] {
 }
 
 case class GetColorsFromPalette(palette:Op[Array[Int]], num:Op[Int])
-extends Op2(palette, num)({
-  (palette, num) =>
-  Result(new MultiColorRangeChooser(palette).getColors(num))
+     extends Op2(palette, num)({
+       (palette, num) =>
+         Result(new MultiColorRangeChooser(palette).getColors(num))
 })

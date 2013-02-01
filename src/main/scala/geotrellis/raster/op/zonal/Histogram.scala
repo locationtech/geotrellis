@@ -26,7 +26,8 @@ object Histogram {
  * @param   tileResults   Cached results of full tiles created by createTileResults
  */
 case class Histogram[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[RasterExtent,HistogramObj]) 
-  (implicit val mB: Manifest[HistogramObj], val mD: Manifest[DD]) extends TiledPolygonalZonalSummary[HistogramObj] {
+                         (implicit val mB: Manifest[HistogramObj], val mD: Manifest[DD]) 
+     extends TiledPolygonalZonalSummary[HistogramObj] {
  
   type B = HistogramObj
   type D = DD

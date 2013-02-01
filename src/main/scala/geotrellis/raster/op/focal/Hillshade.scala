@@ -12,6 +12,8 @@ import Angles._
  * based on the sun altitude, azimuth, and the z factor. The z factor is
  * a conversion factor from map units to elevation units. 
  *
+ * Returns a raster of TypeShort.
+ * 
  * This operation uses Horn's method for computing hill shading.
  *
  * @see [[http://goo.gl/DtVDQ Esri Desktop's description of Hillshade.]]

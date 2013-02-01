@@ -13,6 +13,8 @@ import scala.math.{max,min}
  * @param    sigma          Sigma parameter for Gaussian
  * @param    amp            Amplitude for Gaussian. Will be the value at the center of
  *                          the resulting raster.
+ *
+ * @note                    Raster will be TypeInt
  */
 case class CreateGaussianRaster(size: Op[Int], cellWidth: Op[Double], sigma: Op[Double], amp: Op[Double]) 
      extends Op4[Int,Double,Double,Double,Raster](size, cellWidth, sigma, amp)({ (n,w,sigma,amp) => 
@@ -46,6 +48,8 @@ case class CreateGaussianRaster(size: Op[Int], cellWidth: Op[Double], sigma: Op[
  * @param       size           Number of rows in the resulting raster.
  * @param       cellWidth      Cell width of the resutling raster.
  * @param       rad            Radius of the circle.
+ *
+ * @note                       Raster will be TypeInt 
  */
 case class CreateCircleRaster(size: Op[Int], cellWidth: Op[Double], rad: Op[Int]) 
     extends Op3[Int,Double,Int,Raster](size, cellWidth,rad)({ (size, cellWidth, rad) =>
@@ -75,6 +79,10 @@ case class CreateCircleRaster(size: Op[Int], cellWidth: Op[Double], rad: Op[Int]
  *
  * @param      r       Raster to convolve.
  * @param      k       Kernel that represents the convolution filter.
+ *
+ * @note               Convolve does not currently support Double raster data.
+ *                     If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *                     the data values will be rounded to integers.
  */
 case class Convolve(r:Op[Raster], k:Op[Kernel]) extends FocalOp[Raster](r,k)({
   (r,n) => 
@@ -93,22 +101,27 @@ case class Convolve(r:Op[Raster], k:Op[Kernel]) extends FocalOp[Raster](r,k)({
  *                              an Int value.
  * @param      kernel           Kernel to be used in the computation.
  * @param      rasterExtent     Raster extent of the resulting raster.
+ *
+ * @note                        KernelDensity does not currently support Double raster data.
+ *                              If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *                              the data values will be rounded to integers.
  */
 case class KernelDensity[D](points:Op[Seq[Point[D]]], 
                             transform:Op[D=>Int],
                             kernel:Op[Kernel],
                             rasterExtent:Op[RasterExtent])
-  extends Op4(points,transform,kernel,rasterExtent)({ (points,transform,kernel,rasterExtent) =>
-    val convolver = new Convolver { }
-    
-    convolver.initKernel(kernel)
-    convolver.init(rasterExtent)
-    for(point <- points) {
-      val col = convolver.rasterExtent.mapXToGrid(point.geom.getX())
-      val row = convolver.rasterExtent.mapYToGrid(point.geom.getY())
-      convolver.stampKernel(col,row,transform(point.data))
-    }                                                       
-    Result(convolver.result)
+     extends Op4(points,transform,kernel,rasterExtent)({ 
+       (points,transform,kernel,rasterExtent) =>
+         val convolver = new Convolver { }
+       
+         convolver.initKernel(kernel)
+         convolver.init(rasterExtent)
+         for(point <- points) {
+           val col = convolver.rasterExtent.mapXToGrid(point.geom.getX())
+           val row = convolver.rasterExtent.mapYToGrid(point.geom.getY())
+           convolver.stampKernel(col,row,transform(point.data))
+         }                                                       
+         Result(convolver.result)
  })
 
 /**
@@ -207,7 +220,7 @@ class ConvolveCalculation(k:Kernel) extends FocalCalculation[Raster] with Convol
     var focusRow = 0
     var focusCol = 0
 
-    while(focusRow< rows) {
+    while(focusRow < rows) {
       focusCol = 0
       while(focusCol < cols) {
         val z = r.get(focusCol,focusRow)
