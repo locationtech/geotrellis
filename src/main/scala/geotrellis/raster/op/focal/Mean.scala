@@ -4,15 +4,18 @@ import geotrellis._
 
 import scala.math._
 
-/** Computes the mean value of a neighborhood for a given raster 
+/** Computes the mean value of a neighborhood for a given raster. Returns a raster of TypeDouble
  *
  * @param    r      Raster on which to run the focal operation.
  * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
  *
- * @note
- * If the neighborhood is a [[Square]] neighborhood, the mean calucation will use
- * the [[CellwiseMeanCalc]] to perform the calculation, because it is faster.
- * If the neighborhood is of any other type, then [[CursorMeanCalc]] is used.
+ * @note            If the neighborhood is a [[Square]] neighborhood, the mean calucation will use
+ *                  the [[CellwiseMeanCalc]] to perform the calculation, because it is faster.
+ *                  If the neighborhood is of any other type, then [[CursorMeanCalc]] is used.
+ * 
+ * @note            Mean does not currently support Double raster data inputs.
+ *                  If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *                  the data values will be rounded to integers.
  */
 case class Mean(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
   (r,n) =>

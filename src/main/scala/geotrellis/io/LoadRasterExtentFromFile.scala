@@ -37,7 +37,3 @@ case class LoadRasterExtent(nme:Op[String]) extends Op[RasterExtent] {
     }
   }
 }
-
-//object LoadRasterExtentFromFile {
-//  def apply(path:String) = LoadRasterExtentFromFile(path)
-//}

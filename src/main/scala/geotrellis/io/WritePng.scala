@@ -22,6 +22,9 @@ extends Op5(r, path, colorBreaks, h, noDataColor) ({
   }
 })
 
+/**
+ * Write out a PNG file of a raster that contains RGBA values)
+ */
 case class WritePngRgba(r:Op[Raster], path:Op[String]) extends Op2(r, path)({
   (r, path) =>
     val bytes = new Encoder(Settings(Rgba, PaethFilter)).writePath(path, r)

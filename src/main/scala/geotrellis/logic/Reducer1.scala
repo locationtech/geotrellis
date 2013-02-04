@@ -5,7 +5,10 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.raster._
 
-abstract class Reducer1[B:Manifest, C:Manifest](r:Op[Raster])(handle:Raster => B)(reducer:List[B] => C) extends Op[C] {
+abstract class Reducer1[B:Manifest, C:Manifest](r:Op[Raster])
+                                               (handle:Raster => B)
+                                               (reducer:List[B] => C) 
+         extends Op[C] {
   def _run(context:Context) = runAsync('init :: r :: Nil)
 
   val nextSteps:Steps = {

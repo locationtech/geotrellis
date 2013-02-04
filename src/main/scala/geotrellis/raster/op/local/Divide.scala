@@ -36,10 +36,10 @@ case class DivideDoubleConstantBy(c:Op[Double], r:Op[Raster]) extends Op2(c, r) 
 
 
 /**
-  * Divide each value of one raster with the values from another raster.
-  * Local operation.
-  * Binary operation.
-  */
+ * Divide each value of one raster with the values from another raster.
+ * Local operation.
+ * Binary operation.
+ */
 case class DivideRaster(r1:Op[Raster], r2:Op[Raster]) extends BinaryLocal {
   def handle(z1:Int, z2:Int) = if (z2 == NODATA || z2 == 0 || z1 == NODATA) {
     NODATA

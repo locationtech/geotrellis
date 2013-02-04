@@ -40,6 +40,10 @@ case class PowDoubleConstantBy(c:Op[Double], r:Op[Raster]) extends Op2(c, r)({
   (c, r) => Result(r.dualMapIfSet(pow(c, _).toInt)(pow(c, _)))
 })
 
+/**
+ * Takes the cell value of the first raster and raises it to the power determined
+ * by the cell value of the second raster.
+ */
 case class PowRaster(r1:Op[Raster], r2:Op[Raster]) extends BinaryLocal {
   def handle(z1:Int, z2:Int) = {
     if (z1 == NODATA) NODATA

@@ -18,6 +18,9 @@ case class XorConstant2(c:Op[Int], r:Op[Raster]) extends Op2(c, r) ({
   (c, r) => Result(r.mapIfSet(_ ^ c))
 })
 
+/**
+ * Xor's the cell values of two integer typed Rasters.
+ */
 case class XorRaster(r1:Op[Raster], r2:Op[Raster]) extends Op2(r1, r2) ({
   (r1, r2) => Result(r1.combine(r2)(_ ^ _))
 })

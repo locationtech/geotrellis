@@ -23,6 +23,8 @@ object Max {
 
 /**
  * Perform a zonal summary that calculates the max value of all raster cells within a geometry.
+ * This operation is for integer typed Rasters. If you want the Max for double type rasters
+ * (TypeFloat,TypeDouble) use [[MaxDouble]]
  *
  * @param   r             Raster to summarize
  * @param   zonePolygon   Polygon that defines the zone
@@ -72,7 +74,7 @@ object MaxDouble {
 
   def maxRaster (r:Raster):Double = {
     var max = Double.NegativeInfinity
-    r.foreach( (x) => if (x != NODATA && x > max) max = x )
+    r.foreachDouble( x => if (!java.lang.Double.isNaN(x) && x > max) max = x )
     max
   }
 }
@@ -96,7 +98,7 @@ case class MaxDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
       val f = new Callback[Geometry,D] {
           def apply(col:Int, row:Int, g:Geometry[D]) {
             val z = r.getDouble(col,row)
-            if (!z.isNaN && z > max) { max = z }
+            if (!java.lang.Double.isNaN(z) && z > max) { max = z }
           }
         }
 
@@ -110,7 +112,7 @@ case class MaxDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
   def handleFullTile(rOp:Op[Raster]) = rOp.map (r =>
     tileResults.get(r.rasterExtent).getOrElse({
       var max = Double.NegativeInfinity
-      r.force.foreach((x:Int) => if (x != NODATA && x > max) max = x )
+      r.force.foreachDouble((x:Double) => if (!java.lang.Double.isNaN(x) && x > max) max = x )
       max
    }))
   

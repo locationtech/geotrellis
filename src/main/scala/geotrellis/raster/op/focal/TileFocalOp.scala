@@ -21,7 +21,6 @@ case class TileFocalOp[T <:Op[Raster] with FocalOperationBase with HasAnalysisAr
   val nextSteps: Steps = {
     case 'init :: (r: Raster) :: Nil => init(r)
     case 'untiled :: (r:Raster) :: Nil => Result(r)
-    //case 'reduce :: (bs:  List[_]) => Result(reducer(bs.asInstanceOf[List[B]]))
     case 'results :: (tileLayout:TileLayout) :: (re:RasterExtent) :: (r:List[_]) => { 
         val tiles = r.asInstanceOf[List[Raster]] 
         val firstTile = tiles.head

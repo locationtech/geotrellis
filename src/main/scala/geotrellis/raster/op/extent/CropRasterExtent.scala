@@ -4,14 +4,13 @@ import geotrellis._
 import scala.math.ceil
 import scala.math.floor
 
-
 /**
  * Given a geographical extent and grid height/width, return an object used to
  * load raster data.
  */
 case class CropRasterExtent(r:Op[RasterExtent], e:Op[Extent]) 
-extends Op2(r,e)({
-  (re, extent) => {
+     extends Op2(r,e)({
+  (re, extent) => 
     val xmin = extent.xmin
     val xmax = extent.xmax
     val ymin = extent.ymin
@@ -34,9 +33,7 @@ extends Op2(r,e)({
 
      val newExtent = Extent(xmin3, ymin3, xmax3, ymax3)
      Result(RasterExtent(newExtent, re.cellwidth, re.cellheight, cols3, rows3))
-  }
 })
-
 
 object CropRasterExtent {
   def apply(re:Op[RasterExtent], xmin:Double, ymin:Double, xmax:Double, ymax:Double):CropRasterExtent = {

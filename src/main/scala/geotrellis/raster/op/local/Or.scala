@@ -18,6 +18,13 @@ case class OrConstant2(c:Op[Int], r:Op[Raster]) extends Op2(c, r) ({
   (c, r) => Result(r.mapIfSet(_ | c))
 })
 
+/**
+ * Or's the cell values of the two rasters.
+ *
+ * @note               MinRaster does not currently support Double raster data.
+ *                     If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *                     the data values will be rounded to integers.
+ */
 case class OrRaster(r1:Op[Raster], r2:Op[Raster]) extends Op2(r1, r2) ({
   (r1, r2) => Result(r1.combine(r2)(_ | _))
 })

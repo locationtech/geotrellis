@@ -98,9 +98,13 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
    */
   def getDouble(col:Int, row:Int):Double = data.getDouble(col, row)
 
-  
   /**
    * Return tuple of highest and lowest value in raster.
+   *
+   * @note   Currently does not support double valued raster data types
+   *         (TypeFloat,TypeDouble). Calling findMinMax on rasters of those
+   *         types will give the integer min and max of the rounded values of
+   *         their cells.
    */
   def findMinMax = {
     var zmin = Int.MaxValue
@@ -116,13 +120,11 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
     (zmin, zmax)
   } 
 
-
   /**
    * Test [[geotrellis.RasterExtent]] of other raster w/ our own geographic
    *attributes.
    */
   def compare(other:Raster) = this.rasterExtent.compare(other.rasterExtent)
-
 
   /**
    * Clone this raster.

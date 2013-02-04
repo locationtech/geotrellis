@@ -33,5 +33,3 @@ case class Aspect(r:Op[Raster]) extends FocalOp[Raster](r,Square(1))({
     }
   }
 }) with HasAnalysisArea[Aspect]
-
-
