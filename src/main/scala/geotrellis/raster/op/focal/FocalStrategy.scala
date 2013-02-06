@@ -4,7 +4,6 @@ import scala.math._
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.raster.CroppedRaster
 
 sealed trait TraversalStrategy
 object TraversalStrategy {
@@ -30,7 +29,7 @@ object CursorStrategy {
   }
 
   def execute(r:Raster,cursor:Cursor,c:CursorCalculation[_],t:TraversalStrategy,reOpt:Option[RasterExtent]=None):Unit = {
-	val analysisArea = FocalOperation.calculateAnalysisArea(r, reOpt)
+    val analysisArea = FocalOperation.calculateAnalysisArea(r, reOpt)
     t match {
       case ScanLine => handleScanLine(r, analysisArea, cursor,c)
       case SpiralZag => handleSpiralZag(r,analysisArea,cursor,c)
@@ -56,7 +55,7 @@ object CursorStrategy {
     
     // Spiral around the raster.
     // Once we get down with dealing with borders,
-    // turn on fast mode for the cursor.
+    // zig zag over inner portion.
     while(!(done || zagTime)) {
       //Move right across top
       while(col < colMax) {

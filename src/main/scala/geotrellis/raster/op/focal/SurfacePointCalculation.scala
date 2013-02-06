@@ -130,7 +130,6 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
       s.`dz/dx` = Double.NaN
       s.`dz/dy` = Double.NaN
     }
-
     s.`dz/dx` = (east(0) + 2*east(1) + east(2) - west(0) - 2*west(1) - west(2)) / (8 * cellWidth)
     s.`dz/dy` = (west(2) + 2*base(2) + east(2) - west(0) - 2*base(0) - east(0)) / (8 * cellHeight)
   }
@@ -147,18 +146,18 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
    * @note Assumes a [[Square]](1) neighborhood.
    *
    */
-  //TODO: needs to be updated for analysis area
   def execute(r:Raster,n:Neighborhood,reOpt:Option[RasterExtent]) = {
-    val cols = r.cols
-    val rows = r.rows
+    val analysisArea = FocalOperation.calculateAnalysisArea(r,reOpt)
+    val cols = (analysisArea.colMax-analysisArea.colMin)+1
+    val rows = (analysisArea.rowMax-analysisArea.rowMin)+1
+    var colMin = analysisArea.colMin
+    var rowMin = analysisArea.rowMin
     cellWidth = r.rasterExtent.cellwidth
     cellHeight = r.rasterExtent.cellheight
 
     if(cols < 3 || rows < 3) { sys.error("Raster is too small to get surface values") }
 
-    var y = 1
-    var x = 1
-    var focalValue = r.getDouble(0,0)
+    var focalValue = r.getDouble(colMin,rowMin)
     
     // Handle top row
     
@@ -168,108 +167,114 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
     west(2) = focalValue
     base(0) = focalValue
     base(1) = focalValue
-    base(2) = r.getDouble(0,1)
+    base(2) = r.getDouble(colMin,rowMin + 1)
     east(0) = focalValue
-    east(1) = r.getDouble(1,0)
-    east(2) = r.getDouble(1,1)
-    setValue(0,0)
+    east(1) = r.getDouble(colMin + 1,rowMin)
+    east(2) = r.getDouble(colMin + 1,rowMin + 1)
+    setValue(colMin,rowMin)
     
+    var col = colMin + 1
+
     /// Top Middle
-    while (x < cols-1) {
+    while (col < cols-1) {
       moveRight()
-      focalValue = r.getDouble(x,0)
+      focalValue = r.getDouble(col,rowMin)
       west(0) = focalValue
       base(0) = focalValue
       east(0) = focalValue
-      east(1) = r.getDouble(x+1,0)
-      east(2) = r.getDouble(x+1,1)
-      setValue(x, 0)
-      x += 1
+      east(1) = r.getDouble(col+1,rowMin)
+      east(2) = r.getDouble(col+1,rowMin + 1)
+      setValue(col, rowMin)
+      col += 1
     }
 
     /// Top Right
     moveRight()
-    focalValue = r.getDouble(x,0)
+    focalValue = r.getDouble(col,rowMin)
     west(0) = focalValue
     base(0) = focalValue
     east(0) = focalValue
     east(1) = focalValue
     east(2) = focalValue
-    setValue(x,0)
+    setValue(col,rowMin)
     
+    var row = rowMin + 1
+
     // Handle middle rows
-    while (y < rows-1) {
-      focalValue = r.getDouble(0,y)
+    while (row < rows-1) {
+      focalValue = r.getDouble(colMin,row)
       // Middle Left
       west(0) = focalValue
       west(1) = focalValue
       west(2) = focalValue
-      base(0) = r.getDouble(0,y-1)
+      base(0) = r.getDouble(colMin,row-1)
       base(1) = focalValue
-      base(2) = r.getDouble(0,y+1)
-      east(0) = r.getDouble(1,y-1)
-      east(1) = r.getDouble(1,y)
-      east(2) = r.getDouble(1,y+1)
-      setValue(0,y)
-      
+      base(2) = r.getDouble(colMin,row+1)
+      east(0) = r.getDouble(colMin+1,row-1)
+      east(1) = r.getDouble(colMin+1,row)
+      east(2) = r.getDouble(colMin+1,row+1)
+      setValue(colMin,row)
       /// Middle Middle (ha)
-      x = 1
-      while (x < cols-1) {
+      col = colMin + 1
+      while (col < cols-1) {
         moveRight()
-        east(0) = r.getDouble(x+1,y-1)
-        east(1) = r.getDouble(x+1,y)
-        east(2) = r.getDouble(x+1,y+1)
-        setValue(x, y)
-        x += 1
+        east(0) = r.getDouble(col+1,row-1)
+        east(1) = r.getDouble(col+1,row)
+        east(2) = r.getDouble(col+1,row+1)
+        setValue(col, row)
+        col += 1
       }
 
       /// Middle Right
       moveRight()
-      focalValue = r.getDouble(x,y)
+      focalValue = r.getDouble(col,row)
+
       east(0) = focalValue
       east(1) = focalValue
       east(2) = focalValue
-      setValue(x,y)
-      y += 1
+
+      setValue(col,row)
+
+      row += 1
     }
 
     // Handle bottom row
 
     /// Bottom Left
-    focalValue = r.getDouble(0,y)
+    focalValue = r.getDouble(colMin,row)
     west(0) = focalValue
     west(1) = focalValue
     west(2) = focalValue
-    base(0) = r.getDouble(0,y-1)
+    base(0) = r.getDouble(colMin,row-1)
     base(1) = focalValue
     base(2) = focalValue
-    east(0) = r.getDouble(1,y-1)
-    east(1) = r.getDouble(1,y)
+    east(0) = r.getDouble(colMin+1,row-1)
+    east(1) = r.getDouble(colMin+1,row)
     east(2) = focalValue
-    setValue(0,y)
+    setValue(colMin,row)
     
     /// Bottom Middle
-    x = 1
-    while (x < cols-1) {
+    col = colMin + 1
+    while (col < cols-1) {
       moveRight()
-      focalValue = r.getDouble(x,y)
-      east(0) = r.getDouble(x+1,y-1)
-      east(1) = r.getDouble(x+1,y)
+      focalValue = r.getDouble(col,row)
+      east(0) = r.getDouble(col+1,row-1)
+      east(1) = r.getDouble(col+1,row)
       east(2) = focalValue
       base(2) = focalValue
       west(2) = focalValue
-      setValue(x, y)
-      x += 1
+      setValue(col, row)
+      col += 1
     }
 
     /// Bottom Right
     moveRight()
-    focalValue = r.getDouble(x,y)
+    focalValue = r.getDouble(col,row)
     east(0) = focalValue
     east(1) = focalValue
     east(2) = focalValue
     base(2) = focalValue
     west(2) = focalValue
-    setValue(x,y)
+    setValue(col,row)
   }
 }

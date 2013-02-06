@@ -3,9 +3,10 @@ package geotrellis
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.matchers.ShouldMatchers
 
 @RunWith(classOf[JUnitRunner])
-class ExtentTest extends FunSuite {
+class ExtentTest extends FunSuite with ShouldMatchers {
   test("invalid ranges") {
     intercept[ExtentRangeError] { Extent(10.0, 0.0, 0.0, 10.0) }
     intercept[ExtentRangeError] { Extent(0.0, 10.0, 10.0, 0.0) }
@@ -81,5 +82,15 @@ class ExtentTest extends FunSuite {
     val e = Extent(0.0, 0.0, 10.0, 10.0)
     assert(e.southWest === (0.0, 0.0))
     assert(e.northEast === (10.0, 10.0))
+  }
+
+  test("containsExtent") {
+    val e = Extent(0.0, 100.0, 10.0, 200.0)
+    assert(e.containsExtent(e))
+    assert(e.containsExtent(Extent(1.0, 102.0, 9.0,170.0))) 
+    assert(!e.containsExtent(Extent(-1.0, 102.0, 9.0,170.0))) 
+    assert(!e.containsExtent(Extent(1.0, -102.0, 9.0,170.0)))
+    assert(!e.containsExtent(Extent(1.0, 102.0, 19.0,170.0))) 
+    assert(!e.containsExtent(Extent(1.0, 102.0, 9.0,370.0))) 
   }
 }

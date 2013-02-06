@@ -5,6 +5,12 @@ import scala.math.{min, max, round, ceil, floor}
 case class GeoAttrsError(msg:String) extends Exception(msg)
 
 /**
+ * Represents grid coordinates of a subsection of a RasterExtent.
+ * These coordinates are inclusive.
+ */
+case class GridBounds(colMin:Int,rowMin:Int,colMax:Int,rowMax:Int)
+
+/**
  * RasterExtent objects represent the geographic extent (envelope) of a raster.
  */
 case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols:Int, rows:Int) {
@@ -77,19 +83,31 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     val y = min(max(extent.ymax - (row * cellheight) - (cellheight / 2), extent.ymin), extent.ymax)
     (x, y)
   }
-  
-  def mapToGrid2(x:Double, y:Double) = {
-    val col = round((x - extent.xmin) / cellwidth).toInt
-    val row = round((y - extent.ymin) / cellheight).toInt
-    (col, row)
+
+  /**
+   * Gets the GridBounds for this RasterExtent that is the smallest subgrid
+   * containing all points within the extent. The extent is considered inclusive
+   * on it's north and west borders, exclusive on it's east and south borders.
+   * See [[RasterExtent]] for a discussion of grid and extent boundry concepts.
+   */
+  def gridBoundsFor(subExtent:Extent):GridBounds = {
+    if(!extent.containsExtent(subExtent)) { throw ExtentRangeError("") }
+    // West and North boundrys are a simple mapToGrid call.
+    val (colMin,rowMin) = mapToGrid(subExtent.xmin, subExtent.ymax)
+
+    // If South East corner is on grid border lines, we want to still only include
+    // what is to the West and\or North of the point. However if the border point
+    // is not directly on a grid division, include the whole row and/or column that
+    // contains the point.
+    val colMax = ceil((subExtent.xmax - extent.xmin) / cellwidth).toInt - 1
+    val rowMax = ceil((extent.ymax - subExtent.ymin) / cellheight).toInt - 1
+    
+    GridBounds(max(0,colMin),
+               max(0,rowMin),
+               min(cols-1,colMax),
+               min(rows-1,rowMax))
   }
-
-  //def gridToMap2(col:Int, row:Int) = {
-  //  val x = col * cellwidth + extent.xmin + (cellwidth / 2)
-  //  val y = extent.ymax - row * cellheight - (cellheight / 2) 
-  //  (x, y)
-  //}
-
+  
   /**
    * Combine two different GeoAttrs (which must have the same cellsizes).
    * The result is a new extent at the same resolution.
