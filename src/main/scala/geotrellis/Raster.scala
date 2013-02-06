@@ -69,7 +69,7 @@ object Raster {
   }
   def loadUncachedTileSet(dir:String, server:Server):Raster = {
     val (tileBase, typ, layout, re) = loadTileSetInfo(dir, server)
-    val data = TileSetRasterData(dir, tileBase, typ, layout, re, server)
+    val data = TileSetRasterData(dir, tileBase, typ, layout, server)
     Raster(data, re) 
   }
 }

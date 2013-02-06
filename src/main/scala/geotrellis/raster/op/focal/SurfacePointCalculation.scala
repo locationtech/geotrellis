@@ -146,10 +146,10 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
    * @note Assumes a [[Square]](1) neighborhood.
    *
    */
-  def execute(r:Raster,n:Neighborhood,reOpt:Option[RasterExtent]) = {
+  def execute(r:Raster,n:Neighborhood,reOpt:Option[RasterExtent]):Unit = {
     val analysisArea = FocalOperation.calculateAnalysisArea(r,reOpt)
-    val cols = (analysisArea.colMax-analysisArea.colMin)+1
-    val rows = (analysisArea.rowMax-analysisArea.rowMin)+1
+    val cols = analysisArea.colMax + 1
+    val rows = analysisArea.rowMax + 1
     var colMin = analysisArea.colMin
     var rowMin = analysisArea.rowMin
     cellWidth = r.rasterExtent.cellwidth
@@ -161,6 +161,9 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
     
     // Handle top row
     
+    // NEED TO NOT JUST USE THE focalValue FOR OUTSIDE VALUES; IF colMin or rowMin ARE
+    // INSIDE BOUNDS, REACH
+
     /// Top Left
     west(0) = focalValue
     west(1) = focalValue
@@ -171,7 +174,7 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
     east(0) = focalValue
     east(1) = r.getDouble(colMin + 1,rowMin)
     east(2) = r.getDouble(colMin + 1,rowMin + 1)
-    setValue(colMin,rowMin)
+    setValue(0,0)
     
     var col = colMin + 1
 
@@ -184,7 +187,7 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
       east(0) = focalValue
       east(1) = r.getDouble(col+1,rowMin)
       east(2) = r.getDouble(col+1,rowMin + 1)
-      setValue(col, rowMin)
+      setValue(col-colMin, 0)
       col += 1
     }
 
@@ -196,7 +199,7 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
     east(0) = focalValue
     east(1) = focalValue
     east(2) = focalValue
-    setValue(col,rowMin)
+    setValue(col-colMin,0)
     
     var row = rowMin + 1
 
@@ -213,7 +216,7 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
       east(0) = r.getDouble(colMin+1,row-1)
       east(1) = r.getDouble(colMin+1,row)
       east(2) = r.getDouble(colMin+1,row+1)
-      setValue(colMin,row)
+      setValue(0,row-rowMin)
       /// Middle Middle (ha)
       col = colMin + 1
       while (col < cols-1) {
@@ -221,7 +224,7 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
         east(0) = r.getDouble(col+1,row-1)
         east(1) = r.getDouble(col+1,row)
         east(2) = r.getDouble(col+1,row+1)
-        setValue(col, row)
+        setValue(col-colMin, row-rowMin)
         col += 1
       }
 
@@ -233,7 +236,7 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
       east(1) = focalValue
       east(2) = focalValue
 
-      setValue(col,row)
+      setValue(col-colMin,row-rowMin)
 
       row += 1
     }
@@ -251,8 +254,8 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
     east(0) = r.getDouble(colMin+1,row-1)
     east(1) = r.getDouble(colMin+1,row)
     east(2) = focalValue
-    setValue(colMin,row)
-    
+    setValue(0,row-rowMin)
+
     /// Bottom Middle
     col = colMin + 1
     while (col < cols-1) {
@@ -263,7 +266,7 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
       east(2) = focalValue
       base(2) = focalValue
       west(2) = focalValue
-      setValue(col, row)
+      setValue(col-colMin, row-rowMin)
       col += 1
     }
 
@@ -275,6 +278,6 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
     east(2) = focalValue
     base(2) = focalValue
     west(2) = focalValue
-    setValue(col,row)
+    setValue(col-colMin,row-rowMin)
   }
 }

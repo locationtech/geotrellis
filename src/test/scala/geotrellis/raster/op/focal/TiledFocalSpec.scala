@@ -17,9 +17,10 @@ import org.scalatest.junit.JUnitRunner
 //12 13 14 15
 
 @RunWith(classOf[JUnitRunner])
-class TiledZonalSpec extends FunSpec with FocalOpSpec
-                              with ShouldMatchers
-                              with TestServer {
+class TiledFocalSpec extends FunSpec with FocalOpSpec
+                                     with ShouldMatchers
+                                     with TestServer 
+                                     with RasterBuilders {
   describe("normal min") {
     it("square min r=1") {
       val r = createRaster((0 until 16).toArray)
@@ -29,6 +30,7 @@ class TiledZonalSpec extends FunSpec with FocalOpSpec
                                            8, 8, 9, 10))
     }
   }
+
   describe("Min on a tiled raster") {
     it("square min r=1") {
       val r = createRaster((0 until 16).toArray)
@@ -40,4 +42,14 @@ class TiledZonalSpec extends FunSpec with FocalOpSpec
                                      8, 8, 9, 10))
     }
   }
+
+  describe("Tiled Sum") {
+    it("should match non-tiled sum on a large raster") {
+      val rOp = get("elevation")
+      val tiled = logic.Do(rOp)({ r => Tiler.createTiledRaster(r,89,140) })
+      val tiledSum = TileFocalOp(tiled,Sum(_,Square(1)))
+      val regularSum = Sum(rOp,Square(1))
+      assertEqual(tiledSum,regularSum)
+    }
+  }                                
 }

@@ -64,7 +64,7 @@ object CroppedRaster {
       case a:ArrayRasterData => 
         Raster(CroppedArrayRasterData(a, dst, col1, row1, cols, rows), dst)
       case t:TiledRasterData =>
-        Raster(CroppedTiledRasterData(t, dst, col1, row1, cols, rows), dst)
+        Raster(CroppedTiledRasterData(t, src, dst, col1, row1, cols, rows), dst)
       case d => sys.error("unsupported crop: %s" format d)
     }
   }
