@@ -88,11 +88,11 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
    * Gets the GridBounds for this RasterExtent that is the smallest subgrid
    * containing all points within the extent. The extent is considered inclusive
    * on it's north and west borders, exclusive on it's east and south borders.
-   * See [[RasterExtent]] for a discussion of grid and extent boundry concepts.
+   * See [[RasterExtent]] for a discussion of grid and extent boundary concepts.
    */
   def gridBoundsFor(subExtent:Extent):GridBounds = {
     if(!extent.containsExtent(subExtent)) { throw ExtentRangeError("") }
-    // West and North boundrys are a simple mapToGrid call.
+    // West and North boundarys are a simple mapToGrid call.
     val (colMin,rowMin) = mapToGrid(subExtent.xmin, subExtent.ymax)
 
     // If South East corner is on grid border lines, we want to still only include
