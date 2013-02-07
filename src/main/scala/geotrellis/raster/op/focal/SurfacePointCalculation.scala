@@ -143,35 +143,46 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
    * @param     r       Raster to execute against.
    * @param     n       Neighborhood used (must be [[Square]] with dimension 1)
    * 
-   * @note Assumes a [[Square]](1) neighborhood.
+   * @note              Assumes a [[Square]](1) neighborhood.
+   * @note              All values in the neighborhood that are outside the raster grid
+   *                    are counted as having the focal value. Note that in the case
+   *                    the cell is outside the analysis area, but still inside the raster,
+   *                    the raster value will still be used.
    *
    */
   def execute(r:Raster,n:Neighborhood,reOpt:Option[RasterExtent]):Unit = {
     val analysisArea = FocalOperation.calculateAnalysisArea(r,reOpt)
-    val cols = analysisArea.colMax + 1
-    val rows = analysisArea.rowMax + 1
-    var colMin = analysisArea.colMin
-    var rowMin = analysisArea.rowMin
+    val colMax = analysisArea.colMax
+    val colBorderMax = r.cols - 1
+    val rowMax = analysisArea.rowMax
+    val rowBorderMax = r.rows - 1
+    val colMin = analysisArea.colMin
+    val rowMin = analysisArea.rowMin
     cellWidth = r.rasterExtent.cellwidth
     cellHeight = r.rasterExtent.cellheight
 
-    if(cols < 3 || rows < 3) { sys.error("Raster is too small to get surface values") }
+    if(colMax <= 3 || rowMax <= 3) { sys.error("Raster is too small to get surface values") }
+
+    def getValSafe(col:Int,row:Int,focalVal:Double) = {
+      if(col < 0 || colBorderMax < col || row < 0 || rowBorderMax < row) {
+        focalVal
+      } else {
+        r.getDouble(col,row)
+      }
+    }
 
     var focalValue = r.getDouble(colMin,rowMin)
     
     // Handle top row
     
-    // NEED TO NOT JUST USE THE focalValue FOR OUTSIDE VALUES; IF colMin or rowMin ARE
-    // INSIDE BOUNDS, REACH
-
     /// Top Left
-    west(0) = focalValue
-    west(1) = focalValue
-    west(2) = focalValue
-    base(0) = focalValue
+    west(0) = getValSafe(colMin-1,rowMin-1,focalValue)
+    west(1) = getValSafe(colMin-1,rowMin  ,focalValue)
+    west(2) = getValSafe(colMin-1,rowMin+1,focalValue)
+    base(0) = getValSafe(colMin  ,rowMin-1,focalValue)
     base(1) = focalValue
     base(2) = r.getDouble(colMin,rowMin + 1)
-    east(0) = focalValue
+    east(0) = getValSafe(colMin+1,rowMin-1,focalValue)
     east(1) = r.getDouble(colMin + 1,rowMin)
     east(2) = r.getDouble(colMin + 1,rowMin + 1)
     setValue(0,0)
@@ -179,12 +190,12 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
     var col = colMin + 1
 
     /// Top Middle
-    while (col < cols-1) {
+    while (col < colMax) {
       moveRight()
       focalValue = r.getDouble(col,rowMin)
-      west(0) = focalValue
-      base(0) = focalValue
-      east(0) = focalValue
+      west(0) = getValSafe(col-1,rowMin-1,focalValue)
+      base(0) = getValSafe(col  ,rowMin-1,focalValue)
+      east(0) = getValSafe(col+1,rowMin-1,focalValue)
       east(1) = r.getDouble(col+1,rowMin)
       east(2) = r.getDouble(col+1,rowMin + 1)
       setValue(col-colMin, 0)
@@ -194,22 +205,22 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
     /// Top Right
     moveRight()
     focalValue = r.getDouble(col,rowMin)
-    west(0) = focalValue
-    base(0) = focalValue
-    east(0) = focalValue
-    east(1) = focalValue
-    east(2) = focalValue
+    west(0) = getValSafe(col-1,rowMin-1,focalValue)
+    base(0) = getValSafe(col  ,rowMin-1,focalValue)
+    east(0) = getValSafe(col+1,rowMin-1,focalValue)
+    east(1) = getValSafe(col+1,rowMin  ,focalValue)
+    east(2) = getValSafe(col+1,rowMin+1,focalValue)
     setValue(col-colMin,0)
     
     var row = rowMin + 1
 
     // Handle middle rows
-    while (row < rows-1) {
+    while (row < rowMax) {
       focalValue = r.getDouble(colMin,row)
       // Middle Left
-      west(0) = focalValue
-      west(1) = focalValue
-      west(2) = focalValue
+      west(0) = getValSafe(colMin-1,row-1,focalValue)
+      west(1) = getValSafe(colMin-1,row,focalValue)
+      west(2) = getValSafe(colMin-1,row+1,focalValue)
       base(0) = r.getDouble(colMin,row-1)
       base(1) = focalValue
       base(2) = r.getDouble(colMin,row+1)
@@ -217,9 +228,10 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
       east(1) = r.getDouble(colMin+1,row)
       east(2) = r.getDouble(colMin+1,row+1)
       setValue(0,row-rowMin)
-      /// Middle Middle (ha)
+
+      /// Middle Middle
       col = colMin + 1
-      while (col < cols-1) {
+      while (col < colMax) {
         moveRight()
         east(0) = r.getDouble(col+1,row-1)
         east(1) = r.getDouble(col+1,row)
@@ -232,9 +244,9 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
       moveRight()
       focalValue = r.getDouble(col,row)
 
-      east(0) = focalValue
-      east(1) = focalValue
-      east(2) = focalValue
+      east(0) = getValSafe(col+1,row-1,focalValue)
+      east(1) = getValSafe(col+1,row  ,focalValue)
+      east(2) = getValSafe(col+1,row+1,focalValue)
 
       setValue(col-colMin,row-rowMin)
 
@@ -245,27 +257,27 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
 
     /// Bottom Left
     focalValue = r.getDouble(colMin,row)
-    west(0) = focalValue
-    west(1) = focalValue
-    west(2) = focalValue
+    west(0) = getValSafe(colMin-1,row-1,focalValue)
+    west(1) = getValSafe(colMin-1,row  ,focalValue)
+    west(2) = getValSafe(colMin-1,row+1,focalValue)
     base(0) = r.getDouble(colMin,row-1)
     base(1) = focalValue
-    base(2) = focalValue
+    base(2) = getValSafe(colMin  ,row+1,focalValue)
     east(0) = r.getDouble(colMin+1,row-1)
     east(1) = r.getDouble(colMin+1,row)
-    east(2) = focalValue
+    east(2) = getValSafe(colMin+1,row+1,focalValue)
     setValue(0,row-rowMin)
 
     /// Bottom Middle
     col = colMin + 1
-    while (col < cols-1) {
+    while (col < colMax) {
       moveRight()
       focalValue = r.getDouble(col,row)
+      west(2) = getValSafe(col-1,row+1,focalValue)
+      base(2) = getValSafe(col  ,row+1,focalValue)
       east(0) = r.getDouble(col+1,row-1)
       east(1) = r.getDouble(col+1,row)
-      east(2) = focalValue
-      base(2) = focalValue
-      west(2) = focalValue
+      east(2) = getValSafe(col+1,row+1,focalValue)
       setValue(col-colMin, row-rowMin)
       col += 1
     }
@@ -273,11 +285,11 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
     /// Bottom Right
     moveRight()
     focalValue = r.getDouble(col,row)
-    east(0) = focalValue
-    east(1) = focalValue
-    east(2) = focalValue
-    base(2) = focalValue
-    west(2) = focalValue
+    west(2) = getValSafe(col-1,row+1,focalValue)
+    base(2) = getValSafe(col  ,row+1,focalValue)
+    east(0) = getValSafe(col+1,row-1,focalValue)
+    east(1) = getValSafe(col+1,row  ,focalValue)
+    east(2) = getValSafe(col+1,row+1,focalValue)
     setValue(col-colMin,row-rowMin)
   }
 }

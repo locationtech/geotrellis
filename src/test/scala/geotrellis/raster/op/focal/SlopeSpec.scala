@@ -18,7 +18,7 @@ import scala.math._
 class SlopeSpec extends FunSpec with ShouldMatchers
                                 with TestServer {
   describe("Slope") {
-    ignore("should match gdal computed slope raster") {
+    it("should match gdal computed slope raster") {
       val rOp = get("elevation")
       val gdalOp = get("slope")
       val slopeComputed = Slope(rOp,1.0)
@@ -45,7 +45,7 @@ class SlopeSpec extends FunSpec with ShouldMatchers
       val tiled = logic.Do(rOp)({ r => Tiler.createTiledRaster(r,89,140) })
       val tiledSlope = TileFocalOp(tiled,Slope(_,1.0))
 
-      assertEqual(nonTiledSlope,tiledSlope)      
+      assertEqual(nonTiledSlope,tiledSlope)
     }
   }
 }

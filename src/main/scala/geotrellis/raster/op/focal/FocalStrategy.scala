@@ -191,56 +191,61 @@ object CellwiseStrategy {
     val rowMin = analysisArea.rowMin
     val colMin = analysisArea.colMin
     val rowMax = analysisArea.rowMax
+    val rowBorderMax = r.rows - 1
     val colMax = analysisArea.colMax
+    val colBorderMax = r.cols - 1
 
     val analysisOffsetCols = analysisArea.colMin
     val analysisOffsetRows = analysisArea.rowMin
 
-    var row = rowMin
-    while (row <= rowMax) {
-      val curRowMin = max(rowMin, row - n) // was yy1
-      val curRowMax = min(rowMax, row + n ) // was yy2
+    var focusRow = rowMin
+    while (focusRow <= rowMax) {
+      val curRowMin = max(0, focusRow - n) // was yy1
+      val curRowMax = min(rowBorderMax, focusRow + n ) // was yy2
 
       calc.reset()
-      val xx2 = min(colMax, colMin + n)
-      var yy = curRowMin
-      while (yy <= curRowMax) {
-        var xx = colMin
-        while (xx <= xx2) {
-          calc.add(r, xx, yy)
-          xx += 1
+      val curColMax = min(colBorderMax, colMin + n)
+      val curColMin = max(0, colMin - n)
+      var curRow = curRowMin
+      while (curRow <= curRowMax) {
+        var curCol = curColMin
+        while (curCol <= curColMax) {
+          calc.add(r, curCol, curRow)
+          curCol += 1
         }
-        yy += 1
+        curRow += 1
       }
 
       // offset output col & row to analysis area coordinates
-      calc.setValue(0, row - rowMin) 
+      calc.setValue(0, focusRow - rowMin) 
 
-      var col = colMin + 1
-      while (col <= colMax) {
-        val xx1 = col - n - 1
-        if (xx1 >= 0) {
+      var focusCol = colMin + 1
+      while (focusCol <= colMax) {
+        // Remove the western most column that is no longer part of the neighborhood
+        val oldWestCol = focusCol - n - 1
+        if (oldWestCol >= 0) {
           var yy = curRowMin
           while (yy <= curRowMax) {
-            calc.remove(r, xx1, yy)
+            calc.remove(r, oldWestCol, yy)
             yy += 1
           }
         }
 
-        val xx2 = col + n
-        if (xx2 <= colMax) {
+        // Add the eastern most column that is now part of the neighborhood
+        val newEastCol = focusCol + n
+        if (newEastCol <= colBorderMax) {
             var yy = curRowMin
             while (yy <= curRowMax) {
-              calc.add(r, xx2, yy)
+              calc.add(r, newEastCol, yy)
               yy += 1
             }
           }
 
         // offset output col & row to analysis area coordinates
-        calc.setValue(col - colMin, row - rowMin)
-        col += 1
+        calc.setValue(focusCol - colMin, focusRow - rowMin)
+        focusCol += 1
       }
-      row += 1
+      focusRow += 1
     }
   }
 }
