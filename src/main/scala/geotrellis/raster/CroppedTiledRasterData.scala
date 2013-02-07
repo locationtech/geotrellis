@@ -7,6 +7,7 @@ import geotrellis._
  * cropping of an underlying raster data object.
  */
 case class CroppedTiledRasterData(underlying:TiledRasterData,
+                                  underlyingRasterExtent:RasterExtent,
                                   rasterExtent:RasterExtent,
                                   colOffset:Int, rowOffset:Int,
                                   _cols:Int, _rows:Int) extends TiledRasterData {
@@ -161,7 +162,7 @@ case class CroppedTiledRasterData(underlying:TiledRasterData,
 
   def getTileOp(rl:ResolutionLayout, c:Int, r:Int) = {
   
-    val url = underlying.tileLayout.getResolutionLayout(underlying.rasterExtent)
+    val url = underlying.tileLayout.getResolutionLayout(underlyingRasterExtent)
  
     val underlyingTileCol = c + leftBorder
     val underlyingTileRow = r + topBorder 

@@ -6,6 +6,7 @@ import geotrellis.statistics.op._
 import geotrellis.process._
 import geotrellis.data._
 import geotrellis.testutil._
+import geotrellis.raster._
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -35,8 +36,8 @@ class HillshadeSpec extends FunSuite with TestServer {
     val data = IntArrayRasterData(arr, 5, 5)
     val r = Raster(data, re)
 
-    val h = run(focal.Hillshade(Aspect(r),Slope(r,1.0),315.0,45.0))
-    val h2 = run(focal.Hillshade(r,315.0,45.0,1.0))
+    val h = run(Hillshade(Aspect(r),Slope(r,1.0),315.0,45.0))
+    val h2 = run(Hillshade(r,315.0,45.0,1.0))
     assert(h.get(2, 2) === 77)
     assert(h2.get(2,2) === 77)
   }
@@ -58,7 +59,7 @@ class HillshadeSpec extends FunSuite with TestServer {
     run(io.WritePng(r, "/tmp/raster.png", grayscale(6), h, 0))
   
     val t1 = time()
-    val r1 = server.run(focal.Hillshade(r))
+    val r1 = server.run(Hillshade(r))
     println("generated hillshade from memory in %s ms" format (time() - t1))
 
     val h1 = server.run(stat.GetHistogram(r1))
@@ -90,5 +91,15 @@ class HillshadeSpec extends FunSuite with TestServer {
     val t6 = time()
     run(io.WritePng(r, "/tmp/raster6.png", stat.GetColorBreaks(h, colors638), h, 0))
     println("[6] wrote png in %s ms" format (time() - t6))
+  }
+
+  test("Hillshade should work with tiling, direct") {
+    val rOp = get("elevation")
+    val nonTiledHillshade = DirectHillshade(rOp,315.0,45.0,1.0)
+
+    val tiled = logic.Do(rOp)({ r => Tiler.createTiledRaster(r,89,140) })
+    val tiledHillshade = TileFocalOp(tiled,DirectHillshade(_,315.0,45.0,1.0))
+
+    assertEqual(nonTiledHillshade,tiledHillshade)
   }
 }

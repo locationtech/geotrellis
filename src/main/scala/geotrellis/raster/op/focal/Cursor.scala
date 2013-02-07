@@ -4,7 +4,6 @@ import scala.collection.mutable
 import scala.math.{min,max}
 import geotrellis._
 import Movement._
-import geotrellis.raster.CroppedRaster
 
 sealed trait Movement { val isVertical:Boolean }
 

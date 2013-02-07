@@ -1,12 +1,15 @@
 package geotrellis
 
+import geotrellis.testutil._
+
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
-//import org.junit.runner.RunWith
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class RasterExtentSpec extends FunSpec with MustMatchers with ShouldMatchers {
+class RasterExtentSpec extends FunSpec with MustMatchers 
+                                       with ShouldMatchers 
+                                       with RasterBuilders {
   describe("A RasterExtent object") {
     val e1 = Extent(0.0, 0.0, 1.0, 1.0)
     val e2 = Extent(0.0, 0.0, 20.0, 20.0)
@@ -74,6 +77,55 @@ class RasterExtentSpec extends FunSpec with MustMatchers with ShouldMatchers {
       evaluating {
         g1.combine(RasterExtent(e1, 4.0, 4.0, 5, 5))
       } should produce [Exception];
+    }
+  }
+
+  def sampleRasterExtent = {
+    val baseExtent = Extent(10,-100,30,0)
+    RasterExtent(baseExtent,2,20,10,5)
+  }
+
+  describe("Getting grid bounds from an an extent") {
+    it("should return whole grid when using it's own extent") {
+      val rasterExtent = sampleRasterExtent
+      val baseExtent = Extent(10,-100,30,0)
+      val expected = GridBounds(0,0,rasterExtent.cols-1,rasterExtent.rows-1)
+      rasterExtent.gridBoundsFor(baseExtent) should be (expected)
+    }
+
+    it("should get top left cell") {
+      val rasterExtent = sampleRasterExtent
+      val subExtent = Extent(10,-20,12,0)
+      val expected = GridBounds(0,0,0,0)
+      rasterExtent.gridBoundsFor(subExtent) should be (expected)
+    }
+
+    it("should get 2x2 subgrid from southwest corner") {
+      val rasterExtent = sampleRasterExtent
+      val subExtent = Extent(26,-100,30,-60)
+      val expected = GridBounds(8,3,9,4)
+      rasterExtent.gridBoundsFor(subExtent) should be (expected)      
+    }
+
+    it("should get bounds for extents that do not fall on grid lines") {
+      // Map of subExtends to expected Grid Bounds
+      val testData = Map( 
+        (Extent(25,-92,29,-81),GridBounds(7,4,9,4)),
+        (Extent(12.01,-42,24.5,-20.1),GridBounds(1,1,7,2))
+      )
+      val rasterExtent = sampleRasterExtent
+
+      for((subExtent,expected) <- testData)
+        rasterExtent.gridBoundsFor(subExtent) should be (expected)      
+    }
+
+    it("should handle subExtents that are out of bounds") {
+      intercept[ExtentRangeError] {
+        val rasterExtent = sampleRasterExtent
+        val subExtent = Extent(-26,-100,30,-60)
+        val expected = GridBounds(8,3,9,4)
+        rasterExtent.gridBoundsFor(subExtent)
+      }
     }
   }
 }

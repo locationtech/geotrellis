@@ -64,6 +64,16 @@ case class Extent(xmin:Double, ymin:Double, xmax:Double, ymax:Double) {
   def containsPoint(x:Double, y:Double) = {
     x > xmin && x < xmax && y > ymin && y < ymax
   }
+
+  /**
+   * Determines whether the given extent is contained within the extent.
+   */
+  def containsExtent(other:Extent) = {
+    other.xmin >= xmin &&
+    other.ymin >= ymin &&
+    other.xmax <= xmax &&
+    other.ymax <= ymax
+  }
   
   /**
    * Return SW corner (xmin, ymin) as tuple.

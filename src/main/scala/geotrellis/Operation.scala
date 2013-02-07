@@ -131,7 +131,7 @@ case class StepRequiresAsync[T](args:Args, cb:Callback[T]) extends StepOutput[T]
 
 object StepError { 
   def fromException(e:Throwable) = { 
-    val msg = e.getMessage 
+    val msg = e.toString
     val trace = e.getStackTrace.map(_.toString).mkString("\n") 
     StepError(msg, trace) 
   } 
