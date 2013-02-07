@@ -6,11 +6,14 @@ import org.scalatest.matchers.MustMatchers
 import geotrellis._
 import geotrellis.process.TestServer
 import geotrellis.raster.op.tiles._
+import geotrellis.testutil._
 
 import geotrellis.Implicits._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class TileSpec extends FunSpec with MustMatchers {
+class TileSpec extends FunSpec with MustMatchers 
+                               with TestServer
+                               with RasterBuilders {
   val e = Extent(0.0, 0.0, 100.0, 100.0)
   val g = RasterExtent(e, 20.0, 20.0, 5, 5)
   
@@ -93,8 +96,6 @@ class TileSpec extends FunSpec with MustMatchers {
   val tileData = TileArrayRasterData(tiles, layout, g)
   val tileRaster = Raster(tileData, g)
 
-  val server = TestServer()
-  
   // this is a really big normal raster
   val largeData = Array.fill(largeSize * largeSize)(0)
   val largeRaster = Raster(largeData, gLarge)
@@ -125,11 +126,8 @@ class TileSpec extends FunSpec with MustMatchers {
   describe("Tiler") {
     it ("should build a tiled raster from a source raster") {
       val tileRaster2 = Tiler.createTiledRaster(raster, 2, 2)
-      //println(raster.asciiDraw)
-      //println(tileRaster2.asciiDraw)
 
       for (y <- 0 to 4; x <- 0 to 4) {
-        //println("x=%s y=%s" format (x, y))
         tileRaster2.get(x, y) must be === ((y * 5) + x) + 1
       }
 
@@ -143,8 +141,25 @@ class TileSpec extends FunSpec with MustMatchers {
       e22_test must be === e22
     }
 
+    it("should have raster extent and tile layout length consistent when building in memory") {
+      val arr = Array(0,1,2,3,4,
+                      1,1,2,3,4,
+                      2,1,2,3,4,
+                      3,1,2,3,4)
+      val r = Tiler.createTiledRaster(createRaster(arr),2,2)
+      val data = r.data.asInstanceOf[TiledRasterData]
+      data.length should be (r.cols * r.rows)
+    }
+
+    it("should have raster extent and tile layout length consistent when building in memory for large raster") {
+      val arr = (for(col <- 0 until 979; row <- 0 to 1400) yield { row + 979*col }).toArray
+      val r = Raster(IntArrayRasterData(arr,979,1400),RasterExtent(Extent(0,0,979,1400),1,1,979,1400))
+      val tr = Tiler.createTiledRaster(r,89,140)
+      val data = tr.data.asInstanceOf[TileArrayRasterData]
+      data.length should be (tr.cols * tr.rows)
+    }
+
     it("can be built from in-memory tiles") {
-      val s = TestServer()
       val extent = Extent(1, 21, 79, 59)
       val raster4 = Raster(tileData, g)
       for (y <- 2 to 3; x <- 0 to 3) {
@@ -156,9 +171,8 @@ class TileSpec extends FunSpec with MustMatchers {
       val trd = Tiler.createTiledRasterData(raster, 2, 2)
       Tiler.writeTiles(trd, raster.rasterExtent, "testraster", "/tmp/foo")
 
-      val s = TestServer()
       val extent = Extent(1, 21, 79, 59)
-      val tileSetRD = TileSetRasterData("/tmp/foo", "testraster", TypeInt, layout, g, s)
+      val tileSetRD = TileSetRasterData("/tmp/foo", "testraster", TypeInt, layout, server)
 
       val raster4 = Raster(tileSetRD, g)
       for (y <- 0 to 3; x <- 0 to 3) {
@@ -172,7 +186,7 @@ class TileSpec extends FunSpec with MustMatchers {
         raster5.get(x, y) must be === ((y * 5) + x) + 1
       }
 
-      val raster6 = server.run(io.LoadTileSet("/tmp/foo"))
+      val raster6 = run(io.LoadTileSet("/tmp/foo"))
       for (y <- 0 to 3; x <- 0 to 3) {
         val expected = ((y * 5) + x) + 1
         raster6.get(x, y) must be === ((y * 5) + x) + 1
@@ -188,7 +202,7 @@ class TileSpec extends FunSpec with MustMatchers {
   describe("TileMin(r)") {
     it("finds the minimum value of a tiled raster") {
       val op = TileMin(tileRaster)
-      val z = server.run(op)
+      val z = run(op)
       z must be === 1
     }
   }
@@ -196,7 +210,7 @@ class TileSpec extends FunSpec with MustMatchers {
   describe("TileMax(r)") {
     it("finds the maximum value of the tiled raster") {
       val op = TileMax(tileRaster)
-      val z = server.run(op)
+      val z = run(op)
       z must be === 25
     }
   }
@@ -204,8 +218,7 @@ class TileSpec extends FunSpec with MustMatchers {
   describe("TileHistogram(r)") {
     it("finds the histogram of the tiled raster") {
       val op = TileHistogram(tileRaster)
-      val h = server.run(op)
-      //println(h.toJSON)
+      val h = run(op)
       h.getItemCount(0) must be === 0
       h.getItemCount(1) must be === 1
       h.getItemCount(25) must be === 1
@@ -216,7 +229,7 @@ class TileSpec extends FunSpec with MustMatchers {
   describe("TileMax(r * 2)") {
     it("finds the maximum value") {
       val op = TileMax(tileRaster * 2)
-      val z = server.run(op)
+      val z = run(op)
       z must be === 50
     }
   }
@@ -224,7 +237,7 @@ class TileSpec extends FunSpec with MustMatchers {
   describe("TileMax(r + r)") {
     it("finds the maximum value") {
       val op = TileMax(tileRaster + tileRaster)
-      val z = server.run(op)
+      val z = run(op)
       z must be === 50
     }
   }
@@ -240,9 +253,16 @@ class TileSpec extends FunSpec with MustMatchers {
       val yCoords = tileLayout.getYCoords(re)
       assert(xCoords(0) === xmin)
       assert(yCoords(0) === ymax)
-      
     }
   }
   
-  
+  describe("LazyTiledWrapper") {
+    val d = 10
+    val r = createConsecutiveRaster(d)
+    val layout = TileLayout(5,5,2,2)
+    val lazyWrapper = LazyTiledWrapper(r.data,layout)
+    val tile = lazyWrapper.getTile(2,2)
+    val expected = Array(45,46,55,56)
+    assertEqual(tile,expected)
+  }
 }

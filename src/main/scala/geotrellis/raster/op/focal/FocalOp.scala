@@ -165,7 +165,7 @@ abstract class FocalOperation[T](r:Op[Raster],n:Op[Neighborhood],analysisArea:Op
 case class AnalysisArea(colMin:Int, rowMin:Int, colMax:Int, rowMax:Int, rasterExtent:RasterExtent)
 
 object FocalOperation {
-    def calculateAnalysisArea(r:Raster,reOpt:Option[RasterExtent]) = 
+  def calculateAnalysisArea(r:Raster,reOpt:Option[RasterExtent]) = 
     reOpt match {
       case None => {
         AnalysisArea(0, 0, r.cols - 1, r.rows - 1, r.rasterExtent)
@@ -179,13 +179,8 @@ object FocalOperation {
         }
         
         // translate the upper-left (xmin/ymax) and lower-right (xmax/ymin) points
-        val (colMin, rowMin) = CroppedRaster.findUpperLeft(inputRE, e.xmin, e.ymax) // north-west
-        val (colMax, rowMax) = CroppedRaster.findLowerRight(inputRE, e.xmax, e.ymin) // south-east
-       
-        // colMax & rowMax of analysis area are inclusive, unlike results
-        // from CroppedRaster which are exclusive of the max bound,
-        // so we subtract 1 from each.
-        AnalysisArea(colMin, rowMin, colMax - 1, rowMax - 1, re)
+        val GridBounds(colMin,rowMin,colMax,rowMax) = inputRE.gridBoundsFor(e)
+        AnalysisArea(colMin, rowMin, colMax, rowMax, re)
       }
     }  
 }

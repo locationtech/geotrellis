@@ -2,6 +2,7 @@ package geotrellis.raster.op.focal
 
 import geotrellis._
 import geotrellis.raster._
+import geotrellis.raster.op._
 import geotrellis.raster.op.transform._
 
 import geotrellis.testutil._
@@ -35,6 +36,16 @@ class SlopeSpec extends FunSpec with ShouldMatchers
       val croppedComputed = Crop(slopeComputed,cropExtent)
       
       assertEqual(croppedGdal,croppedComputed, 1.0)
+    }
+
+    it("should work with tiling") {
+      val rOp = get("elevation")
+      val nonTiledSlope = Slope(rOp,1.0)
+
+      val tiled = logic.Do(rOp)({ r => Tiler.createTiledRaster(r,89,140) })
+      val tiledSlope = TileFocalOp(tiled,Slope(_,1.0))
+
+      assertEqual(nonTiledSlope,tiledSlope)
     }
   }
 }

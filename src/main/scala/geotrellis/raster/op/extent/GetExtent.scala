@@ -3,7 +3,7 @@ package geotrellis.raster.op.extent
 import geotrellis._
 
 /**
- * Creates an extent out of boundry values.
+ * Creates an extent out of boundary values.
  */
 case class GetExtent(xmin:Op[Double], ymin:Op[Double], xmax:Op[Double], ymax:Op[Double])
      extends Op4 (xmin, ymin, xmax, ymax) ({

@@ -90,16 +90,18 @@ case class DirectHillshade(r:Op[Raster], azimuth:Op[Double],altitude:Op[Double],
       data.set(x,y,round(127.0 * max(0.0,v)).toInt)      
     }
   }
-})
+})  with HasAnalysisArea[DirectHillshade]
 
 /** Indirect calculation of hill shading of a raster that uses Aspect and Slope operation results.
  *
  * Construct through the [[Hillshade]] object.
  *
+ * @note               Does not currently work with TiledFocalOps of Aspect and Slope.
+ *                     Use the direct method with TileFocalOps and tiled raster data.
  * @see [[Hillshade]]
  */
 case class IndirectHillshade(aspect:Aspect,slope:Slope,azimuth:Op[Double],altitude:Op[Double]) 
-         extends Operation[Raster] {
+     extends Operation[Raster] {
   def _run(context:Context) = runAsync(List('init,aspect,slope,azimuth,altitude))
   def productArity = 4
   def canEqual(other:Any) = other.isInstanceOf[IndirectHillshade]
