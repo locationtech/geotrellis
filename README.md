@@ -3,8 +3,8 @@
 *GeoTrellis* is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
 user interaction with geospatial data by bringing the power of geospatial analysis to real time, interactive web applications.
 
-*Please see our 
-[getting started guide](http://azavea.github.com/geotrellis/getting_started/GeoTrellis.html) for more information about using GeoTrellis.* 
+_Please visit our **[documentation page](http://geotrellis.github.com)** for more information. For getting 
+started with using GeoTrellis, see our [getting started guide.](http://geotrellis.github.com/gettingstarted)_
 
 GeoTrellis was designed to solve three core problems, with a focus on raster processing:
 
@@ -72,7 +72,7 @@ operations with existing operations.
 
 You can find *Scaladocs* for the latest version of the project here:
 
-[http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.package](http://azavea.github.com/geotrellis/latest/api/index.html#geotrellis.package)
+[http://geotrellis.github.com/api.doc/latest/api/index.html#geotrellis.package](http://geotrellis.github.com/api.doc/latest/api/index.html#geotrellis.package)
 
 ## Contributors
 
