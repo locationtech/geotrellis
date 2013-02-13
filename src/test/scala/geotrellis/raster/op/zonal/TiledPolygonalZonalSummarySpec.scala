@@ -5,7 +5,7 @@ import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.feature._
 
-import geotrellis.raster.op.zonal._
+import geotrellis.raster.op.zonal.summary._
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
@@ -95,28 +95,28 @@ class TiledPolygonalZonalSummarySpec extends FunSpec with ShouldMatchers {
       Set(FullTile(RasterExtent(Extent(20,10,30,20),1,1,10,10)),
           PartialTile(RasterExtent(Extent(10,10,20,20),1,1,10,10),e)) should equal (result)
 
-      val tileSums = zonal.Sum.createTileResults(rData, rasterExtent) 
-      val sumOp = zonal.Sum(raster, zone, tileSums)
+      val tileSums = zonal.summary.Sum.createTileResults(rData, rasterExtent) 
+      val sumOp = zonal.summary.Sum(raster, zone, tileSums)
       val sumResult = server.run(sumOp)
       sumResult should equal (250)
 
-      val tileSumsD = zonal.SumDouble.createTileResults(rData, rasterExtent) 
-      val sumDOp = zonal.SumDouble(raster, zone, tileSumsD)
+      val tileSumsD = zonal.summary.SumDouble.createTileResults(rData, rasterExtent) 
+      val sumDOp = zonal.summary.SumDouble(raster, zone, tileSumsD)
       val sumDResult = server.run(sumDOp)
       sumDResult should equal (250.0)
 
-      val tileMins = zonal.Min.createTileResults(rData, rasterExtent)
-      val minOp = zonal.Min(raster, zone, tileMins)
+      val tileMins = zonal.summary.Min.createTileResults(rData, rasterExtent)
+      val minOp = zonal.summary.Min(raster, zone, tileMins)
       val minResult = server.run(minOp)
       minResult should equal (1)
 
-      val tileMaxes = zonal.Max.createTileResults(rData, rasterExtent)
-      val maxOp = zonal.Max(raster, zone, tileMaxes)
+      val tileMaxes = zonal.summary.Max.createTileResults(rData, rasterExtent)
+      val maxOp = zonal.summary.Max(raster, zone, tileMaxes)
       val maxResult = server.run(maxOp)
       maxResult should equal (2)
 
-      val tileHistograms = zonal.Histogram.createTileResults(rData, rasterExtent)
-      val histOp = zonal.Histogram(raster, zone, tileHistograms)
+      val tileHistograms = zonal.summary.Histogram.createTileResults(rData, rasterExtent)
+      val histOp = zonal.summary.Histogram(raster, zone, tileHistograms)
       val h = server.run(histOp)
       h.getItemCount(1) should equal (50)
       h.getItemCount(2) should equal (100)
