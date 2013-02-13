@@ -179,7 +179,6 @@ trait TiledRasterData extends RasterData {
       val tilePolygon = tileExtent.extent.asFeature(())
 
       if (tilePolygon.geom.intersects(clipExtent.geom)) {
-        println(s"in raster.getTileOpList: including tile $c, $r")
         tiles = getTileOp(rl, c, r) :: tiles
       }
     }
@@ -749,7 +748,6 @@ object Tiler {
       }
       val finalPath = tilePath(outputDir, name, col, row)
       if (nodata) {
-        println("found nodata arg: " + outputPath)
         val jsonPath = Filesystem.join(outputDir, tileName(name, col, row)) + ".json"
         ArgWriter(rasterType).writeMetadataJSON(jsonPath, name2,re)
       } else {
