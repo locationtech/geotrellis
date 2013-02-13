@@ -1,4 +1,4 @@
-package geotrellis.raster.op.zonal
+package geotrellis.raster.op.zonal.summary
 
 import geotrellis._
 import geotrellis.feature._

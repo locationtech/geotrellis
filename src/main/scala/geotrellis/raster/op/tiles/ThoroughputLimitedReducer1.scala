@@ -36,7 +36,6 @@ trait ThroughputLimitedReducer1[C] extends Op[C] {
       bs match {
         case Nil => Result(reducer(results.asInstanceOf[List[B]]))
         case (head: List[_]) :: tail => {
-          println("run next batch")
           runAsync('runGroup :: results :: tail :: head)
         }
         case _ => throw new Exception("unexpected state in thoroughput reducer")

@@ -292,6 +292,7 @@ case class TileSetRasterData(basePath:String, name:String, typ:RasterType, tileL
   def getTile(col:Int, row:Int) = {
     val path = Tiler.tilePath(basePath, name, col, row)
     server.loadRaster(path).data match {
+      case i:IntConstant => i
       case a:ArrayRasterData => LazyArrayWrapper(a)
       case o => o
     }
@@ -315,6 +316,7 @@ class TileArrayRasterData(val tiles:Array[Raster],
   def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
   def getType = typ
   def getTile(col:Int, row:Int) = tiles(row * tileCols + col).data match {
+    case i:IntConstant => i
     case a:ArrayRasterData => LazyArrayWrapper(a)
     case o => o
   }
@@ -746,7 +748,6 @@ object Tiler {
       }
       val finalPath = tilePath(outputDir, name, col, row)
       if (nodata) {
-        println("found nodata arg: " + outputPath)
         val jsonPath = Filesystem.join(outputDir, tileName(name, col, row)) + ".json"
         ArgWriter(rasterType).writeMetadataJSON(jsonPath, name2,re)
       } else {

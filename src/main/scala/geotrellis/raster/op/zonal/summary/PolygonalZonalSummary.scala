@@ -1,4 +1,4 @@
-package geotrellis.raster.op.zonal
+package geotrellis.raster.op.zonal.summary
 
 import geotrellis._
 import geotrellis.raster.op.tiles._
@@ -25,6 +25,8 @@ trait TiledPolygonalZonalSummary[C] extends ThroughputLimitedReducer1[C] {
 
   override def loadTileExtent = Some(zonePolygon)
 
+  override def toString = "Zonal Summary"
+
   /**
    * Compute the intermediate product of a given raster
    * tile and a polygon
@@ -50,9 +52,9 @@ trait TiledPolygonalZonalSummary[C] extends ThroughputLimitedReducer1[C] {
    */
   def handleNoDataTile():Op[B]
 
-  def mapper(rasterOp: Op[Raster]):Op[List[B]] = 
+  def mapper(rasterOp: Op[Raster]):Op[List[B]] = {
     raster.op.Force(rasterOp).flatMap(
-      strictRaster => 
+      strictRaster => { 
         strictRaster data match {
           case x: IntConstant if x.n == NODATA => {
             AsList(handleNoDataTile())
@@ -66,8 +68,10 @@ trait TiledPolygonalZonalSummary[C] extends ThroughputLimitedReducer1[C] {
                AsList(handleFullTile(strictRaster)),
                handlePartialTile) 
           }
-        })
-
+        }
+      }
+    )
+  }
   def handlePartialTileWithIntersections(
     r: Op[Raster], p: Op[List[Geometry[D]]]):Op[List[B]] =
     p.flatMap(
