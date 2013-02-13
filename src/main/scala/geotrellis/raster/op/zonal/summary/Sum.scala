@@ -1,4 +1,4 @@
-package geotrellis.raster.op.zonal
+package geotrellis.raster.op.zonal.summary
 
 import geotrellis._
 import geotrellis.feature._
@@ -36,7 +36,7 @@ case class Sum[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[R
   type B = Long
   type D = DD
   
-  def handlePartialTileIntersection(rOp: Op[Raster], gOp: Op[Geometry[D]]) = {
+  def handlePartialTileIntersection(rOp: Op[Raster], gOp: Op[Geometry[D]]) = 
     rOp.flatMap ( r => gOp.flatMap ( g => {
       var sum: Long = 0L
       val f = new Callback[Geometry,D] {
@@ -51,15 +51,16 @@ case class Sum[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[R
         r.rasterExtent)(f)
       sum
     }))
-  }
 
-  def handleFullTile(rOp:Op[Raster]) = rOp.map (r =>
-    tileResults.get(r.rasterExtent).getOrElse({
-      var s = 0L
-      r.force.foreach((x:Int) => if (s != NODATA) s = s + x)
-      s
-   }))
- 
+  def handleFullTile(rOp:Op[Raster]) = 
+    rOp.map (r =>
+      tileResults.get(r.rasterExtent).getOrElse({
+        var s = 0L
+        r.force.foreach((x:Int) => if (s != NODATA) s = s + x)
+        s
+    }))
+   
+
   def handleNoDataTile = 0L
 
   def reducer(mapResults: List[Long]):Long = mapResults.foldLeft(0L)(_ + _) 

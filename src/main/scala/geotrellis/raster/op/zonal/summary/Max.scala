@@ -1,4 +1,4 @@
-package geotrellis.raster.op.zonal
+package geotrellis.raster.op.zonal.summary
 
 import geotrellis._
 import geotrellis.feature._
@@ -8,29 +8,29 @@ import scala.math.{ max, min }
 import geotrellis.raster.TileArrayRasterData
 import geotrellis.raster.TiledRasterData
 
-object Min {
+object Max {
   def createTileResults(trd:TiledRasterData, re:RasterExtent) = {
     val tiles = trd.getTileList(re)
-    tiles map { r => (r.rasterExtent, minRaster(r))} toMap
+    tiles map { r => (r.rasterExtent, maxRaster(r))} toMap
   }
 
-  def minRaster (r:Raster):Int = {
-    var min = Int.MaxValue
-    r.foreach( (x) => if (x != NODATA && x < min) min = x )
-    min
+  def maxRaster (r:Raster):Int = {
+    var max = Int.MinValue
+    r.foreach( (x) => if (x != NODATA && x > max) max = x )
+    max
   }
 }
 
 /**
- * Perform a zonal summary that calculates the min of all raster cells within a geometry.
- * This operation is for integer typed Rasters. If you want the Min for double type rasters
- * (TypeFloat,TypeDouble) use [[MinDouble]]
+ * Perform a zonal summary that calculates the max value of all raster cells within a geometry.
+ * This operation is for integer typed Rasters. If you want the Max for double type rasters
+ * (TypeFloat,TypeDouble) use [[MaxDouble]]
  *
  * @param   r             Raster to summarize
  * @param   zonePolygon   Polygon that defines the zone
  * @param   tileResults   Cached results of full tiles created by createTileResults
  */
-case class Min[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[RasterExtent,Int]) 
+case class Max[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[RasterExtent,Int]) 
   (implicit val mB: Manifest[Int], val mD: Manifest[DD]) extends TiledPolygonalZonalSummary[Int] {
  
   type B = Int
@@ -38,54 +38,55 @@ case class Min[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[R
   
   def handlePartialTileIntersection(rOp: Op[Raster], gOp: Op[Geometry[D]]) = {
     rOp.flatMap ( r => gOp.flatMap ( g => {
-      var min = Int.MaxValue
+      var max = Int.MinValue
       val f = new Callback[Geometry,D] {
           def apply(col:Int, row:Int, g:Geometry[D]) {
             val z = r.get(col,row)
-            if (z != NODATA && z < min) { min = z }
+            if (z != NODATA && z > max) { max = z }
           }
         }
 
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
         r.rasterExtent)(f)
-      min
+      max
     }))
   }
 
   def handleFullTile(rOp:Op[Raster]) = rOp.map (r =>
     tileResults.get(r.rasterExtent).getOrElse({
-      var min = Int.MaxValue
-      r.force.foreach((x:Int) => if (x != NODATA && x < min) min = x )
-      min
+      var max = Int.MinValue
+      r.force.foreach((x:Int) => if (x != NODATA && x > max) max = x )
+      max
    }))
   
-  def handleNoDataTile = Int.MaxValue
+ 
+  def handleNoDataTile = Int.MinValue
 
-  def reducer(mapResults: List[Int]):Int = mapResults.foldLeft(Int.MaxValue)(math.min(_, _)) 
+  def reducer(mapResults: List[Int]):Int = mapResults.foldLeft(Int.MinValue)(math.max(_, _)) 
 }
 
-object MinDouble {
+object MaxDouble {
   def createTileResults(trd:TiledRasterData, re:RasterExtent) = {
     val tiles = trd.getTileList(re)
-    tiles map { r => (r.rasterExtent, minRaster(r))} toMap
+    tiles map { r => (r.rasterExtent, maxRaster(r))} toMap
   }
 
-  def minRaster (r:Raster):Double = {
-    var min = Double.PositiveInfinity
-    r.foreachDouble( x => if (!java.lang.Double.isNaN(x) && x < min) min = x )
-    min
+  def maxRaster (r:Raster):Double = {
+    var max = Double.NegativeInfinity
+    r.foreachDouble( x => if (!java.lang.Double.isNaN(x) && x > max) max = x )
+    max
   }
 }
 
 /**
- * Perform a zonal summary that calculates the min of all raster cells within a geometry.
+ * Perform a zonal summary that calculates the max value of all raster cells within a geometry.
  *
  * @param   r             Raster to summarize
  * @param   zonePolygon   Polygon that defines the zone
  * @param   tileResults   Cached results of full tiles created by createTileResults
  */
-case class MinDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[RasterExtent,Double]) 
+case class MaxDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[RasterExtent,Double]) 
   (implicit val mB: Manifest[Double], val mD: Manifest[DD]) extends TiledPolygonalZonalSummary[Double] {
  
   type B = Double
@@ -93,32 +94,30 @@ case class MinDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults
   
   def handlePartialTileIntersection(rOp: Op[Raster], gOp: Op[Geometry[D]]) = {
     rOp.flatMap ( r => gOp.flatMap ( g => {
-      var min = Double.PositiveInfinity
+      var max = Double.NegativeInfinity
       val f = new Callback[Geometry,D] {
           def apply(col:Int, row:Int, g:Geometry[D]) {
             val z = r.getDouble(col,row)
-            if (!java.lang.Double.isNaN(z) && z < min) { min = z }
+            if (!java.lang.Double.isNaN(z) && z > max) { max = z }
           }
         }
 
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
         r.rasterExtent)(f)
-      min
+      max
     }))
   }
 
   def handleFullTile(rOp:Op[Raster]) = rOp.map (r =>
     tileResults.get(r.rasterExtent).getOrElse({
-      var min = Double.PositiveInfinity
-      r.force.foreachDouble((x:Double) => if (!java.lang.Double.isNaN(x) && x < min) min = x )
-      min
+      var max = Double.NegativeInfinity
+      r.force.foreachDouble((x:Double) => if (!java.lang.Double.isNaN(x) && x > max) max = x )
+      max
    }))
   
  
-  def handleNoDataTile = Double.PositiveInfinity
+  def handleNoDataTile = Double.NegativeInfinity
 
-  def reducer(mapResults: List[Double]):Double = mapResults.foldLeft(Double.PositiveInfinity)(math.min(_, _)) 
+  def reducer(mapResults: List[Double]):Double = mapResults.foldLeft(Double.NegativeInfinity)(math.max(_, _)) 
 }
-
-
