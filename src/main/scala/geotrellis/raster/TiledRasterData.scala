@@ -179,6 +179,7 @@ trait TiledRasterData extends RasterData {
       val tilePolygon = tileExtent.extent.asFeature(())
 
       if (tilePolygon.geom.intersects(clipExtent.geom)) {
+        println(s"in raster.getTileOpList: including tile $c, $r")
         tiles = getTileOp(rl, c, r) :: tiles
       }
     }
@@ -292,6 +293,7 @@ case class TileSetRasterData(basePath:String, name:String, typ:RasterType, tileL
   def getTile(col:Int, row:Int) = {
     val path = Tiler.tilePath(basePath, name, col, row)
     server.loadRaster(path).data match {
+      case i:IntConstant => i
       case a:ArrayRasterData => LazyArrayWrapper(a)
       case o => o
     }
@@ -315,6 +317,7 @@ class TileArrayRasterData(val tiles:Array[Raster],
   def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
   def getType = typ
   def getTile(col:Int, row:Int) = tiles(row * tileCols + col).data match {
+    case i:IntConstant => i
     case a:ArrayRasterData => LazyArrayWrapper(a)
     case o => o
   }
