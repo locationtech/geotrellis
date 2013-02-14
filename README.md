@@ -18,7 +18,7 @@ More information is also available on the [GeoTrellis website](http://www.azavea
 
 The current release version of GeoTrellis is 0.7.0 (Asgard).
 
-[![Build Status](https://secure.travis-ci.org/azavea/geotrellis.png)](http://travis-ci.org/azavea/geotrellis)
+[![Build Status](https://api.travis-ci.org/geotrellis/geotrellis.png)](http://travis-ci.org/geotrellis/geotrellis)
 
 ## Features
 
