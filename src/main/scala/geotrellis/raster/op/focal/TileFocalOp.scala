@@ -9,12 +9,28 @@ import geotrellis.raster._
 import geotrellis.feature.Polygon
 
 object TileFocalOp {
+  /**
+   * Used to make a [[TileFocalOp]] based off a focal operation that will
+   * parallelize correctly with tiled raster data.
+   */
   def makeFocalOp[T <: Op[Raster] with FocalOperationBase with HasAnalysisArea[T]](makeOp:Op[Raster] => T) = 
   (_r:Op[Raster], _re:Op[Option[RasterExtent]]) => {
     val op = makeOp(_r)
     op.setAnalysisArea(_re)
   }
 }
+
+/**
+ * Used to make an operation based off a focal operation that will
+ * parallelize correctly with tiled raster data.
+ *
+ * Use [[TileFocalOp.makeFocalOp]] to create correctly create a TileFocalOp.
+ * 
+ * @example
+ * {{{
+ * val tileFocalOp = TileFocalOp(tiledRaster, Min(_, Square(1)))
+ * }}}
+ */
 case class TileFocalOp[T <:Op[Raster] with FocalOperationBase with HasAnalysisArea[T]](r: Op[Raster], zonalOp:(Op[Raster]) => T) extends Op[Raster] {
   def _run(context: Context) = runAsync('init :: r :: Nil)
 

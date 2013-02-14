@@ -22,7 +22,7 @@ class MeanSpec extends FunSpec with FocalOpSpec
       getCursorMeanResult(MockCursor.fromAll(NODATA,NODATA,NODATA,NODATA)).isNaN should be (true)
     }
 
-    it("should match histogram median default set in cursor calculation") {      
+    it("should match histogram mean default set in cursor calculation") {      
       for(s <- defaultTestSets) {
         val sf = s.filter { x => x != NODATA }
         val expected = sf.sum / sf.length.toDouble
@@ -34,7 +34,7 @@ class MeanSpec extends FunSpec with FocalOpSpec
       }
     }
 
-    it("should match histogram median default set in cellwise calculation") {      
+    it("should match histogram mean default set in cellwise calculation") {      
       for(s <- defaultTestSets) {
         val sf = s.filter { x => x != NODATA }
         val expected = sf.sum / sf.length.toDouble

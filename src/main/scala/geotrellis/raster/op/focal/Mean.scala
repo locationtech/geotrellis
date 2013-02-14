@@ -27,7 +27,7 @@ case class Mean(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
 
 case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleRasterDataResult {
   var count:Int = 0
-  var sum:Double = 0.0
+  var sum:Int = 0
 
  def add(r:Raster, x:Int, y:Int) = {
     val z = r.get(x,y)
@@ -45,23 +45,23 @@ case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleRas
     }
   } 
 
-  def setValue(x:Int,y:Int) = { data.setDouble(x,y, sum / count) }
+  def setValue(x:Int,y:Int) = { data.setDouble(x,y, sum / count.toDouble) }
   def reset() = { count = 0 ; sum = 0 }
 }
 
 case class CursorMeanCalc() extends CursorCalculation[Raster] with DoubleRasterDataResult {
   var count:Int = 0
-  var sum:Double = 0.0
+  var sum:Int = 0
 
   def calc(r:Raster,c:Cursor) = {
     c.removedCells.foreach { (x,y) => 
-      var v = r.get(x,y)
+      val v = r.get(x,y)
       if(v != NODATA) { count -= 1; sum -= v } 
     }
     c.addedCells.foreach { (x,y) => 
-      var v = r.get(x,y)
+      val v = r.get(x,y)
       if(v != NODATA) { count += 1; sum += v } 
     }
-    data.setDouble(c.col,c.row,sum / count)
+    data.setDouble(c.col,c.row,sum / count.toDouble)
   }
 }

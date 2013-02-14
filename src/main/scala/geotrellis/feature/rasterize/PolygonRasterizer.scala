@@ -180,5 +180,4 @@ object PolygonRasterizer {
     }
     EdgeTable(map,rowMin,rowMax)
   }
-  
 }

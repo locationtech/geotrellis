@@ -13,9 +13,16 @@ import geotrellis.process._
  *                     the data values will be rounded to integers.
  */
 object Min {
+  /** Takes the min value of two Int values */
   def apply(x:Op[Int], y:Op[Int]) = logic.Do2(x, y)((z1, z2) => min(z1, z2))
+  /** Takes a Raster and an Int, and gives a raster with each cell being
+   * the min value of the original raster and the integer. See [MinConstant]]*/
   def apply(r:Op[Raster], c:Op[Int]) = MinConstant(r, c)
+  /** Takes a Raster and an Int, and gives a raster with each cell being
+   * the min value of the original raster and the integer. See [MinConstant2]]*/
   def apply(c:Op[Int], r:Op[Raster]) = MinConstant2(c, r)
+  /** Takes two Rasters and gives a raster with the min values of the two at each cell.
+   * See [[MinRaster]] */
   def apply(r1:Op[Raster], r2:Op[Raster]) = MinRaster(r1, r2)
 }
 

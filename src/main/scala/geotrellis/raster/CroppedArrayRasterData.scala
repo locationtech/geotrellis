@@ -2,10 +2,6 @@ package geotrellis.raster
 
 import geotrellis._
 
-object CroppedArrayRasterData {
-  
-}
-
 /**
  * This trait represents a raster data which represents a lazily-applied
  * cropping of an underlying raster data object.

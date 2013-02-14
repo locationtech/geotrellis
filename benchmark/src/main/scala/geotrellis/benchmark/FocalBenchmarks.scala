@@ -42,6 +42,11 @@ class FocalOperationsBenchmark extends OperationBenchmark {
   def timeOldMax(reps:Int) = run(reps)(server.run(oldfocal.Max(r,oldfocal.Square(1))))
   def timeMax(reps:Int) = run(reps)(server.run(focal.Max(r,focal.Square(1))))
 
+  def timeStandardDeviationSquare1(reps:Int) = run(reps)(server.run(focal.StandardDeviation(r, focal.Square(1))))
+  def timeStandardDeviationSquare3(reps:Int) = run(reps)(server.run(focal.StandardDeviation(r, focal.Square(3))))
+  def timeStandardDeviationCircle1(reps:Int) = run(reps)(server.run(focal.StandardDeviation(r, focal.Circle(1))))
+  def timeStandardDeviationCircle2(reps:Int) = run(reps)(server.run(focal.StandardDeviation(r, focal.Circle(2))))
+
   // Mean operation, compare it against the FastFocalMean
   def timeMeanSquare1(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(1))))
   def timeMeanSquare3(reps:Int) = run(reps)(server.run(focal.Mean(r, focal.Square(3))))

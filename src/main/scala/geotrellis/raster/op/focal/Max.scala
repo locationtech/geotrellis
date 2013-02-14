@@ -4,7 +4,8 @@ import geotrellis._
 
 import scala.math._
 
-/** Computes the maximum value of a neighborhood for a given raster 
+/**
+ * Computes the maximum value of a neighborhood for a given raster.
  *
  * @param    r      Raster on which to run the focal operation.
  * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))

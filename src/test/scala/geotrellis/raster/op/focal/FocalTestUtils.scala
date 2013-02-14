@@ -32,6 +32,10 @@ object MockCursor {
   def fromAddRemove(a:Seq[Int],r:Seq[Int]) = {
     new MockCursor(Seq[Int](),a,r)
   }
+
+  def fromAddRemoveAll(all:Seq[Int],a:Seq[Int],r:Seq[Int]) = {
+    new MockCursor(all,a,r)
+  }
 }
 
 case class MockCursor(all:Seq[Int],added:Seq[Int],removed:Seq[Int]) extends Cursor(Raster.empty(RasterExtent(Extent(0,0,3,3),1,1,3,3)),1) {

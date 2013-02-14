@@ -50,6 +50,9 @@ package object geometry {
       })
 
 
+  /**
+   * Returns a Geometry as a Polygon Set.
+   */
   case class AsPolygonSet[D](g: Op[Geometry[D]]) extends Operation[List[Polygon[D]]] {    
     val compositeOp = FilterGeometry[jts.Polygon,D](FlattenGeometry(g))
 

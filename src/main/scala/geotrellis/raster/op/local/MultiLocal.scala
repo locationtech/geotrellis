@@ -1,10 +1,8 @@
 package geotrellis.raster.op.local
 
-import annotation.tailrec
+import scala.annotation.tailrec
 
 import geotrellis._
-import geotrellis._
-import geotrellis.process._
 
 trait MultiLocal extends Op[Raster] {
   def ops:Array[Op[Raster]]
@@ -45,8 +43,6 @@ trait MultiLocal extends Op[Raster] {
     }
   }
 }
-
-
 
 trait MultiLocalArray extends Op[Raster] {
   def op:Op[Array[Raster]]
