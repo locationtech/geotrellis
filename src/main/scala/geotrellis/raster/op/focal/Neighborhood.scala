@@ -19,7 +19,7 @@ import Angles._
 trait Neighborhood { 
   /** How many cells past the focus the bounding box goes. (e.g., 1 for 9x9 square) */
   val extent:Int 
-  /** Wether or not this neighborhood has a mask the cursor of it's bounding box */
+  /** Whether or not this neighborhood has a mask the cursor of it's bounding box */
   val hasMask:Boolean
   /** Overridden to define the mask of Neighborhoods that have one */
   def mask(x:Int,y:Int):Boolean = { false }

@@ -11,10 +11,10 @@ class AsArraySpec extends FunSpec with ShouldMatchers
                                   with TestServer 
                                   with RasterBuilders {
   describe("AsArray") {
-    it("should convert int wiht AsArray") {
+    it("should convert int with AsArray") {
       var arr = Array(1,2,3,4,5,6,7)
       val r = createRaster(arr)
-      val arr2 = server.run(AsArray(r))
+      val arr2 = run(AsArray(r))
       arr2 should be (arr)
     }
 

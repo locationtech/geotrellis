@@ -1,8 +1,6 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
-import geotrellis._
-
 import RasterUtil._
 
 /**

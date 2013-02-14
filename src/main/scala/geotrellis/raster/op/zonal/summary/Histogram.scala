@@ -19,7 +19,7 @@ object Histogram {
 }
 
 /**
- * Perform a zonal summary that calculates a histogram all raster cells within a geometry.
+ * Perform a zonal summary that calculates a histogram of all raster cells within a geometry.
  *
  * @param   r             Raster to summarize
  * @param   zonePolygon   Polygon that defines the zone

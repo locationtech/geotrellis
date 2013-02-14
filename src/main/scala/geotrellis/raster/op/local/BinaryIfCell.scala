@@ -9,9 +9,6 @@ import RasterUtil._
  * Given a condition over two rasters, set the value of each cell in the output
  * to a specified value if the condition is true given the corresponding values in
  * each of the two input rasters.
- * 
- * Local operation.
- * Binary operation (input includes two rasters).
  */
 case class BinaryIfCell(r1:Op[Raster], r2:Op[Raster],
                         cond: (Int, Int) => Boolean, trueValue: Int) extends BinaryLocal {

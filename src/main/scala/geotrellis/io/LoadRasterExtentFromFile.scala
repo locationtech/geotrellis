@@ -28,7 +28,9 @@ case class LoadRasterMetadataFromFile(path:String) extends Op1(path)({
   }
 })
 
-
+/**
+  * Load the [[RasterExtent]] from the raster layer with the specified name.
+  */
 case class LoadRasterExtent(nme:Op[String]) extends Op[RasterExtent] {
   def _run(context:Context) = runAsync(List(nme, context))
   val nextSteps:Steps = {

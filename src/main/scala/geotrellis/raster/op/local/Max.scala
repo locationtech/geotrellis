@@ -3,7 +3,6 @@ package geotrellis.raster.op.local
 import scala.math.max
 
 import geotrellis._
-import geotrellis.process._
 
 /**
  * Gets maximum values.
@@ -13,9 +12,13 @@ import geotrellis.process._
  *                     the data values will be rounded to integers.
  */
 object Max {
+  /** Gets the maximum value between two integers */
   def apply(x:Op[Int], y:Op[Int]) = logic.Do2(x, y)((z1, z2) => max(z1, z2))
+  /** Gets the maximum value between cell values of a rasters and a constant. See [[MaxConstant]] */
   def apply(r:Op[Raster], c:Op[Int]) = MaxConstant(r, c)
+  /** Gets the maximum value between cell values of a rasters and a constant. See [[MaxConstant2]] */
   def apply(c:Op[Int], r:Op[Raster]) = MaxConstant2(c, r)
+  /** Gets the maximum value between cell values of two rasters. See [[MaxRaster]] */
   def apply(r1:Op[Raster], r2:Op[Raster]) = MaxRaster(r1, r2)
 }
 
