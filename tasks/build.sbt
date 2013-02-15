@@ -19,7 +19,7 @@ name := "geotrellis-tasks"
 
 organization := "com.azavea.geotrellis"
 
-version := "0.8.0-M4-SNAPSHOT"
+version := "0.9.0-SNAPSHOT"
 
 //seq(Revolver.settings: _*)
 
