@@ -2,10 +2,18 @@ package geotrellis.raster.op.local
 
 import geotrellis._
 
+/**
+ * Subtracts values.
+ */
 object Subtract {
+  /** Subtracts the second Int input value from the first.*/
   def apply(x:Op[Int], y:Op[Int]) = logic.Do2(x, y)((x, y) => x + y)
+  /** Subtract a constant value from each cell. See [[SubtractConstant]]*/
   def apply(r:Op[Raster], c:Op[Int]) = SubtractConstant(r, c)
+  /** Subtract the value of each cell from a constant. [[SubtractConstantBy]]*/
   def apply(c:Op[Int], r:Op[Raster]) = SubtractConstantBy(c, r)
+  /** Subtract each value in the second raster from the corresponding value in the first raster.
+   * See [[SubtractRaster]] */
   def apply(r1:Op[Raster], r2:Op[Raster]) = SubtractRaster(r1, r2)
 }
 
@@ -17,7 +25,7 @@ case class SubtractConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c)({
 })
 
 /**
- * Subtract the value of each cell by a constant.
+ * Subtract the value of each cell from a constant.
  */
 case class SubtractConstantBy(c:Op[Int], r:Op[Raster]) extends Op2(c, r)({
   (c, r) => Result(r.dualMapIfSet(c - _)(c - _))

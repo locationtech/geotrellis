@@ -3,6 +3,10 @@ package geotrellis.logic
 import geotrellis._
 import geotrellis.process._
 
+/**
+ * Conditionally executes one of two operations; if the Boolean Operation evaluates true, the first
+ * Operation executes, otherwise the second Operation executes.
+ */
 case class If[A <: C,B <: C,C:Manifest](bOp: Op[Boolean], trueOp: Op[A], falseOp: Op[B])extends Op[C] {
   def _run(context: Context) = runAsync('init :: bOp :: Nil)
 

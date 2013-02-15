@@ -37,6 +37,9 @@ case class GetColorBreaks(h:Op[Histogram], cs:Op[Array[Int]])
   }
 }
 
+/**
+ * Creates a range of colors interpolated from a smaller set of colors.
+ */
 case class GetColorsFromPalette(palette:Op[Array[Int]], num:Op[Int])
      extends Op2(palette, num)({
        (palette, num) =>

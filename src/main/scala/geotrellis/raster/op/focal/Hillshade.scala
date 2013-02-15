@@ -6,7 +6,8 @@ import scala.math._
 
 import Angles._
 
-/** Computes Hillshade (shaded relief) from a raster
+/**
+ * Computes Hillshade (shaded relief) from a raster.
  *
  * The resulting raster will be a shaded relief map (a hill shading)
  * based on the sun altitude, azimuth, and the z factor. The z factor is
@@ -50,7 +51,8 @@ object Hillshade {
     DirectHillshade(r,azimuth,altitude,zFactor)
 }
 
-/** Direct calculation of hill shading of a raster. Construct through the [[Hillshade]] object.
+/**
+ * Direct calculation of hill shading of a raster. Construct through the [[Hillshade]] object.
  *
  * @see [[Hillshade]]
  */
@@ -92,7 +94,8 @@ case class DirectHillshade(r:Op[Raster], azimuth:Op[Double],altitude:Op[Double],
   }
 })  with HasAnalysisArea[DirectHillshade]
 
-/** Indirect calculation of hill shading of a raster that uses Aspect and Slope operation results.
+/**
+ * Indirect calculation of hill shading of a raster that uses Aspect and Slope operation results.
  *
  * Construct through the [[Hillshade]] object.
  *

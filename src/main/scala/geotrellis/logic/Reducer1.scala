@@ -5,6 +5,10 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.raster._
 
+/**
+ * Base class for operations that use a map and reduce step to allow for
+ * operations to be distributed over [[geotrellis.raster.TiledRasterData]].
+ */
 abstract class Reducer1[B:Manifest, C:Manifest](r:Op[Raster])
                                                (handle:Raster => B)
                                                (reducer:List[B] => C) 

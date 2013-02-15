@@ -2,22 +2,37 @@ package geotrellis.raster.op.local
 
 import geotrellis._
 
+/**
+ * Operation to add values.
+ */
 object Add {
+  /**
+   * Adds two integers.
+   */
   def apply(x:Op[Int], y:Op[Int]) = logic.Do2(x, y)((x, y) => x + y)
+  /**
+   * Add a constant value to each cell. See [[AddConstant]]
+   */
   def apply(r:Op[Raster], c:Op[Int]) = AddConstant(r, c)
+  /**
+   * Add a constant value to each cell. See [[AddConstant2]]
+   */
   def apply(c:Op[Int], r:Op[Raster]) = AddConstant2(c, r)
+  /**
+   * Add the values of each cell in each raster. See [[AddRasters]]
+   */
   def apply(rs:Op[Raster]*) = AddRasters(rs:_*)
 }
 
 /**
- * Add a constant value to each cell.
+ * Add a constant integer value to each cell.
  */
 case class AddConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c)({
   (r, c) => Result(r.dualMapIfSet(_ + c)(_ + c))
 })
 
 /**
- * Add a constant value to each cell.
+ * Add a constant integer value to each cell.
  */
 case class AddConstant2(c:Op[Int], r:Op[Raster]) extends Op2(c, r)({
   (c, r) => Result(r.dualMapIfSet(_ + c)(_ + c))

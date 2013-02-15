@@ -9,7 +9,9 @@ import geotrellis.process._
  * In the Raster case, maps cell values to 1 if they are not NODATA, else 0.
  */
 object Undefined {
+  /** Maps an integer to 1 if NODATA, else 0. See [[UndefinedConstant]] */
   def apply(z:Op[Int]) = new UndefinedConstant(z)
+  /** Maps Raster cell values to 1 if they are NODATA, else 0. See [[UndefinedRaster]] */
   def apply(r:Op[Raster]) = new UndefinedRaster(r)
 }
 
