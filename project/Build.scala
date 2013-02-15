@@ -2,14 +2,13 @@ import sbt._
 import sbt.Keys._
 
 object GeotrellisBuild extends Build {
-  val geotoolsVersion = "8.0-M4"
 
   val key = AttributeKey[Boolean]("javaOptionsPatched")
 
   lazy val root = Project("root", file(".")).settings(
     organization := "com.azavea.geotrellis",
     name := "geotrellis",
-    version := "0.8.0-SNAPSHOT",
+    version := "0.9.0-SNAPSHOT",
     scalaVersion := "2.10.0",
     
     scalacOptions ++= Seq("-deprecation", 
@@ -107,11 +106,13 @@ object GeotrellisBuild extends Build {
       )).
     dependsOn(root)
 
+  val geotoolsVersion = "8.0"
+
   lazy val geotools:Project = Project("geotools", file("geotools")).
     settings(
-    scalaVersion := "2.10.0-RC3",
+    scalaVersion := "2.10.0",
     libraryDependencies ++= Seq(
-      "org.scalatest" % "scalatest_2.10.0-RC3" % "1.8-B1" % "test",
+      "org.scalatest" %% "scalatest" % "2.0.M5b",
       "java3d" % "j3d-core" % "1.3.1",
       "org.geotools" % "gt-main" % geotoolsVersion,
       "org.geotools" % "gt-jdbc" % geotoolsVersion,
