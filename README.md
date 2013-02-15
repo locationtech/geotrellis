@@ -16,7 +16,7 @@ Please contact us if you have any questions, find us on irc at #geotrellis on fr
 the user mailing list at [https://groups.google.com/group/geotrellis-user](https://groups.google.com/group/geotrellis-user).
 More information is also available on the [GeoTrellis website](http://www.azavea.com/products/geotrellis/).
 
-The current release version of GeoTrellis is 0.7.0 (Asgard).
+The current release version of GeoTrellis is 0.8.0 (Atlantis).
 
 [![Build Status](https://api.travis-ci.org/geotrellis/geotrellis.png)](http://travis-ci.org/geotrellis/geotrellis)
 
@@ -32,7 +32,7 @@ operations with existing operations.
 ```scala
   // Import some libraries and operations we'll use
   import geotrellis._
-  import geotrellis.op.raster._
+  import geotrellis.raster.op._
 
   // Set up the rasters and weights we'll use
   val raster1 = io.LoadRaster("foo")
@@ -72,7 +72,7 @@ operations with existing operations.
 
 You can find *Scaladocs* for the latest version of the project here:
 
-[http://geotrellis.github.com/api.doc/latest/api/index.html#geotrellis.package](http://geotrellis.github.com/api.doc/latest/api/index.html#geotrellis.package)
+[http://geotrellis.github.com/scaladocs/latest/#geotrellis.package](http://geotrellis.github.com/scaladocs/latest/#geotrellis.package)
 
 ## Contributors
 
@@ -81,4 +81,5 @@ You can find *Scaladocs* for the latest version of the project here:
  - Rob Emanuele 
  - Adam Hinz
  - Michael Tedeschi
+ - Robert Cheetham
  - Justin Walgran
