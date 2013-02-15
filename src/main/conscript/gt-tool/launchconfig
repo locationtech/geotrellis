@@ -4,7 +4,7 @@
   name: geotrellis-tasks
   class: geotrellis.run.Script
 [scala]
-  version: 2.9.2
+  version: 2.10.0
 [repositories]
   local
   maven-central
