@@ -106,7 +106,7 @@ object GeotrellisBuild extends Build {
       )).
     dependsOn(root)
 
-  val geotoolsVersion = "8.0"
+  val geotoolsVersion = "8.0-M4"
 
   lazy val geotools:Project = Project("geotools", file("geotools")).
     settings(
