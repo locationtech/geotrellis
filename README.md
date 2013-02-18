@@ -27,6 +27,12 @@ The current release version of GeoTrellis is 0.8.0 (Atlantis).
 - In the spirit of the object-functional style of Scala, it is easy to both create new operations and compose new 
 operations with existing operations.
 
+## SBT
+
+    scalaVersion := "2.10.0"
+
+    libraryDependencies += "com.azavea.geotrellis" %% "geotrellis" % "0.8.0"
+
 ## Some sample GeoTrellis code
 
 ```scala
