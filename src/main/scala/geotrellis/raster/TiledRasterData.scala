@@ -356,7 +356,7 @@ object LazyTiledWrapper {
 
 
 /**
- * This RasterData warps an existing ArrayRasterData so as to allow operations
+ * This RasterData wraps an existing ArrayRasterData so as to allow operations
  * on it to be executed in parallel. The underlying RasterData is limited to
  * a single array's worth of data (~2.1G).
  */
