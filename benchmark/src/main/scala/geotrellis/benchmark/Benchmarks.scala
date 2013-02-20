@@ -147,6 +147,7 @@ class DataMap extends OperationBenchmark {
     mcWhileLoop = MultiplyConstantWhileLoop(raster, 2)
   }
 
+
   def timeIntArrayWhileLoop(reps:Int) = run(reps)(intArrayWhileLoop)
   def intArrayWhileLoop = {
     val goal = ints.clone
@@ -172,7 +173,20 @@ class DataMap extends OperationBenchmark {
     }
     goal
   }
-  
+ 
+
+  import spire.syntax._ 
+  def timeIntArrayCforLoop(reps:Int) = run(reps)(intArrayCforLoop)
+  def intArrayCforLoop = {
+    val goal = ints.clone
+    val len = goal.length
+    cfor(0)(_ < len, _ + 1) { i =>
+      val z = goal(i)
+      if (z != NODATA) goal(i) = goal(i) * 2
+    }
+    goal
+  }
+ 
   def timeRasterWhileLoop(reps:Int) = run(reps)(rasterWhileLoop)
   def rasterWhileLoop = {
     val rcopy = raster.copy
