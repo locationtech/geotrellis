@@ -1,5 +1,8 @@
 import AssemblyKeys._
 
+import de.johoop.jacoco4sbt._
+import JacocoPlugin._
+
 assemblySettings
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) {
@@ -10,6 +13,8 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) {
     case _ => MergeStrategy.first
   }
 }
+
+seq(jacoco.settings : _ *)
 
 seq(lsSettings :_*)
 
