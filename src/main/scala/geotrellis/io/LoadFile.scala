@@ -3,8 +3,6 @@ package geotrellis.io
 import geotrellis.process._
 import geotrellis._
 
-
-
 /**
  * Load the raster data for a particular extent/resolution from the specified file.
  */

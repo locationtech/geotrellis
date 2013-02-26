@@ -45,41 +45,6 @@ class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
                       18, 12, nd, 34, 77)
     val raster3 = Raster(data3, rasterExtent)
 
-    it("dispatch is not yet implemented") {
-      val G = GetRasterExtent(0.0, 0.0, 100.0, 100.0, 100, 100)
-      //evaluating { G.dispatch(server) } should produce [Exception];
-    }
-
-    it("Literal") {
-      val L = Literal(33)
-      server.run(L) must be === 33
-    }
-
-    it("CreateRaster") {
-      val G = GetRasterExtent(0.0, 0.0, 100.0, 100.0, 100, 100)
-      val C = CreateRaster(G)
-      val raster = server.run(C)
-      raster.get(0, 0) must be === NODATA
-      raster.get(1, 0) must be === NODATA
-      raster.get(0, 1) must be === NODATA
-    }
-
-    it("LoadFile") {
-      val L = io.LoadFile("src/test/resources/fake.img8.arg")
-      val raster = server.run(L)
-
-      raster.get(0, 0) must be === 49 
-      raster.get(3, 3) must be === 4 
-    }
-
-
-    it("LoadFile, take 2") {
-      val L2 = io.LoadFile("src/test/resources/fake.img8.arg")
-      val raster2 = server.run(L2)
-      raster2.get(0, 0) must be === 49
-      raster2.get(3, 3) must be === 4 
-    }
-
     it("LoadFile, w/ resampling") {
       val G1 = io.LoadRasterExtentFromFile("src/test/resources/fake.img8.arg")
       val geo1 = server.run(G1)
@@ -91,14 +56,6 @@ class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
       raster.get(1, 0) must be === 36
       raster.get(0, 1) must be === 2
       raster.get(1, 1) must be === 4
-    }
-    it("GetRasterExtent") {
-      val e = Extent(xmin = -90, ymin = 20,
-                     xmax = -80, ymax = 40)
-      val op = GetRasterExtent(e, 20, 30)
-      val re = server.run(op)
-      re.extent.xmin must be === -90
-      re.cols must be === 20
     }
  
     it("LoadResampledArgFile, take 2") {
@@ -114,7 +71,6 @@ class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
       raster.get(0, 1) must be === 2 
       raster.get(1, 1) must be === 4
     }
-
 
     it("ResampleRaster") {
       val L = io.LoadFile("src/test/resources/quad8.arg")
@@ -150,8 +106,6 @@ class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
 
     it("BuildArrayHistogram") {
       val histo = server.run(GetHistogram(raster1, 101))
-      //println(histo.toJSON)
-      //println(histo.getValues.toList)
 
       histo.getTotalCount must be === 18
       histo.getItemCount(11) must be === 2
@@ -162,9 +116,6 @@ class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
 
     it("BuildMapHistogram") {
       val histo = server.run(GetHistogram(raster1))
-
-      //println(histo.toJSON)
-      //println(histo.getValues.toList)
 
       histo.getTotalCount must be === 18
       histo.getItemCount(11) must be === 2
@@ -215,74 +166,6 @@ class IntSpecX extends FunSpec with MustMatchers with ShouldMatchers {
       d(10) must be === -447
       d(200) must be === 447
       d(210) must be === 1341
-    }
-
-    val f2 = (a:Array[Int], cols:Int, rows:Int, xmin:Double, ymin:Double,
-             cellsize:Double, srs:Int) => {
-      val g = RasterExtent(Extent(xmin, ymin, xmin + cellsize * cols, ymin + cellsize * rows),
-                               cellsize, cellsize, cols, rows)
-      Raster(a, g)
-    }
-
-    val f = (a:Array[Int], cols:Int, rows:Int, xmin:Double, ymin:Double,
-             cellsize:Double) => f2(a, cols, rows, xmin, ymin, cellsize, 999)
-
-    val h = (a:Array[Int], cols:Int, rows:Int) => {
-      f(a, cols, rows, 0.0, 0.0, 1.0)
-    }
-
-    val a = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    val r = Literal(f(a, 3, 3, 0.0, 0.0, 1.0))
-
-    val a2 = Array(2, 2, 2, 2, 2, 2, 2, 2, 2)
-    val r2 = Literal(f(a2, 3, 3, 0.0, 0.0, 1.0))
-
-    val a3 = Array(nd, nd, 1, 2, 2, 2, 3, 3, nd)
-    val y3 = Array(1, 1, 1, 2, 2, 2, 3, 3, 1)
-    val z3 = Array(0, 0, 1, 2, 2, 2, 3, 3, 0)
-    val r3 = Literal(f(a3, 3, 3, 0.0, 0.0, 1.0))
-
-    def runArray(op:Op[Raster]) = {
-      server.run(op).data.asArray.getOrElse(sys.error("argh")).toArray
-    }
-
-    // unary local
-    it("Negate") {
-      runArray(local.Negate(r)) must be === a.map { _ * -1 }
-    }
-    it("AddConstant") {
-      runArray(local.AddConstant(r, 10)) must be === a.map { _ + 10 }
-    }
-    it("MultiplyConstant") {
-      runArray(local.MultiplyConstant(r, 8)) must be === a.map { _ * 8 }
-    }
-    it("SubtractConstant") {
-      runArray(SubtractConstant(r, 5)) must be === a.map { _ - 5 }
-    }
-    it("DivideConstant") {
-      runArray(DivideConstant(r, 2)) must be === a.map { _ / 2 }
-    }
-    it("MaxConstant") {
-      runArray(MaxConstant(r, 6)) must be === a.map { max(_, 6) }
-    }
-    it("MinConstant") {
-      runArray(MinConstant(r, 6)) must be === a.map { min(_, 6) }
-    }
-
-    it("IfCell") {
-      runArray(IfCell(r, _ > 6, 6)) must be === a.map { min(_, 6) } 
-    }
-
-    it ("IfCell, second test") {
-      runArray(IfCell(r, x => x > 3, 3)) must be === a.map { min(_, 3) } 
-    }
-
-    it ("IfCell with an else clause (IfElse)") {
-      runArray(IfCell(r, _ > 3, 1, 0)) must be === a.map { x:Int => if (x > 3) 1 else 0 } 
-    }
-
-    it ("DoCell") {
-      runArray(DoCell(r, _ + 1)) must be === a.map { _ + 1 }
     }
   }
 }
