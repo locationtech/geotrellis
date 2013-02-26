@@ -16,12 +16,11 @@ abstract class Reducer1[B: Manifest, C: Manifest](r: Op[Raster])(handle: Raster 
     case 'reduce :: (bs:  List[_]) => Result(reducer(bs.asInstanceOf[List[B]]))
   }
 
-  def init(r: Raster) = {
-    r.data match {
-      case _: TiledRasterData => runAsync('reduce :: r.getTileList.map(mapper))
-      case _ => Result(reducer(handle(r) :: Nil))
-    }
-  }
+  def init(r: Raster) = 
+    if (r.isTiled) 
+      runAsync('reduce :: r.getTileList.map(mapper))
+    else
+      Result(reducer(handle(r) :: Nil)) 
 
   def mapper(r: Raster): Op[B] = logic.Do1(r)(handle)
 }

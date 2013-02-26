@@ -139,6 +139,8 @@ class TileSpec extends FunSpec with MustMatchers
       e00_test must be === e00
       e11_test must be === e11
       e22_test must be === e22
+
+      tileRaster2.isTiled must be === true
     }
 
     it("should have raster extent and tile layout length consistent when building in memory") {
