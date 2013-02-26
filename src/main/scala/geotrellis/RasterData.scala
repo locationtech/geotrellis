@@ -66,6 +66,11 @@ trait RasterData {
   def alloc(cols:Int, rows:Int): MutableRasterData
   def isFloat = getType.float
 
+  /**
+    * True if this RasterData is tiled, e.g. a subclass of TiledRasterData. 
+    */
+  def isTiled:Boolean = false
+
   def copy:RasterData
   def length:Int
   def lengthLong:Long 

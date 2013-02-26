@@ -44,5 +44,9 @@ class RasterSpec extends FunSpec with MustMatchers {
       r1 must be === r3
       r1 must be === r4
     }
+
+    it("should have run-time info about being tiled") {
+      raster.isTiled must be === false
+    }
   }
 }

@@ -85,6 +85,11 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
 
   def isFloat = data.getType.float
 
+  /**
+    * Returns true if the underlying data is tiled. 
+    */
+  def isTiled:Boolean = data.isTiled
+
   def toArray = data.asArray.getOrElse(sys.error("argh")).toArray
   def toArrayDouble = data.asArray.getOrElse(sys.error("argh")).toArrayDouble
 
