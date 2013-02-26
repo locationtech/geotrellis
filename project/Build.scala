@@ -13,6 +13,7 @@ object GeotrellisBuild extends Build {
     
     scalacOptions ++= Seq("-deprecation", 
                           "-unchecked", 
+                          "-Yclosure-elim",
                           "-optimize", 
                           "-language:implicitConversions", 
                           "-language:postfixOps", 
@@ -34,10 +35,6 @@ object GeotrellisBuild extends Build {
       "com.typesafe.akka" %% "akka-kernel" % "2.1.0",
       "com.typesafe.akka" %% "akka-remote" % "2.1.0",
       "com.typesafe.akka" %% "akka-actor" % "2.1.0",
-      "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
-      "com.sun.jersey" % "jersey-bundle" % "1.11",
-      "org.slf4j" % "slf4j-api" % "1.6.0",
-      "org.slf4j" % "slf4j-nop" % "1.6.0",
       "asm" % "asm" % "3.3.1",
       "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
       "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1"
@@ -90,6 +87,17 @@ object GeotrellisBuild extends Build {
     )
   )
 
+  lazy val server:Project = Project("server", file("server")).
+    settings(
+      scalaVersion := "2.10.0",
+      libraryDependencies ++= Seq(
+        "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
+        "com.sun.jersey" % "jersey-bundle" % "1.11",
+        "org.slf4j" % "slf4j-api" % "1.6.0",
+        "org.slf4j" % "slf4j-nop" % "1.6.0"
+      )).
+    dependsOn(root)
+
   lazy val dev:Project = Project("dev", file("dev")).
     settings(
       scalaVersion := "2.10.0",
@@ -104,7 +112,7 @@ object GeotrellisBuild extends Build {
       libraryDependencies ++= Seq(
         "asm" % "asm" % "3.3.1"
       )).
-    dependsOn(root)
+    dependsOn(server)
 
   val geotoolsVersion = "8.0-M4"
 
