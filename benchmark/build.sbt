@@ -1,5 +1,7 @@
 import AssemblyKeys._
 
+resolvers += Resolver.sonatypeRepo("snapshots")
+
 assemblySettings
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) {
@@ -10,3 +12,5 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) {
     case _ => MergeStrategy.first
   }
 }
+
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided"

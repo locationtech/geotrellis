@@ -28,6 +28,7 @@ import com.google.caliper.SimpleBenchmark
 
 import scala.math.{min, max}
 import scala.util.Random
+import scala.annotation.tailrec
 
 /**
  * Extend this to create an actual benchmarking class.
@@ -160,7 +161,22 @@ class DataMap extends OperationBenchmark {
     }
     goal
   }
-  
+ 
+  def timeIntArrayTailrec(reps:Int) = run(reps)(intArrayTailrec)
+  def intArrayTailrec = {
+    val goal = ints.clone
+    val len = goal.length
+    @inline @tailrec def loop(i:Int) {
+      if (i < len) {
+        val z = goal(i)
+        if (z != NODATA) goal(i) = z * 2
+        loop(i + 1)
+      }
+    }
+    loop(0)
+    goal
+  }
+ 
   def timeDoubleArrayWhileLoop(reps:Int) = run(reps)(doubleArrayWhileLoop)
   def doubleArrayWhileLoop = {
     val goal = doubles.clone
@@ -182,9 +198,21 @@ class DataMap extends OperationBenchmark {
     val len = goal.length
     cfor(0)(_ < len, _ + 1) { i =>
       val z = goal(i)
-      if (z != NODATA) goal(i) = goal(i) * 2
+      if (z != NODATA) goal(i) = z * 2
     }
     goal
+  }
+
+  import scalaxy.loops._
+
+  def timeScalaxyLoop(reps:Int) = run(reps)(scalaxyLoop)
+  def scalaxyLoop = {
+    val goal = ints.clone
+    val len = goal.length
+    for(i <- 0 until len optimized)  {
+      val z = goal(i)
+      if (z != NODATA) goal(i) = z * 2
+    }
   }
  
   def timeRasterWhileLoop(reps:Int) = run(reps)(rasterWhileLoop)
@@ -201,7 +229,7 @@ class DataMap extends OperationBenchmark {
     }
     rcopy
   }
-  
+ 
   def timeRasterMap(reps:Int) = run(reps)(rasterMap)
   def rasterMap = raster.map(z => if (z != NODATA) z * 2 else NODATA)
 
