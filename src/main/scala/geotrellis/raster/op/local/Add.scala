@@ -9,15 +9,27 @@ object Add {
   /**
    * Adds two integers.
    */
-  def apply(x:Op[Int], y:Op[Int]) = logic.Do2(x, y)((x, y) => x + y)
+  def apply(x:Op[Int], y:Op[Int]):Op[Int] = logic.Do2(x, y)((x, y) => x + y)
   /**
-   * Add a constant value to each cell. See [[AddConstant]]
+   * Adds two doubles.
+   */
+  def apply(x:Op[Double], y:Op[Double])(implicit d: DummyImplicit):Op[Double] = logic.Do2(x, y)((x, y) => x + y)
+  /**
+   * Add a constant Int value to each cell. See [[AddConstant]]
    */
   def apply(r:Op[Raster], c:Op[Int]) = AddConstant(r, c)
   /**
-   * Add a constant value to each cell. See [[AddConstant2]]
+   * Add a constant Double value to each cell. See [[AddDoubleConstant]]
    */
-  def apply(c:Op[Int], r:Op[Raster]) = AddConstant2(c, r)
+  def apply(r:Op[Raster], c:Op[Double]) = AddDoubleConstant(r, c)
+  /**
+   * Add a constant value to each cell. See [[AddConstant]]
+   */
+  def apply(c:Op[Int], r:Op[Raster])(implicit d: DummyImplicit) = AddConstant(r, c)
+  /**
+   * Add a constant Double value to each cell. See [[AddDoubleConstant]]
+   */
+  def apply(c:Op[Double], r:Op[Raster])(implicit d: DummyImplicit) = AddDoubleConstant(r,c)
   /**
    * Add the values of each cell in each raster. See [[AddRasters]]
    */
@@ -32,10 +44,10 @@ case class AddConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c)({
 })
 
 /**
- * Add a constant integer value to each cell.
+ * Add a constant double value to each cell.
  */
-case class AddConstant2(c:Op[Int], r:Op[Raster]) extends Op2(c, r)({
-  (c, r) => Result(r.dualMapIfSet(_ + c)(_ + c))
+case class AddDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r, c)({
+  (r, c) => Result(r.dualMapIfSet({i:Int => (i + c).toInt})(_ + c))
 })
 
 /**
