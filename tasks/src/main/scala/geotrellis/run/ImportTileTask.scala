@@ -12,7 +12,7 @@ import geotrellis.raster._
  *
  * See trellis.run.Task for more information on Tasks.
  */
-@Parameters(commandNames = Array("import-tile"), commandDescription ="Imports raster data as a tiled raster into the geotrellis system.")
+@Parameters(commandNames = Array("import-tile"), commandDescription ="Imports raster data as a tiled ARG using GDAL.")
 class ImportTileTask extends Task { 
   @Parameter( 
     names = Array("--input", "-i"),  
