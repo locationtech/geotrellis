@@ -95,6 +95,8 @@ trait TiledRasterData extends RasterData {
    */
   def tileLayout:TileLayout
 
+  override def isTiled = true
+
   def cols = tileLayout.totalCols
   def rows = tileLayout.totalRows
 
@@ -102,6 +104,7 @@ trait TiledRasterData extends RasterData {
   def pixelRows:Int = tileLayout.pixelRows
   def tileCols:Int = tileLayout.tileCols
   def tileRows:Int = tileLayout.tileRows
+
 
   /**
    * Get a RasterData instance for a particular tile.
