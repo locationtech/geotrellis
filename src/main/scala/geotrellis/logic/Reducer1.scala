@@ -6,6 +6,8 @@ import geotrellis.process._
 import geotrellis.raster._
 
 /**
+ * TODO: DEPRECATED -- to be removed.
+ *
  * Base class for operations that use a map and reduce step to allow for
  * operations to be distributed over [[geotrellis.raster.TiledRasterData]].
  */
