@@ -40,6 +40,9 @@ trait RasterBuilders {
     Raster(arr, RasterExtent(Extent(0,-rows,cols*10,0),10,1,cols,rows))
   }
 
+  def createNoData(cols:Int,rows:Int,t:RasterType = TypeInt) =
+    Raster(RasterData.emptyByType(t,cols,rows), RasterExtent(Extent(0,-rows,cols*10,0),10,1,cols,rows))
+
   /**
    * 9x10 raster of 90 numbers between 1 - 100 in random order.
    */
