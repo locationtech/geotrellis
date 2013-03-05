@@ -11,10 +11,29 @@ import geotrellis._
  *                between a value and NoData returns the value.
  */
 object Max {
-  /** Gets the maximum value between two integers. Does not consider NoData values as special. */
+  /**
+   * Gets the maximum value between two integers.
+   *
+   * @note
+   * Whereas the operations dealing with rasters use the rule that
+   * the Max of a NODATA and another value v is the latter value v,
+   * this operation does not differentiate NODATA from other integers
+   * and will return what scala.math.max(NODATA, v) returns (which
+   * since NODATA = Int.MinValue will be the value v).
+   */
   def apply(x:Op[Int], y:Op[Int]) = logic.Do2(x, y)((z1, z2) => max(z1, z2))
 
-  /** Gets the maximum value between two doubles. Does not consider NoData values as special. */
+  /**
+   * Gets the maximum value between two doubles.
+   *
+   * @note
+   * Whereas the operations dealing with rasters use the rule that
+   * the Max of a Double.NaN (the NoData value for Double values)
+   * and another value v is the latter value v,
+   * this operation does not differentiate Double.NaN from other Double values
+   * and will return what scala.math.max(Double.NaN, v) returns (which
+   * is Double.NaN).
+   */
   def apply(x:Op[Double], y:Op[Double])(implicit d:DummyImplicit) = logic.Do2(x, y)((z1, z2) => max(z1, z2))
 
   /** Gets the maximum value between cell values of a rasters and an Int constant. See [[MaxConstant]] */

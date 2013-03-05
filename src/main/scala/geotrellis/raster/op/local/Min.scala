@@ -11,10 +11,28 @@ import geotrellis._
  *                between a value and NoData returns the value.
  */
 object Min {
-  /** Takes the min value of two Int values. Does not consider NoData values as special. */
+  /**
+   * Takes the min value of two Int values.
+   *
+   * @note
+   * Whereas the operations dealing with rasters use the rule that
+   * the Min of a NODATA and another value v is the latter value v,
+   * this operation does not differentiate NODATA from other integers
+   * and will return what scala.math.min(NODATA, v) returns (which
+   * since NODATA = Int.MinValue will be NODATA).
+   */
   def apply(x:Op[Int], y:Op[Int]) = logic.Do2(x, y)((z1, z2) => min(z1, z2))
 
-  /** Takes the min value of two Double values. Does not consider NoData values as special. */
+  /** Takes the min value of two Double values.
+   *
+   * @note
+   * Whereas the operations dealing with rasters use the rule that
+   * the Min of a Double.NaN (the NoData value for Double values)
+   * and another value v is the latter value v,
+   * this operation does not differentiate Double.NaN from other Double values
+   * and will return what scala.math.min(Double.NaN, v) returns (which
+   * is Double.NaN).
+   */
   def apply(x:Op[Double], y:Op[Double])(implicit d:DummyImplicit) = logic.Do2(x, y)((z1, z2) => min(z1, z2))
 
   /** Takes a Raster and an Int, and gives a raster with each cell being
