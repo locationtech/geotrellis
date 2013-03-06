@@ -12,4 +12,4 @@
   sonatype-releases: https://oss.sonatype.org/content/repositories/releases/
   sonatype-snapshots: http://oss.sonatype.org/content/repositories/snapshots/
   geotools: http://download.osgeo.org/webdav/geotools/
-
+  mapfish: http://dev.mapfish.org/maven/repository/
