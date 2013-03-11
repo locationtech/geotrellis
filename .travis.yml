@@ -2,7 +2,7 @@
 language: scala
 scala:
   - 2.9.2
-script: ./sbt -mem 1512 test && ./sbt -mem 1512 "project demo" compile && ./sbt -mem 1512 "project geotools" compile && ./sbt -mem 1512 "project tasks" compile && ./sbt -mem 1512 "project benchmark" compile && ./sbt -mem 1512 "project dev" compile && ./sbt -mem 1512 "project server" compile && curl https://raw.github.com/n8han/conscript/master/setup.sh | sh && cs n8han/giter8 && g8 geotrellis/geotrellis.g8 --organization=geotrellis && cd geotrellis-template && chmod 755 ./sbt && ./sbt compile
+script: ./sbt -mem 1512 test && ./sbt -mem 1512 "project demo" compile && ./sbt -mem 1512 "project geotools" compile && ./sbt -mem 1512 "project tasks" compile && ./sbt -mem 1512 "project benchmark" compile && ./sbt -mem 1512 "project dev" compile && ./sbt -mem 1512 "project server" compile && export PATH=$HOME/bin:$PATH && curl https://raw.github.com/n8han/conscript/master/setup.sh | sh && cs n8han/giter8 && g8 geotrellis/geotrellis.g8 --organization=geotrellis && cd geotrellis-template && chmod 755 ./sbt && ./sbt compile
 notifications:
   email:
     recipients:
