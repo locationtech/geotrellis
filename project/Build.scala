@@ -41,7 +41,6 @@ object GeotrellisBuild extends Build {
     ),
 
     resolvers ++= Seq(
-      "Geotools" at "http://download.osgeo.org/webdav/geotools/", 
       "NL4J Repository" at "http://nativelibs4java.sourceforge.net/maven/",
       "maven2 dev repository" at "http://download.java.net/maven/2",
       "Scala Test" at "http://www.scala-tools.org/repo-reloases/",
@@ -128,7 +127,9 @@ object GeotrellisBuild extends Build {
       "org.geotools" % "gt-coverage" % geotoolsVersion,
       "org.geotools" % "gt-coveragetools" % geotoolsVersion,
       "org.postgis" % "postgis-jdbc" % "1.3.3",
-      "javax.media" % "jai_core" % "1.1.3")
+      "javax.media" % "jai_core" % "1.1.3"),
+    resolvers ++= Seq(
+      "Geotools" at "http://download.osgeo.org/webdav/geotools/")
     ).
     dependsOn(root)
 
@@ -148,7 +149,7 @@ object GeotrellisBuild extends Build {
     dependsOn(root)
 
   def benchmarkSettings = Seq(
-    scalaVersion := "2.10.0",
+     scalaVersion := "2.10.0",
 
     // raise memory limits here if necessary
     javaOptions += "-Xmx8G",
