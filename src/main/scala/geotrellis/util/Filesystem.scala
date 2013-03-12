@@ -46,10 +46,4 @@ object Filesystem {
   }
 
   def join(parts:String*) = parts.mkString(File.separator)
-
-  //def findFiles(f:File, r:Regex):Array[File] = {
-  //  val these = f.listFiles
-  //  val good = these.filter(f => r.findFirstIn(f.getName).isDefined)
-  //  good ++ these.filter(_.isDirectory).flatMap(recursiveListFiles(_, r))
-  //}
 }
