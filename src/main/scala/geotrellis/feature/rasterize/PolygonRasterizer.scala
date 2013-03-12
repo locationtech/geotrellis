@@ -15,10 +15,11 @@ object PolygonRasterizer {
     val edgeTable = buildEdgeTable(p, re)
     val activeEdgeTable = ActiveEdgeTable.empty
 
-    if (edgeTable.rowMin < re.rows && edgeTable.rowMax > 0 ) {
-      val rowMin = math.min(0, edgeTable.rowMin)
-      val rowMax = math.max(re.rows - 1, edgeTable.rowMax)
+    if (edgeTable.rowMax > 0 && edgeTable.rowMin < re.rows) {
+      val rowMin = math.max(0, edgeTable.rowMin)
+      val rowMax = math.min(re.rows - 1, edgeTable.rowMax)
 
+      println(s"rasterizing with rowMin $rowMin and rowMax $rowMax")
       // Process each row in the raster that intersects with the polygon.
       for(row <- rowMin to rowMax) {
 
