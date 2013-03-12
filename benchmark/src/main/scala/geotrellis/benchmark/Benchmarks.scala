@@ -477,7 +477,7 @@ class MinTiled extends OperationBenchmark {
 
     tiledOp = BTileMin(makeOp(tiledRaster))
     tiledArrayOp = BTileMin(makeOp(tiledArrayRaster))
-    tiledLazyOp = TileMin(makeOp(lazyRaster))
+    tiledLazyOp = stat.Min(makeOp(lazyRaster))
 
     // run on a normal raster
     normalUntiledOp = UntiledMin(makeOp(r))
@@ -539,7 +539,7 @@ class HistogramTiled extends OperationBenchmark {
     tiledOp = BTileHistogram(makeOp(tiledRaster))
     tiledArrayOp = BTileHistogram(makeOp(tiledArrayRaster))
     tiledArrayForceOp = BTileForceHistogram(makeOp(tiledArrayRaster))
-    tiledLazyOp = TileHistogram(makeOp(lazyRaster))
+    tiledLazyOp = stat.GetHistogram(makeOp(lazyRaster))
 
     // run on a normal raster
     normalUntiledOp = BUntiledHistogram(makeOp(r))

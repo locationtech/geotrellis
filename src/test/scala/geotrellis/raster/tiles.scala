@@ -7,7 +7,7 @@ import geotrellis._
 import geotrellis.process.TestServer
 import geotrellis.raster.op.tiles._
 import geotrellis.testutil._
-
+import geotrellis.statistics.op._
 import geotrellis.Implicits._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
@@ -201,25 +201,25 @@ class TileSpec extends FunSpec with MustMatchers
     }
   }
   
-  describe("TileMin(r)") {
+  describe("stat.Min(r)") {
     it("finds the minimum value of a tiled raster") {
-      val op = TileMin(tileRaster)
+      val op = stat.Min(tileRaster)
       val z = run(op)
       z must be === 1
     }
   }
 
-  describe("TileMax(r)") {
+  describe("stat.Max(r)") {
     it("finds the maximum value of the tiled raster") {
-      val op = TileMax(tileRaster)
+      val op = stat.Max(tileRaster)
       val z = run(op)
       z must be === 25
     }
   }
 
-  describe("TileHistogram(r)") {
+  describe("stat.GetHistogram(r)") {
     it("finds the histogram of the tiled raster") {
-      val op = TileHistogram(tileRaster)
+      val op = stat.GetHistogram(tileRaster)
       val h = run(op)
       h.getItemCount(0) must be === 0
       h.getItemCount(1) must be === 1
@@ -228,17 +228,17 @@ class TileSpec extends FunSpec with MustMatchers
     }
   }
 
-  describe("TileMax(r * 2)") {
+  describe("stat.Max(r * 2)") {
     it("finds the maximum value") {
-      val op = TileMax(tileRaster * 2)
+      val op = stat.Max(tileRaster * 2)
       val z = run(op)
       z must be === 50
     }
   }
 
-  describe("TileMax(r + r)") {
+  describe("stat.Max(r + r)") {
     it("finds the maximum value") {
-      val op = TileMax(tileRaster + tileRaster)
+      val op = stat.Max(tileRaster + tileRaster)
       val z = run(op)
       z must be === 50
     }
