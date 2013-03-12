@@ -26,6 +26,8 @@ class RasterizePolygonSpec extends FunSuite {
       val diamond = Polygon( List((3,7), (6,4), (3,1), (0,4), (3,7)), ())
       val triangle = Polygon( List((2,8),(5,5),(6,7), (6,7), (2,8)),() ) 
 
+      val outsideSquare = Polygon( (51,59) :: (51,56) :: (54,56) :: (54,59) :: (51,59) :: Nil, ())
+
       // intersection on cell midpoint
       val square2 = Polygon( (1.0,9.0) :: (1.0,8.5) :: (1.0,6.0) :: (4.0, 6.0) :: (4.0, 8.5) :: (4.0, 9.0) :: (1.0, 9.0) :: Nil, () )
 
@@ -98,7 +100,10 @@ class RasterizePolygonSpec extends FunSuite {
 
       val r4 = Rasterizer.rasterizeWithValue(square2, re)((a:Unit) => 0x44)
       println(r4.asciiDraw())
-      
+
+      val r5 = Rasterizer.rasterizeWithValue(outsideSquare, re)((a:Unit) => 0x55)
+      println(r5.asciiDraw())
+            
      // LoadWKT()
   }
   
@@ -191,4 +196,6 @@ class RasterizePolygonSpec extends FunSuite {
     //val r = foreachCellByPolygon(p1, re, (x:Int, y:Int, p:Polygon[Unit]) => ( sum = sum + 1 ) )
     //assert(sum === 6722)
   }
+
+
 }

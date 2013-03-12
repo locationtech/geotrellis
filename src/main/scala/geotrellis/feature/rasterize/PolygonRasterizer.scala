@@ -15,22 +15,27 @@ object PolygonRasterizer {
     val edgeTable = buildEdgeTable(p, re)
     val activeEdgeTable = ActiveEdgeTable.empty
 
-    // Process each row in the raster that intersects with the polygon.
-    for(row <- edgeTable.rowMin to edgeTable.rowMax) {
+    if (edgeTable.rowMin < re.rows && edgeTable.rowMax > 0 ) {
+      val rowMin = math.min(0, edgeTable.rowMin)
+      val rowMax = math.max(re.rows - 1, edgeTable.rowMax)
 
-     // Update our active edge table to reflect the current row.
-     activeEdgeTable.update(row, edgeTable, re)
-     
-      // activeEdgeTable.updateIntercepts(row, re)
+      // Process each row in the raster that intersects with the polygon.
+      for(row <- rowMin to rowMax) {
 
-      // call function on included cells
-      val fillRanges = activeEdgeTable.fillRanges(row,includeExterior)
-      val cellRanges = processRanges(fillRanges)
-      for ( (col0, col1) <- cellRanges;
-            col          <- col0 to col1
-      ) f(col,row,p)
+       // Update our active edge table to reflect the current row.
+       activeEdgeTable.update(row, edgeTable, re)
+       
+        // activeEdgeTable.updateIntercepts(row, re)
 
-      activeEdgeTable.dropEdges(row)
+        // call function on included cells
+        val fillRanges = activeEdgeTable.fillRanges(row,includeExterior)
+        val cellRanges = processRanges(fillRanges)
+        for ( (col0, col1) <- cellRanges;
+              col          <- col0 to col1
+        ) f(col,row,p)
+
+        activeEdgeTable.dropEdges(row)
+      }
     }
   }
 
