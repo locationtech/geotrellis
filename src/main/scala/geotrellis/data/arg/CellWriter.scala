@@ -62,6 +62,7 @@ object BoolCellWriter extends CellWriter {
       }
       row += 1
     }
+    if(i != 0) { dos.writeByte(z) } // Write last byte!
   }
   def writeCell(data:RasterData, col:Int, row:Int, cols:Int, dos:DataOutputStream) = ()
 }
