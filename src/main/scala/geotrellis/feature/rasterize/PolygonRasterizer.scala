@@ -10,16 +10,19 @@ object PolygonRasterizer {
    * Apply a function to each raster cell that intersects with a polygon.
    */
   def foreachCellByPolygon[D](p:Polygon[D], re:RasterExtent, includeExterior:Boolean=false)( f:Callback[Polygon,D]) {
+    
+    if (! p.geom.intersects(re.extent.asFeature(()).geom)) { return }
+    
     // Create a global edge table which tracks the minimum and maximum row 
     // for which each edge is relevant.
     val edgeTable = buildEdgeTable(p, re)
     val activeEdgeTable = ActiveEdgeTable.empty
 
+
     if (edgeTable.rowMax > 0 && edgeTable.rowMin < re.rows) {
       val rowMin = math.max(0, edgeTable.rowMin)
       val rowMax = math.min(re.rows - 1, edgeTable.rowMax)
 
-      println(s"rasterizing with rowMin $rowMin and rowMax $rowMax")
       // Process each row in the raster that intersects with the polygon.
       for(row <- rowMin to rowMax) {
 
