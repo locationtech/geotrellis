@@ -1,8 +1,7 @@
 package geotrellis.statistics.op.stat
 
 import geotrellis._
-import geotrellis._
-import geotrellis.statistics._
+import geotrellis.statistics._ 
 import geotrellis.logic.{Reducer1,Reducer2}
 import geotrellis.process._
 
@@ -23,11 +22,16 @@ object GetHistogram {
  * @note     Rasters with a double type (TypeFloat,TypeDouble) will have their values
  *           rounded to integers when making the Histogram.
  */
-case class GetHistogramMap(r:Op[Raster]) extends Reducer1(r)({
-  r => FastMapHistogram.fromRaster(r.force)
-})({
-  hs => FastMapHistogram.fromHistograms(hs)
-})
+case class GetHistogramMap(r:Op[Raster]) extends logic.TileReducer1[Histogram] {
+  type B = FastMapHistogram
+ 
+  case class UntiledHistogram(r:Op[Raster]) extends Op1(r) ({
+    (r) => Result(List(FastMapHistogram.fromRaster(r.force)))
+  })
+
+  def mapper(r:Op[Raster]):Op[List[FastMapHistogram]] = UntiledHistogram(r)
+  def reducer(hs:List[FastMapHistogram]):Histogram = FastMapHistogram.fromHistograms(hs)
+}
 
 /**
  * Implements a histogram in terms of an array of the given size.

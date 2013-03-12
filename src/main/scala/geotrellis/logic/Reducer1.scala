@@ -5,7 +5,10 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.raster._
 
+@deprecated("Use TileReducer1 instead.", "0.8")
 /**
+ * DEPRECATED -- use TileReducer1.
+ *
  * Base class for operations that use a map and reduce step to allow for
  * operations to be distributed over [[geotrellis.raster.TiledRasterData]].
  */
