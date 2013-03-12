@@ -49,10 +49,14 @@ trait ThroughputLimitedReducer1[C] extends Op[C] {
         case None => r.getTileOpList().map(mapper)
         case Some(p) => r.getTileOpList(p).map(mapper)
       }
-      val groups = ops grouped (limit) toList
-      val tail = groups.tail
-      val head = groups.head
-      runAsync('runGroup :: List[B]() :: tail :: head)
+      if (ops.isEmpty) {
+        runAsync('reduce :: List[B]())
+      } else {
+        val groups = ops grouped (limit) toList
+        val tail = groups.tail
+        val head = groups.head
+        runAsync('runGroup :: List[B]() :: tail :: head)
+      }
     } else {
         runAsync('runGroup :: List[B]() :: List[B]() :: mapper(r) :: Nil)
     }

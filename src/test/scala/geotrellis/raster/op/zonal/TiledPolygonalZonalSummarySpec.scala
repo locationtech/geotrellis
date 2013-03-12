@@ -120,6 +120,13 @@ class TiledPolygonalZonalSummarySpec extends FunSpec with ShouldMatchers {
       val h = server.run(histOp)
       h.getItemCount(1) should equal (50)
       h.getItemCount(2) should equal (100)
+
+
+      // Test non-intersecting polygons (issue #412)
+      val nonintersecting = Extent(100,120,100,120).asFeature(())
+      val sumOp2 = zonal.summary.Sum(raster, nonintersecting, tileSums)
+      val sumResult2 = server.run(sumOp2)
+      sumResult2 should equal (0)
     }
   }
 }
