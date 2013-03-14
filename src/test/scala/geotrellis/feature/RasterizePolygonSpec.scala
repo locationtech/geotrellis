@@ -14,6 +14,7 @@ import PolygonRasterizer._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class RasterizePolygonSpec extends FunSuite {
+
   test("Polygon Rasterization") {
       val e = Extent(0.0, 0.0, 10.0, 10.0)
       val g = RasterExtent(e, 1.0, 1.0, 10, 10)
@@ -27,6 +28,7 @@ class RasterizePolygonSpec extends FunSuite {
       val triangle = Polygon( List((2,8),(5,5),(6,7), (6,7), (2,8)),() ) 
 
       val outsideSquare = Polygon( (51,59) :: (51,56) :: (54,56) :: (54,59) :: (51,59) :: Nil, ())
+      val envelopingSquare = Extent(0.0, 0.0, 10.0, 10.0).asFeature(())
 
       // intersection on cell midpoint
       val square2 = Polygon( (1.0,9.0) :: (1.0,8.5) :: (1.0,6.0) :: (4.0, 6.0) :: (4.0, 8.5) :: (4.0, 9.0) :: (1.0, 9.0) :: Nil, () )
@@ -103,10 +105,27 @@ class RasterizePolygonSpec extends FunSuite {
 
       val r5 = Rasterizer.rasterizeWithValue(outsideSquare, re)((a:Unit) => 0x55)
       println(r5.asciiDraw())
-            
+
+      val r6 = Rasterizer.rasterizeWithValue(envelopingSquare, re)((a:Unit) => 0x66)
+      println(r6.asciiDraw())            
+
      // LoadWKT()
   }
-  
+
+  test("failing example should work") {
+    val geojson = """{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[35.092945313732635,-85.4351806640625],[35.06147690849717,-85.440673828125],[35.08620310578525,-85.37200927734375]]]}}"""
+    val fOp = io.LoadGeoJsonFeature(geojson)
+    val f = TestServer().run(fOp)
+    val p = Polygon(List((-9510600.807354769, 4176519.1962707597), (-9511212.30358105,4172238.854275199), (-9503568.600752532,4175602.1747499597), (-9510600.807354769,4176519.1962707597)),())
+    val re = RasterExtent(Extent(-9509377.814902207,4174073.2405969054,-9508766.318675926,4174684.736823185),2.3886571339098737,2.3886571339044167,256,256)
+    val r = Rasterizer.rasterizeWithValue(p, re)( (a:Unit) => 1 )
+    var sum = 0
+    r.foreach(v => if (v != NODATA) sum = sum + 1)
+    assert(sum === 65536)
+  }
+
+
+
   test("polygon rasterization: more complex polygons") {
 	  val p1 = Polygon (List((-74.6229572569999, 41.5930024740001),
           (-74.6249086829999, 41.5854607480001),
@@ -148,7 +167,7 @@ class RasterizePolygonSpec extends FunSuite {
       assert(r1.get(390,333) === 0x55)
       println("sum: " + sum)
   }
-  
+
   test("Rasterization tests from directory of WKT files") {
 
     // This test loads WKT text files from src/test/resources/feature which are
@@ -166,36 +185,42 @@ class RasterizePolygonSpec extends FunSuite {
 
     val f = new java.io.File("src/test/resources/feature/")
     val fs = f.listFiles.filter(_.getPath().endsWith(".wkt"))
-    //.foreach {
-      
-    fs.foreach( f => {
-      val json = scala.io.Source.fromFile(f).mkString
-      val filename = f.getName()
-      println("Testing rasterization: " + filename)
-      val count = Integer.parseInt(f.getName().subSequence(0, filename.length - 4).toString.split("_").last)
-      println("count: " + count)
-      val g1 = TestServer().run(io.LoadWkt(json))
-      val p1 = Polygon(g1.geom, ())
-      var sum = 0
-      val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)
-      val r = foreachCellByPolygon(p1, re)(
-          new Callback[Polygon,Unit] {
-            def apply(x:Int, y:Int, p:Polygon[Unit]) {
-              sum = sum + 1 
-            }
-          })
 
-      assert(sum === count)
-    } )
-    //val data1 = scala.io.Source.fromFile("src/test/resources/feature/polygon1.wkt").mkString
-    //val g1 = TestServer().run(io.LoadWkt(data1))
-    //val p1 = Polygon(g1.geom, ())
-    //println(p1)
-    //var sum = 0
-    //val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)
-    //val r = foreachCellByPolygon(p1, re, (x:Int, y:Int, p:Polygon[Unit]) => ( sum = sum + 1 ) )
-    //assert(sum === 6722)
+    val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)
+    fs.foreach( f => { 
+      val (sum, count) = RasterizePolygonSpec.countRasterizedCells(f, re) 
+      assert ( sum === count )
+    })
   }
 
+/*  test("github issue 412: rasterize specific multipolygon") {
+    val f = new java.io.File("src/test/resources/wkt/usace_division_3.wkt") 
+    val json = scala.io.Source.fromFile(wktFile).mkString
+    val re = RasterExtent( Extent ( -14170971.178,2802226.157,-6033516.401,6621293.7227), 31786.93272265625, 14918.232678515624, 256, 256)
+    Rasterizer.rasterizeWithValue(
+    val (sum, count) = RasterizePolygonSpec.countRasterizedCells(f, re)
+  }
+*/
+}
 
+object RasterizePolygonSpec {
+  def countRasterizedCells( wktFile:java.io.File, re:RasterExtent ) = {
+    val json = scala.io.Source.fromFile(wktFile).mkString
+    val filename = wktFile.getName()
+    println("Testing rasterization: " + filename)
+    val count = Integer.parseInt(wktFile.getName().subSequence(0, filename.length - 4).toString.split("_").last)
+    println("count: " + count)
+    val g1 = TestServer().run(io.LoadWkt(json))
+    val p1 = Polygon(g1.geom, ())
+    var sum = 0
+    val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)
+    val r = foreachCellByPolygon(p1, re)(
+        new Callback[Polygon,Unit] {
+          def apply(x:Int, y:Int, p:Polygon[Unit]) {
+            sum = sum + 1
+          }
+        })
+
+    (sum, count)
+  }
 }
