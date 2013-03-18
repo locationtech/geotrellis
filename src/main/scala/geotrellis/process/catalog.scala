@@ -36,7 +36,7 @@ case class DataStore(name:String, params:Map[String, String]) {
   private def initRasterLayers() {
     val path = params("path")
     val f = new java.io.File(path)
-    if (!f.isDirectory) sys.error("store %s is not a dirctory" format path)
+    if (!f.isDirectory) sys.error("store %s is not a directory" format path)
     find(f, ".json", initRasterLayer _)
   }
 
