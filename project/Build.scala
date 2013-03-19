@@ -95,7 +95,7 @@ object GeotrellisBuild extends Build {
         "org.slf4j" % "slf4j-api" % "1.6.0",
         "org.slf4j" % "slf4j-nop" % "1.6.0"
       )).
-    dependsOn(root)
+    dependsOn(root,geotools)
 
   lazy val dev:Project = Project("dev", file("dev")).
     settings(

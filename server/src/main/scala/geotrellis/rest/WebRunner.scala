@@ -9,18 +9,21 @@ import java.util.concurrent.TimeUnit
 import com.typesafe.config.ConfigFactory
 
 /**
- * Starts a webserver on the configured port (default 8080) that will serve any rest
- * services found in the package defined as 'resource_package' in the configuration file.
- *
- * At the moment, the directory is this package -- geotrellis.rest.
- * See "HelloService" for an example.  Any classes defined in the package with
- * JAX-RS attributes will become REST services.
+ * Starts a webserver on the configured port that will serve any rest
+ * services found in the package defined as 'rest-package' in the configuration file.
+ * By default, the admin services are included, found in geotrellis.admin.services.
+ * Any classes defined in an included package with JAX-RS attributes will become REST services.
  */
 
 object WebRunner {
   val config = ConfigFactory.load()
 
   def main(args: Array[String]) {
+    printWelcome()
+
+    val packages = Seq(config.getString("geotrellis.rest-package"),
+                       "geotrellis.admin.services")
+
     val host = config.getString("geotrellis.host")
     val port = config.getInt("geotrellis.port")
 
@@ -28,9 +31,9 @@ object WebRunner {
     val maximumPoolSize = config.getInt("geotrellis.jetty.maximumPoolSize")
     val keepAliveTime =  config.getLong("geotrellis.jetty.keepAliveMilliseconds")
 
-    println("Starting server on port %d.".format(port))
     val server = new Server()
     server.setThreadPool(new ExecutorThreadPool(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS))
+
     val connector = new SelectChannelConnector()
     connector.setHost(host)
     connector.setPort(port)
@@ -38,14 +41,33 @@ object WebRunner {
 
     val holder: ServletHolder = new ServletHolder(classOf[ServletContainer])
     holder.setInitParameter("com.sun.jersey.config.property.resourceConfigClass",
-      "com.sun.jersey.api.core.PackagesResourceConfig")
+                            "com.sun.jersey.api.core.PackagesResourceConfig")
 
-    val pkg = config.getString("geotrellis.rest-package")
-    holder.setInitParameter("com.sun.jersey.config.property.packages", pkg)
+    holder.setInitParameter("com.sun.jersey.config.property.packages", packages.mkString(";"))
 
     val context = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS)
-    context.addServlet(holder, "/*")
+
+    if(config.getBoolean("geotrellis.server.serve-static")) {
+      context.setResourceBase("/home/rob/proj/gt/geotrellis-alt/server/src/main/webapp/")
+      context.setWelcomeFiles(Array("index.html"))
+      context.addServlet(classOf[org.eclipse.jetty.servlet.DefaultServlet], "/*")
+    }
+
+    context.addServlet(holder, "/gt/*")
+
+    log(s"Starting server on port $port.")
+    for(p <- packages) { log(s"\tIncluding package $p") }
+
     server.start
     server.join
+
+  }
+
+  def printWelcome() = {
+    println("\n\t--=== GEOTRELLIS SERVER ===--\n")
+  }
+
+  def log(msg:String) = {
+    println(s"[GEOTRELLIS]  $msg")
   }
 }
