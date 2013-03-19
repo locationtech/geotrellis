@@ -48,7 +48,14 @@ object WebRunner {
     val context = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS)
 
     if(config.getBoolean("geotrellis.server.serve-static")) {
-      context.setResourceBase("/home/rob/proj/gt/geotrellis-alt/server/src/main/webapp/")
+      val staticPath = config.getString("geotrellis.server.static-path")
+      if(!new java.io.File(staticPath).isDirectory) {
+        log(s"ERROR - $staticPath is not a valid directory for static content.")
+        log(s"        Check the geotrellis.server.static-path property of your configuration")
+        errorOut()
+      }
+      log(s"Serving static content from $staticPath")
+      context.setResourceBase(staticPath)
       context.setWelcomeFiles(Array("index.html"))
       context.addServlet(classOf[org.eclipse.jetty.servlet.DefaultServlet], "/*")
     }
@@ -69,5 +76,9 @@ object WebRunner {
 
   def log(msg:String) = {
     println(s"[GEOTRELLIS]  $msg")
+  }
+
+  def errorOut() = {
+    System.exit(1)
   }
 }
