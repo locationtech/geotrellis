@@ -50,8 +50,6 @@ class Arg32Spec extends FunSpec with MustMatchers with ShouldMatchers {
     it("should write to full paths ") {
       val fh = java.io.File.createTempFile("foog", ".arg")
       val path = fh.getPath
-      val base = path.substring(0, path.length - 4)
-      println("base path: " + base)
 
       ArgWriter(TypeInt).write(path, raster, "foog")
 
@@ -60,6 +58,17 @@ class Arg32Spec extends FunSpec with MustMatchers with ShouldMatchers {
     
       //new java.io.File(base + ".arg").delete() must be === true
       //new java.io.File(base + ".json").delete() must be === true
+      data1 must be === data2
+    }
+
+    it("should allow file extension to be excluded") {
+      val fh = java.io.File.createTempFile("testraster2", ".arg")
+      val path = fh.getPath
+      val base = path.substring(0, path.length - 4)
+      ArgWriter(TypeInt).write(base, raster, "foog2")
+
+      val data1 = scala.io.Source.fromFile(path).mkString
+      val data2 = scala.io.Source.fromFile("src/test/resources/fake.img32.arg").mkString
       data1 must be === data2
     }
 
