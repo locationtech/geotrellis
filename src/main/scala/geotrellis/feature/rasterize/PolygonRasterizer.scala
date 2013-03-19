@@ -10,6 +10,15 @@ object PolygonRasterizer {
    * Apply a function to each raster cell that intersects with a polygon.
    */
   def foreachCellByPolygon[D](p:Polygon[D], re:RasterExtent, includeExterior:Boolean=false)( f:Callback[Polygon,D]) {
+    
+    // If polygon does not intersect with this raster's extent, skip.
+    val rasterGeom = re.extent.asFeature(()).geom
+    if (! p.geom.intersects(rasterGeom)) { return }
+
+    processPolygon( p, re:RasterExtent, includeExterior )(f)
+  }
+
+  def processPolygon[D](p:Polygon[D], re:RasterExtent, includeExterior:Boolean)( f:Callback[Polygon,D]) {
     // Create a global edge table which tracks the minimum and maximum row 
     // for which each edge is relevant.
     val edgeTable = buildEdgeTable(p, re)
@@ -19,25 +28,24 @@ object PolygonRasterizer {
       val rowMin = math.max(0, edgeTable.rowMin)
       val rowMax = math.min(re.rows - 1, edgeTable.rowMax)
 
-      println(s"rasterizing with rowMin $rowMin and rowMax $rowMax")
       // Process each row in the raster that intersects with the polygon.
-      for(row <- rowMin to rowMax) {
-
+      for(row <- edgeTable.rowMin to edgeTable.rowMax) {
        // Update our active edge table to reflect the current row.
        activeEdgeTable.update(row, edgeTable, re)
-       
         // activeEdgeTable.updateIntercepts(row, re)
 
         // call function on included cells
-        val fillRanges = activeEdgeTable.fillRanges(row,includeExterior)
-        val cellRanges = processRanges(fillRanges)
-        for ( (col0, col1) <- cellRanges;
-              col          <- col0 to col1
-        ) f(col,row,p)
+        if (row >= rowMin && row <= rowMax) {
+          val fillRanges = activeEdgeTable.fillRanges(row,includeExterior, re)
+          val cellRanges = processRanges(fillRanges, includeExterior, re)
+          for ( (col0, col1) <- cellRanges;
+                col          <- col0 to col1
+          ) f(col,row,p)
+        }
 
         activeEdgeTable.dropEdges(row)
       }
-    }
+    } 
   }
 
   /** Return columns to be included in this range.
@@ -45,14 +53,15 @@ object PolygonRasterizer {
    * If includeTouched is true, all cells touched by the polygon will be included.
    * If includeTouched is false, only cells whose center point is within the polygon will be included.
    */
-  def processRanges(fillRanges:List[(Double,Double)], includeTouched:Boolean = false):List[(Int,Int)] = {
+  def processRanges(fillRanges:List[(Double,Double)], includeTouched:Boolean = false, re:RasterExtent):List[(Int,Int)] = {
     for ( (x0, x1) <- fillRanges) yield {
       val cellWidth = 1
-      if (includeTouched) {
+      val (minCol, maxCol) = if (includeTouched) {
         ( (math.floor(x0)).toInt, (math.ceil(x1)).toInt )
       } else {
         ( (math.floor(x0 + 0.5)).toInt,  (math.floor(x1 - 0.5)).toInt )
       }
+      ( math.max(minCol,0), math.min(maxCol, re.cols - 1 ) )
     }
   }
 
@@ -88,8 +97,12 @@ object PolygonRasterizer {
       edges = edges.map { i => Intercept(i.line, y, re) }
     } 
 
-    def fillRanges(row:Int, includeExterior:Boolean):List[(Double,Double)] = {
-      val doubleRange = edges.grouped(2).map {r => (r(0).colDouble, r(1).colDouble)}.toList
+    def fillRanges(row:Int, includeExterior:Boolean, re:RasterExtent):List[(Double,Double)] = {
+      val doubleRange:List[(Double,Double)] = edges
+        .grouped(2)
+        .filter(_.length == 2)
+        .map {r => (r(0).colDouble, r(1).colDouble)}
+        .toList
       doubleRange
     }
       
@@ -173,17 +186,20 @@ object PolygonRasterizer {
     val lines = geom.getExteriorRing.getCoordinates.sliding(2).flatMap {  
       case Array(c1,c2) => Line.create(c1,c2,re)
     }.toList
+    if (lines.length > 0 ) {
+      val rowMin = lines.map( _.rowMin ).reduceLeft( math.min(_, _) ) 
+      val rowMax = lines.map( _.rowMax ).reduceLeft( math.max(_, _) ) 
 
-    val rowMin = lines.map( _.rowMin ).reduceLeft( math.min(_, _) ) 
-    val rowMax = lines.map( _.rowMax ).reduceLeft( math.max(_, _) ) 
-
-    var map = Map[Int,List[Line]]()
-    for(line <- lines) {
-      // build lists of lines by starting row
-      val linelist = map.get(line.rowMin)
+      var map = Map[Int,List[Line]]()
+      for(line <- lines) {
+        // build lists of lines by starting row
+        val linelist = map.get(line.rowMin)
                         .getOrElse(List[Line]())
-      map += (line.rowMin -> (linelist :+ line))
+        map += (line.rowMin -> (linelist :+ line))
+      }
+      EdgeTable(map,rowMin,rowMax)
+    } else {
+      EdgeTable( Map[Int,List[Line]](), 0, 0 ) 
     }
-    EdgeTable(map,rowMin,rowMax)
   }
 }
