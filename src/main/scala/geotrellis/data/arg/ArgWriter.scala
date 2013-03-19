@@ -20,14 +20,26 @@ case class ArgWriter(typ:RasterType) extends Writer {
 
   /**
    * Write a raster in ARG format to the specified path.
-   * 
-   * @param path: Path to write arg files including base filename but not extension
+   *
+   * The outputFilePath argument should be the full file path (including file name and extension)
+   * to which the raster file should be written.  For example, "/var/data/geotrellis/myraster.arg".
+   *
+   * The metadataName argument is a logical name for the raster that will be included in the raster's
+   * metadata.  It does not have to match the output filename.  This filename is used by the catalog
+   * when a raster is loaded by name as opposed to filepath.
+   *
+   * @param outputFilePath: File path to which to write out arg file (can include .arg extension)
    * @param raster: Raster to write to disk
-   * @param name: Name to be included in json metadata as 'layer', used in catalog
+   * @param metadataName: Name to be included in json metadata as 'layer', used in catalog
    */
-  def write(path:String, raster:Raster, name:String) {
-    val base = path.substring(0, path.lastIndexOf("."))
-    writeMetadataJSON(base + ".json", name, raster.rasterExtent)
+  def write(outputFilePath:String, raster:Raster, metadataName:String) {
+    val path = outputFilePath
+    val base:String = if (path.endsWith(".arg") || path.endsWith(".")) {
+      path.substring(0, path.lastIndexOf("."))
+    } else {
+      path 
+    }
+    writeMetadataJSON(base + ".json", metadataName, raster.rasterExtent)
     writeData(base + ".arg", raster)
   }
 
