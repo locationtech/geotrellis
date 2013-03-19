@@ -40,16 +40,6 @@ class OperationsTest extends FunSuite {
   val r10 = Raster(Array.fill(100)(10), re)
   val r11 = Raster(Array.fill(100)(11), re)
   
-  run("int", AddConstant(r3, 6), r9)
-
-  run("int", And(r9, 3), r1)
-  run("int", And(9, r3), r1)
-  run("int", And(r9, r3), r1)
-
-  run("int", Or(r9, 3), r11)
-  run("int", Or(9, r3), r11)
-  run("int", Or(r9, r3), r11)
-
   run("int", Xor(r9, 3), r10)
   run("int", Xor(9, r3), r10)
   run("int", Xor(r9, r3), r10)
@@ -98,10 +88,6 @@ class OperationsTest extends FunSuite {
   val d10 = Raster(Array.fill(100)(10.0), re)
   val d11 = Raster(Array.fill(100)(11.0), re)
 
-  run("double", AddConstant(d3, 6), d9)
-
-  run("double", And(d9, 3), d1)
-  
   run("double", DivideConstant(d9_9, 3), d3_3)
   run("double", DivideDoubleConstant(d9_9, 3.0), d3_3)
   run("double", DivideConstantBy(99, d9_9), d10)

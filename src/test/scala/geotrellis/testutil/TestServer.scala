@@ -46,6 +46,8 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
     val r1 = run(rOp1)
     val r2 = run(rOp2)
     
+    r1.rasterExtent should be (r2.rasterExtent)
+
     r1.cols should be (r2.cols)
     r1.rows should be (r2.rows)
     r1.isFloat should be (r2.isFloat)
@@ -54,7 +56,7 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
     for(col <- 0 until r1.cols) {
       for(row <- 0 until r1.rows) {
         if(isFloat) {
-          if(r1.getDouble(col,row) - r2.getDouble(col,row) >= threshold) {
+          if(math.abs(r1.getDouble(col,row) - r2.getDouble(col,row)) >= threshold) {
             println(s"Failure at (${col},${row})")
             r1.getDouble(col,row) should be (r2.getDouble(col,row))
           }

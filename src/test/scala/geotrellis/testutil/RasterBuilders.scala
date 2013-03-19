@@ -9,14 +9,30 @@ trait RasterBuilders {
     Raster(arr, RasterExtent(Extent(0,0,d,d),1,1,d,d))
   }
 
+  def createConsecutiveRaster(cols:Int,rows:Int, startingFrom:Int = 1):Raster = {
+    val arr = (for(i <- startingFrom to cols*rows + (startingFrom - 1)) yield i).toArray
+    Raster(arr, RasterExtent(Extent(0,-rows,cols*10,0),10,1,cols,rows))
+  }
+
   def createOnesRaster(d:Int):Raster = {
     val arr = (for(i <- 1 to d*d) yield 1).toArray
     Raster(arr, RasterExtent(Extent(0,0,d,d),1,1,d,d))
   }
 
   def createValueRaster(d:Int,v:Int):Raster = {
-    val arr = (for(i <- 1 to d*d) yield v).toArray
-    Raster(arr, RasterExtent(Extent(0,0,d,d),1,1,d,d))
+    Raster(Array.fill(d*d)(v), RasterExtent(Extent(0,0,d,d),1,1,d,d))
+  }
+
+  def createValueRaster(d:Int,v:Double):Raster = {
+    Raster(Array.fill(d*d)(v), RasterExtent(Extent(0,0,d,d),1,1,d,d))
+  }
+
+  def createValueRaster(cols:Int,rows:Int,v:Int):Raster = {
+    Raster(Array.fill(rows*cols)(v), RasterExtent(Extent(0,-rows,cols*10,0),10,1,cols,rows))
+  }
+
+  def createValueRaster(cols:Int,rows:Int,v:Double):Raster = {
+    Raster(Array.fill(cols*rows)(v), RasterExtent(Extent(0,-rows,cols*10,0),10,1,cols,rows))
   }
 
   def createRaster(arr:Array[Int]) = {
@@ -42,6 +58,14 @@ trait RasterBuilders {
 
   def createNoData(cols:Int,rows:Int,t:RasterType = TypeInt) =
     Raster(RasterData.emptyByType(t,cols,rows), RasterExtent(Extent(0,-rows,cols*10,0),10,1,cols,rows))
+
+  def replaceValues(r:Raster,valueMap:Map[(Int,Int),Int]) = {
+    val arr = for(row <- 0 until r.rows; col <- 0 until r.cols) yield {
+      if(valueMap.contains((col,row))) { valueMap((col,row)) }
+      else { r.get(col,row) }
+    }
+    Raster(arr.toArray, r.rasterExtent)
+  }
 
   /**
    * 9x10 raster of 90 numbers between 1 - 100 in random order.
@@ -127,9 +151,17 @@ trait RasterBuilders {
   def printR(r:Raster) {
     for(row <- 0 until r.rows) {
       for(col <- 0 until r.cols) {
-        print(s"    ${r.get(col,row)}")
+        val v = r.get(col,row)
+        val s = if(v == NODATA) {
+          "ND"
+        } else {
+          s"$v"
+        }
+        val pad = " " * math.max(6 - s.length,0) 
+        print(s"${pad + s}")
       }
       println
     }      
+    println
   }
 }

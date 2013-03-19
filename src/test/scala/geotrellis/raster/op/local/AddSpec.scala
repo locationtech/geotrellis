@@ -31,6 +31,10 @@ class AddSpec extends FunSpec
       }
     }
 
+    it("adds a constant value to each cell of another int value raster") {
+      assertEqual(Add(6,createValueRaster(10,3)),createValueRaster(10,9))
+    }
+
     it("adds a constant value to each cell of an double valued raster") {
       val r = probabilityRaster
       val result = run(Add(r,1))
@@ -39,6 +43,10 @@ class AddSpec extends FunSpec
           result.getDouble(col,row) should be (r.getDouble(col,row) + 1.0)
         }
       }
+    }
+
+    it("adds a double constant value to each cell of another int value raster") {
+      assertEqual(Add(6,createValueRaster(10,3.3)),createValueRaster(10,9.3))
     }
 
     it("adds a double constant value to each cell of an int valued raster") {
@@ -70,7 +78,7 @@ class AddSpec extends FunSpec
         }
       }
     }
-    
+
     it("adds a double raster to itself") {
       val r = probabilityRaster
       val result = run(Add(r,r))
