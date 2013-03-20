@@ -73,6 +73,7 @@ object Rasterizer {
       case p:LineString[_] => foreachCellByLineString[D](p.asInstanceOf[LineString[D]],re)(f.asInstanceOf[Callback[LineString,D]])
       case p:Polygon[_] => PolygonRasterizer.foreachCellByPolygon[D](p.asInstanceOf[Polygon[D]],re)(f.asInstanceOf[Callback[Polygon,D]])
       case p:MultiPolygon[_] => foreachCellByMultiPolygon[D](p.asInstanceOf[MultiPolygon[D]],re)(f.asInstanceOf[Callback[Polygon,D]])
+      case _ => ()
     }
   }
   
