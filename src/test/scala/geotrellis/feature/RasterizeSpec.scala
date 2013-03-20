@@ -73,4 +73,25 @@ class RasterizeSpec extends FunSuite {
       s.shutdown()
     
   }
+
+  test("linestring rasterization") {
+      // setup test objects
+      val s = TestServer()
+      val e = Extent(0.0, 0.0, 10.0, 10.0)
+      val g = RasterExtent(e, 1.0, 1.0, 10, 10)
+
+      val data = (0 until 99).toArray
+      val raster = Raster(data, g)
+      val re = raster.rasterExtent
+
+      val line1 = LineString( 1.0,3.5,1.0,8.5, "line" ) 
+      var lineOutput:String = ""
+      val l1 = new geotrellis.feature.rasterize.Callback[LineString,String] {
+          def apply(col:Int, row:Int, feature:LineString[String]) {
+            lineOutput = lineOutput + raster.get(col,row) + ","
+          }
+        }
+      Rasterizer.foreachCellByLineString(line1, re)(l1)
+      assert(lineOutput === "11,21,31,41,51,61,")
+  }
 }
