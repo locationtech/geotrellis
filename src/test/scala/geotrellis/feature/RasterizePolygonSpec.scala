@@ -109,6 +109,12 @@ class RasterizePolygonSpec extends FunSuite {
       val r6 = Rasterizer.rasterizeWithValue(envelopingSquare, re)((a:Unit) => 0x66)
       println(r6.asciiDraw())            
 
+      val emptyGeom = outsideSquare.geom.intersection(envelopingSquare.geom)
+
+      val r7 = Rasterizer.rasterizeWithValue(Feature(emptyGeom, ()), re)((a:Unit) => 0x77)
+      sum = 0
+      r7.foreach(f => if (f != NODATA) sum = sum + 1 )
+      assert(sum === 0)
      // LoadWKT()
   }
 
