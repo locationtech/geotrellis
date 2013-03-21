@@ -245,7 +245,7 @@ case class Worker(val server: Server) extends WorkerLike {
       } catch {
         case e:Throwable => {
           val error = StepError.fromException(e)
-          System.err.printf("Operation failed, with exception: %s\n\nStack trace:\n%s\n", error.msg,error.trace)
+          System.err.println("Operation failed, with exception: %s\n\nStack trace:\n%s\n", error.msg,error.trace)
           handleResult(pos, client, error, Some(geotrellisContext.timer), dispatcher)
         }
       }
@@ -335,7 +335,7 @@ extends WorkerLike {
     } catch {
       case e:Throwable => {
         val error = StepError.fromException(e)
-        System.err.printf(s"Operation failed, with exception: ${error.msg}\n\nStack trace:${error.trace}\n\n")
+        System.err.println(s"Operation failed, with exception: ${error.msg}\n\nStack trace:${error.trace}\n\n")
         handleResult(pos, client, error, None, dispatcher)
       }
     }
