@@ -90,7 +90,10 @@ akka {
 
   def run[T:Manifest](op:Op[T]):T = getResult(op) match {
     case Complete(value, _) => value
-    case Error(msg, trace) => sys.error(msg)
+    case Error(msg, trace) => {
+      println(s"Operation Error. Trace: $trace")
+      sys.error(msg)
+    }
   }
 
   def getResult[T:Manifest](op:Op[T]) = _run(op)

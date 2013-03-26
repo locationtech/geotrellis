@@ -513,9 +513,11 @@ case class LazyTiledCombine(data1:TiledRasterData, data2:TiledRasterData,
   val typ = RasterData.largestType(data1, data2)
   val layout = data1.tileLayout // TODO: must handle different tile layouts
 
-  if (data1.lengthLong != data2.lengthLong)
-    sys.error("invalid raster sizes: %s, %s" format (data1.lengthLong,
-                                                     data2.lengthLong))
+  if (data1.lengthLong != data2.lengthLong) {
+    val size1 = s"${data1.cols} x ${data1.rows}"
+    val size2 = s"${data2.cols} x ${data2.rows}"
+    sys.error(s"Cannot combine rasters of different sizes: $size1 vs $size2")
+  }
 
   def tileLayout = layout
 

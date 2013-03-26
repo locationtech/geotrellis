@@ -299,6 +299,11 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
 
   def combine(rhs:RasterData)(f:(Int, Int) => Int):RasterData = rhs match {
     case other:ArrayRasterData => {
+      if (lengthLong != other.lengthLong) {
+        val size1 = s"${cols} x ${rows}"
+        val size2 = s"${other.cols} x ${other.rows}"
+        sys.error(s"Cannot combine rasters of different sizes: $size1 vs $size2")
+      }
       val output = RasterData.largestAlloc(this, other, cols, rows)
       var i = 0
       val len = length
@@ -346,6 +351,11 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
 
   def combineDouble(rhs:RasterData)(f:(Double, Double) => Double) = rhs match {
     case other:ArrayRasterData => {
+      if (lengthLong != other.lengthLong) {
+        val size1 = s"${cols} x ${rows}"
+        val size2 = s"${other.cols} x ${other.rows}"
+        sys.error(s"Cannot combine rasters of different sizes: $size1 vs $size2")
+      }
       val output = RasterData.largestAlloc(this, other, cols, rows)
       var i = 0
       val len = length
@@ -806,6 +816,11 @@ extends LazyRasterData with Wrapper {
 final case class LazyCombine(data1:ArrayRasterData,
                              data2:ArrayRasterData,
                              g:(Int, Int) => Int) extends LazyRasterData {
+  if (data1.lengthLong != data2.lengthLong) {
+    val size1 = s"${data1.cols} x ${data1.rows}"
+    val size2 = s"${data2.cols} x ${data2.rows}"
+    sys.error(s"Cannot combine rasters of different sizes: $size1 vs $size2")
+  }
 
   def cols = data1.cols
   def rows = data1.rows
@@ -876,6 +891,12 @@ final case class LazyCombine(data1:ArrayRasterData,
 final case class LazyCombineDouble(data1:ArrayRasterData,
                                    data2:ArrayRasterData,
                                    g:(Double, Double) => Double) extends LazyRasterData {
+
+  if (data1.lengthLong != data2.lengthLong) {
+    val size1 = s"${data1.cols} x ${data1.rows}"
+    val size2 = s"${data2.cols} x ${data2.rows}"
+    sys.error(s"Cannot combine rasters of different sizes: $size1 vs $size2")
+  }
 
   def cols = data1.cols
   def rows = data1.rows
