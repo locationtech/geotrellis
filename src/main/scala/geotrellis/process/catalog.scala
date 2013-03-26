@@ -63,7 +63,10 @@ case class DataStore(name:String, params:Map[String, String]) {
   def getPaths = paths.keys
   def getLayers = layers.values
 
-  def hasCacheAll = params.contains("cacheAll")
+  def hasCacheAll = if(params.contains("cacheAll")) {
+    val value = params("cacheAll").toLowerCase
+    value == "true" || value == "yes" || value == "1"
+  } else { false }
 
   def getRasterLayer(path:String): Option[RasterLayer] = paths.get(path)
 

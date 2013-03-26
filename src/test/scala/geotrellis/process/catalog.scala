@@ -105,5 +105,53 @@ class CatalogSpec extends FunSpec with MustMatchers with ShouldMatchers {
       val result = s.getRasterByName("constant", None).asInstanceOf[Result[Raster]]
       assert(result.value.data.isInstanceOf[IntConstant])
     }
+
+    it("should correctly recognize to cache all") {
+      def cacheAllLine(s:String) = s"""
+{
+ "catalog": "Test",
+ "stores": [
+  {
+   "store": "test:fs",
+   "params": {
+     "type": "fs",
+     "path": "$datapath",
+     "cacheAll": "$s"
+    }
+  }
+ ]
+}
+      """
+      val yeses = Seq("yes","YES","True","true","1")
+      val noes = Seq("no","false","shutup!","Troo")
+      
+      for(s <- yeses) {
+        Catalog.fromJSON(cacheAllLine(s)).stores("test:fs").hasCacheAll should be (true)
+      }
+
+      for(s <- noes) {
+        Catalog.fromJSON(cacheAllLine(s)).stores("test:fs").hasCacheAll should be (false)
+      }
+    }
+
+    it("should not cache all when there is no cacheAll line") {
+      val noCacheAllLine = s"""
+{
+ "catalog": "Test",
+ "stores": [
+  {
+   "store": "test:fs",
+   "params": {
+     "type": "fs",
+     "path": "$datapath"
+    }
+  }
+ ]
+}
+      """
+
+      val catalog = Catalog.fromJSON(noCacheAllLine)
+      catalog.stores("test:fs").hasCacheAll should be (false)
+    }
   }
 }
