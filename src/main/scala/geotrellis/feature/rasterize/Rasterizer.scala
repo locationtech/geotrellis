@@ -47,7 +47,7 @@ object Rasterizer {
         def apply(col: Int, row: Int, polygon: Geometry[D]) {
           array(row * cols + col) = f(col,row,polygon)
         }
-      }
+    }
     foreachCellByFeature(feature, rasterExtent)(f2)
     Raster(array,rasterExtent)
   }
