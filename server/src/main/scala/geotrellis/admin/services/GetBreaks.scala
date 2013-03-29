@@ -42,7 +42,7 @@ class GetBreaks {
     val histo = stat.GetHistogram(layerOp)
     val classBreaks = stat.GetClassBreaks(histo, numBreaksOp)
 
-    Main.run(classBreaks) match {
+    GeoTrellis.run(classBreaks) match {
       case process.Complete(breaks,h) =>
         OK.json(Json.classBreaks(breaks))
       case process.Error(message,failure) =>

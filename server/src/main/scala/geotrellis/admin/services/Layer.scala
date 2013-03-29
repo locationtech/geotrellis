@@ -27,7 +27,7 @@ class Layer {
     @Context req:HttpServletRequest
   ) = {
     val r = io.LoadRasterExtent(layer);
-    Main.run(r) match {
+    GeoTrellis.run(r) match {
       case process.Complete(rasterExtent,h) =>
         OK.json(s"""{
           "name" : "${layer}",
@@ -77,7 +77,7 @@ class Layer {
 
     val png = Render(layerOp,ramp,breaksOp)
 
-    Main.run(png) match {
+    GeoTrellis.run(png) match {
       case process.Complete(img,h) =>
         OK.png(img)
       case process.Error(message,failure) =>

@@ -68,24 +68,6 @@
       <script src="../assets/js/html5shiv.js"></script>
     <![endif]-->
 
-    <script type='text/javascript'>
-    $(function(){
-        var bottomPadding = 10;
-
-        var resize = function(){
-            var pane = $('#left-pane');
-            var height = $(window).height() - pane.position().top - bottomPadding;
-            pane.css({'height': height +'px'});
-
-            var map = $('#map');
-            var height = $(window).height() - map.position().top - bottomPadding;
-            map.css({'height': height +'px'});
-        }
-        resize();
-        $(window).resize(resize);
-    });
-    </script>
-
   </head>
 
   <body>
