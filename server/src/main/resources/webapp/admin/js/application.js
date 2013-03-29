@@ -244,7 +244,26 @@ var active = null;
     });
 });
 
+var setupSize = function() {
+    var bottomPadding = 10;
+
+    var resize = function(){
+        var pane = $('#left-pane');
+        var height = $(window).height() - pane.position().top - bottomPadding;
+        pane.css({'height': height +'px'});
+
+        var mapDiv = $('#map');
+        var height = $(window).height() - mapDiv.offset().top - bottomPadding;
+        mapDiv.css({'height': height +'px'});
+
+        map.invalidateSize();
+    };
+    resize();
+    $(window).resize(resize);
+};
+
 // On page load
 $(document).ready(function() {
     colorRamps.bindColorRamps();
+    setupSize();
 });
