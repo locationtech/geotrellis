@@ -44,19 +44,21 @@ trait Dim2 // two-dimensional, e.g. Polygon or MultiPolygon
 
 /// Simple feature traits
 
-trait SingleGeometry[G <: jts.Geometry, D] extends Feature[G, D]
+class Geometry[D] (val geom:jts.Geometry, val data:D) extends Feature[jts.Geometry, D]
 
-trait Point[D] extends SingleGeometry[jts.Point, D] with Dim0 
+class SingleGeometry[D] (override val geom:jts.Geometry, data:D) extends Geometry(geom, data)
 
-trait LineString[D] extends SingleGeometry[jts.LineString, D] 
+class Point[D] (override val geom:jts.Point, data:D) extends SingleGeometry(geom,data)
 
-trait Polygon[D] extends SingleGeometry[jts.Polygon, D] 
+class LineString[D] (override val geom:jts.LineString, data:D) extends SingleGeometry(geom,data)
+
+class Polygon[D] (override val geom:jts.Polygon, data:D) extends SingleGeometry(geom,data)
 
 /// Multi feature traits
 
-trait GeometryCollection[G <: jts.GeometryCollection, D] extends Feature[G, D]
+class GeometryCollection[D](override val geom:jts.GeometryCollection, data:D) extends Geometry(geom,data)
 
-trait MultiPoint[D] extends GeometryCollection[jts.MultiPoint, D] with Dim0 {
+class MultiPoint[D](override val geom:jts.MultiPoint, data:D) extends GeometryCollection(geom,data) {
 
   def flatten:List[Point[D]] =
     (0 until geom.getNumGeometries).map(
@@ -64,21 +66,21 @@ trait MultiPoint[D] extends GeometryCollection[jts.MultiPoint, D] with Dim0 {
 
 }
 
-trait MultiLineString[D] extends GeometryCollection[jts.MultiLineString, D] {
-
+class MultiLineString[D](override val geom:jts.MultiLineString, data:D) extends GeometryCollection(geom, data) {
   def flatten:List[LineString[D]] = 
     (0 until geom.getNumGeometries).map( 
       i => new JtsLineString(geom.getGeometryN(i).asInstanceOf[jts.LineString],data)).toList
 }
 
-trait MultiPolygon[D] extends GeometryCollection[jts.MultiPolygon, D] {
+class MultiPolygon[D](override val geom:jts.MultiPolygon, data:D) extends GeometryCollection(geom, data) {
+
   def flatten:List[Polygon[D]] =
     (0 until geom.getNumGeometries).map(
       i => new JtsPolygon(geom.getGeometryN(i).asInstanceOf[jts.Polygon],data)).toList
 
 }
 
-case class JtsGeometry[D](geom: jts.Geometry, data: D) extends Feature[jts.Geometry, D] 
+case class JtsGeometry[D](g: jts.Geometry, d: D) extends Geometry(g,d)
 
 
 /// Implementations
@@ -168,7 +170,7 @@ object Point {
 /**
  * Point feature with a JTS Point internal representation.
  */
-case class JtsPoint[D](geom: jts.Point, data: D) extends Point[D] 
+case class JtsPoint[D](g: jts.Point, d: D) extends Point(g,d)
 
 /// Line implementation
 object LineString {
@@ -224,7 +226,7 @@ object LineString {
 /**
  * Implementation of LineString feature with underlying jts instance.
  */
-case class JtsLineString[D](geom: jts.LineString, data: D) extends LineString[D]
+case class JtsLineString[D](g: jts.LineString, d: D) extends LineString(g,d)
 
 /// Polygon implementation
 object Polygon {
@@ -372,7 +374,7 @@ object Polygon {
 
 }
 
-case class JtsPolygon[D](geom: jts.Polygon, data: D) extends Polygon[D] 
+case class JtsPolygon[D](g: jts.Polygon, d: D) extends Polygon(g, d)
 
 /// MultiPoint implementation
 object MultiPoint {
@@ -397,7 +399,7 @@ object MultiPoint {
   }
 }
 
-case class JtsMultiPoint[D](geom: jts.MultiPoint, data: D) extends MultiPoint[D]
+case class JtsMultiPoint[D](g: jts.MultiPoint, d: D) extends MultiPoint[D](g, d)
 
 /// MultiLineString implementation
 /**
@@ -430,7 +432,7 @@ object MultiLineString {
   }
 }
 
-case class JtsMultiLineString[D](geom: jts.MultiLineString, data: D) extends MultiLineString[D] 
+case class JtsMultiLineString[D](g: jts.MultiLineString, d: D) extends MultiLineString(g,d)
 
 /// MultiPolygon implementation
 object MultiPolygon {
@@ -466,7 +468,7 @@ object MultiPolygon {
 
 }
 
-case class JtsMultiPolygon[D](geom: jts.MultiPolygon, data: D) extends MultiPolygon[D] 
+case class JtsMultiPolygon[D](g: jts.MultiPolygon, d: D) extends MultiPolygon(g,d)
 
 /**
  * Turn tuples into JtsCoordinates.
