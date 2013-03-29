@@ -23,6 +23,6 @@ class CatalogService {
   def catalog(
     @Context req:HttpServletRequest
   ) = {
-    OK.json(Main.server.catalog.toJson)
+    OK.json(GeoTrellis.server.catalog.toJson)
   }
 }
