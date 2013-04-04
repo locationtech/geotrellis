@@ -960,12 +960,15 @@ final case class LazyCombineDouble(data1:ArrayRasterData,
   }
 }
 
-
 /**
- * LazyCombineDouble represents a lazily-applied conversion between types.
+ * LazyConvertToBit represents a lazily-applied conversion from any type to TypeBit.
  */
 final case class LazyConvert(data:ArrayRasterData, typ:RasterType)
 extends LazyRasterData {
+  if(data.getType.contains(typ)) {
+    throw new IllegalArgumentException("Cannot convert raster to a type with less bits.")
+  }
+
   def cols = data.cols
   def rows = data.rows
 
@@ -979,18 +982,18 @@ extends LazyRasterData {
   override def toArrayDouble = data.toArrayDouble
 
   def foreach(f:Int => Unit) = data.foreach(f)
-  def map(f:Int => Int) = LazyMap(data, f)
-  def mapIfSet(f:Int => Int) = LazyMapIfSet(data, f)
+  def map(f:Int => Int) = LazyMap(this, f)
+  def mapIfSet(f:Int => Int) = LazyMapIfSet(this, f)
   def combine(other:RasterData)(f:(Int, Int) => Int) = other match {
-    case a:ArrayRasterData => LazyCombine(data, a, f)
-    case o => o.combine(data)((z2, z1) => f(z1, z2))
+    case a:ArrayRasterData => LazyCombine(this, a, f)
+    case o => o.combine(this)((z2, z1) => f(z1, z2))
   }
 
   def foreachDouble(f:Double => Unit) = data.foreachDouble(f)
-  def mapDouble(f:Double => Double) = LazyMapDouble(data, f)
-  def mapIfSetDouble(f:Double => Double) = LazyMapIfSetDouble(data, f)
+  def mapDouble(f:Double => Double) = LazyMapDouble(this, f)
+  def mapIfSetDouble(f:Double => Double) = LazyMapIfSetDouble(this, f)
   def combineDouble(other:RasterData)(f:(Double, Double) => Double) = other match {
-    case a:ArrayRasterData => LazyCombineDouble(data, a, f)
-    case o => o.combineDouble(data)((z2, z1) => f(z1, z2))
+    case a:ArrayRasterData => LazyCombineDouble(this, a, f)
+    case o => o.combineDouble(this)((z2, z1) => f(z1, z2))
   }
 }
