@@ -11,13 +11,6 @@ class RasterDataSpec extends FunSpec
                         with TestServer 
                         with RasterBuilders {
   describe("convert") {
-    it("should throw exception when converting down") { 
-      val r = positiveIntegerNoDataRaster
-      intercept[IllegalArgumentException] {
-        r.convert(TypeBit)
-      }
-    }
-
     it("should convert a byte raster to an int raster") { 
       val r = byteRaster
       var result = r.convert(TypeShort)

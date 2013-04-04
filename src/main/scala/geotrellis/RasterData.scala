@@ -962,12 +962,15 @@ final case class LazyCombineDouble(data1:ArrayRasterData,
 
 /**
  * LazyConvertToBit represents a lazily-applied conversion from any type to TypeBit.
+ *
+ * @note     If you care converting to a RasterType with less bits
+ *           than the type of the underlying data, you are responsible
+ *           for managing overflow. This convert does not do any casting;
+ *           therefore converting from a TypeInt to TypeByte could still
+ *           return values greater than 127 from apply(). 
  */
 final case class LazyConvert(data:ArrayRasterData, typ:RasterType)
 extends LazyRasterData {
-  if(data.getType.contains(typ)) {
-    throw new IllegalArgumentException("Cannot convert raster to a type with less bits.")
-  }
 
   def cols = data.cols
   def rows = data.rows
