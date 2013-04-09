@@ -5,7 +5,7 @@ import math.{abs, round, sqrt}
 /**
   * Data object representing a histogram of values.
   */
-abstract trait Histogram {
+abstract trait Histogram extends Serializable {
   /**
    * Note the occurance of 'item''.
    *

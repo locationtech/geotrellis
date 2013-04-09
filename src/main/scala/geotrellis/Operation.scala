@@ -10,7 +10,7 @@ import akka.actor._
  * Base Operation for all GeoTrellis functionality. All other operations must
  * extend this trait.
  */
-abstract class Operation[+T] extends Product {
+abstract class Operation[+T] extends Product with Serializable {
   type Steps = PartialFunction[Any, StepOutput[T]]
   type Args = List[Any]
   val nextSteps:PartialFunction[Any,StepOutput[T]]
