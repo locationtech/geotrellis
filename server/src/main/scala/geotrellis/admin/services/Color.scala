@@ -25,7 +25,7 @@ class Color {
   @GET
   def get(
     @Context req:HttpServletRequest
-  ):Any = {
+  ):Response = {
     // Return JSON with information on color ramps.
     val c = for(key <- Colors.rampMap.keys) yield {
       s"""{ "key": "$key", "image": "img/ramps/${key}.png" }"""

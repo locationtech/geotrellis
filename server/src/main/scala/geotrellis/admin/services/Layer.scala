@@ -25,7 +25,7 @@ class Layer {
   def render(
     @DefaultValue("") @QueryParam("layer") layer:String,
     @Context req:HttpServletRequest
-  ) = {
+  ):Response = {
     val r = io.LoadRasterExtent(layer);
     GeoTrellis.run(r) match {
       case process.Complete(rasterExtent,h) =>
@@ -51,7 +51,7 @@ class Layer {
     @DefaultValue("") @QueryParam("breaks") breaks:String,
     @DefaultValue("blue-to-red") @QueryParam("colorRamp") colorRampKey:String,
     @Context req:HttpServletRequest
-  ) = {
+  ):Response = {
     val extentOp = string.ParseExtent(bbox)
 
     val colsOp = string.ParseInt(cols)

@@ -3,7 +3,9 @@ package geotrellis.rest
 import geotrellis.process.Failure
 
 import javax.ws.rs.core.{Response => XResp}
-import javax.ws.rs.core.{Context, MediaType, MultivaluedMap}
+import javax.ws.rs.core.{Context, MediaType, MultivaluedMap, CacheControl}
+
+import scala.language.implicitConversions
 
 object ResponseType {
   val Text = "text/plain"
@@ -12,44 +14,66 @@ object ResponseType {
   val Png  = "image/png"
 }
 
-trait Response {
-  def setHeader(r:XResp.ResponseBuilder):XResp.ResponseBuilder = {
-    r.header("Access-Control-Allow-Origin", "*")
-     .header("Access-Control-Allow-Credentials", "true")
+object Response {
+  implicit def response2JerseyResponse(resp:Response) = {
+    resp.build()
   }
 
+  def apply(rb:XResp.ResponseBuilder) = new Response(rb)
+  
   def error() = 
-    setHeader(XResp.serverError().`type`("text/plain"))
+    Response(XResp.serverError()).mimeType("text/plain")
 
-  def ok(t:String) = 
-    if(t == ResponseType.Png) {
-      XResp.ok().`type`(t)
-    } else {
-      setHeader(XResp.ok().`type`(t))
-    }
+  def ok(t:String) = {
+    Response(XResp.ok()).mimeType(t)
+  }
 }
 
-object OK extends Response {
+class Response(private var rb:XResp.ResponseBuilder) {
+  def mimeType(t:String) = {
+    rb = rb.`type`(t)
+    this
+  }
+
+  def data(d:Object) = {
+    rb = rb.entity(d)
+    this
+  }
+
+  def allowCORS() = {
+    rb = rb.header("Access-Control-Allow-Origin", "*")
+           .header("Access-Control-Allow-Credentials", "true")
+    this
+  }
+
+  def cache(seconds:Int = 1200) = {
+    val cc = new CacheControl()
+    cc.setMaxAge(seconds)
+    cc.setNoCache(false)
+    rb = rb.cacheControl(cc)
+    this
+  }
+
+  def build() = {
+    rb.build()
+  }
+}
+
+object OK {
   def apply(data:Object) = 
-    ok(ResponseType.Html).entity(data)
-                         .build()
+    Response.ok(ResponseType.Html).data(data)
   
   def png(png:Array[Byte]) = 
-    ok(ResponseType.Png).entity(png)
-                        .build()
+    Response.ok(ResponseType.Png).data(png)
 
   def json(json:String) = 
-    ok(ResponseType.Json).entity(json)
-                         .build()
+    Response.ok(ResponseType.Json).data(json)
 }
 
-object ERROR extends Response {
+object ERROR {
   def apply(message:String) = 
-    error().entity(message)
-           .build()
+    Response.error().data(message)
 
   def apply(message:String, trace:Failure) = 
-    error().entity(message + " " + trace)
-           .build()
-  
+    Response.error().data(message + " " + trace)
 }

@@ -28,7 +28,7 @@ class GetBreaks {
     @DefaultValue("") @QueryParam("layer") layer:String,
     @DefaultValue("10") @QueryParam("numBreaks") numBreaks:String,
     @Context req:HttpServletRequest
-  ) = {
+  ):Response = {
     val extentOp = string.ParseExtent(bbox)
     
     val colsOp = string.ParseInt(cols)
