@@ -34,7 +34,7 @@ var map = (function() {
         "Blank" : getLayer(Layers.mapBox.worldBlank,Layers.mapBox.attrib)
     };
 
-    var m = L.map('map').setView([34.76192255039478,-85.35140991210938], 9);
+    var m = L.map('map').setView([39.9886950160466,-75.1519775390625], 10);
 
     selected.addTo(m);
 
@@ -47,6 +47,58 @@ var map = (function() {
     return m;
 })()
 
+var valueViewer = (function() {
+    var createValueGrid = function (rows, cols, values){
+        var i=0;
+        var grid = document.createElement('table');
+        var centerRow = Math.floor(rows / 2);
+        var centerCol = Math.floor(cols / 2);
+        grid.className = 'valueGrid';
+        grid.id = 'valueGrid';
+        for (var r=0;r<rows;++r){
+            var tr = grid.appendChild(document.createElement('tr'));
+            for (var c=0;c<cols;++c){
+                var cell = tr.appendChild(document.createElement('td'));
+                cell.innerHTML = values[r*cols + c];
+                if(r == centerRow && c == centerCol) {
+                    cell.className = 'centerCell';
+                }
+            }
+        }
+        return grid;
+    };
+    return {
+        update : function(latlng) {
+            $.ajax({
+                url: gtUrl('admin/layer/valuegrid'),
+                data: { 'layer' : layerViewer.getLayer().name,
+                        'lat': latlng.lat,
+                        'lng': latlng.lng },
+                dataType: "json",
+                success: function(data) {
+                    if(data.success) {
+                        var d  = Math.floor(Math.sqrt(data.values.length))
+                        var grid = createValueGrid(d,d,data.values);
+                        $('#valueViewer').html("");
+                        $('#valueViewer').append(grid);
+                        valueViewer.updateSize();
+                    } else {
+                        // Display no success in div.
+                        $('#valueViewer').html("");
+                        $('#valueViewer').append(
+                            $('<span class="label label-info">Could not get raster values. Is the Raster projection Web Mercator?</span>'));
+                    }
+                }
+            });
+        },
+        updateSize : function() {
+            if($('#valueGrid')) {
+                $('#valueGrid').css({'height': ($('#valueGrid').width()) +'px'});
+            }
+        }
+    };
+})();
+
 var layerViewer = (function() {
     var layer = null;
 
@@ -55,21 +107,6 @@ var layerViewer = (function() {
     var opacity = 0.5;
     var colorRamp = "blue-to-red";
     var numBreaks = 10;
-
-    var handleLayerClick = function(e) {
-        $.ajax({
-            url: gtUrl('admin/layer/values'),
-            data: { 'layer' : layer.name,
-                    'size'  : 5,
-                    'lat'   : e.latlng.lat,
-                    'lng'   : e.latlng.lng },
-            dataType: 'json',
-            success: function(d) {
-                //var valueGrid = 
-                alert(JSON.stringify(d));
-            }
-        });
-    };
 
     update = function() {
         $.ajax({
@@ -83,6 +120,13 @@ var layerViewer = (function() {
                 if (mapLayer) {
                     map.lc.removeLayer(mapLayer);
                     map.removeLayer(mapLayer);
+                } else { 
+                    // First time loading layer, set up the value viewer.
+                    $('#info-tab-link').show();
+                    map.on('click', function(e) {
+                        valueViewer.update(e.latlng);
+                        $('a[href=#layer-info]').tab('show');
+                    });
                 }
 
                 mapLayer = new L.TileLayer.WMS(gtUrl("admin/layer/render"), {
@@ -90,8 +134,7 @@ var layerViewer = (function() {
                     format: 'image/png',
                     breaks: breaks,
                     transparent: true,
-                    colorRamp: colorRamp,
-                    click: handleLayerClick
+                    colorRamp: colorRamp,                    
                 })
 
                 mapLayer.setOpacity(opacity);
@@ -144,7 +187,9 @@ var layerViewer = (function() {
             colorRamp = key;
             update();
         },
-
+        getColorRamp: function(key) { 
+            return colorRamp;
+        },
         update: update,
 
         getMapLayer: function() { return mapLayer; }
@@ -197,8 +242,12 @@ var colorRamps = (function() {
         var p = $("#colorRampTemplate").clone();
         p.find('img').attr("src",colorDef.image);
         p.click(function() {
+            $("#activeRamp").attr("src",colorDef.image);
             layerViewer.setColorRamp(colorDef.key);
         });
+        if(colorDef.key == layerViewer.getColorRamp()) {
+            $("#activeRamp").attr("src",colorDef.image);
+        }
         p.show();
         ramps.append(p);
     }
@@ -257,6 +306,7 @@ var setupSize = function() {
         mapDiv.css({'height': height +'px'});
 
         map.invalidateSize();
+        valueViewer.updateSize();
     };
     resize();
     $(window).resize(resize);
