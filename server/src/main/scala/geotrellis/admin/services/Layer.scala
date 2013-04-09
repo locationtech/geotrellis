@@ -25,7 +25,7 @@ class Layer {
   def render(
     @DefaultValue("") @QueryParam("layer") layer:String,
     @Context req:HttpServletRequest
-  ) = {
+  ):Response = {
     val r = io.LoadRasterExtent(layer);
     GeoTrellis.run(r) match {
       case process.Complete(rasterExtent,h) =>
@@ -33,6 +33,7 @@ class Layer {
           "name" : "${layer}",
           "rasterExtent" : ${rasterExtent.toJson}
          }""")
+           .allowCORS()
       case process.Error(message,failure) =>
         ERROR(message,failure)
     }
@@ -51,7 +52,7 @@ class Layer {
     @DefaultValue("") @QueryParam("breaks") breaks:String,
     @DefaultValue("blue-to-red") @QueryParam("colorRamp") colorRampKey:String,
     @Context req:HttpServletRequest
-  ) = {
+  ):Response = {
     val extentOp = string.ParseExtent(bbox)
 
     val colsOp = string.ParseInt(cols)
@@ -80,6 +81,7 @@ class Layer {
     GeoTrellis.run(png) match {
       case process.Complete(img,h) =>
         OK.png(img)
+          .cache(1000)
       case process.Error(message,failure) =>
         ERROR(message,failure)
     }
