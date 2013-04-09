@@ -31,7 +31,28 @@ span.weight input {
 	font-size: 18px;
 }
 
+#layer-info-name {
+    text-align: center;
+}
+
 
 /* =======================================================
-   Summary
+   Value Viewer
 ======================================================= */
+
+.valueGrid { 
+    margin:1em auto; 
+    border-collapse:collapse;
+    width: 100%
+}
+
+.valueGrid td {
+    /* width:30px; height:30px;  */
+    border:2px solid #ccc;
+    text-align:center;
+    font-family:sans-serif; font-size:13px
+}
+.centerCell {
+    background-color:yellow;
+    font-weight:bold; color:red;
+}
