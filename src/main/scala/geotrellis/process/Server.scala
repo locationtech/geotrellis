@@ -22,7 +22,6 @@ import com.typesafe.config.ConfigFactory
 import scala.util.{Try,Success => TrySuccess, Failure => TryFailure}
 import geotrellis.util.Filesystem
 
-//class Server (id:String, val catalog:Catalog) extends FileCaching {
 class Server (id:String, val catalog:Catalog) {
   val debug = false
 
@@ -30,39 +29,6 @@ class Server (id:String, val catalog:Catalog) {
   var actor:akka.actor.ActorRef = system.actorOf(Props(new ServerActor(id, this)), "server")
 
   private[this] val staticCache = mutable.Map.empty[String, Array[Byte]]
-
-  val customConf2 = ConfigFactory.parseString("""
-akka {
-  version = "2.0-M2"
-  logConfigOnStart = off
-  loglevel = "INFO"
-  stdout-loglevel = "INFO"
-  event-handlers = ["akka.event.Logging$DefaultLogger"]
-  remote {
-    client {
-      "message-frame-size": "100 MiB"
-    },
-    server {
-      "message-frame-size": "100 MiB"
-    }
-  }
-  default-dispatcher {
-    core-pool-size-factor = 80.0
-  }
-  actor {
-    debug {
-      receive = off
-      autoreceive = off
-      lifecycle = off
-    }
-    deployment {
-      /routey {
-        nr-of-instances = 300
-      }
-    }
-  }
-}
-""")
 
   initStaticCache()
 
@@ -101,7 +67,6 @@ akka {
   private[process] def _run[T:Manifest](op:Op[T]) = {
     log("server._run called with %s" format op)
 
-//    implicit val timeout = Timeout(Duration(3600, "millis"))
     val d = Duration.create(600, TimeUnit.SECONDS)
     implicit val t = Timeout(d)
     val future = op match {
@@ -187,5 +152,3 @@ object Server {
 
   def empty(id:String) = new Server(id, Catalog.empty(id))
 }
-
-
