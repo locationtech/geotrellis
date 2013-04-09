@@ -45,6 +45,7 @@ class GetBreaks {
     GeoTrellis.run(classBreaks) match {
       case process.Complete(breaks,h) =>
         OK.json(Json.classBreaks(breaks))
+          .allowCORS()
       case process.Error(message,failure) =>
         ERROR(message,failure)
     }

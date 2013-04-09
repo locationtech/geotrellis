@@ -32,5 +32,6 @@ class Color {
     }
     val arr = "[" + c.mkString(",") + "]"
     OK.json(s"""{ "colors": $arr }""")
+      .allowCORS()
   }
 }

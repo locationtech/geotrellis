@@ -24,5 +24,6 @@ class CatalogService {
     @Context req:HttpServletRequest
   ):Response = {
     OK.json(GeoTrellis.server.catalog.toJson)
+      .allowCORS()
   }
 }

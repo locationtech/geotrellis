@@ -33,6 +33,7 @@ class Layer {
           "name" : "${layer}",
           "rasterExtent" : ${rasterExtent.toJson}
          }""")
+           .allowCORS()
       case process.Error(message,failure) =>
         ERROR(message,failure)
     }
@@ -80,6 +81,7 @@ class Layer {
     GeoTrellis.run(png) match {
       case process.Complete(img,h) =>
         OK.png(img)
+          .cache(1000)
       case process.Error(message,failure) =>
         ERROR(message,failure)
     }
