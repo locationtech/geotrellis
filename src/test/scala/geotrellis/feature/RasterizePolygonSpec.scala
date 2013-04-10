@@ -4,6 +4,7 @@ import geotrellis._
 import geotrellis.feature.op.geometry.{Buffer,GetCentroid}
 import geotrellis.process._
 import geotrellis.feature._
+import geotrellis.testutil._
 import math.{max,min,round}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -121,7 +122,7 @@ class RasterizePolygonSpec extends FunSuite {
   test("failing example should work") {
     val geojson = """{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[35.092945313732635,-85.4351806640625],[35.06147690849717,-85.440673828125],[35.08620310578525,-85.37200927734375]]]}}"""
     val fOp = io.LoadGeoJsonFeature(geojson)
-    val f = TestServer().run(fOp)
+    val f = TestServer.server.run(fOp)
     val p = Polygon(List((-9510600.807354769, 4176519.1962707597), (-9511212.30358105,4172238.854275199), (-9503568.600752532,4175602.1747499597), (-9510600.807354769,4176519.1962707597)),())
     val re = RasterExtent(Extent(-9509377.814902207,4174073.2405969054,-9508766.318675926,4174684.736823185),2.3886571339098737,2.3886571339044167,256,256)
     val r = Rasterizer.rasterizeWithValue(p, re)( (a:Unit) => 1 )
@@ -216,7 +217,7 @@ object RasterizePolygonSpec {
     println("Testing rasterization: " + filename)
     val count = Integer.parseInt(wktFile.getName().subSequence(0, filename.length - 4).toString.split("_").last)
     println("count: " + count)
-    val g1 = TestServer().run(io.LoadWkt(json))
+    val g1 = TestServer.server.run(io.LoadWkt(json))
     val p1 = Polygon(g1.geom, ())
     var sum = 0
     val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)

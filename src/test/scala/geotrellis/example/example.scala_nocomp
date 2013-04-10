@@ -43,7 +43,7 @@ class ExampleSpec extends Spec with MustMatchers {
     // pre-process the total weights
     val weightsum:Int = weights.foldLeft(0.toInt) { (a, b) => (a + b).toInt }
 
-    val server = TestServer()
+    val server = TestServer.server
     it("should work") {
 
       val geo = server.run(LoadRasterExtentFromFile(paths(0)))

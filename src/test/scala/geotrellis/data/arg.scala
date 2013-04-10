@@ -7,14 +7,14 @@ import org.scalatest.matchers.ShouldMatchers
 import scala.math.abs
 
 import geotrellis._
-import geotrellis.process.TestServer
+import geotrellis.testutil._
 import geotrellis.raster._
 import geotrellis.data._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class ArgSpec extends FunSpec with MustMatchers with ShouldMatchers {
   describe("An ArgReader") {
-    val server = TestServer()
+    val server = TestServer.server
     val path1 = "src/test/resources/fake.img8.arg"
     	 
     it("should build a valid raster") {

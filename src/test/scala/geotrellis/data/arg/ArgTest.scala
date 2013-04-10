@@ -4,6 +4,7 @@ import geotrellis._
 import geotrellis.data._
 import geotrellis.data.arg._
 import geotrellis._
+import geotrellis.testutil._
 
 import geotrellis.process._
 import geotrellis.raster._
@@ -14,7 +15,7 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class ArgTest extends FunSuite {
-  val server = TestServer()
+  val server = TestServer.server
 
   val data = IntArrayRasterData(Array(NODATA, -1, 2, -3,
                                       4, -5, 6, -7,

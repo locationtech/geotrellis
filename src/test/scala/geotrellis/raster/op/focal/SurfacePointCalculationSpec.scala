@@ -3,6 +3,7 @@ package geotrellis.raster.op.focal
 import geotrellis._
 import geotrellis.process._
 import geotrellis.raster.op._
+import geotrellis.testutil._
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
@@ -13,7 +14,7 @@ import scala.math._
 
 @RunWith(classOf[JUnitRunner])
 class SlopeAspectTests extends FunSpec with ShouldMatchers {
-  val server = TestServer("src/test/resources/catalog.json")
+  val server = TestServer.server
 
   describe("SurfacePoint") {
     it("should calculate trig values correctly") {

@@ -4,6 +4,7 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.feature._
+import geotrellis.testutil._
 
 import geotrellis.raster.op.zonal.summary._
 
@@ -15,7 +16,7 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class TiledPolygonalZonalSummarySpec extends FunSpec with ShouldMatchers {
-  val server = TestServer()
+  val server = TestServer.server
 
   sealed trait TestResultTile
 
