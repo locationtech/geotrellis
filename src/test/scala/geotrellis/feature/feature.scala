@@ -4,6 +4,7 @@ import geotrellis._
 import geotrellis.feature.op.geometry._
 import geotrellis.process._
 import geotrellis.feature._
+import geotrellis.testutil._
 import math.{max,min,round}
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
@@ -14,7 +15,7 @@ import geotrellis.feature.op.geometry.Intersect
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class FeatureSpec extends FunSpec with MustMatchers with ShouldMatchers {
 
-  val s = TestServer()
+  val s = TestServer.server
   val p = Point(1.0,2.0,"hi")
   val b = Buffer(p, 5.0, 8, EndCapRound) // same as Buffer(p, 5.0)
   val p2 = Point (3.0,2.0,"goodbye")

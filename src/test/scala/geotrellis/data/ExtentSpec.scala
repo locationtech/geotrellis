@@ -1,9 +1,9 @@
 package geotrellis.data
 
 import geotrellis._
-import geotrellis._
 import geotrellis.process._
 import geotrellis.raster.op._
+import geotrellis.testutil._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
@@ -30,7 +30,7 @@ class ExtentSpec extends FunSpec with MustMatchers with ShouldMatchers {
   }
 
   describe("An Extent") {
-    val server = TestServer("src/test/resources/catalog.json")
+    val server = TestServer.server
 
     def confirm(op:Op[Raster], expected:Array[Int]) {
       val r = server.run(op)

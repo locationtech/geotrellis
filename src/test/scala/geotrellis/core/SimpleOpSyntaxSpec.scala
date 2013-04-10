@@ -2,6 +2,7 @@ package geotrellis.core
 
 import geotrellis._
 import geotrellis.process._
+import geotrellis.testutil._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
@@ -9,7 +10,7 @@ import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class SimpleOpSyntaxSpec extends FunSpec with MustMatchers with ShouldMatchers {
-  val server = TestServer()
+  val server = TestServer.server
   def testOp[T:Manifest](op:Op[T], expected:T){
     server.run(op) must be === expected
   }

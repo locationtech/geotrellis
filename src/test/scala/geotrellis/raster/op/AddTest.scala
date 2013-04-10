@@ -3,6 +3,8 @@ package geotrellis.raster.op
 import geotrellis._
 import geotrellis.process._
 import geotrellis.raster._
+import geotrellis.testutil._
+
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -17,7 +19,7 @@ class AddTest extends FunSuite {
   val r2 = Raster(Array.fill(100)(6), re).defer
   val r3 = Raster(Array.fill(100)(9), re)
 
-  val server = TestServer()
+  val server = TestServer.server
 
   test("add correctly") {
     val rr = server.run(Add(r1, r2))

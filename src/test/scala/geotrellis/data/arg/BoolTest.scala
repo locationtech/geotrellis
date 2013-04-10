@@ -5,6 +5,7 @@ import geotrellis.data._
 import geotrellis.data.arg._
 import geotrellis._
 import geotrellis.process._
+import geotrellis.testutil._
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -12,7 +13,7 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class Int1Test extends FunSuite {
-  val server = TestServer()
+  val server = TestServer.server
 
   val arr = Array[Byte]((1 + 0 + 4 + 0 + 0 + 32 + 64 + 128).toByte,
                         (0 + 0 + 0 + 8 + 16 + 0 + 64 + 128).toByte)

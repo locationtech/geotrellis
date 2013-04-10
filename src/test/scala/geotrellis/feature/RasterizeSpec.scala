@@ -4,6 +4,7 @@ import geotrellis._
 import geotrellis.feature.op.geometry.{Buffer,GetCentroid}
 import geotrellis.process._
 import geotrellis.feature._
+import geotrellis.testutil._
 import math.{max,min,round}
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -15,7 +16,7 @@ import geotrellis.feature.rasterize.Rasterizer
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class RasterizeSpec extends FunSuite {
   test("Point Rasterization") {
-      val s = TestServer()
+      val s = TestServer.server
       val e = Extent(0.0, 0.0, 10.0, 10.0)
       val g = RasterExtent(e, 1.0, 1.0, 10, 10)
 
@@ -76,7 +77,7 @@ class RasterizeSpec extends FunSuite {
 
   test("linestring rasterization") {
       // setup test objects
-      val s = TestServer()
+      val s = TestServer.server
       val e = Extent(0.0, 0.0, 10.0, 10.0)
       val g = RasterExtent(e, 1.0, 1.0, 10, 10)
 

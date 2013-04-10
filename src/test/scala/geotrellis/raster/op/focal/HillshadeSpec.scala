@@ -49,7 +49,6 @@ class HillshadeSpec extends FunSuite with TestServer {
   
     println("Starting test Hillshade operation.")
     println("Loading raster")
-    val server = TestServer()
   
     val t0 = time()
     val r = server.run(io.LoadFile(path))
