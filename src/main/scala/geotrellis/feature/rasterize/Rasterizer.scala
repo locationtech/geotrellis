@@ -22,7 +22,7 @@ object Rasterizer {
    * @param rasterExtent  Definition of raster to create
    * @param f             Function that returns single value to burn
    */ 
-  def rasterizeWithValue[D:Manifest](feature:Geometry[D], rasterExtent:RasterExtent)(f:(D) => Int) = {
+  def rasterizeWithValue[D](feature:Geometry[D], rasterExtent:RasterExtent)(f:(D) => Int) = {
     val cols = rasterExtent.cols
     val array = Array.fill[Int](rasterExtent.cols * rasterExtent.rows)(NODATA)
     val burnValue = f(feature.data)
@@ -40,7 +40,7 @@ object Rasterizer {
    * @param rasterExtent  Definition of raster to create
    * @param f             Function that takes col, row, feature and returns value to burn
    */ 
-  def rasterize[D:Manifest](feature:Geometry[D], rasterExtent:RasterExtent)(f:Transformer[Geometry,D,Int]) = {
+  def rasterize[D](feature:Geometry[D], rasterExtent:RasterExtent)(f:Transformer[Geometry,D,Int]) = {
     val cols = rasterExtent.cols
     val array = Array.fill[Int](rasterExtent.cols * rasterExtent.rows)(NODATA)
     val f2 = new Callback[Geometry,D] {
@@ -65,7 +65,7 @@ object Rasterizer {
    * @param re       RasterExtent to use for iterating through cells
    * @param f        A function that takes (col:Int, row:Int, rasterValue:Int, feature:Feature)
    */
-  def foreachCellByFeature[G[_] <: Geometry[_], D:Manifest](feature:G[D], re:RasterExtent)(f: Callback[G,D]):Unit = {
+  def foreachCellByFeature[G[_] <: Geometry[_], D](feature:G[D], re:RasterExtent)(f: Callback[G,D]):Unit = {
     feature match {
       case p:Point[_] => foreachCellByPoint[D](p.asInstanceOf[Point[D]],re)(f.asInstanceOf[Callback[Point,D]])
       case p:MultiPoint[_] => foreachCellByMultiPoint[D](p.asInstanceOf[MultiPoint[D]],re)(f.asInstanceOf[Callback[Point,D]])
@@ -76,20 +76,6 @@ object Rasterizer {
       case _ => ()
     }
   }
-  
-  /**
-   * Calculate value from raster cell under a point feature using provided function. 
-   * 
-   * This method follows the general pattern of the feature aggregation methods, even though
-  * a point only covers a single raster cell.
-   */
-  def aggregrateCellsByPoint[D,Z](p:Point[D], r:Raster, start:Z)(f:(Int,D,Z) => Z):Z = {
-    val geom = p.geom
-    val re = r.rasterExtent
-    val cellValue = r.get( re.mapXToGrid(geom.getX()), re.mapYToGrid(geom.getY()))
-    f(cellValue,p.data,start)
-  }
-  
     
   /**
    * Invoke a function on raster cells under a point feature.
