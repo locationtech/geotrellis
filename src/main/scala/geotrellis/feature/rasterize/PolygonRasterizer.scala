@@ -10,7 +10,6 @@ object PolygonRasterizer {
    * Apply a function to each raster cell that intersects with a polygon.
    */
   def foreachCellByPolygon[D](p:Polygon[D], re:RasterExtent, includeExterior:Boolean=false)( f:Callback[Polygon,D]) {
-    
     // If polygon does not intersect with this raster's extent, skip.
     val rasterGeom = re.extent.asFeature(()).geom
     if (! p.geom.intersects(rasterGeom)) { return }
@@ -53,7 +52,9 @@ object PolygonRasterizer {
    * If includeTouched is true, all cells touched by the polygon will be included.
    * If includeTouched is false, only cells whose center point is within the polygon will be included.
    */
-  def processRanges(fillRanges:List[(Double,Double)], includeTouched:Boolean = false, re:RasterExtent):List[(Int,Int)] = {
+  def processRanges(fillRanges:List[(Double,Double)], 
+                    includeTouched:Boolean = false, 
+                    re:RasterExtent):List[(Int,Int)] = {
     for ( (x0, x1) <- fillRanges) yield {
       val cellWidth = 1
       val (minCol, maxCol) = if (includeTouched) {
@@ -105,15 +106,10 @@ object PolygonRasterizer {
         .toList
       doubleRange
     }
-      
-        
-  
-    
   }
   object ActiveEdgeTable {
     def empty() = new ActiveEdgeTable(List[Intercept]())
-
-    }
+  }
 
   // Inverse slope: 1/m
   case class Line(rowMin: Int, rowMax: Int, x0:Double, y0:Double, x1:Double, y1:Double, inverseSlope: Double) {

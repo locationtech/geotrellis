@@ -147,94 +147,56 @@ object Rasterizer {
   }
 
   /**
-   * lines
+   * Iterates over the cells determined by the segments of a LineString.
+   * The iteration happens in the direction from the first point to the last point.
    */
-  //TODO: implement midpoint line algorithm
-  // Converts start and end point to grid cells, and draws a line between those two grid cells.
-  // Uses DDA or simple incremental algorithm.
   def foreachCellByLineString[D](p:LineString[D], re:RasterExtent)(f: Callback[LineString,D]) {
     val geom = p.geom
-    val p0 = geom.getCoordinateN(0)
-    val p1 = geom.getCoordinateN(1)
 
-    val p0x = re.mapXToGrid(p0.x)
-    val p0y = re.mapYToGrid(p0.y)
-    val p1x = re.mapXToGrid(p1.x)
-    val p1y = re.mapYToGrid(p1.y)
-    
-    if (p0x < p1x) {
-      foreachCellInGridLine(p0x, p0y, p1x, p1y, p, re)(f)
-    } else {
-      foreachCellInGridLine(p1x, p1y, p0x, p0y, p, re)(f)
+    val cells = (for(coord <- geom.getCoordinates()) yield { 
+      (re.mapXToGrid(coord.x), re.mapYToGrid(coord.y)) 
+    }).toList
+
+    for(i <- 1 until cells.length) {
+      foreachCellInGridLine(cells(i-1)._1, 
+                            cells(i-1)._2, 
+                            cells(i)._1, 
+                            cells(i)._2, p, re, i != cells.length - 1)(f)
     }
   }
-  
-  //TODO: optimizations, including getting line within raster extent
-  //test for horizontal and vertical lines
-  private def foreachCellInGridLine[D](x0:Int, y0:Int, x1:Int, y1:Int, p:LineString[D], re:RasterExtent)(f:Callback[LineString,D]) { 
-    val dy = y1 - y0
-    val dx = x1 - x0
-    val m:Double = dy.toDouble / dx.toDouble
+
+  /***
+   * Implementation of the Bresenham line drawing algorithm.
+   * Only calls on cell coordinates within raster extent.
+   *
+   * @param    p                  LineString used to define zone
+   * @param    re                 RasterExtent used to determine cols and rows
+   * @param    skipLast           'true' if the function should skip function calling the last cell (x1,y1).
+   *                              This is useful for not duplicating end points when calling for multiple
+   *                              line segments
+   * @param    f                  Function to apply: f(cols,row,feature)
+   */
+  def foreachCellInGridLine[D](x0:Int, y0:Int, x1:Int, y1:Int, p:LineString[D], re:RasterExtent, skipLast:Boolean = false)
+                              (f:Callback[LineString,D]) = {
+    val dx=math.abs(x1-x0)
+    val sx=if (x0<x1) 1 else -1
+    val dy=math.abs(y1-y0)
+    val sy=if (y0<y1) 1 else -1
     
-    // if a step in x creates a step in y that is greater than one, reverse
-    // roles of x and y.
-    if (math.abs(m) > 1) {      
-      foreachCellInGridLineSteep[D](x0, y0, x1, y1, p, re)(f)
-    } else {
-      var x:Int = x0
-      var y:Double = y0
-      
-      val ymax = re.extent.ymax
-      val ymin = re.extent.ymin
-      val xmax = re.extent.xmax
-      val xmin = re.extent.xmin
+    var x = x0
+    var y = y0
+    var err = (if (dx>dy) dx else -dy)/2
+    var e2 = err
 
-      val cols = re.cols
-      val rows = re.rows
-
-      while(x <= x1) {
-        //println("x: %d, y: %f".format(x,y))
-
-        val newY:Int = (y + 0.5).asInstanceOf[Int]
-        if (x >= 0 && y >= 0 && x < cols && y < rows) {
-          f(x, newY, p)
-        }
-        y += m
-        x = x + 1
-      }
+    while(x != x1 || y != y1){
+      if(0 <= x && x < re.cols &&
+         0 <= y && y < re.rows) { f(x,y,p); }
+      e2 = err;
+      if (e2 > -dx) { err -= dy; x += sx; }
+      if (e2 < dy) { err += dx; y += sy; }
     }
+    if(!skipLast &&
+       0 <= x && x < re.cols &&
+       0 <= y && y < re.rows) { f(x,y,p); }
   }
-  
-  private def foreachCellInGridLineSteep[D](x0:Int, y0:Int, x1:Int, y1:Int, p:LineString[D], re:RasterExtent)(f: Callback[LineString,D]) {
-    val dy = y1 - y0
-    val dx = x1 - x0
-    val m:Double = dy.toDouble / dx.toDouble
-    
-    // if a step in x creates a step in y that is greater than one, reverse
-    // roles of x and y.
-    //if (math.abs(m) > 1) {      
-    //  foreachCellInGridLineSteep[D](x0, y0, x1, y1, p, re)(f)
-   // }
-    
-    var x:Double = x0
-    var y:Int = y0
-    
-    val ymax = re.extent.ymax
-    val ymin = re.extent.ymin
-    val xmax = re.extent.xmax
-    val xmin = re.extent.xmin
-    
-    val cols = re.cols
-    val rows = re.rows
-    
-    val step:Double = 1.0/m
-    while(y <= y1) {
-      val newX:Int = (x + 0.5).asInstanceOf[Int]
-      if (x >= 0 && y >= 0 && x < cols && y < rows) {        
-    	  f(newX, y, p)
-      }
-      x += step
-      y = y + 1
-    }
-  } 
 }
