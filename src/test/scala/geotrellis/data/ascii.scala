@@ -1,10 +1,10 @@
 package geotrellis.data
 
-import geotrellis.process.TestServer
 import geotrellis._
 import geotrellis.raster._
 
 import geotrellis._
+import geotrellis.testutil._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
@@ -12,7 +12,7 @@ import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class AsciiSpec extends FunSpec with MustMatchers with ShouldMatchers {
-  val server = TestServer()
+  val server = TestServer.server
 
   val data:Array[Int] = (1 to 100).toArray
 

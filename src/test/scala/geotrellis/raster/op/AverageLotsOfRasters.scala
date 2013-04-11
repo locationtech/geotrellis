@@ -3,6 +3,7 @@ package geotrellis.raster.op
 import geotrellis._
 import geotrellis.process._
 import geotrellis.raster.op._
+import geotrellis.testutil._
 
 import geotrellis.raster.op.local.AddArray
 import geotrellis.{op => liftOp}
@@ -16,7 +17,7 @@ class AverageLotsOfRastersTest extends FunSuite {
   val e = Extent(0.0, 0.0, 10.0, 10.0)
   val re = RasterExtent(e, 1.0, 1.0, 10, 10)
 
-  val server = TestServer()
+  val server = TestServer.server
 
   def r(n:Int) = Raster(Array.fill(100)(n), re)
   def r(n:Double) = Raster(Array.fill(100)(n), re)
@@ -35,7 +36,7 @@ class AverageLotsOfRastersTest extends FunSuite {
     val groups = dividedOps.tail.grouped(limit).map { _.toArray }.toList
 
     val rOps:Op[Raster] = groups.foldLeft (firstRaster) ((oldResult:Op[Raster], newOps:Array[Op[Raster]]) => (logic.WithResult(oldResult)({ oldResult => local.Add( local.AddRasters(newOps:_*), oldResult) })) )
-    val s = process.TestServer()
+    val s = TestServer.server
     val output = s.run(rOps)
   }
 
@@ -50,7 +51,7 @@ class AverageLotsOfRastersTest extends FunSuite {
     val groups = dividedOps.tail.grouped(limit).map { _.toArray }.map(local.AddRasters( _:_* ) ) 
     val ops2 = local.AddArray( logic.CollectArray( groups.toArray ) )
 
-    val s = process.TestServer()
+    val s = TestServer.server
     val output = s.run(ops2)
   }
 }

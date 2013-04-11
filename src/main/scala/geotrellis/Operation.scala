@@ -146,6 +146,8 @@ class Context (server:Server) {
 
   def loadTileSet(path:String):Raster = Raster.loadTileSet(path, server)
 
+  def loadUncachedTileSet(path:String):Raster = Raster.loadUncachedTileSet(path, server)
+
   def getRaster(path:String, layer:RasterLayer, re:RasterExtent):Raster = 
     server.getRaster(path, Option(layer), Option(re))
 

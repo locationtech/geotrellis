@@ -5,6 +5,7 @@ import org.scalatest.matchers.MustMatchers
 
 import geotrellis._
 import geotrellis.process._
+import geotrellis.testutil._
 
 case class Defenestrator(msg:String) extends Operation[Unit] {
   def _run(context:Context) = {
@@ -38,7 +39,7 @@ class FailingOpSpec extends FunSpec with MustMatchers {
 
 describe("A failing operation") {
     it("should return a StepError") {
-      val server = TestServer()
+      val server = TestServer.server
       val op = Defenestrator("Ermintrude Inch")
       val op2 = Window("extremely high")
       val op3 = LargeWindow(Literal(Unit), op2)

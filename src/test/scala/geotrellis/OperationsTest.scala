@@ -5,6 +5,7 @@ import geotrellis.raster.op.local._
 import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.Implicits._
+import geotrellis.testutil._
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -12,7 +13,7 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class OperationsTest extends FunSuite {
-  val server = TestServer()
+  val server = TestServer.server
 
   var counter = 1
   def run(prefix:String, op:Op[Raster], expected:Raster) {

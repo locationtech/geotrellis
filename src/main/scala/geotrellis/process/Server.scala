@@ -22,15 +22,18 @@ import com.typesafe.config.ConfigFactory
 import scala.util.{Try,Success => TrySuccess, Failure => TryFailure}
 import geotrellis.util.Filesystem
 
-class Server (id:String, val catalog:Catalog) {
+//class Server (id:String, val catalog:Catalog) extends FileCaching {
+class Server (id:String, val catalog:Catalog) extends Serializable {
   val debug = false
 
-  var system:akka.actor.ActorSystem = akka.actor.ActorSystem(id, ConfigFactory.load())
-  var actor:akka.actor.ActorRef = system.actorOf(Props(new ServerActor(id, this)), "server")
+  var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(new ServerActor(id, this)), id)
 
   private[this] val staticCache = mutable.Map.empty[String, Array[Byte]]
 
   initStaticCache()
+
+  Server.startActorSystem
+  def system = Server.actorSystem
 
   def startUp:Unit = ()
 
@@ -50,7 +53,10 @@ class Server (id:String, val catalog:Catalog) {
     }
   }
 
-  def shutdown():Unit = system.shutdown()
+  def shutdown():Unit = { 
+    //Server.actorSystem.shutdown()
+    //Server.actorSystem.awaitTermination()
+  }
 
   def log(msg:String) = if(debug) println(msg)
 
@@ -67,6 +73,7 @@ class Server (id:String, val catalog:Catalog) {
   private[process] def _run[T:Manifest](op:Op[T]) = {
     log("server._run called with %s" format op)
 
+//    implicit val timeout = Timeout(Duration(3600, "millis"))
     val d = Duration.create(600, TimeUnit.SECONDS)
     implicit val t = Timeout(d)
     val future = op match {
@@ -149,6 +156,13 @@ object Server {
   def apply(id:String) = new Server(id, Catalog.fromPath(catalogPath))
   def apply(id:String, path:String) = new Server(id, Catalog.fromPath(path))
   def apply(id:String, catalog:Catalog) = new Server(id, catalog)
-
   def empty(id:String) = new Server(id, Catalog.empty(id))
+
+  var actorSystem:akka.actor.ActorSystem = akka.actor.ActorSystem("GeoTrellis", ConfigFactory.load())
+
+  def startActorSystem {
+    if (actorSystem.isTerminated) {
+      actorSystem = akka.actor.ActorSystem("GeoTrellis", ConfigFactory.load())
+    } 
+  }
 }
