@@ -4,6 +4,7 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.raster.op.local.AddArray
+import geotrellis.testutil._
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -14,7 +15,7 @@ class AddArrayTest extends FunSuite {
   val e = Extent(0.0, 0.0, 10.0, 10.0)
   val re = RasterExtent(e, 1.0, 1.0, 10, 10)
 
-  val server = TestServer()
+  val server = TestServer.server
 
   def r(n:Int) = Raster(Array.fill(100)(n), re)
   def r(n:Double) = Raster(Array.fill(100)(n), re)

@@ -5,6 +5,7 @@ import geotrellis.raster.op._
 import geotrellis.raster.op.local.{AddConstant,MultiplyConstant}
 import geotrellis.raster._
 import geotrellis._
+import geotrellis.testutil._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
@@ -18,7 +19,7 @@ class BinaryLocalSpec extends FunSpec with MustMatchers with ShouldMatchers {
     val cols = 100
     val rows = 100
 
-    val server = TestServer()
+    val server = TestServer.server
     val e = Extent(0.0, 0.0, 100.0, 100.0)
     val re = RasterExtent(e, e.width / cols, e.height / rows, cols, rows)
 

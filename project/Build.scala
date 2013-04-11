@@ -23,6 +23,8 @@ object GeotrellisBuild extends Build {
     parallelExecution := false,
     testListeners <+= target.map(tgt => new eu.henkelmann.sbt.JUnitXmlTestsListener(tgt.toString)),
 
+    fork in test := false,
+
     mainClass := Some("geotrellis.rest.WebRunner"),
 
     javaOptions in run += "-Xmx2G",
@@ -32,9 +34,10 @@ object GeotrellisBuild extends Build {
       "org.scala-lang" % "scala-reflect" % "2.10.0",
       "junit" % "junit" % "4.5" % "test",
       "com.vividsolutions" % "jts" % "1.12",
-      "com.typesafe.akka" %% "akka-kernel" % "2.1.0",
-      "com.typesafe.akka" %% "akka-remote" % "2.1.0",
-      "com.typesafe.akka" %% "akka-actor" % "2.1.0",
+      "com.typesafe.akka" %% "akka-kernel" % "2.1.2",
+      "com.typesafe.akka" %% "akka-remote" % "2.1.2",
+      "com.typesafe.akka" %% "akka-actor" % "2.1.2",
+"com.typesafe.akka" %% "akka-cluster-experimental" % "2.1.2",
       "asm" % "asm" % "3.3.1",
       "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
       "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1"
@@ -101,7 +104,13 @@ object GeotrellisBuild extends Build {
     settings(
       scalaVersion := "2.10.0",
       libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-reflect" % "2.10.0"
+      "org.scala-lang" % "scala-reflect" % "2.10.0",
+      "org.hyperic" % "sigar"  % "1.6.4"
+      ),
+      Keys.fork in run := true,
+      fork := true,
+      javaOptions in run ++= Seq(
+        "-Djava.library.path=./sigar"
       )).
     dependsOn(root)
 

@@ -89,7 +89,7 @@ case class ResolutionLayout(xs:Array[Double], ys:Array[Double],
 /**
  *
  */
-trait TiledRasterData extends RasterData {
+trait TiledRasterData extends RasterData with Serializable {
   /**
    * Returns the particular layout of this TiledRasterData's tiles.
    */
@@ -314,7 +314,7 @@ case class TileSetRasterData(basePath:String, name:String, typ:RasterType, tileL
  */
 class TileArrayRasterData(val tiles:Array[Raster],
                           val tileLayout:TileLayout,
-                          val rasterExtent:RasterExtent) extends TiledRasterData  {
+                          val rasterExtent:RasterExtent) extends TiledRasterData  with Serializable {
   val typ = tiles(0).data.getType
   def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
   def getType = typ

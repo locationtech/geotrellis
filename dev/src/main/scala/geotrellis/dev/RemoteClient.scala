@@ -8,85 +8,99 @@ import akka.actor.{ ActorRef, Props, Actor, ActorSystem }
 import geotrellis.raster.op._
 import geotrellis.process._
 import geotrellis._
+import geotrellis.raster._
+import geotrellis.statistics.op._
+
+import akka.cluster.routing.ClusterRouterConfig
+import akka.cluster.routing.ClusterRouterSettings
+import akka.cluster.routing.AdaptiveLoadBalancingRouter
+import akka.cluster.routing.HeapMetricsSelector
+import akka.cluster.routing.AdaptiveLoadBalancingRouter
+import akka.cluster.routing.SystemLoadAverageMetricsSelector
+import akka.kernel.Bootable
+import akka.actor.{ Props, Actor, ActorSystem }
+import com.typesafe.config.ConfigFactory
+
+import akka.cluster.routing.ClusterRouterConfig
+import akka.cluster.routing.ClusterRouterSettings
+import akka.routing.ConsistentHashingRouter
+import akka.routing.FromConfig
+import akka.cluster.routing.ClusterRouterConfig
+import akka.cluster.routing.ClusterRouterSettings
+import akka.cluster.routing.AdaptiveLoadBalancingRouter
+import akka.cluster.routing.HeapMetricsSelector
+import akka.cluster.routing.ClusterRouterConfig
+import akka.cluster.routing.ClusterRouterSettings
+import akka.cluster.routing.AdaptiveLoadBalancingRouter
+import akka.cluster.routing.SystemLoadAverageMetricsSelector
+
+import akka.cluster.Cluster
+import akka.cluster.ClusterEvent.CurrentClusterState
+import akka.cluster.ClusterEvent.MemberUp
+
+import geotrellis.process._
+import akka.serialization._
 
 class RemoteClientApplication extends Bootable {
-
-
-  val config = ConfigFactory.load.getConfig("remoteClient")
-
-  val system = ActorSystem("RemoteClientApplication", config)
-  val server = new Server("client", Catalog.empty("client"))
-  val actor = system.actorOf(Props(new ServerActor("client", server)), "remoteClientActor")
-
-  server.actor = actor
-  server.system = system
-
-  //val system = ActorSystem("RemoteClientApplication", ConfigFactory.load.getConfig("remoteClient"))
-  //val actor = system.actorOf(Props[RemoteClientActor], "remoteClientActor")
-  val clusterSeed = config.getString("geotrellis.clusterSeed")
-  val remoteActor = system.actorFor(s"akka://RemoteServerApplication@${clusterSeed}:8552/user/remoteServer")
-
-
-  def sendRemote(op: Run) = {
-    actor ! (remoteActor, op)
-  }
-
-  def runRemote(op:Operation[_]) {
-    val remoteOp = op.dispatch(remoteActor)
-    println("About to run operation w/ remote dispatch")
-    val start = System.currentTimeMillis 
-    val result = server.run(remoteOp)
-    val elapsed = System.currentTimeMillis - start
-    println("Finished running operation w/ remote dispatch.")
-    println("Finished request: elapsed time: %d".format(elapsed))
-  }
+  val server = new Server("remoteServer", Catalog.empty("client"))
+  val router = server.system.actorOf(
+      Props[ServerActor].withRouter(FromConfig),
+      name = "clusterRouter")
 
   def startup() {
   }
 
   def shutdown() {
-    system.shutdown()
+    server.shutdown()
   }
 }
 
-class RemoteClientActor extends Actor {
-  var startTime = 0.0
-  
-  def receive = {
-    case (actor: ActorRef, op: Run) => { 
-      startTime = System.currentTimeMillis
-      actor ! op
-    }
-    case a:OperationResult[_] => {
-      println("Result in: %f".format( System.currentTimeMillis - startTime) )
-      println("Response was: " + a.toString()  )
-    }
-  }
-}
 
 object RemoteClient {
   def main(args: Array[String]) {
+    println("Attempting to connect to cluster.")
+    if (args.nonEmpty) System.setProperty("akka.remote.netty.port", args(0))
+
     val app = new RemoteClientApplication
+    val server = app.server
 
-    val height = 10.0
-    val width = 10.0
+    Cluster(server.system) registerOnMemberUp {
+      println("Joined cluster.")
 
-    val cols = 256
-    val rows = 256
+      var carbonLocation = "/var/geotrellis/tile/"
+      val uncachedRaster = io.LoadUncachedTileSet(HelloWorldOp(carbonLocation))
+      val op = stat.GetHistogram(uncachedRaster)
+      op.limit = 5000
 
-    val e = Extent(0.0, 0.0, width, height)
-    val re = RasterExtent(e, width / cols, height / rows, cols, rows)
+      while(true) {
+        println(" == Sending op for remote execution.")
+        val start = System.currentTimeMillis
+        val result = server.run(op.dispatch(app.router))
+        val elapsed = System.currentTimeMillis - start
+        println(s" ==== completed.  elapsed time: $elapsed\n")
 
-    val data = Array.ofDim[Int](cols * rows)
-    import scala.util.Random
+        println(s" == executing operation locally.")
+        val start2 = System.currentTimeMillis
+        val result2 = server.run(op)
+        val elapsed2 = System.currentTimeMillis - start2
+        println(s" ==== raw time for execution: $elapsed2\n\n")
 
-    for (i <- 0 until cols * rows) data(i) = Random.nextInt() % 1000000
-
-    val r1 = Raster(Array.fill(cols * rows)(3), re)
-    println("CLIENT: Started application.")
-    while (true) {
-      val remoteOp = local.AddConstant(r1,3)
-      app.runRemote(remoteOp)
+        Thread.sleep(200)
+      } 
     }
   }
+  def testSerialization(remoteOp:AnyRef, server:Server) {
+    val serialization = SerializationExtension(server.system)
+    val serializer = serialization.findSerializerFor(remoteOp)
+    val bytes = serializer.toBinary(remoteOp)
+    val back = serializer.fromBinary(bytes, manifest = None)
+    assert(back == remoteOp)
+  }
 }
+
+case class HelloWorldOp[String](s:Op[String]) extends Op1(s)({
+  s => {
+    println("Executing load tileset operation.")
+    Result(s)
+  }
+})

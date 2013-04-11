@@ -3,6 +3,7 @@ package geotrellis.raster.op
 import geotrellis.process._
 import geotrellis._
 import geotrellis.raster.op.local._
+import geotrellis.testutil._
 
 import geotrellis.raster._
 import geotrellis._
@@ -19,7 +20,7 @@ class UnaryLocalSpec extends FunSpec with MustMatchers with ShouldMatchers {
     val cols = 1000
     val rows = 1000
 
-    val server = TestServer()
+    val server = TestServer.server
     val e = Extent(0.0, 0.0, 100.0, 100.0)
     val re = RasterExtent(e, e.width / cols, e.height / rows, cols, rows)
     val data = Array.fill(re.cols * re.rows)(100)

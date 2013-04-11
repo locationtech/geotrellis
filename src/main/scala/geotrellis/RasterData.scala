@@ -61,7 +61,7 @@ trait DoubleBasedArray {
  *
  * Designed to be a near drop-in replacement for Array in many cases.
  */
-trait RasterData {
+trait RasterData extends Serializable {
   def getType: RasterType
   def alloc(cols:Int, rows:Int): MutableRasterData
   def isFloat = getType.float

@@ -3,6 +3,7 @@ package geotrellis.data.arg
 import geotrellis._
 import geotrellis.process._
 import geotrellis.raster._
+import geotrellis.testutil._
 
 import java.io.{DataInputStream, FileInputStream}
 
@@ -17,7 +18,7 @@ class Arg32Spec extends FunSpec with MustMatchers with ShouldMatchers {
   val nd = NODATA
 
   describe("An Arg32Reader") {
-    val server = TestServer()
+    val server = TestServer.server
 
     val path1 = "src/test/resources/fake.img32.arg"
 

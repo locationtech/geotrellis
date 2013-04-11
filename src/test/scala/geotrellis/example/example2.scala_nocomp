@@ -25,7 +25,7 @@ class ExampleTwoSpec extends Spec with MustMatchers {
   //  val weightsum:Int = weights.foldLeft(0.toInt) { (a, b) => (a + b).toInt }
   //
   //  it("should work with a subextent that once crashed") {
-  //    val server = TestServer()
+  //    val server = TestServer.server
   //  
   //    //val geo = LoadRasterExtentFromArgFile(paths(0)).run(server)
   // 

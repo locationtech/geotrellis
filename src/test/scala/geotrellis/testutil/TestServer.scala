@@ -7,19 +7,21 @@ import geotrellis.process._
 import org.scalatest.{BeforeAndAfter,Suite}
 import org.scalatest.matchers._
 
+object TestServer {
+  lazy val server:Server = new Server("testutil", Catalog.fromPath("src/test/resources/catalog.json"))
+}
 /*
  * Mixin to provide a server that is reset for each test
  */
 trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
-  var server:Server = null
-
+  var server = TestServer.server 
   before {
-    server = geotrellis.process.TestServer("src/test/resources/catalog.json")  
+    //server = geotrellis.process.TestServer("src/test/resources/catalog.json")  
   }
 
   after {
-    server.shutdown()
-    server = null
+    //server.shutdown()
+    //server = null
   }
 
   def run[T:Manifest](op:Op[T]):T = server.run(op)
