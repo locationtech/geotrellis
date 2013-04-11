@@ -98,8 +98,6 @@ case class ServerActor(id: String, server: Server) extends Actor {
   def receive = {
     // EXTERNAL MESSAGES
     case Run(op) => {
-      log(" ** Server asked to run op %s: thread: %s" format (op,Thread.currentThread.getName))
-      log(" ** Server should return result to sender: " + sender )
       val msgSender = sender
       dispatcher ! RunOperation(op, 0, msgSender, None)
     }
@@ -107,22 +105,17 @@ case class ServerActor(id: String, server: Server) extends Actor {
     // internal message sent from external source (a remote server)
     case msg:RunOperation[_] => { 
       val s = sender
-      log(" ** Received RunOperation message from remote actor: %s".format(s))
-      log(" ** Message is: %s".format(msg.toString))
+
       dispatcher ! msg
     }
 
     case RunDispatched(op,childDispatcher) => {
-      log(" ** Server asked to run op %s: thread: %s dispatcher: %s"
-          .format (op,Thread.currentThread.getName, childDispatcher))
-      log(" ** Server should return result to sender: " + sender )
       val msgSender = sender
       this.dispatcher ! RunOperation(op, 0, msgSender, Some(childDispatcher)) 
     }
 
     // INTERNAL MESSAGES
     case RunCallback(args, pos, cb, client, id, dispatcher) => {
-      log("server asked to run callback %s %s" format (args, cb))
       context.actorOf(Props(Calculation(server, pos, args, cb, client, dispatcher, id)))
     }
 
@@ -166,34 +159,25 @@ trait WorkerLike extends Actor {
   // This method handles a given output. It will either return a result/error
   // to the client, or dispatch more asynchronous requests, as necessary.
   def handleResult[T](pos:Int, client:ActorRef, output:StepOutput[T], t:Option[Timer], dispatcher:ActorRef) {
-    log("handleResult: worker-like (%s) got output %d: %s" format (this, pos, output))
 
     output match {
       // ok, this operation completed and we have a value. so return it.
       case Result(value) => {
 
-        log(" ** Output was a result %s" format value)
         val history = success(id, startTime, time(), t)
-        //log("&&& generated history: %s" format history)
         val result = OperationResult(Complete(value, history), pos)
 
-        log(" ** sending %s back to client: %s".format(result,client))
         client ! result
-        log(" ** sent")
       }
 
       // there was an error, so return that as well.
       case StepError(msg, trace) => {
-        log(" output was an error %s" format msg)
         val history = failure(id, startTime, time(), t, msg, trace)
-        log(" *** Worker %s received an error %s, %s, %s\n" format (id, msg,history.toPretty, Thread.currentThread.getName))
-        log (" *** Sending error message to %s\n" format client )
         client ! OperationResult(Error(msg, history), pos)
       }
 
       // we need to do more work, so as the server to do it asynchronously.
       case StepRequiresAsync(args, cb) => {
-        log(" output requires async: %s" format args.toList)
         server.actor ! RunCallback(args, pos, cb, client, id, dispatcher)
       }
     }
@@ -234,7 +218,6 @@ case class Worker(val server: Server) extends WorkerLike {
       //_id = op.toString
       _id = op.name
       startTime = time()
-      log("worker: run operation (%d): %s: %s" format (pos, op, Thread.currentThread.getName))
       //val timer = new Timer()
       val geotrellisContext = new Context(server)
       try {
@@ -276,10 +259,8 @@ extends WorkerLike {
   override def preStart {
     //startTime = time()
     for (i <- 0 until args.length) {
-      log(" ** Calculation preStart().  Acting on:  %d: %s" format (i, args(i)))
       args(i) match {
         case op:Operation[_] => {
-          log(" ** ** Sending op %d to dispatcher %s".format(i, dispatcher.toString))
           dispatcher ! RunOperation(op, i, self, None)
         }
         case value => results(i) = Some(Inlined(value))
@@ -329,7 +310,6 @@ extends WorkerLike {
   // are ready to begin evaluation. After this point we will terminate and not
   // receive any more messages.
   def finishCallback() {
-    log(" all values complete")
     try {
       handleResult(pos, client, cb(getValues), None, dispatcher)
     } catch {
@@ -339,28 +319,19 @@ extends WorkerLike {
         handleResult(pos, client, error, None, dispatcher)
       }
     }
-    log(" calculation done: performing callback")
     context.stop(self)
   }
 
   // Actor event loop
   def receive = {
     case OperationResult(childResult,  pos) => {
-      log("calculation (%s) got result %d".format(id,pos))
       results(pos) = Some(childResult)
-      log("results: %s".format(results))
-      log("result: %s".format(results(0)))
       if (!isDone) {
-        log("Calculation is not yet complete: %s".format(id))
       } else if (hasError) {
-        log("Calculation %s has an error.".format(id))
         val se = StepError("error", "error")
         handleResult(this.pos, client, se , None, dispatcher)
-        log("child operation error, stopping: " + this.id )
-        //finishCallback()
         context.stop(self)
       } else {
-        log(" all values complete")
         finishCallback()
         context.stop(self)
       }
