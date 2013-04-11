@@ -4,7 +4,6 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
 import geotrellis._
-import geotrellis.process.TestServer
 import geotrellis.raster.op.tiles._
 import geotrellis.testutil._
 import geotrellis.statistics.op._
