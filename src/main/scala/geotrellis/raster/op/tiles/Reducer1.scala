@@ -18,7 +18,7 @@ abstract class Reducer1[B: Manifest, C: Manifest](r: Op[Raster])(handle: Raster 
 
   def init(r: Raster) = 
     if (r.isTiled) 
-      runAsync('reduce :: r.getTileList.map(mapper))
+      runAsync('reduce :: r.getTiles.map(mapper))
     else
       Result(reducer(handle(r) :: Nil)) 
 

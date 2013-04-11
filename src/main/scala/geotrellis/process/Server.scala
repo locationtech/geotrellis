@@ -22,7 +22,6 @@ import com.typesafe.config.ConfigFactory
 import scala.util.{Try,Success => TrySuccess, Failure => TryFailure}
 import geotrellis.util.Filesystem
 
-//class Server (id:String, val catalog:Catalog) extends FileCaching {
 class Server (id:String, val catalog:Catalog) extends Serializable {
   val debug = false
 
@@ -54,8 +53,8 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
   }
 
   def shutdown():Unit = { 
-    //Server.actorSystem.shutdown()
-    //Server.actorSystem.awaitTermination()
+    Server.actorSystem.shutdown()
+    Server.actorSystem.awaitTermination()
   }
 
   def log(msg:String) = if(debug) println(msg)
@@ -73,7 +72,6 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
   private[process] def _run[T:Manifest](op:Op[T]) = {
     log("server._run called with %s" format op)
 
-//    implicit val timeout = Timeout(Duration(3600, "millis"))
     val d = Duration.create(600, TimeUnit.SECONDS)
     implicit val t = Timeout(d)
     val future = op match {
@@ -141,8 +139,8 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
         Result(r)
       }
       case None => {
-        val debugInfo = "Failed to load raster ${name} from catalog at ${catalog.source}" + 
-          " with json: \n" + catalog.json
+        val debugInfo = s"Failed to load raster ${name} from catalog at ${catalog.source}" + 
+                        s" with json: \n ${catalog.json}"
         StepError(s"Did not find raster '${name}' in catalog", debugInfo)
       }
     }

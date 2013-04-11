@@ -11,8 +11,9 @@ import geotrellis.raster.TiledRasterData
 
 object Histogram {
   def createTileResults(trd:TiledRasterData, re:RasterExtent) = {
-    val tiles = trd.getTileList(re)
-    tiles map { r => (r.rasterExtent, histogramRaster(r))} toMap
+    trd.getTiles(re)
+       .map { r => (r.rasterExtent, histogramRaster(r))} 
+       .toMap
   }
 
   def histogramRaster (r:Raster):HistogramObj = FastMapHistogram.fromRaster(r)
