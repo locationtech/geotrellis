@@ -12,8 +12,8 @@ import geotrellis.process._
  *           rounded to integers when making the Histogram.
  */
 object GetHistogram {
-  def apply(r:Op[Raster]):Op[Histogram] = GetHistogramMap(r)
-  def apply(r:Op[Raster], size:Op[Int]):Op[Histogram] = GetHistogramMap(r)
+  def apply(r:Op[Raster]) = GetHistogramMap(r)
+  def apply(r:Op[Raster], size:Op[Int]) = GetHistogramMap(r)
 }
 
 /**
