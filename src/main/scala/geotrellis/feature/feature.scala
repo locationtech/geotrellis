@@ -82,7 +82,6 @@ class MultiPolygon[D](override val geom:jts.MultiPolygon, data:D) extends Geomet
 
 case class JtsGeometry[D](g: jts.Geometry, d: D) extends Geometry(g,d)
 
-
 /// Implementations
 
 object Feature {
@@ -219,6 +218,30 @@ object LineString {
    */
   def apply[D](x0: Int, y0: Int, x1: Int, y1: Int, data: D): LineString[D] = {
     val g = factory.createLineString(Array(new jts.Coordinate(x0, y0), new jts.Coordinate(x1, y1)))
+    JtsLineString(g, data)
+  }
+
+  /**
+   * Create a LineString (aka a line) given x and y coordinates, as integers.
+   *
+   * @param tpls  Seq of (x,y) tuples
+   * @param data  Data value of this feature
+   */
+  def apply[D](tpls: Seq[(Int, Int)], data: D): LineString[D] = {
+    val coords = tpls.map { t => new jts.Coordinate(t._1, t._2) }.toArray
+    val g = factory.createLineString(coords)
+    JtsLineString(g, data)
+  }
+
+  /**
+   * Create a LineString (aka a line) given x and y coordinates, as integers.
+   *
+   * @param tpls  Seq of (x,y) tuples
+   * @param data  Data value of this feature
+   */
+  def apply[D](tpls: Seq[(Double, Double)], data: D)(implicit d:DummyImplicit): LineString[D] = {
+    val coords = tpls.map { t => new jts.Coordinate(t._1, t._2) }.toArray
+    val g = factory.createLineString(coords)
     JtsLineString(g, data)
   }
 }

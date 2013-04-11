@@ -115,14 +115,11 @@ object LoadGeoJson {
         }
         case "linestring" => {
           val coords = coordinateArray.get.asInstanceOf[List[List[Double]]]
-          if (coords.length != 2) {
+          if (coords.length % 2 != 0) {
             None
           } else {
-            val x0 = coords(0)(0)
-            val y0 = coords(0)(1)
-            val x1 = coords(1)(0)
-            val y1 = coords(1)(1)
-            Some(Array(LineString(x0, y0, x1, y1, properties)))
+            val pts = for(p <- coords) yield { (p(0),p(1)) }
+            Some(Array(LineString(pts, properties)))
           }
         }
         case "multilinestring" => {

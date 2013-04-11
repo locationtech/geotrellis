@@ -56,6 +56,13 @@ class LoadGeoJsonSpec extends FunSpec with MustMatchers with ShouldMatchers {
   }
 """
 
+  // LineString geometry with multiple points
+  val geojsonLineStringGeometry2 = """
+{ "type": "LineString",
+  "coordinates": [ [100.0, 0.0], [101.0, 1.0], [101.0, 7.0], [150.0, 10.0]]
+  }
+"""
+
   // MultiLineString geometry geojson example
   // from http://www.geojson.org/geojson-spec.html 
   val geojsonMultiLineStringGeometry = """
@@ -65,7 +72,6 @@ class LoadGeoJsonSpec extends FunSpec with MustMatchers with ShouldMatchers {
       [ [102.0, 2.0], [103.0, 3.0] ]
     ]
   }"""
-
 
     it("should parse a Polygon feature") {
       val result = LoadGeoJson.parse(geojsonPolygonFeature)
@@ -101,6 +107,11 @@ class LoadGeoJsonSpec extends FunSpec with MustMatchers with ShouldMatchers {
     it ("should parse a LineString geometry") {
       val result = LoadGeoJson.parse(geojsonLineStringGeometry)
       result.get.apply(0).toString must be === "JtsLineString(LINESTRING (100 0, 101 1),None)"
+    }
+
+    it ("should parse a LineString geometry with multiple points") {
+      val result = LoadGeoJson.parse(geojsonLineStringGeometry2)
+      result.get.apply(0).toString must be === "JtsLineString(LINESTRING (100 0, 101 1, 101 7, 150 10),None)"
     }
 
     it ("should parse a MultiLineString geometry") {
