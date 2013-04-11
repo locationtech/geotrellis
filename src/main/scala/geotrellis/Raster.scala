@@ -19,7 +19,7 @@ object Raster {
     Raster(IntArrayRasterData.empty(re.cols, re.rows), re)
 
   /**
-   * THIS SHOULD BE MOVED WHY IS THIS HERE
+   * Todo: Move tile loading out of Raster.
    */
   import geotrellis.process.Server
   import com.typesafe.config.ConfigFactory
@@ -71,9 +71,7 @@ object Raster {
 
   def loadUncachedTileSet(dir:String, server:Server):Raster = {
     val (tileBase, typ, layout, re) = loadTileSetInfo(dir, server)
-    val data = TileSetRasterData(dir, tileBase, typ, layout) { path =>
-      server.run(io.LoadFile(path))
-    }
+    val data = TileSetRasterData(dir, tileBase, typ, layout, server)
     Raster(data, re) 
   }
 }

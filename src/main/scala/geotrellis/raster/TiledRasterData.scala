@@ -188,14 +188,19 @@ trait TiledRasterData extends RasterData with Serializable {
  * Currently this is the only TileRasterData that can be reliably used on data
  * too large to fit in memory.
  */
-case class TileSetRasterData(basePath:String, name:String, typ:RasterType, tileLayout:TileLayout)
-                            (loadFunc:(String)=>Raster) extends TiledRasterData {
+case class TileSetRasterData(basePath:String, 
+                             name:String, 
+                             typ:RasterType, 
+                             tileLayout:TileLayout,
+                             server:Server) extends TiledRasterData {
   def getType = typ
   def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
 
+  def loadPath(path:String) = server.loadRaster(path)
+
   def getTile(col:Int, row:Int) = {
     val path = Tiler.tilePath(basePath, name, col, row)
-    loadFunc(path).data match {
+    loadPath(path).data match {
       case i:IntConstant => i
       case a:ArrayRasterData => LazyArrayWrapper(a)
       case o => o
