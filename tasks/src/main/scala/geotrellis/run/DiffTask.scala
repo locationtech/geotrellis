@@ -47,7 +47,7 @@ object DiffTask {
     if(!doesFileExist(sourcePath)) { return }
     if(!doesFileExist(targetPath)) { return }    
 
-    val localServer = TestServer()
+    val localServer = Server.empty("task")
     
     try {
       val r1Op = io.LoadFile(sourcePath)

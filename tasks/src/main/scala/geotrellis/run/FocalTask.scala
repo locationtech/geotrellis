@@ -58,7 +58,7 @@ object FocalTask {
       return
     }
 
-    val localServer = TestServer()
+    val localServer = Server.empty("task")
     
     try {
       val op = operation.toLowerCase match {

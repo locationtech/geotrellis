@@ -51,7 +51,7 @@ object ExportTask {
   def execute(sourcePath:String, targetPath:String):Unit = {  
     if(!doesFileExist(sourcePath)) { return }
 
-    val localServer = TestServer()
+    val localServer = Server.empty("task")
     
     try {
       val r = localServer.run(io.LoadFile(sourcePath))
