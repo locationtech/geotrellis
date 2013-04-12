@@ -107,6 +107,9 @@ object GeotrellisBuild extends Build {
       "org.scala-lang" % "scala-reflect" % "2.10.0",
       "org.hyperic" % "sigar"  % "1.6.4"
       ),
+      resolvers ++= Seq(
+        "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
+      ),
       Keys.fork in run := true,
       fork := true,
       javaOptions in run ++= Seq(
@@ -127,6 +130,9 @@ object GeotrellisBuild extends Build {
   lazy val geotools:Project = Project("geotools", file("geotools")).
     settings(
     scalaVersion := "2.10.0",
+    name := "geotrellis-geotools",
+    organization := "com.azavea.geotrellis",
+    version := "0.9.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       "org.scalatest" %% "scalatest" % "2.0.M5b",
       "java3d" % "j3d-core" % "1.3.1",
