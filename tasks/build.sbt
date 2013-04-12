@@ -19,7 +19,7 @@ name := "geotrellis-tasks"
 
 organization := "com.azavea.geotrellis"
 
-version := "0.8.1-RC1"
+version := "0.8.1-RC2"
 
 assemblySettings
 
