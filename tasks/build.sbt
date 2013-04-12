@@ -19,9 +19,7 @@ name := "geotrellis-tasks"
 
 organization := "com.azavea.geotrellis"
 
-version := "0.9.0-SNAPSHOT"
-
-//seq(Revolver.settings: _*)
+version := "0.8.1-RC1"
 
 assemblySettings
 
@@ -60,11 +58,6 @@ pomExtra := (
   <connection>scm:git:git@github.com:azavea/geotrellis.git</connection>
 </scm>
 <developers>
-  <developer>
-    <id>non</id>
-    <name>Erik Osheim</name>
-    <url>http://github.com/non/</url>
-  </developer>
   <developer>
     <id>joshmarcus</id>
     <name>Josh Marcus</name>
