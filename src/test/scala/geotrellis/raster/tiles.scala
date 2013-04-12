@@ -172,6 +172,8 @@ class TileSpec extends FunSpec with MustMatchers
       val trd = Tiler.createTiledRasterData(raster, 2, 2)
       Tiler.writeTiles(trd, raster.rasterExtent, "testraster", "/tmp/foo")
 
+      val f = new java.io.File("/tmp/foo")
+      println(s"Does it exist?  ${f.isDirectory}")
       val extent = Extent(1, 21, 79, 59)
       val tileSetRD = TileSetRasterData("/tmp/foo", "testraster", TypeInt, layout, server)
 

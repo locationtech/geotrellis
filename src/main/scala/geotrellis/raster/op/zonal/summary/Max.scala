@@ -10,13 +10,14 @@ import geotrellis.raster.TiledRasterData
 
 object Max {
   def createTileResults(trd:TiledRasterData, re:RasterExtent) = {
-    val tiles = trd.getTileList(re)
-    tiles map { r => (r.rasterExtent, maxRaster(r))} toMap
+    trd.getTiles(re)
+       .map { r => (r.rasterExtent, maxRaster(r))}
+       .toMap
   }
 
   def maxRaster (r:Raster):Int = {
     var max = Int.MinValue
-    r.foreach( (x) => if (x != NODATA && x > max) max = x )
+    for(z <- r) { if (z > max) max = z }
     max
   }
 }
@@ -68,8 +69,9 @@ case class Max[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[R
 
 object MaxDouble {
   def createTileResults(trd:TiledRasterData, re:RasterExtent) = {
-    val tiles = trd.getTileList(re)
-    tiles map { r => (r.rasterExtent, maxRaster(r))} toMap
+    trd.getTiles(re)
+       .map { r => (r.rasterExtent, maxRaster(r))} 
+       .toMap
   }
 
   def maxRaster (r:Raster):Double = {

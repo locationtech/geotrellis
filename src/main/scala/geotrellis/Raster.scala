@@ -19,7 +19,7 @@ object Raster {
     Raster(IntArrayRasterData.empty(re.cols, re.rows), re)
 
   /**
-   *
+   * Todo: Move tile loading out of Raster.
    */
   import geotrellis.process.Server
   import com.typesafe.config.ConfigFactory
@@ -62,11 +62,13 @@ object Raster {
     val layout = TileLayout(layoutCols, layoutRows, pixelCols, pixelRows)
     (tileBase, typ, layout, re)
   }
+
   def loadTileSet(dir:String, server:Server):Raster = {
     val (tileBase, typ, layout, re) = loadTileSetInfo(dir, server)
     val data = TileArrayRasterData(dir, tileBase, typ, layout, re, server)
     Raster(data, re)
   }
+
   def loadUncachedTileSet(dir:String, server:Server):Raster = {
     val (tileBase, typ, layout, re) = loadTileSetInfo(dir, server)
     val data = TileSetRasterData(dir, tileBase, typ, layout, server)
@@ -220,14 +222,9 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
 
   def defer() = data.asArray.map(d => Raster(LazyArrayWrapper(d), rasterExtent)).getOrElse(this)
 
-  def getTiles():Array[Raster] = data match {
+  def getTiles():List[Raster] = data match {
     case t:TiledRasterData => t.getTiles(rasterExtent)
-    case _ => Array(this)
-  }
-
-  def getTileList():List[Raster] = data match {
-    case t:TiledRasterData => t.getTileList(rasterExtent)
-    case _ => this :: Nil
+    case _ => List(this)
   }
 
   def getTileOpList():List[Op[Raster]] = data match {
@@ -240,5 +237,4 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
     case t:TiledRasterData => t.getTileOpList(rasterExtent, clipExtent)
     case _ => Literal(this) :: Nil
   }
-  
 }
