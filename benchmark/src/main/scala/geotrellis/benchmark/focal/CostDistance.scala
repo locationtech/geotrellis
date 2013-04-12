@@ -15,7 +15,7 @@ import scala.util.Random
 
 object CostDistanceOperationBenchmark extends BenchmarkRunner(classOf[CostDistanceOperationBenchmark])
 class CostDistanceOperationBenchmark extends OperationBenchmark {
-  val s = TestServer()
+  val s = Server.empty("test")
   var r: Raster = _
   var p: List[(Int,Int)] = _
 

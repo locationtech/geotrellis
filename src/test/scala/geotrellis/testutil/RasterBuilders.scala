@@ -147,6 +147,9 @@ trait RasterBuilders {
     Raster(arr,re)
   }
 
+  /**
+   * 14 x 9 raster with positive byte values
+   */
   def byteRaster = {
     var arr = Array[Byte](
       62,  22,  44,   3,  36,  75,  87,  83,  84,  30,  91,  85,  70,  23,

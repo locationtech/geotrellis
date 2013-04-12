@@ -20,7 +20,7 @@ class FocalOperationsBenchmark extends OperationBenchmark {
 
   override def setUp() {
     val path = "src/main/resources/sbn/SBN_inc_percap.arg"
-    server = TestServer()
+    server = Server.empty("test")
 
     val e = Extent(-8475497.88485957, 4825540.69147447,
                    -8317922.884859569, 4954765.69147447)
