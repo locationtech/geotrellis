@@ -52,12 +52,12 @@ pomIncludeRepository := { _ => false }
 
 licenses := Seq("GPL3" -> url("http://www.gnu.org/licenses/gpl-3.0-standalone.html"))
 
-homepage := Some(url("http://github.com/azavea/geotrellis"))
+homepage := Some(url("http://github.com/geotrellis/geotrellis"))
 
 pomExtra := (
 <scm>
-  <url>git@github.com:azavea/geotrellis.git</url>
-  <connection>scm:git:git@github.com:azavea/geotrellis.git</connection>
+  <url>git@github.com:geotrellis/geotrellis.git</url>
+  <connection>scm:git:git@github.com:geotrellis/geotrellis.git</connection>
 </scm>
 <developers>
   <developer>
