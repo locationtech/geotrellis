@@ -60,18 +60,6 @@ class RasterizeSpec extends FunSuite with TestServer
       
       val line = LineString(0,0,9,9,"diagonal line")
       Rasterizer.foreachCellByLineString(line, re)(f3)
-      
-      // Some examples of immutable/fold interface
-      val f1 = (z:Int, d:String, output:String) => output + d + z.toString
-      
-      val o = rasterize.Rasterizer.aggregrateCellsByPoint(p, raster, "")(f1)
-      assert(o === "point one: 81")
-      
-      val o2 = rasterize.Rasterizer.aggregrateCellsByPoint(p2, raster, "")(f1)
-      assert(o2 === "point two: 9")
-      
-      val o3 = rasterize.Rasterizer.aggregrateCellsByPoint(p3, raster, "")(f1)
-      assert(o3 === "point three: 0")
   }
 
   test("linestring rasterization") {

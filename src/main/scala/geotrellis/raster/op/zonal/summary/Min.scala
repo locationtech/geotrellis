@@ -10,13 +10,14 @@ import geotrellis.raster.TiledRasterData
 
 object Min {
   def createTileResults(trd:TiledRasterData, re:RasterExtent) = {
-    val tiles = trd.getTileList(re)
-    tiles map { r => (r.rasterExtent, minRaster(r))} toMap
+    trd.getTiles(re)
+       .map { r => (r.rasterExtent, minRaster(r))}
+       .toMap
   }
 
   def minRaster (r:Raster):Int = {
     var min = Int.MaxValue
-    r.foreach( (x) => if (x != NODATA && x < min) min = x )
+    for(z <- r) { if (z != NODATA && z < min) min = z }
     min
   }
 }
@@ -67,8 +68,9 @@ case class Min[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[R
 
 object MinDouble {
   def createTileResults(trd:TiledRasterData, re:RasterExtent) = {
-    val tiles = trd.getTileList(re)
-    tiles map { r => (r.rasterExtent, minRaster(r))} toMap
+    trd.getTiles(re)
+       .map { r => (r.rasterExtent, minRaster(r))} 
+       .toMap
   }
 
   def minRaster (r:Raster):Double = {

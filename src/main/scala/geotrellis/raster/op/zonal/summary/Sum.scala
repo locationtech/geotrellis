@@ -10,13 +10,14 @@ import geotrellis.raster.TiledRasterData
 
 object Sum {
   def createTileResults(trd:TiledRasterData, re:RasterExtent) = {
-    val tiles = trd.getTileList(re)
-    tiles map { r => (r.rasterExtent, sumRaster(r))} toMap
+    trd.getTiles(re)
+       .map { r => (r.rasterExtent, sumRaster(r))}
+       .toMap
   }
 
   def sumRaster (r:Raster):Long = {
     var sum = 0L
-    r.foreach( (x) => if (x != NODATA) sum = sum + x )
+    for(z <- r) { if (z != NODATA) sum = sum + z }
     sum
   }
 }
@@ -68,8 +69,9 @@ case class Sum[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[R
 
 object SumDouble {
   def createTileResults(trd:TiledRasterData, re:RasterExtent) = {
-    val tiles = trd.getTileList(re)
-    tiles map { r => (r.rasterExtent, sumRaster(r))} toMap
+    trd.getTiles(re)
+       .map { r => (r.rasterExtent, sumRaster(r))}
+       .toMap
   }
 
   def sumRaster (r:Raster):Double = {
