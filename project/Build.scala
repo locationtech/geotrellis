@@ -108,7 +108,7 @@ object GeotrellisBuild extends Build {
       "org.hyperic" % "sigar"  % "1.6.4"
       ),
       resolvers ++= Seq(
-        "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
+        "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
       ),
       Keys.fork in run := true,
       fork := true,
