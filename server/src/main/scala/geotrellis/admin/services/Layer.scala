@@ -95,7 +95,7 @@ class Layer {
     @DefaultValue("") @QueryParam("lng") lng:String,
     @DefaultValue("7") @QueryParam("size") size:String,
     @Context req:HttpServletRequest
-  ) = {
+  ):Response = {
     val lngOp = string.ParseDouble(lat)
     val latOp = string.ParseDouble(lng)
     val sizeOp = string.ParseInt(size)
