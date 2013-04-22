@@ -9,7 +9,7 @@ object GeotrellisBuild extends Build {
     organization := "com.azavea.geotrellis",
     name := "geotrellis",
     version := "0.9.0-SNAPSHOT",
-    scalaVersion := "2.10.0",
+    scalaVersion := "2.10.1",
     
     scalacOptions ++= Seq("-deprecation", 
                           "-unchecked", 
