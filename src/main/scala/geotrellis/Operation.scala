@@ -279,7 +279,7 @@ object OpX {
  
 }
 
-class Op2[A,B,T](val a:Op[A], val b:Op[B]) (f:(A,B)=>StepOutput[T]) extends Operation[T] {
+class Op2[A,B,T](a:Op[A], b:Op[B]) (f:(A,B)=>StepOutput[T]) extends Operation[T] {
   def productArity = 2
   def canEqual(other:Any) = other.isInstanceOf[Op2[_,_,_]]
   def productElement(n:Int) = n match {
