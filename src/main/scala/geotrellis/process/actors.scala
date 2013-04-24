@@ -170,6 +170,11 @@ trait WorkerLike extends Actor {
         client ! result
       }
 
+      // Execute the returned operation as the next step of this calculation.
+      case AndThen(op) => {
+         server.actor ! RunOperation(op, pos, client, Some(dispatcher))
+      }
+
       // there was an error, so return that as well.
       case StepError(msg, trace) => {
         val history = failure(id, startTime, time(), t, msg, trace)
