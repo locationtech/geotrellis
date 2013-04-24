@@ -64,9 +64,8 @@ object IfCell {
  * Maps all cells matching `cond` to `trueValue`.
  */
 case class IfDoubleCell(r:Op[Raster], cond:Double => Boolean, trueValue:Double) extends Op1(r)({
-  (r) => Result(r.dualMap({z:Int => if (cond(i2d(z))) d2i(trueValue) else z})
-                         (z => if (cond(z)) trueValue else z))
-}) 
+  (r) => AndThen(logic.RasterDualMap(r) ({z:Int => if (cond(i2d(z))) d2i(trueValue) else z}) (z => if (cond(z)) trueValue else z))
+   }) 
 
 /**
  * Set all values of output raster to one value or another based on whether a
@@ -74,7 +73,7 @@ case class IfDoubleCell(r:Op[Raster], cond:Double => Boolean, trueValue:Double) 
  */
 case class IfElseCell(r:Op[Raster], cond:Int => Boolean, trueValue:Int,
                       falseValue:Int) extends Op1(r)({
-  (r) => Result(r.dualMap(z => if (cond(z)) trueValue else falseValue)
+  (r) => AndThen(logic.RasterDualMap(r)(z => if (cond(z)) trueValue else falseValue)
                          ({z:Double => if (cond(d2i(z))) i2d(trueValue) else i2d(falseValue)}))
 })
 
@@ -84,7 +83,7 @@ case class IfElseCell(r:Op[Raster], cond:Int => Boolean, trueValue:Int,
  */
 case class IfElseDoubleCell(r:Op[Raster], cond:Double => Boolean, trueValue:Double,
                       falseValue:Double) extends Op1(r)({
-  (r) => Result(r.dualMap({z:Int => if (cond(i2d(z))) d2i(trueValue) else d2i(falseValue)})
+  (r) => AndThen(logic.RasterDualMap(r)({z:Int => if (cond(i2d(z))) d2i(trueValue) else d2i(falseValue)})
                          (z => if (cond(z)) trueValue else falseValue))
 })
 
@@ -94,13 +93,11 @@ case class IfElseDoubleCell(r:Op[Raster], cond:Double => Boolean, trueValue:Doub
  * each of the two input rasters.
  */
 case class BinaryIfCell(r1:Op[Raster], r2:Op[Raster],
-                        cond: (Int, Int) => Boolean, trueValue: Int) extends BinaryLocal {
-
-  def handle(z1:Int, z2:Int): Int = if (cond(z1, z2)) trueValue else z1
-
-  def handleDouble(z1:Double, z2:Double): Double =
-    if (cond(d2i(z1), d2i(z2))) i2d(trueValue) else z1
-}
+                        cond: (Int, Int) => Boolean, trueValue: Int) extends Op2(r1,r2)({
+  (r1,r2) => AndThen(logic.RasterDualCombine(r1,r2)
+  ((z1,z2) => if (cond(z1, z2)) trueValue else z1)
+  ((z1,z2) => if (cond(d2i(z1), d2i(z2))) i2d(trueValue) else z1))
+})
 
 /**
  * Given a Double condition over two rasters, set the value of each cell in the output
@@ -108,13 +105,11 @@ case class BinaryIfCell(r1:Op[Raster], r2:Op[Raster],
  * each of the two input rasters.
  */
 case class BinaryIfDoubleCell(r1:Op[Raster], r2:Op[Raster],
-                        cond: (Double, Double) => Boolean, trueValue: Double) extends BinaryLocal {
-
-  def handle(z1:Int, z2:Int): Int = if (cond(i2d(z1), i2d(z2))) d2i(trueValue) else z1
-
-  def handleDouble(z1:Double, z2:Double): Double =
-    if (cond(z1, z2)) trueValue else z1
-}
+                        cond: (Double, Double) => Boolean, trueValue: Double) extends Op2(r1,r2) ({
+  (r1,r2) => AndThen(logic.RasterDualCombine(r1,r2)
+  ((z1,z2) => if (cond(i2d(z1), i2d(z2))) d2i(trueValue) else z1)
+  ((z1,z2) => if (cond(z1, z2)) trueValue else z1))
+})
 
 /**
  * Given a condition over two rasters, set the value of each cell in the output
@@ -132,13 +127,11 @@ case class BinaryIfDoubleCell(r1:Op[Raster], r2:Op[Raster],
  */
 case class BinaryIfElseCell(r1:Op[Raster], r2:Op[Raster],
                             cond: (Int, Int) => Boolean, trueValue:Int,
-                            falseValue:Int) extends BinaryLocal {
-
-  def handle(z1:Int, z2:Int): Int = if(cond(z1,z2)) trueValue else falseValue
-
-  def handleDouble(z1:Double, z2:Double): Double =
-    if (cond(d2i(z1), d2i(z2))) i2d(trueValue) else i2d(falseValue)
-}
+                            falseValue:Int) extends Op2(r1,r2) ({
+  (r1,r2) => AndThen(logic.RasterDualCombine(r1,r2)
+  ((z1,z2) => if(cond(z1,z2)) trueValue else falseValue)
+  ((z1,z2) => if (cond(d2i(z1), d2i(z2))) i2d(trueValue) else i2d(falseValue) ))
+})
 
 /**
  * Given a Double condition over two rasters, set the value of each cell in the output
@@ -156,10 +149,8 @@ case class BinaryIfElseCell(r1:Op[Raster], r2:Op[Raster],
  */
 case class BinaryIfElseDoubleCell(r1:Op[Raster], r2:Op[Raster],
                             cond: (Double, Double) => Boolean, trueValue:Double,
-                            falseValue:Double) extends BinaryLocal {
-
-  def handle(z1:Int, z2:Int): Int = if(cond(i2d(z1),i2d(z2))) d2i(trueValue) else d2i(falseValue)
-
-  def handleDouble(z1:Double, z2:Double): Double =
-    if (cond(z1, z2)) trueValue else falseValue
-}
+                            falseValue:Double) extends Op2(r1,r2)({
+  (r1,r2) => AndThen(logic.RasterDualCombine(r1,r2)
+  ((z1,z2) => if(cond(i2d(z1),i2d(z2))) d2i(trueValue) else d2i(falseValue))
+  ((z1,z2) => if (cond(z1, z2)) trueValue else falseValue))
+})

@@ -40,14 +40,14 @@ object Add {
  * Add a constant integer value to each cell.
  */
 case class AddConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c)({
-  (r, c) => Result(r.dualMapIfSet(_ + c)(_ + c))
+  (r, c) => AndThen(logic.RasterDualMapIfSet(r)(_ + c)(_ + c))
 })
 
 /**
  * Add a constant double value to each cell.
  */
 case class AddDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r, c)({
-  (r, c) => Result(r.dualMapIfSet({i:Int => (i + c).toInt})(_ + c))
+  (r, c) => AndThen(logic.RasterDualMapIfSet(r)({i:Int => (i + c).toInt})(_ + c))
 })
 
 /**

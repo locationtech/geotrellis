@@ -30,5 +30,5 @@ case class FloorDouble(x:Op[Double]) extends Op1(x)(x => Result(floor(x)))
  * Gets the Floor value for each raster cell value.
  */
 case class FloorRaster(r:Op[Raster]) extends Op1(r)({
-  r => Result(r.dualMapIfSet(z => z)(floor(_)))
+  r => AndThen(logic.RasterDualMapIfSet(r)(z => z)(floor(_)))
 })
