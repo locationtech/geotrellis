@@ -15,7 +15,7 @@ class DoSpec extends FunSpec
   describe("DoCell") {
     it ("performs integer function") {
       val r = positiveIntegerRaster
-      val result = run(DoCell(r, { x:Int => x * 10 }))
+      val result = run(DoCell(r)( (x:Int) => x * 10))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (r.get(col,row) * 10)
@@ -25,7 +25,7 @@ class DoSpec extends FunSpec
 
     it ("performs integer function against TypeDouble raster") {
       val r = probabilityNoDataRaster
-      val result = run(DoCell(r, { x:Int => if(x == NODATA) {NODATA} else {x * 10} }))
+      val result = run(DoCell(r)( (x:Int) => if(x == NODATA) NODATA else x * 10 ))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(col % 2 == 1) { java.lang.Double.isNaN(result.getDouble(col,row)) should be (true) }
@@ -36,7 +36,7 @@ class DoSpec extends FunSpec
 
     it ("performs double function") {
       val r = probabilityRaster
-      val result = run(DoCell(r, { x:Double => x * 10.0 }))
+      val result = run(DoCellDouble(r)( (x:Double) => x * 10.0))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should be (r.getDouble(col,row) * 10)
@@ -46,7 +46,7 @@ class DoSpec extends FunSpec
 
     it ("performs double function against TypeInt raster") {
       val r = positiveIntegerNoDataRaster
-      val result = run(DoCell(r, { x:Double => x * 10.0 }))
+      val result = run(DoCellDouble(r)( (x:Double) => x * 10.0))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(col % 2 == 1) { result.get(col,row) should be (NODATA) }
@@ -57,7 +57,7 @@ class DoSpec extends FunSpec
 
     it ("performs binary integer function") {
       val r = positiveIntegerRaster
-      val result = run(DoCell(r, r, { (z1:Int,z2:Int) => z1+z2 }))
+      val result = run(DoCell(r, r)({ (z1:Int,z2:Int) => z1+z2 }))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (r.get(col,row) * 2)
@@ -67,7 +67,7 @@ class DoSpec extends FunSpec
 
     it ("performs binary integer function against TypeDouble raster") {
       val r = probabilityNoDataRaster
-      val result = run(DoCell(r, r, { (z1:Int,z2:Int) => if(z1 == NODATA) { NODATA} else { z1 + z2 } }))
+      val result = run(DoCell(r, r)({ (z1:Int,z2:Int) => if(z1 == NODATA) { NODATA} else { z1 + z2 } }))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(col % 2 == 1) { java.lang.Double.isNaN(result.getDouble(col,row)) should be (true) }
@@ -78,7 +78,7 @@ class DoSpec extends FunSpec
 
     it ("performs binary double function") {
       val r = probabilityRaster
-      val result = run(DoCell(r, r, { (z1:Double,z2:Double) => z1+z2 }))
+      val result = run(DoCellDouble(r, r)({ (z1:Double,z2:Double) => z1+z2 }))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should be (r.getDouble(col,row) * 2)
@@ -88,7 +88,7 @@ class DoSpec extends FunSpec
 
     it ("performs binary double function against TypeInt raster") {
       val r = positiveIntegerNoDataRaster
-      val result = run(DoCell(r, r, { (z1:Double,z2:Double) => if(z1 == NODATA) {NODATA} else {z1 + z2} }))
+      val result = run(DoCellDouble(r, r)({ (z1:Double,z2:Double) => if(z1 == NODATA) {NODATA} else {z1 + z2} }))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(col % 2 == 1) { result.get(col,row) should be (NODATA) }
@@ -119,7 +119,7 @@ class DoSpec extends FunSpec
       val a = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
       val r = Literal(f(a, 3, 3, 0.0, 0.0, 1.0))
 
-      val r2 = run(DoCell(r, {z:Int => z + 1}))
+      val r2 = run(DoCell(r)({z:Int => z + 1}))
       val d = r2.data.asArray.getOrElse(sys.error("cannot get raster as array"))
       d.toArray should be (a.map { _ + 1 })
     }
