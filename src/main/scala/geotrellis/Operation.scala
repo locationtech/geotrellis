@@ -81,6 +81,8 @@ abstract class Operation[+T] extends Product with Serializable {
 
  //TODO: how should filter be implemented for list comprehensions?
  def filter(f:(T) => Boolean) = this
+
+  def andThen[U](f:T => Op[U]) = flatMap(f)
 }
 
 
