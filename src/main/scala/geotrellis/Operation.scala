@@ -28,22 +28,16 @@ abstract class Operation[+T] extends Product with Serializable {
    * Execute this operation and return the result.  
    */
   def run(context:Context): StepOutput[T] = {
-    log("Operation.run called")
     val o = _run(context)
-    log("Operation run returning %s" format o)
     o
   }
 
   def runAsync(args:Args): StepOutput[T] = {
-    log("Operation.runAsync called with %s" format args)
     val f = (args2:Args) => {
-      log("*** runAsync-generated callback called with %s" format args2)
       val stepOutput:StepOutput[T] = processNextSteps(args2)
-      log("*** step output from nextSteps was %s" format stepOutput)
       stepOutput
     }
     val o = StepRequiresAsync[T](args, f)
-    log("Operation.runAsync returns %s" format o)
     o
   }
 
@@ -125,6 +119,7 @@ object Operation {
 sealed trait StepOutput[+T]
 
 case class Result[T](value:T) extends StepOutput[T]
+case class AndThen[T](op:Operation[T]) extends StepOutput[T]
 case class StepError(msg:String, trace:String) extends StepOutput[Nothing]
 case class StepRequiresAsync[T](args:Args, cb:Callback[T]) extends StepOutput[T]
 
@@ -158,6 +153,7 @@ abstract class Op0[T](f:()=>StepOutput[T]) extends Operation[T] {
 
 class Op1[A,T](a:Op[A])(f:(A)=>StepOutput[T]) extends Operation[T] {
   def _run(context:Context) = runAsync(List(a))
+
   def productArity = 1
   def canEqual(other:Any) = other.isInstanceOf[Op1[_,_]]
   def productElement(n:Int) = if (n == 0) a else throw new IndexOutOfBoundsException()
@@ -283,7 +279,7 @@ object OpX {
  
 }
 
-class Op2[A,B,T](a:Op[A],b:Op[B]) (f:(A,B)=>StepOutput[T]) extends Operation[T] {
+class Op2[A,B,T](val a:Op[A], val b:Op[B]) (f:(A,B)=>StepOutput[T]) extends Operation[T] {
   def productArity = 2
   def canEqual(other:Any) = other.isInstanceOf[Op2[_,_,_]]
   def productElement(n:Int) = n match {
@@ -295,6 +291,7 @@ class Op2[A,B,T](a:Op[A],b:Op[B]) (f:(A,B)=>StepOutput[T]) extends Operation[T] 
   val nextSteps:Steps = { 
     case a :: b :: Nil => f(a.asInstanceOf[A], b.asInstanceOf[B])
   }
+
 }
 
 
@@ -333,6 +330,7 @@ class Op4[A,B,C,D,T](a:Op[A],b:Op[B],c:Op[C],d:Op[D])
       f(a.asInstanceOf[A], b.asInstanceOf[B], c.asInstanceOf[C], d.asInstanceOf[D])
     }
   }
+
 }
 
 abstract class Op5[A,B,C,D,E,T](a:Op[A],b:Op[B],c:Op[C],d:Op[D],e:Op[E])
@@ -344,6 +342,7 @@ abstract class Op5[A,B,C,D,E,T](a:Op[A],b:Op[B],c:Op[C],d:Op[D],e:Op[E])
         d.asInstanceOf[D], e.asInstanceOf[E])
     }
   }
+  
 }
 
 abstract class Op6[A,B,C,D,E,F,T]
@@ -357,4 +356,3 @@ abstract class Op6[A,B,C,D,E,F,T]
     }
   }
 }
-
