@@ -107,7 +107,7 @@ case class UntiledMin(r:Op[Raster]) extends Operation[Int] {
 /**
  * older version of the MultiLocal trait
  */
-trait MultiLocalOld extends LocalOperation {
+trait MultiLocalOld extends Operation[Raster]{
   def ops:Array[Op[Raster]]
 
   def _run(context:Context) = runAsync(ops.toList)
