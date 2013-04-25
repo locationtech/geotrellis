@@ -50,24 +50,18 @@ case class AddDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r, c)({
   (r, c) => AndThen(logic.RasterDualMapIfSet(r)({i:Int => (i + c).toInt})(_ + c))
 })
 
-/**
- * Add the values of each cell in each raster.
- */
-case class AddRasters(rs:Op[Raster]*) extends MultiLocal {
-  final def ops = rs.toArray
-
-  final def handle(a:Int, b:Int) = if (a == NODATA) b else if (b == NODATA) a else a + b
-
-  final def handleDouble(a:Double, b:Double) =
-    if (java.lang.Double.isNaN(a)) b else if (java.lang.Double.isNaN(b)) a else a + b
+object AddRasters {
+ /**
+  * Add the values of each cell in each raster.
+  */
+  def apply(rs:Op[Raster]*):Op[Raster] = logic.RasterDualReduceList(rs) ((a, b) => if (a == NODATA) b else if (b == NODATA) a else a + b) ((a, b) => if (java.lang.Double.isNaN(a)) b else if (java.lang.Double.isNaN(b)) a else a + b)
 }
 
 /**
- * Add the values of each cell in each raster.
+ * Given an array of rasters, sum each cell across all rasters.
  */
-case class AddArray(op:Op[Array[Raster]]) extends MultiLocalArray {
-  final def handle(a:Int, b:Int) = if (a == NODATA) b else if (b == NODATA) a else a + b
-
-  final def handleDouble(a:Double, b:Double) =
-    if (java.lang.Double.isNaN(a)) b else if (java.lang.Double.isNaN(b)) a else a + b
-}
+case class AddArray(rasters:Op[Array[Raster]]) extends Op1(rasters) ({
+  (rs) => AndThen(logic.RasterDualReduceList(rs.map(Literal(_)).toSeq)
+    ((a, b) => if (a == NODATA) b else if (b == NODATA) a else a + b)
+    ((a, b) => if (java.lang.Double.isNaN(a)) b else if (java.lang.Double.isNaN(b)) a else a + b))
+})

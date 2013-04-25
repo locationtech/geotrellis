@@ -46,19 +46,22 @@ case class MultiplyDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r, c)(
   (r, c) => AndThen(RasterDualMapIfSet(r)({ i:Int => (i * c).toInt})(_ * c))
 })
 
-/**
- * Multiply each cell of each raster.
- */
-case class MultiplyRasters(rs:Op[Raster]*) extends MultiLocal {
-  final def ops = rs.toArray
-  final def handle(a:Int, b:Int) = if (a == NODATA) NODATA else if (b == NODATA) NODATA else a * b
-  final def handleDouble(a:Double, b:Double) = a * b
+object MultiplyRasters {
+  /**
+   * Multiply values of cells of each raster.
+   */
+  def apply(rs:Op[Raster]*) = (
+    logic.RasterDualReduceList(rs)
+      ((a,b) => if (a == NODATA) NODATA else if (b == NODATA) NODATA else a * b)
+      ((a,b) => a * b)
+  )
 }
 
 /**
  * Multiply each cell of each raster in array.
  */
-case class MultiplyArray(op:Op[Array[Raster]]) extends MultiLocalArray {
-  final def handle(a:Int, b:Int) = if (a == NODATA) NODATA else if (b == NODATA) NODATA else a * b
-  final def handleDouble(a:Double, b:Double) = a * b
-}
+case class MultiplyArray(rasters:Op[Array[Raster]]) extends Op1(rasters) ({
+  (rs) => AndThen(logic.RasterDualReduceList(rs.map(Literal(_)).toSeq)
+  ((a, b) => if (a == NODATA) NODATA else if (b == NODATA) NODATA else a * b)
+  ((a,b) => a * b))
+})
