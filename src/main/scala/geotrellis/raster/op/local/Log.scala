@@ -30,5 +30,5 @@ case class LogDouble(x:Op[Double]) extends Op1(x)(x => Result(log(x)))
  * Computes the Log of Raster cell values.
  */
 case class LogRaster(r:Op[Raster]) extends Op1(r)({
-  r => Result(r.dualMapIfSet(log(_).toInt)(log(_)))
+  r => AndThen(logic.RasterDualMapIfSet(r)(log(_).toInt)(log(_)))
 })

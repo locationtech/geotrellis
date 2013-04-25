@@ -21,5 +21,5 @@ case class RoundDouble(x:Op[Double]) extends Op1(x)(x => Result(round(x)))
 
 /* Round each cell's value to the nearest integer. */
 case class RoundRaster(r:Op[Raster]) extends Op1(r)({
-  r => Result(r.dualMapIfSet(z => z)(round(_)))
+  r => AndThen(logic.RasterDualMapIfSet(r)(z => z)(round(_)))
 })

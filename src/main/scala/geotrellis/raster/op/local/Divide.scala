@@ -39,32 +39,33 @@ case class DivideConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c)({
  * Divide each cell by a constant Double value.
  */
 case class DivideDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r, c)({
-  (r, c) => Result(r.dualMapIfSet({i:Int => (i / c).toInt})(_ / c))
+  (r, c) => AndThen(logic.RasterDualMapIfSet(r)({i:Int => (i / c).toInt})(_ / c))
 })
 
 /**
  * Divide each cell by a constant value.
  */
 case class DivideConstantBy(c:Op[Int], r:Op[Raster]) extends Op2(c, r)({
-  (c, r) => Result(r.dualMapIfSet(c / _)(c / _))
+  (c, r) => AndThen(logic.RasterDualMapIfSet(r)(c / _)(c / _))
 })
 
 /**
  * Divide each cell by a constant Double value.
  */
 case class DivideDoubleConstantBy(c:Op[Double], r:Op[Raster]) extends Op2(c, r) ({
-  (c, r) => Result(r.dualMapIfSet({i:Int => (c / i).toInt})(c / _))
+  (c, r) => AndThen(logic.RasterDualMapIfSet(r)({i:Int => (c / i).toInt})(c / _))
 })
 
 /**
  * Divide each value of one raster with the values from another raster.
  */
-case class DivideRaster(r1:Op[Raster], r2:Op[Raster]) extends BinaryLocal {
-  def handle(z1:Int, z2:Int) = if (z2 == NODATA || z2 == 0 || z1 == NODATA) {
+case class DivideRaster(r1:Op[Raster], r2:Op[Raster]) extends Op2(r1,r2)({
+  (r1,r2) => AndThen(logic.RasterDualCombine(r1,r2)
+  ((z1:Int, z2:Int) => if (z2 == NODATA || z2 == 0 || z1 == NODATA) {
     NODATA
   } else {
     z1 / z2
-  }
-
-  def handleDouble(z1:Double, z2:Double) = z1 / z2
-}
+  })
+  ((z1:Double, z2:Double) => z1 / z2)
+  )
+})
