@@ -54,14 +54,14 @@ object AddRasters {
  /**
   * Add the values of each cell in each raster.
   */
-  def apply(rs:Op[Raster]*):Op[Raster] = logic.RasterDualReduceList(rs) ((a, b) => if (a == NODATA) b else if (b == NODATA) a else a + b) ((a, b) => if (java.lang.Double.isNaN(a)) b else if (java.lang.Double.isNaN(b)) a else a + b)
+  def apply(rs:Op[Raster]*):Op[Raster] = logic.RasterDualReduce(rs) ((a, b) => if (a == NODATA) b else if (b == NODATA) a else a + b) ((a, b) => if (java.lang.Double.isNaN(a)) b else if (java.lang.Double.isNaN(b)) a else a + b)
 }
 
 /**
  * Given an array of rasters, sum each cell across all rasters.
  */
 case class AddArray(rasters:Op[Array[Raster]]) extends Op1(rasters) ({
-  (rs) => AndThen(logic.RasterDualReduceList(rs.map(Literal(_)).toSeq)
+  (rs) => AndThen(logic.RasterDualReduce(rs.map(Literal(_)).toSeq)
     ((a, b) => if (a == NODATA) b else if (b == NODATA) a else a + b)
     ((a, b) => if (java.lang.Double.isNaN(a)) b else if (java.lang.Double.isNaN(b)) a else a + b))
 })

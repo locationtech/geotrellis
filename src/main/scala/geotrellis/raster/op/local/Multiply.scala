@@ -51,7 +51,7 @@ object MultiplyRasters {
    * Multiply values of cells of each raster.
    */
   def apply(rs:Op[Raster]*) = (
-    logic.RasterDualReduceList(rs)
+    logic.RasterDualReduce(rs)
       ((a,b) => if (a == NODATA) NODATA else if (b == NODATA) NODATA else a * b)
       ((a,b) => a * b)
   )
@@ -61,7 +61,7 @@ object MultiplyRasters {
  * Multiply each cell of each raster in array.
  */
 case class MultiplyArray(rasters:Op[Array[Raster]]) extends Op1(rasters) ({
-  (rs) => AndThen(logic.RasterDualReduceList(rs.map(Literal(_)).toSeq)
+  (rs) => AndThen(logic.RasterDualReduce(rs.map(Literal(_)).toSeq)
   ((a, b) => if (a == NODATA) NODATA else if (b == NODATA) NODATA else a * b)
   ((a,b) => a * b))
 })

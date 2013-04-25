@@ -1,32 +1,85 @@
 package geotrellis.logic
 
 import geotrellis._
+import geotrellis.raster.{TileLayout,TileArrayRasterData}
 import scala.annotation.tailrec
 
-case class RasterMap(r:Op[Raster])(f:Int => Int) extends Op1(r)({
-  r => Result(r.map(f))
-})
+abstract class TiledRasterMapper(r:Op[Raster]) extends Operation[Raster] {
+  def mapper(rOp:Op[Raster]):Op[Raster]
 
-case class RasterMapIfSet(r:Op[Raster])(f:Int => Int) extends Op1(r)({
-  r => Result(r.mapIfSet(f)) 
-})
+  private case class TileInfo(tileLayout:TileLayout, rasterExtent: RasterExtent)
+  var limit = 1000
 
-case class RasterDualMapIfSet(r:Op[Raster])(f:Int => Int)(g:Double => Double) extends Op1(r)({
-  r => Result(r.dualMapIfSet(f)(g)) 
-})
+  def _run(context:Context) = {
+    if (r.isInstanceOf[TiledRasterMapper]) {
+      AndThen(mapper(r))
+    } else {
+      runAsync('init :: r :: Nil)
+    }
+  }
 
-case class RasterDualMap(r:Op[Raster])(f:Int => Int)(g:Double => Double) extends Op1(r)({
-  r => Result(r.dualMap(f)(g))
-})
+  val nextSteps:Steps = {
+    case 'init :: (r:Raster) :: Nil => init(r)
+    case 'runGroup :: (tileInfo:TileInfo) :: (oldResults:List[_]) :: (pending:List[_]) :: (_newResults: List[_]) => {
+      val newResults = _newResults.asInstanceOf[List[Raster]]
+      val results = oldResults.asInstanceOf[List[Raster]] ::: newResults
+      pending match {
+        case Nil => Result(reducer(tileInfo, results)) 
+        case (head: List[_]) :: tail => {
+          runAsync('runGroup :: tileInfo :: results :: tail :: head)
+        }
+        case _ => throw new Exception("unexpected state")
+      }
+    }
+  }
+
+  def reducer(tileInfo:TileInfo, rasters:List[Raster]) = {
+    Raster(TileArrayRasterData(rasters.toArray, tileInfo.tileLayout, tileInfo.rasterExtent), tileInfo.rasterExtent)
+  }
+
+  def init(r:Raster) = {
+    if (r.isTiled) {
+      val tileLayout = r.data.tileLayoutOpt.get
+      val tileInfo = TileInfo(tileLayout, r.rasterExtent)
+      val ops = r.getTileOpList().map(mapper).map(raster.op.Force(_))
+      val groups = ops.grouped(limit).toList
+      val tail = groups.tail
+      val head = groups.head
+      runAsync('runGroup :: tileInfo :: List[Raster]() :: tail :: head)
+    } else {
+      AndThen(mapper(r))
+    }
+  }
+}
+
+case class RasterMapIfSet(r:Op[Raster])(f:Int => Int) extends TiledRasterMapper(r) {
+  def mapper(rOp:Op[Raster]) = rOp.map(_.mapIfSet(f))
+}
+
+case class RasterMap(r:Op[Raster])(f:Int => Int) extends TiledRasterMapper(r) {
+  def mapper(rOp:Op[Raster]):Op[Raster] = rOp.map(_.map(f))
+}
+
+case class RasterDualMap(r:Op[Raster])(f:Int => Int)(g:Double => Double) extends TiledRasterMapper(r) {
+  def mapper(rOp:Op[Raster]):Op[Raster] = rOp.map(_.dualMap(f)(g))
+}
+
+case class RasterDualMapIfSet(r:Op[Raster])(f:Int => Int)(g:Double => Double) extends TiledRasterMapper(r) {
+  def mapper(rOp:Op[Raster]):Op[Raster] = rOp.map(_.dualMapIfSet(f)(g))
+}
 
 case class RasterCombine(r1:Op[Raster], r2:Op[Raster])(f:(Int,Int) => Int) extends Op2(r1, r2)({
-  (r1, r2) => Result(r1.combine(r2)(f))
+  (r1, r2) => Result(r1.combine(r2)(f).force)
 })
 
 case class RasterDualCombine(r1:Op[Raster], r2:Op[Raster])(f:(Int,Int) => Int)(g:(Double,Double) => Double) extends Op2(r1,r2)({
-  (r1, r2) => Result(r1.dualCombine(r2)(f)(g))
+  (r1, r2) => Result(r1.dualCombine(r2)(f)(g).force)
 })
 
+case class RasterForce(rOp:Op[Raster]) extends TiledRasterMapper(rOp) {
+  def mapper(rOp:Op[Raster]) = rOp.map { _.force }
+}
+ 
 case class RasterDualReduce(rasters:Seq[Op[Raster]])(f:(Int,Int) => Int)(g:(Double,Double) => Double) extends Operation[Raster] {
   def _run(context:Context) = runAsync(rasters.toList)
 
@@ -55,9 +108,9 @@ case class RasterDualReduce(rasters:Seq[Op[Raster]])(f:(Int,Int) => Int)(g:(Doub
   def handleRasters(rasters:List[Raster]) = {
     val (r :: rs) = rasters
     if (r.isFloat) {
-      Result(Raster(reduceDouble(r.data, rs), r.rasterExtent))
+      AndThen(raster.op.Force(Raster(reduceDouble(r.data, rs), r.rasterExtent)))
     } else {
-      Result(Raster(reduce(r.data, rs), r.rasterExtent))
+      AndThen(raster.op.Force(Raster(reduce(r.data, rs), r.rasterExtent)))
     }
   }
 }
