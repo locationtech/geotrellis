@@ -30,5 +30,5 @@ case class SqrtDouble(x:Op[Double]) extends Op1(x)(x => Result(sqrt(x)))
  * Takes the square root of each cell value of a Raster
  */
 case class SqrtRaster(r:Op[Raster]) extends Op1(r)({
-  r => Result(r.dualMapIfSet(sqrt(_).toInt)(sqrt(_)))
+  r => AndThen(logic.RasterDualMapIfSet(r)(sqrt(_).toInt)(sqrt(_)))
 })

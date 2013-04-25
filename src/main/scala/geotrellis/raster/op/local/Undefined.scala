@@ -26,5 +26,5 @@ case class UndefinedConstant(c:Op[Int]) extends Op1(c)({
  * Maps Raster cell values to 1 if they are NODATA, else 0.
  */
 case class UndefinedRaster(r:Op[Raster]) extends Op1(r)({
-  r => Result(r.convert(TypeBit).map(z => if (z == NODATA) 1 else 0))
+  (r) => AndThen(logic.RasterMap(r.convert(TypeBit))(z => if (z == NODATA) 1 else 0))
 })

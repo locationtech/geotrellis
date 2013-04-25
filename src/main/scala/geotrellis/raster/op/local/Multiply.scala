@@ -1,6 +1,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.logic.RasterDualMapIfSet
 
 /**
  * Multiplies values of Rasters or constants.
@@ -35,14 +36,14 @@ object Multiply {
  * Multiply each cell by a constant.
  */
 case class MultiplyConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c)({
-  (r, c) => Result(r.dualMapIfSet(_ * c)(_ * c))
+  (r, c) => AndThen(RasterDualMapIfSet(r)(_ * c)(_ * c))
 })
 
 /**
  * Multiply each cell by a constant (double).
  */
 case class MultiplyDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r, c)({
-  (r, c) => Result(r.dualMapIfSet({ i:Int => (i * c).toInt})(_ * c))
+  (r, c) => AndThen(RasterDualMapIfSet(r)({ i:Int => (i * c).toInt})(_ * c))
 })
 
 /**
