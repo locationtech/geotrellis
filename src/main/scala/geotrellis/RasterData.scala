@@ -66,10 +66,13 @@ trait RasterData extends Serializable {
   def alloc(cols:Int, rows:Int): MutableRasterData
   def isFloat = getType.float
 
+  def tileLayoutOpt:Option[TileLayout] = None
+
   /**
     * True if this RasterData is tiled, e.g. a subclass of TiledRasterData. 
     */
   def isTiled:Boolean = false
+  def isLazy:Boolean = false
 
   def copy:RasterData
   def length:Int

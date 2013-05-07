@@ -65,16 +65,12 @@ object Min {
  */
 case class MinConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
   (r, c) => 
-    if(c == NODATA) { Result(r) }
-    else {
-      Result(r.dualMap({
-        z => 
-          if(z == NODATA) { c } else { min(z, c) }
-      })({
-        z =>
-          if(java.lang.Double.isNaN(z)) { c } else { min(z,c) }
-      }))
-    }
+    if (c == NODATA) 
+      Result(r)
+    else 
+      AndThen(logic.RasterDualMap(r)
+        (z => if(z == NODATA) c else min(z, c) )
+        (z => if(java.lang.Double.isNaN(z)) c else min(z,c)))
 })
 
 /**
@@ -86,16 +82,13 @@ case class MinConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
  */
 case class MinDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r, c) ({
   (r, c) => 
-    if(java.lang.Double.isNaN(c)) { Result(r) }
-    else {
-      Result(r.dualMap({
-        z => 
-          if(z == NODATA) { c.toInt } else { min(z,c).toInt }
-      })({
-        z =>
-          if(java.lang.Double.isNaN(z)) { c } else { min(z,c) }
-      }))
-    }
+    if (java.lang.Double.isNaN(c))
+      Result(r)
+    else 
+      AndThen(logic.RasterDualMap(r)
+        (z => if(z == NODATA) c.toInt else min(z,c).toInt)
+        (z => if(java.lang.Double.isNaN(z)) c else min(z,c))
+      )
 })
 
 /**
@@ -105,17 +98,13 @@ case class MinDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r, c) ({
  *                between a value and NoData returns the value.
  */
 case class MinRaster(r1:Op[Raster], r2:Op[Raster]) extends Op2(r1, r2) ({
-  (r1, r2) => 
-    Result(r1.dualCombine(r2)({
-      (z1, z2) =>
+  (r1, r2) => AndThen(logic.RasterDualCombine(r1,r2)
+    ((z1, z2) =>
         if(z1 == NODATA) { z2 }
         else if(z2 == NODATA) { z1 }
-        else { min(z1,z2) }
-    })({
-      (z1,z2) => 
+        else { min(z1,z2) })
+    ((z1,z2) => 
         if(java.lang.Double.isNaN(z1)) { z2 }
         else if(java.lang.Double.isNaN(z2)) { z1 }
-        else { min(z1,z2) }
-    })
-  )
+        else { min(z1,z2) }))
 })

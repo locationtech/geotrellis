@@ -60,16 +60,9 @@ object Max {
  */
 case class MaxConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
   (r, c) => 
-    if(c == NODATA) { Result(r) }
-    else {
-      Result(r.dualMap({
-        z => 
-          max(z, c) // Since NODATA is Int.MinValue, if z is NODATA then result will be c
-      })({
-        z =>
-          if(java.lang.Double.isNaN(z)) { c } else { max(z,c) }
-      }))
-    }
+    if(c == NODATA) Result(r) else AndThen(logic.RasterDualMap(r)
+      (z => max(z, c)) // Since NODATA is Int.MinValue, if z is NODATA then result will be c
+      (z => if(java.lang.Double.isNaN(z)) c else max(z,c)))
 })
 
 /**
@@ -80,16 +73,9 @@ case class MaxConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
  */
 case class MaxDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r, c) ({
   (r, c) => 
-    if(java.lang.Double.isNaN(c)) { Result(r) }
-    else {
-      Result(r.dualMap({
-        z => 
-          if(z == NODATA) { c.toInt } else { max(z,c).toInt }
-      })({
-        z =>
-          if(java.lang.Double.isNaN(z)) { c } else { max(z,c) }
-      }))
-    }
+    if(java.lang.Double.isNaN(c)) Result(r) else AndThen(logic.RasterDualMap(r)
+      (z => if(z == NODATA) c.toInt else max(z,c).toInt)
+      (z => if(java.lang.Double.isNaN(z)) c else max(z,c))) 
 })
 
 /**
@@ -100,14 +86,11 @@ case class MaxDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r, c) ({
  */
 case class MaxRaster(r1:Op[Raster], r2:Op[Raster]) extends Op2(r1, r2) ({
   (r1, r2) => 
-    Result(r1.dualCombine(r2)({
-      (z1, z2) =>
-        max(z1, z2) // Since NODATA is Int.MinValue, NODATA rule will work out
-    })({
-      (z1,z2) => 
-        if(java.lang.Double.isNaN(z1)) { z2 }
-        else if(java.lang.Double.isNaN(z2)) { z1 }
+    AndThen(logic.RasterDualCombine(r1,r2)
+      ((z1, z2) => max(z1, z2)) // Since NODATA is Int.MinValue, NODATA rule will work out
+      ((z1,z2) => {
+        if (java.lang.Double.isNaN(z1)) { z2 }
+        else if (java.lang.Double.isNaN(z2)) { z1 }
         else { max(z1,z2) }
-    })
-  )
+      }))
 })
