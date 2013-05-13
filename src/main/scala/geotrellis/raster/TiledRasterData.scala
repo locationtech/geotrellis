@@ -196,7 +196,7 @@ case class TileSetRasterData(basePath:String,
   def getType = typ
   def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
 
-  def loadPath(path:String) = server.loadRaster(path)
+  def loadPath(path:String) = server.getRaster(path,None,None)
 
   def getTile(col:Int, row:Int) = {
     val path = Tiler.tilePath(basePath, name, col, row)
@@ -246,7 +246,7 @@ object TileArrayRasterData {
     var tiles:List[Raster] = Nil
     for (r <- 0 until tileLayout.tileRows; c <- 0 until tileLayout.tileCols) {
       val path = Tiler.tilePath(basePath, name, c, r)
-      tiles = tiles ::: List(server.loadRaster(path))
+      tiles = tiles ::: List(server.getRaster(path,None,None))
     }
     new TileArrayRasterData(tiles.toArray, tileLayout, rasterExtent)
   }

@@ -9,7 +9,7 @@ final class RasterReadState(raster:Raster,
                             val target:RasterExtent) extends ReadState {
   val data:ArrayRasterData = raster.data.asInstanceOf[ArrayRasterData] //FIXME
 
-  val layer = RasterLayer("raster", "intraster", "", "", raster.rasterExtent, 3857, 0.0, 0.0)
+  val layer = RasterLayer("raster", "intraster", TypeInt, "", raster.rasterExtent, 3857, 0.0, 0.0)
 
   def getType = data.getType
 

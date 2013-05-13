@@ -115,11 +115,6 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
   def getRaster(path:String, layerOpt:Option[RasterLayer], reOpt:Option[RasterExtent]):Raster = {
     getReader(path, layerOpt).readPath(path, layerOpt, reOpt)  
   }
-
-  // TODO: rewrite calls to loadRaster to getRaster. then remove?
-  def loadRaster(path:String):Raster = getRaster(path, None, None)
-  def loadRaster(path:String, g:RasterExtent):Raster = getRaster(path, None, Option(g))
-
   def getRasterExtentByName(name:String):RasterExtent = {
     catalog.getRasterLayerByName(name) match {
       case Some(layer) => layer.rasterExtent
