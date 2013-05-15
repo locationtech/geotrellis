@@ -1,6 +1,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.logic.{RasterDualMapIfSet=>DualMapIfSet}
 
 /**
  * Subtracts values.
@@ -33,43 +34,43 @@ object Subtract {
  * Subtract a constant value from each cell.
  */
 case class SubtractConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c)({
-  (r, c) => Result(r.dualMapIfSet(_ - c)(_ - c))
+  (r, c) => AndThen(DualMapIfSet(r)(_ - c)(_ - c))
 })
 
 /**
  * Subtract a Double constant value from each cell.
  */
 case class SubtractDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r, c)({
-  (r, c) => Result(r.dualMapIfSet({i:Int => (i - c).toInt})(_ - c))
+  (r, c) => AndThen(DualMapIfSet(r)({i:Int => (i - c).toInt})(_ - c))
 })
 
 /**
  * Subtract the value of each cell from a constant.
  */
 case class SubtractConstantBy(c:Op[Int], r:Op[Raster]) extends Op2(c, r)({
-  (c, r) => Result(r.dualMapIfSet(c - _)(c - _))
+  (c, r) => AndThen(DualMapIfSet(r)(c - _)(c - _))
 })
 
 /**
  * Subtract the value of each cell from a constant.
  */
 case class SubtractDoubleConstantBy(c:Op[Double], r:Op[Raster]) extends Op2(c, r)({
-  (c, r) => Result(r.dualMapIfSet({i:Int => (c-i).toInt})(c - _))
+  (c, r) => AndThen(DualMapIfSet(r)({i:Int => (c-i).toInt})(c - _))
 })
 
 /**
  * Subtract each value in the second raster from the corresponding value in the first raster.
  */
-case class SubtractRaster(r1:Op[Raster], r2:Op[Raster]) extends BinaryLocal {
-  def handle(z1:Int, z2:Int) = {
-    if (z1 == NODATA) z2
-    else if (z2 == NODATA) z1
-    else z1 - z2
-  }
-
-  def handleDouble(z1:Double, z2:Double) = {
+case class SubtractRaster(r1:Op[Raster], r2:Op[Raster]) extends Op2(r1,r2)({
+  (r1,r2) => AndThen(logic.RasterDualCombine(r1,r2) 
+    ((z1:Int, z2:Int) => {
+      if (z1 == NODATA) z2
+      else if (z2 == NODATA) z1
+      else z1 - z2
+    })
+    ((z1:Double, z2:Double) => {
     if (java.lang.Double.isNaN(z1)) z2
     else if (java.lang.Double.isNaN(z2)) z1
     else z1 - z2
-  }
-}
+    }))
+})

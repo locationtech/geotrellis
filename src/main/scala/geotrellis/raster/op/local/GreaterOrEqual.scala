@@ -24,22 +24,18 @@ object GreaterOrEqual {
  * Returns a raster indicating which cell values are greater than or equal to the input value.
  */
 case class GreaterOrEqualConstant1(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
-  (r, c) => Result(r.convert(TypeBit).dualMapIfSet {
-    z => if (z >= c) 1 else 0
-  } {
-    z => if (z >= c) 1 else 0
-  })
+  (r, c) => AndThen(logic.RasterDualMapIfSet(r)
+  (z => if (z >= c) 1 else 0)
+  (z => if (z >= c) 1 else 0))
 })
 
 /**
  * Returns a raster indication which cell values are greater than or equal to the input value.
  */
 case class GreaterOrEqualConstant2(c:Op[Int], r:Op[Raster]) extends Op2(c, r) ({
-  (c, r) => Result(r.convert(TypeBit).dualMapIfSet {
-    z => if (z >= c) 1 else 0
-  } {
-    z => if (z >= c) 1 else 0
-  })
+  (c, r) => AndThen(logic.RasterDualMapIfSet(r)
+  (z => if (z >= c) 1 else 0)
+  (z => if (z >= c) 1 else 0))
 })
 
 /**
@@ -47,9 +43,7 @@ case class GreaterOrEqualConstant2(c:Op[Int], r:Op[Raster]) extends Op2(c, r) ({
  * greater than or equal to the corresponding cells of the second input raster.
  */
 case class GreaterOrEqualRaster(r1:Op[Raster], r2:Op[Raster]) extends Op2(r1, r2) ({
-  (r1, r2) => Result(r1.convert(TypeBit).dualCombine(r2.convert(TypeBit)) {
-    (z1, z2) => if (z1 >= z2) 1 else 0
-  } {
-    (z1, z2) => if (z1 >= z2) 1 else 0
+  (r1, r2) => AndThen(logic.RasterDualCombine(r1,r2) 
+  ((z1,z2) => (if (z1 >= z2) 1 else 0))
+  ((z1,z2) => (if (z1 >= z2) 1 else 0)))
   })
-})

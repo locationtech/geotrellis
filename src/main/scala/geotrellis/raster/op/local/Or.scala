@@ -24,7 +24,7 @@ object Or {
  * Or's an integer value with each cell of the raster
  */
 case class OrConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
-  (r, c) => Result(r.mapIfSet(_ | c))
+  (r, c) => AndThen(logic.RasterMapIfSet(r)(_ | c))
 })
 
 /**
@@ -34,5 +34,5 @@ case class OrConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
  *                     will be rounded to Ints before or'ing.
  */
 case class OrRaster(r1:Op[Raster], r2:Op[Raster]) extends Op2(r1, r2) ({
-  (r1, r2) => Result(r1.combine(r2)(_ | _))
+  (r1, r2) => AndThen(logic.RasterCombine(r1,r2)(_ | _))
 })
