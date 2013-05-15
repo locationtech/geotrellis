@@ -23,7 +23,7 @@ import geotrellis.raster.CroppedRaster
  */
 class FocalOp[T](r:Op[Raster],n:Op[Neighborhood],reOpt:Op[Option[RasterExtent]] = Literal(None))
                 (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization)                  
-extends FocalOperation[T](r,n) {
+extends FocalOperation0[T](r,n) {
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
@@ -103,18 +103,24 @@ extends FocalOperation4[A,B,C,D,T](r,n,a,b,c,d){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
-trait HasAnalysisArea[SELF <: FocalOperationBase] extends Cloneable { this:SELF =>
-  def makeClone() = super.clone().asInstanceOf[SELF]
+trait FocalOperation[T] extends Operation[T] with Cloneable {
+  type SELF <: FocalOperation[T] 
   def setAnalysisArea(op:Operation[Option[RasterExtent]]) = {
     val clone = this.makeClone()
     clone.analysisAreaOp = op
     clone
   }
+  def makeClone() = {
+    super.clone().asInstanceOf[SELF]
+  }
+  var analysisAreaOp:Operation[Option[RasterExtent]] = Literal(None)
+  var rasterOp:Operation[Raster]
+  def tiledOp():Operation[T] = ???
 }
 
-trait FocalOperationBase {
-  var analysisAreaOp:Operation[Option[RasterExtent]]
-} 
+trait CanTile { self : FocalOperation[Raster] =>
+  override def tiledOp():Operation[Raster] = TileFocalOp( this.rasterOp, this )
+}
 
 /**
  * Base class for a focal operation that takes a raster and a neighborhood.
@@ -124,25 +130,32 @@ trait FocalOperationBase {
  *
  * @tparam       T           Return type of the Operation.
  */
-abstract class FocalOperation[T](r:Op[Raster],n:Op[Neighborhood],analysisArea:Op[Option[RasterExtent]] = Literal(None)) 
-         extends Operation[T] with FocalOperationBase {
-  var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
-  def _run(context:Context) = runAsync(List('init,r,n,analysisAreaOp))
+abstract class FocalOperation0[T](r:Op[Raster],n:Op[Neighborhood]) 
+         extends FocalOperation[T] {
+  var rasterOp:Operation[Raster] = r
+  def _run(context:Context) = runAsync(List('init,rasterOp,n,analysisAreaOp))
   def productArity = 3
-  def canEqual(other:Any) = other.isInstanceOf[FocalOperation[_]]
+  def canEqual(other:Any) = other.isInstanceOf[FocalOperation0[_]]
   def productElement(n:Int) = n match {
     case 0 => r
     case 1 => n
-    case 2 => analysisArea
+    case 2 => analysisAreaOp
     case _ => new IndexOutOfBoundsException()
   }
+
+
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {
-    case 'init :: (r:Raster) :: (n:Neighborhood) :: (_reOpt:Option[_]) :: Nil => 
-      val reOpt = _reOpt.asInstanceOf[Option[RasterExtent]]
-      val calc = getCalculation(r,n)
-      calc.init(r, reOpt)
-      calc.execute(r,n,reOpt)
-      Result(calc.result)
+    case 'init :: (r:Raster) :: (n:Neighborhood) :: (_reOpt:Option[_]) :: Nil =>  {
+      if (r.isTiled && _reOpt == None) {
+        AndThen(this.tiledOp())
+      } else {
+        val reOpt = _reOpt.asInstanceOf[Option[RasterExtent]]
+        val calc = getCalculation(r,n)
+        calc.init(r, reOpt)
+        calc.execute(r,n,reOpt)
+        Result(calc.result)
+      }
+    }
   }
 
   /** Gets a calculation to be used with this focal operation for the given raster
@@ -192,21 +205,20 @@ object FocalOperation {
  * @param        n           Neighborhood to use with this focal operation.
  * @param        a           Argument of type A.
  * @param        b           Argument of type B.
- * @param        reOpt       Optional raster that represents the analysis area.
  *
  * @tparam       T           Return type of the Operation.
  */
 abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood],
-                                    a:Op[A],analysisArea:Op[Option[RasterExtent]]=None) 
-extends Operation[T] with FocalOperationBase {
-  var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
-  def _run(context:Context) = runAsync(List('init,r,n,a,analysisAreaOp))
+                                    a:Op[A]) 
+extends FocalOperation[T] {
+  var rasterOp = r
+  def _run(context:Context) = runAsync(List('init,rasterOp,n,a,analysisAreaOp))
   def productArity = 3
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation1[_,_]]
   def productElement(n:Int) = n match {
     case 0 => r
     case 1 => n
-    case 2 => a
+    case 2 => a 
     case _ => new IndexOutOfBoundsException()
   }
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {
@@ -242,15 +254,14 @@ extends Operation[T] with FocalOperationBase {
  * @param        n           Neighborhood to use with this focal operation.
  * @param        a           Argument of type A.
  * @param        b           Argument of type B.
- * @param        reOpt       Optional raster that represents the analysis area.
  *
  * @tparam       T           Return type of the Operation.
  */
 abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],
-                                      a:Op[A],b:Op[B],analysisArea:Op[Option[RasterExtent]]=None) 
-         extends Operation[T] with FocalOperationBase {
-  var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
-  def _run(context:Context) = runAsync(List('init,r,n,a,b,analysisAreaOp))
+                                      a:Op[A],b:Op[B])
+         extends FocalOperation[T] {
+  var rasterOp = r
+  def _run(context:Context) = runAsync(List('init,rasterOp,n,a,b,analysisAreaOp))
   def productArity = 5
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation2[_,_,_]]
   def productElement(n:Int) = n match {
@@ -258,7 +269,6 @@ abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],
     case 1 => n
     case 2 => a
     case 3 => b
-    case 4 => analysisArea
     case _ => new IndexOutOfBoundsException()
   }
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {
@@ -299,16 +309,15 @@ abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],
  * @param        a           Argument of type A.
  * @param        b           Argument of type B.
  * @param        c           Argument of type C.
- * @param        reOpt       Optional raster that represents the analysis area.
  *
  * @tparam       T           Return type of the Operation.
  */
 abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],
-                                        a:Op[A],b:Op[B],c:Op[C],analysisArea:Op[Option[RasterExtent]]=None) 
-         extends Operation[T] with FocalOperationBase {
-  var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
-  def _run(context:Context) = runAsync(List('init,r,n,a,b,c,analysisAreaOp))
-  def productArity = 6
+                                        a:Op[A],b:Op[B],c:Op[C]) 
+         extends FocalOperation[T] {
+  var rasterOp:Operation[Raster] = r 
+  def _run(context:Context) = runAsync(List('init,rasterOp,n,a,b,c,analysisAreaOp))
+  def productArity = 5
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation3[_,_,_,_]]
   def productElement(n:Int) = n match {
     case 0 => r
@@ -316,7 +325,6 @@ abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],
     case 2 => a
     case 3 => b
     case 4 => c
-    case 5 => analysisArea
     case _ => new IndexOutOfBoundsException()
   }
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {
@@ -357,16 +365,15 @@ abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],
  * @param        b           Argument of type B.
  * @param        c           Argument of type C.
  * @param        d           Argument of type D.
- * @param        reOpt       Optional raster that represents the analysis area.
  *
  * @tparam       T           Return type of the Operation.
  */
 abstract class FocalOperation4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],
-                                          a:Op[A],b:Op[B],c:Op[C],d:Op[D],analysisArea:Op[Option[RasterExtent]]=None) 
-         extends Operation[T] with FocalOperationBase {
-  var analysisAreaOp:Operation[Option[RasterExtent]] = analysisArea
-  def _run(context:Context) = runAsync(List('init,r,n,a,b,c,d,analysisAreaOp))
-  def productArity = 7
+                                          a:Op[A],b:Op[B],c:Op[C],d:Op[D])
+         extends FocalOperation[T] {
+  var rasterOp = r
+  def _run(context:Context) = runAsync(List('init,rasterOp,n,a,b,c,d,analysisAreaOp))
+  def productArity = 6
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation4[_,_,_,_,_]]
   def productElement(n:Int) = n match {
     case 0 => r
@@ -375,7 +382,6 @@ abstract class FocalOperation4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],
     case 3 => b
     case 4 => c
     case 5 => d
-    case 6 => analysisArea
     case _ => new IndexOutOfBoundsException()
   }
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {

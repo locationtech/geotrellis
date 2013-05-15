@@ -23,7 +23,7 @@ case class Mean(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
       case Square(ext) => new CellwiseMeanCalc
       case _ => new CursorMeanCalc
     }
-}) with HasAnalysisArea[Mean]
+}) with CanTile
 
 case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleRasterDataResult {
   var count:Int = 0

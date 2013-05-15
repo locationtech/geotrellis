@@ -49,7 +49,8 @@ class AspectSpec extends FunSpec with ShouldMatchers
       val nonTiledAspect = Aspect(rOp)
 
       val tiled = logic.Do(rOp)({ r => Tiler.createTiledRaster(r,89,140) })
-      val tiledAspect = TileFocalOp(tiled,Aspect(_))
+      //val tiledAspect = TileFocalOp(tiled,Aspect(rOp))
+      val tiledAspect = Aspect(tiled)
 
       assertEqual(nonTiledAspect,tiledAspect)
     }
