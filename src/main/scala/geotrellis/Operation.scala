@@ -82,7 +82,15 @@ abstract class Operation[+T] extends Product with Serializable {
  //TODO: how should filter be implemented for list comprehensions?
  def filter(f:(T) => Boolean) = this
 
-  def andThen[U](f:T => Op[U]) = flatMap(f)
+ def andThen[U](f:T => Op[U]) = flatMap(f)
+
+ /** Call the given function with this operation as its argument.
+   *
+   * This is primarily useful for code readability.
+   * @see http://debasishg.blogspot.com/2009/09/thrush-combinator-in-scala.html
+   */
+ def into[U] (f: (Operation[T]) => U):U = f(this)
+
 }
 
 

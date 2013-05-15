@@ -73,6 +73,8 @@ class OperationsTest extends FunSuite {
   run("int", r9 / r3, r3)
   run("int", r3 - r2, r1)
 
+  // test Operation.into()
+  run("int", Literal(r2).into(Multiply(_, 3)), r6) 
 
   // doubles
 
