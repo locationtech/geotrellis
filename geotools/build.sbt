@@ -19,7 +19,7 @@ name := "geotrellis-geotools"
 
 organization := "com.azavea.geotrellis"
 
-version := "0.8.1-RC2"
+version := "0.8.1-RC3"
 
 assemblySettings
 
