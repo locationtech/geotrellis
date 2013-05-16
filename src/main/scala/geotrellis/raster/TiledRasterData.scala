@@ -192,15 +192,12 @@ case class TileSetRasterData(basePath:String,
                              name:String, 
                              typ:RasterType, 
                              tileLayout:TileLayout,
-                             server:Server) extends TiledRasterData {
+                             loader:TileLoader) extends TiledRasterData {
   def getType = typ
   def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
 
-  def loadPath(path:String) = server.getRaster(path,None,None)
-
   def getTile(col:Int, row:Int) = {
-    val path = Tiler.tilePath(basePath, name, col, row)
-    loadPath(path).data match {
+    loader.getTile(col,row).data match {
       case i:IntConstant => i
       case a:ArrayRasterData => LazyArrayWrapper(a)
       case o => o

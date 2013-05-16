@@ -100,7 +100,7 @@ class CatalogSpec extends FunSpec with MustMatchers with ShouldMatchers {
                                                   .sum
     } 
 
-    it("should create IntConstant NODATA args") {
+    it("should create IntConstant arg") {
       val s = Server("catalogtest", catalog)
       val result = s.getRasterByName("constant", None).asInstanceOf[Result[Raster]]
       assert(result.value.data.isInstanceOf[IntConstant])

@@ -8,7 +8,7 @@ import geotrellis.process._
 import geotrellis.util.Filesystem
 
 abstract class IntNReadState(data:Either[String, Array[Byte]],
-                             val layer:RasterLayer,
+                             val rasterExtent:RasterExtent,
                              val target:RasterExtent,
                              typ:RasterType) extends IntReadState {
   def getType = typ
@@ -33,27 +33,27 @@ abstract class IntNReadState(data:Either[String, Array[Byte]],
 }
 
 class Int8ReadState(data:Either[String, Array[Byte]],
-                    layer:RasterLayer,
+                    rasterExtent:RasterExtent,
                     target:RasterExtent)
-extends IntNReadState(data, layer, target, TypeByte) {
+extends IntNReadState(data, rasterExtent, target, TypeByte) {
   @inline final def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int) {
     dest(destIndex) = src.get(sourceIndex)
   }
 }
 
 class Int16ReadState(data:Either[String, Array[Byte]],
-                     layer:RasterLayer,
+                     rasterExtent:RasterExtent,
                      target:RasterExtent)
-extends IntNReadState(data, layer, target, TypeShort) {
+extends IntNReadState(data, rasterExtent, target, TypeShort) {
   @inline final def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int) {
     dest(destIndex) = src.getShort(sourceIndex * 2)
   }
 }
 
 class Int32ReadState(data:Either[String, Array[Byte]],
-                     layer:RasterLayer,
+                     rasterExtent:RasterExtent,
                      target:RasterExtent)
-extends IntNReadState(data, layer, target, TypeInt) {
+extends IntNReadState(data, rasterExtent, target, TypeInt) {
   @inline final def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int) {
     dest(destIndex) = src.getInt(sourceIndex * 4)
   }
@@ -61,7 +61,7 @@ extends IntNReadState(data, layer, target, TypeInt) {
 
 
 final class Int1ReadState(data:Either[String, Array[Byte]],
-                          val layer:RasterLayer,
+                          val rasterExtent:RasterExtent,
                           val target:RasterExtent) 
       extends ReadState {
   private var src:ByteBuffer = null

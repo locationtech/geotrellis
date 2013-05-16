@@ -7,7 +7,7 @@ import geotrellis.process._
 import geotrellis.util.Filesystem
 
 abstract class ArgFloatNReadState(data:Either[String, Array[Byte]],
-                                  val layer:RasterLayer,
+                                  val rasterExtent:RasterExtent,
                                   val target:RasterExtent,
                                   typ:RasterType) extends ReadState {
   def getType = typ
@@ -25,18 +25,18 @@ abstract class ArgFloatNReadState(data:Either[String, Array[Byte]],
 }
 
 class Float64ReadState(data:Either[String, Array[Byte]],
-                       layer:RasterLayer,
+                       rasterExtent:RasterExtent,
                        target:RasterExtent)
-extends ArgFloatNReadState(data, layer, target, TypeDouble) {
+extends ArgFloatNReadState(data, rasterExtent, target, TypeDouble) {
   @inline final def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int) {
     dest.updateDouble(destIndex, src.getDouble(sourceIndex * width))
   }
 }
 
 class Float32ReadState(data:Either[String, Array[Byte]],
-                       layer:RasterLayer,
+                       rasterExtent:RasterExtent,
                        target:RasterExtent)
-extends ArgFloatNReadState(data, layer, target, TypeFloat) {
+extends ArgFloatNReadState(data, rasterExtent, target, TypeFloat) {
   @inline final def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int) {
     dest.updateDouble(destIndex, src.getFloat(sourceIndex * width))
   }

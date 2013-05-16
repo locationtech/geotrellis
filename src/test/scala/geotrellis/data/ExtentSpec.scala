@@ -34,36 +34,35 @@ class ExtentSpec extends FunSpec with MustMatchers with ShouldMatchers {
 
     def confirm(op:Op[Raster], expected:Array[Int]) {
       val r = server.run(op)
-      //println(r.asciiDraw)
       r.data.asArray.getOrElse(sys.error("argh")).toArray must be === expected
     }
 
-    val origin1 = (1100.0, 1200.0)
-    val cellSizes1 = (100.0, 100.0)
+    it("should load as expected") {
 
-    //val name = "6x6int32"
-    //val path = "src/test/resources/data/6x6int32.arg"
+      val origin1 = (1100.0, 1200.0)
+      val cellSizes1 = (100.0, 100.0)
 
-    val name = "6x6int8"
-    val path = "src/test/resources/data/6x6int8.arg"
+      val name = "6x6int8"
+      val path = "src/test/resources/data/6x6int8.arg"
 
-    val expected1 = (1 to 36).toArray
+      val expected1 = (1 to 36).toArray
 
-    val expected23 = Array(0x08, 0x09, 0x0A,
-                           0x0E, 0x0F, 0x10,
-                           0x14, 0x15, 0x16)
+      val expected23 = Array(0x08, 0x09, 0x0A,
+        0x0E, 0x0F, 0x10,
+        0x14, 0x15, 0x16)
 
-    val expected4 = Array(0x0E, 0x0F,
-                          0x14, 0x15)
+      val expected4 = Array(0x0E, 0x0F,
+        0x14, 0x15)
 
-    val op1 = load(name)
-    val op2 = load(name, origin1, cellSizes1, 3, 3)
-    confirm(op1, expected1)
-    confirm(op2, expected23)
+      val op1 = load(name)
+      val op2 = load(name, origin1, cellSizes1, 3, 3)
+      confirm(op1, expected1)
+      confirm(op2, expected23)
 
-    val xop1 = xload(path)
-    val xop2 = xload(path, origin1, cellSizes1, 3, 3)
-    confirm(xop1, expected1)
-    confirm(xop2, expected23)
+      val xop1 = xload(path)
+      val xop2 = xload(path, origin1, cellSizes1, 3, 3)
+      confirm(xop1, expected1)
+      confirm(xop2, expected23)
+    }
   }
 }

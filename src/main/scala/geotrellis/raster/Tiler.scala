@@ -204,7 +204,7 @@ object Tiler {
       ArgWriter(rasterType).writeMetadataJSON(outputPath, name2,re)
       Gdal.translate(inPath, outputPath, rasterType, col * pixelCols, row * pixelRows, pixelCols, pixelRows)
 
-      val arg = ArgReader.readPath(outputPath,None,None)
+      val arg = new ArgReader(outputPath).readPath(None,None)
       var nodata = true
       val outArg = arg.mapIfSet { z => {
           if (z == NODATA + 1) NODATA else { if (z != NODATA) nodata = false; z }

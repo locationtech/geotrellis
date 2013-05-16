@@ -175,7 +175,10 @@ class TileSpec extends FunSpec with MustMatchers
       val f = new java.io.File("/tmp/foo")
       println(s"Does it exist?  ${f.isDirectory}")
       val extent = Extent(1, 21, 79, 59)
-      val tileSetRD = TileSetRasterData("/tmp/foo", "testraster", TypeInt, layout, server)
+      val info = process.RasterLayerInfo("testraster",TypeInt,raster.rasterExtent,0,0.0,0.0)
+      val layer = new process.TileSetRasterLayer(info, "/tmp/foo", layout, None)
+      val tileSetRD = layer.getRaster(None).data.asInstanceOf[TileSetRasterData]
+
 
       val raster4 = Raster(tileSetRD, g)
       for (y <- 0 to 3; x <- 0 to 3) {

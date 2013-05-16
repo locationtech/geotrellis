@@ -10,8 +10,12 @@ case class LoadRasterExtentFromFile(path:String) extends Op1(path)({
   (path) => {
     val i = path.lastIndexOf(".")
     val jsonPath = (if (i == -1) path else path.substring(0, i)) + ".json"
-    val layer = RasterLayer.fromPath(jsonPath)
-    Result(layer.rasterExtent)
+    val layer = RasterLayer.fromPath(jsonPath) match {
+      case Some(l) => l
+      case None => 
+        sys.error(s"Could not load raster extent from $path, as it is not a valid layer metadata file")
+    }
+    Result(layer.info.rasterExtent)
   }
 })
 
@@ -23,8 +27,12 @@ case class LoadRasterMetadataFromFile(path:String) extends Op1(path)({
   (path) => {
     val i = path.lastIndexOf(".")
     val jsonPath = (if (i == -1) path else path.substring(0, i)) + ".json"
-    val layer = RasterLayer.fromPath(jsonPath)
-    Result(layer.rasterExtent)
+    val layer = RasterLayer.fromPath(jsonPath) match {
+      case Some(l) => l
+      case None => 
+        sys.error(s"Could not load raster metadata from $path, as it is not a valid layer metadata file")
+    }
+    Result(layer.info.rasterExtent)
   }
 })
 

@@ -12,7 +12,6 @@ import geotrellis.util.Filesystem
 case class DataStore(name:String, params:Map[String, String]) {
 
   private val layers = mutable.Map.empty[String, RasterLayer]
-  private val paths = mutable.Map.empty[String, RasterLayer]
 
   initRasterLayers()
 
@@ -21,40 +20,74 @@ case class DataStore(name:String, params:Map[String, String]) {
    */
   private def initRasterLayers() {
     val path = params("path")
-    val f = new java.io.File(path)
-    if (!f.isDirectory) sys.error("store %s is not a directory" format path)
-    find(f, ".json", initRasterLayer _)
+    val f = new File(path)
+    if (!f.isDirectory) {
+      sys.error("store %s is not a directory" format path)
+    }
+
+    // Walk the directory to for raster layers;
+    // also search subdirectories, but some directories
+    // might be tiled rasters.
+    initDirectory(f)
   }
 
-  /**
-   * Initialize a raster layer from its JSON metadata file.
-   */
-  private def initRasterLayer(f:File) {
-    val layer = RasterLayer.fromFile(f)
-    layers(layer.name) = layer
-    paths(layer.rasterPath) = layer
+  private def initDirectory(d:File) {
+    val files = d.listFiles.filter(f => f.isFile)
+    val skipDirectories = mutable.Set[File]()
+    for(f <- files) {
+
+    }
+
+    for(child <- d.listFiles) {
+
+      if(child.isDirectory) {
+        // It's a directory, so either it's a Tiled layer
+        // or it's a subdirectory that we will search.
+        if(isTileDirectory(child)) {
+          loadTileLayer(child)
+        } else {
+          initDirectory(child)
+        }
+
+      } else {
+        // It's a file, so either it's a JSON file
+        // which may or may not contain layer metadata,
+        // or we just ignore it.
+        if(child.getPath.endsWith(".json")) {
+          RasterLayer.fromFile(child) match {
+            case Some(layer) =>
+              layers(layer.info.name) = layer
+            case _ =>
+              System.err.println(s"Skipping ${child.getPath}...")
+          }
+        }
+      }
+    }
   }
 
-  /**
-   * Find files based on an extension. Directories will be searched recursively
-   * and matching files will run the provided callback 'action'.
+  /*
+   *  Assumes that it is a directory
    */
-  private def find(f:File, ext:String, action:File => Unit) {
-    val fs = f.listFiles
-    fs.filter(_.getPath.endsWith(ext)).foreach(f => action(f))
-    fs.filter(_.isDirectory).foreach(f => find(f, ext, action))
+  private def isTileDirectory(f:File) = {
+    val layout = new File(f, "layout.json")
+    layout.exists
   }
+
+  private def loadTileLayer(f:File) = {
+
+  }
+
+  def cacheAll() =
+    layers.values
+          .map(_.cache)
 
   def getNames = layers.keys
-  def getPaths = paths.keys
   def getLayers = layers.values
 
   def hasCacheAll = if(params.contains("cacheAll")) {
     val value = params("cacheAll").toLowerCase
     value == "true" || value == "yes" || value == "1"
   } else { false }
-
-  def getRasterLayer(path:String): Option[RasterLayer] = paths.get(path)
 
   def getRasterLayerByName(name:String):Option[RasterLayer] = {
     layers.get(name)
