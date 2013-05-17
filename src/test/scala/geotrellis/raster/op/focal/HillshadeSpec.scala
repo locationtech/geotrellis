@@ -97,8 +97,8 @@ class HillshadeSpec extends FunSuite with TestServer {
     val nonTiledHillshade = DirectHillshade(rOp,315.0,45.0,1.0)
 
     val tiled = logic.Do(rOp)({ r => Tiler.createTiledRaster(r,89,140) })
-    val tiledHillshade = TileFocalOp(tiled,DirectHillshade(_,315.0,45.0,1.0))
-
+    //val tiledHillshade = TileFocalOp(tiled,DirectHillshade(rOp,315.0,45.0,1.0))
+    val tiledHillshade = DirectHillshade(tiled, 315.0, 45.0, 1.0)
     assertEqual(nonTiledHillshade,tiledHillshade)
   }
 }

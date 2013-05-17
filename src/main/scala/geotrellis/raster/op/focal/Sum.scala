@@ -21,7 +21,7 @@ case class Sum(r:Op[Raster], n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
       case Square(ext) => new CellwiseSumCalc
       case _ => new CursorSumCalc
     }
-}) with HasAnalysisArea[Sum]
+}) with CanTile
 
 class CursorSumCalc extends CursorCalculation[Raster] 
     with IntRasterDataResult {

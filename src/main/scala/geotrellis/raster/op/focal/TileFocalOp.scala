@@ -13,10 +13,16 @@ object TileFocalOp {
    * Used to make a [[TileFocalOp]] based off a focal operation that will
    * parallelize correctly with tiled raster data.
    */
-  def makeFocalOp[T <: Op[Raster] with FocalOperationBase with HasAnalysisArea[T]](makeOp:Op[Raster] => T) = 
+  def makeFocalOp(makeOp:Op[Raster] => FocalOperation[Raster]) = 
   (_r:Op[Raster], _re:Op[Option[RasterExtent]]) => {
     val op = makeOp(_r)
     op.setAnalysisArea(_re)
+  }
+
+  def makeFocalOp2(op:FocalOperation[Raster]) = (_r:Op[Raster], _re:Op[Option[RasterExtent]]) => {
+    val op2 = op.setAnalysisArea(_re)
+    op2.rasterOp = _r
+    op2
   }
 }
 
@@ -31,7 +37,7 @@ object TileFocalOp {
  * val tileFocalOp = TileFocalOp(tiledRaster, Min(_, Square(1)))
  * }}}
  */
-case class TileFocalOp[T <:Op[Raster] with FocalOperationBase with HasAnalysisArea[T]](r: Op[Raster], zonalOp:(Op[Raster]) => T) extends Op[Raster] {
+case class TileFocalOp(r: Op[Raster], focalOp:FocalOperation[Raster]) extends Op[Raster] {
   def _run(context: Context) = runAsync('init :: r :: Nil)
 
   val nextSteps: Steps = {
@@ -47,12 +53,12 @@ case class TileFocalOp[T <:Op[Raster] with FocalOperationBase with HasAnalysisAr
 
   def init(r: Raster) = {
     r.data match {
-      case trd: TiledRasterData => tileFocalOp(r, trd, TileFocalOp.makeFocalOp(zonalOp))
+      case trd: TiledRasterData => tileFocalOp(r, trd, TileFocalOp.makeFocalOp2(focalOp))
       case _ => throw new Exception("TileFocalOp not implemented for non-tiled rasters")
     }
   }
   
-  def tileFocalOp[T](raster:Raster, trd:TiledRasterData, makeFocalOp: (Op[Raster], Op[Option[RasterExtent]]) => Op[Raster]) = {
+  def tileFocalOp(raster:Raster, trd:TiledRasterData, makeFocalOp: (Op[Raster], Op[Option[RasterExtent]]) => FocalOperation[Raster]) = {
     val tileLayout = trd.tileLayout
     val re = raster.rasterExtent
     val rl = tileLayout.getResolutionLayout(re)
@@ -68,4 +74,3 @@ case class TileFocalOp[T <:Op[Raster] with FocalOperationBase with HasAnalysisAr
     runAsync('results :: tileLayout :: re ::  ops.toList)
   }
 }
-
