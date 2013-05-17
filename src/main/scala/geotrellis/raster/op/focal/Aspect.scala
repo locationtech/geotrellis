@@ -32,4 +32,5 @@ case class Aspect(r:Op[Raster]) extends FocalOp[Raster](r,Square(1))({
       data.setDouble(x,y,degrees(s.aspect))
     }
   }
-}) with HasAnalysisArea[Aspect]
+}) with FocalOperation[Raster] with CanTile
+
