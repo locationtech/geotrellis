@@ -42,4 +42,4 @@ case class StandardDeviation(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Ra
       data.setDouble(c.col,c.row,math.sqrt(squares / count.toDouble))
     }
   }
-}) with HasAnalysisArea[StandardDeviation]
+}) with CanTile

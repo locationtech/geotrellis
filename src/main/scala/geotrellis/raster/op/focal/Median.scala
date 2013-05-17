@@ -18,7 +18,7 @@ case class Median(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)(
       case Square(ext) => new CellwiseMedianCalc(ext)
       case _ => new CursorMedianCalc(n.extent)
     }
-}) with HasAnalysisArea[Median]
+}) with CanTile
 
 class CursorMedianCalc(extent:Int) extends CursorCalculation[Raster] with IntRasterDataResult 
                                                                      with MedianModeCalculation {

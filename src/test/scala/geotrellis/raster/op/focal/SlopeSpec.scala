@@ -43,8 +43,8 @@ class SlopeSpec extends FunSpec with ShouldMatchers
       val nonTiledSlope = Slope(rOp,1.0)
 
       val tiled = logic.Do(rOp)({ r => Tiler.createTiledRaster(r,89,140) })
-      val tiledSlope = TileFocalOp(tiled,Slope(_,1.0))
-
+      //val tiledSlope = TileFocalOp(tiled,Slope(rOp,1.0))
+      val tiledSlope = Slope(tiled, 1.0)
       assertEqual(nonTiledSlope,tiledSlope)
     }
   }

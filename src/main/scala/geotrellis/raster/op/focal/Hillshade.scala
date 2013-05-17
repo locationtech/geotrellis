@@ -92,7 +92,7 @@ case class DirectHillshade(r:Op[Raster], azimuth:Op[Double],altitude:Op[Double],
       data.set(x,y,round(127.0 * max(0.0,v)).toInt)      
     }
   }
-})  with HasAnalysisArea[DirectHillshade]
+})  with CanTile
 
 /**
  * Indirect calculation of hill shading of a raster that uses Aspect and Slope operation results.

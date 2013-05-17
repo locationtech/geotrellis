@@ -65,4 +65,4 @@ class Slope(r:Op[Raster], zFactor:Op[Double]) extends FocalOp1[Double,Raster](r,
       data.setDouble(x,y,degrees(s.slope(zFactor)))
     }
   }
-}) with HasAnalysisArea[Slope]
+}) with CanTile
