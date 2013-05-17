@@ -92,6 +92,11 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
     */
   def isTiled:Boolean = data.isTiled
 
+  /**
+    * Returns true if the underlying data is being lazily evaluated.
+    */
+  def isLazy:Boolean = data.isLazy
+
   def toArray = data.asArray.getOrElse(sys.error("argh")).toArray
   def toArrayDouble = data.asArray.getOrElse(sys.error("argh")).toArrayDouble
 

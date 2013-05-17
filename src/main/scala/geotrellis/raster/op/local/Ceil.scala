@@ -30,5 +30,5 @@ case class CeilDouble(x:Op[Double]) extends Op1(x)(x => Result(ceil(x)))
  * Takes the Ceiling of each raster cell value.
  */
 case class CeilRaster(r:Op[Raster]) extends Op1(r)({
-  r => Result(r.dualMapIfSet(z => z)(ceil(_)))
+  r => AndThen(logic.RasterDualMapIfSet(r)(z => z - 1)(ceil(_)))
 })

@@ -17,8 +17,11 @@ trait TiledRasterData extends RasterData with Serializable {
    * Returns the particular layout of this TiledRasterData's tiles.
    */
   def tileLayout:TileLayout
+  
+  override def tileLayoutOpt = Some(tileLayout)
 
   override def isTiled = true
+  override def isLazy  = true
 
   def cols = tileLayout.totalCols
   def rows = tileLayout.totalRows

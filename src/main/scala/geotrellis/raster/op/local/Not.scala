@@ -20,7 +20,9 @@ object Not {
  *                     If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
  *                     the data values will be rounded to integers.
  */
-case class NotRaster(r:Op[Raster]) extends Op1(r)(r => Result(r.mapIfSet(~_)))
+case class NotRaster(r:Op[Raster]) extends Op1(r)({
+  (r) => AndThen(logic.RasterMapIfSet(r)((z:Int) => ~z))
+})
 
 /**
  * Returns the bitwise negation of an Int value.

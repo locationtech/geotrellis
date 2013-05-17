@@ -60,7 +60,7 @@ class OperationsTest extends FunSuite {
   run("int", DivideConstantBy(18, r9), r2)
   run("int", DivideDoubleConstantBy(18.0, r9), r2)
 
-  run("int", DoCell(r9,{ z:Int => z - 3}), r6)
+  run("int", DoCell(r9)(_ - 3), r6)
 
   run("int", MultiplyConstant(r2, 3), r6)
   run("int", MultiplyDoubleConstant(r2, 3.0), r6)
@@ -73,6 +73,8 @@ class OperationsTest extends FunSuite {
   run("int", r9 / r3, r3)
   run("int", r3 - r2, r1)
 
+  // test Operation.into()
+  run("int", Literal(r2).into(Multiply(_, 3)), r6) 
 
   // doubles
 
@@ -94,7 +96,7 @@ class OperationsTest extends FunSuite {
   run("double", DivideConstantBy(99, d9_9), d10)
   run("double", DivideDoubleConstantBy(99.0, d9_9), d10)
   
-  run("double", DoCell(d10,{z:Int => z - 3}), d7)
+  run("double", DoCellDouble(d10)(_ - 3), d7)
   
   run("double", MultiplyConstant(d2_2, 3), d6_6)
   run("double", MultiplyDoubleConstant(d10, 1.1), d11)

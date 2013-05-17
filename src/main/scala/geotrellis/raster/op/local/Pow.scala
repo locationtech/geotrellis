@@ -1,6 +1,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.logic.{RasterDualMapIfSet => DualMapIfSet}
 
 import scala.math.pow
 
@@ -45,44 +46,45 @@ case class PowDoubles(x:Op[Double], y:Op[Double]) extends Op2(x, y) ({
  * Raises cell values of a Raster to an Int Power.
  */
 case class PowConstant(r:Op[Raster], c:Op[Int]) extends Op2(r,c) ({
-  (r,c) => Result(r.dualMapIfSet(pow(_, c).toInt)(pow(_, c)))
+  (r,c) => AndThen(DualMapIfSet(r)(pow(_, c).toInt)(pow(_, c)))
 })
 
 /**
  * Raises cell values of a Raster to a Double Power.
  */
 case class PowDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r,c) ({
-  (r,c) => Result(r.dualMapIfSet(pow(_, c).toInt)(pow(_, c)))
+  (r,c) => AndThen(DualMapIfSet(r)(pow(_, c).toInt)(pow(_, c)))
 })
 
 /**
  * Raises an Int value to the power of each cell values.
  */
 case class PowConstantBy(c:Op[Int], r:Op[Raster]) extends Op2(c, r)({
-  (c, r) => Result(r.dualMapIfSet(pow(c, _).toInt)(pow(c, _)))
+  (c, r) => AndThen(DualMapIfSet(r)(pow(c, _).toInt)(pow(c, _)))
 })
 
 /**
  * Raises a Double value to the power of each cell values.
  */
 case class PowDoubleConstantBy(c:Op[Double], r:Op[Raster]) extends Op2(c, r)({
-  (c, r) => Result(r.dualMapIfSet(pow(c, _).toInt)(pow(c, _)))
+  (c, r) => AndThen(DualMapIfSet(r)(pow(c, _).toInt)(pow(c, _)))
 })
 
 /**
  * Takes the cell value of the first raster and raises it to the power determined
  * by the cell value of the second raster.
  */
-case class PowRaster(r1:Op[Raster], r2:Op[Raster]) extends BinaryLocal {
-  def handle(z1:Int, z2:Int) = {
-    if (z1 == NODATA) NODATA
-    else if (z2 == NODATA) 1
-    else pow(z1, z2).toInt
-  }
-
-  def handleDouble(z1:Double, z2:Double) = {
-    if (java.lang.Double.isNaN(z1)) Double.NaN
-    else if (java.lang.Double.isNaN(z2)) 1.0
-    else pow(z1, z2)
-  }
-}
+case class PowRaster(r1:Op[Raster], r2:Op[Raster]) extends Op2(r1,r2)({
+  (r1,r2) => AndThen(
+    logic.RasterDualCombine(r1,r2)
+    ((z1:Int, z2:Int) => {
+      if (z1 == NODATA) NODATA
+      else if (z2 == NODATA) 1
+      else pow(z1, z2).toInt
+    })
+    ((z1:Double, z2:Double) => {
+      if (java.lang.Double.isNaN(z1)) Double.NaN
+      else if (java.lang.Double.isNaN(z2)) 1.0
+      else pow(z1, z2)
+    }))
+})
