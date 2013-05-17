@@ -10,7 +10,13 @@ import com.typesafe.config.Config
 object TileSetRasterLayerBuilder
 extends RasterLayerBuilder {
   def apply(jsonPath:String, json:Config, cache:Option[Cache]):Option[RasterLayer] = {
-    val tileDirPath = json.getString("path")
+    val tileDirPath = 
+      if(json.hasPath("path")) {
+        json.getString("path")
+      } else {
+        // Default to a directory with the same base name as the .json file.
+        Filesystem.basename(jsonPath)
+      }
 
     if(!new java.io.File(tileDirPath).isDirectory) {
       System.err.println(s"[ERROR] Raster in catalog points Tile Direcotry '$tileDirPath', but this is not a valid directory.")

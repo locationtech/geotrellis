@@ -32,49 +32,34 @@ case class DataStore(name:String, params:Map[String, String]) {
   }
 
   private def initDirectory(d:File) {
-    val files = d.listFiles.filter(f => f.isFile)
     val skipDirectories = mutable.Set[File]()
-    for(f <- files) {
-
-    }
-
-    for(child <- d.listFiles) {
-
-      if(child.isDirectory) {
-        // It's a directory, so either it's a Tiled layer
-        // or it's a subdirectory that we will search.
-        if(isTileDirectory(child)) {
-          loadTileLayer(child)
-        } else {
-          initDirectory(child)
-        }
-
-      } else {
-        // It's a file, so either it's a JSON file
-        // which may or may not contain layer metadata,
-        // or we just ignore it.
-        if(child.getPath.endsWith(".json")) {
-          RasterLayer.fromFile(child) match {
-            case Some(layer) =>
-              layers(layer.info.name) = layer
+    for(f <- d.listFiles
+              .filter(_.isFile)
+              .filter(_.getPath.endsWith(".json"))) {
+      // It's a JSON file
+      // which may contain layer metadata,
+      // or we just ignore it.
+      RasterLayer.fromFile(f) match {
+        case Some(layer) =>
+          layers(layer.info.name) = layer
+          // Skip the tile directory if it's a tiled raster.
+          layer match {
+            case tl:TileSetRasterLayer =>
+              skipDirectories.add(new File(tl.tileDirPath))
             case _ =>
-              System.err.println(s"Skipping ${child.getPath}...")
           }
-        }
+        case _ =>
+          System.err.println(s"Skipping ${f.getPath}...")
       }
     }
-  }
 
-  /*
-   *  Assumes that it is a directory
-   */
-  private def isTileDirectory(f:File) = {
-    val layout = new File(f, "layout.json")
-    layout.exists
-  }
-
-  private def loadTileLayer(f:File) = {
-
+    // Recurse through subdirectories. If a directory was marked
+    // as containing a tile set, skip it.
+    for(subdir <- d.listFiles
+                   .filter(_.isDirectory)
+                   .filter(!skipDirectories.contains(_))) {
+     initDirectory(subdir)
+    }
   }
 
   def cacheAll() =

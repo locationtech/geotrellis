@@ -17,8 +17,6 @@ object RasterLayerParser {
   }
 
   def apply(jsonString:String,path:String = "", cache:Option[Cache] = None) = {
-//    val rasterLayer =
-//      try {
         val json = ConfigFactory.parseString(jsonString)
         val layerType = json.getString("type").toLowerCase
 
@@ -30,70 +28,5 @@ object RasterLayerParser {
             System.err.println("          Skipping...")
             None
         }
-
-  //       val layer = json.getString("layer")
-  //       val ltype:RasterLayerType = json.getString("type").toLowerCase
-
-  //       val datatype = parseType(json.getString("datatype"))
-
-  //       val xmin = json.getDouble("xmin")
-  //       val ymin = json.getDouble("ymin")
-  //       val xmax = json.getDouble("xmax")
-  //       val ymax = json.getDouble("ymax")
-  //       val extent = Extent(xmin, ymin, xmax, ymax)
-
-  //       val cellWidth = json.getDouble("cellwidth")
-  //       val cellHeight = json.getDouble("cellheight")
-
-  //       val epsg = json.getInt("epsg")
-  //       val xskew = json.getDouble("xskew")
-  //       val yskew = json.getDouble("yskew")
-
-  //       ltype match {
-  //         case ConstantRaster =>
-  //           val cols = json.getInt("cols")
-  //           val rows = json.getInt("rows")
-
-  //           val rasterExtent = RasterExtent(extent, cellWidth, cellHeight, cols, rows)
-  //           val info = RasterLayerInfo(layer, datatype, rasterExtent, epsg, xskew, yskew)
-
-  //           if(datatype.isDouble) {
-
-  //           } else {
-
-  //           }
-
-  //         case ArgFile =>
-  //           val cols = json.getInt("cols")
-  //           val rows = json.getInt("rows")
-
-  //           val rasterExtent = RasterExtent(extent, cellWidth, cellHeight, cols, rows)
-  //           val info = RasterLayerInfo(layer, datatype, rasterExtent, epsg, xskew, yskew)
-  //           Some(new ArgFileRasterLayer(info,path,cache))
-  //         case Tiled =>
-  //           val layoutCols = json.getInt("layout_cols")
-  //           val layoutRows = json.getInt("layout_rows")
-  //           val pixelCols = json.getInt("pixel_cols")
-  //           val pixelRows = json.getInt("pixel_rows")
-  //           val cols = layoutCols * pixelCols
-  //           val rows = layoutRows * pixelRows
-
-  //           val rasterExtent = RasterExtent(extent, cellWidth, cellHeight, cols, rows)
-  //           val info = RasterLayerInfo(layer, datatype, rasterExtent, epsg, xskew, yskew)
-  //           Some(new ArgFileRasterLayer(info,path,cache))
-
-  // //        case AsciiFile =>
-
-  //       }
-      // } catch {
-      //   case e:Exception =>
-      //     if(path != null && !path.isEmpty) {
-      //       System.err.println(s"Could not read raster layer at path $path: ${e.getMessage}")
-      //     } else {
-      //       System.err.println(s"Could not read raster layer: ${e.getMessage}")
-      //     }
-      //     None
-      // }
-//    rasterLayer
   }
 }

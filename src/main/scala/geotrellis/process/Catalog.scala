@@ -41,7 +41,7 @@ object Catalog {
       "constant" -> ConstantRasterLayerBuilder,
       "ascii" -> AsciiRasterLayerBuilder,
       "arg" -> ArgFileRasterLayerBuilder,
-      "tiled" -> ArgFileRasterLayerBuilder
+      "tiled" -> TileSetRasterLayerBuilder
     )
 
   def addRasterLayerBuilder(layerType:String,builder:RasterLayerBuilder) =
