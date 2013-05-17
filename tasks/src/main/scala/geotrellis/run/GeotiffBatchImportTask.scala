@@ -94,7 +94,7 @@ object GeotiffBatchImportTask {
         
         println("Loading file: " + tifPath)
 
-        val raster = GeoTiffReader.readPath(tifPath,None,None)
+        val raster = new GeoTiffReader(tifPath).readPath(None,None)
         
         val rastertype = if (datatype == "") raster.data.getType else stringToRasterType(datatype)
         

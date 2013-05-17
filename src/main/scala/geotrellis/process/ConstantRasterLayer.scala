@@ -31,7 +31,7 @@ object ConstantRasterLayerBuilder extends RasterLayerBuilder {
 
 class IntConstantLayer(info:RasterLayerInfo, value:Int, c:Option[Cache]) 
 extends RasterLayer(info,c) {
-  def getRaster(targetExtent:Option[RasterExtent]) = {
+  def getRaster(targetExtent:Option[RasterExtent] = None) = {
     val re = targetExtent match {
       case Some(rext) => rext
       case None => info.rasterExtent

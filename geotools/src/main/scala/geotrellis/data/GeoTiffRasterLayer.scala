@@ -46,7 +46,7 @@ extends RasterLayerBuilder {
 
 class GeoTiffRasterLayer(info:RasterLayerInfo, rasterPath:String, c:Option[Cache]) 
 extends RasterLayer(info,c) {
-  def getRaster(targetExtent:Option[RasterExtent]) = {
+  def getRaster(targetExtent:Option[RasterExtent] = None) = {
     new GeoTiffReader(rasterPath).readPath(Some(this), targetExtent)
   }
 

@@ -44,7 +44,7 @@ class ArgFileRasterLayer(info:RasterLayerInfo, rasterPath:String, c:Option[Cache
 extends RasterLayer(info,c) {
   private var cached = false
 
-  def getRaster(targetExtent:Option[RasterExtent]) =
+  def getRaster(targetExtent:Option[RasterExtent] = None) =
     if(cached) {
       c.get.lookup[Array[Byte]](info.name) match {
         case Some(bytes) =>

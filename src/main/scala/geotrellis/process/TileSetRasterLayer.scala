@@ -54,15 +54,17 @@ class TileSetRasterLayer(info:RasterLayerInfo,
 extends RasterLayer(info,c) {
   val loader = new TileLoader(tileDirPath,info,tileLayout)
 
-  def getRaster(targetExtent:Option[RasterExtent]) = {
-    Raster(TileSetRasterData(tileDirPath,
-                             info.name,
-                             info.rasterType,
-                             tileLayout,
-                             loader), info.rasterExtent) // TODO: Manage different raster extents.
-  }
+  def getRaster(targetExtent:Option[RasterExtent] = None) =
+    Raster(getData, info.rasterExtent) // TODO: Manage different raster extents.
 
-  def cache() = {}
+  def getData() = 
+    TileSetRasterData(tileDirPath,
+                      info.name,
+                      info.rasterType,
+                      tileLayout,
+                      loader)
+
+  def cache() = {} // TODO: Implement
 }
 
 class TileLoader(tileDirPath:String,tileSetInfo:RasterLayerInfo,tileLayout:TileLayout) {
