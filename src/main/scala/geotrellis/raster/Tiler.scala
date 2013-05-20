@@ -125,7 +125,11 @@ object Tiler {
     writeLayout(data.getType, data.tileLayout, re, name, path)
   }
 
-  def writeLayout(rasterType:RasterType, tileLayout:TileLayout, re:RasterExtent, name:String, path:String) = {
+  def writeLayout(rasterType:RasterType, 
+                  tileLayout:TileLayout, 
+                  re:RasterExtent, 
+                  name:String, 
+                  path:String) = {
     val RasterExtent(Extent(xmin, ymin, xmax, ymax), cw, ch, _, _) = re
     val TileLayout(lcols, lrows, pcols, prows) = tileLayout
 

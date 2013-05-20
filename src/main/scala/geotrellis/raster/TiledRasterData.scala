@@ -9,6 +9,8 @@ import geotrellis.feature.Polygon
 import java.io.{FileOutputStream, BufferedOutputStream}
 import geotrellis.util.Filesystem
 
+import spire.syntax._
+
 /**
  *
  */
@@ -62,7 +64,7 @@ trait TiledRasterData extends RasterData with Serializable {
   def getTileOp(rl:ResolutionLayout, c:Int, r:Int):Op[Raster]
  
   /**
-  * Return a list of operations; each operation will load a tile's raster.
+   * Return a list of operations; each operation will load a tile's raster.
    */
   def getTileOpList(re:RasterExtent): List[Op[Raster]] = {
     val rl = tileLayout.getResolutionLayout(re)
@@ -102,7 +104,7 @@ trait TiledRasterData extends RasterData with Serializable {
    */
   def cellToTile(col:Int, row:Int):(Int,Int) = (col / pixelCols, row / pixelRows)
 
-  def convert(typ:RasterType):RasterData = sys.error("can't convert tiled data")
+  def convert(typ:RasterType):RasterData = LazyTiledConvert(this,typ)
 
   def copy = this
 
@@ -143,7 +145,7 @@ trait TiledRasterData extends RasterData with Serializable {
       getTile(c, r).foreach(z => f(z))
   }
 
-  def asArray = {
+  override def asArray:Option[ArrayRasterData] = {
     if (lengthLong > 2147483647L) None
     val len = length
     val d = IntArrayRasterData.ofDim(cols, rows)
@@ -155,13 +157,14 @@ trait TiledRasterData extends RasterData with Serializable {
 
   def force = mutable
 
-  def mutable:Option[MutableRasterData] = asArray
+  def mutable:Option[MutableRasterData] = asArray.flatMap(_.mutable)
 
   def get(col:Int, row:Int) = {
     val tcol = col / pixelCols
     val trow = row / pixelRows
     val pcol = col % pixelCols
     val prow = row % pixelRows
+
     getTile(tcol, trow).get(pcol, prow)
   }
 
@@ -211,6 +214,25 @@ case class TileSetRasterData(basePath:String,
     val path = Tiler.tilePath(basePath, name, c, r)
     logic.Do(io.LoadFile(path))(_.defer)    
   }  
+
+  override def asArray = {
+    if (lengthLong > 2147483647L) None
+    val len = length
+    val d = IntArrayRasterData.ofDim(cols, rows)
+    cfor(0)(_ < tileLayout.tileCols, _ + 1) { tcol =>
+      cfor(0)(_ < tileLayout.tileRows, _ + 1) { trow =>
+        val tile = getTile(tcol,trow)
+        cfor(0)(_ < tileLayout.pixelCols, _ + 1) { pcol =>
+          cfor(0)(_ < tileLayout.pixelRows, _ + 1) { prow => 
+            val acol = (tileLayout.pixelCols * tcol) + pcol
+            val arow = (tileLayout.pixelRows * trow) + prow
+            d( (arow*tileLayout.totalRows) + acol ) = tile.get(pcol,prow)
+          }
+        }
+      }
+    }
+    Some(d)
+  }
 }
 
 /**
@@ -390,8 +412,13 @@ case class LazyTiledMap(data:TiledRasterData, g:Int => Int) extends LazyTiledRas
       logic.Do(data.getTileOp(rl, c, r))(_.map(g))
 
   override def map(f:Int => Int) = LazyTiledMap(data, z => f(g(z)))
-}
 
+  override def asArray = 
+    data.asArray match {
+      case Some(a) => a.map(g).asArray
+      case None => None
+    }
+}
 
 /**
  * This lazy, tiled raster data represents a mapIfSet over a tiled raster data.
@@ -407,6 +434,31 @@ case class LazyTiledMapIfSet(data:TiledRasterData, g:Int => Int) extends LazyTil
   override def map(f:Int => Int) = LazyTiledMap(data, z => f(gIfSet(z)))
 
   override def mapIfSet(f:Int => Int) = LazyTiledMapIfSet(this, z => f(g(z)))
+
+  override def asArray = 
+    data.asArray match {
+      case Some(a) => a.mapIfSet(g).asArray
+      case None => None
+    }
+}
+
+/**
+ * This lazy, tiled raster data represents a convert over a tiled raster data.
+ */
+case class LazyTiledConvert(data:TiledRasterData, typ:RasterType) 
+extends LazyTiledRasterData {
+  override def getType = typ
+
+  def getTile(col:Int, row:Int) = data.getTile(col, row).convert(typ)
+
+  override def getTileOp(rl:ResolutionLayout, c:Int, r:Int) =
+    logic.Do(data.getTileOp(rl, c, r))(_.convert(typ))
+
+  override def asArray = 
+    data.asArray match {
+      case Some(a) => a.convert(typ).asArray
+      case None => None
+    }
 }
 
 
@@ -453,4 +505,15 @@ case class LazyTiledCombine(data1:TiledRasterData, data2:TiledRasterData,
     }
     LazyTiledCombine(data1, data2, h)
   }
+
+  override def asArray = 
+    data1.asArray match {
+      case Some(a1) =>
+        data2.asArray match {
+          case Some(a2) =>
+            a1.combine(a2)(g).asArray
+          case None => None
+        }
+      case None => None
+    }
 }

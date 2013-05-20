@@ -69,7 +69,6 @@ class Layer {
       }
     }                                                 
 
- 
     val breaksOp = 
       logic.ForEach(string.SplitOnComma(breaks))(string.ParseInt(_))
     

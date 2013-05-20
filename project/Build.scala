@@ -40,7 +40,8 @@ object GeotrellisBuild extends Build {
 "com.typesafe.akka" %% "akka-cluster-experimental" % "2.1.2",
       "asm" % "asm" % "3.3.1",
       "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
-      "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1"
+      "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1",
+      "org.spire-math" %% "spire" % "0.3.0"
     ),
 
     resolvers ++= Seq(
