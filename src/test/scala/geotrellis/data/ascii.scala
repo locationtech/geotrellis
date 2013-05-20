@@ -23,7 +23,7 @@ class AsciiSpec extends FunSpec with MustMatchers with ShouldMatchers {
   describe("An AsciiReader") {
     it ("should fail on non-existent files") {
       val path = "/does/not/exist.tif"
-      evaluating { AsciiReader.readPath(path, None, None) } should produce [Exception]
+      evaluating { new AsciiReader(path).readPath(None, None) } should produce [Exception]
     }
 
     it ("should write ASCII") {
@@ -31,7 +31,7 @@ class AsciiSpec extends FunSpec with MustMatchers with ShouldMatchers {
     }
 
     it ("should read ASCII") {
-      val r2 = AsciiReader.readPath("/tmp/foo.asc", None, None)
+      val r2 = new AsciiReader("/tmp/foo.asc").readPath(None, None)
       r2 must be === r
     }
 

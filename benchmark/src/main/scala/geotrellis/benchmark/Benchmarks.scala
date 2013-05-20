@@ -54,12 +54,20 @@ trait OperationBenchmark extends SimpleBenchmark {
   def createTiledRaster(r:Raster, pixelCols:Int, pixelRows:Int) = {
     val re = r.rasterExtent
 
-    val trd = Tiler.createTiledRasterData(r, pixelCols, pixelRows)
+    val layer = new TileSetRasterLayer(RasterLayerInfo("benchmark_raster",
+                                                       TypeInt,
+                                                       re,
+                                                       0,0,0),
+                                       "/tmp",
+                                       Tiler.buildTileLayout(re,pixelCols,pixelRows),
+                                       None)
+
+    val trd = layer.getData()
     val tiledArrayRaster = Raster(trd, re)
 
-    val layout = trd.tileLayout 
+    val layout = layer.tileLayout 
     Tiler.writeTiles(trd, re, "benchmark_raster", "/tmp")
-    val tileSetRD = TileSetRasterData("/tmp", "benchmark_raster", TypeInt, layout, server)
+    val tileSetRD = TileSetRasterData("/tmp", "benchmark_raster", TypeInt, layout, layer.loader)
 
     val tiledRaster = Raster(tileSetRD, re)
 
@@ -431,7 +439,17 @@ class BigMinTiled extends OperationBenchmark{
     val layout = TileLayout(tileN,tileN,2000,2000)
     val e = Extent(0.0, 0.0, (tileN * 2000.0), (tileN * 2000.0))
     val re = RasterExtent(e, 1.0, 1.0, tileN * 2000, tileN * 2000)
-    val tileSetRD = TileSetRasterData("/tmp", "big", TypeByte, layout, server)
+
+    val layer = new TileSetRasterLayer(RasterLayerInfo("bit",
+                                                       TypeByte,
+                                                       re,
+                                                       0,0,0),
+                                       "/tmp",
+                                       layout,
+                                       None)
+
+    val trd = layer.getData()
+    val tileSetRD = TileSetRasterData("/tmp", "big", TypeByte, layout, layer.loader)
     val raster = Raster(tileSetRD, re)
     tiledMinOp = BTileMin(Add(AddConstant(raster,2), raster))
     tiledHistogramOp = BTileHistogram(raster)

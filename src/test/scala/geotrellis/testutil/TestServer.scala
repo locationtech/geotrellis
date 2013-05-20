@@ -15,14 +15,6 @@ object TestServer {
  */
 trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
   var server = TestServer.server 
-  before {
-    //server = geotrellis.process.TestServer("src/test/resources/catalog.json")  
-  }
-
-  after {
-    //server.shutdown()
-    //server = null
-  }
 
   def run[T:Manifest](op:Op[T]):T = server.run(op)
 
@@ -36,7 +28,6 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
     (rd.cols * rd.rows) should be (arr.length)
     for(col <- 0 until rd.cols) {
       for(row <- 0 until rd.rows) {
-        //println(s"RD(${col},${row}) = ${rd.get(col,row)}   Array(${row*rd.cols+row}) = ${arr(row*rd.cols + col)}")
         rd.get(col,row) should be (arr(row*rd.cols + col))
       }
     }

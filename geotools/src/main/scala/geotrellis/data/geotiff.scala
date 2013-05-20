@@ -25,9 +25,8 @@ import geotrellis.util._
 import geotrellis.util.Filesystem
 import java.awt.image.DataBuffer._
 
-
 class GeoTiffIntReadState(path:String,
-                          val layer:RasterLayer,
+                          val rasterExtent:RasterExtent,
                           val target:RasterExtent,
                           val typ:RasterType,
                           val reader:gce.geotiff.GeoTiffReader) extends ReadState {
@@ -36,17 +35,14 @@ class GeoTiffIntReadState(path:String,
   private var noData:Int = NODATA
   private var data:Array[Int] = null
 
-  private def initializeNoData(reader:gce.geotiff.GeoTiffReader) = {
+  private def initializeNoData(reader:gce.geotiff.GeoTiffReader) = 
     noData = reader.getMetadata.getNoData.toInt
-    // val bits = reader.read(null).getRenderedImage.getSampleModel.getSampleSize(0)
-    // noData = if (z < 0) { z + (1 << bits) } else { z }
-  }
 
   def initSource(pos:Int, size:Int) {
     val x = 0
-    val y = pos / layer.rasterExtent.cols
-    val w = layer.rasterExtent.cols
-    val h = size / layer.rasterExtent.cols
+    val y = pos / rasterExtent.cols
+    val w = rasterExtent.cols
+    val h = size / rasterExtent.cols
 
     initializeNoData(reader)
     data = Array.fill(w * h)(noData)
@@ -79,7 +75,7 @@ class GeoTiffIntReadState(path:String,
 }
 
 class GeoTiffDoubleReadState(path:String,
-                          val layer:RasterLayer,
+                          val rasterExtent:RasterExtent,
                           val target:RasterExtent,
                           val typ:RasterType,
                           val reader:gce.geotiff.GeoTiffReader) extends ReadState {
@@ -90,17 +86,15 @@ class GeoTiffDoubleReadState(path:String,
   
   private def initializeNoData(reader:gce.geotiff.GeoTiffReader) = {
     noData = reader.getMetadata.getNoData.toDouble
-//    val bits = reader.read(null).getRenderedImage.getSampleModel.getSampleSize(0)
-//    noData = if (z < 0) { z + (1 << bits) } else { z }
   }
 
   def getNoDataValue = noData
 
   def initSource(pos:Int, size:Int) {
     val x = 0
-    val y = pos / layer.rasterExtent.cols
-    val w = layer.rasterExtent.cols
-    val h = size / layer.rasterExtent.cols
+    val y = pos / rasterExtent.cols
+    val w = rasterExtent.cols
+    val h = size / rasterExtent.cols
 
     initializeNoData(reader)
     data = Array.fill(w * h)(noData)
@@ -132,8 +126,8 @@ class GeoTiffDoubleReadState(path:String,
 
 }
 
-object GeoTiffReader extends FileReader {
-  private def getReader(path:String) = {
+class GeoTiffReader(path:String) extends FileReader(path) {
+  private def getReader() = {
     val fh    = new File(path)
     val gtf   = new gce.geotiff.GeoTiffFormat
     val hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:3785"))
@@ -143,8 +137,11 @@ object GeoTiffReader extends FileReader {
     gtf.getReader(fh, hints)
   }
 
-  def loadRasterExtent(reader:gce.geotiff.GeoTiffReader) = {
-    val cov = reader.read(null)
+  def loadRasterExtent(reader:Option[gce.geotiff.GeoTiffReader] = None) = {
+    val cov = reader match {
+      case Some(r) => r.read(null)
+      case None => getReader().read(null)
+    }
 
     val env  = cov.getEnvelope2D
     val e = Extent(env.getMinX, env.getMinY, env.getMaxX, env.getMaxY)
@@ -159,18 +156,21 @@ object GeoTiffReader extends FileReader {
     RasterExtent(e, cellwidth, cellheight, cols, rows)
   }
 
-  def readStateFromPath(path:String, rl:RasterLayer, re:RasterExtent) = {
-    val reader = getReader(path)
+  def readStateFromPath(rasterType:RasterType, 
+                        rasterExtent:RasterExtent,targetExtent:RasterExtent) = {
+    val reader = getReader()
     val dt = reader.read(null).getRenderedImage.getSampleModel.getDataType
 
+    val ore = rasterExtent
     dt match {
-      case TYPE_BYTE    =>   new GeoTiffIntReadState(path, rl, re, TypeShort, reader) // Bytes are unsigned in GTiff
-      case TYPE_SHORT   =>   new GeoTiffIntReadState(path, rl, re, TypeShort, reader)
-      case TYPE_USHORT  =>   new GeoTiffIntReadState(path, rl, re, TypeInt, reader)
-      case TYPE_INT     =>   new GeoTiffIntReadState(path, rl, re, TypeInt, reader)
-      case TYPE_FLOAT   =>   new GeoTiffDoubleReadState(path, rl, re, TypeFloat, reader)
-      case TYPE_DOUBLE  =>   new GeoTiffDoubleReadState(path, rl, re, TypeDouble, reader)
-      case _            =>   new GeoTiffDoubleReadState(path, rl, re, TypeDouble, reader)
+      // Bytes are unsigned in GTiff
+      case TYPE_BYTE    =>   new GeoTiffIntReadState(path, ore, targetExtent, TypeShort, reader) 
+      case TYPE_SHORT   =>   new GeoTiffIntReadState(path, ore, targetExtent, TypeShort, reader)
+      case TYPE_USHORT  =>   new GeoTiffIntReadState(path, ore, targetExtent, TypeInt, reader)
+      case TYPE_INT     =>   new GeoTiffIntReadState(path, ore, targetExtent, TypeInt, reader)
+      case TYPE_FLOAT   =>   new GeoTiffDoubleReadState(path, ore, targetExtent, TypeFloat, reader)
+      case TYPE_DOUBLE  =>   new GeoTiffDoubleReadState(path, ore, targetExtent, TypeDouble, reader)
+      case _            =>   new GeoTiffDoubleReadState(path, ore, targetExtent, TypeDouble, reader)
     }
   }
 
@@ -178,12 +178,13 @@ object GeoTiffReader extends FileReader {
     sys.error("caching geotif not supported")
   }
 
-  override def readMetadata(path:String) = {
-    val extent = loadRasterExtent(getReader(path))
-    val (base, typ) = Filesystem.split(path)
-    RasterLayer("", typ, "", base, extent, 3857, 0.0, 0.0)
+  override def readMetadata() = {
+    val extent = loadRasterExtent()
+    val info = new RasterLayerInfo("", TypeDouble, extent, 3857, 0.0, 0.0)
+    Some(new GeoTiffRasterLayer(info,path,None))
   }
 }
+
 
 /**
  * This GeoTiffWriter is deprecated.

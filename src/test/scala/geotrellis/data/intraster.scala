@@ -16,7 +16,7 @@ class RasterReaderSpec extends FunSpec with MustMatchers with ShouldMatchers {
       val geo = RasterExtent(e, 8.0, 8.0, 10, 10)
 
       val server = TestServer.server
-      val raster = server.loadRaster("src/test/resources/quad8.arg", geo)
+      val raster = server.getRaster("src/test/resources/quad8.arg", None, Some(geo))
 
       val raster2 = RasterReader.read(raster, None)
       

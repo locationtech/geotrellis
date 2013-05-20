@@ -6,7 +6,7 @@
   "epsg": 3785, 
   "layer": "constant",
   "rows": 20, 
-  "type": "arg", 
+  "type": "constant", 
   "xmax": 150.5, 
   "xmin": -9.5, 
   "xskew": 0.0, 

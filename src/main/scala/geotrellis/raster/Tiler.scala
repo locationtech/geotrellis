@@ -125,7 +125,11 @@ object Tiler {
     writeLayout(data.getType, data.tileLayout, re, name, path)
   }
 
-  def writeLayout(rasterType:RasterType, tileLayout:TileLayout, re:RasterExtent, name:String, path:String) = {
+  def writeLayout(rasterType:RasterType, 
+                  tileLayout:TileLayout, 
+                  re:RasterExtent, 
+                  name:String, 
+                  path:String) = {
     val RasterExtent(Extent(xmin, ymin, xmax, ymax), cw, ch, _, _) = re
     val TileLayout(lcols, lrows, pcols, prows) = tileLayout
 
@@ -204,7 +208,7 @@ object Tiler {
       ArgWriter(rasterType).writeMetadataJSON(outputPath, name2,re)
       Gdal.translate(inPath, outputPath, rasterType, col * pixelCols, row * pixelRows, pixelCols, pixelRows)
 
-      val arg = ArgReader.readPath(outputPath,None,None)
+      val arg = new ArgReader(outputPath).readPath(None,None)
       var nodata = true
       val outArg = arg.mapIfSet { z => {
           if (z == NODATA + 1) NODATA else { if (z != NODATA) nodata = false; z }

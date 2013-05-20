@@ -15,8 +15,8 @@ describe("A Server") {
       val server = TestServer.server
       val geo = RasterExtent(Extent(-9.5, 3.8, 150.5, 163.8), 8.0, 8.0, 20, 20)
 
-      val r1 = server.loadRaster(path, geo)
-      val r2 = server.loadRaster(path, geo)
+      val r1 = server.getRaster(path, None, Some(geo))
+      val r2 = server.getRaster(path, None, Some(geo))
 
       r1 must be === r2
     }
