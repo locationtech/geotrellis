@@ -6,6 +6,8 @@ sealed abstract class RasterType(val precedence:Int, val float:Boolean, val name
   def intersect(rhs:RasterType) = if (precedence < rhs.precedence) this else rhs
 
   def contains(rhs:RasterType) = precedence >= rhs.precedence
+
+  def isDouble = precedence > 32
 }
 
 case object TypeBit extends RasterType(1, false, "bool")

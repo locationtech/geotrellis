@@ -9,7 +9,7 @@ import geotrellis.util._
 import geotrellis.util.Filesystem
 
 final class AsciiReadState(path:String,
-                           val layer:RasterLayer,
+                           val rasterExtent:RasterExtent,
                            val target:RasterExtent) extends IntReadState {
   var ncols:Int = 0
   var nrows:Int = 0
@@ -131,18 +131,21 @@ final class AsciiReadState(path:String,
   }
 }
 
-object AsciiReader extends FileReader {
-  def readStateFromPath(path:String, layer:RasterLayer, target:RasterExtent) = {
-    new AsciiReadState(path, layer, target)
+class AsciiReader(path:String) extends FileReader(path) {
+  def readStateFromPath(rasterType:RasterType, 
+                        rasterExtent:RasterExtent,
+                        targetExtent:RasterExtent):ReadState = {
+    new AsciiReadState(path, rasterExtent, targetExtent)
   }
   def readStateFromCache(b:Array[Byte], layer:RasterLayer, target:RasterExtent) = {
     sys.error("caching ascii grid is not supported")
   }
 
-  override def readMetadata(path:String) = {
+  override def readMetadata() = {
     val state = new AsciiReadState(path, null, null)
     val (base, typ) = Filesystem.split(path)
-    RasterLayer("", typ, "", base, state.loadRasterExtent(), 3857, 0.0, 0.0)
+    val info = RasterLayerInfo("", TypeInt, state.loadRasterExtent(), 3857, 0.0, 0.0)
+    Some(new ArgFileRasterLayer(info,base,None))
   }
 }
 

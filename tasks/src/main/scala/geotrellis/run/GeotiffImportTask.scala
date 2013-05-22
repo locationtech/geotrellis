@@ -74,8 +74,8 @@ object GeotiffImportTask {
     val server = Server("script", Catalog.empty("script"))
     try {
       println("Loading file: " + inpath)
-      //val raster = server.run(io.LoadFile(inpath))
-      val raster = GeoTiffReader.readPath(inpath,None,None)
+
+      val raster = new GeoTiffReader(inpath).readPath(None,None)
      
       val version = "1.0"
   

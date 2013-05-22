@@ -2,16 +2,13 @@ package geotrellis.data
 
 import scala.math.{Numeric, min, max, abs, round, floor, ceil}
 import java.io.{File, FileInputStream, FileOutputStream}
-import java.io.{BufferedOutputStream, FileOutputStream}
-import java.nio.ByteBuffer
-import java.nio.channels.FileChannel.MapMode._
 
 import geotrellis._
 import geotrellis.process._
 import geotrellis.raster.IntConstant
 
 trait ReadState {
-  val layer:RasterLayer
+  val rasterExtent:RasterExtent
   val target:RasterExtent
 
   // must override
@@ -37,7 +34,7 @@ trait ReadState {
 
   // don't override
   def loadRaster(): Raster = {
-    val re = layer.rasterExtent
+    val re = rasterExtent
 
     // keep track of cell size in our source raster
     val src_cellwidth =  re.cellwidth
@@ -145,69 +142,5 @@ trait IntReadState extends ReadState {
       if (data(i) == nd) data(i) = NODATA
       i += 1
     }
-  }
-}
-
-trait Reader {}
-
-trait FileReader extends Reader {
-  def metadataPath(path:String) = path.substring(0, path.lastIndexOf(".")) + ".json"
-
-  def readMetadata(path:String) = RasterLayer.fromPath(metadataPath(path))
-
-  def readStateFromCache(bytes:Array[Byte], layer:RasterLayer, target:RasterExtent):ReadState
-
-  def readCache(bytes:Array[Byte], layer:RasterLayer, targetOpt:Option[RasterExtent]): Raster = {
-    val target = targetOpt.getOrElse(layer.rasterExtent)
-    val readState = readStateFromCache(bytes, layer, target)
-    val raster = readState.loadRaster() // all the work is here
-    readState.destroy()
-    raster
-  }
-
-  def readStateFromPath(path:String, layer:RasterLayer, target:RasterExtent):ReadState
-
-  def readPath(path:String, layerOpt:Option[RasterLayer], targetOpt:Option[RasterExtent]): Raster = {
-    val layer = layerOpt.getOrElse(readMetadata(path))
-    val target = targetOpt.getOrElse(layer.rasterExtent)
-    if (! (new File(path)).exists() ) {
-      Raster(IntConstant(NODATA,target.cols,target.rows),target)
-    } else {
-      val readState = readStateFromPath(path, layer, target)
-      val raster = readState.loadRaster() // all the work is here
-      readState.destroy()
-      raster
-    }
-  }
-}
-
-trait Writer {
-  def write(path:String, raster:Raster, name:String):Unit
-
-  def rasterType: String
-  def dataType:String
-
-  def writeMetadataJSON(path:String, name:String, re:RasterExtent) {
-    val metadata = """{
-  "layer": "%s",
-  "datatype": "%s", 
-  "type": "%s",
-  "xmin": %f,
-  "xmax": %f,
-  "ymin": %f,
-  "ymax": %f,
-  "cols": %d,
-  "rows": %d,
-  "cellwidth": %f,
-  "cellheight": %f,
-  "epsg": 3785,
-  "yskew": 0.0,
-  "xskew": 0.0
-}""".format(name, rasterType, dataType, re.extent.xmin, re.extent.xmax, re.extent.ymin,
-             re.extent.ymax, re.cols, re.rows, re.cellwidth, re.cellheight)
-
-    val bos = new BufferedOutputStream(new FileOutputStream(path))
-    bos.write(metadata.getBytes)
-    bos.close
   }
 }

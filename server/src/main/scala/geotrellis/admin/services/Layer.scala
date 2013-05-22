@@ -62,11 +62,13 @@ class Layer {
 
     val layerOp = io.LoadRaster(layer,reOp).map { r =>
       // Convert 0 of bit raster to NODATA
-      if(r.data.getType == TypeBit) { r.convert(TypeByte).map { z => if(z == 0) NODATA else z } }
-      else { r }
+      if(!r.isTiled && r.data.getType == TypeBit) { 
+        r.convert(TypeByte).map { z => if(z == 0) NODATA else z } 
+      } else { 
+        r 
+      }
     }                                                 
 
- 
     val breaksOp = 
       logic.ForEach(string.SplitOnComma(breaks))(string.ParseInt(_))
     

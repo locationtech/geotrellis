@@ -1,0 +1,32 @@
+package geotrellis.process.json
+
+import geotrellis._
+import geotrellis.process._
+
+import com.typesafe.config.ConfigFactory
+
+object RasterLayerParser {
+  def parseType(s:String):RasterType = s match {
+    case "bool" => TypeBit
+    case "int8" => TypeByte
+    case "int16" => TypeShort
+    case "int32" => TypeInt
+    case "float32" => TypeFloat
+    case "float64" => TypeDouble
+    case s => sys.error("unsupported datatype '%s'" format s)
+  }
+
+  def apply(jsonString:String,path:String = "", cache:Option[Cache] = None) = {
+        val json = ConfigFactory.parseString(jsonString)
+        val layerType = json.getString("type").toLowerCase
+
+        Catalog.getRasterLayerBuilder(layerType) match {
+          case Some(builder) => builder(path,json,cache)
+          case None => 
+            System.err.println(s"[ERROR]  Raster layer defined at $path has raster layer type $layerType " +
+                                "for which this catalog has no builder.")
+            System.err.println("          Skipping...")
+            None
+        }
+  }
+}

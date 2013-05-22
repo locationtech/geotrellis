@@ -34,7 +34,7 @@ class Arg32Spec extends FunSpec with MustMatchers with ShouldMatchers {
     }
 
     it("should build a valid raster") {
-      val raster = ArgReader.readPath(path1, None, None)
+      val raster = new ArgReader(path1).readPath(None,None)
 
       raster.cols must be === 4
       raster.rows must be === 4
@@ -46,7 +46,7 @@ class Arg32Spec extends FunSpec with MustMatchers with ShouldMatchers {
       }
     }
 
-    val raster = ArgReader.readPath(path1, None, None)
+    val raster = new ArgReader(path1).readPath(None, None)
 
     it("should write to full paths ") {
       val fh = java.io.File.createTempFile("foog", ".arg")
@@ -103,7 +103,7 @@ class Arg32Spec extends FunSpec with MustMatchers with ShouldMatchers {
       val e = Extent(xmin, ymin, xmax, ymax)
       val re = RasterExtent(e, cellwidth, cellheight, cols, rows)
 
-      ArgReader.readPath("src/test/resources/quad32.arg", None, Some(re))
+      new ArgReader("src/test/resources/quad32.arg").readPath(None, Some(re))
     }
     
     // helper function

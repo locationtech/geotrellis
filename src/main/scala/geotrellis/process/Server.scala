@@ -29,28 +29,25 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
 
   private[this] val staticCache = mutable.Map.empty[String, Array[Byte]]
 
-  initStaticCache()
+  catalog.initCache
 
   Server.startActorSystem
   def system = Server.actorSystem
 
   def startUp:Unit = ()
 
-  def initStaticCache():Unit = {
-    val cacheStores = catalog.stores.values.filter(_.hasCacheAll)
-    cacheStores.foreach(_.getLayers.foreach(l => loadInStaticCache(l)))
+  // def initStaticCache():Unit = {
+  //   val cacheStores = catalog.stores.values.filter(_.hasCacheAll)
+  //   cacheStores.foreach(_.getLayers.foreach(l => loadInStaticCache(l)))
 
-    val n = staticCache.size
-    val (amt, units) = Units.bytes(staticCache.foldLeft(0)(_ + _._2.length))
-    log("loaded %d layers (%.2f %s) into static cache" format (n, amt, units))
-  }
+  //   val n = staticCache.size
+  //   val (amt, units) = Units.bytes(staticCache.foldLeft(0)(_ + _._2.length))
+  //   log("loaded %d layers (%.2f %s) into static cache" format (n, amt, units))
+  // }
 
-  def loadInStaticCache(layer:RasterLayer):Unit = {
-    val path = layer.rasterPath
-    if (new File(path).exists) {
-      staticCache(layer.name) = Filesystem.slurp(path)
-    }
-  }
+  // def loadInStaticCache(layer:RasterLayer):Unit = {
+  //     staticCache(layer.name) = layer.getBytes
+  // }
 
   def shutdown():Unit = { 
     Server.actorSystem.shutdown()
@@ -75,7 +72,8 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
     val d = Duration.create(600, TimeUnit.SECONDS)
     implicit val t = Timeout(d)
     val future = op match {
-      case op:DispatchedOperation[_] => (actor ? RunDispatched(op.op, op.dispatcher)).mapTo[OperationResult[T]]
+      case op:DispatchedOperation[_] => 
+        (actor ? RunDispatched(op.op, op.dispatcher)).mapTo[OperationResult[T]]
       case op:Op[_]           => (actor ? Run(op)).mapTo[OperationResult[T]]
     }
 
@@ -88,24 +86,20 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
     }
   }
 
-  def metadataPath(path:String) = {
-    path.substring(0, path.lastIndexOf(".")) + ".json"
-  }
-
   /**
    * Return the appropriate reader object for the given path.
    */
-  def getReader(path:String, layerOpt:Option[RasterLayer]): FileReader = {
+  def getReader(path:String): FileReader = {
     path match {
-      case ArgPattern() => ArgReader
-      case AsciiPattern() => AsciiReader
+      case ArgPattern() => new ArgReader(path)
+      case AsciiPattern() => new AsciiReader(path)
       case _ => sys.error("unknown path type %s".format(path))
     }
   }
    
   def getRasterStepOutput(path:String, layerOpt:Option[RasterLayer], reOpt:Option[RasterExtent]) = {
-    val reader = getReader(path, layerOpt)
-    Try(reader.readPath(path, layerOpt, reOpt)) match { 
+    val reader = getReader(path)
+    Try(reader.readPath(layerOpt, reOpt)) match { 
       case TrySuccess(r) => Result(r)
       case TryFailure(e) =>
         StepError(s"Could not load raster from path: ${path}. Reason: $e","")
@@ -113,16 +107,12 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
   }
 
   def getRaster(path:String, layerOpt:Option[RasterLayer], reOpt:Option[RasterExtent]):Raster = {
-    getReader(path, layerOpt).readPath(path, layerOpt, reOpt)  
+    getReader(path).readPath(layerOpt, reOpt)  
   }
-
-  // TODO: rewrite calls to loadRaster to getRaster. then remove?
-  def loadRaster(path:String):Raster = getRaster(path, None, None)
-  def loadRaster(path:String, g:RasterExtent):Raster = getRaster(path, None, Option(g))
 
   def getRasterExtentByName(name:String):RasterExtent = {
     catalog.getRasterLayerByName(name) match {
-      case Some(layer) => layer.rasterExtent
+      case Some(layer) => layer.info.rasterExtent
       case None => sys.error("couldn't find %s" format name)
     }
   }
@@ -130,13 +120,7 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
   def getRasterByName(name:String, reOpt:Option[RasterExtent]):StepOutput[Raster] = {
     catalog.getRasterLayerByName(name) match {
       case Some(layer) => {
-        val path = layer.rasterPath
-        val reader = getReader(path, Some(layer))
-        val r = staticCache.get(layer.name) match {
-          case Some(bytes) => reader.readCache(bytes, layer, reOpt)
-          case None => reader.readPath(path, Some(layer), reOpt)
-        }
-        Result(r)
+        Result(layer.getRaster(reOpt))
       }
       case None => {
         val debugInfo = s"Failed to load raster ${name} from catalog at ${catalog.source}" + 
