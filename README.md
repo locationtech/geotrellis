@@ -16,8 +16,10 @@ Please contact us if you have any questions, find us on irc at #geotrellis on fr
 the user mailing list at [https://groups.google.com/group/geotrellis-user](https://groups.google.com/group/geotrellis-user).
 More information is also available on the [GeoTrellis website](http://www.azavea.com/products/geotrellis/).
 
-The current release version of GeoTrellis is 0.8.0 (Atlantis).
+The current release version of GeoTrellis is 0.8.1.
 
+The current development release of GeoTrellis is 0.9.0-M1.
+ 
 [![Build Status](https://api.travis-ci.org/geotrellis/geotrellis.png)](http://travis-ci.org/geotrellis/geotrellis)
 
 ## Features
@@ -31,7 +33,7 @@ operations with existing operations.
 
     scalaVersion := "2.10.0"
 
-    libraryDependencies += "com.azavea.geotrellis" %% "geotrellis" % "0.8.0"
+    libraryDependencies += "com.azavea.geotrellis" %% "geotrellis" % "0.8.1"
 
 ## Some sample GeoTrellis code
 
