@@ -6,7 +6,7 @@ name := "geotrellis-server"
 
 organization := "com.azavea.geotrellis"
 
-version := "0.8.1-RC3"
+version := "0.8.1"
 
 //seq(Revolver.settings: _*)
 

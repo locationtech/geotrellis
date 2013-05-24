@@ -8,7 +8,7 @@ object GeotrellisBuild extends Build {
   lazy val root = Project("root", file(".")).settings(
     organization := "com.azavea.geotrellis",
     name := "geotrellis",
-    version := "0.8.1-RC3",
+    version := "0.8.1",
     scalaVersion := "2.10.1",
     
     scalacOptions ++= Seq("-deprecation", 
@@ -132,7 +132,7 @@ object GeotrellisBuild extends Build {
     scalaVersion := "2.10.0",
     name := "geotrellis-geotools",
     organization := "com.azavea.geotrellis",
-    version := "0.8.1-RC3",
+    version := "0.8.1",
     libraryDependencies ++= Seq(
       "org.scalatest" %% "scalatest" % "2.0.M5b",
       "java3d" % "j3d-core" % "1.3.1",
@@ -151,7 +151,7 @@ object GeotrellisBuild extends Build {
   lazy val tasks:Project = Project("tasks", file("tasks")).
     settings(
       scalaVersion := "2.10.0",
-      version := "0.8.1-RC3",
+      version := "0.8.1",
       libraryDependencies ++= Seq(
         "com.beust" % "jcommander" % "1.23",
         "org.reflections" % "reflections" % "0.9.5"),
