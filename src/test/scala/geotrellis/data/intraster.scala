@@ -5,6 +5,7 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
 import Console.printf
+import geotrellis._
 import geotrellis.{Extent,RasterExtent}
 import geotrellis.testutil._
 
@@ -15,8 +16,8 @@ class RasterReaderSpec extends FunSpec with MustMatchers with ShouldMatchers {
       val e = Extent(-9.5, 3.8, 80 + -9.5, 80 + 3.8)
       val geo = RasterExtent(e, 8.0, 8.0, 10, 10)
 
-      val server = TestServer.server
-      val raster = server.getRaster("src/test/resources/quad8.arg", None, Some(geo))
+      val context = new Context(TestServer.server)
+      val raster = context.loadRaster("src/test/resources/quad8.arg", geo)
 
       val raster2 = RasterReader.read(raster, None)
       

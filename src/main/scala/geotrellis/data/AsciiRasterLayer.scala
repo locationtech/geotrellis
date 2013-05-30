@@ -5,10 +5,14 @@ import geotrellis.process._
 import geotrellis.util._
 import geotrellis.data.arg.ArgReader
 
+import java.io.{File, BufferedReader}
 import com.typesafe.config.Config
 
 object AsciiRasterLayerBuilder
 extends RasterLayerBuilder {
+  val intRe = """^(-?[0-9]+)$""".r
+  val floatRe = """^(-?[0-9]+\.[0-9]+)$""".r
+
   def apply(jsonPath:String, json:Config, cache:Option[Cache]):Option[RasterLayer] = {
     val path = 
       if(json.hasPath("path")) {
@@ -22,32 +26,114 @@ extends RasterLayerBuilder {
         }
       }
 
+    val rasterType = 
+      if(json.hasPath("type")) {
+        val t = getRasterType(json)
+        if(t.isDouble) {
+          System.err.println(s"[ERROR] Layer at $jsonPath has Ascii type and a Double data type. " +
+                              "This is not currently supported")
+          System.err.println("[ERROR]   Skipping this raster layer...")
+          return None
+        }
+        t
+      } else {
+        TypeInt
+      }
+
     if(!new java.io.File(path).exists) {
       System.err.println("[ERROR] Cannot find data (.asc or .grd file) for " +
-                        s"Ascii Raster '${getName(json)}' in catalog.")
+        s"Ascii Raster '${getName(json)}' in catalog.")
       System.err.println("[ERROR]   Skipping this raster layer...")
       None
     } else {
-
-      val cols = json.getInt("cols")
-      val rows = json.getInt("rows")
-
-      val (cellWidth,cellHeight) = getCellWidthAndHeight(json)
-      val rasterExtent = RasterExtent(getExtent(json), cellWidth, cellHeight, cols, rows)
+      val (rasterExtent,noDataValue) = loadMetaData(path)
 
       val info = RasterLayerInfo(getName(json),
-        getRasterType(json),
+        rasterType,
         rasterExtent,
         getEpsg(json),
         getXskew(json),
         getYskew(json))
 
-      Some(new AsciiRasterLayer(info,path,cache))
+      Some(new AsciiRasterLayer(info,noDataValue,path,cache))
     }
+  }
+
+  def fromFile(path:String, cache:Option[Cache] = None):AsciiRasterLayer = {
+    val f = new File(path)
+    if(!f.exists) {
+      sys.error(s"Path $path does not exist")
+    }
+    val (rasterExtent,noDataValue) = loadMetaData(path)
+
+    val name = Filesystem.basename(f.getName)
+
+    val info = RasterLayerInfo(name,
+      TypeInt,
+      rasterExtent,
+      0,
+      0,
+      0)
+
+    new AsciiRasterLayer(info,noDataValue,path,cache)
+  }
+
+  def getBufferedReader(path:String) = {
+    val fh = new File(path)
+    if (!fh.canRead) throw new Exception("you can't read '%s' so how can i?".format(path))
+    val fr = new java.io.FileReader(path)
+    new BufferedReader(fr)
+  }
+
+  def loadMetaData(path:String):(RasterExtent,Int) = {
+    var ncols:Int = 0
+    var nrows:Int = 0
+    var xllcorner:Double = 0.0
+    var yllcorner:Double = 0.0
+    var cellsize:Double = 0.0
+    var nodata_value:Int = -9999
+
+    val br = getBufferedReader(path)
+
+    try {
+      var done = false
+      while (!done) {
+        val line = br.readLine().trim()
+        val toks = line.split(" ")
+  
+        if (line == null) throw new Exception("premature end of file: %s".format(path))
+        if (toks.length == 0) throw new Exception("illegal empty line: %s".format(path))
+  
+        if (line.charAt(0).isDigit) {
+          done = true
+        } else {
+          toks match {
+            case Array("nrows", intRe(n)) => nrows = n.toInt
+            case Array("ncols", intRe(n)) => ncols = n.toInt
+            case Array("xllcorner", floatRe(n)) => xllcorner = n.toDouble
+            case Array("yllcorner", floatRe(n)) => yllcorner = n.toDouble
+            case Array("cellsize", floatRe(n)) => cellsize = n.toDouble
+            case Array("nodata_value", intRe(n)) => nodata_value = n.toInt
+  
+            case _ => throw new Exception("mal-formed line '%s'".format(line))
+          }
+        }
+      }
+    } finally {
+      br.close()
+    }
+
+    val xmin = xllcorner
+    val ymin = yllcorner
+    val xmax = xllcorner + ncols * cellsize
+    val ymax = yllcorner + nrows * cellsize
+    val e = Extent(xmin, ymin, xmax, ymax)
+
+    (RasterExtent(e, cellsize, cellsize, ncols, nrows), nodata_value)
   }
 }
 
-class AsciiRasterLayer(info:RasterLayerInfo, rasterPath:String, c:Option[Cache]) 
+class AsciiRasterLayer(info:RasterLayerInfo, noDataValue:Int, rasterPath:String, c:Option[Cache]) 
 extends RasterLayer(info,c) {
   private var cached = false
 
@@ -55,12 +141,12 @@ extends RasterLayer(info,c) {
     if(cached) {
       c.get.lookup[Array[Byte]](info.name) match {
         case Some(bytes) =>
-          getReader.readCache(bytes, this, targetExtent)
+          getReader.readCache(bytes, info.rasterType, info.rasterExtent, targetExtent)
         case None =>
           sys.error("Cache problem: Layer things it's cached but it is in fact not cached.")
       }
     } else {
-      getReader.readPath(Some(this), targetExtent)
+      getReader.readPath(info.rasterType,info.rasterExtent,targetExtent)
     }
 
   def cache = 
@@ -71,5 +157,5 @@ extends RasterLayer(info,c) {
       case None => //do nothing
     }
 
-  private def getReader = new AsciiReader(rasterPath)
+  private def getReader = new AsciiReader(rasterPath, noDataValue)
 }
