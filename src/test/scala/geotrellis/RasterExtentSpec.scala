@@ -78,6 +78,27 @@ class RasterExtentSpec extends FunSpec with MustMatchers
         g1.combine(RasterExtent(e1, 4.0, 4.0, 5, 5))
       } should produce [Exception];
     }
+
+    it("should change resolution") {
+      val cw = 30.0
+      val ch = 10.0
+      val cols = 200
+      val rows = 300
+
+      val xmin = -100.0
+      val ymin = 20.0
+
+      val extent = Extent(xmin,ymin,xmin + (cols * cw), ymin + (rows * ch))
+      val re = RasterExtent(extent, cw, ch, cols, rows)
+
+      val ncw = cw * 3.0
+      val nch = ch / 5.0
+
+      val result = re.withResolution(ncw, nch)
+
+      result.cols should be (math.ceil(cols / 3.0).toInt)
+      result.rows should be (rows * 5)
+    }
   }
 
   def sampleRasterExtent = {

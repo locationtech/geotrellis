@@ -26,6 +26,23 @@ case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int) 
   def totalRows = tileRows * pixelRows
 
   /**
+   * Given a particular RasterExtent (geographic area plus resolution) for the
+   * entire tiled raster, construct an ResolutionLayout which will manage the
+   * appropriate geographic boundaries, and resolution information, for each
+   * tile.
+   */
+  def getResolutionLayout(re:RasterExtent) = {
+    ResolutionLayout(re, pixelCols, pixelRows)
+  }
+}
+
+/**
+ * For a particular resolution and tile layout, this class stores the
+ * geographical boundaries of each tile extent.
+ */
+case class ResolutionLayout(re:RasterExtent, pixelCols:Int, pixelRows:Int) {
+
+  /**
    * Given an extent and resolution (RasterExtent), return the geographic
    * X-coordinates for each tile boundary in this raster data. For example,
    * if we have a 2x2 RasterData, with a raster extent whose X coordinates
@@ -35,14 +52,8 @@ case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int) 
    *
    * Notice that if we have N columns of tiles we'll return N+1 Doubles.
    */
-  def getXCoords(re:RasterExtent):Array[Double] = {
-    val xboundries = Array.ofDim[Double](tileCols + 1)
-    val cellwidth = re.cellwidth
-    val xmin = re.extent.xmin
-    for (i <- 0 until tileCols) xboundries(i) = xmin + (i * cellwidth * pixelCols)
-    xboundries(tileCols) = re.extent.xmax
-    xboundries
-  }
+  private def getXCoord(col:Int):Double = 
+    re.extent.xmin + (col * re.cellwidth * pixelCols)
 
   /**
    * This method is identical to getXCoords except that it functions on the
@@ -51,37 +62,13 @@ case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int) 
    * Note that the origin tile (0,0) is in the upper left of the extent, so the
    * upper left corner of the origin tile is (xmin, ymax).
    */
-  def getYCoords(re:RasterExtent):Array[Double] = {
-    val yboundries = Array.ofDim[Double](tileRows + 1)
-    val cellheight = re.cellheight
-    val ymax = re.extent.ymax
-    for (i <- 0 until tileRows) yboundries(i) = ymax - i * cellheight * pixelRows
-    yboundries(tileRows) = re.extent.ymin
-    yboundries
+  private def getYCoord(row:Int):Double = 
+    re.extent.ymax - (row * re.cellheight * pixelRows)
+
+  def getExtent(c:Int, r:Int) = {
+    Extent(getXCoord(c), getYCoord(r + 1), getXCoord(c + 1), getYCoord(r))
   }
-
-  /**
-   * Given a particular RasterExtent (geographic area plus resolution) for the
-   * entire tiled raster, construct an ResolutionLayout which will manage the
-   * appropriate geographic boundaries, and resolution information, for each
-   * tile.
-   */
-  def getResolutionLayout(re:RasterExtent) = {
-    val xs = getXCoords(re)
-    val ys = getYCoords(re)
-    ResolutionLayout(xs, ys, re.cellwidth, re.cellheight, pixelCols, pixelRows)
-  }
-}
-
-/**
- * For a particular resolution and tile layout, this class stores the
- * geographical boundaries of each tile extent.
- */
-case class ResolutionLayout(xboundries:Array[Double], yboundries:Array[Double],
-                            cellwidth:Double, cellheight:Double, pixelCols:Int, pixelRows:Int) {
-
-  def getExtent(c:Int, r:Int) = Extent(xboundries(c), yboundries(r + 1), xboundries(c + 1), yboundries(r))
 
   def getRasterExtent(c:Int, r:Int) = 
-    RasterExtent(getExtent(c, r), cellwidth, cellheight, pixelCols, pixelRows)
+    RasterExtent(getExtent(c, r), re.cellwidth, re.cellheight, pixelCols, pixelRows)
 }

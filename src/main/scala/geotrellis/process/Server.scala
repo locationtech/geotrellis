@@ -36,19 +36,6 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
 
   def startUp:Unit = ()
 
-  // def initStaticCache():Unit = {
-  //   val cacheStores = catalog.stores.values.filter(_.hasCacheAll)
-  //   cacheStores.foreach(_.getLayers.foreach(l => loadInStaticCache(l)))
-
-  //   val n = staticCache.size
-  //   val (amt, units) = Units.bytes(staticCache.foldLeft(0)(_ + _._2.length))
-  //   log("loaded %d layers (%.2f %s) into static cache" format (n, amt, units))
-  // }
-
-  // def loadInStaticCache(layer:RasterLayer):Unit = {
-  //     staticCache(layer.name) = layer.getBytes
-  // }
-
   def shutdown():Unit = { 
     Server.actorSystem.shutdown()
     Server.actorSystem.awaitTermination()
@@ -83,50 +70,6 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
       case OperationResult(c:Complete[_], _) => c.asInstanceOf[Complete[T]]
       case OperationResult(e:Error, _) => e
       case r => sys.error("unexpected status: %s" format r)
-    }
-  }
-
-  /**
-   * Return the appropriate reader object for the given path.
-   */
-  def getReader(path:String): FileReader = {
-    path match {
-      case ArgPattern() => new ArgReader(path)
-      case AsciiPattern() => new AsciiReader(path)
-      case _ => sys.error("unknown path type %s".format(path))
-    }
-  }
-   
-  def getRasterStepOutput(path:String, layerOpt:Option[RasterLayer], reOpt:Option[RasterExtent]) = {
-    val reader = getReader(path)
-    Try(reader.readPath(layerOpt, reOpt)) match { 
-      case TrySuccess(r) => Result(r)
-      case TryFailure(e) =>
-        StepError(s"Could not load raster from path: ${path}. Reason: $e","")
-    }
-  }
-
-  def getRaster(path:String, layerOpt:Option[RasterLayer], reOpt:Option[RasterExtent]):Raster = {
-    getReader(path).readPath(layerOpt, reOpt)  
-  }
-
-  def getRasterExtentByName(name:String):RasterExtent = {
-    catalog.getRasterLayerByName(name) match {
-      case Some(layer) => layer.info.rasterExtent
-      case None => sys.error("couldn't find %s" format name)
-    }
-  }
-
-  def getRasterByName(name:String, reOpt:Option[RasterExtent]):StepOutput[Raster] = {
-    catalog.getRasterLayerByName(name) match {
-      case Some(layer) => {
-        Result(layer.getRaster(reOpt))
-      }
-      case None => {
-        val debugInfo = s"Failed to load raster ${name} from catalog at ${catalog.source}" + 
-                        s" with json: \n ${catalog.json}"
-        StepError(s"Did not find raster '${name}' in catalog", debugInfo)
-      }
     }
   }
 }

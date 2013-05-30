@@ -155,4 +155,15 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
 
     RasterExtent(newExtent, cellwidth, cellheight, newCols, newCols)
   }
+
+  /**
+   * Returns a RasterExtent with the same extent,
+   * but a modified number of columns and rows based
+   * on the given cell height and width.
+   */
+  def withResolution(targetCellWidth:Double,targetCellHeight:Double) = {
+    val newCols = math.ceil((extent.xmax - extent.xmin) / targetCellWidth).toInt
+    val newRows = math.ceil((extent.ymax - extent.ymin) / targetCellHeight).toInt
+    RasterExtent(extent,targetCellWidth,targetCellHeight,newCols,newRows)
+  }
 }

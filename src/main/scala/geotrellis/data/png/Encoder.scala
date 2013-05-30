@@ -127,12 +127,12 @@ case class Encoder(settings:Settings) {
     // dereference some useful information from the raster
     val cols = raster.cols
     val size = cols * raster.rows
+    println("Getting array raster data...")
     val data = raster.data.asArray
+    println("...Done.")
 
     // allocate a data chunk for our pixel data
     val cIDAT = new Chunk(IDAT)
-
-    var j = 0
 
     // allocate a byte buffer
     val bb = createByteBuffer(raster)
@@ -170,7 +170,10 @@ case class Encoder(settings:Settings) {
     // dereference some useful information from the raster
     val cols = raster.cols
     val size = cols * raster.rows
+    println("Getting array raster data...")
     val data = raster.data.asArray
+    println("...Done.")
+
 
     // allocate a data chunk for our pixel data
     val cIDAT = new Chunk(IDAT)

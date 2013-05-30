@@ -12,8 +12,8 @@ case class ExtentRangeError(msg:String) extends Exception(msg)
  * concerned with details of e.g. cell sizes (for that, see RasterExtent).
  */
 case class Extent(xmin:Double, ymin:Double, xmax:Double, ymax:Double) {
-  if (xmin > xmax) throw ExtentRangeError("x: %s to %s".format(xmin, xmax))
-  if (ymin > ymax) throw ExtentRangeError("y: %s to %s".format(ymin, ymax))
+  if (xmin > xmax) throw ExtentRangeError(s"x: $xmin to $xmax")
+  if (ymin > ymax) throw ExtentRangeError(s"y: $ymin to $ymax")
   
   val height = ymax - ymin
   val width = xmax - xmin
@@ -49,12 +49,25 @@ case class Extent(xmin:Double, ymin:Double, xmax:Double, ymax:Double) {
    * Return a the smallest extent that contains this extent and the provided
    * extent. This is provides a union of the two extents.
    */
-  def combine(other:Extent) = {
+  def combine(other:Extent):Extent = {
     val xminNew = min(xmin, other.xmin)
     val xmaxNew = max(xmax, other.xmax)
     val yminNew = min(ymin, other.ymin)
     val ymaxNew = max(ymax, other.ymax)
     Extent(xminNew, yminNew, xmaxNew, ymaxNew)
+  }
+
+  /**
+   * Takes the intersection of two extents.
+   */
+  def intersect(other:Extent):Option[Extent] = {
+    val xminNew = max(xmin, other.xmin)
+    val xmaxNew = min(xmax, other.xmax)
+    val yminNew = max(ymin, other.ymin)
+    val ymaxNew = min(ymax, other.ymax)
+    if(xminNew <= xmaxNew && yminNew <= ymaxNew) {
+      Some(Extent(xminNew, yminNew, xmaxNew, ymaxNew))
+    } else { None }
   }
   
   /**

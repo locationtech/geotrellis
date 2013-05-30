@@ -3,26 +3,37 @@ package geotrellis.process
 import geotrellis._
 import geotrellis.util._
 import geotrellis.data.arg.ArgReader
-import geotrellis.raster.{TileSetRasterData,TileLayout,Tiler}
+import geotrellis.raster.{TileSetRasterData,
+                          TileLayout,
+                          Tiler,
+                          CroppedRaster,
+                          IntConstant}
 
 import com.typesafe.config.Config
+import java.io.File
 
 object TileSetRasterLayerBuilder
 extends RasterLayerBuilder {
   def apply(jsonPath:String, json:Config, cache:Option[Cache]):Option[RasterLayer] = {
-    val tileDirPath = 
+    val tileDir = 
       if(json.hasPath("path")) {
-        json.getString("path")
+        val f = new File(json.getString("path"))
+        if(f.isAbsolute) {
+          f
+        } else {
+          new File(new File(jsonPath).getParent, f.getPath)
+        }
       } else {
         // Default to a directory with the same base name as the .json file.
-        Filesystem.basename(jsonPath)
+        new File(new File(jsonPath).getParent, getName(json))
       }
 
-    if(!new java.io.File(tileDirPath).isDirectory) {
-      System.err.println(s"[ERROR] Raster in catalog points Tile Direcotry '$tileDirPath', but this is not a valid directory.")
+    if(!tileDir.isDirectory) {
+      System.err.println(s"[ERROR] Raster in catalog points Tile Directory '${tileDir.getPath}', but this is not a valid directory.")
       System.err.println("[ERROR]   Skipping this raster layer...")
       None
     } else {
+      val tileDirPath = tileDir.getPath
       val layoutCols = json.getInt("layout_cols")
       val layoutRows = json.getInt("layout_rows")
       val pixelCols = json.getInt("pixel_cols")
@@ -52,27 +63,65 @@ class TileSetRasterLayer(info:RasterLayerInfo,
                          val tileLayout:TileLayout,
                          c:Option[Cache])
 extends RasterLayer(info,c) {
-  val loader = new TileLoader(tileDirPath,info,tileLayout)
+  def getRaster(targetExtent:Option[RasterExtent]) = {
+    targetExtent match {
+      case Some(re) =>
+        val r = Raster(getData(Some((re.cellwidth,re.cellheight))), info.rasterExtent)
+        println(s"Cropping ${r.rasterExtent.extent} to ${re.extent}")
+        CroppedRaster(r,re.extent)
+      case None => Raster(getData(None), info.rasterExtent)
+    }
+  }
 
-  def getRaster(targetExtent:Option[RasterExtent] = None) =
-    Raster(getData, info.rasterExtent) // TODO: Manage different raster extents.
-
-  def getData() = 
+  def getData(cellSize:Option[(Double,Double)] = None) = 
     TileSetRasterData(tileDirPath,
                       info.name,
                       info.rasterType,
                       tileLayout,
-                      loader)
+                      getTileLoader(cellSize))
+
+  private def getTileLoader(cellSize:Option[(Double,Double)] = None) =
+    new TileLoader(tileDirPath,info,tileLayout,cellSize)
 
   def cache() = {} // TODO: Implement
 }
 
-class TileLoader(tileDirPath:String,tileSetInfo:RasterLayerInfo,tileLayout:TileLayout) {
+class TileLoader(tileDirPath:String,
+                 tileSetInfo:RasterLayerInfo,
+                 tileLayout:TileLayout,
+                 cellSize:Option[(Double,Double)] = None) {
   val resLayout = tileLayout.getResolutionLayout(tileSetInfo.rasterExtent)
 
-  def getTile(col:Int,row:Int) = {
-    val path = Tiler.tilePath(tileDirPath, tileSetInfo.name, col, row)
-    val ext = resLayout.getRasterExtent(col,row)
-    new ArgReader(path).readPath(tileSetInfo.rasterType,ext,ext)
+  val rasterExtent = tileSetInfo.rasterExtent
+
+  cellSize match {
+    case Some((cellWidth,cellHeight)) =>
+      println(s"Loading tiles with $cellWidth and $cellHeight")
+    case None => 
+      println(s"Loading tiles with normal resolution.")
+  }
+
+  def getTile(col:Int,row:Int):Raster = {
+    val re = resLayout.getRasterExtent(col,row)
+    val te =
+      cellSize match {
+        case Some((cellWidth,cellHeight)) =>
+          re.withResolution(cellWidth,cellHeight)
+        case None => re
+      }
+
+    if(col < 0 || row < 0 ||
+       tileLayout.tileCols <= col || tileLayout.tileRows <= row) {
+      Raster(IntConstant(NODATA, rasterExtent.cols, rasterExtent.rows), te)
+    } else {
+      val path = Tiler.tilePath(tileDirPath, tileSetInfo.name, col, row)
+      val te =
+        cellSize match {
+          case Some((cellWidth,cellHeight)) =>
+            re.withResolution(cellWidth,cellHeight)
+          case None => re
+        }
+      new ArgReader(path).readPath(tileSetInfo.rasterType,re,te)
+    }
   }
 }

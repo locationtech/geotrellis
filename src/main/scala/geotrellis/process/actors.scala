@@ -204,7 +204,6 @@ case class Worker(val server: Server) extends WorkerLike {
   // history).
 
   private var _id = ""
-  //def id = "worker " + _id
   def id = _id
 
   def success(id:String, start:Long, stop:Long, t:Option[Timer]) = t match {
@@ -220,27 +219,23 @@ case class Worker(val server: Server) extends WorkerLike {
   // Actor event loop
   def receive = {
     case RunOperation(op, pos, client, Some(dispatcher)) => {
-      //_id = op.toString
       _id = op.name
       startTime = time()
-      //val timer = new Timer()
       val geotrellisContext = new Context(server)
       try {
-        //val z = op.run(server)(timer)
-        //handleResult(pos, client, z, Some(timer))
         val z = op.run(geotrellisContext)
         handleResult(pos, client, z, Some(geotrellisContext.timer), dispatcher)
       } catch {
         case e:Throwable => {
           val error = StepError.fromException(e)
-          System.err.println("Operation failed, with exception: %s\n\nStack trace:\n%s\n", error.msg,error.trace)
+          System.err.println("Operation failed, with exception: " + 
+            s"${e}\n\nStack trace:\n${error.trace}\n", error.msg,error.trace)
           handleResult(pos, client, error, Some(geotrellisContext.timer), dispatcher)
         }
       }
-      //context.stop(self)
     }
     case RunOperation(_,_,_,None) => sys.error("received msg without dispatcher")
-    case x => sys.error("worker got unknown msg: %s" format x)
+    case x => sys.error(s"worker got unknown msg: $x")
   }
 }
 
@@ -249,7 +244,6 @@ case class Calculation[T](val server:Server, pos:Int, args:Args,
                           _id:String)
 extends WorkerLike {
 
-  //def id = "calc " + _id
   def id = "calc " + _id
 
   startTime = time()
@@ -262,7 +256,6 @@ extends WorkerLike {
   // operations to be run. If none of those existed, we should run the
   // callback and be done.
   override def preStart {
-    //startTime = time()
     for (i <- 0 until args.length) {
       args(i) match {
         case op:Operation[_] => {
@@ -320,7 +313,7 @@ extends WorkerLike {
     } catch {
       case e:Throwable => {
         val error = StepError.fromException(e)
-        System.err.println(s"Operation failed, with exception: ${error.msg}\n\nStack trace:${error.trace}\n\n")
+        System.err.println(s"Operation failed, with exception: $e\n\nStack trace:${error.trace}\n\n")
         handleResult(pos, client, error, None, dispatcher)
       }
     }

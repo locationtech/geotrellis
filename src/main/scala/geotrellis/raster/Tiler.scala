@@ -25,7 +25,7 @@ object Tiler {
    * Given a name ("bar") a col (0), and a row (4), returns the correct name
    * for this tile ("bar_0_4").
    */
-  def tileName(name:String, col:Int, row:Int) = {
+  private def tileName(name:String, col:Int, row:Int) = {
     "%s_%d_%d".format(name, col, row)
   }
 
@@ -51,7 +51,7 @@ object Tiler {
     TileLayout(tileCols, tileRows, pixelCols, pixelRows)
   }
 
-  def buildTileRasterExtent(tx:Int, ty:Int, re:RasterExtent, pixelCols:Int, pixelRows:Int) = {
+  private def buildTileRasterExtent(tx:Int, ty:Int, re:RasterExtent, pixelCols:Int, pixelRows:Int) = {
     val cw = re.cellwidth
     val ch = re.cellheight
     val e = re.extent
@@ -125,7 +125,7 @@ object Tiler {
     writeLayout(data.getType, data.tileLayout, re, name, path)
   }
 
-  def writeLayout(rasterType:RasterType, 
+  private def writeLayout(rasterType:RasterType,
                   tileLayout:TileLayout, 
                   re:RasterExtent, 
                   name:String, 
@@ -133,32 +133,34 @@ object Tiler {
     val RasterExtent(Extent(xmin, ymin, xmax, ymax), cw, ch, _, _) = re
     val TileLayout(lcols, lrows, pcols, prows) = tileLayout
 
-    val layout = """{
-  "layer": "%s",
+    val layout = 
+      s"""{
+            "layer": "$name",
 
-  "type": "tiled",
-  "datatype": "%s",
+            "type": "tiled",
+            "datatype": "${rasterType.name}",
+            "path" : "$path",
 
-  "xmin": %f,
-  "xmax": %f,
-  "ymin": %f,
-  "ymax": %f,
+            "xmin": $xmin,
+            "xmax": $xmax,
+            "ymin": $ymin,
+            "ymax": $ymax,
 
-  "cellwidth": %f,
-  "cellheight": %f,
+            "cellwidth": $cw,
+            "cellheight": $ch,
 
-  "tile_base": "%s",
-  "layout_cols": %d,
-  "layout_rows": %d,
-  "pixel_cols": %d,
-  "pixel_rows": %d,
+            "tile_base": "$name",
+            "layout_cols": $lcols,
+            "layout_rows": $lrows,
+            "pixel_cols": $pcols,
+            "pixel_rows": $prows,
 
-  "yskew": 0.0,
-  "xskew": 0.0,
-  "epsg": 3785
-}""".format(name, rasterType.name, xmin, xmax, ymin, ymax, cw, ch, name, lcols, lrows, pcols, prows)
+            "yskew": 0.0,
+            "xskew": 0.0,
+            "epsg": 3785
+          }"""
 
-    val layoutPath = Filesystem.join(path, "layout.json")
+    val layoutPath = Filesystem.join(new java.io.File(path).getParent, s"$name.json")
     val bos = new BufferedOutputStream(new FileOutputStream(layoutPath))
     bos.write(layout.getBytes)
     bos.close
