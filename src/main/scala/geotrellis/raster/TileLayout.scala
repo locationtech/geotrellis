@@ -4,7 +4,6 @@ import geotrellis._
 import geotrellis.util.Filesystem
 import geotrellis.process._
 import geotrellis.data.arg.{ArgWriter,ArgReader}
-import geotrellis.data.Gdal
 import geotrellis.feature.Polygon
 import java.io.{FileOutputStream, BufferedOutputStream}
 import geotrellis.util.Filesystem
@@ -46,23 +45,27 @@ case class ResolutionLayout(re:RasterExtent, pixelCols:Int, pixelRows:Int) {
    * Given an extent and resolution (RasterExtent), return the geographic
    * X-coordinates for each tile boundary in this raster data. For example,
    * if we have a 2x2 RasterData, with a raster extent whose X coordinates
-   * span 13.0 - 83.0 (i.e. cellwidth is 35.0), we would return:
+   * span 13.0 - 83.0 (i.e. cellwidth is 35.0), we would return the following
+   * for the corresponding input:
    *
-   *   Array(13.0, 48.0, 83.0)
+   *  Input     Output
+   * -------   -------- 
+   *    0        13.0
+   *    1        48.0
+   *    2        83.0
    *
-   * Notice that if we have N columns of tiles we'll return N+1 Doubles.
    */
-  private def getXCoord(col:Int):Double = 
+  def getXCoord(col:Int):Double =
     re.extent.xmin + (col * re.cellwidth * pixelCols)
 
   /**
-   * This method is identical to getXCoords except that it functions on the
+   * This method is identical to getXCoord except that it functions on the
    * Y-axis instead.
    * 
    * Note that the origin tile (0,0) is in the upper left of the extent, so the
    * upper left corner of the origin tile is (xmin, ymax).
    */
-  private def getYCoord(row:Int):Double = 
+  def getYCoord(row:Int):Double = 
     re.extent.ymax - (row * re.cellheight * pixelRows)
 
   def getExtent(c:Int, r:Int) = {

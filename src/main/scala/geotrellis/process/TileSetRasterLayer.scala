@@ -29,7 +29,8 @@ extends RasterLayerBuilder {
       }
 
     if(!tileDir.isDirectory) {
-      System.err.println(s"[ERROR] Raster in catalog points Tile Directory '${tileDir.getPath}', but this is not a valid directory.")
+      System.err.println(s"[ERROR] Raster in catalog points Tile Directory '${tileDir.getPath}'" +
+                          ", but this is not a valid directory.")
       System.err.println("[ERROR]   Skipping this raster layer...")
       None
     } else {
@@ -103,7 +104,7 @@ class TileLoader(tileDirPath:String,
 
   def getTile(col:Int,row:Int):Raster = {
     val re = resLayout.getRasterExtent(col,row)
-    val te =
+    val targetExtent =
       cellSize match {
         case Some((cellWidth,cellHeight)) =>
           re.withResolution(cellWidth,cellHeight)
@@ -112,16 +113,10 @@ class TileLoader(tileDirPath:String,
 
     if(col < 0 || row < 0 ||
        tileLayout.tileCols <= col || tileLayout.tileRows <= row) {
-      Raster(IntConstant(NODATA, rasterExtent.cols, rasterExtent.rows), te)
+      Raster(IntConstant(NODATA, rasterExtent.cols, rasterExtent.rows), targetExtent)
     } else {
       val path = Tiler.tilePath(tileDirPath, tileSetInfo.name, col, row)
-      val te =
-        cellSize match {
-          case Some((cellWidth,cellHeight)) =>
-            re.withResolution(cellWidth,cellHeight)
-          case None => re
-        }
-      new ArgReader(path).readPath(tileSetInfo.rasterType,re,te)
+      new ArgReader(path).readPath(tileSetInfo.rasterType,re,targetExtent)
     }
   }
 }

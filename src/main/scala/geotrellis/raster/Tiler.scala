@@ -4,7 +4,6 @@ import geotrellis._
 import geotrellis.util.Filesystem
 import geotrellis.process._
 import geotrellis.data.arg.{ArgWriter,ArgReader}
-import geotrellis.data.Gdal
 import geotrellis.feature.Polygon
 import java.io.{FileOutputStream, BufferedOutputStream}
 import geotrellis.util.Filesystem
@@ -185,49 +184,6 @@ object Tiler {
       ArgWriter(raster.data.getType).write(path2, raster, name2)
     }
   }
-
-  def writeTilesWithGdal(inPath: String, name:String, outputDir:String, pixelCols:Int, pixelRows:Int) {
-    val rasterInfo = Gdal.info(inPath)
-    val re = rasterInfo.rasterExtent
-
-    val rasterType = rasterInfo.rasterType match {
-      case Some(rt) => rt
-      case None => TypeDouble   // What should be default if source raster data file has unsupported type?
-    }
-    val layout = buildTileLayout(re, pixelCols, pixelRows)
-
-    println("Writing layout...")
-    val dir = new java.io.File(outputDir)
-    if (!dir.exists()) dir.mkdir()
-    writeLayout(rasterType, layout, re, name, outputDir)
-
-    val reLayout = layout.getResolutionLayout(re)
-    for (row <- 0 until layout.tileRows; col <- 0 until layout.tileCols) {
-      val name2 = tileName (name, col, row)
-      val outputPath = tilePath(outputDir, "tmp_" + name, col, row)  
-      val re = reLayout.getRasterExtent(col,row)
-
-      ArgWriter(rasterType).writeMetadataJSON(outputPath, name2,re)
-      Gdal.translate(inPath, outputPath, rasterType, col * pixelCols, row * pixelRows, pixelCols, pixelRows)
-
-      val arg = new ArgReader(outputPath).readPath(None,None)
-      var nodata = true
-      val outArg = arg.mapIfSet { z => {
-          if (z == NODATA + 1) NODATA else { if (z != NODATA) nodata = false; z }
-        }
-      }
-      val finalPath = tilePath(outputDir, name, col, row)
-      if (nodata) {
-        val jsonPath = Filesystem.join(outputDir, tileName(name, col, row)) + ".json"
-        ArgWriter(rasterType).writeMetadataJSON(jsonPath, name2,re)
-      } else {
-        ArgWriter(rasterType).write(finalPath, outArg, name2)
-      }
-      
-      // Clean up temporary files
-      new java.io.File(outputPath).delete() ; new java.io.File(outputPath.replace(".arg", ".json")).delete()
-    }
-  } 
 
   /**
    * Given a path and name, deletes the relevant tileset from the disk.

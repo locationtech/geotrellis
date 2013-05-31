@@ -5,7 +5,6 @@ import geotrellis.{op => liftop}
 import geotrellis.util.Filesystem
 import geotrellis.process._
 import geotrellis.data.arg.{ArgWriter,ArgReader}
-import geotrellis.data.Gdal
 import geotrellis.feature.Polygon
 import java.io.{FileOutputStream, BufferedOutputStream}
 import geotrellis.util.Filesystem
@@ -151,19 +150,11 @@ trait TiledRasterData extends RasterData with Serializable {
     else {
       val len = length
       val d = IntArrayRasterData.ofDim(tileLayout.totalCols, tileLayout.totalRows)
-      var tcol = 0
-      while(tcol < tileLayout.tileCols) {
-      //cfor(0)(_ < tileLayout.tileCols, _ + 1) { tcol =>
-        var trow = 0
-        while(trow < tileLayout.tileRows) {
-//        cfor(0)(_ < tileLayout.tileRows, _ + 1) { trow =>
+      cfor(0)(_ < tileLayout.tileCols, _ + 1) { tcol =>
+        cfor(0)(_ < tileLayout.tileRows, _ + 1) { trow =>
           val tile = getTile(tcol,trow)
-          var pcol = 0
-          while(pcol < tileLayout.pixelCols) {
-//          cfor(0)(_ < tileLayout.pixelCols, _ + 1) { pcol =>
-            var prow = 0
-            while(prow < tileLayout.pixelRows) {
-//            cfor(0)(_ < tileLayout.pixelRows, _ + 1) { prow =>
+          cfor(0)(_ < tileLayout.pixelCols, _ + 1) { pcol =>
+            cfor(0)(_ < tileLayout.pixelRows, _ + 1) { prow =>
               val acol = (tileLayout.pixelCols * tcol) + pcol
               val arow = (tileLayout.pixelRows * trow) + prow
               if(acol >= d.cols || arow >= d.rows) {
@@ -174,13 +165,9 @@ trait TiledRasterData extends RasterData with Serializable {
                 println(s"Tile: ${tile.cols} ${tile.rows}  P ${pcol} ${prow}  T ${tcol} ${trow} A ${acol} ${arow} tl $tileLayout")
               }
               d.set(acol,arow, tile.get(pcol,prow))
-              prow += 1
             }
-            pcol += 1
           }
-          trow += 1
         }
-        tcol += 1
       }
       Some(d)
     }

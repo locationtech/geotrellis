@@ -11,22 +11,40 @@ trait ReadState {
   val rasterExtent:RasterExtent
   val target:RasterExtent
 
-  // must override
+  /**
+   * Defines the type of Raster this ReadState will read.
+   */
   def getType: RasterType
 
-  // must override
+  /**
+   * Creates the RasterData of the resampled Raster.
+   * By default creates an ArrayRasterData of the 
+   * type defined by getType.
+   */
   def createRasterData(cols:Int, rows:Int):MutableRasterData = RasterData.emptyByType(getType, cols, rows)
 
-  // must override
+  /**
+   * This function is called to initialize the source
+   * data in preperation for resampling and assigning into
+   * the destination RasterData.
+   */
   protected[this] def initSource(position:Int, size:Int):Unit
 
-  // must override
+  /**
+   * Assign an indexed source value to the
+   * destination RasterData at the specified index.
+   */
   protected[this] def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int):Unit
 
-  // don't usually override
+  /**
+   * Creates a Raster based on the destination RasterData
+   * after it has been read in.
+   */
   protected[this] def createRaster(data:MutableRasterData) = Raster(data, target)
 
-  // maybe override
+  /**
+   * Called for cleanup after the ReadState is no longer used.
+   */
   def destroy() {}
 
   // maybe need to override; currently a noop
