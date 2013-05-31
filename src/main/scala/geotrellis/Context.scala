@@ -35,7 +35,7 @@ class Context(server:Server) {
       case Some(layer) =>
         layer match {
           case tl:TileSetRasterLayer =>
-            Raster(tl.getData(None).asTileArray, tl.info.rasterExtent)
+            Raster(tl.getData.asTileArray, tl.info.rasterExtent)
           case _ =>
             sys.error(s"Raster layer at path $path is not a tiled raster layer.")
         }
@@ -73,7 +73,6 @@ class Context(server:Server) {
   def getRasterByName(name:String, reOpt:Option[RasterExtent]):StepOutput[Raster] = 
     server.catalog.getRasterLayerByName(name) match {
       case Some(layer) => {
-        println(s"Getting raster with reopt $reOpt")
         Result(layer.getRaster(reOpt))
       }
       case None => {

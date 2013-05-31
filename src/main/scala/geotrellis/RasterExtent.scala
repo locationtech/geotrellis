@@ -110,6 +110,14 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     (x, y)
   }
 
+  def gridColToMap(col:Int) = {
+    max(min(col * cellwidth + extent.xmin + (cellwidth / 2), extent.xmax), extent.xmin)
+  }
+
+  def gridRowToMap(row:Int) = {
+    min(max(extent.ymax - (row * cellheight) - (cellheight / 2), extent.ymin), extent.ymax)
+  }
+
   /**
    * Gets the GridBounds for this RasterExtent that is the smallest subgrid
    * containing all points within the extent. The extent is considered inclusive

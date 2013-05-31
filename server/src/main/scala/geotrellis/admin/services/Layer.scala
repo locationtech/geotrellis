@@ -54,7 +54,6 @@ class Layer {
     @Context req:HttpServletRequest
   ):Response = {
     val extentOp = string.ParseExtent(bbox)
-    println(s"BBOX  $bbox")
     val colsOp = string.ParseInt(cols)
     val rowsOp = string.ParseInt(rows)
 
@@ -83,11 +82,9 @@ class Layer {
 
     GeoTrellis.run(png) match {
       case process.Complete(img,h) =>
-        println("completed")
         OK.png(img)
           .cache(1000)
       case process.Error(message,failure) =>
-        println("failed")
         ERROR(message,failure)
     }
   }

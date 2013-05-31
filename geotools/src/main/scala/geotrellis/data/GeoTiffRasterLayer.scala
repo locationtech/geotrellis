@@ -48,7 +48,7 @@ extends RasterLayerBuilder {
   def fromTif(path:String, cache:Option[Cache] = None):GeoTiffRasterLayer = {
     val f = new File(path)
     if(!f.exists) {
-      sys.err(s"File $path does not exist")
+      sys.error(s"File $path does not exist")
     }
 
     val reader = GeoTiff.getReader(path)
