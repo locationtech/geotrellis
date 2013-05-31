@@ -135,7 +135,7 @@ extends RasterLayer(info,c) {
                       tileLayout,
                       getTileLoader)
 
-  private def getTileLoader() =
+  def getTileLoader() =
     new TileLoader(tileDirPath,info,tileLayout)
 
   def cache() = {} // TODO: Implement
