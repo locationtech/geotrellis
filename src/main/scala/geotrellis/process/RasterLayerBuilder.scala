@@ -28,9 +28,26 @@ trait RasterLayerBuilder {
     (cellWidth,cellHeight)
   }
 
-  def getEpsg(json:Config) = json.getInt("epsg")
-  def getXskew(json:Config) = json.getDouble("xskew")
-  def getYskew(json:Config) = json.getDouble("yskew")
+  def getEpsg(json:Config) = 
+    if(json.hasPath("epsg")) {
+      json.getInt("epsg")
+    } else {
+      3785
+    }
+
+  def getXskew(json:Config) = 
+    if(json.hasPath("xskew")) {
+      json.getDouble("xskew")
+    } else {
+      0.0
+    }
+
+  def getYskew(json:Config) = 
+    if(json.hasPath("yskew")) {
+      json.getDouble("yskew")
+    } else {
+      0.0
+    }
 
   def getRasterType(json:Config):RasterType = {
     parseType(json.getString("datatype"))
