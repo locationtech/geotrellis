@@ -89,12 +89,7 @@ extends RasterLayer(info,c) {
               case Some(ext) =>
                 val cols = math.ceil((ext.xmax - ext.xmin) / re.cellwidth).toInt
                 val rows = math.ceil((ext.ymax - ext.ymin) / re.cellheight).toInt
-                // Resize extent to fit cell width and height
-                val e = Extent(ext.xmin,
-                               ext.ymax - (rows*re.cellheight),
-                               ext.xmin + (cols*re.cellwidth),
-                               ext.ymax)
-                val tileRe = RasterExtent(e,re.cellwidth,re.cellheight,cols,rows)
+                val tileRe = RasterExtent(ext,re.cellwidth,re.cellheight,cols,rows)
 
                 // Read section of the tile
                 val path = Tiler.tilePath(tileDirPath, info.name, tcol, trow)
