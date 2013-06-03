@@ -5,8 +5,6 @@ import java.nio.ByteBuffer
 import java.nio.channels.FileChannel.MapMode._
 import scala.math.min
 
-
-
 object Filesystem {
   def slurp(path:String, bs:Int = 262144):Array[Byte] = {
     val f = new File(path)

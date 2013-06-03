@@ -4,9 +4,10 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
 import geotrellis._
+import geotrellis.process._
 import geotrellis.raster.op.tiles._
-import geotrellis.testutil._
 import geotrellis.statistics.op._
+import geotrellis.testutil._
 import geotrellis.Implicits._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
@@ -172,13 +173,14 @@ class TileSpec extends FunSpec with MustMatchers
       val trd = Tiler.createTiledRasterData(raster, 2, 2)
       Tiler.writeTiles(trd, raster.rasterExtent, "testraster", "/tmp/foo")
 
-      val f = new java.io.File("/tmp/foo")
-      println(s"Does it exist?  ${f.isDirectory}")
-      val extent = Extent(1, 21, 79, 59)
-      val info = process.RasterLayerInfo("testraster",TypeInt,raster.rasterExtent,0,0.0,0.0)
-      val layer = new process.TileSetRasterLayer(info, "/tmp/foo", layout, None)
-      val tileSetRD = layer.getRaster(None).data.asInstanceOf[TileSetRasterData]
+      val path = "/tmp/testraster.json"
+      val f = new java.io.File(path)
+      val layer = RasterLayer.fromFile(f) match {
+        case Some(l) => l
+        case None => sys.error(s"Raster layer at $path does not exist.")
+      }
 
+      val tileSetRD = layer.getRaster(None).data.asInstanceOf[TileSetRasterData]
 
       val raster4 = Raster(tileSetRD, g)
       for (y <- 0 to 3; x <- 0 to 3) {
@@ -186,13 +188,13 @@ class TileSpec extends FunSpec with MustMatchers
         raster4.get(x, y) must be === ((y * 5) + x) + 1
       }
 
-      val raster5 = Raster.loadTileSet("/tmp/foo", server)
+      val raster5 = layer.getRaster
       for (y <- 0 to 3; x <- 0 to 3) {
         val expected = ((y * 5) + x) + 1
         raster5.get(x, y) must be === ((y * 5) + x) + 1
       }
 
-      val raster6 = run(io.LoadTileSet("/tmp/foo"))
+      val raster6 = run(io.LoadTileSet(path))
       for (y <- 0 to 3; x <- 0 to 3) {
         val expected = ((y * 5) + x) + 1
         raster6.get(x, y) must be === ((y * 5) + x) + 1
@@ -255,10 +257,9 @@ class TileSpec extends FunSpec with MustMatchers
       val worldExtent = Extent(xmin,-90.0,180.00446313369997,90.00892799539997)
       val re = RasterExtent(worldExtent, 0.0089285714,0.0089285714,40321,20161)
       val tileLayout = Tiler.buildTileLayout(re, 2048, 2048)
-      val xCoords = tileLayout.getXCoords(re)
-      val yCoords = tileLayout.getYCoords(re)
-      assert(xCoords(0) === xmin)
-      assert(yCoords(0) === ymax)
+      val resLayout = tileLayout.getResolutionLayout(re)
+      assert(resLayout.getXCoord(0) === xmin)
+      assert(resLayout.getYCoord(0) === ymax)
     }
   }
   

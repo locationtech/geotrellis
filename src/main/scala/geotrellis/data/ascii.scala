@@ -10,20 +10,13 @@ import geotrellis.util.Filesystem
 
 final class AsciiReadState(path:String,
                            val rasterExtent:RasterExtent,
-                           val target:RasterExtent) extends IntReadState {
-  var ncols:Int = 0
-  var nrows:Int = 0
-  var xllcorner:Double = 0.0
-  var yllcorner:Double = 0.0
-  var cellsize:Double = 0.0
-  var nodata_value:Int = -9999
-
-  var ints:IntArrayRasterData = null
+                           val target:RasterExtent,
+                           val noDataValue:Int) extends IntReadState {
+  private var ints:IntArrayRasterData = null
 
   def getType = TypeInt
-  //def createRasterData(size:Int) = IntArrayRasterData.empty(size)
 
-  def getNoDataValue = nodata_value
+  def getNoDataValue = noDataValue
 
   val intRe = """^(-?[0-9]+)$""".r
   val floatRe = """^(-?[0-9]+\.[0-9]+)$""".r
@@ -36,17 +29,10 @@ final class AsciiReadState(path:String,
   }
 
   def initSource(pos:Int, size:Int) {
-    readMetadata()
-
     assert (pos == 0)
-    assert (size == ncols * nrows)
+    assert (size == rasterExtent.cols * rasterExtent.rows)
 
-    val xmin = xllcorner
-    val ymin = yllcorner
-    val xmax = xllcorner + ncols * cellsize
-    val ymax = yllcorner + nrows * cellsize
-
-    ints = IntArrayRasterData.ofDim(ncols, nrows)
+    ints = IntArrayRasterData.ofDim(rasterExtent.cols, rasterExtent.rows)
     val br = getBufferedReader()
     try {
       var done = false
@@ -60,12 +46,12 @@ final class AsciiReadState(path:String,
 
         val toks = line.trim().split(" ")
         if (toks(0).charAt(0).isDigit) {
-          if (toks.length != ncols) {
-            throw new Exception("saw %d cols, expected %d: %s".format(toks.length, ncols, path))
+          if (toks.length != rasterExtent.cols) {
+            throw new Exception("saw %d cols, expected %d: %s".format(toks.length, rasterExtent.cols, path))
           }
 
           var i = 0
-          while (i < ncols) {
+          while (i < rasterExtent.cols) {
             ints(n) = toks(i).toInt
             i += 1
             n += 1
@@ -85,68 +71,20 @@ final class AsciiReadState(path:String,
   def assignFromSource(sourceIndex:Int, dest:MutableRasterData, destIndex:Int) {
     dest(destIndex) = ints(sourceIndex)
   }
-
-  def readMetadata() {
-    val br = getBufferedReader()
-
-    try {
-      var done = false
-      while (!done) {
-        val line = br.readLine().trim()
-        val toks = line.split(" ")
-  
-        if (line == null) throw new Exception("premature end of file: %s".format(path))
-        if (toks.length == 0) throw new Exception("illegal empty line: %s".format(path))
-  
-        if (line.charAt(0).isDigit) {
-          done = true
-        } else {
-          toks match {
-            case Array("nrows", intRe(n)) => nrows = n.toInt
-            case Array("ncols", intRe(n)) => ncols = n.toInt
-            case Array("xllcorner", floatRe(n)) => xllcorner = n.toDouble
-            case Array("yllcorner", floatRe(n)) => yllcorner = n.toDouble
-            case Array("cellsize", floatRe(n)) => cellsize = n.toDouble
-            case Array("nodata_value", intRe(n)) => nodata_value = n.toInt
-  
-            case _ => throw new Exception("mal-formed line '%s'".format(line))
-          }
-        }
-      }
-    } finally {
-      br.close()
-    }
-  }
-
-  def loadRasterExtent() = {
-    readMetadata()
-
-    val xmin = xllcorner
-    val ymin = yllcorner
-    val xmax = xllcorner + ncols * cellsize
-    val ymax = yllcorner + nrows * cellsize
-    val e = Extent(xmin, ymin, xmax, ymax)
-
-    RasterExtent(e, cellsize, cellsize, ncols, nrows)
-  }
 }
 
-class AsciiReader(path:String) extends FileReader(path) {
+class AsciiReader(path:String, noDataValue:Int) extends FileReader(path) {
   def readStateFromPath(rasterType:RasterType, 
                         rasterExtent:RasterExtent,
                         targetExtent:RasterExtent):ReadState = {
-    new AsciiReadState(path, rasterExtent, targetExtent)
-  }
-  def readStateFromCache(b:Array[Byte], layer:RasterLayer, target:RasterExtent) = {
-    sys.error("caching ascii grid is not supported")
+    new AsciiReadState(path, rasterExtent, targetExtent, noDataValue)
   }
 
-  override def readMetadata() = {
-    val state = new AsciiReadState(path, null, null)
-    val (base, typ) = Filesystem.split(path)
-    val info = RasterLayerInfo("", TypeInt, state.loadRasterExtent(), 3857, 0.0, 0.0)
-    Some(new ArgFileRasterLayer(info,base,None))
-  }
+  def readStateFromCache(b:Array[Byte], 
+                         rasterType:RasterType,
+                         rasterExtent:RasterExtent,
+                         targetExtent:RasterExtent) = 
+    sys.error("caching ascii grid is not supported")
 }
 
 object AsciiWriter extends Writer {

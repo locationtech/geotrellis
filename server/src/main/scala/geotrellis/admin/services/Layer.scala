@@ -54,7 +54,6 @@ class Layer {
     @Context req:HttpServletRequest
   ):Response = {
     val extentOp = string.ParseExtent(bbox)
-
     val colsOp = string.ParseInt(cols)
     val rowsOp = string.ParseInt(rows)
 
@@ -62,7 +61,7 @@ class Layer {
 
     val layerOp = io.LoadRaster(layer,reOp).map { r =>
       // Convert 0 of bit raster to NODATA
-      if(!r.isTiled && r.data.getType == TypeBit) { 
+      if(!r.data.isTiled && r.data.getType == TypeBit) { 
         r.convert(TypeByte).map { z => if(z == 0) NODATA else z } 
       } else { 
         r 
@@ -72,11 +71,12 @@ class Layer {
     val breaksOp = 
       logic.ForEach(string.SplitOnComma(breaks))(string.ParseInt(_))
     
-    val ramp = breaksOp.map { b => 
-      val cr = Colors.rampMap.getOrElse(colorRampKey,BlueToRed)
-      if(cr.toArray.length < b.length) { cr.interpolate(b.length) }
-      else { cr }
-    }
+    val ramp = 
+      breaksOp.map { b =>
+        val cr = Colors.rampMap.getOrElse(colorRampKey,BlueToRed)
+        if(cr.toArray.length < b.length) { cr.interpolate(b.length) }
+        else { cr }
+      }
 
     val png = Render(layerOp,ramp,breaksOp)
 

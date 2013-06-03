@@ -19,7 +19,6 @@ case class CroppedTiledRasterData(underlying:TiledRasterData,
   val (leftClip, topClip, rightClip, bottomClip) = calculateClipping
 
   override def mutable:Option[MutableRasterData] = {
-
     val arr = alloc(cols, rows)
     if (isFloat) {
       for (c <- 0 until cols; r <- 0 until rows) {

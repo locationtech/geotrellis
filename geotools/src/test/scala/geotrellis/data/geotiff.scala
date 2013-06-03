@@ -43,12 +43,12 @@ class GeoTiffSpec extends FunSpec with MustMatchers with ShouldMatchers {
   describe("A GeoTiffReader") {
     it ("should fail on non-existent files") {
       val path = "/does/not/exist.tif"
-      evaluating { new GeoTiffReader(path).readPath(None, None) } should produce [Exception];
+      evaluating { GeoTiff.readRaster(path) } should produce [Exception];
     }
 
     it ("should load correct extent & gridToMap should work") {
       val path = "src/test/resources/econic.tif"
-      val raster1 = new GeoTiffReader(path).readPath(None, None)
+      val raster1 = GeoTiff.readRaster(path)
       val (xmap, ymap) = raster1.rasterExtent.gridToMap(0,0)
       xmap should be (-15381.615 plusOrMinus 0.001)
       ymap should be (15418.729 plusOrMinus 0.001)
@@ -56,16 +56,16 @@ class GeoTiffSpec extends FunSpec with MustMatchers with ShouldMatchers {
 
     it ("should render to PNG") {
       val path = "src/test/resources/econic.tif"
-      val raster1 = new GeoTiffReader(path).readPath(None, None)
+      val raster1 = GeoTiff.readRaster(path)
 
       val e = Extent(-15471.6, -15511.3, 15428.4, 15388.7)
       val geo = RasterExtent(e, 60.0, 60.0, 513, 513)
-      val raster2 = new GeoTiffReader(path).readPath(None, Some(geo))
+      val raster2 = GeoTiffRasterLayerBuilder.fromTif(path).get.getRaster(Some(geo))
     }
 
     it ("should draw") {
       val path = "src/test/resources/econic.tif"
-      val raster = new GeoTiffReader(path).readPath(None, None)
+      val raster = GeoTiff.readRaster(path)
       val histogram = FastMapHistogram.fromRaster(raster)
 
       val (zmin, zmax) = raster.findMinMax
@@ -79,7 +79,7 @@ class GeoTiffSpec extends FunSpec with MustMatchers with ShouldMatchers {
     }
 
     it ("should write") {
-      val r = new GeoTiffReader("src/test/resources/econic.tif").readPath(None, None)
+      val r = GeoTiff.readRaster("src/test/resources/econic.tif")
       GeoTiffWriter.write("/tmp/written.tif", r, "foo")
     }
 
@@ -93,7 +93,7 @@ class GeoTiffSpec extends FunSpec with MustMatchers with ShouldMatchers {
 
     it ("should retain Float32 type when converting tif to arg") {
       val path = "src/test/resources/aspect.tif"
-      val raster = new GeoTiffReader(path).readPath(None, None)
+      val raster = GeoTiff.readRaster(path)
       raster.data.getType should be (TypeFloat)
     }
 
@@ -104,7 +104,7 @@ class GeoTiffSpec extends FunSpec with MustMatchers with ShouldMatchers {
       // should correspond to NoData values of the directly read arg.
       import geotiff._
       val originalArg = server.run(io.LoadFile("src/test/resources/data/slope.arg"))
-      val translatedTif = new GeoTiffReader("src/test/resources/slope.tif").readPath(None, None)
+      val translatedTif = GeoTiff.readRaster("src/test/resources/slope.tif")
 
       translatedTif.rows should be (originalArg.rows)
       translatedTif.cols should be (originalArg.cols)

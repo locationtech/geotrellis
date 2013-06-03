@@ -67,7 +67,7 @@ trait OperationBenchmark extends SimpleBenchmark {
 
     val layout = layer.tileLayout 
     Tiler.writeTiles(trd, re, "benchmark_raster", "/tmp")
-    val tileSetRD = TileSetRasterData("/tmp", "benchmark_raster", TypeInt, layout, layer.loader)
+    val tileSetRD = TileSetRasterData("/tmp", "benchmark_raster", TypeInt, layout, layer.getTileLoader)
 
     val tiledRaster = Raster(tileSetRD, re)
 
@@ -449,7 +449,7 @@ class BigMinTiled extends OperationBenchmark{
                                        None)
 
     val trd = layer.getData()
-    val tileSetRD = TileSetRasterData("/tmp", "big", TypeByte, layout, layer.loader)
+    val tileSetRD = TileSetRasterData("/tmp", "big", TypeByte, layout, layer.getTileLoader)
     val raster = Raster(tileSetRD, re)
     tiledMinOp = BTileMin(Add(AddConstant(raster,2), raster))
     tiledHistogramOp = BTileHistogram(raster)

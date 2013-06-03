@@ -7,6 +7,7 @@ import org.scalatest.matchers.ShouldMatchers
 import scala.math.abs
 
 import geotrellis._
+import geotrellis.process.RasterLayer
 import geotrellis.testutil._
 import geotrellis.raster._
 import geotrellis.data._
@@ -15,10 +16,10 @@ import geotrellis.data._
 class ArgSpec extends FunSpec with MustMatchers with ShouldMatchers {
   describe("An ArgReader") {
     val server = TestServer.server
-    val path1 = "src/test/resources/fake.img8.arg"
+    val path1 = "src/test/resources/fake.img8.json"
     	 
     it("should build a valid raster") {
-      val raster = new ArgReader(path1).readPath(None,None)
+      val raster = RasterLayer.fromPath(path1).get.getRaster()
 
       raster.cols must be === 4
       raster.rows must be === 4
@@ -31,7 +32,7 @@ class ArgSpec extends FunSpec with MustMatchers with ShouldMatchers {
     }
 
     it("should write out args") {
-      val raster = new ArgReader(path1).readPath(None,None)
+      val raster = RasterLayer.fromPath(path1).get.getRaster()
 
       val fh = java.io.File.createTempFile("foog", ".arg")
       val path2 = fh.getPath
@@ -55,7 +56,8 @@ class ArgSpec extends FunSpec with MustMatchers with ShouldMatchers {
       val cellheight = abs(ymax - ymin) / cols
       val e = Extent(xmin, ymin, xmax, ymax)
       val re = RasterExtent(e, cellwidth, cellheight, cols, rows)
-      new ArgReader("src/test/resources/quad8.arg").readPath(None, Some(re))
+
+      RasterLayer.fromPath("src/test/resources/quad8.json").get.getRaster(Some(re))
     }
 
     // helper function

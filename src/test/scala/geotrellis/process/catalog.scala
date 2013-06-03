@@ -24,7 +24,7 @@ class CatalogSpec extends FunSpec with MustMatchers with ShouldMatchers {
                 "catalog": "catalog2",
                 "stores": [
                   {
-                    "store": "stroud:fs",
+                    "store": "test:fs",
                     "params": {
                         "type": "fs",
                         "path": "${datapath}"
@@ -63,8 +63,8 @@ class CatalogSpec extends FunSpec with MustMatchers with ShouldMatchers {
       val expected = Catalog(
         "catalog2",
         Map(
-          "stroud:fs" -> DataStore(
-              "stroud:fs",
+          "test:fs" -> DataStore(
+              "test:fs",
               Map("type" -> "fs", "path" -> "src/test/resources/data")
           )
         ),
@@ -89,7 +89,7 @@ class CatalogSpec extends FunSpec with MustMatchers with ShouldMatchers {
 
   describe("A DataSource") {
    val catalog = Catalog.fromJSON(json1)
-   val store = catalog.stores("stroud:fs")
+   val store = catalog.stores("test:fs")
    val layers = store.getLayers
 
     it("should find Args in a source directory") {
@@ -102,7 +102,8 @@ class CatalogSpec extends FunSpec with MustMatchers with ShouldMatchers {
 
     it("should create IntConstant arg") {
       val s = Server("catalogtest", catalog)
-      val result = s.getRasterByName("constant", None).asInstanceOf[Result[Raster]]
+      val context = new Context(s)
+      val result = context.getRasterByName("constant", None).asInstanceOf[Result[Raster]]
       assert(result.value.data.isInstanceOf[IntConstant])
     }
 
