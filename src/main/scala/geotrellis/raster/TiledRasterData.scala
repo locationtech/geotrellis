@@ -157,13 +157,6 @@ trait TiledRasterData extends RasterData with Serializable {
             cfor(0)(_ < tileLayout.pixelRows, _ + 1) { prow =>
               val acol = (tileLayout.pixelCols * tcol) + pcol
               val arow = (tileLayout.pixelRows * trow) + prow
-              if(acol >= d.cols || arow >= d.rows) {
-                println(s"Tile Layout: $tileLayout  P ${pcol} ${prow}  T ${tcol} ${trow} A ${acol} ${arow}")
-              }
-
-              if(pcol >= tile.cols || prow >= tile.rows) {
-                println(s"Tile: ${tile.cols} ${tile.rows}  P ${pcol} ${prow}  T ${tcol} ${trow} A ${acol} ${arow} tl $tileLayout")
-              }
               d.set(acol,arow, tile.get(pcol,prow))
             }
           }
