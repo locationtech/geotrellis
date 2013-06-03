@@ -110,6 +110,14 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     (x, y)
   }
 
+  def gridColToMap(col:Int) = {
+    max(min(col * cellwidth + extent.xmin + (cellwidth / 2), extent.xmax), extent.xmin)
+  }
+
+  def gridRowToMap(row:Int) = {
+    min(max(extent.ymax - (row * cellheight) - (cellheight / 2), extent.ymin), extent.ymax)
+  }
+
   /**
    * Gets the GridBounds for this RasterExtent that is the smallest subgrid
    * containing all points within the extent. The extent is considered inclusive
@@ -154,5 +162,16 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     val newCols = ceil(newExtent.width / cellwidth).toInt
 
     RasterExtent(newExtent, cellwidth, cellheight, newCols, newCols)
+  }
+
+  /**
+   * Returns a RasterExtent with the same extent,
+   * but a modified number of columns and rows based
+   * on the given cell height and width.
+   */
+  def withResolution(targetCellWidth:Double,targetCellHeight:Double) = {
+    val newCols = math.ceil((extent.xmax - extent.xmin) / targetCellWidth).toInt
+    val newRows = math.ceil((extent.ymax - extent.ymin) / targetCellHeight).toInt
+    RasterExtent(extent,targetCellWidth,targetCellHeight,newCols,newRows)
   }
 }

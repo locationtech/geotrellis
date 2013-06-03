@@ -8,7 +8,7 @@ import geotrellis.raster.op.focal.CellSet
  * by applying the given function to the cells of the original raster
  * that compose a cell in the resulting raster.
  *
- * @note: If the original RasterExtent dimensions are not divisible by the
+ * @note If the original RasterExtent dimensions are not divisible by the
  * given cols and rows, the CellSet argument of the function might give
  * invalid column and rows in it's foreach function. You need to guard
  * against this in the given function.

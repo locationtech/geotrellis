@@ -10,7 +10,9 @@ import geotrellis.data.arg.ArgReader
 
 abstract class RasterLayer(val info:RasterLayerInfo,
                            private val c:Option[Cache]) {
-  def getRaster(targetExtent:Option[RasterExtent] = None):Raster
+  def getRaster():Raster = getRaster(None)
+
+  def getRaster(targetExtent:Option[RasterExtent]):Raster
   def cache():Unit
 }
 

@@ -18,8 +18,11 @@ class ArgReader(path:String) extends FileReader(path) {
     case t => sys.error("datatype %s is not supported" format t)
   }
 
-  def readStateFromCache(b:Array[Byte], rl:RasterLayer, re:RasterExtent) = {
-    makeReadState(Right(b), rl.info.rasterType, rl.info.rasterExtent, re)
+  def readStateFromCache(b:Array[Byte], 
+                         rasterType:RasterType, 
+                         rasterExtent:RasterExtent, 
+                         targetExtent:RasterExtent) = {
+    makeReadState(Right(b), rasterType, rasterExtent, targetExtent)
   }
 
   def readStateFromPath(rasterType:RasterType, 

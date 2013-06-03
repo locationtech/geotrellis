@@ -5,6 +5,13 @@ import geotrellis.process._
 
 object Do {
   /**
+   * Invoke a function that takes no arguments.
+   * 
+   * See Do0.
+   */
+  def apply[Z](call:() => Z) = Do0(call)
+
+  /**
    * Invoke a function that takes one argument.
    * 
    * See Do1.
@@ -18,6 +25,16 @@ object Do {
    */
   def apply[A,B,Z](a:Op[A], b:Op[B])(call:(A,B) => Z) = 
     Do2(a,b)(call)
+}
+
+/**
+ * Invoke a function that takes no arguments.
+ */
+case class Do0[Z](call:() => Z) extends Op[Z] {
+  def _run(context:Context) = Result(call())
+  val nextSteps:Steps = {
+    case _ => sys.error("Should not be called.")
+  }
 }
 
 /**

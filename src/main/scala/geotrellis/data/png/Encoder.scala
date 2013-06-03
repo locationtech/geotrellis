@@ -132,8 +132,6 @@ case class Encoder(settings:Settings) {
     // allocate a data chunk for our pixel data
     val cIDAT = new Chunk(IDAT)
 
-    var j = 0
-
     // allocate a byte buffer
     val bb = createByteBuffer(raster)
 
