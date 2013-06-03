@@ -1,10 +1,10 @@
 package geotrellis.raster
 
 import geotrellis._
+import geotrellis.{op => liftop}
 import geotrellis.util.Filesystem
 import geotrellis.process._
 import geotrellis.data.arg.{ArgWriter,ArgReader}
-import geotrellis.data.Gdal
 import geotrellis.feature.Polygon
 import java.io.{FileOutputStream, BufferedOutputStream}
 import geotrellis.util.Filesystem
@@ -146,13 +146,31 @@ trait TiledRasterData extends RasterData with Serializable {
   }
 
   override def asArray:Option[ArrayRasterData] = {
-    if (lengthLong > 2147483647L) None
-    val len = length
-    val d = IntArrayRasterData.ofDim(cols, rows)
-    for( r <- 0 until rows; c <- 0 until cols) {
-      d(r * cols + c) = get(c,r)
+    if (lengthLong > 2147483647L) { None }
+    else {
+      val len = length
+      val d = IntArrayRasterData.ofDim(tileLayout.totalCols, tileLayout.totalRows)
+      cfor(0)(_ < tileLayout.tileCols, _ + 1) { tcol =>
+        cfor(0)(_ < tileLayout.tileRows, _ + 1) { trow =>
+          val tile = getTile(tcol,trow)
+          cfor(0)(_ < tileLayout.pixelCols, _ + 1) { pcol =>
+            cfor(0)(_ < tileLayout.pixelRows, _ + 1) { prow =>
+              val acol = (tileLayout.pixelCols * tcol) + pcol
+              val arow = (tileLayout.pixelRows * trow) + prow
+              if(acol >= d.cols || arow >= d.rows) {
+                println(s"Tile Layout: $tileLayout  P ${pcol} ${prow}  T ${tcol} ${trow} A ${acol} ${arow}")
+              }
+
+              if(pcol >= tile.cols || prow >= tile.rows) {
+                println(s"Tile: ${tile.cols} ${tile.rows}  P ${pcol} ${prow}  T ${tcol} ${trow} A ${acol} ${arow} tl $tileLayout")
+              }
+              d.set(acol,arow, tile.get(pcol,prow))
+            }
+          }
+        }
+      }
+      Some(d)
     }
-    Some(d)
   }
 
   def force = mutable
@@ -210,29 +228,17 @@ case class TileSetRasterData(basePath:String,
     }
   }
 
-  override def getTileOp(rl:ResolutionLayout, c:Int, r:Int) = {
-    val path = Tiler.tilePath(basePath, name, c, r)
-    logic.Do(io.LoadFile(path))(_.defer)    
-  }  
-
-  override def asArray = {
-    if (lengthLong > 2147483647L) None
-    val len = length
-    val d = IntArrayRasterData.ofDim(cols, rows)
-    cfor(0)(_ < tileLayout.tileCols, _ + 1) { tcol =>
-      cfor(0)(_ < tileLayout.tileRows, _ + 1) { trow =>
-        val tile = getTile(tcol,trow)
-        cfor(0)(_ < tileLayout.pixelCols, _ + 1) { pcol =>
-          cfor(0)(_ < tileLayout.pixelRows, _ + 1) { prow => 
-            val acol = (tileLayout.pixelCols * tcol) + pcol
-            val arow = (tileLayout.pixelRows * trow) + prow
-            d( (arow*tileLayout.totalRows) + acol ) = tile.get(pcol,prow)
-          }
-        }
-      }
-    }
-    Some(d)
+  override def getTileOp(rl:ResolutionLayout, c:Int, r:Int):Op[Raster] = {
+    logic.Do(() => 
+      Raster(getTile(c,r), loader.resLayout.getRasterExtent(c,r))
+    )
   }
+
+  def asTileArray:TileArrayRasterData = {
+    val re = loader.rasterExtent
+    TileArrayRasterData(getTiles(re).toArray,tileLayout,re)
+  }
+  
 }
 
 /**
@@ -256,23 +262,9 @@ class TileArrayRasterData(val tiles:Array[Raster],
 }
 
 object TileArrayRasterData {
-  def apply(tiles:Array[Raster], tileLayout:TileLayout, rasterExtent:RasterExtent) = 
+  def apply(tiles:Array[Raster], tileLayout:TileLayout, rasterExtent:RasterExtent) =
     new TileArrayRasterData(tiles, tileLayout, rasterExtent)
-  /**
-   * Create a TileArrayRasterData by loading all tiles from disk.
-   */
-  def apply(basePath:String, name:String, typ:RasterType, tileLayout:TileLayout, 
-      rasterExtent:RasterExtent, server:Server) = {
-    val rl = tileLayout.getResolutionLayout(rasterExtent)
-    
-    var tiles:List[Raster] = Nil
-    for (r <- 0 until tileLayout.tileRows; c <- 0 until tileLayout.tileCols) {
-      val path = Tiler.tilePath(basePath, name, c, r)
-      tiles = tiles ::: List(server.getRaster(path,None,None))
-    }
-    new TileArrayRasterData(tiles.toArray, tileLayout, rasterExtent)
-  }
-} 
+}
 
 object LazyTiledWrapper {
   def apply(data:RasterData, tileLayout:TileLayout):TiledRasterData = {
@@ -343,17 +335,10 @@ case class LazyViewWrapper(data:ArrayRasterData,
   }
 
   override final def foreach(f:Int => Unit) = {
-    var r = row1
-    val rlimit = row2
-    val climit = col2
-    val width = parentCols
-    while (r < rlimit) {
-      var c = col1
-      while (c < climit) {
-        f(data(r * width + c))
-        c += 1
+    cfor(row1)(_ < row2, _ + 1) { r =>
+      cfor(col1)(_ < col2, _ + 1) { c =>
+        f(data(r * parentCols + c))
       }
-      r += 1
     }
   }
 

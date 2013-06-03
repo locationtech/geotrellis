@@ -17,63 +17,6 @@ object Raster {
 
   def empty(re:RasterExtent):Raster = 
     Raster(IntArrayRasterData.empty(re.cols, re.rows), re)
-
-  /**
-   * Todo: Move tile loading out of Raster.
-   */
-  import geotrellis.process.Server
-  import com.typesafe.config.ConfigFactory
-  import geotrellis.raster._
-  private def loadTileSetInfo(dir:String, server:Server) = {
-    val path = Filesystem.join(dir, "layout.json")
-    val json = ConfigFactory.parseFile(new File(path))
-
-    if (json.getString("type") != "tiled")
-      sys.error("directory '%s' does not contain a tileset" format dir)
-
-    val typ:RasterType = json.getString("datatype") match {
-      case "bool" => TypeBit
-      case "int8" => TypeByte
-      case "int16" => TypeShort
-      case "int32" => TypeInt
-      case "float32" => TypeFloat
-      case "float64" => TypeDouble
-      case s => sys.error("unsupported datatype '%s'" format s)
-    }
-
-    val xmin = json.getDouble("xmin")
-    val ymin = json.getDouble("ymin")
-    val xmax = json.getDouble("xmax")
-    val ymax = json.getDouble("ymax")
-    val e = Extent(xmin, ymin, xmax, ymax)
-
-    val tileBase:String = json.getString("tile_base")
-    val layoutCols = json.getInt("layout_cols")
-    val layoutRows = json.getInt("layout_rows")
-    val pixelCols = json.getInt("pixel_cols")
-    val pixelRows = json.getInt("pixel_rows")
-    val cols = layoutCols * pixelCols
-    val rows = layoutRows * pixelRows
-
-    val cw = json.getDouble("cellwidth")
-    val ch = json.getDouble("cellheight")
-
-    val re = RasterExtent(e, cw, ch, cols, rows)
-    val layout = TileLayout(layoutCols, layoutRows, pixelCols, pixelRows)
-    (tileBase, typ, layout, re)
-  }
-
-  def loadTileSet(dir:String, server:Server):Raster = {
-    val (tileBase, typ, layout, re) = loadTileSetInfo(dir, server)
-    val data = TileArrayRasterData(dir, tileBase, typ, layout, re, server)
-    Raster(data, re)
-  }
-
-  def loadUncachedTileSet(dir:String, server:Server):Raster = {
-    val (tileBase, typ, layout, re) = loadTileSetInfo(dir, server)
-    val data = TileSetRasterData(dir, tileBase, typ, layout, null)
-    Raster(data, re) 
-  }
 }
 
 /**

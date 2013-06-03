@@ -44,16 +44,16 @@ class ArgFileRasterLayer(info:RasterLayerInfo, rasterPath:String, c:Option[Cache
 extends RasterLayer(info,c) {
   private var cached = false
 
-  def getRaster(targetExtent:Option[RasterExtent] = None) =
+  def getRaster(targetExtent:Option[RasterExtent]) =
     if(cached) {
       c.get.lookup[Array[Byte]](info.name) match {
         case Some(bytes) =>
-          getReader.readCache(bytes, this, targetExtent)
+          getReader.readCache(bytes, info.rasterType, info.rasterExtent, targetExtent)
         case None =>
           sys.error("Cache problem: Layer things it's cached but it is in fact not cached.")
       }
     } else {
-      getReader.readPath(Some(this), targetExtent)
+      getReader.readPath(info.rasterType, info.rasterExtent, targetExtent)
     }
 
   def cache = 

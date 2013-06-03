@@ -1,26 +1,93 @@
 package geotrellis
 
 import geotrellis.process._
+import geotrellis.util.Filesystem
 
-class Context (server:Server) {
+class Context(server:Server) {
   val timer = new Timer()
 
-  def loadRaster(path:String, g:RasterExtent):Raster = 
-    server.getRaster(path, None, Option(g))
+  /**
+   * Clients can call the raster path loading functions
+   * with either the .json metadata (prefered) or with
+   * the .arg extension. This function moves the latter
+   * path into the metadata path.
+   */
+  private def processPath(path:String):String =
+    if(path.endsWith(".arg")) {
+      path.substring(0,path.length - 4) + ".json"
+    } else {
+      path
+    }
 
-  def loadTileSet(path:String):Raster = Raster.loadTileSet(path, server)
+  def loadRaster(path:String, re:RasterExtent):Raster = 
+    loadRaster(path, Some(re))
 
-  def loadUncachedTileSet(path:String):Raster = Raster.loadUncachedTileSet(path, server)
+  def loadRaster(path:String, reOpt:Option[RasterExtent]):Raster = 
+    RasterLayer.fromPath(processPath(path)) match {
+      case Some(rl) => 
+        rl.getRaster(reOpt)
+      case None =>
+        sys.error(s"Cannot read raster layer at path $path")
+    }
 
-  def getRaster(path:String, layer:RasterLayer, re:RasterExtent):Raster = 
-    server.getRaster(path, Option(layer), Option(re))
+  def loadTileSet(path:String):Raster = 
+    RasterLayer.fromPath(path) match {
+      case Some(layer) =>
+        layer match {
+          case tl:TileSetRasterLayer =>
+            Raster(tl.getData.asTileArray, tl.info.rasterExtent)
+          case _ =>
+            sys.error(s"Raster layer at path $path is not a tiled raster layer.")
+        }
+      case None => sys.error(s"Cannot load raster layer at path $path")
+    }
 
-  def getRasterStepOutput(path:String, layer:Option[RasterLayer], re:Option[RasterExtent]):StepOutput[Raster] = 
-    server.getRasterStepOutput(path, layer, re)
+  def loadUncachedTileSet(path:String):Raster = 
+    RasterLayer.fromPath(path) match {
+      case Some(layer) =>
+        layer match {
+          case tl:TileSetRasterLayer =>
+            tl.getRaster
+          case _ =>
+            sys.error(s"Raster layer at path $path is not a tiled raster layer.")
+        }
+      case None => sys.error(s"Cannot load raster layer at path $path")
+    }
 
+  def getRasterStepOutput(path:String, reOpt:Option[RasterExtent]):StepOutput[Raster] = 
+    RasterLayer.fromPath(processPath(path)) match {
+      case Some(rl) => Result(rl.getRaster(reOpt))
+      case None =>
+        StepError(s"Could not load raster from path: ${path}.","")
+    }
+
+  /**
+   * Read a raster from a layer in the catalog
+   */
   def getRasterByName(name:String, re:RasterExtent):StepOutput[Raster] = 
-    server.getRasterByName(name, Option(re))
+    getRasterByName(name,Some(re))
 
+  /**
+   * Read a raster from a layer in the catalog
+   */
+  def getRasterByName(name:String, reOpt:Option[RasterExtent]):StepOutput[Raster] = 
+    server.catalog.getRasterLayerByName(name) match {
+      case Some(layer) => {
+        Result(layer.getRaster(reOpt))
+      }
+      case None => {
+        val debugInfo = s"Failed to load raster ${name} from catalog at ${server.catalog.source}" + 
+                        s" with json: \n ${server.catalog.json}"
+        StepError(s"Did not find raster '${name}' in catalog", debugInfo)
+      }
+    }
+
+  /**
+   * Read a raster extent from a layer in the catalog
+   */
   def getRasterExtentByName(name:String):RasterExtent = 
-    server.getRasterExtentByName(name)
+    server.catalog.getRasterLayerByName(name) match {
+      case Some(layer) => layer.info.rasterExtent
+      case None => sys.error(s"couldn't find raster $name in catalog at ${server.catalog.source}")
+    }
 }

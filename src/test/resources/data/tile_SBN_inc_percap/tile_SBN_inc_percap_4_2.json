@@ -1,0 +1,16 @@
+{
+  "layer": "tile_SBN_inc_percap_4_2",
+  "datatype": "int8", 
+  "type": "arg",
+  "xmin": -8398697.884860,
+  "xmax": -8379497.884860,
+  "ymin": 4897165.691474,
+  "ymax": 4916365.691474,
+  "cols": 256,
+  "rows": 256,
+  "cellwidth": 75.000000,
+  "cellheight": 75.000000,
+  "epsg": 3785,
+  "yskew": 0.0,
+  "xskew": 0.0
+}

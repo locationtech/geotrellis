@@ -32,7 +32,7 @@ case class DataStore(name:String, params:Map[String, String]) {
   }
 
   private def initDirectory(d:File) {
-    val skipDirectories = mutable.Set[File]()
+    val skipDirectories = mutable.Set[String]()
     for(f <- d.listFiles
               .filter(_.isFile)
               .filter(_.getPath.endsWith(".json"))) {
@@ -45,7 +45,7 @@ case class DataStore(name:String, params:Map[String, String]) {
           // Skip the tile directory if it's a tiled raster.
           layer match {
             case tl:TileSetRasterLayer =>
-              skipDirectories.add(new File(tl.tileDirPath))
+              skipDirectories.add(new File(tl.tileDirPath).getAbsolutePath)
             case _ =>
           }
         case _ =>
@@ -57,8 +57,8 @@ case class DataStore(name:String, params:Map[String, String]) {
     // as containing a tile set, skip it.
     for(subdir <- d.listFiles
                    .filter(_.isDirectory)
-                   .filter(!skipDirectories.contains(_))) {
-     initDirectory(subdir)
+                   .filter(f => !skipDirectories.contains(f.getAbsolutePath))) {
+      initDirectory(subdir)
     }
   }
 

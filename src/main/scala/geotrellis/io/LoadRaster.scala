@@ -14,9 +14,9 @@ case class LoadRaster(n:Op[String], r:Op[RasterExtent]) extends Op[Raster] {
   def _run(context:Context) = runAsync(List(n, r, context))
   val nextSteps:Steps = {
     case (name:String) :: null :: (context:Context) :: Nil => 
-     context.getRasterByName(name, null)
+     context.getRasterByName(name, None)
     case (name:String) :: (re:RasterExtent) :: (context:Context) :: Nil => 
-      context.getRasterByName(name, re)
+      context.getRasterByName(name, Some(re))
   }
 }
 
