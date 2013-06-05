@@ -19,6 +19,9 @@ class Extent():
         self.xmax = xmax
         self.ymax = ymax
 
+    def __str__(self):
+        return "Extent(%f,%f,%f,%f)" % (self.xmin,self.ymin,self.xmax,self.ymax)
+
 class RasterExtent():
     def __init__(self, extent, cellwidth, cellheight, cols, rows):
         self.extent = extent
@@ -27,10 +30,10 @@ class RasterExtent():
         self.cols = cols
         self.rows = rows
 
-"""
-Represents one band in a raster as read by GDAL.
-"""
 class GdalLayer():
+    """
+    Represents one band in a raster as read by GDAL.
+    """
     def __init__(self, path, band = 1):
         self.path = path
         self.dataset = gdal.Open(path, GA_ReadOnly)
@@ -83,12 +86,12 @@ class GdalLayer():
             'epsg': self.epsg
         }
 
-    """
-    Reads a row from this raster.
-    Optionally you can specify an offset and size
-    to read only a section of the row.
-    """
     def read_row(self,row,offset=0,size=None):
+        """
+        Reads a row from this raster.
+        Optionally you can specify an offset and size
+        to read only a section of the row.
+        """
         # Network Byte Order (Big Endian)
         if size is None:
             size = self.cols
@@ -98,7 +101,7 @@ class GdalLayer():
         scanline = self.band.ReadRaster(
             offset, row, size, 1, size, 1, self.band.DataType)
 
-        return struct.unpack(unpack_str, scanline)
+        return list(struct.unpack(unpack_str, scanline))
 
     def write_metadata(self, path, name):
         m = self.toMap()
@@ -109,7 +112,7 @@ class GdalLayer():
                 json.dumps(m,
                            sort_keys=True,
                            indent=4,
-                           separators=(',',': ')))
+                           separators=(',',': ')) + '\n')
 
 
     def write_arg(self, 
@@ -143,28 +146,43 @@ class GdalLayer():
         if len(window) != 4:
             log.error('Invalid window: %s' % window)
 
-        xstart = window[0]
-        xlen = window[2] - xstart
+        start_col, end_col = window[0], window[2]
+        total_cols =  end_col - start_col
 
-        ystart, yend = window[1], window[3]
+        start_row, end_row = window[1], window[3]
+        total_rows = end_row - start_row
 
         ndv = self.band.GetNoDataValue()
         arg_no_data = nodata_for_fmt(data_type)
 
-        ysize = yend - ystart
-        psize = int(ysize / 100)
+        psize = int(total_rows / 100)
 
         output = file(path, 'wb')
-        writer = ArgWriter(output,data_type,verify)        
+        writer = ArgWriter(output,data_type,verify)
 
-        for row in xrange(ystart,yend):
+        # If needed, add NoData values to the start or end of the row
+        prerow = [arg_no_data] * (0 - start_col)
+        start_col = max(0,start_col)
+        postrow = [arg_no_data] * (end_col - self.raster_extent.cols)
+        total_cols_to_scan = min(end_col, self.raster_extent.cols) - start_col
+
+        for row in xrange(start_row,end_row):
             if printprg and psize != 0 and row % psize == 0:
-                yp = row - ystart
-                sys.stdout.write('%d/%d (%d%%) completed\r' % (yp,ysize,yp*100/ysize))
+                row_progress = row - start_row
+                sys.stdout.write('%d/%d (%d%%) completed\r' % (row_progress,
+                                                               total_rows,
+                                                               row_progress*100/total_rows))
                 sys.stdout.flush()
                 output.flush()
 
-            ar = self.read_row(row,xstart,xlen)
+            if row < 0 or row >= self.raster_extent.rows:
+                ar = [arg_no_data] * total_cols
+            else:
+                ar = self.read_row(row,start_col,total_cols_to_scan)
+                if prerow:
+                    ar = prerow + ar
+                if postrow:
+                    ar = ar + postrow
 
             # Replace nodata before verification
             data = array.array(to_datatype_str(self.band.DataType), ar)
@@ -178,4 +196,4 @@ class GdalLayer():
         output.close()
 
         if printprg:
-            print "%d/%d (100%%) completed" % (ysize,ysize)
+            print "%d/%d (100%%) completed" % (total_rows,total_rows)

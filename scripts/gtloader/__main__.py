@@ -43,7 +43,8 @@ class ConvertCommand:
                 args.name,
                 not args.no_verify,
                 args.cols_per_tile,
-                args.rows_per_tile)
+                args.rows_per_tile,
+                args.legacy)
     
     @staticmethod
     def add_parser(subparsers):
@@ -87,6 +88,10 @@ class ConvertCommand:
                              help='Number of cols per tile',
                              default=None,
                              type=int)
+        tiles_group.add_argument('--legacy',
+                             help='Write out the tiles in old tile format ' \
+                                  '(to work with GeoTrellis 0.8.x)',
+                             action='store_true')
 
         convert_parser.set_defaults(func=ConvertCommand.execute)
 

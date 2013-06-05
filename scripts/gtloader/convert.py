@@ -5,8 +5,9 @@ import sys, os
 import math
 import json
 import log
-from raster import GdalLayer
+from raster import GdalLayer, Extent
 from datatypes import *
+
 
 def convert(inputPath, 
             output_path, 
@@ -15,7 +16,8 @@ def convert(inputPath,
             layer_name = None,
             verify = True,
             rows_per_tile = None,
-            cols_per_tile = None):
+            cols_per_tile = None,
+            legacy = False):
     layer = GdalLayer(inputPath, band)
 
     log.notice("Loading raster with width %s, height %s" %
@@ -39,9 +41,6 @@ def convert(inputPath,
         layer_name = '.'.join(layer.path.split('.')[:-1])
 
     if rows_per_tile and cols_per_tile:
-        # metadata = getmetadata(layer.dataset, layer.band, data_type)
-        # metadata['layer'] = layer_name
-
         if os.path.isfile(output_path):
             log.error('Output path %s is a file.' % output_path)
 
@@ -50,11 +49,11 @@ def convert(inputPath,
         if os.path.exists(tile_dir):
             log.error('Output directory %s already exists' % tile_dir)
 
-
         tile_row_size = rows_per_tile
         tile_col_size = cols_per_tile
-        ntilerows = int(math.ceil(layer.band.YSize / tile_row_size))
-        ntilecols = int(math.ceil(layer.band.XSize / tile_col_size))
+
+        ntilecols = int(math.ceil(layer.raster_extent.cols / float(tile_col_size)))
+        ntilerows = int(math.ceil(layer.raster_extent.rows / float(tile_row_size)))
 
         nrows = ntilerows * tile_row_size
         ncols = ntilecols * tile_col_size
@@ -64,7 +63,7 @@ def convert(inputPath,
 
         tile_metadata['type'] = 'tiled'
         tile_metadata['layer'] = layer_name
-        tile_metadata['path'] = output_path
+        tile_metadata['path'] = tile_dir
 
         tile_metadata['tile_base'] = layer_name
         tile_metadata['layout_cols'] = str(ntilecols)
@@ -74,68 +73,79 @@ def convert(inputPath,
         tile_metadata['cols'] = str(ncols)
         tile_metadata['rows'] = str(nrows)
 
-        json_path = os.path.join(output_path,'%s.json' % layer_name)
+        # Make the directory that will hold the tiles
+        os.makedirs(tile_dir)
+
+        if legacy:
+            # GeoTrellis 0.8.x puts the metadata file inside the 
+            # tile directory, and names it layout.json
+            json_path = os.path.join(tile_dir,'layout.json')
+        else:
+            json_path = os.path.join(output_path,'%s.json' % layer_name)
 
         with file(json_path,'w') as mdf:
             mdf.write(
                 json.dumps(tile_metadata,
                            sort_keys=True,
                            indent=4,
-                           separators=(',',': ')))
+                           separators=(',',': ')) + '\n')
 
-        os.makedirs(tile_dir)
+
 
         tile_name_ft = '%s_%%d_%%d' % layer_name
         tile_path_ft = os.path.join(tile_dir,'%s.arg' % tile_name_ft)
 
         total_tiles = ntilerows * ntilecols
 
+        maxy = layer.raster_extent.extent.ymax
+        minx = layer.raster_extent.extent.xmin
+        cellwidth = layer.raster_extent.cellwidth
+        cellheight = layer.raster_extent.cellheight
+
         for row in xrange(0,ntilerows):
             ystart = row * tile_row_size
             yend = ystart + tile_row_size
-            ywin = [ystart,yend]
 
             for col in xrange(0,ntilecols):
-                tileindex = col + row*ntilecols
+                tileindex = col + row*ntilecols + 1
                 p = int(tileindex * 100.0 / total_tiles)
 
-                sys.stdout.write('%d/%d (%d%%) completed\r' %
+                sys.stdout.write('Tile %d/%d (%d%%)\n' %
                                  (tileindex,total_tiles,p))
                 sys.stdout.flush()
 
-
                 xstart = col * tile_col_size
                 xend = xstart + tile_col_size
-                xwin = [xstart,xend]
+
+                # Get tile extent
+                xmin = minx + xstart * cellwidth
+                xmax = xmin + (cellwidth * tile_col_size)
+                ymax = maxy - (cellheight * ystart)
+                ymin = ymax - (cellheight * tile_row_size)
 
                 filename = tile_path_ft % (col,row)
 
                 newmetadata = metadata.copy()
                 # Shift xmin and recalculate xmax
                 newmetadata['layer'] = tile_name_ft % (col,row)
-                newmetadata['xmin'] += xstart*metadata['cellwidth']
-                newmetadata['ymin'] += ystart*metadata['cellheight']
-
-                newmetadata['xmax'] = newmetadata['xmin'] + \
-                                      metadata['cellwidth']*tile_col_size
-
-                newmetadata['ymax'] = newmetadata['ymin'] + \
-                                      metadata['cellheight']*tile_row_size
-
+                newmetadata['xmin'] = xmin
+                newmetadata['ymin'] = ymin
+                newmetadata['xmax'] = xmax
+                newmetadata['ymax'] = ymax
                 newmetadata['rows'] = tile_row_size
                 newmetadata['cols'] = tile_col_size
 
                 layer.write_arg(filename, window = (xstart,ystart,xend,yend), verify = verify)
 
-                metadata_file = output_path[0:-4] + '.json'
+                metadata_file = filename[0:-4] + '.json'
                 with file(metadata_file,'w') as mdf:
                     mdf.write(
                         json.dumps(newmetadata,
                                    sort_keys=True,
                                    indent=4,
-                                   separators=(',',': ')))
+                                   separators=(',',': ')) + '\n')
 
-        print '%s/%s (100%%) completed' % (total_tiles,total_tiles)
+        print 'Tile conversion completed.'
 
     else:
         if os.path.isdir(output_path):
