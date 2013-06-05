@@ -19,13 +19,16 @@ class Context(server:Server) {
       path
     }
 
+  def loadRaster(path:String):Raster = 
+    loadRaster(path, None)
+
   def loadRaster(path:String, re:RasterExtent):Raster = 
     loadRaster(path, Some(re))
 
   def loadRaster(path:String, reOpt:Option[RasterExtent]):Raster = 
     RasterLayer.fromPath(processPath(path)) match {
-      case Some(rl) => 
-        rl.getRaster(reOpt)
+      case Some(layer) =>
+        layer.getRaster(reOpt)
       case None =>
         sys.error(s"Cannot read raster layer at path $path")
     }
@@ -56,19 +59,26 @@ class Context(server:Server) {
 
   def getRasterStepOutput(path:String, reOpt:Option[RasterExtent]):StepOutput[Raster] = 
     RasterLayer.fromPath(processPath(path)) match {
-      case Some(rl) => Result(rl.getRaster(reOpt))
+      case Some(layer) => 
+        Result(layer.getRaster(reOpt))
       case None =>
         StepError(s"Could not load raster from path: ${path}.","")
     }
 
   /**
-   * Read a raster from a layer in the catalog
+   * Read a raster from a layer in the catalog.
+   */
+  def getRasterByName(name:String):StepOutput[Raster] = 
+    getRasterByName(name,None)
+
+  /**
+   * Read a raster from a layer in the catalog with a specific extent.
    */
   def getRasterByName(name:String, re:RasterExtent):StepOutput[Raster] = 
     getRasterByName(name,Some(re))
 
   /**
-   * Read a raster from a layer in the catalog
+   * Read a raster from a layer in the catalog.
    */
   def getRasterByName(name:String, reOpt:Option[RasterExtent]):StepOutput[Raster] = 
     server.catalog.getRasterLayerByName(name) match {

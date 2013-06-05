@@ -128,6 +128,10 @@ extends RasterLayer(info,c) {
     }
   }
 
+  override
+  def getRaster(extent:Extent):Raster = 
+    CroppedRaster(getRaster,extent)
+
   def getData() = 
     TileSetRasterData(tileDirPath,
                       info.name,

@@ -123,7 +123,10 @@ trait ReadState {
           // compute src and dst indices and ASSIGN!
           val src_i = src_span + src_col
 
-          if (src_col >= 0 && src_col < src_cols && src_i < src_size && src_i >= 0) {
+          if (src_col >= 0 && 
+              src_col < src_cols && 
+              src_i < src_size && 
+              src_i >= 0) {
             val dst_i = dst_span + dst_col
             assignFromSource(src_i, resampled, dst_i)
           }

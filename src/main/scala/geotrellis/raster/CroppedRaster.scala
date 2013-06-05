@@ -64,7 +64,6 @@ object CroppedRaster {
       case a:ArrayRasterData => 
         Raster(CroppedArrayRasterData(a, dst, col1, row1, cols, rows), dst)
       case t:TiledRasterData =>
-        println(s"Doing crop on tiled raster with raster extent ${r.rasterExtent}")
         Raster(CroppedTiledRasterData(t, src, dst, col1, row1, cols, rows), dst)
       case d => sys.error("unsupported crop: %s" format d)
     }
