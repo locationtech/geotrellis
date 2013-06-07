@@ -27,8 +27,8 @@ optional arguments:
                         Arg data type. Selecting "auto" will convert between
                         whatever the input datatype is. Since unsigned types are
                         not supported they will automatically be promoted to the
-                        next highest highest signed type.
-  --no-verify           Don't verify input data falls in a givenrange (just
+                        next highest signed type.
+  --no-verify           Don't verify input data falls in a given range (just
                         truncate)
   --tiled               Instead of converting to arg, convert into tiled arg format
   --band BAND           A specific band to extract
