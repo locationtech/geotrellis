@@ -30,7 +30,7 @@ class SerializationTest extends FunSuite
   }
 
   test("Tile Rasters are serializable") {
-    pickle(run(io.LoadRaster("sbn_tiled")))
+    pickle(run(io.LoadRaster("mtsthelens_tiled")))
   }
 
   def pickle(o:AnyRef) = {
