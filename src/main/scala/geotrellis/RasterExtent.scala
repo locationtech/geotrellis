@@ -151,7 +151,7 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
    * TODO: relatedly, the translate version should require the grids to be
    * properly aligned.
    */
-  def combine (that:RasterExtent) = {
+  def combine (that:RasterExtent):RasterExtent = {
     if (cellwidth != that.cellwidth)
       throw GeoAttrsError("illegal cellwidths: %s and %s".format(cellwidth, that.cellwidth))
     if (cellheight != that.cellheight)
@@ -169,9 +169,27 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
    * but a modified number of columns and rows based
    * on the given cell height and width.
    */
-  def withResolution(targetCellWidth:Double,targetCellHeight:Double) = {
+  def withResolution(targetCellWidth:Double,targetCellHeight:Double):RasterExtent = {
     val newCols = math.ceil((extent.xmax - extent.xmin) / targetCellWidth).toInt
     val newRows = math.ceil((extent.ymax - extent.ymin) / targetCellHeight).toInt
     RasterExtent(extent,targetCellWidth,targetCellHeight,newCols,newRows)
+  }
+
+  /**
+   * Returns a RasterExtent that lines up with this RasterExtent's resolution,
+   * and grid layout.
+   * i.e., the resulting RasterExtent will not have given extent,
+   * but will have the smallest extent such that the whole of 
+   * the given extent is covered, that lines up with the grid.
+   */
+  def createAligned(targetExtent:Extent):RasterExtent = {
+    val xmin = extent.xmin + (math.floor((targetExtent.xmin - extent.xmin) / cellwidth) * cellwidth)
+    val xmax = extent.xmax - (math.floor((extent.xmax - targetExtent.xmax) / cellwidth) * cellwidth)
+    val ymin = extent.ymin + (math.floor((targetExtent.ymin - extent.ymin) / cellheight) * cellheight)
+    val ymax = extent.ymax - (math.floor((extent.ymax - targetExtent.ymax) / cellheight) * cellheight)
+
+    val targetCols = math.round((xmax - xmin) / cellwidth).toInt
+    val targetRows = math.round((ymax - ymin) / cellheight).toInt
+    RasterExtent(Extent(xmin,ymin,xmax,ymax),cellwidth,cellheight,targetCols,targetRows)
   }
 }

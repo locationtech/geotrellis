@@ -11,8 +11,11 @@ import geotrellis.data.arg.ArgReader
 abstract class RasterLayer(val info:RasterLayerInfo,
                            private val c:Option[Cache]) {
   def getRaster():Raster = getRaster(None)
-
   def getRaster(targetExtent:Option[RasterExtent]):Raster
+
+  def getRaster(extent:Extent):Raster = 
+    getRaster(Some(info.rasterExtent.createAligned(extent)))
+
   def cache():Unit
 }
 

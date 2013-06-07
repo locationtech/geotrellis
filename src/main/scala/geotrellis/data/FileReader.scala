@@ -23,14 +23,10 @@ abstract class FileReader(val path:String) {
 
   def readPath(rasterType:RasterType, 
                rasterExtent:RasterExtent, 
-               target:RasterExtent): Raster = {
-    val readState = readStateFromPath(rasterType, 
-                                      rasterExtent,
-                                      target)
-    val raster = readState.loadRaster() // all the work is here
-    readState.destroy()
-    raster
-  }
+               target:RasterExtent): Raster = 
+    readRaster(readStateFromPath(rasterType, 
+                                 rasterExtent,
+                                 target))
 
   def readCache(bytes:Array[Byte], 
                 rasterType:RasterType, 
@@ -41,10 +37,13 @@ abstract class FileReader(val path:String) {
   def readCache(bytes:Array[Byte], 
                 rasterType:RasterType, 
                 rasterExtent:RasterExtent, 
-                targetExtent:RasterExtent): Raster = {
-    val readState = readStateFromCache(bytes, rasterType, rasterExtent, targetExtent)
-    val raster = readState.loadRaster() // all the work is here
-    readState.destroy()
-    raster
-  }
+                targetExtent:RasterExtent): Raster = 
+    readRaster(readStateFromCache(bytes, rasterType, rasterExtent, targetExtent))
+
+  private def readRaster(readState:ReadState) = 
+    try {
+      readState.loadRaster()
+    } finally {
+      readState.destroy()
+    }
 }
