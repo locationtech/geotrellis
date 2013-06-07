@@ -1,0 +1,16 @@
+{
+  "layer": "sbn_tiled_3_5",
+  "datatype": "int8", 
+  "type": "arg",
+  "xmin": -8417897.884860,
+  "xmax": -8398697.884860,
+  "ymin": 4839565.691474,
+  "ymax": 4858765.691474,
+  "cols": 256,
+  "rows": 256,
+  "cellwidth": 75.000000,
+  "cellheight": 75.000000,
+  "epsg": 3785,
+  "yskew": 0.0,
+  "xskew": 0.0
+}

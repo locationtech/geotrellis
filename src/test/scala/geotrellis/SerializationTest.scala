@@ -15,7 +15,8 @@ import geotrellis.statistics._
 @RunWith(classOf[JUnitRunner])
 class SerializationTest extends FunSuite 
                         with ShouldMatchers 
-                        with RasterBuilders {
+                        with RasterBuilders 
+                        with TestServer {
 
   // Operations and data objects that may be sent remotely must be serializable.
   test("Operation and data object serialization test") {
@@ -26,6 +27,10 @@ class SerializationTest extends FunSuite
     pickle(local.Add(addOp, 2))
     pickle(FastMapHistogram())
     pickle(Statistics(0,0,0,0,0,0))
+  }
+
+  test("Tile Rasters are serializable") {
+    pickle(run(io.LoadRaster("sbn_tiled")))
   }
 
   def pickle(o:AnyRef) = {

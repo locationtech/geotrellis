@@ -7,5 +7,6 @@ case class RasterLayerInfo(name:String,
                            rasterExtent:RasterExtent,
                            epsg:Int,
                            xskew:Double,
-                           yskew:Double)
+                           yskew:Double,
+                           shouldCache:Boolean = false)
 
