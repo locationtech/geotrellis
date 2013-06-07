@@ -24,9 +24,20 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String, sou
   private var cacheSet = false
   def initCache() =
     if(!cacheSet) {
+      // Cache all layers if the DataStore has cacheAll set
       stores.values
             .filter(_.hasCacheAll)
             .map(_.cacheAll)
+
+      // If the DataStore didn't cache due to the cacheAll flag,
+      // find any layer that has the cache flag set and cache those layers.
+      stores.values
+            .filter(!_.hasCacheAll)
+            .map(_.getLayers)
+            .flatten
+            .filter(_.info.shouldCache)
+            .map(_.cache)
+
       cacheSet = true
     }
 

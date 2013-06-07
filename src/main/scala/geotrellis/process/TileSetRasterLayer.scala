@@ -54,11 +54,17 @@ extends RasterLayerBuilder {
                                  rasterExtent,
                                  getEpsg(json),
                                  getXskew(json),
-                                 getYskew(json))
+                                 getYskew(json),
+                                 getCacheFlag(json))
 
       Some(new TileSetRasterLayer(info,tileDirPath,layout,cache))
     }
   }
+}
+
+object TileSetRasterLayer {
+  def tileCacheName(info:RasterLayerInfo,col:Int,row:Int) = 
+    s"${info.name}_${col}_${row}"
 }
 
 class TileSetRasterLayer(info:RasterLayerInfo, 
@@ -136,14 +142,28 @@ extends RasterLayer(info,c) {
                       getTileLoader)
 
   def getTileLoader() =
-    new TileLoader(tileDirPath,info,tileLayout)
+    if(cached)
+      new CacheTileLoader(info,tileLayout,c.get)
+    else 
+      new DiskTileLoader(info,tileLayout,tileDirPath)
 
-  def cache() = {} // TODO: Implement
+  private var cached = false
+  def cache() = {
+    if(!cached && c.isDefined) {
+      val cch = c.get
+      cfor(0)(_ < tileLayout.tileCols, _ + 1) { col =>
+        cfor(0)(_ < tileLayout.tileRows, _ + 1) { row =>
+          val path = Tiler.tilePath(tileDirPath, info.name, col, row)
+          cch.insert(TileSetRasterLayer.tileCacheName(info,col,row), Filesystem.slurp(path))
+        }
+      }
+      cached = true
+    }
+  }
 }
 
-class TileLoader(tileDirPath:String,
-                 tileSetInfo:RasterLayerInfo,
-                 tileLayout:TileLayout) {
+abstract class TileLoader(tileSetInfo:RasterLayerInfo,
+                          tileLayout:TileLayout) extends Serializable {
   val resLayout = tileLayout.getResolutionLayout(tileSetInfo.rasterExtent)
 
   val rasterExtent = tileSetInfo.rasterExtent
@@ -154,8 +174,33 @@ class TileLoader(tileDirPath:String,
        tileLayout.tileCols <= col || tileLayout.tileRows <= row) {
       Raster(IntConstant(NODATA, rasterExtent.cols, rasterExtent.rows),  rasterExtent)
     } else {
+      loadRaster(col,row,re)
+    }
+  }
+
+  protected def loadRaster(col:Int,row:Int,re:RasterExtent):Raster
+}
+
+class DiskTileLoader(tileSetInfo:RasterLayerInfo,
+                     tileLayout:TileLayout,
+                     tileDirPath:String)
+extends TileLoader(tileSetInfo,tileLayout) {
+  def loadRaster(col:Int,row:Int,re:RasterExtent) = {
       val path = Tiler.tilePath(tileDirPath, tileSetInfo.name, col, row)
       new ArgReader(path).readPath(tileSetInfo.rasterType,re,re)
+  }
+}
+
+class CacheTileLoader(tileSetInfo:RasterLayerInfo,
+                      tileLayout:TileLayout,
+                      c:Cache)
+extends TileLoader(tileSetInfo,tileLayout) {
+  def loadRaster(col:Int,row:Int,re:RasterExtent) = {
+    c.lookup[Array[Byte]](TileSetRasterLayer.tileCacheName(tileSetInfo,col,row)) match {
+      case Some(bytes) =>
+        new ArgReader("").readCache(bytes, tileSetInfo.rasterType, re, re)
+      case None =>
+        sys.error("Cache problem: Tile thinks it's cached but it is in fact not cached.")
     }
   }
 }
