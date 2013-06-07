@@ -17,7 +17,7 @@ import geotrellis._
  * The data component is generic.
  *
  */
-trait Feature[+G <: jts.Geometry, D] {
+trait Feature[+G <: jts.Geometry, D] extends Serializable {
 
   /**
    * Returns geometry as a JTS Geometry object.
@@ -133,7 +133,7 @@ object Point {
    * @param   y   y coordinate
    */
   def apply(x: Double, y: Double) = {
-    JtsPoint(factory.createPoint(new jts.Coordinate(x, y)), Unit)
+    JtsPoint(factory.createPoint(new jts.Coordinate(x, y)), None)
   } 
   /**
    * Create a point feature from a JTS point instance.
