@@ -149,4 +149,120 @@ class RasterExtentSpec extends FunSpec with MustMatchers
       }
     }
   }
+
+  describe("Creating aligned RasterExtent based on an extent") {
+    it("should handle an extent contained within the RasterExtent") {
+      val xmin = 1.0
+      val xmax = 13.0
+      val cellwidth = 0.5
+      val cols = 24
+
+      val ymin = -1.3
+      val ymax = -0.3
+      val cellheight = 0.1
+      val rows = 10
+
+      val rasterExtent = 
+        RasterExtent(Extent(xmin,ymin,xmax,ymax),cellwidth,cellheight,cols,rows)
+
+      val xmin2 = 2.3
+      val xmax2 = 11.2
+      val ymin2 = -0.934
+      val ymax2 = -0.45
+
+      val extent = Extent(xmin2,ymin2,xmax2,ymax2)
+
+      val result = rasterExtent.createAligned(extent)
+
+      val xmin_expected = 2.0
+      val xmax_expected = 11.5
+      val cols_expected = 19
+
+      val ymin_expected = -1.0
+      val ymax_expected = -0.4
+      val rows_expected = 6
+
+      val expected = 
+        RasterExtent(Extent(xmin_expected,ymin_expected,xmax_expected,ymax_expected),
+                     cellwidth, cellheight, cols_expected, rows_expected)
+
+      result should be (expected)
+    }
+
+    it("should handle an extent not contained within the RasterExtent, to the northeast") {
+      val xmin = 1.0
+      val xmax = 13.0
+      val cellwidth = 0.5
+      val cols = 24
+
+      val ymin = -1.3
+      val ymax = -0.3
+      val cellheight = 0.1
+      val rows = 10
+
+      val rasterExtent = 
+        RasterExtent(Extent(xmin,ymin,xmax,ymax),cellwidth,cellheight,cols,rows)
+
+      val xmin2 = 2.3
+      val xmax2 = 15.2
+      val ymin2 = -0.934
+      val ymax2 = 0.12
+
+      val extent = Extent(xmin2,ymin2,xmax2,ymax2)
+
+      val result = rasterExtent.createAligned(extent)
+
+      val xmin_expected = 2.0
+      val xmax_expected = 15.5
+      val cols_expected = 27
+
+      val ymin_expected = -1.0
+      val ymax_expected = 0.2
+      val rows_expected = 12
+
+      val expected = 
+        RasterExtent(Extent(xmin_expected,ymin_expected,xmax_expected,ymax_expected),
+                     cellwidth, cellheight, cols_expected, rows_expected)
+
+      result should be (expected)
+    }
+
+    it("should handle an extent not contained within the RasterExtent, to the southwest") {
+      val xmin = 1.0
+      val xmax = 13.0
+      val cellwidth = 0.5
+      val cols = 24
+
+      val ymin = -1.3
+      val ymax = -0.3
+      val cellheight = 0.1
+      val rows = 10
+
+      val rasterExtent = 
+        RasterExtent(Extent(xmin,ymin,xmax,ymax),cellwidth,cellheight,cols,rows)
+
+      val xmin2 = -4.3
+      val xmax2 = 11.2
+      val ymin2 = -1.73
+      val ymax2 = -0.45
+
+      val extent = Extent(xmin2,ymin2,xmax2,ymax2)
+
+      val result = rasterExtent.createAligned(extent)
+
+      val xmin_expected = -4.5
+      val xmax_expected = 11.5
+      val cols_expected = 32
+
+      val ymin_expected = -1.8
+      val ymax_expected = -0.4
+      val rows_expected = 14
+
+      val expected = 
+        RasterExtent(Extent(xmin_expected,ymin_expected,xmax_expected,ymax_expected),
+                     cellwidth, cellheight, cols_expected, rows_expected)
+
+      result should be (expected)
+    }
+  }
 }
