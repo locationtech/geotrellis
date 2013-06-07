@@ -11,7 +11,7 @@ object PolygonRasterizer {
    */
   def foreachCellByPolygon[D](p:Polygon[D], re:RasterExtent, includeExterior:Boolean=false)( f:Callback[Polygon,D]) {
     // If polygon does not intersect with this raster's extent, skip.
-    val rasterGeom = re.extent.asFeature(()).geom
+    val rasterGeom = re.extent.asFeature(None).geom
     if (! p.geom.intersects(rasterGeom)) { return }
 
     processPolygon( p, re:RasterExtent, includeExterior )(f)

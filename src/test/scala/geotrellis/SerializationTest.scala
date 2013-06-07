@@ -11,6 +11,7 @@ import geotrellis._
 import geotrellis.testutil._
 import geotrellis.raster.op._
 import geotrellis.statistics._
+import geotrellis.feature._
 
 @RunWith(classOf[JUnitRunner])
 class SerializationTest extends FunSuite 
@@ -27,6 +28,8 @@ class SerializationTest extends FunSuite
     pickle(local.Add(addOp, 2))
     pickle(FastMapHistogram())
     pickle(Statistics(0,0,0,0,0,0))
+    pickle(Point(0,0, None))
+    pickle(Polygon( (1,9) :: (1,6) :: (4,6) :: (4,9) :: (1,9) :: Nil, None ))
   }
 
   test("Tile Rasters are serializable") {
