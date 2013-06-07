@@ -11,7 +11,7 @@ import scala.reflect.runtime.universe._
 package object geometry {
 
   val GetExtent = liftOp { (a: Raster) => a.rasterExtent.extent }
-  val AsFeature = liftOp { (e: Extent) => e.asFeature(()) }
+  val AsFeature = liftOp { (e: Extent) => e.asFeature(None) }
 
 
   /**
