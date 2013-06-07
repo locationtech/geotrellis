@@ -1,0 +1,22 @@
+{
+    "cache" : true,
+    "cellheight": 10.0,
+    "cellwidth": 10.0,
+    "cols": "1200",
+    "datatype": "float32",
+    "epsg": "26710",
+    "layer": "mtsthelens_tiled_cached",
+    "layout_cols": "4",
+    "layout_rows": "5",
+    "pixel_cols": "300",
+    "pixel_rows": "300",
+    "rows": "1500",
+    "tile_base": "mtsthelens_tiled_cached",
+    "type": "tiled",
+    "xmax": 567610.0,
+    "xmin": 557820.0,
+    "xskew": 0,
+    "ymax": 5121980.0,
+    "ymin": 5107980.0,
+    "yskew": 0
+}

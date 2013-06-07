@@ -53,6 +53,13 @@ trait RasterLayerBuilder {
     parseType(json.getString("datatype"))
   }
 
+  def getCacheFlag(json:Config):Boolean = 
+    if(json.hasPath("cache")) {
+      json.getBoolean("cache")
+    } else {
+      false
+    }
+
   def parseType(s:String):RasterType = s match {
     case "bool" => TypeBit
     case "int8" => TypeByte

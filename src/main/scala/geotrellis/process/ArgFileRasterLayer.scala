@@ -33,7 +33,8 @@ extends RasterLayerBuilder {
         rasterExtent,
         getEpsg(json),
         getXskew(json),
-        getYskew(json))
+        getYskew(json),
+        getCacheFlag(json))
 
       Some(new ArgFileRasterLayer(info,path,cache))
     }
@@ -50,7 +51,7 @@ extends RasterLayer(info,c) {
         case Some(bytes) =>
           getReader.readCache(bytes, info.rasterType, info.rasterExtent, targetExtent)
         case None =>
-          sys.error("Cache problem: Layer things it's cached but it is in fact not cached.")
+          sys.error("Cache problem: Layer thinks it's cached but it is in fact not cached.")
       }
     } else {
       getReader.readPath(info.rasterType, info.rasterExtent, targetExtent)
