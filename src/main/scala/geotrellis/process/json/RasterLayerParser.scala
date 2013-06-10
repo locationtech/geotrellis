@@ -16,12 +16,12 @@ object RasterLayerParser {
     case s => sys.error("unsupported datatype '%s'" format s)
   }
 
-  def apply(jsonString:String,path:String = "", cache:Option[Cache] = None) = {
+  def apply(jsonString:String,path:String = "") = {
         val json = ConfigFactory.parseString(jsonString)
         val layerType = json.getString("type").toLowerCase
 
         Catalog.getRasterLayerBuilder(layerType) match {
-          case Some(builder) => builder(path,json,cache)
+          case Some(builder) => builder(path,json)
           case None => 
             System.err.println(s"[ERROR]  Raster layer defined at $path has raster layer type $layerType " +
                                 "for which this catalog has no builder.")

@@ -18,7 +18,7 @@ extends RasterLayerBuilder {
     Catalog.addRasterLayerBuilder("geotiff", GeoTiffRasterLayerBuilder)
   }
 
-  def apply(jsonPath:String, json:Config, cache:Option[Cache]):Option[RasterLayer] = {
+  def apply(jsonPath:String, json:Config):Option[RasterLayer] = {
     val path = 
       if(json.hasPath("path")) {
         new File(new File(jsonPath).getParentFile, json.getString("path")).getPath
@@ -41,11 +41,11 @@ extends RasterLayerBuilder {
                                  getXskew(json),
                                  getYskew(json))
 
-      Some(new GeoTiffRasterLayer(info,path,cache))
+      Some(new GeoTiffRasterLayer(info,path))
     }
   }
 
-  def fromTif(path:String, cache:Option[Cache] = None):GeoTiffRasterLayer = {
+  def fromTif(path:String):GeoTiffRasterLayer = {
     val f = new File(path)
     if(!f.exists) {
       sys.error(s"File $path does not exist")
@@ -70,12 +70,12 @@ extends RasterLayerBuilder {
       0,
       0)
 
-    new GeoTiffRasterLayer(info,path,cache)
+    new GeoTiffRasterLayer(info,path)
   }
 }
 
-class GeoTiffRasterLayer(info:RasterLayerInfo, rasterPath:String, c:Option[Cache]) 
-extends RasterLayer(info,c) {
+class GeoTiffRasterLayer(info:RasterLayerInfo, rasterPath:String) 
+extends RasterLayer(info) {
   def getRaster(targetExtent:Option[RasterExtent]) = {
     new GeoTiffReader(rasterPath).readPath(info.rasterType,info.rasterExtent,targetExtent)
   }

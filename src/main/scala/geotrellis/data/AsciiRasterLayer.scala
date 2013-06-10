@@ -13,7 +13,7 @@ extends RasterLayerBuilder {
   val intRe = """^(-?[0-9]+)$""".r
   val floatRe = """^(-?[0-9]+\.[0-9]+)$""".r
 
-  def apply(jsonPath:String, json:Config, cache:Option[Cache]):Option[RasterLayer] = {
+  def apply(jsonPath:String, json:Config):Option[RasterLayer] = {
     val path = 
       if(json.hasPath("path")) {
         json.getString("path")
@@ -55,7 +55,7 @@ extends RasterLayerBuilder {
         getXskew(json),
         getYskew(json))
 
-      Some(new AsciiRasterLayer(info,noDataValue,path,cache))
+      Some(new AsciiRasterLayer(info,noDataValue,path))
     }
   }
 
@@ -75,7 +75,7 @@ extends RasterLayerBuilder {
       0,
       0)
 
-    new AsciiRasterLayer(info,noDataValue,path,cache)
+    new AsciiRasterLayer(info,noDataValue,path)
   }
 
   def getBufferedReader(path:String) = {
@@ -133,13 +133,13 @@ extends RasterLayerBuilder {
   }
 }
 
-class AsciiRasterLayer(info:RasterLayerInfo, noDataValue:Int, rasterPath:String, c:Option[Cache]) 
-extends RasterLayer(info,c) {
+class AsciiRasterLayer(info:RasterLayerInfo, noDataValue:Int, rasterPath:String) 
+extends RasterLayer(info) {
   private var cached = false
 
   def getRaster(targetExtent:Option[RasterExtent]) =
     if(cached) {
-      c.get.lookup[Array[Byte]](info.name) match {
+      _cache.get.lookup[Array[Byte]](info.name) match {
         case Some(bytes) =>
           getReader.readCache(bytes, info.rasterType, info.rasterExtent, targetExtent)
         case None =>
@@ -150,11 +150,13 @@ extends RasterLayer(info,c) {
     }
 
   def cache = 
-    c match {
-      case Some(cch) =>
-        cch.insert(info.name, Filesystem.slurp(rasterPath))
-        cached = true
-      case None => //do nothing
+    if(!cached) {
+      _cache match {
+        case Some(c) =>
+          c.insert(info.name, Filesystem.slurp(rasterPath))
+          cached = true
+        case None => //do nothing
+      }
     }
 
   private def getReader = new AsciiReader(rasterPath, noDataValue)

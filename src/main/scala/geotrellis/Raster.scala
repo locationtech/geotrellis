@@ -76,6 +76,33 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
   } 
 
   /**
+   * Return tuple of highest and lowest value in raster.
+   *
+   * @note   Currently does not support double valued raster data types
+   *         (TypeFloat,TypeDouble). Calling findMinMax on rasters of those
+   *         types will give the integer min and max of the rounded values of
+   *         their cells.
+   */
+  def findMinMaxDouble = {
+    var zmin = Double.NaN
+    var zmax = Double.NaN
+
+    data.foreachDouble {
+      z => if (!java.lang.Double.isNaN(z)) {
+        if(java.lang.Double.isNaN(zmin)) {
+          zmin = z
+          zmax = z
+        } else {
+          zmin = min(zmin, z)
+          zmax = max(zmax, z)
+        }
+      }
+    }
+
+    (zmin, zmax)
+  } 
+
+  /**
    * Test [[geotrellis.RasterExtent]] of other raster w/ our own geographic
    *attributes.
    */

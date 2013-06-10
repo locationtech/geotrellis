@@ -10,7 +10,7 @@ import com.typesafe.config.Config
  * Information out of the metadata json files.
  */
 trait RasterLayerBuilder {
-  def apply(path:String, json:Config, cache:Option[Cache]):Option[RasterLayer]
+  def apply(path:String, json:Config):Option[RasterLayer]
 
   def getName(json:Config) = json.getString("layer")
 

@@ -8,8 +8,12 @@ import geotrellis.data.FileReader
 import geotrellis.data.arg.ArgReader
 
 
-abstract class RasterLayer(val info:RasterLayerInfo,
-                           private val c:Option[Cache]) {
+abstract class RasterLayer(val info:RasterLayerInfo) {
+  protected var _cache:Option[Cache] = None
+  def setCache(c:Option[Cache]) = {
+    _cache = c
+  }
+
   def getRaster():Raster = getRaster(None)
   def getRaster(targetExtent:Option[RasterExtent]):Raster
 
@@ -23,20 +27,20 @@ object RasterLayer {
   /**
    * Build a RasterLayer instance given a path to a JSON file.
    */
-  def fromPath(path:String, cache:Option[Cache] = None) = {
+  def fromPath(path:String) = {
     val base = Filesystem.basename(path) + ".json"
     val src = Source.fromFile(path)
     val data = src.mkString
     src.close()
-    fromJSON(data, base, cache)
+    fromJSON(data, base)
   }
 
-  def fromFile(f:File, cache:Option[Cache] = None) = RasterLayer.fromPath(f.getAbsolutePath, cache)
+  def fromFile(f:File) = RasterLayer.fromPath(f.getAbsolutePath)
 
   /**
    * Build a RasterLayer instance given a JSON string.
    */
-  def fromJSON(data:String, basePath:String, cache:Option[Cache] = None):Option[RasterLayer] = {
-    json.RasterLayerParser(data, basePath, cache)
+  def fromJSON(data:String, basePath:String):Option[RasterLayer] = {
+    json.RasterLayerParser(data, basePath)
   }
 }

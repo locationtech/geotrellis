@@ -12,7 +12,7 @@ class Context(server:Server) {
    * the .arg extension. This function moves the latter
    * path into the metadata path.
    */
-  private def processPath(path:String):String =
+  def processPath(path:String):String =
     if(path.endsWith(".arg")) {
       path.substring(0,path.length - 4) + ".json"
     } else {
@@ -99,5 +99,17 @@ class Context(server:Server) {
     server.catalog.getRasterLayerByName(name) match {
       case Some(layer) => layer.info.rasterExtent
       case None => sys.error(s"couldn't find raster $name in catalog at ${server.catalog.source}")
+    }
+
+  def getRasterLayerInfo(name:String):RasterLayerInfo =
+    server.catalog.getRasterLayerByName(name) match {
+      case Some(layer) => layer.info
+      case None => sys.error(s"couldn't find raster $name in catalog at ${server.catalog.source}")
+    }
+
+  def getRasterLayerInfoFromPath(path:String):RasterLayerInfo =
+    RasterLayer.fromPath(processPath(path)) match {
+      case Some(layer) => layer.info
+      case None => sys.error(s"couldn't get raster layer from path $path")
     }
 }
