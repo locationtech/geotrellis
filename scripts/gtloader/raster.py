@@ -6,6 +6,7 @@ import struct
 import array
 import json
 import gdal
+import math
 
 import log
 import projection
@@ -96,16 +97,18 @@ class GdalLayer():
         if size is None:
             size = self.cols
 
-        unpack_str = '>' + (self.fchar * size)
+        unpack_str = '%d%s' % (size,self.fchar)
 
         scanline = self.band.ReadRaster(
             offset, row, size, 1, size, 1, self.band.DataType)
 
         return list(struct.unpack(unpack_str, scanline))
 
-    def write_metadata(self, path, name):
+    def write_metadata(self, path, name, data_type = None):
         m = self.toMap()
         m['layer'] = name
+        if data_type:
+            m['datatype'] = data_type
 
         with file(path,'w') as mdf:
             mdf.write(
@@ -113,7 +116,6 @@ class GdalLayer():
                            sort_keys=True,
                            indent=4,
                            separators=(',',': ')) + '\n')
-
 
     def write_arg(self, 
                   path, 
@@ -135,10 +137,7 @@ class GdalLayer():
         """
         if not data_type:
             data_type = self.datatype
-
-        if os.path.exists(path):
-            log.error("File %s already exists" % path)
-
+            
         # Process the windows for clipping
         if window is None:
             window = (0, 0, self.raster_extent.cols, self.raster_extent.rows)
@@ -153,6 +152,10 @@ class GdalLayer():
         total_rows = end_row - start_row
 
         ndv = self.band.GetNoDataValue()
+        # if NoData is 128 and type is byte, 128 is read in as -128
+        if self.datatype == 'int8' and ndv == 128:
+            ndv = -128
+
         arg_no_data = nodata_for_fmt(data_type)
 
         psize = int(total_rows / 100)
@@ -183,9 +186,8 @@ class GdalLayer():
                     ar = prerow + ar
                 if postrow:
                     ar = ar + postrow
-
             # Replace nodata before verification
-            data = array.array(to_datatype_str(self.band.DataType), ar)
+            data = array.array(to_struct_fmt(data_type), ar)
             for i in xrange(0,len(data)):
                 if data[i] == ndv:
                     data[i] = arg_no_data

@@ -5,12 +5,12 @@ This module deals with raster data types.
 from gdalconst import *
 
 class arg:
-    datatypes = ['bit','int8','int16','int32','int64','float32','float64']
+    datatypes = ['bit','int8','int16','int32','float32','float64']
 
 # Convert between gdal datatypes
 # and python struct package format strings
 gdt_datatype_map = {
-    GDT_Byte:     'B',
+    GDT_Byte:     'b',
     GDT_CInt16:   'h',
     GDT_Int16:    'h',
     GDT_CInt32:   'i',
@@ -31,7 +31,7 @@ gdal_arg_datatype_map = {
     GDT_CInt32:   'int32',
     GDT_Int32:    'int32',
     GDT_UInt16:   'int32',
-    GDT_UInt32:   'int64',
+    GDT_UInt32:   'float32',
     GDT_Float32:  'float32',
     GDT_CFloat32: 'float32',
     GDT_Float64:  'float64'
@@ -44,7 +44,6 @@ inp_datatype_map = {
     'int8':    'b',
     'int16':   'h',
     'int32':   'i',
-    'int64':   'q',
     'float32': 'f',
     'float64': 'd'
 }
@@ -55,7 +54,6 @@ nodata_map = {
     'int8':    -2**7,
     'int16':   -2**15,
     'int32':   -2**31,
-    'int64':   -2**63,
     'float32': float('nan'),
     'float64': float('nan')
 }

@@ -38,11 +38,13 @@ class ArgWriter():
 
         values is a list-like structure with the data to write
         """
-        outputfmt = '>' + (self.sfmt * len(values))
+        endian = '>'
+        outputfmt = "%s%d%s" % (endian,len(values),self.sfmt)
         try:
             self.buf.write(struct.pack(outputfmt, *values))
         except Exception, e:
             if self.verify:
+                print 'Verifying data...'
                 for v in values:
                     #TODO: Handle bit types specially
 
@@ -50,8 +52,8 @@ class ArgWriter():
                     failed = False
                     nv = None
                     try:
-                        nv = struct.unpack('>' + self.sfmt,
-                                           struct.pack('>' + self.sfmt, v))[0]
+                        nv = struct.unpack(endian + self.sfmt,
+                                           struct.pack(endian + self.sfmt, v))[0]
                     except struct.error, e:
                         print e
                         failed = True
@@ -66,8 +68,9 @@ class ArgWriter():
                               'convert to %s resuled in: %s -> %s' %\
                               (self.datatype, v, nv))
             else: # Just make it work
+                print 'Truncating values...'
                 for i in xrange(0,len(values)):
-                    self.buf.write(struct.pack('>' + self.sfmt, self.truncate(values[i])))
+                    self.buf.write(struct.pack(endian + self.sfmt, self.truncate(values[i])))
 
     def get_truncator(self):
         """ Return a function that is able to truncate data

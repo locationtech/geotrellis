@@ -1,7 +1,7 @@
 """
 Converts between GDAL and python rasters.
 """
-import sys, os
+import sys, os, shutil
 import math
 import json
 import log
@@ -17,7 +17,8 @@ def convert(inputPath,
             verify = True,
             rows_per_tile = None,
             cols_per_tile = None,
-            legacy = False):
+            legacy = False,
+            clobber = False):
     layer = GdalLayer(inputPath, band)
 
     log.notice("Loading raster with width %s, height %s" %
@@ -38,7 +39,7 @@ def convert(inputPath,
         log.error('Could not determine datatype')
 
     if not layer_name:
-        layer_name = '.'.join(layer.path.split('.')[:-1])
+        layer_name = '.'.join(os.path.basename(layer.path).split('.')[:-1])
 
     if rows_per_tile and cols_per_tile:
         if os.path.isfile(output_path):
@@ -46,8 +47,24 @@ def convert(inputPath,
 
         # Check if output is ready for files
         tile_dir = os.path.join(output_path, layer_name)
+        if legacy:
+            # GeoTrellis 0.8.x puts the metadata file inside the 
+            # tile directory, and names it layout.json
+            json_path = os.path.join(tile_dir,'layout.json')
+        else:
+            json_path = os.path.join(output_path,'%s.json' % layer_name)
+
         if os.path.exists(tile_dir):
-            log.error('Output directory %s already exists' % tile_dir)
+            if clobber:
+                shutil.rmtree(tile_dir)
+            else:
+                log.error('Output directory %s already exists' % tile_dir)
+
+        if os.path.exists(json_path):
+            if clobber:
+                os.remove(json_path)
+            else:
+                log.error('File %s already exists' % json_path)
 
         tile_row_size = rows_per_tile
         tile_col_size = cols_per_tile
@@ -76,21 +93,12 @@ def convert(inputPath,
         # Make the directory that will hold the tiles
         os.makedirs(tile_dir)
 
-        if legacy:
-            # GeoTrellis 0.8.x puts the metadata file inside the 
-            # tile directory, and names it layout.json
-            json_path = os.path.join(tile_dir,'layout.json')
-        else:
-            json_path = os.path.join(output_path,'%s.json' % layer_name)
-
         with file(json_path,'w') as mdf:
             mdf.write(
                 json.dumps(tile_metadata,
                            sort_keys=True,
                            indent=4,
                            separators=(',',': ')) + '\n')
-
-
 
         tile_name_ft = '%s_%%d_%%d' % layer_name
         tile_path_ft = os.path.join(tile_dir,'%s.arg' % tile_name_ft)
@@ -155,5 +163,17 @@ def convert(inputPath,
 
         metadata_file = output_path[0:-4] + '.json'
 
+        if os.path.exists(output_path):
+            if clobber:
+                os.remove(output_path)
+            else:
+                log.error("File %s already exists" % output_path)
+
+        if os.path.exists(metadata_file):
+            if clobber:
+                os.remove(metadata_file)
+            else:
+                log.error("File %s already exists" % metadata_file)
+
         layer.write_arg(output_path, data_type, verify = verify)
-        layer.write_metadata(metadata_file, layer_name)
+        layer.write_metadata(metadata_file, layer_name, data_type)
