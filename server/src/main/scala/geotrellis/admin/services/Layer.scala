@@ -26,12 +26,13 @@ class Layer {
     @DefaultValue("") @QueryParam("layer") layer:String,
     @Context req:HttpServletRequest
   ):Response = {
-    val r = io.LoadRasterExtent(layer);
-    GeoTrellis.run(r) match {
-      case process.Complete(rasterExtent,h) =>
+    val op = io.LoadRasterLayerInfo(layer);
+    GeoTrellis.run(op) match {
+      case process.Complete(info,h) =>
         OK.json(s"""{
           "name" : "${layer}",
-          "rasterExtent" : ${rasterExtent.toJson}
+          "rasterExtent" : ${info.rasterExtent.toJson},
+          "datatype" :" ${info.rasterType}"
          }""")
            .allowCORS()
       case process.Error(message,failure) =>
