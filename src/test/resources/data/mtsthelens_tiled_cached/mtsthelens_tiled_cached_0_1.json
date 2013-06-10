@@ -1,16 +1,16 @@
 {
     "cellheight": 10.0,
     "cellwidth": 10.0,
-    "cols": 300,
+    "cols": 400,
     "datatype": "float32",
     "epsg": "26710",
     "layer": "mtsthelens_tiled_cached_0_1",
-    "rows": 300,
+    "rows": 400,
     "type": "arg",
-    "xmax": 560820.0,
+    "xmax": 561820.0,
     "xmin": 557820.0,
     "xskew": 0,
-    "ymax": 5118980.0,
-    "ymin": 5115980.0,
+    "ymax": 5117980.0,
+    "ymin": 5113980.0,
     "yskew": 0
 }
