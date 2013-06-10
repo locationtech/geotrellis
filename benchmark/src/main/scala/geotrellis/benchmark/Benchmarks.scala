@@ -11,7 +11,7 @@ import geotrellis.data._
 import geotrellis.data.png._
 import geotrellis.raster.op._
 import geotrellis.io._
-import geotrellis.raster.op.focal.Normalize
+import geotrellis.raster.op.focal.Rescale
 import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.statistics._
@@ -59,8 +59,7 @@ trait OperationBenchmark extends SimpleBenchmark {
                                                        re,
                                                        0,0,0),
                                        "/tmp",
-                                       Tiler.buildTileLayout(re,pixelCols,pixelRows),
-                                       None)
+                                       Tiler.buildTileLayout(re,pixelCols,pixelRows))
 
     val trd = layer.getData()
     val tiledArrayRaster = Raster(trd, re)
@@ -333,7 +332,7 @@ class WeightedOverlay extends OperationBenchmark {
     val reOp = getRasterExtentOp(names(0), size, size)
     val total = weights.sum
     val rs = (0 until n).map(i => MultiplyConstant(LoadRaster(names(i), reOp), weights(i)))
-    val rasterOp = Normalize(DivideConstant(Add(rs: _*), total), (1, 100))
+    val rasterOp = Rescale(DivideConstant(Add(rs: _*), total), (1, 100))
     val h = GetHistogram(rasterOp, 101) 
     val breaksOp = stat.GetColorBreaks(h, colors)
     op = RenderPng(rasterOp, breaksOp, h, 0)
@@ -445,8 +444,7 @@ class BigMinTiled extends OperationBenchmark{
                                                        re,
                                                        0,0,0),
                                        "/tmp",
-                                       layout,
-                                       None)
+                                       layout)
 
     val trd = layer.getData()
     val tileSetRD = TileSetRasterData("/tmp", "big", TypeByte, layout, layer.getTileLoader)

@@ -189,14 +189,12 @@ abstract class BReducer1[B:Manifest, C:Manifest](r:Op[Raster])(handle:Raster => 
   def _run(context:Context) = runAsync('init :: r :: Nil)
 
   val nextSteps:Steps = {
-    //case _ => Result(null.asInstanceOf[C])
     case 'init :: (r:Raster) :: Nil => init(r)
     case 'reduce :: (bs:List[_]) => Result(reducer(bs.asInstanceOf[List[B]]))
   }
 
   def init(r:Raster) = {
     r.data match {
-      //case _ => runAsync('reduce :: r.getTileList.map(mapper))
       case _:TiledRasterData => runAsync('reduce :: r.getTileOpList.map(mapper))
       case _ => Result(reducer(handle(r) :: Nil))
     }

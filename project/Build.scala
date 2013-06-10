@@ -166,6 +166,10 @@ object GeotrellisBuild extends Build {
 
   def benchmarkSettings = Seq(
      scalaVersion := "2.10.0",
+    scalacOptions ++= Seq("-deprecation", 
+                          "-unchecked", 
+                          "-language:postfixOps", 
+                          "-feature"),
 
     // raise memory limits here if necessary
     javaOptions += "-Xmx8G",

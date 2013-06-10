@@ -8,5 +8,7 @@ case class RasterLayerInfo(name:String,
                            epsg:Int,
                            xskew:Double,
                            yskew:Double,
-                           shouldCache:Boolean = false)
+                           shouldCache:Boolean = false) {
+  var cached = false
+}
 

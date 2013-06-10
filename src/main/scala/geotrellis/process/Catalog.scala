@@ -41,6 +41,9 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String, sou
             .map(_.cache)
 
       cacheSet = true
+    } else {
+      sys.error("Cache has already been set for this Catalog. " +
+                "You may not set the cache more than once during a Catalog's lifetime.")
     }
 
   def initCache(cache:Cache):Unit = initCache(Some(cache))

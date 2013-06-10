@@ -43,11 +43,9 @@ extends RasterLayerBuilder {
 
 class ArgFileRasterLayer(info:RasterLayerInfo, rasterPath:String) 
 extends RasterLayer(info) {
-  private var cached = false
-
   def getRaster(targetExtent:Option[RasterExtent]) =
-    if(cached) {
-      _cache.get.lookup[Array[Byte]](info.name) match {
+    if(isCached) {
+      getCache.lookup[Array[Byte]](info.name) match {
         case Some(bytes) =>
           getReader.readCache(bytes, info.rasterType, info.rasterExtent, targetExtent)
         case None =>
@@ -57,13 +55,8 @@ extends RasterLayer(info) {
       getReader.readPath(info.rasterType, info.rasterExtent, targetExtent)
     }
 
-  def cache = 
-    _cache match {
-      case Some(c) =>
+  def cache(c:Cache) = 
         c.insert(info.name, Filesystem.slurp(rasterPath))
-        cached = true
-      case None => //do nothing
-    }
 
   private def getReader = new ArgReader(rasterPath)
 }

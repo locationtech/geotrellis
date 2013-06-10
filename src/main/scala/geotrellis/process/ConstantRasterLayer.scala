@@ -39,7 +39,7 @@ extends RasterLayer(info) {
     Raster(IntConstant(value,re.cols,re.rows),re)
   }
 
-  def cache = {} // No-op
+  def cache(c:Cache) = {} // No-op
 }
 
 class DoubleConstantLayer(info:RasterLayerInfo, value:Double) 
@@ -52,6 +52,6 @@ extends RasterLayer(info) {
     Raster(DoubleConstant(value,re.cols,re.rows),re)
   }
 
-  def cache = {} // No-op
+  def cache(c:Cache) = {} // No-op
 }
 

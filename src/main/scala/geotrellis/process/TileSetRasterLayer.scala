@@ -145,22 +145,17 @@ extends RasterLayer(info) {
                       getTileLoader)
 
   def getTileLoader() =
-    if(cached)
-      new CacheTileLoader(info,tileLayout,_cache.get)
+    if(isCached)
+      new CacheTileLoader(info,tileLayout,getCache)
     else 
       new DiskTileLoader(info,tileLayout,tileDirPath)
 
-  private var cached = false
-  def cache() = {
-    if(!cached && _cache.isDefined) {
-      val c = _cache.get
-      cfor(0)(_ < tileLayout.tileCols, _ + 1) { col =>
-        cfor(0)(_ < tileLayout.tileRows, _ + 1) { row =>
-          val path = Tiler.tilePath(tileDirPath, info.name, col, row)
-          c.insert(TileSetRasterLayer.tileCacheName(info,col,row), Filesystem.slurp(path))
-        }
+  def cache(c:Cache) = {
+    cfor(0)(_ < tileLayout.tileCols, _ + 1) { col =>
+      cfor(0)(_ < tileLayout.tileRows, _ + 1) { row =>
+        val path = Tiler.tilePath(tileDirPath, info.name, col, row)
+        c.insert(TileSetRasterLayer.tileCacheName(info,col,row), Filesystem.slurp(path))
       }
-      cached = true
     }
   }
 }

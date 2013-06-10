@@ -80,5 +80,5 @@ extends RasterLayer(info) {
     new GeoTiffReader(rasterPath).readPath(info.rasterType,info.rasterExtent,targetExtent)
   }
 
-  def cache() = { } // TODO: implement
+  def cache(c:Cache) = { } // TODO: implement
 }
