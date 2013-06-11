@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import argparse
+import argparse, os
 
 import log
 import catalog
@@ -27,6 +27,9 @@ class InfoCommand:
 class ConvertCommand:
     @staticmethod
     def execute(args):
+        if not os.path.isfile(args.input):
+            log.error("Path %s does not exist." % args.input)
+
         if (args.rows_per_tile and not args.cols_per_tile) or \
            (args.cols_per_tile and not args.rows_per_tile):
             log.error('You must specifiy both --rows-per-tile and '\
@@ -44,12 +47,13 @@ class ConvertCommand:
                 not args.no_verify,
                 args.cols_per_tile,
                 args.rows_per_tile,
-                args.legacy)
+                args.legacy,
+                args.clobber)
     
     @staticmethod
     def add_parser(subparsers):
         convert_parser = subparsers.add_parser('convert')
-        convert_parser.add_argument('--data-type',
+        convert_parser.add_argument('-t', '--data-type',
                                     help='Arg data type. Defaults to converting '\
                                     'between whatever the input datatype is. '\
                                     'Since unsigned types are not supported '\
@@ -57,21 +61,26 @@ class ConvertCommand:
                                     'the next highest signed type.',
                                     choices=arg.datatypes,
                                     default=None)
-        convert_parser.add_argument('--no-verify',
-                                    action='store_true',
-                                    help="Don't verify input data falls in a given "\
-                                    'range (just truncate)')
 
-        convert_parser.add_argument('--name',
+        convert_parser.add_argument('-n', '--name',
                                     default=None,
                                     help='Each layer requires a name for the '\
                                          'metadata. By default the name is '\
                                          'input file without the extension.')
 
-        convert_parser.add_argument('--band',
+        convert_parser.add_argument('-b', '--band',
                                     type=int,
                                     default=1,
                                     help='A specific band to extract')
+
+        convert_parser.add_argument('--clobber',
+                                    action='store_true',
+                                    help='Clobber existing files or directories.')
+
+        convert_parser.add_argument('--no-verify',
+                                    action='store_true',
+                                    help="Don't verify input data falls in a given "\
+                                    'range (just truncate)')
 
         # File names
         convert_parser.add_argument('input',

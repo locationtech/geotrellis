@@ -16,7 +16,7 @@ import spire.syntax._
 
 object TileSetRasterLayerBuilder
 extends RasterLayerBuilder {
-  def apply(jsonPath:String, json:Config, cache:Option[Cache]):Option[RasterLayer] = {
+  def apply(jsonPath:String, json:Config):Option[RasterLayer] = {
     val tileDir = 
       if(json.hasPath("path")) {
         val f = new File(json.getString("path"))
@@ -57,7 +57,7 @@ extends RasterLayerBuilder {
                                  getYskew(json),
                                  getCacheFlag(json))
 
-      Some(new TileSetRasterLayer(info,tileDirPath,layout,cache))
+      Some(new TileSetRasterLayer(info,tileDirPath,layout))
     }
   }
 }
@@ -69,9 +69,8 @@ object TileSetRasterLayer {
 
 class TileSetRasterLayer(info:RasterLayerInfo, 
                          val tileDirPath:String,
-                         val tileLayout:TileLayout,
-                         c:Option[Cache])
-extends RasterLayer(info,c) {
+                         val tileLayout:TileLayout)
+extends RasterLayer(info) {
   def getRaster(targetExtent:Option[RasterExtent]) = {
     targetExtent match {
       case Some(re) =>
@@ -146,22 +145,17 @@ extends RasterLayer(info,c) {
                       getTileLoader)
 
   def getTileLoader() =
-    if(cached)
-      new CacheTileLoader(info,tileLayout,c.get)
+    if(isCached)
+      new CacheTileLoader(info,tileLayout,getCache)
     else 
       new DiskTileLoader(info,tileLayout,tileDirPath)
 
-  private var cached = false
-  def cache() = {
-    if(!cached && c.isDefined) {
-      val cch = c.get
-      cfor(0)(_ < tileLayout.tileCols, _ + 1) { col =>
-        cfor(0)(_ < tileLayout.tileRows, _ + 1) { row =>
-          val path = Tiler.tilePath(tileDirPath, info.name, col, row)
-          cch.insert(TileSetRasterLayer.tileCacheName(info,col,row), Filesystem.slurp(path))
-        }
+  def cache(c:Cache) = {
+    cfor(0)(_ < tileLayout.tileCols, _ + 1) { col =>
+      cfor(0)(_ < tileLayout.tileRows, _ + 1) { row =>
+        val path = Tiler.tilePath(tileDirPath, info.name, col, row)
+        c.insert(TileSetRasterLayer.tileCacheName(info,col,row), Filesystem.slurp(path))
       }
-      cached = true
     }
   }
 }
