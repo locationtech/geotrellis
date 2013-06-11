@@ -80,7 +80,7 @@ def convert(inputPath,
 
         tile_metadata['type'] = 'tiled'
         tile_metadata['layer'] = layer_name
-        tile_metadata['path'] = tile_dir
+        tile_metadata['path'] = os.path.relpath(tile_dir,output_path)
 
         tile_metadata['tile_base'] = layer_name
         tile_metadata['layout_cols'] = str(ntilecols)
