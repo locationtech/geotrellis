@@ -8,7 +8,7 @@
     "layer": "mtsthelens_tiled_cached",
     "layout_cols": "3",
     "layout_rows": "4",
-    "path": "/home/rob/proj/gt/geotrellis/src/test/resources/data/mtsthelens_tiled_cached",
+    "path": "mtsthelens_tiled_cached",
     "pixel_cols": "400",
     "pixel_rows": "400",
     "rows": "1600",
