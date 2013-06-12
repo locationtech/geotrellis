@@ -24,6 +24,107 @@ class InfoCommand:
                             help='Path to input file.')
         parser.set_defaults(func=InfoCommand.execute)
 
+class ConvertAllCommand:
+    @staticmethod
+    def execute(args):
+        if os.path.isfile(args.input):
+            log.error("Path %s exists, but is a file." % args.input)
+
+        if not os.path.isdir(args.input):
+            log.error("Path %s does not exist." % args.input)
+
+        if (args.rows_per_tile and not args.cols_per_tile) or \
+           (args.cols_per_tile and not args.rows_per_tile):
+            log.error('You must specifiy both --rows-per-tile and '\
+                      '--cols-per-tile or neither')
+
+        if args.data_type == 'bit':
+            #TODO: Support bit types
+            log.error('bit datatype not yet supported')
+
+        flist = os.listdir(args.input)
+        if args.extension:
+            flist = filter(lambda x: x.endswith(args.extension), flist)
+
+        if not args.rows_per_tile:
+            get_output = lambda f: os.path.join(args.output,os.path.splitext(f)[0] + '.arg')
+        else:
+            get_output = lambda f: args.output
+
+        for f in flist:
+            path = os.path.join(args.input,f)
+            if not os.path.isfile(path):
+                continue
+
+            print "Converting %s" % (path)
+            convert(path, 
+                    get_output(f), 
+                    args.data_type,
+                    args.band, 
+                    args.name,
+                    not args.no_verify,
+                    args.cols_per_tile,
+                    args.rows_per_tile,
+                    args.legacy,
+                    args.clobber)
+    
+    @staticmethod
+    def add_parser(subparsers):
+        parser = subparsers.add_parser('convert-all')
+        parser.add_argument('-t', '--data-type',
+                                    help='Arg data type. Defaults to converting '\
+                                    'between whatever the input datatype is. '\
+                                    'Since unsigned types are not supported '\
+                                    'they will automatically be promoted to '\
+                                    'the next highest signed type.',
+                                    choices=arg.datatypes,
+                                    default=None)
+
+        parser.add_argument('-n', '--name',
+                                    default=None,
+                                    help='Each layer requires a name for the '\
+                                         'metadata. By default the name is '\
+                                         'input file without the extension.')
+
+        parser.add_argument('-b', '--band',
+                                    type=int,
+                                    default=1,
+                                    help='A specific band to extract')
+
+        parser.add_argument('-e', '--extension',
+                                    help="Extension of files in the input directory to convert.")
+
+        parser.add_argument('--clobber',
+                                    action='store_true',
+                                    help='Clobber existing files or directories.')
+
+        parser.add_argument('--no-verify',
+                                    action='store_true',
+                                    help="Don't verify input data falls in a given "\
+                                    'range (just truncate)')
+
+        # File names
+        parser.add_argument('input',
+                                    help='Name of the input directory.')
+        parser.add_argument('output',
+                                help='Output directory to write converted ARGs to.')
+        # Tiles
+        tiles_group = parser.add_argument_group('tiles')
+        tiles_group.add_argument('--rows-per-tile',
+                             help='Number of rows per tile',
+                             default=None,
+                             type=int)
+        tiles_group.add_argument('--cols-per-tile',
+                             help='Number of cols per tile',
+                             default=None,
+                             type=int)
+        tiles_group.add_argument('--legacy',
+                             help='Write out the tiles in old tile format ' \
+                                  '(to work with GeoTrellis 0.8.x)',
+                             action='store_true')
+
+        parser.set_defaults(func=ConvertAllCommand.execute)
+
 class ConvertCommand:
     @staticmethod
     def execute(args):
@@ -198,6 +299,7 @@ if __name__ == '__main__':
     subparsers = parser.add_subparsers()
 
     InfoCommand.add_parser(subparsers)
+    ConvertAllCommand.add_parser(subparsers)
     ConvertCommand.add_parser(subparsers)
     CatalogCommand.add_parser(subparsers)
 
