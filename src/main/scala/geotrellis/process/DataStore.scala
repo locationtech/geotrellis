@@ -62,6 +62,13 @@ case class DataStore(name:String, params:Map[String, String]) {
     }
   }
 
+  /**
+   * Sets the cache for all child layers.
+   */
+  def setCache(c:Option[Cache]) = {
+    for(layer <- layers.values) { layer.setCache(c) }
+  }
+
   def cacheAll() =
     layers.values
           .map(_.cache)

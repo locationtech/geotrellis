@@ -216,6 +216,7 @@ var layerInfo = (function() {
             addInfo(infoData,"Rows",layer.rasterExtent.rows);
             addInfo(infoData,"Cell Width",layer.rasterExtent.cellwidth);
             addInfo(infoData,"Cell Height",layer.rasterExtent.cellheight);
+            addInfo(infoData,"Data Type",layer.datatype);
         }
     };
 

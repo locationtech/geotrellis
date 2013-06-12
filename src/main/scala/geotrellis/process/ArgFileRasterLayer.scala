@@ -8,7 +8,7 @@ import com.typesafe.config.Config
 
 object ArgFileRasterLayerBuilder
 extends RasterLayerBuilder {
-  def apply(jsonPath:String, json:Config, cache:Option[Cache]):Option[RasterLayer] = {
+  def apply(jsonPath:String, json:Config):Option[RasterLayer] = {
     val path = 
       if(json.hasPath("path")) {
         json.getString("path")
@@ -36,18 +36,16 @@ extends RasterLayerBuilder {
         getYskew(json),
         getCacheFlag(json))
 
-      Some(new ArgFileRasterLayer(info,path,cache))
+      Some(new ArgFileRasterLayer(info,path))
     }
   }
 }
 
-class ArgFileRasterLayer(info:RasterLayerInfo, rasterPath:String, c:Option[Cache]) 
-extends RasterLayer(info,c) {
-  private var cached = false
-
+class ArgFileRasterLayer(info:RasterLayerInfo, rasterPath:String) 
+extends RasterLayer(info) {
   def getRaster(targetExtent:Option[RasterExtent]) =
-    if(cached) {
-      c.get.lookup[Array[Byte]](info.name) match {
+    if(isCached) {
+      getCache.lookup[Array[Byte]](info.name) match {
         case Some(bytes) =>
           getReader.readCache(bytes, info.rasterType, info.rasterExtent, targetExtent)
         case None =>
@@ -57,13 +55,8 @@ extends RasterLayer(info,c) {
       getReader.readPath(info.rasterType, info.rasterExtent, targetExtent)
     }
 
-  def cache = 
-    c match {
-      case Some(cch) =>
-        cch.insert(info.name, Filesystem.slurp(rasterPath))
-        cached = true
-      case None => //do nothing
-    }
+  def cache(c:Cache) = 
+        c.insert(info.name, Filesystem.slurp(rasterPath))
 
   private def getReader = new ArgReader(rasterPath)
 }

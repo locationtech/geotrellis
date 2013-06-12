@@ -19,11 +19,13 @@ import com.typesafe.config.Config
  * correspond to one catalog.
  */
 case class Catalog(name:String, stores:Map[String, DataStore], json: String, source: String) {
-  val cache = new HashCache()
 
   private var cacheSet = false
-  def initCache() =
+  def initCache(cache:Option[Cache]):Unit =
     if(!cacheSet) {
+      // Set the cache on all layers.
+      for(store <- stores.values) { store.setCache(cache) }
+
       // Cache all layers if the DataStore has cacheAll set
       stores.values
             .filter(_.hasCacheAll)
@@ -39,7 +41,12 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String, sou
             .map(_.cache)
 
       cacheSet = true
+    } else {
+      sys.error("Cache has already been set for this Catalog. " +
+                "You may not set the cache more than once during a Catalog's lifetime.")
     }
+
+  def initCache(cache:Cache):Unit = initCache(Some(cache))
 
   def getRasterLayerByName(name:String):Option[RasterLayer] = {
     stores.values.flatMap(_.getRasterLayerByName(name)).headOption
