@@ -15,7 +15,7 @@ import geotrellis.logic._
 import geotrellis.{ op => liftOp }
 import com.vividsolutions.jts.{ geom => jts }
 
-trait TiledPolygonalZonalSummary[C] extends ThroughputLimitedReducer1[C] {
+trait TiledPolygonalZonalSummary[C] extends logic.TileReducer1[C] {
 
   type D
   val zonePolygon: Op[Polygon[D]]
