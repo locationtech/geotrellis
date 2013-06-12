@@ -218,9 +218,16 @@ case class Worker(val server: Server) extends WorkerLike {
 
   // Actor event loop
   def receive = {
-    case RunOperation(op, pos, client, Some(dispatcher)) => {
-      _id = op.name
+    case RunOperation(incomingOp, pos, client, Some(ourDispatcher)) => {
+      // Worker has received an operation to execute.
       startTime = time()
+      // If the the children of this operation should be run remotely,
+      // replace our dispatcher with the remote dispatcher.
+      val (op, dispatcher) = incomingOp match {
+        case DispatchedOperation(runOp, newDispatcher) => (runOp, newDispatcher)
+        case _ => (incomingOp, ourDispatcher)
+      }
+      _id = op.name
       val geotrellisContext = new Context(server)
       try {
         val z = op.run(geotrellisContext)
@@ -239,6 +246,9 @@ case class Worker(val server: Server) extends WorkerLike {
   }
 }
 
+/** A calculation is a worker actor responsible for executing operations that are
+  * dependent on the calculation of other operations. 
+  */
 case class Calculation[T](val server:Server, pos:Int, args:Args,
                           cb:Callback[T], client:ActorRef, dispatcher:ActorRef,
                           _id:String)
