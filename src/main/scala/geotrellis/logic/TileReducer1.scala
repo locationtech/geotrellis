@@ -52,16 +52,20 @@ trait TileReducer1[C] extends Op[C] {
 
   def init(r: Raster, cropPolygon:Option[Polygon[_]]) = {
     if (r.isTiled) {
-        val ops = cropPolygon match {
-          case None => r.getTileOpList().map(mapper)
-          case Some(p) => r.getTileOpList(p).map(mapper)
-        }
+      val ops = cropPolygon match {
+        case None => r.getTileOpList().map(mapper)
+        case Some(p) => r.getTileOpList(p).map(mapper)
+      }
+      if (ops.isEmpty) { 
+        Result(reducer(Nil))
+      } else {
         val groups = ops grouped (limit) toList
         val tail = groups.tail
         val head = groups.head
         runAsync('runGroup :: List[B]() :: tail :: head)
-      } else {
-        runAsync('reduce :: mapper(r) :: Nil)
-      }
+      } 
+   } else {
+      runAsync('reduce :: mapper(r) :: Nil)
+   }
   }
 }

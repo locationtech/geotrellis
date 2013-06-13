@@ -2,7 +2,6 @@ package geotrellis.statistics.op.stat
 
 import geotrellis._
 import geotrellis.statistics._ 
-import geotrellis.logic.{Reducer1,Reducer2}
 import geotrellis.process._
 
 /**
@@ -39,12 +38,16 @@ case class GetHistogramMap(r:Op[Raster]) extends logic.TileReducer1[Histogram] {
  * @note     Rasters with a double type (TypeFloat,TypeDouble) will have their values
  *           rounded to integers when making the Histogram.
  */
-case class GetHistogramArray(r:Op[Raster], n:Op[Int]) extends Reducer2(r, n)({
-  (r, n) => ArrayHistogram.fromRaster(r.force, n)
-})({
-  (hs, n) => ArrayHistogram.fromHistograms(hs, n)
-})
+case class GetHistogramArray(r:Op[Raster], n:Int) extends logic.TileReducer1[Histogram] {
+  type B = ArrayHistogram
 
+  case class UntiledHistogram(r:Op[Raster]) extends Op1(r) ({
+    (r) => Result(List(ArrayHistogram.fromRaster(r.force, n)))
+  })
+
+  def mapper(r:Op[Raster]):Op[List[ArrayHistogram]] = UntiledHistogram(r)
+  def reducer(hs:List[ArrayHistogram]):Histogram = ArrayHistogram.fromHistograms(hs, n)
+}
 
 /**
  * Create a histogram from double values in a raster.
@@ -64,9 +67,14 @@ case class GetHistogramArray(r:Op[Raster], n:Op[Int]) extends Reducer2(r, n)({
  * @param r                   Raster to create histogram from
  * @param significantDigits   Number of significant digits to preserve by multiplying 
  */ 
-case class GetDoubleHistogram(r:Op[Raster], significantDigits:Int) extends Reducer1(r)({
-  r => FastMapHistogram.fromRasterDouble(r.force, significantDigits)
-})({
-  hs => FastMapHistogram.fromHistograms(hs)
-})
+case class GetDoubleHistogram(r:Op[Raster], significantDigits:Int) extends logic.TileReducer1[Histogram] {
+  type B = FastMapHistogram
+
+  case class UntiledHistogram(r:Op[Raster]) extends Op1(r)({ 
+    r => Result(List(FastMapHistogram.fromRasterDouble(r.force, significantDigits)))
+  })
+
+  def mapper(r:Op[Raster]):Op[List[FastMapHistogram]] = UntiledHistogram(r)
+  def reducer(hs:List[FastMapHistogram]):Histogram = FastMapHistogram.fromHistograms(hs)
+}
 
