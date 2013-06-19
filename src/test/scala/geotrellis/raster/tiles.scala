@@ -212,6 +212,11 @@ class TileSpec extends FunSpec with MustMatchers
       val op = stat.Min(tileRaster)
       val z = run(op)
       z must be === 1
+
+      // test TileSetRasterData
+      val op2 = stat.Min(io.LoadRaster("mtsthelens_tiled_cached"))
+      val z2 = run(op2)
+      z2 must be === 2231
     }
   }
 
