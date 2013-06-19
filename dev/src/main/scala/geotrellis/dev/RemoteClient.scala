@@ -67,9 +67,8 @@ object RemoteClient {
     Cluster(server.system) registerOnMemberUp {
       println("Joined cluster.")
 
-      var carbonLocation = "/var/geotrellis/tile/"
-      val uncachedRaster = io.LoadUncachedTileSet(HelloWorldOp(carbonLocation))
-      val op = stat.GetHistogram(uncachedRaster)
+      val raster = io.LoadRaster("mtsthelens_tiled_cached")
+      val op = stat.GetHistogram(raster)
       op.limit = 5000
 
       while(true) {
