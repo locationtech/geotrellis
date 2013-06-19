@@ -144,6 +144,8 @@ extends RasterLayer(info) {
                       tileLayout,
                       getTileLoader)
 
+  def getTile(col:Int, row:Int) = getTileLoader().getTile(col,row)
+
   def getTileLoader() =
     if(isCached)
       new CacheTileLoader(info,tileLayout,getCache)

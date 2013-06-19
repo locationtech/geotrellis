@@ -101,6 +101,15 @@ class Context(server:Server) {
       case None => sys.error(s"couldn't find raster $name in catalog at ${server.catalog.source}")
     }
 
+  /**
+   * Load RasterLayer from the catalog by name.
+   */
+  def getRasterLayer(name:String):RasterLayer =
+    server.catalog.getRasterLayerByName(name) match {
+      case Some(layer) => layer
+      case None => sys.error(s"couldn't find raster $name in catalog at ${server.catalog.source}")
+    }
+
   def getRasterLayerInfo(name:String):RasterLayerInfo =
     server.catalog.getRasterLayerByName(name) match {
       case Some(layer) => layer.info
