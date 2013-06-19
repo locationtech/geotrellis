@@ -199,13 +199,16 @@ trait TiledRasterData extends RasterData with Serializable {
 }
 
 /**
- * This RasterData uses no in-memory caching and loads all tile data from disk
- * when needed.
+ * This RasterData represents a tiled raster.
+ * 
+ * This is the primary RasterData for representing tiled rasters, and must be
+ * used for raster work to be distributed without passing the data across
+ * the network.
  *
- * Currently this is the only TileRasterData that can be reliably used on data
+ * It is also the only TileRasterData that can be reliably used on data
  * too large to fit in memory.
  */
-case class TileSetRasterData(basePath:String, 
+case class TileSetRasterData(basePath:String,
                              name:String, 
                              typ:RasterType, 
                              tileLayout:TileLayout,
@@ -221,11 +224,8 @@ case class TileSetRasterData(basePath:String,
     }
   }
 
-  override def getTileOp(rl:ResolutionLayout, c:Int, r:Int):Op[Raster] = {
-    logic.Do(() => 
-      Raster(getTile(c,r), loader.resLayout.getRasterExtent(c,r))
-    )
-  }
+  override def getTileOp(rl:ResolutionLayout, c:Int, r:Int):Op[Raster] = 
+    io.LoadRasterTile(name, c, r)
 
   def asTileArray:TileArrayRasterData = {
     val re = loader.rasterExtent
@@ -244,12 +244,19 @@ class TileArrayRasterData(val tiles:Array[Raster],
                           val rasterExtent:RasterExtent) extends TiledRasterData  with Serializable {
   val typ = tiles(0).data.getType
   def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
-  def getType = typ
+  def getType = typ 
   def getTile(col:Int, row:Int) = tiles(row * tileCols + col).data match {
     case i:IntConstant => i
     case a:ArrayRasterData => LazyArrayWrapper(a)
     case o => o
   }
+
+  /**
+   * getTileOp will return a Literal raster operation.
+   * 
+   * Note that this means that distributing work on a TileArrayRasterData
+   * means that the data will be sent over the network.
+   */
   def getTileOp(rl:ResolutionLayout, c:Int, r:Int):Op[Raster] =
     Literal(getTileRaster(rl, c, r))
 }
