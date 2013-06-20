@@ -41,11 +41,11 @@ trait TileReducer1[C] extends Op[C] {
       val newResults2 = newResults.asInstanceOf[List[List[B]]]
       val results = oldResults.asInstanceOf[List[B]] ::: newResults2.flatten
       bs match {
-        case Nil => Result(reducer(results.asInstanceOf[List[B]]))
+        case Nil => Result(reducer(results))
         case (head: List[_]) :: tail => {
           runAsync('runGroup :: results :: tail :: head)
         }
-        case _ => throw new Exception("unexpected state in thoroughput reducer")
+        case _ => throw new Exception("unexpected state in tile reducer")
       }
     }
   }

@@ -23,7 +23,7 @@ class RegionGroupSpec extends FunSpec
                    7,     7,NODATA,     9,     9),
           5, 6
       )
-      val regions = run(RegionGroup(r))
+      val regions = run(RegionGroup(r)).raster
 
       val histogram = run(GetHistogram(regions))
       val count = histogram.getValues.length
@@ -55,7 +55,7 @@ class RegionGroupSpec extends FunSpec
                17,18
       )
 
-      val regions = run(RegionGroup(r))
+      val RegionGroupResult(regions,regionMap) = run(RegionGroup(r))
 
       val histogram = run(GetHistogram(regions))
       val count = histogram.getValues.length
@@ -66,8 +66,10 @@ class RegionGroupSpec extends FunSpec
         cfor(0)(_ < 18, _ + 1) { row =>
           val v = r.get(col,row)
           val region = regions.get(col,row)
+
           if(v == NODATA) { region should be (v) }
           else {
+            regionMap(region) should be (v)
             if(!regionCounts.contains(v)) { regionCounts(v) = mutable.Set[Int]() }
             regionCounts(v) += region
           }
@@ -97,7 +99,7 @@ class RegionGroupSpec extends FunSpec
                7,8
       )
 
-      val regions = run(RegionGroup(r))
+      val RegionGroupResult(regions,regionMap) = run(RegionGroup(r))
 
       val histogram = run(GetHistogram(regions))
       val count = histogram.getValues.length
@@ -110,6 +112,7 @@ class RegionGroupSpec extends FunSpec
           val region = regions.get(col,row)
           if(v == NODATA) { region should be (v) }
           else {
+            regionMap(region) should be (v)
             if(!regionCounts.contains(v)) { regionCounts(v) = mutable.Set[Int]() }
             regionCounts(v) += region
           }

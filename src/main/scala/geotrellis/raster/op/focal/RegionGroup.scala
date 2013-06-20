@@ -6,10 +6,13 @@ import spire.syntax._
 
 import scala.collection.mutable
 
+case class RegionGroupResult(raster:Raster,regionMap:Map[Int,Int])
+
 case class RegionGroup(r:Op[Raster]) extends Op1(r)({
   r =>
     var regionId = -1
     val regions = new RegionPartition()
+    val regionMap = mutable.Map[Int,Int]()
     val cols = r.cols
     val rows = r.rows
     val data = IntArrayRasterData.empty(cols,rows)
@@ -23,21 +26,32 @@ case class RegionGroup(r:Op[Raster]) extends Op1(r)({
             else { v + 1 }
 
           if(v == top) {
+            // Value to north is the same region
             val topRegion = data.get(col,row-1)
             if(v == valueToLeft) {
-              regions.add(topRegion,data.get(col-1,row))
+              // Value to west is also same region
+              val leftRegion = data.get(col-1,row)
+              if(leftRegion != topRegion) {
+                // Set the north and west regions equal
+                regions.add(topRegion,data.get(col-1,row))
+              }
               data.set(col,row,topRegion)
             } else {
               data.set(col,row,topRegion)
             }
+            if(!regionMap.contains(topRegion)) { regionMap(topRegion) = v }
           } else {
             if(v == valueToLeft) {
-              data.set(col,row,data.get(col-1,row))
+              // Value to west is same region
+              val westRegion = data.get(col-1,row)
+              data.set(col,row,westRegion)
+              if(!regionMap.contains(westRegion)) { regionMap(westRegion) = v }
             } else {
-              // New region
+              // This value represents a new region
               regionId += 1
               regions.add(regionId)
               data.set(col,row,regionId)
+              if(!regionMap.contains(regionId)) { regionMap(regionId) = v }
             }
           }
         }
@@ -49,11 +63,15 @@ case class RegionGroup(r:Op[Raster]) extends Op1(r)({
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         val v = data.get(col,row)
-        if(v != NODATA) { data.set(col,row,regions.getClass(v)) }
+        if(v != NODATA) { 
+          val cls = regions.getClass(v)
+          if(cls != v && regionMap.contains(v)) { regionMap.remove(v) }
+          data.set(col,row,regions.getClass(v))
+        }
       }
     }
 
-    Result(Raster(data,r.rasterExtent))
+    Result(RegionGroupResult(Raster(data,r.rasterExtent),regionMap.toMap))
 })
 
 class RegionPartition {
