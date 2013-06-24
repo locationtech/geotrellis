@@ -84,7 +84,7 @@ class GdalLayer():
             'cols': re.cols,
             'xskew': 0,
             'yskew': 0,
-            'epsg': self.epsg
+            'epsg': int(self.epsg)
         }
 
     def read_row(self,row,offset=0,size=None):
