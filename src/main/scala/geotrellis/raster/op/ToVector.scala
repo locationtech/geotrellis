@@ -2,6 +2,7 @@ package geotrellis.raster.op
 
 import geotrellis._
 import geotrellis.feature._
+import geotrellis.feature.rasterize.{PolygonRasterizer, Callback}
 import geotrellis.raster.op.focal.{RegionGroup,RegionGroupResult}
 import geotrellis.raster.CroppedRaster
 
@@ -11,14 +12,99 @@ import scala.collection.mutable
 
 import spire.syntax._
 
-object ToVector {
-  def apply(r:Op[Raster]):Op[List[Polygon[Int]]] = {
-    RegionGroup(r).flatMap { rgr =>
-      val p = new Polygonizer(rgr.raster)
-      (for(v <- rgr.regionMap.keys) yield {
-        p.getPolygon(v, rgr.regionMap(v))
-      }).toList
-    }
+case class ToVector(r:Op[Raster]) extends Operation[List[Polygon[Int]]] {
+  def _run(context:Context) = runAsync('init :: r :: Nil)
+
+  val nextSteps:Steps = {
+    case 'init :: a :: Nil => 
+      runAsync('regioned :: RegionGroup(r) :: Nil)
+    case 'regioned :: (rgr:RegionGroupResult) :: Nil =>
+      val polyizer = new Polygonizer(rgr.raster)
+      val r = rgr.raster
+      val processedValues = mutable.Set[Int]()
+      val polygons = mutable.Set[Polygon[Int]]()
+
+      var col = 0
+      while(col < r.cols) {
+        var row = 0
+        while(row < r.rows) {
+          val v = r.get(col,row)
+          if(v != NODATA) {
+            if(!processedValues.contains(v)) {
+
+              val shell = polyizer.getLinearRing(v,(col,row))
+              val shellPoly = Polygon(
+                new geom.Polygon(shell, Array[geom.LinearRing](), Feature.factory),
+                rgr.regionMap(v)
+              )
+              val innerStarts = mutable.Map[Int,(Int,Int)]()
+              val noDatas = mutable.ListBuffer[(Int,Int)]()
+
+              PolygonRasterizer.foreachCellByPolygon(shellPoly, r.rasterExtent)( 
+                new Callback[Polygon,Int] {
+                  def apply(col:Int,row:Int,poly:Polygon[Int]) = {
+                    val innerV = r.get(col,row)
+                    if(innerV == NODATA) {
+                      noDatas += ((col,row))
+                    } else if(innerV != v) {
+                      if(innerStarts.contains(innerV)) {
+                        val (pcol,prow) = innerStarts(innerV)
+                        if(col < pcol || ((col == pcol) && row < prow)) {
+                          innerStarts(innerV) = (col,row)
+                        }
+                      } else {
+                        innerStarts(innerV) = (col,row)
+                      }
+                    }
+                  }
+                }
+              )
+
+              // Handle inner unmatched values
+              val valuedHoles =
+                for(v <- innerStarts.keys) yield {
+                  polyizer.getLinearRing(v, innerStarts(v))
+                }
+
+              // Handle NODATA holes.
+              val nodataHoles = mutable.ListBuffer[geom.LinearRing]()
+              val sorted = noDatas.sorted
+              val len = noDatas.length
+              var i = 0
+              while(i < len) {
+                val p = polyizer.getLinearRing(NODATA, sorted(i))
+                val holepoly = Feature.factory.createPolygon(p, Array[geom.LinearRing]())
+
+                nodataHoles += p
+                var j = i+1
+                var break = false
+                while(j < len && !break) {
+                  val (col,row) = sorted(j)
+                  val (x,y) = r.rasterExtent.gridToMap(col,row)
+                  val point = Feature.factory.createPoint(new geom.Coordinate(x,y))
+
+                  if(!holepoly.contains(point)) {
+                    break = true
+                  }
+                  else { j += 1 }
+                }
+                i = j
+              }
+
+              polygons += Polygon(
+                new geom.Polygon(shell, (valuedHoles ++ nodataHoles).toArray, Feature.factory),
+                rgr.regionMap(v)
+              )
+
+              processedValues += v
+            }
+          }
+          row += 1
+        }
+        col += 1
+      }
+
+      Result(polygons.toList)
   }
 }
 
@@ -123,8 +209,8 @@ class Polygonizer(val r:Raster) {
         } else if(pd == LEFT) {          //LHT
           points += mark(col,row-1,TOPLEFT)
         } else {                         //RT
-          points += mark(col,row-1,TOPLEFT)
           points += mark(col,row-1,TOPRIGHT)
+          points += mark(col,row-1,TOPLEFT)
         }
       }
     } else if(d == RIGHT) {
@@ -134,8 +220,8 @@ class Polygonizer(val r:Raster) {
         } else if(pd == DOWN) {          //LHT
           points += mark(col-1,row,BOTTOMLEFT)
         } else {                         //RT
-          points += mark(col-1,row,BOTTOMLEFT)
           points += mark(col-1,row,TOPLEFT)
+          points += mark(col-1,row,BOTTOMLEFT)
         }
       }
     } else if(d == UP) {
@@ -145,8 +231,8 @@ class Polygonizer(val r:Raster) {
         } else if(pd == RIGHT) {         //LHT
           points += mark(col,row+1,BOTTOMRIGHT)
         } else {                         //RT
-          points += mark(col,row+1,BOTTOMRIGHT)
           points += mark(col,row+1,BOTTOMLEFT)
+          points += mark(col,row+1,BOTTOMRIGHT)
         }
       }
     } else if(d == LEFT) {
@@ -156,8 +242,8 @@ class Polygonizer(val r:Raster) {
         } else if(pd == UP) {            //LHT
           points += mark(col+1,row,TOPRIGHT)
         } else {                         //RT
-          points += mark(col+1,row,TOPRIGHT)
           points += mark(col+1,row,BOTTOMRIGHT)
+          points += mark(col+1,row,TOPRIGHT)
         }
       }
     } else { sys.error(s"Unknown direction $d") }
@@ -177,7 +263,7 @@ class Polygonizer(val r:Raster) {
       }
       else if(m == 1) {
         // Check down
-        if(row < rows) {
+        if(row+1 < rows) {
           if(r.get(col,row+1) == v) {
             return DOWN
           }
@@ -185,7 +271,7 @@ class Polygonizer(val r:Raster) {
       }
       else if(m == 2) {
         // Check right
-        if(col < cols) {
+        if(col+1 < cols) {
           if(r.get(col+1,row) == v) {
             return RIGHT
           }
@@ -205,9 +291,7 @@ class Polygonizer(val r:Raster) {
     return NOTFOUND
   }
 
-  def getPolygon[T](v:Int, data:T) = {
-    val points = mutable.ArrayBuffer[geom.Coordinate]()
-
+  def getPolygon[T](v:Int, data:T):Polygon[T] = {
     // Find upper left start point.
     var sc = 0
     var sr = 0
@@ -222,14 +306,23 @@ class Polygonizer(val r:Raster) {
     }
 
     if(!found) { sys.error(s"This raster does not contain value $v") }
+    getPolygon(v,data,(sc,sr))
+  }
 
-    val startCol = sc
-    val startRow = sr
-    points += mark(startCol,startRow,TOPLEFT)
+  def getPolygon[T](v:Int, data:T,startPoint:(Int,Int)):Polygon[T] = {
+    val shell = getLinearRing(v:Int,startPoint:(Int,Int))
+    Polygon(Feature.factory.createPolygon(shell, Array()),data)
+  }
+
+  def getLinearRing[T](v:Int, startPoint:(Int,Int)) = {
+    val points = mutable.ArrayBuffer[geom.Coordinate]()
+
+    val startCol = startPoint._1
+    val startRow = startPoint._2
 
     // First check down and right of first. 
     var direction = NOTFOUND
-    if(startRow < rows) {
+    if(startRow+1 < rows) {
       if(r.get(startCol,startRow+1) == v) {
         direction = DOWN
       }
@@ -243,11 +336,15 @@ class Polygonizer(val r:Raster) {
 
     if(direction == NOTFOUND) {
       // Single cell polygon.
+      points += mark(startCol,startRow,TOPLEFT)
       points += mark(startCol,startRow,BOTTOMLEFT)
       points += mark(startCol,startRow,BOTTOMRIGHT)
       points += mark(startCol,startRow,TOPRIGHT)
       points += mark(startCol,startRow,TOPLEFT)
     } else {
+      points += mark(startCol,startRow,TOPLEFT)
+      if(direction == RIGHT) { points += mark(startCol,startRow,BOTTOMLEFT) }
+
       var previousDirection = direction
       var col = startCol
       var row = startRow
@@ -279,9 +376,9 @@ class Polygonizer(val r:Raster) {
 
       // Make end marks
       if(direction == UP) { mark(col,row, TOPRIGHT) }
-      points += mark(startCol,startRow,TOPLEFT) // Completes the polygon
+      points += mark(startCol,startRow,TOPLEFT) // Completes the ring
     }
 
-    Polygon(points.toArray, data)
+    Feature.factory.createLinearRing(points.toArray)
   }
 }

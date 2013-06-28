@@ -123,5 +123,51 @@ class RegionGroupSpec extends FunSpec
       regionCounts(9).size should be (1)
       regionCounts(5).size should be (1)
     }
+
+    it("should count regions with a nodata line almost separating regions") {
+      val n = NODATA
+      val arr = 
+        Array(
+//             0  1  2  3  4 
+               1, 1, 1, 1, n,// 0
+               1, 5, 5, 1, n,// 1
+               5, 5, 1, 1, 1,// 2
+               n, n, n, n, 1,// 3
+               1, n, 1, n, 1,// 4
+               1, 1, 1, 5, 1,// 5
+               1, 5, 5, 1, 1,// 6
+               1, 1, 1, 1, n)// 7
+
+      val cw = 1
+      val ch = 10
+      val cols = 5
+      val rows = 8
+      val xmin = 0
+      val xmax = 5
+      val ymin = -70
+      val ymax = 0
+
+      val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
+      val RegionGroupResult(regions,regionMap) = run(RegionGroup(r))
+      printR(regions)
+      val histogram = run(GetHistogram(regions))
+      val count = histogram.getValues.length
+      count should be (4)
+      
+      val regionCounts = mutable.Map[Int,mutable.Set[Int]]()
+      cfor(0)(_ < 5, _ + 1) { col =>
+        cfor(0)(_ < 8, _ + 1) { row =>
+          val v = r.get(col,row)
+          val region = regions.get(col,row)
+          if(v == NODATA) { region should be (v) }
+          else {
+            regionMap(region) should be (v)
+            if(!regionCounts.contains(v)) { regionCounts(v) = mutable.Set[Int]() }
+            regionCounts(v) += region
+          }
+        }
+      }
+
+    }
   }
 }
