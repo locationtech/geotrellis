@@ -103,7 +103,7 @@ object GeotrellisBuild extends Build {
 
   lazy val dev:Project = Project("dev", file("dev")).
     settings(
-      scalaVersion := "2.10.0",
+      scalaVersion := "2.10.2",
       libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % "2.10.2",
       "org.hyperic" % "sigar"  % "1.6.4"
@@ -120,7 +120,7 @@ object GeotrellisBuild extends Build {
 
   lazy val demo:Project = Project("demo", file("demo")).
     settings(
-      scalaVersion := "2.10.0",
+      scalaVersion := "2.10.2",
       libraryDependencies ++= Seq(
         "asm" % "asm" % "3.3.1"
       )).
@@ -151,7 +151,7 @@ object GeotrellisBuild extends Build {
 
   lazy val tasks:Project = Project("tasks", file("tasks")).
     settings(
-      scalaVersion := "2.10.0",
+      scalaVersion := "2.10.2",
       libraryDependencies ++= Seq(
         "com.beust" % "jcommander" % "1.23",
         "org.reflections" % "reflections" % "0.9.5"),
