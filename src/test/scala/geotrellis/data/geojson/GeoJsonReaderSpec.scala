@@ -1,16 +1,14 @@
-package geotrellis.io
-
+package geotrellis.data.geojson
 
 import geotrellis._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
-//import org.junit.runner.RunWith
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class LoadGeoJsonSpec extends FunSpec with MustMatchers with ShouldMatchers {
-  describe("io.LoadGeoJson.parse") {
+class GeoJsonReaderSpec extends FunSpec with MustMatchers with ShouldMatchers {
+  describe("GeoJsonReader") {
 
     // Polygon feature geojson example
     val geojsonPolygonFeature = """
@@ -74,7 +72,7 @@ class LoadGeoJsonSpec extends FunSpec with MustMatchers with ShouldMatchers {
   }"""
 
     it("should parse a Polygon feature") {
-      val result = LoadGeoJson.parse(geojsonPolygonFeature)
+      val result = GeoJsonReader.parse(geojsonPolygonFeature)
       println("result is: " + result)
       val polygonArray = result.get 
       println(polygonArray)
@@ -83,39 +81,39 @@ class LoadGeoJsonSpec extends FunSpec with MustMatchers with ShouldMatchers {
     }
 
     it("should parse a Polygon geometry") {
-      val result = LoadGeoJson.parse(geojsonPolygonGeometry)
+      val result = GeoJsonReader.parse(geojsonPolygonGeometry)
       val polygonArray = result.get
       val polygon = polygonArray(0)
       polygon.toString must be === "JtsPolygon(POLYGON ((-102.890625 42.44792175292969, -103.59375 36.82292175292969, -94.453125 35.41667175292969, -90.9375 40.33854675292969, -96.5625 44.55729675292969, -102.890625 42.44792175292969)),None)"
     } 
 
     it("should parse a MultiPolygon geometry") {
-      val result = LoadGeoJson.parse(geojsonMultiPolygonGeometry)
+      val result = GeoJsonReader.parse(geojsonMultiPolygonGeometry)
       result.get.apply(0).toString must be === "JtsMultiPolygon(MULTIPOLYGON (((102 2, 103 2, 103 3, 102 3, 102 2)), ((100 0, 101 0, 101 1, 100 1, 100 0), (100.19999694824219 0.2000000029802322, 100.80000305175781 0.2000000029802322, 100.80000305175781 0.800000011920929, 100.19999694824219 0.800000011920929, 100.19999694824219 0.2000000029802322))),None)"
     }
 
     it("should parse a Point geometry") {
-      val result = LoadGeoJson.parse(geojsonPointGeometry) 
+      val result = GeoJsonReader.parse(geojsonPointGeometry) 
       result.get.apply(0).toString must be === "JtsPoint(POINT (100 0),None)"
     }
 
     it("should parse a MultiPoint geometry") {
-      val result = LoadGeoJson.parse(geojsonMultiPointGeometry) 
+      val result = GeoJsonReader.parse(geojsonMultiPointGeometry) 
       result.get.apply(0).toString must be === "JtsMultiPoint(MULTIPOINT ((100 0), (101 1)),None)"
     }
 
     it ("should parse a LineString geometry") {
-      val result = LoadGeoJson.parse(geojsonLineStringGeometry)
+      val result = GeoJsonReader.parse(geojsonLineStringGeometry)
       result.get.apply(0).toString must be === "JtsLineString(LINESTRING (100 0, 101 1),None)"
     }
 
     it ("should parse a LineString geometry with multiple points") {
-      val result = LoadGeoJson.parse(geojsonLineStringGeometry2)
+      val result = GeoJsonReader.parse(geojsonLineStringGeometry2)
       result.get.apply(0).toString must be === "JtsLineString(LINESTRING (100 0, 101 1, 101 7, 150 10),None)"
     }
 
     it ("should parse a MultiLineString geometry") {
-      val result = LoadGeoJson.parse(geojsonMultiLineStringGeometry)
+      val result = GeoJsonReader.parse(geojsonMultiLineStringGeometry)
       result.get.apply(0).toString must be === "JtsMultiLineString(MULTILINESTRING ((100 0, 101 1), (102 2, 103 3)),None)"
     }
   }

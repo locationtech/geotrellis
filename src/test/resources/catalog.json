@@ -8,6 +8,14 @@
      "path": "src/test/resources/data",
      "cacheAll": "no"
     }
+  },
+  {
+   "store": "sbn:fs",
+   "params": {
+     "type": "fs",
+     "path": "src/test/resources/sbn",
+     "cacheAll": "no"
+    }
   }
  ]
 }
