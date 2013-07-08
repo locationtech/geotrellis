@@ -6,7 +6,6 @@ import org.codehaus.jackson.map._
 
 import geotrellis._
 import geotrellis.process._
-import geotrellis.io.LoadGeoJson
 import geotrellis.feature._
 
 import scala.language.existentials
