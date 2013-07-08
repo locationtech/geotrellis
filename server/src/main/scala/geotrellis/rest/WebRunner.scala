@@ -8,6 +8,10 @@ package geotrellis.rest
  */
 
 object WebRunner {
+
+  def createJettyServer(config:ServerConfig, contextPath:String) = 
+    new JettyServer(config.jetty).withPackages(config.packages, contextPath)
+
   def main(args: Array[String]) {
     printWelcome()
 
@@ -15,9 +19,7 @@ object WebRunner {
 
     try {
       val config = ServerConfig.init()
-      
-      val server = new JettyServer(config.jetty)
-      .withPackages(config.packages, "/gt/*")
+      val server = createJettyServer(config, "/gt/*")
       
       config.staticContentPath match {
         case Some(path) => 
