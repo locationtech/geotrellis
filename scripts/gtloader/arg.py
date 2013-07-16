@@ -103,3 +103,4 @@ class ArgWriter():
             return lambda val: truncate_pow(64, val)
         else:
             return lambda val: val
+

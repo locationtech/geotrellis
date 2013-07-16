@@ -5,14 +5,14 @@ import log
 import catalog
 from convert import *
 from datatypes import arg
-from raster import GdalLayer
+from raster import Layer
 
 class InfoCommand:
     @staticmethod
     def execute(args):
-        layer = GdalLayer(args.input)
+        layer = Layer.fromPath(args.input)
         
-        for i in layer.toMap().iteritems():
+        for i in layer.arg_metadata().iteritems():
             print "%s: %s" % i
 
     @staticmethod
