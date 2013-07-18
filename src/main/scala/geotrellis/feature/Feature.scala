@@ -49,6 +49,7 @@ object Feature {
       case multiPolygon: jts.MultiPolygon => JtsMultiPolygon(multiPolygon, data)
       case line: jts.LineString           => JtsLineString(line, data)
       case multiLine: jts.MultiLineString => JtsMultiLineString(multiLine, data)
+      case gc:jts.GeometryCollection      => JtsGeometryCollection(gc, data)
       case _                              => JtsGeometry(p, data)
     }
   }

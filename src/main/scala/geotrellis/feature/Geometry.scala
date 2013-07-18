@@ -8,8 +8,6 @@ class Geometry[D] (val geom:jts.Geometry, val data:D) extends Feature[jts.Geomet
 
 class SingleGeometry[D] (override val geom:jts.Geometry, data:D) extends Geometry(geom, data)
 
-class GeometryCollection[D](override val geom:jts.GeometryCollection, data:D) extends Geometry(geom,data)
-
 case class JtsGeometry[D](g: jts.Geometry, d: D) extends Geometry(g,d)
 
 /**
@@ -21,5 +19,9 @@ trait UsesCoords {
   def makeCoords(tpls: Array[(Double, Double)]) = {
     tpls.map { pt => makeCoord(pt._1, pt._2) }.toArray
   }
+}
+
+object Geometry {
+  def apply[D](geom:jts.Geometry, data:D) = new Geometry(geom, data)
 }
 
