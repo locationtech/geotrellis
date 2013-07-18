@@ -58,6 +58,15 @@ nodata_map = {
     'float64': float('nan')
 }
 
+datatype_size_map = {
+    'bit': 1,
+    'int8': 8,
+    'int16': 16,
+    'int32': 32,
+    'float32': 32,
+    'float64': 64
+}
+
 def to_datatype_str(n):
     """ Convert from integer GDAL datatypes to
         python struct format strings """
