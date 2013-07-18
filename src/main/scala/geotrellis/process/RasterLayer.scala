@@ -74,7 +74,7 @@ object RasterLayer {
       src.close()
       fromJSON(data, base)
     } catch {
-      case _ => None
+      case _:Exception => None
     }
 
   def fromFile(f:File):Option[RasterLayer] = RasterLayer.fromPath(f.getAbsolutePath)
@@ -85,7 +85,7 @@ object RasterLayer {
   def fromJSON(data:String, basePath:String):Option[RasterLayer] =
     try {
       json.RasterLayerParser(data, basePath)
-    } else {
-      case _ => None
+    } catch {
+      case _:Exception => None
     }
 }
