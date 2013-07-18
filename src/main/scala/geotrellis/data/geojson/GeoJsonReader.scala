@@ -25,11 +25,27 @@ object GeoJsonReader {
    */
   def parse(geojson:String):Option[Array[Geometry[Option[JsonNode]]]] = { 
     val parser = parserFactory.createJsonParser(geojson)
+
+    // parse state vars
     var geometryType = ""
     var readCoordinates = false
     var coordinateArray:Option[List[Any]] = None
     var properties:Option[JsonNode] = None
-    
+
+    // result features
+    var featureArray = ListBuffer[Geometry[Option[JsonNode]]]() 
+
+    var geometryArray = ListBuffer[Geometry[Option[JsonNode]]]() 
+    // is this a feature collection?
+    var featureCollection = false
+
+    // is this a geometry collection?
+    var geometryCollection = false
+  
+    // track of how many objects deep we've desecended
+    var objectCounter = 0
+
+    var collectionLevel = 0
     if (parser.nextToken() == START_OBJECT) {
       var token = parser.nextToken()
       // Main parsing loop
@@ -43,12 +59,31 @@ object GeoJsonReader {
               case "type" => {
                 parser.nextToken()
                 val typeText = parser.getText().toLowerCase
-                if (typeText != "feature") {
+                if (typeText != "feature" && typeText != "geometrycollection" && typeText != "featurecollection" && typeText != "features") {
                   geometryType = typeText
+                } else {
+                  if (typeText == "featurecollection") {
+                    featureCollection = true
+                    collectionLevel = objectCounter
+                  }
+                  if (typeText == "geometrycollection") {
+                    geometryCollection = true
+                    collectionLevel = objectCounter
+                  }
+                  if (typeText == "features") {
+                    parser.nextToken()
+                    //features = parser.readValueAsTree()
+                  }
+                  if (typeText == "geometries") {
+                    parser.nextToken()
+                  }
                 }
               }
               case "properties" => {
                 parser.nextToken()
+                //if (featureCollection) {
+                //  objectCounter += 1  
+                //}
                 properties = Some(parser.readValueAsTree())
                 parser.getCurrentToken()
               }
@@ -59,12 +94,21 @@ object GeoJsonReader {
                 // We conflate the geometry object and the feature object 
                 // so that we can handle either -- so we skip the  
                 // start object token to follow.
+                if (featureCollection || geometryCollection) {
+                  objectCounter += 1
+                }
                 parser.nextToken()
               }
               case "bbox" => {
                 // we don't do anything with bbox as it doesn't
                 // change the definition of the features
               }
+              case "features" => {
+                parser.nextToken()
+                parser.nextToken()
+                objectCounter += 1
+              }
+
               case _ => {}
             }
             token = parser.nextToken
@@ -82,57 +126,94 @@ object GeoJsonReader {
             // If we come upon an object that has not been
             // handled somewhere else, we call readValueAsTree() to
             // move beyond this object.
-            val o = parser.readValueAsTree(); 
-            token = parser.getCurrentToken() 
+            if (featureCollection || geometryCollection) {
+              objectCounter += 1
+              token = parser.nextToken()
+            } else {
+              val o = parser.readValueAsTree(); 
+              token = parser.getCurrentToken() 
+            }
           }
-          case END_OBJECT => token = parser.nextToken() 
+          case END_OBJECT => {
+            objectCounter -= 1
+            if (featureCollection || geometryCollection) {
+              if (collectionLevel == objectCounter) {
+                val featureZ = makeFeature(geometryType, coordinateArray, properties)
+                val feature = featureZ(0)
+                if (geometryCollection) {
+                  geometryArray += feature
+                } else {
+                  featureArray += feature
+                }
+               }
+            }
+            if (geometryCollection && featureCollection && objectCounter == -1) {
+              val geoms = geometryArray.map( _.geom )
+              val f = GeometryCollection(geoms, properties)
+              featureArray += f
+              geometryCollection = false 
+            }
+            token = parser.nextToken() 
+          }
           case _ => { token = parser.nextToken() }
         }
       }
-      
-      val feature:Option[Array[Geometry[Option[JsonNode]]]] = geometryType match {
+      if (featureCollection) {
+          Some(featureArray.toArray)
+      } else if (geometryCollection) {
+          val geoms = geometryArray.map( _.geom )
+
+          val f = GeometryCollection(geoms, properties)
+          Some(Array(f))
+      } else {
+        Some(makeFeature(geometryType, coordinateArray, properties))
+      }
+    } else {
+      None
+    } 
+  }
+
+    def makeFeature (geometryType:String, coordinateArray:Option[List[Any]], properties:Option[JsonNode]) = { 
+      val feature:Array[Geometry[Option[JsonNode]]] = geometryType match {
         case "polygon" => {
           val coords = coordinateArray.get.asInstanceOf[List[List[List[Double]]]] 
           // Complete the LineStrings by including the first element as the
           // last (not required by geojson)
 
           val polyCoords = coords.map ( closeLineString(_) )
-          Some(Array(Polygon(polyCoords, properties)))
+          Array(Polygon(polyCoords, properties))
         }
         case "multipolygon" => {
           val coords = coordinateArray.get.asInstanceOf[List[List[List[List[Double]]]]] 
           val multipolyCoords = coords.map(_.map(closeLineString(_)))
-          Some(Array(MultiPolygon(multipolyCoords, properties)))
+          Array(MultiPolygon(multipolyCoords, properties))
          //val coords = coordinateArray.get.asInstanceOf[List[List[List[
         }
         case "point" => {
           val coords = coordinateArray.get.asInstanceOf[List[Double]]
-          Some(Array(Point(coords(0), coords(1),properties)))
+          Array(Point(coords(0), coords(1),properties))
         }
         case "multipoint" => {
           val coords = coordinateArray.get.asInstanceOf[List[List[Double]]]
-          Some(Array(MultiPoint(coords, properties)))
+          Array(MultiPoint(coords, properties))
         }
         case "linestring" => {
           val coords = coordinateArray.get.asInstanceOf[List[List[Double]]]
           if (coords.length % 2 != 0) {
-            None
+            throw new Exception("couldn't parse linestring: coordinate length not divisible by 2")
           } else {
             val pts = for(p <- coords) yield { (p(0),p(1)) }
-            Some(Array(LineString(pts, properties)))
+            Array(LineString(pts, properties))
           }
         }
         case "multilinestring" => {
           val coords = coordinateArray.get.asInstanceOf[List[List[List[Double]]]]
-          Some(Array(MultiLineString(coords, properties))) 
+          Array(MultiLineString(coords, properties))
         }
       }
       feature
-    } else {
-      None
-    }
   }
-
+  
   def parseArrays(parser:org.codehaus.jackson.JsonParser):List[Any] = {
     var result:List[Any] = List[Any]()
     var floatArray:Boolean = false
