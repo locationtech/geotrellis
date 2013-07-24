@@ -193,3 +193,11 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     RasterExtent(Extent(xmin,ymin,xmax,ymax),cellwidth,cellheight,targetCols,targetRows)
   }
 }
+
+object RasterExtent {
+  def apply(extent:Extent, cols:Int, rows:Int):RasterExtent = {
+    val cw = (extent.xmax - extent.xmin) / cols
+    val ch = (extent.ymax - extent.ymin) / rows
+    RasterExtent(extent, cw, ch, cols, rows)
+  }
+}
