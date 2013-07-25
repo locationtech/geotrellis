@@ -31,7 +31,6 @@ case class ToVector(r:Op[Raster]) extends Operation[List[Polygon[Int]]] {
           val v = r.get(col,row)
           if(v != NODATA) {
             if(!processedValues.contains(v)) {
-
               val shell = polyizer.getLinearRing(v,(col,row))
               val shellPoly = Polygon(
                 new geom.Polygon(shell, Array[geom.LinearRing](), Feature.factory),
@@ -59,6 +58,7 @@ case class ToVector(r:Op[Raster]) extends Operation[List[Polygon[Int]]] {
                   }
                 }
               )
+
 
               // Handle inner unmatched values
               val valuedHoles =
@@ -368,7 +368,7 @@ class Polygonizer(val r:Raster) {
         if(col == startCol && row == startRow) {
           if(previousDirection == LEFT) {
             break = true
-          } else if(previousDirection == UP && direction == DOWN) {
+          } else if(previousDirection == UP && (direction == DOWN || direction == LEFT)) {
             break = true
           }
         }

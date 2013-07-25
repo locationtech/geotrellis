@@ -326,4 +326,11 @@ class ToVectorSpec extends FunSpec
       assertCoords(holeCoordinates2,expectedHoleCoords2)
     }
   }
+
+  it("should vectorize a raster that was at one point not vectorizing properly") {
+    val r = get("vectorbugger")
+    val op = ToVector(r)
+    val vect = run(op)
+    val geo = geotrellis.data.geojson.GeoJsonWriter.createFeatureCollectionString(vect)
+  }
 }
