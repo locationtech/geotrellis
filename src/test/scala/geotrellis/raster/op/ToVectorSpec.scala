@@ -331,6 +331,21 @@ class ToVectorSpec extends FunSpec
     val r = get("vectorbugger")
     val op = ToVector(r)
     val vect = run(op)
-    val geo = geotrellis.data.geojson.GeoJsonWriter.createFeatureCollectionString(vect)
+  }
+
+  it("should vectorize another raster that was at one point not vectorizing properly") {
+    println("Running test on vectorbugger2...")
+    val r = get("vectorbugger2")
+    val op = ToVector(r)
+    val vect = run(op)
+  }
+
+  it("should vectorize yet another raster that was at one point not vectorizing properly") {
+    println("Running test on vectorbugger3...")
+    val r = get("vectorbugger3")
+    val op = ToVector(r)
+    val vect = run(op)
+    // val geo = geotrellis.data.geojson.GeoJsonWriter.createFeatureCollectionString(vect)
+    // println(s"\n\n${geo}")
   }
 }
