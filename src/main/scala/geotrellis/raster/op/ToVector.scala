@@ -31,7 +31,6 @@ case class ToVector(r:Op[Raster]) extends Operation[List[Polygon[Int]]] {
           val v = r.get(col,row)
           if(v != NODATA) {
             if(!processedValues.contains(v)) {
-
               val shell = polyizer.getLinearRing(v,(col,row))
               val shellPoly = Polygon(
                 new geom.Polygon(shell, Array[geom.LinearRing](), Feature.factory),
@@ -60,6 +59,7 @@ case class ToVector(r:Op[Raster]) extends Operation[List[Polygon[Int]]] {
                 }
               )
 
+
               // Handle inner unmatched values
               val valuedHoles =
                 for(v <- innerStarts.keys) yield {
@@ -68,13 +68,13 @@ case class ToVector(r:Op[Raster]) extends Operation[List[Polygon[Int]]] {
 
               // Handle NODATA holes.
               val nodataHoles = mutable.ListBuffer[geom.LinearRing]()
+              val nodataPolys = mutable.ListBuffer[geom.Polygon]()
               val sorted = noDatas.sorted
-              val len = noDatas.length
+              val len = sorted.length
               var i = 0
               while(i < len) {
                 val p = polyizer.getLinearRing(NODATA, sorted(i))
-                val holepoly = Feature.factory.createPolygon(p, Array[geom.LinearRing]())
-
+                nodataPolys += Feature.factory.createPolygon(p, Array[geom.LinearRing]())
                 nodataHoles += p
                 var j = i+1
                 var break = false
@@ -83,10 +83,12 @@ case class ToVector(r:Op[Raster]) extends Operation[List[Polygon[Int]]] {
                   val (x,y) = r.rasterExtent.gridToMap(col,row)
                   val point = Feature.factory.createPoint(new geom.Coordinate(x,y))
 
-                  if(!holepoly.contains(point)) {
+                  if(!nodataPolys.foldLeft(false)( (a,b) => a || b.intersects(point))) {
                     break = true
                   }
-                  else { j += 1 }
+                  else { 
+                    j += 1 
+                  }
                 }
                 i = j
               }
@@ -365,10 +367,13 @@ class Polygonizer(val r:Raster) {
         makeMarks(points, col,row,direction,previousDirection)
         previousDirection = direction
         direction = findNextDirection(col,row,direction,v)
+        // println(s"PREVIOUS ${sd(previousDirection)} NEXT ${sd(direction)}  (${col-116},${row-227})")
         if(col == startCol && row == startRow) {
-          if(previousDirection == LEFT) {
+          //println(s"  SHOULD HAVE BROKE?")
+          if(previousDirection == LEFT || previousDirection == DOWN) {
             break = true
-          } else if(previousDirection == UP && direction == DOWN) {
+          } else if((previousDirection == UP || previousDirection == RIGHT) && 
+                    (direction == DOWN || direction == LEFT)) {
             break = true
           }
         }

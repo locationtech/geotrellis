@@ -65,7 +65,12 @@ case class RegionGroup(r:Op[Raster]) extends Op1(r)({
         val v = data.get(col,row)
         if(v != NODATA) { 
           val cls = regions.getClass(v)
-          if(cls != v && regionMap.contains(v)) { regionMap.remove(v) }
+          if(cls != v && regionMap.contains(v)) {
+            if(!regionMap.contains(cls)) {
+              sys.error(s"Region map should contain class identifier $cls")
+            }
+            regionMap.remove(v) 
+          }
           data.set(col,row,regions.getClass(v))
         }
       }
@@ -74,66 +79,63 @@ case class RegionGroup(r:Op[Raster]) extends Op1(r)({
     Result(RegionGroupResult(Raster(data,r.rasterExtent),regionMap.toMap))
 })
 
-class RegionPartition {
-  private val regionMap = mutable.Map[Int,Int]()
-  private val minMap = mutable.ListBuffer[Int]()
+class RegionPartition() {
+  private val regionMap = mutable.Map[Int,Partition]()
 
-  private var maxRegionIndex = -1
-  def regionCount:Int = maxRegionIndex + 1
+  object Partition {
+    def apply(ms:Int*) = {
+      val p = new Partition
+      p += (ms:_*)
+      p
+    }
+  }
+
+  class Partition() {
+    val members = mutable.Set[Int]()
+    var _min = Int.MaxValue
+
+    def min = _min
+
+    def +=(ms:Int*) = {
+      for(m <- ms) {
+        regionMap(m) = this
+        members += m
+        if(m < _min) { _min = m }
+      }
+    }
+
+    def absorb(other:Partition) = +=(other.members.toSeq:_*)
+
+    override def toString = s"PARTITION($min)"
+  }
 
   def add(x:Int) =
     if(!regionMap.contains(x)) {
-      maxRegionIndex += 1
-      regionMap(x) = maxRegionIndex
-      minMap += x
+      Partition(x)
     }
 
   def add(x:Int,y:Int):Unit = {
     if(!regionMap.contains(x)) {
       if(!regionMap.contains(y)) {
         // x and y are not mapped
-        maxRegionIndex += 1
-        regionMap(x) = maxRegionIndex
-        regionMap(y) = maxRegionIndex
-        minMap += math.min(x,y)
+        Partition(x,y)
       } else {
         // x is not mapped, y is mapped
-        val r = regionMap(y)
-        regionMap(x) = r
-        val my = minMap(r)
-        if(x == math.min(x,my)) { 
-          minMap(r) = x
-        }
+        regionMap(y) += x
       }
     } else {
       if(!regionMap.contains(y)) {
         // x is mapped, y is not mapped
-        val r = regionMap(x)
-        regionMap(y) = r
-        val mx = minMap(r)
-        if(y == math.min(mx,y)) {
-          minMap(r) = y
-        }
+        regionMap(x) += y
       } else {
-        // both x and y are mapped
-        val rx = regionMap(x)
-        val ry = regionMap(y)
-        val mx = minMap(rx)
-        val my = minMap(ry)
-        if(my == math.min(mx,my)) {
-          regionMap(x) = ry
-          minMap(rx) = my
-        } else {
-          regionMap(y) = rx
-          minMap(ry) = mx
-        }
+        regionMap(x).absorb(regionMap(y))
       }
     }
   }
 
   def getClass(x:Int) = 
     if(!regionMap.contains(x)) { sys.error(s"There is no partition containing $x") }
-    else { 
-      minMap(regionMap(x)) 
+    else {
+      regionMap(x).min
     }
 }

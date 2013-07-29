@@ -171,3 +171,23 @@ class RegionGroupSpec extends FunSpec
     }
   }
 }
+
+
+class RegionPartitionSpec extends FunSpec
+                             with TestServer
+                             with RasterBuilders {
+  describe("RegionPartition") {
+    it("should work in a once problematic case") {
+      val rp = new RegionPartition()
+
+      rp.add(60,48)
+
+      rp.add(63,62)
+      rp.add(60,62)
+
+      rp.add(60,23)
+
+      rp.getClass(63) should be (23)
+    }
+  }
+}
