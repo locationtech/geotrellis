@@ -42,7 +42,7 @@ object GeoJsonReader {
     // is this a geometry collection?
     var geometryCollection = false
   
-    // track of how many objects deep we've desecended
+    // track of how many objects deep we've descended
     var objectCounter = 0
 
     var collectionLevel = 0
@@ -81,9 +81,6 @@ object GeoJsonReader {
               }
               case "properties" => {
                 parser.nextToken()
-                //if (featureCollection) {
-                //  objectCounter += 1  
-                //}
                 properties = Some(parser.readValueAsTree())
                 parser.getCurrentToken()
               }
@@ -187,7 +184,6 @@ object GeoJsonReader {
           val coords = coordinateArray.get.asInstanceOf[List[List[List[List[Double]]]]] 
           val multipolyCoords = coords.map(_.map(closeLineString(_)))
           Array(MultiPolygon(multipolyCoords, properties))
-         //val coords = coordinateArray.get.asInstanceOf[List[List[List[
         }
         case "point" => {
           val coords = coordinateArray.get.asInstanceOf[List[Double]]
@@ -256,3 +252,4 @@ object GeoJsonReader {
     }
   }
 }
+

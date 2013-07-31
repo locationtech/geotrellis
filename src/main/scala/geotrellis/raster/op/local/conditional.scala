@@ -1,7 +1,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
-import RasterUtil._
+import geotrellis.raster.RasterUtil._
 
 /**
  * Maps all cells matching `cond` to Int `trueValue`.

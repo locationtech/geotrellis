@@ -1,6 +1,7 @@
 package geotrellis.raster.op.transform
 
 import geotrellis._
+import geotrellis.raster.RasterData
 import geotrellis.raster.op.focal.CellSet
 
 /**
@@ -31,7 +32,7 @@ case class Downsample(r: Raster, cols: Int, rows: Int)(f:CellSet=>Int)
      extends Op4(r,cols,rows,f)({
        (r,cols,rows,f) =>
          val colsPerBlock = math.ceil(r.cols / cols.toDouble).toInt
-         val rowsPerBlock = math.ceil(r.rows / rows.toDouble).toInt
+         val rowsPerBlock = math.ceil(r.rows / rows.toDouble).toInt  
          val cellwidth = colsPerBlock * r.rasterExtent.cellwidth
          val cellheight = rowsPerBlock * r.rasterExtent.cellheight
          val xmin = r.rasterExtent.extent.xmin

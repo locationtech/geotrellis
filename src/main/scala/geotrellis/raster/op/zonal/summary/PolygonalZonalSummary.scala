@@ -1,6 +1,7 @@
 package geotrellis.raster.op.zonal.summary
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.raster.op.tiles._
 import geotrellis.feature._
 import geotrellis.feature.op.geometry._

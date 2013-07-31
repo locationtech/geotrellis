@@ -1,10 +1,9 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
-
 import spire.syntax._
-
 import scala.collection.mutable
+import geotrellis.raster.IntArrayRasterData
 
 case class RegionGroupResult(raster:Raster,regionMap:Map[Int,Int])
 

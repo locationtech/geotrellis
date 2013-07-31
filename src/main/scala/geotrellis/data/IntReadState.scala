@@ -1,6 +1,8 @@
 package geotrellis.data
 
 import geotrellis._
+import geotrellis.raster.MutableRasterData
+import geotrellis.raster.MutableRasterData
 
 trait IntReadState extends ReadState {
   // must override

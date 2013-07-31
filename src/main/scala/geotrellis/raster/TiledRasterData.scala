@@ -231,8 +231,29 @@ case class TileSetRasterData(basePath:String,
     val re = loader.rasterExtent
     TileArrayRasterData(getTiles(re).toArray,tileLayout,re)
   }
-  
 }
+
+/*
+object GetTileOps(r:Op[Raster]) {
+  def apply(rOp:Op[Raster]) = {
+    rOp.map { r => 
+      isTiled match {
+      	case true => Literal(r)
+      	case false =>
+      		r.data match {
+      		case d:TileSetRasterData =>
+      			io.LoadRaster(d.name,)
+      		case d:TileArrayRasterData =>
+      		  
+        }
+    }
+  }
+}
+*/
+
+trait TileDefinition
+case class LiteralTile(r:Raster) extends TileDefinition
+case class CatalogTile(name:String, col:Int, row:Int) extends TileDefinition
 
 /**
  * This RasterData wraps an array of tile Rasters in memory. It is the fastest

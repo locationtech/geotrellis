@@ -2,6 +2,7 @@ package geotrellis.data
 
 import java.nio.ByteBuffer
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.util._
 import geotrellis.process._
 import geotrellis.util.Filesystem
