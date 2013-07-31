@@ -30,7 +30,7 @@ object GeotrellisBuild extends Build {
     javaOptions in run += "-Xmx2G",
 
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "2.0.M5b",
+      "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
       "org.scala-lang" % "scala-reflect" % "2.10.2",
       "junit" % "junit" % "4.5" % "test",
       "com.vividsolutions" % "jts" % "1.12",
@@ -135,7 +135,7 @@ object GeotrellisBuild extends Build {
     organization := "com.azavea.geotrellis",
     version := "0.9.0-SNAPSHOT",
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "2.0.M5b",
+      "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
       "java3d" % "j3d-core" % "1.3.1",
       "org.geotools" % "gt-main" % geotoolsVersion,
       "org.geotools" % "gt-jdbc" % geotoolsVersion,

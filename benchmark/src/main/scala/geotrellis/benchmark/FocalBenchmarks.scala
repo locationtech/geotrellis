@@ -3,6 +3,7 @@ package geotrellis.benchmark
 import geotrellis._
 import geotrellis.process._
 import geotrellis.raster.op._
+import geotrellis.raster._
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Param

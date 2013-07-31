@@ -1,6 +1,7 @@
 package geotrellis.data
 
 import geotrellis._
+import geotrellis.raster._
 
 import org.geotools.gce
 
