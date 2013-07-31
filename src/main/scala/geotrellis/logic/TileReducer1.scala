@@ -59,7 +59,7 @@ trait TileReducer1[C] extends Op[C] {
       if (ops.isEmpty) { 
         Result(reducer(Nil))
       } else {
-        val groups = ops grouped (limit) toList
+        val groups = ops.grouped(limit).toList
         val tail = groups.tail
         val head = groups.head
         runAsync('runGroup :: List[B]() :: tail :: head)

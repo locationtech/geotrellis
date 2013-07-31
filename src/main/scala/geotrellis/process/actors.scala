@@ -304,7 +304,7 @@ extends WorkerLike {
   // If any entry in the results array is null, we're not done.
   def isDone = results.find(_ == None).isEmpty
 
-  def hasError = results.find { case Some(Error(_,_)) => true; case a => false } isDefined
+  def hasError = results.find { case Some(Error(_,_)) => true; case a => false }.isDefined
 
  
   // Create a list of the actual values of our children.

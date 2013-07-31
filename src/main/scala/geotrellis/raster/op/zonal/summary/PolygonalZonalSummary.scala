@@ -56,7 +56,7 @@ trait TiledPolygonalZonalSummary[C] extends logic.TileReducer1[C] {
   def mapper(rasterOp: Op[Raster]):Op[List[B]] = {
     raster.op.Force(rasterOp).flatMap(
       strictRaster => { 
-        strictRaster data match {
+        strictRaster.data match {
           case x: IntConstant if x.n == NODATA => {
             AsList(handleNoDataTile())
           }
