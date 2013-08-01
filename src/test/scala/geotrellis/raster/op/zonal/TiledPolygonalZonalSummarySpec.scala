@@ -13,6 +13,8 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers._
 import org.scalatest.junit.JUnitRunner
 
+// for PartialTile
+import scala.language.existentials
 
 @RunWith(classOf[JUnitRunner])
 class TiledPolygonalZonalSummarySpec extends FunSpec with ShouldMatchers {

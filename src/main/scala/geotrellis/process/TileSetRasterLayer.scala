@@ -1,6 +1,7 @@
 package geotrellis.process
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.util._
 import geotrellis.data.arg.ArgReader
 import geotrellis.raster.{TileSetRasterData,

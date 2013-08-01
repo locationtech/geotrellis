@@ -3,6 +3,7 @@ package geotrellis.data
 import java.nio.IntBuffer
 import geotrellis._
 import geotrellis.process._
+import geotrellis.raster._
 import geotrellis.util._
 
 final class RasterReadState(raster:Raster,

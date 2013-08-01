@@ -8,6 +8,8 @@ package object geotrellis {
   type Op[+A] = Operation[A]
   type DI = DummyImplicit
 
+  type RasterData = geotrellis.raster.RasterData
+  
   /**
    * Add simple syntax for creating an operation.
    *

@@ -1,9 +1,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
-import geotrellis._
-
-import RasterUtil._
+import geotrellis.raster.RasterUtil._
 
 /**
  * Generate a raster with the values from the first raster, but only include

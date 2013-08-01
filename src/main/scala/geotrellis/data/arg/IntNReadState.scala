@@ -6,6 +6,7 @@ import geotrellis.data._
 import geotrellis.util._
 import geotrellis.process._
 import geotrellis.util.Filesystem
+import geotrellis.raster._
 
 abstract class IntNReadState(data:Either[String, Array[Byte]],
                              val rasterExtent:RasterExtent,

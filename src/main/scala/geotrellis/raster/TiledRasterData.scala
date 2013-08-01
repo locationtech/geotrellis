@@ -231,7 +231,6 @@ case class TileSetRasterData(basePath:String,
     val re = loader.rasterExtent
     TileArrayRasterData(getTiles(re).toArray,tileLayout,re)
   }
-  
 }
 
 /**

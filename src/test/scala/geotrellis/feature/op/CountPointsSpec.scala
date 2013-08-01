@@ -1,6 +1,7 @@
 package geotrellis.feature.op.geometry
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.feature._
 
 import org.scalatest.FunSpec
