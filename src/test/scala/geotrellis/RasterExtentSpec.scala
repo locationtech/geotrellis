@@ -264,5 +264,25 @@ class RasterExtentSpec extends FunSpec with MustMatchers
 
       result should be (expected)
     }
+
+    it("should get a RasterExtent correctly with no cell width or height.") {
+      val ext = Extent(0.0,-10.0,100.0,-1.0)
+      val cellWidth = 10
+      val cellHeight = 1
+      val cols = 10
+      val rows = 9
+      val expected = RasterExtent(ext,cellWidth,cellHeight,cols,rows)
+      val actual = RasterExtent(Extent(0.0, -10.0, 100.0, -1.0), cols, rows)
+
+      actual should be (expected)
+    }
+
+    it("should get another RasterExtent correctly from extent and cols rows") {
+      val e = Extent(xmin = -90, ymin = 20,
+                     xmax = -80, ymax = 40)
+      val re = RasterExtent(e, 20, 30)
+      re.extent.xmin should be (-90)
+      re.cols should be (20)
+    }
   }
 }
