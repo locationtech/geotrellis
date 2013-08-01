@@ -37,11 +37,16 @@ class JettyServer(config:JettyConfig) {
 
   val staticResources = mutable.ListBuffer[String]()
   
-  def withPackages(packages:Seq[String], contextPath:String = "/gt/*") = {
+  def withPackages(packages:Seq[String], contextPath:String = "/gt/*", initParameters:Map[String,String]=Map()) = {
     val holder = new ServletHolder(classOf[ServletContainer])
     holder.setInitParameter("com.sun.jersey.config.property.resourceConfigClass",
                             "com.sun.jersey.api.core.PackagesResourceConfig")
     holder.setInitParameter("com.sun.jersey.config.property.packages", packages.mkString(";"))
+
+    initParameters foreach {
+      case (key, value) => holder.setInitParameter(key, value)
+    }
+
     context.addServlet(holder, contextPath)
     this
   }

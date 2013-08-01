@@ -66,20 +66,26 @@ object RasterLayer {
   /**
    * Build a RasterLayer instance given a path to a JSON file.
    */
-  def fromPath(path:String) = {
-    val base = Filesystem.basename(path) + ".json"
-    val src = Source.fromFile(path)
-    val data = src.mkString
-    src.close()
-    fromJSON(data, base)
-  }
+  def fromPath(path:String):Option[RasterLayer] = 
+    try {
+      val base = Filesystem.basename(path) + ".json"
+      val src = Source.fromFile(path)
+      val data = src.mkString
+      src.close()
+      fromJSON(data, base)
+    } catch {
+      case _:Exception => None
+    }
 
-  def fromFile(f:File) = RasterLayer.fromPath(f.getAbsolutePath)
+  def fromFile(f:File):Option[RasterLayer] = RasterLayer.fromPath(f.getAbsolutePath)
 
   /**
    * Build a RasterLayer instance given a JSON string.
    */
-  def fromJSON(data:String, basePath:String):Option[RasterLayer] = {
-    json.RasterLayerParser(data, basePath)
-  }
+  def fromJSON(data:String, basePath:String):Option[RasterLayer] =
+    try {
+      json.RasterLayerParser(data, basePath)
+    } catch {
+      case _:Exception => None
+    }
 }

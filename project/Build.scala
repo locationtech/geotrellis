@@ -9,7 +9,7 @@ object GeotrellisBuild extends Build {
     organization := "com.azavea.geotrellis",
     name := "geotrellis",
     version := "0.9.0-SNAPSHOT",
-    scalaVersion := "2.10.1",
+    scalaVersion := "2.10.2",
     
     scalacOptions ++= Seq("-deprecation", 
                           "-unchecked", 
@@ -31,17 +31,17 @@ object GeotrellisBuild extends Build {
 
     libraryDependencies ++= Seq(
       "org.scalatest" %% "scalatest" % "2.0.M5b",
-      "org.scala-lang" % "scala-reflect" % "2.10.0",
+      "org.scala-lang" % "scala-reflect" % "2.10.2",
       "junit" % "junit" % "4.5" % "test",
       "com.vividsolutions" % "jts" % "1.12",
-      "com.typesafe.akka" %% "akka-kernel" % "2.1.2",
-      "com.typesafe.akka" %% "akka-remote" % "2.1.2",
-      "com.typesafe.akka" %% "akka-actor" % "2.1.2",
+      "com.typesafe.akka" %% "akka-kernel" % "2.2.0",
+      "com.typesafe.akka" %% "akka-remote" % "2.2.0",
+      "com.typesafe.akka" %% "akka-actor" % "2.2.0",
 "com.typesafe.akka" %% "akka-cluster-experimental" % "2.1.2",
       "asm" % "asm" % "3.3.1",
       "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
       "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1",
-      "org.spire-math" %% "spire" % "0.3.0"
+      "org.spire-math" %% "spire" % "0.4.0"
     ),
 
     resolvers ++= Seq(
@@ -92,7 +92,7 @@ object GeotrellisBuild extends Build {
 
   lazy val server:Project = Project("server", file("server")).
     settings(
-      scalaVersion := "2.10.0",
+      scalaVersion := "2.10.2",
       libraryDependencies ++= Seq(
         "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
         "com.sun.jersey" % "jersey-bundle" % "1.11",
@@ -103,9 +103,9 @@ object GeotrellisBuild extends Build {
 
   lazy val dev:Project = Project("dev", file("dev")).
     settings(
-      scalaVersion := "2.10.0",
+      scalaVersion := "2.10.2",
       libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-reflect" % "2.10.0",
+      "org.scala-lang" % "scala-reflect" % "2.10.2",
       "org.hyperic" % "sigar"  % "1.6.4"
       ),
       resolvers ++= Seq(
@@ -120,7 +120,7 @@ object GeotrellisBuild extends Build {
 
   lazy val demo:Project = Project("demo", file("demo")).
     settings(
-      scalaVersion := "2.10.0",
+      scalaVersion := "2.10.2",
       libraryDependencies ++= Seq(
         "asm" % "asm" % "3.3.1"
       )).
@@ -130,7 +130,7 @@ object GeotrellisBuild extends Build {
 
   lazy val geotools:Project = Project("geotools", file("geotools")).
     settings(
-    scalaVersion := "2.10.0",
+    scalaVersion := "2.10.2",
     name := "geotrellis-geotools",
     organization := "com.azavea.geotrellis",
     version := "0.9.0-SNAPSHOT",
@@ -151,7 +151,7 @@ object GeotrellisBuild extends Build {
 
   lazy val tasks:Project = Project("tasks", file("tasks")).
     settings(
-      scalaVersion := "2.10.0",
+      scalaVersion := "2.10.2",
       libraryDependencies ++= Seq(
         "com.beust" % "jcommander" % "1.23",
         "org.reflections" % "reflections" % "0.9.5"),
@@ -165,7 +165,7 @@ object GeotrellisBuild extends Build {
     dependsOn(root)
 
   def benchmarkSettings = Seq(
-     scalaVersion := "2.10.0",
+     scalaVersion := "2.10.2",
     scalacOptions ++= Seq("-deprecation", 
                           "-unchecked", 
                           "-language:postfixOps", 
@@ -180,7 +180,7 @@ object GeotrellisBuild extends Build {
       "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT" 
           from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
       "com.google.code.gson" % "gson" % "1.7.1",
-      "org.spire-math" %% "spire" % "0.3.0"
+      "org.spire-math" %% "spire" % "0.4.0"
     ),
 
     // enable forking in both run and test

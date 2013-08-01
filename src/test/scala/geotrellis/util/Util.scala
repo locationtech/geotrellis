@@ -24,3 +24,4 @@ class UtilSpec extends FunSpec with MustMatchers {
     }
   }
 }
+

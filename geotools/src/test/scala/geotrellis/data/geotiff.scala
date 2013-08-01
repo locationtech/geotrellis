@@ -60,7 +60,7 @@ class GeoTiffSpec extends FunSpec with MustMatchers with ShouldMatchers {
 
       val e = Extent(-15471.6, -15511.3, 15428.4, 15388.7)
       val geo = RasterExtent(e, 60.0, 60.0, 513, 513)
-      val raster2 = GeoTiffRasterLayerBuilder.fromTif(path).get.getRaster(Some(geo))
+      val raster2 = GeoTiffRasterLayerBuilder.fromTif(path).getRaster(Some(geo))
     }
 
     it ("should draw") {

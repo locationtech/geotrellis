@@ -3,7 +3,6 @@ package geotrellis.raster.op.focal
 import geotrellis._
 import geotrellis.raster._
 import geotrellis.feature._
-import geotrellis.raster.op.VerticalFlip
 import geotrellis.testutil._
 
 import org.junit.runner.RunWith

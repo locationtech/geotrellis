@@ -16,15 +16,14 @@ case class GetRasterExtentFromRaster(r:Op[Raster]) extends Op1(r) ({
  */
 case class GetRasterExtent(extent:Op[Extent], cols:Op[Int], rows:Op[Int])
   extends Op3 (extent,cols,rows) ({
-  (e, cols, rows) => 
-    val cw = (e.xmax - e.xmin) / cols
-    val ch = (e.ymax - e.ymin) / rows
-    Result(RasterExtent(e, cw, ch, cols, rows))
+  (e, cols, rows) => Result(RasterExtent(e, cols, rows))
 })
 
 object GetRasterExtent {
+  @deprecated("Use RasterExtent.apply()", "0.9")
   def apply(xmin:Double, ymin:Double, xmax:Double, ymax:Double, cols:Int, rows:Int):GetRasterExtent = {
     GetRasterExtent(Extent(xmin,ymin,xmax,ymax),cols,rows)
   }
+
   def apply(r:Op[Raster]) = GetRasterExtentFromRaster(r)
 }
