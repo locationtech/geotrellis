@@ -1,6 +1,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.testutil._
 
 import org.junit.runner.RunWith

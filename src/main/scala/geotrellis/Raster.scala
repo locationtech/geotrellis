@@ -7,6 +7,7 @@ import geotrellis.feature.Polygon
 import java.io.File
 import scala.math.{min, max}
 import geotrellis.util.Filesystem
+import geotrellis.raster._
 
 object Raster {
   def apply(arr:Array[Int], re:RasterExtent):Raster = 

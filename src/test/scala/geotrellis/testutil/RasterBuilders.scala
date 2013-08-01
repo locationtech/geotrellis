@@ -1,6 +1,7 @@
 package geotrellis.testutil
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.process._
 
 trait RasterBuilders {

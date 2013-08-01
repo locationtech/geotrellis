@@ -6,10 +6,10 @@ import geotrellis.data.arg._
 import geotrellis._
 import geotrellis.process._
 import geotrellis.testutil._
-
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import geotrellis.raster.BitArrayRasterData
 
 @RunWith(classOf[JUnitRunner])
 class Int1Test extends FunSuite {

@@ -4,6 +4,7 @@ import scala.math.{min, max}
 import java.io.{File, FileWriter, BufferedReader, BufferedWriter, PrintWriter}
 import Console.printf
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.process._
 import geotrellis.util._
 import geotrellis.util.Filesystem

@@ -13,4 +13,6 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) {
   }
 }
 
+scalaVersion := "2.10.2"
+
 libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided"
