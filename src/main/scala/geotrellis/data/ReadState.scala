@@ -4,6 +4,7 @@ import scala.math.{Numeric, min, max, abs, round, floor, ceil}
 import java.io.{File, FileInputStream, FileOutputStream}
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.process._
 import geotrellis.raster.IntConstant
 

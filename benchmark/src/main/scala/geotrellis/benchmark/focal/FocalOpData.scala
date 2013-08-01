@@ -1,6 +1,7 @@
 package geotrellis.benchmark.oldfocal
 
 import geotrellis._
+import geotrellis.raster._
 
 /** Provides a storage mechanism for focal operations that is later converted into a raster. */
 trait FocalOpData[@specialized(Int,Double) D] {

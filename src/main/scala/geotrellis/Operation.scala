@@ -5,6 +5,8 @@ import scala.{PartialFunction => PF}
 
 import akka.actor._
 
+import scala.language.implicitConversions
+
 /**
  * Base Operation for all GeoTrellis functionality. All other operations must
  * extend this trait.

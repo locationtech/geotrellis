@@ -1,6 +1,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.feature.Point
 import geotrellis.feature.op._
 import scala.math.{max,min}

@@ -4,6 +4,7 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
+import geotrellis.raster._
 
 import scala.collection.mutable
 

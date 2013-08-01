@@ -1,6 +1,7 @@
 package geotrellis.raster.op.zonal.summary
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.raster.op.tiles._
 import geotrellis.feature._
 import geotrellis.feature.op.geometry._
@@ -55,7 +56,7 @@ trait TiledPolygonalZonalSummary[C] extends logic.TileReducer1[C] {
   def mapper(rasterOp: Op[Raster]):Op[List[B]] = {
     raster.op.Force(rasterOp).flatMap(
       strictRaster => { 
-        strictRaster data match {
+        strictRaster.data match {
           case x: IntConstant if x.n == NODATA => {
             AsList(handleNoDataTile())
           }
