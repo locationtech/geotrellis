@@ -23,7 +23,7 @@ class MinoritySpec extends FunSpec
 
       assertEqual(Minority(r1,r2,r3,r4,r5,r6,r7), Array.fill(7*8)(5))
       assertEqual(Minority(1,r1,r2,r3,r4,r5,r6), Array.fill(7*8)(7))
-      assertEqual(Minority(Array(r1,r2,r3,r4,r5,r6),2), Array.fill(7*8)(1))
+      assertEqual(Minority(Seq(r1,r2,r3,r4,r5,r6),2), Array.fill(7*8)(1))
       assertEqual(Minority(0,r1,r1,r2), Array.fill(7*8)(5))
       assertEqual(Minority(1,r1,r1,r2), Array.fill(7*8)(1))
       assertEqual(Minority(2,r1,r1,r2), Array.fill(7*8)(NODATA))

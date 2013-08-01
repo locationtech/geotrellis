@@ -1,23 +1,24 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
-import geotrellis.logic.CollectArray
+import geotrellis.raster.IntArrayRasterData
+import geotrellis.logic.Collect
 
 import scala.collection.mutable
 import spire.syntax._
 
 object Minority {
   def apply(rs:Op[Raster]*):Minority =
-    Minority(CollectArray(rs.toArray),0)
+    Minority(Collect(rs),0)
 
   def apply(level:Op[Int],rs:Op[Raster]*):Minority =
-    Minority(CollectArray(rs.toArray),level)
+    Minority(Collect(rs),level)
 
-  def apply(rasters:Op[Array[Raster]]):Minority =
+  def apply(rasters:Op[Seq[Raster]]):Minority =
     Minority(rasters,0)
 }
 
-case class Minority(rasters:Op[Array[Raster]],level:Op[Int]) extends Op2(rasters,level)({ 
+case class Minority(rasters:Op[Seq[Raster]],level:Op[Int]) extends Op2(rasters,level)({ 
   (rs,level) =>
     rs.reduceLeft { (a,b) =>
       if(a.rasterExtent != b.rasterExtent) { 
