@@ -2,7 +2,7 @@ package geotrellis.raster.op.local
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.logic.CollectArray
+import geotrellis.logic.Collect
 
 import spire.syntax._
 
@@ -11,13 +11,13 @@ import spire.syntax._
  */
 object Variety {
   def apply(rs:Op[Raster]*):Variety =
-    Variety(CollectArray(rs.toArray))
+    Variety(Collect(rs))
 }
 
 /**
  * Variety gives the count of unique values at each location in a set of Rasters.
  */
-case class Variety(rasters:Op[Array[Raster]]) extends Op1(rasters) ({
+case class Variety(rasters:Op[Seq[Raster]]) extends Op1(rasters) ({
   (rs) => 
     rs.reduceLeft { (a,b) => 
       if(a.rasterExtent != b.rasterExtent) { 

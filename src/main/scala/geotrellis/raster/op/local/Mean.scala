@@ -2,7 +2,7 @@ package geotrellis.raster.op.local
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.logic.CollectArray
+import geotrellis.logic.Collect
 
 import spire.syntax._
 
@@ -11,13 +11,13 @@ import spire.syntax._
  */
 object Mean {
   def apply(rs:Op[Raster]*):Mean = 
-    Mean(CollectArray(rs.toArray))
+    Mean(Collect(rs))
 }
 
 /**
  * The mean of values at each location in a set of Rasters.
  */
-case class Mean(rasters:Op[Array[Raster]]) extends Op1(rasters) ({
+case class Mean(rasters:Op[Seq[Raster]]) extends Op1(rasters) ({
   (rs) => 
     rs.reduceLeft { (a,b) => 
       if(a.rasterExtent != b.rasterExtent) { 
