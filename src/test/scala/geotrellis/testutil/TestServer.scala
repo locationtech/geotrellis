@@ -14,9 +14,10 @@ object TestServer {
  * Mixin to provide a server that is reset for each test
  */
 trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
-  var server = TestServer.server 
+  val server = TestServer.server 
 
   def run[T:Manifest](op:Op[T]):T = server.run(op)
+  def getResult[T:Manifest](op:Op[T]) = server.getResult(op)
 
   def get(name:String) = io.LoadRaster(name)
 

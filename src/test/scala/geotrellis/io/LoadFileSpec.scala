@@ -23,10 +23,7 @@ class LoadFileSpec extends FunSpec
     it("should load fake.img8 with resampling") {
       val extent = run(io.LoadRasterExtentFromFile("src/test/resources/fake.img8.arg")).extent
 
-      val resampleRasterExtent = GetRasterExtent( extent.xmin, 
-                                                   extent.ymin, 
-                                                   extent.xmax, 
-                                                   extent.ymax, 2, 2) 
+      val resampleRasterExtent = RasterExtent(extent, 2, 2) 
       val raster = run(io.LoadFile("src/test/resources/fake.img8.arg", resampleRasterExtent))
       raster.get(0, 0) should be (34)
       raster.get(1, 0) should be (36)
