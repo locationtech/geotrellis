@@ -7,7 +7,7 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class CroppedRasterTest extends FunSuite {
+class CroppedRasterSpec extends FunSuite {
   val (cols, rows) = (5, 5)
   val (cw, ch) = (20.0, 20.0)
   val (xmin, ymin) = (0.0, 0.0)
@@ -21,8 +21,6 @@ class CroppedRasterTest extends FunSuite {
 
   val tiledRaster = Tiler.createTiledRaster(r, 2, 2)
   
-  //println(r.asciiDraw)
-
   def ints(a:Array[Int], cols:Int, rows:Int) = IntArrayRasterData(a, cols, rows)
 
   test("aligned crop") {
@@ -38,9 +36,6 @@ class CroppedRasterTest extends FunSuite {
     assert(r2.get(1,0) == 19)
     val data = r2.data.asInstanceOf[CroppedTiledRasterData]
     assert( data != null)
-    val tile = data.getTile(0,0)
-    
-//    assert(r2.data === ints(Array(18, 19), 2, 1))
   }
 
   test("slightly smaller crop") {
