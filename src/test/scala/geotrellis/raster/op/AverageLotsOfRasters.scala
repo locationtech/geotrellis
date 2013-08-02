@@ -49,7 +49,7 @@ class AverageLotsOfRastersTest extends FunSuite {
     val firstRaster:Op[Raster] = dividedOps.head
 
     val groups = dividedOps.tail.grouped(limit).map { _.toArray }.map(local.AddRasters( _:_* ) ) 
-    val ops2 = local.AddArray( logic.CollectArray( groups.toArray ) )
+    val ops2 = local.AddArray( logic.Collect( groups.toSeq ).map(_.toArray) )
 
     val s = TestServer.server
     val output = s.run(ops2)
