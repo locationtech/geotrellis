@@ -1,6 +1,4 @@
-package geotrellis.raster
-
-import geotrellis._
+package geotrellis
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers

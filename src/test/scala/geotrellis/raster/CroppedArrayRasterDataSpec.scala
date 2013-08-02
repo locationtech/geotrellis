@@ -7,7 +7,7 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class CroppedArrayRasterDataTest extends FunSuite {
+class CroppedArrayRasterDataSpec extends FunSuite {
   val d1 = IntConstant(123, 10, 10)
 
   val colOffset = 3
