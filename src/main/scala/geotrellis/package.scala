@@ -7,6 +7,7 @@ package object geotrellis {
 
   type Op[+A] = Operation[A]
   type DI = DummyImplicit
+  type CBSF[A,B,C] = CanBuildSourceFrom[A,B,C]
 
   type RasterData = geotrellis.raster.RasterData
   
