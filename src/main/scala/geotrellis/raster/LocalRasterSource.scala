@@ -6,7 +6,7 @@ import geotrellis.raster.op.tiles.GetTileOps
 object LocalRasterSource {
   implicit def canBuildSourceFrom: CanBuildSourceFrom[LocalRasterSource, Raster, LocalRasterSource] = new CanBuildSourceFrom[LocalRasterSource, Raster, LocalRasterSource] {
     def apply() = new LocalRasterSourceBuilder
-    def apply(from: LocalRasterSource, op: Op[Seq[Op[Raster]]]) = new LocalRasterSourceBuilder
+    def apply(dfn:RasterDefinition, op: Op[Seq[Op[Raster]]]) = new LocalRasterSourceBuilder().setOp(op).setRasterDefinition(dfn)
   }
 }
 class LocalRasterSourceBuilder extends SourceBuilder[Raster, LocalRasterSource] {
