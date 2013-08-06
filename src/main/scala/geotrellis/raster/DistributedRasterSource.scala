@@ -6,19 +6,20 @@ import geotrellis.SourceBuilder
 import geotrellis.logic.Collect
 
 object DistributedRasterSource {
-  implicit def canBuildSourceFrom: CanBuildSourceFrom[DistributedRasterSource, Raster, DistributedRasterSource] = new CanBuildSourceFrom[DistributedRasterSource, Raster, DistributedRasterSource] {
-    def apply() = new DistributedRasterSourceBuilder
-    def apply(dfn: RasterDefinition, op: Op[Seq[Op[Raster]]]) = 
-      new DistributedRasterSourceBuilder().setOp(op).setDataDefinition(dfn)
+  implicit def canBuildSourceFrom: CanBuildSourceFrom[DistributedRasterSource, Raster, DistributedRasterSource] =
+    new CanBuildSourceFrom[DistributedRasterSource, Raster, DistributedRasterSource] {
+      def apply() = new DistributedRasterSourceBuilder
+      def apply(rasterSrc:DistributedRasterSource) =
+        DistributedRasterSourceBuilder(rasterSrc)
   }
 }
 
-class DistributedRasterSource(val rasterDef:Op[RasterDefinition]) extends RasterSourceLike[DistributedRasterSource] {
+class DistributedRasterSource(val rasterDef: Op[RasterDefinition]) extends RasterSource with RasterSourceLike[DistributedRasterSource] {
   def partitions = rasterDef.map(_.tiles)
-  val dataDefinition =  rasterDef
+  val rasterDefinition = rasterDef
   def converge = rasterDef.map { rd =>
     val re = rd.re
-    Collect(rd.tiles).map(s => Raster(TileArrayRasterData(s.toArray,rd.tileLayout,re), re))
+    Collect(rd.tiles).map(s => Raster(TileArrayRasterData(s.toArray, rd.tileLayout, re), re))
   }
 }
 
