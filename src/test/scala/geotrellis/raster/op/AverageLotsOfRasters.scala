@@ -55,5 +55,3 @@ class AverageLotsOfRastersTest extends FunSuite {
     val output = s.run(ops2)
   }
 }
-
-

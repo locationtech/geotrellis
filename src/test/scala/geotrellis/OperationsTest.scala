@@ -10,15 +10,15 @@ import geotrellis.testutil._
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.matchers.ShouldMatchers
 
 @RunWith(classOf[JUnitRunner])
-class OperationsTest extends FunSuite {
-  val server = TestServer.server
-
+class OperationsTest extends FunSuite 
+                        with TestServer {
   var counter = 1
   def run(prefix:String, op:Op[Raster], expected:Raster) {
     test("%s:%s:%s" format (prefix, op.name, counter)) {
-      val got = server.run(op)
+      val got = run(op)
       if (got != expected) {
         println("got " + got.data.asInstanceOf[ArrayRasterData].applyDouble(0))
         println("expected " + expected.data.asInstanceOf[ArrayRasterData].applyDouble(0))
@@ -108,4 +108,60 @@ class OperationsTest extends FunSuite {
   run("double", d2_2 * d3, d6_6)
   run("double", d9_9 / d3_3, d3_3)
   run("double", d3_3 - d2_2, d1_1)
+
+  test("Collapsing operations") {
+    // I'm not really sure what this test is doing.
+    val cols = 100
+    val rows = 100
+
+    val e = Extent(0.0, 0.0, 100.0, 100.0)
+    val re = RasterExtent(e, e.width / cols, e.height / rows, cols, rows)
+
+    def makeData(c:Int) = Array.fill(re.cols * re.rows)(c)
+    def makeRaster(c:Int) = Raster(makeData(c), re)
+
+    val r63 = makeRaster(63)
+    val r46 = makeRaster(46)
+    val r33 = makeRaster(33)
+    val r17 = makeRaster(17)
+    val r13 = makeRaster(13)
+
+    val a = AddConstant(MultiplyConstant(AddConstant(r13, 1), 3), 5)
+    val b = AddConstant(MultiplyConstant(AddConstant(r13, 1), 2), 3)
+    val op = Subtract(a, b)
+
+    val Complete(r, history) = getResult(op)
+    r.get(0, 0) should be (16)
+  }
+
+  test("The UnaryLocal operation (AddConstant)") {
+    def f(op:Op[Raster]) = AddConstant(op, 1)
+    val cols = 1000
+    val rows = 1000
+
+    val e = Extent(0.0, 0.0, 100.0, 100.0)
+    val re = RasterExtent(e, e.width / cols, e.height / rows, cols, rows)
+    val data = Array.fill(re.cols * re.rows)(100)
+    val raster = Raster(data, re)
+
+    val d = raster.data.asArray.get
+
+    val op = AddConstant(raster, 33)
+    val raster2 = run(op)
+    val d2 = raster2.data.asArray.get
+    d2(0) should be (d(0) + 33)
+
+    val d3 = run(f(f(raster))).data.asArray.get
+    d3(0) should be (d(0) + 2)
+    
+    val d4 = run(f(f(f(raster)))).data.asArray.get
+    d4(0) should be (d(0) + 3)
+
+    val d5 = run(f(f(f(f(raster))))).data.asArray.get
+    d5(0) should be (d(0) + 4)
+
+    val Complete(raster3, history) = getResult(f(f(f(f(f(raster))))))
+    val d6 = raster3.data.asArray.get
+    d6(0) should be (d(0) + 5)
+  }
 }

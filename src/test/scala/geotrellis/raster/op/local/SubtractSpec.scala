@@ -120,5 +120,23 @@ class SubtractSpec extends FunSpec
         }
       }
     }
+
+    it("should subtract 63 and 17 correctly") {
+      val cols = 100
+      val rows = 100
+
+      val e = Extent(0.0, 0.0, 100.0, 100.0)
+      val re = RasterExtent(e, e.width / cols, e.height / rows, cols, rows)
+
+      def makeData(c:Int) = Array.fill(re.cols * re.rows)(c)
+      def makeRaster(c:Int) = Raster(makeData(c), re)
+
+      val r63 = makeRaster(63)
+      val r46 = makeRaster(46)
+      val r17 = makeRaster(17)
+
+      val r = run(Subtract(r63, r17))
+      r.get(0, 0) should be (r46.get(0, 0))
+    }
   }
 }
