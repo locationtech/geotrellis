@@ -9,7 +9,7 @@ object DistributedRasterSource {
   implicit def canBuildSourceFrom: CanBuildSourceFrom[DistributedRasterSource, Raster, DistributedRasterSource] = new CanBuildSourceFrom[DistributedRasterSource, Raster, DistributedRasterSource] {
     def apply() = new DistributedRasterSourceBuilder
     def apply(dfn: RasterDefinition, op: Op[Seq[Op[Raster]]]) = 
-      new DistributedRasterSourceBuilder().setOp(null).setDataDefinition(dfn)
+      new DistributedRasterSourceBuilder().setOp(op).setDataDefinition(dfn)
   }
 }
 
