@@ -2,6 +2,9 @@ package geotrellis.raster
   
 import geotrellis._
 
- class RasterSourceBuilder extends SourceBuilder[Raster, RasterSource] {
-    def result = new RasterSource(this.op)
- }
+trait RasterSourceBuilder[A] extends SourceBuilder[Raster,A] {
+  def setRasterDefinition(dfn:Op[RasterDefinition]):this.type
+}
+ //class RasterSourceBuilder extends SourceBuilder[Raster, RasterSource] {
+    //def result = new RasterSource(this.op)
+ //}

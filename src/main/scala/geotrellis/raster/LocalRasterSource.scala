@@ -1,6 +1,7 @@
 package geotrellis.raster
 
 import geotrellis._
+import geotrellis.raster.op.tiles.GetTileOps
 
 object LocalRasterSource {
   implicit def canBuildSourceFrom: CanBuildSourceFrom[LocalRasterSource, Raster, LocalRasterSource] = new CanBuildSourceFrom[LocalRasterSource, Raster, LocalRasterSource] {
@@ -9,7 +10,19 @@ object LocalRasterSource {
   }
 }
 class LocalRasterSourceBuilder extends SourceBuilder[Raster, LocalRasterSource] {
+  val dataDefinition = ???
   def result = new LocalRasterSource(null)
+  def setDataDefinition(dfn: geotrellis.Operation[geotrellis.DataDefinition]): this.type = this 
+  def setOp(op: Seq[geotrellis.Operation[geotrellis.Raster]]): this.type = this 
+  def setRasterDefinition(dfn: geotrellis.Operation[geotrellis.RasterDefinition]): this.type = this 
 }
 
-class LocalRasterSource(seqOp: Op[Seq[Op[Raster]]]) extends RasterSource(seqOp) with RasterSourceLike[LocalRasterSource] {}
+class LocalRasterSource(val raster:Op[Raster])
+  extends RasterSourceLike[LocalRasterSource] {
+  def dataDefinition = ???
+  def partitions = GetTileOps(raster)
+
+  def converge = ???
+  
+
+}

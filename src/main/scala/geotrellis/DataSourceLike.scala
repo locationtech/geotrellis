@@ -1,6 +1,7 @@
 package geotrellis
 
 trait DataSourceLike[+T,+Repr <: DataSource[T]] { self:Repr =>
+  def dataDefinition:Op[DataDefinition]
   def map[B,That](f:Op[T] => Op[B])(implicit bf:CanBuildSourceFrom[Repr,B,That]):That =  {
     val builder = bf.apply()
 	  val newOp = this.partitions.map( seq =>
@@ -9,6 +10,7 @@ trait DataSourceLike[+T,+Repr <: DataSource[T]] { self:Repr =>
 	      }
 	)
 	builder.op = newOp
+	builder.setDataDefinition(dataDefinition)
     builder.result()
   }
 }
