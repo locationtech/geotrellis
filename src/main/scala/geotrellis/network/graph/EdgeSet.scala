@@ -20,8 +20,8 @@ class EdgeSet(val vertex:Vertex) extends Iterable[Edge] {
   def iterator = 
     edges.iterator
 
-  private var _edgeCount = 0
-  def edgeCount = _edgeCount
+  private val edgeCounts = mutable.Map[EdgeType,Int]()
+  def edgeCount(et:EdgeType) = edgeCounts.getOrElse(et,0)
 
   def hasAnyTimeEdgeTo(target:Vertex) =
     if(!edgesToTargets.contains(target)) {
@@ -30,21 +30,12 @@ class EdgeSet(val vertex:Vertex) extends Iterable[Edge] {
       edgesToTargets(target).filter(_.time != Time.ANY).isEmpty
     }
 
-  def addEdge(target:Vertex,time:Time,travelTime:Duration):Unit = {
+  def addEdge(edge:Edge):Unit = {
+    val target = edge.target
     if(!edgesToTargets.contains(target)) { edgesToTargets(target) = mutable.ListBuffer[Edge]() }
-
-    val edgesToTarget = edgesToTargets(target)
-    var set = false
-
-    cfor(0)( _ < edgesToTarget.length && !set, _ + 1) { i =>
-      if(time > edgesToTarget(i).time) {
-        edgesToTarget.insert(i,Edge(target, time, travelTime))
-        set = true
-      }   
-    }
-    if(!set) { edgesToTarget += Edge(target, time, travelTime) }
-
-    _edgeCount += 1
+    edgesToTargets(target) += edge
+    if(!edgeCounts.contains(edge.edgeType)) { edgeCounts(edge.edgeType) = 0 }
+    edgeCounts(edge.edgeType) += 1
   }
 
   override

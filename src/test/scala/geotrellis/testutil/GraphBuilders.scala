@@ -83,7 +83,7 @@ object SampleGraph {
     for(u <- vertices) {
       for(v <- vertices) {
         if(u != v) {
-          g.addEdge(u,v, Time(u.location.lat.toInt*10),Duration(u.location.lat.toInt))
+          g.addEdge(u,TransitEdge(v,Time(u.location.lat.toInt*10),Duration(u.location.lat.toInt)))
         }
       }
     }
@@ -110,8 +110,8 @@ object SampleGraph {
     for(u <- vertices) {
       for(v <- vertices) {
         if(u != v) {
-          g.addEdge(u,v, Time(u.location.lat.toInt*10),Duration(u.location.lat.toInt))
-          g.addEdge(u,v, Time.ANY,Duration(20))
+          g.addEdge(u,TransitEdge(v,Time(u.location.lat.toInt*10),Duration(u.location.lat.toInt)))
+          g.addEdge(u,WalkEdge(v,Duration(20)))
         }
       }
     }
@@ -155,7 +155,7 @@ object TestGraph {
          }
 
          val weight = Duration(e.label.get.toInt)
-         g.addEdge(vertices(b),vertices(targetBox),Time.ANY, weight)
+         g.addEdge(vertices(b),WalkEdge(vertices(targetBox),weight))
        }
      }
 

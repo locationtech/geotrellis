@@ -64,7 +64,7 @@ class ShortestPathTree(val startVertex:Int,
   val tripStart = startTime.toInt
   val duration = maxDuration.getOrElse(Duration(Int.MaxValue)).toInt + tripStart
 
-  graph.foreachOutgoingEdge(startVertex,tripStart) { (target,weight) =>
+  graph.foreachTransitEdge(startVertex,tripStart) { (target,weight) =>
     val t = tripStart + weight
     if(t <= duration) {
       shortestPathTimes(target) = t
@@ -77,7 +77,7 @@ class ShortestPathTree(val startVertex:Int,
     val currentVertex = queue.dequeue
     val currentTime = shortestPathTimes(currentVertex)
 
-    graph.foreachOutgoingEdge(currentVertex, currentTime) { (target,weight) =>
+    graph.foreachTransitEdge(currentVertex, currentTime) { (target,weight) =>
       val t = currentTime + weight
       if(t <= duration) {
         val currentTime = shortestPathTimes(target)

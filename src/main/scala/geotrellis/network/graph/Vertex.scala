@@ -30,5 +30,3 @@ case class Vertex(location:Location, name:String, vertexType:VertexType) {
       case _ => false 
     }
 }
-
-case class Edge(target:Vertex,time:Time,travelTime:Duration)
