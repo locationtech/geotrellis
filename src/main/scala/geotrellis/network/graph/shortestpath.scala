@@ -64,7 +64,15 @@ class ShortestPathTree(val startVertex:Int,
   val tripStart = startTime.toInt
   val duration = maxDuration.getOrElse(Duration(Int.MaxValue)).toInt + tripStart
 
+  var count = 0
+
+  val sv = graph.vertexFor(startVertex)
+
   graph.foreachTransitEdge(startVertex,tripStart) { (target,weight) =>
+
+    val tv = graph.vertexFor(target)
+    if(sv.vertexType == StationVertex && tv.vertexType == StationVertex) { count += 1 }
+
     val t = tripStart + weight
     if(t <= duration) {
       shortestPathTimes(target) = t
@@ -77,7 +85,13 @@ class ShortestPathTree(val startVertex:Int,
     val currentVertex = queue.dequeue
     val currentTime = shortestPathTimes(currentVertex)
 
+    val cv = graph.vertexFor(currentVertex)
+
     graph.foreachTransitEdge(currentVertex, currentTime) { (target,weight) =>
+
+      val tv = graph.vertexFor(target)
+      if(cv.vertexType == StationVertex && tv.vertexType == StationVertex) { count += 1 }
+
       val t = currentTime + weight
       if(t <= duration) {
         val currentTime = shortestPathTimes(target)
@@ -88,6 +102,10 @@ class ShortestPathTree(val startVertex:Int,
         }
       }
     }
+  }
+
+  if(count > 0) {
+    println(s"        -------- There were $count station to station edges. --------- ")
   }
 
   def travelTimeTo(target:Int):Duration = {

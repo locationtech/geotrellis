@@ -81,6 +81,8 @@ object PackedAnytimeEdges {
             .sortBy { e => (vertexLookup(e.target),-e.travelTime.toInt) }
             .toList
         
+        if(edges.length != edgeCount) { sys.error("Edge edge edge walk") }
+
         var lastTarget = -1
 
         cfor(0)(_ < edgeCount, _ + 1) { i =>
@@ -114,20 +116,25 @@ class PackedTransitEdges(vertexCount:Int,val edgeCount:Int) extends Serializable
    *       n = number of edges to read
    */
   private val vertices = Array.ofDim[Int](vertexCount * 2)
-
+ 
   /**
    * 'edges' is an array of that is indexed based
    * on the 'vertices' array, and contains three peices
-   * of information about an edge: the target vertex and 
-   * the weight of the edge.
+   * of information about an edge: the target vertex, the
+   * start time associated with this edge, and the weight
+   * of the edge.
    *
-   * ... [ v | w ] | [ v | w ] | [ v | w ] ...
+   * ... [ v | t | w ] | [ v | t | w ] | [ v | t | w ] ...
    * where v = the connected vertex
+   *       t = time edge can be traversed (-2 if all time)
    *       w = weight of traversal
+   * 
+   * Weight is defined as time taken to traverse the given edge,
+   * plus the waiting time for that edge traversal to occur.
    * 
    * Weight is defined as time taken to traverse the given edge.
    */
-  val edges = Array.ofDim[Int](edgeCount * 2)
+  val edges = Array.ofDim[Int](edgeCount * 3)
 
   /**
    * Given a source vertex, and a time, call a function which takes
@@ -142,7 +149,6 @@ class PackedTransitEdges(vertexCount:Int,val edgeCount:Int) extends Serializable
 
     val end = vertices(source * 2 + 1) + start
     var target = -1
-    var targetSpent = false
     var skipUntilTargetChange = false
 
     cfor(start)( _ < end, _ + 3 ) { i =>
@@ -166,7 +172,7 @@ class PackedTransitEdges(vertexCount:Int,val edgeCount:Int) extends Serializable
 
         if(edgeTime >= time) {
           skipUntilTargetChange = true
-          val actualWeight = edges(i+2) + (edgeTime - time)
+          val actualWeight = edgeWeight + (edgeTime - time)
           f(edgeTarget,actualWeight)
         }
       }
@@ -183,9 +189,12 @@ object PackedTransitEdges {
     var edgesIndex = 0
     var doubleAnies = 0
 
+    var totalEdgeCount = 0
+
     cfor(0)(_ < vertexCount, _ + 1) { i =>
       val v = vertices(i)
       val edgeCount = unpacked.edgeCount(v,edgeType)
+      totalEdgeCount += edgeCount
       if(edgeCount == 0) {
         // Record empty vertex
         packed.vertices(i*2) = -1
@@ -194,7 +203,7 @@ object PackedTransitEdges {
         // Set the edge index for this vertex
         packed.vertices(i*2) = edgesIndex
         // Record the number of edge entries for this vertex
-        packed.vertices(i*2+1) = edgeCount*2
+        packed.vertices(i*2+1) = edgeCount*3
 
         // Edges need to be sorted first by target and then by the thier start time.
         val edges =
@@ -209,6 +218,8 @@ object PackedTransitEdges {
           val t = vertexLookup(e.target)
 
           packed.edges(edgesIndex) = t
+          edgesIndex += 1
+          packed.edges(edgesIndex) = e.time.toInt
           edgesIndex += 1
           packed.edges(edgesIndex) = e.travelTime.toInt
           edgesIndex += 1
@@ -240,7 +251,22 @@ extends Serializable {
    */
   def foreachTransitEdge(source:Int,time:Int)(f:(Int,Int)=>Unit):Unit = {
     walkingEdges.foreachOutgoingEdge(source)(f)
-    transitEdges.foreachOutgoingEdge(source,time)(f)
+    var count = 0
+    val sv = vertexMap(source)
+    transitEdges.foreachOutgoingEdge(source,time) { (x,y) => 
+      val tv = vertexMap(x)
+      tv.vertexType match {
+        case StationVertex =>
+          println(s"        Source Vertex: ${sv.name}   Target station: ${tv.name}.")
+          count += 1
+        case _ => //pass
+      }
+      
+      f(x,y)
+    }
+    if(count > 0) {
+      println(s" --------------- THERE WERE $count transit edges to stations called.")
+    }
   }
 
   def foreachWalkingEdge(source:Int,time:Int)(f:(Int,Int)=>Unit):Unit = {
