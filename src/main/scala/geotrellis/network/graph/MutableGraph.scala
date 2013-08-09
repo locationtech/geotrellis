@@ -10,10 +10,10 @@ class MutableGraph() {
 
   private val edgeSets = mutable.Map[Vertex,EdgeSet]()
 
-  def edgeCount() = edgeSets.values.foldLeft(0)(_+_.edgeCount)
+  def edgeCount(et:EdgeType) = edgeSets.values.foldLeft(0)(_+_.edgeCount(et))
 
-  def edgeCount(v:Vertex) = 
-    edgeSets(v).edgeCount
+  def edgeCount(v:Vertex,et:EdgeType) = 
+    edgeSets(v).edgeCount(et)
 
   def edges(v:Vertex) =
     edgeSets(v)
@@ -34,8 +34,8 @@ class MutableGraph() {
   }
 
   /** Does not check if target vertex is in the graph */
-  def addEdge(source:Vertex,target:Vertex,time:Time,travelTime:Duration) = {
-    edgeSets(source).addEdge(target,time,travelTime)
+  def addEdge(source:Vertex,edge:Edge) = {
+    edgeSets(source).addEdge(edge)
   }
 
   def vertices() = 
