@@ -23,13 +23,6 @@ class EdgeSet(val vertex:Vertex) extends Iterable[Edge] {
   private val edgeCounts = mutable.Map[EdgeType,Int]()
   def edgeCount(et:EdgeType) = edgeCounts.getOrElse(et,0)
 
-  def hasAnyTimeEdgeTo(target:Vertex) =
-    if(!edgesToTargets.contains(target)) {
-      false 
-    } else {
-      edgesToTargets(target).filter(_.time != Time.ANY).isEmpty
-    }
-
   def addEdge(edge:Edge):Unit = {
     val target = edge.target
     if(!edgesToTargets.contains(target)) { edgesToTargets(target) = mutable.ListBuffer[Edge]() }

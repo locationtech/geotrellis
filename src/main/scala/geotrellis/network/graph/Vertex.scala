@@ -17,7 +17,7 @@ case object StreetVertex extends VertexType {
 case class Vertex(location:Location, name:String, vertexType:VertexType) {
   override
   def toString = {
-    s"V(${location})"
+    s"V($name,$location)"
   }
 
   override 
