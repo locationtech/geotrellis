@@ -19,10 +19,30 @@ import Angles._
 trait Neighborhood { 
   /** How many cells past the focus the bounding box goes. (e.g., 1 for 9x9 square) */
   val extent:Int 
+
   /** Whether or not this neighborhood has a mask the cursor of it's bounding box */
   val hasMask:Boolean
-  /** Overridden to define the mask of Neighborhoods that have one */
-  def mask(x:Int,y:Int):Boolean = { false }
+
+  /** Overridden to define the mask of Neighborhoods that have one 
+   *  col and row treat the mask as a raster, that is, (0,0) is the
+   *  upper left corner, and (extent*2+1,extent*2+1) is the lower
+   *  right corner
+   */
+  def mask(col:Int,row:Int):Boolean = { false }
+
+  override
+  def toString = {
+    val sb = new scala.collection.mutable.StringBuilder()
+    val d = extent*2 + 1
+    for(y <- 0 until d) {
+      for(x <- 0 until d) {
+        if(mask(x,y)) { sb.append(" X ") }
+        else { sb.append(" O ") }
+      }
+      sb.append("\n")
+    }
+    sb.toString
+  }
 }
 
 /** A square neighborhood.
