@@ -41,6 +41,36 @@ object Time {
   val ANY = new Time(-2)
 
   def apply(secondsFromMidnight:Int) = new Time(secondsFromMidnight)
+
+  /**
+   * Parses a time string in an HH:MM:SS 24-hour format
+   */
+  def parse(s:String) = {
+    val arr = s.split(":")
+    if(arr.length != 3) { sys.error("Illegal time format: %s. Must be HH:MM:SS (24 hour)") }
+    val hours = 
+      try {
+        arr(0).toInt
+      } catch { case _:java.lang.NumberFormatException => 
+          sys.error("Illegal time format: %s. Must be HH:MM:SS (24 hour)")
+      }
+
+    val minutes = 
+      try {
+        arr(1).toInt
+      } catch { case _:java.lang.NumberFormatException => 
+          sys.error("Illegal time format: %s. Must be HH:MM:SS (24 hour)")
+      }
+
+    val seconds = 
+      try {
+        arr(2).toInt
+      } catch { case _:java.lang.NumberFormatException => 
+          sys.error("Illegal time format: %s. Must be HH:MM:SS (24 hour)")
+      }
+
+    new Time(hours*60*60 + minutes*60 + seconds)
+  }
 }
 
 class Duration(private val seconds:Int) 
@@ -80,4 +110,6 @@ object Duration {
     } else {
       new Duration(seconds)
     }
+
+  def fromMinutes(min:Int) = new Duration(min*60)
 }
