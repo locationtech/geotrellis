@@ -21,6 +21,15 @@ extends Serializable {
     transitEdges.foreachOutgoingEdge(source,time)(f)
   }
 
+  def foreachIncomingTransitEdge(source:Int,time:Int)(f:(Int,Int)=>Unit):Unit = {
+    walkEdges.foreachOutgoingEdge(source)(f)
+    transitEdges.foreachIncomingEdge(source,time)(f)
+    // { (t,w) =>
+    //   println(s"  Incoming ${vertexMap(t)} to ${vertexMap(source)} with weight $w")
+    //   f(t,w)
+    // }
+  }
+
   def foreachWalkEdge(source:Int)(f:(Int,Int)=>Unit):Unit = {
     walkEdges.foreachOutgoingEdge(source)(f)
   }

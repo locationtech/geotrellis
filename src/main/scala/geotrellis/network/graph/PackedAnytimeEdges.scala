@@ -4,9 +4,12 @@ import geotrellis.network._
 
 import spire.syntax._
 
+/**
+  * Represents edges of a undirected weighted graph.
+  */
 class PackedAnytimeEdges(vertexCount:Int,val edgeCount:Int) extends Serializable {
   /**
-   * 'vertices' is an array that is indexed by vertex id,
+   * 'verticesToEdges' is an array that is indexed by vertex id,
    * that contains two peices of information:
    * the start index of the 'edges' array for
    * a given vertex, and the number of outbound
@@ -16,11 +19,11 @@ class PackedAnytimeEdges(vertexCount:Int,val edgeCount:Int) extends Serializable
    * where i = index in edges array
    *       n = number of edges to read
    */
-  private val vertices = Array.ofDim[Int](vertexCount * 2)
+  private val verticesToEdges = Array.ofDim[Int](vertexCount * 2)
 
   /**
    * 'edges' is an array of that is indexed based
-   * on the 'vertices' array, and contains three peices
+   * on the 'verticesToEdges' array, and contains three peices
    * of information about an edge: the target vertex and 
    * the weight of the edge.
    *
@@ -38,9 +41,9 @@ class PackedAnytimeEdges(vertexCount:Int,val edgeCount:Int) extends Serializable
    * edge from the source.
    */
   def foreachOutgoingEdge(source:Int)(f:(Int,Int)=>Unit):Unit = {
-    val start = vertices(source * 2)
+    val start = verticesToEdges(source * 2)
     if(start == -1) { return }
-    val end = (vertices(source * 2 + 1)*2) + start
+    val end = (verticesToEdges(source * 2 + 1)*2) + start
 
     cfor(start)( _ < end, _ + 2 ) { i =>
       val edgeTarget = edges(i)
@@ -62,13 +65,13 @@ object PackedAnytimeEdges {
       val edgeCount = unpacked.edgeCount(v,edgeType)
       if(edgeCount == 0) {
         // Record empty vertex
-        packed.vertices(i*2) = -1
-        packed.vertices(i*2+1) = 0
+        packed.verticesToEdges(i*2) = -1
+        packed.verticesToEdges(i*2+1) = 0
       } else {
         // Set the edge index for this vertex
-        packed.vertices(i*2) = edgesIndex
+        packed.verticesToEdges(i*2) = edgesIndex
         // Record the number of edge entries for this vertex
-        packed.vertices(i*2+1) = edgeCount
+        packed.verticesToEdges(i*2+1) = edgeCount
 
         // Edges need to be sorted first by target and then by the thier start time.
         val edges =
@@ -82,19 +85,9 @@ object PackedAnytimeEdges {
 
         var lastTarget = -1
 
-        if(v.name == "1961318622") {
-          println(s"Hell yeah $v has edge count $edgeCount")
-        }
-
         cfor(0)(_ < edgeCount, _ + 1) { i =>
           val e = edges(i)
           val t = vertexLookup(e.target)
-          if(v.name == "1961318622") {
-            println(s"  ...is connected to Hell yeah ${e.target}")
-            if(e.target.name == "261465878") {
-              println(s"           EVERYTHING IS BAD AND I FEEL BAD")
-            }
-          }
 
           if(lastTarget != t) {
             packed.edges(edgesIndex) = t
