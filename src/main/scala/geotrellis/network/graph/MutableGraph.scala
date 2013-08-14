@@ -10,10 +10,10 @@ class MutableGraph() {
 
   private val edgeSets = mutable.Map[Vertex,EdgeSet]()
 
-  def edgeCount(et:EdgeType) = edgeSets.values.foldLeft(0)(_+_.edgeCount(et))
+  def edgeCount(mode:TransitMode) = edgeSets.values.foldLeft(0)(_+_.edgeCount(mode))
 
-  def edgeCount(v:Vertex,et:EdgeType) = 
-    edgeSets(v).edgeCount(et)
+  def edgeCount(v:Vertex,mode:TransitMode) = 
+    edgeSets(v).edgeCount(mode)
 
   def edges(v:Vertex) =
     edgeSets(v)

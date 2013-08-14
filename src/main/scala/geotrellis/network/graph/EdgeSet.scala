@@ -20,15 +20,15 @@ class EdgeSet(val vertex:Vertex) extends Iterable[Edge] {
   def iterator = 
     edges.iterator
 
-  private val edgeCounts = mutable.Map[EdgeType,Int]()
-  def edgeCount(et:EdgeType) = edgeCounts.getOrElse(et,0)
+  private val edgeCounts = mutable.Map[TransitMode,Int]()
+  def edgeCount(mode:TransitMode) = edgeCounts.getOrElse(mode,0)
 
   def addEdge(edge:Edge):Unit = {
     val target = edge.target
     if(!edgesToTargets.contains(target)) { edgesToTargets(target) = mutable.ListBuffer[Edge]() }
     edgesToTargets(target) += edge
-    if(!edgeCounts.contains(edge.edgeType)) { edgeCounts(edge.edgeType) = 0 }
-    edgeCounts(edge.edgeType) += 1
+    if(!edgeCounts.contains(edge.mode)) { edgeCounts(edge.mode) = 0 }
+    edgeCounts(edge.mode) += 1
   }
 
   override
