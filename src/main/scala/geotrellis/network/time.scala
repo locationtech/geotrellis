@@ -113,3 +113,52 @@ object Duration {
 
   def fromMinutes(min:Int) = new Duration(min*60)
 }
+
+sealed abstract class DayOfWeek extends Serializable
+
+sealed abstract class WeekDay extends DayOfWeek
+sealed abstract class Weekend extends DayOfWeek
+
+case object Monday extends WeekDay { override def toString = "Monday" }
+case object Tuesday extends WeekDay { override def toString = "Tuesday" }
+case object Wednesday extends WeekDay { override def toString = "Wednesday" }
+case object Thursday extends WeekDay { override def toString = "Thursday" }
+case object Friday extends WeekDay { override def toString = "Friday" }
+case object Saturday extends Weekend { override def toString = "Saturday" }
+case object Sunday extends Weekend { override def toString = "Sunday" }
+
+trait WeeklySchedule extends Serializable 
+{ def isFor(d:DayOfWeek):Boolean }
+
+object EveryDaySchedule extends WeeklySchedule { 
+  def isFor(d:DayOfWeek) = true 
+
+  override 
+  def toString = "EVERYDAY"
+}
+
+object WeekDaySchedule extends WeeklySchedule {
+  def isFor(d:DayOfWeek) = 
+    d match {
+      case _:WeekDay => true
+      case _ => false
+    }
+
+  override 
+  def toString = "WEEKDAYS"
+}
+
+case class DaySchedule(target:DayOfWeek) extends WeeklySchedule {
+  def isFor(d:DayOfWeek) = d == target
+
+  override def equals(o: Any) = 
+    o match {
+      case that: DaySchedule => target.equals(that.target)
+      case _ => false
+    }
+
+  override def hashCode = target.hashCode
+
+  override 
+  def toString = s"SINGELDAY($target)"
+}
