@@ -226,6 +226,7 @@ object PackedTransitEdges {
           val tup = edges(i)
           val s = tup._1
           val e = tup._2
+
           packed.incomingEdges(incomingEdgesIndex) = s
           incomingEdgesIndex += 1
           packed.incomingEdges(incomingEdgesIndex) = e.time.toInt

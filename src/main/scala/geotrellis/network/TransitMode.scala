@@ -32,3 +32,4 @@ case class PublicTransit(weeklySchedule:WeeklySchedule) extends TransitMode {
   override
   def toString = s"MODE(PublicTransit($weeklySchedule))"
 }
+
