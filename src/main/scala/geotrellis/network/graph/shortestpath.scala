@@ -15,7 +15,7 @@ case object BikePath extends PathType
 case class TransitPath(weeklySchedule:WeeklySchedule) extends PathType { 
   override def equals(o: Any) = 
     o match {
-      case that: PublicTransit => weeklySchedule.equals(that.weeklySchedule)
+      case that: TransitPath => weeklySchedule.equals(that.weeklySchedule)
       case _ => false
     }
 
