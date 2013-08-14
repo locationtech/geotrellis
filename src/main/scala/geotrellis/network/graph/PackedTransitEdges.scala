@@ -161,9 +161,9 @@ class PackedTransitEdges(vertexCount:Int,val edgeCount:Int) extends Serializable
 }
 
 object PackedTransitEdges {
-  def pack(vertices:Array[Vertex],vertexLookup:Map[Vertex,Int],unpacked:MutableGraph,edgeType:EdgeType) = {
+  def pack(vertices:Array[Vertex],vertexLookup:Map[Vertex,Int],unpacked:MutableGraph,mode:TransitMode) = {
     val vertexCount = vertices.length
-    val packed = new PackedTransitEdges(vertexCount,unpacked.edgeCount(edgeType))
+    val packed = new PackedTransitEdges(vertexCount,unpacked.edgeCount(mode))
 
     // Pack edges
     var outgoingEdgesIndex = 0
@@ -171,7 +171,7 @@ object PackedTransitEdges {
 
     cfor(0)(_ < vertexCount, _ + 1) { i =>
       val v = vertices(i)
-      val edgeCount = unpacked.edgeCount(v,edgeType)
+      val edgeCount = unpacked.edgeCount(v,mode)
       if(edgeCount == 0) {
         // Record empty vertex
         packed.verticesToOutgoing(i*2) = -1
@@ -185,7 +185,7 @@ object PackedTransitEdges {
         // Edges need to be sorted first by target and then by the their start time.
         val edges =
           unpacked.edges(v)
-            .filter(_.edgeType == edgeType)
+            .filter(_.mode == mode)
             .toSeq
             .sortBy { e => (vertexLookup(e.target),e.time.toInt) }
             .toList

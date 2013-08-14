@@ -10,7 +10,17 @@ abstract sealed class PathType
 
 case object WalkPath extends PathType
 case object BikePath extends PathType 
-case object TransitPath extends PathType // includes walking
+
+/** Path includes public transit and walking */
+case class TransitPath(weeklySchedule:WeeklySchedule) extends PathType { 
+  override def equals(o: Any) = 
+    o match {
+      case that: PublicTransit => weeklySchedule.equals(that.weeklySchedule)
+      case _ => false
+    }
+
+  override def hashCode = weeklySchedule.hashCode
+} 
 
 trait ShortestPathTree {
   def travelTimeTo(target:Int):Duration
@@ -25,19 +35,25 @@ object ShortestPathTree {
   def initSptArray(vertexCount:Int) = { _sptArray = Array.fill[Int](vertexCount)(-1) }
 
   def departure(from:Int, startTime:Time, graph:TransitGraph) =
-    new ShortestDeparturePathTree(from,startTime,graph,None,TransitPath)
+    new ShortestDeparturePathTree(from,startTime,graph,None,WalkPath)
+
+  def departure(from:Int,startTime:Time,graph:TransitGraph,pathType:PathType) =
+    new ShortestDeparturePathTree(from,startTime,graph,None,pathType)
 
   def departure(from:Int,startTime:Time,graph:TransitGraph,maxDuration:Duration) =
-    new ShortestDeparturePathTree(from,startTime,graph,Some(maxDuration),TransitPath)
+    new ShortestDeparturePathTree(from,startTime,graph,Some(maxDuration),WalkPath)
 
   def departure(from:Int,startTime:Time,graph:TransitGraph,maxDuration:Duration,pathType:PathType) =
     new ShortestDeparturePathTree(from,startTime,graph,Some(maxDuration),pathType)
 
   def arrival(to:Int, arriveTime:Time, graph:TransitGraph) =
-    new ShortestArrivalPathTree(to,arriveTime,graph,None,TransitPath)
+    new ShortestArrivalPathTree(to,arriveTime,graph,None,WalkPath)
+
+  def arrival(to:Int, arriveTime:Time, graph:TransitGraph,pathType:PathType) =
+    new ShortestArrivalPathTree(to,arriveTime,graph,None,pathType)
 
   def arrival(to:Int,arriveTime:Time,graph:TransitGraph,maxDuration:Duration) =
-    new ShortestArrivalPathTree(to,arriveTime,graph,Some(maxDuration),TransitPath)
+    new ShortestArrivalPathTree(to,arriveTime,graph,Some(maxDuration),WalkPath)
 
   def arrival(to:Int,arriveTime:Time,graph:TransitGraph,maxDuration:Duration,pathType:PathType) =
     new ShortestArrivalPathTree(to,arriveTime,graph,Some(maxDuration),pathType)
@@ -80,31 +96,30 @@ extends ShortestPathTree {
       case None => Int.MaxValue
     }
 
-  val foreachEdge:(Int,Int,(Int,Int)=>Unit)=>Unit = { (sv, t, f) =>
+  val edgeIterator = 
     pathType match {
       case WalkPath =>
-        graph.foreachWalkEdge(sv)(f)
+        graph.getEdgeIterator(Walking,EdgeDirection.Outgoing)
       case BikePath =>
-        graph.foreachBikeEdge(sv)(f)
-      case TransitPath =>
-        graph.foreachTransitEdge(sv,t)(f)
+        graph.getEdgeIterator(Biking,EdgeDirection.Outgoing)
+      case TransitPath(weeklySchedule) =>
+        graph.getEdgeIterator(Seq(Walking,PublicTransit(weeklySchedule)),EdgeDirection.Outgoing)
     }
-  }
 
-  foreachEdge(startVertex,tripStart, { (target,weight) =>
+  edgeIterator.foreachEdge(startVertex,tripStart) { (target,weight) =>
     val t = tripStart + weight
     if(t <= duration) {
       shortestPathTimes(target) = t
       queue += target
       _reachableVertices += target
     }
-  })
+  }
 
   while(!queue.isEmpty) {
     val currentVertex = queue.dequeue
     val currentTime = shortestPathTimes(currentVertex)
 
-    foreachEdge(currentVertex, currentTime, { (target,weight) =>
+    edgeIterator.foreachEdge(currentVertex, currentTime) { (target,weight) =>
       val t = currentTime + weight
       if(t <= duration) {
         val currentTime = shortestPathTimes(target)
@@ -114,7 +129,7 @@ extends ShortestPathTree {
           queue += target
         }
       }
-    })
+    }
   }
 
   def travelTimeTo(target:Int):Duration = {
@@ -145,9 +160,6 @@ extends ShortestPathTree {
 
   shortestPathTimes(destinationVertex) = 0
 
-  // val shortestPaths =
-  //   Array.fill[ListBuffer[Int]](graph.vertexCount)(ListBuffer[Int]())  ///////DEBUG
-
   // dijkstra's
 
   object VertexOrdering extends Ordering[Int] {
@@ -164,32 +176,30 @@ extends ShortestPathTree {
       case None => Int.MinValue
     }
 
-  val foreachEdge:(Int,Int,(Int,Int)=>Unit)=>Unit = { (sv, t, f) =>
+  val edgeIterator = 
     pathType match {
       case WalkPath =>
-        graph.foreachWalkEdge(sv)(f)
+        graph.getEdgeIterator(Walking,EdgeDirection.Incoming)
       case BikePath =>
-        graph.foreachBikeEdge(sv)(f)
-      case TransitPath =>
-        graph.foreachIncomingTransitEdge(sv,t)(f)
+        graph.getEdgeIterator(Biking,EdgeDirection.Incoming)
+      case TransitPath(weeklySchedule) =>
+        graph.getEdgeIterator(Seq(Walking,PublicTransit(weeklySchedule)),EdgeDirection.Incoming)
     }
-  }
 
-  foreachEdge(destinationVertex,tripStart, { (target,weight) =>
+  edgeIterator.foreachEdge(destinationVertex,tripStart) { (target,weight) =>
     val t = tripStart - weight
     if(t >= duration) {
       shortestPathTimes(target) = t
       queue += target
       _reachableVertices += target
-//      shortestPaths(target) = shortestPaths(destinationVertex) :+ destinationVertex //DBOEU
     }
-  })
+  }
 
   while(!queue.isEmpty) {
     val currentVertex = queue.dequeue
     val currentTime = shortestPathTimes(currentVertex)
 
-    foreachEdge(currentVertex, currentTime, { (target,weight) =>
+    edgeIterator.foreachEdge(currentVertex, currentTime) { (target,weight) =>
       val t = currentTime - weight
       if(t >= duration) {
         val currentTime = shortestPathTimes(target)
@@ -197,10 +207,9 @@ extends ShortestPathTree {
           _reachableVertices += target
           shortestPathTimes(target) = t
           queue += target
-//          shortestPaths(target) = shortestPaths(currentVertex) :+ currentVertex //DUBEG
         }
       }
-    })
+    }
   }
 
   def travelTimeTo(target:Int):Duration = {

@@ -28,9 +28,10 @@ class PackedGraphSpec extends FunSpec
       for(v <- packedToUnpacked.keys) {
         val unpackedEdges = unpacked.edges(packedToUnpacked(v))
         val packedEdges = mutable.ListBuffer[Edge]()
-        packed.foreachTransitEdge(v,0) { (t,w) =>
-          packedEdges += WalkEdge(packedToUnpacked(t),Duration(w))
-        }
+        packed.getEdgeIterator(PublicTransit(EveryDaySchedule),EdgeDirection.Outgoing)
+              .foreachEdge(v,0) { (t,w) =>
+                 packedEdges += WalkEdge(packedToUnpacked(t),Duration(w))
+               }
         packedEdges.sortBy(_.target.location.lat).toSeq should be 
            (unpackedEdges.toSeq.sortBy(_.target.location.lat).toSeq)
       }
@@ -42,19 +43,22 @@ class PackedGraphSpec extends FunSpec
       // No edges past time 100
       for(v <- 0 until packed.vertexCount) { 
         var c = 0
-        packed.foreachTransitEdge(v, 101) { (t,w) => c += 1 }
-        c should be (0)
-      }
+        packed.getEdgeIterator(PublicTransit(EveryDaySchedule),EdgeDirection.Outgoing)
+              .foreachEdge(v, 101) { (t,w) => c += 1 }
+                 c should be (0)
+               }
 
       val v5 = packed.vertexAt(Location(5.0,1.0))
-      packed.foreachTransitEdge(v5,20) { (t,w) =>
-        w should be ((50-20) + 5)
-      }
+      packed.getEdgeIterator(PublicTransit(EveryDaySchedule),EdgeDirection.Outgoing)
+            .foreachEdge(v5,20) { (t,w) =>
+               w should be ((50-20) + 5)
+             }
 
       val v7 = packed.vertexAt(Location(7.0,1.0))
-      packed.foreachTransitEdge(v7,20) { (t,w) =>
-        w should be ((70-20) + 7)
-      }
+      packed.getEdgeIterator(PublicTransit(EveryDaySchedule),EdgeDirection.Outgoing)
+            .foreachEdge(v7,20) { (t,w) =>
+               w should be ((70-20) + 7)
+             }
     }
 
     // it("should return proper outgoing edges for times and any times.") {
