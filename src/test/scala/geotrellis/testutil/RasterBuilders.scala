@@ -42,6 +42,25 @@ trait RasterBuilders {
     Raster(arr, RasterExtent(Extent(0,0,d,d),1,1,d,d))
   }
 
+  def createRaster(arr:Array[Float]) = {
+    val d = scala.math.sqrt(arr.length).toInt
+    if(d > scala.math.round(d)) { sys.error("Array must be square") }
+    Raster(FloatArrayRasterData(arr,d,d), RasterExtent(Extent(0,0,d,d),1,1,d,d))
+  }
+
+  def createRaster(arr:Array[Byte]) = {
+    val d = scala.math.sqrt(arr.length).toInt
+    if(d > scala.math.round(d)) { sys.error("Array must be square") }
+    Raster(ByteArrayRasterData(arr,d,d), RasterExtent(Extent(0,0,d,d),1,1,d,d))
+  }
+
+  def createRaster(arr:Array[Short]) = {
+    val d = scala.math.sqrt(arr.length).toInt
+    if(d > scala.math.round(d)) { sys.error("Array must be square") }
+    Raster(ShortArrayRasterData(arr,d,d), RasterExtent(Extent(0,0,d,d),1,1,d,d))
+  }
+
+
   def createRaster(arr:Array[Double]) = {
     val d = scala.math.sqrt(arr.length).toInt
     if(d > scala.math.round(d)) { sys.error("Array must be square") }
@@ -162,6 +181,26 @@ trait RasterBuilders {
       35, 119, 106,  38,  57,  15,  67,  54,  27,  76,  34,  80,  31,  55,
       44,  71,  50,  37,  27,  70,  34, 120,  22,  62, 109, 113,  54,  32,
       81,  76,  31,  81,  63,  26,  65,  71,  29, 121,   3,  55, 107,  56)
+    val ext = Extent(0,-100,1400,-10)
+    val re = RasterExtent(ext,100,10,14,9)
+    Raster(ByteArrayRasterData(arr,14,9),re)
+  }
+
+  /**
+   * 14 x 9 raster with positive byte values
+   */
+  def byteNoDataRaster = {
+    val n = geotrellis.raster.byteNodata
+    var arr = Array[Byte](
+      62,  22,  44,   3,  36,  75,  87,  83,  84,  30,  91,  85,  70,  23,
+      96,  11,  73, 109, 103,  n,   9, 112, 118, 125,  24, 116,  52, 126,
+      20,  n,  57,  79,  63, 108,  82,  88,  n,  80,  n,  58,  69,  26,
+     126,  85,  56,  20,  51,  67,  48,  24,  n,  72,  n,  20, 109, 120,
+       8, 112,  20, n,  83, 114,  n,  38,  34,  70,   9,  32,  94, 104,
+      67,  93,  38,  51,  22,   4,  13,  57,   1,  34,  n,  n,  28,  93,
+      35, 119,   n,  38,  57,  15,  67,  54,  27,  76,  34,  n,  31,  55,
+      44,  71,  50,  37,  27,  70,  34, 120,  22,  62, 109, 113,  54,  32,
+      81,  76,  31,  81,  63,  26,  65,  71,  29, 121,   3,  n, 107,  56)
     val ext = Extent(0,-100,1400,-10)
     val re = RasterExtent(ext,100,10,14,9)
     Raster(ByteArrayRasterData(arr,14,9),re)

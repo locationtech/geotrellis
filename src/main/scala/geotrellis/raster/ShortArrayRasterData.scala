@@ -20,7 +20,19 @@ final case class ShortArrayRasterData(array: Array[Short], cols: Int, rows: Int)
     val len = length
     while (i < len) {
       val z = arr(i)
-      if (z != shortNodata) arr(i) = f(z).asInstanceOf[Short]
+      if (z != shortNodata) arr(i) = i2s(f(z))
+      i += 1
+    }
+    ShortArrayRasterData(arr, cols, rows)
+  }
+
+  override def mapIfSetDouble(f: Double => Double) = {
+    val arr = array.clone
+    var i = 0
+    val len = length
+    while (i < len) {
+      val z = arr(i)
+      if (z != shortNodata) arr(i) = d2s(f(z.toDouble))
       i += 1
     }
     ShortArrayRasterData(arr, cols, rows)
@@ -28,7 +40,6 @@ final case class ShortArrayRasterData(array: Array[Short], cols: Int, rows: Int)
 }
 
 object ShortArrayRasterData {
-  //def apply(array:Array[Short]) = new ShortArrayRasterData(array)
   def ofDim(cols: Int, rows: Int) = new ShortArrayRasterData(Array.ofDim[Short](cols * rows), cols, rows)
   def empty(cols: Int, rows: Int) = new ShortArrayRasterData(Array.fill[Short](cols * rows)(Short.MinValue), cols, rows)
 }

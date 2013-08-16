@@ -38,7 +38,8 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
     var i = 0
     while (i < len) {
       val z = apply(i)
-      if (isData(z)) data(i) = f(z)
+      if (isData(z)) { data(i) = f(z) }
+      else { data(i) = NODATA }
       i += 1
     }
     data
@@ -90,7 +91,8 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
     var i = 0
     while (i < len) {
       val z = applyDouble(i)
-      if (isData(z)) data.updateDouble(i, f(z))
+      if (isData(z)) { data.updateDouble(i, f(z)) }
+      else { data.updateDouble(i, Double.NaN) }
       i += 1
     }
     data
