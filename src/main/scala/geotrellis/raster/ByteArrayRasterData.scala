@@ -20,7 +20,19 @@ final case class ByteArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
     val len = length
     while (i < len) {
       val z = arr(i)
-      if (z != byteNodata) arr(i) = f(z).asInstanceOf[Byte]
+      if (z != byteNodata) arr(i) = i2b(f(z))
+      i += 1
+    }
+    ByteArrayRasterData(arr, cols, rows)
+  }
+
+  override def mapIfSetDouble(f: Double => Double) = {
+    val arr = array.clone
+    var i = 0
+    val len = length
+    while (i < len) {
+      val z = arr(i)
+      if (z != byteNodata) arr(i) = d2b(f(z.toDouble))
       i += 1
     }
     ByteArrayRasterData(arr, cols, rows)
@@ -28,7 +40,6 @@ final case class ByteArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
 }
 
 object ByteArrayRasterData {
-  //def apply(array:Array[Byte]) = new ByteArrayRasterData(array)
   def ofDim(cols: Int, rows: Int) = new ByteArrayRasterData(Array.ofDim[Byte](cols * rows), cols, rows)
   def empty(cols: Int, rows: Int) = new ByteArrayRasterData(Array.fill[Byte](cols * rows)(Byte.MinValue), cols, rows)
 }
