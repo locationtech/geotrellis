@@ -80,10 +80,7 @@ trait OperationBenchmark extends SimpleBenchmark {
   /**
    * Load a server with the GeoTrellis benchmarking catalog.
    */
-  def initServer():Server = {
-    val catalog = Catalog.fromPath("src/main/resources/catalog.json")
-    Server("demo", catalog)
-  }
+  def initServer():Server = BenchmarkServer.server
 
   /**
    * Sugar for building arrays using a per-cell init function.
@@ -102,6 +99,11 @@ trait OperationBenchmark extends SimpleBenchmark {
     while (i < reps) { f; i += 1 }
   }
 }
+
+object BenchmarkServer {
+  val server = Server("demo", Catalog.fromPath("src/main/resources/catalog.json"))
+}
+
 
 /**
  * Extend this to create a main object which will run 'cls' (a benchmark).
