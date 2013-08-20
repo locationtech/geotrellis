@@ -60,6 +60,12 @@ abstract class RasterLayer(val info:RasterLayerInfo) {
 
   def getRaster(extent:Extent):Raster = 
     getRaster(Some(info.rasterExtent.createAligned(extent)))
+
+  def getTile(tileCol:Int, tileRow:Int):Raster
+}
+
+abstract class UntiledRasterLayer(info:RasterLayerInfo) extends RasterLayer(info) {
+  def getTile(tileCol:Int, tileRow:Int) = getRaster(None)
 }
 
 object RasterLayer {

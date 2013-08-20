@@ -12,6 +12,20 @@ object DistributedRasterSource {
       def apply(rasterSrc:DistributedRasterSource) =
         DistributedRasterSourceBuilder(rasterSrc)
   }
+  
+  def apply(name:String):DistributedRasterSource =
+    new DistributedRasterSource(
+      io.LoadRasterLayerInfo(name).map { info =>
+        RasterDefinition(
+          info.rasterExtent,
+          info.tileLayout,
+          (for(tileCol <- 0 until info.tileLayout.tileCols;
+            tileRow <- 0 until info.tileLayout.tileRows) yield {
+            io.LoadTile(name,tileCol,tileRow)
+          }).toSeq
+        )
+      }
+    )
 }
 
 class DistributedRasterSource(val rasterDef: Op[RasterDefinition]) extends RasterSource with RasterSourceLike[DistributedRasterSource] {
