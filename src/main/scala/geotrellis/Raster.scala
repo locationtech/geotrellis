@@ -73,6 +73,7 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
       }
     }
 
+    if(zmin == Int.MaxValue) { zmin = NODATA }
     (zmin, zmax)
   } 
 
