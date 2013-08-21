@@ -23,7 +23,7 @@ import scala.util.{Try,Success => TrySuccess, Failure => TryFailure}
 import geotrellis.util.Filesystem
 
 class Server (id:String, val catalog:Catalog) extends Serializable {
-  val debug = false
+  val debug = true
 
   var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(new ServerActor(id, this)), id)
 
@@ -42,6 +42,10 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
   }
 
   def log(msg:String) = if(debug) println(msg)
+
+  def runSource[T:Manifest](src:DataSource[T]) = {
+    run(src.get)
+  }
 
   def run[T:Manifest](op:Op[T]):T = getResult(op) match {
     case Complete(value, _) => value

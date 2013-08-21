@@ -3,19 +3,7 @@ package geotrellis.raster
 import geotrellis._
 
 
-class LocalRasterSourceBuilder extends SourceBuilder[Raster, LocalRasterSource] {
-  var _dataDefinition:Op[RasterDefinition] = null
-
-  def setOp(op: Op[Seq[geotrellis.Operation[geotrellis.Raster]]]): this.type = {
-    this.op = op
-    this 
-  }
-  
-  def setRasterDefinition(dfn: geotrellis.Operation[geotrellis.RasterDefinition]): this.type = {
-    this._dataDefinition = dfn
-    this
-  }
-  
+class LocalRasterSourceBuilder extends RasterSourceBuilder[LocalRasterSource] {  
   def result = LocalRasterSource(_dataDefinition)
 }
 
@@ -25,3 +13,11 @@ object LocalRasterSourceBuilder {
     builder.setRasterDefinition(rasterSource.rasterDefinition)
   }
 }
+
+
+  
+  
+case class SetTilesOnRasterDefinition(rasterDefinition:Op[RasterDefinition], opSeq:Op[Seq[Op[Raster]]]) 
+	extends Op2(rasterDefinition,opSeq) ({
+	  (dfn, opSeq) =>  Result(dfn.setTiles(opSeq))
+	})

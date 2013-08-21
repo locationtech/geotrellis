@@ -166,6 +166,7 @@ trait TiledRasterData extends RasterData with Serializable {
     }
   }
 
+  def asTiledRasterData = this
   def force = mutable
 
   def mutable:Option[MutableRasterData] = asArray.flatMap(_.mutable)
@@ -263,6 +264,9 @@ class TileArrayRasterData(val tiles:Array[Raster],
 object TileArrayRasterData {
   def apply(tiles:Array[Raster], tileLayout:TileLayout, rasterExtent:RasterExtent) =
     new TileArrayRasterData(tiles, tileLayout, rasterExtent)
+
+  def apply(r:Raster) = 
+    new TileArrayRasterData(Array(r), TileLayout(1,1,r.cols,r.rows), r.rasterExtent)
 }
 
 object LazyTiledWrapper {

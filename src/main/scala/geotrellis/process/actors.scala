@@ -266,16 +266,22 @@ extends WorkerLike {
   // operations to be run. If none of those existed, we should run the
   // callback and be done.
   override def preStart {
+    println(s"in Calculation preStart for $id")
     for (i <- 0 until args.length) {
       args(i) match {
         case op:Operation[_] => {
+          println(s"sending out op for execution: $op")
           dispatcher ! RunOperation(op, i, self, None)
         }
-        case value => results(i) = Some(Inlined(value))
+        case value => { 
+        	println(s"Received inlined value (no execution): $value")
+        	results(i) = Some(Inlined(value))
+        }
       }
     }
 
     if (isDone) { 
+      println("isDone right away")
       finishCallback()
       context.stop(self)
     }
@@ -333,6 +339,7 @@ extends WorkerLike {
   // Actor event loop
   def receive = {
     case OperationResult(childResult,  pos) => {
+      println(s"received result $childResult FOR PARENT ${_id} AT POSITION $pos")
       results(pos) = Some(childResult)
       if (!isDone) {
       } else if (hasError) {
@@ -340,6 +347,7 @@ extends WorkerLike {
         handleResult(this.pos, client, se , None, dispatcher)
         context.stop(self)
       } else {
+        println(s"all child operations of ${_id} have completed.  invoking callback")
         finishCallback()
         context.stop(self)
       }

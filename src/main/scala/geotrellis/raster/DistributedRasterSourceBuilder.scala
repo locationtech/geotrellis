@@ -3,10 +3,20 @@ package geotrellis.raster
 import geotrellis._
 
 class DistributedRasterSourceBuilder extends RasterSourceBuilder[DistributedRasterSource] {
-  var _dataDefinition:Op[RasterDefinition] = null
+/*  var _dataDefinition:Op[RasterDefinition] = null
 
   def setOp(op: Op[Seq[Op[Raster]]]): this.type = {
-    this.op = op
+    println(s"rasterDefinition was: ${_dataDefinition}")
+    val newDfn = op.flatMap ( tiles => {
+      _dataDefinition.map(
+        (dfn) => {
+          dfn.setTiles(tiles)
+        }
+      )
+    })
+    
+    this.setRasterDefinition(newDfn)
+    println(s"rasterDefinition is now: ${_dataDefinition}")
     this 
   }
   
@@ -14,7 +24,7 @@ class DistributedRasterSourceBuilder extends RasterSourceBuilder[DistributedRast
     this._dataDefinition = dfn
     this
   }
-
+*/
   def result = new DistributedRasterSource(_dataDefinition)
 
 }

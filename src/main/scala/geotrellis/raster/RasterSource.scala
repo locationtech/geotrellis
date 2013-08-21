@@ -12,7 +12,9 @@ import geotrellis.raster.op._
 
 trait RasterSource extends DataSource[Raster] {
 	def rasterDefinition:Op[RasterDefinition]
+
 }
+
 /*
 object RasterSource {
   implicit def canBuildSourceFrom: CanBuildSourceFrom[DataSource[Raster], Raster, RasterSource] = new CanBuildSourceFrom[DataSource[Raster], Raster, RasterSource] {

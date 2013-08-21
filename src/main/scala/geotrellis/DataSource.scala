@@ -16,6 +16,7 @@ import geotrellis._
  * or loaded in memory on a specific machine. 
   */
 trait DataSource[+T] {
-	def partitions():Op[Seq[Op[T]]] 
+  def partitions():Op[Seq[Op[T]]]
+  def get:Op[T]
 }
 

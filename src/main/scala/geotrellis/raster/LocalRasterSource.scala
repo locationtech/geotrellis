@@ -9,19 +9,30 @@ object LocalRasterSource {
     def apply(rasterSrc:LocalRasterSource) = LocalRasterSourceBuilder(rasterSrc)
   }
 
-  def apply(raster:Op[Raster]) = {
-    raster.map { r =>
-      RasterDefinition(
-        r.rasterExtent,
-        TileLayout(1, 1, r.cols, r.rows),
-        Seq(r)
-      )
-    }
+  def fromRaster(raster:Op[Raster]) = {
+    val rasterDef = RasterDefinitionFromRaster(raster)
+    new LocalRasterSource(rasterDef)
   }
 }
 
 case class LocalRasterSource(val rasterDefinition:Op[RasterDefinition]) extends RasterSource  with RasterSourceLike[LocalRasterSource] {
-  def partitions = rasterDefinition.map(_.tiles)
-  def converge = ???
+  //TODO: move to RasterSource{Like}?
+  def partitions = GetTilesFromRasterDefinition(rasterDefinition)//rasterDefinition.map(_.tiles)
 }
 
+case class GetTilesFromRasterDefinition(dfn:Op[RasterDefinition]) extends Op1(dfn)({d => Result(d.tiles)})
+
+case class RasterDefinitionFromRaster(r:Op[Raster]) extends Op1(r) ({
+  (r) => {
+    println("In RasterDefinitionFromRaster.")
+	val data = r.data.asTiledRasterData(r)
+	  	
+	val dfn = RasterDefinition(
+			r.rasterExtent,
+			data.tileLayout,
+			data.getTileOpList(r.rasterExtent)
+    )
+    println("after LocalRasterSource fromRaster")
+    Result(dfn)
+  }
+})

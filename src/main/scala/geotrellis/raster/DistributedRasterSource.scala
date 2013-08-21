@@ -31,10 +31,6 @@ object DistributedRasterSource {
 class DistributedRasterSource(val rasterDef: Op[RasterDefinition]) extends RasterSource with RasterSourceLike[DistributedRasterSource] {
   def partitions = rasterDef.map(_.tiles)
   val rasterDefinition = rasterDef
-  def converge = rasterDef.map { rd =>
-    val re = rd.re
-    Collect(rd.tiles).map(s => Raster(TileArrayRasterData(s.toArray, rd.tileLayout, re), re))
-  }
 }
 
 object Foo {
@@ -42,6 +38,7 @@ object Foo {
     val d1 = new DistributedRasterSource(null)
     val d2: DistributedRasterSource = d1.map(local.Add(_, 3))
     val d3: DistributedRasterSource = d1.localAdd(3)
+    val d4: LocalRasterSource = d1.converge
 
     val l1 = new LocalRasterSource(null)
     val l2: LocalRasterSource = l1.map(local.Add(_, 3))
