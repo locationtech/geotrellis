@@ -13,6 +13,11 @@ object DistributedRasterSource {
         DistributedRasterSourceBuilder(rasterSrc)
   }
   
+  implicit def canBuildSourceFromHistogram: CanBuildSourceFrom[DistributedRasterSource,statistics.Histogram,DistributedSeqSource[statistics.Histogram]] = new CanBuildSourceFrom[DistributedRasterSource,statistics.Histogram,DistributedSeqSource[statistics.Histogram]] {
+    def apply() = new DistributedSeqSourceBuilder[statistics.Histogram]
+    def apply(src:DistributedRasterSource) = new DistributedSeqSourceBuilder[statistics.Histogram]
+  }
+
   def apply(name:String):DistributedRasterSource =
     new DistributedRasterSource(
       io.LoadRasterLayerInfo(name).map { info =>
