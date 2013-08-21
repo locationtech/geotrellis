@@ -24,7 +24,6 @@ case class GetTilesFromRasterDefinition(dfn:Op[RasterDefinition]) extends Op1(df
 
 case class RasterDefinitionFromRaster(r:Op[Raster]) extends Op1(r) ({
   (r) => {
-    println("In RasterDefinitionFromRaster.")
 	val data = r.data.asTiledRasterData(r)
 	  	
 	val dfn = RasterDefinition(
@@ -32,7 +31,6 @@ case class RasterDefinitionFromRaster(r:Op[Raster]) extends Op1(r) ({
 			data.tileLayout,
 			data.getTileOpList(r.rasterExtent)
     )
-    println("after LocalRasterSource fromRaster")
     Result(dfn)
   }
 })

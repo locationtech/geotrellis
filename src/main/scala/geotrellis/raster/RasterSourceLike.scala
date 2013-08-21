@@ -11,15 +11,11 @@ trait RasterSourceLike[+Repr <: DataSource[Raster]] extends DataSourceLike[Raste
 
   def get = {
     rasterDefinition.flatMap { rd =>
-    println("in rastersourcelike get")
-    println(s"tiles are: ${rd.tiles}")
-    val re = rd.re
-    val collect = logic.Collect(rd.tiles)
-    val result:Op[Raster] = rd.tiles.head
-    result
-    //.map(s => Raster(TileArrayRasterData(s.toArray,rd.tileLayout,re), re))
-    }	
-  }	
+      val re = rd.re
+      logic.Collect(rd.tiles).map(s => Raster(TileArrayRasterData(s.toArray, rd.tileLayout, re),re))
+    }}
+      
+      
 def converge = LocalRasterSource.fromRaster(
     rasterDefinition.flatMap { rd =>
       val re = rd.re
@@ -27,7 +23,6 @@ def converge = LocalRasterSource.fromRaster(
     })
  
   def localAdd[That](i: Int)(implicit cbf: CBF[That]) = {
-    println("About to apply local add.")
     this.map(MyAddConstant(_, i))
   }
 }

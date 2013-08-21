@@ -23,7 +23,7 @@ import scala.util.{Try,Success => TrySuccess, Failure => TryFailure}
 import geotrellis.util.Filesystem
 
 class Server (id:String, val catalog:Catalog) extends Serializable {
-  val debug = true
+  val debug = false
 
   var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(new ServerActor(id, this)), id)
 
