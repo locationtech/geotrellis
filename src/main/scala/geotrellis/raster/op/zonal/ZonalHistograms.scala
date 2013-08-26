@@ -1,7 +1,6 @@
 package geotrellis.raster.op.zonal
 
 import geotrellis._
-import geotrellis._
 import geotrellis.process._
 import geotrellis.statistics._
 
