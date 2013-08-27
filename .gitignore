@@ -12,3 +12,7 @@ TAGS
 *.aux.xml
 
 *.pyc
+.project
+.classpath
+.cache
+.settings
