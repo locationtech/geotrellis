@@ -167,6 +167,7 @@ trait TiledRasterData extends RasterData with Serializable {
   }
 
   def asTiledRasterData = this
+
   def force = mutable
 
   def mutable:Option[MutableRasterData] = asArray.flatMap(_.mutable)

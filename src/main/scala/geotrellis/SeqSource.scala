@@ -1,10 +1,15 @@
 package geotrellis
 
-trait SeqSource[A] extends DataSource[Seq[A]] {
-  var _dataDefinition:Op[Seq[Op[Seq[A]]]] = null
 
-  def setOp(op:Op[Seq[Op[Seq[A]]]]):this.type = {
-    this._dataDefinition = op
-    this
-  }
+// object SeqSource {
+//   implicit def canConvergeTo:CanConvergeTo[Histogram,Histogram] =
+//     new CanConvergeTo[Histogram,Histogram] {
+//       def converge(ops:Op[Seq[Op[Histogram]]]):Op[Histogram] = ???
+//     }
+// }
+
+trait SeqSource[A] extends DataSource[Seq[A],A] {
+  val seqOp:Op[Seq[Op[A]]]
+
+  def partitions = seqOp
 }

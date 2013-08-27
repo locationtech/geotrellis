@@ -10,7 +10,7 @@ import geotrellis.raster.op._
 
 }*/
 
-trait RasterSource extends DataSource[Raster] {
+trait RasterSource extends DataSource[Raster,Raster] {
 	def rasterDefinition:Op[RasterDefinition]
 
 }

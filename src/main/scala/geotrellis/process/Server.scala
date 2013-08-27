@@ -43,7 +43,7 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
 
   def log(msg:String) = if(debug) println(msg)
 
-  def runSource[T:Manifest](src:DataSource[T]) = {
+  def runSource[T:Manifest](src:DataSource[T,_]) = {
     run(src.get)
   }
 

@@ -5,6 +5,10 @@ import geotrellis.raster.op._
 import geotrellis.SourceBuilder
 import geotrellis.logic.Collect
 
+import geotrellis.statistics.Histogram
+
+import geotrellis.SingleDataSource._
+
 object DistributedRasterSource {
   implicit def canBuildSourceFrom: CanBuildSourceFrom[DistributedRasterSource, Raster, DistributedRasterSource] =
     new CanBuildSourceFrom[DistributedRasterSource, Raster, DistributedRasterSource] {
@@ -13,11 +17,16 @@ object DistributedRasterSource {
         DistributedRasterSourceBuilder(rasterSrc)
   }
   
-  implicit def canBuildSourceFromHistogram: CanBuildSourceFrom[DistributedRasterSource,statistics.Histogram,DistributedSeqSource[statistics.Histogram]] = new CanBuildSourceFrom[DistributedRasterSource,statistics.Histogram,DistributedSeqSource[statistics.Histogram]] {
-    def apply() = new DistributedSeqSourceBuilder[statistics.Histogram]
-    def apply(src:DistributedRasterSource) = new DistributedSeqSourceBuilder[statistics.Histogram]
-  }
+  implicit def canBuildSourceFromHistogram:CanBuildSourceFrom[DistributedRasterSource,Histogram,SingleDataSource[Histogram,Histogram]] = 
+    new CanBuildSourceFrom[DistributedRasterSource,
+                           Histogram,
+                           SingleDataSource[Histogram,Histogram]] {
+    def apply() = new SingleDataSourceBuilder[Histogram,Histogram]
+    def apply(src:DistributedRasterSource) = 
+      new SingleDataSourceBuilder[Histogram,Histogram]
+    }
 
+ 
   def apply(name:String):DistributedRasterSource =
     new DistributedRasterSource(
       io.LoadRasterLayerInfo(name).map { info =>

@@ -15,8 +15,15 @@ import geotrellis._
  * Represents a data source that may be distributed across machines (logical data source) 
  * or loaded in memory on a specific machine. 
   */
-trait DataSource[+T] {
-  def partitions():Op[Seq[Op[T]]]
+trait DataSource[T,P] extends DataSourceLike[T,P,DataSource[T,P]] {
+  // def partitions():Op[Seq[Op[P]]]
+  // def get:Op[T]
+}
+
+trait Convergable[T] {
   def get:Op[T]
 }
 
+trait Partitioned[P] {
+  def partitions():Op[Seq[Op[P]]]
+}

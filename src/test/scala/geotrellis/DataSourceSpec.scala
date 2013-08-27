@@ -6,7 +6,7 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.raster._
 import geotrellis.raster.op._
-import geotrellis.statistics.Histogram
+import geotrellis.statistics._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class DataSourceSpec extends FunSpec 
@@ -30,12 +30,43 @@ class DataSourceSpec extends FunSpec
       result2.get(100,100) should be (3236)
       result3.get(100,100) should be (3239)
     }
+
     it ("should return a DistributedSeqSource when appropriate") {
       val d = getDistributedRasterSource
-      val s:DistributedSeqSource[Histogram] = d.histogram
+      // distributed source of histograms
+
+      // DataSource[Histogram,_] -- we can get a single histogram
+      val hist:SingleDataSource[Histogram,Histogram] = d.histogram // distributed
+      
+      case class MinFromHistogram(h:Op[Histogram]) extends Op1(h)({
+        (h) => Result(h.getMinValue)
+      })
+
+      case class FindMin(ints:Op[Seq[Int]]) extends Op1(ints)({
+        (ints) => Result(ints.reduce(math.min(_,_)))
+      })
+
+      val ints:DistributedSeqSource[Int] = hist.map(MinFromHistogram(_))
+
+import SingleDataSource._
+import DistributedSeqSource._
+
+      val int = ints.converge.map(FindMin(_))
+      println(s"Int is: $int")
+
+      val histogramResult = runSource(hist)
+      val intsResult = runSource(ints)
+      println(s"ints result: $intsResult")
+      val s = histogramResult
       println(s)
+      println(histogramResult)
+      histogramResult.getMinValue should be (2231)
+      histogramResult.getMaxValue should be (8367)
+      intsResult.length should be (12)
+  //    minResult should be (2231)
     }
   }
+   
 
   describe("LocalRasterSource") {
     it("should return a LocalRasterSource when possible") {
@@ -56,7 +87,5 @@ class DataSourceSpec extends FunSpec
     }
 
     
-  }
-
- 
+  } 
 }

@@ -5,7 +5,7 @@ class DistributedSeqSourceBuilder[A] extends SeqSourceBuilder[A,DistributedSeqSo
 }
 
 object DistributedSeqSourceBuilder {
-  def apply[A](source:DataSource[A]) = {
+  def apply[A](source:DataSource[A,_]) = {
     val builder = new DistributedSeqSourceBuilder[A]()
     builder
   }
