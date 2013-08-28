@@ -3,7 +3,7 @@ package geotrellis.raster.op
 import geotrellis._
 import geotrellis.feature._
 import geotrellis.feature.rasterize.{PolygonRasterizer, Callback}
-import geotrellis.raster.op.focal.{RegionGroup,RegionGroupResult}
+import geotrellis.raster.op.focal.{RegionGroup,RegionGroupResult,RegionGroupOptions}
 import geotrellis.raster.CroppedRaster
 
 import com.vividsolutions.jts.geom
@@ -15,12 +15,38 @@ import spire.syntax._
 case class ToVector(r:Op[Raster]) extends Operation[List[Polygon[Int]]] {
   def _run(context:Context) = runAsync('init :: r :: Nil)
 
+  class ToVectorCallback(val polyizer:Polygonizer,
+                         val r:Raster,
+                         val v:Int) extends Callback[Polygon,Int] {
+    val innerStarts = mutable.Map[Int,(Int,Int)]()
+
+    def linearRings = 
+      for(k <- innerStarts.keys) yield {
+        polyizer.getLinearRing(k, innerStarts(k))
+      }
+
+    def apply(col:Int,row:Int,poly:Polygon[Int]) = {
+      val innerV = r.get(col,row)
+      if(innerV != v) {
+        if(innerStarts.contains(innerV)) {
+          val (pcol,prow) = innerStarts(innerV)
+          if(col < pcol || ((col == pcol) && row < prow)) {
+            innerStarts(innerV) = (col,row)
+          }
+        } else {
+          innerStarts(innerV) = (col,row)
+        }
+      }
+    }
+  }
+
   val nextSteps:Steps = {
     case 'init :: a :: Nil => 
-      runAsync('regioned :: RegionGroup(r) :: Nil)
+      runAsync('regioned :: RegionGroup(r,RegionGroupOptions(false)) :: Nil)
     case 'regioned :: (rgr:RegionGroupResult) :: Nil =>
       val polyizer = new Polygonizer(rgr.raster)
       val r = rgr.raster
+      val regionMap = rgr.regionMap
       val processedValues = mutable.Set[Int]()
       val polygons = mutable.Set[Polygon[Int]]()
 
@@ -29,72 +55,20 @@ case class ToVector(r:Op[Raster]) extends Operation[List[Polygon[Int]]] {
         var row = 0
         while(row < r.rows) {
           val v = r.get(col,row)
-          if(v != NODATA) {
+          if(regionMap(v) != NODATA) {
             if(!processedValues.contains(v)) {
               val shell = polyizer.getLinearRing(v,(col,row))
               val shellPoly = Polygon(
                 new geom.Polygon(shell, Array[geom.LinearRing](), Feature.factory),
                 rgr.regionMap(v)
               )
-              val innerStarts = mutable.Map[Int,(Int,Int)]()
-              val noDatas = mutable.ListBuffer[(Int,Int)]()
 
-              PolygonRasterizer.foreachCellByPolygon(shellPoly, r.rasterExtent)( 
-                new Callback[Polygon,Int] {
-                  def apply(col:Int,row:Int,poly:Polygon[Int]) = {
-                    val innerV = r.get(col,row)
-                    if(innerV == NODATA) {
-                      noDatas += ((col,row))
-                    } else if(innerV != v) {
-                      if(innerStarts.contains(innerV)) {
-                        val (pcol,prow) = innerStarts(innerV)
-                        if(col < pcol || ((col == pcol) && row < prow)) {
-                          innerStarts(innerV) = (col,row)
-                        }
-                      } else {
-                        innerStarts(innerV) = (col,row)
-                      }
-                    }
-                  }
-                }
-              )
+              val callback = new ToVectorCallback(polyizer,r,v)
 
-
-              // Handle inner unmatched values
-              val valuedHoles =
-                for(v <- innerStarts.keys) yield {
-                  polyizer.getLinearRing(v, innerStarts(v))
-                }
-
-              // Handle NODATA holes.
-              val nodataHoles = mutable.ListBuffer[geom.LinearRing]()
-              val nodataPolys = mutable.ListBuffer[geom.Polygon]()
-              val sorted = noDatas.sorted
-              val len = sorted.length
-              var i = 0
-              while(i < len) {
-                val p = polyizer.getLinearRing(NODATA, sorted(i))
-                nodataPolys += Feature.factory.createPolygon(p, Array[geom.LinearRing]())
-                nodataHoles += p
-                var j = i+1
-                var break = false
-                while(j < len && !break) {
-                  val (col,row) = sorted(j)
-                  val (x,y) = r.rasterExtent.gridToMap(col,row)
-                  val point = Feature.factory.createPoint(new geom.Coordinate(x,y))
-
-                  if(!nodataPolys.foldLeft(false)( (a,b) => a || b.intersects(point))) {
-                    break = true
-                  }
-                  else { 
-                    j += 1 
-                  }
-                }
-                i = j
-              }
+              PolygonRasterizer.foreachCellByPolygon(shellPoly, r.rasterExtent)(callback)
 
               polygons += Polygon(
-                new geom.Polygon(shell, (valuedHoles ++ nodataHoles).toArray, Feature.factory),
+                new geom.Polygon(shell, callback.linearRings.toArray, Feature.factory),
                 rgr.regionMap(v)
               )
 

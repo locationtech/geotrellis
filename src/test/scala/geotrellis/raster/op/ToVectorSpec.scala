@@ -325,25 +325,52 @@ class ToVectorSpec extends FunSpec
       val holeCoordinates2 = polygon.geom.getInteriorRingN(1).getCoordinates.map(c => (c.x,c.y))
       assertCoords(holeCoordinates2,expectedHoleCoords2)
     }
-  }
 
-  it("should vectorize a raster that was at one point not vectorizing properly") {
-    val r = get("vectorbugger")
-    val op = ToVector(r)
-    val vect = run(op)
-  }
+    it("should vectorize an shape with a two polys.") {
+      val n = NODATA
+      val arr = 
+        Array(
+//             0  1  2  3  4 
+               n, 1, n, 1, n,// 0
+               1, 1, n, 1, n,// 1
+               n, n, n, 1, 1,// 2
+               1, 1, n, n, 1,// 3
+               1, 1, n, n, 1,// 4
+               1, 1, n, 1, 1 // 5
+        )
 
-  it("should vectorize another raster that was at one point not vectorizing properly") {
-    println("Running test on vectorbugger2...")
-    val r = get("vectorbugger2")
-    val op = ToVector(r)
-    val vect = run(op)
-  }
 
-  it("should vectorize yet another raster that was at one point not vectorizing properly") {
-    println("Running test on vectorbugger3...")
-    val r = get("vectorbugger3")
-    val op = ToVector(r)
-    val vect = run(op)
+      val cols = 5
+      val rows = 6
+      val xmax = 5
+      val ymin = -60
+
+      val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
+
+
+      val geoms = run(ToVector(r))
+
+      withClue ("Number of polygons did not match expected:") { geoms.length should be (3) }
+    }
+
+    it("should vectorize a raster that was at one point not vectorizing properly") {
+      val r = get("vectorbugger")
+      val op = ToVector(r)
+      val vect = run(op)
+    }
+
+    it("should vectorize another raster that was at one point not vectorizing properly") {
+      println("Running test on vectorbugger2...")
+      val r = get("vectorbugger2")
+      val op = ToVector(r)
+      val vect = run(op)
+    }
+
+    it("should vectorize yet another raster that was at one point not vectorizing properly") {
+      println("Running test on vectorbugger3...")
+      val r = get("vectorbugger3")
+      val op = ToVector(r)
+      val vect = run(op)
+    }
   }
 }

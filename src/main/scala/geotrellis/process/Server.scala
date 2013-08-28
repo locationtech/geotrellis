@@ -56,7 +56,7 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
   private[process] def _run[T:Manifest](op:Op[T]) = {
     log("server._run called with %s" format op)
 
-    val d = Duration.create(600, TimeUnit.SECONDS)
+    val d = Duration.create(60000, TimeUnit.SECONDS)
     implicit val t = Timeout(d)
     val future = op match {
       case op:DispatchedOperation[_] => 

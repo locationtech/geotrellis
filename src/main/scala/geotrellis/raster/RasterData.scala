@@ -1,7 +1,6 @@
 package geotrellis.raster
 
 import geotrellis._
-//import geotrellis.raster.RasterUtil._
 
 /**
  * RasterData provides access and update to the grid data of a raster.

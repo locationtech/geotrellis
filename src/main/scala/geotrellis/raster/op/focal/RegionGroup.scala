@@ -7,7 +7,11 @@ import geotrellis.raster.IntArrayRasterData
 
 case class RegionGroupResult(raster:Raster,regionMap:Map[Int,Int])
 
-case class RegionGroup(r:Op[Raster]) extends Op1(r)({
+object RegionGroupOptions { val Default = RegionGroupOptions() }
+case class RegionGroupOptions(ignoreNoData:Boolean = true)
+
+case class RegionGroup(r:Op[Raster], options:RegionGroupOptions = RegionGroupOptions.Default) 
+extends Op1(r)({
   r =>
     var regionId = -1
     val regions = new RegionPartition()
@@ -15,11 +19,12 @@ case class RegionGroup(r:Op[Raster]) extends Op1(r)({
     val cols = r.cols
     val rows = r.rows
     val data = IntArrayRasterData.empty(cols,rows)
+    val ignoreNoData = options.ignoreNoData
     cfor(0)(_ < rows, _ + 1) { row =>
       var valueToLeft = NODATA
       cfor(0)(_ < cols, _ + 1) { col =>
         val v = r.get(col,row)
-        if(v != NODATA) {
+        if(v != NODATA || !ignoreNoData) {
           val top =
             if(row > 0) { r.get(col,row - 1) }
             else { v + 1 }
@@ -27,7 +32,7 @@ case class RegionGroup(r:Op[Raster]) extends Op1(r)({
           if(v == top) {
             // Value to north is the same region
             val topRegion = data.get(col,row-1)
-            if(v == valueToLeft) {
+            if(v == valueToLeft && col > 0) {
               // Value to west is also same region
               val leftRegion = data.get(col-1,row)
               if(leftRegion != topRegion) {
@@ -40,7 +45,7 @@ case class RegionGroup(r:Op[Raster]) extends Op1(r)({
             }
             if(!regionMap.contains(topRegion)) { regionMap(topRegion) = v }
           } else {
-            if(v == valueToLeft) {
+            if(v == valueToLeft && col > 0) {
               // Value to west is same region
               val westRegion = data.get(col-1,row)
               data.set(col,row,westRegion)
@@ -62,7 +67,7 @@ case class RegionGroup(r:Op[Raster]) extends Op1(r)({
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         val v = data.get(col,row)
-        if(v != NODATA) { 
+        if(v != NODATA || !ignoreNoData) { 
           val cls = regions.getClass(v)
           if(cls != v && regionMap.contains(v)) {
             if(!regionMap.contains(cls)) {
@@ -75,16 +80,23 @@ case class RegionGroup(r:Op[Raster]) extends Op1(r)({
       }
     }
 
-    Result(RegionGroupResult(Raster(data,r.rasterExtent),regionMap.toMap))
+  Result(RegionGroupResult(Raster(data,r.rasterExtent),regionMap.toMap))
 })
 
 class RegionPartition() {
-  private val regionMap = mutable.Map[Int,Partition]()
+  val regionMap = mutable.Map[Int,Partition]()
 
   object Partition {
-    def apply(ms:Int*) = {
+    def apply(x:Int) = {
       val p = new Partition
-      p += (ms:_*)
+      p += x
+      p
+    }
+
+    def apply(x:Int,y:Int) = {
+      val p = new Partition
+      p += x
+      p += y
       p
     }
   }
@@ -95,15 +107,16 @@ class RegionPartition() {
 
     def min = _min
 
-    def +=(ms:Int*) = {
-      for(m <- ms) {
-        regionMap(m) = this
-        members += m
-        if(m < _min) { _min = m }
-      }
+    def +=(x:Int) = {
+      regionMap(x) = this
+      members += x
+      if(x < _min) { _min = x }
     }
 
-    def absorb(other:Partition) = +=(other.members.toSeq:_*)
+    def absorb(other:Partition) =
+      if(this != other) {
+        for(m <- other.members) { +=(m) }
+      }
 
     override def toString = s"PARTITION($min)"
   }
