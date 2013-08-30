@@ -31,7 +31,11 @@ class ShortestPathSpec extends FunSpec
       val d = packed.vertexAt(dest.location)
       val s = packed.vertexAt(source.location)
 
-      val spt = ShortestPathTree.arrival(d,Time.parse("12:00:00"),packed,TransitPath(EveryDaySchedule))
+      val spt = 
+        ShortestPathTree.arrival(d,
+          Time.parse("12:00:00"),
+          packed,
+          ScheduledTransit("test",EveryDaySchedule),Walking)
       spt.travelTimeTo(s) should be (Duration(65 * 60))
     }
   }
