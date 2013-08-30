@@ -21,7 +21,7 @@ class PackedAnytimeEdges(vertexCount:Int,val edgeCount:Int) extends Serializable
    * where i = index in edges array
    *       n = number of edges to read
    */
-  private val verticesToOutgoing = Array.ofDim[Int](vertexCount * 2)
+  val verticesToOutgoing = Array.ofDim[Int](vertexCount * 2)
 
   /**
    * 'outgoingEdges' is an array of that is indexed based

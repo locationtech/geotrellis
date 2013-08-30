@@ -68,11 +68,10 @@ object ShortestPathGraphs {
 
     graph.addEdge(b,WalkEdge(a,Duration.fromMinutes(5)))
     graph.addEdge(a,WalkEdge(b,Duration.fromMinutes(5)))
-    graph.addEdge(a,TransitEdge(e,Time.parse("11:00:00"),Duration.fromMinutes(10)))
-    graph.addEdge(e,TransitEdge(f,Time.parse("11:20:00"),Duration.fromMinutes(20)))
+    graph.addEdge(a,TransitEdge(e,"test",Time.parse("11:00:00"),Duration.fromMinutes(10)))
+    graph.addEdge(e,TransitEdge(f,"test",Time.parse("11:20:00"),Duration.fromMinutes(20)))
     graph.addEdge(f,WalkEdge(g,Duration.fromMinutes(1)))
     graph.addEdge(g,WalkEdge(f,Duration.fromMinutes(1)))
-
 
     (graph,g,b)
   }
@@ -120,7 +119,7 @@ object SampleGraph {
     for(u <- vertices) {
       for(v <- vertices) {
         if(u != v) {
-          g.addEdge(u,TransitEdge(v,Time(u.location.lat.toInt*10),Duration(u.location.lat.toInt)))
+          g.addEdge(u,TransitEdge(v,"test",Time(u.location.lat.toInt*10),Duration(u.location.lat.toInt)))
         }
       }
     }
@@ -147,7 +146,7 @@ object SampleGraph {
     for(u <- vertices) {
       for(v <- vertices) {
         if(u != v) {
-          g.addEdge(u,TransitEdge(v,Time(u.location.lat.toInt*10),Duration(u.location.lat.toInt)))
+          g.addEdge(u,TransitEdge(v,"test",Time(u.location.lat.toInt*10),Duration(u.location.lat.toInt)))
           g.addEdge(u,WalkEdge(v,Duration(20)))
         }
       }

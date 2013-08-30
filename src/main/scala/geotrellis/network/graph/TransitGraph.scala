@@ -30,11 +30,12 @@ class EmptyEdgeIterator extends EdgeIterator {
 class TransitGraph(private val vertexMap:Array[Vertex],
                    private val locationToVertex:Map[Location,Int],
                    val anytimeEdgeSets:Map[TransitMode,PackedAnytimeEdges],
-                   val transitEdgeSets:Map[TransitMode,PackedTransitEdges])
+                   val scheduledEdgeSets:Map[ScheduledTransit,PackedScheduledEdges])
 extends Serializable {
   val vertexCount = vertexMap.length
   val edgeCount = anytimeEdgeSets.values.map(_.edgeCount).foldLeft(0)(_+_) +
-                  transitEdgeSets.values.map(_.edgeCount).foldLeft(0)(_+_)
+                  scheduledEdgeSets.values.map(_.edgeCount).foldLeft(0)(_+_)
+  val transitEdgeModes = scheduledEdgeSets.keys.toArray
 
   def getEdgeIterator(transitMode:TransitMode,edgeDirection:EdgeDirection):EdgeIterator =
     getEdgeIterator(Seq(transitMode),edgeDirection)
@@ -44,9 +45,10 @@ extends Serializable {
                                   .filter(transitModes.contains(_))
                                   .map(anytimeEdgeSets(_))
                                   .toArray
-    val transits = transitEdgeSets.keys
+
+    val transits = scheduledEdgeSets.keys
                                   .filter(transitModes.contains(_))
-                                  .map(transitEdgeSets(_))
+                                  .map(scheduledEdgeSets(_))
                                   .toArray
 
     val aLen = anytimes.length
@@ -244,15 +246,16 @@ object TransitGraph {
     }
 
     val anytimeEdgeSets = mutable.Map[TransitMode,PackedAnytimeEdges]()
-    val transitEdgeSets = mutable.Map[TransitMode,PackedTransitEdges]()
+    val scheduledEdgeSets = mutable.Map[ScheduledTransit,PackedScheduledEdges]()
     for(mode <- modes) {
-      if(mode.isTimeDependant) {
-        transitEdgeSets(mode) = PackedTransitEdges.pack(vertices,vertexLookup,unpacked,mode)
-      } else {
+      mode match {
+        case s:ScheduledTransit => 
+          scheduledEdgeSets(s) = PackedScheduledEdges.pack(vertices,vertexLookup,unpacked,mode)
+        case _ =>
         anytimeEdgeSets(mode) = PackedAnytimeEdges.pack(vertices,vertexLookup,unpacked,mode)
       }
     }
 
-    new TransitGraph(vertexMap,locations.toMap,anytimeEdgeSets.toMap,transitEdgeSets.toMap)
+    new TransitGraph(vertexMap,locations.toMap,anytimeEdgeSets.toMap,scheduledEdgeSets.toMap)
   }
 }

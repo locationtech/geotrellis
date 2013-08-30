@@ -6,7 +6,7 @@ import spire.syntax._
 
 import scala.collection.mutable
 
-class PackedTransitEdges(vertexCount:Int,val edgeCount:Int) extends Serializable {
+class PackedScheduledEdges(vertexCount:Int,val edgeCount:Int) extends Serializable {
   /**
    * 'verticesToOutgoing' is an array that is indexed by vertex id,
    * that contains two peices of information:
@@ -160,10 +160,10 @@ class PackedTransitEdges(vertexCount:Int,val edgeCount:Int) extends Serializable
   }
 }
 
-object PackedTransitEdges {
+object PackedScheduledEdges {
   def pack(vertices:Array[Vertex],vertexLookup:Map[Vertex,Int],unpacked:MutableGraph,mode:TransitMode) = {
     val vertexCount = vertices.length
-    val packed = new PackedTransitEdges(vertexCount,unpacked.edgeCount(mode))
+    val packed = new PackedScheduledEdges(vertexCount,unpacked.edgeCount(mode))
 
     // Pack edges
     var outgoingEdgesIndex = 0

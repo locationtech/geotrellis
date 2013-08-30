@@ -8,9 +8,9 @@ import org.scalatest.matchers.ShouldMatchers
 
 import scala.collection.mutable
 
-class PackedGraphSpec extends FunSpec
-                         with ShouldMatchers {
-  describe("PackedGraph") {
+class TransitGraphSpec extends FunSpec
+                          with ShouldMatchers {
+  describe("TransitGraph") {
     it("should pack a graph correctly.") {
       val unpacked = SampleGraph.noTimes
       val packed = unpacked.pack()
@@ -28,7 +28,7 @@ class PackedGraphSpec extends FunSpec
       for(v <- packedToUnpacked.keys) {
         val unpackedEdges = unpacked.edges(packedToUnpacked(v))
         val packedEdges = mutable.ListBuffer[Edge]()
-        packed.getEdgeIterator(PublicTransit(EveryDaySchedule),EdgeDirection.Outgoing)
+        packed.getEdgeIterator(ScheduledTransit("test",EveryDaySchedule),EdgeDirection.Outgoing)
               .foreachEdge(v,0) { (t,w) =>
                  packedEdges += WalkEdge(packedToUnpacked(t),Duration(w))
                }
@@ -43,19 +43,19 @@ class PackedGraphSpec extends FunSpec
       // No edges past time 100
       for(v <- 0 until packed.vertexCount) { 
         var c = 0
-        packed.getEdgeIterator(PublicTransit(EveryDaySchedule),EdgeDirection.Outgoing)
+        packed.getEdgeIterator(ScheduledTransit("test",EveryDaySchedule),EdgeDirection.Outgoing)
               .foreachEdge(v, 101) { (t,w) => c += 1 }
                  c should be (0)
                }
 
       val v5 = packed.vertexAt(Location(5.0,1.0))
-      packed.getEdgeIterator(PublicTransit(EveryDaySchedule),EdgeDirection.Outgoing)
+      packed.getEdgeIterator(ScheduledTransit("test",EveryDaySchedule),EdgeDirection.Outgoing)
             .foreachEdge(v5,20) { (t,w) =>
                w should be ((50-20) + 5)
              }
 
       val v7 = packed.vertexAt(Location(7.0,1.0))
-      packed.getEdgeIterator(PublicTransit(EveryDaySchedule),EdgeDirection.Outgoing)
+      packed.getEdgeIterator(ScheduledTransit("test",EveryDaySchedule),EdgeDirection.Outgoing)
             .foreachEdge(v7,20) { (t,w) =>
                w should be ((70-20) + 7)
              }
@@ -85,7 +85,7 @@ class PackedGraphSpec extends FunSpec
           StreetVertex(Location(6.0,2.0),"bF"),
           StreetVertex(Location(7.0,2.0),"bG")
         ),
-        PublicTransit(WeekDaySchedule) -> List(
+        ScheduledTransit("test",WeekDaySchedule) -> List(
           StreetVertex(Location(1.0,3.0),"tA"),
           StreetVertex(Location(2.0,3.0),"tB"),
           StreetVertex(Location(3.0,3.0),"tC"),
@@ -94,7 +94,7 @@ class PackedGraphSpec extends FunSpec
           StreetVertex(Location(6.0,3.0),"tF"),
           StreetVertex(Location(7.0,3.0),"tG")
         ),
-        PublicTransit(DaySchedule(Saturday)) -> List(
+        ScheduledTransit("test",DaySchedule(Saturday)) -> List(
           StreetVertex(Location(1.0,4.0),"satA"),
           StreetVertex(Location(2.0,4.0),"satB"),
           StreetVertex(Location(3.0,4.0),"satC"),
@@ -103,7 +103,7 @@ class PackedGraphSpec extends FunSpec
           StreetVertex(Location(6.0,4.0),"satF"),
           StreetVertex(Location(7.0,4.0),"satG")
         ),
-        PublicTransit(DaySchedule(Sunday)) -> List(
+        ScheduledTransit("test",DaySchedule(Sunday)) -> List(
           StreetVertex(Location(1.0,5.0),"sunA"),
           StreetVertex(Location(2.0,5.0),"sunB"),
           StreetVertex(Location(3.0,5.0),"sunC"),
@@ -126,9 +126,9 @@ class PackedGraphSpec extends FunSpec
 
     connect(vertices(Walking))(WalkEdge(_,Duration(600)))
     connect(vertices(Biking))(BikeEdge(_,Duration(60)))
-    connect(vertices(PublicTransit(WeekDaySchedule)))(TransitEdge(_,Time(1000),Duration(30),WeekDaySchedule))
-    connect(vertices(PublicTransit(DaySchedule(Saturday))))(TransitEdge(_,Time(1000),Duration(20),DaySchedule(Saturday)))
-    connect(vertices(PublicTransit(DaySchedule(Sunday))))(TransitEdge(_,Time(1000),Duration(10),DaySchedule(Sunday)))
+    connect(vertices(ScheduledTransit("test",WeekDaySchedule)))(TransitEdge(_,"test",Time(1000),Duration(30),WeekDaySchedule))
+    connect(vertices(ScheduledTransit("test",DaySchedule(Saturday))))(TransitEdge(_,"test",Time(1000),Duration(20),DaySchedule(Saturday)))
+    connect(vertices(ScheduledTransit("test",DaySchedule(Sunday))))(TransitEdge(_,"test",Time(1000),Duration(10),DaySchedule(Sunday)))
 
     val g = mg.pack
 
@@ -183,60 +183,60 @@ class PackedGraphSpec extends FunSpec
     }
 
     it("should iterate over edges for only one transit, outgoing") {
-      checkFor(Seq(PublicTransit(WeekDaySchedule)),EdgeDirection.Outgoing)
+      checkFor(Seq(Walking,ScheduledTransit("test",WeekDaySchedule)),EdgeDirection.Outgoing)
     }
 
     it("should iterate over edges for only one transit, incoming") {
-      checkFor(Seq(PublicTransit(WeekDaySchedule)),EdgeDirection.Incoming)
+      checkFor(Seq(Walking,ScheduledTransit("test",WeekDaySchedule)),EdgeDirection.Incoming)
     }
 
     it("should iterate over edges for multiple transit, outgoing") {
-     checkFor(Seq(PublicTransit(WeekDaySchedule),PublicTransit(DaySchedule(Sunday))),
+     checkFor(Seq(Walking,ScheduledTransit("test",WeekDaySchedule),ScheduledTransit("test",DaySchedule(Sunday))),
               EdgeDirection.Outgoing)
     }
 
     it("should iterate over edges for multiple transit, incoming") {
-      checkFor(Seq(PublicTransit(WeekDaySchedule),PublicTransit(DaySchedule(Sunday))),
+      checkFor(Seq(Walking,ScheduledTransit("test",WeekDaySchedule),ScheduledTransit("test",DaySchedule(Sunday))),
                EdgeDirection.Incoming)
     }
 
     it("should iterate over edges for one anytime, one transit outgoing") {
-      checkFor(Seq(Walking,PublicTransit(DaySchedule(Sunday))),
+      checkFor(Seq(Walking,ScheduledTransit("test",DaySchedule(Sunday))),
                EdgeDirection.Outgoing)
     }
 
     it("should iterate over edges for one anytime, one transit incoming") {
-      checkFor(Seq(Walking,PublicTransit(DaySchedule(Sunday))),
+      checkFor(Seq(Walking,ScheduledTransit("test",DaySchedule(Sunday))),
                EdgeDirection.Incoming)
     }
 
     it("should iterate over edges for multiple anytime, one transit outgoing") {
-      checkFor(Seq(Walking,Biking,PublicTransit(DaySchedule(Sunday))),
+      checkFor(Seq(Walking,Biking,ScheduledTransit("test",DaySchedule(Sunday))),
                EdgeDirection.Outgoing)
     }
 
     it("should iterate over edges for multiple anytime, one transit incoming") {
-      checkFor(Seq(Walking,Biking,PublicTransit(DaySchedule(Sunday))),
+      checkFor(Seq(Walking,Biking,ScheduledTransit("test",DaySchedule(Sunday))),
                EdgeDirection.Incoming)
     }
 
     it("should iterate over edges for one anytime, multiple transit outgoing") {
-      checkFor(Seq(Walking,PublicTransit(WeekDaySchedule),PublicTransit(DaySchedule(Sunday))),
+      checkFor(Seq(Walking,ScheduledTransit("test",WeekDaySchedule),ScheduledTransit("test",DaySchedule(Sunday))),
                EdgeDirection.Outgoing)
     }
 
     it("should iterate over edges for one anytime, multiple transit incoming") {
-      checkFor(Seq(Walking,PublicTransit(WeekDaySchedule),PublicTransit(DaySchedule(Sunday))),
+      checkFor(Seq(Walking,ScheduledTransit("test",WeekDaySchedule),ScheduledTransit("test",DaySchedule(Sunday))),
                EdgeDirection.Incoming)
     }
 
     it("should iterate over edges for multiple anytime, multiple transit, outgoing") {
-      checkFor(Seq(Walking,Biking,PublicTransit(WeekDaySchedule),PublicTransit(DaySchedule(Sunday))),
+      checkFor(Seq(Walking,Biking,ScheduledTransit("test",WeekDaySchedule),ScheduledTransit("test",DaySchedule(Sunday))),
                EdgeDirection.Outgoing)
     }
 
     it("should iterate over edges for mutliple anytime, multiple transit, incoming") {
-      checkFor(Seq(Walking,Biking,PublicTransit(WeekDaySchedule),PublicTransit(DaySchedule(Sunday))),
+      checkFor(Seq(Walking,Biking,ScheduledTransit("test",WeekDaySchedule),ScheduledTransit("test",DaySchedule(Sunday))),
                EdgeDirection.Incoming)
     }
   }
