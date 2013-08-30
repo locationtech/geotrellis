@@ -11,10 +11,11 @@ case object WalkEdge extends EdgeType {
 
 case object TransitEdge extends EdgeType {
   def apply(target:Vertex,
+            service:String,
             time:Time,
             travelTime:Duration,
             weeklySchedule:WeeklySchedule = EveryDaySchedule) =
-    Edge(target,time,travelTime,PublicTransit(weeklySchedule))
+    Edge(target,time,travelTime,ScheduledTransit(service,weeklySchedule))
 }
 
 case object BikeEdge extends EdgeType {

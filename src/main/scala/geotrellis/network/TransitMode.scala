@@ -16,19 +16,9 @@ case object Biking extends TransitMode {
   def toString = "MODE(Biking)"
 }
 
-case class PublicTransit(weeklySchedule:WeeklySchedule) extends TransitMode {
+case class ScheduledTransit(service:String,weeklySchedule:WeeklySchedule) extends TransitMode {
   val isTimeDependant = true
 
-  override 
-  def equals(o: Any) = 
-    o match {
-      case that: PublicTransit => weeklySchedule.equals(that.weeklySchedule)
-      case _ => false
-    }
-
-  override 
-  def hashCode = weeklySchedule.hashCode
-
   override
-  def toString = s"MODE(PublicTransit($weeklySchedule))"
+  def toString = s"MODE(ScheduledTransit($service,$weeklySchedule))"
 }
