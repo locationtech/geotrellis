@@ -199,4 +199,23 @@ class FeatureSpec extends FunSpec with MustMatchers with ShouldMatchers {
        assert(filteredSeq.length === 1)
     }
   }
+
+  describe("creating empties") {
+    it("should create empty features") {
+      val gc =   GeometryCollection.empty()
+      val gc2 =  GeometryCollection.empty(1)
+      val ls =   LineString.empty()
+      val ls2 =  LineString.empty(1)
+      val mls =  MultiLineString.empty()
+      val mls2 = MultiLineString.empty(1)
+      val mp =   MultiPoint.empty()
+      val mp2 =  MultiPoint.empty(1)
+      val mpl =  MultiPolygon.empty()
+      val mpl2 = MultiPolygon.empty(1)
+      val p =    Point.empty()
+      val p2 =   Point.empty(1)
+      val pl =   Polygon.empty()
+      val pl2 =  Polygon.empty(1)
+    }
+  }
 }

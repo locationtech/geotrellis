@@ -10,11 +10,12 @@ object Filter {
     opsOp.flatMap (
       (seq) => {
         seq.foldLeft (Literal(Seq[A]()):Operation[Seq[A]]) { 
-          ((sum:Op[Seq[A]],v:A) => {
+          (sum:Op[Seq[A]],v:A) =>
             for( s <- sum;
-                 bool <- condition(v) ) yield if (bool) s :+ v else s
-          })} 
+                 bool <- condition(v) ) yield {
+              if (bool) s :+ v else s
+            }
+        }
       })
-
 }
 
