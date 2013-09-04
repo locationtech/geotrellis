@@ -10,6 +10,21 @@ class Polygon[D] (override val geom:jts.Polygon, data:D) extends SingleGeometry(
 /// Polygon implementation
 object Polygon {
   val factory = Feature.factory
+
+  /**
+   * Create an empty polygon feature.
+   */
+  def empty(): Polygon[_] =
+    JtsPolygon(factory.createPolygon(null,null), None)
+
+  /**
+   * Create an empty polygon feature with data.
+   *
+   * @param   data  The data of this feature
+   */
+  def empty[D](data: D): Polygon[D] =
+    JtsPolygon(factory.createPolygon(null,null), data)
+
   /**
    * Create a polgyon feature from a JTS Polygon object.
    *
