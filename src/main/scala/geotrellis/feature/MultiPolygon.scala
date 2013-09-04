@@ -17,9 +17,31 @@ object MultiPolygon {
 
   val factory = Feature.factory
 
+  /**
+   * Create a an multipolygon feature.
+   */
+  def empty(): MultiPolygon[_] = 
+    JtsMultiPolygon(factory.createMultiPolygon(Array[jts.Polygon]()), None)
+
+  /**
+   * Create a an multipolygon feature with data.
+   *
+   * @param data  Data of this feature.
+   */
+  def empty[D](data: D): MultiPolygon[D] = 
+    JtsMultiPolygon(factory.createMultiPolygon(Array[jts.Polygon]()), data)
+
+  /**
+   * Create a multipolygon feature from a JTS MultiPolygon instance.
+   *
+   * @param g     JTS MultiPolygon instance
+   * @param data  Data of this feature.
+   */
+  def apply[D](g: jts.MultiPolygon, data: D): MultiPolygon[D] = 
+    JtsMultiPolygon(g, data)
+
   def apply[D](g: jts.Geometry, data: D): MultiPolygon[D] =
     JtsMultiPolygon(g.asInstanceOf[jts.MultiPolygon], data)
-  def apply[D](g: jts.MultiPolygon, data: D): MultiPolygon[D] = JtsMultiPolygon(g, data)
 
   /**
    * Create a MultiPolygon using four nested lists.

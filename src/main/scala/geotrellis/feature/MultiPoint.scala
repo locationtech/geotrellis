@@ -16,7 +16,29 @@ class MultiPoint[D](override val geom:jts.MultiPoint, data:D) extends GeometryCo
 object MultiPoint {
   val factory = Feature.factory
 
-  def apply[D](g: jts.MultiPoint, data: D):JtsMultiPoint[D] = JtsMultiPoint(g, data)
+  /**
+   * Create an empty MultiPoint feature.
+   */
+  def emtpy():MultiPoint[_] = 
+    JtsMultiPoint(factory.createMultiPoint(Array[jts.Coordinate]()), None)
+
+  /**
+   * Create an empty MultiPoint feature with data.
+   *
+   * @param   data  Data of this feature
+   */
+  def empty[D](data: D):MultiPoint[D] = 
+    JtsMultiPoint(factory.createMultiPoint(Array[jts.Coordinate]()), data)
+
+  /**
+   * Create a MultiPoint feature.
+   *
+   * @param   g     JTS MutliPoint object
+   * @param   data  Data of this feature
+   */
+  def apply[D](g: jts.MultiPoint, data: D):JtsMultiPoint[D] = 
+    JtsMultiPoint(g, data)
+
   /**
    * Create a MultiPoint feature with sequences of coordinate values.
    *

@@ -18,7 +18,28 @@ extends GeometryCollection(geom, data) {
 object MultiLineString {
   val factory = Feature.factory 
 
-  def apply[D](g: jts.MultiLineString, data: D) = JtsMultiLineString(g, data)
+  /**
+   * Create an empty MultiLineString.
+   */
+  def empty():MultiLineString[_] = 
+    JtsMultiLineString(factory.createMultiLineString(Array[jts.LineString]()), None)
+
+  /**
+   * Create an empty MultiLineString feature with data.
+   *
+   * @param   data  Data of this feature
+   */
+  def empty[D](data: D):MultiLineString[D] = 
+    JtsMultiLineString(factory.createMultiLineString(Array[jts.LineString]()), data)
+
+  /**
+   * Create a MultiLineString feature.
+   *
+   * @param   g     JTS MutliLineString object
+   * @param   data  Data of this feature
+   */
+  def apply[D](g: jts.MultiLineString, data: D):MultiLineString[D] = 
+    JtsMultiLineString(g, data)
 
   /**
    * Create a MultiLineString feature with sequences of coordinate values.

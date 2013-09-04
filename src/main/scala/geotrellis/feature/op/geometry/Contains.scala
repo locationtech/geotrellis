@@ -13,6 +13,7 @@ import com.vividsolutions.jts.geom
   *  @see [[http://tsusiatsoftware.net/jts/javadoc/com/vividsolutions/jts/geom/Geometry.html#contains(com.vividsolutions.jts.geom.Geometry) "JTS documentation"]]
   */
 case class Contains(g:Op[Geometry[_]], other:Op[Geometry[_]]) extends Op2(g,other) ({
-  (g,other) => Result(g.geom.contains(other.geom))
+  (g,other) => 
+    Result(g.geom.contains(other.geom))
 })
 

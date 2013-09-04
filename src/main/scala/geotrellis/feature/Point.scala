@@ -15,13 +15,45 @@ object Point {
   def factory = Feature.factory
 
   /**
+   * Create an empty point feature.
+   *
+   * @param data  Data of this feature.
+   */
+  def empty():Point[_] = 
+    new JtsPoint(
+      factory.createPoint(factory.getCoordinateSequenceFactory.create(Array[jts.Coordinate]())),
+      None
+    )
+
+  /**
+   * Create an empty point feature with data.
+   *
+   * @param data  Data of this feature.
+   */
+  def empty[D](data: D):Point[D] =
+    new JtsPoint(
+      factory.createPoint(factory.getCoordinateSequenceFactory.create(Array[jts.Coordinate]())),
+      data
+    )
+
+
+  /**
+   * Create a point feature from a JTS point instance.
+   *
+   * @param p     JTS Point instance
+   * @param data  Data of this feature.
+   */
+  def apply[D](p: jts.Point, data: D):Point[D] = 
+    new JtsPoint(p, data)
+
+  /**
    * Create a point feature.
    *
    * @param   x   x coordinate
    * @param   y   y coordinate
    * @param   d   Data of this feature
    */
-  def apply[D](x: Double, y: Double, data: D) = {
+  def apply[D](x: Double, y: Double, data: D):Point[D] = {
     val p = factory.createPoint(new jts.Coordinate(x, y))
     JtsPoint(p, data)
   }
@@ -32,16 +64,9 @@ object Point {
    * @param   x   x coordinate
    * @param   y   y coordinate
    */
-  def apply(x: Double, y: Double) = {
+  def apply(x: Double, y: Double):Point[_] = {
     JtsPoint(factory.createPoint(new jts.Coordinate(x, y)), None)
   } 
-  /**
-   * Create a point feature from a JTS point instance.
-   *
-   * @param p     JTS Point instance
-   * @param data  Data of this feature.
-   */
-  def apply[D](p: jts.Point, data: D) = new JtsPoint(p, data)
 
   /**
    * Calculate row and column of this point in given raster extent.

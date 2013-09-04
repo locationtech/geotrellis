@@ -11,13 +11,19 @@ object LineString {
   val factory = Feature.factory
 
   /**
-   * Create a LineString (aka a line) feature.
+   * Create an Empty LineString (aka a line) feature.
    *
-   * @param   g     jts.Geometry object
+   */
+  def empty(): LineString[_] =
+    JtsLineString(factory.createLineString(Array[jts.Coordinate]()), None)
+
+  /**
+   * Create an Empty LineString (aka a line) feature with data.
+   *
    * @param   data  Data of this feature
    */
-  def apply[D](g: jts.Geometry, data: D): LineString[D] =
-    JtsLineString(g.asInstanceOf[jts.LineString], data)
+  def empty[D](data: D): LineString[D] =
+    JtsLineString(factory.createLineString(Array[jts.Coordinate]()), data)
 
   /**
    * Create a LineString (aka a line) feature.
@@ -27,6 +33,15 @@ object LineString {
    */
   def apply[D](g: jts.LineString, data: D): LineString[D] =
     JtsLineString(g, data)
+
+  /**
+   * Create a LineString (aka a line) feature.
+   *
+   * @param   g     jts.Geometry object
+   * @param   data  Data of this feature
+   */
+  def apply[D](g: jts.Geometry, data: D): LineString[D] =
+    JtsLineString(g.asInstanceOf[jts.LineString], data)
 
   /**
    * Create a LineString (aka a line) given x and y coordinates, as integers.

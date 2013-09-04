@@ -17,8 +17,9 @@ case class FlattenGeometry[D](g1: Op[Geometry[D]]) extends Operation[List[Geomet
   def flattenGeometry(g: jts.Geometry): List[jts.Geometry] = {
     val numGeometries = g.getNumGeometries
     if (numGeometries > 1) {
-      (0 until numGeometries).flatMap( i =>
-        flattenGeometry(g.getGeometryN(i))).toList
+      (0 until numGeometries).flatMap({ i =>
+        flattenGeometry(g.getGeometryN(i))
+      }).toList
     } else {
       List(g)
     }   
