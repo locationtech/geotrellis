@@ -4,7 +4,11 @@ import geotrellis._
 
 import com.vividsolutions.jts.{ geom => jts }
 
-class Point[D] (override val geom:jts.Point, data:D) extends SingleGeometry(geom,data)
+class Point[D] (override val geom:jts.Point, data:D) extends SingleGeometry(geom,data) {
+  val (x,y) = 
+    if(geom.isEmpty) { (Double.NaN,Double.NaN) }
+    else { (geom.getX,geom.getY) }
+}
 
 /**
  * Point represents a simple (x,y) coordinate.

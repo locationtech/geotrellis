@@ -3,6 +3,12 @@ package geotrellis.network
 import scala.collection.mutable
 
 case class Location(lat:Double,long:Double)
+object Location {
+  implicit def location2Tuple(l:Location):(Double,Double) = 
+    (l.lat,l.long)
+
+  def apply(tup:(Double,Double)):Location = Location(tup._1,tup._2)
+}
 
 case class NamedLocation(name:String,location:Location)
 

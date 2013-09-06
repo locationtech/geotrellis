@@ -1,6 +1,4 @@
-package geotrellis.network.index
-
-import geotrellis.network._
+package geotrellis.feature
 
 import com.vividsolutions.jts.index.strtree.{STRtree, ItemDistance, ItemBoundable}
 import com.vividsolutions.jts.index.strtree.ItemDistance
@@ -13,6 +11,15 @@ import scala.collection.JavaConversions._
 import geotrellis.Extent
 
 object SpatialIndex {
+  def apply(points:Iterable[(Double,Double)])
+           (implicit di:DummyImplicit):SpatialIndex[(Double,Double)] = {
+    val si = new SpatialIndex[(Double,Double)](Measure.Dumb)(t=>t)
+    for(point <- points) {
+      si.insert(point)
+    }
+    si
+  }
+
   def apply[T](points:Iterable[T])(f:T=>(Double,Double)):SpatialIndex[T] = {
     val si = new SpatialIndex[T](Measure.Dumb)(f)
     for(point <- points) {
@@ -36,23 +43,23 @@ class SpatialIndex[T](val measure:Measure)(f:T=>(Double,Double)) extends Seriali
     rtree.nearestNeighbour(new Envelope(new Coordinate(x,y)),null,measure).asInstanceOf[T]
   }
 
-  def nearest(location:Location):T = {
-    val e = new Envelope(new Coordinate(location.long,location.lat))
+  def nearest(pt:(Double,Double)):T = {
+    val e = new Envelope(new Coordinate(pt._1,pt._2))
     rtree.nearestNeighbour(e,null,measure).asInstanceOf[T]
   }
 
-  def nearestInExtent(extent:Extent,location:Location):Option[T] = {
+  def nearestInExtent(extent:Extent,pt:(Double,Double)):Option[T] = {
     val l = pointsInExtent(extent)
     if(l.isEmpty) { None }
     else {
       var nearest = l.head
       var minDist = {
-        val (lat,long) = f(nearest)
-        Distance.distance(location.lat,location.long,lat,long)
+        val (x,y) = f(nearest)
+        measure.distance(x,y,pt._1,pt._2)
       }
       for(t <- l.tail) {
-        val (lat,long) = f(t)
-        val d = Distance.distance(location.lat,location.long,lat,long)
+        val (x,y) = f(t)
+        val d = measure.distance(pt._1,pt._2,x,y)
         if(d < minDist) {
           nearest = t
           minDist = d
