@@ -12,7 +12,13 @@ object WebRunner {
   def createJettyServer(config:ServerConfig, contextPath:String) = 
     new JettyServer(config.jetty).withPackages(config.packages, contextPath)
 
-  def main(args: Array[String]) {
+  @deprecated("Use run method.","0.8.3")
+  def main(args: Array[String]):Unit =
+    run({ s => })
+
+  def run():Unit = run({s => })
+
+  def run(configServer:JettyServer=>Unit):Unit = {
     printWelcome()
 
     Logger.setLogger(new ConsoleLogger())
@@ -36,6 +42,8 @@ object WebRunner {
         server.withResourceContent("/webapp")
         Logger.log(s"Including Admin Site...")
       }
+
+      configServer(server)
 
       GeoTrellis.setup(config.geotrellis)
 
