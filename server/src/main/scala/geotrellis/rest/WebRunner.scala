@@ -9,8 +9,8 @@ package geotrellis.rest
 
 object WebRunner {
 
-  def createJettyServer(config:ServerConfig, contextPath:String) = 
-    new JettyServer(config.jetty).withPackages(config.packages, contextPath)
+  def createJettyServer(config:ServerConfig) = 
+    new JettyServer(config.jetty).withPackages(config.packages)
 
   @deprecated("Use run method.","0.8.3")
   def main(args: Array[String]):Unit =
@@ -25,7 +25,7 @@ object WebRunner {
 
     try {
       val config = ServerConfig.init()
-      val server = createJettyServer(config, "/gt/*")
+      val server = createJettyServer(config)
       
       config.staticContentPath match {
         case Some(path) => 

@@ -25,8 +25,6 @@ object ServerConfig {
       } else { None }
     } else { None }
 
-    
-
     val jetty = JettyConfig.init(config)
     val geotrellis = GeoTrellisConfig.init(config)
     val admin = AdminConfig.init(config)
@@ -48,7 +46,8 @@ case class JettyConfig(host:String,
                        corePoolSize:Int,
                        maximumPoolSize:Int,
                        keepAliveTime:Long,
-                       serveStatic:Boolean)
+                       serveStatic:Boolean,
+                       contextPath:String)
 object JettyConfig {
   def init():JettyConfig = init(ConfigFactory.load())
   def init(config:Config):JettyConfig = {
@@ -62,7 +61,16 @@ object JettyConfig {
     val serveStatic = config.hasPath("geotrellis.server.serve-static") &&
                       config.getBoolean("geotrellis.server.serve-static")
 
-    JettyConfig(host,port,corePoolSize,maximumPoolSize,keepAliveTime,serveStatic)
+    val contextPath = 
+      if(config.hasPath("geotrellis.rest-prefix")) {
+        val s = config.getString("geotrellis.rest-prefix") + "/*"
+        if(!s.startsWith("/")) { s"/$s" }
+        else { s }
+      } else {
+        "/gt/*"
+      }
+
+    JettyConfig(host,port,corePoolSize,maximumPoolSize,keepAliveTime,serveStatic,contextPath)
   }
 }
 
