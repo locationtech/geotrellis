@@ -103,7 +103,10 @@ object GeotrellisBuild extends Build {
         "com.sun.jersey" % "jersey-bundle" % "1.11",
         "org.slf4j" % "slf4j-api" % "1.6.0",
         "org.slf4j" % "slf4j-nop" % "1.6.0"
-      )).
+      ),
+      resolvers ++= Seq(
+      "Geotools" at "http://download.osgeo.org/webdav/geotools/")
+    ).
     dependsOn(root,geotools)
 
   lazy val dev:Project = Project("dev", file("dev")).
@@ -148,7 +151,7 @@ object GeotrellisBuild extends Build {
       "org.geotools" % "gt-coverage" % geotoolsVersion,
       "org.geotools" % "gt-coveragetools" % geotoolsVersion,
       "org.postgis" % "postgis-jdbc" % "1.3.3",
-      "javax.media" % "jai_core" % "1.1.3"),
+      "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"),
     resolvers ++= Seq(
       "Geotools" at "http://download.osgeo.org/webdav/geotools/")
     ).
