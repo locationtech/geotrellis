@@ -50,18 +50,22 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
     for(col <- 0 until r1.cols) {
       for(row <- 0 until r1.rows) {
         if(isFloat) {
-          if(math.abs(r1.getDouble(col,row) - r2.getDouble(col,row)) >= threshold) {
-            println(s"Failure at (${col},${row})")
+          val v1 = r1.getDouble(col,row)
+          val v2 = r2.getDouble(col,row)
+
+          if(math.abs(v1 - v2) >= threshold) {
+            println(s"Failure at (${col},${row}) - V1: $v1  V2: $v2")
             r1.getDouble(col,row) should be (r2.getDouble(col,row))
           }
         } else {
-          if(r1.get(col,row) != (r2.get(col,row)))
-            println(s"Failure at (${col},${row})")
-          r1.get(col,row) should be (r2.get(col,row))
+          val v1 = r1.get(col,row)
+          val v2 = r2.get(col,row)
+          if(v1 != v2) {
+            println(s"Failure at (${col},${row}) - V1: $v1  V2: $v2")
+            r1.get(col,row) should be (r2.get(col,row))
+          }
         }
       }
     }
   }
 }
-
-

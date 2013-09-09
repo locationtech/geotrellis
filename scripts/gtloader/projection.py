@@ -11,6 +11,7 @@ def get_epsg(raster):
     epsg = sr.GetAttrValue('AUTHORITY',1)
 
     if auth is None or epsg is None or auth.lower() != 'epsg':
-        log.error('Could not get EPSG projection')
-
-    return epsg
+        log.warn('Could not get EPSG projection')
+        return 0
+    else:
+        return epsg
