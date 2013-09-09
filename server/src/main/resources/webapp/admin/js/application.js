@@ -267,7 +267,7 @@ var colorRamps = (function() {
 })();
 var active = null;
 
-    $.getJSON(gtUrl('admin/catalog'), function(catalog) {
+$.getJSON(gtUrl('admin/catalog'), function(catalog) {
     $("#page-title").text("GeoTrellis Viewer - " + catalog.name);
 
     treeNodes = _.map(catalog.stores,function(store) {
@@ -281,17 +281,22 @@ var active = null;
         }
     });
 
-    $("#catalog-tree").dynatree({
-        onActivate: function(node) {
-            if(!node.data.isFolder) {
-                $.getJSON(gtUrl("admin/layer/info?layer="+node.data.title), function(layer) {
-                    layerViewer.setLayer(layer);
-                    layerInfo.setLayer(layer);
-                });
-            }
-        },
-        children: treeNodes
-    });
+    if(treeNodes.length == 0) {
+        $("#catalog-tree").append($("<span class='emptymsg'>Catalog is empty!</span>"));
+    } else {
+
+        $("#catalog-tree").dynatree({
+            onActivate: function(node) {
+                if(!node.data.isFolder) {
+                    $.getJSON(gtUrl("admin/layer/info?layer="+node.data.title), function(layer) {
+                        layerViewer.setLayer(layer);
+                        layerInfo.setLayer(layer);
+                    });
+                }
+            },
+            children: treeNodes
+        });
+    }
 });
 
 var setupSize = function() {
