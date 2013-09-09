@@ -69,6 +69,16 @@ case class Extent(xmin:Double, ymin:Double, xmax:Double, ymax:Double) {
       Some(Extent(xminNew, yminNew, xmaxNew, ymaxNew))
     } else { None }
   }
+
+  /**
+   * Returns true if these extents share at least
+   * one point in common.
+   */
+  def intersects(other:Extent):Boolean =
+    !(other.xmax < xmin ||
+      other.xmin > xmax) &&
+    !(other.ymax < ymin ||
+      other.ymin > ymax)
   
   /**
    * Determine whether the given point lies within the extent. The boundary
