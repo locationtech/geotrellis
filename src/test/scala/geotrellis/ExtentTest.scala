@@ -93,4 +93,29 @@ class ExtentTest extends FunSuite with ShouldMatchers {
     assert(!e.containsExtent(Extent(1.0, 102.0, 19.0,170.0))) 
     assert(!e.containsExtent(Extent(1.0, 102.0, 9.0,370.0))) 
   }
+
+  test("intersects") {
+    val base = Extent(0.0, -20.0, 100.0, -10.0)
+
+    def does(other:geotrellis.Extent) =
+      base.intersects(other) should be (true)
+
+    def doesnot(other:geotrellis.Extent) =
+      base.intersects(other) should be (false)
+
+    doesnot(Extent(-100.0,-20.0,-1.0,-10.0))
+    does(Extent(-100.0,-20.0,0.0,-10.0))
+    does(Extent(-100.0,-20.0,10.0,-10.0))
+    does(Extent(0.0,-20.0,10.0,-10.0))
+    does(Extent(40.0,-20.0,120.0,-10.0))
+    does(Extent(100.0,-20.0,120.0,-10.0))
+    doesnot(Extent(110.0,-20.0,120.0,-10.0))
+    does(Extent(-100.0,-20.0,120.0,-10.0))
+    doesnot(Extent(-100.0,-30.0,120.0,-21.0))
+    does(Extent(-100.0,-30.0,120.0,-20.0))
+    does(Extent(-100.0,-15.0,120.0,-10.0))
+    does(Extent(-100.0,-15.0,120.0,0.0))
+    doesnot(Extent(-100.0,-9.0,120.0,0.0))
+    doesnot(Extent(-100.0,-9.0,-10.0,0.0))
+  }
 }
