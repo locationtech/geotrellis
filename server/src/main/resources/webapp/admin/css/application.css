@@ -35,6 +35,14 @@ span.weight input {
     text-align: center;
 }
 
+.emptymsg {
+    text-align: center;
+    display: block;
+    color: #F1172F;
+    font-weight: bold;
+    font-size: 18px;
+}
+
 
 /* =======================================================
    Value Viewer
@@ -56,3 +64,4 @@ span.weight input {
     background-color:yellow;
     font-weight:bold; color:red;
 }
+
