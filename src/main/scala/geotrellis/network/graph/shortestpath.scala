@@ -87,8 +87,6 @@ extends ShortestPathTree {
                                   .filter(edgeTypes.contains(_))
                                   .map(graph.anytimeEdgeSets(_))
                                   .toArray
-  val b = anytimes(0)
-
   edgeIterator.foreachEdge(startVertex,tripStart) { (target,weight) =>
     val t = tripStart + weight
     if(t <= duration) {
