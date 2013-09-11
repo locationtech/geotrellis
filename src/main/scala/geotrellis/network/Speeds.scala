@@ -5,5 +5,7 @@ package geotrellis.network
  */
 object Speeds {
   val walking = 1.33 // m/s
-  val biking = 4.9  // m/s
+  // biking speed from: 
+  // http://arxiv.org/abs/1011.6266
+  val biking = 2.7  // m/s
 }
