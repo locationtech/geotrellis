@@ -6,9 +6,7 @@ name := "geotrellis-server"
 
 organization := "com.azavea.geotrellis"
 
-version := "0.9.0-SNAPSHOT"
-
-//seq(Revolver.settings: _*)
+version := "0.8.2-RC1"
 
 assemblySettings
 
