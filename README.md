@@ -3,8 +3,7 @@
 *GeoTrellis* is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
 user interaction with geospatial data by bringing the power of geospatial analysis to real time, interactive web applications.
 
-_Please visit our **[documentation page](http://geotrellis.github.com)** for more information. For getting 
-started with using GeoTrellis, see our [getting started guide.](http://geotrellis.github.com/gettingstarted)_
+Please visit our **[documentation page](http://geotrellis.github.com)** for more information. 
 
 GeoTrellis was designed to solve three core problems, with a focus on raster processing:
 
@@ -14,11 +13,14 @@ GeoTrellis was designed to solve three core problems, with a focus on raster pro
 
 Please contact us if you have any questions, find us on irc at #geotrellis on freenode, or join 
 the user mailing list at [https://groups.google.com/group/geotrellis-user](https://groups.google.com/group/geotrellis-user).
-More information is also available on the [GeoTrellis website](http://www.azavea.com/products/geotrellis/).
+
+GeoTrellis is available under the Apache 2 license.  Learn more at More information is also available on the [GeoTrellis website](http://www.azavea.com/products/geotrellis/).
+
+GeoTrellis is available under the Apache 2 License.
 
 The current release version of GeoTrellis is 0.8.1.
 
-The current development release of GeoTrellis is 0.9.0-M1.
+The current development release of GeoTrellis is 0.8.2-RC1.
  
 [![Build Status](https://api.travis-ci.org/geotrellis/geotrellis.png)](http://travis-ci.org/geotrellis/geotrellis)
 
