@@ -103,7 +103,6 @@ object MeanDouble {
     var sum = 0.0
     var count = 0L
     r.foreachDouble( (x) => if (!java.lang.Double.isNaN(x)) { sum = sum + x; count = count + 1 })
-    println("Sum: " + sum + " Count: " + count + " Result: " + sum/count)
     DoubleMean(sum,count)
   }
 }
@@ -130,7 +129,6 @@ case class MeanDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResult
             val z = r.getDouble(col,row)
             if (!java.lang.Double.isNaN(z)) { sum = sum + z; count = count + 1 }
           }
-        println("Partial Sum: " + sum + " Count: " + count + " Result: " + sum/count)
         }
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
@@ -144,7 +142,6 @@ case class MeanDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResult
       var s = 0.0
       var c = 0L
       r.force.foreachDouble((x:Double) => if (!java.lang.Double.isNaN(s)) { s = s + x; c = c + 1 })
-      println("Full Tile Sum: " + s + " Count: " + c + " Result: " + s/c)
       DoubleMean(s,c)
    }))
   
