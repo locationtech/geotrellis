@@ -113,10 +113,20 @@ class TiledPolygonalZonalSummarySpec extends FunSpec with ShouldMatchers {
       val minResult = server.run(minOp)
       minResult should equal (1)
 
+      val tileMinsD = zonal.summary.MinDouble.createTileResults(rData, rasterExtent)
+      val minDOp = zonal.summary.MinDouble(raster, zone, tileMinsD)
+      val minDResult = server.run(minDOp)
+      minDResult should equal (1.0)
+
       val tileMaxes = zonal.summary.Max.createTileResults(rData, rasterExtent)
       val maxOp = zonal.summary.Max(raster, zone, tileMaxes)
       val maxResult = server.run(maxOp)
       maxResult should equal (2)
+
+      val tileMaxesD = zonal.summary.MaxDouble.createTileResults(rData, rasterExtent)
+      val maxDOp = zonal.summary.MaxDouble(raster, zone, tileMaxesD)
+      val maxDResult = server.run(maxDOp)
+      maxDResult should equal (2.0)
 
       val tileHistograms = zonal.summary.Histogram.createTileResults(rData, rasterExtent)
       val histOp = zonal.summary.Histogram(raster, zone, tileHistograms)
