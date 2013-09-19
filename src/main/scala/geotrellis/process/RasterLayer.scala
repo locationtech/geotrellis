@@ -7,6 +7,9 @@ import geotrellis.util._
 import geotrellis.data.FileReader
 import geotrellis.data.arg.ArgReader
 
+import dispatch._, Defaults._
+import scala.concurrent.Future
+
 /**
  * Represents a Raster Layer that can give detailed information
  * about the Raster it represents, cache the raster, and get the 
@@ -91,6 +94,15 @@ object RasterLayer {
   def fromJSON(data:String, basePath:String):Option[RasterLayer] =
     try {
       json.RasterLayerParser(data, basePath)
+    } catch {
+      case _:Exception => None
+    }
+
+  def fromUrl(jsonUrl:String):Future[Option[RasterLayer]] =
+    try {
+      for(json <- Http(url(jsonUrl) OK as.String)) {
+
+      }
     } catch {
       case _:Exception => None
     }
