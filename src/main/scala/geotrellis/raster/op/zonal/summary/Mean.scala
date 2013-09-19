@@ -8,35 +8,30 @@ import scala.math.{ max, min }
 import geotrellis.raster.TileArrayRasterData
 import geotrellis.raster.TiledRasterData
 
-trait Mean[T] {
-  val sum: T
-  val count: T
-  def mean: T
-  def +(b: T) : T
+case class LongMean(sum: Long, count: Long) {
+  def mean = math.round((sum/count).toDouble)
+  def +(b: LongMean) = LongMean(sum + b.sum,count + b.count)
 }
 
 object Mean {
 
   def createTileResults(trd:TiledRasterData, re:RasterExtent) = {
     trd.getTiles(re)
-       .map { r => (r.rasterExtent, meanRaster(r))}
+       .map { r => (r.rasterExtent, meanTiledRaster(r))}
        .toMap
   }
 
   def meanRaster (r:Raster):Long = {
+    meanTiledRaster(r).mean
+  }
+
+  def meanTiledRaster (r:Raster):LongMean = {
     var sum = 0L
     var count = 0L
     for(z <- r) { if (z != NODATA) { sum = sum + z; count = count + 1 }}
-    math.round((sum/count).toDouble)
+    LongMean(sum,count)
   }
 }
-
-case class MeanLong(sum: Long, count: Long) extends Mean[Long] {
-  def mean = math.round((sum/count).toDouble)
-  def +(b: MeanLong) = MeanLong(this.sum + b.sum,this.count + b.count)
-}
-
-
 
 /**
  * Perform a zonal summary that calculates the mean of all raster cells within a geometry.
@@ -47,10 +42,10 @@ case class MeanLong(sum: Long, count: Long) extends Mean[Long] {
  * @param   zonePolygon   Polygon that defines the zone
  * @param   tileResults   Cached results of full tiles created by createTileResults
  */
-case class Mean[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[RasterExtent,MeanLong])
-  (implicit val mB: Manifest[MeanLong], val mD: Manifest[DD]) extends TiledPolygonalZonalSummary[Long] {
+case class Mean[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[RasterExtent,LongMean])
+  (implicit val mB: Manifest[LongMean], val mD: Manifest[DD]) extends TiledPolygonalZonalSummary[Long] {
 
-  type B = MeanLong
+  type B = LongMean
   type D = DD
   
   def handlePartialTileIntersection(rOp: Op[Raster], gOp: Op[Geometry[D]]) = 
@@ -67,7 +62,7 @@ case class Mean[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
         r.rasterExtent)(f)
-      MeanLong(sum,count)
+      LongMean(sum,count)
     }))
 
   def handleFullTile(rOp:Op[Raster]) = 
@@ -76,30 +71,40 @@ case class Mean[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[
         var s = 0L
         var c = 0L
         r.force.foreach((x:Int) => if (s != NODATA) { s = s + x; c = c + 1 })
-        MeanLong(s,c)
+        LongMean(s,c)
     }))
    
 
-  def handleNoDataTile = MeanLong(0L,0L)
+  def handleNoDataTile = LongMean(0L,0L)
 
-  def reducer(mapResults: List[MeanLong]):Long = {
-    mapResults.foldLeft[MeanLong](MeanLong(0L,0L))(_ + _ ).mean
+  def reducer(mapResults: List[LongMean]):Long = {
+    mapResults.foldLeft(LongMean(0L,0L))(_ + _).mean
   }
+}
+
+case class DoubleMean(sum: Double, count: Double) {
+  def mean = sum/count
+  def +(b: DoubleMean) = DoubleMean(sum + b.sum,count + b.count)
 }
 
 object MeanDouble {
   def createTileResults(trd:TiledRasterData, re:RasterExtent) = {
     trd.getTiles(re)
-       .map { r => (r.rasterExtent, meanRaster(r))}
+       .map { r => (r.rasterExtent, meanTileRaster(r))}
        .toMap
   }
 
   def meanRaster (r:Raster):Double = {
+    meanTileRaster(r).mean
+  }
+
+  def meanTileRaster (r:Raster):DoubleMean = {
+
     var sum = 0.0
     var count = 0L
     r.foreachDouble( (x) => if (!java.lang.Double.isNaN(x)) { sum = sum + x; count = count + 1 })
     println("Sum: " + sum + " Count: " + count + " Result: " + sum/count)
-    sum/count
+    DoubleMean(sum,count)
   }
 }
 
@@ -110,10 +115,10 @@ object MeanDouble {
  * @param   zonePolygon   Polygon that defines the zone
  * @param   tileResults   Cached results of full tiles created by createTileResults
  */
-case class MeanDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[RasterExtent,Double])
-  (implicit val mB: Manifest[Double], val mD: Manifest[DD]) extends TiledPolygonalZonalSummary[Double] {
+case class MeanDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[RasterExtent,DoubleMean])
+  (implicit val mB: Manifest[DoubleMean], val mD: Manifest[DD]) extends TiledPolygonalZonalSummary[Double] {
  
-  type B = Double
+  type B = DoubleMean
   type D = DD
   
   def handlePartialTileIntersection(rOp: Op[Raster], gOp: Op[Geometry[D]]) = {
@@ -130,7 +135,7 @@ case class MeanDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResult
       geotrellis.feature.rasterize.Rasterizer.foreachCellByFeature(
         g,
         r.rasterExtent)(f)
-      sum/count
+      DoubleMean(sum,count)
     }))
   }
 
@@ -140,14 +145,10 @@ case class MeanDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResult
       var c = 0L
       r.force.foreachDouble((x:Double) => if (!java.lang.Double.isNaN(s)) { s = s + x; c = c + 1 })
       println("Full Tile Sum: " + s + " Count: " + c + " Result: " + s/c)
-      s/c
+      DoubleMean(s,c)
    }))
   
-  def handleNoDataTile = 0.0
+  def handleNoDataTile = DoubleMean(0.0,0.0)
 
-  def reducer(mapResults: List[Double]):Double = {
-    mapResults.map(a =>  println("MR " + a))
-
-    mapResults.foldLeft(0.0)(_ + _) / mapResults.length
-  }
+  def reducer(mapResults: List[DoubleMean]):Double =  mapResults.foldLeft(DoubleMean(0.0,0.0))(_ + _).mean
 }
