@@ -9,7 +9,11 @@ import geotrellis.raster.TileArrayRasterData
 import geotrellis.raster.TiledRasterData
 
 case class LongMean(sum: Long, count: Long) {
-  def mean = math.round((sum/count).toDouble)
+  def mean = if (count == 0) {
+    geotrellis.NODATA
+  } else {
+    math.round((sum / count).toDouble)
+  }
   def +(b: LongMean) = LongMean(sum + b.sum,count + b.count)
 }
 
@@ -83,7 +87,11 @@ case class Mean[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[
 }
 
 case class DoubleMean(sum: Double, count: Double) {
-  def mean = sum/count
+  def mean = if (count == 0) {
+    geotrellis.NODATA
+  } else {
+    sum/count
+  }
   def +(b: DoubleMean) = DoubleMean(sum + b.sum,count + b.count)
 }
 
