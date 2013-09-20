@@ -74,7 +74,7 @@ case class Mean[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[
       tileResults.get(r.rasterExtent).getOrElse({
         var s = 0L
         var c = 0L
-        r.force.foreach((x:Int) => if (s != NODATA) { s = s + x; c = c + 1 })
+        r.force.foreach((x:Int) => if (x != NODATA) { s = s + x; c = c + 1 })
         LongMean(s,c)
     }))
    
@@ -149,7 +149,7 @@ case class MeanDouble[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResult
     tileResults.get(r.rasterExtent).getOrElse({
       var s = 0.0
       var c = 0L
-      r.force.foreachDouble((x:Double) => if (!java.lang.Double.isNaN(s)) { s = s + x; c = c + 1 })
+      r.force.foreachDouble((x:Double) => if (!java.lang.Double.isNaN(x)) { s = s + x; c = c + 1 })
       DoubleMean(s,c)
    }))
   
