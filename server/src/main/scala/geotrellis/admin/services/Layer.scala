@@ -15,6 +15,7 @@ import geotrellis.feature._
 import geotrellis.feature.op.geometry.AsPolygonSet
 import geotrellis.feature.rasterize.{Rasterizer, Callback}
 import geotrellis.data.ColorRamps._
+import geotrellis.util.srs
 
 import scala.collection.JavaConversions._
 
@@ -99,8 +100,8 @@ class Layer {
     @DefaultValue("7") @QueryParam("size") size:String,
     @Context req:HttpServletRequest
   ):Response = {
-    val lngOp = string.ParseDouble(lat)
-    val latOp = string.ParseDouble(lng)
+    val latOp = string.ParseDouble(lat)
+    val lngOp = string.ParseDouble(lng)
     val sizeOp = string.ParseInt(size)
 
     val layerOp = io.LoadRaster(layer)
@@ -109,12 +110,7 @@ class Layer {
                  lat  <- latOp;
                  lng  <- lngOp;
                  size <- sizeOp) yield {
-      val rp = Reproject(Point(lng,lat,0), Projections.LatLong, Projections.WebMercator)
-                        .asInstanceOf[Point[Int]]
-                        .geom
-      val x = rp.getX
-      val y = rp.getY
-
+      val (x,y) = srs.LatLng.transform(lng,lat,srs.WebMercator)
       val s = size / 2
       val (col,row) = rast.rasterExtent.mapToGrid(x,y)
       for(r <- (row - s) to (row + s);
