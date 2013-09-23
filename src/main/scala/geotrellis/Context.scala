@@ -15,6 +15,10 @@ class Context(server:Server) {
   def processPath(path:String):String =
     if(path.endsWith(".arg")) {
       path.substring(0,path.length - 4) + ".json"
+    } else if (path.endsWith("/")) {
+      path.substring(0,path.length - 1) + ".json"
+    } else if (!path.endsWith(".json")){
+      path + ".json"
     } else {
       path
     }
@@ -34,7 +38,7 @@ class Context(server:Server) {
     }
 
   def loadTileSet(path:String):Raster = 
-    RasterLayer.fromPath(path) match {
+    RasterLayer.fromPath(processPath(path)) match {
       case Some(layer) =>
         layer match {
           case tl:TileSetRasterLayer =>
@@ -46,7 +50,7 @@ class Context(server:Server) {
     }
 
   def loadUncachedTileSet(path:String):Raster = 
-    RasterLayer.fromPath(path) match {
+    RasterLayer.fromPath(processPath(path)) match {
       case Some(layer) =>
         layer match {
           case tl:TileSetRasterLayer =>
