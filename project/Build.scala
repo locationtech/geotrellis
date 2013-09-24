@@ -67,9 +67,9 @@ object GeotrellisBuild extends Build {
 
     publishArtifact in Test := false,
     // disable publishing the main API jar
-    publishArtifact in (Compile, packageDoc) := false,
+    publishArtifact in (Compile, packageDoc) := true,
     // disable publishing the main sources jar
-    publishArtifact in (Compile, packageSrc) := false,
+    publishArtifact in (Compile, packageSrc) := true,
 
     pomIncludeRepository := { _ => false },
     licenses := Seq("GPL3" -> url("http://www.gnu.org/licenses/gpl-3.0-standalone.html")),
