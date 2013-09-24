@@ -1,8 +1,9 @@
-package geotrellis.raster
+package geotrellis.source
   
 import geotrellis._
+import geotrellis.raster._
 
-trait RasterSourceBuilder[A] extends SourceBuilder[Raster,A] {
+class RasterSourceBuilder extends SourceBuilder[Raster,RasterSource] {
   var _dataDefinition:Op[RasterDefinition] = null
 
 /*
@@ -24,5 +25,20 @@ trait RasterSourceBuilder[A] extends SourceBuilder[Raster,A] {
   def setRasterDefinition(dfn: geotrellis.Operation[geotrellis.RasterDefinition]): this.type = {
     this._dataDefinition = dfn
     this
+  }
+
+  def result = new RasterSource(_dataDefinition)
+
+}
+
+case class SetTilesOnRasterDefinition(rasterDefinition:Op[RasterDefinition], opSeq:Op[Seq[Op[Raster]]])
+       extends Op2(rasterDefinition,opSeq) ({
+         (dfn, opSeq) =>  Result(dfn.setTiles(opSeq))
+       })
+
+object RasterSourceBuilder {
+  def apply(rasterSource:RasterSource) = {
+    val builder = new RasterSourceBuilder()
+    builder.setRasterDefinition(rasterSource.rasterDefinition)
   }
 }

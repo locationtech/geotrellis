@@ -1,4 +1,5 @@
 import scala.annotation.tailrec
+import geotrellis.source.CanBuildSourceFrom
 
 //import annotation.implicitNotFound
 
@@ -137,6 +138,7 @@ package object geotrellis {
     result 
   }
 }
+
 
 package geotrellis {
   package object process {

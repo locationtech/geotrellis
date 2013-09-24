@@ -1,4 +1,4 @@
-package geotrellis
+package geotrellis.source
 
 trait CanBuildSourceFrom[-From, Elem, +To] extends AnyRef {
   def apply(): SourceBuilder[Elem, To]

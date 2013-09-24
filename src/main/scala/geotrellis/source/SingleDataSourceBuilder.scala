@@ -1,7 +1,9 @@
-package geotrellis
+package geotrellis.source
 
-class SingleDataSourceBuilder[T,P](implicit converger:CanConvergeTo[T,P]) 
-    extends SourceBuilder[P,SingleDataSource[T,P]] {
+import geotrellis._
+
+
+/*class SingleDataSourceBuilder[T,P] extends SourceBuilder[P,SingleDataSource[T,P]] {
 
   var _dataDefinition:Op[Seq[Op[P]]] = null
   
@@ -15,7 +17,9 @@ class SingleDataSourceBuilder[T,P](implicit converger:CanConvergeTo[T,P])
 
 object SingleDataSourceBuilder {
   def apply[A](source:DataSource[A,_]) = {
-    val builder = new DistributedSeqSourceBuilder[A]()
+    val builder = new SeqSourceBuilder[A]()
     builder
   }
 }
+
+ */

@@ -2,13 +2,16 @@ package geotrellis.raster
 
 import geotrellis._
 
-class DistributedRasterSourceBuilder extends RasterSourceBuilder[DistributedRasterSource] {
-  def result = new DistributedRasterSource(_dataDefinition)
+/*
+class RasterSourceBuilder { 
+  def result = new RasterSource(_dataDefinition)
 }
+ */
 
-object DistributedRasterSourceBuilder {
+/*object RasterSourceBuilder {
   def apply(rasterSource:RasterSource) = {
-    val builder = new DistributedRasterSourceBuilder()
+    val builder = new RasterSourceBuilder()
     builder.setRasterDefinition(rasterSource.rasterDefinition)
   }
 }
+ */

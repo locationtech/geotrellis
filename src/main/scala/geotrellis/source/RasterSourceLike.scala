@@ -1,9 +1,10 @@
-package geotrellis.raster
+package geotrellis.source
 
 import geotrellis._
 import geotrellis.raster.op._
 import geotrellis.statistics.op._
 import geotrellis.data._
+import geotrellis.raster._
 
 trait RasterSourceLike[+Repr <: DataSource[Raster,Raster]] 
     extends DataSourceLike[Raster,Raster, Repr]
@@ -12,20 +13,18 @@ trait RasterSourceLike[+Repr <: DataSource[Raster,Raster]]
   type CBF[A] = ({ type BF = CBSF[Repr, Raster, A]})#BF
   type HBF[A] = ({ type BF = CBSF[Repr, statistics.Histogram, A] })#BF
   //type CBF[A] = ({ type BF = CBSF[Repr, Raster, A]})#BF
-  def tiles = self.partitions
+  def tiles = self.elements
   def rasterDefinition:Op[RasterDefinition]
 
-  def get = {
+  def get()(implicit mf:Manifest[Raster]) = {
     rasterDefinition flatMap { rd =>
       val re = rd.re
       logic.Collect(rd.tiles).map(s => Raster(TileArrayRasterData(s.toArray, rd.tileLayout, re),re))
     }}    
   
-  def converge:LocalRasterSource = LocalRasterSource.fromRaster(this.get)
-  
   // Methods w/ transformations that retain this source type.
-  def localAdd[That](i: Int)(implicit cbf: CBF[That]) = this map(local.Add(_, i))
-  def localSubtract[That](i: Int)(implicit cbf: CBF[That]) = this map(local.Subtract(_, i))
+  def localAdd[That](i: Int)(implicit cbf: CBF[That]) = this mapOp(local.Add(_, i))
+  def localSubtract[That](i: Int)(implicit cbf: CBF[That]) = this mapOp(local.Subtract(_, i))
 
   // Methods that return a local source but can act on any type.
 
@@ -35,16 +34,14 @@ trait RasterSourceLike[+Repr <: DataSource[Raster,Raster]]
     * or parallel execution.
     */
   def histogram[That](implicit cbf:HBF[That]) = 
-    this map(stat.GetHistogram(_))
+    this mapOp(stat.GetHistogram(_))
 
   // Methods that act on a local source.
 
   //?TODO: should we force here, or in png, or not at all?
-  def renderPng(colorRamp: Op[ColorRamp]):ValueDataSource[Array[Byte]] = {
-    val rasterOp = this
-      .converge
-      .get // LocalDataSource -> Op[Raster]
+  /*def renderPng(colorRamp: Op[ColorRamp]):ValueDataSource[Array[Byte]] = {
+    val rasterOp = this.converge.get 
     val pngOp = io.SimpleRenderPng(rasterOp, colorRamp)
     new ValueDataSource(pngOp)
-  }
+  }*/
 }
