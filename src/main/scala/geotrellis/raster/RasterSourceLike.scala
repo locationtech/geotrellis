@@ -3,6 +3,7 @@ package geotrellis.raster
 import geotrellis._
 import geotrellis.raster.op._
 import geotrellis.statistics.op._
+import geotrellis.data._
 
 trait RasterSourceLike[+Repr <: DataSource[Raster,Raster]] 
     extends DataSourceLike[Raster,Raster, Repr]
@@ -15,18 +16,18 @@ trait RasterSourceLike[+Repr <: DataSource[Raster,Raster]]
   def rasterDefinition:Op[RasterDefinition]
 
   def get = {
-    rasterDefinition.flatMap { rd =>
+    rasterDefinition flatMap { rd =>
       val re = rd.re
       logic.Collect(rd.tiles).map(s => Raster(TileArrayRasterData(s.toArray, rd.tileLayout, re),re))
     }}    
   
-  def converge = LocalRasterSource.fromRaster(this.get)
+  def converge:LocalRasterSource = LocalRasterSource.fromRaster(this.get)
   
-  // examples of transformations that retain this source type
-  def localAdd[That](i: Int)(implicit cbf: CBF[That]) = this.map(local.Add(_, i))
-  def localSubtract[That](i: Int)(implicit cbf: CBF[That]) = this.map(local.Subtract(_, i))
+  // Methods w/ transformations that retain this source type.
+  def localAdd[That](i: Int)(implicit cbf: CBF[That]) = this map(local.Add(_, i))
+  def localSubtract[That](i: Int)(implicit cbf: CBF[That]) = this map(local.Subtract(_, i))
 
-  // examples that become a local source type eventually but can act on any type
+  // Methods that return a local source but can act on any type.
 
   /** histograms return a SeqSource, which represents a source that generates a sequence 
     * of values.  The SeqSource will be either a DistributedSeqSource or a LocalSeqSource
@@ -34,5 +35,16 @@ trait RasterSourceLike[+Repr <: DataSource[Raster,Raster]]
     * or parallel execution.
     */
   def histogram[That](implicit cbf:HBF[That]) = 
-    this.map(stat.GetHistogram(_))
+    this map(stat.GetHistogram(_))
+
+  // Methods that act on a local source.
+
+  //?TODO: should we force here, or in png, or not at all?
+  def renderPng(colorRamp: Op[ColorRamp]):ValueDataSource[Array[Byte]] = {
+    val rasterOp = this
+      .converge
+      .get // LocalDataSource -> Op[Raster]
+    val pngOp = io.SimpleRenderPng(rasterOp, colorRamp)
+    new ValueDataSource(pngOp)
+  }
 }
