@@ -6,7 +6,7 @@ name := "geotrellis-server"
 
 organization := "com.azavea.geotrellis"
 
-version := "0.8.2-RC1"
+version := "0.8.2-RC2"
 
 assemblySettings
 
