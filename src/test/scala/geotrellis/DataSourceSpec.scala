@@ -20,15 +20,17 @@ class DataSourceSpec extends FunSpec
     it("should return a RasterSource when possible") { 
       val d1 = getRasterSource
       val d2:RasterSource = d1.localAdd(3)
-      val d3:RasterSource  = d2.mapOp(local.Add(_, 3))
-
+      val d3:RasterSource  = d2 mapOp(local.Add(_, 3))
+      val d4:RasterSource = d3 map(_ map(_ + 3))
       val result1 = runSource(d1)
       val result2 = runSource(d2)
       val result3 = runSource(d3)
+      val result4 = runSource(d4)
 
       result1.get(100,100) should be (3233)
       result2.get(100,100) should be (3236)
       result3.get(100,100) should be (3239)
+      result4.get(100,100) should be (3242)
     }
 
 /*

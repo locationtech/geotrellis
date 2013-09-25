@@ -23,7 +23,14 @@ trait DataSourceLike[T,V,+Repr <: DataSource[T,V]] { self:Repr =>
   def get()(implicit mf:Manifest[V]):Op[V]
 
 
-  def map[B:Manifest,That](f:T => B)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = mapOp(fOp => fOp.map(f(_)))
+  def map[B:Manifest,That](f:T => B)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
+    val builder = bf.apply(this)
+    val fOp = op(f(_)) 
+    val newOp = TransformSequenceOfOperations(elements)(fOp)
+    builder.setOp(newOp)
+    val result = builder.result()
+    result
+  }
 
   /** apply a function to elements, and return the appropriate datasource **/
   def mapOp[B:Manifest,That](f:Op[T] => Op[B])(implicit bf:CanBuildSourceFrom[Repr,B,That]):That =  {
