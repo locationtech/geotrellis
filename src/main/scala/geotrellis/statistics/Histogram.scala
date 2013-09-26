@@ -7,7 +7,7 @@ import math.{abs, round, sqrt}
   */
 abstract trait Histogram extends Serializable {
   /**
-   * Note the occurance of 'item''.
+   * Note the occurance of 'item'.
    *
    * The optional parameter 'count' allows histograms to be built more
    * efficiently. Negative counts can be used to remove a particular number
@@ -152,7 +152,7 @@ abstract trait Histogram extends Serializable {
     val maxValue = h.getMaxValue
 
     // this is the array of breaks we will return
-    val breaks = Array.ofDim[Int](quantiles.length);
+    val breaks = Array.ofDim[Int](quantiles.length)
 
     // the quantile we're currently working on
     var qIndex = 0
@@ -253,76 +253,80 @@ abstract trait Histogram extends Serializable {
     }
     t / getTotalCount
   }
-    
+
 
   def generateStatistics() = {
     val values = getValues()
+    if (values.length == 0) {
+      Statistics.EMPTY
+    } else {
 
-    var mode = 0
-    var modeCount = 0
-  
-    var mean = 0.0
-    var total = 0
+      var mode = 0
+      var modeCount = 0
 
-    var median = 0
-    var needMedian = true
-    val limit = getTotalCount() / 2
+      var mean = 0.0
+      var total = 0
 
-    var i = 0
-    val len = values.length;
+      var median = 0
+      var needMedian = true
+      val limit = getTotalCount() / 2
 
-    while (i < len) {
-      val value = values(i)
-      val count = getItemCount(value)
-      if (count != 0) {
-        // update the mode
-        if (count > modeCount) {
-          mode = value
-          modeCount = count
+      var i = 0
+      val len = values.length
+
+      while (i < len) {
+        val value = values(i)
+        val count = getItemCount(value)
+        if (count != 0) {
+          // update the mode
+          if (count > modeCount) {
+            mode = value
+            modeCount = count
+          }
+
+          // update the mean
+          val delta = value - mean
+          total += count
+          mean += (count * delta) / total
+
+          // update median if needed
+          if (needMedian && total > limit) {
+            median = values(i)
+            needMedian = false
+          }
         }
-  
-        // update the mean
-        val delta = value - mean
-        total += count
-        mean += (count * delta) / total
-
-        // update median if needed
-        if (needMedian && total > limit) {
-          median = values(i)
-          needMedian = false
-        }
-      }
-      i += 1
-    }
-
-    // find the min value
-    val zmin = if (values.length > 0) values(0) else Int.MaxValue
-
-    // find the max value
-    val zmax = if (values.length > 0) values(len - 1) else Int.MinValue
-
-    // find stddev
-    i = 0
-    total = 0
-    var mean2 = 0.0
-    while (i < len) {
-      val value = values(i)
-      val count = getItemCount(value)
-
-      if (count > 0) {
-        val x = value - mean
-        val y = x * x
-  
-        val delta = y - mean2
-        total += count
-        mean2 += (count * delta) / total
+        i += 1
       }
 
-      i += 1
-    }
-    val stddev = sqrt(mean2)
+      // find the min value
+      val zmin = values(0)
 
-    Statistics(mean, median, mode, stddev, zmin, zmax)
+      // find the max value
+      val zmax = values(len - 1)
+
+      // find stddev
+      i = 0
+      total = 0
+      var mean2 = 0.0
+      while (i < len) {
+        val value = values(i)
+        val count = getItemCount(value)
+
+        if (count > 0) {
+          val x = value - mean
+          val y = x * x
+
+          val delta = y - mean2
+          total += count
+          mean2 += (count * delta) / total
+        }
+
+        i += 1
+      }
+      val stddev = sqrt(mean2)
+
+      Statistics(mean, median, mode, stddev, zmin, zmax)
+    }
   }
 
   // TODO: use a standard json library
