@@ -14,10 +14,6 @@ object GeoTrellis {
   }
 
   def setup(config:GeoTrellisConfig, name:String = "geotrellis-server") = {
-
-    // Add the ability to read GeoTiffs in the catalog.
-    Catalog.addRasterLayerBuilder("geotiff", geotrellis.data.GeoTiffRasterLayerBuilder)
-
     val catalog = config.catalogPath match {
       case Some(path) =>
         if(!new java.io.File(path).exists()) {
