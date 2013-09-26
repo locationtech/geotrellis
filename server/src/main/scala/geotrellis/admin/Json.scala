@@ -7,6 +7,7 @@ import org.codehaus.jackson.map._
 import geotrellis._
 import geotrellis.process._
 import geotrellis.feature._
+import geotrellis.util.srs
 
 import scala.language.existentials
 import scala.language.implicitConversions
@@ -17,7 +18,7 @@ object Json {
   def wrap(json: => String) = new JsonWrapper { def toJson() = json }
 
   implicit def RasterExtentToJson(re:RasterExtent):JsonWrapper = wrap {
-    var latLong = Reproject(re.extent,Projections.WebMercator, Projections.LatLong)
+    var latLong = srs.WebMercator.transform(re.extent,srs.LatLng)
     s"""{
           "cols" : "${re.cols}",
           "rows" : "${re.rows}",
@@ -25,10 +26,10 @@ object Json {
           "cellwidth" : "${re.cellwidth}",         
           "cellheight" : "${re.cellheight}",
           "latlong" : {
-              "latmin" : "${latLong.xmin}",
-              "longmin" : "${latLong.ymin}",
-              "latmax" : "${latLong.xmax}",
-              "longmax" : "${latLong.ymax}"
+              "latmin" : "${latLong.ymin}",
+              "longmin" : "${latLong.xmin}",
+              "latmax" : "${latLong.ymax}",
+              "longmax" : "${latLong.xmax}"
           }
         }"""
   }
