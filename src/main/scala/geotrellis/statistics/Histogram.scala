@@ -231,11 +231,14 @@ abstract trait Histogram extends Serializable {
     geotrellis.NODATA
   } else {
     val values = getValues
-    if( values.length % 2 == 0) {
-      (values(values.length/2) + values(values.length/2-1)) / 2
-    } else {
-      values(values.length / 2)
+    val middle = getTotalCount() / 2
+    var total = 0
+    var i = 0
+    while (total <= middle) {
+      total += getItemCount(values(i))
+      i += 1
     }
+    values(i-1)
   }
 
   def getMean():Double = {
