@@ -37,6 +37,10 @@ trait DataSourceLike[+T,V,+Repr <: DataSource[T,V]] { self:Repr =>
     result
   }
 
+  def reduce[T1 >: T](reducer:(T1,T1) => T1)(implicit mf:Manifest[T1]):ValueDataSource[T1] = 
+    ValueDataSource( logic.Collect(elements) map (_.reduce(reducer)) )
+  
+
   case class TransformSequenceOfOperations[P,B](opSeq:Op[Seq[Op[P]]])
     (f:Op[P]=> Op[B]) extends Op1(opSeq) ({
       (opSeq) => {

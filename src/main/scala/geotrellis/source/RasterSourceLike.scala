@@ -7,8 +7,6 @@ import geotrellis.data._
 import geotrellis.raster._
 import geotrellis.statistics._
 
-//import RasterSource._
-
 trait RasterSourceLike[+Repr <: RasterSource] 
     extends DataSourceLike[Raster,Raster, Repr]
     with DataSource[Raster,Raster] { self: Repr =>
@@ -30,5 +28,57 @@ trait RasterSourceLike[+Repr <: RasterSource]
   def histogram():HistogramDS = this mapOp(stat.GetHistogram(_))
 
   // Methods that act on a local source.
+
+  def combine[That](rs:RasterSource)(f:(Int,Int)=>Int)(implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
+    // Check that extents are the same
+    // ...
+    val tileOps =
+      for(ts1 <- tiles;
+          ts2 <- rs.tiles;
+          t1 <- ts1;
+          t2 <- ts2) yield {
+        for(r1 <- t1;
+            r2 <- t2) yield {
+          r1.combine(r2)(f)
+        }
+      }
+    val builder = bf.apply(this)
+    builder.setOp(tileOps)
+    builder.result()
+  }
+
+  def combineDouble[That](rs:RasterSource)(f:(Double,Double)=>Double)(implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
+    // Check that extents are the same
+    // ...
+    val tileOps =
+      for(ts1 <- tiles;
+          ts2 <- rs.tiles;
+          t1 <- ts1;
+          t2 <- ts2) yield {
+        for(r1 <- t1;
+            r2 <- t2) yield {
+          r1.combineDouble(r2)(f)
+        }
+      }
+    val builder = bf.apply(this)
+    builder.setOp(tileOps)
+    builder.result()
+  }
+
+  def dualCombine[That](rs:RasterSource)(fInt:(Int,Int)=>Int)(fDouble:(Double,Double)=>Double)(implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
+    val tileOps =
+      for(ts1 <- tiles;
+          ts2 <- rs.tiles;
+          t1 <- ts1;
+          t2 <- ts2) yield {
+        for(r1 <- t1;
+            r2 <- t2) yield {
+          r1.dualCombine(r2)(fInt)(fDouble)
+        }
+      }
+    val builder = bf.apply(this)
+    builder.setOp(tileOps)
+    builder.result()
+  }
 
 }

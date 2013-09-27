@@ -8,7 +8,7 @@ trait CanBuildSourceFrom[-From, Elem, +To] extends AnyRef {
   def apply(from: From): SourceBuilder[Elem, To]
 }
 
-object CanBuildSourceFrom extends LowerPriorityImplicits {
+object CanBuildSourceFrom  extends LowerPriorityImplicits {
   def convergeHistograms[H <: Histogram](histOps:(Op[Seq[Op[H]]])) = {
     val histograms:Op[Seq[H]] = logic.Collect(histOps)
     val histograms2 = histograms map((hs:Seq[H]) => FastMapHistogram.fromHistograms(hs))
@@ -25,8 +25,12 @@ object CanBuildSourceFrom extends LowerPriorityImplicits {
     def apply(rasterSrc:RasterSource) =
       RasterSourceBuilder(rasterSrc)
   }
-}
 
+  implicit def canBuildValueFromValueSource[E]:CanBuildSourceFrom[ValueDataSource[_], E, ValueDataSource[E]] = new CanBuildSourceFrom[ValueDataSource[_], E, ValueDataSource[E]] {
+    def apply() = new ValueDataSourceBuilder[E]()
+    def apply(ds:ValueDataSource[_]) = new ValueDataSourceBuilder[E]()
+  }
+}
 /**
   * This trait is necessary to make the implicit builder for Seq[A] lower priority
   * than builders listed for specific types in CanBuildSourceFrom above.
