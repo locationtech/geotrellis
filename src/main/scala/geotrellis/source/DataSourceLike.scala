@@ -4,24 +4,12 @@ import geotrellis._
 
 import scala.language.higherKinds
 
-case class TransformSequenceOfOperations[P,B](opSeq:Op[Seq[Op[P]]])
-                                             (f:Op[P]=> Op[B]) extends Op1(opSeq) ({
-  (opSeq) => {
-    val newSeq:Seq[Op[B]] = opSeq.map(
-      (op:Op[P]) => {
-        val op2:Op[B] = f(op)
-          op2
-      }
-    )
-      Result(newSeq)
-  }})
 
 
-
-trait DataSourceLike[T,V,+Repr <: DataSource[T,V]] { self:Repr =>
+trait DataSourceLike[+T,V,+Repr <: DataSource[T,V]] { self:Repr =>
   def elements():Op[Seq[Op[T]]]
   def get()(implicit mf:Manifest[V]):Op[V]
-
+  def converge()(implicit mf:Manifest[V]) = ValueDataSource(get)
 
   def map[B:Manifest,That](f:T => B)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
     val builder = bf.apply(this)
@@ -48,4 +36,17 @@ trait DataSourceLike[T,V,+Repr <: DataSource[T,V]] { self:Repr =>
     val result = builder.result()
     result
   }
+
+  case class TransformSequenceOfOperations[P,B](opSeq:Op[Seq[Op[P]]])
+    (f:Op[P]=> Op[B]) extends Op1(opSeq) ({
+      (opSeq) => {
+        val newSeq:Seq[Op[B]] = opSeq.map(
+          (op:Op[P]) => {
+            val op2:Op[B] = f(op)
+            op2
+          }
+        )
+        Result(newSeq)
+      }})
+
 }

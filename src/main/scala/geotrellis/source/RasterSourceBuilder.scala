@@ -6,17 +6,6 @@ import geotrellis.raster._
 class RasterSourceBuilder extends SourceBuilder[Raster,RasterSource] {
   var _dataDefinition:Op[RasterDefinition] = null
 
-/*
-  def setOp(op: Op[Seq[Op[Raster]]]): this.type = {
-    println(s"rasterDefinition was: ${_dataDefinition}")
-    val newDfn = for(tiles <- op;
-    				 dfn <- _dataDefinition) yield {
-      dfn.setTiles(tiles)
-    }       this.setRasterDefinition(newDfn)
-    println(s"rasterDefinition is now: ${_dataDefinition}")
-    this 
-  }*/
-  
   def setOp(op: Op[Seq[Op[Raster]]]): this.type = {
     this.setRasterDefinition(SetTilesOnRasterDefinition(_dataDefinition, op))
     this 
