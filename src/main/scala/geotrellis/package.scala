@@ -1,17 +1,19 @@
 import scala.annotation.tailrec
 import geotrellis.source.CanBuildSourceFrom
-
-//import annotation.implicitNotFound
+import geotrellis.statistics.Histogram
 
 package object geotrellis {
   final val NODATA = Int.MinValue
 
   type Op[+A] = Operation[A]
   type DI = DummyImplicit
-  type CBSF[A,B,C] = CanBuildSourceFrom[A,B,C]
 
   type RasterData = geotrellis.raster.RasterData
-  
+
+  type RasterDS = geotrellis.source.RasterSource
+  type SeqDS[E] = geotrellis.source.DataSource[E,Seq[E]]
+  type HistogramDS = geotrellis.source.DataSource[Histogram,Histogram]
+
   /**
    * Add simple syntax for creating an operation.
    *
