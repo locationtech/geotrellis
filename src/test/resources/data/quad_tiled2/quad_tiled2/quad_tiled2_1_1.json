@@ -1,0 +1,16 @@
+{
+    "cellheight": 8.0,
+    "cellwidth": 8.0,
+    "cols": 10,
+    "datatype": "int32",
+    "epsg": 3785,
+    "layer": "quad_tiled2_1_1",
+    "rows": 10,
+    "type": "arg",
+    "xmax": 150.5,
+    "xmin": 70.5,
+    "xskew": 0,
+    "ymax": 83.80000000000001,
+    "ymin": 3.8000000000000114,
+    "yskew": 0
+}
