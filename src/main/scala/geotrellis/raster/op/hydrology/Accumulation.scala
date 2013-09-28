@@ -19,22 +19,18 @@ object Util{
 			if(sum == -1){
 				sum =0
 				//two lists to track the coords
-				var  x= new ArrayStack[Int]()
-				var  y= new ArrayStack[Int]()
+				var  stack= new ArrayStack[Tuple2[Int,Int]]()
 				var len = 0
-				x.push(c)
-				y.push(r)
-				x.push(c)
-				y.push(r)
-				
-				while(!x.isEmpty || data.get(c,r) == -1){
+				stack.push(new Tuple2(c,r))
+				stack.push(new Tuple2(c,r))
+
+				while(! stack.isEmpty || data.get(c,r) == -1){
 					sum = 0
 					flag = 0  
 				//right neighbour	
 					if(c+1<cols && raster.get(c+1,r)==16){
 						if(data.get(c+1,r)== -1){
-							x.push(c+1)
-							y.push(r)
+							stack.push(new Tuple2(c+1,r))
 							flag =1
 						
 						}else{
@@ -46,8 +42,7 @@ object Util{
 			//
 					if(c+1<cols && r+1<rows && raster.get(c+1,r+1)== 32){
 						if(data.get(c+1,r+1)== -1){
-							x.push(c+1)
-							y.push(r+1)
+							stack.push(new Tuple2(c+1,r+1))
 							flag =1
 						}else{
 						sum = sum + data.get(c+1,r+1) +1
@@ -57,8 +52,7 @@ object Util{
 			//bottom neighbor
 					if(r+1<rows && raster.get(c,r+1)== 64){
 						if(data.get(c,r+1)== -1){
-							x.push(c)
-							y.push(r+1)
+							stack.push(new Tuple2(c,r+1))
 							flag =1
 						}else{
 							sum = sum + data.get(c,r+1) +1
@@ -67,8 +61,7 @@ object Util{
 			//bottom left neighbor
 					if(c-1>=0 && r+1<rows && raster.get(c-1,r+1)== 128){
 						if(data.get(c-1,r+1)== -1){
-							x.push(c-1)
-							y.push(r+1)
+							stack.push(new Tuple2(c-1,r+1))
 							flag =1
 						}else{
 							sum = sum + data.get(c-1,r+1)  +1
@@ -77,8 +70,7 @@ object Util{
 			//left neighbor
 					if(c-1>=0 && raster.get(c-1,r)== 1){
 						if(data.get(c-1,r)== -1){
-							x.push(c-1)
-							y.push(r)
+							stack.push(new Tuple2(c-1,r))
 							flag =1
 						}
 						else{
@@ -88,8 +80,7 @@ object Util{
 			//top left neighbor
 					if(c-1>=0 && r-1>=0 && raster.get(c-1,r-1)== 2){
 						if(data.get(c-1,r-1)== -1){
-							x.push(c-1)
-							y.push(r-1)
+							stack.push(new Tuple2(c-1,r-1))
 							flag =1
 						}
 						else{
@@ -99,8 +90,7 @@ object Util{
 			//top neighbor 
 					if(r-1>=0 && raster.get(c,r-1)== 4){
 						if(data.get(c,r-1)== -1){
-							x.push(c)
-							y.push(r-1)
+							stack.push(new Tuple2(c,r-1))
 							flag =1
 							
 						}else{
@@ -111,8 +101,7 @@ object Util{
 			//top right neighbor
 					if(c+1<cols && r-1>=0 && raster.get(c+1,r-1)== 8){
 						if(data.get(c+1,r-1)== -1){
-							x.push(c+1)
-							y.push(r-1)
+							stack.push(new Tuple2(c+1,r-1))
 							flag =1
 							
 						}else{
@@ -124,9 +113,10 @@ object Util{
 					if (flag == 0){ 
 						data.set(c,r,sum)
 					}
-					if(!x.isEmpty){
-						c= x.pop
-						r= y.pop
+					if(!stack.isEmpty){
+						val t = stack.pop
+						c= t._1
+						r= t._2
 					}
 				}
 			}
