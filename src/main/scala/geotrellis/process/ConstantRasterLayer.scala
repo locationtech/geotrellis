@@ -30,7 +30,7 @@ object ConstantRasterLayerBuilder extends RasterLayerBuilder {
 }
 
 class IntConstantLayer(info:RasterLayerInfo, value:Int) 
-extends RasterLayer(info) {
+extends UntiledRasterLayer(info) {
   def getRaster(targetExtent:Option[RasterExtent] = None) = {
     val re = targetExtent match {
       case Some(rext) => rext
@@ -43,7 +43,7 @@ extends RasterLayer(info) {
 }
 
 class DoubleConstantLayer(info:RasterLayerInfo, value:Double) 
-extends RasterLayer(info) {
+extends UntiledRasterLayer(info) {
   def getRaster(targetExtent:Option[RasterExtent]) = {
     val re = targetExtent match {
       case Some(rext) => rext

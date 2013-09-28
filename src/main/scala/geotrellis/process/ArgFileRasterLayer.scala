@@ -42,7 +42,7 @@ extends RasterLayerBuilder {
 }
 
 class ArgFileRasterLayer(info:RasterLayerInfo, rasterPath:String) 
-extends RasterLayer(info) {
+extends UntiledRasterLayer(info) {
   def getRaster(targetExtent:Option[RasterExtent]) =
     if(isCached) {
       getCache.lookup[Array[Byte]](info.name) match {

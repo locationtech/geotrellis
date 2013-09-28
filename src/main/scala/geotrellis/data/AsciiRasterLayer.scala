@@ -26,24 +26,23 @@ extends RasterLayerBuilder {
         }
       }
 
-    val rasterType = 
+    val rasterType:RasterType = 
       if(json.hasPath("type")) {
         val t = getRasterType(json)
         if(t.isDouble) {
           System.err.println(s"[ERROR] Layer at $jsonPath has Ascii type and a Double data type. " +
-                              "This is not currently supported")
-          System.err.println("[ERROR]   Skipping this raster layer...")
+                              "This is not currently supported.")
+          System.err.println("[ERROR]   Skipping this raster layer.")
           return None
         }
         t
       } else {
         TypeInt
       }
-
     if(!new java.io.File(path).exists) {
       System.err.println("[ERROR] Cannot find data (.asc or .grd file) for " +
         s"Ascii Raster '${getName(json)}' in catalog.")
-      System.err.println("[ERROR]   Skipping this raster layer...")
+      System.err.println("[ERROR]   Skipping this raster layer.")
       None
     } else {
       val (rasterExtent,noDataValue) = loadMetaData(path)
@@ -134,7 +133,7 @@ extends RasterLayerBuilder {
 }
 
 class AsciiRasterLayer(info:RasterLayerInfo, noDataValue:Int, rasterPath:String) 
-extends RasterLayer(info) {
+extends UntiledRasterLayer(info) {
   private var cached = false
 
   def getRaster(targetExtent:Option[RasterExtent]) =

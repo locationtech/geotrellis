@@ -1,6 +1,6 @@
 import scala.annotation.tailrec
-
-//import annotation.implicitNotFound
+import geotrellis.source.CanBuildSourceFrom
+import geotrellis.statistics.Histogram
 
 package object geotrellis {
   final val NODATA = Int.MinValue
@@ -9,7 +9,11 @@ package object geotrellis {
   type DI = DummyImplicit
 
   type RasterData = geotrellis.raster.RasterData
-  
+
+  type RasterDS = geotrellis.source.RasterSource
+  type SeqDS[E] = geotrellis.source.DataSource[E,Seq[E]]
+  type HistogramDS = geotrellis.source.DataSource[Histogram,Histogram]
+
   /**
    * Add simple syntax for creating an operation.
    *
@@ -136,6 +140,7 @@ package object geotrellis {
     result 
   }
 }
+
 
 package geotrellis {
   package object process {

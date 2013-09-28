@@ -21,7 +21,7 @@ object FastMapHistogram {
     h
   }
 
-  def fromHistograms(hs:List[Histogram]) = {
+  def fromHistograms(hs:Seq[Histogram]) = {
     val total:Histogram = FastMapHistogram()
     hs.foreach(h => total.update(h))
     total
