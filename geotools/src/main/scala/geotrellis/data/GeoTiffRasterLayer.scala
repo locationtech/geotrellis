@@ -75,7 +75,7 @@ extends RasterLayerBuilder {
 }
 
 class GeoTiffRasterLayer(info:RasterLayerInfo, rasterPath:String) 
-extends RasterLayer(info) {
+extends UntiledRasterLayer(info) {
   def getRaster(targetExtent:Option[RasterExtent]) = {
     new GeoTiffReader(rasterPath).readPath(info.rasterType,info.rasterExtent,targetExtent)
   }

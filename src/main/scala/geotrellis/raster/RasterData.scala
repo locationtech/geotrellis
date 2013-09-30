@@ -14,6 +14,8 @@ trait RasterData extends Serializable {
 
   def tileLayoutOpt: Option[TileLayout] = None
 
+
+
   /**
    * True if this RasterData is tiled, e.g. a subclass of TiledRasterData.
    */
@@ -86,6 +88,12 @@ trait RasterData extends Serializable {
    * Return the current RasterData as an array.
    */
   def asArray: Option[ArrayRasterData]
+
+  /**
+    * Return this as a TiledRasterData.  
+    */
+  def asTiledRasterData(raster:Raster):TiledRasterData = TileArrayRasterData(raster)
+  
 
   /**
    * Return the current RasterData values as a strict (calculated) ArrayRasterData.

@@ -271,7 +271,9 @@ extends WorkerLike {
         case op:Operation[_] => {
           dispatcher ! RunOperation(op, i, self, None)
         }
-        case value => results(i) = Some(Inlined(value))
+        case value => { 
+          results(i) = Some(Inlined(value))
+        }
       }
     }
 

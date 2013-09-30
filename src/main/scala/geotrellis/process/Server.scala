@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit
 import com.typesafe.config.ConfigFactory
 import scala.util.{Try,Success => TrySuccess, Failure => TryFailure}
 import geotrellis.util.Filesystem
+import geotrellis.source.DataSource
 
 class Server (id:String, val catalog:Catalog) extends Serializable {
   val debug = false
@@ -42,6 +43,10 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
   }
 
   def log(msg:String) = if(debug) println(msg)
+
+  def runSource[T:Manifest](src:DataSource[_,T]) =
+    run(src.get)
+  
 
   def run[T:Manifest](op:Op[T]):T = getResult(op) match {
     case Complete(value, _) => value

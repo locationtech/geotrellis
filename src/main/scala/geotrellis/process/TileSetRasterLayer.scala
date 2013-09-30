@@ -53,9 +53,10 @@ extends RasterLayerBuilder {
       val info = RasterLayerInfo(getName(json),
                                  getRasterType(json),
                                  rasterExtent,
-                                 getEpsg(json),
+                                 getEpsg(json),                            
                                  getXskew(json),
                                  getYskew(json),
+                                 layout,
                                  getCacheFlag(json))
 
       Some(new TileSetRasterLayer(info,tileDirPath,layout))

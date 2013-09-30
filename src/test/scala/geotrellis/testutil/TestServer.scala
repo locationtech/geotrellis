@@ -3,9 +3,9 @@ package geotrellis.testutil
 import geotrellis._
 import geotrellis.raster.op._
 import geotrellis.process._
-
 import org.scalatest.{BeforeAndAfter,Suite}
 import org.scalatest.matchers._
+import geotrellis.source.DataSource
 
 object TestServer {
   lazy val server:Server = new Server("testutil", Catalog.fromPath("src/test/resources/catalog.json"))
@@ -17,6 +17,7 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
   val server = TestServer.server 
 
   def run[T:Manifest](op:Op[T]):T = server.run(op)
+  def runSource[T:Manifest](src:DataSource[_,T]):T = server.runSource(src)
   def getResult[T:Manifest](op:Op[T]) = server.getResult(op)
 
   def get(name:String) = io.LoadRaster(name)

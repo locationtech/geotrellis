@@ -126,7 +126,11 @@ case class CompositeOperation[+T,U](gOp:Op[U], f:(U) => Op[T]) extends Operation
     case 'firstOp :: u :: Nil => runAsync('result :: f(u.asInstanceOf[U]) :: Nil) 
     case 'result :: t :: Nil => Result(t.asInstanceOf[T])
   } 
+
+  //override def toString() = "CompositeOperation(" + gOp.toString + ")" + " with function: " + f.hashcode  
 }
+
+case object UnboundOperation extends Op0[Nothing](throw new Exception("foo"))
 
 abstract class OperationWrapper[+T](op:Op[T]) extends Operation[T] {
   def _run(context:Context) = op._run(context)
