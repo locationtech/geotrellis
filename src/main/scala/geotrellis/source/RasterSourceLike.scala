@@ -35,8 +35,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     val tileOps =
       for(ts1 <- tiles;
           ts2 <- rs.tiles;
-          t1 <- ts1;
-          t2 <- ts2) yield {
+          (t1,t2) <- ts1.zip(ts2)) yield {
         for(r1 <- t1;
             r2 <- t2) yield {
           r1.combine(r2)(f)
@@ -50,11 +49,10 @@ trait RasterSourceLike[+Repr <: RasterSource]
   def combineDouble[That](rs:RasterSource)(f:(Double,Double)=>Double)(implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
     // Check that extents are the same
     // ...
-    val tileOps =
+    val tileOps = 
       for(ts1 <- tiles;
           ts2 <- rs.tiles;
-          t1 <- ts1;
-          t2 <- ts2) yield {
+          (t1,t2) <- ts1.zip(ts2)) yield {
         for(r1 <- t1;
             r2 <- t2) yield {
           r1.combineDouble(r2)(f)
@@ -69,8 +67,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     val tileOps =
       for(ts1 <- tiles;
           ts2 <- rs.tiles;
-          t1 <- ts1;
-          t2 <- ts2) yield {
+          (t1,t2) <- ts1.zip(ts2)) yield {
         for(r1 <- t1;
             r2 <- t2) yield {
           r1.dualCombine(r2)(fInt)(fDouble)
