@@ -34,6 +34,8 @@ case class History(id:String,
                      result:Option[HistoryResult],
                      startTime:Long,
                      endTime:Long) {
+  val elapsedTime = endTime - startTime
+
   def withResult[T](value:T) = {
     val now = System.currentTimeMillis
     val s = 
@@ -100,7 +102,7 @@ case class History(id:String,
     sb.append(result match {
       case Some(Success(s)) => s"$s (in ${endTime - startTime} ms)"
       case Some(Failure(msg,trace)) => 
-        s"ERROR: $msg (in ${endTime - startTime} ms): \n" + trace + "\n"
+        s"ERROR: $msg (in $elapsedTime ms): \n" + trace + "\n"
       case None => "No Result"
     })
     sb.append("\n")
