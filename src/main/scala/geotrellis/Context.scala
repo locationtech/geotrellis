@@ -4,8 +4,6 @@ import geotrellis.process._
 import geotrellis.util.Filesystem
 
 class Context(server:Server) {
-  val timer = new Timer()
-
   /**
    * Clients can call the raster path loading functions
    * with either the .json metadata (prefered) or with

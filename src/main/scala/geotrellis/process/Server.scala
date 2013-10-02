@@ -26,7 +26,7 @@ import geotrellis.source.DataSource
 class Server (id:String, val catalog:Catalog) extends Serializable {
   val debug = false
 
-  var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(new ServerActor(id, this)), id)
+  var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(new ServerActor(this)), id)
 
   private[this] val cache = new HashCache()
 
@@ -44,21 +44,25 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
 
   def log(msg:String) = if(debug) println(msg)
 
-  def runSource[T:Manifest](src:DataSource[_,T]) =
+  def runSource[T:Manifest](src:DataSource[_,T]):T =
     run(src.get)
-  
 
+  def getSource[T:Manifest](src:DataSource[_,T]):CalculationResult[T] =
+    getResult(src.get)
+  
   def run[T:Manifest](op:Op[T]):T = getResult(op) match {
     case Complete(value, _) => value
     case Error(msg, trace) => {
       println(s"Operation Error. Trace: $trace")
       sys.error(msg)
     }
+    case Inlined(value) => 
+      sys.error("Inlined results should not be returned from run")
   }
 
-  def getResult[T:Manifest](op:Op[T]) = _run(op)
+  def getResult[T:Manifest](op:Op[T]):CalculationResult[T] = _run(op)
 
-  private[process] def _run[T:Manifest](op:Op[T]) = {
+  private[process] def _run[T:Manifest](op:Op[T]):CalculationResult[T] = {
     log("server._run called with %s" format op)
 
     val d = Duration.create(60000, TimeUnit.SECONDS)

@@ -18,6 +18,7 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
 
   def run[T:Manifest](op:Op[T]):T = server.run(op)
   def runSource[T:Manifest](src:DataSource[_,T]):T = server.runSource(src)
+  def getSource[T:Manifest](src:DataSource[_,T]):CalculationResult[T] = server.getSource(src)
   def getResult[T:Manifest](op:Op[T]) = server.getResult(op)
 
   def get(name:String) = io.LoadRaster(name)

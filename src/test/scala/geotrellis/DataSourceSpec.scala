@@ -1,6 +1,7 @@
 package geotrellis
 
 import geotrellis.testutil._
+import geotrellis.process._
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 import geotrellis.raster._
@@ -37,8 +38,42 @@ class DataSourceSpec extends FunSpec
                  .combine(dreally3)(_-_)
                  .localSubtract(5)
 
-      println(e2.get)
-      runSource(e2)
+      val e3 = RasterSource("quadborder").combine(RasterSource("quadborder2"))(_+_)
+
+      //println(e2.get)
+
+
+      getSource(e3) match {
+        case Complete(value,success) =>
+          println(success.toString)
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+      }
+
+      // val altOp = 
+      //   for(r1 <- io.LoadRaster("quadborder");
+      //       r2 <- io.LoadRaster("quadborder2")) yield {
+      //     r1.combine(r2)(_+_)
+      //   }
+
+      // val altOp =
+      //   new CompositeOperation(
+      //     io.LoadRaster("quadborder"), { r1:Raster =>
+      //       logic.Do1(io.LoadRaster("quadborder2")) { r2 =>
+      //         r1.combine(r2)(_+_)
+      //       }
+      //     }
+      //   )
+
+      // getResult(altOp) match {
+      //   case Complete(value,success) =>
+      //     println(success.toString)
+      //   case Error(msg,failure) =>
+      //     println(msg)
+      //     println(failure)
+      // }
+
       /*
       val e3 = d2 mapOp(local.Add(_, 3))
       val e4 = d3 map(r => r.map(z => z + 3))
