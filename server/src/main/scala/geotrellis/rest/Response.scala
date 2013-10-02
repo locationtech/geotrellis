@@ -74,6 +74,6 @@ object ERROR {
   def apply(message:String) = 
     Response.error().data(message)
 
-  def apply(message:String, trace:Failure) = 
+  def apply(message:String, trace:String) = 
     Response.error().data(message + " " + trace)
 }

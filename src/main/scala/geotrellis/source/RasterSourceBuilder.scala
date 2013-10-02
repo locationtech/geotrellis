@@ -11,7 +11,7 @@ class RasterSourceBuilder extends SourceBuilder[Raster,RasterSource] {
     this 
   }
 
-  def setRasterDefinition(dfn: geotrellis.Operation[geotrellis.RasterDefinition]): this.type = {
+  def setRasterDefinition(dfn: Operation[RasterDefinition]): this.type = {
     this._dataDefinition = dfn
     this
   }

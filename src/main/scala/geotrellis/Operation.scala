@@ -25,91 +25,102 @@ abstract class Operation[+T] extends Product with Serializable {
   def name: String = getClass.getSimpleName
 
   protected[geotrellis] def _run(context:Context): StepOutput[T]
- 
+  
   /**
-   * Execute this operation and return the result.  
-   */
-  def run(context:Context): StepOutput[T] = {
-    val o = _run(context)
-    o
-  }
+    * Execute this operation and return the result.  
+    */
+  def run(context:Context): StepOutput[T] =
+    _run(context)
 
   def runAsync(args:Args): StepOutput[T] = {
-    val f = (args2:Args) => {
-      val stepOutput:StepOutput[T] = processNextSteps(args2)
-      stepOutput
-    }
-    val o = StepRequiresAsync[T](args, f)
-    o
+    StepRequiresAsync[T](args, { (nextArgs:Args) =>
+      processNextSteps(nextArgs)
+    })
   }
 
   def processNextSteps(args:Args):StepOutput[T] = nextSteps(args)
 
   /** Returns an operation whose children will be executed on a remote cluster.
-   * 
-   *  This method will cause the operations executed as a result of this operation
-   *  (input operations and any operations necessary for this computation) to be 
-   *  dispatched to and executed on a remote cluster.
-   *
-   */
-  def dispatch(cluster:ActorRef) = 
-    DispatchedOperation(this, cluster)    
+    * 
+    *  This method will cause the operations executed as a result of this operation
+    *  (input operations and any operations necessary for this computation) to be 
+    *  dispatched to and executed on a remote cluster.
+    *
+    */
+  def dispatch(cluster:ActorRef) =
+    DispatchedOperation(this, cluster)
 
   /** Returns an operation that will be executed on a remote cluster.
-   *
-   *  This method will cause the specified operation to be executed on a remote
-   *  cluster.
-   *
-   *  Note that if you wish to distribute the work of a single operation, you
-   *  should probably be using dispatch() instead of remote().
-   */
+    *
+    *  This method will cause the specified operation to be executed on a remote
+    *  cluster.
+    *
+    *  Note that if you wish to distribute the work of a single operation, you
+    *  should probably be using dispatch() instead of remote().
+    */
   def remote(cluster:ActorRef) = logic.Do1(this)(x => x).dispatch(cluster)
   
 
- /**
-  * Create a new operation with a function that takes the result of this operation
-  * and returns a new operation.
-  */
- def flatMap[U](f:T=>Operation[U]):Operation[U] = new CompositeOperation(this,f) 
+  /**
+    * Create a new operation with a function that takes the result of this operation
+    * and returns a new operation.
+    */
+  def flatMap[U](f:T=>Operation[U]):Operation[U] = new CompositeOperation(this,f)
 
- /**
-  * Create a new operation that returns the result of the provided function that
-  * takes this operation's result as its argument.
-  */
- def map[U](f:(T)=>U):Operation[U] = logic.Do1(this)(f) 
+  /**
+    * Create a new operation that returns the result of the provided function that
+    * takes this operation's result as its argument.
+    */
+  def map[U](f:(T)=>U):Operation[U] = logic.Do1(this)(f)
 
- /**
-  * Create an operation that applies the function f to the result of this operation,
-  * but returns nothing.
-  */
- def foreach[U](f:(T)=>U):Unit = logic.Do1(this) {
-    (t:T) => {
-      f(t)
-      ()
+  /**
+    * Create an operation that applies the function f to the result of this operation,
+    * but returns nothing.
+    */
+  def foreach[U](f:(T)=>U):Unit = logic.Do1(this) { t:T =>
+    f(t)
+    ()
+  }
+
+  /**
+    * Create a new operation with a function that takes the result of this operation
+    * and returns a new operation.
+    * 
+    * Same as flatMap.
+    */
+  def withResult[U](f:T=>Operation[U]):Operation[U] = flatMap(f)
+
+
+  //TODO: how should filter be implemented for list comprehensions?
+  def filter(f:(T) => Boolean) = this
+
+  def andThen[U](f:T => Op[U]) = flatMap(f)
+
+  /** Call the given function with this operation as its argument.
+    *
+    * This is primarily useful for code readability.
+    * @see http://debasishg.blogspot.com/2009/09/thrush-combinator-in-scala.html
+    */
+  def into[U] (f: (Operation[T]) => U):U = f(this)
+
+  def prettyString:String = {
+    val sb = new StringBuilder
+    sb.append(s"$name(")
+    val arity = this.productArity
+    for(i <- 0 until arity) {
+      this.productElement(i) match {
+        case lit:Literal[_] =>
+          sb.append(s"LT{${lit.value}}")
+        case op:Operation[_] =>
+          sb.append(s"OP{${op.name}}")
+        case x => 
+          sb.append(s"$x")
+      }
+      if(i < arity - 1) { sb.append(",") }
     }
- }
-
- /**
-  * Create a new operation with a function that takes the result of this operation
-  * and returns a new operation.
-  * 
-  * Same as flatMap.
-  */
- def withResult[U](f:T=>Operation[U]):Operation[U] = flatMap(f)
-
-
- //TODO: how should filter be implemented for list comprehensions?
- def filter(f:(T) => Boolean) = this
-
- def andThen[U](f:T => Op[U]) = flatMap(f)
-
- /** Call the given function with this operation as its argument.
-   *
-   * This is primarily useful for code readability.
-   * @see http://debasishg.blogspot.com/2009/09/thrush-combinator-in-scala.html
-   */
- def into[U] (f: (Operation[T]) => U):U = f(this)
-
+    sb.append(")")
+    sb.toString
+  }
 }
 
 
@@ -126,8 +137,6 @@ case class CompositeOperation[+T,U](gOp:Op[U], f:(U) => Op[T]) extends Operation
     case 'firstOp :: u :: Nil => runAsync('result :: f(u.asInstanceOf[U]) :: Nil) 
     case 'result :: t :: Nil => Result(t.asInstanceOf[T])
   } 
-
-  //override def toString() = "CompositeOperation(" + gOp.toString + ")" + " with function: " + f.hashcode  
 }
 
 case object UnboundOperation extends Op0[Nothing](throw new Exception("foo"))
@@ -143,28 +152,6 @@ extends OperationWrapper(logic.Force(op)) {}
 object Operation {
   implicit def implicitLiteral[A:Manifest](a:A):Operation[A] = Literal(a)
 }
-
-/**
- * When run, Operations will return a StepOutput. This will either indicate a
- * complete result (Result), an error (StepError), or indicate that it
- * needs other work performed asynchronously before it can continue.
- */
-sealed trait StepOutput[+T]
-
-case class Result[T](value:T) extends StepOutput[T]
-case class AndThen[T](op:Operation[T]) extends StepOutput[T]
-case class StepError(msg:String, trace:String) extends StepOutput[Nothing]
-case class StepRequiresAsync[T](args:Args, cb:Callback[T]) extends StepOutput[T]
-
-object StepError { 
-  def fromException(e:Throwable) = { 
-    val msg = e.getMessage
-    val trace = e.getStackTrace.map(_.toString).mkString("\n") 
-    StepError(msg, trace) 
-  } 
-} 
-
-
 
 /**
  * Below are the Op0 - Op6 abstract classes.

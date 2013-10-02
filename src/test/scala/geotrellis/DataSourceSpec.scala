@@ -1,6 +1,7 @@
 package geotrellis
 
 import geotrellis.testutil._
+import geotrellis.process._
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 import geotrellis.raster._
@@ -20,7 +21,7 @@ class DataSourceSpec extends FunSpec
     RasterSource("quad_tiled")
 
   describe("RasterSource") {
-    it("should return a RasterSource when possible") { 
+    it("should print history") { 
       val r1 = RasterSource("quad_tiled")
       val r2 = RasterSource("quad_tiled2")
       val d1 = r1
@@ -30,20 +31,27 @@ class DataSourceSpec extends FunSpec
       val d4:RasterSource = d3 map(r => r.map(z => z + 3))
       val d5:DataSource[Int,Seq[Int]] = d3 map(r => r.findMinMax._2)
       
-      val dreally2 = r2
-      val dreally3 = RasterSource("quad_tiled")
+      val e2 = d1.combine(r2)(_+_)
+        .combine(d2)(_-_)
+        .localSubtract(5)
 
-      val e2 = d1.combine(dreally2)(_+_)
-                 .combine(dreally3)(_-_)
-                 .localSubtract(5)
+      getSource(e2) match {
+        case Complete(value,success) =>
+          println(success.toString)
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+      }
+    }
 
-      println(e2.get)
-      runSource(e2)
-      /*
-      val e3 = d2 mapOp(local.Add(_, 3))
-      val e4 = d3 map(r => r.map(z => z + 3))
-      val e5 = d3 map(r => r.findMinMax._2)
+    it("should return a RasterSource when possible") { 
+      val d1 = getRasterSource
 
+      val d2:RasterSource = d1.localAdd(3)
+      val d3:RasterSource  = d2 mapOp(local.Add(_, 3))
+      val d4:RasterSource = d3 map(r => r.map(z => z + 3))
+      val d5:DataSource[Int,Seq[Int]] = d3 map(r => r.findMinMax._2)
+      
       val result1 = runSource(d1)
       val result2 = runSource(d2)
       val result3 = runSource(d3)
@@ -55,10 +63,9 @@ class DataSourceSpec extends FunSpec
       result3.get(100,100) should be (3239)
       result4.get(100,100) should be (3242)
       result5.head should be (6026)
-       */
     }
 
-    ignore ("should handle a histogram result") {
+    it("should handle a histogram result") {
       val d = getRasterSource
 
       val hist = d.histogram
@@ -91,7 +98,7 @@ class DataSourceSpec extends FunSpec
       
     }
 
-    ignore("should handle combine") {
+    it("should handle combine") {
       val d = getRasterSource
       val d2 = getRasterSource
 

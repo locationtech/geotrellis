@@ -1,32 +1,24 @@
 package geotrellis.process
 
-import java.io.File
-import scala.util.matching.Regex
-import scala.collection.mutable
 import geotrellis._
-import geotrellis._
-import geotrellis.data._
-import geotrellis.data.arg._
-import geotrellis.data.FileExtensionRegexes._
-import geotrellis.RasterExtent
-import geotrellis._
-import geotrellis.util._
+import geotrellis.process.actors._
+
 import akka.actor._
-import akka.routing._
+import akka.pattern.ask
+import akka.routing.FromConfig
+
+import akka.util.Timeout
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import akka.util.Timeout
-import akka.pattern.ask
 import java.util.concurrent.TimeUnit
+
 import com.typesafe.config.ConfigFactory
-import scala.util.{Try,Success => TrySuccess, Failure => TryFailure}
-import geotrellis.util.Filesystem
 import geotrellis.source.DataSource
 
 class Server (id:String, val catalog:Catalog) extends Serializable {
   val debug = false
 
-  var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(new ServerActor(id, this)), id)
+  var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(new ServerActor(this)), id)
 
   private[this] val cache = new HashCache()
 
@@ -42,23 +34,30 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
     Server.actorSystem.awaitTermination()
   }
 
+  def getRouter(routerName:String):ActorRef =
+    system.actorOf(
+      Props[ServerActor].withRouter(FromConfig),
+      name = routerName)
+
   def log(msg:String) = if(debug) println(msg)
 
-  def runSource[T:Manifest](src:DataSource[_,T]) =
+  def runSource[T:Manifest](src:DataSource[_,T]):T =
     run(src.get)
+
+  def getSource[T:Manifest](src:DataSource[_,T]):CalculationResult[T] =
+    getResult(src.get)
   
-
-  def run[T:Manifest](op:Op[T]):T = getResult(op) match {
-    case Complete(value, _) => value
-    case Error(msg, trace) => {
-      println(s"Operation Error. Trace: $trace")
-      sys.error(msg)
+  def run[T:Manifest](op:Op[T]):T = 
+    getResult(op) match {
+      case Complete(value, _) => value
+      case Error(msg, trace) =>
+        println(s"Operation Error. Trace: $trace")
+        sys.error(msg)
     }
-  }
 
-  def getResult[T:Manifest](op:Op[T]) = _run(op)
+  def getResult[T:Manifest](op:Op[T]):CalculationResult[T] = _run(op)
 
-  private[process] def _run[T:Manifest](op:Op[T]) = {
+  private[process] def _run[T:Manifest](op:Op[T]):CalculationResult[T] = {
     log("server._run called with %s" format op)
 
     val d = Duration.create(60000, TimeUnit.SECONDS)
@@ -80,10 +79,6 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
 }
 
 object Server {
-  val config = ConfigFactory.load()
-  def catalogPath = config.getString("geotrellis.catalog")
-
-  def apply(id:String) = new Server(id, Catalog.fromPath(catalogPath))
   def apply(id:String, path:String) = new Server(id, Catalog.fromPath(path))
   def apply(id:String, catalog:Catalog) = new Server(id, catalog)
   def empty(id:String) = new Server(id, Catalog.empty(id))

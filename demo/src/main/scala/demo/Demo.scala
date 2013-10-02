@@ -144,7 +144,7 @@ class DemoService1 {
           val query = req.getQueryString + "&format=png"
           val url = "/demo1?" + query + "&format=png"
           println(url)
-          val html = Demo.infoPage(cols.toInt, rows.toInt, ms, url, h.toPretty)
+          val html = Demo.infoPage(cols.toInt, rows.toInt, ms, url, h.toString)
           response("text/html")(html)
         }
         case process.Error(msg, trace) => {

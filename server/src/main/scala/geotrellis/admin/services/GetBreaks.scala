@@ -43,11 +43,11 @@ class GetBreaks {
     val classBreaks = stat.GetClassBreaks(histo, numBreaksOp)
 
     GeoTrellis.run(classBreaks) match {
-      case process.Complete(breaks,h) =>
+      case process.Complete(breaks,_) =>
         OK.json(Json.classBreaks(breaks))
           .allowCORS()
-      case process.Error(message,failure) =>
-        ERROR(message,failure)
+      case process.Error(message,history) =>
+        ERROR(message,history)
     }
   }
 }
