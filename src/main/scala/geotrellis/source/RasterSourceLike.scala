@@ -77,5 +77,4 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.setOp(tileOps)
     builder.result()
   }
-
 }

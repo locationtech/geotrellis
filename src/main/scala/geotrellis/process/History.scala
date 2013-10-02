@@ -24,16 +24,29 @@ object History {
   implicit def historyToString(h:History) = h.toString
 }
 
-abstract sealed trait HistoryResult
+abstract sealed trait HistoryResult { 
+  def toJson:String
+}
 
-case class Success(value:String) extends HistoryResult
-case class Failure(msg:String,trace:String) extends HistoryResult
+case class Success(value:String) extends HistoryResult {
+  def toJson() = {
+    val escapedVal = value.replace(""""""","""\"""")
+    s"""{ "type" : "success", "value" : "$escapedVal" }"""
+  }
+}
+case class Failure(msg:String,trace:String) extends HistoryResult {
+  def toJson() = {
+    val escapedMsg = msg.replace(""""""","""\"""")
+    val escapedTrace = msg.replace(""""""","""\"""")
+    s"""{ "type" : "failure", "msg" : "$escapedMsg", "trace" : "$escapedTrace" }"""
+  }
+}
 
 case class History(id:String,
-                     steps:List[StepHistory],
-                     result:Option[HistoryResult],
-                     startTime:Long,
-                     endTime:Long) {
+                   steps:List[StepHistory],
+                   result:Option[HistoryResult],
+                   startTime:Long,
+                   endTime:Long) {
   val elapsedTime = endTime - startTime
 
   def withResult[T](value:T) = {
@@ -42,6 +55,8 @@ case class History(id:String,
       value match {
         case null => "null"
         case s:String => s""""$s""""
+        case i:Int => s"""$i"""
+        case d:Double => s"""$d"""
         case v:Vector[_] => 
           val sb = new StringBuilder
           sb.append("Vector(")
@@ -108,16 +123,34 @@ case class History(id:String,
     sb.append("\n")
     sb.toString
   }
+
+  def toJson():String = {
+    val r = result match {
+      case Some(r) => r.toJson
+      case None => """{ "type" : "none" }"""
+    }
+    val orderedSteps = steps.reverse.toList
+    val stepsJson = 
+      (for(i <- 0 until orderedSteps.length) yield {
+        orderedSteps(i).toJson(i)
+      }).mkString(",")
+
+    s"""{ "id" : "$id",
+          "elapsedTime" : "$elapsedTime",
+          "result" : $r,
+          "steps" : [ $stepsJson ]
+        }"""
+  }
 }
 
-case class StepHistory(opHistorys:List[History]) {
+case class StepHistory(opHistories:List[History]) {
   override
   def toString:String =
     toString("","")
 
   def toString(indentString:String,opIndentString:String):String = {
     val sb = new StringBuilder
-    val len = opHistorys.length
+    val len = opHistories.length
 
     val firstOpIndentString = opIndentString + TreeChars.OUT_DOWN + TreeChars.OUT
     val otherOpIndentString = indentString + TreeChars.DOWN_OUT + TreeChars.OUT
@@ -137,8 +170,14 @@ case class StepHistory(opHistorys:List[History]) {
       val ins = 
         if(i == len - 1) { indentString + (" " * 2) }
         else { betweenIndentString }
-      sb.append(opHistorys(i).toString(ins,false))
+      sb.append(opHistories(i).toString(ins,false))
     }
     sb.toString
+  }
+
+  def toJson(pos:Int = 0) = {
+    val opsJson = opHistories.map(_.toJson).mkString(",")
+    s"""{ "seq" : $pos,
+          "ops" : [ $opsJson ] }"""
   }
 }
