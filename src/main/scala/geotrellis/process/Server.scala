@@ -5,6 +5,7 @@ import geotrellis.process.actors._
 
 import akka.actor._
 import akka.pattern.ask
+import akka.routing.FromConfig
 
 import akka.util.Timeout
 import scala.concurrent.Await
@@ -32,6 +33,11 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
     Server.actorSystem.shutdown()
     Server.actorSystem.awaitTermination()
   }
+
+  def getRouter(routerName:String):ActorRef =
+    system.actorOf(
+      Props[ServerActor].withRouter(FromConfig),
+      name = routerName)
 
   def log(msg:String) = if(debug) println(msg)
 
