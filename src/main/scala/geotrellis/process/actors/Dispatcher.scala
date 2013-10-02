@@ -1,9 +1,10 @@
-package geotrellis.process
+package geotrellis.process.actors
 
 import akka.actor._
 import akka.routing._
 
 import geotrellis._
+import geotrellis.process._
 
 /**
  * Dispatcher is responsible for forwarding work to workers.

@@ -1,26 +1,17 @@
 package geotrellis.process
 
-import java.io.File
-import scala.util.matching.Regex
-import scala.collection.mutable
 import geotrellis._
-import geotrellis._
-import geotrellis.data._
-import geotrellis.data.arg._
-import geotrellis.data.FileExtensionRegexes._
-import geotrellis.RasterExtent
-import geotrellis._
-import geotrellis.util._
+import geotrellis.process.actors._
+
 import akka.actor._
-import akka.routing._
+import akka.pattern.ask
+
+import akka.util.Timeout
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import akka.util.Timeout
-import akka.pattern.ask
 import java.util.concurrent.TimeUnit
+
 import com.typesafe.config.ConfigFactory
-import scala.util.{Try,Success => TrySuccess, Failure => TryFailure}
-import geotrellis.util.Filesystem
 import geotrellis.source.DataSource
 
 class Server (id:String, val catalog:Catalog) extends Serializable {
@@ -50,15 +41,13 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
   def getSource[T:Manifest](src:DataSource[_,T]):CalculationResult[T] =
     getResult(src.get)
   
-  def run[T:Manifest](op:Op[T]):T = getResult(op) match {
-    case Complete(value, _) => value
-    case Error(msg, trace) => {
-      println(s"Operation Error. Trace: $trace")
-      sys.error(msg)
+  def run[T:Manifest](op:Op[T]):T = 
+    getResult(op) match {
+      case Complete(value, _) => value
+      case Error(msg, trace) =>
+        println(s"Operation Error. Trace: $trace")
+        sys.error(msg)
     }
-    case Inlined(value) => 
-      sys.error("Inlined results should not be returned from run")
-  }
 
   def getResult[T:Manifest](op:Op[T]):CalculationResult[T] = _run(op)
 
@@ -84,10 +73,6 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
 }
 
 object Server {
-  val config = ConfigFactory.load()
-  def catalogPath = config.getString("geotrellis.catalog")
-
-  def apply(id:String) = new Server(id, Catalog.fromPath(catalogPath))
   def apply(id:String, path:String) = new Server(id, Catalog.fromPath(path))
   def apply(id:String, catalog:Catalog) = new Server(id, catalog)
   def empty(id:String) = new Server(id, Catalog.empty(id))

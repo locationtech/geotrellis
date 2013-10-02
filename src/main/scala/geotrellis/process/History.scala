@@ -20,6 +20,8 @@ object History {
 
   def literal[T](v:T) =
     new History("Literal",Nil,None,System.currentTimeMillis,0).withResult(v)
+
+  implicit def historyToString(h:History) = h.toString
 }
 
 abstract sealed trait HistoryResult
@@ -97,7 +99,8 @@ case class History(id:String,
     sb.append("Result: ")
     sb.append(result match {
       case Some(Success(s)) => s"$s (in ${endTime - startTime} ms)"
-      case Some(Failure(msg,_)) => s"ERROR: $msg (in ${endTime - startTime} ms)"
+      case Some(Failure(msg,trace)) => 
+        s"ERROR: $msg (in ${endTime - startTime} ms): \n" + trace + "\n"
       case None => "No Result"
     })
     sb.append("\n")

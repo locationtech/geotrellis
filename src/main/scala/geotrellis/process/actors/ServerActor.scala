@@ -1,5 +1,6 @@
-package geotrellis.process
+package geotrellis.process.actors
 
+import geotrellis.process._
 import akka.actor._
 
 /**

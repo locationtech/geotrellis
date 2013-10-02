@@ -1,4 +1,4 @@
-package geotrellis.process
+package geotrellis.process.actors
 
 import akka.actor._
 import akka.routing._
@@ -6,6 +6,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 import geotrellis._
+import geotrellis.process._
 
 /**
  * This class contains functionality to handle results from operations,
@@ -103,7 +104,7 @@ extends Actor {
 
   // These results won't (necessarily) share any type info with each other, so
   // we have to use Any as the least-upper type bound :(
-  val results = Array.fill[Option[CalculationResult[Any]]](args.length)(None)
+  val results = Array.fill[Option[InternalCalculationResult[Any]]](args.length)(None)
 
   // Just after starting the actor, we need to dispatch out the child
   // operations to be run. If none of those existed, we should run the

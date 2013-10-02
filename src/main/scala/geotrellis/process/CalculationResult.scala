@@ -10,23 +10,34 @@ package geotrellis.process
 sealed trait CalculationResult[+T]
 
 /**
+ * Internal version to include Inlined;
+ * outside match statements shouldn't get warned about 
+ * not handling an Inlined case since they should never leak outside.
+ */
+private[process] 
+sealed trait InternalCalculationResult[+T]
+
+/**
  * CalculationResult for an operation which was a literal argument.
  *
  * Instances of Inlined should never leak out of the actor world. E.g. messages
- * sent to clients in the Trellis world should either be Complete or Failure.
+ * sent to clients in the GeoTrellis world should either be Complete or Failure.
  *
  * Inlined exists because these arguments don't have useful history, and
  * Calculations need to distinguish them from Complete results (which were
  * calculated operations with history).
  */
-case class Inlined[T](value:T) extends CalculationResult[T]
+private[process]
+case class Inlined[T](value:T) extends InternalCalculationResult[T]
 
 /**
  * CalculationResult for a successful operation.
  */
 case class Complete[T](value:T, history:History) extends CalculationResult[T]
+                                                    with InternalCalculationResult[T]
 
 /**
  * CalculationResult for a failed operation.
  */
 case class Error(message:String, history:History) extends CalculationResult[Nothing]
+                                                     with InternalCalculationResult[Nothing]

@@ -1,11 +1,12 @@
-package geotrellis.process
+package geotrellis.process.actors
 
 import geotrellis._
+import geotrellis.process._
 import akka.actor._
 
 
 /*******************************************************
- * External messages sent from Trellis land (non-actors)
+ * External messages sent from GeoTrellis land (non-actors)
  *******************************************************
  */
 
@@ -30,20 +31,23 @@ case class RunDispatched(op:Operation[_], dispatcher:ActorRef)
 /**
  * Internal message to run the provided op and send the result to the client.
  */
-case class RunOperation[T](op: Operation[T], pos: Int, client: ActorRef, dispatcher:Option[ActorRef])
+private[actors] case class RunOperation[T](op: Operation[T], 
+                                            pos: Int, 
+                                            client: ActorRef, 
+                                            dispatcher:Option[ActorRef])
 
 /**
  * Internal message to compute the provided args (if necessary), invoke the
  * provided callback with the computed args, and send the result to the client.
  */
-case class RunCallback[T](args:Args, 
-                          pos:Int, 
-                          cb:Callback[T], 
-                          client:ActorRef, 
-                          dispatcher:ActorRef,
-                          history:History)
+private[actors] case class RunCallback[T](args:Args, 
+                                           pos:Int, 
+                                           cb:Callback[T], 
+                                           client:ActorRef, 
+                                           dispatcher:ActorRef,
+                                           history:History)
 
 /**
- * Message used to send result values. Used internally and externally.
+ * Message used to send result values. Used internally.
  */
-case class OperationResult[T](result:CalculationResult[T], pos: Int)
+private[process] case class OperationResult[T](result:InternalCalculationResult[T], pos: Int)
