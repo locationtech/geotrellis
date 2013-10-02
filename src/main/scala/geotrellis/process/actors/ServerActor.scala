@@ -14,18 +14,17 @@ import akka.actor._
  * send the message to a workers). In the second case we will spin up a
  * Calculation actor who will handle the message.
  */
+private[process]
 case class ServerActor(server: Server) extends Actor {
   val dispatcher: ActorRef = context.actorOf(Props(Dispatcher(server)))
 
   // Actor event loop
   def receive = {
-    // EXTERNAL MESSAGES
     case Run(op) => {
       val msgSender = sender
       dispatcher ! RunOperation(op, 0, msgSender, None)
     }
  
-    // internal message sent from external source (a remote server)
     case msg:RunOperation[_] => { 
       dispatcher ! msg
     }
@@ -35,9 +34,8 @@ case class ServerActor(server: Server) extends Actor {
       this.dispatcher ! RunOperation(op, 0, msgSender, Some(childDispatcher)) 
     }
 
-    // INTERNAL MESSAGES
     case RunCallback(args, pos, cb, client, dispatcher,tracker) => {
-      context.actorOf(Props(Calculation(server, pos, args, cb, client, dispatcher, tracker)))
+      context.actorOf(Props(StepAggregator(server, pos, args, cb, client, dispatcher, tracker)))
     }
 
     case msg => sys.error("unknown message: %s" format msg)
