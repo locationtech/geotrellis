@@ -61,7 +61,7 @@ object InfoTask {
         println(s"Min $min  Max $max")
         var sum = 0
         var count = 0
-        raster.foreach { z => if(z != NODATA) { sum += z; count += 1; 1 } }
+        raster.foreach { z => if(z != NODATA) { sum += z; count += 1} }
         println(s"Mean: ${sum/count}")
       }
     } finally {

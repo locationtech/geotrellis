@@ -1,4 +1,6 @@
-package geotrellis
+package geotrellis.source
+
+import geotrellis._
 
 import geotrellis.raster.TileLayout
 
