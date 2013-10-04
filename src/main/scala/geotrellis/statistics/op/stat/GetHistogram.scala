@@ -34,6 +34,8 @@ case class GetHistogramMap(r:Op[Raster]) extends logic.TileReducer1[Histogram] {
 
 /**
  * Implements a histogram in terms of an array of the given size.
+ * The size provided must be less than or equal to the number of distinct 
+ * values in the Raster.
  *
  * @note     Rasters with a double type (TypeFloat,TypeDouble) will have their values
  *           rounded to integers when making the Histogram.
