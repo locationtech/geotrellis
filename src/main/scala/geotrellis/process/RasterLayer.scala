@@ -7,7 +7,8 @@ import geotrellis.util._
 import geotrellis.data.FileReader
 import geotrellis.data.arg.ArgReader
 
-import dispatch._, Defaults._
+import dispatch.classic._
+import scala.concurrent._
 import scala.concurrent.Future
 
 /**
@@ -98,12 +99,14 @@ object RasterLayer {
       case _:Exception => None
     }
 
-  def fromUrl(jsonUrl:String):Future[Option[RasterLayer]] =
+  def fromUrl(jsonUrl:String):Option[RasterLayer] = {
+    val h = new Http()
     try {
-      for(json <- Http(url(jsonUrl) OK as.String)) {
-
-      }
+      fromJSON(h(url(jsonUrl) as_str),jsonUrl)
     } catch {
       case _:Exception => None
+    } finally {
+      h.shutdown
     }
+  }
 }

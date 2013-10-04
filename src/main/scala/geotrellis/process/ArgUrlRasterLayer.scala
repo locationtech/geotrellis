@@ -4,45 +4,42 @@ import geotrellis._
 import geotrellis.util._
 import geotrellis.data.arg.ArgReader
 
+import dispatch.classic._
+
 import com.typesafe.config.Config
 
 object ArgUrlRasterLayerBuilder
 extends RasterLayerBuilder {
   def apply(jsonPath:String, json:Config):Option[RasterLayer] = {
-    val path = 
-      if(json.hasPath("path")) {
-        json.getString("path")
+    val url = 
+      if(json.hasPath("url")) {
+        json.getString("url")
       } else {
-        Filesystem.basename(jsonPath) + ".arg"
+        System.err.println(s"[ERROR] 'argurl' type rasters must have 'url' field in json.")
+        System.err.println("[ERROR]   Skipping this raster layer...")
+        return None
       }
 
-    if(!new java.io.File(path).exists) {
-      System.err.println(s"[ERROR] Raster in catalog points to path $path, but file does not exist")
-      System.err.println("[ERROR]   Skipping this raster layer...")
-      None
-    } else {
+    val cols = json.getInt("cols")
+    val rows = json.getInt("rows")
 
-      val cols = json.getInt("cols")
-      val rows = json.getInt("rows")
+    val (cellWidth,cellHeight) = getCellWidthAndHeight(json)
+    val rasterExtent = RasterExtent(getExtent(json), cellWidth, cellHeight, cols, rows)
 
-      val (cellWidth,cellHeight) = getCellWidthAndHeight(json)
-      val rasterExtent = RasterExtent(getExtent(json), cellWidth, cellHeight, cols, rows)
+    val info = RasterLayerInfo(getName(json),
+      getRasterType(json),
+      rasterExtent,
+      getEpsg(json),
+      getXskew(json),
+      getYskew(json),
+      getCacheFlag(json))
 
-      val info = RasterLayerInfo(getName(json),
-        getRasterType(json),
-        rasterExtent,
-        getEpsg(json),
-        getXskew(json),
-        getYskew(json),
-        getCacheFlag(json))
-
-      Some(new ArgUrlRasterLayer(info,path))
-    }
+    Some(new ArgUrlRasterLayer(info,url))
   }
 }
 
-class ArgUrlRasterLayer(info:RasterLayerInfo, rasterPath:String) 
-extends RasterLayer(info) {
+class ArgUrlRasterLayer(info:RasterLayerInfo, rasterUrl:String) 
+extends UntiledRasterLayer(info) {
   def getRaster(targetExtent:Option[RasterExtent]) =
     if(isCached) {
       getCache.lookup[Array[Byte]](info.name) match {
@@ -52,12 +49,28 @@ extends RasterLayer(info) {
           sys.error("Cache problem: Layer thinks it's cached but it is in fact not cached.")
       }
     } else {
-      getReader.readPath(info.rasterType, info.rasterExtent, targetExtent)
+      getReader.readCache(getBytes,
+                          info.rasterType,
+                          info.rasterExtent, targetExtent)
     }
 
-  def cache(c:Cache) = 
-        c.insert(info.name, Filesystem.slurp(rasterPath))
+  def getBytes = {
+    val size = info.rasterExtent.cols * info.rasterExtent.rows * (info.rasterType.bits / 8)
+    val result = Array.ofDim[Byte](size)
+    val h = new Http()
+    h(url(rasterUrl) >>  { (stream,charset) =>
+      var bytesRead = 1
+      while (bytesRead > 0) { 
+        bytesRead = stream.read(result, bytesRead-1, size)
+      }
+    })
+    h.shutdown
+    result
+  }
 
-  private def getReader = new ArgReader(rasterPath)
+  def cache(c:Cache) = 
+        c.insert(info.name, getBytes)
+
+  private def getReader = new ArgReader("")
 }
 
