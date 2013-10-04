@@ -123,4 +123,10 @@ class Context(server:Server) {
       case Some(layer) => layer.info
       case None => sys.error(s"couldn't get raster layer from path $path")
     }
+
+  def getRasterUrl(url:String,re:Option[RasterExtent]):Raster = 
+    RasterLayer.fromUrl(url) match {
+      case Some(layer) => layer.getRaster(re)
+      case None => sys.error(s"couldn't get raster layer from URL $url")
+    }
 }
