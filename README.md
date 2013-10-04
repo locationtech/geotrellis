@@ -94,3 +94,4 @@ You can find *Scaladocs* for the latest version of the project here:
  - Robert Cheetham
  - Justin Walgran
  - Eric J. Christeson
+

@@ -37,12 +37,13 @@ object GeotrellisBuild extends Build {
       "com.typesafe.akka" %% "akka-kernel" % "2.2.0",
       "com.typesafe.akka" %% "akka-remote" % "2.2.0",
       "com.typesafe.akka" %% "akka-actor" % "2.2.0",
-"com.typesafe.akka" %% "akka-cluster-experimental" % "2.1.2",
+      "com.typesafe.akka" %% "akka-cluster-experimental" % "2.1.2",
       "asm" % "asm" % "3.3.1",
       "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
       "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1",
       "org.spire-math" %% "spire" % "0.4.0",
-        "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided"
+      "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided",
+      "net.databinder" %% "dispatch-http" % "0.8.10"
     ),
 
     resolvers ++= Seq(
