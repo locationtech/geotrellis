@@ -9,7 +9,6 @@ import geotrellis.raster.CroppedRaster
  *
  * @param        r           Raster the focal operation will run against.
  * @param        n           Neighborhood to use with this focal operation.
- * @param        reOpt       Optional raster that represents the analysis area.
  * @param        getCalc     Function that returns a [[FocalCalculation]] based
  *                           on the raster and neighborhood. This allows flexibility
  *                           in what calculation to use; if some calculations are faster
@@ -21,7 +20,7 @@ import geotrellis.raster.CroppedRaster
  *
  * @tparam       T           Return type of the Operation.
  */
-class FocalOp[T](r:Op[Raster],n:Op[Neighborhood],reOpt:Op[Option[RasterExtent]] = Literal(None))
+class FocalOp[T](r:Op[Raster],n:Op[Neighborhood])
                 (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization)                  
 extends FocalOperation0[T](r,n) {
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
@@ -33,12 +32,11 @@ extends FocalOperation0[T](r,n) {
  * @param        r           Raster the focal operation will run against.
  * @param        n           Neighborhood to use with this focal operation.
  * @param        a           Argument of type A.
- * @param        reOpt       Optional raster that represents the analysis area.
  * @param        getCalc     See notes for same parameter in [[FocalOp]]
  *
  * @tparam       T           Return type of the Operation.
  */
-class FocalOp1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],reOpt:Op[Option[RasterExtent]] = Literal(None))
+class FocalOp1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A])
                    (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization1[A])
 extends FocalOperation1[A,T](r,n,a){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
@@ -51,13 +49,12 @@ extends FocalOperation1[A,T](r,n,a){
  * @param        n           Neighborhood to use with this focal operation.
  * @param        a           Argument of type A.
  * @param        b           Argument of type B.
- * @param        reOpt       Optional raster that represents the analysis area.
  * @param        getCalc     See notes for same parameter in [[FocalOp]]
  *
  * @tparam       T           Return type of the Operation.
  */
 class FocalOp2[A,B,T](r:Op[Raster],n:Op[Neighborhood],
-                      a:Op[A],b:Op[B],reOpt:Op[Option[RasterExtent]] = Literal(None))
+                      a:Op[A],b:Op[B])
                      (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization2[A,B])
 extends FocalOperation2[A,B,T](r,n,a,b){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
@@ -71,13 +68,12 @@ extends FocalOperation2[A,B,T](r,n,a,b){
  * @param        a           Argument of type A.
  * @param        b           Argument of type B.
  * @param        c           Argument of type C.
- * @param        reOpt       Optional raster that represents the analysis area.
  * @param        getCalc     See notes for same parameter in [[FocalOp]]
  *
  * @tparam       T           Return type of the Operation.
  */
 class FocalOp3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],
-                        a:Op[A],b:Op[B],c:Op[C],reOpt:Op[Option[RasterExtent]] = Literal(None))
+                        a:Op[A],b:Op[B],c:Op[C])
                        (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization3[A,B,C])
 extends FocalOperation3[A,B,C,T](r,n,a,b,c){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
@@ -92,12 +88,11 @@ extends FocalOperation3[A,B,C,T](r,n,a,b,c){
  * @param        b           Argument of type B.
  * @param        c           Argument of type C.
  * @param        d           Argument of type D.
- * @param        reOpt       Optional raster that represents the analysis area.
  * @param        getCalc     See notes for same parameter in [[FocalOp]]
  *
  * @tparam       T           Return type of the Operation.
  */
-class FocalOp4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],d:Op[D],reOpt:Op[Option[RasterExtent]] = Literal(None))
+class FocalOp4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],d:Op[D])
                          (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization4[A,B,C,D])
 extends FocalOperation4[A,B,C,D,T](r,n,a,b,c,d){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
