@@ -138,4 +138,34 @@ package object geotrellis {
     s.shutdown()
     result 
   }
+
+  /**
+   * Syntax for converting tuples of operations
+   * into objects that you can call map and flatMap on.
+   * this is similiar to a for comprehension, but the
+   * operations will be executed in parallel.
+   */
+  case class OpMap2[A,B](a:Op[A],b:Op[B]) {
+    def map[T:Manifest](f:(A,B)=>T) = op(f).apply(a,b)
+    def flatMap[T:Manifest](f:(A,B)=>Op[T]) = op(f).apply(a,b)
+  }
+
+  implicit def opTupleToOpMap2[A,B](t:(Op[A],Op[B])) = 
+    new OpMap2(t._1,t._2)
+
+  case class OpMap3[A,B,C](a:Op[A],b:Op[B],c:Op[C]) {
+    def map[T:Manifest](f:(A,B,C)=>T) = op(f).apply(a,b,c)
+    def flatMap[T:Manifest](f:(A,B,C)=>Op[T]) = op(f).apply(a,b,c)
+  }
+
+  implicit def opTupleToOpMap3[A,B,C](t:(Op[A],Op[B],Op[C])) = 
+    new OpMap3(t._1,t._2,t._3)
+
+  case class OpMap4[A,B,C,D](a:Op[A],b:Op[B],c:Op[C],d:Op[D]) {
+    def map[T:Manifest](f:(A,B,C,D)=>T) = op(f).apply(a,b,c,d)
+    def flatMap[T:Manifest](f:(A,B,C,D)=>Op[T]) = op(f).apply(a,b,c,d)
+  }
+
+  implicit def opTupleToOpMap4[A,B,C,D](t:(Op[A],Op[B],Op[C],Op[D])) = 
+    new OpMap4(t._1,t._2,t._3,t._4)
 }

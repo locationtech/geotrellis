@@ -179,3 +179,17 @@ w1.tiles.flatMap { r => local.Add(r.mapIfSet( _ + 2),2) }
 
 (w1:DistRasterDS).into { r:Raster => r.mapIfSet( _ + 2) }
 
+
+// Focal ops
+
+r1.focal(Square(2)) { (r,n) => focal.Min(r,n) }
+
+
+r1.focalMin(Square(2))
+
+def focalMin(n:Neighborhood) = this.focal(n)(focal.Min(_,_))
+
+
+def focal(n:Neighborhood)((Op[Raster],Neighborhood)=>Op[Raster]) = {
+  
+}

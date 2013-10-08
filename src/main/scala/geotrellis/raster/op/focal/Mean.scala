@@ -1,6 +1,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.raster.TileNeighbors
 
 import scala.math._
 
@@ -8,6 +9,7 @@ import scala.math._
  *
  * @param    r      Raster on which to run the focal operation.
  * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
+ * @param    tns    TileNeighbors that describe the neighboring tiles.
  *
  * @note            If the neighborhood is a [[Square]] neighborhood, the mean calucation will use
  *                  the [[CellwiseMeanCalc]] to perform the calculation, because it is faster.
@@ -17,13 +19,18 @@ import scala.math._
  *                  If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
  *                  the data values will be rounded to integers.
  */
-case class Mean(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
+case class Mean(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) 
+    extends FocalOp[Raster](r,n,tns)({
   (r,n) =>
     n match {
       case Square(ext) => new CellwiseMeanCalc
       case _ => new CursorMeanCalc
     }
-}) with CanTile
+})
+
+object Mean {
+  def apply(r:Op[Raster],n:Op[Neighborhood]) = new Mean(r,n,TileNeighbors.NONE)
+}
 
 case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleRasterDataResult {
   var count:Int = 0

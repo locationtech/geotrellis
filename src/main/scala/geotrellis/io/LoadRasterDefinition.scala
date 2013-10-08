@@ -12,16 +12,7 @@ case class LoadRasterDefinition(n:Op[String]) extends Op[RasterDefinition] {
   val nextSteps:Steps = {
     case (n:String) :: (context:Context) :: Nil => {
       val info = context.getRasterLayerInfo(n)
-      Result(
-        RasterDefinition(
-          info.rasterExtent,
-          info.tileLayout,
-          (for(tileCol <- 0 until info.tileLayout.tileCols;
-            tileRow <- 0 until info.tileLayout.tileRows) yield {
-            io.LoadTile(n,tileCol,tileRow)
-          }).toSeq
-        )
-      )
+      Result(RasterDefinition(n,info.rasterExtent,info.tileLayout))
     }
   }
 }

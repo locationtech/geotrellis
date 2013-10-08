@@ -1,24 +1,31 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.raster.TileNeighbors
 import geotrellis.statistics.FastMapHistogram
 
 /** Computes the median value of a neighborhood for a given raster 
  *
  * @param    r      Raster on which to run the focal operation.
  * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
+ * @param    tns    TileNeighbors that describe the neighboring tiles.
  *
  * @note    Median does not currently support Double raster data.
  *          If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
  *          the data values will be rounded to integers.
  */
-case class Median(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
+case class Median(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) 
+    extends FocalOp[Raster](r,n,tns)({
   (r,n) => 
     n match {
       case Square(ext) => new CellwiseMedianCalc(ext)
       case _ => new CursorMedianCalc(n.extent)
     }
-}) with CanTile
+})
+
+object Median {
+  def apply(r:Op[Raster],n:Op[Neighborhood]) = new Median(r,n,TileNeighbors.NONE)
+}
 
 class CursorMedianCalc(extent:Int) extends CursorCalculation[Raster] with IntRasterDataResult 
                                                                      with MedianModeCalculation {

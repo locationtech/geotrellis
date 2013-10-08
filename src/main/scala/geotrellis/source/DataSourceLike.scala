@@ -4,8 +4,6 @@ import geotrellis._
 
 import scala.language.higherKinds
 
-
-
 trait DataSourceLike[+T,V,+Repr <: DataSource[T,V]] { self:Repr =>
   def elements():Op[Seq[Op[T]]]
   def get()(implicit mf:Manifest[V]):Op[V]

@@ -8,17 +8,22 @@ import geotrellis.statistics.FastMapHistogram
  *
  * @param    r      Raster on which to run the focal operation.
  * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
+ * @param    tns    TileNeighbors that describe the neighboring tiles.
  * @note            Mode does not currently support Double raster data.
  *                  If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
  *                  the data values will be rounded to integers.
  */
-case class Mode(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
+case class Mode(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,n,tns)({
   (r,n) => 
     n match {
       case Square(ext) => new CellwiseModeCalc(ext)
       case _ => new CursorModeCalc(n.extent)
     }
-}) with CanTile
+})
+
+object Mode {
+  def apply(r:Op[Raster],n:Op[Neighborhood]) = new Mode(r,n,TileNeighbors.NONE)
+}
 
 class CursorModeCalc(extent:Int) extends CursorCalculation[Raster] with IntRasterDataResult 
                                                                    with MedianModeCalculation {

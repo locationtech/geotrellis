@@ -84,7 +84,7 @@ class TiledPolygonalZonalSummarySpec extends FunSpec with ShouldMatchers {
       val tileLayout = TileLayout(4, 4, 10, 10)
 
       val rasterExtent = RasterExtent(Extent(0,0,40,40),1,1,40,40)
-      val rData = new TileArrayRasterData(tiles, tileLayout, rasterExtent)
+      val rData = new TileArrayRasterData(tiles, tileLayout)
 
       val raster = new Raster(rData, rasterExtent)
 

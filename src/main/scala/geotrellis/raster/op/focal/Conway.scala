@@ -1,17 +1,19 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.raster.TileNeighbors
 
 /** Computes the next step of Conway's Game of Life for a given [[Raster]].
  *
  * @param    r      Raster that represents a state of Conway's Game of Life,
  *                  where NODATA values are dead cells and any other value
  *                  is counted as alive cells.
+ * @param    tns    TileNeighbors that describe the neighboring tiles.
  *
  * @see A description of Conway's Game of Life can be found on
  * [[http://en.wikipedia.org/wiki/Conway's_Game_of_Life wikipedia]].
  */
-case class Conway(r:Op[Raster]) extends FocalOp[Raster](r,Square(1))({
+case class Conway(r:Op[Raster],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,Square(1),tns)({
   (r,n) => new CellwiseCalculation[Raster] with ByteRasterDataResult {
     var count = 0
 
@@ -33,3 +35,7 @@ case class Conway(r:Op[Raster]) extends FocalOp[Raster](r,Square(1))({
     def reset() = { count = 0 }
   }
 })
+
+object Conway {
+  def apply(r:Op[Raster]):Conway = new Conway(r, TileNeighbors.NONE)
+}
