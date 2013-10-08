@@ -80,18 +80,23 @@ case class CreateCircleRaster(size: Op[Int], cellWidth: Op[Double], rad: Op[Int]
  *
  * @param      r       Raster to convolve.
  * @param      k       Kernel that represents the convolution filter.
+ * @param      tns     TileNeighbors that describe the neighboring tiles.
  *
  * @note               Convolve does not currently support Double raster data.
  *                     If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
  *                     the data values will be rounded to integers.
  */
-case class Convolve(r:Op[Raster], k:Op[Kernel]) extends FocalOp[Raster](r,k)({
+case class Convolve(r:Op[Raster], k:Op[Kernel],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,k,tns)({
   (r,n) => 
     n match {
       case k:Kernel => new ConvolveCalculation(k)
       case _ => sys.error("Convolve must take a Kernel neighborhood.")
     }
 })
+
+object Convolve {
+ 
+}
 
 /**
  * Supplies functionaltiy to operations that do convolution.
@@ -109,8 +114,8 @@ trait Convolver extends IntRasterDataResult {
     kernelcols = kraster.cols
   }
 
-  override def init(r:Raster,reOpt:Option[RasterExtent]) = {
-    super.init(r,reOpt)
+  override def init(r:Raster) = {
+    super.init(r)
     rows = r.rows
     cols = r.cols
   }
@@ -167,27 +172,30 @@ trait Convolver extends IntRasterDataResult {
 class ConvolveCalculation(k:Kernel) extends FocalCalculation[Raster] with Convolver {
   initKernel(k)
 
-  def execute(r:Raster,n:Neighborhood,reOpt:Option[RasterExtent]):Unit = {
+  def execute(r:Raster,n:Neighborhood,neighbors:Seq[Option[Raster]]):Unit = {
     n match {
-      case k:Kernel => execute(r,k,reOpt)
+      case k:Kernel => execute(r,k,neighbors)
       case _ => sys.error("Convolve operation neighborhood must be of type Kernel")
     }
   }
 
-  def execute(r:Raster,kernel:Kernel,reOpt:Option[RasterExtent]):Unit = {
-    val result = Raster.empty(r.rasterExtent);
+  def execute(raster:Raster,kernel:Kernel,neighbors:Seq[Option[Raster]]):Unit = {
+    val analysisArea = AnalysisArea(raster)
+    val r = TileWithNeighbors(raster,neighbors)
+
+    val result = Raster.empty(raster.rasterExtent);
     val data = result.data.mutable.get
 
-    val rows = r.rows
-    val cols = r.cols
+    val rowMax = analysisArea.rowMax
+    val colMax = analysisArea.colMax
 
     val kraster = kernel.raster
 
     val kernelrows = kraster.rows
     val kernelcols = kraster.cols
 
-    var focusRow = 0
-    var focusCol = 0
+    var focusRow = analysisArea.rowMin
+    var focusCol = analysisArea.colMin
 
     while(focusRow < rows) {
       focusCol = 0

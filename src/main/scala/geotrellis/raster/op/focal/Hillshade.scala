@@ -1,6 +1,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.raster.TileNeighbors
 
 import scala.math._
 
@@ -25,7 +26,11 @@ object Hillshade {
    * altitude of 45 degrees, and z factor of 1.0.
    *
    * @param      r      Raster to for which to compute the hill shading.
+   * @param      tns    TileNeighbors that describe the neighboring tiles.
    */
+  def apply(r:Op[Raster],tns:Op[TileNeighbors]):DirectHillshade = DirectHillshade(r,tns,315.0,45.0,1.0)
+
+
   def apply(r:Op[Raster]):DirectHillshade = DirectHillshade(r,315.0,45.0,1.0)
 
   /**
@@ -42,11 +47,16 @@ object Hillshade {
   /**
    * Creates a hillshade operation directly from azimuth, altitude, and zFactor parameters.
    *
+   * @param   r           Raster to for which to compute the hill shading.
+   * @param   tns         TileNeighbors that describe the neighboring 
    * @param   azimuth     Degrees clockwise from north of light source.
    * @param   altitude    Degrees above horizon of the light source.
    * @param   zFactor     Factor that convers altitude units to map units.
    *                      (map units per elevation unit)
    */
+  def apply(r:Op[Raster],tns:Op[TileNeighbors],azimuth:Op[Double],altitude:Op[Double],zFactor:Op[Double]) =
+    DirectHillshade(r,tns,azimuth,altitude,zFactor)
+
   def apply(r:Op[Raster],azimuth:Op[Double],altitude:Op[Double],zFactor:Op[Double]) =
     DirectHillshade(r,azimuth,altitude,zFactor)
 }
@@ -56,8 +66,8 @@ object Hillshade {
  *
  * @see [[Hillshade]]
  */
-case class DirectHillshade(r:Op[Raster], azimuth:Op[Double],altitude:Op[Double],zFactor:Op[Double])
-    extends FocalOp3[Double,Double,Double,Raster](r,Square(1),azimuth,altitude,zFactor)({
+case class DirectHillshade(r:Op[Raster],tns:Op[TileNeighbors],azimuth:Op[Double],altitude:Op[Double],zFactor:Op[Double])
+    extends FocalOp3[Double,Double,Double,Raster](r,Square(1),tns,azimuth,altitude,zFactor)({
   (raster,n) => new SurfacePointCalculation[Raster] with ShortRasterDataResult 
                                                     with Initialization3[Double,Double,Double] {
     var azimuth = 0.0
@@ -70,8 +80,8 @@ case class DirectHillshade(r:Op[Raster], azimuth:Op[Double],altitude:Op[Double],
     var cosAz = 0.0
     var sinAz = 0.0
 
-    def init(r:Raster,az:Double,al:Double,z:Double,reOpt:Option[RasterExtent]) = {
-      super.init(r,reOpt)
+    def init(r:Raster,az:Double,al:Double,z:Double) = {
+      super.init(r)
 
       azimuth = radians(90.0 - az)
       zenith = radians(90.0 - al)
@@ -92,7 +102,11 @@ case class DirectHillshade(r:Op[Raster], azimuth:Op[Double],altitude:Op[Double],
       data.set(x,y,round(127.0 * max(0.0,v)).toInt)      
     }
   }
-})  with CanTile
+}) 
+
+object DirectHillshade {
+  def apply(r:Op[Raster],azimuth:Op[Double],altitude:Op[Double],zFactor:Op[Double]) = new DirectHillshade(r,TileNeighbors.NONE,azimuth,altitude,zFactor)
+}
 
 /**
  * Indirect calculation of hill shading of a raster that uses Aspect and Slope operation results.
@@ -132,3 +146,4 @@ case class IndirectHillshade(aspect:Aspect,slope:Slope,azimuth:Op[Double],altitu
       Result(hr.convert(TypeShort))
   }
 }
+

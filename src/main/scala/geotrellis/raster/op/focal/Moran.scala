@@ -1,6 +1,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.raster.TileNeighbors
 import geotrellis.statistics.{Statistics,FastMapHistogram}
 
 /** Calculates spatial autocorrelation of cells based on the similarity to
@@ -13,18 +14,20 @@ import geotrellis.statistics.{Statistics,FastMapHistogram}
  *
  * @param       r         Raster to perform the operation on.
  * @param       n         Neighborhood to use in this focal operation.
+ * @param       tns       TileNeighbors that describe the neighboring tiles.
  *
  * @note                  Since mean and standard deviation are based off of an
  *                        Int based Histogram, those values will come from rounded values
  *                        of a double typed Raster (TypeFloat,TypeDouble).
  */
-case class RasterMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({
+case class RasterMoransI(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) 
+    extends FocalOp[Raster](r,n,tns)({
   (r,n) => new CursorCalculation[Raster] with DoubleRasterDataResult {
     var mean = 0.0
     var `stddev^2` = 0.0
 
-   override def init(r:Raster,re:Option[RasterExtent]) = {
-     super.init(r,re)  
+   override def init(r:Raster) = {
+     super.init(r)  
      val h = FastMapHistogram.fromRaster(r)
      val Statistics(m,_,_,s,_,_) = h.generateStatistics
      mean = m
@@ -50,6 +53,10 @@ case class RasterMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster
   }
 })
 
+object RasterMoransI {
+  def apply(r:Op[Raster],n:Op[Neighborhood]) = new RasterMoransI(r,n,TileNeighbors.NONE)
+}
+
 // Scalar version:
 
 /** Calculates global spatial autocorrelation of a raster based on the similarity to
@@ -61,12 +68,13 @@ case class RasterMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp[Raster
  *
  * @param       r         Raster to perform the operation on.
  * @param       n         Neighborhood to use in this focal operation.
+ * @param       tns       TileNeighbors that describe the neighboring tiles.
  *
  * @note                  Since mean and standard deviation are based off of an
  *                        Int based Histogram, those values will come from rounded values
  *                        of a double typed Raster (TypeFloat,TypeDouble).
  */
-case class ScalarMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp(r,n)({
+case class ScalarMoransI(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends FocalOp(r,n,tns)({
   (r,n) => new CursorCalculation[Double] with Initialization {
     var mean:Double = 0
     var `stddev^2`:Double = 0
@@ -74,7 +82,7 @@ case class ScalarMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp(r,n)({
     var count:Double = 0.0
     var ws:Int = 0
 
-    def init(r:Raster, reOpt:Option[RasterExtent]) = {
+    def init(r:Raster) = {
       val h = FastMapHistogram.fromRaster(r)
       val Statistics(m,_,_,s,_,_) = h.generateStatistics
       mean = m
@@ -94,3 +102,7 @@ case class ScalarMoransI(r:Op[Raster],n:Op[Neighborhood]) extends FocalOp(r,n)({
     def result = count / ws
   }
 })
+
+object ScalarMoransI {
+  def apply(r:Op[Raster],n:Op[Neighborhood]) = new ScalarMoransI(r,n,TileNeighbors.NONE)
+}

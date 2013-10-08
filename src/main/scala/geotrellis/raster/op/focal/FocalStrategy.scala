@@ -21,15 +21,26 @@ import TraversalStrategy._
  * what cells have been removed since the last move.
  */
 object CursorStrategy {
-  def execute(r:Raster,cursor:Cursor,c:CursorCalculation[_],tOpt:Option[TraversalStrategy],reOpt:Option[RasterExtent]):Unit =  {
-    tOpt match {
-      case Some(t) => execute(r,cursor,c,t,reOpt)
-      case None    => execute(r,cursor,c,ZigZag,reOpt) 
-    } 
+  def execute(r:Raster,
+              n:Neighborhood,
+              c:CursorCalculation[_],
+              tOpt:Option[TraversalStrategy], 
+              neighbors:Seq[Option[Raster]]):Unit = {
+    val reOpt = Some(r.rasterExtent)
+    val analysisArea = AnalysisArea(r)
+
+    val t = tOpt match {
+      case None => ZigZag
+      case Some(tStrategy) => tStrategy
+    }
+    // Get the tile raster
+    val rast = TileWithNeighbors(r,neighbors)
+
+    val cursor = Cursor(rast,n,analysisArea)
+    execute(rast,cursor,c,t,analysisArea)
   }
 
-  def execute(r:Raster,cursor:Cursor,c:CursorCalculation[_],t:TraversalStrategy,reOpt:Option[RasterExtent]=None):Unit = {
-    val analysisArea = FocalOperation.calculateAnalysisArea(r, reOpt)
+  def execute(r:Raster,cursor:Cursor,c:CursorCalculation[_],t:TraversalStrategy,analysisArea:AnalysisArea):Unit = {
     t match {
       case ScanLine => handleScanLine(r, analysisArea, cursor,c)
       case SpiralZag => handleSpiralZag(r,analysisArea,cursor,c)
@@ -175,13 +186,19 @@ object CursorStrategy {
  * but can only be used for Square or Circle neighborhoods.
  */ 
 object CellwiseStrategy {
+  def execute(r:Raster, 
+              n:Square,
+              c:CellwiseCalculation[_], 
+              tOpt:Option[TraversalStrategy], 
+              op:Seq[Option[Raster]]):Unit = ???
+
   def execute(r:Raster,n:Square,calc:CellwiseCalculation[_],tOpt:Option[TraversalStrategy], reOpt:Option[RasterExtent]):Unit = tOpt match {
       case None => execute(r,n,calc,ScanLine,reOpt)
       case Some(t) => execute(r,n,calc,t,reOpt)
   }
 
  def execute(r:Raster,n:Square,calc:CellwiseCalculation[_],t:TraversalStrategy=ScanLine,reOpt:Option[RasterExtent]=None):Unit = {
-    val analysisArea = FocalOperation.calculateAnalysisArea(r, reOpt)
+    val analysisArea = AnalysisArea(r, reOpt)
     t match {
       case _ => handleScanLine(r,n.extent,calc,analysisArea)
     }

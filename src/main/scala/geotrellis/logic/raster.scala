@@ -34,7 +34,7 @@ abstract class TiledRasterMapper(r:Op[Raster]) extends Operation[Raster] {
   }
 
   def reducer(tileInfo:TileInfo, rasters:List[Raster]) = {
-    Raster(TileArrayRasterData(rasters.toArray, tileInfo.tileLayout, tileInfo.rasterExtent), tileInfo.rasterExtent)
+    Raster(TileArrayRasterData(rasters.toArray, tileInfo.tileLayout), tileInfo.rasterExtent)
   }
 
   def init(r:Raster) = {

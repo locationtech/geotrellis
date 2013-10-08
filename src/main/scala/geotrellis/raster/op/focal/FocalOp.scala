@@ -1,6 +1,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.raster._
 import scala.math._
 import geotrellis.raster.CroppedRaster
 
@@ -9,6 +10,7 @@ import geotrellis.raster.CroppedRaster
  *
  * @param        r           Raster the focal operation will run against.
  * @param        n           Neighborhood to use with this focal operation.
+ * @param        tns         TileNeighbors that describe the neighboring tiles.
  * @param        getCalc     Function that returns a [[FocalCalculation]] based
  *                           on the raster and neighborhood. This allows flexibility
  *                           in what calculation to use; if some calculations are faster
@@ -20,9 +22,9 @@ import geotrellis.raster.CroppedRaster
  *
  * @tparam       T           Return type of the Operation.
  */
-class FocalOp[T](r:Op[Raster],n:Op[Neighborhood])
+class FocalOp[T](r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors])
                 (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization)                  
-extends FocalOperation0[T](r,n) {
+extends FocalOperation0[T](r,n,tns) {
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
@@ -31,14 +33,15 @@ extends FocalOperation0[T](r,n) {
  *
  * @param        r           Raster the focal operation will run against.
  * @param        n           Neighborhood to use with this focal operation.
+ * @param        tns         TileNeighbors that describe the neighboring tiles.
  * @param        a           Argument of type A.
  * @param        getCalc     See notes for same parameter in [[FocalOp]]
  *
  * @tparam       T           Return type of the Operation.
  */
-class FocalOp1[A,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A])
+class FocalOp1[A,T](r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors],a:Op[A])
                    (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization1[A])
-extends FocalOperation1[A,T](r,n,a){
+extends FocalOperation1[A,T](r,n,tns,a){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
@@ -47,16 +50,17 @@ extends FocalOperation1[A,T](r,n,a){
  *
  * @param        r           Raster the focal operation will run against.
  * @param        n           Neighborhood to use with this focal operation.
+ * @param        tns         TileNeighbors that describe the neighboring tiles.
  * @param        a           Argument of type A.
  * @param        b           Argument of type B.
  * @param        getCalc     See notes for same parameter in [[FocalOp]]
  *
  * @tparam       T           Return type of the Operation.
  */
-class FocalOp2[A,B,T](r:Op[Raster],n:Op[Neighborhood],
+class FocalOp2[A,B,T](r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors],
                       a:Op[A],b:Op[B])
                      (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization2[A,B])
-extends FocalOperation2[A,B,T](r,n,a,b){
+extends FocalOperation2[A,B,T](r,n,tns,a,b){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
@@ -65,6 +69,7 @@ extends FocalOperation2[A,B,T](r,n,a,b){
  *
  * @param        r           Raster the focal operation will run against.
  * @param        n           Neighborhood to use with this focal operation.
+ * @param        tns         TileNeighbors that describe the neighboring tiles.
  * @param        a           Argument of type A.
  * @param        b           Argument of type B.
  * @param        c           Argument of type C.
@@ -72,10 +77,10 @@ extends FocalOperation2[A,B,T](r,n,a,b){
  *
  * @tparam       T           Return type of the Operation.
  */
-class FocalOp3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],
+class FocalOp3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors],
                         a:Op[A],b:Op[B],c:Op[C])
                        (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization3[A,B,C])
-extends FocalOperation3[A,B,C,T](r,n,a,b,c){
+extends FocalOperation3[A,B,C,T](r,n,tns,a,b,c){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
@@ -84,6 +89,7 @@ extends FocalOperation3[A,B,C,T](r,n,a,b,c){
  *
  * @param        r           Raster the focal operation will run against.
  * @param        n           Neighborhood to use with this focal operation.
+ * @param        tns         TileNeighbors that describe the neighboring tiles.
  * @param        a           Argument of type A.
  * @param        b           Argument of type B.
  * @param        c           Argument of type C.
@@ -92,64 +98,105 @@ extends FocalOperation3[A,B,C,T](r,n,a,b,c){
  *
  * @tparam       T           Return type of the Operation.
  */
-class FocalOp4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],a:Op[A],b:Op[B],c:Op[C],d:Op[D])
+class FocalOp4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors],a:Op[A],b:Op[B],c:Op[C],d:Op[D])
                          (getCalc:(Raster,Neighborhood)=>FocalCalculation[T] with Initialization4[A,B,C,D])
-extends FocalOperation4[A,B,C,D,T](r,n,a,b,c,d){
+extends FocalOperation4[A,B,C,D,T](r,n,tns,a,b,c,d){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
-trait FocalOperation[T] extends Operation[T] with Cloneable {
-  type SELF <: FocalOperation[T] 
-  def setAnalysisArea(op:Operation[Option[RasterExtent]]) = {
-    val clone = this.makeClone()
-    clone.analysisAreaOp = op
-    clone
-  }
-  def makeClone() = {
-    super.clone().asInstanceOf[SELF]
-  }
-  var analysisAreaOp:Operation[Option[RasterExtent]] = Literal(None)
-  var rasterOp:Operation[Raster]
-  def tiledOp():Operation[T] = ???
+case class AnalysisArea(colMin:Int, rowMin:Int, colMax:Int, rowMax:Int, rasterExtent:RasterExtent)
+
+object AnalysisArea {
+  def apply(r:Raster,reOpt:Option[RasterExtent]):AnalysisArea = 
+    reOpt match {
+      case None => {
+        AnalysisArea(0, 0, r.cols - 1, r.rows - 1, r.rasterExtent)
+      }
+      case Some(re) => {
+        val inputRE = r.rasterExtent
+        val e = re.extent
+        // calculate our bounds in terms of parent bounds
+        if (re.cellwidth != inputRE.cellwidth || re.cellheight != inputRE.cellheight) {
+          throw new Exception("Cell size of analysis area must match the input raster")
+        }
+        
+        // translate the upper-left (xmin/ymax) and lower-right (xmax/ymin) points
+        val GridBounds(colMin,rowMin,colMax,rowMax) = inputRE.gridBoundsFor(e)
+        AnalysisArea(colMin, rowMin, colMax, rowMax, re)
+      }
+    }  
+
+  def apply(r:Raster):AnalysisArea = apply(r,None)
 }
 
-trait CanTile { self : FocalOperation[Raster] =>
-  override def tiledOp():Operation[Raster] = TileFocalOp( this.rasterOp, this )
+object TileWithNeighbors {
+  def apply(r:Raster,neighbors:Seq[Option[Raster]]) = 
+    if(neighbors.isEmpty) {
+      r
+    } else {
+      val re =
+        neighbors.flatten
+          .map(_.rasterExtent)
+          .reduceLeft((re1,re2) => re1.combine(re2))
+
+      val tileCols = 1 +
+      // East Column
+      neighbors.slice(1,4).map { case Some(_) => 1; case None => 0 }.reduce(_*_) +
+      // West Column
+      neighbors.slice(5,8).map { case Some(_) => 1; case None => 0 }.reduce(_*_)
+
+      val tileRows = 1 +
+      // North Row
+        (neighbors(7) :: neighbors.slice(0,2).toList).map { case Some(_) => 1; case None => 0 }.reduce(_*_) +
+      // South Row
+      neighbors.slice(3,6).map { case Some(_) => 1; case None => 0 }.reduce(_*_)
+
+      val nTileLayout = TileLayout(tileCols, tileRows, r.rasterExtent.cols, r.rasterExtent.rows)
+
+      Raster(new TileArrayRasterData(Array(
+        neighbors(7),
+        neighbors(0),
+        neighbors(1),
+        neighbors(6),
+        Some(r),
+        neighbors(2),
+        neighbors(5),
+        neighbors(4),
+        neighbors(3)
+      ).flatten, nTileLayout),re)
+    }
 }
+
+trait FocalOperation[T] extends Operation[T]
 
 /**
  * Base class for a focal operation that takes a raster and a neighborhood.
  *
  * @param        r           Raster the focal operation will run against.
  * @param        n           Neighborhood to use with this focal operation.
+ * @param        tns         TileNeighbors that describe the neighboring tiles.
  *
  * @tparam       T           Return type of the Operation.
  */
-abstract class FocalOperation0[T](r:Op[Raster],n:Op[Neighborhood]) 
+abstract class FocalOperation0[T](r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) 
          extends FocalOperation[T] {
-  var rasterOp:Operation[Raster] = r
-  def _run(context:Context) = runAsync(List('init,rasterOp,n,analysisAreaOp))
+  def _run(context:Context) = runAsync(List('init,r,n,tns.flatMap(_.getNeighbors)))
   def productArity = 3
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation0[_]]
-  def productElement(n:Int) = n match {
+  def productElement(index:Int) = index match {
     case 0 => r
     case 1 => n
-    case 2 => analysisAreaOp
+    case 2 => tns
     case _ => new IndexOutOfBoundsException()
   }
 
 
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {
-    case 'init :: (r:Raster) :: (n:Neighborhood) :: (_reOpt:Option[_]) :: Nil =>  {
-      if (r.isTiled && _reOpt == None) {
-        AndThen(this.tiledOp())
-      } else {
-        val reOpt = _reOpt.asInstanceOf[Option[RasterExtent]]
-        val calc = getCalculation(r,n)
-        calc.init(r, reOpt)
-        calc.execute(r,n,reOpt)
-        Result(calc.result)
-      }
+    case 'init :: (r:Raster) :: (n:Neighborhood) :: (reOpt:Option[_]) :: (neighbors:Seq[_]) :: Nil =>  {
+      val calc = getCalculation(r,n)
+      calc.init(r)
+      calc.execute(r,n,neighbors.asInstanceOf[Seq[Option[Raster]]])
+      Result(calc.result)
     }
   }
 
@@ -170,58 +217,34 @@ abstract class FocalOperation0[T](r:Op[Raster],n:Op[Neighborhood])
   def getCalculation(r:Raster,n:Neighborhood):FocalCalculation[T] with Initialization 
 }
 
-case class AnalysisArea(colMin:Int, rowMin:Int, colMax:Int, rowMax:Int, rasterExtent:RasterExtent)
-
-object FocalOperation {
-  def calculateAnalysisArea(r:Raster,reOpt:Option[RasterExtent]) = 
-    reOpt match {
-      case None => {
-        AnalysisArea(0, 0, r.cols - 1, r.rows - 1, r.rasterExtent)
-      }
-      case Some(re) => {
-        val inputRE = r.rasterExtent
-        val e = re.extent
-        // calculate our bounds in terms of parent bounds
-        if (re.cellwidth != inputRE.cellwidth || re.cellheight != inputRE.cellheight) {
-          throw new Exception("Cell size of analysis area must match the input raster")
-        }
-        
-        // translate the upper-left (xmin/ymax) and lower-right (xmax/ymin) points
-        val GridBounds(colMin,rowMin,colMax,rowMax) = inputRE.gridBoundsFor(e)
-        AnalysisArea(colMin, rowMin, colMax, rowMax, re)
-      }
-    }  
-}
-
 /**
  * Base class for a focal operation that takes a raster, a neighborhood, and one other argument.
  *
  * @param        r           Raster the focal operation will run against.
  * @param        n           Neighborhood to use with this focal operation.
+ * @param        tns         TileNeighbors that describe the neighboring tiles.
  * @param        a           Argument of type A.
- * @param        b           Argument of type B.
  *
  * @tparam       T           Return type of the Operation.
  */
-abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood],
-                                    a:Op[A]) 
-extends FocalOperation[T] {
+abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood], tns:Op[TileNeighbors], a:Op[A]) 
+    extends FocalOperation[T] {
   var rasterOp = r
-  def _run(context:Context) = runAsync(List('init,rasterOp,n,a,analysisAreaOp))
-  def productArity = 3
+  def _run(context:Context) = runAsync(List('init,rasterOp,n,tns.flatMap(_.getNeighbors),a))
+  def productArity = 4
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation1[_,_]]
-  def productElement(n:Int) = n match {
+  def productElement(index:Int) = index match {
     case 0 => r
     case 1 => n
-    case 2 => a 
+    case 2 => tns
+    case 3 => a
     case _ => new IndexOutOfBoundsException()
   }
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {
-    case 'init :: (r:Raster) :: (n:Neighborhood) :: a :: (_analysisArea:Option[_]) :: Nil => 
-      val analysisArea = _analysisArea.asInstanceOf[Option[RasterExtent]]
+    case 'init :: (r:Raster) :: (n:Neighborhood) :: (neighbors:Seq[_]) :: a :: Nil => 
       val calc = getCalculation(r,n)
-      calc.init(r,a.asInstanceOf[A],analysisArea)
-      calc.execute(r,n,analysisArea)
+      calc.init(r,a.asInstanceOf[A])
+      calc.execute(r,n,neighbors.asInstanceOf[Seq[Option[Raster]]])
       Result(calc.result)
   }
 
@@ -247,35 +270,34 @@ extends FocalOperation[T] {
  *
  * @param        r           Raster the focal operation will run against.
  * @param        n           Neighborhood to use with this focal operation.
+ * @param        tns         TileNeighbors that describe the neighboring tiles.
  * @param        a           Argument of type A.
  * @param        b           Argument of type B.
  *
  * @tparam       T           Return type of the Operation.
  */
-abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],
+abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors],
                                       a:Op[A],b:Op[B])
          extends FocalOperation[T] {
   var rasterOp = r
-  def _run(context:Context) = runAsync(List('init,rasterOp,n,a,b,analysisAreaOp))
+  def _run(context:Context) = runAsync(List('init,rasterOp,n,tns.flatMap(_.getNeighbors),a,b))
   def productArity = 5
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation2[_,_,_]]
-  def productElement(n:Int) = n match {
+  def productElement(index:Int) = index match {
     case 0 => r
     case 1 => n
-    case 2 => a
-    case 3 => b
+    case 2 => tns
+    case 3 => a
+    case 4 => b
     case _ => new IndexOutOfBoundsException()
   }
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {
-    case 'init :: (r:Raster) :: (n:Neighborhood) :: a :: b :: (_analysisArea:Option[_]) :: Nil => 
-      val analysisArea = _analysisArea.asInstanceOf[Option[RasterExtent]]
+    case 'init :: (r:Raster) :: (n:Neighborhood) :: (neighbors:Seq[_]) :: a :: b :: Nil => 
       val calc = getCalculation(r,n)
       calc.init(r,
                 a.asInstanceOf[A],
-                b.asInstanceOf[B],
-                analysisArea
-      )
-      calc.execute(r,n,analysisArea)
+                b.asInstanceOf[B])
+      calc.execute(r,n,neighbors.asInstanceOf[Seq[Option[Raster]]])
       Result(calc.result)
   }
 
@@ -301,36 +323,36 @@ abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],
  *
  * @param        r           Raster the focal operation will run against.
  * @param        n           Neighborhood to use with this focal operation.
+ * @param        tns         TileNeighbors that describe the neighboring tiles.
  * @param        a           Argument of type A.
  * @param        b           Argument of type B.
  * @param        c           Argument of type C.
  *
  * @tparam       T           Return type of the Operation.
  */
-abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],
+abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors],
                                         a:Op[A],b:Op[B],c:Op[C]) 
          extends FocalOperation[T] {
   var rasterOp:Operation[Raster] = r 
-  def _run(context:Context) = runAsync(List('init,rasterOp,n,a,b,c,analysisAreaOp))
+  def _run(context:Context) = runAsync(List('init,rasterOp,n,tns.flatMap(_.getNeighbors),a,b,c))
   def productArity = 5
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation3[_,_,_,_]]
-  def productElement(n:Int) = n match {
+  def productElement(index:Int) = index match {
     case 0 => r
     case 1 => n
-    case 2 => a
-    case 3 => b
-    case 4 => c
+    case 2 => tns
+    case 3 => a
+    case 4 => b
+    case 5 => c
     case _ => new IndexOutOfBoundsException()
   }
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {
-    case 'init :: (r:Raster) :: (n:Neighborhood) :: a :: b :: c :: (_analysisArea:Option[_]) :: Nil => 
-      val analysisArea = _analysisArea.asInstanceOf[Option[RasterExtent]]
+    case 'init :: (r:Raster) :: (n:Neighborhood) :: (neighbors:Seq[_]) :: a :: b :: c :: Nil => 
       val calc = getCalculation(r,n)
       calc.init(r,a.asInstanceOf[A],
                 b.asInstanceOf[B],
-                c.asInstanceOf[C],
-                analysisArea)
-      calc.execute(r,n,analysisArea)
+                c.asInstanceOf[C])
+      calc.execute(r,n,neighbors.asInstanceOf[Seq[Option[Raster]]])
       Result(calc.result)
   }
   
@@ -356,6 +378,7 @@ abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],
  *
  * @param        r           Raster the focal operation will run against.
  * @param        n           Neighborhood to use with this focal operation.
+ * @param        tns         TileNeighbors that describe the neighboring tiles.
  * @param        a           Argument of type A.
  * @param        b           Argument of type B.
  * @param        c           Argument of type C.
@@ -363,32 +386,31 @@ abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],
  *
  * @tparam       T           Return type of the Operation.
  */
-abstract class FocalOperation4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],
+abstract class FocalOperation4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors],
                                           a:Op[A],b:Op[B],c:Op[C],d:Op[D])
          extends FocalOperation[T] {
   var rasterOp = r
-  def _run(context:Context) = runAsync(List('init,rasterOp,n,a,b,c,d,analysisAreaOp))
+  def _run(context:Context) = runAsync(List('init,rasterOp,n,tns.flatMap(_.getNeighbors),a,b,c,d))
   def productArity = 6
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation4[_,_,_,_,_]]
-  def productElement(n:Int) = n match {
+  def productElement(index:Int) = index match {
     case 0 => r
     case 1 => n
-    case 2 => a
-    case 3 => b
-    case 4 => c
-    case 5 => d
+    case 2 => tns
+    case 3 => a
+    case 4 => b
+    case 5 => c
+    case 6 => d
     case _ => new IndexOutOfBoundsException()
   }
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {
-    case 'init :: (r:Raster) :: (n:Neighborhood) :: a :: b :: c :: d :: (_analysisArea:Option[_]) :: Nil => 
-      val analysisArea = _analysisArea.asInstanceOf[Option[RasterExtent]]
+    case 'init :: (r:Raster) :: (n:Neighborhood) :: (neighbors:Seq[_]) :: a :: b :: c :: d :: Nil => 
       val calc = getCalculation(r,n)
       calc.init(r,a.asInstanceOf[A],
                   b.asInstanceOf[B],
                   c.asInstanceOf[C],
-                  d.asInstanceOf[D],
-                  analysisArea)
-      calc.execute(r,n,analysisArea)
+                  d.asInstanceOf[D])
+      calc.execute(r,n,neighbors.asInstanceOf[Seq[Option[Raster]]])
       Result(calc.result)
   }
   

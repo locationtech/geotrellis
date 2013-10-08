@@ -1,6 +1,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.raster.TileNeighbors
 
 /** Computes the sum of values of a neighborhood for a given raster 
  *
@@ -15,13 +16,17 @@ import geotrellis._
  *                  If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
  *                  the data values will be rounded to integers.
  */
-case class Sum(r:Op[Raster], n:Op[Neighborhood]) extends FocalOp[Raster](r,n)({ 
+case class Sum(r:Op[Raster], n:Op[Neighborhood],ns:Op[TileNeighbors]) extends FocalOp[Raster](r,n,ns)({ 
   (r,n) =>
     n match {
       case Square(ext) => new CellwiseSumCalc
       case _ => new CursorSumCalc
     }
-}) with CanTile
+})
+
+object Sum {
+  def apply(r:Op[Raster], n:Op[Neighborhood]) = new Sum(r,n,TileNeighbors.NONE)
+}
 
 class CursorSumCalc extends CursorCalculation[Raster] 
     with IntRasterDataResult {

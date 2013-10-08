@@ -98,7 +98,7 @@ object Tiler {
       rasters(ty * tileCols + tx) = Raster(data, tre)
     }
 
-    TileArrayRasterData(rasters, layout, src.rasterExtent)
+    TileArrayRasterData(rasters, layout)
   }
 
   /**

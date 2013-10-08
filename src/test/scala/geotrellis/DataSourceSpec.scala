@@ -36,6 +36,8 @@ class DataSourceSpec extends FunSpec
         .localSubtract(5)
 
       getSource(e2) match {
+//      getSource(r1.combine(r2)(_+_)) match {
+//      getSource(d1) match {
         case Complete(value,success) =>
           println(success.toString)
         case Error(msg,failure) =>
