@@ -40,15 +40,15 @@ object Cursor {
    *                      for extent and mask.
    * @param analysisArea  Analysis area
    */
-  def apply(r:Raster,n:Neighborhood,analysisArea:AnalysisArea) = {
+  def apply(r:Raster,n:Neighborhood,analysisArea:AnalysisArea):Cursor = {
     val result = new Cursor(r,analysisArea,n.extent)
     if(n.hasMask) { result.setMask(n.mask) }
     result
   }
 
-  def apply(r:Raster,extent:Int) = new Cursor(r,AnalysisArea(r),extent)
+  def apply(r:Raster,n:Neighborhood):Cursor =  apply(r,n,AnalysisArea(r))
 
-  
+  def apply(r:Raster,extent:Int):Cursor = new Cursor(r,AnalysisArea(r),extent)
 }
 
 /**

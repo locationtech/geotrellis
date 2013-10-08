@@ -95,7 +95,7 @@ case class Convolve(r:Op[Raster], k:Op[Kernel],tns:Op[TileNeighbors]) extends Fo
 })
 
 object Convolve {
- 
+  def apply(r:Op[Raster], k:Op[Kernel]):Convolve = Convolve(r,k,TileNeighbors.NONE)
 }
 
 /**

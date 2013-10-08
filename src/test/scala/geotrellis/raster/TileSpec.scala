@@ -93,7 +93,7 @@ class TileSpec extends FunSpec with MustMatchers
   // this is a tiled raster
   val layout = TileLayout(3, 3, 2, 2)
   val tiles = Array(r00, r10, r20, r01, r11, r21, r02, r12, r22)
-  val tileData = TileArrayRasterData(tiles, layout, g)
+  val tileData = TileArrayRasterData(tiles, layout)
   val tileRaster = Raster(tileData, g)
 
   // this is a really big normal raster

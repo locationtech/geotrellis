@@ -190,15 +190,18 @@ object CellwiseStrategy {
               n:Square,
               c:CellwiseCalculation[_], 
               tOpt:Option[TraversalStrategy], 
-              op:Seq[Option[Raster]]):Unit = ???
-
-  def execute(r:Raster,n:Square,calc:CellwiseCalculation[_],tOpt:Option[TraversalStrategy], reOpt:Option[RasterExtent]):Unit = tOpt match {
-      case None => execute(r,n,calc,ScanLine,reOpt)
-      case Some(t) => execute(r,n,calc,t,reOpt)
+              neighbors:Seq[Option[Raster]]):Unit = {
+    val analysisArea = AnalysisArea(r)
+    val t = tOpt match {
+      case None => ScanLine
+      case Some(tStrategy) => tStrategy
+    }
+    val rast = TileWithNeighbors(r,neighbors)
+    execute(rast,n,c,t,analysisArea)
   }
 
- def execute(r:Raster,n:Square,calc:CellwiseCalculation[_],t:TraversalStrategy=ScanLine,reOpt:Option[RasterExtent]=None):Unit = {
-    val analysisArea = AnalysisArea(r, reOpt)
+  def execute(r:Raster,n:Square,calc:CellwiseCalculation[_],t:TraversalStrategy,analysisArea:AnalysisArea):Unit = {
+    val analysisArea = AnalysisArea(r)
     t match {
       case _ => handleScanLine(r,n.extent,calc,analysisArea)
     }

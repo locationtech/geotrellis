@@ -35,3 +35,7 @@ case class Conway(r:Op[Raster],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,
     def reset() = { count = 0 }
   }
 })
+
+object Conway {
+  def apply(r:Op[Raster]):Conway = new Conway(r, TileNeighbors.NONE)
+}

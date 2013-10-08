@@ -192,7 +192,7 @@ abstract class FocalOperation0[T](r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNei
 
 
   val nextSteps:PartialFunction[Any,StepOutput[T]] = {
-    case 'init :: (r:Raster) :: (n:Neighborhood) :: (reOpt:Option[_]) :: (neighbors:Seq[_]) :: Nil =>  {
+    case 'init :: (r:Raster) :: (n:Neighborhood) :: (neighbors:Seq[_]) :: Nil =>  {
       val calc = getCalculation(r,n)
       calc.init(r)
       calc.execute(r,n,neighbors.asInstanceOf[Seq[Option[Raster]]])
