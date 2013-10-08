@@ -38,13 +38,17 @@ object Cursor {
    * @param    r          Raster the [[Cursor]] will be for.
    * @param    n          Neighborhood this [[Cursor]] will be based on,
    *                      for extent and mask.
-   * @param    reOpt      Raster extent that represents the analysis area for the operation.
+   * @param analysisArea  Analysis area
    */
-  def apply(r:Raster,n:Neighborhood,reOpt:Option[RasterExtent]=None) = {
-    val result = new Cursor(r,n.extent,reOpt)
+  def apply(r:Raster,n:Neighborhood,analysisArea:AnalysisArea):Cursor = {
+    val result = new Cursor(r,analysisArea,n.extent)
     if(n.hasMask) { result.setMask(n.mask) }
     result
   }
+
+  def apply(r:Raster,n:Neighborhood):Cursor =  apply(r,n,AnalysisArea(r))
+
+  def apply(r:Raster,extent:Int):Cursor = new Cursor(r,AnalysisArea(r),extent)
 }
 
 /**
@@ -52,15 +56,13 @@ object Cursor {
  * neighborhood.
  *
  * @param      r                     Raster that this cursor runs over
- * @param      re                    Optional analysis area
+ * @param      analysisArea          Analysis area
  * @param      ext                   The distance from the focus that the
  *                                   bounding box of this cursor extends.
  *                                   e.g. if the bounding box is 9x9, then
  *                                   the distance from center is 1.
  */
-class Cursor(r:Raster,  val extent:Int, reOpt:Option[RasterExtent] = None) {
-  val analysisArea = FocalOperation.calculateAnalysisArea(r, reOpt)
-
+class Cursor(r:Raster, analysisArea:AnalysisArea, val extent:Int) {
   private val rows = r.rasterExtent.rows
   private val cols = r.rasterExtent.cols
 
@@ -367,7 +369,6 @@ class Cursor(r:Raster,  val extent:Int, reOpt:Option[RasterExtent] = None) {
             mask.foreachEastColumn { y =>
               val yRaster = y+(_row-extent)
               if(0 <= yRaster && yRaster < cols) {
-
                 f(removedCol,yRaster)
               }
             }

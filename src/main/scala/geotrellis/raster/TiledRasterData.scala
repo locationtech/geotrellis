@@ -231,7 +231,7 @@ case class TileSetRasterData(basePath:String,
 
   def asTileArray:TileArrayRasterData = {
     val re = loader.rasterExtent
-    TileArrayRasterData(getTiles(re).toArray,tileLayout,re)
+    TileArrayRasterData(getTiles(re).toArray,tileLayout)
   }
 }
 
@@ -241,8 +241,9 @@ case class TileSetRasterData(basePath:String,
  * Rasters.
  */
 class TileArrayRasterData(val tiles:Array[Raster],
-                          val tileLayout:TileLayout,
-                          val rasterExtent:RasterExtent) extends TiledRasterData  with Serializable {
+                          val tileLayout:TileLayout// ,
+                          // val rasterExtent:RasterExtent
+) extends TiledRasterData  with Serializable {
   val typ = tiles(0).data.getType
   def alloc(cols:Int, rows:Int) = RasterData.allocByType(typ, cols, rows)
   def getType = typ 
@@ -263,11 +264,14 @@ class TileArrayRasterData(val tiles:Array[Raster],
 }
 
 object TileArrayRasterData {
-  def apply(tiles:Array[Raster], tileLayout:TileLayout, rasterExtent:RasterExtent) =
-    new TileArrayRasterData(tiles, tileLayout, rasterExtent)
+  def apply(tiles:Array[Raster], tileLayout:TileLayout// , rasterExtent:RasterExtent
+  ) =
+    new TileArrayRasterData(tiles, tileLayout// , rasterExtent
+    )
 
   def apply(r:Raster) = 
-    new TileArrayRasterData(Array(r), TileLayout(1,1,r.cols,r.rows), r.rasterExtent)
+    new TileArrayRasterData(Array(r), TileLayout(1,1,r.cols,r.rows)// , r.rasterExtent
+    )
 }
 
 object LazyTiledWrapper {

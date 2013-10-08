@@ -140,18 +140,21 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
    * the value at the focus is added in place of out-of-border neighborhood
    * values.
    *
-   * @param     r       Raster to execute against.
-   * @param     n       Neighborhood used (must be [[Square]] with dimension 1)
+   * @param     raster        Raster to execute against.
+   * @param     n             Neighborhood used (must be [[Square]] with dimension 1)
+   * @param     neighbors     Neighboring tiles
    * 
-   * @note              Assumes a [[Square]](1) neighborhood.
-   * @note              All values in the neighborhood that are outside the raster grid
-   *                    are counted as having the focal value. Note that in the case
-   *                    the cell is outside the analysis area, but still inside the raster,
-   *                    the raster value will still be used.
+   * @note                    Assumes a [[Square]](1) neighborhood.
+   * @note                    All values in the neighborhood that are outside the raster grid
+   *                          are counted as having the focal value. Note that in the case
+   *                          the cell is outside the analysis area, but still inside the raster,
+   *                          the raster value will still be used.
    *
    */
-  def execute(r:Raster,n:Neighborhood,reOpt:Option[RasterExtent]):Unit = {
-    val analysisArea = FocalOperation.calculateAnalysisArea(r,reOpt)
+  def execute(raster:Raster,n:Neighborhood,neighbors:Seq[Option[Raster]]):Unit = {
+    val analysisArea = AnalysisArea(raster)
+    val r = TileWithNeighbors(raster,neighbors)
+
     val colMax = analysisArea.colMax
     val colBorderMax = r.cols - 1
     val rowMax = analysisArea.rowMax

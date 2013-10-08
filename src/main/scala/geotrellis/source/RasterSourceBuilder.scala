@@ -5,9 +5,10 @@ import geotrellis.raster._
 
 class RasterSourceBuilder extends SourceBuilder[Raster,RasterSource] {
   var _dataDefinition:Op[RasterDefinition] = null
+  var _ops:Op[Seq[Op[Raster]]] = null
 
   def setOp(op: Op[Seq[Op[Raster]]]): this.type = {
-    this.setRasterDefinition(SetTilesOnRasterDefinition(_dataDefinition, op))
+    _ops = op
     this 
   }
 
@@ -16,14 +17,9 @@ class RasterSourceBuilder extends SourceBuilder[Raster,RasterSource] {
     this
   }
 
-  def result = new RasterSource(_dataDefinition)
+  def result = new RasterSource(_dataDefinition,_ops)
 
 }
-
-case class SetTilesOnRasterDefinition(rasterDefinition:Op[RasterDefinition], opSeq:Op[Seq[Op[Raster]]])
-       extends Op2(rasterDefinition,opSeq) ({
-         (dfn, opSeq) =>  Result(dfn.setTiles(opSeq))
-       })
 
 object RasterSourceBuilder {
   def apply(rasterSource:RasterSource) = {

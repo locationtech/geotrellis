@@ -1,6 +1,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.raster._
 
 import Angles._
 
@@ -26,11 +27,15 @@ import Angles._
   * [[http://goo.gl/JCnNP Geospatial Analysis - A comprehensive guide]]
   * (Smit, Longley, and Goodchild)
   */
-case class Aspect(r:Op[Raster]) extends FocalOp[Raster](r,Square(1))({
+case class Aspect(r:Op[Raster],neighbors:Op[TileNeighbors]) 
+    extends FocalOp[Raster](r,Square(1),neighbors)({
   (r,n) => new SurfacePointCalculation[Raster] with DoubleRasterDataResult {
     def setValue(x:Int,y:Int,s:SurfacePoint) {
       data.setDouble(x,y,degrees(s.aspect))
     }
   }
-}) with FocalOperation[Raster] with CanTile
+}) with FocalOperation[Raster]
 
+object Aspect {
+  def apply(r:Op[Raster]):Aspect = Aspect(r,Literal(TileNeighbors.NONE))
+}
