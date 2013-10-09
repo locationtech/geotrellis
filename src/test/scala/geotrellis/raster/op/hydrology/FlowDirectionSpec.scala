@@ -14,10 +14,8 @@ class FlowDirectionSpec extends FunSpec with ShouldMatchers
                                         with TestServer 
                                         with RasterBuilders {
   describe("FlowDirection") {
-    /*
-     * Note: Sinks are not autmatically filled, so sinks are always going to have NODATA for direction
-     */ 
 
+    // Note: Sinks are not autmatically filled, so sinks are always going to have NODATA for direction
     it("should match computed elevation raster") {
       val ncols = 6
       val nrows = 6

@@ -6,13 +6,14 @@ import scala.math._
 
 
 object FlowDirection {
-
+	// Determine flow direction of the cell at (c,r) in raster
 	def flow(c:Int, r:Int, raster:Raster) = {
 		val neighbors = getNeighbors(c, r, raster)
 		val max = neighbors.values.max
 		neighbors.filter { case(_,v) => v == max }.keys.reduce(_+_)
 	}
 
+	// returns a map of available immediate neighbors and their drop in elevation from cell
 	def getNeighbors(c:Int, r:Int, raster:Raster):Map[Int, Double] = {
 		val center = raster.get(c, r)
 		val ncols = raster.cols
@@ -47,13 +48,26 @@ object FlowDirection {
 
 	}
 
+	// determines whether the cell at (c,r) in raster is a sink
 	def isSink(c:Int,r:Int,raster:Raster) = {
 		getNeighbors(c,r,raster).values.foldLeft(true)( _ && _ < 0)
 	}
 }
 
 /**
- *  Operation to compute flow direction from elevation raster
+ *  Operation to compute a flow direction raster from an elevation raster
+ *  
+ *  The directional encoding is from:
+ *    Greenlee, D. D. 1987. "Raster and Vector Processing for Scanned Linework."
+ *    Photogrammetric Engineering and Remote Sensing (ISSN 0099-1112), vol. 53, Oct. 1987, p. 1383-1387.
+ *  
+ *  The direction of flow is towards the neighboring cell with the largest drop in elevation. If two 
+ *	or more cells have the same drop in elevation, their directional values are added together. The
+ *  8-bit encoding of the direction preserves the multi-directional property.
+ *  
+ *  Sinks, cells which have no drop in elevation towards any neighbor, have no direction of flow.
+ *
+ *  @param        raster           Elevation raster the operation will run against. 
  */
 
 case class FlowDirection(raster:Op[Raster]) extends Op1(raster)({
@@ -66,9 +80,9 @@ case class FlowDirection(raster:Op[Raster]) extends Op1(raster)({
 			var c = 0
 			while (c < ncols) {
 				if (raster.get(c,r) == NODATA || (FlowDirection.isSink(c,r,raster))) {
-					data.set(c, r, NODATA)
+					data.set(c,r,NODATA)
 				} else {
-					data.set(c, r, FlowDirection.flow(c,r,raster))
+					data.set(c,r,FlowDirection.flow(c,r,raster))
 				}				
 				c = c + 1
 			}
