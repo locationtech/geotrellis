@@ -10,5 +10,5 @@ import geotrellis.statistics._
  * Represents a data source that may be distributed across machines (logical data source) 
  * or loaded in memory on a specific machine. 
   */
-trait DataSource[+T,V] extends DataSourceLike[T,V,DataSource[T,V]] {
+trait DataSource[+T,+V] extends DataSourceLike[T,V,DataSource[T,V]] {
 }

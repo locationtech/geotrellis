@@ -26,7 +26,7 @@ object CanBuildSourceFrom  extends LowerPriorityImplicits {
       RasterSourceBuilder(rasterSrc)
   }
 
-  implicit def canBuildValueFromValueSource[E]:CanBuildSourceFrom[ValueDataSource[_], E, ValueDataSource[E]] = new CanBuildSourceFrom[ValueDataSource[_], E, ValueDataSource[E]] {
+  implicit def canBuildValueFromValueSource[E:Manifest]:CanBuildSourceFrom[ValueDataSource[_], E, ValueDataSource[E]] = new CanBuildSourceFrom[ValueDataSource[_], E, ValueDataSource[E]] {
     def apply() = new ValueDataSourceBuilder[E]()
     def apply(ds:ValueDataSource[_]) = new ValueDataSourceBuilder[E]()
   }

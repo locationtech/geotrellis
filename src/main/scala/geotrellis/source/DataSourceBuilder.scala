@@ -10,7 +10,7 @@ case class DataSourceBuilder[E,V](convergeFunction:(Op[Seq[Op[E]]]) => Op[V]) ex
 
   def result = new DataSource[E,V] {
     val elements = _dataDefinition
-    def get()(implicit mf:Manifest[V]) = convergeFunction(elements)
+    def get() = convergeFunction(elements)
   }
 
   def setOp(op: Op[Seq[Op[E]]]): this.type = {
