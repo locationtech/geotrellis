@@ -19,6 +19,7 @@ object FlowDirection {
 		val ncols = raster.cols
 		val nrows = raster.rows
 
+		// weights to be applied to drop in elevation towards the neighbours
 		val distances = Map[Int, Double](
 			1 -> 1,
 			2 -> sqrt(2),
@@ -29,6 +30,7 @@ object FlowDirection {
 			64 -> 1,
 			128 -> sqrt(2))
 
+		// coordinates of the 8 neighbours
 		val map = Map[Int, (Int, Int)](
 			1 -> (c+1,r),
 			2 -> (c+1,r+1),
