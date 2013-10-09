@@ -13,7 +13,7 @@ object LoadRasterUrl {
 case class LoadRasterUrl(url:Op[String],re:Op[Option[RasterExtent]]) extends Operation[Raster] {
   def _run(context:Context) = runAsync(List(url,re,context))
   val nextSteps:Steps = {
-    case (url:String) :: (re:Option[RasterExtent]) ::(context:Context) :: Nil =>
-      Result(context.getRasterUrl(url, re))
+    case (url:String) :: (re:Option[_]) ::(context:Context) :: Nil =>
+      Result(context.getRasterUrl(url, re.asInstanceOf[Option[RasterExtent]]))
   }
 }

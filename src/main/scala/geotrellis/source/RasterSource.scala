@@ -8,7 +8,6 @@ import geotrellis.raster._
 class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps:Op[Seq[Op[Raster]]]) extends  RasterSourceLike[RasterSource] {
   def elements = tileOps
   val rasterDefinition = rasterDef
-  def converge = ValueDataSource(get)
 }
 
 object RasterSource {
