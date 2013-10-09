@@ -53,7 +53,7 @@ object FlowDirection {
 }
 
 /**
- *  Operation to compute flow direction from elseevation raster
+ *  Operation to compute flow direction from elevation raster
  */
 
 case class FlowDirection(raster:Op[Raster]) extends Op1(raster)({
