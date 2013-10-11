@@ -37,7 +37,6 @@ class FlowDirectionSpec extends FunSpec with ShouldMatchers
                             ncols,nrows)
       val m_raster = Raster(m, r_extent)
       val e_computed = FlowDirection(e_raster)
-      
       assertEqual(e_computed, m_raster)
     }
 
@@ -56,7 +55,6 @@ class FlowDirectionSpec extends FunSpec with ShouldMatchers
                             ncols,nrows)
       val m_raster = Raster(m, r_extent)
       val e_computed = FlowDirection(e_raster)
-      
       assertEqual(e_computed, m_raster)
     }
 
@@ -75,7 +73,6 @@ class FlowDirectionSpec extends FunSpec with ShouldMatchers
                             ncols,nrows)
       val m_raster = Raster(m, r_extent)
       val e_computed = FlowDirection(e_raster)
-      
       assertEqual(e_computed, m_raster)
     }
 
