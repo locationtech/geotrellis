@@ -35,6 +35,7 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
     result
   }
 
+  def distribute(cluster:akka.actor.ActorRef) = this mapOp (RemoteOperation(_, cluster))
   def reduce[T1 >: T](reducer:(T1,T1) => T1)(implicit mf:Manifest[T1]):ValueDataSource[T1] = 
     ValueDataSource( logic.Collect(elements) map (_.reduce(reducer)) )
 

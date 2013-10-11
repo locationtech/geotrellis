@@ -1,5 +1,6 @@
 package geotrellis.process.actors
 
+import geotrellis._
 import geotrellis.process._
 import akka.actor._
 
@@ -25,8 +26,11 @@ case class ServerActor(server: Server) extends Actor {
       dispatcher ! RunOperation(op, 0, msgSender, None)
     }
  
-    case msg:RunOperation[_] => { 
-      dispatcher ! msg
+    case msg:RunOperation[_] => {
+      msg match {
+        case RunOperation(RemoteOperation(_,cluster), _, _, _)  => cluster ! msg
+        case _ => dispatcher ! msg
+      }
     }
 
     case RunDispatched(op,childDispatcher) => {
