@@ -1,74 +1,81 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
-import geotrellis.logic.{RasterDualMapIfSet=>DualMapIfSet}
+import geotrellis.source._
 
 /**
  * Subtracts values.
  */
 object Subtract {
-  /** Subtracts the second Int input value from the first.*/
-  def apply(x:Op[Int], y:Op[Int]) = logic.Do2(x, y)((x, y) => x - y)
+  /** Subtract a constant value from each cell.*/
+  def apply(r:Op[Raster], c:Op[Int]):Op[Raster] = 
+    (r,c).map { (r,c) => r.dualMapIfSet(_ - c)(_ - c) }
+         .withName("Subtract[ConstantInt]")
 
-  /** Subtracts the second Double input value from the first.*/
-  def apply(x:Op[Double], y:Op[Double])(implicit d: DummyImplicit) = logic.Do2(x, y)((x, y) => x - y)
+  /** Subtract a double constant value from each cell.*/
+  def apply(r:Op[Raster], c:Op[Double])(implicit d:DI):Op[Raster] = 
+    (r,c).map { (r,c) => r.dualMapIfSet({i:Int=>(i - c).toInt})(_ - c) }
+         .withName("Subtract[ConstantDouble]")
 
-  /** Subtract a constant value from each cell. See [[SubtractConstant]]*/
-  def apply(r:Op[Raster], c:Op[Int]) = SubtractConstant(r, c)
+  /** Subtract each value of a cell from a constant value. */
+  def apply(c:Op[Int],r:Op[Raster])(implicit d:DI,d2:DI,d3:DI):Op[Raster] = 
+    (r,c).map { (r,c) => r.dualMapIfSet(c - _)(c - _) }
+         .withName("Subtract[FromConstantInt]")
 
-  /** Subtract a double constant value from each cell. See [[SubtractDoubleConstant]]*/
-  def apply(r:Op[Raster], c:Op[Double]) = SubtractDoubleConstant(r, c)
+  /** Subtract each value of a cell from a double constant value. */
+  def apply(c:Op[Double],r:Op[Raster])(implicit d:DI,d2:DI,d3:DI,d4:DI):Op[Raster] = 
+    (r,c).map { (r,c) => r.dualMapIfSet({i:Int=>(i - c).toInt})(_ - c) }
+         .withName("Subtract[FromConstantDouble]")
 
-  /** Subtract the value of each cell from a constant. [[SubtractConstantBy]]*/
-  def apply(c:Op[Int], r:Op[Raster]) = SubtractConstantBy(c, r)
+  /** Subtract the values of each cell in each raster. */
+  def apply(r1:Op[Raster],r2:Op[Raster])(implicit d:DI,d2:DI,d3:DI,d4:DI,d5:DI):Op[Raster] = 
+    (r1,r2).map(subtractRasters)
+           .withName("Subtract[Rasters]")
 
-  /** Subtract the value of each cell from a double constant. [[SubtractDoubleConstantBy]]*/
-  def apply(c:Op[Double], r:Op[Raster]) = SubtractDoubleConstantBy(c, r)
+  def apply(rs:Seq[Op[Raster]])(implicit d:DI):Op[Raster] = 
+    rs.mapOps(_.reduce(subtractRasters))
+      .withName("Subtract[Rasters]")
 
-  /** Subtract each value in the second raster from the corresponding value in the first raster.
-   * See [[SubtractRaster]] */
-  def apply(r1:Op[Raster], r2:Op[Raster]) = SubtractRaster(r1, r2)
+  def apply(rs:Op[Seq[Op[Raster]]]):Op[Raster] = 
+    rs.flatMap { seq:Seq[Op[Raster]] => apply(seq:_*) }
+      .withName("Subtract[Rasters]")
+
+  def apply(rs:Op[Raster]*):Op[Raster] = 
+    apply(rs)
+
+  def subtractRasters(r1:Raster,r2:Raster) = 
+    r1.dualCombine(r2)({
+      (a, b) =>
+      if (a == NODATA) b
+      else if (b == NODATA) a
+      else a - b
+    })({
+      (a, b) =>
+      if (java.lang.Double.isNaN(a)) b
+      else if (java.lang.Double.isNaN(b)) a
+      else a - b
+    })
 }
 
-/**
- * Subtract a constant value from each cell.
- */
-case class SubtractConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c)({
-  (r, c) => Result(r.dualMapIfSet(_ - c)(_ - c))
-})
-
-/**
- * Subtract a Double constant value from each cell.
- */
-case class SubtractDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r, c)({
-  (r, c) => Result(r.dualMapIfSet({i:Int => (i - c).toInt})(_ - c))
-})
-
-/**
- * Subtract the value of each cell from a constant.
- */
-case class SubtractConstantBy(c:Op[Int], r:Op[Raster]) extends Op2(c, r)({
-  (c, r) => Result(r.dualMapIfSet(c - _)(c - _))
-})
-
-/**
- * Subtract the value of each cell from a constant.
- */
-case class SubtractDoubleConstantBy(c:Op[Double], r:Op[Raster]) extends Op2(c, r)({
-  (c, r) => Result(r.dualMapIfSet({i:Int => (c-i).toInt})(c - _))
-})
-
-/**
- * Subtract each value in the second raster from the corresponding value in the first raster.
- */
-case class SubtractRaster(r1:Op[Raster], r2:Op[Raster]) extends Op2(r1,r2)({
-  (r1,r2) => Result(r1.dualCombine(r2) ((z1:Int, z2:Int) => {
-      if (z1 == NODATA) z2
-      else if (z2 == NODATA) z1
-      else z1 - z2
-    }) ((z1:Double, z2:Double) => {
-    if (java.lang.Double.isNaN(z1)) z2
-    else if (java.lang.Double.isNaN(z2)) z1
-    else z1 - z2
-    }))
-})
+trait SubtractOpMethods[+Repr <: RasterSource] { self: Repr =>
+  /** Subtract a constant value from each cell.*/
+  def localSubtract(i: Int) = self.mapOp(Subtract(_, i))
+  /** Subtract a constant value from each cell.*/
+  def -(i:Int) = localSubtract(i)
+  /** Subtract each value of a cell from a constant value. */
+  def localSubtractFrom(i: Int) = self.mapOp(Subtract(i, _))
+  /** Subtract each value of a cell from a constant value. */
+  def -:(i:Int) = localSubtract(i)
+  /** Subtract a double constant value from each cell.*/
+  def localSubtract(d: Double) = self.mapOp(Subtract(_, d))
+  /** Subtract a double constant value from each cell.*/
+  def -(d:Double) = localSubtract(d)
+  /** Subtract each value of a cell from a double constant value. */
+  def localSubtractFrom(d: Double) = self.mapOp(Subtract(d, _))
+  /** Subtract each value of a cell from a double constant value. */
+  def -:(d:Double) = localSubtract(d)
+  /** Subtract the values of each cell in each raster. See [[SubtractRasters]] */
+  def localSubtract(rs:RasterSource) = self.combineOp(rs)(Subtract(_,_))
+  /** Subtract the values of each cell in each raster. See [[SubtractRasters]] */
+  def -(rs:RasterSource) = localSubtract(rs)
+}

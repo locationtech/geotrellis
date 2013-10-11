@@ -1,5 +1,6 @@
-package geotrellis
+package geotrellis.source
 
+import geotrellis._
 import geotrellis.testutil._
 import geotrellis.process._
 import org.scalatest.FunSpec
@@ -7,7 +8,6 @@ import org.scalatest.matchers.ShouldMatchers
 import geotrellis.raster._
 import geotrellis.raster.op._
 import geotrellis.statistics._
-import geotrellis.source.{RasterSource,DataSource,ValueDataSource}
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class DataSourceSpec extends FunSpec 
@@ -24,25 +24,13 @@ class DataSourceSpec extends FunSpec
     it("should print history") { 
       val r1 = RasterSource("quad_tiled")
       val r2 = RasterSource("quad_tiled2")
-      val d1 = r1
-
-      val d2:RasterSource = d1.localAdd(3)
-      val d3:RasterSource  = d2 mapOp(local.Add(_, 3))
-      val d4:RasterSource = d3 map(r => r.map(z => z + 3))
-      val d5:DataSource[Int,Seq[Int]] = d3 map(r => r.findMinMax._2)
-      
-      val e2 = d1.combine(r2)(_+_)
-        .combine(d2)(_-_)
-        .localSubtract(5)
-
-      getSource(e2) match {
-//      getSource(r1.combine(r2)(_+_)) match {
-//      getSource(d1) match {
+      getSource(r1 + r2) match {
         case Complete(value,success) =>
           println(success.toString)
         case Error(msg,failure) =>
           println(msg)
           println(failure)
+          assert(false)
       }
     }
 
