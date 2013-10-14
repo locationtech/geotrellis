@@ -40,7 +40,7 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
     Server.actorSystem.awaitTermination()
   }
 
-  def getRouter(routerName:String):ActorRef =
+  def getRouter(routerName:String="clusterRouter"):ActorRef =
     system.actorOf(
       Props.empty.withRouter(FromConfig),
       name = routerName)
