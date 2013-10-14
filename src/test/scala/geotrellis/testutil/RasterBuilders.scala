@@ -3,6 +3,7 @@ package geotrellis.testutil
 import geotrellis._
 import geotrellis.raster._
 import geotrellis.process._
+import geotrellis.source._
 
 trait RasterBuilders {
   def createConsecutiveRaster(d:Int):Raster = {
@@ -85,6 +86,41 @@ trait RasterBuilders {
       else { r.get(col,row) }
     }
     Raster(arr.toArray, r.rasterExtent)
+  }
+
+  def createRasterSource(arr:Array[Int],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int) = {
+    if(tileCols*pixelCols*tileRows*pixelRows != arr.length) {
+      sys.error("Tile and pixel col rows do not match array length")
+    }
+    val tiles = 
+      (for(j <- 0 until tileRows) yield {
+        (for(i <- 0 until tileCols) yield { Array.ofDim[Int](pixelCols*pixelRows) }).toArray
+      }).toArray
+
+    for(tR <- 0 until tileRows) {
+      for(pR <- 0 until pixelRows) {
+        for(tC <- 0 until tileCols) {
+          for(pC <- 0 until pixelCols) {
+            val col = tC*pixelCols + pC
+            val row = tR*pixelRows + pR
+            val v = arr(row*tileCols*pixelCols + col)
+            tiles(tR)(tC)(pR*pixelCols + pC) = v
+          }
+        }
+      }
+    }
+
+    val rasters = 
+      (for(r <- 0 until tileRows;
+        c <- 0 until tileCols) yield {
+        createRaster(tiles(r)(c),pixelCols,pixelRows)
+      }).toSeq
+
+    val ops = rasters.map(Literal(_))
+    val re = rasters.map(_.rasterExtent).reduce(_.combine(_))
+    val tileLayout = TileLayout(tileCols,tileRows,pixelCols,pixelRows)
+
+    RasterSource(RasterDefinition("test",re,tileLayout),ops)
   }
 
   /**
@@ -204,6 +240,12 @@ trait RasterBuilders {
     val ext = Extent(0,-100,1400,-10)
     val re = RasterExtent(ext,100,10,14,9)
     Raster(ByteArrayRasterData(arr,14,9),re)
+  }
+
+  def getIntFilledRaster(n:Int) = {
+    val e = Extent(0.0, 0.0, 10.0, 10.0)
+    val re = RasterExtent(e, 1.0, 1.0, 10, 10)
+    Raster(Array.fill(100)(n), re)
   }
 
   /* prints out a raster to console */
