@@ -21,8 +21,8 @@ object History {
   def apply(op:Op[_],system:String) =
     new History(op.name,Nil,None,System.currentTimeMillis,0,system)
 
-  def literal[T](v:T) =
-    new History("Literal",Nil,None,System.currentTimeMillis,0).withResult(v)
+  def literal[T](v:T,system:String) =
+    new History("Literal",Nil,None,System.currentTimeMillis,0,system).withResult(v)
 
   implicit def historyToString(h:History) = h.toString
 }
