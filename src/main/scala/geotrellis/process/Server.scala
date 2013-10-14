@@ -18,7 +18,7 @@ import geotrellis.source.DataSource
 class Server (id:String, val catalog:Catalog) extends Serializable {
   val debug = false
 
-  var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(new ServerActor(this)), id)
+  var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(classOf[ServerActor],this), id)
 
   private[this] val cache = new HashCache()
 
@@ -36,7 +36,7 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
 
   def getRouter(routerName:String):ActorRef =
     system.actorOf(
-      Props[ServerActor].withRouter(FromConfig),
+      Props.empty.withRouter(FromConfig),
       name = routerName)
 
   def log(msg:String) = if(debug) println(msg)

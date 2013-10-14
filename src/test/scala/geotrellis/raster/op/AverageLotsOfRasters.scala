@@ -25,7 +25,7 @@ class AverageLotsOfRastersTest extends FunSuite {
 
   test("average rasters in sequential groups to limit memory usage") {
     val limit = 30
-    val ops:Seq[Op[Raster]] = (1.0 until 200.0 by 1.0).map { i:Double => r(i) }
+    val ops:Seq[Op[Raster]] = (1.0 until 200.0 by 1.0).map { i:Double => Literal(r(i)) }
     val count = ops.length
  
     val dividedOps:Seq[Op[Raster]] = ops.map { rOp => local.Divide(rOp, count) }

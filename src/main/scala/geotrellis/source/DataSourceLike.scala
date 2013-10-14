@@ -40,4 +40,6 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
 
   def foldRight[B](z:B)(folder:(T,B)=>B):ValueDataSource[B] =
     converge(_.foldRight(z)(folder))
+
+  def distribute(cluster:akka.actor.ActorRef) = this mapOp (RemoteOperation(_, cluster))
 }
