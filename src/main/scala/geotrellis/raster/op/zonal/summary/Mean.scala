@@ -18,7 +18,6 @@ case class LongMean(sum: Long, count: Long) {
 }
 
 object Mean {
-
   def createTileResults(trd:TiledRasterData, re:RasterExtent) = {
     trd.getTiles(re)
        .map { r => (r.rasterExtent, meanTiledRaster(r))}
@@ -87,8 +86,8 @@ case class Mean[DD] (r:Op[Raster], zonePolygon:Op[Polygon[DD]], tileResults:Map[
 }
 
 case class DoubleMean(sum: Double, count: Double) {
-  def mean = if (count == 0) {
-    geotrellis.NODATA
+  def mean:Double = if (count == 0) {
+    Double.NaN
   } else {
     sum/count
   }
@@ -102,12 +101,11 @@ object MeanDouble {
        .toMap
   }
 
-  def meanRaster (r:Raster):Double = {
+  def meanRaster(r:Raster):Double = {
     meanTileRaster(r).mean
   }
 
-  def meanTileRaster (r:Raster):DoubleMean = {
-
+  def meanTileRaster(r:Raster):DoubleMean = {
     var sum = 0.0
     var count = 0L
     r.foreachDouble( (x) => if (!java.lang.Double.isNaN(x)) { sum = sum + x; count = count + 1 })
