@@ -32,15 +32,27 @@ object Subtract {
     (r1,r2).map(subtractRasters)
            .withName("Subtract[Rasters]")
 
-  def apply(rs:Seq[Op[Raster]])(implicit d:DI):Op[Raster] = 
+  def apply(rs:Seq[Op[Raster]]):Op[Raster] = 
     rs.mapOps(_.reduce(subtractRasters))
       .withName("Subtract[Rasters]")
 
-  def apply(rs:Op[Seq[Op[Raster]]]):Op[Raster] = 
+  def apply(rs:Array[Op[Raster]]):Op[Raster] = 
+    rs.mapOps(_.reduce(subtractRasters))
+      .withName("Subtract[Rasters]")
+
+  def apply(rs:Op[Seq[Raster]]):Op[Raster] = 
+    rs.map(_.reduce(subtractRasters))
+      .withName("Subtract[Rasters]")
+
+  def apply(rs:Op[Array[Raster]])(implicit d:DI):Op[Raster] = 
+    rs.map(_.reduce(subtractRasters))
+      .withName("Subtract[Rasters]")
+
+  def apply(rs:Op[Seq[Op[Raster]]])(implicit d:DI,d2:DI):Op[Raster] = 
     rs.flatMap { seq:Seq[Op[Raster]] => apply(seq:_*) }
       .withName("Subtract[Rasters]")
 
-  def apply(rs:Op[Raster]*):Op[Raster] = 
+  def apply(rs:Op[Raster]*)(implicit d:DI,d2:DI,d3:DI):Op[Raster] = 
     apply(rs)
 
   def subtractRasters(r1:Raster,r2:Raster) = 

@@ -148,7 +148,7 @@ class DataMap extends OperationBenchmark {
     byteData = new ByteArrayRasterData(init(len)(Random.nextInt.toByte), size, size)
     shortData = new ShortArrayRasterData(init(len)(Random.nextInt.toShort), size, size)
 
-    mc = MultiplyConstant(raster, 2)
+    mc = Multiply(raster, 2)
     mcCustomWithInt = MultiplyConstantCustomWithInt(raster, 2)
     mcMapIfSet = MultiplyConstantMapIfSet(raster, 2)
     mcMapSugar = MultiplyConstantMapSugar(raster, 2)
@@ -333,8 +333,8 @@ class WeightedOverlay extends OperationBenchmark {
     server = initServer()
     val reOp = getRasterExtentOp(names(0), size, size)
     val total = weights.sum
-    val rs = (0 until n).map(i => MultiplyConstant(LoadRaster(names(i), reOp), weights(i)))
-    val rasterOp = Rescale(DivideConstant(Add(rs: _*), total), (1, 100))
+    val rs = (0 until n).map(i => Multiply(LoadRaster(names(i), reOp), weights(i)))
+    val rasterOp = Rescale(Divide(Add(rs: _*), total), (1, 100))
     val h = GetHistogram(rasterOp, 101) 
     val breaksOp = stat.GetColorBreaks(h, colors)
     op = RenderPng(rasterOp, breaksOp, h, 0)
@@ -354,11 +354,11 @@ class AddRasters extends OperationBenchmark {
   override def setUp() {
     server = initServer()
     val r:Raster = loadRaster("SBN_farm_mkt", size, size)
-    val r1 = AddConstant(r, 1)
-    val r2 = AddConstant(r, 2)
-    val r3 = AddConstant(r, 3)
-    val r4 = AddConstant(r, 4)
-    val r5 = AddConstant(r, 5)
+    val r1 = Add(r, 1)
+    val r2 = Add(r, 2)
+    val r3 = Add(r, 3)
+    val r4 = Add(r, 4)
+    val r5 = Add(r, 5)
     op = Add(r1, r2, r3, r4, r5)
   }
 
@@ -376,8 +376,8 @@ class SubtractRasters extends OperationBenchmark {
   override def setUp() {
     server = initServer()
     val r:Raster = loadRaster("SBN_farm_mkt", size, size)
-    val r1 = MultiplyConstant(r, 2)
-    val r2 = AddConstant(r, 2)
+    val r1 = Multiply(r, 2)
+    val r2 = Add(r, 2)
     op = Subtract(r1, r2)
   }
 
@@ -396,7 +396,7 @@ class ConstantAdd extends OperationBenchmark {
   override def setUp() {
     server = initServer()
     val r:Raster = loadRaster("SBN_farm_mkt", size, size)
-    op = AddConstant(r, 13)
+    op = Add(r, 13)
   }
 
   def timeConstantAdd(reps:Int) = run(reps)(constantAdd)
@@ -451,7 +451,7 @@ class BigMinTiled extends OperationBenchmark{
     val trd = layer.getData()
     val tileSetRD = TileSetRasterData("/tmp", "big", TypeByte, layout, layer.getTileLoader)
     val raster = Raster(tileSetRD, re)
-    tiledMinOp = BTileMin(Add(AddConstant(raster,2), raster))
+    tiledMinOp = BTileMin(Add(Add(raster,2), raster))
     tiledHistogramOp = BTileHistogram(raster)
   }
 
@@ -486,7 +486,7 @@ class MinTiled extends OperationBenchmark {
   var normalTiledOp:Op[Int] = null 
 
   //def makeOp(r:Op[Raster]):Operation[Raster] = r
-  def makeOp(r:Op[Raster]) = Add(AddConstant(r, 5),r)
+  def makeOp(r:Op[Raster]) = Add(Add(r, 5),r)
 
   override def setUp() {
     server = initServer()
@@ -544,9 +544,9 @@ class HistogramTiled extends OperationBenchmark {
 
   var normalTiledOp:Op[Histogram] = null 
 
-  //def makeOp(r:Raster) = Add(AddConstant(r, 5), r)
+  //def makeOp(r:Raster) = Add(Add(r, 5), r)
   def makeOp(r:Raster) = Add(r, r)
-  //def makeOp(r:Raster) = AddConstant(r, 5)
+  //def makeOp(r:Raster) = Add(r, 5)
   //def makeOp(r:Raster) = Literal(r)
 
   override def setUp() {
@@ -610,7 +610,7 @@ class MiniWeightedOverlay extends OperationBenchmark {
     val r1:Raster = loadRaster("SBN_farm_mkt", size, size)
     val r2:Raster = loadRaster("SBN_RR_stops_walk", size, size)
 
-    op = AddOld(MultiplyConstant(r1, 5), MultiplyConstant(r2, 2))
+    op = AddOld(Multiply(r1, 5), Multiply(r2, 2))
 
     strictOp = Add(MultiplyConstantMapSugar(r1, 5), MultiplyConstantMapSugar(r2, 2))
     lazyOp = Force(Add(MultiplyConstantMapSugar(r1.defer, 5), MultiplyConstantMapSugar(r2.defer, 2)))
@@ -680,11 +680,11 @@ class LazyIteration extends OperationBenchmark {
     val r2:Raster = loadRaster("SBN_RR_stops_walk", size, size).defer
     val r3:Raster = loadRaster("SBN_inc_percap", size, size).defer
 
-    simpleOp = AddConstant(r1, 6) 
-    mediumOp = Add(MultiplyConstant(r1, 2), MultiplyConstant(r2, 3))
-    complexOp = Add(DivideConstant(Add(MultiplyConstant(r1, 2),
-                                       MultiplyConstant(r2, 3),
-                                       MultiplyConstant(r3, 4)), 9), mediumOp)
+    simpleOp = Add(r1, 6) 
+    mediumOp = Add(Multiply(r1, 2), Multiply(r2, 3))
+    complexOp = Add(Divide(Add(Multiply(r1, 2),
+                               Multiply(r2, 3),
+                               Multiply(r3, 4)), 9), mediumOp)
   }
 
   def timeSimpleOpLazyIteration(reps:Int) = run(reps)(simpleOpLazyIteration)

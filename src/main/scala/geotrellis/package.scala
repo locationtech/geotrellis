@@ -13,12 +13,6 @@ package object geotrellis {
   type SeqDS[E] = geotrellis.source.DataSource[E,Seq[E]]
   type HistogramDS = geotrellis.source.DataSource[Histogram,Histogram]
 
-  // implicit class Literal[+A](val value:A) extends Op[A] {
-  //   val nextSteps:Steps = { case _ => Result(value) }
-  //   def _run(context:Context) = Result(value)
-  // }
-
-
   /**
    * Add simple syntax for creating an operation.
    *
@@ -174,5 +168,10 @@ package object geotrellis {
   implicit class OpMapSeq[A](seq:Seq[Op[A]]) {
     def mapOps[T](f:(Seq[A]=>T)) = logic.Collect(Literal(seq)).map(f)
     def flaMapOps[T](f:(Seq[A]=>Op[T])) = logic.Collect(Literal(seq)).flatMap(f)
+  }
+
+  implicit class OpMapArray[A](seq:Array[Op[A]]) {
+    def mapOps[T](f:(Seq[A]=>T)) = logic.Collect(Literal(seq.toSeq)).map(f)
+    def flaMapOps[T](f:(Seq[A]=>Op[T])) = logic.Collect(Literal(seq.toSeq)).flatMap(f)
   }
 }
