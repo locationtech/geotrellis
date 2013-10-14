@@ -21,7 +21,7 @@ abstract trait Histogram extends Serializable {
   def uncountItem(item:Int): Unit
 
   /**
-   * 
+   * Sets the item to the given count.
    */
   def setItem(item:Int, count:Int): Unit
 
@@ -58,8 +58,6 @@ abstract trait Histogram extends Serializable {
   /**
    * This is a heuristic used by getQuantileBreaks, which mutates the
    * histogram.
-   *
-   *
    */
   def normalizeExtremeValues(num:Int, cutoff:Int): Histogram = {
     val (zmin, zmax) = getMinMaxValues()
@@ -253,7 +251,6 @@ abstract trait Histogram extends Serializable {
     }
     t / getTotalCount
   }
-
 
   def generateStatistics() = {
     val values = getValues()

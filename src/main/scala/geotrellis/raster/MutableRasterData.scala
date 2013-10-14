@@ -7,7 +7,7 @@ import geotrellis._
  * (mutated).
  */
 trait MutableRasterData extends StrictRasterData {
-  def mutable = Option(this)
+  def mutable = this
 
   def update(i:Int, z:Int): Unit
   def updateDouble(i:Int, z:Double):Unit

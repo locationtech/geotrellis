@@ -9,11 +9,7 @@ import geotrellis.util._
 final class RasterReadState(raster:Raster,
                             val target:RasterExtent) extends ReadState {
   val data:ArrayRasterData =
-    raster.data.asArray match {
-      case Some(ard) => ard
-      case None => 
-        sys.error("RasterReadState cannot handle raster data that cannot be made into an array.")
-    }
+    raster.data.asArray
   val rasterExtent:RasterExtent = raster.rasterExtent
 
   def getType = data.getType
