@@ -32,10 +32,9 @@ class RemoteServerApplication extends Bootable {
   // by id, which is set as "remoteServer" in the client's configuration.
   val id = "remoteServer"
 
-  val server = new Server(id, Catalog.empty("test"))
+  val server = new Server(id, Catalog.fromPath("src/test/resources/catalog.json"))
 
-  def startup() {
-  }
+  def startup() { }
 
   def shutdown() {
     server.shutdown()

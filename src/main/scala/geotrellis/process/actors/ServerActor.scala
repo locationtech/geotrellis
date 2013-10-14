@@ -15,7 +15,6 @@ import akka.actor._
  * send the message to a workers). In the second case we will spin up a
  * Calculation actor who will handle the message.
  */
-private[process]
 case class ServerActor(server: Server) extends Actor {
   val dispatcher: ActorRef = context.actorOf(Props(Dispatcher(server)))
 
