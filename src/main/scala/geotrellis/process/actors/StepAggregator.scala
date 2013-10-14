@@ -42,7 +42,7 @@ case class StepAggregator[T](val server:Server,
       args(i) match {
         case lit:Literal[_] =>
           val v = lit.value
-          results(i) = Some(Complete(v,History.literal(v)))
+          results(i) = Some(Complete(v,History.literal(v,server.externalId)))
         case op:Operation[_] =>
           dispatcher ! RunOperation(op, i, self, None)
         case value =>
