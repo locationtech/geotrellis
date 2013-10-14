@@ -1,6 +1,8 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.source._
+import geotrellis.process._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
@@ -13,14 +15,6 @@ class MultiplySpec extends FunSpec
                       with TestServer 
                       with RasterBuilders {
   describe("Multiply") {
-    it("multiplys two integers") {
-      run(Multiply(3,2)) should be (6)
-    }
-
-    it("multiplys two doubles") {
-      run(Multiply(.2,.3)) should be (.06)
-    }
-    
     it("multiplys a constant value to each cell of an int valued raster") {
       val r = positiveIntegerRaster
       val result = run(Multiply(r,5))
@@ -78,6 +72,67 @@ class MultiplySpec extends FunSpec
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should be (math.pow(r.getDouble(col,row), 2.0))
         }
+      }
+    }
+
+    it("multiplies two tiled RasterSources correctly") {
+      val rs1 = RasterSource("quad_tiled")
+      val rs2 = RasterSource("quad_tiled2")
+
+      val r1 = runSource(rs1)
+      val r2 = runSource(rs2)
+      getSource(rs1 * rs2) match {
+        case Complete(result,success) =>
+          //println(success)
+          for(row <- 0 until r1.rasterExtent.rows) {
+            for(col <- 0 until r1.rasterExtent.cols) {
+              result.get(col,row) should be (r1.get(col,row) * r2.get(col,row))
+            }
+          }
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+      }
+    }
+
+    it("multiplies three tiled RasterSources correctly") {
+      val rs1 = createRasterSource(
+        Array( 1,1,1, 1,1,1, 1,1,1,
+               1,1,1, 1,1,1, 1,1,1,
+
+               1,1,1, 1,1,1, 1,1,1,
+               1,1,1, 1,1,1, 1,1,1),
+        3,2,3,2)
+
+      val rs2 = createRasterSource(
+        Array( 2,2,2, 2,2,2, 2,2,2,
+               2,2,2, 2,2,2, 2,2,2,
+
+               2,2,2, 2,2,2, 2,2,2,
+               2,2,2, 2,2,2, 2,2,2),
+        3,2,3,2)
+
+      val rs3 = createRasterSource(
+        Array( 3,3,3, 3,3,3, 3,3,3,
+               3,3,3, 3,3,3, 3,3,3,
+
+               3,3,3, 3,3,3, 3,3,3,
+               3,3,3, 3,3,3, 3,3,3),
+        3,2,3,2)
+
+      getSource(rs1 * rs2 * rs3) match {
+        case Complete(result,success) =>
+//          println(success)
+          for(row <- 0 until 4) {
+            for(col <- 0 until 9) {
+              result.get(col,row) should be (6)
+            }
+          }
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
       }
     }
   }

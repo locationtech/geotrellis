@@ -23,4 +23,7 @@ object RasterSource {
     }
     new RasterSource(rasterDef, tileOps)
   }
+
+  def apply(rasterDef:Op[RasterDefinition],tileOps:Op[Seq[Op[Raster]]]) =
+    new RasterSource(rasterDef, tileOps)
 }

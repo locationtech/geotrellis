@@ -44,7 +44,7 @@ object WeightedOverlayArray {
 
     val weightSum:Op[Int] = logic.Do(weights)(_.sum)
 
-    local.AddArray(rs) / weightSum
+    local.Add(rs) / weightSum
   }
 }
 

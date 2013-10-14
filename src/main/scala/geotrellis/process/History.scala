@@ -58,7 +58,12 @@ case class History(id:String,
     val s = 
       value match {
         case null => "null"
-        case s:String => s""""$s""""
+        case s:String =>
+          if(s.length > 10) {
+            s""""${s.substring(0,10)}...""""
+          } else {
+            s""""$s""""
+          }
         case i:Int => s"""$i"""
         case d:Double => s"""$d"""
         case v:Vector[_] => 

@@ -8,46 +8,38 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
   def elements():Op[Seq[Op[T]]]
   def get():Op[V]
   def converge() = ValueDataSource(get)
-
-  def map[B,That](f:T => B)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
-    val builder = bf.apply(this)
-    val fOp = op(f(_)) 
-    val newOp = TransformSequenceOfOperations(elements)(fOp)
-    builder.setOp(newOp)
-    val result = builder.result()
-    result
-  }
+  def converge[B](f:Seq[T]=>B):ValueDataSource[B] =
+    ValueDataSource( logic.Collect(elements).map(f) )
 
   /** apply a function to elements, and return the appropriate datasource **/
-  def mapOp[B,That](f:Op[T] => Op[B])(implicit bf:CanBuildSourceFrom[Repr,B,That]):That =  {
-    val builder = bf.apply(this)
-    
-    // Apply the provided op to the operations inside the
-    // future sequence of operations.  For example,
-    // if we have an Op that returns Seq(LoadRaster(foo)) and our
-    // function is AddConstant(_, 3) we should end up with 
-    // an op that returns Seq(AddConstant(LoadRaster(foo),3))
-    // 
-    val newOp = TransformSequenceOfOperations(elements)(f)
+  def map[B,That](f:T => B)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = 
+    _mapOp(op(f(_)),bf.apply(this))
 
+  /** apply a function to element operations, and return the appropriate datasource **/
+  def mapOp[B,That](f:Op[T] => Op[B])(implicit bf:CanBuildSourceFrom[Repr,B,That]):That =  
+    _mapOp(f,bf.apply(this))
+
+  private def _mapOp[B,That](f:Op[T]=>Op[B],builder:SourceBuilder[B,That]) = {
+    val newOp = elements.map(_.map(f)).withName("DataSourceMap")
     builder.setOp(newOp)
     val result = builder.result()
     result
   }
 
-  def distribute(cluster:akka.actor.ActorRef) = this mapOp (RemoteOperation(_, cluster))
-  def reduce[T1 >: T](reducer:(T1,T1) => T1)(implicit mf:Manifest[T1]):ValueDataSource[T1] = 
-    ValueDataSource( logic.Collect(elements) map (_.reduce(reducer)) )
+  def reduce[T1 >: T](reducer:(T1,T1) => T1):ValueDataSource[T1] = 
+    reduceLeft(reducer)
 
-  case class TransformSequenceOfOperations[P,B](opSeq:Op[Seq[Op[P]]])
-    (f:Op[P]=> Op[B]) extends Op1(opSeq) ({
-      (opSeq) => {
-        val newSeq:Seq[Op[B]] = opSeq.map(
-          (op:Op[P]) => {
-            val op2:Op[B] = f(op)
-            op2
-          }
-        )
-        Result(newSeq)
-      }})
+  def reduceLeft[T1 >: T](reducer:(T1,T) => T1):ValueDataSource[T1] = 
+    converge(_.reduceLeft(reducer))
+
+  def reduceRight[T1 >: T](reducer:(T,T1) => T1):ValueDataSource[T1] = 
+    converge(_.reduceRight(reducer))
+
+  def foldLeft[B](z:B)(folder:(B,T)=>B):ValueDataSource[B] =
+    converge(_.foldLeft(z)(folder))
+
+  def foldRight[B](z:B)(folder:(T,B)=>B):ValueDataSource[B] =
+    converge(_.foldRight(z)(folder))
+
+  def distribute(cluster:akka.actor.ActorRef) = this mapOp (RemoteOperation(_, cluster))
 }
