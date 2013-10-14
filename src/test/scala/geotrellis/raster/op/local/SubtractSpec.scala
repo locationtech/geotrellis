@@ -1,6 +1,8 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.source._
+import geotrellis.process._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
@@ -13,15 +15,7 @@ class SubtractSpec extends FunSpec
                  with TestServer 
                  with RasterBuilders {
   describe("Subtract") {
-    it("subtracts two integers") { 
-      run(Subtract(1,2)) should be (-1)
-    }
-
-    it("subtracts two doubles") {
-      run(Subtract(.5,.3)) should be (.2)
-    }
-    
-    it("subtracts a constant value to each cell of an int valued raster, from right hand side") {
+    it("subtracts a constant value to each cell of an int valued raster") {
       val r = positiveIntegerRaster
       val result = run(Subtract(r,5))
       for(col <- 0 until r.cols) {
@@ -31,7 +25,7 @@ class SubtractSpec extends FunSpec
       }
     }
 
-    it("subtracts a constant value to each cell of an double valued raster, from right hand side") {
+    it("subtracts a constant value to each cell of an double valued raster") {
       val r = probabilityRaster
       val result = run(Subtract(r,1))
       for(col <- 0 until r.cols) {
@@ -41,27 +35,7 @@ class SubtractSpec extends FunSpec
       }
     }
 
-    it("subtracts a constant value to each cell of an int valued raster, from left hand side") {
-      val r = positiveIntegerRaster
-      val result = run(Subtract(10,r))
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          result.get(col,row) should be (10 - r.get(col,row))
-        }
-      }
-    }
-
-    it("subtracts a constant value to each cell of an double valued raster, from left hand side") {
-      val r = probabilityRaster
-      val result = run(Subtract(3,r))
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          result.getDouble(col,row) should be (3.0 - r.getDouble(col,row))
-        }
-      }
-    }
-
-    it("subtracts a double constant value to each cell of an int valued raster, from right hand side") {
+    it("subtracts a double constant value to each cell of an int valued raster") {
       val r = positiveIntegerRaster
       val result = run(Subtract(r,5.7))
       for(col <- 0 until r.cols) {
@@ -71,32 +45,12 @@ class SubtractSpec extends FunSpec
       }
     }
 
-    it("subtracts a double constant value to each cell of an double valued raster, from right hand side") {
+    it("subtracts a double constant value to each cell of an double valued raster") {
       val r = probabilityRaster
       val result = run(Subtract(r,0.1))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should be (r.getDouble(col,row) - 0.1)
-        }
-      }
-    }
-
-    it("subtracts a double constant value to each cell of an int valued raster, from left hand side") {
-      val r = positiveIntegerRaster
-      val result = run(Subtract(10.2,r))
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          result.get(col,row) should be ( (10.2 - r.get(col,row)).toInt )
-        }
-      }
-    }
-
-    it("subtracts a double constant value to each cell of an double valued raster, from left hand side") {
-      val r = probabilityRaster
-      val result = run(Subtract(3.3,r))
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          result.getDouble(col,row) should be (3.3 - r.getDouble(col,row))
         }
       }
     }
@@ -137,6 +91,67 @@ class SubtractSpec extends FunSpec
 
       val r = run(Subtract(r63, r17))
       r.get(0, 0) should be (r46.get(0, 0))
+    }
+
+    it("subtracts two tiled RasterSources correctly") {
+      val rs1 = RasterSource("quad_tiled")
+      val rs2 = RasterSource("quad_tiled2")
+
+      val r1 = runSource(rs1)
+      val r2 = runSource(rs2)
+      getSource(rs1 - rs2) match {
+        case Complete(result,success) =>
+          //println(success)
+          for(row <- 0 until r1.rasterExtent.rows) {
+            for(col <- 0 until r1.rasterExtent.cols) {
+              result.get(col,row) should be (r1.get(col,row) - r2.get(col,row))
+            }
+          }
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+      }
+    }
+
+    it("subtracts three tiled RasterSources correctly") {
+      val rs1 = createRasterSource(
+        Array( 1,1,1, 1,1,1, 1,1,1,
+               1,1,1, 1,1,1, 1,1,1,
+
+               1,1,1, 1,1,1, 1,1,1,
+               1,1,1, 1,1,1, 1,1,1),
+        3,2,3,2)
+
+      val rs2 = createRasterSource(
+        Array( 2,2,2, 2,2,2, 2,2,2,
+               2,2,2, 2,2,2, 2,2,2,
+
+               2,2,2, 2,2,2, 2,2,2,
+               2,2,2, 2,2,2, 2,2,2),
+        3,2,3,2)
+
+      val rs3 = createRasterSource(
+        Array( 3,3,3, 3,3,3, 3,3,3,
+               3,3,3, 3,3,3, 3,3,3,
+
+               3,3,3, 3,3,3, 3,3,3,
+               3,3,3, 3,3,3, 3,3,3),
+        3,2,3,2)
+
+      getSource(rs1 - rs2 - rs3) match {
+        case Complete(result,success) =>
+//          println(success)
+          for(row <- 0 until 4) {
+            for(col <- 0 until 9) {
+              result.get(col,row) should be (-4)
+            }
+          }
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+      }
     }
   }
 }

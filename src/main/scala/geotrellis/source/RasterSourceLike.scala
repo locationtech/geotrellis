@@ -24,10 +24,22 @@ trait RasterSourceLike[+Repr <: RasterSource]
       logic.Collect(tiles).map(s => Raster(TileArrayRasterData(s.toArray, rd.tileLayout),re))
     }
   
-  // Methods that return a local source but can act on any type.
   def histogram():HistogramDS = this mapOp(stat.GetHistogram(_))
 
-  // Methods that act on a local source.
+  def combineOp[B,That](rs:RasterSource)
+                       (f:(Op[Raster],Op[Raster])=>Op[B])
+                       (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
+    val tileOps:Op[Seq[Op[B]]] =
+      (tiles,rs.tiles).map { (ts1,ts2) =>
+        ts1.zip(ts2).map { case (t1,t2) => 
+          f(t1,t2) 
+        }
+      }
+
+    val builder = bf.apply(this)
+    builder.setOp(tileOps)
+    builder.result()
+  }
 
   def combine[That](rs:RasterSource)
                    (f:(Int,Int)=>Int)
@@ -45,23 +57,6 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.setOp(tileOps)
     builder.result()
   }
-
-  // def combine[That](rs:RasterSource)
-  //                  (f:(Int,Int)=>Int)
-  //                  (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
-  //   val tileOps =
-  //     (tiles,rs.tiles).map { (ts1,ts2) =>
-  //       for((t1,t2) <- ts1.zip(ts2)) yield {
-  //         (t1,t2).map { (r1,r2) =>
-  //           r1.combine(r2)(f)
-  //         }
-  //       }
-  //     }
-
-  //   val builder = bf.apply(this)
-  //   builder.setOp(tileOps)
-  //   builder.result()
-  // }
 
 
   def combineDouble[That](rs:RasterSource)(f:(Double,Double)=>Double)(implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {

@@ -1,6 +1,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.source._
 import geotrellis.process._
 
 /**
@@ -36,5 +37,14 @@ case class AndConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
  *                     will be rounded to Ints before and'ing.
  */
 case class AndRaster(r1:Op[Raster], r2:Op[Raster]) extends Op2(r1, r2) ({
-  (r1, r2) => AndThen(logic.RasterCombine(r1,r2)(_ & _)) // Handles NODATA correctly, since
+  (r1, r2) => AndThen(logic.RasterCombine(r1,r2)(_ & _))
 })
+
+trait AndOpMethods[+Repr <: RasterSource] { self: Repr =>
+  /** And a constant Int value to each cell. See [[AndConstant]] */
+  def localAnd(i: Int) = self.mapOp(And(_, i))
+  def ^(i:Int) = localAnd(i)
+  /** And the values of each cell in each raster. See [[AndRaster]] */
+  def localAnd(rs:RasterSource) = self.combineOp(rs)(And(_,_))
+  def ^(rs:RasterSource) = localAnd(rs)
+}

@@ -1,6 +1,8 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.source._
+import geotrellis.process._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
@@ -13,14 +15,6 @@ class DivideSpec extends FunSpec
                       with TestServer 
                       with RasterBuilders {
   describe("Divide") {
-    it("divides two integers") {
-      run(Divide(9,2)) should be (4)
-    }
-
-    it("divides two doubles") {
-      run(Divide(23.0,10.0)) should be (2.3)
-    }
-    
     it("divides a constant value to each cell of an int valued raster, from right hand side") {
       val r = positiveIntegerRaster
       val result = run(Divide(r,5))
@@ -118,6 +112,73 @@ class DivideSpec extends FunSpec
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should be (1.0)
         }
+      }
+    }
+
+    it("divides two tiled RasterSources correctly") {
+      val rs1 = RasterSource("quad_tiled")
+      val rs2 = RasterSource("quad_tiled2")
+
+      val r1 = runSource(rs1)
+      val r2 = runSource(rs2)
+      getSource(rs1 / rs2) match {
+        case Complete(result,success) =>
+          //println(success)
+          for(row <- 0 until r1.rasterExtent.rows) {
+            for(col <- 0 until r1.rasterExtent.cols) {
+              if(result.get(col,row) == NODATA) {
+                (r1.get(col,row) == NODATA ||
+                 r2.get(col,row) == NODATA ||
+                 r2.get(col,row) == 0) should be (true)
+              } else {
+                result.get(col,row) should be (r1.get(col,row) / r2.get(col,row))
+              }
+            }
+          }
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+      }
+    }
+
+    it("divides three tiled RasterSources correctly") {
+      val rs1 = createRasterSource(
+        Array( 1000,1000,1000, 1000,1000,1000, 1000,1000,1000,
+               1000,1000,1000, 1000,1000,1000, 1000,1000,1000,
+
+               1000,1000,1000, 1000,1000,1000, 1000,1000,1000,
+               1000,1000,1000, 1000,1000,1000, 1000,1000,1000),
+        3,2,3,2)
+
+      val rs2 = createRasterSource(
+        Array( 200,200,200, 200,200,200, 200,200,200,
+               200,200,200, 200,200,200, 200,200,200,
+
+               200,200,200, 200,200,200, 200,200,200,
+               200,200,200, 200,200,200, 200,200,200),
+        3,2,3,2)
+
+      val rs3 = createRasterSource(
+        Array( 2,2,2, 2,2,2, 2,2,2,
+               2,2,2, 2,2,2, 2,2,2,
+
+               2,2,2, 2,2,2, 2,2,2,
+               2,2,2, 2,2,2, 2,2,2),
+        3,2,3,2)
+
+      getSource(rs1 / rs2 / rs3) match {
+        case Complete(result,success) =>
+//          println(success)
+          for(row <- 0 until 4) {
+            for(col <- 0 until 9) {
+              result.get(col,row) should be ((1000/200)/2)
+            }
+          }
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
       }
     }
   }

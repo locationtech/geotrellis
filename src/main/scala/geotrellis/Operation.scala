@@ -22,7 +22,9 @@ abstract class Operation[+T] extends Product with Serializable {
   /**
     * Return operation identified (class simple name).
     */
-  def name: String = getClass.getSimpleName
+  private var _name = getClass.getSimpleName
+  def name: String = _name
+  def withName(n:String):Operation[T] = { _name += s" ($n)"; this }
 
   protected[geotrellis] def _run(context:Context): StepOutput[T]
   
@@ -153,7 +155,8 @@ case class RemoteOperation[+T](val op:Op[T], cluster:ActorRef)
 extends OperationWrapper(logic.Force(op)) {}
 
 object Operation {
-  implicit def implicitLiteral[A:Manifest](a:A):Operation[A] = Literal(a)
+  implicit def implicitLiteralVal[A <: AnyVal](a:A)(implicit m:Manifest[A]):Operation[A] = Literal(a)
+  implicit def implicitLiteralRef[A <: AnyRef](a:A):Operation[A] = Literal(a)
 }
 
 /**
@@ -198,7 +201,6 @@ class Op2[A,B,T](a:Op[A], b:Op[B]) (f:(A,B)=>StepOutput[T]) extends Operation[T]
   val nextSteps:Steps = { 
     case a :: b :: Nil => f(a.asInstanceOf[A], b.asInstanceOf[B])
   }
-
 }
 
 class Op3[A,B,C,T](a:Op[A],b:Op[B],c:Op[C])

@@ -145,27 +145,33 @@ package object geotrellis {
    * this is similiar to a for comprehension, but the
    * operations will be executed in parallel.
    */
-  case class OpMap2[A,B](a:Op[A],b:Op[B]) {
-    def map[T:Manifest](f:(A,B)=>T) = op(f).apply(a,b)
-    def flatMap[T:Manifest](f:(A,B)=>Op[T]) = op(f).apply(a,b)
+  implicit class OpMap2[A,B](t:(Op[A],Op[B])) {
+    def map[T](f:(A,B)=>T) = op(f).apply(t._1,t._2)
+    def flatMap[T](f:(A,B)=>Op[T]) = op(f).apply(t._1,t._2)
   }
 
-  implicit def opTupleToOpMap2[A,B](t:(Op[A],Op[B])) = 
-    new OpMap2(t._1,t._2)
-
-  case class OpMap3[A,B,C](a:Op[A],b:Op[B],c:Op[C]) {
-    def map[T:Manifest](f:(A,B,C)=>T) = op(f).apply(a,b,c)
-    def flatMap[T:Manifest](f:(A,B,C)=>Op[T]) = op(f).apply(a,b,c)
+  implicit class OpMap3[A,B,C](t:(Op[A],Op[B],Op[C])) {
+    def map[T](f:(A,B,C)=>T) = op(f).apply(t._1,t._2,t._3)
+    def flatMap[T](f:(A,B,C)=>Op[T]) = op(f).apply(t._1,t._2,t._3)
   }
 
-  implicit def opTupleToOpMap3[A,B,C](t:(Op[A],Op[B],Op[C])) = 
-    new OpMap3(t._1,t._2,t._3)
-
-  case class OpMap4[A,B,C,D](a:Op[A],b:Op[B],c:Op[C],d:Op[D]) {
-    def map[T:Manifest](f:(A,B,C,D)=>T) = op(f).apply(a,b,c,d)
-    def flatMap[T:Manifest](f:(A,B,C,D)=>Op[T]) = op(f).apply(a,b,c,d)
+  implicit class OpMap4[A,B,C,D](t:(Op[A],Op[B],Op[C],Op[D])) {
+    def map[T](f:(A,B,C,D)=>T) = op(f).apply(t._1,t._2,t._3,t._4)
+    def flatMap[T](f:(A,B,C,D)=>Op[T]) = op(f).apply(t._1,t._2,t._3,t._4)
   }
 
-  implicit def opTupleToOpMap4[A,B,C,D](t:(Op[A],Op[B],Op[C],Op[D])) = 
-    new OpMap4(t._1,t._2,t._3,t._4)
+  /** 
+   * Syntax for converting an iterable collection to 
+   * have methods to work with the results of those 
+   * operations executed in parallel
+   */
+  implicit class OpMapSeq[A](seq:Seq[Op[A]]) {
+    def mapOps[T](f:(Seq[A]=>T)) = logic.Collect(Literal(seq)).map(f)
+    def flaMapOps[T](f:(Seq[A]=>Op[T])) = logic.Collect(Literal(seq)).flatMap(f)
+  }
+
+  implicit class OpMapArray[A](seq:Array[Op[A]]) {
+    def mapOps[T](f:(Seq[A]=>T)) = logic.Collect(Literal(seq.toSeq)).map(f)
+    def flaMapOps[T](f:(Seq[A]=>Op[T])) = logic.Collect(Literal(seq.toSeq)).flatMap(f)
+  }
 }
