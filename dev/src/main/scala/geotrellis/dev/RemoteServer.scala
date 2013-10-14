@@ -44,7 +44,7 @@ class RemoteServerApplication extends Bootable {
 
 object RemoteServer {
   def main(args: Array[String]) {
-    if (args.nonEmpty) System.setProperty("akka.remote.netty.port", args(0))
+    if (args.nonEmpty) System.setProperty("akka.remote.netty.tcp.port", args(0))
     new RemoteServerApplication
     println("Started GeoTrellis remote server.")
     println("Ready to receive messages.")
