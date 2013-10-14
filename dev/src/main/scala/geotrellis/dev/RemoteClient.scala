@@ -69,6 +69,7 @@ object RemoteClient {
       println("Joined cluster.")
       //oldTest(app)
       sourceTest(app)
+      app.server.shutdown()
     }
   }
 
@@ -83,6 +84,7 @@ object RemoteClient {
       .distribute(app.router)
       .converge
       .map(seqInt => seqInt.reduce(math.min(_,_)))
+
     for (i <- 1 until 10) {
       server.getSource(r) match {
         case Complete(value,success) =>
