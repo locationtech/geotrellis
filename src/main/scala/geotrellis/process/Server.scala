@@ -27,6 +27,12 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
   Server.startActorSystem
   def system = Server.actorSystem
 
+  val fullExternalId = system.asInstanceOf[ExtendedActorSystem].provider.getDefaultAddress.toString
+  val externalId = if (fullExternalId.startsWith("akka.tcp://GeoTrellis@")) 
+    fullExternalId.substring(22)
+  else 
+    ""
+
   def startUp:Unit = ()
 
   def shutdown():Unit = { 
