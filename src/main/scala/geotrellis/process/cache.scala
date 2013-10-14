@@ -9,7 +9,7 @@ import scala.collection.mutable
 /** 
  * Trait for a string-keyed, any valued cache.
  */
-trait Cache {
+trait Cache extends Serializable {
   /** Lookup the value for key k
    * @return Some(v) if the value was cached, None otherwise
    */

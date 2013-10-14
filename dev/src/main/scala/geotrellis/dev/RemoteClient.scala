@@ -42,7 +42,7 @@ import geotrellis.process._
 import akka.serialization._
 
 class RemoteClientApplication extends Bootable {
-  val server = new Server("remoteServer", Catalog.empty("client"))
+  val server = new Server("remoteServer", Catalog.fromPath("src/test/resources/catalog.json"))
   val router = server.getRouter("clusterRouter")
 
   def startup() {
@@ -57,7 +57,7 @@ class RemoteClientApplication extends Bootable {
 object RemoteClient {
   def main(args: Array[String]) {
     println("Attempting to connect to cluster.")
-    if (args.nonEmpty) System.setProperty("akka.remote.netty.port", args(0))
+    if (args.nonEmpty) System.setProperty("akka.remote.netty.tcp.port", args(0))
 
     val app = new RemoteClientApplication
     val server = app.server
