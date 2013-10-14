@@ -41,6 +41,9 @@ import akka.cluster.ClusterEvent.MemberUp
 import geotrellis.process._
 import akka.serialization._
 
+import geotrellis.source._
+import geotrellis.statistics._
+
 class RemoteClientApplication extends Bootable {
   val server = new Server("remoteServer", Catalog.fromPath("src/test/resources/catalog.json"))
   val router = server.getRouter("clusterRouter")
@@ -64,28 +67,69 @@ object RemoteClient {
 
     Cluster(server.system) registerOnMemberUp {
       println("Joined cluster.")
-
-      val raster = io.LoadRaster("mtsthelens_tiled_cached")
-      val op = stat.GetHistogram(raster)
-      op.limit = 5000
-
-      while(true) {
-        println(" == Sending op for remote execution.")
-        val start = System.currentTimeMillis
-        val result = server.run(op.dispatch(app.router))
-        val elapsed = System.currentTimeMillis - start
-        println(s" ==== completed.  elapsed time: $elapsed\n")
-
-        println(s" == executing operation locally.")
-        val start2 = System.currentTimeMillis
-        val result2 = server.run(op)
-        val elapsed2 = System.currentTimeMillis - start2
-        println(s" ==== raw time for execution: $elapsed2\n\n")
-
-        Thread.sleep(200)
-      } 
+      //oldTest(app)
+      sourceTest(app)
     }
   }
+
+
+  def sourceTest(app:RemoteClientApplication):Unit = {
+    val server = app.server
+
+    val r = RasterSource("mtsthelens_tiled_cached")
+      .localAdd(3)
+      .histogram
+      .mapOp(MinFromHistogram(_))
+      .distribute(app.router)
+      .converge
+      .map(seqInt => seqInt.reduce(math.min(_,_)))
+    for (i <- 1 until 10) {
+      server.getSource(r) match {
+        case Complete(value,success) =>
+          println(s"result: value")
+          println(success.toString)
+        case Error(msg, failure) =>
+          println(msg)
+          println(failure)
+      }
+    }
+  }
+
+  def oldTest(app:RemoteClientApplication):Unit = {
+    val server = app.server
+    val raster = io.LoadRaster("mtsthelens_tiled_cached")
+    val op = stat.GetHistogram(raster)
+    op.limit = 5000
+
+    for(i <- 1 until 10) {
+      println(" == Sending op for remote execution.")
+      val start = System.currentTimeMillis
+
+      server.getResult(op.dispatch(app.router)) match {
+        case Complete(value,success) => println(success.toString)
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+      }
+      val elapsed = System.currentTimeMillis - start
+      println(s" ==== completed.  elapsed time: $elapsed\n")
+
+      println(s" == executing operation locally.")
+      val start2 = System.currentTimeMillis
+      server.getResult(op) match {
+        case Complete(value,success) => println(success.toString)
+        case Error(msg, failure) =>
+          println(msg)
+          println(failure)
+      }
+      val elapsed2 = System.currentTimeMillis - start2
+      println(s" ==== raw time for execution: $elapsed2\n\n")
+
+      Thread.sleep(200)
+    }
+    server.shutdown()
+  }
+
   def testSerialization(remoteOp:AnyRef, server:Server) {
     val serialization = SerializationExtension(server.system)
     val serializer = serialization.findSerializerFor(remoteOp)
@@ -101,3 +145,12 @@ case class HelloWorldOp[String](s:Op[String]) extends Op1(s)({
     Result(s)
   }
 })
+
+
+  case class MinFromHistogram(h:Op[Histogram]) extends Op1(h)({
+    (h) => Result(h.getMinValue)
+  })
+
+  case class FindMin(ints:Op[Seq[Int]]) extends Op1(ints)({
+    (ints) => Result(ints.reduce(math.min(_,_)))
+  })
