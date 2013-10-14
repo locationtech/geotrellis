@@ -75,7 +75,4 @@ class FlowDirectionSpec extends FunSpec with ShouldMatchers
       val e_computed = FlowDirection(e_raster)
       assertEqual(e_computed, m_raster)
     }
-
-
-
   }}
