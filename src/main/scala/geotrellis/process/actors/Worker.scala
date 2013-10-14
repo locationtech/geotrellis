@@ -30,6 +30,7 @@ case class Worker(val server: Server) extends Actor {
       // replace our dispatcher with the remote dispatcher.
       val (op, dispatcher) = incomingOp match {
         case DispatchedOperation(runOp, newDispatcher) => (runOp, newDispatcher)
+        case RemoteOperation(runOp, cluster) => throw new Exception("RemoteOperation should not be passed to worker")
         case _ => (incomingOp, ourDispatcher)
       }
 
