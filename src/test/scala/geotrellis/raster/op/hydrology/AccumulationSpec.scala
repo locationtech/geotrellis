@@ -15,7 +15,7 @@ class AccumulationSpec extends FunSpec
                  with ShouldMatchers 
                  with TestServer 
                  with RasterBuilders {
-				 
+
 		describe("Accumulation"){
 			it("Calulates the accumulation of water using a flow dirrection raster"){
 			var ncols = 6
@@ -29,7 +29,7 @@ class AccumulationSpec extends FunSpec
                                             2,2,1,4,4,4,
                                             1,1,1,1,4,16),
                             ncols,nrows)
-			
+
 			val in_raster = Raster(m, r_extent)
 			val o = IntArrayRasterData(Array[Int](0,0,0,0,0,0,
                                             0,1,1,2,2,0,
@@ -39,11 +39,11 @@ class AccumulationSpec extends FunSpec
                                             0,2,4,7,34,1),
                             ncols,nrows)
 			val out_raster = Raster(o, r_extent)
-			
+
 			assertEqual(Accumulation(in_raster),out_raster )
 			}
 		}
-				 
-				 
-				 
+
+
+
 				 }
