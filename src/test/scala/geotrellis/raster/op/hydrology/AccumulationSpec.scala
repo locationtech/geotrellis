@@ -16,34 +16,31 @@ class AccumulationSpec extends FunSpec
                  with TestServer 
                  with RasterBuilders {
 
-		describe("Accumulation"){
-			it("Calulates the accumulation of water using a flow dirrection raster"){
-			var ncols = 6
-			var nrows = 6
-			val r_extent = RasterExtent(Extent(0,0,1,1),1,1,ncols,nrows)
-			val m = IntArrayRasterData(Array[Int](
-											2,2,2,4,4,8,
-                                            2,2,2,4,4,8,
-                                            1,1,2,4,8,4,
-                                            128,128,1,2,4,8,
-                                            2,2,1,4,4,4,
-                                            1,1,1,1,4,16),
-                            ncols,nrows)
+  describe("Accumulation"){
+    it("Calulates the accumulation of water using a flow dirrection raster"){
+      var ncols = 6
+      var nrows = 6
+      val r_extent = RasterExtent(Extent(0,0,1,1),1,1,ncols,nrows)
+      val m = IntArrayRasterData(Array[Int](
+            2,2,2,4,4,8,
+            2,2,2,4,4,8,
+            1,1,2,4,8,4,
+            128,128,1,2,4,8,
+            2,2,1,4,4,4,
+            1,1,1,1,4,16),
+            ncols,nrows)
 
-			val in_raster = Raster(m, r_extent)
-			val o = IntArrayRasterData(Array[Int](0,0,0,0,0,0,
-                                            0,1,1,2,2,0,
-                                            0,3,7,5,4,0,
-                                            0,0,0,20,0,1,
-                                            0,0,0,1,24,0,
-                                            0,2,4,7,34,1),
-                            ncols,nrows)
-			val out_raster = Raster(o, r_extent)
-
-			assertEqual(Accumulation(in_raster),out_raster )
-			}
-		}
-
-
-
-				 }
+      val in_raster = Raster(m, r_extent)
+      val o = IntArrayRasterData(Array[Int](
+            0,0,0,0,0,0,
+            0,1,1,2,2,0,
+            0,3,7,5,4,0,
+            0,0,0,20,0,1,
+            0,0,0,1,24,0,
+            0,2,4,7,34,1),
+            ncols,nrows)
+      val out_raster = Raster(o, r_extent)
+      assertEqual(Accumulation(in_raster),out_raster )
+    }  
+  }
+}

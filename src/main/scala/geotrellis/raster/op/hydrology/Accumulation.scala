@@ -154,6 +154,5 @@ case class Accumulation(flowDirrection:Op[Raster]) extends Op1(flowDirrection)({
 		}
 
 		//convert the IntArrayflowDirrection to a flowDirrection
-
 		Result(Raster( data , flowDirrection.rasterExtent))
 	})
