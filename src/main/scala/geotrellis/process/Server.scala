@@ -27,6 +27,12 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
   Server.startActorSystem
   def system = Server.actorSystem
 
+  val fullExternalId = system.asInstanceOf[ExtendedActorSystem].provider.getDefaultAddress.toString
+  val externalId = if (fullExternalId.startsWith("akka.tcp://GeoTrellis@")) 
+    fullExternalId.substring(22)
+  else 
+    ""
+
   def startUp:Unit = ()
 
   def shutdown():Unit = { 
@@ -34,7 +40,7 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
     Server.actorSystem.awaitTermination()
   }
 
-  def getRouter(routerName:String):ActorRef =
+  def getRouter(routerName:String="clusterRouter"):ActorRef =
     system.actorOf(
       Props.empty.withRouter(FromConfig),
       name = routerName)
