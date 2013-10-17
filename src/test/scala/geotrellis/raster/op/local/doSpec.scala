@@ -120,7 +120,7 @@ class DoSpec extends FunSpec
       val r = Literal(f(a, 3, 3, 0.0, 0.0, 1.0))
 
       val r2 = run(DoCell(r)({z:Int => z + 1}))
-      val d = r2.data.asArray.getOrElse(sys.error("cannot get raster as array"))
+      val d = r2.data.asArray
       d.toArray should be (a.map { _ + 1 })
     }
   }
