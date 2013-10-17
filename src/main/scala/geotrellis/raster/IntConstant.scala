@@ -8,7 +8,7 @@ final case class IntConstant(n:Int, cols:Int, rows:Int) extends StrictRasterData
   def applyDouble(i:Int) = n.toDouble
   def length = cols * rows
   def alloc(cols:Int, rows:Int) = IntArrayRasterData.empty(cols, rows)
-  def mutable = Option(IntArrayRasterData(Array.fill(length)(n), cols, rows))
+  def mutable = IntArrayRasterData(Array.fill(length)(n), cols, rows)
   def copy = this
 
   override def combine(other:RasterData)(f:(Int,Int) => Int) = other.map(z => f(n, z))

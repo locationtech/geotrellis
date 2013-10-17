@@ -17,6 +17,6 @@ trait LazyRasterData extends ArrayRasterData {
       d(i) = apply(i)
       i += 1
     }
-    Option(d)
+    d
   }
 }

@@ -70,7 +70,7 @@ trait OperationBenchmark extends SimpleBenchmark {
 
     val tiledRaster = Raster(tileSetRD, re)
 
-    val d = r.data.asArray.getOrElse(sys.error("argh"))
+    val d = r.data.asArray
     val lazyRasterData = LazyTiledWrapper(d, layout)
     val lazyRaster = Raster(lazyRasterData, re)
 
@@ -227,7 +227,7 @@ class DataMap extends OperationBenchmark {
   def timeRasterWhileLoop(reps:Int) = run(reps)(rasterWhileLoop)
   def rasterWhileLoop = {
     val rcopy = raster.copy
-    val goal = rcopy.data.mutable.getOrElse(sys.error("argh"))
+    val goal = rcopy.data.mutable
 
     var i = 0
     val len = goal.length
@@ -773,7 +773,7 @@ class RasterForeach extends OperationBenchmark {
   def rasterWhile = {
     var t = 0
     var i = 0
-    val d = r.data.asArray.getOrElse(sys.error("argh"))
+    val d = r.data.asArray
     val len = r.length
     while (i < len) {
       t += d(i)
