@@ -22,7 +22,7 @@ class RescaleSpec extends FunSpec
       raster.rows should be (40)
       raster.rasterExtent should be (re)
       
-      val d = raster.data.asArray.getOrElse(sys.error("Can't get RasterData as Array."))
+      val d = raster.data.asArray
       println(raster.asciiDraw())
       println(raster.rasterExtent)
       raster.get(0,0) should be (1)
