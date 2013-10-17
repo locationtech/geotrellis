@@ -1,6 +1,8 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.source._
+import geotrellis.process._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
@@ -12,15 +14,7 @@ class MinSpec extends FunSpec
                  with ShouldMatchers 
                  with TestServer 
                  with RasterBuilders {
-  describe("Min") {
-    it("mins two integers") {
-      run(Min(3,2)) should be (2)
-    }
-
-    it("mins two doubles") {
-      run(Min(.2,.3)) should be (.2)
-    }
-    
+  describe("Min") {    
     it("mins a constant value to each cell of an int valued raster") {
       val r = positiveIntegerRaster
       val result = run(Min(r,50))
@@ -34,13 +28,13 @@ class MinSpec extends FunSpec
       }
     }
 
-    it("takes the constant int value for NODATA cells of an int valued raster") {
+    it("produces NODATA for NODATA cells of an int valued raster") {
       val r = positiveIntegerNoDataRaster
       val result = run(Min(r,50))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(col % 2 == 1) {
-            result.get(col,row) should be (50)
+            result.get(col,row) should be (NODATA)
           }
         }
       }
@@ -56,13 +50,13 @@ class MinSpec extends FunSpec
       }
     }
 
-    it("takes the constant int value for Double.NaN cells of an Double valued raster") {
+    it("produces Double.NaN for Double.NaN cells of an Double valued raster") {
       val r = probabilityNoDataRaster
       val result = run(Min(r,-1))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(col % 2 == 1) {
-            result.getDouble(col,row) should be (-1.0)
+            java.lang.Double.isNaN(result.getDouble(col,row)) should be (true)
           }
         }
       }
@@ -81,13 +75,13 @@ class MinSpec extends FunSpec
       }
     }
 
-    it("takes the constant double value for NODATA cells of an int valued raster") {
+    it("takes NODATA for NODATA cells of an int valued raster and double constant") {
       val r = positiveIntegerNoDataRaster
       val result = run(Min(r,52.4))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(col % 2 == 1) {
-            result.get(col,row) should be (52)
+            result.get(col,row) should be (NODATA)
           }
         }
       }
@@ -106,30 +100,30 @@ class MinSpec extends FunSpec
       }
     }
 
-    it("takes the constant Double value for Double.NaN cells of an Double valued raster") {
+    it("prodcues NaN for Double.NaN cells of an Double valued raster") {
       val r = probabilityNoDataRaster
       val result = run(Min(r,-.04))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(col % 2 == 1) {
-            result.getDouble(col,row) should be (-0.04)
+            java.lang.Double.isNaN(result.getDouble(col,row)) should be (true)
           }
         }
       }
     }
 
-    it("acts as identity if constant is NODATA") {
+    it("sets all data to NODATA if constant is NODATA") {
       val r1 = positiveIntegerNoDataRaster
       val r2 = probabilityNoDataRaster
-      assertEqual(run(Min(r1,NODATA)),r1)
-      assertEqual(run(Min(r2,NODATA)),r2)
+      assertEqual(run(Min(r1,NODATA)),r1.map(z=>NODATA))
+      assertEqual(run(Min(r2,NODATA)),r2.map(z=>NODATA))
     }
 
-    it("acts as identity if constant is Double.NaN") {
+    it("sets all data to NaN if constant is Double.NaN") {
       val r1 = positiveIntegerNoDataRaster
       val r2 = probabilityNoDataRaster
-      assertEqual(run(Min(r1,Double.NaN)),r1)
-      assertEqual(run(Min(r2,Double.NaN)),r2)
+      assertEqual(run(Min(r1,Double.NaN)),r1.mapDouble(z=>Double.NaN))
+      assertEqual(run(Min(r2,Double.NaN)),r2.mapDouble(z=>Double.NaN))
     }
 
     it("mins two integer rasters") {
@@ -181,8 +175,11 @@ class MinSpec extends FunSpec
       for(col <- 0 until 4) {
         for(row <- 0 until 3) {
           val z1 = r1.get(col,row)
+          val z2 = r2.get(col,row)
 
-          if(col % 2 == 0 && z1 != NODATA ) {
+          if(z1 == NODATA || z2 == NODATA) {
+            result.get(col,row) should be (NODATA)
+          } else if(col % 2 == 0) {
             result.get(col,row) should be (z1)
           } else {
             result.get(col,row) should be (r2.get(col,row))
@@ -202,14 +199,82 @@ class MinSpec extends FunSpec
       for(col <- 0 until 4) {
         for(row <- 0 until 3) {
           val z1 = r1.getDouble(col,row)
+          val z2 = r2.getDouble(col,row)
+          val zr = result.getDouble(col,row)
 
-          if(col % 2 == 0 && !java.lang.Double.isNaN(z1)) {
-            result.getDouble(col,row) should be (z1)
+          if(isNaN(z1) || isNaN(z2)) {
+            withClue(s"Z1: $z1  Z2: $z2  R: $zr") { isNaN(zr) should be (true) }
+          } else if(col % 2 == 0) {
+            zr should be (z1)
           } else {
-            result.getDouble(col,row) should be (r2.getDouble(col,row))
+            zr should be (z2)
           }
         }
       }
     }    
+
+    it("takes min of two tiled RasterSources correctly") {
+      val rs1 = RasterSource("quad_tiled")
+      val rs2 = RasterSource("quad_tiled2")
+
+      val r1 = runSource(rs1)
+      val r2 = runSource(rs2)
+      getSource(rs1.localMin(rs2)) match {
+        case Complete(result,success) =>
+          println(success)
+          for(row <- 0 until r1.rasterExtent.rows) {
+            for(col <- 0 until r1.rasterExtent.cols) {
+              result.get(col,row) should be (math.min(r1.get(col,row),r2.get(col,row)))
+            }
+          }
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+      }
+    }
+
+    it("takes min of three tiled RasterSources correctly") {
+      val rs1 = createRasterSource(
+        Array( NODATA,1,1, 1,1,1, 1,1,1,
+               1,1,1, 1,1,1, 1,1,1,
+
+               1,1,1, 1,1,1, 1,1,1,
+               1,1,1, 1,1,1, 1,1,1),
+        3,2,3,2)
+
+      val rs2 = createRasterSource(
+        Array( 2,2,2, 2,2,2, 2,2,2,
+               2,2,2, 2,2,2, 2,2,2,
+
+               2,2,2, 2,2,2, 2,2,2,
+               2,2,2, 2,2,2, 2,2,2),
+        3,2,3,2)
+
+      val rs3 = createRasterSource(
+        Array( 3,3,3, 3,3,3, 3,3,3,
+               3,3,3, 3,3,3, 3,3,3,
+
+               3,3,3, 3,3,3, 3,3,3,
+               3,3,3, 3,3,3, 3,3,3),
+        3,2,3,2)
+
+      getSource(Seq(rs1,rs2,rs3).reduce(_.localMin(_))) match {
+        case Complete(result,success) =>
+//          println(success)
+          for(row <- 0 until 4) {
+            for(col <- 0 until 9) {
+              if(row == 0 && col == 0)
+                result.get(col,row) should be (NODATA)
+              else
+                result.get(col,row) should be (1)
+            }
+          }
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+      }
+    }
   }
 }

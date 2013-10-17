@@ -1,50 +1,104 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.source._
 
 /**
- * Determines if one value is less than or equal to another. Sets to 1 if true, else 0.
+ * Determines if values are less than or equal to other values. Sets to 1 if true, else 0.
  */
-object LessOrEqual {
-  /** Returns 1 if the first input integer is less than or equal to the second, else 0 */
-  def apply(x:Op[Int], y:Op[Int]) = logic.Do2(x, y)((x, y) => if(x <= y) 1 else 0)
-  /** Returns a raster indicating which cell values are less than or equal to the input value.
-   * See [[LessOrEqualConstant1]] */
-  def apply(r:Op[Raster], c:Op[Int]) = new LessOrEqualConstant1(r, c)
-  /** Returns a raster indication which cell values are less than or equal to the input value.
-   * See [[LessOrEqualConstant2]] */
-  def apply(c:Op[Int], r:Op[Raster]) = new LessOrEqualConstant2(c, r)
-  /** Returns a raster indicating which cell values of the first input raster are
-   *  less than or equal to the corresponding cells of the second input raster.
-   *  See [[LessOrEqualRaster]] */
-  def apply(r1:Op[Raster], r2:Op[Raster]) = new LessOrEqualRaster(r1, r2)
+object LessOrEqual extends LocalRasterBinaryOp {
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is less than or equal to the input
+   * integer, else 0.
+   */
+  def apply(r:Op[Raster], c:Op[Int]):Op[Raster] = 
+    (r,c).map { (r,c) => r.dualMapIfSet(checkLessOrEqual(_,c))(checkLessOrEqual(_,c)) }
+         .withName("LessOrEqual[ConstantInt]")
+
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is less than or equal to the input
+   * intenger, else 0.
+   */
+  def apply(r:Op[Raster], c:Op[Double])(implicit d:DI):Op[Raster] = 
+    (r,c).map { (r,c) => r.dualMapIfSet(checkLessOrEqual(_,c))(checkLessOrEqual(_,c)) }
+         .withName("LessOrEqual[ConstantDouble]")
+
+  private def checkLessOrEqual(i1:Int,i2:Int) = 
+    if(i1 <= i2) 1 else 0
+
+  private def checkLessOrEqual(i:Int,d:Double) =
+    if(isNaN(d)) { 0 }
+    else {
+      if(i == NODATA) { 0 }
+      else { 
+        if(i <= d.toInt) 1
+        else 0
+      }
+    }
+
+  private def checkLessOrEqual(d1:Double,d2:Double):Double = 
+    if(isNaN(d1)) { 0 }
+    else {
+      if(isNaN(d2)) { 0 }
+      else { 
+        if(d1 <= d2) 1 
+        else 0 
+      }
+    }
+
+  def doRasters(r1:Raster,r2:Raster):Raster =
+    r1.dualCombine(r2)(checkLessOrEqual)(checkLessOrEqual)
 }
 
-/**
- * Returns a raster indicating which cell values are less than or equal to the input value.
- */
-case class LessOrEqualConstant1(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
-  (r, c) => AndThen(logic.RasterDualMapIfSet(r)
-    (z => if (z <= c) 1 else 0)
-    (z => if (z <= c) 1 else 0)
-  )
-})
-
-/**
- * Returns a raster indication which cell values are less than or equal to the input value.
- */
-case class LessOrEqualConstant2(c:Op[Int], r:Op[Raster]) extends Op2(c, r) ({
-  (c, r) => AndThen(logic.RasterDualMapIfSet(r)
-    (z => if (z <= c) 1 else 0)
-    (z => if (z <= c) 1 else 0))
-})
-
-/**
- * Returns a raster indicating which cell values of the first input raster are
- * less than or equal to the corresponding cells of the second input raster.
- */
-case class LessOrEqualRaster(r1:Op[Raster], r2:Op[Raster]) extends Op2(r1, r2) ({
-  (r1, r2) => AndThen(logic.RasterDualCombine(r1,r2)
-    ((z1, z2) => if (z1 <= z2) 1 else 0)
-    ((z1, z2) => if (z1 <= z2) 1 else 0))
-})
+trait LessOrEqualOpMethods[+Repr <: RasterSource] { self: Repr =>
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is less than or equal to the input
+   * integer, else 0.
+   */
+  def localLessOrEqual(i: Int) = self.mapOp(LessOrEqual(_, i))
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is less than or equal to the input
+    * integer, else 0.
+   */
+  def <=(i:Int) = localLessOrEqual(i)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is less than or equal to the input
+   * integer, else 0.
+   */
+  def <=:(i:Int) = localLessOrEqual(i)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is less than or equal to the input
+   * intenger, else 0.
+   */
+  def localLessOrEqual(d: Double) = self.mapOp(LessOrEqual(_, d))
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is less than or equal to the input
+   * intenger, else 0.
+   */
+  def <=(d:Double) = localLessOrEqual(d)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is less than or equal to the input
+   * intenger, else 0.
+   */
+  def <=:(d:Double) = localLessOrEqual(d)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is less than or equal to the input
+   * intenger, else 0.
+   */
+  def localLessOrEqual(rs:RasterSource) = self.combineOp(rs)(LessOrEqual(_,_))
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is less than or equal to the input
+   * intenger, else 0.
+   */
+  def <=(rs:RasterSource) = localLessOrEqual(rs)
+}

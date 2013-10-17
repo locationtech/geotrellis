@@ -54,12 +54,7 @@ case class History(id:String,
     val s = 
       value match {
         case null => "null"
-        case s:String =>
-          if(s.length > 10) {
-            s""""${s.substring(0,10)}...""""
-          } else {
-            s""""$s""""
-          }
+        case s:String => s""""$s""""
         case i:Int => s"""$i"""
         case d:Double => s"""$d"""
         case v:Vector[_] => 
@@ -84,7 +79,13 @@ case class History(id:String,
           sb.toString
         case _ => value.getClass.getSimpleName
       }
-    new History(id,steps,Some(Success(s)),startTime,now)
+    val truncS =           
+      if(s.length > 15) {
+        s"""${s.substring(0,12)}..."""
+      } else {
+        s
+      }
+    new History(id,steps,Some(Success(truncS)),startTime,now)
   }
 
   def withError(msg:String,trace:String) = {

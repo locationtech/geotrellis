@@ -199,19 +199,22 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
 
   def defer() = data.asArray.map(d => Raster(LazyArrayWrapper(d), rasterExtent)).getOrElse(this)
 
+  // TODO: Remove
   def getTiles():List[Raster] = data match {
     case t:TiledRasterData => t.getTiles(rasterExtent)
     case _ => List(this)
   }
 
+  // TODO: Remove
   def getTileOpList():List[Op[Raster]] = data match {
     case t:TiledRasterData => t.getTileOpList(rasterExtent)
     case _ => Literal(this) :: Nil
   }
 
-  //TODO: update Literal() case to return empty list if necessary
+  //TODO: Remove
   def getTileOpList(clipExtent:Polygon[_]):List[Op[Raster]] = data match {
     case t:TiledRasterData => t.getTileOpList(rasterExtent, clipExtent)
     case _ => Literal(this) :: Nil
   }
 }
+

@@ -109,7 +109,7 @@ class AddSpec extends FunSpec
 
     it("adds three tiled RasterSources correctly") {
       val rs1 = createRasterSource(
-        Array( 1,1,1, 1,1,1, 1,1,1,
+        Array( NODATA,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
 
                1,1,1, 1,1,1, 1,1,1,
@@ -137,7 +137,10 @@ class AddSpec extends FunSpec
 //          println(success)
           for(row <- 0 until 4) {
             for(col <- 0 until 9) {
-              result.get(col,row) should be (6)
+              if(row == 0 && col == 0)
+                result.get(col,row) should be (NODATA)
+              else
+                result.get(col,row) should be (6)
             }
           }
         case Error(msg,failure) =>
@@ -165,8 +168,8 @@ class AddSpec extends FunSpec
       val n = NODATA
 
       assert(run(addInts(a, b)) === ri(c))
-      assert(run(addInts(n, b)) === ri(b))
-      assert(run(addInts(c, n)) === ri(c))
+      assert(run(addInts(n, b)) === ri(n))
+      assert(run(addInts(c, n)) === ri(n))
       assert(run(addInts(n, n)) === ri(n))
     }
 
@@ -178,8 +181,8 @@ class AddSpec extends FunSpec
       val n = Double.NaN
 
       assert(run(addDoubles(a, b)) === rd(c))
-      assert(run(addDoubles(n, b)) === rd(b))
-      assert(run(addDoubles(c, n)) === rd(c))
+      assert(run(addDoubles(n, b)) === rd(n))
+      assert(run(addDoubles(c, n)) === rd(n))
       assert(run(addDoubles(n, n)) === rd(n))
 
       assert(run(addDoubles(a, a, b, b, c)) === rd(x))

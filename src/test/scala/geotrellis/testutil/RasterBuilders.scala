@@ -123,6 +123,41 @@ trait RasterBuilders {
     RasterSource(RasterDefinition("test",re,tileLayout),ops)
   }
 
+  def createRasterSource(arr:Array[Double],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int) = {
+    if(tileCols*pixelCols*tileRows*pixelRows != arr.length) {
+      sys.error("Tile and pixel col rows do not match array length")
+    }
+    val tiles = 
+      (for(j <- 0 until tileRows) yield {
+        (for(i <- 0 until tileCols) yield { Array.ofDim[Double](pixelCols*pixelRows) }).toArray
+      }).toArray
+
+    for(tR <- 0 until tileRows) {
+      for(pR <- 0 until pixelRows) {
+        for(tC <- 0 until tileCols) {
+          for(pC <- 0 until pixelCols) {
+            val col = tC*pixelCols + pC
+            val row = tR*pixelRows + pR
+            val v = arr(row*tileCols*pixelCols + col)
+            tiles(tR)(tC)(pR*pixelCols + pC) = v
+          }
+        }
+      }
+    }
+
+    val rasters = 
+      (for(r <- 0 until tileRows;
+        c <- 0 until tileCols) yield {
+        createRaster(tiles(r)(c),pixelCols,pixelRows)
+      }).toSeq
+
+    val ops = rasters.map(Literal(_))
+    val re = rasters.map(_.rasterExtent).reduce(_.combine(_))
+    val tileLayout = TileLayout(tileCols,tileRows,pixelCols,pixelRows)
+
+    RasterSource(RasterDefinition("test",re,tileLayout),ops)
+  }
+
   /**
    * 9x10 raster of 90 numbers between 1 - 100 in random order.
    */

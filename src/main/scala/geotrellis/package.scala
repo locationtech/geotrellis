@@ -13,6 +13,8 @@ package object geotrellis {
   type SeqDS[E] = geotrellis.source.DataSource[E,Seq[E]]
   type HistogramDS = geotrellis.source.DataSource[Histogram,Histogram]
 
+  @inline def isNaN(d:Double) = java.lang.Double.isNaN(d)
+
   /**
    * Add simple syntax for creating an operation.
    *
