@@ -11,7 +11,7 @@ import geotrellis.raster.RasterUtil._
  */ 
 trait ArrayRasterData extends RasterData {
 
-  def asArray = Option(this)
+  def asArray = this
 
   def convert(typ:RasterType):ArrayRasterData = LazyConvert(this, typ)
 

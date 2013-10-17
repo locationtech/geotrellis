@@ -41,8 +41,8 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
     */
   def isLazy:Boolean = data.isLazy
 
-  def toArray = data.asArray.getOrElse(sys.error("argh")).toArray
-  def toArrayDouble = data.asArray.getOrElse(sys.error("argh")).toArrayDouble
+  def toArray = data.asArray.toArray
+  def toArrayDouble = data.asArray.toArrayDouble
 
   /**
    * Get value at given coordinates.
@@ -192,12 +192,10 @@ case class Raster (data:RasterData, rasterExtent:RasterExtent) {
     if (dz > 0) mapIfSet(z => ((z - zmin) * dg) / dz + gmin) else copy()
   }
 
-  def force() = {
-    val opt = data.force.map(d => Raster(d, rasterExtent))
-    opt.getOrElse(sys.error("force called on non-array raster data"))
-  }
+  def force() =
+    Raster(data.force,rasterExtent)
 
-  def defer() = data.asArray.map(d => Raster(LazyArrayWrapper(d), rasterExtent)).getOrElse(this)
+  def defer() = Raster(LazyArrayWrapper(data.asArray), rasterExtent)
 
   // TODO: Remove
   def getTiles():List[Raster] = data match {

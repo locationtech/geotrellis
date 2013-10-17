@@ -12,7 +12,7 @@ object Util {
    * ByteBuffer boiler-plate stuff below.
    */
   def initByteBuffer32(bb:ByteBuffer, data:RasterData, size:Int) {
-    val d = data.asArray.getOrElse(sys.error("can't get data array")) 
+    val d = data.asArray
     var j = 0
     while (j < size) {
       val z = d(j)
@@ -25,7 +25,7 @@ object Util {
   }
 
   def initByteBuffer24(bb:ByteBuffer, data:RasterData, size:Int) {
-    val d = data.asArray.getOrElse(sys.error("can't get data array"))
+    val d = data.asArray
     var j = 0
     while (j < size) {
       val z = d(j)
@@ -37,7 +37,7 @@ object Util {
   }
 
   def initByteBuffer16(bb:ByteBuffer, data:RasterData, size:Int) {
-    val d = data.asArray.getOrElse(sys.error("can't get data array"))
+    val d = data.asArray
     var j = 0
     while (j < size) {
       val z = d(j)
@@ -48,7 +48,7 @@ object Util {
   }
 
   def initByteBuffer8(bb:ByteBuffer, data:RasterData, size:Int) {
-    val d = data.asArray.getOrElse(sys.error("can't get data array"))
+    val d = data.asArray
     var j = 0
     while (j < size) {
       bb.put(byte(d(j)))
