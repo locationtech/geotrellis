@@ -26,7 +26,7 @@ class ArgTest extends FunSuite {
   val raster = Raster(data, re)
 
   def loadRaster(path:String) = server.run(io.LoadFile(path))
-  def loadRasterData(path:String) = loadRaster(path).data.asArray.getOrElse(sys.error("argh"))
+  def loadRasterData(path:String) = loadRaster(path).data.asArray
 
   test("test float compatibility") {
     assert(java.lang.Double.isNaN(data.applyDouble(0)))
