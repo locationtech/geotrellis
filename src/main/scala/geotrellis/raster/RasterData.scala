@@ -87,7 +87,7 @@ trait RasterData extends Serializable {
   /**
    * Return the current RasterData as an array.
    */
-  def asArray: Option[ArrayRasterData]
+  def asArray: ArrayRasterData
 
   /**
     * Return this as a TiledRasterData.  
@@ -101,12 +101,12 @@ trait RasterData extends Serializable {
    * If your RasterData cannot be represented as an array, bad things will happen.
    * If your RasterData is lazy, any deferred calculations will be executed.
    */
-  def force: Option[StrictRasterData]
+  def force: StrictRasterData
 
   /**
    * Return a mutable version of the current raster.
    */
-  def mutable: Option[MutableRasterData]
+  def mutable: MutableRasterData
 
   /**
    * Get a particular (x, y) cell's integer value.

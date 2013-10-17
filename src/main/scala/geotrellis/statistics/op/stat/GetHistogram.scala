@@ -79,4 +79,3 @@ case class GetDoubleHistogram(r:Op[Raster], significantDigits:Int) extends logic
   def mapper(r:Op[Raster]):Op[List[FastMapHistogram]] = UntiledHistogram(r)
   def reducer(hs:List[FastMapHistogram]):Histogram = FastMapHistogram.fromHistograms(hs)
 }
-

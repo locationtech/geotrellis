@@ -10,7 +10,7 @@ import geotrellis._
  * foreach, and combine.
  */
 trait StrictRasterData extends ArrayRasterData with Serializable {
-  def force = Option(this)
+  def force = this
 
   def foreach(f:Int => Unit):Unit = {
     var i = 0

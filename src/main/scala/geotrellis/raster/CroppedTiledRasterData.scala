@@ -18,7 +18,7 @@ case class CroppedTiledRasterData(underlying:TiledRasterData,
   val (leftBorder, topBorder, rightBorder, bottomBorder) = calculateBorder
   val (leftClip, topClip, rightClip, bottomClip) = calculateClipping
 
-  override def mutable:Option[MutableRasterData] = {
+  override def mutable:MutableRasterData = {
     val arr = alloc(cols, rows)
     if (isFloat) {
       for (c <- 0 until cols; r <- 0 until rows) {
@@ -31,7 +31,7 @@ case class CroppedTiledRasterData(underlying:TiledRasterData,
         val elapsed = System.currentTimeMillis - start
       }
     }
-    Option(arr)
+    arr
   }
 
   override def force = mutable

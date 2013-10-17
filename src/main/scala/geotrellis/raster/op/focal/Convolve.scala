@@ -184,7 +184,7 @@ class ConvolveCalculation(k:Kernel) extends FocalCalculation[Raster] with Convol
     val r = TileWithNeighbors(raster,neighbors)
 
     val result = Raster.empty(raster.rasterExtent);
-    val data = result.data.mutable.get
+    val data = result.data.mutable
 
     val rowMax = analysisArea.rowMax
     val colMax = analysisArea.colMax

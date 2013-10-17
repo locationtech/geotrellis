@@ -14,7 +14,7 @@ case class ResampledArrayRasterData(underlying:ArrayRasterData,
   def cols = dst.cols
 
   // TODO: use a similar strategy to loadRaster() one to handle Doubles.
-  def mutable:Option[MutableRasterData] = {
+  def mutable:MutableRasterData = {
     val re = src
 
     // keep track of cell size in our source raster
@@ -99,7 +99,7 @@ case class ResampledArrayRasterData(underlying:ArrayRasterData,
       dst_row += 1
     }
 
-    Option(arr)
+    arr
   }
 
   def force = mutable

@@ -13,7 +13,7 @@ case class CroppedArrayRasterData(underlying:ArrayRasterData,
   def length = cols * rows
 
   // TODO: this will be slow
-  def mutable:Option[MutableRasterData] = {
+  def mutable:MutableRasterData = {
     val arr = alloc(cols, rows)
     if (isFloat) {
       for (c <- 0 until cols; r <- 0 until rows) {
@@ -24,7 +24,7 @@ case class CroppedArrayRasterData(underlying:ArrayRasterData,
         arr.set(c, r, get(c, r))
       }
     }
-    Option(arr)
+    arr
   }
   def force = mutable
 
