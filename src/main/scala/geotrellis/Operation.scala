@@ -149,10 +149,10 @@ abstract class OperationWrapper[+T](op:Op[T]) extends Operation[T] {
 }
 
 case class DispatchedOperation[+T](val op:Op[T], val dispatcher:ActorRef)
-extends OperationWrapper(logic.Force(op)) {}
+extends OperationWrapper(op) {}
 
 case class RemoteOperation[+T](val op:Op[T], cluster:ActorRef)
-extends OperationWrapper(logic.Force(op)) {}
+extends OperationWrapper(op) {}
 
 object Operation {
   implicit def implicitLiteralVal[A <: AnyVal](a:A)(implicit m:Manifest[A]):Operation[A] = Literal(a)

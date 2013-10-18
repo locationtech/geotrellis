@@ -5,8 +5,8 @@ import geotrellis._
 /**
  * LazyCombine represents a lazily-applied combine method.
  */
-final case class LazyCombine(data1: ArrayRasterData,
-                             data2: ArrayRasterData,
+final case class LazyCombine(data1: RasterData,
+                             data2: RasterData,
                              g: (Int, Int) => Int) extends LazyRasterData {
   if (data1.lengthLong != data2.lengthLong) {
     val size1 = s"${data1.cols} x ${data1.rows}"
@@ -45,7 +45,7 @@ final case class LazyCombine(data1: ArrayRasterData,
   }
 
   def combine(other: RasterData)(f: (Int, Int) => Int) = other match {
-    case a: ArrayRasterData => LazyCombine(this, a, f)
+    case a: RasterData => LazyCombine(this, a, f)
     case o                  => o.combine(this)((z2, z1) => f(z1, z2))
   }
 
@@ -71,7 +71,7 @@ final case class LazyCombine(data1: ArrayRasterData,
   }
 
   def combineDouble(other: RasterData)(f: (Double, Double) => Double) = other match {
-    case a: ArrayRasterData => LazyCombineDouble(this, a, f)
+    case a: RasterData => LazyCombineDouble(this, a, f)
     case o                  => o.combineDouble(this)((z2, z1) => f(z1, z2))
   }
 }

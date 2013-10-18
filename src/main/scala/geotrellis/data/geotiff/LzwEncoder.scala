@@ -13,6 +13,7 @@ import scala.annotation.switch
 import scala.math.{ceil, min}
 
 import geotrellis._
+import geotrellis.raster.RasterUtil._
 
 /**
  * Implements LZW compression encoding.
@@ -71,7 +72,7 @@ class LzwFloatEncoder(encoder:Encoder) extends LzwEncoder(encoder) {
   private val ndx:Int = floatToRawIntBits(ndf)
 
   def handleCell(i:Int) {
-    var z = data.applyDouble(i)
+    var z = i2d(data(i))
     val n = if (isNaN(z)) ndx else floatToRawIntBits(z.toFloat)
     handleByte(n >> 24)
     handleByte((n >> 16) & 0xff)
@@ -86,7 +87,7 @@ class LzwDoubleEncoder(encoder:Encoder) extends LzwEncoder(encoder) {
   private val ndx:Long = doubleToRawLongBits(ndf)
 
   def handleCell(i:Int) {
-    var z = data.applyDouble(i)
+    var z = i2d(data(i))
     val n = if (isNaN(z)) ndx else doubleToRawLongBits(z)
     handleByte((n >> 56).toInt)
     handleByte(((n >> 48) & 0xff).toInt)

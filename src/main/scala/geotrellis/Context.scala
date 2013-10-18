@@ -40,7 +40,8 @@ class Context(server:Server) {
       case Some(layer) =>
         layer match {
           case tl:TileSetRasterLayer =>
-            Raster(tl.getData.asTileArray, tl.info.rasterExtent)
+            tl.getRaster
+//            Raster(tl.getData/*.asTileArray*/, tl.info.rasterExtent)  // TODO
           case _ =>
             sys.error(s"Raster layer at path $path is not a tiled raster layer.")
         }

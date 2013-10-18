@@ -6,7 +6,7 @@ import geotrellis._
  * LazyRasterData is an ArrayRasterData which (may) be lazily evaluated, and
  * which will perform other operations lazily.
  */
-trait LazyRasterData extends ArrayRasterData {
+trait LazyRasterData extends RasterData {
   def force = mutable
 
   def mutable = {

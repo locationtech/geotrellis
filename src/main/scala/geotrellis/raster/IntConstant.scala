@@ -13,7 +13,6 @@ final case class IntConstant(n:Int, cols:Int, rows:Int) extends StrictRasterData
 
   override def combine(other:RasterData)(f:(Int,Int) => Int) = other.map(z => f(n, z))
   override def map(f:Int => Int) = IntConstant(f(n), cols, rows)
-  override def mapIfSet(f:Int => Int) = if (n != NODATA) map(f) else this
 
   override def foreach(f: Int => Unit) {
     var i = 0
@@ -23,6 +22,5 @@ final case class IntConstant(n:Int, cols:Int, rows:Int) extends StrictRasterData
 
   override def combineDouble(other:RasterData)(f:(Double,Double) => Double) = other.mapDouble(z => f(n, z))
   override def mapDouble(f:Double => Double) = DoubleConstant(f(n), cols, rows)
-  override def mapIfSetDouble(f:Double => Double) = if (n != NODATA) mapDouble(f) else this
   override def foreachDouble(f: Double => Unit) = foreach(z => f(z))
 }

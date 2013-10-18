@@ -20,10 +20,9 @@ object CellWriter {
 }
 
 trait CellWriter {
-  protected[this] def writeCell(data:RasterData, col:Int, row:Int, cols:Int, dos:DataOutputStream)
+  protected[this] def writeCell(raster:Raster, col:Int, row:Int, cols:Int, dos:DataOutputStream)
 
   def writeCells(raster:Raster, dos:DataOutputStream) {
-    val data = raster.data
     val cols = raster.rasterExtent.cols
     val rows = raster.rasterExtent.rows
 
@@ -31,7 +30,7 @@ trait CellWriter {
     while (row < rows) {
       var col = 0
       while (col < cols) {
-        writeCell(data, col, row, cols, dos)
+        writeCell(raster, col, row, cols, dos)
         col += 1
       }
       row += 1
@@ -41,7 +40,6 @@ trait CellWriter {
 
 object BoolCellWriter extends CellWriter {
   override def writeCells(raster:Raster, dos:DataOutputStream) {
-    val data = raster.data
     val cols = raster.rasterExtent.cols
     val rows = raster.rasterExtent.rows
 
@@ -51,7 +49,7 @@ object BoolCellWriter extends CellWriter {
     while (row < rows) {
       var col = 0
       while (col < cols) {
-        z += (data.get(col, row) & 1) << i
+        z += (raster.get(col, row) & 1) << i
         i += 1
         col += 1
         if (i > 7) {
@@ -64,22 +62,22 @@ object BoolCellWriter extends CellWriter {
     }
     if(i != 0) { dos.writeByte(z) } // Write last byte!
   }
-  def writeCell(data:RasterData, col:Int, row:Int, cols:Int, dos:DataOutputStream) = ()
+  def writeCell(raster:Raster, col:Int, row:Int, cols:Int, dos:DataOutputStream) = ()
 }
 
 trait IntCellWriter extends CellWriter {
   def noDataValue:Int
   def writeValue(z:Int, dos:DataOutputStream): Unit
-  @inline final def writeCell(data:RasterData, col:Int, row:Int, cols:Int, dos:DataOutputStream) {
-    val z = data.get(col, row)
+  @inline final def writeCell(raster:Raster, col:Int, row:Int, cols:Int, dos:DataOutputStream) {
+    val z = raster.get(col, row)
     if (z == NODATA) writeValue(noDataValue, dos) else writeValue(z, dos)
   }
 }
 
 trait FloatCellWriter extends CellWriter {
   def writeValue(z:Double, dos:DataOutputStream): Unit
-  @inline final def writeCell(data:RasterData, col:Int, row:Int, cols:Int, dos:DataOutputStream) {
-    writeValue(data.getDouble(col, row), dos)
+  @inline final def writeCell(raster:Raster, col:Int, row:Int, cols:Int, dos:DataOutputStream) {
+    writeValue(raster.getDouble(col, row), dos)
   }
 }
 

@@ -8,24 +8,18 @@ import geotrellis._
  * Designed to be a near drop-in replacement for Array in many cases.
  */
 trait RasterData extends Serializable {
+  def force:RasterData
   def getType: RasterType
   def alloc(cols: Int, rows: Int): MutableRasterData
+
   def isFloat = getType.float
+  def convert(typ:RasterType):RasterData = LazyConvert(this, typ)
+  def lengthLong = length
 
-  def tileLayoutOpt: Option[TileLayout] = None
-
-
-
-  /**
-   * True if this RasterData is tiled, e.g. a subclass of TiledRasterData.
-   */
-  def isTiled: Boolean = false
   def isLazy: Boolean = false
 
   def copy: RasterData
   def length: Int
-  def lengthLong: Long
-  def convert(typ: RasterType): RasterData
 
   def cols: Int
   def rows: Int
@@ -52,12 +46,6 @@ trait RasterData extends Serializable {
   def map(f: Int => Int): RasterData
 
   /**
-   * Similar to map, except that this method passes through "nodata" cells
-   * without calling the provided function.
-   */
-  def mapIfSet(f: Int => Int): RasterData
-
-  /**
    * Combine two RasterData's cells into new cells using the given double
    * function. For every (x,y) cell coordinate, get each RasterData's double
    * value, map them to a new value, and assign it to the output's (x,y) cell.
@@ -78,45 +66,51 @@ trait RasterData extends Serializable {
    */
   def mapDouble(f: Double => Double): RasterData
 
-  /**
-   * Similar to map, except that this method passes through "nodata" cells
-   * without calling the provided function.
-   */
-  def mapIfSetDouble(f: Double => Double): RasterData
+  override def equals(other:Any):Boolean = other match {
+    case r:RasterData => {
+      if (r == null) return false
+      val len = length
+      if (len != r.length) return false
+      var i = 0
+      while (i < len) {
+        if (apply(i) != r(i)) return false
+        i += 1
+      }
+      true
+    }
+    case _ => false
+  }
 
-  /**
-   * Return the current RasterData as an array.
-   */
-  def asArray: ArrayRasterData
+  def apply(i: Int):Int
+  def applyDouble(i:Int):Double
 
-  /**
-    * Return this as a TiledRasterData.  
-    */
-  def asTiledRasterData(raster:Raster):TiledRasterData = TileArrayRasterData(raster)
-  
+  def get(col:Int, row:Int) = apply(row * cols + col)
+  def getDouble(col:Int, row:Int) = applyDouble(row * cols + col)
 
-  /**
-   * Return the current RasterData values as a strict (calculated) ArrayRasterData.
-   *
-   * If your RasterData cannot be represented as an array, bad things will happen.
-   * If your RasterData is lazy, any deferred calculations will be executed.
-   */
-  def force: StrictRasterData
+  def toList = toArray.toList
+  def toListDouble = toArrayDouble.toList
 
-  /**
-   * Return a mutable version of the current raster.
-   */
-  def mutable: MutableRasterData
+  def toArray:Array[Int] = {
+    val len = length
+    val arr = Array.ofDim[Int](len)
+    var i = 0
+    while (i < len) {
+      arr(i) = apply(i)
+      i += 1
+    }
+    arr
+  }
 
-  /**
-   * Get a particular (x, y) cell's integer value.
-   */
-  def get(x: Int, y: Int): Int
-
-  /**
-   * Get a particular (x, y) cell's double value.
-   */
-  def getDouble(x: Int, y: Int): Double
+  def toArrayDouble:Array[Double] = {
+    val len = length
+    val arr = Array.ofDim[Double](len)
+    var i = 0
+    while (i < len) {
+      arr(i) = applyDouble(i)
+      i += 1
+    }
+    arr
+  }
 }
 
 object RasterData {

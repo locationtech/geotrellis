@@ -12,17 +12,20 @@ import geotrellis.raster.RasterUtil._
  * val result = DoCell(R, {x:Int => x + 3} ) // add 3 to every cell in the raster  
  * </pre>
  */
-case class DoCell(r:Op[Raster])(f:Int => Int) extends Op1(r)({
-  (r) => AndThen(logic.RasterDualMap(r)(f)({ z:Double => i2d(f(d2i(z))) }))
-})
-
 object DoCell {
-  def apply(r1:Op[Raster], r2:Op[Raster])(f:(Int,Int) => Int) = BinaryDoCell(r1,r2)(f)
-}
+  def apply(r:Op[Raster])(f:Int => Int) =
+    r.map(_.dualMap(f)({ z:Double => i2d(f(d2i(z))) }))
+     .withName("DoCell")
 
-object DoCellDouble {
-  def apply(r1:Op[Raster], r2:Op[Raster])(f:(Double,Double) => Double) = BinaryDoDoubleCell(r1,r2)(f)
+  def apply(r1:Op[Raster], r2:Op[Raster])(f:(Int,Int) => Int) = 
+    (r1,r2).map { (a,b) => a.dualCombine(b)(f)((z1:Double, z2:Double) => i2d(f(d2i(z1), d2i(z2)))) }
+           .withName("DoCell")
+
+  def apply(r1:Op[Raster], r2:Op[Raster])(f:(Double,Double) => Double)(implicit d:DI) = 
+    (r1,r2).map { (a,b) => a.dualCombine(b)((z1:Int,z2:Int)=>d2i(f(i2d(z1), i2d(z2))))(f) }
+           .withName("DoCell")
 }
+    
 /**
  * Perform a Double function on every cell in a raster.
  *
@@ -32,9 +35,12 @@ object DoCellDouble {
  * val r2 = DoCell(R, x => x + 3 ) // add 3 to every cell in the raster  
  * </pre>
  */
-case class DoCellDouble(r:Op[Raster])(f:Double => Double) extends Op1(r)({
-  (r) => AndThen(logic.RasterDualMap(r)({ z:Int => d2i(f(i2d(z))) })(f))
-})
+object  DoCellDouble {
+  def apply(r:Op[Raster])(f:Double => Double) =
+    r.map(_.dualMap({ z:Int => d2i(f(i2d(z))) })(f))
+     .withName("DoCellDouble")
+
+}
 
 /**
  * Perform a function on every cell in a raster with the values from another raster.
@@ -48,11 +54,11 @@ case class DoCellDouble(r:Op[Raster])(f:Double => Double) extends Op1(r)({
  * val result = BinaryDoCell(r1, r2, {(a:Int, b:Int) => a + b} )
  * </pre>
  */
-case class BinaryDoCell(r1:Op[Raster], r2:Op[Raster])(f:(Int, Int) => Int) extends Op2(r1,r2) ({
-  (r1,r2) => AndThen(logic.RasterDualCombine(r1,r2)
-  ((z1:Int, z2:Int) => f(z1, z2))
-  ((z1:Double, z2:Double) => i2d(f(d2i(z1), d2i(z2)))))
-})
+// case class BinaryDoCell(r1:Op[Raster], r2:Op[Raster])(f:(Int, Int) => Int) extends Op2(r1,r2) ({
+//   (r1,r2) => AndThen(logic.RasterDualCombine(r1,r2)
+//   ((z1:Int, z2:Int) => f(z1, z2))
+//   ((z1:Double, z2:Double) => i2d(f(d2i(z1), d2i(z2)))))
+// })
 
 /**
  * Perform a Double function on every cell in a raster with the values from another raster.
@@ -66,8 +72,8 @@ case class BinaryDoCell(r1:Op[Raster], r2:Op[Raster])(f:(Int, Int) => Int) exten
  * val result = BinaryDoCell(r1, r2, {(a:Double, b:Double) => a + b} )
  * </pre>
  */
-case class BinaryDoDoubleCell(r1:Op[Raster], r2:Op[Raster])(f:(Double, Double) => Double) extends Op2(r1,r2) ({
-  (r1,r2) => AndThen(logic.RasterDualCombine(r1,r2)
-  ((z1:Int, z2:Int) => d2i(f(i2d(z1), i2d(z2))))
-  ((z1:Double, z2:Double) => f(z1, z2)))
-})
+// case class BinaryDoDoubleCell(r1:Op[Raster], r2:Op[Raster])(f:(Double, Double) => Double) extends Op2(r1,r2) ({
+//   (r1,r2) => AndThen(logic.RasterDualCombine(r1,r2)
+//   ((z1:Int, z2:Int) => d2i(f(i2d(z1), i2d(z2))))
+//   ((z1:Double, z2:Double) => f(z1, z2)))
+// })

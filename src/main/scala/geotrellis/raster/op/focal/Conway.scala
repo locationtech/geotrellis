@@ -17,14 +17,14 @@ case class Conway(r:Op[Raster],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,
   (r,n) => new CellwiseCalculation[Raster] with ByteRasterDataResult {
     var count = 0
 
-    def add(r:Raster, x:Int, y:Int) = {
+    def add(r:RasterLike, x:Int, y:Int) = {
       val z = r.get(x,y)
       if (z != NODATA) {
         count += 1
       }
     }
 
-    def remove(r:Raster, x:Int, y:Int) = {
+    def remove(r:RasterLike, x:Int, y:Int) = {
       val z = r.get(x,y)
       if (z != NODATA) {
         count -= 1

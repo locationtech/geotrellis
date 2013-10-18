@@ -9,12 +9,12 @@ import geotrellis.feature._
   * Note that the returned tiles are lazily loaded, so that they
   * can still be dispatched across the network without passing data. 
   */
-case class GetIntersectingTileOps(r: Op[Raster], p:Op[Polygon[_]]) extends Op2(r,p)({
-  (r,p) => { 
-    val tileOps = r.data match { 
-      case t:TiledRasterData => t.getTileOpList(r.rasterExtent, p)
-      case _ => Literal(r) :: Nil
-    }
-    Result(tileOps)
-  }
-})
+// case class GetIntersectingTileOps(r: Op[Raster], p:Op[Polygon[_]]) extends Op2(r,p)({
+//   (r,p) => { 
+//     val tileOps = r.data match { 
+//       case t:TiledRasterData => t.getTileOpList(r.rasterExtent, p)
+//       case _ => Literal(r) :: Nil
+//     }
+//     Result(tileOps)
+//   }
+// })

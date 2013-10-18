@@ -18,21 +18,21 @@ trait RasterSourceLike[+Repr <: RasterSource]
 
   def get() =
     (rasterDefinition,logic.Collect(tiles)).map { (rd,tileSeq) =>
-      Raster(TileArrayRasterData(tileSeq.toArray, rd.tileLayout),rd.re)
+      TileRaster(tileSeq,rd.re,rd.tileLayout).toArrayRaster
     }
 
-  // def global[That](f:Raster=>Raster)
-  //                 (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
-  //   val tileOps:Op[Seq[Op[Raster]]] =
-  //     (rasterDefinition,logic.Collect(tiles)).map { (rd,tileSeq) =>
-  //       val r = f(Raster(TileArrayRasterData(tileSeq.toArray, rd.tileLayout),rd.re))
-  //       r.createTiles(rd.tileLayout).map(Literal(_))
-  //     }
-  //   // Set into new RasterSource
-  //   val builder = bf.apply(this)
-  //   builder.setOp(tileOps)
-  //   builder.result
-  // }
+  def global[That](f:RasterLike=>Raster)
+                  (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
+    val tileOps:Op[Seq[Op[Raster]]] =
+      (rasterDefinition,logic.Collect(tiles)).map { (rd,tileSeq) =>
+        val r = f(TileRaster(tileSeq.toSeq, rd.re,rd.tileLayout))
+        TileRaster.split(r,rd.tileLayout).map(Literal(_))
+      }
+    // Set into new RasterSource
+    val builder = bf.apply(this)
+    builder.setOp(tileOps)
+    builder.result
+  }
 
   def combineOp[B,That](rs:RasterSource)
                        (f:(Op[Raster],Op[Raster])=>Op[B])

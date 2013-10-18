@@ -8,7 +8,7 @@ import geotrellis._
  * right) is not. This means that the actual size of the "real data" here is
  * just col2 - col1, and row2 - row1.
  */
-final case class MaskedArrayRasterData(data:ArrayRasterData, col1:Int, row1:Int, col2:Int, row2:Int)
+final case class MaskedRasterData(data:RasterData, col1:Int, row1:Int, col2:Int, row2:Int)
 extends LazyRasterData with Wrapper {
   def copy = this
   def underlying = data
@@ -53,9 +53,8 @@ extends LazyRasterData with Wrapper {
   }
 
   def map(f:Int => Int) = LazyMap(this, f)
-  def mapIfSet(f:Int => Int) = LazyMapIfSet(this, f)
   def combine(other:RasterData)(f:(Int, Int) => Int) = other match {
-    case a:ArrayRasterData => LazyCombine(this, a, f)
+    case a:RasterData => LazyCombine(this, a, f)
     case o => o.combine(this)((z2, z1) => f(z1, z2))
   }
 
@@ -74,9 +73,8 @@ extends LazyRasterData with Wrapper {
   }
 
   def mapDouble(f:Double => Double) = LazyMapDouble(this, f)
-  def mapIfSetDouble(f:Double => Double) = LazyMapIfSetDouble(this, f)
   def combineDouble(other:RasterData)(f:(Double, Double) => Double) = other match {
-    case a:ArrayRasterData => LazyCombineDouble(this, a, f)
+    case a:RasterData => LazyCombineDouble(this, a, f)
     case o => o.combineDouble(this)((z2, z1) => f(z1, z2))
   }
 }

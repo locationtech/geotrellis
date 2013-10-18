@@ -7,7 +7,7 @@ import geotrellis._
  * underlying raster data.
  */
 trait Wrapper {
-  protected[this] def underlying: ArrayRasterData
+  protected[this] def underlying: RasterData
   final def getType = underlying.getType
   final def alloc(cols: Int, rows: Int) = underlying.alloc(cols, rows)
   final def length = underlying.length

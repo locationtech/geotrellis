@@ -34,7 +34,7 @@ case class RasterMoransI(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors])
      `stddev^2` = s*s
     }
 
-    def calc(r:Raster,cursor:Cursor) = {
+    def calc(r:RasterLike,cursor:Cursor) = {
       var z = 0.0
       var w = 0
       var base = 0.0
@@ -89,7 +89,7 @@ case class ScalarMoransI(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) 
       `stddev^2` = s*s
     }
 
-    def calc(r:Raster,cursor:Cursor) = {
+    def calc(r:RasterLike,cursor:Cursor) = {
       var base = r.getDouble(cursor.col,cursor.row) - mean
       var z = -base
 

@@ -10,6 +10,6 @@ import geotrellis._
  * This is useful when you want to force lazy operations to happen
  * at specific points in the operation chain.
  */
-case class Force(r:Op[Raster]) extends Op1(r)({
-  r => Result(r.force)
-})
+// case class Force(r:Op[Raster]) extends Op1(r)({
+//   r => Result(r.force)
+// })

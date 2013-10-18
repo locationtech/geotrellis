@@ -4,10 +4,10 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.util._
 import geotrellis.data.arg.ArgReader
-import geotrellis.raster.{TileSetRasterData,
+import geotrellis.raster.{//TileSetRasterData,
                           TileLayout,
                           Tiler,
-                          CroppedRaster,
+  //CroppedRaster,
                           IntConstant}
 
 import com.typesafe.config.Config
@@ -132,14 +132,14 @@ extends RasterLayer(info) {
 
   override
   def getRaster(extent:Extent):Raster = 
-    CroppedRaster(getRaster,extent)
+    CroppedRaster(getRaster(None),extent)
 
-  def getData() = 
-    TileSetRasterData(tileDirPath,
-                      info.name,
-                      info.rasterType,
-                      tileLayout,
-                      getTileLoader)
+  def getData():IntArrayRasterData = ??? // TODO
+    // TileSetRasterData(tileDirPath,
+    //                   info.name,
+    //                   info.rasterType,
+    //                   tileLayout,
+    //                   getTileLoader)
 
   def getTile(col:Int, row:Int) = getTileLoader().getTile(col,row)
 

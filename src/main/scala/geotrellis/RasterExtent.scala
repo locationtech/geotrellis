@@ -8,7 +8,10 @@ case class GeoAttrsError(msg:String) extends Exception(msg)
  * Represents grid coordinates of a subsection of a RasterExtent.
  * These coordinates are inclusive.
  */
-case class GridBounds(colMin:Int,rowMin:Int,colMax:Int,rowMax:Int)
+case class GridBounds(colMin:Int,rowMin:Int,colMax:Int,rowMax:Int) {
+  val width = colMax - colMin
+  val height = rowMax - rowMin
+}
 
 /**
  * RasterExtent objects represent the geographic extent (envelope) of a raster.
@@ -191,6 +194,14 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     val targetCols = math.round((xmax - xmin) / cellwidth).toInt
     val targetRows = math.round((ymax - ymin) / cellheight).toInt
     RasterExtent(Extent(xmin,ymin,xmax,ymax),cellwidth,cellheight,targetCols,targetRows)
+  }
+
+  def extentFor(gridBounds:GridBounds):Extent = {
+    val xmin = max(min(gridBounds.colMin * cellwidth + extent.xmin, extent.xmax) , extent.xmin)
+    val ymax = min(max(extent.ymax - (gridBounds.rowMin * cellheight), extent.ymin), extent.ymax)
+    val xmax = xmin + (gridBounds.width * cellwidth)
+    val ymin = ymax - (gridBounds.height * cellheight)
+    Extent(xmin,ymin,xmax,ymax)
   }
 }
 

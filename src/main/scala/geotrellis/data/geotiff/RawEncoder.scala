@@ -13,6 +13,7 @@ import scala.annotation.switch
 import scala.math.{ceil, min}
 
 import geotrellis._
+import geotrellis.raster.RasterUtil._
 
 object RawEncoder {
   def render(encoder:Encoder) = RawEncoder(encoder).render()
@@ -54,7 +55,7 @@ class RawIntEncoder(encoder:Encoder) extends RawEncoder(encoder) {
 class RawFloatEncoder(encoder:Encoder) extends RawEncoder(encoder) {
   val ndf = if (encoder.settings.esriCompat) Float.MinValue else Float.NaN
   def handleCell(i:Int) {
-    var z = data.applyDouble(i)
+    var z = i2d(data(i))
     dmg.writeFloat(if (isNaN(z)) ndf else z.toFloat)
   }
 }
@@ -62,7 +63,7 @@ class RawFloatEncoder(encoder:Encoder) extends RawEncoder(encoder) {
 class RawDoubleEncoder(encoder:Encoder) extends RawEncoder(encoder) {
   val ndf = if (encoder.settings.esriCompat) Double.MinValue else Double.NaN
   def handleCell(i:Int) {
-    var z = data.applyDouble(i)
+    var z = i2d(data(i))
     dmg.writeDouble(if (isNaN(z)) ndf else z)
   }
 }

@@ -9,7 +9,7 @@ import geotrellis._
  * This trait provides concrete, eager implementations of map, mapIfSet,
  * foreach, and combine.
  */
-trait StrictRasterData extends ArrayRasterData with Serializable {
+trait StrictRasterData extends RasterData with Serializable {
   def force = this
 
   def foreach(f:Int => Unit):Unit = {
@@ -21,32 +21,10 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
     }
   }
 
-  def map(f:Int => Int):ArrayRasterData = {
-    val len = length
-    val data = alloc(cols, rows)
-    var i = 0
-    while (i < len) {
-      data(i) = f(apply(i))
-      i += 1
-    }
-    data
-  }
-
-  def mapIfSet(f:Int => Int):ArrayRasterData = {
-    val len = length
-    val data = alloc(cols, rows)
-    var i = 0
-    while (i < len) {
-      val z = apply(i)
-      if (isData(z)) { data(i) = f(z) }
-      else { data(i) = NODATA }
-      i += 1
-    }
-    data
-  }
+  def map(f:Int => Int):RasterData = LazyMap(this,f)
 
   def combine(rhs:RasterData)(f:(Int, Int) => Int):RasterData = rhs match {
-    case other:ArrayRasterData => {
+    case other:RasterData => {
       if (lengthLong != other.lengthLong) {
         val size1 = s"${cols} x ${rows}"
         val size2 = s"${other.cols} x ${other.rows}"
@@ -73,33 +51,10 @@ trait StrictRasterData extends ArrayRasterData with Serializable {
     }
   }
 
-
-  def mapDouble(f:Double => Double):ArrayRasterData = {
-    val len = length
-    val data = alloc(cols, rows)
-    var i = 0
-    while (i < len) {
-      data.updateDouble(i, f(applyDouble(i)))
-      i += 1
-    }
-    data
-  }
-
-  def mapIfSetDouble(f:Double => Double):ArrayRasterData = {
-    val len = length
-    val data = alloc(cols, rows)
-    var i = 0
-    while (i < len) {
-      val z = applyDouble(i)
-      if (isData(z)) { data.updateDouble(i, f(z)) }
-      else { data.updateDouble(i, Double.NaN) }
-      i += 1
-    }
-    data
-  }
+  def mapDouble(f:Double => Double):RasterData = LazyMapDouble(this,f)
 
   def combineDouble(rhs:RasterData)(f:(Double, Double) => Double) = rhs match {
-    case other:ArrayRasterData => {
+    case other:RasterData => {
       if (lengthLong != other.lengthLong) {
         val size1 = s"${cols} x ${rows}"
         val size2 = s"${other.cols} x ${other.rows}"

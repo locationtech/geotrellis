@@ -5,8 +5,8 @@ import geotrellis._
 /**
  * LazyCombineDouble represents a lazily-applied combineDouble method.
  */
-final case class LazyCombineDouble(data1: ArrayRasterData,
-                                   data2: ArrayRasterData,
+final case class LazyCombineDouble(data1: RasterData,
+                                   data2: RasterData,
                                    g: (Double, Double) => Double) extends LazyRasterData {
 
   if (data1.lengthLong != data2.lengthLong) {
@@ -37,16 +37,8 @@ final case class LazyCombineDouble(data1: ArrayRasterData,
 
   def map(f: Int => Int) = LazyCombine(data1, data2, (a, b) => f(d2i(g(i2d(a), i2d(b)))))
 
-  def mapIfSet(f: Int => Int) = {
-    def h(a: Int, b: Int) = {
-      val z = g(a, b)
-      if (isNodata(z)) NODATA else f(d2i(z))
-    }
-    LazyCombine(data1, data2, h)
-  }
-
   def combine(other: RasterData)(f: (Int, Int) => Int) = other match {
-    case a: ArrayRasterData => LazyCombine(this, a, f)
+    case a: RasterData => LazyCombine(this, a, f)
     case o                  => o.combine(this)((z2, z1) => f(z1, z2))
   }
 
@@ -63,16 +55,8 @@ final case class LazyCombineDouble(data1: ArrayRasterData,
     LazyCombineDouble(data1, data2, (a, b) => f(g(a, b)))
   }
 
-  def mapIfSetDouble(f: Double => Double) = {
-    def h(a: Double, b: Double) = {
-      val z = g(a, b)
-      if (isNodata(z)) Double.NaN else f(z)
-    }
-    LazyCombineDouble(data1, data2, h)
-  }
-
   def combineDouble(other: RasterData)(f: (Double, Double) => Double) = other match {
-    case a: ArrayRasterData => LazyCombineDouble(this, a, f)
+    case a: RasterData => LazyCombineDouble(this, a, f)
     case o                  => o.combineDouble(this)((z2, z1) => f(z1, z2))
   }
 }
