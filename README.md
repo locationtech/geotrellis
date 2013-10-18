@@ -35,7 +35,7 @@ operations with existing operations.
 
     scalaVersion := "2.10.0"
 
-    libraryDependencies += "com.azavea.geotrellis" %% "geotrellis" % "0.8.1"
+    libraryDependencies += "com.azavea.geotrellis" %% "geotrellis" % "0.8.2"
 
 ## Some sample GeoTrellis code
 
