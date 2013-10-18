@@ -14,13 +14,13 @@ GeoTrellis was designed to solve three core problems, with a focus on raster pro
 Please contact us if you have any questions, find us on irc at #geotrellis on freenode, or join 
 the user mailing list at [https://groups.google.com/group/geotrellis-user](https://groups.google.com/group/geotrellis-user).
 
-GeoTrellis is available under the Apache 2 license.  Learn more at More information is also available on the [GeoTrellis website](http://www.azavea.com/products/geotrellis/).
+GeoTrellis is available under the Apache 2 license.  More information is also available on the [GeoTrellis website](http://www.azavea.com/products/geotrellis/).
 
 GeoTrellis is available under the Apache 2 License.
 
-The current release version of GeoTrellis is 0.8.1.
+The current release version of GeoTrellis is 0.8.2.
 
-The current development release of GeoTrellis is 0.8.2-RC1.
+The current development release of GeoTrellis is 0.9.0-SNAPSHOT.
  
 [![Build Status](https://api.travis-ci.org/geotrellis/geotrellis.png)](http://travis-ci.org/geotrellis/geotrellis)
 
