@@ -1,12 +1,16 @@
 package geotrellis.source
 
 import geotrellis._
+import geotrellis.feature._
 import geotrellis.raster.op._
 import geotrellis.statistics.op._
 
 import geotrellis.raster._
 
-trait RasterSourceLike[+Repr <: RasterSource] 
+import scalaxy.loops._
+import scala.collection.mutable
+
+trait RasterDataSourceLike[+Repr <: RasterDataSource] 
     extends DataSourceLike[Raster,Raster, Repr]
     with DataSource[Raster,Raster] 
     with focal.FocalOpMethods[Repr] 
@@ -28,13 +32,13 @@ trait RasterSourceLike[+Repr <: RasterSource]
         val r = f(TileRaster(tileSeq.toSeq, rd.re,rd.tileLayout))
         TileRaster.split(r,rd.tileLayout).map(Literal(_))
       }
-    // Set into new RasterSource
+    // Set into new RasterDataSource
     val builder = bf.apply(this)
     builder.setOp(tileOps)
     builder.result
   }
 
-  def combineOp[B,That](rs:RasterSource)
+  def combineOp[B,That](rs:RasterDataSource)
                        (f:(Op[Raster],Op[Raster])=>Op[B])
                        (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
     val tileOps:Op[Seq[Op[B]]] =
@@ -49,7 +53,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.result
   }
 
-  def combine[That](rs:RasterSource)
+  def combine[That](rs:RasterDataSource)
                    (f:(Int,Int)=>Int)
                    (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
     val tileOps =
@@ -67,7 +71,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
   }
 
 
-  def combineDouble[That](rs:RasterSource)(f:(Double,Double)=>Double)(implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
+  def combineDouble[That](rs:RasterDataSource)(f:(Double,Double)=>Double)(implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
     // Check that extents are the same
     // ...
     val tileOps = 
@@ -84,7 +88,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.result
   }
 
-  def dualCombine[That](rs:RasterSource)(fInt:(Int,Int)=>Int)(fDouble:(Double,Double)=>Double)(implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
+  def dualCombine[That](rs:RasterDataSource)(fInt:(Int,Int)=>Int)(fDouble:(Double,Double)=>Double)(implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
     val tileOps =
       for(ts1 <- tiles;
           ts2 <- rs.tiles;
@@ -98,4 +102,50 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.setOp(tileOps)
     builder.result
   }
+
+  def filterTiles(p:Op[feature.Polygon[_]]):Op[Seq[Op[TileIntersection]]] = {
+    (rasterDefinition,tiles,p).map { (rd,tiles,p) =>
+      val rl = rd.tileLayout.getResolutionLayout(rd.re)
+      val tileCols = rd.tileLayout.tileCols
+      val tileRows = rd.tileLayout.tileRows
+      val filtered = mutable.ListBuffer[Op[TileIntersection]]()
+      for(col <- 0 until tileCols optimized) {
+        for(row <- 0 until tileRows optimized) {
+          val tilePoly = 
+            rl.getRasterExtent(col,row)
+              .extent
+              .asFeature()
+              .geom
+
+          if(p.geom.contains(tilePoly)) {
+            filtered += tiles(row*tileCols + col).map(FullTileIntersection(_))
+          } else {
+            val intersections = tilePoly.intersection(p.geom).asPolygonSet.map(Polygon(_,0))
+            if(!intersections.isEmpty) {
+              filtered += tiles(row*tileCols + col).map(PartialTileIntersection(_,intersections))
+            }
+          }
+        }
+      }
+      filtered.toSeq
+    }
+  }
+
+  def mapIntersecting[B,That,D](p:Op[feature.Polygon[D]])(handleTileIntersection:TileIntersection=>B)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
+    val builder = bf.apply(this)
+    val newOp = 
+      filterTiles(p).map { filteredTiles =>
+        filteredTiles.map { tileIntersectionOp =>
+          tileIntersectionOp.map(handleTileIntersection(_))
+        }
+      }
+    builder.setOp(newOp)
+    val result = builder.result()
+    result
+  }
 }
+
+abstract sealed trait TileIntersection
+
+case class PartialTileIntersection[D](tile:Raster,intersections:List[Polygon[D]]) extends TileIntersection
+case class FullTileIntersection(tile:Raster) extends TileIntersection

@@ -3,7 +3,7 @@ package geotrellis.source
 import geotrellis._
 import geotrellis.raster._
 
-class RasterSourceBuilder extends SourceBuilder[Raster,RasterSource] {
+class RasterDataSourceBuilder extends SourceBuilder[Raster,RasterDataSource] {
   var _dataDefinition:Op[RasterDefinition] = null
   var _ops:Op[Seq[Op[Raster]]] = null
 
@@ -17,13 +17,13 @@ class RasterSourceBuilder extends SourceBuilder[Raster,RasterSource] {
     this
   }
 
-  def result = new RasterSource(_dataDefinition,_ops)
+  def result = new RasterDataSource(_dataDefinition,_ops)
 
 }
 
-object RasterSourceBuilder {
-  def apply(rasterSource:RasterSource) = {
-    val builder = new RasterSourceBuilder()
+object RasterDataSourceBuilder {
+  def apply(rasterSource:RasterDataSource) = {
+    val builder = new RasterDataSourceBuilder()
     builder.setRasterDefinition(rasterSource.rasterDefinition)
   }
 }
