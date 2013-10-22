@@ -86,7 +86,7 @@ class CostDistanceSpec extends FunSuite with TestServer {
 
     val cd = CostDistance(costRaster, points)
 
-    val d = server.run(cd).toArray
+    val d = server.run(cd).toArrayDouble
     
     val expected = Array(
       22,21,21,20,17,15,14,
@@ -97,8 +97,8 @@ class CostDistanceSpec extends FunSuite with TestServer {
       14, 9, 8, 9, 6, 3, 8)
 
     val values = d.toSeq.map(i => (i + 0.5).toInt)
-    println(values.toSeq)
-    println(expected.toSeq)
+    // println(values.toSeq)
+    // println(expected.toSeq)
 
     for(i <- 0 until values.length) {
       values(i) should be (expected(i))
