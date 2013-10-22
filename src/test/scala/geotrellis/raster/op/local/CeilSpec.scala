@@ -15,8 +15,8 @@ class CeilSpec extends FunSpec
                  with TestServer 
                  with RasterBuilders {
   describe("Ceil") {    
-    it("takes ceil of int tiled RasterSource") {
-      val rs = createRasterSource(
+    it("takes ceil of int tiled RasterDataSource") {
+      val rs = createRasterDataSource(
         Array( NODATA,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
 
@@ -42,8 +42,8 @@ class CeilSpec extends FunSpec
       }
     }
 
-    it("takes ceil of Double tiled RasterSource") {
-      val rs = createRasterSource(
+    it("takes ceil of Double tiled RasterDataSource") {
+      val rs = createRasterDataSource(
         Array( Double.NaN,1.3,1.3, 1.3,1.3,1.3, 1.3,1.3,1.3,
                1.3,1.3,1.3, 1.3,1.3,1.3, 1.3,1.3,1.3,
 

@@ -44,7 +44,7 @@ object Divide extends LocalRasterBinaryOp {
     })
 }
 
-trait DivideOpMethods[+Repr <: RasterSource] { self: Repr =>
+trait DivideOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /** Divide each value of the raster by a constant value.*/
   def localDivide(i: Int) = self.mapOp(Divide(_, i))
   /** Divide each value of the raster by a constant value.*/
@@ -62,7 +62,7 @@ trait DivideOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Divide a double constant value by each cell value.*/
   def /:(d:Double) = localDivideValue(d)
   /** Divide the values of each cell in each raster. */
-  def localDivide(rs:RasterSource) = self.combineOp(rs)(Divide(_,_))
+  def localDivide(rs:RasterDataSource) = self.combineOp(rs)(Divide(_,_))
   /** Divide the values of each cell in each raster. */
-  def /(rs:RasterSource) = localDivide(rs)
+  def /(rs:RasterDataSource) = localDivide(rs)
 }

@@ -6,7 +6,7 @@ import geotrellis.feature._
 import geotrellis.feature.rasterize._
 import geotrellis.statistics._
 
-trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
+trait ZonalSummaryOpMethods[+Repr <: RasterDataSource] { self:Repr =>
   def zonalHistogram[D](p:Op[feature.Polygon[D]]):ValueDataSource[Histogram] = 
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
@@ -53,7 +53,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
 
           sum
       }
-    }
+    }.reduce(_+_)
 
   def zonalSumDouble[D](p:Op[feature.Polygon[D]]) = 
     self.mapIntersecting(p) { tileIntersection =>
@@ -77,7 +77,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
 
           sum
       }
-    }
+    }.reduce(_+_)
 
   def zonalMin[D](p:Op[feature.Polygon[D]]) = 
     self.mapIntersecting(p) { tileIntersection =>
@@ -101,7 +101,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
 
           min
       }
-    }
+    }.reduce(math.min(_,_))
 
   def zonalMinDouble[D](p:Op[feature.Polygon[D]]) = 
     self.mapIntersecting(p) { tileIntersection =>
@@ -125,7 +125,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
 
           min
       }
-    }
+    }.reduce(math.min(_,_))
 
   def zonalMax[D](p:Op[feature.Polygon[D]]) = 
     self.mapIntersecting(p) { tileIntersection =>
@@ -148,7 +148,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
           }
           max
       }
-    }
+    }.reduce(math.max(_,_))
 
   def zonalMaxDouble[D](p:Op[feature.Polygon[D]]) = 
     self.mapIntersecting(p) { tileIntersection =>
@@ -171,7 +171,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
           }
           max
       }
-    }
+    }.reduce(math.max(_,_))
 
   def zonalMean[D](p:Op[feature.Polygon[D]]) = 
     self.mapIntersecting(p) { tileIntersection =>
@@ -197,7 +197,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
 
           LongMean(sum,count)
       }
-    }
+    }.reduce(_+_).map(_.mean)
 
   def zonalMeanDouble[D](p:Op[feature.Polygon[D]]) = 
     self.mapIntersecting(p) { tileIntersection =>
@@ -219,10 +219,10 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
                 }
               }
             )
-          DoubleMean(sum,count)
           }
+          DoubleMean(sum,count)
       }
-    }
+    }.reduce(_+_).map(_.mean)
 }
 
 case class LongMean(sum: Long, count: Long) {

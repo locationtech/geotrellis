@@ -77,7 +77,7 @@ object RemoteClient {
   def sourceTest(app:RemoteClientApplication):Unit = {
     val server = app.server
 
-    val r = RasterSource("mtsthelens_tiled_cached")
+    val r = RasterDataSource("mtsthelens_tiled_cached")
       .localAdd(3)
       .histogram
       .mapOp(MinFromHistogram(_))

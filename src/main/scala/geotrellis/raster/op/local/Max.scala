@@ -46,11 +46,11 @@ object Max extends LocalRasterBinaryOp {
     })
 }
 
-trait MaxOpMethods[+Repr <: RasterSource] { self: Repr =>
+trait MaxOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /** Max a constant Int value to each cell. */
   def localMax(i: Int) = self.mapOp(Max(_, i))
   /** Max a constant Double value to each cell. */
   def localMax(d: Double) = self.mapOp(Max(_, d))
   /** Max the values of each cell in each raster.  */
-  def localMax(rs:RasterSource) = self.combineOp(rs)(Max(_,_))
+  def localMax(rs:RasterDataSource) = self.combineOp(rs)(Max(_,_))
 }

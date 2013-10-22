@@ -52,7 +52,7 @@ object Equal extends LocalRasterBinaryOp {
     r1.dualCombine(r2)(checkEqual)(checkEqual)
 }
 
-trait EqualOpMethods[+Repr <: RasterSource] { self: Repr =>
+trait EqualOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
@@ -94,11 +94,11 @@ trait EqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell value of the input raster is equal to the input
    * intenger, else 0.
    */
-  def localEqual(rs:RasterSource) = self.combineOp(rs)(Equal(_,_))
+  def localEqual(rs:RasterDataSource) = self.combineOp(rs)(Equal(_,_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
    * intenger, else 0.
    */
-  def ===(rs:RasterSource) = localEqual(rs)
+  def ===(rs:RasterDataSource) = localEqual(rs)
 }

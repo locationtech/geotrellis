@@ -6,6 +6,7 @@ import geotrellis._
  * This trait represents a raster data which represents a lazily-applied
  * cropping of an underlying raster data object.
  */
+// TODO
 // case class ResampledRasterData(underlying:RasterData,
 //                                     src:RasterExtent,
 //                                     dst:RasterExtent) extends RasterData {

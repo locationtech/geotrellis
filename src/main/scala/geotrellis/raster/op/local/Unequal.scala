@@ -52,7 +52,7 @@ object Unequal extends LocalRasterBinaryOp {
     r1.dualCombine(r2)(checkUnequal)(checkUnequal)
 }
 
-trait UnequalOpMethods[+Repr <: RasterSource] { self: Repr =>
+trait UnequalOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
@@ -94,11 +94,11 @@ trait UnequalOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell value of the input raster is equal to the input
    * intenger, else 0.
    */
-  def localUnequal(rs:RasterSource) = self.combineOp(rs)(Unequal(_,_))
+  def localUnequal(rs:RasterDataSource) = self.combineOp(rs)(Unequal(_,_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
    * intenger, else 0.
    */
-  def !==(rs:RasterSource) = localUnequal(rs)
+  def !==(rs:RasterDataSource) = localUnequal(rs)
 }

@@ -15,8 +15,8 @@ class FloorSpec extends FunSpec
                  with TestServer 
                  with RasterBuilders {
   describe("Floor") {    
-    it("takes floor of int tiled RasterSource") {
-      val rs = createRasterSource(
+    it("takes floor of int tiled RasterDataSource") {
+      val rs = createRasterDataSource(
         Array( NODATA,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
 
@@ -42,8 +42,8 @@ class FloorSpec extends FunSpec
       }
     }
 
-    it("takes floor of Double tiled RasterSource") {
-      val rs = createRasterSource(
+    it("takes floor of Double tiled RasterDataSource") {
+      val rs = createRasterDataSource(
         Array( Double.NaN,1.3,1.3, 1.3,1.3,1.3, 1.3,1.3,1.3,
                1.3,1.3,1.3, 1.3,1.3,1.3, 1.3,1.3,1.3,
 

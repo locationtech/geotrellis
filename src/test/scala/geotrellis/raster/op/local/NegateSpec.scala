@@ -36,7 +36,7 @@ class NegateSpec extends FunSpec
     }
 
     it("negates a double raster source correctly") {
-      val rs = RasterSource("mtsthelens_tiled")
+      val rs = RasterDataSource("mtsthelens_tiled")
 
       val r = runSource(rs)
       getSource(-rs) match {
@@ -60,7 +60,7 @@ class NegateSpec extends FunSpec
     }
 
     it("negates a int raster source") {
-      val rs = createRasterSource(
+      val rs = createRasterDataSource(
         Array( NODATA,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
 

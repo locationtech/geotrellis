@@ -20,11 +20,11 @@ object Raster {
 trait RasterLike {
   val rasterExtent:RasterExtent
 
-  val cols = rasterExtent.cols
-  val rows = rasterExtent.rows
+  lazy val cols = rasterExtent.cols
+  lazy val rows = rasterExtent.rows
 
   val rasterType:RasterType
-  val isFloat:Boolean = rasterType.float // TODO: yup.
+  def isFloat:Boolean = rasterType.float // TODO: yup.
 
   def toArrayRaster:ArrayRaster
 

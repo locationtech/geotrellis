@@ -9,7 +9,7 @@ package object geotrellis {
 
   type RasterData = geotrellis.raster.RasterData
 
-  type RasterDS = geotrellis.source.RasterSource
+  type RasterDS = geotrellis.source.RasterDataSource
   type SeqDS[E] = geotrellis.source.DataSource[E,Seq[E]]
   type HistogramDS = geotrellis.source.DataSource[Histogram,Histogram]
 

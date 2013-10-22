@@ -109,9 +109,9 @@ class LessSpec extends FunSpec
       }
     }
 
-    it("adds two tiled RasterSources correctly") {
-      val rs1 = RasterSource("quad_tiled")
-      val rs2 = RasterSource("quad_tiled2")
+    it("adds two tiled RasterDataSources correctly") {
+      val rs1 = RasterDataSource("quad_tiled")
+      val rs2 = RasterDataSource("quad_tiled2")
 
       getSource(rs1 < rs2) match {
         case Complete(result,success) =>
@@ -128,8 +128,8 @@ class LessSpec extends FunSpec
       }
     }
 
-    it("adds three tiled RasterSources correctly") {
-      val rs1 = createRasterSource(
+    it("adds three tiled RasterDataSources correctly") {
+      val rs1 = createRasterDataSource(
         Array( NODATA,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
 
@@ -137,7 +137,7 @@ class LessSpec extends FunSpec
                1,1,1, 1,1,1, 1,1,1),
         3,2,3,2)
 
-      val rs2 = createRasterSource(
+      val rs2 = createRasterDataSource(
         Array( 2,2,2, 2,2,2, 2,2,2,
                2,2,2, 2,2,2, 2,2,2,
 
@@ -145,7 +145,7 @@ class LessSpec extends FunSpec
                2,2,2, 2,2,2, 2,2,2),
         3,2,3,2)
 
-      val rs3 = createRasterSource(
+      val rs3 = createRasterDataSource(
         Array( -1,3,3, 3,3,3, 3,3,3,
                3,3,3, 3,3,3, 3,3,3,
 
@@ -155,7 +155,6 @@ class LessSpec extends FunSpec
 
       getSource(rs1 < rs2 < rs3) match {
         case Complete(result,success) =>
-          printR(result)
 //          println(success)
           for(row <- 0 until 4) {
             for(col <- 0 until 9) {

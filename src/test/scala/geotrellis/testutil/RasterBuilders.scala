@@ -88,7 +88,7 @@ trait RasterBuilders {
     Raster(arr.toArray, r.rasterExtent)
   }
 
-  def createRasterSource(arr:Array[Int],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int) = {
+  def createRasterDataSource(arr:Array[Int],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int) = {
     if(tileCols*pixelCols*tileRows*pixelRows != arr.length) {
       sys.error("Tile and pixel col rows do not match array length")
     }
@@ -113,17 +113,23 @@ trait RasterBuilders {
     val rasters = 
       (for(r <- 0 until tileRows;
         c <- 0 until tileCols) yield {
-        createRaster(tiles(r)(c),pixelCols,pixelRows)
+        val xmin = c*pixelCols*10
+        val xmax = xmin + pixelCols*10
+        val ymin = r*(-pixelRows)
+        val ymax = ymin + pixelRows
+        Raster(tiles(r)(c), 
+          RasterExtent(Extent(xmin,ymin,xmax,ymax),10,1,pixelCols,pixelRows)
+        )
       }).toSeq
 
     val ops = rasters.map(Literal(_))
     val re = rasters.map(_.rasterExtent).reduce(_.combine(_))
     val tileLayout = TileLayout(tileCols,tileRows,pixelCols,pixelRows)
 
-    RasterSource(RasterDefinition("test",re,tileLayout),ops)
+    RasterDataSource(RasterDefinition("test",re,tileLayout),ops)
   }
 
-  def createRasterSource(arr:Array[Double],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int) = {
+  def createRasterDataSource(arr:Array[Double],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int) = {
     if(tileCols*pixelCols*tileRows*pixelRows != arr.length) {
       sys.error("Tile and pixel col rows do not match array length")
     }
@@ -148,14 +154,20 @@ trait RasterBuilders {
     val rasters = 
       (for(r <- 0 until tileRows;
         c <- 0 until tileCols) yield {
-        createRaster(tiles(r)(c),pixelCols,pixelRows)
+        val xmin = c*pixelCols*10
+        val xmax = xmin + pixelCols*10
+        val ymin = r*(-pixelRows)
+        val ymax = ymin + pixelRows
+        Raster(tiles(r)(c), 
+          RasterExtent(Extent(xmin,ymin,xmax,ymax),10,1,pixelCols,pixelRows)
+        )
       }).toSeq
 
     val ops = rasters.map(Literal(_))
     val re = rasters.map(_.rasterExtent).reduce(_.combine(_))
     val tileLayout = TileLayout(tileCols,tileRows,pixelCols,pixelRows)
 
-    RasterSource(RasterDefinition("test",re,tileLayout),ops)
+    RasterDataSource(RasterDefinition("test",re,tileLayout),ops)
   }
 
   /**

@@ -25,7 +25,7 @@ object And extends LocalRasterBinaryOp {
     })
 }
 
-trait AndOpMethods[+Repr <: RasterSource] { self: Repr =>
+trait AndOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /** And a constant Int value to each cell. */
   def localAnd(i: Int) = self.mapOp(And(_, i))
   /** And a constant Int value to each cell. */
@@ -33,7 +33,7 @@ trait AndOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** And a constant Int value to each cell. */
   def &:(i:Int) = localAnd(i)
   /** And the values of each cell in each raster.  */
-  def localAnd(rs:RasterSource) = self.combineOp(rs)(And(_,_))
+  def localAnd(rs:RasterDataSource) = self.combineOp(rs)(And(_,_))
   /** And the values of each cell in each raster. */
-  def &(rs:RasterSource) = localAnd(rs)
+  def &(rs:RasterDataSource) = localAnd(rs)
 }

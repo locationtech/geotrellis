@@ -20,10 +20,6 @@ object DoCell {
   def apply(r1:Op[Raster], r2:Op[Raster])(f:(Int,Int) => Int) = 
     (r1,r2).map { (a,b) => a.dualCombine(b)(f)((z1:Double, z2:Double) => i2d(f(d2i(z1), d2i(z2)))) }
            .withName("DoCell")
-
-  def apply(r1:Op[Raster], r2:Op[Raster])(f:(Double,Double) => Double)(implicit d:DI) = 
-    (r1,r2).map { (a,b) => a.dualCombine(b)((z1:Int,z2:Int)=>d2i(f(i2d(z1), i2d(z2))))(f) }
-           .withName("DoCell")
 }
     
 /**
@@ -40,6 +36,9 @@ object  DoCellDouble {
     r.map(_.dualMap({ z:Int => d2i(f(i2d(z))) })(f))
      .withName("DoCellDouble")
 
+  def apply(r1:Op[Raster], r2:Op[Raster])(f:(Double,Double) => Double) = 
+    (r1,r2).map { (a,b) => a.dualCombine(b)((z1:Int,z2:Int)=>d2i(f(i2d(z1), i2d(z2))))(f) }
+           .withName("DoCell")
 }
 
 /**

@@ -20,10 +20,10 @@ object CanBuildSourceFrom  extends LowerPriorityImplicits {
     def apply(ds:DataSource[_,_]) = new DataSourceBuilder(convergeHistograms)
   }
 
-  implicit def canBuildRasterSource =  new CanBuildSourceFrom[RasterSource, Raster, RasterSource] {
-    def apply() = new RasterSourceBuilder
-    def apply(rasterSrc:RasterSource) =
-      RasterSourceBuilder(rasterSrc)
+  implicit def canBuildRasterDataSource =  new CanBuildSourceFrom[RasterDataSource, Raster, RasterDataSource] {
+    def apply() = new RasterDataSourceBuilder
+    def apply(rasterSrc:RasterDataSource) =
+      RasterDataSourceBuilder(rasterSrc)
   }
 
   implicit def canBuildValueFromValueSource[E:Manifest]:CanBuildSourceFrom[ValueDataSource[_], E, ValueDataSource[E]] = new CanBuildSourceFrom[ValueDataSource[_], E, ValueDataSource[E]] {

@@ -42,7 +42,7 @@ object Subtract extends LocalRasterBinaryOp {
     })
 }
 
-trait SubtractOpMethods[+Repr <: RasterSource] { self: Repr =>
+trait SubtractOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /** Subtract a constant value from each cell.*/
   def localSubtract(i: Int) = self.mapOp(Subtract(_, i))
   /** Subtract a constant value from each cell.*/
@@ -60,7 +60,7 @@ trait SubtractOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Subtract each value of a cell from a double constant value. */
   def -:(d:Double) = localSubtract(d)
   /** Subtract the values of each cell in each raster. See [[SubtractRasters]] */
-  def localSubtract(rs:RasterSource) = self.combineOp(rs)(Subtract(_,_))
+  def localSubtract(rs:RasterDataSource) = self.combineOp(rs)(Subtract(_,_))
   /** Subtract the values of each cell in each raster. See [[SubtractRasters]] */
-  def -(rs:RasterSource) = localSubtract(rs)
+  def -(rs:RasterDataSource) = localSubtract(rs)
 }

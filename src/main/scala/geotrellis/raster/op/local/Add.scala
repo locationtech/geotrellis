@@ -32,7 +32,7 @@ object Add extends LocalRasterBinaryOp {
     })
 }
 
-trait AddOpMethods[+Repr <: RasterSource] { self: Repr =>
+trait AddOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /** Add a constant Int value to each cell. */
   def localAdd(i: Int) = self.mapOp(Add(_, i))
   /** Add a constant Int value to each cell. */
@@ -46,7 +46,7 @@ trait AddOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Add a constant Double value to each cell. */
   def +:(d:Double) = localAdd(d)
   /** Add the values of each cell in each raster.  */
-  def localAdd(rs:RasterSource) = self.combineOp(rs)(Add(_,_))
+  def localAdd(rs:RasterDataSource) = self.combineOp(rs)(Add(_,_))
   /** Add the values of each cell in each raster. */
-  def +(rs:RasterSource) = localAdd(rs)
+  def +(rs:RasterDataSource) = localAdd(rs)
 }

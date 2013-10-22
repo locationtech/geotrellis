@@ -52,7 +52,7 @@ object LessOrEqual extends LocalRasterBinaryOp {
     r1.dualCombine(r2)(checkLessOrEqual)(checkLessOrEqual)
 }
 
-trait LessOrEqualOpMethods[+Repr <: RasterSource] { self: Repr =>
+trait LessOrEqualOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
@@ -94,11 +94,11 @@ trait LessOrEqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell value of the input raster is less than or equal to the input
    * intenger, else 0.
    */
-  def localLessOrEqual(rs:RasterSource) = self.combineOp(rs)(LessOrEqual(_,_))
+  def localLessOrEqual(rs:RasterDataSource) = self.combineOp(rs)(LessOrEqual(_,_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * intenger, else 0.
    */
-  def <=(rs:RasterSource) = localLessOrEqual(rs)
+  def <=(rs:RasterDataSource) = localLessOrEqual(rs)
 }

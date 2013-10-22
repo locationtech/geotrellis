@@ -20,13 +20,13 @@ final case class LazyMap(data: RasterData, g: Int => Int)
   def copy = force
 
   def force():RasterData = {
-    val data = RasterData.allocByType(getType,cols,rows)
+    val forcedData = RasterData.allocByType(getType,cols,rows)
     for(col <- 0 until cols optimized) {
       for(row <- 0 until rows optimized) {
-        data.set(col,row,g(data.get(col,row)))
+        forcedData.set(col,row,g(data.get(col,row)))
       }
     }
-    data
+    forcedData
   }
 
   final def apply(i: Int) = g(data(i))
@@ -63,13 +63,13 @@ final case class LazyMapDouble(data: RasterData, g: Double => Double)
   def copy = force
 
   def force():RasterData = {
-    val data = RasterData.allocByType(getType,cols,rows)
+    val forcedData = RasterData.allocByType(getType,cols,rows)
     for(col <- 0 until cols optimized) {
       for(row <- 0 until rows optimized) {
-        data.setDouble(col,row,g(data.getDouble(col,row)))
+        forcedData.setDouble(col,row,g(data.getDouble(col,row)))
       }
     }
-    data
+    forcedData
   }
 
   final def apply(i: Int) = d2i(g(data.applyDouble(i)))

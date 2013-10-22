@@ -32,7 +32,7 @@ object Multiply extends LocalRasterBinaryOp {
     })
 }
 
-trait MultiplyOpMethods[+Repr <: RasterSource] { self: Repr =>
+trait MultiplyOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /** Multiply a constant value from each cell.*/
   def localMultiply(i: Int) = self.mapOp(Multiply(_, i))
   /** Multiply a constant value from each cell.*/
@@ -46,7 +46,7 @@ trait MultiplyOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Multiply a double constant value from each cell.*/
   def *:(d:Double) = localMultiply(d)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(rs:RasterSource) = self.combineOp(rs)(Multiply(_,_))
+  def localMultiply(rs:RasterDataSource) = self.combineOp(rs)(Multiply(_,_))
   /** Multiply the values of each cell in each raster. */
-  def *(rs:RasterSource) = localMultiply(rs)
+  def *(rs:RasterDataSource) = localMultiply(rs)
 }

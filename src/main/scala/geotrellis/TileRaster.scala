@@ -57,27 +57,31 @@ case class TileRaster(tiles:Seq[Raster],
       sys.error("This tiled raster is too big to convert into an array.") 
     } else {
       val len = cols*rows
+      val tileCols = tileLayout.tileCols
+      val tileRows = tileLayout.tileRows
+      val pixelCols = tileLayout.pixelCols
+      val pixelRows = tileLayout.pixelRows
       if(!isFloat) {
-        for(tcol <- 0 until tileLayout.tileCols optimized) {
-          for(trow <- 0 until tileLayout.tileRows optimized) {
+        for(tcol <- 0 until tileCols optimized) {
+          for(trow <- 0 until tileRows optimized) {
             val tile = getTile(tcol,trow)
-            for(prow <- 0 until tileLayout.pixelRows) {
-              for(pcol <- 0 until tileLayout.pixelCols) {
-                val acol = (tileLayout.pixelCols * tcol) + pcol
-                val arow = (tileLayout.pixelRows * trow) + prow
+            for(prow <- 0 until pixelRows optimized) {
+              for(pcol <- 0 until pixelCols optimized) {
+                val acol = (pixelCols * tcol) + pcol
+                val arow = (pixelRows * trow) + prow
                 data.set(acol,arow,tile.get(pcol,prow))
               }
             }
           }
         }
       } else {
-        for(tcol <- 0 until tileLayout.tileCols optimized) {
-          for(trow <- 0 until tileLayout.tileRows optimized) {
+        for(tcol <- 0 until tileCols optimized) {
+          for(trow <- 0 until tileRows optimized) {
             val tile = getTile(tcol,trow)
-            for(prow <- 0 until tileLayout.pixelRows) {
-              for(pcol <- 0 until tileLayout.pixelCols) {
-                val acol = (tileLayout.pixelCols * tcol) + pcol
-                val arow = (tileLayout.pixelRows * trow) + prow
+            for(prow <- 0 until pixelRows optimized) {
+              for(pcol <- 0 until pixelCols optimized) {
+                val acol = (pixelCols * tcol) + pcol
+                val arow = (pixelRows * trow) + prow
                 data.setDouble(acol,arow,tile.getDouble(pcol,prow))
               }
             }

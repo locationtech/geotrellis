@@ -14,16 +14,16 @@ class DataSourceSpec extends FunSpec
                         with ShouldMatchers 
                         with TestServer 
                         with RasterBuilders {
-  def getRasterSource = 
-    RasterSource("mtsthelens_tiled_cached")
+  def getRasterDataSource = 
+    RasterDataSource("mtsthelens_tiled_cached")
 
-  def getSmallRasterSource =
-    RasterSource("quad_tiled")
+  def getSmallRasterDataSource =
+    RasterDataSource("quad_tiled")
 
-  describe("RasterSource") {
+  describe("RasterDataSource") {
     it("should print history") { 
-      val r1 = RasterSource("quad_tiled")
-      val r2 = RasterSource("quad_tiled2")
+      val r1 = RasterDataSource("quad_tiled")
+      val r2 = RasterDataSource("quad_tiled2")
       getSource(r1 + r2) match {
         case Complete(value,success) =>
           println(success.toString)
@@ -34,12 +34,12 @@ class DataSourceSpec extends FunSpec
       }
     }
 
-    it("should return a RasterSource when possible") { 
-      val d1 = getRasterSource
+    it("should return a RasterDataSource when possible") { 
+      val d1 = getRasterDataSource
 
-      val d2:RasterSource = d1.localAdd(3)
-      val d3:RasterSource  = d2 mapOp(local.Add(_, 3))
-      val d4:RasterSource = d3 map(r => r.map(z => z + 3))
+      val d2:RasterDataSource = d1.localAdd(3)
+      val d3:RasterDataSource  = d2 mapOp(local.Add(_, 3))
+      val d4:RasterDataSource = d3 map(r => r.map(z => z + 3))
       val d5:DataSource[Int,Seq[Int]] = d3 map(r => r.findMinMax._2)
       
       val result1 = runSource(d1)
@@ -56,7 +56,7 @@ class DataSourceSpec extends FunSpec
     }
 
     it("should handle a histogram result") {
-      val d = getRasterSource
+      val d = getRasterDataSource
 
       val hist = d.histogram
       val hist2:DataSource[Histogram,Histogram] = d.map( (h:Raster) => FastMapHistogram() )
@@ -89,10 +89,10 @@ class DataSourceSpec extends FunSpec
     }
 
     it("should handle combine") {
-      val d = getRasterSource
-      val d2 = getRasterSource
+      val d = getRasterDataSource
+      val d2 = getRasterDataSource
 
-      val combineDS:RasterSource = d.combine(d2)(_+_)
+      val combineDS:RasterDataSource = d.combine(d2)(_+_)
       val initial = runSource(d)
       val result = runSource(combineDS)
 

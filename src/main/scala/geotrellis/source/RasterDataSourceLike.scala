@@ -15,6 +15,7 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
     with DataSource[Raster,Raster] 
     with focal.FocalOpMethods[Repr] 
     with local.LocalOpMethods[Repr] 
+    with zonal.summary.ZonalSummaryOpMethods[Repr]
     with stat.StatOpMethods[Repr] { self: Repr =>
 
   def tiles = self.elements

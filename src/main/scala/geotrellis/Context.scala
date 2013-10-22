@@ -35,19 +35,6 @@ class Context(server:Server) {
         sys.error(s"Cannot read raster layer at path $path")
     }
 
-  def loadTileSet(path:String):Raster = 
-    RasterLayer.fromPath(processPath(path)) match {
-      case Some(layer) =>
-        layer match {
-          case tl:TileSetRasterLayer =>
-            tl.getRaster
-//            Raster(tl.getData/*.asTileArray*/, tl.info.rasterExtent)  // TODO
-          case _ =>
-            sys.error(s"Raster layer at path $path is not a tiled raster layer.")
-        }
-      case None => sys.error(s"Cannot load raster layer at path $path")
-    }
-
   def loadUncachedTileSet(path:String):Raster = 
     RasterLayer.fromPath(processPath(path)) match {
       case Some(layer) =>

@@ -36,7 +36,7 @@ class SqrtSpec extends FunSpec
     }
 
     it("takes the square root of a double raster source correctly") {
-      val rs = RasterSource("mtsthelens_tiled")
+      val rs = RasterDataSource("mtsthelens_tiled")
 
       val r = runSource(rs)
       getSource(rs.localSqrt) match {
@@ -60,7 +60,7 @@ class SqrtSpec extends FunSpec
     }
 
     it("takes the square root of a int raster source") {
-      val rs = createRasterSource(
+      val rs = createRasterDataSource(
         Array( NODATA,9,9, 9,9,9, 9,9,9,
                9,9,9, 9,9,9, 9,9,9,
 

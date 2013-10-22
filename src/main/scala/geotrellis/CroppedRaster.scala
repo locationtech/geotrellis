@@ -5,7 +5,7 @@ import scalaxy.loops._
 import scala.collection.mutable
 
 object CroppedRaster {
-  def apply(sourceRaster:Raster,gridBounds:GridBounds):CroppedRaster =
+  def apply(sourceRaster:Raster,gridBounds:GridBounds):CroppedRaster = 
     CroppedRaster(sourceRaster,gridBounds,sourceRaster.rasterExtent.extentFor(gridBounds))
   def apply(sourceRaster:Raster,extent:Extent):CroppedRaster =
     CroppedRaster(sourceRaster,sourceRaster.rasterExtent.gridBoundsFor(extent),extent)
@@ -23,59 +23,67 @@ case class CroppedRaster(sourceRaster:Raster,
   def force = toArrayRaster
   val rasterType = sourceRaster.rasterType
 
-  def get(col: Int,row: Int): Int = 
-    sourceRaster.get(col+gridBounds.colMin,row+gridBounds.rowMin)
-  def getDouble(col: Int,row: Int): Double = 
-    sourceRaster.getDouble(col+gridBounds.colMin,row+gridBounds.rowMin)
+  private val colMin = gridBounds.colMin
+  private val rowMin = gridBounds.rowMin
+  private val sourceCols = sourceRaster.rasterExtent.cols
+  private val sourceRows = sourceRaster.rasterExtent.rows
 
-  def toArray: Array[Int] = {
-    val arr = Array.ofDim[Int](rasterExtent.cols*rasterExtent.rows)
-    val colMin = gridBounds.colMin
-    val colMax = gridBounds.colMax
-    val rowMin = gridBounds.rowMin
-    val rowMax = gridBounds.rowMax
-    var i = 0
-    for(row <-rowMin until rowMax optimized) {
-      for(col <- rowMax until colMax optimized) {
-        arr(i) = sourceRaster.get(col,row)
-        i += 1
-      }
+  def get(col: Int,row: Int): Int = {
+    val c = col+gridBounds.colMin
+    val r = row+gridBounds.rowMin
+    if(c < 0 || r < 0 || c >= sourceCols || r >= sourceRows) {
+      NODATA
+    } else {
+      sourceRaster.get(c,r)
     }
-    arr
+  }
+  def getDouble(col: Int,row: Int): Double = {
+    val c = col+gridBounds.colMin
+    val r = row+gridBounds.rowMin
+
+    if(c < 0 || r < 0 || c >= sourceCols || r >= sourceRows) {
+      Double.NaN
+    } else {
+      sourceRaster.getDouble(col+gridBounds.colMin,row+gridBounds.rowMin)
+    }
   }
 
   def toArrayRaster:ArrayRaster = {
     val data = RasterData.allocByType(rasterType,cols,rows)
-    val colMin = gridBounds.colMin
-    val colMax = gridBounds.colMax
-    val rowMin = gridBounds.rowMin
-    val rowMax = gridBounds.rowMax
     if(!isFloat) {
-      for(row <-rowMin until rowMax optimized) {
-        for(col <- rowMax until colMax optimized) {
-          data.set(col-colMin, row-rowMin, sourceRaster.get(col,row))
+      for(row <- 0 until rows optimized) {
+        for(col <- 0 until cols optimized) {
+          data.set(col, row, get(col,row))
         }
       }
     } else {
-      for(row <-rowMin until rowMax optimized) {
-        for(col <- rowMax until colMax optimized) {
-          data.setDouble(col-colMin, row-rowMin, sourceRaster.getDouble(col,row))
+      for(row <- 0 until rows optimized) {
+        for(col <- 0 until cols optimized) {
+          data.setDouble(col, row, getDouble(col,row))
         }
       }
     }
     ArrayRaster(data,rasterExtent)
   }
 
+  def toArray: Array[Int] = {
+    val arr = Array.ofDim[Int](rasterExtent.cols*rasterExtent.rows)
+    var i = 0
+    for(row <- 0 until rows optimized) {
+      for(col <- 0 until cols optimized) {
+        arr(i) = get(col,row)
+        i += 1
+      }
+    }
+    arr
+  }
+
   def toArrayDouble: Array[Double] = {
     val arr = Array.ofDim[Double](rasterExtent.cols*rasterExtent.rows)
-    val colMin = gridBounds.colMin
-    val colMax = gridBounds.colMax
-    val rowMin = gridBounds.rowMin
-    val rowMax = gridBounds.rowMax
     var i = 0
-    for(row <-rowMin until rowMax optimized) {
-      for(col <- rowMax until colMax optimized) {
-        arr(i) = sourceRaster.getDouble(col,row)
+    for(row <- 0 until rows optimized) {
+      for(col <- 0 until cols optimized) {
+        arr(i) = getDouble(col,row)
         i += 1
       }
     }
@@ -94,15 +102,9 @@ case class CroppedRaster(sourceRaster:Raster,
 
   def map(f: Int => Int): Raster = {
     val data = RasterData.allocByType(rasterType,cols,rows)
-    val colMin = gridBounds.colMin
-    val colMax = gridBounds.colMax
-    val rowMin = gridBounds.rowMin
-    val rowMax = gridBounds.rowMax
-    var i = 0
-    for(row <-rowMin until rowMax optimized) {
-      for(col <- rowMax until colMax optimized) {
-        data.set(col,row, sourceRaster.get(col,row))
-        i += 1
+    for(row <- 0 until rows optimized) {
+      for(col <- 0 until cols optimized) {
+        data.set(col,row, get(col,row))
       }
     }
     ArrayRaster(data,rasterExtent)
@@ -113,36 +115,20 @@ case class CroppedRaster(sourceRaster:Raster,
       throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
                              s"$rasterExtent does not match ${r2.rasterExtent}")
     }
-    r2 match {
-      case ar:ArrayRaster =>
-        val data = RasterData.allocByType(rasterType,cols,rows)
-        val colMin = gridBounds.colMin
-        val colMax = gridBounds.colMax
-        val rowMin = gridBounds.rowMin
-        val rowMax = gridBounds.rowMax
-        for(row <-rowMin until rowMax optimized) {
-          for(col <- rowMax until colMax optimized) {
-            data.set(col,row, f(sourceRaster.get(col,row),ar.get(col-colMin,row-rowMin)))
-          }
-        }
-        Raster(data,rasterExtent)
-      case _ => sys.error("Unknown Raster type")
-      // case tr:TileRaster =>
-      //   TileRaster.wrap(toArrayRaster,tr.tileLayout).combine(tr)(f)
+    val data = RasterData.allocByType(rasterType,cols,rows)
+    for(row <- 0 until rows optimized) {
+      for(col <- 0 until cols optimized) {
+        data.set(col,row, f(get(col,row),r2.get(col-colMin,row-rowMin)))
+      }
     }
+    Raster(data,rasterExtent)
   }
 
   def mapDouble(f:Double =>Double):Raster = {
     val data = RasterData.allocByType(rasterType,cols,rows)
-    val colMin = gridBounds.colMin
-    val colMax = gridBounds.colMax
-    val rowMin = gridBounds.rowMin
-    val rowMax = gridBounds.rowMax
-    var i = 0
-    for(row <-rowMin until rowMax optimized) {
-      for(col <- rowMax until colMax optimized) {
-        data.setDouble(col,row, sourceRaster.getDouble(col,row))
-        i += 1
+    for(row <- 0 until rows optimized) {
+      for(col <- 0 until cols optimized) {
+        data.setDouble(col,row, getDouble(col,row))
       }
     }
     ArrayRaster(data,rasterExtent)
@@ -153,22 +139,12 @@ case class CroppedRaster(sourceRaster:Raster,
       throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
                              s"$rasterExtent does not match ${r2.rasterExtent}")
     }
-    r2 match {
-      case ar:ArrayRaster =>
-        val data = RasterData.allocByType(rasterType,cols,rows)
-        val colMin = gridBounds.colMin
-        val colMax = gridBounds.colMax
-        val rowMin = gridBounds.rowMin
-        val rowMax = gridBounds.rowMax
-        for(row <-rowMin until rowMax optimized) {
-          for(col <- rowMax until colMax optimized) {
-            data.setDouble(col,row, f(sourceRaster.get(col,row),ar.getDouble(col-colMin,row-rowMin)))
-          }
-        }
-        Raster(data,rasterExtent)
-      case _ => sys.error("Unknown Raster type")
-      // case tr:TileRaster =>
-      //   TileRaster.wrap(toArrayRaster,tr.tileLayout).combineDouble(tr)(f)
+    val data = RasterData.allocByType(rasterType,cols,rows)
+    for(row <- 0 until rows optimized) {
+      for(col <- 0 until cols optimized) {
+        data.setDouble(col,row, f(getDouble(col,row),r2.getDouble(col-colMin,row-rowMin)))
+      }
     }
+    Raster(data,rasterExtent)
   }
 }

@@ -15,8 +15,8 @@ class LogSpec extends FunSpec
                  with TestServer 
                  with RasterBuilders {
   describe("Log") {    
-    it("takes log of int tiled RasterSource") {
-      val rs = createRasterSource(
+    it("takes log of int tiled RasterDataSource") {
+      val rs = createRasterDataSource(
         Array( NODATA,20,20, 20,20,20, 20,20,20,
                20,20,20, 20,20,20, 20,20,20,
 
@@ -42,8 +42,8 @@ class LogSpec extends FunSpec
       }
     }
 
-    it("takes log of Double tiled RasterSource") {
-      val rs = createRasterSource(
+    it("takes log of Double tiled RasterDataSource") {
+      val rs = createRasterDataSource(
         Array( Double.NaN,34.2,34.2, 34.2,34.2,34.2, 34.2,34.2,34.2,
                34.2,34.2,34.2, 34.2,34.2,34.2, 34.2,34.2,34.2,
 

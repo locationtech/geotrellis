@@ -9,7 +9,7 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
   def get():Op[V]
   def converge() = ValueDataSource(get)
   def converge[B](f:Seq[T]=>B):ValueDataSource[B] =
-    ValueDataSource( logic.Collect(elements).map(f) )
+    ValueDataSource( logic.Collect(elements).map(f).withName("shit") )
 
   /** apply a function to elements, and return the appropriate datasource **/
   def map[B,That](f:T => B)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = 

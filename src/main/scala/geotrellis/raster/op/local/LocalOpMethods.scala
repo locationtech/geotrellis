@@ -4,7 +4,7 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.source._
 
-trait LocalOpMethods[+Repr <: RasterSource] 
+trait LocalOpMethods[+Repr <: RasterDataSource] 
   extends AddOpMethods[Repr]
      with SubtractOpMethods[Repr]
      with MultiplyOpMethods[Repr]
@@ -49,5 +49,5 @@ trait LocalOpMethods[+Repr <: RasterSource]
   /** Maps an integer typed Raster to 0 if the cell value is not NODATA, otherwise 1. */
   def localUndefined() = mapOp(Undefined(_))
 
-  def localCombinations(rs:RasterSource) = combineOp(rs)(Combination(_,_))
+  def localCombinations(rs:RasterDataSource) = combineOp(rs)(Combination(_,_))
 }

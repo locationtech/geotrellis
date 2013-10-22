@@ -5,14 +5,15 @@ import geotrellis.raster.op._
 import geotrellis.statistics.Histogram
 import geotrellis.raster._
 
-class RasterDataSource(val rasterDef: Op[RasterDefinition], val tileOps:Op[Seq[Op[Raster]]]) extends  RasterDataSourceLike[RasterSource] {
+class RasterDataSource(val rasterDef: Op[RasterDefinition], val tileOps:Op[Seq[Op[Raster]]]) 
+    extends  RasterDataSourceLike[RasterDataSource] {
   def elements = tileOps
   val rasterDefinition = rasterDef
 }
 
-object RasterSource {
+object RasterDataSource {
   def apply(name:String):RasterDataSource =
-    RasterSource(io.LoadRasterDefinition(name))
+    RasterDataSource(io.LoadRasterDefinition(name))
 
   def apply(rasterDef:Op[RasterDefinition]):RasterDataSource = {
     val tileOps = rasterDef.map { rd =>

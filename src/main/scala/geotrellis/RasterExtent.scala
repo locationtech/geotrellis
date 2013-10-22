@@ -9,8 +9,8 @@ case class GeoAttrsError(msg:String) extends Exception(msg)
  * These coordinates are inclusive.
  */
 case class GridBounds(colMin:Int,rowMin:Int,colMax:Int,rowMax:Int) {
-  val width = colMax - colMin
-  val height = rowMax - rowMin
+  val width = colMax - colMin + 1
+  val height = rowMax - rowMin + 1
 }
 
 /**
@@ -128,7 +128,6 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
    * See [[RasterExtent]] for a discussion of grid and extent boundary concepts.
    */
   def gridBoundsFor(subExtent:Extent):GridBounds = {
-    if(!extent.containsExtent(subExtent)) { throw ExtentRangeError("") }
     // West and North boundarys are a simple mapToGrid call.
     val (colMin,rowMin) = mapToGrid(subExtent.xmin, subExtent.ymax)
 
@@ -139,10 +138,10 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     val colMax = ceil((subExtent.xmax - extent.xmin) / cellwidth).toInt - 1
     val rowMax = ceil((extent.ymax - subExtent.ymin) / cellheight).toInt - 1
     
-    GridBounds(max(0,colMin),
-               max(0,rowMin),
-               min(cols-1,colMax),
-               min(rows-1,rowMax))
+    GridBounds(colMin,
+               rowMin,
+               colMax,
+               rowMax)
   }
   
   /**
@@ -201,6 +200,7 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     val ymax = min(max(extent.ymax - (gridBounds.rowMin * cellheight), extent.ymin), extent.ymax)
     val xmax = xmin + (gridBounds.width * cellwidth)
     val ymin = ymax - (gridBounds.height * cellheight)
+    println(s"xmin $xmin ymax $ymax xmax $xmax ymin $ymin")
     Extent(xmin,ymin,xmax,ymax)
   }
 }
