@@ -20,7 +20,7 @@ class CostDistanceSpec extends FunSuite with TestServer {
     val re = RasterExtent(e, 10,10,size,size)
     val data = IntArrayRasterData(a, size, size)
 
-    Literal(new Raster(data, re))
+    Literal(Raster(data, re))
   }
 
   def asRaster(a: Array[Int], cols: Int, rows: Int): Op[Raster] = {
@@ -28,7 +28,7 @@ class CostDistanceSpec extends FunSuite with TestServer {
     val re = RasterExtent(e, 10,10,cols,rows)
     val data = IntArrayRasterData(a, cols, rows)
 
-    Literal(new Raster(data, re))
+    Literal( Raster(data, re))
   }
   
   test("ESRI example") {
@@ -53,7 +53,7 @@ class CostDistanceSpec extends FunSuite with TestServer {
 
     val cd = CostDistance(costRaster, points)
 
-    val d = server.run(cd).data.asInstanceOf[DoubleArrayRasterData]
+    val d = server.run(cd).toArrayDouble
 
     val expected = Array(
       2.0, 0.0, 0.0, 4.0, 6.7, 9.2,
@@ -63,9 +63,11 @@ class CostDistanceSpec extends FunSuite with TestServer {
       2.5, 5.7, 6.4,   N, 7.1, 11.1,
       0.0, 1.5, 3.5, 5.0, 7.0, 10.5).map(i => " %04.1f " format i)
 
-    val strings = d.array.map(i => " %04.1f " format i)
+    val strings = d.map(i => " %04.1f " format i)
 
-    strings should equal (expected)
+    for(i <- 0 until strings.length) {
+      strings(i) should be (expected(i))
+    }
   }
 
   test("GRASS example") {
@@ -84,7 +86,7 @@ class CostDistanceSpec extends FunSuite with TestServer {
 
     val cd = CostDistance(costRaster, points)
 
-    val d = server.run(cd).data.asInstanceOf[DoubleArrayRasterData]
+    val d = server.run(cd).toArrayDouble
     
     val expected = Array(
       22,21,21,20,17,15,14,
@@ -94,8 +96,13 @@ class CostDistanceSpec extends FunSuite with TestServer {
       16,13, 8, 7, 4, 0, 6,
       14, 9, 8, 9, 6, 3, 8)
 
-    d.array.map(i => (i + 0.5).toInt) should equal(expected)
+    val values = d.toSeq.map(i => (i + 0.5).toInt)
+    // println(values.toSeq)
+    // println(expected.toSeq)
 
+    for(i <- 0 until values.length) {
+      values(i) should be (expected(i))
+    }
   }
 
   def print(d: DoubleArrayRasterData):Unit = println(d.array.toList.map(i => " %04.1f " format i).grouped(d.cols).map(_.mkString(",")).mkString("\n"))

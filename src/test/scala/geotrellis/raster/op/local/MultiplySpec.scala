@@ -75,9 +75,9 @@ class MultiplySpec extends FunSpec
       }
     }
 
-    it("multiplies two tiled RasterSources correctly") {
-      val rs1 = RasterSource("quad_tiled")
-      val rs2 = RasterSource("quad_tiled2")
+    it("multiplies two tiled RasterDataSources correctly") {
+      val rs1 = RasterDataSource("quad_tiled")
+      val rs2 = RasterDataSource("quad_tiled2")
 
       val r1 = runSource(rs1)
       val r2 = runSource(rs2)
@@ -96,8 +96,8 @@ class MultiplySpec extends FunSpec
       }
     }
 
-    it("multiplies three tiled RasterSources correctly") {
-      val rs1 = createRasterSource(
+    it("multiplies three tiled RasterDataSources correctly") {
+      val rs1 = createRasterDataSource(
         Array( 1,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
 
@@ -105,7 +105,7 @@ class MultiplySpec extends FunSpec
                1,1,1, 1,1,1, 1,1,1),
         3,2,3,2)
 
-      val rs2 = createRasterSource(
+      val rs2 = createRasterDataSource(
         Array( 2,2,2, 2,2,2, 2,2,2,
                2,2,2, 2,2,2, 2,2,2,
 
@@ -113,7 +113,7 @@ class MultiplySpec extends FunSpec
                2,2,2, 2,2,2, 2,2,2),
         3,2,3,2)
 
-      val rs3 = createRasterSource(
+      val rs3 = createRasterDataSource(
         Array( 3,3,3, 3,3,3, 3,3,3,
                3,3,3, 3,3,3, 3,3,3,
 

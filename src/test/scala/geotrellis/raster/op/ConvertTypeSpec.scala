@@ -16,7 +16,7 @@ class ConvertTypeSpec extends FunSpec
     it("should convert a byte raster to an int raster") { 
       val r = byteRaster
       var result = run(local.Add(ConvertType(r,TypeShort),100))
-      result.data.getType should be (TypeShort)
+      result.rasterType should be (TypeShort)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (r.get(col,row) + 100)

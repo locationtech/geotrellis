@@ -111,7 +111,7 @@ object AsciiWriter extends Writer {
     pw.write("cellsize %.12f\n".format(g.cellwidth))
     pw.write("nodata_value %d\n".format(noData))
 
-    val data = raster.data.asArray
+    val data = raster.toArray
 
     var y = 0
     while (y < g.rows) {

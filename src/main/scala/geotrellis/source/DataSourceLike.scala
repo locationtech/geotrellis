@@ -7,9 +7,9 @@ import scala.language.higherKinds
 trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
   def elements():Op[Seq[Op[T]]]
   def get():Op[V]
-  def converge() = ValueDataSource(get)
+  def converge() = ValueDataSource(get.withName("Converge"))
   def converge[B](f:Seq[T]=>B):ValueDataSource[B] =
-    ValueDataSource( logic.Collect(elements).map(f) )
+    ValueDataSource( logic.Collect(elements).map(f).withName("Converge") )
 
   /** apply a function to elements, and return the appropriate datasource **/
   def map[B,That](f:T => B)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = 
@@ -20,7 +20,7 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
     _mapOp(f,bf.apply(this))
 
   private def _mapOp[B,That](f:Op[T]=>Op[B],builder:SourceBuilder[B,That]) = {
-    val newOp = elements.map(_.map(f)).withName("DataSourceMap")
+    val newOp = elements.map(_.map(f)).withName(s"${self.getClass.getSimpleName} map")
     builder.setOp(newOp)
     val result = builder.result()
     result
@@ -41,5 +41,7 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
   def foldRight[B](z:B)(folder:(T,B)=>B):ValueDataSource[B] =
     converge(_.foldRight(z)(folder))
 
-  def distribute(cluster:akka.actor.ActorRef) = this mapOp (RemoteOperation(_, cluster))
+  def distribute[T1 >: T,That](cluster:akka.actor.ActorRef)
+                              (implicit bf:CanBuildSourceFrom[Repr,T1,That]):That =
+    _mapOp(RemoteOperation(_, cluster),bf.apply(this))
 }

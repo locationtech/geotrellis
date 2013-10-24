@@ -104,7 +104,7 @@ class CatalogSpec extends FunSpec with MustMatchers with ShouldMatchers {
       val s = Server("catalogtest", catalog)
       val context = new Context(s)
       val result = context.getRasterByName("constant", None).asInstanceOf[Result[Raster]]
-      assert(result.value.data.isInstanceOf[IntConstant])
+      assert(result.value.asInstanceOf[ArrayRaster].data.isInstanceOf[IntConstant])
     }
 
     it("should correctly recognize to cache all") {

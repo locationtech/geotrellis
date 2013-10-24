@@ -21,7 +21,7 @@ class ArgTest extends FunSuite {
   }
 
   test("make sure it contains 100 cells") {
-    assert(r.length === 100)
+    assert((r.rasterExtent.cols*r.rasterExtent.rows) === 100)
   }
 
   test("make sure it's an array of zeros") {

@@ -29,7 +29,7 @@ trait CursorCalculation[T] extends FocalCalculation[T] {
   def execute(r:Raster,n:Neighborhood,neighbors:Seq[Option[Raster]]):Unit = 
     CursorStrategy.execute(r,n,this,traversalStrategy,neighbors)
   
-  def calc(r:Raster,cur:Cursor):Unit
+  def calc(r:RasterLike,cur:Cursor):Unit
 }
 
 /**
@@ -42,8 +42,8 @@ trait CellwiseCalculation[T] extends FocalCalculation[T] {
       case _ => sys.error("Cannot use cellwise calculation with this traversal strategy.")
     }
   
-  def add(r:Raster,x:Int,y:Int)
-  def remove(r:Raster,x:Int,y:Int)
+  def add(r:RasterLike,x:Int,y:Int)
+  def remove(r:RasterLike,x:Int,y:Int)
   def reset():Unit
   def setValue(x:Int,y:Int)
 }

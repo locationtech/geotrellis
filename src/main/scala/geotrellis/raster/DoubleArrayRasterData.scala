@@ -14,18 +14,6 @@ final case class DoubleArrayRasterData(array: Array[Double], cols: Int, rows: In
   def updateDouble(i: Int, z: Double) = array(i) = z
   def copy = DoubleArrayRasterData(array.clone, cols, rows)
   override def toArrayDouble = array.clone
-
-  override def mapIfSet(f: Int => Int) = {
-    val arr = array.clone
-    var i = 0
-    val len = length
-    while (i < len) {
-      val z = arr(i)
-      if (!java.lang.Double.isNaN(z)) arr(i) = i2d(f(d2i(z)))
-      i += 1
-    }
-    DoubleArrayRasterData(arr, cols, rows)
-  }
 }
 
 object DoubleArrayRasterData {

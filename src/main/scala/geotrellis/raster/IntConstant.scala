@@ -2,7 +2,9 @@ package geotrellis.raster
 
 import geotrellis._
 
-final case class IntConstant(n:Int, cols:Int, rows:Int) extends StrictRasterData {
+import scalaxy.loops._
+
+final case class IntConstant(n:Int, cols:Int, rows:Int) extends RasterData {
   def getType = TypeInt
   def apply(i:Int) = n
   def applyDouble(i:Int) = n.toDouble
@@ -13,7 +15,6 @@ final case class IntConstant(n:Int, cols:Int, rows:Int) extends StrictRasterData
 
   override def combine(other:RasterData)(f:(Int,Int) => Int) = other.map(z => f(n, z))
   override def map(f:Int => Int) = IntConstant(f(n), cols, rows)
-  override def mapIfSet(f:Int => Int) = if (n != NODATA) map(f) else this
 
   override def foreach(f: Int => Unit) {
     var i = 0
@@ -23,6 +24,15 @@ final case class IntConstant(n:Int, cols:Int, rows:Int) extends StrictRasterData
 
   override def combineDouble(other:RasterData)(f:(Double,Double) => Double) = other.mapDouble(z => f(n, z))
   override def mapDouble(f:Double => Double) = DoubleConstant(f(n), cols, rows)
-  override def mapIfSetDouble(f:Double => Double) = if (n != NODATA) mapDouble(f) else this
   override def foreachDouble(f: Double => Unit) = foreach(z => f(z))
+
+  def force():RasterData = {
+    val forcedData = RasterData.allocByType(getType,cols,rows)
+    for(col <- 0 until cols optimized) {
+      for(row <- 0 until rows optimized) {
+        forcedData.set(col,row,n)
+      }
+    }
+    forcedData
+  }
 }

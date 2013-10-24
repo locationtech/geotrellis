@@ -63,7 +63,7 @@ class Layer {
 
     val layerOp = io.LoadRaster(layer,reOp).map { r =>
       // Convert 0 of bit raster to NODATA
-      if(!r.data.isTiled && r.data.getType == TypeBit) { 
+      if(r.rasterType == TypeBit) { 
         r.convert(TypeByte).map { z => if(z == 0) NODATA else z } 
       } else { 
         r 

@@ -23,6 +23,7 @@ class ColorMapSpec extends FunSpec with ShouldMatchers
       ), 4, 3)
 
       val result = run(ColorMap(r,map,ColorMapOptions(LessThan,5)))
+
       result.get(1,0) should be (5)
       result.get(2,0) should be (5)
       result.get(1,1) should be (5)
@@ -126,8 +127,9 @@ class ColorMapSpec extends FunSpec with ShouldMatchers
         10, 20, 31, 40
       ), 4, 3)
 
-      getResult(ColorMap(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true))) match {
-        case x:process.Complete[_] => withClue("Should have resulted in a failure.") { assert(false) }
+      getResult(Force(ColorMap(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true)))) match {
+        case x:process.Complete[_] => 
+          withClue("Should have resulted in a failure.") { assert(false) }
         case x:process.Error => // pass
       }
     }
@@ -248,7 +250,7 @@ class ColorMapSpec extends FunSpec with ShouldMatchers
         1.0, 2.0, 3.1, 4.0
       ), 4, 3)
 
-      getResult(ColorMap(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true))) match {
+      getResult(Force(ColorMap(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true)))) match {
         case x:process.Complete[_] => withClue("Should have resulted in a failure.") { assert(false) }
         case x:process.Error => // pass
       }

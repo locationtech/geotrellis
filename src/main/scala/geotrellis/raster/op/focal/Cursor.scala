@@ -40,15 +40,15 @@ object Cursor {
    *                      for extent and mask.
    * @param analysisArea  Analysis area
    */
-  def apply(r:Raster,n:Neighborhood,analysisArea:AnalysisArea):Cursor = {
+  def apply(r:RasterLike,n:Neighborhood,analysisArea:AnalysisArea):Cursor = {
     val result = new Cursor(r,analysisArea,n.extent)
     if(n.hasMask) { result.setMask(n.mask) }
     result
   }
 
-  def apply(r:Raster,n:Neighborhood):Cursor =  apply(r,n,AnalysisArea(r))
+  def apply(r:RasterLike,n:Neighborhood):Cursor =  apply(r,n,AnalysisArea(r))
 
-  def apply(r:Raster,extent:Int):Cursor = new Cursor(r,AnalysisArea(r),extent)
+  def apply(r:RasterLike,extent:Int):Cursor = new Cursor(r,AnalysisArea(r),extent)
 }
 
 /**
@@ -62,7 +62,7 @@ object Cursor {
  *                                   e.g. if the bounding box is 9x9, then
  *                                   the distance from center is 1.
  */
-class Cursor(r:Raster, analysisArea:AnalysisArea, val extent:Int) {
+class Cursor(r:RasterLike, analysisArea:AnalysisArea, val extent:Int) {
   private val rows = r.rasterExtent.rows
   private val cols = r.rasterExtent.cols
 

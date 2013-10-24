@@ -32,35 +32,11 @@ object Mean {
   def apply(r:Op[Raster],n:Op[Neighborhood]) = new Mean(r,n,TileNeighbors.NONE)
 }
 
-case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleRasterDataResult {
-  var count:Int = 0
-  var sum:Int = 0
-
- def add(r:Raster, x:Int, y:Int) = {
-    val z = r.get(x,y)
-    if (z != NODATA) {
-      count += 1
-      sum   += z
-    }
-  }
-
-  def remove(r:Raster, x:Int, y:Int) = {
-    val z = r.get(x,y)
-    if (z != NODATA) {
-      count -= 1
-      sum -= z
-    }
-  } 
-
-  def setValue(x:Int,y:Int) = { data.setDouble(x,y, sum / count.toDouble) }
-  def reset() = { count = 0 ; sum = 0 }
-}
-
 case class CursorMeanCalc() extends CursorCalculation[Raster] with DoubleRasterDataResult {
   var count:Int = 0
   var sum:Int = 0
 
-  def calc(r:Raster,c:Cursor) = {
+  def calc(r:RasterLike,c:Cursor) = {
     c.removedCells.foreach { (x,y) => 
       val v = r.get(x,y)
       if(v != NODATA) { count -= 1; sum -= v } 
@@ -71,4 +47,28 @@ case class CursorMeanCalc() extends CursorCalculation[Raster] with DoubleRasterD
     }
     data.setDouble(c.col,c.row,sum / count.toDouble)
   }
+}
+
+case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleRasterDataResult {
+  var count:Int = 0
+  var sum:Int = 0
+
+ def add(r:RasterLike, x:Int, y:Int) = {
+    val z = r.get(x,y)
+    if (z != NODATA) {
+      count += 1
+      sum   += z
+    }
+  }
+
+  def remove(r:RasterLike, x:Int, y:Int) = {
+    val z = r.get(x,y)
+    if (z != NODATA) {
+      count -= 1
+      sum -= z
+    }
+  } 
+
+  def setValue(x:Int,y:Int) = { data.setDouble(x,y, sum / count.toDouble) }
+  def reset() = { count = 0 ; sum = 0 }
 }

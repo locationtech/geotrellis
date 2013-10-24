@@ -26,13 +26,13 @@ class ConvolveSpec extends FunSuite with TestServer {
     val data1 = IntArrayRasterData(in1, size1, size1)
     val data2 = IntArrayRasterData(in2, size2, size2)
 
-    val r1 = new Raster(data1, re1)
-    val r2 = new Raster(data2, re2)
+    val r1 = Raster(data1, re1)
+    val r2 = Raster(data2, re2)
 
     val op = Convolve(r1, r2)
     val r3 = server.run(op)
 
-    val r3d = r3.data.asArray.toArray
+    val r3d = r3.toArray
     assert(r3d === out)
   }
   
@@ -40,26 +40,24 @@ class ConvolveSpec extends FunSuite with TestServer {
     // Create and sample a 5x5 guassian
     val op = CreateGaussianRaster(5,5.0,2.0,100.0)
     val r1 = server.run(op)
-    val r1d = r1.data.asArray
 
     // (3,1) => (1,1) => r = sqrt(1*1 + 1*1) = sqrt(2)
     // 100*exp(-(sqrt(2)^2)/(2*(2.0^2))) = 77.88 = 77
-    assert(r1d.get(3,1) === 77)
+    assert(r1.get(3,1) === 77)
 
     // Should also be symmetric
-    assert(r1d.get(3,3) === 77)
-    assert(r1d.get(3,1) === 77)
-    assert(r1d.get(1,3) === 77)
-    assert(r1d.get(1,1) === 77)
+    assert(r1.get(3,3) === 77)
+    assert(r1.get(3,1) === 77)
+    assert(r1.get(1,3) === 77)
+    assert(r1.get(1,1) === 77)
 
     // Make sure amp and sigma do stuff
     val op2 = CreateGaussianRaster(5,5.0,4.0,50.0)
     val r2 = server.run(op2)
-    val r2d = r2.data.asArray
 
     // (3,1) => (1,1) => r = sqrt(1*1 + 1*1) = sqrt(2)
     // 50*exp(-(sqrt(2)^2)/(2*(4.0^2))) = 46.97 = 46
-    assert(r2d.get(3,1) === 46)
+    assert(r2.get(3,1) === 46)
   }
  
 

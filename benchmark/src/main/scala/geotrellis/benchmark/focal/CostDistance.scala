@@ -37,7 +37,7 @@ class CostDistanceOperationBenchmark extends OperationBenchmark {
     val re = RasterExtent(e, 10,10,n,n)
     val data = IntArrayRasterData(a, n, n)
 
-    new Raster(data, re)
+    Raster(data, re)
   }
 
   def randomPointList(n: Int, nPoints: Int) = {

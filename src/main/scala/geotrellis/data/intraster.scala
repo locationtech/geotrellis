@@ -8,11 +8,11 @@ import geotrellis.util._
 
 final class RasterReadState(raster:Raster,
                             val target:RasterExtent) extends ReadState {
-  val data:ArrayRasterData =
-    raster.data.asArray
+  val data:Array[Int] =
+    raster.toArray
   val rasterExtent:RasterExtent = raster.rasterExtent
 
-  def getType = data.getType
+  def getType = raster.rasterType
 
   private var pos:Int = 0
   private var sz:Int = 0

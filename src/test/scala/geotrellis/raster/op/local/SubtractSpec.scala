@@ -93,9 +93,9 @@ class SubtractSpec extends FunSpec
       r.get(0, 0) should be (r46.get(0, 0))
     }
 
-    it("subtracts two tiled RasterSources correctly") {
-      val rs1 = RasterSource("quad_tiled")
-      val rs2 = RasterSource("quad_tiled2")
+    it("subtracts two tiled RasterDataSources correctly") {
+      val rs1 = RasterDataSource("quad_tiled")
+      val rs2 = RasterDataSource("quad_tiled2")
 
       val r1 = runSource(rs1)
       val r2 = runSource(rs2)
@@ -114,8 +114,8 @@ class SubtractSpec extends FunSpec
       }
     }
 
-    it("subtracts three tiled RasterSources correctly") {
-      val rs1 = createRasterSource(
+    it("subtracts three tiled RasterDataSources correctly") {
+      val rs1 = createRasterDataSource(
         Array( 1,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
 
@@ -123,7 +123,7 @@ class SubtractSpec extends FunSpec
                1,1,1, 1,1,1, 1,1,1),
         3,2,3,2)
 
-      val rs2 = createRasterSource(
+      val rs2 = createRasterDataSource(
         Array( 2,2,2, 2,2,2, 2,2,2,
                2,2,2, 2,2,2, 2,2,2,
 
@@ -131,7 +131,7 @@ class SubtractSpec extends FunSpec
                2,2,2, 2,2,2, 2,2,2),
         3,2,3,2)
 
-      val rs3 = createRasterSource(
+      val rs3 = createRasterDataSource(
         Array( 3,3,3, 3,3,3, 3,3,3,
                3,3,3, 3,3,3, 3,3,3,
 

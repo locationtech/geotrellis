@@ -68,13 +68,12 @@ case class IntColorMap(r:Op[Raster],
 
       val len = orderedBreaks.length
 
-      Result(
+      Result({
         r.map { z =>
           if(z == NODATA) { options.noDataColor }
           else {
             var i = 0
             while(i < len && zCheck(z,i)) { i += 1 }
-
             if(i == len){
               if(options.strict) {
                 sys.error(s"Value $z did not have an associated color and break")
@@ -86,7 +85,7 @@ case class IntColorMap(r:Op[Raster],
             }
           }
         }
-      )
+      })
 })
 
 case class DoubleColorMap(r:Op[Raster], 

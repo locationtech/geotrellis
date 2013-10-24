@@ -4,7 +4,7 @@ import geotrellis._
 
 import com.vividsolutions.jts.{ geom => jts }
 
-class Geometry[D] (val geom:jts.Geometry, val data:D) extends Feature[jts.Geometry, D]
+class Geometry[D] (val geom:jts.Geometry, val data:D) extends Feature[jts.Geometry, D] 
 
 class SingleGeometry[D] (override val geom:jts.Geometry, data:D) extends Geometry(geom, data)
 
