@@ -101,7 +101,7 @@ object RemoteClient {
     val server = app.server
     val raster = io.LoadRaster("mtsthelens_tiled_cached")
     val op = stat.GetHistogram(raster)
-    op.limit = 5000
+    //op.limit = 5000 // TODO: Replace grouping of ops
 
     for(i <- 1 until 10) {
       println(" == Sending op for remote execution.")
