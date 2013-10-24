@@ -38,6 +38,27 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
     }
   }
 
+  def assertEqual(r:Op[Raster],arr:Array[Double]) = {
+    val raster = run(r)
+    val cols = raster.rasterExtent.cols
+    val rows = raster.rasterExtent.rows
+    for(col <- 0 until cols) {
+      for(row <- 0 until rows) {
+        val v = raster.getDouble(col,row)
+        if(isNaN(v)) {
+          withClue(s"Value at ($col,$row) are not the same: value was ${arr(row*cols+col)}") {
+            isNaN(arr(row*cols + col)) should be (true)
+          }
+        } else {
+          withClue(s"Value at ($col,$row) are not the same:") {
+            v should be (arr(row*cols + col))
+          }
+        }
+      }
+    }
+  }
+
+
   def assertEqual(r:Op[Raster],r2:Op[Raster]):Unit = assertEqual(r,r2,0.0000000001)
 
   def assertEqual(rOp1:Op[Raster],rOp2:Op[Raster],threshold:Double):Unit = {

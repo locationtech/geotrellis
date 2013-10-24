@@ -14,6 +14,10 @@ object InverseMask {
  */
   def apply(r1:Op[Raster], r2:Op[Raster], readMask:Op[Int], writeMask:Op[Int]) =
     (r1,r2,readMask,writeMask).map { (r1,r2,readMask,writeMask) =>
-      r1.dualCombine(r2)((z1,z2) => if (z2 == readMask) z1 else writeMask)((z1,z2) => if (d2i(z2) == readMask) z1 else i2d(writeMask))
+      r1.dualCombine(r2)((z1,z2) => 
+        if (z2 == readMask) z1 else writeMask
+      )((z1,z2) => 
+        if (d2i(z2) == readMask) z1 else i2d(writeMask)
+      )
     }.withName("InverseMask")
 }

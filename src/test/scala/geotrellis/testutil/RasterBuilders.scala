@@ -6,6 +6,9 @@ import geotrellis.process._
 import geotrellis.source._
 
 trait RasterBuilders {
+  val nd = NODATA
+  val NaN = Double.NaN
+
   def createConsecutiveRaster(d:Int):Raster = {
     val arr = (for(i <- 1 to d*d) yield i).toArray
     Raster(arr, RasterExtent(Extent(0,0,d,d),1,1,d,d))

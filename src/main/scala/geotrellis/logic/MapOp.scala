@@ -3,34 +3,34 @@ package geotrellis.logic
 import geotrellis._
 import geotrellis.process._
 
-object Do {
+object MapOp {
   /**
    * Invoke a function that takes no arguments.
    * 
-   * See Do0.
+   * See MapOp0.
    */
-  def apply[Z](call:() => Z) = Do0(call)
+  def apply[Z](call:() => Z) = MapOp0(call)
 
   /**
    * Invoke a function that takes one argument.
    * 
-   * See Do1.
+   * See MapOp1.
    */
-  def apply[A,Z](a:Op[A])(call:A => Z) = Do1(a)(call)
+  def apply[A,Z](a:Op[A])(call:A => Z) = MapOp1(a)(call)
 
   /**
    * Invoke a function that takes two arguments.
    *
-   * See Do2.
+   * See MapOp2.
    */
   def apply[A,B,Z](a:Op[A], b:Op[B])(call:(A,B) => Z) = 
-    Do2(a,b)(call)
+    MapOp2(a,b)(call)
 }
 
 /**
  * Invoke a function that takes no arguments.
  */
-case class Do0[Z](call:() => Z) extends Op[Z] {
+case class MapOp0[Z](call:() => Z) extends Op[Z] {
   def _run(context:Context) = Result(call())
   val nextSteps:Steps = {
     case _ => sys.error("Should not be called.")
@@ -40,10 +40,10 @@ case class Do0[Z](call:() => Z) extends Op[Z] {
 /**
  * Invoke a function that takes one argument.
  *
- * Functionally speaking: Map an Op[A] into an Op[Z] 
+ * Functionally speaking: MapOp an Op[A] into an Op[Z] 
  * using a function from A => Z.
  */
-case class Do1[A, Z](a:Op[A])(call:A => Z) extends Op[Z] {
+case class MapOp1[A, Z](a:Op[A])(call:A => Z) extends Op[Z] {
   def _run(context:Context) = runAsync(a :: Nil)
   val nextSteps:Steps = {
     case a :: Nil => Result(call(a.asInstanceOf[A]))
@@ -53,10 +53,10 @@ case class Do1[A, Z](a:Op[A])(call:A => Z) extends Op[Z] {
 /**
  * Invoke a function that takes two arguments.
  *
- * Functionally speaking: Map an Op[A] and Op[B] into an Op[Z] using a 
+ * Functionally speaking: MapOp an Op[A] and Op[B] into an Op[Z] using a 
  * function from (A,B) => Z.
  */
-case class Do2[A, B, Z]
+case class MapOp2[A, B, Z]
 (a:Op[A], b:Op[B])(call:(A,B) => Z) extends Op[Z] {
   def _run(context:Context) = runAsync(a :: b :: Nil)
   val nextSteps:Steps = {

@@ -139,7 +139,7 @@ case class Annulus(innerRadius:Double,outerRadius:Double) extends Neighborhood {
 
 object Kernel {
   implicit def raster2Kernel(r:Raster):Op[Kernel] = Kernel(r)
-  implicit def rasterOp2Kernel(r:Op[Raster]):Op[Kernel] = logic.Do(r) { r => Kernel(r) }
+  implicit def rasterOp2Kernel(r:Op[Raster]):Op[Kernel] = r.map(Kernel(_))
 }
 
 /** Kernel

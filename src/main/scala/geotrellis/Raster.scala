@@ -17,130 +17,8 @@ object Raster {
     ArrayRaster(IntArrayRasterData.empty(re.cols, re.rows), re)
 }
 
-trait RasterLike {
-  val rasterExtent:RasterExtent
-
-  lazy val cols = rasterExtent.cols
-  lazy val rows = rasterExtent.rows
-
-  val rasterType:RasterType
-  def isFloat:Boolean = rasterType.float // TODO: yup.
-
-  def toArrayRaster:ArrayRaster
-
-  /**
-   * Get value at given coordinates.
-   */
-  def get(col:Int, row:Int):Int
-
-  /**
-   * Get value at given coordinates.
-   */
-  def getDouble(col:Int, row:Int):Double
-
-  def dualForeach(f:Int => Unit)(g:Double => Unit):Unit =
-    if (isFloat) foreachDouble(g) else foreach(f)
-
-  def foreach(f:Int=>Unit):Unit =
-    for(col <- 0 until cols optimized) {
-      for(row <- 0 until rows optimized) {
-        f(get(col,row))
-      }
-    }
-
-  def foreachDouble(f:Double=>Unit):Unit =
-    for(col <- 0 until cols optimized) {
-      for(row <- 0 until rows optimized) {
-        f(getDouble(col,row))
-      }
-    }
-
-  /**
-   * Return tuple of highest and lowest value in raster.
-   *
-   * @note   Currently does not support double valued raster data types
-   *         (TypeFloat,TypeDouble). Calling findMinMax on rasters of those
-   *         types will give the integer min and max of the rounded values of
-   *         their cells.
-   */
-  def findMinMax = {
-    var zmin = Int.MaxValue
-    var zmax = Int.MinValue
-
-    foreach { 
-      z => if (z != NODATA) {
-        zmin = math.min(zmin, z)
-        zmax = math.max(zmax, z)
-      }
-    }
-
-    if(zmin == Int.MaxValue) { zmin = NODATA }
-    (zmin, zmax)
-  } 
-
-  /**
-   * Return tuple of highest and lowest value in raster.
-   */
-  def findMinMaxDouble = {
-    var zmin = Double.NaN
-    var zmax = Double.NaN
-
-    foreachDouble {
-      z => if (!java.lang.Double.isNaN(z)) {
-        if(java.lang.Double.isNaN(zmin)) {
-          zmin = z
-          zmax = z
-        } else {
-          zmin = math.min(zmin, z)
-          zmax = math.max(zmax, z)
-        }
-      }
-    }
-
-    (zmin, zmax)
-  } 
-
-  /**
-   * Return ascii art of this raster.
-   */
-  def asciiDraw() = { 
-    var s = "";
-    for (row <- 0 until rasterExtent.rows) {
-      for (col <- 0 until rasterExtent.cols) {
-        val z = this.get(col,row)
-        if (z == NODATA) {
-          s += ".."
-        } else {
-          s += "%02X".format(z)
-        }
-      }
-      s += "\n"
-    }
-    s
-  }
-
-  /**
-   * Return ascii art of a range from this raster.
-   */
-  def asciiDrawRange(colMin:Int, colMax:Int, rowMin:Int, rowMax:Int) = {
-    var s = "";
-    for (row <- rowMin to rowMax) {
-      for (col <- colMin to colMax) {
-        val z = this.get(row, col)
-        if (z == NODATA) {
-          s += ".."
-        } else {
-          s += "%02X".format(z)
-        }
-      }
-      s += "\n"
-    }
-    s
-  }
-}
-
 /**
- * 
+ * Base trait for the Raster data type.
  */
 trait Raster extends RasterLike {
   /** This function will force any deferred operations to happen
@@ -182,6 +60,36 @@ trait Raster extends RasterLike {
     ArrayRaster(data,rasterExtent)
   }
 
+  def combine(rs:Raster*)(f:Seq[Int] => Int)(implicit d:DI):Raster = 
+    combine(rs)(f)
+
+  def reduce(rs:Seq[Raster])(f:(Int,Int)=>Int):Raster = {
+    if(Set(rs.map(_.rasterExtent)).size != 1) {
+      val rasterExtents = rs.map(_.rasterExtent).toSeq
+      throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
+                             s"$rasterExtents are not all equal")
+    }
+
+    val layerCount = rs.length
+    if(layerCount == 0) {
+      this
+    } else {
+      val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
+      val data = RasterData.allocByType(newRasterType,cols,rows)
+      for(col <- 0 until cols optimized) {
+        for(row <- 0 until rows optimized) {
+          var v = get(col,row)
+          for(i <- 1 until layerCount optimized) {
+            v = f(v,rs(i).get(col,row))
+          }
+
+          data.set(col,row,v)
+        }
+      }
+      ArrayRaster(data,rasterExtent)
+    }
+  }
+
   def combineDouble(rs:Seq[Raster])(f:Seq[Double] => Double):Raster = {
     if(Set(rs.map(_.rasterExtent)).size != 1) {
       val rasterExtents = rs.map(_.rasterExtent).toSeq
@@ -199,11 +107,35 @@ trait Raster extends RasterLike {
     ArrayRaster(data,rasterExtent)
   }
 
-  def combine(rs:Raster*)(f:Seq[Int] => Int)(implicit d:DI):Raster = 
-    combine(rs)(f)
-
   def combineDouble(rs:Raster*)(f:Seq[Double] => Double)(implicit d:DI):Raster = 
     combineDouble(rs)(f)
+
+  def reduceDouble(rs:Seq[Raster])(f:(Double,Double)=>Double):Raster = {
+    if(Set(rs.map(_.rasterExtent)).size != 1) {
+      val rasterExtents = rs.map(_.rasterExtent).toSeq
+      throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
+                             s"$rasterExtents are not all equal")
+    }
+
+    val layerCount = rs.length
+    if(layerCount == 0) {
+      this
+    } else {
+      val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
+      val data = RasterData.allocByType(newRasterType,cols,rows)
+      for(col <- 0 until cols optimized) {
+        for(row <- 0 until rows optimized) {
+          var v = getDouble(col,row)
+          for(i <- 1 until layerCount optimized) {
+            v = f(v,rs(i).getDouble(col,row))
+          }
+
+          data.setDouble(col,row,v)
+        }
+      }
+      ArrayRaster(data,rasterExtent)
+    }
+  }
 
   def mapIfSet(f:Int => Int):Raster =
     map { i =>
@@ -225,6 +157,18 @@ trait Raster extends RasterLike {
 
   def dualCombine(r2:Raster)(f:(Int, Int) => Int)(g:(Double, Double) => Double) =
     if (isFloat || r2.isFloat) combineDouble(r2)(g) else combine(r2)(f)
+
+  def dualCombine(rs:Seq[Raster])(f:Seq[Int] => Int)(g:Seq[Double] => Double) =
+    (isFloat +: rs.map(_.isFloat)) find(b=>b) match {
+      case Some(_) => combineDouble(rs)(g)
+      case _ => combine(rs)(f)
+    }
+
+  def dualReduce(rs:Seq[Raster])(f:(Int,Int)=>Int)(g:(Double,Double)=>Double) = 
+    (isFloat +: rs.map(_.isFloat)) find(b=>b) match {
+      case Some(_) => reduceDouble(rs)(g)
+      case _ => reduce(rs)(f)
+    }
 
   /**
    * Test [[geotrellis.RasterExtent]] of other raster w/ our own geographic

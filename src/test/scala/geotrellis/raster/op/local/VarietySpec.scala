@@ -1,6 +1,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.process._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
@@ -68,6 +69,73 @@ class VarietySpec extends FunSpec
             variety.get(col,row) should be (NODATA)
           }
         }
+      }
+    }
+
+    it("computes variety on raster sources") { 
+      val n = NODATA
+      val r1 = createRasterDataSource(
+        Array( n, n, n, n, n, n,
+               n, n, n, n, n, n,
+               n, n, n, n, n, n,
+               n, n, n, n, n, n), 
+        2,2,3,2
+      )
+
+      val r2 = createRasterDataSource(
+        Array( n, 1, n, n, n, n,
+               n, n, 1, n, n, n,
+               n, n, n, 1, n, n,
+               n, n, n, n, 1, n), 
+        2,2,3,2
+      )
+
+      val r3 = createRasterDataSource(
+        Array( n, 2, n, n, n, n,
+               n, n, 2, n, n, n,
+               n, n, n, 2, n, n,
+               n, n, n, n, 1, n),  
+        2,2,3,2
+      )
+
+      val r4 = createRasterDataSource(
+        Array( n, 3, n, n, n, n,
+               n, n, 3, n, n, n,
+               n, n, n, 2, n, n,
+               n, n, n, n, 1, n), 
+        2,2,3,2
+      )
+
+      val r5 = createRasterDataSource(
+        Array( n, 4, n, n, n, n,
+               n, n, 3, n, n, n,
+               n, n, n, 2, n, n,
+               n, n, n, n, 1, n), 
+        2,2,3,2
+      )
+
+      getSource(r1.localVariety(r2,r3,r4,r5)) match {
+        case Complete(result,success) =>
+          for(col <- 0 until 6) {
+            for(row <- 0 until 4) {
+              if(col== row + 1) {
+                col match {
+                  case 1 => result.get(col,row) should be (4)
+                  case 2 => result.get(col,row) should be (3)
+                  case 3 => result.get(col,row) should be (2)
+                  case 4 => result.get(col,row) should be (1)
+                  case 5 => result.get(col,row) should be (NODATA)
+                }
+              } else {
+                result.get(col,row) should be (NODATA)
+              }
+            }
+          }
+
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
       }
     }
   }

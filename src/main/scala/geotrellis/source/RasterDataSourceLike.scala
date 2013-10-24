@@ -21,7 +21,7 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
   def tiles = self.elements
   def rasterDefinition:Op[RasterDefinition]
 
-  def get() =
+  def get():Op[Raster] =
     (rasterDefinition,logic.Collect(tiles)).map { (rd,tileSeq) =>
       TileRaster(tileSeq,rd.re,rd.tileLayout).toArrayRaster
     }
@@ -54,6 +54,19 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
     builder.result
   }
 
+  def combineOp[B,That](rs:Seq[RasterDataSource])
+                       (f:Seq[Op[Raster]]=>Op[B])
+                       (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
+    val tileOps:Op[Seq[Op[B]]] =
+      (tiles,logic.Collect(rs.map(_.tiles))).map { (thisTiles,restTiles) =>
+        (thisTiles +: restTiles).transpose.map(f)
+      }
+
+    val builder = bf.apply(this)
+    builder.setOp(tileOps)
+    builder.result
+  }
+
   def combine[That](rs:RasterDataSource)
                    (f:(Int,Int)=>Int)
                    (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
@@ -61,7 +74,7 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
       (tiles,rs.tiles).map { (ts1,ts2) =>
         for((t1,t2) <- ts1.zip(ts2)) yield {
           (t1,t2).map { (r1,r2) =>
-            r1.combine(r2)(f)
+            r1.dualCombine(r2)(f)((z1:Double, z2:Double) => i2d(f(d2i(z1), d2i(z2))))
           }
         }
       }
@@ -72,16 +85,15 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
   }
 
 
-  def combineDouble[That](rs:RasterDataSource)(f:(Double,Double)=>Double)(implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
-    // Check that extents are the same
-    // ...
+  def combineDouble[That](rs:RasterDataSource)
+                         (f:(Double,Double)=>Double)
+                         (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
     val tileOps = 
-      for(ts1 <- tiles;
-          ts2 <- rs.tiles;
-          (t1,t2) <- ts1.zip(ts2)) yield {
-        for(r1 <- t1;
-            r2 <- t2) yield {
-          r1.combineDouble(r2)(f)
+      (tiles,rs.tiles).map { (ts1,ts2) =>
+        for((t1,t2) <- ts1.zip(ts2)) yield {
+          (t1,t2).map { (r1,r2) =>
+            r1.dualCombine(r2)((z1:Int,z2:Int)=>d2i(f(i2d(z1), i2d(z2))))(f)
+          }
         }
       }
     val builder = bf.apply(this)
@@ -89,14 +101,16 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
     builder.result
   }
 
-  def dualCombine[That](rs:RasterDataSource)(fInt:(Int,Int)=>Int)(fDouble:(Double,Double)=>Double)(implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
+  def dualCombine[That](rs:RasterDataSource)
+                       (fInt:(Int,Int)=>Int)
+                       (fDouble:(Double,Double)=>Double)
+                       (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
     val tileOps =
-      for(ts1 <- tiles;
-          ts2 <- rs.tiles;
-          (t1,t2) <- ts1.zip(ts2)) yield {
-        for(r1 <- t1;
-            r2 <- t2) yield {
-          r1.dualCombine(r2)(fInt)(fDouble)
+      (tiles,rs.tiles).map { (ts1,ts2) =>
+        for((t1,t2) <- ts1.zip(ts2)) yield {
+          (t1,t2).map { (r1,r2) =>
+            r1.dualCombine(r2)(fInt)(fDouble)
+          }
         }
       }
     val builder = bf.apply(this)

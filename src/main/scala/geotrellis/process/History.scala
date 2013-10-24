@@ -53,9 +53,9 @@ case class History(id:String,
                    system:String = "unknown") {
   val elapsedTime = endTime - startTime
 
-  def withResult[T](value:T) = {
+  def withResult[T](value:T,forced:Boolean = false) = {
     val now = System.currentTimeMillis
-    val s = 
+    val resultString = 
       value match {
         case null => "null"
         case s:String => s""""$s""""
@@ -84,12 +84,16 @@ case class History(id:String,
         case _ => value.getClass.getSimpleName
       }
 
+    val s = 
+      if(forced) { resultString + " [Forced]" }
+      else { resultString }
+
     val truncS =           
-      if(s.length > 15) {
-        s"""${s.substring(0,12)}..."""
-      } else {
+      // if(s.length > 15) {
+      //   s"""${s.substring(0,12)}..."""
+      // } else {
         s
-      }
+//      }
 
     new History(id,steps,Some(Success(truncS)),startTime,now,system)
   }

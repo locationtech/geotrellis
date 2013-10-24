@@ -55,6 +55,11 @@ class DataSourceSpec extends FunSpec
       result5.head should be (6026)
     }
 
+    it("should return a RasterDataSource when calling .distribute") {
+      val cluster = server.actor
+      val d1:RasterDataSource = (getRasterDataSource + 3).distribute(cluster)
+    }
+
     it("should handle a histogram result") {
       val d = getRasterDataSource
 

@@ -163,7 +163,7 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     val newRows = ceil(newExtent.height / cellheight).toInt
     val newCols = ceil(newExtent.width / cellwidth).toInt
 
-    RasterExtent(newExtent, cellwidth, cellheight, newCols, newCols)
+    RasterExtent(newExtent, cellwidth, cellheight, newCols, newRows)
   }
 
   /**

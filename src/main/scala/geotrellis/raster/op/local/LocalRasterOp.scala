@@ -2,7 +2,7 @@ package geotrellis.raster.op.local
 
 import geotrellis._
 
-trait LocalRasterBinaryOp {
+trait LocalRasterBinaryOp extends Serializable {
   val name = {
     val n = getClass.getSimpleName
     if(n.endsWith("$")) n.substring(0,n.length-1)

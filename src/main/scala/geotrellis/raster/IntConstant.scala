@@ -2,7 +2,9 @@ package geotrellis.raster
 
 import geotrellis._
 
-final case class IntConstant(n:Int, cols:Int, rows:Int) extends StrictRasterData {
+import scalaxy.loops._
+
+final case class IntConstant(n:Int, cols:Int, rows:Int) extends RasterData {
   def getType = TypeInt
   def apply(i:Int) = n
   def applyDouble(i:Int) = n.toDouble
@@ -23,4 +25,14 @@ final case class IntConstant(n:Int, cols:Int, rows:Int) extends StrictRasterData
   override def combineDouble(other:RasterData)(f:(Double,Double) => Double) = other.mapDouble(z => f(n, z))
   override def mapDouble(f:Double => Double) = DoubleConstant(f(n), cols, rows)
   override def foreachDouble(f: Double => Unit) = foreach(z => f(z))
+
+  def force():RasterData = {
+    val forcedData = RasterData.allocByType(getType,cols,rows)
+    for(col <- 0 until cols optimized) {
+      for(row <- 0 until rows optimized) {
+        forcedData.set(col,row,n)
+      }
+    }
+    forcedData
+  }
 }

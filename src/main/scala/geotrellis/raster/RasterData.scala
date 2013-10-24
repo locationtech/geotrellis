@@ -2,6 +2,36 @@ package geotrellis.raster
 
 import geotrellis._
 
+object RasterData {
+  def largestType(lhs: RasterData, rhs: RasterData) = {
+    lhs.getType.union(rhs.getType)
+  }
+  def largestByType(lhs: RasterData, rhs: RasterData) = {
+    if (largestType(lhs, rhs) == lhs.getType) lhs else rhs
+  }
+  def largestAlloc(lhs: RasterData, rhs: RasterData, cols: Int, rows: Int) = {
+    largestByType(lhs, rhs).alloc(cols, rows)
+  }
+
+  def allocByType(t: RasterType, cols: Int, rows: Int): MutableRasterData = t match {
+    case TypeBit    => BitArrayRasterData.ofDim(cols, rows)
+    case TypeByte   => ByteArrayRasterData.ofDim(cols, rows)
+    case TypeShort  => ShortArrayRasterData.ofDim(cols, rows)
+    case TypeInt    => IntArrayRasterData.ofDim(cols, rows)
+    case TypeFloat  => FloatArrayRasterData.ofDim(cols, rows)
+    case TypeDouble => DoubleArrayRasterData.ofDim(cols, rows)
+  }
+
+  def emptyByType(t: RasterType, cols: Int, rows: Int): MutableRasterData = t match {
+    case TypeBit    => BitArrayRasterData.empty(cols, rows)
+    case TypeByte   => ByteArrayRasterData.empty(cols, rows)
+    case TypeShort  => ShortArrayRasterData.empty(cols, rows)
+    case TypeInt    => IntArrayRasterData.empty(cols, rows)
+    case TypeFloat  => FloatArrayRasterData.empty(cols, rows)
+    case TypeDouble => DoubleArrayRasterData.empty(cols, rows)
+  }
+}
+
 /**
  * RasterData provides access and update to the grid data of a raster.
  *
@@ -24,12 +54,7 @@ trait RasterData extends Serializable {
   def cols: Int
   def rows: Int
 
-  /**
-   * Combine two RasterData's cells into new cells using the given integer
-   * function. For every (x,y) cell coordinate, get each RasterData's integer
-   * value, map them to a new value, and assign it to the output's (x,y) cell.
-   */
-  def combine(other: RasterData)(f: (Int, Int) => Int): RasterData
+  def mutable():MutableRasterData
 
   /**
    * For every cell in the given raster, run the given integer function.
@@ -38,19 +63,40 @@ trait RasterData extends Serializable {
    * row, but this should probably not be relied upon. In the future we'd like
    * to be able to parallelize foreach.
    */
-  def foreach(f: Int => Unit): Unit
+  def foreach(f:Int => Unit):Unit = {
+    var i = 0
+    val len = length
+    while(i < len) {
+      f(apply(i))
+      i += 1
+    }
+  }
 
   /**
    * Map each cell in the given raster to a new one, using the given function.
    */
-  def map(f: Int => Int): RasterData
+  def map(f:Int => Int):RasterData = LazyMap(this,f)
 
   /**
-   * Combine two RasterData's cells into new cells using the given double
-   * function. For every (x,y) cell coordinate, get each RasterData's double
+   * Combine two RasterData's cells into new cells using the given integer
+   * function. For every (x,y) cell coordinate, get each RasterData's integer
    * value, map them to a new value, and assign it to the output's (x,y) cell.
    */
-  def combineDouble(other: RasterData)(f: (Double, Double) => Double): RasterData
+  def combine(other:RasterData)(f:(Int, Int) => Int):RasterData = {
+    if (lengthLong != other.lengthLong) {
+      val size1 = s"${cols} x ${rows}"
+      val size2 = s"${other.cols} x ${other.rows}"
+      sys.error(s"Cannot combine rasters of different sizes: $size1 vs $size2")
+    }
+    val output = RasterData.largestAlloc(this, other, cols, rows)
+    var i = 0
+    val len = length
+    while (i < len) {
+      output(i) = f(apply(i), other(i))
+      i += 1
+    }
+    output
+  }
 
   /**
    * For every cell in the given raster, run the given double function.
@@ -59,12 +105,40 @@ trait RasterData extends Serializable {
    * row, but this should probably not be relied upon. In the future we'd like
    * to be able to parallelize foreach.
    */
-  def foreachDouble(f: Double => Unit): Unit
+  def foreachDouble(f:Double => Unit):Unit = {
+    var i = 0
+    val len = length
+    while(i < len) {
+      f(applyDouble(i))
+      i += 1
+    }
+  }
 
   /**
    * Map each cell in the given raster to a new one, using the given function.
    */
-  def mapDouble(f: Double => Double): RasterData
+  def mapDouble(f:Double => Double):RasterData = LazyMapDouble(this,f)
+
+  /**
+   * Combine two RasterData's cells into new cells using the given double
+   * function. For every (x,y) cell coordinate, get each RasterData's double
+   * value, map them to a new value, and assign it to the output's (x,y) cell.
+   */
+  def combineDouble(other:RasterData)(f:(Double, Double) => Double):RasterData = {
+    if (lengthLong != other.lengthLong) {
+      val size1 = s"${cols} x ${rows}"
+      val size2 = s"${other.cols} x ${other.rows}"
+      sys.error(s"Cannot combine rasters of different sizes: $size1 vs $size2")
+    }
+    val output = RasterData.largestAlloc(this, other, cols, rows)
+    var i = 0
+    val len = length
+    while (i < len) {
+      output.updateDouble(i, f(applyDouble(i), other.applyDouble(i)))
+      i += 1
+    }
+    output
+  }
 
   override def equals(other:Any):Boolean = other match {
     case r:RasterData => {
@@ -112,36 +186,3 @@ trait RasterData extends Serializable {
     arr
   }
 }
-
-object RasterData {
-  def largestType(lhs: RasterData, rhs: RasterData) = {
-    lhs.getType.union(rhs.getType)
-  }
-  def largestByType(lhs: RasterData, rhs: RasterData) = {
-    if (largestType(lhs, rhs) == lhs.getType) lhs else rhs
-  }
-  def largestAlloc(lhs: RasterData, rhs: RasterData, cols: Int, rows: Int) = {
-    largestByType(lhs, rhs).alloc(cols, rows)
-  }
-
-  def allocByType(t: RasterType, cols: Int, rows: Int): MutableRasterData = t match {
-    case TypeBit    => BitArrayRasterData.ofDim(cols, rows)
-    case TypeByte   => ByteArrayRasterData.ofDim(cols, rows)
-    case TypeShort  => ShortArrayRasterData.ofDim(cols, rows)
-    case TypeInt    => IntArrayRasterData.ofDim(cols, rows)
-    case TypeFloat  => FloatArrayRasterData.ofDim(cols, rows)
-    case TypeDouble => DoubleArrayRasterData.ofDim(cols, rows)
-  }
-
-  def emptyByType(t: RasterType, cols: Int, rows: Int): MutableRasterData = t match {
-    case TypeBit    => BitArrayRasterData.empty(cols, rows)
-    case TypeByte   => ByteArrayRasterData.empty(cols, rows)
-    case TypeShort  => ShortArrayRasterData.empty(cols, rows)
-    case TypeInt    => IntArrayRasterData.empty(cols, rows)
-    case TypeFloat  => FloatArrayRasterData.empty(cols, rows)
-    case TypeDouble => DoubleArrayRasterData.empty(cols, rows)
-  }
-}
-
-
-
