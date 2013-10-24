@@ -55,16 +55,15 @@ object ExportTask {
     
     try {
       val r = localServer.run(io.LoadFile(sourcePath))
-      val data = r.data
       var x = 0 
       var y = 0
       printToFile(new File(targetPath)) { p =>
-        while(y < data.rows) {
+        while(y < r.rows) {
           x = 0
-          while(x < data.cols) {
-            p.print(s"${data.get(x,y)}")
+          while(x < r.cols) {
+            p.print(s"${r.get(x,y)}")
             x += 1
-            if(x != data.cols) { p.print(",") }
+            if(x != r.cols) { p.print(",") }
           }
           p.print("\n")
           y += 1
