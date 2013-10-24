@@ -14,7 +14,7 @@ object GeoTiffWriter extends Writer {
   def dataType = ""
 
   def write(path:String, raster:Raster, name:String) {
-    val settings = raster.data.getType match {
+    val settings = raster.rasterType match {
       case TypeBit | TypeByte => Settings.int8
       case TypeShort => Settings.int16
       case TypeInt => Settings.int32
