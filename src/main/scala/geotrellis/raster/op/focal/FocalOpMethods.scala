@@ -16,13 +16,15 @@ trait FocalOpMethods[+Repr <: RasterDataSource] { self: Repr =>
 
       def getTile(tileCol:Int,tileRow:Int):Option[Op[Raster]] =
         if(0 <= tileCol && tileCol <= colMax &&
-          0 <= tileRow && tileRow <= rowMax) {
+           0 <= tileRow && tileRow <= rowMax) {
           Some(seq(tileRow*(colMax+1) + tileCol))
         } else { None }
 
+      println(s"COLMAX $colMax ROWMAX $rowMax")
       seq.zipWithIndex.map { case (tile,i) =>
-        val col = i % re.cols
-        val row = i / re.rows
+        val col = i % (colMax+1)
+        val row = i / (colMax+1)
+        println(s" TILE ($col = $i % ${colMax+1}, $row = $i / ${rowMax+1})")
 
         // get tileCols, tileRows, & list of relative neighbor coordinate tuples
         val tileSeq = Seq(
@@ -43,6 +45,26 @@ trait FocalOpMethods[+Repr <: RasterDataSource] { self: Repr =>
           /* NorthWest */
           getTile(col - 1, row - 1)
         )
+
+        val tileSeqP = Seq(
+          /* North */
+          getTile(col, row - 1),
+          /* NorthEast */
+          getTile(col + 1, row - 1),
+          /* East */
+          getTile(col + 1, row),
+          /* SouthEast */
+          getTile(col + 1, row + 1),
+          /* South */
+          getTile(col, row + 1),
+          /* SouthWest */
+          getTile(col - 1, row + 1),
+          /* West */
+          getTile(col - 1, row),
+          /* NorthWest */
+          getTile(col - 1, row - 1)
+        )
+
         (tile,SeqTileNeighbors(tileSeq))
       }
     }
@@ -60,6 +82,8 @@ trait FocalOpMethods[+Repr <: RasterDataSource] { self: Repr =>
     val result = builder.result()
     result
   }
+
+  def focalSum(n:Neighborhood) = focal(n)(Sum(_,_,_))
 
   def focalMin(n:Neighborhood) = focal(n)(Min(_,_,_))
   def focalMax(n:Neighborhood) = focal(n)(Max(_,_,_))

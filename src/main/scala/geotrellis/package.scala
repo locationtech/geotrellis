@@ -176,4 +176,8 @@ package object geotrellis {
     def mapOps[T](f:(Seq[A]=>T)) = logic.Collect(Literal(seq.toSeq)).map(f)
     def flaMapOps[T](f:(Seq[A]=>Op[T])) = logic.Collect(Literal(seq.toSeq)).flatMap(f)
   }
+
+  implicit class OpSeqToCollect[T](seq:Op[Seq[Op[T]]]) {
+    def collect() = logic.Collect(seq)
+  }
 }

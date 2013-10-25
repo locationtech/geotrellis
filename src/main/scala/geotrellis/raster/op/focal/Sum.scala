@@ -61,5 +61,7 @@ class CellwiseSumCalc extends CellwiseCalculation[Raster]
   }
 
   def reset() = { total = 0 }
-  def setValue(x:Int,y:Int) = data.set(x,y,total)
+  def setValue(x:Int,y:Int) = { 
+    data.set(x,y,total) 
+  }
 }

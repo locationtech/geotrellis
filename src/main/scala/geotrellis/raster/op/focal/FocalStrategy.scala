@@ -26,7 +26,6 @@ object CursorStrategy {
               c:CursorCalculation[_],
               tOpt:Option[TraversalStrategy], 
               neighbors:Seq[Option[Raster]]):Unit = {
-    val reOpt = Some(r.rasterExtent)
     val analysisArea = AnalysisArea(r)
 
     val t = tOpt match {
@@ -220,8 +219,8 @@ object CellwiseStrategy {
 
     var focusRow = rowMin
     while (focusRow <= rowMax) {
-      val curRowMin = max(0, focusRow - n) // was yy1
-      val curRowMax = min(rowBorderMax, focusRow + n ) // was yy2
+      val curRowMin = max(0, focusRow - n)
+      val curRowMax = min(rowBorderMax, focusRow + n )
 
       calc.reset()
       val curColMax = min(colBorderMax, colMin + n)
