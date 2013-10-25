@@ -40,7 +40,7 @@ case class Downsample(r: Raster, cols: Int, rows: Int)(f:CellSet=>Int)
          val ext = Extent(xmin,ymin,xmin + cellwidth*cols,ymin + cellheight*rows)
          val re = RasterExtent(ext,cellwidth,cellheight, cols, rows)
          
-         val data = RasterData.emptyByType(r.data.getType, cols, rows)
+         val data = RasterData.emptyByType(r.rasterType, cols, rows)
 
          val cellSet = new DownsampleCellSet(colsPerBlock,rowsPerBlock)
          var col = 0

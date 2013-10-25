@@ -52,6 +52,8 @@ abstract class Operation[+T] extends Product with Serializable {
   def dispatch(cluster:ActorRef) =
     DispatchedOperation(this, cluster)
 
+
+  // TODO: Get rid of.
   /** Returns an operation that will be executed on a remote cluster.
     *
     *  This method will cause the specified operation to be executed on a remote
@@ -60,7 +62,7 @@ abstract class Operation[+T] extends Product with Serializable {
     *  Note that if you wish to distribute the work of a single operation, you
     *  should probably be using dispatch() instead of remote().
     */
-  def remote(cluster:ActorRef) = logic.Do1(this)(x => x).dispatch(cluster)
+  def remote(cluster:ActorRef) = map(x => x).dispatch(cluster)
   
 
   /**
@@ -73,13 +75,13 @@ abstract class Operation[+T] extends Product with Serializable {
     * Create a new operation that returns the result of the provided function that
     * takes this operation's result as its argument.
     */
-  def map[U](f:(T)=>U):Operation[U] = logic.Do1(this)(f)
+  def map[U](f:(T)=>U):Operation[U] = logic.MapOp(this)(f)
 
   /**
     * Create an operation that applies the function f to the result of this operation,
     * but returns nothing.
     */
-  def foreach[U](f:(T)=>U):Unit = logic.Do1(this) { t:T =>
+  def foreach[U](f:(T)=>U):Unit = map { t:T =>
     f(t)
     ()
   }
@@ -149,10 +151,10 @@ abstract class OperationWrapper[+T](op:Op[T]) extends Operation[T] {
 }
 
 case class DispatchedOperation[+T](val op:Op[T], val dispatcher:ActorRef)
-extends OperationWrapper(logic.Force(op)) {}
+extends OperationWrapper(op) {}
 
 case class RemoteOperation[+T](val op:Op[T], cluster:ActorRef)
-extends OperationWrapper(logic.Force(op)) {}
+extends OperationWrapper(op) {}
 
 object Operation {
   implicit def implicitLiteralVal[A <: AnyVal](a:A)(implicit m:Manifest[A]):Operation[A] = Literal(a)

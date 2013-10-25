@@ -1,24 +1,91 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
-import geotrellis.testutil._
+import geotrellis.process._
+import geotrellis.source._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 
+import geotrellis.testutil._
+
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class UndefinedSpec extends FunSpec with ShouldMatchers 
-                                    with TestServer 
-                                    with RasterBuilders {
+class UndefinedSpec extends FunSpec 
+                    with ShouldMatchers 
+                    with TestServer 
+                    with RasterBuilders {
   describe("Undefined") {
-    it("should work with TypeInt raster") {
-      val r = createRaster(Array(1,2,NODATA,NODATA,5,6,7))
-      assertEqual(Undefined(r),Array(0,0,1,1,0,0,0))
+    it("returns correct result for an integer raster") {
+      val r = positiveIntegerNoDataRaster
+      val result = run(Undefined(r))
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          if(r.get(col,row) == NODATA) result.get(col,row) should be (1)
+          else result.get(col,row) should be (0)
+        }
+      }
     }
 
-    it("should work with TypeDouble raster") {
-      val r = createRaster(Array(1.0,2.0,Double.NaN,Double.NaN,5.0,6.0,7.0))
-      assertEqual(Undefined(r),Array(0,0,1,1,0,0,0))
+    it("returns correct result for a double raster") {
+      val r = probabilityNoDataRaster
+      val result = run(Undefined(r))
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          if(isNaN(r.getDouble(col,row))) result.get(col,row) should be (1)
+          else result.get(col,row) should be (0)
+        }
+      }
+    }
+
+    it("returns correct result for a double raster source correctly") {
+      val rs = RasterDataSource("mtsthelens_tiled")
+
+      val r = runSource(rs)
+      getSource(rs.localUndefined) match {
+        case Complete(result,success) =>
+//          println(success)
+          for(row <- 0 until r.rasterExtent.rows / 3) {
+            for(col <- 0 until r.rasterExtent.cols / 3) {
+              val z = r.getDouble(col,row)
+              val rz = result.get(col,row)
+              if(isNaN(z))
+                rz should be (1)
+              else 
+                rz should be (0)
+            }
+          }
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+      }
+    }
+
+    it("returns correct result for a int raster source") {
+      val rs = createRasterDataSource(
+        Array( NODATA,1,1, 1,1,1, 1,1,1,
+               1,1,1, 1,1,1, 1,1,1,
+
+               1,1,1, 1,1,1, 1,1,1,
+               1,1,1, 1,1,1, 1,1,1),
+        3,2,3,2)
+
+      getSource(rs.localUndefined) match {
+        case Complete(result,success) =>
+//          println(success)
+          for(row <- 0 until 4) {
+            for(col <- 0 until 9) {
+              if(row == 0 && col == 0)
+                result.get(col,row) should be (1)
+              else
+                result.get(col,row) should be (0)
+            }
+          }
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+      }
     }
   }
 }

@@ -2,8 +2,6 @@ package geotrellis.raster.op
 
 import geotrellis._
 import geotrellis.process._
-import geotrellis._
-import geotrellis._
 
 /**
  * Forces evaluation of the resulting raster of the passed in operation.

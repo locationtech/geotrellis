@@ -4,16 +4,13 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.util._
 import geotrellis.data.arg.ArgReader
-import geotrellis.raster.{TileSetRasterData,
-                          TileLayout,
-                          Tiler,
-                          CroppedRaster,
-                          IntConstant}
+import geotrellis.raster._
 
 import com.typesafe.config.Config
 import java.io.File
 
-import spire.syntax._
+import scalaxy.loops._
+import scala.collection.mutable
 
 object TileSetRasterLayerBuilder
 extends RasterLayerBuilder {
@@ -88,8 +85,8 @@ extends RasterLayer(info) {
         // Collect data from intersecting tiles
         val targetExtent = re.extent
         val resLayout = tileLayout.getResolutionLayout(info.rasterExtent)
-        cfor(0)( _ < tileLayout.tileCols, _ + 1) { tcol =>
-          cfor(0)( _ < tileLayout.tileRows, _ + 1) { trow =>
+        for(tcol <- 0 until tileLayout.tileCols optimized) { 
+          for(trow <- 0 until tileLayout.tileRows optimized) {
             val sourceRasterExtent = resLayout.getRasterExtent(tcol,trow)
             val sourceExtent = resLayout.getExtent(tcol,trow)
             sourceExtent.intersect(targetExtent) match {
@@ -105,8 +102,8 @@ extends RasterLayer(info) {
                   new ArgReader(path).readPath(info.rasterType,sourceRasterExtent,tileRe)
 
                 // Copy over the values to the correct place in the raster data
-                cfor(0)(_ < cols, _ + 1) { partCol =>
-                  cfor(0)(_ < rows, _ + 1) { partRow =>
+                for(partCol <- 0 until cols optimized) {
+                  for(partRow <- 0 until rows optimized) {
                     val dataCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
                     val dataRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
                     if(!(dataCol < 0 || dataCol >= re.cols ||
@@ -126,20 +123,20 @@ extends RasterLayer(info) {
         }
         Raster(data, re)
       case None => 
-        Raster(getData, info.rasterExtent)
+        val loader = getTileLoader()
+        val tiles = mutable.ListBuffer[Raster]()
+        for(col <- 0 until tileLayout.tileCols optimized) {
+          for(row <- 0 until tileLayout.tileRows optimized) {
+            tiles += loader.getTile(col,row)
+          }
+        }
+        TileRaster(tiles.toSeq, info.rasterExtent, tileLayout).toArrayRaster
     }
   }
 
   override
   def getRaster(extent:Extent):Raster = 
-    CroppedRaster(getRaster,extent)
-
-  def getData() = 
-    TileSetRasterData(tileDirPath,
-                      info.name,
-                      info.rasterType,
-                      tileLayout,
-                      getTileLoader)
+    CroppedRaster(getRaster(None),extent)
 
   def getTile(col:Int, row:Int) = getTileLoader().getTile(col,row)
 
@@ -150,8 +147,8 @@ extends RasterLayer(info) {
       new DiskTileLoader(info,tileLayout,tileDirPath)
 
   def cache(c:Cache) = {
-    cfor(0)(_ < tileLayout.tileCols, _ + 1) { col =>
-      cfor(0)(_ < tileLayout.tileRows, _ + 1) { row =>
+    for(col <- 0 until tileLayout.tileCols) {
+      for(row <- 0 until tileLayout.tileRows) {
         val path = Tiler.tilePath(tileDirPath, info.name, col, row)
         c.insert(TileSetRasterLayer.tileCacheName(info,col,row), Filesystem.slurp(path))
       }

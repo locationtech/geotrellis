@@ -17,10 +17,10 @@ import geotrellis.process._
  * yet been evaluated.
  * 
  */
-case class Force[A](op:Op[A]) extends Op[A] {
-  def _run(context:Context) = runAsync(op :: Nil)
-  val nextSteps:Steps = {
-    case (r:Raster) :: Nil => Result(r.force.asInstanceOf[A])
-    case a :: Nil => Result(a.asInstanceOf[A])
-  }
-}
+// case class Force[A](op:Op[A]) extends Op[A] {
+//   def _run(context:Context) = runAsync(op :: Nil)
+//   val nextSteps:Steps = {
+//     case (r:Raster) :: Nil => Result(r.force.asInstanceOf[A])
+//     case a :: Nil => Result(a.asInstanceOf[A])
+//   }
+// }

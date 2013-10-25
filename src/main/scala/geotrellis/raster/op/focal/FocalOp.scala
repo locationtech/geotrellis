@@ -3,7 +3,6 @@ package geotrellis.raster.op.focal
 import geotrellis._
 import geotrellis.raster._
 import scala.math._
-import geotrellis.raster.CroppedRaster
 
 /**
  * Focal Operation that takes a raster and a neighborhood.
@@ -107,7 +106,7 @@ extends FocalOperation4[A,B,C,D,T](r,n,tns,a,b,c,d){
 case class AnalysisArea(colMin:Int, rowMin:Int, colMax:Int, rowMax:Int, rasterExtent:RasterExtent)
 
 object AnalysisArea {
-  def apply(r:Raster,reOpt:Option[RasterExtent]):AnalysisArea = 
+  def apply(r:RasterLike,reOpt:Option[RasterExtent]):AnalysisArea = 
     reOpt match {
       case None => {
         AnalysisArea(0, 0, r.cols - 1, r.rows - 1, r.rasterExtent)
@@ -126,7 +125,7 @@ object AnalysisArea {
       }
     }  
 
-  def apply(r:Raster):AnalysisArea = apply(r,None)
+  def apply(r:RasterLike):AnalysisArea = apply(r,None)
 }
 
 object TileWithNeighbors {
@@ -151,9 +150,9 @@ object TileWithNeighbors {
       // South Row
       neighbors.slice(3,6).map { case Some(_) => 1; case None => 0 }.reduce(_*_)
 
-      val nTileLayout = TileLayout(tileCols, tileRows, r.rasterExtent.cols, r.rasterExtent.rows)
+      val tileLayout = TileLayout(tileCols, tileRows, r.rasterExtent.cols, r.rasterExtent.rows)
 
-      Raster(new TileArrayRasterData(Array(
+      TileRaster(Seq(
         neighbors(7),
         neighbors(0),
         neighbors(1),
@@ -163,7 +162,7 @@ object TileWithNeighbors {
         neighbors(5),
         neighbors(4),
         neighbors(3)
-      ).flatten, nTileLayout),re)
+      ).flatten, re, tileLayout)
     }
 }
 

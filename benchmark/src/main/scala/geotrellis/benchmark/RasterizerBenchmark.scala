@@ -59,6 +59,6 @@ class RasterizerBenchmark extends OperationBenchmark {
     re = RasterExtent(e, 10,10,n,n)
     data = IntArrayRasterData(a, n, n)
 
-    new Raster(data, re)
+    Raster(data, re)
   }
 }

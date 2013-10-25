@@ -33,6 +33,10 @@ case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int) 
   def getResolutionLayout(re:RasterExtent) = {
     ResolutionLayout(re, pixelCols, pixelRows)
   }
+
+  /** Gets the index of a tile at col, row. */
+  def getTileIndex(col:Int,row:Int) =
+    row*tileCols + col
 }
 
 /**

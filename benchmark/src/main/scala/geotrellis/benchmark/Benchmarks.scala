@@ -16,7 +16,6 @@ import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.statistics._
 import geotrellis.raster.op.local._
-import geotrellis.raster.op.tiles._
 import geotrellis.statistics.op._
 import geotrellis.raster.op.extent.GetRasterExtent
 import geotrellis.statistics.op.stat.GetHistogram
@@ -51,31 +50,31 @@ trait OperationBenchmark extends SimpleBenchmark {
   /**
    * Write out a tiled raster in /tmp; return a raster w/ a TiledRasterData
    */
-  def createTiledRaster(r:Raster, pixelCols:Int, pixelRows:Int) = {
-    val re = r.rasterExtent
+//   def createTiledRaster(r:Raster, pixelCols:Int, pixelRows:Int) = {
+//     val re = r.rasterExtent
 
-    val layer = new TileSetRasterLayer(RasterLayerInfo("benchmark_raster",
-                                                       TypeInt,
-                                                       re,
-                                                       0,0,0),
-                                       "/tmp",
-                                       Tiler.buildTileLayout(re,pixelCols,pixelRows))
+//     val layer = new TileSetRasterLayer(RasterLayerInfo("benchmark_raster",
+//                                                        TypeInt,
+//                                                        re,
+//                                                        0,0,0),
+//                                        "/tmp",
+//                                        Tiler.buildTileLayout(re,pixelCols,pixelRows))
 
-    val trd = layer.getData()
-    val tiledArrayRaster = Raster(trd, re)
+//     val trd = layer.getData()
+//     val tiledArrayRaster = Raster(trd, re)
 
-    val layout = layer.tileLayout 
-    Tiler.writeTiles(trd, re, "benchmark_raster", "/tmp")
-    val tileSetRD = TileSetRasterData("/tmp", "benchmark_raster", TypeInt, layout, layer.getTileLoader)
+//     val layout = layer.tileLayout 
+//     Tiler.writeTiles(trd, re, "benchmark_raster", "/tmp")
+//     val tileSetRD = TileSetRasterData("/tmp", "benchmark_raster", TypeInt, layout, layer.getTileLoader)
 
-    val tiledRaster = Raster(tileSetRD, re)
+//     val tiledRaster = Raster(tileSetRD, re)
 
-    val d = r.data.asArray
-    val lazyRasterData = LazyTiledWrapper(d, layout)
-    val lazyRaster = Raster(lazyRasterData, re)
+//     val d = r.toArrayRaster.data.asArray
+//     // val lazyRasterData = LazyTiledWrapper(d, layout)
+// //    val lazyRaster = Raster(lazyRasterData, re)
 
-    (tiledRaster, tiledArrayRaster, lazyRaster)
-  }
+//     (tiledRaster, tiledArrayRaster)
+//   }
 
   /**
    * Load a server with the GeoTrellis benchmarking catalog.
@@ -226,7 +225,7 @@ class DataMap extends OperationBenchmark {
  
   def timeRasterWhileLoop(reps:Int) = run(reps)(rasterWhileLoop)
   def rasterWhileLoop = {
-    val rcopy = raster.copy
+    val rcopy = raster.toArrayRaster
     val goal = rcopy.data.mutable
 
     var i = 0
@@ -335,7 +334,7 @@ class WeightedOverlay extends OperationBenchmark {
     val total = weights.sum
     val rs = (0 until n).map(i => Multiply(LoadRaster(names(i), reOp), weights(i)))
     val rasterOp = Rescale(Divide(Add(rs: _*), total), (1, 100))
-    val h = GetHistogram(rasterOp, 101) 
+    val h = GetHistogram(rasterOp) 
     val breaksOp = stat.GetColorBreaks(h, colors)
     op = RenderPng(rasterOp, breaksOp, h, 0)
   }
@@ -448,11 +447,11 @@ class BigMinTiled extends OperationBenchmark{
                                        "/tmp",
                                        layout)
 
-    val trd = layer.getData()
-    val tileSetRD = TileSetRasterData("/tmp", "big", TypeByte, layout, layer.getTileLoader)
-    val raster = Raster(tileSetRD, re)
-    tiledMinOp = BTileMin(Add(Add(raster,2), raster))
-    tiledHistogramOp = BTileHistogram(raster)
+    // val trd = layer.getData()
+    // val tileSetRD = TileSetRasterData("/tmp", "big", TypeByte, layout, layer.getTileLoader)
+    // val raster = Raster(tileSetRD, re)
+    // tiledMinOp = BTileMin(Add(Add(raster,2), raster))
+    // tiledHistogramOp = BTileHistogram(raster)
   }
 
   def timeMin(reps:Int) = run(reps)(min)
@@ -491,17 +490,17 @@ class MinTiled extends OperationBenchmark {
   override def setUp() {
     server = initServer()
     val r:Raster = loadRaster("SBN_farm_mkt", size, size)
-    val (tiledRaster, tiledArrayRaster, lazyRaster) = createTiledRaster(r, pixels, pixels)
+//    val (tiledRaster, tiledArrayRaster, lazyRaster) = createTiledRaster(r, pixels, pixels)
 
-    tiledOp = BTileMin(makeOp(tiledRaster))
-    tiledArrayOp = BTileMin(makeOp(tiledArrayRaster))
-    tiledLazyOp = stat.Min(makeOp(lazyRaster))
+    // tiledOp = BTileMin(makeOp(tiledRaster))
+    // tiledArrayOp = BTileMin(makeOp(tiledArrayRaster))
+    // tiledLazyOp = stat.Min(makeOp(lazyRaster))
 
     // run on a normal raster
-    normalUntiledOp = UntiledMin(makeOp(r))
-    normalTiledOp = BTileMin(makeOp(r))
+    // normalUntiledOp = UntiledMin(makeOp(r))
+    // normalTiledOp = BTileMin(makeOp(r))
 
-    rawOp = Force(makeOp(r))
+    rawOp = makeOp(r)
   }
 
   //def timeTiledMin(reps:Int) = run(reps)(tiledMin)
@@ -524,74 +523,75 @@ class MinTiled extends OperationBenchmark {
 }
 
 
-object HistogramTiled extends BenchmarkRunner(classOf[HistogramTiled])
-class HistogramTiled extends OperationBenchmark {
-  @Param(Array("6000"))
-  var size:Int = 0
+// TODO
+// object HistogramTiled extends BenchmarkRunner(classOf[HistogramTiled])
+// class HistogramTiled extends OperationBenchmark {
+//   @Param(Array("6000"))
+//   var size:Int = 0
 
-  //@Param(Array("256", "512"))
-  var pixels:Int = 1500
+//   //@Param(Array("256", "512"))
+//   var pixels:Int = 1500
 
-  var tiledOp:Op[Histogram] = null
-  var tiledArrayOp:Op[Histogram] = null
-  var tiledArrayForceOp:Op[Histogram] = null
+//   var tiledOp:Op[Histogram] = null
+//   var tiledArrayOp:Op[Histogram] = null
+//   var tiledArrayForceOp:Op[Histogram] = null
 
-  var tiledLazyOp:Op[Histogram] = null
-  var rawOp:Op[Raster] = null
+//   var tiledLazyOp:Op[Histogram] = null
+//   var rawOp:Op[Raster] = null
 
-  var normalUntiledOp:Op[Histogram] = null
-  var normalUntiledLazyOp:Op[Histogram] = null
+//   // var normalUntiledOp:Op[Histogram] = null
+//   // var normalUntiledLazyOp:Op[Histogram] = null
 
-  var normalTiledOp:Op[Histogram] = null 
+//   // var normalTiledOp:Op[Histogram] = null 
 
-  //def makeOp(r:Raster) = Add(Add(r, 5), r)
-  def makeOp(r:Raster) = Add(r, r)
-  //def makeOp(r:Raster) = Add(r, 5)
-  //def makeOp(r:Raster) = Literal(r)
+//   //def makeOp(r:Raster) = Add(Add(r, 5), r)
+//   def makeOp(r:Raster) = Add(r, r)
+//   //def makeOp(r:Raster) = Add(r, 5)
+//   //def makeOp(r:Raster) = Literal(r)
 
-  override def setUp() {
-    server = initServer()
-    val r:Raster = loadRaster("SBN_farm_mkt", size, size)
-    val (tiledRaster, tiledArrayRaster, lazyRaster) = createTiledRaster(r, pixels, pixels)
+//   override def setUp() {
+//     server = initServer()
+//     val r:Raster = loadRaster("SBN_farm_mkt", size, size)
+//     val (tiledRaster, tiledArrayRaster, lazyRaster) = createTiledRaster(r, pixels, pixels)
 
-    tiledOp = BTileHistogram(makeOp(tiledRaster))
-    tiledArrayOp = BTileHistogram(makeOp(tiledArrayRaster))
-    tiledArrayForceOp = BTileForceHistogram(makeOp(tiledArrayRaster))
-    tiledLazyOp = stat.GetHistogram(makeOp(lazyRaster))
+//     tiledOp = BTileHistogram(makeOp(tiledRaster))
+//     tiledArrayOp = BTileHistogram(makeOp(tiledArrayRaster))
+//     tiledArrayForceOp = BTileForceHistogram(makeOp(tiledArrayRaster))
+//     tiledLazyOp = stat.GetHistogram(makeOp(lazyRaster))
 
-    // run on a normal raster
-    normalUntiledOp = BUntiledHistogram(makeOp(r))
-    normalUntiledLazyOp = BUntiledHistogram(makeOp(r.defer))
+//     // run on a normal raster
+//     // normalUntiledOp = BUntiledHistogram(makeOp(r))
+//     // normalUntiledLazyOp = BUntiledHistogram(makeOp(r.d))
     
-    normalTiledOp = BTileHistogram(makeOp(r.defer))
+//     // normalTiledOp = BTileHistogram(makeOp(r.defer))
 
-    rawOp = Force(makeOp(r))
-  }
+//     rawOp = Force(makeOp(r))
+//   }
 
-  def timeTiledHistogram(reps:Int) = run(reps)(tiledHistogram)
-  def tiledHistogram = server.run(tiledOp)
+//   def timeTiledHistogram(reps:Int) = run(reps)(tiledHistogram)
+//   def tiledHistogram = server.run(tiledOp)
   
-  def timeRawOp(reps:Int) = run(reps)(runRawOp)
-  def runRawOp = server.run(rawOp)
+//   def timeRawOp(reps:Int) = run(reps)(runRawOp)
+//   def runRawOp = server.run(rawOp)
   
-  def timeNormalUntiledOp(reps:Int) = run(reps)(runNormalUntiledOp)
-  def runNormalUntiledOp = server.run(normalUntiledOp)
+//   def timeNormalUntiledOp(reps:Int) = run(reps)(runNormalUntiledOp)
+//   def runNormalUntiledOp = server.run(normalUntiledOp)
   
-  def timeNormalUntiledLazyOp(reps:Int) = run(reps)(runNormalUntiledLazyOp)
-  def runNormalUntiledLazyOp = server.run(normalUntiledLazyOp)
+//   def timeNormalUntiledLazyOp(reps:Int) = run(reps)(runNormalUntiledLazyOp)
+//   def runNormalUntiledLazyOp = server.run(normalUntiledLazyOp)
   
-  def timeTiledArrayHistogramOp(reps:Int) = run(reps)(tiledArrayHistogram)
-  def tiledArrayHistogram = server.run(tiledArrayOp)
+//   def timeTiledArrayHistogramOp(reps:Int) = run(reps)(tiledArrayHistogram)
+//   def tiledArrayHistogram = server.run(tiledArrayOp)
 
-  def timeTiledArrayForce(reps:Int) = run(reps)(tiledArrayForce)
-  def tiledArrayForce = server.run(tiledArrayForceOp)
+//   def timeTiledArrayForce(reps:Int) = run(reps)(tiledArrayForce)
+//   def tiledArrayForce = server.run(tiledArrayForceOp)
 
-  def timeTiledLazyOp(reps:Int) = run(reps)(tiledLazyHistogram)
-  def tiledLazyHistogram = server.run(tiledLazyOp)
+//   def timeTiledLazyOp(reps:Int) = run(reps)(tiledLazyHistogram)
+//   def tiledLazyHistogram = server.run(tiledLazyOp)
   
-  def timeNormalTiledOp(reps:Int) = run(reps)(runNormalTiledOp)
-  def runNormalTiledOp = server.run(normalTiledOp)
-}
+//   def timeNormalTiledOp(reps:Int) = run(reps)(runNormalTiledOp)
+//   def runNormalTiledOp = server.run(normalTiledOp)
+// }
 
 
 object MiniWeightedOverlay extends BenchmarkRunner(classOf[MiniWeightedOverlay])
@@ -613,7 +613,7 @@ class MiniWeightedOverlay extends OperationBenchmark {
     op = AddOld(Multiply(r1, 5), Multiply(r2, 2))
 
     strictOp = Add(MultiplyConstantMapSugar(r1, 5), MultiplyConstantMapSugar(r2, 2))
-    lazyOp = Force(Add(MultiplyConstantMapSugar(r1.defer, 5), MultiplyConstantMapSugar(r2.defer, 2)))
+    lazyOp = Add(MultiplyConstantMapSugar(r1, 5), MultiplyConstantMapSugar(r2, 2))
   }
 
   def timeMiniWeightedOverlay(reps:Int) = run(reps)(miniWeightedOverlay)
@@ -642,12 +642,12 @@ class NewAddOperations extends OperationBenchmark {
     val r1:Raster = loadRaster("SBN_farm_mkt", size, size)
     val r2:Raster = loadRaster("SBN_RR_stops_walk", size, size)
 
-    val l1:Raster = r1.defer
-    val l2:Raster = r2.defer
+    val l1:Raster = r1
+    val l2:Raster = r2
 
-    strictOld = Force(AddOld(AddOld(r1, r2), AddOld(r1, r2)))
-    strictNew = Force(Add(Add(r1, r2), Add(r1, r2)))
-    lazyNew = Force(Add(Add(l1, l2), Add(l1, l2)))
+    strictOld = AddOld(AddOld(r1, r2), AddOld(r1, r2))
+    strictNew = Add(Add(r1, r2), Add(r1, r2))
+    lazyNew = Add(Add(l1, l2), Add(l1, l2))
   }
 
   def timeStrictOld(reps:Int) = run(reps)(runStrictOld)
@@ -676,9 +676,9 @@ class LazyIteration extends OperationBenchmark {
   override def setUp() {
     server = initServer()
 
-    val r1:Raster = loadRaster("SBN_farm_mkt", size, size).defer
-    val r2:Raster = loadRaster("SBN_RR_stops_walk", size, size).defer
-    val r3:Raster = loadRaster("SBN_inc_percap", size, size).defer
+    val r1:Raster = loadRaster("SBN_farm_mkt", size, size)
+    val r2:Raster = loadRaster("SBN_RR_stops_walk", size, size)
+    val r3:Raster = loadRaster("SBN_inc_percap", size, size)
 
     simpleOp = Add(r1, 6) 
     mediumOp = Add(Multiply(r1, 2), Multiply(r2, 3))
@@ -773,8 +773,8 @@ class RasterForeach extends OperationBenchmark {
   def rasterWhile = {
     var t = 0
     var i = 0
-    val d = r.data.asArray
-    val len = r.length
+    val d = r.toArray
+    val len = r.cols*r.rows
     while (i < len) {
       t += d(i)
       i += 1
@@ -784,36 +784,36 @@ class RasterForeach extends OperationBenchmark {
 }
 
 
-object WriteHugeTiledRaster {
-  def main(args:Array[String]) {
-    if (args.length < 6) {
-      println("usage: PATH NAME COLS ROWS PIXELCOLS PIXELROWS")
-      println("e.g. /tmp hugeraster 1024 1024 256 256")
-    }
-    val path = args(0)
-    val name = args(1)
-    val cols = args(2).toInt
-    val rows  = args(3).toInt
-    val pixelCols = args(4).toInt
-    val pixelRows = args(5).toInt
-    println("Creating raster (%d, %d) with tiles (%d, %d)" format (cols, rows,
-                                                                   pixelCols, pixelRows))
+// object WriteHugeTiledRaster {
+//   def main(args:Array[String]) {
+//     if (args.length < 6) {
+//       println("usage: PATH NAME COLS ROWS PIXELCOLS PIXELROWS")
+//       println("e.g. /tmp hugeraster 1024 1024 256 256")
+//     }
+//     val path = args(0)
+//     val name = args(1)
+//     val cols = args(2).toInt
+//     val rows  = args(3).toInt
+//     val pixelCols = args(4).toInt
+//     val pixelRows = args(5).toInt
+//     println("Creating raster (%d, %d) with tiles (%d, %d)" format (cols, rows,
+//                                                                    pixelCols, pixelRows))
 
-    // map units = pixels
-    val extent = Extent(0, 0, cols, rows)
-    val re = RasterExtent(extent, 1.0, 1.0, cols, rows)
+//     // map units = pixels
+//     val extent = Extent(0, 0, cols, rows)
+//     val re = RasterExtent(extent, 1.0, 1.0, cols, rows)
     
-    Tiler.writeTilesFromFunction(pixelCols, pixelRows, re, name, path, f)
-  }
+//     Tiler.writeTilesFromFunction(pixelCols, pixelRows, re, name, path, f)
+//   }
   
-  def f(tileCol:Int, tileRow:Int, layout:TileLayout, re:RasterExtent):Raster = {
-    val rl = layout.getResolutionLayout(re)
-    val tileRasterExtent = rl.getRasterExtent(tileCol,tileRow)
+//   def f(tileCol:Int, tileRow:Int, layout:TileLayout, re:RasterExtent):Raster = {
+//     val rl = layout.getResolutionLayout(re)
+//     val tileRasterExtent = rl.getRasterExtent(tileCol,tileRow)
 
-    val value:Byte = ((tileCol % 50) + 1).toByte
-    val size = layout.pixelCols * layout.pixelRows
-    val a = ByteArrayRasterData(Array.fill[Byte](size)(value),
-                                layout.pixelCols, layout.pixelRows)
-    Raster(a,tileRasterExtent)
-  }
-}
+//     val value:Byte = ((tileCol % 50) + 1).toByte
+//     val size = layout.pixelCols * layout.pixelRows
+//     val a = ByteArrayRasterData(Array.fill[Byte](size)(value),
+//                                 layout.pixelCols, layout.pixelRows)
+//     Raster(a,tileRasterExtent)
+//   }
+// }

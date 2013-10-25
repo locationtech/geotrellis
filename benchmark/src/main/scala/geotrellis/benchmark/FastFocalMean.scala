@@ -21,7 +21,7 @@ case class FastFocalMean(r:Op[Raster], n:Int) extends Op1(r)({
  */
 final class CalcFastFocalMean(r:Raster, n:Int) {
   // get an array-like interface to the data
-  final val data = r.data.asArray
+  final val data = r.toArrayRaster.data
 
   // raster data used to store the results
   final val out = data.alloc(r.cols, r.rows)

@@ -4,7 +4,6 @@ import geotrellis._
 import geotrellis.feature._
 import geotrellis.feature.rasterize.{PolygonRasterizer, Callback}
 import geotrellis.raster.op.focal.{RegionGroup,RegionGroupResult,RegionGroupOptions}
-import geotrellis.raster.CroppedRaster
 
 import com.vividsolutions.jts.geom
 

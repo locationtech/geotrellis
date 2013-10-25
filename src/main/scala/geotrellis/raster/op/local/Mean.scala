@@ -4,51 +4,73 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.logic.Collect
 
-import spire.syntax._
+import scalaxy.loops._
 
 /**
  * The mean of values at each location in a set of Rasters.
  */
-object Mean {
-  def apply(rs:Op[Raster]*):Mean = 
-    Mean(Collect(rs))
-}
+object Mean extends Serializable {
+  def apply(rs:Op[Raster]*)(implicit d:DI):Op[Raster] = apply(rs)
 
-/**
- * The mean of values at each location in a set of Rasters.
- */
-case class Mean(rasters:Op[Seq[Raster]]) extends Op1(rasters) ({
-  (rs) => 
-    rs.reduceLeft { (a,b) => 
-      if(a.rasterExtent != b.rasterExtent) { 
-        sys.error(s"Raster extents ${a.rasterExtent} and ${b.rasterExtent} are not equal") 
+  def apply(rs:Seq[Op[Raster]]):Op[Raster] = 
+    logic.Collect(rs).map { rs =>
+      if(Set(rs.map(_.rasterExtent)).size != 1) {
+        val rasterExtents = rs.map(_.rasterExtent).toSeq
+        throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
+          s"$rasterExtents are not all equal")
       }
-      b
-    }
 
-    val re = rs(0).rasterExtent
-    val cols = re.cols
-    val rows = re.rows
+      val layerCount = rs.length
+      if(layerCount == 0) {
+        sys.error(s"Can't compute mean of empty sequence")
+      } else {
+        val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
+        val re = rs(0).rasterExtent
+        val cols = re.cols
+        val rows = re.rows
+        val data = RasterData.allocByType(newRasterType,cols,rows)
+        if(newRasterType.isDouble) {
+          for(col <- 0 until cols optimized) {
+            for(row <- 0 until rows optimized) {
+              var count = 0
+              var sum = 0.0
+              for(i <- 0 until layerCount optimized) {
+                val v = rs(i).getDouble(col,row)
+                if(!isNaN(v)) { 
+                  count += 1
+                  sum += v
+                }
+              }
 
-    val data = DoubleArrayRasterData.empty(cols,rows)
-
-    var count = 0
-    var sum = 0.0
-    val layerCount = rs.length
-    cfor(0)(_ < cols, _ + 1) { col =>
-      cfor(0)(_ < rows, _ + 1) { row => 
-        sum = 0.0
-        count = 0
-        cfor(0)(_ < layerCount, _ + 1) { i =>
-          val v = rs(i).getDouble(col,row)
-          if(!java.lang.Double.isNaN(v)) {
-            count += 1
-            sum += v
+              if(count > 0) {
+                data.setDouble(col,row,sum/count)
+              } else {
+                data.setDouble(col,row,Double.NaN)
+              }
+            }
+          }
+        } else {
+          for(col <- 0 until cols optimized) {
+            for(row <- 0 until rows optimized) {
+              var count = 0
+              var sum = 0
+              for(i <- 0 until layerCount optimized) {
+                val v = rs(i).get(col,row)
+                if(v != NODATA) {
+                  count += 1
+                  sum += v
+                }
+              }
+              if(count > 0) {
+                data.set(col,row,sum/count)
+              } else {
+                data.set(col,row,NODATA)
+              }
+            }
           }
         }
-        data.setDouble(col,row, sum / count)
+        ArrayRaster(data,re)
       }
     }
-
-    Result(Raster(data,re))
-})
+    .withName("Mean")
+}

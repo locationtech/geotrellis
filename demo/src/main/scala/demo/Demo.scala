@@ -42,7 +42,7 @@ object WeightedOverlayArray {
 
     val rs:Op[Array[Raster]] = logic.ForEach(rasters, weights)(_ * _)
 
-    val weightSum:Op[Int] = logic.Do(weights)(_.sum)
+    val weightSum:Op[Int] = logic.MapOp(weights)(_.sum)
 
     local.Add(rs) / weightSum
   }

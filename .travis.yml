@@ -2,11 +2,11 @@
 language: scala
 scala:
   - 2.9.2
-script: ./sbt -mem 1512 test && ./sbt -mem 1512 "project demo" compile && ./sbt -mem 1512 "project geotools" compile && ./sbt -mem 1512 "project tasks" compile && ./sbt -mem 1512 "project benchmark" compile && ./sbt -mem 1512 "project dev" compile && ./sbt -mem 1512 "project server" compile 
+script: ./sbt -J-Xmx2G test && ./sbt -J-Xmx2G "project demo" compile && ./sbt -J-Xmx2G "project geotools" compile && ./sbt -J-Xmx2G "project tasks" compile && ./sbt -J-Xmx2G "project benchmark" compile && ./sbt -J-Xmx2G "project dev" compile && ./sbt -J-Xmx2G "project server" compile 
 notifications:
   email:
     recipients:
-      - jmarcus@azavea.com
+      - remanuele@azavea.com
   irc:
       - "irc.freenode.org#geotrellis"
   use_notice: true

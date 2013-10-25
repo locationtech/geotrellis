@@ -1,96 +1,56 @@
 package geotrellis.raster.op.local
 
-import scala.math.max
-
 import geotrellis._
+import geotrellis.source._
 
 /**
  * Gets maximum values.
  *
  * @note          Max handles NoData values such that taking the Max
- *                between a value and NoData returns the value.
+ *                between a value and NoData returns NoData.
  */
-object Max {
-  /**
-   * Gets the maximum value between two integers.
-   *
-   * @note
-   * Whereas the operations dealing with rasters use the rule that
-   * the Max of a NODATA and another value v is the latter value v,
-   * this operation does not differentiate NODATA from other integers
-   * and will return what scala.math.max(NODATA, v) returns (which
-   * since NODATA = Int.MinValue will be the value v).
-   */
-  def apply(x:Op[Int], y:Op[Int]) = logic.Do2(x, y)((z1, z2) => max(z1, z2))
+object Max extends LocalRasterBinaryOp {
+  /** Takes a Raster and an Int, and gives a raster with each cell being
+   * the max value of the original raster and the integer. */
+  def apply(r:Op[Raster], c:Op[Int]) = 
+    (r,c).map { (r,c) => 
+           if(c == NODATA) {
+             r.dualMapIfSet(z=>NODATA)(z=>Double.NaN)
+           } else {
+             r.dualMapIfSet(math.max(_, c))(math.max(_, c))
+           }
+          }
+         .withName("Max[ConstantInt]")
 
-  /**
-   * Gets the maximum value between two doubles.
-   *
-   * @note
-   * Whereas the operations dealing with rasters use the rule that
-   * the Max of a Double.NaN (the NoData value for Double values)
-   * and another value v is the latter value v,
-   * this operation does not differentiate Double.NaN from other Double values
-   * and will return what scala.math.max(Double.NaN, v) returns (which
-   * is Double.NaN).
-   */
-  def apply(x:Op[Double], y:Op[Double])(implicit d:DummyImplicit) = logic.Do2(x, y)((z1, z2) => max(z1, z2))
+  /** Takes a Raster and an Double, and gives a raster with each cell being
+   * the max value of the original raster and the Double. */
+  def apply(r:Op[Raster], c:Op[Double])(implicit d:DI) = 
+    (r,c).map { (r,c) => 
+           if(java.lang.Double.isNaN(c)) {
+             r.dualMapIfSet(z=>NODATA)(z=>Double.NaN)
+           } else {
+             r.dualMapIfSet(math.max(_, c.toInt))(math.max(_, c))
+           }
+          }
+         .withName("Max[ConstantDouble]")
 
-  /** Gets the maximum value between cell values of a rasters and an Int constant. See [[MaxConstant]] */
-  def apply(r:Op[Raster], c:Op[Int]) = MaxConstant(r, c)
-
-  /** Gets the maximum value between cell values of a rasters and an Int constant. See [[MaxConstant]] */
-  def apply(c:Op[Int], r:Op[Raster])(implicit d:DummyImplicit) = MaxConstant(r, c)
-
-  /** Gets the maximum value between cell values of a rasters and a Double constant. See [[MaxDoubleConstant]] */
-  def apply(r:Op[Raster], c:Op[Double]) = MaxDoubleConstant(r, c)
-
-  /** Gets the maximum value between cell values of a rasters and a Double constant. See [[MaxDoubleConstant]] */
-  def apply(c:Op[Double], r:Op[Raster])(implicit d:DummyImplicit) = MaxDoubleConstant(r, c)
-
-  /** Gets the maximum value between cell values of two rasters. See [[MaxRaster]] */
-  def apply(r1:Op[Raster], r2:Op[Raster]) = MaxRaster(r1, r2)
+  def doRasters(r1:Raster,r2:Raster):Raster =
+    r1.dualCombine(r2)({
+      (a, b) =>
+      if (a == NODATA || b == NODATA) NODATA
+      else math.max(a, b)
+    })({
+      (a, b) =>
+      if (java.lang.Double.isNaN(a) || java.lang.Double.isNaN(b)) Double.NaN
+      else math.max(a,b)
+    })
 }
 
-/**
- * Gets the maximum value between cell values of a rasters and an Int constant.
- *
- * @note          Max handles NoData values such that taking the Max
- *                between a value and NoData returns the value.
- */
-case class MaxConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
-  (r, c) => 
-    if(c == NODATA) Result(r) else AndThen(logic.RasterDualMap(r)
-      (z => max(z, c)) // Since NODATA is Int.MinValue, if z is NODATA then result will be c
-      (z => if(java.lang.Double.isNaN(z)) c else max(z,c)))
-})
-
-/**
- * Gets the maximum value between cell values of a rasters and a Double constant.
- *
- * @note          Max handles NoData values such that taking the Max
- *                between a value and NoData returns the value.
- */
-case class MaxDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r, c) ({
-  (r, c) => 
-    if(java.lang.Double.isNaN(c)) Result(r) else AndThen(logic.RasterDualMap(r)
-      (z => if(z == NODATA) c.toInt else max(z,c).toInt)
-      (z => if(java.lang.Double.isNaN(z)) c else max(z,c))) 
-})
-
-/**
- * Gets the maximum value between cell values of two rasters.
- *
- * @note          Max handles NoData values such that taking the Max
- *                between a value and NoData returns the value.
- */
-case class MaxRaster(r1:Op[Raster], r2:Op[Raster]) extends Op2(r1, r2) ({
-  (r1, r2) => 
-    AndThen(logic.RasterDualCombine(r1,r2)
-      ((z1, z2) => max(z1, z2)) // Since NODATA is Int.MinValue, NODATA rule will work out
-      ((z1,z2) => {
-        if (java.lang.Double.isNaN(z1)) { z2 }
-        else if (java.lang.Double.isNaN(z2)) { z1 }
-        else { max(z1,z2) }
-      }))
-})
+trait MaxOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+  /** Max a constant Int value to each cell. */
+  def localMax(i: Int) = self.mapOp(Max(_, i))
+  /** Max a constant Double value to each cell. */
+  def localMax(d: Double) = self.mapOp(Max(_, d))
+  /** Max the values of each cell in each raster.  */
+  def localMax(rs:RasterDataSource) = self.combineOp(rs)(Max(_,_))
+}

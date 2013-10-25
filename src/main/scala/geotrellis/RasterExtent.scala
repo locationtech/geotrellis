@@ -8,7 +8,10 @@ case class GeoAttrsError(msg:String) extends Exception(msg)
  * Represents grid coordinates of a subsection of a RasterExtent.
  * These coordinates are inclusive.
  */
-case class GridBounds(colMin:Int,rowMin:Int,colMax:Int,rowMax:Int)
+case class GridBounds(colMin:Int,rowMin:Int,colMax:Int,rowMax:Int) {
+  val width = colMax - colMin + 1
+  val height = rowMax - rowMin + 1
+}
 
 /**
  * RasterExtent objects represent the geographic extent (envelope) of a raster.
@@ -125,7 +128,6 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
    * See [[RasterExtent]] for a discussion of grid and extent boundary concepts.
    */
   def gridBoundsFor(subExtent:Extent):GridBounds = {
-    if(!extent.containsExtent(subExtent)) { throw ExtentRangeError("") }
     // West and North boundarys are a simple mapToGrid call.
     val (colMin,rowMin) = mapToGrid(subExtent.xmin, subExtent.ymax)
 
@@ -136,10 +138,10 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     val colMax = ceil((subExtent.xmax - extent.xmin) / cellwidth).toInt - 1
     val rowMax = ceil((extent.ymax - subExtent.ymin) / cellheight).toInt - 1
     
-    GridBounds(max(0,colMin),
-               max(0,rowMin),
-               min(cols-1,colMax),
-               min(rows-1,rowMax))
+    GridBounds(colMin,
+               rowMin,
+               colMax,
+               rowMax)
   }
   
   /**
@@ -161,7 +163,7 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     val newRows = ceil(newExtent.height / cellheight).toInt
     val newCols = ceil(newExtent.width / cellwidth).toInt
 
-    RasterExtent(newExtent, cellwidth, cellheight, newCols, newCols)
+    RasterExtent(newExtent, cellwidth, cellheight, newCols, newRows)
   }
 
   /**
@@ -191,6 +193,15 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     val targetCols = math.round((xmax - xmin) / cellwidth).toInt
     val targetRows = math.round((ymax - ymin) / cellheight).toInt
     RasterExtent(Extent(xmin,ymin,xmax,ymax),cellwidth,cellheight,targetCols,targetRows)
+  }
+
+  def extentFor(gridBounds:GridBounds):Extent = {
+    val xmin = max(min(gridBounds.colMin * cellwidth + extent.xmin, extent.xmax) , extent.xmin)
+    val ymax = min(max(extent.ymax - (gridBounds.rowMin * cellheight), extent.ymin), extent.ymax)
+    val xmax = xmin + (gridBounds.width * cellwidth)
+    val ymin = ymax - (gridBounds.height * cellheight)
+    println(s"xmin $xmin ymax $ymax xmax $xmax ymin $ymin")
+    Extent(xmin,ymin,xmax,ymax)
   }
 }
 

@@ -66,10 +66,7 @@ final case class BitArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
     BitArrayRasterData(arr, cols, rows)
   }
 
-  override def mapIfSet(f: Int => Int) = map(f)
-
   override def mapDouble(f: Double => Double) = map(z => d2i(f(i2d(z))))
-  override def mapIfSetDouble(f: Double => Double) = mapDouble(f)
 }
 
 object BitArrayRasterData {

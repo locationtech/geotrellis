@@ -77,7 +77,7 @@ object RemoteClient {
   def sourceTest(app:RemoteClientApplication):Unit = {
     val server = app.server
 
-    val r = RasterSource("mtsthelens_tiled_cached")
+    val r = RasterDataSource("mtsthelens_tiled_cached")
       .localAdd(3)
       .histogram
       .mapOp(MinFromHistogram(_))
@@ -101,7 +101,7 @@ object RemoteClient {
     val server = app.server
     val raster = io.LoadRaster("mtsthelens_tiled_cached")
     val op = stat.GetHistogram(raster)
-    op.limit = 5000
+    //op.limit = 5000 // TODO: Replace grouping of ops
 
     for(i <- 1 until 10) {
       println(" == Sending op for remote execution.")

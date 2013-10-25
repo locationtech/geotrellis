@@ -55,7 +55,7 @@ object DiffTask {
       val diffOp = local.Subtract(r1Op, r2Op)
       val diff = localServer.run(diffOp)
 
-      val arr = diff.data.asArray.toArrayDouble
+      val arr = diff.toArrayDouble
       val differences = arr.filter(i => i != 0 )
       val (max, min) = (arr.max, arr.min)
 

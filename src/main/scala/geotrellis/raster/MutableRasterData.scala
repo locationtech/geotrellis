@@ -6,8 +6,9 @@ import geotrellis._
  * MutableRasterData is a StrictRasterData whose cells can be written to
  * (mutated).
  */
-trait MutableRasterData extends StrictRasterData {
+trait MutableRasterData extends RasterData {
   def mutable = this
+  def force = this
 
   def update(i:Int, z:Int): Unit
   def updateDouble(i:Int, z:Double):Unit

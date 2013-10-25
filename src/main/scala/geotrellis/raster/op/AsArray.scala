@@ -7,8 +7,7 @@ import geotrellis._
  */
 case class AsArray(r:Op[Raster]) extends Op1(r)({ 
   r => 
-    val data = r.data.asArray
-    Result(data.toArray)
+    Result(r.toArray)
 })
 
 /**
@@ -16,6 +15,5 @@ case class AsArray(r:Op[Raster]) extends Op1(r)({
  */
 case class AsArrayDouble(r:Op[Raster]) extends Op1(r)({
   r =>  
-    val data = r.data.asArray
-    Result(data.toArrayDouble)
+    Result(r.toArrayDouble)
 })
