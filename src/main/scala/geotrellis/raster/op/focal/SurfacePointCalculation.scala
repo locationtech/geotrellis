@@ -152,8 +152,7 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
    *
    */
   def execute(raster:Raster,n:Neighborhood,neighbors:Seq[Option[Raster]]):Unit = {
-    val analysisArea = AnalysisArea(raster)
-    val r = TileWithNeighbors(raster,neighbors)
+    val (r,analysisArea) = TileWithNeighbors(raster,neighbors)
 
     val colMax = analysisArea.colMax
     val colBorderMax = r.cols - 1

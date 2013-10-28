@@ -180,8 +180,7 @@ class ConvolveCalculation(k:Kernel) extends FocalCalculation[Raster] with Convol
   }
 
   def execute(raster:Raster,kernel:Kernel,neighbors:Seq[Option[Raster]]):Unit = {
-    val analysisArea = AnalysisArea(raster)
-    val r = TileWithNeighbors(raster,neighbors)
+    val (r,analysisArea) = TileWithNeighbors(raster,neighbors)
 
     val rowMax = analysisArea.rowMax
     val colMax = analysisArea.colMax

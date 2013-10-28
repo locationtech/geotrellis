@@ -26,7 +26,7 @@ case class CursorSetup(r:Raster,calc:CursorCalculation[Raster],cursor:Cursor) {
 
 object MockCursorHelper {
   def raster = Raster.empty(RasterExtent(Extent(0,0,3,3),1,1,3,3))
-  def analysisArea = AnalysisArea(raster)
+  def analysisArea = GridBounds(raster)
 }
 
 object MockCursor {
@@ -97,7 +97,7 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
     val op = createOp(r,n)
     val calc = op.getCalculation(r,n).asInstanceOf[CursorCalculation[Raster] with Initialization]
     calc.init(r)
-    val analysisArea = AnalysisArea(r)
+    val analysisArea = GridBounds(r)
     CursorSetup(r,calc,Cursor(r,n,analysisArea))
   }
 
@@ -121,8 +121,8 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
 
   def testCursorSequence[T <: FocalOp[Raster]](createOp:(Raster,Neighborhood)=>T,n:Neighborhood,
                                                setups:Seq[SeqTestSetup[Int]]) = {
-    val op = createOp(null,n)
-    val calc = op.getCalculation(null,n).asInstanceOf[CursorCalculation[Raster] with Initialization]
+    val op = createOp(MockCursorHelper.raster,n)
+    val calc = op.getCalculation(MockCursorHelper.raster,n).asInstanceOf[CursorCalculation[Raster] with Initialization]
     
     var init = true
     for(setup <- setups) {
@@ -135,8 +135,8 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
 
   def testCellwiseSequence[T <: FocalOp[Raster]](createOp:(Raster,Neighborhood)=>T,n:Neighborhood,
                                                setups:Seq[SeqTestSetup[Int]]) = {
-    val op = createOp(null,n)
-    val calc = op.getCalculation(null,n).asInstanceOf[CellwiseCalculation[Raster] with Initialization]
+    val op = createOp(MockCursorHelper.raster,n)
+    val calc = op.getCalculation(MockCursorHelper.raster,n).asInstanceOf[CellwiseCalculation[Raster] with Initialization]
     
     var init = true
     for(setup <- setups) {
@@ -159,8 +159,8 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
 
   def testDoubleCursorSequence[T <: FocalOp[Raster]](createOp:(Raster,Neighborhood)=>T,n:Neighborhood,
                                                setups:Seq[SeqTestSetup[Double]]) = {
-    val op = createOp(null,n)
-    val calc = op.getCalculation(null,n).asInstanceOf[CursorCalculation[Raster] with Initialization]
+    val op = createOp(MockCursorHelper.raster,n)
+    val calc = op.getCalculation(MockCursorHelper.raster,n).asInstanceOf[CursorCalculation[Raster] with Initialization]
     
     var init = true
     for(setup <- setups) {
@@ -173,8 +173,8 @@ trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
 
   def testDoubleCellwiseSequence[T <: FocalOp[Raster]](createOp:(Raster,Neighborhood)=>T,n:Neighborhood,
                                                setups:Seq[SeqTestSetup[Double]]) = {
-    val op = createOp(null,n)
-    val calc = op.getCalculation(null,n).asInstanceOf[CellwiseCalculation[Raster] with Initialization]
+    val op = createOp(MockCursorHelper.raster,n)
+    val calc = op.getCalculation(MockCursorHelper.raster,n).asInstanceOf[CellwiseCalculation[Raster] with Initialization]
     
     var init = true
     for(setup <- setups) {

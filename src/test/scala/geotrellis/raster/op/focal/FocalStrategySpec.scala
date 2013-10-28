@@ -36,7 +36,7 @@ class FocalStrategySpec extends FunSpec with ShouldMatchers {
         }
       }
 
-      CursorStrategy.execute(r,cur,calc, TraversalStrategy.ZigZag,AnalysisArea(r))
+      CursorStrategy.execute(r,cur,calc, TraversalStrategy.ZigZag,GridBounds(r))
     }
 
     it("should execute the ScanLine traversal strategy correctly") {
@@ -63,7 +63,7 @@ class FocalStrategySpec extends FunSpec with ShouldMatchers {
         }
       }
 
-      CursorStrategy.execute(r,cur,calc,TraversalStrategy.ScanLine,AnalysisArea(r))
+      CursorStrategy.execute(r,cur,calc,TraversalStrategy.ScanLine,GridBounds(r))
     }
   }
 }

@@ -10,22 +10,27 @@ import scala.math._
  * @param    r      Raster on which to run the focal operation.
  * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
  * @param    tns    TileNeighbors that describe the neighboring tiles.
+
+ * @return          Returns a double value raster that is the computed mean for each neighborhood.
  *
  * @note            If the neighborhood is a [[Square]] neighborhood, the mean calucation will use
  *                  the [[CellwiseMeanCalc]] to perform the calculation, because it is faster.
  *                  If the neighborhood is of any other type, then [[CursorMeanCalc]] is used.
- * 
- * @note            Mean does not currently support Double raster data inputs.
- *                  If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
- *                  the data values will be rounded to integers.
  */
 case class Mean(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) 
     extends FocalOp[Raster](r,n,tns)({
   (r,n) =>
-    n match {
-      case Square(ext) => new CellwiseMeanCalc
-      case _ => new CursorMeanCalc
-    }
+      if(r.isFloat) {
+        n match {
+          case Square(ext) => new CellwiseMeanCalcDouble
+          case _ => new CursorMeanCalcDouble
+        }
+      } else {
+        n match {
+          case Square(ext) => new CellwiseMeanCalc
+          case _ => new CursorMeanCalc
+        }
+      }
 })
 
 object Mean {
@@ -71,4 +76,45 @@ case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleRas
 
   def setValue(x:Int,y:Int) = { data.setDouble(x,y, sum / count.toDouble) }
   def reset() = { count = 0 ; sum = 0 }
+}
+
+case class CursorMeanCalcDouble() extends CursorCalculation[Raster] with DoubleRasterDataResult {
+  var count:Int = 0
+  var sum:Double = 0.0
+
+  def calc(r:RasterLike,c:Cursor) = {
+    c.removedCells.foreach { (x,y) => 
+      val v = r.getDouble(x,y)
+      if(!isNaN(v)) { count -= 1; sum -= v } 
+    }
+    c.addedCells.foreach { (x,y) => 
+      val v = r.getDouble(x,y)
+      if(!isNaN(v)) { count += 1; sum += v } 
+    }
+    data.setDouble(c.col,c.row,sum / count)
+  }
+}
+
+case class CellwiseMeanCalcDouble() extends CellwiseCalculation[Raster] with DoubleRasterDataResult {
+  var count:Int = 0
+  var sum:Double = 0.0
+
+ def add(r:RasterLike, x:Int, y:Int) = {
+    val z = r.getDouble(x,y)
+    if (!isNaN(z)) {
+      count += 1
+      sum   += z
+    }
+  }
+
+  def remove(r:RasterLike, x:Int, y:Int) = {
+    val z = r.getDouble(x,y)
+    if (!isNaN(z)) {
+      count -= 1
+      sum -= z
+    }
+  } 
+
+  def setValue(x:Int,y:Int) = { data.setDouble(x,y, sum / count) }
+  def reset() = { count = 0 ; sum = 0.0 }
 }

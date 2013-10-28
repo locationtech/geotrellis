@@ -84,25 +84,28 @@ trait RasterLike {
     }
 
     (zmin, zmax)
-  } 
+  }
 
   /**
    * Return ascii art of this raster.
    */
-  def asciiDraw() = { 
-    var s = "";
-    for (row <- 0 until rasterExtent.rows) {
-      for (col <- 0 until rasterExtent.cols) {
-        val z = this.get(col,row)
-        if (z == NODATA) {
-          s += ".."
+  def asciiDraw():String = { 
+    val sb = new StringBuilder
+    for(row <- 0 until rows) {
+      for(col <- 0 until cols) {
+        val v = get(col,row)
+        val s = if(v == NODATA) {
+          "ND"
         } else {
-          s += "%02X".format(z)
+          s"$v"
         }
+        val pad = " " * math.max(6 - s.length,0) 
+        sb.append(s"$pad$s")
       }
-      s += "\n"
-    }
-    s
+      sb += '\n'
+    }      
+    sb += '\n'
+    sb.toString
   }
 
   /**

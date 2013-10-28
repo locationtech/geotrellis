@@ -1,6 +1,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.process._
 import geotrellis.statistics._
 import geotrellis.testutil._
 
@@ -58,6 +59,33 @@ class ModeSpec extends FunSpec with FocalOpSpec
       result.get(2,4) should equal (6)
       result.get(3,4) should beIn (Seq(0,5))
       result.get(4,4) should beIn (Seq(0,5))
+    }
+
+    it("should get mode for raster source") {
+      val rs1 = createRasterDataSource(
+        Array( nd,7,1,      1,3,5,      9,8,2,
+                9,1,1,      2,2,2,      4,3,5,
+
+                3,8,1,     3, 3,3,      1,2,2,
+                2,4,7,     1,nd,1,      8,4,3
+        ),
+        3,2,3,2
+      )
+
+      getSource(rs1.focalMode(Square(1))) match {
+        case Complete(result,success) =>
+//          println(success)
+          assertEqual(result,
+            Array(7, 1, 1,    1, 2, 2,    5, 9, 8,
+                  7, 1, 1,    1, 3, 3,    2, 2, 2,
+
+                  9, 1, 1,    1, 2, 1,    2, 2, 2,
+                  3, 3, 1,    1, 3, 1,    1, 2, 2))
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+      }
     }
   }
 }

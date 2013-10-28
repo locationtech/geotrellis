@@ -103,69 +103,6 @@ extends FocalOperation4[A,B,C,D,T](r,n,tns,a,b,c,d){
   def getCalculation(r:Raster,n:Neighborhood) = { getCalc(r,n) }
 }
 
-case class AnalysisArea(colMin:Int, rowMin:Int, colMax:Int, rowMax:Int, rasterExtent:RasterExtent)
-
-object AnalysisArea {
-  def apply(r:RasterLike,reOpt:Option[RasterExtent]):AnalysisArea = 
-    reOpt match {
-      case None => {
-        AnalysisArea(0, 0, r.cols - 1, r.rows - 1, r.rasterExtent)
-      }
-      case Some(re) => {
-        val inputRE = r.rasterExtent
-        val e = re.extent
-        // calculate our bounds in terms of parent bounds
-        if (re.cellwidth != inputRE.cellwidth || re.cellheight != inputRE.cellheight) {
-          throw new Exception("Cell size of analysis area must match the input raster")
-        }
-        
-        // translate the upper-left (xmin/ymax) and lower-right (xmax/ymin) points
-        val GridBounds(colMin,rowMin,colMax,rowMax) = inputRE.gridBoundsFor(e)
-        AnalysisArea(colMin, rowMin, colMax, rowMax, re)
-      }
-    }  
-
-  def apply(r:RasterLike):AnalysisArea = apply(r,None)
-}
-
-object TileWithNeighbors {
-  def apply(r:Raster,neighbors:Seq[Option[Raster]]) = 
-    if(neighbors.isEmpty) {
-      r
-    } else {
-      val re =
-        neighbors.flatten
-          .map(_.rasterExtent)
-          .reduceLeft((re1,re2) => re1.combine(re2))
-
-      val tileCols = 1 +
-      // East Column
-      neighbors.slice(1,4).map { case Some(_) => 1; case None => 0 }.reduce(_*_) +
-      // West Column
-      neighbors.slice(5,8).map { case Some(_) => 1; case None => 0 }.reduce(_*_)
-
-      val tileRows = 1 +
-      // North Row
-        (neighbors(7) :: neighbors.slice(0,2).toList).map { case Some(_) => 1; case None => 0 }.reduce(_*_) +
-      // South Row
-      neighbors.slice(3,6).map { case Some(_) => 1; case None => 0 }.reduce(_*_)
-
-      val tileLayout = TileLayout(tileCols, tileRows, r.rasterExtent.cols, r.rasterExtent.rows)
-
-      TileRaster(Seq(
-        neighbors(7),
-        neighbors(0),
-        neighbors(1),
-        neighbors(6),
-        Some(r),
-        neighbors(2),
-        neighbors(5),
-        neighbors(4),
-        neighbors(3)
-      ).flatten, re, tileLayout)
-    }
-}
-
 trait FocalOperation[T] extends Operation[T]
 
 /**

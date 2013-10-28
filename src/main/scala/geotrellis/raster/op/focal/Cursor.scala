@@ -40,15 +40,15 @@ object Cursor {
    *                      for extent and mask.
    * @param analysisArea  Analysis area
    */
-  def apply(r:RasterLike,n:Neighborhood,analysisArea:AnalysisArea):Cursor = {
+  def apply(r:RasterLike,n:Neighborhood,analysisArea:GridBounds):Cursor = {
     val result = new Cursor(r,analysisArea,n.extent)
     if(n.hasMask) { result.setMask(n.mask) }
     result
   }
 
-  def apply(r:RasterLike,n:Neighborhood):Cursor =  apply(r,n,AnalysisArea(r))
+  def apply(r:RasterLike,n:Neighborhood):Cursor =  apply(r,n,GridBounds(r))
 
-  def apply(r:RasterLike,extent:Int):Cursor = new Cursor(r,AnalysisArea(r),extent)
+  def apply(r:RasterLike,extent:Int):Cursor = new Cursor(r,GridBounds(r),extent)
 }
 
 /**
@@ -62,7 +62,7 @@ object Cursor {
  *                                   e.g. if the bounding box is 9x9, then
  *                                   the distance from center is 1.
  */
-class Cursor(r:RasterLike, analysisArea:AnalysisArea, val extent:Int) {
+class Cursor(r:RasterLike, analysisArea:GridBounds, val extent:Int) {
   private val rows = r.rasterExtent.rows
   private val cols = r.rasterExtent.cols
 
@@ -266,7 +266,7 @@ class Cursor(r:RasterLike, analysisArea:AnalysisArea, val extent:Int) {
         } else {
           mask.foreachX(addedRow-(_row-extent)) { x =>
             val xRaster = x+(_col-extent)
-            if(0 <= xRaster && xRaster <= rows) {
+            if(0 <= xRaster && xRaster <= cols) {
               f(xRaster,addedRow)
             }
           }
@@ -284,14 +284,14 @@ class Cursor(r:RasterLike, analysisArea:AnalysisArea, val extent:Int) {
           if(movement == Left) {
             mask.foreachWestColumn { y =>
               val yRaster = y+(_row-extent)
-              if(0 <= yRaster && yRaster < cols) {
+              if(0 <= yRaster && yRaster < rows) {
                 f(addedCol,yRaster)
               }
             }
           } else { // Right
             mask.foreachEastColumn { y =>
               val yRaster = y+(_row-extent)
-              if(0 <= yRaster && yRaster < cols) {
+              if(0 <= yRaster && yRaster < rows) {
                 f(addedCol,yRaster)
               }
             }
@@ -313,8 +313,7 @@ class Cursor(r:RasterLike, analysisArea:AnalysisArea, val extent:Int) {
 
   /**
    * Iterates over all cell values of the raster which
-   * are no longer covered by the cursor that were not previously masked
-   * not masked, or that were masked when previously unmasked,
+   * are no longer covered by the cursor 
    * as part of the last move last move of the cursor.
    *
    * For instance, if move(Movement.Up) is called, then there will
@@ -368,14 +367,14 @@ class Cursor(r:RasterLike, analysisArea:AnalysisArea, val extent:Int) {
           if(movement == Left) {
             mask.foreachEastColumn { y =>
               val yRaster = y+(_row-extent)
-              if(0 <= yRaster && yRaster < cols) {
+              if(0 <= yRaster && yRaster < rows) {
                 f(removedCol,yRaster)
               }
             }
           } else { //Right
             mask.foreachWestColumn { y =>
               val yRaster = y+(_row-extent)
-              if(0 <= yRaster && yRaster < cols) {
+              if(0 <= yRaster && yRaster < rows) {
                 f(removedCol,yRaster)
               }
             }
@@ -393,5 +392,17 @@ class Cursor(r:RasterLike, analysisArea:AnalysisArea, val extent:Int) {
         }
       }
     }
+  }
+
+  def asciiDraw:String = {
+    val sb = new StringBuilder
+    var row = 0
+    allCells.foreach { (cl,rw) =>
+      if(row != rw) { sb.append("\n") ; row += 1 }
+      val s = r.get(cl,rw).toString
+      val pad = " " * math.max(6 - s.length,0)
+      sb.append(s"$pad$s")
+    }
+    sb.toString
   }
 }

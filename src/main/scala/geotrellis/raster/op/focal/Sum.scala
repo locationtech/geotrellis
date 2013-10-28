@@ -33,12 +33,18 @@ class CursorSumCalc extends CursorCalculation[Raster]
   var total = 0
 
   def calc(r:RasterLike,cursor:Cursor) = {
+
+    val added = collection.mutable.Set[(Int,Int,Int)]()
     cursor.addedCells.foreach { (x,y) => 
       val v = r.get(x,y)
+      added += ((x,y,v))
       if(v != NODATA) { total += r.get(x,y) }
     }
+
+    val removed = collection.mutable.Set[(Int,Int,Int)]()
     cursor.removedCells.foreach { (x,y) => 
       val v = r.get(x,y)
+      removed += ((x,y,v))
       if(v != NODATA) { total -= r.get(x,y) }
     }
 

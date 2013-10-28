@@ -13,6 +13,11 @@ case class GridBounds(colMin:Int,rowMin:Int,colMax:Int,rowMax:Int) {
   val height = rowMax - rowMin + 1
 }
 
+object GridBounds {
+  def apply(r:RasterLike):GridBounds = 
+    GridBounds(0,0,r.rasterExtent.cols,r.rasterExtent.rows)
+}
+
 /**
  * RasterExtent objects represent the geographic extent (envelope) of a raster.
  *

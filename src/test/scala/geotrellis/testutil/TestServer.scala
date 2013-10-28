@@ -23,14 +23,24 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
 
   def get(name:String) = io.LoadRaster(name)
 
-  def assertEqual(r:Op[Raster],arr:Array[Int]) = {
-    run(r).toArray should equal (arr)
+  def assertEqual(r:Op[Raster],arr:Array[Int]):Unit =
+    assertEqual(run(r),arr)
+
+  def assertEqual(r:RasterLike,arr:Array[Int]):Unit = {
+    (r.cols * r.rows) should be (arr.length)
+    for(row <- 0 until r.rows) {
+      for(col <- 0 until r.cols) {
+        withClue(s"Value at ($col,$row) are not the same") {
+          r.get(col,row) should be (arr(row*r.cols + col))
+        }
+      }
+    }
   }
 
   def assertEqual(rd:RasterData,arr:Array[Int]) = {
     (rd.cols * rd.rows) should be (arr.length)
-    for(col <- 0 until rd.cols) {
-      for(row <- 0 until rd.rows) {
+    for(row <- 0 until rd.rows) {
+      for(col <- 0 until rd.cols) {
         withClue(s"Value at ($col,$row) are not the same") {
           rd.get(col,row) should be (arr(row*rd.cols + col))
         }
@@ -38,12 +48,15 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
     }
   }
 
-  def assertEqual(r:Op[Raster],arr:Array[Double]) = {
+  def assertEqual(r:Op[Raster],arr:Array[Double]):Unit = 
+    assertEqual(r,arr,0.0000000001)
+
+  def assertEqual(r:Op[Raster],arr:Array[Double],threshold:Double):Unit = {
     val raster = run(r)
     val cols = raster.rasterExtent.cols
     val rows = raster.rasterExtent.rows
-    for(col <- 0 until cols) {
-      for(row <- 0 until rows) {
+    for(row <- 0 until rows) {
+      for(col <- 0 until cols) {
         val v = raster.getDouble(col,row)
         if(isNaN(v)) {
           withClue(s"Value at ($col,$row) are not the same: value was ${arr(row*cols+col)}") {
@@ -51,7 +64,7 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
           }
         } else {
           withClue(s"Value at ($col,$row) are not the same:") {
-            v should be (arr(row*cols + col))
+            v should be (arr(row*cols + col) plusOrMinus threshold)
           }
         }
       }
@@ -59,9 +72,9 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
   }
 
 
-  def assertEqual(r:Op[Raster],r2:Op[Raster]):Unit = assertEqual(r,r2,0.0000000001)
+  def assertEqual(r:Op[RasterLike],r2:Op[RasterLike]):Unit = assertEqual(r,r2,0.0000000001)
 
-  def assertEqual(rOp1:Op[Raster],rOp2:Op[Raster],threshold:Double):Unit = {
+  def assertEqual(rOp1:Op[RasterLike],rOp2:Op[RasterLike],threshold:Double):Unit = {
     val r1 = run(rOp1)
     val r2 = run(rOp2)
     
