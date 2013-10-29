@@ -6,8 +6,6 @@ import geotrellis.raster._
 import geotrellis.feature._
 import geotrellis.testutil._
 
-import geotrellis.raster.op.zonal.summary._
-
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
@@ -18,10 +16,11 @@ import scala.language.existentials
 
 
 // TODO
-// @RunWith(classOf[JUnitRunner])
-// class TiledPolygonalZonalSummarySpec extends FunSpec with ShouldMatchers {
-//   val server = TestServer.server
-
+ @RunWith(classOf[org.scalatest.junit.JUnitRunner])
+ class TiledPolygonalZonalSummarySpec extends FunSpec
+                                      with ShouldMatchers
+                                      with TestServer
+                                      with RasterBuilders {
 //   sealed trait TestResultTile
 
 //   case class FullTile(re: RasterExtent) extends TestResultTile
@@ -53,7 +52,7 @@ import scala.language.existentials
 //     def reducer(mapResults: List[B]):Seq[B] = mapResults
 //   }
 
-//   describe("ZonalSummary") {
+   describe("ZonalSummary") {
 //     it("zonal summary summarizes one raster") {
 //       val rData = new IntArrayRasterData(Array.ofDim[Int](9), 3, 3).map { i => 1 }
 //       val extent = Extent(0,0,90,90)
@@ -69,7 +68,7 @@ import scala.language.existentials
 //       result should equal (List(FullTile(rasterExtent)))
 //     }
 
-//     it("should handle tiled stuff") {      
+     it("should handle tiled stuff") {
 //       def getTile(i: Int, data: Int) = {
 //         val rData = new IntArrayRasterData(Array.fill[Int](100)(data), 10, 10)
 //         val row = i % 4
@@ -85,12 +84,12 @@ import scala.language.existentials
 
 //       val tileLayout = TileLayout(4, 4, 10, 10)
 
-//       val rasterExtent = RasterExtent(Extent(0,0,40,40),1,1,40,40)
-//       val rData = new TileArrayRasterData(tiles, tileLayout)
+       val rasterExtent = RasterExtent(Extent(0,0,40,40),1,1,40,40)
+       val rData = createRasterDataSource(Array.fill(40*40)(1),4,4,10,10)
 
 //       val raster = new Raster(rData, rasterExtent)
 
-//       val zone = Extent(15,10,30,20).asFeature(())
+       val zone = Extent(15,10,30,20).asFeature(0)
       
 //       val summaryOp = MockTiledPolygonalZonalSummary(raster, zone)
 //       val result = server.run(summaryOp).toSet
@@ -100,57 +99,118 @@ import scala.language.existentials
 //       Set(FullTile(RasterExtent(Extent(20,10,30,20),1,1,10,10)),
 //           PartialTile(RasterExtent(Extent(10,10,20,20),1,1,10,10),e)) should equal (result)
 
-//       val tileSums = zonal.summary.Sum.createTileResults(rData, rasterExtent) 
-//       val sumOp = zonal.summary.Sum(raster, zone, tileSums)
-//       val sumResult = server.run(sumOp)
-//       sumResult should equal (250)
+       val sumOp = rData.zonalSum(zone)
+       server.getSource(sumOp) match {
+         case Complete(result,success) =>
+           println(success)
+           result should equal (250)
+         case Error(msg,failure) =>
+           println(s"MSG: $msg")
+           println(s"FAILURE: $failure")
+           assert(false)
+       }
 
-//       val tileSumsD = zonal.summary.SumDouble.createTileResults(rData, rasterExtent) 
-//       val sumDOp = zonal.summary.SumDouble(raster, zone, tileSumsD)
-//       val sumDResult = server.run(sumDOp)
-//       sumDResult should equal (250.0)
+       val sumDOp = rData.zonalSumDouble(zone)
+       server.getSource(sumDOp) match {
+         case Complete(result,success) =>
+           println(success)
+           result should equal (250.0)
+         case Error(msg,failure) =>
+           println(msg)
+           println(failure)
+           assert(false)
+       }
 
-//       val tileMins = zonal.summary.Min.createTileResults(rData, rasterExtent)
-//       val minOp = zonal.summary.Min(raster, zone, tileMins)
-//       val minResult = server.run(minOp)
-//       minResult should equal (1)
+       val minOp = rData.zonalMin(zone)
+       server.getSource(minOp) match {
+         case Complete(result,success) =>
+           println(success)
+           result should equal (1)
+         case Error(msg,failure) =>
+           println(msg)
+           println(failure)
+           assert(false)
+       }
 
-//       val tileMinsD = zonal.summary.MinDouble.createTileResults(rData, rasterExtent)
-//       val minDOp = zonal.summary.MinDouble(raster, zone, tileMinsD)
-//       val minDResult = server.run(minDOp)
-//       minDResult should equal (1.0)
+       val minDOp = rData.zonalMinDouble(zone)
+       server.getSource(minDOp) match {
+         case Complete(result,success) =>
+           println(success)
+           result should equal (1.0)
+         case Error(msg,failure) =>
+           println(msg)
+           println(failure)
+           assert(false)
+       }
 
-//       val tileMaxes = zonal.summary.Max.createTileResults(rData, rasterExtent)
-//       val maxOp = zonal.summary.Max(raster, zone, tileMaxes)
-//       val maxResult = server.run(maxOp)
-//       maxResult should equal (2)
+       val maxOp = rData.zonalMax(zone)
+       server.getSource(maxOp) match {
+         case Complete(result,success) =>
+           println(success)
+           result should equal (2)
+         case Error(msg,failure) =>
+           println(msg)
+           println(failure)
+           assert(false)
+       }
 
-//       val tileMaxesD = zonal.summary.MaxDouble.createTileResults(rData, rasterExtent)
-//       val maxDOp = zonal.summary.MaxDouble(raster, zone, tileMaxesD)
-//       val maxDResult = server.run(maxDOp)
-//       maxDResult should equal (2.0)
+       val maxDOp = rData.zonalMaxDouble(zone)
+       server.getSource(maxDOp) match {
+         case Complete(result,success) =>
+           println(success)
+           result should equal (2.0)
+         case Error(msg,failure) =>
+           println(msg)
+           println(failure)
+           assert(false)
+       }
 
-//       val tileHistograms = zonal.summary.Histogram.createTileResults(rData, rasterExtent)
-//       val histOp = zonal.summary.Histogram(raster, zone, tileHistograms)
-//       val h = server.run(histOp)
-//       h.getItemCount(1) should equal (50)
-//       h.getItemCount(2) should equal (100)
+       val histOp = rData.zonalHistogram(zone)
+       server.getSource(histOp) match {
+         case Complete(result,success) =>
+           println(success)
+           result.getItemCount(1) should equal (50)
+           result.getItemCount(2) should equal (100)
+         case Error(msg,failure) =>
+           println(msg)
+           println(failure)
+           assert(false)
+       }
 
-//       val tileMeans = zonal.summary.Mean.createTileResults(rData, rasterExtent)
-//       val meanOp = zonal.summary.Mean(raster, zone, tileMeans)
-//       val meanResult = server.run(meanOp)
-//       meanResult should equal (1)
+       val meanOp = rData.zonalMean(zone)
+       server.getSource(meanOp) match {
+         case Complete(result,success) =>
+           println(success)
+           result should equal (1)
+         case Error(msg,failure) =>
+           println(msg)
+           println(failure)
+           assert(false)
+       }
 
-//       val tileMeansD = zonal.summary.MeanDouble.createTileResults(rData, rasterExtent)
-//       val meanDOp = zonal.summary.MeanDouble(raster, zone, tileMeansD)
-//       val meanDResult = server.run(meanDOp)
-//       meanDResult should equal (1.6666666666666667)
+       val meanDOp = rData.zonalMeanDouble(zone)
+       server.getSource(meanDOp) match {
+         case Complete(result,success) =>
+           println(success)
+           result should equal (1.6666666666666667)
+         case Error(msg,failure) =>
+           println(msg)
+           println(failure)
+           assert(false)
+       }
 
-//       // Test non-intersecting polygons (issue #412)
-//       val nonintersecting = Extent(100,120,100,120).asFeature(())
-//       val sumOp2 = zonal.summary.Sum(raster, nonintersecting, tileSums)
-//       val sumResult2 = server.run(sumOp2)
-//       sumResult2 should equal (0)
-//     }
-//   }
-// }
+       // Test non-intersecting polygons (issue #412)
+       val nonintersecting = Extent(100,120,100,120).asFeature(())
+       val sumOp2 = rData.zonalSum(nonintersecting)
+       server.getSource(sumOp2) match {
+         case Complete(result,success) =>
+           println(success)
+           result should equal (0)
+         case Error(msg,failure) =>
+           println(msg)
+           println(failure)
+           assert(false)
+       }
+     }
+   }
+ }
