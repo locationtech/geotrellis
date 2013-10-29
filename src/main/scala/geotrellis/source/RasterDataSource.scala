@@ -27,4 +27,23 @@ object RasterDataSource {
 
   def apply(rasterDef:Op[RasterDefinition],tileOps:Op[Seq[Op[Raster]]]) =
     new RasterDataSource(rasterDef, tileOps)
+
+  def apply(tiledRaster:TileRaster):RasterDataSource = {
+    val rasterDef = 
+      RasterDefinition("tiledRaster",
+                       tiledRaster.rasterExtent,
+                       tiledRaster.tileLayout)
+    val tileOps = tiledRaster.tiles.map(Literal(_)) 
+    new RasterDataSource(rasterDef, tileOps)
+  }
+
+  def apply(tiledRaster:Op[TileRaster])(implicit d:DI):RasterDataSource = {
+    val rasterDef = tiledRaster.map { tr =>
+      RasterDefinition("tiledRaster",
+                       tr.rasterExtent,
+                       tr.tileLayout)
+    }
+    val tileOps = tiledRaster.map(_.tiles.map(Literal(_)))
+    new RasterDataSource(rasterDef, tileOps)
+  }
 }

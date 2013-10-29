@@ -86,17 +86,28 @@ case class CreateCircleRaster(size: Op[Int], cellWidth: Op[Double], rad: Op[Int]
  *                     If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
  *                     the data values will be rounded to integers.
  */
-case class Convolve(r:Op[Raster], k:Op[Kernel],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,k,tns)({
+// case class Convolve(r:Op[Raster], k:Op[Kernel],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,k,tns)({
+//   (r,n) => 
+//     n match {
+//       case k:Kernel => new ConvolveCalculation(k)
+//       case _ => sys.error("Convolve must take a Kernel neighborhood.")
+//     }
+// })
+case class Convolve(r:Op[Raster], k:Op[Kernel]) extends Op2(r,k)({
   (r,n) => 
     n match {
-      case k:Kernel => new ConvolveCalculation(k)
+      case k:Kernel => 
+        val calc = new ConvolveCalculation(k)
+        calc.init(r)
+        calc.execute(r,k,Seq[Option[Raster]]())
+        Result(calc.result)
       case _ => sys.error("Convolve must take a Kernel neighborhood.")
     }
 })
 
-object Convolve {
-  def apply(r:Op[Raster], k:Op[Kernel]):Convolve = Convolve(r,k,TileNeighbors.NONE)
-}
+// object Convolve {
+//   def apply(r:Op[Raster], k:Op[Kernel]):Convolve = Convolve(r,k,TileNeighbors.NONE)
+// }
 
 /**
  * Supplies functionaltiy to operations that do convolution.

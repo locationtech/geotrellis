@@ -153,17 +153,23 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
    */
   def execute(raster:Raster,n:Neighborhood,neighbors:Seq[Option[Raster]]):Unit = {
     val (r,analysisArea) = TileWithNeighbors(raster,neighbors)
+//    println(r.asciiDraw)
 
-    val colMax = analysisArea.colMax
-    val colBorderMax = r.cols - 1
-    val rowMax = analysisArea.rowMax
-    val rowBorderMax = r.rows - 1
     val colMin = analysisArea.colMin
+    val colMax = analysisArea.colMax
+
     val rowMin = analysisArea.rowMin
+    val rowMax = analysisArea.rowMax
+
+    val colBorderMax = r.cols - 1
+    val rowBorderMax = r.rows - 1
+
     cellWidth = r.rasterExtent.cellwidth
     cellHeight = r.rasterExtent.cellheight
 
-    if(colMax <= 3 || rowMax <= 3) { sys.error("Raster is too small to get surface values") }
+    if(colBorderMax < 3 || rowBorderMax < 3) { 
+      sys.error(s"Raster is too small to get surface values. ($colBorderMax,$rowBorderMax)") 
+    }
 
     def getValSafe(col:Int,row:Int,focalVal:Double) = {
       if(col < 0 || colBorderMax < col || row < 0 || rowBorderMax < row) {

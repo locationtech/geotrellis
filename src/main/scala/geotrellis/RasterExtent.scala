@@ -205,7 +205,6 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     val ymax = min(max(extent.ymax - (gridBounds.rowMin * cellheight), extent.ymin), extent.ymax)
     val xmax = xmin + (gridBounds.width * cellwidth)
     val ymin = ymax - (gridBounds.height * cellheight)
-    println(s"xmin $xmin ymax $ymax xmax $xmax ymin $ymin")
     Extent(xmin,ymin,xmax,ymax)
   }
 }

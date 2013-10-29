@@ -13,8 +13,9 @@ import scala.collection.mutable
 trait RasterDataSourceLike[+Repr <: RasterDataSource] 
     extends DataSourceLike[Raster,Raster, Repr]
     with DataSource[Raster,Raster] 
-    with focal.FocalOpMethods[Repr] 
     with local.LocalOpMethods[Repr] 
+    with focal.FocalOpMethods[Repr] 
+    with global.GlobalOpMethods[Repr]
     with zonal.summary.ZonalSummaryOpMethods[Repr]
     with stat.StatOpMethods[Repr] { self: Repr =>
 

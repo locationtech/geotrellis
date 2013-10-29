@@ -14,17 +14,16 @@ object TileRaster {
                                  s" $tileLayout does not match ${tr.tileLayout}")
         }
         tr
-      case ar:ArrayRaster =>
-        wrap(ar, tileLayout)
       case _ =>
-        sys.error(s"TileRaster cannot handle this raster type (${r.getClass.getSimpleName})")
+        wrap(r, tileLayout)
+//        sys.error(s"TileRaster cannot handle this raster type (${r.getClass.getSimpleName})")
     }
 
-  def wrap(ar:ArrayRaster,tileLayout:TileLayout):TileRaster = {
-    TileRaster(split(ar,tileLayout),ar.rasterExtent,tileLayout)
+  def wrap(r:Raster,tileLayout:TileLayout):TileRaster = {
+    TileRaster(split(r,tileLayout),r.rasterExtent,tileLayout)
   }
 
-  def split(ar:Raster,tileLayout:TileLayout):Seq[Raster] = {
+  def split(r:Raster,tileLayout:TileLayout):Seq[Raster] = {
     val pCols = tileLayout.pixelCols
     val pRows = tileLayout.pixelRows
 
@@ -32,10 +31,11 @@ object TileRaster {
     for(trow <- 0 until tileLayout.tileRows optimized) {
       for(tcol <- 0 until tileLayout.tileCols optimized) {
         val firstCol = tcol * pCols
-        val lastCol = tcol + pCols - 1
-        val firstRow = tcol * pRows
-        val lastRow = tcol + pRows - 1
-        tiles += CroppedRaster(ar,GridBounds(firstCol,firstRow,lastCol,lastRow))
+        val lastCol = firstCol + pCols - 1
+        val firstRow = trow * pRows
+        val lastRow = firstRow + pRows - 1
+        val gb = GridBounds(firstCol,firstRow,lastCol,lastRow)
+        tiles += CroppedRaster(r,gb)
       }
     }
     return tiles

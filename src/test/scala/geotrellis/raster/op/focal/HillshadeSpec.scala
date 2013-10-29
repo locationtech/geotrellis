@@ -1,6 +1,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.source._
 import geotrellis.raster.op._
 import geotrellis.statistics.op._
 import geotrellis.process._
@@ -13,7 +14,9 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class HillshadeSpec extends FunSuite with TestServer {
+class HillshadeSpec extends FunSuite 
+                       with TestServer 
+                       with RasterBuilders {
   def grayscale(n:Int) = {
     val ns = (1 to 128).toArray
     val limits = ns.map(i => i * n)
@@ -92,14 +95,49 @@ class HillshadeSpec extends FunSuite with TestServer {
     println("[6] wrote png in %s ms" format (time() - t6))
   }
 
-  // TODO
-  // test("Hillshade should work with tiling, direct") {
-  //   val rOp = get("elevation")
-  //   val nonTiledHillshade = DirectHillshade(rOp,315.0,45.0,1.0)
+  test("Hillshade works with raste source") {
+    val rs = createRasterDataSource(
+      Array(0, 0, 0,              0, 0, 0,
+            0, 2450, 2461,        2483, 0, 0,
 
-  //   val tiled = logic.Do(rOp)({ r => Tiler.createTiledRaster(r,89,140) })
-  //   //val tiledHillshade = TileFocalOp(tiled,DirectHillshade(rOp,315.0,45.0,1.0))
-  //   val tiledHillshade = DirectHillshade(tiled, 315.0, 45.0, 1.0)
-  //   assertEqual(nonTiledHillshade,tiledHillshade)
-  // }
+            0, 2452, 2461,        2483, 0, 0,
+            0, 2447, 2455,        2477, 0, 0),
+      2,2,3,2,5,5)
+
+    getSource(rs.focalHillshade(315.0,45.0,1.0)) match {
+      case Complete(result,success) =>
+        //          println(success)
+        printR(result)
+        assert(result.get(2, 2) === 77)
+      case Error(msg,failure) =>
+        println(msg)
+        println(failure)
+        assert(false)
+    }
+  }
+
+  test("should get the same result for split raster") {
+    val rOp = get("elevation")
+    val nonTiledSlope = Hillshade(rOp,315.0,45.0,1.0)
+
+    val tiled =
+      rOp.map { r =>
+        val (tcols,trows) = (11,20)
+        val pcols = r.rasterExtent.cols / tcols
+        val prows = r.rasterExtent.rows / trows
+        val tl = TileLayout(tcols,trows,pcols,prows)
+        TileRaster.wrap(r,tl)
+      }
+
+    val rs = RasterDataSource(tiled)
+    getSource(rs.focalHillshade(315.0,45.0,1.0)) match {
+      case Complete(result,success) =>
+        //          println(success)
+        assertEqual(result,nonTiledSlope)
+      case Error(msg,failure) =>
+        println(msg)
+        println(failure)
+        assert(false)
+    }
+  }
 }

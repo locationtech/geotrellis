@@ -1,4 +1,4 @@
-package geotrellis.raster.op.focal
+package geotrellis.raster.op
 
 import geotrellis._
 
@@ -25,7 +25,7 @@ object Normalize {
  *                     If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
  *                     the data values will be rounded to integers.
  */
-object Rescale {
+object Rescale extends Serializable {
   /** Normalize the values in the given raster so that all values are within the
    * specified minimum and maximum value range. See [[AutomaticRescale]]. */
   def apply(r:Op[Raster], g:Op[(Int, Int)]) = AutomaticRescale(r, g)

@@ -69,4 +69,11 @@ trait FocalOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   def focalMean(n:Neighborhood) = focal(n)(Mean(_,_,_))
   def focalMedian(n:Neighborhood) = focal(n)(Median(_,_,_))
   def focalMode(n:Neighborhood) = focal(n)(Mode(_,_,_))
+  def focalStandardDeviation(n:Neighborhood) = focal(n)(StandardDeviation(_,_,_))
+
+  def focalAspect = focal(Square(1))((r,_,nbs) => Aspect(r,nbs))
+  def focalSlope = focal(Square(1))((r,_,nbs) => Slope(r,nbs))
+  def focalHillshade = focal(Square(1))((r,_,nbs) => Hillshade(r,nbs))
+  def focalHillshade(azimuth:Double,altitude:Double,zFactor:Double) =
+    focal(Square(1))((r,_,nbs) => Hillshade(r,nbs,azimuth,altitude,zFactor))
 }
