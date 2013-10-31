@@ -15,13 +15,13 @@ import org.scalatest.matchers._
                                       with RasterBuilders {
    describe("ZonalSummary") {
      it("computes Sum") {
-       val rData = createRasterDataSource(Array.fill(40*40)(1),4,4,10,10)
+       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
        val zone = Extent(10,-10,30,10).asFeature()
 
        val sumOp = rData.zonalSum(zone)
        getSource(sumOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result should equal (40)
          case Error(msg,failure) =>
            println(s"MSG: $msg")
@@ -31,13 +31,13 @@ import org.scalatest.matchers._
      }
 
      it("computes Double Sum") {
-       val rData = createRasterDataSource(Array.fill(40*40)(1),4,4,10,10)
+       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
        val zone = Extent(10,-10,30,10).asFeature()
 
        val sumDOp = rData.zonalSumDouble(zone)
        getSource(sumDOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result should equal (40.0)
          case Error(msg,failure) =>
            println(msg)
@@ -47,13 +47,13 @@ import org.scalatest.matchers._
      }
 
      it("computes Minimum") {
-       val rData = createRasterDataSource(Array.fill(40*40)(1),4,4,10,10)
+       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
        val zone = Extent(10,-10,30,10).asFeature()
 
        val minOp = rData.zonalMin(zone)
        getSource(minOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result should equal (1)
          case Error(msg,failure) =>
            println(msg)
@@ -63,13 +63,13 @@ import org.scalatest.matchers._
      }
 
      it("computes Double Minimum") {
-       val rData = createRasterDataSource(Array.fill(40*40)(1),4,4,10,10)
+       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
        val zone = Extent(10,-10,30,10).asFeature()
 
        val minDOp = rData.zonalMinDouble(zone)
        getSource(minDOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result should equal (1.0)
          case Error(msg,failure) =>
            println(msg)
@@ -79,13 +79,13 @@ import org.scalatest.matchers._
      }
 
      it("computes Maximum") {
-       val rData = createRasterDataSource(Array.fill(40*40)(1),4,4,10,10)
+       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
        val zone = Extent(10,-10,30,10).asFeature()
 
        val maxOp = rData.zonalMax(zone)
        getSource(maxOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result should equal (1)
          case Error(msg,failure) =>
            println(msg)
@@ -95,13 +95,13 @@ import org.scalatest.matchers._
      }
 
      it("computes Double Maximum") {
-       val rData = createRasterDataSource(Array.fill(40*40)(1),4,4,10,10)
+       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
        val zone = Extent(10,-10,30,10).asFeature()
 
        val maxDOp = rData.zonalMaxDouble(zone)
        getSource(maxDOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result should equal (1.0)
          case Error(msg,failure) =>
            println(msg)
@@ -111,13 +111,13 @@ import org.scalatest.matchers._
      }
 
      it("computes Histogram") {
-       val rData = createRasterDataSource(Array.fill(40*40)(1),4,4,10,10)
+       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
        val zone = Extent(10,-10,30,10).asFeature()
 
        val histOp = rData.zonalHistogram(zone)
        getSource(histOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result.getItemCount(1) should equal (40)
            result.getItemCount(2) should equal (0)
          case Error(msg,failure) =>
@@ -128,13 +128,13 @@ import org.scalatest.matchers._
      }
 
      it("computes Mean") {
-       val rData = createRasterDataSource(Array.fill(40*40)(1),4,4,10,10)
+       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
        val zone = Extent(10,-10,30,10).asFeature()
 
        val meanOp = rData.zonalMean(zone)
        getSource(meanOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result should equal (1)
          case Error(msg,failure) =>
            println(msg)
@@ -144,13 +144,13 @@ import org.scalatest.matchers._
      }
 
      it("computes Double Mean") {
-       val rData = createRasterDataSource(Array.fill(40*40)(1),4,4,10,10)
+       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
        val zone = Extent(10,-10,30,10).asFeature()
 
        val meanDOp = rData.zonalMeanDouble(zone)
        getSource(meanDOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result should equal (1.0)
          case Error(msg,failure) =>
            println(msg)
@@ -161,7 +161,7 @@ import org.scalatest.matchers._
 
      it("fails on nonintersecting zone") {
        // Test non-intersecting polygons (issue #412)
-       val rData = createRasterDataSource(Array.fill(40*40)(1),4,4,10,10)
+       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
        val zone = Extent(10,-10,30,10).asFeature()
 
        val nonintersecting = Extent(100,120,100,120).asFeature(())

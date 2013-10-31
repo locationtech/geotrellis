@@ -17,8 +17,9 @@ object RasterSource {
 
   def apply(rasterDef:Op[RasterDefinition]):RasterSource = {
     val tileOps = rasterDef.map { rd =>
-      (for(tileCol <- 0 until rd.tileLayout.tileCols;
-        tileRow <- 0 until rd.tileLayout.tileRows) yield {
+
+      (for(tileRow <- 0 until rd.tileLayout.tileRows;
+           tileCol <- 0 until rd.tileLayout.tileCols) yield {
         io.LoadTile(rd.layerName,tileCol,tileRow)
       })
     }

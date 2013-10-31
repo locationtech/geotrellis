@@ -31,7 +31,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.converge
 
-  def zonalSum[D](p:Op[feature.Polygon[D]]):ValueDataSource[Long] =
+  def zonalSum[D](p:Op[feature.Polygon[D]]):ValueSource[Long] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
@@ -55,7 +55,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.reduce(_+_)
 
-  def zonalSumDouble[D](p:Op[feature.Polygon[D]]):ValueDataSource[Double] =
+  def zonalSumDouble[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
@@ -79,7 +79,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.reduce(_+_)
 
-  def zonalMin[D](p:Op[feature.Polygon[D]]):ValueDataSource[Long] =
+  def zonalMin[D](p:Op[feature.Polygon[D]]):ValueSource[Long] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
@@ -103,7 +103,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.reduce(math.min(_,_))
 
-  def zonalMinDouble[D](p:Op[feature.Polygon[D]]):ValueDataSource[Double] =
+  def zonalMinDouble[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
@@ -127,7 +127,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.reduce(math.min(_,_))
 
-  def zonalMax[D](p:Op[feature.Polygon[D]]):ValueDataSource[Long] =
+  def zonalMax[D](p:Op[feature.Polygon[D]]):ValueSource[Long] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
@@ -150,7 +150,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.reduce(math.max(_,_))
 
-  def zonalMaxDouble[D](p:Op[feature.Polygon[D]]):ValueDataSource[Double] =
+  def zonalMaxDouble[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
@@ -173,7 +173,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.reduce(math.max(_,_))
 
-  def zonalMean[D](p:Op[feature.Polygon[D]]):ValueDataSource[Long] =
+  def zonalMean[D](p:Op[feature.Polygon[D]]):ValueSource[Long] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
@@ -199,7 +199,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.reduce(_+_).map(_.mean)
 
-  def zonalMeanDouble[D](p:Op[feature.Polygon[D]]):ValueDataSource[Double] =
+  def zonalMeanDouble[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
