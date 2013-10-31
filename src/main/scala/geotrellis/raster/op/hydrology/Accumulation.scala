@@ -179,6 +179,16 @@ case class Accumulation(flowDirrection:Op[Raster]) extends Op1(flowDirrection)({
       }
       c= c+1
     }
+    r= 0
+    while(r < rows){
+      c=0
+      while(c < cols){
+        System.out.print(data.get(c,r) + ", ")
+        c = c+1 
+      }
+      System.out.println()
+      r= r+1 
+    }
 
     //convert the IntArrayflowDirrection to a flowDirrection
     Result(Raster( data , flowDirrection.rasterExtent))

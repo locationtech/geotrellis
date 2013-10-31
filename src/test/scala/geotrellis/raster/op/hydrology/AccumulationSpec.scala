@@ -58,10 +58,10 @@ class AccumulationSpec extends FunSpec
       val in_raster = Raster(m, r_extent)
       val o = IntArrayRasterData(Array[Int](
             0,1,2,3,4,5,
-            0,2,4,9,14,20,
-            0,2,6,12,23,39,
-            0,2,6,14,28,53,
-            0,2,6,14,30,60,
+            0,2,5,9,14,20,
+            0,2,6,13,24,40,
+            0,2,6,14,29,55,
+            0,2,6,14,30,61,
             0,2,6,14,30,62),
             ncols,nrows)
       val out_raster = Raster(o, r_extent)
