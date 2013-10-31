@@ -10,7 +10,7 @@ import geotrellis.raster._
 import scalaxy.loops._
 import scala.collection.mutable
 
-trait RasterDataSourceLike[+Repr <: RasterDataSource] 
+trait RasterSourceLike[+Repr <: RasterSource] 
     extends DataSourceLike[Raster,Raster, Repr]
     with DataSource[Raster,Raster] 
     with local.LocalOpMethods[Repr] 
@@ -34,7 +34,7 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
         val r = f(TileRaster(tileSeq.toSeq, rd.re,rd.tileLayout))
         TileRaster.split(r,rd.tileLayout).map(Literal(_))
       }
-    // Set into new RasterDataSource
+    // Set into new RasterSource
     val builder = bf.apply(this)
     builder.setOp(tileOps)
     builder.result
@@ -48,13 +48,13 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
           TileRaster.split(r,rd.tileLayout).map(Literal(_))
         }
       }
-    // Set into new RasterDataSource
+    // Set into new RasterSource
     val builder = bf.apply(this)
     builder.setOp(tileOps)
     builder.result
   }
 
-  def combineOp[B,That](rs:RasterDataSource)
+  def combineOp[B,That](rs:RasterSource)
                        (f:(Op[Raster],Op[Raster])=>Op[B])
                        (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
     val tileOps:Op[Seq[Op[B]]] =
@@ -69,7 +69,7 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
     builder.result
   }
 
-  def combineOp[B,That](rs:Seq[RasterDataSource])
+  def combineOp[B,That](rs:Seq[RasterSource])
                        (f:Seq[Op[Raster]]=>Op[B])
                        (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
     val tileOps:Op[Seq[Op[B]]] =
@@ -82,7 +82,7 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
     builder.result
   }
 
-  def combine[That](rs:RasterDataSource)
+  def combine[That](rs:RasterSource)
                    (f:(Int,Int)=>Int)
                    (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
     val tileOps =
@@ -100,7 +100,7 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
   }
 
 
-  def combineDouble[That](rs:RasterDataSource)
+  def combineDouble[That](rs:RasterSource)
                          (f:(Double,Double)=>Double)
                          (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
     val tileOps = 
@@ -116,7 +116,7 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
     builder.result
   }
 
-  def dualCombine[That](rs:RasterDataSource)
+  def dualCombine[That](rs:RasterSource)
                        (fInt:(Int,Int)=>Int)
                        (fDouble:(Double,Double)=>Double)
                        (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
@@ -174,7 +174,7 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
     result
   }
 
-  def min():ValueDataSource[Int] = 
+  def min():ValueSource[Int] = 
     self.map(_.findMinMax._1)
         .reduce { (m1,m2) =>
           if(m1 == NODATA) m2
@@ -182,7 +182,7 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
           else math.min(m1,m2)
          }
 
-  def max():ValueDataSource[Int] = 
+  def max():ValueSource[Int] = 
     self.map(_.findMinMax._2)
         .reduce { (m1,m2) =>
           if(m1 == NODATA) m2
@@ -190,7 +190,7 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
           else math.max(m1,m2)
          }
 
-  def minMax():ValueDataSource[(Int,Int)] = 
+  def minMax():ValueSource[(Int,Int)] = 
     self.map(_.findMinMax)
         .reduce { (mm1,mm2) =>
           val (min1,max1) = mm1

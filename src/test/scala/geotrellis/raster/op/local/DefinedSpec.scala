@@ -38,7 +38,7 @@ class DefinedSpec extends FunSpec
     }
 
     it("returns correct result for a double raster source correctly") {
-      val rs = RasterDataSource("mtsthelens_tiled")
+      val rs = RasterSource("mtsthelens_tiled")
 
       val r = runSource(rs)
       getSource(rs.localDefined) match {
@@ -62,7 +62,7 @@ class DefinedSpec extends FunSpec
     }
 
     it("returns correct result for a int raster source") {
-      val rs = createRasterDataSource(
+      val rs = createRasterSource(
         Array( NODATA,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
 

@@ -14,7 +14,7 @@ class FocalOpMethodsSpec extends FunSpec with FocalOpSpec
                                          with TestServer {
   describe("zipWithNeighbors") {
     it("Gets correct neighbors for 3 x 2 tiles") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
         Array( 1,1,1,      2,2,2,      3,3,3,
                1,1,1,      2,2,2,      3,3,3,
 

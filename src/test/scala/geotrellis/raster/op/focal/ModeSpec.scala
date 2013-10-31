@@ -62,7 +62,7 @@ class ModeSpec extends FunSpec with FocalOpSpec
     }
 
     it("should get mode for raster source") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
         Array( nd,7,1,      1,3,5,      9,8,2,
                 9,1,1,      2,2,2,      4,3,5,
 

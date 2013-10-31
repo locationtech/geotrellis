@@ -46,11 +46,11 @@ object Min extends LocalRasterBinaryOp {
     })
 }
 
-trait MinOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait MinOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Min a constant Int value to each cell. */
   def localMin(i: Int) = self.mapOp(Min(_, i))
   /** Min a constant Double value to each cell. */
   def localMin(d: Double) = self.mapOp(Min(_, d))
   /** Min the values of each cell in each raster.  */
-  def localMin(rs:RasterDataSource) = self.combineOp(rs)(Min(_,_))
+  def localMin(rs:RasterSource) = self.combineOp(rs)(Min(_,_))
 }

@@ -26,7 +26,7 @@ object Or extends LocalRasterBinaryOp {
     })
 }
 
-trait OrOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait OrOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Or a constant Int value to each cell. */
   def localOr(i: Int) = self.mapOp(Or(_, i))
   /** Or a constant Int value to each cell. */
@@ -34,7 +34,7 @@ trait OrOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /** Or a constant Int value to each cell. */
   def |:(i:Int) = localOr(i)
   /** Or the values of each cell in each raster.  */
-  def localOr(rs:RasterDataSource) = self.combineOp(rs)(Or(_,_))
+  def localOr(rs:RasterSource) = self.combineOp(rs)(Or(_,_))
   /** Or the values of each cell in each raster. */
-  def |(rs:RasterDataSource) = localOr(rs)
+  def |(rs:RasterSource) = localOr(rs)
 }

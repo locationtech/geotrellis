@@ -21,7 +21,7 @@ class NotSpec extends FunSpec
     }
 
     it("negates a raster source") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
         Array( NODATA,1,1, 1,1,1, 1,1,1,
           1,1,1, 1,1,1, 1,1,1,
 

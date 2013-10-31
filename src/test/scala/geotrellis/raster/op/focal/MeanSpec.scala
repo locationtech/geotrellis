@@ -61,7 +61,7 @@ class MeanSpec extends FunSpec with FocalOpSpec
     }
 
     it("should square min for raster source") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
         Array( nd,7,1,      1,3,5,      9,8,2,
                 9,1,1,      2,2,2,      4,3,5,
 
@@ -91,7 +91,7 @@ class MeanSpec extends FunSpec with FocalOpSpec
 
 
     it("should circle min for raster source") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
             Array(5.666,  3.8,2.166,    1.666,   2.5, 4.166,    5.166, 5.166,   4.5,
                     5.6,3.875,2.777,    1.888, 2.666, 3.555,    4.111,   4.0, 3.666,
 

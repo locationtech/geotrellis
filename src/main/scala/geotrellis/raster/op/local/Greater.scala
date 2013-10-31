@@ -52,7 +52,7 @@ object Greater extends LocalRasterBinaryOp {
     r1.dualCombine(r2)(checkGreater)(checkGreater)
 }
 
-trait GreaterOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait GreaterOpMethods[+Repr <: RasterSource] { self: Repr =>
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
@@ -98,11 +98,11 @@ trait GreaterOpMethods[+Repr <: RasterDataSource] { self: Repr =>
    * the corresponding cell value of the input raster is greater than the input
    * intenger, else 0.
    */
-  def localGreater(rs:RasterDataSource) = self.combineOp(rs)(Greater(_,_))
+  def localGreater(rs:RasterSource) = self.combineOp(rs)(Greater(_,_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * intenger, else 0.
    */
-  def >(rs:RasterDataSource) = localGreater(rs)
+  def >(rs:RasterSource) = localGreater(rs)
 }

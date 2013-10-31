@@ -41,7 +41,7 @@ object Pow extends LocalRasterBinaryOp {
     )
 }
 
-trait PowOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait PowOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Pow each value of the raster by a constant value.*/
   def localPow(i: Int) = self.mapOp(Pow(_, i))
   /** Pow each value of the raster by a constant value.*/
@@ -59,7 +59,7 @@ trait PowOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /** Pow a double constant value by each cell value.*/
   def **:(d:Double) = localPowValue(d)
   /** Pow the values of each cell in each raster. */
-  def localPow(rs:RasterDataSource) = self.combineOp(rs)(Pow(_,_))
+  def localPow(rs:RasterSource) = self.combineOp(rs)(Pow(_,_))
   /** Pow the values of each cell in each raster. */
-  def **(rs:RasterDataSource) = localPow(rs)
+  def **(rs:RasterSource) = localPow(rs)
 }

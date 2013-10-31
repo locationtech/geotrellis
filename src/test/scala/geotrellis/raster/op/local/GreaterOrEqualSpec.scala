@@ -115,9 +115,9 @@ class GreaterOrEqualSpec extends FunSpec
       }
     }
 
-    it("adds two tiled RasterDataSources correctly") {
-      val rs1 = RasterDataSource("quad_tiled")
-      val rs2 = RasterDataSource("quad_tiled2")
+    it("adds two tiled RasterSources correctly") {
+      val rs1 = RasterSource("quad_tiled")
+      val rs2 = RasterSource("quad_tiled2")
 
       getSource(rs1 >= rs2) match {
         case Complete(result,success) =>
@@ -134,9 +134,9 @@ class GreaterOrEqualSpec extends FunSpec
       }
     }
 
-    it("adds two tiled unequalRasterDataSources correctly") {
-      val rs1 = RasterDataSource("quad_tiled")
-      val rs2 = RasterDataSource("quad_tiled2") + 1
+    it("adds two tiled unequalRasterSources correctly") {
+      val rs1 = RasterSource("quad_tiled")
+      val rs2 = RasterSource("quad_tiled2") + 1
 
       getSource(rs1 >= rs2) match {
         case Complete(result,success) =>
@@ -167,8 +167,8 @@ class GreaterOrEqualSpec extends FunSpec
       }
     }
 
-    it("adds three tiled RasterDataSources correctly") {
-      val rs1 = createRasterDataSource(
+    it("adds three tiled RasterSources correctly") {
+      val rs1 = createRasterSource(
         Array( NODATA,1,1, 1,1,1, 1,1,3,
                1,1,1, 1,1,1, 1,1,3,
 
@@ -176,7 +176,7 @@ class GreaterOrEqualSpec extends FunSpec
                1,1,1, 1,1,1, 1,1,3),
         3,2,3,2)
 
-      val rs2 = createRasterDataSource(
+      val rs2 = createRasterSource(
         Array( NODATA,1,2, 2,2,2, 2,2,2,
                1,1,2, 2,2,2, 2,2,2,
 
@@ -184,7 +184,7 @@ class GreaterOrEqualSpec extends FunSpec
                1,1,1, 2,2,2, 2,2,2),
         3,2,3,2)
 
-      val rs3 = createRasterDataSource(
+      val rs3 = createRasterSource(
         Array( NODATA,3,3, 3,3,3, 3,3,1,
                1,3,3, 3,3,3, 3,3,1,
 

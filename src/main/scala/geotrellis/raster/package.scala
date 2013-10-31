@@ -1,6 +1,6 @@
 package geotrellis
 
-import geotrellis.source.RasterDataSource
+import geotrellis.source.RasterSource
 package object raster {
 
   final val byteNodata = Byte.MinValue

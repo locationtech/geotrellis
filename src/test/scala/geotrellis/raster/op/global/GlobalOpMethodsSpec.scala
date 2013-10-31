@@ -15,7 +15,7 @@ class GlobalOpMethodsSpec extends FunSpec
                              with RasterBuilders {
   describe("finding min and max") {
     it("Gets correct min and max for 3 x 2 tiles") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
         Array( 1,1,1,      2,2,2,      3,3,3,
                1,1,1,      2,2,2,      3,3,3,
 

@@ -66,7 +66,7 @@ class SumSpec extends FunSpec with FocalOpSpec
     }
 
     it("should square sum r=1 for raster source") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
         Array( nd,1,1,      1,1,1,      1,1,1,
                 1,1,1,      2,2,2,      1,1,1,
 
@@ -94,7 +94,7 @@ class SumSpec extends FunSpec with FocalOpSpec
     }
 
     it("should square sum with 5x5 neighborhood") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
         Array( nd,1,1,      1,1,1,      1,1,1,
                 1,1,1,      2,2,2,      1,1,1,
 
@@ -172,7 +172,7 @@ class SumSpec extends FunSpec with FocalOpSpec
     }
 
     it("should circle sum for raster source") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
         Array( nd,1,1,      1,1,1,      1,1,1,
                 1,1,1,      2,2,2,      1,1,1,
 

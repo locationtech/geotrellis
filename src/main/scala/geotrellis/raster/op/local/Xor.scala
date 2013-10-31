@@ -25,7 +25,7 @@ object Xor extends LocalRasterBinaryOp {
     })
 }
 
-trait XorOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait XorOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Xor a constant Int value to each cell. */
   def localXor(i: Int) = self.mapOp(Xor(_, i))
   /** Xor a constant Int value to each cell. */
@@ -33,7 +33,7 @@ trait XorOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /** Xor a constant Int value to each cell. */
   def ^:(i:Int) = localXor(i)
   /** Xor the values of each cell in each raster.  */
-  def localXor(rs:RasterDataSource) = self.combineOp(rs)(Xor(_,_))
+  def localXor(rs:RasterSource) = self.combineOp(rs)(Xor(_,_))
   /** Xor the values of each cell in each raster. */
-  def ^(rs:RasterDataSource) = localXor(rs)
+  def ^(rs:RasterSource) = localXor(rs)
 }

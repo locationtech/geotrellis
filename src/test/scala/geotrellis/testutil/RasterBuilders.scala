@@ -91,10 +91,10 @@ trait RasterBuilders {
     Raster(arr.toArray, r.rasterExtent)
   }
 
-  def createRasterDataSource(arr:Array[Int],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int):RasterDataSource =
-    createRasterDataSource(arr,tileCols,tileRows,pixelCols,pixelRows,10.0,1.0)
+  def createRasterSource(arr:Array[Int],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int):RasterSource =
+    createRasterSource(arr,tileCols,tileRows,pixelCols,pixelRows,10.0,1.0)
 
-  def createRasterDataSource(arr:Array[Int],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int,cellwidth:Double,cellheight:Double):RasterDataSource = {
+  def createRasterSource(arr:Array[Int],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int,cellwidth:Double,cellheight:Double):RasterSource = {
     if(tileCols*pixelCols*tileRows*pixelRows != arr.length) {
       sys.error("Tile and pixel col rows do not match array length")
     }
@@ -132,13 +132,13 @@ trait RasterBuilders {
     val re = rasters.map(_.rasterExtent).reduce(_.combine(_))
     val tileLayout = TileLayout(tileCols,tileRows,pixelCols,pixelRows)
 
-    RasterDataSource(RasterDefinition("test",re,tileLayout),ops)
+    RasterSource(RasterDefinition("test",re,tileLayout),ops)
   }
 
-  def createRasterDataSource(arr:Array[Double],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int):RasterDataSource = 
-    createRasterDataSource(arr,tileCols,tileRows,pixelCols,pixelRows,10.0,1.0)
+  def createRasterSource(arr:Array[Double],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int):RasterSource = 
+    createRasterSource(arr,tileCols,tileRows,pixelCols,pixelRows,10.0,1.0)
 
-  def createRasterDataSource(arr:Array[Double],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int,cellwidth:Double,cellheight:Double):RasterDataSource = {
+  def createRasterSource(arr:Array[Double],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int,cellwidth:Double,cellheight:Double):RasterSource = {
     if(tileCols*pixelCols*tileRows*pixelRows != arr.length) {
       sys.error("Tile and pixel col rows do not match array length")
     }
@@ -176,7 +176,7 @@ trait RasterBuilders {
     val re = rasters.map(_.rasterExtent).reduce(_.combine(_))
     val tileLayout = TileLayout(tileCols,tileRows,pixelCols,pixelRows)
 
-    RasterDataSource(RasterDefinition("test",re,tileLayout),ops)
+    RasterSource(RasterDefinition("test",re,tileLayout),ops)
   }
 
   /**

@@ -8,7 +8,7 @@ import geotrellis.process._
  */
   //TODO: handle rasterextent
 /*
-case class LoadRasterDataSource(n:Op[String]) extends Op[Raster] {
+case class LoadRasterSource(n:Op[String]) extends Op[Raster] {
   def _run(context:Context) = runAsync(List(n, r, context))
   val nextSteps:Steps = {
     case (name:String) :: null :: (context:Context) :: Nil => 

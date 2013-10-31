@@ -48,7 +48,7 @@ class MaxSpec extends FunSpec with FocalOpSpec
     }
 
     it("should square max for raster source") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
         Array( nd,7,1,      1,1,1,      1,1,1,
                 9,1,1,      2,2,2,      1,3,1,
 
@@ -76,7 +76,7 @@ class MaxSpec extends FunSpec with FocalOpSpec
     }
 
     it("should square max with 5x5 neighborhood") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
         Array( nd,7,1,      1,1,1,      1,1,1,
                 9,1,1,      2,2,2,      1,3,1,
 
@@ -104,7 +104,7 @@ class MaxSpec extends FunSpec with FocalOpSpec
     }
 
     it("should circle max for raster source") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
         Array( nd,7,1,     1, 1,1,      1,1,1,
                 9,1,1,     2, 2,2,      1,3,1,
 

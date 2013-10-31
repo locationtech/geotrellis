@@ -66,23 +66,23 @@ trait LocalOpMethods[+Repr <: RasterDS]
     combineOp(rs)(InverseMask(_,_,readMask,writeMask))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
-  def localMean(rss:Seq[RasterDataSource]):RasterDataSource = 
+  def localMean(rss:Seq[RasterSource]):RasterSource = 
     combineOp(rss)(Mean(_))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
-  def localMean(rss:RasterDataSource*)(implicit d:DI):RasterDataSource = 
+  def localMean(rss:RasterSource*)(implicit d:DI):RasterSource = 
     localMean(rss)
 
-  def colorMap(breaksToColors:Map[Int,Int]):RasterDataSource =
+  def colorMap(breaksToColors:Map[Int,Int]):RasterSource =
     colorMap(breaksToColors,ColorMapOptions.Default)
 
-  def colorMap(breaksToColors:Map[Int,Int],options:ColorMapOptions):RasterDataSource =
+  def colorMap(breaksToColors:Map[Int,Int],options:ColorMapOptions):RasterSource =
     mapOp(ColorMap(_,breaksToColors,options))
 
-  def colorMap(breaksToColors:Map[Double,Int])(implicit d:DI):RasterDataSource =
+  def colorMap(breaksToColors:Map[Double,Int])(implicit d:DI):RasterSource =
     colorMap(breaksToColors,ColorMapOptions.Default)
 
-  def colorMap(breaksToColors:Map[Double,Int],options:ColorMapOptions)(implicit d:DI):RasterDataSource =
+  def colorMap(breaksToColors:Map[Double,Int],options:ColorMapOptions)(implicit d:DI):RasterSource =
     mapOp(ColorMap(_,breaksToColors,options))
 
   def convert(rasterType:RasterType) =

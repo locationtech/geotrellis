@@ -100,20 +100,20 @@ object Majority {
     .withName("Majority")
 }
 
-trait MajorityOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait MajorityOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Assigns to each cell the value within the given rasters that is the most numerous. */
-  def localMajority(rss:Seq[RasterDS]):RasterDataSource = 
+  def localMajority(rss:Seq[RasterDS]):RasterSource = 
     combineOp(rss)(Majority(_))
 
   /** Assigns to each cell the value within the given rasters that is the most numerous. */
-  def localMajority(rss:RasterDS*)(implicit d:DI):RasterDataSource = 
+  def localMajority(rss:RasterDS*)(implicit d:DI):RasterSource = 
     localMajority(rss)
 
   /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
-  def localMajority(n:Int,rss:Seq[RasterDS]):RasterDataSource = 
+  def localMajority(n:Int,rss:Seq[RasterDS]):RasterSource = 
     combineOp(rss)(Majority(n,_))
 
   /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
-  def localMajority(n:Int,rss:RasterDS*)(implicit d:DI):RasterDataSource = 
+  def localMajority(n:Int,rss:RasterDS*)(implicit d:DI):RasterSource = 
     localMajority(n,rss)
 }

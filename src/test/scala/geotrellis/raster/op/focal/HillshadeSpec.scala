@@ -96,7 +96,7 @@ class HillshadeSpec extends FunSuite
   }
 
   test("Hillshade works with raste source") {
-    val rs = createRasterDataSource(
+    val rs = createRasterSource(
       Array(0, 0, 0,              0, 0, 0,
             0, 2450, 2461,        2483, 0, 0,
 
@@ -129,7 +129,7 @@ class HillshadeSpec extends FunSuite
         TileRaster.wrap(r,tl)
       }
 
-    val rs = RasterDataSource(tiled)
+    val rs = RasterSource(tiled)
     getSource(rs.focalHillshade(315.0,45.0,1.0)) match {
       case Complete(result,success) =>
         //          println(success)

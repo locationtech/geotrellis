@@ -129,7 +129,7 @@ class LocalMapSpec extends FunSpec
 
   describe("RasterSource methods") {
     it("should map an integer function over an integer raster source") {
-      val rs = createRasterDataSource(
+      val rs = createRasterSource(
         Array(nd,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
@@ -154,7 +154,7 @@ class LocalMapSpec extends FunSpec
     }
 
     it("should map an integer function over a double raster source") {
-      val rs = createRasterDataSource(
+      val rs = createRasterSource(
         Array(NaN,1.5,1.5, 1.5,1.5,1.5, 1.5,1.5,1.5,
                1.5,1.5,1.5, 1.5,1.5,1.5, 1.5,1.5,1.5,
                1.5,1.5,1.5, 1.5,1.5,1.5, 1.5,1.5,1.5,
@@ -179,7 +179,7 @@ class LocalMapSpec extends FunSpec
     }
 
     it("should map a double function over an integer raster source") {
-      val rs = createRasterDataSource(
+      val rs = createRasterSource(
         Array(nd,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
@@ -204,7 +204,7 @@ class LocalMapSpec extends FunSpec
     }
 
     it("should map a double function over a double raster source") {
-      val rs = createRasterDataSource(
+      val rs = createRasterSource(
         Array(NaN,1.5,1.5, 1.5,1.5,1.5, 1.5,1.5,1.5,
                1.5,1.5,1.5, 1.5,1.5,1.5, 1.5,1.5,1.5,
                1.5,1.5,1.5, 1.5,1.5,1.5, 1.5,1.5,1.5,
@@ -229,7 +229,7 @@ class LocalMapSpec extends FunSpec
     }
 
     it("should mapIfSet an integer function over an integer raster source") {
-      val rs = createRasterDataSource(
+      val rs = createRasterSource(
         Array(nd,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
@@ -254,7 +254,7 @@ class LocalMapSpec extends FunSpec
     }
 
     it("should mapIfSet an integer function over a double raster source") {
-      val rs = createRasterDataSource(
+      val rs = createRasterSource(
         Array(NaN,1.5,1.5, 1.5,1.5,1.5, 1.5,1.5,1.5,
                1.5,1.5,1.5, 1.5,1.5,1.5, 1.5,1.5,1.5,
                1.5,1.5,1.5, 1.5,1.5,1.5, 1.5,1.5,1.5,
@@ -279,7 +279,7 @@ class LocalMapSpec extends FunSpec
     }
 
     it("should mapIfSet a double function over an integer raster source") {
-      val rs = createRasterDataSource(
+      val rs = createRasterSource(
         Array(nd,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
@@ -304,7 +304,7 @@ class LocalMapSpec extends FunSpec
     }
 
     it("should mapIfSet a double function over a double raster source") {
-      val rs = createRasterDataSource(
+      val rs = createRasterSource(
         Array(NaN,1.5,1.5, 1.5,1.5,1.5, 1.5,1.5,1.5,
                1.5,1.5,1.5, 1.5,1.5,1.5, 1.5,1.5,1.5,
                1.5,1.5,1.5, 1.5,1.5,1.5, 1.5,1.5,1.5,

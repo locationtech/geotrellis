@@ -4,7 +4,7 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.source._
 
-trait GlobalOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait GlobalOpMethods[+Repr <: RasterSource] { self: Repr =>
   def rescale(newMin:Int,newMax:Int) = {
     val minMax = self.minMax.get
     self.globalOp { r =>

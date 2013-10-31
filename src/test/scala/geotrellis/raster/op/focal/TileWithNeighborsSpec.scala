@@ -14,7 +14,7 @@ class TileWithNeighborsSpec extends FunSpec with FocalOpSpec
                                             with TestServer {
   describe("TileWithNeighbors") {
     it("should tile correctly for 3x2 columns") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
         Array( 1,1,1,      2,2,2,      3,3,3,
                1,1,1,      2,2,2,      3,3,3,
 

@@ -53,7 +53,7 @@ class SlopeSpec extends FunSpec with ShouldMatchers
           TileRaster.wrap(r,tl)
         }
 
-      val rs = RasterDataSource(tiled)
+      val rs = RasterSource(tiled)
       getSource(rs.focalSlope) match {
         case Complete(result,success) =>
 //          println(success)

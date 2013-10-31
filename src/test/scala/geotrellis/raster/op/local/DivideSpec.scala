@@ -115,9 +115,9 @@ class DivideSpec extends FunSpec
       }
     }
 
-    it("divides two tiled RasterDataSources correctly") {
-      val rs1 = RasterDataSource("quad_tiled")
-      val rs2 = RasterDataSource("quad_tiled2")
+    it("divides two tiled RasterSources correctly") {
+      val rs1 = RasterSource("quad_tiled")
+      val rs2 = RasterSource("quad_tiled2")
 
       val r1 = runSource(rs1)
       val r2 = runSource(rs2)
@@ -142,8 +142,8 @@ class DivideSpec extends FunSpec
       }
     }
 
-    it("divides three tiled RasterDataSources correctly") {
-      val rs1 = createRasterDataSource(
+    it("divides three tiled RasterSources correctly") {
+      val rs1 = createRasterSource(
         Array( 1000,1000,1000, 1000,1000,1000, 1000,1000,1000,
                1000,1000,1000, 1000,1000,1000, 1000,1000,1000,
 
@@ -151,7 +151,7 @@ class DivideSpec extends FunSpec
                1000,1000,1000, 1000,1000,1000, 1000,1000,1000),
         3,2,3,2)
 
-      val rs2 = createRasterDataSource(
+      val rs2 = createRasterSource(
         Array( 200,200,200, 200,200,200, 200,200,200,
                200,200,200, 200,200,200, 200,200,200,
 
@@ -159,7 +159,7 @@ class DivideSpec extends FunSpec
                200,200,200, 200,200,200, 200,200,200),
         3,2,3,2)
 
-      val rs3 = createRasterDataSource(
+      val rs3 = createRasterSource(
         Array( 2,2,2, 2,2,2, 2,2,2,
                2,2,2, 2,2,2, 2,2,2,
 

@@ -74,7 +74,7 @@ class VarietySpec extends FunSpec
 
     it("computes variety on raster sources") { 
       val n = NODATA
-      val r1 = createRasterDataSource(
+      val r1 = createRasterSource(
         Array( n, n, n, n, n, n,
                n, n, n, n, n, n,
                n, n, n, n, n, n,
@@ -82,7 +82,7 @@ class VarietySpec extends FunSpec
         2,2,3,2
       )
 
-      val r2 = createRasterDataSource(
+      val r2 = createRasterSource(
         Array( n, 1, n, n, n, n,
                n, n, 1, n, n, n,
                n, n, n, 1, n, n,
@@ -90,7 +90,7 @@ class VarietySpec extends FunSpec
         2,2,3,2
       )
 
-      val r3 = createRasterDataSource(
+      val r3 = createRasterSource(
         Array( n, 2, n, n, n, n,
                n, n, 2, n, n, n,
                n, n, n, 2, n, n,
@@ -98,7 +98,7 @@ class VarietySpec extends FunSpec
         2,2,3,2
       )
 
-      val r4 = createRasterDataSource(
+      val r4 = createRasterSource(
         Array( n, 3, n, n, n, n,
                n, n, 3, n, n, n,
                n, n, n, 2, n, n,
@@ -106,7 +106,7 @@ class VarietySpec extends FunSpec
         2,2,3,2
       )
 
-      val r5 = createRasterDataSource(
+      val r5 = createRasterSource(
         Array( n, 4, n, n, n, n,
                n, n, 3, n, n, n,
                n, n, n, 2, n, n,

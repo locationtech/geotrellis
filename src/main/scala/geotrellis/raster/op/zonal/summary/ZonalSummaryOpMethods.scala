@@ -6,8 +6,8 @@ import geotrellis.feature._
 import geotrellis.feature.rasterize._
 import geotrellis.statistics._
 
-trait ZonalSummaryOpMethods[+Repr <: RasterDataSource] { self:Repr =>
-  def zonalHistogram[D](p:Op[feature.Polygon[D]]):ValueDataSource[Histogram] = 
+trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
+  def zonalHistogram[D](p:Op[feature.Polygon[D]]):ValueSource[Histogram] = 
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>

@@ -52,7 +52,7 @@ object GreaterOrEqual extends LocalRasterBinaryOp {
     r1.dualCombine(r2)(checkGreaterOrEqual)(checkGreaterOrEqual)
 }
 
-trait GreaterOrEqualOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait GreaterOrEqualOpMethods[+Repr <: RasterSource] { self: Repr =>
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
@@ -94,11 +94,11 @@ trait GreaterOrEqualOpMethods[+Repr <: RasterDataSource] { self: Repr =>
    * the corresponding cell value of the input raster is greater than or equal to the input
    * intenger, else 0.
    */
-  def localGreaterOrEqual(rs:RasterDataSource) = self.combineOp(rs)(GreaterOrEqual(_,_))
+  def localGreaterOrEqual(rs:RasterSource) = self.combineOp(rs)(GreaterOrEqual(_,_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
    * intenger, else 0.
    */
-  def >=(rs:RasterDataSource) = localGreaterOrEqual(rs)
+  def >=(rs:RasterSource) = localGreaterOrEqual(rs)
 }

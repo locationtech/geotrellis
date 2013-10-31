@@ -100,20 +100,20 @@ object Minority {
     .withName("Minority")
 }
 
-trait MinorityOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait MinorityOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
-  def localMinority(rss:Seq[RasterDS]):RasterDataSource = 
+  def localMinority(rss:Seq[RasterDS]):RasterSource = 
     combineOp(rss)(Minority(_))
 
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
-  def localMinority(rss:RasterDS*)(implicit d:DI):RasterDataSource = 
+  def localMinority(rss:RasterDS*)(implicit d:DI):RasterSource = 
     localMinority(rss)
 
   /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
-  def localMinority(n:Int,rss:Seq[RasterDS]):RasterDataSource = 
+  def localMinority(n:Int,rss:Seq[RasterDS]):RasterSource = 
     combineOp(rss)(Minority(n,_))
 
   /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
-  def localMinority(n:Int,rss:RasterDS*)(implicit d:DI):RasterDataSource = 
+  def localMinority(n:Int,rss:RasterDS*)(implicit d:DI):RasterSource = 
     localMinority(n,rss)
 }

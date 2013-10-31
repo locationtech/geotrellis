@@ -93,7 +93,7 @@ class MinSpec extends FunSpec with FocalOpSpec
     }
 
     it("should square min for raster source") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
         Array( nd,7,1,      1,3,5,      9,8,2,
                 9,1,1,      2,2,2,      4,3,5,
 
@@ -121,7 +121,7 @@ class MinSpec extends FunSpec with FocalOpSpec
     }
 
     it("should square min with 5x5 neighborhood") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
         Array( nd,7,7,      7,3,5,      9,8,2,
                 9,7,7,      2,2,2,      4,3,5,
 
@@ -149,7 +149,7 @@ class MinSpec extends FunSpec with FocalOpSpec
     }
 
     it("should circle min for raster source") {
-      val rs1 = createRasterDataSource(
+      val rs1 = createRasterSource(
         Array( nd,7,4,     5, 4,2,      9,nd,nd,
                 9,6,2,     2, 2,2,      5,3,nd,
 

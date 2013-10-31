@@ -48,12 +48,12 @@ object Variety {
     .withName("Variety")
 }
 
-trait VarietyOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait VarietyOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
-  def localVariety(rss:Seq[RasterDS]):RasterDataSource = 
+  def localVariety(rss:Seq[RasterDS]):RasterSource = 
     combineOp(rss)(Variety(_))
 
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
-  def localVariety(rss:RasterDS*)(implicit d:DI):RasterDataSource = 
+  def localVariety(rss:RasterDS*)(implicit d:DI):RasterSource = 
     localVariety(rss)
 }
