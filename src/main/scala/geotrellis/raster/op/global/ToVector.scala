@@ -1,9 +1,8 @@
-package geotrellis.raster.op
+package geotrellis.raster.op.global
 
 import geotrellis._
 import geotrellis.feature._
 import geotrellis.feature.rasterize.{PolygonRasterizer, Callback}
-import geotrellis.raster.op.focal.{RegionGroup,RegionGroupResult,RegionGroupOptions}
 
 import com.vividsolutions.jts.geom
 

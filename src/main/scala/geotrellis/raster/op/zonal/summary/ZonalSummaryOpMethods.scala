@@ -12,7 +12,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterDataSource] { self:Repr =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
           val histogram = FastMapHistogram()
-          r.force.foreach((z:Int) => if (z != NODATA) histogram.countItem(z, 1))
+          r.foreach((z:Int) => if (z != NODATA) histogram.countItem(z, 1))
           histogram
         case PartialTileIntersection(r:Raster,polygons:List[_]) =>
           val histogram = FastMapHistogram()
@@ -205,7 +205,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterDataSource] { self:Repr =>
         case FullTileIntersection(r:Raster) =>
           var s = 0.0
           var c = 0L
-          r.force.foreachDouble((x:Double) => if (!java.lang.Double.isNaN(x)) { s = s + x; c = c + 1 })
+          r.foreachDouble((x:Double) => if (!java.lang.Double.isNaN(x)) { s = s + x; c = c + 1 })
           DoubleMean(s,c)
         case PartialTileIntersection(r:Raster,polygons:List[_]) =>
           var sum = 0.0

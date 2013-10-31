@@ -26,7 +26,7 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
   def assertEqual(r:Op[Raster],arr:Array[Int]):Unit =
     assertEqual(run(r),arr)
 
-  def assertEqual(r:RasterLike,arr:Array[Int]):Unit = {
+  def assertEqual(r:Raster,arr:Array[Int]):Unit = {
     (r.cols * r.rows) should be (arr.length)
     for(row <- 0 until r.rows) {
       for(col <- 0 until r.cols) {
@@ -72,9 +72,9 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
   }
 
 
-  def assertEqual(r:Op[RasterLike],r2:Op[RasterLike]):Unit = assertEqual(r,r2,0.0000000001)
+  def assertEqual(r:Op[Raster],r2:Op[Raster]):Unit = assertEqual(r,r2,0.0000000001)
 
-  def assertEqual(rOp1:Op[RasterLike],rOp2:Op[RasterLike],threshold:Double):Unit = {
+  def assertEqual(rOp1:Op[Raster],rOp2:Op[Raster],threshold:Double):Unit = {
     val r1 = run(rOp1)
     val r2 = run(rOp2)
     

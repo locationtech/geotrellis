@@ -118,7 +118,7 @@ case class CroppedRaster(sourceRaster:Raster,
     val data = RasterData.allocByType(rasterType,cols,rows)
     for(row <- 0 until rows optimized) {
       for(col <- 0 until cols optimized) {
-        data.set(col,row, f(get(col,row),r2.get(col-colMin,row-rowMin)))
+        data.set(col,row, f(get(col,row),r2.get(col,row)))
       }
     }
     Raster(data,rasterExtent)
@@ -142,7 +142,7 @@ case class CroppedRaster(sourceRaster:Raster,
     val data = RasterData.allocByType(rasterType,cols,rows)
     for(row <- 0 until rows optimized) {
       for(col <- 0 until cols optimized) {
-        data.setDouble(col,row, f(getDouble(col,row),r2.getDouble(col-colMin,row-rowMin)))
+        data.setDouble(col,row, f(getDouble(col,row),r2.getDouble(col,row)))
       }
     }
     Raster(data,rasterExtent)

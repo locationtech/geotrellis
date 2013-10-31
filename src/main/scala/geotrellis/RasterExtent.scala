@@ -14,7 +14,7 @@ case class GridBounds(colMin:Int,rowMin:Int,colMax:Int,rowMax:Int) {
 }
 
 object GridBounds {
-  def apply(r:RasterLike):GridBounds = 
+  def apply(r:Raster):GridBounds = 
     GridBounds(0,0,r.rasterExtent.cols,r.rasterExtent.rows)
 }
 
@@ -86,18 +86,12 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
    * Convert map coordinate x to grid coordinate column.
    */
   def mapXToGrid(x:Double) = mapXToGridDouble(x).toInt
-  
   def mapXToGridDouble(x:Double) = (x - extent.xmin) / cellwidth
-
     
   /**
    * Convert map coordinate y to grid coordinate row.
    */
   def mapYToGrid(y:Double) = mapYToGridDouble(y).toInt
-  
-  /**
-   * 
-   */
   def mapYToGridDouble(y:Double) = (extent.ymax - y ) / cellheight
   
   /**
@@ -185,7 +179,7 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
   /**
    * Returns a RasterExtent that lines up with this RasterExtent's resolution,
    * and grid layout.
-   * i.e., the resulting RasterExtent will not have given extent,
+   * i.e., the resulting RasterExtent will not have the given extent,
    * but will have the smallest extent such that the whole of 
    * the given extent is covered, that lines up with the grid.
    */
@@ -214,5 +208,11 @@ object RasterExtent {
     val cw = (extent.xmax - extent.xmin) / cols
     val ch = (extent.ymax - extent.ymin) / rows
     RasterExtent(extent, cw, ch, cols, rows)
+  }
+
+  def apply(extent:Extent, cellwidth:Double, cellheight:Double):RasterExtent = {
+    val cols = ((extent.ymax - extent.ymin) / cellheight).toInt
+    val rows = ((extent.xmax - extent.xmin) / cellwidth).toInt
+    RasterExtent(extent, cellwidth, cellheight, cols, rows)
   }
 }

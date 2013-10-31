@@ -1,4 +1,4 @@
-package geotrellis.raster.op
+package geotrellis.raster.op.local
 
 import geotrellis._
 
@@ -15,7 +15,7 @@ class ConvertTypeSpec extends FunSpec
   describe("ConvertType") {
     it("should convert a byte raster to an int raster") { 
       val r = byteRaster
-      var result = run(local.Add(ConvertType(r,TypeShort),100))
+      var result = run(Add(ConvertType(r,TypeShort),100))
       result.rasterType should be (TypeShort)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {

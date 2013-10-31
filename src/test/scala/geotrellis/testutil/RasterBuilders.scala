@@ -305,7 +305,7 @@ trait RasterBuilders {
   }
 
   /* prints out a raster to console */
-  def printR(r:RasterLike) {
+  def printR(r:Raster) {
     for(row <- 0 until r.rows) {
       for(col <- 0 until r.cols) {
         val v = r.get(col,row)

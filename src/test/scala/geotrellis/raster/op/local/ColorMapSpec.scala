@@ -1,8 +1,7 @@
-package geotrellis.raster.op
+package geotrellis.raster.op.local
 
 import geotrellis._
 import geotrellis.testutil._
-import geotrellis.raster.op.data._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
@@ -127,10 +126,9 @@ class ColorMapSpec extends FunSpec with ShouldMatchers
         10, 20, 31, 40
       ), 4, 3)
 
-      getResult(Force(ColorMap(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true)))) match {
-        case x:process.Complete[_] => 
-          withClue("Should have resulted in a failure.") { assert(false) }
-        case x:process.Error => // pass
+      intercept[Exception] {
+        run(ColorMap(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true)))
+         .toArray
       }
     }
   }
@@ -250,9 +248,9 @@ class ColorMapSpec extends FunSpec with ShouldMatchers
         1.0, 2.0, 3.1, 4.0
       ), 4, 3)
 
-      getResult(Force(ColorMap(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true)))) match {
-        case x:process.Complete[_] => withClue("Should have resulted in a failure.") { assert(false) }
-        case x:process.Error => // pass
+      intercept[Exception] {
+        run(ColorMap(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true)))
+         .toArray
       }
     }
   }

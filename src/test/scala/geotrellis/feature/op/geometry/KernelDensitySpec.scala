@@ -1,4 +1,4 @@
-package geotrellis.raster.op.focal
+package geotrellis.feature.op.geometry
 
 import geotrellis._
 import geotrellis.raster._

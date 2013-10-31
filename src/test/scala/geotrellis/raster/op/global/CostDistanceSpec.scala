@@ -1,4 +1,4 @@
-package geotrellis.raster.op.focal
+package geotrellis.raster.op.global
 
 import geotrellis._
 import geotrellis.raster._

@@ -17,7 +17,7 @@ import scala.math._
  */
 case class Min(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,n,tns)({
   (r,n) => new CursorCalculation[Raster] with IntRasterDataResult {
-    def calc(r:RasterLike,cursor:Cursor) = {
+    def calc(r:Raster,cursor:Cursor) = {
   
       var m = NODATA
       cursor.allCells.foreach { 

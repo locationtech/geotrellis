@@ -4,7 +4,7 @@ import geotrellis._
 import geotrellis.raster._
 
 object TileWithNeighbors {
-  def apply(r:Raster,neighbors:Seq[Option[Raster]]):(RasterLike,GridBounds) = 
+  def apply(r:Raster,neighbors:Seq[Option[Raster]]):(Raster,GridBounds) = 
     if(neighbors.isEmpty) {
       (r,GridBounds(0,0,r.rasterExtent.cols-1,r.rasterExtent.rows-1))
     } else {

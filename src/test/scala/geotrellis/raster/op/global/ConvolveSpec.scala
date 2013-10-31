@@ -1,4 +1,4 @@
-package geotrellis.raster.op.focal
+package geotrellis.raster.op.global
 
 import geotrellis._
 import geotrellis.raster._
@@ -9,7 +9,6 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
 class ConvolveSpec extends FunSuite with TestServer {
   def doit(in1: Array[Int], in2: Array[Int], out: Array[Int]) = {
     val size1 = math.sqrt(in1.length).toInt    
@@ -38,26 +37,24 @@ class ConvolveSpec extends FunSuite with TestServer {
   
   test("gaussian") {
     // Create and sample a 5x5 guassian
-    val op = CreateGaussianRaster(5,5.0,2.0,100.0)
-    val r1 = server.run(op)
+    val k1 = Kernel.createGaussian(5,5.0,2.0,100.0)
 
     // (3,1) => (1,1) => r = sqrt(1*1 + 1*1) = sqrt(2)
     // 100*exp(-(sqrt(2)^2)/(2*(2.0^2))) = 77.88 = 77
-    assert(r1.get(3,1) === 77)
+    assert(k1.raster.get(3,1) === 77)
 
     // Should also be symmetric
-    assert(r1.get(3,3) === 77)
-    assert(r1.get(3,1) === 77)
-    assert(r1.get(1,3) === 77)
-    assert(r1.get(1,1) === 77)
+    assert(k1.raster.get(3,3) === 77)
+    assert(k1.raster.get(3,1) === 77)
+    assert(k1.raster.get(1,3) === 77)
+    assert(k1.raster.get(1,1) === 77)
 
     // Make sure amp and sigma do stuff
-    val op2 = CreateGaussianRaster(5,5.0,4.0,50.0)
-    val r2 = server.run(op2)
+    val k2 = Kernel.createGaussian(5,5.0,4.0,50.0)
 
     // (3,1) => (1,1) => r = sqrt(1*1 + 1*1) = sqrt(2)
     // 50*exp(-(sqrt(2)^2)/(2*(4.0^2))) = 46.97 = 46
-    assert(r2.get(3,1) === 46)
+    assert(k2.raster.get(3,1) === 46)
   }
  
 

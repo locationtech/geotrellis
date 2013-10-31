@@ -14,7 +14,7 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
     extends DataSourceLike[Raster,Raster, Repr]
     with DataSource[Raster,Raster] 
     with local.LocalOpMethods[Repr] 
-    with focal.FocalOpMethods[Repr] 
+    with focal.FocalOpMethods[Repr]
     with global.GlobalOpMethods[Repr]
     with zonal.summary.ZonalSummaryOpMethods[Repr]
     with stat.StatOpMethods[Repr] { self: Repr =>
@@ -27,12 +27,26 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
       TileRaster(tileSeq,rd.re,rd.tileLayout).toArrayRaster
     }
 
-  def global[That](f:RasterLike=>Raster)
+  def global[That](f:Raster=>Raster)
                   (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
     val tileOps:Op[Seq[Op[Raster]]] =
       (rasterDefinition,logic.Collect(tiles)).map { (rd,tileSeq) =>
         val r = f(TileRaster(tileSeq.toSeq, rd.re,rd.tileLayout))
         TileRaster.split(r,rd.tileLayout).map(Literal(_))
+      }
+    // Set into new RasterDataSource
+    val builder = bf.apply(this)
+    builder.setOp(tileOps)
+    builder.result
+  }
+
+  def globalOp[T,That](f:Raster=>Op[Raster])
+                    (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
+    val tileOps:Op[Seq[Op[Raster]]] =
+      (rasterDefinition,logic.Collect(tiles)).flatMap { (rd,tileSeq) =>
+        f(TileRaster(tileSeq.toSeq, rd.re,rd.tileLayout)).map { r =>
+          TileRaster.split(r,rd.tileLayout).map(Literal(_))
+        }
       }
     // Set into new RasterDataSource
     val builder = bf.apply(this)
@@ -159,6 +173,36 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
     val result = builder.result()
     result
   }
+
+  def min():ValueDataSource[Int] = 
+    self.map(_.findMinMax._1)
+        .reduce { (m1,m2) =>
+          if(m1 == NODATA) m2
+          else if(m2 == NODATA) m1
+          else math.min(m1,m2)
+         }
+
+  def max():ValueDataSource[Int] = 
+    self.map(_.findMinMax._2)
+        .reduce { (m1,m2) =>
+          if(m1 == NODATA) m2
+          else if(m2 == NODATA) m1
+          else math.max(m1,m2)
+         }
+
+  def minMax():ValueDataSource[(Int,Int)] = 
+    self.map(_.findMinMax)
+        .reduce { (mm1,mm2) =>
+          val (min1,max1) = mm1
+          val (min2,max2) = mm2
+          (if(min1 == NODATA) min2
+           else if(min2 == NODATA) min1
+           else math.min(min1,min2),
+           if(max1 == NODATA) max2
+           else if(max2 == NODATA) max1
+           else math.max(max1,max2)
+          )
+         }
 }
 
 abstract sealed trait TileIntersection

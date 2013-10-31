@@ -76,4 +76,10 @@ trait FocalOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   def focalHillshade = focal(Square(1))((r,_,nbs) => Hillshade(r,nbs))
   def focalHillshade(azimuth:Double,altitude:Double,zFactor:Double) =
     focal(Square(1))((r,_,nbs) => Hillshade(r,nbs,azimuth,altitude,zFactor))
+
+  def focalMoransI(n:Neighborhood) =
+    self.globalOp(RasterMoransI(_,n))
+
+  def focalScalarMoransI(n:Neighborhood) =
+    self.converge.mapOp(ScalarMoransI(_,n))
 }

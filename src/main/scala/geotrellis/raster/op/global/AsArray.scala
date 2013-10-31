@@ -1,4 +1,4 @@
-package geotrellis.raster.op.data
+package geotrellis.raster.op.global
 
 import geotrellis._
 

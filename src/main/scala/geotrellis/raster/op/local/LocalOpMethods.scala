@@ -72,4 +72,19 @@ trait LocalOpMethods[+Repr <: RasterDS]
   /** Takes the mean of the values of each cell in the set of rasters. */
   def localMean(rss:RasterDataSource*)(implicit d:DI):RasterDataSource = 
     localMean(rss)
+
+  def colorMap(breaksToColors:Map[Int,Int]):RasterDataSource =
+    colorMap(breaksToColors,ColorMapOptions.Default)
+
+  def colorMap(breaksToColors:Map[Int,Int],options:ColorMapOptions):RasterDataSource =
+    mapOp(ColorMap(_,breaksToColors,options))
+
+  def colorMap(breaksToColors:Map[Double,Int])(implicit d:DI):RasterDataSource =
+    colorMap(breaksToColors,ColorMapOptions.Default)
+
+  def colorMap(breaksToColors:Map[Double,Int],options:ColorMapOptions)(implicit d:DI):RasterDataSource =
+    mapOp(ColorMap(_,breaksToColors,options))
+
+  def convert(rasterType:RasterType) =
+    mapOp(ConvertType(_,rasterType))
 }

@@ -1,7 +1,9 @@
-package geotrellis.raster.op.focal
+package geotrellis.feature.op.geometry
 
 import geotrellis._
 import geotrellis.feature.Point
+import geotrellis.raster.Kernel
+import geotrellis.raster.Convolver
 
 /**
  * Computes a Density raster based on the Kernel and set of points provided.
@@ -23,10 +25,8 @@ case class KernelDensity[D](points:Op[Seq[Point[D]]],
                             rasterExtent:Op[RasterExtent])
      extends Op4(points,transform,kernel,rasterExtent)({ 
        (points,transform,kernel,rasterExtent) =>
-         val convolver = new Convolver { }
+         val convolver = new Convolver(rasterExtent,kernel)
        
-         convolver.initKernel(kernel)
-         convolver.init(rasterExtent)
          for(point <- points) {
            val col = convolver.rasterExtent.mapXToGrid(point.geom.getX())
            val row = convolver.rasterExtent.mapYToGrid(point.geom.getY())

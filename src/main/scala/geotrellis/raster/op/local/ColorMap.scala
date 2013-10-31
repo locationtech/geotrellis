@@ -1,4 +1,4 @@
-package geotrellis.raster.op
+package geotrellis.raster.op.local
 
 import geotrellis._
 
@@ -17,6 +17,7 @@ case class ColorMapOptions(
   /** Set to true to throw exception on unmappable variables */
   strict:Boolean = false        
 )
+
 object ColorMapOptions {
   val Default = ColorMapOptions(LessThan)
 }

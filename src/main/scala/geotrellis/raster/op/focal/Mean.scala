@@ -41,7 +41,7 @@ case class CursorMeanCalc() extends CursorCalculation[Raster] with DoubleRasterD
   var count:Int = 0
   var sum:Int = 0
 
-  def calc(r:RasterLike,c:Cursor) = {
+  def calc(r:Raster,c:Cursor) = {
     c.removedCells.foreach { (x,y) => 
       val v = r.get(x,y)
       if(v != NODATA) { count -= 1; sum -= v } 
@@ -58,7 +58,7 @@ case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleRas
   var count:Int = 0
   var sum:Int = 0
 
- def add(r:RasterLike, x:Int, y:Int) = {
+ def add(r:Raster, x:Int, y:Int) = {
     val z = r.get(x,y)
     if (z != NODATA) {
       count += 1
@@ -66,7 +66,7 @@ case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleRas
     }
   }
 
-  def remove(r:RasterLike, x:Int, y:Int) = {
+  def remove(r:Raster, x:Int, y:Int) = {
     val z = r.get(x,y)
     if (z != NODATA) {
       count -= 1
@@ -82,7 +82,7 @@ case class CursorMeanCalcDouble() extends CursorCalculation[Raster] with DoubleR
   var count:Int = 0
   var sum:Double = 0.0
 
-  def calc(r:RasterLike,c:Cursor) = {
+  def calc(r:Raster,c:Cursor) = {
     c.removedCells.foreach { (x,y) => 
       val v = r.getDouble(x,y)
       if(!isNaN(v)) { count -= 1; sum -= v } 
@@ -99,7 +99,7 @@ case class CellwiseMeanCalcDouble() extends CellwiseCalculation[Raster] with Dou
   var count:Int = 0
   var sum:Double = 0.0
 
- def add(r:RasterLike, x:Int, y:Int) = {
+ def add(r:Raster, x:Int, y:Int) = {
     val z = r.getDouble(x,y)
     if (!isNaN(z)) {
       count += 1
@@ -107,7 +107,7 @@ case class CellwiseMeanCalcDouble() extends CellwiseCalculation[Raster] with Dou
     }
   }
 
-  def remove(r:RasterLike, x:Int, y:Int) = {
+  def remove(r:Raster, x:Int, y:Int) = {
     val z = r.getDouble(x,y)
     if (!isNaN(z)) {
       count -= 1

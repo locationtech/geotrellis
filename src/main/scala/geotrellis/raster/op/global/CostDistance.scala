@@ -1,4 +1,4 @@
-package geotrellis.raster.op.focal
+package geotrellis.raster.op.global
 
 import geotrellis._
 import geotrellis.raster._
@@ -202,7 +202,7 @@ final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int,Int)]]) 
   * Represents an optional integer
   * using 'Raster NODATA' as a flag
   */
-private [focal] 
+private [global] 
 class IOption(val v: Int) extends AnyVal {
   def map(f: Int => Int) = if (isDefined) new IOption(f(v)) else this
   def flatMap(f: Int => IOption) = if (isDefined) f(v) else this
@@ -214,7 +214,7 @@ class IOption(val v: Int) extends AnyVal {
   * Represents an optional integer
   * using 'Double.NaN' as a flag
   */
-private [focal] 
+private [global]
 class DOption(val v: Double) extends AnyVal {
   def map(f: Double => Double) = if (isDefined) new DOption(f(v)) else this
   def flatMap(f: Double => DOption) = if (isDefined) f(v) else this
@@ -222,13 +222,13 @@ class DOption(val v: Double) extends AnyVal {
   def get = if (isDefined) v else sys.error("Get called on NaN")
 }
 
-private [focal] 
+private [global]
 object IOption {
   val None = new IOption(NODATA)
   def apply(v: Int) = new IOption(v)
 }
 
-private [focal] 
+private [global]
 object DOption {
   val None = new DOption(Double.NaN)
   def apply(v: Double) = new DOption(v)

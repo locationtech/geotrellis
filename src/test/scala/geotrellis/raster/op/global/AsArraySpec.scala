@@ -1,7 +1,6 @@
-package geotrellis.raster.op
+package geotrellis.raster.op.global
 
 import geotrellis.testutil._
-import geotrellis.raster.op.data._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
