@@ -133,11 +133,11 @@ trait RasterDataSourceLike[+Repr <: RasterDataSource]
               .geom
 
           if(p.geom.contains(tilePoly)) {
-            filtered += tiles(row*tileCols + col).map(FullTileIntersection(_))
+            filtered += tiles(col*tileRows + row).map(FullTileIntersection(_))
           } else {
             val intersections = tilePoly.intersection(p.geom).asPolygonSet.map(Polygon(_,0))
             if(!intersections.isEmpty) {
-              filtered += tiles(row*tileCols + col).map(PartialTileIntersection(_,intersections))
+              filtered += tiles(col*tileRows + row).map(PartialTileIntersection(_,intersections))
             }
           }
         }
