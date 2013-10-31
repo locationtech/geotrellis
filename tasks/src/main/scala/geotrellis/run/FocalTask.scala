@@ -80,7 +80,7 @@ object FocalTask {
       val r = localServer.run(op)
 
       val name = new java.io.File(targetPath).getName.replace(".arg","")
-      ArgWriter(r.data.getType).write(targetPath, r, name)
+      ArgWriter(r.rasterType).write(targetPath, r, name)
       println(s"Wrote to ${targetPath}")
     } finally {
       localServer.shutdown()

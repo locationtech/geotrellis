@@ -31,7 +31,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.converge
 
-  def zonalSum[D](p:Op[feature.Polygon[D]]) = 
+  def zonalSum[D](p:Op[feature.Polygon[D]]):ValueDataSource[Long] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
@@ -55,7 +55,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.reduce(_+_)
 
-  def zonalSumDouble[D](p:Op[feature.Polygon[D]]) = 
+  def zonalSumDouble[D](p:Op[feature.Polygon[D]]):ValueDataSource[Double] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
@@ -79,15 +79,15 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.reduce(_+_)
 
-  def zonalMin[D](p:Op[feature.Polygon[D]]) = 
+  def zonalMin[D](p:Op[feature.Polygon[D]]):ValueDataSource[Long] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
-          var min = Int.MaxValue
+          var min = Long.MaxValue
           r.foreach((x:Int) => if (x != NODATA && x < min) { min = x })
           min
         case PartialTileIntersection(r:Raster,polygons:List[_]) =>
-          var min = Int.MaxValue
+          var min = Long.MaxValue
           for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
             Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
               new Callback[Geometry,D] {
@@ -103,7 +103,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.reduce(math.min(_,_))
 
-  def zonalMinDouble[D](p:Op[feature.Polygon[D]]) = 
+  def zonalMinDouble[D](p:Op[feature.Polygon[D]]):ValueDataSource[Double] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
@@ -127,15 +127,15 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.reduce(math.min(_,_))
 
-  def zonalMax[D](p:Op[feature.Polygon[D]]) = 
+  def zonalMax[D](p:Op[feature.Polygon[D]]):ValueDataSource[Long] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
-          var max = Int.MinValue
+          var max = Long.MinValue
           r.foreach((x:Int) => if (x != NODATA && x > max) { max = x })
           max
         case PartialTileIntersection(r:Raster,polygons:List[_]) =>
-          var max = Int.MaxValue
+          var max = Long.MinValue
           for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
             Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
               new Callback[Geometry,D] {
@@ -150,7 +150,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.reduce(math.max(_,_))
 
-  def zonalMaxDouble[D](p:Op[feature.Polygon[D]]) = 
+  def zonalMaxDouble[D](p:Op[feature.Polygon[D]]):ValueDataSource[Double] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
@@ -173,7 +173,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.reduce(math.max(_,_))
 
-  def zonalMean[D](p:Op[feature.Polygon[D]]) = 
+  def zonalMean[D](p:Op[feature.Polygon[D]]):ValueDataSource[Long] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
@@ -199,7 +199,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.reduce(_+_).map(_.mean)
 
-  def zonalMeanDouble[D](p:Op[feature.Polygon[D]]) = 
+  def zonalMeanDouble[D](p:Op[feature.Polygon[D]]):ValueDataSource[Double] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
