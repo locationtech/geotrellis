@@ -11,13 +11,12 @@ import geotrellis.data._
 import geotrellis.data.png._
 import geotrellis.raster.op._
 import geotrellis.io._
-import geotrellis.raster.op.focal.Rescale
+import geotrellis.raster.op.global.Rescale
 import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.statistics._
 import geotrellis.raster.op.local._
 import geotrellis.statistics.op._
-import geotrellis.raster.op.extent.GetRasterExtent
 import geotrellis.statistics.op.stat.GetHistogram
 
 import com.google.caliper.Benchmark
@@ -35,16 +34,14 @@ import scala.annotation.tailrec
 trait OperationBenchmark extends SimpleBenchmark {
   var server:Server = null
 
-  def getRasterExtentOp(name:String, w:Int, h:Int) = {
-    val extent = server.run(LoadRasterExtent(name)).extent
-    geotrellis.raster.op.extent.GetRasterExtent(extent, w, h)
-  }
+  def getRasterExtent(name:String, w:Int, h:Int) =
+    RasterExtent(server.run(LoadRasterExtent(name)).extent,w,h)
 
   /**
    * Loads a given raster with a particular height/width.
    */
   def loadRaster(name:String, w:Int, h:Int) = {
-    server.run(LoadRaster(name, getRasterExtentOp(name, w, h)))
+    server.run(LoadRaster(name, getRasterExtent(name, w, h)))
   }
 
   /**
@@ -330,9 +327,9 @@ class WeightedOverlay extends OperationBenchmark {
 
   override def setUp() {
     server = initServer()
-    val reOp = getRasterExtentOp(names(0), size, size)
+    val re = getRasterExtent(names(0), size, size)
     val total = weights.sum
-    val rs = (0 until n).map(i => Multiply(LoadRaster(names(i), reOp), weights(i)))
+    val rs = (0 until n).map(i => Multiply(LoadRaster(names(i), re), weights(i)))
     val rasterOp = Rescale(Divide(Add(rs: _*), total), (1, 100))
     val h = GetHistogram(rasterOp) 
     val breaksOp = stat.GetColorBreaks(h, colors)
@@ -699,7 +696,7 @@ class LazyIteration extends OperationBenchmark {
 
   def timeSimpleOpStrictIteration(reps:Int) = run(reps)(simpleOpStrictIteration)
   def simpleOpStrictIteration = {
-    val r = server.run(simpleOp).force
+    val r = server.run(simpleOp)
     var t = 0
     for (i <- 0 until iterations) {
       r.foreach(z => t = t + z)
@@ -719,7 +716,7 @@ class LazyIteration extends OperationBenchmark {
 
   def timeMediumOpStrictIteration(reps:Int) = run(reps)(mediumOpStrictIteration)
   def mediumOpStrictIteration = {
-    val r = server.run(mediumOp).force
+    val r = server.run(mediumOp)
     var t = 0
     for (i <- 0 until iterations) {
       r.foreach(z => t = t + z)
@@ -739,7 +736,7 @@ class LazyIteration extends OperationBenchmark {
 
   def timeComplexOpStrictIteration(reps:Int) = run(reps)(complexOpStrictIteration)
   def complexOpStrictIteration = {
-    val r = server.run(complexOp).force
+    val r = server.run(complexOp)
     var t = 0
     for (i <- 0 until iterations) {
       r.foreach(z => t = t + z)

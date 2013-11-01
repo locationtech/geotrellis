@@ -94,5 +94,5 @@ class FocalOperationsBenchmark extends OperationBenchmark {
   def timeSumSquare22(reps:Int) = run(reps)(server.run(focal.Sum(r,focal.Square(22))))
 //  def timeSumSquare22Tiled512(reps:Int) = run(reps)(focal.Sum(tiledR512,focal.Square(22)))
 
-  def timeConvolve(reps:Int) = run(reps)(server.run(focal.Convolve(r,focal.CreateGaussianRaster(5,5.0,4.0,50.0))))
+  def timeConvolve(reps:Int) = run(reps)(server.run(global.Convolve(r,Kernel.gaussian(5,5.0,4.0,50.0))))
 }

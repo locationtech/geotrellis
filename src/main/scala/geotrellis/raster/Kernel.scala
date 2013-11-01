@@ -28,7 +28,7 @@ object Kernel {
    *
    * @note                    Raster will be TypeInt
    */
-  def createGaussian(size:Int, cellWidth:Double, sigma:Double, amp:Double) = {
+  def gaussian(size:Int, cellWidth:Double, sigma:Double, amp:Double) = {
     val extent = Extent(0,0,size*cellWidth,size*cellWidth)
     val rasterExtent = RasterExtent(extent, cellWidth, cellWidth, size, size)
     val output = IntArrayRasterData.empty(rasterExtent.cols, rasterExtent.rows)
@@ -60,7 +60,7 @@ object Kernel {
    *
    * @note                       Raster will be TypeInt 
    */
-  def createCircle(size:Int, cellWidth:Double, rad:Int) = {
+  def circle(size:Int, cellWidth:Double, rad:Int) = {
     val extent = Extent(0,0,size*cellWidth,size*cellWidth)
     val rasterExtent = RasterExtent(extent, cellWidth, cellWidth, size, size)
     val output = IntArrayRasterData.empty(rasterExtent.cols, rasterExtent.rows)

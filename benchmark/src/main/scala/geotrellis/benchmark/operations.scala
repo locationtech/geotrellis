@@ -130,7 +130,7 @@ trait MultiLocalOld extends Operation[Raster]{
   }
   
   def handleRasters(rasters:Array[Raster]) = {
-    val output = rasters(0).copy.toArrayRaster
+    val output = rasters(0).toArrayRaster
     val outdata = output.data
     var j = 0
     while (j < rasters.length) {
