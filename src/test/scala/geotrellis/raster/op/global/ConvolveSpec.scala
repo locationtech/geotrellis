@@ -37,7 +37,7 @@ class ConvolveSpec extends FunSuite with TestServer {
   
   test("gaussian") {
     // Create and sample a 5x5 guassian
-    val k1 = Kernel.createGaussian(5,5.0,2.0,100.0)
+    val k1 = Kernel.gaussian(5,5.0,2.0,100.0)
 
     // (3,1) => (1,1) => r = sqrt(1*1 + 1*1) = sqrt(2)
     // 100*exp(-(sqrt(2)^2)/(2*(2.0^2))) = 77.88 = 77
@@ -50,7 +50,7 @@ class ConvolveSpec extends FunSuite with TestServer {
     assert(k1.raster.get(1,1) === 77)
 
     // Make sure amp and sigma do stuff
-    val k2 = Kernel.createGaussian(5,5.0,4.0,50.0)
+    val k2 = Kernel.gaussian(5,5.0,4.0,50.0)
 
     // (3,1) => (1,1) => r = sqrt(1*1 + 1*1) = sqrt(2)
     // 50*exp(-(sqrt(2)^2)/(2*(4.0^2))) = 46.97 = 46
