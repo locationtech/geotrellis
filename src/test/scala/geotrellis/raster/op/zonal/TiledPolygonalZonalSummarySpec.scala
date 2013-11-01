@@ -21,11 +21,11 @@ import org.scalatest.matchers._
        val sumOp = rData.zonalSum(zone)
        getSource(sumOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result should equal (40)
          case Error(msg,failure) =>
-           println(s"MSG: $msg")
-           println(s"FAILURE: $failure")
+           println(msg)
+           println(failure)
            assert(false)
        }
      }
@@ -37,7 +37,7 @@ import org.scalatest.matchers._
        val sumDOp = rData.zonalSumDouble(zone)
        getSource(sumDOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result should equal (40.0)
          case Error(msg,failure) =>
            println(msg)
@@ -53,7 +53,7 @@ import org.scalatest.matchers._
        val minOp = rData.zonalMin(zone)
        getSource(minOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result should equal (1)
          case Error(msg,failure) =>
            println(msg)
@@ -69,7 +69,7 @@ import org.scalatest.matchers._
        val minDOp = rData.zonalMinDouble(zone)
        getSource(minDOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result should equal (1.0)
          case Error(msg,failure) =>
            println(msg)
@@ -85,7 +85,7 @@ import org.scalatest.matchers._
        val maxOp = rData.zonalMax(zone)
        getSource(maxOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result should equal (1)
          case Error(msg,failure) =>
            println(msg)
@@ -101,7 +101,7 @@ import org.scalatest.matchers._
        val maxDOp = rData.zonalMaxDouble(zone)
        getSource(maxDOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result should equal (1.0)
          case Error(msg,failure) =>
            println(msg)
@@ -117,7 +117,7 @@ import org.scalatest.matchers._
        val histOp = rData.zonalHistogram(zone)
        getSource(histOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result.getItemCount(1) should equal (40)
            result.getItemCount(2) should equal (0)
          case Error(msg,failure) =>
@@ -134,8 +134,8 @@ import org.scalatest.matchers._
        val meanOp = rData.zonalMean(zone)
        getSource(meanOp) match {
          case Complete(result,success) =>
-           println(success)
-           result should equal (1)
+//           println(success)
+           result should equal (1.0)
          case Error(msg,failure) =>
            println(msg)
            println(failure)
@@ -150,7 +150,7 @@ import org.scalatest.matchers._
        val meanDOp = rData.zonalMeanDouble(zone)
        getSource(meanDOp) match {
          case Complete(result,success) =>
-           println(success)
+//           println(success)
            result should equal (1.0)
          case Error(msg,failure) =>
            println(msg)
