@@ -9,7 +9,7 @@ package object geotrellis {
 
   type RasterData = geotrellis.raster.RasterData
 
-  type RasterDS = geotrellis.source.RasterDataSource
+  type RasterDS = geotrellis.source.RasterSource
   type SeqDS[E] = geotrellis.source.DataSource[E,Seq[E]]
   type HistogramDS = geotrellis.source.DataSource[Histogram,Histogram]
 
@@ -175,5 +175,9 @@ package object geotrellis {
   implicit class OpMapArray[A](seq:Array[Op[A]]) {
     def mapOps[T](f:(Seq[A]=>T)) = logic.Collect(Literal(seq.toSeq)).map(f)
     def flaMapOps[T](f:(Seq[A]=>Op[T])) = logic.Collect(Literal(seq.toSeq)).flatMap(f)
+  }
+
+  implicit class OpSeqToCollect[T](seq:Op[Seq[Op[T]]]) {
+    def collect() = logic.Collect(seq)
   }
 }

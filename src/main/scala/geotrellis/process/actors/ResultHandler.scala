@@ -21,16 +21,7 @@ class ResultHandler(server:Server,
     output match {
       // ok, this operation completed and we have a value. so return it.
       case Result(value) => {
-        val (v,hist) = 
-          value match {
-            // case r:Raster => 
-            //   val v = r.force
-            //   val hist = history.withResult(value,forced=true)
-            //   (v,hist)
-            case _ => (value,history.withResult(value))
-          }
-
-        val result = OperationResult(Complete(v, hist), pos)
+        val result = OperationResult(Complete(value, history.withResult(value)), pos)
 
         client ! result
       }

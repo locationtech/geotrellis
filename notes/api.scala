@@ -1,5 +1,5 @@
 // Getting min of raster
-val r = io.LoadRaster("")  // RasterDataSource extends DataSource[Raster,Raster]
+val r = io.LoadRaster("")  // RasterSource extends DataSource[Raster,Raster]
 val hist:DataSource[Histogram,Histogram] = r.histogram
 val ints:SeqDataSource[Int] = hist.chunks.map(_.min)
 val result = ints.reduce(math.min(_,_))
@@ -15,8 +15,8 @@ io.LoadRaster("")
 io.LoadRaster("")
   .histogram:HistogramDataSource extends DataSource[Histogram,Histogram] 
    .map(_.getMin):DataSource[Int]
-   .reduce(math.min(_,_)):ValueDataSource[Int]
-   .map(_ + 1) : ValueDataSource[Int]
+   .reduce(math.min(_,_)):ValueSource[Int]
+   .map(_ + 1) : ValueSource[Int]
    .run(server)
 
 trait DataSource[T] {
@@ -24,8 +24,8 @@ trait DataSource[T] {
   def chunks:Op[Seq[T]]
 }
 
-RasterDataSource extends DataSource[Raster] {
-  def localAdd(r:RasterDataSource)
+RasterSource extends DataSource[Raster] {
+  def localAdd(r:RasterSource)
   def 
 }
 
@@ -43,7 +43,7 @@ trait ConvergableInto[T] {
 
 
 
-val r:RasterDataSource
+val r:RasterSource
 
 
 rOp.map(r => r.map( _ + 1 ) )
@@ -96,14 +96,14 @@ io.LoadRaster(""):RasterDS
   .run(server):Int
 
 // Add with Raster
-val r:RasterDataSource = io.LoadRaster("1")
-val ar:RasterDataSource = r.localAdd(5)
+val r:RasterSource = io.LoadRaster("1")
+val ar:RasterSource = r.localAdd(5)
 val tiles:TileDataSource = ar.tiles
 
 // Add with tiles
 val atiles:TileDataSource = r.tiles.map(local.Add(_,5))
 val atiles:TileDataSource = r.tiles.localAdd(5)
-val atr:RasterDataSource = atiles.toRaster
+val atr:RasterSource = atiles.toRaster
 
 tiles === atiles
 atr === ar

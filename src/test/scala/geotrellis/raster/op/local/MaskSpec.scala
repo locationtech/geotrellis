@@ -17,7 +17,7 @@ class MaskSpec extends FunSpec
                   with RasterBuilders {
   describe("Mask") {
     it("should work with integers") {
-            val rs1 = createRasterDataSource(
+            val rs1 = createRasterSource(
         Array( NODATA,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
 
@@ -25,7 +25,7 @@ class MaskSpec extends FunSpec
                1,1,1, 1,1,1, 1,1,1),
         3,2,3,2)
 
-      val rs2 = createRasterDataSource(
+      val rs2 = createRasterSource(
         Array( 0,0,0, 0,0,0, 0,0,0,
                2,2,2, 2,2,2, 2,2,2,
 

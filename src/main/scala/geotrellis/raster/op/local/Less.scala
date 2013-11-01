@@ -7,52 +7,38 @@ import geotrellis.source._
  * Determines if values are less than other values. Sets to 1 if true, else 0.
  */
 object Less extends LocalRasterBinaryOp {
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is less than the input
-   * integer, else 0.
-   */
-  def apply(r:Op[Raster], c:Op[Int]):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet(checkLess(_,c))(checkLess(_,c)) }
-         .withName("Less[ConstantInt]")
+  /** Apply this operation to the values of each cell in each raster.  */
+  override
+  def apply(rss:Seq[Op[Raster]]):Op[Raster] = 
+    rss.mapOps { rasters =>
+        rasters.head
+               .dualCombine(rasters.tail)({ zs =>
+                   val z = zs(0)
+                   if(zs.tail.foldLeft(true)(_ && z < _)) 1
+                   else 0
+                })({ zs =>
+                  val z = zs(0)
+                  if(zs.tail.foldLeft(true)(_ && z < _)) 1
+                  else 0
+                })
+       }
+      .withName(s"Less[Rasters]")
 
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is less than the input
-   * intenger, else 0.
-   */
-  def apply(r:Op[Raster], c:Op[Double])(implicit d:DI):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet(checkLess(_,c))(checkLess(_,c)) }
-         .withName("Less[ConstantDouble]")
+  def combine(z1:Int,z2:Int) =
+    if(z1 < z2) 1 else 0
 
-  private def checkLess(i1:Int,i2:Int) = 
-    if(i1 < i2) 1 else 0
-
-  private def checkLess(i:Int,d:Double) =
-    if(isNaN(d)) { 0 }
+  def combine(z1:Double,z2:Double):Double =
+    if(isNaN(z1)) { 0 }
     else {
-      if(i == NODATA) { 0 }
+      if(isNaN(z2)) { 0 }
       else { 
-        if(i < d.toInt) 1
-        else 0
-      }
-    }
-
-  private def checkLess(d1:Double,d2:Double):Double = 
-    if(isNaN(d1)) { 0 }
-    else {
-      if(isNaN(d2)) { 0 }
-      else { 
-        if(d1 < d2) 1 
+        if(z1 < z2) 1 
         else 0 
       }
     }
-
-  def doRasters(r1:Raster,r2:Raster):Raster =
-    r1.dualCombine(r2)(checkLess)(checkLess)
 }
 
-trait LessOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait LessOpMethods[+Repr <: RasterSource] { self: Repr =>
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
@@ -76,33 +62,41 @@ trait LessOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
-   * intenger, else 0.
+   * double, else 0.
    */
   def localLess(d: Double) = self.mapOp(Less(_, d))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
-   * intenger, else 0.
+   * double, else 0.
    */
   def <(d:Double) = localLess(d)
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
-   * intenger, else 0.
+   * double, else 0.
    * 
    * @note Syntax has double '<' due to '<:' operator being reserved in Scala.
    */
   def <<:(d:Double) = localLess(d)
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is less than the input
-   * intenger, else 0.
+   * the corresponding cell valued of the rasters are less than the next raster, else 0.
    */
-  def localLess(rs:RasterDataSource) = self.combineOp(rs)(Less(_,_))
+  def localLess(rs:RasterSource) = self.combine(rs)(Less(_,_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is less than the input
-   * intenger, else 0.
+   * the corresponding cell valued of the rasters are less than the next raster, else 0.
    */
-  def <(rs:RasterDataSource) = localLess(rs)
+  def <(rs:RasterSource) = localLess(rs)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the rasters are less than the next raster, else 0.
+   */
+  def localLess(rss:Seq[RasterSource]) = self.combine(rss)(Less(_))
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the rasters are less than the next raster, else 0.
+   */
+  def <(rss:Seq[RasterSource]) = localLess(rss)
 }

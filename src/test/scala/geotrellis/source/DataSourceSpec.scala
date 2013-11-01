@@ -14,16 +14,16 @@ class DataSourceSpec extends FunSpec
                         with ShouldMatchers 
                         with TestServer 
                         with RasterBuilders {
-  def getRasterDataSource = 
-    RasterDataSource("mtsthelens_tiled_cached")
+  def getRasterSource = 
+    RasterSource("mtsthelens_tiled_cached")
 
-  def getSmallRasterDataSource =
-    RasterDataSource("quad_tiled")
+  def getSmallRasterSource =
+    RasterSource("quad_tiled")
 
-  describe("RasterDataSource") {
+  describe("RasterSource") {
     it("should print history") { 
-      val r1 = RasterDataSource("quad_tiled")
-      val r2 = RasterDataSource("quad_tiled2")
+      val r1 = RasterSource("quad_tiled")
+      val r2 = RasterSource("quad_tiled2")
       getSource(r1 + r2) match {
         case Complete(value,success) =>
           println(success.toString)
@@ -34,12 +34,12 @@ class DataSourceSpec extends FunSpec
       }
     }
 
-    it("should return a RasterDataSource when possible") { 
-      val d1 = getRasterDataSource
+    it("should return a RasterSource when possible") { 
+      val d1 = getRasterSource
 
-      val d2:RasterDataSource = d1.localAdd(3)
-      val d3:RasterDataSource  = d2 mapOp(local.Add(_, 3))
-      val d4:RasterDataSource = d3 map(r => r.map(z => z + 3))
+      val d2:RasterSource = d1.localAdd(3)
+      val d3:RasterSource  = d2 mapOp(local.Add(_, 3))
+      val d4:RasterSource = d3 map(r => r.map(z => z + 3))
       val d5:DataSource[Int,Seq[Int]] = d3 map(r => r.findMinMax._2)
       
       val result1 = runSource(d1)
@@ -55,13 +55,13 @@ class DataSourceSpec extends FunSpec
       result5.head should be (6026)
     }
 
-    it("should return a RasterDataSource when calling .distribute") {
+    it("should return a RasterSource when calling .distribute") {
       val cluster = server.actor
-      val d1:RasterDataSource = (getRasterDataSource + 3).distribute(cluster)
+      val d1:RasterSource = (getRasterSource + 3).distribute(cluster)
     }
 
     it("should handle a histogram result") {
-      val d = getRasterDataSource
+      val d = getRasterSource
 
       val hist = d.histogram
       val hist2:DataSource[Histogram,Histogram] = d.map( (h:Raster) => FastMapHistogram() )
@@ -75,9 +75,9 @@ class DataSourceSpec extends FunSpec
 
       val ints:DataSource[Int,Seq[Int]] = hist.mapOp(MinFromHistogram(_))
      
-      val seqIntVS:ValueDataSource[Seq[Int]] = ints.converge
+      val seqIntVS:ValueSource[Seq[Int]] = ints.converge
 
-      val intVS:ValueDataSource[Int] = seqIntVS.map( seqInt => seqInt.reduce(math.min(_,_)))
+      val intVS:ValueSource[Int] = seqIntVS.map( seqInt => seqInt.reduce(math.min(_,_)))
       val intVS2 = ints.reduce(math.min(_,_))
 
       val histogramResult = runSource(hist)
@@ -94,10 +94,10 @@ class DataSourceSpec extends FunSpec
     }
 
     it("should handle combine") {
-      val d = getRasterDataSource
-      val d2 = getRasterDataSource
+      val d = getRasterSource
+      val d2 = getRasterSource
 
-      val combineDS:RasterDataSource = d.combine(d2)(_+_)
+      val combineDS:RasterSource = d.localCombine(d2)(_+_)
       val initial = runSource(d)
       val result = runSource(combineDS)
 

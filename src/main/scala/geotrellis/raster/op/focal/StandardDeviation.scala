@@ -21,7 +21,7 @@ case class StandardDeviation(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbor
     var count:Int = 0
     var sum:Int = 0
 
-    def calc(r:RasterLike,c:Cursor) = {
+    def calc(r:Raster,c:Cursor) = {
       c.removedCells.foreach { (x,y) => 
         val v = r.get(x,y)
         if(v != NODATA) { count -= 1; sum -= v } 

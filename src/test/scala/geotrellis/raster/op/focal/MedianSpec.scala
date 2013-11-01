@@ -1,6 +1,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.process._
 import geotrellis.statistics._
 import geotrellis.testutil._
 
@@ -60,6 +61,34 @@ class MedianSpec extends FunSpec with TestServer
       result.get(2,4) should equal (median(0,2,5,6,6,7))
       result.get(3,4) should equal (median(0,0,2,5,5,6))
       result.get(4,4) should equal (median(0,0,5,5))
+    }
+
+    it("should get median on raster source") {
+      val rs1 = createRasterSource(
+        Array( nd,7,1,      1,3,5,      9,8,2,
+                9,1,1,      2,2,2,      4,3,5,
+
+                3,8,1,     3, 3,3,      1,2,2,
+                2,4,7,     1,nd,1,      8,4,3
+        ),
+        3,2,3,2
+      )
+
+      getSource(rs1.focalMedian(Square(1))) match {
+        case Complete(result,success) =>
+//          println(success)
+          assertEqual(result,
+            Array(7, 1, 1,    1, 2, 3,    4, 4, 4,
+                  7, 2, 1,    2, 3, 3,    3, 3, 2,
+
+                  3, 3, 2,    2, 2, 2,    3, 3, 3,
+                  3, 3, 3,    3, 3, 3,    2, 2, 2))
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+
+      }
     }
   }
 }

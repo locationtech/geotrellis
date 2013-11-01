@@ -16,7 +16,6 @@ final case class IntArrayRasterData(array:Array[Int], cols:Int, rows:Int) extend
 }
 
 object IntArrayRasterData {
-  //def apply(array:Array[Int]) = new IntArrayRasterData(array)
   def ofDim(cols:Int, rows:Int) = new IntArrayRasterData(Array.ofDim[Int](cols * rows), cols, rows)
   def empty(cols:Int, rows:Int) = new IntArrayRasterData(Array.fill[Int](cols * rows)(NODATA), cols, rows)
 }

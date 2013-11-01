@@ -7,9 +7,9 @@ import scala.language.higherKinds
 trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
   def elements():Op[Seq[Op[T]]]
   def get():Op[V]
-  def converge() = ValueDataSource(get.withName("Converge"))
-  def converge[B](f:Seq[T]=>B):ValueDataSource[B] =
-    ValueDataSource( logic.Collect(elements).map(f).withName("Converge") )
+  def converge() = ValueSource(get.withName("Converge"))
+  def converge[B](f:Seq[T]=>B):ValueSource[B] =
+    ValueSource( logic.Collect(elements).map(f).withName("Converge") )
 
   /** apply a function to elements, and return the appropriate datasource **/
   def map[B,That](f:T => B)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = 
@@ -26,22 +26,50 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
     result
   }
 
-  def reduce[T1 >: T](reducer:(T1,T1) => T1):ValueDataSource[T1] = 
+  def reduce[T1 >: T](reducer:(T1,T1) => T1):ValueSource[T1] = 
     reduceLeft(reducer)
 
-  def reduceLeft[T1 >: T](reducer:(T1,T) => T1):ValueDataSource[T1] = 
+  def reduceLeft[T1 >: T](reducer:(T1,T) => T1):ValueSource[T1] = 
     converge(_.reduceLeft(reducer))
 
-  def reduceRight[T1 >: T](reducer:(T,T1) => T1):ValueDataSource[T1] = 
+  def reduceRight[T1 >: T](reducer:(T,T1) => T1):ValueSource[T1] = 
     converge(_.reduceRight(reducer))
 
-  def foldLeft[B](z:B)(folder:(B,T)=>B):ValueDataSource[B] =
+  def foldLeft[B](z:B)(folder:(B,T)=>B):ValueSource[B] =
     converge(_.foldLeft(z)(folder))
 
-  def foldRight[B](z:B)(folder:(T,B)=>B):ValueDataSource[B] =
+  def foldRight[B](z:B)(folder:(T,B)=>B):ValueSource[B] =
     converge(_.foldRight(z)(folder))
 
   def distribute[T1 >: T,That](cluster:akka.actor.ActorRef)
                               (implicit bf:CanBuildSourceFrom[Repr,T1,That]):That =
     _mapOp(RemoteOperation(_, cluster),bf.apply(this))
+
+  def combine[B,C,That](ds:DataSource[B,_])
+                         (f:(Op[T],Op[B])=>Op[C])
+                         (implicit bf:CanBuildSourceFrom[Repr,C,That]):That = {
+    val newElements:Op[Seq[Op[C]]] =
+      (elements,ds.elements).map { (e1,e2) =>
+        e1.zip(e2).map { case (a,b) => 
+          f(a,b) 
+        }
+      }
+
+    val builder = bf.apply(this)
+    builder.setOp(newElements)
+    builder.result
+  }
+
+  def combine[T1 >: T,B,That](dss:Seq[DataSource[T1,_]])
+                               (f:Seq[Op[T1]]=>Op[B])
+                               (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
+    val newElements:Op[Seq[Op[B]]] =
+      (elements +: dss.map(_.elements)).mapOps { seq =>
+        seq.transpose.map(f)
+      }
+
+    val builder = bf.apply(this)
+    builder.setOp(newElements)
+    builder.result
+  }
 }

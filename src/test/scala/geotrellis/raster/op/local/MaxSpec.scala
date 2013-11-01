@@ -213,9 +213,9 @@ class MaxSpec extends FunSpec
       }
     }    
 
-    it("takes max of two tiled RasterDataSources correctly") {
-      val rs1 = RasterDataSource("quad_tiled")
-      val rs2 = RasterDataSource("quad_tiled2")
+    it("takes max of two tiled RasterSources correctly") {
+      val rs1 = RasterSource("quad_tiled")
+      val rs2 = RasterSource("quad_tiled2")
 
       val r1 = runSource(rs1)
       val r2 = runSource(rs2)
@@ -234,8 +234,8 @@ class MaxSpec extends FunSpec
       }
     }
 
-    it("takes max of three tiled RasterDataSources correctly") {
-      val rs1 = createRasterDataSource(
+    it("takes max of three tiled RasterSources correctly") {
+      val rs1 = createRasterSource(
         Array( NODATA,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
 
@@ -243,7 +243,7 @@ class MaxSpec extends FunSpec
                1,1,1, 1,1,1, 1,1,1),
         3,2,3,2)
 
-      val rs2 = createRasterDataSource(
+      val rs2 = createRasterSource(
         Array( 2,2,2, 2,2,2, 2,2,2,
                2,2,2, 2,2,2, 2,2,2,
 
@@ -251,7 +251,7 @@ class MaxSpec extends FunSpec
                2,2,2, 2,2,2, 2,2,2),
         3,2,3,2)
 
-      val rs3 = createRasterDataSource(
+      val rs3 = createRasterSource(
         Array( 3,3,3, 3,3,3, 3,3,3,
                3,3,3, 3,3,3, 3,3,3,
 

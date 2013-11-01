@@ -16,6 +16,9 @@ import geotrellis.statistics.{Statistics,FastMapHistogram}
  * @param       n         Neighborhood to use in this focal operation.
  * @param       tns       TileNeighbors that describe the neighboring tiles.
  *
+ * @note                  This operation requires that the whole raster be passed in;
+ *                        it does not work over tiles.
+ * 
  * @note                  Since mean and standard deviation are based off of an
  *                        Int based Histogram, those values will come from rounded values
  *                        of a double typed Raster (TypeFloat,TypeDouble).
@@ -34,7 +37,7 @@ case class RasterMoransI(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors])
      `stddev^2` = s*s
     }
 
-    def calc(r:RasterLike,cursor:Cursor) = {
+    def calc(r:Raster,cursor:Cursor) = {
       var z = 0.0
       var w = 0
       var base = 0.0
@@ -69,6 +72,9 @@ object RasterMoransI {
  * @param       r         Raster to perform the operation on.
  * @param       n         Neighborhood to use in this focal operation.
  * @param       tns       TileNeighbors that describe the neighboring tiles.
+ * 
+ * @note                  This operation requires that the whole raster be passed in;
+ *                        it does not work over tiles.
  *
  * @note                  Since mean and standard deviation are based off of an
  *                        Int based Histogram, those values will come from rounded values
@@ -89,7 +95,7 @@ case class ScalarMoransI(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) 
       `stddev^2` = s*s
     }
 
-    def calc(r:RasterLike,cursor:Cursor) = {
+    def calc(r:Raster,cursor:Cursor) = {
       var base = r.getDouble(cursor.col,cursor.row) - mean
       var z = -base
 

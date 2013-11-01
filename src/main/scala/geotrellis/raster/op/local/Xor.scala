@@ -1,6 +1,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.source._
 
 /**
@@ -12,20 +13,16 @@ import geotrellis.source._
  *              will be rounded to Ints.
  */
 object Xor extends LocalRasterBinaryOp {
-  /** Xor's an integer value with each cell of the raster.*/
-  def apply(r:Op[Raster], c:Op[Int]):Op[Raster] = 
-    (r,c).map { (r,c) => r.map { z => if(z != NODATA) z ^ c else z } }
-         .withName("Xor[Constant]")
+  def combine(z1:Int,z2:Int) = 
+    if (z1 == NODATA || z2 == NODATA) NODATA
+    else z1 ^ z2
 
-  def doRasters(r1:Raster,r2:Raster):Raster =
-    r1.combine(r2)({
-      (a, b) =>
-      if (a == NODATA || b == NODATA) NODATA
-      else a ^ b
-    })
+  def combine(z1:Double,z2:Double) = 
+    if(isNaN(z1) || isNaN(z2)) Double.NaN
+    else i2d(d2i(z1) ^ d2i(z2))
 }
 
-trait XorOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait XorOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Xor a constant Int value to each cell. */
   def localXor(i: Int) = self.mapOp(Xor(_, i))
   /** Xor a constant Int value to each cell. */
@@ -33,7 +30,11 @@ trait XorOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /** Xor a constant Int value to each cell. */
   def ^:(i:Int) = localXor(i)
   /** Xor the values of each cell in each raster.  */
-  def localXor(rs:RasterDataSource) = self.combineOp(rs)(Xor(_,_))
+  def localXor(rs:RasterSource) = self.combine(rs)(Xor(_,_))
   /** Xor the values of each cell in each raster. */
-  def ^(rs:RasterDataSource) = localXor(rs)
+  def ^(rs:RasterSource) = localXor(rs)
+  /** Xor the values of each cell in each raster. */
+  def localXor(rss:Seq[RasterSource]) = self.combine(rss)(Xor(_))
+  /** Xor the values of each cell in each raster. */
+  def ^(rss:Seq[RasterSource]) = localXor(rss)
 }

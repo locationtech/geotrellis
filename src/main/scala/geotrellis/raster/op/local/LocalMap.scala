@@ -66,7 +66,7 @@ object  LocalMapDouble extends Serializable {
            .withName("LocalMap")
 }
 
-trait LocalMapOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait LocalMapOpMethods[+Repr <: RasterSource] { self: Repr =>
     /** Map the integer values of a each cell to a new integer value. */
   def localMap(f:Int=>Int) = 
     self.mapOp { tileOp =>

@@ -57,21 +57,19 @@ class BoundingBox {
           @PathParam("extent2") s2:String,
           @Context req:HttpServletRequest) = {
     // parse the given extents
-    val e1:Op[Extent] = string.ParseExtent(s1)
-    val e2:Op[Extent] = string.ParseExtent(s2)
-
-    // combine the extents
-    val op:Op[Extent] = extent.CombineExtents(e1, e2)
-
-    // run the operation
-    val data:String = try {
-      val extent:Extent = Demo.server.run(op)
-      extent.toString
-    } catch {
-      case e:Throwable => e.toString
+    val extent1 = {
+      val Array(xmin,ymin,xmax,ymax) = s1.split(",").map(_.toDouble)
+      Extent(xmin,ymin,xmax,ymax)
     }
 
-    response("text/plain")(data)
+    val extent2 = {
+      val Array(xmin,ymin,xmax,ymax) = s2.split(",").map(_.toDouble)
+      Extent(xmin,ymin,xmax,ymax)
+    }
+
+    val combined = extent1.combine(extent2)
+
+    response("text/plain")(combined.toString)
   }
 }
 

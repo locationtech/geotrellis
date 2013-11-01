@@ -242,9 +242,9 @@ class ConditionalSpec extends FunSpec
       }
     }
 
-    it("conditionally combines two tiled RasterDataSources correctly") {
-      val rs1 = RasterDataSource("quad_tiled")
-      val rs2 = RasterDataSource("quad_tiled2") + 1
+    it("conditionally combines two tiled RasterSources correctly") {
+      val rs1 = RasterSource("quad_tiled")
+      val rs2 = RasterSource("quad_tiled2") + 1
 
       val r1 = runSource(rs1)
       val r2 = runSource(rs2)

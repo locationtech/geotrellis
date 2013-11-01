@@ -86,9 +86,9 @@ class AddSpec extends FunSpec
       assert(run(Add(r1, r2)) === r3)
     }
 
-    it("adds two tiled RasterDataSources correctly") {
-      val rs1 = RasterDataSource("quad_tiled")
-      val rs2 = RasterDataSource("quad_tiled2")
+    it("adds two tiled RasterSources correctly") {
+      val rs1 = RasterSource("quad_tiled")
+      val rs2 = RasterSource("quad_tiled2")
 
       val r1 = runSource(rs1)
       val r2 = runSource(rs2)
@@ -107,8 +107,8 @@ class AddSpec extends FunSpec
       }
     }
 
-    it("adds three tiled RasterDataSources correctly") {
-      val rs1 = createRasterDataSource(
+    it("adds three tiled RasterSources correctly") {
+      val rs1 = createRasterSource(
         Array( NODATA,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
 
@@ -116,7 +116,7 @@ class AddSpec extends FunSpec
                1,1,1, 1,1,1, 1,1,1),
         3,2,3,2)
 
-      val rs2 = createRasterDataSource(
+      val rs2 = createRasterSource(
         Array( 2,2,2, 2,2,2, 2,2,2,
                2,2,2, 2,2,2, 2,2,2,
 
@@ -124,7 +124,7 @@ class AddSpec extends FunSpec
                2,2,2, 2,2,2, 2,2,2),
         3,2,3,2)
 
-      val rs3 = createRasterDataSource(
+      val rs3 = createRasterSource(
         Array( 3,3,3, 3,3,3, 3,3,3,
                3,3,3, 3,3,3, 3,3,3,
 
@@ -167,10 +167,10 @@ class AddSpec extends FunSpec
       val c = 9
       val n = NODATA
 
-      assert(run(addInts(a, b)) === ri(c))
-      assert(run(addInts(n, b)) === ri(n))
-      assert(run(addInts(c, n)) === ri(n))
-      assert(run(addInts(n, n)) === ri(n))
+      assertEqual(addInts(a, b),ri(c))
+      assertEqual(addInts(n, b),ri(n))
+      assertEqual(addInts(c, n),ri(n))
+      assertEqual(addInts(n, n),ri(n))
     }
 
     it("adds doubles") {
@@ -180,12 +180,12 @@ class AddSpec extends FunSpec
       val x = a + a + b + b + c
       val n = Double.NaN
 
-      assert(run(addDoubles(a, b)) === rd(c))
-      assert(run(addDoubles(n, b)) === rd(n))
-      assert(run(addDoubles(c, n)) === rd(n))
-      assert(run(addDoubles(n, n)) === rd(n))
+      assertEqual(addDoubles(a, b),rd(c))
+      assertEqual(addDoubles(n, b),rd(n))
+      assertEqual(addDoubles(c, n),rd(n))
+      assertEqual(addDoubles(n, n),rd(n))
 
-      assert(run(addDoubles(a, a, b, b, c)) === rd(x))
+      assertEqual(addDoubles(a, a, b, b, c),rd(x))
     }
   }
 }

@@ -1,7 +1,6 @@
 package geotrellis.io
 
 import geotrellis._
-import geotrellis.raster.op.extent.GetRasterExtent
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers

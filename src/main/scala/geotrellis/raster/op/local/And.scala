@@ -1,6 +1,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.source._
 
 /**
@@ -12,20 +13,16 @@ import geotrellis.source._
  *              will be rounded to Ints.
  */
 object And extends LocalRasterBinaryOp {
-  /** And a constant Int value to each cell. */
-  def apply(r:Op[Raster], c:Op[Int]):Op[Raster] = 
-    (r,c).map { (r,c) => r.map { z => if(z != NODATA) z & c else z } }
-         .withName("And[Constant]")
+  def combine(z1:Int,z2:Int) =
+    if (z1 == NODATA || z2 == NODATA) NODATA
+    else z1 & z2
 
-  def doRasters(r1:Raster,r2:Raster):Raster =
-    r1.combine(r2)({
-      (a, b) =>
-      if (a == NODATA || b == NODATA) NODATA
-      else a & b
-    })
+  def combine(z1:Double,z2:Double) =
+    if (isNaN(z1) || isNaN(z2)) Double.NaN
+    else i2d(d2i(z1) & d2i(z2))
 }
 
-trait AndOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait AndOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** And a constant Int value to each cell. */
   def localAnd(i: Int) = self.mapOp(And(_, i))
   /** And a constant Int value to each cell. */
@@ -33,7 +30,11 @@ trait AndOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /** And a constant Int value to each cell. */
   def &:(i:Int) = localAnd(i)
   /** And the values of each cell in each raster.  */
-  def localAnd(rs:RasterDataSource) = self.combineOp(rs)(And(_,_))
+  def localAnd(rs:RasterSource) = self.combine(rs)(And(_,_))
   /** And the values of each cell in each raster. */
-  def &(rs:RasterDataSource) = localAnd(rs)
+  def &(rs:RasterSource) = localAnd(rs)
+  /** And the values of each cell in each raster.  */
+  def localAnd(rss:Seq[RasterSource]) = self.combine(rss)(And(_))
+  /** And the values of each cell in each raster. */
+  def &(rss:Seq[RasterSource]) = localAnd(rss)
 }

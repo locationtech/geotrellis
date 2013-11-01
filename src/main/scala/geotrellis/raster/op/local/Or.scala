@@ -1,7 +1,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
-import geotrellis.process._
+import geotrellis.raster._
 import geotrellis.source._
 
 /**
@@ -13,20 +13,16 @@ import geotrellis.source._
  *              will be rounded to Ints.
  */
 object Or extends LocalRasterBinaryOp {
-  /** Or's an integer value with each cell of the raster.*/
-  def apply(r:Op[Raster], c:Op[Int]):Op[Raster] = 
-    (r,c).map { (r,c) => r.map { z => if(z != NODATA) z | c else z } }
-         .withName("Or[Constant]")
+  def combine(z1:Int,z2:Int) =
+    if (z1 == NODATA || z2 == NODATA) NODATA
+    else z1 | z2
 
-  def doRasters(r1:Raster,r2:Raster):Raster =
-    r1.combine(r2)({
-      (a, b) =>
-      if (a == NODATA || b == NODATA) NODATA
-      else a | b
-    })
+  def combine(z1:Double,z2:Double) =
+    if (isNaN(z1) || isNaN(z2)) Double.NaN
+    else i2d(d2i(z1) | d2i(z2))
 }
 
-trait OrOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait OrOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Or a constant Int value to each cell. */
   def localOr(i: Int) = self.mapOp(Or(_, i))
   /** Or a constant Int value to each cell. */
@@ -34,7 +30,11 @@ trait OrOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /** Or a constant Int value to each cell. */
   def |:(i:Int) = localOr(i)
   /** Or the values of each cell in each raster.  */
-  def localOr(rs:RasterDataSource) = self.combineOp(rs)(Or(_,_))
+  def localOr(rs:RasterSource) = self.combine(rs)(Or(_,_))
   /** Or the values of each cell in each raster. */
-  def |(rs:RasterDataSource) = localOr(rs)
+  def |(rs:RasterSource) = localOr(rs)
+  /** Or the values of each cell in each raster.  */
+  def localOr(rss:Seq[RasterSource]) = self.combine(rss)(Or(_))
+  /** Or the values of each cell in each raster. */
+  def |(rss:Seq[RasterSource]) = localOr(rss)
 }

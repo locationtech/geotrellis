@@ -11,7 +11,7 @@ import scalaxy.loops._
  * 
  * @return     An TypeInt raster with the count values.
  */
-object Variety {
+object Variety extends Serializable {
   def apply(rs:Op[Raster]*)(implicit d:DI):Op[Raster] =
     apply(rs)
   def apply(rs:Seq[Op[Raster]]):Op[Raster] =
@@ -48,12 +48,12 @@ object Variety {
     .withName("Variety")
 }
 
-trait VarietyOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait VarietyOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
-  def localVariety(rss:Seq[RasterDS]):RasterDataSource = 
-    combineOp(rss)(Variety(_))
+  def localVariety(rss:Seq[RasterDS]):RasterSource = 
+    combine(rss)(Variety(_))
 
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
-  def localVariety(rss:RasterDS*)(implicit d:DI):RasterDataSource = 
+  def localVariety(rss:RasterDS*)(implicit d:DI):RasterSource = 
     localVariety(rss)
 }

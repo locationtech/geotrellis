@@ -27,7 +27,7 @@ case class ServerActor(server: Server) extends Actor {
  
     case msg:RunOperation[_] => {
       msg match {
-        // TODO Seems wrong. Shouldn't it sent a bare RunOperation to the cluster?
+        // TODO Seems wrong. Shouldn't it send a bare RunOperation to the cluster?
         case RunOperation(RemoteOperation(_,cluster), _, _, _)  => cluster ! msg 
         case _ => dispatcher ! msg
       }

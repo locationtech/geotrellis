@@ -22,7 +22,7 @@ class FocalStrategySpec extends FunSpec with ShouldMatchers {
 
       val calc = new CursorCalculation[Int] {
         def result = 0
-        def calc(r:RasterLike,cursor:Cursor) = {
+        def calc(r:Raster,cursor:Cursor) = {
           if(cursor.row != 0 || cursor.col != 0 ) { cursor.isReset should equal(false) }
           if(lastY != cursor.row) {
             cursor.row should be > lastY
@@ -36,7 +36,7 @@ class FocalStrategySpec extends FunSpec with ShouldMatchers {
         }
       }
 
-      CursorStrategy.execute(r,cur,calc, TraversalStrategy.ZigZag,AnalysisArea(r))
+      CursorStrategy.execute(r,cur,calc, TraversalStrategy.ZigZag,GridBounds(r))
     }
 
     it("should execute the ScanLine traversal strategy correctly") {
@@ -50,7 +50,7 @@ class FocalStrategySpec extends FunSpec with ShouldMatchers {
 
       val calc = new CursorCalculation[Int] {
         def result = 0
-        def calc(r:RasterLike,cursor:Cursor) = {
+        def calc(r:Raster,cursor:Cursor) = {
           if(lastY != cursor.row) {
             cursor.isReset should equal(true)
             cursor.row should be > lastY
@@ -63,7 +63,7 @@ class FocalStrategySpec extends FunSpec with ShouldMatchers {
         }
       }
 
-      CursorStrategy.execute(r,cur,calc,TraversalStrategy.ScanLine,AnalysisArea(r))
+      CursorStrategy.execute(r,cur,calc,TraversalStrategy.ScanLine,GridBounds(r))
     }
   }
 }

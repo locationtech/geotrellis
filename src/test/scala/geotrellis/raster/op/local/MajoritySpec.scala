@@ -32,13 +32,13 @@ class MajoritySpec extends FunSpec
     }
 
     it("takes majority on rasters sources of all one value") {
-      val r1 = createRasterDataSource(Array.fill(6*8)(1), 2,2,3,4)
-      val r2 = createRasterDataSource(Array.fill(6*8)(5), 2,2,3,4)
-      val r3 = createRasterDataSource(Array.fill(6*8)(1), 2,2,3,4)
-      val r4 = createRasterDataSource(Array.fill(6*8)(7), 2,2,3,4)
-      val r5 = createRasterDataSource(Array.fill(6*8)(1), 2,2,3,4)
-      val r6 = createRasterDataSource(Array.fill(6*8)(7), 2,2,3,4)
-      val r7 = createRasterDataSource(Array.fill(6*8)(NODATA), 2,2,3,4)
+      val r1 = createRasterSource(Array.fill(6*8)(1), 2,2,3,4)
+      val r2 = createRasterSource(Array.fill(6*8)(5), 2,2,3,4)
+      val r3 = createRasterSource(Array.fill(6*8)(1), 2,2,3,4)
+      val r4 = createRasterSource(Array.fill(6*8)(7), 2,2,3,4)
+      val r5 = createRasterSource(Array.fill(6*8)(1), 2,2,3,4)
+      val r6 = createRasterSource(Array.fill(6*8)(7), 2,2,3,4)
+      val r7 = createRasterSource(Array.fill(6*8)(NODATA), 2,2,3,4)
 
       assertEqual(r1.localMajority(r2,r3,r4,r5,r6,r7).get, Array.fill(6*8)(1))
       assertEqual(r1.localMajority(1,r2,r3,r4,r5,r6).get, Array.fill(6*8)(7))
@@ -51,13 +51,13 @@ class MajoritySpec extends FunSpec
     }
 
     it("takes majority on double rasters sources of all one value") {
-      val r1 = createRasterDataSource(Array.fill(6*8)(1.1), 2,2,3,4)
-      val r2 = createRasterDataSource(Array.fill(6*8)(5.5), 2,2,3,4)
-      val r3 = createRasterDataSource(Array.fill(6*8)(1.1), 2,2,3,4)
-      val r4 = createRasterDataSource(Array.fill(6*8)(7.7), 2,2,3,4)
-      val r5 = createRasterDataSource(Array.fill(6*8)(1.1), 2,2,3,4)
-      val r6 = createRasterDataSource(Array.fill(6*8)(7.7), 2,2,3,4)
-      val r7 = createRasterDataSource(Array.fill(6*8)(NaN), 2,2,3,4)
+      val r1 = createRasterSource(Array.fill(6*8)(1.1), 2,2,3,4)
+      val r2 = createRasterSource(Array.fill(6*8)(5.5), 2,2,3,4)
+      val r3 = createRasterSource(Array.fill(6*8)(1.1), 2,2,3,4)
+      val r4 = createRasterSource(Array.fill(6*8)(7.7), 2,2,3,4)
+      val r5 = createRasterSource(Array.fill(6*8)(1.1), 2,2,3,4)
+      val r6 = createRasterSource(Array.fill(6*8)(7.7), 2,2,3,4)
+      val r7 = createRasterSource(Array.fill(6*8)(NaN), 2,2,3,4)
 
       assertEqual(r1.localMajority(r2,r3,r4,r5,r6,r7).get, Array.fill(6*8)(1.1))
       assertEqual(r1.localMajority(1,r2,r3,r4,r5,r6).get, Array.fill(6*8)(7.7))

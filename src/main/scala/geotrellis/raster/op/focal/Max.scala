@@ -17,9 +17,12 @@ import scala.math._
  */
 case class Max(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends FocalOp(r,n,tns)({
   (r,n) => new CursorCalculation[Raster] with IntRasterDataResult { 
-    def calc(r:RasterLike, cursor:Cursor) = {
+    def calc(r:Raster, cursor:Cursor) = {
       var m = Int.MinValue
-      cursor.allCells.foreach { (x,y) => m = max(m,r.get(x,y)) }
+      cursor.allCells.foreach { (x,y) => 
+        val v = r.get(x,y)
+        if(v > m) { m = v }
+      }
       data.set(cursor.col,cursor.row,m)
     }
   }

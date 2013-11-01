@@ -9,7 +9,7 @@ case class RasterMoransI(r:Op[Raster], neighborhoodType: Neighborhood) extends O
   r => {
     val h = FastMapHistogram.fromRaster(r)
     val Statistics(mean, _, _, stddev, _, _) = h.generateStatistics
-    val diff = r.convert(TypeDouble).force.mapDouble(_ - mean)
+    val diff = r.convert(TypeDouble).mapDouble(_ - mean)
     FocalOp.getResultDouble(diff, Default,  neighborhoodType, () => new MoranCalc(stddev * stddev))
   }
 })

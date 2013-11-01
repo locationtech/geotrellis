@@ -10,41 +10,18 @@ import geotrellis.source._
  *              to be NODATA or Double.NaN.
  */
 object Divide extends LocalRasterBinaryOp {
-  /** Divide each value of the raster by a constant value.*/
-  def apply(r:Op[Raster], c:Op[Int]):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet(_ / c)(_ / c) } 
-         .withName("Divide[ByConstantInt]")
+  def combine(z1:Int,z2:Int) =
+    if (z1 == NODATA || z2 == NODATA) NODATA
+    else if (z2 == 0) NODATA
+    else z1 / z2
 
-  /** Divide each value of a raster by a double constant value.*/
-  def apply(r:Op[Raster], c:Op[Double])(implicit d:DI):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet({i:Int=>(i / c).toInt})(_ / c) }
-         .withName("Divide[ByConstantDouble]")
-
-  /** Divide a constant value by each cell value.*/
-  def apply(c:Op[Int],r:Op[Raster])(implicit d:DI,d2:DI,d3:DI):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet(c / _ )(c / _ ) }
-         .withName("Divide[ConstantInt]")
-
-  /** Divide a double constant value by each cell value.*/
-  def apply(c:Op[Double],r:Op[Raster])(implicit d:DI,d2:DI,d3:DI,d4:DI):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet({i:Int=>(c / i).toInt})(c / _) }
-         .withName("Divide[ConstantDouble]")
-
-  def doRasters(r1:Raster,r2:Raster) = 
-    r1.dualCombine(r2)({
-      (a, b) =>
-      if (a == NODATA || b == NODATA) NODATA
-      else if (b == 0) NODATA
-      else a / b
-    })({
-      (a, b) =>
-      if (java.lang.Double.isNaN(a) || java.lang.Double.isNaN(b)) Double.NaN
-      else if (b == 0) Double.NaN
-      else a / b
-    })
+  def combine(z1:Double,z2:Double) =
+    if (isNaN(z1) || isNaN(z2)) Double.NaN
+    else if (z2 == 0) Double.NaN
+    else z1 / z2
 }
 
-trait DivideOpMethods[+Repr <: RasterDataSource] { self: Repr =>
+trait DivideOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Divide each value of the raster by a constant value.*/
   def localDivide(i: Int) = self.mapOp(Divide(_, i))
   /** Divide each value of the raster by a constant value.*/
@@ -62,7 +39,11 @@ trait DivideOpMethods[+Repr <: RasterDataSource] { self: Repr =>
   /** Divide a double constant value by each cell value.*/
   def /:(d:Double) = localDivideValue(d)
   /** Divide the values of each cell in each raster. */
-  def localDivide(rs:RasterDataSource) = self.combineOp(rs)(Divide(_,_))
+  def localDivide(rs:RasterSource) = self.combine(rs)(Divide(_,_))
   /** Divide the values of each cell in each raster. */
-  def /(rs:RasterDataSource) = localDivide(rs)
+  def /(rs:RasterSource) = localDivide(rs)
+  /** Divide the values of each cell in each raster. */
+  def localDivide(rss:Seq[RasterSource]) = self.combine(rss)(Divide(_))
+  /** Divide the values of each cell in each raster. */
+  def /(rss:Seq[RasterSource]) = localDivide(rss)
 }

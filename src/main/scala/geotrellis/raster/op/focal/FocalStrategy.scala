@@ -26,21 +26,18 @@ object CursorStrategy {
               c:CursorCalculation[_],
               tOpt:Option[TraversalStrategy], 
               neighbors:Seq[Option[Raster]]):Unit = {
-    val reOpt = Some(r.rasterExtent)
-    val analysisArea = AnalysisArea(r)
-
     val t = tOpt match {
       case None => ZigZag
       case Some(tStrategy) => tStrategy
     }
     // Get the tile raster
-    val rast = TileWithNeighbors(r,neighbors)
+    val (rast,analysisArea) = TileWithNeighbors(r,neighbors)
 
     val cursor = Cursor(rast,n,analysisArea)
     execute(rast,cursor,c,t,analysisArea)
   }
 
-  def execute(r:RasterLike,cursor:Cursor,c:CursorCalculation[_],t:TraversalStrategy,analysisArea:AnalysisArea):Unit = {
+  def execute(r:Raster,cursor:Cursor,c:CursorCalculation[_],t:TraversalStrategy,analysisArea:GridBounds):Unit = {
     t match {
       case ScanLine => handleScanLine(r, analysisArea, cursor,c)
       case SpiralZag => handleSpiralZag(r,analysisArea,cursor,c)
@@ -48,7 +45,7 @@ object CursorStrategy {
     }
   }
   
-  private def handleSpiralZag(r:RasterLike,analysisArea:AnalysisArea,cursor:Cursor,c:CursorCalculation[_]) = {
+  private def handleSpiralZag(r:Raster,analysisArea:GridBounds,cursor:Cursor,c:CursorCalculation[_]) = {
     var colMax = analysisArea.colMax
     var rowMax = analysisArea.rowMax
     var colMin = analysisArea.colMin
@@ -127,7 +124,7 @@ object CursorStrategy {
     }
   }
 
-  private def handleZigZag(r:RasterLike,analysisArea:AnalysisArea,cursor:Cursor,c:CursorCalculation[_]) = {
+  private def handleZigZag(r:Raster,analysisArea:GridBounds,cursor:Cursor,c:CursorCalculation[_]) = {
     val colMax = analysisArea.colMax
     val rowMax = analysisArea.rowMax
     val colMin = analysisArea.colMin
@@ -155,7 +152,7 @@ object CursorStrategy {
     }
   }
 
-  private def handleScanLine(r:RasterLike,analysisArea:AnalysisArea,cursor:Cursor,c:CursorCalculation[_]) = {
+  private def handleScanLine(r:Raster,analysisArea:GridBounds,cursor:Cursor,c:CursorCalculation[_]) = {
     val colMax = analysisArea.colMax
     val rowMax = analysisArea.rowMax
     val colMin = analysisArea.colMin
@@ -191,23 +188,21 @@ object CellwiseStrategy {
               c:CellwiseCalculation[_], 
               tOpt:Option[TraversalStrategy], 
               neighbors:Seq[Option[Raster]]):Unit = {
-    val analysisArea = AnalysisArea(r)
     val t = tOpt match {
       case None => ScanLine
       case Some(tStrategy) => tStrategy
     }
-    val rast = TileWithNeighbors(r,neighbors)
+    val (rast,analysisArea) = TileWithNeighbors(r,neighbors)
     execute(rast,n,c,t,analysisArea)
   }
 
-  def execute(r:RasterLike,n:Square,calc:CellwiseCalculation[_],t:TraversalStrategy,analysisArea:AnalysisArea):Unit = {
-    val analysisArea = AnalysisArea(r)
+  def execute(r:Raster,n:Square,calc:CellwiseCalculation[_],t:TraversalStrategy,analysisArea:GridBounds):Unit = {
     t match {
       case _ => handleScanLine(r,n.extent,calc,analysisArea)
     }
   }
 
-  private def handleScanLine(r:RasterLike,n:Int, calc:CellwiseCalculation[_], analysisArea:AnalysisArea) = {
+  private def handleScanLine(r:Raster,n:Int, calc:CellwiseCalculation[_], analysisArea:GridBounds) = {
     val rowMin = analysisArea.rowMin
     val colMin = analysisArea.colMin
     val rowMax = analysisArea.rowMax
@@ -220,8 +215,8 @@ object CellwiseStrategy {
 
     var focusRow = rowMin
     while (focusRow <= rowMax) {
-      val curRowMin = max(0, focusRow - n) // was yy1
-      val curRowMax = min(rowBorderMax, focusRow + n ) // was yy2
+      val curRowMin = max(0, focusRow - n)
+      val curRowMax = min(rowBorderMax, focusRow + n )
 
       calc.reset()
       val curColMax = min(colBorderMax, colMin + n)

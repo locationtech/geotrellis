@@ -20,7 +20,9 @@ class PowSpec extends FunSpec
       val result = run(Pow(r,5))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
-          result.get(col,row) should be (math.pow(r.get(col,row),5).toInt)
+          withClue(s"Failure at $col,$row") {
+            result.get(col,row) should be (math.pow(r.get(col,row),5).toInt)
+          }
         }
       }
     }
@@ -123,9 +125,9 @@ class PowSpec extends FunSpec
       }
     }
 
-    it("pow's two tiled RasterDataSources correctly") {
-      val rs1 = RasterDataSource("quad_tiled")
-      val rs2 = RasterDataSource("quad_tiled2")
+    it("pow's two tiled RasterSources correctly") {
+      val rs1 = RasterSource("quad_tiled")
+      val rs2 = RasterSource("quad_tiled2")
 
       val r1 = runSource(rs1)
       val r2 = runSource(rs2)
@@ -150,8 +152,8 @@ class PowSpec extends FunSpec
       }
     }
 
-    it("pow's three tiled RasterDataSources correctly") {
-      val rs1 = createRasterDataSource(
+    it("pow's three tiled RasterSources correctly") {
+      val rs1 = createRasterSource(
         Array( 10,10,10, 10,10,10, 10,10,10,
                10,10,10, 10,10,10, 10,10,10,
 
@@ -159,7 +161,7 @@ class PowSpec extends FunSpec
                10,10,10, 10,10,10, 10,10,10),
         3,2,3,2)
 
-      val rs2 = createRasterDataSource(
+      val rs2 = createRasterSource(
         Array( 3,3,3, 3,3,3, 3,3,3,
                3,3,3, 3,3,3, 3,3,3,
 
@@ -167,7 +169,7 @@ class PowSpec extends FunSpec
                3,3,3, 3,3,3, 3,3,3),
         3,2,3,2)
 
-      val rs3 = createRasterDataSource(
+      val rs3 = createRasterSource(
         Array( 2,2,2, 2,2,2, 2,2,2,
                2,2,2, 2,2,2, 2,2,2,
 

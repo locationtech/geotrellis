@@ -33,8 +33,8 @@ class XorSpec extends FunSpec
         createValueRaster(10,10.0))
     }
 
-    it("xors three tiled RasterDataSources correctly") {
-      val rs1 = createRasterDataSource(
+    it("xors three tiled RasterSources correctly") {
+      val rs1 = createRasterSource(
         Array( NODATA,1,1, 1,1,1, 1,1,1,
           1,1,1, 1,1,1, 1,1,1,
 
@@ -42,7 +42,7 @@ class XorSpec extends FunSpec
           1,1,1, 1,1,1, 1,1,1),
         3,2,3,2)
 
-      val rs2 = createRasterDataSource(
+      val rs2 = createRasterSource(
         Array( 2,2,2, 2,2,2, 2,2,2,
           2,2,2, 2,2,2, 2,2,2,
 
@@ -50,7 +50,7 @@ class XorSpec extends FunSpec
           2,2,2, 2,2,2, 2,2,2),
         3,2,3,2)
 
-      val rs3 = createRasterDataSource(
+      val rs3 = createRasterSource(
         Array( 3,3,3, 3,3,3, 3,3,3,
           3,3,3, 3,3,3, 3,3,3,
 
