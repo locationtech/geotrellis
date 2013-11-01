@@ -79,15 +79,15 @@ trait ZonalSummaryOpMethods[+Repr <: RasterDataSource] { self:Repr =>
       }
     }.reduce(_+_)
 
-  def zonalMin[D](p:Op[feature.Polygon[D]]):ValueDataSource[Long] =
+  def zonalMin[D](p:Op[feature.Polygon[D]]):ValueDataSource[Int] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
-          var min = Long.MaxValue
+          var min = Int.MaxValue
           r.foreach((x:Int) => if (x != NODATA && x < min) { min = x })
           min
         case PartialTileIntersection(r:Raster,polygons:List[_]) =>
-          var min = Long.MaxValue
+          var min = Int.MaxValue
           for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
             Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
               new Callback[Geometry,D] {
@@ -127,15 +127,15 @@ trait ZonalSummaryOpMethods[+Repr <: RasterDataSource] { self:Repr =>
       }
     }.reduce(math.min(_,_))
 
-  def zonalMax[D](p:Op[feature.Polygon[D]]):ValueDataSource[Long] =
+  def zonalMax[D](p:Op[feature.Polygon[D]]):ValueDataSource[Int] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
-          var max = Long.MinValue
+          var max = Int.MinValue
           r.foreach((x:Int) => if (x != NODATA && x > max) { max = x })
           max
         case PartialTileIntersection(r:Raster,polygons:List[_]) =>
-          var max = Long.MinValue
+          var max = Int.MinValue
           for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
             Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
               new Callback[Geometry,D] {
@@ -173,14 +173,14 @@ trait ZonalSummaryOpMethods[+Repr <: RasterDataSource] { self:Repr =>
       }
     }.reduce(math.max(_,_))
 
-  def zonalMean[D](p:Op[feature.Polygon[D]]):ValueDataSource[Long] =
+  def zonalMean[D](p:Op[feature.Polygon[D]]):ValueDataSource[Double] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
           var s = 0L
           var c = 0L
           r.foreach((x:Int) => if (x != NODATA) { s = s + x; c = c + 1 })
-          LongMean(s,c)
+          Mean(s,c)
         case PartialTileIntersection(r:Raster,polygons:List[_]) =>
           var sum: Long = 0L
           var count: Long = 0L
@@ -195,7 +195,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterDataSource] { self:Repr =>
             )
           }
 
-          LongMean(sum,count)
+          Mean(sum,count)
       }
     }.reduce(_+_).map(_.mean)
 
@@ -206,7 +206,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterDataSource] { self:Repr =>
           var s = 0.0
           var c = 0L
           r.force.foreachDouble((x:Double) => if (!java.lang.Double.isNaN(x)) { s = s + x; c = c + 1 })
-          DoubleMean(s,c)
+          Mean(s,c)
         case PartialTileIntersection(r:Raster,polygons:List[_]) =>
           var sum = 0.0
           var count = 0L
@@ -220,25 +220,16 @@ trait ZonalSummaryOpMethods[+Repr <: RasterDataSource] { self:Repr =>
               }
             )
           }
-          DoubleMean(sum,count)
+          Mean(sum,count)
       }
     }.reduce(_+_).map(_.mean)
 }
 
-case class LongMean(sum: Long, count: Long) {
-  def mean = if (count == 0) {
-    geotrellis.NODATA
-  } else {
-    math.round((sum / count).toDouble)
-  }
-  def +(b: LongMean) = LongMean(sum + b.sum,count + b.count)
-}
-
-case class DoubleMean(sum: Double, count: Double) {
+case class Mean(sum: Double, count: Long) {
   def mean:Double = if (count == 0) {
     Double.NaN
   } else {
     sum/count
   }
-  def +(b: DoubleMean) = DoubleMean(sum + b.sum,count + b.count)
+  def +(b: Mean) = Mean(sum + b.sum,count + b.count)
 }
