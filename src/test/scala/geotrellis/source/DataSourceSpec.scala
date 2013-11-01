@@ -97,7 +97,7 @@ class DataSourceSpec extends FunSpec
       val d = getRasterSource
       val d2 = getRasterSource
 
-      val combineDS:RasterSource = d.combine(d2)(_+_)
+      val combineDS:RasterSource = d.localCombine(d2)(_+_)
       val initial = runSource(d)
       val result = runSource(combineDS)
 

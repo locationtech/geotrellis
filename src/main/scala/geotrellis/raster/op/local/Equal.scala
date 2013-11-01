@@ -7,49 +7,31 @@ import geotrellis.source._
  * Determines if values are equal. Sets to 1 if true, else 0.
  */
 object Equal extends LocalRasterBinaryOp {
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is equal to the input
-   * integer, else 0.
-   */
-  def apply(r:Op[Raster], c:Op[Int]):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet(checkEqual(_,c))(checkEqual(_,c)) }
-         .withName("Equal[ConstantInt]")
+  /** Apply this operation to the values of each cell in each raster.  */
+  override
+  def apply(rss:Seq[Op[Raster]]):Op[Raster] = 
+    rss.mapOps { rasters =>
+        rasters.head
+               .dualCombine(rasters.tail)({ zs => 
+                  if(zs.distinct.length < 2) 1 else 0
+                })({ zs =>
+                  if(zs.distinct.filter(!isNaN(_)).length < 2) 1 else 0
+                })
+       }
+      .withName(s"Equal[Rasters]")
 
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is equal to the input
-   * intenger, else 0.
-   */
-  def apply(r:Op[Raster], c:Op[Double])(implicit d:DI):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet(checkEqual(_,c))(checkEqual(_,c)) }
-         .withName("Equal[ConstantDouble]")
+  def combine(z1:Int,z2:Int) = 
+    if(z1 == z2) 1 else 0
 
-  private def checkEqual(i1:Int,i2:Int) = 
-    if(i1 == i2) 1 else 0
-
-  private def checkEqual(i:Int,d:Double) =
-    if(isNaN(d)) { if(i == NODATA) 1 else 0 }
+  def combine(z1:Double,z2:Double):Double =
+    if(isNaN(z1)) { if(isNaN(z2)) 1 else 0 }
     else {
-      if(i == NODATA) { 0 }
+      if(isNaN(z2)) { 0 }
       else { 
-        if(i == d.toInt) 1
-        else 0
-      }
-    }
-
-  private def checkEqual(d1:Double,d2:Double):Double = 
-    if(isNaN(d1)) { if(isNaN(d2)) 1 else 0 }
-    else {
-      if(isNaN(d2)) { 0 }
-      else { 
-        if(d1 == d2) 1 
+        if(z1 == z2) 1 
         else 0 
       }
     }
-
-  def doRasters(r1:Raster,r2:Raster):Raster =
-    r1.dualCombine(r2)(checkEqual)(checkEqual)
 }
 
 trait EqualOpMethods[+Repr <: RasterSource] { self: Repr =>
@@ -74,31 +56,39 @@ trait EqualOpMethods[+Repr <: RasterSource] { self: Repr =>
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
-   * intenger, else 0.
+   * double, else 0.
    */
   def localEqual(d: Double) = self.mapOp(Equal(_, d))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
-   * intenger, else 0.
+   * double, else 0.
    */
   def ===(d:Double) = localEqual(d)
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
-   * intenger, else 0.
+   * double, else 0.
    */
   def ===:(d:Double) = localEqual(d)
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is equal to the input
-   * intenger, else 0.
+   * the corresponding cell valued of the rasters are equal, else 0.
    */
-  def localEqual(rs:RasterSource) = self.combineOp(rs)(Equal(_,_))
+  def localEqual(rs:RasterSource) = self.combine(rs)(Equal(_,_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is equal to the input
-   * intenger, else 0.
+   * the corresponding cell valued of the rasters are equal, else 0.
    */
   def ===(rs:RasterSource) = localEqual(rs)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the rasters are equal, else 0.
+   */
+  def localEqual(rss:Seq[RasterSource]) = self.combine(rss)(Equal(_))
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the rasters are equal, else 0.
+   */
+  def ===(rss:Seq[RasterSource]) = localEqual(rss)
 }

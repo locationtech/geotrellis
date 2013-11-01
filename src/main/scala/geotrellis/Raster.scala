@@ -34,8 +34,6 @@ trait Raster {
   val rasterType:RasterType
   def isFloat:Boolean = rasterType.float
 
-
-
   /**
    * Get value at given coordinates.
    */
@@ -106,17 +104,18 @@ trait Raster {
                              s"$rasterExtents are not all equal")
     }
 
-    val layerCount = rs.length
+    val rasters = this +: rs
+    val layerCount = rasters.length
     if(layerCount == 0) {
       this
     } else {
-      val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
+      val newRasterType = rasters.map(_.rasterType).reduce(_.union(_))
       val data = RasterData.allocByType(newRasterType,cols,rows)
       for(col <- 0 until cols optimized) {
         for(row <- 0 until rows optimized) {
           var v = get(col,row)
           for(i <- 1 until layerCount optimized) {
-            v = f(v,rs(i).get(col,row))
+            v = f(v,rasters(i).get(col,row))
           }
 
           data.set(col,row,v)
@@ -153,17 +152,18 @@ trait Raster {
                              s"$rasterExtents are not all equal")
     }
 
-    val layerCount = rs.length
+    val rasters = this +: rs
+    val layerCount = rasters.length
     if(layerCount == 0) {
       this
     } else {
-      val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
+      val newRasterType = rasters.map(_.rasterType).reduce(_.union(_))
       val data = RasterData.allocByType(newRasterType,cols,rows)
       for(col <- 0 until cols optimized) {
         for(row <- 0 until rows optimized) {
           var v = getDouble(col,row)
           for(i <- 1 until layerCount optimized) {
-            v = f(v,rs(i).getDouble(col,row))
+            v = f(v,rasters(i).getDouble(col,row))
           }
 
           data.setDouble(col,row,v)
@@ -271,7 +271,6 @@ trait Raster {
 
     (zmin, zmax)
   }
-
 
   /**
    * Return ascii art of this raster.

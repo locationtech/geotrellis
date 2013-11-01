@@ -10,35 +10,13 @@ import geotrellis.source._
  *              to be NODATA or Double.NaN.
  */
 object Pow extends LocalRasterBinaryOp {
-  /** Raise each value of the raster to the power of a constant value.*/
-  def apply(r:Op[Raster], c:Op[Int]):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet(math.pow(_,c).toInt)(math.pow(_,c)) } 
-         .withName("Pow[ByConstantInt]")
+  def combine(z1:Int,z2:Int) =
+    if (z1 == NODATA || z2 == NODATA) NODATA
+    else if (z2 == 0) NODATA
+    else math.pow(z1,z2).toInt
 
-  /** Raise each value of the raster to the power of a constant double value.*/
-  def apply(r:Op[Raster], c:Op[Double])(implicit d:DI):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet(math.pow(_,c).toInt)(math.pow(_,c)) }
-         .withName("Pow[ByConstantDouble]")
-
-  /** Pow a constant value by each cell value.*/
-  def apply(c:Op[Int],r:Op[Raster])(implicit d:DI,d2:DI,d3:DI):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet(math.pow(c,_).toInt)(math.pow(c,_)) }
-         .withName("Pow[ConstantInt]")
-
-  /** Pow a double constant value by each cell value.*/
-  def apply(c:Op[Double],r:Op[Raster])(implicit d:DI,d2:DI,d3:DI,d4:DI):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet(math.pow(c,_).toInt)(math.pow(c,_)) }
-         .withName("Pow[ConstantDouble]")
-
-  def doRasters(r1:Raster,r2:Raster) = 
-    r1.dualCombine(r2)({
-      (a, b) =>
-      if (a == NODATA || b == NODATA) NODATA
-      else if (b == 0) NODATA
-      else math.pow(a, b).toInt
-    })(
-      math.pow(_,_)
-    )
+  def combine(z1:Double,z2:Double) =
+    math.pow(z1,z2)
 }
 
 trait PowOpMethods[+Repr <: RasterSource] { self: Repr =>
@@ -59,7 +37,11 @@ trait PowOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Pow a double constant value by each cell value.*/
   def **:(d:Double) = localPowValue(d)
   /** Pow the values of each cell in each raster. */
-  def localPow(rs:RasterSource) = self.combineOp(rs)(Pow(_,_))
+  def localPow(rs:RasterSource) = self.combine(rs)(Pow(_,_))
   /** Pow the values of each cell in each raster. */
   def **(rs:RasterSource) = localPow(rs)
+  /** Pow the values of each cell in each raster. */
+  def localPow(rss:Seq[RasterSource]) = self.combine(rss)(Pow(_))
+  /** Pow the values of each cell in each raster. */
+  def **(rss:Seq[RasterSource]) = localPow(rss)
 }

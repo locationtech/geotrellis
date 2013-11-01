@@ -3,7 +3,7 @@ package geotrellis.raster.op.local
 import geotrellis._
 import geotrellis.raster.RasterUtil._
 
-object InverseMask {
+object InverseMask extends Serializable {
 /**
  * Generate a raster with the values from the first raster, but only include
  * cells in which the corresponding cell in the second raster is set to the 

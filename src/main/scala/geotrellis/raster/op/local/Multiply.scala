@@ -10,26 +10,13 @@ import geotrellis.source._
  *              to be NODATA or Double.NaN.
  */
 object Multiply extends LocalRasterBinaryOp {
-  /** Multiply a constant value from each cell.*/
-  def apply(r:Op[Raster], c:Op[Int]):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet(_ * c)(_ * c) }
-         .withName("Multiply[ConstantInt]")
+  def combine(z1:Int,z2:Int) =
+    if (z1 == NODATA || z2 == NODATA) NODATA
+    else z1 * z2
 
-  /** Multiply a double constant value from each cell.*/
-  def apply(r:Op[Raster], c:Op[Double])(implicit d:DI):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet({i:Int=>(i * c).toInt})(_ * c) }
-         .withName("Multiply[ConstantDouble]")
-
-  def doRasters(r1:Raster,r2:Raster) = 
-    r1.dualCombine(r2)({
-      (a, b) =>
-      if (a == NODATA || b == NODATA) NODATA
-      else a * b
-    })({
-      (a, b) =>
-      if (java.lang.Double.isNaN(a) || java.lang.Double.isNaN(b)) Double.NaN
-      else a * b
-    })
+  def combine(z1:Double,z2:Double) =
+    if (isNaN(z1) || isNaN(z2)) Double.NaN
+    else z1 * z2
 }
 
 trait MultiplyOpMethods[+Repr <: RasterSource] { self: Repr =>
@@ -46,7 +33,11 @@ trait MultiplyOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Multiply a double constant value from each cell.*/
   def *:(d:Double) = localMultiply(d)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(rs:RasterSource) = self.combineOp(rs)(Multiply(_,_))
+  def localMultiply(rs:RasterSource) = self.combine(rs)(Multiply(_,_))
   /** Multiply the values of each cell in each raster. */
   def *(rs:RasterSource) = localMultiply(rs)
+  /** Multiply the values of each cell in each raster. */
+  def localMultiply(rss:Seq[RasterSource]) = self.combine(rss)(Multiply(_))
+  /** Multiply the values of each cell in each raster. */
+  def *(rss:Seq[RasterSource]) = localMultiply(rss)
 }

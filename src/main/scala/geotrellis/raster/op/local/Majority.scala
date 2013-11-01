@@ -7,7 +7,7 @@ import geotrellis.source._
 import scalaxy.loops._
 import scala.collection.mutable
 
-object Majority {
+object Majority extends Serializable {
   def apply(rs:Op[Raster]*):Op[Raster] =
     apply(0,rs)
 
@@ -103,7 +103,7 @@ object Majority {
 trait MajorityOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Assigns to each cell the value within the given rasters that is the most numerous. */
   def localMajority(rss:Seq[RasterDS]):RasterSource = 
-    combineOp(rss)(Majority(_))
+    combine(rss)(Majority(_))
 
   /** Assigns to each cell the value within the given rasters that is the most numerous. */
   def localMajority(rss:RasterDS*)(implicit d:DI):RasterSource = 
@@ -111,7 +111,7 @@ trait MajorityOpMethods[+Repr <: RasterSource] { self: Repr =>
 
   /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
   def localMajority(n:Int,rss:Seq[RasterDS]):RasterSource = 
-    combineOp(rss)(Majority(n,_))
+    combine(rss)(Majority(n,_))
 
   /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
   def localMajority(n:Int,rss:RasterDS*)(implicit d:DI):RasterSource = 

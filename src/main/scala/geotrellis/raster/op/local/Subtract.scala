@@ -1,6 +1,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.source._
 
 /**
@@ -10,36 +11,13 @@ import geotrellis.source._
  *              to be NODATA or Double.NaN.
  */
 object Subtract extends LocalRasterBinaryOp {
-  /** Subtract a constant value from each cell.*/
-  def apply(r:Op[Raster], c:Op[Int]):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet(_ - c)(_ - c) }
-         .withName("Subtract[ConstantInt]")
+  def combine(z1:Int,z2:Int) =
+    if (z1 == NODATA || z2 == NODATA) NODATA
+    else z1 - z2
 
-  /** Subtract a double constant value from each cell.*/
-  def apply(r:Op[Raster], c:Op[Double])(implicit d:DI):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet({i:Int=>(i - c).toInt})(_ - c) }
-         .withName("Subtract[ConstantDouble]")
-
-  /** Subtract each value of a cell from a constant value. */
-  def apply(c:Op[Int],r:Op[Raster])(implicit d:DI,d2:DI,d3:DI):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet(c - _)(c - _) }
-         .withName("Subtract[FromConstantInt]")
-
-  /** Subtract each value of a cell from a double constant value. */
-  def apply(c:Op[Double],r:Op[Raster])(implicit d:DI,d2:DI,d3:DI,d4:DI):Op[Raster] = 
-    (r,c).map { (r,c) => r.dualMapIfSet({i:Int=>(i - c).toInt})(_ - c) }
-         .withName("Subtract[FromConstantDouble]")
-
-  def doRasters(r1:Raster,r2:Raster) = 
-    r1.dualCombine(r2)({
-      (a, b) =>
-      if (a == NODATA || b == NODATA) NODATA
-      else a - b
-    })({
-      (a, b) =>
-      if (java.lang.Double.isNaN(a) || java.lang.Double.isNaN(b)) Double.NaN
-      else a - b
-    })
+  def combine(z1:Double,z2:Double) =
+    if (isNaN(z1) || isNaN(z2)) Double.NaN
+    else z1 - z2
 }
 
 trait SubtractOpMethods[+Repr <: RasterSource] { self: Repr =>
@@ -60,7 +38,11 @@ trait SubtractOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Subtract each value of a cell from a double constant value. */
   def -:(d:Double) = localSubtract(d)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(rs:RasterSource) = self.combineOp(rs)(Subtract(_,_))
+  def localSubtract(rs:RasterSource) = self.combine(rs)(Subtract(_,_))
   /** Subtract the values of each cell in each raster. */
   def -(rs:RasterSource) = localSubtract(rs)
+  /** Subtract the values of each cell in each raster. */
+  def localSubtract(rss:Seq[RasterSource]) = self.combine(rss)(Subtract(_))
+  /** Subtract the values of each cell in each raster. */
+  def -(rss:Seq[RasterSource]) = localSubtract(rss)
 }

@@ -44,4 +44,32 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
   def distribute[T1 >: T,That](cluster:akka.actor.ActorRef)
                               (implicit bf:CanBuildSourceFrom[Repr,T1,That]):That =
     _mapOp(RemoteOperation(_, cluster),bf.apply(this))
+
+  def combine[B,C,That](ds:DataSource[B,_])
+                         (f:(Op[T],Op[B])=>Op[C])
+                         (implicit bf:CanBuildSourceFrom[Repr,C,That]):That = {
+    val newElements:Op[Seq[Op[C]]] =
+      (elements,ds.elements).map { (e1,e2) =>
+        e1.zip(e2).map { case (a,b) => 
+          f(a,b) 
+        }
+      }
+
+    val builder = bf.apply(this)
+    builder.setOp(newElements)
+    builder.result
+  }
+
+  def combine[T1 >: T,B,That](dss:Seq[DataSource[T1,_]])
+                               (f:Seq[Op[T1]]=>Op[B])
+                               (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
+    val newElements:Op[Seq[Op[B]]] =
+      (elements +: dss.map(_.elements)).mapOps { seq =>
+        seq.transpose.map(f)
+      }
+
+    val builder = bf.apply(this)
+    builder.setOp(newElements)
+    builder.result
+  }
 }

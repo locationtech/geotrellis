@@ -13,14 +13,22 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps:Op[Seq[Op[Ra
 
 object RasterSource {
   def apply(name:String):RasterSource =
-    RasterSource(io.LoadRasterDefinition(name))
+    RasterSource(io.LoadRasterDefinition(name),None)
 
-  def apply(rasterDef:Op[RasterDefinition]):RasterSource = {
+  def apply(name:String,rasterExtent:RasterExtent):RasterSource =
+    RasterSource(io.LoadRasterDefinition(name),Some(rasterExtent))
+
+  def apply(rasterDef:Op[RasterDefinition]):RasterSource = 
+    apply(rasterDef,None)
+
+  def apply(rasterDef:Op[RasterDefinition],targetExtent:RasterExtent):RasterSource = 
+    apply(rasterDef,Some(targetExtent))
+
+  def apply(rasterDef:Op[RasterDefinition],targetExtent:Option[RasterExtent]):RasterSource = {
     val tileOps = rasterDef.map { rd =>
-
       (for(tileRow <- 0 until rd.tileLayout.tileRows;
            tileCol <- 0 until rd.tileLayout.tileCols) yield {
-        io.LoadTile(rd.layerName,tileCol,tileRow)
+        io.LoadTile(rd.layerName,tileCol,tileRow,targetExtent)
       })
     }
     new RasterSource(rasterDef, tileOps)

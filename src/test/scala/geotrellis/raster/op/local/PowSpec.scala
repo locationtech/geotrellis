@@ -20,7 +20,9 @@ class PowSpec extends FunSpec
       val result = run(Pow(r,5))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
-          result.get(col,row) should be (math.pow(r.get(col,row),5).toInt)
+          withClue(s"Failure at $col,$row") {
+            result.get(col,row) should be (math.pow(r.get(col,row),5).toInt)
+          }
         }
       }
     }

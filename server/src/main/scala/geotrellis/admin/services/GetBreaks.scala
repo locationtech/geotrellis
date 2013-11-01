@@ -22,20 +22,10 @@ case class ClassBreaksToJson(b:Op[Array[Int]]) extends Op1(b)({
 class GetBreaks {
   @GET
   def get(
-    @DefaultValue("") @QueryParam("bbox") bbox:String,
-    @DefaultValue("256") @QueryParam("cols") cols:String,
-    @DefaultValue("256") @QueryParam("rows") rows:String,
     @DefaultValue("") @QueryParam("layer") layer:String,
     @DefaultValue("10") @QueryParam("numBreaks") numBreaks:String,
     @Context req:HttpServletRequest
   ):Response = {
-    val extentOp = string.ParseExtent(bbox)
-    
-    val colsOp = string.ParseInt(cols)
-    val rowsOp = string.ParseInt(rows)
-
-    val reOp = extent.GetRasterExtent(extentOp, colsOp, rowsOp)
-
     val layerOp = io.LoadRaster(layer)
 
     val numBreaksOp = string.ParseInt(numBreaks)
