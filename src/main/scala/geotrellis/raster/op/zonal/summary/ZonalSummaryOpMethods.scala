@@ -133,7 +133,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
-          var max = NODATA
+          var max = NODATA // == Int.MinValue
           r.foreach((x:Int) => if (x != NODATA && x > max) { max = x })
           max
         case PartialTileIntersection(r:Raster,polygons:List[_]) =>
@@ -175,14 +175,14 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }.reduce(math.max(_,_))
 
-  def zonalMean[D](p:Op[feature.Polygon[D]]):ValueSource[Int] =
+  def zonalMean[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
           var s = 0L
           var c = 0
           r.foreach((x:Int) => if (x != NODATA) { s = s + x; c = c + 1 })
-          LongMean(s,c)
+          Mean(s,c)
         case PartialTileIntersection(r:Raster,polygons:List[_]) =>
           var sum: Long = 0L
           var count: Int = 0
@@ -197,7 +197,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
             )
           }
 
-          LongMean(sum,count)
+          Mean(sum,count)
       }
     }.reduce(_+_).map(_.mean)
 
@@ -207,8 +207,8 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
         case FullTileIntersection(r:Raster) =>
           var s = 0.0
           var c = 0L
-          r.foreachDouble((x:Double) => if (!java.lang.Double.isNaN(x)) { s = s + x; c = c + 1 })
-          DoubleMean(s,c)
+          r.foreachDouble((x:Double) => if (!isNaN(x)) { s = s + x; c = c + 1 })
+          Mean(s,c)
         case PartialTileIntersection(r:Raster,polygons:List[_]) =>
           var sum = 0.0
           var count = 0L
@@ -222,26 +222,16 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
               }
             )
           }
-          DoubleMean(sum,count)
+          Mean(sum,count)
       }
     }.reduce(_+_).map(_.mean)
 }
 
-case class LongMean(sum: Long, count: Int) {
-  def mean:Int = 
-    if (count == 0) {
-      geotrellis.NODATA
-    } else {
-      math.round((sum / count).toDouble).toInt
-    }
-  def +(b: LongMean) = LongMean(sum + b.sum,count + b.count)
-}
-
-case class DoubleMean(sum: Double, count: Double) {
+case class Mean(sum: Double, count: Long) {
   def mean:Double = if (count == 0) {
     Double.NaN
   } else {
     sum/count
   }
-  def +(b: DoubleMean) = DoubleMean(sum + b.sum,count + b.count)
+  def +(b: Mean) = Mean(sum + b.sum,count + b.count)
 }

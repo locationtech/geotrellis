@@ -24,8 +24,8 @@ import org.scalatest.matchers._
 //           println(success)
            result should equal (40)
          case Error(msg,failure) =>
-           println(s"MSG: $msg")
-           println(s"FAILURE: $failure")
+           println(msg)
+           println(failure)
            assert(false)
        }
      }
@@ -135,7 +135,7 @@ import org.scalatest.matchers._
        getSource(meanOp) match {
          case Complete(result,success) =>
 //           println(success)
-           result should equal (1)
+           result should equal (1.0)
          case Error(msg,failure) =>
            println(msg)
            println(failure)
