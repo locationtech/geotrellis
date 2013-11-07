@@ -30,11 +30,11 @@ trait OrOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Or a constant Int value to each cell. */
   def |:(i:Int) = localOr(i)
   /** Or the values of each cell in each raster.  */
-  def localOr(rs:RasterSource) = self.combine(rs)(Or(_,_))
+  def localOr(rs:RasterSource) = self.combineOp(rs)(Or(_,_))
   /** Or the values of each cell in each raster. */
   def |(rs:RasterSource) = localOr(rs)
   /** Or the values of each cell in each raster.  */
-  def localOr(rss:Seq[RasterSource]) = self.combine(rss)(Or(_))
+  def localOr(rss:Seq[RasterSource]) = self.combineOp(rss)(Or(_))
   /** Or the values of each cell in each raster. */
   def |(rss:Seq[RasterSource]) = localOr(rss)
 }

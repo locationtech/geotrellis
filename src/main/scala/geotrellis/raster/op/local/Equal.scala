@@ -75,7 +75,7 @@ trait EqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are equal, else 0.
    */
-  def localEqual(rs:RasterSource) = self.combine(rs)(Equal(_,_))
+  def localEqual(rs:RasterSource) = self.combineOp(rs)(Equal(_,_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are equal, else 0.
@@ -85,7 +85,7 @@ trait EqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are equal, else 0.
    */
-  def localEqual(rss:Seq[RasterSource]) = self.combine(rss)(Equal(_))
+  def localEqual(rss:Seq[RasterSource]) = self.combineOp(rss)(Equal(_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are equal, else 0.

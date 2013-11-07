@@ -100,10 +100,13 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
               }
             )
           }
-
           min
       }
-    }.reduce(math.min(_,_))
+    }.reduce { (a,b) => 
+      if(a == NODATA) { b } 
+      else if(b == NODATA) { a }
+      else { math.min(a,b) }
+    }
 
   def zonalMinDouble[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
     self.mapIntersecting(p) { tileIntersection =>
@@ -118,7 +121,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
             Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
               new Callback[Geometry,D] {
                 def apply(col:Int, row:Int, g:Geometry[D]) {
-                  val z = r.get(col,row)
+                  val z = r.getDouble(col,row)
                   if (!isNaN(z) && (z < min || isNaN(min))) { min = z }
                 }
               }
@@ -127,7 +130,11 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
 
           min
       }
-    }.reduce(math.min(_,_))
+    }.reduce { (a,b) => 
+      if(isNaN(a)) { b } 
+      else if(isNaN(b)) { a }
+      else { math.min(a,b) }
+    }
 
   def zonalMax[D](p:Op[feature.Polygon[D]]):ValueSource[Int] =
     self.mapIntersecting(p) { tileIntersection =>
@@ -143,14 +150,18 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
               new Callback[Geometry,D] {
                 def apply(col:Int, row:Int, g:Geometry[D]) {
                   val z = r.get(col,row)
-                  if (z != NODATA && z > max) { max = z }
+                  if (z != NODATA && (z > max || max == NODATA)) { max = z }
                 }
               }
             )
           }
           max
       }
-    }.reduce(math.max(_,_))
+    }.reduce { (a,b) => 
+      if(a == NODATA) { b } 
+      else if(b == NODATA) { a }
+      else { math.max(a,b) }
+    }
 
   def zonalMaxDouble[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
     self.mapIntersecting(p) { tileIntersection =>
@@ -165,7 +176,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
             Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
               new Callback[Geometry,D] {
                 def apply(col:Int, row:Int, g:Geometry[D]) {
-                  val z = r.get(col,row)
+                  val z = r.getDouble(col,row)
                   if (!isNaN(z) && (z > max || isNaN(max))) { max = z }
                 }
               }
@@ -173,14 +184,18 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
           }
           max
       }
-    }.reduce(math.max(_,_))
+    }.reduce { (a,b) => 
+      if(isNaN(a)) { b } 
+      else if(isNaN(b)) { a }
+      else { math.max(a,b) }
+    }
 
   def zonalMean[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
     self.mapIntersecting(p) { tileIntersection =>
       tileIntersection match {
         case FullTileIntersection(r:Raster) =>
           var s = 0L
-          var c = 0
+          var c = 0L
           r.foreach((x:Int) => if (x != NODATA) { s = s + x; c = c + 1 })
           Mean(s,c)
         case PartialTileIntersection(r:Raster,polygons:List[_]) =>
@@ -216,7 +231,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
             Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
               new Callback[Geometry,D] {
                 def apply(col:Int, row:Int, g:Geometry[D]) {
-                  val z = r.get(col,row)
+                  val z = r.getDouble(col,row)
                   if (!isNaN(z)) { sum = sum + z; count = count + 1 }
                 }
               }

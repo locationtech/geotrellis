@@ -39,11 +39,11 @@ trait DivideOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Divide a double constant value by each cell value.*/
   def /:(d:Double) = localDivideValue(d)
   /** Divide the values of each cell in each raster. */
-  def localDivide(rs:RasterSource) = self.combine(rs)(Divide(_,_))
+  def localDivide(rs:RasterSource) = self.combineOp(rs)(Divide(_,_))
   /** Divide the values of each cell in each raster. */
   def /(rs:RasterSource) = localDivide(rs)
   /** Divide the values of each cell in each raster. */
-  def localDivide(rss:Seq[RasterSource]) = self.combine(rss)(Divide(_))
+  def localDivide(rss:Seq[RasterSource]) = self.combineOp(rss)(Divide(_))
   /** Divide the values of each cell in each raster. */
   def /(rss:Seq[RasterSource]) = localDivide(rss)
 }

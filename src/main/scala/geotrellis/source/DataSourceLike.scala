@@ -45,7 +45,7 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
                               (implicit bf:CanBuildSourceFrom[Repr,T1,That]):That =
     _mapOp(RemoteOperation(_, cluster),bf.apply(this))
 
-  def combine[B,C,That](ds:DataSource[B,_])
+  def combineOp[B,C,That](ds:DataSource[B,_])
                          (f:(Op[T],Op[B])=>Op[C])
                          (implicit bf:CanBuildSourceFrom[Repr,C,That]):That = {
     val newElements:Op[Seq[Op[C]]] =
@@ -60,12 +60,40 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
     builder.result
   }
 
-  def combine[T1 >: T,B,That](dss:Seq[DataSource[T1,_]])
+  def combineOp[T1 >: T,B,That](dss:Seq[DataSource[T1,_]])
                                (f:Seq[Op[T1]]=>Op[B])
                                (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
     val newElements:Op[Seq[Op[B]]] =
       (elements +: dss.map(_.elements)).mapOps { seq =>
         seq.transpose.map(f)
+      }
+
+    val builder = bf.apply(this)
+    builder.setOp(newElements)
+    builder.result
+  }
+
+  def combine[B,C,That](ds:DataSource[B,_])
+                       (f:(T,B)=>C)
+                       (implicit bf:CanBuildSourceFrom[Repr,C,That]):That = {
+    val newElements:Op[Seq[Op[C]]] =
+      (elements,ds.elements).map { (e1,e2) =>
+        e1.zip(e2).map { case (a,b) => 
+          (a,b).map(f(_,_))
+        }
+      }
+
+    val builder = bf.apply(this)
+    builder.setOp(newElements)
+    builder.result
+  }
+
+  def combine[T1 >: T,B,That](dss:Seq[DataSource[T1,_]])
+                             (f:Seq[T1]=>B)
+                             (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
+    val newElements:Op[Seq[Op[B]]] =
+      (elements +: dss.map(_.elements)).mapOps { seq =>
+        seq.transpose.map(_.mapOps(f(_)))
       }
 
     val builder = bf.apply(this)

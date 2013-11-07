@@ -75,7 +75,7 @@ trait UnequalOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.
    */
-  def localUnequal(rs:RasterSource) = self.combine(rs)(Unequal(_,_))
+  def localUnequal(rs:RasterSource) = self.combineOp(rs)(Unequal(_,_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.
@@ -85,7 +85,7 @@ trait UnequalOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.
    */
-  def localUnequal(rss:Seq[RasterSource]) = self.combine(rss)(Unequal(_))
+  def localUnequal(rss:Seq[RasterSource]) = self.combineOp(rss)(Unequal(_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.

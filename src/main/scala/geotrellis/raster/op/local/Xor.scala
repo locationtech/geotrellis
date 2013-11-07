@@ -30,11 +30,11 @@ trait XorOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Xor a constant Int value to each cell. */
   def ^:(i:Int) = localXor(i)
   /** Xor the values of each cell in each raster.  */
-  def localXor(rs:RasterSource) = self.combine(rs)(Xor(_,_))
+  def localXor(rs:RasterSource) = self.combineOp(rs)(Xor(_,_))
   /** Xor the values of each cell in each raster. */
   def ^(rs:RasterSource) = localXor(rs)
   /** Xor the values of each cell in each raster. */
-  def localXor(rss:Seq[RasterSource]) = self.combine(rss)(Xor(_))
+  def localXor(rss:Seq[RasterSource]) = self.combineOp(rss)(Xor(_))
   /** Xor the values of each cell in each raster. */
   def ^(rss:Seq[RasterSource]) = localXor(rss)
 }

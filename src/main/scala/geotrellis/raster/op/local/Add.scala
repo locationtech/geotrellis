@@ -33,11 +33,11 @@ trait AddOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Add a constant Double value to each cell. */
   def +:(d:Double) = localAdd(d)
   /** Add the values of each cell in each raster.  */
-  def localAdd(rs:RasterSource) = self.combine(rs)(Add(_,_))
+  def localAdd(rs:RasterSource) = self.combineOp(rs)(Add(_,_))
   /** Add the values of each cell in each raster. */
   def +(rs:RasterSource) = localAdd(rs)
   /** Add the values of each cell in each raster.  */
-  def localAdd(rss:Seq[RasterSource]) = self.combine(rss)(Add(_))
+  def localAdd(rss:Seq[RasterSource]) = self.combineOp(rss)(Add(_))
   /** Add the values of each cell in each raster. */
   def +(rss:Seq[RasterSource]) = localAdd(rss)
 }

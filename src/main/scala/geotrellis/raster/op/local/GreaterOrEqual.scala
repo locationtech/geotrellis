@@ -79,7 +79,7 @@ trait GreaterOrEqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.
    */
-  def localGreaterOrEqual(rs:RasterSource) = self.combine(rs)(GreaterOrEqual(_,_))
+  def localGreaterOrEqual(rs:RasterSource) = self.combineOp(rs)(GreaterOrEqual(_,_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.
@@ -89,7 +89,7 @@ trait GreaterOrEqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.
    */
-  def localGreaterOrEqual(rss:Seq[RasterSource]) = self.combine(rss)(GreaterOrEqual(_))
+  def localGreaterOrEqual(rss:Seq[RasterSource]) = self.combineOp(rss)(GreaterOrEqual(_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.
