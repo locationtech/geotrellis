@@ -1,8 +1,7 @@
 package geotrellis.process.json
 
-import org.codehaus.jackson._
-import org.codehaus.jackson.JsonToken._
-import org.codehaus.jackson.map._
+import com.typesafe.config._
+import collection.JavaConversions._
 
 import scala.collection.mutable
 
@@ -10,82 +9,69 @@ import scala.collection.mutable
 // keep it up-to-date with changes you make here.
 
 object CatalogParser {
-  val parserFactory = new MappingJsonFactory()
-
   def error(msg:String) = sys.error(s"Invalid json in catalog: $msg")
 
-  def apply(json:String):CatalogRec = {
-    var catalog = ""
-    val stores = mutable.ListBuffer[DataStoreRec]()
+  def apply(jsonString:String):CatalogRec = {
+    val json = ConfigFactory.parseString(jsonString)
 
-    val parser = parserFactory.createJsonParser(json)
-
-    if(parser.nextToken() != START_OBJECT) 
-      error("Json does not start as object.")
-    else { 
-      var token = parser.nextToken()
-      while (token != null) {
-        token match {
-          case FIELD_NAME => 
-            parser.getCurrentName() match {
-              case "catalog" =>
-                parser.nextToken()
-                catalog = parser.getText()
-              case "stores" =>
-                if(parser.nextToken() != START_ARRAY) error("Stores must be an array.")
-                token = parser.nextToken()
-                while(token != END_ARRAY && token != null) {
-                  token match {
-                    case START_OBJECT =>
-                      stores.append(parseDataStore(parser))
-                    case _ => error("Stores must be an array of objects.")
-                  }
-                  token = parser.nextToken()
-                }
-              case f => error(s"Unknown field name $f.")
-            }
-          case END_OBJECT => // Done.
-          case _ => 
-            error("Expecting a field name.")
-        }
-        token = parser.nextToken()    
+    val catalog =
+      try {
+        json.getString("catalog")
+      } catch {
+        case _:ConfigException.Missing =>
+          error("Must have 'catalog' property with catalog name.")
+        case _:ConfigException.WrongType =>
+          error("'catalog' property must be a string.")
       }
-    }
-
     if(catalog == "") error("Catalog must have a name field 'catalog' be non-empty")
 
-    CatalogRec(catalog,stores.toList)
+    val storesList = 
+      try {
+        json.getConfigList("stores")
+      } catch {
+        case _:ConfigException.Missing =>
+          error("Must have 'stores' property with list of data stores.")
+        case _:ConfigException.WrongType =>
+          error("'stores' property must be a list of data stores.")
+      }
+
+    val stores = storesList.map(parseDataStore).toList
+
+    CatalogRec(catalog,stores)
   }
 
-  private def parseDataStore(parser:JsonParser):DataStoreRec = {
-    var store = ""
-    var params = mutable.HashMap[String,String]()
-    var token = parser.nextToken()
-    while(token != null && token != END_OBJECT) {
-      token match {
-        case FIELD_NAME =>
-          parser.getCurrentName() match {
-            case "store" =>
-              parser.nextToken()
-              store = parser.getText()
-            case "params" =>
-              if(parser.nextToken() != START_OBJECT) error("Expecting start of object.")
-              token = parser.nextToken()
-              while(token != null && token != END_OBJECT) {
-                params(parser.getCurrentName()) = { parser.nextToken() ; parser.getText() }
-                token = parser.nextToken()
-              }
-            case f => error(s"Unexpected field name $f") // Unknown name
-          }
-        case _ => 
-          error("Expecting a field name.")
+  private def parseDataStore(storeConfig:Config):DataStoreRec = {
+    val store =
+      try {
+        storeConfig.getString("store")
+      } catch {
+        case _:ConfigException.Missing =>
+          error("Data store must have 'store' property with data store name.")
+        case _:ConfigException.WrongType =>
+          error("'store' property must be a string.")
       }
-      token = parser.nextToken()
-    }
 
-    if(store == "") error("Store must have a name field 'store' be non-empty")
-    if(!params.contains("type")) error("Store must include a field 'type' in it's parameters.")
-    if(!params.contains("path")) error("Store must include a field 'path' in it's parameters.")
+    val paramsConfig = 
+      try {
+        storeConfig.getConfig("params")
+      } catch {
+        case _:ConfigException.Missing =>
+          error("Data store must have 'params' property with parameters.")
+        case _:ConfigException.WrongType =>
+          error("'param' property must be a json object.")
+      }
+
+    val params = 
+      paramsConfig.root.keys.map { key =>
+        val value =
+          try {
+            paramsConfig.getString(key)
+          } catch {
+            case _:ConfigException.WrongType =>
+              error("'param' property must be a json object.")
+          }
+        (key,value)
+      }
 
     DataStoreRec(store, params.toMap)
   }
