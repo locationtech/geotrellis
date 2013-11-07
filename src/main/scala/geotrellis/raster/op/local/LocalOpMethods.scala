@@ -110,15 +110,15 @@ trait LocalOpMethods[+Repr <: RasterDS]
 
   /** Masks this raster based on cell values of the second raster. See [[Mask]]. */
   def localMask(rs:RasterDS,readMask:Int,writeMask:Int) = 
-    combine(rs)(Mask(_,_,readMask,writeMask))
+    combineOp(rs)(Mask(_,_,readMask,writeMask))
 
   /** InverseMasks this raster based on cell values of the second raster. See [[InverseMask]]. */
   def localInverseMask(rs:RasterDS,readMask:Int,writeMask:Int) = 
-    combine(rs)(InverseMask(_,_,readMask,writeMask))
+    combineOp(rs)(InverseMask(_,_,readMask,writeMask))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
   def localMean(rss:Seq[RasterSource]):RasterSource = 
-    combine(rss)(Mean(_))
+    combineOp(rss)(Mean(_))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
   def localMean(rss:RasterSource*)(implicit d:DI):RasterSource = 

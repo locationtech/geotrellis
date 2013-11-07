@@ -103,7 +103,7 @@ object Minority extends Serializable {
 trait MinorityOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
   def localMinority(rss:Seq[RasterDS]):RasterSource = 
-    combine(rss)(Minority(_))
+    combineOp(rss)(Minority(_))
 
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
   def localMinority(rss:RasterDS*)(implicit d:DI):RasterSource = 
@@ -111,7 +111,7 @@ trait MinorityOpMethods[+Repr <: RasterSource] { self: Repr =>
 
   /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
   def localMinority(n:Int,rss:Seq[RasterDS]):RasterSource = 
-    combine(rss)(Minority(n,_))
+    combineOp(rss)(Minority(n,_))
 
   /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
   def localMinority(n:Int,rss:RasterDS*)(implicit d:DI):RasterSource = 

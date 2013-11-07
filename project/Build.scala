@@ -69,7 +69,7 @@ object GeotrellisBuild extends Build {
     publishArtifact in Test := false,
 
     pomIncludeRepository := { _ => false },
-    licenses := Seq("GPL3" -> url("http://www.gnu.org/licenses/gpl-3.0-standalone.html")),
+    licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
     homepage := Some(url("http://geotrellis.github.io/")),
 
     pomExtra := (

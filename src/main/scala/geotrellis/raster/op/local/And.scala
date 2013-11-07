@@ -30,11 +30,11 @@ trait AndOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** And a constant Int value to each cell. */
   def &:(i:Int) = localAnd(i)
   /** And the values of each cell in each raster.  */
-  def localAnd(rs:RasterSource) = self.combine(rs)(And(_,_))
+  def localAnd(rs:RasterSource) = self.combineOp(rs)(And(_,_))
   /** And the values of each cell in each raster. */
   def &(rs:RasterSource) = localAnd(rs)
   /** And the values of each cell in each raster.  */
-  def localAnd(rss:Seq[RasterSource]) = self.combine(rss)(And(_))
+  def localAnd(rss:Seq[RasterSource]) = self.combineOp(rss)(And(_))
   /** And the values of each cell in each raster. */
   def &(rss:Seq[RasterSource]) = localAnd(rss)
 }

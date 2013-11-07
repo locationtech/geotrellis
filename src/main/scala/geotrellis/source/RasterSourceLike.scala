@@ -16,6 +16,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     with local.LocalOpMethods[Repr] 
     with focal.FocalOpMethods[Repr]
     with global.GlobalOpMethods[Repr]
+    with zonal.ZonalOpMethods[Repr]
     with zonal.summary.ZonalSummaryOpMethods[Repr]
     with stat.StatOpMethods[Repr] { self: Repr =>
 

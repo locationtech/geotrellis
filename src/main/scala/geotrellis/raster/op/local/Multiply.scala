@@ -33,11 +33,11 @@ trait MultiplyOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Multiply a double constant value from each cell.*/
   def *:(d:Double) = localMultiply(d)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(rs:RasterSource) = self.combine(rs)(Multiply(_,_))
+  def localMultiply(rs:RasterSource) = self.combineOp(rs)(Multiply(_,_))
   /** Multiply the values of each cell in each raster. */
   def *(rs:RasterSource) = localMultiply(rs)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(rss:Seq[RasterSource]) = self.combine(rss)(Multiply(_))
+  def localMultiply(rss:Seq[RasterSource]) = self.combineOp(rss)(Multiply(_))
   /** Multiply the values of each cell in each raster. */
   def *(rss:Seq[RasterSource]) = localMultiply(rss)
 }

@@ -51,7 +51,7 @@ object Variety extends Serializable {
 trait VarietyOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
   def localVariety(rss:Seq[RasterDS]):RasterSource = 
-    combine(rss)(Variety(_))
+    combineOp(rss)(Variety(_))
 
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
   def localVariety(rss:RasterDS*)(implicit d:DI):RasterSource = 
