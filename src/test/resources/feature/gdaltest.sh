@@ -5,5 +5,9 @@ arg="$1"
 
 gdal_rasterize -ts 300 300 -te 0 0 300 300 -of GTiff -burn 255 $arg.json $arg.tif
 
-echo "result is:" 
-gdal2xyz.py $arg.tif | egrep 255$ | wc -l
+gdal_translate -of xyz $arg.tif $arg.xyz
+
+echo "cells included in rasterization:"
+egrep 255$ $arg.xyz | wc -l
+
+rm $arg.xyz
