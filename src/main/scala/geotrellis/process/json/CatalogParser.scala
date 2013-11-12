@@ -11,7 +11,7 @@ import scala.collection.mutable
 object CatalogParser {
   def error(msg:String) = sys.error(s"Invalid json in catalog: $msg")
 
-  def apply(jsonString:String):CatalogRec = {
+  def apply(jsonString:String,catalogPath:String):CatalogRec = {
     val json = ConfigFactory.parseString(jsonString)
 
     val catalog =
@@ -35,12 +35,12 @@ object CatalogParser {
           error("'stores' property must be a list of data stores.")
       }
 
-    val stores = storesList.map(parseDataStore).toList
+    val stores = storesList.map(parseDataStore(catalogPath,_)).toList
 
     CatalogRec(catalog,stores)
   }
 
-  private def parseDataStore(storeConfig:Config):DataStoreRec = {
+  private def parseDataStore(catalogPath:String,storeConfig:Config):DataStoreRec = {
     val store =
       try {
         storeConfig.getString("store")
@@ -73,6 +73,6 @@ object CatalogParser {
         (key,value)
       }
 
-    DataStoreRec(store, params.toMap)
+    DataStoreRec(store, params.toMap,catalogPath)
   }
 }

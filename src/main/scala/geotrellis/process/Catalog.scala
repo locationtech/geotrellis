@@ -11,6 +11,8 @@ import geotrellis.data.AsciiRasterLayerBuilder
 
 import com.typesafe.config.Config
 
+import java.io.File
+
 // example json is available in the geotrellis.process.catalog tests. please
 // keep it up-to-date with changes you make here.
 
@@ -18,7 +20,7 @@ import com.typesafe.config.Config
  * Represents a named collection of data stores. We expect each JSON file to
  * correspond to one catalog.
  */
-case class Catalog(name:String, stores:Map[String, DataStore], json: String, source: String) {
+case class Catalog(name:String, stores:Map[String, DataStore], json: String,source: String) {
 
   private var cacheSet = false
   def initCache(cache:Option[Cache]):Unit =
@@ -84,16 +86,19 @@ object Catalog {
     val src = Source.fromFile(path)
     val data = src.mkString
     src.close()
-    json.CatalogParser(data).create(data, path)
+    fromJSON(data,path)
   }
+
+  def fromJSON(data:String):Catalog = fromJSON(data,"")
 
   /**
    * Build a Catalog instance given a string of JSON data.
    */
-  def fromJSON(data:String): Catalog = json.CatalogParser(data).create(data, "unknown")
+  def fromJSON(data:String,path:String): Catalog = 
+    json.CatalogParser(data,path).create(data,path)
 
   /**
    * Builds an empty Catalog.
    */
-  def empty(name:String) = Catalog(name, Map.empty[String, DataStore], "{}", "empty()" )
+  def empty(name:String) = Catalog(name, Map.empty[String, DataStore], "{}","empty()")
 }

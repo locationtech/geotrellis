@@ -32,7 +32,11 @@ class RemoteServerApplication extends Bootable {
   // by id, which is set as "remoteServer" in the client's configuration.
   val id = "remoteServer"
 
-  val server = new Server(id, Catalog.fromPath("src/test/resources/catalog.json"))
+  println()
+  val f = new java.io.File( "../src/test/resources/catalog.json" ).getCanonicalPath
+  println(f)
+  //val f = "src/test/resources/catalog.json"
+  val server = new Server(id, Catalog.fromPath(f))
 
   def startup() { }
 

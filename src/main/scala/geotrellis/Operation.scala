@@ -153,7 +153,7 @@ abstract class OperationWrapper[+T](op:Op[T]) extends Operation[T] {
 case class DispatchedOperation[+T](val op:Op[T], val dispatcher:ActorRef)
 extends OperationWrapper(op) {}
 
-case class RemoteOperation[+T](val op:Op[T], cluster:ActorRef)
+case class RemoteOperation[+T](val op:Op[T], cluster:Option[ActorRef])
 extends OperationWrapper(op) {}
 
 object Operation {
