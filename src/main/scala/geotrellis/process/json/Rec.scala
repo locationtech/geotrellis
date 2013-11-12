@@ -17,12 +17,14 @@ trait Rec[T] {
 
 case class CatalogRec(catalog:String,
                       stores:List[DataStoreRec]) extends Rec[Catalog] {
-  def create(json:String, source:String) = Catalog(catalog, stores.map(s => s.name -> s.create).toMap, json, source)
+  def create(json:String, source:String) = 
+    Catalog(catalog, stores.map(s => s.name -> s.create).toMap, json, source)
   def name = catalog
 }
 
 case class DataStoreRec(store:String,
-                        params:Map[String, String]) extends Rec[DataStore] {
-  def create = DataStore(store, params)
+                        params:Map[String, String],
+                        catalogPath:String) extends Rec[DataStore] {
+  def create = DataStore(store, params,catalogPath)
   def name = store
 }

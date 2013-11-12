@@ -54,7 +54,7 @@ class CatalogSpec extends FunSpec with MustMatchers with ShouldMatchers {
   describe("A Catalog") {
     it("should load when empty") {
       val found = Catalog.fromJSON(json0)
-      val expected = Catalog("catalog1", Map.empty[String, DataStore], json0, "unknown")
+      val expected = Catalog("catalog1", Map.empty[String, DataStore], json0, "")
       found must be === expected
     }
 
@@ -65,11 +65,11 @@ class CatalogSpec extends FunSpec with MustMatchers with ShouldMatchers {
         Map(
           "test:fs" -> DataStore(
               "test:fs",
-              Map("type" -> "fs", "path" -> "src/test/resources/data")
+              Map("type" -> "fs", "path" -> "src/test/resources/data"),
+              ""
           )
         ),
-        json1,
-        "unknown"
+        json1, ""
       )
       found must be === expected
     }

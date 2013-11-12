@@ -41,9 +41,12 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
   def foldRight[B](z:B)(folder:(T,B)=>B):ValueSource[B] =
     converge(_.foldRight(z)(folder))
 
+  def distribute[T1 >: T,That](implicit bf:CanBuildSourceFrom[Repr,T1,That]):That =
+    _mapOp(RemoteOperation(_, None),bf.apply(this))
+
   def distribute[T1 >: T,That](cluster:akka.actor.ActorRef)
                               (implicit bf:CanBuildSourceFrom[Repr,T1,That]):That =
-    _mapOp(RemoteOperation(_, cluster),bf.apply(this))
+    _mapOp(RemoteOperation(_, Some(cluster)),bf.apply(this))
 
   def combineOp[B,C,That](ds:DataSource[B,_])
                          (f:(Op[T],Op[B])=>Op[C])

@@ -17,16 +17,16 @@ case class Dispatcher(server: Server) extends Actor {
   def receive = {
     case RunOperation(op,pos,client,dispatcher) => {
       op match {
-        case RemoteOperation(sendOp, cluster) => {
+        case RemoteOperation(sendOp, None) => 
+          server.getRouter ! RunOperation(sendOp,pos,client,None)
+        case RemoteOperation(sendOp, Some(cluster)) => 
           cluster ! RunOperation(sendOp,pos,client,None)
-        }
-        case _ => { 
+        case _ =>
           val outgoingDispatcher = dispatcher match {
             case None => Some(self)
             case _ => dispatcher
           }
           pool ! RunOperation(op,pos,client,outgoingDispatcher)
-        }
       }
     }
     case r => sys.error("Dispatcher received unknown result.")
