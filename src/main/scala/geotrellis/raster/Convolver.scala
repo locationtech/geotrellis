@@ -17,42 +17,51 @@ case class Convolver(rasterExtent:RasterExtent,k:Kernel) {
   val data:IntArrayRasterData = IntArrayRasterData.empty(rasterExtent.cols,rasterExtent.rows)
 
   def stampKernel(col:Int,row:Int,z:Int) = {
-    val rowmin = row - kernelrows / 2
-    val rowmax = math.min(row + kernelrows / 2 + 1, rows)
- 
-    val colmin = col - kernelcols / 2
-    val colmax = math.min(col + kernelcols / 2 + 1, cols)
+    if(z == 0) {
+      val o = data.get(col,row)
+      data.set(col,row,
+        if(o == NODATA) 0
+        else o
+      )
+    } else {
 
-    var kcol = 0
-    var krow = 0
+      val rowmin = row - kernelrows / 2
+      val rowmax = math.min(row + kernelrows / 2 + 1, rows)
+      
+      val colmin = col - kernelcols / 2
+      val colmax = math.min(col + kernelcols / 2 + 1, cols)
 
-    var r = rowmin
-    var c = colmin
-    while(r < rowmax) {
-      while(c < colmax) {               
-        if (r >= 0 && c >= 0 && r < rows && c < cols &&
+      var kcol = 0
+      var krow = 0
+
+      var r = rowmin
+      var c = colmin
+      while(r < rowmax) {
+        while(c < colmax) {
+          if (r >= 0 && c >= 0 && r < rows && c < cols &&
             kcol >= 0 && krow >= 0 && kcol < kernelcols && krow < kernelrows) {
 
-          val k = kraster.get(kcol,krow)
-          if (k != NODATA) {
-            val o = data.get(c,r)
-            val w = if (o == NODATA) {
-              k * z
-            } else {
-              o + k*z
+            val k = kraster.get(kcol,krow)
+            if (k != NODATA) {
+              val o = data.get(c,r)
+              val w = if (o == NODATA) {
+                k * z
+              } else {
+                o + k*z
+              }
+              data.set(c,r,w)
             }
-            data.set(c,r,w)
           }
-        } 
 
-        c += 1
-        kcol += 1
+          c += 1
+          kcol += 1
+        }
+
+        kcol = 0
+        c = colmin
+        r += 1
+        krow += 1
       }
-
-      kcol = 0
-      c = colmin
-      r += 1
-      krow += 1
     }
   }
 

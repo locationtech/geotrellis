@@ -35,8 +35,7 @@ case class Convolve(r:Op[Raster], k:Op[Kernel]) extends Op2(r,k)({
       col = 0
       while(col < cols) {
         val z = r.get(col,row)
-
-        if (z != NODATA && z != 0) {
+        if (z != NODATA) {
           convolver.stampKernel(col,row,z)
         }
 
