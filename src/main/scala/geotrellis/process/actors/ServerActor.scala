@@ -1,5 +1,6 @@
 package geotrellis.process.actors
 
+import geotrellis._
 import geotrellis.process._
 import akka.actor._
 
@@ -14,7 +15,6 @@ import akka.actor._
  * send the message to a workers). In the second case we will spin up a
  * Calculation actor who will handle the message.
  */
-private[process]
 case class ServerActor(server: Server) extends Actor {
   val dispatcher: ActorRef = context.actorOf(Props(Dispatcher(server)))
 
@@ -25,9 +25,8 @@ case class ServerActor(server: Server) extends Actor {
       dispatcher ! RunOperation(op, 0, msgSender, None)
     }
  
-    case msg:RunOperation[_] => { 
+    case msg:RunOperation[_] => 
       dispatcher ! msg
-    }
 
     case RunDispatched(op,childDispatcher) => {
       val msgSender = sender

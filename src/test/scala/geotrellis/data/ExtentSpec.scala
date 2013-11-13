@@ -34,7 +34,7 @@ class ExtentSpec extends FunSpec with MustMatchers with ShouldMatchers {
 
     def confirm(op:Op[Raster], expected:Array[Int]) {
       val r = server.run(op)
-      r.data.asArray.getOrElse(sys.error("argh")).toArray must be === expected
+      r.toArray should be (expected)
     }
 
     it("should load as expected") {

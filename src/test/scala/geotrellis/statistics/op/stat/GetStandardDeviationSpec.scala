@@ -16,7 +16,7 @@ class GetStandardDeviationSpec extends FunSpec
       val r = run(LoadFile("src/test/resources/quad8.arg"))
       val std = run(GetStandardDeviation(r, GetHistogram(r), 1000))
 
-      val d = std.data.asArray.getOrElse(sys.error("Could not get raster as Array."))
+      val d = std.toArray
   
       d(0) should be (-1341)
       d(10) should be (-447)

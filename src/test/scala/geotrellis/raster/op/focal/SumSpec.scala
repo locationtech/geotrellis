@@ -3,6 +3,8 @@ package geotrellis.raster.op.focal
 import geotrellis._
 import geotrellis.raster._
 import geotrellis.testutil._
+import geotrellis.source._
+import geotrellis.process._
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
@@ -29,7 +31,7 @@ class SumSpec extends FunSpec with FocalOpSpec
   val getCellwiseSumResult = Function.uncurried((getCellwiseResult _).curried((r,n) => Sum(r,n))(Square(1)))
 
   describe("Sum") {
-    it("should match sum against default sets in cursor calculation") {      
+    it("should match sum against default sets in cursor calculation") {
       for(added <- defaultTestSets) {
         for(removed <- defaultTestSets) {
           val filteredA = added.filter { x => x != NODATA } 
@@ -40,7 +42,7 @@ class SumSpec extends FunSpec with FocalOpSpec
       }
     }
 
-    it("should match sum against default sets in cellwise calculation") {      
+    it("should match sum against default sets in cellwise calculation") {
       for(added <- defaultTestSets) {
         for(removed <- defaultTestSets) {
           val filteredA = added.filter { x => x != NODATA } 
@@ -61,6 +63,62 @@ class SumSpec extends FunSpec with FocalOpSpec
       testCellwiseSequence((r,n)=>Sum(r,n), Square(1),
              Seq( SeqTestSetup(Seq(1,2,3,4,5), Seq[Int](), 15),
                   SeqTestSetup(Seq(10,10)    , Seq(2,3,5), 25)) )
+    }
+
+    it("should square sum r=1 for raster source") {
+      val rs1 = createRasterSource(
+        Array( nd,1,1,      1,1,1,      1,1,1,
+                1,1,1,      2,2,2,      1,1,1,
+
+                1,1,1,      3,3,3,      1,1,1,
+                1,1,1,     1,nd,1,      1,1,1
+        ),
+        3,2,3,2
+      )
+
+      getSource(rs1.focalSum(Square(1))) match {
+        case Complete(result,success) =>
+//          println(success)
+          assertEqual(result,
+            Array(3, 5, 7,    8, 9, 8,    7, 6, 4,
+                  5, 8,12,   15,18,15,   12, 9, 6,
+
+                  6, 9,12,   14,17,14,   12, 9, 6,
+                  4, 6, 8,    9,11, 9,    8, 6, 4))
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+
+      }
+    }
+
+    it("should square sum with 5x5 neighborhood") {
+      val rs1 = createRasterSource(
+        Array( nd,1,1,      1,1,1,      1,1,1,
+                1,1,1,      2,2,2,      1,1,1,
+
+                1,1,1,      3,3,3,      1,1,1,
+                1,1,1,     1,nd,1,      1,1,1
+        ),
+        3,2,3,2
+      )
+
+      getSource(rs1.focalSum(Square(2))) match {
+        case Complete(result,success) =>
+//          println(success)
+          assertEqual(result,
+            Array( 8, 14, 20,   24,24,24,    21,15, 9,
+                  11, 18, 24,   28,28,28,    25,19,12,
+
+                  11, 18, 24,   28,28,28,    25,19,12,
+                   9, 15, 20,   23,23,23,    20,15, 9))
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+
+      }
     }
 
     it("should square sum r=1") {
@@ -111,6 +169,34 @@ class SumSpec extends FunSpec with FocalOpSpec
                                            15, 16, 16, 15))
       assertEqual(Sum(r, Circle(5)), data16)
       assertEqual(Sum(r, Circle(6)), data16)
+    }
+
+    it("should circle sum for raster source") {
+      val rs1 = createRasterSource(
+        Array( nd,1,1,      1,1,1,      1,1,1,
+                1,1,1,      2,2,2,      1,1,1,
+
+                1,1,1,      3,3,3,      1,1,1,
+                1,1,1,     1,nd,1,      1,1,1
+        ),
+        3,2,3,2
+      )
+
+      getSource(rs1.focalSum(Circle(1))) match {
+        case Complete(result,success) =>
+          //println(success)
+          assertEqual(result,
+            Array(2, 3, 4,    5, 5, 5,    4, 4, 3,
+                  3, 5, 6,    9,10, 9,    6, 5, 4,
+
+                  4, 5, 7,   10,11,10,    7, 5, 4,
+                  3, 4, 4,    5, 5, 5,    4, 4, 3))
+        case Error(msg,failure) =>
+          // println(msg)
+          // println(failure)
+          assert(false)
+
+      }
     }
   }
 }

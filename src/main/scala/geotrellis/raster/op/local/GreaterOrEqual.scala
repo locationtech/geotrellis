@@ -1,49 +1,98 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.source._
 
 /**
- * Determines if one value is greater than or equal to another. Sets to 1 if true, else 0.
+ * Determines if values are greater than or equal to other values. Sets to 1 if true, else 0.
  */
-object GreaterOrEqual {
-  /** Returns 1 if the first input integer is greater than or equal to the second, else 0 */
-  def apply(x:Op[Int], y:Op[Int]) = logic.Do2(x, y)((x, y) => if(x >= y) 1 else 0)
-  /** Returns a raster indicating which cell values are greater than or equal to the input value.
-   * See [[GreaterOrEqualConstant1]] */
-  def apply(r:Op[Raster], c:Op[Int]) = new GreaterOrEqualConstant1(r, c)
-  /** Returns a raster indication which cell values are greater than or equal to the input value.
-   * See [[GreaterOrEqualConstant2]] */
-  def apply(c:Op[Int], r:Op[Raster]) = new GreaterOrEqualConstant2(c, r)
-  /** Returns a raster indicating which cell values of the first input raster are
-   *  greater than or equal to the corresponding cells of the second input raster.
-   *  See [[GreaterOrEqualRaster]] */
-  def apply(r1:Op[Raster], r2:Op[Raster]) = new GreaterOrEqualRaster(r1, r2)
+object GreaterOrEqual extends LocalRasterBinaryOp {
+  /** Apply this operation to the values of each cell in each raster.  */
+  override
+  def apply(rss:Seq[Op[Raster]]):Op[Raster] = 
+    rss.mapOps { rasters =>
+        rasters.head
+               .dualCombine(rasters.tail)({ zs =>
+                   val z = zs(0)
+                   if(zs.tail.foldLeft(true)(_ && z >= _)) 1
+                   else 0
+                })({ zs =>
+                  val z = zs(0)
+                  if(zs.tail.foldLeft(true)(_ && z >= _)) 1
+                  else 0
+                })
+       }
+      .withName(s"GreaterOrEqual[Rasters]")
+
+  def combine(z1:Int,z2:Int) =
+    if(z1 >= z2) 1 else 0
+
+  def combine(z1:Double,z2:Double):Double =
+    if(isNaN(z1)) { 0 }
+    else {
+      if(isNaN(z2)) { 0 }
+      else { 
+        if(z1 >= z2) 1 
+        else 0 
+      }
+    }
 }
 
-/**
- * Returns a raster indicating which cell values are greater than or equal to the input value.
- */
-case class GreaterOrEqualConstant1(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
-  (r, c) => AndThen(logic.RasterDualMapIfSet(r)
-  (z => if (z >= c) 1 else 0)
-  (z => if (z >= c) 1 else 0))
-})
-
-/**
- * Returns a raster indication which cell values are greater than or equal to the input value.
- */
-case class GreaterOrEqualConstant2(c:Op[Int], r:Op[Raster]) extends Op2(c, r) ({
-  (c, r) => AndThen(logic.RasterDualMapIfSet(r)
-  (z => if (z >= c) 1 else 0)
-  (z => if (z >= c) 1 else 0))
-})
-
-/**
- * Returns a raster indicating which cell values of the first input raster are
- * greater than or equal to the corresponding cells of the second input raster.
- */
-case class GreaterOrEqualRaster(r1:Op[Raster], r2:Op[Raster]) extends Op2(r1, r2) ({
-  (r1, r2) => AndThen(logic.RasterDualCombine(r1,r2) 
-  ((z1,z2) => (if (z1 >= z2) 1 else 0))
-  ((z1,z2) => (if (z1 >= z2) 1 else 0)))
-  })
+trait GreaterOrEqualOpMethods[+Repr <: RasterSource] { self: Repr =>
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is greater than or equal to the input
+   * integer, else 0.
+   */
+  def localGreaterOrEqual(i: Int) = self.mapOp(GreaterOrEqual(_, i))
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is greater than or equal to the input
+    * integer, else 0.
+   */
+  def >=(i:Int) = localGreaterOrEqual(i)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is greater than or equal to the input
+   * integer, else 0.
+   */
+  def >=:(i:Int) = localGreaterOrEqual(i)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is greater than or equal to the input
+   * double, else 0.
+   */
+  def localGreaterOrEqual(d: Double) = self.mapOp(GreaterOrEqual(_, d))
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is greater than or equal to the input
+   * double, else 0.
+   */
+  def >=(d:Double) = localGreaterOrEqual(d)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is greater than or equal to the input
+   * double, else 0.
+   */
+  def >=:(d:Double) = localGreaterOrEqual(d)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.
+   */
+  def localGreaterOrEqual(rs:RasterSource) = self.combineOp(rs)(GreaterOrEqual(_,_))
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.
+   */
+  def >=(rs:RasterSource) = localGreaterOrEqual(rs)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.
+   */
+  def localGreaterOrEqual(rss:Seq[RasterSource]) = self.combineOp(rss)(GreaterOrEqual(_))
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.
+   */
+  def >=(rss:Seq[RasterSource]) = localGreaterOrEqual(rss)
+}

@@ -18,8 +18,11 @@ object History {
   def apply(op:Op[_]) =
     new History(op.name,Nil,None,System.currentTimeMillis,0)
 
-  def literal[T](v:T) =
-    new History("Literal",Nil,None,System.currentTimeMillis,0).withResult(v)
+  def apply(op:Op[_],system:String) =
+    new History(op.name,Nil,None,System.currentTimeMillis,0,system)
+
+  def literal[T](v:T,system:String) =
+    new History("Literal",Nil,None,System.currentTimeMillis,0,system).withResult(v)
 
   implicit def historyToString(h:History) = h.toString
 }
@@ -46,12 +49,13 @@ case class History(id:String,
                    steps:List[StepHistory],
                    result:Option[HistoryResult],
                    startTime:Long,
-                   endTime:Long) {
+                   endTime:Long,
+                   system:String = "unknown") {
   val elapsedTime = endTime - startTime
 
-  def withResult[T](value:T) = {
+  def withResult[T](value:T,forced:Boolean = false) = {
     val now = System.currentTimeMillis
-    val s = 
+    val resultString = 
       value match {
         case null => "null"
         case s:String => s""""$s""""
@@ -79,25 +83,37 @@ case class History(id:String,
           sb.toString
         case _ => value.getClass.getSimpleName
       }
-    new History(id,steps,Some(Success(s)),startTime,now)
+
+    val s = 
+      if(forced) { resultString + " [Forced]" }
+      else { resultString }
+
+    val truncS =           
+      // if(s.length > 15) {
+      //   s"""${s.substring(0,12)}..."""
+      // } else {
+        s
+//      }
+
+    new History(id,steps,Some(Success(truncS)),startTime,now,system)
   }
 
   def withError(msg:String,trace:String) = {
     val now = System.currentTimeMillis
-    new History(id,steps,Some(Failure(msg,trace)),startTime,now)
+    new History(id,steps,Some(Failure(msg,trace)),startTime,now,system)
   }
 
   def withStep(step:StepHistory) =
-    new History(id,step :: steps,result,startTime,endTime)
+    new History(id,step :: steps,result,startTime,endTime,system)
 
   def withStep(stepHistorys:List[History]) =
-    new History(id,StepHistory(stepHistorys) :: steps,result,startTime,endTime)
+    new History(id,StepHistory(stepHistorys) :: steps,result,startTime,endTime,system)
 
   override
   def toString:String = 
     toString("",false)
 
-  def toString(indentString:String,initialIndent:Boolean):String = {
+  def toString(indentString:String,initialIndent:Boolean,includeSystem:Boolean=true):String = {
     val halfLen = id.length/2
     val sb = new StringBuilder
     if(initialIndent) {
@@ -120,6 +136,9 @@ case class History(id:String,
         s"ERROR: $msg (in $elapsedTime ms): \n" + trace + "\n"
       case None => "No Result"
     })
+    if (includeSystem && system != "") {
+      sb.append("[" + system + "]")
+    }
     sb.append("\n")
     sb.toString
   }

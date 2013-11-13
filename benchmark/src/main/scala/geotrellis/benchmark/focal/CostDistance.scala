@@ -29,7 +29,7 @@ class CostDistanceOperationBenchmark extends OperationBenchmark {
     p = randomPointList(rasterSize, points)
   }
 
-  def timeCostDistance(reps:Int) = run(reps)(s.run(focal.CostDistance(r,p)))
+  def timeCostDistance(reps:Int) = run(reps)(s.run(global.CostDistance(r,p)))
 
   def randomRasterN(n: Int) = {
     val a = Array.ofDim[Int](n*n).map(a => Random.nextInt(255))
@@ -37,7 +37,7 @@ class CostDistanceOperationBenchmark extends OperationBenchmark {
     val re = RasterExtent(e, 10,10,n,n)
     val data = IntArrayRasterData(a, n, n)
 
-    new Raster(data, re)
+    Raster(data, re)
   }
 
   def randomPointList(n: Int, nPoints: Int) = {

@@ -32,10 +32,13 @@ class RemoteServerApplication extends Bootable {
   // by id, which is set as "remoteServer" in the client's configuration.
   val id = "remoteServer"
 
-  val server = new Server(id, Catalog.empty("test"))
+  println()
+  val f = new java.io.File( "../src/test/resources/catalog.json" ).getCanonicalPath
+  println(f)
+  //val f = "src/test/resources/catalog.json"
+  val server = new Server(id, Catalog.fromPath(f))
 
-  def startup() {
-  }
+  def startup() { }
 
   def shutdown() {
     server.shutdown()
@@ -44,7 +47,7 @@ class RemoteServerApplication extends Bootable {
 
 object RemoteServer {
   def main(args: Array[String]) {
-    if (args.nonEmpty) System.setProperty("akka.remote.netty.port", args(0))
+    if (args.nonEmpty) System.setProperty("akka.remote.netty.tcp.port", args(0))
     new RemoteServerApplication
     println("Started GeoTrellis remote server.")
     println("Ready to receive messages.")

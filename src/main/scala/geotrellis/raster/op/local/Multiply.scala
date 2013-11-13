@@ -1,67 +1,43 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
-import geotrellis.logic.RasterDualMapIfSet
+import geotrellis.source._
 
 /**
- * Multiplies values of Rasters or constants.
+ * Multiplies values.
+ * 
+ * @note        NoData values will cause the results of this operation
+ *              to be NODATA or Double.NaN.
  */
-object Multiply {
-  /** Multiply two integer values. */
-  def apply(x:Op[Int], y:Op[Int]) = logic.Do2(x, y)((x, y) => x * y)
+object Multiply extends LocalRasterBinaryOp {
+  def combine(z1:Int,z2:Int) =
+    if (z1 == NODATA || z2 == NODATA) NODATA
+    else z1 * z2
 
-  /** Multiply two integer values. */
-  def apply(x:Op[Double], y:Op[Double])(implicit d: DummyImplicit) = logic.Do2(x, y)((x, y) => x * y)
-
-  /** Multiply each cell by an Int constant. See [[MultiplyConstant]] */
-  def apply(r:Op[Raster], c:Op[Int]) = MultiplyConstant(r, c)
-
-  /** Multiply each cell by an Int constant. See [[MultiplyConstant]] */
-  def apply(c:Op[Int], r:Op[Raster])(implicit d: DummyImplicit) = MultiplyConstant(r, c)
-
-  /** Multiply each cell by an Double constant. See [[MultiplyDoubleConstant]] */
-  def apply(r:Op[Raster], c:Op[Double]) = MultiplyDoubleConstant(r, c)
-
-  /** Multiply each cell by an Double constant. See [[MultiplyDoubleConstant]] */
-  def apply(c:Op[Double], r:Op[Raster])(implicit d: DummyImplicit) = MultiplyDoubleConstant(r, c)
-
-  /** Multiply values of cells of each raster. See [[MultiplyRasters]] */
-  def apply(rs:Op[Raster]*) = MultiplyRasters(rs:_*)
-
-  /** Multiply values of cells of each raster. See [[MultiplyArray]] */
-  def apply(rs:Op[Array[Raster]]) = MultiplyArray(rs)
+  def combine(z1:Double,z2:Double) =
+    if (isNaN(z1) || isNaN(z2)) Double.NaN
+    else z1 * z2
 }
 
-/**
- * Multiply each cell by a constant.
- */
-case class MultiplyConstant(r:Op[Raster], c:Op[Int]) extends Op2(r, c)({
-  (r, c) => AndThen(RasterDualMapIfSet(r)(_ * c)(_ * c))
-})
-
-/**
- * Multiply each cell by a constant (double).
- */
-case class MultiplyDoubleConstant(r:Op[Raster], c:Op[Double]) extends Op2(r, c)({
-  (r, c) => AndThen(RasterDualMapIfSet(r)({ i:Int => (i * c).toInt})(_ * c))
-})
-
-object MultiplyRasters {
-  /**
-   * Multiply values of cells of each raster.
-   */
-  def apply(rs:Op[Raster]*) = (
-    logic.RasterDualReduce(rs)
-      ((a,b) => if (a == NODATA) NODATA else if (b == NODATA) NODATA else a * b)
-      ((a,b) => a * b)
-  )
+trait MultiplyOpMethods[+Repr <: RasterSource] { self: Repr =>
+  /** Multiply a constant value from each cell.*/
+  def localMultiply(i: Int) = self.mapOp(Multiply(_, i))
+  /** Multiply a constant value from each cell.*/
+  def *(i:Int) = localMultiply(i)
+  /** Multiply a constant value from each cell.*/
+  def *:(i:Int) = localMultiply(i)
+  /** Multiply a double constant value from each cell.*/
+  def localMultiply(d: Double) = self.mapOp(Multiply(_, d))
+  /** Multiply a double constant value from each cell.*/
+  def *(d:Double) = localMultiply(d)
+  /** Multiply a double constant value from each cell.*/
+  def *:(d:Double) = localMultiply(d)
+  /** Multiply the values of each cell in each raster. */
+  def localMultiply(rs:RasterSource) = self.combineOp(rs)(Multiply(_,_))
+  /** Multiply the values of each cell in each raster. */
+  def *(rs:RasterSource) = localMultiply(rs)
+  /** Multiply the values of each cell in each raster. */
+  def localMultiply(rss:Seq[RasterSource]) = self.combineOp(rss)(Multiply(_))
+  /** Multiply the values of each cell in each raster. */
+  def *(rss:Seq[RasterSource]) = localMultiply(rss)
 }
-
-/**
- * Multiply each cell of each raster in array.
- */
-case class MultiplyArray(rasters:Op[Array[Raster]]) extends Op1(rasters) ({
-  (rs) => AndThen(logic.RasterDualReduce(rs.map(Literal(_)).toSeq)
-  ((a, b) => if (a == NODATA) NODATA else if (b == NODATA) NODATA else a * b)
-  ((a,b) => a * b))
-})

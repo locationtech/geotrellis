@@ -71,10 +71,10 @@ case class MultiplyConstantWhileLoop(r:Op[Raster], c:Op[Int]) extends Op[Raster]
 
   val nextSteps:Steps = {
     case (raster:Raster) :: (n:Int) :: Nil => {
-      val r2 = raster.copy
-      val data = r2.data.mutable.getOrElse(sys.error("argh"))
+      val r2 = raster.toArrayRaster
+      val data = r2.data.mutable
 
-      val len = r2.length
+      val len = r2.cols * r2.rows
       var i = 0
       while (i < len) {
         val z = data(i)
@@ -85,7 +85,6 @@ case class MultiplyConstantWhileLoop(r:Op[Raster], c:Op[Int]) extends Op[Raster]
     }
   }
 }
-
 
 case class UntiledMin(r:Op[Raster]) extends Operation[Int] {
   def _run(context:Context) = runAsync(r :: Nil)
@@ -121,8 +120,8 @@ trait MultiLocalOld extends Operation[Raster]{
   def handle(z1:Int, z2:Int):Int
 
   def handleRaster(_outdata:RasterData, _data:RasterData) {
-    val data = _data.asArray.getOrElse(sys.error("argh"))
-    val outdata = _outdata.mutable.getOrElse(sys.error("argh"))
+    val data = _data.toArray
+    val outdata = _outdata.mutable
     var i = 0
     while (i < outdata.length) {
       outdata(i) = handle(outdata(i), data(i))
@@ -131,11 +130,11 @@ trait MultiLocalOld extends Operation[Raster]{
   }
   
   def handleRasters(rasters:Array[Raster]) = {
-    val output = rasters(0).copy() 
-    val outdata = output.data.asArray.getOrElse(sys.error("argh"))
+    val output = rasters(0).toArrayRaster
+    val outdata = output.data
     var j = 0
     while (j < rasters.length) {
-      handleRaster(outdata, rasters(j).data)
+      handleRaster(outdata, rasters(j).toArrayRaster.data)
       j += 1
     }
     Result(output)
@@ -151,21 +150,21 @@ case class AddOld(rs:Op[Raster]*) extends MultiLocalOld {
 }
 
 // the winner!
-case class BTileForceHistogram(r:Op[Raster]) extends BReducer1(r)({
-  r => FastMapHistogram.fromRaster(r.force)
-})({
-  hs => FastMapHistogram.fromHistograms(hs)
-})
+// case class BTileForceHistogram(r:Op[Raster]) extends BReducer1(r)({
+//   r => FastMapHistogram.fromRaster(r.force)
+// })({
+//   hs => FastMapHistogram.fromHistograms(hs)
+// })
 
 
 /**
  *
  */
-case class BTileHistogram(r:Op[Raster]) extends BReducer1(r)({
-  r => FastMapHistogram.fromRaster(r)
-})({
-  hs => FastMapHistogram.fromHistograms(hs)
-})
+// case class BTileHistogram(r:Op[Raster]) extends BReducer1(r)({
+//   r => FastMapHistogram.fromRaster(r)
+// })({
+//   hs => FastMapHistogram.fromHistograms(hs)
+// })
 
 case class BUntiledHistogram(r:Op[Raster]) extends Op1(r) ({
   r => {
@@ -173,33 +172,32 @@ case class BUntiledHistogram(r:Op[Raster]) extends Op1(r) ({
   }
 })
 
-case class BTileMin(r:Op[Raster]) extends BReducer1(r)({
-  r => {
-    var zmin = Int.MaxValue
-    r.foreach {
-      z => if (z != NODATA) zmin = min(z,zmin)
-    }
-    zmin
-  }
-})({
-  zs => zs.reduceLeft((x,y) => min(x,y))
-})
+// case class BTileMin(r:Op[Raster]) extends BReducer1(r)({
+//   r => {
+//     var zmin = Int.MaxValue
+//     r.foreach {
+//       z => if (z != NODATA) zmin = min(z,zmin)
+//     }
+//     zmin
+//   }
+// })({
+//   zs => zs.reduceLeft((x,y) => min(x,y))
+// })
 
-abstract class BReducer1[B:Manifest, C:Manifest](r:Op[Raster])(handle:Raster => B)(reducer:List[B] => C) extends Op[C] {
-  def _run(context:Context) = runAsync('init :: r :: Nil)
+// abstract class BReducer1[B:Manifest, C:Manifest](r:Op[Raster])(handle:Raster => B)(reducer:List[B] => C) extends Op[C] {
+//   def _run(context:Context) = runAsync('init :: r :: Nil)
 
-  val nextSteps:Steps = {
-    case 'init :: (r:Raster) :: Nil => init(r)
-    case 'reduce :: (bs:List[_]) => Result(reducer(bs.asInstanceOf[List[B]]))
-  }
+//   val nextSteps:Steps = {
+//     case 'init :: (r:Raster) :: Nil => init(r)
+//     case 'reduce :: (bs:List[_]) => Result(reducer(bs.asInstanceOf[List[B]]))
+//   }
 
-  def init(r:Raster) = {
-    r.data match {
-      case _:TiledRasterData => runAsync('reduce :: r.getTileOpList.map(mapper))
-      case _ => Result(reducer(handle(r) :: Nil))
-    }
-  }
+//   def init(r:Raster) = {
+//     r.data match {
+//       case _:TiledRasterData => runAsync('reduce :: r.getTileOpList.map(mapper))
+//       case _ => Result(reducer(handle(r) :: Nil))
+//     }
+//   }
 
-  def mapper(r:Op[Raster]):Op[B] = logic.Do(r)(handle)
-}
-
+//   def mapper(r:Op[Raster]):Op[B] = logic.Do(r)(handle)
+// }

@@ -33,12 +33,18 @@ class CursorSumCalc extends CursorCalculation[Raster]
   var total = 0
 
   def calc(r:Raster,cursor:Cursor) = {
+
+    val added = collection.mutable.Set[(Int,Int,Int)]()
     cursor.addedCells.foreach { (x,y) => 
       val v = r.get(x,y)
+      added += ((x,y,v))
       if(v != NODATA) { total += r.get(x,y) }
     }
+
+    val removed = collection.mutable.Set[(Int,Int,Int)]()
     cursor.removedCells.foreach { (x,y) => 
       val v = r.get(x,y)
+      removed += ((x,y,v))
       if(v != NODATA) { total -= r.get(x,y) }
     }
 
@@ -61,5 +67,7 @@ class CellwiseSumCalc extends CellwiseCalculation[Raster]
   }
 
   def reset() = { total = 0 }
-  def setValue(x:Int,y:Int) = data.set(x,y,total)
+  def setValue(x:Int,y:Int) = { 
+    data.set(x,y,total) 
+  }
 }

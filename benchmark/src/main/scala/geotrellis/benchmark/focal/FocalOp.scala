@@ -24,7 +24,7 @@ object FocalOp {
 	val strategy = FocalStrategy.get[Double](s,n)
         Result(strategy.handle(r, d.newData(r), () => d.newCalc))
       case d: MultiTypeFocalOpDefinition => 
-	r.data.getType match {
+	r.rasterType match {
 	  case TypeBit | TypeByte | TypeShort | TypeInt =>
 	    val strategy = FocalStrategy.get[Int](s,n)
 	    Result(strategy.handle(r, d.newIntData(r), () => d.newIntCalc))

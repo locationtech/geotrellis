@@ -23,7 +23,7 @@ class RasterSpec extends FunSpec with MustMatchers {
 
     it("should create empty rasters") {
       val r = Raster.empty(g)
-      val d = r.data.asArray.getOrElse(sys.error("argh"))
+      val d = r.toArray
       for(i <- 0 until g.cols * g.rows) {
         d(i) must be === NODATA
       }
@@ -41,10 +41,6 @@ class RasterSpec extends FunSpec with MustMatchers {
       r1 must not be r2
       r1 must be === r3
       r1 must be === r4
-    }
-
-    it("should have run-time info about being tiled") {
-      raster.isTiled must be === false
     }
   }
 }

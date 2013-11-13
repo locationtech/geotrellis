@@ -2,7 +2,6 @@ package geotrellis.raster.op.transform
 
 import geotrellis._
 import geotrellis.data._
-import geotrellis.raster.op.extent.GetRasterExtent
 /**
  * Generate a raster with a new extent and resolution.
  *
@@ -23,8 +22,8 @@ object Resize {
   /**
    * Generate a raster with a new extent and resolution. 
    */
-  def apply(r:Op[Raster], extentOp:Op[Extent], cols:Op[Int], rows:Op[Int]):Resize = 
-    Resize(r,GetRasterExtent(extentOp, cols, rows))
+  def apply(r:Op[Raster], extentOp:Op[Extent], cols:Op[Int], rows:Op[Int]):Op[Raster] = 
+    (extentOp,cols,rows).flatMap( (e,cs,rs) => Resize(r,RasterExtent(e, cs, rs)))
 
   def apply(r:Op[Raster], cols:Op[Int], rows:Op[Int]):ResizeGrid = ResizeGrid(r, cols, rows)
 }

@@ -45,8 +45,8 @@ class Layer {
   @Path("/render")
   def render(
     @DefaultValue("") @QueryParam("bbox") bbox:String,
-    @DefaultValue("256") @QueryParam("cols") cols:String,
-    @DefaultValue("256") @QueryParam("rows") rows:String,
+    @DefaultValue("256") @QueryParam("cols") cols:Int,
+    @DefaultValue("256") @QueryParam("rows") rows:Int,
     @DefaultValue("") @QueryParam("layer") layer:String,
     @DefaultValue("") @QueryParam("palette") palette:String,
     @DefaultValue("4") @QueryParam("colors") numColors:String,
@@ -55,15 +55,16 @@ class Layer {
     @DefaultValue("blue-to-red") @QueryParam("colorRamp") colorRampKey:String,
     @Context req:HttpServletRequest
   ):Response = {
-    val extentOp = string.ParseExtent(bbox)
-    val colsOp = string.ParseInt(cols)
-    val rowsOp = string.ParseInt(rows)
+    val extent = {
+      val Array(xmin,ymin,xmax,ymax) = bbox.split(",").map(_.toDouble)
+      Extent(xmin,ymin,xmax,ymax)
+    }
 
-    val reOp = extent.GetRasterExtent(extentOp, colsOp, rowsOp)
+    val rasterExtent = RasterExtent(extent, cols, rows)
 
-    val layerOp = io.LoadRaster(layer,reOp).map { r =>
+    val layerOp = io.LoadRaster(layer,rasterExtent).map { r =>
       // Convert 0 of bit raster to NODATA
-      if(!r.data.isTiled && r.data.getType == TypeBit) { 
+      if(r.rasterType == TypeBit) { 
         r.convert(TypeByte).map { z => if(z == 0) NODATA else z } 
       } else { 
         r 

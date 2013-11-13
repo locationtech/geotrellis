@@ -13,6 +13,8 @@ package object geotrellis {
   type SeqDS[E] = geotrellis.source.DataSource[E,Seq[E]]
   type HistogramDS = geotrellis.source.DataSource[Histogram,Histogram]
 
+  @inline def isNaN(d:Double) = java.lang.Double.isNaN(d)
+
   /**
    * Add simple syntax for creating an operation.
    *
@@ -38,7 +40,7 @@ package object geotrellis {
    *
    * val plusOne = op { (i:Int) => Result(i + 1) }
    */
-  def op[A, T](f: (A) => StepOutput[T])(implicit m: Manifest[T]): (Op[A]) => Op1[A, T] =
+  def op[A, T](f: (A) => StepOutput[T]): (Op[A]) => Op1[A, T] =
     (a: Op[A]) => new Op1(a)((a) => f(a))
 
   /**
@@ -49,7 +51,7 @@ package object geotrellis {
    * val localPlusOne = ( (r:Raster, i:Int) => local.Add(r,i + 1) )
    *
    */
-  def op[A, T](f: (A) => Op[T])(implicit m: Manifest[T], n: DI): (Op[A]) => Op1[A, T] =
+  def op[A, T](f: (A) => Op[T])(implicit n: DI): (Op[A]) => Op1[A, T] =
     (a: Op[A]) => new Op1(a)((a) => StepRequiresAsync(List(f(a)), (l) => Result(l.head.asInstanceOf[T])))
 
   /**
@@ -59,7 +61,7 @@ package object geotrellis {
    *
    * val plusOne = op { (i:Int) => i + 1 }
    */
-  def op[A, T](f: (A) => T)(implicit m: Manifest[T], n: DI, o: DI): (Op[A]) => Op1[A, T] =
+  def op[A, T](f: (A) => T)(implicit n: DI, o: DI): (Op[A]) => Op1[A, T] =
     (a: Op[A]) => new Op1(a)((a) => Result(f(a)))
 
   // Op2 methods for op() //
@@ -67,20 +69,20 @@ package object geotrellis {
   /**
    * Create an operation from a 2-arg function that returns StepOutput.
    */
-  def op[A, B, T](f: (A, B) => StepOutput[T])(implicit m: Manifest[T]): (Op[A], Op[B]) => Op2[A, B, T] =
+  def op[A, B, T](f: (A, B) => StepOutput[T]): (Op[A], Op[B]) => Op2[A, B, T] =
     (a: Op[A], b: Op[B]) => new Op2(a, b)((a, b) => f(a, b))
 
   /**
    * Create an operation from a 2-arg function that returns an operation.
    */
-  def op[A, B, T](f: (A, B) => Op[T])(implicit m: Manifest[T], n: DI): (Op[A], Op[B]) => Op2[A, B, T] =
+  def op[A, B, T](f: (A, B) => Op[T])(implicit n: DI): (Op[A], Op[B]) => Op2[A, B, T] =
     (a: Op[A], b: Op[B]) => new Op2(a, b)((a, b) => StepRequiresAsync(List(f(a, b)), (l) =>
       Result(l.head.asInstanceOf[T])))
 
   /**
    * Create an operation from a 2-arg function that returns a literal value.
    */
-  def op[A, B, T](f: (A, B) => T)(implicit m: Manifest[T], n: DI, o: DI): (Op[A], Op[B]) => Op2[A, B, T] =
+  def op[A, B, T](f: (A, B) => T)(implicit n: DI, o: DI): (Op[A], Op[B]) => Op2[A, B, T] =
     (a: Op[A], b: Op[B]) => new Op2(a, b)((a, b) => Result(f(a, b)))
 
   // Op3 methods for op() //
@@ -88,20 +90,20 @@ package object geotrellis {
   /**
    * Create an operation from a 3-arg function that returns StepOutput.
    */
-  def op[A, B, C, T](f: (A, B, C) => StepOutput[T])(implicit m: Manifest[T]): (Op[A], Op[B], Op[C]) => Op3[A, B, C, T] =
+  def op[A, B, C, T](f: (A, B, C) => StepOutput[T]): (Op[A], Op[B], Op[C]) => Op3[A, B, C, T] =
     (a: Op[A], b: Op[B], c: Op[C]) => new Op3(a, b, c)((a, b, c) => f(a, b, c))
 
   /**
    * Create an operation from a 3-arg function that returns an operation.
    */
-  def op[A, B, C, T](f: (A, B, C) => Op[T])(implicit m: Manifest[T], n: DI): (Op[A], Op[B], Op[C]) => Op3[A, B, C, T] =
+  def op[A, B, C, T](f: (A, B, C) => Op[T])(implicit  n: DI): (Op[A], Op[B], Op[C]) => Op3[A, B, C, T] =
     (a: Op[A], b: Op[B], c: Op[C]) =>
       new Op3(a, b, c)((a, b, c) => StepRequiresAsync(List(f(a, b, c)), (l) => Result(l.head.asInstanceOf[T])))
 
   /**
    * Create an operation from a 3-arg function that returns a literal value.
    */
-  def op[A, B, C, T](f: (A, B, C) => T)(implicit m: Manifest[T], n: DI, o: DI): (Op[A], Op[B], Op[C]) => Op3[A, B, C, T] =
+  def op[A, B, C, T](f: (A, B, C) => T)(implicit n: DI, o: DI): (Op[A], Op[B], Op[C]) => Op3[A, B, C, T] =
     (a: Op[A], b: Op[B], c: Op[C]) => new Op3(a, b, c)((a, b, c) => Result(f(a, b, c)))
 
   // Op4 methods for op() //
@@ -109,14 +111,14 @@ package object geotrellis {
   /**
    * Create an operation from a 4-arg function that returns StepOutput.
    */
-  def op[A, B, C, D, T](f: (A, B, C, D) => StepOutput[T])(implicit m: Manifest[T]): 
+  def op[A, B, C, D, T](f: (A, B, C, D) => StepOutput[T]): 
 	  (Op[A], Op[B], Op[C], Op[D]) => Op4[A, B, C, D, T] =
     (a: Op[A], b: Op[B], c: Op[C], d: Op[D]) => new Op4(a, b, c, d)((a, b, c, d) => f(a, b, c, d))
 
   /**
    * Create an operation from a 4-arg function that returns an operation.
    */
-  def op[A, B, C, D, T](f: (A, B, C, D) => Op[T])(implicit m: Manifest[T], n: DI): 
+  def op[A, B, C, D, T](f: (A, B, C, D) => Op[T])(implicit n: DI): 
 	  (Op[A], Op[B], Op[C], Op[D]) => Op4[A, B, C, D, T] =
     (a: Op[A], b: Op[B], c: Op[C], d: Op[D]) => new Op4(a, b, c, d)((a, b, c, d) => 
       StepRequiresAsync(List(f(a, b, c, d)), (l) => Result(l.head.asInstanceOf[T])))
@@ -124,7 +126,7 @@ package object geotrellis {
   /**
    * Create an operation from a 4-arg function that returns a literal value.
    */
-  def op[A, B, C, D, T](f: (A, B, C, D) => T)(implicit m: Manifest[T], n: DI, o: DI): 
+  def op[A, B, C, D, T](f: (A, B, C, D) => T)(implicit n: DI, o: DI): 
 	  (Op[A], Op[B], Op[C], Op[D]) => Op4[A, B, C, D, T] =
     (a: Op[A], b: Op[B], c: Op[C], d: Op[D]) => new Op4(a, b, c, d)((a, b, c, d) => 
       Result(f(a, b, c, d)))
@@ -145,27 +147,37 @@ package object geotrellis {
    * this is similiar to a for comprehension, but the
    * operations will be executed in parallel.
    */
-  case class OpMap2[A,B](a:Op[A],b:Op[B]) {
-    def map[T:Manifest](f:(A,B)=>T) = op(f).apply(a,b)
-    def flatMap[T:Manifest](f:(A,B)=>Op[T]) = op(f).apply(a,b)
+  implicit class OpMap2[A,B](t:(Op[A],Op[B])) {
+    def map[T](f:(A,B)=>T) = op(f).apply(t._1,t._2)
+    def flatMap[T](f:(A,B)=>Op[T]) = op(f).apply(t._1,t._2)
   }
 
-  implicit def opTupleToOpMap2[A,B](t:(Op[A],Op[B])) = 
-    new OpMap2(t._1,t._2)
-
-  case class OpMap3[A,B,C](a:Op[A],b:Op[B],c:Op[C]) {
-    def map[T:Manifest](f:(A,B,C)=>T) = op(f).apply(a,b,c)
-    def flatMap[T:Manifest](f:(A,B,C)=>Op[T]) = op(f).apply(a,b,c)
+  implicit class OpMap3[A,B,C](t:(Op[A],Op[B],Op[C])) {
+    def map[T](f:(A,B,C)=>T) = op(f).apply(t._1,t._2,t._3)
+    def flatMap[T](f:(A,B,C)=>Op[T]) = op(f).apply(t._1,t._2,t._3)
   }
 
-  implicit def opTupleToOpMap3[A,B,C](t:(Op[A],Op[B],Op[C])) = 
-    new OpMap3(t._1,t._2,t._3)
-
-  case class OpMap4[A,B,C,D](a:Op[A],b:Op[B],c:Op[C],d:Op[D]) {
-    def map[T:Manifest](f:(A,B,C,D)=>T) = op(f).apply(a,b,c,d)
-    def flatMap[T:Manifest](f:(A,B,C,D)=>Op[T]) = op(f).apply(a,b,c,d)
+  implicit class OpMap4[A,B,C,D](t:(Op[A],Op[B],Op[C],Op[D])) {
+    def map[T](f:(A,B,C,D)=>T) = op(f).apply(t._1,t._2,t._3,t._4)
+    def flatMap[T](f:(A,B,C,D)=>Op[T]) = op(f).apply(t._1,t._2,t._3,t._4)
   }
 
-  implicit def opTupleToOpMap4[A,B,C,D](t:(Op[A],Op[B],Op[C],Op[D])) = 
-    new OpMap4(t._1,t._2,t._3,t._4)
+  /** 
+   * Syntax for converting an iterable collection to 
+   * have methods to work with the results of those 
+   * operations executed in parallel
+   */
+  implicit class OpMapSeq[A](seq:Seq[Op[A]]) {
+    def mapOps[T](f:(Seq[A]=>T)) = logic.Collect(Literal(seq)).map(f)
+    def flaMapOps[T](f:(Seq[A]=>Op[T])) = logic.Collect(Literal(seq)).flatMap(f)
+  }
+
+  implicit class OpMapArray[A](seq:Array[Op[A]]) {
+    def mapOps[T](f:(Seq[A]=>T)) = logic.Collect(Literal(seq.toSeq)).map(f)
+    def flaMapOps[T](f:(Seq[A]=>Op[T])) = logic.Collect(Literal(seq.toSeq)).flatMap(f)
+  }
+
+  implicit class OpSeqToCollect[T](seq:Op[Seq[Op[T]]]) {
+    def collect() = logic.Collect(seq)
+  }
 }

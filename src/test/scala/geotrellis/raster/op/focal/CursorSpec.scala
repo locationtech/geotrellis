@@ -42,7 +42,7 @@ class CursorSpec extends FunSpec with ShouldMatchers with RasterBuilders {
       val sAdded = Set[(Int,Int)]()
       val sAll = Set[(Int,Int)]()
       val r = createConsecutiveRaster(10)
-      val analysisArea = AnalysisArea(r)
+      val analysisArea = GridBounds(r)
       val cursor = new Cursor(r,analysisArea,1)
       for(row <- 0 until r.rows) {
         for(col <- 0 until r.cols) {

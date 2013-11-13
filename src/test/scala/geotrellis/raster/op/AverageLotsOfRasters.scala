@@ -4,9 +4,7 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.raster.op._
 import geotrellis.testutil._
-
-import geotrellis.raster.op.local.AddArray
-import geotrellis.{op => liftOp}
+import geotrellis.raster.op.local.Add
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -22,8 +20,8 @@ class AverageLotsOfRastersTest extends FunSuite {
   def r(n:Int) = Raster(Array.fill(100)(n), re)
   def r(n:Double) = Raster(Array.fill(100)(n), re)
 
-  def addInts(ns:Int*) = AddArray(ns.map(n => r(n)).toArray.asInstanceOf[Array[Raster]])
-  def addDoubles(ns:Double*) = AddArray(ns.map(n => r(n)).toArray.asInstanceOf[Array[Raster]])
+  def addInts(ns:Int*) = Add(ns.map(n => Literal(r(n))))
+  def addDoubles(ns:Double*) = Add(ns.map(n => r(n)))
 
   test("average rasters in sequential groups to limit memory usage") {
     val limit = 30
@@ -35,7 +33,7 @@ class AverageLotsOfRastersTest extends FunSuite {
     val firstRaster:Op[Raster] = dividedOps.head
     val groups = dividedOps.tail.grouped(limit).map { _.toArray }.toList
 
-    val rOps:Op[Raster] = groups.foldLeft (firstRaster) ((oldResult:Op[Raster], newOps:Array[Op[Raster]]) => (logic.WithResult(oldResult)({ oldResult => local.Add( local.AddRasters(newOps:_*), oldResult) })) )
+    val rOps:Op[Raster] = groups.foldLeft (firstRaster) ((oldResult:Op[Raster], newOps:Array[Op[Raster]]) => (logic.WithResult(oldResult)({ oldResult => local.Add( local.Add(newOps), oldResult) })) )
     val s = TestServer.server
     val output = s.run(rOps)
   }
@@ -48,8 +46,8 @@ class AverageLotsOfRastersTest extends FunSuite {
     val dividedOps:Seq[Op[Raster]] = ops.map { rOp => local.Divide(rOp, count) }
     val firstRaster:Op[Raster] = dividedOps.head
 
-    val groups = dividedOps.tail.grouped(limit).map { _.toArray }.map(local.AddRasters( _:_* ) ) 
-    val ops2 = local.AddArray( logic.Collect( groups.toSeq ).map(_.toArray) )
+    val groups = dividedOps.tail.grouped(limit).map(local.Add(_) ) 
+    val ops2 = groups.toSeq.flaMapOps(seq => Add(seq))
 
     val s = TestServer.server
     val output = s.run(ops2)

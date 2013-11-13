@@ -5,7 +5,7 @@
    "store": "test:fs",
    "params": {
      "type": "fs",
-     "path": "src/test/resources/data",
+     "path": "data",
      "cacheAll": "no"
     }
   },
@@ -13,7 +13,7 @@
    "store": "sbn:fs",
    "params": {
      "type": "fs",
-     "path": "src/test/resources/sbn",
+     "path": "sbn",
      "cacheAll": "no"
     }
   }

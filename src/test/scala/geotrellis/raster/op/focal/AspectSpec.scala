@@ -38,21 +38,10 @@ class AspectSpec extends FunSpec with ShouldMatchers
       val croppedGdal = Crop(gdalOp,cropExtent)
       val croppedComputed = Crop(aspectComputed,cropExtent)
 
-      val rgc = run(Force(croppedGdal))
-      val rc = run(Force(croppedComputed))
+      val rgc = run(croppedGdal)
+      val rc = run(croppedComputed)
 
       assertEqual(croppedGdal,croppedComputed, 0.1)
-    }
-
-    it("should work with tiling") {
-      val rOp = get("elevation")
-      val nonTiledAspect = Aspect(rOp)
-
-      val tiled = logic.Do(rOp)({ r => Tiler.createTiledRaster(r,89,140) })
-      //val tiledAspect = TileFocalOp(tiled,Aspect(rOp))
-      val tiledAspect = Aspect(tiled)
-
-      assertEqual(nonTiledAspect,tiledAspect)
     }
 
     it("should calculate edge cases correctly") {

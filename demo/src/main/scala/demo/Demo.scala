@@ -7,11 +7,9 @@ import javax.ws.rs.core.{Response, Context}
 
 // import core geotrellis types
 import geotrellis._
-
-// import some useful operations
+import geotrellis.source._
 import geotrellis.raster.op._
 import geotrellis.statistics.op._
-import geotrellis.rest.op._
 
 // import syntax implicits like "raster + raster"
 import geotrellis.Implicits._
@@ -20,31 +18,17 @@ object response {
   def apply(mime:String)(data:Any) = Response.ok(data).`type`(mime).build()
 }
 
-/**
- * Operation to perform the basic weighted overlay calculation.
- */
-object WeightedOverlayBasic {
-  def apply(raster1:Op[Raster], weight1:Op[Int],
-            raster2:Op[Raster], weight2:Op[Int]) = {
-
-    val x:Op[Raster] = raster1 * weight1
-    val y:Op[Raster] = raster2 * weight2
-    val z:Op[Raster] = x + y
-
-    val weightSum:Op[Int] = weight1 + weight2
-
-    z / weightSum
-  }
-}
-
 object WeightedOverlayArray {
-  def apply(rasters:Op[Array[Raster]], weights:Op[Array[Int]]) = {
+  def apply(rasters:Seq[RasterSource], weights:Seq[Int]):RasterSource = {
 
-    val rs:Op[Array[Raster]] = logic.ForEach(rasters, weights)(_ * _)
+//    val rs:Op[Array[Raster]] = logic.ForEach(rasters, weights)(_ * _)
+    val weighted = rasters.zip(weights).map { case (r,w) => r * w }
+    val weightedSum = 
+      weighted.head + weighted.tail
 
-    val weightSum:Op[Int] = logic.Do(weights)(_.sum)
+    val sum = weights.foldLeft(0)(_+_)
 
-    local.AddArray(rs) / weightSum
+    weightedSum / sum
   }
 }
 
@@ -90,10 +74,10 @@ class DemoService1 {
   @GET
   def get(
     @DefaultValue(defaultBox) @QueryParam("bbox") bbox:String,
-    @DefaultValue("256") @QueryParam("cols") cols:String,
-    @DefaultValue("256") @QueryParam("rows") rows:String,
-    @DefaultValue("SBN_inc_percap") @QueryParam("layers") layers:String,
-    @DefaultValue("1") @QueryParam("weights") weights:String,
+    @DefaultValue("256") @QueryParam("cols") cols:Int,
+    @DefaultValue("256") @QueryParam("rows") rows:Int,
+    @DefaultValue("SBN_inc_percap") @QueryParam("layers") layersParam:String,
+    @DefaultValue("1") @QueryParam("weights") weightsParam:String,
     @DefaultValue("") @QueryParam("mask") mask:String,
     @DefaultValue(defaultColors) @QueryParam("palette") palette:String,
     @DefaultValue("4") @QueryParam("colors") numColors:String,
@@ -103,38 +87,37 @@ class DemoService1 {
 
     // First let's figure out what geographical area we're interestd in, as
     // well as the resolution we want to use.
-    val colsOp = string.ParseInt(cols)
-    val rowsOp = string.ParseInt(rows)
-    val extentOp = string.ParseExtent(bbox)
-    val reOp = extent.GetRasterExtent(extentOp, colsOp, rowsOp)
+    val extent = {
+      val Array(xmin,ymin,xmax,ymax) = bbox.split(",").map(_.toDouble)
+      Extent(xmin,ymin,xmax,ymax)
+    }
+    val re = RasterExtent(extent,cols,rows)
 
-    // Figure out which rasters and weights the user wants to use.
-    val layerOps = logic.ForEach(string.SplitOnComma(layers))(io.LoadRaster(_, reOp))
-    val weightOps = logic.ForEach(string.SplitOnComma(weights))(string.ParseInt(_))
+    val layers = layersParam.split(",").map(RasterSource(_,re))
+    val weights = weightsParam.split(",").map(_.toInt)
 
     // Do the actual weighted overlay operation
-    val overlayOp = WeightedOverlayArray(layerOps, weightOps)
+    val overlay = WeightedOverlayArray(layers, weights)
 
     // Cache and (optionally) mask the result.
-    val outputOp = if (mask.isEmpty) {
-      overlayOp
+    val output = if (mask.isEmpty) {
+      overlay
     } else {
-      local.Mask(overlayOp, io.LoadRaster(mask, reOp), NODATA, NODATA)
+      overlay.localMask(RasterSource(mask,re),NODATA,NODATA)
     }
 
     // Build a histogram of the output raster values.
-    val histogramOp = stat.GetHistogram(outputOp)
+    val histogram = output.histogram
 
     // Parse the user's color palette and allocate colors.
-    val paletteColorsOp = logic.ForEach(string.SplitOnComma(palette))(s => string.ParseHexInt(s))
-    val numColorsOp = string.ParseInt(numColors)
-    val colorsOp = stat.GetColorsFromPalette(paletteColorsOp, numColorsOp)
+    val paletteColors = palette.split(",").map(Integer.parseInt(_,16))
+    val colorsOp = stat.GetColorsFromPalette(paletteColors, numColors.toInt)
 
     // Determine some good quantile breaks to use for coloring output.
-    val breaksOp = stat.GetColorBreaks(histogramOp, colorsOp)
+    val breaksOp = stat.GetColorBreaks(histogram.get, colorsOp)
 
     // Render the actual PNG image.
-    val pngOp = io.RenderPng(outputOp, breaksOp, histogramOp, Literal(0))
+    val pngOp = io.RenderPng(output.get, breaksOp, histogram.get, Literal(0))
 
     format match {
       case "hello" => response("text/plain")("hello world")

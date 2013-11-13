@@ -17,4 +17,12 @@ class CollectSpec extends FunSpec
       result should be (Seq(1,2,3))
     }
   }
+
+  describe("CollectMap") {
+    it("should take a Map[String,Op[Int]] and turn it into a Map[String,Int]") {
+      val map = Map("one" -> Literal(1),"two" -> Literal(2),"three" -> Literal(3))
+      val result = run(Collect(map))
+      result should be (Map("one" -> 1,"two" -> 2,"three" -> 3))
+    }
+  }
 }

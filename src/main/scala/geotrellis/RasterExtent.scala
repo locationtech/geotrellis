@@ -8,7 +8,15 @@ case class GeoAttrsError(msg:String) extends Exception(msg)
  * Represents grid coordinates of a subsection of a RasterExtent.
  * These coordinates are inclusive.
  */
-case class GridBounds(colMin:Int,rowMin:Int,colMax:Int,rowMax:Int)
+case class GridBounds(colMin:Int,rowMin:Int,colMax:Int,rowMax:Int) {
+  val width = colMax - colMin + 1
+  val height = rowMax - rowMin + 1
+}
+
+object GridBounds {
+  def apply(r:Raster):GridBounds = 
+    GridBounds(0,0,r.rasterExtent.cols,r.rasterExtent.rows)
+}
 
 /**
  * RasterExtent objects represent the geographic extent (envelope) of a raster.
@@ -78,18 +86,12 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
    * Convert map coordinate x to grid coordinate column.
    */
   def mapXToGrid(x:Double) = mapXToGridDouble(x).toInt
-  
   def mapXToGridDouble(x:Double) = (x - extent.xmin) / cellwidth
-
     
   /**
    * Convert map coordinate y to grid coordinate row.
    */
   def mapYToGrid(y:Double) = mapYToGridDouble(y).toInt
-  
-  /**
-   * 
-   */
   def mapYToGridDouble(y:Double) = (extent.ymax - y ) / cellheight
   
   /**
@@ -125,7 +127,6 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
    * See [[RasterExtent]] for a discussion of grid and extent boundary concepts.
    */
   def gridBoundsFor(subExtent:Extent):GridBounds = {
-    if(!extent.containsExtent(subExtent)) { throw ExtentRangeError("") }
     // West and North boundarys are a simple mapToGrid call.
     val (colMin,rowMin) = mapToGrid(subExtent.xmin, subExtent.ymax)
 
@@ -136,10 +137,10 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     val colMax = ceil((subExtent.xmax - extent.xmin) / cellwidth).toInt - 1
     val rowMax = ceil((extent.ymax - subExtent.ymin) / cellheight).toInt - 1
     
-    GridBounds(max(0,colMin),
-               max(0,rowMin),
-               min(cols-1,colMax),
-               min(rows-1,rowMax))
+    GridBounds(colMin,
+               rowMin,
+               colMax,
+               rowMax)
   }
   
   /**
@@ -161,7 +162,7 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     val newRows = ceil(newExtent.height / cellheight).toInt
     val newCols = ceil(newExtent.width / cellwidth).toInt
 
-    RasterExtent(newExtent, cellwidth, cellheight, newCols, newCols)
+    RasterExtent(newExtent, cellwidth, cellheight, newCols, newRows)
   }
 
   /**
@@ -178,7 +179,7 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
   /**
    * Returns a RasterExtent that lines up with this RasterExtent's resolution,
    * and grid layout.
-   * i.e., the resulting RasterExtent will not have given extent,
+   * i.e., the resulting RasterExtent will not have the given extent,
    * but will have the smallest extent such that the whole of 
    * the given extent is covered, that lines up with the grid.
    */
@@ -192,6 +193,14 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     val targetRows = math.round((ymax - ymin) / cellheight).toInt
     RasterExtent(Extent(xmin,ymin,xmax,ymax),cellwidth,cellheight,targetCols,targetRows)
   }
+
+  def extentFor(gridBounds:GridBounds):Extent = {
+    val xmin = max(min(gridBounds.colMin * cellwidth + extent.xmin, extent.xmax) , extent.xmin)
+    val ymax = min(max(extent.ymax - (gridBounds.rowMin * cellheight), extent.ymin), extent.ymax)
+    val xmax = xmin + (gridBounds.width * cellwidth)
+    val ymin = ymax - (gridBounds.height * cellheight)
+    Extent(xmin,ymin,xmax,ymax)
+  }
 }
 
 object RasterExtent {
@@ -199,5 +208,11 @@ object RasterExtent {
     val cw = (extent.xmax - extent.xmin) / cols
     val ch = (extent.ymax - extent.ymin) / rows
     RasterExtent(extent, cw, ch, cols, rows)
+  }
+
+  def apply(extent:Extent, cellwidth:Double, cellheight:Double):RasterExtent = {
+    val cols = ((extent.ymax - extent.ymin) / cellheight).toInt
+    val rows = ((extent.xmax - extent.xmin) / cellwidth).toInt
+    RasterExtent(extent, cellwidth, cellheight, cols, rows)
   }
 }

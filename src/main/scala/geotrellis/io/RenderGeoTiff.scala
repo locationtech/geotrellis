@@ -8,7 +8,7 @@ import geotrellis.data.geotiff._
   */
 case class RenderGeoTiff(r:Op[Raster], compression:Compression) extends Op1(r) ({
   r => {
-    val settings = r.data.getType match {
+    val settings = r.rasterType match {
       case TypeBit | TypeByte => Settings(ByteSample, Signed, true, compression)
       case TypeShort => Settings(ShortSample, Signed, true, compression)
       case TypeInt => Settings(IntSample, Signed, true, compression)

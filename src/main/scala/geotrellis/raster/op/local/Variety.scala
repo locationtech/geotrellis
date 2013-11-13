@@ -2,50 +2,58 @@ package geotrellis.raster.op.local
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.logic.Collect
+import geotrellis.source._
 
-import spire.syntax._
+import scalaxy.loops._
 
 /**
  * Variety gives the count of unique values at each location in a set of Rasters.
+ * 
+ * @return     An TypeInt raster with the count values.
  */
-object Variety {
-  def apply(rs:Op[Raster]*):Variety =
-    Variety(Collect(rs))
+object Variety extends Serializable {
+  def apply(rs:Op[Raster]*)(implicit d:DI):Op[Raster] =
+    apply(rs)
+  def apply(rs:Seq[Op[Raster]]):Op[Raster] =
+    logic.Collect(rs).map { rs =>
+      if(Set(rs.map(_.rasterExtent)).size != 1) {
+        val rasterExtents = rs.map(_.rasterExtent).toSeq
+        throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
+          s"$rasterExtents are not all equal")
+      }
+
+      val layerCount = rs.length
+      if(layerCount == 0) {
+        sys.error(s"Can't compute majority of empty sequence")
+      } else {
+        val re = rs(0).rasterExtent
+        val cols = re.cols
+        val rows = re.rows
+        val data = RasterData.allocByType(TypeInt,cols,rows)
+
+        for(col <- 0 until cols optimized) {
+          for(row <- 0 until rows optimized) {
+            val variety =
+              rs.map(r => r.get(col,row))
+                .toSet
+                .filter(_ != NODATA)
+                .size
+            data.set(col,row,
+              if(variety == 0) { NODATA } else { variety })
+          }
+        }
+        Raster(data,re)
+      }      
+    }
+    .withName("Variety")
 }
 
-/**
- * Variety gives the count of unique values at each location in a set of Rasters.
- */
-case class Variety(rasters:Op[Seq[Raster]]) extends Op1(rasters) ({
-  (rs) => 
-    rs.reduceLeft { (a,b) => 
-      if(a.rasterExtent != b.rasterExtent) { 
-        sys.error(s"Raster extents ${a.rasterExtent} and ${b.rasterExtent} are not equal") 
-      }
-      b
-    }
+trait VarietyOpMethods[+Repr <: RasterSource] { self: Repr =>
+  /** Assigns to each cell the value within the given rasters that is the least numerous. */
+  def localVariety(rss:Seq[RasterDS]):RasterSource = 
+    combineOp(rss)(Variety(_))
 
-    val re = rs(0).rasterExtent
-    val cols = re.cols
-    val rows = re.rows
-
-    val data = IntArrayRasterData.empty(cols,rows)
-
-    var col = 0
-    while(col < cols) {
-      var row = 0
-      while(row < rows) {
-        val variety =
-          rs.map(r => r.get(col,row))
-            .toSet
-            .filter(_ != NODATA)
-            .size
-        data.set(col,row, 
-          if(variety == 0) { NODATA } else { variety })
-        row += 1
-      }
-      col += 1
-    }
-    Result(Raster(data,re))
-})
+  /** Assigns to each cell the value within the given rasters that is the least numerous. */
+  def localVariety(rss:RasterDS*)(implicit d:DI):RasterSource = 
+    localVariety(rss)
+}

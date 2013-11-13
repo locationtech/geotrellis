@@ -9,10 +9,10 @@ import geotrellis.process._
  */
 sealed trait StepOutput[+T]
 
-case class Result[T](value:T) extends StepOutput[T]
-case class AndThen[T](op:Operation[T]) extends StepOutput[T]
+case class Result[+T](value:T) extends StepOutput[T]
+case class AndThen[+T](op:Operation[T]) extends StepOutput[T]
 case class StepError(msg:String, trace:String) extends StepOutput[Nothing]
-case class StepRequiresAsync[T](args:Args, cb:Callback[T]) extends StepOutput[T]
+case class StepRequiresAsync[+T](args:Args, cb:Callback[T]) extends StepOutput[T]
 
 object StepError { 
   def fromException(e:Throwable) = { 

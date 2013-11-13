@@ -24,7 +24,7 @@ class GetClassBreaksSpec extends FunSpec
 
   describe("GetClassBreaks") {
     it("gets expected class breaks from test raster.") {
-      val h = GetHistogram(Literal(testRaster), 101)
+      val h = GetHistogram(Literal(testRaster))
       val result = GetClassBreaks(h, 4)
       server.run(result) should be (Array(12, 15, 66, 95))
     }

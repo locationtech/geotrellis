@@ -1,69 +1,119 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
-import geotrellis.raster.IntArrayRasterData
-import geotrellis.logic.Collect
+import geotrellis.raster._
+import geotrellis.source._
 
+import scalaxy.loops._
 import scala.collection.mutable
-import spire.syntax._
 
-object Majority {
-  def apply(rs:Op[Raster]*):Majority =
-    Majority(Collect(rs),0)
+object Majority extends Serializable {
+  def apply(rs:Op[Raster]*):Op[Raster] =
+    apply(0,rs)
 
-  def apply(level:Op[Int],rs:Op[Raster]*):Majority =
-    Majority(Collect(rs),level)
+  def apply(rs:Seq[Op[Raster]])(implicit d:DI):Op[Raster] =
+    apply(0,rs)
 
-  def apply(rasters:Op[Seq[Raster]]):Majority =
-    Majority(rasters,0)
-}
+  def apply(level:Op[Int],rs:Op[Raster]*):Op[Raster] =
+    apply(level,rs)
 
-case class Majority(rasters:Op[Seq[Raster]],level:Op[Int]) extends Op2(rasters,level)({ 
-  (rs,level) =>
-    rs.reduceLeft { (a,b) =>
-      if(a.rasterExtent != b.rasterExtent) { 
-        sys.error(s"Raster extents ${a.rasterExtent} and ${b.rasterExtent} are not equal") 
+  def apply(level:Op[Int],rs:Seq[Op[Raster]])(implicit d:DI):Op[Raster] =
+    (level,logic.Collect(rs)).map { (level,rs) =>
+      if(Set(rs.map(_.rasterExtent)).size != 1) {
+        val rasterExtents = rs.map(_.rasterExtent).toSeq
+        throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
+          s"$rasterExtents are not all equal")
       }
-      b
-    }
 
-    val re = rs(0).rasterExtent
-    val cols = re.cols
-    val rows = re.rows
+      val layerCount = rs.length
+      if(layerCount == 0) {
+        sys.error(s"Can't compute majority of empty sequence")
+      } else {
+        val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
+        val re = rs(0).rasterExtent
+        val cols = re.cols
+        val rows = re.rows
+        val data = RasterData.allocByType(newRasterType,cols,rows)
 
-    val data = IntArrayRasterData.empty(cols,rows)
+        if(newRasterType.isDouble) {
+          val counts = mutable.Map[Double,Int]()
 
-    val counts = mutable.Map[Int,Int]()
+          for(col <- 0 until cols) {
+            for(row <- 0 until rows) {
+              counts.clear
+              for(r <- rs) {
+                val v = r.getDouble(col,row)
+                if(!isNaN(v)) {
+                  if(!counts.contains(v)) {
+                    counts(v) = 1
+                  } else {
+                    counts(v) += 1
+                  }
+                }
+              }
 
-    var col = 0
-    while(col < cols) {
-      var row = 0
-      while(row < rows) {
-        counts.clear
-        for(r <- rs) {
-          val v = r.get(col,row)
-          if(v != NODATA) {
-            if(!counts.contains(v)) {
-              counts(v) = 1
-            } else {
-              counts(v) += 1
+              val sorted =
+                counts.keys
+                  .toSeq
+                  .sortBy { k => counts(k) }
+                  .toList
+              val len = sorted.length - 1
+              val m =
+                if(len >= level) { sorted(len-level) }
+                else { Double.NaN }
+              data.setDouble(col,row, m)
+            }
+          }
+        } else {
+          val counts = mutable.Map[Int,Int]()
+
+          for(col <- 0 until cols) {
+            for(row <- 0 until rows) {
+              counts.clear
+              for(r <- rs) {
+                val v = r.get(col,row)
+                if(v != NODATA) {
+                  if(!counts.contains(v)) {
+                    counts(v) = 1
+                  } else {
+                    counts(v) += 1
+                  }
+                }
+              }
+
+              val sorted =
+                counts.keys
+                  .toSeq
+                  .sortBy { k => counts(k) }
+                  .toList
+              val len = sorted.length - 1
+              val m =
+                if(len >= level) { sorted(len-level) }
+                else { NODATA }
+              data.set(col,row, m)
             }
           }
         }
-
-        val sorted = 
-          counts.keys
-                .toSeq
-                .sortBy { k => counts(k) }
-                .toList
-        val len = sorted.length - 1
-        val m = 
-          if(len >= level) { sorted(len-level) }
-          else { NODATA }
-        data.set(col,row, m)
-        row += 1
+        ArrayRaster(data,re)
       }
-      col += 1
     }
-    Result(Raster(data,re))
-})
+    .withName("Majority")
+}
+
+trait MajorityOpMethods[+Repr <: RasterSource] { self: Repr =>
+  /** Assigns to each cell the value within the given rasters that is the most numerous. */
+  def localMajority(rss:Seq[RasterDS]):RasterSource = 
+    combineOp(rss)(Majority(_))
+
+  /** Assigns to each cell the value within the given rasters that is the most numerous. */
+  def localMajority(rss:RasterDS*)(implicit d:DI):RasterSource = 
+    localMajority(rss)
+
+  /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
+  def localMajority(n:Int,rss:Seq[RasterDS]):RasterSource = 
+    combineOp(rss)(Majority(n,_))
+
+  /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
+  def localMajority(n:Int,rss:RasterDS*)(implicit d:DI):RasterSource = 
+    localMajority(n,rss)
+}

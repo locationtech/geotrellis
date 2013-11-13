@@ -18,9 +18,7 @@ class FilterSpec extends FunSpec
     }
     it("should filter Op[Seq[Int]] with int to Op[Boolean] function") {
       val seq = Literal(Seq(1,2,3,4,5,6,7,8,9,10))
-      val result = run(Filter(seq, { i:Int => 
-        geotrellis.raster.op.local.Add(i,1).map(_ % 2 == 0)
-      }))
+      val result = run(Filter(seq, { i:Int =>  Literal(i+1).map(_ % 2 == 0) }))
       result should be (Seq(1,3,5,7,9))
     }
   }

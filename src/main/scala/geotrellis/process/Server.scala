@@ -15,10 +15,12 @@ import java.util.concurrent.TimeUnit
 import com.typesafe.config.ConfigFactory
 import geotrellis.source.DataSource
 
+import scala.collection.mutable
+
 class Server (id:String, val catalog:Catalog) extends Serializable {
   val debug = false
 
-  var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(new ServerActor(this)), id)
+  var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(classOf[ServerActor],this), id)
 
   private[this] val cache = new HashCache()
 
@@ -27,6 +29,12 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
   Server.startActorSystem
   def system = Server.actorSystem
 
+  val fullExternalId = system.asInstanceOf[ExtendedActorSystem].provider.getDefaultAddress.toString
+  val externalId = if (fullExternalId.startsWith("akka.tcp://GeoTrellis@")) 
+    fullExternalId.substring(22)
+  else 
+    ""
+
   def startUp:Unit = ()
 
   def shutdown():Unit = { 
@@ -34,10 +42,17 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
     Server.actorSystem.awaitTermination()
   }
 
-  def getRouter(routerName:String):ActorRef =
-    system.actorOf(
-      Props[ServerActor].withRouter(FromConfig),
-      name = routerName)
+  private val routers = mutable.Map[String,ActorRef]()
+  def getRouter():ActorRef = getRouter("clusterRouter")
+  def getRouter(routerName:String):ActorRef = {
+    if(!routers.contains(routerName)) { 
+      routers(routerName) = 
+        system.actorOf(
+          Props.empty.withRouter(FromConfig),
+          name = routerName)
+    }
+    routers(routerName)
+  }
 
   def log(msg:String) = if(debug) println(msg)
 
@@ -63,9 +78,11 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
     val d = Duration.create(60000, TimeUnit.SECONDS)
     implicit val t = Timeout(d)
     val future = op match {
-      case op:DispatchedOperation[_] => 
-        (actor ? RunDispatched(op.op, op.dispatcher)).mapTo[OperationResult[T]]
-      case op:Op[_]           => (actor ? Run(op)).mapTo[OperationResult[T]]
+      case DispatchedOperation(wrappedOp,dispatcher) => 
+        (actor ? RunDispatched(wrappedOp, dispatcher)).mapTo[OperationResult[T]]
+
+      case op:Op[_] => 
+        (actor ? Run(op)).mapTo[OperationResult[T]]
     }
 
     val result = Await.result(future, d)

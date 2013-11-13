@@ -38,7 +38,7 @@ class ResizeSpec extends FunSpec
       raster.cols should be (4)
       raster.rows should be (4)
 
-      val d = raster.data.asArray.getOrElse(sys.error("Can't get RasterData as Array."))
+      val d = raster.toArray
 
       d(0) should be (1)
       d(3) should be (2)

@@ -134,7 +134,12 @@ trait ShortRasterDataResult extends Initialization with Resulting[Raster] {
     data = ShortArrayRasterData.empty(rasterExtent.cols,rasterExtent.rows)
   }
 
-  def result = Raster(data,rasterExtent)
+  def result = {
+    val r = Raster(data,rasterExtent)
+    // println("Raster\n")
+    // println(r.asciiDraw)
+    r
+  }
 }
 
 /**

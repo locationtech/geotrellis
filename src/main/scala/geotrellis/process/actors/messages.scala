@@ -32,9 +32,9 @@ case class RunDispatched(op:Operation[_], dispatcher:ActorRef)
  * Internal message to run the provided op and send the result to the client.
  */
 private[actors] case class RunOperation[T](op: Operation[T], 
-                                            pos: Int, 
-                                            client: ActorRef, 
-                                            dispatcher:Option[ActorRef])
+                                           pos: Int, 
+                                           client: ActorRef, 
+                                           dispatcher:Option[ActorRef])
 
 /**
  * Internal message to compute the provided args (if necessary), invoke the

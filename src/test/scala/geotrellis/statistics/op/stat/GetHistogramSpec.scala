@@ -23,7 +23,7 @@ class GetHistogramSpec extends FunSpec
 
   describe("GetHistogram") {
     it("should get correct values from test raster.") {
-      val histo = run(GetHistogram(testRaster, 101))
+      val histo = run(GetHistogram(testRaster))
 
       histo.getTotalCount should be (18)
       histo.getItemCount(11) should be (2)

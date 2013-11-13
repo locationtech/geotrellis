@@ -1,49 +1,94 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.source._
 
-/** Determines if values are not equal, and sets results as 1 if not equal, 0 otherwise. */
-object Unequal {
-  /** Determines if two Int values are not equal */
-  def apply(x:Op[Int], y:Op[Int]) = logic.Do2(x, y)((x, y) => if(x != y) 1 else 0)
-  /** Determines if cell values of the Raster are not equal. See [[UnequalConstant1]] */
-  def apply(r:Op[Raster], c:Op[Int]) = new UnequalConstant1(r, c)
-  /** Determines if cell values of the Raster are not equal. See [[UnequalConstant2]] */
-  def apply(c:Op[Int], r:Op[Raster]) = new UnequalConstant2(c, r)
-  /** Determines if corresponding cell values of the two input Rasters are not equal.
-   * See [[UnequalRaster]] */
-  def apply(r1:Op[Raster], r2:Op[Raster]) = new UnequalRaster(r1, r2)
+/**
+ * Determines if values are equal. Sets to 1 if true, else 0.
+ */
+object Unequal extends LocalRasterBinaryOp {
+  /** Apply this operation to the values of each cell in each raster.  */
+  override
+  def apply(rss:Seq[Op[Raster]]):Op[Raster] = 
+    rss.mapOps { rasters =>
+        rasters.head
+               .dualCombine(rasters.tail)({ zs => 
+                  if(zs.distinct.length < 2) 0 else 1
+                })({ zs =>
+                  if(zs.distinct.filter(!isNaN(_)).length < 2) 0 else 1
+                })
+       }
+      .withName(s"Unequal[Rasters]")
+
+  def combine(z1:Int,z2:Int) = 
+    if(z1 == z2) 0 else 1
+
+  def combine(z1:Double,z2:Double):Double =
+    if(isNaN(z1)) { if(isNaN(z2)) 0 else 1 }
+    else {
+      if(isNaN(z2)) { 1 }
+      else { 
+        if(z1 == z2) 0
+        else 1
+      }
+    }
 }
 
-/**
- * Determines if cell values of the Raster are not equal.
- * Returns a Raster with TypeBit data, where 1 indicates the cell value
- * did not equal the input value.
- */
-case class UnequalConstant1(r:Op[Raster], c:Op[Int]) extends Op2(r, c) ({
-  (r, c) => AndThen(logic.RasterDualMapIfSet(r) 
-    (z => if (z != c) 1 else 0)
-    (z => if (z != c) 1 else 0))
-})
-
-/**
- * Determines if cell values of the Raster are not equal.
- * Returns a Raster with TypeBit data, where 1 indicates the cell value
- * did not equal the input value.
- */
-case class UnequalConstant2(c:Op[Int], r:Op[Raster]) extends Op2(c, r) ({
-  (c, r) => AndThen(logic.RasterDualMapIfSet(r)
-    (z => if (z != c) 1 else 0)
-    (z => if (z != c) 1 else 0))
-})
-
-/**
- * Determines if corresponding cell values of the two input Rasters are not equal.
- * Returns a Raster with TypeBit data, where 1 indicates the corresponding cell values
- * did not equal each other.
- */
-case class UnequalRaster(r1:Op[Raster], r2:Op[Raster]) extends Op2(r1, r2) ({
-  (r1, r2) => AndThen(logic.RasterDualCombine(r1,r2) 
-    ((z1, z2) => if (z1 != z2) 1 else 0)
-    ((z1, z2) => if (z1 != z2) 1 else 0))
-})
+trait UnequalOpMethods[+Repr <: RasterSource] { self: Repr =>
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * integer, else 0.
+   */
+  def localUnequal(i: Int) = self.mapOp(Unequal(_, i))
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * integer, else 0.
+   */
+  def !==(i:Int) = localUnequal(i)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * integer, else 0.
+   */
+  def !==:(i:Int) = localUnequal(i)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * intenger, else 0.
+   */
+  def localUnequal(d: Double) = self.mapOp(Unequal(_, d))
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * double, else 0.
+   */
+  def !==(d:Double) = localUnequal(d)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * double, else 0.
+   */
+  def !==:(d:Double) = localUnequal(d)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the rasters are not equal, else 0.
+   */
+  def localUnequal(rs:RasterSource) = self.combineOp(rs)(Unequal(_,_))
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the rasters are not equal, else 0.
+   */
+  def !==(rs:RasterSource) = localUnequal(rs)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the rasters are not equal, else 0.
+   */
+  def localUnequal(rss:Seq[RasterSource]) = self.combineOp(rss)(Unequal(_))
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the rasters are not equal, else 0.
+   */
+  def !==(rss:Seq[RasterSource]) = localUnequal(rss)
+}

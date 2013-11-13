@@ -8,6 +8,11 @@ import geotrellis.feature.Polygon
 import java.io.{FileOutputStream, BufferedOutputStream}
 import geotrellis.util.Filesystem
 
+object TileLayout {
+  def apply(re:RasterExtent, tileCols:Int, tileRows:Int):TileLayout =
+    TileLayout(tileCols,tileRows,math.ceil(re.cols/tileCols).toInt,math.ceil(re.rows/tileRows).toInt)
+}
+
 /**
  * This class stores the layout of a tiled raster: the number of tiles (in
  * cols/rows) and also the size of each tile (in cols/rows of pixels).
@@ -33,6 +38,10 @@ case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int) 
   def getResolutionLayout(re:RasterExtent) = {
     ResolutionLayout(re, pixelCols, pixelRows)
   }
+
+  /** Gets the index of a tile at col, row. */
+  def getTileIndex(col:Int,row:Int) =
+    row*tileCols + col
 }
 
 /**

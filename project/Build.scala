@@ -34,10 +34,10 @@ object GeotrellisBuild extends Build {
       "org.scala-lang" % "scala-reflect" % "2.10.2",
       "junit" % "junit" % "4.5" % "test",
       "com.vividsolutions" % "jts" % "1.12",
-      "com.typesafe.akka" %% "akka-kernel" % "2.2.0",
-      "com.typesafe.akka" %% "akka-remote" % "2.2.0",
-      "com.typesafe.akka" %% "akka-actor" % "2.2.0",
-      "com.typesafe.akka" %% "akka-cluster-experimental" % "2.1.2",
+      "com.typesafe.akka" %% "akka-kernel" % "2.2.1",
+      "com.typesafe.akka" %% "akka-remote" % "2.2.1",
+      "com.typesafe.akka" %% "akka-actor" % "2.2.1",
+      "com.typesafe.akka" %% "akka-cluster" % "2.2.1",
       "asm" % "asm" % "3.3.1",
       "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
       "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1",
@@ -69,7 +69,7 @@ object GeotrellisBuild extends Build {
     publishArtifact in Test := false,
 
     pomIncludeRepository := { _ => false },
-    licenses := Seq("GPL3" -> url("http://www.gnu.org/licenses/gpl-3.0-standalone.html")),
+    licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
     homepage := Some(url("http://geotrellis.github.io/")),
 
     pomExtra := (

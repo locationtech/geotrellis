@@ -5,11 +5,11 @@ import language.higherKinds
 import geotrellis.feature._
 import geotrellis._
 
-trait Callback[G[_],T] {
+trait Callback[-G[_],T] {
   def apply(col: Int, row: Int, g: G[T])
 }
 
-trait Transformer[G[_],A,B] {
+trait Transformer[-G[_],A,+B] {
   def apply(col: Int, row: Int, g: G[A]):B
 }
 

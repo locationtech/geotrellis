@@ -2,6 +2,8 @@ package geotrellis.raster
 
 import geotrellis._
 
+import scalaxy.loops._
+
 /**
  * LazyConvert represents a lazily-applied conversion to any type.
  *
@@ -11,34 +13,39 @@ import geotrellis._
  *           therefore converting from a TypeInt to TypeByte could still
  *           return values greater than 127 from apply().
  */
-final case class LazyConvert(data: ArrayRasterData, typ: RasterType)
-  extends LazyRasterData {
+final case class LazyConvert(data: RasterData, typ: RasterType)
+  extends RasterData {
+
+  final def getType = typ
+  final def alloc(cols: Int, rows: Int) = data.alloc(cols, rows)
+  final def length = data.length
 
   def cols = data.cols
   def rows = data.rows
 
-  def getType = typ
-  def alloc(cols: Int, rows: Int) = RasterData.allocByType(typ, cols, rows)
-  def length = data.length
   def apply(i: Int) = data.apply(i)
   def applyDouble(i: Int) = data.applyDouble(i)
-  def copy = this
+  def copy = force
   override def toArray = data.toArray
   override def toArrayDouble = data.toArrayDouble
 
-  def foreach(f: Int => Unit) = data.foreach(f)
-  def map(f: Int => Int) = LazyMap(this, f)
-  def mapIfSet(f: Int => Int) = LazyMapIfSet(this, f)
-  def combine(other: RasterData)(f: (Int, Int) => Int) = other match {
-    case a: ArrayRasterData => LazyCombine(this, a, f)
-    case o                  => o.combine(this)((z2, z1) => f(z1, z2))
+  def mutable():MutableRasterData = {
+    val rasterType = getType
+    val forcedData = RasterData.allocByType(rasterType,cols,rows)
+    if(rasterType.isDouble) {
+      for(col <- 0 until cols optimized) {
+        for(row <- 0 until rows optimized) {
+          forcedData.setDouble(col,row,data.getDouble(col,row))
+        }
+      }
+    } else {
+      for(col <- 0 until cols optimized) {
+        for(row <- 0 until rows optimized) {
+          forcedData.set(col,row,data.get(col,row))
+        }
+      }
+    }
+    forcedData
   }
-
-  def foreachDouble(f: Double => Unit) = data.foreachDouble(f)
-  def mapDouble(f: Double => Double) = LazyMapDouble(this, f)
-  def mapIfSetDouble(f: Double => Double) = LazyMapIfSetDouble(this, f)
-  def combineDouble(other: RasterData)(f: (Double, Double) => Double) = other match {
-    case a: ArrayRasterData => LazyCombineDouble(this, a, f)
-    case o                  => o.combineDouble(this)((z2, z1) => f(z1, z2))
-  }
+  def force():RasterData = mutable
 }
