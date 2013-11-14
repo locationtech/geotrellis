@@ -105,6 +105,14 @@ object GeotrellisBuild extends Build {
     ).
     dependsOn(root)
 
+  lazy val spark:Project = Project("spark", file("geotrellis-spark")).
+    settings(
+      scalaVersion := "2.10.2",
+      libraryDependencies ++= Seq(
+        "org.apache.spark" %% "spark-core" % "0.9.0-incubating-SNAPSHOT" 
+      )
+    ).dependsOn(root)
+
   lazy val dev:Project = Project("dev", file("dev")).
     settings(
       scalaVersion := "2.10.2",
