@@ -10,7 +10,9 @@ object GeotrellisBuild extends Build {
     name := "geotrellis",
     version := "0.9.0-SNAPSHOT",
     scalaVersion := "2.10.2",
-    
+
+    // disable annoying warnings about 2.10.x
+    conflictWarning in ThisBuild := ConflictWarning.disable,    
     scalacOptions ++= Seq("-deprecation", 
                           "-unchecked", 
                           "-Yclosure-elim",
