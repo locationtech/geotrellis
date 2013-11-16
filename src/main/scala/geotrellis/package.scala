@@ -2,8 +2,6 @@ import geotrellis.source.CanBuildSourceFrom
 import geotrellis.statistics.Histogram
 
 package object geotrellis {
-  final val NODATA = Int.MinValue
-
   type Op[+A] = Operation[A]
   type DI = DummyImplicit
 
