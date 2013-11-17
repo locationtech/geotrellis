@@ -70,7 +70,7 @@ trait IntCellWriter extends CellWriter {
   def writeValue(z:Int, dos:DataOutputStream): Unit
   @inline final def writeCell(raster:Raster, col:Int, row:Int, cols:Int, dos:DataOutputStream) {
     val z = raster.get(col, row)
-    if (z == NODATA) writeValue(noDataValue, dos) else writeValue(z, dos)
+    if (isNoData(z)) writeValue(noDataValue, dos) else writeValue(z, dos)
   }
 }
 

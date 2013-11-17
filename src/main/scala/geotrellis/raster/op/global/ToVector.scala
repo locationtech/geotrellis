@@ -53,7 +53,7 @@ case class ToVector(r:Op[Raster]) extends Operation[List[Polygon[Int]]] {
         var row = 0
         while(row < r.rows) {
           val v = r.get(col,row)
-          if(regionMap(v) != NODATA) {
+          if(isData(regionMap(v))) {
             if(!processedValues.contains(v)) {
               val shell = polyizer.getLinearRing(v,(col,row))
               val shellPoly = Polygon(

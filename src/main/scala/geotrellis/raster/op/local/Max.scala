@@ -11,11 +11,11 @@ import geotrellis.source._
  */
 object Max extends LocalRasterBinaryOp {
   def combine(z1:Int,z2:Int) =
-    if (z1 == NODATA || z2 == NODATA) NODATA
+    if (isNoData(z1) || isNoData(z2)) NODATA
     else math.max(z1,z2)
 
   def combine(z1:Double,z2:Double) =
-    if (isNaN(z1) || isNaN(z2)) Double.NaN
+    if (isNoData(z1) || isNoData(z2)) Double.NaN
     else math.max(z1,z2)
 }
 

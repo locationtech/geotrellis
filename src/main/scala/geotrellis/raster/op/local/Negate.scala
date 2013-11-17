@@ -8,7 +8,7 @@ import geotrellis.process._
  */
 object Negate extends Serializable {
   def apply(r:Op[Raster]) = 
-    r.map(_.dualMap(z => if(z == NODATA) z else -z)
-                   (z => if(java.lang.Double.isNaN(z)) z else -z))
+    r.map(_.dualMap(z => if(isNoData(z)) z else -z)
+                   (z => if(isNoData(z)) z else -z))
      .withName("Negate[Raster]")
 }

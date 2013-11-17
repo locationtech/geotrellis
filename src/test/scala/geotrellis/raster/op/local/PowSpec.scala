@@ -94,8 +94,8 @@ class PowSpec extends FunSpec
         for(row <- 0 until r.rows) {
           val z = r.getDouble(col,row)
           val rz = result.getDouble(col,row)
-          if(isNaN(z) || z < 1)
-            withClue(s"z = $z, rz = $rz") { isNaN(rz) should be (true) }
+          if(isNoData(z) || z < 1)
+            withClue(s"z = $z, rz = $rz") { isNoData(rz) should be (true) }
           else
             withClue(s"z = $z, rz = $rz") { rz should be (math.pow(-3.3, r.getDouble(col,row))) }
         }
@@ -136,9 +136,9 @@ class PowSpec extends FunSpec
           //println(success)
           for(row <- 0 until r1.rasterExtent.rows) {
             for(col <- 0 until r1.rasterExtent.cols) {
-              if(result.get(col,row) == NODATA) {
-                (r1.get(col,row) == NODATA ||
-                 r2.get(col,row) == NODATA ||
+              if(isNoData(result.get(col,row))) {
+                (isNoData(r1.get(col,row)) ||
+                 isNoData(r2.get(col,row)) ||
                  r2.get(col,row) == 0) should be (true)
               } else {
                 result.get(col,row) should be (math.pow(r1.get(col,row), r2.get(col,row)))

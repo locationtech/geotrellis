@@ -21,15 +21,15 @@ class MeanSpec extends FunSpec with FocalOpSpec
 
   describe("Mean") {
     it("should handle all NODATA") {
-      getCursorMeanResult(MockCursor.fromAll(NODATA,NODATA,NODATA,NODATA)).isNaN should be (true)
+      isNoData(getCursorMeanResult(MockCursor.fromAll(NODATA,NODATA,NODATA,NODATA))) should be (true)
     }
 
     it("should match histogram mean default set in cursor calculation") {      
       for(s <- defaultTestSets) {
-        val sf = s.filter { x => x != NODATA }
+        val sf = s.filter { x => isData(x) }
         val expected = sf.sum / sf.length.toDouble
-        if(expected.isNaN) {
-          getCursorMeanResult(MockCursor.fromAddRemove(s,Seq[Int]())).isNaN should equal (true)
+        if(isNoData(expected)) {
+          isNoData(getCursorMeanResult(MockCursor.fromAddRemove(s,Seq[Int]()))) should equal (true)
         } else {
           getCursorMeanResult(MockCursor.fromAddRemove(s,Seq[Int]())) should equal (expected)
         }
@@ -38,10 +38,10 @@ class MeanSpec extends FunSpec with FocalOpSpec
 
     it("should match histogram mean default set in cellwise calculation") {      
       for(s <- defaultTestSets) {
-        val sf = s.filter { x => x != NODATA }
+        val sf = s.filter { x => isData(x) }
         val expected = sf.sum / sf.length.toDouble
-        if(expected.isNaN) {
-          getCellwiseMeanResult(s,Seq[Int]()).isNaN should equal (true)
+        if(isNoData(expected)) {
+          isNoData(getCellwiseMeanResult(s,Seq[Int]())) should equal (true)
         } else {
           getCellwiseMeanResult(s,Seq[Int]()) should equal (expected)
         }

@@ -34,8 +34,8 @@ class SumSpec extends FunSpec with FocalOpSpec
     it("should match sum against default sets in cursor calculation") {
       for(added <- defaultTestSets) {
         for(removed <- defaultTestSets) {
-          val filteredA = added.filter { x => x != NODATA } 
-          val filteredR = removed.filter { x => x != NODATA } 
+          val filteredA = added.filter { x => isData(x) } 
+          val filteredR = removed.filter { x => isData(x) } 
           val expected = filteredA.sum - filteredR.sum
           getCursorSumResult(MockCursor.fromAddRemove(added,removed)) should equal (expected)
         }
@@ -45,8 +45,8 @@ class SumSpec extends FunSpec with FocalOpSpec
     it("should match sum against default sets in cellwise calculation") {
       for(added <- defaultTestSets) {
         for(removed <- defaultTestSets) {
-          val filteredA = added.filter { x => x != NODATA } 
-          val filteredR = removed.filter { x => x != NODATA }           
+          val filteredA = added.filter { x => isData(x) } 
+          val filteredR = removed.filter { x => isData(x) }           
           val expected = filteredA.sum - filteredR.sum
           getCellwiseSumResult(added,removed) should equal (expected)
         }

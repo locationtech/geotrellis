@@ -18,7 +18,7 @@ class IntMaxCalc extends FocalCalculation[Int] {
   var zmax = NODATA
   def clear() { zmax = NODATA }
   def add(col:Int, row:Int, r:Raster) { 
-    if(zmax == NODATA) { zmax = r.get(col,row) }
+    if(isNoData(zmax)) { zmax = r.get(col,row) }
     else { zmax = max(r.get(col, row), zmax) }
   }
   def remove(col:Int, row:Int, r:Raster) = sys.error("remove() not supported")

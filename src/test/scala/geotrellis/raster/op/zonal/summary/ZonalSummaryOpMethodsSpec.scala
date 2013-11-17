@@ -122,7 +122,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val sum = 
         containedCells
           .map { case (col,row) => tiledR.get(col,row) }
-          .foldLeft(0) { (a,b) => if(b == NODATA) a else a + b }
+          .foldLeft(0) { (a,b) => if(isNoData(b)) a else a + b }
 
       getSource(tiledRS.zonalSum(poly)) match {
         case Complete(result,success) =>
@@ -157,7 +157,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val sum = 
         containedCells
           .map { case (col,row) => tiledRDouble.getDouble(col,row) }
-          .foldLeft(0.0) { (a,b) => if(isNaN(b)) a else a + b }
+          .foldLeft(0.0) { (a,b) => if(isNoData(b)) a else a + b }
 
       getSource(tiledRSDouble.zonalSumDouble(poly)) match {
         case Complete(result,success) =>
@@ -192,7 +192,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val min = 
         containedCells
           .map { case (col,row) => tiledR.get(col,row) }
-          .foldLeft(Int.MaxValue) { (a,b) => if(b == NODATA) a else math.min(a, b) }
+          .foldLeft(Int.MaxValue) { (a,b) => if(isNoData(b)) a else math.min(a, b) }
 
       getSource(tiledRS.zonalMin(poly)) match {
         case Complete(result,success) =>
@@ -227,7 +227,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val min = 
         containedCells
           .map { case (col,row) => tiledRDouble.getDouble(col,row) }
-          .foldLeft(Double.MaxValue) { (a,b) => if(isNaN(b)) a else math.min(a, b) }
+          .foldLeft(Double.MaxValue) { (a,b) => if(isNoData(b)) a else math.min(a, b) }
 
       getSource(tiledRSDouble.zonalMinDouble(poly)) match {
         case Complete(result,success) =>
@@ -262,7 +262,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val max = 
         containedCells
           .map { case (col,row) => tiledR.get(col,row) }
-          .foldLeft(Int.MinValue) { (a,b) => if(b == NODATA) a else math.max(a, b) }
+          .foldLeft(Int.MinValue) { (a,b) => if(isNoData(b)) a else math.max(a, b) }
 
       getSource(tiledRS.zonalMax(poly)) match {
         case Complete(result,success) =>
@@ -297,7 +297,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val max = 
         containedCells
           .map { case (col,row) => tiledRDouble.getDouble(col,row) }
-          .foldLeft(Double.MinValue) { (a,b) => if(isNaN(b)) a else math.max(a, b) }
+          .foldLeft(Double.MinValue) { (a,b) => if(isNoData(b)) a else math.max(a, b) }
 
       getSource(tiledRSDouble.zonalMaxDouble(poly)) match {
         case Complete(result,success) =>
@@ -333,7 +333,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val h = statistics.FastMapHistogram()
 
       for(z <- containedCells.map { case (col,row) => tiledR.get(col,row) }) {
-        if (z != NODATA) { h.countItem(z, 1) }
+        if (isData(z)) { h.countItem(z, 1) }
       }
 
       getSource(tiledRS.zonalHistogram(poly)) match {
@@ -342,7 +342,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
           for(row <- 0 until tiledR.rows) {
             for(col <- 0 until tiledR.cols) {
               val v = tiledR.get(col,row)
-              if(v != NODATA) {
+              if(isData(v)) {
                 result.getItemCount(v) should be (h.getItemCount(v))
               }
             }
@@ -378,10 +378,10 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
           .map { case (col,row) => tiledR.getDouble(col,row) }
       val sum = 
         vals
-          .foldLeft(0.0) { (a,b) => if(isNaN(b)) a else a + b }
+          .foldLeft(0.0) { (a,b) => if(isNoData(b)) a else a + b }
       val count = 
         vals
-          .foldLeft(0.0) { (a,b) => if(isNaN(b)) a else a + 1.0 }
+          .foldLeft(0.0) { (a,b) => if(isNoData(b)) a else a + 1.0 }
 
       getSource(tiledRS.zonalMean(poly)) match {
         case Complete(result,success) =>
@@ -416,7 +416,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val sum = 
         containedCells
           .map { case (col,row) => tiledRDouble.getDouble(col,row) }
-          .foldLeft(0.0) { (a,b) => if(isNaN(b)) a else a + b }
+          .foldLeft(0.0) { (a,b) => if(isNoData(b)) a else a + b }
 
       getSource(tiledRSDouble.zonalSumDouble(poly)) match {
         case Complete(result,success) =>
@@ -435,10 +435,10 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
           .map { case (col,row) => tiledRDouble.getDouble(col,row) }
       val sum = 
         vals
-          .foldLeft(0.0) { (a,b) => if(isNaN(b)) a else a + b }
+          .foldLeft(0.0) { (a,b) => if(isNoData(b)) a else a + b }
       val count = 
         vals
-          .foldLeft(0.0) { (a,b) => if(isNaN(b)) a else a + 1.0 }
+          .foldLeft(0.0) { (a,b) => if(isNoData(b)) a else a + 1.0 }
 
       getSource(tiledRSDouble.zonalMeanDouble(poly)) match {
         case Complete(result,success) =>

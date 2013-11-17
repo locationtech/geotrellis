@@ -20,7 +20,7 @@ class UndefinedSpec extends FunSpec
       val result = run(Undefined(r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
-          if(r.get(col,row) == NODATA) result.get(col,row) should be (1)
+          if(isNoData(r.get(col,row))) result.get(col,row) should be (1)
           else result.get(col,row) should be (0)
         }
       }
@@ -31,7 +31,7 @@ class UndefinedSpec extends FunSpec
       val result = run(Undefined(r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
-          if(isNaN(r.getDouble(col,row))) result.get(col,row) should be (1)
+          if(isNoData(r.getDouble(col,row))) result.get(col,row) should be (1)
           else result.get(col,row) should be (0)
         }
       }
@@ -48,7 +48,7 @@ class UndefinedSpec extends FunSpec
             for(col <- 0 until r.rasterExtent.cols / 3) {
               val z = r.getDouble(col,row)
               val rz = result.get(col,row)
-              if(isNaN(z))
+              if(isNoData(z))
                 rz should be (1)
               else 
                 rz should be (0)

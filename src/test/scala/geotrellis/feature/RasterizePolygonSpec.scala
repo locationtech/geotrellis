@@ -72,7 +72,7 @@ class RasterizePolygonSpec extends FunSuite
       }
     
       var sum = 0
-      r1.foreach(f => if (f != NODATA) sum = sum + 1 )
+      r1.foreach(f => if (isData(f)) sum = sum + 1 )
       assert(sum === 9)
       
       val r2 = Rasterizer.rasterizeWithValue(diamond, re)((a:Unit) => 0x22)
@@ -85,7 +85,7 @@ class RasterizePolygonSpec extends FunSuite
       assert(r2.get(3,8) === 0x22)
       
       sum = 0
-      r2.foreach(f => if (f != NODATA) sum = sum + 1 )
+      r2.foreach(f => if (isData(f)) sum = sum + 1 )
       assert(sum === 18)
 
       val r3 = Rasterizer.rasterizeWithValue(triangle, re)((a:Unit) => 0x33)  
@@ -95,7 +95,7 @@ class RasterizePolygonSpec extends FunSuite
       assert(r3.get(4,3) === 0x33)
       assert(r3.get(5,3) === 0x33)
       sum = 0
-      r3.foreach(f => if (f != NODATA) sum = sum + 1 )
+      r3.foreach(f => if (isData(f)) sum = sum + 1 )
       assert(sum === 3)
 
       val r4 = Rasterizer.rasterizeWithValue(square2, re)((a:Unit) => 0x44)
@@ -111,7 +111,7 @@ class RasterizePolygonSpec extends FunSuite
 
       val r7 = Rasterizer.rasterizeWithValue(Feature(emptyGeom, ()), re)((a:Unit) => 0x77)
       sum = 0
-      r7.foreach(f => if (f != NODATA) sum = sum + 1 )
+      r7.foreach(f => if (isData(f)) sum = sum + 1 )
       assert(sum === 0)
      // LoadWKT()
   }
@@ -196,7 +196,7 @@ class RasterizePolygonSpec extends FunSuite
     val re = RasterExtent(Extent(-9509377.814902207,4174073.2405969054,-9508766.318675926,4174684.736823185),2.3886571339098737,2.3886571339044167,256,256)
     val r = Rasterizer.rasterizeWithValue(p, re)( (a:Unit) => 1 )
     var sum = 0
-    r.foreach(v => if (v != NODATA) sum = sum + 1)
+    r.foreach(v => if (isData(v)) sum = sum + 1)
     assert(sum === 65536)
   }
 
@@ -234,7 +234,7 @@ class RasterizePolygonSpec extends FunSuite
        
        val r1 = Rasterizer.rasterizeWithValue(p1, rasterExtent)((a:Unit) => 0x55)
       var sum = 0
-      r1.foreach(f => if (f != NODATA) sum = sum + 1 ) 
+      r1.foreach(f => if (isData(f)) sum = sum + 1 ) 
       assert(sum === 3)
       assert(r1.get(389,332) === 0x55)
       assert(r1.get(390,332) === 0x55)

@@ -35,7 +35,7 @@ trait MedianModeCalculation {
     while(!break)
     {
       arrV = arr(i)
-      if(arrV == NODATA) {
+      if(isNoData(arrV)) {
         arr(i) = v
         currArrMax += 1
         break = true
@@ -65,7 +65,7 @@ trait MedianModeCalculation {
     var break = false
     while(!break)
     {
-      if(arr(i) == NODATA) {
+      if(isNoData(arr(i))) {
         arr(i) = v
         currArrMax += 1
         break = true
@@ -129,7 +129,7 @@ trait MedianModeCalculation {
     var break = false
     while(!break) {
       val v = arr(i)
-      if(v == NODATA) {
+      if(isNoData(v)) {
         if(curCount > modeCount) {
           m = curValue
           modeCount = curCount

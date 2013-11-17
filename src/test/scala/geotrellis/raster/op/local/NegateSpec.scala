@@ -46,8 +46,8 @@ class NegateSpec extends FunSpec
             for(col <- 0 until r.rasterExtent.cols / 3) {
               val z = r.getDouble(col,row)
               val rz = result.getDouble(col,row)
-              if(isNaN(z))
-                isNaN(rz) should be (true)
+              if(isNoData(z))
+                isNoData(rz) should be (true)
               else 
                 rz should be (-z)
             }

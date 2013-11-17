@@ -37,13 +37,13 @@ class GeoTiffIntReadState(path:String,
   }
 
   protected[this] override def translate(rData:MutableRasterData) {
-    if(noData != NODATA) {
+    if(isData(noData)) {
       println(s"NoData value is $noData, converting to Int.MinValue")
       var i = 0
       val len = rData.length
       var conflicts = 0
       while (i < len) {
-        if(rData(i) == NODATA) conflicts += 1
+        if(isNoData(rData(i))) conflicts += 1
         if (rData(i) == noData) rData.updateDouble(i, NODATA)
         i += 1
       }

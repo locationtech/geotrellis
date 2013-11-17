@@ -115,7 +115,7 @@ final class CalcFastFocalMean(r:Raster, n:Int) {
     var i = row * cols 
     while (i < radius) {
       val z = data(i)
-      if (z != NODATA) {
+      if (isData(z)) {
         sum += data(i)
         count += 1
       }
@@ -129,7 +129,7 @@ final class CalcFastFocalMean(r:Raster, n:Int) {
     var j = 0
     while (j <= radius) {
       val z = data(i)
-      if (z != NODATA) {
+      if (isData(z)) {
         sum += data(i)
         count += 1
       }
@@ -148,12 +148,12 @@ final class CalcFastFocalMean(r:Raster, n:Int) {
     val limit = cols - radius
     while (j < limit) {
       val z1 = data(i)
-      if (z1 != NODATA) {
+      if (isData(z1)) {
         sum += data(i)
         count += 1
       }
       val z2 = data(k)
-      if (z2 != NODATA) {
+      if (isData(z2)) {
         sum -= data(k)
         count -= 1
       }
@@ -169,7 +169,7 @@ final class CalcFastFocalMean(r:Raster, n:Int) {
     // slowly shrinks.
     while (j < cols) {
       val z = data(k)
-      if (z != NODATA) {
+      if (isData(z)) {
         sum -= z
         count -= 1
       }

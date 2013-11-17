@@ -24,7 +24,7 @@ extends Op1(r)({
       var valueToLeft = NODATA
       cfor(0)(_ < cols, _ + 1) { col =>
         val v = r.get(col,row)
-        if(v != NODATA || !ignoreNoData) {
+        if(isData(v) || !ignoreNoData) {
           val top =
             if(row > 0) { r.get(col,row - 1) }
             else { v + 1 }
@@ -67,7 +67,7 @@ extends Op1(r)({
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         val v = data.get(col,row)
-        if(v != NODATA || !ignoreNoData) { 
+        if(isData(v) || !ignoreNoData) { 
           val cls = regions.getClass(v)
           if(cls != v && regionMap.contains(v)) {
             if(!regionMap.contains(cls)) {

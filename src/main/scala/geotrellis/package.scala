@@ -1,7 +1,39 @@
 import geotrellis.source.CanBuildSourceFrom
 import geotrellis.statistics.Histogram
 
+import language.experimental.macros
+
 package object geotrellis {
+  // Keep constant values in sync with macro functions
+  @inline final val byteNODATA = Byte.MinValue 
+  @inline final val shortNODATA = Short.MinValue
+  @inline final val NODATA = Int.MinValue
+
+  import geotrellis.Macros._
+  def isNoData(b:Byte):Boolean = macro isNoDataByte_impl
+  def isNoData(s:Short):Boolean = macro isNoDataShort_impl
+  def isNoData(i:Int):Boolean = macro isNoDataInt_impl
+  def isNoData(f:Float):Boolean = macro isNoDataFloat_impl
+  def isNoData(d:Double):Boolean = macro isNoDataDouble_impl
+
+  def isData(b:Byte):Boolean = macro isDataByte_impl
+  def isData(s:Short):Boolean = macro isDataShort_impl
+  def isData(i:Int):Boolean = macro isDataInt_impl
+  def isData(f:Float):Boolean = macro isDataFloat_impl
+  def isData(d:Double):Boolean = macro isDataDouble_impl
+
+  @inline final def b2i(n:Byte):Int = if (isNoData(n)) NODATA else n.toInt
+  @inline final def i2b(n:Int):Byte = if (isNoData(n)) byteNODATA else n.toByte
+
+  @inline final def s2i(n:Short):Int = if (isNoData(n)) NODATA else n.toInt
+  @inline final def i2s(n:Int):Short = if (isNoData(n)) shortNODATA else n.toShort
+
+  @inline final def i2f(n:Int):Float = if (isNoData(n)) Float.NaN else n.toFloat
+  @inline final def f2i(n:Float):Int = if (isNoData(n)) NODATA else n.toInt
+
+  @inline final def i2d(n:Int):Double = if (isNoData(n)) Double.NaN else n.toDouble
+  @inline final def d2i(n:Double):Int = if (isNoData(n)) NODATA else n.toInt
+
   type Op[+A] = Operation[A]
   type DI = DummyImplicit
 
@@ -10,8 +42,6 @@ package object geotrellis {
   type RasterDS = geotrellis.source.RasterSource
   type SeqDS[E] = geotrellis.source.DataSource[E,Seq[E]]
   type HistogramDS = geotrellis.source.DataSource[Histogram,Histogram]
-
-  @inline def isNaN(d:Double) = java.lang.Double.isNaN(d)
 
   /**
    * Add simple syntax for creating an operation.

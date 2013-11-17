@@ -17,7 +17,7 @@ object FastMapHistogram {
 
   def fromRaster(r:Raster) = {
     val h = FastMapHistogram()
-    r.foreach(z => if (z != NODATA) h.countItem(z, 1))
+    r.foreach(z => if (isData(z)) h.countItem(z, 1))
     h
   }
 

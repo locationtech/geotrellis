@@ -109,7 +109,7 @@ object GeotrellisBuild extends Build {
           "org.slf4j" % "slf4j-nop" % "1.6.0"
         )
        )
-      .dependsOn(root,macros)
+      .dependsOn(root)
 
   lazy val spark:Project = 
     Project("spark", file("geotrellis-spark"))

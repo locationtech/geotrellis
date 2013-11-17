@@ -46,8 +46,8 @@ class SqrtSpec extends FunSpec
             for(col <- 0 until r.rasterExtent.cols / 3) {
               val z = r.get(col,row)
               val rz = result.getDouble(col,row) 
-              if(isNaN(z) || z < 0.0)
-                isNaN(rz) should be (true)
+              if(isNoData(z) || z < 0.0)
+                isNoData(rz) should be (true)
               else 
                 rz should be (math.sqrt(z) plusOrMinus 1e-5)
             }

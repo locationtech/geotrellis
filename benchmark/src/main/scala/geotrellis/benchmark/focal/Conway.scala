@@ -15,7 +15,7 @@ protected object ConwayFocalOpDef extends IntFocalOpDefinition {
 protected class ConwayCalc extends FocalCalculation[Int] {
   var count = 0
   def clear() { count = 0 }
-  def add(col:Int, row:Int, r:Raster) { if (r.get(col, row) != NODATA) count += 1 }
-  def remove(col:Int, row:Int, r:Raster) { if (r.get(col, row) != NODATA) count -= 1 }
+  def add(col:Int, row:Int, r:Raster) { if (isData(r.get(col, row))) count += 1 }
+  def remove(col:Int, row:Int, r:Raster) { if (isData(r.get(col, row))) count -= 1 }
   def getResult = if (count == 2 || count == 3) 1 else NODATA
 }

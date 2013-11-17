@@ -53,7 +53,7 @@ case class HillshadeCalc(azimuth:Double,
 					  cw:Double, 
 					  ch:Double) extends SlopeAspectCalculator[Int](zFactor,cw,ch) {
   def getResult:Int = {
-    if (base(1) == NODATA) return NODATA
+    if (isNoData(base(1))) return NODATA
 
     val (slope,aspect) = getSlopeAndAspect
       

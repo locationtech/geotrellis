@@ -15,7 +15,7 @@ object Equal extends LocalRasterBinaryOp {
                .dualCombine(rasters.tail)({ zs => 
                   if(zs.distinct.length < 2) 1 else 0
                 })({ zs =>
-                  if(zs.distinct.filter(!isNaN(_)).length < 2) 1 else 0
+                  if(zs.distinct.filter(isData(_)).length < 2) 1 else 0
                 })
        }
       .withName(s"Equal[Rasters]")
@@ -24,9 +24,9 @@ object Equal extends LocalRasterBinaryOp {
     if(z1 == z2) 1 else 0
 
   def combine(z1:Double,z2:Double):Double =
-    if(isNaN(z1)) { if(isNaN(z2)) 1 else 0 }
+    if(isNoData(z1)) { if(isNoData(z2)) 1 else 0 }
     else {
-      if(isNaN(z2)) { 0 }
+      if(isNoData(z2)) { 0 }
       else { 
         if(z1 == z2) 1 
         else 0 
