@@ -43,7 +43,9 @@ object GeotrellisBuild extends Build {
       "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1",
       "org.spire-math" %% "spire" % "0.4.0",
       "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided",
-      "net.databinder" %% "dispatch-http" % "0.8.10"
+      "net.databinder" %% "dispatch-http" % "0.8.10",
+      "org.apache.commons" % "commons-math3" % "3.2",
+      "org.scalanlp" %% "breeze" % "0.5.2"
     ),
 
     resolvers ++= Seq(
