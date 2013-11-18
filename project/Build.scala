@@ -40,7 +40,6 @@ object GeotrellisBuild extends Build {
       "com.typesafe.akka" %% "akka-remote" % "2.2.1",
       "com.typesafe.akka" %% "akka-actor" % "2.2.1",
       "com.typesafe.akka" %% "akka-cluster" % "2.2.1",
-      "asm" % "asm" % "3.3.1",
       "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
       "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1",
       "org.spire-math" %% "spire" % "0.4.0",
@@ -134,11 +133,8 @@ object GeotrellisBuild extends Build {
 
   lazy val demo:Project = Project("demo", file("demo")).
     settings(
-      scalaVersion := "2.10.2",
-      libraryDependencies ++= Seq(
-        "asm" % "asm" % "3.3.1"
-      )).
-    dependsOn(server)
+      scalaVersion := "2.10.2"
+    ).dependsOn(server)
 
   val geotoolsVersion = "8.0-M4"
 
