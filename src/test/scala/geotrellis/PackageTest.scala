@@ -3,7 +3,7 @@ package geotrellis
 import org.scalatest.FunSuite
 import org.scalatest.matchers._
 
-class ConstantsTest extends FunSuite with ShouldMatchers {
+class PackageTest extends FunSuite with ShouldMatchers {
   test("constants") {
     assert(NODATA === Int.MinValue)
   }
