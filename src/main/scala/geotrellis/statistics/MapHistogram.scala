@@ -33,7 +33,7 @@ class MapHistogram(counts:Map[Int, Int], var total:Int) extends Histogram {
   }
 
   def uncountItem(i:Int) {
-    if (i != NODATA) {
+    if (isData(i)) {
       val opt = this.counts.remove(i)
       if (opt.isDefined) {
         this.total -= opt.get
@@ -42,7 +42,7 @@ class MapHistogram(counts:Map[Int, Int], var total:Int) extends Histogram {
   }
 
   def countItem(i:Int, count:Int=1) {
-    if (i != NODATA) {
+    if (isData(i)) {
       if (this.counts.contains(i)) {
         this.counts(i) += count
       } else {
@@ -53,7 +53,7 @@ class MapHistogram(counts:Map[Int, Int], var total:Int) extends Histogram {
   }
 
   def setItem(i:Int, count:Int) {
-    if (i != NODATA) {
+    if (isData(i)) {
       if (this.counts.contains(i)) {
         this.total = this.total + count - this.counts(i)
         this.counts(i) = count

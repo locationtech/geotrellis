@@ -57,7 +57,7 @@ class CeilSpec extends FunSpec
           for(row <- 0 until 4) {
             for(col <- 0 until 9) {
               if(row == 0 && col == 0)
-                isNaN(result.getDouble(col,row)) should be (true)
+                isNoData(result.getDouble(col,row)) should be (true)
               else
                 result.getDouble(col,row) should be (2.0)
             }

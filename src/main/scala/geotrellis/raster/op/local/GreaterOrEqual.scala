@@ -28,9 +28,9 @@ object GreaterOrEqual extends LocalRasterBinaryOp {
     if(z1 >= z2) 1 else 0
 
   def combine(z1:Double,z2:Double):Double =
-    if(isNaN(z1)) { 0 }
+    if(isNoData(z1)) { 0 }
     else {
-      if(isNaN(z2)) { 0 }
+      if(isNoData(z2)) { 0 }
       else { 
         if(z1 >= z2) 1 
         else 0 

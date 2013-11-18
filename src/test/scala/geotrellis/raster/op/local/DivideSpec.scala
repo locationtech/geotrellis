@@ -126,9 +126,9 @@ class DivideSpec extends FunSpec
           //println(success)
           for(row <- 0 until r1.rasterExtent.rows) {
             for(col <- 0 until r1.rasterExtent.cols) {
-              if(result.get(col,row) == NODATA) {
-                (r1.get(col,row) == NODATA ||
-                 r2.get(col,row) == NODATA ||
+              if(isNoData(result.get(col,row))) {
+                (isNoData(r1.get(col,row)) ||
+                 isNoData(r2.get(col,row)) ||
                  r2.get(col,row) == 0) should be (true)
               } else {
                 result.get(col,row) should be (r1.get(col,row) / r2.get(col,row))

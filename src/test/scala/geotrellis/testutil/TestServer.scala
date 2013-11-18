@@ -58,9 +58,9 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
     for(row <- 0 until rows) {
       for(col <- 0 until cols) {
         val v = raster.getDouble(col,row)
-        if(isNaN(v)) {
+        if(isNoData(v)) {
           withClue(s"Value at ($col,$row) are not the same: value was ${arr(row*cols+col)}") {
-            isNaN(arr(row*cols + col)) should be (true)
+            isNoData(arr(row*cols + col)) should be (true)
           }
         } else {
           withClue(s"Value at ($col,$row) are not the same:") {

@@ -126,7 +126,7 @@ import geotrellis.testutil._
 // //          println(success)
 //           for(row <- 0 until 4) {
 //             for(col <- 0 until 6) {
-//               if(isNaN(expected(row*6+col))) { isNaN(result.getDouble(col,row)) should be (true) }
+//               if(isNoData(expected(row*6+col))) { isNoData(result.getDouble(col,row)) should be (true) }
 //               else { result.getDouble(col,row) should be (expected(row*6 + col)) }
 //             }
 //           }

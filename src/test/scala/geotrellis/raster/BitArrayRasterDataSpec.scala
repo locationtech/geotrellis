@@ -13,4 +13,3 @@ class BitArrayRasterDataSpec extends FunSpec with ShouldMatchers {
     }
   }
 }
- 

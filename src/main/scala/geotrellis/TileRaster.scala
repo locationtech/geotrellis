@@ -226,7 +226,7 @@ case class TileRaster(tiles:Seq[Raster],
 
           for(col <- 0 until tileLayout.pixelCols) {
             val v = tile.get(col,row)
-            val s = if(v == NODATA) {
+            val s = if(isNoData(v)) {
               "ND"
             } else {
               s"$v"

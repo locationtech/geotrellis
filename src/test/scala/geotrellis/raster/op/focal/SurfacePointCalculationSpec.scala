@@ -27,11 +27,11 @@ class SlopeAspectTests extends FunSpec with ShouldMatchers {
           val aspect = s.aspect
           val slope = s.slope
           
-          if(!slope.isNaN) {
+          if(isData(slope)) {
             abs(s.cosSlope - cos(slope)) should be < tolerance
             abs(s.sinSlope - sin(slope)) should be < tolerance
           }
-          if(!aspect.isNaN) {
+          if(isData(aspect)) {
             abs(s.sinAspect - sin(aspect)) should be < tolerance
             abs(s.cosAspect - cos(aspect)) should be < tolerance
           }

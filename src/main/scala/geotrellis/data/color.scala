@@ -90,7 +90,7 @@ case class RgbaColors(cs:Array[Int]) extends Colors {
  * Mapper which wraps color breaks and nodataColor
  */
 case class ColorMapper(cb:ColorBreaks, nodataColor:Int) extends Function1[Int, Int] {
-  def apply(z:Int):Int = if (z == NODATA) nodataColor else cb.get(z)
+  def apply(z:Int):Int = if (isNoData(z)) nodataColor else cb.get(z)
 }
 
 /**

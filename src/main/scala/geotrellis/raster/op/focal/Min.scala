@@ -23,7 +23,7 @@ case class Min(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends Fo
       cursor.allCells.foreach { 
         (col,row) => {
           val v = r.get(col,row)
-          if(v != NODATA && (v < m || m == NODATA)) { m = v }
+          if(isData(v) && (v < m || isNoData(m))) { m = v }
         }
       }
       data.set(cursor.col,cursor.row,m)

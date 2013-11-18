@@ -34,7 +34,7 @@ class RasterDataSpec extends FunSpec
         for(row <- 0 until rows) {
           val v = r.get(col,row)
           val v2 = r2.get(col,row)
-          if(v == NODATA) {
+          if(isNoData(v)) {
             v2 should be (NODATA)
           }
         }
@@ -45,8 +45,8 @@ class RasterDataSpec extends FunSpec
         for(row <- 0 until rows) {
           val v = r.getDouble(col,row)
           val v3 = r3.getDouble(col,row)
-          if(java.lang.Double.isNaN(v)) {
-            java.lang.Double.isNaN(v3) should be (true)
+          if(isNoData(v)) {
+            isNoData(v3) should be (true)
           }
         }
       }
@@ -55,7 +55,7 @@ class RasterDataSpec extends FunSpec
     it("should respect NoData values") {
       withClue("ByteArrayRasterData") { check(byteNoDataRaster) }
       withClue("ShortArrayRasterData") { 
-        val n = shortNodata
+        val n = shortNODATA
         check(createRaster(Array[Short](1,2,3,n,n,n,3,4,5)))
       }
       withClue("IntArrayRasterData") { check(positiveIntegerNoDataRaster) }

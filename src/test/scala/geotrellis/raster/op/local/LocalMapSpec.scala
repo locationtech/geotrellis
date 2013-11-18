@@ -27,10 +27,10 @@ class LocalMapSpec extends FunSpec
 
     it ("performs integer function against TypeDouble raster") {
       val r = probabilityNoDataRaster
-      val result = run(LocalMap(r)( (x:Int) => if(x == NODATA) NODATA else x * 10 ))
+      val result = run(LocalMap(r)( (x:Int) => if(isNoData(x)) NODATA else x * 10 ))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
-          if(col % 2 == 1) { java.lang.Double.isNaN(result.getDouble(col,row)) should be (true) }
+          if(col % 2 == 1) { isNoData(result.getDouble(col,row)) should be (true) }
           else { result.getDouble(col,row) should be (r.getDouble(col,row).toInt * 10) }
         }
       }
@@ -69,10 +69,10 @@ class LocalMapSpec extends FunSpec
 
     it ("performs binary integer function against TypeDouble raster") {
       val r = probabilityNoDataRaster
-      val result = run(LocalMap(r, r)({ (z1:Int,z2:Int) => if(z1 == NODATA) { NODATA} else { z1 + z2 } }))
+      val result = run(LocalMap(r, r)({ (z1:Int,z2:Int) => if(isNoData(z1)) { NODATA} else { z1 + z2 } }))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
-          if(col % 2 == 1) { java.lang.Double.isNaN(result.getDouble(col,row)) should be (true) }
+          if(col % 2 == 1) { isNoData(result.getDouble(col,row)) should be (true) }
           else { result.getDouble(col,row) should be (r.getDouble(col,row).toInt * 2) }
         }
       }
@@ -90,7 +90,7 @@ class LocalMapSpec extends FunSpec
 
     it ("performs binary double function against TypeInt raster") {
       val r = positiveIntegerNoDataRaster
-      val result = run(LocalMapDouble(r, r)({ (z1:Double,z2:Double) => if(z1 == NODATA) {NODATA} else {z1 + z2} }))
+      val result = run(LocalMapDouble(r, r)({ (z1:Double,z2:Double) => if(isNoData(z1)) {NODATA} else {z1 + z2} }))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(col % 2 == 1) { result.get(col,row) should be (NODATA) }
@@ -137,7 +137,7 @@ class LocalMapSpec extends FunSpec
         3,2,3,2)
 
       val r = runSource(rs)
-      getSource(rs.localMap(z => if(z == NODATA) 0 else z + 1)) match {
+      getSource(rs.localMap(z => if(isNoData(z)) 0 else z + 1)) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {
@@ -162,12 +162,12 @@ class LocalMapSpec extends FunSpec
         3,2,3,2)
 
       val r = runSource(rs)
-      getSource(rs.localMap(z => if(z == NODATA) 0 else z + 1)) match {
+      getSource(rs.localMap(z => if(isNoData(z)) 0 else z + 1)) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {
             for(col <- 0 until 9) {
-              if(isNaN(r.getDouble(col,row))) { result.getDouble(col,row) should be (0.0) }
+              if(isNoData(r.getDouble(col,row))) { result.getDouble(col,row) should be (0.0) }
               else { result.getDouble(col,row) should be (2.0) }
             }
           }
@@ -187,7 +187,7 @@ class LocalMapSpec extends FunSpec
         3,2,3,2)
 
       val r = runSource(rs)
-      getSource(rs.localMapDouble(z => if(isNaN(z)) 0.0 else z + 1.0)) match {
+      getSource(rs.localMapDouble(z => if(isNoData(z)) 0.0 else z + 1.0)) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {
@@ -212,12 +212,12 @@ class LocalMapSpec extends FunSpec
         3,2,3,2)
 
       val r = runSource(rs)
-      getSource(rs.localMapDouble(z => if(isNaN(z)) 0.0 else z + 0.3)) match {
+      getSource(rs.localMapDouble(z => if(isNoData(z)) 0.0 else z + 0.3)) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {
             for(col <- 0 until 9) {
-              if(isNaN(r.getDouble(col,row))) { result.getDouble(col,row) should be (0.0) }
+              if(isNoData(r.getDouble(col,row))) { result.getDouble(col,row) should be (0.0) }
               else { result.getDouble(col,row) should be (1.8) }
             }
           }
@@ -267,7 +267,7 @@ class LocalMapSpec extends FunSpec
 //          println(success)
           for(row <- 0 until 4) {
             for(col <- 0 until 9) {
-              if(isNaN(r.getDouble(col,row))) { isNaN(result.getDouble(col,row)) should be (true) }
+              if(isNoData(r.getDouble(col,row))) { isNoData(result.getDouble(col,row)) should be (true) }
               else { result.getDouble(col,row) should be (2.0) }
             }
           }
@@ -287,7 +287,7 @@ class LocalMapSpec extends FunSpec
         3,2,3,2)
 
       val r = runSource(rs)
-      getSource(rs.localMapIfSetDouble(z => if(isNaN(z)) 0.0 else z + 1.0)) match {
+      getSource(rs.localMapIfSetDouble(z => if(isNoData(z)) 0.0 else z + 1.0)) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {
@@ -312,12 +312,12 @@ class LocalMapSpec extends FunSpec
         3,2,3,2)
 
       val r = runSource(rs)
-      getSource(rs.localMapIfSetDouble(z => if(isNaN(z)) 0.0 else z + 0.3)) match {
+      getSource(rs.localMapIfSetDouble(z => if(isNoData(z)) 0.0 else z + 0.3)) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {
             for(col <- 0 until 9) {
-              if(isNaN(r.getDouble(col,row))) { isNaN(result.getDouble(col,row)) should be (true) }
+              if(isNoData(r.getDouble(col,row))) { isNoData(result.getDouble(col,row)) should be (true) }
               else { result.getDouble(col,row) should be (1.8) }
             }
           }

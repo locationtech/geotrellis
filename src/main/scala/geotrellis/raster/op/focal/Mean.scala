@@ -44,11 +44,11 @@ case class CursorMeanCalc() extends CursorCalculation[Raster] with DoubleRasterD
   def calc(r:Raster,c:Cursor) = {
     c.removedCells.foreach { (x,y) => 
       val v = r.get(x,y)
-      if(v != NODATA) { count -= 1; sum -= v } 
+      if(isData(v)) { count -= 1; sum -= v } 
     }
     c.addedCells.foreach { (x,y) => 
       val v = r.get(x,y)
-      if(v != NODATA) { count += 1; sum += v } 
+      if(isData(v)) { count += 1; sum += v } 
     }
     data.setDouble(c.col,c.row,sum / count.toDouble)
   }
@@ -60,7 +60,7 @@ case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleRas
 
  def add(r:Raster, x:Int, y:Int) = {
     val z = r.get(x,y)
-    if (z != NODATA) {
+    if (isData(z)) {
       count += 1
       sum   += z
     }
@@ -68,7 +68,7 @@ case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleRas
 
   def remove(r:Raster, x:Int, y:Int) = {
     val z = r.get(x,y)
-    if (z != NODATA) {
+    if (isData(z)) {
       count -= 1
       sum -= z
     }
@@ -85,11 +85,11 @@ case class CursorMeanCalcDouble() extends CursorCalculation[Raster] with DoubleR
   def calc(r:Raster,c:Cursor) = {
     c.removedCells.foreach { (x,y) => 
       val v = r.getDouble(x,y)
-      if(!isNaN(v)) { count -= 1; sum -= v } 
+      if(isData(v)) { count -= 1; sum -= v } 
     }
     c.addedCells.foreach { (x,y) => 
       val v = r.getDouble(x,y)
-      if(!isNaN(v)) { count += 1; sum += v } 
+      if(isData(v)) { count += 1; sum += v } 
     }
     data.setDouble(c.col,c.row,sum / count)
   }
@@ -101,7 +101,7 @@ case class CellwiseMeanCalcDouble() extends CellwiseCalculation[Raster] with Dou
 
  def add(r:Raster, x:Int, y:Int) = {
     val z = r.getDouble(x,y)
-    if (!isNaN(z)) {
+    if (isData(z)) {
       count += 1
       sum   += z
     }
@@ -109,7 +109,7 @@ case class CellwiseMeanCalcDouble() extends CellwiseCalculation[Raster] with Dou
 
   def remove(r:Raster, x:Int, y:Int) = {
     val z = r.getDouble(x,y)
-    if (!isNaN(z)) {
+    if (isData(z)) {
       count -= 1
       sum -= z
     }

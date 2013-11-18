@@ -9,5 +9,5 @@ import geotrellis.process._
 object Defined extends Serializable {
   /** Maps an integer typed Raster to 1 if the cell value is not NODATA, otherwise 0. */
   def apply(r:Op[Raster]) = 
-    r.map(_.map(z => if(z == NODATA) 0 else 1).convert(TypeBit))
+    r.map(_.map(z => if(isNoData(z)) 0 else 1).convert(TypeBit))
 }

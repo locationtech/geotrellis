@@ -5,15 +5,12 @@ import java.io.DataOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
-import java.lang.Double.isNaN
-
 import scala.collection.mutable
 import scala.annotation.switch
 
 import scala.math.{ceil, min}
 
 import geotrellis._
-import geotrellis.raster.RasterUtil._
 
 /**
  * Implements LZW compression encoding.
@@ -41,7 +38,7 @@ object LzwEncoder {
 class LzwByteEncoder(encoder:Encoder) extends LzwEncoder(encoder) {
   def handleCell(i:Int) {
     var z = data.apply(i)
-    if (z == NODATA) z = encoder.noDataInt
+    if (isNoData(z)) z = encoder.noDataInt
     handleByte(z)
   }
 }
@@ -49,7 +46,7 @@ class LzwByteEncoder(encoder:Encoder) extends LzwEncoder(encoder) {
 class LzwShortEncoder(encoder:Encoder) extends LzwEncoder(encoder) {
   def handleCell(i:Int) {
     var z = data.apply(i)
-    if (z == NODATA) z = encoder.noDataInt
+    if (isNoData(z)) z = encoder.noDataInt
     handleByte(z >> 8)
     handleByte(z & 0xff)
   }
@@ -58,7 +55,7 @@ class LzwShortEncoder(encoder:Encoder) extends LzwEncoder(encoder) {
 class LzwIntEncoder(encoder:Encoder) extends LzwEncoder(encoder) {
   def handleCell(i:Int) {
     var z = data.apply(i)
-    if (z == NODATA) z = encoder.noDataInt
+    if (isNoData(z)) z = encoder.noDataInt
     handleByte(z >> 24)
     handleByte((z >> 16) & 0xff)
     handleByte((z >> 8) & 0xff)
@@ -73,7 +70,7 @@ class LzwFloatEncoder(encoder:Encoder) extends LzwEncoder(encoder) {
 
   def handleCell(i:Int) {
     var z = i2d(data(i))
-    val n = if (isNaN(z)) ndx else floatToRawIntBits(z.toFloat)
+    val n = if (isNoData(z)) ndx else floatToRawIntBits(z.toFloat)
     handleByte(n >> 24)
     handleByte((n >> 16) & 0xff)
     handleByte((n >> 8) & 0xff)
@@ -88,7 +85,7 @@ class LzwDoubleEncoder(encoder:Encoder) extends LzwEncoder(encoder) {
 
   def handleCell(i:Int) {
     var z = i2d(data(i))
-    val n = if (isNaN(z)) ndx else doubleToRawLongBits(z)
+    val n = if (isNoData(z)) ndx else doubleToRawLongBits(z)
     handleByte((n >> 56).toInt)
     handleByte(((n >> 48) & 0xff).toInt)
     handleByte(((n >> 40) & 0xff).toInt)

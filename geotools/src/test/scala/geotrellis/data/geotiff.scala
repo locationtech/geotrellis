@@ -110,8 +110,8 @@ class GeoTiffSpec extends FunSpec with MustMatchers with ShouldMatchers {
       translatedTif.cols should be (originalArg.cols)
       for(col <- 0 until originalArg.cols) {
         for(row <- 0 until originalArg.rows) {
-          if(originalArg.getDouble(col,row).isNaN)
-             translatedTif.getDouble(col,row).isNaN should be (true)
+          if(isNoData(originalArg.getDouble(col,row)))
+             isNoData(translatedTif.getDouble(col,row)) should be (true)
           else
             translatedTif.getDouble(col,row) should be (originalArg.getDouble(col,row))
         }

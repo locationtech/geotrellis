@@ -56,7 +56,7 @@ class MaxSpec extends FunSpec
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(col % 2 == 1) {
-            java.lang.Double.isNaN(result.getDouble(col,row)) should be (true)
+            isNoData(result.getDouble(col,row)) should be (true)
           }
         }
       }
@@ -106,7 +106,7 @@ class MaxSpec extends FunSpec
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(col % 2 == 1) {
-            java.lang.Double.isNaN(result.getDouble(col,row)) should be (true)
+            isNoData(result.getDouble(col,row)) should be (true)
           }
         }
       }
@@ -177,7 +177,7 @@ class MaxSpec extends FunSpec
           val z1 = r1.get(col,row)
           val z2 = r2.get(col,row)
 
-          if(z1 == NODATA || z2 == NODATA) {
+          if(isNoData(z1) || isNoData(z2)) {
             result.get(col,row) should be (NODATA)
           } else if(col % 2 != 0) {
             result.get(col,row) should be (z1)
@@ -202,8 +202,8 @@ class MaxSpec extends FunSpec
           val z2 = r2.getDouble(col,row)
           val zr = result.getDouble(col,row)
 
-          if(isNaN(z1) || isNaN(z2)) {
-            withClue(s"Z1: $z1  Z2: $z2  R: $zr") { isNaN(zr) should be (true) }
+          if(isNoData(z1) || isNoData(z2)) {
+            withClue(s"Z1: $z1  Z2: $z2  R: $zr") { isNoData(zr) should be (true) }
           } else if(col % 2 != 0) {
             zr should be (z1)
           } else {

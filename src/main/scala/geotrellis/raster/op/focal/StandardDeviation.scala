@@ -24,12 +24,12 @@ case class StandardDeviation(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbor
     def calc(r:Raster,c:Cursor) = {
       c.removedCells.foreach { (x,y) => 
         val v = r.get(x,y)
-        if(v != NODATA) { count -= 1; sum -= v } 
+        if(isData(v)) { count -= 1; sum -= v } 
       }
       
       c.addedCells.foreach { (x,y) => 
         val v = r.get(x,y)
-        if(v != NODATA) { count += 1; sum += v }
+        if(isData(v)) { count += 1; sum += v }
       }
 
       val mean = sum / count.toDouble
@@ -37,7 +37,7 @@ case class StandardDeviation(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbor
 
       c.allCells.foreach { (x,y) =>
         var v = r.get(x,y)
-        if(v != NODATA) { 
+        if(isData(v)) { 
           squares += math.pow(r.get(x,y) - mean,2)
         }
       }

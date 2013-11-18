@@ -39,7 +39,7 @@ abstract class SlopeAspectCalculator[@specialized(Int,Double) D](zFactor:Double,
   }
 
   def getSlopeAndAspect: (Double, Double) = {
-    if (base(1) == NODATA) return (Double.NaN, Double.NaN)
+    if (isNoData(base(1))) return (Double.NaN, Double.NaN)
 
     // east - west
     val `dz/dx` = (east(0) + 2*east(1) + east(2) - west(0) - 2*west(1) - west(2)) / (8 * cellWidth)
@@ -83,7 +83,7 @@ protected case class AspectCalc(zFactor:Double,
 		       cellWidth:Double, 
 		       cellHeight:Double) extends SlopeAspectCalculator[Double](zFactor,cellWidth,cellHeight) {
   def getResult:Double = {
-    if (base(1) == NODATA) return NODATA
+    if (isNoData(base(1))) return NODATA
 
     val (_,aspect) = getSlopeAndAspect
     degrees(aspect)
@@ -100,7 +100,7 @@ protected case class SlopeCalc(zFactor:Double,
 		      cellWidth:Double,
 		      cellHeight:Double) extends SlopeAspectCalculator[Double](zFactor,cellWidth,cellHeight) {
   def getResult:Double = {
-    if(base(1) == NODATA) return NODATA
+    if(isNoData(base(1))) return NODATA
     val (slope,_) = getSlopeAndAspect
     degrees(slope)
 

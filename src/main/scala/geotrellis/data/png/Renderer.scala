@@ -26,7 +26,7 @@ extends Function1[Int, Int] {
 
   def settings = Settings(color, PaethFilter)
   def render(r:Raster) = r.convert(rasterType).map(this)
-  def apply(z:Int):Int = { if(z == NODATA) nodata else colorMap.getItemCount(z) }
+  def apply(z:Int):Int = { if(isNoData(z)) nodata else colorMap.getItemCount(z) }
 }
 
 object Renderer {

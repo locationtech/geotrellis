@@ -20,7 +20,7 @@ case class Convolver(rasterExtent:RasterExtent,k:Kernel) {
     if(z == 0) {
       val o = data.get(col,row)
       data.set(col,row,
-        if(o == NODATA) 0
+        if(isNoData(o)) 0
         else o
       )
     } else {
@@ -42,9 +42,9 @@ case class Convolver(rasterExtent:RasterExtent,k:Kernel) {
             kcol >= 0 && krow >= 0 && kcol < kernelcols && krow < kernelrows) {
 
             val k = kraster.get(kcol,krow)
-            if (k != NODATA) {
+            if (isData(k)) {
               val o = data.get(c,r)
-              val w = if (o == NODATA) {
+              val w = if (isNoData(o)) {
                 k * z
               } else {
                 o + k*z

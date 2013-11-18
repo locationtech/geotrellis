@@ -282,7 +282,7 @@ trait RasterBuilders {
    * 14 x 9 raster with positive byte values
    */
   def byteNoDataRaster = {
-    val n = geotrellis.raster.byteNodata
+    val n = byteNODATA
     var arr = Array[Byte](
       62,  22,  44,   3,  36,  75,  87,  83,  84,  30,  91,  85,  70,  23,
       96,  11,  73, 109, 103,  n,   9, 112, 118, 125,  24, 116,  52, 126,
@@ -309,7 +309,7 @@ trait RasterBuilders {
     for(row <- 0 until r.rows) {
       for(col <- 0 until r.cols) {
         val v = r.get(col,row)
-        val s = if(v == NODATA) {
+        val s = if(isNoData(v)) {
           "ND"
         } else {
           s"$v"

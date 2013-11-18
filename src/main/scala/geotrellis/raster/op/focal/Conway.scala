@@ -19,14 +19,14 @@ case class Conway(r:Op[Raster],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,
 
     def add(r:Raster, x:Int, y:Int) = {
       val z = r.get(x,y)
-      if (z != NODATA) {
+      if (isData(z)) {
         count += 1
       }
     }
 
     def remove(r:Raster, x:Int, y:Int) = {
       val z = r.get(x,y)
-      if (z != NODATA) {
+      if (isData(z)) {
         count -= 1
       }
     } 

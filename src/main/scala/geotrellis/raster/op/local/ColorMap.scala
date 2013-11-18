@@ -71,7 +71,7 @@ case class IntColorMap(r:Op[Raster],
 
       Result({
         r.map { z =>
-          if(z == NODATA) { options.noDataColor }
+          if(isNoData(z)) { options.noDataColor }
           else {
             var i = 0
             while(i < len && zCheck(z,i)) { i += 1 }
@@ -118,7 +118,7 @@ case class DoubleColorMap(r:Op[Raster],
 
       Result(
         r.mapDouble { z =>
-          if(java.lang.Double.isNaN(z)) { options.noDataColor }
+          if(isNoData(z)) { options.noDataColor }
           else {
             var i = 0
             while(i < len && zCheck(z,i)) { i += 1 }

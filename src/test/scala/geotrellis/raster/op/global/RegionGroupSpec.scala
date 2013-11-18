@@ -67,7 +67,7 @@ class RegionGroupSpec extends FunSpec
           val v = r.get(col,row)
           val region = regions.get(col,row)
 
-          if(v == NODATA) { region should be (v) }
+          if(isNoData(v)) { region should be (v) }
           else {
             regionMap(region) should be (v)
             if(!regionCounts.contains(v)) { regionCounts(v) = mutable.Set[Int]() }
@@ -160,7 +160,7 @@ class RegionGroupSpec extends FunSpec
         cfor(0)(_ < 8, _ + 1) { row =>
           val v = r.get(col,row)
           val region = regions.get(col,row)
-          if(v == NODATA) { region should be (v) }
+          if(isNoData(v)) { region should be (v) }
           else {
             regionMap(region) should be (v)
             if(!regionCounts.contains(v)) { regionCounts(v) = mutable.Set[Int]() }
@@ -200,7 +200,7 @@ class RegionGroupSpec extends FunSpec
         cfor(0)(_ < 8, _ + 1) { row =>
           val v = r.get(col,row)
           val region = regions.get(col,row)
-          if(v == NODATA) { region should be (v) }
+          if(isNoData(v)) { region should be (v) }
           else { region should be (0) }
         }
       }
@@ -240,7 +240,7 @@ class RegionGroupSpec extends FunSpec
         cfor(0)(_ < 8, _ + 1) { row =>
           val v = r.get(col,row)
           val region = regions.get(col,row)
-          if(v == NODATA) { region should be (v) }
+          if(isNoData(v)) { region should be (v) }
           else {
             regionMap(region) should be (v)
             if(!regionCounts.contains(v)) { regionCounts(v) = mutable.Set[Int]() }
