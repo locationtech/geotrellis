@@ -35,70 +35,65 @@ case object Universeal extends KrigingMethod
   fp = wf1 + wf2 + wf3 + ...
 */
 
-object KrigingInterpolate {
-  def getWeight(pts:Seq[Point[Int]],dest:Point[Int]) = {
-    sv = Variogram(pts)
-    length = pts.length
-    for (i <- 0 until length optimized) {
-      // eq1 coefficients
-      pts.map{ a => GetDistance()}
-    }
+// object KrigingInterpolate {
+//   def getWeight(pts:Seq[Point[Int]],dest:Point[Int]) = {
+//     val sv:Function1[Double,Double] = Variogram(pts)
+//     length = pts.length
+//     for (i <- 0 until length optimized) {
+//       // eq1 coefficients
+//       pts.map{ a => GetDistance() }
+//     }
 
 
-  }
-  def makePairs(ps:Seq[Point[Int]]):Seq[([Point[Int]],[Point[Int]])] = {
-    ps.foldLeft((Seq.empty[([Point[Int]],[Point[Int]])],ps.tail)) {
-      case(b,a) => (a.map{ x => (a,x) } ++ b._1,
-                    b._2.tail) }._1
-  }
-}
+//   }
+// }
 
-/**
- * Kriging Interpolation
- */
-case class KrigingInterpolate(points:Seq[Point[Int]],re:RasterExtent,radius:Option[Int]=None,method:KrigingMethod) {
-    val cols = re.cols
-    val rows = re.rows
-    val data = RasterData.emptyByType(TypeInt, cols, rows)
+// /**
+//  * Kriging Interpolation
+//  */
+// case class KrigingInterpolate(points:Seq[Point[Int]],re:RasterExtent,radius:Option[Int]=None,method:KrigingMethod) {
+//     val cols = re.cols
+//     val rows = re.rows
+//     val data = RasterData.emptyByType(TypeInt, cols, rows)
 
-    val index:SpatialIndex[Point[Int]] = SpatialIndex(points)(p => (p.x,p.y))
+//     val index:SpatialIndex[Point[Int]] = SpatialIndex(points)(p => (p.x,p.y))
 
-    if(points.isEmpty) {
-      Result(Raster(data,re))
-    } else {
-      radius match {
-        case Some(r) =>
-          for(col <- 0 until cols optimized) {
-            for(row <- 0 until rows optimized) {
-              val destX = re.gridColToMap(col)
-              val destY = re.gridRowToMap(row)
-              val dest = Point(destX,destY)
-              val pts = index.
-                pointsInExtent(Extent(destX - r, destY - r, destX + r, destY + r))
-                  .map( a => GetDistance(dest,a) < r )
+//     if(points.isEmpty) {
+//       Result(Raster(data,re))
+//     } else {
+//       radius match {
+//         case Some(r) =>
+//           for(col <- 0 until cols optimized) {
+//             for(row <- 0 until rows optimized) {
+//               val destX = re.gridColToMap(col)
+//               val destY = re.gridRowToMap(row)
+//               val dest = Point(destX,destY)
+//               val pts = index.
+//                 pointsInExtent(Extent(destX - r, destY - r, destX + r, destY + r))
+//                   .map( a => GetDistance(dest,a) < r )
 
-              getWeight(pts,dest)
+//               getWeight(pts,dest)
 
-              val length = pts.length
-              for(i <- 0 until length optimized) {
-                val point = pts(i)
-                val dX = (destX - point.x)
-                val dY = (destY - point.y)
-                val d = sqrt(dX * dX + dY * dY)
-                if (d < r) {
-                  val w = 1 / d
-                  s += point.data * w
-                  ws += w
-                  c += 1
-                }
-              }
-              if (c == 0) {
-                data.set(col, row, NODATA)
-              } else {
-                val mean = s / ws
-                data.set(col, row, mean.toInt)
-              }
-            }
+//               val length = pts.length
+//               for(i <- 0 until length optimized) {
+//                 val point = pts(i)
+//                 val dX = (destX - point.x)
+//                 val dY = (destY - point.y)
+//                 val d = sqrt(dX * dX + dY * dY)
+//                 if (d < r) {
+//                   val w = 1 / d
+//                   s += point.data * w
+//                   ws += w
+//                   c += 1
+//                 }
+//               }
+//               if (c == 0) {
+//                 data.set(col, row, NODATA)
+//               } else {
+//                 val mean = s / ws
+//                 data.set(col, row, mean.toInt)
+//               }
+//             }
     
-    Result(Raster(data,re))
-})
+//     Result(Raster(data,re))
+// })
