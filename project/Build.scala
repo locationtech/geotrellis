@@ -59,7 +59,6 @@ object GeotrellisBuild extends Build {
           "com.typesafe.akka" %% "akka-remote" % "2.2.1",
           "com.typesafe.akka" %% "akka-actor" % "2.2.1",
           "com.typesafe.akka" %% "akka-cluster" % "2.2.1",
-          "asm" % "asm" % "3.3.1",
           "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
           "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1",
           "org.spire-math" %% "spire" % "0.4.0",
@@ -146,10 +145,7 @@ object GeotrellisBuild extends Build {
     Project("demo", file("demo"))
       .settings(
         scalaVersion := "2.10.2",
-        scalacOptions ++= defaultScalacOptions,
-        libraryDependencies ++= Seq(
-          "asm" % "asm" % "3.3.1"
-        )
+        scalacOptions ++= defaultScalacOptions
        )
       .dependsOn(server)
 
