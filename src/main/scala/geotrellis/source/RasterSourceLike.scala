@@ -18,7 +18,8 @@ trait RasterSourceLike[+Repr <: RasterSource]
     with global.GlobalOpMethods[Repr]
     with zonal.ZonalOpMethods[Repr]
     with zonal.summary.ZonalSummaryOpMethods[Repr]
-    with stat.StatOpMethods[Repr] { self: Repr =>
+    with stat.StatOpMethods[Repr] 
+    with io.IoOpMethods[Repr] { self: Repr =>
 
   def tiles = self.elements
   def rasterDefinition:Op[RasterDefinition]
