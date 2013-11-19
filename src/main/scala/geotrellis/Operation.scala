@@ -163,7 +163,6 @@ extends OperationWrapper(op) {}
 object Operation {
   implicit def implicitLiteralVal[A <: AnyVal](a:A)(implicit m:Manifest[A]):Operation[A] = Literal(a)
   implicit def implicitLiteralRef[A <: AnyRef](a:A):Operation[A] = Literal(a)
-//  implicit val innerToOp[T,Op[T]](x:Op[T]) = x
 }
 
 /**
