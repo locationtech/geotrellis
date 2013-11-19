@@ -87,6 +87,8 @@ abstract class Operation[+T] extends Product with Serializable {
     ()
   }
 
+  def flatten[B](implicit f:T=>Op[B]) = flatMap(f(_))
+
   /**
    * Create a new operation with a function that takes the result of this operation
    * and returns a new operation.
