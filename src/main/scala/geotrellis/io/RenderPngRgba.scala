@@ -4,7 +4,6 @@ import geotrellis._
 import geotrellis.data._
 import geotrellis.data.png._
 
-
 /**
  * Generate a PNG from a raster of RGBA integer values.
  *
