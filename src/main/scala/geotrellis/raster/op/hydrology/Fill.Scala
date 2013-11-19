@@ -18,9 +18,9 @@ case class Fill(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors])
     extends FocalOp[Raster](r,n,tns)({
   (r,n) =>
       if(r.isFloat) {
-        new CursorFillCalcDouble
+      _=> new CursorFillCalcDouble
       } else {
-          new CursorFillCalc
+      _=> new CursorFillCalc
       }
 })
 
@@ -47,7 +47,7 @@ case class CursorFillCalc() extends CursorCalculation[Raster] with DoubleRasterD
       } 
     }
     c.addedCells.foreach { (x,y) => 
-      var cVal = r.get(c.col,c.row)
+      cVal = r.get(c.col,c.row)
     c.removedCells.foreach { (x,y) => 
       val v = r.get(x,y)
       if(v != NODATA) {
@@ -58,25 +58,43 @@ case class CursorFillCalc() extends CursorCalculation[Raster] with DoubleRasterD
         totalCount += 1
       } 
     }
-    if(count == 0){ data.setDouble(sum / totalCount.toDouble) }
-    else { data.setDouble(cVal.toDouble }
+    if(count == 0){ data.setDouble(c.col,c.row,((sum-cVal) / totalCount.toDouble) }
+    else { data.setDouble(c.col,c.row,cVal.toDouble }
     }
   }
 }
-case class CursorMeanCalcDouble() extends CursorCalculation[Raster] with DoubleRasterDataResult {
+case class CursorFillCalcDouble() extends CursorCalculation[Raster] with DoubleRasterDataResult {
   var count:Int = 0
-  var sum:Double = 0.0
+  var totalCount:Int = 0
+  var sum:Double = 0
+  val thresh:Double = 10
 
   def calc(r:Raster,c:Cursor) = {
+    var cVal = r.get(c.col,c.row)
     c.removedCells.foreach { (x,y) => 
       val v = r.getDouble(x,y)
-      if(!isNaN(v)) { count -= 1; sum -= v } 
+      if(!isNaN(v)) {
+        if((v - cval).abs() < thresh ){
+          count -= 1
+        } 
+        sum -= v
+        totalCount -= 1
+      } 
     }
     c.addedCells.foreach { (x,y) => 
-      val v = r.getDouble(x,y)
-      if(!isNaN(v)) { count += 1; sum += v } 
+      var cVal = r.getDouble(c.col,c.row)
+    c.removedCells.foreach { (x,y) => 
+      val v = r.get(x,y)
+      if(!isNaN(v)) {
+        if((v - cval).abs < thresh ){
+          count += 1
+        } 
+        sum += v
+        totalCount += 1
+      } 
     }
-    data.setDouble(c.col,c.row,sum / count)
+    if(count == 0){ data.setDouble(c.col,c.row,(sum-cVal) / totalCount) }
+    else { data.setDouble(c.col,c.row,cVal)}
+    }
   }
 }
-
