@@ -25,24 +25,23 @@ import geotrellis.statistics.Histogram
  *   import geotrellis.statistics.op._
  *
  *   val rOp = io.LoadRaster("foo") // get a data raster
- *   val histogramOp = stat.GetHistogram(r)
  *   val colors = Array(0xFF0000FF, 0x00FF00FF) // red and green in RGBA values
  *   // generate a 6 color gradient between red and green
  *   val colorsOp = stat.GetColorsFromPalette(colors, 6) 
  *   val breaksOp = stat.GetColorBreaks(histogramOp, numColorsOp)
- *   val pngOp = io.RenderPng(rOp, braeksOp, histogramOp, 0)
+ *   val pngOp = io.RenderPng(rOp, braeksOp, 0)
  * }}}
  */
-case class RenderPng(r:Op[Raster], colorBreaks:Op[ColorBreaks], h:Op[Histogram],
-                     noDataColor:Op[Int])
-extends Op4(r, colorBreaks, h, noDataColor)({
-  (r, colorBreaks, h, noDataColor) => {
+case class RenderPng(r:Op[Raster], colorBreaks:Op[ColorBreaks], noDataColor:Op[Int])
+extends Op3(r, colorBreaks, noDataColor)({
+  (r, colorBreaks, noDataColor) => {
     val breaks = colorBreaks.limits
     val colors = colorBreaks.colors
-    val renderer = Renderer(breaks, colors, h, noDataColor)
+
+    val renderer = Renderer(breaks, colors, noDataColor)
     val r2 = renderer.render(r)
     val bytes = new Encoder(renderer.settings).writeByteArray(r2)
+
     Result(bytes)
   }
 })
-

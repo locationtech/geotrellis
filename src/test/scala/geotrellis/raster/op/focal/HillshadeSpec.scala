@@ -58,7 +58,7 @@ class HillshadeSpec extends FunSuite
     val h = server.run(stat.GetHistogram(r))
     println("loaded raster in %s ms" format (time() - t0))
   
-    run(io.WritePng(r, "/tmp/raster.png", grayscale(6), h, 0))
+    run(io.WritePng(r, "/tmp/raster.png", grayscale(6), 0))
   
     val t1 = time()
     val r1 = server.run(Hillshade(r))
@@ -67,7 +67,7 @@ class HillshadeSpec extends FunSuite
     val h1 = server.run(stat.GetHistogram(r1))
 
     val t2 = time()
-    run(io.WritePng(r1, "/tmp/hillshade2.png", grayBreaks, h, 0))
+    run(io.WritePng(r1, "/tmp/hillshade2.png", grayBreaks, 0))
     println("[2] wrote png in %s ms" format (time() - t2))
 
     val palette = Array(0xff0000ff, 0xff8800ff, 0xffff00ff,
@@ -79,19 +79,19 @@ class HillshadeSpec extends FunSuite
     val colors638 = new MultiColorRangeChooser(palette).getColors(638)
 
     val t3 = time()
-    run(io.WritePng(r, "/tmp/raster3.png", stat.GetColorBreaks(h, colors10), h, 0))
+    run(io.WritePng(r, "/tmp/raster3.png", stat.GetColorBreaks(h, colors10), 0))
     println("[3] wrote png in %s ms" format (time() - t3))
 
     val t4 = time()
-    run(io.WritePng(r, "/tmp/raster4.png", stat.GetColorBreaks(h, colors100), h, 0))
+    run(io.WritePng(r, "/tmp/raster4.png", stat.GetColorBreaks(h, colors100), 0))
     println("[4] wrote png in %s ms" format (time() - t4))
 
     val t5 = time()
-    run(io.WritePng(r, "/tmp/raster5.png", stat.GetColorBreaks(h, colors1000), h, 0))
+    run(io.WritePng(r, "/tmp/raster5.png", stat.GetColorBreaks(h, colors1000), 0))
     println("[5] wrote png in %s ms" format (time() - t5))
 
     val t6 = time()
-    run(io.WritePng(r, "/tmp/raster6.png", stat.GetColorBreaks(h, colors638), h, 0))
+    run(io.WritePng(r, "/tmp/raster6.png", stat.GetColorBreaks(h, colors638), 0))
     println("[6] wrote png in %s ms" format (time() - t6))
   }
 

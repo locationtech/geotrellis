@@ -1,43 +1,26 @@
-package geotrellis.data.png
+ package geotrellis.data.png
 
 import geotrellis._
 import geotrellis.data._
-import geotrellis.statistics.Histogram
+import geotrellis.statistics._
 
-case class Renderer(limits:Array[Int], colors:Array[Int], histogram:Histogram,
-                    nodata:Int, rasterType:RasterType, color:Color)
-extends Function1[Int, Int] {
-  def makeColorMap() = {
-    val ch = histogram.copy
-    val len = limits.length - 1
-    def findColor(z:Int):Int = {
-      var i = 0
-      while (i < len) {
-        if (z <= limits(i)) return colors(i)
-        i += 1
-      }
-      colors(len)
-    }
-    histogram.foreachValue(z => ch.setItem(z, findColor(z)))
-    ch
-  }
+import scala.collection.mutable
 
-  private val colorMap = makeColorMap()
-
+case class Renderer(colorMap:IntColorMap, rasterType:RasterType, color:Color) {
+  def render(r:Raster) = 
+      r.convert(rasterType).map(colorMap)
   def settings = Settings(color, PaethFilter)
-  def render(r:Raster) = r.convert(rasterType).map(this)
-  def apply(z:Int):Int = { if(isNoData(z)) nodata else colorMap.getItemCount(z) }
 }
 
 object Renderer {
-  def apply(breaks:ColorBreaks, h:Histogram, nodata:Int):Renderer = {
-    apply(breaks.limits, breaks.colors, h, nodata)
+  def apply(breaks:ColorBreaks, nodata:Int):Renderer = {
+    apply(breaks.limits, breaks.colors, nodata)
   }
 
-  def apply(limits:Array[Int], colors:Array[Int], h:Histogram, nodata:Int):Renderer = {
+  def apply(limits:Array[Int], colors:Array[Int], nodata:Int):Renderer = {
     val n = limits.length
-    if (n < 255) {
-      val indices = (0 until n).toArray
+    if(colors.length < 255) {
+      val indices = (0 until colors.length).toArray
       val rgbs = new Array[Int](256)
       val as = new Array[Int](256)
 
@@ -50,29 +33,34 @@ object Renderer {
       }
       rgbs(255) = 0
       as(255) = 0
-      return Renderer(limits, indices, h, 255, TypeByte, Indexed(rgbs, as))
-    }
-
-    import geotrellis.data.Color._
-
-    var opaque = true
-    var grey = true
-    var i = 0
-    while (i < colors.length) {
-      val c = colors(i)
-      opaque &&= isOpaque(c)
-      grey &&= isGrey(c)
-      i += 1
-    }
-
-    if (grey && opaque) {
-      Renderer(limits, colors.map(z => (z >> 8) & 0xff), h, nodata, TypeByte, Grey(nodata))
-    } else if (opaque) {
-      Renderer(limits, colors.map(z => z >> 8), h, nodata, TypeInt, Rgb(nodata))
-    } else if (grey) {
-      Renderer(limits, colors.map(z => z & 0xffff), h, nodata, TypeShort, Greya)
+      val color = png.Indexed(rgbs, as)
+      val colorMap = ColorMap(limits,indices,ColorMapOptions(LessThan,255))
+      Renderer(colorMap, TypeByte, color)
     } else {
-      Renderer(limits, colors, h, nodata, TypeInt, Rgba)
+
+      var opaque = true
+      var grey = true
+      var i = 0
+      while (i < colors.length) {
+        val c = colors(i)
+        opaque &&= Color.isOpaque(c)
+        grey &&= Color.isGrey(c)
+        i += 1
+      }
+
+      if (grey && opaque) {
+        val colorMap = ColorMap(limits,colors.map(z => (z >> 8) & 0xff),ColorMapOptions(LessThan,nodata))
+        Renderer(colorMap, TypeByte, png.Grey(nodata))
+      } else if (opaque) {
+        val colorMap = ColorMap(limits,colors.map(z => z >> 8),ColorMapOptions(LessThan,nodata))
+        Renderer(colorMap, TypeInt, png.Rgb(nodata))
+      } else if (grey) {
+        val colorMap = ColorMap(limits,colors.map(z => z & 0xffff),ColorMapOptions(LessThan,nodata))
+        Renderer(colorMap, TypeShort, png.Greya)
+      } else {
+        val colorMap = ColorMap(limits,colors,ColorMapOptions(LessThan,nodata))
+        Renderer(colorMap, TypeInt, png.Rgba)
+      }
     }
   }
 }
