@@ -87,6 +87,8 @@ abstract class Operation[+T] extends Product with Serializable {
     ()
   }
 
+  def flatten[B](implicit f:T=>Op[B]) = flatMap(f(_))
+
   /**
    * Create a new operation with a function that takes the result of this operation
    * and returns a new operation.
@@ -161,6 +163,7 @@ extends OperationWrapper(op) {}
 object Operation {
   implicit def implicitLiteralVal[A <: AnyVal](a:A)(implicit m:Manifest[A]):Operation[A] = Literal(a)
   implicit def implicitLiteralRef[A <: AnyRef](a:A):Operation[A] = Literal(a)
+//  implicit val innerToOp[T,Op[T]](x:Op[T]) = x
 }
 
 /**
