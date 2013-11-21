@@ -112,7 +112,7 @@ class DrawRaster {
     val breaksOp:Op[ColorBreaks] = stat.GetColorBreaks(histogramOp, colorsOp)
 
     // render the png
-    val pngOp:Op[Array[Byte]] = io.RenderPng(rasterOp, breaksOp, histogramOp, Literal(0))
+    val pngOp:Op[Array[Byte]] = io.RenderPng(rasterOp, breaksOp, 0)
 
     // run the operation
     try {

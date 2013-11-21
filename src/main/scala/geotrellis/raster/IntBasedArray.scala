@@ -1,7 +1,6 @@
 package geotrellis.raster
 
 import geotrellis._
-import geotrellis.raster.RasterUtil._
 
 /**
  * This trait defines applyDouble/updateDouble in terms of apply/update.

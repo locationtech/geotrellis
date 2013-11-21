@@ -31,17 +31,17 @@ class StandardDeviationSpec extends FunSpec with FocalOpSpec
 
   describe("StandardDeviation") {
     it("should handle all NODATA") {
-      getSquareStdResult(MockCursor.fromAll(NODATA,NODATA,NODATA,NODATA)).isNaN should be (true)
+      isNoData(getSquareStdResult(MockCursor.fromAll(NODATA,NODATA,NODATA,NODATA))) should be (true)
     }
 
     it("should match calculated std on default sets") {
       for(s <- defaultTestSets) {
-        val sf = s.filter { x => x != NODATA }.toList
+        val sf = s.filter { x => isData(x) }.toList
         val xs = sf
         val μ = mean(xs)
         val σ = stddev(xs, μ)
-        if(σ.isNaN) {
-          getSquareStdResult(MockCursor.fromAddRemoveAll(s,s,Seq[Int]())).isNaN should equal (true)
+        if(isNoData(σ)) {
+          isNoData(getSquareStdResult(MockCursor.fromAddRemoveAll(s,s,Seq[Int]()))) should equal (true)
         } else {
           getSquareStdResult(MockCursor.fromAddRemoveAll(s,s,Seq[Int]())) should equal (σ)
         }

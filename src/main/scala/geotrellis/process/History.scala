@@ -16,10 +16,10 @@ object TreeChars {
 
 object History {
   def apply(op:Op[_]) =
-    new History(op.name,Nil,None,System.currentTimeMillis,0)
+    new History(op.opId,Nil,None,System.currentTimeMillis,0)
 
   def apply(op:Op[_],system:String) =
-    new History(op.name,Nil,None,System.currentTimeMillis,0,system)
+    new History(op.opId,Nil,None,System.currentTimeMillis,0,system)
 
   def literal[T](v:T,system:String) =
     new History("Literal",Nil,None,System.currentTimeMillis,0,system).withResult(v)

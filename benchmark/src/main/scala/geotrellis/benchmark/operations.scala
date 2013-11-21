@@ -53,7 +53,7 @@ case class MultiplyConstantMapIfSetSugar(r:Op[Raster], c:Op[Int]) extends Op2(r,
  * Here is a MultiplyConstant implementation in terms of raster.mapIfSet and Op2.
  */
 case class MultiplyConstantMapSugar(r:Op[Raster], c:Op[Int]) extends Op2(r, c)({
-  (r, c) => Result(r.map(z => if (z != NODATA) z * c else NODATA))
+  (r, c) => Result(r.map(z => if (isData(z)) z * c else NODATA))
 })
 
 /**
@@ -78,7 +78,7 @@ case class MultiplyConstantWhileLoop(r:Op[Raster], c:Op[Int]) extends Op[Raster]
       var i = 0
       while (i < len) {
         val z = data(i)
-        if (z != NODATA) data(i) = z * n
+        if (isData(z)) data(i) = z * n
         i += 1
       }
       Result(r2)
@@ -93,7 +93,7 @@ case class UntiledMin(r:Op[Raster]) extends Operation[Int] {
       var zmin = Int.MaxValue 
       raster.foreach {
         data => {
-          z:Int => if (z != NODATA) {
+          z:Int => if (isData(z)) {
             zmin = min(zmin, z)
           }
         }
@@ -146,7 +146,7 @@ trait MultiLocalOld extends Operation[Raster]{
  */
 case class AddOld(rs:Op[Raster]*) extends MultiLocalOld {
   final def ops = rs.toArray
-  final def handle(a:Int, b:Int) = if (a == NODATA) b else if (b == NODATA) a else a + b
+  final def handle(a:Int, b:Int) = if (isNoData(a)) b else if (isNoData(b)) a else a + b
 }
 
 // the winner!
@@ -176,7 +176,7 @@ case class BUntiledHistogram(r:Op[Raster]) extends Op1(r) ({
 //   r => {
 //     var zmin = Int.MaxValue
 //     r.foreach {
-//       z => if (z != NODATA) zmin = min(z,zmin)
+//       z => if (isData(z)) zmin = min(z,zmin)
 //     }
 //     zmin
 //   }

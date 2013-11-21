@@ -43,7 +43,7 @@ object Majority extends Serializable {
               counts.clear
               for(r <- rs) {
                 val v = r.getDouble(col,row)
-                if(!isNaN(v)) {
+                if(isData(v)) {
                   if(!counts.contains(v)) {
                     counts(v) = 1
                   } else {
@@ -72,7 +72,7 @@ object Majority extends Serializable {
               counts.clear
               for(r <- rs) {
                 val v = r.get(col,row)
-                if(v != NODATA) {
+                if(isData(v)) {
                   if(!counts.contains(v)) {
                     counts(v) = 1
                   } else {
@@ -103,7 +103,7 @@ object Majority extends Serializable {
 trait MajorityOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Assigns to each cell the value within the given rasters that is the most numerous. */
   def localMajority(rss:Seq[RasterDS]):RasterSource = 
-    combine(rss)(Majority(_))
+    combineOp(rss)(Majority(_))
 
   /** Assigns to each cell the value within the given rasters that is the most numerous. */
   def localMajority(rss:RasterDS*)(implicit d:DI):RasterSource = 
@@ -111,7 +111,7 @@ trait MajorityOpMethods[+Repr <: RasterSource] { self: Repr =>
 
   /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
   def localMajority(n:Int,rss:Seq[RasterDS]):RasterSource = 
-    combine(rss)(Majority(n,_))
+    combineOp(rss)(Majority(n,_))
 
   /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
   def localMajority(n:Int,rss:RasterDS*)(implicit d:DI):RasterSource = 

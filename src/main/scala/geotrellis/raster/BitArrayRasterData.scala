@@ -23,7 +23,9 @@ final case class BitArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
   // 3 | 9 -> 11, that is 00000011 | 00001001 -> 00001011
   // 3 & 9 -> 1,  that is 00000011 & 00001001 -> 00000001
   // 3 ^ 9 -> 10, that is 00000011 ^ 00001001 -> 00001010
-  assert(array.length == (size + 7) / 8)
+  if(array.length != (size + 7)/8) {
+    sys.error(s"BitArrayRasterData array length must be ${(size + 7)/8}, was ${array.length}")
+  }
   def getType = TypeBit
   def alloc(cols: Int, rows: Int) = BitArrayRasterData.ofDim(cols, rows)
   def length = size
@@ -40,30 +42,24 @@ final case class BitArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
   }
   def copy = BitArrayRasterData(array.clone, cols, rows)
 
-  override def map(f: Int => Int) = {
+  override def map(f: Int=>Int) = {
     val f0 = f(0) & 1
     val f1 = f(1) & 1
-    val arr = if (f0 == 0 && f1 == 0) {
-      // array of all zeros
-      Array.ofDim[Byte](array.length)
+    
+    if (f0 == 0 && f1 == 0) {
+      println("yer")
+      BitConstant(false,cols,rows)
     } else if (f0 == 1 && f1 == 1) {
-      // array of all ones
-      Array.fill[Byte](array.length)(-1.asInstanceOf[Byte])
+      println("pap")
+      BitConstant(true,cols,rows)
     } else if (f0 == 0 && f1 == 1) {
+      println("wut")
       // same data as we have now
-      array.clone
+      this
     } else {
       // inverse (complement) of what we have now
-      val arr = array.clone
-      val len = array.length
-      var i = 0
-      while (i < len) {
-        arr(i) = (~arr(i)).asInstanceOf[Byte]
-        i += 1
-      }
-      arr
+      LazyMapBitInverse(this)
     }
-    BitArrayRasterData(arr, cols, rows)
   }
 
   override def mapDouble(f: Double => Double) = map(z => d2i(f(i2d(z))))

@@ -1,7 +1,6 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
-import geotrellis.raster.RasterUtil._
 import geotrellis.source._
 
 /**
@@ -80,11 +79,11 @@ trait ConditionalOpMethods[+Repr <: RasterDS] { self: Repr =>
   def localIf(cond:Double => Boolean,trueValue:Double,falseValue:Double) = 
     self.mapOp(IfCell(_,cond,trueValue,falseValue))
   def localIf(rs:RasterDS,cond:(Int,Int)=>Boolean,trueValue:Int) = 
-    self.combine(rs)(IfCell(_,_,cond,trueValue))
+    self.combineOp(rs)(IfCell(_,_,cond,trueValue))
   def localIf(rs:RasterDS,cond:(Double,Double)=>Boolean,trueValue:Double) = 
-    self.combine(rs)(IfCell(_,_,cond,trueValue))
+    self.combineOp(rs)(IfCell(_,_,cond,trueValue))
   def localIf(rs:RasterDS,cond:(Int,Int)=>Boolean,trueValue:Int,falseValue:Int) = 
-    self.combine(rs)(IfCell(_,_,cond,trueValue,falseValue))
+    self.combineOp(rs)(IfCell(_,_,cond,trueValue,falseValue))
   def localIf(rs:RasterDS,cond:(Double,Double)=>Boolean,trueValue:Double,falseValue:Double) = 
-    self.combine(rs)(IfCell(_,_,cond,trueValue,falseValue))
+    self.combineOp(rs)(IfCell(_,_,cond,trueValue,falseValue))
 }

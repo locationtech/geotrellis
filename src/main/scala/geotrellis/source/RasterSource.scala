@@ -12,6 +12,31 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps:Op[Seq[Op[Ra
 }
 
 object RasterSource {
+  def fromFile(path:String):RasterSource = 
+    fromFile(path,None)
+
+  def fromFile(path:String,rasterExtent:RasterExtent):RasterSource =
+    fromFile(path,Some(rasterExtent))
+
+  def fromFile(path:String,rasterExtent:Option[RasterExtent]):RasterSource = {
+    val rasterLayer = io.LoadRasterLayerFromPath(path)
+    val rasterDef = 
+      rasterLayer map { layer =>
+        RasterDefinition(layer.info.name,
+                         layer.info.rasterExtent,
+                         layer.info.tileLayout)
+      }
+
+    val tileOps = rasterLayer.map { layer =>
+      (for(tileRow <- 0 until layer.info.tileLayout.tileRows;
+           tileCol <- 0 until layer.info.tileLayout.tileCols) yield {
+        Literal(layer.getTile(tileCol,tileRow,rasterExtent))
+      })
+    }
+
+    RasterSource(rasterDef,tileOps)
+  }
+
   def apply(name:String):RasterSource =
     RasterSource(io.LoadRasterDefinition(name),None)
 

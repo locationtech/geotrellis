@@ -10,7 +10,7 @@ object ArrayHistogram {
 
   def fromRaster(r:Raster, n:Int) = {
     val h = ArrayHistogram(n)
-    r.foreach(z => if (z != NODATA) h.countItem(z, 1))
+    r.foreach(z => if (isData(z)) h.countItem(z, 1))
     h
   }
 

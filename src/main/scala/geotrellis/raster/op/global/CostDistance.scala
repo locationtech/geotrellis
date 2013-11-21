@@ -70,7 +70,7 @@ final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int,Int)]]) 
         val source = d.getDouble(c,r)
 
         // Previous value could be NODATA
-        val prevCost = if (prev == NODATA || prev.isNaN) java.lang.Double.MAX_VALUE else prev
+        val prevCost = if (isNoData(prev)) java.lang.Double.MAX_VALUE else prev
 
         var curMinCost = Double.MaxValue
 
@@ -206,7 +206,7 @@ private [global]
 class IOption(val v: Int) extends AnyVal {
   def map(f: Int => Int) = if (isDefined) new IOption(f(v)) else this
   def flatMap(f: Int => IOption) = if (isDefined) f(v) else this
-  def isDefined = v != NODATA
+  def isDefined = isData(v)
   def get = if (isDefined) v else sys.error("Get called on NODATA")
 }
 
@@ -218,7 +218,7 @@ private [global]
 class DOption(val v: Double) extends AnyVal {
   def map(f: Double => Double) = if (isDefined) new DOption(f(v)) else this
   def flatMap(f: Double => DOption) = if (isDefined) f(v) else this
-  def isDefined = !v.isNaN
+  def isDefined = isData(v)
   def get = if (isDefined) v else sys.error("Get called on NaN")
 }
 

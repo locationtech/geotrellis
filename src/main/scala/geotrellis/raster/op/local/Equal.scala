@@ -15,7 +15,7 @@ object Equal extends LocalRasterBinaryOp {
                .dualCombine(rasters.tail)({ zs => 
                   if(zs.distinct.length < 2) 1 else 0
                 })({ zs =>
-                  if(zs.distinct.filter(!isNaN(_)).length < 2) 1 else 0
+                  if(zs.distinct.filter(isData(_)).length < 2) 1 else 0
                 })
        }
       .withName(s"Equal[Rasters]")
@@ -24,9 +24,9 @@ object Equal extends LocalRasterBinaryOp {
     if(z1 == z2) 1 else 0
 
   def combine(z1:Double,z2:Double):Double =
-    if(isNaN(z1)) { if(isNaN(z2)) 1 else 0 }
+    if(isNoData(z1)) { if(isNoData(z2)) 1 else 0 }
     else {
-      if(isNaN(z2)) { 0 }
+      if(isNoData(z2)) { 0 }
       else { 
         if(z1 == z2) 1 
         else 0 
@@ -75,7 +75,7 @@ trait EqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are equal, else 0.
    */
-  def localEqual(rs:RasterSource) = self.combine(rs)(Equal(_,_))
+  def localEqual(rs:RasterSource) = self.combineOp(rs)(Equal(_,_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are equal, else 0.
@@ -85,7 +85,7 @@ trait EqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are equal, else 0.
    */
-  def localEqual(rss:Seq[RasterSource]) = self.combine(rss)(Equal(_))
+  def localEqual(rss:Seq[RasterSource]) = self.combineOp(rss)(Equal(_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are equal, else 0.

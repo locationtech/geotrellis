@@ -14,11 +14,11 @@ import geotrellis.source._
  */
 object Xor extends LocalRasterBinaryOp {
   def combine(z1:Int,z2:Int) = 
-    if (z1 == NODATA || z2 == NODATA) NODATA
+    if (isNoData(z1) || isNoData(z2)) NODATA
     else z1 ^ z2
 
   def combine(z1:Double,z2:Double) = 
-    if(isNaN(z1) || isNaN(z2)) Double.NaN
+    if(isNoData(z1) || isNoData(z2)) Double.NaN
     else i2d(d2i(z1) ^ d2i(z2))
 }
 
@@ -30,11 +30,11 @@ trait XorOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Xor a constant Int value to each cell. */
   def ^:(i:Int) = localXor(i)
   /** Xor the values of each cell in each raster.  */
-  def localXor(rs:RasterSource) = self.combine(rs)(Xor(_,_))
+  def localXor(rs:RasterSource) = self.combineOp(rs)(Xor(_,_))
   /** Xor the values of each cell in each raster. */
   def ^(rs:RasterSource) = localXor(rs)
   /** Xor the values of each cell in each raster. */
-  def localXor(rss:Seq[RasterSource]) = self.combine(rss)(Xor(_))
+  def localXor(rss:Seq[RasterSource]) = self.combineOp(rss)(Xor(_))
   /** Xor the values of each cell in each raster. */
   def ^(rss:Seq[RasterSource]) = localXor(rss)
 }

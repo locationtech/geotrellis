@@ -3,6 +3,7 @@ package geotrellis.feature.rasterize
 import geotrellis._
 import geotrellis.feature.op.geometry.{Buffer,GetCentroid}
 import geotrellis.process._
+import geotrellis.source._
 import geotrellis.feature._
 import geotrellis.testutil._
 import math.{max,min,round}
@@ -14,7 +15,9 @@ import geotrellis.feature.op.geometry.Intersect
 import PolygonRasterizer._
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class RasterizePolygonSpec extends FunSuite {
+class RasterizePolygonSpec extends FunSuite 
+                              with TestServer
+                              with RasterBuilders {
 
   test("Polygon Rasterization") {
       val e = Extent(0.0, 0.0, 10.0, 10.0)
@@ -60,14 +63,8 @@ class RasterizePolygonSpec extends FunSuite {
       assert(triangleTable.rowMax === 4)
 
 
-      val f1 = new Callback[Polygon,Unit] {
-          def apply(col:Int, row:Int, p:Polygon[Unit]) {
-            println("xx col: %d, row: %d".format(col,row))
-          }
-        }
-
       val r1 = Rasterizer.rasterizeWithValue(square,re)((a:Unit) => 0x11) 
-      println(r1.asciiDraw)
+//      println(r1.asciiDraw)
 
       // values match gdal
       for ( i <- 1 to 3; j <- 1 to 3) { 
@@ -75,11 +72,11 @@ class RasterizePolygonSpec extends FunSuite {
       }
     
       var sum = 0
-      r1.foreach(f => if (f != NODATA) sum = sum + 1 )
+      r1.foreach(f => if (isData(f)) sum = sum + 1 )
       assert(sum === 9)
       
       val r2 = Rasterizer.rasterizeWithValue(diamond, re)((a:Unit) => 0x22)
-      println(r2.asciiDraw())
+//      println(r2.asciiDraw())
       assert(r2.get(3,3) === 0x22)
       for (i <- 2 to 4) { assert(r2.get(i,4) === 0x22) }
       for (i <- 1 to 5) { assert(r2.get(i,5) === 0x22) }
@@ -88,50 +85,120 @@ class RasterizePolygonSpec extends FunSuite {
       assert(r2.get(3,8) === 0x22)
       
       sum = 0
-      r2.foreach(f => if (f != NODATA) sum = sum + 1 )
+      r2.foreach(f => if (isData(f)) sum = sum + 1 )
       assert(sum === 18)
 
       val r3 = Rasterizer.rasterizeWithValue(triangle, re)((a:Unit) => 0x33)  
-      println(r3.asciiDraw())
+//      println(r3.asciiDraw())
       
       assert(r3.get(3,2) === 0x33)
       assert(r3.get(4,3) === 0x33)
       assert(r3.get(5,3) === 0x33)
       sum = 0
-      r3.foreach(f => if (f != NODATA) sum = sum + 1 )
+      r3.foreach(f => if (isData(f)) sum = sum + 1 )
       assert(sum === 3)
 
       val r4 = Rasterizer.rasterizeWithValue(square2, re)((a:Unit) => 0x44)
-      println(r4.asciiDraw())
+//      println(r4.asciiDraw())
 
       val r5 = Rasterizer.rasterizeWithValue(outsideSquare, re)((a:Unit) => 0x55)
-      println(r5.asciiDraw())
+//      println(r5.asciiDraw())
 
       val r6 = Rasterizer.rasterizeWithValue(envelopingSquare, re)((a:Unit) => 0x66)
-      println(r6.asciiDraw())            
+//      println(r6.asciiDraw())            
 
       val emptyGeom = outsideSquare.geom.intersection(envelopingSquare.geom)
 
       val r7 = Rasterizer.rasterizeWithValue(Feature(emptyGeom, ()), re)((a:Unit) => 0x77)
       sum = 0
-      r7.foreach(f => if (f != NODATA) sum = sum + 1 )
+      r7.foreach(f => if (isData(f)) sum = sum + 1 )
       assert(sum === 0)
      // LoadWKT()
   }
 
+  // Commented out because Rasterizer does not include cells when the cell centers
+  // are the border points of the polygon in this case. I'm not certain if this
+  // is the correct functionality, see issue #620
+  // test("Polygon rasterization over a tiled raster source") {
+  //   val tiledRS =
+  //     createRasterSource(
+  //       Array(   1,  2,  3,   4,  5,  6,    7,  8,  9,
+  //               10, 11, 12,  13, 14, 15,   16, 17, 18,
+
+  //               20, 21, 22,  23, 24, 25,   26, 27, 28,
+  //               31, 32, 33,  34, 35, 36,   37, 38, 39
+  //       ),
+  //       3,2,3,2)
+
+  //   val tiledR = runSource(tiledRS)
+
+  //   def out(t:(Double,Double)) = { (t._1 - 0.0001,t._2 + 0.0001) }
+  //   val poly = {
+  //     val re = tiledR.rasterExtent
+  //     val polyPoints = Seq(
+  //       re.gridToMap(2,1), out(re.gridToMap(4,0)),re.gridToMap(7,2),
+  //       re.gridToMap(5,3), re.gridToMap(2,2),re.gridToMap(2,1)
+  //     )
+  //     Polygon(polyPoints, 0)
+  //   }
+
+  //   val expectedCells = Seq(
+  //            5,/*(4,0),*/
+  //       12,13,14,15,/*(2,1),(3,1),(4,1),(5,1),*/
+  //       21,22,23,24,25,26,/*(2,2),(3,2),(4,2),(5,2),(6,2),(7,2),*/
+  //               36/*(5,3)*/
+  //   )
+    
+  //   //      Polygon vertices are 0's (also contained cells
+  //   //      X's are contained cells
+  //   //
+  //   //       *  *  *    *  0  *    *  *  *
+  //   //       *  *  0    X  X  X    *  *  *
+  //   //
+  //   //       *  *  0    X  X  X    X  0  *
+  //   //       *  *  *    *  *  0    *  *  *
+  //   //
+  //   val tiledCells = collection.mutable.Set[Int]()
+
+  //   val tiles = run(logic.Collect(tiledRS.tiles))
+  //   tiles.map { tile =>
+  //     Rasterizer.foreachCellByFeature(poly, tile.rasterExtent) (new Callback[Geometry,Int] {
+  //       def apply(col: Int, row: Int, g: Geometry[Int]) {
+  //         tiledCells += tile.get(col,row)
+  //       }
+  //     })
+  //   }
+
+  //   val nonTiledCells = collection.mutable.Set[Int]()
+  //   Rasterizer.foreachCellByFeature(poly, tiledR.rasterExtent) (new Callback[Geometry,Int] {
+  //     def apply(col: Int, row: Int, g: Geometry[Int]) {
+  //       nonTiledCells += tiledR.get(col,row)
+  //     }
+  //   })
+
+  //   withClue("Tiled does not match non tiled: ") {
+  //     nonTiledCells.toSeq.sorted should be (tiledCells.toSeq.sorted)
+  //   }
+
+  //   val burnedR = Rasterizer.rasterizeWithValue(poly, tiledR.rasterExtent)(x => 1)
+  //   println(burnedR.asciiDraw)
+      
+  //   withClue("Tiled does not match expected: ") {
+  //     tiledCells.toSeq.sorted should be (expectedCells.toSeq.sorted)
+  //   }
+  // }
+
   test("failing example should work") {
     val geojson = """{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[35.092945313732635,-85.4351806640625],[35.06147690849717,-85.440673828125],[35.08620310578525,-85.37200927734375]]]}}"""
     val fOp = io.LoadGeoJsonFeature(geojson)
-    val f = TestServer.server.run(fOp)
+    val f = run(fOp)
     val p = Polygon(List((-9510600.807354769, 4176519.1962707597), (-9511212.30358105,4172238.854275199), (-9503568.600752532,4175602.1747499597), (-9510600.807354769,4176519.1962707597)),())
     val re = RasterExtent(Extent(-9509377.814902207,4174073.2405969054,-9508766.318675926,4174684.736823185),2.3886571339098737,2.3886571339044167,256,256)
     val r = Rasterizer.rasterizeWithValue(p, re)( (a:Unit) => 1 )
     var sum = 0
-    r.foreach(v => if (v != NODATA) sum = sum + 1)
+    r.foreach(v => if (isData(v)) sum = sum + 1)
     assert(sum === 65536)
   }
-
-
 
   test("polygon rasterization: more complex polygons") {
 	  val p1 = Polygon (List((-74.6229572569999, 41.5930024740001),
@@ -167,16 +234,15 @@ class RasterizePolygonSpec extends FunSuite {
        
        val r1 = Rasterizer.rasterizeWithValue(p1, rasterExtent)((a:Unit) => 0x55)
       var sum = 0
-      r1.foreach(f => if (f != NODATA) sum = sum + 1 ) 
+      r1.foreach(f => if (isData(f)) sum = sum + 1 ) 
       assert(sum === 3)
       assert(r1.get(389,332) === 0x55)
       assert(r1.get(390,332) === 0x55)
       assert(r1.get(390,333) === 0x55)
-      println("sum: " + sum)
+//      println("sum: " + sum)
   }
 
   test("Rasterization tests from directory of WKT files") {
-
     // This test loads WKT text files from src/test/resources/feature which are
     // named xxx_nnn.wkt, where nnn is the number of cells we expect rasterization
     // to determine to be within the defined feature in the raster extent defined
@@ -190,44 +256,38 @@ class RasterizePolygonSpec extends FunSuite {
     // The final line is the number of cells included by GDAL (center of cell mode).
     // Rename the .wkt file to end with _N (where N is the number).
 
-    val f = new java.io.File("src/test/resources/feature/")
-    val fs = f.listFiles.filter(_.getPath().endsWith(".wkt"))
-
-    val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)
-    fs.foreach( f => { 
-      val (sum, count) = RasterizePolygonSpec.countRasterizedCells(f, re) 
-      assert ( sum === count )
-    })
-  }
-
-/*  test("github issue 412: rasterize specific multipolygon") {
-    val f = new java.io.File("src/test/resources/wkt/usace_division_3.wkt") 
-    val json = scala.io.Source.fromFile(wktFile).mkString
-    val re = RasterExtent( Extent ( -14170971.178,2802226.157,-6033516.401,6621293.7227), 31786.93272265625, 14918.232678515624, 256, 256)
-    Rasterizer.rasterizeWithValue(
-    val (sum, count) = RasterizePolygonSpec.countRasterizedCells(f, re)
-  }
-*/
-}
-
-object RasterizePolygonSpec {
-  def countRasterizedCells( wktFile:java.io.File, re:RasterExtent ) = {
-    val json = scala.io.Source.fromFile(wktFile).mkString
-    val filename = wktFile.getName()
-    println("Testing rasterization: " + filename)
-    val count = Integer.parseInt(wktFile.getName().subSequence(0, filename.length - 4).toString.split("_").last)
-    println("count: " + count)
-    val g1 = TestServer.server.run(io.LoadWkt(json))
-    val p1 = Polygon(g1.geom, ())
-    var sum = 0
-    val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)
-    val r = foreachCellByPolygon(p1, re)(
+    def countRasterizedCells( wktFile:java.io.File, re:RasterExtent ) = {
+      val json = scala.io.Source.fromFile(wktFile).mkString
+      val filename = wktFile.getName()
+//      println("Testing rasterization: " + filename)
+      val count = 
+        Integer.parseInt(wktFile.getName()
+                                .subSequence(0, filename.length - 4)
+                                .toString
+                                .split("_")
+                                .last)
+//      println("count: " + count)
+      val g1 = run(io.LoadWkt(json))
+      val p1 = Polygon(g1.geom, ())
+      var sum = 0
+      val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)
+      val r = foreachCellByPolygon(p1, re)(
         new Callback[Polygon,Unit] {
           def apply(x:Int, y:Int, p:Polygon[Unit]) {
             sum = sum + 1
           }
         })
 
-    (sum, count)
+      (sum, count)
+    }
+
+    val f = new java.io.File("src/test/resources/feature/")
+    val fs = f.listFiles.filter(_.getPath().endsWith(".wkt"))
+
+    val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)
+    fs.foreach( f => { 
+      val (sum, count) = countRasterizedCells(f, re) 
+      assert ( sum === count )
+    })
   }
 }

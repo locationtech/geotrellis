@@ -18,7 +18,7 @@ class IntMinCalc extends FocalCalculation[Int] {
   var zmin = NODATA
   def clear() { zmin = NODATA }
   def add(col:Int, row:Int, r:Raster) { 
-    if(zmin == NODATA) {
+    if(isNoData(zmin)) {
       zmin = r.get(col,row)
     } else {
       zmin = min(r.get(col, row), zmin) 

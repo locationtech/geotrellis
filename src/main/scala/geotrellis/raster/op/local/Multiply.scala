@@ -11,11 +11,11 @@ import geotrellis.source._
  */
 object Multiply extends LocalRasterBinaryOp {
   def combine(z1:Int,z2:Int) =
-    if (z1 == NODATA || z2 == NODATA) NODATA
+    if (isNoData(z1) || isNoData(z2)) NODATA
     else z1 * z2
 
   def combine(z1:Double,z2:Double) =
-    if (isNaN(z1) || isNaN(z2)) Double.NaN
+    if (isNoData(z1) || isNoData(z2)) Double.NaN
     else z1 * z2
 }
 
@@ -33,11 +33,11 @@ trait MultiplyOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Multiply a double constant value from each cell.*/
   def *:(d:Double) = localMultiply(d)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(rs:RasterSource) = self.combine(rs)(Multiply(_,_))
+  def localMultiply(rs:RasterSource) = self.combineOp(rs)(Multiply(_,_))
   /** Multiply the values of each cell in each raster. */
   def *(rs:RasterSource) = localMultiply(rs)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(rss:Seq[RasterSource]) = self.combine(rss)(Multiply(_))
+  def localMultiply(rss:Seq[RasterSource]) = self.combineOp(rss)(Multiply(_))
   /** Multiply the values of each cell in each raster. */
   def *(rss:Seq[RasterSource]) = localMultiply(rss)
 }

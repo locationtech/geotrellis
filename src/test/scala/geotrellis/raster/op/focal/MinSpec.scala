@@ -86,7 +86,7 @@ class MinSpec extends FunSpec with FocalOpSpec
     it("should match scala.math.max default sets") {      
       for(s <- defaultTestSets) {        
         getMinResult(Square(1),MockCursor.fromAll(s:_*)) should equal ({
-          val x = s.filter(_ != NODATA)
+          val x = s.filter(isData(_))
           if(x.isEmpty) NODATA else x.min
         })
       }

@@ -110,31 +110,31 @@ trait LocalOpMethods[+Repr <: RasterDS]
 
   /** Masks this raster based on cell values of the second raster. See [[Mask]]. */
   def localMask(rs:RasterDS,readMask:Int,writeMask:Int) = 
-    combine(rs)(Mask(_,_,readMask,writeMask))
+    combineOp(rs)(Mask(_,_,readMask,writeMask))
 
   /** InverseMasks this raster based on cell values of the second raster. See [[InverseMask]]. */
   def localInverseMask(rs:RasterDS,readMask:Int,writeMask:Int) = 
-    combine(rs)(InverseMask(_,_,readMask,writeMask))
+    combineOp(rs)(InverseMask(_,_,readMask,writeMask))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
   def localMean(rss:Seq[RasterSource]):RasterSource = 
-    combine(rss)(Mean(_))
+    combineOp(rss)(Mean(_))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
   def localMean(rss:RasterSource*)(implicit d:DI):RasterSource = 
     localMean(rss)
 
-  def colorMap(breaksToColors:Map[Int,Int]):RasterSource =
-    colorMap(breaksToColors,ColorMapOptions.Default)
+  def color(breaksToColors:Map[Int,Int]):RasterSource =
+    color(breaksToColors,data.ColorMapOptions.Default)
 
-  def colorMap(breaksToColors:Map[Int,Int],options:ColorMapOptions):RasterSource =
-    mapOp(ColorMap(_,breaksToColors,options))
+  def color(breaksToColors:Map[Int,Int],options:data.ColorMapOptions):RasterSource =
+    mapOp(ColorRaster(_,breaksToColors,options))
 
-  def colorMap(breaksToColors:Map[Double,Int])(implicit d:DI):RasterSource =
-    colorMap(breaksToColors,ColorMapOptions.Default)
+  def color(breaksToColors:Map[Double,Int])(implicit d:DI):RasterSource =
+    color(breaksToColors,data.ColorMapOptions.Default)
 
-  def colorMap(breaksToColors:Map[Double,Int],options:ColorMapOptions)(implicit d:DI):RasterSource =
-    mapOp(ColorMap(_,breaksToColors,options))
+  def color(breaksToColors:Map[Double,Int],options:data.ColorMapOptions)(implicit d:DI):RasterSource =
+    mapOp(ColorRaster(_,breaksToColors,options))
 
   def convert(rasterType:RasterType) =
     mapOp(ConvertType(_,rasterType))

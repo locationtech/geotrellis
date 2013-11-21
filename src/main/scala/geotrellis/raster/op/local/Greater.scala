@@ -28,9 +28,9 @@ object Greater extends LocalRasterBinaryOp {
     if(z1 > z2) 1 else 0
 
   def combine(z1:Double,z2:Double):Double =
-    if(isNaN(z1)) { 0 }
+    if(isNoData(z1)) { 0 }
     else {
-      if(isNaN(z2)) { 0 }
+      if(isNoData(z2)) { 0 }
       else { 
         if(z1 > z2) 1 
         else 0 
@@ -83,7 +83,7 @@ trait GreaterOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than the next raster, else 0.
    */
-  def localGreater(rs:RasterSource) = self.combine(rs)(Greater(_,_))
+  def localGreater(rs:RasterSource) = self.combineOp(rs)(Greater(_,_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than the next raster, else 0.
@@ -93,7 +93,7 @@ trait GreaterOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than the next raster, else 0.
    */
-  def localGreater(rss:Seq[RasterSource]) = self.combine(rss)(Greater(_))
+  def localGreater(rss:Seq[RasterSource]) = self.combineOp(rss)(Greater(_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than the next raster, else 0.

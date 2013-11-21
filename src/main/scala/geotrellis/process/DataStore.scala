@@ -9,7 +9,7 @@ import geotrellis.util.Filesystem
  * Represents a location where data can be loaded from (e.g. the filesystem,
  * postgis, a web service, etc).
  */
-case class DataStore(name:String, params:Map[String, String]) {
+case class DataStore(name:String, params:Map[String, String],catalogPath:String) {
 
   private val layers = mutable.Map.empty[String, RasterLayer]
 
@@ -20,7 +20,14 @@ case class DataStore(name:String, params:Map[String, String]) {
    */
   private def initRasterLayers() {
     val path = params("path")
-    val f = new File(path)
+    // Make relative paths relative to the catalog path.
+
+    val f = {
+      val f = new File(path)
+      if(f.isAbsolute) f
+      else new File(new File(catalogPath).getParentFile,path)
+    }
+
     if (!f.isDirectory) {
       sys.error("store %s is not a directory" format path)
     }

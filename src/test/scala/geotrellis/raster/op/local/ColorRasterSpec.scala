@@ -2,15 +2,16 @@ package geotrellis.raster.op.local
 
 import geotrellis._
 import geotrellis.testutil._
+import geotrellis.data._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 
 @org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class ColorMapSpec extends FunSpec with ShouldMatchers 
+class ColorRasterSpec extends FunSpec with ShouldMatchers 
                                    with TestServer 
                                    with RasterBuilders {
-  describe("ColorMap - Integers") {
+  describe("ColorRaster - Integers") {
     val n = NODATA
 
     it("should map NODATA correctly") {
@@ -21,7 +22,7 @@ class ColorMapSpec extends FunSpec with ShouldMatchers
         n, 3, 3, n
       ), 4, 3)
 
-      val result = run(ColorMap(r,map,ColorMapOptions(LessThan,5)))
+      val result = run(ColorRaster(r,map,ColorMapOptions(LessThan,5)))
 
       result.get(1,0) should be (5)
       result.get(2,0) should be (5)
@@ -49,7 +50,7 @@ class ColorMapSpec extends FunSpec with ShouldMatchers
 
       ), 5, 6)
 
-      val result = run(ColorMap(r,map,ColorMapOptions(GreaterThan,5, noMapColor = 7)))
+      val result = run(ColorRaster(r,map,ColorMapOptions(GreaterThan,5, noMapColor = 7)))
 
       for(i <- 0 to 5) { result.get(0,i) should be(7) }
       for(i <- 0 to 5) { result.get(1,i) should be(1) }
@@ -76,7 +77,7 @@ class ColorMapSpec extends FunSpec with ShouldMatchers
 
       ), 5, 6)
 
-      val result = run(ColorMap(r,map,ColorMapOptions(LessThan,5,noMapColor = 7)))
+      val result = run(ColorRaster(r,map,ColorMapOptions(LessThan,5,noMapColor = 7)))
 
       for(i <- 0 to 5) { result.get(0,i) should be(1) }
       for(i <- 0 to 5) { result.get(1,i) should be(2) }
@@ -100,7 +101,7 @@ class ColorMapSpec extends FunSpec with ShouldMatchers
         10, 20, 30, 40, 44
       ), 5, 4)
 
-      val result = run(ColorMap(r,map,ColorMapOptions(Exact,5,noMapColor = 7)))
+      val result = run(ColorRaster(r,map,ColorMapOptions(Exact,5,noMapColor = 7)))
 
       for(i <- 0 to 3) { result.get(0,i) should be(1) }
       for(i <- 0 to 3) { result.get(1,i) should be(2) }
@@ -127,13 +128,13 @@ class ColorMapSpec extends FunSpec with ShouldMatchers
       ), 4, 3)
 
       intercept[Exception] {
-        run(ColorMap(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true)))
+        run(ColorRaster(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true)))
          .toArray
       }
     }
   }
 
-  describe("ColorMap - Doubles") {
+  describe("ColorRaster - Doubles") {
     val n = Double.NaN
 
     it("should map NODATA correctly") {
@@ -144,7 +145,7 @@ class ColorMapSpec extends FunSpec with ShouldMatchers
         n, 0.3, 0.3, n
       ), 4, 3)
 
-      val result = run(ColorMap(r,map,ColorMapOptions(LessThan,5)))
+      val result = run(ColorRaster(r,map,ColorMapOptions(LessThan,5)))
       result.get(1,0) should be (5)
       result.get(2,0) should be (5)
       result.get(1,1) should be (5)
@@ -171,7 +172,7 @@ class ColorMapSpec extends FunSpec with ShouldMatchers
 
       ), 5, 6)
 
-      val result = run(ColorMap(r,map,ColorMapOptions(GreaterThan,5, noMapColor = 7)))
+      val result = run(ColorRaster(r,map,ColorMapOptions(GreaterThan,5, noMapColor = 7)))
 
       for(i <- 0 to 5) { result.get(0,i) should be(7) }
       for(i <- 0 to 5) { result.get(1,i) should be(1) }
@@ -198,7 +199,7 @@ class ColorMapSpec extends FunSpec with ShouldMatchers
 
       ), 5, 6)
 
-      val result = run(ColorMap(r,map,ColorMapOptions(LessThan,5,noMapColor = 7)))
+      val result = run(ColorRaster(r,map,ColorMapOptions(LessThan,5,noMapColor = 7)))
 
       for(i <- 0 to 5) { result.get(0,i) should be(1) }
       for(i <- 0 to 5) { result.get(1,i) should be(2) }
@@ -222,7 +223,7 @@ class ColorMapSpec extends FunSpec with ShouldMatchers
         1.0, 2.0, 3.0, 4.0, 4.4
       ), 5, 4)
 
-      val result = run(ColorMap(r,map,ColorMapOptions(Exact,5,noMapColor = 7)))
+      val result = run(ColorRaster(r,map,ColorMapOptions(Exact,5,noMapColor = 7)))
 
       for(i <- 0 to 3) { result.get(0,i) should be(1) }
       for(i <- 0 to 3) { result.get(1,i) should be(2) }
@@ -249,7 +250,7 @@ class ColorMapSpec extends FunSpec with ShouldMatchers
       ), 4, 3)
 
       intercept[Exception] {
-        run(ColorMap(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true)))
+        run(ColorRaster(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true)))
          .toArray
       }
     }

@@ -20,17 +20,17 @@ abstract class Operation[+T] extends Product with Serializable {
   private def log(msg:String) = if(debug) println(msg)
 
   /**
-    * Return operation identified (class simple name).
-    */
-  private var _name = getClass.getSimpleName
-  def name: String = _name
-  def withName(n:String):Operation[T] = { _name += s" ($n)"; this }
+   * Return operation identified.
+   */
+  private var _opId = getClass.getSimpleName
+  def opId: String = _opId
+  def withName(n:String):Operation[T] = { _opId += s" ($n)"; this }
 
   protected[geotrellis] def _run(context:Context): StepOutput[T]
   
   /**
-    * Execute this operation and return the result.  
-    */
+   * Execute this operation and return the result.  
+   */
   def run(context:Context): StepOutput[T] =
     _run(context)
 
@@ -42,56 +42,59 @@ abstract class Operation[+T] extends Product with Serializable {
 
   def processNextSteps(args:Args):StepOutput[T] = nextSteps(args)
 
-  /** Returns an operation whose children will be executed on a remote cluster.
-    * 
-    *  This method will cause the operations executed as a result of this operation
-    *  (input operations and any operations necessary for this computation) to be 
-    *  dispatched to and executed on a remote cluster.
-    *
-    */
+  /** 
+   *  Returns an operation whose children will be executed on a remote cluster.
+   *  This method will cause the operations executed as a result of this operation
+   *  (input operations and any operations necessary for this computation) to be 
+   *  dispatched to and executed on a remote cluster.
+   *
+   */
   def dispatch(cluster:ActorRef) =
     DispatchedOperation(this, cluster)
 
 
   // TODO: Get rid of.
-  /** Returns an operation that will be executed on a remote cluster.
-    *
-    *  This method will cause the specified operation to be executed on a remote
-    *  cluster.
-    *
-    *  Note that if you wish to distribute the work of a single operation, you
-    *  should probably be using dispatch() instead of remote().
-    */
+  /** 
+   * Returns an operation that will be executed on a remote cluster.
+   *
+   *  This method will cause the specified operation to be executed on a remote
+   *  cluster.
+   *
+   *  Note that if you wish to distribute the work of a single operation, you
+   *  should probably be using dispatch() instead of remote().
+   */
   def remote(cluster:ActorRef) = map(x => x).dispatch(cluster)
   
 
   /**
-    * Create a new operation with a function that takes the result of this operation
-    * and returns a new operation.
-    */
+   * Create a new operation with a function that takes the result of this operation
+   * and returns a new operation.
+   */
   def flatMap[U](f:T=>Operation[U]):Operation[U] = new CompositeOperation(this,f)
 
   /**
-    * Create a new operation that returns the result of the provided function that
-    * takes this operation's result as its argument.
-    */
+   * Create a new operation that returns the result of the provided function that
+   * takes this operation's result as its argument.
+   */
   def map[U](f:(T)=>U):Operation[U] = logic.MapOp(this)(f)
 
   /**
-    * Create an operation that applies the function f to the result of this operation,
-    * but returns nothing.
-    */
+   * Create an operation that applies the function f to the result of this operation,
+   * but returns nothing.
+   */
   def foreach[U](f:(T)=>U):Unit = map { t:T =>
     f(t)
     ()
   }
 
+  def flatten[B](implicit f:T=>Op[B]) = flatMap(f(_))
+
   /**
-    * Create a new operation with a function that takes the result of this operation
-    * and returns a new operation.
-    * 
-    * Same as flatMap.
-    */
+   * Create a new operation with a function that takes the result of this operation
+   * and returns a new operation.
+   * 
+   * Same as flatMap.
+   */
   def withResult[U](f:T=>Operation[U]):Operation[U] = flatMap(f)
 
 
@@ -100,23 +103,24 @@ abstract class Operation[+T] extends Product with Serializable {
 
   def andThen[U](f:T => Op[U]) = flatMap(f)
 
-  /** Call the given function with this operation as its argument.
-    *
-    * This is primarily useful for code readability.
-    * @see http://debasishg.blogspot.com/2009/09/thrush-combinator-in-scala.html
-    */
+  /** 
+   * Call the given function with this operation as its argument.
+   *
+   * This is primarily useful for code readability.
+   * @see http://debasishg.blogspot.com/2009/09/thrush-combinator-in-scala.html
+   */
   def into[U] (f: (Operation[T]) => U):U = f(this)
 
   def prettyString:String = {
     val sb = new StringBuilder
-    sb.append(s"$name(")
+    sb.append(s"$opId(")
     val arity = this.productArity
     for(i <- 0 until arity) {
       this.productElement(i) match {
         case lit:Literal[_] =>
           sb.append(s"LT{${lit.value}}")
         case op:Operation[_] =>
-          sb.append(s"OP{${op.name}}")
+          sb.append(s"OP{${op.opId}}")
         case x => 
           sb.append(s"$x")
       }
@@ -153,7 +157,7 @@ abstract class OperationWrapper[+T](op:Op[T]) extends Operation[T] {
 case class DispatchedOperation[+T](val op:Op[T], val dispatcher:ActorRef)
 extends OperationWrapper(op) {}
 
-case class RemoteOperation[+T](val op:Op[T], cluster:ActorRef)
+case class RemoteOperation[+T](val op:Op[T], cluster:Option[ActorRef])
 extends OperationWrapper(op) {}
 
 object Operation {

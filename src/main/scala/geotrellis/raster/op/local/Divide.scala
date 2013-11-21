@@ -11,12 +11,12 @@ import geotrellis.source._
  */
 object Divide extends LocalRasterBinaryOp {
   def combine(z1:Int,z2:Int) =
-    if (z1 == NODATA || z2 == NODATA) NODATA
+    if (isNoData(z1) || isNoData(z2)) NODATA
     else if (z2 == 0) NODATA
     else z1 / z2
 
   def combine(z1:Double,z2:Double) =
-    if (isNaN(z1) || isNaN(z2)) Double.NaN
+    if (isNoData(z1) || isNoData(z2)) Double.NaN
     else if (z2 == 0) Double.NaN
     else z1 / z2
 }
@@ -39,11 +39,11 @@ trait DivideOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Divide a double constant value by each cell value.*/
   def /:(d:Double) = localDivideValue(d)
   /** Divide the values of each cell in each raster. */
-  def localDivide(rs:RasterSource) = self.combine(rs)(Divide(_,_))
+  def localDivide(rs:RasterSource) = self.combineOp(rs)(Divide(_,_))
   /** Divide the values of each cell in each raster. */
   def /(rs:RasterSource) = localDivide(rs)
   /** Divide the values of each cell in each raster. */
-  def localDivide(rss:Seq[RasterSource]) = self.combine(rss)(Divide(_))
+  def localDivide(rss:Seq[RasterSource]) = self.combineOp(rss)(Divide(_))
   /** Divide the values of each cell in each raster. */
   def /(rss:Seq[RasterSource]) = localDivide(rss)
 }

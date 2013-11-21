@@ -161,7 +161,7 @@ class DataMap extends OperationBenchmark {
     val len = goal.length
     while (i < len) {
       val z = goal(i)
-      if (z != NODATA) goal(i) = z * 2
+      if (isData(z)) goal(i) = z * 2
       i += 1
     }
     goal
@@ -174,7 +174,7 @@ class DataMap extends OperationBenchmark {
     @inline @tailrec def loop(i:Int) {
       if (i < len) {
         val z = goal(i)
-        if (z != NODATA) goal(i) = z * 2
+        if (isData(z)) goal(i) = z * 2
         loop(i + 1)
       }
     }
@@ -189,7 +189,7 @@ class DataMap extends OperationBenchmark {
     val len = goal.length
     while (i < len) {
       val z = goal(i)
-      if (z != NODATA) goal(i) = z * 2.0
+      if (isData(z)) goal(i) = z * 2.0
       i += 1
     }
     goal
@@ -203,7 +203,7 @@ class DataMap extends OperationBenchmark {
     val len = goal.length
     cfor(0)(_ < len, _ + 1) { i =>
       val z = goal(i)
-      if (z != NODATA) goal(i) = z * 2
+      if (isData(z)) goal(i) = z * 2
     }
     goal
   }
@@ -216,7 +216,7 @@ class DataMap extends OperationBenchmark {
     val len = goal.length
     for(i <- 0 until len optimized)  {
       val z = goal(i)
-      if (z != NODATA) goal(i) = z * 2
+      if (isData(z)) goal(i) = z * 2
     }
   }
  
@@ -229,14 +229,14 @@ class DataMap extends OperationBenchmark {
     val len = goal.length
     while (i < len) {
       val z = goal(i)
-      if (z != NODATA) goal(i) = goal(i) * 2
+      if (isData(z)) goal(i) = goal(i) * 2
       i += 1
     }
     rcopy
   }
  
   def timeRasterMap(reps:Int) = run(reps)(rasterMap)
-  def rasterMap = raster.map(z => if (z != NODATA) z * 2 else NODATA)
+  def rasterMap = raster.map(z => if (isData(z)) z * 2 else NODATA)
 
   def timeRasterMapIfSet(reps:Int) = run(reps)(rasterMapIfSet)
   def rasterMapIfSet = raster.mapIfSet(z => z * 2)
@@ -249,14 +249,14 @@ class DataMap extends OperationBenchmark {
     val len = data.length
     while (i < len) {
       val z = data(i)
-      if (z != NODATA) data(i) = data(i) * 2
+      if (isData(z)) data(i) = data(i) * 2
       i += 1
     }
     data
   }
 
   def timeBitDataMap(reps:Int) = run(reps)(bitDataMap)
-  def bitDataMap = bitData.map(z => if (z != NODATA) z * 2 else NODATA)
+  def bitDataMap = bitData.map(z => if (isData(z)) z * 2 else NODATA)
 
   def timeByteDataWhileLoop(reps:Int) = run(reps)(byteDataWhileLoop)
   def byteDataWhileLoop = {
@@ -265,14 +265,14 @@ class DataMap extends OperationBenchmark {
     val len = data.length
     while (i < len) {
       val z = data(i)
-      if (z != NODATA) data(i) = data(i) * 2
+      if (isData(z)) data(i) = data(i) * 2
       i += 1
     }
     data
   }
   
   def timeByteDataMap(reps:Int) = run(reps)(byteDataMap)
-  def byteDataMap = byteData.map(z => if (z != NODATA) z * 2 else NODATA)
+  def byteDataMap = byteData.map(z => if (isData(z)) z * 2 else NODATA)
 
   def timeShortDataWhileLoop(reps:Int) = run(reps)(shortDataWhileLoop)
   def shortDataWhileLoop = {
@@ -281,14 +281,14 @@ class DataMap extends OperationBenchmark {
     val len = data.length
     while (i < len) {
       val z = data(i)
-      if (z != NODATA) data(i) = data(i) * 2
+      if (isData(z)) data(i) = data(i) * 2
       i += 1
     }
     data
   }
   
   def timeShortDataMap(reps:Int) = run(reps)(shortDataMap)
-  def shortDataMap = shortData.map(z => if (z != NODATA) z * 2 else NODATA)
+  def shortDataMap = shortData.map(z => if (isData(z)) z * 2 else NODATA)
   // xyz
   
   def timeRasterOperationUnary(reps:Int) = run(reps)(rasterOperationUnary)
@@ -333,7 +333,7 @@ class WeightedOverlay extends OperationBenchmark {
     val rasterOp = Rescale(Divide(Add(rs: _*), total), (1, 100))
     val h = GetHistogram(rasterOp) 
     val breaksOp = stat.GetColorBreaks(h, colors)
-    op = RenderPng(rasterOp, breaksOp, h, 0)
+    op = RenderPng(rasterOp, breaksOp, 0)
   }
 
   def timeWeightedOverlay(reps:Int) = run(reps)(weightedOverlay)

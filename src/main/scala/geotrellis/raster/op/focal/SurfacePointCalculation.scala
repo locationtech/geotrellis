@@ -126,7 +126,7 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
   }
   
   protected def calcSurface():Unit = {
-    if(java.lang.Double.isNaN(base(1))) {
+    if(isNoData(base(1))) {
       s.`dz/dx` = Double.NaN
       s.`dz/dy` = Double.NaN
     }

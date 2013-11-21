@@ -39,9 +39,9 @@ object FlowDirection {
       128 -> (c+1,r-1))
     // remove invalid neighbours and produce map of drop-values
       map.filter { case(_,(col,row)) =>
-            0 <= col && col < ncols &&
-            0 <= row && row < nrows &&
-        raster.get(col,row) != NODATA
+        0 <= col && col < ncols &&
+        0 <= row && row < nrows &&
+        isData(raster.get(col,row))
       }.map { case (k,v) => k -> (center-raster.get(v._1,v._2)) / distances(k) }
   }
 
@@ -75,7 +75,7 @@ case class FlowDirection(raster:Op[Raster]) extends Op1(raster)({
     while (r < nrows) {
       var c = 0
       while (c < ncols) {
-        if (raster.get(c,r) == NODATA || (FlowDirection.isSink(c,r,raster))) {
+        if (isNoData(raster.get(c,r)) || (FlowDirection.isSink(c,r,raster))) {
           data.set(c,r,NODATA)
         } else {
           data.set(c,r,FlowDirection.flow(c,r,raster))

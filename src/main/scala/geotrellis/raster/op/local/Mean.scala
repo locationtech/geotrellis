@@ -36,7 +36,7 @@ object Mean extends Serializable {
               var sum = 0.0
               for(i <- 0 until layerCount optimized) {
                 val v = rs(i).getDouble(col,row)
-                if(!isNaN(v)) { 
+                if(isData(v)) { 
                   count += 1
                   sum += v
                 }
@@ -56,7 +56,7 @@ object Mean extends Serializable {
               var sum = 0
               for(i <- 0 until layerCount optimized) {
                 val v = rs(i).get(col,row)
-                if(v != NODATA) {
+                if(isData(v)) {
                   count += 1
                   sum += v
                 }

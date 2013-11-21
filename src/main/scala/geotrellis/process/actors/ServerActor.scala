@@ -25,13 +25,8 @@ case class ServerActor(server: Server) extends Actor {
       dispatcher ! RunOperation(op, 0, msgSender, None)
     }
  
-    case msg:RunOperation[_] => {
-      msg match {
-        // TODO Seems wrong. Shouldn't it send a bare RunOperation to the cluster?
-        case RunOperation(RemoteOperation(_,cluster), _, _, _)  => cluster ! msg 
-        case _ => dispatcher ! msg
-      }
-    }
+    case msg:RunOperation[_] => 
+      dispatcher ! msg
 
     case RunDispatched(op,childDispatcher) => {
       val msgSender = sender

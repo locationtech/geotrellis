@@ -39,7 +39,7 @@ class ConditionalSpec extends FunSpec
 
     it("should work with integer function on TypeDouble raster for NoData values") {
       val r = probabilityNoDataRaster
-      val result = run(IfCell(r,{z:Int => z == NODATA}, -1000))
+      val result = run(IfCell(r,{z:Int => isNoData(z)}, -1000))
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           if(col % 2 == 1) result.getDouble(col,row) should be (-1000.0)
@@ -49,7 +49,7 @@ class ConditionalSpec extends FunSpec
 
     it("should work with double function on TypeInt raster for NoData values") {
       val r = positiveIntegerNoDataRaster
-      val result = run(IfCell(r,{z:Double => java.lang.Double.isNaN(z)}, -1000.0))
+      val result = run(IfCell(r,{z:Double => isNoData(z)}, -1000.0))
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           if(col % 2 == 1) result.get(col,row) should be (-1000)
@@ -80,7 +80,7 @@ class ConditionalSpec extends FunSpec
 
     it("should work with integer function on TypeDouble raster for NoData values with else value") {
       val r = probabilityNoDataRaster
-      val result = run(IfCell(r,{z:Int => z == NODATA}, -1000, 2000))
+      val result = run(IfCell(r,{z:Int => isNoData(z)}, -1000, 2000))
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           if(col % 2 == 1) result.getDouble(col,row) should be (-1000.0)
@@ -91,7 +91,7 @@ class ConditionalSpec extends FunSpec
 
     it("should work with double function on TypeInt raster for NoData values withe else value") {
       val r = positiveIntegerNoDataRaster
-      val result = run(IfCell(r,{z:Double => java.lang.Double.isNaN(z)}, -1000.0, 2000.0))
+      val result = run(IfCell(r,{z:Double => isNoData(z)}, -1000.0, 2000.0))
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           if(col % 2 == 1) result.get(col,row) should be (-1000)
@@ -144,7 +144,7 @@ class ConditionalSpec extends FunSpec
                                    .12, Double.NaN,  .3, -.2,
                                    .8 , -.6, .12, Double.NaN), 4,3)
       val r = probabilityNoDataRaster
-      val result = run(IfCell(r1,r2,{(z1:Int,z2:Int) => z1 == NODATA || z2 == NODATA }, -1000))
+      val result = run(IfCell(r1,r2,{(z1:Int,z2:Int) => isNoData(z1) || isNoData(z2) }, -1000))
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           if(col % 2 == 1) result.getDouble(col,row) should be (-1000.0)
@@ -161,7 +161,7 @@ class ConditionalSpec extends FunSpec
                                    8 , -6, 12, NODATA), 4,3)
       val r = positiveIntegerNoDataRaster
       val result = run(IfCell(r1,r2,{ (z1:Double,z2:Double) => 
-        java.lang.Double.isNaN(z1) || java.lang.Double.isNaN(z2)
+        isNoData(z1) || isNoData(z2)
       }, -1000.0))
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
@@ -214,7 +214,7 @@ class ConditionalSpec extends FunSpec
                                    .12, Double.NaN,  .3, -.2,
                                    .8 , -.6, .12, Double.NaN), 4,3)
       val r = probabilityNoDataRaster
-      val result = run(IfCell(r1,r2,{(z1:Int,z2:Int) => z1 == NODATA || z2 == NODATA }, -1000,2000))
+      val result = run(IfCell(r1,r2,{(z1:Int,z2:Int) => isNoData(z1) || isNoData(z2) }, -1000,2000))
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           if(col % 2 == 1) result.getDouble(col,row) should be (-1000.0)
@@ -232,7 +232,7 @@ class ConditionalSpec extends FunSpec
                                    8 , -6, 12, NODATA), 4,3)
       val r = positiveIntegerNoDataRaster
       val result = run(IfCell(r1,r2,{ (z1:Double,z2:Double) => 
-        java.lang.Double.isNaN(z1) || java.lang.Double.isNaN(z2)
+        isNoData(z1) || isNoData(z2)
       }, -1000.0,2000.0))
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {

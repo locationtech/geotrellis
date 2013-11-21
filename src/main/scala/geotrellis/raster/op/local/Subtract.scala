@@ -12,11 +12,11 @@ import geotrellis.source._
  */
 object Subtract extends LocalRasterBinaryOp {
   def combine(z1:Int,z2:Int) =
-    if (z1 == NODATA || z2 == NODATA) NODATA
+    if (isNoData(z1) || isNoData(z2)) NODATA
     else z1 - z2
 
   def combine(z1:Double,z2:Double) =
-    if (isNaN(z1) || isNaN(z2)) Double.NaN
+    if (isNoData(z1) || isNoData(z2)) Double.NaN
     else z1 - z2
 }
 
@@ -38,11 +38,11 @@ trait SubtractOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Subtract each value of a cell from a double constant value. */
   def -:(d:Double) = localSubtract(d)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(rs:RasterSource) = self.combine(rs)(Subtract(_,_))
+  def localSubtract(rs:RasterSource) = self.combineOp(rs)(Subtract(_,_))
   /** Subtract the values of each cell in each raster. */
   def -(rs:RasterSource) = localSubtract(rs)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(rss:Seq[RasterSource]) = self.combine(rss)(Subtract(_))
+  def localSubtract(rss:Seq[RasterSource]) = self.combineOp(rss)(Subtract(_))
   /** Subtract the values of each cell in each raster. */
   def -(rss:Seq[RasterSource]) = localSubtract(rss)
 }

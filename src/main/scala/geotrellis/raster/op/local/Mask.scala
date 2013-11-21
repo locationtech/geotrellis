@@ -1,7 +1,6 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
-import geotrellis.raster.RasterUtil._
 
 object Mask extends Serializable {  
   /**

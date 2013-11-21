@@ -31,7 +31,7 @@ import org.scalatest.junit.JUnitRunner
 //   def loadRasterData(path:String) = loadRaster(path).data.asArray
 
 //   test("test float compatibility") {
-//     assert(java.lang.Double.isNaN(data.applyDouble(0)))
+//     assert(isNoData(data.applyDouble(0)))
 //     assert(data.apply(0) === NODATA)
 
 //     assert(data.applyDouble(1) === -1.0)
@@ -62,14 +62,14 @@ import org.scalatest.junit.JUnitRunner
 
 //   test("check float32") {
 //     val d = loadRasterData("/tmp/foo-float32.arg")
-//     assert(java.lang.Double.isNaN(d.applyDouble(0)))
+//     assert(isNoData(d.applyDouble(0)))
 //     assert(d.applyDouble(1) === -1.0)
 //     assert(d.applyDouble(2) === 2.0)
 //   }
 
 //   test("check float64") {
 //     val d = loadRasterData("/tmp/foo-float64.arg")
-//     assert(java.lang.Double.isNaN(d.applyDouble(0)))
+//     assert(isNoData(d.applyDouble(0)))
 //     assert(d.applyDouble(1) === -1.0)
 //     assert(d.applyDouble(2) === 2.0)
 //   }

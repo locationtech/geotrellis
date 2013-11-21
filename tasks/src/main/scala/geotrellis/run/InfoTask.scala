@@ -54,14 +54,14 @@ object InfoTask {
         println(s"Min $min  Max $max")
         var sum = 0.0
         var count = 0
-        raster.foreachDouble { z => if(!java.lang.Double.isNaN(z)) { sum += z; count += 1; } }
+        raster.foreachDouble { z => if(isData(z)) { sum += z; count += 1; } }
         println(s"Mean: ${sum/count}")
       } else {
         val (min,max) = raster.findMinMax
         println(s"Min $min  Max $max")
         var sum = 0
         var count = 0
-        raster.foreach { z => if(z != NODATA) { sum += z; count += 1} }
+        raster.foreach { z => if(isData(z)) { sum += z; count += 1} }
         println(s"Mean: ${sum/count}")
       }
     } finally {

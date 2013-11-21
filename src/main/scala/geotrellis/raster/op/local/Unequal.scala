@@ -15,7 +15,7 @@ object Unequal extends LocalRasterBinaryOp {
                .dualCombine(rasters.tail)({ zs => 
                   if(zs.distinct.length < 2) 0 else 1
                 })({ zs =>
-                  if(zs.distinct.filter(!isNaN(_)).length < 2) 0 else 1
+                  if(zs.distinct.filter(isData(_)).length < 2) 0 else 1
                 })
        }
       .withName(s"Unequal[Rasters]")
@@ -24,9 +24,9 @@ object Unequal extends LocalRasterBinaryOp {
     if(z1 == z2) 0 else 1
 
   def combine(z1:Double,z2:Double):Double =
-    if(isNaN(z1)) { if(isNaN(z2)) 0 else 1 }
+    if(isNoData(z1)) { if(isNoData(z2)) 0 else 1 }
     else {
-      if(isNaN(z2)) { 1 }
+      if(isNoData(z2)) { 1 }
       else { 
         if(z1 == z2) 0
         else 1
@@ -75,7 +75,7 @@ trait UnequalOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.
    */
-  def localUnequal(rs:RasterSource) = self.combine(rs)(Unequal(_,_))
+  def localUnequal(rs:RasterSource) = self.combineOp(rs)(Unequal(_,_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.
@@ -85,7 +85,7 @@ trait UnequalOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.
    */
-  def localUnequal(rss:Seq[RasterSource]) = self.combine(rss)(Unequal(_))
+  def localUnequal(rss:Seq[RasterSource]) = self.combineOp(rss)(Unequal(_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.
