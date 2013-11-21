@@ -160,7 +160,16 @@ object GeotrellisBuild extends Build {
     Seq(
       name := "geotrellis-spark",
       libraryDependencies ++= Seq(
-        "org.apache.spark" %% "spark-core" % "0.9.0-incubating-SNAPSHOT"))
+        // first two are just to quell the UnsupportedOperationException in Hadoop's Configuration 
+        // http://itellity.wordpress.com/2013/05/27/xerces-parse-error-with-hadoop-or-solr-feature-httpapache-orgxmlfeaturesxinclude-is-not-recognized/
+        "xerces" % "xercesImpl" % "2.9.1",
+        "xalan" % "xalan" % "2.7.1",
+        "junit" % "junit" % "4.5" % "test",
+        "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
+        "org.apache.spark" %% "spark-core" % "0.9.0-incubating-SNAPSHOT",
+        "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4"),
+      resolvers ++= Seq(
+        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"))
 
   // Project: dev
 
