@@ -8,6 +8,7 @@ import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.tiling.TmsTiling
 
+// A simple example demonstrating reading and writing of (tileId, Array) out to sequence file 
 object ArgHadoopDriver {
 
   def fill(value: Int) = Array.fill(TmsTiling.DefaultTileSize * TmsTiling.DefaultTileSize)(value)

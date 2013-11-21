@@ -1,5 +1,20 @@
 package geotrellis.spark.tiling
 
+
+/**
+ * @author akini
+ * 
+ * A TMS based tiling scheme taken from this book:
+ * 
+ * "Tile-Based Geospatial Information Systems Principles and Practices" 
+ * by John T. Sample • Elias Ioup
+ * 
+ * Tiles are indexed by their column and row identifiers - tx and ty, which start from (0,0) 
+ * on the lower left corner of the world and go upto numXTiles-1 and numYTiles-1 respectively
+ * (see below for their implementations)
+ * 
+ * 
+ */
 object TmsTiling {
 
   val Epsilon = 0.00000001
@@ -33,8 +48,8 @@ object TmsTiling {
   def latLonToPixels(lat: Double, lon: Double, zoom: Int, tileSize: Int) = {
     val res = resolution(zoom, tileSize)
 
-    new Pixel(((180 + lon) / res).toLong,
-      ((90 + lat) / res).toLong)
+    new Pixel(	((180 + lon) / res).toLong,
+    			((90 + lat) / res).toLong)
   }
 
   def pixelsToTile(px: Double, py: Double, tileSize: Int) = {
@@ -47,11 +62,6 @@ object TmsTiling {
     val tx = ((180 + lon) * (numXTiles(zoom) / 360)).toLong
     val ty = ((90 + lat) * (numYTiles(zoom) / 180)).toLong
     new Tile(tx, ty)
-
-    //val pixel = latLonToPixels(lat,lon,zoom,tileSize)
-    //pixelsToTile(pixel.px, pixel.py, tileSize)
   }
 
-  def main(args: Array[String]) = {
-  }
 }
