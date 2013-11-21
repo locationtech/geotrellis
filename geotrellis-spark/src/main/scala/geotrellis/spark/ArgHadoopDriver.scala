@@ -8,7 +8,17 @@ import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.tiling.TmsTiling
 
-// A simple example demonstrating reading and writing of (tileId, Array) out to sequence file 
+/**
+ * @author akini
+ * 
+ * A simple example demonstrating reading and writing of (tileId, Array) out to sequence file
+ * Run command: ArgHadoopDriver [NUMTILES] [HDFS-OR-LOCAL-PATH-TO-SEQUENCE-FILE]
+ *  		e.g.,	ArgHadoopDriver 100 file:///tmp/args.seq
+ * 
+ * Currently the following also needs to be passed in to the VM to quell a Hadoop Configuration exception that:
+ * -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl
+ * 
+ */
 object ArgHadoopDriver {
 
   def fill(value: Int) = Array.fill(TmsTiling.DefaultTileSize * TmsTiling.DefaultTileSize)(value)
