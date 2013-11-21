@@ -17,12 +17,9 @@ import scala.math._
 */
 case class Fill(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) 
     extends FocalOp[Raster](r,n,tns)({
-  (r,n) =>
-      if(r.isFloat) {
-      _=> new CursorFillCalcDouble
-      } else {
-      _=> new CursorFillCalc
-      }
+  (r,n) => 
+      if(r.isFloat) { => new CursorFillCalcDouble }
+      else { => new CursorFillCalc }
 })
 
 object Fill {
