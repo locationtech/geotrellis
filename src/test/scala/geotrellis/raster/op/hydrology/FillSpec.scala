@@ -23,32 +23,20 @@ class FillSpec extends FunSpec
       val r_extent = RasterExtent(Extent(0,0,1,1),1,1,ncols,nrows)
       val m = IntArrayRasterData(Array[Int](
             2,2,2,4,4,8,
-            2,2,2,4,4,8,
-<<<<<<< HEAD
             1,1,1,4,8,4,
             1,128,1,2,4,8,
             1,1,1,4,4,4,
-=======
-            1,1,2,4,8,4,
-            128,128,1,2,4,8,
-            2,2,1,4,4,4,
->>>>>>> 1e72c8188aa56458eb737817f3aaac50f9733496
+            1,2,3,4,5,6,
             1,1,1,1,4,16),
             ncols,nrows)
 
       val in_raster = Raster(m, r_extent)
       val o = IntArrayRasterData(Array[Int](
             2,2,2,4,4,8,
-            2,2,2,4,4,8,
-<<<<<<< HEAD
             1,1,1,4,8,4,
             1,1,1,2,4,8,
             1,1,1,4,4,4,
-=======
-            1,1,2,4,8,4,
-            128,128,1,2,4,8,
-            2,2,1,4,4,4,
->>>>>>> 1e72c8188aa56458eb737817f3aaac50f9733496
+            1,2,3,4,5,6,
             1,1,1,1,4,16),
             ncols,nrows)
       val out_raster = Raster(o, r_extent)

@@ -1,8 +1,5 @@
 package geotrellis.raster.op.hydrology
-<<<<<<< HEAD
 
-=======
->>>>>>> 1e72c8188aa56458eb737817f3aaac50f9733496
 import geotrellis.raster.op.focal
 import geotrellis._
 import geotrellis.raster.TileNeighbors
@@ -62,13 +59,10 @@ case class CursorFillCalc() extends CursorCalculation[Raster] with DoubleRasterD
         totalCount += 1
       } 
     }
-<<<<<<< HEAD
+
     if(count == 0){ data.setDouble(c.col,c.row,((sum-cVal) / (totalCount-1).toDouble) }
-=======
-    if(count == 0){ data.setDouble(c.col,c.row,((sum-cVal) / totalCount.toDouble) }
->>>>>>> 1e72c8188aa56458eb737817f3aaac50f9733496
     else { data.setDouble(c.col,c.row,cVal.toDouble }
-    }
+
   }
 }
 case class CursorFillCalcDouble() extends CursorCalculation[Raster] with DoubleRasterDataResult {
@@ -101,11 +95,7 @@ case class CursorFillCalcDouble() extends CursorCalculation[Raster] with DoubleR
         totalCount += 1
       } 
     }
-<<<<<<< HEAD
     if(count == 0){ data.setDouble(c.col,c.row,(sum-cVal) / (totalCount -1) ) }
-=======
-    if(count == 0){ data.setDouble(c.col,c.row,(sum-cVal) / totalCount) }
->>>>>>> 1e72c8188aa56458eb737817f3aaac50f9733496
     else { data.setDouble(c.col,c.row,cVal)}
     }
   }
