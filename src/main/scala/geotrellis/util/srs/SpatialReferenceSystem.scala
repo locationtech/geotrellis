@@ -1,19 +1,92 @@
 package geotrellis.util.srs
 
 import geotrellis._
+import geotrellis.feature.Feature.factory
+import com.vividsolutions.jts.geom._
+import scala.collection.JavaConversions._
 
 class NoTransformationException(src:SpatialReferenceSystem,target:SpatialReferenceSystem) 
     extends Exception(s"SpatialReferenceSystem ${src.name} has no logic to transform to ${target.name}")
 
+/** Spatial Reference System (SRS) */
 abstract class SpatialReferenceSystem {
   val name:String
 
-  def transform(x:Double,y:Double,targetSRS:SpatialReferenceSystem):(Double,Double)
+  def transform(x:Double,y:Double,targetSRS:SRS):(Double,Double)
 
-  def transform(e:Extent,targetSRS:SpatialReferenceSystem):Extent = {
+  def transform(e:Extent,targetSRS:SRS):Extent = {
     val (xmin,ymin) = transform(e.xmin,e.ymin,targetSRS)
     val (xmax,ymax) = transform(e.xmax,e.ymax,targetSRS)
     Extent(xmin,ymin,xmax,ymax)
+  }
+
+  def transform(c:Coordinate,targetSRS:SRS):Coordinate = {
+    val (x,y) = transform(c.x,c.y,targetSRS)
+    new Coordinate(x,y)
+  }
+
+  def transform(p:Point,targetSRS:SRS):Point =
+    factory.createPoint(transform(p.getCoordinate,targetSRS))
+
+  def transform(mp:MultiPoint,targetSRS:SRS):MultiPoint = {
+    val len = mp.getNumGeometries
+    val transformedPoints = 
+      (for(i <- 0 until len) yield { 
+        transform(mp.getGeometryN(i).asInstanceOf[Point], targetSRS) 
+      }).toArray
+    factory.createMultiPoint(transformedPoints)
+  }
+
+  def transform(ls:LineString,targetSRS:SRS):LineString =
+    factory.createLineString(ls.getCoordinateSequence
+                               .toCoordinateArray
+                               .map(transform(_,targetSRS)).toArray)
+
+  def transform(lr:LinearRing,targetSRS:SRS):LinearRing =
+    factory.createLinearRing(lr.getCoordinateSequence
+                               .toCoordinateArray
+                               .map(transform(_,targetSRS)).toArray)
+
+  def transform(p:Polygon,targetSRS:SRS):Polygon = {
+    val exterior = transform(p.getExteriorRing.asInstanceOf[LinearRing],targetSRS)
+    val interiorRings = {
+      val len = p.getNumInteriorRing
+      (for(i <- 0 until len) yield {
+        transform(p.getInteriorRingN(i).asInstanceOf[LinearRing],targetSRS)
+      }).toArray
+    }
+
+    factory.createPolygon(exterior,interiorRings)
+  }
+
+  def transform(mp:MultiPolygon,targetSRS:SRS):MultiPolygon = {
+    val len = mp.getNumGeometries
+    val transformedPolys = 
+      (for(i <- 0 until len) yield { 
+        transform(mp.getGeometryN(i).asInstanceOf[Polygon], targetSRS) 
+      }).toArray
+    factory.createMultiPolygon(transformedPolys)
+  }
+
+  def transform(g:Geometry,targetSRS:SRS):Geometry =
+    g match {
+      case point:Point               => transform(point,targetSRS)
+      case polygon:Polygon           => transform(polygon,targetSRS)
+      case multiPoint:MultiPoint     => transform(multiPoint,targetSRS)
+      case multiPolygon:MultiPolygon => transform(multiPolygon,targetSRS)
+      case line:LineString           => transform(line,targetSRS)
+      case multiLine:MultiLineString => transform(multiLine,targetSRS)
+      case gc:GeometryCollection     => transform(gc,targetSRS)
+      case _                         => sys.error(s"Unknown geometry: ${g.getGeometryType}")
+    }
+
+  def transform(gc:GeometryCollection,targetSRS:SRS):GeometryCollection = {
+    val len = gc.getNumGeometries
+    val transformedGeoms = 
+      (for(i <- 0 until len) yield { 
+        transform(gc.getGeometryN(i), targetSRS) 
+      }).toArray
+    factory.createGeometryCollection(transformedGeoms)
   }
 }
 
@@ -21,43 +94,3 @@ object SpatialReferenceSystem {
   val originShift = 2 * math.Pi * 6378137 / 2.0
 }
 
-/**
- * WGS 84 Datum ESPG:4326
- * 
- * http://spatialreference.org/ref/epsg/4326/
- */
-case object LatLng extends SpatialReferenceSystem {
-  val name = "WGS84 Datum EPSG:4326"
-
-  def transform(x:Double,y:Double,targetSRS:SpatialReferenceSystem) =
-    targetSRS match {
-      case WebMercator =>
-        val mx = x * SpatialReferenceSystem.originShift / 180.0
-        val my1 = ( math.log( math.tan((90 + y) * math.Pi / 360.0 )) / (math.Pi / 180.0) )
-        val my = my1 * SpatialReferenceSystem.originShift / 180 
-        (mx, my)
-      case _ =>
-        throw new NoTransformationException(this,targetSRS)
-    }
-}
-
-/**
- * WGS 84 Web Mercator, Spherical Mercator, EPSG:900913, EPSG:3857
- * 
- * http://spatialreference.org/ref/sr-org/7483/
- */
-case object WebMercator extends SpatialReferenceSystem {
-  val name = "Spherical Mercator EPSG:900913"
-
-  def transform(x:Double,y:Double,targetSRS:SpatialReferenceSystem) =
-    targetSRS match {
-      case LatLng =>
-        val xlng = (x / SpatialReferenceSystem.originShift) * 180.0
-        val ylat1 = (y / SpatialReferenceSystem.originShift) * 180.0
-        
-        val ylat = 180 / math.Pi * (2 * math.atan( math.exp( ylat1 * math.Pi / 180.0)) - math.Pi / 2.0)
-        (xlng, ylat)
-      case _ =>
-        throw new NoTransformationException(this,targetSRS)
-    }
-}
