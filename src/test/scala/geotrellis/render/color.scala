@@ -1,4 +1,4 @@
-package geotrellis.data
+package geotrellis.render
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
@@ -7,7 +7,6 @@ object ColorSpec {
   def hexstringify(colors:Array[Int]) = colors.map{ "%08x".format(_) }.toList 
 }
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class ColorSpec extends FunSpec with MustMatchers {
   describe("LinearColorRangeChooser(FF0000,0000FF)") {
     val c = new LinearColorRangeChooser(0xFF0000, 0x0000FF)

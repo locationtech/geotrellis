@@ -7,6 +7,8 @@ import javax.ws.rs.core.{Response, Context}
 
 // import core geotrellis types
 import geotrellis._
+import geotrellis.render._
+import geotrellis.render.op._
 import geotrellis.source._
 import geotrellis.raster.op._
 import geotrellis.statistics.op._
@@ -111,13 +113,13 @@ class DemoService1 {
 
     // Parse the user's color palette and allocate colors.
     val paletteColors = palette.split(",").map(Integer.parseInt(_,16))
-    val colorsOp = stat.GetColorsFromPalette(paletteColors, numColors.toInt)
+    val colorsOp = GetColorsFromPalette(paletteColors, numColors.toInt)
 
     // Determine some good quantile breaks to use for coloring output.
-    val breaksOp = stat.GetColorBreaks(histogram.get, colorsOp)
+    val breaksOp = GetColorBreaks(histogram.get, colorsOp)
 
     // Render the actual PNG image.
-    val pngOp = io.RenderPng(output.get, breaksOp, 0)
+    val pngOp = RenderPng(output.get, breaksOp, 0)
 
     format match {
       case "hello" => response("text/plain")("hello world")

@@ -1,13 +1,5 @@
 package geotrellis.logic
 
-import java.io.{File,FileInputStream,FileOutputStream}
-import scala.math.{max,min,sqrt}
-
-import geotrellis.data.ColorBreaks
-import geotrellis.Raster
-
-import geotrellis.statistics._
-import geotrellis.process._
 import geotrellis._
 
 import geotrellis.testutil._

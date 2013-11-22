@@ -8,7 +8,9 @@ package geotrellis.benchmark
 
 import geotrellis._
 import geotrellis.data._
-import geotrellis.data.png._
+import geotrellis.render.png._
+import geotrellis.render._
+import geotrellis.render.op._
 import geotrellis.raster.op._
 import geotrellis.io._
 import geotrellis.raster.op.global.Rescale
@@ -332,7 +334,7 @@ class WeightedOverlay extends OperationBenchmark {
     val rs = (0 until n).map(i => Multiply(LoadRaster(names(i), re), weights(i)))
     val rasterOp = Rescale(Divide(Add(rs: _*), total), (1, 100))
     val h = GetHistogram(rasterOp) 
-    val breaksOp = stat.GetColorBreaks(h, colors)
+    val breaksOp = GetColorBreaks(h, colors)
     op = RenderPng(rasterOp, breaksOp, 0)
   }
 

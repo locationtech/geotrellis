@@ -8,6 +8,8 @@ import geotrellis.process._
 import geotrellis.data._
 import geotrellis.testutil._
 import geotrellis.raster._
+import geotrellis.render._
+import geotrellis.render.op._
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
@@ -79,19 +81,19 @@ class HillshadeSpec extends FunSuite
     val colors638 = new MultiColorRangeChooser(palette).getColors(638)
 
     val t3 = time()
-    run(io.WritePng(r, "/tmp/raster3.png", stat.GetColorBreaks(h, colors10), 0))
+    run(io.WritePng(r, "/tmp/raster3.png", GetColorBreaks(h, colors10), 0))
     println("[3] wrote png in %s ms" format (time() - t3))
 
     val t4 = time()
-    run(io.WritePng(r, "/tmp/raster4.png", stat.GetColorBreaks(h, colors100), 0))
+    run(io.WritePng(r, "/tmp/raster4.png", GetColorBreaks(h, colors100), 0))
     println("[4] wrote png in %s ms" format (time() - t4))
 
     val t5 = time()
-    run(io.WritePng(r, "/tmp/raster5.png", stat.GetColorBreaks(h, colors1000), 0))
+    run(io.WritePng(r, "/tmp/raster5.png", GetColorBreaks(h, colors1000), 0))
     println("[5] wrote png in %s ms" format (time() - t5))
 
     val t6 = time()
-    run(io.WritePng(r, "/tmp/raster6.png", stat.GetColorBreaks(h, colors638), 0))
+    run(io.WritePng(r, "/tmp/raster6.png", GetColorBreaks(h, colors638), 0))
     println("[6] wrote png in %s ms" format (time() - t6))
   }
 

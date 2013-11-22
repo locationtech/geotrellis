@@ -14,7 +14,7 @@ import geotrellis.raster._
 import geotrellis.feature._
 import geotrellis.feature.op.geometry.AsPolygonSet
 import geotrellis.feature.rasterize.{Rasterizer, Callback}
-import geotrellis.data.ColorRamps._
+import geotrellis.render.ColorRamps._
 import geotrellis.util.srs
 
 import scala.collection.JavaConversions._

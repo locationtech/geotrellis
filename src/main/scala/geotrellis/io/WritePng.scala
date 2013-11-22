@@ -1,9 +1,8 @@
 package geotrellis.io
 
 import geotrellis._
-import geotrellis.data._
-import geotrellis.data.png._
-import geotrellis.statistics._
+import geotrellis.render._
+import geotrellis.render.png._
 
 /**
  * Write out a PNG graphic file to the file system at the specified path.

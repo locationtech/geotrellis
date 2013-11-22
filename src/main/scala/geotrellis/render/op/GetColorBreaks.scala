@@ -1,9 +1,8 @@
-package geotrellis.statistics.op.stat
+package geotrellis.render.op
 
-import geotrellis.data.{ColorBreaks,ColorMapper}
 import geotrellis._
-import geotrellis.statistics._
-import geotrellis.data._
+import geotrellis.render._
+import geotrellis.statistics.Histogram
 
 import scala.math.round
 

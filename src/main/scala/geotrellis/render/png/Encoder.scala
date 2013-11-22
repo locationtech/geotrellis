@@ -1,4 +1,4 @@
-package geotrellis.data.png
+package geotrellis.render.png
 
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
@@ -31,7 +31,7 @@ case class Encoder(settings:Settings) {
   final val FILTER:Byte = settings.filter.n
 
   // pixel depth in bytes
-  final val DEPTH:Int = settings.color.depth
+  final val DEPTH:Int = settings.colorType.depth
 
   // how many bits to shift to get the uppermost byte.
   final val SHIFT:Int = (DEPTH - 1) * 8
@@ -47,7 +47,7 @@ case class Encoder(settings:Settings) {
     cIHDR.writeInt(width)
     cIHDR.writeInt(height)
     cIHDR.writeByte(8); // 8 bits per component
-    cIHDR.writeByte(settings.color.n) // color type (0,2,3,4,6)
+    cIHDR.writeByte(settings.colorType.n) // color type (0,2,3,4,6)
     cIHDR.writeByte(0) // DEFLATE compression
     cIHDR.writeByte(0) // adaptive filtering
     cIHDR.writeByte(0) // no interlacing
@@ -55,7 +55,7 @@ case class Encoder(settings:Settings) {
   }
 
   def writeBackgroundInfo(dos:DataOutputStream) {
-    settings.color match {
+    settings.colorType match {
       case Grey(t) => {
         // write a single 2-byte color value
         // our data is presumed to be in RGBA

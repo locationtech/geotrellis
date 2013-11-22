@@ -1,13 +1,14 @@
-package geotrellis.statistics.op.stat
+package geotrellis.render.op
 
 import geotrellis._
+import geotrellis.render._
+import geotrellis.statistics.op.stat._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class GetColorBreaksSpec extends FunSpec 
                             with TestServer
                             with ShouldMatchers {
