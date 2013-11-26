@@ -1,4 +1,4 @@
-package geotrellis.data.png
+package geotrellis.render.png
 
 sealed abstract class Filter(val n:Byte)
 case object NoFilter extends Filter(0)

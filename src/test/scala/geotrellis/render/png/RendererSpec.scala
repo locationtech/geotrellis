@@ -1,9 +1,9 @@
-package geotrellis.data.png
+package geotrellis.render.png
 
 import geotrellis.testutil._
 import geotrellis.statistics.{ArrayHistogram,FastMapHistogram}
 import geotrellis._
-import geotrellis.data._
+import geotrellis.render._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
@@ -23,7 +23,7 @@ class RendererSpec extends FunSpec with ShouldMatchers
       val colorMap = renderer.colorMap
 
       val color:Indexed = 
-        renderer.color match {
+        renderer.colorType match {
           case i @ Indexed(_,_) => i
           case _ =>
             withClue(s"Color should be Indexed") { sys.error("") }
@@ -48,7 +48,7 @@ class RendererSpec extends FunSpec with ShouldMatchers
       val renderer = Renderer(limits,colors,nodata)
       val colorMap = renderer.colorMap
       val color:Indexed = 
-        renderer.color match {
+        renderer.colorType match {
           case i @ Indexed(_,_) => i
           case _ =>
             withClue(s"Color should be Indexed") { sys.error("") }

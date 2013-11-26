@@ -1,8 +1,7 @@
-package geotrellis.io
+package geotrellis.render.op
 
 import geotrellis._
-import geotrellis.data._
-import geotrellis.data.png._
+import geotrellis.render.png._
 
 /**
  * Generate a PNG from a raster of RGBA integer values.

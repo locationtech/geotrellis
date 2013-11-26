@@ -1,4 +1,4 @@
-package geotrellis.data.png
+package geotrellis.render.png
 
 import java.nio.ByteBuffer
 

@@ -1,16 +1,16 @@
-package geotrellis.raster.op.local
+package geotrellis.render.op
 
 import geotrellis._
+import geotrellis.render._
 import geotrellis.testutil._
 import geotrellis.data._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class ColorRasterSpec extends FunSpec with ShouldMatchers 
-                                   with TestServer 
-                                   with RasterBuilders {
+                                      with TestServer 
+                                      with RasterBuilders {
   describe("ColorRaster - Integers") {
     val n = NODATA
 

@@ -1,11 +1,8 @@
-package geotrellis.io
+package geotrellis.render.op
 
 import geotrellis._
-import geotrellis.data._
-import geotrellis.data.png._
-import geotrellis.statistics.op._
-import geotrellis.statistics.Histogram
-
+import geotrellis.render._
+import geotrellis.render.png._
 
 /**
  * Generate a PNG image from a raster.

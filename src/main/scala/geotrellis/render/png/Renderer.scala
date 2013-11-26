@@ -1,15 +1,14 @@
- package geotrellis.data.png
+ package geotrellis.render.png
 
 import geotrellis._
-import geotrellis.data._
-import geotrellis.statistics._
+import geotrellis.render._
 
 import scala.collection.mutable
 
-case class Renderer(colorMap:IntColorMap, rasterType:RasterType, color:Color) {
+case class Renderer(colorMap:IntColorMap, rasterType:RasterType, colorType:ColorType) {
   def render(r:Raster) = 
       r.convert(rasterType).map(colorMap)
-  def settings = Settings(color, PaethFilter)
+  def settings = Settings(colorType, PaethFilter)
 }
 
 object Renderer {
@@ -33,9 +32,9 @@ object Renderer {
       }
       rgbs(255) = 0
       as(255) = 0
-      val color = png.Indexed(rgbs, as)
+      val colorType = Indexed(rgbs, as)
       val colorMap = ColorMap(limits,indices,ColorMapOptions(LessThan,255))
-      Renderer(colorMap, TypeByte, color)
+      Renderer(colorMap, TypeByte, colorType)
     } else {
 
       var opaque = true
@@ -50,16 +49,16 @@ object Renderer {
 
       if (grey && opaque) {
         val colorMap = ColorMap(limits,colors.map(z => (z >> 8) & 0xff),ColorMapOptions(LessThan,nodata))
-        Renderer(colorMap, TypeByte, png.Grey(nodata))
+        Renderer(colorMap, TypeByte, Grey(nodata))
       } else if (opaque) {
         val colorMap = ColorMap(limits,colors.map(z => z >> 8),ColorMapOptions(LessThan,nodata))
-        Renderer(colorMap, TypeInt, png.Rgb(nodata))
+        Renderer(colorMap, TypeInt, Rgb(nodata))
       } else if (grey) {
         val colorMap = ColorMap(limits,colors.map(z => z & 0xffff),ColorMapOptions(LessThan,nodata))
-        Renderer(colorMap, TypeShort, png.Greya)
+        Renderer(colorMap, TypeShort, Greya)
       } else {
         val colorMap = ColorMap(limits,colors,ColorMapOptions(LessThan,nodata))
-        Renderer(colorMap, TypeInt, png.Rgba)
+        Renderer(colorMap, TypeInt, Rgba)
       }
     }
   }

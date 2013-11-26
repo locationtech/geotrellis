@@ -1,11 +1,11 @@
-package geotrellis.data.png
+package geotrellis.render.png
 
 import scala.io.{Source}
 
 import java.io.{File,FileInputStream}
 
 import geotrellis._
-import geotrellis.data.png._
+import geotrellis.render._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers

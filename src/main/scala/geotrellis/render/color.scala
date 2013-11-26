@@ -1,4 +1,4 @@
-package geotrellis.data
+package geotrellis.render
 
 import scala.math.round
 

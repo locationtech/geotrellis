@@ -63,7 +63,7 @@ class DataSourceSpec extends FunSpec
     it("should handle a histogram result") {
       val d = getRasterSource
 
-      val hist = d.histogram
+      val hist = d.tileHistograms
       val hist2:DataSource[Histogram,Histogram] = d.map( (h:Raster) => FastMapHistogram() )
       case class MinFromHistogram(h:Op[Histogram]) extends Op1(h)({
         (h) => Result(h.getMinValue)

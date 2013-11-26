@@ -18,6 +18,7 @@ object GeotrellisBuild extends Build {
         Seq("-deprecation",
           "-unchecked",
           "-Yclosure-elim",
+          "-Yinline-warnings",
           "-optimize",
           "-language:implicitConversions",
           "-language:postfixOps",
@@ -67,6 +68,7 @@ object GeotrellisBuild extends Build {
 
   lazy val macrosSettings =
     Seq(
+      name := "geotrellis-macros",
       addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.2" % "2.0.0-SNAPSHOT"),
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % "2.10.2"),
@@ -119,6 +121,7 @@ object GeotrellisBuild extends Build {
 
   lazy val serverSettings =
     Seq(
+      name := "geotrellis-server",
       libraryDependencies ++= Seq(
         "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
         "com.sun.jersey" % "jersey-bundle" % "1.11",

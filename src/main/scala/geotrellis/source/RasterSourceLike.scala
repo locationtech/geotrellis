@@ -4,6 +4,7 @@ import geotrellis._
 import geotrellis.feature._
 import geotrellis.raster.op._
 import geotrellis.statistics.op._
+import geotrellis.render.op._
 
 import geotrellis.raster._
 
@@ -19,7 +20,8 @@ trait RasterSourceLike[+Repr <: RasterSource]
     with zonal.ZonalOpMethods[Repr]
     with zonal.summary.ZonalSummaryOpMethods[Repr]
     with stat.StatOpMethods[Repr] 
-    with io.IoOpMethods[Repr] { self: Repr =>
+    with io.IoOpMethods[Repr] 
+    with RenderOpMethods[Repr] { self: Repr =>
 
   def tiles = self.elements
   def rasterDefinition:Op[RasterDefinition]
