@@ -1,19 +1,20 @@
 package geotrellis.spark.tiling
 
+import scala.util.control.Breaks._
 
 /**
  * @author akini
- * 
+ *
  * A TMS based tiling scheme taken from this book:
- * 
- * "Tile-Based Geospatial Information Systems Principles and Practices" 
+ *
+ * "Tile-Based Geospatial Information Systems Principles and Practices"
  * by John T. Sample • Elias Ioup
- * 
- * Tiles are indexed by their column and row identifiers - tx and ty, which start from (0,0) 
+ *
+ * Tiles are indexed by their column and row identifiers - tx and ty, which start from (0,0)
  * on the lower left corner of the world and go upto numXTiles-1 and numYTiles-1 respectively
  * (see below for their implementations)
- * 
- * 
+ *
+ *
  */
 object TmsTiling {
 
@@ -28,12 +29,14 @@ object TmsTiling {
 
   def resolution(zoom: Int, tileSize: Int) = 360 / (numXTiles(zoom) * tileSize)
 
-  def zoom(res: Double, tileSize: Int) = {
-    val resWithEp = res + Epsilon;
+  def zoom(res: Double, tileSize: Int): Int = {
+    val resWithEp = res + Epsilon
 
-    // TODO - avoid materializing array for sake of first element, do that without loop breaks
-    val zoom = for (i <- 1 to MaxZoomLevel; if (resWithEp >= resolution(i, tileSize))) yield i
-    zoom(0)
+    for(i <- 1 to MaxZoomLevel) {
+      if(resWithEp >= resolution(i, tileSize))
+        return i
+    }
+    return 0
   }
 
   // using equations 2.3 through 2.6 from TBGIS book
@@ -48,8 +51,8 @@ object TmsTiling {
   def latLonToPixels(lat: Double, lon: Double, zoom: Int, tileSize: Int) = {
     val res = resolution(zoom, tileSize)
 
-    new Pixel(	((180 + lon) / res).toLong,
-    			((90 + lat) / res).toLong)
+    new Pixel(((180 + lon) / res).toLong,
+      ((90 + lat) / res).toLong)
   }
 
   def pixelsToTile(px: Double, py: Double, tileSize: Int) = {
@@ -63,5 +66,9 @@ object TmsTiling {
     val ty = ((90 + lat) * (numYTiles(zoom) / 180)).toLong
     new Tile(tx, ty)
   }
+  
+   def main(args: Array[String]): Unit = {
+	  println(zoom(0.0878906250, 512))
+   }
 
 }
