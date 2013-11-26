@@ -79,7 +79,7 @@ object RemoteClient {
 
     val r = RasterSource("mtsthelens_tiled_cached")
       .localAdd(3)
-      .histogram
+      .tileHistograms
       .mapOp(MinFromHistogram(_))
       .distribute(app.router)
       .converge
