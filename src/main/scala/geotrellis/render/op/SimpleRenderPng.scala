@@ -1,10 +1,8 @@
-package geotrellis.io
+package geotrellis.render.op
 
 import geotrellis._
-import geotrellis.data._
-import geotrellis.data.png._
-import geotrellis.statistics.op._
-import geotrellis.statistics.Histogram
+import geotrellis.render._
+import geotrellis.statistics.op.stat
 
 /**
  * Generate a PNG image from a data raster.
@@ -24,8 +22,8 @@ import geotrellis.statistics.Histogram
 object SimpleRenderPng {
   def apply(r:Op[Raster],colorRamp:Op[ColorRamp] = ColorRamps.HeatmapBlueToYellowToRedSpectrum) = 
     r.flatMap { r =>
-        val colorBreaks = stat.GetColorBreaks(stat.GetHistogram(r), colorRamp.map(_.toArray))
-        io.RenderPng(r,colorBreaks,0)
+        val colorBreaks = GetColorBreaks(stat.GetHistogram(r), colorRamp.map(_.toArray))
+        RenderPng(r,colorBreaks,0)
       }
      .withName("SimpleRenderPng")
 }

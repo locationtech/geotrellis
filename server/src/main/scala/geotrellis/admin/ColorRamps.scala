@@ -1,6 +1,6 @@
 package geotrellis.admin
 
-import geotrellis.data.ColorRamps
+import geotrellis.render.ColorRamps
 
 object Colors {
   val rampMap = Map(

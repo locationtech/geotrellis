@@ -1,8 +1,7 @@
-package geotrellis.raster.op.local
+package geotrellis.render.op
 
 import geotrellis._
-
-import geotrellis.data._
+import geotrellis.render._
 
 object ColorRaster {
   def apply(r:Op[Raster],
