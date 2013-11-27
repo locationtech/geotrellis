@@ -1,15 +1,20 @@
 import sbt._
 import sbt.Keys._
 
-object GeotrellisBuild extends Build {
+object Version {
+  val geotrellis = "0.9.0-SNAPSHOT"
+  val scala = "2.10.3"
+  val akka = "2.2.3"
+}
 
+object GeotrellisBuild extends Build {
   val key = AttributeKey[Boolean]("javaOptionsPatched")
 
   // Default settings
   override lazy val settings = super.settings ++
     Seq(
-      version := "0.9.0-SNAPSHOT",
-      scalaVersion := "2.10.3",
+      version := Version.geotrellis,
+      scalaVersion := Version.scala,
       organization := "com.azavea.geotrellis",
 
       // disable annoying warnings about 2.10.x
@@ -94,10 +99,10 @@ object GeotrellisBuild extends Build {
         "org.scala-lang" % "scala-reflect" % "2.10.2",
         "junit" % "junit" % "4.5" % "test",
         "com.vividsolutions" % "jts" % "1.12",
-        "com.typesafe.akka" %% "akka-kernel" % "2.2.1",
-        "com.typesafe.akka" %% "akka-remote" % "2.2.1",
-        "com.typesafe.akka" %% "akka-actor" % "2.2.1",
-        "com.typesafe.akka" %% "akka-cluster" % "2.2.1",
+        "com.typesafe.akka" %% "akka-kernel" % Version.akka,
+        "com.typesafe.akka" %% "akka-remote" % Version.akka,
+        "com.typesafe.akka" %% "akka-actor" % Version.akka,
+        "com.typesafe.akka" %% "akka-cluster" % Version.akka,
         "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
         "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1",
         "org.spire-math" %% "spire" % "0.4.0",
