@@ -3,47 +3,32 @@ package geotrellis.io
 import geotrellis._
 import geotrellis.process._
 
-/**
-  * Load the [[RasterExtent]] from the raster in the specified file.
+/** Load the [[RasterExtent]] from the raster in the specified file.
   */
-case class LoadRasterExtentFromFile(path:String) extends Op1(path)({
-  (path) => {
-    val i = path.lastIndexOf(".")
-    val jsonPath = (if (i == -1) path else path.substring(0, i)) + ".json"
-    val layer = RasterLayer.fromPath(jsonPath) match {
-      case Some(l) => l
-      case None => 
-        sys.error(s"Could not load raster extent from $path, as it is not a valid layer metadata file")
-    }
-    Result(layer.info.rasterExtent)
-  }
-})
-
-/**
-  * Load the [[geotrellis.process.RasterLayer]], a representation of the raster metadata,
-  * from the raster in the specified file.
-  */ 
-case class LoadRasterMetadataFromFile(path:String) extends Op1(path)({
-  (path) => {
-    val i = path.lastIndexOf(".")
-    val jsonPath = (if (i == -1) path else path.substring(0, i)) + ".json"
-    val layer = RasterLayer.fromPath(jsonPath) match {
-      case Some(l) => l
-      case None => 
-        sys.error(s"Could not load raster metadata from $path, as it is not a valid layer metadata file")
-    }
-    Result(layer.info.rasterExtent)
-  }
-})
-
-/**
-  * Load the [[RasterExtent]] from the raster layer with the specified name.
-  */
-case class LoadRasterExtent(nme:Op[String]) extends Op[RasterExtent] {
-  def _run(context:Context) = runAsync(List(nme, context))
+case class LoadRasterExtentFromFile(path:Op[String]) extends Op[RasterExtent] {
+  def _run(context:Context) = runAsync(List(path, context))
   val nextSteps:Steps = {
-    case (name:String) :: (context:Context) :: Nil => {
-      Result(context.getRasterExtentByName(name))
+    case (path:String) :: (context:Context) :: Nil => {
+      Result(context.getRasterLayerFromPath(path).info.rasterExtent)
+    }
+  }
+}
+
+object LoadRasterExtent {
+  def apply(name:Op[String]): LoadRasterExtent = 
+    LoadRasterExtent(None,name)
+
+  def apply(ds:String, name:Op[String]): LoadRasterExtent = 
+    LoadRasterExtent(Some(ds),name)
+}
+
+/** Load the [[RasterExtent]] from the raster layer with the specified name.
+  */
+case class LoadRasterExtent(ds:Op[Option[String]], nme:Op[String]) extends Op[RasterExtent] {
+  def _run(context:Context) = runAsync(List(ds, nme, context))
+  val nextSteps:Steps = {
+    case (ds:Option[String]) :: (name:String) :: (context:Context) :: Nil => {
+      Result(context.getRasterLayer(ds,name).info.rasterExtent)
     }
   }
 }

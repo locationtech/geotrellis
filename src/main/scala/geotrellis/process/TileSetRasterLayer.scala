@@ -24,7 +24,7 @@ extends RasterLayerBuilder {
           new File(new File(jsonPath).getParent, f.getPath)
         }
       } else {
-        // Default to a directory with the same base name as the .json file.
+        // Default to a directory with the same name as the layer name.
         new File(new File(jsonPath).getParent, getName(json))
       }
 

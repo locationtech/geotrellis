@@ -4,7 +4,7 @@
   "cols": 20, 
   "datatype": "int32", 
   "epsg": 3785, 
-  "layer": "quad", 
+  "layer": "quad32", 
   "rows": 20, 
   "type": "arg", 
   "xmax": 150.5, 

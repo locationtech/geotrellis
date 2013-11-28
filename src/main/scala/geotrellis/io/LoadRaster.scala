@@ -3,22 +3,30 @@ package geotrellis.io
 import geotrellis._
 import geotrellis.process._
 
+object LoadRaster {
+  def apply(n:Op[String]):LoadRaster =
+    LoadRaster(None, n, None)
+
+  def apply(n:Op[String],re:RasterExtent):LoadRaster =
+    LoadRaster(None, n, Some(re))
+
+  def apply(ds:String, n: Op[String]): LoadRaster =
+    LoadRaster(Some(ds), n, None)
+
+  def apply(ds:String, n:Op[String],re:RasterExtent):LoadRaster =
+    LoadRaster(Some(ds), n, Some(re))
+}
+
 /**
  * Load the raster data for a particular extent/resolution for the 
  * raster layer in the catalog with name 'n'
  */
-case class LoadRaster(n:Op[String], r:Op[RasterExtent]) extends Op[Raster] {
-  def _run(context:Context) = runAsync(List(n, r, context))
+case class LoadRaster(ds:Op[Option[String]], 
+                      n:Op[String], 
+                      r:Op[Option[RasterExtent]]) extends Op[Raster] {
+  def _run(context:Context) = runAsync(List(ds, n, r, context))
   val nextSteps:Steps = {
-    case (name:String) :: null :: (context:Context) :: Nil => 
-     context.getRasterByName(name, None)
-    case (name:String) :: (re:RasterExtent) :: (context:Context) :: Nil => 
-      context.getRasterByName(name, Some(re))
-  }
-}
-
-object LoadRaster {
-  def apply(n:Op[String]):LoadRaster = {
-    LoadRaster(n, Literal[RasterExtent](null))
+    case (ds:Option[String]) :: (name:String) :: (re:Option[RasterExtent]) :: (context:Context) :: Nil => 
+      Result(context.getRasterLayer(ds,name).getRaster(re))
   }
 }

@@ -21,7 +21,8 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
   def getSource[T:Manifest](src:DataSource[_,T]):CalculationResult[T] = server.getSource(src)
   def getResult[T:Manifest](op:Op[T]) = server.getResult(op)
 
-  def get(name:String) = io.LoadRaster(name)
+  def get(name:String):Op[Raster] = get("test:fs",name)
+  def get(ds:String,name:String):Op[Raster] = io.LoadRaster(ds,name)
 
   def assertEqual(r:Op[Raster],arr:Array[Int]):Unit =
     assertEqual(run(r),arr)

@@ -10,6 +10,14 @@
     }
   },
   {
+   "store": "test:fs2",
+   "params": {
+     "type": "fs",
+     "path": "data2",
+     "cacheAll": "no"
+    }
+  },
+  {
    "store": "sbn:fs",
    "params": {
      "type": "fs",

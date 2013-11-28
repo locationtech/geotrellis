@@ -14,6 +14,6 @@ case class LoadRasterUrl(url:Op[String],re:Op[Option[RasterExtent]]) extends Ope
   def _run(context:Context) = runAsync(List(url,re,context))
   val nextSteps:Steps = {
     case (url:String) :: (re:Option[_]) ::(context:Context) :: Nil =>
-      Result(context.getRasterUrl(url, re.asInstanceOf[Option[RasterExtent]]))
+      Result(context.getRasterLayerFromUrl(url).getRaster(re.asInstanceOf[Option[RasterExtent]]))
   }
 }

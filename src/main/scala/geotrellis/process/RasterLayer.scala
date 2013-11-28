@@ -78,7 +78,7 @@ object RasterLayer {
   /**
    * Build a RasterLayer instance given a path to a JSON file.
    */
-  def fromPath(path:String):Option[RasterLayer] = 
+  def fromPath(path:String):Option[RasterLayer] =
     try {
       val base = Filesystem.basename(path) + ".json"
       val src = Source.fromFile(path)
