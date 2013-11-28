@@ -70,8 +70,9 @@ var valueViewer = (function() {
     return {
         update : function(latlng) {
             $.ajax({
-                url: gtUrl('admin/layer/valuegrid'),
-                data: { 'layer' : layerViewer.getLayer().name,
+                url: gtUrl('layer/valuegrid'),
+                data: { 'store' : layerViewer.getLayer().store,
+                        'layer' : layerViewer.getLayer().name,
                         'lat': latlng.lat,
                         'lng': latlng.lng },
                 dataType: "json",
@@ -110,8 +111,9 @@ var layerViewer = (function() {
 
     update = function() {
         $.ajax({
-            url: gtUrl('admin/breaks'),
-            data: { 'layer' : layer.name,
+            url: gtUrl('layer/breaks'),
+            data: { 'store' : layer.store,
+                    'layer' : layer.name,
                     'numBreaks': numBreaks },
             dataType: "json",
             success: function(r) {
@@ -129,7 +131,8 @@ var layerViewer = (function() {
                     });
                 }
 
-                mapLayer = new L.TileLayer.WMS(gtUrl("admin/layer/render"), {
+                mapLayer = new L.TileLayer.WMS(gtUrl("layer/render"), {
+                    store: layer.store,
                     layer: layer.name,
                     format: 'image/png',
                     breaks: breaks,
@@ -256,7 +259,7 @@ var colorRamps = (function() {
     return { 
         bindColorRamps: function() {
             $.ajax({
-                url: gtUrl('admin/colors'),
+                url: gtUrl('colors'),
                 dataType: 'json',
                 success: function(data) {
                     _.map(data.colors, makeColorRamp)
@@ -267,7 +270,7 @@ var colorRamps = (function() {
 })();
 var active = null;
 
-$.getJSON(gtUrl('admin/catalog'), function(catalog) {
+$.getJSON(gtUrl('catalog'), function(catalog) {
     $("#page-title").text("GeoTrellis Viewer - " + catalog.name);
 
     treeNodes = _.map(catalog.stores,function(store) {
@@ -276,7 +279,7 @@ $.getJSON(gtUrl('admin/catalog'), function(catalog) {
             isFolder: true,
             key: store.name,
             children: _.map(store.layers, function(layer) {
-                return { title: layer }
+                return { title: layer, store: store.name }
             })
         }
     });
@@ -288,7 +291,7 @@ $.getJSON(gtUrl('admin/catalog'), function(catalog) {
         $("#catalog-tree").dynatree({
             onActivate: function(node) {
                 if(!node.data.isFolder) {
-                    $.getJSON(gtUrl("admin/layer/info?layer="+node.data.title), function(layer) {
+                    $.getJSON(gtUrl("layer/info?layer="+node.data.title+"&store="+node.data.store), function(layer) {
                         layerViewer.setLayer(layer);
                         layerInfo.setLayer(layer);
                     });

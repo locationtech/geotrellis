@@ -16,3 +16,5 @@ libraryDependencies ++= Seq(
 )
 
 addSbtPlugin("de.johoop" % "jacoco4sbt" % "1.2.4")
+
+addSbtPlugin("io.spray" % "sbt-revolver" % "0.7.1")

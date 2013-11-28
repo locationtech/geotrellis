@@ -129,6 +129,8 @@ trait RasterSourceLike[+Repr <: RasterSource]
            else math.max(max1,max2)
           )
          }
+
+  def info:ValueSource[process.RasterLayerInfo] = ValueSource(rasterDefinition.flatMap( rd => io.LoadRasterLayerInfo(rd.layerId)))
 }
 
 abstract sealed trait TileIntersection

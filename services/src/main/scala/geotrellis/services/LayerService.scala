@@ -1,78 +1,62 @@
 package geotrellis.service
 
-object Layer {
-  // def asJson(layer:String):String =
-  //   asJson(None,layer)
+import geotrellis._
+import geotrellis.source._
+import geotrellis.process.LayerId
+import geotrellis.render.ColorRamps._
 
-  // def asJson(dataStore:String,layer:String):String =
-  //   asJson(Some(dataStore),layer)
+import Json._
 
-  // def asJson(layer:String):String = {
-  //   RasterSource(layer:String)
-  //   val op = io.LoadRasterLayerInfo(layer);
-  //   GeoTrellis.run(op) match {
-  //     case process.Complete(info,h) =>
-  //       OK.json(s"""{
-  //         "name" : "${layer}",
-  //         "rasterExtent" : ${info.rasterExtent.toJson},
-  //         "datatype" :" ${info.rasterType}"
-  //        }""")
-  //          .allowCORS()
-  //     case process.Error(message,failure) =>
-  //       ERROR(message,failure)
-  //   }
-  // }
+object LayerService {
+  def getInfo(layer:LayerId):ValueSource[String] =
+    RasterSource(layer)
+      .info
+      .map { info =>
+        s"""{
+            "name" : "${info.id.name}",
+            "rasterExtent" : ${info.rasterExtent.toJson},
+            "datatype" :" ${info.rasterType}"
+           }"""
+       }
 
-  // @GET
-  // @Path("/render")
-  // def render(
-  //   @DefaultValue("") @QueryParam("bbox") bbox:String,
-  //   @DefaultValue("256") @QueryParam("cols") cols:Int,
-  //   @DefaultValue("256") @QueryParam("rows") rows:Int,
-  //   @DefaultValue("") @QueryParam("layer") layer:String,
-  //   @DefaultValue("") @QueryParam("palette") palette:String,
-  //   @DefaultValue("4") @QueryParam("colors") numColors:String,
-  //   @DefaultValue("image/png") @QueryParam("format") format:String,
-  //   @DefaultValue("") @QueryParam("breaks") breaks:String,
-  //   @DefaultValue("blue-to-red") @QueryParam("colorRamp") colorRampKey:String,
-  //   @Context req:HttpServletRequest
-  // ):Response = {
-  //   val extent = {
-  //     val Array(xmin,ymin,xmax,ymax) = bbox.split(",").map(_.toDouble)
-  //     Extent(xmin,ymin,xmax,ymax)
-  //   }
+  def getBreaks(layer:LayerId,numBreaks:Int):ValueSource[String] =
+      RasterSource(layer)
+        .classBreaks(numBreaks)
+        .map (Json.classBreaks(_))
 
-  //   val rasterExtent = RasterExtent(extent, cols, rows)
+  def render(
+    bbox:String,
+    cols:Int,
+    rows:Int,
+    layer:LayerId,
+    breaksString:String,
+    colorRampKey:String
+  ):ValueSource[Array[Byte]] = {
+    val extent = {
+      val Array(xmin,ymin,xmax,ymax) = bbox.split(",").map(_.toDouble)
+      Extent(xmin,ymin,xmax,ymax)
+    }
 
-  //   val layerOp = io.LoadRaster(layer,rasterExtent).map { r =>
-  //     // Convert 0 of bit raster to NODATA
-  //     if(r.rasterType == TypeBit) { 
-  //       r.convert(TypeByte).map { z => if(z == 0) NODATA else z } 
-  //     } else { 
-  //       r 
-  //     }
-  //   }                                                 
+    val breaks = breaksString.split(",").map(_.toInt)
 
-  //   val breaksOp = 
-  //     logic.ForEach(string.SplitOnComma(breaks))(string.ParseInt(_))
-    
-  //   val ramp = 
-  //     breaksOp.map { b =>
-  //       val cr = Colors.rampMap.getOrElse(colorRampKey,BlueToRed)
-  //       if(cr.toArray.length < b.length) { cr.interpolate(b.length) }
-  //       else { cr }
-  //     }
+    render(RasterExtent(extent, cols, rows),layer,breaks,colorRampKey)
+  }
 
-  //   val png = Render(layerOp,ramp,breaksOp)
+  def render(
+    rasterExtent:RasterExtent,
+    layer:LayerId,
+    breaks:Array[Int],
+    colorRampKey:String
+  ):ValueSource[Array[Byte]] = {
+    val ramp = {
+      val cr = ColorRampMap.getOrElse(colorRampKey,BlueToRed)
+      if(cr.toArray.length < breaks.length) { cr.interpolate(breaks.length) }
+      else { cr }
+    }
 
-  //   GeoTrellis.run(png) match {
-  //     case process.Complete(img,h) =>
-  //       OK.png(img)
-  //         .cache(1000)
-  //     case process.Error(message,failure) =>
-  //       ERROR(message,failure)
-  //   }
-  // }
+    RasterSource(layer)
+      .renderPng(ramp,breaks)
+  }
 
   // @GET
   // @Path("/valuegrid")

@@ -152,7 +152,7 @@ object GeotrellisBuild extends Build {
   lazy val admin: Project =
     Project("admin", file("admin"))
       .settings(adminSettings: _*)
-      .dependsOn(root)
+      .dependsOn(root,services)
 
   lazy val adminSettings =
     Seq(
@@ -164,7 +164,7 @@ object GeotrellisBuild extends Build {
       resolvers ++= Seq(
         "spray repo" at "http://repo.spray.io"
       )
-    )
+    ) ++ spray.revolver.RevolverPlugin.Revolver.settings
 
   // Project: spark
 

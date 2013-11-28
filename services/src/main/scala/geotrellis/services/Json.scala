@@ -12,8 +12,7 @@ object Json {
   def wrap(json: => String) = new JsonWrapper { def toJson() = json }
 
   implicit def RasterExtentToJson(re:RasterExtent):JsonWrapper = wrap {
-//    var latLong = srs.WebMercator.transform(re.extent,srs.LatLng)
-    var latLong = re.extent
+    val latLong = re.extent
     s"""{
           "cols" : "${re.cols}",
           "rows" : "${re.rows}",
@@ -32,12 +31,12 @@ object Json {
   implicit def CatalogToJson(catalog:Catalog):JsonWrapper = wrap {
     s"""{   "name" :  "${catalog.name}",
             "stores" : [ """ + 
-                        {for(store <- catalog.stores.values) yield {
-                      s"""{ "name" :  "${store.name}",""" +
-                      s"""  "layers" : [""" +
-                             (store.getNames.map(x => s""" "$x\" """)).mkString(",") +
+                   (for(store <- catalog.stores.values) yield {
+                          s"""{ "name" :  "${store.name}",""" +
+                          s"""  "layers" : [""" +
+                          store.getNames.toList.sorted.map(x => s""" "$x\" """).mkString(",") +
                                    "] }" 
-                              } }.mkString(",") +
+                   }).mkString(",") +
                      """]
         }"""
   }

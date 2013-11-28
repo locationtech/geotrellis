@@ -8,9 +8,6 @@ import geotrellis.admin._
 import geotrellis.admin.Json._
 import geotrellis.rest._
 
-/**
- * Create a weighted overlay of the Chattanooga model.
- */
 @Path("/admin/colors")
 class Color {
   @GET
