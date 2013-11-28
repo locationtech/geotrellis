@@ -26,24 +26,12 @@ class LayerLoader(server:Server) {
     }
 
   /**
-   * Load RasterLayer from the catalog by name.
-   */
-  def getRasterLayer(name:String):RasterLayer =
-    getRasterLayer(None,name)
-
-  /**
-   * Load RasterLayer from the catalog by data store name and layer name.
-   */
-  def getRasterLayer(dataStore: String, name: String): RasterLayer =
-    getRasterLayer(Some(dataStore),name)
-
-  /**
    * Load RasterLayer from the catalog.
    */
-  def getRasterLayer(dataStore: Option[String], name: String): RasterLayer =
-    server.catalog.getRasterLayer(dataStore, name) match {
+  def getRasterLayer(layerId:LayerId): RasterLayer =
+    server.catalog.getRasterLayer(layerId) match {
       case Some(layer) => layer
-      case None => sys.error(s"couldn't find raster $name in catalog at ${server.catalog.source}")
+      case None => sys.error(s"couldn't find raster ${layerId.name} in catalog at ${server.catalog.source}")
     }
 
   /**

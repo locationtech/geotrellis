@@ -22,7 +22,7 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
 
   var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(classOf[ServerActor],this), id)
 
-  private[this] val cache = new HashCache()
+  private[this] val cache = new HashCache[String]()
 
   catalog.initCache(cache)
 

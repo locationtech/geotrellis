@@ -10,7 +10,7 @@ import java.io.File
 
 object ArgFileRasterLayerBuilder
 extends RasterLayerBuilder {
-  def apply(jsonPath:String, json:Config):Option[RasterLayer] = {
+  def apply(ds:Option[String],jsonPath:String, json:Config):Option[RasterLayer] = {
     val f = 
       if(json.hasPath("path")) {
         val f = new File(json.getString("path"))
@@ -36,13 +36,16 @@ extends RasterLayerBuilder {
       val (cellWidth,cellHeight) = getCellWidthAndHeight(json)
       val rasterExtent = RasterExtent(getExtent(json), cellWidth, cellHeight, cols, rows)
 
-      val info = RasterLayerInfo(getName(json),
-        getRasterType(json),
-        rasterExtent,
-        getEpsg(json),
-        getXskew(json),
-        getYskew(json),
-        getCacheFlag(json))
+      val info = 
+        RasterLayerInfo(
+          LayerId(ds,getName(json)),
+          getRasterType(json),
+          rasterExtent,
+          getEpsg(json),
+          getXskew(json),
+          getYskew(json),
+          getCacheFlag(json)
+        )
 
       Some(new ArgFileRasterLayer(info,f.getAbsolutePath))
     }
@@ -53,7 +56,7 @@ class ArgFileRasterLayer(info:RasterLayerInfo, rasterPath:String)
 extends UntiledRasterLayer(info) {
   def getRaster(targetExtent:Option[RasterExtent]) =
     if(isCached) {
-      getCache.lookup[Array[Byte]](info.name) match {
+      getCache.lookup[Array[Byte]](info.id.toString) match {
         case Some(bytes) =>
           getReader.readCache(bytes, info.rasterType, info.rasterExtent, targetExtent)
         case None =>
@@ -63,8 +66,8 @@ extends UntiledRasterLayer(info) {
       getReader.readPath(info.rasterType, info.rasterExtent, targetExtent)
     }
 
-  def cache(c:Cache) = 
-        c.insert(info.name, Filesystem.slurp(rasterPath))
+  def cache(c:Cache[String]) = 
+        c.insert(info.id.toString, Filesystem.slurp(rasterPath))
 
   private def getReader = new ArgReader(rasterPath)
 }

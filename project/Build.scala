@@ -24,7 +24,6 @@ object GeotrellisBuild extends Build {
           "-unchecked",
           "-Yclosure-elim",
           "-Yinline-warnings",
-          "-optimize",
           "-language:implicitConversions",
           "-language:postfixOps",
           "-language:existentials",
@@ -93,6 +92,8 @@ object GeotrellisBuild extends Build {
       fork in test := false,
       mainClass := Some("geotrellis.rest.WebRunner"),
       javaOptions in run += "-Xmx2G",
+      scalacOptions ++=
+        Seq("-optimize"),
       libraryDependencies ++= Seq(
         "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
         "org.scala-lang" % "scala-reflect" % "2.10.2",
@@ -113,23 +114,78 @@ object GeotrellisBuild extends Build {
         "Scala Test" at "http://www.scala-tools.org/repo-reloases/",
         "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
         "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
-        "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"))
+        "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots")
+    )
 
-  // Project: server
+  // Project: services
 
-  lazy val server: Project =
-    Project("server", file("server"))
-      .settings(serverSettings: _*)
+  lazy val services: Project =
+    Project("services", file("services"))
+      .settings(servicesSettings: _*)
       .dependsOn(root)
 
-  lazy val serverSettings =
+  lazy val servicesSettings =
     Seq(
-      name := "geotrellis-server",
+      name := "geotrellis-services"
+    )
+
+  // Project: jetty
+
+  lazy val jetty: Project =
+    Project("jetty", file("jetty"))
+      .settings(jettySettings: _*)
+      .dependsOn(root)
+
+  lazy val jettySettings =
+    Seq(
+      name := "geotrellis-jetty",
       libraryDependencies ++= Seq(
         "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
         "com.sun.jersey" % "jersey-bundle" % "1.11",
         "org.slf4j" % "slf4j-api" % "1.6.0",
-        "org.slf4j" % "slf4j-nop" % "1.6.0")) // ++ publishSettings
+        "org.slf4j" % "slf4j-nop" % "1.6.0")
+    )
+
+
+  // Project: admin
+
+  lazy val admin: Project =
+    Project("admin", file("admin"))
+      .settings(adminSettings: _*)
+      .dependsOn(root)
+
+  lazy val adminSettings =
+    Seq(
+      name := "geotrellis-admin",
+      libraryDependencies ++= Seq(
+        "io.spray" % "spray-routing" % "1.2-RC4",
+        "io.spray" % "spray-can" % "1.2-RC4"
+      ),
+      resolvers ++= Seq(
+        "spray repo" at "http://repo.spray.io"
+      )
+    )
+
+  // Project: spark
+
+  lazy val spark: Project =
+    Project("spark", file("geotrellis-spark"))
+      .settings(sparkSettings: _*)
+      .dependsOn(root)
+
+  lazy val sparkSettings =
+    Seq(
+      name := "geotrellis-spark",
+      libraryDependencies ++= Seq(
+        // first two are just to quell the UnsupportedOperationException in Hadoop's Configuration 
+        // http://itellity.wordpress.com/2013/05/27/xerces-parse-error-with-hadoop-or-solr-feature-httpapache-orgxmlfeaturesxinclude-is-not-recognized/
+        "xerces" % "xercesImpl" % "2.9.1",
+        "xalan" % "xalan" % "2.7.1",
+        "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
+        "org.apache.spark" %% "spark-core" % "0.9.0-incubating-SNAPSHOT",
+        "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4"),
+      resolvers ++= Seq(
+        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"))
 
   // Project: geotools
 
@@ -155,27 +211,6 @@ object GeotrellisBuild extends Build {
       resolvers ++= Seq(
         "Geotools" at "http://download.osgeo.org/webdav/geotools/"))
 
-  // Project: spark
-
-  lazy val spark: Project =
-    Project("spark", file("geotrellis-spark"))
-      .settings(sparkSettings: _*)
-      .dependsOn(root)
-
-  lazy val sparkSettings =
-    Seq(
-      name := "geotrellis-spark",
-      libraryDependencies ++= Seq(
-        // first two are just to quell the UnsupportedOperationException in Hadoop's Configuration 
-        // http://itellity.wordpress.com/2013/05/27/xerces-parse-error-with-hadoop-or-solr-feature-httpapache-orgxmlfeaturesxinclude-is-not-recognized/
-        "xerces" % "xercesImpl" % "2.9.1",
-        "xalan" % "xalan" % "2.7.1",
-        "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
-        "org.apache.spark" %% "spark-core" % "0.9.0-incubating-SNAPSHOT",
-        "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4"),
-      resolvers ++= Seq(
-        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"))
-
   // Project: dev
 
   lazy val dev: Project =
@@ -199,7 +234,7 @@ object GeotrellisBuild extends Build {
 
   lazy val demo: Project =
     Project("demo", file("demo"))
-      .dependsOn(server)
+      .dependsOn(jetty)
 
   // Project: tasks
 

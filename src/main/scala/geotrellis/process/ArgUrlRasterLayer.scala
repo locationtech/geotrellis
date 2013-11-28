@@ -10,7 +10,7 @@ import com.typesafe.config.Config
 
 object ArgUrlRasterLayerBuilder
 extends RasterLayerBuilder {
-  def apply(jsonPath:String, json:Config):Option[RasterLayer] = {
+  def apply(ds:Option[String],jsonPath:String, json:Config):Option[RasterLayer] = {
     val url = 
       if(json.hasPath("url")) {
         json.getString("url")
@@ -26,13 +26,16 @@ extends RasterLayerBuilder {
     val (cellWidth,cellHeight) = getCellWidthAndHeight(json)
     val rasterExtent = RasterExtent(getExtent(json), cellWidth, cellHeight, cols, rows)
 
-    val info = RasterLayerInfo(getName(json),
-      getRasterType(json),
-      rasterExtent,
-      getEpsg(json),
-      getXskew(json),
-      getYskew(json),
-      getCacheFlag(json))
+    val info = 
+      RasterLayerInfo(
+        LayerId(ds,getName(json)),
+        getRasterType(json),
+        rasterExtent,
+        getEpsg(json),
+        getXskew(json),
+        getYskew(json),
+        getCacheFlag(json)
+      )
 
     Some(new ArgUrlRasterLayer(info,url))
   }
@@ -42,7 +45,7 @@ class ArgUrlRasterLayer(info:RasterLayerInfo, rasterUrl:String)
 extends UntiledRasterLayer(info) {
   def getRaster(targetExtent:Option[RasterExtent]) =
     if(isCached) {
-      getCache.lookup[Array[Byte]](info.name) match {
+      getCache.lookup[Array[Byte]](info.id.toString) match {
         case Some(bytes) =>
           getReader.readCache(bytes, info.rasterType, info.rasterExtent, targetExtent)
         case None =>
@@ -68,8 +71,8 @@ extends UntiledRasterLayer(info) {
     result
   }
 
-  def cache(c:Cache) = 
-        c.insert(info.name, getBytes)
+  def cache(c:Cache[String]) = 
+        c.insert(info.id.toString, getBytes)
 
   private def getReader = new ArgReader("")
 }

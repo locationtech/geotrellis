@@ -5,36 +5,34 @@ import geotrellis._
 import geotrellis.process._
 
 object LoadTile {
-  def apply(n:Op[String],col:Op[Int],row:Op[Int]):LoadTile =
-    LoadTile(None,n,col,row,None)
+  def apply(n:String,col:Op[Int],row:Op[Int]):LoadTile =
+    LoadTile(LayerId(n),col,row,None)
 
   def apply(n:String,col:Int,row:Int,re:RasterExtent):LoadTile =
-    LoadTile(None,n,col,row,Some(re))
+    LoadTile(LayerId(n),col,row,Some(re))
 
-  def apply(n:String,col:Int,row:Int,re:Option[RasterExtent]):LoadTile =
-    LoadTile(None,n,col,row,re)
+  // def apply(n:String,col:Int,row:Int,re:Option[RasterExtent]):LoadTile =
+  //   LoadTile(LayerId(n),col,row,re)
 
   def apply(ds:String,n:String,col:Int,row:Int):LoadTile =
-    LoadTile(Some(ds),n,col,row,None)
+    LoadTile(LayerId(ds,n),col,row,None)
 
   def apply(ds: String, n: String, col: Int, row: Int, re: RasterExtent):LoadTile =
-    LoadTile(Some(ds),n,col,row,None)
+    LoadTile(LayerId(ds,n),col,row,None)
 }
 
-case class LoadTile(ds:Op[Option[String]],
-                    name:Op[String],
+case class LoadTile(layerId:Op[LayerId],
                     col:Op[Int],
                     row:Op[Int],
                     targetExtent:Op[Option[RasterExtent]]) extends Op[Raster] {
-  def _run() = runAsync(List(ds, name, col, row, targetExtent))
+  def _run() = runAsync(List(layerId, col, row, targetExtent))
   val nextSteps:Steps = {
-    case (ds:Option[_]) :: 
-         (n:String) :: 
+    case (layerId:LayerId) :: 
          (col:Int) :: 
          (row:Int) :: 
          (te:Option[_]) :: Nil =>
       LayerResult { layerLoader =>
-        val layer = layerLoader.getRasterLayer(ds.asInstanceOf[Option[String]],n)
+        val layer = layerLoader.getRasterLayer(layerId)
         layer.getTile(col,row,te.asInstanceOf[Option[RasterExtent]])
       }
   }

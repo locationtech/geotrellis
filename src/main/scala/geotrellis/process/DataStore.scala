@@ -48,7 +48,7 @@ case class DataStore(name:String, params:Map[String, String],catalogPath:String)
       // or we just ignore it.
       RasterLayer.fromFile(f) match {
         case Some(layer) =>
-          layers(layer.info.name) = layer
+          layers(layer.info.id.name) = layer
           // Skip the tile directory if it's a tiled raster.
           layer match {
             case tl:TileSetRasterLayer =>
@@ -72,7 +72,7 @@ case class DataStore(name:String, params:Map[String, String],catalogPath:String)
   /**
    * Sets the cache for all child layers.
    */
-  def setCache(c:Option[Cache]) = {
+  def setCache(c:Option[Cache[String]]) = {
     for(layer <- layers.values) { layer.setCache(c) }
   }
 

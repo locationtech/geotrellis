@@ -4,22 +4,22 @@ import geotrellis._
 import geotrellis.process._
 
 object LoadRasterLayerInfo {
-  def apply(n:Op[String]): LoadRasterLayerInfo = 
-    LoadRasterLayerInfo(None,n)
+  def apply(n:String): LoadRasterLayerInfo = 
+    LoadRasterLayerInfo(LayerId(n))
 
-  def apply(ds:String, n:Op[String]): LoadRasterLayerInfo = 
-    LoadRasterLayerInfo(Some(ds),n)
+  def apply(ds:String, n:String): LoadRasterLayerInfo = 
+    LoadRasterLayerInfo(LayerId(ds,n))
 }
 
 /**
   * Load the [[RasterLayerInfo]] from the raster layer with the specified name.
   */
-case class LoadRasterLayerInfo(ds:Op[Option[String]], n:Op[String]) extends Op[RasterLayerInfo] {
-  def _run() = runAsync(List(ds, n))
+case class LoadRasterLayerInfo(layerId:Op[LayerId]) extends Op[RasterLayerInfo] {
+  def _run() = runAsync(List(layerId))
   val nextSteps:Steps = {
-    case (ds:Option[_]) :: (n:String) :: Nil =>
+    case (layerId:LayerId) :: Nil =>
       LayerResult { layerLoader =>
-        layerLoader.getRasterLayer(ds.asInstanceOf[Option[String]], n).info
+        layerLoader.getRasterLayer(layerId).info
       }
   }
 }
