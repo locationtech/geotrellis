@@ -123,7 +123,7 @@ class DemoService1 {
 
     format match {
       case "hello" => response("text/plain")("hello world")
-      case "info" => Demo.server.getResult(pngOp) match {
+      case "info" => Demo.server.run(pngOp) match {
         case process.Complete(img, h) => {
           val ms = h.elapsedTime
           val query = req.getQueryString + "&format=png"
@@ -136,7 +136,7 @@ class DemoService1 {
           response("text/plain")("failed: %s\ntrace:\n%s".format(msg, trace))
         }
       }
-      case _ => Demo.server.getResult(pngOp) match {
+      case _ => Demo.server.run(pngOp) match {
         case process.Complete(img, _) => response("image/png")(img)
         case process.Error(msg, trace) => {
           response("text/plain")("failed: %s\ntrace:\n%s".format(msg, trace))

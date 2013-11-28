@@ -53,7 +53,7 @@ object DiffTask {
       val r1Op = io.LoadFile(sourcePath)
       val r2Op = io.LoadFile(targetPath)
       val diffOp = local.Subtract(r1Op, r2Op)
-      val diff = localServer.run(diffOp)
+      val diff = localServer.get(diffOp)
 
       val arr = diff.toArrayDouble
       val differences = arr.filter(i => i != 0 )

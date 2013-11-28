@@ -1,5 +1,7 @@
 package geotrellis.rest
 
+import geotrellis._
+
 /**
  * Starts a webserver on the configured port that will serve any rest
  * services found in the package defined as 'rest-package' in the configuration file.
@@ -45,16 +47,11 @@ object WebRunner {
 
       configServer(server)
 
-      GeoTrellis.setup(config.geotrellis)
-
       Logger.log(s"Starting server on port ${config.jetty.port}.")
       for(p <- config.packages) { Logger.log(s"\tIncluding package $p") }
 
       server.start()
-    } /*catch {
-      case e:Exception =>
-        Logger.error(e.getMessage)
-    } */finally {
+    } finally {
       GeoTrellis.shutdown()
     }
   }

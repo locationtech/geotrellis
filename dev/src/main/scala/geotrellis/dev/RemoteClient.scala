@@ -86,7 +86,7 @@ object RemoteClient {
       .map(seqInt => seqInt.reduce(math.min(_,_)))
 
     for (i <- 1 until 10) {
-      server.getSource(r) match {
+      server.run(r) match {
         case Complete(value,success) =>
           println(s"result: value")
           println(success.toString)
@@ -107,7 +107,7 @@ object RemoteClient {
       println(" == Sending op for remote execution.")
       val start = System.currentTimeMillis
 
-      server.getResult(op.dispatch(app.router)) match {
+      server.run(op.dispatch(app.router)) match {
         case Complete(value,success) => println(success.toString)
         case Error(msg,failure) =>
           println(msg)
@@ -118,7 +118,7 @@ object RemoteClient {
 
       println(s" == executing operation locally.")
       val start2 = System.currentTimeMillis
-      server.getResult(op) match {
+      server.run(op) match {
         case Complete(value,success) => println(success.toString)
         case Error(msg, failure) =>
           println(msg)

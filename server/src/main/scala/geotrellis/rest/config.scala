@@ -6,7 +6,6 @@ import scala.collection.mutable
 
 case class ServerConfig(packages:Seq[String],
                         jetty:JettyConfig,
-                        geotrellis:GeoTrellisConfig,
                         admin:AdminConfig,
                         staticContentPath:Option[String])
 
@@ -26,7 +25,6 @@ object ServerConfig {
     } else { None }
 
     val jetty = JettyConfig.init(config)
-    val geotrellis = GeoTrellisConfig.init(config)
     val admin = AdminConfig.init(config)
 
     if(admin.serveSite) {
@@ -35,7 +33,6 @@ object ServerConfig {
 
     ServerConfig(packages.toSeq,
                  jetty,
-                 geotrellis,
                  admin,
                  staticContentPath)
   }
@@ -71,17 +68,6 @@ object JettyConfig {
       }
 
     JettyConfig(host,port,corePoolSize,maximumPoolSize,keepAliveTime,serveStatic,contextPath)
-  }
-}
-
-case class GeoTrellisConfig(catalogPath:Option[String])
-object GeoTrellisConfig {
-  def init():GeoTrellisConfig = init(ConfigFactory.load())
-  def init(config:Config):GeoTrellisConfig = {
-    val catalogPath = if(config.hasPath("geotrellis.catalog")) {
-      Some(config.getString("geotrellis.catalog"))
-    } else { None }
-    GeoTrellisConfig(catalogPath)
   }
 }
 

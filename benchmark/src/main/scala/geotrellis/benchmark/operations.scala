@@ -17,7 +17,7 @@ import geotrellis.raster._
  * that concern is mostly superstitious.
  */
 abstract class CustomWithInt(r:Op[Raster], c:Op[Int]) extends Op[Raster] {
-  final def _run(context:Context) = runAsync(r :: c :: Nil)
+  final def _run() = runAsync(r :: c :: Nil)
 
   def handleCell(z:Int, n:Int): Int
 
@@ -33,7 +33,7 @@ case class MultiplyConstantCustomWithInt(r:Op[Raster], c:Op[Int]) extends Custom
  * Here is a MultiplyConstant implementation in terms of raster.mapIfSet.
  */
 case class MultiplyConstantMapIfSet(r:Op[Raster], c:Op[Int]) extends Op[Raster] {
-  def _run(context:Context) = runAsync(r :: c :: Nil)
+  def _run() = runAsync(r :: c :: Nil)
 
   final def _finish(raster:Raster, n:Int) = raster.mapIfSet(_ * n)
 
@@ -67,7 +67,7 @@ case class MultiplyConstantMapIfSetSugarWithLiteral(r:Op[Raster], c:Int) extends
  * Here is a MultiplyConstant implementation in terms of a while-loop.
  */
 case class MultiplyConstantWhileLoop(r:Op[Raster], c:Op[Int]) extends Op[Raster] {
-  def _run(context:Context) = runAsync(r :: c :: Nil)
+  def _run() = runAsync(r :: c :: Nil)
 
   val nextSteps:Steps = {
     case (raster:Raster) :: (n:Int) :: Nil => {
@@ -87,7 +87,7 @@ case class MultiplyConstantWhileLoop(r:Op[Raster], c:Op[Int]) extends Op[Raster]
 }
 
 case class UntiledMin(r:Op[Raster]) extends Operation[Int] {
-  def _run(context:Context) = runAsync(r :: Nil)
+  def _run() = runAsync(r :: Nil)
   val nextSteps:Steps = {
     case (raster:Raster) :: Nil => {
       var zmin = Int.MaxValue 
@@ -109,7 +109,7 @@ case class UntiledMin(r:Op[Raster]) extends Operation[Int] {
 trait MultiLocalOld extends Operation[Raster]{
   def ops:Array[Op[Raster]]
 
-  def _run(context:Context) = runAsync(ops.toList)
+  def _run() = runAsync(ops.toList)
 
   val nextSteps:Steps = {
     case rasters:List[_] => {
@@ -185,7 +185,7 @@ case class BUntiledHistogram(r:Op[Raster]) extends Op1(r) ({
 // })
 
 // abstract class BReducer1[B:Manifest, C:Manifest](r:Op[Raster])(handle:Raster => B)(reducer:List[B] => C) extends Op[C] {
-//   def _run(context:Context) = runAsync('init :: r :: Nil)
+//   def _run() = runAsync('init :: r :: Nil)
 
 //   val nextSteps:Steps = {
 //     case 'init :: (r:Raster) :: Nil => init(r)

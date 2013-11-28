@@ -77,7 +77,7 @@ object FocalTask {
         return
       }
 
-      val r = localServer.run(op)
+      val r = localServer.get(op)
 
       val name = new java.io.File(targetPath).getName.replace(".arg","")
       ArgWriter(r.rasterType).write(targetPath, r, name)

@@ -41,8 +41,8 @@ object InfoTask {
     val localServer = Server.empty("task")
     
     try {
-      val info = localServer.run(io.LoadRasterLayerInfoFromPath(sourcePath))
-      val raster = localServer.run(io.LoadFile(sourcePath))
+      val info = localServer.get(io.LoadRasterLayerInfoFromPath(sourcePath))
+      val raster = localServer.get(io.LoadFile(sourcePath))
 
       println(s"ARG at $sourcePath")
       println("------------------------------------------")
