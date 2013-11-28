@@ -3,9 +3,7 @@ package geotrellis.raster
 import geotrellis._
 import geotrellis.data.RasterReader
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 
 // TODO
 // @RunWith(classOf[JUnitRunner])

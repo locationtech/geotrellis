@@ -50,4 +50,4 @@ private[actors] case class RunCallback[T](args:Args,
 /**
  * Message used to send result values. Used internally.
  */
-private[process] case class OperationResult[T](result:InternalCalculationResult[T], pos: Int)
+private[process] case class PositionedResult[T](result:InternalOperationResult[T], pos: Int)

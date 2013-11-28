@@ -23,9 +23,9 @@ class RegionGroupSpec extends FunSpec
                    7,     7,NODATA,     9,     9),
           5, 6
       )
-      val regions = run(RegionGroup(r)).raster
+      val regions = get(RegionGroup(r)).raster
 
-      val histogram = run(GetHistogram(regions))
+      val histogram = get(GetHistogram(regions))
       val count = histogram.getValues.length
       count should be (4)
 
@@ -55,9 +55,9 @@ class RegionGroupSpec extends FunSpec
                17,18
       )
 
-      val RegionGroupResult(regions,regionMap) = run(RegionGroup(r))
+      val RegionGroupResult(regions,regionMap) = get(RegionGroup(r))
 
-      val histogram = run(GetHistogram(regions))
+      val histogram = get(GetHistogram(regions))
       val count = histogram.getValues.length
       count should be (8)
       
@@ -107,9 +107,9 @@ class RegionGroupSpec extends FunSpec
                17,18
       )
 
-      val RegionGroupResult(regions,regionMap) = run(RegionGroup(r,RegionGroupOptions(false)))
+      val RegionGroupResult(regions,regionMap) = get(RegionGroup(r,RegionGroupOptions(false)))
 
-      val histogram = run(GetHistogram(regions))
+      val histogram = get(GetHistogram(regions))
       val count = histogram.getValues.length
       count should be (9)
       
@@ -149,9 +149,9 @@ class RegionGroupSpec extends FunSpec
                7,8
       )
 
-      val RegionGroupResult(regions,regionMap) = run(RegionGroup(r))
+      val RegionGroupResult(regions,regionMap) = get(RegionGroup(r))
 
-      val histogram = run(GetHistogram(regions))
+      val histogram = get(GetHistogram(regions))
       val count = histogram.getValues.length
       count should be (4)
       
@@ -190,9 +190,9 @@ class RegionGroupSpec extends FunSpec
                7,8
       )
 
-      val RegionGroupResult(regions,regionMap) = run(RegionGroup(r))
+      val RegionGroupResult(regions,regionMap) = get(RegionGroup(r))
 
-      val histogram = run(GetHistogram(regions))
+      val histogram = get(GetHistogram(regions))
       val count = histogram.getValues.length
       count should be (1)
       
@@ -230,8 +230,8 @@ class RegionGroupSpec extends FunSpec
       val ymax = 0
 
       val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
-      val RegionGroupResult(regions,regionMap) = run(RegionGroup(r))
-      val histogram = run(GetHistogram(regions))
+      val RegionGroupResult(regions,regionMap) = get(RegionGroup(r))
+      val histogram = get(GetHistogram(regions))
       val count = histogram.getValues.length
       count should be (4)
       
@@ -274,8 +274,8 @@ class RegionGroupSpec extends FunSpec
       val ymax = 0
 
       val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
-      val RegionGroupResult(regions,regionMap) = run(RegionGroup(r,RegionGroupOptions(false)))
-      val histogram = run(GetHistogram(regions))
+      val RegionGroupResult(regions,regionMap) = get(RegionGroup(r,RegionGroupOptions(false)))
+      val histogram = get(GetHistogram(regions))
       val count = histogram.getValues.length
       count should be (7)
       

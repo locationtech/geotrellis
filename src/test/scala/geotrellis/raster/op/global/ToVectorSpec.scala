@@ -71,7 +71,7 @@ class ToVectorSpec extends FunSpec
 
       val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
 
-      val geoms = run(ToVector(r))
+      val geoms = get(ToVector(r))
 
       val onesCoords = List(   (1.0,0.0), (3.0,-0.0),
                             (1.0,-20.0),(3.0,-20.0),
@@ -107,7 +107,7 @@ class ToVectorSpec extends FunSpec
 
       val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
 
-      val geoms = run(ToVector(r))
+      val geoms = get(ToVector(r))
 
       val onesCoords = List( tl(1,1),                     tr(3,1),
                                     br(1,1),     bl(3,1),
@@ -149,7 +149,7 @@ class ToVectorSpec extends FunSpec
       val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
 
 
-      val geoms = run(ToVector(r))
+      val geoms = get(ToVector(r))
 
       val onesCoords = List(  tl(4,3), tr(5,3),                       tl(9,3), tr(10,3),
                     tl(3,4), tl(4,4),                                
@@ -189,7 +189,7 @@ class ToVectorSpec extends FunSpec
       val ymin = -80
 
       val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
-      val geoms = run(ToVector(r))
+      val geoms = get(ToVector(r))
 
       val onesCoords = List( 
         tl(0,0),                               tr(3,0),
@@ -233,7 +233,7 @@ class ToVectorSpec extends FunSpec
 
       val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
 
-      val geoms = run(ToVector(r))
+      val geoms = get(ToVector(r))
 
       val expectedShellCoords = List( 
 
@@ -286,7 +286,7 @@ class ToVectorSpec extends FunSpec
       val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
 
 
-      val geoms = run(ToVector(r))
+      val geoms = get(ToVector(r))
 
       val expectedShellCoords = List( 
                 tl(1,0),     tr(3,0),
@@ -348,29 +348,29 @@ class ToVectorSpec extends FunSpec
       val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
 
 
-      val geoms = run(ToVector(r))
+      val geoms = get(ToVector(r))
 
       withClue ("Number of polygons did not match expected:") { geoms.length should be (3) }
     }
 
     it("should vectorize a raster that was at one point not vectorizing properly") {
-      val r = get("vectorbugger")
+      val r = getRaster("vectorbugger")
       val op = ToVector(r)
-      val vect = run(op)
+      val vect = get(op)
     }
 
     it("should vectorize another raster that was at one point not vectorizing properly") {
       println("Running test on vectorbugger2...")
-      val r = get("vectorbugger2")
+      val r = getRaster("vectorbugger2")
       val op = ToVector(r)
-      val vect = run(op)
+      val vect = get(op)
     }
 
     it("should vectorize yet another raster that was at one point not vectorizing properly") {
       println("Running test on vectorbugger3...")
-      val r = get("vectorbugger3")
+      val r = getRaster("vectorbugger3")
       val op = ToVector(r)
-      val vect = run(op)
+      val vect = get(op)
     }
   }
 }

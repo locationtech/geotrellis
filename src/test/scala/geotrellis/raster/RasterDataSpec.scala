@@ -7,7 +7,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class RasterDataSpec extends FunSpec 
                         with ShouldMatchers 
                         with TestServer 

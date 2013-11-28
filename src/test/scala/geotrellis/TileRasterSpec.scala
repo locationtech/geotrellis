@@ -42,7 +42,7 @@ class TileRasterSpec extends FunSpec
     }
 
     it("splits up a loaded raster") {
-      val rOp = get("elevation")
+      val rOp = getRaster("elevation")
       val tOp = 
         rOp.map { r =>
           val (tcols,trows) = (11,20)
@@ -51,8 +51,8 @@ class TileRasterSpec extends FunSpec
           val tl = TileLayout(tcols,trows,pcols,prows)
           TileRaster.wrap(r,tl)
         }
-      val tiled = run(tOp)
-      val raster = run(rOp)
+      val tiled = get(tOp)
+      val raster = get(rOp)
 
       assertEqual(tiled,raster)
     }

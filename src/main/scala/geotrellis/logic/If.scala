@@ -8,7 +8,7 @@ import geotrellis.process._
  * Operation executes, otherwise the second Operation executes.
  */
 case class If[A <: C,B <: C,C:Manifest](bOp: Op[Boolean], trueOp: Op[A], falseOp: Op[B])extends Op[C] {
-  def _run(context: Context) = runAsync('init :: bOp :: Nil)
+  def _run() = runAsync('init :: bOp :: Nil)
 
   val nextSteps: Steps = {
     case 'init :: (b: Boolean) :: Nil => runAsync(

@@ -22,7 +22,7 @@ class ColorRasterSpec extends FunSpec with ShouldMatchers
         n, 3, 3, n
       ), 4, 3)
 
-      val result = run(ColorRaster(r,map,ColorMapOptions(LessThan,5)))
+      val result = get(ColorRaster(r,map,ColorMapOptions(LessThan,5)))
 
       result.get(1,0) should be (5)
       result.get(2,0) should be (5)
@@ -50,7 +50,7 @@ class ColorRasterSpec extends FunSpec with ShouldMatchers
 
       ), 5, 6)
 
-      val result = run(ColorRaster(r,map,ColorMapOptions(GreaterThan,5, noMapColor = 7)))
+      val result = get(ColorRaster(r,map,ColorMapOptions(GreaterThan,5, noMapColor = 7)))
 
       for(i <- 0 to 5) { result.get(0,i) should be(7) }
       for(i <- 0 to 5) { result.get(1,i) should be(1) }
@@ -77,7 +77,7 @@ class ColorRasterSpec extends FunSpec with ShouldMatchers
 
       ), 5, 6)
 
-      val result = run(ColorRaster(r,map,ColorMapOptions(LessThan,5,noMapColor = 7)))
+      val result = get(ColorRaster(r,map,ColorMapOptions(LessThan,5,noMapColor = 7)))
 
       for(i <- 0 to 5) { result.get(0,i) should be(1) }
       for(i <- 0 to 5) { result.get(1,i) should be(2) }
@@ -101,7 +101,7 @@ class ColorRasterSpec extends FunSpec with ShouldMatchers
         10, 20, 30, 40, 44
       ), 5, 4)
 
-      val result = run(ColorRaster(r,map,ColorMapOptions(Exact,5,noMapColor = 7)))
+      val result = get(ColorRaster(r,map,ColorMapOptions(Exact,5,noMapColor = 7)))
 
       for(i <- 0 to 3) { result.get(0,i) should be(1) }
       for(i <- 0 to 3) { result.get(1,i) should be(2) }
@@ -128,7 +128,7 @@ class ColorRasterSpec extends FunSpec with ShouldMatchers
       ), 4, 3)
 
       intercept[Exception] {
-        run(ColorRaster(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true)))
+        get(ColorRaster(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true)))
          .toArray
       }
     }
@@ -145,7 +145,7 @@ class ColorRasterSpec extends FunSpec with ShouldMatchers
         n, 0.3, 0.3, n
       ), 4, 3)
 
-      val result = run(ColorRaster(r,map,ColorMapOptions(LessThan,5)))
+      val result = get(ColorRaster(r,map,ColorMapOptions(LessThan,5)))
       result.get(1,0) should be (5)
       result.get(2,0) should be (5)
       result.get(1,1) should be (5)
@@ -172,7 +172,7 @@ class ColorRasterSpec extends FunSpec with ShouldMatchers
 
       ), 5, 6)
 
-      val result = run(ColorRaster(r,map,ColorMapOptions(GreaterThan,5, noMapColor = 7)))
+      val result = get(ColorRaster(r,map,ColorMapOptions(GreaterThan,5, noMapColor = 7)))
 
       for(i <- 0 to 5) { result.get(0,i) should be(7) }
       for(i <- 0 to 5) { result.get(1,i) should be(1) }
@@ -199,7 +199,7 @@ class ColorRasterSpec extends FunSpec with ShouldMatchers
 
       ), 5, 6)
 
-      val result = run(ColorRaster(r,map,ColorMapOptions(LessThan,5,noMapColor = 7)))
+      val result = get(ColorRaster(r,map,ColorMapOptions(LessThan,5,noMapColor = 7)))
 
       for(i <- 0 to 5) { result.get(0,i) should be(1) }
       for(i <- 0 to 5) { result.get(1,i) should be(2) }
@@ -223,7 +223,7 @@ class ColorRasterSpec extends FunSpec with ShouldMatchers
         1.0, 2.0, 3.0, 4.0, 4.4
       ), 5, 4)
 
-      val result = run(ColorRaster(r,map,ColorMapOptions(Exact,5,noMapColor = 7)))
+      val result = get(ColorRaster(r,map,ColorMapOptions(Exact,5,noMapColor = 7)))
 
       for(i <- 0 to 3) { result.get(0,i) should be(1) }
       for(i <- 0 to 3) { result.get(1,i) should be(2) }
@@ -250,7 +250,7 @@ class ColorRasterSpec extends FunSpec with ShouldMatchers
       ), 4, 3)
 
       intercept[Exception] {
-        run(ColorRaster(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true)))
+        get(ColorRaster(r,map,ColorMapOptions(Exact,5,noMapColor = 7, strict = true)))
          .toArray
       }
     }

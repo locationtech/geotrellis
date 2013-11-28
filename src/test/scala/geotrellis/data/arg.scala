@@ -12,10 +12,10 @@ import geotrellis.testutil._
 import geotrellis.raster._
 import geotrellis.data._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class ArgSpec extends FunSpec with MustMatchers with ShouldMatchers {
+class ArgSpec extends FunSpec 
+                 with MustMatchers 
+                 with ShouldMatchers {
   describe("An ArgReader") {
-    val server = TestServer.server
     val path1 = "src/test/resources/fake.img8.json"
     	 
     it("should build a valid raster") {

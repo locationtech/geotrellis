@@ -16,8 +16,8 @@ import geotrellis.testutil._
 //     it("can cache") {
 //       println("Loading tiles...") 
 //       val start = System.nanoTime
-//       val uncached = run(io.LoadRaster("mtsthelens_tiled"))
-//       val cached = run(io.LoadRaster("mtsthelens_tiled_cached"))
+//       val uncached = get(io.LoadRaster("mtsthelens_tiled"))
+//       val cached = get(io.LoadRaster("mtsthelens_tiled_cached"))
 
 //       // Make sure it's cached.
 //       cached.data.asInstanceOf[TileSetRasterData].loader.asInstanceOf[CacheTileLoader]

@@ -16,11 +16,12 @@ object LoadRasterDefinition {
   * Load the [[RasterDefinition]] from the raster layer with the specified name.
   */
 case class LoadRasterDefinition(ds: Op[Option[String]], n: Op[String]) extends Op[RasterDefinition] {
-  def _run(context:Context) = runAsync(List(ds, n, context))
+  def _run() = runAsync(List(ds, n))
   val nextSteps:Steps = {
-    case (ds:Option[String]) :: (n:String) :: (context:Context) :: Nil => {
-      val info = context.getRasterLayer(ds,n).info
-      Result(RasterDefinition(n,info.rasterExtent,info.tileLayout))
-    }
+    case (ds:Option[_]) :: (n:String) :: Nil => 
+      LayerResult { layerLoader =>
+        val info = layerLoader.getRasterLayer(ds.asInstanceOf[Option[String]],n).info
+        RasterDefinition(n,info.rasterExtent,info.tileLayout)
+      }
   }
 }

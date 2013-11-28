@@ -4,14 +4,11 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
-import org.scalatest.junit.JUnitRunner
 
 import scala.math._
 
-@RunWith(classOf[JUnitRunner])
 class MeanSpec extends FunSpec with FocalOpSpec
                                with TestServer
                                with ShouldMatchers {
@@ -71,7 +68,7 @@ class MeanSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalMean(Square(1))) match {
+      run(rs1.focalMean(Square(1))) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,
@@ -101,7 +98,7 @@ class MeanSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalMean(Circle(1))) match {
+      run(rs1.focalMean(Circle(1))) match {
         case Complete(result,success) =>
           //println(success)
           assertEqual(result,

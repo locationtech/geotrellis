@@ -17,7 +17,7 @@ import geotrellis.statistics._
 case class GetStandardDeviation(r:Op[Raster], h:Op[Histogram], factor:Int) extends Op[Raster] {
   val g = GetStatistics(h)
 
-  def _run(context:Context) = runAsync(List(g, r))
+  def _run() = runAsync(List(g, r))
 
   val nextSteps:Steps = {
     case (stats:Statistics) :: (raster:Raster) :: Nil => step2(stats, raster)

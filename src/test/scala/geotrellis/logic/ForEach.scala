@@ -8,7 +8,6 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class ForEachSpec extends FunSpec 
                      with TestServer
                      with MustMatchers 
@@ -17,14 +16,14 @@ class ForEachSpec extends FunSpec
     it("should work with Array[Int]") {
       val ns = Array(1, 2, 3, 4, 5)
       val f:Operation[Array[Int]] = ForEach(Literal(ns))((z:Int) => Literal(z + 1))
-      val results = run(f)
+      val results = get(f)
       results(0) must be === ns(0) + 1
     }
 
     it("should work against two arrays") {
       val a1 = Array("a", "b", "c", "d", "e")
       val a2 = Array("b", "c", "d", "e", "f")
-      val results = run(ForEach(a1,a2)(_ + _))
+      val results = get(ForEach(a1,a2)(_ + _))
       results should be (Array("ab","bc","cd","de","ef"))
     }
 
@@ -32,7 +31,7 @@ class ForEachSpec extends FunSpec
       val a1 = Array("a", "b", "c", "d", "e")
       val a2 = Array("b", "c", "d", "e", "f")
       val a3 = Array("c", "d", "e", "f", "g")
-      val results = run(ForEach(a1,a2,a3)(_ + _ + _))
+      val results = get(ForEach(a1,a2,a3)(_ + _ + _))
       results should be (Array("abc","bcd","cde","def","efg"))
     }
   }

@@ -9,7 +9,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import scala.collection.mutable
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class DownsampleSpec extends FunSpec with ShouldMatchers 
                                with TestServer
                                with RasterBuilders {
@@ -42,7 +41,7 @@ class DownsampleSpec extends FunSpec with ShouldMatchers
           maxValue
       })
 
-      val result = run(op)
+      val result = get(op)
       result.cols should be (4)
       result.rows should be (3)
       assertEqual(result, Array( 1, 2, 3, 4,
@@ -70,7 +69,7 @@ class DownsampleSpec extends FunSpec with ShouldMatchers
           maxValue
       })
 
-      val result = run(op)
+      val result = get(op)
       result.cols should be (4)
       result.rows should be (3)
       assertEqual(result, Array( 2, 2, 3, 4,
@@ -103,7 +102,7 @@ class DownsampleSpec extends FunSpec with ShouldMatchers
           maxValue
       })
 
-      val result = run(op)
+      val result = get(op)
       
       result.cols should be (4)
       result.rows should be (3)
@@ -139,7 +138,7 @@ class DownsampleSpec extends FunSpec with ShouldMatchers
           maxValue
       })
 
-      val result = run(op)
+      val result = get(op)
       
       result.cols should be (4)
       result.rows should be (3)

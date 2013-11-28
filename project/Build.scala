@@ -90,14 +90,12 @@ object GeotrellisBuild extends Build {
     Seq(
       name := "geotrellis",
       parallelExecution := false,
-      testListeners <+= target.map(tgt => new eu.henkelmann.sbt.JUnitXmlTestsListener(tgt.toString)),
       fork in test := false,
       mainClass := Some("geotrellis.rest.WebRunner"),
       javaOptions in run += "-Xmx2G",
       libraryDependencies ++= Seq(
         "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
         "org.scala-lang" % "scala-reflect" % "2.10.2",
-        "junit" % "junit" % "4.5" % "test",
         "com.vividsolutions" % "jts" % "1.12",
         "com.typesafe.akka" %% "akka-kernel" % Version.akka,
         "com.typesafe.akka" %% "akka-remote" % Version.akka,
@@ -172,7 +170,6 @@ object GeotrellisBuild extends Build {
         // http://itellity.wordpress.com/2013/05/27/xerces-parse-error-with-hadoop-or-solr-feature-httpapache-orgxmlfeaturesxinclude-is-not-recognized/
         "xerces" % "xercesImpl" % "2.9.1",
         "xalan" % "xalan" % "2.7.1",
-        "junit" % "junit" % "4.5" % "test",
         "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
         "org.apache.spark" %% "spark-core" % "0.9.0-incubating-SNAPSHOT",
         "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4"),

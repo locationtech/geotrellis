@@ -9,7 +9,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class NegateSpec extends FunSpec 
                     with ShouldMatchers 
                     with TestServer 
@@ -17,7 +16,7 @@ class NegateSpec extends FunSpec
   describe("Negate") {
     it("negates an integer raster") {
       val r = positiveIntegerRaster
-      val result = run(Negate(r))
+      val result = get(Negate(r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (-r.get(col,row))
@@ -27,7 +26,7 @@ class NegateSpec extends FunSpec
 
     it("negates a double raster") {
       val r = probabilityRaster
-      val result = run(Negate(r))
+      val result = get(Negate(r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should be (-r.getDouble(col,row))
@@ -38,8 +37,8 @@ class NegateSpec extends FunSpec
     it("negates a double raster source correctly") {
       val rs = RasterSource("mtsthelens_tiled")
 
-      val r = runSource(rs)
-      getSource(-rs) match {
+      val r = get(rs)
+      run(-rs) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until r.rasterExtent.rows / 3) {
@@ -68,7 +67,7 @@ class NegateSpec extends FunSpec
                1,1,1, 1,1,1, 1,1,1),
         3,2,3,2)
 
-      getSource(-rs) match {
+      run(-rs) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {

@@ -20,26 +20,28 @@ class ResultHandler(server:Server,
   def handleResult[T](output:StepOutput[T],history:History) {
     output match {
       // ok, this operation completed and we have a value. so return it.
-      case Result(value) => {
-        val result = OperationResult(Complete(value, history.withResult(value)), pos)
-
+      case Result(value) =>
+        val result = PositionedResult(Complete(value, history.withResult(value)), pos)
         client ! result
-      }
-
-      // Execute the returned operation as the next step of this calculation.
-      case AndThen(op) => {
-         server.actor ! RunOperation(op, pos, client, Some(dispatcher))
-      }
 
       // there was an error, so return that as well.
-      case StepError(msg, trace) => {
-        client ! OperationResult(Error(msg, history.withError(msg,trace)), pos)
-      }
+      case StepError(msg, trace) =>
+        client ! PositionedResult(Error(msg, history.withError(msg,trace)), pos)
 
       // we need to do more work, so as the server to do it asynchronously.
-      case StepRequiresAsync(args,cb) => {
+      case StepRequiresAsync(args,cb) =>
         server.actor ! RunCallback(args, pos, cb, client, dispatcher,history)
-      }
+
+      // Execute the returned operation as the next step of this calculation.
+      case AndThen(op) =>
+         server.actor ! RunOperation(op, pos, client, Some(dispatcher))
+
+      // This result needs to know how to load layer information.
+      case LayerResult(f) =>
+        val value = f(server.layerLoader)
+        val result = PositionedResult(Complete(value, history.withResult(value)),pos)
+        client ! result
+
     }
   }
 }

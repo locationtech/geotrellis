@@ -7,7 +7,7 @@ class CycleRemover[V] {
 
   private class VertexInfoDatabase(graph: Graph[V]) {
 
-    def getSources: Set[V] = sources
+    def runs: Set[V] = sources
 
     def getSinks: Set[V] = sinks
 
@@ -105,7 +105,7 @@ class CycleRemover[V] {
       processSinks()
 
       @tailrec def processSources() {
-        val sources = db.getSources
+        val sources = db.runs
         if (sources.nonEmpty) {
           for (v ← sources) {
             db.removeVertex(v)

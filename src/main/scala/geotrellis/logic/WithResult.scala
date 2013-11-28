@@ -10,7 +10,7 @@ import geotrellis.process._
  * on the Operation monad
  */
 case class WithResult[A, Z](a:Op[A])(call:A => Op[Z]) extends Op[Z] {
-  def _run(context:Context) = runAsync(a.flatMap(call) :: Nil)
+  def _run() = runAsync(a.flatMap(call) :: Nil)
   val nextSteps:Steps = {
     case a :: Nil => Result(a.asInstanceOf[Z])
   }

@@ -86,7 +86,7 @@ class ZonalPercentageSpec extends FunSpec
         )
       )
 
-      val result = run(ZonalPercentage(r,zones))
+      val result = get(ZonalPercentage(r,zones))
 
       val (cols,rows) = (result.rasterExtent.cols, result.rasterExtent.rows)
       for(col <- 0 until cols) {
@@ -177,9 +177,9 @@ class ZonalPercentageSpec extends FunSpec
         )
       )
 
-      val result = runSource(rs.zonalPercentage(zonesSource))
-      val r = runSource(rs)
-      val zones = runSource(zonesSource)
+      val result = get(rs.zonalPercentage(zonesSource))
+      val r = get(rs)
+      val zones = get(zonesSource)
       val (cols,rows) = (r.rasterExtent.cols, r.rasterExtent.rows)
       for(col <- 0 until cols) {
         for(row <- 0 until rows) {

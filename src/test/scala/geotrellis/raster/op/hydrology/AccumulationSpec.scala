@@ -5,16 +5,13 @@ import geotrellis.raster._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.junit.JUnitRunner 
-import org.junit.Assert._
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class AccumulationSpec extends FunSpec 
-                 with ShouldMatchers 
-                 with TestServer 
-                 with RasterBuilders {
+                          with ShouldMatchers 
+                          with TestServer 
+                          with RasterBuilders {
 
   describe("Accumulation"){
     it("Calulates the accumulation of water using a flow dirrection raster"){

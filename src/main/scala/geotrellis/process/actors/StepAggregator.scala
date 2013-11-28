@@ -32,7 +32,7 @@ case class StepAggregator[T](val server:Server,
 
   // These results won't (necessarily) share any type info with each other, so
   // we have to use Any as the least-upper type bound :(
-  val results = Array.fill[Option[InternalCalculationResult[Any]]](args.length)(None)
+  val results = Array.fill[Option[InternalOperationResult[Any]]](args.length)(None)
 
   // Just after starting the actor, we need to dispatch out the child
   // operations to be run. If none of those existed, we should run the
@@ -97,7 +97,7 @@ case class StepAggregator[T](val server:Server,
 
   // Actor event loop
   def receive = {
-    case OperationResult(childResult,  pos) => {
+    case PositionedResult(childResult,  pos) => {
       results(pos) = Some(childResult)
       if (!isDone) {
       } else if (hasError) {

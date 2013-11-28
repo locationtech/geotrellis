@@ -7,14 +7,11 @@ import geotrellis.source._
 import geotrellis.feature._
 import geotrellis.testutil._
 import math.{max,min,round}
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 import geotrellis.feature.op.geometry.GetEnvelope
 import geotrellis.feature.op.geometry.Intersect
 import PolygonRasterizer._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class RasterizePolygonSpec extends FunSuite 
                               with TestServer
                               with RasterBuilders {
@@ -116,82 +113,10 @@ class RasterizePolygonSpec extends FunSuite
      // LoadWKT()
   }
 
-  // Commented out because Rasterizer does not include cells when the cell centers
-  // are the border points of the polygon in this case. I'm not certain if this
-  // is the correct functionality, see issue #620
-  // test("Polygon rasterization over a tiled raster source") {
-  //   val tiledRS =
-  //     createRasterSource(
-  //       Array(   1,  2,  3,   4,  5,  6,    7,  8,  9,
-  //               10, 11, 12,  13, 14, 15,   16, 17, 18,
-
-  //               20, 21, 22,  23, 24, 25,   26, 27, 28,
-  //               31, 32, 33,  34, 35, 36,   37, 38, 39
-  //       ),
-  //       3,2,3,2)
-
-  //   val tiledR = runSource(tiledRS)
-
-  //   def out(t:(Double,Double)) = { (t._1 - 0.0001,t._2 + 0.0001) }
-  //   val poly = {
-  //     val re = tiledR.rasterExtent
-  //     val polyPoints = Seq(
-  //       re.gridToMap(2,1), out(re.gridToMap(4,0)),re.gridToMap(7,2),
-  //       re.gridToMap(5,3), re.gridToMap(2,2),re.gridToMap(2,1)
-  //     )
-  //     Polygon(polyPoints, 0)
-  //   }
-
-  //   val expectedCells = Seq(
-  //            5,/*(4,0),*/
-  //       12,13,14,15,/*(2,1),(3,1),(4,1),(5,1),*/
-  //       21,22,23,24,25,26,/*(2,2),(3,2),(4,2),(5,2),(6,2),(7,2),*/
-  //               36/*(5,3)*/
-  //   )
-    
-  //   //      Polygon vertices are 0's (also contained cells
-  //   //      X's are contained cells
-  //   //
-  //   //       *  *  *    *  0  *    *  *  *
-  //   //       *  *  0    X  X  X    *  *  *
-  //   //
-  //   //       *  *  0    X  X  X    X  0  *
-  //   //       *  *  *    *  *  0    *  *  *
-  //   //
-  //   val tiledCells = collection.mutable.Set[Int]()
-
-  //   val tiles = run(logic.Collect(tiledRS.tiles))
-  //   tiles.map { tile =>
-  //     Rasterizer.foreachCellByFeature(poly, tile.rasterExtent) (new Callback[Geometry,Int] {
-  //       def apply(col: Int, row: Int, g: Geometry[Int]) {
-  //         tiledCells += tile.get(col,row)
-  //       }
-  //     })
-  //   }
-
-  //   val nonTiledCells = collection.mutable.Set[Int]()
-  //   Rasterizer.foreachCellByFeature(poly, tiledR.rasterExtent) (new Callback[Geometry,Int] {
-  //     def apply(col: Int, row: Int, g: Geometry[Int]) {
-  //       nonTiledCells += tiledR.get(col,row)
-  //     }
-  //   })
-
-  //   withClue("Tiled does not match non tiled: ") {
-  //     nonTiledCells.toSeq.sorted should be (tiledCells.toSeq.sorted)
-  //   }
-
-  //   val burnedR = Rasterizer.rasterizeWithValue(poly, tiledR.rasterExtent)(x => 1)
-  //   println(burnedR.asciiDraw)
-      
-  //   withClue("Tiled does not match expected: ") {
-  //     tiledCells.toSeq.sorted should be (expectedCells.toSeq.sorted)
-  //   }
-  // }
-
   test("failing example should work") {
     val geojson = """{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[35.092945313732635,-85.4351806640625],[35.06147690849717,-85.440673828125],[35.08620310578525,-85.37200927734375]]]}}"""
     val fOp = io.LoadGeoJsonFeature(geojson)
-    val f = run(fOp)
+    val f = get(fOp)
     val p = Polygon(List((-9510600.807354769, 4176519.1962707597), (-9511212.30358105,4172238.854275199), (-9503568.600752532,4175602.1747499597), (-9510600.807354769,4176519.1962707597)),())
     val re = RasterExtent(Extent(-9509377.814902207,4174073.2405969054,-9508766.318675926,4174684.736823185),2.3886571339098737,2.3886571339044167,256,256)
     val r = Rasterizer.rasterizeWithValue(p, re)( (a:Unit) => 1 )
@@ -267,7 +192,7 @@ class RasterizePolygonSpec extends FunSuite
                                 .split("_")
                                 .last)
 //      println("count: " + count)
-      val g1 = run(io.LoadWkt(json))
+      val g1 = get(io.LoadWkt(json))
       val p1 = Polygon(g1.geom, ())
       var sum = 0
       val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)

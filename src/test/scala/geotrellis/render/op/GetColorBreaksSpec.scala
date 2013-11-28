@@ -27,7 +27,7 @@ class GetColorBreaksSpec extends FunSpec
       val h = GetHistogram(Literal(testRaster))
       val (g, y, o, r) = (0x00ff00ff, 0xffff00ff, 0xff7f00ff, 0xff0000ff)
       val colors = Array(g, y, o, r)
-      val colorBreaks = run(GetColorBreaks(h, colors))
+      val colorBreaks = get(GetColorBreaks(h, colors))
       colorBreaks.limits should be (Array(12, 15, 66, 95))
       colorBreaks.colors should be (Array(g, y, o, r))
     }

@@ -13,11 +13,12 @@ import org.scalatest.matchers.ShouldMatchers
 
 import scala.math.abs
 
-class Arg32Spec extends FunSpec with MustMatchers with ShouldMatchers {
+class Arg32Spec extends FunSpec 
+                   with MustMatchers 
+                   with ShouldMatchers {
   val nd = NODATA
 
   describe("An Arg32Reader") {
-    val server = TestServer.server
 
     val path1 = "src/test/resources/fake.img32.json"
 

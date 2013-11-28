@@ -25,7 +25,7 @@ case class FlattenGeometry[D](g1: Op[Geometry[D]]) extends Operation[List[Geomet
     }   
   }
 
-  def _run(context: Context) = runAsync(List(g1))
+  def _run() = runAsync(List(g1))
   val nextSteps: Steps = {
     case a :: Nil => {
       val g = a.asInstanceOf[Geometry[D]]

@@ -35,6 +35,8 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
   else 
     ""
 
+  private[process] val layerLoader = new LayerLoader(this)
+
   def startUp:Unit = ()
 
   def shutdown():Unit = { 
@@ -56,40 +58,46 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
 
   def log(msg:String) = if(debug) println(msg)
 
-  def runSource[T:Manifest](src:DataSource[_,T]):T =
-    run(src.get)
-
-  def getSource[T:Manifest](src:DataSource[_,T]):CalculationResult[T] =
-    getResult(src.get)
+  def get[T](src:DataSource[_,T]):T =
+    run(src) match {
+      case Complete(value, _) => value
+      case Error(msg, trace) =>
+        println(s"Operation Error. Trace: $trace")
+        sys.error(msg)
+    }
   
-  def run[T:Manifest](op:Op[T]):T = 
-    getResult(op) match {
+  def get[T](op:Op[T]):T = 
+    run(op) match {
       case Complete(value, _) => value
       case Error(msg, trace) =>
         println(s"Operation Error. Trace: $trace")
         sys.error(msg)
     }
 
-  def getResult[T:Manifest](op:Op[T]):CalculationResult[T] = _run(op)
+  def run[T](src:DataSource[_,T]):OperationResult[T] =
+    run(src.get)
 
-  private[process] def _run[T:Manifest](op:Op[T]):CalculationResult[T] = {
+  def run[T](op:Op[T]):OperationResult[T] = 
+    _run(op)
+
+  private[process] def _run[T](op:Op[T]):OperationResult[T] = {
     log("server._run called with %s" format op)
 
     val d = Duration.create(60000, TimeUnit.SECONDS)
     implicit val t = Timeout(d)
     val future = op match {
       case DispatchedOperation(wrappedOp,dispatcher) => 
-        (actor ? RunDispatched(wrappedOp, dispatcher)).mapTo[OperationResult[T]]
+        (actor ? RunDispatched(wrappedOp, dispatcher)).mapTo[PositionedResult[T]]
 
       case op:Op[_] => 
-        (actor ? Run(op)).mapTo[OperationResult[T]]
+        (actor ? Run(op)).mapTo[PositionedResult[T]]
     }
 
     val result = Await.result(future, d)
 
     result match {
-      case OperationResult(c:Complete[_], _) => c.asInstanceOf[Complete[T]]
-      case OperationResult(e:Error, _) => e
+      case PositionedResult(c:Complete[_], _) => c.asInstanceOf[Complete[T]]
+      case PositionedResult(e:Error, _) => e
       case r => sys.error("unexpected status: %s" format r)
     }
   }

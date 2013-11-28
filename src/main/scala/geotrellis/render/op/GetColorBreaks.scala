@@ -22,7 +22,7 @@ case class BuildColorBreaks(breaks:Op[Array[Int]], colors:Op[Array[Int]])
 case class GetColorBreaks(h:Op[Histogram], cs:Op[Array[Int]])
      extends Op[ColorBreaks] {
 
-  def _run(context:Context) = runAsync(List(h, cs))
+  def _run() = runAsync(List(h, cs))
 
   val nextSteps:Steps = {
     case (histogram:Histogram) :: (colors:Array[_]) :: Nil => {

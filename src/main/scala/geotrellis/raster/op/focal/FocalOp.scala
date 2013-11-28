@@ -116,7 +116,7 @@ trait FocalOperation[T] extends Operation[T]
  */
 abstract class FocalOperation0[T](r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) 
          extends FocalOperation[T] {
-  def _run(context:Context) = runAsync(List('init,r,n,tns.flatMap(_.getNeighbors)))
+  def _run() = runAsync(List('init,r,n,tns.flatMap(_.getNeighbors)))
   def productArity = 3
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation0[_]]
   def productElement(index:Int) = index match {
@@ -166,7 +166,7 @@ abstract class FocalOperation0[T](r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNei
 abstract class FocalOperation1[A,T](r:Op[Raster],n:Op[Neighborhood], tns:Op[TileNeighbors], a:Op[A]) 
     extends FocalOperation[T] {
   var rasterOp = r
-  def _run(context:Context) = runAsync(List('init,rasterOp,n,tns.flatMap(_.getNeighbors),a))
+  def _run() = runAsync(List('init,rasterOp,n,tns.flatMap(_.getNeighbors),a))
   def productArity = 4
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation1[_,_]]
   def productElement(index:Int) = index match {
@@ -216,7 +216,7 @@ abstract class FocalOperation2[A,B,T](r:Op[Raster],n:Op[Neighborhood],tns:Op[Til
                                       a:Op[A],b:Op[B])
          extends FocalOperation[T] {
   var rasterOp = r
-  def _run(context:Context) = runAsync(List('init,rasterOp,n,tns.flatMap(_.getNeighbors),a,b))
+  def _run() = runAsync(List('init,rasterOp,n,tns.flatMap(_.getNeighbors),a,b))
   def productArity = 5
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation2[_,_,_]]
   def productElement(index:Int) = index match {
@@ -270,7 +270,7 @@ abstract class FocalOperation3[A,B,C,T](r:Op[Raster],n:Op[Neighborhood],tns:Op[T
                                         a:Op[A],b:Op[B],c:Op[C]) 
          extends FocalOperation[T] {
   var rasterOp:Operation[Raster] = r 
-  def _run(context:Context) = runAsync(List('init,rasterOp,n,tns.flatMap(_.getNeighbors),a,b,c))
+  def _run() = runAsync(List('init,rasterOp,n,tns.flatMap(_.getNeighbors),a,b,c))
   def productArity = 5
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation3[_,_,_,_]]
   def productElement(index:Int) = index match {
@@ -326,7 +326,7 @@ abstract class FocalOperation4[A,B,C,D,T](r:Op[Raster],n:Op[Neighborhood],tns:Op
                                           a:Op[A],b:Op[B],c:Op[C],d:Op[D])
          extends FocalOperation[T] {
   var rasterOp = r
-  def _run(context:Context) = runAsync(List('init,rasterOp,n,tns.flatMap(_.getNeighbors),a,b,c,d))
+  def _run() = runAsync(List('init,rasterOp,n,tns.flatMap(_.getNeighbors),a,b,c,d))
   def productArity = 6
   def canEqual(other:Any) = other.isInstanceOf[FocalOperation4[_,_,_,_,_]]
   def productElement(index:Int) = index match {

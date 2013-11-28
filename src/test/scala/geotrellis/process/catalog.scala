@@ -106,7 +106,7 @@ class CatalogSpec extends FunSpec
     } 
 
     it("should create IntConstant arg") {
-      val result = run(io.LoadRaster("constant"))
+      val result = get(io.LoadRaster("constant"))
       assert(result.asInstanceOf[ArrayRaster].data.isInstanceOf[IntConstant])
     }
 

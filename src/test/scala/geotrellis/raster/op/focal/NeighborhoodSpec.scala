@@ -8,7 +8,6 @@ import scala.math._
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class NeighborhoodSpec extends FunSpec with ShouldMatchers {
   describe("Circle") {
     it("should mask all values outside the radius of a 7x7 circle neighborhood") {

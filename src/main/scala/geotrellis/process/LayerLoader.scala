@@ -1,9 +1,13 @@
-package geotrellis
+package geotrellis.process
 
 import geotrellis.process._
 import geotrellis.util.Filesystem
 
-class Context(server:Server) {
+/** LayerLoader will be passed into Operation[T]'s that
+  * mix in the LayerOp trait right before 'run' is called
+  * on the operation step and cleared afterwards.
+  */
+class LayerLoader(server:Server) {
   /**
    * Clients can call the raster path loading functions
    * with either the .json metadata (prefered) or with
@@ -51,6 +55,9 @@ class Context(server:Server) {
       case None => sys.error(s"couldn't load raster at ${processPath(path)}")
     }
 
+  /**
+   * Load RasterLayer from the catalog from a url.
+   */
   def getRasterLayerFromUrl(url:String):RasterLayer = 
     RasterLayer.fromUrl(url) match {
       case Some(layer) => layer

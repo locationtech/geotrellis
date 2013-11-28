@@ -10,7 +10,6 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 import geotrellis.statistics._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class HistogramSpec extends FunSpec with MustMatchers with ShouldMatchers {
   def stringToInts(s:String) = {
     s.toCharArray.map { _.toByte - 32 }

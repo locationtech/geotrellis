@@ -24,9 +24,12 @@ object LoadRaster {
 case class LoadRaster(ds:Op[Option[String]], 
                       n:Op[String], 
                       r:Op[Option[RasterExtent]]) extends Op[Raster] {
-  def _run(context:Context) = runAsync(List(ds, n, r, context))
+  def _run() = runAsync(List(ds, n, r))
   val nextSteps:Steps = {
-    case (ds:Option[String]) :: (name:String) :: (re:Option[RasterExtent]) :: (context:Context) :: Nil => 
-      Result(context.getRasterLayer(ds,name).getRaster(re))
+    case (ds:Option[_]) :: (name:String) :: (re:Option[_]) :: Nil => 
+      LayerResult { layerLoader =>
+        layerLoader.getRasterLayer(ds.asInstanceOf[Option[String]],name)
+                   .getRaster(re.asInstanceOf[Option[RasterExtent]])
+      }
   }
 }

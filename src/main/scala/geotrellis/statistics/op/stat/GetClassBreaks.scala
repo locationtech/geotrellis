@@ -7,7 +7,7 @@ import geotrellis.statistics._
   * Generate quantile class breaks for a given raster.
   */
 case class GetClassBreaks(h:Op[Histogram], n:Op[Int]) extends Op[Array[Int]] {
-  def _run(context:Context) = runAsync(List(h, n))
+  def _run() = runAsync(List(h, n))
 
   val nextSteps:Steps = {
     case (histogram:Histogram) :: (num:Int) :: Nil => step2(histogram, num)

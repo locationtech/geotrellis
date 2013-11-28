@@ -7,7 +7,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class GetHistogramSpec extends FunSpec 
                           with TestServer
                           with ShouldMatchers {
@@ -23,7 +22,7 @@ class GetHistogramSpec extends FunSpec
 
   describe("GetHistogram") {
     it("should get correct values from test raster.") {
-      val histo = run(GetHistogram(testRaster))
+      val histo = get(GetHistogram(testRaster))
 
       histo.getTotalCount should be (18)
       histo.getItemCount(11) should be (2)

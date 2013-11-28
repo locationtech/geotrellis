@@ -21,17 +21,21 @@ object LoadTile {
     LoadTile(Some(ds),n,col,row,None)
 }
 
-case class LoadTile(ds:Op[Option[String]],n:Op[String],col:Op[Int],row:Op[Int],targetExtent:Op[Option[RasterExtent]]) 
-    extends Op[Raster] {
-  def _run(context:Context) = runAsync(List(ds, n, col, row, targetExtent, context))
+case class LoadTile(ds:Op[Option[String]],
+                    name:Op[String],
+                    col:Op[Int],
+                    row:Op[Int],
+                    targetExtent:Op[Option[RasterExtent]]) extends Op[Raster] {
+  def _run() = runAsync(List(ds, name, col, row, targetExtent))
   val nextSteps:Steps = {
-    case (ds:Option[String]) :: 
+    case (ds:Option[_]) :: 
          (n:String) :: 
          (col:Int) :: 
          (row:Int) :: 
-         (te:Option[RasterExtent]) ::
-         (context:Context) :: Nil =>
-      val layer = context.getRasterLayer(ds,n)
-      Result(layer.getTile(col,row,te))
+         (te:Option[_]) :: Nil =>
+      LayerResult { layerLoader =>
+        val layer = layerLoader.getRasterLayer(ds.asInstanceOf[Option[String]],n)
+        layer.getTile(col,row,te.asInstanceOf[Option[RasterExtent]])
+      }
   }
 }
