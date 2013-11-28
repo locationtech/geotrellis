@@ -15,7 +15,7 @@ class VerticalFlipTest extends FunSuite {
   val server = TestServer.server
 
   test("load valid raster") {
-    val op1 = io.LoadRaster("quadborder")
+    val op1 = io.LoadRaster("test:fs","quadborder")
     val op2 = VerticalFlip(op1)
     val op3 = VerticalFlip(op2)
 

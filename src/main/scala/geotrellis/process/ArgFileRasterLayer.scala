@@ -6,18 +6,26 @@ import geotrellis.data.arg.ArgReader
 
 import com.typesafe.config.Config
 
+import java.io.File
+
 object ArgFileRasterLayerBuilder
 extends RasterLayerBuilder {
   def apply(jsonPath:String, json:Config):Option[RasterLayer] = {
-    val path = 
+    val f = 
       if(json.hasPath("path")) {
-        json.getString("path")
+        val f = new File(json.getString("path"))
+        if(f.isAbsolute) {
+          f
+        } else {
+          new File(new File(jsonPath).getParent, f.getPath)
+        }
       } else {
-        Filesystem.basename(jsonPath) + ".arg"
+        // Default to a .arg file with the same name as the layer name.
+        new File(new File(jsonPath).getParent, getName(json) + ".arg")
       }
 
-    if(!new java.io.File(path).exists) {
-      System.err.println(s"[ERROR] Raster in catalog points to path $path, but file does not exist")
+    if(!f.exists) {
+      System.err.println(s"[ERROR] Raster in catalog points to path ${f.getAbsolutePath}, but file does not exist")
       System.err.println("[ERROR]   Skipping this raster layer...")
       None
     } else {
@@ -36,7 +44,7 @@ extends RasterLayerBuilder {
         getYskew(json),
         getCacheFlag(json))
 
-      Some(new ArgFileRasterLayer(info,path))
+      Some(new ArgFileRasterLayer(info,f.getAbsolutePath))
     }
   }
 }
@@ -60,4 +68,3 @@ extends UntiledRasterLayer(info) {
 
   private def getReader = new ArgReader(rasterPath)
 }
-

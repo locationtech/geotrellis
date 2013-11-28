@@ -5,6 +5,7 @@
   "datatype": "int32", 
   "epsg": 3785, 
   "layer": "fake.img", 
+  "path": "fake.img32.arg",
   "rows": 4, 
   "type": "arg", 
   "xmax": 22.5, 

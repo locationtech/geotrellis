@@ -50,9 +50,22 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String,sour
 
   def initCache(cache:Cache):Unit = initCache(Some(cache))
 
-  def getRasterLayerByName(name:String):Option[RasterLayer] = {
-    stores.values.flatMap(_.getRasterLayerByName(name)).headOption
-  }
+  def getRasterLayer(name:String):Option[RasterLayer] =
+    stores.values.flatMap(_.getRasterLayer(name)).toList match {
+      case Nil => None
+      case layer :: Nil => Some(layer)
+      case _ => 
+        sys.error(s"There are multiple layers named '$name' in the catalog. You must specify a datastore")
+    }
+
+  def getRasterLayer(datastore:String,name:String):Option[RasterLayer] =
+    getRasterLayer(Some(datastore),name)
+
+  def getRasterLayer(datastore:Option[String],name:String):Option[RasterLayer] =
+    datastore match {
+      case Some(ds) => stores.get(ds).flatMap(_.getRasterLayer(name))
+      case None => getRasterLayer(name)
+    }
 }
 
 object Catalog {

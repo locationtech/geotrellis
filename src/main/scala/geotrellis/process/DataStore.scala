@@ -88,7 +88,5 @@ case class DataStore(name:String, params:Map[String, String],catalogPath:String)
     value == "true" || value == "yes" || value == "1"
   } else { false }
 
-  def getRasterLayerByName(name:String):Option[RasterLayer] = {
-    layers.get(name)
-  }
+  def getRasterLayer(name:String):Option[RasterLayer] = layers.get(name)
 }
