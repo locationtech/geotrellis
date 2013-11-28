@@ -28,7 +28,8 @@ trait RasterSourceLike[+Repr <: RasterSource]
 
   def get():Op[Raster] =
     (rasterDefinition,logic.Collect(tiles)).map { (rd,tileSeq) =>
-      TileRaster(tileSeq,rd.re,rd.tileLayout).toArrayRaster
+      if(tileSeq.size == 1) tileSeq(0)
+      else TileRaster(tileSeq,rd.re,rd.tileLayout).toArrayRaster
     }
 
   def global[That](f:Raster=>Raster)

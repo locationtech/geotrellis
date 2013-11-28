@@ -70,7 +70,8 @@ abstract class RasterLayer(val info:RasterLayerInfo) {
 }
 
 abstract class UntiledRasterLayer(info:RasterLayerInfo) extends RasterLayer(info) {
-  def getTile(tileCol:Int, tileRow:Int, targetExtent:Option[RasterExtent]) = getRaster(targetExtent)
+  def getTile(tileCol:Int, tileRow:Int, targetExtent:Option[RasterExtent]) =
+    getRaster(targetExtent)
 }
 
 object RasterLayer {
