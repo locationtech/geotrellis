@@ -74,7 +74,8 @@ var valueViewer = (function() {
                 data: { 'store' : layerViewer.getLayer().store,
                         'layer' : layerViewer.getLayer().name,
                         'lat': latlng.lat,
-                        'lng': latlng.lng },
+                        'lng': latlng.lng,
+                        'size': 3 },
                 dataType: "json",
                 success: function(data) {
                     if(data.success) {
@@ -168,9 +169,10 @@ var layerViewer = (function() {
             layer = ls; 
             if(!layer) { return; }
             
-            var latlong = layer.rasterExtent.latlong
-            var southWest = new L.LatLng(latlong.latmin, latlong.longmin);
-            var northEast = new L.LatLng(latlong.latmax, latlong.longmax);
+
+            var bbox = layer.bbox
+            var southWest = new L.LatLng(bbox.latmin, bbox.lngmin);
+            var northEast = new L.LatLng(bbox.latmax, bbox.lngmax);
             var bounds = new L.LatLngBounds(southWest, northEast);
             if(!bounds.contains(map.getBounds())) {
                 map.fitBounds(bounds);
@@ -292,8 +294,12 @@ $.getJSON(gtUrl('catalog'), function(catalog) {
             onActivate: function(node) {
                 if(!node.data.isFolder) {
                     $.getJSON(gtUrl("layer/info?layer="+node.data.title+"&store="+node.data.store), function(layer) {
-                        layerViewer.setLayer(layer);
-                        layerInfo.setLayer(layer);
+                        $.getJSON(gtUrl("layer/bbox?layer="+node.data.title+"&store="+node.data.store), function(bbox) {
+                            layer.store = node.data.store;
+                            layer.bbox = bbox;
+                            layerViewer.setLayer(layer);
+                            layerInfo.setLayer(layer);
+                        });
                     });
                 }
             },

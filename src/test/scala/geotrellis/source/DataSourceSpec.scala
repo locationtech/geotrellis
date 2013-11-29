@@ -33,6 +33,15 @@ class DataSourceSpec extends FunSpec
       }
     }
 
+    it("should converge a tiled raster") {
+      val s = 
+        RasterSource("mtsthelens_tiled_cached")
+          .renderPng
+
+      get(s)
+
+    }
+
     it("should return a RasterSource when possible") { 
       val d1 = getRasterSource
 

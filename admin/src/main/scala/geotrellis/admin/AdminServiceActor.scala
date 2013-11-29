@@ -26,7 +26,7 @@ trait AdminService extends HttpService {
 
   val staticContentPath:String
 
-  val serviceRoute =
+  lazy val serviceRoute =
     get {
       pathPrefix("gt") {
         path("catalog") {
@@ -37,11 +37,25 @@ trait AdminService extends HttpService {
         } ~
         pathPrefix("layer") {
           layerRoute
+//          complete("test")
         }
       }
     }
 
-  val layerRoute:Route =
+  lazy val layerRoute2:Route =
+    get {
+      path("breaks") {
+        // parameters('store,'layer,'numBreaks.as[Int]) { (store,layer,numBreaks) =>
+        //   GeoTrellis.run(LayerService.getBreaks(LayerId(store,layer),numBreaks)) match {
+        //     case Complete(v,_) => complete(v)
+        //     case Error(message,_) => failWith(new RuntimeException(message))
+        //   }
+        // }
+        complete("test")
+      }
+    }
+
+  lazy val layerRoute:Route =
     path("breaks") {
       parameters('store,'layer,'numBreaks.as[Int]) { (store,layer,numBreaks) =>
         GeoTrellis.run(LayerService.getBreaks(LayerId(store,layer),numBreaks)) match {
@@ -52,13 +66,20 @@ trait AdminService extends HttpService {
     } ~
     path("info") {
       parameters('store,'layer) { (store,layer) =>
-        println("AHAFHSAHFSHFAHSFHSAFAHSFFA")
         GeoTrellis.run(LayerService.getInfo(LayerId(store,layer))) match {
           case Complete(v,_) => complete(v)
           case Error(message,_) => failWith(new RuntimeException(message))
         }
       }
     } ~ 
+    path("bbox") {
+      parameters('store,'layer) { (store,layer) =>
+        GeoTrellis.run(LayerService.getBoundingBox(LayerId(store,layer))) match {
+          case Complete(v,_) => complete(v)
+          case Error(message,_) => failWith(new RuntimeException(message))
+        }
+      }
+    } ~
     path("render") {
       parameters(
         'bbox,
@@ -74,7 +95,7 @@ trait AdminService extends HttpService {
             respondWithMediaType(MediaTypes.`image/png`) {
               complete(v)
             }
-          case Error(message,_) => failWith(new RuntimeException(message))
+          case Error(message,trace) => failWith(new RuntimeException(message+trace))
         }
       }
     } ~ 
@@ -84,7 +105,7 @@ trait AdminService extends HttpService {
         'layer,
         'lat.as[Double],
         'lng.as[Double],
-        'size.as[Int]) { (store,layer,lat,lng,size) =>
+        'size.as[Int] ? 7) { (store,layer,lat,lng,size) =>
         val layerId = LayerId(store,layer)
         val (x,y) = srs.LatLng.transform(lng,lat,srs.WebMercator)
 

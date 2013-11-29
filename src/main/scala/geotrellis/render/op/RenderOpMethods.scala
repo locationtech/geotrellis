@@ -17,7 +17,10 @@ trait RenderOpMethods[+Repr <: RasterDS] { self: Repr =>
   def color(breaksToColors:Map[Double,Int],options:ColorMapOptions)(implicit d:DI):RasterSource =
     mapOp(ColorRaster(_,breaksToColors,options))
 
-  def renderPng(colorRamp:ColorRamp) = 
+  def renderPng():ValueSource[Array[Byte]] =
+    renderPng(ColorRamps.BlueToRed)
+
+  def renderPng(colorRamp:ColorRamp):ValueSource[Array[Byte]] = 
     self.converge.mapOp(SimpleRenderPng(_,colorRamp))
 
   def renderPng(colorBreaks:ColorBreaks):ValueSource[Array[Byte]] = 

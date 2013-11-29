@@ -14,13 +14,13 @@ object Main {
     val host = config.getString("geotrellis.admin.host")
     val port = config.getInt("geotrellis.admin.port")
     val staticContentPath = new java.io.File(config.getString("geotrellis.admin.static-content")).getAbsolutePath
+    GeoTrellis.init
     println(s"SERVERING STATIC CONTENT FROM $staticContentPath")
     try {
       implicit val system = GeoTrellis.server.system
 
       val service = system.actorOf(Props(classOf[AdminServiceActor],staticContentPath), "admin-service")
       IO(Http) ! Http.Bind(service, host, port = port)
-
     } catch {
       case _:Exception =>
         GeoTrellis.shutdown
