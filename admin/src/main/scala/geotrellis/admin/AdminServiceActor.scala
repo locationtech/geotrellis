@@ -37,28 +37,14 @@ trait AdminService extends HttpService {
         } ~
         pathPrefix("layer") {
           layerRoute
-//          complete("test")
         }
-      }
-    }
-
-  lazy val layerRoute2:Route =
-    get {
-      path("breaks") {
-        // parameters('store,'layer,'numBreaks.as[Int]) { (store,layer,numBreaks) =>
-        //   GeoTrellis.run(LayerService.getBreaks(LayerId(store,layer),numBreaks)) match {
-        //     case Complete(v,_) => complete(v)
-        //     case Error(message,_) => failWith(new RuntimeException(message))
-        //   }
-        // }
-        complete("test")
       }
     }
 
   lazy val layerRoute:Route =
     path("breaks") {
       parameters('store,'layer,'numBreaks.as[Int]) { (store,layer,numBreaks) =>
-        GeoTrellis.run(LayerService.getBreaks(LayerId(store,layer),numBreaks)) match {
+        LayerService.getBreaks(LayerId(store,layer),numBreaks).run match {
           case Complete(v,_) => complete(v)
           case Error(message,_) => failWith(new RuntimeException(message))
         }
@@ -66,7 +52,7 @@ trait AdminService extends HttpService {
     } ~
     path("info") {
       parameters('store,'layer) { (store,layer) =>
-        GeoTrellis.run(LayerService.getInfo(LayerId(store,layer))) match {
+        LayerService.getInfo(LayerId(store,layer)).run match {
           case Complete(v,_) => complete(v)
           case Error(message,_) => failWith(new RuntimeException(message))
         }
@@ -74,7 +60,7 @@ trait AdminService extends HttpService {
     } ~ 
     path("bbox") {
       parameters('store,'layer) { (store,layer) =>
-        GeoTrellis.run(LayerService.getBoundingBox(LayerId(store,layer))) match {
+        LayerService.getBoundingBox(LayerId(store,layer)).run match {
           case Complete(v,_) => complete(v)
           case Error(message,_) => failWith(new RuntimeException(message))
         }
@@ -90,7 +76,7 @@ trait AdminService extends HttpService {
         'breaks,
         'colorRamp) { (bbox,width,height,store,layer,breaks,colorRamp) =>
         val layerId = LayerId(store,layer)
-        GeoTrellis.run(LayerService.render(bbox,width,height,layerId,breaks,colorRamp)) match {
+        LayerService.render(bbox,width,height,layerId,breaks,colorRamp).run match {
           case Complete(v,_) => 
             respondWithMediaType(MediaTypes.`image/png`) {
               complete(v)
@@ -109,7 +95,6 @@ trait AdminService extends HttpService {
         val layerId = LayerId(store,layer)
         val (x,y) = srs.LatLng.transform(lng,lat,srs.WebMercator)
 
-        val source = 
         RasterSource(layerId)
           .converge
           .map { rast =>
@@ -127,12 +112,10 @@ trait AdminService extends HttpService {
          .map { values =>
             s""" { "success" : "1", "values" : [ ${values.mkString(",")} ] } """
           }
-
-        GeoTrellis.run(source) match {
-          case Complete(v,_) => complete(v)
-          case Error(message,_) => failWith(new RuntimeException(message))
-        }
-
+         .run match {
+            case Complete(v,_) => complete(v)
+            case Error(message,_) => failWith(new RuntimeException(message))
+          }
       }
     }
 }
