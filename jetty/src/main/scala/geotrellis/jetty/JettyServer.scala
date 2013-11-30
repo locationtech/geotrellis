@@ -1,4 +1,4 @@
-package geotrellis.rest
+package geotrellis.jetty
 
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.nio.SelectChannelConnector

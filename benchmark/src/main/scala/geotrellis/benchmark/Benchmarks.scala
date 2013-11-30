@@ -439,7 +439,7 @@ class BigMinTiled extends OperationBenchmark{
     val e = Extent(0.0, 0.0, (tileN * 2000.0), (tileN * 2000.0))
     val re = RasterExtent(e, 1.0, 1.0, tileN * 2000, tileN * 2000)
 
-    val layer = new TileSetRasterLayer(RasterLayerInfo("bit",
+    val layer = new TileSetRasterLayer(RasterLayerInfo(LayerId("bit"),
                                                        TypeByte,
                                                        re,
                                                        0,0,0),

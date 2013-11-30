@@ -1,12 +1,12 @@
-package geotrellis.admin.services
+package geotrellis.jetty.service
 
 import javax.servlet.http.HttpServletRequest
 import javax.ws.rs._
-import javax.ws.rs.core.{Response, Context, MediaType, MultivaluedMap}
+import javax.ws.rs.core.{Response, Context}
+
 import geotrellis._
-import geotrellis.admin._
-import geotrellis.admin.Json._
-import geotrellis.rest._
+import geotrellis.jetty._
+import geotrellis.service._
 
 import scala.collection.JavaConversions._
 
@@ -16,7 +16,7 @@ class CatalogService {
   def catalog(
     @Context req:HttpServletRequest
   ):Response = {
-    OK.json(GeoTrellis.server.catalog.toJson)
+    OK.json(CatalogService.getJson)
       .allowCORS()
   }
 }

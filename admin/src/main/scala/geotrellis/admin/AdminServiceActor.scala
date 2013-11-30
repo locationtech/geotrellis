@@ -30,10 +30,10 @@ trait AdminService extends HttpService {
     get {
       pathPrefix("gt") {
         path("catalog") {
-          complete(CatalogService.asJson)
+          complete(CatalogService.getJson)
         } ~
         path("colors") {
-          complete(ColorRampMap.toJson)
+          complete(ColorRampMap.getJson)
         } ~
         pathPrefix("layer") {
           layerRoute

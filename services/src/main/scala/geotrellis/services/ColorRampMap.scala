@@ -25,7 +25,7 @@ object ColorRampMap {
   def get(s:String) = rampMap.get(s)
   def getOrElse(s:String,cr:ColorRamp) = rampMap.getOrElse(s,cr)
 
-  def toJson = {
+  def getJson = {
     val c = for(key <- rampMap.keys) yield {
       s"""{ "key": "$key", "image": "img/ramps/${key}.png" }"""
     }

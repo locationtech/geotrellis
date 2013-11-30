@@ -1,4 +1,4 @@
-package geotrellis.rest
+package geotrellis.jetty
 
 import geotrellis.process.Failure
 

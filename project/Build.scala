@@ -134,7 +134,7 @@ object GeotrellisBuild extends Build {
   lazy val jetty: Project =
     Project("jetty", file("jetty"))
       .settings(jettySettings: _*)
-      .dependsOn(root)
+      .dependsOn(root,services)
 
   lazy val jettySettings =
     Seq(

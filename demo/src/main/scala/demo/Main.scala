@@ -1,6 +1,6 @@
 package demo
 
-import geotrellis.rest.WebRunner
+import geotrellis.jetty.WebRunner
 
 object Main {
   def main(args: Array[String]) = WebRunner.run()

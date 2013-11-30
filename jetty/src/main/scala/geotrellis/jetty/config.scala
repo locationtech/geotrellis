@@ -1,4 +1,4 @@
-package geotrellis.rest
+package geotrellis.jetty
 
 import com.typesafe.config.{ConfigFactory,Config}
 
@@ -6,7 +6,6 @@ import scala.collection.mutable
 
 case class ServerConfig(packages:Seq[String],
                         jetty:JettyConfig,
-                        admin:AdminConfig,
                         staticContentPath:Option[String])
 
 object ServerConfig {
@@ -25,15 +24,16 @@ object ServerConfig {
     } else { None }
 
     val jetty = JettyConfig.init(config)
-    val admin = AdminConfig.init(config)
 
-    if(admin.serveSite) {
-      packages += "geotrellis.admin.services"
+    val includeServices = config.hasPath("geotrellis.jetty.include-gt-services") &&
+                          config.getBoolean("geotrellis.jetty.include-gt-services")
+
+    if(includeServices) {
+      packages += "geotrellis.jetty.service"
     }
 
     ServerConfig(packages.toSeq,
                  jetty,
-                 admin,
                  staticContentPath)
   }
 }
@@ -68,19 +68,5 @@ object JettyConfig {
       }
 
     JettyConfig(host,port,corePoolSize,maximumPoolSize,keepAliveTime,serveStatic,contextPath)
-  }
-}
-
-case class AdminConfig(serveSite:Boolean,serveFromJar:Boolean)
-object AdminConfig {
-  def init():AdminConfig = init(ConfigFactory.load())
-  def init(config:Config):AdminConfig = {    
-    val serveSite = config.hasPath("geotrellis.admin.serve-site") &&
-                    config.getBoolean("geotrellis.admin.serve-site")
-
-    val serveFromJar = config.hasPath("geotrellis.admin.serve-from-jar") &&
-                       config.getBoolean("geotrellis.admin.serve-from-jar")
-
-    AdminConfig(serveSite,serveFromJar)
   }
 }

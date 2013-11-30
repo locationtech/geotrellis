@@ -1,11 +1,11 @@
-package geotrellis.rest
+package geotrellis.jetty
 
 import geotrellis._
 
 /**
  * Starts a webserver on the configured port that will serve any rest
  * services found in the package defined as 'rest-package' in the configuration file.
- * By default, the admin services are included, found in geotrellis.admin.services.
+ * By default, the example services are included, found in geotrellis.jetty.service.
  * Any classes defined in an included package with JAX-RS attributes will become REST services.
  */
 
@@ -38,11 +38,6 @@ object WebRunner {
           }
         server.withStaticContent(path)
         case None =>
-      }
-
-      if(config.admin.serveSite && config.admin.serveFromJar) {
-        server.withResourceContent("/webapp")
-        Logger.log(s"Including Admin Site...")
       }
 
       configServer(server)

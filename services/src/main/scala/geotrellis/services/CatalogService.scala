@@ -5,6 +5,6 @@ import geotrellis.service.Json._
 
 
 object CatalogService {
-  def asJson() =
+  def getJson() =
     GeoTrellis.server.catalog.toJson
 }

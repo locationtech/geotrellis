@@ -1,12 +1,11 @@
-package geotrellis.admin.services
+package geotrellis.jetty.service
 
 import javax.servlet.http.HttpServletRequest
 import javax.ws.rs._
 import javax.ws.rs.core.{Response, Context, MediaType, MultivaluedMap}
 import geotrellis._
-import geotrellis.admin._
-import geotrellis.admin.Json._
-import geotrellis.rest._
+import geotrellis.jetty._
+import geotrellis.service._
 
 @Path("/admin/colors")
 class Color {
@@ -15,11 +14,7 @@ class Color {
     @Context req:HttpServletRequest
   ):Response = {
     // Return JSON with information on color ramps.
-    val c = for(key <- Colors.rampMap.keys) yield {
-      s"""{ "key": "$key", "image": "img/ramps/${key}.png" }"""
-    }
-    val arr = "[" + c.mkString(",") + "]"
-    OK.json(s"""{ "colors": $arr }""")
+    OK.json(ColorRampMap.getJson)
       .allowCORS()
   }
 }
