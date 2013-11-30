@@ -81,9 +81,6 @@ extends RasterLayer(info) {
       case Some(re) =>
         // If a specific raster extent is asked for,
         // load an ArrayRasterData for the extent.
-        // TODO: Is this the best strategy? Or should
-        // tile rasters loaded with different extents\resolutions
-        // produce tiled rasters?
 
         // Create destination raster data
         val data = RasterData.emptyByType(info.rasterType,re.cols,re.rows)

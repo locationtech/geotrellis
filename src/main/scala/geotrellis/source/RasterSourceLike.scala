@@ -26,7 +26,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
   def tiles = self.elements
   def rasterDefinition:Op[RasterDefinition]
 
-  def get():Op[Raster] =
+  def convergeOp():Op[Raster] =
     (rasterDefinition,logic.Collect(tiles)).map { (rd,tileSeq) =>
       if(tileSeq.size == 1) tileSeq(0)
       else TileRaster(tileSeq,rd.re,rd.tileLayout).toArrayRaster

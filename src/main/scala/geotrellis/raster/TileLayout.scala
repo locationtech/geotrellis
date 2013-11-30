@@ -18,6 +18,7 @@ object TileLayout {
  * cols/rows) and also the size of each tile (in cols/rows of pixels).
  */
 case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int) {
+  def isTiled = tileCols > 1 || tileRows > 1
 
   /**
    * Return the total number of columns across all the tiles.

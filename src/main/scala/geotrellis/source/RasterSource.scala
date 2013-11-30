@@ -19,7 +19,7 @@ object RasterSource {
   def fromFile(path:String,rasterExtent:RasterExtent):RasterSource =
     fromFile(path,Some(rasterExtent))
 
-  def fromFile(path:String,rasterExtent:Option[RasterExtent]):RasterSource = {
+  def fromFile(path:String,targetExtent:Option[RasterExtent]):RasterSource = {
     val rasterLayer = io.LoadRasterLayerFromPath(path)
     val rasterDef = 
       rasterLayer map { layer =>
@@ -28,12 +28,20 @@ object RasterSource {
                          layer.info.tileLayout)
       }
 
-    val tileOps = rasterLayer.map { layer =>
-      (for(tileRow <- 0 until layer.info.tileLayout.tileRows;
-           tileCol <- 0 until layer.info.tileLayout.tileCols) yield {
-        Literal(layer.getTile(tileCol,tileRow,rasterExtent))
-      })
-    }
+    val tileOps = 
+      targetExtent match {
+        case re @ Some(_) =>
+          rasterLayer.map { layer =>
+            Seq(Literal(layer.getRaster(re)))
+          }
+        case None =>
+          rasterLayer.map { layer =>
+            (for(tileRow <- 0 until layer.info.tileLayout.tileRows;
+              tileCol <- 0 until layer.info.tileLayout.tileCols) yield {
+              Literal(layer.getTile(tileCol,tileRow))
+            })
+          }
+      }
 
     RasterSource(rasterDef,tileOps)
   }
@@ -63,12 +71,21 @@ object RasterSource {
     apply(rasterDef,Some(targetExtent))
 
   def apply(rasterDef:Op[RasterDefinition],targetExtent:Option[RasterExtent]):RasterSource = {
-    val tileOps = rasterDef.map { rd =>
-      (for(tileRow <- 0 until rd.tileLayout.tileRows;
-           tileCol <- 0 until rd.tileLayout.tileCols) yield {
-        io.LoadTile(rd.layerId,tileCol,tileRow,targetExtent)
-      })
-    }
+    val tileOps = 
+      targetExtent match {
+        case re @ Some(_) =>
+          rasterDef.map { rd =>
+            Seq(io.LoadRaster(rd.layerId,re))
+          }
+        case None =>
+          rasterDef.map { rd =>
+            (for(tileRow <- 0 until rd.tileLayout.tileRows;
+              tileCol <- 0 until rd.tileLayout.tileCols) yield {
+              io.LoadTile(rd.layerId,tileCol,tileRow)
+            })
+          }
+      }
+
     new RasterSource(rasterDef, tileOps)
   }
 

@@ -11,14 +11,14 @@ object LoadTile {
   def apply(n:String,col:Int,row:Int,re:RasterExtent):LoadTile =
     LoadTile(LayerId(n),col,row,Some(re))
 
-  // def apply(n:String,col:Int,row:Int,re:Option[RasterExtent]):LoadTile =
-  //   LoadTile(LayerId(n),col,row,re)
-
   def apply(ds:String,n:String,col:Int,row:Int):LoadTile =
     LoadTile(LayerId(ds,n),col,row,None)
 
   def apply(ds: String, n: String, col: Int, row: Int, re: RasterExtent):LoadTile =
     LoadTile(LayerId(ds,n),col,row,None)
+
+  def apply(layerId: LayerId, col: Int, row: Int):LoadTile =
+    LoadTile(layerId, col, row, None)
 }
 
 case class LoadTile(layerId:Op[LayerId],

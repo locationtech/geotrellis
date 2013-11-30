@@ -75,7 +75,7 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
     }
 
   def run[T](src:DataSource[_,T]):OperationResult[T] =
-    run(src.get)
+    run(src.convergeOp)
 
   def run[T](op:Op[T]):OperationResult[T] = 
     _run(op)
