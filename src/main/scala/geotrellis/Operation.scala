@@ -75,8 +75,11 @@ abstract class Operation[+T] extends Product with Serializable {
   def withResult[U](f:T=>Operation[U]):Operation[U] = flatMap(f)
 
 
-  //TODO: how should filter be implemented for list comprehensions?
-  def filter(f:(T) => Boolean) = this
+  def filter(f:(T) => Boolean) = flatMap { t =>
+    if(f(t)) { this } else { FailOp[T]("The operation did not meet the required filter.") }
+  }
+
+  def withFilter(f:(T) => Boolean) = filter(f)
 
   def andThen[U](f:T => Op[U]) = flatMap(f)
 
@@ -135,6 +138,12 @@ extends OperationWrapper(op) {}
 object Operation {
   implicit def implicitLiteralVal[A <: AnyVal](a:A)(implicit m:Manifest[A]):Operation[A] = Literal(a)
   implicit def implicitLiteralRef[A <: AnyRef](a:A):Operation[A] = Literal(a)
+}
+
+/** Operation that simply fails with the given message */
+case class FailOp[T](msg:String) extends Operation[T] {
+  def _run() = StepError(msg,"")
+  val nextSteps:Steps = { case _ => StepError(msg,"") }
 }
 
 /**
