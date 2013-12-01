@@ -20,7 +20,7 @@ trait GlobalOpMethods[+Repr <: RasterSource] { self: Repr =>
   def asArray() = 
     self.converge.mapOp(AsArray(_))
 
-  def regionGroup(options:RegionGroupOptions = RegionGroupOptions.Default) =
+  def regionGroup(options:RegionGroupOptions = RegionGroupOptions.default) =
     self.converge.mapOp(RegionGroup(_,options))
 
   def verticalFlip() =
