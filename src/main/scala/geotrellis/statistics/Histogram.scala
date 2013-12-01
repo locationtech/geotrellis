@@ -326,22 +326,8 @@ abstract trait Histogram extends Serializable {
     }
   }
 
-  // TODO: use a standard json library
   def toJSON = {
-    val sb = new StringBuilder()
-    sb.append("[")
-    var first = true
-    val values = getValues
-    var i = 0
-    while (i < values.length) {
-      val count = getItemCount(values(i))
-      if (count > 0) {
-        if (first) first = false else sb.append(",")
-        sb.append("[%d,%d]".format(values(i), count))
-      }
-      i += 1
-    }
-    sb.append("]")
-    sb.toString()
+    val counts = getValues.map(v => s"[$v,${getItemCount(v)}]").mkString(",")
+    s"[$counts]"
   }
 }

@@ -4,7 +4,8 @@ import geotrellis._
 
 import org.scalatest.FunSuite
 
-// TODO
+// TODO - once a implementation of reading with resample to a byte data,
+// reimplement these test with that new code.
 
 // @RunWith(classOf[JUnitRunner])
 // class CroppedArrayRasterDataSpec extends FunSuite {

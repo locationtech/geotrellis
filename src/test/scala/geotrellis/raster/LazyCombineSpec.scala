@@ -10,8 +10,8 @@ import geotrellis.raster._
 
 import scala.collection.mutable
 
-// TODO
-//@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
+// TODO: Once #174 is completed, delete or reimplement.
+
 // class LazyCombineSpec extends FunSpec 
 //                          with ShouldMatchers 
 //                          with TestServer 

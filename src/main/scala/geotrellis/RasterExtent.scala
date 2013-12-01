@@ -102,7 +102,6 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     mapToGrid(x,y)
   }
 
-  // TODO: try to remove calls to max and min if possible
   /**
     * The map coordinate of a grid cell is the center point.
     */  
@@ -144,13 +143,8 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
   }
   
   /**
-   * Combine two different GeoAttrs (which must have the same cellsizes).
+   * Combine two different RasterExtents (which must have the same cellsizes).
    * The result is a new extent at the same resolution.
-   *
-   * TODO: this version currently warps the grid. we need two versions.
-   *
-   * TODO: relatedly, the translate version should require the grids to be
-   * properly aligned.
    */
   def combine (that:RasterExtent):RasterExtent = {
     if (cellwidth != that.cellwidth)

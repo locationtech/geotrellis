@@ -4,7 +4,6 @@ import geotrellis._
 import geotrellis.statistics._
 
 
-// TODO: rewrite this in terms of Op[Statistics].
 /*
  * Calculate a raster in which each value is set to the standard deviation of that cell's value.
  *
