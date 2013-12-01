@@ -31,6 +31,25 @@ class RegionGroupSpec extends FunSpec
 
     }
 
+    it("should group regions with a connectivity of 8 neighbors.") {
+      val r = createRaster(
+        Array(NODATA,NODATA,NODATA,NODATA,     9,
+              NODATA,NODATA,     9,     9,     9,
+              NODATA,     9,NODATA,     5,     5,
+              NODATA,     9,     9,NODATA,NODATA,
+              NODATA,NODATA,     9,     9,NODATA,
+                   7,     7,NODATA,     9,     9),
+          5, 6
+      )
+      val options = RegionGroupOptions(connectivity = EightNeighbors)
+      val regions = get(RegionGroup(r,options)).raster
+
+      val histogram = get(GetHistogram(regions))
+      val count = histogram.getValues.length
+      count should be (3)
+
+    }
+
     it("should group regions on larger example.") {
       val n = NODATA
       val r = createRaster(
@@ -107,7 +126,8 @@ class RegionGroupSpec extends FunSpec
                17,18
       )
 
-      val RegionGroupResult(regions,regionMap) = get(RegionGroup(r,RegionGroupOptions(false)))
+      val RegionGroupResult(regions,regionMap) = 
+        get(RegionGroup(r,RegionGroupOptions(ignoreNoData = false)))
 
       val histogram = get(GetHistogram(regions))
       val count = histogram.getValues.length
@@ -274,7 +294,8 @@ class RegionGroupSpec extends FunSpec
       val ymax = 0
 
       val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
-      val RegionGroupResult(regions,regionMap) = get(RegionGroup(r,RegionGroupOptions(false)))
+      val RegionGroupResult(regions,regionMap) = 
+        get(RegionGroup(r,RegionGroupOptions(ignoreNoData = false)))
       val histogram = get(GetHistogram(regions))
       val count = histogram.getValues.length
       count should be (7)
