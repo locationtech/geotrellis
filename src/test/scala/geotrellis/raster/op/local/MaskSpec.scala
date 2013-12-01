@@ -10,7 +10,6 @@ import scala.math.min
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class MaskSpec extends FunSpec 
                   with ShouldMatchers 
                   with TestServer 
@@ -33,8 +32,8 @@ class MaskSpec extends FunSpec
                0,0,0, 0,0,0, 0,0,0),
         3,2,3,2)
 
-      val r1 = runSource(rs1)
-      getSource(rs1.localMask(rs2, 2, NODATA)) match {
+      val r1 = get(rs1)
+      run(rs1.localMask(rs2, 2, NODATA)) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {

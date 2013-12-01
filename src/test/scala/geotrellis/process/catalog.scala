@@ -106,7 +106,7 @@ class CatalogSpec extends FunSpec
     } 
 
     it("should create IntConstant arg") {
-      val result = run(io.LoadRaster("constant"))
+      val result = get(io.LoadRaster("constant"))
       assert(result.asInstanceOf[ArrayRaster].data.isInstanceOf[IntConstant])
     }
 
@@ -183,7 +183,7 @@ class CatalogSpec extends FunSpec
 
       val catalog = Catalog.fromJSON(noCacheAllLine)
       evaluating {
-        catalog.getRasterLayer("elevation")
+        catalog.getRasterLayer(LayerId("elevation"))
       } should produce [Exception]
     }
   
@@ -211,8 +211,8 @@ class CatalogSpec extends FunSpec
       """
 
       val catalog = Catalog.fromJSON(noCacheAllLine)
-      val layer1 = catalog.getRasterLayer("store1","quadborder").get
-      val layer2 = catalog.getRasterLayer("store2","quadborder").get
+      val layer1 = catalog.getRasterLayer(LayerId("store1","quadborder")).get
+      val layer2 = catalog.getRasterLayer(LayerId("store2","quadborder")).get
       layer1.info.rasterExtent should not be (layer2.info.rasterExtent)
     }
   }

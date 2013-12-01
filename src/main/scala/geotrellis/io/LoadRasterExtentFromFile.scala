@@ -3,32 +3,34 @@ package geotrellis.io
 import geotrellis._
 import geotrellis.process._
 
-/** Load the [[RasterExtent]] from the raster in the specified file.
-  */
-case class LoadRasterExtentFromFile(path:Op[String]) extends Op[RasterExtent] {
-  def _run(context:Context) = runAsync(List(path, context))
-  val nextSteps:Steps = {
-    case (path:String) :: (context:Context) :: Nil => {
-      Result(context.getRasterLayerFromPath(path).info.rasterExtent)
-    }
-  }
-}
-
 object LoadRasterExtent {
-  def apply(name:Op[String]): LoadRasterExtent = 
-    LoadRasterExtent(None,name)
+  def apply(name:String): LoadRasterExtent = 
+    LoadRasterExtent(LayerId(name))
 
-  def apply(ds:String, name:Op[String]): LoadRasterExtent = 
-    LoadRasterExtent(Some(ds),name)
+  def apply(ds:String, name:String): LoadRasterExtent = 
+    LoadRasterExtent(LayerId(ds,name))
 }
 
 /** Load the [[RasterExtent]] from the raster layer with the specified name.
   */
-case class LoadRasterExtent(ds:Op[Option[String]], nme:Op[String]) extends Op[RasterExtent] {
-  def _run(context:Context) = runAsync(List(ds, nme, context))
+case class LoadRasterExtent(layerId:Op[LayerId]) extends Op[RasterExtent] {
+  def _run() = runAsync(List(layerId))
   val nextSteps:Steps = {
-    case (ds:Option[String]) :: (name:String) :: (context:Context) :: Nil => {
-      Result(context.getRasterLayer(ds,name).info.rasterExtent)
-    }
+    case (layerId:LayerId) :: Nil => 
+      LayerResult { layerLoader =>
+        layerLoader.getRasterLayer(layerId).info.rasterExtent
+      }
+  }
+}
+
+/** Load the [[RasterExtent]] from the raster in the specified file.
+  */
+case class LoadRasterExtentFromFile(path:Op[String]) extends Op[RasterExtent] {
+  def _run() = runAsync(List(path))
+  val nextSteps:Steps = {
+    case (path:String) :: Nil => 
+      LayerResult { layerLoader =>
+        layerLoader.getRasterLayerFromPath(path).info.rasterExtent
+      }
   }
 }

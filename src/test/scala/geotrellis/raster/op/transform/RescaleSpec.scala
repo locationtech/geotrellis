@@ -7,7 +7,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class RescaleSpec extends FunSpec 
                             with ShouldMatchers 
                             with TestServer {
@@ -16,7 +15,7 @@ class RescaleSpec extends FunSpec
 
       // double number of rows and cols
       val re = RasterExtent(Extent(-9.5,3.8,150.5,163.8),4.0,4.0,40,40)
-      val raster = run(Rescale(io.LoadFile("src/test/resources/quad8.arg"), 2.0))
+      val raster = get(Rescale(io.LoadFile("src/test/resources/quad8.arg"), 2.0))
 
       raster.cols should be (40)
       raster.rows should be (40)

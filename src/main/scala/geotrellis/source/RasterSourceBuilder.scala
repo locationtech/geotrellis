@@ -12,7 +12,7 @@ class RasterSourceBuilder extends SourceBuilder[Raster,RasterSource] {
     this 
   }
 
-  def setRasterDefinition(dfn: Operation[RasterDefinition]): this.type = {
+  def setRasterDefinition(dfn: Op[RasterDefinition]): this.type = {
     this._dataDefinition = dfn
     this
   }

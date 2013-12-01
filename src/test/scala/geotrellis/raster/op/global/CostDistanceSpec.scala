@@ -5,13 +5,10 @@ import geotrellis.raster._
 import geotrellis.feature._
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 
 import scala.language.implicitConversions
 
-@RunWith(classOf[JUnitRunner])
 class CostDistanceSpec extends FunSuite with TestServer {
   implicit def arrayIsRasterOp(a: Array[Int]): Op[Raster] = {
     val size = math.sqrt(a.length).toInt    
@@ -53,7 +50,7 @@ class CostDistanceSpec extends FunSuite with TestServer {
 
     val cd = CostDistance(costRaster, points)
 
-    val d = server.run(cd).toArrayDouble
+    val d = get(cd).toArrayDouble
 
     val expected = Array(
       2.0, 0.0, 0.0, 4.0, 6.7, 9.2,
@@ -86,7 +83,7 @@ class CostDistanceSpec extends FunSuite with TestServer {
 
     val cd = CostDistance(costRaster, points)
 
-    val d = server.run(cd).toArrayDouble
+    val d = get(cd).toArrayDouble
     
     val expected = Array(
       22,21,21,20,17,15,14,

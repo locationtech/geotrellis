@@ -119,7 +119,7 @@ object DirectHillshade {
  */
 case class IndirectHillshade(aspect:Aspect,slope:Slope,azimuth:Op[Double],altitude:Op[Double]) 
      extends Operation[Raster] {
-  def _run(context:Context) = runAsync(List('init,aspect,slope,azimuth,altitude))
+  def _run() = runAsync(List('init,aspect,slope,azimuth,altitude))
   def productArity = 4
   def canEqual(other:Any) = other.isInstanceOf[IndirectHillshade]
   def productElement(n:Int) = n match {

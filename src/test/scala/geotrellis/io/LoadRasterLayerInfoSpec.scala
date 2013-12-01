@@ -12,13 +12,13 @@ class LoadRasterLayerInfoSpec extends FunSpec
                                  with TestServer {
   describe("LoadRasterLayerInfo") {
     it("loads a cached raster.") {
-      val info = run(LoadRasterLayerInfo("mtsthelens_tiled_cached"))
+      val info = get(LoadRasterLayerInfo("mtsthelens_tiled_cached"))
       info.cached should be (true)
     }
 
     it("loads a raster with a data store.") {
-      val info = run(LoadRasterLayerInfo("test:fs","quadborder"))
-      val info2 = run(LoadRasterLayerInfo("test:fs2","quadborder"))
+      val info = get(LoadRasterLayerInfo("test:fs","quadborder"))
+      val info2 = get(LoadRasterLayerInfo("test:fs2","quadborder"))
 
       info.rasterExtent should not be (info2.rasterExtent)
     }

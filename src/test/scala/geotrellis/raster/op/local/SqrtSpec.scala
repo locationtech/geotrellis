@@ -9,7 +9,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class SqrtSpec extends FunSpec 
                     with ShouldMatchers 
                     with TestServer 
@@ -17,7 +16,7 @@ class SqrtSpec extends FunSpec
   describe("Sqrt") {
     it("takes the square root of an integer raster") {
       val r = positiveIntegerRaster
-      val result = run(Sqrt(r))
+      val result = get(Sqrt(r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (math.sqrt(r.get(col,row)).toInt)
@@ -27,7 +26,7 @@ class SqrtSpec extends FunSpec
 
     it("takes the square root of a double raster") {
       val r = probabilityRaster
-      val result = run(Sqrt(r))
+      val result = get(Sqrt(r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should be (math.sqrt(r.getDouble(col,row)))
@@ -38,8 +37,8 @@ class SqrtSpec extends FunSpec
     it("takes the square root of a double raster source correctly") {
       val rs = RasterSource("mtsthelens_tiled")
 
-      val r = runSource(rs)
-      getSource(rs.localSqrt) match {
+      val r = get(rs)
+      run(rs.localSqrt) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until r.rasterExtent.rows / 3) {
@@ -68,7 +67,7 @@ class SqrtSpec extends FunSpec
                9,9,9, 9,9,9, 9,9,9),
         3,2,3,2)
 
-      getSource(rs.localSqrt) match {
+      run(rs.localSqrt) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {

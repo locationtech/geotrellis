@@ -10,7 +10,7 @@ import scala.annotation.tailrec
 //   private case class TileInfo(tileLayout:TileLayout, rasterExtent: RasterExtent)
 //   var limit = 1000
 
-//   def _run(context:Context) = {
+//   def _run() = {
 //     if (r.isInstanceOf[TiledRasterMapper]) {
 //       AndThen(mapper(r))
 //     } else {
@@ -81,7 +81,7 @@ import scala.annotation.tailrec
 // }
  
 // case class RasterDualReduce(rasters:Seq[Op[Raster]])(f:(Int,Int) => Int)(g:(Double,Double) => Double) extends Operation[Raster] {
-//   def _run(context:Context) = runAsync(rasters.toList)
+//   def _run() = runAsync(rasters.toList)
 
 //   val nextSteps:Steps = {
 //     case rasters:List[_] => handleRasters(rasters.asInstanceOf[List[Raster]])

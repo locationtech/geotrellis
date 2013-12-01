@@ -7,14 +7,11 @@ import geotrellis.raster.op._
 
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
-import org.scalatest.junit.JUnitRunner
 
 import scala.math._
 
-@RunWith(classOf[JUnitRunner])
 class MaxSpec extends FunSpec with FocalOpSpec
                               with ShouldMatchers 
                               with TestServer {
@@ -58,7 +55,7 @@ class MaxSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalMax(Square(1))) match {
+      run(rs1.focalMax(Square(1))) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,
@@ -86,7 +83,7 @@ class MaxSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalMax(Square(2))) match {
+      run(rs1.focalMax(Square(2))) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,
@@ -114,7 +111,7 @@ class MaxSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalMax(Circle(1))) match {
+      run(rs1.focalMax(Circle(1))) match {
         case Complete(result,success) =>
           //println(success)
           assertEqual(result,

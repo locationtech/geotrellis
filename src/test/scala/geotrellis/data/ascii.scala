@@ -10,10 +10,9 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class AsciiSpec extends FunSpec with MustMatchers with ShouldMatchers {
-  val server = TestServer.server
-
+class AsciiSpec extends FunSpec 
+                   with MustMatchers 
+                   with ShouldMatchers {
   val data:Array[Int] = (1 to 100).toArray
 
   val e = Extent(19.0, 9.0, 49.0, 39.0)

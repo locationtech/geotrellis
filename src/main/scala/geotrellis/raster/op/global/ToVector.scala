@@ -11,7 +11,7 @@ import scala.collection.mutable
 import spire.syntax._
 
 case class ToVector(r:Op[Raster]) extends Operation[List[Polygon[Int]]] {
-  def _run(context:Context) = runAsync('init :: r :: Nil)
+  def _run() = runAsync('init :: r :: Nil)
 
   class ToVectorCallback(val polyizer:Polygonizer,
                          val r:Raster,

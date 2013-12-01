@@ -5,14 +5,11 @@ import geotrellis.process._
 import geotrellis.statistics._
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
-import org.scalatest.junit.JUnitRunner
 
 import scala.math._
 
-@RunWith(classOf[JUnitRunner])
 class MedianSpec extends FunSpec with TestServer
                                  with FocalOpSpec
                                  with ShouldMatchers {
@@ -25,7 +22,7 @@ class MedianSpec extends FunSpec with TestServer
                                  0, 7, 2, 0, 0,
                                  6, 6, 6, 5, 5))
 
-      var result = run(Median(r,Square(1)))
+      var result = get(Median(r,Square(1)))
 
       def median(s:Int*) = {
         if(s.length % 2 == 0) {
@@ -74,7 +71,7 @@ class MedianSpec extends FunSpec with TestServer
         3,2,3,2
       )
 
-      getSource(rs1.focalMedian(Square(1))) match {
+      run(rs1.focalMedian(Square(1))) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,

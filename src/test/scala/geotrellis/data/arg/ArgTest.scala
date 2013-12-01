@@ -9,9 +9,7 @@ import geotrellis.testutil._
 import geotrellis.process._
 import geotrellis.raster._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 
 // TODO
 
@@ -27,7 +25,7 @@ import org.scalatest.junit.JUnitRunner
 //   val re = RasterExtent(e, 1.0, 1.0, 4, 4)
 //   val raster = Raster(data, re)
 
-//   def loadRaster(path:String) = server.run(io.LoadFile(path))
+//   def loadRaster(path:String) = server.get(io.LoadFile(path))
 //   def loadRasterData(path:String) = loadRaster(path).data.asArray
 
 //   test("test float compatibility") {

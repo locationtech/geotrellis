@@ -13,5 +13,5 @@ object ValueSource {
 trait ValueSourceLike[+T, +Repr <: ValueSource[T]] 
     extends DataSourceLike[T,T, Repr]
     with DataSource[T,T] { self: Repr => 
-  def get() = self.element
+  def convergeOp() = self.element
 }

@@ -6,7 +6,6 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class RasterExtentSpec extends FunSpec with MustMatchers 
                                        with ShouldMatchers 
                                        with RasterBuilders {

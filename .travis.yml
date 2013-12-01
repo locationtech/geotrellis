@@ -2,11 +2,11 @@
 language: scala
 scala:
   - 2.9.2
-script: ./sbt -J-Xmx2G test && ./sbt -J-Xmx2G "project demo" compile && ./sbt -J-Xmx2G "project geotools" compile && ./sbt -J-Xmx2G "project tasks" compile && ./sbt -J-Xmx2G "project benchmark" compile && ./sbt -J-Xmx2G "project dev" compile && ./sbt -J-Xmx2G "project server" compile 
+script: ./buildall.sh
 notifications:
   email:
     recipients:
-      - remanuele@azavea.com
+      - lossyrob@gmail.com
   irc:
       - "irc.freenode.org#geotrellis"
   use_notice: true

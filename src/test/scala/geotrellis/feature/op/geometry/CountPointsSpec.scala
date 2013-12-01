@@ -9,7 +9,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class CountPointsSpec extends FunSpec 
                          with ShouldMatchers 
                          with TestServer 
@@ -18,7 +17,7 @@ class CountPointsSpec extends FunSpec
     it("returns a zero raster when empty points") {
       val re = RasterExtent(Extent(0,0,9,10),1,1,9,10)
       val op = CountPoints(Seq[Point[Int]](),re)
-      assertEqual(run(op),
+      assertEqual(get(op),
                   Array.fill[Int](90)(0))
     }
 
@@ -28,7 +27,7 @@ class CountPointsSpec extends FunSpec
                        Point(-10,-30,0),
                        Point(-310,1200,0))
       val op = CountPoints(points,re)
-      assertEqual(run(op),
+      assertEqual(get(op),
                   Array.fill[Int](90)(0))
     }
 
@@ -44,7 +43,7 @@ class CountPointsSpec extends FunSpec
       val expected = Array.fill[Int](90)(0)
       expected(4*9 + 4) = 5
 
-      assertEqual(run(op),
+      assertEqual(get(op),
                   expected)
     }
 
@@ -61,7 +60,7 @@ class CountPointsSpec extends FunSpec
         data.set(i,10 - (i+2),1)
       }
 
-      assertEqual(run(op),
+      assertEqual(get(op),
                   Raster(data,re))
     }
   }

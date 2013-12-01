@@ -14,7 +14,7 @@ class OperationSpec extends FunSpec
     it("should flatten an Op[Op[Int]] into an Op[Int]") {
       val iOpOp:Op[Op[Int]] = Literal(1).map { i => Literal(i) }
       val i:Op[Int] = iOpOp.flatten
-      run(i) should be (1)
+      get(i) should be (1)
     }
   }
 }

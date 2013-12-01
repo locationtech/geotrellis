@@ -9,7 +9,6 @@ import geotrellis.raster._
 import geotrellis.raster.op._
 import geotrellis.statistics._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class DataSourceSpec extends FunSpec 
                         with ShouldMatchers 
                         with TestServer 
@@ -24,7 +23,7 @@ class DataSourceSpec extends FunSpec
     it("should print history") { 
       val r1 = RasterSource("quad_tiled")
       val r2 = RasterSource("quad_tiled2")
-      getSource(r1 + r2) match {
+      run(r1 + r2) match {
         case Complete(value,success) =>
           println(success.toString)
         case Error(msg,failure) =>
@@ -32,6 +31,15 @@ class DataSourceSpec extends FunSpec
           println(failure)
           assert(false)
       }
+    }
+
+    it("should converge a tiled raster") {
+      val s = 
+        RasterSource("mtsthelens_tiled_cached")
+          .renderPng
+
+      get(s)
+
     }
 
     it("should return a RasterSource when possible") { 
@@ -42,11 +50,11 @@ class DataSourceSpec extends FunSpec
       val d4:RasterSource = d3 map(r => r.map(z => z + 3))
       val d5:DataSource[Int,Seq[Int]] = d3 map(r => r.findMinMax._2)
       
-      val result1 = runSource(d1)
-      val result2 = runSource(d2)
-      val result3 = runSource(d3)
-      val result4 = runSource(d4)
-      val result5 = runSource(d5)
+      val result1 = get(d1)
+      val result2 = get(d2)
+      val result3 = get(d3)
+      val result4 = get(d4)
+      val result5 = get(d5)
 
       result1.get(100,100) should be (3233)
       result2.get(100,100) should be (3236)
@@ -56,8 +64,7 @@ class DataSourceSpec extends FunSpec
     }
 
     it("should return a RasterSource when calling .distribute") {
-      val cluster = server.actor
-      val d1:RasterSource = (getRasterSource + 3).distribute(cluster)
+      val d1:RasterSource = (getRasterSource + 3).distribute
     }
 
     it("should handle a histogram result") {
@@ -80,11 +87,11 @@ class DataSourceSpec extends FunSpec
       val intVS:ValueSource[Int] = seqIntVS.map( seqInt => seqInt.reduce(math.min(_,_)))
       val intVS2 = ints.reduce(math.min(_,_))
 
-      val histogramResult = runSource(hist)
-      val intsResult = runSource(ints)
+      val histogramResult = get(hist)
+      val intsResult = get(ints)
 
-      val intResult = runSource(intVS)
-      val directIntResult = runSource(intVS2)
+      val intResult = get(intVS)
+      val directIntResult = get(intVS2)
 
       histogramResult.getMinValue should be (2231)
       histogramResult.getMaxValue should be (8367)
@@ -98,8 +105,8 @@ class DataSourceSpec extends FunSpec
       val d2 = getRasterSource
 
       val combineDS:RasterSource = d.localCombine(d2)(_+_)
-      val initial = runSource(d)
-      val result = runSource(combineDS)
+      val initial = get(d)
+      val result = get(combineDS)
 
       result.get(3,3) should be (initial.get(3,3) * 2)
     }

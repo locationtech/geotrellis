@@ -41,7 +41,7 @@ class AddOne {
 
     // run the operation
     val data:String = try {
-      val y:Int = Demo.server.run(opY)
+      val y:Int = Demo.server.get(opY)
       y.toString
     } catch {
       case e:Throwable => e.toString
@@ -84,7 +84,7 @@ class SimpleDrawRaster {
     val pngOp:Op[Array[Byte]] = SimpleRenderPng(rasterOp, BlueToRed)
     // run the operation
     try {
-      val img:Array[Byte] = Demo.server.run(pngOp)
+      val img:Array[Byte] = Demo.server.get(pngOp)
       response("image/png")(img)
     } catch {
       case e:Throwable => response("text/plain")(e.toString)
@@ -118,7 +118,7 @@ class DrawRaster {
 
     // run the operation
     try {
-      val img:Array[Byte] = Demo.server.run(pngOp)
+      val img:Array[Byte] = Demo.server.get(pngOp)
       response("image/png")(img)
     } catch {
       case e:Throwable => response("text/plain")(e.toString)

@@ -6,7 +6,7 @@ import geotrellis.raster.{IntConstant,DoubleConstant}
 import com.typesafe.config.Config
 
 object ConstantRasterLayerBuilder extends RasterLayerBuilder {
-  def apply(jsonPath:String, json:Config):Option[RasterLayer] = {
+  def apply(ds:Option[String],jsonPath:String, json:Config):Option[RasterLayer] = {
     val cols = json.getInt("cols")
     val rows = json.getInt("rows")
 
@@ -14,12 +14,15 @@ object ConstantRasterLayerBuilder extends RasterLayerBuilder {
     val rasterExtent = RasterExtent(getExtent(json), cellWidth, cellHeight, cols, rows)
 
     val rasterType = getRasterType(json)
-    val info = RasterLayerInfo(getName(json),
-      getRasterType(json),
-      rasterExtent,
-      getEpsg(json),
-      getXskew(json),
-      getYskew(json))
+    val info = 
+      RasterLayerInfo(
+        LayerId(ds,getName(json)),
+        getRasterType(json),
+        rasterExtent,
+        getEpsg(json),
+        getXskew(json),
+        getYskew(json)
+      )
 
     if(rasterType.isDouble) {
       Some(new DoubleConstantLayer(info, json.getDouble("constant")))
@@ -39,7 +42,7 @@ extends UntiledRasterLayer(info) {
     Raster(IntConstant(value,re.cols,re.rows),re)
   }
 
-  def cache(c:Cache) = {} // No-op
+  def cache(c:Cache[String]) = {} // No-op
 }
 
 class DoubleConstantLayer(info:RasterLayerInfo, value:Double) 
@@ -52,6 +55,6 @@ extends UntiledRasterLayer(info) {
     Raster(DoubleConstant(value,re.cols,re.rows),re)
   }
 
-  def cache(c:Cache) = {} // No-op
+  def cache(c:Cache[String]) = {} // No-op
 }
 

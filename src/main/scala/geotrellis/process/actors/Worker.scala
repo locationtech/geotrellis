@@ -36,11 +36,10 @@ case class Worker(val server: Server) extends Actor {
       }
 
       val handler = new ResultHandler(server,client,dispatcher,pos)
-      val geotrellisContext = new Context(server)
       val history = History(op,server.externalId)
 
       try {
-        handler.handleResult(op.run(geotrellisContext),history)
+        handler.handleResult(op.run(),history)
       } catch {
         case e:Throwable => {
           val error = StepError.fromException(e)

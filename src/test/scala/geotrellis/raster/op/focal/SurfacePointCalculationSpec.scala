@@ -5,17 +5,14 @@ import geotrellis.process._
 import geotrellis.raster.op._
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
-import org.scalatest.junit.JUnitRunner
 
 import scala.math._
 
-@RunWith(classOf[JUnitRunner])
-class SlopeAspectTests extends FunSpec with ShouldMatchers {
-  val server = TestServer.server
-
+class SlopeAspectTests extends FunSpec 
+                          with ShouldMatchers 
+                          with TestServer {
   describe("SurfacePoint") {
     it("should calculate trig values correctly") {
       val tolerance = 0.0000000001

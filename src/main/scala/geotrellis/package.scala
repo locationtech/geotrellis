@@ -4,6 +4,8 @@ import geotrellis.statistics.Histogram
 import language.experimental.macros
 
 package object geotrellis {
+  implicit lazy val server = GeoTrellis.server
+
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue 
   @inline final val shortNODATA = Short.MinValue

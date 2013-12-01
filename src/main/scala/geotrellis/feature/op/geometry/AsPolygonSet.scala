@@ -20,7 +20,7 @@ case class AsPolygonSet[D](geom: Op[Geometry[D]]) extends Operation[List[Polygon
     case p: jts.Polygon => List(p)
   }
 
-  def _run(context:Context) = runAsync(geom :: Nil)
+  def _run() = runAsync(geom :: Nil)
 
   val nextSteps:Steps = {
     case a :: Nil => {

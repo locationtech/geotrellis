@@ -5,9 +5,7 @@ import geotrellis.raster._
 import geotrellis.feature._
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 
 class ConvolveSpec extends FunSuite with TestServer {
   def doit(in1: Array[Int], in2: Array[Int], out: Array[Int]) = {
@@ -29,7 +27,7 @@ class ConvolveSpec extends FunSuite with TestServer {
     val r2 = Raster(data2, re2)
 
     val op = Convolve(r1, r2)
-    val r3 = server.run(op)
+    val r3 = get(op)
 
     val r3d = r3.toArray
     assert(r3d === out)

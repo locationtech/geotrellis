@@ -4,22 +4,23 @@ import geotrellis._
 import geotrellis.process._
 
 object LoadRasterLayer {
-  def apply(n:Op[String]): LoadRasterLayer =
-    LoadRasterLayer(None,n)
+  def apply(n:String): LoadRasterLayer =
+    LoadRasterLayer(LayerId(n))
 
-  def apply(ds:String, n:Op[String]): LoadRasterLayer =
-    LoadRasterLayer(Some(ds), n)
+  def apply(ds:String, n:String): LoadRasterLayer =
+    LoadRasterLayer(LayerId(ds,n))
 }
 
 /**
   * Load the [[RasterLayer]] from the raster layer with the specified name.
   */
-case class LoadRasterLayer(ds: Op[Option[String]], n:Op[String]) extends Op[RasterLayer] {
-  def _run(context:Context) = runAsync(List(ds, n, context))
+case class LoadRasterLayer(layerId:Op[LayerId]) extends Op[RasterLayer] {
+  def _run() = runAsync(List(layerId))
   val nextSteps:Steps = {
-    case (ds:Option[String]) :: (n:String) :: (context:Context) :: Nil => {
-      Result(context.getRasterLayer(ds, n))
-    }
+    case (layerId:LayerId) :: Nil =>
+      LayerResult { layerLoader =>
+        layerLoader.getRasterLayer(layerId)
+      }
   }
 }
 
@@ -27,10 +28,11 @@ case class LoadRasterLayer(ds: Op[Option[String]], n:Op[String]) extends Op[Rast
   * Load the [[RasterLayer]] from the raster layer at the specified path.
   */
 case class LoadRasterLayerFromPath(path:Op[String]) extends Op[RasterLayer] {
-  def _run(context:Context) = runAsync(List(path, context))
+  def _run() = runAsync(List(path))
   val nextSteps:Steps = {
-    case (path:String) :: (context:Context) :: Nil => {
-      Result(context.getRasterLayerFromPath(path))
-    }
+    case (path:String) :: Nil =>
+      LayerResult { layerLoader =>
+        layerLoader.getRasterLayerFromPath(path)
+      }
   }
 }

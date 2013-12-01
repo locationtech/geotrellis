@@ -7,10 +7,6 @@ import geotrellis.process._
  */
 case class Literal[+A](val value:A) extends Op[A] {
   val nextSteps:Steps = { case _ => Result(value) }
-  def _run(context:Context) = Result(value)
+  def _run() = Result(value)
 }
-
-// object Literal {
-//   def apply[A](a:A):Operation[A] = new Literal(a)
-// }
 

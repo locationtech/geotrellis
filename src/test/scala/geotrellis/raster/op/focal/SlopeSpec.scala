@@ -9,23 +9,18 @@ import geotrellis.raster.op.transform._
 
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
 
-import org.scalatest.junit.JUnitRunner
-import scala.math._
-
-@RunWith(classOf[JUnitRunner])
 class SlopeSpec extends FunSpec with ShouldMatchers
                                 with TestServer {
   describe("Slope") {
     it("should match gdal computed slope raster") {
-      val rOp = get("elevation")
-      val gdalOp = get("slope")
+      val rOp = getRaster("elevation")
+      val gdalOp = getRaster("slope")
       val slopeComputed = Slope(rOp,1.0)
 
-      val rg = run(gdalOp)
+      val rg = get(gdalOp)
 
       // Gdal actually computes the parimeter values differently.
       // So take out the edge results, but don't throw the baby out
@@ -41,7 +36,7 @@ class SlopeSpec extends FunSpec with ShouldMatchers
     }
 
     it("should get the same result for split raster") {
-      val rOp = get("elevation")
+      val rOp = getRaster("elevation")
       val nonTiledSlope = Slope(rOp,1.0)
 
       val tiled = 
@@ -54,7 +49,7 @@ class SlopeSpec extends FunSpec with ShouldMatchers
         }
 
       val rs = RasterSource(tiled)
-      getSource(rs.focalSlope) match {
+      run(rs.focalSlope) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,nonTiledSlope)

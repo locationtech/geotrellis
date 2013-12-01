@@ -3,7 +3,7 @@ package geotrellis.process
 import geotrellis._
 import geotrellis.raster.TileLayout
 
-case class RasterLayerInfo(name:String,
+case class RasterLayerInfo(id:LayerId,
                            rasterType:RasterType,
                            rasterExtent:RasterExtent,
                            epsg:Int,
@@ -17,17 +17,17 @@ case class RasterLayerInfo(name:String,
 
 object RasterLayerInfo {
   //* For untiled rasters */
-  def apply(name:String,
+  def apply(id:LayerId,
             rasterType:RasterType,
             rasterExtent:RasterExtent,
             epsg:Int,
             xskew:Double,
             yskew:Double):RasterLayerInfo = {
     val tl = TileLayout(1,1,rasterExtent.cols,rasterExtent.rows)
-    RasterLayerInfo(name,rasterType,rasterExtent,epsg,xskew,yskew,false)
+    RasterLayerInfo(id,rasterType,rasterExtent,epsg,xskew,yskew,false)
   }
 
-  def apply(name:String,
+  def apply(id:LayerId,
             rasterType:RasterType,
             rasterExtent:RasterExtent,
             epsg:Int,
@@ -35,16 +35,16 @@ object RasterLayerInfo {
             yskew:Double,
             shouldCache:Boolean):RasterLayerInfo = {
     val tl = TileLayout(1,1,rasterExtent.cols,rasterExtent.rows)
-    RasterLayerInfo(name,rasterType,rasterExtent,epsg,xskew,yskew,tl,shouldCache)
+    RasterLayerInfo(id,rasterType,rasterExtent,epsg,xskew,yskew,tl,shouldCache)
   }
 
-  def apply(name:String,
+  def apply(id:LayerId,
             rasterType:RasterType,
             rasterExtent:RasterExtent,
             epsg:Int,
             xskew:Double,
             yskew:Double,
             tileLayout:TileLayout):RasterLayerInfo = {
-    RasterLayerInfo(name,rasterType,rasterExtent,epsg,xskew,yskew,tileLayout,false)
+    RasterLayerInfo(id,rasterType,rasterExtent,epsg,xskew,yskew,tileLayout,false)
   }
 }

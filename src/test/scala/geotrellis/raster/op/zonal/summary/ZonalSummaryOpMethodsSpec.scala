@@ -33,8 +33,8 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       3,2,3,2)
 
 
-  val tiledR = runSource(tiledRS)
-  val tiledRDouble = runSource(tiledRSDouble)
+  val tiledR = get(tiledRS)
+  val tiledRDouble = get(tiledRSDouble)
 
   val poly = {
     val re = tiledR.rasterExtent
@@ -46,23 +46,19 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
   }
 
   val containedCells = Seq(
-//         (4,0),
     (3,1),(4,1),(5,1),
     (3,2),(4,2),(5,2),(6,2)
-//                (5,3)
   )
   
 //      Polygon vertices are 0's (not contianed cells)
 //      X's are contained cells
 // 
-//       *  *  *    *  0  *    *  *  *
+//       *  *  *    *  *  *    *  *  *
 //       *  *  0    X  X  X    *  *  *
 // 
 //       *  *  0    X  X  X    X  0  *
-//       *  *  *    *  *  0    *  *  *  
+//       *  *  *    *  *  *    *  *  *  
 // 
-
-//   I'm not entirely sure if the cell centers should be excluded.
 
   describe("test case") {
     it("is as we think. Make sure we understand what cells are contained in the poly") {
@@ -72,12 +68,10 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
           val p = Point(re.gridColToMap(col),re.gridRowToMap(row),0)
           if(containedCells.contains((col,row))) {
             withClue(s"$col,$row should be not be included") {
-//              poly.geom.intersects(p.geom) should be (true)
               poly.geom.contains(p.geom) should be (true)
             }
           } else {
             withClue(s"$col,$row should be included") {
-//              poly.geom.intersects(p.geom) should be (false)
               poly.geom.contains(p.geom) should be (false)
             }
           }
@@ -92,7 +86,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val zone = Extent(10,-10,30,10).asFeature()
 
       val sumOp = rData.zonalSum(zone)
-      getSource(sumOp) match {
+      run(sumOp) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (40)
@@ -110,7 +104,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
 
       val nonintersecting = Extent(100,120,100,120).asFeature(())
       val sumOp2 = rData.zonalSum(nonintersecting)
-      getSource(sumOp2) match {
+      run(sumOp2) match {
         case Complete(result,success) =>
           assert(false)
         case Error(msg,failure) =>
@@ -124,7 +118,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
           .map { case (col,row) => tiledR.get(col,row) }
           .foldLeft(0) { (a,b) => if(isNoData(b)) a else a + b }
 
-      getSource(tiledRS.zonalSum(poly)) match {
+      run(tiledRS.zonalSum(poly)) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (sum)
@@ -142,7 +136,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val zone = Extent(10,-10,30,10).asFeature()
 
       val sumDOp = rData.zonalSumDouble(zone)
-      getSource(sumDOp) match {
+      run(sumDOp) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (40.0)
@@ -159,7 +153,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
           .map { case (col,row) => tiledRDouble.getDouble(col,row) }
           .foldLeft(0.0) { (a,b) => if(isNoData(b)) a else a + b }
 
-      getSource(tiledRSDouble.zonalSumDouble(poly)) match {
+      run(tiledRSDouble.zonalSumDouble(poly)) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (sum)
@@ -177,7 +171,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val zone = Extent(10,-10,30,10).asFeature()
 
       val minOp = rData.zonalMin(zone)
-      getSource(minOp) match {
+      run(minOp) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (1)
@@ -194,7 +188,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
           .map { case (col,row) => tiledR.get(col,row) }
           .foldLeft(Int.MaxValue) { (a,b) => if(isNoData(b)) a else math.min(a, b) }
 
-      getSource(tiledRS.zonalMin(poly)) match {
+      run(tiledRS.zonalMin(poly)) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (min)
@@ -212,7 +206,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val zone = Extent(10,-10,30,10).asFeature()
 
       val minDOp = rData.zonalMinDouble(zone)
-      getSource(minDOp) match {
+      run(minDOp) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (1.0)
@@ -229,7 +223,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
           .map { case (col,row) => tiledRDouble.getDouble(col,row) }
           .foldLeft(Double.MaxValue) { (a,b) => if(isNoData(b)) a else math.min(a, b) }
 
-      getSource(tiledRSDouble.zonalMinDouble(poly)) match {
+      run(tiledRSDouble.zonalMinDouble(poly)) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (min)
@@ -247,7 +241,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val zone = Extent(10,-10,30,10).asFeature()
 
       val maxOp = rData.zonalMax(zone)
-      getSource(maxOp) match {
+      run(maxOp) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (1)
@@ -264,7 +258,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
           .map { case (col,row) => tiledR.get(col,row) }
           .foldLeft(Int.MinValue) { (a,b) => if(isNoData(b)) a else math.max(a, b) }
 
-      getSource(tiledRS.zonalMax(poly)) match {
+      run(tiledRS.zonalMax(poly)) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (max)
@@ -282,7 +276,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val zone = Extent(10,-10,30,10).asFeature()
 
       val maxDOp = rData.zonalMaxDouble(zone)
-      getSource(maxDOp) match {
+      run(maxDOp) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (1.0)
@@ -299,7 +293,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
           .map { case (col,row) => tiledRDouble.getDouble(col,row) }
           .foldLeft(Double.MinValue) { (a,b) => if(isNoData(b)) a else math.max(a, b) }
 
-      getSource(tiledRSDouble.zonalMaxDouble(poly)) match {
+      run(tiledRSDouble.zonalMaxDouble(poly)) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (max)
@@ -317,7 +311,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val zone = Extent(10,-10,30,10).asFeature()
 
       val histOp = rData.zonalHistogram(zone)
-      getSource(histOp) match {
+      run(histOp) match {
         case Complete(result,success) =>
           //           println(success)
           result.getItemCount(1) should equal (40)
@@ -336,7 +330,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
         if (isData(z)) { h.countItem(z, 1) }
       }
 
-      getSource(tiledRS.zonalHistogram(poly)) match {
+      run(tiledRS.zonalHistogram(poly)) match {
         case Complete(result,success) =>
           //           println(success)
           for(row <- 0 until tiledR.rows) {
@@ -361,7 +355,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val zone = Extent(10,-10,30,10).asFeature()
 
       val meanOp = rData.zonalMean(zone)
-      getSource(meanOp) match {
+      run(meanOp) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (1.0)
@@ -383,7 +377,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
         vals
           .foldLeft(0.0) { (a,b) => if(isNoData(b)) a else a + 1.0 }
 
-      getSource(tiledRS.zonalMean(poly)) match {
+      run(tiledRS.zonalMean(poly)) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (sum / count)
@@ -401,7 +395,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val zone = Extent(10,-10,30,10).asFeature()
 
       val meanDOp = rData.zonalMeanDouble(zone)
-      getSource(meanDOp) match {
+      run(meanDOp) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (1.0)
@@ -418,7 +412,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
           .map { case (col,row) => tiledRDouble.getDouble(col,row) }
           .foldLeft(0.0) { (a,b) => if(isNoData(b)) a else a + b }
 
-      getSource(tiledRSDouble.zonalSumDouble(poly)) match {
+      run(tiledRSDouble.zonalSumDouble(poly)) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (sum)
@@ -440,7 +434,7 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
         vals
           .foldLeft(0.0) { (a,b) => if(isNoData(b)) a else a + 1.0 }
 
-      getSource(tiledRSDouble.zonalMeanDouble(poly)) match {
+      run(tiledRSDouble.zonalMeanDouble(poly)) match {
         case Complete(result,success) =>
           //           println(success)
           result should equal (sum / count.toDouble) 

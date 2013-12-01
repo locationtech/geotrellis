@@ -9,7 +9,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class GreaterOrEqualSpec extends FunSpec 
                    with ShouldMatchers 
                    with TestServer 
@@ -17,7 +16,7 @@ class GreaterOrEqualSpec extends FunSpec
   describe("GreaterOrEqual") {
     it("checks int valued raster against int constant") {
       val r = positiveIntegerRaster
-      val result = run(GreaterOrEqual(r,5))
+      val result = get(GreaterOrEqual(r,5))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.get(col,row)
@@ -30,7 +29,7 @@ class GreaterOrEqualSpec extends FunSpec
 
     it("checks int valued raster against double constant") {
       val r = probabilityRaster.map(_*100).convert(TypeInt)
-      val result = run(GreaterOrEqual(r,69.0))
+      val result = get(GreaterOrEqual(r,69.0))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.get(col,row)
@@ -43,7 +42,7 @@ class GreaterOrEqualSpec extends FunSpec
 
     it("checks double valued raster against int constant") {
       val r = positiveIntegerRaster.convert(TypeDouble).mapDouble(_.toDouble)
-      val result = run(GreaterOrEqual(r,5))
+      val result = get(GreaterOrEqual(r,5))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.getDouble(col,row)
@@ -56,7 +55,7 @@ class GreaterOrEqualSpec extends FunSpec
 
     it("checks double valued raster against double constant") {
       val r = probabilityRaster
-      val result = run(GreaterOrEqual(r,0.69))
+      val result = get(GreaterOrEqual(r,0.69))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.getDouble(col,row)
@@ -69,7 +68,7 @@ class GreaterOrEqualSpec extends FunSpec
 
     it("checks an integer raster against itself") {
       val r = positiveIntegerRaster
-      val result = run(GreaterOrEqual(r,r))
+      val result = get(GreaterOrEqual(r,r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (1)
@@ -80,7 +79,7 @@ class GreaterOrEqualSpec extends FunSpec
     it("checks an integer raster against a different raster") {
       val r = positiveIntegerRaster
       val r2 = positiveIntegerRaster.map(_*2)
-      val result = run(GreaterOrEqual(r,r2))
+      val result = get(GreaterOrEqual(r,r2))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (0)
@@ -90,7 +89,7 @@ class GreaterOrEqualSpec extends FunSpec
 
     it("checks a double raster against itself") {
       val r = probabilityRaster
-      val result = run(GreaterOrEqual(r,r))
+      val result = get(GreaterOrEqual(r,r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (1)
@@ -101,13 +100,13 @@ class GreaterOrEqualSpec extends FunSpec
     it("checks a double raster against a different raster") {
       val r = probabilityRaster
       val r2 = positiveIntegerRaster.mapDouble(_*2.3)
-      val result = run(GreaterOrEqual(r,r2))
+      val result = get(GreaterOrEqual(r,r2))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (0)
         }
       }
-      val result2 = run(GreaterOrEqual(r2,r))
+      val result2 = get(GreaterOrEqual(r2,r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result2.get(col,row) should be (1)
@@ -119,7 +118,7 @@ class GreaterOrEqualSpec extends FunSpec
       val rs1 = RasterSource("quad_tiled")
       val rs2 = RasterSource("quad_tiled2")
 
-      getSource(rs1 >= rs2) match {
+      run(rs1 >= rs2) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until result.rasterExtent.rows) {
@@ -138,7 +137,7 @@ class GreaterOrEqualSpec extends FunSpec
       val rs1 = RasterSource("quad_tiled")
       val rs2 = RasterSource("quad_tiled2") + 1
 
-      getSource(rs1 >= rs2) match {
+      run(rs1 >= rs2) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until result.rasterExtent.rows) {
@@ -152,7 +151,7 @@ class GreaterOrEqualSpec extends FunSpec
           assert(false)
       }
 
-      getSource(rs2 >= rs1) match {
+      run(rs2 >= rs1) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until result.rasterExtent.rows) {
@@ -193,7 +192,7 @@ class GreaterOrEqualSpec extends FunSpec
         3,2,3,2)
 
 
-      getSource(rs1 >= rs2 >= rs3) match {
+      run(rs1 >= rs2 >= rs3) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {

@@ -5,14 +5,11 @@ import geotrellis.process._
 import geotrellis.statistics._
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
-import org.scalatest.junit.JUnitRunner
 
 import scala.math._
 
-@RunWith(classOf[JUnitRunner])
 class ModeSpec extends FunSpec with FocalOpSpec
                                with ShouldMatchers 
                                with RasterBuilders
@@ -28,7 +25,7 @@ class ModeSpec extends FunSpec with FocalOpSpec
                                  0, 7, 2, 0, 0,
                                  6, 6, 6, 5, 5))
 
-      var result = run(Mode(r,Square(1)))
+      var result = get(Mode(r,Square(1)))
 
       val beIn:Seq[Int]=>Matcher[Int] = seq => Matcher { x => 
         MatchResult(seq.contains(x), s"${x} was not in ${seq}", s"${x} was in ${seq}") 
@@ -72,7 +69,7 @@ class ModeSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalMode(Square(1))) match {
+      run(rs1.focalMode(Square(1))) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,

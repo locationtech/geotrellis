@@ -1,6 +1,7 @@
 package geotrellis
 
-import geotrellis.process._
+import geotrellis.process.LayerLoader
+
 import scala.{PartialFunction => PF}
 
 import akka.actor._
@@ -26,13 +27,13 @@ abstract class Operation[+T] extends Product with Serializable {
   def opId: String = _opId
   def withName(n:String):Operation[T] = { _opId += s" ($n)"; this }
 
-  protected[geotrellis] def _run(context:Context): StepOutput[T]
+  protected[geotrellis] def _run(): StepOutput[T]
   
   /**
    * Execute this operation and return the result.  
    */
-  def run(context:Context): StepOutput[T] =
-    _run(context)
+  def run(): StepOutput[T] =
+    _run()
 
   def runAsync(args:Args): StepOutput[T] = {
     StepRequiresAsync[T](args, { (nextArgs:Args) =>
@@ -139,7 +140,7 @@ abstract class Operation[+T] extends Product with Serializable {
  * If the initial operation is g, you can think of this operation as f(g(x)) 
  */
 case class CompositeOperation[+T,U](gOp:Op[U], f:(U) => Op[T]) extends Operation[T] {
-  def _run(context:Context) = runAsync('firstOp :: gOp :: Nil)
+  def _run() = runAsync('firstOp :: gOp :: Nil)
 
   val nextSteps:Steps = {
     case 'firstOp :: u :: Nil => runAsync('result :: f(u.asInstanceOf[U]) :: Nil) 
@@ -147,10 +148,8 @@ case class CompositeOperation[+T,U](gOp:Op[U], f:(U) => Op[T]) extends Operation
   } 
 }
 
-case object UnboundOperation extends Op0[Nothing](throw new Exception("foo"))
-
 abstract class OperationWrapper[+T](op:Op[T]) extends Operation[T] {
-  def _run(context:Context) = op._run(context)
+  def _run() = op._run()
   val nextSteps:Steps = op.nextSteps
 }
 
@@ -177,14 +176,14 @@ object Operation {
  */
 
 abstract class Op0[T](f:()=>StepOutput[T]) extends Operation[T] {
-  def _run(context:Context) = f()
+  def _run() = f()
   val nextSteps:Steps = {
     case _ => sys.error("should not be called")
   }
 }
 
 class Op1[A,T](a:Op[A])(f:(A)=>StepOutput[T]) extends Operation[T] {
-  def _run(context:Context) = runAsync(List(a))
+  def _run() = runAsync(List(a))
 
   def productArity = 1
   def canEqual(other:Any) = other.isInstanceOf[Op1[_,_]]
@@ -203,7 +202,7 @@ class Op2[A,B,T](a:Op[A], b:Op[B]) (f:(A,B)=>StepOutput[T]) extends Operation[T]
     case 1 => b
     case _ => throw new IndexOutOfBoundsException()
   }
-  def _run(context:Context) = runAsync(List(a,b))
+  def _run() = runAsync(List(a,b))
   val nextSteps:Steps = { 
     case a :: b :: Nil => f(a.asInstanceOf[A], b.asInstanceOf[B])
   }
@@ -219,7 +218,7 @@ class Op3[A,B,C,T](a:Op[A],b:Op[B],c:Op[C])
     case 2 => c
     case _ => throw new IndexOutOfBoundsException()
   }
-  def _run(context:Context) = runAsync(List(a,b,c))
+  def _run() = runAsync(List(a,b,c))
   val nextSteps:Steps = { 
     case a :: b :: c :: Nil => {
       f(a.asInstanceOf[A], b.asInstanceOf[B], c.asInstanceOf[C])
@@ -238,7 +237,7 @@ class Op4[A,B,C,D,T](a:Op[A],b:Op[B],c:Op[C],d:Op[D])
     case 3 => d
     case _ => throw new IndexOutOfBoundsException()
   }
-  def _run(context:Context) = runAsync(List(a,b,c,d))
+  def _run() = runAsync(List(a,b,c,d))
   val nextSteps:Steps = { 
     case a :: b :: c :: d :: Nil => {
       f(a.asInstanceOf[A], b.asInstanceOf[B], c.asInstanceOf[C], d.asInstanceOf[D])
@@ -249,7 +248,7 @@ class Op4[A,B,C,D,T](a:Op[A],b:Op[B],c:Op[C],d:Op[D])
 
 abstract class Op5[A,B,C,D,E,T](a:Op[A],b:Op[B],c:Op[C],d:Op[D],e:Op[E])
 (f:(A,B,C,D,E)=>StepOutput[T]) extends Operation[T] {
-  def _run(context:Context) = runAsync(List(a,b,c,d,e))
+  def _run() = runAsync(List(a,b,c,d,e))
   val nextSteps:Steps = {
     case a :: b :: c :: d :: e :: Nil => {
       f(a.asInstanceOf[A], b.asInstanceOf[B], c.asInstanceOf[C],
@@ -262,7 +261,7 @@ abstract class Op5[A,B,C,D,E,T](a:Op[A],b:Op[B],c:Op[C],d:Op[D],e:Op[E])
 abstract class Op6[A,B,C,D,E,F,T]
 (a:Op[A],b:Op[B],c:Op[C],d:Op[D],e:Op[E],f:Op[F])
 (ff:(A,B,C,D,E,F)=>StepOutput[T]) extends Operation[T] {
-  def _run(context:Context) = runAsync(List(a,b,c,d,e,f))
+  def _run() = runAsync(List(a,b,c,d,e,f))
   val nextSteps:Steps = {
     case a :: b :: c :: d :: e :: f :: Nil => {
       ff(a.asInstanceOf[A], b.asInstanceOf[B], c.asInstanceOf[C],

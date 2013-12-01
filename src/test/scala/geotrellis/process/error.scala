@@ -8,7 +8,7 @@ import geotrellis.process._
 import geotrellis.testutil._
 
 case class Defenestrator(msg:String) extends Operation[Unit] {
-  def _run(context:Context) = {
+  def _run() = {
     throw new Exception(msg)
     Result(Unit)
   }
@@ -17,7 +17,7 @@ case class Defenestrator(msg:String) extends Operation[Unit] {
 }
 
 case class Window(msg:String) extends Op[Unit] {
-  def _run(context:Context) = {
+  def _run() = {
     runAsync(List(Defenestrator(msg)))
   }
   val nextSteps:Steps = {
@@ -35,17 +35,18 @@ case class LargeWindow(a:Op[Unit], b:Op[Unit]) extends Op2(a,b) ({
   }
 })
 
-class FailingOpSpec extends FunSpec with MustMatchers {
+class FailingOpSpec extends FunSpec 
+                       with MustMatchers 
+                       with TestServer {
 
-describe("A failing operation") {
+  describe("A failing operation") {
     it("should return a StepError") {
-      val server = TestServer.server
       val op = Defenestrator("Ermintrude Inch")
       val op2 = Window("extremely high")
       val op3 = LargeWindow(Literal(Unit), op2)
-      evaluating { server.run(op) } must produce [java.lang.RuntimeException]
-      evaluating { server.run(op2) } must produce [java.lang.RuntimeException]
-      evaluating { server.run(op3) } must produce [java.lang.RuntimeException]
+      evaluating { get(op) } must produce [java.lang.RuntimeException]
+      evaluating { get(op2) } must produce [java.lang.RuntimeException]
+      evaluating { get(op3) } must produce [java.lang.RuntimeException]
     }
   }
 }

@@ -6,18 +6,9 @@ import geotrellis.raster._
 
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
 
-import org.scalatest.junit.JUnitRunner
-
-// 0  1  2  3
-// 4  5  6  7
-// 8  9 10 11
-//12 13 14 15
-
-@RunWith(classOf[JUnitRunner])
 class MinSpec extends FunSpec with FocalOpSpec
                               with ShouldMatchers
                               with TestServer {
@@ -103,7 +94,7 @@ class MinSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalMin(Square(1))) match {
+      run(rs1.focalMin(Square(1))) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,
@@ -131,7 +122,7 @@ class MinSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalMin(Square(2))) match {
+      run(rs1.focalMin(Square(2))) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,
@@ -159,7 +150,7 @@ class MinSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalMin(Circle(1))) match {
+      run(rs1.focalMin(Circle(1))) match {
         case Complete(result,success) =>
           //println(success)
           assertEqual(result,

@@ -6,10 +6,8 @@ import geotrellis.raster._
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 
-import org.scalatest.junit.JUnitRunner
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class FlowDirectionSpec extends FunSpec with ShouldMatchers 
                                         with TestServer 
                                         with RasterBuilders {
