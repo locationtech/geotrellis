@@ -11,9 +11,8 @@ import akka.actor._
  * back to the client.
  */
 private[actors]
-class ResultHandler(server:Server,
+class ResultHandler(serverContext:ServerContext,
                     client:ActorRef,
-                    dispatcher:ActorRef,
                     pos:Int) {
   // This method handles a given output. It will either return a result/error
   // to the client, or dispatch more asynchronous requests, as necessary.
@@ -30,15 +29,15 @@ class ResultHandler(server:Server,
 
       // we need to do more work, so as the server to do it asynchronously.
       case StepRequiresAsync(args,cb) =>
-        server.actor ! RunCallback(args, pos, cb, client, dispatcher,history)
+        serverContext.serverRef ! RunCallback(args, pos, cb, client, history)
 
       // Execute the returned operation as the next step of this calculation.
       case AndThen(op) =>
-         server.actor ! RunOperation(op, pos, client, Some(dispatcher))
+         serverContext.serverRef ! RunOperation(op, pos, client)
 
       // This result needs to know how to load layer information.
       case LayerResult(f) =>
-        val value = f(server.layerLoader)
+        val value = f(serverContext.layerLoader)
         val result = PositionedResult(Complete(value, history.withResult(value)),pos)
         client ! result
 

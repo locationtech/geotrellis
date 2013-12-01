@@ -16,7 +16,7 @@ import geotrellis.process._
  * Thus, in practice workers only ever do work on simple operations.
  */
 private[actors]
-case class Worker(val server: Server) extends Actor {
+case class Worker(val serverContext: ServerContext) extends Actor {
   // Workers themselves don't have direct children. If the operation in
   // question has a step result requiring child operations be executed 
   // asynchronously, it will be processed by a StepAggregator
@@ -25,18 +25,9 @@ case class Worker(val server: Server) extends Actor {
 
   // Actor event loop
   def receive = {
-    case RunOperation(incomingOp, pos, client, Some(ourDispatcher)) => {
-      // If the the children of this operation should be run remotely,
-      // replace our dispatcher with the remote dispatcher.
-      val (op, dispatcher) = incomingOp match {
-        case DispatchedOperation(runOp, newDispatcher) => (runOp, newDispatcher)
-        case RemoteOperation(runOp, cluster) => 
-          throw new Exception("RemoteOperation should not be passed to worker")
-        case _ => (incomingOp, ourDispatcher)
-      }
-
-      val handler = new ResultHandler(server,client,dispatcher,pos)
-      val history = History(op,server.externalId)
+    case RunOperation(op, pos, client) => {
+      val handler = new ResultHandler(serverContext,client,pos)
+      val history = History(op,serverContext.externalId)
 
       try {
         handler.handleResult(op.run(),history)
@@ -49,7 +40,6 @@ case class Worker(val server: Server) extends Actor {
         }
       }
     }
-    case RunOperation(_,_,_,None) => sys.error("received msg without dispatcher")
     case x => sys.error(s"worker got unknown msg: $x")
   }
 }

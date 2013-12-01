@@ -67,12 +67,10 @@ object RemoteClient {
 
     Cluster(server.system) registerOnMemberUp {
       println("Joined cluster.")
-      //oldTest(app)
       sourceTest(app)
       app.server.shutdown()
     }
   }
-
 
   def sourceTest(app:RemoteClientApplication):Unit = {
     val server = app.server
@@ -97,40 +95,6 @@ object RemoteClient {
     }
   }
 
-  def oldTest(app:RemoteClientApplication):Unit = {
-    val server = app.server
-    val raster = io.LoadRaster("mtsthelens_tiled_cached")
-    val op = stat.GetHistogram(raster)
-    //op.limit = 5000 // TODO: Replace grouping of ops
-
-    for(i <- 1 until 10) {
-      println(" == Sending op for remote execution.")
-      val start = System.currentTimeMillis
-
-      server.run(op.dispatch(app.router)) match {
-        case Complete(value,success) => println(success.toString)
-        case Error(msg,failure) =>
-          println(msg)
-          println(failure)
-      }
-      val elapsed = System.currentTimeMillis - start
-      println(s" ==== completed.  elapsed time: $elapsed\n")
-
-      println(s" == executing operation locally.")
-      val start2 = System.currentTimeMillis
-      server.run(op) match {
-        case Complete(value,success) => println(success.toString)
-        case Error(msg, failure) =>
-          println(msg)
-          println(failure)
-      }
-      val elapsed2 = System.currentTimeMillis - start2
-      println(s" ==== raw time for execution: $elapsed2\n\n")
-
-      Thread.sleep(200)
-    }
-    server.shutdown()
-  }
 
   def testSerialization(remoteOp:AnyRef, server:Server) {
     val serialization = SerializationExtension(server.system)

@@ -20,22 +20,16 @@ import scala.collection.mutable
 class Server (id:String, val catalog:Catalog) extends Serializable {
   val debug = false
 
-  var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(classOf[ServerActor],this), id)
+  private[process] val layerLoader = new LayerLoader(this)
 
   private[this] val cache = new HashCache[String]()
 
   catalog.initCache(cache)
 
+  var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(classOf[ServerActor],this), id)
+
   Server.startActorSystem
   def system = Server.actorSystem
-
-  val fullExternalId = system.asInstanceOf[ExtendedActorSystem].provider.getDefaultAddress.toString
-  val externalId = if (fullExternalId.startsWith("akka.tcp://GeoTrellis@")) 
-    fullExternalId.substring(22)
-  else 
-    ""
-
-  private[process] val layerLoader = new LayerLoader(this)
 
   def startUp:Unit = ()
 
@@ -85,13 +79,8 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
 
     val d = Duration.create(60000, TimeUnit.SECONDS)
     implicit val t = Timeout(d)
-    val future = op match {
-      case DispatchedOperation(wrappedOp,dispatcher) => 
-        (actor ? RunDispatched(wrappedOp, dispatcher)).mapTo[PositionedResult[T]]
-
-      case op:Op[_] => 
+    val future = 
         (actor ? Run(op)).mapTo[PositionedResult[T]]
-    }
 
     val result = Await.result(future, d)
 

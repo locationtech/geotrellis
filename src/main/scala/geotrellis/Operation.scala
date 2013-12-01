@@ -43,30 +43,6 @@ abstract class Operation[+T] extends Product with Serializable {
 
   def processNextSteps(args:Args):StepOutput[T] = nextSteps(args)
 
-  /** 
-   *  Returns an operation whose children will be executed on a remote cluster.
-   *  This method will cause the operations executed as a result of this operation
-   *  (input operations and any operations necessary for this computation) to be 
-   *  dispatched to and executed on a remote cluster.
-   *
-   */
-  def dispatch(cluster:ActorRef) =
-    DispatchedOperation(this, cluster)
-
-
-  // TODO: Get rid of.
-  /** 
-   * Returns an operation that will be executed on a remote cluster.
-   *
-   *  This method will cause the specified operation to be executed on a remote
-   *  cluster.
-   *
-   *  Note that if you wish to distribute the work of a single operation, you
-   *  should probably be using dispatch() instead of remote().
-   */
-  def remote(cluster:ActorRef) = map(x => x).dispatch(cluster)
-  
-
   /**
    * Create a new operation with a function that takes the result of this operation
    * and returns a new operation.
@@ -152,9 +128,6 @@ abstract class OperationWrapper[+T](op:Op[T]) extends Operation[T] {
   def _run() = op._run()
   val nextSteps:Steps = op.nextSteps
 }
-
-case class DispatchedOperation[+T](val op:Op[T], val dispatcher:ActorRef)
-extends OperationWrapper(op) {}
 
 case class RemoteOperation[+T](val op:Op[T], cluster:Option[ActorRef])
 extends OperationWrapper(op) {}
