@@ -22,7 +22,7 @@ object Filesystem {
       buffer.get(data, i, n)
       i += n
     }
-    
+
     data
   }
 

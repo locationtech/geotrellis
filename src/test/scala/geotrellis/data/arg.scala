@@ -115,13 +115,15 @@ class ArgSpec extends FunSpec
                                                   3, 3, 3, 4, 4, 4, 4, 4))
     }
 
-    //TODO: request region totally outside raster
     it("should handle crazy out-of-bounds requests") {
       dotest(-100.0, -100.0, -10.0, -10.0, 2, 2, Array(nd, nd,
                                                        nd, nd))
 
       dotest(1000.0, 1000.0, 1200.0, 1200.0, 2, 2, Array(nd, nd,
                                                          nd, nd))
+
+      dotest(110000.0, 120000.0, 121000.0, 122000.0, 2, 2, Array(nd, nd,
+                                                                 nd, nd))
     }
   }
 }

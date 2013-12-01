@@ -5,7 +5,9 @@ import geotrellis.data.RasterReader
 
 import org.scalatest.FunSuite
 
-// TODO
+// TODO - once a implementation of reading with resample to a byte data,
+// reimplement these test with that new code.
+
 // @RunWith(classOf[JUnitRunner])
 // class ResampledArrayRasterDataTest extends FunSuite {
 //   val (cols, rows) = (5, 5)

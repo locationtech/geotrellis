@@ -43,6 +43,4 @@ class ArgTest extends FunSuite {
     assert(data2.applyDouble(3) === 0.0)
     assert(data2(0) === 0)
   }
-
-  // TODO: actually create and read a real float32 or float64 arg
 }
