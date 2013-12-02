@@ -15,18 +15,17 @@ object FastMapHistogram {
   def apply() = new FastMapHistogram(SIZE, buckets(SIZE), 0, 0)
   def apply(size:Int) = new FastMapHistogram(size, buckets(size), 0, 0)
 
-  def fromRaster(r:Raster) = {
+  def fromRaster(r:Raster):FastMapHistogram = {
     val h = FastMapHistogram()
     r.foreach(z => if (isData(z)) h.countItem(z, 1))
     h
   }
 
-  def fromHistograms(hs:Seq[Histogram]) = {
-    val total:Histogram = FastMapHistogram()
+  def fromHistograms(hs:TraversableOnce[Histogram]):FastMapHistogram = {
+    val total = FastMapHistogram()
     hs.foreach(h => total.update(h))
     total
   }
-
   
   /**
    * Create a histogram from double values in a raster.
@@ -49,7 +48,8 @@ object FastMapHistogram {
   }
 }
 
-class FastMapHistogram(_size:Int, _buckets:Array[Int], _used:Int, _total:Int) extends Histogram {
+class FastMapHistogram(_size:Int, _buckets:Array[Int], _used:Int, _total:Int) 
+    extends MutableHistogram {
   if (_size <= 0) error("initializeSize must be > 0")
 
   // we are reserving this value
@@ -193,7 +193,7 @@ class FastMapHistogram(_size:Int, _buckets:Array[Int], _used:Int, _total:Int) ex
 
   def getTotalCount = total
 
-  def copy() = new FastMapHistogram(size, buckets.clone(), used, total)
+  def mutable() = new FastMapHistogram(size, buckets.clone(), used, total)
 
   def rawValues() = {
     val keys = Array.ofDim[Int](used)

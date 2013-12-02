@@ -70,13 +70,7 @@ class HistogramSpec extends FunSpec with MustMatchers with ShouldMatchers {
           h.getMinValue must be === 6
           h.getMaxValue must be === 8
         }
-    
-        it("should build even quantile ranges") {
-          val h = builder()
-          h.getEvenQuantiles(2).map { i => round(i * 10) } must be === Array(5, 10)
-          h.getEvenQuantiles(5).map { i => round(i * 10) } must be === Array(2, 4, 6, 8, 10)
-        }
-    
+        
         it("should generate quantile breaks") {
           val h = builder()
     
