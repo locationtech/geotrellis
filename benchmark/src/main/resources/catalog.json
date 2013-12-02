@@ -5,7 +5,7 @@
    "store": "test:fs",
    "params": {
      "type": "fs",
-     "path": "src/main/resources/sbn",
+     "path": "sbn",
      "cacheAll": "yes"
    }
   }
