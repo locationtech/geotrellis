@@ -25,12 +25,6 @@ trait Raster {
   lazy val cols = rasterExtent.cols
   lazy val rows = rasterExtent.rows
 
-  /** This function will force any deferred operations to happen
-   *  at the time it is called. This is necessary so that lazy maps
-   *  don't get passed between machines.
-   */
-//  def force():Raster
-
   val rasterType:RasterType
   def isFloat:Boolean = rasterType.float
 
@@ -48,10 +42,6 @@ trait Raster {
   def toArray():Array[Int]
   def toArrayDouble():Array[Double]
 
-  /**
-   * Clone this raster.
-   */
-//  def copy():Raster
   def convert(typ:RasterType):Raster
 
   def dualForeach(f:Int => Unit)(g:Double => Unit):Unit =

@@ -15,10 +15,10 @@ object MapHistogram {
   * Data object representing a histogram that uses a Map (as in hashtable map/dictionary) for internal storage.
   *
   */
-class MapHistogram(counts:Map[Int, Int], var total:Int) extends Histogram {
+class MapHistogram(counts:Map[Int, Int], var total:Int) extends MutableHistogram {
   def getTotalCount = this.total
 
-  def copy() = MapHistogram(this.counts.clone, this.total)
+  def mutable() = MapHistogram(this.counts.clone, this.total)
 
   def getValues() = {
     var keys = rawValues()
