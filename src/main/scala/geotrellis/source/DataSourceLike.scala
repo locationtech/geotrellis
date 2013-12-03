@@ -6,8 +6,8 @@ import scala.language.higherKinds
 
 trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
   def elements():Op[Seq[Op[T]]]
-  def get():Op[V]
-  def converge() = ValueSource(get.withName("Converge"))
+  private[geotrellis] def convergeOp():Op[V]
+  def converge() = ValueSource(convergeOp.withName("Converge"))
   def converge[B](f:Seq[T]=>B):ValueSource[B] =
     ValueSource( logic.Collect(elements).map(f).withName("Converge") )
 
@@ -103,4 +103,7 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
     builder.setOp(newElements)
     builder.result
   }
+
+  def run(implicit server:process.Server) = server.run(this)
+  def get(implicit server:process.Server) = server.get(this)
 }

@@ -9,14 +9,13 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class GetStatisticsSpec extends FunSpec 
                            with TestServer
                            with ShouldMatchers {
   describe("GetStatistics") {
     it("get expected statistics from quad8") {
       val r = io.LoadFile("src/test/resources/quad8.arg")
-      val stats = run(GetStatistics(GetHistogram(r)))
+      val stats = get(GetStatistics(GetHistogram(r)))
 
       val dev = math.sqrt((2 * (0.5 * 0.5) + 2 * (1.5 * 1.5)) / 4)
       val expected = Statistics(2.5, 3, 1, dev, 1, 4)

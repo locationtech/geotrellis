@@ -5,12 +5,17 @@ import org.scalatest.matchers._
 import geotrellis.{Extent,RasterExtent}
 import geotrellis.raster.IntConstant
 import geotrellis._
+import geotrellis.testutil._
 
 import scala.collection.JavaConversions._
 
-class CatalogSpec extends FunSpec with MustMatchers with ShouldMatchers {
+class CatalogSpec extends FunSpec 
+                     with MustMatchers 
+                     with ShouldMatchers 
+                     with TestServer {
 
   val datapath = "src/test/resources/data"
+  val datapath2 = "src/test/resources/data2"
 
   val json0 = """
             {
@@ -101,10 +106,8 @@ class CatalogSpec extends FunSpec with MustMatchers with ShouldMatchers {
     } 
 
     it("should create IntConstant arg") {
-      val s = Server("catalogtest", catalog)
-      val context = new Context(s)
-      val result = context.getRasterByName("constant", None).asInstanceOf[Result[Raster]]
-      assert(result.value.asInstanceOf[ArrayRaster].data.isInstanceOf[IntConstant])
+      val result = get(io.LoadRaster("constant"))
+      assert(result.asInstanceOf[ArrayRaster].data.isInstanceOf[IntConstant])
     }
 
     it("should correctly recognize to cache all") {
@@ -153,6 +156,64 @@ class CatalogSpec extends FunSpec with MustMatchers with ShouldMatchers {
 
       val catalog = Catalog.fromJSON(noCacheAllLine)
       catalog.stores("test:fs").hasCacheAll should be (false)
+    }
+
+    it("should throw if getting by single name and same name existsin two different data stores") {
+      val noCacheAllLine = s"""
+{
+ "catalog": "Test",
+ "stores": [
+  {
+   "store": "store1",
+   "params": {
+     "type": "fs",
+     "path": "$datapath"
+    }
+  },
+  {
+   "store": "store2",
+   "params": {
+     "type": "fs",
+     "path": "$datapath2"
+    }
+  }
+ ]
+}
+      """
+
+      val catalog = Catalog.fromJSON(noCacheAllLine)
+      evaluating {
+        catalog.getRasterLayer(LayerId("elevation"))
+      } should produce [Exception]
+    }
+  
+    it("should get a layer by data store and name") {
+      val noCacheAllLine = s"""
+{
+ "catalog": "Test",
+ "stores": [
+  {
+   "store": "store1",
+   "params": {
+     "type": "fs",
+     "path": "$datapath"
+    }
+  },
+  {
+   "store": "store2",
+   "params": {
+     "type": "fs",
+     "path": "$datapath2"
+    }
+  }
+ ]
+}
+      """
+
+      val catalog = Catalog.fromJSON(noCacheAllLine)
+      val layer1 = catalog.getRasterLayer(LayerId("store1","quadborder")).get
+      val layer2 = catalog.getRasterLayer(LayerId("store2","quadborder")).get
+      layer1.info.rasterExtent should not be (layer2.info.rasterExtent)
     }
   }
 }

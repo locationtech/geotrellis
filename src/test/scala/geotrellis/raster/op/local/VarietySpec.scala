@@ -55,7 +55,7 @@ class VarietySpec extends FunSpec
         5,4
       )
 
-      val variety = run(Variety(r1,r2,r3,r4,r5))
+      val variety = get(Variety(r1,r2,r3,r4,r5))
       for(col <- 0 until 5) {
         for(row <- 0 until 4) {
           if(col== row + 1) {
@@ -114,7 +114,7 @@ class VarietySpec extends FunSpec
         2,2,3,2
       )
 
-      getSource(r1.localVariety(r2,r3,r4,r5)) match {
+      run(r1.localVariety(r2,r3,r4,r5)) match {
         case Complete(result,success) =>
           for(col <- 0 until 6) {
             for(row <- 0 until 4) {

@@ -9,7 +9,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class PowSpec extends FunSpec 
                       with ShouldMatchers 
                       with TestServer 
@@ -17,7 +16,7 @@ class PowSpec extends FunSpec
   describe("Pow") {
     it("Raises an int raster to an int power") {
       val r = positiveIntegerRaster
-      val result = run(Pow(r,5))
+      val result = get(Pow(r,5))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           withClue(s"Failure at $col,$row") {
@@ -29,7 +28,7 @@ class PowSpec extends FunSpec
 
     it("raises a double raster to an int power") {
       val r = probabilityRaster
-      val result = run(Pow(r,3))
+      val result = get(Pow(r,3))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should be (math.pow(r.getDouble(col,row),3))
@@ -39,7 +38,7 @@ class PowSpec extends FunSpec
 
     it("raises an integer to the power of an int raster's cells") {
       val r = positiveIntegerRaster
-      val result = run(Pow(-10,r))
+      val result = get(Pow(-10,r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (math.pow(-10, r.get(col,row)).toInt)
@@ -49,7 +48,7 @@ class PowSpec extends FunSpec
 
     it("raises an integer to the power of a double raster's cells") {
       val r = probabilityRaster
-      val result = run(Pow(3,r))
+      val result = get(Pow(3,r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should be (math.pow(3.0, r.getDouble(col,row)))
@@ -59,7 +58,7 @@ class PowSpec extends FunSpec
 
     it("raises an int raster to a double power") {
       val r = positiveIntegerRaster
-      val result = run(Pow(r,5.1))
+      val result = get(Pow(r,5.1))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (math.pow(r.get(col,row), 5.1).toInt)
@@ -69,7 +68,7 @@ class PowSpec extends FunSpec
 
     it("raises a double raster to a double power") {
       val r = probabilityRaster
-      val result = run(Pow(r,.3))
+      val result = get(Pow(r,.3))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should be (math.pow(r.getDouble(col,row), 0.3))
@@ -79,7 +78,7 @@ class PowSpec extends FunSpec
 
     it("raises a double to the power of a int raster's cells") {
       val r = positiveIntegerRaster
-      val result = run(Pow(-10.7,r))
+      val result = get(Pow(-10.7,r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be ( math.pow(-10.7, r.get(col,row)).toInt)
@@ -89,7 +88,7 @@ class PowSpec extends FunSpec
 
     it("raises a double value to the power of a double raster's cells") {
       val r = probabilityRaster
-      val result = run(Pow(-3.3,r))
+      val result = get(Pow(-3.3,r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.getDouble(col,row)
@@ -104,7 +103,7 @@ class PowSpec extends FunSpec
 
     it("raises an integer raster to itself") {
       val r = positiveIntegerRaster
-      val result = run(Pow(r,r))
+      val result = get(Pow(r,r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.get(col,row)
@@ -116,7 +115,7 @@ class PowSpec extends FunSpec
     
     it("raises a double raster to itself") {
       val r = probabilityRaster
-      val result = run(Pow(r,r))
+      val result = get(Pow(r,r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.getDouble(col,row)
@@ -129,9 +128,9 @@ class PowSpec extends FunSpec
       val rs1 = RasterSource("quad_tiled")
       val rs2 = RasterSource("quad_tiled2")
 
-      val r1 = runSource(rs1)
-      val r2 = runSource(rs2)
-      getSource(rs1 ** rs2) match {
+      val r1 = get(rs1)
+      val r2 = get(rs2)
+      run(rs1 ** rs2) match {
         case Complete(result,success) =>
           //println(success)
           for(row <- 0 until r1.rasterExtent.rows) {
@@ -177,7 +176,7 @@ class PowSpec extends FunSpec
                2,2,2, 2,2,2, 2,2,2),
         3,2,3,2)
 
-      getSource(rs1**rs2**rs3) match {
+      run(rs1**rs2**rs3) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {

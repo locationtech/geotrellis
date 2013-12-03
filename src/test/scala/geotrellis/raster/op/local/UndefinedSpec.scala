@@ -9,7 +9,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class UndefinedSpec extends FunSpec 
                     with ShouldMatchers 
                     with TestServer 
@@ -17,7 +16,7 @@ class UndefinedSpec extends FunSpec
   describe("Undefined") {
     it("returns correct result for an integer raster") {
       val r = positiveIntegerNoDataRaster
-      val result = run(Undefined(r))
+      val result = get(Undefined(r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(isNoData(r.get(col,row))) result.get(col,row) should be (1)
@@ -28,7 +27,7 @@ class UndefinedSpec extends FunSpec
 
     it("returns correct result for a double raster") {
       val r = probabilityNoDataRaster
-      val result = run(Undefined(r))
+      val result = get(Undefined(r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(isNoData(r.getDouble(col,row))) result.get(col,row) should be (1)
@@ -40,8 +39,8 @@ class UndefinedSpec extends FunSpec
     it("returns correct result for a double raster source correctly") {
       val rs = RasterSource("mtsthelens_tiled")
 
-      val r = runSource(rs)
-      getSource(rs.localUndefined) match {
+      val r = get(rs)
+      run(rs.localUndefined) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until r.rasterExtent.rows / 3) {
@@ -70,7 +69,7 @@ class UndefinedSpec extends FunSpec
                1,1,1, 1,1,1, 1,1,1),
         3,2,3,2)
 
-      getSource(rs.localUndefined) match {
+      run(rs.localUndefined) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {

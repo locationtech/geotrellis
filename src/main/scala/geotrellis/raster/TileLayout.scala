@@ -11,6 +11,12 @@ import geotrellis.util.Filesystem
 object TileLayout {
   def apply(re:RasterExtent, tileCols:Int, tileRows:Int):TileLayout =
     TileLayout(tileCols,tileRows,math.ceil(re.cols/tileCols).toInt,math.ceil(re.rows/tileRows).toInt)
+
+  def fromTileDimensions(re:RasterExtent, pixelCols:Int, pixelRows:Int):TileLayout = {
+    val tileCols = (re.cols + pixelCols - 1) / pixelCols
+    val tileRows = (re.rows + pixelRows - 1) / pixelRows
+    TileLayout(tileCols, tileRows, pixelCols, pixelRows)
+  }
 }
 
 /**
@@ -18,6 +24,7 @@ object TileLayout {
  * cols/rows) and also the size of each tile (in cols/rows of pixels).
  */
 case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int) {
+  def isTiled = tileCols > 1 || tileRows > 1
 
   /**
    * Return the total number of columns across all the tiles.

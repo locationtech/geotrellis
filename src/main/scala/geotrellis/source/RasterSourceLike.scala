@@ -4,6 +4,7 @@ import geotrellis._
 import geotrellis.feature._
 import geotrellis.raster.op._
 import geotrellis.statistics.op._
+import geotrellis.render.op._
 
 import geotrellis.raster._
 
@@ -19,14 +20,16 @@ trait RasterSourceLike[+Repr <: RasterSource]
     with zonal.ZonalOpMethods[Repr]
     with zonal.summary.ZonalSummaryOpMethods[Repr]
     with stat.StatOpMethods[Repr] 
-    with io.IoOpMethods[Repr] { self: Repr =>
+    with io.IoOpMethods[Repr] 
+    with RenderOpMethods[Repr] { self: Repr =>
 
   def tiles = self.elements
   def rasterDefinition:Op[RasterDefinition]
 
-  def get():Op[Raster] =
+  def convergeOp():Op[Raster] =
     (rasterDefinition,logic.Collect(tiles)).map { (rd,tileSeq) =>
-      TileRaster(tileSeq,rd.re,rd.tileLayout).toArrayRaster
+      if(tileSeq.size == 1) tileSeq(0)
+      else TileRaster(tileSeq,rd.re,rd.tileLayout).toArrayRaster
     }
 
   def global[That](f:Raster=>Raster)
@@ -126,6 +129,8 @@ trait RasterSourceLike[+Repr <: RasterSource]
            else math.max(max1,max2)
           )
          }
+
+  def info:ValueSource[process.RasterLayerInfo] = ValueSource(rasterDefinition.flatMap( rd => io.LoadRasterLayerInfo(rd.layerId)))
 }
 
 abstract sealed trait TileIntersection

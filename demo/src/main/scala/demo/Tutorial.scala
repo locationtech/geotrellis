@@ -6,7 +6,9 @@ import javax.ws.rs.core.{Response, Context}
 
 import geotrellis._
 import geotrellis.data._
-import geotrellis.data.ColorRamps._
+import geotrellis.render.ColorRamps._
+import geotrellis.render._
+import geotrellis.render.op._
 import geotrellis.statistics.{Histogram}
 import geotrellis.process.{Server}
 import geotrellis.Implicits._
@@ -39,7 +41,7 @@ class AddOne {
 
     // run the operation
     val data:String = try {
-      val y:Int = Demo.server.run(opY)
+      val y:Int = Demo.server.get(opY)
       y.toString
     } catch {
       case e:Throwable => e.toString
@@ -79,10 +81,10 @@ class SimpleDrawRaster {
   @Path("/{name}")
   def get(@PathParam("name") name:String) = {
     val rasterOp:Op[Raster] = io.LoadRaster(name)
-    val pngOp:Op[Array[Byte]] = io.SimpleRenderPng(rasterOp, BlueToRed)
+    val pngOp:Op[Array[Byte]] = SimpleRenderPng(rasterOp, BlueToRed)
     // run the operation
     try {
-      val img:Array[Byte] = Demo.server.run(pngOp)
+      val img:Array[Byte] = Demo.server.get(pngOp)
       response("image/png")(img)
     } catch {
       case e:Throwable => response("text/plain")(e.toString)
@@ -105,18 +107,18 @@ class DrawRaster {
     // find the colors to use
     val paletteOp:Op[Array[Int]] = logic.ForEach(string.SplitOnComma(palette))(string.ParseColor(_))
     val numOp:Op[Int] = string.ParseInt(shades)
-    val colorsOp:Op[Array[Int]] = stat.GetColorsFromPalette(paletteOp, numOp)
+    val colorsOp:Op[Array[Int]] = GetColorsFromPalette(paletteOp, numOp)
 
     // find the appropriate quantile class breaks to use
     val histogramOp:Op[Histogram] = stat.GetHistogram(rasterOp)
-    val breaksOp:Op[ColorBreaks] = stat.GetColorBreaks(histogramOp, colorsOp)
+    val breaksOp:Op[ColorBreaks] = GetColorBreaks(histogramOp, colorsOp)
 
     // render the png
-    val pngOp:Op[Array[Byte]] = io.RenderPng(rasterOp, breaksOp, 0)
+    val pngOp:Op[Array[Byte]] = RenderPng(rasterOp, breaksOp, 0)
 
     // run the operation
     try {
-      val img:Array[Byte] = Demo.server.run(pngOp)
+      val img:Array[Byte] = Demo.server.get(pngOp)
       response("image/png")(img)
     } catch {
       case e:Throwable => response("text/plain")(e.toString)

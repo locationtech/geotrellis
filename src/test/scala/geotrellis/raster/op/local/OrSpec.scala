@@ -8,7 +8,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class OrSpec extends FunSpec 
                  with ShouldMatchers 
                  with TestServer 
@@ -57,7 +56,7 @@ class OrSpec extends FunSpec
                3,3,3, 3,3,3, 3,3,3),
         3,2,3,2)
 
-      getSource(rs1 | rs2 | rs3) match {
+      run(rs1 | rs2 | rs3) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {

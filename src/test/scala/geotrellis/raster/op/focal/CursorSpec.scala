@@ -10,7 +10,6 @@ import scala.math._
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class CursorSpec extends FunSpec with ShouldMatchers with RasterBuilders {
 
   def checkSet(r:Raster,set:CellSet,cursor:Cursor,m:Movement,center:(Int,Int),expected:Seq[Int]) = {

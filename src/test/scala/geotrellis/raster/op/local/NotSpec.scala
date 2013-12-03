@@ -9,7 +9,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class NotSpec extends FunSpec 
                  with ShouldMatchers 
                  with TestServer 
@@ -29,7 +28,7 @@ class NotSpec extends FunSpec
           1,1,1, 1,1,1, 1,1,1),
         3,2,3,2)
 
-      getSource(~rs1) match {
+      run(~rs1) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {

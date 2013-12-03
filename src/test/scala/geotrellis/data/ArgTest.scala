@@ -3,11 +3,8 @@ package geotrellis.data
 import geotrellis._
 import geotrellis.raster._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
 class ArgTest extends FunSuite {
   var r:Raster = null
 
@@ -46,6 +43,4 @@ class ArgTest extends FunSuite {
     assert(data2.applyDouble(3) === 0.0)
     assert(data2(0) === 0)
   }
-
-  // TODO: actually create and read a real float32 or float64 arg
 }

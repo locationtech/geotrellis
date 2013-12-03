@@ -8,12 +8,11 @@ import geotrellis.process._
 import geotrellis.data._
 import geotrellis.testutil._
 import geotrellis.raster._
+import geotrellis.render._
+import geotrellis.render.op._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
 class HillshadeSpec extends FunSuite 
                        with TestServer 
                        with RasterBuilders {
@@ -39,8 +38,8 @@ class HillshadeSpec extends FunSuite
     val data = IntArrayRasterData(arr, 5, 5)
     val r = Raster(data, re)
 
-    val h = run(Hillshade(Aspect(r),Slope(r,1.0),315.0,45.0))
-    val h2 = run(Hillshade(r,315.0,45.0,1.0))
+    val h = get(Hillshade(Aspect(r),Slope(r,1.0),315.0,45.0))
+    val h2 = get(Hillshade(r,315.0,45.0,1.0))
     assert(h.get(2, 2) === 77)
     assert(h2.get(2,2) === 77)
   }
@@ -54,20 +53,20 @@ class HillshadeSpec extends FunSuite
     println("Loading raster")
   
     val t0 = time()
-    val r = server.run(io.LoadFile(path))
-    val h = server.run(stat.GetHistogram(r))
+    val r = get(io.LoadFile(path))
+    val h = get(stat.GetHistogram(r))
     println("loaded raster in %s ms" format (time() - t0))
   
-    run(io.WritePng(r, "/tmp/raster.png", grayscale(6), 0))
+    get(io.WritePng(r, "/tmp/raster.png", grayscale(6), 0))
   
     val t1 = time()
-    val r1 = server.run(Hillshade(r))
+    val r1 = get(Hillshade(r))
     println("generated hillshade from memory in %s ms" format (time() - t1))
 
-    val h1 = server.run(stat.GetHistogram(r1))
+    val h1 = get(stat.GetHistogram(r1))
 
     val t2 = time()
-    run(io.WritePng(r1, "/tmp/hillshade2.png", grayBreaks, 0))
+    get(io.WritePng(r1, "/tmp/hillshade2.png", grayBreaks, 0))
     println("[2] wrote png in %s ms" format (time() - t2))
 
     val palette = Array(0xff0000ff, 0xff8800ff, 0xffff00ff,
@@ -79,19 +78,19 @@ class HillshadeSpec extends FunSuite
     val colors638 = new MultiColorRangeChooser(palette).getColors(638)
 
     val t3 = time()
-    run(io.WritePng(r, "/tmp/raster3.png", stat.GetColorBreaks(h, colors10), 0))
+    get(io.WritePng(r, "/tmp/raster3.png", GetColorBreaks(h, colors10), 0))
     println("[3] wrote png in %s ms" format (time() - t3))
 
     val t4 = time()
-    run(io.WritePng(r, "/tmp/raster4.png", stat.GetColorBreaks(h, colors100), 0))
+    get(io.WritePng(r, "/tmp/raster4.png", GetColorBreaks(h, colors100), 0))
     println("[4] wrote png in %s ms" format (time() - t4))
 
     val t5 = time()
-    run(io.WritePng(r, "/tmp/raster5.png", stat.GetColorBreaks(h, colors1000), 0))
+    get(io.WritePng(r, "/tmp/raster5.png", GetColorBreaks(h, colors1000), 0))
     println("[5] wrote png in %s ms" format (time() - t5))
 
     val t6 = time()
-    run(io.WritePng(r, "/tmp/raster6.png", stat.GetColorBreaks(h, colors638), 0))
+    get(io.WritePng(r, "/tmp/raster6.png", GetColorBreaks(h, colors638), 0))
     println("[6] wrote png in %s ms" format (time() - t6))
   }
 
@@ -104,7 +103,7 @@ class HillshadeSpec extends FunSuite
             0, 2447, 2455,        2477, 0, 0),
       2,2,3,2,5,5)
 
-    getSource(rs.focalHillshade(315.0,45.0,1.0)) match {
+    run(rs.focalHillshade(315.0,45.0,1.0)) match {
       case Complete(result,success) =>
         //          println(success)
         printR(result)
@@ -117,7 +116,7 @@ class HillshadeSpec extends FunSuite
   }
 
   test("should get the same result for split raster") {
-    val rOp = get("elevation")
+    val rOp = getRaster("elevation")
     val nonTiledSlope = Hillshade(rOp,315.0,45.0,1.0)
 
     val tiled =
@@ -130,7 +129,7 @@ class HillshadeSpec extends FunSuite
       }
 
     val rs = RasterSource(tiled)
-    getSource(rs.focalHillshade(315.0,45.0,1.0)) match {
+    run(rs.focalHillshade(315.0,45.0,1.0)) match {
       case Complete(result,success) =>
         //          println(success)
         assertEqual(result,nonTiledSlope)

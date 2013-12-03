@@ -31,7 +31,7 @@ object MapOp {
  * Invoke a function that takes no arguments.
  */
 case class MapOp0[Z](call:() => Z) extends Op[Z] {
-  def _run(context:Context) = Result(call())
+  def _run() = Result(call())
   val nextSteps:Steps = {
     case _ => sys.error("Should not be called.")
   }
@@ -44,7 +44,7 @@ case class MapOp0[Z](call:() => Z) extends Op[Z] {
  * using a function from A => Z.
  */
 case class MapOp1[A, Z](a:Op[A])(call:A => Z) extends Op[Z] {
-  def _run(context:Context) = runAsync(a :: Nil)
+  def _run() = runAsync(a :: Nil)
   val nextSteps:Steps = {
     case a :: Nil => Result(call(a.asInstanceOf[A]))
   }
@@ -58,7 +58,7 @@ case class MapOp1[A, Z](a:Op[A])(call:A => Z) extends Op[Z] {
  */
 case class MapOp2[A, B, Z]
 (a:Op[A], b:Op[B])(call:(A,B) => Z) extends Op[Z] {
-  def _run(context:Context) = runAsync(a :: b :: Nil)
+  def _run() = runAsync(a :: b :: Nil)
   val nextSteps:Steps = {
     case a :: b :: Nil => Result(call(a.asInstanceOf[A],
                                       b.asInstanceOf[B]))

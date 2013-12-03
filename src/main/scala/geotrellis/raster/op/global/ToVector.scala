@@ -10,8 +10,10 @@ import scala.collection.mutable
 
 import spire.syntax._
 
-case class ToVector(r:Op[Raster]) extends Operation[List[Polygon[Int]]] {
-  def _run(context:Context) = runAsync('init :: r :: Nil)
+case class ToVector(r:Op[Raster], 
+                    regionConnectivity:Connectivity = RegionGroupOptions.default.connectivity)
+    extends Operation[List[Polygon[Int]]] {
+  def _run() = runAsync('init :: r :: Nil)
 
   class ToVectorCallback(val polyizer:Polygonizer,
                          val r:Raster,
@@ -40,7 +42,12 @@ case class ToVector(r:Op[Raster]) extends Operation[List[Polygon[Int]]] {
 
   val nextSteps:Steps = {
     case 'init :: a :: Nil => 
-      runAsync('regioned :: RegionGroup(r,RegionGroupOptions(false)) :: Nil)
+      val regionGroupOptions = 
+        RegionGroupOptions(
+          connectivity = regionConnectivity,
+          ignoreNoData = false
+        )
+      runAsync('regioned :: RegionGroup(r,regionGroupOptions) :: Nil)
     case 'regioned :: (rgr:RegionGroupResult) :: Nil =>
       val polyizer = new Polygonizer(rgr.raster)
       val r = rgr.raster

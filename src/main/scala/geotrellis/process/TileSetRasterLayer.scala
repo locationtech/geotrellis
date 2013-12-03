@@ -14,7 +14,7 @@ import scala.collection.mutable
 
 object TileSetRasterLayerBuilder
 extends RasterLayerBuilder {
-  def apply(jsonPath:String, json:Config):Option[RasterLayer] = {
+  def apply(ds:Option[String],jsonPath:String, json:Config):Option[RasterLayer] = {
     val tileDir = 
       if(json.hasPath("path")) {
         val f = new File(json.getString("path"))
@@ -24,7 +24,7 @@ extends RasterLayerBuilder {
           new File(new File(jsonPath).getParent, f.getPath)
         }
       } else {
-        // Default to a directory with the same base name as the .json file.
+        // Default to a directory with the same name as the layer name.
         new File(new File(jsonPath).getParent, getName(json))
       }
 
@@ -47,14 +47,17 @@ extends RasterLayerBuilder {
       val rasterExtent = RasterExtent(getExtent(json), cw, ch, cols, rows)
       val layout = TileLayout(layoutCols, layoutRows, pixelCols, pixelRows)
 
-      val info = RasterLayerInfo(getName(json),
-                                 getRasterType(json),
-                                 rasterExtent,
-                                 getEpsg(json),                            
-                                 getXskew(json),
-                                 getYskew(json),
-                                 layout,
-                                 getCacheFlag(json))
+      val info = 
+        RasterLayerInfo(
+          LayerId(ds,getName(json)),
+          getRasterType(json),
+          rasterExtent,
+          getEpsg(json),
+          getXskew(json),
+          getYskew(json),
+          layout,
+          getCacheFlag(json)
+        )
 
       Some(new TileSetRasterLayer(info,tileDirPath,layout))
     }
@@ -62,8 +65,11 @@ extends RasterLayerBuilder {
 }
 
 object TileSetRasterLayer {
-  def tileCacheName(info:RasterLayerInfo,col:Int,row:Int) = 
-    s"${info.name}_${col}_${row}"
+  def tileName(id:LayerId,col:Int,row:Int) = 
+    s"${id}_${col}_${row}"
+
+  def tilePath(path:String, id:LayerId, col:Int, row:Int) =
+    Filesystem.join(path, s"${id.name}_${col}_${row}.arg")
 }
 
 class TileSetRasterLayer(info:RasterLayerInfo, 
@@ -75,9 +81,6 @@ extends RasterLayer(info) {
       case Some(re) =>
         // If a specific raster extent is asked for,
         // load an ArrayRasterData for the extent.
-        // TODO: Is this the best strategy? Or should
-        // tile rasters loaded with different extents\resolutions
-        // produce tiled rasters?
 
         // Create destination raster data
         val data = RasterData.emptyByType(info.rasterType,re.cols,re.rows)
@@ -96,7 +99,7 @@ extends RasterLayer(info) {
                 val tileRe = RasterExtent(ext,re.cellwidth,re.cellheight,cols,rows)
 
                 // Read section of the tile
-                val path = Tiler.tilePath(tileDirPath, info.name, tcol, trow)
+                val path = TileSetRasterLayer.tilePath(tileDirPath, info.id, tcol, trow)
                 val sourceRasterExtent = resLayout.getRasterExtent(tcol,trow)
                 val rasterPart = 
                   new ArgReader(path).readPath(info.rasterType,sourceRasterExtent,tileRe)
@@ -147,11 +150,11 @@ extends RasterLayer(info) {
     else 
       new DiskTileLoader(info,tileLayout,tileDirPath)
 
-  def cache(c:Cache) = {
+  def cache(c:Cache[String]) = {
     for(col <- 0 until tileLayout.tileCols) {
       for(row <- 0 until tileLayout.tileRows) {
-        val path = Tiler.tilePath(tileDirPath, info.name, col, row)
-        c.insert(TileSetRasterLayer.tileCacheName(info,col,row), Filesystem.slurp(path))
+        val path = TileSetRasterLayer.tilePath(tileDirPath, info.id, col, row)
+        c.insert(TileSetRasterLayer.tileName(info.id,col,row), Filesystem.slurp(path))
       }
     }
   }
@@ -187,7 +190,7 @@ class DiskTileLoader(tileSetInfo:RasterLayerInfo,
                      tileDirPath:String)
 extends TileLoader(tileSetInfo,tileLayout) {
   def loadRaster(col:Int,row:Int,re:RasterExtent,targetExtent:Option[RasterExtent]) = {
-      val path = Tiler.tilePath(tileDirPath, tileSetInfo.name, col, row)
+    val path = TileSetRasterLayer.tilePath(tileDirPath, tileSetInfo.id, col, row)
     val reader = new ArgReader(path)
     val tre =
       targetExtent match {
@@ -198,12 +201,12 @@ extends TileLoader(tileSetInfo,tileLayout) {
   }
 }
 
-class CacheTileLoader(tileSetInfo:RasterLayerInfo,
+class CacheTileLoader(info:RasterLayerInfo,
                       tileLayout:TileLayout,
-                      c:Cache)
-extends TileLoader(tileSetInfo,tileLayout) {
+                      c:Cache[String])
+extends TileLoader(info,tileLayout) {
   def loadRaster(col:Int,row:Int,re:RasterExtent,targetExtent:Option[RasterExtent]) = {
-    c.lookup[Array[Byte]](TileSetRasterLayer.tileCacheName(tileSetInfo,col,row)) match {
+    c.lookup[Array[Byte]](TileSetRasterLayer.tileName(info.id,col,row)) match {
       case Some(bytes) =>
         val reader = new ArgReader("")
         val tre = 
@@ -211,7 +214,7 @@ extends TileLoader(tileSetInfo,tileLayout) {
             case Some(x) => x
             case None => re
           }
-        reader.readCache(bytes, tileSetInfo.rasterType, re, tre)
+        reader.readCache(bytes, info.rasterType, re, tre)
       case None =>
         sys.error("Cache problem: Tile thinks it's cached but it is in fact not cached.")
     }

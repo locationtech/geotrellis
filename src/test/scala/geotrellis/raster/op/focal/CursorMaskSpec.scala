@@ -10,7 +10,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import Movement._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class CursorMaskSpec extends FunSpec with ShouldMatchers {
   val testArray = Array(Array( 1,  2,  3,  4),
                         Array( 5,  6,  7,  8),

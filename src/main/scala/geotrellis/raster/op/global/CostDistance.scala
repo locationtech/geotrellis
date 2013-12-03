@@ -17,7 +17,7 @@ import java.util.PriorityQueue
   * 
   */
 final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int,Int)]]) extends Op[Raster] {
-  def _run(context:Context) = runAsync(List(costOp,pointsOp))
+  def _run() = runAsync(List(costOp,pointsOp))
 
   val nextSteps:Steps = {
     case List(cost, points) => costDistance(

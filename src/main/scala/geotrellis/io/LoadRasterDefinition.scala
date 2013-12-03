@@ -4,15 +4,24 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.source._
 
+object LoadRasterDefinition {
+  def apply(n:String):LoadRasterDefinition =
+    LoadRasterDefinition(LayerId(n))
+
+  def apply(ds:String,n:String):LoadRasterDefinition =
+    LoadRasterDefinition(LayerId(ds,n))
+}
+
 /**
   * Load the [[RasterDefinition]] from the raster layer with the specified name.
   */
-case class LoadRasterDefinition(n:Op[String]) extends Op[RasterDefinition] {
-  def _run(context:Context) = runAsync(List(n, context))
+case class LoadRasterDefinition(layerId:Op[LayerId]) extends Op[RasterDefinition] {
+  def _run() = runAsync(List(layerId))
   val nextSteps:Steps = {
-    case (n:String) :: (context:Context) :: Nil => {
-      val info = context.getRasterLayerInfo(n)
-      Result(RasterDefinition(n,info.rasterExtent,info.tileLayout))
-    }
+    case (layerId:LayerId) :: Nil => 
+      LayerResult { layerLoader =>
+        val info = layerLoader.getRasterLayer(layerId).info
+        RasterDefinition(layerId,info.rasterExtent,info.tileLayout)
+      }
   }
 }

@@ -80,7 +80,7 @@ import geotrellis.testutil._
 //         n, 8, n,   5, 2, n,
 //         n, 8, n,   3, 4, n), 2, 2, 3, 2)
 
-//       getSource(rs1.localMean(rs2, rs3)) match {
+//       run(rs1.localMean(rs2, rs3)) match {
 //         case Complete(result,success) =>
 // //          println(success)
 //           result.findMinMax._2 should be (
@@ -121,7 +121,7 @@ import geotrellis.testutil._
 //         (4.1+1.0)/2,       8.3, 4.1,       3.1, (4.2+4.1)/2,          7.3
 //       )
 
-//       getSource(rs1.localMean(rs2, rs3)) match {
+//       run(rs1.localMean(rs2, rs3)) match {
 //         case Complete(result,success) =>
 // //          println(success)
 //           for(row <- 0 until 4) {

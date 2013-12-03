@@ -5,10 +5,8 @@ import geotrellis.feature.op.geometry.{Buffer,GetCentroid}
 import geotrellis.feature._
 import geotrellis.testutil._
 import math.{max,min,round}
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.matchers._
-import org.scalatest.junit.JUnitRunner
 import geotrellis.feature.op.geometry.GetEnvelope
 import geotrellis.feature.op.geometry.Intersect
 import geotrellis.feature.rasterize.Rasterizer
@@ -16,7 +14,6 @@ import geotrellis.feature.rasterize.Rasterizer
 import geotrellis.testutil._
 import scala.collection.mutable
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class RasterizeSpec extends FunSuite with TestServer 
                                      with ShouldMatchers {
    test("Point Rasterization") {

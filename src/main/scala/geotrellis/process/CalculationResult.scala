@@ -1,13 +1,13 @@
 package geotrellis.process
 
 /**
- * CalculationResult contains an operation's results.
+ * OperationResult contains an operation's results.
  *
  * This could include the resulting value the operation produced, an error
  * that prevented the operation from completing, and the history of the
  * operation.
  */
-sealed trait CalculationResult[+T]
+sealed trait OperationResult[+T]
 
 /**
  * Internal version to include Inlined;
@@ -15,10 +15,10 @@ sealed trait CalculationResult[+T]
  * not handling an Inlined case since they should never leak outside.
  */
 private[process] 
-sealed trait InternalCalculationResult[+T]
+sealed trait InternalOperationResult[+T]
 
 /**
- * CalculationResult for an operation which was a literal argument.
+ * OperationResult for an operation which was a literal argument.
  *
  * Instances of Inlined should never leak out of the actor world. E.g. messages
  * sent to clients in the GeoTrellis world should either be Complete or Failure.
@@ -28,16 +28,16 @@ sealed trait InternalCalculationResult[+T]
  * calculated operations with history).
  */
 private[process]
-case class Inlined[T](value:T) extends InternalCalculationResult[T]
+case class Inlined[T](value:T) extends InternalOperationResult[T]
 
 /**
- * CalculationResult for a successful operation.
+ * OperationResult for a successful operation.
  */
-case class Complete[T](value:T, history:History) extends CalculationResult[T]
-                                                    with InternalCalculationResult[T]
+case class Complete[T](value:T, history:History) extends OperationResult[T]
+                                                    with InternalOperationResult[T]
 
 /**
- * CalculationResult for a failed operation.
+ * OperationResult for a failed operation.
  */
-case class Error(message:String, history:History) extends CalculationResult[Nothing]
-                                                     with InternalCalculationResult[Nothing]
+case class Error(message:String, history:History) extends OperationResult[Nothing]
+                                                     with InternalOperationResult[Nothing]

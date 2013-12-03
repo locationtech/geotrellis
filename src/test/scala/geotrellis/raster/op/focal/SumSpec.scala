@@ -6,11 +6,8 @@ import geotrellis.testutil._
 import geotrellis.source._
 import geotrellis.process._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
 class SumSpec extends FunSpec with FocalOpSpec 
                               with TestServer {
   val sq1 = Square(1)
@@ -76,7 +73,7 @@ class SumSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalSum(Square(1))) match {
+      run(rs1.focalSum(Square(1))) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,
@@ -104,7 +101,7 @@ class SumSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalSum(Square(2))) match {
+      run(rs1.focalSum(Square(2))) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,
@@ -182,7 +179,7 @@ class SumSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalSum(Circle(1))) match {
+      run(rs1.focalSum(Circle(1))) match {
         case Complete(result,success) =>
           //println(success)
           assertEqual(result,

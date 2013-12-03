@@ -6,9 +6,7 @@ import geotrellis.testutil._
 import geotrellis.source._
 import geotrellis.process._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
-import org.scalatest.junit.JUnitRunner
 
 class TileWithNeighborsSpec extends FunSpec with FocalOpSpec 
                                             with TestServer {
@@ -31,7 +29,7 @@ class TileWithNeighborsSpec extends FunSpec with FocalOpSpec
       )
 
       val tiledRasters =
-        run(
+        get(
           rs1.zipWithNeighbors
              .map { seq =>
                seq.map { case (rOp,tileNeighbors) =>

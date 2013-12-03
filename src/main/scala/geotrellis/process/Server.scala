@@ -20,20 +20,16 @@ import scala.collection.mutable
 class Server (id:String, val catalog:Catalog) extends Serializable {
   val debug = false
 
-  var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(classOf[ServerActor],this), id)
+  private[process] val layerLoader = new LayerLoader(this)
 
-  private[this] val cache = new HashCache()
+  private[this] val cache = new HashCache[String]()
 
   catalog.initCache(cache)
 
+  var actor:akka.actor.ActorRef = Server.actorSystem.actorOf(Props(classOf[ServerActor],this), id)
+
   Server.startActorSystem
   def system = Server.actorSystem
-
-  val fullExternalId = system.asInstanceOf[ExtendedActorSystem].provider.getDefaultAddress.toString
-  val externalId = if (fullExternalId.startsWith("akka.tcp://GeoTrellis@")) 
-    fullExternalId.substring(22)
-  else 
-    ""
 
   def startUp:Unit = ()
 
@@ -56,40 +52,41 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
 
   def log(msg:String) = if(debug) println(msg)
 
-  def runSource[T:Manifest](src:DataSource[_,T]):T =
-    run(src.get)
-
-  def getSource[T:Manifest](src:DataSource[_,T]):CalculationResult[T] =
-    getResult(src.get)
+  def get[T](src:DataSource[_,T]):T =
+    run(src) match {
+      case Complete(value, _) => value
+      case Error(msg, trace) =>
+        println(s"Operation Error. Trace: $trace")
+        sys.error(msg)
+    }
   
-  def run[T:Manifest](op:Op[T]):T = 
-    getResult(op) match {
+  def get[T](op:Op[T]):T = 
+    run(op) match {
       case Complete(value, _) => value
       case Error(msg, trace) =>
         println(s"Operation Error. Trace: $trace")
         sys.error(msg)
     }
 
-  def getResult[T:Manifest](op:Op[T]):CalculationResult[T] = _run(op)
+  def run[T](src:DataSource[_,T]):OperationResult[T] =
+    run(src.convergeOp)
 
-  private[process] def _run[T:Manifest](op:Op[T]):CalculationResult[T] = {
+  def run[T](op:Op[T]):OperationResult[T] = 
+    _run(op)
+
+  private[process] def _run[T](op:Op[T]):OperationResult[T] = {
     log("server._run called with %s" format op)
 
     val d = Duration.create(60000, TimeUnit.SECONDS)
     implicit val t = Timeout(d)
-    val future = op match {
-      case DispatchedOperation(wrappedOp,dispatcher) => 
-        (actor ? RunDispatched(wrappedOp, dispatcher)).mapTo[OperationResult[T]]
-
-      case op:Op[_] => 
-        (actor ? Run(op)).mapTo[OperationResult[T]]
-    }
+    val future = 
+        (actor ? Run(op)).mapTo[PositionedResult[T]]
 
     val result = Await.result(future, d)
 
     result match {
-      case OperationResult(c:Complete[_], _) => c.asInstanceOf[Complete[T]]
-      case OperationResult(e:Error, _) => e
+      case PositionedResult(c:Complete[_], _) => c.asInstanceOf[Complete[T]]
+      case PositionedResult(e:Error, _) => e
       case r => sys.error("unexpected status: %s" format r)
     }
   }

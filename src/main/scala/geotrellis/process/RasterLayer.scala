@@ -32,7 +32,7 @@ import scala.concurrent.Future
  * the raster's native resolution.
  */
 abstract class RasterLayer(val info:RasterLayerInfo) {
-  private var _cache:Option[Cache] = None
+  private var _cache:Option[Cache[String]] = None
   protected def getCache = 
     _cache match {
       case Some(c) => c
@@ -40,7 +40,7 @@ abstract class RasterLayer(val info:RasterLayerInfo) {
         sys.error("No cache is currently set. Check isCached before accessing this member.")
     }
 
-  def setCache(c:Option[Cache]) = {
+  def setCache(c:Option[Cache[String]]) = {
     _cache = c
   }
 
@@ -57,7 +57,7 @@ abstract class RasterLayer(val info:RasterLayerInfo) {
     }
   }
 
-  protected def cache(c:Cache):Unit
+  protected def cache(c:Cache[String]):Unit
 
   def getRaster():Raster = getRaster(None)
   def getRaster(targetExtent:Option[RasterExtent]):Raster
@@ -70,14 +70,15 @@ abstract class RasterLayer(val info:RasterLayerInfo) {
 }
 
 abstract class UntiledRasterLayer(info:RasterLayerInfo) extends RasterLayer(info) {
-  def getTile(tileCol:Int, tileRow:Int, targetExtent:Option[RasterExtent]) = getRaster(targetExtent)
+  def getTile(tileCol:Int, tileRow:Int, targetExtent:Option[RasterExtent]) =
+    getRaster(targetExtent)
 }
 
 object RasterLayer {
   /**
    * Build a RasterLayer instance given a path to a JSON file.
    */
-  def fromPath(path:String):Option[RasterLayer] = 
+  def fromPath(path:String):Option[RasterLayer] =
     try {
       val base = Filesystem.basename(path) + ".json"
       val src = Source.fromFile(path)

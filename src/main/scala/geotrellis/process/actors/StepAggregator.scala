@@ -19,20 +19,19 @@ import geotrellis.process._
  * is executed and the results are handled by a ResultHandler.
  */
 private[actors]
-case class StepAggregator[T](val server:Server, 
+case class StepAggregator[T](serverContext:ServerContext, 
                              pos:Int, 
                              args:Args,
                              cb:Callback[T], 
                              client:ActorRef, 
-                             dispatcher:ActorRef,
                              history:History)
     extends Actor {
 
-  val handler = new ResultHandler(server,client,dispatcher,pos)
+  val handler = new ResultHandler(serverContext,client,pos)
 
   // These results won't (necessarily) share any type info with each other, so
   // we have to use Any as the least-upper type bound :(
-  val results = Array.fill[Option[InternalCalculationResult[Any]]](args.length)(None)
+  val results = Array.fill[Option[InternalOperationResult[Any]]](args.length)(None)
 
   // Just after starting the actor, we need to dispatch out the child
   // operations to be run. If none of those existed, we should run the
@@ -42,9 +41,9 @@ case class StepAggregator[T](val server:Server,
       args(i) match {
         case lit:Literal[_] =>
           val v = lit.value
-          results(i) = Some(Complete(v,History.literal(v,server.externalId)))
+          results(i) = Some(Complete(v,History.literal(v,serverContext.externalId)))
         case op:Operation[_] =>
-          dispatcher ! RunOperation(op, i, self, None)
+          serverContext.serverRef ! RunOperation(op, i, self)
         case value =>
           results(i) = Some(Inlined(value))
       }
@@ -97,7 +96,7 @@ case class StepAggregator[T](val server:Server,
 
   // Actor event loop
   def receive = {
-    case OperationResult(childResult,  pos) => {
+    case PositionedResult(childResult,  pos) => {
       results(pos) = Some(childResult)
       if (!isDone) {
       } else if (hasError) {

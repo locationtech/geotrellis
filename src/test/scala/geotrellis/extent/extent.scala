@@ -6,7 +6,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.Extent;
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class ExtentSpec extends FunSpec with MustMatchers with ShouldMatchers {
   describe("An Extent object") {
     it("should die when invalid #1") {

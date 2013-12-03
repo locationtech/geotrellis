@@ -3,14 +3,11 @@ package geotrellis.raster.op.focal
 import geotrellis._
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
-import org.scalatest.junit.JUnitRunner
 
 import scala.math._
 
-@RunWith(classOf[JUnitRunner])
 class StandardDeviationSpec extends FunSpec with FocalOpSpec
                                             with ShouldMatchers {
 

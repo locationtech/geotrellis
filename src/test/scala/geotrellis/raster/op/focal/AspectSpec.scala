@@ -7,27 +7,24 @@ import geotrellis.raster.op.transform._
 
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
 
-import org.scalatest.junit.JUnitRunner
 import scala.math._
 
 import Angles._
 
-@RunWith(classOf[JUnitRunner])
 class AspectSpec extends FunSpec with ShouldMatchers
                                  with TestServer 
                                  with RasterBuilders {
   describe("Aspect") {
     it("should match gdal computed aspect raster") {
-      val rOp = get("elevation")
-      val gdalOp = get("aspect")
+      val rOp = getRaster("elevation")
+      val gdalOp = getRaster("aspect")
       val aspectComputed = Aspect(rOp)
 
-      val rg = run(gdalOp)
-      var re = run(aspectComputed)
+      val rg = get(gdalOp)
+      val re = get(aspectComputed)
 
       // Gdal actually computes the parimeter values differently.
       // So take out the edge results
@@ -38,8 +35,8 @@ class AspectSpec extends FunSpec with ShouldMatchers
       val croppedGdal = Crop(gdalOp,cropExtent)
       val croppedComputed = Crop(aspectComputed,cropExtent)
 
-      val rgc = run(croppedGdal)
-      val rc = run(croppedComputed)
+      val rgc = get(croppedGdal)
+      val rc = get(croppedComputed)
 
       assertEqual(croppedGdal,croppedComputed, 0.1)
     }
@@ -51,7 +48,7 @@ class AspectSpec extends FunSpec with ShouldMatchers
                                        1,2,2,2,2,
                                        1,2,2,1,2))
 
-      val aR = run(Aspect(r))
+      val aR = get(Aspect(r))
 
       // Check left edge
       var value = aR.getDouble(0,1)

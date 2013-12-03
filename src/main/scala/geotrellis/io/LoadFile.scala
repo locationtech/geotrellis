@@ -7,10 +7,12 @@ import geotrellis._
  * Load the raster data for a particular extent/resolution from the specified file.
  */
 case class LoadFile(p:Op[String]) extends Operation[Raster] {
-  def _run(context:Context) = runAsync(List(p,context))
+  def _run() = runAsync(List(p))
   val nextSteps:Steps = {
-    case (path:String) :: (context:Context) :: Nil =>
-      context.getRasterStepOutput(path, None)
+    case (path:String) :: Nil =>
+      LayerResult { layerLoader =>
+        layerLoader.getRasterLayerFromPath(path).getRaster
+      }
   }
 }
 
@@ -18,10 +20,12 @@ case class LoadFile(p:Op[String]) extends Operation[Raster] {
  * Load the raster data from the specified file, using the RasterExtent provided.
  */
 case class LoadFileWithRasterExtent(p:Op[String], e:Op[RasterExtent]) extends Operation[Raster] {
-  def _run(context:Context) = runAsync(List(p,e, context))
+  def _run() = runAsync(List(p,e))
   val nextSteps:Steps = {
-    case (path:String) :: (re:RasterExtent) :: (context:Context) :: Nil => 
-      context.getRasterStepOutput(path, Some(re))
+    case (path:String) :: (re:RasterExtent) :: Nil => 
+      LayerResult { layerLoader =>
+        layerLoader.getRasterLayerFromPath(path).getRaster(Some(re))
+      }
   }
 }
 

@@ -23,7 +23,7 @@ import java.io.File
 case class Catalog(name:String, stores:Map[String, DataStore], json: String,source: String) {
 
   private var cacheSet = false
-  def initCache(cache:Option[Cache]):Unit =
+  def initCache(cache:Option[Cache[String]]):Unit =
     if(!cacheSet) {
       // Set the cache on all layers.
       for(store <- stores.values) { store.setCache(cache) }
@@ -48,11 +48,19 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String,sour
                 "You may not set the cache more than once during a Catalog's lifetime.")
     }
 
-  def initCache(cache:Cache):Unit = initCache(Some(cache))
+  def initCache(cache:Cache[String]):Unit = initCache(Some(cache))
 
-  def getRasterLayerByName(name:String):Option[RasterLayer] = {
-    stores.values.flatMap(_.getRasterLayerByName(name)).headOption
-  }
+  def getRasterLayer(layerId:LayerId):Option[RasterLayer] =
+    layerId.store match {
+      case Some(ds) => stores.get(ds).flatMap(_.getRasterLayer(layerId.name))
+      case None => 
+        stores.values.flatMap(_.getRasterLayer(layerId.name)).toList match {
+          case Nil => None
+          case layer :: Nil => Some(layer)
+          case _ =>
+            sys.error(s"There are multiple layers named '${layerId.name}' in the catalog. You must specify a datastore")
+        }
+    }
 }
 
 object Catalog {

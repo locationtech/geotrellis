@@ -17,23 +17,6 @@ object GetHistogram {
 }
 
 /**
- * Implements a histogram in terms of a map.
- *
- * @note     Rasters with a double type (TypeFloat,TypeDouble) will have their values
- *           rounded to integers when making the Histogram.
- */
-// case class GetHistogramMap(r:Op[Raster]) extends logic.TileReducer1[Histogram] {
-//   type B = FastMapHistogram
- 
-//   case class UntiledHistogram(r:Op[Raster]) extends Op1(r) ({
-//     (r) => Result(List(FastMapHistogram.fromRaster(r)))
-//   })
-
-//   def mapper(r:Op[Raster]):Op[List[FastMapHistogram]] = UntiledHistogram(r)
-//   def reducer(hs:List[FastMapHistogram]):Histogram = FastMapHistogram.fromHistograms(hs)
-// }
-
-/**
  * Implements a histogram in terms of an array of the given size.
  * The size provided must be less than or equal to the number of distinct 
  * values in the Raster.
@@ -41,16 +24,11 @@ object GetHistogram {
  * @note     Rasters with a double type (TypeFloat,TypeDouble) will have their values
  *           rounded to integers when making the Histogram.
  */
-// case class GetHistogramArray(r:Op[Raster], n:Int) extends logic.TileReducer1[Histogram] {
-//   type B = ArrayHistogram
-
-//   case class UntiledHistogram(r:Op[Raster]) extends Op1(r) ({
-//     (r) => Result(List(ArrayHistogram.fromRaster(r, n)))
-//   })
-
-//   def mapper(r:Op[Raster]):Op[List[ArrayHistogram]] = UntiledHistogram(r)
-//   def reducer(hs:List[ArrayHistogram]):Histogram = ArrayHistogram.fromHistograms(hs, n)
-// }
+object GetArrayHistogram {
+  def apply(r:Op[Raster],size:Int) = 
+    r.map(ArrayHistogram.fromRaster(_,size))
+     .withName("GetArrayHistogram")
+}
 
 /**
  * Create a histogram from double values in a raster.
@@ -70,13 +48,8 @@ object GetHistogram {
  * @param r                   Raster to create histogram from
  * @param significantDigits   Number of significant digits to preserve by multiplying 
  */ 
-// case class GetDoubleHistogram(r:Op[Raster], significantDigits:Int) extends logic.TileReducer1[Histogram] {
-//   type B = FastMapHistogram
-
-//   case class UntiledHistogram(r:Op[Raster]) extends Op1(r)({ 
-//     r => Result(List(FastMapHistogram.fromRasterDouble(r, significantDigits)))
-//   })
-
-//   def mapper(r:Op[Raster]):Op[List[FastMapHistogram]] = UntiledHistogram(r)
-//   def reducer(hs:List[FastMapHistogram]):Histogram = FastMapHistogram.fromHistograms(hs)
-// }
+object GetDoubleHistogram {
+  def apply(r:Op[Raster], significantDigits:Int) = 
+    r.map(FastMapHistogram.fromRasterDouble(_,significantDigits))
+     .withName("GetDoubleHistogram")
+}

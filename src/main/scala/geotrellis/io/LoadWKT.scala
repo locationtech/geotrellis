@@ -11,7 +11,6 @@ import geotrellis.feature.Feature
  */
 case class LoadWkt(wkt:String) extends Op1(wkt) ({
   (wkt:String) => {
-    //TODO: catch parse failure
     val jtsGeom = new WKTReader().read(wkt)
     Result(Feature(jtsGeom,())) 
   }

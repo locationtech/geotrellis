@@ -124,18 +124,6 @@ trait LocalOpMethods[+Repr <: RasterDS]
   def localMean(rss:RasterSource*)(implicit d:DI):RasterSource = 
     localMean(rss)
 
-  def color(breaksToColors:Map[Int,Int]):RasterSource =
-    color(breaksToColors,data.ColorMapOptions.Default)
-
-  def color(breaksToColors:Map[Int,Int],options:data.ColorMapOptions):RasterSource =
-    mapOp(ColorRaster(_,breaksToColors,options))
-
-  def color(breaksToColors:Map[Double,Int])(implicit d:DI):RasterSource =
-    color(breaksToColors,data.ColorMapOptions.Default)
-
-  def color(breaksToColors:Map[Double,Int],options:data.ColorMapOptions)(implicit d:DI):RasterSource =
-    mapOp(ColorRaster(_,breaksToColors,options))
-
   def convert(rasterType:RasterType) =
     mapOp(ConvertType(_,rasterType))
 }

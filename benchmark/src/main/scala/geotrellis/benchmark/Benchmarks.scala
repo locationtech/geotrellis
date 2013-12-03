@@ -8,7 +8,9 @@ package geotrellis.benchmark
 
 import geotrellis._
 import geotrellis.data._
-import geotrellis.data.png._
+import geotrellis.render.png._
+import geotrellis.render._
+import geotrellis.render.op._
 import geotrellis.raster.op._
 import geotrellis.io._
 import geotrellis.raster.op.global.Rescale
@@ -35,13 +37,13 @@ trait OperationBenchmark extends SimpleBenchmark {
   var server:Server = null
 
   def getRasterExtent(name:String, w:Int, h:Int) =
-    RasterExtent(server.run(LoadRasterExtent(name)).extent,w,h)
+    RasterExtent(server.get(LoadRasterExtent(name)).extent,w,h)
 
   /**
    * Loads a given raster with a particular height/width.
    */
   def loadRaster(name:String, w:Int, h:Int) = {
-    server.run(LoadRaster(name, getRasterExtent(name, w, h)))
+    server.get(LoadRaster(name, getRasterExtent(name, w, h)))
   }
 
   /**
@@ -292,25 +294,25 @@ class DataMap extends OperationBenchmark {
   // xyz
   
   def timeRasterOperationUnary(reps:Int) = run(reps)(rasterOperationUnary)
-  def rasterOperationUnary = server.run(mc)
+  def rasterOperationUnary = server.get(mc)
   
   def timeRasterOperationCustomWithInt(reps:Int) = run(reps)(rasterOperationCustomWithInt)
-  def rasterOperationCustomWithInt = server.run(mcCustomWithInt)
+  def rasterOperationCustomWithInt = server.get(mcCustomWithInt)
   
   def timeRasterOperationMapSugar(reps:Int) = run(reps)(rasterOperationMapSugar)
-  def rasterOperationMapSugar = server.run(mcMapSugar)
+  def rasterOperationMapSugar = server.get(mcMapSugar)
 
   def timeRasterOperationMapIfSetSugar(reps:Int) = run(reps)(rasterOperationMapIfSetSugar)
-  def rasterOperationMapIfSetSugar = server.run(mcMapIfSetSugar)
+  def rasterOperationMapIfSetSugar = server.get(mcMapIfSetSugar)
 
   def timeRasterOperationMapIfSetSugarWithLiteral(reps:Int) = run(reps)(rasterOperationMapIfSetSugarWithLiteral)
-  def rasterOperationMapIfSetSugarWithLiteral = server.run(mcMapIfSetSugarWithLiteral)
+  def rasterOperationMapIfSetSugarWithLiteral = server.get(mcMapIfSetSugarWithLiteral)
 
   def timeRasterOperationMapIfSet(reps:Int) = run(reps)(rasterOperationMapIfSet)
-  def rasterOperationMapIfSet = server.run(mcMapIfSet)
+  def rasterOperationMapIfSet = server.get(mcMapIfSet)
 
   def timeRasterOperationWhileLoop(reps:Int) = run(reps)(rasterOperationWhileLoop)
-  def rasterOperationWhileLoop = server.run(mcWhileLoop)
+  def rasterOperationWhileLoop = server.get(mcWhileLoop)
 }
 
 object WeightedOverlay extends BenchmarkRunner(classOf[WeightedOverlay])
@@ -332,12 +334,12 @@ class WeightedOverlay extends OperationBenchmark {
     val rs = (0 until n).map(i => Multiply(LoadRaster(names(i), re), weights(i)))
     val rasterOp = Rescale(Divide(Add(rs: _*), total), (1, 100))
     val h = GetHistogram(rasterOp) 
-    val breaksOp = stat.GetColorBreaks(h, colors)
+    val breaksOp = GetColorBreaks(h, colors)
     op = RenderPng(rasterOp, breaksOp, 0)
   }
 
   def timeWeightedOverlay(reps:Int) = run(reps)(weightedOverlay)
-  def weightedOverlay = server.run(op)
+  def weightedOverlay = server.get(op)
 }
 
 object AddRasters extends BenchmarkRunner(classOf[AddRasters])
@@ -359,7 +361,7 @@ class AddRasters extends OperationBenchmark {
   }
 
   def timeAddRasters(reps:Int) = run(reps)(addRasters)
-  def addRasters = server.run(op)
+  def addRasters = server.get(op)
 }
 
 object SubtractRasters extends BenchmarkRunner(classOf[SubtractRasters])
@@ -378,7 +380,7 @@ class SubtractRasters extends OperationBenchmark {
   }
 
   def timeSubtractRasters(reps:Int) = run(reps)(subtractRasters)
-  def subtractRasters = server.run(op)
+  def subtractRasters = server.get(op)
 }
 
 
@@ -396,7 +398,7 @@ class ConstantAdd extends OperationBenchmark {
   }
 
   def timeConstantAdd(reps:Int) = run(reps)(constantAdd)
-  def constantAdd = server.run(op)
+  def constantAdd = server.get(op)
 }
 
 object BigMinTiled {
@@ -437,7 +439,7 @@ class BigMinTiled extends OperationBenchmark{
     val e = Extent(0.0, 0.0, (tileN * 2000.0), (tileN * 2000.0))
     val re = RasterExtent(e, 1.0, 1.0, tileN * 2000, tileN * 2000)
 
-    val layer = new TileSetRasterLayer(RasterLayerInfo("bit",
+    val layer = new TileSetRasterLayer(RasterLayerInfo(LayerId("bit"),
                                                        TypeByte,
                                                        re,
                                                        0,0,0),
@@ -453,13 +455,13 @@ class BigMinTiled extends OperationBenchmark{
 
   def timeMin(reps:Int) = run(reps)(min)
   def min = { 
-    val min = server.run(tiledMinOp)
+    val min = server.get(tiledMinOp)
     println("Found min: %d" format (min))
   }
   
   def timeHistogram(reps:Int) = run(reps)(histogram)
   def histogram = {
-    val h = server.run(tiledHistogramOp)
+    val h = server.get(tiledHistogramOp)
     println("Found histogram: %s" format (h.toJSON))
   }
 }
@@ -501,22 +503,22 @@ class MinTiled extends OperationBenchmark {
   }
 
   //def timeTiledMin(reps:Int) = run(reps)(tiledMin)
-  def tiledMin = server.run(tiledOp)
+  def tiledMin = server.get(tiledOp)
  
   def timeTiledArrayMinOp(reps:Int) = run(reps)(tiledArrayMin)
-  def tiledArrayMin = server.run(tiledArrayOp)
+  def tiledArrayMin = server.get(tiledArrayOp)
 
   //def timeTiledLazyOp(reps:Int) = run(reps)(tiledLazyMin)
-  // def tiledLazyMin = server.run(tiledLazyOp)
+  // def tiledLazyMin = server.get(tiledLazyOp)
 
   def timeNormalUntiledOp(reps:Int) = run(reps)(runNormalUntiledOp)
-  def runNormalUntiledOp = server.run(normalUntiledOp)
+  def runNormalUntiledOp = server.get(normalUntiledOp)
 
   def timeRawOp(reps:Int) = run(reps)(runRawOp)
-  def runRawOp = server.run(rawOp)
+  def runRawOp = server.get(rawOp)
 
   def timeNormalTiledOp(reps:Int) = run(reps)(runNormalTiledOp)
-  def runNormalTiledOp = server.run(normalTiledOp)
+  def runNormalTiledOp = server.get(normalTiledOp)
 }
 
 
@@ -566,28 +568,28 @@ class MinTiled extends OperationBenchmark {
 //   }
 
 //   def timeTiledHistogram(reps:Int) = run(reps)(tiledHistogram)
-//   def tiledHistogram = server.run(tiledOp)
+//   def tiledHistogram = server.get(tiledOp)
   
 //   def timeRawOp(reps:Int) = run(reps)(runRawOp)
-//   def runRawOp = server.run(rawOp)
+//   def runRawOp = server.get(rawOp)
   
 //   def timeNormalUntiledOp(reps:Int) = run(reps)(runNormalUntiledOp)
-//   def runNormalUntiledOp = server.run(normalUntiledOp)
+//   def runNormalUntiledOp = server.get(normalUntiledOp)
   
 //   def timeNormalUntiledLazyOp(reps:Int) = run(reps)(runNormalUntiledLazyOp)
-//   def runNormalUntiledLazyOp = server.run(normalUntiledLazyOp)
+//   def runNormalUntiledLazyOp = server.get(normalUntiledLazyOp)
   
 //   def timeTiledArrayHistogramOp(reps:Int) = run(reps)(tiledArrayHistogram)
-//   def tiledArrayHistogram = server.run(tiledArrayOp)
+//   def tiledArrayHistogram = server.get(tiledArrayOp)
 
 //   def timeTiledArrayForce(reps:Int) = run(reps)(tiledArrayForce)
-//   def tiledArrayForce = server.run(tiledArrayForceOp)
+//   def tiledArrayForce = server.get(tiledArrayForceOp)
 
 //   def timeTiledLazyOp(reps:Int) = run(reps)(tiledLazyHistogram)
-//   def tiledLazyHistogram = server.run(tiledLazyOp)
+//   def tiledLazyHistogram = server.get(tiledLazyOp)
   
 //   def timeNormalTiledOp(reps:Int) = run(reps)(runNormalTiledOp)
-//   def runNormalTiledOp = server.run(normalTiledOp)
+//   def runNormalTiledOp = server.get(normalTiledOp)
 // }
 
 
@@ -614,13 +616,13 @@ class MiniWeightedOverlay extends OperationBenchmark {
   }
 
   def timeMiniWeightedOverlay(reps:Int) = run(reps)(miniWeightedOverlay)
-  def miniWeightedOverlay = server.run(op)
+  def miniWeightedOverlay = server.get(op)
 
   def timeMiniWeightedOverlayStrict(reps:Int) = run(reps)(miniWeightedOverlayStrict)
-  def miniWeightedOverlayStrict = server.run(strictOp)
+  def miniWeightedOverlayStrict = server.get(strictOp)
 
   def timeMiniWeightedOverlayLazy(reps:Int) = run(reps)(miniWeightedOverlayLazy)
-  def miniWeightedOverlayLazy = server.run(lazyOp)
+  def miniWeightedOverlayLazy = server.get(lazyOp)
 }
 
 
@@ -648,13 +650,13 @@ class NewAddOperations extends OperationBenchmark {
   }
 
   def timeStrictOld(reps:Int) = run(reps)(runStrictOld)
-  def runStrictOld = server.run(strictOld)
+  def runStrictOld = server.get(strictOld)
 
   def timeStrictNew(reps:Int) = run(reps)(runStrictNew)
-  def runStrictNew = server.run(strictNew)
+  def runStrictNew = server.get(strictNew)
 
   def timeLazyNew(reps:Int) = run(reps)(runLazyNew)
-  def runLazyNew = server.run(lazyNew)
+  def runLazyNew = server.get(lazyNew)
 }
 
 
@@ -686,7 +688,7 @@ class LazyIteration extends OperationBenchmark {
 
   def timeSimpleOpLazyIteration(reps:Int) = run(reps)(simpleOpLazyIteration)
   def simpleOpLazyIteration = {
-    val r = server.run(simpleOp)
+    val r = server.get(simpleOp)
     var t = 0
     for (i <- 0 until iterations) {
       r.foreach(z => t = t + z)
@@ -696,7 +698,7 @@ class LazyIteration extends OperationBenchmark {
 
   def timeSimpleOpStrictIteration(reps:Int) = run(reps)(simpleOpStrictIteration)
   def simpleOpStrictIteration = {
-    val r = server.run(simpleOp)
+    val r = server.get(simpleOp)
     var t = 0
     for (i <- 0 until iterations) {
       r.foreach(z => t = t + z)
@@ -706,7 +708,7 @@ class LazyIteration extends OperationBenchmark {
 
   def timeMediumOpLazyIteration(reps:Int) = run(reps)(mediumOpLazyIteration)
   def mediumOpLazyIteration = {
-    val r = server.run(mediumOp)
+    val r = server.get(mediumOp)
     var t = 0
     for (i <- 0 until iterations) {
       r.foreach(z => t = t + z)
@@ -716,7 +718,7 @@ class LazyIteration extends OperationBenchmark {
 
   def timeMediumOpStrictIteration(reps:Int) = run(reps)(mediumOpStrictIteration)
   def mediumOpStrictIteration = {
-    val r = server.run(mediumOp)
+    val r = server.get(mediumOp)
     var t = 0
     for (i <- 0 until iterations) {
       r.foreach(z => t = t + z)
@@ -726,7 +728,7 @@ class LazyIteration extends OperationBenchmark {
 
   def timeComplexOpLazyIteration(reps:Int) = run(reps)(complexOpLazyIteration)
   def complexOpLazyIteration = {
-    val r = server.run(complexOp)
+    val r = server.get(complexOp)
     var t = 0
     for (i <- 0 until iterations) {
       r.foreach(z => t = t + z)
@@ -736,7 +738,7 @@ class LazyIteration extends OperationBenchmark {
 
   def timeComplexOpStrictIteration(reps:Int) = run(reps)(complexOpStrictIteration)
   def complexOpStrictIteration = {
-    val r = server.run(complexOp)
+    val r = server.get(complexOp)
     var t = 0
     for (i <- 0 until iterations) {
       r.foreach(z => t = t + z)
@@ -756,7 +758,7 @@ class RasterForeach extends OperationBenchmark {
 
   override def setUp() {
     server = initServer()
-    r = server.run(loadRaster("SBN_farm_mkt", size, size))
+    r = server.get(loadRaster("SBN_farm_mkt", size, size))
   }
 
   def timeRasterForeach(reps:Int) = run(reps)(rasterForeach)
