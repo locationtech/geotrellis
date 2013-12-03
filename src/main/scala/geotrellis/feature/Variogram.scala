@@ -15,18 +15,6 @@ case object Exponential extends ModelType
 
 object Variogram {
 
-  def trunc(x: Double, n: Int) = {
-    def p10(n: Int, pow: Long = 10): Long = if (n==0) pow else p10(n-1,pow*10)
-    if (n < 0) {
-      val m = p10(-n).toDouble
-      math.round(x/m) * m
-    }
-    else {
-      val m = p10(n).toDouble
-      math.round(x*m) / m
-    }
-  }
-
   case class Bucket(start:Double,end:Double) {
     private val points = mutable.Set[(Point[Int],Point[Int])]()
 
