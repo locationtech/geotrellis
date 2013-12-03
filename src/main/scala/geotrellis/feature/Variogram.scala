@@ -5,11 +5,28 @@ import scala.collection.mutable
 import org.apache.commons.math3.stat.regression.SimpleRegression
 
 abstract sealed class ModelType
-// Enumeration in Scala
+
+// Covariance Function
 case object Linear extends ModelType
 case object Gaussian extends ModelType
+case object Circular extends ModelType
+case object Spherical extends ModelType
+case object Exponential extends ModelType
 
 object Variogram {
+
+  def trunc(x: Double, n: Int) = {
+    def p10(n: Int, pow: Long = 10): Long = if (n==0) pow else p10(n-1,pow*10)
+    if (n < 0) {
+      val m = p10(-n).toDouble
+      math.round(x/m) * m
+    }
+    else {
+      val m = p10(n).toDouble
+      math.round(x*m) / m
+    }
+  }
+
   case class Bucket(start:Double,end:Double) {
     private val points = mutable.Set[(Point[Int],Point[Int])]()
 
@@ -26,7 +43,7 @@ object Variogram {
         points.foldLeft(0.0){ case(acc,(x,y)) =>
           acc + math.pow((x.data-y.data),2)
         }
-      sumOfSquares / points.size
+      (sumOfSquares / points.size) / 2
     }
 
   }
@@ -43,27 +60,40 @@ object Variogram {
     f(elements,List[(T,T)]())
   }
 
-  def apply(pts:Seq[Point[Int]],model:ModelType):Function1[Double,Double] = {
-    val dmax = 100
-    val lag = 10
+  def apply(pts:Seq[Point[Int]],radius:Option[Int]=None,lag:Int=0,model:ModelType):Function1[Double,Double] = {
 
     val distancePairs:Seq[(Double,(Point[Int],Point[Int]))] =
-      makePairs(pts.toList)
-        .map{ case(a,b) => (math.abs(a - b), (a,b)) }
-        .filter { case (distance,_) => distance < dmax }
-        .toSeq
-
+      radius match {
+        case Some(dmax) =>
+          makePairs(pts.toList)
+            .map{ case(a,b) => (math.abs(a - b), (a,b)) }
+            .filter { case (distance,_) => distance <= dmax }
+            .toSeq
+        case None =>
+            makePairs(pts.toList)
+              .map{ case(a,b) => (math.abs(a - b), (a,b)) }
+              .toSeq
+      }
+        
     val buckets:Seq[Bucket] =
       if(lag == 0) {
         distancePairs
-          .map{ case(d, _) => d }
+          .map{ case(d,_) => d }
           .distinct
           .map { d => Bucket(d,d) }
       } else {
-        val n = dmax / lag
-          (for((start,end) <- Seq.range(0,n-1,lag).zip(Seq.range(1,n,lag))) yield {
-            Bucket(start,end)
-          }).toSeq
+        val dmax =
+          Math.floor({
+            radius match {
+              case Some(n) => n / lag
+              case None => distancePairs.map{ case(d,_) => d }.max / lag
+            }
+          }).toInt * lag
+        // (for((start,end) <-
+        //   List.range(0,dmax,lag).zip(List.range(lag,dmax+lag,lag))) yield {
+        //     Bucket(start,end)
+        //   }).toSeq
+        List.range(0,dmax,lag).zip(List.range(lag,dmax+lag,lag)).map{ case(start,end) => Bucket(start,end) }
       }
 
     for( (d,(x,y)) <- distancePairs ) {
@@ -85,7 +115,7 @@ object Variogram {
         val intercept = regression.getIntercept
 
         x => slope*x + intercept
-      case Gaussian =>
+      case _ =>
         ???
     }
   }
