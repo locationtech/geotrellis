@@ -2,6 +2,8 @@ package geotrellis.raster
 
 import geotrellis._
 
+import scalaxy.loops._
+
 /**
  * RasterData based on an Array[Byte] as a bitmask; values are 0 and 1.
  * Thus, there are 8 boolean (0/1) values per byte in the array. For example,
@@ -23,6 +25,7 @@ final case class BitArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
   // 3 | 9 -> 11, that is 00000011 | 00001001 -> 00001011
   // 3 & 9 -> 1,  that is 00000011 & 00001001 -> 00000001
   // 3 ^ 9 -> 10, that is 00000011 ^ 00001001 -> 00001010
+
   if(array.length != (size + 7)/8) {
     sys.error(s"BitArrayRasterData array length must be ${(size + 7)/8}, was ${array.length}")
   }
@@ -47,18 +50,16 @@ final case class BitArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
     val f1 = f(1) & 1
     
     if (f0 == 0 && f1 == 0) {
-      println("yer")
       BitConstant(false,cols,rows)
     } else if (f0 == 1 && f1 == 1) {
-      println("pap")
       BitConstant(true,cols,rows)
     } else if (f0 == 0 && f1 == 1) {
-      println("wut")
       // same data as we have now
       this
     } else {
       // inverse (complement) of what we have now
-      LazyMapBitInverse(this)
+      val arr = array.map(b => (b ^ -1).toByte)
+      BitArrayRasterData(arr,cols,rows)
     }
   }
 
@@ -69,4 +70,3 @@ object BitArrayRasterData {
   def ofDim(cols: Int, rows: Int) = new BitArrayRasterData(Array.ofDim[Byte](((cols * rows) + 7) / 8), cols, rows)
   def empty(cols: Int, rows: Int) = ofDim(cols, rows)
 }
-

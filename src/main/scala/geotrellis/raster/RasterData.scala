@@ -75,7 +75,16 @@ trait RasterData extends Serializable {
   /**
    * Map each cell in the given raster to a new one, using the given function.
    */
-  def map(f:Int => Int):RasterData = LazyMap(this,f)
+  def map(f:Int=>Int):RasterData = {
+    val output = alloc(cols, rows)
+    var i = 0
+    val len = length
+    while (i < len) {
+      output(i) = f(apply(i))
+      i += 1
+    }
+    output
+  }
 
   /**
    * Combine two RasterData's cells into new cells using the given integer
@@ -117,7 +126,16 @@ trait RasterData extends Serializable {
   /**
    * Map each cell in the given raster to a new one, using the given function.
    */
-  def mapDouble(f:Double => Double):RasterData = LazyMapDouble(this,f)
+  def mapDouble(f:Double => Double):RasterData = {
+    val len = length
+    val data = alloc(cols, rows)
+    var i = 0
+    while (i < len) {
+      data.updateDouble(i, f(applyDouble(i)))
+      i += 1
+    }
+    data
+  }
 
   /**
    * Combine two RasterData's cells into new cells using the given double
