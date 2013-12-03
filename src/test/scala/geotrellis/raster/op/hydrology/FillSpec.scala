@@ -5,9 +5,6 @@ import geotrellis.raster._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.junit.JUnitRunner 
-import org.junit.Assert._
-
 import geotrellis.testutil._
 
 class FillSpec extends FunSpec 
