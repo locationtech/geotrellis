@@ -63,7 +63,7 @@ object Semivariogram {
               .map{ case(a,b) => (math.abs(a - b), (a,b)) }
               .toSeq
       }
-      
+
     val buckets:Seq[Bucket] =
       if(lag == 0) {
         distancePairs
