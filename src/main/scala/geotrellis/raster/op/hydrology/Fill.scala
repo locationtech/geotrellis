@@ -27,71 +27,52 @@ object Fill {
 }
 
 case class CursorFillCalc() extends CursorCalculation[Raster] with IntRasterDataResult {
-  var count:Int = 0
-    var totalCount:Int = 0
-    var sum:Int = 0
-    val thresh = 20
+  
+    val threshold:Int = 20
 
     def calc(r:Raster,c:Cursor) = {
+      var count:Int = 0
+      var totalCount:Int = 0
+      var sum:Int = 0
       val cVal = r.get(c.col,c.row)
-        c.removedCells.foreach { (col,row) => 
-          if(c.col != col || c.row != row){
-            if((r.get(col,row)-cVal).abs < thresh ){
-              count = count -1 
-            }
-            totalCount = totalCount - 1
-              sum = sum - r.get(col,row)
-          }
-        }
-      c.addedCells.foreach { (col,row) => 
+      c.allCells
+      .foreach { (col,row) => 
         if(c.col != col || c.row != row){
-          if((r.get(col,row)-cVal).abs < thresh ){
+          if((r.get(col,row)-cVal).abs > threshold ){
             count = count + 1 
           }
           totalCount = totalCount + 1
             sum = sum + r.get(col,row)
         }
+
       }
 
-      if(count == 0){
-        System.out.println("Sink found at ("+c.col + "," + c.row + ")" +"\nSum:" + sum )
-
-          data.set(c.col,c.row, ((sum) / (totalCount))) 
+      if(count == totalCount){
+          data.set(c.col,c.row, sum/totalCount) 
       } else { 
         data.set(c.col,c.row,cVal)
       }
     }
 }
 case class CursorFillCalcDouble() extends CursorCalculation[Raster] with DoubleRasterDataResult {
-  var count:Int = 0
-    var totalCount:Int = 0
-    var sum:Double = 0
-    val thresh:Double = 20.0
+  val thresh:Double = 20.0
 
     def calc(r:Raster,c:Cursor) = {
-      val cVal = r.getDouble(c.col,c.row)
-        c.removedCells.foreach { (col,row) => 
-          if(c.col != col || c.row != row){
-            if((r.getDouble(col,row)-cVal).abs < thresh ){
-              count = count -1 
-            }
-            totalCount = totalCount - 1
-              sum = sum - r.getDouble(col,row)
-          }
-        }
-      c.addedCells.foreach { (col,row) => 
+      var count:Int = 0
+      var totalCount:Int = 0
+      var sum:Double = 0
+      val cVal:Double = r.getDouble(c.col,c.row)
+      c.allCells.foreach { (col,row) => 
         if(c.col != col || c.row != row){
-          if((r.get(col,row)-cVal).abs < thresh ){
+          if((r.getDouble(col,row)-cVal).abs > thresh ){
             count = count + 1 
           }
           totalCount = totalCount + 1
-            sum = sum + r.getDouble(col,row)
+            sum = sum + r.get(col,row)
         }
       }
-
-      if(count == 0){
-        System.out.println("Sink found at ("+c.col + "," + c.row + ")" )
-          data.setDouble(c.col,c.row, ((sum) / (totalCount))) 
+      if(count == totalCount){
+          data.setDouble(c.col,c.row, sum/totalCount) 
       } else { 
         data.setDouble(c.col,c.row,cVal)
       }
