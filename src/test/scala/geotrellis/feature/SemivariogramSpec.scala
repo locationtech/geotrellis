@@ -17,51 +17,6 @@ class SemivariogramSpec extends FunSpec
                             with TestServer 
                             with RasterBuilders {
   describe("Semivariogram") {
-    it("Simple Regression (Trivial)") {
-      val regression = new SimpleRegression
-      val points = Seq[(Double,Double)]((1,2),(2,3))
-
-      for((x,y) <- points) { regression.addData(x,y) }
-      val slope = regression.getSlope
-      val intercept = regression.getIntercept
-
-      val slopeExpected = 1.0
-      val interceptExpected = 1.0
-
-      slope should be (slopeExpected plusOrMinus 0.001)
-      intercept should be (interceptExpected plusOrMinus 0.001)
-    }
-
-    it("Simple Regression (Advanced)") {
-      val regression = new SimpleRegression
-      val points = Seq[(Double,Double)](
-        (1.47,52.21),
-        (1.50,53.12),
-        (1.52,54.48),
-        (1.55,55.84),
-        (1.57,57.20),
-        (1.60,58.57),
-        (1.63,59.93),
-        (1.65,61.29),
-        (1.68,63.11),
-        (1.70,64.47),
-        (1.73,66.28),
-        (1.75,68.10),
-        (1.78,69.92),
-        (1.80,72.19),
-        (1.83,74.46))
-
-      for((x,y) <- points) { regression.addData(x,y) }
-      val slope = regression.getSlope
-      val intercept = regression.getIntercept
-
-      val slopeExpected = 61.272
-      val interceptExpected = -39.061
-
-      slope should be (slopeExpected plusOrMinus 0.001)
-      intercept should be (interceptExpected plusOrMinus 0.001)
-    }
-
     it("Semivariogram (Bucketed)") {
       val points = Seq[Point[Int]](
         Point(0.0,0.0,10),
