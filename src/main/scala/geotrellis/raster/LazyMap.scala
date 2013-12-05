@@ -32,6 +32,8 @@ final case class LazyMap(data: RasterData, g: Int => Int)
 
   final def apply(i: Int) = g(data(i))
   final def applyDouble(i: Int) = i2d(g(data(i)))
+  
+  def toArrayByte: Array[Byte] = force.toArrayByte
 }
 
 /**
@@ -62,6 +64,8 @@ final case class LazyMapDouble(data: RasterData, g: Double => Double)
 
   final def apply(i: Int) = d2i(g(data.applyDouble(i)))
   final def applyDouble(i: Int) = g(data.applyDouble(i))
+  
+  def toArrayByte: Array[Byte] = force.toArrayByte
 }
 
 final case class LazyMapBitInverse(data:RasterData)
@@ -89,4 +93,6 @@ final case class LazyMapBitInverse(data:RasterData)
 
   final def apply(i: Int) = (data(i)&1)^1
   final def applyDouble(i: Int) = i2d((data(i)&1)^1)
+ 
+  def toArrayByte: Array[Byte] = force.toArrayByte
 }

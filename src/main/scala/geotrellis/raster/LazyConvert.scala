@@ -48,4 +48,7 @@ final case class LazyConvert(data: RasterData, typ: RasterType)
     forcedData
   }
   def force():RasterData = mutable
+  
+  def toArrayByte: Array[Byte] = force.toArrayByte
+
 }

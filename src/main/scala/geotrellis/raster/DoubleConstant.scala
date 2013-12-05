@@ -38,4 +38,6 @@ final case class DoubleConstant(n:Double, cols:Int, rows:Int) extends RasterData
     }
     forcedData
   }
+  
+  def toArrayByte: Array[Byte] = Array(n.toByte)
 }
