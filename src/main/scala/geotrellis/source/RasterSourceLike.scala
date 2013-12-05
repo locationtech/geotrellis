@@ -59,47 +59,6 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.result
   }
 
-  def filterTiles(p:Op[feature.Polygon[_]]):Op[Seq[Op[TileIntersection]]] = {
-    (rasterDefinition,tiles,p).map { (rd,tiles,p) =>
-      val rl = rd.tileLayout.getResolutionLayout(rd.re)
-      val tileCols = rd.tileLayout.tileCols
-      val tileRows = rd.tileLayout.tileRows
-      val filtered = mutable.ListBuffer[Op[TileIntersection]]()
-      for(col <- 0 until tileCols optimized) {
-        for(row <- 0 until tileRows optimized) {
-          val tilePoly = 
-            rl.getRasterExtent(col,row)
-              .extent
-              .asFeature()
-              .geom
-
-          if(p.geom.contains(tilePoly)) {
-            filtered += tiles(row*tileCols + col).map(FullTileIntersection(_))
-          } else {
-            val intersections = tilePoly.intersection(p.geom).asPolygonSet.map(Polygon(_,0))
-            if(!intersections.isEmpty) {
-              filtered += tiles(row*tileCols + col).map(PartialTileIntersection(_,intersections))
-            }
-          }
-        }
-      }
-      filtered.toSeq
-    }
-  }
-
-  def mapIntersecting[B,That,D](p:Op[feature.Polygon[D]])(handleTileIntersection:TileIntersection=>B)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
-    val builder = bf.apply(this)
-    val newOp = 
-      filterTiles(p).map { filteredTiles =>
-        filteredTiles.map { tileIntersectionOp =>
-          tileIntersectionOp.map(handleTileIntersection(_))
-        }
-      }
-    builder.setOp(newOp)
-    val result = builder.result()
-    result
-  }
-
   def min():ValueSource[Int] = 
     self.map(_.findMinMax._1)
         .reduce { (m1,m2) =>
@@ -130,10 +89,6 @@ trait RasterSourceLike[+Repr <: RasterSource]
           )
          }
 
-  def info:ValueSource[process.RasterLayerInfo] = ValueSource(rasterDefinition.flatMap( rd => io.LoadRasterLayerInfo(rd.layerId)))
+  def info:ValueSource[process.RasterLayerInfo] = 
+    ValueSource(rasterDefinition.flatMap( rd => io.LoadRasterLayerInfo(rd.layerId)))
 }
-
-abstract sealed trait TileIntersection
-
-case class PartialTileIntersection[D](tile:Raster,intersections:List[Polygon[D]]) extends TileIntersection
-case class FullTileIntersection(tile:Raster) extends TileIntersection
