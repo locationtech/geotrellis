@@ -52,11 +52,11 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
                          (f:(Op[T],Op[B])=>Op[C])
                          (implicit bf:CanBuildSourceFrom[Repr,C,That]):That = {
     val newElements:Op[Seq[Op[C]]] =
-      (elements,ds.elements).map { (e1,e2) =>
+      ((elements,ds.elements).map { (e1,e2) =>
         e1.zip(e2).map { case (a,b) => 
           f(a,b) 
         }
-      }
+      }).withName("combineOp-map")
 
     val builder = bf.apply(this)
     builder.setOp(newElements)
@@ -103,6 +103,9 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
     builder.setOp(newElements)
     builder.result
   }
+
+  def cache(implicit server:process.Server) =
+    mapOp(element => Literal(server.get(element)))
 
   def run(implicit server:process.Server) = server.run(this)
   def get(implicit server:process.Server) = server.get(this)

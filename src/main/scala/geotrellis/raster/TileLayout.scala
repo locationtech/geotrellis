@@ -17,6 +17,9 @@ object TileLayout {
     val tileRows = (re.rows + pixelRows - 1) / pixelRows
     TileLayout(tileCols, tileRows, pixelCols, pixelRows)
   }
+
+  def singleTile(cols:Int,rows:Int) =
+    TileLayout(1,1,cols,rows)
 }
 
 /**

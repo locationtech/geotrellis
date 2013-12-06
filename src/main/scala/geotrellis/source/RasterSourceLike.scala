@@ -36,8 +36,12 @@ trait RasterSourceLike[+Repr <: RasterSource]
                   (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
     val tileOps:Op[Seq[Op[Raster]]] =
       (rasterDefinition,logic.Collect(tiles)).map { (rd,tileSeq) =>
-        val r = f(TileRaster(tileSeq.toSeq, rd.re,rd.tileLayout))
-        TileRaster.split(r,rd.tileLayout).map(Literal(_))
+        if(rd.isTiled) {
+          val r = f(TileRaster(tileSeq.toSeq, rd.re,rd.tileLayout))
+          TileRaster.split(r,rd.tileLayout).map(Literal(_))
+        } else {
+          Seq(f(tileSeq(0)))
+        }
       }
     // Set into new RasterSource
     val builder = bf.apply(this)
@@ -49,8 +53,12 @@ trait RasterSourceLike[+Repr <: RasterSource]
                     (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
     val tileOps:Op[Seq[Op[Raster]]] =
       (rasterDefinition,logic.Collect(tiles)).flatMap { (rd,tileSeq) =>
-        f(TileRaster(tileSeq.toSeq, rd.re,rd.tileLayout)).map { r =>
-          TileRaster.split(r,rd.tileLayout).map(Literal(_))
+        if(rd.isTiled) {
+          f(TileRaster(tileSeq.toSeq, rd.re,rd.tileLayout)).map { r =>
+            TileRaster.split(r,rd.tileLayout).map(Literal(_))
+          }
+        } else {
+          Seq(f(tileSeq(0)))
         }
       }
     // Set into new RasterSource

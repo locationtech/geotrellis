@@ -9,20 +9,17 @@ import geotrellis.source._
 object Less extends LocalRasterBinaryOp {
   /** Apply this operation to the values of each cell in each raster.  */
   override
-  def apply(rss:Seq[Op[Raster]]):Op[Raster] = 
-    rss.mapOps { rasters =>
-        rasters.head
-               .dualCombine(rasters.tail)({ zs =>
-                   val z = zs(0)
-                   if(zs.tail.foldLeft(true)(_ && z < _)) 1
-                   else 0
-                })({ zs =>
-                  val z = zs(0)
-                  if(zs.tail.foldLeft(true)(_ && z < _)) 1
-                  else 0
-                })
-       }
-      .withName(s"Less[Rasters]")
+  def combine(rasters:RasterSeq):Raster =
+    rasters
+      .dualCombine({ zs =>
+        val z = zs(0)
+        if(zs.tail.foldLeft(true)(_ && z < _)) 1
+        else 0
+      })({ zs =>
+        val z = zs(0)
+        if(zs.tail.foldLeft(true)(_ && z < _)) 1
+        else 0
+      })
 
   def combine(z1:Int,z2:Int) =
     if(z1 < z2) 1 else 0

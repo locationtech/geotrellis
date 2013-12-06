@@ -16,7 +16,6 @@ object TileRaster {
         tr
       case _ =>
         wrap(r, tileLayout)
-//        sys.error(s"TileRaster cannot handle this raster type (${r.getClass.getSimpleName})")
     }
 
   def wrap(r:Raster,tileLayout:TileLayout):TileRaster = {

@@ -2,6 +2,7 @@ package geotrellis.benchmark
 
 import geotrellis._
 import geotrellis.process._
+import geotrellis.source._
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Runner 
@@ -18,22 +19,18 @@ abstract class BenchmarkRunner(cls:java.lang.Class[_ <: Benchmark]) {
  * Extend this to create an actual benchmarking class.
  */
 trait OperationBenchmark extends SimpleBenchmark {
-  def getRasterExtent(name:String, w:Int, h:Int) =
-    RasterExtent(GeoTrellis.get(io.LoadRasterExtent(name)).extent,w,h)
-
+  def getRasterExtent(name:String, w:Int, h:Int):RasterExtent = {
+    val ext = RasterSource(name).info.get.rasterExtent.extent
+    RasterExtent(ext,w,h)
+  }
   /**
    * Loads a given raster with a particular height/width.
    */
-  def loadRaster(name:String, w:Int, h:Int) = {
-    GeoTrellis.get(io.LoadRaster(name, getRasterExtent(name, w, h)))
-  }
+  def loadRaster(name:String, w:Int, h:Int):Raster =
+    RasterSource(name,getRasterExtent(name,w,h)).get
 
-  def get[T](op:Op[T]) = GeoTrellis.get(op)
-
-  /**
-   * Load a server with the GeoTrellis benchmarking catalog.
-   */
-//  def initServer():Server = GeoTrellis.server//BenchmarkServer.server
+  def get[T](op:Op[T]):T = GeoTrellis.get(op)
+  def get[T](source:DataSource[_,T]):T = GeoTrellis.get(source)
 
   /**
    * Sugar for building arrays using a per-cell init function.

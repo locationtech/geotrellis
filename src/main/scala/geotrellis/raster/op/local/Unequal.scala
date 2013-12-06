@@ -9,16 +9,13 @@ import geotrellis.source._
 object Unequal extends LocalRasterBinaryOp {
   /** Apply this operation to the values of each cell in each raster.  */
   override
-  def apply(rss:Seq[Op[Raster]]):Op[Raster] = 
-    rss.mapOps { rasters =>
-        rasters.head
-               .dualCombine(rasters.tail)({ zs => 
-                  if(zs.distinct.length < 2) 0 else 1
-                })({ zs =>
-                  if(zs.distinct.filter(isData(_)).length < 2) 0 else 1
-                })
-       }
-      .withName(s"Unequal[Rasters]")
+  def combine(rasters:RasterSeq):Raster =
+    rasters
+      .dualCombine({ zs =>
+        if(zs.distinct.length < 2) 0 else 1
+      })({ zs =>
+        if(zs.distinct.filter(isData(_)).length < 2) 0 else 1
+      })
 
   def combine(z1:Int,z2:Int) = 
     if(z1 == z2) 0 else 1
