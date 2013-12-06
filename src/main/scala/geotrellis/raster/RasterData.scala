@@ -14,32 +14,30 @@ object RasterData {
   }
 
   def allocByType(t: RasterType, cols: Int, rows: Int): MutableRasterData = t match {
-    case TypeBit => BitArrayRasterData.ofDim(cols, rows)
-    case TypeByte => ByteArrayRasterData.ofDim(cols, rows)
-    case TypeShort => ShortArrayRasterData.ofDim(cols, rows)
-    case TypeInt => IntArrayRasterData.ofDim(cols, rows)
-    case TypeFloat => FloatArrayRasterData.ofDim(cols, rows)
+    case TypeBit    => BitArrayRasterData.ofDim(cols, rows)
+    case TypeByte   => ByteArrayRasterData.ofDim(cols, rows)
+    case TypeShort  => ShortArrayRasterData.ofDim(cols, rows)
+    case TypeInt    => IntArrayRasterData.ofDim(cols, rows)
+    case TypeFloat  => FloatArrayRasterData.ofDim(cols, rows)
     case TypeDouble => DoubleArrayRasterData.ofDim(cols, rows)
   }
 
   def emptyByType(t: RasterType, cols: Int, rows: Int): MutableRasterData = t match {
-    case TypeBit => BitArrayRasterData.empty(cols, rows)
-    case TypeByte => ByteArrayRasterData.empty(cols, rows)
-    case TypeShort => ShortArrayRasterData.empty(cols, rows)
-    case TypeInt => IntArrayRasterData.empty(cols, rows)
-    case TypeFloat => FloatArrayRasterData.empty(cols, rows)
+    case TypeBit    => BitArrayRasterData.empty(cols, rows)
+    case TypeByte   => ByteArrayRasterData.empty(cols, rows)
+    case TypeShort  => ShortArrayRasterData.empty(cols, rows)
+    case TypeInt    => IntArrayRasterData.empty(cols, rows)
+    case TypeFloat  => FloatArrayRasterData.empty(cols, rows)
     case TypeDouble => DoubleArrayRasterData.empty(cols, rows)
   }
 
-  def toRasterData(bytes: Array[Byte], awType: RasterType, cols: Int, rows: Int) = {
-    awType match {
-      case TypeBit => BitArrayRasterData.fromArrayByte(bytes, cols, rows)
-      case TypeByte => ByteArrayRasterData.fromArrayByte(bytes, cols, rows)
-      case TypeShort => ShortArrayRasterData.fromArrayByte(bytes, cols, rows)
-      case TypeInt => IntArrayRasterData.fromArrayByte(bytes, cols, rows)
-      case TypeFloat => FloatArrayRasterData.fromArrayByte(bytes, cols, rows)
-      case TypeDouble => DoubleArrayRasterData.fromArrayByte(bytes, cols, rows)
-    }
+  def toRasterData(bytes: Array[Byte], awType: RasterType, cols: Int, rows: Int) = awType match {
+    case TypeBit    => BitArrayRasterData.fromArrayByte(bytes, cols, rows)
+    case TypeByte   => ByteArrayRasterData.fromArrayByte(bytes, cols, rows)
+    case TypeShort  => ShortArrayRasterData.fromArrayByte(bytes, cols, rows)
+    case TypeInt    => IntArrayRasterData.fromArrayByte(bytes, cols, rows)
+    case TypeFloat  => FloatArrayRasterData.fromArrayByte(bytes, cols, rows)
+    case TypeDouble => DoubleArrayRasterData.fromArrayByte(bytes, cols, rows)
   }
 }
 
