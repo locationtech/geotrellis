@@ -30,6 +30,15 @@ object RasterData {
     case TypeFloat  => FloatArrayRasterData.empty(cols, rows)
     case TypeDouble => DoubleArrayRasterData.empty(cols, rows)
   }
+
+  def toRasterData(bytes: Array[Byte], awType: RasterType, cols: Int, rows: Int) = awType match {
+    case TypeBit    => BitArrayRasterData.fromArrayByte(bytes, cols, rows)
+    case TypeByte   => ByteArrayRasterData.fromArrayByte(bytes, cols, rows)
+    case TypeShort  => ShortArrayRasterData.fromArrayByte(bytes, cols, rows)
+    case TypeInt    => IntArrayRasterData.fromArrayByte(bytes, cols, rows)
+    case TypeFloat  => FloatArrayRasterData.fromArrayByte(bytes, cols, rows)
+    case TypeDouble => DoubleArrayRasterData.fromArrayByte(bytes, cols, rows)
+  }
 }
 
 /**
@@ -38,12 +47,12 @@ object RasterData {
  * Designed to be a near drop-in replacement for Array in many cases.
  */
 trait RasterData extends Serializable {
-  def force:RasterData
+  def force: RasterData
   def getType: RasterType
   def alloc(cols: Int, rows: Int): MutableRasterData
 
   def isFloat = getType.float
-  def convert(typ:RasterType):RasterData = LazyConvert(this, typ)
+  def convert(typ: RasterType): RasterData = LazyConvert(this, typ)
   def lengthLong = length
 
   def isLazy: Boolean = false
@@ -54,7 +63,7 @@ trait RasterData extends Serializable {
   def cols: Int
   def rows: Int
 
-  def mutable():MutableRasterData
+  def mutable(): MutableRasterData
 
   /**
    * For every cell in the given raster, run the given integer function.
@@ -63,10 +72,10 @@ trait RasterData extends Serializable {
    * row, but this should probably not be relied upon. In the future we'd like
    * to be able to parallelize foreach.
    */
-  def foreach(f:Int => Unit):Unit = {
+  def foreach(f: Int => Unit): Unit = {
     var i = 0
     val len = length
-    while(i < len) {
+    while (i < len) {
       f(apply(i))
       i += 1
     }
@@ -91,7 +100,7 @@ trait RasterData extends Serializable {
    * function. For every (x,y) cell coordinate, get each RasterData's integer
    * value, map them to a new value, and assign it to the output's (x,y) cell.
    */
-  def combine(other:RasterData)(f:(Int, Int) => Int):RasterData = {
+  def combine(other: RasterData)(f: (Int, Int) => Int): RasterData = {
     if (lengthLong != other.lengthLong) {
       val size1 = s"${cols} x ${rows}"
       val size2 = s"${other.cols} x ${other.rows}"
@@ -114,10 +123,10 @@ trait RasterData extends Serializable {
    * row, but this should probably not be relied upon. In the future we'd like
    * to be able to parallelize foreach.
    */
-  def foreachDouble(f:Double => Unit):Unit = {
+  def foreachDouble(f: Double => Unit): Unit = {
     var i = 0
     val len = length
-    while(i < len) {
+    while (i < len) {
       f(applyDouble(i))
       i += 1
     }
@@ -142,7 +151,7 @@ trait RasterData extends Serializable {
    * function. For every (x,y) cell coordinate, get each RasterData's double
    * value, map them to a new value, and assign it to the output's (x,y) cell.
    */
-  def combineDouble(other:RasterData)(f:(Double, Double) => Double):RasterData = {
+  def combineDouble(other: RasterData)(f: (Double, Double) => Double): RasterData = {
     if (lengthLong != other.lengthLong) {
       val size1 = s"${cols} x ${rows}"
       val size2 = s"${other.cols} x ${other.rows}"
@@ -158,8 +167,8 @@ trait RasterData extends Serializable {
     output
   }
 
-  override def equals(other:Any):Boolean = other match {
-    case r:RasterData => {
+  override def equals(other: Any): Boolean = other match {
+    case r: RasterData => {
       if (r == null) return false
       val len = length
       if (len != r.length) return false
@@ -173,16 +182,16 @@ trait RasterData extends Serializable {
     case _ => false
   }
 
-  def apply(i: Int):Int
-  def applyDouble(i:Int):Double
+  def apply(i: Int): Int
+  def applyDouble(i: Int): Double
 
-  def get(col:Int, row:Int) = apply(row * cols + col)
-  def getDouble(col:Int, row:Int) = applyDouble(row * cols + col)
+  def get(col: Int, row: Int) = apply(row * cols + col)
+  def getDouble(col: Int, row: Int) = applyDouble(row * cols + col)
 
   def toList = toArray.toList
   def toListDouble = toArrayDouble.toList
 
-  def toArray:Array[Int] = {
+  def toArray: Array[Int] = {
     val len = length
     val arr = Array.ofDim[Int](len)
     var i = 0
@@ -193,7 +202,7 @@ trait RasterData extends Serializable {
     arr
   }
 
-  def toArrayDouble:Array[Double] = {
+  def toArrayDouble: Array[Double] = {
     val len = length
     val arr = Array.ofDim[Double](len)
     var i = 0
@@ -203,4 +212,6 @@ trait RasterData extends Serializable {
     }
     arr
   }
+
+  def toArrayByte: Array[Byte]
 }
