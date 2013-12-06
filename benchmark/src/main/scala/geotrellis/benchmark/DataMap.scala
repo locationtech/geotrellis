@@ -91,7 +91,6 @@ class DataMap extends OperationBenchmark {
     }
     goal
   }
- 
 
   import spire.syntax._ 
   def timeIntArrayCforLoop(reps:Int) = run(reps)(intArrayCforLoop)
@@ -138,7 +137,6 @@ class DataMap extends OperationBenchmark {
   def timeRasterMapIfSet(reps:Int) = run(reps)(rasterMapIfSet)
   def rasterMapIfSet = raster.mapIfSet(z => z * 2)
 
-  // xyz
   def timeBitDataWhileLoop(reps:Int) = run(reps)(bitDataWhileLoop)
   def bitDataWhileLoop = {
     val data = bitData.copy
@@ -186,26 +184,4 @@ class DataMap extends OperationBenchmark {
   
   def timeShortDataMap(reps:Int) = run(reps)(shortDataMap)
   def shortDataMap = shortData.map(z => if (isData(z)) z * 2 else NODATA)
-  // xyz
-  
-  def timeRasterOperationUnary(reps:Int) = run(reps)(rasterOperationUnary)
-  def rasterOperationUnary = get(mc)
-  
-  def timeRasterOperationCustomWithInt(reps:Int) = run(reps)(rasterOperationCustomWithInt)
-  def rasterOperationCustomWithInt = get(mcCustomWithInt)
-  
-  def timeRasterOperationMapSugar(reps:Int) = run(reps)(rasterOperationMapSugar)
-  def rasterOperationMapSugar = get(mcMapSugar)
-
-  def timeRasterOperationMapIfSetSugar(reps:Int) = run(reps)(rasterOperationMapIfSetSugar)
-  def rasterOperationMapIfSetSugar = get(mcMapIfSetSugar)
-
-  def timeRasterOperationMapIfSetSugarWithLiteral(reps:Int) = run(reps)(rasterOperationMapIfSetSugarWithLiteral)
-  def rasterOperationMapIfSetSugarWithLiteral = get(mcMapIfSetSugarWithLiteral)
-
-  def timeRasterOperationMapIfSet(reps:Int) = run(reps)(rasterOperationMapIfSet)
-  def rasterOperationMapIfSet = get(mcMapIfSet)
-
-  def timeRasterOperationWhileLoop(reps:Int) = run(reps)(rasterOperationWhileLoop)
-  def rasterOperationWhileLoop = get(mcWhileLoop)
 }

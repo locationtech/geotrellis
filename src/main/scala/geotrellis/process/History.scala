@@ -88,14 +88,7 @@ case class History(id:String,
       if(forced) { resultString + " [Forced]" }
       else { resultString }
 
-    val truncS =           
-      // if(s.length > 15) {
-      //   s"""${s.substring(0,12)}..."""
-      // } else {
-        s
-//      }
-
-    new History(id,steps,Some(Success(truncS)),startTime,now,system)
+    new History(id,steps,Some(Success(s)),startTime,now,system)
   }
 
   def withError(msg:String,trace:String) = {

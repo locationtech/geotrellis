@@ -36,8 +36,12 @@ trait RasterSourceLike[+Repr <: RasterSource]
                   (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
     val tileOps:Op[Seq[Op[Raster]]] =
       (rasterDefinition,logic.Collect(tiles)).map { (rd,tileSeq) =>
-        val r = f(TileRaster(tileSeq.toSeq, rd.re,rd.tileLayout))
-        TileRaster.split(r,rd.tileLayout).map(Literal(_))
+        if(rd.isTiled) {
+          val r = f(TileRaster(tileSeq.toSeq, rd.re,rd.tileLayout))
+          TileRaster.split(r,rd.tileLayout).map(Literal(_))
+        } else {
+          Seq(f(tileSeq(0)))
+        }
       }
     // Set into new RasterSource
     val builder = bf.apply(this)
@@ -49,8 +53,12 @@ trait RasterSourceLike[+Repr <: RasterSource]
                     (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
     val tileOps:Op[Seq[Op[Raster]]] =
       (rasterDefinition,logic.Collect(tiles)).flatMap { (rd,tileSeq) =>
-        f(TileRaster(tileSeq.toSeq, rd.re,rd.tileLayout)).map { r =>
-          TileRaster.split(r,rd.tileLayout).map(Literal(_))
+        if(rd.isTiled) {
+          f(TileRaster(tileSeq.toSeq, rd.re,rd.tileLayout)).map { r =>
+            TileRaster.split(r,rd.tileLayout).map(Literal(_))
+          }
+        } else {
+          Seq(f(tileSeq(0)))
         }
       }
     // Set into new RasterSource
@@ -59,7 +67,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.result
   }
 
-  def filterTiles(p:Op[feature.Polygon[_]]):Op[Seq[Op[TileIntersection]]] = {
+  private def filterTiles(p:Op[feature.Polygon[_]]):Op[Seq[Op[TileIntersection]]] = {
     (rasterDefinition,tiles,p).map { (rd,tiles,p) =>
       val rl = rd.tileLayout.getResolutionLayout(rd.re)
       val tileCols = rd.tileLayout.tileCols
@@ -90,11 +98,73 @@ trait RasterSourceLike[+Repr <: RasterSource]
   def mapIntersecting[B,That,D](p:Op[feature.Polygon[D]])(handleTileIntersection:TileIntersection=>B)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
     val builder = bf.apply(this)
     val newOp = 
-      filterTiles(p).map { filteredTiles =>
-        filteredTiles.map { tileIntersectionOp =>
-          tileIntersectionOp.map(handleTileIntersection(_))
+      (rasterDefinition,tiles,p).map { (rd,tiles,p) =>
+        val rl = rd.tileLayout.getResolutionLayout(rd.re)
+        val tileCols = rd.tileLayout.tileCols
+        val tileRows = rd.tileLayout.tileRows
+        val filtered = mutable.ListBuffer[Op[B]]()
+        for(col <- 0 until tileCols optimized) {
+          for(row <- 0 until tileRows optimized) {
+            val tilePoly =
+              rl.getRasterExtent(col,row)
+                .extent
+                .asFeature()
+                .geom
+
+            if(p.geom.contains(tilePoly)) {
+              filtered += 
+                tiles(row*tileCols + col)
+                  .map(t => handleTileIntersection(FullTileIntersection(t)))
+            } else {
+              val intersections = tilePoly.intersection(p.geom).asPolygonSet.map(Polygon(_,p.data))
+              if(!intersections.isEmpty) {
+                filtered += 
+                  tiles(row*tileCols + col)
+                    .map(t => handleTileIntersection(PartialTileIntersection(t,intersections)))
+              }
+            }
+          }
         }
+        filtered.toSeq
       }
+
+    builder.setOp(newOp)
+    val result = builder.result()
+    result
+  }
+
+  def mapIntersecting[B,That,D](p:Op[feature.Polygon[D]],fullTileCache:DataSource[B,_])(handlePartialIntersection:PartialTileIntersection[D]=>B)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
+    val builder = bf.apply(this)
+    val newOp = 
+      (rasterDefinition,tiles,p).map { (rd,tiles,p) =>
+        val rl = rd.tileLayout.getResolutionLayout(rd.re)
+        val tileCols = rd.tileLayout.tileCols
+        val tileRows = rd.tileLayout.tileRows
+        val filtered = mutable.ListBuffer[Op[B]]()
+        for(col <- 0 until tileCols optimized) {
+          for(row <- 0 until tileRows optimized) {
+            val tilePoly =
+              rl.getRasterExtent(col,row)
+                .extent
+                .asFeature()
+                .geom
+
+            if(p.geom.contains(tilePoly)) {
+              filtered += 
+                fullTileCache.elements.flatMap(_.apply(row*tileCols + col))
+            } else {
+              val intersections = tilePoly.intersection(p.geom).asPolygonSet.map(Polygon(_,p.data))
+              if(!intersections.isEmpty) {
+                filtered += 
+                  tiles(row*tileCols + col)
+                    .map(t => handlePartialIntersection(PartialTileIntersection(t,intersections)))
+              }
+            }
+          }
+        }
+        filtered.toSeq
+      }
+
     builder.setOp(newOp)
     val result = builder.result()
     result

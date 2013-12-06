@@ -251,6 +251,18 @@ object GeotrellisBuild extends Build {
         "org.reflections" % "reflections" % "0.9.5"),
       mainClass in Compile := Some("geotrellis.run.Tasks"))
 
+  // Project: profile
+
+  lazy val profile: Project =
+    Project("profile", file("profile"))
+      .settings(profileSettings: _*)
+      .dependsOn(root)
+
+  lazy val profileSettings =
+    Seq(
+      mainClass in Compile := Some("geotrellis.profile.Main")
+    )
+
   // Project: benchmark
 
   lazy val benchmark: Project =
@@ -269,7 +281,9 @@ object GeotrellisBuild extends Build {
         "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
           from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
         "com.google.code.gson" % "gson" % "1.7.1",
-        "org.spire-math" %% "spire" % "0.4.0"),
+        "org.spire-math" %% "spire" % "0.4.0",
+        "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided"
+      ),
 
       // enable forking in both run and test
       fork := true,

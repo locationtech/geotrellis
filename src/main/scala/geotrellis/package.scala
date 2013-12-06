@@ -45,6 +45,8 @@ package object geotrellis {
   type SeqDS[E] = geotrellis.source.DataSource[E,Seq[E]]
   type HistogramDS = geotrellis.source.DataSource[Histogram,Histogram]
 
+  type Png = Array[Byte]
+
   /**
    * Add simple syntax for creating an operation.
    *
