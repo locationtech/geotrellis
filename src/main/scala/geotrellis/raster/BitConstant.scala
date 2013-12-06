@@ -49,4 +49,6 @@ final case class BitConstant(n:Byte, cols:Int, rows:Int) extends RasterData {
     }
     forcedData
   }
+  
+  def toArrayByte: Array[Byte] = throw new UnsupportedOperationException("BitConstant doesn't support this conversion")
 }

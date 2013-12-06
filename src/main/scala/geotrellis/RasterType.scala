@@ -2,6 +2,7 @@ package geotrellis
 
 sealed abstract class RasterType(val precedence:Int, val float:Boolean, val name:String) extends Serializable {
   def bits = if (float) precedence / 10 else precedence
+  def bytes = bits / 8
   def union(rhs:RasterType) = if (precedence < rhs.precedence) rhs else this
   def intersect(rhs:RasterType) = if (precedence < rhs.precedence) this else rhs
 
