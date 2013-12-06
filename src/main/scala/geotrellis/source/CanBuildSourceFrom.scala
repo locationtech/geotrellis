@@ -36,11 +36,7 @@ trait Priority1Implicits extends Priority2Implicits { this: CanBuildSourceFrom.t
 
 trait Priority2Implicits { this: CanBuildSourceFrom.type =>
   implicit def canBuildSeq[E]:CanBuildSourceFrom[DataSource[_,_], E, DataSource[E,Seq[E]]] = new CanBuildSourceFrom[DataSource[_,_], E, DataSource[E,Seq[E]]] {
-    def apply = new DataSourceBuilder(convergeSeq)
-    def apply(ds:DataSource[_,_]) = new DataSourceBuilder(convergeSeq)
-  }
-
-  def convergeSeq[A](elementOps:(Op[Seq[Op[A]]])) = {
-    logic.Collect(elementOps)
+    def apply = new DataSourceBuilder(DataSource.convergeSeq)
+    def apply(ds:DataSource[_,_]) = new DataSourceBuilder(DataSource.convergeSeq)
   }
 }

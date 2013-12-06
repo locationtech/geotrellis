@@ -6,247 +6,130 @@ import geotrellis.feature._
 import geotrellis.feature.rasterize._
 import geotrellis.statistics._
 
+import scala.collection.mutable
+import scalaxy.loops._
+
+abstract sealed trait TileIntersection
+
+case class PartialTileIntersection[D](tile:Raster,intersections:List[Polygon[D]]) extends TileIntersection
+case class FullTileIntersection(tile:Raster) extends TileIntersection
+
 trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
-  def zonalHistogram[D](p:Op[feature.Polygon[D]]):ValueSource[Histogram] = 
-    self.mapIntersecting(p) { tileIntersection =>
-      tileIntersection match {
-        case FullTileIntersection(r:Raster) =>
-          val histogram = FastMapHistogram()
-          r.foreach((z:Int) => if (isData(z)) histogram.countItem(z, 1))
-          histogram
-        case PartialTileIntersection(r:Raster,polygons:List[_]) =>
-          val histogram = FastMapHistogram()
-          for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
-            Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-              new Callback[Geometry,D] {
-                def apply (col:Int, row:Int, g:Geometry[D]) {
-                  val z = r.get(col,row)
-                  if (isData(z)) histogram.countItem(z, 1)
+  def mapIntersecting[B,That,D](p:Op[feature.Polygon[D]],fullTileResults:Option[DataSource[B,_]])
+                               (handleTileIntersection:TileIntersection=>B)
+                               (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
+    val builder = bf.apply(this)
+
+    val newOp = 
+      (rasterDefinition,tiles,p).map { (rd,tiles,p) =>
+        val rl = rd.tileLayout.getResolutionLayout(rd.re)
+        val tileCols = rd.tileLayout.tileCols
+        val tileRows = rd.tileLayout.tileRows
+        val filtered = mutable.ListBuffer[Op[B]]()
+
+        val handleFullTile:Int => Op[B] =
+          fullTileResults match {
+            case Some(cached) =>
+              { (i:Int) => cached.elements.flatMap(_(i)) }
+            case None =>
+              { (i:Int) => 
+                tiles(i).map { t =>
+                  handleTileIntersection(FullTileIntersection(t))
                 }
               }
-            )
           }
 
-          histogram
+        for(col <- 0 until tileCols optimized) {
+          for(row <- 0 until tileRows optimized) {
+            val tilePoly =
+              rl.getRasterExtent(col,row)
+                .extent
+                .asFeature()
+                .geom
+
+            if(p.geom.contains(tilePoly)) {              
+              filtered += handleFullTile(row*tileCols + col)
+            } else {
+              val intersections = tilePoly.intersection(p.geom).asPolygonSet.map(Polygon(_,0))
+              if(!intersections.isEmpty) {
+                filtered += tiles(row*tileCols + col).map { t =>
+                  handleTileIntersection(PartialTileIntersection(t,intersections))
+                }
+              }
+            }
+          }
+        }
+        filtered.toSeq
       }
-    }.converge
+
+    builder.setOp(newOp)
+    val result = builder.result()
+    result
+  }
+
+  private 
+  def zonalSummary[T,V,That <: DataSource[_,V],D]
+    (tileSummary:TileSummary[T,V,That], p:Op[Polygon[D]], cachedResult:Option[DataSource[T,_]]) =
+    tileSummary.converge {
+      self.mapIntersecting(p,cachedResult) { tileIntersection =>
+        tileIntersection match {
+          case ft @ FullTileIntersection(_) => tileSummary.handleFullTile(ft)
+          case pt @ PartialTileIntersection(_,_) => tileSummary.handlePartialTile(pt)
+        }
+      }
+    }
+
+  def zonalHistogram[D](p:Op[feature.Polygon[D]]):ValueSource[Histogram] =
+    zonalSummary(Histogram,p,None)
+
+  def zonalHistogram[D](p:Op[feature.Polygon[D]],cached:DataSource[Histogram,_]):ValueSource[Histogram] =
+    zonalSummary(Histogram,p,Some(cached))
 
   def zonalSum[D](p:Op[feature.Polygon[D]]):ValueSource[Long] =
-    self.mapIntersecting(p) { tileIntersection =>
-      tileIntersection match {
-        case FullTileIntersection(r:Raster) =>
-          var s = 0L
-          r.foreach((x:Int) => if (isData(x)) s = s + x)
-          s
-        case PartialTileIntersection(r:Raster,polygons:List[_]) =>
-          var sum: Long = 0L
-          for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
-            Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-              new Callback[Geometry,D] {
-                def apply(col:Int, row:Int, g:Geometry[D]) {
-                  val z = r.get(col,row)
-                  if (isData(z)) { sum = sum + z }
-                }
-              }
-            )
-          }
+    zonalSummary(Sum,p,None)
 
-          sum
-      }
-    }.reduce(_+_)
+  def zonalSum[D](p:Op[feature.Polygon[D]],cached:DataSource[Long,_]):ValueSource[Long] =
+    zonalSummary(Sum,p,Some(cached))
 
   def zonalSumDouble[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
-    self.mapIntersecting(p) { tileIntersection =>
-      tileIntersection match {
-        case FullTileIntersection(r:Raster) =>
-          var s = 0.0
-          r.foreachDouble((x:Double) => if (isData(x)) s = s + x)
-          s
-        case PartialTileIntersection(r:Raster,polygons:List[_]) =>
-          var sum = 0.0
-          for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
-            Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-              new Callback[Geometry,D] {
-                def apply(col:Int, row:Int, g:Geometry[D]) {
-                  val z = r.getDouble(col,row)
-                  if(isData(z)) { sum = sum + z }
-                }
-              }
-            )
-          }
+    zonalSummary(SumDouble,p,None)
 
-          sum
-      }
-    }.reduce(_+_)
+  def zonalSumDouble[D](p:Op[feature.Polygon[D]],cached:DataSource[Double,_]):ValueSource[Double] =
+    zonalSummary(SumDouble,p,Some(cached))
 
   def zonalMin[D](p:Op[feature.Polygon[D]]):ValueSource[Int] =
-    self.mapIntersecting(p) { tileIntersection =>
-      tileIntersection match {
-        case FullTileIntersection(r:Raster) =>
-          var min = NODATA
-          r.foreach { (x:Int) => 
-            if (isData(x) && (x < min || isNoData(min))) { min = x }
-          }
-          min
-        case PartialTileIntersection(r:Raster,polygons:List[_]) =>
-          var min = NODATA
-          for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
-            Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-              new Callback[Geometry,D] {
-                def apply(col:Int, row:Int, g:Geometry[D]) {
-                  val z = r.get(col,row)
-                  if (isData(z) && (z < min || isNoData(min)) ) { min = z }
-                }
-              }
-            )
-          }
-          min
-      }
-    }.reduce { (a,b) => 
-      if(isNoData(a)) { b } 
-      else if(isNoData(b)) { a }
-      else { math.min(a,b) }
-    }
+    zonalSummary(Min,p,None)
+
+  def zonalMin[D](p:Op[feature.Polygon[D]],cached:DataSource[Int,_]):ValueSource[Int] =
+    zonalSummary(Min,p,Some(cached))
 
   def zonalMinDouble[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
-    self.mapIntersecting(p) { tileIntersection =>
-      tileIntersection match {
-        case FullTileIntersection(r:Raster) =>
-          var min = Double.NaN
-          r.foreach((x:Int) => if (isData(x) && (x < min || isNoData(min))) { min = x })
-          min
-        case PartialTileIntersection(r:Raster,polygons:List[_]) =>
-          var min = Double.NaN
-          for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
-            Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-              new Callback[Geometry,D] {
-                def apply(col:Int, row:Int, g:Geometry[D]) {
-                  val z = r.getDouble(col,row)
-                  if (isData(z) && (z < min || isNoData(min))) { min = z }
-                }
-              }
-            )
-          }
+    zonalSummary(MinDouble,p,None)
 
-          min
-      }
-    }.reduce { (a,b) => 
-      if(isNoData(a)) { b } 
-      else if(isNoData(b)) { a }
-      else { math.min(a,b) }
-    }
+  def zonalMinDouble[D](p:Op[feature.Polygon[D]],cached:DataSource[Double,_]):ValueSource[Double] =
+    zonalSummary(MinDouble,p,Some(cached))
 
   def zonalMax[D](p:Op[feature.Polygon[D]]):ValueSource[Int] =
-    self.mapIntersecting(p) { tileIntersection =>
-      tileIntersection match {
-        case FullTileIntersection(r:Raster) =>
-          var max = NODATA // == Int.MinValue
-          r.foreach((x:Int) => if (isData(x) && x > max) { max = x })
-          max
-        case PartialTileIntersection(r:Raster,polygons:List[_]) =>
-          var max = NODATA
-          for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
-            Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-              new Callback[Geometry,D] {
-                def apply(col:Int, row:Int, g:Geometry[D]) {
-                  val z = r.get(col,row)
-                  if (isData(z) && (z > max || isNoData(max))) { max = z }
-                }
-              }
-            )
-          }
-          max
-      }
-    }.reduce { (a,b) => 
-      if(isNoData(a)) { b } 
-      else if(isNoData(b)) { a }
-      else { math.max(a,b) }
-    }
+    zonalSummary(Max,p,None)
+
+  def zonalMax[D](p:Op[feature.Polygon[D]],cached:DataSource[Int,_]):ValueSource[Int] =
+    zonalSummary(Max,p,Some(cached))
 
   def zonalMaxDouble[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
-    self.mapIntersecting(p) { tileIntersection =>
-      tileIntersection match {
-        case FullTileIntersection(r:Raster) =>
-          var max = Double.NaN
-          r.foreach((x:Int) => if (isData(x) && (x > max || isNoData(max))) { max = x })
-          max
-        case PartialTileIntersection(r:Raster,polygons:List[_]) =>
-          var max = Double.NaN
-          for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
-            Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-              new Callback[Geometry,D] {
-                def apply(col:Int, row:Int, g:Geometry[D]) {
-                  val z = r.getDouble(col,row)
-                  if (isData(z) && (z > max || isNoData(max))) { max = z }
-                }
-              }
-            )
-          }
-          max
-      }
-    }.reduce { (a,b) => 
-      if(isNoData(a)) { b } 
-      else if(isNoData(b)) { a }
-      else { math.max(a,b) }
-    }
+    zonalSummary(MaxDouble,p,None)
+
+  def zonalMaxDouble[D](p:Op[feature.Polygon[D]],cached:DataSource[Double,_]):ValueSource[Double] =
+    zonalSummary(MaxDouble,p,Some(cached))
 
   def zonalMean[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
-    self.mapIntersecting(p) { tileIntersection =>
-      tileIntersection match {
-        case FullTileIntersection(r:Raster) =>
-          var s = 0L
-          var c = 0L
-          r.foreach((x:Int) => if (isData(x)) { s = s + x; c = c + 1 })
-          Mean(s,c)
-        case PartialTileIntersection(r:Raster,polygons:List[_]) =>
-          var sum: Long = 0L
-          var count: Int = 0
-          for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
-            Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-              new Callback[Geometry,D] {
-                def apply(col:Int, row:Int, g:Geometry[D]) {
-                  val z = r.get(col,row)
-                  if (isData(z)) { sum = sum + z; count = count + 1 }
-                }
-              }
-            )
-          }
+    zonalSummary(Mean,p,None)
 
-          Mean(sum,count)
-      }
-    }.reduce(_+_).map(_.mean)
+  def zonalMean[D](p:Op[feature.Polygon[D]],cached:DataSource[MeanResult,_]):ValueSource[Double] =
+    zonalSummary(Mean,p,Some(cached))
 
   def zonalMeanDouble[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
-    self.mapIntersecting(p) { tileIntersection =>
-      tileIntersection match {
-        case FullTileIntersection(r:Raster) =>
-          var s = 0.0
-          var c = 0L
-          r.foreachDouble((x:Double) => if (isData(x)) { s = s + x; c = c + 1 })
-          Mean(s,c)
-        case PartialTileIntersection(r:Raster,polygons:List[_]) =>
-          var sum = 0.0
-          var count = 0L
-          for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
-            Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-              new Callback[Geometry,D] {
-                def apply(col:Int, row:Int, g:Geometry[D]) {
-                  val z = r.getDouble(col,row)
-                  if (isData(z)) { sum = sum + z; count = count + 1 }
-                }
-              }
-            )
-          }
-          Mean(sum,count)
-      }
-    }.reduce(_+_).map(_.mean)
-}
+    zonalSummary(MeanDouble,p,None)
 
-case class Mean(sum: Double, count: Long) {
-  def mean:Double = if (count == 0) {
-    Double.NaN
-  } else {
-    sum/count
-  }
-  def +(b: Mean) = Mean(sum + b.sum,count + b.count)
+  def zonalMeanDouble[D](p:Op[feature.Polygon[D]],cached:DataSource[MeanResult,_]):ValueSource[Double] =
+    zonalSummary(MeanDouble,p,Some(cached))
 }
