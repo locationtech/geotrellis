@@ -21,7 +21,7 @@ case class Min(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends Fo
       new CursorCalculation[Raster] with DoubleRasterDataResult {
         def calc(r:Raster,cursor:Cursor) = {
   
-          var m:Double = NODATA
+          var m:Double = Double.NaN
           cursor.allCells.foreach { 
             (col,row) => {
               val v = r.getDouble(col,row)

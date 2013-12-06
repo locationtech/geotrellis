@@ -96,7 +96,7 @@ class CursorDoubleSumCalc extends CursorCalculation[Raster]
     cursor.removedCells.foreach { (x,y) => 
       val v = r.getDouble(x,y)
       removed += ((x,y,v))
-      if(isData(v)) { total -= r.get(x,y) }
+      if(isData(v)) { total -= r.getDouble(x,y) }
     }
 
     data.setDouble(cursor.col,cursor.row,total)

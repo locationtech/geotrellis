@@ -18,7 +18,7 @@ import scala.math._
  */
 case class StandardDeviation(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,n,tns)({
   (r,n) => 
-    if(r.isFloat){
+    if(r.isFloat) {
       new CursorCalculation[Raster] with DoubleRasterDataResult {
         var count:Int = 0
         var sum:Double = 0
@@ -40,13 +40,14 @@ case class StandardDeviation(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbor
           c.allCells.foreach { (x,y) =>
             var v = r.getDouble(x,y)
             if(isData(v)) { 
-              squares += math.pow(r.get(x,y) - mean,2)
+              squares += math.pow(v - mean,2)
             }
           }
+
           data.setDouble(c.col,c.row,math.sqrt(squares / count.toDouble))
         }
       }
-    }else{
+    } else {
       new CursorCalculation[Raster] with DoubleRasterDataResult {
       var count:Int = 0
       var sum:Int = 0
@@ -68,7 +69,7 @@ case class StandardDeviation(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbor
         c.allCells.foreach { (x,y) =>
           var v = r.get(x,y)
           if(isData(v)) { 
-            squares += math.pow(r.get(x,y) - mean,2)
+            squares += math.pow(v - mean,2)
           }
         }
         data.setDouble(c.col,c.row,math.sqrt(squares / count.toDouble))
