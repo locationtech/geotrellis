@@ -64,13 +64,13 @@ final case class BitArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
 
   override def mapDouble(f: Double => Double) = map(z => d2i(f(i2d(z))))
 
-  def toArrayByte: Array[Byte] = throw new UnsupportedOperationException("BitArrayRasterData doesn't support this conversion")
+  def toArrayByte: Array[Byte] = array
 }
 
 object BitArrayRasterData {
   def ofDim(cols: Int, rows: Int) = new BitArrayRasterData(Array.ofDim[Byte](((cols * rows) + 7) / 8), cols, rows)
   def empty(cols: Int, rows: Int) = ofDim(cols, rows)
 
-  def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int) = throw new UnsupportedOperationException("BitArrayRasterData doesn't support this conversion")
+  def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int) = BitArrayRasterData(bytes, cols, rows)
 }
 
