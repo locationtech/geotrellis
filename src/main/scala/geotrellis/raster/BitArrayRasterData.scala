@@ -23,8 +23,8 @@ final case class BitArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
   // 3 | 9 -> 11, that is 00000011 | 00001001 -> 00001011
   // 3 & 9 -> 1,  that is 00000011 & 00001001 -> 00000001
   // 3 ^ 9 -> 10, that is 00000011 ^ 00001001 -> 00001010
-  if(array.length != (size + 7)/8) {
-    sys.error(s"BitArrayRasterData array length must be ${(size + 7)/8}, was ${array.length}")
+  if (array.length != (size + 7) / 8) {
+    sys.error(s"BitArrayRasterData array length must be ${(size + 7) / 8}, was ${array.length}")
   }
   def getType = TypeBit
   def alloc(cols: Int, rows: Int) = BitArrayRasterData.ofDim(cols, rows)
@@ -42,16 +42,16 @@ final case class BitArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
   }
   def copy = BitArrayRasterData(array.clone, cols, rows)
 
-  override def map(f: Int=>Int) = {
+  override def map(f: Int => Int) = {
     val f0 = f(0) & 1
     val f1 = f(1) & 1
-    
+
     if (f0 == 0 && f1 == 0) {
       println("yer")
-      BitConstant(false,cols,rows)
+      BitConstant(false, cols, rows)
     } else if (f0 == 1 && f1 == 1) {
       println("pap")
-      BitConstant(true,cols,rows)
+      BitConstant(true, cols, rows)
     } else if (f0 == 0 && f1 == 1) {
       println("wut")
       // same data as we have now
@@ -63,10 +63,14 @@ final case class BitArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
   }
 
   override def mapDouble(f: Double => Double) = map(z => d2i(f(i2d(z))))
+
+  def toArrayByte: Array[Byte] = array
 }
 
 object BitArrayRasterData {
   def ofDim(cols: Int, rows: Int) = new BitArrayRasterData(Array.ofDim[Byte](((cols * rows) + 7) / 8), cols, rows)
   def empty(cols: Int, rows: Int) = ofDim(cols, rows)
+
+  def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int) = BitArrayRasterData(bytes, cols, rows)
 }
 
