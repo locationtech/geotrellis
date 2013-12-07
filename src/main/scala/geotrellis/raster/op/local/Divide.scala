@@ -16,8 +16,7 @@ object Divide extends LocalRasterBinaryOp {
     else z1 / z2
 
   def combine(z1:Double,z2:Double) =
-    if (isNoData(z1) || isNoData(z2)) Double.NaN
-    else if (z2 == 0) Double.NaN
+    if (z2 == 0) Double.NaN
     else z1 / z2
 }
 

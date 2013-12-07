@@ -27,9 +27,13 @@ trait RasterSourceLike[+Repr <: RasterSource]
   def rasterDefinition:Op[RasterDefinition]
 
   def convergeOp():Op[Raster] =
-    (rasterDefinition,logic.Collect(tiles)).map { (rd,tileSeq) =>
-      if(tileSeq.size == 1) tileSeq(0)
-      else TileRaster(tileSeq,rd.re,rd.tileLayout).toArrayRaster
+    tiles.flatMap { ts =>
+      if(ts.size == 1) { ts(0) }
+      else { 
+        (rasterDefinition,logic.Collect(ts)).map { (rd,tileSeq) =>
+          TileRaster(tileSeq,rd.re,rd.tileLayout).toArrayRaster
+        }
+      }
     }
 
   def global[That](f:Raster=>Raster)

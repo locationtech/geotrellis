@@ -2,6 +2,8 @@ package geotrellis.render
 
 import geotrellis._
 
+import scala.collection.mutable
+
 sealed abstract class ColorMapType
 
 case object GreaterThan extends ColorMapType
@@ -15,7 +17,9 @@ case class ColorMapOptions(
   /** Rgba value for data that doesn't fit the map */
   noMapColor:Int = 0x00000000,  
   /** Set to true to throw exception on unmappable variables */
-  strict:Boolean = false        
+  strict:Boolean = false,
+  /** Cache values during rending for speed. */
+  cache:Boolean = true
 )
 
 object ColorMapOptions {
@@ -69,6 +73,7 @@ trait ColorMap {
       grey &&= Color.isGrey(c)
       i += 1
     }
+    _colorsChecked = true
   }
 
   def opaque = 
@@ -89,8 +94,9 @@ trait ColorMap {
 }
 
 case class IntColorMap(breaksToColors:Map[Int,Int],
-                      options:ColorMapOptions = ColorMapOptions.Default) 
-    extends ColorMap with Function[Int,Int] {
+                      options:ColorMapOptions = ColorMapOptions.Default) {
+  println("asdf")
+  println(options.cache)
   lazy val colors = breaksToColors.values.toList
   val orderedBreaks:Array[Int] =
     options.colorMapType match {
@@ -131,13 +137,43 @@ case class IntColorMap(breaksToColors:Map[Int,Int],
     }
   }
 
-  def render(r:Raster) = 
-    r.convert(TypeByte).map(apply)
+  val memoized = mutable.Map( (NODATA,options.noDataColor) )
+  def applyMemoized(z:Int) = {
+    if(memoized.contains(z)) { 
+//      print("M")
+      memoized(z) 
+    }
+    else {
+      if(isNoData(z)) { options.noDataColor }
+      else {
+        var i = 0
+        while(i < len && zCheck(z,i)) { i += 1 }
+        val v = 
+          if(i == len){
+            if(options.strict) {
+              sys.error(s"Value $z did not have an associated color and break")
+            } else {
+              options.noMapColor
+            }
+          } else {
+            breaksToColors(orderedBreaks(i))
+          }
+//        print(".")
+        memoized(z) = v
+        v
+      }
+    }
+  }
+
+  def render(r:Raster) =
+    if(options.cache)
+      r.convert(TypeByte).map(applyMemoized)
+    else
+      r.convert(TypeByte).map(apply)
 }
 
 case class DoubleColorMap(breaksToColors:Map[Double,Int],
-                          options:ColorMapOptions = ColorMapOptions.Default) 
-    extends ColorMap with Function1[Double,Int] {
+                          options:ColorMapOptions = ColorMapOptions.Default) {
   lazy val colors = breaksToColors.values.toList
   val orderedBreaks:Array[Double] =
     options.colorMapType match {
@@ -179,6 +215,33 @@ case class DoubleColorMap(breaksToColors:Map[Double,Int],
     }
   }
 
+  val memoized = mutable.Map[Double,Int]()
+  def applyMemoized(z:Double) = {
+    if(isNoData(z)) { options.noDataColor }
+    else {
+      if(memoized.contains(z)) { memoized(z) }
+      else {
+        var i = 0
+        while(i < len && zCheck(z,i)) { i += 1 }
+        val v =
+          if(i == len){
+            if(options.strict) {
+              sys.error(s"Value $z did not have an associated color and break")
+            } else {
+              options.noMapColor
+            }
+          } else {
+            breaksToColors(orderedBreaks(i))
+          }
+        memoized(z) = v
+        v
+      }
+    }
+  }
+
   def render(r:Raster) =
-    r.convert(TypeByte).mapDouble(apply)
+    if(options.cache)
+      r.mapDouble(applyMemoized)
+    else
+      r.mapDouble(apply)
 }

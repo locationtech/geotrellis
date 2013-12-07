@@ -22,39 +22,43 @@ class WeightedOverlay extends OperationBenchmark {
 
   var op:Op[Raster] = null
   var source:RasterSource = null
-  var source2:RasterSource = null
+  // var source2:RasterSource = null
 
   // var op:Op[Png] = null
   // var source:ValueSource[Png] = null
-
+  // var sourceSeq:ValueSource[Png] = null
 
   override def setUp() {
     val re = getRasterExtent(names(0), size, size)
     val total = weights.sum
     val rs = (0 until n).map(i => Multiply(LoadRaster(names(i), re), weights(i)))
-//    val rasterOp = global.Rescale(Divide(Add(rs: _*), total), (1, 100))
-//     val rasterOp = Divide(Add(rs: _*),total)
+    val weightedAdd = get(Add(rs: _*))
+//    val weightedAdd = Add(rs: _*)
+    val divided = Divide(weightedAdd, total)
+    // val rasterOp = global.Rescale(divided, (1, 100))
+    // val h = GetHistogram(rasterOp) 
+    // val breaksOp = GetColorBreaks(h, colors)
 
-     val rasterOp = Add(rs: _*)
-    val h = GetHistogram(rasterOp) 
-    val breaksOp = GetColorBreaks(h, colors)
-
-    op = rasterOp//RenderPng(rasterOp, breaksOp, 0)
 //    op = RenderPng(rasterOp, breaksOp, 0)
+    op = divided
 
     source = 
       (0 until n).map(i => RasterSource(names(i),re) * weights(i))
                  .reduce(_+_)
+                 .cached
                  .localDivide(total)
 //                 .rescale(1,100)
 //                 .renderPng(colors)
 
-    source = 
-      (0 until n).map(i => RasterSource(names(i),re) * weights(i))
-                 .reduce(_+_)
-//                 .localDivide(total)
-//                 .rescale(1,100)
-//                 .renderPng(colors)
+
+
+//     sourceSeq = 
+//       RasterSeqSource2((0 until n).map(i => RasterSource(names(i),re) * weights(i)))
+//                  .localAdd
+// //                 .cached
+//                  .localDivide(total)
+//                  .rescale(1,100)
+//                  .renderPng(colors)
   }
 
   // target
@@ -63,4 +67,7 @@ class WeightedOverlay extends OperationBenchmark {
 
   def timeWeightedOverlaySource(reps:Int) = run(reps)(weightedOverlaySource)
   def weightedOverlaySource = get(source)
+
+  // def timeWeightedOverlaySourceSeq(reps:Int) = run(reps)(weightedOverlaySourceSeq)
+  // def weightedOverlaySourceSeq = get(sourceSeq)
 }

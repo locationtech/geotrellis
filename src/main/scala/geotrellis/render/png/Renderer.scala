@@ -1,4 +1,4 @@
- package geotrellis.render.png
+package geotrellis.render.png
 
 import geotrellis._
 import geotrellis.render._
@@ -7,7 +7,8 @@ import scala.collection.mutable
 
 case class Renderer(colorMap:IntColorMap, rasterType:RasterType, colorType:ColorType) {
   def render(r:Raster) = 
-      r.convert(rasterType).map(colorMap)
+    colorMap.render(r).convert(rasterType)
+//      r.convert(rasterType).map(colorMap)
   def settings = Settings(colorType, PaethFilter)
 }
 
