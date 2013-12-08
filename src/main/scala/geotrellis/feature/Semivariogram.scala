@@ -6,15 +6,16 @@ import org.apache.commons.math3.stat.regression.SimpleRegression
 
 abstract sealed class ModelType
 
-// Covariance Function
 case object Linear extends ModelType
 case object Gaussian extends ModelType
 case object Circular extends ModelType
 case object Spherical extends ModelType
 case object Exponential extends ModelType
 
-object Variogram {
-
+/**
+  Empirical semivariogram
+*/
+object Semivariogram {
   case class Bucket(start:Double,end:Double) {
     private val points = mutable.Set[(Point[Int],Point[Int])]()
 
@@ -25,17 +26,17 @@ object Variogram {
       else (start <= x) && (x < end)
 
     def midpoint = (start + end) / 2.0
-
-    def semiVariance = {
+    def isEmpty = points.isEmpty
+    def semivariance = {
       val sumOfSquares = 
         points.foldLeft(0.0){ case(acc,(x,y)) =>
           acc + math.pow((x.data-y.data),2)
         }
       (sumOfSquares / points.size) / 2
     }
-
   }
 
+  /** Produces unique pairs of points */
   def makePairs[T](elements:List[T]):List[(T,T)] = {
     def f(elements:List[T],acc:List[(T,T)]):List[(T,T)] =
       elements match {
@@ -49,7 +50,7 @@ object Variogram {
   }
 
   def apply(pts:Seq[Point[Int]],radius:Option[Int]=None,lag:Int=0,model:ModelType):Function1[Double,Double] = {
-
+    // every pair of points and their distance from each other
     val distancePairs:Seq[(Double,(Point[Int],Point[Int]))] =
       radius match {
         case Some(dmax) =>
@@ -62,7 +63,7 @@ object Variogram {
               .map{ case(a,b) => (math.abs(a - b), (a,b)) }
               .toSeq
       }
-        
+
     val buckets:Seq[Bucket] =
       if(lag == 0) {
         distancePairs
@@ -70,20 +71,15 @@ object Variogram {
           .distinct
           .map { d => Bucket(d,d) }
       } else {
-        val dmax =
-          Math.floor({
-            radius match {
-              case Some(n) => n / lag
-              case None => distancePairs.map{ case(d,_) => d }.max / lag
-            }
-          }).toInt * lag
-        // (for((start,end) <-
-        //   List.range(0,dmax,lag).zip(List.range(lag,dmax+lag,lag))) yield {
-        //     Bucket(start,end)
-        //   }).toSeq
-        List.range(0,dmax,lag).zip(List.range(lag,dmax+lag,lag)).map{ case(start,end) => Bucket(start,end) }
+        // the maximum distance between two points in the field
+        val dmax = distancePairs.map{ case(d,_) => d }.max
+        // the lower limit of the largest bucket
+        val lowerLimit = (Math.floor(dmax/lag).toInt * lag) + 1
+        List.range(0,lowerLimit,lag).zip(List.range(lag,lowerLimit+lag,lag))
+          .map{ case(start,end) => Bucket(start,end) }
       }
 
+    // populate the buckets
     for( (d,(x,y)) <- distancePairs ) {
       buckets.find(b => b.contains(d)) match {
         case Some(b) => b.add(x,y)
@@ -91,8 +87,11 @@ object Variogram {
       }
     }
 
+    // use midpoint of buckets for distance
     val regressionPoints:Seq[(Double,Double)] = 
-      buckets.map { b => (b.midpoint,b.semiVariance) }
+      // empty buckets are first removed
+      buckets.filter ( b => !b.isEmpty)
+        .map { b => (b.midpoint,b.semivariance) }
 
     model match {
       case Linear =>
@@ -101,10 +100,12 @@ object Variogram {
         for((x,y) <- regressionPoints) { regression.addData(x,y) }
         val slope = regression.getSlope
         val intercept = regression.getIntercept
-
         x => slope*x + intercept
-      case _ =>
-        ???
+
+      case Gaussian => ???
+      case Exponential => ???
+      case Circular => ???
+      case Spherical => ???
     }
   }
 }
