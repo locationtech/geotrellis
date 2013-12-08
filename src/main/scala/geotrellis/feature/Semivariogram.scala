@@ -1,5 +1,6 @@
 package geotrellis.feature
-import geotrellis.feature.op.geometry
+
+import geotrellis._
 
 import scala.collection.mutable
 import org.apache.commons.math3.stat.regression.SimpleRegression
@@ -52,7 +53,7 @@ object Semivariogram {
   def apply(pts:Seq[Point[Int]],radius:Option[Int]=None,lag:Int=0,model:ModelType):Function1[Double,Double] = {
 
     // ignore points without a value
-    val validPts = pts.filter( pt => pt.data != NODATA)
+    val validPts = pts.filter(pt => pt.data != NODATA)
 
     // every pair of points and their distance from each other
     val distancePairs:Seq[(Double,(Point[Int],Point[Int]))] =

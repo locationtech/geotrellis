@@ -8,10 +8,8 @@ import org.scalatest.matchers._
 import org.scalatest.junit.JUnitRunner
 import geotrellis.testutil._
 
-
 import org.apache.commons.math3.stat.regression.SimpleRegression
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class SemivariogramSpec extends FunSpec 
                             with ShouldMatchers 
                             with TestServer 
