@@ -50,16 +50,20 @@ object Semivariogram {
   }
 
   def apply(pts:Seq[Point[Int]],radius:Option[Int]=None,lag:Int=0,model:ModelType):Function1[Double,Double] = {
+
+    // ignore points without a value
+    val validPts = pts.filter( pt => pt.data != NODATA)
+
     // every pair of points and their distance from each other
     val distancePairs:Seq[(Double,(Point[Int],Point[Int]))] =
       radius match {
         case Some(dmax) =>
-          makePairs(pts.toList)
+          makePairs(validPts.toList)
             .map{ case(a,b) => (math.abs(a - b), (a,b)) }
             .filter { case (distance,_) => distance <= dmax }
             .toSeq
         case None =>
-            makePairs(pts.toList)
+            makePairs(validPts.toList)
               .map{ case(a,b) => (math.abs(a - b), (a,b)) }
               .toSeq
       }
