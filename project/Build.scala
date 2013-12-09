@@ -106,7 +106,8 @@ object GeotrellisBuild extends Build {
         "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1",
         "org.spire-math" %% "spire" % "0.4.0",
         "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided",
-        "net.databinder" %% "dispatch-http" % "0.8.10" // for reading args from URLs
+        "net.databinder" %% "dispatch-http" % "0.8.10", // for reading args from URLs
+        "org.apache.commons" % "commons-math3" % "3.2"
       ),
 
       resolvers ++= Seq(
@@ -178,7 +179,7 @@ object GeotrellisBuild extends Build {
     Seq(
       name := "geotrellis-spark",
       libraryDependencies ++= Seq(
-        // first two are just to quell the UnsupportedOperationException in Hadoop's Configuration 
+        // first two are just to quell the UnsupportedOperationException in Hadoop's Configuration
         // http://itellity.wordpress.com/2013/05/27/xerces-parse-error-with-hadoop-or-solr-feature-httpapache-orgxmlfeaturesxinclude-is-not-recognized/
         "xerces" % "xercesImpl" % "2.9.1",
         "xalan" % "xalan" % "2.7.1",

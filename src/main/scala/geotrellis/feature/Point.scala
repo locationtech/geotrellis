@@ -8,6 +8,9 @@ class Point[D] (override val geom:jts.Point, data:D) extends SingleGeometry(geom
   val (x,y) = 
     if(geom.isEmpty) { (Double.NaN,Double.NaN) }
     else { (geom.getX,geom.getY) }
+
+  def -(p:Point[_]):Double =
+    math.sqrt(math.pow(x - p.x,2) + math.pow(y - p.y,2))
 }
 
 /**
