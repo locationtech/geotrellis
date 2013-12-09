@@ -1,11 +1,13 @@
 package geotrellis.spark
 
-import org.apache.hadoop.io.SequenceFile
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.conf.Configuration
-import geotrellis.spark.formats.TileIdWritable
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.SequenceFile
+
+import geotrellis.TypeInt
+import geotrellis.raster.IntArrayRasterData
 import geotrellis.spark.formats.ArgWritable
+import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.tiling.TmsTiling
 
 /**
@@ -21,7 +23,10 @@ import geotrellis.spark.tiling.TmsTiling
  */
 object ArgHadoopDriver {
 
-  def fill(value: Int) = Array.fill(TmsTiling.DefaultTileSize * TmsTiling.DefaultTileSize)(value)
+  def fill(value: Int) = {
+    val arr = Array.fill(TmsTiling.DefaultTileSize * TmsTiling.DefaultTileSize)(value)
+    IntArrayRasterData(arr, TmsTiling.DefaultTileSize, TmsTiling.DefaultTileSize)
+  }
 
   def main(args: Array[String]): Unit = {
     val seqFilePath = new Path(args(0)) // full path to sequence file
@@ -30,25 +35,26 @@ object ArgHadoopDriver {
     val fs = seqFilePath.getFileSystem(conf)
 
     val key = new TileIdWritable()
-    val value = new ArgWritable()
 
     // first let's write a few records out
     val writer = SequenceFile.createWriter(fs, conf, seqFilePath, classOf[TileIdWritable], classOf[ArgWritable]) 
     for (i <- 0 until numTiles) {
-      key.set(i);
+      key.set(i)
       val array = fill(i)
       val value = ArgWritable.toWritable(array)
-      writer.append(key, value);
+      writer.append(key, value)
     }
-    writer.close();
+    writer.close()
 
     // now let's read them back in and check their key,values
     val reader = new SequenceFile.Reader(fs, seqFilePath, conf)
     var i = 0
+    val value = ArgWritable.apply
+
     while (reader.next(key, value)) {
-      val actual = ArgWritable.toArray(value)
+      val actual = ArgWritable.toRasterData(value, TypeInt, TmsTiling.DefaultTileSize, TmsTiling.DefaultTileSize).asInstanceOf[IntArrayRasterData].array
       val expected = fill(i)
-      if (key.get != i || !actual.sameElements(expected))
+      if (key.get != i || !actual.sameElements(expected.toArray))
         throw new Exception("Arrays don't match for key = " + i)
       i = i + 1
     }

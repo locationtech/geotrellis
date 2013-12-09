@@ -109,4 +109,12 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
 
   def run(implicit server:process.Server) = server.run(this)
   def get(implicit server:process.Server) = server.get(this)
+
+  def cached[R1 >: Repr,T1 >: T](implicit server:process.Server, bf:CanBuildSourceFrom[Repr,T1,R1]) = {
+    val elementOps = server.get(elements) 
+    val newElements = Literal(elementOps.map { op => Literal(server.get(op)) })
+    val builder = bf.apply(this)
+    builder.setOp(newElements)
+    builder.result
+  }
 }

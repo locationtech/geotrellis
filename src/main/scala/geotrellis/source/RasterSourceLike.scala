@@ -67,109 +67,6 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.result
   }
 
-  private def filterTiles(p:Op[feature.Polygon[_]]):Op[Seq[Op[TileIntersection]]] = {
-    (rasterDefinition,tiles,p).map { (rd,tiles,p) =>
-      val rl = rd.tileLayout.getResolutionLayout(rd.re)
-      val tileCols = rd.tileLayout.tileCols
-      val tileRows = rd.tileLayout.tileRows
-      val filtered = mutable.ListBuffer[Op[TileIntersection]]()
-      for(col <- 0 until tileCols optimized) {
-        for(row <- 0 until tileRows optimized) {
-          val tilePoly = 
-            rl.getRasterExtent(col,row)
-              .extent
-              .asFeature()
-              .geom
-
-          if(p.geom.contains(tilePoly)) {
-            filtered += tiles(row*tileCols + col).map(FullTileIntersection(_))
-          } else {
-            val intersections = tilePoly.intersection(p.geom).asPolygonSet.map(Polygon(_,0))
-            if(!intersections.isEmpty) {
-              filtered += tiles(row*tileCols + col).map(PartialTileIntersection(_,intersections))
-            }
-          }
-        }
-      }
-      filtered.toSeq
-    }
-  }
-
-  def mapIntersecting[B,That,D](p:Op[feature.Polygon[D]])(handleTileIntersection:TileIntersection=>B)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
-    val builder = bf.apply(this)
-    val newOp = 
-      (rasterDefinition,tiles,p).map { (rd,tiles,p) =>
-        val rl = rd.tileLayout.getResolutionLayout(rd.re)
-        val tileCols = rd.tileLayout.tileCols
-        val tileRows = rd.tileLayout.tileRows
-        val filtered = mutable.ListBuffer[Op[B]]()
-        for(col <- 0 until tileCols optimized) {
-          for(row <- 0 until tileRows optimized) {
-            val tilePoly =
-              rl.getRasterExtent(col,row)
-                .extent
-                .asFeature()
-                .geom
-
-            if(p.geom.contains(tilePoly)) {
-              filtered += 
-                tiles(row*tileCols + col)
-                  .map(t => handleTileIntersection(FullTileIntersection(t)))
-            } else {
-              val intersections = tilePoly.intersection(p.geom).asPolygonSet.map(Polygon(_,p.data))
-              if(!intersections.isEmpty) {
-                filtered += 
-                  tiles(row*tileCols + col)
-                    .map(t => handleTileIntersection(PartialTileIntersection(t,intersections)))
-              }
-            }
-          }
-        }
-        filtered.toSeq
-      }
-
-    builder.setOp(newOp)
-    val result = builder.result()
-    result
-  }
-
-  def mapIntersecting[B,That,D](p:Op[feature.Polygon[D]],fullTileCache:DataSource[B,_])(handlePartialIntersection:PartialTileIntersection[D]=>B)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
-    val builder = bf.apply(this)
-    val newOp = 
-      (rasterDefinition,tiles,p).map { (rd,tiles,p) =>
-        val rl = rd.tileLayout.getResolutionLayout(rd.re)
-        val tileCols = rd.tileLayout.tileCols
-        val tileRows = rd.tileLayout.tileRows
-        val filtered = mutable.ListBuffer[Op[B]]()
-        for(col <- 0 until tileCols optimized) {
-          for(row <- 0 until tileRows optimized) {
-            val tilePoly =
-              rl.getRasterExtent(col,row)
-                .extent
-                .asFeature()
-                .geom
-
-            if(p.geom.contains(tilePoly)) {
-              filtered += 
-                fullTileCache.elements.flatMap(_.apply(row*tileCols + col))
-            } else {
-              val intersections = tilePoly.intersection(p.geom).asPolygonSet.map(Polygon(_,p.data))
-              if(!intersections.isEmpty) {
-                filtered += 
-                  tiles(row*tileCols + col)
-                    .map(t => handlePartialIntersection(PartialTileIntersection(t,intersections)))
-              }
-            }
-          }
-        }
-        filtered.toSeq
-      }
-
-    builder.setOp(newOp)
-    val result = builder.result()
-    result
-  }
-
   def min():ValueSource[Int] = 
     self.map(_.findMinMax._1)
         .reduce { (m1,m2) =>
@@ -200,10 +97,6 @@ trait RasterSourceLike[+Repr <: RasterSource]
           )
          }
 
-  def info:ValueSource[process.RasterLayerInfo] = ValueSource(rasterDefinition.flatMap( rd => io.LoadRasterLayerInfo(rd.layerId)))
+  def info:ValueSource[process.RasterLayerInfo] = 
+    ValueSource(rasterDefinition.flatMap( rd => io.LoadRasterLayerInfo(rd.layerId)))
 }
-
-abstract sealed trait TileIntersection
-
-case class PartialTileIntersection[D](tile:Raster,intersections:List[Polygon[D]]) extends TileIntersection
-case class FullTileIntersection(tile:Raster) extends TileIntersection

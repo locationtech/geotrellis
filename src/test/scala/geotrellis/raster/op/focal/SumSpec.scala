@@ -18,6 +18,7 @@ class SumSpec extends FunSpec with FocalOpSpec
   val re = RasterExtent(e, 1.0, 1.0, 4, 4)
 
   val r = Raster(IntConstant(1, 4, 4), re)
+  val rd = Raster(DoubleConstant(1.1, 4, 4), re)
 
   val data16 = Array(16, 16, 16, 16,
                      16, 16, 16, 16,
@@ -123,6 +124,13 @@ class SumSpec extends FunSpec with FocalOpSpec
                                            6, 9, 9, 6,
                                            6, 9, 9, 6,
                                            4, 6, 6, 4))
+    }
+
+    it("should square sum r=1 double") {
+      assertEqual(Sum(rd, Square(1)), Array(4.4, 6.6, 6.6, 4.4,
+                                            6.6, 9.9, 9.9, 6.6,
+                                            6.6, 9.9, 9.9, 6.6,
+                                            4.4, 6.6, 6.6, 4.4))
     }
 
     it("should square sum r=2") {
