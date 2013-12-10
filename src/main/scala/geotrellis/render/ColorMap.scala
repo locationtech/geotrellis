@@ -1,6 +1,7 @@
 package geotrellis.render
 
 import geotrellis._
+import geotrellis.statistics.Histogram
 
 import scala.collection.mutable
 
@@ -17,9 +18,7 @@ case class ColorMapOptions(
   /** Rgba value for data that doesn't fit the map */
   noMapColor:Int = 0x00000000,  
   /** Set to true to throw exception on unmappable variables */
-  strict:Boolean = false,
-  /** Cache values during rending for speed. */
-  cache:Boolean = true
+  strict:Boolean = false
 )
 
 object ColorMapOptions {
@@ -59,9 +58,9 @@ trait ColorMap {
   def colors:Seq[Int]
   val options:ColorMapOptions
 
-  var _opaque = true
-  var _grey = true
-  var _colorsChecked = false
+  private var _opaque = true
+  private var _grey = true
+  private var _colorsChecked = false
 
   private def checkColors() = {
     var opaque = true
@@ -91,12 +90,12 @@ trait ColorMap {
     }
 
   def render(r:Raster):Raster
+
+  def cache(h:Histogram):ColorMap
 }
 
 case class IntColorMap(breaksToColors:Map[Int,Int],
-                      options:ColorMapOptions = ColorMapOptions.Default) {
-  println("asdf")
-  println(options.cache)
+                      options:ColorMapOptions = ColorMapOptions.Default) extends ColorMap {
   lazy val colors = breaksToColors.values.toList
   val orderedBreaks:Array[Int] =
     options.colorMapType match {
@@ -137,43 +136,27 @@ case class IntColorMap(breaksToColors:Map[Int,Int],
     }
   }
 
-  val memoized = mutable.Map( (NODATA,options.noDataColor) )
-  def applyMemoized(z:Int) = {
-    if(memoized.contains(z)) { 
-//      print("M")
-      memoized(z) 
-    }
-    else {
-      if(isNoData(z)) { options.noDataColor }
-      else {
-        var i = 0
-        while(i < len && zCheck(z,i)) { i += 1 }
-        val v = 
-          if(i == len){
-            if(options.strict) {
-              sys.error(s"Value $z did not have an associated color and break")
-            } else {
-              options.noMapColor
-            }
-          } else {
-            breaksToColors(orderedBreaks(i))
-          }
-//        print(".")
-        memoized(z) = v
-        v
-      }
+  def render(r:Raster) =
+      r.convert(TypeByte).map(apply)
+
+  def cache(h:Histogram):ColorMap = {
+    val ch = h.mutable
+
+    h.foreachValue(z => ch.setItem(z, apply(z)))
+    val cs = colors
+    val opts = options
+    new ColorMap {
+      lazy val colors = cs
+      val options = opts
+      def render(r:Raster) = 
+        r.map { z => if(z == NODATA) options.noDataColor else ch.getItemCount(z) }
+      def cache(h:Histogram) = this
     }
   }
-
-  def render(r:Raster) =
-    if(options.cache)
-      r.convert(TypeByte).map(applyMemoized)
-    else
-      r.convert(TypeByte).map(apply)
 }
 
 case class DoubleColorMap(breaksToColors:Map[Double,Int],
-                          options:ColorMapOptions = ColorMapOptions.Default) {
+                          options:ColorMapOptions = ColorMapOptions.Default) extends ColorMap {
   lazy val colors = breaksToColors.values.toList
   val orderedBreaks:Array[Double] =
     options.colorMapType match {
@@ -215,33 +198,22 @@ case class DoubleColorMap(breaksToColors:Map[Double,Int],
     }
   }
 
-  val memoized = mutable.Map[Double,Int]()
-  def applyMemoized(z:Double) = {
-    if(isNoData(z)) { options.noDataColor }
-    else {
-      if(memoized.contains(z)) { memoized(z) }
-      else {
-        var i = 0
-        while(i < len && zCheck(z,i)) { i += 1 }
-        val v =
-          if(i == len){
-            if(options.strict) {
-              sys.error(s"Value $z did not have an associated color and break")
-            } else {
-              options.noMapColor
-            }
-          } else {
-            breaksToColors(orderedBreaks(i))
-          }
-        memoized(z) = v
-        v
-      }
+  def render(r:Raster) =
+      r.mapDouble(apply)
+
+  def cache(h:Histogram):ColorMap = {
+    val ch = h.mutable
+
+    h.foreachValue(z => ch.setItem(z, apply(z)))
+    val cs = colors
+    val opts = options
+
+    new ColorMap {
+      lazy val colors = cs
+      val options = opts
+      def render(r:Raster) = 
+        r.map { z => if(z == NODATA) options.noDataColor else ch.getItemCount(z) }
+      def cache(h:Histogram) = this
     }
   }
-
-  def render(r:Raster) =
-    if(options.cache)
-      r.mapDouble(applyMemoized)
-    else
-      r.mapDouble(apply)
 }

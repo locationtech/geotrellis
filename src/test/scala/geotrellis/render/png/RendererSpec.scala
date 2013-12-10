@@ -20,7 +20,7 @@ class RendererSpec extends FunSpec with ShouldMatchers
 
       val nodata = 0
       val renderer = Renderer(limits,colors,nodata)
-      val colorMap = renderer.colorMap
+      val colorMap = renderer.colorMap.asInstanceOf[IntColorMap]
 
       val color:Indexed = 
         renderer.colorType match {
@@ -46,7 +46,7 @@ class RendererSpec extends FunSpec with ShouldMatchers
 
       val nodata = 0
       val renderer = Renderer(limits,colors,nodata)
-      val colorMap = renderer.colorMap
+      val colorMap = renderer.colorMap.asInstanceOf[IntColorMap]
       val color:Indexed = 
         renderer.colorType match {
           case i @ Indexed(_,_) => i

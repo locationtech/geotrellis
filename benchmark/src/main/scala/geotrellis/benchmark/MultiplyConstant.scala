@@ -59,4 +59,3 @@ class MultiplyConstant extends OperationBenchmark {
   def timeRasterOperationWhileLoop(reps:Int) = run(reps)(rasterOperationWhileLoop)
   def rasterOperationWhileLoop = get(mcWhileLoop)
 }
-

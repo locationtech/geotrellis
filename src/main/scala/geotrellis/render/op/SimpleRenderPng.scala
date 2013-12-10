@@ -22,8 +22,10 @@ import geotrellis.statistics.op.stat
 object SimpleRenderPng {
   def apply(r:Op[Raster],colors:Op[Array[Int]])(implicit d:DI):Op[Png] = 
     r.flatMap { r =>
-        val colorBreaks = GetColorBreaks(stat.GetHistogram(r), colors)
-        RenderPng(r,colorBreaks,0)
+        stat.GetHistogram(r).flatMap { h =>
+          val colorBreaks = GetColorBreaks(h, colors)
+          RenderPng(r,colorBreaks,0,h)
+        }
       }
      .withName("SimpleRenderPng")
 

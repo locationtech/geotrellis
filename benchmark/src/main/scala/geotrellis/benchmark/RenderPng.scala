@@ -23,10 +23,11 @@ class RenderPngBenchmark extends OperationBenchmark {
   override def setUp() {
     val re = getRasterExtent(name, size, size)
     val raster = get(io.LoadRaster(name,re))
-    val h = GetHistogram(raster)
-    val breaksOp = GetColorBreaks(h, colors)
-
-    op = RenderPng(raster, breaksOp, 0)
+    op =
+      GetHistogram(raster).flatMap { h =>
+        val breaksOp = GetColorBreaks(h, colors)
+        RenderPng(raster, breaksOp, 0, h)
+      }
 
     source = 
       RasterSource(name,re)
@@ -39,28 +40,4 @@ class RenderPngBenchmark extends OperationBenchmark {
 
   def timeRenderPngSource(reps:Int) = run(reps)(renderPngSource)
   def renderPngSource = get(source)
-}
-
-object RenderPngProfile {
-  def main(args:Array[String]) = {
-    val n = 10
-    val name = "SBN_farm_mkt"
-    val colors = Array(0x0000FF, 0x0080FF, 0x00FF80, 0xFFFF00, 0xFF8000, 0xFF0000)
-
-    var size:Int = 2048
-
-    var op:Op[Png] = null
-    var source:ValueSource[Png] = null
-    source =
-      RasterSource(name)
-        .cached
-        .renderPng(colors)
-
-    GeoTrellis.run(source) match {
-      case process.Complete(png,history) =>
-        println(history)
-      case _ =>
-    }
-    GeoTrellis.shutdown
-  }
 }
