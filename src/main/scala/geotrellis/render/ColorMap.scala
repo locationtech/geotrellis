@@ -55,7 +55,7 @@ object ColorMap {
 }
 
 trait ColorMap {
-  def colors:Seq[Int]
+  def colors:Array[Int]
   val options:ColorMapOptions
 
   private var _opaque = true
@@ -96,7 +96,6 @@ trait ColorMap {
 
 case class IntColorMap(breaksToColors:Map[Int,Int],
                       options:ColorMapOptions = ColorMapOptions.Default) extends ColorMap {
-  lazy val colors = breaksToColors.values.toList
   val orderedBreaks:Array[Int] =
     options.colorMapType match {
       case LessThan =>
@@ -106,6 +105,9 @@ case class IntColorMap(breaksToColors:Map[Int,Int],
       case Exact =>
         breaksToColors.keys.toArray
     }
+
+  val orderedColors:Array[Int] = orderedBreaks.map(breaksToColors(_))
+  lazy val colors = orderedColors
 
   val zCheck:(Int,Int)=>Boolean =
     options.colorMapType match {
@@ -131,7 +133,7 @@ case class IntColorMap(breaksToColors:Map[Int,Int],
           options.noMapColor
         }
       } else {
-        breaksToColors(orderedBreaks(i))
+        orderedColors(i)
       }
     }
   }
@@ -141,23 +143,23 @@ case class IntColorMap(breaksToColors:Map[Int,Int],
 
   def cache(h:Histogram):ColorMap = {
     val ch = h.mutable
-
     h.foreachValue(z => ch.setItem(z, apply(z)))
-    val cs = colors
-    val opts = options
-    new ColorMap {
-      lazy val colors = cs
-      val options = opts
-      def render(r:Raster) = 
-        r.map { z => if(z == NODATA) options.noDataColor else ch.getItemCount(z) }
-      def cache(h:Histogram) = this
-    }
+    CachedColorMap(orderedColors,options,ch)
   }
+}
+
+case class CachedColorMap(colors:Array[Int],options:ColorMapOptions,h:Histogram) 
+  extends ColorMap with Function1[Int,Int] {
+  final val noDataColor = options.noDataColor
+  def render(r:Raster) =
+    r.map(this)
+  final def apply(z:Int) = { if(isNoData(z)) noDataColor else h.getItemCount(z) }
+  def cache(h:Histogram) = this
 }
 
 case class DoubleColorMap(breaksToColors:Map[Double,Int],
                           options:ColorMapOptions = ColorMapOptions.Default) extends ColorMap {
-  lazy val colors = breaksToColors.values.toList
+  lazy val colors = breaksToColors.values.toArray
   val orderedBreaks:Array[Double] =
     options.colorMapType match {
       case LessThan =>

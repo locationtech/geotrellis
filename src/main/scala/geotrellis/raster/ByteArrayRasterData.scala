@@ -14,7 +14,7 @@ final case class ByteArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
   def update(i: Int, z: Int) { array(i) = i2b(z) }
   def copy = ByteArrayRasterData(array.clone, cols, rows)
 
-  def toArrayByte: Array[Byte] = array
+  def toArrayByte: Array[Byte] = array.clone
 }
 
 object ByteArrayRasterData {

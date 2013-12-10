@@ -22,7 +22,6 @@ final case class DoubleArrayRasterData(array: Array[Double], cols: Int, rows: In
     bytebuff.asDoubleBuffer.put(array)
     pixels
   }
-
 }
 
 object DoubleArrayRasterData {

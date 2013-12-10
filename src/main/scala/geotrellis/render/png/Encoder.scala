@@ -101,17 +101,8 @@ case class Encoder(settings:Settings) {
   }
 
   def createByteBuffer(raster:Raster) = {
-    val size = raster.rasterExtent.cols * raster.rasterExtent.rows
-    val data = raster.toArray
-    val bb = ByteBuffer.allocate(size * DEPTH)
-
-    if (DEPTH == 4) initByteBuffer32(bb, data, size)
-    else if (DEPTH == 3) initByteBuffer24(bb, data, size)
-    else if (DEPTH == 2) initByteBuffer16(bb, data, size)
-    else if (DEPTH == 1) initByteBuffer8(bb, data, size)
-    else sys.error("unsupported depth: %s" format DEPTH)
-
-    bb
+     val size = raster.rasterExtent.cols * raster.rasterExtent.rows
+    ByteBuffer.wrap(raster.toArrayByte,0,size)
   }
 
   // TODO: figure out how to share code without impacting performance
@@ -127,7 +118,6 @@ case class Encoder(settings:Settings) {
     // dereference some useful information from the raster
     val cols = raster.cols
     val size = cols * raster.rows
-    val data = raster.toArray
 
     // allocate a data chunk for our pixel data
     val cIDAT = new Chunk(IDAT)
@@ -168,7 +158,7 @@ case class Encoder(settings:Settings) {
     // dereference some useful information from the raster
     val cols = raster.cols
     val size = cols * raster.rows
-    val data = raster.toArray
+//    val data = raster.toArray
 
     // allocate a data chunk for our pixel data
     val cIDAT = new Chunk(IDAT)

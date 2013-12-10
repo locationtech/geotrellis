@@ -22,7 +22,7 @@ object Renderer {
   def apply(limits:Array[Int], colors:Array[Int], nodata:Int,h:Histogram):Renderer =
     apply(limits,colors,nodata,Some(h))
 
-  /** Include a histogram to cache the color map and speed up the rendering. */
+  /** Include a precomputed histogram to cache the color map and speed up the rendering. */
   def apply(limits:Array[Int], colors:Array[Int], nodata:Int,h:Option[Histogram]):Renderer = {
     val n = limits.length
     if(colors.length < 255) {

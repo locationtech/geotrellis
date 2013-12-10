@@ -41,6 +41,7 @@ trait Raster {
   def toArrayRaster():ArrayRaster
   def toArray():Array[Int]
   def toArrayDouble():Array[Double]
+  def toArrayByte():Array[Byte]
 
   def convert(typ:RasterType):Raster
 
