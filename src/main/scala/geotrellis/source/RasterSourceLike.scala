@@ -99,4 +99,83 @@ trait RasterSourceLike[+Repr <: RasterSource]
 
   def info:ValueSource[process.RasterLayerInfo] = 
     ValueSource(rasterDefinition.flatMap( rd => io.LoadRasterLayerInfo(rd.layerId)))
+
+  def warp(target:RasterExtent) = {
+    val newDef = rasterDefinition map (rd => RasterDefinition(rd.layerId,target,TileLayout.singleTile(target.cols,target.rows),rd.rasterType))
+    val newOp:Op[Seq[Op[Raster]]] =
+    (rasterDefinition,tiles).flatMap { (rd,seq) =>
+      if(rd.isTiled) {
+        val re = rd.re
+        val tileLayout = rd.tileLayout
+
+        val targetExtent = target.extent
+        val resLayout = tileLayout.getResolutionLayout(re)
+
+        val warped = mutable.ListBuffer[Op[Raster]]()
+        val tCols = tileLayout.tileCols
+        for(tcol <- 0 until tCols optimized) {
+          for(trow <- 0 until tileLayout.tileRows optimized) {
+            val sourceRasterExtent = resLayout.getRasterExtent(tcol,trow)
+            val sourceExtent = resLayout.getExtent(tcol,trow)
+            sourceExtent.intersect(targetExtent) match {
+              case Some(ext) =>
+                val cols = math.ceil((ext.xmax - ext.xmin) / re.cellwidth).toInt
+                val rows = math.ceil((ext.ymax - ext.ymin) / re.cellheight).toInt
+                val tileRe = RasterExtent(ext,re.cellwidth,re.cellheight,cols,rows)
+
+                // Read section of the tile
+                warped += seq(tCols*trow + tcol) map(_.warp(tileRe))
+              case None => // pass
+            }
+          }
+        }
+
+        if(warped.size == 0) {
+          Seq(Literal(Raster(RasterData.emptyByType(rd.rasterType,target.cols,target.rows),target)))
+        } else if(warped.size == 1) {
+          warped.toSeq
+        } else {
+          // Create destination raster data
+
+          logic.Collect(warped) map { warped =>
+            val data = RasterData.emptyByType(rd.rasterType,re.cols,re.rows)
+
+            for(rasterPart <- warped) {
+              val tileRe = rasterPart.rasterExtent
+              // Copy over the values to the correct place in the raster data
+              val cols = tileRe.cols
+              val rows = tileRe.rows
+              if(rd.rasterType.isDouble) {
+                for(partCol <- 0 until cols optimized) {
+                  for(partRow <- 0 until rows optimized) {
+                    val dataCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
+                    val dataRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
+                    if(!(dataCol < 0 || dataCol >= re.cols ||
+                      dataRow < 0 || dataRow >= re.rows)) {
+                      data.setDouble(dataCol, dataRow, rasterPart.getDouble(partCol, partRow))
+                    }
+                  }
+                }
+              } else {
+                for(partCol <- 0 until cols optimized) {
+                  for(partRow <- 0 until rows optimized) {
+                    val dataCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
+                    val dataRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
+                    if(!(dataCol < 0 || dataCol >= re.cols ||
+                      dataRow < 0 || dataRow >= re.rows)) {
+                      data.set(dataCol, dataRow, rasterPart.get(partCol, partRow))
+                    }
+                  }
+                }
+              }
+            }
+            Seq(Literal(Raster(data, target)))
+          }
+        }
+      } else {
+        Seq(seq(0).map(_.warp(target)))
+      }
+    }
+    RasterSource(newDef,newOp)
+  }
 }

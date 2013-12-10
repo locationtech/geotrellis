@@ -50,6 +50,8 @@ case class TileRaster(tiles:Seq[Raster],
 
   val rasterType = tiles(0).rasterType
 
+  def warp(target:RasterExtent) = toArrayRaster.warp(target)
+
   def toArrayRaster():ArrayRaster = {
     if (cols.toLong*rows.toLong > Int.MaxValue.toLong) {
       sys.error("This tiled raster is too big to convert into an array.") 

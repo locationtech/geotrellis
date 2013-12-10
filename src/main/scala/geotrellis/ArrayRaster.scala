@@ -5,7 +5,6 @@ import geotrellis.raster._
 import scalaxy.loops._
 
 case class ArrayRaster(data:RasterData,rasterExtent:RasterExtent) extends Raster {
-//  def force = ArrayRaster(data.force,rasterExtent)
   val rasterType = data.getType
 
   def toArray = data.toArray
@@ -15,8 +14,9 @@ case class ArrayRaster(data:RasterData,rasterExtent:RasterExtent) extends Raster
   def get(col:Int, row:Int):Int = data.get(col, row)
   def getDouble(col:Int, row:Int):Double = data.getDouble(col, row)
 
-//  def copy():Raster = Raster(data.copy, rasterExtent)
   def convert(typ:RasterType) = Raster(data.convert(typ), rasterExtent)
+
+  def warp(target:RasterExtent) = ArrayRaster(data.warp(rasterExtent,target),target)
 
   override //for speed
   def foreach(f:Int => Unit):Unit = data.foreach(f)

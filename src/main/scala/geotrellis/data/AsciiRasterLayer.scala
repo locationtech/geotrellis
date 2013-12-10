@@ -3,7 +3,6 @@ package geotrellis.data
 import geotrellis._
 import geotrellis.process._
 import geotrellis.util._
-import geotrellis.data.arg.ArgReader
 
 import java.io.{File, BufferedReader}
 import com.typesafe.config.Config

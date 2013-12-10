@@ -135,4 +135,19 @@ class RasterSourceSpec extends FunSpec
       result.get(3,3) should be (initial.get(3,3) * 2)
     }
   }
+
+  describe("warp") {
+    it("should warp with crop only") {
+      val rs = createRasterSource(
+        Array( 1,10,100, 1000,2,2, 2,2,2,
+               2,20,200, 2000,2,2, 2,2,2,
+
+               3,30,300, 3000,2,2, 2,2,2,
+               4,40,400, 4000,2,2, 2,2,2),
+        3,2,3,2)
+
+      val re = rs.info.get.rasterExtent
+
+    }
+  }
 }

@@ -269,7 +269,7 @@ object GeotrellisBuild extends Build {
   lazy val benchmark: Project =
     Project("benchmark", file("benchmark"))
       .settings(benchmarkSettings: _*)
-      .dependsOn(root)
+      .dependsOn(root,geotools)
 
   def benchmarkSettings =
     Seq(

@@ -1,6 +1,7 @@
 package geotrellis.process
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.util._
 import geotrellis.data.arg.ArgReader
 
@@ -52,22 +53,28 @@ extends RasterLayerBuilder {
   }
 }
 
-class ArgFileRasterLayer(info:RasterLayerInfo, rasterPath:String) 
+class ArgFileRasterLayer(info:RasterLayerInfo, val rasterPath:String) 
 extends UntiledRasterLayer(info) {
-  def getRaster(targetExtent:Option[RasterExtent]) =
-    if(isCached) {
-      getCache.lookup[Array[Byte]](info.id.toString) match {
-        case Some(bytes) =>
-          getReader.readCache(bytes, info.rasterType, info.rasterExtent, targetExtent)
-        case None =>
-          sys.error("Cache problem: Layer thinks it's cached but it is in fact not cached.")
+  def getRaster(targetExtent:Option[RasterExtent]) = {
+    val data =
+      if(isCached) {
+        getCache.lookup[Array[Byte]](info.id.toString) match {
+          case Some(bytes) =>
+            RasterData.fromArrayByte(bytes,info.rasterType,info.rasterExtent.cols,info.rasterExtent.rows)
+          case None =>
+            sys.error("Cache problem: Layer thinks it's cached but it is in fact not cached.")
+        }
+      } else {
+        ArgReader.readData(rasterPath, info.rasterType, info.rasterExtent)
       }
-    } else {
-      getReader.readPath(info.rasterType, info.rasterExtent, targetExtent)
+    targetExtent match {
+      case Some(re) =>
+        Raster(data.warp(info.rasterExtent,re),re)
+      case None =>
+        Raster(data,info.rasterExtent)
     }
+  }
 
   def cache(c:Cache[String]) = 
         c.insert(info.id.toString, Filesystem.slurp(rasterPath))
-
-  private def getReader = new ArgReader(rasterPath)
 }

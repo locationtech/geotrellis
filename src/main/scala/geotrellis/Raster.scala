@@ -109,6 +109,8 @@ trait Raster {
     mapIfSet(z => ( ((z - oldMin) / dold) * dnew ) + newMin)
   }
 
+  def warp(target:RasterExtent):Raster
+
   /**
    * Return tuple of highest and lowest value in raster.
    *

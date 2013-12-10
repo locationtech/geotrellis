@@ -1,12 +1,6 @@
 package geotrellis.raster
 
 import geotrellis._
-import geotrellis.util.Filesystem
-import geotrellis.process._
-import geotrellis.data.arg.{ArgWriter,ArgReader}
-import geotrellis.feature.Polygon
-import java.io.{FileOutputStream, BufferedOutputStream}
-import geotrellis.util.Filesystem
 
 object TileLayout {
   def apply(re:RasterExtent, tileCols:Int, tileRows:Int):TileLayout =
