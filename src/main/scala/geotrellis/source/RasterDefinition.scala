@@ -6,7 +6,7 @@ import geotrellis.process.LayerId
 
 import geotrellis.raster.TileLayout
 
-case class RasterDefinition(layerId:LayerId,re:RasterExtent,tileLayout:TileLayout) {
+case class RasterDefinition(layerId:LayerId,re:RasterExtent,tileLayout:TileLayout,rasterType:RasterType) {
   def isTiled = tileLayout.isTiled
 }
 

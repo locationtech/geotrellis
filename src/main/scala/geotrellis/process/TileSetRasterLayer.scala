@@ -102,7 +102,7 @@ extends RasterLayer(info) {
                 val path = TileSetRasterLayer.tilePath(tileDirPath, info.id, tcol, trow)
                 val sourceRasterExtent = resLayout.getRasterExtent(tcol,trow)
                 val rasterPart = 
-                  new ArgReader(path).readPath(info.rasterType,sourceRasterExtent,tileRe)
+                  ArgReader.readData(path,info.rasterType,sourceRasterExtent).warp(sourceRasterExtent,tileRe)
 
                 // Copy over the values to the correct place in the raster data
                 for(partCol <- 0 until cols optimized) {
@@ -191,13 +191,12 @@ class DiskTileLoader(tileSetInfo:RasterLayerInfo,
 extends TileLoader(tileSetInfo,tileLayout) {
   def loadRaster(col:Int,row:Int,re:RasterExtent,targetExtent:Option[RasterExtent]) = {
     val path = TileSetRasterLayer.tilePath(tileDirPath, tileSetInfo.id, col, row)
-    val reader = new ArgReader(path)
-    val tre =
-      targetExtent match {
-        case Some(x) => x
-        case None => re
-      }
-      reader.readPath(tileSetInfo.rasterType,re,tre)
+    val data = ArgReader.readData(path,tileSetInfo.rasterType,re)
+    targetExtent match {
+      case Some(tre) => Raster(data.warp(re,tre),tre)
+      case None => Raster(data,re)
+    }
+
   }
 }
 
@@ -208,13 +207,11 @@ extends TileLoader(info,tileLayout) {
   def loadRaster(col:Int,row:Int,re:RasterExtent,targetExtent:Option[RasterExtent]) = {
     c.lookup[Array[Byte]](TileSetRasterLayer.tileName(info.id,col,row)) match {
       case Some(bytes) =>
-        val reader = new ArgReader("")
-        val tre = 
-          targetExtent match {
-            case Some(x) => x
-            case None => re
-          }
-        reader.readCache(bytes, info.rasterType, re, tre)
+        val data = RasterData.fromArrayByte(bytes,info.rasterType,re.cols,re.rows)
+        targetExtent match {
+          case Some(tre) => Raster(data.warp(re,tre),tre)
+          case None => Raster(data,re)
+        }
       case None =>
         sys.error("Cache problem: Tile thinks it's cached but it is in fact not cached.")
     }

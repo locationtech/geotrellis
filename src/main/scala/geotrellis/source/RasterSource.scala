@@ -25,7 +25,8 @@ object RasterSource {
       rasterLayer map { layer =>
         RasterDefinition(layer.info.id,
                          layer.info.rasterExtent,
-                         layer.info.tileLayout)
+                         layer.info.tileLayout,
+                         layer.info.rasterType)
       }
 
     val tileOps = 
@@ -97,7 +98,8 @@ object RasterSource {
       RasterDefinition(
         LayerId("LiteralTileRaster"),
         tiledRaster.rasterExtent,
-        tiledRaster.tileLayout
+        tiledRaster.tileLayout,
+        tiledRaster.rasterType
       )
     val tileOps = tiledRaster.tiles.map(Literal(_))
     new RasterSource(rasterDef, tileOps)
@@ -108,7 +110,8 @@ object RasterSource {
       RasterDefinition(
         LayerId("LiteralTileRaster"),
         tr.rasterExtent,
-        tr.tileLayout
+        tr.tileLayout,
+        tr.rasterType
       )
     }
     val tileOps = tiledRaster.map(_.tiles.map(Literal(_)))
@@ -121,7 +124,8 @@ object RasterSource {
         val (cols,rows) = (r.rasterExtent.cols,r.rasterExtent.rows)
         RasterDefinition(LayerId("LiteralRaster"),
                          r.rasterExtent,
-                         TileLayout.singleTile(cols,rows))
+                         TileLayout.singleTile(cols,rows),
+                         r.rasterType)
       }
 
     val tileOps = Literal(Seq(raster))
@@ -134,7 +138,8 @@ object RasterSource {
         val (cols,rows) = (r.rasterExtent.cols,r.rasterExtent.rows)
         RasterDefinition(LayerId("LiteralRaster"),
                          r.rasterExtent,
-                         TileLayout.singleTile(cols,rows))
+                         TileLayout.singleTile(cols,rows),
+                         r.rasterType)
       }
 
     val tileOps = Literal(Seq(Literal(r)))

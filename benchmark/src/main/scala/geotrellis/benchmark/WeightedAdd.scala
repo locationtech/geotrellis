@@ -12,17 +12,20 @@ import com.google.caliper.Param
 
 object WeightedAdd extends BenchmarkRunner(classOf[WeightedAdd])
 class WeightedAdd extends OperationBenchmark {
-  val names = Array("SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k")
-  val weights = Array(2, 1, 5, 2)
+  // val names = Array("SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k")
+  // val weights = Array(2, 1, 5, 2)
 
-  // val names = Array("SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k",
-  //                   "SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k",
-  //                   "SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k",
-  //                   "SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k")
-  // val weights = Array(2, 1, 5, 2,
-  //                     2, 1, 5, 2,
-  //                     2, 1, 5, 2,
-  //                     2, 1, 5, 2)
+  // val names = Array("SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k")
+  // val weights = Array(2, 1, 5, 2)
+
+  val names = Array("SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k",
+                    "SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k",
+                    "SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k",
+                    "SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k")
+  val weights = Array(2, 1, 5, 2,
+                      2, 1, 5, 2,
+                      2, 1, 5, 2,
+                      2, 1, 5, 2)
 
   // val names = Array("SBN_farm_mkt", "SBN_RR_stops_walk")
   // val weights = Array(2, 3)
@@ -53,11 +56,11 @@ class WeightedAdd extends OperationBenchmark {
   }
 
   // target
-  // def timeWeightedAddOp(reps:Int) = run(reps)(weightedAddOp)
-  // def weightedAddOp = get(op)
+  def timeWeightedAddOp(reps:Int) = run(reps)(weightedAddOp)
+  def weightedAddOp = get(op)
 
-  // def timeWeightedAddSource(reps:Int) = run(reps)(weightedAddSource)
-  // def weightedAddSource = get(source)
+  def timeWeightedAddSource(reps:Int) = run(reps)(weightedAddSource)
+  def weightedAddSource = get(source)
 
   def timeWeightedAddSourceSeq(reps:Int) = run(reps)(weightedAddSourceSeq)
   def weightedAddSourceSeq = get(sourceSeq)

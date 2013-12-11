@@ -1,15 +1,14 @@
 package geotrellis.process
 
-import scala.io.Source
-import java.io.File
 import geotrellis._
 import geotrellis.util._
-import geotrellis.data.FileReader
-import geotrellis.data.arg.ArgReader
 
 import dispatch.classic._
 import scala.concurrent._
 import scala.concurrent.Future
+
+import scala.io.Source
+import java.io.File
 
 /**
  * Represents a Raster Layer that can give detailed information

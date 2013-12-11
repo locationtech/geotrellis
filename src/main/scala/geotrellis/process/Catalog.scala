@@ -75,7 +75,7 @@ object Catalog {
 
   def addRasterLayerBuilder(layerType:String,builder:RasterLayerBuilder) =
     if(stringToRasterLayerBuilder.contains(layerType)) {
-      sys.error(s"A raster layer builder is already registered for the layer type '$layerType'")
+      println(s"WARNING: A raster layer builder is already registered for the layer type '$layerType'")
     } else {
       stringToRasterLayerBuilder(layerType) = builder
     }

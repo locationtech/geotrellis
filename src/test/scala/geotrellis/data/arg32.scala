@@ -22,14 +22,6 @@ class Arg32Spec extends FunSpec
 
     val path1 = "src/test/resources/fake.img32.json"
 
-    it("should use correct no data values") {
-
-      import geotrellis.data.arg
-      new Int8ReadState(Left(""), null, null).getNoDataValue must be === -128
-      new Int16ReadState(Left(""), null, null).getNoDataValue must be === -32768
-      new Int32ReadState(Left(""), null, null).getNoDataValue must be === -2147483648
-    }
-
     it("should build a valid raster") {
       val raster = RasterLayer.fromPath(path1).get.getRaster()
 

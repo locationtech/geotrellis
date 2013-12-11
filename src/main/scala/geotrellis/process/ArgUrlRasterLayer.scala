@@ -1,8 +1,8 @@
 package geotrellis.process
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.util._
-import geotrellis.data.arg.ArgReader
 
 import dispatch.classic._
 
@@ -47,14 +47,12 @@ extends UntiledRasterLayer(info) {
     if(isCached) {
       getCache.lookup[Array[Byte]](info.id.toString) match {
         case Some(bytes) =>
-          getReader.readCache(bytes, info.rasterType, info.rasterExtent, targetExtent)
+          fromBytes(bytes, targetExtent)
         case None =>
           sys.error("Cache problem: Layer thinks it's cached but it is in fact not cached.")
       }
     } else {
-      getReader.readCache(getBytes,
-                          info.rasterType,
-                          info.rasterExtent, targetExtent)
+      fromBytes(getBytes, targetExtent)
     }
 
   def getBytes = {
@@ -74,6 +72,15 @@ extends UntiledRasterLayer(info) {
   def cache(c:Cache[String]) = 
         c.insert(info.id.toString, getBytes)
 
-  private def getReader = new ArgReader("")
+  private def fromBytes(arr:Array[Byte],target:Option[RasterExtent]) = {
+    val data = 
+      RasterData.fromArrayByte(arr,info.rasterType,info.rasterExtent.cols,info.rasterExtent.rows)
+    target match {
+      case Some(re) =>
+        Raster(data.warp(info.rasterExtent,re),re)
+      case None =>
+        Raster(data,info.rasterExtent)
+    }
+  }
 }
 
