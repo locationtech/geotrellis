@@ -37,4 +37,7 @@ final case class IntConstant(n: Int, cols: Int, rows: Int) extends RasterData {
   }
 
   def toArrayByte: Array[Byte] = Array(n.toByte)
+
+  def warp(current:RasterExtent,target:RasterExtent):RasterData =
+    IntConstant(n,target.cols,target.rows)
 }

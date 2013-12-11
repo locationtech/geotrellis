@@ -51,4 +51,7 @@ final case class BitConstant(n:Byte, cols:Int, rows:Int) extends RasterData {
   }
   
   def toArrayByte: Array[Byte] = throw new UnsupportedOperationException("BitConstant doesn't support this conversion")
+
+  def warp(current:RasterExtent,target:RasterExtent):RasterData =
+    BitConstant(n,target.cols,target.rows)
 }

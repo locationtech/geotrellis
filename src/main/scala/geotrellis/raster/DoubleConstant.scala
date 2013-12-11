@@ -40,4 +40,7 @@ final case class DoubleConstant(n:Double, cols:Int, rows:Int) extends RasterData
   }
   
   def toArrayByte: Array[Byte] = Array(n.toByte)
+
+  def warp(current:RasterExtent,target:RasterExtent):RasterData =
+    DoubleConstant(n,target.cols,target.rows)
 }

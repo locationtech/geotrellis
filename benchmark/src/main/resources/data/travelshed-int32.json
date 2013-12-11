@@ -1,0 +1,16 @@
+{
+  "layer": "travelshed-int32",
+  "datatype": "int32", 
+  "type": "arg",
+  "xmin": -75.191182,
+  "xmax": -75.115475,
+  "ymin": 39.958243,
+  "ymax": 40.042923,
+  "cols": 500,
+  "rows": 500,
+  "cellwidth": 0.000151,
+  "cellheight": 0.000169,
+  "epsg": 3785,
+  "yskew": 0.0,
+  "xskew": 0.0
+}

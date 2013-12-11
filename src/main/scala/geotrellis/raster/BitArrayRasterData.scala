@@ -66,6 +66,8 @@ final case class BitArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
   override def mapDouble(f: Double => Double) = map(z => d2i(f(i2d(z))))
 
   def toArrayByte: Array[Byte] = array
+
+  def warp(current:RasterExtent,target:RasterExtent):RasterData = ???
 }
 
 object BitArrayRasterData {

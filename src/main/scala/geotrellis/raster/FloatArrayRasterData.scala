@@ -21,6 +21,15 @@ final case class FloatArrayRasterData(array: Array[Float], cols: Int, rows: Int)
     bytebuff.asFloatBuffer.put(array)
     pixels
   }
+
+  def warp(current:RasterExtent,target:RasterExtent):RasterData = {
+    val warped = Array.ofDim[Float](target.cols*target.rows).fill(Float.NaN)
+    FloatArrayRasterData(
+      RasterData.warp[Float](current,target,array,warped),
+      target.cols,
+      target.rows
+    )
+  }
 }
 
 object FloatArrayRasterData {

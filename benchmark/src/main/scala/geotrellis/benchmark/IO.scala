@@ -13,19 +13,19 @@ object IOBenchmarks extends BenchmarkRunner(classOf[IOBenchmarks])
 class IOBenchmarks extends OperationBenchmark {
   data.GeoTiffRasterLayerBuilder.addToCatalog
 
-  @Param(Array("0", "1", "3", "4", "5", "6", "7"))
-//  @Param(Array("7"))
+//  @Param(Array("0", "1", "3", "4", "5", "6", "7"))
+//  @Param(Array("7","8","9"))
+  @Param(Array("0","1","2","3"))
   var index = 0
 
   val layers = 
-    Array("SBN_car_share",
-      "SBN_co_phila",
-      "SBN_farm_mkt",
-      "SBN_inc_percap",
-      "SBN_recycle",
-      "SBN_RR_stops_walk",
-      "SBN_street_den_1k",
-      "aspect")
+    Array(
+      "SBN_car_share", // (byte)
+      "aspect",
+      "aspect-double",
+      "travelshed-int32"//,
+//      "wm_DevelopedLand"
+    )
 
   var path:String = ""
   var extent:RasterExtent = null

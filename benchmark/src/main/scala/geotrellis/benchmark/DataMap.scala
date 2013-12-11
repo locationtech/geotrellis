@@ -185,3 +185,43 @@ class DataMap extends OperationBenchmark {
   def timeShortDataMap(reps:Int) = run(reps)(shortDataMap)
   def shortDataMap = shortData.map(z => if (isData(z)) z * 2 else NODATA)
 }
+
+object ArrayFill extends BenchmarkRunner(classOf[ArrayFill])
+class ArrayFill extends OperationBenchmark {
+
+  @Param(Array("2048", "4096","8192"))
+  var size:Int = 0
+
+  def timeScalaArrayFillBytes(reps:Int) = run(reps)(scalaArrayFillBytes)
+  def scalaArrayFillBytes = {
+    val arr = Array.fill[Byte](size*size)(byteNODATA)
+  }
+
+  def timeJavaArraysFillBytes(reps:Int) = run(reps)(javaArraysFillBytes)
+  def javaArraysFillBytes = {
+    val arr = Array.ofDim[Byte](size*size)
+    java.util.Arrays.fill(arr,byteNODATA)
+  }
+
+  def timeFillerBytes(reps:Int) = run(reps)(fillerBytes)
+  def fillerBytes = {
+    Array.ofDim[Byte](size*size).fill(byteNODATA)
+  }
+
+  def timeScalaArrayFillDoubles(reps:Int) = run(reps)(scalaArrayFillDoubles)
+  def scalaArrayFillDoubles = {
+    val arr = Array.fill[Double](size*size)(Double.NaN)
+  }
+
+  def timeJavaArraysFillDoubles(reps:Int) = run(reps)(javaArraysFillDoubles)
+  def javaArraysFillDoubles = {
+    val arr = Array.ofDim[Double](size*size)
+    java.util.Arrays.fill(arr,Double.NaN)
+  }
+
+  def timeFillerDoubles(reps:Int) = run(reps)(fillerDoubles)
+  def fillerDoubles = {
+    Array.ofDim[Double](size*size).fill(Double.NaN)
+  }
+
+}

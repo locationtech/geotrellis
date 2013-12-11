@@ -36,6 +36,24 @@ package object geotrellis {
   @inline final def i2d(n:Int):Double = if (isNoData(n)) Double.NaN else n.toDouble
   @inline final def d2i(n:Double):Int = if (isNoData(n)) NODATA else n.toInt
 
+  // Use this implicit class to fill arrays ... much faster than Array.fill[Int](dim)(val), etc.
+  implicit class ByteArrayFiller(val arr:Array[Byte]) extends AnyVal {
+    def fill(v:Byte) = { java.util.Arrays.fill(arr,v) ; arr }
+  }
+  implicit class ShortArrayFiller(val arr:Array[Short]) extends AnyVal {
+    def fill(v:Short) = { java.util.Arrays.fill(arr,v) ; arr }
+  }
+  implicit class IntArrayFiller(val arr:Array[Int]) extends AnyVal {
+    def fill(v:Int) = { java.util.Arrays.fill(arr,v) ; arr }
+  }
+  implicit class FloatArrayFiller(val arr:Array[Float]) extends AnyVal {
+    def fill(v:Float) = { java.util.Arrays.fill(arr,v) ; arr }
+  }
+  implicit class DoubleArrayFiller(val arr:Array[Double]) extends AnyVal {
+    def fill(v:Double) = { java.util.Arrays.fill(arr,v) ; arr }
+  }
+
+
   type Op[+A] = Operation[A]
   type DI = DummyImplicit
 

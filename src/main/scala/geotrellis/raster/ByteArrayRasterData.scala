@@ -15,11 +15,22 @@ final case class ByteArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
   def copy = ByteArrayRasterData(array.clone, cols, rows)
 
   def toArrayByte: Array[Byte] = array.clone
+
+  def warp(current:RasterExtent,target:RasterExtent):RasterData = {
+    val warped = Array.ofDim[Byte](target.cols*target.rows).fill(byteNODATA)
+    ByteArrayRasterData(
+      RasterData.warp[Byte](current,target,array,warped),
+      target.cols,
+      target.rows
+    )
+  }
 }
 
 object ByteArrayRasterData {
-  def ofDim(cols: Int, rows: Int) = new ByteArrayRasterData(Array.ofDim[Byte](cols * rows), cols, rows)
-  def empty(cols: Int, rows: Int) = new ByteArrayRasterData(Array.fill[Byte](cols * rows)(Byte.MinValue), cols, rows)
+  def ofDim(cols: Int, rows: Int) = 
+    new ByteArrayRasterData(Array.ofDim[Byte](cols * rows), cols, rows)
+  def empty(cols: Int, rows: Int) = 
+    new ByteArrayRasterData(Array.fill[Byte](cols * rows)(byteNODATA), cols, rows)
 
   def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int) = ByteArrayRasterData(bytes, cols, rows)
 }
