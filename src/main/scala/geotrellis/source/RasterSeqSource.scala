@@ -21,7 +21,7 @@ case class RasterSeqSource(rasterDefinition:Op[RasterDefinition], elements:Op[Se
   def convergeOp: Op[Seq[Raster]] =
     (rasterDefinition,logic.Collect(elements)).map { (rd,tileSeq) =>
       tileSeq.transpose.map { rasterTiles =>
-        TileRaster(rasterTiles,rd.re,rd.tileLayout).toArrayRaster
+        TileRaster(rasterTiles,rd.rasterExtent,rd.tileLayout).toArrayRaster
       }
   }
 

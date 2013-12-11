@@ -14,6 +14,7 @@ class IOBenchmarks extends OperationBenchmark {
   data.GeoTiffRasterLayerBuilder.addToCatalog
 
   @Param(Array("0", "1", "3", "4", "5", "6", "7"))
+//  @Param(Array("7"))
   var index = 0
 
   val layers = 

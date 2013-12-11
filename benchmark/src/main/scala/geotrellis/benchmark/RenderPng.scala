@@ -24,7 +24,7 @@ class RenderPngBenchmark extends OperationBenchmark {
 
   override def setUp() {
     val re = getRasterExtent(name, size, size)
-    val raster = get(io.LoadRaster(name,re))
+    val raster = get(LoadRaster(name,re))
     op =
       GetHistogram(raster).flatMap { h =>
         val breaksOp = GetColorBreaks(h, colors)
@@ -141,16 +141,7 @@ class RendererBenchmark extends OperationBenchmark {
   }
 
   def timeMap(reps:Int) = run(reps)(runMap)
-  def runMap = { 
-    val len = data.length
-    var i = 0
-    while(i < len) { 
-      val z = data(i)
-      if(z == NODATA) 0 else 100
-      i += 1
-    }
-  }
-//    data.map { z => if(z == NODATA) 0 else 100 } }
+  def runMap = { data.map { z => if(z == NODATA) 0 else 100 } }
 
   // def timeRenderer(reps:Int) = run(reps)(runRenderer)
   // def runRenderer = renderer.render(raster)

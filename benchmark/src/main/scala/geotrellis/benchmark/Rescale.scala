@@ -19,7 +19,7 @@ class RescaleBenchmark extends OperationBenchmark {
   var source:RasterSource = null
   override def setUp() {
     val re = getRasterExtent(name, size, size)
-    val raster = get(io.LoadRaster(name,re))
+    val raster = get(LoadRaster(name,re))
     op = global.Rescale(raster, (0,100))
 
     source = 

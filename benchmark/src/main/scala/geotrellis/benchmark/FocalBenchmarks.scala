@@ -4,6 +4,7 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.raster.op._
 import geotrellis.raster._
+import geotrellis.io.LoadFile
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Param
@@ -25,7 +26,7 @@ class FocalOperationsBenchmark extends OperationBenchmark {
     val e = Extent(-8475497.88485957, 4825540.69147447,
                    -8317922.884859569, 4954765.69147447)
     val re = RasterExtent(e, 75.0, 75.0, 2101, 1723)
-    r = get(io.LoadFile(path, re))
+    r = get(LoadFile(path, re))
 
     // tiledR256 = raster.Tiler.createTiledRaster(r, 256, 256)
     // tiledR512 = raster.Tiler.createTiledRaster(r, 512, 512)

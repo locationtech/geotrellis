@@ -31,7 +31,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
       if(ts.size == 1) { ts(0) }
       else { 
         (rasterDefinition,logic.Collect(ts)).map { (rd,tileSeq) =>
-          TileRaster(tileSeq,rd.re,rd.tileLayout).toArrayRaster
+          TileRaster(tileSeq,rd.rasterExtent,rd.tileLayout).toArrayRaster
         }
       }
     }
@@ -41,7 +41,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     val tileOps:Op[Seq[Op[Raster]]] =
       (rasterDefinition,logic.Collect(tiles)).map { (rd,tileSeq) =>
         if(rd.isTiled) {
-          val r = f(TileRaster(tileSeq.toSeq, rd.re,rd.tileLayout))
+          val r = f(TileRaster(tileSeq.toSeq, rd.rasterExtent,rd.tileLayout))
           TileRaster.split(r,rd.tileLayout).map(Literal(_))
         } else {
           Seq(f(tileSeq(0)))
@@ -58,7 +58,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     val tileOps:Op[Seq[Op[Raster]]] =
       (rasterDefinition,logic.Collect(tiles)).flatMap { (rd,tileSeq) =>
         if(rd.isTiled) {
-          f(TileRaster(tileSeq.toSeq, rd.re,rd.tileLayout)).map { r =>
+          f(TileRaster(tileSeq.toSeq, rd.rasterExtent,rd.tileLayout)).map { r =>
             TileRaster.split(r,rd.tileLayout).map(Literal(_))
           }
         } else {
@@ -104,12 +104,15 @@ trait RasterSourceLike[+Repr <: RasterSource]
   def info:ValueSource[process.RasterLayerInfo] = 
     ValueSource(rasterDefinition.flatMap( rd => io.LoadRasterLayerInfo(rd.layerId)))
 
+  def rasterExtent:ValueSource[RasterExtent] =
+    ValueSource(rasterDefinition.map(_.rasterExtent))
+
   def warp(target:RasterExtent) = {
     val newDef = rasterDefinition map (rd => RasterDefinition(rd.layerId,target,TileLayout.singleTile(target.cols,target.rows),rd.rasterType))
     val newOp:Op[Seq[Op[Raster]]] =
     (rasterDefinition,tiles).flatMap { (rd,seq) =>
       if(rd.isTiled) {
-        val re = rd.re
+        val re = rd.rasterExtent
         val tileLayout = rd.tileLayout
 
         val targetExtent = target.extent
@@ -140,7 +143,6 @@ trait RasterSourceLike[+Repr <: RasterSource]
           warped.toSeq
         } else {
           // Create destination raster data
-
           logic.Collect(warped) map { warped =>
             val data = RasterData.emptyByType(rd.rasterType,re.cols,re.rows)
 

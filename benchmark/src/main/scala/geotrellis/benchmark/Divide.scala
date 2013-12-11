@@ -3,7 +3,7 @@ package geotrellis.benchmark
 import geotrellis._
 import geotrellis.source._
 import geotrellis.raster.op.local
-import geotrellis.io._
+import geotrellis.io.LoadRaster
 
 import com.google.caliper.Param
 
@@ -20,7 +20,7 @@ class DivideBenchmark extends OperationBenchmark {
 
   override def setUp() {
     val re = getRasterExtent(name, size, size)
-    val raster = get(io.LoadRaster(name,re))
+    val raster = get(LoadRaster(name,re))
     op = local.Divide(raster, n)
 
     source = 

@@ -41,6 +41,12 @@ object RasterData {
     case TypeFloat  => FloatArrayRasterData.fromArrayByte(bytes, cols, rows)
     case TypeDouble => DoubleArrayRasterData.fromArrayByte(bytes, cols, rows)
   }
+
+  def apply(arr: Array[Byte], cols: Int, rows: Int) = ByteArrayRasterData(arr,cols,rows)
+  def apply(arr: Array[Short], cols: Int, rows: Int) = ShortArrayRasterData(arr,cols,rows)
+  def apply(arr: Array[Int], cols: Int, rows: Int) = IntArrayRasterData(arr,cols,rows)
+  def apply(arr: Array[Float], cols: Int, rows: Int) = FloatArrayRasterData(arr,cols,rows)
+  def apply(arr: Array[Double], cols: Int, rows: Int) = DoubleArrayRasterData(arr,cols,rows)
 }
 
 /**
@@ -217,7 +223,20 @@ trait RasterData extends Serializable {
 
   def toArrayByte: Array[Byte]
 
-  def warp(current:RasterExtent,target:RasterExtent) = {
+  /** Warp this raster data from the original extent to a new extent.
+    * Algorithm by Erik Osheim.
+    */
+  def warp(current:RasterExtent,target:RasterExtent):RasterData = {
+    val dst_cols = target.cols
+    val dst_rows = target.rows
+
+    val result = RasterData.emptyByType(getType, dst_cols, dst_rows)
+
+
+    if(!current.extent.intersects(target.extent)) {
+      return result
+    }
+
     // keep track of cell size in our source raster
     val src_cellwidth =  current.cellwidth
     val src_cellheight = current.cellheight
@@ -228,17 +247,9 @@ trait RasterData extends Serializable {
     val src_xmax = current.extent.xmax
     val src_ymax = current.extent.ymax
 
-    // the dimensions to resample to
-    val dst_cols = target.cols
-    val dst_rows = target.rows
-
     // calculate the dst cell size
     val dst_cellwidth  = (target.extent.xmax - target.extent.xmin) / dst_cols
     val dst_cellheight = (target.extent.ymax - target.extent.ymin) / dst_rows
-
-    // save "normalized map coordinates" for destination cell (0, 0)
-    val xbase = target.extent.xmin - src_xmin + (dst_cellwidth / 2)
-    val ybase = target.extent.ymax - src_ymin - (dst_cellheight / 2)
 
     // track height/width in map units
     val src_map_width  = src_xmax - src_xmin
@@ -249,52 +260,111 @@ trait RasterData extends Serializable {
     
     // this is the resampled destination array
     val dst_size = dst_cols * dst_rows
-    val result = alloc(dst_cols, dst_rows)
+
+    // save "normalized map coordinates" for destination cell (0, 0)
+    var xbase = target.extent.xmin - src_xmin + (dst_cellwidth / 2)
+    var ybase = target.extent.ymax - src_ymin - (dst_cellheight / 2)
 
     // these are the min and max columns we will access on this row
     val min_col = (xbase / src_cellwidth).toInt
     val max_col = ((xbase + dst_cols * dst_cellwidth) / src_cellwidth).toInt
 
+    val startCol =
+      if(target.extent.xmin < src_xmin) {
+        val delta = src_xmin - target.extent.xmin
+        val startCol = (delta / dst_cellwidth).toInt
+        xbase += (dst_cellwidth * startCol)
+        if(xbase < 0.0) {
+          xbase += dst_cellwidth
+          startCol + 1
+        } else {
+          startCol
+        }
+      } else {
+        0
+      }
+
     // start at the Y-center of the first dst grid cell
     var y = ybase
 
     // loop over rows
-    for(dst_row <- 0 until dst_rows optimized) {
-      // calculate the Y grid coordinate to read from
-      val src_row = (src_rows - (y / src_cellheight).toInt - 1)
+    if(getType.isDouble) {
+      for(dst_row <- 0 until dst_rows optimized) {
+        // calculate the Y grid coordinate to read from
+        val src_row = (src_rows - (y / src_cellheight).toInt - 1)
 
-      // pre-calculate some spans we'll use a bunch
-      val src_span = src_row * src_cols
-      val dst_span = dst_row * dst_cols
+        // pre-calculate some spans we'll use a bunch
+        val src_span = src_row * src_cols
+        val dst_span = dst_row * dst_cols
 
-      if (src_span + min_col < src_size && src_span + max_col >= 0) {
+        if (src_span + min_col < src_size && src_span + max_col >= 0) {
 
-        // start at the X-center of the first dst grid cell
-        var x = xbase
-  
-        // loop over cols
-        for(dst_col <- 0 until dst_cols optimized) {
-          // calculate the X grid coordinate to read from
-          val src_col = (x / src_cellwidth).toInt
-  
-          // compute src and dst indices and ASSIGN!
-          val src_i = src_span + src_col
+          // start at the X-center of the first dst grid cell
+          var x = xbase
+          
+          // loop over cols
+          for(dst_col <- startCol until dst_cols optimized) {
+            // calculate the X grid coordinate to read from
+            val src_col = (x / src_cellwidth).toInt
+            
+            // compute src and dst indices and ASSIGN!
+            val src_i = src_span + src_col
 
-          if (src_col >= 0 && 
-              src_col < src_cols && 
-              src_i < src_size && 
+            if (src_col >= 0 &&
+              src_col < src_cols &&
+              src_i < src_size &&
               src_i >= 0) {
-            val dst_i = dst_span + dst_col
-            result.update(dst_i,apply(src_i))
+              val dst_i = dst_span + dst_col
+              result.updateDouble(dst_i,applyDouble(src_i))
+            }
+            
+            // increase our X map coordinate
+            x += dst_cellwidth
           }
-  
-          // increase our X map coordinate
-          x += dst_cellwidth
         }
-      }
 
-      // decrease our Y map coordinate
-      y -= dst_cellheight
+        // decrease our Y map coordinate
+        y -= dst_cellheight
+      }
+    } else {
+      // loop over rows
+      for(dst_row <- 0 until dst_rows optimized) {
+        // calculate the Y grid coordinate to read from
+        val src_row = (src_rows - (y / src_cellheight).toInt - 1)
+
+        // pre-calculate some spans we'll use a bunch
+        val src_span = src_row * src_cols
+        val dst_span = dst_row * dst_cols
+
+        if (src_span + min_col < src_size && src_span + max_col >= 0) {
+
+          // start at the X-center of the first dst grid cell
+          var x = xbase
+          
+          // loop over cols
+          for(dst_col <- startCol until dst_cols optimized) {
+            // calculate the X grid coordinate to read from
+            val src_col = (x / src_cellwidth).toInt
+            
+            // compute src and dst indices and ASSIGN!
+            val src_i = src_span + src_col
+
+            if (src_col >= 0 &&
+              src_col < src_cols &&
+              src_i < src_size &&
+              src_i >= 0) {
+              val dst_i = dst_span + dst_col
+              result.update(dst_i,apply(src_i))
+            }
+            
+            // increase our X map coordinate
+            x += dst_cellwidth
+          }
+        }
+
+        // decrease our Y map coordinate
+        y -= dst_cellheight
+      }
     }
 
     // build a raster object from our array and return

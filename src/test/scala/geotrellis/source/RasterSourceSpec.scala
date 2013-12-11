@@ -44,19 +44,6 @@ class RasterSourceSpec extends FunSpec
       }
     }
 
-    it("should print history") { 
-      val r1 = RasterSource("quad_tiled")
-      val r2 = RasterSource("quad_tiled2")
-      run(r1 + r2) match {
-        case Complete(value,success) =>
-          println(success.toString)
-        case Error(msg,failure) =>
-          println(msg)
-          println(failure)
-          assert(false)
-      }
-    }
-
     it("should converge a tiled raster") {
       val s = 
         RasterSource("mtsthelens_tiled_cached")
@@ -137,7 +124,37 @@ class RasterSourceSpec extends FunSpec
   }
 
   describe("warp") {
-    it("should warp with crop only") {
+    it("should warp with crop only on single tile") {
+      // val rs = createRasterSource(
+      //   Array( 1,10,100,1000,2,2,2,2,2,
+      //          2,20,200,2000,2,2,2,2,2,
+      //          3,30,300,3000,2,2,2,2,2,
+      //          4,40,400,4000,2,2,2,2,2),
+      //   1,1,9,4)
+
+      val rs = RasterSource(createRaster(
+        Array( 1,10,100,1000,2,2,2,2,2,
+               2,20,200,2000,2,2,2,2,2,
+               3,30,300,3000,2,2,2,2,2,
+               4,40,400,4000,2,2,2,2,2),
+        9,4))
+
+
+      val RasterExtent(Extent(xmin,_,_,ymax),cw,ch,cols,rows) = rs.rasterExtent.get
+      val newRe = RasterExtent(Extent(xmin,ymax - (ch*3),xmin + (cw*4), ymax),4,3)
+      rs.warp(newRe).run match {
+        case Complete(r,_) =>
+          assertEqual(r,Array(1,10,100,1000,
+                              2,20,200,2000,
+                              3,30,300,3000))
+        case Error(msg,trace) =>
+          println(msg)
+          println(trace)
+          assert(false)
+      }
+    }
+
+    it("should warp with crop only with tiles") {
       val rs = createRasterSource(
         Array( 1,10,100, 1000,2,2, 2,2,2,
                2,20,200, 2000,2,2, 2,2,2,
@@ -146,8 +163,18 @@ class RasterSourceSpec extends FunSpec
                4,40,400, 4000,2,2, 2,2,2),
         3,2,3,2)
 
-      val re = rs.info.get.rasterExtent
-
+      val RasterExtent(Extent(xmin,_,_,ymax),cw,ch,cols,rows) = rs.rasterExtent.get
+      val newRe = RasterExtent(Extent(xmin,ymax - (ch*3),xmin + (cw*4), ymax),4,3)
+      rs.warp(newRe).run match {
+        case Complete(r,_) =>
+          assertEqual(r,Array(1,10,100,1000,
+                              2,20,200,2000,
+                              3,30,300,3000))
+        case Error(msg,trace) =>
+          println(msg)
+          println(trace)
+          assert(false)
+      }
     }
   }
 }
