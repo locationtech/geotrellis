@@ -37,12 +37,10 @@ object GeneratePartitionedMapFiles {
     
     val tilesPerFile = numTiles / numFiles
     val conf = new Configuration()
+    conf.set("io.map.index.interval", "1");
     val fs = dirPath.getFileSystem(conf)
 
     val key = new TileIdWritable()
-
-    // first let's write a few records out
-
     
     var writer: Option[MapFile.Writer] = None
 
