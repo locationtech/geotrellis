@@ -102,7 +102,7 @@ extends RasterLayer(info) {
                 val path = TileSetRasterLayer.tilePath(tileDirPath, info.id, tcol, trow)
                 val sourceRasterExtent = resLayout.getRasterExtent(tcol,trow)
                 val rasterPart = 
-                  ArgReader.readData(path,info.rasterType,sourceRasterExtent).warp(sourceRasterExtent,tileRe)
+                  ArgReader.readData(path,info.rasterType,sourceRasterExtent,tileRe)
 
                 // Copy over the values to the correct place in the raster data
                 for(partCol <- 0 until cols optimized) {
@@ -191,10 +191,11 @@ class DiskTileLoader(tileSetInfo:RasterLayerInfo,
 extends TileLoader(tileSetInfo,tileLayout) {
   def loadRaster(col:Int,row:Int,re:RasterExtent,targetExtent:Option[RasterExtent]) = {
     val path = TileSetRasterLayer.tilePath(tileDirPath, tileSetInfo.id, col, row)
-    val data = ArgReader.readData(path,tileSetInfo.rasterType,re)
     targetExtent match {
-      case Some(tre) => Raster(data.warp(re,tre),tre)
-      case None => Raster(data,re)
+      case Some(tre) => 
+        ArgReader.read(path,tileSetInfo.rasterType,re,tre)
+      case None => 
+        ArgReader.read(path,tileSetInfo.rasterType,re)
     }
 
   }
@@ -207,10 +208,13 @@ extends TileLoader(info,tileLayout) {
   def loadRaster(col:Int,row:Int,re:RasterExtent,targetExtent:Option[RasterExtent]) = {
     c.lookup[Array[Byte]](TileSetRasterLayer.tileName(info.id,col,row)) match {
       case Some(bytes) =>
-        val data = RasterData.fromArrayByte(bytes,info.rasterType,re.cols,re.rows)
         targetExtent match {
-          case Some(tre) => Raster(data.warp(re,tre),tre)
-          case None => Raster(data,re)
+          case Some(tre) => 
+            val data = ArgReader.warpBytes(bytes,info.rasterType,re,tre)
+            Raster(data,tre)
+          case None => 
+            val data = RasterData.fromArrayByte(bytes,info.rasterType,re.cols,re.rows)
+            Raster(data,re)
         }
       case None =>
         sys.error("Cache problem: Tile thinks it's cached but it is in fact not cached.")

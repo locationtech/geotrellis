@@ -39,7 +39,7 @@ object Filesystem {
     case n => (p.substring(0, n), p.substring(n + 1, p.length))
   }
 
-  def slurpToBuffer(path:String, pos:Int, size:Int, bs:Int = 262144) = {
+  def slurpToBuffer(path:String, pos:Int, size:Int, bs:Int = 262144):ByteBuffer = {
     ByteBuffer.wrap(slurp(path, bs), pos, size)
   }
 

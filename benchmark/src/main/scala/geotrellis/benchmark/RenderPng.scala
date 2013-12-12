@@ -140,20 +140,17 @@ class RendererBenchmark extends OperationBenchmark {
     rendered = renderer.render(raster)
   }
 
-  def timeMap(reps:Int) = run(reps)(runMap)
-  def runMap = { data.map { z => if(z == NODATA) 0 else 100 } }
+  def timeRenderer(reps:Int) = run(reps)(runRenderer)
+  def runRenderer = renderer.render(raster)
 
-  // def timeRenderer(reps:Int) = run(reps)(runRenderer)
-  // def runRenderer = renderer.render(raster)
+  def timeEncoder(reps:Int) = run(reps)(runEncoder)
+  def runEncoder = {
+    val r2 = renderer.render(raster)
+    val bytes = new Encoder(renderer.settings).writeByteArray(r2)
+  }
 
-  // def timeEncoder(reps:Int) = run(reps)(runEncoder)
-  // def runEncoder = {
-  //   val r2 = renderer.render(raster)
-  //   val bytes = new Encoder(renderer.settings).writeByteArray(r2)
-  // }
-
-  // def timeJustEncoder(reps:Int) = run(reps)(runJustEncoder)
-  // def runJustEncoder = {
-  //   val bytes = new Encoder(renderer.settings).writeByteArray(rendered)
-  // }
+  def timeJustEncoder(reps:Int) = run(reps)(runJustEncoder)
+  def runJustEncoder = {
+    val bytes = new Encoder(renderer.settings).writeByteArray(rendered)
+  }
 }

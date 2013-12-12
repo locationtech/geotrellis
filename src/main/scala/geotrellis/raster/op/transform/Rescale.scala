@@ -27,7 +27,7 @@ case class Rescale(r:Op[Raster], rescalePct:Op[Double]) extends Op2(r,rescalePct
     val cw = re.cellwidth / rescalePct
     val ch = re.cellheight / rescalePct
     val newRasterExtent = re.withResolution(cw, ch)
-    Result(RasterReader.read(r, Option(newRasterExtent)))
+    Result(r.warp(newRasterExtent))
   }
 })
 

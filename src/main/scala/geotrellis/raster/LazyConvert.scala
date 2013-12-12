@@ -53,4 +53,7 @@ final case class LazyConvert(data: RasterData, typ: RasterType)
 
   def warp(current:RasterExtent,target:RasterExtent):RasterData =
     LazyConvert(data.warp(current,target),typ)
+
+  override def map(f:Int=>Int) = LazyConvert(data.map(f),typ)
+  override def mapDouble(f:Double=>Double) = LazyConvert(data.mapDouble(f),typ)
 }

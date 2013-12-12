@@ -90,7 +90,6 @@ object GeotrellisBuild extends Build {
       name := "geotrellis",
       parallelExecution := false,
       fork in test := false,
-      mainClass := Some("geotrellis.rest.WebRunner"),
       javaOptions in run += "-Xmx2G",
       scalacOptions ++=
         Seq("-optimize"),
@@ -116,7 +115,8 @@ object GeotrellisBuild extends Build {
         "Scala Test" at "http://www.scala-tools.org/repo-reloases/",
         "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
         "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
-        "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots")
+        "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
+      )
     )
 
   // Project: services
@@ -284,6 +284,14 @@ object GeotrellisBuild extends Build {
         "com.google.code.gson" % "gson" % "1.7.1",
         "org.spire-math" %% "spire" % "0.4.0",
         "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided"
+      ),
+      resolvers ++= Seq(
+        "NL4J Repository" at "http://nativelibs4java.sourceforge.net/maven/",
+        "maven2 dev repository" at "http://download.java.net/maven/2",
+        "Scala Test" at "http://www.scala-tools.org/repo-reloases/",
+        "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
+        "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
+        "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
       ),
 
       // enable forking in both run and test

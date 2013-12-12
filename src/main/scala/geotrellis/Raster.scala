@@ -24,6 +24,7 @@ trait Raster {
   val rasterExtent:RasterExtent
   lazy val cols = rasterExtent.cols
   lazy val rows = rasterExtent.rows
+  lazy val length = cols * rows
 
   val rasterType:RasterType
   def isFloat:Boolean = rasterType.float
@@ -74,7 +75,7 @@ trait Raster {
       else f(i)
     }
 
-  def mapIfSetDouble(f:Double => Double):Raster = 
+  def mapIfSetDouble(f:Double => Double):Raster =
     mapDouble { d =>
       if(isNoData(d)) d
       else f(d)

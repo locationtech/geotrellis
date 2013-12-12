@@ -1,6 +1,7 @@
 package geotrellis.process
 
 import geotrellis._
+import geotrellis.data.arg.ArgReader
 import geotrellis.raster._
 import geotrellis.util._
 
@@ -73,14 +74,13 @@ extends UntiledRasterLayer(info) {
         c.insert(info.id.toString, getBytes)
 
   private def fromBytes(arr:Array[Byte],target:Option[RasterExtent]) = {
-    val data = 
-      RasterData.fromArrayByte(arr,info.rasterType,info.rasterExtent.cols,info.rasterExtent.rows)
     target match {
       case Some(re) =>
-        Raster(data.warp(info.rasterExtent,re),re)
+        val data = ArgReader.warpBytes(arr:Array[Byte],info.rasterType,info.rasterExtent,re)
+        Raster(data,re)
       case None =>
+        val data = RasterData.fromArrayByte(arr,info.rasterType,info.rasterExtent.cols,info.rasterExtent.rows)
         Raster(data,info.rasterExtent)
-    }
+      }
   }
 }
-

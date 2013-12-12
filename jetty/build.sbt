@@ -2,12 +2,6 @@ import AssemblyKeys._
 
 resolvers <+= sbtResolver
 
-name := "geotrellis-server"
-
-organization := "com.azavea.geotrellis"
-
-version := "0.9.0-SNAPSHOT"
-
 //seq(Revolver.settings: _*)
 
 assemblySettings

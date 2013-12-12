@@ -25,11 +25,8 @@ final case class IntArrayRasterData(array: Array[Int], cols: Int, rows: Int) ext
 
   def warp(current:RasterExtent,target:RasterExtent):RasterData = {
     val warped = Array.ofDim[Int](target.cols*target.rows).fill(NODATA)
-    IntArrayRasterData(
-      RasterData.warp[Int](current,target,array,warped),
-      target.cols,
-      target.rows
-    )
+    Warp[Int](current,target,array,warped)
+    IntArrayRasterData(warped, target.cols, target.rows)
   }
 }
 

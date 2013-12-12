@@ -2,6 +2,8 @@ package geotrellis.raster
 
 import geotrellis._
 
+import java.nio.ByteBuffer
+
 /**
  * RasterData based on Array[Byte] (each cell as a Byte).
  */
@@ -9,7 +11,7 @@ final case class ByteArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
   extends MutableRasterData with IntBasedArray {
   def getType = TypeByte
   def alloc(cols: Int, rows: Int) = ByteArrayRasterData.ofDim(cols, rows)
-  def length = array.length
+  val length = array.length
   def apply(i: Int) = b2i(array(i))
   def update(i: Int, z: Int) { array(i) = i2b(z) }
   def copy = ByteArrayRasterData(array.clone, cols, rows)
@@ -18,11 +20,8 @@ final case class ByteArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
 
   def warp(current:RasterExtent,target:RasterExtent):RasterData = {
     val warped = Array.ofDim[Byte](target.cols*target.rows).fill(byteNODATA)
-    ByteArrayRasterData(
-      RasterData.warp[Byte](current,target,array,warped),
-      target.cols,
-      target.rows
-    )
+    Warp(current,target,new ByteBufferWarpAssign(ByteBuffer.wrap(array),warped))
+    ByteArrayRasterData(warped, target.cols, target.rows)
   }
 }
 

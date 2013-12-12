@@ -13,9 +13,8 @@ import geotrellis.data._
  */
 case class Resize(r:Op[Raster], rasterExtent:Op[RasterExtent]) 
 	extends Op2(r,rasterExtent) ({
-  (raster,rasterExtent) => {
-    Result(RasterReader.read(raster, Option(rasterExtent)))
-  }
+  (raster,rasterExtent) =>
+    Result(raster.warp(rasterExtent))
 })
 
 object Resize {
@@ -35,7 +34,7 @@ extends Op3(r,cols,rows)({
     val cw = extent.width / cols
     val ch = extent.height / rows
     val re = RasterExtent(extent, cw, ch, cols, rows)
-    Result(RasterReader.read(raster, Option(re)))
+    Result(raster.warp(re))
   }
 })
 

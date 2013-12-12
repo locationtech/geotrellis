@@ -9,23 +9,88 @@ import geotrellis.raster.op.local._
 
 import com.google.caliper.Param
 
-object IOBenchmarks extends BenchmarkRunner(classOf[IOBenchmarks])
-class IOBenchmarks extends OperationBenchmark {
-  data.GeoTiffRasterLayerBuilder.addToCatalog
+object IOBenchmark extends BenchmarkRunner(classOf[IOBenchmark])
+class IOBenchmark extends OperationBenchmark {
+  @Param(Array("bit","byte","short","int","float","double"))
+  var rasterType = ""
 
-//  @Param(Array("0", "1", "3", "4", "5", "6", "7"))
-//  @Param(Array("7","8","9"))
-  @Param(Array("0","1","2","3"))
-  var index = 0
+  var size = 256
 
   val layers = 
-    Array(
-      "SBN_car_share", // (byte)
-      "aspect",
-      "aspect-double",
-      "travelshed-int32"//,
-//      "wm_DevelopedLand"
+    Map(
+      ("bit","wm_DevelopedLand"),
+      ("byte", "SBN_car_share"),
+      ("short","travelshed-int16"),
+      ("int","travelshed-int32"),
+      ("float","aspect"), 
+      ("double","aspect-double")
     )
+
+  var path:String = ""
+  var rasterExtent:RasterExtent = null
+  var typ:RasterType = TypeFloat
+
+  var targetExtent:RasterExtent = null
+
+  override def setUp() {
+    val id = layers(rasterType)
+    val layer = GeoTrellis.get(LoadRasterLayer(id)).asInstanceOf[ArgFileRasterLayer]
+    path = layer.rasterPath
+    typ = layer.info.rasterType
+    rasterExtent = RasterSource(id).get.rasterExtent
+    val RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows) =
+      rasterExtent
+
+    val extent = Extent(xmin,ymin,(xmin+xmax)/2.0,(ymin+ymax)/2.0)
+    targetExtent = RasterExtent(extent,size,size)
+  }
+
+  def timeLoadRaster(reps:Int) = run(reps)(loadRaster)
+  def loadRaster = { GeoTrellis.get(LoadRaster(layers(rasterType))) }
+
+  def timeRasterSource(reps:Int) = run(reps)(rasterSource)
+  def rasterSource = { RasterSource(layers(rasterType)).get }
+
+  def timeLoadRasterWithExtent(reps:Int) = run(reps)(loadRasterWithExtent)
+  def loadRasterWithExtent = { GeoTrellis.get(LoadRaster(layers(rasterType),targetExtent)) }
+
+  def timeRasterSourceWithExtent(reps:Int) = run(reps)(rasterSourceWithExtent)
+  def rasterSourceWithExtent = { RasterSource(layers(rasterType),targetExtent).get }
+
+  def timeNewReader(reps:Int) = run(reps)(newReader)
+  def newReader = { arg.ArgReader.read(path,typ,rasterExtent) }
+
+  def timeOldReader(reps:Int) = run(reps)(oldReader)
+  def oldReader =
+    new io.ArgReader(path).readPath(typ,rasterExtent,None)
+
+  def timeNewReaderWithExtent(reps:Int) = run(reps)(newReaderWithExtent)
+  def newReaderWithExtent = { 
+    val r = arg.ArgReader.read(path,typ,rasterExtent,targetExtent) 
+  }
+
+  def timeOldReaderWithExtent(reps:Int) = run(reps)(oldReaderWithExtent)
+  def oldReaderWithExtent =
+    new io.ArgReader(path).readPath(typ,rasterExtent,Some(targetExtent))
+}
+
+object ReadAndWarpBenchmark extends BenchmarkRunner(classOf[ReadAndWarpBenchmark])
+class ReadAndWarpBenchmark extends OperationBenchmark {
+  @Param(Array("bit","byte","short","int","float","double"))
+  var rasterType = ""
+
+  val layers = 
+    Map(
+      ("bit","wm_DevelopedLand"),
+      ("byte", "SBN_car_share"),
+      ("short","travelshed-int16"),
+      ("int","travelshed-int32"),
+      ("float","aspect"), 
+      ("double","aspect-double")
+    )
+
+  @Param(Array("256", "512", "979", "1400", "2048", "4096"))
+  var size = 0
 
   var path:String = ""
   var extent:RasterExtent = null
@@ -34,28 +99,21 @@ class IOBenchmarks extends OperationBenchmark {
   var targetExtent:RasterExtent = null
 
   override def setUp() {
-    val layer = GeoTrellis.get(LoadRasterLayer(layers(index))).asInstanceOf[ArgFileRasterLayer]
+    val id = layers(rasterType)
+    val layer = GeoTrellis.get(LoadRasterLayer(id)).asInstanceOf[ArgFileRasterLayer]
     path = layer.rasterPath
     typ = layer.info.rasterType
-    extent = RasterSource(layers(index)).get.rasterExtent
-    targetExtent = RasterExtent(extent.extent,600,600)
+    extent = RasterSource(id).get.rasterExtent
+    targetExtent = RasterExtent(extent.extent,size,size)
   }
-
-  def timeLoadRaster(reps:Int) = run(reps)(loadRaster)
-  def loadRaster = { GeoTrellis.get(LoadRaster(layers(index))) }
-
-  def timeRasterSource(reps:Int) = run(reps)(rasterSource)
-  def rasterSource = { RasterSource(layers(index)).get }
-
-  def timeNewReader(reps:Int) = run(reps)(newReader)
-  def newReader = { arg.ArgReader.read(path,typ,extent) }
-
-  def timeOldReader(reps:Int) = run(reps)(oldReader)
-  def oldReader =
-    new io.ArgReader(path).readPath(typ,extent,None)
 
   def timeNewReaderWithExtent(reps:Int) = run(reps)(newReaderWithExtent)
   def newReaderWithExtent = { 
+    val r = arg.ArgReader.read(path,typ,extent,targetExtent) 
+  }
+
+  def timeNewReaderWithWarp(reps:Int) = run(reps)(newReaderWithWarp)
+  def newReaderWithWarp = { 
     val r = arg.ArgReader.read(path,typ,extent) 
     r.warp(targetExtent)
   }
@@ -65,8 +123,64 @@ class IOBenchmarks extends OperationBenchmark {
     new io.ArgReader(path).readPath(typ,extent,Some(targetExtent))
 }
 
-object GeoTiffVsArgBenchmarks extends BenchmarkRunner(classOf[GeoTiffVsArgBenchmarks])
-class GeoTiffVsArgBenchmarks extends OperationBenchmark {
+object SmallTileReadAndWarpBenchmark extends BenchmarkRunner(classOf[SmallTileReadAndWarpBenchmark])
+class SmallTileReadAndWarpBenchmark extends OperationBenchmark {
+  @Param(Array("bit","byte","short","int","float","double"))
+  var rasterType = ""
+
+  var size = 256
+
+  val layers = 
+    Map(
+      ("bit","wm_DevelopedLand"),
+      ("byte", "SBN_car_share"),
+      ("short","travelshed-int16"),
+      ("int","travelshed-int32"),
+      ("float","aspect"), 
+      ("double","aspect-double")
+    )
+
+  var path:String = ""
+  var extent:RasterExtent = null
+  var typ:RasterType = TypeFloat
+
+  var rasterExtent:RasterExtent = null
+  var targetExtent:RasterExtent = null
+
+  override def setUp() {
+    val id = layers(rasterType)
+
+    val layer = GeoTrellis.get(LoadRasterLayer(id)).asInstanceOf[ArgFileRasterLayer]
+    path = layer.rasterPath
+    typ = layer.info.rasterType
+    rasterExtent = RasterSource(id).get.rasterExtent
+    val RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows) =
+      rasterExtent
+
+    val extent = Extent(xmin,ymin,(xmin+xmax)/2.0,(ymin+ymax)/2.0)
+    targetExtent = RasterExtent(extent,size,size)
+  }
+
+  def timeNewReaderWithExtent(reps:Int) = run(reps)(newReaderWithExtent)
+  def newReaderWithExtent = { 
+    val r = arg.ArgReader.read(path,typ,rasterExtent,targetExtent) 
+  }
+
+  def timeNewReaderWithWarp(reps:Int) = run(reps)(newReaderWithWarp)
+  def newReaderWithWarp = { 
+    val r = arg.ArgReader.read(path,typ,rasterExtent) 
+    r.warp(targetExtent)
+  }
+
+  def timeOldReaderWithExtent(reps:Int) = run(reps)(oldReaderWithExtent)
+  def oldReaderWithExtent =
+    new io.ArgReader(path).readPath(typ,rasterExtent,Some(targetExtent))
+}
+
+
+/** Reading the same raster as a .tif (with GeoTools) and as an ARG with GeoTrellis */
+object GeoTiffVsArgBenchmark extends BenchmarkRunner(classOf[GeoTiffVsArgBenchmark])
+class GeoTiffVsArgBenchmark extends OperationBenchmark {
   def timeRasterSource(reps:Int) = run(reps)(rasterSource)
   def rasterSource = { RasterSource("aspect").get }
 
@@ -74,8 +188,8 @@ class GeoTiffVsArgBenchmarks extends OperationBenchmark {
   def loadGeoTiff = { RasterSource("aspect-tif").get }
 }
 
-object TileIOBenchmarks extends BenchmarkRunner(classOf[TileIOBenchmarks])
-class TileIOBenchmarks extends OperationBenchmark {
+object TileIOBenchmark extends BenchmarkRunner(classOf[TileIOBenchmark])
+class TileIOBenchmark extends OperationBenchmark {
   var targetExtent:RasterExtent = null
 
   override def setUp() {

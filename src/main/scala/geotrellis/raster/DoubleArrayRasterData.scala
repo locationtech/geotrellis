@@ -25,15 +25,12 @@ final case class DoubleArrayRasterData(array: Array[Double], cols: Int, rows: In
 
   def warp(current:RasterExtent,target:RasterExtent):RasterData = {
     val warped = Array.ofDim[Double](target.cols*target.rows).fill(Double.NaN)
-    DoubleArrayRasterData(
-      RasterData.warp[Double](current,target,array,warped),
-      target.cols,
-      target.rows
-    )
+    Warp[Double](current,target,array,warped)
+    DoubleArrayRasterData(warped, target.cols, target.rows)
   }
 }
 
-object DoubleArrayRasterData2 {
+object DoubleArrayRasterData {
   def ofDim(cols: Int, rows: Int) = 
     new DoubleArrayRasterData(Array.ofDim[Double](cols * rows), cols, rows)
   def empty(cols: Int, rows: Int) = 

@@ -24,8 +24,9 @@ final case class ShortArrayRasterData(array: Array[Short], cols: Int, rows: Int)
 
   def warp(current:RasterExtent,target:RasterExtent):RasterData = {
     val warped = Array.ofDim[Short](target.cols*target.rows).fill(shortNODATA)
+    Warp[Short](current,target,array,warped)
     ShortArrayRasterData(
-      RasterData.warp[Short](current,target,array,warped),
+      warped,
       target.cols,
       target.rows
     )

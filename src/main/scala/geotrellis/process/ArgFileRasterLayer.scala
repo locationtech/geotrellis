@@ -56,23 +56,29 @@ extends RasterLayerBuilder {
 class ArgFileRasterLayer(info:RasterLayerInfo, val rasterPath:String) 
 extends UntiledRasterLayer(info) {
   def getRaster(targetExtent:Option[RasterExtent]) = {
-    val data =
-      if(isCached) {
-        getCache.lookup[Array[Byte]](info.id.toString) match {
-          case Some(bytes) =>
-            RasterData.fromArrayByte(bytes,info.rasterType,info.rasterExtent.cols,info.rasterExtent.rows)
-          case None =>
-            sys.error("Cache problem: Layer thinks it's cached but it is in fact not cached.")
-        }
-      } else {
-        ArgReader.readData(rasterPath, info.rasterType, info.rasterExtent)
+    if(isCached) {
+      getCache.lookup[Array[Byte]](info.id.toString) match {
+        case Some(bytes) =>
+          targetExtent match {
+            case Some(re) =>
+              val data = ArgReader.warpBytes(bytes, info.rasterType, info.rasterExtent, re)
+              Raster(data,re)
+            case None =>
+              val data = RasterData.fromArrayByte(bytes,info.rasterType,info.rasterExtent.cols,info.rasterExtent.rows)
+              Raster(data,info.rasterExtent)
+          }
+        case None =>
+          sys.error("Cache problem: Layer thinks it's cached but it is in fact not cached.")
       }
-    targetExtent match {
-      case Some(re) =>
-        Raster(data.warp(info.rasterExtent,re),re)
-      case None =>
-        Raster(data,info.rasterExtent)
+    } else {
+      targetExtent match {
+        case Some(re) =>
+          ArgReader.read(rasterPath, info.rasterType, info.rasterExtent, re)
+        case None =>
+          ArgReader.read(rasterPath, info.rasterType, info.rasterExtent)
+      }
     }
+
   }
 
   def cache(c:Cache[String]) = 
