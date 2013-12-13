@@ -30,8 +30,10 @@ final case class FloatArrayRasterData(array: Array[Float], cols: Int, rows: Int)
 }
 
 object FloatArrayRasterData {
-  def ofDim(cols: Int, rows: Int) = new FloatArrayRasterData(Array.ofDim[Float](cols * rows), cols, rows)
-  def empty(cols: Int, rows: Int) = new FloatArrayRasterData(Array.fill[Float](cols * rows)(Float.NaN), cols, rows)
+  def ofDim(cols: Int, rows: Int) = 
+    new FloatArrayRasterData(Array.ofDim[Float](cols * rows), cols, rows)
+  def empty(cols: Int, rows: Int) = 
+    new FloatArrayRasterData(Array.ofDim[Float](cols * rows).fill(Float.NaN), cols, rows)
 
   def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int) = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)

@@ -22,14 +22,6 @@ class DataMap extends OperationBenchmark {
   var byteData:ByteArrayRasterData = null
   var shortData:ShortArrayRasterData = null
 
-  var mc:Op[Raster] = null
-  var mcCustomWithInt:Op[Raster] = null
-  var mcMapSugar:Op[Raster] = null
-  var mcMapIfSetSugar:Op[Raster] = null
-  var mcMapIfSetSugarWithLiteral:Op[Raster] = null
-  var mcMapIfSet:Op[Raster] = null
-  var mcWhileLoop:Op[Raster] = null
-
   override def setUp() {
     val len = size * size
     ints = init(len)(Random.nextInt)
@@ -40,14 +32,6 @@ class DataMap extends OperationBenchmark {
     bitData = new BitArrayRasterData(init((len + 7) / 8)(Random.nextInt.toByte), size, size)
     byteData = new ByteArrayRasterData(init(len)(Random.nextInt.toByte), size, size)
     shortData = new ShortArrayRasterData(init(len)(Random.nextInt.toShort), size, size)
-
-    mc = Multiply(raster, 2)
-    mcCustomWithInt = MultiplyConstantCustomWithInt(raster, 2)
-    mcMapIfSet = MultiplyConstantMapIfSet(raster, 2)
-    mcMapSugar = MultiplyConstantMapSugar(raster, 2)
-    mcMapIfSetSugar = MultiplyConstantMapIfSetSugar(raster, 2)
-    mcMapIfSetSugarWithLiteral = MultiplyConstantMapIfSetSugarWithLiteral(raster, 2)
-    mcWhileLoop = MultiplyConstantWhileLoop(raster, 2)
   }
 
 
@@ -186,10 +170,12 @@ class DataMap extends OperationBenchmark {
   def shortDataMap = shortData.map(z => if (isData(z)) z * 2 else NODATA)
 }
 
+/** Result: Array.fill is really slow and should not be used */
 object ArrayFill extends BenchmarkRunner(classOf[ArrayFill])
 class ArrayFill extends OperationBenchmark {
 
-  @Param(Array("2048", "4096","8192"))
+//  @Param(Array("2048", "4096","8192"))
+  @Param(Array("256"))
   var size:Int = 0
 
   def timeScalaArrayFillBytes(reps:Int) = run(reps)(scalaArrayFillBytes)
@@ -206,6 +192,22 @@ class ArrayFill extends OperationBenchmark {
   def timeFillerBytes(reps:Int) = run(reps)(fillerBytes)
   def fillerBytes = {
     Array.ofDim[Byte](size*size).fill(byteNODATA)
+  }
+
+  def timeScalaArrayFillFloats(reps:Int) = run(reps)(scalaArrayFillFloats)
+  def scalaArrayFillFloats = {
+    val arr = Array.fill[Float](size*size)(Float.NaN)
+  }
+
+  def timeJavaArraysFillFloats(reps:Int) = run(reps)(javaArraysFillFloats)
+  def javaArraysFillFloats = {
+    val arr = Array.ofDim[Float](size*size)
+    java.util.Arrays.fill(arr,Float.NaN)
+  }
+
+  def timeFillerFloats(reps:Int) = run(reps)(fillerFloats)
+  def fillerFloats = {
+    Array.ofDim[Float](size*size).fill(Float.NaN)
   }
 
   def timeScalaArrayFillDoubles(reps:Int) = run(reps)(scalaArrayFillDoubles)

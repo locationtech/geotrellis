@@ -7,20 +7,6 @@ import geotrellis.source._
  * Determines if values are less than other values. Sets to 1 if true, else 0.
  */
 object Less extends LocalRasterBinaryOp {
-  /** Apply this operation to the values of each cell in each raster.  */
-  override
-  def combine(rasters:RasterSeq):Raster =
-    rasters
-      .dualCombine({ zs =>
-        val z = zs(0)
-        if(zs.tail.foldLeft(true)(_ && z < _)) 1
-        else 0
-      })({ zs =>
-        val z = zs(0)
-        if(zs.tail.foldLeft(true)(_ && z < _)) 1
-        else 0
-      })
-
   def combine(z1:Int,z2:Int) =
     if(z1 < z2) 1 else 0
 
@@ -86,14 +72,4 @@ trait LessOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell valued of the rasters are less than the next raster, else 0.
    */
   def <(rs:RasterSource) = localLess(rs)
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell valued of the rasters are less than the next raster, else 0.
-   */
-  def localLess(rss:Seq[RasterSource]) = self.combineOp(rss)(Less(_))
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell valued of the rasters are less than the next raster, else 0.
-   */
-  def <(rss:Seq[RasterSource]) = localLess(rss)
 }

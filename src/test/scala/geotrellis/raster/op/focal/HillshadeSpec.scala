@@ -13,6 +13,8 @@ import geotrellis.render.op._
 
 import org.scalatest.FunSuite
 
+import scalaxy.loops._
+
 class HillshadeSpec extends FunSuite 
                        with TestServer 
                        with RasterBuilders {
@@ -136,6 +138,36 @@ class HillshadeSpec extends FunSuite
       case Error(msg,failure) =>
         println(msg)
         println(failure)
+        assert(false)
+    }
+  }
+
+  test("should run Hillshade square 3 on tiled raster in catalog") {
+    val name = "SBN_inc_percap"
+
+    val source = RasterSource(name)
+    val r = source.get
+
+    val expected = source.focalHillshade.get
+
+    val tileLayout = TileLayout.fromTileDimensions(r.rasterExtent,256,256)
+    val rs = RasterSource(TileRaster.wrap(r,tileLayout,cropped = false))
+
+    rs.focalHillshade.run match {
+      case Complete(value,hist) =>
+        for(col <- 0 until expected.cols optimized) {
+          for(row <- 0 until expected.rows optimized) {
+            withClue (s"Value different at $col,$row: ") {
+              val v1 = expected.getDouble(col,row)
+              val v2 = value.getDouble(col,row)
+              if(isNoData(v1)) isNoData(v2) should be (true)
+              else if(isNoData(v2)) isNoData(v1) should be (true)
+              else v1 should be (v2)
+            }
+          }
+        }
+      case Error(message,trace) =>
+        println(message)
         assert(false)
     }
   }

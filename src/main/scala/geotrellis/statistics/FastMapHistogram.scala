@@ -10,7 +10,7 @@ object FastMapHistogram {
   private final val UNSET:Int = NODATA + 1
   private final val SIZE = 16
 
-  private def buckets(size:Int) = Array.fill(size * 2)(UNSET)
+  private def buckets(size:Int) = Array.ofDim[Int](size * 2).fill(UNSET)
 
   def apply() = new FastMapHistogram(SIZE, buckets(SIZE), 0, 0)
   def apply(size:Int) = new FastMapHistogram(size, buckets(size), 0, 0)
@@ -167,7 +167,7 @@ class FastMapHistogram(_size:Int, _buckets:Array[Int], _used:Int, _total:Int)
     // internals.
     val nextsize = size * factor
     val nextmask = nextsize - 1
-    val nextbuckets = Array.fill(nextsize * 2)(UNSET)
+    val nextbuckets = Array.ofDim[Int](nextsize * 2).fill(UNSET)
 
     // given the underlying array implementation we can only store so many
     // unique values. given that 1<<30

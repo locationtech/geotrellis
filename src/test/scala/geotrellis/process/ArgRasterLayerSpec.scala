@@ -55,7 +55,7 @@ class ArgRasterLayerSpec extends FunSpec
     val chunker = (xmin:Double, ymin:Double, xmax:Double, ymax:Double,
                    cols:Int, rows:Int) => {
       val cellwidth  = abs(xmax - xmin) / cols
-      val cellheight = abs(ymax - ymin) / cols
+      val cellheight = abs(ymax - ymin) / rows
       val e = Extent(xmin, ymin, xmax, ymax)
       val re = RasterExtent(e, cellwidth, cellheight, cols, rows)
       RasterLayer.fromPath("src/test/resources/quad8.json").get.getRaster(Some(re))
@@ -75,8 +75,9 @@ class ArgRasterLayerSpec extends FunSpec
     // helper function
     val dotest = (xmin:Double, ymin:Double, xmax:Double, ymax:Double,
                   cols:Int, rows:Int, expect:Array[Int]) => {
-      val result = chunker(xmin, ymin, xmax, ymax, cols, rows)
 
+      val result = chunker(xmin, ymin, xmax, ymax, cols, rows)
+      println(result.asciiDraw)
       val d = result.toArray
       val ok = dcmp(d, expect)
       if (!ok) {

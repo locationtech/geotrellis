@@ -112,7 +112,7 @@ case class Encoder(settings:Settings) {
     else if (DEPTH == 3) initByteBuffer24(bb, data, size)
     else if (DEPTH == 2) initByteBuffer16(bb, data, size)
     else if (DEPTH == 1) initByteBuffer8(bb, data, size)
-    else sys.error("unsupported depth: %s" format DEPTH)
+    else sys.error(s"unsupported depth: $DEPTH")
 
     bb
   }

@@ -12,6 +12,7 @@ import com.google.caliper.Param
 object IOBenchmark extends BenchmarkRunner(classOf[IOBenchmark])
 class IOBenchmark extends OperationBenchmark {
   @Param(Array("bit","byte","short","int","float","double"))
+//  @Param(Array("float"))
   var rasterType = ""
 
   var size = 256
@@ -30,6 +31,9 @@ class IOBenchmark extends OperationBenchmark {
   var rasterExtent:RasterExtent = null
   var typ:RasterType = TypeFloat
 
+  // val path = "/home/rob/proj/gt/geotrellis/benchmark/src/main/resources/data/aspect.arg"
+  // val typ:RasterType = TypeFloat
+
   var targetExtent:RasterExtent = null
 
   override def setUp() {
@@ -41,7 +45,9 @@ class IOBenchmark extends OperationBenchmark {
     val RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows) =
       rasterExtent
 
-    val extent = Extent(xmin,ymin,(xmin+xmax)/2.0,(ymin+ymax)/2.0)
+    val xdelta = (xmax - xmin) / 1.5
+    val ydelta = (ymax - ymin) / 1.5
+    val extent = Extent(xmin,ymin,xmin+xdelta,ymin+ydelta)
     targetExtent = RasterExtent(extent,size,size)
   }
 
@@ -66,7 +72,7 @@ class IOBenchmark extends OperationBenchmark {
 
   def timeNewReaderWithExtent(reps:Int) = run(reps)(newReaderWithExtent)
   def newReaderWithExtent = { 
-    val r = arg.ArgReader.read(path,typ,rasterExtent,targetExtent) 
+    val r = arg.ArgReader.read(path,typ,rasterExtent,targetExtent)
   }
 
   def timeOldReaderWithExtent(reps:Int) = run(reps)(oldReaderWithExtent)

@@ -19,7 +19,7 @@ final case class BitConstant(n:Byte, cols:Int, rows:Int) extends RasterData {
   def applyDouble(i:Int) = dVal
   def length = cols * rows
   def alloc(cols:Int, rows:Int) = BitArrayRasterData.empty(cols, rows)
-  def mutable = BitArrayRasterData(Array.fill(length)(n), cols, rows)
+  def mutable = BitArrayRasterData(Array.ofDim[Byte](length).fill(n), cols, rows)
   def copy = this
 
   override def combine(other:RasterData)(f:(Int,Int) => Int) = other.map(z => f(iVal, z))

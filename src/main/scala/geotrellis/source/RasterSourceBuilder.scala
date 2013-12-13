@@ -26,9 +26,4 @@ object RasterSourceBuilder {
     val builder = new RasterSourceBuilder()
     builder.setRasterDefinition(rasterSource.rasterDefinition)
   }
-
-  def apply(rasterSeqSource:RasterSeqSource) = {
-    val builder = new RasterSourceBuilder()
-    builder.setRasterDefinition(rasterSeqSource.rasterDefinition)
-  }
 }

@@ -15,13 +15,6 @@ object CanBuildSourceFrom  extends Priority1Implicits {
       RasterSourceBuilder(rasterSrc)
   }
 
-  implicit def canBuildRasterSourceFromSeq =  
-    new CanBuildSourceFrom[RasterSeqSource, Raster, RasterSource] {
-      def apply() = new RasterSourceBuilder
-      def apply(rasterSeqSrc:RasterSeqSource) =
-        RasterSourceBuilder(rasterSeqSrc)
-    }
-
   implicit def canBuildValueFromValueSource[E:Manifest]:CanBuildSourceFrom[ValueSource[_], E, ValueSource[E]] = new CanBuildSourceFrom[ValueSource[_], E, ValueSource[E]] {
     def apply() = new ValueSourceBuilder[E]()
     def apply(ds:ValueSource[_]) = new ValueSourceBuilder[E]()

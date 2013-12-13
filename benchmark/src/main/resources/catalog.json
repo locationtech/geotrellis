@@ -6,7 +6,7 @@
    "params": {
      "type": "fs",
      "path": "sbn",
-     "cacheAll": "yes"
+     "cacheAll": "no"
    }
   },
   {

@@ -10,6 +10,8 @@ import geotrellis.render.op._
 
 import com.google.caliper.Param
 
+import RasterSourceSeq._
+
 object WeightedAdd extends BenchmarkRunner(classOf[WeightedAdd])
 class WeightedAdd extends OperationBenchmark {
   // val names = Array("SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k")
@@ -50,7 +52,7 @@ class WeightedAdd extends OperationBenchmark {
                  .reduce(_+_)
 
     sourceSeq = 
-      RasterSeqSource2((0 until n).map(i => RasterSource(names(i),re) * weights(i)))
+      (0 until n).map(i => RasterSource(names(i),re) * weights(i))
                  .localAdd
 
   }

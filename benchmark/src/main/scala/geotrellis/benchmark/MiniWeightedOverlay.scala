@@ -8,76 +8,92 @@ import com.google.caliper.Param
 
 object MiniWeightedOverlay extends BenchmarkRunner(classOf[MiniWeightedOverlay])
 class MiniWeightedOverlay extends OperationBenchmark {
-  @Param(Array("256", "512", "1024", "2048", "4096"))
+  @Param(Array("256","512", "1024"))
   var size:Int = 0
-  
-  var ops:Op[Raster] = null
+
+//  @Param(Array("bit","byte","short","int","float","double"))
+  @Param(Array("bit"))
+  var rasterType = ""
+
+  val layers = 
+    Map(
+      ("bit","wm_DevelopedLand"),
+      ("byte", "SBN_car_share"),
+      ("short","travelshed-int16"),
+      ("int","travelshed-int32"),
+      ("float","aspect"), 
+      ("double","aspect-double")
+    )
+
   var source:RasterSource = null
 
   override def setUp() {
-    val r1:Raster = loadRaster("SBN_farm_mkt", size, size)
-    val r2:Raster = loadRaster("SBN_RR_stops_walk", size, size)
+    // val r1:Raster = loadRaster(layers(rasterType), size, size)
+    // val r2:Raster = loadRaster(layers(rasterType), size, size)
 
-    ops = Add(Multiply(r1, 5), Multiply(r2, 2))
-    source = (RasterSource(r1) * 5) + (RasterSource(r2) * 2)
+    // source = (RasterSource(r1) * 5) + (RasterSource(r2) * 2)
+    // val r1:Raster = loadRaster(layers(rasterType), size, size)
+    // val r2:Raster = loadRaster(layers(rasterType), size, size)
+
+    val name = layers(rasterType)
+    val re = getRasterExtent(name,size,size)
+
+    source = (RasterSource(name,re) * 5) + (RasterSource(name,re) * 2)
   }
-
-  def timeMiniWeightedOverlayOps(reps:Int) = run(reps)(miniWeightedOverlayOps)
-  def miniWeightedOverlayOps = get(ops)
-
 
   def timeMiniWeightedOverlaySource(reps:Int) = run(reps)(miniWeightedOverlaySource)
   def miniWeightedOverlaySource = get(source)
 }
 
-object MiniWeightedOverlayProfile {
-  def getRasterExtent(name:String, w:Int, h:Int):RasterExtent = {
-    val ext = RasterSource(name).info.get.rasterExtent.extent
-    RasterExtent(ext,w,h)
-  }
-  /**
-   * Loads a given raster with a particular height/width.
-   */
-  def loadRaster(name:String, w:Int, h:Int):Raster =
-    RasterSource(name,getRasterExtent(name,w,h)).get
+object SmallIOBenchmark extends BenchmarkRunner(classOf[SmallIOBenchmark])
+class SmallIOBenchmark extends OperationBenchmark {
+//  @Param(Array("256","512", "1024"))
+  @Param(Array("256"))
+  var size:Int = 0
 
+//  @Param(Array("bit","byte","short","int","float","double"))
+  @Param(Array("float"))
+  var rasterType = ""
 
-  import geotrellis.process._
-  var size:Int = 10000
-  
-  var ops:Op[Raster] = null
+  val path = "/home/rob/proj/gt/geotrellis/benchmark/src/main/resources/data/aspect.arg"
+
+  val layers = 
+    Map(
+      ("bit","wm_DevelopedLand"),
+      ("byte", "SBN_car_share"),
+      ("short","travelshed-int16"),
+      ("int","travelshed-int32"),
+      ("float","aspect"), 
+      ("double","aspect-double")
+    )
+
   var source:RasterSource = null
+  var op:Op[Raster] = null
 
-  def main(args:Array[String]):Unit = {
-    val r1:Raster = loadRaster("SBN_farm_mkt", size, size)
-    val r2:Raster = loadRaster("SBN_RR_stops_walk", size, size)
+  var re:RasterExtent = null
+  var baseRe:RasterExtent = null
 
-    ops = Add(Multiply(r1, 5), Multiply(r2, 2))
-    source = (RasterSource(r1) * 5) + (RasterSource(r2) * 2)
+  override def setUp() {
+    val name = layers(rasterType)
+    baseRe = get(geotrellis.io.LoadRasterExtent(name))
+    re = getRasterExtent(name,size,size)
 
-    println("Warming up GeoTrellis..")
-    GeoTrellis.get(ops)
-    GeoTrellis.get(source)
-
-    println("Press enter to start ops...")
-    System.console.readLine
-
-    GeoTrellis.run(ops) match {
-      case Complete(_,hist) =>
-        println(hist)
-      case _ => sys.error("")
-    }
-    println("Done ops.")
-    println("Press enter to start source...")
-    System.console.readLine
-
-    GeoTrellis.run(source) match {
-      case Complete(_,hist) =>
-        println(hist)
-      case _ => sys.error("")
-    }
-
-    println("Done.")
-    GeoTrellis.shutdown
+    op = geotrellis.io.LoadRaster(name,re)
+    source = RasterSource(name,re)
   }
+
+  def timeLoadTheRaster(reps:Int) = run(reps)(loadTheRaster)
+  def loadTheRaster = get(source)
+
+  // def timeLoadTheRasterOp(reps:Int) = run(reps)(loadTheRasterOp)
+  // def loadTheRasterOp = get(op)
+
+  // def timeSlurp(reps:Int) = run(reps)(slurp)
+  // def slurp = geotrellis.data.arg.ArgReader.read(path,TypeFloat,baseRe,re)
+
+  // def timeSlurpOld(reps:Int) = run(reps)(slurpOld)
+  // def slurpOld = new io.ArgReader(path).readPath(TypeFloat,baseRe,Some(re))
+
+  // def timeLoadTwoRaster(reps:Int) = run(reps)(loadTwoRaster)
+  // def loadTwoRaster = get(geotrellis.io.LoadRaster(layers(rasterType)))
 }

@@ -37,7 +37,7 @@ object ShortArrayRasterData {
   def ofDim(cols: Int, rows: Int) = 
     new ShortArrayRasterData(Array.ofDim[Short](cols * rows), cols, rows)
   def empty(cols: Int, rows: Int) = 
-    new ShortArrayRasterData(Array.fill[Short](cols * rows)(shortNODATA), cols, rows)
+    new ShortArrayRasterData(Array.ofDim[Short](cols * rows).fill(shortNODATA), cols, rows)
 
   def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int) = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)

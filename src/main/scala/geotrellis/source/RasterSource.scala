@@ -93,6 +93,7 @@ object RasterSource {
   def apply(rasterDef:Op[RasterDefinition],tileOps:Op[Seq[Op[Raster]]]) =
     new RasterSource(rasterDef, tileOps)
 
+  /** Create a RasterSource who's tile ops are the tiles of a TileRaster. */
   def apply(tiledRaster:TileRaster):RasterSource = {
     val rasterDef = 
       RasterDefinition(
@@ -101,7 +102,9 @@ object RasterSource {
         tiledRaster.tileLayout,
         tiledRaster.rasterType
       )
+    
     val tileOps = tiledRaster.tiles.map(Literal(_))
+
     new RasterSource(rasterDef, tileOps)
   }
 

@@ -12,14 +12,14 @@ trait WarpAssign {
 
 class ArrayWarpAssign[@specialized(Byte,Short,Int,Float,Double) T](src:Array[T], dst:Array[T]) 
     extends WarpAssign {
-  @inline final def apply(srcIndex:Int,dstIndex:Int):Unit = {
+  final def apply(srcIndex:Int,dstIndex:Int):Unit = {
     dst(dstIndex) = src(srcIndex)
   }
 }
 
 final class BitWarpAssign(src:Array[Byte],dst:Array[Byte])
       extends WarpAssign {
-  @inline final def apply(srcIndex:Int,dstIndex:Int):Unit = {
+  final def apply(srcIndex:Int,dstIndex:Int):Unit = {
     val i = srcIndex
     val z = (src(i >> 3) >> (i & 7)) & 1
     val div = dstIndex >> 3
@@ -35,7 +35,7 @@ final class BitWarpAssign(src:Array[Byte],dst:Array[Byte])
 
 class ByteBufferWarpAssign(src:ByteBuffer,dst:Array[Byte])
     extends WarpAssign {
-  @inline final def apply(srcIndex:Int,dstIndex:Int):Unit = {
+  final def apply(srcIndex:Int,dstIndex:Int):Unit = {
     dst(dstIndex) = src.get(srcIndex)
   }
 }
@@ -43,7 +43,7 @@ class ByteBufferWarpAssign(src:ByteBuffer,dst:Array[Byte])
 class ShortBufferWarpAssign(src:ByteBuffer,dst:Array[Short])
     extends WarpAssign {
   final val width = TypeShort.bytes
-  @inline final def apply(srcIndex:Int,dstIndex:Int):Unit = {
+  final def apply(srcIndex:Int,dstIndex:Int):Unit = {
     dst(dstIndex) = src.getShort(srcIndex*width)
   }
 }
@@ -51,7 +51,7 @@ class ShortBufferWarpAssign(src:ByteBuffer,dst:Array[Short])
 class IntBufferWarpAssign(src:ByteBuffer,dst:Array[Int])
     extends WarpAssign {
   final val width = TypeInt.bytes
-  @inline final def apply(srcIndex:Int,dstIndex:Int):Unit = {
+  final def apply(srcIndex:Int,dstIndex:Int):Unit = {
     dst(dstIndex) = src.getInt(srcIndex*width)
   }
 }
@@ -59,7 +59,7 @@ class IntBufferWarpAssign(src:ByteBuffer,dst:Array[Int])
 class FloatBufferWarpAssign(src:ByteBuffer,dst:Array[Float])
     extends WarpAssign {
   final val width = TypeFloat.bytes
-  @inline final def apply(srcIndex:Int,dstIndex:Int):Unit = {
+  final def apply(srcIndex:Int,dstIndex:Int):Unit = {
     dst(dstIndex) = src.getFloat(srcIndex*width)
   }
 }
@@ -67,7 +67,7 @@ class FloatBufferWarpAssign(src:ByteBuffer,dst:Array[Float])
 class DoubleBufferWarpAssign(src:ByteBuffer,dst:Array[Double])
     extends WarpAssign {
   final val width = TypeDouble.bytes
-  @inline final def apply(srcIndex:Int,dstIndex:Int):Unit = {
+  final def apply(srcIndex:Int,dstIndex:Int):Unit = {
     dst(dstIndex) = src.getDouble(srcIndex*width)
   }
 }
@@ -89,20 +89,24 @@ object Warp {
     val src_ymin = current.extent.ymin
     val src_xmax = current.extent.xmax
     val src_ymax = current.extent.ymax
-    val src_map_width  = src_xmax - src_xmin
-    val src_map_height = src_ymax - src_ymin
-    val src_size = src_rows * src_cols
 
 
     val dst_cols = target.cols
     val dst_rows = target.rows
-    val dst_cellwidth  = (target.extent.xmax - target.extent.xmin) / dst_cols
-    val dst_cellheight = (target.extent.ymax - target.extent.ymin) / dst_rows
-    val dst_size = dst_cols * dst_rows
+
+    val dst_cellwidth  = target.cellwidth
+    val dst_cellheight = target.cellheight
 
     // save "normalized map coordinates" for destination cell (0, 0)
     var xbase = target.extent.xmin - src_xmin + (dst_cellwidth / 2)
-    var ybase = target.extent.ymax - src_ymin - (dst_cellheight / 2)
+    val ybase = target.extent.ymax - src_ymin - (dst_cellheight / 2)
+
+    val src_map_width  = src_xmax - src_xmin
+    val src_map_height = src_ymax - src_ymin
+
+    val src_size = src_rows * src_cols
+
+    val dst_size = dst_cols * dst_rows
 
     // these are the min and max columns we will access on this row
     val min_col = (xbase / src_cellwidth).toInt
@@ -129,7 +133,7 @@ object Warp {
       for(dst_row <- 0 until dst_rows optimized) {
         // calculate the Y grid coordinate to read from
         val src_row = (src_rows - (y / src_cellheight).toInt - 1)
-
+  
         // pre-calculate some spans we'll use a bunch
         val src_span = src_row * src_cols
         val dst_span = dst_row * dst_cols
@@ -147,10 +151,8 @@ object Warp {
             // compute src and dst indices and ASSIGN!
             val src_i = src_span + src_col
 
-            if (src_col >= 0 &&
-              src_col < src_cols &&
-              src_i < src_size &&
-              src_i >= 0) {
+            if (src_col >= 0 && src_col < src_cols &&
+                src_i < src_size && src_i >= 0) {
               val dst_i = dst_span + dst_col
               assign(src_i,dst_i)
             }

@@ -1,11 +1,14 @@
 package geotrellis
 
 import geotrellis.raster._
+import geotrellis.source._
 import geotrellis.process._
 import geotrellis.testutil._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
+
+import scalaxy.loops._
 
 class TileRasterSpec extends FunSpec 
                         with MustMatchers 
@@ -55,6 +58,50 @@ class TileRasterSpec extends FunSpec
       val raster = get(rOp)
 
       assertEqual(tiled,raster)
+    }
+
+    it("should wrap raster with cropped raster as tiles if cropped is true") {
+      val name = "SBN_inc_percap"
+
+      val r = RasterSource(name).get
+
+      val tileLayout = TileLayout.fromTileDimensions(r.rasterExtent,256,256)
+      val tiled = TileRaster.wrap(r,tileLayout,cropped = true)
+      tiled.tiles.map( t => t.asInstanceOf[CroppedRaster])
+    }
+
+    it("should wrap raster with array raster as tiles if cropped is false") {
+      val name = "SBN_inc_percap"
+
+      val r = RasterSource(name).get
+
+      val tileLayout = TileLayout.fromTileDimensions(r.rasterExtent,256,256)
+      val tiled = TileRaster.wrap(r,tileLayout,cropped = false)
+      tiled.tiles.map( t => t.asInstanceOf[ArrayRaster])
+    }
+
+    it("should wrap raster, and converge to same result warped to the tile layout") {
+      val name = "SBN_inc_percap"
+
+      val r = RasterSource(name).get
+
+      val tileLayout = TileLayout.fromTileDimensions(r.rasterExtent,256,256)
+      val tiled = TileRaster.wrap(r,tileLayout,cropped = false)
+      val backToArray = tiled.toArrayRaster
+
+      for(col <- 0 until backToArray.cols optimized) {
+        for(row <- 0 until backToArray.rows optimized) {
+          if(col >= r.cols || row >= r.rows) {
+            withClue (s"Tile grid coord $col,$row is out of raste bounds, so it should be NoData") {
+              isNoData(backToArray.get(col,row)) should be (true)
+            }
+          } else {
+            withClue (s"Value different at $col,$row: ") {
+              backToArray.get(col,row) should be (r.get(col,row))
+            }
+          }
+        }
+      }
     }
   }
 }

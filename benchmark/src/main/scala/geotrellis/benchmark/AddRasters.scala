@@ -24,7 +24,6 @@ class AddRasters extends OperationBenchmark {
   }
 
   def timeAddRasters(reps:Int) = run(reps)(addRasters)
-
   def addRasters = get(source)
 }
 

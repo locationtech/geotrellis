@@ -8,15 +8,34 @@ import com.google.caliper.Param
 
 object ConstantAdd extends BenchmarkRunner(classOf[ConstantAdd])
 class ConstantAdd extends OperationBenchmark {
-  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "10000"))
+  @Param(Array("bit","byte","short","int","float","double"))
+  var rasterType = ""
+
+  val layers = 
+    Map(
+      ("bit","wm_DevelopedLand"),
+      ("byte", "SBN_car_share"),
+      ("short","travelshed-int16"),
+      ("int","travelshed-int32"),
+      ("float","aspect"), 
+      ("double","aspect-double")
+    )
+
+  @Param(Array("128", "256", "512"))
   var size:Int = 0
 
+  var op:Op[Raster] = null
   var source:RasterSource = null
 
   override def setUp() {
-    source = 13 +: RasterSource(loadRaster("SBN_farm_mkt", size, size))
+    val id = layers(rasterType)
+    op = Add(loadRaster(id,size,size),13)
+    source = 13 +: RasterSource(loadRaster(id, size, size))
   }
 
-  def timeConstantAdd(reps:Int) = run(reps)(constantAdd)
-  def constantAdd = get(source)
+  def timeConstantAddOp(reps:Int) = run(reps)(constantAddOp)
+  def constantAddOp = get(source)
+
+  def timeConstantAddSource(reps:Int) = run(reps)(constantAddSource)
+  def constantAddSource = get(source)
 }

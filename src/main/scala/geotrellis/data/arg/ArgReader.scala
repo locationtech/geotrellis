@@ -4,33 +4,45 @@ import geotrellis._
 import geotrellis.data._
 import geotrellis.raster._
 import geotrellis.process._
+import geotrellis.util.Filesystem
 
 import java.nio.ByteBuffer
 
 object ArgReader {
-  def read(path:String,typ:RasterType,rasterExtent:RasterExtent):Raster =
+  final def read(path:String,typ:RasterType,rasterExtent:RasterExtent):Raster =
     Raster(readData(path,typ,rasterExtent),rasterExtent)
 
-  def readData(path:String,typ:RasterType,rasterExtent:RasterExtent):RasterData = {
+  final def readData(path:String,typ:RasterType,rasterExtent:RasterExtent):RasterData = {
     val cols = rasterExtent.cols
     val rows = rasterExtent.rows
-    RasterData.fromArrayByte(util.Filesystem.slurp(path),typ,cols,rows)
+    RasterData.fromArrayByte(Filesystem.slurp(path),typ,cols,rows)
   }
 
-  def read(path:String,typ:RasterType,rasterExtent:RasterExtent,targetExtent:RasterExtent):Raster =
+  final def read(path:String,typ:RasterType,rasterExtent:RasterExtent,targetExtent:RasterExtent):Raster =
     Raster(readData(path,typ,rasterExtent,targetExtent),targetExtent)
 
-  def readData(path:String,typ:RasterType,re:RasterExtent,targetRe:RasterExtent):RasterData =
-    if(targetRe.extent.containsExtent(re.extent)) {
-      // Based on benchmarks, if its the case that the target encompasses the
-      // existing RasterExtent, it's faster to just read and warp
-      readData(path,typ,re).warp(re,targetRe)
-    } else {
-      val bytes = util.Filesystem.slurp(path)
-      warpBytes(bytes,typ,re,targetRe)
-    }
+  final def readData(path:String,typ:RasterType,re:RasterExtent,targetRe:RasterExtent):RasterData = {
+    val size = typ.numBytes(re.size)
 
-  def warpBytes(bytes:Array[Byte],typ:RasterType,re:RasterExtent,targetRe:RasterExtent):RasterData = {
+    val cols = re.cols
+    // Find the top-left most and bottom-right cell coordinates
+    val GridBounds(colMin,rowMin,colMax,rowMax) = re.gridBoundsFor(targetRe.extent)
+
+    // Get the indices, buffer one col and row on each side
+    val startIndex = math.max(typ.numBytes((rowMin-1) * cols + colMin - 1),0)
+    val length = math.min(size-startIndex, typ.numBytes((rowMax+1) * cols + colMax+1) - startIndex)
+
+    if(length > 0) {
+      val bytes = Array.ofDim[Byte](size)
+      Filesystem.mapToByteArray(path,bytes,startIndex,length)
+
+      warpBytes(bytes,typ,re,targetRe)
+    } else {
+      RasterData.emptyByType(typ,targetRe.cols, targetRe.rows)
+    }
+  }
+
+  final def warpBytes(bytes:Array[Byte],typ:RasterType,re:RasterExtent,targetRe:RasterExtent):RasterData = {
     val cols = targetRe.cols
     val rows = targetRe.rows
 

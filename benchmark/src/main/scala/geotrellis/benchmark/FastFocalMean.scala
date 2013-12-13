@@ -4,7 +4,76 @@ import geotrellis._
 import geotrellis.raster.op.focal.Square
 import geotrellis.raster.op._
 import geotrellis.process._
+import geotrellis.source._
 import geotrellis.raster._
+import geotrellis.io._
+
+import com.google.caliper.Param
+
+object FocalMeanBenchmark extends BenchmarkRunner(classOf[FocalMeanBenchmark])
+class FocalMeanBenchmark extends OperationBenchmark {
+//  @Param(Array("256","512", "1024"))
+  // @Param(Array("256"))
+  // var size:Int = 0
+
+  // @Param(Array("bit","byte","short","int","float","double"))
+  // var rasterType = ""
+
+  // val layers = 
+  //   Map(
+  //     ("bit","wm_DevelopedLand"),
+  //     ("byte", "SBN_car_share"),
+  //     ("short","travelshed-int16"),
+  //     ("int","travelshed-int32"),
+  //     ("float","aspect"), 
+  //     ("double","aspect-double")
+  //   )
+
+  var op:Op[Raster] = null
+  var fastOp:Op[Raster] = null
+
+  var source:RasterSource = null
+  var fastSource:RasterSource = null
+
+  override def setUp() {
+    // From old FocalBenchmarks
+    val name = "SBN_inc_percap"
+    val e = Extent(-8475497.88485957, 4825540.69147447,
+                   -8317922.884859569, 4954765.69147447)
+    val re = RasterExtent(e, 75.0, 75.0, 2101, 1723)
+
+    // val name = layers(rasterType)
+    // val re = getRasterExtent(name, size, size)
+
+    val raster = get(LoadRaster(name,re))
+
+    op = focal.Mean(raster, Square(1))
+    fastOp = FastFocalMean(raster,1)
+
+    source = 
+      RasterSource(name,re)
+        .cached
+        .focalMean(Square(1))
+
+    fastSource =
+      RasterSource(name,re)
+        .cached
+        .mapOp(FastFocalMean(_,1))
+  }
+
+  def timeMeanOp(reps:Int) = run(reps)(meanOp)
+  def meanOp = get(op)
+
+  def timeFastMeanOp(reps:Int) = run(reps)(fastMeanOp)
+  def fastMeanOp = get(fastOp)
+
+
+  def timeMeanSource(reps:Int) = run(reps)(meanSource)
+  def meanSource = get(source)
+
+  def timeFastMeanSource(reps:Int) = run(reps)(fastMeanSource)
+  def fastMeanSource = get(fastSource)
+}
 
 case class FastFocalMean(r:Op[Raster], n:Int) extends Op1(r)({
   r => new CalcFastFocalMean(r, n).calc

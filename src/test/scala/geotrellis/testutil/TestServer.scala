@@ -11,7 +11,6 @@ object TestServer {
   lazy val init = {
     GeoTrellis.init(GeoTrellisConfig("src/test/resources/catalog.json"),"test-server")
   }
-//  lazy val server:Server = new Server("testutil",)
 }
 
 trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {

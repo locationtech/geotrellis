@@ -13,7 +13,7 @@ import com.vividsolutions.jts.geom
  */
 case class CountPoints(points:Op[Seq[Point[_]]], rasterExtent:Op[RasterExtent]) extends Op2(points,rasterExtent) ({
   (points,re) =>
-    val array = Array.fill[Int](re.cols * re.rows)(0)
+    val array = Array.ofDim[Int](re.cols * re.rows).fill(0)
     for(point <- points.map { p => p.geom }) {
       val x = point.getX()
       val y = point.getY()

@@ -102,6 +102,7 @@ trait RasterData extends Serializable {
     }
     output
   }
+//  def map(f:Int=>Int):RasterData = LazyMap(this,f)
 
   /**
    * Combine two RasterData's cells into new cells using the given integer
@@ -123,6 +124,8 @@ trait RasterData extends Serializable {
     }
     output
   }
+  // def combine(other:RasterData)(f:(Int,Int) => Int):RasterData =
+  //   LazyCombine(this,other,f)
 
   /**
    * For every cell in the given raster, run the given double function.
@@ -153,6 +156,7 @@ trait RasterData extends Serializable {
     }
     data
   }
+//  def mapDouble(f:Double => Double):RasterData = LazyMapDouble(this, f)
 
   /**
    * Combine two RasterData's cells into new cells using the given double
@@ -174,6 +178,8 @@ trait RasterData extends Serializable {
     }
     output
   }
+  // def combineDouble(other: RasterData)(f: (Double, Double) => Double): RasterData =
+  //   LazyCombineDouble(this, other, f)
 
   override def equals(other: Any): Boolean = other match {
     case r: RasterData => {

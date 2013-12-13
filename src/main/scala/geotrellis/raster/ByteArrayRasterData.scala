@@ -29,7 +29,7 @@ object ByteArrayRasterData {
   def ofDim(cols: Int, rows: Int) = 
     new ByteArrayRasterData(Array.ofDim[Byte](cols * rows), cols, rows)
   def empty(cols: Int, rows: Int) = 
-    new ByteArrayRasterData(Array.fill[Byte](cols * rows)(byteNODATA), cols, rows)
+    new ByteArrayRasterData(Array.ofDim[Byte](cols * rows).fill(byteNODATA), cols, rows)
 
   def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int) = ByteArrayRasterData(bytes, cols, rows)
 }

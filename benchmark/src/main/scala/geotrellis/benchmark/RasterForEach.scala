@@ -6,7 +6,6 @@ import com.google.caliper.Param
 
 object RasterForeach extends BenchmarkRunner(classOf[RasterForeach])
 class RasterForeach extends OperationBenchmark {
-  //@Param(Array("64", "128", "256", "512", "1024", "2048", "4096", "8192", "10000"))
   @Param(Array("64", "128", "256", "512", "1024"))
   var size:Int = 0
   

@@ -34,7 +34,7 @@ object DoubleArrayRasterData {
   def ofDim(cols: Int, rows: Int) = 
     new DoubleArrayRasterData(Array.ofDim[Double](cols * rows), cols, rows)
   def empty(cols: Int, rows: Int) = 
-    new DoubleArrayRasterData(Array.fill[Double](cols * rows)(Double.NaN), cols, rows)
+    new DoubleArrayRasterData(Array.ofDim[Double](cols * rows).fill(Double.NaN), cols, rows)
 
   def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int) = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)

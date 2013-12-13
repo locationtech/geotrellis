@@ -104,9 +104,6 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
     builder.result
   }
 
-  def cache(implicit server:process.Server) =
-    mapOp(element => Literal(server.get(element)))
-
   def run(implicit server:process.Server) = server.run(this)
   def get(implicit server:process.Server) = server.get(this)
 

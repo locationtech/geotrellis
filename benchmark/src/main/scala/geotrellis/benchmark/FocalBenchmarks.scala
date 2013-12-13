@@ -2,9 +2,10 @@ package geotrellis.benchmark
 
 import geotrellis._
 import geotrellis.process._
+import geotrellis.source._
 import geotrellis.raster.op._
 import geotrellis.raster._
-import geotrellis.io.LoadFile
+import geotrellis.io._
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Param
@@ -16,20 +17,32 @@ import scala.util.Random
 
 object FocalOperationsBenchmark extends BenchmarkRunner(classOf[FocalOperationsBenchmark])
 class FocalOperationsBenchmark extends OperationBenchmark {
+
   var r:Raster = null
-  // var tiledR256:Raster = null
-  // var tiledR512:Raster = null
+
+  var rs:RasterSource = null
+
+  var tiledRS256:RasterSource = null
+  var tiledRS512:RasterSource = null
 
   override def setUp() {
-    val path = "src/main/resources/sbn/SBN_inc_percap.arg"
+    val name = "SBN_inc_percap"
 
     val e = Extent(-8475497.88485957, 4825540.69147447,
                    -8317922.884859569, 4954765.69147447)
     val re = RasterExtent(e, 75.0, 75.0, 2101, 1723)
-    r = get(LoadFile(path, re))
+    r = get(LoadRaster(name, re))
 
-    // tiledR256 = raster.Tiler.createTiledRaster(r, 256, 256)
-    // tiledR512 = raster.Tiler.createTiledRaster(r, 512, 512)
+    rs = RasterSource(name,re).cached
+
+    tiledRS256 = {
+      val tileLayout = TileLayout.fromTileDimensions(re,256,256)
+      RasterSource(TileRaster.wrap(r,tileLayout,cropped = false))
+    }
+    tiledRS512 = {
+      val tileLayout = TileLayout.fromTileDimensions(re,512,512)
+      RasterSource(TileRaster.wrap(r,tileLayout,cropped = false))
+    }
   }
 
   def timeConway(reps:Int) = run(reps)(get(focal.Conway(r)))
@@ -49,8 +62,9 @@ class FocalOperationsBenchmark extends OperationBenchmark {
   def timeMeanSquare1(reps:Int) = run(reps)(get(focal.Mean(r, focal.Square(1))))
   def timeMeanSquare3(reps:Int) = run(reps)(get(focal.Mean(r, focal.Square(3))))
   def timeMeanSquare7(reps:Int) = run(reps)(get(focal.Mean(r, focal.Square(7))))
-  // def timeMeanSquare7Tiled256(reps:Int) = run(reps)(get(focal.Mean(tiledR256, focal.Square(3))))
-  // def timeMeanSquare7Tiled512(reps:Int) = run(reps)(get(focal.Mean(tiledR256, focal.Square(3))))
+
+  def timeMeanSquare3Tiled256(reps:Int) = run(reps)(get(tiledRS256.focalMean(focal.Square(3))))
+  def timeMeanSquare3Tiled512(reps:Int) = run(reps)(get(tiledRS512.focalMean(focal.Square(3))))
 
   def timeFastMean1(reps:Int) = run(reps)(get(FastFocalMean(r, 1)))
   def timeFastMean3(reps:Int) = run(reps)(get(FastFocalMean(r, 3)))
