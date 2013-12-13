@@ -54,7 +54,7 @@ object RasterSource {
     RasterSource(io.LoadRasterDefinition(LayerId(name)),Some(rasterExtent))
 
   def apply(store:String,name:String):RasterSource =
-    RasterSource(io.LoadRasterDefinition(LayerId(name)),None)
+    RasterSource(io.LoadRasterDefinition(LayerId(store,name)),None)
 
   def apply(store:String,name:String,rasterExtent:RasterExtent):RasterSource =
     RasterSource(io.LoadRasterDefinition(LayerId(store,name)),Some(rasterExtent))
