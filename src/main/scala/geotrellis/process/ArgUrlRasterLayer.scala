@@ -11,14 +11,12 @@ import com.typesafe.config.Config
 
 object ArgUrlRasterLayerBuilder
 extends RasterLayerBuilder {
-  def apply(ds:Option[String],jsonPath:String, json:Config):Option[RasterLayer] = {
+  def apply(ds:Option[String],jsonPath:String, json:Config):RasterLayer = {
     val url = 
       if(json.hasPath("url")) {
         json.getString("url")
       } else {
-        System.err.println(s"[ERROR] 'argurl' type rasters must have 'url' field in json.")
-        System.err.println("[ERROR]   Skipping this raster layer...")
-        return None
+        throw new java.io.IOException(s"[ERROR] 'argurl' type rasters must have 'url' field in json.")
       }
 
     val cols = json.getInt("cols")
@@ -38,7 +36,7 @@ extends RasterLayerBuilder {
         getCacheFlag(json)
       )
 
-    Some(new ArgUrlRasterLayer(info,url))
+    new ArgUrlRasterLayer(info,url)
   }
 }
 

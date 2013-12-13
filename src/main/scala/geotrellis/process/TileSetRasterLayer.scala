@@ -14,7 +14,7 @@ import scala.collection.mutable
 
 object TileSetRasterLayerBuilder
 extends RasterLayerBuilder {
-  def apply(ds:Option[String],jsonPath:String, json:Config):Option[RasterLayer] = {
+  def apply(ds:Option[String],jsonPath:String, json:Config):RasterLayer = {
     val tileDir = 
       if(json.hasPath("path")) {
         val f = new File(json.getString("path"))
@@ -29,10 +29,8 @@ extends RasterLayerBuilder {
       }
 
     if(!tileDir.isDirectory) {
-      System.err.println(s"[ERROR] Raster in catalog points Tile Directory '${tileDir.getPath}'" +
-                          ", but this is not a valid directory.")
-      System.err.println("[ERROR]   Skipping this raster layer...")
-      None
+      throw new java.io.IOException(s"[ERROR] Raster in catalog points Tile Directory '${tileDir.getPath}'" +
+                                     ", but this is not a valid directory.")
     } else {
       val tileDirPath = tileDir.getPath
       val layoutCols = json.getInt("layout_cols")
@@ -59,7 +57,7 @@ extends RasterLayerBuilder {
           getCacheFlag(json)
         )
 
-      Some(new TileSetRasterLayer(info,tileDirPath,layout))
+      new TileSetRasterLayer(info,tileDirPath,layout)
     }
   }
 }

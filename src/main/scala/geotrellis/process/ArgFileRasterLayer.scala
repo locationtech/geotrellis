@@ -11,7 +11,7 @@ import java.io.File
 
 object ArgFileRasterLayerBuilder
 extends RasterLayerBuilder {
-  def apply(ds:Option[String],jsonPath:String, json:Config):Option[RasterLayer] = {
+  def apply(ds:Option[String],jsonPath:String, json:Config):RasterLayer = {
     val f = 
       if(json.hasPath("path")) {
         val f = new File(json.getString("path"))
@@ -26,9 +26,7 @@ extends RasterLayerBuilder {
       }
 
     if(!f.exists) {
-      System.err.println(s"[ERROR] Raster in catalog points to path ${f.getAbsolutePath}, but file does not exist")
-      System.err.println("[ERROR]   Skipping this raster layer...")
-      None
+      throw new java.io.IOException(s"[ERROR] ${f.getAbsolutePath} does not exist")
     } else {
 
       val cols = json.getInt("cols")
@@ -48,7 +46,7 @@ extends RasterLayerBuilder {
           getCacheFlag(json)
         )
 
-      Some(new ArgFileRasterLayer(info,f.getAbsolutePath))
+      new ArgFileRasterLayer(info,f.getAbsolutePath)
     }
   }
 }

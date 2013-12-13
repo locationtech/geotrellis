@@ -13,13 +13,13 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps:Op[Seq[Op[Ra
 }
 
 object RasterSource {
-  def fromFile(path:String):RasterSource = 
-    fromFile(path,None)
+  def fromPath(path:String):RasterSource = 
+    fromPath(path,None)
 
-  def fromFile(path:String,rasterExtent:RasterExtent):RasterSource =
-    fromFile(path,Some(rasterExtent))
+  def fromPath(path:String,rasterExtent:RasterExtent):RasterSource =
+    fromPath(path,Some(rasterExtent))
 
-  def fromFile(path:String,targetExtent:Option[RasterExtent]):RasterSource = {
+  def fromPath(path:String,targetExtent:Option[RasterExtent]):RasterSource = {
     val rasterLayer = io.LoadRasterLayerFromPath(path)
     val rasterDef = 
       rasterLayer map { layer =>

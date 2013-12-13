@@ -11,8 +11,8 @@ class MiniWeightedOverlay extends OperationBenchmark {
   @Param(Array("256","512", "1024"))
   var size:Int = 0
 
-//  @Param(Array("bit","byte","short","int","float","double"))
-  @Param(Array("bit"))
+  @Param(Array("bit","byte","short","int","float","double"))
+//  @Param(Array("bit"))
   var rasterType = ""
 
   val layers = 
@@ -28,13 +28,6 @@ class MiniWeightedOverlay extends OperationBenchmark {
   var source:RasterSource = null
 
   override def setUp() {
-    // val r1:Raster = loadRaster(layers(rasterType), size, size)
-    // val r2:Raster = loadRaster(layers(rasterType), size, size)
-
-    // source = (RasterSource(r1) * 5) + (RasterSource(r2) * 2)
-    // val r1:Raster = loadRaster(layers(rasterType), size, size)
-    // val r2:Raster = loadRaster(layers(rasterType), size, size)
-
     val name = layers(rasterType)
     val re = getRasterExtent(name,size,size)
 
@@ -47,12 +40,12 @@ class MiniWeightedOverlay extends OperationBenchmark {
 
 object SmallIOBenchmark extends BenchmarkRunner(classOf[SmallIOBenchmark])
 class SmallIOBenchmark extends OperationBenchmark {
-//  @Param(Array("256","512", "1024"))
-  @Param(Array("256"))
+  @Param(Array("256","512", "1024"))
+//  @Param(Array("256"))
   var size:Int = 0
 
-//  @Param(Array("bit","byte","short","int","float","double"))
-  @Param(Array("float"))
+  @Param(Array("bit","byte","short","int","float","double"))
+//  @Param(Array("float"))
   var rasterType = ""
 
   val path = "/home/rob/proj/gt/geotrellis/benchmark/src/main/resources/data/aspect.arg"
@@ -88,11 +81,11 @@ class SmallIOBenchmark extends OperationBenchmark {
   // def timeLoadTheRasterOp(reps:Int) = run(reps)(loadTheRasterOp)
   // def loadTheRasterOp = get(op)
 
-  // def timeSlurp(reps:Int) = run(reps)(slurp)
-  // def slurp = geotrellis.data.arg.ArgReader.read(path,TypeFloat,baseRe,re)
+  // def timeReader(reps:Int) = run(reps)(reader)
+  // def reader = geotrellis.data.arg.ArgReader.read(path,TypeFloat,baseRe,re)
 
-  // def timeSlurpOld(reps:Int) = run(reps)(slurpOld)
-  // def slurpOld = new io.ArgReader(path).readPath(TypeFloat,baseRe,Some(re))
+  // def timeReaderOld(reps:Int) = run(reps)(readerOld)
+  // def readerOld = new io.ArgReader(path).readPath(TypeFloat,baseRe,Some(re))
 
   // def timeLoadTwoRaster(reps:Int) = run(reps)(loadTwoRaster)
   // def loadTwoRaster = get(geotrellis.io.LoadRaster(layers(rasterType)))
