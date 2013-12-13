@@ -299,7 +299,7 @@ object GeotrellisBuild extends Build {
               // get the runtime classpath, turn into a colon-delimited string
               val classPath = Project.runTask(fullClasspath in Runtime in benchmark, state).get._2.toEither.right.get.files.mkString(":")
               // return a state with javaOptionsPatched = true and javaOptions set correctly
-              Project.extract(state).append(Seq(javaOptions in (benchmark, run) ++= Seq("-cp", classPath)), state.put(key, true))
+              Project.extract(state).append(Seq(javaOptions in (benchmark, run) ++= Seq("-Xmx8G", "-cp", classPath)), state.put(key, true))
             case Some(_) =>
               state // the javaOptions are already patched
           }

@@ -31,9 +31,6 @@ class IOBenchmark extends OperationBenchmark {
   var rasterExtent:RasterExtent = null
   var typ:RasterType = TypeFloat
 
-  // val path = "/home/rob/proj/gt/geotrellis/benchmark/src/main/resources/data/aspect.arg"
-  // val typ:RasterType = TypeFloat
-
   var targetExtent:RasterExtent = null
 
   override def setUp() {

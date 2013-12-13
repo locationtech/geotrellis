@@ -57,7 +57,6 @@ class WeightedAdd extends OperationBenchmark {
 
   }
 
-  // target
   def timeWeightedAddOp(reps:Int) = run(reps)(weightedAddOp)
   def weightedAddOp = get(op)
 

@@ -78,15 +78,15 @@ class SmallIOBenchmark extends OperationBenchmark {
   def timeLoadTheRaster(reps:Int) = run(reps)(loadTheRaster)
   def loadTheRaster = get(source)
 
-  // def timeLoadTheRasterOp(reps:Int) = run(reps)(loadTheRasterOp)
-  // def loadTheRasterOp = get(op)
+  def timeLoadTheRasterOp(reps:Int) = run(reps)(loadTheRasterOp)
+  def loadTheRasterOp = get(op)
 
-  // def timeReader(reps:Int) = run(reps)(reader)
-  // def reader = geotrellis.data.arg.ArgReader.read(path,TypeFloat,baseRe,re)
+  def timeReader(reps:Int) = run(reps)(reader)
+  def reader = geotrellis.data.arg.ArgReader.read(path,TypeFloat,baseRe,re)
 
-  // def timeReaderOld(reps:Int) = run(reps)(readerOld)
-  // def readerOld = new io.ArgReader(path).readPath(TypeFloat,baseRe,Some(re))
+  def timeReaderOld(reps:Int) = run(reps)(readerOld)
+  def readerOld = new io.ArgReader(path).readPath(TypeFloat,baseRe,Some(re))
 
-  // def timeLoadTwoRaster(reps:Int) = run(reps)(loadTwoRaster)
-  // def loadTwoRaster = get(geotrellis.io.LoadRaster(layers(rasterType)))
+  def timeLoadTwoRaster(reps:Int) = run(reps)(loadTwoRaster)
+  def loadTwoRaster = get(geotrellis.io.LoadRaster(layers(rasterType)))
 }
