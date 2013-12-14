@@ -1,80 +1,84 @@
 # GeoTrellis
 
-*GeoTrellis* is a high performance geoprocessing engine and programming toolkit.  The goal of the project is to transform
-user interaction with geospatial data by bringing the power of geospatial analysis to real time, interactive web applications.
+*GeoTrellis* is a Scala library and framework for creating processes to work with raster data.
 
-Please visit our **[documentation page](http://geotrellis.github.com)** for more information. 
+#### IO: 
+GeoTrellis reads, writes, and operates on raster data as fast as possible. It also has functionaly to warp (change the resolution and bounding box) of rasters on loading and throughout the operation sequence.
+      
+#### Operations: 
+GeoTrellis implements many [Map Algebra](http://en.wikipedia.org/wiki/Map_algebra) operations as well as vector to raster or raster to vector operations. This is the heart of GeoTrellis: preforming geospatial operations against raster data in the fastest way possible, no matter the scale.
+      
+##### Web Service Framework:
+GeoTrellis provides tools to render rasters into PNGs for web mapping applications, or to convert information about the rasters into JSON format. One of the main goals of GeoTrellis is to provide raster processing at web speeds (sub-10 ms) for RESTful endpoints that can be consumed by web applications. Another goal is to provide fast batch processing of very large raster data.
 
-GeoTrellis was designed to solve three core problems, with a focus on raster processing:
+Please visit our **[documentation page](http://geotrellis.github.com)** for more information.
 
-- Creating scalable, high performance geoprocessing web services
-- Creating distributed geoprocessing services that can act on large data sets
-- Parallelizing geoprocessing operations to take full advantage of multi-core architecture 
+You can also find more information at:
 
-Please contact us if you have any questions, find us on irc at #geotrellis on freenode, or join 
-the user mailing list at [https://groups.google.com/group/geotrellis-user](https://groups.google.com/group/geotrellis-user).
+  - IRC:  #geotrellis on freenode. Come say HI, we would love to hear about what you're working on. 
+  - The mailing list at [https://groups.google.com/group/geotrellis-user](https://groups.google.com/group/geotrellis-user).
 
-GeoTrellis is available under the Apache 2 license.  More information is also available on the [GeoTrellis website](http://www.azavea.com/products/geotrellis/).
+GeoTrellis is available under the Apache 2 license.  
 
-GeoTrellis is available under the Apache 2 License.
-
-The current release version of GeoTrellis is 0.8.2.
-
-The current development release of GeoTrellis is 0.9.0-SNAPSHOT.
+More information is also available on the [GeoTrellis website](http://www.azavea.com/products/geotrellis/).
  
 [![Build Status](https://api.travis-ci.org/geotrellis/geotrellis.png)](http://travis-ci.org/geotrellis/geotrellis)
 
-## Features
-
-- GeoTrellis is designed to help a developer create simple, standard REST services that return the results of geoprocessing models.
-- Like an RDBS that can optimize queries, GeoTrellis will automatically parallelize and optimize your geoprocessing models where possible.  
-- In the spirit of the object-functional style of Scala, it is easy to both create new operations and compose new 
-operations with existing operations.
-
 ## SBT
 
-    scalaVersion := "2.10.0"
+    scalaVersion := "2.10.3"
 
-    libraryDependencies += "com.azavea.geotrellis" %% "geotrellis" % "0.8.2"
+    libraryDependencies += "com.azavea.geotrellis" %% "geotrellis" % "0.9.0"
 
 ## Some sample GeoTrellis code
 
 ```scala
   // Import some libraries and operations we'll use
   import geotrellis._
-  import geotrellis.raster.op._
+  import geotrellis.source._
 
-  // Set up the rasters and weights we'll use
-  val raster1 = io.LoadRaster("foo")
-  val raster2 = io.LoadRaster("bar")
-  val weight1 = 5
-  val weight2 = 2
+  // Set up the rasters and weights we'll use:
+  val r1 = RasterSource("rasterOne") // raster defined in catalog
+  val r2 = RasterSource("rasterTwo")
 
-  val total = weight1 + weight2
+  // This will define a RasterSource that is dthe addition of the 
+  // first raster with each cell multiplied
+  // by 5, and the second raster with each cell multiplied by 2. 
+  // To understand what it means for a raster to be multiplied by an integer or
+  // for two rasters to be added, see Map Algebra documentation,
+  // GeoTrellis documentation or ask the mailing list/IRC.
+  val added  = (r1*5) + (r2*2)
+  
 
-  // Create a new operation that multiplies each cell of
-  // each raster by a weight, and then add those two new
-  // rasters together.
-  val op = local.Add(local.MultiplyConstant(raster1, weight1),
-                     local.MultiplyConstant(raster2, weight2))
+  // This divides the raster by the total weight,
+  // which will give us the the final Weighted Overlay
+  // (also called a Suitability Map).
+  val weightedOverlay = added / (5+2)
 
-  // Create a new operation that takes the result of the
-  // previous operation and divides each cell by the total
-  // weight, creating a weighted overlay of our two rasters.
-  val wo1 = local.DivideConstant(op, total)
+  // Now we want to render this Weighted Overlay
+  // as part of a WMS service. We could run the
+  // renderPng operation with the default color ramp
+  // (which is a Blue to Red color ramp descriped
+  // at http://geotrellis.github.io/overviews/rendering.html).
+  val rendered = added.renderPng  
+ 
+  // At this point we've only describe the work that
+  // we wish to be done. Once we call 'run' on the souce,
+  // we will invoke the chain of commands that we have been
+  // building up, from loading the rasters from disk to 
+  // rendering the PNG of the wieghted overlay.
 
-  // We can use a simpler syntax if we want.  Note that this
-  // is still just creating an operation.
-  import geotrellis.Implicits._
-  val wo2 = (raster1 * weight1 + raster2 * weight2) / total
-
-  // To this point, we've only been composing new operations.
-  // Now, we will run them.
-  import geotrellis.process.Server
-  val server = Server("example")
-  val result1 = server.run(wo1)
-  val result2 = server.run(wo2)
-```
+  rendered.run match {
+    process.Complete(png, history) =>
+      // return the PNG as an Array of Bytes
+      // for spray:
+      complete { png }
+    process.Failure(message, history) =>
+      // handle the failure.
+      // for spray:
+      failWith { new RuntimeException(message) }
+  }
+ ```
 
 ## API Reference
 
@@ -94,4 +98,6 @@ You can find *Scaladocs* for the latest version of the project here:
  - Robert Cheetham
  - Justin Walgran
  - Eric J. Christeson
-
+ - Ameet Kini
+ - Mark Landry
+ - Walt Chen
