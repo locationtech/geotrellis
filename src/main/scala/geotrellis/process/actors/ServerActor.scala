@@ -36,6 +36,9 @@ case class ServerActor(server: Server) extends Actor {
  
     case RunOperation(op,pos,client) => 
       op match {
+        case Literal(value) => 
+          val hist = History(op,serverContext.externalId).withResult(value)
+          client ! PositionedResult(Complete(value, hist.withResult(value).withResult(value)), pos)
         case RemoteOperation(sendOp, None) => 
           server.getRouter ! RunOperation(sendOp,pos,client)
         case RemoteOperation(sendOp, Some(cluster)) => 

@@ -1,7 +1,6 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
-import geotrellis.raster._
 
 trait LocalRasterBinaryOp extends Serializable {
   val name = {
@@ -18,14 +17,14 @@ trait LocalRasterBinaryOp extends Serializable {
               (z:Double) => combine(z,d)
             })
           }
-         .withName("$name[ConstantInt]")
+         .withName(s"$name[ConstantInt]")
 
   /** Apply to the value from each cell and a constant Double. */
   def apply(r:Op[Raster], c:Op[Double])(implicit d:DI):Op[Raster] = 
     (r,c).map { (r,c) => 
             r.dualMap({z => d2i(combine(i2d(z),c))})(combine(_,c))
           }
-         .withName("$name[ConstantDouble]")
+         .withName(s"$name[ConstantDouble]")
 
   /** Apply to a constant Int and the value from each cell. */
   def apply(c:Op[Int],r:Op[Raster])(implicit d:DI,d2:DI,d3:DI):Op[Raster] = 
@@ -35,14 +34,14 @@ trait LocalRasterBinaryOp extends Serializable {
               (z:Double) => combine(d,z)
             })
           }
-         .withName("$name[ConstantInt]")
+         .withName(s"$name[ConstantInt]")
 
   /** Apply to a constant Double and the value from each cell. */
   def apply(c:Op[Double],r:Op[Raster])(implicit d:DI,d2:DI,d3:DI,d4:DI):Op[Raster] = 
     (r,c).map { (r,c) => 
             r.dualMap({z => d2i(combine(c,i2d(z)))})(combine(c,_))
           }
-         .withName("$name[ConstantDouble]")
+         .withName(s"$name[ConstantDouble]")
 
   /** Apply this operation to the values of each cell in each raster.  */
   def apply(r1:Op[Raster],r2:Op[Raster])(implicit d:DI,d2:DI):Op[Raster] = 
@@ -51,9 +50,7 @@ trait LocalRasterBinaryOp extends Serializable {
 
   /** Apply this operation to the values of each cell in each raster.  */
   def apply(rs:Seq[Op[Raster]]):Op[Raster] = 
-    rs.mapOps { rasters =>
-        rasters.head.dualReduce(rasters.tail)(combine)(combine)
-       }
+    rs.mapOps(rasters => new RasterReducer(combine)(combine)(rasters))
       .withName(s"$name[Rasters]")
 
   /** Apply this operation to the values of each cell in each raster.  */
@@ -62,11 +59,12 @@ trait LocalRasterBinaryOp extends Serializable {
 
   /** Apply this operation to the values of each cell in each raster.  */
   def apply(rs:Op[Seq[Raster]]):Op[Raster] = 
-    apply(rs.map(_.map(Literal(_))))
+    rs.map(apply)
+      .withName("$name[Rasters-Literal]")
 
   /** Apply this operation to the values of each cell in each raster.  */
   def apply(rs:Op[Array[Raster]])(implicit d:DI):Op[Raster] = 
-    apply(rs.map(_.toSeq))
+    apply(rs.map(_.toSeq).withName("$name[Rasters]"))
 
   /** Apply this operation to the values of each cell in each raster.  */
   def apply(rs:Op[Seq[Op[Raster]]])(implicit d:DI,d2:DI):Op[Raster] =
@@ -77,6 +75,10 @@ trait LocalRasterBinaryOp extends Serializable {
   def apply(rs:Op[Raster]*)(implicit d:DI,d2:DI,d3:DI):Op[Raster] = {
     apply(rs)
   }
+
+  /** Apply this operation to a Seq of raw rasters */
+  def apply(seq:Seq[Raster]):Raster =
+    new RasterReducer(combine)(combine)(seq)
 
   def combine(z1:Int,z2:Int):Int
   def combine(z1:Double,z2:Double):Double

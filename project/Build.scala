@@ -22,7 +22,6 @@ object GeotrellisBuild extends Build {
       scalacOptions ++=
         Seq("-deprecation",
           "-unchecked",
-          "-Yclosure-elim",
           "-Yinline-warnings",
           "-language:implicitConversions",
           "-language:postfixOps",
@@ -90,9 +89,8 @@ object GeotrellisBuild extends Build {
       name := "geotrellis",
       parallelExecution := false,
       fork in test := false,
-      mainClass := Some("geotrellis.rest.WebRunner"),
       javaOptions in run += "-Xmx2G",
-      scalacOptions ++=
+      scalacOptions in compile ++=
         Seq("-optimize"),
       libraryDependencies ++= Seq(
         "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
@@ -116,7 +114,8 @@ object GeotrellisBuild extends Build {
         "Scala Test" at "http://www.scala-tools.org/repo-reloases/",
         "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
         "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
-        "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots")
+        "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
+      )
     )
 
   // Project: services
@@ -257,7 +256,7 @@ object GeotrellisBuild extends Build {
   lazy val benchmark: Project =
     Project("benchmark", file("benchmark"))
       .settings(benchmarkSettings: _*)
-      .dependsOn(root)
+      .dependsOn(root,geotools)
 
   def benchmarkSettings =
     Seq(
@@ -270,55 +269,41 @@ object GeotrellisBuild extends Build {
         "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
           from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
         "com.google.code.gson" % "gson" % "1.7.1",
-        "org.spire-math" %% "spire" % "0.4.0"),
+        "org.spire-math" %% "spire" % "0.4.0",
+        "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided"
+      ),
+      resolvers ++= Seq(
+        "NL4J Repository" at "http://nativelibs4java.sourceforge.net/maven/",
+        "maven2 dev repository" at "http://download.java.net/maven/2",
+        "Scala Test" at "http://www.scala-tools.org/repo-reloases/",
+        "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
+        "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
+        "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
+      ),
 
       // enable forking in both run and test
       fork := true,
 
-      // set the correct working directory for acces to resources in test
+      // custom kludge to get caliper to see the right classpath
 
-      runner in Compile in run <<= (thisProject,
-        taskTemporaryDirectory,
-        scalaInstance,
-        baseDirectory,
-        javaOptions,
-        outputStrategy,
-        javaHome,
-        connectInput) map {
-          (tp, tmp, si, base, options, strategy, javaHomeDir, connectIn) =>
-            new BenchmarkRunner(tp.id, ForkOptions(scalaJars = si.jars,
-              javaHome = javaHomeDir,
-              connectInput = connectIn,
-              outputStrategy = strategy,
-              runJVMOptions = options,
-              workingDirectory = Some(base)))
-        })
-}
-
-class BenchmarkRunner(subproject: String, config: ForkScalaRun) extends sbt.ScalaRun {
-  def run(mainClass: String, classpath: Seq[File], options: Seq[String], log: Logger): Option[String] = {
-    log.info("Running " + subproject + " " + mainClass + " " + options.mkString(" "))
-
-    val javaOptions = classpathOption(classpath) ::: mainClass :: options.toList
-    val strategy = config.outputStrategy getOrElse LoggedOutput(log)
-    val jvmopts = config.runJVMOptions ++ javaOptions
-    val process = Fork.java.fork(config.javaHome,
-      jvmopts,
-      config.workingDirectory,
-      Map.empty,
-      config.connectInput,
-      strategy)
-    def cancel() = {
-      log.warn("Run canceled.")
-      process.destroy()
-      1
-    }
-    val exitCode = try process.exitValue() catch { case e: InterruptedException => cancel() }
-    processExitCode(exitCode, "runner")
-  }
-  private def classpathOption(classpath: Seq[File]) = "-classpath" :: Path.makeString(classpath) :: Nil
-  private def processExitCode(exitCode: Int, label: String) = {
-    if (exitCode == 0) None
-    else Some("Nonzero exit code returned from " + label + ": " + exitCode)
-  }
+      // we need to add the runtime classpath as a "-cp" argument to the
+      // `javaOptions in run`, otherwise caliper will not see the right classpath
+      // and die with a ConfigurationException unfortunately `javaOptions` is a
+      // SettingsKey and `fullClasspath in Runtime` is a TaskKey, so we need to
+      // jump through these hoops here in order to feed the result of the latter
+      // into the former
+      onLoad in Global ~= { previous => state =>
+        previous {
+          state.get(key) match {
+            case None =>
+              // get the runtime classpath, turn into a colon-delimited string
+              val classPath = Project.runTask(fullClasspath in Runtime in benchmark, state).get._2.toEither.right.get.files.mkString(":")
+              // return a state with javaOptionsPatched = true and javaOptions set correctly
+              Project.extract(state).append(Seq(javaOptions in (benchmark, run) ++= Seq("-Xmx8G", "-cp", classPath)), state.put(key, true))
+            case Some(_) =>
+              state // the javaOptions are already patched
+          }
+        }
+      }
+    )
 }

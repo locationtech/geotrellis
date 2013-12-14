@@ -1,7 +1,5 @@
 package geotrellis.jetty
 
-import geotrellis.process.Failure
-
 import javax.ws.rs.core.{Response => XResp}
 import javax.ws.rs.core.{Context, MediaType, MultivaluedMap, CacheControl}
 

@@ -7,19 +7,6 @@ import geotrellis.source._
  * Determines if values are equal. Sets to 1 if true, else 0.
  */
 object Unequal extends LocalRasterBinaryOp {
-  /** Apply this operation to the values of each cell in each raster.  */
-  override
-  def apply(rss:Seq[Op[Raster]]):Op[Raster] = 
-    rss.mapOps { rasters =>
-        rasters.head
-               .dualCombine(rasters.tail)({ zs => 
-                  if(zs.distinct.length < 2) 0 else 1
-                })({ zs =>
-                  if(zs.distinct.filter(isData(_)).length < 2) 0 else 1
-                })
-       }
-      .withName(s"Unequal[Rasters]")
-
   def combine(z1:Int,z2:Int) = 
     if(z1 == z2) 0 else 1
 
@@ -81,14 +68,4 @@ trait UnequalOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell valued of the rasters are not equal, else 0.
    */
   def !==(rs:RasterSource) = localUnequal(rs)
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell valued of the rasters are not equal, else 0.
-   */
-  def localUnequal(rss:Seq[RasterSource]) = self.combineOp(rss)(Unequal(_))
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell valued of the rasters are not equal, else 0.
-   */
-  def !==(rss:Seq[RasterSource]) = localUnequal(rss)
 }

@@ -158,7 +158,7 @@ class CatalogSpec extends FunSpec
       catalog.stores("test:fs").hasCacheAll should be (false)
     }
 
-    it("should throw if getting by single name and same name existsin two different data stores") {
+    it("should fail if getting by single name and same name existing two different data stores") {
       val noCacheAllLine = s"""
 {
  "catalog": "Test",
@@ -182,9 +182,10 @@ class CatalogSpec extends FunSpec
       """
 
       val catalog = Catalog.fromJSON(noCacheAllLine)
-      evaluating {
-        catalog.getRasterLayer(LayerId("elevation"))
-      } should produce [Exception]
+      catalog.getRasterLayer(LayerId("elevation")) match {
+        case scala.util.Success(_) => assert(false)
+        case scala.util.Failure(_) => 
+      }
     }
   
     it("should get a layer by data store and name") {

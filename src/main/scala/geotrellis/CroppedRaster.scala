@@ -28,6 +28,8 @@ case class CroppedRaster(sourceRaster:Raster,
   private val sourceCols = sourceRaster.rasterExtent.cols
   private val sourceRows = sourceRaster.rasterExtent.rows
 
+  def warp(target:RasterExtent) = toArrayRaster.warp(target)
+
   def get(col: Int,row: Int): Int = {
     val c = col+gridBounds.colMin
     val r = row+gridBounds.rowMin
@@ -89,6 +91,8 @@ case class CroppedRaster(sourceRaster:Raster,
     }
     arr
   }
+
+  def toArrayByte(): Array[Byte] = toArrayRaster.toArrayByte
 
   def copy() = 
     if(isFloat) {

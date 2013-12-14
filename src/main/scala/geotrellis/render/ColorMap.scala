@@ -1,6 +1,9 @@
 package geotrellis.render
 
 import geotrellis._
+import geotrellis.statistics.Histogram
+
+import scala.collection.mutable
 
 sealed abstract class ColorMapType
 
@@ -15,7 +18,7 @@ case class ColorMapOptions(
   /** Rgba value for data that doesn't fit the map */
   noMapColor:Int = 0x00000000,  
   /** Set to true to throw exception on unmappable variables */
-  strict:Boolean = false        
+  strict:Boolean = false
 )
 
 object ColorMapOptions {
@@ -52,12 +55,12 @@ object ColorMap {
 }
 
 trait ColorMap {
-  def colors:Seq[Int]
+  def colors:Array[Int]
   val options:ColorMapOptions
 
-  var _opaque = true
-  var _grey = true
-  var _colorsChecked = false
+  private var _opaque = true
+  private var _grey = true
+  private var _colorsChecked = false
 
   private def checkColors() = {
     var opaque = true
@@ -69,6 +72,7 @@ trait ColorMap {
       grey &&= Color.isGrey(c)
       i += 1
     }
+    _colorsChecked = true
   }
 
   def opaque = 
@@ -86,12 +90,12 @@ trait ColorMap {
     }
 
   def render(r:Raster):Raster
+
+  def cache(h:Histogram):ColorMap
 }
 
 case class IntColorMap(breaksToColors:Map[Int,Int],
-                      options:ColorMapOptions = ColorMapOptions.Default) 
-    extends ColorMap with Function[Int,Int] {
-  lazy val colors = breaksToColors.values.toList
+                      options:ColorMapOptions = ColorMapOptions.Default) extends ColorMap {
   val orderedBreaks:Array[Int] =
     options.colorMapType match {
       case LessThan =>
@@ -101,6 +105,9 @@ case class IntColorMap(breaksToColors:Map[Int,Int],
       case Exact =>
         breaksToColors.keys.toArray
     }
+
+  val orderedColors:Array[Int] = orderedBreaks.map(breaksToColors(_))
+  lazy val colors = orderedColors
 
   val zCheck:(Int,Int)=>Boolean =
     options.colorMapType match {
@@ -126,19 +133,33 @@ case class IntColorMap(breaksToColors:Map[Int,Int],
           options.noMapColor
         }
       } else {
-        breaksToColors(orderedBreaks(i))
+        orderedColors(i)
       }
     }
   }
 
-  def render(r:Raster) = 
-    r.convert(TypeByte).map(apply)
+  def render(r:Raster) =
+      r.convert(TypeByte).map(apply)
+
+  def cache(h:Histogram):ColorMap = {
+    val ch = h.mutable
+    h.foreachValue(z => ch.setItem(z, apply(z)))
+    CachedColorMap(orderedColors,options,ch)
+  }
+}
+
+case class CachedColorMap(colors:Array[Int],options:ColorMapOptions,h:Histogram) 
+  extends ColorMap with Function1[Int,Int] {
+  final val noDataColor = options.noDataColor
+  def render(r:Raster) =
+    r.map(this)
+  final def apply(z:Int) = { if(isNoData(z)) noDataColor else h.getItemCount(z) }
+  def cache(h:Histogram) = this
 }
 
 case class DoubleColorMap(breaksToColors:Map[Double,Int],
-                          options:ColorMapOptions = ColorMapOptions.Default) 
-    extends ColorMap with Function1[Double,Int] {
-  lazy val colors = breaksToColors.values.toList
+                          options:ColorMapOptions = ColorMapOptions.Default) extends ColorMap {
+  lazy val colors = breaksToColors.values.toArray
   val orderedBreaks:Array[Double] =
     options.colorMapType match {
       case LessThan =>
@@ -180,5 +201,21 @@ case class DoubleColorMap(breaksToColors:Map[Double,Int],
   }
 
   def render(r:Raster) =
-    r.convert(TypeByte).mapDouble(apply)
+      r.mapDouble(apply)
+
+  def cache(h:Histogram):ColorMap = {
+    val ch = h.mutable
+
+    h.foreachValue(z => ch.setItem(z, apply(z)))
+    val cs = colors
+    val opts = options
+
+    new ColorMap {
+      lazy val colors = cs
+      val options = opts
+      def render(r:Raster) = 
+        r.map { z => if(z == NODATA) options.noDataColor else ch.getItemCount(z) }
+      def cache(h:Histogram) = this
+    }
+  }
 }

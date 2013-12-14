@@ -34,7 +34,7 @@ case class ArgWriter(typ:RasterType) extends Writer {
    */
   def write(outputFilePath:String, raster:Raster, metadataName:String) {
     val path = outputFilePath
-    val base:String = if (path.endsWith(".arg") || path.endsWith(".")) {
+    val base:String = if (path.endsWith(".arg") || path.endsWith(".json") || path.endsWith(".")) {
       path.substring(0, path.lastIndexOf("."))
     } else {
       path 

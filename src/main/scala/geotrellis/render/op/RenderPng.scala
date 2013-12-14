@@ -3,6 +3,15 @@ package geotrellis.render.op
 import geotrellis._
 import geotrellis.render._
 import geotrellis.render.png._
+import geotrellis.statistics.Histogram
+
+object RenderPng {
+  def apply(r:Op[Raster], colorBreaks:Op[ColorBreaks], noDataColor:Op[Int]):RenderPng =
+    RenderPng(r,colorBreaks,noDataColor,None)
+
+  def apply(r:Op[Raster], colorBreaks:Op[ColorBreaks], noDataColor:Op[Int],h:Histogram):RenderPng =
+    RenderPng(r,colorBreaks,noDataColor,Some(h))
+}
 
 /**
  * Generate a PNG image from a raster.
@@ -29,13 +38,21 @@ import geotrellis.render.png._
  *   val pngOp = io.RenderPng(rOp, braeksOp, 0)
  * }}}
  */
-case class RenderPng(r:Op[Raster], colorBreaks:Op[ColorBreaks], noDataColor:Op[Int])
+case class RenderPng(r:Op[Raster], 
+                     colorBreaks:Op[ColorBreaks], 
+                     noDataColor:Op[Int],
+                     histogram:Option[Histogram])
 extends Op3(r, colorBreaks, noDataColor)({
   (r, colorBreaks, noDataColor) => {
     val breaks = colorBreaks.limits
     val colors = colorBreaks.colors
 
-    val renderer = Renderer(breaks, colors, noDataColor)
+    val renderer = 
+      histogram match {
+        case Some(h) => Renderer(breaks, colors, noDataColor,h)
+        case None => Renderer(breaks, colors, noDataColor)
+      }
+
     val r2 = renderer.render(r)
     val bytes = new Encoder(renderer.settings).writeByteArray(r2)
 

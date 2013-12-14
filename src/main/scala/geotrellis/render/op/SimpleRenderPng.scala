@@ -20,10 +20,15 @@ import geotrellis.statistics.op.stat
  * @param colorRamp   Colors to select from
  */
 object SimpleRenderPng {
-  def apply(r:Op[Raster],colorRamp:Op[ColorRamp] = ColorRamps.HeatmapBlueToYellowToRedSpectrum) = 
+  def apply(r:Op[Raster],colors:Op[Array[Int]])(implicit d:DI):Op[Png] = 
     r.flatMap { r =>
-        val colorBreaks = GetColorBreaks(stat.GetHistogram(r), colorRamp.map(_.toArray))
-        RenderPng(r,colorBreaks,0)
+        stat.GetHistogram(r).flatMap { h =>
+          val colorBreaks = GetColorBreaks(h, colors)
+          RenderPng(r,colorBreaks,0,h)
+        }
       }
      .withName("SimpleRenderPng")
+
+  def apply(r:Op[Raster],colorRamp:Op[ColorRamp] = ColorRamps.HeatmapBlueToYellowToRedSpectrum):Op[Png] = 
+    apply(r,colorRamp.map(_.toArray))
 }

@@ -1,15 +1,15 @@
 package geotrellis.process
 
-import scala.io.Source
-import java.io.File
 import geotrellis._
 import geotrellis.util._
-import geotrellis.data.FileReader
-import geotrellis.data.arg.ArgReader
 
 import dispatch.classic._
 import scala.concurrent._
 import scala.concurrent.Future
+import scala.util._
+
+import scala.io.Source
+import java.io.File
 
 /**
  * Represents a Raster Layer that can give detailed information
@@ -78,7 +78,7 @@ object RasterLayer {
   /**
    * Build a RasterLayer instance given a path to a JSON file.
    */
-  def fromPath(path:String):Option[RasterLayer] =
+  def fromPath(path:String):Try[RasterLayer] =
     try {
       val base = Filesystem.basename(path) + ".json"
       val src = Source.fromFile(path)
@@ -86,27 +86,27 @@ object RasterLayer {
       src.close()
       fromJSON(data, base)
     } catch {
-      case _:Exception => None
+      case e:Exception => Failure(e)
     }
 
-  def fromFile(f:File):Option[RasterLayer] = RasterLayer.fromPath(f.getAbsolutePath)
+  def fromFile(f:File):Try[RasterLayer] = RasterLayer.fromPath(f.getAbsolutePath)
 
   /**
    * Build a RasterLayer instance given a JSON string.
    */
-  def fromJSON(data:String, basePath:String):Option[RasterLayer] =
+  def fromJSON(data:String, basePath:String):Try[RasterLayer] =
     try {
-      json.RasterLayerParser(data, basePath)
+      Success(json.RasterLayerParser(data, basePath))
     } catch {
-      case _:Exception => None
+      case e:Exception => Failure(e)
     }
 
-  def fromUrl(jsonUrl:String):Option[RasterLayer] = {
+  def fromUrl(jsonUrl:String):Try[RasterLayer] = {
     val h = new Http()
     try {
       fromJSON(h(url(jsonUrl) as_str),jsonUrl)
     } catch {
-      case _:Exception => None
+      case e:Exception => Failure(e)
     } finally {
       h.shutdown
     }

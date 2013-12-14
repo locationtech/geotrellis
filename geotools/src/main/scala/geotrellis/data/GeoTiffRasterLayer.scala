@@ -18,7 +18,7 @@ extends RasterLayerBuilder {
     Catalog.addRasterLayerBuilder("geotiff", GeoTiffRasterLayerBuilder)
   }
 
-  def apply(ds:Option[String], jsonPath:String, json:Config):Option[RasterLayer] = {
+  def apply(ds:Option[String], jsonPath:String, json:Config):RasterLayer = {
     val path = 
       if(json.hasPath("path")) {
         new File(new File(jsonPath).getParentFile, json.getString("path")).getPath
@@ -27,9 +27,8 @@ extends RasterLayerBuilder {
       }
 
     if(!new File(path).exists) {
-      System.err.println(s"[ERROR] Raster in catalog points to path $path, but file does not exist")
-      System.err.println( "[ERROR]   Skipping this raster layer...")
-      None
+      throw new java.io.IOException(s"[ERROR] Raster in catalog points to path $path, but file does not exist" +
+                                     "[ERROR]   Skipping this raster layer...")
     } else {
       val rasterExtent = GeoTiff.loadRasterExtent(path)
 
@@ -44,7 +43,7 @@ extends RasterLayerBuilder {
           getYskew(json)
         )
 
-      Some(new GeoTiffRasterLayer(info,path))
+      new GeoTiffRasterLayer(info,path)
     }
   }
 

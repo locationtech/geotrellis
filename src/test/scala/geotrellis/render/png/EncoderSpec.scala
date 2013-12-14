@@ -111,6 +111,10 @@ c5 04 9e f8 03 17 ee 04 00 12 3a 47 85 ae b3 00
   
     it("should match the reference") {
       val bytes1 = encoder.writeByteArray(raster2)
+      println(bytes1.length)
+      println(raster2.cols*raster2.rows)
+      println(bytes1.toSeq)
+      println(rgb.toSeq)
       bytes1 must be === rgb
     }
   

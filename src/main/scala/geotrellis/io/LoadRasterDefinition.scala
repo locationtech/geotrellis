@@ -21,7 +21,7 @@ case class LoadRasterDefinition(layerId:Op[LayerId]) extends Op[RasterDefinition
     case (layerId:LayerId) :: Nil => 
       LayerResult { layerLoader =>
         val info = layerLoader.getRasterLayer(layerId).info
-        RasterDefinition(layerId,info.rasterExtent,info.tileLayout)
+        RasterDefinition(layerId,info.rasterExtent,info.tileLayout,info.rasterType)
       }
   }
 }

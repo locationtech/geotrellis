@@ -76,7 +76,7 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
   /**
    * Convert map coordinates (x,y) to grid coordinates (col,row).
    */
-  def mapToGrid(x:Double, y:Double) = {
+  final def mapToGrid(x:Double, y:Double) = {
     val col = ((x - extent.xmin) / cellwidth).toInt
     val row = ((extent.ymax - y) / cellheight).toInt
     (col, row)
@@ -85,19 +85,19 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
   /**
    * Convert map coordinate x to grid coordinate column.
    */
-  def mapXToGrid(x:Double) = mapXToGridDouble(x).toInt
-  def mapXToGridDouble(x:Double) = (x - extent.xmin) / cellwidth
+  final def mapXToGrid(x:Double) = mapXToGridDouble(x).toInt
+  final def mapXToGridDouble(x:Double) = (x - extent.xmin) / cellwidth
     
   /**
    * Convert map coordinate y to grid coordinate row.
    */
-  def mapYToGrid(y:Double) = mapYToGridDouble(y).toInt
-  def mapYToGridDouble(y:Double) = (extent.ymax - y ) / cellheight
+  final def mapYToGrid(y:Double) = mapYToGridDouble(y).toInt
+  final def mapYToGridDouble(y:Double) = (extent.ymax - y ) / cellheight
   
   /**
    * Convert map coordinate tuple (x,y) to grid coordinates (col,row).
    */
-  def mapToGrid(mapCoord:(Double,Double)):(Int,Int) = {
+  final def mapToGrid(mapCoord:(Double,Double)):(Int,Int) = {
     val (x,y) = mapCoord;
     mapToGrid(x,y)
   }
@@ -105,17 +105,17 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
   /**
     * The map coordinate of a grid cell is the center point.
     */  
-  def gridToMap(col:Int, row:Int) = {
+  final def gridToMap(col:Int, row:Int) = {
     val x = max(min(col * cellwidth + extent.xmin + (cellwidth / 2), extent.xmax), extent.xmin)
     val y = min(max(extent.ymax - (row * cellheight) - (cellheight / 2), extent.ymin), extent.ymax)
     (x, y)
   }
 
-  def gridColToMap(col:Int) = {
+  final def gridColToMap(col:Int) = {
     max(min(col * cellwidth + extent.xmin + (cellwidth / 2), extent.xmax), extent.xmin)
   }
 
-  def gridRowToMap(row:Int) = {
+  final def gridRowToMap(row:Int) = {
     min(max(extent.ymax - (row * cellheight) - (cellheight / 2), extent.ymin), extent.ymax)
   }
 
@@ -194,6 +194,19 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
     val xmax = xmin + (gridBounds.width * cellwidth)
     val ymin = ymax - (gridBounds.height * cellheight)
     Extent(xmin,ymin,xmax,ymax)
+  }
+
+  /** Adjusts a raster extent so that in can encompass the tile layout.
+    * Will warp the extent, but keep the resolution, and preserve nort and 
+    * west borders
+    */
+  def adjustTo(tileLayout:raster.TileLayout) = {
+    val totalCols = tileLayout.pixelCols * tileLayout.tileCols
+    val totalRows = tileLayout.pixelRows * tileLayout.tileRows
+
+    val warpedExtent = Extent(extent.xmin,extent.ymax - (cellheight*totalRows),
+                        extent.xmin + (cellwidth*totalCols), extent.ymax)
+    RasterExtent(warpedExtent, cellwidth, cellheight, totalCols, totalRows)
   }
 }
 
