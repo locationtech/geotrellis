@@ -72,7 +72,9 @@ More information is also available on the [GeoTrellis website](http://www.azavea
     process.Complete(png, history) =>
       // return the PNG as an Array of Bytes
       // for spray:
-      complete { png }
+      respondWithMediaType(MediaTypes.`image/png`) {
+        complete { png }
+      }
     process.Failure(message, history) =>
       // handle the failure.
       // for spray:
