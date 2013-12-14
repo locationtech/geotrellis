@@ -28,7 +28,7 @@ More information is also available on the [GeoTrellis website](http://www.azavea
 
     scalaVersion := "2.10.3"
 
-    libraryDependencies += "com.azavea.geotrellis" %% "geotrellis" % "0.9.0"
+    libraryDependencies += "com.azavea.geotrellis" %% "geotrellis" % "0.9.0-RC1"
 
 ## Some sample GeoTrellis code
 
