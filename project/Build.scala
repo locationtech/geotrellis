@@ -2,7 +2,7 @@ import sbt._
 import sbt.Keys._
 
 object Version {
-  val geotrellis = "0.9.0-SNAPSHOT"
+  val geotrellis = "0.9.0-RC1"
   val scala = "2.10.3"
   val akka = "2.2.3"
 }
