@@ -1,6 +1,7 @@
 package geotrellis.spark.utils
 
 import org.apache.spark.SparkContext
+import org.apache.hadoop.conf.Configuration
 
 object GeotrellisSparkUtils {
 	def createSparkContext(sparkMaster: String, appName: String, gtJarSuffix: String) = {
@@ -18,4 +19,6 @@ object GeotrellisSparkUtils {
 		
 		new SparkContext(sparkMaster, appName, sparkHome, Seq(gtJar))
 	}
+	
+	def createHadoopConfiguration = new Configuration
 }
