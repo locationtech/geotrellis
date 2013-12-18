@@ -40,12 +40,16 @@ object LoadImageRDD {
     val nameNode = "hdfs://localhost:9000"
 
     val sc = GeotrellisSparkUtils.createSparkContext(sparkMaster, "LoadImage", dependencyJarSuffix)
-    val imagePath = "/geotrellis/images/argtest"
-    val awtestRdd = LoadImageRDD(sc, nameNode + imagePath)
+    val inputImagePath = "/geotrellis/images/argtest"
+    val awtestRdd = LoadImageRDD(sc, nameNode + inputImagePath)
     //val awtestRdd = sc.sequenceFile(nameNode + imagePath, classOf[TileIdWritable], classOf[ArgWritable])
     awtestRdd.foreach { case (tile,_) => println(tile.get) }
+    println("sc defaultMinSplits/defaultParallelism = %d/%d".format(sc.defaultMinSplits, sc.defaultParallelism))
     println("# of partitions = " + awtestRdd.getPartitions.length)
-    sc.stop
+    val outputImagePath = "/geotrellis/images/argtestout"
+    awtestRdd.save(nameNode + outputImagePath)
+    println("partition = " + awtestRdd.partitioner)
+    //sc.stop
 
   }
 }
