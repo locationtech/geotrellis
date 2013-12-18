@@ -16,7 +16,6 @@ import geotrellis.raster.ShortArrayRasterData
 import geotrellis.raster.BitArrayRasterData
 import geotrellis.TypeBit
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class ArgWritableSpec extends FunSpec with MustMatchers with ShouldMatchers {
   describe("conversion from/to ArgWritable") {
 

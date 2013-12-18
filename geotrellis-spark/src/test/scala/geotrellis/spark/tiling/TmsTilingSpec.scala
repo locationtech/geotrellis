@@ -4,7 +4,6 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class TmsTilingSpec extends FunSpec with MustMatchers with ShouldMatchers {
   // taken from "Tile-Based Geospatial Information Systems Principles and Practices" by John T. Sample • Elias Ioup
   // for 512x512 tiles
