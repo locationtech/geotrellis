@@ -186,7 +186,8 @@ object GeotrellisBuild extends Build {
         "org.apache.spark" %% "spark-core" % "0.9.0-incubating-SNAPSHOT",
         "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4"),
       resolvers ++= Seq(
-        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"))
+        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos")
+    ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
   // Project: geotools
 
