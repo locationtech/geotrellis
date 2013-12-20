@@ -17,15 +17,66 @@ import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.tiling.TileBounds
 import org.apache.hadoop.fs.FileSystem
 import java.io.PrintWriter
+import java.io.ObjectInputStream
+import org.apache.hadoop.io.ObjectWritable
+import java.io.ObjectOutputStream
+import scala.collection.mutable.ArrayBuffer
 
-class TileIdPartitioner(val splitFile: String, val conf: Configuration) extends org.apache.spark.Partitioner {
-  
-  val splitPoints = readSplitPoints
+class TileIdPartitioner extends org.apache.spark.Partitioner {
 
-  override def getPartition(key: Any) = findPartition(key, splitPoints)
+  @transient
+  var splitPoints = new Array[TileIdWritable](0)
+
+  override def getPartition(key: Any) = findPartition(key)
   override def numPartitions = splitPoints.length
+  override def toString = splitPoints.zipWithIndex.mkString
+  
+  // TODO override equals and hashCode
+  
+  private def findPartition(key: Any) = {
+    val index = java.util.Arrays.binarySearch(splitPoints.asInstanceOf[Array[Object]], key)
+    if (index < 0)
+      (index + 1) * -1
+    else
+      index
+  }
 
-  def readSplitPoints: Array[TileIdWritable] = {
+
+  private def writeObject(out: ObjectOutputStream) {
+    println("calling writeObject")
+    out.defaultWriteObject()
+    out.writeInt(splitPoints.length)
+    splitPoints.foreach(split => out.writeLong(split.get))
+  }
+
+  private def readObject(in: ObjectInputStream) {
+    println("calling readObject")
+
+    in.defaultReadObject()
+
+    val buf = new ArrayBuffer[TileIdWritable]
+    val len = in.readInt
+    for (i <- 0 until len)
+      buf += TileIdWritable(in.readLong())
+    splitPoints = buf.toArray
+  }
+}
+
+object TileIdPartitioner {
+  val SplitFile = "splits"
+
+  def apply(splitFile: String, conf: Configuration): TileIdPartitioner = {
+    val tp = new TileIdPartitioner
+    tp.splitPoints = readSplits(splitFile, conf)
+    tp
+  }
+
+  def apply(splitGenerator: SplitGenerator, splitFile: String, conf: Configuration): TileIdPartitioner = {
+    writeSplits(splitGenerator, new Path(splitFile), conf)
+    apply(splitFile, conf)
+  }
+
+  private def readSplits(splitFile: String, conf: Configuration): Array[TileIdWritable] = {
     val splitPoints = new ListBuffer[TileIdWritable]
     val splitFilePath = new Path(splitFile)
     val fs = splitFilePath.getFileSystem(conf)
@@ -62,26 +113,13 @@ class TileIdPartitioner(val splitFile: String, val conf: Configuration) extends 
 
     splitPoints.toArray
   }
-  
-  private def findPartition(key: Any, splitPoints: Array[TileIdWritable]) = {
-    val index = java.util.Arrays.binarySearch(splitPoints.asInstanceOf[Array[Object]], key)
-    if (index < 0)
-      (index + 1) * -1
-    else
-      index
-  }
-  
-  def printSplits = TileIdPartitioner.printSplits(splitFile, conf)
-}
-
-object TileIdPartitioner {
-  def writeSplits(splitGenerator: SplitGenerator, splitFile: Path, conf: Configuration): Int = {
+  private def writeSplits(splitGenerator: SplitGenerator, splitFile: Path, conf: Configuration): Int = {
     val splits = splitGenerator.getSplits
 
     val fs = FileSystem.get(conf)
     val fdos = fs.create(splitFile)
     val out = new PrintWriter(fdos)
-    splits.foreach{
+    splits.foreach {
       split => out.println(new String(Base64.encodeBase64(ByteBuffer.allocate(8).putLong(split).array())))
     }
     out.close()
@@ -89,10 +127,10 @@ object TileIdPartitioner {
 
     splits.length
   }
-  
+
   def printSplits(splitFile: String, conf: Configuration) {
-	  val splits = new TileIdPartitioner(splitFile, conf).readSplitPoints
-	  splits.zipWithIndex.foreach(t => println("Split #%d: %d".format(t._2, t._1.get)))
+    val splits = readSplits(splitFile, conf)
+    splits.zipWithIndex.foreach(t => println("Split #%d: %d".format(t._2, t._1.get)))
   }
 }
 
@@ -115,7 +153,7 @@ object ImageSplitGenerator {
   def computeIncrement(tileBounds: TileBounds, tileSizeBytes: Int, blockSizeBytes: Long) = {
     val tilesPerBlock = (blockSizeBytes / tileSizeBytes).toLong
     val tileCount = tileBounds.width * tileBounds.height
-    
+
     // return -1 if it doesn't make sense to have splits, getSplits will handle this accordingly
     val increment =
       if (blockSizeBytes <= 0 || tilesPerBlock >= tileCount)

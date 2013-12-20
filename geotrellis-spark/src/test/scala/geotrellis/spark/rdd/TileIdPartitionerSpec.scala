@@ -16,8 +16,7 @@ class TileIdPartitionerSpec extends FunSpec with MustMatchers with ShouldMatcher
       def getSplits = seq
     }
     val splitFile = java.io.File.createTempFile("splits", null).getAbsolutePath()
-    TileIdPartitioner.writeSplits(splitGenerator, new Path(splitFile), conf)
-    new TileIdPartitioner(splitFile, conf)
+    TileIdPartitioner(splitGenerator, splitFile, conf)
   }
 
   /* tests to see if we have two partitions - 10 and 20, then keys 1, 10, 11, 20, 21 are 
