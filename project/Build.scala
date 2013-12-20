@@ -248,7 +248,20 @@ object GeotrellisBuild extends Build {
     Seq(
       libraryDependencies ++= Seq(
         "com.beust" % "jcommander" % "1.23",
-        "org.reflections" % "reflections" % "0.9.5"),
+        "org.reflections" % "reflections" % "0.9.5"
+      ),
+      libraryDependencies <+= (sbtVersion) { v =>
+        v.split('.').toList match {
+          case "0" :: "11" :: "3" :: Nil  =>
+            "org.scala-sbt" %%
+            "launcher-interface" %
+             v % "provided"
+          case _ =>
+            "org.scala-sbt" %
+            "launcher-interface" %
+            v % "provided"
+        }
+      },
       mainClass in Compile := Some("geotrellis.run.Tasks"))
 
   // Project: benchmark
