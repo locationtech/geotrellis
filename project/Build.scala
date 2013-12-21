@@ -186,7 +186,8 @@ object GeotrellisBuild extends Build {
         "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
         "com.sun.jersey" % "jersey-bundle" % "1.11",
         "org.slf4j" % "slf4j-api" % "1.6.0",
-        "org.slf4j" % "slf4j-nop" % "1.6.0")
+        "org.slf4j" % "slf4j-nop" % "1.6.0",
+        "asm" % "asm" % "3.3.1" )
     ) ++
     defaultAssemblySettings
 
