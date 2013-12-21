@@ -5,18 +5,9 @@ import javax.ws.rs.{GET, Path, DefaultValue, PathParam, QueryParam}
 import javax.ws.rs.core.{Response, Context}
 
 import geotrellis._
-import geotrellis.data._
-import geotrellis.render.ColorRamps._
+import geotrellis.source._
 import geotrellis.render._
-import geotrellis.render.op._
-import geotrellis.statistics.{Histogram}
-import geotrellis.process.{Server}
-import geotrellis.Implicits._
-
-import geotrellis.raster.op._
-import geotrellis.rest.op._
-import geotrellis.statistics.op._
-
+import ColorRamps._
 
 @Path("/greeting")
 class HelloWorld {
@@ -24,30 +15,6 @@ class HelloWorld {
   def get(@Context req:HttpServletRequest) = {
     // give a friendly greeting
     response("text/plain")("hello world")
-  }
-}
-
-@Path("/adder")
-class AddOne {
-  @GET
-  @Path("/{x}")
-  def get(@PathParam("x") s:String,
-          @Context req:HttpServletRequest) = {
-    // parse the given integer
-    val opX:Op[Int] = string.ParseInt(s)
-
-    // add one
-    val opY:Op[Int] = opX + 1
-
-    // run the operation
-    val data:String = try {
-      val y:Int = Demo.server.get(opY)
-      y.toString
-    } catch {
-      case e:Throwable => e.toString
-    }
-
-    response("text/plain")(data)
   }
 }
 
@@ -80,11 +47,12 @@ class SimpleDrawRaster {
   @GET
   @Path("/{name}")
   def get(@PathParam("name") name:String) = {
-    val rasterOp:Op[Raster] = io.LoadRaster(name)
-    val pngOp:Op[Array[Byte]] = SimpleRenderPng(rasterOp, BlueToRed)
-    // run the operation
+    val raster:RasterSource = RasterSource(name)
+    val png:ValueSource[Png] = raster.renderPng(BlueToRed)
+
+    // run the source
     try {
-      val img:Array[Byte] = Demo.server.get(pngOp)
+      val img:Array[Byte] = png.get
       response("image/png")(img)
     } catch {
       case e:Throwable => response("text/plain")(e.toString)
@@ -98,27 +66,21 @@ class DrawRaster {
   @Path("/{name}/palette/{palette}/shades/{shades}")
   def get(@PathParam("name") name:String,
           @PathParam("palette") palette:String,
-          @PathParam("shades") shades:String,
+          @PathParam("shades") shades:Int,
           @Context req:HttpServletRequest) = {
 
     // load the raster
-    val rasterOp:Op[Raster] = io.LoadRaster(name)
+    val raster:RasterSource = RasterSource(name)
 
     // find the colors to use
-    val paletteOp:Op[Array[Int]] = logic.ForEach(string.SplitOnComma(palette))(string.ParseColor(_))
-    val numOp:Op[Int] = string.ParseInt(shades)
-    val colorsOp:Op[Array[Int]] = GetColorsFromPalette(paletteOp, numOp)
+    val paletteColors:Array[Int] = palette.split(",").map(Color.parseColor(_))
+    val colors:Array[Int] = Color.chooseColors(paletteColors, shades)
 
-    // find the appropriate quantile class breaks to use
-    val histogramOp:Op[Histogram] = stat.GetHistogram(rasterOp)
-    val breaksOp:Op[ColorBreaks] = GetColorBreaks(histogramOp, colorsOp)
-
-    // render the png
-    val pngOp:Op[Array[Byte]] = RenderPng(rasterOp, breaksOp, 0)
+    val png = raster.renderPng(colors)
 
     // run the operation
     try {
-      val img:Array[Byte] = Demo.server.get(pngOp)
+      val img:Array[Byte] = png.get
       response("image/png")(img)
     } catch {
       case e:Throwable => response("text/plain")(e.toString)
