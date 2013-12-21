@@ -34,4 +34,7 @@ trait RenderOpMethods[+Repr <: RasterDS] { self: Repr =>
 
   def renderPng(colors:Array[Int]):ValueSource[Png] =
     self.converge.mapOp(SimpleRenderPng(_,colors))
+
+  def renderPng(colors:Array[Int], numColors:Int):ValueSource[Png] =
+    self.converge.mapOp(SimpleRenderPng(_,Color.chooseColors(colors,numColors)))
 }

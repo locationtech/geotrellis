@@ -69,7 +69,11 @@ case class StepAggregator[T](serverContext:ServerContext,
   // If any entry in the results array is null, we're not done.
   def isDone = results.find(_ == None).isEmpty
 
-  def hasError = results.find { case Some(Error(_,_)) => true; case a => false }.isDefined
+  def error:Option[Error] = 
+    results.flatten
+           .filter { case err:Error => true; case _ => false }
+           .headOption
+           .map { err => err.asInstanceOf[Error] }
 
   // Create a list of the actual values of our children.
   def getValues = results.toList.map {
@@ -98,14 +102,15 @@ case class StepAggregator[T](serverContext:ServerContext,
   def receive = {
     case PositionedResult(childResult,  pos) => {
       results(pos) = Some(childResult)
-      if (!isDone) {
-      } else if (hasError) {
-        val se = StepError("error", "error")
-        handler.handleResult(se,history.withStep(childHistories))
-        context.stop(self)
-      } else {
-        finishCallback()
-        context.stop(self)
+      if (isDone) {
+        error match {
+          case Some(Error(msg,trace)) =>
+            val se = StepError(msg, trace)
+            handler.handleResult(se,history.withStep(childHistories))
+          case None =>
+            finishCallback()
+            context.stop(self)
+        }
       }
     }
 
