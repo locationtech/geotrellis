@@ -1,17 +1,33 @@
 import sbt._
 import sbt.Keys._
 
+// sbt-assembly
+import sbtassembly.Plugin._
+import AssemblyKeys._
+
+// ls.implicit.ly
+import ls.Plugin.LsKeys
+import ls.Plugin.lsSettings
+
 object Version {
   val geotrellis = "0.9.0-RC1"
   val scala = "2.10.3"
   val akka = "2.2.3"
 }
 
+object Info {
+  val description = 
+    "GeoTrellis is an open source geographic data processing engine for high performance applications."
+  val url = "http://geotrellis.github.io"
+  val tags = Seq("maps", "gis", "geographic", "data", "raster", "processing")
+}
+
 object GeotrellisBuild extends Build {
   val key = AttributeKey[Boolean]("javaOptionsPatched")
 
   // Default settings
-  override lazy val settings = super.settings ++
+  override lazy val settings = 
+    super.settings ++
     Seq(
       version := Version.geotrellis,
       scalaVersion := Version.scala,
@@ -42,7 +58,7 @@ object GeotrellisBuild extends Build {
 
       pomIncludeRepository := { _ => false },
       licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
-      homepage := Some(url("http://geotrellis.github.io/")),
+      homepage := Some(url(Info.url)),
 
       pomExtra := (
 
@@ -61,7 +77,22 @@ object GeotrellisBuild extends Build {
             <name>Rob Emanuele</name>
             <url>http://github.com/lossyrob/</url>
           </developer>
-        </developers>))
+        </developers>)
+    )
+
+  val defaultAssemblySettings = 
+    assemblySettings ++
+    Seq(
+      mergeStrategy in assembly <<= (mergeStrategy in assembly) {
+        (old) => {
+          case "reference.conf" => MergeStrategy.concat
+          case "application.conf" => MergeStrategy.concat
+          case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+          case "META-INF\\MANIFEST.MF" => MergeStrategy.discard
+          case _ => MergeStrategy.first
+        }
+      }
+    )
 
   // Project: macros
 
@@ -116,7 +147,18 @@ object GeotrellisBuild extends Build {
         "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
         "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
       )
+    ) ++
+    defaultAssemblySettings
+    lsSettings ++
+    Seq(
+      (LsKeys.tags in LsKeys.lsync) :=
+        Info.tags,
+      (LsKeys.docsUrl in LsKeys.lsync) := 
+        Some(new URL(Info.url)),
+      (description in LsKeys.lsync) := 
+        Info.description
     )
+
 
   // Project: services
 
@@ -144,8 +186,10 @@ object GeotrellisBuild extends Build {
         "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
         "com.sun.jersey" % "jersey-bundle" % "1.11",
         "org.slf4j" % "slf4j-api" % "1.6.0",
-        "org.slf4j" % "slf4j-nop" % "1.6.0")
-    )
+        "org.slf4j" % "slf4j-nop" % "1.6.0",
+        "asm" % "asm" % "3.3.1" )
+    ) ++
+    defaultAssemblySettings
 
 
   // Project: admin
@@ -165,7 +209,9 @@ object GeotrellisBuild extends Build {
       resolvers ++= Seq(
         "spray repo" at "http://repo.spray.io"
       )
-    ) ++ spray.revolver.RevolverPlugin.Revolver.settings
+    ) ++ 
+    spray.revolver.RevolverPlugin.Revolver.settings ++
+    defaultAssemblySettings
 
   // Project: spark
 
@@ -177,16 +223,21 @@ object GeotrellisBuild extends Build {
   lazy val sparkSettings =
     Seq(
       name := "geotrellis-spark",
-      libraryDependencies ++= Seq(
-        // first two are just to quell the UnsupportedOperationException in Hadoop's Configuration
-        // http://itellity.wordpress.com/2013/05/27/xerces-parse-error-with-hadoop-or-solr-feature-httpapache-orgxmlfeaturesxinclude-is-not-recognized/
-        "xerces" % "xercesImpl" % "2.9.1",
-        "xalan" % "xalan" % "2.7.1",
-        "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
-        "org.apache.spark" %% "spark-core" % "0.9.0-incubating-SNAPSHOT",
-        "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4"),
+      libraryDependencies ++= 
+        Seq(
+          // first two are just to quell the UnsupportedOperationException in Hadoop's Configuration
+          // http://itellity.wordpress.com/2013/05/27/xerces-parse-error-with-hadoop-or-solr-feature-httpapache-orgxmlfeaturesxinclude-is-not-recognized/
+          "xerces" % "xercesImpl" % "2.9.1",
+          "xalan" % "xalan" % "2.7.1",
+          "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
+          "org.apache.spark" %% "spark-core" % "0.9.0-incubating-SNAPSHOT",
+          "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4"
+        ),
       resolvers ++= Seq(
-        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"))
+        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
+      )
+    ) ++
+    defaultAssemblySettings
 
   // Project: geotools
 
@@ -199,18 +250,24 @@ object GeotrellisBuild extends Build {
   lazy val geotoolsSettings =
     Seq(
       name := "geotrellis-geotools",
-      libraryDependencies ++= Seq(
-        "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
-        "java3d" % "j3d-core" % "1.3.1",
-        "org.geotools" % "gt-main" % geotoolsVersion,
-        "org.geotools" % "gt-jdbc" % geotoolsVersion,
-        "org.geotools.jdbc" % "gt-jdbc-postgis" % geotoolsVersion,
-        "org.geotools" % "gt-coverage" % geotoolsVersion,
-        "org.geotools" % "gt-coveragetools" % geotoolsVersion,
-        "org.postgis" % "postgis-jdbc" % "1.3.3",
-        "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"),
-      resolvers ++= Seq(
-        "Geotools" at "http://download.osgeo.org/webdav/geotools/"))
+      libraryDependencies ++= 
+        Seq(
+          "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
+          "java3d" % "j3d-core" % "1.3.1",
+          "org.geotools" % "gt-main" % geotoolsVersion,
+          "org.geotools" % "gt-jdbc" % geotoolsVersion,
+          "org.geotools.jdbc" % "gt-jdbc-postgis" % geotoolsVersion,
+          "org.geotools" % "gt-coverage" % geotoolsVersion,
+          "org.geotools" % "gt-coveragetools" % geotoolsVersion,
+          "org.postgis" % "postgis-jdbc" % "1.3.3",
+          "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
+        ),
+      resolvers ++= 
+        Seq(
+          "Geotools" at "http://download.osgeo.org/webdav/geotools/"
+        )
+    ) ++
+    defaultAssemblySettings
 
   // Project: dev
 
@@ -221,15 +278,23 @@ object GeotrellisBuild extends Build {
 
   lazy val devSettings =
     Seq(
-      libraryDependencies ++= Seq(
-        "org.scala-lang" % "scala-reflect" % "2.10.2",
-        "org.hyperic" % "sigar" % "1.6.4"),
-      resolvers ++= Seq(
-        "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"),
+      libraryDependencies ++= 
+        Seq(
+          "org.scala-lang" % "scala-reflect" % "2.10.2",
+          "org.hyperic" % "sigar" % "1.6.4"
+        ),
+      resolvers ++= 
+        Seq(
+          "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
+        ),
       Keys.fork in run := true,
       fork := true,
-      javaOptions in run ++= Seq(
-        "-Djava.library.path=./sigar"))
+      javaOptions in run ++= 
+        Seq(
+          "-Djava.library.path=./sigar"
+        )
+    ) ++
+    defaultAssemblySettings
 
   // Project: demo
 
@@ -246,10 +311,27 @@ object GeotrellisBuild extends Build {
 
   lazy val tasksSettings =
     Seq(
-      libraryDependencies ++= Seq(
-        "com.beust" % "jcommander" % "1.23",
-        "org.reflections" % "reflections" % "0.9.5"),
-      mainClass in Compile := Some("geotrellis.run.Tasks"))
+      libraryDependencies ++= 
+        Seq(
+          "com.beust" % "jcommander" % "1.23",
+          "org.reflections" % "reflections" % "0.9.5"
+        ),
+      libraryDependencies <+= 
+        (sbtVersion) { v =>
+          v.split('.').toList match {
+            case "0" :: "11" :: "3" :: Nil  =>
+              "org.scala-sbt" %%
+              "launcher-interface" %
+              v % "provided"
+            case _ =>
+              "org.scala-sbt" %
+              "launcher-interface" %
+              v % "provided"
+          }
+        },
+      mainClass in Compile := Some("geotrellis.run.Tasks")
+    ) ++
+    defaultAssemblySettings
 
   // Project: benchmark
 
@@ -305,5 +387,6 @@ object GeotrellisBuild extends Build {
           }
         }
       }
-    )
+    ) ++
+  defaultAssemblySettings
 }
