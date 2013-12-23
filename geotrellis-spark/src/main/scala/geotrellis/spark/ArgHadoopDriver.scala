@@ -54,12 +54,11 @@ object ArgHadoopDriver {
     var i = 0
     val value = ArgWritable(defaultTileSize * defaultTileSize * TypeInt.bytes, 0)
 
-    import scala.runtime.ScalaRunTime._
     while (reader.next(key, value)) {
       val actual = ArgWritable.toRasterData(value, TypeInt, defaultTileSize, defaultTileSize).asInstanceOf[IntArrayRasterData].array
       val expected = fill(i)
       if (key.get != i || !actual.sameElements(expected.toArray))
-        throw new Exception("Arrays don't match for key = %d and i = %d, expected = %s and actual = %s".format(key.get, i, stringOf(expected.array), stringOf(actual.array)))
+        sys.error(s"Arrays don't match for key = ${key.get} and i = $i, expected = ${expected.array.toSeq} and actual = ${actual.array.toSeq}")
 
       i = i + 1
     }
