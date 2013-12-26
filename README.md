@@ -84,8 +84,6 @@ More information is also available on the [GeoTrellis website](http://www.azavea
 
 ## API Reference
 
-### Scaladocs
-
 You can find *Scaladocs* for the latest version of the project here:
 
 [http://geotrellis.github.com/scaladocs/latest/#geotrellis.package](http://geotrellis.github.com/scaladocs/latest/#geotrellis.package)
@@ -103,3 +101,7 @@ You can find *Scaladocs* for the latest version of the project here:
  - Ameet Kini
  - Mark Landry
  - Walt Chen
+
+## Contributing
+
+Feedback and contributions to the project, no matter what kind, are always very welcome. A CLA is required for contribution, see the [CLA FAQ](https://github.com/geotrellis/geotrellis/wiki/Contributor-license-agreement-FAQ) on the wiki for more information. Please refer to the [Scala style guide](http://docs.scala-lang.org/style/) for formatting patches to the codebase.
