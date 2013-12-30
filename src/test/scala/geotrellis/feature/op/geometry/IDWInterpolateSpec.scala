@@ -12,14 +12,13 @@ import geotrellis.testutil._
 
 import com.vividsolutions.jts.{ geom => jts }
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class IDWInterpolateSpec extends FunSpec 
                             with ShouldMatchers 
                             with TestServer 
                             with RasterBuilders {
   describe("IDWInterpolate") {
     it("matches a QGIS generated IDW raster") {
-      val r = run(io.LoadRaster("schoolidw"))
+      val r = get(io.LoadRaster("schoolidw"))
       val re = r.rasterExtent
 
       val path = "src/test/resources/schoolgeo.json"
@@ -28,13 +27,13 @@ class IDWInterpolateSpec extends FunSpec
       val geoJson = f.mkString
       f.close
 
-      val geoms = run(LoadGeoJson(geoJson))
+      val geoms = get(LoadGeoJson(geoJson))
       val points = 
         (for(g <- geoms) yield {
           Point(g.geom.asInstanceOf[jts.Point],g.data.get.get("data").getTextValue.toInt)
         }).toSeq
 
-      val result = run(IDWInterpolate(points,re))
+      val result = get(IDWInterpolate(points,re))
       var count = 0
       for(col <- 0 until re.cols) {
         for(row <- 0 until re.rows) {

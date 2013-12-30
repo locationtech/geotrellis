@@ -132,7 +132,7 @@ trait RasterBuilders {
     val re = rasters.map(_.rasterExtent).reduce(_.combine(_))
     val tileLayout = TileLayout(tileCols,tileRows,pixelCols,pixelRows)
 
-    RasterSource(RasterDefinition("test",re,tileLayout),ops)
+    RasterSource(RasterDefinition(LayerId("test"),re,tileLayout,TypeInt),ops)
   }
 
   def createRasterSource(arr:Array[Double],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int):RasterSource = 
@@ -176,7 +176,7 @@ trait RasterBuilders {
     val re = rasters.map(_.rasterExtent).reduce(_.combine(_))
     val tileLayout = TileLayout(tileCols,tileRows,pixelCols,pixelRows)
 
-    RasterSource(RasterDefinition("test",re,tileLayout),ops)
+    RasterSource(RasterDefinition(LayerId("test"),re,tileLayout,TypeDouble),ops)
   }
 
   /**

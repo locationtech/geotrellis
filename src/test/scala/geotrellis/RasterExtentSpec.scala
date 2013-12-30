@@ -6,7 +6,6 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class RasterExtentSpec extends FunSpec with MustMatchers 
                                        with ShouldMatchers 
                                        with RasterBuilders {
@@ -281,6 +280,21 @@ class RasterExtentSpec extends FunSpec with MustMatchers
       val re = RasterExtent(e, 20, 30)
       re.extent.xmin should be (-90)
       re.cols should be (20)
+    }
+  }
+
+  describe("RasterExtent.adjustTo") {
+    it("should adjust to a tile layout that is larger than the raster extent") {
+      val extent = Extent(0,0,1000,1000)
+      val re = RasterExtent(extent,10, 1, 100, 1000)
+      val tileLayout = raster.TileLayout(3,2,40,600)
+      val result = re.adjustTo(tileLayout)
+
+      result.cols should be (120)
+      result.rows should be (1200)
+      result.cellwidth should be (re.cellwidth)
+      result.cellheight should be (re.cellheight)
+      result.extent should be (Extent(0,-200,1200,1000))
     }
   }
 }

@@ -17,7 +17,7 @@ final case class LazyConvert(data: RasterData, typ: RasterType)
   extends RasterData {
 
   final def getType = typ
-  final def alloc(cols: Int, rows: Int) = data.alloc(cols, rows)
+  final def alloc(cols: Int, rows: Int) = RasterData.allocByType(typ,cols,rows)
   final def length = data.length
 
   def cols = data.cols
@@ -48,4 +48,9 @@ final case class LazyConvert(data: RasterData, typ: RasterType)
     forcedData
   }
   def force():RasterData = mutable
+  
+  def toArrayByte: Array[Byte] = force.toArrayByte
+
+  def warp(current:RasterExtent,target:RasterExtent):RasterData =
+    LazyConvert(data.warp(current,target),typ)
 }

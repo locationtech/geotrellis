@@ -6,11 +6,9 @@ import geotrellis.source._
 
 trait GlobalOpMethods[+Repr <: RasterSource] { self: Repr =>
   def rescale(newMin:Int,newMax:Int) = {
-    val minMax = self.minMax.get
-    self.globalOp { r =>
-      minMax.map { case (min,max) => 
-        r.normalize(min,max,newMin,newMax)
-      }
+    self.global { r =>
+      val (min,max) = r.findMinMax
+      r.normalize(min,max,newMin,newMax)
     }
   }
 
@@ -20,7 +18,7 @@ trait GlobalOpMethods[+Repr <: RasterSource] { self: Repr =>
   def asArray() = 
     self.converge.mapOp(AsArray(_))
 
-  def regionGroup(options:RegionGroupOptions = RegionGroupOptions.Default) =
+  def regionGroup(options:RegionGroupOptions = RegionGroupOptions.default) =
     self.converge.mapOp(RegionGroup(_,options))
 
   def verticalFlip() =

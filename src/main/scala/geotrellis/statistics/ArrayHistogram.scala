@@ -4,18 +4,18 @@ import geotrellis._
 import math.{abs, ceil, min, max, sqrt}
 
 object ArrayHistogram {
-  def apply(size:Int) = new ArrayHistogram(Array.fill[Int](size)(0), 0)
+  def apply(size:Int) = new ArrayHistogram(Array.ofDim[Int](size).fill(0), 0)
 
   def apply(counts:Array[Int], total:Int) = new ArrayHistogram(counts, total)
 
-  def fromRaster(r:Raster, n:Int) = {
+  def fromRaster(r:Raster, n:Int):ArrayHistogram = {
     val h = ArrayHistogram(n)
     r.foreach(z => if (isData(z)) h.countItem(z, 1))
     h
   }
 
-  def fromHistograms(hs:List[Histogram], n:Int) = {
-    val total:Histogram = ArrayHistogram(n)
+  def fromHistograms(hs:List[Histogram], n:Int):ArrayHistogram = {
+    val total = ArrayHistogram(n)
     hs.foreach(h => total.update(h))
     total
   }
@@ -26,12 +26,13 @@ object ArrayHistogram {
 /**
   * Data object representing a histogram that uses an array for internal storage. 
   */
-class ArrayHistogram(val counts:Array[Int], var total:Int) extends Histogram {
+class ArrayHistogram(val counts:Array[Int], var total:Int) 
+    extends MutableHistogram {
   def size = counts.length
 
   def getTotalCount = total
 
-  def copy() = ArrayHistogram(counts.clone, total)
+  def mutable() = ArrayHistogram(counts.clone, total)
 
   def foreachValue(f:Int => Unit) {
     var i = 0

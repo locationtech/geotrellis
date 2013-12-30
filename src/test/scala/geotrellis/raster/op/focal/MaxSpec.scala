@@ -7,14 +7,11 @@ import geotrellis.raster.op._
 
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
-import org.scalatest.junit.JUnitRunner
 
 import scala.math._
 
-@RunWith(classOf[JUnitRunner])
 class MaxSpec extends FunSpec with FocalOpSpec
                               with ShouldMatchers 
                               with TestServer {
@@ -41,6 +38,19 @@ class MaxSpec extends FunSpec with FocalOpSpec
                                     3,4,4,4))
     }
 
+    it("should agree with a manually worked out example with doubles") {
+      val r = createRaster(Array[Double](1.2,1.3,1.1,1.4,
+                                         2.4,2.1,2.5,2.2,
+                                         3.1,3.5,3.2,3.1,
+                                         1.9,1.1,4.4,4.9))
+
+      val maxOp = focal.Max(r,Square(1))
+      assertEqual(maxOp, Array[Double](2.4,2.5,2.5,2.5,
+                                       3.5,3.5,3.5,3.2,
+                                       3.5,4.4,4.9,4.9,
+                                       3.5,4.4,4.9,4.9))
+    }
+
     it("should match scala.math.max default sets") {      
       for(s <- defaultTestSets) {
         getMaxResult(Square(1),MockCursor.fromAll(s:_*)) should equal (s.max)
@@ -58,7 +68,7 @@ class MaxSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalMax(Square(1))) match {
+      run(rs1.focalMax(Square(1))) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,
@@ -86,7 +96,7 @@ class MaxSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalMax(Square(2))) match {
+      run(rs1.focalMax(Square(2))) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,
@@ -114,7 +124,7 @@ class MaxSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalMax(Circle(1))) match {
+      run(rs1.focalMax(Circle(1))) match {
         case Complete(result,success) =>
           //println(success)
           assertEqual(result,

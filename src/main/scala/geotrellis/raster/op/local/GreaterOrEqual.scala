@@ -7,23 +7,6 @@ import geotrellis.source._
  * Determines if values are greater than or equal to other values. Sets to 1 if true, else 0.
  */
 object GreaterOrEqual extends LocalRasterBinaryOp {
-  /** Apply this operation to the values of each cell in each raster.  */
-  override
-  def apply(rss:Seq[Op[Raster]]):Op[Raster] = 
-    rss.mapOps { rasters =>
-        rasters.head
-               .dualCombine(rasters.tail)({ zs =>
-                   val z = zs(0)
-                   if(zs.tail.foldLeft(true)(_ && z >= _)) 1
-                   else 0
-                })({ zs =>
-                  val z = zs(0)
-                  if(zs.tail.foldLeft(true)(_ && z >= _)) 1
-                  else 0
-                })
-       }
-      .withName(s"GreaterOrEqual[Rasters]")
-
   def combine(z1:Int,z2:Int) =
     if(z1 >= z2) 1 else 0
 
@@ -85,14 +68,4 @@ trait GreaterOrEqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.
    */
   def >=(rs:RasterSource) = localGreaterOrEqual(rs)
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.
-   */
-  def localGreaterOrEqual(rss:Seq[RasterSource]) = self.combineOp(rss)(GreaterOrEqual(_))
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.
-   */
-  def >=(rss:Seq[RasterSource]) = localGreaterOrEqual(rss)
 }

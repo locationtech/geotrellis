@@ -7,7 +7,6 @@ import geotrellis.testutil._
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class CropSpec extends FunSpec with ShouldMatchers 
                                with TestServer
                                with RasterBuilders {

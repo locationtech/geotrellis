@@ -7,7 +7,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class RasterDataSpec extends FunSpec 
                         with ShouldMatchers 
                         with TestServer 
@@ -63,6 +62,52 @@ class RasterDataSpec extends FunSpec
         val n = Float.NaN
         check(createRaster(Array[Float](1.0f,2.0f,3.0f,n,n,n,3.0f,4.0f,5.0f)))
       }
+    }
+  }
+
+  describe("warp") {
+    it("should warp with crop only") {
+      val rd = RasterData(
+        Array( 1,10,100,1000,2,2,2,2,2,
+               2,20,200,2000,2,2,2,2,2,
+               3,30,300,3000,2,2,2,2,2,
+               4,40,400,4000,2,2,2,2,2),
+        9,4)
+      val re = RasterExtent(Extent(0.0,0.0,9.0,4.0),9,4)
+      val nre = RasterExtent(Extent(0.0,1.0,4.0,4.0),4,3)
+      rd.warp(re,nre).toArray should be (Array(1,10,100,1000,
+                                               2,20,200,2000,
+                                               3,30,300,3000))
+    }
+
+    it("should give NODATA for warp with crop outside of bounds") {
+      val rd = RasterData(
+        Array( 1,10,100,1000,2,2,2,2,2,
+               2,20,200,2000,2,2,2,2,2,
+               3,30,300,3000,2,2,2,2,2,
+               4,40,400,4000,2,2,2,2,2),
+        9,4)
+      val re = RasterExtent(Extent(0.0,0.0,9.0,4.0),9,4)
+      val nre = RasterExtent(Extent(-1.0,2.0,3.0,5.0),1.0,1.0,4,3)
+      println(nre)
+      printR(Raster(rd.warp(re,nre),nre))
+      rd.warp(re,nre).toArray should be (Array(nd,nd,nd, nd,
+                                               nd, 1,10,100,
+                                               nd, 2,20,200))
+    }
+
+    it("should warp with resolution decrease in X and crop in Y") {
+      val rd = RasterData(
+        Array( 1,10,100,1000,-2,2,2,2,2,
+               2,20,200,2000,-2,2,2,2,2,
+               3,30,300,3000,-2,2,2,2,2,
+               4,40,400,4000,-2,2,2,2,2),
+        9,4)
+      val re = RasterExtent(Extent(0.0,0.0,9.0,4.0),9,4)
+      val nre = RasterExtent(Extent(0.0,1.0,9.0,4.0),3,3)
+      rd.warp(re,nre).toArray should be (Array(10,-2,2,
+                                               20,-2,2,
+                                               30,-2,2))
     }
   }
 }

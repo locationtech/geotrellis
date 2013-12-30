@@ -1,11 +1,8 @@
 package geotrellis
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 
-@RunWith(classOf[JUnitRunner])
 class ExtentTest extends FunSuite with ShouldMatchers {
   test("invalid ranges") {
     intercept[ExtentRangeError] { Extent(10.0, 0.0, 0.0, 10.0) }

@@ -3,7 +3,6 @@ package geotrellis.data
 import geotrellis._
 import geotrellis.process._
 import geotrellis.util._
-import geotrellis.data.arg.ArgReader
 
 import java.io.{File, BufferedReader}
 import com.typesafe.config.Config
@@ -13,7 +12,7 @@ extends RasterLayerBuilder {
   val intRe = """^(-?[0-9]+)$""".r
   val floatRe = """^(-?[0-9]+\.[0-9]+)$""".r
 
-  def apply(jsonPath:String, json:Config):Option[RasterLayer] = {
+  def apply(ds:Option[String],jsonPath:String, json:Config):RasterLayer = {
     val path = 
       if(json.hasPath("path")) {
         json.getString("path")
@@ -30,35 +29,34 @@ extends RasterLayerBuilder {
       if(json.hasPath("type")) {
         val t = getRasterType(json)
         if(t.isDouble) {
-          System.err.println(s"[ERROR] Layer at $jsonPath has Ascii type and a Double data type. " +
-                              "This is not currently supported.")
-          System.err.println("[ERROR]   Skipping this raster layer.")
-          return None
+          throw new java.io.IOException(s"[ERROR] Layer at $jsonPath has Ascii type and a Double data type. " +
+                                         "This is not currently supported.")
         }
         t
       } else {
         TypeInt
       }
     if(!new java.io.File(path).exists) {
-      System.err.println("[ERROR] Cannot find data (.asc or .grd file) for " +
-        s"Ascii Raster '${getName(json)}' in catalog.")
-      System.err.println("[ERROR]   Skipping this raster layer.")
-      None
+      throw new java.io.IOException("[ERROR] Cannot find data (.asc or .grd file) for " +
+                                   s"Ascii Raster '${getName(json)}' in catalog.")
     } else {
       val (rasterExtent,noDataValue) = loadMetaData(path)
 
-      val info = RasterLayerInfo(getName(json),
-        rasterType,
-        rasterExtent,
-        getEpsg(json),
-        getXskew(json),
-        getYskew(json))
+      val info = 
+        RasterLayerInfo(
+          LayerId(ds,getName(json)),
+          rasterType,
+          rasterExtent,
+          getEpsg(json),
+          getXskew(json),
+          getYskew(json)
+        )
 
-      Some(new AsciiRasterLayer(info,noDataValue,path))
+      new AsciiRasterLayer(info,noDataValue,path)
     }
   }
 
-  def fromFile(path:String, cache:Option[Cache] = None):AsciiRasterLayer = {
+  def fromFile(path:String, cache:Option[Cache[String]] = None):AsciiRasterLayer = {
     val f = new File(path)
     if(!f.exists) {
       sys.error(s"Path $path does not exist")
@@ -67,12 +65,15 @@ extends RasterLayerBuilder {
 
     val name = Filesystem.basename(f.getName)
 
-    val info = RasterLayerInfo(name,
-      TypeInt,
-      rasterExtent,
-      0,
-      0,
-      0)
+    val info = 
+      RasterLayerInfo(
+        LayerId(name),
+        TypeInt,
+        rasterExtent,
+        0,
+        0,
+        0
+      )
 
     new AsciiRasterLayer(info,noDataValue,path)
   }
@@ -138,7 +139,7 @@ extends UntiledRasterLayer(info) {
 
   def getRaster(targetExtent:Option[RasterExtent]) =
     if(isCached) {
-      getCache.lookup[Array[Byte]](info.name) match {
+      getCache.lookup[Array[Byte]](info.id.toString) match {
         case Some(bytes) =>
           getReader.readCache(bytes, info.rasterType, info.rasterExtent, targetExtent)
         case None =>
@@ -148,8 +149,8 @@ extends UntiledRasterLayer(info) {
       getReader.readPath(info.rasterType,info.rasterExtent,targetExtent)
     }
 
-  def cache(c:Cache) = 
-    c.insert(info.name, Filesystem.slurp(rasterPath))
+  def cache(c:Cache[String]) = 
+    c.insert(info.id.toString, Filesystem.slurp(rasterPath))
 
   private def getReader = new AsciiReader(rasterPath, noDataValue)
 }

@@ -6,11 +6,8 @@ import geotrellis.testutil._
 import geotrellis.source._
 import geotrellis.process._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
 class SumSpec extends FunSpec with FocalOpSpec 
                               with TestServer {
   val sq1 = Square(1)
@@ -21,6 +18,7 @@ class SumSpec extends FunSpec with FocalOpSpec
   val re = RasterExtent(e, 1.0, 1.0, 4, 4)
 
   val r = Raster(IntConstant(1, 4, 4), re)
+  val rd = Raster(DoubleConstant(1.1, 4, 4), re)
 
   val data16 = Array(16, 16, 16, 16,
                      16, 16, 16, 16,
@@ -76,7 +74,7 @@ class SumSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalSum(Square(1))) match {
+      run(rs1.focalSum(Square(1))) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,
@@ -104,7 +102,7 @@ class SumSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalSum(Square(2))) match {
+      run(rs1.focalSum(Square(2))) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,
@@ -126,6 +124,13 @@ class SumSpec extends FunSpec with FocalOpSpec
                                            6, 9, 9, 6,
                                            6, 9, 9, 6,
                                            4, 6, 6, 4))
+    }
+
+    it("should square sum r=1 double") {
+      assertEqual(Sum(rd, Square(1)), Array(4.4, 6.6, 6.6, 4.4,
+                                            6.6, 9.9, 9.9, 6.6,
+                                            6.6, 9.9, 9.9, 6.6,
+                                            4.4, 6.6, 6.6, 4.4))
     }
 
     it("should square sum r=2") {
@@ -182,7 +187,7 @@ class SumSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalSum(Circle(1))) match {
+      run(rs1.focalSum(Circle(1))) match {
         case Complete(result,success) =>
           //println(success)
           assertEqual(result,

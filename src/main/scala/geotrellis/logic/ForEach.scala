@@ -16,17 +16,17 @@ object ForEach {
  */
 case class ForEach1[A, Z:Manifest](op:Op[Array[A]])(f:(A) => Op[Z]) extends Op[Array[Z]] {
 
-  def _run(context:Context) = runAsync(List(op, context))
+  def _run() = runAsync(List(op))
 
   val nextSteps:PF[Any, StepOutput[Array[Z]]] = {
-    case (as:Array[_]) :: (context:Context) :: Nil => {
-      step2(as.asInstanceOf[Array[A]], context)
+    case (as:Array[_]) :: Nil => {
+      step2(as.asInstanceOf[Array[A]])
     }
 
     case zs:List[_] => Result(zs.asInstanceOf[List[Z]].toArray)
   }
 
-  def step2(as:Array[A], context:Context) = {
+  def step2(as:Array[A]) = {
     runAsync(as.toList.map(a => f(a)))
   }
 }
@@ -41,19 +41,18 @@ case class ForEach1[A, Z:Manifest](op:Op[Array[A]])(f:(A) => Op[Z]) extends Op[A
 case class ForEach2[A, B, Z:Manifest](opA:Op[Array[A]], opB:Op[Array[B]])
                                      (f:(A, B) => Op[Z]) extends Op[Array[Z]] {
 
-  def _run(context:Context) = runAsync(List(opA, opB, context))
+  def _run() = runAsync(List(opA, opB))
 
   val nextSteps:PF[Any, StepOutput[Array[Z]]] = {
-    case (as:Array[_]) :: (bs:Array[_]) :: (context:Context) :: Nil => {
+    case (as:Array[_]) :: (bs:Array[_]) :: Nil => {
       step2(as.asInstanceOf[Array[A]],
-            bs.asInstanceOf[Array[B]],
-            context)
+            bs.asInstanceOf[Array[B]])
     }
 
     case zs:List[_] => Result(zs.asInstanceOf[List[Z]].toArray)
   }
 
-  def step2(as:Array[A], bs:Array[B], context:Context) = {
+  def step2(as:Array[A], bs:Array[B]) = {
     runAsync((0 until as.length).map(i => f(as(i), bs(i))).toList)
   }
 }
@@ -71,20 +70,19 @@ case class ForEach3[A, B, C, Z:Manifest](opA:Op[Array[A]],
                                          opC:Op[Array[C]])
 (f:(A, B, C) => Op[Z]) extends Op[Array[Z]] {
 
-  def _run(context:Context) = runAsync(List(opA, opB, opC, context))
+  def _run() = runAsync(List(opA, opB, opC))
 
   val nextSteps:PF[Any, StepOutput[Array[Z]]] = {
-    case (as:Array[_]) :: (bs:Array[_]) :: (cs:Array[_]) :: (context:Context) :: Nil => {
+    case (as:Array[_]) :: (bs:Array[_]) :: (cs:Array[_]) :: Nil => {
       step2(as.asInstanceOf[Array[A]],
             bs.asInstanceOf[Array[B]],
-            cs.asInstanceOf[Array[C]],
-            context)
+            cs.asInstanceOf[Array[C]])
     }
 
     case zs:List[_] => Result(zs.asInstanceOf[List[Z]].toArray)
   }
 
-  def step2(as:Array[A], bs:Array[B], cs:Array[C], context:Context) = {
+  def step2(as:Array[A], bs:Array[B], cs:Array[C]) = {
     runAsync((0 until as.length).toList.map(i => f(as(i), bs(i), cs(i))))
   }
 }

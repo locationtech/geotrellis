@@ -3,47 +3,34 @@ package geotrellis.io
 import geotrellis._
 import geotrellis.process._
 
-/**
-  * Load the [[RasterExtent]] from the raster in the specified file.
-  */
-case class LoadRasterExtentFromFile(path:String) extends Op1(path)({
-  (path) => {
-    val i = path.lastIndexOf(".")
-    val jsonPath = (if (i == -1) path else path.substring(0, i)) + ".json"
-    val layer = RasterLayer.fromPath(jsonPath) match {
-      case Some(l) => l
-      case None => 
-        sys.error(s"Could not load raster extent from $path, as it is not a valid layer metadata file")
-    }
-    Result(layer.info.rasterExtent)
-  }
-})
+object LoadRasterExtent {
+  def apply(name:String): LoadRasterExtent = 
+    LoadRasterExtent(LayerId(name))
 
-/**
-  * Load the [[geotrellis.process.RasterLayer]], a representation of the raster metadata,
-  * from the raster in the specified file.
-  */ 
-case class LoadRasterMetadataFromFile(path:String) extends Op1(path)({
-  (path) => {
-    val i = path.lastIndexOf(".")
-    val jsonPath = (if (i == -1) path else path.substring(0, i)) + ".json"
-    val layer = RasterLayer.fromPath(jsonPath) match {
-      case Some(l) => l
-      case None => 
-        sys.error(s"Could not load raster metadata from $path, as it is not a valid layer metadata file")
-    }
-    Result(layer.info.rasterExtent)
-  }
-})
+  def apply(ds:String, name:String): LoadRasterExtent = 
+    LoadRasterExtent(LayerId(ds,name))
+}
 
-/**
-  * Load the [[RasterExtent]] from the raster layer with the specified name.
+/** Load the [[RasterExtent]] from the raster layer with the specified name.
   */
-case class LoadRasterExtent(nme:Op[String]) extends Op[RasterExtent] {
-  def _run(context:Context) = runAsync(List(nme, context))
+case class LoadRasterExtent(layerId:Op[LayerId]) extends Op[RasterExtent] {
+  def _run() = runAsync(List(layerId))
   val nextSteps:Steps = {
-    case (name:String) :: (context:Context) :: Nil => {
-      Result(context.getRasterExtentByName(name))
-    }
+    case (layerId:LayerId) :: Nil => 
+      LayerResult { layerLoader =>
+        layerLoader.getRasterLayer(layerId).info.rasterExtent
+      }
+  }
+}
+
+/** Load the [[RasterExtent]] from the raster in the specified file.
+  */
+case class LoadRasterExtentFromFile(path:Op[String]) extends Op[RasterExtent] {
+  def _run() = runAsync(List(path))
+  val nextSteps:Steps = {
+    case (path:String) :: Nil => 
+      LayerResult { layerLoader =>
+        layerLoader.getRasterLayerFromPath(path).info.rasterExtent
+      }
   }
 }

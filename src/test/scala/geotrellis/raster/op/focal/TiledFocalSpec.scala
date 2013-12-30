@@ -5,11 +5,8 @@ import geotrellis.raster._
 
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
-
-import org.scalatest.junit.JUnitRunner
 
 // 0  1  2  3
 // 4  5  6  7

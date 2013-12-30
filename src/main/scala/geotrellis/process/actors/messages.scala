@@ -16,13 +16,6 @@ import akka.actor._
  */
 case class Run(op:Operation[_])
 
-/**
- * External message to compute the given operation and return result to sender.
- * Dispatch child operations with provided dispatcher.
- */
-case class RunDispatched(op:Operation[_], dispatcher:ActorRef)
-
-
 /********************
  * Internal messages 
  ********************
@@ -33,8 +26,7 @@ case class RunDispatched(op:Operation[_], dispatcher:ActorRef)
  */
 private[actors] case class RunOperation[T](op: Operation[T], 
                                            pos: Int, 
-                                           client: ActorRef, 
-                                           dispatcher:Option[ActorRef])
+                                           client: ActorRef)
 
 /**
  * Internal message to compute the provided args (if necessary), invoke the
@@ -44,10 +36,9 @@ private[actors] case class RunCallback[T](args:Args,
                                            pos:Int, 
                                            cb:Callback[T], 
                                            client:ActorRef, 
-                                           dispatcher:ActorRef,
                                            history:History)
 
 /**
  * Message used to send result values. Used internally.
  */
-private[process] case class OperationResult[T](result:InternalCalculationResult[T], pos: Int)
+private[process] case class PositionedResult[T](result:InternalOperationResult[T], pos: Int)

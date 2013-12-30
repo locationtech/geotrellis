@@ -12,6 +12,7 @@ import geotrellis.data.AsciiRasterLayerBuilder
 import com.typesafe.config.Config
 
 import java.io.File
+import scala.util._
 
 // example json is available in the geotrellis.process.catalog tests. please
 // keep it up-to-date with changes you make here.
@@ -23,7 +24,7 @@ import java.io.File
 case class Catalog(name:String, stores:Map[String, DataStore], json: String,source: String) {
 
   private var cacheSet = false
-  def initCache(cache:Option[Cache]):Unit =
+  def initCache(cache:Option[Cache[String]]):Unit =
     if(!cacheSet) {
       // Set the cache on all layers.
       for(store <- stores.values) { store.setCache(cache) }
@@ -48,11 +49,27 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String,sour
                 "You may not set the cache more than once during a Catalog's lifetime.")
     }
 
-  def initCache(cache:Cache):Unit = initCache(Some(cache))
+  def initCache(cache:Cache[String]):Unit = initCache(Some(cache))
 
-  def getRasterLayerByName(name:String):Option[RasterLayer] = {
-    stores.values.flatMap(_.getRasterLayerByName(name)).headOption
-  }
+  def getRasterLayer(layerId:LayerId):Try[RasterLayer] =
+    layerId.store match {
+      case Some(ds) => 
+        stores.get(ds) match {
+          case Some(store) =>
+            store.getRasterLayer(layerId.name) match {
+              case Some(layer) => Success(layer)
+              case None => Failure(new java.io.IOException(s"No raster with name ${layerId.name} exists in store ${ds}"))
+            }
+          case None => Failure(new java.io.IOException(s"No store with name $ds exists in the catalog."))
+        }
+      case None => 
+        stores.values.flatMap(_.getRasterLayer(layerId.name)).toList match {
+          case Nil => Failure(new java.io.IOException(s"No raster with name ${layerId.name} exists in the catalog."))
+          case layer :: Nil => Success(layer)
+          case _ =>
+            Failure(new java.io.IOException(s"There are multiple layers named '${layerId.name}' in the catalog. You must specify a datastore"))
+        }
+    }
 }
 
 object Catalog {
@@ -67,7 +84,7 @@ object Catalog {
 
   def addRasterLayerBuilder(layerType:String,builder:RasterLayerBuilder) =
     if(stringToRasterLayerBuilder.contains(layerType)) {
-      sys.error(s"A raster layer builder is already registered for the layer type '$layerType'")
+      println(s"WARNING: A raster layer builder is already registered for the layer type '$layerType'")
     } else {
       stringToRasterLayerBuilder(layerType) = builder
     }

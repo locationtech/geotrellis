@@ -9,7 +9,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class SubtractSpec extends FunSpec 
                  with ShouldMatchers 
                  with TestServer 
@@ -17,7 +16,7 @@ class SubtractSpec extends FunSpec
   describe("Subtract") {
     it("subtracts a constant value to each cell of an int valued raster") {
       val r = positiveIntegerRaster
-      val result = run(Subtract(r,5))
+      val result = get(Subtract(r,5))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (r.get(col,row) - 5)
@@ -27,7 +26,7 @@ class SubtractSpec extends FunSpec
 
     it("subtracts a constant value to each cell of an double valued raster") {
       val r = probabilityRaster
-      val result = run(Subtract(r,1))
+      val result = get(Subtract(r,1))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should be (r.getDouble(col,row) - 1.0)
@@ -37,7 +36,7 @@ class SubtractSpec extends FunSpec
 
     it("subtracts a double constant value to each cell of an int valued raster") {
       val r = positiveIntegerRaster
-      val result = run(Subtract(r,5.7))
+      val result = get(Subtract(r,5.7))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be ( (r.get(col,row) - 5.7).toInt)
@@ -47,7 +46,7 @@ class SubtractSpec extends FunSpec
 
     it("subtracts a double constant value to each cell of an double valued raster") {
       val r = probabilityRaster
-      val result = run(Subtract(r,0.1))
+      val result = get(Subtract(r,0.1))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should be (r.getDouble(col,row) - 0.1)
@@ -57,7 +56,7 @@ class SubtractSpec extends FunSpec
 
     it("subtracts an integer raster to itself") {
       val r = positiveIntegerRaster
-      val result = run(Subtract(r,r))
+      val result = get(Subtract(r,r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (0)
@@ -67,7 +66,7 @@ class SubtractSpec extends FunSpec
     
     it("subtracts a double raster to itself") {
       val r = probabilityRaster
-      val result = run(Subtract(r,r))
+      val result = get(Subtract(r,r))
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should be (0.0)
@@ -89,7 +88,7 @@ class SubtractSpec extends FunSpec
       val r46 = makeRaster(46)
       val r17 = makeRaster(17)
 
-      val r = run(Subtract(r63, r17))
+      val r = get(Subtract(r63, r17))
       r.get(0, 0) should be (r46.get(0, 0))
     }
 
@@ -97,9 +96,9 @@ class SubtractSpec extends FunSpec
       val rs1 = RasterSource("quad_tiled")
       val rs2 = RasterSource("quad_tiled2")
 
-      val r1 = runSource(rs1)
-      val r2 = runSource(rs2)
-      getSource(rs1 - rs2) match {
+      val r1 = get(rs1)
+      val r2 = get(rs2)
+      run(rs1 - rs2) match {
         case Complete(result,success) =>
           //println(success)
           for(row <- 0 until r1.rasterExtent.rows) {
@@ -139,7 +138,7 @@ class SubtractSpec extends FunSpec
                3,3,3, 3,3,3, 3,3,3),
         3,2,3,2)
 
-      getSource(rs1 - rs2 - rs3) match {
+      run(rs1 - rs2 - rs3) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {

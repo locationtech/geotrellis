@@ -8,7 +8,6 @@ import geotrellis.raster._
 
 import scala.collection.mutable.Set
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class FocalStrategySpec extends FunSpec with ShouldMatchers {
   describe("CursorStrategy") {
     it("should execute the ZigZag traversal strategy correctly") {

@@ -1,0 +1,16 @@
+{
+  "layer": "aspect-double",
+  "datatype": "float64", 
+  "type": "arg",
+  "xmin": 557815.000000,
+  "xmax": 567605.000000,
+  "ymin": 5107985.000000,
+  "ymax": 5121985.000000,
+  "cols": 979,
+  "rows": 1400,
+  "cellwidth": 10.000000,
+  "cellheight": 10.000000,
+  "epsg": 3785,
+  "yskew": 0.0,
+  "xskew": 0.0
+}

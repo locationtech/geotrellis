@@ -7,7 +7,7 @@ import geotrellis.source._
 trait FocalOpMethods[+Repr <: RasterSource] { self: Repr =>
     def zipWithNeighbors:Op[Seq[(Op[Raster],TileNeighbors)]] = 
       (self.tiles,self.rasterDefinition).map { (seq,rd) =>
-        val re = rd.re
+        val re = rd.rasterExtent
         val tileLayout = rd.tileLayout
         val rl = tileLayout.getResolutionLayout(re)
 

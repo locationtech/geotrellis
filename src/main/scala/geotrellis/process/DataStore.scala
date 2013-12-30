@@ -5,6 +5,8 @@ import java.io.File
 import geotrellis._
 import geotrellis.util.Filesystem
 
+import scala.util._
+
 /**
  * Represents a location where data can be loaded from (e.g. the filesystem,
  * postgis, a web service, etc).
@@ -47,16 +49,16 @@ case class DataStore(name:String, params:Map[String, String],catalogPath:String)
       // which may contain layer metadata,
       // or we just ignore it.
       RasterLayer.fromFile(f) match {
-        case Some(layer) =>
-          layers(layer.info.name) = layer
+        case Success(layer) =>
+          layers(layer.info.id.name) = layer
           // Skip the tile directory if it's a tiled raster.
           layer match {
             case tl:TileSetRasterLayer =>
               skipDirectories.add(new File(tl.tileDirPath).getAbsolutePath)
             case _ =>
           }
-        case _ =>
-          System.err.println(s"Skipping ${f.getPath}...")
+        case Failure(e) =>
+          System.err.println(s"[ERROR] Skipping ${f.getPath}: $e")
       }
     }
 
@@ -72,7 +74,7 @@ case class DataStore(name:String, params:Map[String, String],catalogPath:String)
   /**
    * Sets the cache for all child layers.
    */
-  def setCache(c:Option[Cache]) = {
+  def setCache(c:Option[Cache[String]]) = {
     for(layer <- layers.values) { layer.setCache(c) }
   }
 
@@ -88,7 +90,5 @@ case class DataStore(name:String, params:Map[String, String],catalogPath:String)
     value == "true" || value == "yes" || value == "1"
   } else { false }
 
-  def getRasterLayerByName(name:String):Option[RasterLayer] = {
-    layers.get(name)
-  }
+  def getRasterLayer(name:String):Option[RasterLayer] = layers.get(name)
 }

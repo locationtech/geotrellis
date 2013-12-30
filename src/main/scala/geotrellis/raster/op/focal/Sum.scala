@@ -18,9 +18,16 @@ import geotrellis.raster.TileNeighbors
  */
 case class Sum(r:Op[Raster], n:Op[Neighborhood],ns:Op[TileNeighbors]) extends FocalOp[Raster](r,n,ns)({ 
   (r,n) =>
-    n match {
-      case Square(ext) => new CellwiseSumCalc
-      case _ => new CursorSumCalc
+    if(r.isFloat){
+      n match {
+        case Square(ext) => new CellwiseDoubleSumCalc
+        case _ => new CursorDoubleSumCalc
+      }
+    }else{
+      n match {
+        case Square(ext) => new CellwiseSumCalc
+        case _ => new CursorSumCalc
+      }
     }
 })
 
@@ -66,8 +73,52 @@ class CellwiseSumCalc extends CellwiseCalculation[Raster]
     if(isData(v)) { total -= r.get(x,y) }
   }
 
-  def reset() = { total = 0 }
+  def reset() = { total = 0}
   def setValue(x:Int,y:Int) = { 
     data.set(x,y,total) 
+  }
+}
+
+class CursorDoubleSumCalc extends CursorCalculation[Raster] 
+    with DoubleRasterDataResult {
+  var total = 0.0
+
+  def calc(r:Raster,cursor:Cursor) = {
+
+    val added = collection.mutable.Set[(Int,Int,Double)]()
+    cursor.addedCells.foreach { (x,y) => 
+      val v = r.getDouble(x,y)
+      added += ((x,y,v))
+      if(isData(v)) { total += r.getDouble(x,y) }
+    }
+
+    val removed = collection.mutable.Set[(Int,Int,Double)]()
+    cursor.removedCells.foreach { (x,y) => 
+      val v = r.getDouble(x,y)
+      removed += ((x,y,v))
+      if(isData(v)) { total -= r.getDouble(x,y) }
+    }
+
+    data.setDouble(cursor.col,cursor.row,total)
+  }
+}
+
+class CellwiseDoubleSumCalc extends CellwiseCalculation[Raster]
+    with DoubleRasterDataResult {
+  var total = 0.0
+  
+  def add(r:Raster,x:Int,y:Int) = { 
+    val v = r.getDouble(x,y)
+    if(isData(v)) { total += r.getDouble(x,y) }
+  }
+
+  def remove(r:Raster,x:Int,y:Int) = { 
+    val v = r.getDouble(x,y)
+    if(isData(v)) { total -= r.getDouble(x,y) }
+  }
+
+  def reset() = { total = 0.0 }
+  def setValue(x:Int,y:Int) = { 
+    data.setDouble(x,y,total) 
   }
 }

@@ -11,35 +11,36 @@ import akka.actor._
  * back to the client.
  */
 private[actors]
-class ResultHandler(server:Server,
+class ResultHandler(serverContext:ServerContext,
                     client:ActorRef,
-                    dispatcher:ActorRef,
                     pos:Int) {
   // This method handles a given output. It will either return a result/error
   // to the client, or dispatch more asynchronous requests, as necessary.
   def handleResult[T](output:StepOutput[T],history:History) {
     output match {
       // ok, this operation completed and we have a value. so return it.
-      case Result(value) => {
-        val result = OperationResult(Complete(value, history.withResult(value)), pos)
-
+      case Result(value) =>
+        val result = PositionedResult(Complete(value, history.withResult(value)), pos)
         client ! result
-      }
-
-      // Execute the returned operation as the next step of this calculation.
-      case AndThen(op) => {
-         server.actor ! RunOperation(op, pos, client, Some(dispatcher))
-      }
 
       // there was an error, so return that as well.
-      case StepError(msg, trace) => {
-        client ! OperationResult(Error(msg, history.withError(msg,trace)), pos)
-      }
+      case StepError(msg, trace) =>
+        client ! PositionedResult(Error(msg, history.withError(msg,trace)), pos)
 
       // we need to do more work, so as the server to do it asynchronously.
-      case StepRequiresAsync(args,cb) => {
-        server.actor ! RunCallback(args, pos, cb, client, dispatcher,history)
-      }
+      case StepRequiresAsync(args,cb) =>
+        serverContext.serverRef ! RunCallback(args, pos, cb, client, history)
+
+      // Execute the returned operation as the next step of this calculation.
+      case AndThen(op) =>
+         serverContext.serverRef ! RunOperation(op, pos, client)
+
+      // This result needs to know how to load layer information.
+      case LayerResult(f) =>
+        val value = f(serverContext.layerLoader)
+        val result = PositionedResult(Complete(value, history.withResult(value)),pos)
+        client ! result
+
     }
   }
 }

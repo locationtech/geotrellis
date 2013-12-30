@@ -16,19 +16,37 @@ import scala.math._
  *                  the data values will be rounded to integers.
  */
 case class Min(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,n,tns)({
-  (r,n) => new CursorCalculation[Raster] with IntRasterDataResult {
-    def calc(r:Raster,cursor:Cursor) = {
+  (r,n) =>
+    if(r.isFloat){
+      new CursorCalculation[Raster] with DoubleRasterDataResult {
+        def calc(r:Raster,cursor:Cursor) = {
   
-      var m = NODATA
-      cursor.allCells.foreach { 
-        (col,row) => {
-          val v = r.get(col,row)
-          if(isData(v) && (v < m || isNoData(m))) { m = v }
+          var m:Double = Double.NaN
+          cursor.allCells.foreach { 
+            (col,row) => {
+              val v = r.getDouble(col,row)
+              if(isData(v) && (v < m || isNoData(m))) { m = v }
+            }
+          }
+          data.setDouble(cursor.col,cursor.row,m)
         }
       }
-      data.set(cursor.col,cursor.row,m)
+ 
+    }else{
+      new CursorCalculation[Raster] with IntRasterDataResult {
+        def calc(r:Raster,cursor:Cursor) = {
+  
+          var m = NODATA
+          cursor.allCells.foreach { 
+            (col,row) => {
+              val v = r.get(col,row)
+              if(isData(v) && (v < m || isNoData(m))) { m = v }
+            }
+          }
+          data.set(cursor.col,cursor.row,m)
+        }
+      }
     }
-  }
 })
 
 object Min {

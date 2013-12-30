@@ -1,22 +1,29 @@
- package geotrellis.render.png
+package geotrellis.render.png
 
 import geotrellis._
 import geotrellis.render._
+import geotrellis.statistics.Histogram
 
 import scala.collection.mutable
 
-case class Renderer(colorMap:IntColorMap, rasterType:RasterType, colorType:ColorType) {
+case class Renderer(colorMap:ColorMap, rasterType:RasterType, colorType:ColorType) {
   def render(r:Raster) = 
-      r.convert(rasterType).map(colorMap)
+    colorMap.render(r).convert(rasterType)
   def settings = Settings(colorType, PaethFilter)
 }
 
 object Renderer {
-  def apply(breaks:ColorBreaks, nodata:Int):Renderer = {
+  def apply(breaks:ColorBreaks, nodata:Int):Renderer =
     apply(breaks.limits, breaks.colors, nodata)
-  }
 
-  def apply(limits:Array[Int], colors:Array[Int], nodata:Int):Renderer = {
+  def apply(limits:Array[Int], colors:Array[Int], nodata:Int):Renderer =
+    apply(limits,colors,nodata,None)
+
+  def apply(limits:Array[Int], colors:Array[Int], nodata:Int,h:Histogram):Renderer =
+    apply(limits,colors,nodata,Some(h))
+
+  /** Include a precomputed histogram to cache the color map and speed up the rendering. */
+  def apply(limits:Array[Int], colors:Array[Int], nodata:Int,h:Option[Histogram]):Renderer = {
     val n = limits.length
     if(colors.length < 255) {
       val indices = (0 until colors.length).toArray
@@ -34,7 +41,12 @@ object Renderer {
       as(255) = 0
       val colorType = Indexed(rgbs, as)
       val colorMap = ColorMap(limits,indices,ColorMapOptions(LessThan,255))
-      Renderer(colorMap, TypeByte, colorType)
+      h match {
+        case Some(hist) =>
+          Renderer(colorMap.cache(hist), TypeByte, colorType)
+        case None =>
+          Renderer(colorMap, TypeByte, colorType)
+      }
     } else {
 
       var opaque = true
@@ -49,16 +61,36 @@ object Renderer {
 
       if (grey && opaque) {
         val colorMap = ColorMap(limits,colors.map(z => (z >> 8) & 0xff),ColorMapOptions(LessThan,nodata))
-        Renderer(colorMap, TypeByte, Grey(nodata))
+        h match {
+          case Some(hist) =>
+            Renderer(colorMap.cache(hist), TypeByte, Grey(nodata))
+          case None =>
+            Renderer(colorMap, TypeByte, Grey(nodata))
+        }
       } else if (opaque) {
         val colorMap = ColorMap(limits,colors.map(z => z >> 8),ColorMapOptions(LessThan,nodata))
-        Renderer(colorMap, TypeInt, Rgb(nodata))
+        h match {
+          case Some(hist) =>
+            Renderer(colorMap.cache(hist), TypeInt, Rgb(nodata))
+          case None =>
+            Renderer(colorMap, TypeInt, Rgb(nodata))
+        }
       } else if (grey) {
         val colorMap = ColorMap(limits,colors.map(z => z & 0xffff),ColorMapOptions(LessThan,nodata))
-        Renderer(colorMap, TypeShort, Greya)
+        h match {
+          case Some(hist) =>
+            Renderer(colorMap.cache(hist), TypeShort, Greya)
+          case None =>
+            Renderer(colorMap, TypeShort, Greya)
+        }
       } else {
         val colorMap = ColorMap(limits,colors,ColorMapOptions(LessThan,nodata))
-        Renderer(colorMap, TypeInt, Rgba)
+        h match {
+          case Some(hist) =>
+            Renderer(colorMap.cache(hist), TypeInt, Rgba)
+          case None =>
+            Renderer(colorMap, TypeInt, Rgba)
+        }
       }
     }
   }

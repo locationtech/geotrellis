@@ -1,8 +1,6 @@
 package geotrellis
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
 import java.io._
 
@@ -13,7 +11,6 @@ import geotrellis.raster.op._
 import geotrellis.statistics._
 import geotrellis.feature._
 
-@RunWith(classOf[JUnitRunner])
 class SerializationTest extends FunSuite 
                         with ShouldMatchers 
                         with RasterBuilders 

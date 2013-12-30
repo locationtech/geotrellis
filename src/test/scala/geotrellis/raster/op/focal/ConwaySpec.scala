@@ -6,14 +6,11 @@ import geotrellis.raster.op._
 
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
-import org.scalatest.junit.JUnitRunner
 
 import scala.math._
 
-@RunWith(classOf[JUnitRunner])
 class ConwaySpec extends FunSpec with FocalOpSpec
                                  with ShouldMatchers {
 

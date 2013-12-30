@@ -23,7 +23,7 @@ import geotrellis.feature.Polygon
 //   def mapper(r: Op[Raster]): Op[List[B]]
 //   def reducer(mapResults: List[B]): C
 
-//   def _run(context: Context) = {
+//   def _run() = {
 //     loadTileExtent match {
 //       case None => runAsync('init :: r :: Nil)
 //       case Some(op) => runAsync('initWithTileExtent :: r :: op :: Nil)

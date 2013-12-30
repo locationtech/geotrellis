@@ -10,14 +10,13 @@ import scala.math.min
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class InverseMaskSpec extends FunSpec 
                   with ShouldMatchers 
                   with TestServer 
                   with RasterBuilders {
   describe("Mask") {
     it("should work with integers") {
-            val rs1 = createRasterSource(
+      val rs1 = createRasterSource(
         Array( NODATA,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1,
 
@@ -33,8 +32,8 @@ class InverseMaskSpec extends FunSpec
                0,0,0, 0,0,0, 0,0,0),
         3,2,3,2)
 
-      val r1 = runSource(rs1)
-      getSource(rs1.localInverseMask(rs2, 2, NODATA)) match {
+      val r1 = get(rs1)
+      run(rs1.localInverseMask(rs2, 2, NODATA)) match {
         case Complete(result,success) =>
           printR(result)
 //          println(success)

@@ -6,18 +6,9 @@ import geotrellis.raster._
 
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
 
-import org.scalatest.junit.JUnitRunner
-
-// 0  1  2  3
-// 4  5  6  7
-// 8  9 10 11
-//12 13 14 15
-
-@RunWith(classOf[JUnitRunner])
 class MinSpec extends FunSpec with FocalOpSpec
                               with ShouldMatchers
                               with TestServer {
@@ -103,7 +94,7 @@ class MinSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalMin(Square(1))) match {
+      run(rs1.focalMin(Square(1))) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,
@@ -112,6 +103,34 @@ class MinSpec extends FunSpec with FocalOpSpec
 
                   1, 1, 1,    1, 1, 1,    1, 1, 2,
                   2, 1, 1,    1, 1, 1,    1, 1, 2))
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+
+      }
+    }
+
+    it("should square min for raster source with double") {
+      val rs1 = createRasterSource(
+        Array( NaN,7.1,1.2,      1.4,3.9,5.1,      9.9,8.1,2.2,
+               9.4,1.1,1.5,      2.5,2.2,2.9,      4.0,3.3,5.1,
+
+               3.4,8.2,1.9,      3.8,3.1,3.0,      1.3,2.1,2.5,
+               2.5,4.9,7.1,      1.4,NaN,1.1,      8.0,4.8,3.0
+        ),
+        3,2,3,2
+      )
+
+      run(rs1.focalMin(Square(1))) match {
+        case Complete(result,success) =>
+//          println(success)
+          assertEqual(result,
+            Array(1.1, 1.1, 1.1,    1.2, 1.4, 2.2,    2.9, 2.2, 2.2,
+                  1.1, 1.1, 1.1,    1.2, 1.4, 1.3,    1.3, 1.3, 2.1,
+
+                  1.1, 1.1, 1.1,    1.4, 1.1, 1.1,    1.1, 1.3, 2.1,
+                  2.5, 1.9, 1.4,    1.4, 1.1, 1.1,    1.1, 1.3, 2.1))
         case Error(msg,failure) =>
           println(msg)
           println(failure)
@@ -131,7 +150,7 @@ class MinSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalMin(Square(2))) match {
+      run(rs1.focalMin(Square(2))) match {
         case Complete(result,success) =>
 //          println(success)
           assertEqual(result,
@@ -159,7 +178,7 @@ class MinSpec extends FunSpec with FocalOpSpec
         3,2,3,2
       )
 
-      getSource(rs1.focalMin(Circle(1))) match {
+      run(rs1.focalMin(Circle(1))) match {
         case Complete(result,success) =>
           //println(success)
           assertEqual(result,

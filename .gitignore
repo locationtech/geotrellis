@@ -10,9 +10,11 @@ TAGS
 .#*
 .lib
 *.aux.xml
+*.jar
 
 *.pyc
 .project
 .classpath
 .cache
 .settings
+.history

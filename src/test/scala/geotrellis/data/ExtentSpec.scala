@@ -9,8 +9,10 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
-class ExtentSpec extends FunSpec with MustMatchers with ShouldMatchers {
+class ExtentSpec extends FunSpec 
+                    with MustMatchers 
+                    with ShouldMatchers 
+                    with TestServer {
 
   def re(pt:(Double, Double), cs:(Double, Double), ncols:Int, nrows:Int) = {
     val (x1, y1) = pt
@@ -30,10 +32,8 @@ class ExtentSpec extends FunSpec with MustMatchers with ShouldMatchers {
   }
 
   describe("An Extent") {
-    val server = TestServer.server
-
     def confirm(op:Op[Raster], expected:Array[Int]) {
-      val r = server.run(op)
+      val r = get(op)
       r.toArray should be (expected)
     }
 

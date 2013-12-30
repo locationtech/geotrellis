@@ -6,9 +6,7 @@ import geotrellis.testutil._
 import geotrellis.source._
 import geotrellis.process._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
-import org.scalatest.junit.JUnitRunner
 
 class GlobalOpMethodsSpec extends FunSpec
                              with TestServer 
@@ -30,9 +28,9 @@ class GlobalOpMethodsSpec extends FunSpec
         ),
         3,4,3,2
       )
-      runSource(rs1.min) should be (1)
-      runSource(rs1.max) should be (20)
-      runSource(rs1.minMax) should be ((1,20))
+      get(rs1.min) should be (1)
+      get(rs1.max) should be (20)
+      get(rs1.minMax) should be ((1,20))
     }
   }
 }

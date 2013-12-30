@@ -6,8 +6,8 @@ import scala.language.higherKinds
 
 trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
   def elements():Op[Seq[Op[T]]]
-  def get():Op[V]
-  def converge() = ValueSource(get.withName("Converge"))
+  private[geotrellis] def convergeOp():Op[V]
+  def converge() = ValueSource(convergeOp.withName("Converge"))
   def converge[B](f:Seq[T]=>B):ValueSource[B] =
     ValueSource( logic.Collect(elements).map(f).withName("Converge") )
 
@@ -52,11 +52,11 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
                          (f:(Op[T],Op[B])=>Op[C])
                          (implicit bf:CanBuildSourceFrom[Repr,C,That]):That = {
     val newElements:Op[Seq[Op[C]]] =
-      (elements,ds.elements).map { (e1,e2) =>
+      ((elements,ds.elements).map { (e1,e2) =>
         e1.zip(e2).map { case (a,b) => 
           f(a,b) 
         }
-      }
+      }).withName("combineOp-map")
 
     val builder = bf.apply(this)
     builder.setOp(newElements)
@@ -99,6 +99,17 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
         seq.transpose.map(_.mapOps(f(_)))
       }
 
+    val builder = bf.apply(this)
+    builder.setOp(newElements)
+    builder.result
+  }
+
+  def run(implicit server:process.Server) = server.run(this)
+  def get(implicit server:process.Server) = server.get(this)
+
+  def cached[R1 >: Repr,T1 >: T](implicit server:process.Server, bf:CanBuildSourceFrom[Repr,T1,R1]) = {
+    val elementOps = server.get(elements) 
+    val newElements = Literal(elementOps.map { op => Literal(server.get(op)) })
     val builder = bf.apply(this)
     builder.setOp(newElements)
     builder.result

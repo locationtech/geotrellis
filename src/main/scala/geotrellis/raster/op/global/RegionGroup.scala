@@ -5,12 +5,19 @@ import spire.syntax._
 import scala.collection.mutable
 import geotrellis.raster.IntArrayRasterData
 
+abstract sealed trait Connectivity
+case object FourNeighbors extends Connectivity
+case object EightNeighbors extends Connectivity
+
 case class RegionGroupResult(raster:Raster,regionMap:Map[Int,Int])
 
-object RegionGroupOptions { val Default = RegionGroupOptions() }
-case class RegionGroupOptions(ignoreNoData:Boolean = true)
+object RegionGroupOptions { val default = RegionGroupOptions() }
+case class RegionGroupOptions(
+  connectivity:Connectivity = FourNeighbors,
+  ignoreNoData:Boolean = true
+)
 
-case class RegionGroup(r:Op[Raster], options:RegionGroupOptions = RegionGroupOptions.Default) 
+case class RegionGroup(r:Op[Raster], options:RegionGroupOptions = RegionGroupOptions.default) 
 extends Op1(r)({
   r =>
     var regionId = -1
@@ -20,46 +27,153 @@ extends Op1(r)({
     val rows = r.rows
     val data = IntArrayRasterData.empty(cols,rows)
     val ignoreNoData = options.ignoreNoData
-    cfor(0)(_ < rows, _ + 1) { row =>
-      var valueToLeft = NODATA
-      cfor(0)(_ < cols, _ + 1) { col =>
-        val v = r.get(col,row)
-        if(isData(v) || !ignoreNoData) {
-          val top =
-            if(row > 0) { r.get(col,row - 1) }
-            else { v + 1 }
 
-          if(v == top) {
-            // Value to north is the same region
-            val topRegion = data.get(col,row-1)
-            if(v == valueToLeft && col > 0) {
-              // Value to west is also same region
-              val leftRegion = data.get(col-1,row)
-              if(leftRegion != topRegion) {
-                // Set the north and west regions equal
-                regions.add(topRegion,data.get(col-1,row))
+    /* Go through each cell row by row, and set all considered neighbors
+     * whose values are equal to the current cell's values to be of the 
+     * same region. If there are no equal considered neighbors, then the cell
+     * represents a new region. Considered neighbors are: west and north, for 
+     * connectivity of FourNieghbors, and west, north, and northwest for connectivity
+     * of EightNeighbors.
+     * 
+     * Code is duplicated for Four and Eight Neighbor connectivity for performance
+     * and to try and avoid a mess of conditionals.
+     */
+    if(options.connectivity == FourNeighbors) {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        var valueToLeft = NODATA
+        cfor(0)(_ < cols, _ + 1) { col =>
+          val v = r.get(col,row)
+          if(isData(v) || !ignoreNoData) {
+            val top =
+              if(row > 0) { r.get(col,row - 1) }
+              else { v + 1 }
+
+            if(v == top) {
+              // Value to north is the same region
+              val topRegion = data.get(col,row-1)
+              data.set(col,row,topRegion)
+
+              if(v == valueToLeft && col > 0) {
+                // Value to west is also same region
+                val leftRegion = data.get(col-1,row)
+                if(leftRegion != topRegion) {
+                  // Set the north and west regions equal
+                  regions.add(topRegion,data.get(col-1,row))
+                }
               }
-              data.set(col,row,topRegion)
             } else {
-              data.set(col,row,topRegion)
-            }
-            if(!regionMap.contains(topRegion)) { regionMap(topRegion) = v }
-          } else {
-            if(v == valueToLeft && col > 0) {
-              // Value to west is same region
-              val westRegion = data.get(col-1,row)
-              data.set(col,row,westRegion)
-              if(!regionMap.contains(westRegion)) { regionMap(westRegion) = v }
-            } else {
-              // This value represents a new region
-              regionId += 1
-              regions.add(regionId)
-              data.set(col,row,regionId)
-              if(!regionMap.contains(regionId)) { regionMap(regionId) = v }
+              if(v == valueToLeft && col > 0) {
+                // Value to west is same region
+                data.set(col,row,data.get(col-1,row))
+              } else {
+                // This value represents a new region
+                regionId += 1
+                regions.add(regionId)
+                data.set(col,row,regionId)
+                regionMap(regionId) = v
+              }
             }
           }
+          valueToLeft = v
         }
-        valueToLeft = v
+      }
+    } else {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        var valueToLeft = NODATA
+        var valueToTopLeft = NODATA
+        var valueToTop = NODATA
+        cfor(0)(_ < cols, _ + 1) { col =>
+          val v = r.get(col,row)
+          val topRight =
+            if(row > 0 && col < cols-1) { r.get(col+1,row - 1) }
+            else { v + 1 }
+
+          if(col == 0) {
+            if(row > 0) { valueToTop = r.get(col,row - 1) }
+            else { valueToTop = v + 1 }
+          }
+
+          if(isData(v) || !ignoreNoData) {
+            if(v == topRight) {
+              // Value to north east is the same region
+              val topRightRegion = data.get(col+1,row-1)
+              data.set(col,row,topRightRegion)
+              if(v == valueToLeft && col > 0) {
+                // Value to west is also same region
+                val leftRegion = data.get(col-1,row)
+                if(leftRegion != topRightRegion) {
+                  // Set the north and west regions equal
+                  regions.add(topRightRegion,data.get(col-1,row))
+                }
+              }
+              if(v == valueToTopLeft && col > 0 && row > 0) {
+                // Value to northwest is also same region
+                val topLeftRegion = data.get(col-1,row-1)
+                if(topLeftRegion != topRightRegion) {
+                  // Set the north and west regions equal
+                  regions.add(topRightRegion,data.get(col-1,row-1))
+                }
+              }
+              if(v == valueToTop && row > 0) {
+                // Value to north is also same region
+                val topRegion = data.get(col,row-1)
+                if(topRegion != topRightRegion) {
+                  // Set the north and west regions equal
+                  regions.add(topRightRegion,data.get(col,row-1))
+                }
+              }
+            } else {
+              if(v == valueToTop) {
+                // Value to north east is the same region
+                val topRegion = data.get(col,row-1)
+                data.set(col,row,topRegion)
+                if(v == valueToLeft && col > 0) {
+                  // Value to west is also same region
+                  val leftRegion = data.get(col-1,row)
+                  if(leftRegion != topRegion) {
+                    // Set the north and west regions equal
+                    regions.add(topRegion,data.get(col-1,row))
+                  }
+                }
+                if(v == valueToTopLeft && col > 0 && row > 0) {
+                  // Value to northwest is also same region
+                  val topLeftRegion = data.get(col-1,row-1)
+                  if(topLeftRegion != topRegion) {
+                    // Set the north and west regions equal
+                    regions.add(topRegion,data.get(col-1,row-1))
+                  }
+                }
+              } else {
+                if(v == valueToLeft && col > 0) {
+                  // Value to west is same region
+                  val westRegion = data.get(col-1,row)
+                  data.set(col,row,westRegion)
+                  if(v == valueToTopLeft && col > 0 && row > 0) {
+                    // Value to northwest is also same region
+                    val topLeftRegion = data.get(col-1,row-1)
+                    if(topLeftRegion != westRegion) {
+                      // Set the north and west regions equal
+                      regions.add(westRegion,data.get(col-1,row-1))
+                    }
+                  }
+                } else {
+                  if(v == valueToTopLeft && col > 0 && row > 0) {
+                    data.set(col,row,data.get(col-1,row-1))
+                  } else {
+                    // This value represents a new region
+                    regionId += 1
+                    regions.add(regionId)
+                    data.set(col,row,regionId)
+                    regionMap(regionId) = v
+                  }
+                }
+              }
+            }
+          }
+          valueToLeft = v
+          valueToTopLeft = valueToTop
+          valueToTop = topRight
+        }
       }
     }
 

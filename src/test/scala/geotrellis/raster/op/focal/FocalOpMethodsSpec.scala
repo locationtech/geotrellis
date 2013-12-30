@@ -6,9 +6,7 @@ import geotrellis.testutil._
 import geotrellis.source._
 import geotrellis.process._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSpec
-import org.scalatest.junit.JUnitRunner
 
 class FocalOpMethodsSpec extends FunSpec with FocalOpSpec 
                                          with TestServer {
@@ -39,7 +37,7 @@ class FocalOpMethodsSpec extends FunSpec with FocalOpSpec
              }
            .collect
 
-      for((r,neighbors) <- run(neighborsOp)) {
+      for((r,neighbors) <- get(neighborsOp)) {
         r.get(0,0) match {
           case 1 =>
             withClue("NW") {

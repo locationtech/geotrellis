@@ -7,14 +7,13 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class GetStandardDeviationSpec extends FunSpec 
                                   with TestServer
                                   with ShouldMatchers {
   describe("GetStandardDeviation") {
     it("should match known values from quad8 raster") {
-      val r = run(LoadFile("src/test/resources/quad8.arg"))
-      val std = run(GetStandardDeviation(r, GetHistogram(r), 1000))
+      val r = get(LoadFile("src/test/resources/quad8.arg"))
+      val std = get(GetStandardDeviation(r, GetHistogram(r), 1000))
 
       val d = std.toArray
   

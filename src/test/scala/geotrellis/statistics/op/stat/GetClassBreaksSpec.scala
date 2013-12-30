@@ -8,7 +8,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class GetClassBreaksSpec extends FunSpec 
                             with TestServer
                             with ShouldMatchers {
@@ -26,7 +25,7 @@ class GetClassBreaksSpec extends FunSpec
     it("gets expected class breaks from test raster.") {
       val h = GetHistogram(Literal(testRaster))
       val result = GetClassBreaks(h, 4)
-      server.run(result) should be (Array(12, 15, 66, 95))
+      get(result) should be (Array(12, 15, 66, 95))
     }
   }
 }

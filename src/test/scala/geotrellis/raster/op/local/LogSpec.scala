@@ -9,7 +9,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import geotrellis.testutil._
 
-@org.junit.runner.RunWith(classOf[org.scalatest.junit.JUnitRunner])
 class LogSpec extends FunSpec 
                  with ShouldMatchers 
                  with TestServer 
@@ -24,7 +23,7 @@ class LogSpec extends FunSpec
                20,20,20, 20,20,20, 20,20,20),
         3,2,3,2)
 
-      getSource(rs.localLog) match {
+      run(rs.localLog) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {
@@ -51,7 +50,7 @@ class LogSpec extends FunSpec
                34.2,34.2,34.2, 34.2,34.2,34.2, 34.2,34.2,34.2),
         3,2,3,2)
 
-      getSource(rs.localLog) match {
+      run(rs.localLog) match {
         case Complete(result,success) =>
 //          println(success)
           for(row <- 0 until 4) {

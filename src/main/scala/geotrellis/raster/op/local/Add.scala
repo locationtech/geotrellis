@@ -3,6 +3,8 @@ package geotrellis.raster.op.local
 import geotrellis._
 import geotrellis.source._
 
+import scala.annotation.tailrec
+
 /**
  * Operation to add values.
  * 

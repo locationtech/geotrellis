@@ -1,0 +1,16 @@
+{
+  "layer": "wm_DevelopedLand",
+  "datatype": "bool", 
+  "type": "arg",
+  "xmin": -9634947.090382,
+  "xmax": -9359277.090382,
+  "ymin": 4030964.877278,
+  "ymax": 4300664.877278,
+  "cols": 9189,
+  "rows": 8990,
+  "cellwidth": 30.000000,
+  "cellheight": 30.000000,
+  "epsg": 3785,
+  "yskew": 0.0,
+  "xskew": 0.0
+}

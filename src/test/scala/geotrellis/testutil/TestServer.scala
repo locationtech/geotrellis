@@ -8,23 +8,25 @@ import org.scalatest.matchers._
 import geotrellis.source.DataSource
 
 object TestServer {
-  lazy val server:Server = new Server("testutil", Catalog.fromPath("src/test/resources/catalog.json"))
+  lazy val init = {
+    GeoTrellis.init(GeoTrellisConfig("src/test/resources/catalog.json"),"test-server")
+  }
 }
-/*
- * Mixin to provide a server that is reset for each test
- */
+
 trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
-  val server = TestServer.server 
+//  val server = TestServer.server
+  TestServer.init
 
-  def run[T:Manifest](op:Op[T]):T = server.run(op)
-  def runSource[T:Manifest](src:DataSource[_,T]):T = server.runSource(src)
-  def getSource[T:Manifest](src:DataSource[_,T]):CalculationResult[T] = server.getSource(src)
-  def getResult[T:Manifest](op:Op[T]) = server.getResult(op)
+  def run[T](op:Op[T]):OperationResult[T] = GeoTrellis.run(op)
+  def run[T](src:DataSource[_,T]):OperationResult[T] = GeoTrellis.run(src)
+  def get[T](op:Op[T]):T = GeoTrellis.get(op)
+  def get[T](src:DataSource[_,T]):T = GeoTrellis.get(src)
 
-  def get(name:String) = io.LoadRaster(name)
+  def getRaster(name:String):Op[Raster] = getRaster("test:fs",name)
+  def getRaster(ds:String,name:String):Op[Raster] = io.LoadRaster(ds,name)
 
   def assertEqual(r:Op[Raster],arr:Array[Int]):Unit =
-    assertEqual(run(r),arr)
+    assertEqual(get(r),arr)
 
   def assertEqual(r:Raster,arr:Array[Int]):Unit = {
     (r.cols * r.rows) should be (arr.length)
@@ -52,7 +54,7 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
     assertEqual(r,arr,0.0000000001)
 
   def assertEqual(r:Op[Raster],arr:Array[Double],threshold:Double):Unit = {
-    val raster = run(r)
+    val raster = get(r)
     val cols = raster.rasterExtent.cols
     val rows = raster.rasterExtent.rows
     for(row <- 0 until rows) {
@@ -75,8 +77,8 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
   def assertEqual(r:Op[Raster],r2:Op[Raster]):Unit = assertEqual(r,r2,0.0000000001)
 
   def assertEqual(rOp1:Op[Raster],rOp2:Op[Raster],threshold:Double):Unit = {
-    val r1 = run(rOp1)
-    val r2 = run(rOp2)
+    val r1 = get(rOp1)
+    val r2 = get(rOp2)
     
     withClue("Raster extends are not equal") { r1.rasterExtent should be (r2.rasterExtent) }
 

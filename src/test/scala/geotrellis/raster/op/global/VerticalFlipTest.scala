@@ -6,22 +6,18 @@ import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.testutil._
 
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
-class VerticalFlipTest extends FunSuite {
-  val server = TestServer.server
-
+class VerticalFlipTest extends FunSuite 
+                          with TestServer {
   test("load valid raster") {
-    val op1 = io.LoadRaster("quadborder")
+    val op1 = io.LoadRaster("test:fs","quadborder")
     val op2 = VerticalFlip(op1)
     val op3 = VerticalFlip(op2)
 
-    val r1 = server.run(op1)
-    val r2 = server.run(op2)
-    val r3 = server.run(op3)
+    val r1 = get(op1)
+    val r2 = get(op2)
+    val r3 = get(op3)
 
     assert(r1 === r3)
 

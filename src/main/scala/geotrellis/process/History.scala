@@ -31,13 +31,13 @@ abstract sealed trait HistoryResult {
   def toJson:String
 }
 
-case class Success(value:String) extends HistoryResult {
+case class SuccessHistory(value:String) extends HistoryResult {
   def toJson() = {
     val escapedVal = value.replace(""""""","""\"""")
     s"""{ "type" : "success", "value" : "$escapedVal" }"""
   }
 }
-case class Failure(msg:String,trace:String) extends HistoryResult {
+case class FailureHistory(msg:String,trace:String) extends HistoryResult {
   def toJson() = {
     val escapedMsg = msg.replace(""""""","""\"""")
     val escapedTrace = msg.replace(""""""","""\"""")
@@ -88,19 +88,12 @@ case class History(id:String,
       if(forced) { resultString + " [Forced]" }
       else { resultString }
 
-    val truncS =           
-      // if(s.length > 15) {
-      //   s"""${s.substring(0,12)}..."""
-      // } else {
-        s
-//      }
-
-    new History(id,steps,Some(Success(truncS)),startTime,now,system)
+    new History(id,steps,Some(SuccessHistory(s)),startTime,now,system)
   }
 
   def withError(msg:String,trace:String) = {
     val now = System.currentTimeMillis
-    new History(id,steps,Some(Failure(msg,trace)),startTime,now,system)
+    new History(id,steps,Some(FailureHistory(msg,trace)),startTime,now,system)
   }
 
   def withStep(step:StepHistory) =
@@ -131,8 +124,8 @@ case class History(id:String,
     sb.append(TreeChars.OUT * halfLen)
     sb.append("Result: ")
     sb.append(result match {
-      case Some(Success(s)) => s"$s (in ${endTime - startTime} ms)"
-      case Some(Failure(msg,trace)) => 
+      case Some(SuccessHistory(s)) => s"$s (in ${endTime - startTime} ms)"
+      case Some(FailureHistory(msg,trace)) => 
         s"ERROR: $msg (in $elapsedTime ms): \n" + trace + "\n"
       case None => "No Result"
     })
