@@ -10,6 +10,9 @@ import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.tiling.TmsTiling
 import scala.util.Random
 import org.apache.hadoop.io.MapFile
+import geotrellis.spark.rdd.TileIdPartitioner
+import geotrellis.spark.rdd.SplitGenerator
+import geotrellis.spark.utils.GeotrellisSparkUtils
 
 /**
  * @author akini
@@ -36,7 +39,7 @@ object GeneratePartitionedMapFiles {
     val numFiles = args(2).toInt
     
     val tilesPerFile = numTiles / numFiles
-    val conf = new Configuration()
+    val conf = GeotrellisSparkUtils.createHadoopConfiguration
     conf.set("io.map.index.interval", "1");
     val fs = dirPath.getFileSystem(conf)
 
@@ -47,7 +50,7 @@ object GeneratePartitionedMapFiles {
     for (i <- 0 until numTiles) {
       if(i % tilesPerFile == 0) {
     	writer.foreach(_.close)  
-        val mapFilePath = new Path(dirPath, i.toString)
+        val mapFilePath = new Path(dirPath, "part-%05d".format(i))
         println("writing to " + mapFilePath)
         writer = Some(new MapFile.Writer(conf, fs, mapFilePath.toUri.toString, 
         							classOf[TileIdWritable], classOf[ArgWritable],
@@ -59,6 +62,14 @@ object GeneratePartitionedMapFiles {
       writer.foreach(_.append(key, value))
     }
     writer.foreach(_.close)  
+
+    val generator = new SplitGenerator {
+      def getSplits = (for(i <- 0 until numTiles by tilesPerFile) yield i.toLong).drop(1).map(_ - 1)
+      println(getSplits)
+    }
+    val splitFile = new Path(dirPath, TileIdPartitioner.SplitFile).toUri.toString
+    TileIdPartitioner(generator, splitFile, conf)
   }
+
 
 }
