@@ -235,8 +235,9 @@ object GeotrellisBuild extends Build {
         ),
       resolvers ++= Seq(
         "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos")
-    ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
-      ++ defaultAssemblySettings
+    ) ++ 
+    defaultAssemblySettings ++ 
+    net.virtualvoid.sbt.graph.Plugin.graphSettings
 
   // Project: geotools
 
