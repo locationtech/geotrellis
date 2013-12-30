@@ -11,5 +11,8 @@ case class RasterDefinition(layerId:LayerId,
                             tileLayout:TileLayout,
                             rasterType:RasterType) {
   def isTiled = tileLayout.isTiled
+
+  def withType(newType:RasterType) = 
+    RasterDefinition(layerId, rasterExtent, tileLayout, newType)
 }
 
