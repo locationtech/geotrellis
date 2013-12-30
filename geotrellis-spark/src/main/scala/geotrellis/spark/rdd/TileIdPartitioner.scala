@@ -35,6 +35,7 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
   
   private def findPartition(key: Any) = {
     val index = java.util.Arrays.binarySearch(splitPoints.asInstanceOf[Array[Object]], key)
+    println("findPartition returned " + index)
     if (index < 0)
       (index + 1) * -1
     else
@@ -43,17 +44,13 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
 
 
   private def writeObject(out: ObjectOutputStream) {
-    println("calling writeObject")
     out.defaultWriteObject()
     out.writeInt(splitPoints.length)
     splitPoints.foreach(split => out.writeLong(split.get))
   }
 
   private def readObject(in: ObjectInputStream) {
-    println("calling readObject")
-
-    in.defaultReadObject()
-
+    in.defaultReadObject()    
     val buf = new ArrayBuffer[TileIdWritable]
     val len = in.readInt
     for (i <- 0 until len)
@@ -115,8 +112,8 @@ object TileIdPartitioner {
   }
   private def writeSplits(splitGenerator: SplitGenerator, splitFile: Path, conf: Configuration): Int = {
     val splits = splitGenerator.getSplits
-
-    val fs = FileSystem.get(conf)
+    println("writing splits to " + splitFile)
+    val fs = splitFile.getFileSystem(conf)
     val fdos = fs.create(splitFile)
     val out = new PrintWriter(fdos)
     splits.foreach {
