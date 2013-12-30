@@ -11,7 +11,7 @@ import geotrellis.spark.formats.TileIdWritable
 import org.apache.hadoop.mapred.SequenceFileOutputFormat
 import org.apache.hadoop.io.SequenceFile
 
-class SaveImageFunctions[K <% Writable: ClassTag, V <% Writable: ClassTag](self: RDD[(K, V)]) {
+class SaveImageFunctions[K <% TileIdWritable: ClassTag, V <% ArgWritable: ClassTag](self: RDD[(K, V)]) {
   def save(path: String) = {
     println("Saving image out...")
     val jobConf = new JobConf(self.context.hadoopConfiguration)
