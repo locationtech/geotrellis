@@ -30,14 +30,18 @@ class ColorRamp(val colors: Seq[Int]) {
    * ColorRamp.  For example, given a color ramp of two colors, red and yellow, a request
    * for 5 colors would return Red, Yellowish-Red, Orange, Reddish-Yellow, Yellow.
    */
-  def interpolate(nBreaks: Int): ColorRamp = ColorRamp(new MultiColorRangeChooser(colors.toArray).getColors(nBreaks))
+  def interpolate(nBreaks: Int): ColorRamp = 
+    ColorRamp(Color.chooseColors(colors.toArray, nBreaks))
+
   def alphaGradient(start: Int = 0, stop: Int = 0xFF): ColorRamp = {
-    val alphas = new LinearColorRangeChooser(start,stop).getRanges(Color.unzipA, colors.length)
+    val alphas = Color.chooseColors(start,stop, colors.length).map(Color.unzipA)
+//.getRanges(Color.unzipA, colors.length)
     
     val newColors = colors.zip(alphas).map ({ case (color, a) => 
       val (r,g,b,_) = Color.unzip(color)
       Color.zip(r,g,b,a)
     })
+
     ColorRamp(newColors) 
   }
   def setAlpha(a: Int): ColorRamp = {

@@ -1,13 +1,17 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.process._
+import geotrellis.source._
 import geotrellis.testutil._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
 
 import scala.math._
+
+import scalaxy.loops._
 
 class MeanSpec extends FunSpec with FocalOpSpec
                                with TestServer
@@ -111,6 +115,36 @@ class MeanSpec extends FunSpec with FocalOpSpec
         case Error(msg,failure) =>
           // println(msg)
           // println(failure)
+          assert(false)
+      }
+    }
+
+    it("should run Mean square 3 on tiled raster in catalog") {
+      val name = "SBN_inc_percap"
+
+      val source = RasterSource(name)
+      val r = source.get
+
+      val expected = source.focalMean(Square(3)).get
+
+      val tileLayout = TileLayout.fromTileDimensions(r.rasterExtent,256,256)
+      val rs = RasterSource(TileRaster.wrap(r,tileLayout,cropped = false))
+
+      rs.focalMean(Square(3)).run match {
+        case Complete(value,hist) =>
+          for(col <- 0 until expected.cols optimized) {
+            for(row <- 0 until expected.rows optimized) {
+              withClue (s"Value different at $col,$row: ") {
+                val v1 = expected.getDouble(col,row)
+                val v2 = value.getDouble(col,row)
+                if(isNoData(v1)) isNoData(v2) should be (true)
+                else if(isNoData(v2)) isNoData(v1) should be (true)
+                else v1 should be (v2)
+              }
+            }
+          }
+        case Error(message,trace) =>
+          println(message)
           assert(false)
       }
     }

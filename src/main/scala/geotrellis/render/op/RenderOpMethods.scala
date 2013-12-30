@@ -17,19 +17,24 @@ trait RenderOpMethods[+Repr <: RasterDS] { self: Repr =>
   def color(breaksToColors:Map[Double,Int],options:ColorMapOptions)(implicit d:DI):RasterSource =
     mapOp(ColorRaster(_,breaksToColors,options))
 
-  def renderPng():ValueSource[Array[Byte]] =
+  def renderPng():ValueSource[Png] =
     renderPng(ColorRamps.BlueToRed)
 
-  def renderPng(colorRamp:ColorRamp):ValueSource[Array[Byte]] = 
+  def renderPng(colorRamp:ColorRamp):ValueSource[Png] = 
     self.converge.mapOp(SimpleRenderPng(_,colorRamp))
 
-  def renderPng(colorBreaks:ColorBreaks):ValueSource[Array[Byte]] = 
+  def renderPng(colorBreaks:ColorBreaks):ValueSource[Png] = 
     renderPng(colorBreaks,0)
 
-  def renderPng(colorBreaks:ColorBreaks,noDataColor:Int):ValueSource[Array[Byte]] = 
+  def renderPng(colorBreaks:ColorBreaks,noDataColor:Int):ValueSource[Png] = 
     self.converge.mapOp(RenderPng(_,colorBreaks,noDataColor))
 
-  def renderPng(ramp:ColorRamp, breaks:Array[Int]):ValueSource[Array[Byte]] =
+  def renderPng(ramp:ColorRamp, breaks:Array[Int]):ValueSource[Png] =
     renderPng(ColorBreaks.assign(breaks,ramp.toArray))
 
+  def renderPng(colors:Array[Int]):ValueSource[Png] =
+    self.converge.mapOp(SimpleRenderPng(_,colors))
+
+  def renderPng(colors:Array[Int], numColors:Int):ValueSource[Png] =
+    self.converge.mapOp(SimpleRenderPng(_,Color.chooseColors(colors,numColors)))
 }

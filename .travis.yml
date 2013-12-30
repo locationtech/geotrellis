@@ -10,3 +10,7 @@ notifications:
   irc:
       - "irc.freenode.org#geotrellis"
   use_notice: true
+
+jdk:
+  - openjdk7
+  - oraclejdk7

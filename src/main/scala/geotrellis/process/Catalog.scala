@@ -12,6 +12,7 @@ import geotrellis.data.AsciiRasterLayerBuilder
 import com.typesafe.config.Config
 
 import java.io.File
+import scala.util._
 
 // example json is available in the geotrellis.process.catalog tests. please
 // keep it up-to-date with changes you make here.
@@ -50,15 +51,23 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String,sour
 
   def initCache(cache:Cache[String]):Unit = initCache(Some(cache))
 
-  def getRasterLayer(layerId:LayerId):Option[RasterLayer] =
+  def getRasterLayer(layerId:LayerId):Try[RasterLayer] =
     layerId.store match {
-      case Some(ds) => stores.get(ds).flatMap(_.getRasterLayer(layerId.name))
+      case Some(ds) => 
+        stores.get(ds) match {
+          case Some(store) =>
+            store.getRasterLayer(layerId.name) match {
+              case Some(layer) => Success(layer)
+              case None => Failure(new java.io.IOException(s"No raster with name ${layerId.name} exists in store ${ds}"))
+            }
+          case None => Failure(new java.io.IOException(s"No store with name $ds exists in the catalog."))
+        }
       case None => 
         stores.values.flatMap(_.getRasterLayer(layerId.name)).toList match {
-          case Nil => None
-          case layer :: Nil => Some(layer)
+          case Nil => Failure(new java.io.IOException(s"No raster with name ${layerId.name} exists in the catalog."))
+          case layer :: Nil => Success(layer)
           case _ =>
-            sys.error(s"There are multiple layers named '${layerId.name}' in the catalog. You must specify a datastore")
+            Failure(new java.io.IOException(s"There are multiple layers named '${layerId.name}' in the catalog. You must specify a datastore"))
         }
     }
 }
@@ -75,7 +84,7 @@ object Catalog {
 
   def addRasterLayerBuilder(layerType:String,builder:RasterLayerBuilder) =
     if(stringToRasterLayerBuilder.contains(layerType)) {
-      sys.error(s"A raster layer builder is already registered for the layer type '$layerType'")
+      println(s"WARNING: A raster layer builder is already registered for the layer type '$layerType'")
     } else {
       stringToRasterLayerBuilder(layerType) = builder
     }

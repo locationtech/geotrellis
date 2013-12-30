@@ -18,25 +18,29 @@ object FlowDirection {
     val ncols = raster.cols
     val nrows = raster.rows
     // weights to be applied to drop in elevation towards the neighbours
-    val distances = Map[Int,Double](
-      1 -> 1,
-      2 -> sqrt(2),
-      4 -> 1,
-      8 -> sqrt(2),
-      16 -> 1,
-      32 -> sqrt(2),
-      64 -> 1,
-      128 -> sqrt(2))
+    val distances = 
+      Map[Int,Double](
+        (1,        1   ),
+        (2,   sqrt(2)  ),
+        (4,        1   ),
+        (8,   sqrt(2)  ),
+        (16,       1   ),
+        (32,  sqrt(2)  ),
+        (64,       1   ),
+        (128, sqrt(2)  )
+      )
     // coordinates of the 8 neighbours
-    val map = Map[Int,(Int,Int)](
-      1 -> (c+1,r),
-      2 -> (c+1,r+1),
-      4 -> (c,r+1),
-      8 -> (c-1,r+1),
-      16 -> (c-1,r),
-      32 -> (c-1,r-1),
-      64 -> (c,r-1),
-      128 -> (c+1,r-1))
+    val map = 
+      Map[Int,(Int,Int)](
+        ( 1,   (c+1,r)    ),
+        ( 2,   (c+1,r+1)  ),
+        ( 4,   (c,r+1)    ),
+        ( 8,   (c-1,r+1)  ),
+        (16,   (c-1,r)    ),
+        (32,   (c-1,r-1)  ),
+        (64,   (c,r-1)    ),
+        (128,  (c+1,r-1)  )
+      )
     // remove invalid neighbours and produce map of drop-values
       map.filter { case(_,(col,row)) =>
         0 <= col && col < ncols &&

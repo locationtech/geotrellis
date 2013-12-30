@@ -51,4 +51,6 @@ final case class LazyConvert(data: RasterData, typ: RasterType)
   
   def toArrayByte: Array[Byte] = force.toArrayByte
 
+  def warp(current:RasterExtent,target:RasterExtent):RasterData =
+    LazyConvert(data.warp(current,target),typ)
 }

@@ -21,11 +21,19 @@ final case class FloatArrayRasterData(array: Array[Float], cols: Int, rows: Int)
     bytebuff.asFloatBuffer.put(array)
     pixels
   }
+
+  def warp(current:RasterExtent,target:RasterExtent):RasterData = {
+    val warped = Array.ofDim[Float](target.cols*target.rows).fill(Float.NaN)
+    Warp[Float](current,target,array,warped)
+    FloatArrayRasterData(warped, target.cols, target.rows)
+  }
 }
 
 object FloatArrayRasterData {
-  def ofDim(cols: Int, rows: Int) = new FloatArrayRasterData(Array.ofDim[Float](cols * rows), cols, rows)
-  def empty(cols: Int, rows: Int) = new FloatArrayRasterData(Array.fill[Float](cols * rows)(Float.NaN), cols, rows)
+  def ofDim(cols: Int, rows: Int) = 
+    new FloatArrayRasterData(Array.ofDim[Float](cols * rows), cols, rows)
+  def empty(cols: Int, rows: Int) = 
+    new FloatArrayRasterData(Array.ofDim[Float](cols * rows).fill(Float.NaN), cols, rows)
 
   def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int) = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)

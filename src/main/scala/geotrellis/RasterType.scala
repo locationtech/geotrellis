@@ -9,9 +9,14 @@ sealed abstract class RasterType(val precedence:Int, val float:Boolean, val name
   def contains(rhs:RasterType) = precedence >= rhs.precedence
 
   def isDouble = precedence > 32
+
+  def numBytes(size:Int) = bytes * size
 }
 
-case object TypeBit extends RasterType(1, false, "bool")
+case object TypeBit extends RasterType(1, false, "bool") { 
+  override final def numBytes(size:Int) = (size + 7) / 8
+}
+
 case object TypeByte extends RasterType(8, false, "int8")
 case object TypeShort extends RasterType(16, false, "int16")
 case object TypeInt extends RasterType(32, false, "int32")

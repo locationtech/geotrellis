@@ -2,6 +2,8 @@ package geotrellis.raster
 
 import geotrellis._
 
+import scalaxy.loops._
+
 object RasterData {
   def largestType(lhs: RasterData, rhs: RasterData) = {
     lhs.getType.union(rhs.getType)
@@ -31,7 +33,7 @@ object RasterData {
     case TypeDouble => DoubleArrayRasterData.empty(cols, rows)
   }
 
-  def toRasterData(bytes: Array[Byte], awType: RasterType, cols: Int, rows: Int) = awType match {
+  def fromArrayByte(bytes: Array[Byte], awType: RasterType, cols: Int, rows: Int) = awType match {
     case TypeBit    => BitArrayRasterData.fromArrayByte(bytes, cols, rows)
     case TypeByte   => ByteArrayRasterData.fromArrayByte(bytes, cols, rows)
     case TypeShort  => ShortArrayRasterData.fromArrayByte(bytes, cols, rows)
@@ -39,6 +41,12 @@ object RasterData {
     case TypeFloat  => FloatArrayRasterData.fromArrayByte(bytes, cols, rows)
     case TypeDouble => DoubleArrayRasterData.fromArrayByte(bytes, cols, rows)
   }
+
+  def apply(arr: Array[Byte], cols: Int, rows: Int) = ByteArrayRasterData(arr,cols,rows)
+  def apply(arr: Array[Short], cols: Int, rows: Int) = ShortArrayRasterData(arr,cols,rows)
+  def apply(arr: Array[Int], cols: Int, rows: Int) = IntArrayRasterData(arr,cols,rows)
+  def apply(arr: Array[Float], cols: Int, rows: Int) = FloatArrayRasterData(arr,cols,rows)
+  def apply(arr: Array[Double], cols: Int, rows: Int) = DoubleArrayRasterData(arr,cols,rows)
 }
 
 /**
@@ -94,6 +102,7 @@ trait RasterData extends Serializable {
     }
     output
   }
+//  def map(f:Int=>Int):RasterData = LazyMap(this,f)
 
   /**
    * Combine two RasterData's cells into new cells using the given integer
@@ -115,6 +124,8 @@ trait RasterData extends Serializable {
     }
     output
   }
+  // def combine(other:RasterData)(f:(Int,Int) => Int):RasterData =
+  //   LazyCombine(this,other,f)
 
   /**
    * For every cell in the given raster, run the given double function.
@@ -145,6 +156,7 @@ trait RasterData extends Serializable {
     }
     data
   }
+//  def mapDouble(f:Double => Double):RasterData = LazyMapDouble(this, f)
 
   /**
    * Combine two RasterData's cells into new cells using the given double
@@ -166,6 +178,8 @@ trait RasterData extends Serializable {
     }
     output
   }
+  // def combineDouble(other: RasterData)(f: (Double, Double) => Double): RasterData =
+  //   LazyCombineDouble(this, other, f)
 
   override def equals(other: Any): Boolean = other match {
     case r: RasterData => {
@@ -214,4 +228,6 @@ trait RasterData extends Serializable {
   }
 
   def toArrayByte: Array[Byte]
+
+  def warp(current:RasterExtent,target:RasterExtent):RasterData 
 }

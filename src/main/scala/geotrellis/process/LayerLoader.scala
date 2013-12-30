@@ -3,6 +3,8 @@ package geotrellis.process
 import geotrellis.process._
 import geotrellis.util.Filesystem
 
+import scala.util._
+
 /** LayerLoader will be passed into Operation[T]'s that
   * mix in the LayerOp trait right before 'run' is called
   * on the operation step and cleared afterwards.
@@ -30,8 +32,8 @@ class LayerLoader(server:Server) {
    */
   def getRasterLayer(layerId:LayerId): RasterLayer =
     server.catalog.getRasterLayer(layerId) match {
-      case Some(layer) => layer
-      case None => sys.error(s"couldn't find raster ${layerId.name} in catalog at ${server.catalog.source}")
+      case Success(layer) => layer
+      case Failure(e) => throw e
     }
 
   /**
@@ -39,8 +41,8 @@ class LayerLoader(server:Server) {
    */
   def getRasterLayerFromPath(path:String):RasterLayer =
     RasterLayer.fromPath(processPath(path)) match {
-      case Some(layer) => layer
-      case None => sys.error(s"couldn't load raster at ${processPath(path)}")
+      case Success(layer) => layer
+      case Failure(e) => throw e
     }
 
   /**
@@ -48,7 +50,7 @@ class LayerLoader(server:Server) {
    */
   def getRasterLayerFromUrl(url:String):RasterLayer = 
     RasterLayer.fromUrl(url) match {
-      case Some(layer) => layer
-      case None => sys.error(s"couldn't get raster layer from URL $url")
+      case Success(layer) => layer
+      case Failure(e) => throw e
     }
 }

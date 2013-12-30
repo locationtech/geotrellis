@@ -58,14 +58,23 @@ final case class BitArrayRasterData(array: Array[Byte], cols: Int, rows: Int)
       this
     } else {
       // inverse (complement) of what we have now
-      val arr = array.map(b => (b ^ -1).toByte)
-      BitArrayRasterData(arr, cols, rows)
+      val clone = array.clone
+      var i = 0
+      val len = array.length
+      while(i < len) { clone(i) = (array(i) ^ -1).toByte ; i += 1 }
+      BitArrayRasterData(clone, cols, rows)
     }
   }
 
   override def mapDouble(f: Double => Double) = map(z => d2i(f(i2d(z))))
 
   def toArrayByte: Array[Byte] = array
+
+  def warp(current:RasterExtent,target:RasterExtent):RasterData = {
+    val warped = Array.ofDim[Byte]((target.cols*target.rows+7)/8).fill(byteNODATA)
+    Warp(current,target,new BitWarpAssign(array,warped))
+    BitArrayRasterData(warped, target.cols, target.rows)
+  }
 }
 
 object BitArrayRasterData {

@@ -23,10 +23,8 @@ object RasterLayerParser {
         Catalog.getRasterLayerBuilder(layerType) match {
           case Some(builder) => builder(path,json)
           case None => 
-            System.err.println(s"[ERROR]  Raster layer defined at $path has raster layer type $layerType " +
-                                "for which this catalog has no builder.")
-            System.err.println("          Skipping...")
-            None
+            throw new java.io.IOException(s"Raster layer defined at $path has raster layer type $layerType " +
+                                           "for which this catalog has no builder.")
         }
   }
 }

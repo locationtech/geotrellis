@@ -16,14 +16,33 @@ object TileRaster {
         tr
       case _ =>
         wrap(r, tileLayout)
-//        sys.error(s"TileRaster cannot handle this raster type (${r.getClass.getSimpleName})")
     }
 
-  def wrap(r:Raster,tileLayout:TileLayout):TileRaster = {
-    TileRaster(split(r,tileLayout),r.rasterExtent,tileLayout)
+  /** Converts a raster into a TileRaster with the given tileLayout.
+    * 
+    * @param        r              Raster to wrap.
+    * @param        tileLayout     TileLayout of the resulting 
+    *                              TileRaster.
+    * @param        cropped        Set this flag to false if you
+    *                              want the tiles to be ArrayRasters,
+    *                              otherwise they will be CroppedRasters
+    *                              with the raster 'r' as the backing raster.
+    */ 
+  def wrap(r:Raster,tileLayout:TileLayout, cropped:Boolean = true):TileRaster = {
+    TileRaster(split(r,tileLayout, cropped),r.rasterExtent.adjustTo(tileLayout),tileLayout)
   }
 
-  def split(r:Raster,tileLayout:TileLayout):Seq[Raster] = {
+  /** Splits a raster into a TileRaster into tiles.
+    * 
+    * @param        r              Raster to split.
+    * @param        tileLayout     TileLayout defining the tiles to be 
+    *                              generated.
+    * @param        cropped        Set this flag to false if you
+    *                              want the tiles to be ArrayRasters,
+    *                              otherwise they will be CroppedRasters
+    *                              with the raster 'r' as the backing raster.
+    */ 
+  def split(r:Raster,tileLayout:TileLayout, cropped:Boolean = true):Seq[Raster] = {
     val pCols = tileLayout.pixelCols
     val pRows = tileLayout.pixelRows
 
@@ -35,7 +54,10 @@ object TileRaster {
         val firstRow = trow * pRows
         val lastRow = firstRow + pRows - 1
         val gb = GridBounds(firstCol,firstRow,lastCol,lastRow)
-        tiles += CroppedRaster(r,gb)
+        tiles += {
+          if(cropped) CroppedRaster(r,gb)
+          else CroppedRaster(r,gb).toArrayRaster
+        }
       }
     }
     return tiles
@@ -50,6 +72,8 @@ case class TileRaster(tiles:Seq[Raster],
   private def getTile(tcol:Int,trow:Int) = tileList(trow*tileCols+tcol)
 
   val rasterType = tiles(0).rasterType
+
+  def warp(target:RasterExtent) = toArrayRaster.warp(target)
 
   def toArrayRaster():ArrayRaster = {
     if (cols.toLong*rows.toLong > Int.MaxValue.toLong) {
@@ -147,6 +171,8 @@ case class TileRaster(tiles:Seq[Raster],
       arr
     }
   }
+
+  def toArrayByte():Array[Byte] = toArrayRaster.toArrayByte
 
   def get(col:Int, row:Int):Int = {
     val tcol = col / tileLayout.pixelCols

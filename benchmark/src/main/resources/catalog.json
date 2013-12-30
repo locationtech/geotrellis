@@ -5,8 +5,16 @@
    "store": "test:fs",
    "params": {
      "type": "fs",
-     "path": "src/main/resources/sbn",
-     "cacheAll": "yes"
+     "path": "sbn",
+     "cacheAll": "no"
+   }
+  },
+  {
+   "store": "data:fs",
+   "params": {
+     "type": "fs",
+     "path": "data",
+     "cacheAll": "no"
    }
   }
  ]

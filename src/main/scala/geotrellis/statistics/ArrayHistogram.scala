@@ -4,7 +4,7 @@ import geotrellis._
 import math.{abs, ceil, min, max, sqrt}
 
 object ArrayHistogram {
-  def apply(size:Int) = new ArrayHistogram(Array.fill[Int](size)(0), 0)
+  def apply(size:Int) = new ArrayHistogram(Array.ofDim[Int](size).fill(0), 0)
 
   def apply(counts:Array[Int], total:Int) = new ArrayHistogram(counts, total)
 

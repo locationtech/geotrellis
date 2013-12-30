@@ -22,10 +22,11 @@ object GeoTrellis {
 
     val catalog = config.catalogPath match {
       case Some(path) =>
-        if(!new java.io.File(path).exists()) {
-          sys.error(s"Catalog path $path does not exist. Please modify your settings.")
+        val file = new java.io.File(path)
+        if(!file.exists()) {
+          sys.error(s"Catalog path ${file.getAbsolutePath} does not exist. Please modify your settings.")
         }
-        Catalog.fromPath(path)
+        Catalog.fromPath(file.getAbsolutePath)
       case None => Catalog.empty(s"${name}-catalog")
     }
     _server = Server(name, catalog)

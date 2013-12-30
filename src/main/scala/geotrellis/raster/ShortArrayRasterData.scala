@@ -21,11 +21,23 @@ final case class ShortArrayRasterData(array: Array[Short], cols: Int, rows: Int)
     bytebuff.asShortBuffer.put(array)
     pixels
   }
+
+  def warp(current:RasterExtent,target:RasterExtent):RasterData = {
+    val warped = Array.ofDim[Short](target.cols*target.rows).fill(shortNODATA)
+    Warp[Short](current,target,array,warped)
+    ShortArrayRasterData(
+      warped,
+      target.cols,
+      target.rows
+    )
+  }
 }
 
 object ShortArrayRasterData {
-  def ofDim(cols: Int, rows: Int) = new ShortArrayRasterData(Array.ofDim[Short](cols * rows), cols, rows)
-  def empty(cols: Int, rows: Int) = new ShortArrayRasterData(Array.fill[Short](cols * rows)(Short.MinValue), cols, rows)
+  def ofDim(cols: Int, rows: Int) = 
+    new ShortArrayRasterData(Array.ofDim[Short](cols * rows), cols, rows)
+  def empty(cols: Int, rows: Int) = 
+    new ShortArrayRasterData(Array.ofDim[Short](cols * rows).fill(shortNODATA), cols, rows)
 
   def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int) = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)

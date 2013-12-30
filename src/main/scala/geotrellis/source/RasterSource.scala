@@ -13,19 +13,20 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps:Op[Seq[Op[Ra
 }
 
 object RasterSource {
-  def fromFile(path:String):RasterSource = 
-    fromFile(path,None)
+  def fromPath(path:String):RasterSource = 
+    fromPath(path,None)
 
-  def fromFile(path:String,rasterExtent:RasterExtent):RasterSource =
-    fromFile(path,Some(rasterExtent))
+  def fromPath(path:String,rasterExtent:RasterExtent):RasterSource =
+    fromPath(path,Some(rasterExtent))
 
-  def fromFile(path:String,targetExtent:Option[RasterExtent]):RasterSource = {
+  def fromPath(path:String,targetExtent:Option[RasterExtent]):RasterSource = {
     val rasterLayer = io.LoadRasterLayerFromPath(path)
     val rasterDef = 
       rasterLayer map { layer =>
         RasterDefinition(layer.info.id,
                          layer.info.rasterExtent,
-                         layer.info.tileLayout)
+                         layer.info.tileLayout,
+                         layer.info.rasterType)
       }
 
     val tileOps = 
@@ -53,7 +54,7 @@ object RasterSource {
     RasterSource(io.LoadRasterDefinition(LayerId(name)),Some(rasterExtent))
 
   def apply(store:String,name:String):RasterSource =
-    RasterSource(io.LoadRasterDefinition(LayerId(name)),None)
+    RasterSource(io.LoadRasterDefinition(LayerId(store,name)),None)
 
   def apply(store:String,name:String,rasterExtent:RasterExtent):RasterSource =
     RasterSource(io.LoadRasterDefinition(LayerId(store,name)),Some(rasterExtent))
@@ -92,14 +93,18 @@ object RasterSource {
   def apply(rasterDef:Op[RasterDefinition],tileOps:Op[Seq[Op[Raster]]]) =
     new RasterSource(rasterDef, tileOps)
 
+  /** Create a RasterSource who's tile ops are the tiles of a TileRaster. */
   def apply(tiledRaster:TileRaster):RasterSource = {
     val rasterDef = 
       RasterDefinition(
         LayerId("LiteralTileRaster"),
         tiledRaster.rasterExtent,
-        tiledRaster.tileLayout
+        tiledRaster.tileLayout,
+        tiledRaster.rasterType
       )
+    
     val tileOps = tiledRaster.tiles.map(Literal(_))
+
     new RasterSource(rasterDef, tileOps)
   }
 
@@ -108,10 +113,39 @@ object RasterSource {
       RasterDefinition(
         LayerId("LiteralTileRaster"),
         tr.rasterExtent,
-        tr.tileLayout
+        tr.tileLayout,
+        tr.rasterType
       )
     }
     val tileOps = tiledRaster.map(_.tiles.map(Literal(_)))
+    new RasterSource(rasterDef, tileOps)
+  }
+
+  def apply(raster:Op[Raster])(implicit d:DI,d2:DI):RasterSource = {
+    val rasterDef = 
+      raster.map { r =>
+        val (cols,rows) = (r.rasterExtent.cols,r.rasterExtent.rows)
+        RasterDefinition(LayerId("LiteralRaster"),
+                         r.rasterExtent,
+                         TileLayout.singleTile(cols,rows),
+                         r.rasterType)
+      }
+
+    val tileOps = Literal(Seq(raster))
+    new RasterSource(rasterDef, tileOps)
+  }
+
+  def apply(r:Raster):RasterSource = {
+    val rasterDef = 
+      Literal {
+        val (cols,rows) = (r.rasterExtent.cols,r.rasterExtent.rows)
+        RasterDefinition(LayerId("LiteralRaster"),
+                         r.rasterExtent,
+                         TileLayout.singleTile(cols,rows),
+                         r.rasterType)
+      }
+
+    val tileOps = Literal(Seq(Literal(r)))
     new RasterSource(rasterDef, tileOps)
   }
 }

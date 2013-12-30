@@ -6,7 +6,7 @@ import geotrellis.raster.{IntConstant,DoubleConstant}
 import com.typesafe.config.Config
 
 object ConstantRasterLayerBuilder extends RasterLayerBuilder {
-  def apply(ds:Option[String],jsonPath:String, json:Config):Option[RasterLayer] = {
+  def apply(ds:Option[String],jsonPath:String, json:Config):RasterLayer = {
     val cols = json.getInt("cols")
     val rows = json.getInt("rows")
 
@@ -25,9 +25,9 @@ object ConstantRasterLayerBuilder extends RasterLayerBuilder {
       )
 
     if(rasterType.isDouble) {
-      Some(new DoubleConstantLayer(info, json.getDouble("constant")))
+      new DoubleConstantLayer(info, json.getDouble("constant"))
     } else {
-      Some(new IntConstantLayer(info, json.getInt("constant")))
+      new IntConstantLayer(info, json.getInt("constant"))
     }
   }
 }

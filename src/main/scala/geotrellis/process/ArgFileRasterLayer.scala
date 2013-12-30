@@ -1,6 +1,7 @@
 package geotrellis.process
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.util._
 import geotrellis.data.arg.ArgReader
 
@@ -10,7 +11,7 @@ import java.io.File
 
 object ArgFileRasterLayerBuilder
 extends RasterLayerBuilder {
-  def apply(ds:Option[String],jsonPath:String, json:Config):Option[RasterLayer] = {
+  def apply(ds:Option[String],jsonPath:String, json:Config):RasterLayer = {
     val f = 
       if(json.hasPath("path")) {
         val f = new File(json.getString("path"))
@@ -25,9 +26,7 @@ extends RasterLayerBuilder {
       }
 
     if(!f.exists) {
-      System.err.println(s"[ERROR] Raster in catalog points to path ${f.getAbsolutePath}, but file does not exist")
-      System.err.println("[ERROR]   Skipping this raster layer...")
-      None
+      throw new java.io.IOException(s"[ERROR] ${f.getAbsolutePath} does not exist")
     } else {
 
       val cols = json.getInt("cols")
@@ -47,27 +46,39 @@ extends RasterLayerBuilder {
           getCacheFlag(json)
         )
 
-      Some(new ArgFileRasterLayer(info,f.getAbsolutePath))
+      new ArgFileRasterLayer(info,f.getAbsolutePath)
     }
   }
 }
 
-class ArgFileRasterLayer(info:RasterLayerInfo, rasterPath:String) 
+class ArgFileRasterLayer(info:RasterLayerInfo, val rasterPath:String) 
 extends UntiledRasterLayer(info) {
-  def getRaster(targetExtent:Option[RasterExtent]) =
+  def getRaster(targetExtent:Option[RasterExtent]) = {
     if(isCached) {
       getCache.lookup[Array[Byte]](info.id.toString) match {
         case Some(bytes) =>
-          getReader.readCache(bytes, info.rasterType, info.rasterExtent, targetExtent)
+          targetExtent match {
+            case Some(re) =>
+              val data = ArgReader.warpBytes(bytes, info.rasterType, info.rasterExtent, re)
+              Raster(data,re)
+            case None =>
+              val data = RasterData.fromArrayByte(bytes,info.rasterType,info.rasterExtent.cols,info.rasterExtent.rows)
+              Raster(data,info.rasterExtent)
+          }
         case None =>
           sys.error("Cache problem: Layer thinks it's cached but it is in fact not cached.")
       }
     } else {
-      getReader.readPath(info.rasterType, info.rasterExtent, targetExtent)
+      targetExtent match {
+        case Some(re) =>
+          ArgReader.read(rasterPath, info.rasterType, info.rasterExtent, re)
+        case None =>
+          ArgReader.read(rasterPath, info.rasterType, info.rasterExtent)
+      }
     }
+
+  }
 
   def cache(c:Cache[String]) = 
         c.insert(info.id.toString, Filesystem.slurp(rasterPath))
-
-  private def getReader = new ArgReader(rasterPath)
 }

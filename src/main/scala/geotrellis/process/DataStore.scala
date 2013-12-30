@@ -5,6 +5,8 @@ import java.io.File
 import geotrellis._
 import geotrellis.util.Filesystem
 
+import scala.util._
+
 /**
  * Represents a location where data can be loaded from (e.g. the filesystem,
  * postgis, a web service, etc).
@@ -47,7 +49,7 @@ case class DataStore(name:String, params:Map[String, String],catalogPath:String)
       // which may contain layer metadata,
       // or we just ignore it.
       RasterLayer.fromFile(f) match {
-        case Some(layer) =>
+        case Success(layer) =>
           layers(layer.info.id.name) = layer
           // Skip the tile directory if it's a tiled raster.
           layer match {
@@ -55,8 +57,8 @@ case class DataStore(name:String, params:Map[String, String],catalogPath:String)
               skipDirectories.add(new File(tl.tileDirPath).getAbsolutePath)
             case _ =>
           }
-        case _ =>
-          System.err.println(s"Skipping ${f.getPath}...")
+        case Failure(e) =>
+          System.err.println(s"[ERROR] Skipping ${f.getPath}: $e")
       }
     }
 

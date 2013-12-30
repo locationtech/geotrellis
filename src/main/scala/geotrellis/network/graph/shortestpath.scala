@@ -1,5 +1,6 @@
 package geotrellis.network.graph
 
+import geotrellis._
 import geotrellis.network._
 
 import scala.collection.mutable.{ListBuffer,PriorityQueue}
@@ -16,7 +17,7 @@ object ShortestPathTree {
   // graph vertex count, since Array.clone is so much faster than
   // Array.fill
   private [graph] var _sptArray:Array[Int] = null
-  def initSptArray(vertexCount:Int) = { _sptArray = Array.fill[Int](vertexCount)(-1) }
+  def initSptArray(vertexCount:Int) = { _sptArray = Array.ofDim[Int](vertexCount).fill(-1) }
 
   def departure(from:Int, startTime:Time, graph:TransitGraph) =
     new ShortestDeparturePathTree(from,startTime,graph,None,Seq(Walking))
@@ -55,7 +56,7 @@ extends ShortestPathTree {
    */
   private val shortestPathTimes = 
     if(ShortestPathTree._sptArray != null) { ShortestPathTree._sptArray.clone }
-    else { Array.fill[Int](graph.vertexCount)(-1) }
+    else { Array.ofDim[Int](graph.vertexCount).fill(-1) }
 
   private val _reachableVertices = 
     ListBuffer[Int]()
@@ -132,7 +133,7 @@ extends ShortestPathTree {
    */
   private val shortestPathTimes = 
     if(ShortestPathTree._sptArray != null) { ShortestPathTree._sptArray.clone }
-    else { Array.fill[Int](graph.vertexCount)(-1) }
+    else { Array.ofDim[Int](graph.vertexCount).fill(-1) }
 
   private val _reachableVertices = 
     ListBuffer[Int]()

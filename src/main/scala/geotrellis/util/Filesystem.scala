@@ -26,6 +26,19 @@ object Filesystem {
     data
   }
 
+  def mapToByteArray(path:String, data:Array[Byte], startIndex:Int, size:Int):Unit = {
+    val f = new File(path)
+    val fis = new FileInputStream(f)
+    val buffer = 
+      try {
+        val channel = fis.getChannel
+        channel.map(READ_ONLY, startIndex, size)
+      } finally {
+        fis.close
+      }
+    buffer.get(data,startIndex,size)
+  }
+
   /**
    * Return the path string with the final extension removed.
    */
@@ -39,7 +52,7 @@ object Filesystem {
     case n => (p.substring(0, n), p.substring(n + 1, p.length))
   }
 
-  def slurpToBuffer(path:String, pos:Int, size:Int, bs:Int = 262144) = {
+  def slurpToBuffer(path:String, pos:Int, size:Int, bs:Int = 262144):ByteBuffer = {
     ByteBuffer.wrap(slurp(path, bs), pos, size)
   }
 

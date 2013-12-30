@@ -13,6 +13,8 @@ import geotrellis.render.op._
 
 import org.scalatest.FunSuite
 
+import scalaxy.loops._
+
 class HillshadeSpec extends FunSuite 
                        with TestServer 
                        with RasterBuilders {
@@ -44,57 +46,7 @@ class HillshadeSpec extends FunSuite
     assert(h2.get(2,2) === 77)
   }
 
-  test("can write hillshade") {
-    val path = "src/test/resources/sbn/SBN_inc_percap.arg"
-
-    val grayBreaks = grayscale(1)
-  
-    println("Starting test Hillshade operation.")
-    println("Loading raster")
-  
-    val t0 = time()
-    val r = get(io.LoadFile(path))
-    val h = get(stat.GetHistogram(r))
-    println("loaded raster in %s ms" format (time() - t0))
-  
-    get(io.WritePng(r, "/tmp/raster.png", grayscale(6), 0))
-  
-    val t1 = time()
-    val r1 = get(Hillshade(r))
-    println("generated hillshade from memory in %s ms" format (time() - t1))
-
-    val h1 = get(stat.GetHistogram(r1))
-
-    val t2 = time()
-    get(io.WritePng(r1, "/tmp/hillshade2.png", grayBreaks, 0))
-    println("[2] wrote png in %s ms" format (time() - t2))
-
-    val palette = Array(0xff0000ff, 0xff8800ff, 0xffff00ff,
-                        0x00ff00ff, 0x00ffffff, 0x0000ffff)
-
-    val colors10 = new MultiColorRangeChooser(palette).getColors(10)
-    val colors100 = new MultiColorRangeChooser(palette).getColors(100)
-    val colors1000 = new MultiColorRangeChooser(palette).getColors(1000)
-    val colors638 = new MultiColorRangeChooser(palette).getColors(638)
-
-    val t3 = time()
-    get(io.WritePng(r, "/tmp/raster3.png", GetColorBreaks(h, colors10), 0))
-    println("[3] wrote png in %s ms" format (time() - t3))
-
-    val t4 = time()
-    get(io.WritePng(r, "/tmp/raster4.png", GetColorBreaks(h, colors100), 0))
-    println("[4] wrote png in %s ms" format (time() - t4))
-
-    val t5 = time()
-    get(io.WritePng(r, "/tmp/raster5.png", GetColorBreaks(h, colors1000), 0))
-    println("[5] wrote png in %s ms" format (time() - t5))
-
-    val t6 = time()
-    get(io.WritePng(r, "/tmp/raster6.png", GetColorBreaks(h, colors638), 0))
-    println("[6] wrote png in %s ms" format (time() - t6))
-  }
-
-  test("Hillshade works with raste source") {
+  test("Hillshade works with raster source") {
     val rs = createRasterSource(
       Array(0, 0, 0,              0, 0, 0,
             0, 2450, 2461,        2483, 0, 0,
@@ -136,6 +88,42 @@ class HillshadeSpec extends FunSuite
       case Error(msg,failure) =>
         println(msg)
         println(failure)
+        assert(false)
+    }
+  }
+
+  test("should run Hillshade square 3 on tiled raster in catalog") {
+    val name = "SBN_inc_percap"
+
+    val source = RasterSource(name)
+
+
+    val r = source.get
+    val tileLayout = TileLayout.fromTileDimensions(r.rasterExtent,256,256)
+    val rs = RasterSource(TileRaster.wrap(r,tileLayout,cropped = false))
+
+    val expected = source.focalHillshade.get
+    rs.focalHillshade.run match {
+      case Complete(value,hist) =>
+        // Dont check last col or last row. 
+        // Reason is, because the offsetting of the tiles, the tiled version
+        // pulls in NoData's where the non tiled just has the edge value,
+        // so the calculations produce different results. Which makes sense.
+        // So if your going for accuracy don't tile something that create NoData 
+        // borders.
+        for(col <- 0 until expected.cols-1 optimized) {
+          for(row <- 0 until expected.rows-1 optimized) {
+            withClue (s"Value different at $col,$row: ") {
+              val v1 = value.getDouble(col,row)
+              val v2 = expected.getDouble(col,row)
+              if(isNoData(v1)) isNoData(v2) should be (true)
+              else if(isNoData(v2)) isNoData(v1) should be (true)
+              else v1 should be (v2)
+            }
+          }
+        }
+      case Error(message,trace) =>
+        println(message)
         assert(false)
     }
   }

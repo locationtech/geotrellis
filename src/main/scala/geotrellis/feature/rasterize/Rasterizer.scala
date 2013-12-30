@@ -24,7 +24,7 @@ object Rasterizer {
    */ 
   def rasterizeWithValue[D](feature:Geometry[D], rasterExtent:RasterExtent)(f:(D) => Int) = {
     val cols = rasterExtent.cols
-    val array = Array.fill[Int](rasterExtent.cols * rasterExtent.rows)(NODATA)
+    val array = Array.ofDim[Int](rasterExtent.cols * rasterExtent.rows).fill(NODATA)
     val burnValue = f(feature.data)
     val f2 = new Callback[Geometry,D] {
         def apply(col: Int, row: Int, g: Geometry[D]) {
@@ -42,7 +42,7 @@ object Rasterizer {
    */ 
   def rasterize[D](feature:Geometry[D], rasterExtent:RasterExtent)(f:Transformer[Geometry,D,Int]) = {
     val cols = rasterExtent.cols
-    val array = Array.fill[Int](rasterExtent.cols * rasterExtent.rows)(NODATA)
+    val array = Array.ofDim[Int](rasterExtent.cols * rasterExtent.rows).fill(NODATA)
     val f2 = new Callback[Geometry,D] {
         def apply(col: Int, row: Int, polygon: Geometry[D]) {
           array(row * cols + col) = f(col,row,polygon)

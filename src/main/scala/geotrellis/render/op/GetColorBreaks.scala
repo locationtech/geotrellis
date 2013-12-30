@@ -6,10 +6,10 @@ import geotrellis.statistics.Histogram
 
 import scala.math.round
 
-case class BuildColorMapper(colorBreaks:Op[ColorBreaks], noDataColor:Op[Int])
-     extends Op2(colorBreaks, noDataColor)({
-       (bs, c) => Result(ColorMapper(bs, c))
-})
+// case class BuildColorMapper(colorBreaks:Op[ColorBreaks], noDataColor:Op[Int])
+//      extends Op2(colorBreaks, noDataColor)({
+//        (bs, c) => Result(ColorMapper(bs, c))
+// })
 
 case class BuildColorBreaks(breaks:Op[Array[Int]], colors:Op[Array[Int]])
      extends Op2(breaks, colors)({
@@ -42,5 +42,5 @@ case class GetColorBreaks(h:Op[Histogram], cs:Op[Array[Int]])
 case class GetColorsFromPalette(palette:Op[Array[Int]], num:Op[Int])
      extends Op2(palette, num)({
        (palette, num) =>
-         Result(new MultiColorRangeChooser(palette).getColors(num))
+         Result(Color.chooseColors(palette, num))
 })

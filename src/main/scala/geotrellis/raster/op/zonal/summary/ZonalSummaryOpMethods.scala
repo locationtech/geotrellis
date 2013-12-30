@@ -22,7 +22,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
 
     val newOp = 
       (rasterDefinition,tiles,p).map { (rd,tiles,p) =>
-        val rl = rd.tileLayout.getResolutionLayout(rd.re)
+        val rl = rd.tileLayout.getResolutionLayout(rd.rasterExtent)
         val tileCols = rd.tileLayout.tileCols
         val tileRows = rd.tileLayout.tileRows
         val filtered = mutable.ListBuffer[Op[B]]()

@@ -1,12 +1,6 @@
 package geotrellis.raster
 
 import geotrellis._
-import geotrellis.util.Filesystem
-import geotrellis.process._
-import geotrellis.data.arg.{ArgWriter,ArgReader}
-import geotrellis.feature.Polygon
-import java.io.{FileOutputStream, BufferedOutputStream}
-import geotrellis.util.Filesystem
 
 object TileLayout {
   def apply(re:RasterExtent, tileCols:Int, tileRows:Int):TileLayout =
@@ -17,6 +11,9 @@ object TileLayout {
     val tileRows = (re.rows + pixelRows - 1) / pixelRows
     TileLayout(tileCols, tileRows, pixelCols, pixelRows)
   }
+
+  def singleTile(cols:Int,rows:Int) =
+    TileLayout(1,1,cols,rows)
 }
 
 /**
