@@ -2,7 +2,7 @@ package geotrellis.spark.formats
 
 import org.apache.hadoop.io.LongWritable
 
-class TileIdWritable extends LongWritable 
+class TileIdWritable extends LongWritable with Serializable 
 
 object TileIdWritable {
   def apply(value: Long): TileIdWritable = {
