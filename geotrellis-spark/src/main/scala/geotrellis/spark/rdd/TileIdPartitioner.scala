@@ -35,7 +35,6 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
   
   private def findPartition(key: Any) = {
     val index = java.util.Arrays.binarySearch(splitPoints.asInstanceOf[Array[Object]], key)
-    println("findPartition returned " + index)
     if (index < 0)
       (index + 1) * -1
     else
