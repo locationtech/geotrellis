@@ -6,6 +6,16 @@ import geotrellis.feature.Polygon
 
 case class ExtentRangeError(msg:String) extends Exception(msg)
 
+object Extent {
+  /** Parses a string in the format "xmin,ymin,xmax,ymax" form, e.g.
+    * 100.00,600.00,300.00,800.00
+    */
+  def fromString(s:String) = {
+    val Array(xmin,ymin,xmax,ymax) = s.split(",").map(_.toDouble)
+    Extent(xmin,ymin,xmax,ymax)
+  }
+}
+
 /**
  * An Extent represents a rectangular region of geographic space (with a
  * particular projection). It is expressed in map coordinates. It is not
