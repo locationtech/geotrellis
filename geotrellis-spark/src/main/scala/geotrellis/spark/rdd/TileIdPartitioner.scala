@@ -59,12 +59,14 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
 object TileIdPartitioner {
   val SplitFile = "splits"
 
+  /* construct a partitioner from the splits file */
   def apply(splitFile: String, conf: Configuration): TileIdPartitioner = {
     val tp = new TileIdPartitioner
     tp.splitPoints = readSplits(splitFile, conf)
     tp
   }
 
+  /* construct a partitioner from a split generator */
   def apply(splitGenerator: SplitGenerator, splitFile: String, conf: Configuration): TileIdPartitioner = {
     writeSplits(splitGenerator, new Path(splitFile), conf)
     apply(splitFile, conf)
