@@ -2,6 +2,7 @@ package geotrellis.process
 
 import geotrellis._
 import geotrellis.raster.TileLayout
+import geotrellis.source.RasterDefinition
 
 case class RasterLayerInfo(id:LayerId,
                            rasterType:RasterType,
@@ -47,4 +48,9 @@ object RasterLayerInfo {
             tileLayout:TileLayout):RasterLayerInfo = {
     RasterLayerInfo(id,rasterType,rasterExtent,epsg,xskew,yskew,tileLayout,false)
   }
+
+  /** Creates a RasterLayerInfo for an in memory raster based on the RasterDefinition
+    */
+  def fromDefinition(rd:RasterDefinition) =
+    RasterLayerInfo(rd.layerId,rd.rasterType,rd.rasterExtent,0,0.0,0.0,rd.tileLayout,false)
 }
