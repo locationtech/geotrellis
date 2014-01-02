@@ -54,7 +54,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
   }
 
   def globalOp[T,That](f:Raster=>Op[Raster])
-                    (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
+                      (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
     val tileOps:Op[Seq[Op[Raster]]] =
       (rasterDefinition,logic.Collect(tiles)).flatMap { (rd,tileSeq) =>
         if(rd.isTiled) {
@@ -68,6 +68,17 @@ trait RasterSourceLike[+Repr <: RasterSource]
     // Set into new RasterSource
     val builder = bf.apply(this)
     builder.setOp(tileOps)
+    builder.result
+  }
+
+  def convertType[That](newType:RasterType) = {
+    val newDef = rasterDefinition.map(_.withType(newType))
+    val ops = tiles.map { seq => seq.map { tile => tile.map { r => r.convert(newType) } } }
+    val builder = new RasterSourceBuilder()
+
+    builder.setRasterDefinition(newDef)
+    builder.setOp(ops)
+
     builder.result
   }
 
