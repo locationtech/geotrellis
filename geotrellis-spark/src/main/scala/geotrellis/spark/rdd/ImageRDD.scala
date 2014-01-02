@@ -14,7 +14,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.HadoopRDD
 
-class LoadImageRDD(
+class ImageRDD(
   sc: SparkContext,
   path: String,
   broadcastedConf: Broadcast[SerializableWritable[Configuration]],
@@ -32,19 +32,19 @@ class LoadImageRDD(
    * Overriding the partitioner with a TileIdPartitioner 
    */
   override val partitioner = {
-    val splitFile = path.stripSuffix(LoadImageRDD.SeqFileGlob) + Path.SEPARATOR + TileIdPartitioner.SplitFile
+    val splitFile = path.stripSuffix(ImageRDD.SeqFileGlob) + Path.SEPARATOR + TileIdPartitioner.SplitFile
     Some(TileIdPartitioner(splitFile, sc.hadoopConfiguration))
   }
 }
 
-object LoadImageRDD {
+object ImageRDD {
 
   val SeqFileGlob = "/*[0-9]*/data"
 
   def apply(sc: SparkContext, path: String) = {
     val globbedPath = path + SeqFileGlob
 
-    new LoadImageRDD(
+    new ImageRDD(
       sc, globbedPath, sc.broadcast(new SerializableWritable(sc.hadoopConfiguration)), sc.defaultMinSplits)
   }
 }
