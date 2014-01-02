@@ -11,7 +11,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-class SaveImageFunctions[K <% TileIdWritable: ClassTag, V <% ArgWritable: ClassTag](self: RDD[(K, V)]) {
+class SaveImageFunctions[K <: TileIdWritable: ClassTag, V <: ArgWritable: ClassTag](self: RDD[(K, V)]) {
   def save(path: String) = {
     println("Saving image out...")
     val jobConf = new JobConf(self.context.hadoopConfiguration)
