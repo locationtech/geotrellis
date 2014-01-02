@@ -58,13 +58,13 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String,sour
           case Some(store) =>
             store.getRasterLayer(layerId.name) match {
               case Some(layer) => Success(layer)
-              case None => Failure(new java.io.IOException("No raster with name ${layerId.name} exists in store ${ds}"))
+              case None => Failure(new java.io.IOException(s"No raster with name ${layerId.name} exists in store ${ds}"))
             }
-          case None => Failure(new java.io.IOException("No store with name $ds exists in the catalog."))
+          case None => Failure(new java.io.IOException(s"No store with name $ds exists in the catalog."))
         }
       case None => 
         stores.values.flatMap(_.getRasterLayer(layerId.name)).toList match {
-          case Nil => Failure(new java.io.IOException("No raster with name ${layerId.name} exists in the catalog."))
+          case Nil => Failure(new java.io.IOException(s"No raster with name ${layerId.name} exists in the catalog."))
           case layer :: Nil => Success(layer)
           case _ =>
             Failure(new java.io.IOException(s"There are multiple layers named '${layerId.name}' in the catalog. You must specify a datastore"))
