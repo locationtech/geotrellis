@@ -23,7 +23,7 @@ import scala.collection.mutable.ListBuffer
 class TileIdPartitioner extends org.apache.spark.Partitioner {
 
   @transient
-  var splitPoints = new Array[TileIdWritable](0)
+  private var splitPoints = new Array[TileIdWritable](0)
 
   override def getPartition(key: Any) = findPartition(key)
   override def numPartitions = splitPoints.length
