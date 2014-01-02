@@ -5,7 +5,9 @@ import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.rdd.ImageRDD
 import geotrellis.spark.utils.GeotrellisSparkUtils
 
-object InputOutputDriver {
+import org.apache.spark.Logging
+
+object InputOutputDriver extends Logging {
   def main(args: Array[String]) {
     val sparkMaster = args(0) 			// "spark://host:7077"
     val geotrellisJarSuffix = args(1) 	// /geotrellis-spark/target/scala-2.10/geotrellis-spark_2.10-0.9.0-SNAPSHOT.jar
@@ -16,13 +18,13 @@ object InputOutputDriver {
     val awtestRdd = ImageRDD(sc, nameNode + inputImagePath)
 
     def printTileWithPartition(idx: Int, itr: Iterator[(TileIdWritable, ArgWritable)]) = {
-      itr.foreach(t => println("Tile %d partition %d".format(t._1.get, idx)))
+      itr.foreach(t => logInfo("Tile %d partition %d".format(t._1.get, idx)))
       itr
     }
 
-    println("sc defaultMinSplits/defaultParallelism = %d/%d".format(sc.defaultMinSplits, sc.defaultParallelism))
-    println("# of partitions = " + awtestRdd.getPartitions.length)
-    println("# of rows = " + awtestRdd.mapPartitionsWithIndex(printTileWithPartition, true).count)
+    logInfo("sc defaultMinSplits/defaultParallelism = %d/%d".format(sc.defaultMinSplits, sc.defaultParallelism))
+    logInfo("# of partitions = " + awtestRdd.getPartitions.length)
+    logInfo("# of rows = " + awtestRdd.mapPartitionsWithIndex(printTileWithPartition, true).count)
 
     awtestRdd.save(nameNode + outputImagePath)
 
