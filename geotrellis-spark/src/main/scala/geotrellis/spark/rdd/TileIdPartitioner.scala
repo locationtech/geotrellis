@@ -1,26 +1,28 @@
 package geotrellis.spark.rdd
+import geotrellis.spark.formats.TileIdWritable
+import geotrellis.spark.tiling.TileBounds
+import geotrellis.spark.tiling.TmsTiling
 
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileReader
-import java.io.InputStreamReader
-import java.nio.ByteBuffer
-import java.util.Scanner
-import scala.collection.mutable.ListBuffer
 import org.apache.commons.codec.binary.Base64
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FSDataInputStream
 import org.apache.hadoop.fs.LocalFileSystem
 import org.apache.hadoop.fs.Path
-import geotrellis.spark.formats.TileIdWritable
-import geotrellis.spark.tiling.TmsTiling
-import geotrellis.spark.tiling.TileBounds
-import org.apache.hadoop.fs.FileSystem
-import java.io.PrintWriter
+
+
+
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileReader
+import java.io.InputStreamReader
 import java.io.ObjectInputStream
-import org.apache.hadoop.io.ObjectWritable
 import java.io.ObjectOutputStream
+import java.io.PrintWriter
+import java.nio.ByteBuffer
+import java.util.Scanner
+
 import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.ListBuffer
 
 class TileIdPartitioner extends org.apache.spark.Partitioner {
 

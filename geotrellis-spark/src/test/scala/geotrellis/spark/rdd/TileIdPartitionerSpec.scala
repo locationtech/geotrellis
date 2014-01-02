@@ -1,11 +1,12 @@
 package geotrellis.spark.rdd
 
+import geotrellis.spark.formats.TileIdWritable
+import geotrellis.spark.utils.GeotrellisSparkUtils
+
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
-import geotrellis.spark.formats.TileIdWritable
 import org.apache.hadoop.fs.Path
-import geotrellis.spark.utils.GeotrellisSparkUtils
 
 class TileIdPartitionerSpec extends FunSpec with MustMatchers with ShouldMatchers {
 

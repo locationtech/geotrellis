@@ -1,19 +1,18 @@
 package geotrellis.spark.rdd
-
-import org.apache.spark.SparkContext._
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapred.SequenceFileInputFormat
-import org.apache.spark.SerializableWritable
-import org.apache.spark.SparkContext
-import org.apache.spark.broadcast.Broadcast
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
-import geotrellis.spark.utils.GeotrellisSparkUtils
-import org.apache.hadoop.fs.FileSystem
-import org.apache.spark.rdd.HadoopRDD
-import org.apache.hadoop.mapred.JobConf
+
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.FileInputFormat
+import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.mapred.SequenceFileInputFormat
+import org.apache.spark.SerializableWritable
+
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkContext
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.rdd.HadoopRDD
 
 class LoadImageRDD(
   sc: SparkContext,

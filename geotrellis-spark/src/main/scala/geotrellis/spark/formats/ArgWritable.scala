@@ -1,17 +1,18 @@
 package geotrellis.spark.formats
 
-import org.apache.hadoop.io.BytesWritable
+import geotrellis._
 import geotrellis.RasterType
 import geotrellis.raster.RasterData
 
+import org.apache.hadoop.io.BytesWritable
 
 class ArgWritable(bytes: Array[Byte]) extends BytesWritable(bytes) {
   // This constructor is rarely used (e.g., hadoop fs -text). Preferred use is via companion object  
-  def this() = this(Array.fill[Byte](0)(0))
+  def this() = this(Array[Byte]())
 }
 
 object ArgWritable {
-  def apply(len: Int, fillValue: Byte) = new ArgWritable(Array.fill[Byte](len)(fillValue))
+  def apply(len: Int, fillValue: Byte) = new ArgWritable(Array.ofDim[Byte](len).fill(fillValue))
   def apply(bytes: Array[Byte]) = new ArgWritable(bytes)
   def apply(aw: ArgWritable) = new ArgWritable(aw.getBytes)
 

@@ -1,18 +1,18 @@
 package geotrellis.spark
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.SequenceFile
-import geotrellis.TypeInt
 import geotrellis.raster.IntArrayRasterData
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
-import geotrellis.spark.tiling.TmsTiling
-import scala.util.Random
-import org.apache.hadoop.io.MapFile
-import geotrellis.spark.rdd.TileIdPartitioner
 import geotrellis.spark.rdd.SplitGenerator
+import geotrellis.spark.rdd.TileIdPartitioner
+import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.GeotrellisSparkUtils
+
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.MapFile
+import org.apache.hadoop.io.SequenceFile
+
+import scala.util.Random
 
 /**
  * @author akini

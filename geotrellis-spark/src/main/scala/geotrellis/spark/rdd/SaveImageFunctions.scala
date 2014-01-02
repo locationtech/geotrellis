@@ -1,15 +1,15 @@
 package geotrellis.spark.rdd
-
-import scala.reflect.ClassTag
-import org.apache.hadoop.io.Writable
-import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapred.MapFileOutputFormat
-import org.apache.spark.SparkContext.rddToPairRDDFunctions
-import org.apache.spark.rdd.RDD
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
-import org.apache.hadoop.mapred.SequenceFileOutputFormat
+
 import org.apache.hadoop.io.SequenceFile
+import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.mapred.MapFileOutputFormat
+import org.apache.hadoop.mapred.SequenceFileOutputFormat
+import org.apache.spark.SparkContext.rddToPairRDDFunctions
+import org.apache.spark.rdd.RDD
+
+import scala.reflect.ClassTag
 
 class SaveImageFunctions[K <% TileIdWritable: ClassTag, V <% ArgWritable: ClassTag](self: RDD[(K, V)]) {
   def save(path: String) = {

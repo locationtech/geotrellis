@@ -1,9 +1,9 @@
 package geotrellis.spark
 
-import geotrellis.spark.rdd.LoadImageRDD
-import geotrellis.spark.utils.GeotrellisSparkUtils
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
+import geotrellis.spark.rdd.LoadImageRDD
+import geotrellis.spark.utils.GeotrellisSparkUtils
 
 object InputOutputDriver {
   def main(args: Array[String]) {

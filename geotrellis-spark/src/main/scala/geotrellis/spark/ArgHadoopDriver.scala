@@ -1,14 +1,15 @@
 package geotrellis.spark
 
+import geotrellis._
+import geotrellis.raster.IntArrayRasterData
+import geotrellis.spark.formats.{ArgWritable, TileIdWritable}
+import geotrellis.spark.tiling.TmsTiling
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.SequenceFile
 
-import geotrellis.TypeInt
-import geotrellis.raster.IntArrayRasterData
-import geotrellis.spark.formats.ArgWritable
-import geotrellis.spark.formats.TileIdWritable
-import geotrellis.spark.tiling.TmsTiling
+
 
 /**
  * @author akini
@@ -25,7 +26,7 @@ object ArgHadoopDriver {
   val defaultTileSize = TmsTiling.DefaultTileSize
   
   def fill(value: Int) = {
-    val arr = Array.fill(defaultTileSize * defaultTileSize)(value)
+    val arr = Array.ofDim[Int](defaultTileSize * defaultTileSize).fill(value)
     IntArrayRasterData(arr, defaultTileSize, defaultTileSize)
   }
 
