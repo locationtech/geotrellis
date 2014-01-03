@@ -69,8 +69,7 @@ object GeneratePartitionedMapFiles {
       def getSplits = (for (i <- 0 until numTiles by tilesPerFile) yield i.toLong).drop(1).map(_ - 1)
       println(getSplits)
     }
-    val splitFile = new Path(dirPath, TileIdPartitioner.SplitFile).toUri.toString
-    TileIdPartitioner(generator, splitFile, conf)
+    TileIdPartitioner(generator, dirPath, conf)
   }
 
 }

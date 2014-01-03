@@ -32,7 +32,7 @@ class ImageRDD(
    * Overriding the partitioner with a TileIdPartitioner 
    */
   override val partitioner = {
-    val splitFile = path.stripSuffix(ImageRDD.SeqFileGlob) + Path.SEPARATOR + TileIdPartitioner.SplitFile
+    val splitFile = path.stripSuffix(ImageRDD.SeqFileGlob) 
     Some(TileIdPartitioner(splitFile, sc.hadoopConfiguration))
   }
 }
