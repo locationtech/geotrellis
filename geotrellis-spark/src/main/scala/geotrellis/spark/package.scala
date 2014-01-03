@@ -8,7 +8,13 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 
 package object spark {
-  implicit def rddToSaveImageFunctions[K <: TileIdWritable: ClassTag, V <: ArgWritable: ClassTag](
-      rdd: RDD[(K, V)]) =
-    new SaveImageFunctions(rdd)
+  
+  type TileId = Long
+  
+  type ImageWritableRDD = RDD[(TileIdWritable, ArgWritable)]
+  //type ImageRDD = RDD[(TileId, RasterData)]
+
+  implicit class SavableImage(val image: ImageWritableRDD) {
+    def save(path: String) = SaveImageFunctions.save(image, path)
+  }
 }
