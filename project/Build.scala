@@ -234,10 +234,10 @@ object GeotrellisBuild extends Build {
           "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4"
         ),
       resolvers ++= Seq(
-        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
-      )
-    ) ++
-    defaultAssemblySettings
+        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos")
+    ) ++ 
+    defaultAssemblySettings ++ 
+    net.virtualvoid.sbt.graph.Plugin.graphSettings
 
   // Project: geotools
 

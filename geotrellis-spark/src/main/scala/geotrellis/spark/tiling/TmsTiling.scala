@@ -22,12 +22,12 @@ object TmsTiling {
   val MaxZoomLevel = 22
   val DefaultTileSize = 512
 
-  def numXTiles(zoom: Int) = math.pow(2, zoom)
-  def numYTiles(zoom: Int) = math.pow(2, zoom - 1)
+  def numXTiles(zoom: Int) = math.pow(2, zoom).toLong
+  def numYTiles(zoom: Int) = math.pow(2, zoom - 1).toLong
 
   def tileId(tx: Long, ty: Long, zoom: Int) = (ty * numXTiles(zoom)) + tx
 
-  def resolution(zoom: Int, tileSize: Int) = 360 / (numXTiles(zoom) * tileSize)
+  def resolution(zoom: Int, tileSize: Int) = 360 / (numXTiles(zoom) * tileSize).toDouble
 
   def zoom(res: Double, tileSize: Int): Int = {
     val resWithEp = res + Epsilon
@@ -62,8 +62,8 @@ object TmsTiling {
 
   // slightly modified version of equations 2.9 and 2.10
   def latLonToTile(lat: Double, lon: Double, zoom: Int, tileSize: Int) = {
-    val tx = ((180 + lon) * (numXTiles(zoom) / 360)).toLong
-    val ty = ((90 + lat) * (numYTiles(zoom) / 180)).toLong
+    val tx = ((180 + lon) * (numXTiles(zoom) / 360.0)).toLong
+    val ty = ((90 + lat) * (numYTiles(zoom) / 180.0)).toLong
     new Tile(tx, ty)
   }
   
