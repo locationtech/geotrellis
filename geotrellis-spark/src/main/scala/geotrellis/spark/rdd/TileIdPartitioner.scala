@@ -1,5 +1,6 @@
 package geotrellis.spark.rdd
 import geotrellis.spark.formats.TileIdWritable
+import geotrellis.spark.utils._
 
 import org.apache.commons.codec.binary.Base64
 import org.apache.hadoop.conf.Configuration
@@ -73,42 +74,23 @@ object TileIdPartitioner {
   }
 
   private def readSplits(splitFile: String, conf: Configuration): Array[TileIdWritable] = {
-    val splitPoints = new ListBuffer[TileIdWritable]
-    val splitFilePath = new Path(splitFile)
-    val fs = splitFilePath.getFileSystem(conf)
-    var fdis: Option[FSDataInputStream] = None
-    var in: Option[Scanner] = None
-
-    if (fs.getClass == classOf[LocalFileSystem]) {
-      // local file 
-      val localSplitFile = new File(splitFilePath.toUri().getPath())
-      if (localSplitFile.exists()) {
-        in = Some(new Scanner(new BufferedReader(new FileReader(localSplitFile))))
-      }
-    } else {
-      // hdfs file 
-      if (fs.exists(splitFilePath)) {
-        fdis = Some(fs.open(splitFilePath))
-        in = Some(new Scanner(new BufferedReader(new InputStreamReader(fdis.get))))
-      }
-
+    HdfsUtils.getLineScanner(splitFile, conf) match {
+      case Some(in) =>
+        try {
+          val splitPoints = new ListBuffer[TileIdWritable]
+          for(line <- in) {
+            splitPoints += 
+              TileIdWritable(ByteBuffer.wrap(Base64.decodeBase64(line.getBytes)).getLong)
+          }
+          splitPoints.toArray
+        } finally {
+          in.close
+        }
+      case None =>
+        Array[TileIdWritable]()
     }
-
-    if (in.isDefined) {
-      try {
-        while (in.get.hasNextLine)
-          splitPoints += TileIdWritable(ByteBuffer.wrap(Base64.decodeBase64(in.get.nextLine.getBytes)).getLong)
-      } finally {
-        in.get.close()
-      }
-    }
-
-    if (fdis.isDefined) {
-      fdis.get.close()
-    }
-
-    splitPoints.toArray
   }
+
   private def writeSplits(splitGenerator: SplitGenerator, splitFile: Path, conf: Configuration): Int = {
     val splits = splitGenerator.getSplits
     println("writing splits to " + splitFile)
