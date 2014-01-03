@@ -5,6 +5,7 @@ import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.rdd.ImageRDD
 import geotrellis.spark.utils.GeotrellisSparkUtils
 
+import org.apache.spark.SparkContext._
 import org.apache.spark.Logging
 
 object InputOutputDriver extends Logging {
@@ -25,6 +26,7 @@ object InputOutputDriver extends Logging {
     logInfo("sc defaultMinSplits/defaultParallelism = %d/%d".format(sc.defaultMinSplits, sc.defaultParallelism))
     logInfo("# of partitions = " + awtestRdd.getPartitions.length)
     logInfo("# of rows = " + awtestRdd.mapPartitionsWithIndex(printTileWithPartition, true).count)
+    logInfo("# of matching rows = " + awtestRdd.lookup(TileIdWritable(77)).length)
 
     awtestRdd.save(nameNode + outputImagePath)
 
