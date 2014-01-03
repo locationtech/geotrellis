@@ -15,12 +15,12 @@ object HdfsUtils {
   def getLineScanner(path:Path, conf:Configuration): Option[LineScanner] = {
     path.getFileSystem(conf) match {
       case localFS: LocalFileSystem =>
-        val localSplitFile = new File(path.toUri.getPath)
-        if(!localSplitFile.exists)
+        val localFile = new File(path.toUri.getPath)
+        if(!localFile.exists)
           return None
         else {
           val scanner =
-            new Scanner(new BufferedReader(new FileReader(localSplitFile)))
+            new Scanner(new BufferedReader(new FileReader(localFile)))
 
           val lineScanner =
             new LineScanner {
