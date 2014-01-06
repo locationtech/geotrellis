@@ -1,45 +1,35 @@
 package geotrellis.data
 
 import geotrellis._
+import geotrellis.source._
 import geotrellis.raster._
 import geotrellis.process._
 import geotrellis.statistics.FastMapHistogram
 import geotrellis.statistics.op._
 
+import geotrellis.testutil._
+
 import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
-import org.geotools.gce.geotiff.{GeoTiffFormat}
-import org.geotools.factory.{Hints}
-import org.geotools.referencing.{CRS}
-import org.geotools.coverage.grid.{GridCoordinates2D}
+import org.geotools.gce.geotiff.GeoTiffFormat
+import org.geotools.factory.Hints
+import org.geotools.referencing.CRS
+import org.geotools.coverage.grid.GridCoordinates2D
 
 import java.io.{File,FileWriter}
 import javax.imageio.ImageIO
 
 import scala.math.{abs, round}
 
-import org.geotools.coverage.grid.io.imageio.geotiff.{GeoTiffIIOMetadataDecoder}
+import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder
 import org.geotools.coverage.grid.io.imageio.IIOMetadataDumper
 import java.awt.image.BufferedImage
 
-import Console.printf
 import java.awt.image.DataBuffer
 import java.awt.Transparency
 
-import org.geotools.gce.geotiff.{GeoTiffFormat}
-import org.geotools.factory.{Hints}
-import org.geotools.referencing.{CRS}
-import org.geotools.coverage.grid.{GridCoordinates2D}
-
-object TestServer {
-  lazy val server:Server = new Server("testutil", Catalog.fromPath("src/test/resources/catalog.json"))
-}
-
-class GeoTiffSpec extends FunSpec with MustMatchers with ShouldMatchers {
-  val server = TestServer.server
-
+class GeoTiffSpec extends FunSpec with TestServer with ShouldMatchers {
   describe("A GeoTiffReader") {
     it ("should fail on non-existent files") {
       val path = "/does/not/exist.tif"
@@ -54,28 +44,15 @@ class GeoTiffSpec extends FunSpec with MustMatchers with ShouldMatchers {
       ymap should be (15418.729 plusOrMinus 0.001)
     }
 
-    it ("should render to PNG") {
-      val path = "src/test/resources/econic.tif"
-      val raster1 = GeoTiff.readRaster(path)
-
+    it ("should produce same raster for GeoTiff.readRaster and through the Layer") {
       val e = Extent(-15471.6, -15511.3, 15428.4, 15388.7)
-      val geo = RasterExtent(e, 60.0, 60.0, 513, 513)
-      val raster2 = GeoTiffRasterLayerBuilder.fromTif(path).getRaster(Some(geo))
-    }
+      val rasterExtent = RasterExtent(e, 60.0, 60.0, 513, 513)
 
-    it ("should draw") {
       val path = "src/test/resources/econic.tif"
-      val raster = GeoTiff.readRaster(path)
-      val histogram = FastMapHistogram.fromRaster(raster)
+      val raster1 = GeoTiff.readRaster(path)//.warp(rasterExtent)
 
-      val (zmin, zmax) = raster.findMinMax
-
-      val chooser = new MultiColorRangeChooser(Array(0xFF0000FF, 0xFFFF00FF, 0x0000FFFF))
-      val breaks = (zmin to zmax).toArray
-      val colors = chooser.getColors(breaks.length)
-      val cb = ColorBreaks.assign(breaks, colors)
-
-      server.run(io.WritePng(raster, "/tmp/fromgeo.png", cb, histogram, NODATA))
+      val raster2 = GeoTiffRasterLayerBuilder.fromTif(path).getRaster()//(Some(rasterExtent))
+      assertEqual(raster1,raster2)
     }
 
     it ("should write") {
@@ -94,7 +71,7 @@ class GeoTiffSpec extends FunSpec with MustMatchers with ShouldMatchers {
     it ("should retain Float32 type when converting tif to arg") {
       val path = "src/test/resources/aspect.tif"
       val raster = GeoTiff.readRaster(path)
-      raster.data.getType should be (TypeFloat)
+      raster.rasterType should be (TypeFloat)
     }
 
     it ("should translate NODATA correctly") {
@@ -103,7 +80,7 @@ class GeoTiffSpec extends FunSpec with MustMatchers with ShouldMatchers {
       // If the NoData values are translated correctly, then all NoData values from the read in GTiff
       // should correspond to NoData values of the directly read arg.
       import geotiff._
-      val originalArg = server.run(io.LoadFile("src/test/resources/data/slope.arg"))
+      val originalArg = RasterSource.fromPath("src/test/resources/data/slope.arg").get
       val translatedTif = GeoTiff.readRaster("src/test/resources/slope.tif")
 
       translatedTif.rows should be (originalArg.rows)
