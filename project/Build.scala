@@ -245,7 +245,7 @@ object GeotrellisBuild extends Build {
   lazy val geotools: Project =
     Project("geotools", file("geotools"))
       .settings(geotoolsSettings: _*)
-      .dependsOn(root)
+      .dependsOn(root % "test->test;compile->compile")
 
   lazy val geotoolsSettings =
     Seq(
