@@ -20,8 +20,6 @@ object GeoJsonReader {
    * the feature object in the GeoJson will be the data of the feature. 
    *
    * If the the parsing fails, None will be returned.
-   *
-   * Feature and GeometryCollections are not yet supported by this method.
    */
   def parse(geojson:String):Option[Array[Geometry[Option[JsonNode]]]] = { 
     val parser = parserFactory.createJsonParser(geojson)

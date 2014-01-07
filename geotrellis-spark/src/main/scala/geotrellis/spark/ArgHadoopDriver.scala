@@ -1,31 +1,33 @@
 package geotrellis.spark
 
+import geotrellis._
+import geotrellis.raster.IntArrayRasterData
+import geotrellis.spark.formats.{ArgWritable, TileIdWritable}
+import geotrellis.spark.tiling.TmsTiling
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.SequenceFile
 
-import geotrellis.TypeInt
-import geotrellis.raster.IntArrayRasterData
-import geotrellis.spark.formats.ArgWritable
-import geotrellis.spark.formats.TileIdWritable
-import geotrellis.spark.tiling.TmsTiling
+
 
 /**
  * @author akini
  * 
  * A simple example demonstrating reading and writing of (tileId, Array) out to sequence file
  * Run command: ArgHadoopDriver [NUMTILES] [HDFS-OR-LOCAL-PATH-TO-SEQUENCE-FILE]
- *  		e.g.,	ArgHadoopDriver 100 file:///tmp/args.seq
+ *  		e.g.,	ArgHadoopDriver file:///tmp/args.seq 100 
  * 
  * Currently the following also needs to be passed in to the VM to quell a Hadoop Configuration exception that:
  * -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl
  * 
  */
 object ArgHadoopDriver {
-
+  val defaultTileSize = TmsTiling.DefaultTileSize
+  
   def fill(value: Int) = {
-    val arr = Array.fill(TmsTiling.DefaultTileSize * TmsTiling.DefaultTileSize)(value)
-    IntArrayRasterData(arr, TmsTiling.DefaultTileSize, TmsTiling.DefaultTileSize)
+    val arr = Array.ofDim[Int](defaultTileSize * defaultTileSize).fill(value)
+    IntArrayRasterData(arr, defaultTileSize, defaultTileSize)
   }
 
   def main(args: Array[String]): Unit = {
@@ -37,7 +39,9 @@ object ArgHadoopDriver {
     val key = new TileIdWritable()
 
     // first let's write a few records out
-    val writer = SequenceFile.createWriter(fs, conf, seqFilePath, classOf[TileIdWritable], classOf[ArgWritable]) 
+    val writer = SequenceFile.createWriter(fs, conf, seqFilePath, 
+    										classOf[TileIdWritable], classOf[ArgWritable],
+    										SequenceFile.CompressionType.RECORD) 
     for (i <- 0 until numTiles) {
       key.set(i)
       val array = fill(i)
@@ -49,13 +53,14 @@ object ArgHadoopDriver {
     // now let's read them back in and check their key,values
     val reader = new SequenceFile.Reader(fs, seqFilePath, conf)
     var i = 0
-    val value = ArgWritable.apply
+    val value = ArgWritable(defaultTileSize * defaultTileSize * TypeInt.bytes, 0)
 
     while (reader.next(key, value)) {
-      val actual = ArgWritable.toRasterData(value, TypeInt, TmsTiling.DefaultTileSize, TmsTiling.DefaultTileSize).asInstanceOf[IntArrayRasterData].array
+      val actual = ArgWritable.toRasterData(value, TypeInt, defaultTileSize, defaultTileSize).asInstanceOf[IntArrayRasterData].array
       val expected = fill(i)
       if (key.get != i || !actual.sameElements(expected.toArray))
-        throw new Exception("Arrays don't match for key = " + i)
+        sys.error(s"Arrays don't match for key = ${key.get} and i = $i, expected = ${expected.array.toSeq} and actual = ${actual.array.toSeq}")
+
       i = i + 1
     }
     reader.close()
