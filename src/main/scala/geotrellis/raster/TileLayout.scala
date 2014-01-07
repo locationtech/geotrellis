@@ -14,6 +14,9 @@ object TileLayout {
 
   def singleTile(cols:Int,rows:Int) =
     TileLayout(1,1,cols,rows)
+
+  def singleTile(re:RasterExtent) =
+    TileLayout(1,1,re.cols,re.rows)
 }
 
 /**

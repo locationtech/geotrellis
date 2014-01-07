@@ -15,13 +15,19 @@ object CanBuildSourceFrom  extends Priority1Implicits {
       RasterSourceBuilder(rasterSrc)
   }
 
-  implicit def canBuildValueFromValueSource[E:Manifest]:CanBuildSourceFrom[ValueSource[_], E, ValueSource[E]] = new CanBuildSourceFrom[ValueSource[_], E, ValueSource[E]] {
-    def apply() = new ValueSourceBuilder[E]()
-    def apply(ds:ValueSource[_]) = new ValueSourceBuilder[E]()
+  implicit def canBuildRasterFromValue =  new CanBuildSourceFrom[ValueSource[_], Raster, RasterSource] {
+    def apply() = new BareRasterSourceBuilder
+    def apply(rasterSrc:ValueSource[_]) =
+      new BareRasterSourceBuilder
   }
 }
 
 trait Priority1Implicits extends Priority2Implicits { this: CanBuildSourceFrom.type =>
+  implicit def canBuildValueFromValueSource[E:Manifest]:CanBuildSourceFrom[ValueSource[_], E, ValueSource[E]] = new CanBuildSourceFrom[ValueSource[_], E, ValueSource[E]] {
+    def apply() = new ValueSourceBuilder[E]()
+    def apply(ds:ValueSource[_]) = new ValueSourceBuilder[E]()
+  }
+
   def convergeHistograms[H <: Histogram](histOps:(Op[Seq[Op[H]]])) = {
     val histograms:Op[Seq[H]] = logic.Collect(histOps)
     val histograms2 = histograms map((hs:Seq[H]) => FastMapHistogram.fromHistograms(hs))
