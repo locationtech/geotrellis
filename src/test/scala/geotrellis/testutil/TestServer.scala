@@ -59,14 +59,21 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
     val rows = raster.rasterExtent.rows
     for(row <- 0 until rows) {
       for(col <- 0 until cols) {
-        val v = raster.getDouble(col,row)
-        if(isNoData(v)) {
-          withClue(s"Value at ($col,$row) are not the same: value was ${arr(row*cols+col)}") {
-            isNoData(arr(row*cols + col)) should be (true)
+        val v1 = raster.getDouble(col,row)
+        val v2 = arr(row*cols + col)
+        if(isNoData(v1)) {
+          withClue(s"Value at ($col,$row) are not the same: v1 = NoData, v2 = $v2") {
+            isNoData(v2) should be (true)
           }
         } else {
-          withClue(s"Value at ($col,$row) are not the same:") {
-            v should be (arr(row*cols + col) plusOrMinus threshold)
+          if(isNoData(v2)) {
+            withClue(s"Value at ($col,$row) are not the same: v1 = $v1, v2 = NoData") {
+              isNoData(v1) should be (true)
+            }
+          } else {
+            withClue(s"Value at ($col,$row) are not the same:") {
+              v1 should be (v2 plusOrMinus threshold)
+            }
           }
         }
       }
@@ -93,9 +100,21 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
           val v1 = r1.getDouble(col,row)
           val v2 = r2.getDouble(col,row)
 
+          if(isNoData(v1)) {
+            withClue(s"Value at ($col,$row) are not the same: v1 = NoData, v2 = $v2") {
+              isNoData(v2) should be (true)
+            }
+          }
+
+          if(isNoData(v2)) {
+            withClue(s"Value at ($col,$row) are not the same: v1 = $v1, v2 = NoData") {
+              isNoData(v1) should be (true)
+            }
+          }
+
           if(math.abs(v1 - v2) >= threshold) {
             withClue(s"Failure at (${col},${row}) - V1: $v1  V2: $v2") {
-              r1.getDouble(col,row) should be (r2.getDouble(col,row))
+              v1 should be (v2)
             }
           }
         } else {
