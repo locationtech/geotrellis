@@ -7,6 +7,11 @@ case class TileBounds(n: Long, s: Long, e: Long, w: Long) {
   def height = n - s
 } 
 
+case class PixelBounds(n: Long, s: Long, e: Long, w: Long) {
+  def width = e - w
+  def height = n - s
+}
+
 case class Bounds(n: Double, s: Double, e: Double, w: Double) 
 
 case class Pixel(px: Long, py: Long)
