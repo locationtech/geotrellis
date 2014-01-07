@@ -5,6 +5,7 @@ import geotrellis.feature._
 import geotrellis.raster.op._
 import geotrellis.statistics.op._
 import geotrellis.render.op._
+import geotrellis.process.RasterLayerInfo
 
 import geotrellis.raster._
 
@@ -113,7 +114,16 @@ trait RasterSourceLike[+Repr <: RasterSource]
          }
 
   def info:ValueSource[process.RasterLayerInfo] = 
-    ValueSource(rasterDefinition.flatMap( rd => io.LoadRasterLayerInfo(rd.layerId)))
+    ValueSource(
+      rasterDefinition
+        .flatMap { rd => 
+          if(rd.catalogued) {
+            io.LoadRasterLayerInfo(rd.layerId)
+          } else {
+            RasterLayerInfo.fromDefinition(rd)
+          }
+        }
+    )
 
   def rasterExtent:ValueSource[RasterExtent] =
     ValueSource(rasterDefinition.map(_.rasterExtent))

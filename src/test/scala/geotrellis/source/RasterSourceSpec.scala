@@ -86,6 +86,13 @@ class RasterSourceSpec extends FunSpec
       result5.head should be (6026)
     }
 
+    it("should return a RasterSource from a ValueSource map") {
+      val rs = ValueSource(1) map { i => byteRaster }
+      rs.isInstanceOf[RasterSource] should be (true)
+      assertEqual(byteRaster,rs.get)
+      rs.info.get.rasterExtent should be (byteRaster.rasterExtent)
+    }
+
     it("should return a RasterSource when calling .distribute") {
       val d1:RasterSource = (getRasterSource + 3).distribute
     }
