@@ -3,7 +3,7 @@ package geotrellis.spark.utils
 import org.apache.spark.SparkContext
 import org.apache.hadoop.conf.Configuration
 
-object GeotrellisSparkUtils {
+object SparkUtils {
   def createSparkContext(sparkMaster: String, appName: String, gtJarSuffix: String) = {
     val sparkHome = scala.util.Properties.envOrNone("SPARK_HOME") match {
       case Some(value) => value

@@ -3,7 +3,7 @@ package geotrellis.spark
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.rdd.ImageHadoopRDD
-import geotrellis.spark.utils.GeotrellisSparkUtils
+import geotrellis.spark.utils.SparkUtils
 
 import org.apache.spark.SparkContext._
 import org.apache.spark.Logging
@@ -15,7 +15,7 @@ object InputOutputDriver extends Logging {
     val nameNode = args(2) 				// hdfs://localhost:9000
     val inputImagePath = args(3)        // /geotrellis/images/argtest
     val outputImagePath = args(4)		// /geotrellis/images/argtestout
-    val sc = GeotrellisSparkUtils.createSparkContext(sparkMaster, "InputOutputImage", geotrellisJarSuffix)
+    val sc = SparkUtils.createSparkContext(sparkMaster, "InputOutputImage", geotrellisJarSuffix)
     val awtestRdd = ImageHadoopRDD(sc, nameNode + inputImagePath)
 
     def printTileWithPartition(idx: Int, itr: Iterator[(TileIdWritable, ArgWritable)]) = {

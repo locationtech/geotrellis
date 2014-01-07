@@ -6,7 +6,7 @@ import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.rdd.SplitGenerator
 import geotrellis.spark.rdd.TileIdPartitioner
 import geotrellis.spark.tiling.TmsTiling
-import geotrellis.spark.utils.GeotrellisSparkUtils
+import geotrellis.spark.utils.SparkUtils
 
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.MapFile
@@ -39,7 +39,7 @@ object GeneratePartitionedMapFiles {
     val numFiles = args(2).toInt
 
     val tilesPerFile = numTiles / numFiles
-    val conf = GeotrellisSparkUtils.createHadoopConfiguration
+    val conf = SparkUtils.createHadoopConfiguration
     conf.set("io.map.index.interval", "1");
     val fs = dirPath.getFileSystem(conf)
 
