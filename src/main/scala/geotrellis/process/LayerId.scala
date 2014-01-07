@@ -16,4 +16,7 @@ object LayerId {
   /** Create a LayerId with a data store specified */
   def apply(store:String,name:String):LayerId = 
     LayerId(Some(store),name)
+
+  /** LayerId for in-memory rasters */
+  val MEM_RASTER = LayerId(None, "mem-raster")
 }

@@ -46,10 +46,7 @@ object LayerService {
     breaksString:String,
     colorRampKey:String
   ):ValueSource[Array[Byte]] = {
-    val extent = {
-      val Array(xmin,ymin,xmax,ymax) = bbox.split(",").map(_.toDouble)
-      Extent(xmin,ymin,xmax,ymax)
-    }
+    val extent = Extent.fromString(bbox)
 
     val breaks = breaksString.split(",").map(_.toInt)
 

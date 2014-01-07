@@ -19,6 +19,18 @@ class RasterSourceSpec extends FunSpec
   def getSmallRasterSource =
     RasterSource("quad_tiled")
 
+  describe("convert") {
+    it("converts an integer RasterSource to a double RasterSource") {
+      val rs = RasterSource(createRaster(
+        Array( 1,10,100,1000,2,2,2,2,2,
+               2,20,200,2000,2,2,2,2,2,
+               3,30,300,3000,2,2,2,2,2,
+               4,40,400,4000,2,2,2,2,2),
+        9,4))
+      rs.convert(TypeDouble).get.rasterType should be (TypeDouble)
+    }
+  }
+
   describe("RasterSource") {
     it("should load a tiled raster with a target extent") {
       val RasterExtent(Extent(xmin,_,_,ymax),cw,ch,_,_) =
@@ -72,6 +84,13 @@ class RasterSourceSpec extends FunSpec
       result3.get(100,100) should be (3239)
       result4.get(100,100) should be (3242)
       result5.head should be (6026)
+    }
+
+    it("should return a RasterSource from a ValueSource map") {
+      val rs = ValueSource(1) map { i => byteRaster }
+      rs.isInstanceOf[RasterSource] should be (true)
+      assertEqual(byteRaster,rs.get)
+      rs.info.get.rasterExtent should be (byteRaster.rasterExtent)
     }
 
     it("should return a RasterSource when calling .distribute") {

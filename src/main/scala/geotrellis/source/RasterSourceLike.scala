@@ -5,6 +5,7 @@ import geotrellis.feature._
 import geotrellis.raster.op._
 import geotrellis.statistics.op._
 import geotrellis.render.op._
+import geotrellis.process.RasterLayerInfo
 
 import geotrellis.raster._
 
@@ -54,7 +55,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
   }
 
   def globalOp[T,That](f:Raster=>Op[Raster])
-                    (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
+                      (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
     val tileOps:Op[Seq[Op[Raster]]] =
       (rasterDefinition,logic.Collect(tiles)).flatMap { (rd,tileSeq) =>
         if(rd.isTiled) {
@@ -68,6 +69,17 @@ trait RasterSourceLike[+Repr <: RasterSource]
     // Set into new RasterSource
     val builder = bf.apply(this)
     builder.setOp(tileOps)
+    builder.result
+  }
+
+  def convertType[That](newType:RasterType) = {
+    val newDef = rasterDefinition.map(_.withType(newType))
+    val ops = tiles.map { seq => seq.map { tile => tile.map { r => r.convert(newType) } } }
+    val builder = new RasterSourceBuilder()
+
+    builder.setRasterDefinition(newDef)
+    builder.setOp(ops)
+
     builder.result
   }
 
@@ -102,7 +114,16 @@ trait RasterSourceLike[+Repr <: RasterSource]
          }
 
   def info:ValueSource[process.RasterLayerInfo] = 
-    ValueSource(rasterDefinition.flatMap( rd => io.LoadRasterLayerInfo(rd.layerId)))
+    ValueSource(
+      rasterDefinition
+        .flatMap { rd => 
+          if(rd.catalogued) {
+            io.LoadRasterLayerInfo(rd.layerId)
+          } else {
+            RasterLayerInfo.fromDefinition(rd)
+          }
+        }
+    )
 
   def rasterExtent:ValueSource[RasterExtent] =
     ValueSource(rasterDefinition.map(_.rasterExtent))
