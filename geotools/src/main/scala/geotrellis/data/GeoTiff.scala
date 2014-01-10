@@ -1,17 +1,18 @@
 package geotrellis.data
 
 import geotrellis._
+
 import org.geotools.coverage.grid.GridCoverage2D
 import org.geotools.coverage.grid.GridEnvelope2D
 import org.geotools.factory.Hints
 import org.geotools.gce
 import org.geotools.gce.geotiff.{ GeoTiffReader => GTGeoTiffReader }
+import org.geotools.geometry.GeneralEnvelope
 import org.geotools.referencing.CRS
-import org.opengis.geometry.Envelope
+
 import java.awt.image.DataBuffer._
 import java.io.File
 import java.net.URL
-import org.geotools.geometry.GeneralEnvelope
 /**
  * Utility class for dealing with GeoTiff files.
  */
