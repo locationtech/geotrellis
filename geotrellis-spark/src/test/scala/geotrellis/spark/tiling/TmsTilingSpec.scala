@@ -31,18 +31,18 @@ class TmsTilingSpec extends FunSpec with MustMatchers with ShouldMatchers {
     0.0000006706)
 
   describe("tile resolutions") {
-    it("should spit out the right resolutions given the zoom") {
+    it("resolution: should spit out the right resolutions given the zoom") {
       val actual = (0 to resolutions.length).map(zoom => TmsTiling.resolution(zoom + 1, tileSize))
       (actual zip resolutions).foreach(t => t._1 should be(t._2 plusOrMinus TmsTiling.Epsilon))
     }
 
-    it("should spit out the right zoom given the resolution") {
+    it("zoom: should spit out the right zoom given the resolution") {
       resolutions.map(TmsTiling.zoom(_, tileSize)).zipWithIndex.foreach(t => t._1 should be(t._2 + 1))
     }
   }
 
   describe("tile bounds") {
-    it("should yield correct tile Ids for given lat/lon coordinates") {
+    it("latLonToTile: should yield correct tile Ids for given lat/lon coordinates") {
       for (zoom <- 1 to TmsTiling.MaxZoomLevel) {
 
         // low left corner tile 
@@ -53,13 +53,26 @@ class TmsTilingSpec extends FunSpec with MustMatchers with ShouldMatchers {
         // the upper corner tile. note that 90/180 maps to non-existent tile (numXTiles,numYTiles), 
         // so for example, tile (2,1) for zoom level 1. so we use lon/lat slightly less than 90/180
         val tileUpperRight = TmsTiling.latLonToTile(89.99999, 179.99999, zoom, tileSize)
-        tileUpperRight.tx should be(TmsTiling.numXTiles(zoom)-1)
-        tileUpperRight.ty should be(TmsTiling.numYTiles(zoom)-1)
+        tileUpperRight.tx should be(TmsTiling.numXTiles(zoom) - 1)
+        tileUpperRight.ty should be(TmsTiling.numYTiles(zoom) - 1)
 
         // tile corresponding to center point
         val tileCenter = TmsTiling.latLonToTile(0.0, 0.0, zoom, tileSize);
         tileCenter.tx should be((TmsTiling.numXTiles(zoom) / 2).toLong)
         tileCenter.ty should be((TmsTiling.numYTiles(zoom) / 2).toLong)
+      }
+    }
+
+    it("boundsToTile: should yield correct tile bounds given lat/lon bounds") {
+      for (zoom <- 1 to TmsTiling.MaxZoomLevel) {
+        val bounds = new Bounds(-180.0, -90.0, // low left corner 
+          179.99999, 89.99999) // upper right corner
+        val tb = TmsTiling.boundsToTile(bounds, zoom, tileSize)
+        tb.w should be(0)
+        tb.s should be(0)
+        tb.e should be(TmsTiling.numXTiles(zoom) - 1)
+        tb.n should be(TmsTiling.numYTiles(zoom) - 1)
+
       }
     }
 

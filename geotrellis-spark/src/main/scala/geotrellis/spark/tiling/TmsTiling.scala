@@ -47,12 +47,17 @@ object TmsTiling {
       (tx + 1) * tileSize * res - 180, // right/east (lon, x)
       (ty + 1) * tileSize * res - 90) // upper/north (lat, y)
   }
+  
+  def boundsToTile(bounds: Bounds, zoom: Int, tileSize: Int) = {
+    val ll = latLonToTile(bounds.s, bounds.w, zoom, tileSize)
+    val ur = latLonToTile(bounds.n, bounds.e, zoom, tileSize)
+    new TileBounds(ll.tx, ll.ty, ur.tx, ur.ty)
+  }
 
   def latLonToPixels(lat: Double, lon: Double, zoom: Int, tileSize: Int) = {
     val res = resolution(zoom, tileSize)
 
-    new Pixel(((180 + lon) / res).toLong,
-      ((90 + lat) / res).toLong)
+    new Pixel(((180 + lon) / res).toLong, ((90 + lat) / res).toLong)
   }
 
   def pixelsToTile(px: Double, py: Double, tileSize: Int) = {
