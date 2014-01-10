@@ -1,43 +1,41 @@
 package geotrellis.data
 
 import geotrellis._
-
 import org.geotools.coverage.grid.GridCoverage2D
 import org.geotools.coverage.grid.GridEnvelope2D
 import org.geotools.factory.Hints
 import org.geotools.gce
 import org.geotools.gce.geotiff.{ GeoTiffReader => GTGeoTiffReader }
 import org.geotools.referencing.CRS
-
+import org.opengis.geometry.Envelope
 import java.awt.image.DataBuffer._
 import java.io.File
 import java.net.URL
+import org.geotools.geometry.GeneralEnvelope
 /**
  * Utility class for dealing with GeoTiff files.
  */
 object GeoTiff {
   case class Metadata(
-    bounds: Tuple4[Double, Double, Double, Double],
+    bounds: GeneralEnvelope,
     pixelDims: Tuple2[Double, Double],
     bands: Int,
     rasterType: RasterType)
 
-  def getMetadata(url: URL, epsg: String = "EPSG:3785"): Metadata = {
+  def getMetadata(url: URL, epsg: String = "EPSG:3785"): Option[Metadata] =
+    accepts(url, epsg) match {
+      case false => None
+      case true => {
+        val coverage = getGridCoverage2D(url, epsg)
 
-    val coverage = getGridCoverage2D(url, epsg)
+        val envelope = coverage.getGridGeometry().gridToWorld(new GridEnvelope2D(0, 0, 1, 1));
+        val pixelDims = (math.abs(envelope.getWidth), math.abs(envelope.getHeight))
+        val bands = coverage.getNumSampleDimensions
+        val rasterType = RasterType.fromAwtType(coverage.getRenderedImage().getSampleModel().getDataType())
 
-    val envelope = coverage.getGridGeometry().gridToWorld(new GridEnvelope2D(0, 0, 1, 1));
-    val pixelDims = (math.abs(envelope.getWidth), math.abs(envelope.getHeight))
-    val bands = coverage.getNumSampleDimensions
-    val rasterType = RasterType.fromAwtType(coverage.getRenderedImage().getSampleModel().getDataType())
-
-    val lowerCorner = coverage.getEnvelope.getLowerCorner
-    val upperCorner = coverage.getEnvelope.getUpperCorner
-    val bounds = (lowerCorner.getOrdinate(0), lowerCorner.getOrdinate(1),
-      upperCorner.getOrdinate(0), upperCorner.getOrdinate(1))
-
-    Metadata(bounds, pixelDims, bands, rasterType)
-  }
+        Some(Metadata(coverage.getEnvelope.asInstanceOf[GeneralEnvelope], pixelDims, bands, rasterType))
+      }
+    }
 
   /* By default we get a EPSG:3785 reader. Since Scala doesn't allow multiple overloaded methods with 
    * default arguments, we have two variants of getReader that take URL instead of one 
@@ -55,6 +53,12 @@ object GeoTiff {
     getReader(fh, epsg)
   }
 
+  private def accepts(o: Object, epsg: String): Boolean = {
+    val gtf = new gce.geotiff.GeoTiffFormat
+    val hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode(epsg))
+
+    gtf.accepts(o, hints)
+  }
   private def getReader(o: Object, epsg: String): GTGeoTiffReader = {
     val gtf = new gce.geotiff.GeoTiffFormat
     val hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode(epsg))
