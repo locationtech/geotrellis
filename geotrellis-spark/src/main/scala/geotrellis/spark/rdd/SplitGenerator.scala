@@ -6,7 +6,7 @@ import geotrellis.spark.tiling.TmsTiling
 trait SplitGenerator {
   def getSplits: Seq[Long]
 }
-case class ImageSplitGenerator(
+case class RasterSplitGenerator(
   tileBounds: TileBounds,
   zoom: Int,
   increment: Int = -1)
@@ -15,9 +15,9 @@ case class ImageSplitGenerator(
   def getSplits = for (i <- tileBounds.s until tileBounds.n by increment) yield TmsTiling.tileId(tileBounds.e, i, zoom)
 }
 
-object ImageSplitGenerator {
+object RasterSplitGenerator {
   def apply(tileBounds: TileBounds, zoom: Int, tileSizeBytes: Int, blockSizeBytes: Int) = {
-    new ImageSplitGenerator(tileBounds, zoom, computeIncrement(tileBounds, tileSizeBytes, blockSizeBytes))
+    new RasterSplitGenerator(tileBounds, zoom, computeIncrement(tileBounds, tileSizeBytes, blockSizeBytes))
   }
   def computeIncrement(tileBounds: TileBounds, tileSizeBytes: Int, blockSizeBytes: Long) = {
     val tilesPerBlock = (blockSizeBytes / tileSizeBytes).toLong

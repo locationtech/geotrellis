@@ -35,7 +35,7 @@ case class PyramidMetadata(
   defaultValues: List[Float],
   tileType: RasterType,
   maxZoomLevel: Int,
-  imageMetadata: Map[Int, PyramidMetadata.ImageMetadata]) {
+  rasterMetadata: Map[Int, PyramidMetadata.RasterMetadata]) {
 
   def save(path: Path, conf: Configuration) = {
     val metaPath = new Path(path, PyramidMetadata.MetaFile)
@@ -52,7 +52,7 @@ case class PyramidMetadata(
 object PyramidMetadata {
   val MetaFile = "metadata"
 
-  type ImageMetadata = Tuple2[PixelBounds, TileBounds]
+  type RasterMetadata = Tuple2[PixelBounds, TileBounds]
 
   def apply(path: Path, conf: Configuration) = {
     val metaPath = new Path(path, MetaFile)
@@ -123,7 +123,7 @@ object PyramidMetadata {
 
     (files, new PyramidMetadata(bounds, tileSize, meta.bands, List(-9999.0f),
       meta.rasterType, zoom,
-      Map(1 -> new ImageMetadata(pixelBounds, tileBounds))))
+      Map(1 -> new RasterMetadata(pixelBounds, tileBounds))))
   }
 
   def main(args: Array[String]) {

@@ -10,13 +10,13 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat
 import org.apache.spark.Logging
 import org.apache.spark.SparkContext.rddToPairRDDFunctions
 
-object SaveImageFunctions extends Logging {
-  def save(image: ImageWritableRDD, path: String) = {
-    logInfo("Saving image out...")
-    val jobConf = new JobConf(image.context.hadoopConfiguration)
+object SaveRasterFunctions extends Logging {
+  def save(raster: RasterWritableRDD, path: String) = {
+    logInfo("Saving raster out...")
+    val jobConf = new JobConf(raster.context.hadoopConfiguration)
     jobConf.set("io.map.index.interval", "1");
     SequenceFileOutputFormat.setOutputCompressionType(jobConf, SequenceFile.CompressionType.RECORD)
-    image.saveAsHadoopFile(path, classOf[TileIdWritable], classOf[ArgWritable], classOf[MapFileOutputFormat], jobConf)
+    raster.saveAsHadoopFile(path, classOf[TileIdWritable], classOf[ArgWritable], classOf[MapFileOutputFormat], jobConf)
     logInfo("End saving image out...")
 
   }
