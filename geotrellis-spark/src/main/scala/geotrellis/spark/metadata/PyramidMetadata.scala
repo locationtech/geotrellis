@@ -17,10 +17,17 @@ import java.io.PrintWriter
 import java.net.URL
 
 /* 
- * Using List[Float] instead of Array[Float] for defaultValues is a workaround for an issue
- * with using jackson-module-scala with nested collections, in particular nested Arrays
- * If I use Array[Float], I get back a json string that looks like an object reference instead
- * of the array values themselves. I tried adding the @JsonDeserialize as suggested here 
+ * Three workarounds that'd be good to resolve eventually:
+ * 
+ * Using List[Float] instead of Array[Float] for defaultValues (see below for issue description)
+ * Using Int instead of RasterType for rasterType (issue with nested case classes that take 
+ * constructor arguments)
+ * Using Map[String,..] instead of Map[Int,..] for rasterMetadata 
+ * 
+ * The first is a workaround for an issue with using jackson-module-scala with nested collections, 
+ * in particular nested Arrays. If I use Array[Float], I get back a json string that looks like 
+ * an object reference instead of the array values themselves. I tried adding the 
+ * @JsonDeserialize as suggested here: 
  * https://github.com/FasterXML/jackson-module-scala/wiki/FAQ
  * like so, @JsonDeserialize(contentAs = classOf[java.lang.Float]) defaultValues: Array[Float]
  * but still see the exception. The closest issue I saw to this is 
@@ -33,9 +40,9 @@ case class PyramidMetadata(
   tileSize: Int,
   bands: Int,
   defaultValues: List[Float],
-  tileType: RasterType,
+  rasterType: Int,
   maxZoomLevel: Int,
-  rasterMetadata: Map[Int, PyramidMetadata.RasterMetadata]) {
+  rasterMetadata: Map[String, PyramidMetadata.RasterMetadata]) {
 
   def save(path: Path, conf: Configuration) = {
     val metaPath = new Path(path, PyramidMetadata.MetaFile)
@@ -47,6 +54,33 @@ case class PyramidMetadata(
     out.close()
     fdos.close()
   }
+
+  override def equals(that: Any): Boolean =
+    that match {
+      case other: PyramidMetadata => {
+        (this.bounds == other.bounds &&
+          this.tileSize == other.tileSize &&
+          this.defaultValues == other.defaultValues &&
+          this.rasterType == other.rasterType &&
+          this.maxZoomLevel == other.maxZoomLevel &&
+          this.rasterMetadata == other.rasterMetadata)
+      }
+      case _ => false
+    }
+
+  override def hashCode: Int = 
+    41 * (
+      41 * (
+        41 * (
+          41 * (
+            41 * (
+              41 + bounds.hashCode)
+              + tileSize.hashCode)
+              + defaultValues.hashCode)
+              + rasterType.hashCode)
+              + maxZoomLevel.hashCode)
+    +rasterMetadata.hashCode
+  
 }
 
 object PyramidMetadata {
@@ -123,31 +157,10 @@ object PyramidMetadata {
 
     (files, new PyramidMetadata(bounds, tileSize, meta.bands, List(-9999.0f),
       meta.rasterType, zoom,
-      Map(1 -> new RasterMetadata(pixelBounds, tileBounds))))
+      Map(zoom.toString -> new RasterMetadata(pixelBounds, tileBounds))))
   }
 
   def main(args: Array[String]) {
-    //    val inPath = new Path("file:////    val inPath = new Path("file:///tmp/inmetadata")
-    //    val conf = SparkUtils.createHadoopConfiguration/tmp/inmetadata")
-    //    val conf = SparkUtils.createHadoopConfiguration
-    //    val outPath = new Path("file:///tmp/outmetadata")
-    //    val meta = PyramidMetadata(inPath, conf)
-    //    meta.save(outPath, conf)
-    //val meta = PyramidMetadata("/tmp/imagemetadatad")
-    //println(JacksonWrapper.prettyPrint(meta))
-    //    val meta = PyramidMetadata(
-    //      Bounds(1, 1, 1, 1),
-    //      512,
-    //      1,
-    //      List(-9999.0f),
-    //      "float32",
-    //      10,
-    //      Map(1 -> new Itmp/inmetadatamageMetadata(PixelBounds(0, 0, 0, 0), TileBounds(0, 0, 0, 0))))
-    //    val ser = JacksonWrapper.serialize(meta)
-    //    println("ser = " + ser)
-    //        val deser = JacksonWrapper.deserialize[PyramidMetadata](ser)
-    //        println("ser = " + ser + " and deser = " + deser)
-
     val inPath = new Path("file:///home/akini/test/big_files")
     val conf = SparkUtils.createHadoopConfiguration
 
@@ -156,7 +169,7 @@ object PyramidMetadata {
     println(files.mkString("\n"))
     println("\n\n\n")
     println("------- META ------")
-    println(meta)
+    println(JacksonWrapper.prettyPrint(meta))
 
   }
 
