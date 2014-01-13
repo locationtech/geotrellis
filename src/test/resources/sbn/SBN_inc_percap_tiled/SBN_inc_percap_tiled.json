@@ -1,0 +1,22 @@
+{
+    "cellheight": 75.0,
+    "cellwidth": 75.0,
+    "cols": "2304",
+    "datatype": "int8",
+    "epsg": 3785,
+    "layer": "SBN_inc_percap_tiled",
+    "layout_cols": "9",
+    "layout_rows": "7",
+    "path": "SBN_inc_percap_tiled",
+    "pixel_cols": "256",
+    "pixel_rows": "256",
+    "rows": "1792",
+    "tile_base": "SBN_inc_percap_tiled",
+    "type": "tiled",
+    "xmax": -8317922.884859569,
+    "xmin": -8475497.88485957,
+    "xskew": 0,
+    "ymax": 4954765.69147447,
+    "ymin": 4825540.69147447,
+    "yskew": 0
+}

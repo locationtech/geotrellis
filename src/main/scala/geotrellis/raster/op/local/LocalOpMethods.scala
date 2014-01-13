@@ -3,6 +3,9 @@ package geotrellis.raster.op.local
 import geotrellis._
 import geotrellis.raster._
 import geotrellis.source._
+import geotrellis.data.geojson.GeoJsonReader
+import geotrellis.feature.rasterize.{Rasterizer, Callback}
+import geotrellis.feature.Geometry
 
 trait LocalOpMethods[+Repr <: RasterDS] 
   extends LocalMapOpMethods[Repr]
@@ -126,4 +129,36 @@ trait LocalOpMethods[+Repr <: RasterDS]
 
   def convert(rasterType:RasterType) =
     mapOp(ConvertType(_,rasterType))
+
+  /** Masks this raster by the given GeoJSON. */
+  def mask(geoJson: String): RasterSource =
+    GeoJsonReader.parse(geoJson) match {
+      case Some(geomArray) => mask(geomArray)
+      case None => sys.error(s"Invalid GeoJSON: $geoJson")
+    }
+
+  /** Masks this raster by the given GeoJSON. */
+  def mask[T](geom: Geometry[T]): RasterSource = 
+    mask(Seq(geom))
+
+  /** Masks this raster by the given GeoJSON. */
+  def mask[T](geoms: Iterable[Geometry[T]]): RasterSource =
+    map { tile =>
+      val re = tile.rasterExtent
+      val data = RasterData.emptyByType(tile.rasterType, re.cols, re.rows)
+      for(g <- geoms) {
+        if(tile.isFloat) {
+          Rasterizer.foreachCellByFeature(g, re)(new Callback[Geometry,T] {
+            def apply(col: Int, row: Int, g: Geometry[T]) =
+              data.setDouble(col,row,tile.getDouble(col,row))
+          })
+        } else {
+          Rasterizer.foreachCellByFeature(g, re)(new Callback[Geometry,T] {
+            def apply(col: Int, row: Int, g: Geometry[T]) =
+              data.set(col,row,tile.get(col,row))
+          })
+        }
+      }
+      Raster(data,re)
+    }
 }
