@@ -3,6 +3,7 @@ package geotrellis.raster.op.global
 import geotrellis._
 import geotrellis.testutil._
 import geotrellis.feature._
+import geotrellis.source._
 
 import spire.syntax._
 import scala.collection.mutable
@@ -371,6 +372,127 @@ class ToVectorSpec extends FunSpec
       val r = getRaster("vectorbugger3")
       val op = ToVector(r)
       val vect = get(op)
+    }
+
+    it("should vectorize a two cell polygon") {
+      val n = NODATA
+      val arr = 
+        Array(
+//             0  1  2  
+               n, n, n,// 0
+               n, 1, n,// 1
+               n, 1, n,// 2
+               n, n, n // 3
+        )
+
+
+      val cols = 3
+      val rows = 4
+
+      val extent = Extent(0,-4,2,0)
+      val rasterExtent = RasterExtent(extent,1,1,3,4)
+      val r = Raster(arr,rasterExtent)
+
+      val toVector = RasterSource(r).toVector.get
+
+      toVector.length should be (1)
+      val geom = toVector.head.geom
+
+      val coordinates = geom.getCoordinates
+
+      coordinates.length should be (5)
+
+      val sorted = coordinates.map { c => (c.x,c.y) }.sorted.toList
+
+      val expected = List( (1.0, -3.0), (1.0, -1.0), (1.0, -1.0), (2.0, -3.0), (2.0, -1.0) )
+
+      sorted should be (expected)
+    }
+
+    it("should vectorize when last move is to left") {
+      val n = NODATA
+      val arr = 
+        Array(
+//             0  1  2  3
+               n, n, n, n,// 0
+               n, 1, 1, n,// 1
+               n, 1, n, n,// 2
+               n, n, n, n // 3
+        )
+
+
+      val cols = 3
+      val rows = 4
+
+      val extent = Extent(0,-4,3,0)
+      val rasterExtent = RasterExtent(extent,1,1,4,4)
+      val r = Raster(arr,rasterExtent)
+
+      val toVector = RasterSource(r).toVector.get
+
+      toVector.length should be (1)
+      val geom = toVector.head.geom
+
+      val coordinates = geom.getCoordinates
+
+      coordinates.length should be (7)
+
+      val sorted = coordinates.map { c => (c.x,c.y) }.sorted.toList
+
+      val expected = List( 
+        (1.0, -3.0),
+        (1.0, -1.0), 
+        (1.0, -1.0), 
+        (2.0, -3.0), 
+        (2.0, -2.0),
+        (3.0, -2.0),
+        (3.0, -1.0) 
+      )
+
+      sorted should be (expected)
+    }
+
+    it("should vectorize when last two moves is down and left") {
+      val n = NODATA
+      val arr = 
+        Array(
+//             0  1  2  3
+               n, n, n, n,// 0
+               n, n, 1, n,// 1
+               n, 1, 1, n,// 2
+               n, n, n, n // 3
+        )
+
+
+      val cols = 3
+      val rows = 4
+
+      val extent = Extent(0,-4,3,0)
+      val rasterExtent = RasterExtent(extent,1,1,4,4)
+      val r = Raster(arr,rasterExtent)
+
+      val toVector = RasterSource(r).toVector.get
+
+      toVector.length should be (1)
+      val geom = toVector.head.geom
+
+      val coordinates = geom.getCoordinates
+
+      coordinates.length should be (7)
+
+      val sorted = coordinates.map { c => (c.x,c.y) }.sorted.toList
+
+      val expected = List( 
+        (1.0, -3.0),
+        (1.0, -2.0),
+        (1.0, -2.0),
+        (2.0, -2.0),
+        (2.0, -1.0),
+        (3.0, -3.0),
+        (3.0, -1.0)
+      )
+
+      sorted should be (expected)
     }
   }
 }
