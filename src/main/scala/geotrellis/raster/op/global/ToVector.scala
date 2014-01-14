@@ -343,12 +343,11 @@ class Polygonizer(val r:Raster) {
           col -= 1
         }
 
-        makeMarks(points, col,row,direction,previousDirection)
+        makeMarks(points, col, row, direction, previousDirection)
         previousDirection = direction
-        direction = findNextDirection(col,row,direction,v)
-        // println(s"PREVIOUS ${sd(previousDirection)} NEXT ${sd(direction)}  (${col-116},${row-227})")
+        direction = findNextDirection(col, row, direction, v)
+        //println(s"PREVIOUS ${sd(previousDirection)} NEXT ${sd(direction)}  ($col,$row)")
         if(col == startCol && row == startRow) {
-          //println(s"  SHOULD HAVE BROKE?")
           if(previousDirection == LEFT || previousDirection == DOWN) {
             break = true
           } else if((previousDirection == UP || previousDirection == RIGHT) && 
@@ -359,7 +358,7 @@ class Polygonizer(val r:Raster) {
       }
 
       // Make end marks
-      if(direction == UP) { mark(col,row, TOPRIGHT) }
+      if(previousDirection == UP) { points += mark(col,row, TOPRIGHT) }
       points += mark(startCol,startRow,TOPLEFT) // Completes the ring
     }
 
