@@ -36,3 +36,16 @@ case class LoadRasterLayerFromPath(path:Op[String]) extends Op[RasterLayer] {
       }
   }
 }
+
+/**
+  * Load the [[RasterLayer]] from the raster layer at the specified URL.
+  */
+case class LoadRasterLayerFromUrl(url:Op[String]) extends Op[RasterLayer] {
+  def _run() = runAsync(List(url))
+  val nextSteps:Steps = {
+    case (url:String) :: Nil =>
+      LayerResult { layerLoader =>
+        layerLoader.getRasterLayerFromUrl(url)
+      }
+  }
+}
