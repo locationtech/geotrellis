@@ -3,7 +3,7 @@ package geotrellis.admin
 import geotrellis._
 import geotrellis.process._
 import geotrellis.source._
-import geotrellis.service._
+import geotrellis.services._
 import geotrellis.util.srs
 
 import akka.actor._
