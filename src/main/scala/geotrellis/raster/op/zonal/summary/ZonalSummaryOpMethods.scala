@@ -15,11 +15,26 @@ case class PartialTileIntersection[D](tile:Raster,intersections:List[Polygon[D]]
 case class FullTileIntersection(tile:Raster) extends TileIntersection
 
 trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
+  def mapIntersecting[B,That,D](p:Op[feature.Polygon[D]])
+                               (handleTileIntersection:TileIntersection=>B)
+                               (implicit bf:CanBuildSourceFrom[Repr,B,That]):That =
+    _mapIntersecting(p,None)(handleTileIntersection)(bf.apply(this))
+
+  def mapIntersecting[B,That,D](p:Op[feature.Polygon[D]],fullTileResults:DataSource[B,_])
+                               (handleTileIntersection:TileIntersection=>B)
+                               (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = 
+    _mapIntersecting(p,Some(fullTileResults))(handleTileIntersection)(bf.apply(this))
+
   def mapIntersecting[B,That,D](p:Op[feature.Polygon[D]],fullTileResults:Option[DataSource[B,_]])
                                (handleTileIntersection:TileIntersection=>B)
-                               (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
-    val builder = bf.apply(this)
+                               (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = 
+    _mapIntersecting(p,fullTileResults)(handleTileIntersection)(bf.apply(this))
 
+
+  private 
+  def _mapIntersecting[B,That,D](p:Op[feature.Polygon[D]],fullTileResults:Option[DataSource[B,_]])
+                                (handleTileIntersection:TileIntersection=>B)
+                                (builder:SourceBuilder[B,That]):That = {
     val newOp = 
       (rasterDefinition,tiles,p).map { (rd,tiles,p) =>
         val rl = rd.tileLayout.getResolutionLayout(rd.rasterExtent)
