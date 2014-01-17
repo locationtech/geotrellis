@@ -1,0 +1,24 @@
+{
+  "layer": "albers_DevelopedLand",
+
+  "type": "tiled",
+  "datatype": "bool",
+
+  "xmin": 862467.855530,
+  "xmax": 1065387.855530,
+  "ymin": 1282173.186111,
+  "ymax": 1482693.186111,
+
+  "cellwidth": 30.000000,
+  "cellheight": 30.000000,
+
+  "tile_base": "albers_DevelopedLand",
+  "layout_cols": 27,
+  "layout_rows": 27,
+  "pixel_cols": 256,
+  "pixel_rows": 256,
+
+  "yskew": 0.0,
+  "xskew": 0.0,
+  "epsg": 3785
+}
