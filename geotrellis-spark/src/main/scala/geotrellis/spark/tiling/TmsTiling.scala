@@ -61,8 +61,7 @@ object TmsTiling {
   }
 
   def pixelsToTile(px: Double, py: Double, tileSize: Int) = {
-    new Tile((px / tileSize).toLong,
-      (py / tileSize).toLong)
+    new Tile((px / tileSize).toLong, (py / tileSize).toLong)
   }
 
   // slightly modified version of equations 2.9 and 2.10
