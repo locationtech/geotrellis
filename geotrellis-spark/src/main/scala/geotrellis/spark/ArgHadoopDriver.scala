@@ -45,7 +45,7 @@ object ArgHadoopDriver {
     for (i <- 0 until numTiles) {
       key.set(i)
       val array = fill(i)
-      val value = ArgWritable.toWritable(array)
+      val value = ArgWritable.fromRasterData(array)
       writer.append(key, value)
     }
     writer.close()

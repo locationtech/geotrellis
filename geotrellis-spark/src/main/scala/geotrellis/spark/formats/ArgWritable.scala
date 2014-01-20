@@ -16,6 +16,6 @@ object ArgWritable {
   def apply(bytes: Array[Byte]) = new ArgWritable(bytes)
   def apply(aw: ArgWritable) = new ArgWritable(aw.getBytes)
 
-  def toWritable(data: RasterData) = ArgWritable(data.toArrayByte)
+  def fromRasterData(data: RasterData) = ArgWritable(data.toArrayByte)
   def toRasterData(aw: ArgWritable, awType: RasterType, cols: Int, rows: Int) = RasterData.fromArrayByte(aw.getBytes, awType, cols, rows)
 }

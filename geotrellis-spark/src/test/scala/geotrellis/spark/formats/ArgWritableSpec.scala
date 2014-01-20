@@ -28,31 +28,31 @@ class ArgWritableSpec extends FunSpec with MustMatchers with ShouldMatchers {
     
     it("should convert from Array of ints to ArgWritable and back") {
       val expected = Array.ofDim[Int](size).fill(1)
-      val actual = ArgWritable.toRasterData(ArgWritable.toWritable(IntArrayRasterData(expected, cols, rows)), TypeInt, cols, rows)
+      val actual = ArgWritable.toRasterData(ArgWritable.fromRasterData(IntArrayRasterData(expected, cols, rows)), TypeInt, cols, rows)
       expected should be(actual.asInstanceOf[IntArrayRasterData].array)
     }
 
     it("should convert from Array of shorts to ArgWritable and back") {
       val expected = Array.ofDim[Short](size).fill(1)
-      val actual = ArgWritable.toRasterData(ArgWritable.toWritable(ShortArrayRasterData(expected, cols, rows)), TypeShort, cols, rows)
+      val actual = ArgWritable.toRasterData(ArgWritable.fromRasterData(ShortArrayRasterData(expected, cols, rows)), TypeShort, cols, rows)
       expected should be(actual.asInstanceOf[ShortArrayRasterData].array)
     }
 
     it("should convert from Array of doubles to ArgWritable and back") {
       val expected = Array.ofDim[Double](size).fill(1)
-      val actual = ArgWritable.toRasterData(ArgWritable.toWritable(DoubleArrayRasterData(expected, cols, rows)), TypeDouble, cols, rows)
+      val actual = ArgWritable.toRasterData(ArgWritable.fromRasterData(DoubleArrayRasterData(expected, cols, rows)), TypeDouble, cols, rows)
       expected should be(actual.asInstanceOf[DoubleArrayRasterData].array)
     }
 
     it("should convert from Array of floats to ArgWritable and back") {
       val expected = Array.ofDim[Float](size).fill(1)
-      val actual = ArgWritable.toRasterData(ArgWritable.toWritable(FloatArrayRasterData(expected, cols, rows)), TypeFloat, cols, rows)
+      val actual = ArgWritable.toRasterData(ArgWritable.fromRasterData(FloatArrayRasterData(expected, cols, rows)), TypeFloat, cols, rows)
       expected should be(actual.asInstanceOf[FloatArrayRasterData].array)
     }
 
     it("should convert from Array of bytes to ArgWritable and back") {
       val expected = Array.ofDim[Byte](size).fill(1)
-      val actual = ArgWritable.toRasterData(ArgWritable.toWritable(ByteArrayRasterData(expected, cols, rows)), TypeByte, cols, rows)
+      val actual = ArgWritable.toRasterData(ArgWritable.fromRasterData(ByteArrayRasterData(expected, cols, rows)), TypeByte, cols, rows)
       expected should be(actual.asInstanceOf[ByteArrayRasterData].array)
     }
 
@@ -63,7 +63,7 @@ class ArgWritableSpec extends FunSpec with MustMatchers with ShouldMatchers {
       val cols = 8
       val rows = 4
       
-      val actual = ArgWritable.toRasterData(ArgWritable.toWritable(BitArrayRasterData(expected, cols, rows)), TypeBit, cols, rows)
+      val actual = ArgWritable.toRasterData(ArgWritable.fromRasterData(BitArrayRasterData(expected, cols, rows)), TypeBit, cols, rows)
       expected should be(actual.asInstanceOf[BitArrayRasterData].array)
     }
   }
