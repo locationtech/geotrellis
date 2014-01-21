@@ -27,7 +27,7 @@ class PyramidMetadataSpec extends FunSpec with MustMatchers with ShouldMatchers 
         List(-9999.0f),
         DataBuffer.TYPE_FLOAT,
         10,
-        Map("1" -> new PyramidMetadata.RasterMetadata(PixelBounds(0, 0, 0, 0), TileBounds(0, 0, 0, 0))))
+        Map("1" -> new RasterMetadata(PixelBounds(0, 0, 0, 0), TileBounds(0, 0, 0, 0))))
 
       val pyramidPath = new Path(java.nio.file.Files.createTempDirectory("pyramid_metadata_save_test").toUri())
 

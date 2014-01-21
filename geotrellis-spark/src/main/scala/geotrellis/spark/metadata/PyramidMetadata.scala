@@ -35,6 +35,8 @@ import java.net.URL
  * and the fix seems to be in 2.1.2 (I'm using 2.3.0) but doesn't seem to fix this problem
  */
 
+case class RasterMetadata(pixelBounds: PixelBounds, tileBounds: TileBounds)
+
 case class PyramidMetadata(
   bounds: Bounds,
   tileSize: Int,
@@ -42,7 +44,7 @@ case class PyramidMetadata(
   defaultValues: List[Float],
   rasterType: Int,
   maxZoomLevel: Int,
-  rasterMetadata: Map[String, PyramidMetadata.RasterMetadata]) {
+  rasterMetadata: Map[String, RasterMetadata]) {
 
   def save(path: Path, conf: Configuration) = {
     val metaPath = new Path(path, PyramidMetadata.MetaFile)
@@ -85,8 +87,6 @@ case class PyramidMetadata(
 
 object PyramidMetadata {
   val MetaFile = "metadata"
-
-  type RasterMetadata = Tuple2[PixelBounds, TileBounds]
 
   def apply(path: Path, conf: Configuration) = {
     val metaPath = new Path(path, MetaFile)
