@@ -6,6 +6,11 @@ import geotrellis.spark.tiling.TmsTiling
 trait SplitGenerator {
   def getSplits: Seq[Long]
 }
+
+object SplitGenerator {
+  def EMPTY = new SplitGenerator { def getSplits = Seq() }
+}
+
 case class RasterSplitGenerator(
   tileBounds: TileBounds,
   zoom: Int,
