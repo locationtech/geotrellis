@@ -1,4 +1,5 @@
 package geotrellis.spark.metadata
+import geotrellis._
 import geotrellis.RasterType
 import geotrellis.data.GeoTiff
 import geotrellis.data.GeoTiff.Metadata
@@ -19,15 +20,14 @@ import java.net.URL
 /* 
  * Three workarounds that'd be good to resolve eventually:
  * 
- * Using List[Float] instead of Array[Float] for defaultValues (see below for issue description)
  * Using Int instead of RasterType for rasterType (issue with nested case classes that take 
  * constructor arguments)
  * Using Map[String,..] instead of Map[Int,..] for rasterMetadata 
- * 
- * The first is a workaround for an issue with using jackson-module-scala with nested collections, 
- * in particular nested Arrays. If I use Array[Float], I get back a json string that looks like 
- * an object reference instead of the array values themselves. I tried adding the 
- * @JsonDeserialize as suggested here: 
+ * Right now I'm using Double for nodata because it's not clear whether we need an array or not. 
+ * But before that, I had List[Float] instead of Array[Float], as I ran into an issue with using 
+ * jackson-module-scala with nested collections, in particular nested Arrays. 
+ * If I use Array[Float], I get back a json string that looks like an object reference instead 
+ * of the array values themselves. I tried adding the @JsonDeserialize as suggested here: 
  * https://github.com/FasterXML/jackson-module-scala/wiki/FAQ
  * like so, @JsonDeserialize(contentAs = classOf[java.lang.Float]) defaultValues: Array[Float]
  * but still see the exception. The closest issue I saw to this is 
@@ -41,14 +41,15 @@ case class PyramidMetadata(
   bounds: Bounds,
   tileSize: Int,
   bands: Int,
-  defaultValues: List[Float],
-  rasterType: Int,
+  nodata: Double,
+  awtRasterType: Int,
   maxZoomLevel: Int,
   rasterMetadata: Map[String, RasterMetadata]) {
 
+  def rasterType: RasterType = RasterType.fromAwtType(awtRasterType)
+
   def save(path: Path, conf: Configuration) = {
     val metaPath = new Path(path, PyramidMetadata.MetaFile)
-    println("writing metadata to " + metaPath)
     val fs = metaPath.getFileSystem(conf)
     val fdos = fs.create(metaPath)
     val out = new PrintWriter(fdos)
@@ -62,15 +63,16 @@ case class PyramidMetadata(
       case other: PyramidMetadata => {
         (this.bounds == other.bounds &&
           this.tileSize == other.tileSize &&
-          this.defaultValues == other.defaultValues &&
-          this.rasterType == other.rasterType &&
+          (	(isNoData(this.nodata) && isNoData(other.nodata)) || 
+            (this.nodata == other.nodata) ) &&
+          this.awtRasterType == other.awtRasterType &&
           this.maxZoomLevel == other.maxZoomLevel &&
           this.rasterMetadata == other.rasterMetadata)
       }
       case _ => false
     }
 
-  override def hashCode: Int = 
+  override def hashCode: Int =
     41 * (
       41 * (
         41 * (
@@ -78,11 +80,11 @@ case class PyramidMetadata(
             41 * (
               41 + bounds.hashCode)
               + tileSize.hashCode)
-              + defaultValues.hashCode)
+              + nodata.hashCode)
               + rasterType.hashCode)
               + maxZoomLevel.hashCode)
-    +rasterMetadata.hashCode
-  
+  +rasterMetadata.hashCode
+
 }
 
 object PyramidMetadata {
@@ -95,8 +97,7 @@ object PyramidMetadata {
       case Some(in) =>
         try {
           in.mkString
-        }
-        finally {
+        } finally {
           in.close
         }
       case None =>
@@ -131,6 +132,8 @@ object PyramidMetadata {
         sys.error("Error: All input tifs must have the same resolution")
       if (acc.rasterType != meta.rasterType)
         sys.error("Error: All input tifs must have same raster type")
+      if (acc.nodata != meta.nodata)
+        sys.error("Error: All input tifs must have same nodata value")
 
       acc.bounds.add(meta.bounds)
       acc
@@ -147,17 +150,17 @@ object PyramidMetadata {
         meta.bounds.getUpperCorner.getOrdinate(0),
         meta.bounds.getUpperCorner.getOrdinate(1))
 
-    val bounds = new Bounds(w, s, e, n)
+    val bounds = Bounds(w, s, e, n)
     val tileBounds = TmsTiling.boundsToTile(bounds, zoom, tileSize)
     val (pixelLower, pixelUpper) =
       (TmsTiling.latLonToPixels(s, w, zoom, tileSize),
         TmsTiling.latLonToPixels(n, e, zoom, tileSize))
-    val pixelBounds = new PixelBounds(0, 0,
+    val pixelBounds = PixelBounds(0, 0,
       pixelUpper.px - pixelLower.px, pixelUpper.py - pixelLower.py)
 
-    (files, new PyramidMetadata(bounds, tileSize, meta.bands, List(-9999.0f),
-      meta.rasterType, zoom,
-      Map(zoom.toString -> new RasterMetadata(pixelBounds, tileBounds))))
+    (files,
+      PyramidMetadata(bounds, tileSize, meta.bands, meta.nodata, meta.rasterType, zoom,
+        Map(zoom.toString -> RasterMetadata(pixelBounds, tileBounds))))
   }
 
   def main(args: Array[String]) {

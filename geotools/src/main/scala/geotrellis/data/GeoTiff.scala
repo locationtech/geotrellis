@@ -21,20 +21,21 @@ object GeoTiff {
     bounds: GeneralEnvelope,
     pixelDims: Tuple2[Double, Double],
     bands: Int,
-    rasterType: Int)
+    rasterType: Int,
+    nodata: Double)
 
   def getMetadata(url: URL, epsg: String = "EPSG:3785"): Option[Metadata] =
     accepts(url, epsg) match {
       case false => None
       case true => {
         val coverage = getGridCoverage2D(url, epsg)
-
+        val reader = getReader(url, epsg)		
         val envelope = coverage.getGridGeometry().gridToWorld(new GridEnvelope2D(0, 0, 1, 1));
         val pixelDims = (math.abs(envelope.getWidth), math.abs(envelope.getHeight))
         val bands = coverage.getNumSampleDimensions
         val rasterType = coverage.getRenderedImage().getSampleModel().getDataType()
-
-        Some(Metadata(coverage.getEnvelope.asInstanceOf[GeneralEnvelope], pixelDims, bands, rasterType))
+        val nodata = reader.getMetadata().getNoData()
+        Some(Metadata(coverage.getEnvelope.asInstanceOf[GeneralEnvelope], pixelDims, bands, rasterType, nodata))
       }
     }
 

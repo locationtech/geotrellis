@@ -11,8 +11,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import java.awt.image.DataBuffer
 
-
-
 class PyramidMetadataSpec extends FunSpec with MustMatchers with ShouldMatchers {
 
   val conf = SparkUtils.createHadoopConfiguration
@@ -24,7 +22,7 @@ class PyramidMetadataSpec extends FunSpec with MustMatchers with ShouldMatchers 
         Bounds(1, 1, 1, 1),
         512,
         1,
-        List(-9999.0f),
+        Double.NaN,
         DataBuffer.TYPE_FLOAT,
         10,
         Map("1" -> new RasterMetadata(PixelBounds(0, 0, 0, 0), TileBounds(0, 0, 0, 0))))

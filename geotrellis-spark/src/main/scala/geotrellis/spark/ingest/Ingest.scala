@@ -3,6 +3,9 @@ package geotrellis.spark.ingest
 import geotrellis.Extent
 import geotrellis.Raster
 import geotrellis.RasterExtent
+import geotrellis.RasterType
+import geotrellis.TypeFloat
+import geotrellis.TypeInt
 import geotrellis.data.GeoTiff
 import geotrellis.raster.RasterData
 import geotrellis.spark.formats.ArgWritable
@@ -15,8 +18,8 @@ import geotrellis.spark.tiling.Bounds
 import geotrellis.spark.tiling.PixelBounds
 import geotrellis.spark.tiling.TileBounds
 import geotrellis.spark.tiling.TmsTiling
+import geotrellis.spark.utils.HdfsUtils
 import geotrellis.spark.utils.SparkUtils
-
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.MapFile
 import org.apache.hadoop.io.SequenceFile
@@ -24,94 +27,38 @@ import org.geotools.coverage.processing.Operations
 import org.geotools.geometry.GeneralEnvelope
 import org.opengis.coverage.grid.GridCoverage
 import org.opengis.geometry.Envelope
-
-import java.awt.image.DataBuffer
 import java.awt.image.DataBufferFloat
 import java.awt.image.DataBufferInt
 import java.net.URL
-
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.FieldArgs
+import org.geotools.coverage.grid.GridCoverage2D
+import org.geotools.coverage.grid.GridGeometry2D
+import org.geotools.coverage.grid.GeneralGridEnvelope
+import java.awt.Rectangle
+import javax.media.jai.Interpolation
+import geotrellis.data.GeoTiffWriter
 
 class Arguments extends FieldArgs {
   var input: String = _
   var output: String = _
 }
 
+/*
+ * Outstanding issues:
+ * 1. See PyramidMetadata's outstanding issues 
+ * 2. See TODO in here (replacing nodata value with NaN, etc.)  
+ * 3. Saving to multiple partitions 
+ * 4. Mosaicing overlapping tiles 
+ * 
+ * These are features more than issues
+ * 1. Faster local ingest using .par 
+ * 2. Faster local ingest using spark api
+ */
 object Ingest extends ArgMain[Arguments] {
 
   val Default_Projection = "EPSG:4326"
   System.setProperty("com.sun.media.jai.disableMediaLib", "true")
-
-  def tiffToTiles(file: Path, pyMeta: PyramidMetadata): List[(Long, Raster)] = {
-    val url = new URL(file.toUri().toString())
-    val img = GeoTiff.getGridCoverage2D(url)
-    val imgMeta = GeoTiff.getMetadata(url).get
-    println(imgMeta)
-    val (zoom, tileSize, rasterType) = (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType)
-    val tb = getTileBounds(imgMeta.bounds, zoom, tileSize)
-
-    val tileIds = for (
-      ty <- tb.s to tb.n;
-      tx <- tb.w to tb.e;
-      tileId = TmsTiling.tileId(tx, ty, zoom);
-      bounds = TmsTiling.tileToBounds(tx, ty, zoom, tileSize);
-      tile = cutTile(img, bounds, rasterType, zoom, tileSize)
-    ) yield (tileId, tile)
-
-    println(tileIds)
-    tileIds.toList
-  }
-
-  // given 
-  private def getTileBounds(env: Envelope, zoom: Int, tileSize: Int): TileBounds = {
-    val bounds = getBounds(env)
-    TmsTiling.boundsToTile(bounds, zoom, tileSize)
-  }
-
-  private def getBounds(env: Envelope): Bounds = {
-    val (w, s, e, n) =
-      (env.getLowerCorner.getOrdinate(0),
-        env.getLowerCorner.getOrdinate(1),
-        env.getUpperCorner.getOrdinate(0),
-        env.getUpperCorner.getOrdinate(1))
-    Bounds(w, s, e, n)
-  }
-  private def getPixelBounds(env: Envelope, zoom: Int, tileSize: Int) = {
-    val bounds = getBounds(env)
-    val tileBounds = TmsTiling.boundsToTile(bounds, zoom, tileSize)
-    val (pixelLower, pixelUpper) =
-      (TmsTiling.latLonToPixels(bounds.s, bounds.w, zoom, tileSize),
-        TmsTiling.latLonToPixels(bounds.n, bounds.e, zoom, tileSize))
-    new PixelBounds(0, 0,
-      pixelUpper.px - pixelLower.px, pixelUpper.py - pixelLower.py)
-  }
-
-  /*private def cutTile(image: GridCoverage2D, croppedEnvelope: GeneralEnvelope): GridCoverage = {
-    println(s"before cropping, dataBuffLen=${image.getRenderedImage().getData().getDataBuffer().getSize}")
-    val cropped = Operations.DEFAULT.crop(image, croppedEnvelope).asInstanceOf[GridCoverage]
-    cropped
-    //val scaled = Operations.DEFAULT.scale(cropped, 0.5, 0.5, 0, 0, null)
-    //scaled
-  }*/
-
-  // takes a tile and gives back a Raster for that tile
-  private def cutTile(image: GridCoverage, bounds: Bounds, rasterType: Int, zoom: Int, tileSize: Int): Raster = {
-    val env = new GeneralEnvelope(Array(bounds.w, bounds.s), Array(bounds.e, bounds.n))
-    env.setCoordinateReferenceSystem(image.getCoordinateReferenceSystem())
-
-    val cropImage = Operations.DEFAULT.crop(image, env).asInstanceOf[GridCoverage]
-
-    // TODO - assert that env corresponds to tileSizextileSize    
-    val rawDataBuff = cropImage.getRenderedImage().getData().getDataBuffer()
-    println(s"dataBuffLen=${rawDataBuff.asInstanceOf[DataBufferFloat].getData().length}, bounds=${bounds} and env=${env}")
-    val rd = rasterType match {
-      case DataBuffer.TYPE_FLOAT => RasterData(rawDataBuff.asInstanceOf[DataBufferFloat].getData(), tileSize, tileSize)
-      case DataBuffer.TYPE_INT   => RasterData(rawDataBuff.asInstanceOf[DataBufferInt].getData(), tileSize, tileSize)
-
-    }
-    Raster(rd, RasterExtent(Extent(bounds.w, bounds.s, bounds.e, bounds.n), tileSize, tileSize))
-  }
 
   def main(args: Arguments) {
     val inPath = new Path(args.input)
@@ -128,13 +75,11 @@ object Ingest extends ArgMain[Arguments] {
 
     val tiles = files.flatMap(file => tiffToTiles(file, meta))
     /*tiles.foreach(t => {
-      println(s"tileId=${t._1} and tile length=${t._2.length}")
       GeoTiffWriter.write(s"/tmp/all-ones-ingested/tile-${t._1}.tif", t._2, "float")
     })*/
 
     println("Deleting and creating output path: " + outPath)
     val outFs = outPath.getFileSystem(conf)
-    println(outFs)
     outFs.delete(outPath, true)
     outFs.mkdirs(outPath)
 
@@ -145,13 +90,16 @@ object Ingest extends ArgMain[Arguments] {
     println("Creating Output Path With Zoom: " + outPathWithZoom)
     outFs.mkdirs(outPathWithZoom)
 
-    val tb = meta.rasterMetadata(meta.maxZoomLevel.toString).tileBounds
-    val (zoom, tileSize) = (meta.maxZoomLevel, meta.tileSize)
-    val tileSizeBytes = 512 * 512 * 4
-    val blockSizeBytes = 67108864
-    val tp = TileIdPartitioner(RasterSplitGenerator(tb, zoom, tileSizeBytes, blockSizeBytes), outPathWithZoom, conf)
-    //val tp = TileIdPartitioner(SplitGenerator.EMPTY, outPathWithZoom, conf)
-    println("Saving splits: " + tp)
+    val tileBounds = meta.rasterMetadata(meta.maxZoomLevel.toString).tileBounds
+    val (zoom, tileSize, rasterType) = (meta.maxZoomLevel, meta.tileSize, meta.rasterType)
+    val splitGenerator = RasterSplitGenerator(tileBounds, zoom,
+      TmsTiling.tileSizeBytes(tileSize, rasterType),
+      HdfsUtils.blockSize(conf))
+
+    val partitioner = TileIdPartitioner(splitGenerator, outPathWithZoom, conf)
+
+    //val partitioner = TileIdPartitioner(SplitGenerator.EMPTY, outPathWithZoom, conf)
+    println("Saving splits: " + partitioner)
 
     val mapFilePath = new Path(outPathWithZoom, "part-00000")
     val key = new TileIdWritable()
@@ -162,11 +110,9 @@ object Ingest extends ArgMain[Arguments] {
       SequenceFile.CompressionType.RECORD)
     try {
       tiles.foreach {
-        case (tileId, raster) => {
+        case (tileId, tile) => {
           key.set(tileId)
-          val value = ArgWritable.fromRasterData(raster.toArrayRaster.data)
-          writer.append(key, value)
-
+          writer.append(key, ArgWritable.fromRasterData(tile))
         }
       }
     } finally {
@@ -174,5 +120,94 @@ object Ingest extends ArgMain[Arguments] {
     }
     println("Done saving tiles")
 
+  }
+
+  private def tiffToTiles(file: Path, pyMeta: PyramidMetadata): List[(Long, RasterData)] = {
+    val url = new URL(file.toUri().toString())
+    val image = GeoTiff.getGridCoverage2D(url)
+    val imageMeta = GeoTiff.getMetadata(url).get
+    val (zoom, tileSize, rasterType, nodata) =
+      (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType, pyMeta.nodata)
+    val tb = getTileBounds(imageMeta.bounds, zoom, tileSize)
+
+    val tileIds = for {
+      ty <- tb.s to tb.n
+      tx <- tb.w to tb.e
+      tileId = TmsTiling.tileId(tx, ty, zoom)
+      bounds = TmsTiling.tileToBounds(tx, ty, zoom, tileSize)
+      tile = cutTile(image, bounds, pyMeta)
+    } yield (tileId, tile)
+
+    tileIds.toList
+  }
+
+  // takes an image and a bounds and gives back a tile corresponding to those bounds
+  private def cutTile(image: GridCoverage, bounds: Bounds, pyMeta: PyramidMetadata): RasterData = {
+    val (zoom, tileSize, rasterType, nodata) =
+      (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType, pyMeta.nodata)
+
+    val tileEnvelope = new GeneralEnvelope(Array(bounds.w, bounds.s), Array(bounds.e, bounds.n))
+    tileEnvelope.setCoordinateReferenceSystem(image.getCoordinateReferenceSystem())
+
+    // TODO - translate nodata to NaN
+    val nodataArr = Array(nodata)
+    val tileGeometry = new GridGeometry2D(new GeneralGridEnvelope(new Rectangle(
+      0, 0, tileSize, tileSize)), tileEnvelope)
+
+    val tile = Operations.DEFAULT.resample(image, null, tileGeometry,
+      Interpolation.getInstance(Interpolation.INTERP_NEAREST), nodataArr)
+      .asInstanceOf[GridCoverage2D]
+
+    //val (h, w) = (tile.getRenderedImage().getData().getHeight(), tile.getRenderedImage().getData().getWidth())
+    val rawDataBuff = tile.getRenderedImage().getData().getDataBuffer()
+    //println(s"h=$h,w=$w,dataBuffLen=${rawDataBuff.asInstanceOf[DataBufferFloat].getData().length}, " + 
+    //"bounds=${bounds} and env=${tileEnvelope}")
+
+    // TODO - handle other types
+    val rd = rasterType match {
+      case TypeFloat => RasterData(rawDataBuff.asInstanceOf[DataBufferFloat].getData(), tileSize, tileSize)
+      case TypeInt   => RasterData(rawDataBuff.asInstanceOf[DataBufferInt].getData(), tileSize, tileSize)
+    }
+    //Raster(rd, RasterExtent(Extent(bounds.w, bounds.s, bounds.e, bounds.n), tileSize, tileSize))
+    rd
+  }
+
+  private def getTileBounds(env: Envelope, zoom: Int, tileSize: Int): TileBounds = {
+    val bounds = getBounds(env)
+    TmsTiling.boundsToTile(bounds, zoom, tileSize)
+  }
+
+  private def getBounds(env: Envelope): Bounds = {
+    val (w, s, e, n) =
+      (env.getLowerCorner.getOrdinate(0),
+        env.getLowerCorner.getOrdinate(1),
+        env.getUpperCorner.getOrdinate(0),
+        env.getUpperCorner.getOrdinate(1))
+    Bounds(w, s, e, n)
+  }
+  
+  private def getPixelBounds(env: Envelope, zoom: Int, tileSize: Int) = {
+    val bounds = getBounds(env)
+    val tileBounds = TmsTiling.boundsToTile(bounds, zoom, tileSize)
+    val (pixelLower, pixelUpper) =
+      (TmsTiling.latLonToPixels(bounds.s, bounds.w, zoom, tileSize),
+        TmsTiling.latLonToPixels(bounds.n, bounds.e, zoom, tileSize))
+    new PixelBounds(0, 0,
+      pixelUpper.px - pixelLower.px, pixelUpper.py - pixelLower.py)
+  }
+
+  /* debugging only */
+  private def inspect(tile: GridCoverage2D): Unit = {
+    val env = tile.getEnvelope()
+    val r = tile.getRenderedImage().getData()
+    for {
+      py <- 0 until r.getHeight()
+      if (py < 10)
+      px <- 0 until r.getWidth()
+      if (px < 10)
+    } {
+      val d = r.getSampleFloat(px, py, 0)
+      println(s"($px,$py)=$d")
+    }
   }
 }
