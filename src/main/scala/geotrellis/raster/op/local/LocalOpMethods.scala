@@ -7,7 +7,7 @@ import geotrellis.data.geojson.GeoJsonReader
 import geotrellis.feature.rasterize.{Rasterizer, Callback}
 import geotrellis.feature.Geometry
 
-trait LocalOpMethods[+Repr <: RasterDS] 
+trait LocalOpMethods[+Repr <: RasterSource] 
   extends LocalMapOpMethods[Repr]
      with AddOpMethods[Repr]
      with SubtractOpMethods[Repr]
@@ -112,11 +112,11 @@ trait LocalOpMethods[+Repr <: RasterDS]
   def localUndefined() = mapOp(Undefined(_))
 
   /** Masks this raster based on cell values of the second raster. See [[Mask]]. */
-  def localMask(rs:RasterDS,readMask:Int,writeMask:Int) = 
+  def localMask(rs:RasterSource,readMask:Int,writeMask:Int) = 
     combineOp(rs)(Mask(_,_,readMask,writeMask))
 
   /** InverseMasks this raster based on cell values of the second raster. See [[InverseMask]]. */
-  def localInverseMask(rs:RasterDS,readMask:Int,writeMask:Int) = 
+  def localInverseMask(rs:RasterSource,readMask:Int,writeMask:Int) = 
     combineOp(rs)(InverseMask(_,_,readMask,writeMask))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
