@@ -1,16 +1,9 @@
-package geotrellis.spark.ingest
-
-import geotrellis.Extent
-import geotrellis.Raster
-import geotrellis.RasterExtent
-import geotrellis.RasterType
-import geotrellis.TypeFloat
-import geotrellis.TypeInt
+package geotrellis.spark.cmd
+import geotrellis._
 import geotrellis.data.GeoTiff
 import geotrellis.raster.RasterData
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
-import geotrellis.spark.metadata.JacksonWrapper
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.rdd.RasterSplitGenerator
 import geotrellis.spark.rdd.TileIdPartitioner
@@ -20,24 +13,26 @@ import geotrellis.spark.tiling.TileBounds
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.HdfsUtils
 import geotrellis.spark.utils.SparkUtils
+
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.MapFile
 import org.apache.hadoop.io.SequenceFile
+import org.geotools.coverage.grid.GeneralGridEnvelope
+import org.geotools.coverage.grid.GridCoverage2D
+import org.geotools.coverage.grid.GridGeometry2D
 import org.geotools.coverage.processing.Operations
 import org.geotools.geometry.GeneralEnvelope
 import org.opengis.coverage.grid.GridCoverage
 import org.opengis.geometry.Envelope
+
+import java.awt.Rectangle
 import java.awt.image.DataBufferFloat
 import java.awt.image.DataBufferInt
 import java.net.URL
+
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.FieldArgs
-import org.geotools.coverage.grid.GridCoverage2D
-import org.geotools.coverage.grid.GridGeometry2D
-import org.geotools.coverage.grid.GeneralGridEnvelope
-import java.awt.Rectangle
 import javax.media.jai.Interpolation
-import geotrellis.data.GeoTiffWriter
 
 class Arguments extends FieldArgs {
   var input: String = _
@@ -71,7 +66,7 @@ object Ingest extends ArgMain[Arguments] {
     println(files.mkString("\n"))
     println("\n\n\n")
     println("------- META ------")
-    println(JacksonWrapper.prettyPrint(meta))
+    println(meta)
 
     val tiles = files.flatMap(file => tiffToTiles(file, meta))
     /*tiles.foreach(t => {

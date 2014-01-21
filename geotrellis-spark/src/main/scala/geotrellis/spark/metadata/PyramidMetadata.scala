@@ -3,7 +3,7 @@ import geotrellis._
 import geotrellis.RasterType
 import geotrellis.data.GeoTiff
 import geotrellis.data.GeoTiff.Metadata
-import geotrellis.spark.ingest.Ingest
+import geotrellis.spark.cmd.Ingest
 import geotrellis.spark.tiling.Bounds
 import geotrellis.spark.tiling.PixelBounds
 import geotrellis.spark.tiling.TileBounds
@@ -85,6 +85,7 @@ case class PyramidMetadata(
               + maxZoomLevel.hashCode)
   +rasterMetadata.hashCode
 
+  override def toString = JacksonWrapper.prettyPrint(this)
 }
 
 object PyramidMetadata {
@@ -162,18 +163,4 @@ object PyramidMetadata {
       PyramidMetadata(bounds, tileSize, meta.bands, meta.nodata, meta.rasterType, zoom,
         Map(zoom.toString -> RasterMetadata(pixelBounds, tileBounds))))
   }
-
-  def main(args: Array[String]) {
-    val inPath = new Path("file:///home/akini/test/big_files")
-    val conf = SparkUtils.createHadoopConfiguration
-
-    val (files, meta) = PyramidMetadata.fromTifFiles(inPath, conf)
-    println("------- FILES ------")
-    println(files.mkString("\n"))
-    println("\n\n\n")
-    println("------- META ------")
-    println(JacksonWrapper.prettyPrint(meta))
-
-  }
-
 }
