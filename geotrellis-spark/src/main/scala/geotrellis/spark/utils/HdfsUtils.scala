@@ -18,6 +18,8 @@ import scala.collection.mutable.ListBuffer
 abstract class LineScanner extends Iterator[String] with Closeable
 
 object HdfsUtils {
+  def blockSize(conf: Configuration): Long = conf.getLong("dfs.blocksize", 64 * 1024 * 1024)
+  
   def listFiles(path: Path, conf: Configuration): List[Path] = {
     val fs = path.getFileSystem(conf)
     val files = new ListBuffer[Path]
@@ -71,7 +73,6 @@ object HdfsUtils {
                        conf: Configuration,
                        files: ListBuffer[Path]): Unit = {
     for (fst <- fileStatuses) {
-      println("adding " + fst.getPath)
       if (fst.isDir())
         addFiles(fs.listStatus(fst.getPath()), fs, conf, files)
       else
