@@ -29,7 +29,7 @@ class ArgUrlRasterLayerSpec extends FunSpec
                                with ShouldMatchers 
                                with TestServer 
                                with RasterBuilders 
-                               with BeforeAndAfter {
+                               with BeforeAndAfterAll {
     def actor(routingSettings:RoutingSettings) = 
       new HttpServiceActor {
         implicit def rs = routingSettings
@@ -54,61 +54,52 @@ class ArgUrlRasterLayerSpec extends FunSpec
 
   var system:ActorSystem = null
 
-  before {
-    system = ActorSystem("test-url-fetch")
-  }
+  override
+  def beforeAll =
+    try {
+      super.beforeAll()
+    } finally {
+      system = ActorSystem("test-url-fetch")
+      implicit val s = system
+      implicit val timeout = Timeout(5 seconds)
 
-  after {
-    system.shutdown
-  }
+      val routingSettings = RoutingSettings.default
+      val service = system.actorOf(Props(actor(routingSettings)), "site-service")
+
+      val future = IO(Http) ? Http.Bind(service, "localhost", port = 8192)
+      val conf = Await.result(future, 5 seconds)
+      println(conf)
+    }
+
+  
+  override
+  def afterAll = 
+    try {
+      super.afterAll()
+    } finally {
+      system.shutdown
+    }
+
 
   describe("An ArgUrlRasterLayer") {
     val path1 = "src/test/resources/criml-url.json"
-    implicit val timeout = Timeout(5 seconds)
-
     	 
     it("should give same raster as reading directly from a file") {
-      implicit val s = system
-      val routingSettings = RoutingSettings.default
+      val rasterFromFile =
+        RasterLayer.fromPath(path1).get.getRaster
+      val rasterFromUrl =
+        RasterLayer.fromUrl("http://localhost:8192/criml-url.json").get.getRaster
 
-      val service = system.actorOf(Props(actor(routingSettings)), "site-service")
-      val future = IO(Http) ? Http.Bind(service, "localhost", port = 8192)
-
-      val conf = Await.result(future, 5 seconds)
-      println(conf)
-
-      try {
-        val rasterFromFile =
-          RasterLayer.fromPath(path1).get.getRaster
-        val rasterFromUrl =
-          RasterLayer.fromUrl("http://localhost:8192/criml-url.json").get.getRaster
-
-        assertEqual(rasterFromFile,rasterFromUrl)
-      } finally {
-        system.shutdown
-      }
+      assertEqual(rasterFromFile,rasterFromUrl)
     }
 
     it("should give same raster as reading directly from a file, with encoded url") {
-      implicit val s = system
-      val routingSettings = RoutingSettings.default
+      val rasterFromFile =
+        RasterLayer.fromPath(path1).get.getRaster
+      val rasterFromUrl =
+        RasterLayer.fromUrl("http://localhost:8192/criml%2Burl.json").get.getRaster
 
-      val service = system.actorOf(Props(actor(routingSettings)), "site-service")
-      val future = IO(Http) ? Http.Bind(service, "localhost", port = 8192)
-
-      val conf = Await.result(future, 5 seconds)
-      println(conf)
-
-      try {
-        val rasterFromFile =
-          RasterLayer.fromPath(path1).get.getRaster
-        val rasterFromUrl =
-          RasterLayer.fromUrl("http://localhost:8192/criml%2Burl.json").get.getRaster
-
-        assertEqual(rasterFromFile,rasterFromUrl)
-      } finally {
-        system.shutdown
-      }
+      assertEqual(rasterFromFile,rasterFromUrl)
     }
   }
 }
