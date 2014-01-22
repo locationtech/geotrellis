@@ -5,7 +5,15 @@ import geotrellis.data.arg.ArgReader
 import geotrellis.raster._
 import geotrellis.util._
 
-import dispatch.classic._
+import akka.actor.ActorSystem
+import akka.io.IO
+import akka.pattern.ask
+import akka.util.Timeout
+import scala.concurrent.Future
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import spray.http._
+import spray.client.pipelining._
 
 import com.typesafe.config.Config
 
@@ -55,17 +63,42 @@ extends UntiledRasterLayer(info) {
     }
 
   def getBytes = {
-    val size = info.rasterExtent.cols * info.rasterExtent.rows * (info.rasterType.bits / 8)
-    val result = Array.ofDim[Byte](size)
-    val h = new Http()
-    h(url(rasterUrl) >>  { (stream,charset) =>
-      var bytesRead = 1
-      while (bytesRead > 0) { 
-        bytesRead = stream.read(result, bytesRead-1, size)
+    val d: Duration = 5 seconds
+    implicit val t: Timeout = 5 seconds
+    val (system, shutdown) =
+      if(GeoTrellis.isInit)
+        // If the GeoTrellis.server is being used, use it's Actor System
+        (GeoTrellis.server.system, { () => })
+      else {
+        // otherwise, create a temporary one
+        val s = ActorSystem(s"system-request-$rasterUrl")
+        (s, () => s.shutdown)
       }
-    })
-    h.shutdown
-    result
+
+    implicit val s = system
+    import s.dispatcher
+
+    try {
+      val pipeline = sendReceive ~> unmarshal[Array[Byte]]
+      val response: Future[Array[Byte]] =
+        pipeline(Get(rasterUrl))
+
+      Await.result(response, d)
+    } finally {
+      shutdown()
+    }
+
+    // val size = info.rasterExtent.cols * info.rasterExtent.rows * (info.rasterType.bits / 8)
+    // val result = Array.ofDim[Byte](size)
+    // val h = new Http()
+    // h(url(rasterUrl) >>  { (stream,charset) =>
+    //   var bytesRead = 1
+    //   while (bytesRead > 0) { 
+    //     bytesRead = stream.read(result, bytesRead-1, size)
+    //   }
+    // })
+    // h.shutdown
+//    result
   }
 
   def cache(c:Cache[String]) = 

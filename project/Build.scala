@@ -135,7 +135,8 @@ object GeotrellisBuild extends Build {
         "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1",
         "org.spire-math" %% "spire" % "0.4.0",
         "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided",
-        "net.databinder" %% "dispatch-http" % "0.8.10", // for reading args from URLs
+        "io.spray"       % "spray-client" % "1.2.0", // for reading args from URLs,
+        "io.spray"       % "spray-routing" % "1.2.0" % "test",
         "org.apache.commons" % "commons-math3" % "3.2"
       ),
 
@@ -145,6 +146,7 @@ object GeotrellisBuild extends Build {
         "Scala Test" at "http://www.scala-tools.org/repo-reloases/",
         "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
         "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
+        "spray repo" at "http://repo.spray.io/",
         "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
       )
     ) ++
