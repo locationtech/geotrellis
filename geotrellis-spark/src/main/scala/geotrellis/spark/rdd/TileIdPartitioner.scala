@@ -28,7 +28,9 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
 
   override def getPartition(key: Any) = findPartition(key)
   override def numPartitions = splitPoints.length
-  override def toString = splitPoints.zipWithIndex.mkString
+  override def toString = "TileIdPartitioner split points: " + {
+    if (splitPoints.isEmpty) "Empty" else splitPoints.zipWithIndex.mkString
+  }
 
   // TODO override equals and hashCode
 
