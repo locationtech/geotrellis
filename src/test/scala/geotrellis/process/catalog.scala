@@ -92,18 +92,10 @@ class CatalogSpec extends FunSpec
     }
   }
 
-  describe("A DataSource") {
-   val catalog = Catalog.fromJSON(json1)
-   val store = catalog.stores("test:fs")
-   val layers = store.getLayers
-
-    it("should find Args in a source directory") {
-      layers.toList.length must be === new java.io.File(datapath)
-                                                  .listFiles
-                                                  .filter { x => x.getName.endsWith(".json") }
-                                                  .map { x => 1 }
-                                                  .sum
-    } 
+  describe("A DataStore") {
+    val catalog = Catalog.fromJSON(json1)
+    val store = catalog.stores("test:fs")
+    val layers = store.getLayers
 
     it("should create IntConstant arg") {
       val result = get(io.LoadRaster("constant"))
