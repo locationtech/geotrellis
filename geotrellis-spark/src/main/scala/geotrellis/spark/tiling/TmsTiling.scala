@@ -27,6 +27,13 @@ object TmsTiling {
   def numYTiles(zoom: Int) = math.pow(2, zoom - 1).toLong
 
   def tileId(tx: Long, ty: Long, zoom: Int) = (ty * numXTiles(zoom)) + tx
+  
+  def tileXY(tileId: Long, zoom: Int): Tuple2[Long, Long] = {
+    val width = numXTiles(zoom)
+    val ty = tileId / width
+    val tx = tileId - (ty * width)
+    (tx, ty)
+  }
 
   def resolution(zoom: Int, tileSize: Int) = 360 / (numXTiles(zoom) * tileSize).toDouble
 
