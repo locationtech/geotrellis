@@ -13,7 +13,6 @@ import geotrellis.spark.tiling.TileBounds
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.HdfsUtils
 import geotrellis.spark.utils.SparkUtils
-
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.MapFile
 import org.apache.hadoop.io.SequenceFile
@@ -24,20 +23,14 @@ import org.geotools.coverage.processing.Operations
 import org.geotools.geometry.GeneralEnvelope
 import org.opengis.coverage.grid.GridCoverage
 import org.opengis.geometry.Envelope
-
 import java.awt.Rectangle
 import java.awt.image.DataBufferFloat
 import java.awt.image.DataBufferInt
 import java.net.URL
-
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.FieldArgs
 import javax.media.jai.Interpolation
-
-class Arguments extends FieldArgs {
-  var input: String = _
-  var output: String = _
-}
+import org.apache.spark.Logging
 
 /*
  * Outstanding issues:
@@ -50,12 +43,12 @@ class Arguments extends FieldArgs {
  * 1. Faster local ingest using .par 
  * 2. Faster local ingest using spark api
  */
-object Ingest extends ArgMain[Arguments] {
+object Ingest extends ArgMain[CommandArguments] with Logging {
 
   val Default_Projection = "EPSG:4326"
   System.setProperty("com.sun.media.jai.disableMediaLib", "true")
 
-  def main(args: Arguments) {
+  def main(args: CommandArguments) {
     val inPath = new Path(args.input)
     val outPath = new Path(args.output)
 
@@ -69,20 +62,18 @@ object Ingest extends ArgMain[Arguments] {
     println(meta)
 
     val tiles = files.flatMap(file => tiffToTiles(file, meta))
-    /*tiles.foreach(t => {
-      GeoTiffWriter.write(s"/tmp/all-ones-ingested/tile-${t._1}.tif", t._2, "float")
-    })*/
 
-    println("Deleting and creating output path: " + outPath)
+    logInfo(s"Deleting and creating output path: $outPath")
     val outFs = outPath.getFileSystem(conf)
     outFs.delete(outPath, true)
     outFs.mkdirs(outPath)
 
-    println("Saving metadata: ")
+    logInfo("Saving metadata: ")
+    logInfo(meta.toString)
     meta.save(outPath, conf)
 
     val outPathWithZoom = new Path(outPath, meta.maxZoomLevel.toString)
-    println("Creating Output Path With Zoom: " + outPathWithZoom)
+    logInfo(s"Creating Output Path With Zoom: $outPathWithZoom")
     outFs.mkdirs(outPathWithZoom)
 
     val tileBounds = meta.rasterMetadata(meta.maxZoomLevel.toString).tileBounds
@@ -94,12 +85,12 @@ object Ingest extends ArgMain[Arguments] {
     val partitioner = TileIdPartitioner(splitGenerator, outPathWithZoom, conf)
 
     //val partitioner = TileIdPartitioner(SplitGenerator.EMPTY, outPathWithZoom, conf)
-    println("Saving splits: " + partitioner)
+    logInfo("Saving splits: " + partitioner)
 
     val mapFilePath = new Path(outPathWithZoom, "part-00000")
     val key = new TileIdWritable()
 
-    println(s"Saving ${tiles.length} tiles to $mapFilePath")
+    logInfo(s"Saving ${tiles.length} tiles to $mapFilePath")
     val writer = new MapFile.Writer(conf, outFs, mapFilePath.toUri.toString,
       classOf[TileIdWritable], classOf[ArgWritable],
       SequenceFile.CompressionType.RECORD)
@@ -113,7 +104,7 @@ object Ingest extends ArgMain[Arguments] {
     } finally {
       writer.close
     }
-    println("Done saving tiles")
+    logInfo("Done saving tiles")
 
   }
 
