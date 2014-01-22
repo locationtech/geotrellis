@@ -26,11 +26,11 @@ object LzwEncoder {
   def render(encoder:Encoder) = LzwEncoder(encoder).render()
 
   def apply(encoder:Encoder) = encoder.settings match {
-    case Settings(IntSample, Floating, _, _) => new LzwFloatEncoder(encoder)
-    case Settings(LongSample, Floating, _, _) => new LzwDoubleEncoder(encoder)
-    case Settings(ByteSample, _, _, _) => new LzwByteEncoder(encoder)
-    case Settings(ShortSample, _, _, _) => new LzwShortEncoder(encoder)
-    case Settings(IntSample, _, _, _) => new LzwIntEncoder(encoder)
+    case Settings(IntSample, Floating, _, _, _) => new LzwFloatEncoder(encoder)
+    case Settings(LongSample, Floating, _, _, _) => new LzwDoubleEncoder(encoder)
+    case Settings(ByteSample, _, _, _, _) => new LzwByteEncoder(encoder)
+    case Settings(ShortSample, _, _, _, _) => new LzwShortEncoder(encoder)
+    case Settings(IntSample, _, _, _, _) => new LzwIntEncoder(encoder)
     case s => sys.error("can't encoder %s" format s)
   }
 }
@@ -38,7 +38,7 @@ object LzwEncoder {
 class LzwByteEncoder(encoder:Encoder) extends LzwEncoder(encoder) {
   def handleCell(i:Int) {
     var z = data.apply(i)
-    if (isNoData(z)) z = encoder.noDataInt
+    if (isNoData(z)) z = encoder.settings.nodataInt
     handleByte(z)
   }
 }
@@ -46,7 +46,7 @@ class LzwByteEncoder(encoder:Encoder) extends LzwEncoder(encoder) {
 class LzwShortEncoder(encoder:Encoder) extends LzwEncoder(encoder) {
   def handleCell(i:Int) {
     var z = data.apply(i)
-    if (isNoData(z)) z = encoder.noDataInt
+    if (isNoData(z)) z = encoder.settings.nodataInt
     handleByte(z >> 8)
     handleByte(z & 0xff)
   }
@@ -55,7 +55,7 @@ class LzwShortEncoder(encoder:Encoder) extends LzwEncoder(encoder) {
 class LzwIntEncoder(encoder:Encoder) extends LzwEncoder(encoder) {
   def handleCell(i:Int) {
     var z = data.apply(i)
-    if (isNoData(z)) z = encoder.noDataInt
+    if (isNoData(z)) z = encoder.settings.nodataInt
     handleByte(z >> 24)
     handleByte((z >> 16) & 0xff)
     handleByte((z >> 8) & 0xff)

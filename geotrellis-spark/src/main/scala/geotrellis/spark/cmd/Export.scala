@@ -36,7 +36,7 @@ object Export extends ArgMain[CommandArguments] with Logging {
         val raster = Raster(ArgWritable.toRasterData(aw, rasterType, tileSize, tileSize),
           RasterExtent(Extent(bounds.w, bounds.s, bounds.e, bounds.n), tileSize, tileSize))
           
-        GeoTiffWriter.write(s"${outputDir}/tile-${tileId}.tif", raster, "float")
+        GeoTiffWriter.write(s"${outputDir}/tile-${tileId}.tif", raster, meta.nodata)
         logInfo(s"---------tx: $tx, ty: $ty file: tile-${tileId}.tif")
       }
     }
