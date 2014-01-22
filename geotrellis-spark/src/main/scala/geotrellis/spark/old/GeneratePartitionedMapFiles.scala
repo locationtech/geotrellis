@@ -7,12 +7,11 @@ import geotrellis.spark.rdd.SplitGenerator
 import geotrellis.spark.rdd.TileIdPartitioner
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.SparkUtils
-
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.MapFile
 import org.apache.hadoop.io.SequenceFile
-
 import scala.util.Random
+import geotrellis.spark.formats.ArgWritable
 
 /**
  * @author akini

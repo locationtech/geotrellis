@@ -1,13 +1,13 @@
-package geotrellis.spark
+package geotrellis.spark.old
 
 import geotrellis._
 import geotrellis.raster.IntArrayRasterData
 import geotrellis.spark.formats.{ArgWritable, TileIdWritable}
 import geotrellis.spark.tiling.TmsTiling
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.SequenceFile
+import geotrellis.spark.formats.ArgWritable
 
 
 

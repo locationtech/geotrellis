@@ -1,12 +1,12 @@
-package geotrellis.spark
+package geotrellis.spark.old
 
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.rdd.RasterHadoopRDD
 import geotrellis.spark.utils.SparkUtils
-
 import org.apache.spark.SparkContext._
 import org.apache.spark.Logging
+import geotrellis.spark.SavableImage
 
 object InputOutputDriver extends Logging {
   def main(args: Array[String]) {
