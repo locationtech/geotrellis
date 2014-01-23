@@ -1,5 +1,6 @@
 package geotrellis.data.geotiff
 
+private[geotiff] 
 case class Nodata(value: Double, isSet: Boolean) {
   /**
    * Int nodata value to use when writing raster.
