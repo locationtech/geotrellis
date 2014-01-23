@@ -19,12 +19,12 @@ object Export extends ArgMain[CommandArguments] with Logging {
   def main(args: CommandArguments) {
     val rasterPath = new Path(args.input)
     val zoom = args.zoom
-    val outputDir = args.output
     val rasterPathWithZoom = new Path(rasterPath, zoom.toString)
+    val outputDir = args.output
+    val sparkMaster = args.sparkMaster
     
-    val sc = SparkUtils.createSparkContext("local", "Export", "/geotrellis-spark/target/scala-2.10/geotrellis-spark_2.10-0.10.0-SNAPSHOT.jar")
+    val sc = SparkUtils.createSparkContext(sparkMaster, "Export")
     val meta = PyramidMetadata(rasterPath, sc.hadoopConfiguration)
-    println(meta)
     val (tileSize, rasterType) = (meta.tileSize, meta.rasterType)
     val raster = RasterHadoopRDD(sc, rasterPathWithZoom.toUri.toString)
    
