@@ -11,11 +11,10 @@ import geotrellis.spark.SavableImage
 object InputOutputDriver extends Logging {
   def main(args: Array[String]) {
     val sparkMaster = args(0) 			// "spark://host:7077"
-    val geotrellisJarSuffix = args(1) 	// /geotrellis-spark/target/scala-2.10/geotrellis-spark_2.10-0.9.0-SNAPSHOT.jar
     val nameNode = args(2) 				// hdfs://localhost:9000
     val inputRasterPath = args(3)        // /geotrellis/images/argtest
     val outputRasterPath = args(4)		// /geotrellis/images/argtestout
-    val sc = SparkUtils.createSparkContext(sparkMaster, "InputOutputRaster", geotrellisJarSuffix)
+    val sc = SparkUtils.createSparkContext(sparkMaster, "InputOutputRaster")
     val awtestRdd = RasterHadoopRDD(sc, nameNode + inputRasterPath)
 
     def printTileWithPartition(idx: Int, itr: Iterator[(TileIdWritable, ArgWritable)]) = {
