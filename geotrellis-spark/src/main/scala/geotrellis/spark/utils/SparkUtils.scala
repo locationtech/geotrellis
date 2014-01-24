@@ -33,6 +33,7 @@ object SparkUtils extends Logging {
     new Configuration
   }
 
+  /* find the geotrellis-spark jar under the geotrellis home directory */
   def jar(gtHome: String): String = {
     def isMatch(fileName: String): Boolean = "geotrellis-spark(.)*.jar".r.findFirstIn(fileName) match {
       case Some(_) => true

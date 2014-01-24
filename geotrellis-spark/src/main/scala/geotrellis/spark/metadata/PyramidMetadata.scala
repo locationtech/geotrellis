@@ -17,7 +17,20 @@ import org.apache.hadoop.fs.Path
 import java.io.PrintWriter
 import java.net.URL
 
-/* 
+/**
+ * @author akini
+ *
+ * PyramidMetadata encapsulates the metadata for a pyramid. The on-disk representation is JSON
+ * and this class provides utilities to read/save from/to JSON.
+ *
+ * The metadata has two types of attributes - pyramid level and raster level
+ * Pyramid Level attributes - everything except rasterMetadata
+ * Raster Level attributes - rasterMetadata
+ *
+ */
+case class RasterMetadata(pixelBounds: PixelBounds, tileBounds: TileBounds)
+
+/* ------Note to self------- 
  * Three workarounds that'd be good to resolve eventually:
  * 
  * Using Int instead of RasterType for rasterType (issue with nested case classes that take 
@@ -34,9 +47,6 @@ import java.net.URL
  * https://github.com/FasterXML/jackson-module-scala/issues/48
  * and the fix seems to be in 2.1.2 (I'm using 2.3.0) but doesn't seem to fix this problem
  */
-
-case class RasterMetadata(pixelBounds: PixelBounds, tileBounds: TileBounds)
-
 case class PyramidMetadata(
   bounds: Bounds,
   tileSize: Int,
@@ -63,11 +73,11 @@ case class PyramidMetadata(
       case other: PyramidMetadata => {
         (this.bounds == other.bounds &&
           this.tileSize == other.tileSize &&
-          (	(isNoData(this.nodata) && isNoData(other.nodata)) || 
-            (this.nodata == other.nodata) ) &&
-          this.awtRasterType == other.awtRasterType &&
-          this.maxZoomLevel == other.maxZoomLevel &&
-          this.rasterMetadata == other.rasterMetadata)
+          ((isNoData(this.nodata) && isNoData(other.nodata)) ||
+            (this.nodata == other.nodata)) &&
+            this.awtRasterType == other.awtRasterType &&
+            this.maxZoomLevel == other.maxZoomLevel &&
+            this.rasterMetadata == other.rasterMetadata)
       }
       case _ => false
     }
@@ -91,6 +101,11 @@ case class PyramidMetadata(
 object PyramidMetadata {
   val MetaFile = "metadata"
 
+  /*
+   * Reads the raster's metadata 
+   * 
+   * path - A path to the raster 
+   */
   def apply(path: Path, conf: Configuration) = {
     val metaPath = new Path(path, MetaFile)
 
@@ -107,6 +122,12 @@ object PyramidMetadata {
     JacksonWrapper.deserialize[PyramidMetadata](txt)
   }
 
+  /*
+   * Constructs a metadata from tiff files 
+   * 
+   * path - path to a tiff file or directory containing TIFF files. The directory can be 
+   * arbitrarily deep, and will be recursively searched for all TIFF files
+   */
   def fromTifFiles(path: Path, conf: Configuration): Tuple2[List[Path], PyramidMetadata] = {
 
     val fs = path.getFileSystem(conf)

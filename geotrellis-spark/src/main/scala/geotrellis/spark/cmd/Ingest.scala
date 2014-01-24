@@ -13,9 +13,11 @@ import geotrellis.spark.tiling.TileBounds
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.HdfsUtils
 import geotrellis.spark.utils.SparkUtils
+
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.MapFile
 import org.apache.hadoop.io.SequenceFile
+import org.apache.spark.Logging
 import org.geotools.coverage.grid.GeneralGridEnvelope
 import org.geotools.coverage.grid.GridCoverage2D
 import org.geotools.coverage.grid.GridGeometry2D
@@ -23,21 +25,39 @@ import org.geotools.coverage.processing.Operations
 import org.geotools.geometry.GeneralEnvelope
 import org.opengis.coverage.grid.GridCoverage
 import org.opengis.geometry.Envelope
+
 import java.awt.Rectangle
+import java.awt.image.DataBufferByte
+import java.awt.image.DataBufferDouble
 import java.awt.image.DataBufferFloat
 import java.awt.image.DataBufferInt
+import java.awt.image.DataBufferShort
 import java.net.URL
-import com.quantifind.sumac.ArgMain
-import com.quantifind.sumac.FieldArgs
-import javax.media.jai.Interpolation
-import org.apache.spark.Logging
 
-/*
+import com.quantifind.sumac.ArgMain
+import javax.media.jai.Interpolation
+
+/**
+ * @author akini
+ * 
+ * Ingest GeoTIFFs into ArgWritable.  
+ *
+ * Ingest --input <path-to-tiffs> --output <path-to-raster> --sparkMaster <spark-master-ip>
+ * 
+ * e.g., Ingest --input file:///home/akini/test/small_files/all-ones.tif --output file:///tmp/all-ones 
+ * 
+ * Constraints:
+ * 
+ * --input <path-to-tiffs> - this can either be a directory or a single tiff file and has to be on the local fs.
+ * Currently, mosaicing is not implemented so only the single tiff file case is tested 
+ * 
+ * --output <path-to-raster> - this can be either on hdfs (hdfs://) or local fs (file://). If the directory
+ * already exists, it is deleted
+ * 
+ * 
  * Outstanding issues:
- * 1. See PyramidMetadata's outstanding issues 
- * 2. See TODO in here (replacing nodata value with NaN, etc.)  
- * 3. Saving to multiple partitions 
- * 4. Mosaicing overlapping tiles 
+ * 1. Saving to multiple partitions 
+ * 2. Mosaicing overlapping tiles 
  * 
  * These are features more than issues
  * 1. Faster local ingest using .par 
@@ -127,7 +147,6 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
     tileIds.toList
   }
 
-  // takes an image and a bounds and gives back a tile corresponding to those bounds
   private def cutTile(image: GridCoverage, bounds: Bounds, pyMeta: PyramidMetadata): RasterData = {
     val (zoom, tileSize, rasterType, nodata) =
       (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType, pyMeta.nodata)
@@ -135,7 +154,6 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
     val tileEnvelope = new GeneralEnvelope(Array(bounds.w, bounds.s), Array(bounds.e, bounds.n))
     tileEnvelope.setCoordinateReferenceSystem(image.getCoordinateReferenceSystem())
 
-    // TODO - translate nodata to NaN
     val nodataArr = Array(nodata)
     val tileGeometry = new GridGeometry2D(new GeneralGridEnvelope(new Rectangle(
       0, 0, tileSize, tileSize)), tileEnvelope)
@@ -149,15 +167,20 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
     //println(s"h=$h,w=$w,dataBuffLen=${rawDataBuff.asInstanceOf[DataBufferFloat].getData().length}, " + 
     //"bounds=${bounds} and env=${tileEnvelope}")
 
-    // TODO - handle other types
     val rd = rasterType match {
-      case TypeFloat => RasterData(rawDataBuff.asInstanceOf[DataBufferFloat].getData(), tileSize, tileSize)
-      case TypeInt   => RasterData(rawDataBuff.asInstanceOf[DataBufferInt].getData(), tileSize, tileSize)
+      case TypeDouble => RasterData(rawDataBuff.asInstanceOf[DataBufferDouble].getData(), tileSize, tileSize)
+      case TypeFloat  => RasterData(rawDataBuff.asInstanceOf[DataBufferFloat].getData(), tileSize, tileSize)
+      case TypeInt    => RasterData(rawDataBuff.asInstanceOf[DataBufferInt].getData(), tileSize, tileSize)
+      case TypeShort  => RasterData(rawDataBuff.asInstanceOf[DataBufferShort].getData(), tileSize, tileSize)
+      case TypeByte   => RasterData(rawDataBuff.asInstanceOf[DataBufferByte].getData(), tileSize, tileSize)
+      case _          => sys.error("Unrecognized AWT type - " + rasterType)
     }
-    //Raster(rd, RasterExtent(Extent(bounds.w, bounds.s, bounds.e, bounds.n), tileSize, tileSize))
-    rd
+    NoDataHandler.removeUserNodata(rd, nodata)
   }
 
+  /* The following methods are here vs. TmsTiling as they convert Envelope to TmsTiling types
+   * and there isn't a need to expose Envelope to the rest of geotrellis/geotrellis-spark
+   */
   private def getTileBounds(env: Envelope, zoom: Int, tileSize: Int): TileBounds = {
     val bounds = getBounds(env)
     TmsTiling.boundsToTile(bounds, zoom, tileSize)
@@ -171,7 +194,7 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
         env.getUpperCorner.getOrdinate(1))
     Bounds(w, s, e, n)
   }
-  
+
   private def getPixelBounds(env: Envelope, zoom: Int, tileSize: Int) = {
     val bounds = getBounds(env)
     val tileBounds = TmsTiling.boundsToTile(bounds, zoom, tileSize)

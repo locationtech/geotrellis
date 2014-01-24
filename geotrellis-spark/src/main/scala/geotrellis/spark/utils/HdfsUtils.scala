@@ -1,6 +1,5 @@
 package geotrellis.spark.utils
 import org.apache.hadoop.conf.Configuration
-
 import org.apache.hadoop.fs.FileStatus
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.LocalFileSystem
@@ -18,14 +17,18 @@ import scala.collection.mutable.ListBuffer
 abstract class LineScanner extends Iterator[String] with Closeable
 
 object HdfsUtils {
+
+  /* get the HDFS block size from the Hadoop configuration */
   def blockSize(conf: Configuration): Long = conf.getLong("dfs.blocksize", 64 * 1024 * 1024)
-  
+
+  /* recursively descend into a directory and and get list of file paths */
   def listFiles(path: Path, conf: Configuration): List[Path] = {
     val fs = path.getFileSystem(conf)
     val files = new ListBuffer[Path]
     addFiles(fs.listStatus(path), fs, conf, files)
     files.toList
   }
+
   def getLineScanner(path: String, conf: Configuration): Option[LineScanner] =
     getLineScanner(new Path(path), conf)
 
@@ -51,8 +54,7 @@ object HdfsUtils {
       case fs =>
         if (!fs.exists(path)) {
           return None
-        }
-        else {
+        } else {
           val fdis = fs.open(path)
           val scanner = new Scanner(new BufferedReader(new InputStreamReader(fdis)))
 
