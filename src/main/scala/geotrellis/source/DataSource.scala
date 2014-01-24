@@ -18,13 +18,16 @@ object DataSource {
     logic.Collect(elementOps)
   }
 
-  def fromValues[T](elements:T*):DataSource[T,Seq[T]] =
+  def fromValues[T](elements:T*):SeqSource[T] =
     fromValues(elements)
 
-  def fromValues[T](elements:Seq[T])(implicit d:DI):DataSource[T,Seq[T]] =
+  def fromValues[T](elements:Seq[T])(implicit d:DI): SeqSource[T] =
     apply(Literal(elements.map(Literal(_))))
 
-  def apply[T](elements:Op[Seq[Op[T]]]):DataSource[T,Seq[T]] = {
+  def fromSources[T](sources: Seq[DataSource[_,T]]): SeqSource[T] =
+    apply(Literal(sources.map(_.convergeOp)))
+
+  def apply[T](elements:Op[Seq[Op[T]]]): SeqSource[T] = {
     val builder:DataSourceBuilder[T,Seq[T]] = new DataSourceBuilder(convergeSeq)
     builder.setOp(elements)
     builder.result

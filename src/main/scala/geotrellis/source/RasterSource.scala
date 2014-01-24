@@ -1,7 +1,7 @@
 package geotrellis.source
 
 import geotrellis._
-import geotrellis.process.LayerId
+import geotrellis.process.{LayerId, RasterLayer}
 import geotrellis.raster.op._
 import geotrellis.statistics.Histogram
 import geotrellis.raster._
@@ -19,8 +19,20 @@ object RasterSource {
   def fromPath(path:String,rasterExtent:RasterExtent):RasterSource =
     fromPath(path,Some(rasterExtent))
 
-  def fromPath(path:String,targetExtent:Option[RasterExtent]):RasterSource = {
-    val rasterLayer = io.LoadRasterLayerFromPath(path)
+  def fromPath(path:String,targetExtent:Option[RasterExtent]):RasterSource =
+    apply(io.LoadRasterLayerFromPath(path),targetExtent)
+
+  def fromUrl(jsonUrl: String): RasterSource =
+    fromUrl(jsonUrl, None)
+
+  def fromUrl(jsonUrl: String, targetExtent:RasterExtent): RasterSource =
+    fromUrl(jsonUrl, Some(targetExtent))
+
+  def fromUrl(jsonUrl: String, targetExtent:Option[RasterExtent]): RasterSource =
+    apply(io.LoadRasterLayerFromUrl(jsonUrl),targetExtent)
+
+  def apply(rasterLayer:Op[RasterLayer],targetExtent:Option[RasterExtent])
+           (implicit d:DI): RasterSource = {
     val rasterDef = 
       rasterLayer map { layer =>
         RasterDefinition(layer.info.id,

@@ -1,4 +1,4 @@
-package geotrellis.service
+package geotrellis.services
 
 import geotrellis._
 import geotrellis.process._

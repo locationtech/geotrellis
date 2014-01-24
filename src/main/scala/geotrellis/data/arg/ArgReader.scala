@@ -50,7 +50,7 @@ object ArgReader {
       case TypeBit =>
         val warped = Array.ofDim[Byte]((cols*rows + 7)/8)
         Warp(re,targetRe,new BitWarpAssign(bytes,warped))
-        ByteArrayRasterData(warped,cols,rows)
+        BitArrayRasterData(warped,cols,rows)
       case TypeByte =>
         // ByteBuffer assign benchmarked faster than just using Array[Byte] for source.
         val buffer = ByteBuffer.wrap(bytes)

@@ -69,7 +69,7 @@ object IfCell extends Serializable {
            .withName("BinaryIfElseCell")
 }
 
-trait ConditionalOpMethods[+Repr <: RasterDS] { self: Repr =>
+trait ConditionalOpMethods[+Repr <: RasterSource] { self: Repr =>
   def localIf(cond:Int => Boolean,trueValue:Int) = 
     self.mapOp(IfCell(_,cond,trueValue))
   def localIf(cond:Double => Boolean,trueValue:Double) = 
@@ -78,12 +78,12 @@ trait ConditionalOpMethods[+Repr <: RasterDS] { self: Repr =>
     self.mapOp(IfCell(_,cond,trueValue,falseValue))
   def localIf(cond:Double => Boolean,trueValue:Double,falseValue:Double) = 
     self.mapOp(IfCell(_,cond,trueValue,falseValue))
-  def localIf(rs:RasterDS,cond:(Int,Int)=>Boolean,trueValue:Int) = 
+  def localIf(rs:RasterSource,cond:(Int,Int)=>Boolean,trueValue:Int) = 
     self.combineOp(rs)(IfCell(_,_,cond,trueValue))
-  def localIf(rs:RasterDS,cond:(Double,Double)=>Boolean,trueValue:Double) = 
+  def localIf(rs:RasterSource,cond:(Double,Double)=>Boolean,trueValue:Double) = 
     self.combineOp(rs)(IfCell(_,_,cond,trueValue))
-  def localIf(rs:RasterDS,cond:(Int,Int)=>Boolean,trueValue:Int,falseValue:Int) = 
+  def localIf(rs:RasterSource,cond:(Int,Int)=>Boolean,trueValue:Int,falseValue:Int) = 
     self.combineOp(rs)(IfCell(_,_,cond,trueValue,falseValue))
-  def localIf(rs:RasterDS,cond:(Double,Double)=>Boolean,trueValue:Double,falseValue:Double) = 
+  def localIf(rs:RasterSource,cond:(Double,Double)=>Boolean,trueValue:Double,falseValue:Double) = 
     self.combineOp(rs)(IfCell(_,_,cond,trueValue,falseValue))
 }

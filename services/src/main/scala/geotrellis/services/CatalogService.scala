@@ -1,7 +1,7 @@
-package geotrellis.service
+package geotrellis.services
 
 import geotrellis._
-import geotrellis.service.Json._
+import geotrellis.services.Json._
 
 
 object CatalogService {

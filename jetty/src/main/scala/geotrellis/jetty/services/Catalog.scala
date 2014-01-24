@@ -6,7 +6,7 @@ import javax.ws.rs.core.{Response, Context}
 
 import geotrellis._
 import geotrellis.jetty._
-import geotrellis.service._
+import geotrellis.services._
 
 import scala.collection.JavaConversions._
 

@@ -36,4 +36,16 @@ class DataSourceSpec extends FunSpec
       }
     }
   }
+
+  describe("fromSources") {
+    it("should combine sources") {
+      val seq = Seq(
+        ValueSource(1),
+        ValueSource(2),
+        ValueSource(3),
+        DataSource.fromValues(1,2,1).reduce(_+_)
+      )
+      seq.get.toArray should be (Array(1,2,3,4))
+    }
+  }
 }

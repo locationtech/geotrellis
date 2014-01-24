@@ -86,6 +86,7 @@ extends RasterLayer(info) {
         // Collect data from intersecting tiles
         val targetExtent = re.extent
         val resLayout = tileLayout.getResolutionLayout(info.rasterExtent)
+        val loader = getTileLoader()
         for(tcol <- 0 until tileLayout.tileCols optimized) { 
           for(trow <- 0 until tileLayout.tileRows optimized) {
             val sourceRasterExtent = resLayout.getRasterExtent(tcol,trow)
@@ -97,10 +98,7 @@ extends RasterLayer(info) {
                 val tileRe = RasterExtent(ext,re.cellwidth,re.cellheight,cols,rows)
 
                 // Read section of the tile
-                val path = TileSetRasterLayer.tilePath(tileDirPath, info.id, tcol, trow)
-                val sourceRasterExtent = resLayout.getRasterExtent(tcol,trow)
-                val rasterPart = 
-                  ArgReader.readData(path,info.rasterType,sourceRasterExtent,tileRe)
+                val rasterPart = loader.getTile(tcol,trow,Some(tileRe))
 
                 // Copy over the values to the correct place in the raster data
                 for(partCol <- 0 until cols optimized) {
