@@ -56,8 +56,7 @@ import javax.media.jai.Interpolation
  * 
  * 
  * Outstanding issues:
- * 1. Saving to multiple partitions 
- * 2. Mosaicing overlapping tiles 
+ * 1. Mosaicing overlapping tiles 
  * 
  * These are features more than issues
  * 1. Faster local ingest using .par 
@@ -104,30 +103,39 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
 
     val partitioner = TileIdPartitioner(splitGenerator, outPathWithZoom, conf)
 
-    //val partitioner = TileIdPartitioner(SplitGenerator.EMPTY, outPathWithZoom, conf)
     logInfo("Saving splits: " + partitioner)
 
-    val mapFilePath = new Path(outPathWithZoom, "part-00000")
     val key = new TileIdWritable()
 
-    logInfo(s"Saving ${tiles.length} tiles to $mapFilePath")
-    val writer = new MapFile.Writer(conf, outFs, mapFilePath.toUri.toString,
-      classOf[TileIdWritable], classOf[ArgWritable],
-      SequenceFile.CompressionType.RECORD)
+    // open as many writers as number of partitions
+    def openWriters(num: Int) = {
+      val writers = new Array[MapFile.Writer](num)
+      for (i <- 0 until num) {
+        val mapFilePath = new Path(outPathWithZoom, f"part-${i}%05d")
+
+        writers(i) = new MapFile.Writer(conf, outFs, mapFilePath.toUri.toString,
+          classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.NONE)
+
+      }
+      writers
+    }
+    
+    conf.set("io.map.index.interval", "1")
+    val writers = openWriters(partitioner.numPartitions)
     try {
       tiles.foreach {
         case (tileId, tile) => {
           key.set(tileId)
-          writer.append(key, ArgWritable.fromRasterData(tile))
+          writers(partitioner.getPartition(key)).append(key, ArgWritable.fromRasterData(tile))
+          //logInfo(s"Saved tileId=${tileId},partition=${partitioner.getPartition(key)}")
         }
       }
     } finally {
-      writer.close
+      writers.foreach(_.close)
     }
     logInfo("Done saving tiles")
-
   }
-
+  
   private def tiffToTiles(file: Path, pyMeta: PyramidMetadata): List[(Long, RasterData)] = {
     val url = new URL(file.toUri().toString())
     val image = GeoTiff.getGridCoverage2D(url)
