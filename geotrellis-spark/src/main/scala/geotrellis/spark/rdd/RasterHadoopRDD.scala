@@ -40,7 +40,7 @@ class RasterHadoopRDD(
 
 object RasterHadoopRDD {
 
-  val SeqFileGlob = "/*[0-9]*/data"
+  final val SeqFileGlob = "/*[0-9]*/data"
 
   def apply(sc: SparkContext, path: String) = {
     val globbedPath = path + SeqFileGlob

@@ -64,7 +64,7 @@ import javax.media.jai.Interpolation
  */
 object Ingest extends ArgMain[CommandArguments] with Logging {
 
-  val Default_Projection = "EPSG:4326"
+  final val DefaultProjection = "EPSG:4326"
   System.setProperty("com.sun.media.jai.disableMediaLib", "true")
 
   def main(args: CommandArguments) {
@@ -183,7 +183,7 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
       case TypeByte   => RasterData(rawDataBuff.asInstanceOf[DataBufferByte].getData(), tileSize, tileSize)
       case _          => sys.error("Unrecognized AWT type - " + rasterType)
     }
-    NoDataHandler.removeUserNodata(rd, nodata)
+    NoDataHandler.removeUserNoData(rd, nodata)
   }
 
   /* The following methods are here vs. TmsTiling as they convert Envelope to TmsTiling types

@@ -59,7 +59,7 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
 }
 
 object TileIdPartitioner {
-  val SplitFile = "splits"
+  final val SplitFile = "splits"
 
   /* construct a partitioner from the splits file, if one exists */
   def apply(rasterPath: Path, conf: Configuration): TileIdPartitioner = {

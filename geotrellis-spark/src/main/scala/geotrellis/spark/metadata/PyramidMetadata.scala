@@ -68,11 +68,13 @@ case class PyramidMetadata(
     fdos.close()
   }
 
+  
   override def equals(that: Any): Boolean =
     that match {
       case other: PyramidMetadata => {
         (this.bounds == other.bounds &&
           this.tileSize == other.tileSize &&
+          this.bands == other.bands &&
           ((isNoData(this.nodata) && isNoData(other.nodata)) ||
             (this.nodata == other.nodata)) &&
             this.awtRasterType == other.awtRasterType &&
@@ -99,7 +101,7 @@ case class PyramidMetadata(
 }
 
 object PyramidMetadata {
-  val MetaFile = "metadata"
+  final val MetaFile = "metadata"
 
   /*
    * Reads the raster's metadata 
@@ -117,7 +119,7 @@ object PyramidMetadata {
           in.close
         }
       case None =>
-        sys.error(s"oops - couldn't find metaPath")
+        sys.error(s"oops - couldn't find metadata here - ${metaPath.toUri.toString}")
     }
     JacksonWrapper.deserialize[PyramidMetadata](txt)
   }
@@ -136,7 +138,7 @@ object PyramidMetadata {
 
     def getMetadata(file: Path) = {
       val url = new URL(file.toUri().toString())
-      val meta = GeoTiff.getMetadata(url, Ingest.Default_Projection)
+      val meta = GeoTiff.getMetadata(url, Ingest.DefaultProjection)
       (file, meta)
     }
     def filterNone(fileMeta: Tuple2[Path, Option[Metadata]]) = {

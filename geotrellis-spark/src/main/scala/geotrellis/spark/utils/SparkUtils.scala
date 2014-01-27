@@ -50,12 +50,12 @@ object SparkUtils extends Logging {
 
     val matches = findJar(new File(gtHome)).flatten
     if (matches.length == 1) {
-      logInfo(s"Found unique match for geotrellis-spark jar: ")
-      logInfo(matches.mkString("\n"))
-      matches(0).getAbsolutePath
+      val firstMatch = matches(0).getAbsolutePath      
+      logInfo(s"Found unique match for geotrellis-spark jar: ${firstMatch}")
+      firstMatch
     } else if (matches.length > 1) {
       logInfo(s"Found ${matches.length} matches for geotrellis-spark jar: ")
-      logInfo(matches.mkString("\n"))
+      logInfo("{" + matches.mkString(",") + "}")
       val firstMatch = matches(0).getAbsolutePath
       logInfo("Using first match: " + firstMatch)
       firstMatch

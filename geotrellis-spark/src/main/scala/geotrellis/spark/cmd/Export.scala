@@ -4,17 +4,18 @@ import geotrellis.Extent
 import geotrellis.Raster
 import geotrellis.RasterExtent
 import geotrellis.data.GeoTiffWriter
-import geotrellis.raster.MutableRasterData
-import geotrellis.raster.RasterData
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.rdd.RasterHadoopRDD
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.SparkUtils
+
 import org.apache.hadoop.fs.Path
 import org.apache.spark.Logging
-import com.quantifind.sumac.ArgMain
+
 import java.io.File
+
+import com.quantifind.sumac.ArgMain
 
 /**
  * @author akini
@@ -53,27 +54,33 @@ object Export extends ArgMain[CommandArguments] with Logging {
     dir.mkdirs()
 
     val sc = SparkUtils.createSparkContext(sparkMaster, "Export")
-    val meta = PyramidMetadata(rasterPath, sc.hadoopConfiguration)
-    val (tileSize, rasterType) = (meta.tileSize, meta.rasterType)
-    val raster = RasterHadoopRDD(sc, rasterPathWithZoom.toUri.toString)
 
-    raster.foreach {
-      case (tw, aw) => {
-        val tileId = tw.get
-        val (tx, ty) = TmsTiling.tileXY(tileId, zoom)
-        val bounds = TmsTiling.tileToBounds(tx, ty, zoom, tileSize)
-        val rd = ArgWritable.toRasterData(
-          ArgWritable(aw.getBytes().slice(0, tileSize * tileSize * rasterType.bytes)),
-          rasterType, tileSize, tileSize)
-        val trd = NoDataHandler.removeGtNodata(rd, meta.nodata)
-        val raster = Raster(trd, RasterExtent(Extent(bounds.w, bounds.s, bounds.e, bounds.n), tileSize, tileSize))
+    try {
+      val meta = PyramidMetadata(rasterPath, sc.hadoopConfiguration)
+      val (tileSize, rasterType) = (meta.tileSize, meta.rasterType)
+      val raster = RasterHadoopRDD(sc, rasterPathWithZoom.toUri.toString)
 
-        GeoTiffWriter.write(s"${outputDir}/tile-${tileId}.tif", raster, meta.nodata)
-        logInfo(s"---------tx: $tx, ty: $ty file: tile-${tileId}.tif")
+      raster.foreach {
+        case (tw, aw) => {
+          val tileId = tw.get
+          val (tx, ty) = TmsTiling.tileXY(tileId, zoom)
+          val bounds = TmsTiling.tileToBounds(tx, ty, zoom, tileSize)
+          val rd = ArgWritable.toRasterData(
+            ArgWritable(aw.getBytes().slice(0, tileSize * tileSize * rasterType.bytes)),
+            rasterType, tileSize, tileSize)
+          val trd = NoDataHandler.removeGeotrellisNoData(rd, meta.nodata)
+          val raster = Raster(trd, RasterExtent(Extent(bounds.w, bounds.s, bounds.e, bounds.n), tileSize, tileSize))
+
+          GeoTiffWriter.write(s"${outputDir}/tile-${tileId}.tif", raster, meta.nodata)
+          logInfo(s"---------tx: $tx, ty: $ty file: tile-${tileId}.tif")
+        }
       }
-    }
 
-    logInfo(s"Exported ${raster.count} tiles to $outputDir")
-    sc.stop
+      logInfo(s"Exported ${raster.count} tiles to $outputDir")
+    }
+    finally {
+      sc.stop
+      System.clearProperty("spark.master.port")
+    }
   }
 }
