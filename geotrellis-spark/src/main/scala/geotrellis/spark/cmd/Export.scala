@@ -65,8 +65,7 @@ object Export extends ArgMain[CommandArguments] with Logging {
           val tileId = tw.get
           val (tx, ty) = TmsTiling.tileXY(tileId, zoom)
           val bounds = TmsTiling.tileToBounds(tx, ty, zoom, tileSize)
-          val rd = ArgWritable.toRasterData(
-            ArgWritable(aw.getBytes().slice(0, tileSize * tileSize * rasterType.bytes)),
+          val rd = ArgWritable(aw.getBytes().slice(0, tileSize * tileSize * rasterType.bytes)).toRasterData(
             rasterType, tileSize, tileSize)
           val trd = NoDataHandler.removeGeotrellisNoData(rd, meta.nodata)
           val raster = Raster(trd, RasterExtent(Extent(bounds.w, bounds.s, bounds.e, bounds.n), tileSize, tileSize))
@@ -77,8 +76,7 @@ object Export extends ArgMain[CommandArguments] with Logging {
       }
 
       logInfo(s"Exported ${raster.count} tiles to $outputDir")
-    }
-    finally {
+    } finally {
       sc.stop
       System.clearProperty("spark.master.port")
     }

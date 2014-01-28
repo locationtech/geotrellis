@@ -56,7 +56,7 @@ object ArgHadoopDriver {
     val value = ArgWritable(defaultTileSize * defaultTileSize * TypeInt.bytes, 0)
 
     while (reader.next(key, value)) {
-      val actual = ArgWritable.toRasterData(value, TypeInt, defaultTileSize, defaultTileSize).asInstanceOf[IntArrayRasterData].array
+      val actual = value.toRasterData(TypeInt, defaultTileSize, defaultTileSize).asInstanceOf[IntArrayRasterData].array
       val expected = fill(i)
       if (key.get != i || !actual.sameElements(expected.toArray))
         sys.error(s"Arrays don't match for key = ${key.get} and i = $i, expected = ${expected.array.toSeq} and actual = ${actual.array.toSeq}")
