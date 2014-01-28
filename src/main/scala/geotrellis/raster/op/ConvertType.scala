@@ -1,4 +1,4 @@
-package geotrellis.raster.op.local
+package geotrellis.raster.op
 
 import geotrellis._
 
