@@ -2,12 +2,17 @@ package geotrellis.spark.tiling
 
 case class Tile(tx: Long, ty: Long) 
 
-case class TileBounds(n: Long, s: Long, e: Long, w: Long) {
-  def width = e - w
-  def height = n - s
+case class TileBounds(w: Long, s: Long, e: Long, n: Long) {
+  def width = e - w + 1
+  def height = n - s + 1
 } 
 
-case class Bounds(n: Double, s: Double, e: Double, w: Double) 
+case class PixelBounds(w: Long, s: Long, e: Long, n: Long) {
+  def width = e - w + 1
+  def height = n - s + 1
+}
+
+case class Bounds(w: Double, s: Double, e: Double, n: Double) 
 
 case class Pixel(px: Long, py: Long)
 

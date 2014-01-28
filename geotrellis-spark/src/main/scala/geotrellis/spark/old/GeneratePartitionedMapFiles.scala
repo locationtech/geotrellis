@@ -6,13 +6,12 @@ import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.rdd.SplitGenerator
 import geotrellis.spark.rdd.TileIdPartitioner
 import geotrellis.spark.tiling.TmsTiling
-import geotrellis.spark.utils.GeotrellisSparkUtils
-
+import geotrellis.spark.utils.SparkUtils
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.MapFile
 import org.apache.hadoop.io.SequenceFile
-
 import scala.util.Random
+import geotrellis.spark.formats.ArgWritable
 
 /**
  * @author akini
@@ -39,7 +38,7 @@ object GeneratePartitionedMapFiles {
     val numFiles = args(2).toInt
 
     val tilesPerFile = numTiles / numFiles
-    val conf = GeotrellisSparkUtils.createHadoopConfiguration
+    val conf = SparkUtils.createHadoopConfiguration
     conf.set("io.map.index.interval", "1");
     val fs = dirPath.getFileSystem(conf)
 
@@ -56,7 +55,7 @@ object GeneratePartitionedMapFiles {
         for (i <- indices) {
           key.set(i)
           val array = fill(i)
-          val value = ArgWritable.toWritable(array)
+          val value = ArgWritable.fromRasterData(array)
           writer.append(key, value)
         }
       } finally {

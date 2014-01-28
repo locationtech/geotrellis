@@ -16,11 +16,11 @@ object RawEncoder {
   def render(encoder:Encoder) = RawEncoder(encoder).render()
 
   def apply(encoder:Encoder) = encoder.settings match {
-    case Settings(IntSample, Floating, _, _) => new RawFloatEncoder(encoder)
-    case Settings(LongSample, Floating, _, _) => new RawDoubleEncoder(encoder)
-    case Settings(ByteSample, _, _, _) => new RawByteEncoder(encoder)
-    case Settings(ShortSample, _, _, _) => new RawShortEncoder(encoder)
-    case Settings(IntSample, _, _, _) => new RawIntEncoder(encoder)
+    case Settings(IntSample, Floating, _, _, _) => new RawFloatEncoder(encoder)
+    case Settings(LongSample, Floating, _, _, _) => new RawDoubleEncoder(encoder)
+    case Settings(ByteSample, _, _, _, _) => new RawByteEncoder(encoder)
+    case Settings(ShortSample, _, _, _, _) => new RawShortEncoder(encoder)
+    case Settings(IntSample, _, _, _, _) => new RawIntEncoder(encoder)
     case s => sys.error("can't encoder %s" format s)
   }
 }
@@ -28,7 +28,7 @@ object RawEncoder {
 class RawByteEncoder(encoder:Encoder) extends RawEncoder(encoder) {
   def handleCell(i:Int) {
     var z = data.apply(i)
-    if (isNoData(z)) z = encoder.noDataInt
+    if (isNoData(z)) z = encoder.settings.nodataInt
     dmg.writeByte(z)
   }
 }
@@ -36,7 +36,7 @@ class RawByteEncoder(encoder:Encoder) extends RawEncoder(encoder) {
 class RawShortEncoder(encoder:Encoder) extends RawEncoder(encoder) {
   def handleCell(i:Int) {
     var z = data.apply(i)
-    if (isNoData(z)) z = encoder.noDataInt
+    if (isNoData(z)) z = encoder.settings.nodataInt
     dmg.writeShort(z)
   }
 }
@@ -44,7 +44,7 @@ class RawShortEncoder(encoder:Encoder) extends RawEncoder(encoder) {
 class RawIntEncoder(encoder:Encoder) extends RawEncoder(encoder) {
   def handleCell(i:Int) {
     var z = data.apply(i)
-    if (isNoData(z)) z = encoder.noDataInt
+    if (isNoData(z)) z = encoder.settings.nodataInt
     dmg.writeInt(z)
   }
 }
