@@ -1,6 +1,7 @@
-package geotrellis.raster.op.local
+package geotrellis.raster.op
 
 import geotrellis._
+import geotrellis.source._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
@@ -14,7 +15,11 @@ class ConvertTypeSpec extends FunSpec
   describe("ConvertType") {
     it("should convert a byte raster to an int raster") { 
       val r = byteRaster
-      var result = get(Add(ConvertType(r,TypeShort),100))
+      var result = 
+        RasterSource(r)
+          .convert(TypeShort)
+          .localAdd(100)
+          .get
       result.rasterType should be (TypeShort)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
