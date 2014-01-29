@@ -152,7 +152,7 @@ object PyramidMetadata {
     val meta = optMetas.flatten.reduceLeft { (acc, meta) =>
       if (acc.bands != meta.bands)
         sys.error("Error: All input tifs must have the same number of bands")
-      if (acc.pixelDims != meta.pixelDims)
+      if (acc.pixelSize != meta.pixelSize)
         sys.error("Error: All input tifs must have the same resolution")
       if (acc.rasterType != meta.rasterType)
         sys.error("Error: All input tifs must have same raster type")
@@ -165,8 +165,8 @@ object PyramidMetadata {
 
     val tileSize = TmsTiling.DefaultTileSize
 
-    val zoom = math.max(TmsTiling.zoom(meta.pixelDims._1, tileSize),
-      TmsTiling.zoom(meta.pixelDims._2, tileSize))
+    val zoom = math.max(TmsTiling.zoom(meta.pixelSize._1, tileSize),
+      TmsTiling.zoom(meta.pixelSize._2, tileSize))
 
     val (w, s, e, n) =
       (meta.bounds.getLowerCorner.getOrdinate(0),

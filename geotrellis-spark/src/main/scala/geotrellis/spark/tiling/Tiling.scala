@@ -7,9 +7,10 @@ case class TileBounds(w: Long, s: Long, e: Long, n: Long) {
   def height = n - s + 1
 } 
 
+// width/height is non-inclusive 
 case class PixelBounds(w: Long, s: Long, e: Long, n: Long) {
-  def width = e - w + 1
-  def height = n - s + 1
+  def width = e - w
+  def height = n - s
 }
 
 case class Bounds(w: Double, s: Double, e: Double, n: Double) 

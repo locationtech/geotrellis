@@ -39,27 +39,27 @@ import javax.media.jai.Interpolation
 
 /**
  * @author akini
- * 
- * Ingest GeoTIFFs into ArgWritable.  
+ *
+ * Ingest GeoTIFFs into ArgWritable.
  *
  * Ingest --input <path-to-tiffs> --output <path-to-raster> --sparkMaster <spark-master-ip>
- * 
- * e.g., Ingest --input file:///home/akini/test/small_files/all-ones.tif --output file:///tmp/all-ones 
- * 
+ *
+ * e.g., Ingest --input file:///home/akini/test/small_files/all-ones.tif --output file:///tmp/all-ones
+ *
  * Constraints:
- * 
+ *
  * --input <path-to-tiffs> - this can either be a directory or a single tiff file and has to be on the local fs.
- * Currently, mosaicing is not implemented so only the single tiff file case is tested 
- * 
+ * Currently, mosaicing is not implemented so only the single tiff file case is tested
+ *
  * --output <path-to-raster> - this can be either on hdfs (hdfs://) or local fs (file://). If the directory
  * already exists, it is deleted
- * 
- * 
+ *
+ *
  * Outstanding issues:
- * 1. Mosaicing overlapping tiles 
- * 
+ * 1. Mosaicing overlapping tiles
+ *
  * These are features more than issues
- * 1. Faster local ingest using .par 
+ * 1. Faster local ingest using .par
  * 2. Faster local ingest using spark api
  */
 object Ingest extends ArgMain[CommandArguments] with Logging {
@@ -119,7 +119,7 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
       }
       writers
     }
-    
+
     conf.set("io.map.index.interval", "1")
     val writers = openWriters(partitioner.numPartitions)
     try {
@@ -135,7 +135,7 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
     }
     logInfo("Done saving tiles")
   }
-  
+
   private def tiffToTiles(file: Path, pyMeta: PyramidMetadata): List[(Long, RasterData)] = {
     val url = new URL(file.toUri().toString())
     val image = GeoTiff.getGridCoverage2D(url)
@@ -149,13 +149,16 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
       tx <- tb.w to tb.e
       tileId = TmsTiling.tileId(tx, ty, zoom)
       bounds = TmsTiling.tileToBounds(tx, ty, zoom, tileSize)
-      tile = cutTile(image, bounds, pyMeta)
+      tile = cutTile(tileId, image, bounds, pyMeta)
     } yield (tileId, tile)
 
     tileIds.toList
   }
 
-  private def cutTile(image: GridCoverage, bounds: Bounds, pyMeta: PyramidMetadata): RasterData = {
+  private def cutTile(tileId: Long, image: GridCoverage, bounds: Bounds, pyMeta: PyramidMetadata): RasterData = {
+
+    val start = System.currentTimeMillis
+
     val (zoom, tileSize, rasterType, nodata) =
       (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType, pyMeta.nodata)
 
@@ -175,6 +178,8 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
     //println(s"h=$h,w=$w,dataBuffLen=${rawDataBuff.asInstanceOf[DataBufferFloat].getData().length}, " + 
     //"bounds=${bounds} and env=${tileEnvelope}")
 
+    val end1 = System.currentTimeMillis
+
     val rd = rasterType match {
       case TypeDouble => RasterData(rawDataBuff.asInstanceOf[DataBufferDouble].getData(), tileSize, tileSize)
       case TypeFloat  => RasterData(rawDataBuff.asInstanceOf[DataBufferFloat].getData(), tileSize, tileSize)
@@ -183,7 +188,11 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
       case TypeByte   => RasterData(rawDataBuff.asInstanceOf[DataBufferByte].getData(), tileSize, tileSize)
       case _          => sys.error("Unrecognized AWT type - " + rasterType)
     }
-    NoDataHandler.removeUserNoData(rd, nodata)
+    val ret = NoDataHandler.removeUserNoData(rd, nodata)
+
+    val end2 = System.currentTimeMillis
+    println(s"tileId=${tileId} took (${end1 - start},${end2 - start}) ms. dataBuffLen=${rawDataBuff.asInstanceOf[DataBufferFloat].getData().length}")
+    ret
   }
 
   /* The following methods are here vs. TmsTiling as they convert Envelope to TmsTiling types

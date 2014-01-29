@@ -19,7 +19,8 @@ import java.net.URL
 object GeoTiff {
   case class Metadata(
     bounds: GeneralEnvelope,
-    pixelDims: Tuple2[Double, Double],
+    pixelSize: Tuple2[Double, Double],
+    pixels: Tuple2[Int, Int],
     bands: Int,
     rasterType: Int,
     nodata: Double)
@@ -31,11 +32,12 @@ object GeoTiff {
         val coverage = getGridCoverage2D(url, epsg)
         val reader = getReader(url, epsg)		
         val envelope = coverage.getGridGeometry().gridToWorld(new GridEnvelope2D(0, 0, 1, 1));
-        val pixelDims = (math.abs(envelope.getWidth), math.abs(envelope.getHeight))
+        val pixelSize = (math.abs(envelope.getWidth), math.abs(envelope.getHeight))
+        val pixels = (coverage.getRenderedImage().getWidth(),coverage.getRenderedImage().getHeight())
         val bands = coverage.getNumSampleDimensions
         val rasterType = coverage.getRenderedImage().getSampleModel().getDataType()
         val nodata = reader.getMetadata().getNoData()
-        Some(Metadata(coverage.getEnvelope.asInstanceOf[GeneralEnvelope], pixelDims, bands, rasterType, nodata))
+        Some(Metadata(coverage.getEnvelope.asInstanceOf[GeneralEnvelope], pixelSize, pixels, bands, rasterType, nodata))
       }
     }
 

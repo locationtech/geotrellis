@@ -7,4 +7,7 @@ class CommandArguments extends FieldArgs {
   var output: String = _
   var zoom: Int = _
   var sparkMaster: String = _
+  
+  // for debugging only
+  var dumpDir: String = _
 }

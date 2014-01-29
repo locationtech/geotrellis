@@ -2,6 +2,7 @@ package geotrellis.spark.tiling
 
 import scala.util.control.Breaks._
 import geotrellis.RasterType
+import geotrellis.Extent
 
 /**
  * @author akini
@@ -78,6 +79,9 @@ object TmsTiling {
     val ty = ((90 + lat) * (numYTiles(zoom) / 180.0)).toLong
     new Tile(tx, ty)
   }
+
+  def boundsToExtent(b: Bounds): Extent = Extent(b.w, b.s, b.e, b.n)
+  def extentToBounds(e: Extent): Bounds = Bounds(e.xmin, e.ymin, e.xmax, e.ymax)
 
   def tileSizeBytes(tileSize: Int, rasterType: RasterType): Int = 
     tileSize * tileSize * rasterType.bytes
