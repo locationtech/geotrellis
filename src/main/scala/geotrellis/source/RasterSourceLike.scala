@@ -72,7 +72,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.result
   }
 
-  def convertType[That](newType:RasterType) = {
+  def convert(newType:RasterType) = {
     val newDef = rasterDefinition.map(_.withType(newType))
     val ops = tiles.map { seq => seq.map { tile => tile.map { r => r.convert(newType) } } }
     val builder = new RasterSourceBuilder()
@@ -127,9 +127,6 @@ trait RasterSourceLike[+Repr <: RasterSource]
 
   def rasterExtent:ValueSource[RasterExtent] =
     ValueSource(rasterDefinition.map(_.rasterExtent))
-
-  def convert(rasterType:RasterType) =
-    mapOp(ConvertType(_,rasterType))
 
   def warp(target:RasterExtent) = {
     val newDef = rasterDefinition map (rd => RasterDefinition(rd.layerId,target,TileLayout.singleTile(target.cols,target.rows),rd.rasterType))
