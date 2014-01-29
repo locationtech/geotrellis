@@ -1,9 +1,9 @@
 package geotrellis.feature.rasterize
 
-import language.higherKinds
-
 import geotrellis.feature._
 import geotrellis._
+
+import scala.language.higherKinds
 
 trait Callback[-G[_],T] {
   def apply(col: Int, row: Int, g: G[T])
@@ -15,25 +15,34 @@ trait Transformer[-G[_],A,+B] {
 
 
 object Rasterizer {
-
   /**
    * Create a raster from a geometry feature.
    * @param feature       Feature to rasterize
    * @param rasterExtent  Definition of raster to create
    * @param f             Function that returns single value to burn
    */ 
-  def rasterizeWithValue[D](feature:Geometry[D], rasterExtent:RasterExtent)(f:(D) => Int) = {
+  @deprecated(message = "Use rasterizeWithValue(feature, rasterExtent, value)", since = "0.9.0")
+  def rasterizeWithValue[D](feature:Geometry[D], rasterExtent:RasterExtent)(f:(D) => Int): Raster =
+    rasterizeWithValue(feature, rasterExtent, f(feature.data))
+
+  /**
+   * Create a raster from a geometry feature.
+   * @param feature       Feature to rasterize
+   * @param rasterExtent  Definition of raster to create
+   * @param value         Single value to burn
+   */ 
+  def rasterizeWithValue[D](feature:Geometry[D], rasterExtent:RasterExtent, value: Int): Raster = {
     val cols = rasterExtent.cols
     val array = Array.ofDim[Int](rasterExtent.cols * rasterExtent.rows).fill(NODATA)
-    val burnValue = f(feature.data)
     val f2 = new Callback[Geometry,D] {
         def apply(col: Int, row: Int, g: Geometry[D]) {
-          array(row * cols + col) = burnValue
+          array(row * cols + col) = value
         }
       }
     foreachCellByFeature(feature, rasterExtent)(f2) 
     Raster(array,rasterExtent)
   } 
+
   /**
    * Create a raster from a geometry feature.
    * @param feature       Feature to rasterize

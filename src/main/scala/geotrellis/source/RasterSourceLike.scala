@@ -72,7 +72,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.result
   }
 
-  def convertType[That](newType:RasterType) = {
+  def convert(newType:RasterType) = {
     val newDef = rasterDefinition.map(_.withType(newType))
     val ops = tiles.map { seq => seq.map { tile => tile.map { r => r.convert(newType) } } }
     val builder = new RasterSourceBuilder()
