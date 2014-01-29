@@ -376,9 +376,9 @@ class Encoder(dos:DataOutputStream, raster:Raster, val settings:Settings) {
     } else {
       // GDAL only needs these 4 GeoTags
       todoGeoTag(0x0001, 1, 2, numGeoTags) // 1. geotif 1.2, N more tags
-      todoGeoTag(0x0400, 0, 1, 2)          // 2. projected data (1)
+      todoGeoTag(0x0400, 0, 1, 1)          // 2. projected data (1)
       todoGeoTag(0x0401, 0, 1, 1)          // 3. area data (1)
-      todoGeoTag(0x0800, 0, 1, 4326)       // 4. gt projected cs type (3857)
+      todoGeoTag(0x0c00, 0, 1, 3857)       // 4. gt projected cs type (3857)
     }
 
     // 21. nodata as string (#19 if esriCompat is false)

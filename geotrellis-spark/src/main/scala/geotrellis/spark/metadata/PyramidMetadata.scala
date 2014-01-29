@@ -68,6 +68,7 @@ case class PyramidMetadata(
     fdos.close()
   }
 
+  def metadataForBaseZoom: RasterMetadata = rasterMetadata(maxZoomLevel.toString)
   
   override def equals(that: Any): Boolean =
     that match {
