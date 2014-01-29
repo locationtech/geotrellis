@@ -77,6 +77,9 @@ package object geotrellis {
    *
    */
 
+  def op[T](value: => T): Operation[T] =
+    new Op0(() => Result(value))
+
   // Op1 methods for op //
 
   /**

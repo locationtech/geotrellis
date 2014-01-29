@@ -8,13 +8,14 @@ import geotrellis._
  * Represents a neighborhood that is represented by
  * a raster.
  */
-case class Kernel(raster:Raster) {//extends Neighborhood {
+case class Kernel(raster:Raster) {
   if(raster.rows != raster.cols) sys.error("Kernel raster must be square")
   if(raster.rows % 2 != 1) sys.error("Kernel raster must have odd dimension")
 }
 
 object Kernel {
-  implicit def raster2Kernel(r:Raster):Op[Kernel] = Kernel(r)
+  implicit def raster2Kernel(r:Raster):Kernel = Kernel(r)
+  implicit def raster2KernelOp(r:Raster):Op[Kernel] = Literal(Kernel(r))
   implicit def rasterOp2Kernel(r:Op[Raster]):Op[Kernel] = r.map(Kernel(_))
 
   /**

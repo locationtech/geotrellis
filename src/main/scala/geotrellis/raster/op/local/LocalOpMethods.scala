@@ -127,9 +127,6 @@ trait LocalOpMethods[+Repr <: RasterSource]
   def localMean(rss:RasterSource*)(implicit d:DI):RasterSource = 
     localMean(rss)
 
-  def convert(rasterType:RasterType) =
-    mapOp(ConvertType(_,rasterType))
-
   /** Masks this raster by the given GeoJSON. */
   def mask(geoJson: String): RasterSource =
     GeoJsonReader.parse(geoJson) match {
