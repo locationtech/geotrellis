@@ -25,10 +25,10 @@ case class ForEachCellByFeature[G[_] <: Geometry[_], D](feature:Op[G[D]], re:Op[
     Result(Rasterizer.foreachCellByFeature(feature,re)(f))
 })
 
-case class RasterizeWithValue[D](feature:Op[Geometry[D]], re:Op[RasterExtent])(f: (D)=>Int)
-     extends Op2(feature,re)({
-  (feature, re) =>
-    Result(Rasterizer.rasterizeWithValue(feature,re)(f))
+case class RasterizeWithValue[D](feature:Op[Geometry[D]], re:Op[RasterExtent], value:Op[Int])
+     extends Op3(feature,re,value)({
+  (feature, re, value) =>
+    Result(Rasterizer.rasterizeWithValue(feature, re, value))
 })
 
 case class Rasterize[D](feature:Op[Geometry[D]], re:Op[RasterExtent])(f:Transformer[Geometry,D,Int])
