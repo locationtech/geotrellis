@@ -4,9 +4,8 @@ import geotrellis.RasterType
 import geotrellis.data.GeoTiff
 import geotrellis.data.GeoTiff.Metadata
 import geotrellis.spark.cmd.Ingest
-import geotrellis.spark.tiling.Bounds
-import geotrellis.spark.tiling.PixelBounds
-import geotrellis.spark.tiling.TileBounds
+import geotrellis.spark.tiling.PixelExtent
+import geotrellis.spark.tiling.TileExtent
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.HdfsUtils
 import geotrellis.spark.utils.SparkUtils
@@ -28,7 +27,7 @@ import java.net.URL
  * Raster Level attributes - rasterMetadata
  *
  */
-case class RasterMetadata(pixelBounds: PixelBounds, tileBounds: TileBounds)
+case class RasterMetadata(pixelExtent: PixelExtent, tileExtent: TileExtent)
 
 /* ------Note to self------- 
  * Three workarounds that'd be good to resolve eventually:
@@ -48,7 +47,7 @@ case class RasterMetadata(pixelBounds: PixelBounds, tileBounds: TileBounds)
  * and the fix seems to be in 2.1.2 (I'm using 2.3.0) but doesn't seem to fix this problem
  */
 case class PyramidMetadata(
-  bounds: Bounds,
+  extent: Extent,
   tileSize: Int,
   bands: Int,
   nodata: Double,
@@ -73,7 +72,7 @@ case class PyramidMetadata(
   override def equals(that: Any): Boolean =
     that match {
       case other: PyramidMetadata => {
-        (this.bounds == other.bounds &&
+        (this.extent == other.extent &&
           this.tileSize == other.tileSize &&
           this.bands == other.bands &&
           ((isNoData(this.nodata) && isNoData(other.nodata)) ||
@@ -91,7 +90,7 @@ case class PyramidMetadata(
         41 * (
           41 * (
             41 * (
-              41 + bounds.hashCode)
+              41 + extent.hashCode)
               + tileSize.hashCode)
               + nodata.hashCode)
               + rasterType.hashCode)
@@ -175,16 +174,16 @@ object PyramidMetadata {
         meta.bounds.getUpperCorner.getOrdinate(0),
         meta.bounds.getUpperCorner.getOrdinate(1))
 
-    val bounds = Bounds(w, s, e, n)
-    val tileBounds = TmsTiling.boundsToTile(bounds, zoom, tileSize)
+    val extent = Extent(w, s, e, n)
+    val tileExtent = TmsTiling.extentToTile(extent, zoom, tileSize)
     val (pixelLower, pixelUpper) =
       (TmsTiling.latLonToPixels(s, w, zoom, tileSize),
         TmsTiling.latLonToPixels(n, e, zoom, tileSize))
-    val pixelBounds = PixelBounds(0, 0,
+    val pixelExtent = PixelExtent(0, 0,
       pixelUpper.px - pixelLower.px, pixelUpper.py - pixelLower.py)
 
     (files,
-      PyramidMetadata(bounds, tileSize, meta.bands, meta.nodata, meta.rasterType, zoom,
-        Map(zoom.toString -> RasterMetadata(pixelBounds, tileBounds))))
+      PyramidMetadata(extent, tileSize, meta.bands, meta.nodata, meta.rasterType, zoom,
+        Map(zoom.toString -> RasterMetadata(pixelExtent, tileExtent))))
   }
 }

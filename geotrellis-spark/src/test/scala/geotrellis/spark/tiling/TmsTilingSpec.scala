@@ -1,4 +1,5 @@
 package geotrellis.spark.tiling
+import geotrellis.Extent
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
@@ -41,7 +42,7 @@ class TmsTilingSpec extends FunSpec with MustMatchers with ShouldMatchers {
     }
   }
 
-  describe("tile bounds") {
+  describe("tile extents") {
     it("latLonToTile: should yield correct tile Ids for given lat/lon coordinates") {
       for (zoom <- 1 to TmsTiling.MaxZoomLevel) {
 
@@ -63,15 +64,15 @@ class TmsTilingSpec extends FunSpec with MustMatchers with ShouldMatchers {
       }
     }
 
-    it("boundsToTile: should yield correct tile bounds given lat/lon bounds") {
+    it("extentToTile: should yield correct tile extent given lat/lon extent") {
       for (zoom <- 1 to TmsTiling.MaxZoomLevel) {
-        val bounds = new Bounds(-180.0, -90.0, // low left corner 
+        val extent = Extent(-180.0, -90.0, // low left corner 
           179.99999, 89.99999) // upper right corner
-        val tb = TmsTiling.boundsToTile(bounds, zoom, tileSize)
-        tb.w should be(0)
-        tb.s should be(0)
-        tb.e should be(TmsTiling.numXTiles(zoom) - 1)
-        tb.n should be(TmsTiling.numYTiles(zoom) - 1)
+        val tileExtent = TmsTiling.extentToTile(extent, zoom, tileSize)
+        tileExtent.xmin should be(0)
+        tileExtent.ymin should be(0)
+        tileExtent.xmax should be(TmsTiling.numXTiles(zoom) - 1)
+        tileExtent.ymax should be(TmsTiling.numYTiles(zoom) - 1)
 
       }
     }

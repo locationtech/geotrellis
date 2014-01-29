@@ -90,9 +90,9 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
     logInfo(s"Creating Output Path With Zoom: $outPathWithZoom")
     outFs.mkdirs(outPathWithZoom)
 
-    val tileBounds = meta.metadataForBaseZoom.tileBounds
+    val tileExtent = meta.metadataForBaseZoom.tileExtent
     val (zoom, tileSize, rasterType) = (meta.maxZoomLevel, meta.tileSize, meta.rasterType)
-    val splitGenerator = RasterSplitGenerator(tileBounds, zoom,
+    val splitGenerator = RasterSplitGenerator(tileExtent, zoom,
       TmsTiling.tileSizeBytes(tileSize, rasterType),
       HdfsUtils.blockSize(conf))
 
@@ -180,13 +180,13 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
 
     val raster = warp(image, imageMeta, pyMeta)
 
-    val tileBounds = pyMeta.metadataForBaseZoom.tileBounds
+    val tileExtent = pyMeta.metadataForBaseZoom.tileExtent
     val tiles = for {
-      ty <- tileBounds.s to tileBounds.n
-      tx <- tileBounds.w to tileBounds.e
+      ty <- tileExtent.ymin to tileExtent.ymax
+      tx <- tileExtent.xmin to tileExtent.xmax
       tileId = TmsTiling.tileId(tx, ty, zoom)
-      bounds = TmsTiling.tileToBounds(tx, ty, zoom, tileSize)
-      cropRasterTmp = CroppedRaster(raster, TmsTiling.boundsToExtent(bounds))
+      extent = TmsTiling.tileToExtent(tx, ty, zoom, tileSize)
+      cropRasterTmp = CroppedRaster(raster, extent)
       // TODO - do away with the second crop. It is put in as workaround for the case when 
       // CroppedRaster's translation from Extent to gridBounds ends up giving us an extra row/col
       cropRaster = CroppedRaster(cropRasterTmp, GridBounds(0, 0, tileSize - 1, tileSize - 1))
