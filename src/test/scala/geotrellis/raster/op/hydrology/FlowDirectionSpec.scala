@@ -1,6 +1,7 @@
 package geotrellis.raster.op.hydrology
 
 import geotrellis._
+import geotrellis.source._
 import geotrellis.raster._
 
 import org.scalatest.FunSpec
@@ -70,7 +71,7 @@ class FlowDirectionSpec extends FunSpec with ShouldMatchers
                                             1,64,32),
                             ncols,nrows)
       val m_raster = Raster(m, r_extent)
-      val e_computed = FlowDirection(e_raster)
+      val e_computed = RasterSource(e_raster).flowDirection.get
       assertEqual(e_computed, m_raster)
     }
   }}
