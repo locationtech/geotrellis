@@ -1,6 +1,7 @@
 package geotrellis.raster.op.hydrology
 
 import geotrellis._
+import geotrellis.source._
 import geotrellis.raster._
 
 import org.scalatest.FunSpec
@@ -14,7 +15,7 @@ class AccumulationSpec extends FunSpec
                           with RasterBuilders {
 
   describe("Accumulation"){
-    it("Calulates the accumulation of water using a flow dirrection raster"){
+    it("Calulates the accumulation of water using a flow dirrection raster") {
       var ncols = 6
       var nrows = 6
       val r_extent = RasterExtent(Extent(0,0,1,1),1,1,ncols,nrows)
@@ -37,9 +38,10 @@ class AccumulationSpec extends FunSpec
             0,2,4,7,34,1),
             ncols,nrows)
       val out_raster = Raster(o, r_extent)
-      assertEqual(Accumulation(in_raster),out_raster )
+      assertEqual(Accumulation(in_raster),out_raster)
     } 
-    it("Calulates the accumulation of water using a flow dirrection raster using multiple flow dirrections"){
+
+    it("Calulates the accumulation of water using a flow dirrection raster using multiple flow directions") {
       var ncols = 6
       var nrows = 6
       val r_extent = RasterExtent(Extent(0,0,1,1),1,1,ncols,nrows)
@@ -62,7 +64,7 @@ class AccumulationSpec extends FunSpec
             0,2,6,14,30,62),
             ncols,nrows)
       val out_raster = Raster(o, r_extent)
-      assertEqual(Accumulation(in_raster),out_raster )
+      assertEqual(RasterSource(in_raster).accumulation.get, out_raster)
     } 
   }
 }

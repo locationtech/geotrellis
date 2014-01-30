@@ -20,6 +20,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     with global.GlobalOpMethods[Repr]
     with zonal.ZonalOpMethods[Repr]
     with zonal.summary.ZonalSummaryOpMethods[Repr]
+    with hydrology.HydrologyOpMethods[Repr]
     with stat.StatOpMethods[Repr] 
     with io.IoOpMethods[Repr] 
     with RenderOpMethods[Repr] { self: Repr =>
