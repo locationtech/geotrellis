@@ -218,8 +218,8 @@ object RasterExtent {
   }
 
   def apply(extent:Extent, cellwidth:Double, cellheight:Double):RasterExtent = {
-    val cols = ((extent.ymax - extent.ymin) / cellheight).toInt
-    val rows = ((extent.xmax - extent.xmin) / cellwidth).toInt
+    val rows = ((extent.ymax - extent.ymin) / cellheight).toInt
+    val cols = ((extent.xmax - extent.xmin) / cellwidth).toInt
     RasterExtent(extent, cellwidth, cellheight, cols, rows)
   }
 }

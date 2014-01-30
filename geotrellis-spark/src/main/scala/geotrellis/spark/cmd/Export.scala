@@ -64,11 +64,11 @@ object Export extends ArgMain[CommandArguments] with Logging {
         case (tw, aw) => {
           val tileId = tw.get
           val (tx, ty) = TmsTiling.tileXY(tileId, zoom)
-          val bounds = TmsTiling.tileToBounds(tx, ty, zoom, tileSize)
+          val extent = TmsTiling.tileToExtent(tx, ty, zoom, tileSize)
           val rd = ArgWritable(aw.getBytes().slice(0, tileSize * tileSize * rasterType.bytes)).toRasterData(
             rasterType, tileSize, tileSize)
           val trd = NoDataHandler.removeGeotrellisNoData(rd, meta.nodata)
-          val raster = Raster(trd, RasterExtent(Extent(bounds.w, bounds.s, bounds.e, bounds.n), tileSize, tileSize))
+          val raster = Raster(trd, RasterExtent(extent, tileSize, tileSize))
 
           GeoTiffWriter.write(s"${outputDir}/tile-${tileId}.tif", raster, meta.nodata)
           logInfo(s"---------tx: $tx, ty: $ty file: tile-${tileId}.tif")

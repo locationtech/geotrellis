@@ -1,21 +1,22 @@
 package geotrellis.spark.tiling
 
+import geotrellis.Extent
+
 case class Tile(tx: Long, ty: Long) 
 
-case class TileBounds(w: Long, s: Long, e: Long, n: Long) {
-  def width = e - w + 1
-  def height = n - s + 1
+case class TileExtent(xmin: Long, ymin: Long, xmax: Long, ymax: Long) {
+  def width = xmax - xmin + 1
+  def height = ymax - ymin + 1
 } 
 
-case class PixelBounds(w: Long, s: Long, e: Long, n: Long) {
-  def width = e - w + 1
-  def height = n - s + 1
+// width/height is non-inclusive 
+case class PixelExtent(xmin: Long, ymin: Long, xmax: Long, ymax: Long) {
+  def width = xmax - xmin
+  def height = ymax - ymin
 }
-
-case class Bounds(w: Double, s: Double, e: Double, n: Double) 
 
 case class Pixel(px: Long, py: Long)
 
 object Bounds {
-	val WORLD = new Bounds(-180, -90, 180, 90)
+	final val World = Extent(-180, -90, 180, 90)
 }

@@ -1,7 +1,7 @@
 package geotrellis.spark.tiling
 
-import scala.util.control.Breaks._
 import geotrellis.RasterType
+import geotrellis.Extent
 
 /**
  * @author akini
@@ -48,18 +48,18 @@ object TmsTiling {
   }
 
   // using equations 2.3 through 2.6 from TBGIS book
-  def tileToBounds(tx: Long, ty: Long, zoom: Int, tileSize: Int) = {
+  def tileToExtent(tx: Long, ty: Long, zoom: Int, tileSize: Int) = {
     val res = resolution(zoom, tileSize)
-    new Bounds(tx * tileSize * res - 180, // left/west (lon, x)
+    Extent(tx * tileSize * res - 180, // left/west (lon, x)
       ty * tileSize * res - 90, // lower/south (lat, y)
       (tx + 1) * tileSize * res - 180, // right/east (lon, x)
       (ty + 1) * tileSize * res - 90) // upper/north (lat, y)
   }
   
-  def boundsToTile(bounds: Bounds, zoom: Int, tileSize: Int) = {
-    val ll = latLonToTile(bounds.s, bounds.w, zoom, tileSize)
-    val ur = latLonToTile(bounds.n, bounds.e, zoom, tileSize)
-    new TileBounds(ll.tx, ll.ty, ur.tx, ur.ty)
+  def extentToTile(extent: Extent, zoom: Int, tileSize: Int) = {
+    val ll = latLonToTile(extent.ymin, extent.xmin, zoom, tileSize)
+    val ur = latLonToTile(extent.ymax, extent.xmax, zoom, tileSize)
+    new TileExtent(ll.tx, ll.ty, ur.tx, ur.ty)
   }
 
   def latLonToPixels(lat: Double, lon: Double, zoom: Int, tileSize: Int) = {
