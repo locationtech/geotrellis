@@ -1,6 +1,7 @@
 package geotrellis.raster.op.hydrology
 
 import geotrellis._
+import geotrellis.source._
 import geotrellis.raster._
 
 import org.scalatest.FunSpec
@@ -43,7 +44,7 @@ class FillSpec extends FunSpec
             ncols,nrows)
 
       val inRaster = Raster(m, re)
-      assertEqual(Fill(inRaster,FillOptions(50)),inRaster )
+      assertEqual(RasterSource(inRaster).fill(FillOptions(50)).get, inRaster)
     } 
   }
 }
