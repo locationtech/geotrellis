@@ -113,6 +113,14 @@ trait Raster {
 
   def warp(target:RasterExtent):Raster
 
+  def warp(target:Extent):Raster = {
+    warp(rasterExtent.createAligned(target))
+  }
+
+  def warp(targetCols:Int, targetRows:Int):Raster = {
+    warp(rasterExtent.withDimensions(targetCols, targetRows))
+  }
+
   /**
    * Return tuple of highest and lowest value in raster.
    *

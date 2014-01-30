@@ -205,4 +205,13 @@ trait RasterSourceLike[+Repr <: RasterSource]
     }
     RasterSource(newDef,newOp)
   }
+
+  def warp(target:Extent):RasterSource = {
+    warp(rasterExtent.get.createAligned(target))
+  }
+
+  def warp(targetCols:Int, targetRows:Int):RasterSource = {
+    warp(rasterExtent.get.withDimensions(targetCols, targetRows))
+  }
+
 }

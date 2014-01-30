@@ -171,6 +171,14 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
   }
 
   /**
+   * Returns a RasterExtent with the same extent and the
+   * given number of columns and rows.
+   */
+  def withDimensions(targetCols:Int, targetRows:Int):RasterExtent = {
+    RasterExtent(extent, targetCols, targetRows)
+  }
+
+  /**
    * Returns a RasterExtent that lines up with this RasterExtent's resolution,
    * and grid layout.
    * i.e., the resulting RasterExtent will not have the given extent,
