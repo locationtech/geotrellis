@@ -13,6 +13,7 @@ object Version {
   val geotrellis = "0.10.0-SNAPSHOT"
   val scala = "2.10.3"
   val akka = "2.2.3"
+  val geotools = "9.5"
 }
 
 object Info {
@@ -248,7 +249,6 @@ object GeotrellisBuild extends Build {
 
   // Project: geotools
 
-  val geotoolsVersion = "8.0-M4"
   lazy val geotools: Project =
     Project("geotools", file("geotools"))
       .settings(geotoolsSettings: _*)
@@ -261,12 +261,16 @@ object GeotrellisBuild extends Build {
         Seq(
           "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
           "java3d" % "j3d-core" % "1.3.1",
-          "org.geotools" % "gt-main" % geotoolsVersion,
-          "org.geotools" % "gt-jdbc" % geotoolsVersion,
-          "org.geotools.jdbc" % "gt-jdbc-postgis" % geotoolsVersion,
-          "org.geotools" % "gt-coverage" % geotoolsVersion,
-          "org.geotools" % "gt-coveragetools" % geotoolsVersion,
-          "org.postgis" % "postgis-jdbc" % "1.3.3",
+          "org.geotools" % "gt-main" % Version.geotools,
+//          "org.geotools" % "gt-jdbc" % Version.geotools,
+//          "org.geotools.jdbc" % "gt-jdbc-postgis" % Version.geotools,
+          "org.geotools" % "gt-coverage" % Version.geotools,
+          "org.geotools" % "gt-shapefile" % Version.geotools,
+          "org.geotools" % "gt-geotiff" % Version.geotools,
+          "org.geotools" % "gt-epsg-hsql" % Version.geotools,
+//          "org.geotools" % "gt-coveragetools" % Version.geotools,
+
+//          "org.postgis" % "postgis-jdbc" % "1.3.3",
           "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
         ),
       resolvers ++= 
