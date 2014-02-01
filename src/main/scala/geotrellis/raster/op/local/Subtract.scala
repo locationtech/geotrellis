@@ -36,7 +36,7 @@ trait SubtractOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Subtract each value of a cell from a double constant value. */
   def localSubtractFrom(d: Double) = self.mapOp(Subtract(d, _))
   /** Subtract each value of a cell from a double constant value. */
-  def -:(d:Double) = localSubtract(d)
+  def -:(d:Double) = localSubtractFrom(d)
   /** Subtract the values of each cell in each raster. */
   def localSubtract(rs:RasterSource) = self.combineOp(rs)(Subtract(_,_))
   /** Subtract the values of each cell in each raster. */
