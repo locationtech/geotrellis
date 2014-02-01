@@ -46,3 +46,30 @@ trait DivideOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Divide the values of each cell in each raster. */
   def /(rss:Seq[RasterSource]) = localDivide(rss)
 }
+
+trait DivideMethods { self: Raster =>
+  /** Divide each value of the raster by a constant value.*/
+  def localDivide(i: Int) = Divide(self, i)
+  /** Divide each value of the raster by a constant value.*/
+  def /(i: Int) = localDivide(i)
+  /** Divide a constant value by each cell value.*/
+  def localDivideValue(i: Int) = Divide(i,self)
+  /** Divide a constant value by each cell value.*/
+  def /:(i: Int) = localDivideValue(i)
+  /** Divide each value of a raster by a double constant value.*/
+  def localDivide(d: Double) = Divide(self, d)
+  /** Divide each value of a raster by a double constant value.*/
+  def /(d: Double) = localDivide(d)
+  /** Divide a double constant value by each cell value.*/
+  def localDivideValue(d: Double) = Divide(d,self)
+  /** Divide a double constant value by each cell value.*/
+  def /:(d: Double) = localDivideValue(d)
+  /** Divide the values of each cell in each raster. */
+  def localDivide(r:Raster) = Divide(self, r)
+  /** Divide the values of each cell in each raster. */
+  def /(r: Raster) = localDivide(r)
+  /** Divide the values of each cell in each raster. */
+  def localDivide(rs: Seq[Raster]) = Divide(self +: rs)
+  /** Divide the values of each cell in each raster. */
+  def /(rs: Seq[Raster]) = localDivide(rs)
+}
