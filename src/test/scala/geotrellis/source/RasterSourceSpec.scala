@@ -195,5 +195,50 @@ class RasterSourceSpec extends FunSpec
           assert(false)
       }
     }
+
+    it("should crop to a target Extent") {
+      val rs = RasterSource(createRaster(
+                 Array(1, 10, 100, 1000, 2, 2, 2, 2, 2,
+                       2, 20, 200, 2000, 2, 2, 2, 2, 2,
+                       3, 30, 300, 3000, 2, 2, 2, 2, 2,
+                       4, 40, 400, 4000, 2, 2, 2, 2, 2),
+                 9, 4)
+               )
+
+      val RasterExtent(Extent(xmin, ymin, _, _), cw, ch, _, _) = rs.rasterExtent.get
+      val newExt = Extent(xmin, ymin, xmin + (cw * 4), ymin + (ch * 2))
+      rs.warp(newExt).run match {
+        case Complete(r,_) =>
+          assertEqual(r, Array(3, 30, 300, 3000,
+                               4, 40, 400, 4000))
+        case Error(msg,trace) =>
+          println(msg)
+          println(trace)
+          assert(false)
+      }
+    }
+
+    it("should crop to target dimensions") {
+      val rs = RasterSource(createRaster(
+                 Array(2, 10, 2, 100, 2, 1000, 2, 10000,
+                       2, 20, 2, 200, 2, 2000, 2, 20000,
+                       2, 30, 2, 300, 2, 3000, 2, 30000,
+                       2, 40, 2, 400, 2, 4000, 2, 40000),
+                 8, 4)
+               )
+
+      val RasterExtent(Extent(_, _, _, _), _, _, cols, rows) = rs.rasterExtent.get
+      val newCols = cols - 4
+      val newRows = rows - 2
+      rs.warp(newCols, newRows).run match {
+        case Complete(r,_) =>
+          assertEqual(r, Array(10, 100, 1000, 10000,
+                               30, 300, 3000, 30000))
+        case Error(msg,trace) =>
+          println(msg)
+          println(trace)
+          assert(false)
+      }
+    }
   }
 }

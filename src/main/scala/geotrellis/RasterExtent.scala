@@ -204,7 +204,7 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
   }
 
   /** Adjusts a raster extent so that in can encompass the tile layout.
-    * Will warp the extent, but keep the resolution, and preserve nort and 
+    * Will warp the extent, but keep the resolution, and preserve north and
     * west borders
     */
   def adjustTo(tileLayout:raster.TileLayout) = {
@@ -225,8 +225,8 @@ object RasterExtent {
   }
 
   def apply(extent:Extent, cellwidth:Double, cellheight:Double):RasterExtent = {
-    val cols = ((extent.ymax - extent.ymin) / cellheight).toInt
-    val rows = ((extent.xmax - extent.xmin) / cellwidth).toInt
+    val cols = ((extent.xmax - extent.xmin) / cellwidth).toInt
+    val rows = ((extent.ymax - extent.ymin) / cellheight).toInt
     RasterExtent(extent, cellwidth, cellheight, cols, rows)
   }
 }
