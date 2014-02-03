@@ -62,25 +62,25 @@ object TileIdPartitioner {
   final val SplitFile = "splits"
 
   /* construct a partitioner from the splits file, if one exists */
-  def apply(rasterPath: Path, conf: Configuration): TileIdPartitioner = {
+  def apply(pyramid: Path, conf: Configuration): TileIdPartitioner = {
     val tp = new TileIdPartitioner
-    tp.splitPoints = readSplits(rasterPath, conf)
+    tp.splitPoints = readSplits(pyramid, conf)
     tp
   }
 
   /* construct a partitioner from the splits file, if one exists */
-  def apply(rasterPath: String, conf: Configuration): TileIdPartitioner = {
-    apply(new Path(rasterPath), conf)
+  def apply(pyramid: String, conf: Configuration): TileIdPartitioner = {
+    apply(new Path(pyramid), conf)
   }
 
   /* construct a partitioner from a split generator */
-  def apply(splitGenerator: SplitGenerator, rasterPath: Path, conf: Configuration): TileIdPartitioner = {
-    writeSplits(splitGenerator, rasterPath, conf)
-    apply(rasterPath, conf)
+  def apply(splitGenerator: SplitGenerator, pyramid: Path, conf: Configuration): TileIdPartitioner = {
+    writeSplits(splitGenerator, pyramid, conf)
+    apply(pyramid, conf)
   }
 
-  private def readSplits(rasterPath: Path, conf: Configuration): Array[TileIdWritable] = {
-    val splitFile = new Path(rasterPath, SplitFile)
+  private def readSplits(pyramid: Path, conf: Configuration): Array[TileIdWritable] = {
+    val splitFile = new Path(pyramid, SplitFile)
     HdfsUtils.getLineScanner(splitFile, conf) match {
       case Some(in) =>
         try {

@@ -16,8 +16,8 @@ class TileIdPartitionerSpec extends FunSpec with MustMatchers with ShouldMatcher
     val splitGenerator = new SplitGenerator {
       def getSplits = seq
     }
-    val rasterPath = new Path(java.nio.file.Files.createTempDirectory("splits").toUri())
-    TileIdPartitioner(splitGenerator, rasterPath, conf)
+    val pyramid = new Path(java.nio.file.Files.createTempDirectory("splits").toUri())
+    TileIdPartitioner(splitGenerator, pyramid, conf)
   }
 
   /* tests to see if we have two partitions - 10 and 20, then keys 1, 10, 11, 20, 21 are 

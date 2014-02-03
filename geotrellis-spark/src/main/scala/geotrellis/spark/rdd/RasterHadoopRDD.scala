@@ -17,7 +17,7 @@ import org.apache.spark.rdd.HadoopRDD
 
 class RasterHadoopRDD(
   sc: SparkContext, 
-  path: String, 
+  path: String, // globbed path - see apply below 
   broadcastedConf: Broadcast[SerializableWritable[Configuration]], 
   minSplits: Int)
   extends HadoopRDD[TileIdWritable, ArgWritable](
@@ -42,8 +42,8 @@ object RasterHadoopRDD {
 
   final val SeqFileGlob = "/*[0-9]*/data"
 
-  def apply(sc: SparkContext, path: String) = {
-    val globbedPath = path + SeqFileGlob
+  def apply(sc: SparkContext, raster: String) = {
+    val globbedPath = raster + SeqFileGlob
 
     new RasterHadoopRDD(
       sc, globbedPath, sc.broadcast(new SerializableWritable(sc.hadoopConfiguration)), sc.defaultMinSplits)

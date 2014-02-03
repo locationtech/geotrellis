@@ -57,8 +57,8 @@ case class PyramidMetadata(
 
   def rasterType: RasterType = RasterType.fromAwtType(awtRasterType)
 
-  def save(path: Path, conf: Configuration) = {
-    val metaPath = new Path(path, PyramidMetadata.MetaFile)
+  def save(pyramid: Path, conf: Configuration) = {
+    val metaPath = new Path(pyramid, PyramidMetadata.MetaFile)
     val fs = metaPath.getFileSystem(conf)
     val fdos = fs.create(metaPath)
     val out = new PrintWriter(fdos)
@@ -106,10 +106,10 @@ object PyramidMetadata {
   /*
    * Reads the raster's metadata 
    * 
-   * path - A path to the raster 
+   * pyramid - A path to the pyramid 
    */
-  def apply(path: Path, conf: Configuration) = {
-    val metaPath = new Path(path, MetaFile)
+  def apply(pyramid: Path, conf: Configuration) = {
+    val metaPath = new Path(pyramid, MetaFile)
 
     val txt = HdfsUtils.getLineScanner(metaPath, conf) match {
       case Some(in) =>
@@ -130,11 +130,11 @@ object PyramidMetadata {
    * path - path to a tiff file or directory containing TIFF files. The directory can be 
    * arbitrarily deep, and will be recursively searched for all TIFF files
    */
-  def fromTifFiles(path: Path, conf: Configuration): Tuple2[List[Path], PyramidMetadata] = {
+  def fromTifFiles(tiffPath: Path, conf: Configuration): Tuple2[List[Path], PyramidMetadata] = {
 
-    val fs = path.getFileSystem(conf)
+    val fs = tiffPath.getFileSystem(conf)
 
-    val allFiles = HdfsUtils.listFiles(path, conf)
+    val allFiles = HdfsUtils.listFiles(tiffPath, conf)
 
     def getMetadata(file: Path) = {
       val url = new URL(file.toUri().toString())
