@@ -65,8 +65,7 @@ object Export extends ArgMain[CommandArguments] with Logging {
           val tileId = tw.get
           val (tx, ty) = TmsTiling.tileXY(tileId, zoom)
           val extent = TmsTiling.tileToExtent(tx, ty, zoom, tileSize)
-          val rd = ArgWritable(aw.getBytes().slice(0, tileSize * tileSize * rasterType.bytes)).toRasterData(
-            rasterType, tileSize, tileSize)
+          val rd = aw.toRasterData(rasterType, tileSize, tileSize)
           val trd = NoDataHandler.removeGeotrellisNoData(rd, meta.nodata)
           val raster = Raster(trd, RasterExtent(extent, tileSize, tileSize))
 
