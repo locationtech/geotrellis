@@ -20,6 +20,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     with global.GlobalOpMethods[Repr]
     with zonal.ZonalOpMethods[Repr]
     with zonal.summary.ZonalSummaryOpMethods[Repr]
+    with hydrology.HydrologyOpMethods[Repr]
     with stat.StatOpMethods[Repr] 
     with io.IoOpMethods[Repr] 
     with RenderOpMethods[Repr] { self: Repr =>
@@ -72,7 +73,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.result
   }
 
-  def convertType[That](newType:RasterType) = {
+  def convert(newType:RasterType) = {
     val newDef = rasterDefinition.map(_.withType(newType))
     val ops = tiles.map { seq => seq.map { tile => tile.map { r => r.convert(newType) } } }
     val builder = new RasterSourceBuilder()

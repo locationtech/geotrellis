@@ -10,9 +10,10 @@ import ls.Plugin.LsKeys
 import ls.Plugin.lsSettings
 
 object Version {
-  val geotrellis = "1.0.0-SNAPSHOT"
+  val geotrellis = "0.10.0-SNAPSHOT"
   val scala = "2.10.3"
   val akka = "2.2.3"
+  val geotools = "9.5"
 }
 
 object Info {
@@ -135,7 +136,8 @@ object GeotrellisBuild extends Build {
         "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1",
         "org.spire-math" %% "spire" % "0.4.0",
         "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided",
-        "net.databinder" %% "dispatch-http" % "0.8.10", // for reading args from URLs
+        "io.spray"       % "spray-client" % "1.2.0", // for reading args from URLs,
+        "io.spray"       % "spray-routing" % "1.2.0" % "test",
         "org.apache.commons" % "commons-math3" % "3.2"
       ),
 
@@ -145,6 +147,7 @@ object GeotrellisBuild extends Build {
         "Scala Test" at "http://www.scala-tools.org/repo-reloases/",
         "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
         "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
+        "spray repo" at "http://repo.spray.io/",
         "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
       )
     ) ++
@@ -219,6 +222,7 @@ object GeotrellisBuild extends Build {
     Project("spark", file("geotrellis-spark"))
       .settings(sparkSettings: _*)
       .dependsOn(root)
+      .dependsOn(geotools)
 
   lazy val sparkSettings =
     Seq(
@@ -231,17 +235,20 @@ object GeotrellisBuild extends Build {
           "xalan" % "xalan" % "2.7.1",
           "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
           "org.apache.spark" %% "spark-core" % "0.9.0-incubating-SNAPSHOT",
-          "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4"
+          "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4",
+          "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0",
+          "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided",
+	      "com.quantifind" %% "sumac" % "0.2.3"
         ),
       resolvers ++= Seq(
-        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos")
+        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos",
+        "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots")
     ) ++ 
     defaultAssemblySettings ++ 
     net.virtualvoid.sbt.graph.Plugin.graphSettings
 
   // Project: geotools
 
-  val geotoolsVersion = "8.0-M4"
   lazy val geotools: Project =
     Project("geotools", file("geotools"))
       .settings(geotoolsSettings: _*)
@@ -254,12 +261,16 @@ object GeotrellisBuild extends Build {
         Seq(
           "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
           "java3d" % "j3d-core" % "1.3.1",
-          "org.geotools" % "gt-main" % geotoolsVersion,
-          "org.geotools" % "gt-jdbc" % geotoolsVersion,
-          "org.geotools.jdbc" % "gt-jdbc-postgis" % geotoolsVersion,
-          "org.geotools" % "gt-coverage" % geotoolsVersion,
-          "org.geotools" % "gt-coveragetools" % geotoolsVersion,
-          "org.postgis" % "postgis-jdbc" % "1.3.3",
+          "org.geotools" % "gt-main" % Version.geotools,
+//          "org.geotools" % "gt-jdbc" % Version.geotools,
+//          "org.geotools.jdbc" % "gt-jdbc-postgis" % Version.geotools,
+          "org.geotools" % "gt-coverage" % Version.geotools,
+          "org.geotools" % "gt-shapefile" % Version.geotools,
+          "org.geotools" % "gt-geotiff" % Version.geotools,
+          "org.geotools" % "gt-epsg-hsql" % Version.geotools,
+//          "org.geotools" % "gt-coveragetools" % Version.geotools,
+
+//          "org.postgis" % "postgis-jdbc" % "1.3.3",
           "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
         ),
       resolvers ++= 
@@ -351,7 +362,7 @@ object GeotrellisBuild extends Build {
         "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
           from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
         "com.google.code.gson" % "gson" % "1.7.1",
-        "org.spire-math" %% "spire" % "0.4.0",
+        "org.spire-math" %% "spire" % "0.7.1",
         "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided"
       ),
       resolvers ++= Seq(

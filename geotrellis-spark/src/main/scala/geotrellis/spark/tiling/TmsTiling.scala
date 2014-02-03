@@ -1,6 +1,7 @@
 package geotrellis.spark.tiling
 
-import scala.util.control.Breaks._
+import geotrellis.RasterType
+import geotrellis.Extent
 
 /**
  * @author akini
@@ -26,6 +27,13 @@ object TmsTiling {
   def numYTiles(zoom: Int) = math.pow(2, zoom - 1).toLong
 
   def tileId(tx: Long, ty: Long, zoom: Int) = (ty * numXTiles(zoom)) + tx
+  
+  def tileXY(tileId: Long, zoom: Int): Tuple2[Long, Long] = {
+    val width = numXTiles(zoom)
+    val ty = tileId / width
+    val tx = tileId - (ty * width)
+    (tx, ty)
+  }
 
   def resolution(zoom: Int, tileSize: Int) = 360 / (numXTiles(zoom) * tileSize).toDouble
 
@@ -40,24 +48,28 @@ object TmsTiling {
   }
 
   // using equations 2.3 through 2.6 from TBGIS book
-  def tileToBounds(tx: Long, ty: Long, zoom: Int, tileSize: Int) = {
+  def tileToExtent(tx: Long, ty: Long, zoom: Int, tileSize: Int) = {
     val res = resolution(zoom, tileSize)
-    new Bounds(tx * tileSize * res - 180, // left/west (lon, x)
+    Extent(tx * tileSize * res - 180, // left/west (lon, x)
       ty * tileSize * res - 90, // lower/south (lat, y)
       (tx + 1) * tileSize * res - 180, // right/east (lon, x)
       (ty + 1) * tileSize * res - 90) // upper/north (lat, y)
+  }
+  
+  def extentToTile(extent: Extent, zoom: Int, tileSize: Int) = {
+    val ll = latLonToTile(extent.ymin, extent.xmin, zoom, tileSize)
+    val ur = latLonToTile(extent.ymax, extent.xmax, zoom, tileSize)
+    new TileExtent(ll.tx, ll.ty, ur.tx, ur.ty)
   }
 
   def latLonToPixels(lat: Double, lon: Double, zoom: Int, tileSize: Int) = {
     val res = resolution(zoom, tileSize)
 
-    new Pixel(((180 + lon) / res).toLong,
-      ((90 + lat) / res).toLong)
+    new Pixel(((180 + lon) / res).toLong, ((90 + lat) / res).toLong)
   }
 
   def pixelsToTile(px: Double, py: Double, tileSize: Int) = {
-    new Tile((px / tileSize).toLong,
-      (py / tileSize).toLong)
+    new Tile((px / tileSize).toLong, (py / tileSize).toLong)
   }
 
   // slightly modified version of equations 2.9 and 2.10
@@ -66,9 +78,7 @@ object TmsTiling {
     val ty = ((90 + lat) * (numYTiles(zoom) / 180.0)).toLong
     new Tile(tx, ty)
   }
-  
-   def main(args: Array[String]): Unit = {
-	  println(zoom(0.0878906250, 512))
-   }
 
+  def tileSizeBytes(tileSize: Int, rasterType: RasterType): Int = 
+    tileSize * tileSize * rasterType.bytes
 }

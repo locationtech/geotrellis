@@ -9,6 +9,8 @@ import org.apache.hadoop.io.BytesWritable
 class ArgWritable(bytes: Array[Byte]) extends BytesWritable(bytes) {
   // This constructor is rarely used (e.g., hadoop fs -text). Preferred use is via companion object  
   def this() = this(Array[Byte]())
+  
+  def toRasterData(awType: RasterType, cols: Int, rows: Int) = RasterData.fromArrayByte(getBytes, awType, cols, rows)
 }
 
 object ArgWritable {
@@ -16,6 +18,5 @@ object ArgWritable {
   def apply(bytes: Array[Byte]) = new ArgWritable(bytes)
   def apply(aw: ArgWritable) = new ArgWritable(aw.getBytes)
 
-  def toWritable(data: RasterData) = ArgWritable(data.toArrayByte)
-  def toRasterData(aw: ArgWritable, awType: RasterType, cols: Int, rows: Int) = RasterData.fromArrayByte(aw.getBytes, awType, cols, rows)
+  def fromRasterData(data: RasterData) = ArgWritable(data.toArrayByte)
 }

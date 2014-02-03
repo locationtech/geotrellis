@@ -5,7 +5,7 @@ import javax.ws.rs._
 import javax.ws.rs.core.{Response, Context, MediaType, MultivaluedMap}
 import geotrellis._
 import geotrellis.jetty._
-import geotrellis.service._
+import geotrellis.services._
 
 @Path("/admin/colors")
 class Color {
