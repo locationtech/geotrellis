@@ -62,25 +62,25 @@ object TileIdPartitioner {
   final val SplitFile = "splits"
 
   /* construct a partitioner from the splits file, if one exists */
-  def apply(pyramid: Path, conf: Configuration): TileIdPartitioner = {
+  def apply(raster: Path, conf: Configuration): TileIdPartitioner = {
     val tp = new TileIdPartitioner
-    tp.splitPoints = readSplits(pyramid, conf)
+    tp.splitPoints = readSplits(raster, conf)
     tp
   }
 
   /* construct a partitioner from the splits file, if one exists */
-  def apply(pyramid: String, conf: Configuration): TileIdPartitioner = {
-    apply(new Path(pyramid), conf)
+  def apply(raster: String, conf: Configuration): TileIdPartitioner = {
+    apply(new Path(raster), conf)
   }
 
   /* construct a partitioner from a split generator */
-  def apply(splitGenerator: SplitGenerator, pyramid: Path, conf: Configuration): TileIdPartitioner = {
-    writeSplits(splitGenerator, pyramid, conf)
-    apply(pyramid, conf)
+  def apply(splitGenerator: SplitGenerator, raster: Path, conf: Configuration): TileIdPartitioner = {
+    writeSplits(splitGenerator, raster, conf)
+    apply(raster, conf)
   }
 
-  private def readSplits(pyramid: Path, conf: Configuration): Array[TileIdWritable] = {
-    val splitFile = new Path(pyramid, SplitFile)
+  private def readSplits(raster: Path, conf: Configuration): Array[TileIdWritable] = {
+    val splitFile = new Path(raster, SplitFile)
     HdfsUtils.getLineScanner(splitFile, conf) match {
       case Some(in) =>
         try {
@@ -98,9 +98,9 @@ object TileIdPartitioner {
     }
   }
 
-  private def writeSplits(splitGenerator: SplitGenerator, rasterPath: Path, conf: Configuration): Int = {
+  private def writeSplits(splitGenerator: SplitGenerator, raster: Path, conf: Configuration): Int = {
     val splits = splitGenerator.getSplits
-    val splitFile = new Path(rasterPath, SplitFile)
+    val splitFile = new Path(raster, SplitFile)
     //println("writing splits to " + splitFile)
     val fs = splitFile.getFileSystem(conf)
     val fdos = fs.create(splitFile)
@@ -114,8 +114,8 @@ object TileIdPartitioner {
     splits.length
   }
 
-  def printSplits(rasterPath: Path, conf: Configuration) {
-    val splits = readSplits(rasterPath, conf)
+  def printSplits(raster: Path, conf: Configuration) {
+    val splits = readSplits(raster, conf)
     splits.zipWithIndex.foreach(t => println("Split #%d: %d".format(t._2, t._1.get)))
   }
 }
