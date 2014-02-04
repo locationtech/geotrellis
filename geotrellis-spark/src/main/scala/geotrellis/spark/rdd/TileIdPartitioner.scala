@@ -101,7 +101,7 @@ object TileIdPartitioner {
   private def writeSplits(splitGenerator: SplitGenerator, rasterPath: Path, conf: Configuration): Int = {
     val splits = splitGenerator.getSplits
     val splitFile = new Path(rasterPath, SplitFile)
-    println("writing splits to " + splitFile)
+    //println("writing splits to " + splitFile)
     val fs = splitFile.getFileSystem(conf)
     val fdos = fs.create(splitFile)
     val out = new PrintWriter(fdos)
