@@ -237,7 +237,8 @@ object GeotrellisBuild extends Build {
           "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4",
           "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0",
           "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided",
-	      "com.quantifind" %% "sumac" % "0.2.3"
+	      "com.quantifind" %% "sumac" % "0.2.3",
+	      "commons-io" % "commons-io" % "2.4"
         ),
       resolvers ++= Seq(
         "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos",
