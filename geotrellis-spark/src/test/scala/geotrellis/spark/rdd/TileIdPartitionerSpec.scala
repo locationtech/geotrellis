@@ -2,13 +2,13 @@ package geotrellis.spark.rdd
 
 import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.utils.SparkUtils
-
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 import org.apache.hadoop.fs.Path
+import geotrellis.spark.TestEnvironment
 
-class TileIdPartitionerSpec extends FunSpec with MustMatchers with ShouldMatchers {
+class TileIdPartitionerSpec extends TestEnvironment with MustMatchers with ShouldMatchers {
 
   val conf = SparkUtils.createHadoopConfiguration
 
@@ -16,7 +16,7 @@ class TileIdPartitionerSpec extends FunSpec with MustMatchers with ShouldMatcher
     val splitGenerator = new SplitGenerator {
       def getSplits = seq
     }
-    val pyramid = new Path(java.nio.file.Files.createTempDirectory("splits").toUri())
+    val pyramid = new Path(testLocalDir)
     TileIdPartitioner(splitGenerator, pyramid, conf)
   }
 

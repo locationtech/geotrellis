@@ -3,16 +3,15 @@ import geotrellis.Extent
 import geotrellis.spark.tiling.PixelExtent
 import geotrellis.spark.tiling.TileExtent
 import geotrellis.spark.utils.SparkUtils
-
 import org.apache.hadoop.fs.Path
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
-
 import java.awt.image.DataBuffer
+import geotrellis.spark.TestEnvironment
 
 
-class PyramidMetadataSpec extends FunSpec with MustMatchers with ShouldMatchers {
+class PyramidMetadataSpec extends TestEnvironment with MustMatchers with ShouldMatchers {
 
   val conf = SparkUtils.createHadoopConfiguration
 
@@ -28,8 +27,7 @@ class PyramidMetadataSpec extends FunSpec with MustMatchers with ShouldMatchers 
         10,
         Map("1" -> new RasterMetadata(PixelExtent(0, 0, 0, 0), TileExtent(0, 0, 0, 0))))
 
-      val pyramidPath = new Path(java.nio.file.Files.createTempDirectory("pyramid_metadata_save_test").toUri())
-
+      val pyramidPath = new Path(testLocalDir)
       meta.save(pyramidPath, conf)
 
       val newMeta = PyramidMetadata(pyramidPath, conf)
