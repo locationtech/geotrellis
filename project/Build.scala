@@ -234,7 +234,7 @@ object GeotrellisBuild extends Build {
           "xerces" % "xercesImpl" % "2.9.1",
           "xalan" % "xalan" % "2.7.1",
           "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
-          "org.apache.spark" %% "spark-core" % "0.9.0-incubating-SNAPSHOT",
+          "org.apache.spark" %% "spark-core" % "0.9.0-incubating",
           "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4",
           "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0",
           "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided",
