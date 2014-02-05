@@ -11,43 +11,41 @@ import geotrellis.spark.rdd.RasterHadoopRDD
 import geotrellis.spark.storage.RasterReader
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.SparkUtils
-
 import org.apache.hadoop.fs.Path
 import org.apache.spark.Logging
-
 import java.io.File
-
 import com.quantifind.sumac.ArgMain
+import com.quantifind.sumac.validation.Positive
 
 /**
  * @author akini
  *
- * Export a raster as GeoTIFF either as a single tiff or tiff-per-tile. 
+ * Export a raster as GeoTIFF either as a single tiff or tiff-per-tile.
  * The tiff-per-tile use case uses Spark to read the tiles
  *
- * 
- * Export 	[--single <boolean>] 
- * 			--input <path-to-pyramid> 
- *    		--zoom <zoom> 
- *      	--output <path-to-dir-or-file> 
- *       	[--sparkMaster <spark-master-ip>] 
+ *
+ * Export 	[--single <boolean>]
+ * 			--input <path-to-pyramid>
+ *    		--zoom <zoom>
+ *      	--output <path-to-dir-or-file>
+ *       	[--sparkMaster <spark-master-ip>]
  *
  * Single tiff
- * Export --single true --input file:///tmp/all-ones --zoom 10 --output /tmp/all-ones-export.tif 
- * 
+ * Export --single true --input file:///tmp/all-ones --zoom 10 --output /tmp/all-ones-export.tif
+ *
  * tiff-per-tile
- * Export --input file:///tmp/all-ones --zoom 10 --output /tmp/all-ones-export --sparkMaster local 
+ * Export --input file:///tmp/all-ones --zoom 10 --output /tmp/all-ones-export --sparkMaster local
  *
  * Constraints:
- * 
- * --single <boolean> - this is either true or false (default) depending on whether the output needs 
+ *
+ * --single <boolean> - this is either true or false (default) depending on whether the output needs
  * to be a single merged tiff or tiff-per-tile
- * 
+ *
  * --input <path-to-pyramid> - this can be either on hdfs (hdfs://) or local fs (file://) and is a fully
  * qualified path to the pyramid
  *
- * --output <path-to-dir-or-file> - this is a file in the case of a single tiff, and a directory in  
- * the case of tiff-per-tile. Either way, the output would be on the local file system. 
+ * --output <path-to-dir-or-file> - this is a file in the case of a single tiff, and a directory in
+ * the case of tiff-per-tile. Either way, the output would be on the local file system.
  *
  * --sparkMaster <spark-master-ip> - this is the conventional spark cluster url
  * 	(e.g. spark://host:port, local, local[4])
@@ -55,10 +53,11 @@ import com.quantifind.sumac.ArgMain
  */
 class ExportArgs extends CommandArguments {
   var single: Boolean = false
+  @Positive var zoom: Int = _
 }
 
 object Export extends ArgMain[ExportArgs] with Logging {
-  
+
   type TileIdCoord = Tuple3[Long, Long, Long] // [tileId, tx, ty]
   type TileIdRaster = Tuple2[TileIdCoord, Raster]
 
@@ -69,10 +68,11 @@ object Export extends ArgMain[ExportArgs] with Logging {
     val outputDir = args.output
     val sparkMaster = args.sparkMaster
 
-    if (args.single == false)
-      exportTiles(rasterPathWithZoom, outputDir, sparkMaster)
-    else
+    if (args.single)
       exportSingle(rasterPathWithZoom, outputDir)
+    else
+      exportTiles(rasterPathWithZoom, outputDir, sparkMaster)
+
   }
 
   // TODO - this should probably go into the RasterReader as well as RasterHadoopRDD as an implicit
@@ -94,7 +94,7 @@ object Export extends ArgMain[ExportArgs] with Logging {
     val meta = PyramidMetadata(rasterPath.getParent, conf)
     val zoom = rasterPath.getName.toInt
     val (tileSize, rasterType) = (meta.tileSize, meta.rasterType)
-    
+
     // get extents and layout
     val tileExtent = meta.rasterMetadata(zoom.toString).tileExtent
     val res = TmsTiling.resolution(zoom, tileSize)
@@ -110,7 +110,7 @@ object Export extends ArgMain[ExportArgs] with Logging {
       (left._1._3 > right._1._3) || (left._1._3 == right._1._3 && left._1._2 < right._1._2)
     val (tileIds, tiles) = reader.map(toRaster(_, meta, zoom)).toList.sortWith(compare).unzip
     reader.close()
-    
+
     val raster = TileRaster(tiles, rasterExtent, layout).toArrayRaster
     GeoTiffWriter.write(s"${output}", raster, meta.nodata)
     logInfo(s"---------finished writing to file ${output}")
