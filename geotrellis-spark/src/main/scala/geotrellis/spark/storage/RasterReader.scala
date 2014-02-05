@@ -32,16 +32,16 @@ case class RasterReader(raster: Path, conf: Configuration)
 
   def iterator = new Iterator[(TileIdWritable, ArgWritable)] with Closeable {
 
-    var curKey: TileIdWritable = new TileIdWritable
-    var curValue: ArgWritable = new ArgWritable
-    var curPartition: Int = 0
+    private val curKey: TileIdWritable = new TileIdWritable
+    private val curValue: ArgWritable = new ArgWritable
+    private var curPartition: Int = 0
 
     // initialize readers and partitioner
     val readers = getReaders
 
     def close = readers.foreach(r => if (r != null) r.close)
     
-    def hasNext = {
+    override def hasNext = {
       if (curPartition >= readers.length)
         false
       else if (readers(curPartition).next(curKey, curValue))
@@ -52,7 +52,7 @@ case class RasterReader(raster: Path, conf: Configuration)
       }
     }
     
-    def next = (curKey,curValue)
+    override def next = (curKey,curValue)
 
     private def getReaders: Array[MapFile.Reader] = {
       val fs = raster.getFileSystem(conf)
