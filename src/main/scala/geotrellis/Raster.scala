@@ -1,6 +1,7 @@
 package geotrellis
 
 import geotrellis.raster._
+import geotrellis.raster.op._
 import scalaxy.loops._
 
 object Raster {
@@ -20,7 +21,10 @@ object Raster {
 /**
  * Base trait for the Raster data type.
  */
-trait Raster {
+trait Raster extends local.AddMethods
+                with local.SubtractMethods
+                with local.MultiplyMethods
+                with local.DivideMethods {
   val rasterExtent:RasterExtent
   lazy val cols = rasterExtent.cols
   lazy val rows = rasterExtent.rows

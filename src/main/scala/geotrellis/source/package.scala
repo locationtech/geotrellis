@@ -9,4 +9,8 @@ package object source {
 
   implicit def dataSourceSeqToSeqSource[T](iterable:Iterable[DataSource[_,T]]): SeqSource[T] =
     DataSource.fromSources(iterable.toSeq)
+
+  implicit class DataSourceSeqWrapper[T](dss: Seq[DataSource[_,T]]) {
+    def collectSources():SeqSource[T] = DataSource.fromSources(dss)
+  }
 }
