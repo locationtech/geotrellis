@@ -60,7 +60,7 @@ object TmsTiling {
   def tileToExtent(te: TileExtent, zoom: Int, tileSize: Int): Extent = {
     val ll = tileToExtent(te.xmin, te.ymin, zoom, tileSize)
     val ur = tileToExtent(te.xmax, te.ymax, zoom, tileSize)
-    Extent(ll.xmin, ll.ymin, ll.xmax, ll.ymax)
+    Extent(ll.xmin, ll.ymin, ur.xmax, ur.ymax)
   }
   
   def extentToTile(extent: Extent, zoom: Int, tileSize: Int): TileExtent = {
