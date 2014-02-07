@@ -35,7 +35,8 @@ object TmsTiling {
     (tx, ty)
   }
 
-  def resolution(zoom: Int, tileSize: Int) = 360 / (numXTiles(zoom) * tileSize).toDouble
+  def resolution(zoom: Int, tileSize: Int): Double = 
+    360 / (numXTiles(zoom) * tileSize).toDouble
 
   def zoom(res: Double, tileSize: Int): Int = {
     val resWithEp = res + Epsilon
@@ -48,7 +49,7 @@ object TmsTiling {
   }
 
   // using equations 2.3 through 2.6 from TBGIS book
-  def tileToExtent(tx: Long, ty: Long, zoom: Int, tileSize: Int) = {
+  def tileToExtent(tx: Long, ty: Long, zoom: Int, tileSize: Int): Extent = {
     val res = resolution(zoom, tileSize)
     Extent(tx * tileSize * res - 180, // left/west (lon, x)
       ty * tileSize * res - 90, // lower/south (lat, y)
@@ -56,24 +57,29 @@ object TmsTiling {
       (ty + 1) * tileSize * res - 90) // upper/north (lat, y)
   }
   
-  def extentToTile(extent: Extent, zoom: Int, tileSize: Int) = {
+  def tileToExtent(te: TileExtent, zoom: Int, tileSize: Int): Extent = {
+    val ll = tileToExtent(te.xmin, te.ymin, zoom, tileSize)
+    val ur = tileToExtent(te.xmax, te.ymax, zoom, tileSize)
+    Extent(ll.xmin, ll.ymin, ur.xmax, ur.ymax)
+  }
+  
+  def extentToTile(extent: Extent, zoom: Int, tileSize: Int): TileExtent = {
     val ll = latLonToTile(extent.ymin, extent.xmin, zoom, tileSize)
     val ur = latLonToTile(extent.ymax, extent.xmax, zoom, tileSize)
     new TileExtent(ll.tx, ll.ty, ur.tx, ur.ty)
   }
 
-  def latLonToPixels(lat: Double, lon: Double, zoom: Int, tileSize: Int) = {
+  def latLonToPixels(lat: Double, lon: Double, zoom: Int, tileSize: Int): Pixel = {
     val res = resolution(zoom, tileSize)
-
     new Pixel(((180 + lon) / res).toLong, ((90 + lat) / res).toLong)
   }
 
-  def pixelsToTile(px: Double, py: Double, tileSize: Int) = {
+  def pixelsToTile(px: Double, py: Double, tileSize: Int): Tile = {
     new Tile((px / tileSize).toLong, (py / tileSize).toLong)
   }
 
   // slightly modified version of equations 2.9 and 2.10
-  def latLonToTile(lat: Double, lon: Double, zoom: Int, tileSize: Int) = {
+  def latLonToTile(lat: Double, lon: Double, zoom: Int, tileSize: Int): Tile = {
     val tx = ((180 + lon) * (numXTiles(zoom) / 360.0)).toLong
     val ty = ((90 + lat) * (numYTiles(zoom) / 180.0)).toLong
     new Tile(tx, ty)

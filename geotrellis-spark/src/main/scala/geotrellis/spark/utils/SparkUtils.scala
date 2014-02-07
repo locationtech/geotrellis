@@ -33,7 +33,15 @@ object SparkUtils extends Logging {
     new Configuration
   }
 
-  /* find the geotrellis-spark jar under the geotrellis home directory */
+  /* 
+   * Find the geotrellis-spark jar under the geotrellis home directory and return it with a 
+   * "local:" prefix that tells Spark to look for that jar on every slave node where its 
+   * executors are scheduled
+   * 
+   *  For e.g., if GEOTRELLIS_HOME = /usr/local/geotrellis 
+   *  and the jar lives in /usr/local/geotrellis/geotrellis-spark_2.10-0.10.0-SNAPSHOT.jar
+   *  then this gets returned: "local:/usr/local/geotrellis/geotrellis-spark_2.10-0.10.0-SNAPSHOT.jar" 
+   **/
   def jar(gtHome: String): String = {
     def isMatch(fileName: String): Boolean = "geotrellis-spark(.)*.jar".r.findFirstIn(fileName) match {
       case Some(_) => true
@@ -48,15 +56,17 @@ object SparkUtils extends Logging {
       else Array(None)
     }
 
+    def prefix(s: String) = "local:" + s
+    
     val matches = findJar(new File(gtHome)).flatten
     if (matches.length == 1) {
-      val firstMatch = matches(0).getAbsolutePath      
+      val firstMatch = prefix(matches(0).getAbsolutePath)      
       logInfo(s"Found unique match for geotrellis-spark jar: ${firstMatch}")
       firstMatch
     } else if (matches.length > 1) {
       logInfo(s"Found ${matches.length} matches for geotrellis-spark jar: ")
       logInfo("{" + matches.mkString(",") + "}")
-      val firstMatch = matches(0).getAbsolutePath
+      val firstMatch = prefix(matches(0).getAbsolutePath)
       logInfo("Using first match: " + firstMatch)
       firstMatch
     } else {
