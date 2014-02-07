@@ -157,7 +157,11 @@ case class FailOp[T](msg:String) extends Operation[T] {
  * case class Add2(x:Op[Int], y:Op[Int]) extends Op2(x, y)(_ + _)
  */
 
-abstract class Op0[T](f:()=>StepOutput[T]) extends Operation[T] {
+class Op0[T](f:()=>StepOutput[T]) extends Operation[T] {
+  def productArity = 0
+  def canEqual(other:Any) = other.isInstanceOf[Op0[_]]
+  def productElement(n:Int) = throw new IndexOutOfBoundsException()
+
   def _run() = f()
   val nextSteps:Steps = {
     case _ => sys.error("should not be called")

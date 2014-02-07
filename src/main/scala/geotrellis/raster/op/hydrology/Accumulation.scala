@@ -5,7 +5,7 @@ import scala.collection.mutable._
 import geotrellis.raster._
 
 
-object Accumulation{
+object Accumulation {
   //checks if the encoded value includes the dirrecrion
   def doesFlow(value:Int,dir:Int):Boolean= {
     if(value<dir){

@@ -1,23 +1,23 @@
 package geotrellis.spark.rdd
 
 import geotrellis.spark.formats.TileIdWritable
-import geotrellis.spark.utils.GeotrellisSparkUtils
-
+import geotrellis.spark.utils.SparkUtils
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 import org.apache.hadoop.fs.Path
+import geotrellis.spark.TestEnvironment
 
-class TileIdPartitionerSpec extends FunSpec with MustMatchers with ShouldMatchers {
+class TileIdPartitionerSpec extends TestEnvironment with MustMatchers with ShouldMatchers {
 
-  val conf = GeotrellisSparkUtils.createHadoopConfiguration
+  val conf = SparkUtils.createHadoopConfiguration
 
   def getPartitioner(seq: Seq[Long]) = {
     val splitGenerator = new SplitGenerator {
       def getSplits = seq
     }
-    val imagePath = new Path(java.nio.file.Files.createTempDirectory("splits").toUri())
-    TileIdPartitioner(splitGenerator, imagePath, conf)
+    val pyramid = new Path(testLocalDir)
+    TileIdPartitioner(splitGenerator, pyramid, conf)
   }
 
   /* tests to see if we have two partitions - 10 and 20, then keys 1, 10, 11, 20, 21 are 

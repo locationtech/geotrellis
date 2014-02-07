@@ -43,3 +43,26 @@ trait AddOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Add the values of each cell in each raster. */
   def +(rss:Seq[RasterSource]) = localAdd(rss)
 }
+
+trait AddMethods { self: Raster =>
+  /** Add a constant Int value to each cell. */
+  def localAdd(i: Int) = Add(self, i)
+  /** Add a constant Int value to each cell. */
+  def +(i: Int) = localAdd(i)
+  /** Add a constant Int value to each cell. */
+  def +:(i: Int) = localAdd(i)
+  /** Add a constant Double value to each cell. */
+  def localAdd(d: Double) = Add(self, d)
+  /** Add a constant Double value to each cell. */
+  def +(d: Double) = localAdd(d)
+  /** Add a constant Double value to each cell. */
+  def +:(d: Double) = localAdd(d)
+  /** Add the values of each cell in each raster.  */
+  def localAdd(r: Raster) = Add(self, r)
+  /** Add the values of each cell in each raster. */
+  def +(r: Raster) = localAdd(r)
+  /** Add the values of each cell in each raster.  */
+  def localAdd(rs: Seq[Raster]) = Add(self +: rs)
+  /** Add the values of each cell in each raster. */
+  def +(rs: Seq[Raster]) = localAdd(rs)
+}

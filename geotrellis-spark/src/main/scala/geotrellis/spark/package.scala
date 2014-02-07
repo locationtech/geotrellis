@@ -1,7 +1,7 @@
 package geotrellis
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
-import geotrellis.spark.rdd.SaveImageFunctions
+import geotrellis.spark.rdd.SaveRasterFunctions
 
 import org.apache.spark.rdd.RDD
 
@@ -11,10 +11,10 @@ package object spark {
   
   type TileId = Long
   
-  type ImageWritableRDD = RDD[(TileIdWritable, ArgWritable)]
+  type RasterWritableRDD = RDD[(TileIdWritable, ArgWritable)]
   //type ImageRDD = RDD[(TileId, RasterData)]
 
-  implicit class SavableImage(val image: ImageWritableRDD) {
-    def save(path: String) = SaveImageFunctions.save(image, path)
+  implicit class SavableImage(val image: RasterWritableRDD) {
+    def save(path: String) = SaveRasterFunctions.save(image, path)
   }
 }

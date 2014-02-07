@@ -27,8 +27,10 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
   private var splitPoints = new Array[TileIdWritable](0)
 
   override def getPartition(key: Any) = findPartition(key)
-  override def numPartitions = splitPoints.length
-  override def toString = splitPoints.zipWithIndex.mkString
+  override def numPartitions = splitPoints.length + 1
+  override def toString = "TileIdPartitioner split points: " + {
+    if (splitPoints.isEmpty) "Empty" else splitPoints.zipWithIndex.mkString
+  }
 
   // TODO override equals and hashCode
 
@@ -57,28 +59,28 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
 }
 
 object TileIdPartitioner {
-  val SplitFile = "splits"
+  final val SplitFile = "splits"
 
   /* construct a partitioner from the splits file, if one exists */
-  def apply(imagePath: Path, conf: Configuration): TileIdPartitioner = {
+  def apply(raster: Path, conf: Configuration): TileIdPartitioner = {
     val tp = new TileIdPartitioner
-    tp.splitPoints = readSplits(imagePath, conf)
+    tp.splitPoints = readSplits(raster, conf)
     tp
   }
 
   /* construct a partitioner from the splits file, if one exists */
-  def apply(imagePath: String, conf: Configuration): TileIdPartitioner = {
-    apply(new Path(imagePath), conf)
+  def apply(raster: String, conf: Configuration): TileIdPartitioner = {
+    apply(new Path(raster), conf)
   }
 
   /* construct a partitioner from a split generator */
-  def apply(splitGenerator: SplitGenerator, imagePath: Path, conf: Configuration): TileIdPartitioner = {
-    writeSplits(splitGenerator, imagePath, conf)
-    apply(imagePath, conf)
+  def apply(splitGenerator: SplitGenerator, raster: Path, conf: Configuration): TileIdPartitioner = {
+    writeSplits(splitGenerator, raster, conf)
+    apply(raster, conf)
   }
 
-  private def readSplits(imagePath: Path, conf: Configuration): Array[TileIdWritable] = {
-    val splitFile = new Path(imagePath, SplitFile)
+  private def readSplits(raster: Path, conf: Configuration): Array[TileIdWritable] = {
+    val splitFile = new Path(raster, SplitFile)
     HdfsUtils.getLineScanner(splitFile, conf) match {
       case Some(in) =>
         try {
@@ -96,10 +98,10 @@ object TileIdPartitioner {
     }
   }
 
-  private def writeSplits(splitGenerator: SplitGenerator, imagePath: Path, conf: Configuration): Int = {
+  private def writeSplits(splitGenerator: SplitGenerator, raster: Path, conf: Configuration): Int = {
     val splits = splitGenerator.getSplits
-    val splitFile = new Path(imagePath, SplitFile)
-    println("writing splits to " + splitFile)
+    val splitFile = new Path(raster, SplitFile)
+    //println("writing splits to " + splitFile)
     val fs = splitFile.getFileSystem(conf)
     val fdos = fs.create(splitFile)
     val out = new PrintWriter(fdos)
@@ -112,8 +114,8 @@ object TileIdPartitioner {
     splits.length
   }
 
-  def printSplits(imagePath: Path, conf: Configuration) {
-    val splits = readSplits(imagePath, conf)
+  def printSplits(raster: Path, conf: Configuration) {
+    val splits = readSplits(raster, conf)
     splits.zipWithIndex.foreach(t => println("Split #%d: %d".format(t._2, t._1.get)))
   }
 }
