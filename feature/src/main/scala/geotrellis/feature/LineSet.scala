@@ -33,6 +33,63 @@ case class LineSet(ls: Set[Line]) extends GeometrySet {
   def intersection(ps: PolygonSet): LineSetIntersectionResult =
     geom.intersection(ps.geom)
 
+  // -- Union
+
+  def |(p: Point) = union(p)
+  def union(p: Point): PointLineSetUnionResult =
+    p.union(this)
+
+  def |(l: Line) = union(l)
+  def union(l:Line): LineLineUnionResult =
+    l.union(this)
+
+  def |(p: Polygon) = union(p)
+  def union(p: Polygon): PolygonXUnionResult =
+    p.union(this)
+
+  def |(ps: PointSet) = union(ps)
+  def union(ps: PointSet): PointLineSetUnionResult =
+    ps.union(this)
+
+  def |(ls: LineSet) = union(ls)
+  def union(ls: LineSet): LineLineUnionResult =
+    geom.union(ls.geom)
+
+  def |(ps: PolygonSet) = union(ps)
+  def union(ps: PolygonSet): PolygonSetUnionResult =
+    geom.union(ps.geom)
+
+  // -- Difference
+
+  def -(p: Point) = difference(p)
+  def difference(p: Point): LineSetPointDifferenceResult =
+    geom.difference(p.geom)
+
+  def -(l: Line) = difference(l)
+  def difference(l: Line): LineXDifferenceResult = {
+    geom.difference(l.geom)
+  }
+
+  def -(p: Polygon) = difference(p)
+  def difference(p: Polygon): LineXDifferenceResult = {
+    geom.difference(p.geom)
+  }
+
+  def -(ps: PointSet) = difference(ps)
+  def difference(ps: PointSet): LineSetPointDifferenceResult = {
+    geom.difference(ps.geom)
+  }
+
+  def -(ls: LineSet) = difference(ls)
+  def difference(ls: LineSet): LineXDifferenceResult = {
+    geom.difference(ls.geom)
+  }
+
+  def -(ps: PolygonSet) = difference(ps)
+  def difference(ps: PolygonSet): LineXDifferenceResult = {
+    geom.difference(ps.geom)
+  }
+
   // -- Predicates
 
   def crosses(g: Geometry): Boolean =

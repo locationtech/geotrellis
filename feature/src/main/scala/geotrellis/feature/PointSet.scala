@@ -33,6 +33,39 @@ case class PointSet(ps: Set[Point]) extends GeometrySet {
   def intersection(ps: PolygonSet): PointSetIntersectionResult =
     geom.intersection(ps.geom)
 
+  // -- Union
+
+  def |(p: Point) = union(p)
+  def union(p: Point): PointPointUnionResult =
+    p.union(this)
+
+  def |(l: Line) = union(l)
+  def union(l:Line): PointLineUnionResult =
+    l.union(this)
+
+  def |(p: Polygon) = union(p)
+  def union(p: Polygon): PolygonXUnionResult =
+    p.union(this)
+
+  def |(ps: PointSet) = union(ps)
+  def union(ps: PointSet): PointPointUnionResult =
+    geom.union(ps.geom)
+
+  def |(ls: LineSet) = union(ls)
+  def union(ls: LineSet): PointLineSetUnionResult =
+    geom.union(ls.geom)
+
+  def |(ps: PolygonSet) = union(ps)
+  def union(ps: PolygonSet): PolygonSetUnionResult =
+    geom.union(ps.geom)
+
+  // -- Difference
+
+  def -(other: Geometry) = difference(other)
+  def difference(other: Geometry): PointSetDifferenceResult =
+    geom.difference(other.geom)
+
+
   def convexHull: Polygon =
     geom.convexHull.asInstanceOf[jts.Polygon]
 

@@ -23,12 +23,20 @@ case class Point(geom: jts.Point) extends Geometry {
     geom.union(p.geom)
 
   def |(l: Line) = union(l)
-  def union(l: Line): LinePointUnionResult =
+  def union(l: Line): PointLineUnionResult =
     geom.union(l.geom)
 
   def |(p: Polygon) = union(p)
   def union(p: Polygon): PolygonXUnionResult =
     geom.union(p.geom)
+
+  def |(ps: PointSet) = union(ps)
+  def union(ps: PointSet): PointPointUnionResult =
+    geom.union(ps.geom)
+
+  def |(ls: LineSet) = union(ls)
+  def union(ls: LineSet): PointLineSetUnionResult =
+    geom.union(ls.geom)
 
   def |(ps: PolygonSet) = union(ps)
   def union(ps: PolygonSet): PolygonSetUnionResult =
@@ -36,6 +44,7 @@ case class Point(geom: jts.Point) extends Geometry {
 
   // -- Difference
 
+  def -(other: Geometry) = difference(other)
   def difference(other: Geometry): PointDifferenceResult =
     geom.difference(other.geom)
 

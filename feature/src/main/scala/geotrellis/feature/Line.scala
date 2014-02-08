@@ -36,7 +36,7 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry {
   // -- Union
 
   def |(p: Point) = union(p)
-  def union(p: Point): LinePointUnionResult =
+  def union(p: Point): PointLineUnionResult =
     p.union(this)
 
   def |(l: Line) = union(l)
@@ -47,33 +47,48 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry {
   def union(p: Polygon): PolygonXUnionResult =
     geom.union(p.geom)
 
+  def |(ps: PointSet) = union(ps)
+  def union(ps: PointSet): PointLineUnionResult =
+    geom.union(ps.geom)
+
+  def |(ls: LineSet) = union(ls)
+  def union(ls: LineSet): LineLineUnionResult =
+    geom.union(ls.geom)
+
   def |(ps: PolygonSet) = union(ps)
   def union(ps: PolygonSet): PolygonSetUnionResult =
     geom.union(ps.geom)
 
   // -- Difference
 
+  def -(p: Point) = difference(p)
   def difference(p: Point): LinePointDifferenceResult =
     geom.difference(p.geom)
 
+  def -(l: Line) = difference(l)
   def difference(l: Line): LineXDifferenceResult = {
     geom.difference(l.geom)
   }
 
+  def -(p: Polygon) = difference(p)
   def difference(p: Polygon): LineXDifferenceResult = {
     geom.difference(p.geom)
   }
 
-  def difference(g:Geometry):Set[Line] =
-    geom.difference(g.geom) match {
-      case ml:jts.MultiLineString =>
-        ml
-      case l:jts.LineString =>
-        Set(Line(l))
-      case x =>
-        assert(x.isEmpty)
-        Set()
-    }
+  def -(ps: PointSet) = difference(ps)
+  def difference(ps: PointSet): LinePointDifferenceResult = {
+    geom.difference(ps.geom)
+  }
+
+  def -(ls: LineSet) = difference(ls)
+  def difference(ls: LineSet): LineXDifferenceResult = {
+    geom.difference(ls.geom)
+  }
+
+  def -(ps: PolygonSet) = difference(ps)
+  def difference(ps: PolygonSet): LineXDifferenceResult = {
+    geom.difference(ps.geom)
+  }
 
   // -- Buffer
 

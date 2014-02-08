@@ -42,16 +42,53 @@ case class Polygon(geom: jts.Polygon) extends Geometry {
     p.union(this)
 
   def |(l:Line) = union(l)
-  def union(l:Line):PolygonXUnionResult =
+  def union(l: Line): PolygonXUnionResult =
     l.union(this)
 
   def |(p:Polygon) = union(p)
-  def union(p:Polygon):PolygonPolygonUnionResult =
+  def union(p: Polygon): PolygonPolygonUnionResult =
     geom.union(p.geom)
+
+  def |(ps: PointSet) = union(ps)
+  def union(ps: PointSet): PolygonXUnionResult =
+    geom.union(ps.geom)
+
+  def |(ls: LineSet) = union(ls)
+  def union(ls: LineSet): PolygonXUnionResult =
+    geom.union(ls.geom)
 
   def |(ps: PolygonSet) = union(ps)
   def union(ps: PolygonSet): PolygonPolygonUnionResult =
     geom.union(ps.geom)
+
+  // -- Difference
+
+  def -(p: Point) = difference(p)
+  def difference(p: Point): PolygonXDifferenceResult =
+    geom.difference(p.geom)
+
+  def -(l: Line) = difference(l)
+  def difference(l: Line): PolygonXDifferenceResult =
+    geom.difference(l.geom)
+
+  def -(p: Polygon) = difference(p)
+  def difference(p: Polygon): PolygonPolygonDifferenceResult =
+    geom.difference(p.geom)
+
+  def -(ps: PointSet) = difference(ps)
+  def difference(ps: PointSet): PolygonXDifferenceResult = {
+    geom.difference(ps.geom)
+  }
+
+  def -(ls: LineSet) = difference(ls)
+  def difference(ls: LineSet): PolygonXDifferenceResult = {
+    geom.difference(ls.geom)
+  }
+
+  def -(ps: PolygonSet) = difference(ps)
+  def difference(ps: PolygonSet): PolygonPolygonDifferenceResult = {
+    geom.difference(ps.geom)
+  }
 
   // -- Buffer
 
