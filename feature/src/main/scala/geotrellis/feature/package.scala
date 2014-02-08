@@ -1,6 +1,6 @@
 package geotrellis
 
-import com.vividsolutions.jts.{geom=>jts}
+import com.vividsolutions.jts.{geom => jts}
 
 import scala.collection.mutable
 
