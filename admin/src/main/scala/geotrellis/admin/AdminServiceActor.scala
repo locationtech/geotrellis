@@ -53,9 +53,9 @@ trait AdminService extends HttpService {
             } else if (!name.endsWith(".arg") && !name.endsWith(".json")) {
               complete(400, "File type must be .arg or .json")
             } else {
-              GeoTrellis.server.catalog.getPath(store) match {
+              GeoTrellis.server.catalog.path(store) match {
                 case Some(folderName) => {
-                  val filePath = GeoTrellis.server.catalog.getDir + "/" + folderName + "/" + name
+                  val filePath = folderName + "/" + name
                   val fos = new FileOutputStream(filePath)
                   try {
                     fos.write(file)

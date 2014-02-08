@@ -71,14 +71,10 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String,sour
         }
     }
 
-  def getDir:String = (new File(GeoTrellis.server.catalog.source)).getParent
 
-  def getPath(name:String):Option[String] = {
-    if (stores.contains(name)) {
-      stores.get(name).get.params.get("path")
-    } else {
-      None
-    }
+  def path(name:String):Option[String] = stores.get(name) match {
+    case Some(datastore) => datastore.params.get("path")
+    case None => None
   }
 }
 

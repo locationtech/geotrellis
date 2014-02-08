@@ -208,9 +208,5 @@ class CatalogSpec extends FunSpec
       val layer2 = catalog.getRasterLayer(LayerId("store2","quadborder")).get
       layer1.info.rasterExtent should not be (layer2.info.rasterExtent)
     }
-
-    it("should get path of datastores") {
-      Catalog.fromJSON(json1).getPath("test:fs") should be (Some(datapath))
-    }
   }
 }

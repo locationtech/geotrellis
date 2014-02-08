@@ -2,6 +2,7 @@ package geotrellis.process.json
 
 import geotrellis._
 import geotrellis.process._
+import java.io.File
 
 /**
  * Records are the raw scala/json objects, rather than the objects we
@@ -25,6 +26,16 @@ case class CatalogRec(catalog:String,
 case class DataStoreRec(store:String,
                         params:Map[String, String],
                         catalogPath:String) extends Rec[DataStore] {
-  def create = DataStore(store, params,catalogPath)
+  val path = params("path")
+  val f = {
+    val f = new File(path)
+    if(f.isAbsolute) f
+    else new File(new File(catalogPath).getParentFile,path) // Make relative paths relative to the catalog path.
+  }
+  if (!f.isDirectory) {
+    sys.error("store %s is not a directory" format path)
+  }
+
+  def create = DataStore(store, params.updated("path", f.getAbsolutePath), catalogPath)
   def name = store
 }

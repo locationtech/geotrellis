@@ -18,21 +18,10 @@ case class DataStore(name:String, params:Map[String, String],catalogPath:String)
   initRasterLayers()
 
   /**
-   * Initialize raster layers from the directory specified by the 'path' param.
+   * Initialize raster layers from the absolute directory specified by the 'path' param.
    */
   private def initRasterLayers() {
-    val path = params("path")
-    // Make relative paths relative to the catalog path.
-
-    val f = {
-      val f = new File(path)
-      if(f.isAbsolute) f
-      else new File(new File(catalogPath).getParentFile,path)
-    }
-
-    if (!f.isDirectory) {
-      sys.error("store %s is not a directory" format path)
-    }
+    val f = new File(params("path"))
 
     // Walk the directory to for raster layers;
     // also search subdirectories, but some directories
