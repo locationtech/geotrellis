@@ -70,6 +70,16 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String,sour
             Failure(new java.io.IOException(s"There are multiple layers named '${layerId.name}' in the catalog. You must specify a datastore"))
         }
     }
+
+  def getDir:String = (new File(GeoTrellis.server.catalog.source)).getParent
+
+  def getPath(name:String):Option[String] = {
+    if (stores.contains(name)) {
+      stores.get(name).get.params.get("path")
+    } else {
+      None
+    }
+  }
 }
 
 object Catalog {

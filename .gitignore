@@ -18,3 +18,5 @@ TAGS
 .cache
 .settings
 .history
+.idea
+.DS_Store

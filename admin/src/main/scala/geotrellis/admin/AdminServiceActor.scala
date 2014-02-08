@@ -10,6 +10,7 @@ import akka.actor._
 import spray.routing._
 import spray.can.Http
 import spray.http._
+import java.io.FileOutputStream
 
 class AdminServiceActor(val staticContentPath:String) extends Actor with AdminService {
   def actorRefFactory = context
@@ -17,6 +18,7 @@ class AdminServiceActor(val staticContentPath:String) extends Actor with AdminSe
     runRoute {
       get { pathSingleSlash { redirect("index.html",StatusCodes.Found) } } ~
       serviceRoute ~
+      uploadRoute ~
       get { getFromDirectory(staticContentPath) }
     }
 }
@@ -37,6 +39,35 @@ trait AdminService extends HttpService {
         } ~
         pathPrefix("layer") {
           layerRoute
+        }
+      }
+    }
+
+  lazy val uploadRoute =
+    post {
+      pathPrefix("gt") {
+        path("upload") {
+          formFields('store, 'name, 'file.as[Array[Byte]]) { (store, name, file) =>
+            if (name.contains("..") || name.contains("/")) {
+              complete(400, "File name cannot contain .. or /")
+            } else if (!name.endsWith(".arg") && !name.endsWith(".json")) {
+              complete(400, "File type must be .arg or .json")
+            } else {
+              GeoTrellis.server.catalog.getPath(store) match {
+                case Some(folderName) => {
+                  val filePath = GeoTrellis.server.catalog.getDir + "/" + folderName + "/" + name
+                  val fos = new FileOutputStream(filePath)
+                  try {
+                    fos.write(file)
+                  } finally {
+                    fos.close()
+                  }
+                  complete("File successfully uploaded")
+                }
+                case None => complete(400, "Unrecognized datastore")
+              }
+            }
+          }
         }
       }
     }
