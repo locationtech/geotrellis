@@ -98,6 +98,27 @@ class RasterExtentSpec extends FunSpec with MustMatchers
       result.cols should be (math.ceil(cols / 3.0).toInt)
       result.rows should be (rows * 5)
     }
+
+    it("should change columns and rows") {
+      val cellWidth = 30.0
+      val cellHeight = 10.0
+      val cols = 200
+      val rows = 300
+
+      val xmin = -100.0
+      val ymin = 20.0
+
+      val extent = Extent(xmin, ymin, xmin + (cols * cellWidth), ymin + (rows * cellHeight))
+      val re = RasterExtent(extent, cellWidth, cellHeight, cols, rows)
+
+      val newCols = cols / 2
+      val newRows = rows * 3
+
+      val result = re.withDimensions(newCols, newRows)
+
+      result.cellwidth should be (cellWidth * 2)
+      result.cellheight should be (cellHeight / 3)
+    }
   }
 
   def sampleRasterExtent = {
@@ -280,6 +301,18 @@ class RasterExtentSpec extends FunSpec with MustMatchers
       val re = RasterExtent(e, 20, 30)
       re.extent.xmin should be (-90)
       re.cols should be (20)
+    }
+
+    it("should get a RasterExtent correctly with no cols or rows") {
+      val ext = Extent(0.0,-10.0,100.0,-1.0)
+      val cellWidth = 10.0
+      val cellHeight = 1.0
+      val cols = 10
+      val rows = 9
+      val expected = RasterExtent(ext, cellWidth, cellHeight, cols, rows)
+      val actual = RasterExtent(ext, cellWidth, cellHeight)
+
+      actual should be (expected)
     }
   }
 
