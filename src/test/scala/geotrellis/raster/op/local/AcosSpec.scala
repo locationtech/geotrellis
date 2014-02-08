@@ -93,7 +93,7 @@ class AcosSpec extends FunSpec
 
          2, 2, 2,   2, 2, 2,   2, 2, 2,
         -2,-2,-2,  -2,-2,-2,  -2,-2,-2,
-        Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN
+        NODATA, NODATA, NODATA, NODATA, NODATA, NODATA, NODATA, NODATA, NODATA
       )
       val expectedAngles = Array(0.5, 0.0, 1.0,
                                  Double.NaN, Double.NaN,  Double.NaN)
