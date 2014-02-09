@@ -23,7 +23,7 @@ class CosSpec extends FunSpec
        -0.0, -1.0/6, -1.0/3,   -1.0/2, -2.0/3, -5.0/6,
        -1.0, -7.0/6, -4.0/3,   -3.0/2, -5.0/3,-11.0/6,
        -2.0,-13.0/6, -7.0/3,    Double.PositiveInfinity,  Double.NegativeInfinity, Double.NaN
-      )
+      ).map(_ * math.Pi)
       val expected = rasterData.map(math.cos(_))
       val rs = createRasterSource(rasterData, 3, 3, 2, 2)
       run(rs.localCos) match {
@@ -46,7 +46,7 @@ class CosSpec extends FunSpec
           assert(false)
       }
     }
-    it("finds the consine of an int raster") {
+    it("finds the cosine of an int raster") {
       val rasterData = Array (
         0, 1,   2, 3,
         4, 5,   6, 7,
