@@ -29,9 +29,13 @@ case class DataStoreRec(store:String,
   val path = params("path")
   val f = {
     val f = new File(path)
-    if(f.isAbsolute) f
-    else new File(new File(catalogPath).getParentFile,path) // Make relative paths relative to the catalog path.
+    if(f.isAbsolute || catalogPath.isEmpty) { f }
+    else {
+      // Make relative paths relative to the catalog path.
+      new File(new File(catalogPath).getParentFile,path)
+    }
   }
+
   if (!f.isDirectory) {
     sys.error("store %s is not a directory" format path)
   }

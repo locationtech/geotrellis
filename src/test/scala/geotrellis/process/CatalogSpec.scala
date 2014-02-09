@@ -89,7 +89,7 @@ class CatalogSpec extends FunSpec
         Map(
           "test:fs" -> DataStore(
               "test:fs",
-            new File(GeoTrellis.server.catalog.source).getParent + "/" + "src/test/resources/data",
+            new File("ssrc/test/resources/data").getAbsolutePath,
             false
           )
         ),
