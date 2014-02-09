@@ -6,8 +6,11 @@ import geotrellis._
  * Operation to get the Cosine of values.
  */
 object Cos extends Serializable {
-  /** Takes the Cosine of each raster cell value. */
-  def apply(r:Op[Raster]) = 
-    r.map(_.dualMap(z => z)(z => math.cos(z))) 
+  /** Takes the Cosine of each raster cell value.
+    * Always returns a double raster.
+    */
+  def apply(r:Op[Raster]) =
+    r.map(y => y.convert(TypeDouble) 
+                .mapDouble(z => math.cos(z)))
      .withName("Cos")
 }
