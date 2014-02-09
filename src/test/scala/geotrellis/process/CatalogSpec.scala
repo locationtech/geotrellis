@@ -89,7 +89,7 @@ class CatalogSpec extends FunSpec
         Map(
           "test:fs" -> DataStore(
               "test:fs",
-            new File("ssrc/test/resources/data").getAbsolutePath,
+            new File("src/test/resources/data").getAbsolutePath,
             false
           )
         ),
