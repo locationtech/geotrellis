@@ -10,7 +10,8 @@ import geotrellis.GeoTrellis
 import java.io.File
 
 /**
- * Created by jchien on 2/8/14.
+ * This class tests some of the routing and HTTP responses of the Admin Service Actor.
+ * @author jchien
  */
 class AdminServiceActorSpec extends FunSpec with ScalatestRouteTest
                                             with ShouldMatchers
