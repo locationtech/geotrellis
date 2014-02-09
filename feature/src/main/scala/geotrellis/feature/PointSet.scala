@@ -15,7 +15,7 @@ case class PointSet(ps: Set[Point]) extends GeometrySet {
 
   def &(l: Line) = intersection(l)
   def intersection(l: Line): PointSetIntersectionResult =
-    l.intersection(this)                                                    w
+    l.intersection(this)
 
   def &(p: Polygon) = intersection(p)
   def intersection(p: Polygon): PointSetIntersectionResult =

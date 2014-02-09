@@ -6,7 +6,7 @@ import GeomFactory._
 object Point {
 
   def apply(x: Double, y: Double): Point =
-    Point(factory.createPoint(new jts.Coordinate(x,y)))
+    Point(factory.createPoint(new jts.Coordinate(x, y)))
 
   implicit def jts2Point(geom: jts.Point): Point = apply(geom)
 
