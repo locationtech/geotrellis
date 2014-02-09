@@ -3,35 +3,38 @@ package geotrellis.feature
 import com.vividsolutions.jts.{geom => jts}
 
 trait Geometry {
-  val geom:jts.Geometry
 
-  //def area:Double = geom.getArea
-  def centroid:Point = Point(geom.getCentroid)
-  def interiorPoint:Point = Point(geom.getInteriorPoint)
+  val geom: jts.Geometry
 
-  def coveredBy(other:Geometry) =
+  //def area: Double = geom.getArea
+
+  def centroid: Point = Point(geom.getCentroid)
+
+  def interiorPoint: Point = Point(geom.getInteriorPoint)
+
+  def coveredBy(other: Geometry) =
     geom.coveredBy(other.geom)
 
-  def covers(other:Geometry) =
+  def covers(other: Geometry) =
     geom.covers(other.geom)
 
-  def intersects(other:Geometry) =
+  def intersects(other: Geometry) =
     geom.intersects(other.geom)
 
-  def disjoint(other:Geometry) =
+  def disjoint(other: Geometry) =
     geom.disjoint(other.geom)
 
-  def touches(other:Geometry) =
+  def touches(other: Geometry) =
     geom.touches(other.geom)
 
-  def distance(other:Geometry) =
+  def distance(other: Geometry) =
     geom.distance(other.geom)
 
   // Curious to benchmark this against .distance < d,
   // JTS implements it as a different op, I'm assuming
   // for speed.
-  def withinDistance(other:Geometry,d:Double) =
-    geom.isWithinDistance(other.geom,d)
+  def withinDistance(other: Geometry, dist: Double) =
+    geom.isWithinDistance(other.geom, dist)
 
   // TO BE IMPLEMENTED ON A PER TYPE BASIS
   

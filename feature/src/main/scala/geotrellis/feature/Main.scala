@@ -1,15 +1,16 @@
 package geotrellis.feature
 
-import com.vividsolutions.jts.geom
+import com.vividsolutions.jts.{geom => jts}
 
 abstract sealed class GeometryType
 
 object GeometryType {
-  implicit def jtsToGeometryType(g:geom.Geometry) = 
-    stringToGeometryType(g.getGeometryType)
 
-  implicit def stringToGeometryType(s:String) =
-    s match {
+  implicit def jtsToGeometryType(geom: jts.Geometry) =
+    stringToGeometryType(geom.getGeometryType)
+
+  implicit def stringToGeometryType(str: String) =
+    str match {
       case "GeometryCollection" => GeometryCollectionType
       case "Point" => PointType
       case "LineString" => LineStringType
