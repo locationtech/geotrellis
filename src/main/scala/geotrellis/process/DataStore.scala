@@ -11,7 +11,7 @@ import scala.util._
  * Represents a location where data can be loaded from (e.g. the filesystem,
  * postgis, a web service, etc).
  */
-case class DataStore(name:String, params:Map[String, String],catalogPath:String) {
+case class DataStore(name:String, path:String, hasCacheAll:Boolean) {
 
   private val layers = mutable.Map.empty[String, RasterLayer]
 
@@ -21,7 +21,7 @@ case class DataStore(name:String, params:Map[String, String],catalogPath:String)
    * Initialize raster layers from the absolute directory specified by the 'path' param.
    */
   private def initRasterLayers() {
-    val f = new File(params("path"))
+    val f = new File(path)
 
     // Walk the directory to for raster layers;
     // also search subdirectories, but some directories
@@ -73,11 +73,6 @@ case class DataStore(name:String, params:Map[String, String],catalogPath:String)
 
   def getNames = layers.keys
   def getLayers = layers.values
-
-  def hasCacheAll = if(params.contains("cacheAll")) {
-    val value = params("cacheAll").toLowerCase
-    value == "true" || value == "yes" || value == "1"
-  } else { false }
 
   def getRasterLayer(name:String):Option[RasterLayer] = layers.get(name)
 }

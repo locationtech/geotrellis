@@ -71,11 +71,7 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String,sour
         }
     }
 
-
-  def path(name:String):Option[String] = stores.get(name) match {
-    case Some(datastore) => datastore.params.get("path")
-    case None => None
-  }
+  def getStore(name:String) = stores.get(name)
 }
 
 object Catalog {

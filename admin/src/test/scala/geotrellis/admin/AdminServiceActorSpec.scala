@@ -22,7 +22,7 @@ class AdminServiceActorSpec extends FunSpec with ScalatestRouteTest
   describe("AdminServiceActor") {
 
     it("should upload files to the correct datastore") {
-      val file = new File(GeoTrellis.server.catalog.path("test:fs").get + "/" + "reservedfilename7.arg")
+      val file = new File(GeoTrellis.server.catalog.getStore("test:fs").get.path + "/" + "reservedfilename7.arg")
 
       Post("/gt/upload", FormData(Seq("name" -> "reservedfilename7.arg",
         "store" -> "test:fs",

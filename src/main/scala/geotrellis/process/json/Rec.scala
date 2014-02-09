@@ -36,6 +36,11 @@ case class DataStoreRec(store:String,
     sys.error("store %s is not a directory" format path)
   }
 
-  def create = DataStore(store, params.updated("path", f.getAbsolutePath), catalogPath)
+  val hasCacheAll = if(params.contains("cacheAll")) {
+    val value = params("cacheAll").toLowerCase
+    value == "true" || value == "yes" || value == "1"
+  } else { false }
+
+  def create = DataStore(store, f.getAbsolutePath, hasCacheAll)
   def name = store
 }
