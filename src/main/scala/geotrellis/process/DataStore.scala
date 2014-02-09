@@ -23,6 +23,10 @@ case class DataStore(name:String, path:String, hasCacheAll:Boolean) {
   private def initRasterLayers() {
     val f = new File(path)
 
+    if(!f.exists) {
+      sys.error(s"Invalid DataStore path $path: path does not exist.")
+    }
+
     // Walk the directory to for raster layers;
     // also search subdirectories, but some directories
     // might be tiled rasters.
