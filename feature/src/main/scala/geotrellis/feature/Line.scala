@@ -3,6 +3,30 @@ package geotrellis.feature
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
 
+object Line {
+
+  implicit def jtsToLine(geom: jts.LineString): Line =
+    apply(geom)
+
+  def apply(geom: jts.LineString): Line =
+    Line(geom, geom.getCoordinates.map(c => Point(c.x, c.y)).toList)
+
+  def apply(points: Seq[Point]): Line =
+    apply(points.toList)
+
+  def apply(points: Array[Point]): Line =
+    apply(points.toList)
+
+  def apply(points: List[Point]): Line = {
+    if (points.length < 2) {
+      sys.error("Invalid line: Requires 2 or more points.")
+    }
+
+    Line(factory.createLineString(points.map(_.geom.getCoordinate).toArray), points)
+  }
+
+}
+
 case class Line(geom: jts.LineString, points: List[Point]) extends Geometry {
 
   assert(!geom.isEmpty)
@@ -119,29 +143,5 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry {
 
   def crosses(g: Geometry): Boolean =
     geom.crosses(g.geom)
-
-}
-
-object Line {
-
-  implicit def jtsToLine(geom: jts.LineString): Line =
-    apply(geom)
-
-  def apply(geom: jts.LineString): Line =
-    Line(geom, geom.getCoordinates.map(c => Point(c.x, c.y)).toList)
-
-  def apply(points: Seq[Point]): Line =
-    apply(points.toList)
-
-  def apply(points: Array[Point]): Line =
-    apply(points.toList)
-
-  def apply(points: List[Point]): Line = {
-    if (points.length < 2) {
-      sys.error("Invalid line: Requires 2 or more points.")
-    }
-
-    Line(factory.createLineString(points.map(_.geom.getCoordinate).toArray), points)
-  }
 
 }

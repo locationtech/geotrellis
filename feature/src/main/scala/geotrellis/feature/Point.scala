@@ -3,6 +3,15 @@ package geotrellis.feature
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
 
+object Point {
+
+  def apply(x: Double, y: Double): Point =
+    Point(factory.createPoint(new jts.Coordinate(x,y)))
+
+  implicit def jts2Point(geom: jts.Point): Point = apply(geom)
+
+}
+
 case class Point(geom: jts.Point) extends Geometry {
 
   assert(!geom.isEmpty)
@@ -63,13 +72,4 @@ case class Point(geom: jts.Point) extends Geometry {
 
   def crosses(g: Geometry): Boolean =
     geom.crosses(g.geom)
-}
-
-object Point {
-
-  def apply(x: Double, y: Double): Point =
-    Point(factory.createPoint(new jts.Coordinate(x,y)))
-
-  implicit def jts2Point(geom: jts.Point): Point = apply(geom)
-
 }

@@ -3,6 +3,42 @@ package geotrellis.feature
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
 
+object Polygon {
+
+  implicit def jtsToPolygon(geom: jts.Polygon): Polygon =
+    Polygon(geom)
+
+  def apply(exterior: Line): Polygon =
+    apply(exterior, Set())
+
+  def apply(exterior: Line, holes:Set[Line]): Polygon = {
+    if(!exterior.isClosed) {
+      sys.error(s"Cannot create a polygon with unclosed exterior: $exterior")
+    }
+
+    if(exterior.points.length < 4) {
+      sys.error(s"Cannot create a polygon with exterior with less that 4 points: $exterior")
+    }
+
+    val extGeom = factory.createLinearRing(exterior.geom.getCoordinates)
+
+    val holeGeoms = (
+      for (hole <- holes) yield {
+        if (!hole.isClosed) {
+          sys.error(s"Cannot create a polygon with an unclosed hole: $hole")
+        } else {
+          if (hole.points.length < 4)
+            sys.error(s"Cannot create a polygon with a hole with less that 4 points: $hole")
+          else
+            factory.createLinearRing(hole.geom.getCoordinates)
+        }
+      }).toArray
+
+    factory.createPolygon(extGeom, holeGeoms)
+  }
+
+}
+
 case class Polygon(geom: jts.Polygon) extends Geometry {
 
   assert(!geom.isEmpty)
@@ -115,39 +151,4 @@ case class Polygon(geom: jts.Polygon) extends Geometry {
   lazy val isRectangle = geom.isRectangle
 
   lazy val area = geom.getArea
-}
-
-object Polygon {
-
-  implicit def jtsToPolygon(geom: jts.Polygon): Polygon =
-    Polygon(geom)
-
-  def apply(exterior: Line): Polygon =
-    apply(exterior, Set())
-
-  def apply(exterior: Line, holes:Set[Line]): Polygon = {
-    if(!exterior.isClosed) {
-      sys.error(s"Cannot create a polygon with unclosed exterior: $exterior")
-    }
-
-    if(exterior.points.length < 4) {
-      sys.error(s"Cannot create a polygon with exterior with less that 4 points: $exterior")
-    }
-
-    val extGeom = factory.createLinearRing(exterior.geom.getCoordinates)
-
-    val holeGeoms = (
-      for (hole <- holes) yield {
-        if (!hole.isClosed) {
-          sys.error(s"Cannot create a polygon with an unclosed hole: $hole")
-        } else {
-          if (hole.points.length < 4)
-            sys.error(s"Cannot create a polygon with a hole with less that 4 points: $hole")
-          else
-            factory.createLinearRing(hole.geom.getCoordinates)
-        }
-      }).toArray
-
-    factory.createPolygon(extGeom, holeGeoms)
-  }
 }
