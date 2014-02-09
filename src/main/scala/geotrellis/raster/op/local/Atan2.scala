@@ -14,7 +14,8 @@ object Atan2 extends Serializable {
   def apply(r1Op:Op[Raster], r2Op:Op[Raster]) = {
     (r1Op, r2Op)
       .map { (r1, r2) =>
-        r1.combineDouble(r2) ((z1, z2) => math.atan2(z1, z2))
+        r1.convert(TypeDouble)
+          .combineDouble(r2) ((z1, z2) => math.atan2(z1, z2))
        }
       .withName("Atan2")
   }

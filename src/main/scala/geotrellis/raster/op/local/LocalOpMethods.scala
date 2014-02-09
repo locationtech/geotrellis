@@ -161,7 +161,7 @@ trait LocalOpMethods[+Repr <: RasterDS]
   def localAtan() = mapOp(Atan(_))
 
   /** Takes the arc tangent 2 of each raster cell value. */
-  def localAtan2() = mapOp(Atan2(_))
+  def localAtan2(rs: RasterSource) = combineOp(rs)(Atan2(_,_))
 
   def convert(rasterType:RasterType) =
     mapOp(ConvertType(_,rasterType))
