@@ -109,6 +109,22 @@ object GeotrellisBuild extends Build {
         "org.scala-lang" % "scala-reflect" % "2.10.2"),
       resolvers += Resolver.sonatypeRepo("snapshots"))
 
+  // Project: feature
+
+  lazy val feature =
+    Project("feature", file("feature"))
+      .settings(featureSettings:_*)
+
+  lazy val featureSettings = 
+    Seq(
+      name := "geotrellis-feature",
+      libraryDependencies ++= Seq(
+        "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
+        "org.scalacheck" %% "scalacheck" % "1.11.1" % "test",
+        "com.vividsolutions" % "jts" % "1.13"
+      )
+    )
+
   // Project: root
 
   lazy val root =
@@ -345,6 +361,23 @@ object GeotrellisBuild extends Build {
       mainClass in Compile := Some("geotrellis.run.Tasks")
     ) ++
     defaultAssemblySettings
+
+  // Project: feature-benchmark
+
+  lazy val featureBenchmark = 
+    Project("feature-benchmark", file("feature-benchmark"))
+      .settings(featureBenchmarkSettings:_*)
+      .dependsOn(feature % "compile->test")
+
+  lazy val featureBenchmarkSettings =
+    Seq(
+      name := "geotrellis-feature-benchmark",
+      libraryDependencies ++= Seq(
+        "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
+        "org.scalacheck" %% "scalacheck" % "1.11.1" % "test",
+        "com.vividsolutions" % "jts" % "1.13"
+      )
+    )
 
   // Project: benchmark
 

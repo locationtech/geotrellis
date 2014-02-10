@@ -42,4 +42,35 @@ class RasterSpec extends FunSpec with MustMatchers {
       r1 must be === r4
     }
   }
+
+  describe("warp") {
+
+    val ext = Extent(0.0, 0.0, 3.0, 3.0)
+    val re = RasterExtent(ext, 1.0, 1.0, 3, 3)
+    val data = Array(1, 2, 3,
+                     4, 5, 6,
+                     7, 8, 9)
+    val raster = Raster(data, re)
+
+
+    it("should warp to a target RasterExtent") {
+      val targetRE = RasterExtent(ext, 1.5, 1.5, 2, 2)
+      val result = raster.warp(targetRE)
+      result.rasterExtent must be === targetRE
+    }
+
+    it("should warp to a target Extent") {
+      val targetExt = Extent(0.0, 0.0, 6.0, 6.0)
+      val result = raster.warp(targetExt)
+      result.rasterExtent.extent must be === targetExt
+    }
+
+    it("should warp to target dimensions") {
+      val targetCols = 5
+      val targetRows = 5
+      val result = raster.warp(targetCols, targetRows)
+      result.cols must be === 5
+      result.rows must be === 5
+    }
+  }
 }
