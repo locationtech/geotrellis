@@ -2,12 +2,13 @@ package geotrellis.raster.op.local
 
 import geotrellis._
 import geotrellis.raster._
+import geotrellis.raster.op.ConvertType
 import geotrellis.source._
 import geotrellis.data.geojson.GeoJsonReader
 import geotrellis.feature.rasterize.{Rasterizer, Callback}
 import geotrellis.feature.Geometry
 
-trait LocalOpMethods[+Repr <: RasterDS] 
+trait LocalOpMethods[+Repr <: RasterSource] 
   extends LocalMapOpMethods[Repr]
      with AddOpMethods[Repr]
      with SubtractOpMethods[Repr]
@@ -118,11 +119,11 @@ trait LocalOpMethods[+Repr <: RasterDS]
   def localUndefined() = mapOp(Undefined(_))
 
   /** Masks this raster based on cell values of the second raster. See [[Mask]]. */
-  def localMask(rs:RasterDS,readMask:Int,writeMask:Int) = 
+  def localMask(rs:RasterSource,readMask:Int,writeMask:Int) = 
     combineOp(rs)(Mask(_,_,readMask,writeMask))
 
   /** InverseMasks this raster based on cell values of the second raster. See [[InverseMask]]. */
-  def localInverseMask(rs:RasterDS,readMask:Int,writeMask:Int) = 
+  def localInverseMask(rs:RasterSource,readMask:Int,writeMask:Int) = 
     combineOp(rs)(InverseMask(_,_,readMask,writeMask))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
@@ -162,9 +163,6 @@ trait LocalOpMethods[+Repr <: RasterDS]
 
   /** Takes the arc tangent 2 of each raster cell value. */
   def localAtan2(rs: RasterSource) = combineOp(rs)(Atan2(_,_))
-
-  def convert(rasterType:RasterType) =
-    mapOp(ConvertType(_,rasterType))
 
   /** Masks this raster by the given GeoJSON. */
   def mask(geoJson: String): RasterSource =

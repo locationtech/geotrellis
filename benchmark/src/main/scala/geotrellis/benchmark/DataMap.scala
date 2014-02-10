@@ -76,7 +76,7 @@ class DataMap extends OperationBenchmark {
     goal
   }
 
-  import spire.syntax._ 
+  import spire.syntax.cfor._
   def timeIntArrayCforLoop(reps:Int) = run(reps)(intArrayCforLoop)
   def intArrayCforLoop = {
     val goal = ints.clone

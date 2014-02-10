@@ -7,11 +7,13 @@ import geotrellis.source._
 object GeoTrellis {
   private var _server:Server = null
   def server = {
-    if(_server == null) {
+    if(!isInit) {
       init()
     }
     _server
   }
+
+  def isInit: Boolean = _server != null
 
   def init():Unit = init(GeoTrellisConfig())
 

@@ -59,10 +59,6 @@ package object geotrellis {
 
   type RasterData = geotrellis.raster.RasterData
 
-  type RasterDS = geotrellis.source.RasterSource
-  type SeqDS[E] = geotrellis.source.DataSource[E,Seq[E]]
-  type HistogramDS = geotrellis.source.DataSource[Histogram,Histogram]
-
   type Png = Array[Byte]
 
   /**
@@ -80,6 +76,9 @@ package object geotrellis {
    *   val plusOne = op { (i:Int) => Result(i + 1) }
    *
    */
+
+  def op[T](value: => T): Operation[T] =
+    new Op0(() => Result(value))
 
   // Op1 methods for op //
 

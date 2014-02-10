@@ -12,11 +12,15 @@ package geotrellis.data.geotiff
  * is set to true, we instead write out a "user-defined" projected CS.
  */
 case class Settings(size:SampleSize, format:SampleFormat,
-                    esriCompat:Boolean, compression:Compression) {
+                    esriCompat:Boolean, compression:Compression, nodata: Nodata = Nodata.Default) {
   def setSize(s:SampleSize) = Settings(s, format, esriCompat, compression)
   def setFormat(s:SampleFormat) = Settings(size, s, esriCompat, compression)
   def setEsriCompat(e:Boolean) = Settings(size, format, e, compression)
   def setCompression(c:Compression) = Settings(size, format, esriCompat, c)
+  def setNodata(d:Double) = Settings(size, format, esriCompat, compression, Nodata(d, true))
+  
+  def nodataInt = nodata.toInt(this)
+  def nodataString = nodata.toString(this)
 }
 
 object Settings {

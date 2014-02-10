@@ -20,6 +20,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     with global.GlobalOpMethods[Repr]
     with zonal.ZonalOpMethods[Repr]
     with zonal.summary.ZonalSummaryOpMethods[Repr]
+    with hydrology.HydrologyOpMethods[Repr]
     with stat.StatOpMethods[Repr] 
     with io.IoOpMethods[Repr] 
     with RenderOpMethods[Repr] { self: Repr =>
@@ -72,7 +73,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.result
   }
 
-  def convertType[That](newType:RasterType) = {
+  def convert(newType:RasterType) = {
     val newDef = rasterDefinition.map(_.withType(newType))
     val ops = tiles.map { seq => seq.map { tile => tile.map { r => r.convert(newType) } } }
     val builder = new RasterSourceBuilder()
@@ -128,81 +129,111 @@ trait RasterSourceLike[+Repr <: RasterSource]
   def rasterExtent:ValueSource[RasterExtent] =
     ValueSource(rasterDefinition.map(_.rasterExtent))
 
-  def warp(target:RasterExtent) = {
-    val newDef = rasterDefinition map (rd => RasterDefinition(rd.layerId,target,TileLayout.singleTile(target.cols,target.rows),rd.rasterType))
-    val newOp:Op[Seq[Op[Raster]]] =
-    (rasterDefinition,tiles).flatMap { (rd,seq) =>
-      if(rd.isTiled) {
-        val re = rd.rasterExtent
-        val tileLayout = rd.tileLayout
+  private def warp(targetOp: Op[RasterExtent]): RasterSource = {
 
-        val targetExtent = target.extent
-        val resLayout = tileLayout.getResolutionLayout(re)
+    val newDef: Op[RasterDefinition] =
+      (rasterDefinition, targetOp).map { (rd, target) =>
+        RasterDefinition(
+          rd.layerId,
+          target,
+          TileLayout.singleTile(target.cols,target.rows),
+          rd.rasterType
+        )
+      }
 
-        val warped = mutable.ListBuffer[Op[Raster]]()
-        val tCols = tileLayout.tileCols
-        for(tcol <- 0 until tCols optimized) {
-          for(trow <- 0 until tileLayout.tileRows optimized) {
-            val sourceRasterExtent = resLayout.getRasterExtent(tcol,trow)
-            val sourceExtent = resLayout.getExtent(tcol,trow)
-            sourceExtent.intersect(targetExtent) match {
-              case Some(ext) =>
-                val cols = math.ceil((ext.xmax - ext.xmin) / re.cellwidth).toInt
-                val rows = math.ceil((ext.ymax - ext.ymin) / re.cellheight).toInt
-                val tileRe = RasterExtent(ext,re.cellwidth,re.cellheight,cols,rows)
+    val newOp: Op[Seq[Op[Raster]]] =
+      (rasterDefinition, tiles, targetOp).flatMap { (rd, seq, target) =>
+        if (rd.isTiled) {
+          val re = rd.rasterExtent
+          val tileLayout = rd.tileLayout
 
-                // Read section of the tile
-                warped += seq(tCols*trow + tcol) map(_.warp(tileRe))
-              case None => // pass
+          val targetExtent = target.extent
+          val resLayout = tileLayout.getResolutionLayout(re)
+
+          val warped = mutable.ListBuffer[Op[Raster]]()
+          val tCols = tileLayout.tileCols
+          val tRows = tileLayout.tileRows
+          for(tCol <- 0 until tCols optimized) {
+            for(tRow <- 0 until tRows optimized) {
+              val sourceRasterExtent = resLayout.getRasterExtent(tCol, tRow)
+              val sourceExtent = resLayout.getExtent(tCol, tRow)
+              sourceExtent.intersect(targetExtent) match {
+                case Some(ext) =>
+                  val cols = math.ceil((ext.xmax - ext.xmin) / re.cellwidth).toInt
+                  val rows = math.ceil((ext.ymax - ext.ymin) / re.cellheight).toInt
+                  val tileRe = RasterExtent(ext, re.cellwidth, re.cellheight, cols, rows)
+
+                  // Read section of the tile
+                  warped += seq(tCols * tRow + tCol).map(_.warp(tileRe))
+                case None => // pass
+              }
             }
           }
-        }
 
-        if(warped.size == 0) {
-          Seq(Literal(Raster(RasterData.emptyByType(rd.rasterType,target.cols,target.rows),target)))
-        } else if(warped.size == 1) {
-          warped.toSeq
-        } else {
-          // Create destination raster data
-          logic.Collect(warped) map { warped =>
-            val data = RasterData.emptyByType(rd.rasterType,re.cols,re.rows)
+          if (warped.size == 0) {
+            Seq(Literal(Raster(RasterData.emptyByType(rd.rasterType, target.cols, target.rows), target)))
+          } else if (warped.size == 1) {
+            warped.toSeq
+          } else {
 
-            for(rasterPart <- warped) {
-              val tileRe = rasterPart.rasterExtent
-              // Copy over the values to the correct place in the raster data
-              val cols = tileRe.cols
-              val rows = tileRe.rows
-              if(rd.rasterType.isDouble) {
-                for(partCol <- 0 until cols optimized) {
-                  for(partRow <- 0 until rows optimized) {
-                    val dataCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
-                    val dataRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
-                    if(!(dataCol < 0 || dataCol >= re.cols ||
-                      dataRow < 0 || dataRow >= re.rows)) {
-                      data.setDouble(dataCol, dataRow, rasterPart.getDouble(partCol, partRow))
+            // Create destination raster data
+            logic.Collect(warped) map { warped =>
+              val data = RasterData.emptyByType(rd.rasterType, re.cols, re.rows)
+
+              for(rasterPart <- warped) {
+                val tileRe = rasterPart.rasterExtent
+
+                // Copy over the values to the correct place in the raster data
+                val cols = tileRe.cols
+                val rows = tileRe.rows
+
+                if (rd.rasterType.isDouble) {
+                  for(partCol <- 0 until cols optimized) {
+                    for(partRow <- 0 until rows optimized) {
+                      val dataCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
+                      val dataRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
+
+                      if (!(dataCol < 0 ||
+                            dataCol >= re.cols ||
+                            dataRow < 0 || dataRow >= re.rows)
+                         ) {
+                        data.setDouble(dataCol, dataRow, rasterPart.getDouble(partCol, partRow))
+                      }
                     }
                   }
-                }
-              } else {
-                for(partCol <- 0 until cols optimized) {
-                  for(partRow <- 0 until rows optimized) {
-                    val dataCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
-                    val dataRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
-                    if(!(dataCol < 0 || dataCol >= re.cols ||
-                      dataRow < 0 || dataRow >= re.rows)) {
-                      data.set(dataCol, dataRow, rasterPart.get(partCol, partRow))
+                } else {
+                  for(partCol <- 0 until cols optimized) {
+                    for(partRow <- 0 until rows optimized) {
+                      val dataCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
+                      val dataRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
+                      if (!(dataCol < 0 ||
+                            dataCol >= re.cols ||
+                            dataRow < 0 ||
+                            dataRow >= re.rows)
+                         ) {
+                        data.set(dataCol, dataRow, rasterPart.get(partCol, partRow))
+                      }
                     }
                   }
                 }
               }
+              Seq(Literal(Raster(data, target)))
             }
-            Seq(Literal(Raster(data, target)))
           }
+        } else {
+          Seq(seq(0).map(_.warp(target)))
         }
-      } else {
-        Seq(seq(0).map(_.warp(target)))
       }
-    }
+
     RasterSource(newDef,newOp)
   }
+
+  def warp(target: RasterExtent): RasterSource =
+    warp(Literal(target))
+
+  def warp(target: Extent): RasterSource =
+    warp(rasterDefinition.map(_.rasterExtent.createAligned(target)))
+
+  def warp(targetCols: Int, targetRows: Int): RasterSource =
+    warp(rasterDefinition.map(_.rasterExtent.withDimensions(targetCols, targetRows)))
 }

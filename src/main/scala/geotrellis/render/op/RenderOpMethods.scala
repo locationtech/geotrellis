@@ -4,7 +4,7 @@ import geotrellis._
 import geotrellis.render._
 import geotrellis.source._
 
-trait RenderOpMethods[+Repr <: RasterDS] { self: Repr =>
+trait RenderOpMethods[+Repr <: RasterSource] { self: Repr =>
   def color(breaksToColors:Map[Int,Int]):RasterSource =
     color(breaksToColors,ColorMapOptions.Default)
 

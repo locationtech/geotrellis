@@ -171,6 +171,13 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
   }
 
   /**
+   * Returns a RasterExtent with the same extent and the
+   * given number of columns and rows.
+   */
+  def withDimensions(targetCols: Int, targetRows: Int): RasterExtent =
+    RasterExtent(extent, targetCols, targetRows)
+
+  /**
    * Returns a RasterExtent that lines up with this RasterExtent's resolution,
    * and grid layout.
    * i.e., the resulting RasterExtent will not have the given extent,
@@ -197,7 +204,7 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
   }
 
   /** Adjusts a raster extent so that in can encompass the tile layout.
-    * Will warp the extent, but keep the resolution, and preserve nort and 
+    * Will warp the extent, but keep the resolution, and preserve north and
     * west borders
     */
   def adjustTo(tileLayout:raster.TileLayout) = {
@@ -218,8 +225,8 @@ object RasterExtent {
   }
 
   def apply(extent:Extent, cellwidth:Double, cellheight:Double):RasterExtent = {
-    val cols = ((extent.ymax - extent.ymin) / cellheight).toInt
-    val rows = ((extent.xmax - extent.xmin) / cellwidth).toInt
+    val rows = ((extent.ymax - extent.ymin) / cellheight).toInt
+    val cols = ((extent.xmax - extent.xmin) / cellwidth).toInt
     RasterExtent(extent, cellwidth, cellheight, cols, rows)
   }
 }

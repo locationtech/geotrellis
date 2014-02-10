@@ -33,7 +33,7 @@ class IDWInterpolateSpec extends FunSpec
           Point(g.geom.asInstanceOf[jts.Point],g.data.get.get("data").getTextValue.toInt)
         }).toSeq
 
-      val result = get(IDWInterpolate(points,re))
+      val result = VectorToRaster.idwInterpolate(points, re).get
       var count = 0
       for(col <- 0 until re.cols) {
         for(row <- 0 until re.rows) {

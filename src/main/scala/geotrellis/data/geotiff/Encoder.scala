@@ -76,27 +76,6 @@ class Encoder(dos:DataOutputStream, raster:Raster, val settings:Settings) {
   final def sampleFormat:Int = settings.format.kind
 
   /**
-   * Int nodata value to use when writing raster.
-   */
-  final def noDataInt:Int = settings.format match {
-    case Signed => (1L << (bitsPerSample - 1)).toInt
-    case Unsigned => ((1L << bitsPerSample) - 1).toInt
-    case Floating => sys.error("floating point not supported")
-  }
-
-  /**
-   * String nodata value to use in GeoTIFF metadata.
-   */
-  final def noDataString:String = settings.format match {
-    case Signed => "-" + (1L << (bitsPerSample - 1)).toString
-    case Unsigned => ((1L << bitsPerSample) - 1).toString
-    case Floating => if (settings.esriCompat)
-      Double.MinValue.toString
-    else
-      Double.NaN.toString
-  }
-
-  /**
    * The number of TIFF tags to be written.
    *
    * If we update the writer to support additional TIFF tags this number needs
@@ -403,7 +382,7 @@ class Encoder(dos:DataOutputStream, raster:Raster, val settings:Settings) {
     }
 
     // 21. nodata as string (#19 if esriCompat is false)
-    writeString(0xa481, noDataString)
+    writeString(0xa481, settings.nodataString)
 
     // no more ifd entries
     writeInt(0)

@@ -1,5 +1,7 @@
 package geotrellis
 
+import java.awt.image.DataBuffer
+
 sealed abstract class RasterType(val precedence:Int, val float:Boolean, val name:String) extends Serializable {
   def bits = if (float) precedence / 10 else precedence
   def bytes = bits / 8
@@ -11,6 +13,7 @@ sealed abstract class RasterType(val precedence:Int, val float:Boolean, val name
   def isDouble = precedence > 32
 
   def numBytes(size:Int) = bytes * size
+  
 }
 
 case object TypeBit extends RasterType(1, false, "bool") { 
@@ -22,3 +25,14 @@ case object TypeShort extends RasterType(16, false, "int16")
 case object TypeInt extends RasterType(32, false, "int32")
 case object TypeFloat extends RasterType(320, true, "float32")
 case object TypeDouble extends RasterType(640, true, "float64")
+
+object RasterType {
+  def fromAwtType(awtType: Int): RasterType = awtType match {
+    case DataBuffer.TYPE_BYTE => TypeByte
+    case DataBuffer.TYPE_DOUBLE => TypeDouble
+    case DataBuffer.TYPE_FLOAT => TypeFloat
+    case DataBuffer.TYPE_INT => TypeInt
+    case DataBuffer.TYPE_SHORT => TypeShort
+    case _ => sys.error(s"Oops type $awtType is not supported")    
+  }
+}

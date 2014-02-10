@@ -3,10 +3,19 @@ package geotrellis.process
 import geotrellis._
 import geotrellis.util._
 
-import dispatch.classic._
 import scala.concurrent._
 import scala.concurrent.Future
 import scala.util._
+
+import akka.actor.ActorSystem
+import akka.io.IO
+import akka.pattern.ask
+import akka.util.Timeout
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
+import spray.http._
+import spray.client.pipelining._
 
 import scala.io.Source
 import java.io.File
@@ -92,7 +101,7 @@ object RasterLayer {
   def fromFile(f:File):Try[RasterLayer] = RasterLayer.fromPath(f.getAbsolutePath)
 
   /**
-   * Build a RasterLayer instance given a JSON string.
+    * Build a RasterLayer instance given a JSON string.
    */
   def fromJSON(data:String, basePath:String):Try[RasterLayer] =
     try {
@@ -101,14 +110,31 @@ object RasterLayer {
       case e:Exception => Failure(e)
     }
 
-  def fromUrl(jsonUrl:String):Try[RasterLayer] = {
-    val h = new Http()
+  def fromUrl(jsonUrl:String, d: Duration = 5 seconds)
+             (implicit t: Timeout = 5 seconds):Try[RasterLayer] = {
+    val (system, shutdown) =
+      if(GeoTrellis.isInit)
+        // If the GeoTrellis.server is being used, use it's Actor System
+        (GeoTrellis.server.system, { () => })
+      else {
+        // otherwise, create a temporary one
+        val s = ActorSystem(s"system-request-$jsonUrl")
+        (s, () => s.shutdown)
+      }
+    implicit val s = system
+    import s.dispatcher
+
     try {
-      fromJSON(h(url(jsonUrl) as_str),jsonUrl)
+      val pipeline = sendReceive ~> unmarshal[String]
+      val response: Future[String] =
+        pipeline(Get(jsonUrl))
+
+      val json = Await.result(response, d)
+      fromJSON(json, jsonUrl)
     } catch {
       case e:Exception => Failure(e)
     } finally {
-      h.shutdown
+      shutdown()
     }
   }
 }

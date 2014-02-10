@@ -102,18 +102,18 @@ object Majority extends Serializable {
 
 trait MajorityOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Assigns to each cell the value within the given rasters that is the most numerous. */
-  def localMajority(rss:Seq[RasterDS]):RasterSource = 
+  def localMajority(rss:Seq[RasterSource]):RasterSource = 
     combineOp(rss)(Majority(_))
 
   /** Assigns to each cell the value within the given rasters that is the most numerous. */
-  def localMajority(rss:RasterDS*)(implicit d:DI):RasterSource = 
+  def localMajority(rss:RasterSource*)(implicit d:DI):RasterSource = 
     localMajority(rss)
 
   /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
-  def localMajority(n:Int,rss:Seq[RasterDS]):RasterSource = 
+  def localMajority(n:Int,rss:Seq[RasterSource]):RasterSource = 
     combineOp(rss)(Majority(n,_))
 
   /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
-  def localMajority(n:Int,rss:RasterDS*)(implicit d:DI):RasterSource = 
+  def localMajority(n:Int,rss:RasterSource*)(implicit d:DI):RasterSource = 
     localMajority(n,rss)
 }

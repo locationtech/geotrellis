@@ -1,6 +1,7 @@
 package geotrellis.feature.op.geometry
 
 import geotrellis._
+import geotrellis.source._
 import geotrellis.feature.Point
 import geotrellis.raster.Kernel
 import geotrellis.raster.Convolver
