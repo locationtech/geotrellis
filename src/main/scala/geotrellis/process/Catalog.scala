@@ -70,6 +70,8 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String,sour
             Failure(new java.io.IOException(s"There are multiple layers named '${layerId.name}' in the catalog. You must specify a datastore"))
         }
     }
+
+  def getStore(name:String) = stores.get(name)
 }
 
 object Catalog {
