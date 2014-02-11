@@ -2,6 +2,7 @@ package geotrellis.raster.op.local
 
 import geotrellis._
 import geotrellis.raster._
+import geotrellis.raster.op.ConvertType
 import geotrellis.source._
 import geotrellis.data.geojson.GeoJsonReader
 import geotrellis.feature.rasterize.{Rasterizer, Callback}
@@ -90,6 +91,9 @@ trait LocalOpMethods[+Repr <: RasterSource]
   /** Negate (multiply by -1) each value in a raster. */
   def unary_-() = localNegate()
 
+  /** Takes the absolute value of each raster cell value. */
+  def localAbs() = mapOp(Abs(_))
+
   /** Takes the Ceiling of each raster cell value. */
   def localCeil() = mapOp(Ceil(_))
 
@@ -98,6 +102,9 @@ trait LocalOpMethods[+Repr <: RasterSource]
 
   /** Computes the Log of a Raster. */
   def localLog() = mapOp(Log(_))
+
+  /** Takes the Log base 10 of each raster cell value. */
+  def localLog10() = mapOp(Log10(_))
 
   /** Round the values of a Raster. */
   def localRound() = mapOp(Round(_))
@@ -126,6 +133,36 @@ trait LocalOpMethods[+Repr <: RasterSource]
   /** Takes the mean of the values of each cell in the set of rasters. */
   def localMean(rss:RasterSource*)(implicit d:DI):RasterSource = 
     localMean(rss)
+
+  /** Takes the sine of each raster cell value. */
+  def localSin() = mapOp(Sin(_))
+
+  /** Takes the cosine of each raster cell value. */
+  def localCos() = mapOp(Cos(_))
+
+  /** Takes the tangent of each raster cell value. */
+  def localTan() = mapOp(Tan(_))
+
+  /** Takes the sineh of each raster cell value. */
+  def localSinh() = mapOp(Sinh(_))
+
+  /** Takes the cosineh of each raster cell value. */
+  def localCosh() = mapOp(Cosh(_))
+
+  /** Takes the tangenth of each raster cell value. */
+  def localTanh() = mapOp(Tanh(_))
+
+  /** Takes the arc sine of each raster cell value. */
+  def localAsin() = mapOp(Asin(_))
+
+  /** Takes the arc cosine of each raster cell value. */
+  def localAcos() = mapOp(Acos(_))
+
+  /** Takes the arc tangent of each raster cell value. */
+  def localAtan() = mapOp(Atan(_))
+
+  /** Takes the arc tangent 2 of each raster cell value. */
+  def localAtan2(rs: RasterSource) = combineOp(rs)(Atan2(_,_))
 
   /** Masks this raster by the given GeoJSON. */
   def mask(geoJson: String): RasterSource =
