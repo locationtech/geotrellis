@@ -1,22 +1,21 @@
 package geotrellis.spark.rdd
-
+import geotrellis.spark._
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
-import org.apache.hadoop.conf.Configuration
+import geotrellis.spark.metadata.PyramidMetadata
+import geotrellis.spark.tiling.TileIdRaster
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapred.FileInputFormat
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.SequenceFileInputFormat
 import org.apache.spark.SerializableWritable
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkContext
-import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.HadoopRDD
-import geotrellis.spark.metadata.PyramidMetadata
-import org.apache.hadoop.fs.Path
-import geotrellis.Raster
-import geotrellis.spark.tiling.TileIdRaster
 import org.apache.spark.rdd.RDD
-
+import org.apache.spark.TaskContext
+import org.apache.spark.Partition
+import geotrellis.Raster
 /*
  * An RDD abstraction of rasters in Spark. This can give back either tuples of either
  * (TileIdWritable, ArgWritable) or (Long, Raster), the latter being the deserialized 
@@ -45,20 +44,28 @@ class RasterHadoopRDD(raster: String, sc: SparkContext, minSplits: Int)
    */
   override val partitioner = Some(TileIdPartitioner(raster, sc.hadoopConfiguration))
 
+  val rasterPath = new Path(raster)
+  val pyramidPath = rasterPath.getParent()
+  val zoom = rasterPath.getName().toInt
+  private val meta = PyramidMetadata(pyramidPath, sc.hadoopConfiguration)
+
+  /*def mapOp(f:(Raster,Int) => Raster) = mapPartitions { itr: Iterator[(TileIdWritable, ArgWritable)] => {
+	  itr.map(w => f(TileIdRaster.from(w, meta, zoom))
+  	}
+  }*/
 }
 
 object RasterHadoopRDD {
 
   final val SeqFileGlob = "/*[0-9]*/data"
 
-  def apply( raster: String, sc: SparkContext): RDD[(TileIdWritable, ArgWritable)] =
+  def apply(raster: String, sc: SparkContext) =
     new RasterHadoopRDD(raster, sc, sc.defaultMinSplits)
-  
 
-  def asTileIdRaster(raster: String, sc: SparkContext): RDD[TileIdRaster] = {
+  def toTileIdRasterRDD(raster: String, sc: SparkContext): RDD[TileIdRaster] = {
     val rasterPath = new Path(raster)
-    val meta = PyramidMetadata(rasterPath.getParent(), sc.hadoopConfiguration)
-	apply(raster, sc).map(TileIdRaster.from(_, meta, rasterPath.getName().toInt))
+    val rhd = apply(raster, sc)
+    val (meta, zoom) = (rhd.meta, rhd.zoom)
+    rhd.mapPartitions(_.map(TileIdRaster(_, meta, zoom)), true) 
   }
-
 }

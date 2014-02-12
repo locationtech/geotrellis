@@ -1,8 +1,6 @@
 package geotrellis.spark.old
-import geotrellis.spark.SavableImage
+import geotrellis.spark._
 import geotrellis.spark.cmd.CommandArguments
-
-import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.rdd.RasterHadoopRDD
 import geotrellis.spark.utils.HdfsUtils
@@ -21,7 +19,7 @@ object InputOutputDriver extends ArgMain[CommandArguments] with Logging {
     val sc = SparkUtils.createSparkContext(sparkMaster, "InputOutputRaster")
     val awtestRdd = RasterHadoopRDD(inputRasterPath, sc)
 
-    def printTileWithPartition(idx: Int, itr: Iterator[(TileIdWritable, ArgWritable)]) = {
+    def printTileWithPartition(idx: Int, itr: Iterator[TileIdArgWritable]) = {
       itr.foreach { case (tw, aw) => logInfo(s"Tile ${tw.get} partition $idx") }
       itr
     }
