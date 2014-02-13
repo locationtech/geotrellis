@@ -16,7 +16,6 @@ import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.rdd.TileIdPartitioner
 
 class IngestSpec extends TestEnvironment with MustMatchers with ShouldMatchers {
-  val conf = SparkUtils.createHadoopConfiguration
 
   describe("Ingest all-ones.tif") {
 

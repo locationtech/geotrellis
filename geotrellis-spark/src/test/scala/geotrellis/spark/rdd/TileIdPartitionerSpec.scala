@@ -10,8 +10,6 @@ import geotrellis.spark.TestEnvironment
 
 class TileIdPartitionerSpec extends TestEnvironment with MustMatchers with ShouldMatchers {
 
-  val conf = SparkUtils.createHadoopConfiguration
-
   def getPartitioner(seq: Seq[Long]) = {
     val splitGenerator = new SplitGenerator {
       def getSplits = seq

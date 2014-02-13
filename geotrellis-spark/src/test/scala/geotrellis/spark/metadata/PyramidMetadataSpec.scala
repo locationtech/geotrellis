@@ -13,8 +13,6 @@ import geotrellis.spark.TestEnvironment
 
 class PyramidMetadataSpec extends TestEnvironment with MustMatchers with ShouldMatchers {
 
-  val conf = SparkUtils.createHadoopConfiguration
-
   describe("PyramidMetadata.save") {
 
     it("should correctly save and read the metadata") {

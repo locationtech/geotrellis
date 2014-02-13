@@ -1,7 +1,10 @@
 package geotrellis.spark
+import geotrellis.spark.utils.SparkUtils
+
 import org.apache.commons.io.FileUtils
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.FunSpec
+
 import java.io.File
 import java.nio.file.FileSystems
 
@@ -16,11 +19,11 @@ trait TestEnvironment extends FunSpec with BeforeAndAfterAll {
 
   // root directory on local file system for source data (e.g., tiffs)
   final val TestSourceRoot = "geotrellis-spark/src/test/resources"
-  
+
   // make a fully qualified (including scheme) path given a directory and either a file or directory    
-  def makeQualified(prefix: String, suffix: String) = 
+  def makeQualified(prefix: String, suffix: String) =
     FileSystems.getDefault().getPath(prefix, suffix).toUri().toString()
-    
+
   // root directory name on both local file system and hdfs for all tests
   final val RootName = "testFiles"
 
@@ -40,6 +43,9 @@ trait TestEnvironment extends FunSpec with BeforeAndAfterAll {
 
   override def afterAll =
     FileUtils.deleteDirectory(testLocalHandle)
+
+  // a hadoop configuration
+  val conf = SparkUtils.createHadoopConfiguration
 
   private def setupRootDirs: Tuple2[String, String] = {
     val tmpDir = System.getProperty("java.io.tmpdir")
