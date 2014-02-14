@@ -44,15 +44,11 @@ class RasterHadoopRDD(raster: String, sc: SparkContext, minSplits: Int)
    */
   override val partitioner = Some(TileIdPartitioner(raster, sc.hadoopConfiguration))
 
-  val rasterPath = new Path(raster)
-  val pyramidPath = rasterPath.getParent()
+  @transient val rasterPath = new Path(raster)
+  @transient val pyramidPath = rasterPath.getParent()
   val zoom = rasterPath.getName().toInt
-  private val meta = PyramidMetadata(pyramidPath, sc.hadoopConfiguration)
+  val meta = PyramidMetadata(pyramidPath, sc.hadoopConfiguration)
 
-  /*def mapOp(f:(Raster,Int) => Raster) = mapPartitions { itr: Iterator[(TileIdWritable, ArgWritable)] => {
-	  itr.map(w => f(TileIdRaster.from(w, meta, zoom))
-  	}
-  }*/
 }
 
 object RasterHadoopRDD {
@@ -62,10 +58,16 @@ object RasterHadoopRDD {
   def apply(raster: String, sc: SparkContext) =
     new RasterHadoopRDD(raster, sc, sc.defaultMinSplits)
 
-  def toTileIdRasterRDD(raster: String, sc: SparkContext): RDD[TileIdRaster] = {
+  def apply(raster: Path, sc: SparkContext) =
+    new RasterHadoopRDD(raster.toUri().toString(), sc, sc.defaultMinSplits)
+
+  def toRasterRDD(raster: String, sc: SparkContext): RasterRDD = {
     val rasterPath = new Path(raster)
     val rhd = apply(raster, sc)
     val (meta, zoom) = (rhd.meta, rhd.zoom)
-    rhd.mapPartitions(_.map(TileIdRaster(_, meta, zoom)), true) 
+    rhd.mapPartitions(_.map(TileIdRaster(_, meta, zoom)), true).withMetadata(meta)
   }
+
+  def toRasterRDD(raster: Path, sc: SparkContext): RasterRDD =
+    toRasterRDD(raster.toUri().toString(), sc)
 }

@@ -20,7 +20,7 @@ object NoDataHandler {
     rd
   }
 
-  def removeGeotrellisNoData(rd: MutableRasterData, userNoData: Double): RasterData = {
+  def addUserNoData(rd: MutableRasterData, userNoData: Double): RasterData = {
     /* 
      * This handles all types of RasterData - e.g., FloatArrayRasterData, ByteArrayRasterData
      * because the scala will convert the raw types to either Double or Int as per the argument

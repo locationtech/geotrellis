@@ -5,11 +5,10 @@ import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.rdd.RasterHadoopRDD
 import geotrellis.spark.utils.HdfsUtils
 import geotrellis.spark.utils.SparkUtils
-
 import org.apache.spark.Logging
 import org.apache.spark.SparkContext._
-
 import com.quantifind.sumac.ArgMain
+import org.apache.hadoop.fs.Path
 
 object InputOutputDriver extends ArgMain[CommandArguments] with Logging {
   def main(args: CommandArguments) {
@@ -33,7 +32,7 @@ object InputOutputDriver extends ArgMain[CommandArguments] with Logging {
     logInfo(s"Test lookup of first tile $firstTile")
     logInfo("# of matching rows = " + awtestRdd.lookup(TileIdWritable(firstTile)).length)
 
-    awtestRdd.save(outputRasterPath)
+    awtestRdd.save(new Path(outputRasterPath))
 
     sc.stop
   }

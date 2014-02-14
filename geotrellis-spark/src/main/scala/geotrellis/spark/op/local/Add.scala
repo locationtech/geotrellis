@@ -9,14 +9,16 @@ import org.apache.spark.rdd.RDD
 import geotrellis.spark.tiling.TileIdRaster
 import geotrellis.spark._
 import geotrellis.raster.op.local.Add
-trait LocalBinaryOpMethods[+Repr <: RDD[TileIdRaster]] { self: Repr =>
+import org.apache.spark.Logging
+import geotrellis.spark.rdd.RasterRDD
+trait LocalBinaryOpMethods[+Repr <: RasterRDD] extends Logging { self: Repr =>
 
   def mapOp(d: Double, f: (Raster, Double) => Raster) =
-    self.mapPartitions(_.map(tr => (tr._1, f(tr._2, d))))
+    self.mapPartitions(_.map(tr => (tr._1, f(tr._2, d))), true)
 
 }
 
-trait AddOpMethods[+Repr <: RDD[TileIdRaster]] extends LocalBinaryOpMethods[Repr] { self: Repr =>
+trait AddOpMethods[+Repr <: RasterRDD] extends LocalBinaryOpMethods[Repr] { self: Repr =>
   /** Add a constant Int value to each cell. */
   //def localAdd(i: Int) = self.mapOp(Add(_, i))
   /** Add a constant Int value to each cell. */
@@ -24,7 +26,7 @@ trait AddOpMethods[+Repr <: RDD[TileIdRaster]] extends LocalBinaryOpMethods[Repr
   /** Add a constant Int value to each cell. */
   //def +:(i:Int) = localAdd(i)
   /** Add a constant Double value to each cell. */
-  def localAdd(d: Double) = self.mapOp(d, (r, d) => Add(r, d))
+  def localAdd(d: Double) = self.mapOp(d, (r, d) => Add(r, d)).withMetadata(self.meta)
   /** Add a constant Double value to each cell. */
   def +(d: Double) = localAdd(d)
   /** Add a constant Double value to each cell. */

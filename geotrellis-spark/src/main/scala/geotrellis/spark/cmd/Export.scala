@@ -113,7 +113,7 @@ object Export extends ArgMain[ExportArgs] with Logging {
       val zoom = rasterPath.getName.toInt
 
       raster.foreach(writables => {
-        val (tileId, tx, ty, raster) = TileIdRaster.toTileIdCoordRaster(writables, meta, zoom)
+        val (tileId, tx, ty, raster) = TileIdRaster.toTileIdCoordRaster(writables, meta, zoom, true)
         GeoTiffWriter.write(s"${output}/tile-${tileId}.tif", raster, meta.nodata)
         logInfo(s"---------tx: ${tx}, ty: ${ty} file: tile-${tileId}.tif")
       })

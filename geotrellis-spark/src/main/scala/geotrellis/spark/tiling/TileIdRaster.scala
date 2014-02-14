@@ -14,14 +14,18 @@ object TileIdRaster {
     (tileId, raster)
   }
 
-  def toTileIdCoordRaster(writables: TileIdArgWritable, meta: PyramidMetadata, zoom: Int): TileIdCoordRaster = {
+  def toTileIdCoordRaster(
+      writables: TileIdArgWritable, 
+      meta: PyramidMetadata, 
+      zoom: Int, 
+      addUserNoData: Boolean = false): TileIdCoordRaster = {
     val (tileSize, rasterType) = (meta.tileSize, meta.rasterType)
     val (tw, aw) = writables
     val tileId = tw.get
     val (tx, ty) = TmsTiling.tileXY(tileId, zoom)
     val extent = TmsTiling.tileToExtent(tx, ty, zoom, tileSize)
     val rd = aw.toRasterData(rasterType, tileSize, tileSize)
-    val trd = NoDataHandler.removeGeotrellisNoData(rd, meta.nodata)
+    val trd = if(addUserNoData) NoDataHandler.addUserNoData(rd, meta.nodata) else rd
     val raster = Raster(trd, RasterExtent(extent, tileSize, tileSize))
     (tileId, tx, ty, raster)
   }
