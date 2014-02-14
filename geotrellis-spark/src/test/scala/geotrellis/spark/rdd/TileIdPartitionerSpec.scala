@@ -14,7 +14,7 @@ class TileIdPartitionerSpec extends TestEnvironment with MustMatchers with Shoul
     val splitGenerator = new SplitGenerator {
       def getSplits = seq
     }
-    val pyramid = new Path(testLocalDir)
+    val pyramid = outputLocal
     TileIdPartitioner(splitGenerator, pyramid, conf)
   }
 

@@ -25,10 +25,9 @@ class PyramidMetadataSpec extends TestEnvironment with MustMatchers with ShouldM
         10,
         Map("1" -> new RasterMetadata(PixelExtent(0, 0, 0, 0), TileExtent(0, 0, 0, 0))))
 
-      val pyramidPath = new Path(testLocalDir)
-      meta.save(pyramidPath, conf)
+      meta.save(outputLocal, conf)
 
-      val newMeta = PyramidMetadata(pyramidPath, conf)
+      val newMeta = PyramidMetadata(outputLocal, conf)
       
       meta should be(newMeta)
     }
