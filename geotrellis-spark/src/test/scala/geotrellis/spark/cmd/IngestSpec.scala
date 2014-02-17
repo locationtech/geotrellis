@@ -1,21 +1,21 @@
 package geotrellis.spark.cmd
+import geotrellis.Extent
 
 import geotrellis.spark.TestEnvironment
-import geotrellis.spark.utils.SparkUtils
-import org.scalatest.matchers.MustMatchers
-import org.scalatest.matchers.ShouldMatchers
 import geotrellis.spark.metadata.PyramidMetadata
-import geotrellis.Extent
-import java.awt.image.DataBuffer
 import geotrellis.spark.metadata.RasterMetadata
+import geotrellis.spark.rdd.TileIdPartitioner
+import geotrellis.spark.storage.RasterReader
 import geotrellis.spark.tiling.PixelExtent
 import geotrellis.spark.tiling.TileExtent
-import org.apache.hadoop.fs.Path
-import geotrellis.spark.storage.RasterReader
 import geotrellis.spark.tiling.TmsTiling
-import geotrellis.spark.rdd.TileIdPartitioner
 
-class IngestSpec extends TestEnvironment with MustMatchers with ShouldMatchers {
+import org.apache.hadoop.fs.Path
+import org.scalatest.matchers.ShouldMatchers
+
+import java.awt.image.DataBuffer
+
+class IngestSpec extends TestEnvironment with ShouldMatchers {
 
   describe("Ingest all-ones.tif") {
 

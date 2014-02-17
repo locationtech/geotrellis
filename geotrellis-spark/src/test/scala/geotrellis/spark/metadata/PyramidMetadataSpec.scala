@@ -1,17 +1,15 @@
 package geotrellis.spark.metadata
 import geotrellis.Extent
+import geotrellis.spark.TestEnvironment
 import geotrellis.spark.tiling.PixelExtent
 import geotrellis.spark.tiling.TileExtent
-import geotrellis.spark.utils.SparkUtils
-import org.apache.hadoop.fs.Path
-import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
+
 import org.scalatest.matchers.ShouldMatchers
+
 import java.awt.image.DataBuffer
-import geotrellis.spark.TestEnvironment
 
 
-class PyramidMetadataSpec extends TestEnvironment with MustMatchers with ShouldMatchers {
+class PyramidMetadataSpec extends TestEnvironment with ShouldMatchers {
 
   describe("PyramidMetadata.save") {
 
