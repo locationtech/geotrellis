@@ -43,7 +43,14 @@ case class Polygon(geom: jts.Polygon) extends Geometry {
 
   assert(!geom.isEmpty)
 
+  lazy val isRectangle: Boolean = geom.isRectangle
+
+  lazy val area: Double = geom.getArea
+
   lazy val exterior = Line(geom.getExteriorRing)
+
+  lazy val boundary: PolygonBoundaryResult =
+    geom.getBoundary
 
   // -- Intersection
 
@@ -145,10 +152,9 @@ case class Polygon(geom: jts.Polygon) extends Geometry {
   def within(p: Polygon): Boolean =
     geom.within(p.geom)
 
-  def crosses(g: Geometry): Boolean =
-    geom.crosses(g.geom)
+  def crosses(p: Point): Boolean =
+    geom.crosses(p.geom)
 
-  lazy val isRectangle = geom.isRectangle
-
-  lazy val area = geom.getArea
+  def crosses(l: Line): Boolean =
+    geom.crosses(l.geom)
 }

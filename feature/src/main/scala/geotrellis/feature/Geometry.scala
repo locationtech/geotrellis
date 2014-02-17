@@ -6,8 +6,6 @@ trait Geometry {
 
   val geom: jts.Geometry
 
-  //def area: Double = geom.getArea
-
   def centroid: Point = Point(geom.getCentroid)
 
   def interiorPoint: Point = Point(geom.getInteriorPoint)
@@ -36,15 +34,17 @@ trait Geometry {
   def withinDistance(other: Geometry, dist: Double) =
     geom.isWithinDistance(other.geom, dist)
 
-  // TO BE IMPLEMENTED ON A PER TYPE BASIS
-  
-  // union ( | )
+  /* TO BE IMPLEMENTED ON A PER TYPE BASIS */
 
-  // crosses
-  // difference ( - )
+
+
+
+
+
+
   // equal (with tolerance?)
   // equalExact (huh?)
-  // boundary
+
   // vertices
   // envelope
   // boundingBox
@@ -60,7 +60,16 @@ trait Geometry {
   // within
   // something with relate if it's fast (benchmark)
 
-  /**IMPLEMENTED**/
+  /* IMPLEMENTED */
+
+  // boundary
+  // intersection ( & )
+  // union ( | )
+  // difference ( - )
+
+  // crosses
+
+
   // buffer - None on collections, always a polygon. (wait maybe on Multli's)
   // contains - Not on collections (wait maybe on Multli's) - if not, then other Geometry methods don't belong.
   // isRectangle (polygon)
@@ -69,7 +78,7 @@ trait Geometry {
 
   // def boundary = jts.getBoundary
   // def boundaryDimension = jts.getBoundaryDimension
-  // def centriod = jts.getCentroid
+  // def centroid = jts.getCentroid
   // def coordinate:(Double,Double) = jts.getCoordinate
   // def coordinates:Seq[(Double,Double)] = jts.getCoordinates
   // def dimension = jts.getDimension

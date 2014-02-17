@@ -7,6 +7,12 @@ case class LineSet(ls: Set[Line]) extends GeometrySet {
 
   val geom = factory.createMultiLineString(ls.map(_.geom).toArray)
 
+  lazy val isClosed: Boolean =
+    geom.isClosed
+
+  lazy val boundary: LineBoundaryResult =
+    geom.getBoundary
+
   // -- Intersection
 
   def &(p: Point) = intersection(p)
@@ -92,6 +98,4 @@ case class LineSet(ls: Set[Line]) extends GeometrySet {
 
   // -- Predicates
 
-  def crosses(g: Geometry): Boolean =
-    geom.crosses(g.geom)
 }

@@ -70,6 +70,13 @@ case class Point(geom: jts.Point) extends Geometry {
   def within(p: Polygon): Boolean =
     geom.within(p.geom)
 
-  def crosses(g: Geometry): Boolean =
-    geom.crosses(g.geom)
+  def crosses(l: Line): Boolean =
+    geom.crosses(l.geom)
+
+  def crosses(p: Polygon): Boolean =
+    geom.crosses(p.geom)
+
+  // -- Misc.
+
+
 }

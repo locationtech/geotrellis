@@ -31,6 +31,12 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry {
 
   assert(!geom.isEmpty)
 
+  lazy val isClosed: Boolean =
+    geom.isClosed
+
+  lazy val boundary: LineBoundaryResult =
+    geom.getBoundary
+
   // -- Intersection
 
   def &(p: Point) = intersection(p)
@@ -125,10 +131,6 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry {
   // tougher maybe.
 
   // -- Predicates
-
-  def isClosed: Boolean =
-    geom.isClosed
-
   def contains(p: Point): Boolean =
     geom.contains(p.geom)
 
@@ -141,7 +143,13 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry {
   def within(p: Polygon): Boolean =
     geom.within(p.geom)
 
-  def crosses(g: Geometry): Boolean =
-    geom.crosses(g.geom)
+  def crosses(p: Point): Boolean =
+    geom.crosses(p.geom)
+
+  def crosses(l: Line): Boolean =
+    geom.crosses(l.geom)
+
+  def crosses(p: Polygon): Boolean =
+    geom.crosses(p.geom)
 
 }
