@@ -24,7 +24,8 @@ object Raster {
 trait Raster extends local.AddMethods
                 with local.SubtractMethods
                 with local.MultiplyMethods
-                with local.DivideMethods {
+                with local.DivideMethods
+                with local.MinMethods {
   val rasterExtent:RasterExtent
   lazy val cols = rasterExtent.cols
   lazy val rows = rasterExtent.rows

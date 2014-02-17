@@ -29,3 +29,14 @@ trait MinOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Min the values of each cell in each raster.  */
   def localMin(rss:Seq[RasterSource]) = self.combineOp(rss)(Min(_))
 }
+
+trait MinMethods { self: Raster =>
+  /** Min a constant Int value to each cell. */
+  def localMin(i: Int) = Min(self, i)
+  /** Min a constant Double value to each cell. */
+  def localMin(d: Double) = Min(self, d)
+  /** Min the values of each cell in each raster.  */
+  def localMin(r:Raster) = Min(self, r)
+  /** Min the values of each cell in each raster.  */
+  def localMin(rs:Seq[Raster]) = Min(self +: rs)
+}
