@@ -26,7 +26,8 @@ trait Raster extends local.AddMethods
                 with local.MultiplyMethods
                 with local.DivideMethods
                 with local.MinMethods
-                with local.MaxMethods {
+                with local.MaxMethods
+                with local.MaskMethods {
   val rasterExtent:RasterExtent
   lazy val cols = rasterExtent.cols
   lazy val rows = rasterExtent.rows
