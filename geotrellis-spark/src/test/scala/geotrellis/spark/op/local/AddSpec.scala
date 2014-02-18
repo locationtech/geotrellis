@@ -1,22 +1,19 @@
 package geotrellis.spark.op.local
-import geotrellis.spark.SparkEnvironment
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.rdd.RasterHadoopRDD
 import org.apache.hadoop.fs.Path
 import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.BeforeAndAfter
+import org.apache.spark.SparkContext
+import geotrellis.spark.utils.SparkUtils
+import org.scalatest.fixture.FunSpec
+import geotrellis.spark.TestEnvironmentFixture
 
-class AddSpec extends TestEnvironment with ShouldMatchers with SparkEnvironment with BeforeAndAfter {
-
-  // TODO - figure out how to support clauses. Right now, the check has to be done in 
-  // the top level of sparkTest and not inside "it" clauses as is done in BDD style tests
-  before { println("Setting up");setup("AddSpec") }
+class AddSpec extends TestEnvironmentFixture with ShouldMatchers {
 
   describe("Add Operation") {
-    myIt("should add a constant to a raster") {
+    it("should add a constant to a raster") { sc =>
 
       val allOnes = new Path(inputHome, "all-ones/10")
-      if (sc == null) println("NOOOO") else println("YESS")
       val allOnesRDD = RasterHadoopRDD.toRasterRDD(allOnes, sc)
 
       val d = 1
@@ -29,8 +26,6 @@ class AddSpec extends TestEnvironment with ShouldMatchers with SparkEnvironment 
 
       allTwosRDD.map { case (tileId, raster) => raster.findMinMaxDouble }.collect.foreach(_ should be(2, 2))
 
-    }    
+    }
   }
-  after { println("Tearing down");tearDown }
-
 }
