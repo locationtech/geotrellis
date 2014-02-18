@@ -1,8 +1,6 @@
 package geotrellis.spark.rdd
 import geotrellis.spark.TestEnvironment
-
 import geotrellis.spark.formats.TileIdWritable
-
 import org.scalatest.matchers.ShouldMatchers
 
 class TileIdPartitionerSpec extends TestEnvironment with ShouldMatchers {
