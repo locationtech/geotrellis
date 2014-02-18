@@ -10,24 +10,20 @@ import org.scalatest.FunSpec
 
 object SparkTest extends org.scalatest.Tag("geotrellis.spark.test.tags.SparkTest")
 
-trait SparkEnvironment extends FunSpec with BeforeAndAfter {
+trait SparkEnvironment extends FunSpec {
   var sc: SparkContext = _
 
-  def sparkTest(name: String, silenceSpark: Boolean = true)(body: => Unit) {
-    describe(name) {
-      val origLogLevels = if (silenceSpark) SparkLogging.silence() else Level.INFO
-      sc = SparkUtils.createSparkContext("local", name)
-      try {
-        body
-      } finally {
-        sc.stop
-        sc = null
-        // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
-        System.clearProperty("spark.master.port")
-        if (silenceSpark) SparkLogging.setLogLevels(origLogLevels, SparkLogging.components)
-      }
-    }
+  def setup(specName: String) = {
+    sc = SparkUtils.createSparkContext("local", specName)
+  }
+  def myIt(specTest: String, testTags: org.scalatest.Tag*)(body: => Unit) =
+    it(specTest) { body }
 
+  def tearDown = {
+    sc.stop
+    sc = null
+    // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
+    System.clearProperty("spark.master.port")
   }
 }
 
