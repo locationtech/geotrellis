@@ -1,19 +1,22 @@
 package geotrellis.spark
-import org.apache.commons.io.FileUtils
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.FunSpec
-import java.io.File
-import java.nio.file.FileSystems
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.fs.FileSystem
 import geotrellis.spark.utils.SparkUtils
+
+import org.apache.commons.io.FileUtils
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.Path
+import org.apache.spark.SparkContext
+import org.scalatest._
+import org.scalatest.BeforeAndAfterAll
+
+import java.io.File
 
 /*
  * This trait sets up the test directories on the local fs and hdfs 
  * 
  * It uses commons-io in at least one case (recursive directory deletion)
  */
-trait TestEnvironment extends FunSpec with BeforeAndAfterAll {
+
+trait TestEnvironmentBase {
   // get the name of the class which mixes in this trait
   val name = this.getClass.getName
 
@@ -34,14 +37,6 @@ trait TestEnvironment extends FunSpec with BeforeAndAfterAll {
   // outputHomeHdfs - root directory of all tests on hdfs (e.g., hdfs:///tmp)
   // outputLocal - directory of this particular test (e.g., file:///tmp/testFiles/geotrellis.spark.cmd.IngestSpec)
   val (outputHomeLocal, outputHomeHdfs, outputLocal) = setupTestDirs
-
-
-  //override def beforeAll {
-  //}
-
-  override def afterAll =
-    FileUtils.deleteDirectory(new File(outputLocal.toUri()))
-
   private def getLocalFS: FileSystem = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
 
   private def setupTestDirs: (Path, Path, Path) = {
@@ -60,4 +55,34 @@ trait TestEnvironment extends FunSpec with BeforeAndAfterAll {
 
     (new Path(outputHomeLocalHandle.toURI()), new Path(hadoopTmpDir), new Path(outputLocalHandle.toURI()))
   }
+}
+
+trait TestEnvironment extends TestEnvironmentBase with FunSpec with BeforeAndAfterAll {
+  //override def beforeAll {
+  //}
+
+  override def afterAll =
+    FileUtils.deleteDirectory(new File(outputLocal.toUri()))
+}
+
+trait TestEnvironmentFixture extends TestEnvironmentBase with fixture.FunSpec with BeforeAndAfterAll {
+
+  type FixtureParam = SparkContext
+
+  def withFixture(test: OneArgTest) {
+    val sc = SparkUtils.createSparkContext("local", "some name")
+    try {
+      test(sc)
+    } finally {
+      sc.stop
+      // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
+      System.clearProperty("spark.driver.port")
+    }
+  }
+
+  //override def beforeAll {
+  //}
+
+  override def afterAll =
+    FileUtils.deleteDirectory(new File(outputLocal.toUri()))
 }
