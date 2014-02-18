@@ -26,6 +26,10 @@ import java.io.File
  * a single trait to inherit from either/both FunSpec and fixture.FunSpec. This was the best 
  * way to reduce as much as possible code duplication. The only duplication is the definition 
  * of beforeAll/afterAll
+ * 
+ * See http://grokbase.com/t/gg/scala-user/12ak3cacsm/how-do-i-override-and-select-a-base-method-from-two-conflicting-traits
+ * In this case, FunSpec and fixture.FunSpec end up conflicting and some of the conflicting members are vals,
+ * which seem to be problematic (compared to defs) in resolving conflicts
  */
 
 trait TestEnvironmentBase {
