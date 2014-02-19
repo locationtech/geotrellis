@@ -21,6 +21,14 @@ class TileIdPartitionerSpec extends TestEnvironment with ShouldMatchers {
 
     val partitioner = getPartitioner(Seq(10, 20))
 
+    it("should assign tileId Long.MinValue to partition 0") {
+      partitioner.getPartition(TileIdWritable(Long.MinValue)) should be(0)
+    }
+
+    it("should assign tileId Long.MaxValue to partition 2") {
+      partitioner.getPartition(TileIdWritable(Long.MaxValue)) should be(2)
+    }
+
     it("should assign tileId 0 (minimum key) to partition 0") {
       partitioner.getPartition(TileIdWritable(0)) should be(0)
     }
@@ -46,7 +54,7 @@ class TileIdPartitionerSpec extends TestEnvironment with ShouldMatchers {
     val partitioner = getPartitioner(Seq())
     it("should assign all tiles to partition 0") {
       partitioner.getPartition(TileIdWritable(0)) should be(0)
-      partitioner.getPartition(TileIdWritable(Long.MaxValue)) should be(0)      
+      partitioner.getPartition(TileIdWritable(Long.MaxValue)) should be(0)
     }
   }
 }
