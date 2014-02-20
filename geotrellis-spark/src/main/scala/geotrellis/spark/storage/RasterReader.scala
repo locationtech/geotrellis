@@ -59,6 +59,7 @@ case class RasterReader(
 
     def close = readers.foreach(r => if (r != null) r.close)
 
+    // TODO - rewrite to remove early returns 
     override def hasNext: Boolean = {
       if (curKey == null)
         return false
@@ -114,28 +115,5 @@ case class RasterReader(
       readers
     }
 
-  }
-}
-
-object RasterReader {
-
-  def main(args: Array[String]): Unit = {
-    val raster = new Path("hdfs://localhost:9000/geotrellis/images/testcostdistance-gt-ingest/10")
-    val conf = SparkUtils.createHadoopConfiguration
-    //TileIdPartitioner.printSplits(raster, conf)
-    val startKey = TileIdWritable(352964L)
-    val endKey = TileIdWritable(352964L)
-    val reader = RasterReader(raster, conf,startKey,endKey)
-    var count = 0
-    reader.foreach {
-      case (tw, aw) => {
-        println(s"tileId=${tw.get}")
-        count += 1
-      }
-    }
-    //val (tw,aw) = reader.last
-    //println(s"last tile id = ${tw.get}")
-    reader.close
-    println(s"Got $count records")
   }
 }
