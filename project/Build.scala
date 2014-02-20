@@ -222,8 +222,11 @@ object GeotrellisBuild extends Build {
     Seq(
       name := "geotrellis-admin",
       libraryDependencies ++= Seq(
-        "io.spray" % "spray-routing" % "1.2-RC4",
-        "io.spray" % "spray-can" % "1.2-RC4"
+        "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
+        "io.spray" % "spray-testkit" % "1.2.0" % "test",
+        "io.spray" % "spray-routing" % "1.2.0",
+        "io.spray" % "spray-can" % "1.2.0",
+        "io.spray" % "spray-httpx" % "1.2.0"
       ),
       resolvers ++= Seq(
         "spray repo" at "http://repo.spray.io"

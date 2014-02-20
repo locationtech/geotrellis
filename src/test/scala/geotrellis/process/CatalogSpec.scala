@@ -8,12 +8,14 @@ import geotrellis._
 import geotrellis.testutil._
 
 import scala.collection.JavaConversions._
+import java.io.File
 
 class CatalogSpec extends FunSpec 
                      with MustMatchers 
                      with ShouldMatchers 
                      with TestServer {
 
+  val absoluteDatapath = new File("src/test/resources/data").getAbsolutePath
   val datapath = "src/test/resources/data"
   val datapath2 = "src/test/resources/data2"
 
@@ -64,17 +66,34 @@ class CatalogSpec extends FunSpec
     }
 
     it("should load from valid JSON") {
-      val found = Catalog.fromJSON(json1)
+      val jsonLoader = s"""
+                        {
+                          "catalog": "catalog2",
+                          "stores": [
+                            {
+                              "store": "test:fs",
+                              "params": {
+                                  "type": "fs",
+                                  "path": "${absoluteDatapath}"
+                              }
+                            }
+                          ]
+                        }
+        """
+      // note the path should be relative to catalog.json location, not from the root project
+      // folder so we should not use the entire datapath
+
+      val found = Catalog.fromJSON(jsonLoader)
       val expected = Catalog(
         "catalog2",
         Map(
           "test:fs" -> DataStore(
               "test:fs",
-              Map("type" -> "fs", "path" -> "src/test/resources/data"),
-              ""
+            new File("src/test/resources/data").getAbsolutePath,
+            false
           )
         ),
-        json1, ""
+        jsonLoader, ""
       )
       found must be === expected
     }
