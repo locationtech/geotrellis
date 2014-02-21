@@ -17,9 +17,7 @@ class AddSpec extends TestEnvironmentFixture with ShouldMatchers {
     it("should add a constant to a raster") { sc =>
 
       val ones = RasterHadoopRDD.toRasterRDD(onesPath, sc)
-
-      val d = 1
-      val twos = ones + d
+      val twos = ones + 1
 
       // TODO - test doesn't have to save all twos
       /*val allTwos = new Path(outputLocal, "10")
@@ -34,13 +32,13 @@ class AddSpec extends TestEnvironmentFixture with ShouldMatchers {
 
     it("should add multiple rasters") { sc =>
 
-      val left = RasterHadoopRDD.toRasterRDD(onesPath, sc)
+      val ones = RasterHadoopRDD.toRasterRDD(onesPath, sc)
 
-      val threes = left + left + left 
+      val threes = ones + ones + ones 
 
       val res = threes.map { case (tileId, raster) => raster.findMinMaxDouble }.collect
       res.foreach(_ should be(3, 3))
-      res.length should be(left.count)
+      res.length should be(ones.count)
     }
   }
 }
