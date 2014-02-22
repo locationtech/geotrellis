@@ -106,4 +106,13 @@ case class LineSet(ls: Set[Line]) extends GeometrySet
 
   // -- Predicates
 
+  def contains(g: AtMostOneDimensions): Boolean =
+    geom.contains(g.geom)
+
+  def within(g: AtLeastOneDimensions): Boolean =
+    geom.within(g.geom)
+
+  def crosses(g: AtLeastOneDimensions): Boolean =
+    geom.crosses(g.geom)
+
 }

@@ -94,6 +94,12 @@ case class PolygonSet(ps: Set[Polygon]) extends GeometrySet
 
   // -- Predicates
 
-  def crosses(p: AtMostOneDimensions): Boolean =
-    geom.crosses(p.geom)
+  def contains(g: Geometry): Boolean =
+    geom.contains(g.geom)
+
+  def within(g: TwoDimensions): Boolean =
+    geom.within(g.geom)
+
+  def crosses(g: OneDimensions): Boolean =
+    geom.crosses(g.geom)
 }

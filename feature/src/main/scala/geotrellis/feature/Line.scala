@@ -131,19 +131,13 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry
 
   // -- Predicates
 
-  def contains(p: Point): Boolean =
-    geom.contains(p.geom)
+  def contains(g: AtMostOneDimensions): Boolean =
+    geom.contains(g.geom)
 
-  def contains(l: Line): Boolean =
-    geom.contains(l.geom)
+  def within(g: AtLeastOneDimensions): Boolean =
+    geom.within(g.geom)
 
-  def within(l: Line): Boolean =
-    geom.within(l.geom)
-
-  def within(p: Polygon): Boolean =
-    geom.within(p.geom)
-
-  def crosses(d2: Geometry): Boolean =
-    geom.crosses(d2.geom)
+  def crosses(g: AtLeastOneDimensions): Boolean =
+    geom.crosses(g.geom)
 
 }

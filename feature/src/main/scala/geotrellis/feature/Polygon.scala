@@ -141,18 +141,12 @@ case class Polygon(geom: jts.Polygon) extends Geometry
 
   // -- Predicates
 
-  def contains(p: Point): Boolean =
-    geom.contains(p.geom)
+  def contains(g: Geometry): Boolean =
+    geom.contains(g.geom)
 
-  def contains(l: Line): Boolean =
-    geom.contains(l.geom)
+  def within(g: TwoDimensions): Boolean =
+    geom.within(g.geom)
 
-  def contains(p: Polygon): Boolean =
-    geom.contains(p.geom)
-
-  def within(p: Polygon): Boolean =
-    geom.within(p.geom)
-
-  def crosses(p: AtMostOneDimensions): Boolean =
-    geom.crosses(p.geom)
+  def crosses(g: OneDimensions): Boolean =
+    geom.crosses(g.geom)
 }

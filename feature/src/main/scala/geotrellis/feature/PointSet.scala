@@ -68,8 +68,14 @@ case class PointSet(ps: Set[Point]) extends GeometrySet
 
   // -- Predicates
 
-  def crosses(g: AtLeastOneDimensions): Boolean =
-    geom.crosses(g.geom)
+  def contains(g: ZeroDimensions): Boolean =
+    geom.contains(g.geom)
+
+  def within(ps: PointSet): Boolean =
+    geom.within(ps.geom)
+
+  def within(g: AtLeastOneDimensions): Boolean =
+    geom.within(g.geom)
 
   // -- Misc.
 
