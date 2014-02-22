@@ -7,6 +7,11 @@ case class PolygonSet(ps: Set[Polygon]) extends GeometrySet {
 
   val geom = factory.createMultiPolygon(ps.map(_.geom).toArray)
 
+  lazy val area: Double = geom.getArea
+
+  lazy val boundary: LineSetResult =
+    geom.getBoundary
+
   // -- Intersection
 
   def &(p: Point) = intersection(p)
@@ -88,8 +93,4 @@ case class PolygonSet(ps: Set[Polygon]) extends GeometrySet {
 
   // -- Predicates
 
-  def crosses(g: Geometry): Boolean =
-    geom.crosses(g.geom)
-
-  lazy val area: Double = geom.getArea
 }
