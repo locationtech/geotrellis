@@ -52,6 +52,15 @@ case class Polygon(geom: jts.Polygon) extends Geometry {
   lazy val boundary: PolygonBoundaryResult =
     geom.getBoundary
 
+  lazy val vertices: PointSet =
+    geom.getCoordinates
+
+  lazy val boundingBox: Option[Polygon] =
+    if (geom.isEmpty) None else Some(geom.getEnvelope.asInstanceOf[Polygon])
+
+  lazy val perimeter: Double =
+    geom.getLength
+
   // -- Intersection
 
   def &(p: Point) = intersection(p)
@@ -119,19 +128,27 @@ case class Polygon(geom: jts.Polygon) extends Geometry {
     geom.difference(p.geom)
 
   def -(ps: PointSet) = difference(ps)
-  def difference(ps: PointSet): PolygonXDifferenceResult = {
+  def difference(ps: PointSet): PolygonXDifferenceResult =
     geom.difference(ps.geom)
-  }
 
   def -(ls: LineSet) = difference(ls)
-  def difference(ls: LineSet): PolygonXDifferenceResult = {
+  def difference(ls: LineSet): PolygonXDifferenceResult =
     geom.difference(ls.geom)
-  }
 
   def -(ps: PolygonSet) = difference(ps)
-  def difference(ps: PolygonSet): PolygonPolygonDifferenceResult = {
+  def difference(ps: PolygonSet): PolygonPolygonDifferenceResult =
     geom.difference(ps.geom)
-  }
+
+  // -- SymDifference
+
+  def symDifference(p: Point): PointPolygonSymDifferenceResult =
+    p.symDifference(this)
+
+  def symDifference(l: Line): LinePolygonSymDifferenceResult =
+    l.symDifference(this)
+
+  def symDifference(p: Polygon): PolygonPolygonSymDifferenceResult =
+    geom.symDifference(p.geom)
 
   // -- Buffer
 
@@ -157,4 +174,8 @@ case class Polygon(geom: jts.Polygon) extends Geometry {
 
   def crosses(l: Line): Boolean =
     geom.crosses(l.geom)
+
+  def overlaps(p: Polygon): Boolean =
+    geom.overlaps(p.geom)
+
 }

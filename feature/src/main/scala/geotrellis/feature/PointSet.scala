@@ -65,9 +65,6 @@ case class PointSet(ps: Set[Point]) extends GeometrySet {
   def difference(other: Geometry): PointSetDifferenceResult =
     geom.difference(other.geom)
 
-  // -- Predicates
-
-
   // -- Misc.
 
   def convexHull: Polygon =

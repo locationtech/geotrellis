@@ -67,30 +67,23 @@ case class PolygonSet(ps: Set[Polygon]) extends GeometrySet {
     geom.difference(p.geom)
 
   def -(l: Line) = difference(l)
-  def difference(l: Line): PolygonSetXDifferenceResult = {
+  def difference(l: Line): PolygonSetXDifferenceResult =
     geom.difference(l.geom)
-  }
 
   def -(p: Polygon) = difference(p)
-  def difference(p: Polygon): PolygonPolygonDifferenceResult = {
+  def difference(p: Polygon): PolygonPolygonDifferenceResult =
     geom.difference(p.geom)
-  }
 
   def -(ps: PointSet) = difference(ps)
-  def difference(ps: PointSet): PolygonSetXDifferenceResult = {
+  def difference(ps: PointSet): PolygonSetXDifferenceResult =
     geom.difference(ps.geom)
-  }
 
   def -(ls: LineSet) = difference(ls)
-  def difference(ls: LineSet): PolygonSetXDifferenceResult = {
+  def difference(ls: LineSet): PolygonSetXDifferenceResult =
     geom.difference(ls.geom)
-  }
 
   def -(ps: PolygonSet) = difference(ps)
-  def difference(ps: PolygonSet): PolygonPolygonDifferenceResult = {
+  def difference(ps: PolygonSet): PolygonPolygonDifferenceResult =
     geom.difference(ps.geom)
-  }
-
-  // -- Predicates
 
 }

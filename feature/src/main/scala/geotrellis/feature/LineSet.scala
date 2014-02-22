@@ -96,6 +96,4 @@ case class LineSet(ls: Set[Line]) extends GeometrySet {
     geom.difference(ps.geom)
   }
 
-  // -- Predicates
-
 }

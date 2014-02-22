@@ -57,6 +57,17 @@ case class Point(geom: jts.Point) extends Geometry {
   def difference(other: Geometry): PointDifferenceResult =
     geom.difference(other.geom)
 
+  // -- SymDifference
+
+  def symDifference(p: Point): PointPointSymDifferenceResult =
+    geom.symDifference(p.geom)
+
+  def symDifference(l: Line): PointLineSymDifferenceResult =
+    geom.symDifference(l.geom)
+
+  def symDifference(p: Polygon): PointPolygonSymDifferenceResult =
+    geom.symDifference(p.geom)
+
   // -- Buffer
 
   def buffer(d: Double): Polygon =
@@ -83,6 +94,5 @@ case class Point(geom: jts.Point) extends Geometry {
     geom.crosses(p.geom)
 
   // -- Misc.
-
 
 }
