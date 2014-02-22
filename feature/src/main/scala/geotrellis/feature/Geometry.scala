@@ -57,7 +57,7 @@ trait Geometry {
   // overlaps (needs interior to be same dimension as geoms, geom dims ==)
   // symDifference
 
-  // within
+
   // something with relate if it's fast (benchmark)
 
   /* IMPLEMENTED */
@@ -68,6 +68,7 @@ trait Geometry {
   // difference ( - )
 
   // crosses
+  // within
 
 
   // buffer - None on collections, always a polygon. (wait maybe on Multli's)

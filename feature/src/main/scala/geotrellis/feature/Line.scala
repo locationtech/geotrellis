@@ -125,12 +125,8 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry {
   def buffer(d:Double):Polygon =
     geom.buffer(d).asInstanceOf[Polygon]
 
-
-  // Not sure what to do about LinearString, if it really
-  // needs to be around...will make construction of Polys 
-  // tougher maybe.
-
   // -- Predicates
+
   def contains(p: Point): Boolean =
     geom.contains(p.geom)
 

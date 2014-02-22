@@ -289,16 +289,6 @@ object PolygonBoundaryResult {
     }
 }
 
-abstract sealed trait PolygonSetBoundaryResult
-object PolygonSetBoundaryResult {
-  implicit def jtsToResult(geom: jts.Geometry): PolygonSetBoundaryResult =
-    geom match {
-      case ml: jts.MultiLineString => LineSetResult(ml)
-      case _ =>
-        sys.error(s"Unexpected result for Polygon Set boundary: ${geom.getGeometryType}")
-    }
-}
-
 case object NoResult extends Result
   with PointIntersectionResult
   with LineLineIntersectionResult
@@ -367,7 +357,15 @@ case class LineSetResult(ls: Set[Line]) extends Result
   with PointLineSetUnionResult
   with LineSetPointDifferenceResult
   with PolygonBoundaryResult
-  with PolygonSetBoundaryResult
+
+object LineSetResult {
+  implicit def jtsToResult(geom: jts.Geometry): LineSetResult =
+    geom match {
+      case ml: jts.MultiLineString => LineSetResult(ml)
+      case _ =>
+        sys.error(s"Unexpected result: ${geom.getGeometryType}")
+    }
+}
 
 case class PolygonSetResult(ps: Set[Polygon]) extends Result
   with PolygonPolygonIntersectionResult

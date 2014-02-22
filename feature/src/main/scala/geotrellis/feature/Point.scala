@@ -64,6 +64,12 @@ case class Point(geom: jts.Point) extends Geometry {
 
   // -- Predicates
 
+  def contains(p: Point): Boolean =
+    geom.contains(p.geom)
+
+  def within(p: Point): Boolean =
+    geom.within(p.geom)
+
   def within(l: Line): Boolean =
     geom.within(l.geom)
 

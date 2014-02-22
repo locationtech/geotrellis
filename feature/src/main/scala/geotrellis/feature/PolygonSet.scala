@@ -9,7 +9,7 @@ case class PolygonSet(ps: Set[Polygon]) extends GeometrySet {
 
   lazy val area: Double = geom.getArea
 
-  lazy val boundary: PolygonSetBoundaryResult =
+  lazy val boundary: LineSetResult =
     geom.getBoundary
 
   // -- Intersection
