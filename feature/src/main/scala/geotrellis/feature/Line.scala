@@ -11,7 +11,10 @@ object Line {
   def apply(geom: jts.LineString): Line =
     Line(geom, geom.getCoordinates.map(c => Point(c.x, c.y)).toList)
 
-  def apply(points: Seq[Point]): Line =
+  def apply(points: Point*): Line =
+    apply(points.toList)
+
+  def apply(points: Seq[Point])(implicit d: DummyImplicit): Line =
     apply(points.toList)
 
   def apply(points: Array[Point]): Line =
@@ -27,7 +30,8 @@ object Line {
 
 }
 
-case class Line(geom: jts.LineString, points: List[Point]) extends Geometry {
+case class Line(geom: jts.LineString, points: List[Point]) extends Geometry 
+                                                              with TwoDimensions {
 
   assert(!geom.isEmpty)
 
@@ -127,25 +131,13 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry {
 
   // -- Predicates
 
-  def contains(p: Point): Boolean =
-    geom.contains(p.geom)
+  def contains(g: AtMostOneDimensions): Boolean =
+    geom.contains(g.geom)
 
-  def contains(l: Line): Boolean =
-    geom.contains(l.geom)
+  def within(g: AtLeastOneDimensions): Boolean =
+    geom.within(g.geom)
 
-  def within(l: Line): Boolean =
-    geom.within(l.geom)
-
-  def within(p: Polygon): Boolean =
-    geom.within(p.geom)
-
-  def crosses(p: Point): Boolean =
-    geom.crosses(p.geom)
-
-  def crosses(l: Line): Boolean =
-    geom.crosses(l.geom)
-
-  def crosses(p: Polygon): Boolean =
-    geom.crosses(p.geom)
+  def crosses(g: AtLeastOneDimensions): Boolean =
+    geom.crosses(g.geom)
 
 }

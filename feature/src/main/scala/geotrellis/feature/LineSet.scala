@@ -3,7 +3,15 @@ package geotrellis.feature
 import com.vividsolutions.jts.{geom=>jts}
 import GeomFactory._
 
-case class LineSet(ls: Set[Line]) extends GeometrySet {
+object LineSet {
+  def apply(ls: Line*): LineSet = 
+    LineSet(ls.toSet)
+  def apply(ls: Seq[Line])(implicit d: DummyImplicit): LineSet = 
+    LineSet(ls.toSet)
+}
+
+case class LineSet(ls: Set[Line]) extends GeometrySet 
+                                     with TwoDimensions {
 
   val geom = factory.createMultiLineString(ls.map(_.geom).toArray)
 
@@ -97,5 +105,14 @@ case class LineSet(ls: Set[Line]) extends GeometrySet {
   }
 
   // -- Predicates
+
+  def contains(g: AtMostOneDimensions): Boolean =
+    geom.contains(g.geom)
+
+  def within(g: AtLeastOneDimensions): Boolean =
+    geom.within(g.geom)
+
+  def crosses(g: AtLeastOneDimensions): Boolean =
+    geom.crosses(g.geom)
 
 }
