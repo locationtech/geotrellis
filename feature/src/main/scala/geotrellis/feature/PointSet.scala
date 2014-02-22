@@ -3,7 +3,8 @@ package geotrellis.feature
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
 
-case class PointSet(ps: Set[Point]) extends GeometrySet {
+case class PointSet(ps: Set[Point]) extends GeometrySet 
+                                       with ZeroDimensions {
 
   val geom = factory.createMultiPoint(ps.map(_.geom).toArray)
 
@@ -67,6 +68,8 @@ case class PointSet(ps: Set[Point]) extends GeometrySet {
 
   // -- Predicates
 
+  def crosses(g: AtLeastOneDimensions): Boolean =
+    geom.crosses(g.geom)
 
   // -- Misc.
 

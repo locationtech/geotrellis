@@ -3,7 +3,8 @@ package geotrellis.feature
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
 
-case class PolygonSet(ps: Set[Polygon]) extends GeometrySet {
+case class PolygonSet(ps: Set[Polygon]) extends GeometrySet 
+                                           with TwoDimensions {
 
   val geom = factory.createMultiPolygon(ps.map(_.geom).toArray)
 
@@ -93,4 +94,6 @@ case class PolygonSet(ps: Set[Polygon]) extends GeometrySet {
 
   // -- Predicates
 
+  def crosses(p: AtMostOneDimensions): Boolean =
+    geom.crosses(p.geom)
 }

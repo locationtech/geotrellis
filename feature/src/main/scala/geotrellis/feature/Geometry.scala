@@ -10,19 +10,19 @@ trait Geometry {
 
   def interiorPoint: Point = Point(geom.getInteriorPoint)
 
-  def coveredBy(other: Geometry) =
+  def coveredBy(other: Geometry): Boolean =
     geom.coveredBy(other.geom)
 
-  def covers(other: Geometry) =
+  def covers(other: Geometry): Boolean =
     geom.covers(other.geom)
 
-  def intersects(other: Geometry) =
+  def intersects(other: Geometry): Boolean =
     geom.intersects(other.geom)
 
-  def disjoint(other: Geometry) =
+  def disjoint(other: Geometry): Boolean =
     geom.disjoint(other.geom)
 
-  def touches(other: Geometry) =
+  def touches(other: Geometry): Boolean =
     geom.touches(other.geom)
 
   def distance(other: Geometry) =
@@ -35,12 +35,6 @@ trait Geometry {
     geom.isWithinDistance(other.geom, dist)
 
   /* TO BE IMPLEMENTED ON A PER TYPE BASIS */
-
-
-
-
-
-
 
   // equal (with tolerance?)
   // equalExact (huh?)

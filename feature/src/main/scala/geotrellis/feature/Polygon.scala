@@ -39,7 +39,8 @@ object Polygon {
 
 }
 
-case class Polygon(geom: jts.Polygon) extends Geometry {
+case class Polygon(geom: jts.Polygon) extends Geometry 
+                                         with TwoDimensions {
 
   assert(!geom.isEmpty)
 
@@ -152,9 +153,6 @@ case class Polygon(geom: jts.Polygon) extends Geometry {
   def within(p: Polygon): Boolean =
     geom.within(p.geom)
 
-  def crosses(p: Point): Boolean =
+  def crosses(p: AtMostOneDimensions): Boolean =
     geom.crosses(p.geom)
-
-  def crosses(l: Line): Boolean =
-    geom.crosses(l.geom)
 }

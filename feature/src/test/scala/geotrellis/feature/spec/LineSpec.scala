@@ -13,5 +13,18 @@ class LineSpec extends FunSpec with ShouldMatchers {
       val l = Line(List[(Double,Double)]((0,0),(1,0),(1,1),(0,1),(0,0)))
       l.isClosed should be (true)
     }
+
+    it("should return true for crosses for LineSet it crosses") {
+      val l = Line( (0.0, 0.0), (5.0, 5.0) )
+      val ml = 
+        LineSet (
+          Line( (1.0, 0.0), (1.0, 5.0) ),
+          Line( (2.0, 0.0), (2.0, 5.0) ),
+          Line( (3.0, 0.0), (3.0, 5.0) ),
+          Line( (4.0, 0.0), (4.0, 5.0) )
+        )
+
+      l.crosses(ml) should be (true)
+    }
   }
 }
