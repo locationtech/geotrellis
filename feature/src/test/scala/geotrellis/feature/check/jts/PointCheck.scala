@@ -45,6 +45,17 @@ object PointCheck extends Properties("Point") {
     !p1.covers(p2) || (p1 == p2)
   }
 
+  property("within[others]") = forAll { (p1: Point, p2: Point) =>
+    p1.within(p2) == false
+  }
+
+  property("within[MultiPoint]") = forAll { (p: Point) =>
+    val mp = factory.createMultiPoint(
+      Array(new Coordinate(p.getX,p.getY), new Coordinate(p.getX+5.0, p.getY+5.0))
+    )
+    p.within(mp) == true
+  }
+
   property("getInteriorPoint") = forAll { (p:Point) =>
     p.getInteriorPoint == p
   }

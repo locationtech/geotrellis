@@ -8,7 +8,10 @@ import scala.collection.mutable
 class GeometryCollection(val points: Set[Point],
                          val lines: Set[Line],
                          val polygons: Set[Polygon],
-                         val geom: jts.GeometryCollection)
+                         val geom: jts.GeometryCollection) {
+
+  lazy val area: Double = geom.getArea
+}
 
 object GeometryCollection {
 

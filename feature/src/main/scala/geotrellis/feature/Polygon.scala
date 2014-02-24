@@ -39,11 +39,19 @@ object Polygon {
 
 }
 
-case class Polygon(geom: jts.Polygon) extends Geometry {
+case class Polygon(geom: jts.Polygon) extends Geometry 
+                                         with TwoDimensions {
 
   assert(!geom.isEmpty)
 
+  lazy val isRectangle: Boolean = geom.isRectangle
+
+  lazy val area: Double = geom.getArea
+
   lazy val exterior = Line(geom.getExteriorRing)
+
+  lazy val boundary: PolygonBoundaryResult =
+    geom.getBoundary
 
   // -- Intersection
 
@@ -133,22 +141,12 @@ case class Polygon(geom: jts.Polygon) extends Geometry {
 
   // -- Predicates
 
-  def contains(p: Point): Boolean =
-    geom.contains(p.geom)
+  def contains(g: Geometry): Boolean =
+    geom.contains(g.geom)
 
-  def contains(l: Line): Boolean =
-    geom.contains(l.geom)
+  def within(g: TwoDimensions): Boolean =
+    geom.within(g.geom)
 
-  def contains(p: Polygon): Boolean =
-    geom.contains(p.geom)
-
-  def within(p: Polygon): Boolean =
-    geom.within(p.geom)
-
-  def crosses(g: Geometry): Boolean =
+  def crosses(g: OneDimensions): Boolean =
     geom.crosses(g.geom)
-
-  lazy val isRectangle = geom.isRectangle
-
-  lazy val area = geom.getArea
 }
