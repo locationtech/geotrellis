@@ -191,4 +191,115 @@ class PowSpec extends FunSpec
       }
     }
   }
+  describe("Pow on raster") {
+    it("Raises an int raster to an int power") {
+      val r = positiveIntegerRaster
+      val result = get(r**5)
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          withClue(s"Failure at $col,$row") {
+            result.get(col,row) should be (math.pow(r.get(col,row),5).toInt)
+          }
+        }
+      }
+    }
+
+    it("raises a double raster to an int power") {
+      val r = probabilityRaster
+      val result = get(r**3)
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          result.getDouble(col,row) should be (math.pow(r.getDouble(col,row),3))
+        }
+      }
+    }
+
+    it("raises an integer to the power of an int raster's cells") {
+      val r = positiveIntegerRaster
+      val result = get(r.localPowValue(-10))
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          result.get(col,row) should be (math.pow(-10, r.get(col,row)).toInt)
+        }
+      }
+    }
+
+    it("raises an integer to the power of a double raster's cells") {
+      val r = probabilityRaster
+      val result = get(r.localPowValue(3))
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          result.getDouble(col,row) should be (math.pow(3.0, r.getDouble(col,row)))
+        }
+      }
+    }
+
+    it("raises an int raster to a double power") {
+      val r = positiveIntegerRaster
+      val result = get(r**5.1)
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          result.get(col,row) should be (math.pow(r.get(col,row), 5.1).toInt)
+        }
+      }
+    }
+
+    it("raises a double raster to a double power") {
+      val r = probabilityRaster
+      val result = get(r**.3)
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          result.getDouble(col,row) should be (math.pow(r.getDouble(col,row), 0.3))
+        }
+      }
+    }
+
+    it("raises a double to the power of a int raster's cells") {
+      val r = positiveIntegerRaster
+      val result = get(r.localPowValue(-10.7))
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          result.get(col,row) should be ( math.pow(-10.7, r.get(col,row)).toInt)
+        }
+      }
+    }
+
+    it("raises a double value to the power of a double raster's cells") {
+      val r = probabilityRaster
+      val result = get(r.localPowValue(-3.3))
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          val z = r.getDouble(col,row)
+          val rz = result.getDouble(col,row)
+          if(isNoData(z) || z < 1)
+            withClue(s"z = $z, rz = $rz") { isNoData(rz) should be (true) }
+          else
+            withClue(s"z = $z, rz = $rz") { rz should be (math.pow(-3.3, r.getDouble(col,row))) }
+        }
+      }
+    }
+
+    it("raises an integer raster to itself") {
+      val r = positiveIntegerRaster
+      val result = get(r**r)
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          val z = r.get(col,row)
+          val rz = result.get(col,row)
+          withClue(s"$z ** $z != $rz") { rz should be (math.pow(z,z).toInt) }
+        }
+      }
+    }
+
+    it("raises a double raster to itself") {
+      val r = probabilityRaster
+      val result = get(r**r)
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          val z = r.getDouble(col,row)
+          result.getDouble(col,row) should be (math.pow(z,z))
+        }
+      }
+    }
+  }
 }
