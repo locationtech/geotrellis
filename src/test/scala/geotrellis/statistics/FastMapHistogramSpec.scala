@@ -25,5 +25,22 @@ class FastMapHistogramSpec extends FunSpec with ShouldMatchers {
       h.getMedian should equal (h.generateStatistics.median)
     }
   }
+
+  describe("mean calculation") {
+    it("should return the same result for getMean and generateStatistics.mean") {
+      val h = FastMapHistogram()
+      //large values to check that overflow does not trip as it would with sum/count method
+      val list = List(1, 32, 243, 243, 1024, 3125, 7776, 7776, 7776, 16807, 32768, 59049, 59049,
+        59049, 59049, 100000, 161051, 248832, 248832, 371293, 537824, 537824, 759375, 1048576,
+        1419857, 1419857, 1889568, 2476099, 2147483647)
+      for(i <- list) {
+        h.countItem(i)
+      }
+
+      val mean = h.getMean()
+      mean should equal (7.444884144827585E7)
+      mean should equal (h.generateStatistics.mean)
+    }
+  }
 }
                                
