@@ -12,7 +12,8 @@ object Point {
 
 }
 
-case class Point(geom: jts.Point) extends Geometry {
+case class Point(geom: jts.Point) extends Geometry 
+                                     with ZeroDimensions {
 
   assert(!geom.isEmpty)
 
@@ -78,20 +79,8 @@ case class Point(geom: jts.Point) extends Geometry {
   def contains(p: Point): Boolean =
     geom.contains(p.geom)
 
-  def within(p: Point): Boolean =
-    geom.within(p.geom)
-
-  def within(l: Line): Boolean =
-    geom.within(l.geom)
-
-  def within(p: Polygon): Boolean =
-    geom.within(p.geom)
-
-  def crosses(l: Line): Boolean =
-    geom.crosses(l.geom)
-
-  def crosses(p: Polygon): Boolean =
-    geom.crosses(p.geom)
+  def within(g: Geometry): Boolean =
+    geom.within(g.geom)
 
   // -- Misc.
 
