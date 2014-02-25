@@ -2,67 +2,82 @@ package geotrellis.feature
 
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
+import com.vividsolutions.jts.geom.MultiPoint
 
 case class PointSet(ps: Set[Point]) extends GeometrySet 
                                        with ZeroDimensions {
 
-  val geom = factory.createMultiPoint(ps.map(_.geom).toArray)
+  val geom: MultiPoint =
+    factory.createMultiPoint(ps.map(_.geom).toArray)
 
   // -- Intersection
 
-  def &(p: Point) = intersection(p)
+  def &(p: Point): PointIntersectionResult =
+    intersection(p)
   def intersection(p: Point): PointIntersectionResult =
     p.intersection(this)
 
-  def &(l: Line) = intersection(l)
+  def &(l: Line): PointSetIntersectionResult =
+    intersection(l)
   def intersection(l: Line): PointSetIntersectionResult =
     l.intersection(this)
 
-  def &(p: Polygon) = intersection(p)
+  def &(p: Polygon): PointSetIntersectionResult =
+    intersection(p)
   def intersection(p: Polygon): PointSetIntersectionResult =
     p.intersection(this)
 
-  def &(ps: PointSet) = intersection(ps)
+  def &(ps: PointSet): PointSetIntersectionResult =
+    intersection(ps)
   def intersection(ps: PointSet): PointSetIntersectionResult =
     geom.intersection(ps.geom)
 
-  def &(ls: LineSet) = intersection(ls)
+  def &(ls: LineSet): PointSetIntersectionResult =
+    intersection(ls)
   def intersection(ls: LineSet): PointSetIntersectionResult =
     geom.intersection(ls.geom)
 
-  def &(ps: PolygonSet) = intersection(ps)
+  def &(ps: PolygonSet): PointSetIntersectionResult =
+    intersection(ps)
   def intersection(ps: PolygonSet): PointSetIntersectionResult =
     geom.intersection(ps.geom)
 
   // -- Union
 
-  def |(p: Point) = union(p)
-  def union(p: Point): PointPointUnionResult =
+  def |(p: Point): PointZeroDimensionsUnionResult =
+    union(p)
+  def union(p: Point): PointZeroDimensionsUnionResult =
     p.union(this)
 
-  def |(l: Line) = union(l)
+  def |(l: Line): PointLineUnionResult =
+    union(l)
   def union(l:Line): PointLineUnionResult =
     l.union(this)
 
-  def |(p: Polygon) = union(p)
+  def |(p: Polygon): PolygonXUnionResult =
+    union(p)
   def union(p: Polygon): PolygonXUnionResult =
     p.union(this)
 
-  def |(ps: PointSet) = union(ps)
-  def union(ps: PointSet): PointPointUnionResult =
+  def |(ps: PointSet): PointZeroDimensionsUnionResult =
+    union(ps)
+  def union(ps: PointSet): PointZeroDimensionsUnionResult =
     geom.union(ps.geom)
 
-  def |(ls: LineSet) = union(ls)
+  def |(ls: LineSet): PointLineSetUnionResult =
+    union(ls)
   def union(ls: LineSet): PointLineSetUnionResult =
     geom.union(ls.geom)
 
-  def |(ps: PolygonSet) = union(ps)
+  def |(ps: PolygonSet): PolygonSetUnionResult =
+    union(ps)
   def union(ps: PolygonSet): PolygonSetUnionResult =
     geom.union(ps.geom)
 
   // -- Difference
 
-  def -(other: Geometry) = difference(other)
+  def -(other: Geometry): PointSetDifferenceResult =
+    difference(other)
   def difference(other: Geometry): PointSetDifferenceResult =
     geom.difference(other.geom)
 
@@ -71,12 +86,29 @@ case class PointSet(ps: Set[Point]) extends GeometrySet
   def contains(g: ZeroDimensions): Boolean =
     geom.contains(g.geom)
 
-  def within(ps: PointSet): Boolean =
-    geom.within(ps.geom)
-
-  def within(g: AtLeastOneDimensions): Boolean =
+  def within(g: Geometry): Boolean =
     geom.within(g.geom)
 
+  def overlaps(ps: PointSet): Boolean =
+    geom.overlaps(ps.geom)
+
+  // -- SymDifference
+
+  def symDifference(g: ZeroDimensions): ZeroDimensionsPointSetSymDifferenceResult =
+    geom.symDifference(g.geom)
+
+  def symDifference(l: Line): ZeroDimensionsLineSymDifferenceResult =
+    geom.symDifference(l.geom)
+
+  def symDifference(p: Polygon): ZeroDimensionsPolygonSymDifferenceResult =
+    geom.symDifference(p.geom)
+
+  def symDifference(ls: LineSet): ZeroDimensionsLineSetSymDifferenceResult =
+    geom.symDifference(ls.geom)
+
+  def symDifference(ps: PolygonSet): ZeroDimensionsPolygonSetSymDifferenceResult =
+    geom.symDifference(ps.geom)
+                         
   // -- Misc.
 
   def convexHull: Polygon =

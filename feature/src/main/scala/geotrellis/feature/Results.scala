@@ -107,9 +107,9 @@ object PolygonSetIntersectionResult {
 
 // -- Union
 
-abstract sealed trait PointPointUnionResult
-object PointPointUnionResult {
-  implicit def jtsToResult(geom: jts.Geometry): PointPointUnionResult =
+abstract sealed trait PointZeroDimensionsUnionResult
+object PointZeroDimensionsUnionResult {
+  implicit def jtsToResult(geom: jts.Geometry): PointZeroDimensionsUnionResult =
     geom match {
       case p: jts.Point => PointResult(p)
       case mp: jts.MultiPoint => PointSetResult(mp)
@@ -300,20 +300,42 @@ object PointPointSymDifferenceResult {
     }
 }
 
-abstract sealed trait PointLineSymDifferenceResult
-object PointLineSymDifferenceResult {
-  implicit def jtsToResult(geom: jts.Geometry): PointLineSymDifferenceResult =
+abstract sealed trait ZeroDimensionsPointSetSymDifferenceResult
+object ZeroDimensionsPointSetSymDifferenceResult {
+  implicit def jtsToResult(geom: jts.Geometry): ZeroDimensionsPointSetSymDifferenceResult =
+    geom match {
+      case p: jts.Point => PointResult(p)
+      case mp: jts.MultiPoint => PointSetResult(mp)
+      case _ => NoResult
+    }
+}
+
+abstract sealed trait ZeroDimensionsLineSymDifferenceResult
+object ZeroDimensionsLineSymDifferenceResult {
+  implicit def jtsToResult(geom: jts.Geometry): ZeroDimensionsLineSymDifferenceResult =
     geom match {
       case l: jts.LineString => LineResult(l)
+      case gc: jts.GeometryCollection => GeometryCollectionResult(gc)
+      case _ =>
+        sys.error(s"Unexpected result for ZeroDimensions-Line symDifference: ${geom.getGeometryType}")
+    }
+}
+
+abstract sealed trait ZeroDimensionsLineSetSymDifferenceResult
+object ZeroDimensionsLineSetSymDifferenceResult {
+  implicit def jtsToResult(geom: jts.Geometry): ZeroDimensionsLineSetSymDifferenceResult =
+    geom match {
+      case l: jts.LineString => LineResult(l)
+      case ml: jts.MultiLineString => LineSetResult(ml)
       case gc: jts.GeometryCollection => GeometryCollectionResult(gc)
       case _ =>
         sys.error(s"Unexpected result for Point-Line symDifference: ${geom.getGeometryType}")
     }
 }
 
-abstract sealed trait PointPolygonSymDifferenceResult
-object PointPolygonSymDifferenceResult {
-  implicit def jtsToResult(geom: jts.Geometry): PointPolygonSymDifferenceResult =
+abstract sealed trait ZeroDimensionsPolygonSymDifferenceResult
+object ZeroDimensionsPolygonSymDifferenceResult {
+  implicit def jtsToResult(geom: jts.Geometry): ZeroDimensionsPolygonSymDifferenceResult =
     geom match {
       case p: jts.Polygon => PolygonResult(p)
       case gc: jts.GeometryCollection => GeometryCollectionResult(gc)
@@ -322,9 +344,21 @@ object PointPolygonSymDifferenceResult {
     }
 }
 
-abstract sealed trait LineLineSymDifferenceResult
-object LineLineSymDifferenceResult {
-  implicit def jtsToResult(geom: jts.Geometry): LineLineSymDifferenceResult =
+abstract sealed trait ZeroDimensionsPolygonSetSymDifferenceResult
+object ZeroDimensionsPolygonSetSymDifferenceResult {
+  implicit def jtsToResult(geom: jts.Geometry): ZeroDimensionsPolygonSetSymDifferenceResult =
+    geom match {
+      case p: jts.Polygon => PolygonResult(p)
+      case mp: jts.MultiPolygon => PolygonSetResult(mp)
+      case gc: jts.GeometryCollection => GeometryCollectionResult(gc)
+      case _ =>
+        sys.error(s"Unexpected result for Point-Polygon symDifference: ${geom.getGeometryType}")
+    }
+}
+
+abstract sealed trait OneDimensionsSymDifferenceResult
+object OneDimensionsSymDifferenceResult {
+  implicit def jtsToResult(geom: jts.Geometry): OneDimensionsSymDifferenceResult =
     geom match {
       case l: jts.LineString => LineResult(l)
       case ml: jts.MultiLineString => LineSetResult(ml)
@@ -332,9 +366,9 @@ object LineLineSymDifferenceResult {
     }
 }
 
-abstract sealed trait LinePolygonSymDifferenceResult
-object LinePolygonSymDifferenceResult {
-  implicit def jtsToResult(geom: jts.Geometry): LinePolygonSymDifferenceResult =
+abstract sealed trait OneDimensionsPolygonSymDifferenceResult
+object OneDimensionsPolygonSymDifferenceResult {
+  implicit def jtsToResult(geom: jts.Geometry): OneDimensionsPolygonSymDifferenceResult =
     geom match {
       case p: jts.Polygon => PolygonResult(p)
       case gc: jts.GeometryCollection => GeometryCollectionResult(gc)
@@ -343,9 +377,21 @@ object LinePolygonSymDifferenceResult {
     }
 }
 
-abstract sealed trait PolygonPolygonSymDifferenceResult
-object PolygonPolygonSymDifferenceResult {
-  implicit def jtsToResult(geom: jts.Geometry): PolygonPolygonSymDifferenceResult =
+abstract sealed trait OneDimensionsPolygonSetSymDifferenceResult
+object OneDimensionsPolygonSetSymDifferenceResult {
+  implicit def jtsToResult(geom: jts.Geometry): OneDimensionsPolygonSetSymDifferenceResult =
+    geom match {
+      case p: jts.Polygon => PolygonResult(p)
+      case mp: jts.MultiPolygon => PolygonSetResult(mp)
+      case gc: jts.GeometryCollection => GeometryCollectionResult(gc)
+      case _ =>
+        sys.error(s"Unexpected result for Line-Polygon symDifference: ${geom.getGeometryType}")
+    }
+}
+
+abstract sealed trait TwoDimensionsSymDifferenceResult
+object TwoDimensionsSymDifferenceResult {
+  implicit def jtsToResult(geom: jts.Geometry): TwoDimensionsSymDifferenceResult =
     geom match {
       case p: jts.Polygon => PolygonResult(p)
       case mp: jts.MultiPolygon => PolygonSetResult(mp)
@@ -367,8 +413,9 @@ case object NoResult extends Result
   with PolygonPolygonDifferenceResult
   with PointSetDifferenceResult
   with PointPointSymDifferenceResult
-  with LineLineSymDifferenceResult
-  with PolygonPolygonSymDifferenceResult
+  with OneDimensionsSymDifferenceResult
+  with TwoDimensionsSymDifferenceResult
+  with ZeroDimensionsPointSetSymDifferenceResult
 
 case class PointResult(p: Point) extends Result
   with PointIntersectionResult
@@ -378,9 +425,10 @@ case class PointResult(p: Point) extends Result
   with PointSetIntersectionResult
   with LineSetIntersectionResult
   with PolygonSetIntersectionResult
-  with PointPointUnionResult
+  with PointZeroDimensionsUnionResult
   with PointDifferenceResult
   with PointSetDifferenceResult
+  with ZeroDimensionsPointSetSymDifferenceResult
 
 case class LineResult(l: Line) extends Result
   with LineLineIntersectionResult
@@ -394,8 +442,9 @@ case class LineResult(l: Line) extends Result
   with LineXDifferenceResult
   with PointLineSetUnionResult
   with PolygonBoundaryResult
-  with PointLineSymDifferenceResult
-  with LineLineSymDifferenceResult
+  with ZeroDimensionsLineSymDifferenceResult
+  with OneDimensionsSymDifferenceResult
+  with ZeroDimensionsLineSetSymDifferenceResult
 
 case class PolygonResult(p: Polygon) extends Result
   with PolygonPolygonIntersectionResult
@@ -405,19 +454,22 @@ case class PolygonResult(p: Polygon) extends Result
   with PolygonSetUnionResult
   with PolygonXDifferenceResult
   with PolygonPolygonDifferenceResult
-  with PointPolygonSymDifferenceResult
-  with LinePolygonSymDifferenceResult
-  with PolygonPolygonSymDifferenceResult
+  with ZeroDimensionsPolygonSymDifferenceResult
+  with OneDimensionsPolygonSymDifferenceResult
+  with TwoDimensionsSymDifferenceResult
+  with ZeroDimensionsPolygonSetSymDifferenceResult
+  with OneDimensionsPolygonSetSymDifferenceResult
 
 case class PointSetResult(ps: Set[Point]) extends Result
   with PolygonPolygonIntersectionResult
   with PointSetIntersectionResult
   with LineSetIntersectionResult
   with PolygonSetIntersectionResult
-  with PointPointUnionResult
+  with PointZeroDimensionsUnionResult
   with LineBoundaryResult
   with PointSetDifferenceResult
   with PointPointSymDifferenceResult
+  with ZeroDimensionsPointSetSymDifferenceResult
 
 case class LineSetResult(ls: Set[Line]) extends Result
   with PolygonLineIntersectionResult
@@ -430,7 +482,8 @@ case class LineSetResult(ls: Set[Line]) extends Result
   with PointLineSetUnionResult
   with LineSetPointDifferenceResult
   with PolygonBoundaryResult
-  with LineLineSymDifferenceResult
+  with OneDimensionsSymDifferenceResult
+  with ZeroDimensionsLineSetSymDifferenceResult
 
 object LineSetResult {
   implicit def jtsToResult(geom: jts.Geometry): LineSetResult =
@@ -448,7 +501,9 @@ case class PolygonSetResult(ps: Set[Polygon]) extends Result
   with PolygonSetUnionResult
   with PolygonPolygonDifferenceResult
   with PolygonSetXDifferenceResult
-  with PolygonPolygonSymDifferenceResult
+  with TwoDimensionsSymDifferenceResult
+  with ZeroDimensionsPolygonSetSymDifferenceResult
+  with OneDimensionsPolygonSetSymDifferenceResult
 
 case class GeometryCollectionResult(gc: GeometryCollection) extends Result
   with PolygonPolygonIntersectionResult
@@ -458,6 +513,9 @@ case class GeometryCollectionResult(gc: GeometryCollection) extends Result
   with PolygonXUnionResult
   with PolygonSetUnionResult
   with PointLineSetUnionResult
-  with PointLineSymDifferenceResult
-  with PointPolygonSymDifferenceResult
-  with LinePolygonSymDifferenceResult
+  with ZeroDimensionsLineSymDifferenceResult
+  with ZeroDimensionsPolygonSymDifferenceResult
+  with OneDimensionsPolygonSymDifferenceResult
+  with ZeroDimensionsLineSetSymDifferenceResult
+  with ZeroDimensionsPolygonSetSymDifferenceResult
+  with OneDimensionsPolygonSetSymDifferenceResult

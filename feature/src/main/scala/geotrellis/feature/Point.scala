@@ -17,44 +17,49 @@ case class Point(geom: jts.Point) extends Geometry
 
   assert(!geom.isEmpty)
 
-  val x = geom.getX
-  val y = geom.getY
+  val x: Double =
+    geom.getX
+  val y: Double =
+    geom.getY
 
   // -- Intersection
 
-  def &(other: Geometry) = intersection(other)
+  def &(other: Geometry): PointIntersectionResult =
+    intersection(other)
   def intersection(other: Geometry): PointIntersectionResult =
     geom.intersection(other.geom)
 
   // -- Union
 
-  def |(p: Point) = union(p)
-  def union(p: Point): PointPointUnionResult =
-    geom.union(p.geom)
+  def |(g: ZeroDimensions): PointZeroDimensionsUnionResult =
+    union(g)
+  def union(g: ZeroDimensions): PointZeroDimensionsUnionResult =
+    geom.union(g.geom)
 
-  def |(l: Line) = union(l)
+  def |(l: Line): PointLineUnionResult =
+    union(l)
   def union(l: Line): PointLineUnionResult =
     geom.union(l.geom)
 
-  def |(p: Polygon) = union(p)
+  def |(p: Polygon): PolygonXUnionResult =
+    union(p)
   def union(p: Polygon): PolygonXUnionResult =
     geom.union(p.geom)
 
-  def |(ps: PointSet) = union(ps)
-  def union(ps: PointSet): PointPointUnionResult =
-    geom.union(ps.geom)
-
-  def |(ls: LineSet) = union(ls)
+  def |(ls: LineSet): PointLineSetUnionResult =
+    union(ls)
   def union(ls: LineSet): PointLineSetUnionResult =
     geom.union(ls.geom)
 
-  def |(ps: PolygonSet) = union(ps)
+  def |(ps: PolygonSet): PolygonSetUnionResult =
+    union(ps)
   def union(ps: PolygonSet): PolygonSetUnionResult =
     geom.union(ps.geom)
 
   // -- Difference
 
-  def -(other: Geometry) = difference(other)
+  def -(other: Geometry): PointDifferenceResult =
+    difference(other)
   def difference(other: Geometry): PointDifferenceResult =
     geom.difference(other.geom)
 
@@ -63,11 +68,20 @@ case class Point(geom: jts.Point) extends Geometry
   def symDifference(p: Point): PointPointSymDifferenceResult =
     geom.symDifference(p.geom)
 
-  def symDifference(l: Line): PointLineSymDifferenceResult =
+  def symDifference(l: Line): ZeroDimensionsLineSymDifferenceResult =
     geom.symDifference(l.geom)
 
-  def symDifference(p: Polygon): PointPolygonSymDifferenceResult =
+  def symDifference(p: Polygon): ZeroDimensionsPolygonSymDifferenceResult =
     geom.symDifference(p.geom)
+
+  def symDifference(ps: PointSet): ZeroDimensionsPointSetSymDifferenceResult =
+    geom.symDifference(ps.geom)
+
+  def symDifference(ls: LineSet): ZeroDimensionsLineSetSymDifferenceResult =
+    geom.symDifference(ls.geom)
+
+  def symDifference(ps: PolygonSet): ZeroDimensionsPolygonSetSymDifferenceResult =
+    geom.symDifference(ps.geom)
 
   // -- Buffer
 
@@ -76,12 +90,10 @@ case class Point(geom: jts.Point) extends Geometry
 
   // -- Predicates
 
-  def contains(p: Point): Boolean =
-    geom.contains(p.geom)
+  def contains(g: ZeroDimensions): Boolean =
+    geom.contains(g.geom)
 
   def within(g: Geometry): Boolean =
     geom.within(g.geom)
-
-  // -- Misc.
 
 }

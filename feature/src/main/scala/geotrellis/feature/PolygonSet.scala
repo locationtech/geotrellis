@@ -2,54 +2,66 @@ package geotrellis.feature
 
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
+import com.vividsolutions.jts.geom.MultiPolygon
 
 case class PolygonSet(ps: Set[Polygon]) extends GeometrySet 
                                            with TwoDimensions {
 
-  val geom = factory.createMultiPolygon(ps.map(_.geom).toArray)
+  val geom: MultiPolygon =
+    factory.createMultiPolygon(ps.map(_.geom).toArray)
 
-  lazy val area: Double = geom.getArea
+  lazy val area: Double =
+    geom.getArea
 
   lazy val boundary: LineSetResult =
     geom.getBoundary
 
   // -- Intersection
 
-  def &(p: Point) = intersection(p)
+  def &(p: Point): PointIntersectionResult =
+    intersection(p)
   def intersection(p: Point): PointIntersectionResult =
     p.intersection(this)
 
-  def &(l: Line) = intersection(l)
+  def &(l: Line): LineSetIntersectionResult =
+    intersection(l)
   def intersection(l: Line): LineSetIntersectionResult =
     l.intersection(this)
 
-  def &(p: Polygon) = intersection(p)
+  def &(p: Polygon): PolygonSetIntersectionResult =
+    intersection(p)
   def intersection(p: Polygon): PolygonSetIntersectionResult =
     p.intersection(this)
 
-  def &(ls: LineSet) = intersection(ls)
+  def &(ls: LineSet): LineSetIntersectionResult =
+    intersection(ls)
   def intersection(ls: LineSet): LineSetIntersectionResult =
     ls.intersection(this)
 
-  def &(ps: PolygonSet) = intersection(ps)
+  def &(ps: PolygonSet): PolygonSetIntersectionResult =
+    intersection(ps)
   def intersection(ps: PolygonSet): PolygonSetIntersectionResult =
     geom.intersection(ps.geom)
 
   // -- Union
 
-  def |(p: Point) = union(p)
+  def |(p: Point): PolygonSetUnionResult =
+    union(p)
   def union(p: Point): PolygonSetUnionResult =
     p.union(this)
 
-  def |(l: Line) = union(l)
+  def |(l: Line): PolygonSetUnionResult =
+    union(l)
   def union(l: Line): PolygonSetUnionResult =
     l.union(this)
 
-  def |(p: Polygon) = union(p)
+  def |(p: Polygon): PolygonPolygonUnionResult =
+    union(p)
   def union(p: Polygon): PolygonPolygonUnionResult =
     p.union(this)
 
-  def |(ps: PointSet) = union(ps)
+  def |(ps: PointSet): PolygonSetUnionResult =
+    union(ps)
   def union(ps: PointSet): PolygonSetUnionResult =
     ps.union(this)
 
@@ -57,35 +69,55 @@ case class PolygonSet(ps: Set[Polygon]) extends GeometrySet
   def union(ls: LineSet): PolygonSetUnionResult =
     ls.union(this)
 
-  def |(ps: PolygonSet) = union(ps)
+  def |(ps: PolygonSet): PolygonPolygonUnionResult =
+    union(ps)
   def union(ps: PolygonSet): PolygonPolygonUnionResult =
     geom.union(ps.geom)
 
   // -- Difference
 
-  def -(p: Point) = difference(p)
+  def -(p: Point): PolygonSetXDifferenceResult =
+    difference(p)
   def difference(p: Point): PolygonSetXDifferenceResult =
     geom.difference(p.geom)
 
-  def -(l: Line) = difference(l)
+  def -(l: Line): PolygonSetXDifferenceResult =
+    difference(l)
   def difference(l: Line): PolygonSetXDifferenceResult =
     geom.difference(l.geom)
 
-  def -(p: Polygon) = difference(p)
+  def -(p: Polygon): PolygonPolygonDifferenceResult =
+    difference(p)
   def difference(p: Polygon): PolygonPolygonDifferenceResult =
     geom.difference(p.geom)
 
-  def -(ps: PointSet) = difference(ps)
+  def -(ps: PointSet): PolygonSetXDifferenceResult =
+    difference(ps)
   def difference(ps: PointSet): PolygonSetXDifferenceResult =
     geom.difference(ps.geom)
 
-  def -(ls: LineSet) = difference(ls)
+  def -(ls: LineSet): PolygonSetXDifferenceResult =
+    difference(ls)
   def difference(ls: LineSet): PolygonSetXDifferenceResult =
     geom.difference(ls.geom)
 
-  def -(ps: PolygonSet) = difference(ps)
+  def -(ps: PolygonSet): PolygonPolygonDifferenceResult =
+    difference(ps)
   def difference(ps: PolygonSet): PolygonPolygonDifferenceResult =
     geom.difference(ps.geom)
+
+  // -- SymDifference
+
+  def symDifference(g: ZeroDimensions): ZeroDimensionsPolygonSetSymDifferenceResult =
+    geom.symDifference(g.geom)
+
+  def symDifference(g: OneDimensions): OneDimensionsPolygonSetSymDifferenceResult =
+    geom.symDifference(g.geom)
+
+  def symDifference(g: TwoDimensions): TwoDimensionsSymDifferenceResult =
+    geom.symDifference(g.geom)
+
+  // -- Predicates
 
   def contains(g: Geometry): Boolean =
     geom.contains(g.geom)
@@ -95,4 +127,11 @@ case class PolygonSet(ps: Set[Polygon]) extends GeometrySet
 
   def crosses(g: OneDimensions): Boolean =
     geom.crosses(g.geom)
+
+  def crosses(ps: PointSet): Boolean =
+    geom.crosses(ps.geom)
+
+  def overlaps(g: TwoDimensions): Boolean =
+    geom.crosses(g.geom)
+
 }
