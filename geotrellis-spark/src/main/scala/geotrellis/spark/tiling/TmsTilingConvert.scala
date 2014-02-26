@@ -1,29 +1,7 @@
 package geotrellis.spark.tiling
-import geotrellis.RasterExtent
-import geotrellis.process.LayerId
-
 import geotrellis.raster.TileLayout
-import geotrellis.source.RasterDefinition
-import geotrellis.spark.metadata.PyramidMetadata
 
 object TmsTilingConvert {
-
-  /*
-   * Conversion of RasterMetadata to RasterDefinition. In doing the conversion, we use the 
-   * extent of the tile boundaries and not of the original image boundaries. Hence, we use 
-   * tileToExtent instead of plain old 'extent' from PyramidMeta, which corresponds to the 
-   * original image boundaries. Also ignored for the same reason is pixelExtent from the 
-   * RasterMetadata
-   */
-  def rasterDefinition(zoom: Int, meta: PyramidMetadata): RasterDefinition = {
-    val te = meta.rasterMetadata(zoom.toString).tileExtent
-    val res = TmsTiling.resolution(zoom, meta.tileSize)
-    val re = RasterExtent(TmsTiling.tileToExtent(te, zoom, meta.tileSize), res, res)
-
-    // TODO - need to talk to Rob about converting TileLayout to longs
-    val tl = TileLayout(re, te.width.toInt, te.height.toInt)
-    RasterDefinition(LayerId.MEM_RASTER, re, tl, meta.rasterType, false)
-  }
 
   /*
    * Conversion methods from/to Geotrellis Tile Identification scheme (referred to as 

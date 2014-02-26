@@ -1,6 +1,6 @@
 package geotrellis.spark.testfiles
 import geotrellis.spark.metadata.PyramidMetadata
-import geotrellis.spark.tiling.TmsTilingConvert
+import geotrellis.spark.metadata.SparkRasterDefinition
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -14,7 +14,7 @@ class TestFiles(file: Path, conf: Configuration) {
   
   private def setup = {
     val meta = PyramidMetadata(file, conf)
-    (meta, TmsTilingConvert.rasterDefinition(meta.maxZoomLevel, meta))
+    (meta, SparkRasterDefinition(meta.maxZoomLevel, meta))
   }
 }
 

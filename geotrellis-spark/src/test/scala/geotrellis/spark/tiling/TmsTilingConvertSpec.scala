@@ -1,9 +1,9 @@
 package geotrellis.spark.tiling
+import geotrellis.RasterExtent
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.testfiles.AllOnes
+
 import org.scalatest.matchers.ShouldMatchers
-import geotrellis.raster.TileLayout
-import geotrellis.RasterExtent
 
 class TmsTilingConvertSpec extends TestEnvironment with ShouldMatchers {
   val allOnes = AllOnes(inputHome, conf)
@@ -14,18 +14,6 @@ class TmsTilingConvertSpec extends TestEnvironment with ShouldMatchers {
   val zoom = meta.maxZoomLevel
   val tileSize = meta.tileSize
   val res = TmsTiling.resolution(zoom, tileSize)
-
-  describe("rasterDefinition conversion tests") {
-    it("should have the correct tile layout") {
-      layout should be(TileLayout(te.width.toInt, te.height.toInt, tileSize, tileSize))
-    }
-    it("should have the correct raster extent") {
-      val e = TmsTiling.tileToExtent(te, zoom, tileSize)
-      val cols = tileSize * te.width
-      val rows = tileSize * te.height
-      rasterExtent should be(RasterExtent(e, res, res, cols.toInt, rows.toInt))
-    }
-  }
 
   describe("tile indexing conversion tests") {
     it("should yield the right gtTileId") {
