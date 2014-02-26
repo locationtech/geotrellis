@@ -271,11 +271,21 @@ object PolygonSetXDifferenceResult {
 
 abstract sealed trait LineBoundaryResult
 object LineBoundaryResult {
-  implicit def jtsToResult(geom:jts.Geometry): LineBoundaryResult =
+  implicit def jtsToResult(geom: jts.Geometry): LineBoundaryResult =
     geom match {
-      case p:jts.Point => PointResult(p)
-      case mp:jts.MultiPoint => PointSetResult(mp)
+      case mp: jts.MultiPoint => PointSetResult(mp)
       case _ => NoResult
+    }
+}
+
+abstract sealed trait PolygonBoundaryResult
+object PolygonBoundaryResult {
+  implicit def jtsToResult(geom: jts.Geometry): PolygonBoundaryResult =
+    geom match {
+      case l: jts.LineString => LineResult(l)
+      case ml: jts.MultiLineString => LineSetResult(ml)
+      case _ =>
+        sys.error(s"Unexpected result for Polygon boundary: ${geom.getGeometryType}")
     }
 }
 
@@ -293,7 +303,7 @@ case object NoResult extends Result
   with PolygonPolygonDifferenceResult
   with PointSetDifferenceResult
 
-case class PointResult(p:Point) extends Result
+case class PointResult(p: Point) extends Result
   with PointIntersectionResult
   with LineLineIntersectionResult
   with PolygonLineIntersectionResult
@@ -302,11 +312,10 @@ case class PointResult(p:Point) extends Result
   with LineSetIntersectionResult
   with PolygonSetIntersectionResult
   with PointPointUnionResult
-  with LineBoundaryResult
   with PointDifferenceResult
   with PointSetDifferenceResult
 
-case class LineResult(l:Line) extends Result
+case class LineResult(l: Line) extends Result
   with LineLineIntersectionResult
   with PolygonLineIntersectionResult
   with PolygonPolygonIntersectionResult
@@ -317,8 +326,9 @@ case class LineResult(l:Line) extends Result
   with LinePointDifferenceResult
   with LineXDifferenceResult
   with PointLineSetUnionResult
+  with PolygonBoundaryResult
 
-case class PolygonResult(p:Polygon) extends Result
+case class PolygonResult(p: Polygon) extends Result
   with PolygonPolygonIntersectionResult
   with PolygonXUnionResult
   with PolygonPolygonUnionResult
@@ -327,7 +337,7 @@ case class PolygonResult(p:Polygon) extends Result
   with PolygonXDifferenceResult
   with PolygonPolygonDifferenceResult
 
-case class PointSetResult(ls:Set[Point]) extends Result
+case class PointSetResult(ps: Set[Point]) extends Result
   with PolygonPolygonIntersectionResult
   with PointSetIntersectionResult
   with LineSetIntersectionResult
@@ -336,7 +346,7 @@ case class PointSetResult(ls:Set[Point]) extends Result
   with LineBoundaryResult
   with PointSetDifferenceResult
 
-case class LineSetResult(ls:Set[Line]) extends Result
+case class LineSetResult(ls: Set[Line]) extends Result
   with PolygonLineIntersectionResult
   with PolygonPolygonIntersectionResult
   with LineSetIntersectionResult
@@ -346,8 +356,18 @@ case class LineSetResult(ls:Set[Line]) extends Result
   with LineXDifferenceResult
   with PointLineSetUnionResult
   with LineSetPointDifferenceResult
+  with PolygonBoundaryResult
 
-case class PolygonSetResult(ps:Set[Polygon]) extends Result
+object LineSetResult {
+  implicit def jtsToResult(geom: jts.Geometry): LineSetResult =
+    geom match {
+      case ml: jts.MultiLineString => LineSetResult(ml)
+      case _ =>
+        sys.error(s"Unexpected result: ${geom.getGeometryType}")
+    }
+}
+
+case class PolygonSetResult(ps: Set[Polygon]) extends Result
   with PolygonPolygonIntersectionResult
   with PolygonPolygonUnionResult
   with PolygonSetIntersectionResult
@@ -355,7 +375,7 @@ case class PolygonSetResult(ps:Set[Polygon]) extends Result
   with PolygonPolygonDifferenceResult
   with PolygonSetXDifferenceResult
 
-case class GeometryCollectionResult(gc:GeometryCollection) extends Result
+case class GeometryCollectionResult(gc: GeometryCollection) extends Result
   with PolygonPolygonIntersectionResult
   with LineSetIntersectionResult
   with PolygonSetIntersectionResult

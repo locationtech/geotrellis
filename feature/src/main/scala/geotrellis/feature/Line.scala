@@ -11,7 +11,10 @@ object Line {
   def apply(geom: jts.LineString): Line =
     Line(geom, geom.getCoordinates.map(c => Point(c.x, c.y)).toList)
 
-  def apply(points: Seq[Point]): Line =
+  def apply(points: Point*): Line =
+    apply(points.toList)
+
+  def apply(points: Seq[Point])(implicit d: DummyImplicit): Line =
     apply(points.toList)
 
   def apply(points: Array[Point]): Line =
@@ -27,9 +30,16 @@ object Line {
 
 }
 
-case class Line(geom: jts.LineString, points: List[Point]) extends Geometry {
+case class Line(geom: jts.LineString, points: List[Point]) extends Geometry 
+                                                              with TwoDimensions {
 
   assert(!geom.isEmpty)
+
+  lazy val isClosed: Boolean =
+    geom.isClosed
+
+  lazy val boundary: LineBoundaryResult =
+    geom.getBoundary
 
   // -- Intersection
 
@@ -119,29 +129,15 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry {
   def buffer(d:Double):Polygon =
     geom.buffer(d).asInstanceOf[Polygon]
 
-
-  // Not sure what to do about LinearString, if it really
-  // needs to be around...will make construction of Polys 
-  // tougher maybe.
-
   // -- Predicates
 
-  def isClosed: Boolean =
-    geom.isClosed
+  def contains(g: AtMostOneDimensions): Boolean =
+    geom.contains(g.geom)
 
-  def contains(p: Point): Boolean =
-    geom.contains(p.geom)
+  def within(g: AtLeastOneDimensions): Boolean =
+    geom.within(g.geom)
 
-  def contains(l: Line): Boolean =
-    geom.contains(l.geom)
-
-  def within(l: Line): Boolean =
-    geom.within(l.geom)
-
-  def within(p: Polygon): Boolean =
-    geom.within(p.geom)
-
-  def crosses(g: Geometry): Boolean =
+  def crosses(g: AtLeastOneDimensions): Boolean =
     geom.crosses(g.geom)
 
 }

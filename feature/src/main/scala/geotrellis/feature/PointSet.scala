@@ -3,7 +3,8 @@ package geotrellis.feature
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
 
-case class PointSet(ps: Set[Point]) extends GeometrySet {
+case class PointSet(ps: Set[Point]) extends GeometrySet 
+                                       with ZeroDimensions {
 
   val geom = factory.createMultiPoint(ps.map(_.geom).toArray)
 
@@ -65,6 +66,18 @@ case class PointSet(ps: Set[Point]) extends GeometrySet {
   def difference(other: Geometry): PointSetDifferenceResult =
     geom.difference(other.geom)
 
+  // -- Predicates
+
+  def contains(g: ZeroDimensions): Boolean =
+    geom.contains(g.geom)
+
+  def within(ps: PointSet): Boolean =
+    geom.within(ps.geom)
+
+  def within(g: AtLeastOneDimensions): Boolean =
+    geom.within(g.geom)
+
+  // -- Misc.
 
   def convexHull: Polygon =
     geom.convexHull.asInstanceOf[jts.Polygon]
