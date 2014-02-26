@@ -21,3 +21,11 @@ class TestFiles(file: Path, conf: Configuration) {
 object AllOnes {
   def apply(prefix: Path, conf: Configuration) = new TestFiles(new Path(prefix, "all-ones"), conf)
 }
+
+object AllTwos {
+  def apply(prefix: Path, conf: Configuration) = new TestFiles(new Path(prefix, "all-twos"), conf)
+}
+
+object AllHundreds {
+  def apply(prefix: Path, conf: Configuration) = new TestFiles(new Path(prefix, "all-hundreds"), conf)
+}
