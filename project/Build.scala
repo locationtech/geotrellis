@@ -246,6 +246,7 @@ object GeotrellisBuild extends Build {
   lazy val sparkSettings =
     Seq(
       name := "geotrellis-spark",
+      parallelExecution in Test := false,
       libraryDependencies ++= 
         Seq(
           // first two are just to quell the UnsupportedOperationException in Hadoop's Configuration
