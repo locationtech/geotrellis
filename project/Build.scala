@@ -129,6 +129,7 @@ object GeotrellisBuild extends Build {
 
   lazy val root =
     Project("root", file("."))
+      .aggregate(testkit)
       .settings(rootSettings: _*)
       .dependsOn(macros)
 
@@ -207,6 +208,19 @@ object GeotrellisBuild extends Build {
         "org.slf4j" % "slf4j-api" % "1.6.0",
         "org.slf4j" % "slf4j-nop" % "1.6.0",
         "asm" % "asm" % "3.3.1" )
+    ) ++
+    defaultAssemblySettings
+
+
+  // Project: testkit
+
+  lazy val testkit: Project =
+    Project("testkit", file("testkit"))
+      .settings(testkitSettings: _*)
+
+  lazy val testkitSettings =
+    Seq(
+      name := "geotrellis-testkit"
     ) ++
     defaultAssemblySettings
 
