@@ -1,14 +1,7 @@
 package geotrellis.spark.op.local
-import geotrellis.spark.TestEnvironment
-import geotrellis.spark.rdd.RasterHadoopRDD
-import org.apache.hadoop.fs.Path
-import org.scalatest.matchers.ShouldMatchers
-import org.apache.spark.SparkContext
-import geotrellis.spark.utils.SparkUtils
-import org.scalatest.fixture.FunSpec
-import geotrellis.spark.TestEnvironmentFixture
-import org.scalatest.Ignore
 import geotrellis.spark.RasterRDDMatchers
+import geotrellis.spark.TestEnvironmentFixture
+import geotrellis.spark.rdd.RasterHadoopRDD
 import geotrellis.spark.testfiles.AllOnes
 
 class AddSpec extends TestEnvironmentFixture with RasterRDDMatchers {
