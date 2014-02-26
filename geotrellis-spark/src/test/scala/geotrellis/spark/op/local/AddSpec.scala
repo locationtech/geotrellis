@@ -8,37 +8,30 @@ import geotrellis.spark.utils.SparkUtils
 import org.scalatest.fixture.FunSpec
 import geotrellis.spark.TestEnvironmentFixture
 import org.scalatest.Ignore
+import geotrellis.spark.RasterRDDMatchers
+import geotrellis.spark.testfiles.AllOnes
 
-class AddSpec extends TestEnvironmentFixture with ShouldMatchers {
+class AddSpec extends TestEnvironmentFixture with RasterRDDMatchers {
 
   describe("Add Operation") {
-    val onesPath = new Path(inputHome, "all-ones/10")
+    val allOnes = AllOnes(inputHome, conf)
 
     it("should add a constant to a raster") { sc =>
 
-      val ones = RasterHadoopRDD.toRasterRDD(onesPath, sc)
+      val ones = RasterHadoopRDD.toRasterRDD(allOnes.path, sc)
+      
       val twos = ones + 1
 
-      // TODO - test doesn't have to save all twos
-      /*val allTwos = new Path(outputLocal, "10")
-      println(s"allTwos=$allTwos, and outputLocal=${outputLocal.toUri().toString()}")
-      allTwosRDD.save(allTwos)*/
-
-      val res = twos.map { case (tileId, raster) => raster.findMinMaxDouble }.collect
-      res.foreach(_ should be(2, 2))
-      res.length should be(ones.count)
-
+      shouldBe(twos, (2, 2, allOnes.tileCount))
     }
 
     it("should add multiple rasters") { sc =>
 
-      val ones = RasterHadoopRDD.toRasterRDD(onesPath, sc)
+      val ones = RasterHadoopRDD.toRasterRDD(allOnes.path, sc)
 
       val threes = ones + ones + ones 
 
-      val res = threes.map { case (tileId, raster) => raster.findMinMaxDouble }.collect
-      res.foreach(_ should be(3, 3))
-      res.length should be(ones.count)
+      shouldBe(threes, (3, 3, allOnes.tileCount))
     }
   }
 }
