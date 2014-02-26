@@ -93,6 +93,7 @@ trait TestEnvironmentFixture extends TestEnvironmentBase with fixture.FunSpec wi
   def withFixture(test: OneArgTest) {
     // we don't call the version in SparkUtils as that moves the jar file dependency around
     // and that is not needed for local spark context
+    System.setProperty("spark.master.port", "0")
     val sc = new SparkContext("local",test.name)
     try {
       test(sc)
