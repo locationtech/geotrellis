@@ -12,9 +12,9 @@ case class PointSet(ps: Set[Point]) extends GeometrySet
 
   // -- Intersection
 
-  def &(p: Point): PointIntersectionResult =
+  def &(p: Point): PointGeometryIntersectionResult =
     intersection(p)
-  def intersection(p: Point): PointIntersectionResult =
+  def intersection(p: Point): PointGeometryIntersectionResult =
     p.intersection(this)
 
   def &(l: Line): PointSetIntersectionResult =
@@ -54,9 +54,9 @@ case class PointSet(ps: Set[Point]) extends GeometrySet
   def union(l:Line): PointLineUnionResult =
     l.union(this)
 
-  def |(p: Polygon): PolygonXUnionResult =
+  def |(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
     union(p)
-  def union(p: Polygon): PolygonXUnionResult =
+  def union(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
     p.union(this)
 
   def |(ps: PointSet): PointZeroDimensionsUnionResult =
@@ -69,9 +69,9 @@ case class PointSet(ps: Set[Point]) extends GeometrySet
   def union(ls: LineSet): PointLineSetUnionResult =
     geom.union(ls.geom)
 
-  def |(ps: PolygonSet): PolygonSetUnionResult =
+  def |(ps: PolygonSet): AtMostOneDimensionsPolygonSetUnionResult =
     union(ps)
-  def union(ps: PolygonSet): PolygonSetUnionResult =
+  def union(ps: PolygonSet): AtMostOneDimensionsPolygonSetUnionResult =
     geom.union(ps.geom)
 
   // -- Difference

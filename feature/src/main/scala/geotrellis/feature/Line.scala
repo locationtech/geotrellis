@@ -55,9 +55,9 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry
 
   // -- Intersection
 
-  def &(p: Point): PointIntersectionResult =
+  def &(p: Point): PointGeometryIntersectionResult =
     intersection(p)
-  def intersection(p: Point): PointIntersectionResult =
+  def intersection(p: Point): PointGeometryIntersectionResult =
     p.intersection(this)
 
   def &(l: Line): LineLineIntersectionResult =
@@ -65,9 +65,9 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry
   def intersection(l: Line): LineLineIntersectionResult =
     geom.intersection(l.geom)
 
-  def &(p: Polygon): PolygonLineIntersectionResult =
+  def &(p: Polygon): LinePolygonIntersectionResult =
     intersection(p)
-  def intersection(p: Polygon): PolygonLineIntersectionResult =
+  def intersection(p: Polygon): LinePolygonIntersectionResult =
     geom.intersection(p.geom)
 
   def &(ps: PointSet): PointSetIntersectionResult =
@@ -97,9 +97,9 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry
   def union(l: Line): LineLineUnionResult =
     geom.union(l.geom)
 
-  def |(p: Polygon): PolygonXUnionResult =
+  def |(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
     union(p)
-  def union(p: Polygon): PolygonXUnionResult =
+  def union(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
     geom.union(p.geom)
 
   def |(ps: PointSet): PointLineUnionResult =
@@ -112,9 +112,9 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry
   def union(ls: LineSet): LineLineUnionResult =
     geom.union(ls.geom)
 
-  def |(ps: PolygonSet): PolygonSetUnionResult =
+  def |(ps: PolygonSet): AtMostOneDimensionsPolygonSetUnionResult =
     union(ps)
-  def union(ps: PolygonSet): PolygonSetUnionResult =
+  def union(ps: PolygonSet): AtMostOneDimensionsPolygonSetUnionResult =
     geom.union(ps.geom)
 
   // -- Difference

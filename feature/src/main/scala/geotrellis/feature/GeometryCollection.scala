@@ -12,6 +12,16 @@ class GeometryCollection(val points: Set[Point],
 
   lazy val area: Double =
     geom.getArea
+
+  override def equals(that: Any): Boolean = {
+    that match {
+      case other: GeometryCollection => geom == other.geom
+      case _ => false
+    }
+  }
+
+  override def hashCode(): Int  =
+    geom.hashCode()
 }
 
 object GeometryCollection {
@@ -19,7 +29,7 @@ object GeometryCollection {
   implicit def jtsToGeometryCollection(gc: jts.GeometryCollection): GeometryCollection =
     apply(gc)
 
-  def apply(points: Set[Point], lines: Set[Line], polygons: Set[Polygon]): GeometryCollection = {
+  def apply(points: Set[Point] = Set(), lines: Set[Line] = Set(), polygons: Set[Polygon] = Set()): GeometryCollection = {
     val geom = factory.createGeometryCollection((points ++ lines ++ polygons).map(_.geom).toArray)
     new GeometryCollection(points, lines, polygons, geom)
   }

@@ -24,9 +24,9 @@ case class Point(geom: jts.Point) extends Geometry
 
   // -- Intersection
 
-  def &(other: Geometry): PointIntersectionResult =
+  def &(other: Geometry): PointGeometryIntersectionResult =
     intersection(other)
-  def intersection(other: Geometry): PointIntersectionResult =
+  def intersection(other: Geometry): PointGeometryIntersectionResult =
     geom.intersection(other.geom)
 
   // -- Union
@@ -41,9 +41,9 @@ case class Point(geom: jts.Point) extends Geometry
   def union(l: Line): PointLineUnionResult =
     geom.union(l.geom)
 
-  def |(p: Polygon): PolygonXUnionResult =
+  def |(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
     union(p)
-  def union(p: Polygon): PolygonXUnionResult =
+  def union(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
     geom.union(p.geom)
 
   def |(ls: LineSet): PointLineSetUnionResult =
@@ -51,16 +51,16 @@ case class Point(geom: jts.Point) extends Geometry
   def union(ls: LineSet): PointLineSetUnionResult =
     geom.union(ls.geom)
 
-  def |(ps: PolygonSet): PolygonSetUnionResult =
+  def |(ps: PolygonSet): AtMostOneDimensionsPolygonSetUnionResult =
     union(ps)
-  def union(ps: PolygonSet): PolygonSetUnionResult =
+  def union(ps: PolygonSet): AtMostOneDimensionsPolygonSetUnionResult =
     geom.union(ps.geom)
 
   // -- Difference
 
-  def -(other: Geometry): PointDifferenceResult =
+  def -(other: Geometry): PointGeometryDifferenceResult =
     difference(other)
-  def difference(other: Geometry): PointDifferenceResult =
+  def difference(other: Geometry): PointGeometryDifferenceResult =
     geom.difference(other.geom)
 
   // -- SymDifference
@@ -85,8 +85,14 @@ case class Point(geom: jts.Point) extends Geometry
 
   // -- Buffer
 
-  def buffer(d: Double): Polygon =
-    geom.buffer(d).asInstanceOf[Polygon]
+  def buffer(d: Double): Polygon = {
+    val result = geom.buffer(d)
+    result match {
+      case p: jts.Polygon => Polygon(p)
+      case _ =>
+        sys.error(s"Unexpected result for Point buffer: ${result.getGeometryType}")
+    }
+  }
 
   // -- Predicates
 

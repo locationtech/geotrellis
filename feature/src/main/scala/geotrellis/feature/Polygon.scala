@@ -67,14 +67,14 @@ case class Polygon(geom: jts.Polygon) extends Geometry
 
   // -- Intersection
 
-  def &(p: Point): PointIntersectionResult =
+  def &(p: Point): PointGeometryIntersectionResult =
     intersection(p)
-  def intersection(p: Point): PointIntersectionResult =
+  def intersection(p: Point): PointGeometryIntersectionResult =
     p.intersection(this)
 
-  def &(l: Line): PolygonLineIntersectionResult =
+  def &(l: Line): LinePolygonIntersectionResult =
     intersection(l)
-  def intersection(l: Line): PolygonLineIntersectionResult =
+  def intersection(l: Line): LinePolygonIntersectionResult =
     l.intersection(this)
 
   def &(p: Polygon): PolygonPolygonIntersectionResult =
@@ -99,30 +99,15 @@ case class Polygon(geom: jts.Polygon) extends Geometry
 
   // -- Union
 
-  def |(p: Point): PolygonXUnionResult =
-    union(p)
-  def union(p: Point): PolygonXUnionResult =
-    p.union(this)
-
-  def |(l:Line): PolygonXUnionResult =
-    union(l)
-  def union(l: Line): PolygonXUnionResult =
-    l.union(this)
+  def |(g: AtMostOneDimensions): AtMostOneDimensionsPolygonUnionResult =
+    union(g)
+  def union(g: AtMostOneDimensions): AtMostOneDimensionsPolygonUnionResult =
+    geom.union(g.geom)
 
   def |(p:Polygon): PolygonPolygonUnionResult =
     union(p)
   def union(p: Polygon): PolygonPolygonUnionResult =
     geom.union(p.geom)
-
-  def |(ps: PointSet): PolygonXUnionResult =
-    union(ps)
-  def union(ps: PointSet): PolygonXUnionResult =
-    geom.union(ps.geom)
-
-  def |(ls: LineSet): PolygonXUnionResult =
-    union(ls)
-  def union(ls: LineSet): PolygonXUnionResult =
-    geom.union(ls.geom)
 
   def |(ps: PolygonSet): PolygonPolygonUnionResult =
     union(ps)
