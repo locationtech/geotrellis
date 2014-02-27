@@ -73,7 +73,6 @@ class ContextSaveSpec extends TestEnvironmentFixture with MetadataMatcher {
 
   describe("Passing Context through operations tests") {
     it("should produce the expected PyramidMetadata") { sc =>
-      println("----------" + outputLocal + "------------")
       val ones = RasterHadoopRDD.toRasterRDD(allOnes.path, sc)
       val twos = ones + ones
       val twosPath = new Path(outputLocal, ones.opCtx.zoom.toString)
