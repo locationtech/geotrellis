@@ -137,8 +137,7 @@ object GeotrellisBuild extends Build {
     Project("core", file("core"))
       .settings(coreSettings: _*)
       .dependsOn(macros)
-      
- 
+
   lazy val coreSettings =
     Seq(
       name := "geotrellis",
@@ -185,6 +184,11 @@ object GeotrellisBuild extends Build {
         Info.description
     )
 
+  // Project: core-test
+
+  lazy val coreTest =
+    Project("core-test", file("core-test"))
+      .dependsOn(core)
 
   // Project: services
 
