@@ -1,15 +1,16 @@
 package geotrellis.spark.rdd
 import geotrellis.spark._
-import geotrellis.spark.metadata.PyramidMetadata
+import geotrellis.spark.metadata.Context
+import geotrellis.spark.op.local.AddOpMethods
+import geotrellis.spark.op.local.DivideOpMethods
+import geotrellis.spark.op.local.MultiplyOpMethods
+import geotrellis.spark.op.local.SubtractOpMethods
+
 import org.apache.spark.Partition
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
-import geotrellis.spark.op.local.AddOpMethods
-import geotrellis.spark.op.local.MultiplyOpMethods
-import geotrellis.spark.op.local.SubtractOpMethods
-import geotrellis.spark.op.local.DivideOpMethods
 
-class RasterRDD(val prev: RDD[TileIdRaster], val meta: PyramidMetadata)
+class RasterRDD(val prev: RDD[TileIdRaster], val opCtx: Context)
   extends RDD[TileIdRaster](prev)
   with AddOpMethods[RasterRDD]
   with SubtractOpMethods[RasterRDD]

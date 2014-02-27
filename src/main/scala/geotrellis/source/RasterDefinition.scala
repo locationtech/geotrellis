@@ -4,24 +4,21 @@ import geotrellis._
 import geotrellis.process.LayerId
 import geotrellis.raster.TileLayout
 
-class RasterDefinition(val layerId: LayerId,
-                       val rasterExtent: RasterExtent,
-                       val tileLayout: TileLayout,
-                       val rasterType: RasterType,
-                       val catalogued: Boolean) {
+case class RasterDefinition(layerId:LayerId,
+                            rasterExtent:RasterExtent,
+                            tileLayout:TileLayout,
+                            rasterType:RasterType,
+                            catalogued:Boolean = true) {
   def isTiled = tileLayout.isTiled
 
   def withType(newType: RasterType) =
-    new RasterDefinition(layerId, rasterExtent, tileLayout, newType, true)
+    new RasterDefinition(layerId, rasterExtent, tileLayout, newType)
 }
 
 object RasterDefinition {
 
-  def apply(layerId: LayerId, re: RasterExtent, tl: TileLayout, rt: RasterType, catalogued: Boolean = true) = 
-    new RasterDefinition(layerId, re, tl, rt, catalogued)
-
-  def fromRaster(r: Raster): RasterDefinition =
-    new RasterDefinition(
+  def fromRaster(r: Raster): RasterDefinition = 
+    RasterDefinition(
       LayerId.MEM_RASTER,
       r.rasterExtent,
       TileLayout.singleTile(r.rasterExtent),

@@ -9,8 +9,8 @@ class TmsTilingConvertSpec extends TestEnvironment with ShouldMatchers {
   val allOnes = AllOnes(inputHome, conf)
   val meta = allOnes.meta
   val te = meta.metadataForBaseZoom.tileExtent
-  val layout = allOnes.rasterDefinition.tileLayout
-  val rasterExtent = allOnes.rasterDefinition.rasterExtent
+  val layout = allOnes.tileLayout
+  val rasterExtent = allOnes.rasterExtent
   val zoom = meta.maxZoomLevel
   val tileSize = meta.tileSize
   val res = TmsTiling.resolution(zoom, tileSize)

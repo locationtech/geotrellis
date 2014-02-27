@@ -1,15 +1,12 @@
 package geotrellis
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
-import geotrellis.spark.metadata.PyramidMetadata
+import geotrellis.spark.metadata.Context
 import geotrellis.spark.rdd.RasterRDD
-import org.apache.spark.rdd.RDD
 import geotrellis.spark.rdd.SaveRasterFunctions
-import geotrellis.spark.rdd.SaveRasterFunctions
-import geotrellis.spark.formats.ArgWritable
-import geotrellis.spark.metadata.PyramidMetadata
-import geotrellis.spark.formats.TileIdWritable
+
 import org.apache.hadoop.fs.Path
+import org.apache.spark.rdd.RDD
 
 package object spark {
 
@@ -22,7 +19,7 @@ package object spark {
   }
 
   implicit class MakeRasterRDD(val prev: RDD[TileIdRaster]) {
-    def withMetadata(meta: PyramidMetadata) = new RasterRDD(prev, meta)
+    def withContext(ctx: Context) = new RasterRDD(prev, ctx)
   }
   implicit class SavableRasterRDD(val rdd: RasterRDD) {
     def save(path: Path) = SaveRasterFunctions.save(rdd, path)
