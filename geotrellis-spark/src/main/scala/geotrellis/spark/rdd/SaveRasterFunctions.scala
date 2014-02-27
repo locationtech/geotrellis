@@ -40,7 +40,7 @@ object SaveRasterFunctions extends Logging {
       .saveAsHadoopFile(path.toUri().toString(), classOf[TileIdWritable], classOf[ArgWritable], classOf[MapFileOutputFormat], jobConf)
 
     logInfo(s"Finished saving raster to ${path}")
-    raster.meta.save(pyramidPath, raster.context.hadoopConfiguration)
+    raster.opCtx.toMetadata.save(pyramidPath, raster.context.hadoopConfiguration)
     logInfo(s"Finished saving metadata to ${pyramidPath}")
   }
 }

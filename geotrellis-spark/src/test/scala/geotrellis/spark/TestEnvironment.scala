@@ -52,6 +52,18 @@ trait TestEnvironmentBase {
   // outputLocal - directory of this particular test (e.g., file:///tmp/testFiles/geotrellis.spark.cmd.IngestSpec)
   val (outputHomeLocal, outputHomeHdfs, outputLocal) = setupTestDirs
 
+
+  /* 
+   * Makes directory given a path. The parent directory is expected to exist
+   * e.g., to make directory bar under /tmp/foo, call mkdir(new Path("/tmp/foo/bar"))
+   * The parent directory is assumed to exist
+   */
+  def mkdir(dir: Path): Unit = {
+   val handle = new File(dir.toUri())
+    if (!handle.exists)
+      handle.mkdirs()    
+  }
+  
   // clean up the test directory after the test
   // note that this afterAll is not inherited from BeforeAndAfterAll, its callers are
   protected def afterAll() = FileUtils.deleteDirectory(new File(outputLocal.toUri()))
