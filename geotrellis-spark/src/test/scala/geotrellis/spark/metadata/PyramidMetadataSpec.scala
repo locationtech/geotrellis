@@ -3,12 +3,13 @@ import geotrellis.Extent
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.tiling.PixelExtent
 import geotrellis.spark.tiling.TileExtent
-import org.scalatest.matchers.ShouldMatchers
-import java.awt.image.DataBuffer
+
 import org.scalatest.FunSpec
+import org.scalatest.matchers.ShouldMatchers
 
+import java.awt.image.DataBuffer
 
-class PyramidMetadataSpec extends TestEnvironment with ShouldMatchers {
+class PyramidMetadataSpec extends FunSpec with TestEnvironment with ShouldMatchers {
 
   describe("PyramidMetadata.save") {
 

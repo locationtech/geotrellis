@@ -2,9 +2,10 @@ package geotrellis.spark.rdd
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.formats.TileIdWritable
 
+import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 
-class TileIdPartitionerSpec extends TestEnvironment with ShouldMatchers {
+class TileIdPartitionerSpec extends FunSpec with TestEnvironment with ShouldMatchers {
 
   def getPartitioner(seq: Seq[Long]) = {
     val splitGenerator = new SplitGenerator {

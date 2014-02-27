@@ -3,9 +3,10 @@ import geotrellis.RasterExtent
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.testfiles.AllOnes
 
+import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 
-class TmsTilingConvertSpec extends TestEnvironment with ShouldMatchers {
+class TmsTilingConvertSpec extends FunSpec with TestEnvironment with ShouldMatchers {
   val allOnes = AllOnes(inputHome, conf)
   val meta = allOnes.meta
   val te = meta.metadataForBaseZoom.tileExtent

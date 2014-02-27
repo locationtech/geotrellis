@@ -1,15 +1,18 @@
 package geotrellis.spark.op.local
 import geotrellis.spark.RasterRDDMatchers
-import geotrellis.spark.TestEnvironmentFixture
+import geotrellis.spark.SharedSparkContext
+import geotrellis.spark.TestEnvironment
 import geotrellis.spark.rdd.RasterHadoopRDD
 import geotrellis.spark.testfiles.AllOnes
 
-class AddSpec extends TestEnvironmentFixture with RasterRDDMatchers {
+import org.scalatest.FunSpec
+
+class AddSpec extends FunSpec with TestEnvironment with SharedSparkContext with RasterRDDMatchers {
 
   describe("Add Operation") {
     val allOnes = AllOnes(inputHome, conf)
 
-    it("should add a constant to a raster") { sc =>
+    it("should add a constant to a raster") { 
 
       val ones = RasterHadoopRDD.toRasterRDD(allOnes.path, sc)
       
@@ -18,7 +21,7 @@ class AddSpec extends TestEnvironmentFixture with RasterRDDMatchers {
       shouldBe(twos, (2, 2, allOnes.tileCount))
     }
 
-    it("should add multiple rasters") { sc =>
+    it("should add multiple rasters") {
 
       val ones = RasterHadoopRDD.toRasterRDD(allOnes.path, sc)
 

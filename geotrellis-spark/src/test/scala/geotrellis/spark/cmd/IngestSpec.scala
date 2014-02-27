@@ -8,12 +8,14 @@ import geotrellis.spark.storage.RasterReader
 import geotrellis.spark.tiling.PixelExtent
 import geotrellis.spark.tiling.TileExtent
 import geotrellis.spark.tiling.TmsTiling
-import org.apache.hadoop.fs.Path
-import org.scalatest.matchers.ShouldMatchers
-import java.awt.image.DataBuffer
-import org.scalatest.FunSpec
 
-class IngestSpec extends TestEnvironment with ShouldMatchers {
+import org.apache.hadoop.fs.Path
+import org.scalatest.FunSpec
+import org.scalatest.matchers.ShouldMatchers
+
+import java.awt.image.DataBuffer
+
+class IngestSpec extends FunSpec with TestEnvironment with ShouldMatchers {
 
   describe("Ingest all-ones.tif") {
 

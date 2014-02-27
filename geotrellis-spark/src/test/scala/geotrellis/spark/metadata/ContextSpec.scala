@@ -1,13 +1,15 @@
 package geotrellis.spark.metadata
 import geotrellis.RasterExtent
 import geotrellis.raster.TileLayout
+import geotrellis.spark.SharedSparkContext
 import geotrellis.spark.TestEnvironment
+import geotrellis.spark.rdd.RasterHadoopRDD
 import geotrellis.spark.testfiles.AllOnes
 import geotrellis.spark.tiling.TmsTiling
-import org.scalatest.matchers.ShouldMatchers
-import geotrellis.spark.TestEnvironmentFixture
-import geotrellis.spark.rdd.RasterHadoopRDD
+
 import org.apache.hadoop.fs.Path
+import org.scalatest.FunSpec
+import org.scalatest.matchers.ShouldMatchers
 
 /* 
  * This is not just "oldMeta should be(newMeta)" since newMeta is actually supposed to be 
@@ -39,7 +41,7 @@ trait MetadataMatcher extends ShouldMatchers {
  * This is split into two classes as one mixes in TestEnvironmentFixture and the other mixes 
  * in TestEnvironment
  */ 
-class ContextSpec extends TestEnvironment with MetadataMatcher {
+class ContextSpec extends FunSpec with TestEnvironment with MetadataMatcher {
   val allOnes = AllOnes(inputHome, conf)
   val meta = allOnes.meta
   val te = meta.metadataForBaseZoom.tileExtent
@@ -68,11 +70,11 @@ class ContextSpec extends TestEnvironment with MetadataMatcher {
   }
 }
 
-class ContextSaveSpec extends TestEnvironmentFixture with MetadataMatcher {
+class ContextSaveSpec extends FunSpec with TestEnvironment with SharedSparkContext with MetadataMatcher {
   val allOnes = AllOnes(inputHome, conf)
 
   describe("Passing Context through operations tests") {
-    it("should produce the expected PyramidMetadata") { sc =>
+    it("should produce the expected PyramidMetadata") {
       val ones = RasterHadoopRDD.toRasterRDD(allOnes.path, sc)
       val twos = ones + ones
       val twosPath = new Path(outputLocal, ones.opCtx.zoom.toString)
