@@ -15,9 +15,9 @@ class CatalogSpec extends FunSpec
                      with ShouldMatchers 
                      with TestServer {
 
-  val absoluteDatapath = new File("src/test/resources/data").getAbsolutePath
-  val datapath = "src/test/resources/data"
-  val datapath2 = "src/test/resources/data2"
+  val absoluteDatapath = new File("core/src/test/resources/data").getAbsolutePath
+  val datapath = "core/src/test/resources/data"
+  val datapath2 = "core/src/test/resources/data2"
 
   val json0 = """
             {
@@ -89,7 +89,7 @@ class CatalogSpec extends FunSpec
         Map(
           "test:fs" -> DataStore(
               "test:fs",
-            new File("src/test/resources/data").getAbsolutePath,
+            new File("core/src/test/resources/data").getAbsolutePath,
             false
           )
         ),

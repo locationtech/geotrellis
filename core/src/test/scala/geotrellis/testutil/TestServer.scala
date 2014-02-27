@@ -9,7 +9,7 @@ import geotrellis.source.DataSource
 
 object TestServer {
   lazy val init = {
-    GeoTrellis.init(GeoTrellisConfig("src/test/resources/catalog.json"),"test-server")
+    GeoTrellis.init(GeoTrellisConfig("core/src/test/resources/catalog.json"),"test-server")
   }
 }
 

@@ -13,19 +13,19 @@ class LoadFileSpec extends FunSpec
                       with RasterBuilders {
   describe("LoadFile") {
     it("loads a test raster.") {
-      val raster = get(LoadFile("src/test/resources/fake.img8.arg"))
+      val raster = get(LoadFile("core/src/test/resources/fake.img8.arg"))
 
       raster.get(0, 0) should be (49)
       raster.get(3, 3) should be (4)
     }
 
     it("should load fake.img8 with resampling") {
-      val realRaster = get(io.LoadFile("src/test/resources/fake.img8.arg"))
-      val re = get(io.LoadRasterExtentFromFile("src/test/resources/fake.img8.arg"))
+      val realRaster = get(io.LoadFile("core/src/test/resources/fake.img8.arg"))
+      val re = get(io.LoadRasterExtentFromFile("core/src/test/resources/fake.img8.arg"))
       val extent = re.extent
 
       val resampleRasterExtent = RasterExtent(extent, 2, 2) 
-      val raster = get(io.LoadFile("src/test/resources/fake.img8.arg", resampleRasterExtent))
+      val raster = get(io.LoadFile("core/src/test/resources/fake.img8.arg", resampleRasterExtent))
       printR(realRaster)
       println(re)
       printR(raster)

@@ -129,11 +129,17 @@ object GeotrellisBuild extends Build {
 
   lazy val root =
     Project("root", file("."))
-      .aggregate(testkit)
-      .settings(rootSettings: _*)
+      .aggregate(core, macros, testkit)
+ 
+  // Project: core
+  
+  lazy val core =
+    Project("core", file("core"))
+      .settings(coreSettings: _*)
       .dependsOn(macros)
-
-  lazy val rootSettings =
+      
+ 
+  lazy val coreSettings =
     Seq(
       name := "geotrellis",
       parallelExecution := false,
@@ -287,7 +293,7 @@ object GeotrellisBuild extends Build {
   lazy val geotools: Project =
     Project("geotools", file("geotools"))
       .settings(geotoolsSettings: _*)
-      .dependsOn(root % "test->test;compile->compile")
+      .dependsOn(core % "test->test;compile->compile")
 
   lazy val geotoolsSettings =
     Seq(
