@@ -83,15 +83,23 @@ abstract trait Histogram extends Serializable {
 
   def getMean():Double = {
     if(getTotalCount == 0) { return geotrellis.NODATA }
+
     val values = rawValues()
-    var t = 0.0
+    var mean = 0.0
+    var total = 0.0
     var i = 0
     val len = values.length
+
     while (i < len) {
-      t += getItemCount(values(i))
+      val value = values(i)
+      val count = getItemCount(value)
+      val delta = value - mean
+      total += count
+      mean += (count * delta) / total
+
       i += 1
     }
-    t / getTotalCount
+    mean
   }
 
   def generateStatistics() = {
