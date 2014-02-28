@@ -24,12 +24,15 @@ object Info {
 }
 
 object GeotrellisBuild extends Build {
+  import Dependencies._
+
   val key = AttributeKey[Boolean]("javaOptionsPatched")
 
   // Default settings
   override lazy val settings = 
-    super.settings ++
+    super.settings ++ 
     Seq(
+      shellPrompt := { s => Project.extract(s).currentProject.id + " > " },
       version := Version.geotrellis,
       scalaVersion := Version.scala,
       organization := "com.azavea.geotrellis",
@@ -129,7 +132,7 @@ object GeotrellisBuild extends Build {
 
   lazy val root =
     Project("root", file("."))
-      .aggregate(core, macros, testkit)
+      .aggregate(core, coreTest)
  
   // Project: core
   
@@ -147,7 +150,6 @@ object GeotrellisBuild extends Build {
       scalacOptions in compile ++=
         Seq("-optimize"),
       libraryDependencies ++= Seq(
-        "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
         "org.scala-lang" % "scala-reflect" % "2.10.2",
         "com.vividsolutions" % "jts" % "1.12",
         "com.typesafe.akka" %% "akka-kernel" % Version.akka,
@@ -166,7 +168,6 @@ object GeotrellisBuild extends Build {
       resolvers ++= Seq(
         "NL4J Repository" at "http://nativelibs4java.sourceforge.net/maven/",
         "maven2 dev repository" at "http://download.java.net/maven/2",
-        "Scala Test" at "http://www.scala-tools.org/repo-reloases/",
         "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
         "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
         "spray repo" at "http://repo.spray.io/",
@@ -188,7 +189,62 @@ object GeotrellisBuild extends Build {
 
   lazy val coreTest =
     Project("core-test", file("core-test"))
-      .dependsOn(core)
+      .dependsOn(
+        core % "provided",
+        testkit % "provided"
+      )
+      .settings(coreTestSettings: _*)    
+      .settings(libraryDependencies ++= Seq(scalatest % "test"))
+      
+      
+  lazy val coreTestSettings =
+    Seq(
+      name := "geotrellis-core-test",
+      parallelExecution := false,
+      fork in test := false,
+      javaOptions in run += "-Xmx2G",
+      scalacOptions in compile ++=
+        Seq("-optimize"),
+      libraryDependencies ++= Seq(
+        "org.scala-lang" % "scala-reflect" % "2.10.2",
+        "com.vividsolutions" % "jts" % "1.12",
+        "com.typesafe.akka" %% "akka-kernel" % Version.akka,
+        "com.typesafe.akka" %% "akka-remote" % Version.akka,
+        "com.typesafe.akka" %% "akka-actor" % Version.akka,
+        "com.typesafe.akka" %% "akka-cluster" % Version.akka,
+        "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
+        "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1",
+        "org.spire-math" %% "spire" % "0.4.0",
+        "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided",
+        "io.spray"       % "spray-client" % "1.2.0", // for reading args from URLs,
+        "io.spray"       % "spray-routing" % "1.2.0" % "test",
+        "org.apache.commons" % "commons-math3" % "3.2"
+      ),
+
+      resolvers ++= Seq(
+        "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
+        "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
+        "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
+      )
+    ) ++
+    defaultAssemblySettings
+  
+    // Project: testkit
+    lazy val testkit: Project =
+      Project("testkit", file("testkit"))
+        .dependsOn(core)
+        .settings(testkitSettings: _*)
+        .settings(libraryDependencies ++= Seq(scalatest))
+        
+
+    lazy val testkitSettings =
+      Seq(
+        name := "geotrellis-testkit",
+        fork in test := false,
+        javaOptions in run += "-Xmx2G",
+        scalacOptions in compile ++= Seq("-optimize")
+      )
+     
 
   // Project: services
 
@@ -220,20 +276,6 @@ object GeotrellisBuild extends Build {
         "asm" % "asm" % "3.3.1" )
     ) ++
     defaultAssemblySettings
-
-
-  // Project: testkit
-
-  lazy val testkit: Project =
-    Project("testkit", file("testkit"))
-      .settings(testkitSettings: _*)
-
-  lazy val testkitSettings =
-    Seq(
-      name := "geotrellis-testkit"
-    ) ++
-    defaultAssemblySettings
-
 
   // Project: admin
 
