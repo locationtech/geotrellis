@@ -1,25 +1,24 @@
 package geotrellis.spark.formats
 
 import geotrellis._
+import geotrellis.TypeBit
 import geotrellis.TypeByte
 import geotrellis.TypeDouble
 import geotrellis.TypeFloat
 import geotrellis.TypeInt
 import geotrellis.TypeShort
+import geotrellis.raster.BitArrayRasterData
 import geotrellis.raster.ByteArrayRasterData
 import geotrellis.raster.DoubleArrayRasterData
 import geotrellis.raster.FloatArrayRasterData
 import geotrellis.raster.IntArrayRasterData
 import geotrellis.raster.ShortArrayRasterData
-import geotrellis.raster.BitArrayRasterData
-import geotrellis.TypeBit
 
 import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
 import org.scalatest.matchers.ShouldMatchers
 
 
-class ArgWritableSpec extends FunSpec with MustMatchers with ShouldMatchers {
+class ArgWritableSpec extends FunSpec with ShouldMatchers {
   describe("conversion from/to ArgWritable") {
 
     val cols = 2

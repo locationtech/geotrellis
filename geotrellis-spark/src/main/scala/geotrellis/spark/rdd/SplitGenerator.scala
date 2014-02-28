@@ -18,7 +18,9 @@ case class RasterSplitGenerator(
   extends SplitGenerator {
   // if increment is -1 getSplits return an empty sequence
   // also, we start with s+(i-1) as the first split point needs to be there, not at s
-  def getSplits = for (i <- tileExtent.ymin+(increment-1) until tileExtent.ymax by increment) yield TmsTiling.tileId(tileExtent.xmax, i, zoom)
+  def getSplits = 
+    for (i <- tileExtent.ymin+(increment-1) until tileExtent.ymax by increment) 
+      yield TmsTiling.tileId(tileExtent.xmax, i, zoom)
 }
 
 object RasterSplitGenerator {
