@@ -1,17 +1,26 @@
-package geotrellis.spark.tiling
+package geotrellis.spark
+
 import geotrellis.Raster
 import geotrellis.RasterExtent
 
 import geotrellis.spark._
+import geotrellis.spark.tiling._
 import geotrellis.spark.cmd.NoDataHandler
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.metadata.PyramidMetadata
 
-object TileIdRaster {
-  def apply(writables: TileIdArgWritable, meta: PyramidMetadata, zoom: Int): TileIdRaster = {
-	val (tileId, tx, ty, raster) = toTileIdCoordRaster(writables, meta, zoom)
-    (tileId, raster)
+case class Tile(id: Long, raster: Raster) {
+  def tileXY(zoom: Int) =  TmsTiling.tileXY(id, zoom)
+}
+
+object Tile {
+  implicit def tupleToTile(t:(Long,Raster)): Tile =
+    Tile(t._1, t._2)
+
+  def apply(writables: TileIdArgWritable, meta: PyramidMetadata, zoom: Int): Tile = {
+    val (tileId, tx, ty, raster) = toTileIdCoordRaster(writables, meta, zoom)
+    Tile(tileId, raster)
   }
 
   def toTileIdCoordRaster(
@@ -30,7 +39,7 @@ object TileIdRaster {
     (tileId, tx, ty, raster)
   }
 
-  def toTileIdArgWritable(tr: TileIdRaster): TileIdArgWritable = {
-    (TileIdWritable(tr._1), ArgWritable.fromRasterData(tr._2.toArrayRaster.data))
+  def toTileIdArgWritable(tr: Tile): TileIdArgWritable = {
+    (TileIdWritable(tr.id), ArgWritable.fromRasterData(tr.raster.data))
   }
 }

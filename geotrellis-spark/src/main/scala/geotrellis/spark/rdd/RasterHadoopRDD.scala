@@ -1,10 +1,10 @@
 package geotrellis.spark.rdd
+
 import geotrellis.spark._
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.metadata.Context
 import geotrellis.spark.metadata.PyramidMetadata
-import geotrellis.spark.tiling.TileIdRaster
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -37,6 +37,13 @@ class RasterHadoopRDD private (raster: Path, sc: SparkContext, conf: Configurati
   val zoom = raster.getName().toInt
   val meta = PyramidMetadata(pyramidPath, conf)
 
+  def toRasterRdd = 
+    mapPartitions { partition =>
+      partition.map { writableTile =>
+        Tile(writableTile, meta, zoom)
+      }
+     }
+    .withContext(Context.fromMetadata(zoom, meta))
 }
 
 object RasterHadoopRDD {
@@ -65,7 +72,7 @@ object RasterHadoopRDD {
   def toRasterRDD(raster: Path, sc: SparkContext): RasterRDD = {
     val rhd = apply(raster, sc)
     val (meta, zoom) = (rhd.meta, rhd.zoom)
-    rhd.mapPartitions(_.map(TileIdRaster(_, meta, zoom)), true)
+    rhd.mapPartitions(_.map(Tile(_, meta, zoom)), true)
       .withContext(Context.fromMetadata(zoom, meta))
 
   }

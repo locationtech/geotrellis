@@ -8,11 +8,17 @@ import org.apache.spark.Logging
 trait LocalBinaryOpMethods[+Repr <: RasterRDD] extends Logging { self: Repr =>
 
   // map over a rdd with a function f that takes a raster and something and produces a raster
-  def mapOp[T](d: T)(f: ((Long, Raster), T) => (Long, Raster)) =
-    self.mapPartitions(_.map(f(_, d)), true).withContext(self.opCtx)
+  def mapOp[T](d: T)(f: (Tile, T) => Tile) =
+    withContext(self.opCtx) {
+      self.mapPartitions({ partition =>
+        partition.map { tile =>
+          f(tile, d)
+        }
+      }, true)
+    }
 
   // function takes two rasters and produces a third raster  
-  def combineOp(other: RasterRDD)(f: (((Long, Raster), (Long, Raster))) => (Long, Raster)) =
+  def combineOp(other: RasterRDD)(f: ((Tile, Tile)) => Tile) =
     self.zipPartitions(other, true)(_.zip(_).map(f)).withContext(self.opCtx)
 
 }

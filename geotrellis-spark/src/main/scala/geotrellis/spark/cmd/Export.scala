@@ -14,8 +14,6 @@ import org.apache.spark.Logging
 import java.io.File
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Positive
-import geotrellis.spark.tiling.TileIdRaster
-
 
 /**
  * @author akini
@@ -91,7 +89,13 @@ object Export extends ArgMain[ExportArgs] with Logging {
     // upper left, so we need to re-sort the array
     def compare(left: TileIdCoordRaster, right: TileIdCoordRaster): Boolean =
       (left._3 > right._3) || (left._3 == right._3 && left._2 < right._2)
-    val tiles = reader.map(TileIdRaster.toTileIdCoordRaster(_, meta, zoom)).toList.sortWith(compare).map(_._4)
+
+    val tiles = 
+      reader.map(Tile.toTileIdCoordRaster(_, meta, zoom))
+            .toList
+            .sortWith(compare)
+            .map(_._4)
+
     reader.close()
 
     val raster = TileRaster(tiles, rasterExtent, layout).toArrayRaster
@@ -113,7 +117,7 @@ object Export extends ArgMain[ExportArgs] with Logging {
       val zoom = rasterPath.getName.toInt
 
       raster.foreach(writables => {
-        val (tileId, tx, ty, raster) = TileIdRaster.toTileIdCoordRaster(writables, meta, zoom, true)
+        val (tileId, tx, ty, raster) = Tile.toTileIdCoordRaster(writables, meta, zoom, true)
         GeoTiffWriter.write(s"${output}/tile-${tileId}.tif", raster, meta.nodata)
         logInfo(s"---------tx: ${tx}, ty: ${ty} file: tile-${tileId}.tif")
       })
