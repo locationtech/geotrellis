@@ -17,7 +17,7 @@ class DivideSpec extends FunSpec with TestEnvironment with SharedSparkContext wi
 
     it("should divide raster values by a constant") { 
 
-      val twos = RasterHadoopRDD.toRasterRDD(allTwos.path, sc)
+      val twos = RasterHadoopRDD(allTwos.path, sc).toRasterRDD
 
       val ones = twos / 2
 
@@ -26,7 +26,7 @@ class DivideSpec extends FunSpec with TestEnvironment with SharedSparkContext wi
 
     it("should divide from a constant, raster values") { 
 
-      val twos = RasterHadoopRDD.toRasterRDD(allTwos.path, sc)
+      val twos = RasterHadoopRDD(allTwos.path, sc).toRasterRDD
 
       val ones = 2 /: twos
 
@@ -34,8 +34,8 @@ class DivideSpec extends FunSpec with TestEnvironment with SharedSparkContext wi
     }
 
     it("should divide multiple rasters") { 
-      val hundreds = RasterHadoopRDD.toRasterRDD(allHundreds.path, sc)
-      val twos = RasterHadoopRDD.toRasterRDD(allTwos.path, sc)
+      val hundreds = RasterHadoopRDD(allHundreds.path, sc).toRasterRDD
+      val twos = RasterHadoopRDD(allTwos.path, sc).toRasterRDD
       val res = hundreds / twos / twos
 
       shouldBe(res, (25, 25, allHundreds.tileCount))

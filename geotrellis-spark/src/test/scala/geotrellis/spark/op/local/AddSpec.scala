@@ -1,4 +1,5 @@
 package geotrellis.spark.op.local
+
 import geotrellis.spark.RasterRDDMatchers
 import geotrellis.spark.SharedSparkContext
 import geotrellis.spark.TestEnvironment
@@ -14,7 +15,7 @@ class AddSpec extends FunSpec with TestEnvironment with SharedSparkContext with 
 
     it("should add a constant to a raster") { 
 
-      val ones = RasterHadoopRDD.toRasterRDD(allOnes.path, sc)
+      val ones = RasterHadoopRDD(allOnes.path, sc).toRasterRDD
       
       val twos = ones + 1
 
@@ -23,7 +24,7 @@ class AddSpec extends FunSpec with TestEnvironment with SharedSparkContext with 
 
     it("should add multiple rasters") {
 
-      val ones = RasterHadoopRDD.toRasterRDD(allOnes.path, sc)
+      val ones = RasterHadoopRDD(allOnes.path, sc).toRasterRDD
 
       val threes = ones + ones + ones 
 

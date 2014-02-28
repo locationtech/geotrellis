@@ -51,3 +51,8 @@ class RasterRDD(val prev: RDD[Tile], val opCtx: Context)
       }
     }
 }
+
+object RasterRDD {
+  implicit def hadoopRddToRasterRDD(rhrdd: RasterHadoopRDD): RasterRDD =
+    rhrdd.toRasterRDD
+}

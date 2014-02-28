@@ -2,8 +2,7 @@ package geotrellis.spark.rdd
 
 import geotrellis._
 import geotrellis.spark._
-import geotrellis.spark.formats.ArgWritable
-import geotrellis.spark.formats.TileIdWritable
+import geotrellis.spark.formats._
 
 import org.apache.hadoop.io.SequenceFile
 import org.apache.hadoop.mapred.JobConf
@@ -16,14 +15,19 @@ import org.apache.hadoop.fs.Path
 
 object SaveRasterFunctions extends Logging {
     
-  def save(raster: RDD[TileIdArgWritable], path: Path): Unit = {
+  def save(raster: RDD[WritableTile], path: Path): Unit = {
     logInfo("Saving RasterWritableRDD out...")
     val jobConf = new JobConf(raster.context.hadoopConfiguration)
     jobConf.set("io.map.index.interval", "1");
     SequenceFileOutputFormat.setOutputCompressionType(jobConf, SequenceFile.CompressionType.RECORD)
-    raster.saveAsHadoopFile(path.toUri().toString(), classOf[TileIdWritable], classOf[ArgWritable], classOf[MapFileOutputFormat], jobConf)
-    logInfo("End saving RasterWritableRDD out...")
 
+    raster.saveAsHadoopFile(path.toUri().toString(), 
+                            classOf[TileIdWritable], 
+                            classOf[ArgWritable], 
+                            classOf[MapFileOutputFormat], 
+                            jobConf)
+
+    logInfo("End saving RasterWritableRDD out...")
   }
 
   def save(raster: RasterRDD, path: Path): Unit = {
@@ -35,8 +39,18 @@ object SaveRasterFunctions extends Logging {
     jobConf.set("io.map.index.interval", "1");
     SequenceFileOutputFormat.setOutputCompressionType(jobConf, SequenceFile.CompressionType.RECORD)
 
-    raster.mapPartitions(_.map(Tile.toTileIdArgWritable(_)), true)
-      .saveAsHadoopFile(path.toUri().toString(), classOf[TileIdWritable], classOf[ArgWritable], classOf[MapFileOutputFormat], jobConf)
+    val writableRDD =
+      raster.mapPartitions({ partition =>
+        partition.map { tile =>
+          tile.toWritable
+        }
+      }, true)
+
+    writableRDD.saveAsHadoopFile(path.toUri().toString(), 
+                                 classOf[TileIdWritable], 
+                                 classOf[ArgWritable], 
+                                 classOf[MapFileOutputFormat], 
+                                 jobConf)
 
     logInfo(s"Finished saving raster to ${path}")
     raster.opCtx.toMetadata.save(pyramidPath, raster.context.hadoopConfiguration)

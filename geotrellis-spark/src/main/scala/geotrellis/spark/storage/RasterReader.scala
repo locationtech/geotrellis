@@ -1,7 +1,7 @@
 package geotrellis.spark.storage
-import geotrellis.spark.formats.ArgWritable
 
-import geotrellis.spark.formats.TileIdWritable
+import geotrellis.spark.formats._
+import geotrellis.spark.formats._
 import geotrellis.spark.rdd.TileIdPartitioner
 import geotrellis.spark.utils.SparkUtils
 
@@ -25,12 +25,12 @@ case class RasterReader(
   conf: Configuration,
   startKey: TileIdWritable = TileIdWritable(Long.MinValue),
   endKey: TileIdWritable = TileIdWritable(Long.MaxValue))
-  extends Iterable[(TileIdWritable, ArgWritable)]
+  extends Iterable[WritableTile]
   with Closeable {
 
   def close = iterator.close
 
-  def iterator = new Iterator[(TileIdWritable, ArgWritable)] with Closeable {
+  def iterator = new Iterator[WritableTile] with Closeable {
 
     private var curKey: TileIdWritable = TileIdWritable(startKey)
     private var curValue: ArgWritable = new ArgWritable
