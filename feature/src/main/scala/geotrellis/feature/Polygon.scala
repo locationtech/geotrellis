@@ -72,9 +72,9 @@ case class Polygon(geom: jts.Polygon) extends Geometry
   def intersection(p: Point): PointGeometryIntersectionResult =
     p.intersection(this)
 
-  def &(l: Line): LinePolygonIntersectionResult =
+  def &(l: Line): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     intersection(l)
-  def intersection(l: Line): LinePolygonIntersectionResult =
+  def intersection(l: Line): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     l.intersection(this)
 
   def &(p: Polygon): PolygonPolygonIntersectionResult =
@@ -82,14 +82,14 @@ case class Polygon(geom: jts.Polygon) extends Geometry
   def intersection(p: Polygon): PolygonPolygonIntersectionResult =
     geom.intersection(p.geom)
 
-  def &(ps: PointSet): PointSetIntersectionResult =
+  def &(ps: PointSet): PointSetGeometryIntersectionResult =
     intersection(ps)
-  def intersection(ps: PointSet): PointSetIntersectionResult =
+  def intersection(ps: PointSet): PointSetGeometryIntersectionResult =
     geom.intersection(ps.geom)
 
-  def &(ls: LineSet): LineSetIntersectionResult =
+  def &(ls: LineSet): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     intersection(ls)
-  def intersection(ls: LineSet): LineSetIntersectionResult =
+  def intersection(ls: LineSet): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     geom.intersection(ls.geom)
 
   def &(ps: PolygonSet): PolygonSetIntersectionResult =

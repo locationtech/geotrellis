@@ -23,9 +23,9 @@ case class PolygonSet(ps: Set[Polygon]) extends GeometrySet
   def intersection(p: Point): PointGeometryIntersectionResult =
     p.intersection(this)
 
-  def &(l: Line): LineSetIntersectionResult =
+  def &(l: Line): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     intersection(l)
-  def intersection(l: Line): LineSetIntersectionResult =
+  def intersection(l: Line): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     l.intersection(this)
 
   def &(p: Polygon): PolygonSetIntersectionResult =
@@ -33,9 +33,9 @@ case class PolygonSet(ps: Set[Polygon]) extends GeometrySet
   def intersection(p: Polygon): PolygonSetIntersectionResult =
     p.intersection(this)
 
-  def &(ls: LineSet): LineSetIntersectionResult =
+  def &(ls: LineSet): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     intersection(ls)
-  def intersection(ls: LineSet): LineSetIntersectionResult =
+  def intersection(ls: LineSet): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     ls.intersection(this)
 
   def &(ps: PolygonSet): PolygonSetIntersectionResult =

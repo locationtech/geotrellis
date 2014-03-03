@@ -102,5 +102,42 @@ class LineSpec extends FunSpec with ShouldMatchers {
       val l2 = Line(Point(4,0), Point(4,4))
       l1.intersection(l2) should be (NoResult)
     }
+
+    it ("should intersect with a Line and return a GeometryCollectionResult") {
+      val l1 = Line(Point(0,1), Point(4,1))
+      val l2 = Line(Point(0,1), Point(2,0), Point(4,1), Point(3,1))
+      val expected: GeometryCollection =
+        GeometryCollection(points = Set(Point(0,1)), lines = Set(Line(Point(3,1), Point(4,1))))
+      val result = l1.intersection(l2)
+      result match {
+        case GeometryCollectionResult(gc) => gc should be (expected)
+        case _ => fail()
+      }
+    }
+
+    it ("should intersect with a PointSet and return a PointResult") {
+      val l = Line(Point(0,0), Point(2,2))
+      val p1 = Point(1,1)
+      val p2 = Point(5,5)
+      val ps = PointSet(Set(p1, p2))
+      l.intersection(ps) should be (PointResult(p1))
+    }
+
+    it ("should intersect with a PointSet and return a PointSetResult") {
+      val l = Line(Point(0,0), Point(6,6))
+      val p1 = Point(1,1)
+      val p2 = Point(5,5)
+      val ps = PointSet(Set(p1, p2))
+      l.intersection(ps) should be (PointSetResult(Set(p1, p2)))
+    }
+
+    it ("should intersect with a PointSet and return a NoResult") {
+      val l = Line(Point(10,0), Point(12,2))
+      val p1 = Point(1,1)
+      val p2 = Point(5,5)
+      val ps = PointSet(Set(p1, p2))
+      l.intersection(ps) should be (NoResult)
+    }
+
   }
 }

@@ -64,29 +64,14 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry
   def intersection(p: Point): PointGeometryIntersectionResult =
     p.intersection(this)
 
-  def &(l: Line): LineLineIntersectionResult =
-    intersection(l)
-  def intersection(l: Line): LineLineIntersectionResult =
-    geom.intersection(l.geom)
+  def &(g: AtLeastOneDimensions): OneDimensionsAtLeastOneDimensionsIntersectionResult =
+    intersection(g)
+  def intersection(g: AtLeastOneDimensions): OneDimensionsAtLeastOneDimensionsIntersectionResult =
+    geom.intersection(g.geom)
 
-  def &(p: Polygon): LinePolygonIntersectionResult =
-    intersection(p)
-  def intersection(p: Polygon): LinePolygonIntersectionResult =
-    geom.intersection(p.geom)
-
-  def &(ps: PointSet): PointSetIntersectionResult =
+  def &(ps: PointSet): PointSetGeometryIntersectionResult =
     intersection(ps)
-  def intersection(ps:PointSet):PointSetIntersectionResult =
-    geom.intersection(ps.geom)
-
-  def &(ls: LineSet): LineSetIntersectionResult =
-    intersection(ls)
-  def intersection(ls: LineSet): LineSetIntersectionResult =
-    geom.intersection(ls.geom)
-
-  def &(ps: PolygonSet): LineSetIntersectionResult =
-    intersection(ps)
-  def intersection(ps: PolygonSet): LineSetIntersectionResult =
+  def intersection(ps:PointSet):PointSetGeometryIntersectionResult =
     geom.intersection(ps.geom)
 
   // -- Union

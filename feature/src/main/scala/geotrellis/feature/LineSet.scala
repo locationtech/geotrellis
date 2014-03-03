@@ -30,29 +30,29 @@ case class LineSet(ls: Set[Line]) extends GeometrySet
   def intersection(p: Point): PointGeometryIntersectionResult =
     p.intersection(this)
 
-  def &(l: Line): LineSetIntersectionResult =
+  def &(l: Line): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     intersection(l)
-  def intersection(l: Line): LineSetIntersectionResult =
+  def intersection(l: Line): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     l.intersection(this)
 
-  def &(p: Polygon): LineSetIntersectionResult =
+  def &(p: Polygon): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     intersection(p)
-  def intersection(p: Polygon): LineSetIntersectionResult =
+  def intersection(p: Polygon): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     p.intersection(this)
 
-  def &(ps: PointSet): PointSetIntersectionResult =
+  def &(ps: PointSet): PointSetGeometryIntersectionResult =
     intersection(ps)
-  def intersection(ps: PointSet): PointSetIntersectionResult =
+  def intersection(ps: PointSet): PointSetGeometryIntersectionResult =
     ps.intersection(this)
 
-  def &(ls: LineSet): LineSetIntersectionResult =
+  def &(ls: LineSet): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     intersection(ls)
-  def intersection(ls: LineSet): LineSetIntersectionResult =
+  def intersection(ls: LineSet): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     geom.intersection(ls.geom)
 
-  def &(ps: PolygonSet): LineSetIntersectionResult =
+  def &(ps: PolygonSet): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     intersection(ps)
-  def intersection(ps: PolygonSet): LineSetIntersectionResult =
+  def intersection(ps: PolygonSet): OneDimensionsAtLeastOneDimensionsIntersectionResult =
     geom.intersection(ps.geom)
 
   // -- Union
