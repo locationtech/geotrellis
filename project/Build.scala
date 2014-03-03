@@ -247,7 +247,7 @@ object GeotrellisBuild extends Build {
 
   // Project: spark
   lazy val spark: Project =
-    Project("spark", file("geotrellis-spark"))
+    Project("spark", file("spark"))
       .settings(sparkSettings: _*)
       .dependsOn(core)
       .dependsOn(geotools)
@@ -265,18 +265,16 @@ object GeotrellisBuild extends Build {
               ExclusionRule(organization = "org.apache.hadoop")),
           "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4",
           "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0",
-          "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided",
           "com.quantifind" %% "sumac" % "0.2.3",
 	        "commons-io" % "commons-io" % "2.4",
+          scalaxyLoops % "provided",
           scalatest % "test"
         ),
-      resolvers ++= Seq(
-        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos",
-        "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots")
+      resolvers += "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
     ) ++ 
     defaultAssemblySettings ++ 
     net.virtualvoid.sbt.graph.Plugin.graphSettings
-
+    
   // Project: geotools
 
   lazy val geotools: Project =
