@@ -76,4 +76,25 @@ class AndSpec extends FunSpec
       }
     }
   }
+  describe("And on Raster") {
+    it("ands an Int raster and a constant") {
+      assertEqual(createValueRaster(10,9) & 3, createValueRaster(10,1))
+      assertEqual(createValueRaster(10,9) & 0, createValueRaster(10,0))
+    }
+
+    it("ands two Int rasters") {
+      val result = createValueRaster(10,9) & (createValueRaster(10,3))
+      assertEqual(result,
+                  createValueRaster(10,1))
+    }
+
+    it("ands a Double raster and a constant") {
+      assertEqual(createValueRaster(10,9.4) & (3), createValueRaster(10,1.0))
+    }
+
+    it("ands two Double rasters") {
+      assertEqual(createValueRaster(10,9.9) & (createValueRaster(10,3.2)),
+                  createValueRaster(10,1.0))
+    }
+  }
 }
