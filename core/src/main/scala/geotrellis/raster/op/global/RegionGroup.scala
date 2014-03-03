@@ -1,7 +1,7 @@
 package geotrellis.raster.op.global
 
 import geotrellis._
-import spire.syntax._
+import scalaxy.loops._
 import scala.collection.mutable
 import geotrellis.raster.IntArrayRasterData
 
@@ -39,9 +39,9 @@ extends Op1(r)({
      * and to try and avoid a mess of conditionals.
      */
     if(options.connectivity == FourNeighbors) {
-      cfor(0)(_ < rows, _ + 1) { row =>
+      for (row <- 0 until rows optimized) {
         var valueToLeft = NODATA
-        cfor(0)(_ < cols, _ + 1) { col =>
+        for (col <- 0 until cols optimized) {
           val v = r.get(col,row)
           if(isData(v) || !ignoreNoData) {
             val top =
@@ -78,11 +78,11 @@ extends Op1(r)({
         }
       }
     } else {
-      cfor(0)(_ < rows, _ + 1) { row =>
+      for (row <- 0 until rows optimized) {
         var valueToLeft = NODATA
         var valueToTopLeft = NODATA
         var valueToTop = NODATA
-        cfor(0)(_ < cols, _ + 1) { col =>
+        for (col <- 0 until cols optimized) {
           val v = r.get(col,row)
           val topRight =
             if(row > 0 && col < cols-1) { r.get(col+1,row - 1) }
@@ -178,8 +178,9 @@ extends Op1(r)({
     }
 
     // Set equivilant regions to minimum
-    cfor(0)(_ < rows, _ + 1) { row =>
-      cfor(0)(_ < cols, _ + 1) { col =>
+    
+    for (row <- 0 until rows optimized) {
+      for (col <- 0 until cols optimized) {
         val v = data.get(col,row)
         if(isData(v) || !ignoreNoData) { 
           val cls = regions.getClass(v)

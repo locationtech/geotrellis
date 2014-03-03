@@ -8,7 +8,7 @@ import geotrellis.raster._
 import geotrellis.process._
 import geotrellis.raster.IntConstant
 
-import spire.syntax._
+import scalaxy.loops._
 
 trait ReadState {
   val rasterExtent:RasterExtent
@@ -102,7 +102,7 @@ trait ReadState {
     var y = ybase
 
     // loop over rows
-    cfor(0)(_ < dst_rows, _ + 1) { dst_row =>
+    for (dst_row <- 0 to dst_rows optimized) {
       // calculate the Y grid coordinate to read from
       val src_row = (src_rows - (y / src_cellheight).asInstanceOf[Int] - 1)
 
@@ -117,7 +117,7 @@ trait ReadState {
         var x = xbase
   
         // loop over cols
-        cfor(0)(_ < dst_cols, _ + 1) { dst_col =>  
+        for (dst_col <- 0 until dst_cols optimized) {
           // calculate the X grid coordinate to read from
           val src_col = (x / src_cellwidth).asInstanceOf[Int]
   

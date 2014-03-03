@@ -153,8 +153,7 @@ object GeotrellisBuild extends Build {
         jacksonMapper,
         scalaxyLoops % "provided",
         sprayClient, // for reading args from URLs,
-        apacheMath,
-        "org.spire-math" %% "spire" % "0.4.0"
+        apacheMath
       )
     ) ++
     defaultAssemblySettings

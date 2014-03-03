@@ -8,8 +8,6 @@ import com.vividsolutions.jts.geom
 
 import scala.collection.mutable
 
-import spire.syntax._
-
 case class ToVector(r:Op[Raster], 
                     regionConnectivity:Connectivity = RegionGroupOptions.default.connectivity)
     extends Operation[List[Polygon[Int]]] {
