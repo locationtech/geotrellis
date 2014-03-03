@@ -116,7 +116,7 @@ trait Raster extends local.AddMethods
     val dnew = newMax - newMin
     val dold = oldMax - oldMin
     if(dold <= 0 || dnew <= 0) { sys.error(s"Invalid parameters: $oldMin,$oldMax,$newMin,$newMax") }
-    mapIfSet(z => ( ((z - oldMin) / dold) * dnew ) + newMin)
+    mapIfSet(z => ( ((z - oldMin) * dnew) / dold ) + newMin)
   }
 
   def warp(target:RasterExtent):Raster

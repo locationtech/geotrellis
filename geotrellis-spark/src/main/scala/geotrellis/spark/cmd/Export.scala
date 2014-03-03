@@ -1,22 +1,20 @@
 package geotrellis.spark.cmd
 import geotrellis._
+import geotrellis.spark._
 import geotrellis.RasterExtent
 import geotrellis.data.GeoTiffWriter
 import geotrellis.raster.TileLayout
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.rdd.RasterHadoopRDD
 import geotrellis.spark.storage.RasterReader
-import geotrellis.spark.tiling.TileIdCoordRaster
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.SparkUtils
-
 import org.apache.hadoop.fs.Path
 import org.apache.spark.Logging
-
 import java.io.File
-
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Positive
+import geotrellis.spark.tiling.TileIdRaster
 
 
 /**
@@ -92,8 +90,8 @@ object Export extends ArgMain[ExportArgs] with Logging {
     // TMS tiles start from lower left corner whereas TileRaster expects them to start from  
     // upper left, so we need to re-sort the array
     def compare(left: TileIdCoordRaster, right: TileIdCoordRaster): Boolean =
-      (left.ty > right.ty) || (left.ty == right.ty && left.tx < right.tx)
-    val tiles = reader.map(TileIdCoordRaster.from(_, meta, zoom)).toList.sortWith(compare).map(_.raster)
+      (left._3 > right._3) || (left._3 == right._3 && left._2 < right._2)
+    val tiles = reader.map(TileIdRaster.toTileIdCoordRaster(_, meta, zoom)).toList.sortWith(compare).map(_._4)
     reader.close()
 
     val raster = TileRaster(tiles, rasterExtent, layout).toArrayRaster
@@ -115,9 +113,9 @@ object Export extends ArgMain[ExportArgs] with Logging {
       val zoom = rasterPath.getName.toInt
 
       raster.foreach(writables => {
-        val tr = TileIdCoordRaster.from(writables, meta, zoom)
-        GeoTiffWriter.write(s"${output}/tile-${tr.tileId}.tif", tr.raster, meta.nodata)
-        logInfo(s"---------tx: ${tr.tx}, ty: ${tr.ty} file: tile-${tr.tileId}.tif")
+        val (tileId, tx, ty, raster) = TileIdRaster.toTileIdCoordRaster(writables, meta, zoom, true)
+        GeoTiffWriter.write(s"${output}/tile-${tileId}.tif", raster, meta.nodata)
+        logInfo(s"---------tx: ${tx}, ty: ${ty} file: tile-${tileId}.tif")
       })
 
       logInfo(s"Exported ${raster.count} tiles to $output")
