@@ -34,22 +34,20 @@ class RasterRDD(val prev: RDD[Tile], val opCtx: Context)
     }, true)
 
   def mapTiles(f: Tile => Tile): RasterRDD =
-    withContext(opCtx) {
-      mapPartitions({ partition =>
-        partition.map { tile =>
-          f(tile)
-        }
-      }, true)
-    }
+    mapPartitions({ partition =>
+      partition.map { tile =>
+        f(tile)
+      }
+    }, true)
+    .withContext(opCtx)
 
   def combineTiles(other: RasterRDD)(f: (Tile,Tile) => Tile): RasterRDD =
-    withContext(opCtx) {
-      zipPartitions(other, true) { (partition1, partition2) =>
-        partition1.zip(partition2).map { case (tile1, tile2) =>
-          f(tile1, tile2)
-        }
+    zipPartitions(other, true) { (partition1, partition2) =>
+      partition1.zip(partition2).map { case (tile1, tile2) =>
+        f(tile1, tile2)
       }
     }
+    .withContext(opCtx)
 }
 
 object RasterRDD {

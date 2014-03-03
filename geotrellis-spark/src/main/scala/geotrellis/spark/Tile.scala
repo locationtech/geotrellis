@@ -17,9 +17,6 @@ case class Tile(id: Long, raster: Raster) {
 }
 
 object Tile {
-  implicit def tupleToTile(t:(Long,Raster)): Tile =
-    Tile(t._1, t._2)
-
   def toWritable(tr: Tile): WritableTile =
     (TileIdWritable(tr.id), ArgWritable.fromRasterData(tr.raster.data))
 }
