@@ -37,6 +37,7 @@ trait Raster extends local.AddMethods
                 with local.FloorMethods
                 with local.CeilMethods
                 with local.NegateMethods
+                with local.NotMethods
                 with local.PowMethods {
   val rasterExtent:RasterExtent
   lazy val cols = rasterExtent.cols
