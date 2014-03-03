@@ -124,6 +124,23 @@ class PowSpec extends FunSpec
       }
     }
 
+    it("pow's an integer to a raster source") {
+      val rs = RasterSource("quad_tiled")
+      val r = get(rs)
+      run(-10 **: rs) match {
+        case Complete(result, success) =>
+          for (row <- 0 until r.rasterExtent.rows) {
+            for (col <- 0 until r.rasterExtent.cols) {
+              result.get(col, row) should be (math.pow(-10, r.get(col,row)))
+            }
+          }
+        case Error(msg, failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+      }
+    }
+
     it("pow's two tiled RasterSources correctly") {
       val rs1 = RasterSource("quad_tiled")
       val rs2 = RasterSource("quad_tiled2")
@@ -215,8 +232,9 @@ class PowSpec extends FunSpec
     }
 
     it("raises an integer to the power of an int raster's cells") {
+      println("It raises an integer to the power on an int raster's cells");
       val r = positiveIntegerRaster
-      val result = get(r.localPowValue(-10))
+      val result = get(-10 **: r)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (math.pow(-10, r.get(col,row)).toInt)
@@ -226,7 +244,7 @@ class PowSpec extends FunSpec
 
     it("raises an integer to the power of a double raster's cells") {
       val r = probabilityRaster
-      val result = get(r.localPowValue(3))
+      val result = get(3 **: r)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should be (math.pow(3.0, r.getDouble(col,row)))
@@ -256,7 +274,7 @@ class PowSpec extends FunSpec
 
     it("raises a double to the power of a int raster's cells") {
       val r = positiveIntegerRaster
-      val result = get(r.localPowValue(-10.7))
+      val result = get(-10.7 **: r)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be ( math.pow(-10.7, r.get(col,row)).toInt)
@@ -266,7 +284,7 @@ class PowSpec extends FunSpec
 
     it("raises a double value to the power of a double raster's cells") {
       val r = probabilityRaster
-      val result = get(r.localPowValue(-3.3))
+      val result = get(-3.3**:r)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.getDouble(col,row)
@@ -298,6 +316,22 @@ class PowSpec extends FunSpec
         for(row <- 0 until r.rows) {
           val z = r.getDouble(col,row)
           result.getDouble(col,row) should be (math.pow(z,z))
+        }
+      }
+    }
+
+    it("raises three rasters") {
+      val r1 = positiveIntegerRaster
+      val r2 = positiveIntegerRaster
+      val r3 = positiveIntegerRaster
+      val s = Seq(r2, r3)
+      val result = get(r1 ** s)
+      for (col <- 0 until r1.cols) {
+        for (row <- 0 until r1.rows) {
+          result.get(col,row) should be (math.pow(
+                                          math.pow(r1.get(col,row),
+                                                   r2.get(col,row)),
+                                          r3.get(col,row)).toInt)
         }
       }
     }
