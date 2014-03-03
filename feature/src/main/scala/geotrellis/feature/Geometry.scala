@@ -75,7 +75,7 @@ trait Geometry {
   // isRectangle (polygon)
   // def area:Double = geom.getArea  (not for points?)
 
-  // TODO: handle Topology Exception from symDifference
+  // TODO: handle Topology Exception from symDifference, union, intersection, difference
   // symDifference - can't have a GC as an arg. May throw a TopologyException - how to deal with this?
 
   // def boundary = jts.getBoundary

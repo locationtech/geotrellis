@@ -281,12 +281,14 @@ object PolygonSetXDifferenceResult {
 
 // -- Boundary
 
-abstract sealed trait LineBoundaryResult
-object LineBoundaryResult {
-  implicit def jtsToResult(geom: jts.Geometry): LineBoundaryResult =
+abstract sealed trait OneDimensionsBoundaryResult
+object OneDimensionsBoundaryResult {
+  implicit def jtsToResult(geom: jts.Geometry): OneDimensionsBoundaryResult =
     geom match {
+      case g: jts.Geometry if g.isEmpty => NoResult  // do we need this case? A Line can't be empty. What about empty LineSet?
       case mp: jts.MultiPoint => PointSetResult(mp)
-      case _ => NoResult
+      case _ =>
+        sys.error(s"Unexpected result for Line boundary: ${geom.getGeometryType}")
     }
 }
 
@@ -424,7 +426,7 @@ case object NoResult extends Result
   with PointSetIntersectionResult
   with LineSetIntersectionResult
   with PolygonSetIntersectionResult
-  with LineBoundaryResult
+  with OneDimensionsBoundaryResult
   with PointGeometryDifferenceResult
   with LineXDifferenceResult
   with PolygonPolygonDifferenceResult
@@ -483,7 +485,7 @@ case class PointSetResult(ps: Set[Point]) extends Result
   with LineSetIntersectionResult
   with PolygonSetIntersectionResult
   with PointZeroDimensionsUnionResult
-  with LineBoundaryResult
+  with OneDimensionsBoundaryResult
   with PointSetDifferenceResult
   with PointPointSymDifferenceResult
   with ZeroDimensionsPointSetSymDifferenceResult

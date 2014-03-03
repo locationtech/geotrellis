@@ -41,14 +41,18 @@ case class Line(geom: jts.LineString, points: List[Point]) extends Geometry
   lazy val isSimple: Boolean =
     geom.isSimple
 
-  lazy val boundary: LineBoundaryResult =
+  lazy val boundary: OneDimensionsBoundaryResult =
     geom.getBoundary
 
   lazy val vertices: PointSet =
     geom.getCoordinates
 
-  lazy val boundingBox: Option[Polygon] =
-    if (geom.isEmpty) None else Some(geom.getEnvelope.asInstanceOf[Polygon])
+  lazy val boundingBox: Polygon =
+    geom.getEnvelope match {
+      case p: jts.Polygon => Polygon(p)
+      case x =>
+        sys.error(s"Unexpected result for Line boundingBox: ${x.getGeometryType}")
+    }
 
   lazy val length: Double =
     geom.getLength

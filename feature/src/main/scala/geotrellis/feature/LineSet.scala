@@ -20,7 +20,7 @@ case class LineSet(ls: Set[Line]) extends GeometrySet
   lazy val isClosed: Boolean =
     geom.isClosed
 
-  lazy val boundary: LineBoundaryResult =
+  lazy val boundary: OneDimensionsBoundaryResult =
     geom.getBoundary
 
   // -- Intersection

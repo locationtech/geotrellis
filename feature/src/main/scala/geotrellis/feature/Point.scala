@@ -85,14 +85,12 @@ case class Point(geom: jts.Point) extends Geometry
 
   // -- Buffer
 
-  def buffer(d: Double): Polygon = {
-    val result = geom.buffer(d)
-    result match {
+  def buffer(d: Double): Polygon =
+    geom.buffer(d) match {
       case p: jts.Polygon => Polygon(p)
-      case _ =>
-        sys.error(s"Unexpected result for Point buffer: ${result.getGeometryType}")
+      case x =>
+        sys.error(s"Unexpected result for Point buffer: ${x.getGeometryType}")
     }
-  }
 
   // -- Predicates
 
