@@ -11,11 +11,12 @@ case class RasterDefinition(layerId:LayerId,
                             catalogued:Boolean = true) {
   def isTiled = tileLayout.isTiled
 
-  def withType(newType:RasterType) = 
-    RasterDefinition(layerId, rasterExtent, tileLayout, newType)
+  def withType(newType: RasterType) =
+    new RasterDefinition(layerId, rasterExtent, tileLayout, newType)
 }
 
 object RasterDefinition {
+
   def fromRaster(r: Raster): RasterDefinition = 
     RasterDefinition(
       LayerId.MEM_RASTER,
