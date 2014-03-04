@@ -15,54 +15,75 @@
  ******************************************************************************/
 
 package geotrellis.spark
+import geotrellis.spark.utils.SparkUtils
+
 import org.apache.commons.io.FileUtils
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.Path
+import org.scalatest._
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.FunSpec
+
 import java.io.File
-import java.nio.file.FileSystems
 
 /*
- * This trait sets up the test directories on the local fs and hdfs 
- * 
+ * These set of traits handle the creation and deletion of test directories on the local fs and hdfs,
  * It uses commons-io in at least one case (recursive directory deletion)
  */
-trait TestEnvironment extends FunSpec with BeforeAndAfterAll {
+trait TestEnvironment extends BeforeAndAfterAll {self: Suite =>
   // get the name of the class which mixes in this trait
   val name = this.getClass.getName
 
-  // root directory on local file system for source data (e.g., tiffs)
-  final val TestSourceRoot = "geotrellis-spark/src/test/resources"
+  // a hadoop configuration
+  val conf = SparkUtils.createHadoopConfiguration
+
+  // cache the local file system, no tests should have to call getFileSystem
+  val localFS = getLocalFS
+
+  // e.g., root directory on local file system for source data (e.g., tiffs)
+  // localFS.getWorkingDirectory is for e.g., /home/jdoe/git/geotrellis
+  val inputHome = new Path(localFS.getWorkingDirectory, "geotrellis-spark/src/test/resources")
+
+  // test directory paths on local and hdfs 
+  // outputHomeLocal - root directory of all tests on the local file system (e.g., file:///tmp/testFiles)
+  // outputHomeHdfs - root directory of all tests on hdfs (e.g., hdfs:///tmp)
+  // outputLocal - directory of this particular test (e.g., file:///tmp/testFiles/geotrellis.spark.cmd.IngestSpec)
+  val (outputHomeLocal, outputHomeHdfs, outputLocal) = setupTestDirs
+
+
+  /* 
+   * Makes directory given a path. The parent directory is expected to exist
+   * e.g., to make directory bar under /tmp/foo, call mkdir(new Path("/tmp/foo/bar"))
+   * The parent directory is assumed to exist
+   */
+  def mkdir(dir: Path): Unit = {
+   val handle = new File(dir.toUri())
+    if (!handle.exists)
+      handle.mkdirs()    
+  }
   
-  // make a fully qualified (including scheme) path given a directory and either a file or directory    
-  def makeQualified(prefix: String, suffix: String) = 
-    FileSystems.getDefault().getPath(prefix, suffix).toUri().toString()
-    
+  // clean up the test directory after the test
+  // note that this afterAll is not inherited from BeforeAndAfterAll, its callers are
+  override def afterAll() = FileUtils.deleteDirectory(new File(outputLocal.toUri()))
+
   // root directory name on both local file system and hdfs for all tests
-  final val RootName = "testFiles"
+  private final val outputHome = "testFiles"
 
-  // root directory paths on both local file system and hdfs for all tests  
-  val (rootLocalDir, rootHdfsDir) = setupRootDirs
+  private def getLocalFS: FileSystem = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
 
-  // file handle to the test directory on local file system
-  val testLocalHandle = new File(rootLocalDir, name)
-  if (!testLocalHandle.exists)
-    testLocalHandle.mkdirs()
-
-  // test directory on local file system
-  val testLocalDir = testLocalHandle.toURI.toString()
-
-  //override def beforeAll {
-  //}
-
-  override def afterAll =
-    FileUtils.deleteDirectory(testLocalHandle)
-
-  private def setupRootDirs: Tuple2[String, String] = {
+  private def setupTestDirs: (Path, Path, Path) = {
     val tmpDir = System.getProperty("java.io.tmpdir")
 
-    val rootLocalHandle = new File(tmpDir, RootName)
-    if (!rootLocalHandle.exists)
-      rootLocalHandle.mkdirs()
-    (rootLocalHandle.getAbsolutePath(), "")
+    val outputHomeLocalHandle = new File(tmpDir, outputHome)
+    if (!outputHomeLocalHandle.exists)
+      outputHomeLocalHandle.mkdirs()
+
+    val hadoopTmpDir = conf.get("hadoop.tmp.dir", "/tmp")
+
+    // file handle to the test directory on local file system
+    val outputLocalHandle = new File(outputHomeLocalHandle.toString(), name)
+    if (!outputLocalHandle.exists)
+      outputLocalHandle.mkdirs()
+
+    (new Path(outputHomeLocalHandle.toURI()), new Path(hadoopTmpDir), new Path(outputLocalHandle.toURI()))
   }
 }

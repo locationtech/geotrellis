@@ -119,6 +119,9 @@ case class PyramidMetadata(
 object PyramidMetadata {
   final val MetaFile = "metadata"
 
+  // currently we only support single band data
+  final val MaxBands = 1
+  
   /*
    * Reads the raster's metadata 
    * 
@@ -192,11 +195,7 @@ object PyramidMetadata {
 
     val extent = Extent(w, s, e, n)
     val tileExtent = TmsTiling.extentToTile(extent, zoom, tileSize)
-    val (pixelLower, pixelUpper) =
-      (TmsTiling.latLonToPixels(s, w, zoom, tileSize),
-        TmsTiling.latLonToPixels(n, e, zoom, tileSize))
-    val pixelExtent = PixelExtent(0, 0,
-      pixelUpper.px - pixelLower.px, pixelUpper.py - pixelLower.py)
+    val pixelExtent = TmsTiling.extentToPixel(extent, zoom, tileSize)
 
     (files,
       PyramidMetadata(extent, tileSize, meta.bands, meta.nodata, meta.rasterType, zoom,

@@ -15,51 +15,43 @@
  ******************************************************************************/
 
 package geotrellis.spark.rdd
-
+import geotrellis.spark._
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
+import geotrellis.spark.metadata.Context
+import geotrellis.spark.metadata.PyramidMetadata
+import geotrellis.spark.tiling.TileIdRaster
+
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapred.FileInputFormat
-import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapred.SequenceFileInputFormat
-import org.apache.spark.SerializableWritable
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapreduce.Job
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkContext
-import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.rdd.HadoopRDD
-import geotrellis.spark.metadata.PyramidMetadata
-import org.apache.hadoop.fs.Path
-import geotrellis.Raster
-import geotrellis.spark.tiling.TileIdRaster
-import org.apache.spark.rdd.RDD
+import org.apache.spark.rdd.NewHadoopRDD
 
 /*
  * An RDD abstraction of rasters in Spark. This can give back either tuples of either
  * (TileIdWritable, ArgWritable) or (Long, Raster), the latter being the deserialized 
- * form of the former. See companion object for apply and asTiledRaster respectively 
- * 
- * raster - fully qualified path to the raster (with zoom level)
- * 		e.g., file:///tmp/mypyramid/10 or hdfs:///geotrellis/images/mypyramid/10
- *   
- * sc - the spark context
- * minSplits - override the default number of partitions with this number, to get, say
- * 		more than the default number of partitions
- *   
+ * form of the former. See companion object 
  */
-class RasterHadoopRDD(raster: String, sc: SparkContext, minSplits: Int)
-  extends HadoopRDD[TileIdWritable, ArgWritable](
+class RasterHadoopRDD private (raster: Path, sc: SparkContext, conf: Configuration)
+  extends NewHadoopRDD[TileIdWritable, ArgWritable](
     sc,
-    sc.broadcast(new SerializableWritable(sc.hadoopConfiguration)),
-    Some((jobConf: JobConf) => FileInputFormat.setInputPaths(jobConf, raster + RasterHadoopRDD.SeqFileGlob)),
     classOf[SequenceFileInputFormat[TileIdWritable, ArgWritable]],
     classOf[TileIdWritable],
     classOf[ArgWritable],
-    minSplits) {
+    conf) {
 
   /*
    * Overriding the partitioner with a TileIdPartitioner 
    */
-  override val partitioner = Some(TileIdPartitioner(raster, sc.hadoopConfiguration))
+  override val partitioner = Some(TileIdPartitioner(raster, conf))
+
+  @transient val pyramidPath = raster.getParent()
+  val zoom = raster.getName().toInt
+  val meta = PyramidMetadata(pyramidPath, conf)
 
 }
 
@@ -67,14 +59,30 @@ object RasterHadoopRDD {
 
   final val SeqFileGlob = "/*[0-9]*/data"
 
-  def apply( raster: String, sc: SparkContext): RDD[(TileIdWritable, ArgWritable)] =
-    new RasterHadoopRDD(raster, sc, sc.defaultMinSplits)
-  
+  /* raster - fully qualified path to the raster (with zoom level)
+   * 	e.g., file:///tmp/mypyramid/10 or hdfs:///geotrellis/images/mypyramid/10
+   *   
+   * sc - the spark context
+   */
+  def apply(raster: String, sc: SparkContext): RasterHadoopRDD =
+    apply(new Path(raster), sc)
 
-  def asTileIdRaster(raster: String, sc: SparkContext): RDD[TileIdRaster] = {
-    val rasterPath = new Path(raster)
-    val meta = PyramidMetadata(rasterPath.getParent(), sc.hadoopConfiguration)
-	apply(raster, sc).map(TileIdRaster.from(_, meta, rasterPath.getName().toInt))
+  def apply(raster: Path, sc: SparkContext): RasterHadoopRDD = {
+    val job = new Job(sc.hadoopConfiguration)
+    val globbedPath = new Path(raster.toUri().toString() + SeqFileGlob)
+    FileInputFormat.addInputPath(job, globbedPath)
+    val updatedConf = job.getConfiguration
+    new RasterHadoopRDD(raster, sc, updatedConf)
   }
 
+  def toRasterRDD(raster: String, sc: SparkContext): RasterRDD =
+    toRasterRDD(new Path(raster), sc)
+
+  def toRasterRDD(raster: Path, sc: SparkContext): RasterRDD = {
+    val rhd = apply(raster, sc)
+    val (meta, zoom) = (rhd.meta, rhd.zoom)
+    rhd.mapPartitions(_.map(TileIdRaster(_, meta, zoom)), true)
+      .withContext(Context.fromMetadata(zoom, meta))
+
+  }
 }

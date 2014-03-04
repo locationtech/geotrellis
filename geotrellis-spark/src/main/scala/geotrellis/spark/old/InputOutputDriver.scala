@@ -15,19 +15,16 @@
  ******************************************************************************/
 
 package geotrellis.spark.old
-import geotrellis.spark.SavableImage
+import geotrellis.spark._
 import geotrellis.spark.cmd.CommandArguments
-
-import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.rdd.RasterHadoopRDD
 import geotrellis.spark.utils.HdfsUtils
 import geotrellis.spark.utils.SparkUtils
-
 import org.apache.spark.Logging
 import org.apache.spark.SparkContext._
-
 import com.quantifind.sumac.ArgMain
+import org.apache.hadoop.fs.Path
 
 object InputOutputDriver extends ArgMain[CommandArguments] with Logging {
   def main(args: CommandArguments) {
@@ -37,7 +34,7 @@ object InputOutputDriver extends ArgMain[CommandArguments] with Logging {
     val sc = SparkUtils.createSparkContext(sparkMaster, "InputOutputRaster")
     val awtestRdd = RasterHadoopRDD(inputRasterPath, sc)
 
-    def printTileWithPartition(idx: Int, itr: Iterator[(TileIdWritable, ArgWritable)]) = {
+    def printTileWithPartition(idx: Int, itr: Iterator[TileIdArgWritable]) = {
       itr.foreach { case (tw, aw) => logInfo(s"Tile ${tw.get} partition $idx") }
       itr
     }
@@ -51,7 +48,7 @@ object InputOutputDriver extends ArgMain[CommandArguments] with Logging {
     logInfo(s"Test lookup of first tile $firstTile")
     logInfo("# of matching rows = " + awtestRdd.lookup(TileIdWritable(firstTile)).length)
 
-    awtestRdd.save(outputRasterPath)
+    awtestRdd.save(new Path(outputRasterPath))
 
     sc.stop
   }

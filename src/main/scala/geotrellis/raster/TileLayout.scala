@@ -65,6 +65,12 @@ case class TileLayout(tileCols:Int, tileRows:Int, pixelCols:Int, pixelRows:Int) 
   /** Gets the index of a tile at col, row. */
   def getTileIndex(col:Int,row:Int) =
     row*tileCols + col
+    
+  def getXY(tileIndex: Int): Tuple2[Int, Int] = {
+    val ty = tileIndex / tileCols
+    val tx = tileIndex - (ty * tileCols)
+    (tx, ty)
+  }
 }
 
 /**

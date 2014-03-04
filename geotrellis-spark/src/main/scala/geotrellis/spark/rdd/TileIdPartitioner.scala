@@ -40,18 +40,25 @@ import scala.collection.mutable.ListBuffer
 class TileIdPartitioner extends org.apache.spark.Partitioner {
 
   @transient
-  private var splitPoints = new Array[TileIdWritable](0)
+  private var splits = new Array[TileIdWritable](0)
 
   override def getPartition(key: Any) = findPartition(key)
-  override def numPartitions = splitPoints.length + 1
+  override def numPartitions = splits.length + 1
   override def toString = "TileIdPartitioner split points: " + {
-    if (splitPoints.isEmpty) "Empty" else splitPoints.zipWithIndex.mkString
+    if (splits.isEmpty) "Empty" else splits.zipWithIndex.mkString
   }
 
+  // get min,max tileId in a given partition
+  def range(partition: Int): (TileIdWritable, TileIdWritable) = {
+    val min = if(partition == 0) Long.MinValue else splits(partition-1).get + 1
+    val max = if(partition == splits.length) Long.MaxValue else splits(partition).get
+    (TileIdWritable(min), TileIdWritable(max))
+  }
+  
   // TODO override equals and hashCode
-
+  
   private def findPartition(key: Any) = {
-    val index = java.util.Arrays.binarySearch(splitPoints.asInstanceOf[Array[Object]], key)
+    val index = java.util.Arrays.binarySearch(splits.asInstanceOf[Array[Object]], key)
     if (index < 0)
       (index + 1) * -1
     else
@@ -60,8 +67,8 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
 
   private def writeObject(out: ObjectOutputStream) {
     out.defaultWriteObject()
-    out.writeInt(splitPoints.length)
-    splitPoints.foreach(split => out.writeLong(split.get))
+    out.writeInt(splits.length)
+    splits.foreach(split => out.writeLong(split.get))
   }
 
   private def readObject(in: ObjectInputStream) {
@@ -70,7 +77,7 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
     val len = in.readInt
     for (i <- 0 until len)
       buf += TileIdWritable(in.readLong())
-    splitPoints = buf.toArray
+    splits = buf.toArray
   }
 }
 
@@ -80,7 +87,7 @@ object TileIdPartitioner {
   /* construct a partitioner from the splits file, if one exists */
   def apply(raster: Path, conf: Configuration): TileIdPartitioner = {
     val tp = new TileIdPartitioner
-    tp.splitPoints = readSplits(raster, conf)
+    tp.splits = readSplits(raster, conf)
     tp
   }
 
@@ -100,12 +107,12 @@ object TileIdPartitioner {
     HdfsUtils.getLineScanner(splitFile, conf) match {
       case Some(in) =>
         try {
-          val splitPoints = new ListBuffer[TileIdWritable]
+          val splits = new ListBuffer[TileIdWritable]
           for (line <- in) {
-            splitPoints +=
+            splits +=
               TileIdWritable(ByteBuffer.wrap(Base64.decodeBase64(line.getBytes)).getLong)
           }
-          splitPoints.toArray
+          splits.toArray
         } finally {
           in.close
         }

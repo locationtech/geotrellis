@@ -15,32 +15,32 @@
  ******************************************************************************/
 
 package geotrellis.spark.storage
+import geotrellis.spark.formats.ArgWritable
 
 import geotrellis.spark.formats.TileIdWritable
-import geotrellis.spark.formats.ArgWritable
+import geotrellis.spark.rdd.TileIdPartitioner
+import geotrellis.spark.utils.SparkUtils
+
 import org.apache.hadoop.conf.Configuration
-import geotrellis.raster.FloatArrayRasterData
+import org.apache.hadoop.fs.FileStatus
+import org.apache.hadoop.fs.FileUtil
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.MapFile
-import org.apache.hadoop.fs.FileUtil
-import geotrellis.spark.utils.SparkUtils
-import org.apache.hadoop.fs.FileStatus
+
 import java.io.Closeable
 
 /* 
- * An Iterable-based reader. Note that even though Iterables have a rich set of methods
- * this implementation currently would iterate through all tiles to perform any of the  
- * operations. So for example last() would iterate through all tiles to find the last  
- * tile. Clearly, this can be optimized further in at least two ways:
+ * An Iterable-based reader which supports range lookups (e.g., [10, 20] and 
+ * point lookups (e.g., [10, 10]). Internally, it uses the corresponding 
+ * MapFile API to seek to the correct start tileId and stop once it seeks 
+ * past the end tileId
  * 
- * 1. Point looksups on tile ids. Internally seeks the MapFile.Reader to the correct 
- * location for fast performance
- * 2. Range lookups on ranges of tiles (with optional start/end values). Internally
- * seeks the MapFile.Reader to the start location and stops past the end of the 
- * user-provided range
- * 
- */ 
-case class RasterReader(raster: Path, conf: Configuration)
+ */
+case class RasterReader(
+  raster: Path,
+  conf: Configuration,
+  startKey: TileIdWritable = TileIdWritable(Long.MinValue),
+  endKey: TileIdWritable = TileIdWritable(Long.MaxValue))
   extends Iterable[(TileIdWritable, ArgWritable)]
   with Closeable {
 
@@ -48,27 +48,69 @@ case class RasterReader(raster: Path, conf: Configuration)
 
   def iterator = new Iterator[(TileIdWritable, ArgWritable)] with Closeable {
 
-    private val curKey: TileIdWritable = new TileIdWritable
-    private val curValue: ArgWritable = new ArgWritable
-    private var curPartition: Int = 0
+    private var curKey: TileIdWritable = TileIdWritable(startKey)
+    private var curValue: ArgWritable = new ArgWritable
 
     // initialize readers and partitioner
-    val readers = getReaders
+    private val readers = getReaders
+    private val partitioner = TileIdPartitioner(raster, conf)
 
-    def close = readers.foreach(r => if (r != null) r.close)
-    
-    override def hasNext = {
-      if (curPartition >= readers.length)
-        false
-      else if (readers(curPartition).next(curKey, curValue))
-        true
-      else {
-        curPartition += 1
-        hasNext
+    private var readFirstKey: Boolean = false
+    private var curPartition: Int = -1
+
+    // find the partition containing the first key in the range
+    // if found, set curPartition to its partition
+    {
+      var partition = partitioner.getPartition(startKey)
+      while (curPartition == -1 && partition < partitioner.numPartitions) {
+        curKey = readers(partition).getClosest(startKey, curValue).asInstanceOf[TileIdWritable]
+        if (curKey != null) {
+          readFirstKey = true
+          curPartition = partition
+        } else {
+          partition += 1
+        }
       }
     }
-    
-    override def next = (curKey,curValue)
+
+    def close = readers.foreach(r => if (r != null) r.close)
+
+    // TODO - rewrite to remove early returns 
+    override def hasNext: Boolean = {
+      if (curKey == null)
+        return false
+      if (readFirstKey) {
+        readFirstKey = false
+        // handle boundary case: startKey >= endKey
+        if (curKey.compareTo(endKey) <= 0) {
+          return true
+        }
+        return false
+      }
+      /*
+       *  1. found = readers[curPartition].next(currentKey, value)
+       *  2. if !found increment curPartition, ensure that its within limits, and 
+       *  run 1. again. if its not within limits, return false
+       *  3. if currentKey <= endKey return true, else return false;
+       */
+      while (true) {
+        val found = readers(curPartition).next(curKey, curValue)
+        if (found) {
+          if (curKey.compareTo(endKey) <= 0)
+            return true
+          else
+            return false
+        } else {
+          curPartition += 1
+          if(curPartition >= partitioner.numPartitions) {
+            return false
+          }
+        }
+      }
+      return true
+    }
+
+    override def next = (curKey, curValue)
 
     private def getReaders: Array[MapFile.Reader] = {
       val fs = raster.getFileSystem(conf)
@@ -89,24 +131,5 @@ case class RasterReader(raster: Path, conf: Configuration)
       readers
     }
 
-  }
-}
-
-// TODO - replace with test
-object RasterReader {
-
-  def main(args: Array[String]): Unit = {
-    val raster = new Path("hdfs://localhost:9000/geotrellis/images/testcostdistance-gt-ingest/10")
-    val conf = SparkUtils.createHadoopConfiguration
-    val reader = RasterReader(raster, conf)
-    var count = 0
-    reader.foreach{ case(tw,aw) => {
-      println(s"tileId=${tw.get}")
-      count += 1
-    } } 
-    //val (tw,aw) = reader.last
-    //println(s"last tile id = ${tw.get}")
-    reader.close
-    println(s"Got $count records")
   }
 }

@@ -17,9 +17,10 @@
 package geotrellis
 
 import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
+import org.scalatest.matchers._
 
-class RasterSpec extends FunSpec with MustMatchers {
+class RasterSpec extends FunSpec with MustMatchers 
+                                 with ShouldMatchers {
   val e = Extent(0.0, 0.0, 10.0, 10.0)
   val g = RasterExtent(e, 1.0, 1.0, 10, 10)
   describe("A Raster") {
@@ -56,6 +57,18 @@ class RasterSpec extends FunSpec with MustMatchers {
       r1 must not be r2
       r1 must be === r3
       r1 must be === r4
+    }
+
+    it("should normalize from 500-999 to 1-100") {
+      val arr = (for(i <- 500 to 999) yield { i }).toArray
+      val r = Raster(arr, RasterExtent(Extent(0.0,0.0,50.0,10.0), 1, 1, 50, 10))
+      val (oldMin, oldMax) = r.findMinMax
+      val nr = r.normalize(oldMin, oldMax, 1, 100)
+      val (newMin, newMax) = nr.findMinMax
+
+      newMin should be (1)
+      newMax should be (100)
+      nr.toArray.toSet should be ((for(i <- 1 to 100) yield { i }).toSet)
     }
   }
 
