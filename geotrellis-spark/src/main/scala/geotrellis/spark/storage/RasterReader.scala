@@ -1,7 +1,6 @@
 package geotrellis.spark.storage
 
 import geotrellis.spark.formats._
-import geotrellis.spark.formats._
 import geotrellis.spark.rdd.TileIdPartitioner
 import geotrellis.spark.utils.SparkUtils
 
