@@ -4,7 +4,7 @@ import geotrellis.RasterExtent
 import geotrellis.raster.TileLayout
 import geotrellis.spark.SharedSparkContext
 import geotrellis.spark.TestEnvironment
-import geotrellis.spark.rdd.RasterHadoopRDD
+import geotrellis.spark.rdd.RasterRDD
 import geotrellis.spark.testfiles.AllOnes
 import geotrellis.spark.tiling.TmsTiling
 
@@ -76,7 +76,7 @@ class ContextSaveSpec extends FunSpec with TestEnvironment with SharedSparkConte
 
   describe("Passing Context through operations tests") {
     it("should produce the expected PyramidMetadata") {
-      val ones = RasterHadoopRDD(allOnes.path, sc).toRasterRDD
+      val ones = RasterRDD(allOnes.path, sc)
       val twos = ones + ones
       val twosPath = new Path(outputLocal, ones.opCtx.zoom.toString)
       mkdir(twosPath)

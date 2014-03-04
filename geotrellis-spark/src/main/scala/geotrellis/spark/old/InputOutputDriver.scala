@@ -3,7 +3,7 @@ package geotrellis.spark.old
 import geotrellis.spark._
 import geotrellis.spark.formats._
 import geotrellis.spark.cmd.CommandArguments
-import geotrellis.spark.rdd.RasterHadoopRDD
+import geotrellis.spark.rdd.RasterRDD
 import geotrellis.spark.utils.HdfsUtils
 import geotrellis.spark.utils.SparkUtils
 import org.apache.spark.Logging
@@ -17,10 +17,10 @@ object InputOutputDriver extends ArgMain[CommandArguments] with Logging {
     val inputRasterPath = args.input // /geotrellis/images/argtest
     val outputRasterPath = args.output // /geotrellis/images/argtestout
     val sc = SparkUtils.createSparkContext(sparkMaster, "InputOutputRaster")
-    val awtestRdd = RasterHadoopRDD(inputRasterPath, sc)
+    val awtestRdd = RasterRDD(inputRasterPath, sc)
 
-    def printTileWithPartition(idx: Int, itr: Iterator[WritableTile]) = {
-      itr.foreach { case (tw, aw) => logInfo(s"Tile ${tw.get} partition $idx") }
+    def printTileWithPartition(idx: Int, itr: Iterator[Tile]) = {
+      itr.foreach { case Tile(id, _) => logInfo(s"Tile ${id} partition $idx") }
       itr
     }
 
@@ -29,9 +29,10 @@ object InputOutputDriver extends ArgMain[CommandArguments] with Logging {
     logInfo("# of partitions = " + awtestRdd.partitions.length)
     logInfo("# of rows = " + awtestRdd.mapPartitionsWithIndex(printTileWithPartition, true).count)
 
-    val firstTile = awtestRdd.first._1.get
-    logInfo(s"Test lookup of first tile $firstTile")
-    logInfo("# of matching rows = " + awtestRdd.lookup(TileIdWritable(firstTile)).length)
+    val firstTileId = awtestRdd.first.id
+    logInfo(s"Test lookup of first tile $firstTileId")
+    //Do we need this? Should lookup be on RasterRDD?
+    //logInfo("# of matching rows = " + awtestRdd.lookup(firstTileId).length)
 
     awtestRdd.save(new Path(outputRasterPath))
 

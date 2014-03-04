@@ -19,6 +19,7 @@ import org.apache.spark.rdd.NewHadoopRDD
  * (TileIdWritable, ArgWritable) or (Long, Raster), the latter being the deserialized 
  * form of the former. See companion object 
  */
+private[spark]
 class RasterHadoopRDD private (raster: Path, sc: SparkContext, conf: Configuration)
   extends NewHadoopRDD[TileIdWritable, ArgWritable](
     sc,
@@ -48,6 +49,7 @@ class RasterHadoopRDD private (raster: Path, sc: SparkContext, conf: Configurati
     .withContext(Context.fromMetadata(zoom, meta))
 }
 
+private[rdd]
 object RasterHadoopRDD {
 
   final val SeqFileGlob = "/*[0-9]*/data"

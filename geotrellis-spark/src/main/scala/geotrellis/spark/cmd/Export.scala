@@ -5,7 +5,7 @@ import geotrellis.RasterExtent
 import geotrellis.data.GeoTiffWriter
 import geotrellis.raster.TileLayout
 import geotrellis.spark.metadata.PyramidMetadata
-import geotrellis.spark.rdd.RasterHadoopRDD
+import geotrellis.spark.rdd.RasterRDD
 import geotrellis.spark.storage.RasterReader
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.SparkUtils
@@ -116,10 +116,10 @@ object Export extends ArgMain[ExportArgs] with Logging {
 
     try {
       val meta = PyramidMetadata(rasterPath.getParent, sc.hadoopConfiguration)
-      val raster = RasterHadoopRDD(rasterPath.toUri.toString, sc)
+      val raster = RasterRDD(rasterPath.toUri.toString, sc, true)
       val zoom = rasterPath.getName.toInt
 
-      for(tile <- raster.toRasterRDD(true)) {
+      for(tile <- raster) {
         val (tx,ty) = tile.tileXY(zoom)
         GeoTiffWriter.write(s"${output}/tile-${tile.id}.tif", tile.raster, meta.nodata)
         logInfo(s"---------tx: ${tx}, ty: ${ty} file: tile-${tile.id}.tif")

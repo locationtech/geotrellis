@@ -11,8 +11,11 @@ import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
 
 import org.apache.spark.Partition
+import org.apache.spark.SparkContext
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
+
+import org.apache.hadoop.fs.Path
 
 class RasterRDD(val prev: RDD[Tile], val opCtx: Context)
   extends RDD[Tile](prev)
@@ -51,6 +54,15 @@ class RasterRDD(val prev: RDD[Tile], val opCtx: Context)
 }
 
 object RasterRDD {
-  implicit def hadoopRddToRasterRDD(rhrdd: RasterHadoopRDD): RasterRDD =
-    rhrdd.toRasterRDD
+  def apply(raster: String, sc: SparkContext): RasterRDD =
+    apply(new Path(raster), sc)
+
+  def apply(raster: Path, sc: SparkContext): RasterRDD =
+    RasterHadoopRDD(raster, sc).toRasterRDD
+
+def apply(raster: String, sc: SparkContext, addUserNoData: Boolean): RasterRDD =
+    apply(new Path(raster), sc, addUserNoData)
+
+  def apply(raster: Path, sc: SparkContext, addUserNoData: Boolean): RasterRDD =
+    RasterHadoopRDD(raster, sc).toRasterRDD(addUserNoData)
 }
