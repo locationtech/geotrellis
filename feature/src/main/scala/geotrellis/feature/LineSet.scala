@@ -1,21 +1,19 @@
 package geotrellis.feature
 
-import com.vividsolutions.jts.{geom=>jts}
 import GeomFactory._
-import com.vividsolutions.jts.geom.MultiLineString
+
+import com.vividsolutions.jts.{geom=>jts}
 
 object LineSet {
   def apply(ls: Line*): LineSet = 
-    LineSet(ls.toSet)
-  def apply(ls: Seq[Line])(implicit d: DummyImplicit): LineSet = 
-    LineSet(ls.toSet)
+    LineSet(ls)
+
+  def apply(ls: Traversable[Line])(implicit d: DummyImplicit): LineSet = 
+    LineSet(factory.createMultiLineString(ls.map(_.geom).toArray))
 }
 
-case class LineSet(ls: Set[Line]) extends GeometrySet 
-                                     with TwoDimensions {
-
-  val geom: MultiLineString =
-    factory.createMultiLineString(ls.map(_.geom).toArray)
+case class LineSet(geom: jts.MultiLineString) extends GeometrySet 
+                                                 with TwoDimensions {
 
   lazy val isClosed: Boolean =
     geom.isClosed

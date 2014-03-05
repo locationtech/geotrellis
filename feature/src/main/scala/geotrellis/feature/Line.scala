@@ -8,9 +8,6 @@ object Line {
   implicit def jtsToLine(geom: jts.LineString): Line =
     apply(geom)
 
-  def apply(geom: jts.LineString): Line =
-    Line(geom, geom.getCoordinates.map(c => Point(c.x, c.y)).toList)
-
   def apply(points: Point*): Line =
     apply(points.toList)
 
@@ -25,15 +22,17 @@ object Line {
       sys.error("Invalid line: Requires 2 or more points.")
     }
 
-    Line(factory.createLineString(points.map(_.geom.getCoordinate).toArray), points)
+    Line(factory.createLineString(points.map(_.geom.getCoordinate).toArray))
   }
 
 }
 
-case class Line(geom: jts.LineString, points: List[Point]) extends Geometry 
-                                                              with TwoDimensions {
+case class Line(geom: jts.LineString) extends Geometry 
+                                         with TwoDimensions {
 
   assert(!geom.isEmpty)
+
+  lazy val points: List[Point] = geom.getCoordinates.map(c => Point(c.x, c.y)).toList
 
   lazy val isClosed: Boolean =
     geom.isClosed

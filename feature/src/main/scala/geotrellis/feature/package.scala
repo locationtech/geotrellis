@@ -18,9 +18,6 @@ package object feature {
   implicit def tupleListToPointList(tl: List[(Double, Double)]): List[Point] =
     tl map(t => Point(t._1, t._2))
 
-  // implicit def tupleArrayToPointList(tl:Array[(Double,Double)]):List[Point] =
-  //   tl map(t => Point(t._1,t._2)) toList
-
   implicit def coordinateArrayToPointSet(ca: Array[jts.Coordinate]): PointSet = {
     val ps = (for (i <- 0 until ca.length) yield {
       Point(ca(i).x, ca(i).y)

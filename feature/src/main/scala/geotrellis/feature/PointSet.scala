@@ -1,14 +1,19 @@
 package geotrellis.feature
 
-import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
-import com.vividsolutions.jts.geom.MultiPoint
 
-case class PointSet(ps: Set[Point]) extends GeometrySet 
-                                       with ZeroDimensions {
+import com.vividsolutions.jts.{geom => jts}
 
-  val geom: MultiPoint =
-    factory.createMultiPoint(ps.map(_.geom).toArray)
+object PointSet {
+  def apply(ps: Point*): PointSet = 
+    apply(ps)
+
+  def apply(ps: Traversable[Point]): PointSet =
+    PointSet(factory.createMultiPoint(ps.map(_.geom).toArray))
+}
+
+case class PointSet(geom: jts.MultiPoint) extends GeometrySet 
+                                             with ZeroDimensions {
 
   // -- Intersection
 

@@ -1,14 +1,20 @@
 package geotrellis.feature
 
-import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
-import com.vividsolutions.jts.geom.MultiPolygon
 
-case class PolygonSet(ps: Set[Polygon]) extends GeometrySet 
-                                           with TwoDimensions {
+import com.vividsolutions.jts.{geom => jts}
 
-  val geom: MultiPolygon =
-    factory.createMultiPolygon(ps.map(_.geom).toArray)
+object PolygonSet {
+  def apply(ps: Polygon*): PolygonSet = 
+    apply(ps)
+
+  def apply(ps: Traversable[Polygon]): PolygonSet =
+    PolygonSet(factory.createMultiPolygon(ps.map(_.geom).toArray))
+}
+
+
+case class PolygonSet(geom: jts.MultiPolygon) extends GeometrySet 
+                                                 with TwoDimensions {
 
   lazy val area: Double =
     geom.getArea
