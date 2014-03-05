@@ -17,24 +17,23 @@ object Dependencies {
   val sigar         = "org.hyperic"         % "sigar"           % "1.6.4"  
   val jts           = "com.vividsolutions"  % "jts"             % "1.13"
 
-  val akkaVersion   = "2.2.3"
-  val akkaKernel    = "com.typesafe.akka" %% "akka-kernel"  % akkaVersion
-  val akkaRemote    = "com.typesafe.akka" %% "akka-remote"  % akkaVersion
-  val akkaActor     = "com.typesafe.akka" %% "akka-actor"   % akkaVersion
-  val akkaCluster   = "com.typesafe.akka" %% "akka-cluster" % akkaVersion
+  val akkaKernel    = "com.typesafe.akka" %% "akka-kernel"  % Version.akka
+  val akkaRemote    = "com.typesafe.akka" %% "akka-remote"  % Version.akka
+  val akkaActor     = "com.typesafe.akka" %% "akka-actor"   % Version.akka
+  val akkaCluster   = "com.typesafe.akka" %% "akka-cluster" % Version.akka
   
-  val jacksonCore   = "org.codehaus.jackson" % "jackson-core-asl"   % "1.6.1"
-  val jacksonMapper = "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1"
+  val jacksonCore   = "org.codehaus.jackson" % "jackson-core-asl"   % Version.jackson
+  val jacksonMapper = "org.codehaus.jackson" % "jackson-mapper-asl" % Version.jackson
   
   val spire         = "org.spire-math" %% "spire" % "0.7.1"
   
-  val sprayClient   = "io.spray"        % "spray-client"  % "1.2.0"
-  val sprayRouting  = "io.spray"        % "spray-routing" % "1.2.0"
-  val sprayTestkit  = "io.spray"        % "spray-testkit" % "1.2.0"
-  val sprayCan      = "io.spray"        % "spray-can"     % "1.2.0"
-  val sprayHttpx    = "io.spray"        % "spray-httpx"   % "1.2.0"
+  val sprayClient   = "io.spray"        % "spray-client"  % Version.spray
+  val sprayRouting  = "io.spray"        % "spray-routing" % Version.spray
+  val sprayTestkit  = "io.spray"        % "spray-testkit" % Version.spray
+  val sprayCan      = "io.spray"        % "spray-can"     % Version.spray
+  val sprayHttpx    = "io.spray"        % "spray-httpx"   % Version.spray
   
-  val apacheMath   = "org.apache.commons" % "commons-math3" % "3.2"
+  val apacheMath    = "org.apache.commons" % "commons-math3" % "3.2"
 
   val jettyWebapp   = "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4"
   val jerseyBundle  = "com.sun.jersey"    % "jersey-bundle" % "1.11"
@@ -43,7 +42,7 @@ object Dependencies {
   val asm           = "asm"               % "asm"       % "3.3.1" 
   
   val jcommander    = "com.beust"       % "jcommander"    % "1.23"
-  val reflections    = "org.reflections" % "reflections"  % "0.9.5"
+  val reflections   = "org.reflections" % "reflections"  % "0.9.5"
   
  
 }

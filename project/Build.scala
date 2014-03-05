@@ -9,12 +9,6 @@ import AssemblyKeys._
 import ls.Plugin.LsKeys
 import ls.Plugin.lsSettings
 
-object Version {
-  val geotrellis = "0.10.0-SNAPSHOT"
-  val scala = "2.10.3"
-  val geotools = "9.5"
-}
-
 object Info {
   val description = 
     "GeoTrellis is an open source geographic data processing engine for high performance applications."
