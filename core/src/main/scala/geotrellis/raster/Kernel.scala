@@ -18,6 +18,32 @@ object Kernel {
   implicit def raster2KernelOp(r:Raster):Op[Kernel] = Literal(Kernel(r))
   implicit def rasterOp2Kernel(r:Op[Raster]):Op[Kernel] = r.map(Kernel(_))
 
+  
+  /**
+   * Creates a Gaussian kernel, with parameters in map units.
+   * 
+   * Can be used with the [[Convolve]] or [[KernelDensity]] operations.
+   * 
+   * @param rasterExtent	RasterExtent of target raster
+   * @param size			Size of kernel in map units
+   * @param sigma		    Sigma parameter for Gaussian in map units (spread)
+   * @param amp				Amplitude for Gaussian.  Will be the value at the center of the 
+   * 						resulting raster.
+   *       
+   * @note					Raster will be TypeInt
+   * @note					cellwidth is used to convert size and sigma
+   */
+  
+  def gaussian(rasterExtent:RasterExtent, size: Double, sigma: Double, amp: Double): Kernel = {
+    val cellWidth = rasterExtent.cellwidth
+    
+    val spread = sigma / cellWidth
+    val pixelSize = (size / cellWidth).toInt
+    val oddPixelSize = pixelSize - (pixelSize % 2) + 1 // Size must be odd
+    
+    gaussian(oddPixelSize, cellWidth, spread, amp)
+  }
+  
   /**
    * Creates a Gaussian kernel. Can be used with the [[Convolve]] or [[KernelDensity]] operations.
    *
@@ -29,7 +55,7 @@ object Kernel {
    *
    * @note                    Raster will be TypeInt
    */
-  def gaussian(size:Int, cellWidth:Double, sigma:Double, amp:Double) = {
+  def gaussian(size:Int, cellWidth:Double, sigma:Double, amp:Double): Kernel = {
     val extent = Extent(0,0,size*cellWidth,size*cellWidth)
     val rasterExtent = RasterExtent(extent, cellWidth, cellWidth, size, size)
     val output = IntArrayRasterData.empty(rasterExtent.cols, rasterExtent.rows)

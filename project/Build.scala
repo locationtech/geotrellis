@@ -248,12 +248,13 @@ object GeotrellisBuild extends Build {
   lazy val spark: Project =
     Project("spark", file("spark"))
       .settings(sparkSettings: _*)
-      .dependsOn(core)
+      .dependsOn(core, testkit % "test")
       .dependsOn(geotools)
 
   lazy val sparkSettings =
     Seq(
       name := "geotrellis-spark",
+      parallelExecution in Test := false,
       libraryDependencies ++= 
         Seq(
           // first two are just to quell the UnsupportedOperationException in Hadoop's Configuration

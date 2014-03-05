@@ -69,6 +69,13 @@ object TmsTiling {
     new TileExtent(ll.tx, ll.ty, ur.tx, ur.ty)
   }
 
+  def extentToPixel(extent: Extent, zoom: Int, tileSize: Int): PixelExtent = {
+    val (pixelLower, pixelUpper) =
+      (TmsTiling.latLonToPixels(extent.ymin, extent.xmin, zoom, tileSize),
+        TmsTiling.latLonToPixels(extent.ymax, extent.xmax, zoom, tileSize))
+    PixelExtent(0, 0, pixelUpper.px - pixelLower.px, pixelUpper.py - pixelLower.py)    
+  }
+  
   def latLonToPixels(lat: Double, lon: Double, zoom: Int, tileSize: Int): Pixel = {
     val res = resolution(zoom, tileSize)
     new Pixel(((180 + lon) / res).toLong, ((90 + lat) / res).toLong)
