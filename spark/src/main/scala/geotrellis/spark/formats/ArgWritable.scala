@@ -37,4 +37,5 @@ object ArgWritable {
   def apply(aw: ArgWritable) = new ArgWritable(aw.getBytes)
 
   def fromRasterData(data: RasterData) = ArgWritable(data.toArrayByte)
+  def fromRaster(raster: Raster) = ArgWritable.fromRasterData(raster.data)
 }

@@ -2,7 +2,7 @@ package geotrellis.spark.tiling
 
 import geotrellis.Extent
 
-case class Tile(tx: Long, ty: Long) 
+case class TileCoord(tx: Long, ty: Long) 
 
 case class TileExtent(xmin: Long, ymin: Long, xmax: Long, ymax: Long) {
   def width = xmax - xmin + 1
