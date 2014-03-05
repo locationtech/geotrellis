@@ -5,7 +5,6 @@ import geotrellis.testkit._
 import geotrellis.feature._
 import geotrellis.source._
 
-import spire.syntax._
 import scala.collection.mutable
 
 import com.vividsolutions.jts.{geom => jts}

@@ -4,7 +4,6 @@ import geotrellis._
 import geotrellis.testkit._
 import geotrellis.statistics.op.stat._
 
-import spire.syntax._
 import scala.collection.mutable
 
 import org.scalatest.FunSpec
@@ -81,8 +80,8 @@ class RegionGroupSpec extends FunSpec
       count should be (8)
       
       val regionCounts = mutable.Map[Int,mutable.Set[Int]]()
-      cfor(0)(_ < 17, _ + 1) { col =>
-        cfor(0)(_ < 18, _ + 1) { row =>
+      for (col <- 0 until 17) {
+        for (row <- 0 until 18) {
           val v = r.get(col,row)
           val region = regions.get(col,row)
 
@@ -134,8 +133,8 @@ class RegionGroupSpec extends FunSpec
       count should be (9)
       
       val regionCounts = mutable.Map[Int,mutable.Set[Int]]()
-      cfor(0)(_ < 17, _ + 1) { col =>
-        cfor(0)(_ < 18, _ + 1) { row =>
+      for (col <- 0 until 17) {
+        for (row <- 0 until 18) {
           val v = r.get(col,row)
           val region = regions.get(col,row)
 
@@ -176,8 +175,8 @@ class RegionGroupSpec extends FunSpec
       count should be (4)
       
       val regionCounts = mutable.Map[Int,mutable.Set[Int]]()
-      cfor(0)(_ < 7, _ + 1) { col =>
-        cfor(0)(_ < 8, _ + 1) { row =>
+      for (col <- 0 until 7) {
+        for (row <- 0 until 8) {
           val v = r.get(col,row)
           val region = regions.get(col,row)
           if(isNoData(v)) { region should be (v) }
@@ -216,8 +215,8 @@ class RegionGroupSpec extends FunSpec
       val count = histogram.getValues.length
       count should be (1)
       
-      cfor(0)(_ < 7, _ + 1) { col =>
-        cfor(0)(_ < 8, _ + 1) { row =>
+      for (col <- 0 until 7) {
+        for (row <- 0 until 8) {
           val v = r.get(col,row)
           val region = regions.get(col,row)
           if(isNoData(v)) { region should be (v) }
@@ -256,8 +255,8 @@ class RegionGroupSpec extends FunSpec
       count should be (4)
       
       val regionCounts = mutable.Map[Int,mutable.Set[Int]]()
-      cfor(0)(_ < 5, _ + 1) { col =>
-        cfor(0)(_ < 8, _ + 1) { row =>
+      for (col <- 0 until 5) {
+        for (row <- 0 until 8) {
           val v = r.get(col,row)
           val region = regions.get(col,row)
           if(isNoData(v)) { region should be (v) }
@@ -301,8 +300,8 @@ class RegionGroupSpec extends FunSpec
       count should be (7)
       
       val regionCounts = mutable.Map[Int,mutable.Set[Int]]()
-      cfor(0)(_ < 5, _ + 1) { col =>
-        cfor(0)(_ < 8, _ + 1) { row =>
+      for (col <- 0 until 5) {
+        for (row <- 0 until 8) {
           val v = r.get(col,row)
           val region = regions.get(col,row)
           regionMap(region) should be (v)
