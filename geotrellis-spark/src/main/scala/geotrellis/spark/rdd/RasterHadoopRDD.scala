@@ -1,10 +1,9 @@
 package geotrellis.spark.rdd
+
 import geotrellis.spark._
-import geotrellis.spark.formats.ArgWritable
-import geotrellis.spark.formats.TileIdWritable
+import geotrellis.spark.formats._
 import geotrellis.spark.metadata.Context
 import geotrellis.spark.metadata.PyramidMetadata
-import geotrellis.spark.tiling.TileIdRaster
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -20,6 +19,7 @@ import org.apache.spark.rdd.NewHadoopRDD
  * (TileIdWritable, ArgWritable) or (Long, Raster), the latter being the deserialized 
  * form of the former. See companion object 
  */
+private[spark]
 class RasterHadoopRDD private (raster: Path, sc: SparkContext, conf: Configuration)
   extends NewHadoopRDD[TileIdWritable, ArgWritable](
     sc,
@@ -37,8 +37,19 @@ class RasterHadoopRDD private (raster: Path, sc: SparkContext, conf: Configurati
   val zoom = raster.getName().toInt
   val meta = PyramidMetadata(pyramidPath, conf)
 
+  def toRasterRDD(): RasterRDD = 
+    toRasterRDD(false)
+
+  def toRasterRDD(addUserNoData: Boolean): RasterRDD = 
+    mapPartitions { partition =>
+      partition.map { writableTile =>
+        writableTile.toTile(meta, zoom, addUserNoData)
+      }
+     }
+    .withContext(Context.fromMetadata(zoom, meta))
 }
 
+private[rdd]
 object RasterHadoopRDD {
 
   final val SeqFileGlob = "/*[0-9]*/data"
@@ -57,16 +68,5 @@ object RasterHadoopRDD {
     FileInputFormat.addInputPath(job, globbedPath)
     val updatedConf = job.getConfiguration
     new RasterHadoopRDD(raster, sc, updatedConf)
-  }
-
-  def toRasterRDD(raster: String, sc: SparkContext): RasterRDD =
-    toRasterRDD(new Path(raster), sc)
-
-  def toRasterRDD(raster: Path, sc: SparkContext): RasterRDD = {
-    val rhd = apply(raster, sc)
-    val (meta, zoom) = (rhd.meta, rhd.zoom)
-    rhd.mapPartitions(_.map(TileIdRaster(_, meta, zoom)), true)
-      .withContext(Context.fromMetadata(zoom, meta))
-
   }
 }

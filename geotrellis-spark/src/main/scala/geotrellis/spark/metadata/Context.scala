@@ -1,4 +1,5 @@
 package geotrellis.spark.metadata
+
 import geotrellis.RasterExtent
 import geotrellis.RasterType
 import geotrellis.process.LayerId

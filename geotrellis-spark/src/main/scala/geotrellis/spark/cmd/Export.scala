@@ -5,7 +5,7 @@ import geotrellis.RasterExtent
 import geotrellis.data.GeoTiffWriter
 import geotrellis.raster.TileLayout
 import geotrellis.spark.metadata.PyramidMetadata
-import geotrellis.spark.rdd.RasterHadoopRDD
+import geotrellis.spark.rdd.RasterRDD
 import geotrellis.spark.storage.RasterReader
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.SparkUtils
@@ -14,8 +14,6 @@ import org.apache.spark.Logging
 import java.io.File
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Positive
-import geotrellis.spark.tiling.TileIdRaster
-
 
 /**
  * @author akini
@@ -89,9 +87,18 @@ object Export extends ArgMain[ExportArgs] with Logging {
 
     // TMS tiles start from lower left corner whereas TileRaster expects them to start from  
     // upper left, so we need to re-sort the array
-    def compare(left: TileIdCoordRaster, right: TileIdCoordRaster): Boolean =
-      (left._3 > right._3) || (left._3 == right._3 && left._2 < right._2)
-    val tiles = reader.map(TileIdRaster.toTileIdCoordRaster(_, meta, zoom)).toList.sortWith(compare).map(_._4)
+    def compare(left: Tile, right: Tile): Boolean = {
+      val (lx, ly) = left.tileXY(zoom)
+      val (rx, ry) = right.tileXY(zoom)
+      (ly > ry) || (ly == ry && lx < rx)
+    }
+
+    val tiles = 
+      reader.map(_.toTile(meta, zoom))
+            .toList
+            .sortWith(compare)
+            .map(_.raster)
+
     reader.close()
 
     val raster = TileRaster(tiles, rasterExtent, layout).toArrayRaster
@@ -109,14 +116,14 @@ object Export extends ArgMain[ExportArgs] with Logging {
 
     try {
       val meta = PyramidMetadata(rasterPath.getParent, sc.hadoopConfiguration)
-      val raster = RasterHadoopRDD(rasterPath.toUri.toString, sc)
+      val raster = RasterRDD(rasterPath.toUri.toString, sc, true)
       val zoom = rasterPath.getName.toInt
 
-      raster.foreach(writables => {
-        val (tileId, tx, ty, raster) = TileIdRaster.toTileIdCoordRaster(writables, meta, zoom, true)
-        GeoTiffWriter.write(s"${output}/tile-${tileId}.tif", raster, meta.nodata)
-        logInfo(s"---------tx: ${tx}, ty: ${ty} file: tile-${tileId}.tif")
-      })
+      for(tile <- raster) {
+        val (tx,ty) = tile.tileXY(zoom)
+        GeoTiffWriter.write(s"${output}/tile-${tile.id}.tif", tile.raster, meta.nodata)
+        logInfo(s"---------tx: ${tx}, ty: ${ty} file: tile-${tile.id}.tif")
+      }
 
       logInfo(s"Exported ${raster.count} tiles to $output")
     } finally {
