@@ -38,3 +38,20 @@ trait OrOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Or the values of each cell in each raster. */
   def |(rss:Seq[RasterSource]) = localOr(rss)
 }
+
+trait OrMethods { self: Raster =>
+  /** Or a constant Int value to each cell. */
+  def localOr(i: Int) = Or(self, i)
+  /** Or a constant Int value to each cell. */
+  def |(i:Int) = localOr(i)
+  /** Or a constant Int value to each cell. */
+  def |:(i:Int) = localOr(i)
+  /** Or the values of each cell in each raster.  */
+  def localOr(r:Raster) = Or(self,r)
+  /** Or the values of each cell in each raster. */
+  def |(r:Raster) = localOr(r)
+  /** Or the values of each cell in each raster.  */
+  def localOr(rs:Seq[Raster]) = Or(self +: rs)
+  /** Or the values of each cell in each raster. */
+  def |(rs:Seq[Raster]) = localOr(rs)
+}
