@@ -184,8 +184,13 @@ class FeatureSpec extends FunSpec
     it("should return the correct area") {
       val aOp = GetArea(b)
       val a = get(aOp)
-      val expected = 78.03612880645132
-      assert(a === expected) 
+      
+      // The Buffered polygon has 8 segments per quater circle
+      val angleOfTriangle = 90.0 / 8.0
+      val areaOfTriangle = 0.5*5*5*math.sin(math.toRadians(angleOfTriangle))
+      val expected = areaOfTriangle * 8 * 4
+      
+      a should be (expected plusOrMinus 0.000001) 
     }
   }
 
