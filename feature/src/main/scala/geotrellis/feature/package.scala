@@ -12,17 +12,17 @@ package object feature {
   implicit def coordinateToPoint(c: jts.Coordinate): Point =
     Point(c.x,c.y)
 
-  implicit def tupleSetToPointSet(ts: Set[(Double, Double)]): Set[Point] =
+  implicit def tupleSetToMultiPoint(ts: Set[(Double, Double)]): Set[Point] =
     ts map(t => Point(t._1, t._2))
 
   implicit def tupleListToPointList(tl: List[(Double, Double)]): List[Point] =
     tl map(t => Point(t._1, t._2))
 
-  implicit def coordinateArrayToPointSet(ca: Array[jts.Coordinate]): PointSet = {
+  implicit def coordinateArrayToMultiPoint(ca: Array[jts.Coordinate]): MultiPoint = {
     val ps = (for (i <- 0 until ca.length) yield {
       Point(ca(i).x, ca(i).y)
     }).toSet
-    PointSet(ps)
+    MultiPoint(ps)
   }
 
   implicit def pointListToCoordinateArray(ps: List[Point]): Array[jts.Coordinate] =
@@ -64,11 +64,11 @@ package object feature {
     }).toSet.flatten
   }
 
-  implicit def seqPointToPointSet(ps: Set[Point]): PointSet = PointSet(ps)
+  implicit def seqPointToMultiPoint(ps: Set[Point]): MultiPoint = MultiPoint(ps)
 
-  implicit def seqLineToLineSet(ps: Set[Line]): LineSet = LineSet(ps)
+  implicit def seqLineToMultiLine(ps: Set[Line]): MultiLine = MultiLine(ps)
 
-  implicit def seqPolygonToPolygonSet(ps: Set[Polygon]): PolygonSet = PolygonSet(ps)
+  implicit def seqPolygonToMultiPolygon(ps: Set[Polygon]): MultiPolygon = MultiPolygon(ps)
 
   implicit def seqGeometryToGeometryCollection(gs: Set[Geometry]): GeometryCollection = {
     val points = mutable.Set[Point]()

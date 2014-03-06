@@ -4,15 +4,15 @@ import GeomFactory._
 
 import com.vividsolutions.jts.{geom => jts}
 
-object PointSet {
-  def apply(ps: Point*): PointSet = 
+object MultiPoint {
+  def apply(ps: Point*): MultiPoint = 
     apply(ps)
 
-  def apply(ps: Traversable[Point]): PointSet =
-    PointSet(factory.createMultiPoint(ps.map(_.geom).toArray))
+  def apply(ps: Traversable[Point]): MultiPoint =
+    MultiPoint(factory.createMultiPoint(ps.map(_.geom).toArray))
 }
 
-case class PointSet(geom: jts.MultiPoint) extends GeometrySet 
+case class MultiPoint(geom: jts.MultiPoint) extends MultiGeometry 
                                              with ZeroDimensions {
 
   // -- Intersection
@@ -22,29 +22,29 @@ case class PointSet(geom: jts.MultiPoint) extends GeometrySet
   def intersection(p: Point): PointGeometryIntersectionResult =
     p.intersection(this)
 
-  def &(l: Line): PointSetIntersectionResult =
+  def &(l: Line): MultiPointIntersectionResult =
     intersection(l)
-  def intersection(l: Line): PointSetIntersectionResult =
+  def intersection(l: Line): MultiPointIntersectionResult =
     l.intersection(this)
 
-  def &(p: Polygon): PointSetIntersectionResult =
+  def &(p: Polygon): MultiPointIntersectionResult =
     intersection(p)
-  def intersection(p: Polygon): PointSetIntersectionResult =
+  def intersection(p: Polygon): MultiPointIntersectionResult =
     p.intersection(this)
 
-  def &(ps: PointSet): PointSetIntersectionResult =
+  def &(ps: MultiPoint): MultiPointIntersectionResult =
     intersection(ps)
-  def intersection(ps: PointSet): PointSetIntersectionResult =
+  def intersection(ps: MultiPoint): MultiPointIntersectionResult =
     geom.intersection(ps.geom)
 
-  def &(ls: LineSet): PointSetIntersectionResult =
+  def &(ls: MultiLine): MultiPointIntersectionResult =
     intersection(ls)
-  def intersection(ls: LineSet): PointSetIntersectionResult =
+  def intersection(ls: MultiLine): MultiPointIntersectionResult =
     geom.intersection(ls.geom)
 
-  def &(ps: PolygonSet): PointSetIntersectionResult =
+  def &(ps: MultiPolygon): MultiPointIntersectionResult =
     intersection(ps)
-  def intersection(ps: PolygonSet): PointSetIntersectionResult =
+  def intersection(ps: MultiPolygon): MultiPointIntersectionResult =
     geom.intersection(ps.geom)
 
   // -- Union
@@ -64,26 +64,26 @@ case class PointSet(geom: jts.MultiPoint) extends GeometrySet
   def union(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
     p.union(this)
 
-  def |(ps: PointSet): PointZeroDimensionsUnionResult =
+  def |(ps: MultiPoint): PointZeroDimensionsUnionResult =
     union(ps)
-  def union(ps: PointSet): PointZeroDimensionsUnionResult =
+  def union(ps: MultiPoint): PointZeroDimensionsUnionResult =
     geom.union(ps.geom)
 
-  def |(ls: LineSet): PointLineSetUnionResult =
+  def |(ls: MultiLine): PointMultiLineUnionResult =
     union(ls)
-  def union(ls: LineSet): PointLineSetUnionResult =
+  def union(ls: MultiLine): PointMultiLineUnionResult =
     geom.union(ls.geom)
 
-  def |(ps: PolygonSet): AtMostOneDimensionsPolygonSetUnionResult =
+  def |(ps: MultiPolygon): AtMostOneDimensionsMultiPolygonUnionResult =
     union(ps)
-  def union(ps: PolygonSet): AtMostOneDimensionsPolygonSetUnionResult =
+  def union(ps: MultiPolygon): AtMostOneDimensionsMultiPolygonUnionResult =
     geom.union(ps.geom)
 
   // -- Difference
 
-  def -(other: Geometry): PointSetDifferenceResult =
+  def -(other: Geometry): MultiPointDifferenceResult =
     difference(other)
-  def difference(other: Geometry): PointSetDifferenceResult =
+  def difference(other: Geometry): MultiPointDifferenceResult =
     geom.difference(other.geom)
 
   // -- Predicates
@@ -94,12 +94,12 @@ case class PointSet(geom: jts.MultiPoint) extends GeometrySet
   def within(g: Geometry): Boolean =
     geom.within(g.geom)
 
-  def overlaps(ps: PointSet): Boolean =
+  def overlaps(ps: MultiPoint): Boolean =
     geom.overlaps(ps.geom)
 
   // -- SymDifference
 
-  def symDifference(g: ZeroDimensions): ZeroDimensionsPointSetSymDifferenceResult =
+  def symDifference(g: ZeroDimensions): ZeroDimensionsMultiPointSymDifferenceResult =
     geom.symDifference(g.geom)
 
   def symDifference(l: Line): ZeroDimensionsLineSymDifferenceResult =
@@ -108,10 +108,10 @@ case class PointSet(geom: jts.MultiPoint) extends GeometrySet
   def symDifference(p: Polygon): ZeroDimensionsPolygonSymDifferenceResult =
     geom.symDifference(p.geom)
 
-  def symDifference(ls: LineSet): ZeroDimensionsLineSetSymDifferenceResult =
+  def symDifference(ls: MultiLine): ZeroDimensionsMultiLineSymDifferenceResult =
     geom.symDifference(ls.geom)
 
-  def symDifference(ps: PolygonSet): ZeroDimensionsPolygonSetSymDifferenceResult =
+  def symDifference(ps: MultiPolygon): ZeroDimensionsMultiPolygonSymDifferenceResult =
     geom.symDifference(ps.geom)
                          
   // -- Misc.

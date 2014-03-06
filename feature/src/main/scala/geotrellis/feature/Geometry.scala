@@ -66,7 +66,7 @@ trait Geometry {
   // length - line; points have length 0.0
   // perimeter - length of a polygon
 
-  // isSimple - always true for valid polygons and empty geoms; true for points as well; false for PointSets with repeated points
+  // isSimple - always true for valid polygons and empty geoms; true for points as well; false for MultiPoints with repeated points
   // overlaps - geoms must have same dimension and not all points in common and intersection of interiors has same dimension as geoms themselves - done for P/L/A
 
 

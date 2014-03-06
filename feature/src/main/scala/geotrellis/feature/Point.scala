@@ -46,14 +46,14 @@ case class Point(geom: jts.Point) extends Geometry
   def union(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
     geom.union(p.geom)
 
-  def |(ls: LineSet): PointLineSetUnionResult =
+  def |(ls: MultiLine): PointMultiLineUnionResult =
     union(ls)
-  def union(ls: LineSet): PointLineSetUnionResult =
+  def union(ls: MultiLine): PointMultiLineUnionResult =
     geom.union(ls.geom)
 
-  def |(ps: PolygonSet): AtMostOneDimensionsPolygonSetUnionResult =
+  def |(ps: MultiPolygon): AtMostOneDimensionsMultiPolygonUnionResult =
     union(ps)
-  def union(ps: PolygonSet): AtMostOneDimensionsPolygonSetUnionResult =
+  def union(ps: MultiPolygon): AtMostOneDimensionsMultiPolygonUnionResult =
     geom.union(ps.geom)
 
   // -- Difference
@@ -74,13 +74,13 @@ case class Point(geom: jts.Point) extends Geometry
   def symDifference(p: Polygon): ZeroDimensionsPolygonSymDifferenceResult =
     geom.symDifference(p.geom)
 
-  def symDifference(ps: PointSet): ZeroDimensionsPointSetSymDifferenceResult =
+  def symDifference(ps: MultiPoint): ZeroDimensionsMultiPointSymDifferenceResult =
     geom.symDifference(ps.geom)
 
-  def symDifference(ls: LineSet): ZeroDimensionsLineSetSymDifferenceResult =
+  def symDifference(ls: MultiLine): ZeroDimensionsMultiLineSymDifferenceResult =
     geom.symDifference(ls.geom)
 
-  def symDifference(ps: PolygonSet): ZeroDimensionsPolygonSetSymDifferenceResult =
+  def symDifference(ps: MultiPolygon): ZeroDimensionsMultiPolygonSymDifferenceResult =
     geom.symDifference(ps.geom)
 
   // -- Buffer

@@ -56,7 +56,7 @@ case class Polygon(geom: jts.Polygon) extends Geometry
   lazy val boundary: PolygonBoundaryResult =
     geom.getBoundary
 
-  lazy val vertices: PointSet =
+  lazy val vertices: MultiPoint =
     geom.getCoordinates
 
   lazy val boundingBox: Option[Polygon] =
@@ -82,19 +82,19 @@ case class Polygon(geom: jts.Polygon) extends Geometry
   def intersection(p: Polygon): PolygonPolygonIntersectionResult =
     geom.intersection(p.geom)
 
-  def &(ps: PointSet): PointSetIntersectionResult =
+  def &(ps: MultiPoint): MultiPointIntersectionResult =
     intersection(ps)
-  def intersection(ps: PointSet): PointSetIntersectionResult =
+  def intersection(ps: MultiPoint): MultiPointIntersectionResult =
     geom.intersection(ps.geom)
 
-  def &(ls: LineSet): LineSetIntersectionResult =
+  def &(ls: MultiLine): MultiLineIntersectionResult =
     intersection(ls)
-  def intersection(ls: LineSet): LineSetIntersectionResult =
+  def intersection(ls: MultiLine): MultiLineIntersectionResult =
     geom.intersection(ls.geom)
 
-  def &(ps: PolygonSet): PolygonSetIntersectionResult =
+  def &(ps: MultiPolygon): MultiPolygonIntersectionResult =
     intersection(ps)
-  def intersection(ps: PolygonSet): PolygonSetIntersectionResult =
+  def intersection(ps: MultiPolygon): MultiPolygonIntersectionResult =
     geom.intersection(ps.geom)
 
   // -- Union
@@ -109,9 +109,9 @@ case class Polygon(geom: jts.Polygon) extends Geometry
   def union(p: Polygon): PolygonPolygonUnionResult =
     geom.union(p.geom)
 
-  def |(ps: PolygonSet): PolygonPolygonUnionResult =
+  def |(ps: MultiPolygon): PolygonPolygonUnionResult =
     union(ps)
-  def union(ps: PolygonSet): PolygonPolygonUnionResult =
+  def union(ps: MultiPolygon): PolygonPolygonUnionResult =
     geom.union(ps.geom)
 
   // -- Difference
@@ -131,19 +131,19 @@ case class Polygon(geom: jts.Polygon) extends Geometry
   def difference(p: Polygon): PolygonPolygonDifferenceResult =
     geom.difference(p.geom)
 
-  def -(ps: PointSet): PolygonXDifferenceResult =
+  def -(ps: MultiPoint): PolygonXDifferenceResult =
     difference(ps)
-  def difference(ps: PointSet): PolygonXDifferenceResult =
+  def difference(ps: MultiPoint): PolygonXDifferenceResult =
     geom.difference(ps.geom)
 
-  def -(ls: LineSet): PolygonXDifferenceResult =
+  def -(ls: MultiLine): PolygonXDifferenceResult =
     difference(ls)
-  def difference(ls: LineSet): PolygonXDifferenceResult =
+  def difference(ls: MultiLine): PolygonXDifferenceResult =
     geom.difference(ls.geom)
 
-  def -(ps: PolygonSet): PolygonPolygonDifferenceResult =
+  def -(ps: MultiPolygon): PolygonPolygonDifferenceResult =
     difference(ps)
-  def difference(ps: PolygonSet): PolygonPolygonDifferenceResult =
+  def difference(ps: MultiPolygon): PolygonPolygonDifferenceResult =
     geom.difference(ps.geom)
 
   // -- SymDifference
@@ -173,7 +173,7 @@ case class Polygon(geom: jts.Polygon) extends Geometry
   def crosses(g: OneDimensions): Boolean =
     geom.crosses(g.geom)
 
-  def crosses(ps: PointSet): Boolean =
+  def crosses(ps: MultiPoint): Boolean =
     geom.crosses(ps.geom)
 
   def overlaps(g: TwoDimensions): Boolean =

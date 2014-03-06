@@ -43,7 +43,7 @@ case class Line(geom: jts.LineString) extends Geometry
   lazy val boundary: LineBoundaryResult =
     geom.getBoundary
 
-  lazy val vertices: PointSet =
+  lazy val vertices: MultiPoint =
     geom.getCoordinates
 
   lazy val boundingBox: Option[Polygon] =
@@ -69,19 +69,19 @@ case class Line(geom: jts.LineString) extends Geometry
   def intersection(p: Polygon): LinePolygonIntersectionResult =
     geom.intersection(p.geom)
 
-  def &(ps: PointSet): PointSetIntersectionResult =
+  def &(ps: MultiPoint): MultiPointIntersectionResult =
     intersection(ps)
-  def intersection(ps:PointSet):PointSetIntersectionResult =
+  def intersection(ps:MultiPoint):MultiPointIntersectionResult =
     geom.intersection(ps.geom)
 
-  def &(ls: LineSet): LineSetIntersectionResult =
+  def &(ls: MultiLine): MultiLineIntersectionResult =
     intersection(ls)
-  def intersection(ls: LineSet): LineSetIntersectionResult =
+  def intersection(ls: MultiLine): MultiLineIntersectionResult =
     geom.intersection(ls.geom)
 
-  def &(ps: PolygonSet): LineSetIntersectionResult =
+  def &(ps: MultiPolygon): MultiLineIntersectionResult =
     intersection(ps)
-  def intersection(ps: PolygonSet): LineSetIntersectionResult =
+  def intersection(ps: MultiPolygon): MultiLineIntersectionResult =
     geom.intersection(ps.geom)
 
   // -- Union
@@ -101,19 +101,19 @@ case class Line(geom: jts.LineString) extends Geometry
   def union(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
     geom.union(p.geom)
 
-  def |(ps: PointSet): PointLineUnionResult =
+  def |(ps: MultiPoint): PointLineUnionResult =
     union(ps)
-  def union(ps: PointSet): PointLineUnionResult =
+  def union(ps: MultiPoint): PointLineUnionResult =
     geom.union(ps.geom)
 
-  def |(ls: LineSet): LineLineUnionResult =
+  def |(ls: MultiLine): LineLineUnionResult =
     union(ls)
-  def union(ls: LineSet): LineLineUnionResult =
+  def union(ls: MultiLine): LineLineUnionResult =
     geom.union(ls.geom)
 
-  def |(ps: PolygonSet): AtMostOneDimensionsPolygonSetUnionResult =
+  def |(ps: MultiPolygon): AtMostOneDimensionsMultiPolygonUnionResult =
     union(ps)
-  def union(ps: PolygonSet): AtMostOneDimensionsPolygonSetUnionResult =
+  def union(ps: MultiPolygon): AtMostOneDimensionsMultiPolygonUnionResult =
     geom.union(ps.geom)
 
   // -- Difference
@@ -133,19 +133,19 @@ case class Line(geom: jts.LineString) extends Geometry
   def difference(p: Polygon): LineXDifferenceResult =
     geom.difference(p.geom)
 
-  def -(ps: PointSet): LinePointDifferenceResult =
+  def -(ps: MultiPoint): LinePointDifferenceResult =
     difference(ps)
-  def difference(ps: PointSet): LinePointDifferenceResult =
+  def difference(ps: MultiPoint): LinePointDifferenceResult =
     geom.difference(ps.geom)
 
-  def -(ls: LineSet): LineXDifferenceResult =
+  def -(ls: MultiLine): LineXDifferenceResult =
     difference(ls)
-  def difference(ls: LineSet): LineXDifferenceResult =
+  def difference(ls: MultiLine): LineXDifferenceResult =
     geom.difference(ls.geom)
 
-  def -(ps: PolygonSet): LineXDifferenceResult =
+  def -(ps: MultiPolygon): LineXDifferenceResult =
     difference(ps)
-  def difference(ps: PolygonSet): LineXDifferenceResult =
+  def difference(ps: MultiPolygon): LineXDifferenceResult =
     geom.difference(ps.geom)
 
   // -- SymDifference
@@ -159,7 +159,7 @@ case class Line(geom: jts.LineString) extends Geometry
   def symDifference(p: Polygon): OneDimensionsPolygonSymDifferenceResult =
     geom.symDifference(p.geom)
   
-  def symDifference(ps: PolygonSet): OneDimensionsPolygonSetSymDifferenceResult =
+  def symDifference(ps: MultiPolygon): OneDimensionsMultiPolygonSymDifferenceResult =
     geom.symDifference(ps.geom)
 
   // -- Buffer
@@ -178,7 +178,7 @@ case class Line(geom: jts.LineString) extends Geometry
   def crosses(g: AtLeastOneDimensions): Boolean =
     geom.crosses(g.geom)
 
-  def crosses(ps: PointSet): Boolean =
+  def crosses(ps: MultiPoint): Boolean =
     geom.crosses(ps.geom)
 
   def overlaps(g: OneDimensions): Boolean =
