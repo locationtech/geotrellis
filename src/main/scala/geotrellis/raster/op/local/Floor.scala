@@ -11,3 +11,12 @@ object Floor extends Serializable {
     r.map(_.dualMap(z => z)(z => math.floor(z))) // math.floor(Double.NaN) == Double.NaN
      .withName("Floor")
 }
+
+/**
+ * Operation to get the flooring of values.
+ */
+trait FloorMethods { self: Raster =>
+  /** Takes the Flooring of each raster cell value. */
+  def localFloor() =
+    Floor(self)
+}

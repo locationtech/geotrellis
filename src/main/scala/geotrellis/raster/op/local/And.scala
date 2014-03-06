@@ -38,3 +38,20 @@ trait AndOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** And the values of each cell in each raster. */
   def &(rss:Seq[RasterSource]) = localAnd(rss)
 }
+
+trait AndMethods { self: Raster =>
+  /** And a constant Int value to each cell. */
+  def localAnd(i: Int) = And(self, i)
+  /** And a constant Int value to each cell. */
+  def &(i:Int) = localAnd(i)
+  /** And a constant Int value to each cell. */
+  def &:(i:Int) = localAnd(i)
+  /** And the values of each cell in each raster.  */
+  def localAnd(r:Raster) = And(self, r)
+  /** And the values of each cell in each raster. */
+  def &(r:Raster) = localAnd(r)
+  /** And the values of each cell in each raster.  */
+  def localAnd(rs:Seq[Raster]) = And(self +: rs)
+  /** And the values of each cell in each raster. */
+  def &(rs:Seq[Raster]) = localAnd(rs)
+}

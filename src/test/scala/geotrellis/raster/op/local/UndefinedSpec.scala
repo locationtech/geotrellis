@@ -87,4 +87,27 @@ class UndefinedSpec extends FunSpec
       }
     }
   }
+  describe("Undefined raster method") {
+    it("returns correct result for an integer raster") {
+      val r = positiveIntegerNoDataRaster
+      val result = get(r.localUndefined())
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          if(isNoData(r.get(col,row))) result.get(col,row) should be (1)
+          else result.get(col,row) should be (0)
+        }
+      }
+    }
+
+    it("returns correct result for a double raster") {
+      val r = probabilityNoDataRaster
+      val result = get(r.localUndefined())
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          if(isNoData(r.getDouble(col,row))) result.get(col,row) should be (1)
+          else result.get(col,row) should be (0)
+        }
+      }
+    }
+  }
 }

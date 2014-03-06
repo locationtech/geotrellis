@@ -24,7 +24,25 @@ object Raster {
 trait Raster extends local.AddMethods
                 with local.SubtractMethods
                 with local.MultiplyMethods
-                with local.DivideMethods {
+                with local.DivideMethods
+                with local.MinMethods
+                with local.MaxMethods
+                with local.MaskMethods
+                with local.InverseMaskMethods
+                with local.DefinedMethods
+                with local.UndefinedMethods
+                with local.SqrtMethods
+                with local.RoundMethods
+                with local.LogMethods
+                with local.FloorMethods
+                with local.CeilMethods
+                with local.NegateMethods
+                with local.NotMethods
+                with local.AndMethods
+                with local.OrMethods
+                with local.XorMethods
+                with local.ConditionalMethods
+                with local.PowMethods {
   val rasterExtent:RasterExtent
   lazy val cols = rasterExtent.cols
   lazy val rows = rasterExtent.rows

@@ -11,3 +11,8 @@ object Log extends Serializable {
     r.map(_.dualMap(z => if(isNoData(z)) z else math.log(z).toInt)(math.log(_)))
      .withName("Log")
 }
+
+trait LogMethods { self: Raster =>
+  def localLog() =
+    Log(self)
+}

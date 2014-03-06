@@ -11,3 +11,12 @@ object Round extends Serializable {
     r.map(_.dualMap(z => z)(z => if(isNoData(z)) Double.NaN else math.round(z).toDouble))
      .withName("Round")
 }
+
+/**
+ * Computes the Round of Raster or single values.
+ */
+trait RoundMethods { self: Raster =>
+  /** Round the values of a Raster. */
+  def localRound() =
+    Round(self)
+}
