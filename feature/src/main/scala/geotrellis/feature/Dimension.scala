@@ -2,7 +2,7 @@ package geotrellis.feature
 
 import com.vividsolutions.jts.{geom => jts}
 
-sealed trait Dimensions { private[feature] val geom: jts.Geometry }
+sealed trait Dimensions { private[feature] val jtsGeom: jts.Geometry }
 
 trait AtLeastOneDimension extends Dimensions
 trait AtMostOneDimension extends Dimensions

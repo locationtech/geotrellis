@@ -9,19 +9,18 @@ object MultiPolygon {
     apply(ps)
 
   def apply(ps: Traversable[Polygon]): MultiPolygon =
-    MultiPolygon(factory.createMultiPolygon(ps.map(_.geom).toArray))
+    MultiPolygon(factory.createMultiPolygon(ps.map(_.jtsGeom).toArray))
 }
 
-
-case class MultiPolygon(geom: jts.MultiPolygon) extends MultiGeometry 
+case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry 
                                                    with Relatable
                                                    with TwoDimensions {
 
   lazy val area: Double =
-    geom.getArea
+    jtsGeom.getArea
 
   lazy val boundary: MultiLineResult =
-    geom.getBoundary
+    jtsGeom.getBoundary
 
   // -- Intersection
 
@@ -48,7 +47,7 @@ case class MultiPolygon(geom: jts.MultiPolygon) extends MultiGeometry
   def &(ps: MultiPolygon): MultiPolygonIntersectionResult =
     intersection(ps)
   def intersection(ps: MultiPolygon): MultiPolygonIntersectionResult =
-    geom.intersection(ps.geom)
+    jtsGeom.intersection(ps.jtsGeom)
 
   // -- Union
 
@@ -79,75 +78,75 @@ case class MultiPolygon(geom: jts.MultiPolygon) extends MultiGeometry
   def |(ps: MultiPolygon): PolygonPolygonUnionResult =
     union(ps)
   def union(ps: MultiPolygon): PolygonPolygonUnionResult =
-    geom.union(ps.geom)
+    jtsGeom.union(ps.jtsGeom)
 
   // -- Difference
 
   def -(p: Point): MultiPolygonXDifferenceResult =
     difference(p)
   def difference(p: Point): MultiPolygonXDifferenceResult =
-    geom.difference(p.geom)
+    jtsGeom.difference(p.jtsGeom)
 
   def -(l: Line): MultiPolygonXDifferenceResult =
     difference(l)
   def difference(l: Line): MultiPolygonXDifferenceResult =
-    geom.difference(l.geom)
+    jtsGeom.difference(l.jtsGeom)
 
   def -(p: Polygon): PolygonPolygonDifferenceResult =
     difference(p)
   def difference(p: Polygon): PolygonPolygonDifferenceResult =
-    geom.difference(p.geom)
+    jtsGeom.difference(p.jtsGeom)
 
   def -(ps: MultiPoint): MultiPolygonXDifferenceResult =
     difference(ps)
   def difference(ps: MultiPoint): MultiPolygonXDifferenceResult =
-    geom.difference(ps.geom)
+    jtsGeom.difference(ps.jtsGeom)
 
   def -(ls: MultiLine): MultiPolygonXDifferenceResult =
     difference(ls)
   def difference(ls: MultiLine): MultiPolygonXDifferenceResult =
-    geom.difference(ls.geom)
+    jtsGeom.difference(ls.jtsGeom)
 
   def -(ps: MultiPolygon): PolygonPolygonDifferenceResult =
     difference(ps)
   def difference(ps: MultiPolygon): PolygonPolygonDifferenceResult =
-    geom.difference(ps.geom)
+    jtsGeom.difference(ps.jtsGeom)
 
   // -- SymDifference
 
   def symDifference(g: ZeroDimensions): ZeroDimensionsMultiPolygonSymDifferenceResult =
-    geom.symDifference(g.geom)
+    jtsGeom.symDifference(g.jtsGeom)
 
   def symDifference(g: OneDimension): OneDimensionMultiPolygonSymDifferenceResult =
-    geom.symDifference(g.geom)
+    jtsGeom.symDifference(g.jtsGeom)
 
   def symDifference(g: TwoDimensions): TwoDimensionsSymDifferenceResult =
-    geom.symDifference(g.geom)
+    jtsGeom.symDifference(g.jtsGeom)
 
   // -- Predicates
 
   def contains(g: Geometry): Boolean =
-    geom.contains(g.geom)
+    jtsGeom.contains(g.jtsGeom)
 
   def coveredBy(g: TwoDimensions): Boolean =
-    geom.coveredBy(g.geom)
+    jtsGeom.coveredBy(g.jtsGeom)
 
   def covers(g: Geometry): Boolean =
-    geom.covers(g.geom)
+    jtsGeom.covers(g.jtsGeom)
 
   def crosses(g: OneDimension): Boolean =
-    geom.crosses(g.geom)
+    jtsGeom.crosses(g.jtsGeom)
 
   def crosses(ps: MultiPoint): Boolean =
-    geom.crosses(ps.geom)
+    jtsGeom.crosses(ps.jtsGeom)
 
   def overlaps(g: TwoDimensions): Boolean =
-    geom.crosses(g.geom)
+    jtsGeom.crosses(g.jtsGeom)
 
   def touches(g: AtLeastOneDimension): Boolean =
-    geom.touches(g.geom)
+    jtsGeom.touches(g.jtsGeom)
 
   def within(g: TwoDimensions): Boolean =
-    geom.within(g.geom)
+    jtsGeom.within(g.jtsGeom)
 
 }

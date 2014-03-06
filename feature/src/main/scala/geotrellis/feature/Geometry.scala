@@ -4,29 +4,29 @@ import com.vividsolutions.jts.{geom => jts}
 
 trait Geometry {
 
-  val geom: jts.Geometry
+  val jtsGeom: jts.Geometry
 
   def distance(other: Geometry) =
-    geom.distance(other.geom)
+    jtsGeom.distance(other.jtsGeom)
 
   def withinDistance(other: Geometry, dist: Double) =
-    geom.isWithinDistance(other.geom, dist)
+    jtsGeom.isWithinDistance(other.jtsGeom, dist)
 
   def centroid: PointOrNoResult = 
-    geom.getCentroid 
+    jtsGeom.getCentroid 
 
   def interiorPoint: PointOrNoResult = 
-    geom.getInteriorPoint 
+    jtsGeom.getInteriorPoint 
 
 }
 
 trait Relatable { self: Geometry =>
 
   def intersects(other: Geometry): Boolean =
-    geom.intersects(other.geom)
+    jtsGeom.intersects(other.jtsGeom)
 
   def disjoint(other: Geometry): Boolean =
-    geom.disjoint(other.geom)
+    jtsGeom.disjoint(other.jtsGeom)
 
 }
 
