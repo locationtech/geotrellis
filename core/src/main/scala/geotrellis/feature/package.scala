@@ -5,6 +5,7 @@ package object feature {
   implicit class WrappedJtsGeometry(geom:jts.Geometry) {
     private def flattenToPolygon(g:jts.Geometry):List[jts.Polygon] =
       g match {
+        case g if g.isEmpty => List()
         case g: jts.GeometryCollection =>
           (0 until g.getNumGeometries).flatMap { i =>
             flattenToPolygon(g.getGeometryN(i))
