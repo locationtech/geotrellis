@@ -4,7 +4,7 @@ import geotrellis.raster._
 
 import scalaxy.loops._
 
-case class ArrayRaster(data:RasterData,rasterExtent:RasterExtent) extends Raster {
+case class ArrayRaster(data: RasterData, rasterExtent: RasterExtent) extends Raster {
   val rasterType = data.getType
 
   def toArrayRaster = this

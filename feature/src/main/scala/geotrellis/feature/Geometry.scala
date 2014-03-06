@@ -38,18 +38,13 @@ trait Geometry {
 
   // equal (with tolerance?)
   // equalExact (huh?)
-
-  // vertices
-  // envelope
-  // boundingBox
-  // length
-  // perimeter
-
-  // isSimple
-  // isValid ( don't allow invalid? )
   // normalize (hmmm)
-  // overlaps (needs interior to be same dimension as geoms, geom dims ==)
-  // symDifference
+
+
+
+
+  // isValid ( don't allow invalid? )
+
 
 
   // something with relate if it's fast (benchmark)
@@ -63,13 +58,25 @@ trait Geometry {
 
   // crosses
   // within
+  // contains - opposite of within
+
+  // vertices - line, polygon; doesn't make much sense for a point
+  // envelope - line, polygon; again, doesn't make sense for points since it just returns the point
+  // boundingBox - same thing as envelope
+  // length - line; points have length 0.0
+  // perimeter - length of a polygon
+
+  // isSimple - always true for valid polygons and empty geoms; true for points as well; false for PointSets with repeated points
+  // overlaps - geoms must have same dimension and not all points in common and intersection of interiors has same dimension as geoms themselves - done for P/L/A
 
 
   // buffer - None on collections, always a polygon. (wait maybe on Multli's)
   // contains - Not on collections (wait maybe on Multli's) - if not, then other Geometry methods don't belong.
   // isRectangle (polygon)
   // def area:Double = geom.getArea  (not for points?)
-  
+
+  // TODO: handle Topology Exception from symDifference
+  // symDifference - can't have a GC as an arg. May throw a TopologyException - how to deal with this?
 
   // def boundary = jts.getBoundary
   // def boundaryDimension = jts.getBoundaryDimension

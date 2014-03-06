@@ -81,15 +81,15 @@ object TmsTiling {
     new Pixel(((180 + lon) / res).toLong, ((90 + lat) / res).toLong)
   }
 
-  def pixelsToTile(px: Double, py: Double, tileSize: Int): Tile = {
-    new Tile((px / tileSize).toLong, (py / tileSize).toLong)
+  def pixelsToTile(px: Double, py: Double, tileSize: Int): TileCoord = {
+    new TileCoord((px / tileSize).toLong, (py / tileSize).toLong)
   }
 
   // slightly modified version of equations 2.9 and 2.10
-  def latLonToTile(lat: Double, lon: Double, zoom: Int, tileSize: Int): Tile = {
+  def latLonToTile(lat: Double, lon: Double, zoom: Int, tileSize: Int): TileCoord = {
     val tx = ((180 + lon) * (numXTiles(zoom) / 360.0)).toLong
     val ty = ((90 + lat) * (numYTiles(zoom) / 180.0)).toLong
-    new Tile(tx, ty)
+    new TileCoord(tx, ty)
   }
 
   def tileSizeBytes(tileSize: Int, rasterType: RasterType): Int = 

@@ -174,6 +174,8 @@ case class TileRaster(tiles:Seq[Raster],
 
   def toArrayByte():Array[Byte] = toArrayRaster.toArrayByte
 
+  def data: RasterData = toArrayRaster.data
+
   def get(col:Int, row:Int):Int = {
     val tcol = col / tileLayout.pixelCols
     val trow = row / tileLayout.pixelRows
