@@ -12,7 +12,8 @@ object Point {
 
 }
 
-case class Point(geom: jts.Point) extends Geometry 
+case class Point(geom: jts.Point) extends Geometry
+                                     with Relatable
                                      with ZeroDimensions {
 
   assert(!geom.isEmpty)
@@ -24,9 +25,9 @@ case class Point(geom: jts.Point) extends Geometry
 
   // -- Intersection
 
-  def &(other: Geometry): PointGeometryIntersectionResult =
+  def &(other: Geometry): PointOrNoResult =
     intersection(other)
-  def intersection(other: Geometry): PointGeometryIntersectionResult =
+  def intersection(other: Geometry): PointOrNoResult =
     geom.intersection(other.geom)
 
   // -- Union
@@ -41,9 +42,9 @@ case class Point(geom: jts.Point) extends Geometry
   def union(l: Line): PointLineUnionResult =
     geom.union(l.geom)
 
-  def |(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
+  def |(p: Polygon): AtMostOneDimensionPolygonUnionResult =
     union(p)
-  def union(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
+  def union(p: Polygon): AtMostOneDimensionPolygonUnionResult =
     geom.union(p.geom)
 
   def |(ls: MultiLine): PointMultiLineUnionResult =
@@ -51,9 +52,9 @@ case class Point(geom: jts.Point) extends Geometry
   def union(ls: MultiLine): PointMultiLineUnionResult =
     geom.union(ls.geom)
 
-  def |(ps: MultiPolygon): AtMostOneDimensionsMultiPolygonUnionResult =
+  def |(ps: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
     union(ps)
-  def union(ps: MultiPolygon): AtMostOneDimensionsMultiPolygonUnionResult =
+  def union(ps: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
     geom.union(ps.geom)
 
   // -- Difference
@@ -98,6 +99,15 @@ case class Point(geom: jts.Point) extends Geometry
 
   def contains(g: ZeroDimensions): Boolean =
     geom.contains(g.geom)
+
+  def coveredBy(g: Geometry): Boolean =
+    geom.coveredBy(g.geom)
+
+  def covers(p: Point): Boolean =
+    geom.covers(p.geom)
+
+  def touches(g: AtLeastOneDimension): Boolean =
+    geom.touches(g.geom)
 
   def within(g: Geometry): Boolean =
     geom.within(g.geom)

@@ -13,13 +13,14 @@ object MultiPoint {
 }
 
 case class MultiPoint(geom: jts.MultiPoint) extends MultiGeometry 
+                                             with Relatable
                                              with ZeroDimensions {
 
   // -- Intersection
 
-  def &(p: Point): PointGeometryIntersectionResult =
+  def &(p: Point): PointOrNoResult =
     intersection(p)
-  def intersection(p: Point): PointGeometryIntersectionResult =
+  def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
 
   def &(l: Line): MultiPointIntersectionResult =
@@ -59,9 +60,9 @@ case class MultiPoint(geom: jts.MultiPoint) extends MultiGeometry
   def union(l:Line): PointLineUnionResult =
     l.union(this)
 
-  def |(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
+  def |(p: Polygon): AtMostOneDimensionPolygonUnionResult =
     union(p)
-  def union(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
+  def union(p: Polygon): AtMostOneDimensionPolygonUnionResult =
     p.union(this)
 
   def |(ps: MultiPoint): PointZeroDimensionsUnionResult =
@@ -74,9 +75,9 @@ case class MultiPoint(geom: jts.MultiPoint) extends MultiGeometry
   def union(ls: MultiLine): PointMultiLineUnionResult =
     geom.union(ls.geom)
 
-  def |(ps: MultiPolygon): AtMostOneDimensionsMultiPolygonUnionResult =
+  def |(ps: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
     union(ps)
-  def union(ps: MultiPolygon): AtMostOneDimensionsMultiPolygonUnionResult =
+  def union(ps: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
     geom.union(ps.geom)
 
   // -- Difference
@@ -85,17 +86,6 @@ case class MultiPoint(geom: jts.MultiPoint) extends MultiGeometry
     difference(other)
   def difference(other: Geometry): MultiPointDifferenceResult =
     geom.difference(other.geom)
-
-  // -- Predicates
-
-  def contains(g: ZeroDimensions): Boolean =
-    geom.contains(g.geom)
-
-  def within(g: Geometry): Boolean =
-    geom.within(g.geom)
-
-  def overlaps(ps: MultiPoint): Boolean =
-    geom.overlaps(ps.geom)
 
   // -- SymDifference
 
@@ -118,5 +108,25 @@ case class MultiPoint(geom: jts.MultiPoint) extends MultiGeometry
 
   def convexHull: Polygon =
     geom.convexHull.asInstanceOf[jts.Polygon]
+
+  // -- Predicates
+
+  def contains(g: ZeroDimensions): Boolean =
+    geom.contains(g.geom)
+
+  def coveredBy(g: Geometry): Boolean =
+    geom.coveredBy(g.geom)
+
+  def covers(p: ZeroDimensions): Boolean =
+    geom.covers(p.geom)
+
+  def overlaps(ps: MultiPoint): Boolean =
+    geom.overlaps(ps.geom)
+
+  def touches(g: AtLeastOneDimension): Boolean =
+    geom.touches(g.geom)
+
+  def within(g: Geometry): Boolean =
+    geom.within(g.geom)
 
 }

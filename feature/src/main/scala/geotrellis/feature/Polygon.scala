@@ -40,6 +40,7 @@ object Polygon {
 }
 
 case class Polygon(geom: jts.Polygon) extends Geometry 
+                                         with Relatable
                                          with TwoDimensions {
 
   assert(!geom.isEmpty)
@@ -67,9 +68,9 @@ case class Polygon(geom: jts.Polygon) extends Geometry
 
   // -- Intersection
 
-  def &(p: Point): PointGeometryIntersectionResult =
+  def &(p: Point): PointOrNoResult =
     intersection(p)
-  def intersection(p: Point): PointGeometryIntersectionResult =
+  def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
 
   def &(l: Line): LinePolygonIntersectionResult =
@@ -99,9 +100,9 @@ case class Polygon(geom: jts.Polygon) extends Geometry
 
   // -- Union
 
-  def |(g: AtMostOneDimensions): AtMostOneDimensionsPolygonUnionResult =
+  def |(g: AtMostOneDimension): AtMostOneDimensionPolygonUnionResult =
     union(g)
-  def union(g: AtMostOneDimensions): AtMostOneDimensionsPolygonUnionResult =
+  def union(g: AtMostOneDimension): AtMostOneDimensionPolygonUnionResult =
     geom.union(g.geom)
 
   def |(p:Polygon): PolygonPolygonUnionResult =
@@ -151,7 +152,7 @@ case class Polygon(geom: jts.Polygon) extends Geometry
   def symDifference(g: ZeroDimensions): ZeroDimensionsPolygonSymDifferenceResult =
     geom.symDifference(g.geom)
 
-  def symDifference(g: OneDimensions): OneDimensionsPolygonSymDifferenceResult =
+  def symDifference(g: OneDimension): OneDimensionPolygonSymDifferenceResult =
     geom.symDifference(g.geom)
 
   def symDifference(g: TwoDimensions): TwoDimensionsSymDifferenceResult =
@@ -167,10 +168,13 @@ case class Polygon(geom: jts.Polygon) extends Geometry
   def contains(g: Geometry): Boolean =
     geom.contains(g.geom)
 
-  def within(g: TwoDimensions): Boolean =
-    geom.within(g.geom)
+  def coveredBy(g: TwoDimensions): Boolean =
+    geom.coveredBy(g.geom)
 
-  def crosses(g: OneDimensions): Boolean =
+  def covers(g: Geometry): Boolean =
+    geom.covers(g.geom)
+
+  def crosses(g: OneDimension): Boolean =
     geom.crosses(g.geom)
 
   def crosses(ps: MultiPoint): Boolean =
@@ -178,5 +182,11 @@ case class Polygon(geom: jts.Polygon) extends Geometry
 
   def overlaps(g: TwoDimensions): Boolean =
     geom.overlaps(g.geom)
+
+  def touches(g: Geometry): Boolean =
+    geom.touches(g.geom)
+
+  def within(g: TwoDimensions): Boolean =
+    geom.within(g.geom)
 
 }

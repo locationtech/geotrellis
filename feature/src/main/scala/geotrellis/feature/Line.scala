@@ -27,7 +27,8 @@ object Line {
 
 }
 
-case class Line(geom: jts.LineString) extends Geometry 
+case class Line(geom: jts.LineString) extends Geometry
+                                         with Relatable
                                          with TwoDimensions {
 
   assert(!geom.isEmpty)
@@ -54,9 +55,9 @@ case class Line(geom: jts.LineString) extends Geometry
 
   // -- Intersection
 
-  def &(p: Point): PointGeometryIntersectionResult =
+  def &(p: Point): PointOrNoResult =
     intersection(p)
-  def intersection(p: Point): PointGeometryIntersectionResult =
+  def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
 
   def &(l: Line): LineLineIntersectionResult =
@@ -96,9 +97,9 @@ case class Line(geom: jts.LineString) extends Geometry
   def union(l: Line): LineLineUnionResult =
     geom.union(l.geom)
 
-  def |(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
+  def |(p: Polygon): AtMostOneDimensionPolygonUnionResult =
     union(p)
-  def union(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
+  def union(p: Polygon): AtMostOneDimensionPolygonUnionResult =
     geom.union(p.geom)
 
   def |(ps: MultiPoint): PointLineUnionResult =
@@ -111,9 +112,9 @@ case class Line(geom: jts.LineString) extends Geometry
   def union(ls: MultiLine): LineLineUnionResult =
     geom.union(ls.geom)
 
-  def |(ps: MultiPolygon): AtMostOneDimensionsMultiPolygonUnionResult =
+  def |(ps: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
     union(ps)
-  def union(ps: MultiPolygon): AtMostOneDimensionsMultiPolygonUnionResult =
+  def union(ps: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
     geom.union(ps.geom)
 
   // -- Difference
@@ -153,13 +154,13 @@ case class Line(geom: jts.LineString) extends Geometry
   def symDifference(g: ZeroDimensions): ZeroDimensionsLineSymDifferenceResult =
     geom.symDifference(g.geom)
 
-  def symDifference(g: OneDimensions): OneDimensionsSymDifferenceResult =
+  def symDifference(g: OneDimension): OneDimensionSymDifferenceResult =
     geom.symDifference(g.geom)
 
-  def symDifference(p: Polygon): OneDimensionsPolygonSymDifferenceResult =
+  def symDifference(p: Polygon): OneDimensionPolygonSymDifferenceResult =
     geom.symDifference(p.geom)
   
-  def symDifference(ps: MultiPolygon): OneDimensionsMultiPolygonSymDifferenceResult =
+  def symDifference(ps: MultiPolygon): OneDimensionMultiPolygonSymDifferenceResult =
     geom.symDifference(ps.geom)
 
   // -- Buffer
@@ -169,19 +170,30 @@ case class Line(geom: jts.LineString) extends Geometry
 
   // -- Predicates
 
-  def contains(g: AtMostOneDimensions): Boolean =
+  def contains(g: AtMostOneDimension): Boolean =
     geom.contains(g.geom)
 
-  def within(g: AtLeastOneDimensions): Boolean =
-    geom.within(g.geom)
+  def coveredBy(g: AtLeastOneDimension): Boolean =
+    geom.coveredBy(g.geom)
 
-  def crosses(g: AtLeastOneDimensions): Boolean =
+  def covers(g: AtMostOneDimension): Boolean =
+    geom.covers(g.geom)
+
+  def crosses(g: AtLeastOneDimension): Boolean =
     geom.crosses(g.geom)
 
+  /** A Line crosses a MultiPoint when it covers
+      some points but does not cover others */
   def crosses(ps: MultiPoint): Boolean =
     geom.crosses(ps.geom)
 
-  def overlaps(g: OneDimensions): Boolean =
+  def overlaps(g: OneDimension): Boolean =
     geom.overlaps(g.geom)
+
+  def touches(g: Geometry): Boolean =
+    geom.touches(g.geom)
+
+  def within(g: AtLeastOneDimension): Boolean =
+    geom.within(g.geom)
 
 }

@@ -6,15 +6,21 @@ trait Geometry {
 
   val geom: jts.Geometry
 
-  def centroid: Point = Point(geom.getCentroid)
+  def distance(other: Geometry) =
+    geom.distance(other.geom)
 
-  def interiorPoint: Point = Point(geom.getInteriorPoint)
+  def withinDistance(other: Geometry, dist: Double) =
+    geom.isWithinDistance(other.geom, dist)
 
-  def coveredBy(other: Geometry): Boolean =
-    geom.coveredBy(other.geom)
+  def centroid: PointOrNoResult = 
+    geom.getCentroid 
 
-  def covers(other: Geometry): Boolean =
-    geom.covers(other.geom)
+  def interiorPoint: PointOrNoResult = 
+    geom.getInteriorPoint 
+
+}
+
+trait Relatable { self: Geometry =>
 
   def intersects(other: Geometry): Boolean =
     geom.intersects(other.geom)
@@ -22,17 +28,10 @@ trait Geometry {
   def disjoint(other: Geometry): Boolean =
     geom.disjoint(other.geom)
 
-  def touches(other: Geometry): Boolean =
-    geom.touches(other.geom)
+}
 
-  def distance(other: Geometry) =
-    geom.distance(other.geom)
+trait MultiGeometry extends Geometry
 
-  // Curious to benchmark this against .distance < d,
-  // JTS implements it as a different op, I'm assuming
-  // for speed.
-  def withinDistance(other: Geometry, dist: Double) =
-    geom.isWithinDistance(other.geom, dist)
 
   /* TO BE IMPLEMENTED ON A PER TYPE BASIS */
 
@@ -40,12 +39,7 @@ trait Geometry {
   // equalExact (huh?)
   // normalize (hmmm)
 
-
-
-
   // isValid ( don't allow invalid? )
-
-
 
   // something with relate if it's fast (benchmark)
 
@@ -84,4 +78,3 @@ trait Geometry {
   // def coordinate:(Double,Double) = jts.getCoordinate
   // def coordinates:Seq[(Double,Double)] = jts.getCoordinates
   // def dimension = jts.getDimension
-}

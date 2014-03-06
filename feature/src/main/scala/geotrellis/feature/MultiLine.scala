@@ -13,6 +13,7 @@ object MultiLine {
 }
 
 case class MultiLine(geom: jts.MultiLineString) extends MultiGeometry 
+                                                 with Relatable
                                                  with TwoDimensions {
 
   lazy val isClosed: Boolean =
@@ -23,9 +24,9 @@ case class MultiLine(geom: jts.MultiLineString) extends MultiGeometry
 
   // -- Intersection
 
-  def &(p: Point): PointGeometryIntersectionResult =
+  def &(p: Point): PointOrNoResult =
     intersection(p)
-  def intersection(p: Point): PointGeometryIntersectionResult =
+  def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
 
   def &(l: Line): MultiLineIntersectionResult =
@@ -65,9 +66,9 @@ case class MultiLine(geom: jts.MultiLineString) extends MultiGeometry
   def union(l:Line): LineLineUnionResult =
     l.union(this)
 
-  def |(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
+  def |(p: Polygon): AtMostOneDimensionPolygonUnionResult =
     union(p)
-  def union(p: Polygon): AtMostOneDimensionsPolygonUnionResult =
+  def union(p: Polygon): AtMostOneDimensionPolygonUnionResult =
     geom.union(p.geom)
 
   def |(ps: MultiPoint): PointMultiLineUnionResult =
@@ -80,9 +81,9 @@ case class MultiLine(geom: jts.MultiLineString) extends MultiGeometry
   def union(ls: MultiLine): LineLineUnionResult =
     geom.union(ls.geom)
 
-  def |(ps: MultiPolygon): AtMostOneDimensionsMultiPolygonUnionResult =
+  def |(ps: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
     union(ps)
-  def union(ps: MultiPolygon): AtMostOneDimensionsMultiPolygonUnionResult =
+  def union(ps: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
     geom.union(ps.geom)
 
   // -- Difference
@@ -122,30 +123,41 @@ case class MultiLine(geom: jts.MultiLineString) extends MultiGeometry
   def symDifference(g: ZeroDimensions): ZeroDimensionsMultiLineSymDifferenceResult =
     geom.symDifference(g.geom)
 
-  def symDifference(g: OneDimensions): OneDimensionsSymDifferenceResult =
+  def symDifference(g: OneDimension): OneDimensionSymDifferenceResult =
     geom.symDifference(g.geom)
 
-  def symDifference(p: Polygon): OneDimensionsPolygonSymDifferenceResult =
+  def symDifference(p: Polygon): OneDimensionPolygonSymDifferenceResult =
     geom.symDifference(p.geom)
 
-  def symDifference(ps: MultiPolygon): OneDimensionsMultiPolygonSymDifferenceResult =
+  def symDifference(ps: MultiPolygon): OneDimensionMultiPolygonSymDifferenceResult =
     geom.symDifference(ps.geom)
 
   // -- Predicates
 
-  def contains(g: AtMostOneDimensions): Boolean =
+  def contains(g: AtMostOneDimension): Boolean =
     geom.contains(g.geom)
 
-  def within(g: AtLeastOneDimensions): Boolean =
-    geom.within(g.geom)
+  def coveredBy(g: AtLeastOneDimension): Boolean =
+    geom.coveredBy(g.geom)
 
-  def crosses(g: AtLeastOneDimensions): Boolean =
+  def covers(g: AtMostOneDimension): Boolean =
+    geom.covers(g.geom)
+
+  def crosses(g: AtLeastOneDimension): Boolean =
     geom.crosses(g.geom)
 
+  /** A MultiLine crosses a MultiPoint when it covers
+      some points but does not cover others */
   def crosses(ps: MultiPoint): Boolean =
     geom.crosses(ps.geom)
 
-  def overlaps(g: OneDimensions): Boolean =
+  def overlaps(g: OneDimension): Boolean =
     geom.overlaps(g.geom)
+
+  def touches(g: AtLeastOneDimension): Boolean =
+    geom.touches(g.geom)
+
+  def within(g: AtLeastOneDimension): Boolean =
+    geom.within(g.geom)
 
 }

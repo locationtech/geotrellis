@@ -14,7 +14,8 @@ object MultiPolygon {
 
 
 case class MultiPolygon(geom: jts.MultiPolygon) extends MultiGeometry 
-                                                 with TwoDimensions {
+                                                   with Relatable
+                                                   with TwoDimensions {
 
   lazy val area: Double =
     geom.getArea
@@ -24,9 +25,9 @@ case class MultiPolygon(geom: jts.MultiPolygon) extends MultiGeometry
 
   // -- Intersection
 
-  def &(p: Point): PointGeometryIntersectionResult =
+  def &(p: Point): PointOrNoResult =
     intersection(p)
-  def intersection(p: Point): PointGeometryIntersectionResult =
+  def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
 
   def &(l: Line): MultiLineIntersectionResult =
@@ -51,14 +52,14 @@ case class MultiPolygon(geom: jts.MultiPolygon) extends MultiGeometry
 
   // -- Union
 
-  def |(p: Point): AtMostOneDimensionsMultiPolygonUnionResult =
+  def |(p: Point): AtMostOneDimensionMultiPolygonUnionResult =
     union(p)
-  def union(p: Point): AtMostOneDimensionsMultiPolygonUnionResult =
+  def union(p: Point): AtMostOneDimensionMultiPolygonUnionResult =
     p.union(this)
 
-  def |(l: Line): AtMostOneDimensionsMultiPolygonUnionResult =
+  def |(l: Line): AtMostOneDimensionMultiPolygonUnionResult =
     union(l)
-  def union(l: Line): AtMostOneDimensionsMultiPolygonUnionResult =
+  def union(l: Line): AtMostOneDimensionMultiPolygonUnionResult =
     l.union(this)
 
   def |(p: Polygon): PolygonPolygonUnionResult =
@@ -66,13 +67,13 @@ case class MultiPolygon(geom: jts.MultiPolygon) extends MultiGeometry
   def union(p: Polygon): PolygonPolygonUnionResult =
     p.union(this)
 
-  def |(ps: MultiPoint): AtMostOneDimensionsMultiPolygonUnionResult =
+  def |(ps: MultiPoint): AtMostOneDimensionMultiPolygonUnionResult =
     union(ps)
-  def union(ps: MultiPoint): AtMostOneDimensionsMultiPolygonUnionResult =
+  def union(ps: MultiPoint): AtMostOneDimensionMultiPolygonUnionResult =
     ps.union(this)
 
   def |(ls: MultiLine) = union(ls)
-  def union(ls: MultiLine): AtMostOneDimensionsMultiPolygonUnionResult =
+  def union(ls: MultiLine): AtMostOneDimensionMultiPolygonUnionResult =
     ls.union(this)
 
   def |(ps: MultiPolygon): PolygonPolygonUnionResult =
@@ -117,7 +118,7 @@ case class MultiPolygon(geom: jts.MultiPolygon) extends MultiGeometry
   def symDifference(g: ZeroDimensions): ZeroDimensionsMultiPolygonSymDifferenceResult =
     geom.symDifference(g.geom)
 
-  def symDifference(g: OneDimensions): OneDimensionsMultiPolygonSymDifferenceResult =
+  def symDifference(g: OneDimension): OneDimensionMultiPolygonSymDifferenceResult =
     geom.symDifference(g.geom)
 
   def symDifference(g: TwoDimensions): TwoDimensionsSymDifferenceResult =
@@ -128,10 +129,13 @@ case class MultiPolygon(geom: jts.MultiPolygon) extends MultiGeometry
   def contains(g: Geometry): Boolean =
     geom.contains(g.geom)
 
-  def within(g: TwoDimensions): Boolean =
-    geom.within(g.geom)
+  def coveredBy(g: TwoDimensions): Boolean =
+    geom.coveredBy(g.geom)
 
-  def crosses(g: OneDimensions): Boolean =
+  def covers(g: Geometry): Boolean =
+    geom.covers(g.geom)
+
+  def crosses(g: OneDimension): Boolean =
     geom.crosses(g.geom)
 
   def crosses(ps: MultiPoint): Boolean =
@@ -139,5 +143,11 @@ case class MultiPolygon(geom: jts.MultiPolygon) extends MultiGeometry
 
   def overlaps(g: TwoDimensions): Boolean =
     geom.crosses(g.geom)
+
+  def touches(g: AtLeastOneDimension): Boolean =
+    geom.touches(g.geom)
+
+  def within(g: TwoDimensions): Boolean =
+    geom.within(g.geom)
 
 }
