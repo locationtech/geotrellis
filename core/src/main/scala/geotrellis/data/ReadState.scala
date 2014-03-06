@@ -102,7 +102,7 @@ trait ReadState {
     var y = ybase
 
     // loop over rows
-    for (dst_row <- 0 to dst_rows optimized) {
+    for (dst_row <- 0 until dst_rows optimized) {
       // calculate the Y grid coordinate to read from
       val src_row = (src_rows - (y / src_cellheight).asInstanceOf[Int] - 1)
 
