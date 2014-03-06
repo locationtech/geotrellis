@@ -11,7 +11,7 @@ trait RasterRDDMatchers extends ShouldMatchers {
    * b. if number of tiles == count
    */  
   def shouldBe(rdd: RasterRDD, minMaxCount: Tuple3[Int, Int, Long]): Unit = {
-    val res = rdd.map { case (tileId, raster) => raster.findMinMax }.collect
+    val res = rdd.map(_.raster.findMinMax).collect
     val (min, max, count) = minMaxCount
     res.count(_ == (min, max)) should be(count)
     res.length should be(count)
@@ -23,14 +23,15 @@ trait RasterRDDMatchers extends ShouldMatchers {
    * b. if number of tiles == count
    */   
   def shouldBe(rdd: RasterRDD, value: Int, count: Int): Unit = {
-    val res = rdd.map { case (tileId, raster) => raster }.collect
-    res.foreach(r => {
+    val res = rdd.map(_.raster).collect
+
+    res.foreach { r =>
       for (col <- 0 until r.cols) {
         for (row <- 0 until r.rows) {
           r.get(col, row) should be(value)
         }
       }
-    })
+    }
 
     res.length should be(count)
   }

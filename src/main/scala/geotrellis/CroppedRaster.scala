@@ -94,6 +94,8 @@ case class CroppedRaster(sourceRaster:Raster,
 
   def toArrayByte(): Array[Byte] = toArrayRaster.toArrayByte
 
+  def data: RasterData = toArrayRaster.data
+
   def copy() = 
     if(isFloat) {
       Raster(toArray,rasterExtent) 

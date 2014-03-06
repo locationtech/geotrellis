@@ -48,6 +48,8 @@ trait Raster extends local.AddMethods
   def toArrayDouble():Array[Double]
   def toArrayByte():Array[Byte]
 
+  def data: RasterData
+
   def convert(typ:RasterType):Raster
 
   def dualForeach(f:Int => Unit)(g:Double => Unit):Unit =
