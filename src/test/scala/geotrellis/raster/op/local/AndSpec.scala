@@ -96,5 +96,22 @@ class AndSpec extends FunSpec
       assertEqual(createValueRaster(10,9.9) & (createValueRaster(10,3.2)),
                   createValueRaster(10,1.0))
     }
+    it("ands a Seq of rasters") {
+      val r1 = createValueRaster(10, 1)
+      val r2 = createValueRaster(10, 2)
+      val r3 = createValueRaster(10, 3)
+      val r0xF = createValueRaster(10, 15)
+
+      val s1 = Seq(r1, r3)
+      val s2 = Seq(r2, r3)
+      val result1 = get(r0xF & s1)
+      val result2 = get(r0xF & s2)
+      for (y <- 0 until 10) {
+        for (x <- 0 until 10) {
+          result1.get(x,y) should be (1)
+          result2.get(x,y) should be (2)
+        }
+      }
+    }
   }
 }
