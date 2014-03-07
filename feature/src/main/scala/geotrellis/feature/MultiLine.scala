@@ -1,57 +1,26 @@
 package geotrellis.feature
 
-import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
 
-object Line {
+import com.vividsolutions.jts.{geom=>jts}
 
-  implicit def jtsToLine(jtsGeom: jts.LineString): Line =
-    apply(jtsGeom)
+object MultiLine {
+  def apply(ls: Line*): MultiLine = 
+    MultiLine(ls)
 
-  def apply(points: Point*): Line =
-    apply(points.toList)
-
-  def apply(points: Seq[Point])(implicit d: DummyImplicit): Line =
-    apply(points.toList)
-
-  def apply(points: Array[Point]): Line =
-    apply(points.toList)
-
-  def apply(points: List[Point]): Line = {
-    if (points.length < 2) {
-      sys.error("Invalid line: Requires 2 or more points.")
-    }
-
-    Line(factory.createLineString(points.map(_.jtsGeom.getCoordinate).toArray))
-  }
-
+  def apply(ls: Traversable[Line])(implicit d: DummyImplicit): MultiLine = 
+    MultiLine(factory.createMultiLineString(ls.map(_.jtsGeom).toArray))
 }
 
-case class Line(jtsGeom: jts.LineString) extends Geometry
-                                         with Relatable
-                                         with TwoDimensions {
-
-  assert(!jtsGeom.isEmpty)
-
-  lazy val points: List[Point] = jtsGeom.getCoordinates.map(c => Point(c.x, c.y)).toList
+case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry 
+                                                 with Relatable
+                                                 with TwoDimensions {
 
   lazy val isClosed: Boolean =
     jtsGeom.isClosed
 
-  lazy val isSimple: Boolean =
-    jtsGeom.isSimple
-
   lazy val boundary: LineBoundaryResult =
     jtsGeom.getBoundary
-
-  lazy val vertices: MultiPoint =
-    jtsGeom.getCoordinates
-
-  lazy val boundingBox: Option[Polygon] =
-    if (jtsGeom.isEmpty) None else Some(jtsGeom.getEnvelope.asInstanceOf[Polygon])
-
-  lazy val length: Double =
-    jtsGeom.getLength
 
   // -- Intersection
 
@@ -60,20 +29,20 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
 
-  def &(l: Line): LineLineIntersectionResult =
+  def &(l: Line): MultiLineIntersectionResult =
     intersection(l)
-  def intersection(l: Line): LineLineIntersectionResult =
-    jtsGeom.intersection(l.jtsGeom)
+  def intersection(l: Line): MultiLineIntersectionResult =
+    l.intersection(this)
 
-  def &(p: Polygon): LinePolygonIntersectionResult =
+  def &(p: Polygon): MultiLineIntersectionResult =
     intersection(p)
-  def intersection(p: Polygon): LinePolygonIntersectionResult =
-    jtsGeom.intersection(p.jtsGeom)
+  def intersection(p: Polygon): MultiLineIntersectionResult =
+    p.intersection(this)
 
   def &(ps: MultiPoint): MultiPointIntersectionResult =
     intersection(ps)
-  def intersection(ps:MultiPoint):MultiPointIntersectionResult =
-    jtsGeom.intersection(ps.jtsGeom)
+  def intersection(ps: MultiPoint): MultiPointIntersectionResult =
+    ps.intersection(this)
 
   def &(ls: MultiLine): MultiLineIntersectionResult =
     intersection(ls)
@@ -87,25 +56,25 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
 
   // -- Union
 
-  def |(p: Point): PointLineUnionResult =
+  def |(p: Point): PointMultiLineUnionResult =
     union(p)
-  def union(p: Point): PointLineUnionResult =
+  def union(p: Point): PointMultiLineUnionResult =
     p.union(this)
 
   def |(l: Line): LineLineUnionResult =
     union(l)
-  def union(l: Line): LineLineUnionResult =
-    jtsGeom.union(l.jtsGeom)
+  def union(l:Line): LineLineUnionResult =
+    l.union(this)
 
   def |(p: Polygon): AtMostOneDimensionPolygonUnionResult =
     union(p)
   def union(p: Polygon): AtMostOneDimensionPolygonUnionResult =
     jtsGeom.union(p.jtsGeom)
 
-  def |(ps: MultiPoint): PointLineUnionResult =
+  def |(ps: MultiPoint): PointMultiLineUnionResult =
     union(ps)
-  def union(ps: MultiPoint): PointLineUnionResult =
-    jtsGeom.union(ps.jtsGeom)
+  def union(ps: MultiPoint): PointMultiLineUnionResult =
+    ps.union(this)
 
   def |(ls: MultiLine): LineLineUnionResult =
     union(ls)
@@ -119,39 +88,39 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
 
   // -- Difference
 
-  def -(p: Point): LinePointDifferenceResult =
+  def -(p: Point): MultiLinePointDifferenceResult =
     difference(p)
-  def difference(p: Point): LinePointDifferenceResult =
+  def difference(p: Point): MultiLinePointDifferenceResult =
     jtsGeom.difference(p.jtsGeom)
 
   def -(l: Line): LineXDifferenceResult =
     difference(l)
-  def difference(l: Line): LineXDifferenceResult =
+  def difference(l: Line): LineXDifferenceResult = 
     jtsGeom.difference(l.jtsGeom)
-
+  
   def -(p: Polygon): LineXDifferenceResult =
     difference(p)
-  def difference(p: Polygon): LineXDifferenceResult =
+  def difference(p: Polygon): LineXDifferenceResult = 
     jtsGeom.difference(p.jtsGeom)
-
-  def -(ps: MultiPoint): LinePointDifferenceResult =
+  
+  def -(ps: MultiPoint): MultiLinePointDifferenceResult =
     difference(ps)
-  def difference(ps: MultiPoint): LinePointDifferenceResult =
+  def difference(ps: MultiPoint): MultiLinePointDifferenceResult = 
     jtsGeom.difference(ps.jtsGeom)
-
+  
   def -(ls: MultiLine): LineXDifferenceResult =
     difference(ls)
-  def difference(ls: MultiLine): LineXDifferenceResult =
+  def difference(ls: MultiLine): LineXDifferenceResult = 
     jtsGeom.difference(ls.jtsGeom)
-
+  
   def -(ps: MultiPolygon): LineXDifferenceResult =
     difference(ps)
-  def difference(ps: MultiPolygon): LineXDifferenceResult =
+  def difference(ps: MultiPolygon): LineXDifferenceResult = 
     jtsGeom.difference(ps.jtsGeom)
 
   // -- SymDifference
 
-  def symDifference(g: ZeroDimensions): ZeroDimensionsLineSymDifferenceResult =
+  def symDifference(g: ZeroDimensions): ZeroDimensionsMultiLineSymDifferenceResult =
     jtsGeom.symDifference(g.jtsGeom)
 
   def symDifference(g: OneDimension): OneDimensionSymDifferenceResult =
@@ -159,14 +128,9 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
 
   def symDifference(p: Polygon): OneDimensionPolygonSymDifferenceResult =
     jtsGeom.symDifference(p.jtsGeom)
-  
+
   def symDifference(ps: MultiPolygon): OneDimensionMultiPolygonSymDifferenceResult =
     jtsGeom.symDifference(ps.jtsGeom)
-
-  // -- Buffer
-
-  def buffer(d:Double):Polygon =
-    jtsGeom.buffer(d).asInstanceOf[Polygon]
 
   // -- Predicates
 
@@ -182,7 +146,7 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   def crosses(g: AtLeastOneDimension): Boolean =
     jtsGeom.crosses(g.jtsGeom)
 
-  /** A Line crosses a MultiPoint when it covers
+  /** A MultiLine crosses a MultiPoint when it covers
       some points but does not cover others */
   def crosses(ps: MultiPoint): Boolean =
     jtsGeom.crosses(ps.jtsGeom)
@@ -190,7 +154,7 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   def overlaps(g: OneDimension): Boolean =
     jtsGeom.overlaps(g.jtsGeom)
 
-  def touches(g: Geometry): Boolean =
+  def touches(g: AtLeastOneDimension): Boolean =
     jtsGeom.touches(g.jtsGeom)
 
   def within(g: AtLeastOneDimension): Boolean =

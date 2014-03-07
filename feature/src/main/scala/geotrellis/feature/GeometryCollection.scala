@@ -8,20 +8,20 @@ import scala.collection.mutable
 class GeometryCollection(val points: Set[Point],
                          val lines: Set[Line],
                          val polygons: Set[Polygon],
-                         val geom: jts.GeometryCollection) {
+                         val jtsGeom: jts.GeometryCollection) extends Geometry {
 
   lazy val area: Double =
-    geom.getArea
+    jtsGeom.getArea
 
   override def equals(that: Any): Boolean = {
     that match {
-      case other: GeometryCollection => geom == other.geom
+      case other: GeometryCollection => jtsGeom == other.jtsGeom
       case _ => false
     }
   }
 
   override def hashCode(): Int  =
-    geom.hashCode()
+    jtsGeom.hashCode()
 }
 
 object GeometryCollection {
@@ -30,8 +30,8 @@ object GeometryCollection {
     apply(gc)
 
   def apply(points: Set[Point] = Set(), lines: Set[Line] = Set(), polygons: Set[Polygon] = Set()): GeometryCollection = {
-    val geom = factory.createGeometryCollection((points ++ lines ++ polygons).map(_.geom).toArray)
-    new GeometryCollection(points, lines, polygons, geom)
+    val jtsGeom = factory.createGeometryCollection((points ++ lines ++ polygons).map(_.jtsGeom).toArray)
+    new GeometryCollection(points, lines, polygons, jtsGeom)
   }
 
   def apply(gc: jts.GeometryCollection): GeometryCollection = {

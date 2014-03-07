@@ -4,35 +4,34 @@ import com.vividsolutions.jts.{geom => jts}
 
 trait Geometry {
 
-  val geom: jts.Geometry
-
-  def centroid: Point = Point(geom.getCentroid)
-
-  def interiorPoint: Point = Point(geom.getInteriorPoint)
-
-  def coveredBy(other: Geometry): Boolean =
-    geom.coveredBy(other.geom)
-
-  def covers(other: Geometry): Boolean =
-    geom.covers(other.geom)
-
-  def intersects(other: Geometry): Boolean =
-    geom.intersects(other.geom)
-
-  def disjoint(other: Geometry): Boolean =
-    geom.disjoint(other.geom)
-
-  def touches(other: Geometry): Boolean =
-    geom.touches(other.geom)
+  val jtsGeom: jts.Geometry
 
   def distance(other: Geometry) =
-    geom.distance(other.geom)
+    jtsGeom.distance(other.jtsGeom)
 
-  // Curious to benchmark this against .distance < d,
-  // JTS implements it as a different op, I'm assuming
-  // for speed.
   def withinDistance(other: Geometry, dist: Double) =
-    geom.isWithinDistance(other.geom, dist)
+    jtsGeom.isWithinDistance(other.jtsGeom, dist)
+
+  def centroid: PointOrNoResult = 
+    jtsGeom.getCentroid 
+
+  def interiorPoint: PointOrNoResult = 
+    jtsGeom.getInteriorPoint 
+
+}
+
+trait Relatable { self: Geometry =>
+
+  def intersects(other: Geometry): Boolean =
+    jtsGeom.intersects(other.jtsGeom)
+
+  def disjoint(other: Geometry): Boolean =
+    jtsGeom.disjoint(other.jtsGeom)
+
+}
+
+trait MultiGeometry extends Geometry
+
 
   /* TO BE IMPLEMENTED ON A PER TYPE BASIS */
 
@@ -40,12 +39,7 @@ trait Geometry {
   // equalExact (huh?)
   // normalize (hmmm)
 
-
-
-
   // isValid ( don't allow invalid? )
-
-
 
   // something with relate if it's fast (benchmark)
 
@@ -66,7 +60,7 @@ trait Geometry {
   // length - line; points have length 0.0
   // perimeter - length of a polygon
 
-  // isSimple - always true for valid polygons and empty geoms; true for points as well; false for PointSets with repeated points
+  // isSimple - always true for valid polygons and empty geoms; true for points as well; false for MultiPoints with repeated points
   // overlaps - geoms must have same dimension and not all points in common and intersection of interiors has same dimension as geoms themselves - done for P/L/A
 
 
@@ -84,4 +78,3 @@ trait Geometry {
   // def coordinate:(Double,Double) = jts.getCoordinate
   // def coordinates:Seq[(Double,Double)] = jts.getCoordinates
   // def dimension = jts.getDimension
-}
