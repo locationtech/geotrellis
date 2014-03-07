@@ -46,4 +46,10 @@ class NotSpec extends FunSpec
       }
     }
   }
+  describe("Not on Raster") {
+    it("negates an Int raster") {
+      assertEqual(Not(createValueRaster(10,9)),
+                  createValueRaster(10,-10))
+    }
+  }
 }

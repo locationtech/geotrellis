@@ -85,4 +85,25 @@ class SqrtSpec extends FunSpec
       }
     }
   }
+  describe("Sqrt raster method") {
+    it("takes the square root of an integer raster") {
+      val r = positiveIntegerRaster
+      val result = get(r.localSqrt())
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          result.get(col,row) should be (math.sqrt(r.get(col,row)).toInt)
+        }
+      }
+    }
+
+    it("takes the square root of a double raster") {
+      val r = probabilityRaster
+      val result = get(r.localSqrt())
+      for(col <- 0 until r.cols) {
+        for(row <- 0 until r.rows) {
+          result.getDouble(col,row) should be (math.sqrt(r.getDouble(col,row)))
+        }
+      }
+    }
+  }
 }

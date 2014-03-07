@@ -20,3 +20,6 @@ TAGS
 .history
 .idea
 .DS_Store
+*.iml
+*.swp
+*.swo

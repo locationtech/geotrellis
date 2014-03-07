@@ -16,3 +16,14 @@ object Not extends Serializable {
      .withName("Not[Raster]")
 }
 
+/**
+ * Bitwise negation of Raster.
+ * @note               NotRaster does not currently support Double raster data.
+ *                     If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *                     the data values will be rounded to integers.
+ */
+trait NotMethods { self: Raster =>
+  /** Returns the bitwise negation of each cell value. */
+  def localNot() =
+    Not(self)
+}

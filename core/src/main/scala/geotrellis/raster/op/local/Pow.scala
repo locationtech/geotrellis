@@ -27,7 +27,7 @@ trait PowOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Pow a constant value by each cell value.*/
   def localPowValue(i:Int) = self.mapOp(Pow(i,_))
   /** Pow a constant value by each cell value.*/
-  def **:(i:Int) = localPow(i)
+  def **:(i:Int) = localPowValue(i)
   /** Pow each value of a raster by a double constant value.*/
   def localPow(d: Double) = self.mapOp(Pow(_, d))
   /** Pow each value of a raster by a double constant value.*/
@@ -44,4 +44,31 @@ trait PowOpMethods[+Repr <: RasterSource] { self: Repr =>
   def localPow(rss:Seq[RasterSource]) = self.combineOp(rss)(Pow(_))
   /** Pow the values of each cell in each raster. */
   def **(rss:Seq[RasterSource]) = localPow(rss)
+}
+
+trait PowMethods { self: Raster =>
+  /** Pow each value of the raster by a constant value.*/
+  def localPow(i: Int) = Pow(self, i)
+  /** Pow each value of the raster by a constant value.*/
+  def **(i:Int) = localPow(i)
+  /** Pow a constant value by each cell value.*/
+  def localPowValue(i:Int) = Pow(i, self)
+  /** Pow a constant value by each cell value.*/
+  def **:(i:Int) = localPowValue(i)
+  /** Pow each value of a raster by a double constant value.*/
+  def localPow(d: Double) = Pow(self, d)
+  /** Pow each value of a raster by a double constant value.*/
+  def **(d:Double) = localPow(d)
+  /** Pow a double constant value by each cell value.*/
+  def localPowValue(d:Double) = Pow(d,self)
+  /** Pow a double constant value by each cell value.*/
+  def **:(d:Double) = localPowValue(d)
+  /** Pow the values of each cell in each raster. */
+  def localPow(r:Raster) = Pow(self,r)
+  /** Pow the values of each cell in each raster. */
+  def **(r:Raster) = localPow(r)
+  /** Pow the values of each cell in each raster. */
+  def localPow(rs:Seq[Raster]) = Pow(self +: rs)
+  /** Pow the values of each cell in each raster. */
+  def **(rs:Seq[Raster]) = localPow(rs)
 }

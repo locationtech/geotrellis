@@ -13,3 +13,12 @@ object Sqrt extends Serializable {
                    (math.sqrt(_)))
      .withName("Sqrt[Raster]")
 }
+
+/**
+ * Operation for taking a square root.
+ */
+trait SqrtMethods { self: Raster =>
+  /** Take the square root each value in a raster. */
+  def localSqrt() =
+    Sqrt(self)
+}

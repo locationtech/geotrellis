@@ -29,3 +29,14 @@ trait MaxOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Max the values of each cell in each raster.  */
   def localMax(rss:Seq[RasterSource]) = self.combineOp(rss)(Max(_))
 }
+
+trait MaxMethods { self: Raster =>
+  /** Max a constant Int value to each cell. */
+  def localMax(i: Int) = Max(self, i)
+  /** Max a constant Double value to each cell. */
+  def localMax(d: Double) = Max(self, d)
+  /** Max the values of each cell in each raster.  */
+  def localMax(r:Raster) = Max(self, r)
+  /** Max the values of each cell in each raster.  */
+  def localMax(rs:Seq[Raster]) = Max(self +: rs)
+}

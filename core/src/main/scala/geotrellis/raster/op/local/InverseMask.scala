@@ -20,3 +20,8 @@ object InverseMask extends Serializable {
       )
     }.withName("InverseMask")
 }
+
+trait InverseMaskMethods { self: Raster =>
+  def localInverseMask(r:Raster, readMask:Int, writeMask:Int) =
+    InverseMask(self, r, readMask, writeMask)
+}

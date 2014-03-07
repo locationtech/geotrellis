@@ -68,4 +68,47 @@ class LogSpec extends FunSpec
       }
     }
   }
+  describe("Log on Raster") {
+    it("takes log of int Raster") {
+      val r = createRaster(
+        Array( NODATA,20,20, 20,20,20, 20,20,20,
+               20,20,20, 20,20,20, 20,20,20,
+
+               20,20,20, 20,20,20, 20,20,20,
+               20,20,20, 20,20,20, 20,20,20),
+        9, 4)
+
+      val result = get(r.localLog())
+
+      for(row <- 0 until 4) {
+        for(col <- 0 until 9) {
+          if(row == 0 && col == 0)
+            result.get(col,row) should be (NODATA)
+          else
+            result.get(col,row) should be (math.log(20).toInt)
+        }
+      }
+    }
+
+    it("takes log of Double Raster") {
+      val r = createRaster(
+        Array( Double.NaN,34.2,34.2, 34.2,34.2,34.2, 34.2,34.2,34.2,
+               34.2,34.2,34.2, 34.2,34.2,34.2, 34.2,34.2,34.2,
+
+               34.2,34.2,34.2, 34.2,34.2,34.2, 34.2,34.2,34.2,
+               34.2,34.2,34.2, 34.2,34.2,34.2, 34.2,34.2,34.2),
+        9, 4)
+
+      val result = get(r.localLog())
+
+      for(row <- 0 until 4) {
+        for(col <- 0 until 9) {
+          if(row == 0 && col == 0)
+            isNoData(result.getDouble(col,row)) should be (true)
+          else
+            result.getDouble(col,row) should be (math.log(34.2))
+        }
+      }
+    }
+  }
 }

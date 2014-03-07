@@ -20,3 +20,9 @@ object Mask extends Serializable {
       )
     }.withName("Mask")
 }
+
+trait MaskMethods { self: Raster =>
+  /** */
+  def localMask(r:Raster, readMask:Int, writeMask:Int) =
+    Mask(self, r, readMask, writeMask)
+}
