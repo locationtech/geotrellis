@@ -7,16 +7,7 @@ import geotrellis._
  */
 object Round extends Serializable {
   /** Round the values of a Raster. */
-  def apply(r:Op[Raster]) =
-    r.map(_.dualMap(z => z)(z => if(isNoData(z)) Double.NaN else math.round(z).toDouble))
-     .withName("Round")
-}
-
-/**
- * Computes the Round of Raster or single values.
- */
-trait RoundMethods { self: Raster =>
-  /** Round the values of a Raster. */
-  def localRound() =
-    Round(self)
+  def apply(r: Raster): Raster =
+    r.dualMap { z: Int => z }
+              { z: Double => if(isNoData(z)) Double.NaN else math.round(z).toDouble }
 }

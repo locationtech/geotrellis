@@ -8,17 +8,7 @@ import geotrellis.process._
  */
 object Sqrt extends Serializable {
   /** Take the square root each value in a raster. */
-  def apply(r:Op[Raster]) = 
-    r.map(_.dualMap(z => if(isNoData(z) || z < 0) NODATA else math.sqrt(z).toInt)
-                   (math.sqrt(_)))
-     .withName("Sqrt[Raster]")
-}
-
-/**
- * Operation for taking a square root.
- */
-trait SqrtMethods { self: Raster =>
-  /** Take the square root each value in a raster. */
-  def localSqrt() =
-    Sqrt(self)
+  def apply(r: Raster) = 
+    r.dualMap { z: Int => if(isNoData(z) || z < 0) NODATA else math.sqrt(z).toInt }
+              { z: Double =>math.sqrt(z) }
 }
