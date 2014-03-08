@@ -73,9 +73,9 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
   def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
 
-  def &(l: Line): OneDimensionsAtLeastOneDimensionsIntersectionResult =
+  def &(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(l)
-  def intersection(l: Line): OneDimensionsAtLeastOneDimensionsIntersectionResult =
+  def intersection(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     l.intersection(this)
 
   def &(p: Polygon): PolygonPolygonIntersectionResult =

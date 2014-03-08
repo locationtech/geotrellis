@@ -23,29 +23,29 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
 
-  def &(l: Line): MultiPointIntersectionResult =
+  def &(l: Line): MultiPointGeometryIntersectionResult =
     intersection(l)
-  def intersection(l: Line): MultiPointIntersectionResult =
+  def intersection(l: Line): MultiPointGeometryIntersectionResult =
     l.intersection(this)
 
-  def &(p: Polygon): MultiPointIntersectionResult =
+  def &(p: Polygon): MultiPointGeometryIntersectionResult =
     intersection(p)
-  def intersection(p: Polygon): MultiPointIntersectionResult =
+  def intersection(p: Polygon): MultiPointGeometryIntersectionResult =
     p.intersection(this)
 
-  def &(ps: MultiPoint): MultiPointIntersectionResult =
+  def &(ps: MultiPoint): MultiPointGeometryIntersectionResult =
     intersection(ps)
-  def intersection(ps: MultiPoint): MultiPointIntersectionResult =
+  def intersection(ps: MultiPoint): MultiPointGeometryIntersectionResult =
     jtsGeom.intersection(ps.jtsGeom)
 
-  def &(ls: MultiLine): MultiPointIntersectionResult =
+  def &(ls: MultiLine): MultiPointGeometryIntersectionResult =
     intersection(ls)
-  def intersection(ls: MultiLine): MultiPointIntersectionResult =
+  def intersection(ls: MultiLine): MultiPointGeometryIntersectionResult =
     jtsGeom.intersection(ls.jtsGeom)
 
-  def &(ps: MultiPolygon): MultiPointIntersectionResult =
+  def &(ps: MultiPolygon): MultiPointGeometryIntersectionResult =
     intersection(ps)
-  def intersection(ps: MultiPolygon): MultiPointIntersectionResult =
+  def intersection(ps: MultiPolygon): MultiPointGeometryIntersectionResult =
     jtsGeom.intersection(ps.jtsGeom)
 
   // -- Union

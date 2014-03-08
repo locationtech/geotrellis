@@ -69,7 +69,7 @@ object MultiPointGeometryIntersectionResult {
     geom match {
       case g: jts.Geometry if g.isEmpty => NoResult
       case p: jts.Point => PointResult(p)
-      case mp: jts.MultiPoint => PointSetResult(mp)
+      case mp: jts.MultiPoint => MultiPointResult(mp)
       case x => 
         sys.error(s"Unexpected result for MultiPoint-Geometry intersection: ${geom.getGeometryType}")
     }
@@ -422,7 +422,7 @@ case class PointResult(p: Point) extends Result
   with ZeroDimensionsMultiPointSymDifferenceResult
 
 case class LineResult(l: Line) extends Result
-  with OneDimensionsAtLeastOneDimensionsIntersectionResult
+  with OneDimensionAtLeastOneDimensionIntersectionResult
   with PolygonPolygonIntersectionResult
   with MultiPolygonIntersectionResult
   with PointLineUnionResult
@@ -457,7 +457,7 @@ case class MultiPointResult(ps: Set[Point]) extends Result
   with OneDimensionBoundaryResult
   with MultiPointDifferenceResult
   with PointPointSymDifferenceResult
-  with ZeroDimensionsPointSetSymDifferenceResult
+  with ZeroDimensionsMultiPointSymDifferenceResult
   with OneDimensionAtLeastOneDimensionIntersectionResult
 
 case class MultiLineResult(ls: Set[Line]) extends Result

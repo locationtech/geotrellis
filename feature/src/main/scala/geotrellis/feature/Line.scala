@@ -42,13 +42,13 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
     jtsGeom.isSimple
 
   lazy val boundary: OneDimensionBoundaryResult =
-    geom.getBoundary
+    jtsGeom.getBoundary
 
   lazy val vertices: MultiPoint =
     jtsGeom.getCoordinates
 
   lazy val boundingBox: Polygon =
-    geom.getEnvelope match {
+    jtsGeom.getEnvelope match {
       case p: jts.Polygon => Polygon(p)
       case x =>
         sys.error(s"Unexpected result for Line boundingBox: ${x.getGeometryType}")
@@ -67,12 +67,12 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   def &(g: AtLeastOneDimension): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(g)
   def intersection(g: AtLeastOneDimension): OneDimensionAtLeastOneDimensionIntersectionResult =
-    geom.intersection(g.geom)
+    jtsGeom.intersection(g.jtsGeom)
 
   def &(mp: MultiPoint): MultiPointGeometryIntersectionResult =
-    intersection(ps)
+    intersection(mp)
   def intersection(mp: MultiPoint): MultiPointGeometryIntersectionResult =
-    geom.intersection(ps.geom)
+    jtsGeom.intersection(mp.jtsGeom)
 
   // -- Union
 

@@ -19,7 +19,7 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   lazy val isClosed: Boolean =
     jtsGeom.isClosed
 
-  lazy val boundary: LineBoundaryResult =
+  lazy val boundary: OneDimensionBoundaryResult =
     jtsGeom.getBoundary
 
   // -- Intersection
@@ -29,29 +29,29 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
 
-  def &(l: Line): MultiLineIntersectionResult =
+  def &(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(l)
-  def intersection(l: Line): MultiLineIntersectionResult =
+  def intersection(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     l.intersection(this)
 
-  def &(p: Polygon): MultiLineIntersectionResult =
+  def &(p: Polygon): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(p)
-  def intersection(p: Polygon): MultiLineIntersectionResult =
+  def intersection(p: Polygon): OneDimensionAtLeastOneDimensionIntersectionResult =
     p.intersection(this)
 
-  def &(ps: MultiPoint): MultiPointIntersectionResult =
+  def &(ps: MultiPoint): MultiPointGeometryIntersectionResult =
     intersection(ps)
-  def intersection(ps: MultiPoint): MultiPointIntersectionResult =
+  def intersection(ps: MultiPoint): MultiPointGeometryIntersectionResult =
     ps.intersection(this)
 
-  def &(ls: MultiLine): MultiLineIntersectionResult =
+  def &(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(ls)
-  def intersection(ls: MultiLine): MultiLineIntersectionResult =
+  def intersection(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
     jtsGeom.intersection(ls.jtsGeom)
 
-  def &(ps: MultiPolygon): MultiLineIntersectionResult =
+  def &(ps: MultiPolygon): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(ps)
-  def intersection(ps: MultiPolygon): MultiLineIntersectionResult =
+  def intersection(ps: MultiPolygon): OneDimensionAtLeastOneDimensionIntersectionResult =
     jtsGeom.intersection(ps.jtsGeom)
 
   // -- Union

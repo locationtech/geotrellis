@@ -40,12 +40,12 @@ class LineSpec extends FunSpec with ShouldMatchers {
 
     it ("should have a boundary equal to its endpoints") {
       val l = Line(Point(0,0), Point(1,1), Point(2,2))
-      l.boundary should be (PointSetResult(Set(Point(0,0), Point(2,2))))
+      l.boundary should be (MultiPointResult(Set(Point(0,0), Point(2,2))))
     }
 
     it ("should have vertices equal to the set of Points that make up the Line") {
       val l = Line(Point(0,0), Point(1,1), Point(2,2))
-      l.vertices should be (PointSet(Set(Point(0,0), Point(1,1), Point(2,2))))
+      l.vertices should be (MultiPoint(Set(Point(0,0), Point(1,1), Point(2,2))))
     }
 
     it ("should have a Polygon bounding box whose points are (minx, miny), (minx, maxy), (maxx, maxy), (max, miny), (minx, miny)") {
@@ -88,13 +88,13 @@ class LineSpec extends FunSpec with ShouldMatchers {
     it ("should intersect with a Line and return a PointSetResult") {
       val l1 = Line(Point(0,1), Point(4,1))
       val l2 = Line(Point(1,2), Point(1,0), Point(3,0), Point(3,2))
-      l1.intersection(l2) should be (PointSetResult(Set(Point(1,1), Point(3,1))))
+      l1.intersection(l2) should be (MultiPointResult(Set(Point(1,1), Point(3,1))))
     }
 
     it ("should intersect with a Line and return a LineSetResult") {
       val l1 = Line(Point(0,1), Point(4,1))
       val l2 = Line(Point(1,1), Point(0,1), Point(2,0), Point(4,1), Point(3,1))
-      l1.intersection(l2) should be (LineSetResult(Set(Line(Point(0,1), Point(1,1)), Line(Point(3,1), Point(4,1)))))
+      l1.intersection(l2) should be (MultiLineResult(Set(Line(Point(0,1), Point(1,1)), Line(Point(3,1), Point(4,1)))))
     }
 
     it ("should intersect with a Line and return a NoResult") {
@@ -119,7 +119,7 @@ class LineSpec extends FunSpec with ShouldMatchers {
       val l = Line(Point(0,0), Point(2,2))
       val p1 = Point(1,1)
       val p2 = Point(5,5)
-      val ps = PointSet(Set(p1, p2))
+      val ps = MultiPoint(Set(p1, p2))
       l.intersection(ps) should be (PointResult(p1))
     }
 
@@ -127,15 +127,15 @@ class LineSpec extends FunSpec with ShouldMatchers {
       val l = Line(Point(0,0), Point(6,6))
       val p1 = Point(1,1)
       val p2 = Point(5,5)
-      val ps = PointSet(Set(p1, p2))
-      l.intersection(ps) should be (PointSetResult(Set(p1, p2)))
+      val ps = MultiPoint(Set(p1, p2))
+      l.intersection(ps) should be (MultiPointResult(Set(p1, p2)))
     }
 
     it ("should intersect with a PointSet and return a NoResult") {
       val l = Line(Point(10,0), Point(12,2))
       val p1 = Point(1,1)
       val p2 = Point(5,5)
-      val ps = PointSet(Set(p1, p2))
+      val ps = MultiPoint(Set(p1, p2))
       l.intersection(ps) should be (NoResult)
     }
 

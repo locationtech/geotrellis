@@ -87,7 +87,7 @@ case class Point(jtsGeom: jts.Point) extends Geometry
   // -- Buffer
 
   def buffer(d: Double): Polygon =
-    geom.buffer(d) match {
+    jtsGeom.buffer(d) match {
       case p: jts.Polygon => Polygon(p)
       case x =>
         sys.error(s"Unexpected result for Point buffer: ${x.getGeometryType}")
