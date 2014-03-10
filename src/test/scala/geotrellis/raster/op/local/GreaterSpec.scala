@@ -141,7 +141,7 @@ class GreaterSpec extends FunSpec
       }
     }
 
-    it("compares Less on a RasterSource and an int correctly") {
+    it("compares Greater on a RasterSource and an int correctly") {
       val rs1 = RasterSource("quad_tiled")
 
       run(rs1 > 5) match {
@@ -150,6 +150,25 @@ class GreaterSpec extends FunSpec
             for(col <- 0 until result.rasterExtent.cols) {
               val cellResult = result.get(col,row)
               if (result.get(col,row) > 5) cellResult should be (1)
+              else cellResult should be (0)
+            }
+          }
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+      }
+    }
+
+    it("compares Greater on an int and a RasterSource correctly") {
+      val rs1 = RasterSource("quad_tiled")
+
+      run(5 >>: rs1) match {
+        case Complete(result,success) =>
+          for(row <- 0 until result.rasterExtent.rows) {
+            for(col <- 0 until result.rasterExtent.cols) {
+              val cellResult = result.get(col,row)
+              if (5 > result.get(col,row)) cellResult should be (1)
               else cellResult should be (0)
             }
           }
