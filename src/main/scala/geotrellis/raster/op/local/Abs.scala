@@ -12,3 +12,12 @@ object Abs extends Serializable {
                    (z => z.abs))
      .withName("Abs")
 }
+
+/**
+ * Operation to get the Absolute value
+ */
+trait AbsMethods { self: Raster =>
+  /** Takes the Absolute value of each raster cell value. */
+  def localAbs() =
+    Abs(self)
+}
