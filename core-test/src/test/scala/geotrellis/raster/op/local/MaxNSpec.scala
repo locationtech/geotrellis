@@ -4,7 +4,7 @@ import geotrellis._
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 
-import geotrellis.testutil._
+import geotrellis.testkit._
 
 /**
  * Created by jchien on 2/22/14.
