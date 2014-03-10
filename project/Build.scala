@@ -9,13 +9,6 @@ import AssemblyKeys._
 import ls.Plugin.LsKeys
 import ls.Plugin.lsSettings
 
-object Version {
-  val geotrellis = "0.10.0-SNAPSHOT"
-  val scala = "2.10.3"
-  val akka = "2.2.3"
-  val geotools = "9.5"
-}
-
 object Info {
   val description = 
     "GeoTrellis is an open source geographic data processing engine for high performance applications."
@@ -24,12 +17,15 @@ object Info {
 }
 
 object GeotrellisBuild extends Build {
+  import Dependencies._
+
   val key = AttributeKey[Boolean]("javaOptionsPatched")
 
   // Default settings
   override lazy val settings = 
-    super.settings ++
+    super.settings ++ 
     Seq(
+      shellPrompt := { s => Project.extract(s).currentProject.id + " > " },
       version := Version.geotrellis,
       scalaVersion := Version.scala,
       organization := "com.azavea.geotrellis",
@@ -90,49 +86,48 @@ object GeotrellisBuild extends Build {
           case "application.conf" => MergeStrategy.concat
           case "META-INF/MANIFEST.MF" => MergeStrategy.discard
           case "META-INF\\MANIFEST.MF" => MergeStrategy.discard
-          case _ => MergeStrategy.first
+          case _ => MergeStrategy.first 
         }
-      }
+      },
+      resolvers ++= resolutionRepos
     )
 
-  // Project: macros
+  // Project: root
+  lazy val root =
+    Project("root", file("."))
+      .aggregate(core, coreTest)
 
+  // Project: macros
   lazy val macros =
     Project("macros", file("macros"))
       .settings(macrosSettings: _*)
 
-  lazy val macrosSettings =
-    Seq(
-      name := "geotrellis-macros",
-      addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.2" % "2.0.0-SNAPSHOT"),
-      libraryDependencies ++= Seq(
-        "org.scala-lang" % "scala-reflect" % "2.10.2"),
-      resolvers += Resolver.sonatypeRepo("snapshots"))
+  lazy val macrosSettings = Seq(
+    name := "geotrellis-macros",
+    addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.2" % "2.0.0-SNAPSHOT"),
+    libraryDependencies ++= Seq(scalaReflect),
+    resolvers += Resolver.sonatypeRepo("snapshots")
+  )
 
   // Project: feature
-
   lazy val feature =
     Project("feature", file("feature"))
-      .settings(featureSettings:_*)
-
-  lazy val featureSettings = 
-    Seq(
-      name := "geotrellis-feature",
-      libraryDependencies ++= Seq(
-        "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
-        "org.scalacheck" %% "scalacheck" % "1.11.1" % "test",
-        "com.vividsolutions" % "jts" % "1.13"
+      .settings(name := "geotrellis-feature")
+      .settings(libraryDependencies ++= 
+        Seq(
+          scalatest   % "test",
+          scalacheck  % "test",
+          jts
+        )
       )
-    )
 
-  // Project: root
-
-  lazy val root =
-    Project("root", file("."))
-      .settings(rootSettings: _*)
+  // Project: core
+  lazy val core =
+    Project("core", file("core"))
       .dependsOn(macros)
+      .settings(coreSettings: _*)
 
-  lazy val rootSettings =
+  lazy val coreSettings =
     Seq(
       name := "geotrellis",
       parallelExecution := false,
@@ -141,30 +136,18 @@ object GeotrellisBuild extends Build {
       scalacOptions in compile ++=
         Seq("-optimize"),
       libraryDependencies ++= Seq(
-        "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
-        "org.scala-lang" % "scala-reflect" % "2.10.2",
-        "com.vividsolutions" % "jts" % "1.12",
-        "com.typesafe.akka" %% "akka-kernel" % Version.akka,
-        "com.typesafe.akka" %% "akka-remote" % Version.akka,
-        "com.typesafe.akka" %% "akka-actor" % Version.akka,
-        "com.typesafe.akka" %% "akka-cluster" % Version.akka,
-        "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
-        "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1",
-        "org.spire-math" %% "spire" % "0.4.0",
-        "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided",
-        "io.spray"       % "spray-client" % "1.2.0", // for reading args from URLs,
-        "io.spray"       % "spray-routing" % "1.2.0" % "test",
-        "org.apache.commons" % "commons-math3" % "3.2"
-      ),
-
-      resolvers ++= Seq(
-        "NL4J Repository" at "http://nativelibs4java.sourceforge.net/maven/",
-        "maven2 dev repository" at "http://download.java.net/maven/2",
-        "Scala Test" at "http://www.scala-tools.org/repo-reloases/",
-        "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
-        "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
-        "spray repo" at "http://repo.spray.io/",
-        "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
+        scalatest % "test",
+        scalaReflect,
+        jts,
+        akkaKernel,
+        akkaRemote,
+        akkaActor,
+        akkaCluster,
+        jacksonCore,
+        jacksonMapper,
+        scalaxyLoops % "provided",
+        sprayClient, // for reading args from URLs,
+        apacheMath
       )
     ) ++
     defaultAssemblySettings
@@ -178,120 +161,133 @@ object GeotrellisBuild extends Build {
         Info.description
     )
 
+  // Project: core-test
+  lazy val coreTest =
+    Project("core-test", file("core-test"))
+      .dependsOn(core, testkit)
+      .settings(coreTestSettings: _*)      
+      
+  lazy val coreTestSettings =
+    Seq(
+      name := "geotrellis-test",
+      parallelExecution := false,
+      fork in test := false,
+      javaOptions in run += "-Xmx2G",
+      scalacOptions in compile ++=
+        Seq("-optimize"),
+      libraryDependencies ++= Seq(
+        akkaActor % "test",
+        scalatest % "test",      
+        scalaxyLoops % "test",
+        sprayClient % "test",
+        sprayRouting % "test"
+      )
+    ) ++
+    defaultAssemblySettings
+  
+  // Project: testkit
+  lazy val testkit: Project =
+    Project("testkit", file("testkit"))
+      .dependsOn(core)
+      .settings(name := "geotrellis-testkit")
+      .settings(libraryDependencies += scalatest)
+        
 
   // Project: services
-
   lazy val services: Project =
     Project("services", file("services"))
-      .settings(servicesSettings: _*)
-      .dependsOn(root)
-
-  lazy val servicesSettings =
-    Seq(
-      name := "geotrellis-services"
-    )
+      .dependsOn(core)
+      .settings(name := "geotrellis-services")
 
   // Project: jetty
-
   lazy val jetty: Project =
     Project("jetty", file("jetty"))
       .settings(jettySettings: _*)
-      .dependsOn(root,services)
+      .dependsOn(core,services)
 
   lazy val jettySettings =
     Seq(
       name := "geotrellis-jetty",
       libraryDependencies ++= Seq(
-        "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4",
-        "com.sun.jersey" % "jersey-bundle" % "1.11",
-        "org.slf4j" % "slf4j-api" % "1.6.0",
-        "org.slf4j" % "slf4j-nop" % "1.6.0",
-        "asm" % "asm" % "3.3.1" )
+        jettyWebapp,
+        jerseyBundle,
+        slf4jApi,
+        slf4jNop,
+        asm
+      )
     ) ++
     defaultAssemblySettings
 
-
   // Project: admin
-
   lazy val admin: Project =
     Project("admin", file("admin"))
       .settings(adminSettings: _*)
-      .dependsOn(root,services)
+      .dependsOn(core,services)
 
   lazy val adminSettings =
     Seq(
       name := "geotrellis-admin",
       libraryDependencies ++= Seq(
-        "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
-        "io.spray" % "spray-testkit" % "1.2.0" % "test",
-        "io.spray" % "spray-routing" % "1.2.0",
-        "io.spray" % "spray-can" % "1.2.0",
-        "io.spray" % "spray-httpx" % "1.2.0"
-      ),
-      resolvers ++= Seq(
-        "spray repo" at "http://repo.spray.io"
+        scalatest % "test",
+        sprayTestkit % "test",
+        sprayRouting,
+        sprayCan,
+        sprayHttpx
       )
     ) ++ 
     spray.revolver.RevolverPlugin.Revolver.settings ++
     defaultAssemblySettings
 
   // Project: spark
-
   lazy val spark: Project =
-    Project("spark", file("geotrellis-spark"))
+    Project("spark", file("spark"))
       .settings(sparkSettings: _*)
-      .dependsOn(root)
+      .dependsOn(core, testkit % "test")
       .dependsOn(geotools)
 
   lazy val sparkSettings =
     Seq(
       name := "geotrellis-spark",
+      parallelExecution in Test := false,
       libraryDependencies ++= 
         Seq(
           // first two are just to quell the UnsupportedOperationException in Hadoop's Configuration
           // http://itellity.wordpress.com/2013/05/27/xerces-parse-error-with-hadoop-or-solr-feature-httpapache-orgxmlfeaturesxinclude-is-not-recognized/
           "xerces" % "xercesImpl" % "2.9.1",
           "xalan" % "xalan" % "2.7.1",
-          "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
           "org.apache.spark" %% "spark-core" % "0.9.0-incubating" excludeAll (
               ExclusionRule(organization = "org.apache.hadoop")),
           "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4",
           "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0",
-          "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided",
-	      "com.quantifind" %% "sumac" % "0.2.3",
-	      "commons-io" % "commons-io" % "2.4"
+          "com.quantifind" %% "sumac" % "0.2.3",
+	        "commons-io" % "commons-io" % "2.4",
+          scalaxyLoops % "provided",
+          scalatest % "test"
         ),
-      resolvers ++= Seq(
-        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos",
-        "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots")
+      resolvers += "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
     ) ++ 
     defaultAssemblySettings ++ 
     net.virtualvoid.sbt.graph.Plugin.graphSettings
-
+    
   // Project: geotools
 
   lazy val geotools: Project =
     Project("geotools", file("geotools"))
       .settings(geotoolsSettings: _*)
-      .dependsOn(root % "test->test;compile->compile")
+      .dependsOn(core % "test->test;compile->compile")
+      .dependsOn(testkit % "test")
 
   lazy val geotoolsSettings =
     Seq(
       name := "geotrellis-geotools",
       libraryDependencies ++= 
         Seq(
-          "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
           "java3d" % "j3d-core" % "1.3.1",
           "org.geotools" % "gt-main" % Version.geotools,
-//          "org.geotools" % "gt-jdbc" % Version.geotools,
-//          "org.geotools.jdbc" % "gt-jdbc-postgis" % Version.geotools,
           "org.geotools" % "gt-coverage" % Version.geotools,
           "org.geotools" % "gt-shapefile" % Version.geotools,
           "org.geotools" % "gt-geotiff" % Version.geotools,
           "org.geotools" % "gt-epsg-hsql" % Version.geotools,
-//          "org.geotools" % "gt-coveragetools" % Version.geotools,
-
-//          "org.postgis" % "postgis-jdbc" % "1.3.3",
           "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
         ),
       resolvers ++= 
@@ -306,18 +302,14 @@ object GeotrellisBuild extends Build {
   lazy val dev: Project =
     Project("dev", file("dev"))
       .settings(devSettings: _*)
-      .dependsOn(root)
+      .dependsOn(core)
 
   lazy val devSettings =
     Seq(
       libraryDependencies ++= 
         Seq(
-          "org.scala-lang" % "scala-reflect" % "2.10.2",
-          "org.hyperic" % "sigar" % "1.6.4"
-        ),
-      resolvers ++= 
-        Seq(
-          "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
+          scalaReflect,
+          sigar
         ),
       Keys.fork in run := true,
       fork := true,
@@ -329,24 +321,22 @@ object GeotrellisBuild extends Build {
     defaultAssemblySettings
 
   // Project: demo
-
   lazy val demo: Project =
     Project("demo", file("demo"))
       .dependsOn(jetty)
 
   // Project: tasks
-
   lazy val tasks: Project =
     Project("tasks", file("tasks"))
       .settings(tasksSettings: _*)
-      .dependsOn(root, geotools)
+      .dependsOn(core, geotools)
 
   lazy val tasksSettings =
     Seq(
       libraryDependencies ++= 
         Seq(
-          "com.beust" % "jcommander" % "1.23",
-          "org.reflections" % "reflections" % "0.9.5"
+          jcommander,
+          reflections
         ),
       libraryDependencies <+= 
         (sbtVersion) { v =>
@@ -376,9 +366,9 @@ object GeotrellisBuild extends Build {
     Seq(
       name := "geotrellis-feature-benchmark",
       libraryDependencies ++= Seq(
-        "org.scalatest" % "scalatest_2.10" % "2.0.M5b" % "test",
-        "org.scalacheck" %% "scalacheck" % "1.11.1" % "test",
-        "com.vividsolutions" % "jts" % "1.13"
+        scalatest % "test",
+        scalacheck % "test", 
+        jts
       )
     )
 
@@ -387,7 +377,7 @@ object GeotrellisBuild extends Build {
   lazy val benchmark: Project =
     Project("benchmark", file("benchmark"))
       .settings(benchmarkSettings: _*)
-      .dependsOn(root,geotools)
+      .dependsOn(core,geotools)
 
   def benchmarkSettings =
     Seq(
@@ -395,21 +385,13 @@ object GeotrellisBuild extends Build {
       javaOptions += "-Xmx8G",
 
       libraryDependencies ++= Seq(
+        "org.spire-math" %% "spire" % "0.7.1",
+        scalaxyLoops % "provided",
         "com.google.guava" % "guava" % "r09",
         "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
         "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
           from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
-        "com.google.code.gson" % "gson" % "1.7.1",
-        "org.spire-math" %% "spire" % "0.7.1",
-        "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided"
-      ),
-      resolvers ++= Seq(
-        "NL4J Repository" at "http://nativelibs4java.sourceforge.net/maven/",
-        "maven2 dev repository" at "http://download.java.net/maven/2",
-        "Scala Test" at "http://www.scala-tools.org/repo-reloases/",
-        "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
-        "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository",
-        "sonatypeSnapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
+        "com.google.code.gson" % "gson" % "1.7.1"
       ),
 
       // enable forking in both run and test

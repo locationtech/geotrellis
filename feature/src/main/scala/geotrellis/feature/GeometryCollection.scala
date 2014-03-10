@@ -8,9 +8,20 @@ import scala.collection.mutable
 class GeometryCollection(val points: Set[Point],
                          val lines: Set[Line],
                          val polygons: Set[Polygon],
-                         val geom: jts.GeometryCollection) {
+                         val jtsGeom: jts.GeometryCollection) extends Geometry {
 
-  lazy val area: Double = geom.getArea
+  lazy val area: Double =
+    jtsGeom.getArea
+
+  override def equals(that: Any): Boolean = {
+    that match {
+      case other: GeometryCollection => jtsGeom == other.jtsGeom
+      case _ => false
+    }
+  }
+
+  override def hashCode(): Int  =
+    jtsGeom.hashCode()
 }
 
 object GeometryCollection {
@@ -18,17 +29,18 @@ object GeometryCollection {
   implicit def jtsToGeometryCollection(gc: jts.GeometryCollection): GeometryCollection =
     apply(gc)
 
-  def apply(points: Set[Point], lines: Set[Line], polygons: Set[Polygon]): GeometryCollection = {
-    val geom = factory.createGeometryCollection((points ++ lines ++ polygons).map(_.geom).toArray)
-    new GeometryCollection(points, lines, polygons, geom)
+  def apply(points: Set[Point] = Set(), lines: Set[Line] = Set(), polygons: Set[Polygon] = Set()): GeometryCollection = {
+    val jtsGeom = factory.createGeometryCollection((points ++ lines ++ polygons).map(_.jtsGeom).toArray)
+    new GeometryCollection(points, lines, polygons, jtsGeom)
   }
 
-  def apply(gc: jts.GeometryCollection) = {
+  def apply(gc: jts.GeometryCollection): GeometryCollection = {
     val (points, lines, polygons) = collectGeometries(gc)
     new GeometryCollection(points, lines, polygons, gc)
   }
 
-  def unapply(gc: GeometryCollection) = Some((gc.points, gc.lines, gc.polygons))
+  def unapply(gc: GeometryCollection): Some[(Set[Point], Set[Line], Set[Polygon])] =
+    Some((gc.points, gc.lines, gc.polygons))
 
   @inline final private 
   def collectGeometries(gc: jts.GeometryCollection): (Set[Point], Set[Line], Set[Polygon]) = {
