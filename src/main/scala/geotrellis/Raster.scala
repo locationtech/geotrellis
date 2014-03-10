@@ -50,6 +50,7 @@ trait Raster extends local.AddMethods
                 with local.AbsMethods
                 with local.SinMethods
                 with local.CosMethods
+                with local.TanMethods
                 with local.SinhMethods
                 with local.ConditionalMethods
                 with local.PowMethods {
