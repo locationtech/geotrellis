@@ -28,7 +28,9 @@ trait LocalOpMethods[+Repr <: RasterSource]
      with LessOrEqualOpMethods[Repr] 
      with ConditionalOpMethods[Repr] 
      with MajorityOpMethods[Repr] 
-     with MinorityOpMethods[Repr] 
+     with MinorityOpMethods[Repr]
+     with MinNOpMethods[Repr]
+     with MaxNOpMethods[Repr]
      with VarietyOpMethods[Repr] { self: Repr =>
   def localCombine[That](rs:RasterSource)
                    (f:(Int,Int)=>Int)
