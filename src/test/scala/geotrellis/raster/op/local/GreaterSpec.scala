@@ -122,7 +122,7 @@ class GreaterSpec extends FunSpec
       }
     }
 
-    it("adds two tiled RasterSources correctly") {
+    it("compares Greater on two tiled RasterSources correctly") {
       val rs1 = RasterSource("quad_tiled")
       val rs2 = RasterSource("quad_tiled2")
 
@@ -132,6 +132,25 @@ class GreaterSpec extends FunSpec
           for(row <- 0 until result.rasterExtent.rows) {
             for(col <- 0 until result.rasterExtent.cols) {
               result.get(col,row) should be (0)
+            }
+          }
+        case Error(msg,failure) =>
+          println(msg)
+          println(failure)
+          assert(false)
+      }
+    }
+
+    it("compares Less on a RasterSource and an int correctly") {
+      val rs1 = RasterSource("quad_tiled")
+
+      run(rs1 > 5) match {
+        case Complete(result,success) =>
+          for(row <- 0 until result.rasterExtent.rows) {
+            for(col <- 0 until result.rasterExtent.cols) {
+              val cellResult = result.get(col,row)
+              if (result.get(col,row) > 5) cellResult should be (1)
+              else cellResult should be (0)
             }
           }
         case Error(msg,failure) =>

@@ -33,6 +33,12 @@ trait GreaterOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell value of the input raster is greater than the input
    * integer, else 0.
    */
+  def localGreaterRightAssociative(i: Int) = self.mapOp(Greater(i, _))
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is greater than the input
+   * integer, else 0.
+   */
   def >(i:Int) = localGreater(i)
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
@@ -41,13 +47,19 @@ trait GreaterOpMethods[+Repr <: RasterSource] { self: Repr =>
    * 
    * @note Syntax has double '>' due to '>:' operator being reserved in Scala.
    */
-  def >>:(i:Int) = localGreater(i)
+  def >>:(i:Int) = localGreaterRightAssociative(i)
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * double, else 0.
    */
   def localGreater(d: Double) = self.mapOp(Greater(_, d))
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is greater than the input
+   * double, else 0.
+   */
+  def localGreaterRightAssociative(d: Double) = self.mapOp(Greater(d, _))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
@@ -61,7 +73,7 @@ trait GreaterOpMethods[+Repr <: RasterSource] { self: Repr =>
    * 
    * @note Syntax has double '>' due to '>:' operator being reserved in Scala.
    */
-  def >>:(d:Double) = localGreater(d)
+  def >>:(d:Double) = localGreaterRightAssociative(d)
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than the next raster, else 0.
@@ -86,6 +98,12 @@ trait GreaterMethods { self: Raster =>
    * the corresponding cell value of the input raster is greater than the input
    * integer, else 0.
    */
+  def localGreaterRightAssociative(i: Int) = Greater(i, self)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is greater than the input
+   * integer, else 0.
+   */
   def >(i:Int) = localGreater(i)
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
@@ -94,13 +112,19 @@ trait GreaterMethods { self: Raster =>
    * 
    * @note Syntax has double '>' due to '>:' operator being reserved in Scala.
    */
-  def >>:(i:Int) = localGreater(i)
+  def >>:(i:Int) = localGreaterRightAssociative(i)
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * double, else 0.
    */
   def localGreater(d: Double) = Greater(self, d)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is greater than the input
+   * double, else 0.
+   */
+  def localGreaterRightAssociative(d: Double) = Greater(d, self)
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
@@ -114,7 +138,7 @@ trait GreaterMethods { self: Raster =>
    * 
    * @note Syntax has double '>' due to '>:' operator being reserved in Scala.
    */
-  def >>:(d:Double) = localGreater(d)
+  def >>:(d:Double) = localGreaterRightAssociative(d)
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than the next raster, else 0.
