@@ -38,71 +38,70 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
 
   def combine[B,C,That](ds:DataSource[B,_])
                        (f:(T,B)=>C)
-                       (implicit bf:CanBuildSourceFrom[Repr,C,That]):That = {
-    val newElements:Op[Seq[Op[C]]] =
-      (elements,ds.elements).map { (e1,e2) =>
-        e1.zip(e2).map { case (a,b) => 
-          (a,b).map(f(_,_))
-        }
-      }
+                       (implicit bf:CanBuildSourceFrom[Repr,C,That]):That = 
+    _combineOp(ds)( { (a,b) => (a,b).map(f(_,_)) }, bf.apply(this), None)
 
-    val builder = bf.apply(this)
-    builder.setOp(newElements)
-    builder.result
-  }
+  def combine[B,C,That](ds:DataSource[B,_], label: String)
+                       (f:(T,B)=>C)
+                       (implicit bf:CanBuildSourceFrom[Repr,C,That]):That = 
+    _combineOp(ds)( { (a,b) => (a,b).map(f(_,_)) }, bf.apply(this), Some(label))
 
   def combine[T1 >: T,B,That](dss:Seq[DataSource[T1,_]])
                              (f:Seq[T1]=>B)
-                             (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
-    val newElements:Op[Seq[Op[B]]] =
-      (elements +: dss.map(_.elements)).mapOps { seq =>
-        seq.transpose.map(_.mapOps(f(_)))
-      }
+                             (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = 
+    _combineOp(dss)(_.mapOps(f(_)), bf.apply(this), None)
 
-    val builder = bf.apply(this)
-    builder.setOp(newElements)
-    builder.result
-  }
+  def combine[T1 >: T,B,That](dss:Seq[DataSource[T1,_]], label: String)
+                             (f:Seq[T1]=>B)
+                             (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = 
+    _combineOp(dss)(_.mapOps(f(_)), bf.apply(this), Some(label))
 
   def combineOp[B,C,That](ds:DataSource[B,_])
                          (f:(Op[T],Op[B])=>Op[C])
-                         (implicit bf:CanBuildSourceFrom[Repr,C,That]):That = {
-    val newElements:Op[Seq[Op[C]]] =
-      ((elements,ds.elements).map { (e1,e2) =>
-        e1.zip(e2).map { case (a,b) => 
-          f(a,b) 
-        }
-      }).withName("combineOp-map")
-
-    val builder = bf.apply(this)
-    builder.setOp(newElements)
-    builder.result
-  }
-
-  def combineOp[B,C,That](ds:DataSource[B,_])
-                         (f:(Op[T],Op[B])=>Op[C])
-                         (implicit bf:CanBuildSourceFrom[Repr,C,That]):That = {
-    val newElements:Op[Seq[Op[C]]] =
-      ((elements,ds.elements).map { (e1,e2) =>
-        e1.zip(e2).map { case (a,b) => 
-          f(a,b) 
-        }
-      }).withName("combineOp-map")
-
-    val builder = bf.apply(this)
-    builder.setOp(newElements)
-    builder.result
-  }
+                         (implicit bf:CanBuildSourceFrom[Repr,C,That]):That =
+    _combineOp(ds)(f, bf.apply(this), None)
 
   def combineOp[T1 >: T,B,That](dss:Seq[DataSource[T1,_]])
                                (f:Seq[Op[T1]]=>Op[B])
-                               (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
+                               (implicit bf:CanBuildSourceFrom[Repr,B,That]):That =
+    _combineOp(dss)(f, bf.apply(this), None)
+
+  private 
+  def _combineOp[T1 >: T,B,That](dss:Seq[DataSource[T1,_]])
+                                (f:Seq[Op[T1]]=>Op[B], builder: SourceBuilder[B, That], 
+                                                       label: Option[String]): That = {
+    val name = 
+      label match {
+        case Some(l) => s"${self.getClass.getSimpleName} combine[$l]"
+        case None => s"${self.getClass.getSimpleName} combine"
+      }
+
     val newElements:Op[Seq[Op[B]]] =
       (elements +: dss.map(_.elements)).mapOps { seq =>
         seq.transpose.map(f)
+      }.withName(name)
+
+    builder.setOp(newElements)
+    builder.result
+  }
+
+  private 
+  def _combineOp[B, C, That](ds: DataSource[B, _])
+                            (f:(Op[T],Op[B])=>Op[C], builder: SourceBuilder[C, That],
+                                                     label: Option[String]): That = {
+    val name = 
+      label match {
+        case Some(l) => s"${self.getClass.getSimpleName} combine[$l]"
+        case None => s"${self.getClass.getSimpleName} combine"
       }
 
-    val builder = bf.apply(this)
+    val newElements:Op[Seq[Op[C]]] =
+      ((elements,ds.elements).map { (e1,e2) =>
+        e1.zip(e2).map { case (a,b) => 
+          f(a,b) 
+        }
+      }).withName(name)
+
     builder.setOp(newElements)
     builder.result
   }

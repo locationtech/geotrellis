@@ -11,7 +11,7 @@ object Acos extends Serializable {
   * Always returns a double tiled raster.
   * If the absolute value of the cell value is > 1, it will be NaN.
   */
-  def apply(r:Op[Raster]) =
-    r.map(y => y.convert(TypeDouble).mapDouble(z => math.acos(z)))
-     .withName("Acos")
+  def apply(r: Raster): Raster =
+    r.convert(TypeDouble)
+     .mapDouble(z => math.acos(z))
 }

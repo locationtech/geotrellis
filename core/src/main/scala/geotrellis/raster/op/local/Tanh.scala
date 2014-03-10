@@ -10,8 +10,7 @@ object Tanh extends Serializable {
    * Takes the hyperbolic tan of each raster cell value.
    * Always returns a double raster.
    */
-  def apply(r:Op[Raster]) = 
-    r.map(_.convert(TypeDouble)
-           .mapDouble(z => math.tanh(z)))
-     .withName("Tanh")
+  def apply(r: Raster): Raster = 
+    r.convert(TypeDouble)
+     .mapDouble(z => math.tanh(z))
 }

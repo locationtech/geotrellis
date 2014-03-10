@@ -7,7 +7,7 @@ import geotrellis._
  */
 object Floor extends Serializable {
   /** Takes the Flooring of each raster cell value. */
-  def apply(r:Op[Raster]) = 
+  def apply(r: Raster) = 
     r.dualMap { z: Int => z }
               { z: Double => math.floor(z) } // math.floor(Double.NaN) == Double.NaN
 }

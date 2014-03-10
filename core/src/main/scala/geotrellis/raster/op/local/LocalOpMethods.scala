@@ -122,49 +122,49 @@ trait LocalOpMethods[+Repr <: RasterSource]
 
   /** Masks this raster based on cell values of the second raster. See [[Mask]]. */
   def localMask(rs:RasterSource,readMask:Int,writeMask:Int): RasterSource = 
-    combine(rs)(Mask(_,_,readMask,writeMask), "localMask")
+    combine(rs, "localMask")(Mask(_,_,readMask,writeMask))
 
   /** InverseMasks this raster based on cell values of the second raster. See [[InverseMask]]. */
   def localInverseMask(rs:RasterSource,readMask:Int,writeMask:Int): RasterSource = 
-    combine(rs)(InverseMask(_,_,readMask,writeMask), "localMask")
+    combine(rs, "localMask")(InverseMask(_,_,readMask,writeMask))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
-  def localMean(rss:Seq[RasterSource]): RasterSource = 
-    combineOp(rss)(Mean(_))
+  def localMean(rss: Seq[RasterSource]): RasterSource = 
+    combine(rss, "Mean")(Mean(_))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
   def localMean(rss:RasterSource*)(implicit d:DI): RasterSource = 
     localMean(rss)
 
   /** Takes the sine of each raster cell value. */
-  def localSin(): RasterSource = mapOp(Sin(_))
+  def localSin(): RasterSource = map(Sin(_), "Sin")
 
   /** Takes the cosine of each raster cell value. */
-  def localCos(): RasterSource = mapOp(Cos(_))
+  def localCos(): RasterSource = map(Cos(_), "Cos")
 
   /** Takes the tangent of each raster cell value. */
-  def localTan(): RasterSource = mapOp(Tan(_))
+  def localTan(): RasterSource = map(Tan(_), "Tan")
 
   /** Takes the sineh of each raster cell value. */
-  def localSinh(): RasterSource = mapOp(Sinh(_))
+  def localSinh(): RasterSource = map(Sinh(_), "Sinh")
 
   /** Takes the cosineh of each raster cell value. */
-  def localCosh(): RasterSource = mapOp(Cosh(_))
+  def localCosh(): RasterSource = map(Cosh(_), "Cosh")
 
   /** Takes the tangenth of each raster cell value. */
-  def localTanh(): RasterSource = mapOp(Tanh(_))
+  def localTanh(): RasterSource = map(Tanh(_), "Tanh")
 
   /** Takes the arc sine of each raster cell value. */
-  def localAsin(): RasterSource = mapOp(Asin(_))
+  def localAsin(): RasterSource = map(Asin(_), "Asin")
 
   /** Takes the arc cosine of each raster cell value. */
-  def localAcos(): RasterSource = mapOp(Acos(_))
+  def localAcos(): RasterSource = map(Acos(_), "Acos")
 
   /** Takes the arc tangent of each raster cell value. */
-  def localAtan(): RasterSource = mapOp(Atan(_))
+  def localAtan(): RasterSource = map(Atan(_), "Atan")
 
   /** Takes the arc tangent 2 of each raster cell value. */
-  def localAtan2(rs: RasterSource): RasterSource = combineOp(rs)(Atan2(_,_))
+  def localAtan2(rs: RasterSource): RasterSource = combine(rs, "Atan2")(Atan2(_,_))
 
   /** Masks this raster by the given GeoJSON. */
   def mask(geoJson: String): RasterSource =

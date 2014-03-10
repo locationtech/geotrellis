@@ -10,8 +10,7 @@ object Sin extends Serializable {
     * Takes the sine of each raster cell value.
     * Always returns a double raster.
     */
-  def apply(r:Op[Raster]) = 
-    r.map(_.convert(TypeDouble)
-           .mapDouble(z => math.sin(z)))
-     .withName("Sin")
+  def apply(r: Raster): Raster = 
+    r.convert(TypeDouble)
+     .mapDouble(z => math.sin(z))
 }
