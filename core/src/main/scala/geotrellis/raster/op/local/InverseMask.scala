@@ -11,17 +11,7 @@ object InverseMask extends Serializable {
  * For example, if *all* cells in the second raster are set to the readMask value,
  * the output raster will be identical to the first raster.
  */
-  def apply(r1:Op[Raster], r2:Op[Raster], readMask:Op[Int], writeMask:Op[Int]) =
-    (r1,r2,readMask,writeMask).map { (r1,r2,readMask,writeMask) =>
-      r1.dualCombine(r2)((z1,z2) => 
-        if (z2 == readMask) z1 else writeMask
-      )((z1,z2) => 
-        if (d2i(z2) == readMask) z1 else i2d(writeMask)
-      )
-    }.withName("InverseMask")
-}
-
-trait InverseMaskMethods { self: Raster =>
-  def localInverseMask(r:Raster, readMask:Int, writeMask:Int) =
-    InverseMask(self, r, readMask, writeMask)
+  def apply(r1: Raster, r2: Raster, readMask: Int, writeMask: Int): Raster =
+    r1.dualCombine(r2) { (z1: Int,z2: Int) => if (z2 == readMask) z1 else writeMask }
+                       { (z1: Double,z2: Double) => if (d2i(z2) == readMask) z1 else i2d(writeMask) }
 }

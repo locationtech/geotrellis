@@ -7,16 +7,7 @@ import geotrellis.process._
  * Negate (multiply by -1) each value in a raster.
  */
 object Negate extends Serializable {
-  def apply(r:Op[Raster]) = 
-    r.map(_.dualMap(z => if(isNoData(z)) z else -z)
-                   (z => if(isNoData(z)) z else -z))
-     .withName("Negate[Raster]")
-}
-
-/**
- * Negate (multiply by -1) each value in a raster.
- */
-trait NegateMethods { self: Raster =>
-  def localNegate() =
-    Negate(self)
+  def apply(r: Raster): Raster = 
+    r.dualMap { z: Int => if(isNoData(z)) z else -z }
+              { z: Double => if(isNoData(z)) z else -z }
 }
