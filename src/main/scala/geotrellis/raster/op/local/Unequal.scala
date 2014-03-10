@@ -69,3 +69,52 @@ trait UnequalOpMethods[+Repr <: RasterSource] { self: Repr =>
    */
   def !==(rs:RasterSource) = localUnequal(rs)
 }
+
+trait UnequalMethods { self: Raster =>
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * integer, else 0.
+   */
+  def localUnequal(i: Int) = Unequal(self, i)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * integer, else 0.
+   */
+  def !==(i:Int) = localUnequal(i)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * integer, else 0.
+   */
+  def !==:(i:Int) = localUnequal(i)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * intenger, else 0.
+   */
+  def localUnequal(d: Double) = Unequal(self, d)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * double, else 0.
+   */
+  def !==(d:Double) = localUnequal(d)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * double, else 0.
+   */
+  def !==:(d:Double) = localUnequal(d)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the rasters are not equal, else 0.
+   */
+  def localUnequal(r:Raster) = Unequal(self,r)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the raster are not equal, else 0.
+   */
+  def !==(r:Raster) = localUnequal(r)
+}
