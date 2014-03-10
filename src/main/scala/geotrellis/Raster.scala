@@ -54,6 +54,7 @@ trait Raster extends local.AddMethods
                 with local.AsinMethods
                 with local.AcosMethods
                 with local.AtanMethods
+                with local.Atan2Methods
                 with local.SinhMethods
                 with local.ConditionalMethods
                 with local.PowMethods {
