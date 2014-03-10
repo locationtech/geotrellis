@@ -69,3 +69,52 @@ trait EqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    */
   def ===(rs:RasterSource) = localEqual(rs)
 }
+
+trait EqualMethods {self: Raster =>
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * integer, else 0.
+   */
+  def localEqual(i: Int) = Equal(self, i)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * integer, else 0.
+   */
+  def ====(i:Int) = localEqual(i)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * integer, else 0.
+   */
+  def ====:(i:Int) = localEqual(i)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * double, else 0.
+   */
+  def localEqual(d: Double) = Equal(self, d)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * double, else 0.
+   */
+  def ====(d:Double) = localEqual(d)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell value of the input raster is equal to the input
+   * double, else 0.
+   */
+  def ====:(d:Double) = localEqual(d)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the rasters are equal, else 0.
+   */
+  def localEqual(r:Raster) = Equal(self,r)
+  /**
+   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * the corresponding cell valued of the raster are equal, else 0.
+   */
+  def ====(r:Raster) = localEqual(r)
+}
