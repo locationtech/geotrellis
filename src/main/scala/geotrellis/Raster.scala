@@ -43,6 +43,7 @@ trait Raster extends local.AddMethods
                 with local.XorMethods
                 with local.EqualMethods
                 with local.UnequalMethods
+                with local.GreaterMethods
                 with local.ConditionalMethods
                 with local.PowMethods {
   val rasterExtent:RasterExtent
