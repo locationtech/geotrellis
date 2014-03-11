@@ -146,6 +146,8 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   def crosses(g: AtLeastOneDimension): Boolean =
     jtsGeom.crosses(g.jtsGeom)
 
+  /** A Line crosses a MultiPoint when it covers
+      some points but does not cover others */
   def crosses(mp: MultiPoint): Boolean =
     jtsGeom.crosses(mp.jtsGeom)
 

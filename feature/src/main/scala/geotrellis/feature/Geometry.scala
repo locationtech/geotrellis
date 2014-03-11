@@ -18,6 +18,7 @@ trait Geometry {
   def interiorPoint: PointOrNoResult = 
     jtsGeom.getInteriorPoint 
 
+  // TODO: decide if this should be the Object.equals() override
   def equals(g: Geometry): Boolean =
     jtsGeom.equals(g)
 
