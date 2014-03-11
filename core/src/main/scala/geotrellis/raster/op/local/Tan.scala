@@ -7,8 +7,7 @@ import geotrellis._
  */
 object Tan extends Serializable {
   /** Takes the Tangent of each raster cell value. */
-  def apply(r:Op[Raster]) = 
-    r.map(_.convert(TypeDouble)
-           .mapDouble(z => math.tan(z)))
-     .withName("Tan")
+  def apply(r: Raster): Raster =
+    r.convert(TypeDouble)
+     .mapDouble(z => math.tan(z))
 }

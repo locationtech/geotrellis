@@ -9,8 +9,7 @@ object Cos extends Serializable {
   /** Takes the Cosine of each raster cell value.
     * Always returns a double raster.
     */
-  def apply(r:Op[Raster]) =
-    r.map(y => y.convert(TypeDouble) 
-                .mapDouble(z => math.cos(z)))
-     .withName("Cos")
+  def apply(r: Raster): Raster =
+    r.convert(TypeDouble) 
+     .mapDouble(z => math.cos(z))
 }

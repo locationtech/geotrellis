@@ -7,16 +7,7 @@ import geotrellis._
  */
 object Ceil extends Serializable {
   /** Takes the Ceiling of each raster cell value. */
-  def apply(r:Op[Raster]) = 
-    r.map(_.dualMap(z => z)(z => math.ceil(z))) // math.ceil(Double.NaN) == Double.NaN
-     .withName("Ceil")
-}
-
-/**
- * Operation to get the ceiling of values.
- */
-trait CeilMethods { self: Raster =>
-  /** Takes the Ceiling of each raster cell value. */
-  def localCeil() =
-    Ceil(self)
+  def apply(r: Raster): Raster = 
+    r.dualMap { z: Int => z }
+              { z: Double => math.ceil(z) } // math.ceil(Double.NaN) == Double.NaN
 }

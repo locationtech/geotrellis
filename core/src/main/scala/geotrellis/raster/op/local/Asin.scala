@@ -9,7 +9,7 @@ import geotrellis._
  */
 object Asin extends Serializable {
   /** Takes the arc sine of each raster cell value. */
-  def apply(r:Op[Raster]) =
-    r.map(_.convert(TypeDouble).mapDouble (z => math.asin(z))) 
-     .withName("Asin")
+  def apply(r: Raster): Raster =
+    r.convert(TypeDouble)
+     .mapDouble (z => math.asin(z))
 }

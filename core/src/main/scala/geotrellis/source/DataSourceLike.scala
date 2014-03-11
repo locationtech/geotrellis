@@ -13,17 +13,97 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
 
   /** apply a function to elements, and return the appropriate datasource **/
   def map[B,That](f:T => B)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = 
-    _mapOp(op(f(_)),bf.apply(this))
+    _mapOp(op(f(_)), None, bf.apply(this))
+
+  /** apply a function to elements, and return the appropriate datasource **/
+  def map[B,That](f:T => B, label: String)(implicit bf:CanBuildSourceFrom[Repr,B,That]):That = 
+    _mapOp(op(f(_)), Some(label), bf.apply(this))
 
   /** apply a function to element operations, and return the appropriate datasource **/
   def mapOp[B,That](f:Op[T] => Op[B])(implicit bf:CanBuildSourceFrom[Repr,B,That]):That =  
-    _mapOp(f,bf.apply(this))
+    _mapOp(f, None, bf.apply(this))
 
-  private def _mapOp[B,That](f:Op[T]=>Op[B],builder:SourceBuilder[B,That]) = {
-    val newOp = elements.map(_.map(f)).withName(s"${self.getClass.getSimpleName} map")
+  private def _mapOp[B,That](f:Op[T]=>Op[B], label: Option[String], builder:SourceBuilder[B,That]) = {
+    val name = 
+      label match {
+        case Some(l) => s"${self.getClass.getSimpleName} map[$l]"
+        case None => s"${self.getClass.getSimpleName} map"
+      }
+
+    val newOp = elements.map(_.map(f)).withName(name)
     builder.setOp(newOp)
     val result = builder.result()
     result
+  }
+
+  def combine[B,C,That](ds:DataSource[B,_])
+                       (f:(T,B)=>C)
+                       (implicit bf:CanBuildSourceFrom[Repr,C,That]):That = 
+    _combineOp(ds)( { (a,b) => (a,b).map(f(_,_)) }, bf.apply(this), None)
+
+  def combine[B,C,That](ds:DataSource[B,_], label: String)
+                       (f:(T,B)=>C)
+                       (implicit bf:CanBuildSourceFrom[Repr,C,That]):That = 
+    _combineOp(ds)( { (a,b) => (a,b).map(f(_,_)) }, bf.apply(this), Some(label))
+
+  def combine[T1 >: T,B,That](dss:Seq[DataSource[T1,_]])
+                             (f:Seq[T1]=>B)
+                             (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = 
+    _combineOp(dss)(_.mapOps(f(_)), bf.apply(this), None)
+
+  def combine[T1 >: T,B,That](dss:Seq[DataSource[T1,_]], label: String)
+                             (f:Seq[T1]=>B)
+                             (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = 
+    _combineOp(dss)(_.mapOps(f(_)), bf.apply(this), Some(label))
+
+  def combineOp[B,C,That](ds:DataSource[B,_])
+                         (f:(Op[T],Op[B])=>Op[C])
+                         (implicit bf:CanBuildSourceFrom[Repr,C,That]):That =
+    _combineOp(ds)(f, bf.apply(this), None)
+
+  def combineOp[T1 >: T,B,That](dss:Seq[DataSource[T1,_]])
+                               (f:Seq[Op[T1]]=>Op[B])
+                               (implicit bf:CanBuildSourceFrom[Repr,B,That]):That =
+    _combineOp(dss)(f, bf.apply(this), None)
+
+  private 
+  def _combineOp[T1 >: T,B,That](dss:Seq[DataSource[T1,_]])
+                                (f:Seq[Op[T1]]=>Op[B], builder: SourceBuilder[B, That], 
+                                                       label: Option[String]): That = {
+    val name = 
+      label match {
+        case Some(l) => s"${self.getClass.getSimpleName} combine[$l]"
+        case None => s"${self.getClass.getSimpleName} combine"
+      }
+
+    val newElements:Op[Seq[Op[B]]] =
+      (elements +: dss.map(_.elements)).mapOps { seq =>
+        seq.transpose.map(f)
+      }.withName(name)
+
+    builder.setOp(newElements)
+    builder.result
+  }
+
+  private 
+  def _combineOp[B, C, That](ds: DataSource[B, _])
+                            (f:(Op[T],Op[B])=>Op[C], builder: SourceBuilder[C, That],
+                                                     label: Option[String]): That = {
+    val name = 
+      label match {
+        case Some(l) => s"${self.getClass.getSimpleName} combine[$l]"
+        case None => s"${self.getClass.getSimpleName} combine"
+      }
+
+    val newElements:Op[Seq[Op[C]]] =
+      ((elements,ds.elements).map { (e1,e2) =>
+        e1.zip(e2).map { case (a,b) => 
+          f(a,b) 
+        }
+      }).withName(name)
+
+    builder.setOp(newElements)
+    builder.result
   }
 
   def reduce[T1 >: T](reducer:(T1,T1) => T1):ValueSource[T1] = 
@@ -42,67 +122,11 @@ trait DataSourceLike[+T,+V,+Repr <: DataSource[T,V]] { self:Repr =>
     converge(_.foldRight(z)(folder))
 
   def distribute[T1 >: T,That](implicit bf:CanBuildSourceFrom[Repr,T1,That]):That =
-    _mapOp(RemoteOperation(_, None),bf.apply(this))
+    _mapOp(RemoteOperation(_, None), None, bf.apply(this))
 
   def distribute[T1 >: T,That](cluster:akka.actor.ActorRef)
                               (implicit bf:CanBuildSourceFrom[Repr,T1,That]):That =
-    _mapOp(RemoteOperation(_, Some(cluster)),bf.apply(this))
-
-  def combineOp[B,C,That](ds:DataSource[B,_])
-                         (f:(Op[T],Op[B])=>Op[C])
-                         (implicit bf:CanBuildSourceFrom[Repr,C,That]):That = {
-    val newElements:Op[Seq[Op[C]]] =
-      ((elements,ds.elements).map { (e1,e2) =>
-        e1.zip(e2).map { case (a,b) => 
-          f(a,b) 
-        }
-      }).withName("combineOp-map")
-
-    val builder = bf.apply(this)
-    builder.setOp(newElements)
-    builder.result
-  }
-
-  def combineOp[T1 >: T,B,That](dss:Seq[DataSource[T1,_]])
-                               (f:Seq[Op[T1]]=>Op[B])
-                               (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
-    val newElements:Op[Seq[Op[B]]] =
-      (elements +: dss.map(_.elements)).mapOps { seq =>
-        seq.transpose.map(f)
-      }
-
-    val builder = bf.apply(this)
-    builder.setOp(newElements)
-    builder.result
-  }
-
-  def combine[B,C,That](ds:DataSource[B,_])
-                       (f:(T,B)=>C)
-                       (implicit bf:CanBuildSourceFrom[Repr,C,That]):That = {
-    val newElements:Op[Seq[Op[C]]] =
-      (elements,ds.elements).map { (e1,e2) =>
-        e1.zip(e2).map { case (a,b) => 
-          (a,b).map(f(_,_))
-        }
-      }
-
-    val builder = bf.apply(this)
-    builder.setOp(newElements)
-    builder.result
-  }
-
-  def combine[T1 >: T,B,That](dss:Seq[DataSource[T1,_]])
-                             (f:Seq[T1]=>B)
-                             (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = {
-    val newElements:Op[Seq[Op[B]]] =
-      (elements +: dss.map(_.elements)).mapOps { seq =>
-        seq.transpose.map(_.mapOps(f(_)))
-      }
-
-    val builder = bf.apply(this)
-    builder.setOp(newElements)
-    builder.result
-  }
+    _mapOp(RemoteOperation(_, Some(cluster)), None, bf.apply(this))
 
   def run(implicit server:process.Server) = server.run(this)
   def get(implicit server:process.Server) = server.get(this)
