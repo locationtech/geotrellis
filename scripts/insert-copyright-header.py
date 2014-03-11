@@ -30,7 +30,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License."""
 
-max_width = max(map(lambda x: len(x), license))
+max_width = max(map(lambda x: len(x), license.split('\n')))
 
 def c_style_comment(text):
   commented = [ ]
