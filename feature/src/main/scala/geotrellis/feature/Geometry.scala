@@ -6,10 +6,10 @@ trait Geometry {
 
   val jtsGeom: jts.Geometry
 
-  def distance(other: Geometry) =
+  def distance(other: Geometry): Double =
     jtsGeom.distance(other.jtsGeom)
 
-  def withinDistance(other: Geometry, dist: Double) =
+  def withinDistance(other: Geometry, dist: Double): Boolean =
     jtsGeom.isWithinDistance(other.jtsGeom, dist)
 
   def centroid: PointOrNoResult = 
@@ -17,6 +17,10 @@ trait Geometry {
 
   def interiorPoint: PointOrNoResult = 
     jtsGeom.getInteriorPoint 
+
+  // TODO: decide if this should be the Object.equals() override
+  def equals(g: Geometry): Boolean =
+    jtsGeom.equals(g)
 
 }
 
@@ -69,7 +73,7 @@ trait MultiGeometry extends Geometry
   // isRectangle (polygon)
   // def area:Double = geom.getArea  (not for points?)
 
-  // TODO: handle Topology Exception from symDifference
+  // TODO: handle Topology Exception from symDifference, union, intersection, difference
   // symDifference - can't have a GC as an arg. May throw a TopologyException - how to deal with this?
 
   // def boundary = jts.getBoundary

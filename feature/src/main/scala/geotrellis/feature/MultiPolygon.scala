@@ -29,9 +29,9 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
   def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
 
-  def &(l: Line): MultiLineIntersectionResult =
+  def &(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(l)
-  def intersection(l: Line): MultiLineIntersectionResult =
+  def intersection(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     l.intersection(this)
 
   def &(p: Polygon): MultiPolygonIntersectionResult =
@@ -39,9 +39,9 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
   def intersection(p: Polygon): MultiPolygonIntersectionResult =
     p.intersection(this)
 
-  def &(ls: MultiLine): MultiLineIntersectionResult =
+  def &(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(ls)
-  def intersection(ls: MultiLine): MultiLineIntersectionResult =
+  def intersection(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
     ls.intersection(this)
 
   def &(ps: MultiPolygon): MultiPolygonIntersectionResult =

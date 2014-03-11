@@ -44,6 +44,7 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
                                          with TwoDimensions {
 
   assert(!jtsGeom.isEmpty)
+  assert(jtsGeom.isValid)
 
   lazy val isRectangle: Boolean =
     jtsGeom.isRectangle
@@ -73,9 +74,9 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
   def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
 
-  def &(l: Line): LinePolygonIntersectionResult =
+  def &(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(l)
-  def intersection(l: Line): LinePolygonIntersectionResult =
+  def intersection(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     l.intersection(this)
 
   def &(p: Polygon): PolygonPolygonIntersectionResult =
@@ -83,14 +84,14 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
   def intersection(p: Polygon): PolygonPolygonIntersectionResult =
     jtsGeom.intersection(p.jtsGeom)
 
-  def &(ps: MultiPoint): MultiPointIntersectionResult =
+  def &(ps: MultiPoint): MultiPointGeometryIntersectionResult =
     intersection(ps)
-  def intersection(ps: MultiPoint): MultiPointIntersectionResult =
+  def intersection(ps: MultiPoint): MultiPointGeometryIntersectionResult =
     jtsGeom.intersection(ps.jtsGeom)
 
-  def &(ls: MultiLine): MultiLineIntersectionResult =
+  def &(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(ls)
-  def intersection(ls: MultiLine): MultiLineIntersectionResult =
+  def intersection(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
     jtsGeom.intersection(ls.jtsGeom)
 
   def &(ps: MultiPolygon): MultiPolygonIntersectionResult =
