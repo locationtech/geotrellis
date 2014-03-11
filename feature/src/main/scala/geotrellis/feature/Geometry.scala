@@ -6,10 +6,10 @@ trait Geometry {
 
   val jtsGeom: jts.Geometry
 
-  def distance(other: Geometry) =
+  def distance(other: Geometry): Double =
     jtsGeom.distance(other.jtsGeom)
 
-  def withinDistance(other: Geometry, dist: Double) =
+  def withinDistance(other: Geometry, dist: Double): Boolean =
     jtsGeom.isWithinDistance(other.jtsGeom, dist)
 
   def centroid: PointOrNoResult = 
@@ -17,6 +17,9 @@ trait Geometry {
 
   def interiorPoint: PointOrNoResult = 
     jtsGeom.getInteriorPoint 
+
+  def equals(g: Geometry): Boolean =
+    jtsGeom.equals(g)
 
 }
 

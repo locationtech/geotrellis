@@ -44,6 +44,7 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
                                          with TwoDimensions {
 
   assert(!jtsGeom.isEmpty)
+  assert(jtsGeom.isValid)
 
   lazy val isRectangle: Boolean =
     jtsGeom.isRectangle

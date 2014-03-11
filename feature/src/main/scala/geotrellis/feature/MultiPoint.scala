@@ -55,9 +55,9 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   def union(p: Point): PointZeroDimensionsUnionResult =
     p.union(this)
 
-  def |(l: Line): PointLineUnionResult =
+  def |(l: Line): ZeroDimensionsLineUnionResult =
     union(l)
-  def union(l:Line): PointLineUnionResult =
+  def union(l:Line): ZeroDimensionsLineUnionResult =
     l.union(this)
 
   def |(p: Polygon): AtMostOneDimensionPolygonUnionResult =

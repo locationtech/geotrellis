@@ -17,6 +17,7 @@ case class Point(jtsGeom: jts.Point) extends Geometry
                                      with ZeroDimensions {
 
   assert(!jtsGeom.isEmpty)
+  assert(jtsGeom.isValid)
 
   val x: Double =
     jtsGeom.getX
@@ -37,9 +38,9 @@ case class Point(jtsGeom: jts.Point) extends Geometry
   def union(g: ZeroDimensions): PointZeroDimensionsUnionResult =
     jtsGeom.union(g.jtsGeom)
 
-  def |(l: Line): PointLineUnionResult =
+  def |(l: Line): ZeroDimensionsLineUnionResult =
     union(l)
-  def union(l: Line): PointLineUnionResult =
+  def union(l: Line): ZeroDimensionsLineUnionResult =
     jtsGeom.union(l.jtsGeom)
 
   def |(p: Polygon): AtMostOneDimensionPolygonUnionResult =
@@ -47,15 +48,15 @@ case class Point(jtsGeom: jts.Point) extends Geometry
   def union(p: Polygon): AtMostOneDimensionPolygonUnionResult =
     jtsGeom.union(p.jtsGeom)
 
-  def |(ls: MultiLine): PointMultiLineUnionResult =
-    union(ls)
-  def union(ls: MultiLine): PointMultiLineUnionResult =
-    jtsGeom.union(ls.jtsGeom)
+  def |(ml: MultiLine): PointMultiLineUnionResult =
+    union(ml)
+  def union(ml: MultiLine): PointMultiLineUnionResult =
+    jtsGeom.union(ml.jtsGeom)
 
-  def |(ps: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
-    union(ps)
-  def union(ps: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
-    jtsGeom.union(ps.jtsGeom)
+  def |(mp: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
+    union(mp)
+  def union(mp: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
+    jtsGeom.union(mp.jtsGeom)
 
   // -- Difference
 
@@ -75,14 +76,14 @@ case class Point(jtsGeom: jts.Point) extends Geometry
   def symDifference(p: Polygon): ZeroDimensionsPolygonSymDifferenceResult =
     jtsGeom.symDifference(p.jtsGeom)
 
-  def symDifference(ps: MultiPoint): ZeroDimensionsMultiPointSymDifferenceResult =
-    jtsGeom.symDifference(ps.jtsGeom)
+  def symDifference(mp: MultiPoint): ZeroDimensionsMultiPointSymDifferenceResult =
+    jtsGeom.symDifference(mp.jtsGeom)
 
-  def symDifference(ls: MultiLine): ZeroDimensionsMultiLineSymDifferenceResult =
-    jtsGeom.symDifference(ls.jtsGeom)
+  def symDifference(ml: MultiLine): ZeroDimensionsMultiLineSymDifferenceResult =
+    jtsGeom.symDifference(ml.jtsGeom)
 
-  def symDifference(ps: MultiPolygon): ZeroDimensionsMultiPolygonSymDifferenceResult =
-    jtsGeom.symDifference(ps.jtsGeom)
+  def symDifference(mp: MultiPolygon): ZeroDimensionsMultiPolygonSymDifferenceResult =
+    jtsGeom.symDifference(mp.jtsGeom)
 
   // -- Buffer
 
@@ -101,8 +102,8 @@ case class Point(jtsGeom: jts.Point) extends Geometry
   def coveredBy(g: Geometry): Boolean =
     jtsGeom.coveredBy(g.jtsGeom)
 
-  def covers(p: Point): Boolean =
-    jtsGeom.covers(p.jtsGeom)
+  def covers(g: ZeroDimensions): Boolean =
+    jtsGeom.covers(g.jtsGeom)
 
   def touches(g: AtLeastOneDimension): Boolean =
     jtsGeom.touches(g.jtsGeom)
