@@ -53,7 +53,7 @@ re_py = re.compile(r'((#.*?Copyright \(c\).*(?:\n|\r\n?))(#.*?(\n|\r\n?))*)', re
 # Key: Regex for full path.
 # Value: Tuple of (comment regex, comment function, comment regex, copyright company)
 config = {
-  r"\.\/spark.*?\.scala$" : (re_c, c_style_comment, "Digital Globe"),
+  r"\.\/spark.*?\.scala$" : (re_c, c_style_comment, "DigitalGlobe"),
   r".*\.scala$" : (re_c, c_style_comment, "Azavea"),
   r".*\.py$" : (re_py, python_comment, "Azavea")
 }
