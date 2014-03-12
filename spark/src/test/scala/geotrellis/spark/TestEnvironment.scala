@@ -41,7 +41,7 @@ trait TestEnvironment extends BeforeAndAfterAll {self: Suite =>
 
   // e.g., root directory on local file system for source data (e.g., tiffs)
   // localFS.getWorkingDirectory is for e.g., /home/jdoe/git/geotrellis
-  val inputHome = new Path(localFS.getWorkingDirectory, "geotrellis-spark/src/test/resources")
+  val inputHome = new Path(localFS.getWorkingDirectory, "spark/src/test/resources")
 
   // test directory paths on local and hdfs 
   // outputHomeLocal - root directory of all tests on the local file system (e.g., file:///tmp/testFiles)
