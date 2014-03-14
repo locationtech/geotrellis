@@ -55,24 +55,25 @@ object RasterSplitGenerator {
   }
 
   /*
-   * The goal is to come up with an increment such that tiles are partitioned roughly by hdfs block size
-   * so if the block size is 64MB, we want each partition to have at most that much.
-   *
-   * we assume tiles get 0 compression ratio, so we are extremely conservative in figuring how
-   * many tiles can fit in a block.
+   * The partitioner tries to fit n rows of tiles to a split. The rules are:
+   * 1. If the row is too wide for a single hdfs block, we return 1. 
+   * This means each split may spill onto more than one hdfs block
+   * 2. If the total number of tiles is less than that can fit onto a block, 
+   * we return -1. This means no splits would be generated. 
+   * 3. Otherwise, we try and maximize n such that each block will have at 
+   * most that much. Here, we assume tiles get 0 compression ratio, so we are 
+   * extremely conservative in figuring how many tiles can fit in a block.
    */
   def computeIncrement(tileExtent: TileExtent, tileSizeBytes: Int, blockSizeBytes: Long) = {
     val tilesPerBlock = (blockSizeBytes / tileSizeBytes).toLong
     val tileCount = tileExtent.width * tileExtent.height
 
-    assume(tileExtent.width <= tilesPerBlock,
-      s"RasterSplitGenerator cannot handle the case where tileExtent.width=${tileExtent.width} " +
-        s"is more than tilesPerBlock=${tilesPerBlock}")
-
     // return -1 if it doesn't make sense to have splits, getSplits will handle this accordingly
     val increment =
       if (blockSizeBytes <= 0 || tilesPerBlock >= tileCount)
         -1
+      else if (tileExtent.width > tilesPerBlock)
+        1
       else
         (tilesPerBlock / tileExtent.width).toInt
 
