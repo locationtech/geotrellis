@@ -64,10 +64,11 @@ object OneDimensionAtLeastOneDimensionIntersectionResult {
     }
 }
 
-abstract sealed trait PolygonPolygonIntersectionResult
-object PolygonPolygonIntersectionResult {
-  implicit def jtsToResult(geom: jts.Geometry): PolygonPolygonIntersectionResult =
+abstract sealed trait TwoDimensionsTwoDimensionsIntersectionResult
+object TwoDimensionsTwoDimensionsIntersectionResult {
+  implicit def jtsToResult(geom: jts.Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
     geom match {
+      case g: jts.Geometry if g.isEmpty => NoResult
       case p: jts.Point => PointResult(p)
       case l: jts.LineString => LineResult(l)
       case p: jts.Polygon => PolygonResult(p)
@@ -75,7 +76,8 @@ object PolygonPolygonIntersectionResult {
       case ml: jts.MultiLineString => MultiLineResult(ml)
       case mp: jts.MultiPolygon => MultiPolygonResult(mp)
       case gc: jts.GeometryCollection => GeometryCollectionResult(gc)
-      case _ => NoResult
+      case _ =>
+        sys.error(s"Unexpected result for TwoDimensions-TwoDimensions intersection: ${geom.getGeometryType}")
     }
 }
 
@@ -88,22 +90,6 @@ object MultiPointGeometryIntersectionResult {
       case mp: jts.MultiPoint => MultiPointResult(mp)
       case x => 
         sys.error(s"Unexpected result for MultiPoint-Geometry intersection: ${geom.getGeometryType}")
-    }
-}
-
-abstract sealed trait MultiPolygonIntersectionResult
-object MultiPolygonIntersectionResult {
-  implicit def jtsToResult(geom: jts.Geometry): MultiPolygonIntersectionResult =
-    geom match {
-      case p: jts.Point => PointResult(p)
-      case l: jts.LineString => LineResult(l)
-      case p: jts.Polygon => if(p.isEmpty) NoResult else PolygonResult(p)
-      case mp: jts.MultiPoint => MultiPointResult(mp)
-      case ml: jts.MultiLineString => MultiLineResult(ml)
-      case mp: jts.MultiPolygon => MultiPolygonResult(mp)
-      case gc: jts.GeometryCollection => GeometryCollectionResult(gc)
-      case _ => 
-        sys.error(s"Unexpected result for MultiPolygon intersection: ${geom.getGeometryType}")
     }
 }
 
@@ -407,9 +393,8 @@ object TwoDimensionsSymDifferenceResult {
 case object NoResult extends Result
   with PointOrNoResult
   with OneDimensionAtLeastOneDimensionIntersectionResult
-  with PolygonPolygonIntersectionResult
+  with TwoDimensionsTwoDimensionsIntersectionResult
   with MultiPointGeometryIntersectionResult
-  with MultiPolygonIntersectionResult
   with OneDimensionBoundaryResult
   with PointGeometryDifferenceResult
   with LineAtLeastOneDimensionDifferenceResult
@@ -423,9 +408,8 @@ case object NoResult extends Result
 case class PointResult(p: Point) extends Result
   with PointOrNoResult
   with OneDimensionAtLeastOneDimensionIntersectionResult
-  with PolygonPolygonIntersectionResult
+  with TwoDimensionsTwoDimensionsIntersectionResult
   with MultiPointGeometryIntersectionResult
-  with MultiPolygonIntersectionResult
   with PointZeroDimensionsUnionResult
   with PointGeometryDifferenceResult
   with MultiPointDifferenceResult
@@ -433,8 +417,7 @@ case class PointResult(p: Point) extends Result
 
 case class LineResult(l: Line) extends Result
   with OneDimensionAtLeastOneDimensionIntersectionResult
-  with PolygonPolygonIntersectionResult
-  with MultiPolygonIntersectionResult
+  with TwoDimensionsTwoDimensionsIntersectionResult
   with ZeroDimensionsLineUnionResult
   with LineOneDimensionUnionResult
   with LineAtLeastOneDimensionDifferenceResult
@@ -454,10 +437,9 @@ object LineResult {
 }
 
 case class PolygonResult(p: Polygon) extends Result
-  with PolygonPolygonIntersectionResult
+  with TwoDimensionsTwoDimensionsIntersectionResult
   with AtMostOneDimensionPolygonUnionResult
   with PolygonPolygonUnionResult
-  with MultiPolygonIntersectionResult
   with AtMostOneDimensionMultiPolygonUnionResult
   with PolygonXDifferenceResult
   with PolygonPolygonDifferenceResult
@@ -468,9 +450,8 @@ case class PolygonResult(p: Polygon) extends Result
   with OneDimensionMultiPolygonSymDifferenceResult
 
 case class MultiPointResult(ps: Set[Point]) extends Result
-  with PolygonPolygonIntersectionResult
+  with TwoDimensionsTwoDimensionsIntersectionResult
   with MultiPointGeometryIntersectionResult
-  with MultiPolygonIntersectionResult
   with PointZeroDimensionsUnionResult
   with OneDimensionBoundaryResult
   with MultiPointDifferenceResult
@@ -479,8 +460,7 @@ case class MultiPointResult(ps: Set[Point]) extends Result
   with OneDimensionAtLeastOneDimensionIntersectionResult
 
 case class MultiLineResult(ls: Set[Line]) extends Result
-  with PolygonPolygonIntersectionResult
-  with MultiPolygonIntersectionResult
+  with TwoDimensionsTwoDimensionsIntersectionResult
   with LineOneDimensionUnionResult
   with LineAtLeastOneDimensionDifferenceResult
   with PointMultiLineUnionResult
@@ -500,9 +480,8 @@ object MultiLineResult {
 }
 
 case class MultiPolygonResult(ps: Set[Polygon]) extends Result
-  with PolygonPolygonIntersectionResult
+  with TwoDimensionsTwoDimensionsIntersectionResult
   with PolygonPolygonUnionResult
-  with MultiPolygonIntersectionResult
   with AtMostOneDimensionMultiPolygonUnionResult
   with PolygonPolygonDifferenceResult
   with MultiPolygonXDifferenceResult
@@ -511,8 +490,7 @@ case class MultiPolygonResult(ps: Set[Polygon]) extends Result
   with OneDimensionMultiPolygonSymDifferenceResult
 
 case class GeometryCollectionResult(gc: GeometryCollection) extends Result
-  with PolygonPolygonIntersectionResult
-  with MultiPolygonIntersectionResult
+  with TwoDimensionsTwoDimensionsIntersectionResult
   with ZeroDimensionsLineUnionResult
   with AtMostOneDimensionPolygonUnionResult
   with AtMostOneDimensionMultiPolygonUnionResult

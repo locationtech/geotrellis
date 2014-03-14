@@ -84,5 +84,111 @@ class PolygonSpec extends FunSpec with ShouldMatchers {
       val p = Polygon(l, Set(h))
       p.perimeter should be (20 + 12)
     }
+
+    it ("should intersect with a MultiPoint and return a NoResult") {
+      val p1 = Point(10,10)
+      val p2 = Point(11,11)
+      val mp = MultiPoint(p1, p2)
+      val l = Line(Point(0,0), Point(2,2), Point(4,0), Point(0,0))
+      val p = Polygon(l)
+      p & mp should be (NoResult)
+    }
+
+    it ("should intersect with a MultiPoint and return a PointResult") {
+      val p1 = Point(10,10)
+      val p2 = Point(5,5)
+      val mp = MultiPoint(p1, p2)
+      val l = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
+      val p = Polygon(l)
+      p & mp should be (PointResult(p2))
+    }
+
+    it ("should intersect with a MultiPoint and return a MultiPointResult") {
+      val p1 = Point(1,1)
+      val p2 = Point(4,4)
+      val mp = MultiPoint(p1, p2)
+      val l = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
+      val p = Polygon(l)
+      p & mp should be (MultiPointResult(Set(p1, p2)))
+    }
+
+    it ("should intersect with a TwoDimensions and return a NoResult") {
+      val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
+      val p1 = Polygon(l1)
+      val l2 = Line(Point(6,0), Point(7,0), Point(7,1), Point(6,1), Point(6,0))
+      val p2 = Polygon(l2)
+      p1 & p2 should be (NoResult)
+    }
+
+    it ("should intersect with a TwoDimensions and return a PointResult") {
+      val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
+      val p1 = Polygon(l1)
+      val l2 = Line(Point(5,0), Point(7,0), Point(7,1), Point(6,1), Point(5,0))
+      val p2 = Polygon(l2)
+      p1 & p2 should be (PointResult(Point(5,0)))
+    }
+
+    it ("should intersect with a TwoDimensions and return a LineResult") {
+      val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
+      val p1 = Polygon(l1)
+      val l2 = Line(Point(5,0), Point(7,0), Point(7,1), Point(5,1), Point(5,0))
+      val p2 = Polygon(l2)
+      p1 & p2 should be (LineResult(Line(Point(5,1), Point(5,0))))
+    }
+
+    it ("should intersect with a TwoDimensions and return a PolygonResult") {
+      val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
+      val p1 = Polygon(l1)
+      val l2 = Line(Point(4,0), Point(7,0), Point(7,1), Point(4,1), Point(4,0))
+      val p2 = Polygon(l2)
+      p1 & p2 should be (PolygonResult(Polygon(Line(Point(5,1), Point(5,0),
+                                                    Point(4,0), Point(4,1), Point(5,1)))))
+    }
+
+    it ("should intersect with a TwoDimensions and return a MultiPointResult") {
+      val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
+      val p1 = Polygon(l1)
+      val l2 = Line(Point(5,0), Point(7,0), Point(5,5), Point(10,5), Point(10,-1), Point(5,0))
+      val p2 = Polygon(l2)
+      p1 & p2 should be (MultiPointResult(Set(Point(5,0), Point(5,5))))
+    }
+
+    it ("should intersect with a TwoDimensions and return a MultiLineResult") {
+      val l1 = Line(Point(0,0), Point(0,6), Point(5,6), Point(5,0), Point(0,0))
+      val p1 = Polygon(l1)
+      val l2 = Line(Point(5,0), Point(5,2), Point(6,2), Point(6,4), Point(5,4),
+                    Point(5,6), Point(7,6), Point(7,0), Point(5,0))
+      val p2 = Polygon(l2)
+      p1 & p2 should be (MultiLineResult(Set(Line(Point(5,6), Point(5,4)),
+                                             Line(Point(5,2), Point(5,0)))))
+    }
+
+    it ("should intersect with a TwoDimensions and return a MultiPolygonResult") {
+      val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
+      val p1 = Polygon(l1)
+      val l2 = Line(Point(0,4), Point(0,7), Point(5,7), Point(5,4), Point(3,4),
+                    Point(3,6), Point(2,6), Point(2,4), Point(0,4))
+      val p2 = Polygon(l2)
+      p1 & p2 should be (MultiPolygonResult(Set(Polygon(Line(Point(0,4), Point(0,5),
+                                                             Point(2,5), Point(2,4), Point(0,4))),
+                                                Polygon(Line(Point(3,5), Point(5,5),
+                                                             Point(5,4), Point(3,4), Point(3,5))))))
+    }
+
+    it ("should intersect with a TwoDimensions and return a GeometryCollectionResult") {
+      val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
+      val p1 = Polygon(l1)
+      val l2 = Line(Point(0,4), Point(0,7), Point(5,7), Point(5,5), Point(2,6),
+                    Point(2,4), Point(0,4))
+      val p2 = Polygon(l2)
+      val expected: GeometryCollection =
+        GeometryCollection(points = Set(Point(5,5)), polygons = Set(Polygon(Line(Point(0,4), Point(0,5),
+          Point(2,5), Point(2,4), Point(0,4)))))
+      val result = p1 & p2
+      result match {
+        case GeometryCollectionResult(gc) => gc should be (expected)
+        case _ => fail()
+      }
+    }
   }
 }

@@ -62,21 +62,16 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
   assert(!jtsGeom.isEmpty)
   assert(jtsGeom.isValid)
 
-  /**
-   * Tests whether this Polygon is a rectangle.
-   */
+
+  /** Tests whether this Polygon is a rectangle. */
   lazy val isRectangle: Boolean =
     jtsGeom.isRectangle
 
-  /**
-   * Returns the area of this Polygon.
-   */
+  /** Returns the area of this Polygon. */
   lazy val area: Double =
     jtsGeom.getArea
 
-  /**
-   * Returns the exterior ring of this Polygon.
-   */
+  /** Returns the exterior ring of this Polygon. */
   lazy val exterior: Line =
     Line(jtsGeom.getExteriorRing)
 
@@ -88,9 +83,7 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
   lazy val boundary: PolygonBoundaryResult =
     jtsGeom.getBoundary
 
-  /**
-   * Returns this Polygon's vertices.
-   */
+  /** Returns this Polygon's vertices. */
   lazy val vertices: MultiPoint =
     jtsGeom.getCoordinates
 
@@ -113,39 +106,69 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
   lazy val perimeter: Double =
     jtsGeom.getLength
 
+
   // -- Intersection
 
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Polygon and p.
+   */
   def &(p: Point): PointOrNoResult =
     intersection(p)
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Polygon and p.
+   */
   def intersection(p: Point): PointOrNoResult =
-    p.intersection(this)
-
-  def &(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
-    intersection(l)
-  def intersection(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
-    l.intersection(this)
-
-  def &(p: Polygon): PolygonPolygonIntersectionResult =
-    intersection(p)
-  def intersection(p: Polygon): PolygonPolygonIntersectionResult =
     jtsGeom.intersection(p.jtsGeom)
 
-  def &(ps: MultiPoint): MultiPointGeometryIntersectionResult =
-    intersection(ps)
-  def intersection(ps: MultiPoint): MultiPointGeometryIntersectionResult =
-    jtsGeom.intersection(ps.jtsGeom)
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Polygon and mp.
+   */
+  def &(mp: MultiPoint): MultiPointGeometryIntersectionResult =
+    intersection(mp)
 
-  def &(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
-    intersection(ls)
-  def intersection(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
-    jtsGeom.intersection(ls.jtsGeom)
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Polygon and mp.
+   */
+  def intersection(mp: MultiPoint): MultiPointGeometryIntersectionResult =
+    jtsGeom.intersection(mp.jtsGeom)
 
-  def &(ps: MultiPolygon): MultiPolygonIntersectionResult =
-    intersection(ps)
-  def intersection(ps: MultiPolygon): MultiPolygonIntersectionResult =
-    jtsGeom.intersection(ps.jtsGeom)
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Polygon and g.
+   */
+  def &(g: OneDimension): OneDimensionAtLeastOneDimensionIntersectionResult =
+    intersection(g)
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Polygon and g.
+   */
+  def intersection(g: OneDimension): OneDimensionAtLeastOneDimensionIntersectionResult =
+    jtsGeom.intersection(g.jtsGeom)
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Polygon and g.
+   */
+  def &(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
+    intersection(g)
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this Polygon and g.
+   */
+  def intersection(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
+    jtsGeom.intersection(g.jtsGeom)
+
 
   // -- Union
+
 
   def |(g: AtMostOneDimension): AtMostOneDimensionPolygonUnionResult =
     union(g)
