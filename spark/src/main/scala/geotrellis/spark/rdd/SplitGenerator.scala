@@ -1,19 +1,18 @@
-/**
- * ************************************************************************
- * Copyright (c) 2014 DigitalGlobe.
+/** ************************************************************************
+ *  Copyright (c) 2014 DigitalGlobe.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ************************************************************************
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *  ************************************************************************
  */
 
 package geotrellis.spark.rdd
@@ -25,9 +24,6 @@ import geotrellis.spark.tiling.TmsTiling
  * SplitsGenerator provides an interface to derive split points with a default implementation
  * RasterSplitGenerator, which derives split points based on how many tiles can fit on a block.
  *
- * Currently RasterSplitGenerator assumes that the width of the tileExtent is smaller than
- * the number of tiles that can fit on a single block. In other words, an HDFS block is
- * large enough to fit at least one full row of tiles
  */
 trait SplitGenerator {
   def getSplits: Seq[Long]
