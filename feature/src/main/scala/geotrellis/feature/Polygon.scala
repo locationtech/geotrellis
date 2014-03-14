@@ -62,24 +62,54 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
   assert(!jtsGeom.isEmpty)
   assert(jtsGeom.isValid)
 
+  /**
+   * Tests whether this Polygon is a rectangle.
+   */
   lazy val isRectangle: Boolean =
     jtsGeom.isRectangle
 
+  /**
+   * Returns the area of this Polygon.
+   */
   lazy val area: Double =
     jtsGeom.getArea
 
+  /**
+   * Returns the exterior ring of this Polygon.
+   */
   lazy val exterior: Line =
     Line(jtsGeom.getExteriorRing)
 
+  /**
+   * Returns the boundary of this Polygon.
+   * The boundary of a Polygon is the set of closed curves corresponding to its
+   * exterior and interior boundaries.
+   */
   lazy val boundary: PolygonBoundaryResult =
     jtsGeom.getBoundary
 
+  /**
+   * Returns this Polygon's vertices.
+   */
   lazy val vertices: MultiPoint =
     jtsGeom.getCoordinates
 
-  lazy val boundingBox: Option[Polygon] =
-    if (jtsGeom.isEmpty) None else Some(jtsGeom.getEnvelope.asInstanceOf[Polygon])
+  /**
+   * Returns a Polygon whose points are (minx, miny), (minx, maxy),
+   * (maxx, maxy), (maxx, miny), (minx, miny).
+   */
+  lazy val boundingBox: Polygon =
+    jtsGeom.getEnvelope match {
+      case p: jts.Polygon => Polygon(p)
+      case x =>
+        sys.error(s"Unexpected result for Polygon boundingBox: ${x.getGeometryType}")
+    }
 
+  /**
+   * Returns this Polygon's perimeter.
+   * A Polygon's perimeter is the length of its exterior and interior
+   * boundaries.
+   */
   lazy val perimeter: Double =
     jtsGeom.getLength
 

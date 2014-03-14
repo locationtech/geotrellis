@@ -64,6 +64,10 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   lazy val vertices: MultiPoint =
     jtsGeom.getCoordinates
 
+  /**
+   * Returns a Polygon whose points are (minx, miny), (minx, maxy),
+   * (maxx, maxy), (maxx, miny), (minx, miny).
+   */
   lazy val boundingBox: Polygon =
     jtsGeom.getEnvelope match {
       case p: jts.Polygon => Polygon(p)
