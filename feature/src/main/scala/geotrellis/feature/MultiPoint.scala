@@ -1,3 +1,19 @@
+/**************************************************************************
+ * Copyright (c) 2014 Azavea.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **************************************************************************/
+
 package geotrellis.feature
 
 import GeomFactory._
@@ -23,29 +39,29 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
 
-  def &(l: Line): MultiPointIntersectionResult =
+  def &(l: Line): MultiPointGeometryIntersectionResult =
     intersection(l)
-  def intersection(l: Line): MultiPointIntersectionResult =
+  def intersection(l: Line): MultiPointGeometryIntersectionResult =
     l.intersection(this)
 
-  def &(p: Polygon): MultiPointIntersectionResult =
+  def &(p: Polygon): MultiPointGeometryIntersectionResult =
     intersection(p)
-  def intersection(p: Polygon): MultiPointIntersectionResult =
+  def intersection(p: Polygon): MultiPointGeometryIntersectionResult =
     p.intersection(this)
 
-  def &(ps: MultiPoint): MultiPointIntersectionResult =
+  def &(ps: MultiPoint): MultiPointGeometryIntersectionResult =
     intersection(ps)
-  def intersection(ps: MultiPoint): MultiPointIntersectionResult =
+  def intersection(ps: MultiPoint): MultiPointGeometryIntersectionResult =
     jtsGeom.intersection(ps.jtsGeom)
 
-  def &(ls: MultiLine): MultiPointIntersectionResult =
+  def &(ls: MultiLine): MultiPointGeometryIntersectionResult =
     intersection(ls)
-  def intersection(ls: MultiLine): MultiPointIntersectionResult =
+  def intersection(ls: MultiLine): MultiPointGeometryIntersectionResult =
     jtsGeom.intersection(ls.jtsGeom)
 
-  def &(ps: MultiPolygon): MultiPointIntersectionResult =
+  def &(ps: MultiPolygon): MultiPointGeometryIntersectionResult =
     intersection(ps)
-  def intersection(ps: MultiPolygon): MultiPointIntersectionResult =
+  def intersection(ps: MultiPolygon): MultiPointGeometryIntersectionResult =
     jtsGeom.intersection(ps.jtsGeom)
 
   // -- Union
@@ -55,9 +71,9 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   def union(p: Point): PointZeroDimensionsUnionResult =
     p.union(this)
 
-  def |(l: Line): PointLineUnionResult =
+  def |(l: Line): ZeroDimensionsLineUnionResult =
     union(l)
-  def union(l:Line): PointLineUnionResult =
+  def union(l:Line): ZeroDimensionsLineUnionResult =
     l.union(this)
 
   def |(p: Polygon): AtMostOneDimensionPolygonUnionResult =

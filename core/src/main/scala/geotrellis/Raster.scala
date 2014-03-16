@@ -1,3 +1,19 @@
+/**************************************************************************
+ * Copyright (c) 2014 Azavea.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **************************************************************************/
+
 package geotrellis
 
 import geotrellis.raster._
@@ -21,45 +37,8 @@ object Raster {
 /**
  * Base trait for the Raster data type.
  */
-trait Raster extends local.AddMethods
-                with local.SubtractMethods
-                with local.MultiplyMethods
-                with local.DivideMethods
-                with local.MinMethods
-                with local.MaxMethods
-                with local.MaskMethods
-                with local.InverseMaskMethods
-                with local.DefinedMethods
-                with local.UndefinedMethods
-                with local.SqrtMethods
-                with local.RoundMethods
-                with local.LogMethods
-                with local.FloorMethods
-                with local.CeilMethods
-                with local.NegateMethods
-                with local.NotMethods
-                with local.AndMethods
-                with local.OrMethods
-                with local.XorMethods
-                with local.EqualMethods
-                with local.UnequalMethods
-                with local.GreaterMethods
-                with local.LessMethods
-                with local.GreaterOrEqualMethods
-                with local.LessOrEqualMethods
-                with local.AbsMethods
-                with local.SinMethods
-                with local.CosMethods
-                with local.TanMethods
-                with local.AsinMethods
-                with local.AcosMethods
-                with local.AtanMethods
-                with local.Atan2Methods
-                with local.SinhMethods
-                with local.CoshMethods
-                with local.TanhMethods
-                with local.ConditionalMethods
-                with local.PowMethods {
+trait Raster extends local.LocalMethods {
+
   val rasterExtent:RasterExtent
   lazy val cols = rasterExtent.cols
   lazy val rows = rasterExtent.rows

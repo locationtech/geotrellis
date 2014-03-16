@@ -1,3 +1,19 @@
+/**************************************************************************
+ * Copyright (c) 2014 Azavea.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **************************************************************************/
+
 package geotrellis.feature.spec
 
 import geotrellis.feature._
@@ -308,6 +324,8 @@ class PointSpec extends FunSpec with ShouldMatchers {
       }
     }
 
+    // -- Buffer
+
     it ("should buffer and return a Polygon") {
       val p = Point(1,1)
       val result = p.buffer(1)
@@ -316,6 +334,8 @@ class PointSpec extends FunSpec with ShouldMatchers {
         case _ => fail()
       }
     }
+
+    // -- Predicates
 
     it ("should contain another point with the same coordinates") {
       val p1 = Point(1,1)
@@ -347,13 +367,24 @@ class PointSpec extends FunSpec with ShouldMatchers {
       result should be (true)
     }
 
+    it ("should be covered by a Point") {
+      val p1 = Point(1,1)
+      val p2 = Point(1,1)
+      p1.coveredBy(p2) should be (true)
+    }
 
+    it ("should cover a MultiPoint") {
+      val p1 = Point(1,1)
+      val p2 = Point(1,1)
+      val p3 = Point(1,1)
+      val mp = MultiPoint(p2, p3)
+      p1.covers(mp) should be (true)
+    }
 
-
-
-
-
-
+    it ("should touch a Polygon") {
+      val p = Point(1,1)
+      val poly = Polygon(Line(Point(0,0), Point(0,1), Point(1,1), Point(1,0), Point(0,0)))
+    }
 
   }
 
