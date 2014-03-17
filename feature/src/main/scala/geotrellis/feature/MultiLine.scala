@@ -1,3 +1,19 @@
+/**************************************************************************
+ * Copyright (c) 2014 Azavea.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **************************************************************************/
+
 package geotrellis.feature
 
 import GeomFactory._
@@ -14,12 +30,12 @@ object MultiLine {
 
 case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry 
                                                  with Relatable
-                                                 with TwoDimensions {
+                                                 with OneDimension {
 
   lazy val isClosed: Boolean =
     jtsGeom.isClosed
 
-  lazy val boundary: LineBoundaryResult =
+  lazy val boundary: OneDimensionBoundaryResult =
     jtsGeom.getBoundary
 
   // -- Intersection
@@ -29,29 +45,29 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
 
-  def &(l: Line): MultiLineIntersectionResult =
+  def &(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(l)
-  def intersection(l: Line): MultiLineIntersectionResult =
+  def intersection(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     l.intersection(this)
 
-  def &(p: Polygon): MultiLineIntersectionResult =
+  def &(p: Polygon): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(p)
-  def intersection(p: Polygon): MultiLineIntersectionResult =
+  def intersection(p: Polygon): OneDimensionAtLeastOneDimensionIntersectionResult =
     p.intersection(this)
 
-  def &(ps: MultiPoint): MultiPointIntersectionResult =
+  def &(ps: MultiPoint): MultiPointGeometryIntersectionResult =
     intersection(ps)
-  def intersection(ps: MultiPoint): MultiPointIntersectionResult =
+  def intersection(ps: MultiPoint): MultiPointGeometryIntersectionResult =
     ps.intersection(this)
 
-  def &(ls: MultiLine): MultiLineIntersectionResult =
+  def &(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(ls)
-  def intersection(ls: MultiLine): MultiLineIntersectionResult =
+  def intersection(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
     jtsGeom.intersection(ls.jtsGeom)
 
-  def &(ps: MultiPolygon): MultiLineIntersectionResult =
+  def &(ps: MultiPolygon): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(ps)
-  def intersection(ps: MultiPolygon): MultiLineIntersectionResult =
+  def intersection(ps: MultiPolygon): OneDimensionAtLeastOneDimensionIntersectionResult =
     jtsGeom.intersection(ps.jtsGeom)
 
   // -- Union
@@ -61,9 +77,9 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   def union(p: Point): PointMultiLineUnionResult =
     p.union(this)
 
-  def |(l: Line): LineLineUnionResult =
+  def |(l: Line): LineOneDimensionUnionResult =
     union(l)
-  def union(l:Line): LineLineUnionResult =
+  def union(l:Line): LineOneDimensionUnionResult =
     l.union(this)
 
   def |(p: Polygon): AtMostOneDimensionPolygonUnionResult =
@@ -76,9 +92,9 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   def union(ps: MultiPoint): PointMultiLineUnionResult =
     ps.union(this)
 
-  def |(ls: MultiLine): LineLineUnionResult =
+  def |(ls: MultiLine): LineOneDimensionUnionResult =
     union(ls)
-  def union(ls: MultiLine): LineLineUnionResult =
+  def union(ls: MultiLine): LineOneDimensionUnionResult =
     jtsGeom.union(ls.jtsGeom)
 
   def |(ps: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
@@ -93,14 +109,14 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   def difference(p: Point): MultiLinePointDifferenceResult =
     jtsGeom.difference(p.jtsGeom)
 
-  def -(l: Line): LineXDifferenceResult =
+  def -(l: Line): LineAtLeastOneDimensionDifferenceResult =
     difference(l)
-  def difference(l: Line): LineXDifferenceResult = 
+  def difference(l: Line): LineAtLeastOneDimensionDifferenceResult =
     jtsGeom.difference(l.jtsGeom)
   
-  def -(p: Polygon): LineXDifferenceResult =
+  def -(p: Polygon): LineAtLeastOneDimensionDifferenceResult =
     difference(p)
-  def difference(p: Polygon): LineXDifferenceResult = 
+  def difference(p: Polygon): LineAtLeastOneDimensionDifferenceResult =
     jtsGeom.difference(p.jtsGeom)
   
   def -(ps: MultiPoint): MultiLinePointDifferenceResult =
@@ -108,14 +124,14 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   def difference(ps: MultiPoint): MultiLinePointDifferenceResult = 
     jtsGeom.difference(ps.jtsGeom)
   
-  def -(ls: MultiLine): LineXDifferenceResult =
+  def -(ls: MultiLine): LineAtLeastOneDimensionDifferenceResult =
     difference(ls)
-  def difference(ls: MultiLine): LineXDifferenceResult = 
+  def difference(ls: MultiLine): LineAtLeastOneDimensionDifferenceResult =
     jtsGeom.difference(ls.jtsGeom)
   
-  def -(ps: MultiPolygon): LineXDifferenceResult =
+  def -(ps: MultiPolygon): LineAtLeastOneDimensionDifferenceResult =
     difference(ps)
-  def difference(ps: MultiPolygon): LineXDifferenceResult = 
+  def difference(ps: MultiPolygon): LineAtLeastOneDimensionDifferenceResult =
     jtsGeom.difference(ps.jtsGeom)
 
   // -- SymDifference
@@ -123,7 +139,7 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   def symDifference(g: ZeroDimensions): ZeroDimensionsMultiLineSymDifferenceResult =
     jtsGeom.symDifference(g.jtsGeom)
 
-  def symDifference(g: OneDimension): OneDimensionSymDifferenceResult =
+  def symDifference(g: OneDimension): OneDimensionOneDimensionSymDifferenceResult =
     jtsGeom.symDifference(g.jtsGeom)
 
   def symDifference(p: Polygon): OneDimensionPolygonSymDifferenceResult =

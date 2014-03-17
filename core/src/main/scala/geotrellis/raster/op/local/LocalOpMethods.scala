@@ -1,3 +1,19 @@
+/**************************************************************************
+ * Copyright (c) 2014 Azavea.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **************************************************************************/
+
 package geotrellis.raster.op.local
 
 import geotrellis._
@@ -32,6 +48,7 @@ trait LocalOpMethods[+Repr <: RasterSource]
      with MinNOpMethods[Repr]
      with MaxNOpMethods[Repr]
      with VarietyOpMethods[Repr] { self: Repr =>
+
   def localCombine[That](rs:RasterSource)
                    (f:(Int,Int)=>Int)
                    (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
@@ -84,87 +101,88 @@ trait LocalOpMethods[+Repr <: RasterSource]
   }
 
   /** Get the negation of this raster source. Will convert double values into integers. */
-  def localNot() = mapOp(Not(_))
+  def localNot(): RasterSource = map(Not(_), "Not[Raster]")
+
   /** Get the negation of this raster source. Will convert double values into integers. */
-  def unary_~() = localNot()
+  def unary_~(): RasterSource = localNot()
 
   /** Negate (multiply by -1) each value in a raster. */
-  def localNegate() = mapOp(Negate(_))
+  def localNegate(): RasterSource = map(Negate(_), "Negate[Raster]")
   /** Negate (multiply by -1) each value in a raster. */
-  def unary_-() = localNegate()
+  def unary_-(): RasterSource = localNegate()
 
   /** Takes the absolute value of each raster cell value. */
-  def localAbs() = mapOp(Abs(_))
+  def localAbs(): RasterSource = map(Abs(_), "Abs")
 
   /** Takes the Ceiling of each raster cell value. */
-  def localCeil() = mapOp(Ceil(_))
+  def localCeil(): RasterSource = map(Ceil(_), "Ceil")
 
   /** Takes the Floor of each raster cell value. */
-  def localFloor() = mapOp(Floor(_))
+  def localFloor(): RasterSource = map(Floor(_), "Floor")
 
   /** Computes the Log of a Raster. */
-  def localLog() = mapOp(Log(_))
+  def localLog(): RasterSource = map(Log(_), "Log")
 
   /** Takes the Log base 10 of each raster cell value. */
-  def localLog10() = mapOp(Log10(_))
+  def localLog10(): RasterSource = map(Log10(_), "Log10")
 
   /** Round the values of a Raster. */
-  def localRound() = mapOp(Round(_))
+  def localRound(): RasterSource = map(Round(_), "Round")
 
   /** Take the square root each value in a raster. */
-  def localSqrt() = mapOp(Sqrt(_))
+  def localSqrt(): RasterSource = map(Sqrt(_), "Sqrt")
 
   /** Maps an integer typed Raster to 1 if the cell value is not NODATA, otherwise 0. */
-  def localDefined() = mapOp(Defined(_))
+  def localDefined(): RasterSource = map(Defined(_), "Defined")
 
   /** Maps an integer typed Raster to 0 if the cell value is not NODATA, otherwise 1. */
-  def localUndefined() = mapOp(Undefined(_))
+  def localUndefined(): RasterSource = map(Undefined(_), "Undefined")
 
   /** Masks this raster based on cell values of the second raster. See [[Mask]]. */
-  def localMask(rs:RasterSource,readMask:Int,writeMask:Int) = 
-    combineOp(rs)(Mask(_,_,readMask,writeMask))
+  def localMask(rs:RasterSource,readMask:Int,writeMask:Int): RasterSource = 
+    combine(rs, "localMask")(Mask(_,_,readMask,writeMask))
 
   /** InverseMasks this raster based on cell values of the second raster. See [[InverseMask]]. */
-  def localInverseMask(rs:RasterSource,readMask:Int,writeMask:Int) = 
-    combineOp(rs)(InverseMask(_,_,readMask,writeMask))
+  def localInverseMask(rs:RasterSource,readMask:Int,writeMask:Int): RasterSource = 
+    combine(rs, "localMask")(InverseMask(_,_,readMask,writeMask))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
-  def localMean(rss:Seq[RasterSource]):RasterSource = 
-    combineOp(rss)(Mean(_))
+  def localMean(rss: Seq[RasterSource]): RasterSource = 
+    combine(rss, "Mean")(Mean(_))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
-  def localMean(rss:RasterSource*)(implicit d:DI):RasterSource = 
+  def localMean(rss:RasterSource*)(implicit d:DI): RasterSource = 
     localMean(rss)
 
   /** Takes the sine of each raster cell value. */
-  def localSin() = mapOp(Sin(_))
+  def localSin(): RasterSource = map(Sin(_), "Sin")
 
   /** Takes the cosine of each raster cell value. */
-  def localCos() = mapOp(Cos(_))
+  def localCos(): RasterSource = map(Cos(_), "Cos")
 
   /** Takes the tangent of each raster cell value. */
-  def localTan() = mapOp(Tan(_))
+  def localTan(): RasterSource = map(Tan(_), "Tan")
 
   /** Takes the sineh of each raster cell value. */
-  def localSinh() = mapOp(Sinh(_))
+  def localSinh(): RasterSource = map(Sinh(_), "Sinh")
 
   /** Takes the cosineh of each raster cell value. */
-  def localCosh() = mapOp(Cosh(_))
+  def localCosh(): RasterSource = map(Cosh(_), "Cosh")
 
   /** Takes the tangenth of each raster cell value. */
-  def localTanh() = mapOp(Tanh(_))
+  def localTanh(): RasterSource = map(Tanh(_), "Tanh")
 
   /** Takes the arc sine of each raster cell value. */
-  def localAsin() = mapOp(Asin(_))
+  def localAsin(): RasterSource = map(Asin(_), "Asin")
 
   /** Takes the arc cosine of each raster cell value. */
-  def localAcos() = mapOp(Acos(_))
+  def localAcos(): RasterSource = map(Acos(_), "Acos")
 
   /** Takes the arc tangent of each raster cell value. */
-  def localAtan() = mapOp(Atan(_))
+  def localAtan(): RasterSource = map(Atan(_), "Atan")
 
   /** Takes the arc tangent 2 of each raster cell value. */
-  def localAtan2(rs: RasterSource) = combineOp(rs)(Atan2(_,_))
+  def localAtan2(rs: RasterSource): RasterSource = combine(rs, "Atan2")(Atan2(_,_))
 
   /** Masks this raster by the given GeoJSON. */
   def mask(geoJson: String): RasterSource =

@@ -1,3 +1,19 @@
+/**************************************************************************
+ * Copyright (c) 2014 Azavea.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **************************************************************************/
+
 package geotrellis.raster.op.local
 
 import geotrellis._
@@ -23,46 +39,46 @@ object Add extends LocalRasterBinaryOp {
 
 trait AddOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Add a constant Int value to each cell. */
-  def localAdd(i: Int) = self.mapOp(Add(_, i))
+  def localAdd(i: Int): RasterSource = self.mapOp(Add(_, i))
   /** Add a constant Int value to each cell. */
-  def +(i:Int) = localAdd(i)
+  def +(i:Int): RasterSource = localAdd(i)
   /** Add a constant Int value to each cell. */
-  def +:(i:Int) = localAdd(i)
+  def +:(i:Int): RasterSource = localAdd(i)
   /** Add a constant Double value to each cell. */
-  def localAdd(d: Double) = self.mapOp(Add(_, d))
+  def localAdd(d: Double): RasterSource = self.mapOp(Add(_, d))
   /** Add a constant Double value to each cell. */
-  def +(d:Double) = localAdd(d)
+  def +(d:Double): RasterSource = localAdd(d)
   /** Add a constant Double value to each cell. */
-  def +:(d:Double) = localAdd(d)
+  def +:(d:Double):RasterSource = localAdd(d)
   /** Add the values of each cell in each raster.  */
-  def localAdd(rs:RasterSource) = self.combineOp(rs)(Add(_,_))
+  def localAdd(rs:RasterSource): RasterSource = self.combineOp(rs)(Add(_,_))
   /** Add the values of each cell in each raster. */
-  def +(rs:RasterSource) = localAdd(rs)
+  def +(rs:RasterSource): RasterSource = localAdd(rs)
   /** Add the values of each cell in each raster.  */
-  def localAdd(rss:Seq[RasterSource]) = self.combineOp(rss)(Add(_))
+  def localAdd(rss:Seq[RasterSource]): RasterSource = self.combineOp(rss)(Add(_))
   /** Add the values of each cell in each raster. */
-  def +(rss:Seq[RasterSource]) = localAdd(rss)
+  def +(rss:Seq[RasterSource]): RasterSource = localAdd(rss)
 }
 
 trait AddMethods { self: Raster =>
   /** Add a constant Int value to each cell. */
-  def localAdd(i: Int) = Add(self, i)
+  def localAdd(i: Int): Raster = Add(self, i)
   /** Add a constant Int value to each cell. */
-  def +(i: Int) = localAdd(i)
+  def +(i: Int): Raster = localAdd(i)
   /** Add a constant Int value to each cell. */
-  def +:(i: Int) = localAdd(i)
+  def +:(i: Int): Raster = localAdd(i)
   /** Add a constant Double value to each cell. */
-  def localAdd(d: Double) = Add(self, d)
+  def localAdd(d: Double): Raster = Add(self, d)
   /** Add a constant Double value to each cell. */
-  def +(d: Double) = localAdd(d)
+  def +(d: Double): Raster = localAdd(d)
   /** Add a constant Double value to each cell. */
-  def +:(d: Double) = localAdd(d)
+  def +:(d: Double): Raster = localAdd(d)
   /** Add the values of each cell in each raster.  */
-  def localAdd(r: Raster) = Add(self, r)
+  def localAdd(r: Raster): Raster = Add(self, r)
   /** Add the values of each cell in each raster. */
-  def +(r: Raster) = localAdd(r)
+  def +(r: Raster): Raster = localAdd(r)
   /** Add the values of each cell in each raster.  */
-  def localAdd(rs: Seq[Raster]) = Add(self +: rs)
+  def localAdd(rs: Seq[Raster]): Raster = Add(self +: rs)
   /** Add the values of each cell in each raster. */
-  def +(rs: Seq[Raster]) = localAdd(rs)
+  def +(rs: Seq[Raster]): Raster = localAdd(rs)
 }

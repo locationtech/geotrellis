@@ -1,3 +1,19 @@
+/**************************************************************************
+ * Copyright (c) 2014 Azavea.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **************************************************************************/
+
 package geotrellis.raster.op.local
 
 import geotrellis._
@@ -22,54 +38,54 @@ object Subtract extends LocalRasterBinaryOp {
 
 trait SubtractOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Subtract a constant value from each cell.*/
-  def localSubtract(i: Int) = self.mapOp(Subtract(_, i))
+  def localSubtract(i: Int): RasterSource = self.mapOp(Subtract(_, i))
   /** Subtract a constant value from each cell.*/
   def -(i:Int) = localSubtract(i)
   /** Subtract each value of a cell from a constant value. */
-  def localSubtractFrom(i: Int) = self.mapOp(Subtract(i, _))
+  def localSubtractFrom(i: Int): RasterSource = self.mapOp(Subtract(i, _))
   /** Subtract each value of a cell from a constant value. */
   def -:(i:Int) = localSubtract(i)
   /** Subtract a double constant value from each cell.*/
-  def localSubtract(d: Double) = self.mapOp(Subtract(_, d))
+  def localSubtract(d: Double): RasterSource = self.mapOp(Subtract(_, d))
   /** Subtract a double constant value from each cell.*/
   def -(d:Double) = localSubtract(d)
   /** Subtract each value of a cell from a double constant value. */
-  def localSubtractFrom(d: Double) = self.mapOp(Subtract(d, _))
+  def localSubtractFrom(d: Double): RasterSource = self.mapOp(Subtract(d, _))
   /** Subtract each value of a cell from a double constant value. */
   def -:(d:Double) = localSubtractFrom(d)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(rs:RasterSource) = self.combineOp(rs)(Subtract(_,_))
+  def localSubtract(rs:RasterSource): RasterSource = self.combineOp(rs)(Subtract(_,_))
   /** Subtract the values of each cell in each raster. */
-  def -(rs:RasterSource) = localSubtract(rs)
+  def -(rs:RasterSource): RasterSource = localSubtract(rs)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(rss:Seq[RasterSource]) = self.combineOp(rss)(Subtract(_))
+  def localSubtract(rss:Seq[RasterSource]): RasterSource = self.combineOp(rss)(Subtract(_))
   /** Subtract the values of each cell in each raster. */
-  def -(rss:Seq[RasterSource]) = localSubtract(rss)
+  def -(rss:Seq[RasterSource]): RasterSource = localSubtract(rss)
 }
 
 trait SubtractMethods { self: Raster =>
   /** Subtract a constant value from each cell.*/
-  def localSubtract(i: Int) = Subtract(self, i)
+  def localSubtract(i: Int): Raster = Subtract(self, i)
   /** Subtract a constant value from each cell.*/
-  def -(i: Int) = localSubtract(i)
+  def -(i: Int): Raster = localSubtract(i)
   /** Subtract each value of a cell from a constant value. */
-  def localSubtractFrom(i: Int) = Subtract(i, self)
+  def localSubtractFrom(i: Int): Raster = Subtract(i, self)
   /** Subtract each value of a cell from a constant value. */
-  def -:(i: Int) = localSubtract(i)
+  def -:(i: Int): Raster = localSubtract(i)
   /** Subtract a double constant value from each cell.*/
-  def localSubtract(d: Double) = Subtract(self, d)
+  def localSubtract(d: Double): Raster = Subtract(self, d)
   /** Subtract a double constant value from each cell.*/
-  def -(d: Double) = localSubtract(d)
+  def -(d: Double): Raster = localSubtract(d)
   /** Subtract each value of a cell from a double constant value. */
-  def localSubtractFrom(d: Double) = Subtract(d, self)
+  def localSubtractFrom(d: Double): Raster = Subtract(d, self)
   /** Subtract each value of a cell from a double constant value. */
-  def -:(d: Double) = localSubtractFrom(d)
+  def -:(d: Double): Raster = localSubtractFrom(d)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(r: Raster) = Subtract(self, r)
+  def localSubtract(r: Raster): Raster = Subtract(self, r)
   /** Subtract the values of each cell in each raster. */
-  def -(r: Raster) = localSubtract(r)
+  def -(r: Raster): Raster = localSubtract(r)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(rs: Seq[Raster]) = Subtract(self +: rs)
+  def localSubtract(rs: Seq[Raster]): Raster = Subtract(self +: rs)
   /** Subtract the values of each cell in each raster. */
-  def -(rs: Seq[Raster]) = localSubtract(rs)
+  def -(rs: Seq[Raster]): Raster = localSubtract(rs)
 }
