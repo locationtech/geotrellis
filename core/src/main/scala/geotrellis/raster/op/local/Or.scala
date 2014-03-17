@@ -40,34 +40,34 @@ object Or extends LocalRasterBinaryOp {
 
 trait OrOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Or a constant Int value to each cell. */
-  def localOr(i: Int) = self.mapOp(Or(_, i))
+  def localOr(i: Int): RasterSource = self.mapOp(Or(_, i))
   /** Or a constant Int value to each cell. */
-  def |(i:Int) = localOr(i)
+  def |(i:Int): RasterSource = localOr(i)
   /** Or a constant Int value to each cell. */
-  def |:(i:Int) = localOr(i)
+  def |:(i:Int): RasterSource = localOr(i)
   /** Or the values of each cell in each raster.  */
-  def localOr(rs:RasterSource) = self.combineOp(rs)(Or(_,_))
+  def localOr(rs:RasterSource): RasterSource = self.combineOp(rs)(Or(_,_))
   /** Or the values of each cell in each raster. */
-  def |(rs:RasterSource) = localOr(rs)
+  def |(rs:RasterSource): RasterSource = localOr(rs)
   /** Or the values of each cell in each raster.  */
-  def localOr(rss:Seq[RasterSource]) = self.combineOp(rss)(Or(_))
+  def localOr(rss:Seq[RasterSource]): RasterSource = self.combineOp(rss)(Or(_))
   /** Or the values of each cell in each raster. */
-  def |(rss:Seq[RasterSource]) = localOr(rss)
+  def |(rss:Seq[RasterSource]): RasterSource = localOr(rss)
 }
 
 trait OrMethods { self: Raster =>
   /** Or a constant Int value to each cell. */
-  def localOr(i: Int) = Or(self, i)
+  def localOr(i: Int): Raster = Or(self, i)
   /** Or a constant Int value to each cell. */
-  def |(i:Int) = localOr(i)
+  def |(i:Int): Raster = localOr(i)
   /** Or a constant Int value to each cell. */
-  def |:(i:Int) = localOr(i)
+  def |:(i:Int): Raster = localOr(i)
   /** Or the values of each cell in each raster.  */
-  def localOr(r:Raster) = Or(self,r)
+  def localOr(r:Raster): Raster = Or(self,r)
   /** Or the values of each cell in each raster. */
-  def |(r:Raster) = localOr(r)
+  def |(r:Raster): Raster = localOr(r)
   /** Or the values of each cell in each raster.  */
-  def localOr(rs:Seq[Raster]) = Or(self +: rs)
+  def localOr(rs:Seq[Raster]): Raster = Or(self +: rs)
   /** Or the values of each cell in each raster. */
-  def |(rs:Seq[Raster]) = localOr(rs)
+  def |(rs:Seq[Raster]): Raster = localOr(rs)
 }

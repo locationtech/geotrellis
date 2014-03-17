@@ -40,34 +40,34 @@ object And extends LocalRasterBinaryOp {
 
 trait AndOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** And a constant Int value to each cell. */
-  def localAnd(i: Int) = self.mapOp(And(_, i))
+  def localAnd(i: Int): RasterSource = self.mapOp(And(_, i))
   /** And a constant Int value to each cell. */
-  def &(i:Int) = localAnd(i)
+  def &(i:Int): RasterSource = localAnd(i)
   /** And a constant Int value to each cell. */
-  def &:(i:Int) = localAnd(i)
+  def &:(i:Int): RasterSource = localAnd(i)
   /** And the values of each cell in each raster.  */
-  def localAnd(rs:RasterSource) = self.combineOp(rs)(And(_,_))
+  def localAnd(rs:RasterSource): RasterSource = self.combineOp(rs)(And(_,_))
   /** And the values of each cell in each raster. */
-  def &(rs:RasterSource) = localAnd(rs)
+  def &(rs:RasterSource): RasterSource = localAnd(rs)
   /** And the values of each cell in each raster.  */
-  def localAnd(rss:Seq[RasterSource]) = self.combineOp(rss)(And(_))
+  def localAnd(rss:Seq[RasterSource]): RasterSource = self.combineOp(rss)(And(_))
   /** And the values of each cell in each raster. */
-  def &(rss:Seq[RasterSource]) = localAnd(rss)
+  def &(rss:Seq[RasterSource]): RasterSource = localAnd(rss)
 }
 
 trait AndMethods { self: Raster =>
   /** And a constant Int value to each cell. */
-  def localAnd(i: Int) = And(self, i)
+  def localAnd(i: Int): Raster = And(self, i)
   /** And a constant Int value to each cell. */
-  def &(i:Int) = localAnd(i)
+  def &(i:Int): Raster = localAnd(i)
   /** And a constant Int value to each cell. */
-  def &:(i:Int) = localAnd(i)
+  def &:(i:Int): Raster = localAnd(i)
   /** And the values of each cell in each raster.  */
-  def localAnd(r:Raster) = And(self, r)
+  def localAnd(r:Raster): Raster = And(self, r)
   /** And the values of each cell in each raster. */
-  def &(r:Raster) = localAnd(r)
+  def &(r:Raster): Raster = localAnd(r)
   /** And the values of each cell in each raster.  */
-  def localAnd(rs:Seq[Raster]) = And(self +: rs)
+  def localAnd(rs:Seq[Raster]): Raster = And(self +: rs)
   /** And the values of each cell in each raster. */
-  def &(rs:Seq[Raster]) = localAnd(rs)
+  def &(rs:Seq[Raster]): Raster = localAnd(rs)
 }

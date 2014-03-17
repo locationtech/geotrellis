@@ -37,22 +37,22 @@ object Min extends LocalRasterBinaryOp {
 
 trait MinOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Min a constant Int value to each cell. */
-  def localMin(i: Int) = self.mapOp(Min(_, i))
+  def localMin(i: Int): RasterSource = self.mapOp(Min(_, i))
   /** Min a constant Double value to each cell. */
-  def localMin(d: Double) = self.mapOp(Min(_, d))
+  def localMin(d: Double): RasterSource = self.mapOp(Min(_, d))
   /** Min the values of each cell in each raster.  */
-  def localMin(rs:RasterSource) = self.combineOp(rs)(Min(_,_))
+  def localMin(rs:RasterSource): RasterSource = self.combineOp(rs)(Min(_,_))
   /** Min the values of each cell in each raster.  */
-  def localMin(rss:Seq[RasterSource]) = self.combineOp(rss)(Min(_))
+  def localMin(rss:Seq[RasterSource]): RasterSource = self.combineOp(rss)(Min(_))
 }
 
 trait MinMethods { self: Raster =>
   /** Min a constant Int value to each cell. */
-  def localMin(i: Int) = Min(self, i)
+  def localMin(i: Int): Raster = Min(self, i)
   /** Min a constant Double value to each cell. */
-  def localMin(d: Double) = Min(self, d)
+  def localMin(d: Double): Raster = Min(self, d)
   /** Min the values of each cell in each raster.  */
-  def localMin(r:Raster) = Min(self, r)
+  def localMin(r:Raster): Raster = Min(self, r)
   /** Min the values of each cell in each raster.  */
-  def localMin(rs:Seq[Raster]) = Min(self +: rs)
+  def localMin(rs:Seq[Raster]): Raster = Min(self +: rs)
 }
