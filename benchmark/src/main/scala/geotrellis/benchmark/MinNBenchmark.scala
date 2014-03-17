@@ -1,15 +1,41 @@
-package geotrellis.raster.op.local
+package geotrellis.benchmark
 
 import geotrellis._
-import geotrellis.raster.RasterData
-import geotrellis.source.RasterSource
-import geotrellis.ArrayRaster
-import geotrellis.GeoAttrsError
+import geotrellis.raster._
+import geotrellis.source._
+import geotrellis.raster.op.local._
 
-/**
- * Created by jchien on 2/9/14.
- */
-object MinN extends Serializable {
+import com.google.caliper.Param
+
+object MinNImplementation extends BenchmarkRunner(classOf[MinNImplementation])
+class MinNImplementation extends OperationBenchmark {
+//  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
+  @Param(Array("64", "512", "1024"))
+  var size:Int = 0
+
+  var quickSelect: Op[Raster] = null
+  var inPlace: Op[Raster] = null
+
+  override def setUp() {
+    val r = RasterSource(loadRaster("SBN_farm_mkt", size, size))
+    val r1 = (r+1).convergeOp
+    val r2 = (r+2).convergeOp
+    val r3 = (r+3).convergeOp
+    val r4 = (r+4).convergeOp
+    val r5 = (r+5).convergeOp
+
+    quickSelect = MinN(3, r1, r2, r3, r4, r5)
+    inPlace = InPlaceMinN(3, r1, r2, r3, r4, r5)
+  }
+
+  def timeMinNInPlace(reps:Int) = run(reps)(minNInPlace)
+  def minNInPlace = get(inPlace)
+
+  def timeMinNQuickSelect(reps:Int) = run(reps)(minNQuickSelect)
+  def minNQuickSelect = get(quickSelect)
+}
+
+object InPlaceMinN extends Serializable {
 
   case class ArrayView[Num](arr: Array[Num], from: Int, until: Int) {
     def apply(n: Int) =
@@ -136,12 +162,12 @@ object MinN extends Serializable {
         for(col <- 0 until cols) {
           for(row <- 0 until rows) {
             if(newRasterType.isDouble) {
-              //val minN = findNthDoubleInPlace(ArrayView(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)).toArray), n)
-              val minN = quickSelectDouble(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)), n)
+              val minN = findNthDoubleInPlace(ArrayView(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)).toArray), n)
+//              val minN = quickSelectDouble(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)), n)
               data.setDouble(col, row, minN)
             }else { // integer values
-            //val minN = findNthIntInPlace(ArrayView(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)).toArray), n)
-            val minN = quickSelectInt(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)), n)
+            val minN = findNthIntInPlace(ArrayView(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)).toArray), n)
+//            val minN = quickSelectInt(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)), n)
               data.set(col, row, minN)
             }
           }
@@ -150,14 +176,4 @@ object MinN extends Serializable {
       }
     }
       .withName("MaxN")
-}
-
-trait MinNOpMethods[+Repr <: RasterSource] { self: Repr =>
-  /** Assigns to each cell the value within the given rasters that is the nth min */
-  def localMinN(n:Int,rss:Seq[RasterSource]):RasterSource =
-    combineOp(rss)(MinN(n,_))
-
-  /** Assigns to each cell the value within the given rasters that is the nth min */
-  def localMinN(n:Int,rss:RasterSource*)(implicit d:DI):RasterSource =
-    localMinN(n,rss)
 }
