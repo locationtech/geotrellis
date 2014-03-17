@@ -111,52 +111,40 @@ object MaxN extends Serializable {
     }
   }
 
-  def apply(n:Op[Int],rs:Op[Raster]*):Op[Raster] =
+  def apply(n:Int,rs:Raster*):Raster =
     apply(n,rs)
 
-  def apply(n:Op[Int],rs:Seq[Op[Raster]])(implicit d:DI):Op[Raster] =
-    (n,logic.Collect(rs)).map { (n,rs) =>
-      if(Set(rs.map(_.rasterExtent)).size != 1) {
-        val rasterExtents = rs.map(_.rasterExtent).toSeq
-        throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
-          s"$rasterExtents are not all equal")
-      }
+  def apply(n:Int,rs:Seq[Raster])(implicit d:DI):Raster = {
+    if(Set(rs.map(_.rasterExtent)).size != 1) {
+      val rasterExtents = rs.map(_.rasterExtent).toSeq
+      throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
+        s"$rasterExtents are not all equal")
+    }
 
-      val layerCount = rs.length
-      if(layerCount < n) {
-        sys.error(s"Not enough values to compute Nth")
-      } else {
-        val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
-        val re = rs(0).rasterExtent
-        val cols = re.cols
-        val rows = re.rows
-        val data = RasterData.allocByType(newRasterType,cols,rows)
+    val layerCount = rs.length
+    if(layerCount < n) {
+      sys.error(s"Not enough values to compute Nth")
+    } else {
+      val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
+      val re = rs(0).rasterExtent
+      val cols = re.cols
+      val rows = re.rows
+      val data = RasterData.allocByType(newRasterType,cols,rows)
 
-        for(col <- 0 until cols) {
-          for(row <- 0 until rows) {
-            if(newRasterType.isDouble) {
-              //val maxN = findNthDoubleInPlace(ArrayView(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)).toArray), n)
-              val maxN = quickSelectDouble(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)), n)
-              data.setDouble(col, row, maxN)
-            }else { // integer values
-              //val maxN = findNthIntInPlace(ArrayView(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)).toArray), n)
-              val maxN = quickSelectInt(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)), n)
-              data.set(col, row, maxN)
-            }
+      for(col <- 0 until cols) {
+        for(row <- 0 until rows) {
+          if(newRasterType.isDouble) {
+            //val maxN = findNthDoubleInPlace(ArrayView(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)).toArray), n)
+            val maxN = quickSelectDouble(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)), n)
+            data.setDouble(col, row, maxN)
+          }else { // integer values
+            //val maxN = findNthIntInPlace(ArrayView(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)).toArray), n)
+            val maxN = quickSelectInt(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)), n)
+            data.set(col, row, maxN)
           }
         }
-        ArrayRaster(data,re)
       }
+      ArrayRaster(data,re)
     }
-      .withName("MaxN")
-}
-
-trait MaxNOpMethods[+Repr <: RasterSource] { self: Repr =>
-  /** Assigns to each cell the value within the given rasters that is the nth max */
-  def localMaxN(n:Int,rss:Seq[RasterSource]):RasterSource =
-    combineOp(rss)(MaxN(n,_))
-
-  /** Assigns to each cell the value within the given rasters that is the nth max */
-  def localMaxN(n:Int,rss:RasterSource*)(implicit d:DI):RasterSource =
-    localMaxN(n,rss)
+  }
 }

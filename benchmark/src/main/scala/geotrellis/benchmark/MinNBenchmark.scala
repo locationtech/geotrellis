@@ -6,6 +6,7 @@ import geotrellis.source._
 import geotrellis.raster.op.local._
 
 import com.google.caliper.Param
+import scala.collection.mutable.ArrayBuffer
 
 object MinNImplementation extends BenchmarkRunner(classOf[MinNImplementation])
 class MinNImplementation extends OperationBenchmark {
@@ -13,19 +14,21 @@ class MinNImplementation extends OperationBenchmark {
   @Param(Array("64", "512", "1024"))
   var size:Int = 0
 
-  var quickSelect: Op[Raster] = null
-  var inPlace: Op[Raster] = null
+  var quickSelect: Raster = null
+  var inPlace: Raster = null
+  var array: Raster = null
 
   override def setUp() {
-    val r = RasterSource(loadRaster("SBN_farm_mkt", size, size))
-    val r1 = (r+1).convergeOp
-    val r2 = (r+2).convergeOp
-    val r3 = (r+3).convergeOp
-    val r4 = (r+4).convergeOp
-    val r5 = (r+5).convergeOp
+    val r = loadRaster("SBN_farm_mkt", size, size)
+    val r1 = (r+1)
+    val r2 = (r+2)
+    val r3 = (r+3)
+    val r4 = (r+4)
+    val r5 = (r+5)
 
-    quickSelect = MinN(3, r1, r2, r3, r4, r5)
-    inPlace = InPlaceMinN(3, r1, r2, r3, r4, r5)
+    quickSelect = MinN(2, r1, r2, r3, r4, r5)
+    inPlace = InPlaceMinN(2, r1, r2, r3, r4, r5)
+    array = ArrayMinN(2, r1, r2, r3, r4, r5)
   }
 
   def timeMinNInPlace(reps:Int) = run(reps)(minNInPlace)
@@ -33,6 +36,9 @@ class MinNImplementation extends OperationBenchmark {
 
   def timeMinNQuickSelect(reps:Int) = run(reps)(minNQuickSelect)
   def minNQuickSelect = get(quickSelect)
+
+  def timeMinNArray(reps:Int) = run(reps)(minNArray)
+  def minNArray = get(array)
 }
 
 object InPlaceMinN extends Serializable {
@@ -138,42 +144,86 @@ object InPlaceMinN extends Serializable {
     }
   }
 
-  def apply(n:Op[Int],rs:Op[Raster]*):Op[Raster] =
+  def apply(n:Int,rs:Raster*):Raster =
     apply(n,rs)
 
-  def apply(n:Op[Int],rs:Seq[Op[Raster]])(implicit d:DI):Op[Raster] =
-    (n,logic.Collect(rs)).map { (n,rs) =>
-      if(Set(rs.map(_.rasterExtent)).size != 1) {
-        val rasterExtents = rs.map(_.rasterExtent).toSeq
-        throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
-          s"$rasterExtents are not all equal")
-      }
+  def apply(n:Int,rs:Seq[Raster])(implicit d:DI):Raster = {
+    if(Set(rs.map(_.rasterExtent)).size != 1) {
+      val rasterExtents = rs.map(_.rasterExtent).toSeq
+      throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
+        s"$rasterExtents are not all equal")
+    }
 
-      val layerCount = rs.length
-      if(layerCount < n) {
-        sys.error(s"Not enough values to compute Nth")
-      } else {
-        val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
-        val re = rs(0).rasterExtent
-        val cols = re.cols
-        val rows = re.rows
-        val data = RasterData.allocByType(newRasterType,cols,rows)
+    val layerCount = rs.length
+    if(layerCount < n) {
+      sys.error(s"Not enough values to compute Nth")
+    } else {
+      val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
+      val re = rs(0).rasterExtent
+      val cols = re.cols
+      val rows = re.rows
+      val data = RasterData.allocByType(newRasterType,cols,rows)
 
-        for(col <- 0 until cols) {
-          for(row <- 0 until rows) {
-            if(newRasterType.isDouble) {
-              val minN = findNthDoubleInPlace(ArrayView(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)).toArray), n)
+      for(col <- 0 until cols) {
+        for(row <- 0 until rows) {
+          if(newRasterType.isDouble) {
+            val minN = findNthDoubleInPlace(ArrayView(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)).toArray), n)
 //              val minN = quickSelectDouble(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)), n)
-              data.setDouble(col, row, minN)
-            }else { // integer values
-            val minN = findNthIntInPlace(ArrayView(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)).toArray), n)
+            data.setDouble(col, row, minN)
+          }else { // integer values
+          val minN = findNthIntInPlace(ArrayView(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)).toArray), n)
 //            val minN = quickSelectInt(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)), n)
-              data.set(col, row, minN)
-            }
+            data.set(col, row, minN)
           }
         }
-        ArrayRaster(data,re)
       }
+      ArrayRaster(data,re)
     }
-      .withName("MaxN")
+  }
+}
+
+object ArrayMinN extends Serializable {
+
+  def apply(n:Int,rs:Raster*):Raster =
+    apply(n,rs)
+
+  def apply(n:Int,rs:Seq[Raster])(implicit d:DI):Raster = {
+    if(Set(rs.map(_.rasterExtent)).size != 1) {
+      val rasterExtents = rs.map(_.rasterExtent).toSeq
+      throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
+        s"$rasterExtents are not all equal")
+    }
+
+    val layerCount = rs.length
+    if(layerCount < n) {
+      sys.error(s"Not enough values to compute Nth")
+    } else {
+      val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
+      val re = rs(0).rasterExtent
+      val cols = re.cols
+      val rows = re.rows
+      val data = RasterData.allocByType(newRasterType,cols,rows)
+
+      for(col <- 0 until cols) {
+        for(row <- 0 until rows) {
+          if(newRasterType.isDouble) {
+            val sorted = rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)).toArray.sorted
+            val minN = {
+              if(n < sorted.length) { sorted(n) }
+              else { Double.NaN }
+            }
+            data.setDouble(col, row, minN)
+          }else { // integer values
+            val sorted = rs.map(r => r.get(col,row)).filter(num => !isNoData(num)).toArray.sorted
+            val minN = {
+              if(n < sorted.length) { sorted(n) }
+              else { NODATA }
+            }
+            data.set(col, row, minN)
+          }
+        }
+      }
+      ArrayRaster(data,re)
+    }
+  }
 }
