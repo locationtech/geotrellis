@@ -30,15 +30,3 @@ object Sin extends Serializable {
     r.convert(TypeDouble)
      .mapDouble(z => math.sin(z))
 }
-
-/**
- * Operation to get the sine of values.
- */
-trait SinMethods { self: Raster =>
-  /**
-    * Takes the sine of each raster cell value.
-    * @info Always returns a double raster.
-    */
-  def localSin() = 
-    Sin(self)
-}

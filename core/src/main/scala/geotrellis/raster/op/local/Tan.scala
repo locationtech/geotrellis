@@ -27,14 +27,3 @@ object Tan extends Serializable {
     r.convert(TypeDouble)
      .mapDouble(z => math.tan(z))
 }
-
-/**
- * Operation to get the Tangent of values.
- */
-trait TanMethods { self: Raster =>
-  /** Takes the Tangent of each raster cell value.
-   * @info always returns a double raster.
-   */
-  def localTan() =
-    Tan(self)
-}

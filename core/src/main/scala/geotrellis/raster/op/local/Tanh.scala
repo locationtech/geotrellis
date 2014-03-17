@@ -30,14 +30,3 @@ object Tanh extends Serializable {
     r.convert(TypeDouble)
      .mapDouble(z => math.tanh(z))
 }
-
-/**
- * Operation to get the hyperbolic tangent of values.
- */
-trait TanhMethods { self: Raster =>
-  /** Takes the hyperboic cosine of each raster cell value.
-    * @info Always returns a double raster.
-    */
-  def localTanh() =
-    Tanh(self)
-}

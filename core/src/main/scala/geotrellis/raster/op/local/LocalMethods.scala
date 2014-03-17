@@ -28,6 +28,12 @@ trait LocalMethods extends AddMethods
                       with OrMethods
                       with XorMethods
                       with ConditionalMethods
+                      with EqualMethods
+                      with UnequalMethods
+                      with GreaterOrEqualMethods
+                      with GreaterMethods
+                      with LessMethods
+                      with LessOrEqualMethods
                       with PowMethods { self: Raster =>
 
   /**
@@ -97,4 +103,75 @@ trait LocalMethods extends AddMethods
     */
   def localNot(): Raster =
     Not(self)
+
+  /** Takes the Absolute value of each raster cell value. */
+  def localAbs(): Raster =
+  	Abs(self)
+
+  /**
+    * Takes the arc cos of each raster cell value.
+    * @info               Always return a double valued raster.
+    */
+  def localAcos(): Raster =
+    Acos(self)
+
+  /**
+    * Takes the arc sine of each raster cell value.
+    * @info               Always return a double valued raster.
+    */
+  def localAsin(): Raster =
+    Asin(self)
+
+  /** Takes the Arc Tangent2
+   *  This raster holds the y-values, and the parameter
+   *  holds the x values. The arctan is calculated from y/x.
+   *  @info               A double raster is always returned.
+   */
+   def localAtan2(r:Raster): Raster =
+    Atan2(self, r)
+
+  /**
+    * Takes the arc tan of each raster cell value.
+    * @info               Always return a double valued raster.
+    */
+  def localAtan(): Raster =
+    Atan(self)
+
+  /** Takes the Cosine of each raster cell value.
+    * @info               Always returns a double raster.
+    */
+  def localCos(): Raster =
+    Cos(self)
+
+  /** Takes the hyperboic cosine of each raster cell value.
+    * @info               Always returns a double raster.
+    */
+  def localCosh(): Raster =
+    Cosh(self)
+
+  /**
+    * Takes the sine of each raster cell value.
+    * @info               Always returns a double raster.
+    */
+  def localSin(): Raster = 
+    Sin(self)
+
+  /**
+   * Takes the hyperbolic sine of each raster cell value.
+   * @info               Always returns a double raster.
+   */
+  def localSinh(): Raster =
+    Sinh(self)
+
+  /** Takes the Tangent of each raster cell value.
+   * @info               Always returns a double raster.
+   */
+  def localTan(): Raster =
+    Tan(self)
+
+  /** Takes the hyperboic cosine of each raster cell value.
+    * @info               Always returns a double raster.
+    */
+  def localTanh(): Raster =
+    Tanh(self)
 }

@@ -29,14 +29,3 @@ object Cosh extends Serializable {
     r.convert(TypeDouble)
      .mapDouble(z => math.cosh(z))
 }
-
-/**
- * Operation to get the hyperbolic cosine of values.
- */
-trait CoshMethods { self: Raster =>
-  /** Takes the hyperboic cosine of each raster cell value.
-    * @info Always returns a double raster.
-    */
-  def localCosh() =
-    Cosh(self)
-}

@@ -30,15 +30,3 @@ object Sinh extends Serializable {
     r.convert(TypeDouble)
      .mapDouble(z => math.sinh(z))
 }
-
-/**
- * Operation to get the sinh of values.
- */
-trait SinhMethods { self: Raster =>
-  /**
-   * Takes the hyperbolic sine of each raster cell value.
-   * @info Always returns a double raster.
-   */
-  def localSinh() =
-    Sinh(self)
-}

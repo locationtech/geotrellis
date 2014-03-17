@@ -27,12 +27,3 @@ object Abs extends Serializable {
     r.dualMap { z: Int => if(isNoData(z)) z else z.abs }
               { z: Double => z.abs }
 }
-
-/**
- * Operation to get the Absolute value
- */
-trait AbsMethods { self: Raster =>
-  /** Takes the Absolute value of each raster cell value. */
-  def localAbs() =
-    Abs(self)
-}

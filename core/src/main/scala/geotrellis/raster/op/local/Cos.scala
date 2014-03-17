@@ -29,14 +29,3 @@ object Cos extends Serializable {
     r.convert(TypeDouble) 
      .mapDouble(z => math.cos(z))
 }
-
-/**
- * Operation to get the Cosine of values.
- */
-trait CosMethods { self: Raster =>
-  /** Takes the Cosine of each raster cell value.
-    * @info Always returns a double raster.
-    */
-  def localCos() =
-    Cos(self)
-}

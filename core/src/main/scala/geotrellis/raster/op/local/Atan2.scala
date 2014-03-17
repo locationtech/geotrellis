@@ -32,16 +32,3 @@ object Atan2 extends Serializable {
       .combineDouble(r2) { (z1, z2) => math.atan2(z1, z2) }
   }
 }
-
-/**
- * Operation to get the Arc Tangent2 of values.
- */
-trait Atan2Methods { self: Raster =>
-  /** Takes the Arc Tangent2
-   *  The first raster holds the y-values, and the second
-   *  holds the x values. The arctan is calculated from y/x.
-   *  @info A double raster is always returned.
-   */
-   def localAtan2(r:Raster) =
-    Atan2(self, r)
-}
