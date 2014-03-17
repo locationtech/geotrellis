@@ -2,12 +2,13 @@ package geotrellis.raster.op.local
 
 import geotrellis._
 import geotrellis.raster.RasterData
-import geotrellis.source.RasterSource
 import geotrellis.ArrayRaster
 import geotrellis.GeoAttrsError
 
 /**
- * Created by jchien on 2/9/14.
+ * Implementation to find the Nth minimum element of a set of rasters for each cell.
+ * Uses a randomized in-place quick select algorithm that was found to be the fastest on average in benchmarks.
+ * @author jchien
  */
 object MinN extends Serializable {
 
@@ -68,50 +69,6 @@ object MinN extends Serializable {
     }
   }
 
-  def quickSelectInt(seq: Seq[Int], n: Int): Int = {
-    if (n >= seq.length) {
-      NODATA
-    } else if (n == 0) {
-      seq.min
-    } else {
-      val pivot = seq(scala.util.Random.nextInt(seq.length))
-      val (left, right) = seq.partition(_ < pivot)
-      if (left.length == n) {
-        pivot
-      } else if (left.length == 0){
-        val (left, right) = seq.partition(_ == pivot)
-        if (left.length > n) pivot
-        else quickSelectInt(right, n - left.length)
-      } else if (left.length < n) {
-        quickSelectInt(right, n - left.length)
-      } else {
-        quickSelectInt(left, n)
-      }
-    }
-  }
-
-  def quickSelectDouble(seq: Seq[Double], n: Int): Double = {
-    if (n >= seq.length) {
-      Double.NaN
-    } else if (n == 0) {
-      seq.min
-    } else {
-      val pivot = seq(scala.util.Random.nextInt(seq.length))
-      val (left, right) = seq.partition(_ < pivot)
-      if (left.length == n) {
-        pivot
-      } else if (left.length == 0){
-        val (left, right) = seq.partition(_ == pivot)
-        if (left.length > n) pivot
-        else quickSelectDouble(right, n - left.length)
-      } else if (left.length < n) {
-        quickSelectDouble(right, n - left.length)
-      } else {
-        quickSelectDouble(left, n)
-      }
-    }
-  }
-
   def apply(n:Int,rs:Raster*):Raster =
     apply(n,rs)
 
@@ -135,12 +92,10 @@ object MinN extends Serializable {
       for(col <- 0 until cols) {
         for(row <- 0 until rows) {
           if(newRasterType.isDouble) {
-            //val minN = findNthDoubleInPlace(ArrayView(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)).toArray), n)
-            val minN = quickSelectDouble(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)), n)
+            val minN = findNthDoubleInPlace(ArrayView(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)).toArray), n)
             data.setDouble(col, row, minN)
           }else { // integer values
-          //val minN = findNthIntInPlace(ArrayView(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)).toArray), n)
-          val minN = quickSelectInt(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)), n)
+          val minN = findNthIntInPlace(ArrayView(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)).toArray), n)
             data.set(col, row, minN)
           }
         }

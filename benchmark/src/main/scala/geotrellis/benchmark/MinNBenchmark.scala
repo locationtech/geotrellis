@@ -2,21 +2,18 @@ package geotrellis.benchmark
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
 import geotrellis.raster.op.local._
 
 import com.google.caliper.Param
-import scala.collection.mutable.ArrayBuffer
 
 object MinNImplementation extends BenchmarkRunner(classOf[MinNImplementation])
 class MinNImplementation extends OperationBenchmark {
-//  @Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
   @Param(Array("64", "512", "1024"))
   var size:Int = 0
 
-  var quickSelect: Raster = null
-  var inPlace: Raster = null
-  var array: Raster = null
+  var quickSelectInPlace: Raster = null
+  var quickSelectImmutable: Raster = null
+  var arraySort: Raster = null
 
   override def setUp() {
     val r = loadRaster("SBN_farm_mkt", size, size)
@@ -26,79 +23,22 @@ class MinNImplementation extends OperationBenchmark {
     val r4 = (r+4)
     val r5 = (r+5)
 
-    quickSelect = MinN(2, r1, r2, r3, r4, r5)
-    inPlace = InPlaceMinN(2, r1, r2, r3, r4, r5)
-    array = ArrayMinN(2, r1, r2, r3, r4, r5)
+    quickSelectInPlace = MinN(2, r1, r2, r3, r4, r5)
+    quickSelectImmutable = ImmutableMinN(2, r1, r2, r3, r4, r5)
+    arraySort = ArrayMinN(2, r1, r2, r3, r4, r5)
   }
 
-  def timeMinNInPlace(reps:Int) = run(reps)(minNInPlace)
-  def minNInPlace = get(inPlace)
+  def timeMinNQuickSelectInPlace(reps:Int) = run(reps)(minNInPlace)
+  def minNInPlace = get(quickSelectInPlace)
 
-  def timeMinNQuickSelect(reps:Int) = run(reps)(minNQuickSelect)
-  def minNQuickSelect = get(quickSelect)
+  def timeMinNQuickSelectImmutable(reps:Int) = run(reps)(minNImmutable)
+  def minNImmutable = get(quickSelectImmutable)
 
   def timeMinNArray(reps:Int) = run(reps)(minNArray)
-  def minNArray = get(array)
+  def minNArray = get(arraySort)
 }
 
-object InPlaceMinN extends Serializable {
-
-  case class ArrayView[Num](arr: Array[Num], from: Int, until: Int) {
-    def apply(n: Int) =
-      if (from + n < until) arr(from + n)
-      else throw new ArrayIndexOutOfBoundsException(n)
-
-    def partitionInPlace(p: Num => Boolean): (ArrayView[Num], ArrayView[Num]) = {
-      var upper = until - 1
-      var lower = from
-      while (lower < upper) {
-        while (lower < until && p(arr(lower))) lower += 1
-        while (upper >= from && !p(arr(upper))) upper -= 1
-        if (lower < upper) { val tmp = arr(lower); arr(lower) = arr(upper); arr(upper) = tmp }
-      }
-      (copy(until = lower), copy(from = lower))
-    }
-
-    def size = until - from
-    def isEmpty = size <= 0
-  }
-
-  object ArrayView {
-    def apply(arr: Array[Double]) = new ArrayView(arr, 0, arr.size)
-    def apply(arr: Array[Int]) = new ArrayView(arr, 0, arr.size)
-  }
-
-  def findNthIntInPlace(arr: ArrayView[Int], n: Int): Int = {
-    if(n >= arr.size) {
-      NODATA
-    } else {
-      val pivot = arr(scala.util.Random.nextInt(arr.size))
-      val (left, right) = arr partitionInPlace (_ < pivot)
-      if (left.size == n) pivot
-      else if (left.isEmpty) {
-        val (left, right) = arr partitionInPlace (_ == pivot)
-        if (left.size > n) pivot
-        else findNthIntInPlace(right, n - left.size)
-      } else if (left.size < n) findNthIntInPlace(right, n - left.size)
-      else findNthIntInPlace(left, n)
-    }
-  }
-
-  def findNthDoubleInPlace(arr: ArrayView[Double], n: Int): Double = {
-    if(n >= arr.size) {
-      Double.NaN
-    } else {
-      val pivot = arr(scala.util.Random.nextInt(arr.size))
-      val (left, right) = arr partitionInPlace (_ < pivot)
-      if (left.size == n) pivot
-      else if (left.isEmpty) {
-        val (left, right) = arr partitionInPlace (_ == pivot)
-        if (left.size > n) pivot
-        else findNthDoubleInPlace(right, n - left.size)
-      } else if (left.size < n) findNthDoubleInPlace(right, n - left.size)
-      else findNthDoubleInPlace(left, n)
-    }
-  }
+object ImmutableMinN extends Serializable {
 
   def quickSelectInt(seq: Seq[Int], n: Int): Int = {
     if (n >= seq.length) {
@@ -167,12 +107,10 @@ object InPlaceMinN extends Serializable {
       for(col <- 0 until cols) {
         for(row <- 0 until rows) {
           if(newRasterType.isDouble) {
-            val minN = findNthDoubleInPlace(ArrayView(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)).toArray), n)
-//              val minN = quickSelectDouble(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)), n)
+            val minN = quickSelectDouble(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)), n)
             data.setDouble(col, row, minN)
           }else { // integer values
-          val minN = findNthIntInPlace(ArrayView(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)).toArray), n)
-//            val minN = quickSelectInt(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)), n)
+            val minN = quickSelectInt(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)), n)
             data.set(col, row, minN)
           }
         }
