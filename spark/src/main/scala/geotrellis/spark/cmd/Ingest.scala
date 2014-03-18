@@ -1,18 +1,20 @@
-/**************************************************************************
+/**
+ * ************************************************************************
  * Copyright (c) 2014 DigitalGlobe.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **************************************************************************/
+ * ************************************************************************
+ */
 
 package geotrellis.spark.cmd
 import geotrellis._
@@ -141,50 +143,11 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
           //logInfo(s"Saved tileId=${tileId},partition=${partitioner.getPartition(key)}")
         }
       }
-    } finally {
+    }
+    finally {
       writers.foreach(_.close)
     }
     logInfo(s"Done saving ${tiles.length} tiles")
-  }
-
-  private def warp(image: GridCoverage2D, imgMeta: Metadata, pyMeta: PyramidMetadata): Raster = {
-
-    val (pixelWidth, pixelHeight) = imgMeta.pixels
-
-    val (zoom, tileSize, rasterType, nodata) =
-      (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType, pyMeta.nodata)
-
-    def buildRaster = {
-      val extent = Extent(imgMeta.bounds.getLowerCorner.getOrdinate(0),
-        imgMeta.bounds.getLowerCorner.getOrdinate(1),
-        imgMeta.bounds.getUpperCorner.getOrdinate(0),
-        imgMeta.bounds.getUpperCorner.getOrdinate(1))
-      val re = RasterExtent(extent, pixelWidth, pixelHeight)
-      val rawDataBuff = image.getRenderedImage().getData().getDataBuffer()
-      val rd = rasterType match {
-        case TypeDouble => RasterData(rawDataBuff.asInstanceOf[DataBufferDouble].getData(), tileSize, tileSize)
-        case TypeFloat  => RasterData(rawDataBuff.asInstanceOf[DataBufferFloat].getData(), tileSize, tileSize)
-        case TypeInt    => RasterData(rawDataBuff.asInstanceOf[DataBufferInt].getData(), tileSize, tileSize)
-        case TypeShort  => RasterData(rawDataBuff.asInstanceOf[DataBufferShort].getData(), tileSize, tileSize)
-        case TypeByte   => RasterData(rawDataBuff.asInstanceOf[DataBufferByte].getData(), tileSize, tileSize)
-        case _          => sys.error("Unrecognized AWT type - " + rasterType)
-      }
-      val trd = NoDataHandler.removeUserNoData(rd, nodata)
-      Raster(trd, re)
-    }
-
-    val origRaster = buildRaster
-    val res = TmsTiling.resolution(zoom, tileSize)
-    val newRe = RasterExtent(origRaster.rasterExtent.extent, res, res)
-    //println(s"re: ${re},newRe: ${newRe}")
-    //val start = System.currentTimeMillis
-    //println(s"[extent,cols,rows,cellwidth,cellheight,rdLen,bufLen]: ")
-    //println(s"Before Warp: [${r.rasterExtent},${r.cols},${r.rows},${r.rasterExtent.cellwidth},${r.rasterExtent.cellheight},${r.toArrayRaster.data.length},${rawDataBuff.asInstanceOf[DataBufferFloat].getData().length}]")
-    val warpRaster = origRaster.warp(newRe)
-    //val end = System.currentTimeMillis
-    //println(s"After Warp: [${wr.rasterExtent},${wr.cols},${wr.rows},${wr.rasterExtent.cellwidth},cellheight=${wr.rasterExtent.cellheight},${wr.toArrayRaster.data.length}]")
-    //println(s"Warp operation took ${end - start} ms.")
-    warpRaster
   }
 
   private def tiffToTiles(file: Path, pyMeta: PyramidMetadata): List[(Long, Raster)] = {
@@ -234,6 +197,46 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
     end debugging stuff */
 
     tiles.toList
+  }
+
+  private def warp(image: GridCoverage2D, imgMeta: Metadata, pyMeta: PyramidMetadata): Raster = {
+
+    val (pixelWidth, pixelHeight) = imgMeta.pixels
+
+    val (zoom, tileSize, rasterType, nodata) =
+      (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType, pyMeta.nodata)
+
+    def buildRaster = {
+      val extent = Extent(imgMeta.bounds.getLowerCorner.getOrdinate(0),
+        imgMeta.bounds.getLowerCorner.getOrdinate(1),
+        imgMeta.bounds.getUpperCorner.getOrdinate(0),
+        imgMeta.bounds.getUpperCorner.getOrdinate(1))
+      val re = RasterExtent(extent, pixelWidth, pixelHeight)
+      val rawDataBuff = image.getRenderedImage().getData().getDataBuffer()
+      val rd = rasterType match {
+        case TypeDouble => RasterData(rawDataBuff.asInstanceOf[DataBufferDouble].getData(), tileSize, tileSize)
+        case TypeFloat  => RasterData(rawDataBuff.asInstanceOf[DataBufferFloat].getData(), tileSize, tileSize)
+        case TypeInt    => RasterData(rawDataBuff.asInstanceOf[DataBufferInt].getData(), tileSize, tileSize)
+        case TypeShort  => RasterData(rawDataBuff.asInstanceOf[DataBufferShort].getData(), tileSize, tileSize)
+        case TypeByte   => RasterData(rawDataBuff.asInstanceOf[DataBufferByte].getData(), tileSize, tileSize)
+        case _          => sys.error("Unrecognized AWT type - " + rasterType)
+      }
+      val trd = NoDataHandler.removeUserNoData(rd, nodata)
+      Raster(trd, re)
+    }
+
+    val origRaster = buildRaster
+    val res = TmsTiling.resolution(zoom, tileSize)
+    val newRe = RasterExtent(origRaster.rasterExtent.extent, res, res)
+    //println(s"re: ${re},newRe: ${newRe}")
+    //val start = System.currentTimeMillis
+    //println(s"[extent,cols,rows,cellwidth,cellheight,rdLen,bufLen]: ")
+    //println(s"Before Warp: [${r.rasterExtent},${r.cols},${r.rows},${r.rasterExtent.cellwidth},${r.rasterExtent.cellheight},${r.toArrayRaster.data.length},${rawDataBuff.asInstanceOf[DataBufferFloat].getData().length}]")
+    val warpRaster = origRaster.warp(newRe)
+    //val end = System.currentTimeMillis
+    //println(s"After Warp: [${wr.rasterExtent},${wr.cols},${wr.rows},${wr.rasterExtent.cellwidth},cellheight=${wr.rasterExtent.cellheight},${wr.toArrayRaster.data.length}]")
+    //println(s"Warp operation took ${end - start} ms.")
+    warpRaster
   }
 
   /* debugging only */
