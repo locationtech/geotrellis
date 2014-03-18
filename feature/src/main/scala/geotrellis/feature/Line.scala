@@ -149,7 +149,7 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
     jtsGeom.buffer(d) match {
       case p: jts.Polygon => Polygon(p)
       case x =>
-        sys.error(s"Unexpected result for Point buffer: ${x.getGeometryType}")
+        sys.error(s"Unexpected result for Line buffer: ${x.getGeometryType}")
     }
 
   // -- Predicates
