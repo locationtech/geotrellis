@@ -138,7 +138,7 @@ class CoshSpec extends FunSpec
       val expected = rasterData.map(math.cosh(_))
                                .toList
                                .init
-      val rs = createRasterSource(rasterData, 2, 2, 2, 2)
+      val rs = createRaster(rasterData, 4, 4)
       val result = rs.localCosh
       for (y <- 0 until 4) {
         for (x <- 0 until 4) {

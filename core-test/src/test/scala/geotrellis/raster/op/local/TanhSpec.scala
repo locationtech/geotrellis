@@ -108,8 +108,8 @@ class TanhSpec extends FunSpec
        -2.0,-13.0/6, -7.0/3,    Double.PositiveInfinity,  Double.NegativeInfinity, Double.NaN
       ).map(_*math.Pi)
       val expected = rasterData.map(math.tanh(_))
-      val rs = createRasterSource(rasterData, 3, 3, 2, 2)
-      val result = rs.localTanh
+      val r = createRaster(rasterData, 6, 6)
+      val result = r.localTanh
       for (y <- 0 until 6) {
         for (x <- 0 until 6) {
           val theTanh = result.getDouble(x, y)
@@ -134,8 +134,8 @@ class TanhSpec extends FunSpec
       val expected = rasterData.map(math.tanh(_))
                                .toList
                                .init
-      val rs = createRasterSource(rasterData, 2, 2, 2, 2)
-      val result = rs.localTanh
+      val r = createRaster(rasterData, 4, 4)
+      val result = r.localTanh
       for (y <- 0 until 4) {
         for (x <- 0 until 4) {
           val isLastValue = (x == 3 && y == 3)
