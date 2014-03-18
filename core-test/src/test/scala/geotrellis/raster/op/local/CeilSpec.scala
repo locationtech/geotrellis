@@ -94,7 +94,7 @@ class CeilSpec extends FunSpec
                1,1,1, 1,1,1, 1,1,1),
         9, 4)
 
-      val result = get(r.localCeil())
+      val result = r.localCeil()
 
       for(row <- 0 until 4) {
         for(col <- 0 until 9) {
@@ -115,7 +115,7 @@ class CeilSpec extends FunSpec
                1.3,1.3,1.3, 1.3,1.3,1.3, 1.3,1.3,1.3),
         9, 4)
 
-      val result = get(r.localCeil())
+      val result = r.localCeil()
 
       for(row <- 0 until 4) {
         for(col <- 0 until 9) {

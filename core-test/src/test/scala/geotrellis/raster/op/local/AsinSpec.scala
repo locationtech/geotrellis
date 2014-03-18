@@ -147,7 +147,7 @@ class AsinSpec extends FunSpec
         0.0,-0.5,-1/math.sqrt(2),  -math.sqrt(3)/2,-1.0, Double.NaN,   0, 0, 0
       )
       val rs = createRaster(rasterData, 9, 4)
-      val result = get(rs.localAsin())
+      val result = rs.localAsin()
       val expectedAngles = List( 0.0,    1.0/6,  1.0/4,
                                  1.0/3,  0.5,    Double.NaN,
                                  0.0,    0.0,    0.0,
@@ -190,7 +190,7 @@ class AsinSpec extends FunSpec
         -2.6, 2.6,-2.6,   2.6,-2.6, 2.6, -2.6, 2.6,-2.6
       )
       val rs = createRaster(rasterData, 9, 4)
-      val result = get(rs.localAsin())
+      val result = rs.localAsin()
       for (y <- 0 until 4) {
         for (x <- 0 until 9) {
           result.getDouble(x, y).isNaN should be (true)
@@ -211,7 +211,7 @@ class AsinSpec extends FunSpec
                                  Double.NaN, Double.NaN,  Double.NaN)
                             .map(x => x * math.Pi)
       val rs = createRaster(rasterData, 9, 6)
-      val result = get(rs.localAsin())
+      val result = rs.localAsin()
       for (y <- 0 until 3) {
         for (x <- 0 until 9) {
           val cellValue = result.getDouble(x, y)

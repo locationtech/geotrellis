@@ -109,7 +109,7 @@ class TanSpec extends FunSpec
       ).map(_*math.Pi)
       val expected = rasterData.map(math.tan(_))
       val rs = createRaster(rasterData, 6, 6)
-      val result = get(rs.localTan())
+      val result = rs.localTan()
       for (y <- 0 until 6) {
         for (x <- 0 until 6) {
           val theTan = result.getDouble(x, y)
@@ -135,7 +135,7 @@ class TanSpec extends FunSpec
                                .toList
                                .init
       val rs = createRaster(rasterData, 4, 4)
-      val result = get(rs.localTan())
+      val result = rs.localTan()
       for (y <- 0 until 4) {
         for (x <- 0 until 4) {
           val isLastValue = (x == 3 && y == 3)

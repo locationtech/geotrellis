@@ -136,7 +136,7 @@ class XorSpec extends FunSpec
         9, 4)
 
       val s = Seq(r2, r3)
-      val result = get(r1 ^ s)
+      val result = r1 ^ s
       for(row <- 0 until 4) {
         for(col <- 0 until 9) {
           if(row == 0 && col == 0)

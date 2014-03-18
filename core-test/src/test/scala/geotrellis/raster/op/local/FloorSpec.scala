@@ -94,7 +94,7 @@ class FloorSpec extends FunSpec
                1,1,1, 1,1,1, 1,1,1),
         9, 4)
 
-      val result =get(r.localFloor())
+      val result = r.localFloor()
 
       for(row <- 0 until 4) {
         for(col <- 0 until 9) {
@@ -115,7 +115,7 @@ class FloorSpec extends FunSpec
                1.3,1.3,1.3, 1.3,1.3,1.3, 1.3,1.3,1.3),
         9, 4)
 
-      val result = get(r.localFloor())
+      val result = r.localFloor()
 
       for(row <- 0 until 4) {
         for(col <- 0 until 9) {

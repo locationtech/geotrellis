@@ -109,7 +109,7 @@ class CosSpec extends FunSpec
       ).map(_ * math.Pi)
       val expected = rasterData.map(math.cos(_))
       val rs = createRaster(rasterData, 6, 6)
-      val result = get(rs.localCos())
+      val result = rs.localCos()
       for (y <- 0 until 6) {
         for (x <- 0 until 6) {
           val theCos = result.getDouble(x, y)
@@ -135,7 +135,7 @@ class CosSpec extends FunSpec
                                .toList
                                .init
       val rs = createRaster(rasterData, 4, 4)
-      val result = get(rs.localCos())
+      val result = rs.localCos()
       for (y <- 0 until 4) {
         for (x <- 0 until 4) {
           val isLastValue = (x == 3 && y == 3)

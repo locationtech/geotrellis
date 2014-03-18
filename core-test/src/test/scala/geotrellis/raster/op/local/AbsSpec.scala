@@ -92,7 +92,7 @@ class AbsSpec extends FunSpec
         -1, 1,-1,   1,-1, 1, -1, 1,-1
       )
       val r = createRaster(rasterData, 9, 4)
-      val result = get(r.localAbs())
+      val result = r.localAbs()
 
       for (y <- 0 until 4) {
         for (x <- 0 until 9) {
@@ -112,7 +112,7 @@ class AbsSpec extends FunSpec
         -2.6, 2.6,-2.6,   2.6,-2.6, 2.6, -2.6, 2.6,-2.6
       )
       val r = createRaster(rasterData, 9, 4)
-      val result = get(r.localAbs())
+      val result = r.localAbs()
       for (y <- 0 until 4) {
         for (x <- 0 until 9) {
           if (x == 8 && y == 2)

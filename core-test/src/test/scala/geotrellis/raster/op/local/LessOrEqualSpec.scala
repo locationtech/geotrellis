@@ -279,7 +279,7 @@ class LessOrEqualSpec extends FunSpec
   describe("LessOrEqual on Raster") {
     it("checks int valued raster against int constant") {
       val r = positiveIntegerRaster
-      val result = get(r <= 5)
+      val result = r <= 5
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.get(col,row)
@@ -292,7 +292,7 @@ class LessOrEqualSpec extends FunSpec
 
     it("checks int valued raster against double constant") {
       val r = probabilityRaster.map(_*100).convert(TypeInt)
-      val result = get(r <= 69.0)
+      val result = r <= 69.0
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.get(col,row)
@@ -305,7 +305,7 @@ class LessOrEqualSpec extends FunSpec
 
     it("checks double valued raster against int constant") {
       val r = positiveIntegerRaster.convert(TypeDouble).mapDouble(_.toDouble)
-      val result = get(r <= 5)
+      val result = r <= 5
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.getDouble(col,row)
@@ -318,7 +318,7 @@ class LessOrEqualSpec extends FunSpec
 
     it("checks double valued raster against double constant") {
       val r = probabilityRaster
-      val result = get(r <=0.69)
+      val result = r <=0.69
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val z = r.getDouble(col,row)
@@ -331,7 +331,7 @@ class LessOrEqualSpec extends FunSpec
 
     it("checks an integer raster against itself") {
       val r = positiveIntegerRaster
-      val result = get(r <= r)
+      val result = r <= r
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (1)
@@ -342,14 +342,14 @@ class LessOrEqualSpec extends FunSpec
     it("checks an integer raster against a different raster") {
       val r = positiveIntegerRaster
       val r2 = positiveIntegerRaster.map(_*2)
-      val result = get(r <= r2)
+      val result = r <= r2
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (1)
         }
       }
 
-      val result2 = get(r2 <= r)
+      val result2 = r2 <= r
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result2.get(col,row) should be (0)
@@ -359,7 +359,7 @@ class LessOrEqualSpec extends FunSpec
 
     it("checks a double raster against itself") {
       val r = probabilityRaster
-      val result = get(r <= r)
+      val result = r <= r
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (1)
@@ -370,13 +370,13 @@ class LessOrEqualSpec extends FunSpec
     it("checks a double raster against a different raster") {
       val r = probabilityRaster
       val r2 = positiveIntegerRaster.mapDouble(_*2.3)
-      val result = get(r <= r2)
+      val result = r <= r2
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (1)
         }
       }
-      val result2 = get(r2 <= r)
+      val result2 = r2 <= r
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result2.get(col,row) should be (0)

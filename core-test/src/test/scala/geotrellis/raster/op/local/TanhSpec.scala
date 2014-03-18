@@ -109,7 +109,7 @@ class TanhSpec extends FunSpec
       ).map(_*math.Pi)
       val expected = rasterData.map(math.tanh(_))
       val rs = createRasterSource(rasterData, 3, 3, 2, 2)
-      val result = get(rs.localTanh)
+      val result = rs.localTanh
       for (y <- 0 until 6) {
         for (x <- 0 until 6) {
           val theTanh = result.getDouble(x, y)
@@ -135,7 +135,7 @@ class TanhSpec extends FunSpec
                                .toList
                                .init
       val rs = createRasterSource(rasterData, 2, 2, 2, 2)
-      val result = get(rs.localTanh)
+      val result = rs.localTanh
       for (y <- 0 until 4) {
         for (x <- 0 until 4) {
           val isLastValue = (x == 3 && y == 3)

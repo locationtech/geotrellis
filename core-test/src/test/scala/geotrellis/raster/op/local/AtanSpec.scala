@@ -132,7 +132,7 @@ class AtanSpec extends FunSpec
         -math.sqrt(3), Double.NegativeInfinity, Double.NaN
       )
       val rs = createRaster(rasterData, 6, 4)
-      val result = get(rs.localAtan())
+      val result = rs.localAtan()
       val expectedAngles = List( 0.0,    1.0/6,  1.0/4,
                                  1.0/3,  0.5,    Double.NaN,
 
@@ -175,7 +175,7 @@ class AtanSpec extends FunSpec
       val expectedAngles = Array(0.0, 0.25*math.Pi, -0.25*math.Pi,
                                  math.atan(2), math.atan(-2),  Double.NaN)
       val rs = createRaster(rasterData, 9, 6)
-      val result = get(rs.localAtan())
+      val result = rs.localAtan()
       for (y <- 0 until 5) {
         for (x <- 0 until 9) {
           val cellValue = result.getDouble(x, y)

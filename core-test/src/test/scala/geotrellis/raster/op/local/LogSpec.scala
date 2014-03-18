@@ -94,7 +94,7 @@ class LogSpec extends FunSpec
                20,20,20, 20,20,20, 20,20,20),
         9, 4)
 
-      val result = get(r.localLog())
+      val result = r.localLog()
 
       for(row <- 0 until 4) {
         for(col <- 0 until 9) {
@@ -115,7 +115,7 @@ class LogSpec extends FunSpec
                34.2,34.2,34.2, 34.2,34.2,34.2, 34.2,34.2,34.2),
         9, 4)
 
-      val result = get(r.localLog())
+      val result = r.localLog()
 
       for(row <- 0 until 4) {
         for(col <- 0 until 9) {

@@ -92,7 +92,7 @@ class RoundSpec extends FunSpec
 
                1,1,1, 1,1,1, 1,1,1,
                1,1,1, 1,1,1, 1,1,1), 9, 4)
-      val result = get(r.localRound())
+      val result = r.localRound()
       for(row <- 0 until 4) {
         for(col <- 0 until 9) {
           if (row == 0 && col == 0) {
@@ -111,7 +111,7 @@ class RoundSpec extends FunSpec
 
                1.5,1.5,1.5, 1.5,1.5,1.5, 1.5,1.5,1.5,
                1.8,1.8,1.8, 1.8,1.8,1.8, 1.8,1.8,1.8), 9, 4)
-      val result = get(r.localRound())
+      val result = r.localRound()
       for(row <- 0 until 4) {
         for(col <- 0 until 9) {
           if (row == 0 && col == 0) {

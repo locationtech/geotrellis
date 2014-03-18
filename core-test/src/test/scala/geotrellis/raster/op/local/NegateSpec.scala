@@ -104,7 +104,7 @@ class NegateSpec extends FunSpec
   describe("Negate on Raster") {
     it("negates an integer raster") {
       val r = positiveIntegerRaster
-      val result = get(r.localNegate)
+      val result = r.localNegate
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.get(col,row) should be (-r.get(col,row))
@@ -114,7 +114,7 @@ class NegateSpec extends FunSpec
 
     it("negates a double raster") {
       val r = probabilityRaster
-      val result = get(r.localNegate)
+      val result = r.localNegate
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should be (-r.getDouble(col,row))
