@@ -44,7 +44,7 @@ trait LocalOpMethods[+Repr <: RasterSource]
      with LessOrEqualOpMethods[Repr] 
      with ConditionalOpMethods[Repr] 
      with MajorityOpMethods[Repr] 
-     with MinorityOpMethods[Repr] 
+     with MinorityOpMethods[Repr]
      with VarietyOpMethods[Repr] { self: Repr =>
 
   def localCombine[That](rs:RasterSource)
@@ -181,6 +181,22 @@ trait LocalOpMethods[+Repr <: RasterSource]
 
   /** Takes the arc tangent 2 of each raster cell value. */
   def localAtan2(rs: RasterSource): RasterSource = combine(rs, "Atan2")(Atan2(_,_))
+
+  /** Assigns to each cell the value within the given rasters that is the nth min */
+  def localMinN(n:Int,rss:Seq[RasterSource]):RasterSource =
+    combine(rss)(MinN(n,_))
+
+  /** Assigns to each cell the value within the given rasters that is the nth min */
+  def localMinN(n:Int,rss:RasterSource*)(implicit d:DI):RasterSource =
+    localMinN(n,rss)
+
+  /** Assigns to each cell the value within the given rasters that is the nth max */
+  def localMaxN(n:Int,rss:Seq[RasterSource]):RasterSource =
+    combine(rss)(MaxN(n,_))
+
+  /** Assigns to each cell the value within the given rasters that is the nth max */
+  def localMaxN(n:Int,rss:RasterSource*)(implicit d:DI):RasterSource =
+    localMaxN(n,rss)
 
   /** Masks this raster by the given GeoJSON. */
   def mask(geoJson: String): RasterSource =
