@@ -1,18 +1,20 @@
-/**************************************************************************
+/**
+ * ************************************************************************
  * Copyright (c) 2014 DigitalGlobe.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **************************************************************************/
+ * ************************************************************************
+ */
 
 package geotrellis.spark.metadata
 import geotrellis._
@@ -24,11 +26,16 @@ import geotrellis.spark.tiling.PixelExtent
 import geotrellis.spark.tiling.TileExtent
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.HdfsUtils
-import geotrellis.spark.utils.SparkUtils
 
+import org.apache.commons.codec.binary.Base64
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapreduce.Job
 
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import java.io.PrintWriter
 import java.net.URL
 
@@ -84,7 +91,7 @@ case class PyramidMetadata(
   }
 
   def metadataForBaseZoom: RasterMetadata = rasterMetadata(maxZoomLevel.toString)
-  
+
   override def equals(that: Any): Boolean =
     that match {
       case other: PyramidMetadata => {
@@ -114,14 +121,28 @@ case class PyramidMetadata(
   +rasterMetadata.hashCode
 
   override def toString = JacksonWrapper.prettyPrint(this)
+
+  def toBase64: String = {
+    val baos = new ByteArrayOutputStream
+    val oos = new ObjectOutputStream(baos)
+    oos.writeObject(this)
+    val rawBytes = baos.toByteArray()
+    oos.close
+    baos.close
+
+    new String(Base64.encodeBase64(rawBytes))
+  }
+  
+  def writeToJobConf(job: Job) = job.getConfiguration().set(PyramidMetadata.JobConfKey, toBase64)
 }
 
 object PyramidMetadata {
   final val MetaFile = "metadata"
-
+  final val JobConfKey = "geotrellis.spark.metadata"
+    
   // currently we only support single band data
   final val MaxBands = 1
-  
+
   /*
    * Reads the raster's metadata 
    * 
@@ -134,7 +155,8 @@ object PyramidMetadata {
       case Some(in) =>
         try {
           in.mkString
-        } finally {
+        }
+        finally {
           in.close
         }
       case None =>
@@ -201,4 +223,19 @@ object PyramidMetadata {
       PyramidMetadata(extent, tileSize, meta.bands, meta.nodata, meta.rasterType, zoom,
         Map(zoom.toString -> RasterMetadata(pixelExtent, tileExtent))))
   }
+
+  def fromBase64(encoded: String): PyramidMetadata = {
+    val bytes = Base64.decodeBase64(encoded.getBytes())
+
+    val bais = new ByteArrayInputStream(bytes)
+    val ois = new ObjectInputStream(bais)
+    val meta = ois.readObject().asInstanceOf[PyramidMetadata]
+
+    ois.close()
+    bais.close()
+    meta
+  }
+  
+  def readFromJobConf(job: Job) = fromBase64(job.getConfiguration().get(PyramidMetadata.JobConfKey))
+
 }
