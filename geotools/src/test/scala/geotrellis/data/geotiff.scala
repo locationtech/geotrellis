@@ -23,7 +23,7 @@ import geotrellis.process._
 import geotrellis.statistics.FastMapHistogram
 import geotrellis.statistics.op._
 
-import geotrellis.testutil._
+import geotrellis.testkit._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
@@ -53,7 +53,7 @@ class GeoTiffSpec extends FunSpec with TestServer with ShouldMatchers {
     }
 
     it ("should load correct extent & gridToMap should work") {
-      val path = "src/test/resources/econic.tif"
+      val path = "core-test/data/econic.tif"
       val raster1 = GeoTiff.readRaster(path)
       val (xmap, ymap) = raster1.rasterExtent.gridToMap(0,0)
       xmap should be (-15381.615 plusOrMinus 0.001)
@@ -64,7 +64,7 @@ class GeoTiffSpec extends FunSpec with TestServer with ShouldMatchers {
       val e = Extent(-15471.6, -15511.3, 15428.4, 15388.7)
       val rasterExtent = RasterExtent(e, 60.0, 60.0, 513, 513)
 
-      val path = "src/test/resources/econic.tif"
+      val path = "core-test/data/econic.tif"
       val raster1 = GeoTiff.readRaster(path)//.warp(rasterExtent)
 
       val raster2 = GeoTiffRasterLayerBuilder.fromTif(path).getRaster()//(Some(rasterExtent))
@@ -72,7 +72,7 @@ class GeoTiffSpec extends FunSpec with TestServer with ShouldMatchers {
     }
 
     it ("should write") {
-      val r = GeoTiff.readRaster("src/test/resources/econic.tif")
+      val r = GeoTiff.readRaster("core-test/data/econic.tif")
       GeoTiffWriter.write("/tmp/written.tif", r, "foo")
     }
 
@@ -85,7 +85,7 @@ class GeoTiffSpec extends FunSpec with TestServer with ShouldMatchers {
     }
 
     it ("should retain Float32 type when converting tif to arg") {
-      val path = "src/test/resources/aspect.tif"
+      val path = "core-test/data/aspect.tif"
       val raster = GeoTiff.readRaster(path)
       raster.rasterType should be (TypeFloat)
     }
@@ -96,8 +96,8 @@ class GeoTiffSpec extends FunSpec with TestServer with ShouldMatchers {
       // If the NoData values are translated correctly, then all NoData values from the read in GTiff
       // should correspond to NoData values of the directly read arg.
       import geotiff._
-      val originalArg = RasterSource.fromPath("src/test/resources/data/slope.arg").get
-      val translatedTif = GeoTiff.readRaster("src/test/resources/slope.tif")
+      val originalArg = RasterSource.fromPath("core-test/data/data/slope.arg").get
+      val translatedTif = GeoTiff.readRaster("core-test/data/slope.tif")
 
       translatedTif.rows should be (originalArg.rows)
       translatedTif.cols should be (originalArg.cols)

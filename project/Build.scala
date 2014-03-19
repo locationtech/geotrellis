@@ -290,7 +290,7 @@ object GeotrellisBuild extends Build {
   lazy val geotools: Project =
     Project("geotools", file("geotools"))
       .settings(geotoolsSettings: _*)
-      .dependsOn(core % "test->test;compile->compile")
+      .dependsOn(core)
       .dependsOn(testkit % "test")
 
   lazy val geotoolsSettings =
@@ -309,7 +309,8 @@ object GeotrellisBuild extends Build {
       resolvers ++= 
         Seq(
           "Geotools" at "http://download.osgeo.org/webdav/geotools/"
-        )
+        ),
+      fork in test := false
     ) ++
     defaultAssemblySettings
 
