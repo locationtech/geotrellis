@@ -132,14 +132,14 @@ case class PyramidMetadata(
 
     new String(Base64.encodeBase64(rawBytes))
   }
-  
-  def writeToJobConf(job: Job) = job.getConfiguration().set(PyramidMetadata.JobConfKey, toBase64)
+
+  def writeToJobConf(conf: Configuration) = conf.set(PyramidMetadata.JobConfKey, toBase64)
 }
 
 object PyramidMetadata {
   final val MetaFile = "metadata"
   final val JobConfKey = "geotrellis.spark.metadata"
-    
+
   // currently we only support single band data
   final val MaxBands = 1
 
@@ -192,13 +192,13 @@ object PyramidMetadata {
     val (files, optMetas) = allFiles.map(getMetadata(_)).filter(filterNone(_)).unzip
     val meta = optMetas.flatten.reduceLeft { (acc, meta) =>
       if (acc.bands != meta.bands)
-        sys.error("Error: All input tifs must have the same number of bands")
+        sys.error("Error: All input tifs must have the same number of bands ${acc.bands} != ${meta.bands}")
       if (acc.pixelSize != meta.pixelSize)
-        sys.error("Error: All input tifs must have the same resolution")
+        sys.error("Error: All input tifs must have the same resolution ${acc.pixelSize} != ${meta.pixelSize}")
       if (acc.rasterType != meta.rasterType)
-        sys.error("Error: All input tifs must have same raster type")
-      if (acc.nodata != meta.nodata)
-        sys.error("Error: All input tifs must have same nodata value")
+        sys.error("Error: All input tifs must have same raster type ${acc.rasterType} != ${meta.rasterType}")
+      if ((acc.nodata.isNaN() && !meta.nodata.isNaN()) || (!acc.nodata.isNaN() && acc.nodata != meta.nodata))
+        sys.error(s"Error: All input tifs must have same nodata value ${acc.nodata} != ${meta.nodata}")
 
       acc.bounds.add(meta.bounds)
       acc
@@ -235,7 +235,7 @@ object PyramidMetadata {
     bais.close()
     meta
   }
-  
-  def readFromJobConf(job: Job) = fromBase64(job.getConfiguration().get(PyramidMetadata.JobConfKey))
+
+  def readFromJobConf(conf: Configuration) = fromBase64(conf.get(PyramidMetadata.JobConfKey))
 
 }
