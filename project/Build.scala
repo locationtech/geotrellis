@@ -1,4 +1,4 @@
-/**************************************************************************
+/*
  * Copyright (c) 2014 Azavea.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **************************************************************************/
+ */
 
 import sbt._
 import sbt.Keys._
@@ -290,7 +290,7 @@ object GeotrellisBuild extends Build {
   lazy val geotools: Project =
     Project("geotools", file("geotools"))
       .settings(geotoolsSettings: _*)
-      .dependsOn(core % "test->test;compile->compile")
+      .dependsOn(core)
       .dependsOn(testkit % "test")
 
   lazy val geotoolsSettings =
@@ -309,7 +309,8 @@ object GeotrellisBuild extends Build {
       resolvers ++= 
         Seq(
           "Geotools" at "http://download.osgeo.org/webdav/geotools/"
-        )
+        ),
+      fork in test := false
     ) ++
     defaultAssemblySettings
 
