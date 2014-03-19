@@ -34,10 +34,10 @@ max_width = max(map(lambda x: len(x), license.split('\n')))
 
 def c_style_comment(text):
   commented = [ ]
-  commented.append("/**" + ('*' * max_width))
+  commented.append("/*")
   for line in text.split("\n"):
     commented.append(" * " + line)
-  commented.append(" **" + ('*' * max_width) + "/")
+  commented.append(" */")
   return '\n'.join(commented)
 
 def python_comment(text):
