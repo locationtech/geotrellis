@@ -25,7 +25,7 @@ object Atan2 extends Serializable {
   /** Takes the Arc Tangent2
    *  The first raster holds the y-values, and the second
    *  holds the x values. The arctan is calculated from y/x.
-   *  A double raster is always returned.
+   *  @info A double raster is always returned.
    */
   def apply(r1: Raster, r2: Raster): Raster = {
     r1.convert(TypeDouble)

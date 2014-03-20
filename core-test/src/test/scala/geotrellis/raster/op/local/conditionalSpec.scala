@@ -41,6 +41,16 @@ class ConditionalSpec extends FunSpec
       }
     }
 
+    it("should work with localIf") {
+      val r = positiveIntegerRaster
+      val result = get(r.localIf({z:Int => z > 6}, 6))
+      for(col <- 0 until result.cols) {
+        for(row <- 0 until result.rows) {
+          result.get(col,row) should be (min(r.get(col,row),6))
+        }
+      }
+    }
+
     it("should work with doubles") {
       val r = probabilityRaster
       val result = get(IfCell(r,{z:Double => z > 0.5}, 1.0))
@@ -281,7 +291,7 @@ class ConditionalSpec extends FunSpec
   describe("IfCell on Raster") {
     it("should work with integers") {
       val r = positiveIntegerRaster
-      val result = get(r.localIf({z:Int => z > 6}, 6))
+      val result = r.localIf({z:Int => z > 6}, 6)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           result.get(col,row) should be (min(r.get(col,row),6))
@@ -291,7 +301,7 @@ class ConditionalSpec extends FunSpec
 
     it("should work with doubles") {
       val r = probabilityRaster
-      val result = get(r.localIf({z:Double => z > 0.5}, 1.0))
+      val result = r.localIf({z:Double => z > 0.5}, 1.0)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           val z = r.getDouble(col,row)
@@ -302,7 +312,7 @@ class ConditionalSpec extends FunSpec
 
     it("should work with integer function on TypeDouble raster for NoData values") {
       val r = probabilityNoDataRaster
-      val result = get(r.localIf({z:Int => isNoData(z)}, -1000))
+      val result = r.localIf({z:Int => isNoData(z)}, -1000)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           if(col % 2 == 1) result.getDouble(col,row) should be (-1000.0)
@@ -312,7 +322,7 @@ class ConditionalSpec extends FunSpec
 
     it("should work with double function on TypeInt raster for NoData values") {
       val r = positiveIntegerNoDataRaster
-      val result = get(r.localIf({z:Double => isNoData(z)}, -1000.0))
+      val result = r.localIf({z:Double => isNoData(z)}, -1000.0)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           if(col % 2 == 1) result.get(col,row) should be (-1000)
@@ -322,7 +332,7 @@ class ConditionalSpec extends FunSpec
 
     it("should work with integers with else value") {
       val r = positiveIntegerRaster
-      val result = get(r.localIf({z:Int => z > 6}, 6, 2))
+      val result = r.localIf({z:Int => z > 6}, 6, 2)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           result.get(col,row) should be (if (r.get(col,row) > 6) { 6 } else { 2 })
@@ -332,7 +342,7 @@ class ConditionalSpec extends FunSpec
 
     it("should work with doubles with else values") {
       val r = probabilityRaster
-      val result = get(r.localIf({z:Double => z < .5}, 0.01, .99))
+      val result = r.localIf({z:Double => z < .5}, 0.01, .99)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           val z = r.getDouble(col,row)
@@ -343,7 +353,7 @@ class ConditionalSpec extends FunSpec
 
     it("should work with integer function on TypeDouble raster for NoData values with else value") {
       val r = probabilityNoDataRaster
-      val result = get(r.localIf({z:Int => isNoData(z)}, -1000, 2000))
+      val result = r.localIf({z:Int => isNoData(z)}, -1000, 2000)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           if(col % 2 == 1) result.getDouble(col,row) should be (-1000.0)
@@ -354,7 +364,7 @@ class ConditionalSpec extends FunSpec
 
     it("should work with double function on TypeInt raster for NoData values withe else value") {
       val r = positiveIntegerNoDataRaster
-      val result = get(r.localIf({z:Double => isNoData(z)}, -1000.0, 2000.0))
+      val result = r.localIf({z:Double => isNoData(z)}, -1000.0, 2000.0)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           if(col % 2 == 1) result.get(col,row) should be (-1000)
@@ -370,7 +380,7 @@ class ConditionalSpec extends FunSpec
       val r2 = createRaster(Array( 1,  -2, 13, -5,
                                    12, -7,  3, -2,
                                    8 , -6, 12, -7), 4,3)
-      val result = get(r1.localIf(r2, {(z1:Int,z2:Int) => z1 > z2}, 80))
+      val result = r1.localIf(r2, {(z1:Int,z2:Int) => z1 > z2}, 80)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           val z1 = r1.get(col,row)
@@ -388,7 +398,7 @@ class ConditionalSpec extends FunSpec
       val r2 = createRaster(Array( .1,  .2, .13, -.5,
                                    .12, -.7,  .3, -.2,
                                    .8 , -.6, .12, -.7), 4,3)
-      val result = get(r1.localIf(r2, {(z1:Double,z2:Double) => z1 > z2}, -0.5))
+      val result = r1.localIf(r2, {(z1:Double,z2:Double) => z1 > z2}, -0.5)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           val z1 = r1.getDouble(col,row)
@@ -406,7 +416,7 @@ class ConditionalSpec extends FunSpec
       val r2 = createRaster(Array( .1,  .2, .13, Double.NaN,
                                    .12, Double.NaN,  .3, -.2,
                                    .8 , -.6, .12, Double.NaN), 4,3)
-      val result = get(r1.localIf(r2,{(z1:Int,z2:Int) => isNoData(z1) || isNoData(z2) }, -1000))
+      val result = r1.localIf(r2,{(z1:Int,z2:Int) => isNoData(z1) || isNoData(z2) }, -1000)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           if(col % 2 == 1) result.getDouble(col,row) should be (-1000.0)
@@ -421,9 +431,9 @@ class ConditionalSpec extends FunSpec
       val r2 = createRaster(Array( 1,  -2, 13, NODATA,
                                    12, NODATA,  3, -2,
                                    8 , -6, 12, NODATA), 4,3)
-      val result = get(r1.localIf(r2,{ (z1:Double,z2:Double) =>
+      val result = r1.localIf(r2,{ (z1:Double,z2:Double) =>
         isNoData(z1) || isNoData(z2)
-      }, -1000.0))
+      }, -1000.0)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           if(col % 2 == 1) result.get(col,row) should be (-1000)
@@ -438,7 +448,7 @@ class ConditionalSpec extends FunSpec
       val r2 = createRaster(Array( 1,  -2, 13, -5,
                                    12, -7,  3, -2,
                                    8 , -6, 12, -7), 4,3)
-      val result = get(r1.localIf(r2, {(z1:Int,z2:Int) => z1 > z2}, 80,-20))
+      val result = r1.localIf(r2, {(z1:Int,z2:Int) => z1 > z2}, 80,-20)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           val z1 = r1.get(col,row)
@@ -456,7 +466,7 @@ class ConditionalSpec extends FunSpec
       val r2 = createRaster(Array( .1,  .2, .13, -.5,
                                    .12, -.7,  .3, -.2,
                                    .8 , -.6, .12, -.7), 4,3)
-      val result = get(r1.localIf(r2, {(z1:Double,z2:Double) => z1 > z2}, 1.1,0.7))
+      val result = r1.localIf(r2, {(z1:Double,z2:Double) => z1 > z2}, 1.1,0.7)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           val z1 = r1.getDouble(col,row)
@@ -474,7 +484,7 @@ class ConditionalSpec extends FunSpec
       val r2 = createRaster(Array( .1,  .2, .13, Double.NaN,
                                    .12, Double.NaN,  .3, -.2,
                                    .8 , -.6, .12, Double.NaN), 4,3)
-      val result = get(r1.localIf(r2,{(z1:Int,z2:Int) => isNoData(z1) || isNoData(z2) }, -1000,2000))
+      val result = r1.localIf(r2,{(z1:Int,z2:Int) => isNoData(z1) || isNoData(z2) }, -1000,2000)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           if(col % 2 == 1) result.getDouble(col,row) should be (-1000.0)
@@ -490,9 +500,9 @@ class ConditionalSpec extends FunSpec
       val r2 = createRaster(Array( 1,  -2, 13, NODATA,
                                    12, NODATA,  3, -2,
                                    8 , -6, 12, NODATA), 4,3)
-      val result = get(r1.localIf(r2,{ (z1:Double,z2:Double) =>
+      val result = r1.localIf(r2,{ (z1:Double,z2:Double) =>
         isNoData(z1) || isNoData(z2)
-      }, -1000.0,2000.0))
+      }, -1000.0,2000.0)
       for(col <- 0 until result.cols) {
         for(row <- 0 until result.rows) {
           if(col % 2 == 1) result.get(col,row) should be (-1000)

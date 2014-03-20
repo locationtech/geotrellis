@@ -23,7 +23,7 @@ import geotrellis._
  */
 object Cos extends Serializable {
   /** Takes the Cosine of each raster cell value.
-    * Always returns a double raster.
+    * @info Always returns a double raster.
     */
   def apply(r: Raster): Raster =
     r.convert(TypeDouble) 

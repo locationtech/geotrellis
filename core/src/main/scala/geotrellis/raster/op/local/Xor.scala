@@ -40,34 +40,34 @@ object Xor extends LocalRasterBinaryOp {
 
 trait XorOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Xor a constant Int value to each cell. */
-  def localXor(i: Int) = self.mapOp(Xor(_, i))
+  def localXor(i: Int): RasterSource = self.mapOp(Xor(_, i))
   /** Xor a constant Int value to each cell. */
-  def ^(i:Int) = localXor(i)
+  def ^(i:Int): RasterSource = localXor(i)
   /** Xor a constant Int value to each cell. */
-  def ^:(i:Int) = localXor(i)
+  def ^:(i:Int): RasterSource = localXor(i)
   /** Xor the values of each cell in each raster.  */
-  def localXor(rs:RasterSource) = self.combineOp(rs)(Xor(_,_))
+  def localXor(rs:RasterSource): RasterSource = self.combineOp(rs)(Xor(_,_))
   /** Xor the values of each cell in each raster. */
-  def ^(rs:RasterSource) = localXor(rs)
+  def ^(rs:RasterSource): RasterSource = localXor(rs)
   /** Xor the values of each cell in each raster. */
-  def localXor(rss:Seq[RasterSource]) = self.combineOp(rss)(Xor(_))
+  def localXor(rss:Seq[RasterSource]): RasterSource = self.combineOp(rss)(Xor(_))
   /** Xor the values of each cell in each raster. */
-  def ^(rss:Seq[RasterSource]) = localXor(rss)
+  def ^(rss:Seq[RasterSource]): RasterSource = localXor(rss)
 }
 
 trait XorMethods { self: Raster =>
   /** Xor a constant Int value to each cell. */
-  def localXor(i: Int) = Xor(self, i)
+  def localXor(i: Int): Raster = Xor(self, i)
   /** Xor a constant Int value to each cell. */
-  def ^(i:Int) = localXor(i)
+  def ^(i:Int): Raster = localXor(i)
   /** Xor a constant Int value to each cell. */
-  def ^:(i:Int) = localXor(i)
+  def ^:(i:Int): Raster = localXor(i)
   /** Xor the values of each cell in each raster.  */
-  def localXor(r:Raster) = Xor(self,r)
+  def localXor(r:Raster): Raster = Xor(self,r)
   /** Xor the values of each cell in each raster. */
-  def ^(r:Raster) = localXor(r)
+  def ^(r:Raster): Raster = localXor(r)
   /** Xor the values of each cell in each raster. */
-  def localXor(rs:Seq[Raster]) = Xor(self +: rs)
+  def localXor(rs:Seq[Raster]): Raster = Xor(self +: rs)
   /** Xor the values of each cell in each raster. */
-  def ^(rs:Seq[Raster]) = localXor(rs)
+  def ^(rs:Seq[Raster]): Raster = localXor(rs)
 }

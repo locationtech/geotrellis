@@ -23,7 +23,7 @@ import geotrellis._
  */
 object Cosh extends Serializable {
   /** Takes the hyperboic cosine of each raster cell value.
-    * Always returns a double raster.
+    * @info Always returns a double raster.
     */
   def apply(r: Raster): Raster =
     r.convert(TypeDouble)

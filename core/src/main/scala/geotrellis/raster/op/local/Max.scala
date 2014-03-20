@@ -37,22 +37,22 @@ object Max extends LocalRasterBinaryOp {
 
 trait MaxOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Max a constant Int value to each cell. */
-  def localMax(i: Int) = self.mapOp(Max(_, i))
+  def localMax(i: Int): RasterSource = self.mapOp(Max(_, i))
   /** Max a constant Double value to each cell. */
-  def localMax(d: Double) = self.mapOp(Max(_, d))
+  def localMax(d: Double): RasterSource = self.mapOp(Max(_, d))
   /** Max the values of each cell in each raster.  */
-  def localMax(rs:RasterSource) = self.combineOp(rs)(Max(_,_))
+  def localMax(rs:RasterSource): RasterSource = self.combineOp(rs)(Max(_,_))
   /** Max the values of each cell in each raster.  */
-  def localMax(rss:Seq[RasterSource]) = self.combineOp(rss)(Max(_))
+  def localMax(rss:Seq[RasterSource]): RasterSource = self.combineOp(rss)(Max(_))
 }
 
 trait MaxMethods { self: Raster =>
   /** Max a constant Int value to each cell. */
-  def localMax(i: Int) = Max(self, i)
+  def localMax(i: Int): Raster = Max(self, i)
   /** Max a constant Double value to each cell. */
-  def localMax(d: Double) = Max(self, d)
+  def localMax(d: Double): Raster = Max(self, d)
   /** Max the values of each cell in each raster.  */
-  def localMax(r:Raster) = Max(self, r)
+  def localMax(r:Raster): Raster = Max(self, r)
   /** Max the values of each cell in each raster.  */
-  def localMax(rs:Seq[Raster]) = Max(self +: rs)
+  def localMax(rs:Seq[Raster]): Raster = Max(self +: rs)
 }

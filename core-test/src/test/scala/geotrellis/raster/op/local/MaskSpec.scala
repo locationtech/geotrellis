@@ -159,7 +159,7 @@ class MaskSpec extends FunSpec
                2,2,2, 2,2,2, 2,2,2,
                0,0,0, 0,0,0, 0,0,0), 9, 4)
 
-        val result = get(r1.localMask(r2, 2, NODATA))
+        val result = r1.localMask(r2, 2, NODATA)
         for(row <- 0 until 4) {
           for(col <- 0 until 9) {
             if(row != 0 && row != 3)
@@ -182,7 +182,7 @@ class MaskSpec extends FunSpec
                2.0,2.0,2.0, 2.0,2.0,2.0, 2.0,2.0,2.0,
                0.0,0.0,0.0, 0.0,0.0,0.0, 0.0,0.0,0.0), 9, 4)
 
-        val result = get(r1.localMask(r2, 2, NODATA))
+        val result = r1.localMask(r2, 2, NODATA)
         for(row <- 0 until 4) {
           for(col <- 0 until 9) {
             if (row == 0 && col == 0)
