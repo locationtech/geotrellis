@@ -111,7 +111,7 @@ object GeotrellisBuild extends Build {
   // Project: root
   lazy val root =
     Project("root", file("."))
-      .aggregate(core, coreTest)
+      .aggregate(core, coreTest, feature)
 
   // Project: macros
   lazy val macros =
@@ -133,7 +133,8 @@ object GeotrellisBuild extends Build {
         Seq(
           scalatest   % "test",
           scalacheck  % "test",
-          jts
+          jts,
+          sprayJson
         )
       )
 
