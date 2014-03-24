@@ -319,7 +319,7 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     jtsGeom.overlaps(g.jtsGeom)
 
   /**
-   * Tests whether this Polygon touches the specified geometry g.
+   * Tests whether this Polygon touches the specified Geometry g.
    * Returns true if the DE-9IM Intersection Matrix for the two geometries is
    * FT*******, F**T***** or F***T****.
    */
