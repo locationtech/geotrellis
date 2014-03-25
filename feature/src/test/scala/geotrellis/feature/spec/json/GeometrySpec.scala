@@ -67,8 +67,6 @@ class GeometrySpec extends FlatSpec with ShouldMatchers with GeoJsonSupport {
 
     //TODO: What if list: List[Geometry]
     val list: Seq[Geometry] = List(point, line)
-    val shit = implicitly[JsonFormat[Seq[Geometry]]]
-    println(shit)
     marshal(list) should equal (Right(body))
     body.as[Seq[Geometry]] should equal (Right(list))
   }
