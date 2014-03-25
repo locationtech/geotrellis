@@ -30,7 +30,10 @@ import scala.collection.mutable.Set
  */
 object GeoTiff extends Logging {
 
-  private val formats = loadFormats
+  private lazy val formats = {
+    HdfsImageInputStreamSpi.register
+    loadFormats
+  }
   private val hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:4326"))
 
   case class Metadata(
@@ -98,11 +101,8 @@ object GeoTiff extends Logging {
   }
 
   private def loadFormats: Set[AbstractGridFormat] = {
-    HdfsImageInputStreamSpi.register
-
     val spis = GridFormatFinder.getAvailableFormats()
     spis.map(_.createFormat())
-
   }
 
   private def accepts(path: Path, conf: Configuration): Option[AbstractGridFormat] = {
