@@ -129,14 +129,17 @@ object GeotrellisBuild extends Build {
   lazy val feature =
     Project("feature", file("feature"))
       .settings(name := "geotrellis-feature")
-      .settings(libraryDependencies ++= 
+      .settings(libraryDependencies ++=
         Seq(
           scalatest   % "test",
           scalacheck  % "test",
           jts,
-          sprayJson
+          sprayJson,
+          sprayHttpx,
+          akkaActor
         )
       )
+      .settings(defaultAssemblySettings: _*)
 
   // Project: core
   lazy val core =

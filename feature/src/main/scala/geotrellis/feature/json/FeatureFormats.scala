@@ -1,70 +1,79 @@
-/*
- * Copyright (c) 2014 Azavea.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package geotrellis.feature.json
 
 import geotrellis.feature._
 import spray.json._
-import DefaultJsonProtocol._
 
 
-object FeatureFormats {
-  implicit class WrappedAny[T](any: T) {
-    def toJsonWith(extra: String)(implicit writer: JsonWriter[T]): JsValue = {
-      val js = writer.write(any)
-      js match {
-        case o: JsObject => new JsObject(o.fields + ("crs" -> JsString(extra)))
-      }
-    }
-  }
+trait FeatureFormats extends GeometryFormats {
 
-  implicit object PointFormat extends RootJsonFormat[Point] {
-    def write(p: Point) = JsObject(
-      "type" -> JsString("Point"),
-      "coordinates" -> JsArray(JsNumber(p.x),JsNumber(p.y))
-    )
-    def read(value: JsValue) = value.asJsObject.getFields("type", "coordinates") match {
-      case Seq(
-        JsString("Point"),
-        JsArray(Seq(JsNumber(x), JsNumber(y)))
-      ) => Point(x.toDouble, y.toDouble)
-      case _ => throw new DeserializationException("Point geometry expected")
-    }
-  }  
-
-  class PointFeatureFormat[D:JsonFormat] extends RootJsonFormat[PointFeature[D]] {
+  class PointFeatureFormat[D: JsonFormat] extends RootJsonFormat[PointFeature[D]] {
     def write(f: PointFeature[D]) =
       JsObject(
         "type" -> JsString("Feature"),
         "geometry" -> f.geom.toJson,
         "properties" -> f.data.toJson
       )
-    def read (value: JsValue) = value.asJsObject.getFields("type", "geometry", "properties") match {
+
+    def read(value: JsValue) = value.asJsObject.getFields("type", "geometry", "properties") match {
       case Seq(JsString(fType), geom, data) =>
         PointFeature(geom.convertTo[Point], data.convertTo[D])
       case _ => throw new DeserializationException("Point feature expected")
     }
   }
-
-  implicit def pointFeatureJsonFormat[D : JsonFormat] =
+  implicit def pointFeatureFormat[D: JsonFormat]: RootJsonFormat[PointFeature[D]] =
     new PointFeatureFormat[D]
 
 
+    class LineFeatureFormat[D: JsonFormat] extends RootJsonFormat[LineFeature[D]] {
+    def write(f: LineFeature[D]) =
+      JsObject(
+        "type" -> JsString("Feature"),
+        "geometry" -> f.geom.toJson,
+        "properties" -> f.data.toJson
+      )
+
+    def read(value: JsValue) = value.asJsObject.getFields("type", "geometry", "properties") match {
+      case Seq(JsString(fType), geom, data) =>
+        LineFeature(LineFormat.read(geom), data.convertTo[D])
+      case _ => throw new DeserializationException("Point feature expected")
+    }
+  }
+  implicit def lineFeatureFormat[D: JsonFormat]: RootJsonFormat[LineFeature[D]] =
+    new LineFeatureFormat[D]
+
+  class FeatureFormat[D: JsonFormat] extends RootJsonFormat[Feature[Geometry,D]] {
+    def write(o: Feature[Geometry, D]) = o match {
+      case pf: PointFeature[D] => pointFeatureFormat[D].write(pf)
+      case lf: LineFeature[D] => lineFeatureFormat[D].write(lf)
+      case _ => throw new SerializationException("Unknown Feature")
+    }
+
+    def read(value: JsValue) = value.asJsObject.getFields("geometry").head.asJsObject.getFields("type") match {
+      //I feel bad about having to upcast here
+      case Seq(JsString("Point")) => pointFeatureFormat[D].read(value).asInstanceOf[Feature[Geometry, D]]
+      case Seq(JsString("LineString")) => lineFeatureFormat[D].read(value).asInstanceOf[Feature[Geometry, D]]
+      case Seq(JsString(t)) => throw new DeserializationException(s"Unknown Geometry type: $t")
+    }
+  }
+  implicit def featureFormat[D: JsonFormat]: RootJsonFormat[Feature[Geometry,D]] =
+    new FeatureFormat[D]
 
 
+  class FeatureCollection[D: JsonFormat] extends RootJsonFormat[Seq[Feature[Geometry, D]]] {
+    def write(list: Seq[Feature[Geometry, D]]) = JsObject(
+      "type" -> JsString("FeatureCollection"),
+      "features" -> JsArray(list.map {
+        f => featureFormat[D].write(f)
+      }.toList)
+    )
+    def read(value: JsValue) = value.asJsObject.getFields("features") match {
+      case Seq(JsArray(features)) =>
+        for (feature <- features) yield
+          feature.convertTo[Feature[Geometry, D]]
+    }
+  }
+  implicit def featureCollection[D: JsonFormat] =
+    new FeatureCollection[D]
 
 
 
