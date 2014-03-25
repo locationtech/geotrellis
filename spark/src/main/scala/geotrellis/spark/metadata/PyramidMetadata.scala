@@ -17,8 +17,7 @@
 package geotrellis.spark.metadata
 import geotrellis._
 import geotrellis.RasterType
-import geotrellis.data.GeoTiff
-import geotrellis.data.GeoTiff.Metadata
+import geotrellis.spark.ingest.GeoTiff
 import geotrellis.spark.cmd.Ingest
 import geotrellis.spark.tiling.PixelExtent
 import geotrellis.spark.tiling.TileExtent
@@ -176,11 +175,10 @@ object PyramidMetadata {
     val allFiles = HdfsUtils.listFiles(tiffPath, conf)
 
     def getMetadata(file: Path) = {
-      val url = new URL(file.toUri().toString())
-      val meta = GeoTiff.getMetadata(url, Ingest.DefaultProjection)
+      val meta = GeoTiff.getMetadata(file, conf)
       (file, meta)
     }
-    def filterNone(fileMeta: Tuple2[Path, Option[Metadata]]) = {
+    def filterNone(fileMeta: Tuple2[Path, Option[GeoTiff.Metadata]]) = {
       val (file, meta) = fileMeta
       meta match {
         case Some(m) => true
