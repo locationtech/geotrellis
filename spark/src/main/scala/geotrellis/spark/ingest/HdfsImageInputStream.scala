@@ -1,16 +1,17 @@
 package geotrellis.spark.ingest
-
-import javax.imageio.stream.ImageInputStreamImpl
 import org.apache.hadoop.fs.FSDataInputStream
 import org.apache.spark.Logging
+
 import scala.collection.mutable.Stack
+
+import javax.imageio.stream.ImageInputStreamImpl
 
 class HdfsImageInputStream(input: FSDataInputStream) extends ImageInputStreamImpl with Logging {
 
   bitOffset = 0
   seek(0)
   val stack = new Stack[Long]
-  def getStream = input
+
   override def getStreamPosition: Long = {
     streamPos = input.getPos()
     streamPos
@@ -26,15 +27,10 @@ class HdfsImageInputStream(input: FSDataInputStream) extends ImageInputStreamImp
     result
   }
 
-  // NOTE:  Because Geotools resuses the input stream, we can't close it here.  
-  // Instead, the person originally opening the stream is responsible for 
-  // closing it in the appropriate place. Yuck!
-  //  @Override
-  //  public void close() throws IOException
-  //  {
-  //    _input.close();
-  //  }
-
+  // NOTE:  We can't override close because Geotools reuses the input stream. 
+  // We get around that using the loan-pattern in withReader, which closes 
+  // the stream after it is done with the reader
+ 
   override def read(b: Array[Byte], off: Int, len: Int): Int = {
     val start = System.currentTimeMillis()
 

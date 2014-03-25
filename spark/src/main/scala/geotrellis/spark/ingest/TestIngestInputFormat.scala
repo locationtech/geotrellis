@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.old
+package geotrellis.spark.ingest
 
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import geotrellis.spark.utils.SparkUtils
-import geotrellis.spark.ingest.IngestInputFormat
 import org.apache.hadoop.fs.Path
 import scala.collection.JavaConversions._
 import org.apache.spark.SparkContext

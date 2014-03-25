@@ -1,6 +1,6 @@
-package geotrellis.spark.old
+package geotrellis.spark.ingest
+
 import geotrellis.spark.cmd.CommandArguments
-import geotrellis.spark.ingest.HdfsImageInputStreamSpi
 import com.quantifind.sumac.ArgMain
 import java.io.IOException
 import org.apache.hadoop.fs.Path
@@ -16,40 +16,28 @@ import geotrellis.spark.utils.SparkUtils
 import org.apache.spark.Logging
 
 object TestHdfsGeotiffReader extends Logging {
-  private val formats = loadFormats()
-  
+
   def main(args: Array[String]): Unit = {
     val conf = SparkUtils.createHadoopConfiguration
-    val input = new Path("hdfs://localhost:9000/tmp/262359N0530600E_V1.tif")
-    val reader = openHdfsImage(input, conf)
-    logInfo("Done")
-  }
-  
-  
-  def  openHdfsImage(input: Path, conf: Configuration): AbstractGridCoverage2DReader = {
+    val input = new Path("file:///home/akini/test/costdistance/testCostDistance.tif")
+    val input2 = new Path("file:///home/akini/test/costdistance/testCostDistanceWithBounds.tif")
+    val input3 = new Path("file:///home/akini/test/costdistance/README.md")
+    val start = System.currentTimeMillis()
 
-    logInfo("Loading Image file: " + input.toString());
-
-    val stream = input.getFileSystem(conf).open(input)
-logInfo("before fastFormatFinder")
-    val format = fastFormatFinder(stream) match {
-      case Some(f) => f
-      case None => sys.error("Couldn't find format")
+    GeoTiff.getMetadata(input, conf) match {
+      case None    => sys.error("Couldn't find metadata")
+      case Some(m) => println("found: " + m)
     }
-    logInfo("before getReader")
-    format.getReader(stream, new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:3785")))   
-  }
-  
-  
-  def fastFormatFinder(obj: Object): Option[AbstractGridFormat] = 
-    formats.find(_.accepts(obj, new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:3785"))))
-    
-  
-  def loadFormats(): Set[AbstractGridFormat] = {
-    HdfsImageInputStreamSpi.orderInputStreamProviders
-    
-    val spis = GridFormatFinder.getAvailableFormats()
-    spis.map(_.createFormat())
-      
+    GeoTiff.getMetadata(input2, conf) match {
+      case None    => sys.error("Couldn't find metadata")
+      case Some(m) => println("found: " + m)
+    }
+    GeoTiff.getMetadata(input3, conf) match {
+      case None    => println("As expected, couldn't find metadata for " + input3)
+      case Some(m) => sys.error("wtf!")
+    }
+    val end = System.currentTimeMillis()
+    logInfo(s"Ran in ${end - start} ms")
+    logInfo("Done")
   }
 }

@@ -17,11 +17,12 @@
 package geotrellis.spark.ingest
 
 import geotrellis._
-import geotrellis.data.GeoTiff
-import geotrellis.data.GeoTiff.Metadata
+import geotrellis.raster.RasterData
 import geotrellis.spark.cmd.NoDataHandler
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.tiling.TmsTiling
+
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.InputSplit
 import org.apache.hadoop.mapreduce.JobContext
@@ -29,14 +30,13 @@ import org.apache.hadoop.mapreduce.RecordReader
 import org.apache.hadoop.mapreduce.TaskAttemptContext
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
-import java.net.URL
 import org.geotools.coverage.grid.GridCoverage2D
-import geotrellis.raster.RasterData
+
+import java.awt.image.DataBufferByte
 import java.awt.image.DataBufferDouble
 import java.awt.image.DataBufferFloat
 import java.awt.image.DataBufferInt
 import java.awt.image.DataBufferShort
-import java.awt.image.DataBufferByte
 
 class IngestInputFormat extends FileInputFormat[Long, Raster] {
   override def isSplitable(context: JobContext, fileName: Path) = false
@@ -53,7 +53,7 @@ class IngestRecordReader extends RecordReader[Long, Raster] {
   def initialize(split: InputSplit, context: TaskAttemptContext) = {
     val file = split.asInstanceOf[FileSplit].getPath()
     val meta = PyramidMetadata.readFromJobConf(context.getConfiguration())
-    tiles = tiffToTiles(file, meta)
+    tiles = tiffToTiles(file, meta, context.getConfiguration())
   }
 
   def close = {}
@@ -65,23 +65,18 @@ class IngestRecordReader extends RecordReader[Long, Raster] {
     index < tiles.length
   }
 
-  /* Note that this tiffToTiles is slightly differnent from Ingest.tiffToTiles */
-  private def tiffToTiles(file: Path, pyMeta: PyramidMetadata): List[(Long, Raster)] = {
-    val url = new URL(file.toUri().toString())
-    val image = GeoTiff.getGridCoverage2D(url)
-    val imageMeta = GeoTiff.getMetadata(url).get
+  /* Note that this tiffToTiles is slightly different from Ingest.tiffToTiles */
+  private def tiffToTiles(file: Path, pyMeta: PyramidMetadata, conf: Configuration): List[(Long, Raster)] = {
+    val raster = GeoTiff.withReader(file, conf) { reader =>
+      {
+        val image = GeoTiff.getGridCoverage2D(reader)
+        val imageMeta = GeoTiff.getMetadata(reader)
+        warp(image, imageMeta, pyMeta)
+      }
+    }
     val (zoom, tileSize, rasterType, nodata) =
       (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType, pyMeta.nodata)
-
-    val raster = warp(image, imageMeta, pyMeta)
-
-    val (w, s, e, n) =
-      (imageMeta.bounds.getLowerCorner.getOrdinate(0),
-        imageMeta.bounds.getLowerCorner.getOrdinate(1),
-        imageMeta.bounds.getUpperCorner.getOrdinate(0),
-        imageMeta.bounds.getUpperCorner.getOrdinate(1))
-
-    val extent = Extent(w, s, e, n)
+    val extent = raster.rasterExtent.extent
     val tileExtent = TmsTiling.extentToTile(extent, zoom, tileSize)
 
     val tiles = for {
@@ -98,7 +93,7 @@ class IngestRecordReader extends RecordReader[Long, Raster] {
     tiles.toList
   }
 
-  private def warp(image: GridCoverage2D, imgMeta: Metadata, pyMeta: PyramidMetadata): Raster = {
+  private def warp(image: GridCoverage2D, imgMeta: GeoTiff.Metadata, pyMeta: PyramidMetadata): Raster = {
 
     val (pixelWidth, pixelHeight) = imgMeta.pixels
 

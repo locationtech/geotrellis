@@ -22,8 +22,7 @@ import geotrellis.TypeDouble
 import geotrellis.TypeFloat
 import geotrellis.TypeInt
 import geotrellis.TypeShort
-import geotrellis.data.GeoTiff
-import geotrellis.data.GeoTiff.Metadata
+import geotrellis.spark.ingest.GeoTiff
 import geotrellis.raster.RasterData
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
@@ -149,109 +148,5 @@ object ParallelIngest extends ArgMain[CommandArguments] with Logging {
       writers.foreach(_.close)
     }
     logInfo(s"Done saving ${tiles.length} tiles")*/
-  }
-
-  private def tiffToTiles(file: Path, pyMeta: PyramidMetadata): List[(Long, Raster)] = {
-    val url = new URL(file.toUri().toString())
-    val image = GeoTiff.getGridCoverage2D(url)
-    val imageMeta = GeoTiff.getMetadata(url).get
-    val (zoom, tileSize, rasterType, nodata) =
-      (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType, pyMeta.nodata)
-
-    val raster = warp(image, imageMeta, pyMeta)
-
-    val tileExtent = pyMeta.metadataForBaseZoom.tileExtent
-    val tiles = for {
-      ty <- tileExtent.ymin to tileExtent.ymax
-      tx <- tileExtent.xmin to tileExtent.xmax
-      tileId = TmsTiling.tileId(tx, ty, zoom)
-      extent = TmsTiling.tileToExtent(tx, ty, zoom, tileSize)
-      cropRasterTmp = CroppedRaster(raster, extent)
-      // TODO - do away with the second crop. It is put in as workaround for the case when 
-      // CroppedRaster's translation from Extent to gridBounds ends up giving us an extra row/col
-      cropRaster = CroppedRaster(cropRasterTmp, GridBounds(0, 0, tileSize - 1, tileSize - 1))
-    } yield (tileId, cropRaster)
-
-    /* debugging stuff 
-     
-     def dump = {
-      logInfo("-------------- dumping data for debugging purposes -------------")
-      logInfo(s"first, dumping the original raster before warping to ${dumpDir}/original.tif")
-      GeoTiffWriter.write(s"$dumpDir/original.tif", r, pyMeta.nodata)
-
-      logInfo(s"now, dumping the warped raster to ${dumpDir}/warped.tif")
-      GeoTiffWriter.write(s"$dumpDir/warped.tif", wr, pyMeta.nodata)
-
-      logInfo(s"finally, dumping the tiles to ${dumpDir}/tile-[tileId].tif")
-      tiles.foreach {
-        case (tileId, cr1, cr2) => {
-          val (tx, ty) = TmsTiling.tileXY(tileId, zoom)
-          GeoTiffWriter.write(s"${dumpDir}/tile-${tileId}.tif", cr2, pyMeta.nodata)
-          logInfo(s"---------tx: $tx, ty: $ty file: tile-${tileId}.tif: cr1: rows=${cr1.rows}, cols=${cr1.cols}, rdLen=${cr1.toArrayRaster.data.length}, cr2: rows=${cr2.rows}, cols=${cr2.cols}, rdLen=${cr2.toArrayRaster.data.length}")
-        }
-      }
-      logInfo("-------------- end dumping data for debugging purposes -------------")
-
-    }
-    dump
-    
-    end debugging stuff */
-
-    tiles.toList
-  }
-
-  private def warp(image: GridCoverage2D, imgMeta: Metadata, pyMeta: PyramidMetadata): Raster = {
-
-    val (pixelWidth, pixelHeight) = imgMeta.pixels
-
-    val (zoom, tileSize, rasterType, nodata) =
-      (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType, pyMeta.nodata)
-
-    def buildRaster = {
-      val extent = Extent(imgMeta.bounds.getLowerCorner.getOrdinate(0),
-        imgMeta.bounds.getLowerCorner.getOrdinate(1),
-        imgMeta.bounds.getUpperCorner.getOrdinate(0),
-        imgMeta.bounds.getUpperCorner.getOrdinate(1))
-      val re = RasterExtent(extent, pixelWidth, pixelHeight)
-      val rawDataBuff = image.getRenderedImage().getData().getDataBuffer()
-      val rd = rasterType match {
-        case TypeDouble => RasterData(rawDataBuff.asInstanceOf[DataBufferDouble].getData(), tileSize, tileSize)
-        case TypeFloat  => RasterData(rawDataBuff.asInstanceOf[DataBufferFloat].getData(), tileSize, tileSize)
-        case TypeInt    => RasterData(rawDataBuff.asInstanceOf[DataBufferInt].getData(), tileSize, tileSize)
-        case TypeShort  => RasterData(rawDataBuff.asInstanceOf[DataBufferShort].getData(), tileSize, tileSize)
-        case TypeByte   => RasterData(rawDataBuff.asInstanceOf[DataBufferByte].getData(), tileSize, tileSize)
-        case _          => sys.error("Unrecognized AWT type - " + rasterType)
-      }
-      val trd = NoDataHandler.removeUserNoData(rd, nodata)
-      Raster(trd, re)
-    }
-
-    val origRaster = buildRaster
-    val res = TmsTiling.resolution(zoom, tileSize)
-    val newRe = RasterExtent(origRaster.rasterExtent.extent, res, res)
-    //println(s"re: ${re},newRe: ${newRe}")
-    //val start = System.currentTimeMillis
-    //println(s"[extent,cols,rows,cellwidth,cellheight,rdLen,bufLen]: ")
-    //println(s"Before Warp: [${r.rasterExtent},${r.cols},${r.rows},${r.rasterExtent.cellwidth},${r.rasterExtent.cellheight},${r.toArrayRaster.data.length},${rawDataBuff.asInstanceOf[DataBufferFloat].getData().length}]")
-    val warpRaster = origRaster.warp(newRe)
-    //val end = System.currentTimeMillis
-    //println(s"After Warp: [${wr.rasterExtent},${wr.cols},${wr.rows},${wr.rasterExtent.cellwidth},cellheight=${wr.rasterExtent.cellheight},${wr.toArrayRaster.data.length}]")
-    //println(s"Warp operation took ${end - start} ms.")
-    warpRaster
-  }
-
-  /* debugging only */
-  private def inspect(tile: GridCoverage2D): Unit = {
-    val env = tile.getEnvelope()
-    val r = tile.getRenderedImage().getData()
-    for {
-      py <- 0 until r.getHeight()
-      if (py < 10)
-      px <- 0 until r.getWidth()
-      if (px < 10)
-    } {
-      val d = r.getSampleFloat(px, py, 0)
-      println(s"($px,$py)=$d")
-    }
   }
 }
