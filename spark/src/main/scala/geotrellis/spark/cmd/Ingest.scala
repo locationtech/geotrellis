@@ -16,8 +16,7 @@
 
 package geotrellis.spark.cmd
 import geotrellis._
-import geotrellis.data.GeoTiff
-import geotrellis.data.GeoTiff.Metadata
+import geotrellis.spark.ingest.GeoTiff
 import geotrellis.raster.RasterData
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
@@ -27,21 +26,19 @@ import geotrellis.spark.rdd.TileIdPartitioner
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.HdfsUtils
 import geotrellis.spark.utils.SparkUtils
-
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.MapFile
 import org.apache.hadoop.io.SequenceFile
 import org.apache.spark.Logging
 import org.geotools.coverage.grid.GridCoverage2D
-
 import java.awt.image.DataBufferByte
 import java.awt.image.DataBufferDouble
 import java.awt.image.DataBufferFloat
 import java.awt.image.DataBufferInt
 import java.awt.image.DataBufferShort
 import java.net.URL
-
 import com.quantifind.sumac.ArgMain
+import org.apache.hadoop.conf.Configuration
 
 /**
  * @author akini
@@ -91,7 +88,7 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
     println("------- META ------")
     println(meta)
 
-    val tiles = files.flatMap(file => tiffToTiles(file, meta))
+    val tiles = files.flatMap(file => tiffToTiles(file, meta, conf))
 
     logInfo(s"Deleting and creating output path: $outPath")
     val outFs = outPath.getFileSystem(conf)
@@ -148,16 +145,19 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
     logInfo(s"Done saving ${tiles.length} tiles")
   }
 
-  private def tiffToTiles(file: Path, pyMeta: PyramidMetadata): List[(Long, Raster)] = {
-    val url = new URL(file.toUri().toString())
-    val image = GeoTiff.getGridCoverage2D(url)
-    val imageMeta = GeoTiff.getMetadata(url).get
+  private def tiffToTiles(file: Path, pyMeta: PyramidMetadata, conf: Configuration): List[(Long, Raster)] = {
+    val raster = GeoTiff.withReader(file, conf) { reader =>
+      {
+        val image = GeoTiff.getGridCoverage2D(reader)
+        val imageMeta = GeoTiff.getMetadata(reader)
+        warp(image, imageMeta, pyMeta)
+      }
+    }
     val (zoom, tileSize, rasterType, nodata) =
       (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType, pyMeta.nodata)
+    val extent = raster.rasterExtent.extent
+    val tileExtent = TmsTiling.extentToTile(extent, zoom, tileSize)
 
-    val raster = warp(image, imageMeta, pyMeta)
-
-    val tileExtent = pyMeta.metadataForBaseZoom.tileExtent
     val tiles = for {
       ty <- tileExtent.ymin to tileExtent.ymax
       tx <- tileExtent.xmin to tileExtent.xmax
@@ -197,7 +197,7 @@ object Ingest extends ArgMain[CommandArguments] with Logging {
     tiles.toList
   }
 
-  private def warp(image: GridCoverage2D, imgMeta: Metadata, pyMeta: PyramidMetadata): Raster = {
+  private def warp(image: GridCoverage2D, imgMeta: GeoTiff.Metadata, pyMeta: PyramidMetadata): Raster = {
 
     val (pixelWidth, pixelHeight) = imgMeta.pixels
 
