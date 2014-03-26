@@ -37,6 +37,23 @@ class GeometryFormatsSpec extends FlatSpec with ShouldMatchers with GeoJsonSuppo
     body.as[Point] should equal(Right(point))
   }
 
+  it should "know about MultiPoints" in {
+    val mp =
+      MultiPoint(List(Point(0,0), Point(0,1)))
+    val body =
+      jsonBody(
+        """{
+          |  "type": "MultiPoint",
+          |  "coordinates": [[0.0, 0.0], [0.0, 1.0]]
+          |}""".stripMargin
+      )
+
+    marshal(mp) should equal (Right(body))
+    body.as[MultiPoint] should equal(Right(mp))
+  }
+
+
+
   it should "know about Lines" in {
     val body =
       jsonBody(
@@ -67,19 +84,26 @@ class GeometryFormatsSpec extends FlatSpec with ShouldMatchers with GeoJsonSuppo
     body.as[Polygon] should equal(Right(polygon))
   }
 
-  it should "know about MultiPoints" in {
-    val mp =
-      MultiPoint(List(Point(0,0), Point(0,1)))
+  it should "know about MultiPolygons" in {
+    val mp = MultiPolygon(
+      Polygon(
+        Line(Point(0,0), Point(0,1), Point(1,1), Point(0,0))
+      ),
+      Polygon(
+        Line(Point(1,1), Point(1,2), Point(2,2), Point(1,1))
+      )
+    )
+
     val body =
       jsonBody(
         """{
-          |  "type": "MultiPoint",
-          |  "coordinates": [[0.0, 0.0], [0.0, 1.0]]
+          |  "type": "MultiPolygon",
+          |  "coordinates": [[[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [0.0, 0.0]]], [[[1.0, 1.0], [1.0, 2.0], [2.0, 2.0], [1.0, 1.0]]]]
           |}""".stripMargin
       )
 
     marshal(mp) should equal (Right(body))
-    body.as[MultiPoint] should equal(Right(mp))
+    body.as[MultiPolygon] should equal(Right(mp))
   }
 
   it should "know about MultiLines" in {
