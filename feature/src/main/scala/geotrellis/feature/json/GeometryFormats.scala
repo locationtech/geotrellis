@@ -73,12 +73,14 @@ trait GeometryFormats {
     def write(o: Geometry) = o match {
       case o: Point => o.toJson
       case o: Line => o.toJson
+      case o: Polygon => o.toJson
       case _ => throw new SerializationException("Unknown Geometry")
     }
 
     def read(value: JsValue) = value.asJsObject.getFields("type") match {
       case Seq(JsString("Point")) => value.convertTo[Point]
       case Seq(JsString("LineString")) => value.convertTo[Line]
+      case Seq(JsString("Polygon")) => value.convertTo[Polygon]
       case Seq(JsString(t)) => throw new DeserializationException(s"Unknown Geometry type: $t")
     }
   }
