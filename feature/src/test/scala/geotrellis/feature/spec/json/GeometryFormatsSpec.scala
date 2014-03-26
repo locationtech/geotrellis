@@ -17,14 +17,14 @@ import spray.json.DefaultJsonProtocol
 import DefaultJsonProtocol._
 
 
-class GeometrySpec extends FlatSpec with ShouldMatchers with GeoJsonSupport {
+class GeometryFormatsSpec extends FlatSpec with ShouldMatchers with GeoJsonSupport {
   val point = Point(6.0,1.2)
   val line = Line(Point(1,2) :: Point(1,3) :: Nil)
 
   def jsonBody(blob: String) =
     HttpEntity(contentType = ContentType(`application/json`, `UTF-8`), string = blob)
 
-  "Geometry" should "work point" in {
+  "GeometryFormats" should "know about Points" in {
     val body =
       jsonBody(
         """{
@@ -37,7 +37,7 @@ class GeometrySpec extends FlatSpec with ShouldMatchers with GeoJsonSupport {
     body.as[Point] should equal(Right(point))
   }
 
-  it should "work line" in {
+  it should "know about Lines" in {
     val body =
       jsonBody(
         """{
@@ -50,28 +50,7 @@ class GeometrySpec extends FlatSpec with ShouldMatchers with GeoJsonSupport {
     body.as[Line] should equal(Right(line))
   }
 
-  it should "know how to collection" in {
-    val body =
-      jsonBody(
-        """{
-          |  "type": "GeometryCollection",
-          |  "geometries": [{
-          |    "type": "Point",
-          |    "coordinates": [6.0, 1.2]
-          |  }, {
-          |    "type": "LineString",
-          |    "coordinates": [[1.0, 2.0], [1.0, 3.0]]
-          |  }]
-          |}""".stripMargin
-      )
-
-    //TODO: What if list: List[Geometry]
-    val list: Seq[Geometry] = List(point, line)
-    marshal(list) should equal (Right(body))
-    body.as[Seq[Geometry]] should equal (Right(list))
-  }
-
-  it should "know about polygons" in {
+  it should "know about Polygons" in {
     val polygon =
       Polygon(
         Line(Point(0,0), Point(0,1), Point(1,1), Point(0,0))
@@ -116,6 +95,27 @@ class GeometrySpec extends FlatSpec with ShouldMatchers with GeoJsonSupport {
 
     marshal(ml) should equal (Right(body))
     body.as[MultiLine] should equal(Right(ml))
+  }
+
+  it should "know how to collection" in {
+    val body =
+      jsonBody(
+        """{
+          |  "type": "GeometryCollection",
+          |  "geometries": [{
+          |    "type": "Point",
+          |    "coordinates": [6.0, 1.2]
+          |  }, {
+          |    "type": "LineString",
+          |    "coordinates": [[1.0, 2.0], [1.0, 3.0]]
+          |  }]
+          |}""".stripMargin
+      )
+
+    //TODO: What if list: List[Geometry]
+    val list: Seq[Geometry] = List(point, line)
+    marshal(list) should equal (Right(body))
+    body.as[Seq[Geometry]] should equal (Right(list))
   }
 
 }
