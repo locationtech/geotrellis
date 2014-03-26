@@ -103,4 +103,19 @@ class GeometrySpec extends FlatSpec with ShouldMatchers with GeoJsonSupport {
     body.as[MultiPoint] should equal(Right(mp))
   }
 
+  it should "know about MultiLines" in {
+    val ml =
+      MultiLine(Line(Point(0,0), Point(0,1)) :: Line(Point(1,0), Point(1,1)) :: Nil)
+    val body =
+      jsonBody(
+        """{
+          |  "type": "MultiLineString",
+          |  "coordinates": [[[0.0, 0.0], [0.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]]]
+          |}""".stripMargin
+      )
+
+    marshal(ml) should equal (Right(body))
+    body.as[MultiLine] should equal(Right(ml))
+  }
+
 }
