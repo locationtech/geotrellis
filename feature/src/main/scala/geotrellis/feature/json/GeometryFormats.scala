@@ -21,27 +21,52 @@ trait GeometryFormats {
   }
 
 
+  /**
+   * @param arr array of [x, y] point elements
+   * @return Line instance representing line of points
+   */
+  def readLine(arr: JsArray): Line = Line(
+    for (p <- arr.elements) yield p match {
+      case JsArray(Seq(JsNumber(x), JsNumber(y))) => Point(x.toDouble, y.toDouble)
+      case _ => throw new DeserializationException("Points [x,y] pair expected")
+    }
+  )
+
+  /**
+   * @return JsArray of [x, y] arrays
+   */
+  def writeLine(line: Line): JsArray =
+    JsArray(line.points.map {p => JsArray(JsNumber(p.x), JsNumber(p.y))}.toList)
+  
   implicit object LineFormat extends RootJsonFormat[Line] {
-    def write(o: Line) = JsObject(
+    def write(line: Line) = JsObject(
       "type" -> JsString("LineString"),
-      "coordinates" -> JsArray(o.points.map {
-        p => JsArray(JsNumber(p.x), JsNumber(p.y))
-      }.toList)
+      "coordinates" -> writeLine(line)
     )
 
     def read(value: JsValue) = value.asJsObject.getFields("type", "coordinates") match {
-      case Seq(JsString("LineString"), JsArray(points)) =>
-        Line(
-          for (p <- points) yield
-            p match {
-              case JsArray(Seq(JsNumber(x), JsNumber(y))) => Point(x.toDouble, y.toDouble)
-              case _ => throw new DeserializationException("LineString points exptected")
-            }
-        )
+      case Seq(JsString("LineString"), points: JsArray) => readLine(points)
       case _ => throw new DeserializationException("LineString geometry expected")
     }
   }
 
+  implicit object PolygonFormat extends RootJsonFormat[Polygon] {
+    override def read(json: JsValue): Polygon = json.asJsObject.getFields("type", "coordinates") match {
+      case Seq(JsString("Polygon"), JsArray(lineArrays)) =>
+        val lines = {
+          for (line <- lineArrays) yield line match {
+            case l: JsArray => readLine(l)
+          }
+        }
+        Polygon(lines.head, lines.tail.toSet)
+      case _ => throw new DeserializationException("Polygon geometry expected")
+    }
+
+    override def write(obj: Polygon): JsValue = JsObject(
+      "type" -> JsString("Polygon"),
+      "coordinates" -> JsArray( writeLine(obj.exterior) :: obj.holes.map(writeLine).toList)
+    )
+  }
 
   implicit object GeometryFormat extends RootJsonFormat[Geometry] {
     def write(o: Geometry) = o match {
