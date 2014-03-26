@@ -87,4 +87,20 @@ class GeometrySpec extends FlatSpec with ShouldMatchers with GeoJsonSupport {
     marshal(polygon) should equal (Right(body))
     body.as[Polygon] should equal(Right(polygon))
   }
+
+  it should "know about MultiPoints" in {
+    val mp =
+      MultiPoint(List(Point(0,0), Point(0,1)))
+    val body =
+      jsonBody(
+        """{
+          |  "type": "MultiPoint",
+          |  "coordinates": [[0.0, 0.0], [0.0, 1.0]]
+          |}""".stripMargin
+      )
+
+    marshal(mp) should equal (Right(body))
+    body.as[MultiPoint] should equal(Right(mp))
+  }
+
 }
