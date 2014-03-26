@@ -52,10 +52,11 @@ trait GeometryFormats {
 
   implicit object PolygonFormat extends RootJsonFormat[Polygon] {
     override def read(json: JsValue): Polygon = json.asJsObject.getFields("type", "coordinates") match {
-      case Seq(JsString("Polygon"), JsArray(lineArrays)) =>
-        val lines = {
-          for (line <- lineArrays) yield line match {
+      case Seq(JsString("Polygon"), lineArrays: JsArray) =>
+        val lines: List[Line] = {
+          for (line <- lineArrays.elements) yield line match {
             case l: JsArray => readLine(l)
+            case _ => throw new DeserializationException("Line coordinates expected")
           }
         }
         Polygon(lines.head, lines.tail.toSet)

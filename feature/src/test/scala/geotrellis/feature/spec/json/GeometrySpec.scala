@@ -70,4 +70,21 @@ class GeometrySpec extends FlatSpec with ShouldMatchers with GeoJsonSupport {
     marshal(list) should equal (Right(body))
     body.as[Seq[Geometry]] should equal (Right(list))
   }
+
+  it should "know about polygons" in {
+    val polygon =
+      Polygon(
+        Line(Point(0,0), Point(0,1), Point(1,1), Point(0,0))
+      )
+    val body =
+      jsonBody(
+        """{
+          |  "type": "Polygon",
+          |  "coordinates": [[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [0.0, 0.0]]]
+          |}""".stripMargin
+      )
+
+    marshal(polygon) should equal (Right(body))
+    body.as[Polygon] should equal(Right(polygon))
+  }
 }
