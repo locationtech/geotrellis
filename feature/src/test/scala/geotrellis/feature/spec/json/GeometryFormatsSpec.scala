@@ -52,8 +52,6 @@ class GeometryFormatsSpec extends FlatSpec with ShouldMatchers with GeoJsonSuppo
     body.as[MultiPoint] should equal(Right(mp))
   }
 
-
-
   it should "know about Lines" in {
     val body =
       jsonBody(
@@ -65,6 +63,21 @@ class GeometryFormatsSpec extends FlatSpec with ShouldMatchers with GeoJsonSuppo
 
     marshal(line) should equal (Right(body))
     body.as[Line] should equal(Right(line))
+  }
+
+  it should "know about MultiLines" in {
+    val ml =
+      MultiLine(Line(Point(0,0), Point(0,1)) :: Line(Point(1,0), Point(1,1)) :: Nil)
+    val body =
+      jsonBody(
+        """{
+          |  "type": "MultiLineString",
+          |  "coordinates": [[[0.0, 0.0], [0.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]]]
+          |}""".stripMargin
+      )
+
+    marshal(ml) should equal (Right(body))
+    body.as[MultiLine] should equal(Right(ml))
   }
 
   it should "know about Polygons" in {
@@ -106,20 +119,6 @@ class GeometryFormatsSpec extends FlatSpec with ShouldMatchers with GeoJsonSuppo
     body.as[MultiPolygon] should equal(Right(mp))
   }
 
-  it should "know about MultiLines" in {
-    val ml =
-      MultiLine(Line(Point(0,0), Point(0,1)) :: Line(Point(1,0), Point(1,1)) :: Nil)
-    val body =
-      jsonBody(
-        """{
-          |  "type": "MultiLineString",
-          |  "coordinates": [[[0.0, 0.0], [0.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]]]
-          |}""".stripMargin
-      )
-
-    marshal(ml) should equal (Right(body))
-    body.as[MultiLine] should equal(Right(ml))
-  }
 
   it should "know how to collection" in {
     val body =
