@@ -32,6 +32,13 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
                                                  with Relatable
                                                  with OneDimension {
 
+  /** Returns the Lines contained in MultiLine. */
+  lazy val lines: Array[Line] = {
+    for (i <- 0 until jtsGeom.getNumGeometries) yield {
+      Line(jtsGeom.getGeometryN(i).asInstanceOf[jts.LineString])
+    }
+  }.toArray
+
   lazy val isClosed: Boolean =
     jtsGeom.isClosed
 

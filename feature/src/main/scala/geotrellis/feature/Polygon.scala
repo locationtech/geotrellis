@@ -75,6 +75,12 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
   lazy val exterior: Line =
     Line(jtsGeom.getExteriorRing)
 
+  /** Returns the hole rings of this Polygon. */
+  lazy val holes: Array[Line] = {
+    for (i <- 0 until jtsGeom.getNumInteriorRing()) yield
+      Line(jtsGeom.getInteriorRingN(i))
+  }.toArray
+
   /**
    * Returns the boundary of this Polygon.
    * The boundary of a Polygon is the set of closed curves corresponding to its

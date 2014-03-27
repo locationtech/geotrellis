@@ -32,6 +32,14 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
                                                    with Relatable
                                                    with TwoDimensions {
 
+
+  /** Returns the Polygons contained in MultiPolygon. */
+  lazy val polygons: Array[Polygon] = {
+    for (i <- 0 until jtsGeom.getNumGeometries) yield {
+      Polygon(jtsGeom.getGeometryN(i).asInstanceOf[jts.Polygon])
+    }
+  }.toArray
+
   lazy val area: Double =
     jtsGeom.getArea
 

@@ -32,6 +32,13 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
                                              with Relatable
                                              with ZeroDimensions {
 
+  /** Returns the Points contained in MultiPoint. */
+  lazy val points: Array[Point] = {
+    for (i <- 0 until jtsGeom.getNumPoints) yield {
+      Point(jtsGeom.getGeometryN(i).asInstanceOf[jts.Point])
+    }
+  }.toArray
+
   // -- Intersection
 
   def &(p: Point): PointOrNoResult =

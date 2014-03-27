@@ -18,7 +18,7 @@ package geotrellis.feature
 
 import com.vividsolutions.jts.{geom => jts}
 
-trait Feature[G <: Geometry, D] { val geom: G ; val data: D }
+trait Feature[+G <: Geometry, D] { val geom: G ; val data: D }
 
 case class PointFeature[D](geom: Point, data: D) extends Feature[Point,D]
 case class LineFeature[D](geom: Line, data: D) extends Feature[Line,D]
