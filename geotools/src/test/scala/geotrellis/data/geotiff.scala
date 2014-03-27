@@ -33,6 +33,8 @@ import org.geotools.factory.Hints
 import org.geotools.referencing.CRS
 import org.geotools.coverage.grid.GridCoordinates2D
 
+
+
 import java.io.{File,FileWriter}
 import javax.imageio.ImageIO
 
@@ -58,6 +60,34 @@ class GeoTiffSpec extends FunSpec with TestServer with ShouldMatchers {
       val (xmap, ymap) = raster1.rasterExtent.gridToMap(0,0)
       xmap should be (-15381.615 plusOrMinus 0.001)
       ymap should be (15418.729 plusOrMinus 0.001)
+    }
+
+    it("should correctly translate NODATA values for an int raster which has no NODATA value associated") {
+      val path = "geotools/data/cea.tif"
+      val raster = GeoTiff.readRaster(path)
+      val (cols, rows) = (raster.cols, raster.rows)
+
+      // Find NODATA value
+      val reader = GeoTiff.getReader(path)
+
+      val nodata = reader.getMetadata().getNoData()
+      val geoRaster = reader.read(null).getRenderedImage.getData
+      val data = Array.fill(cols * rows)(nodata)
+      geoRaster.getPixels(0, 0, cols, rows, data)
+
+      val rdata = raster.toArray
+
+      for(col <- 0 until cols) {
+        for(row <- 0 until rows) {
+          if(isNoData(rdata(row*cols + col))) {
+            val v = data(row*cols + col)
+            if(isNoData(nodata))
+              isNoData(v) should be (true)
+            else
+             v should be (nodata)
+          }
+        }
+      }
     }
 
     it ("should produce same raster for GeoTiff.readRaster and through the Layer") {
