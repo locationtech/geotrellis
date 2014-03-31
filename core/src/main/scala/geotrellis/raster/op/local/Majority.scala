@@ -129,3 +129,22 @@ trait MajorityOpMethods[+Repr <: RasterSource] { self: Repr =>
   def localMajority(n:Int,rss:RasterSource*)(implicit d:DI):RasterSource =
     localMajority(n,rss)
 }
+
+trait MajorityMethods { self: Raster =>
+
+  /** Assigns to each cell the value within the given rasters that is the most numerous. */
+  def localMajority(rs:Seq[Raster]):Raster =
+    Majority(self +: rs)
+
+  /** Assigns to each cell the value within the given rasters that is the most numerous. */
+  def localMajority(rs:Raster*)(implicit d:DI):Raster =
+    localMajority(rs)
+
+  /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
+  def localMajority(n:Int,rs:Seq[Raster]):Raster =
+    Majority(n, self +: rs)
+
+  /** Assigns to each cell the value within the given rasters that is the nth most numerous. */
+  def localMajority(n:Int,rs:Raster*)(implicit d:DI):Raster =
+    localMajority(n,rs)
+}
