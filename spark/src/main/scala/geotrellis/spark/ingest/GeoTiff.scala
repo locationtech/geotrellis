@@ -53,7 +53,7 @@ object GeoTiff extends Logging {
       case None    => None
       case Some(_) => withReader(path, conf) { reader => Some(getMetadata(reader)) }
     }
-  
+
   /*
    * Get metadata out of an existing reader
    */
@@ -107,10 +107,20 @@ object GeoTiff extends Logging {
 
   private def accepts(path: Path, conf: Configuration): Option[AbstractGridFormat] = {
     val stream = path.getFileSystem(conf).open(path)
-    accepts(stream)
+    val afgOpt = accepts(stream)
+    stream.close()
+    afgOpt
   }
-  
+
   private def accepts(obj: Object): Option[AbstractGridFormat] =
     formats.find(_.accepts(obj, hints))
 
+  private def printClassLoader: Unit = {
+    logInfo("printing classpath -------")
+    val cl = ClassLoader.getSystemClassLoader()
+    import java.net.URLClassLoader
+    val urls = cl.asInstanceOf[URLClassLoader].getURLs()
+    logInfo(urls.mkString(",\n"))
+    logInfo("end printing classpath -------")
+  }
 }
