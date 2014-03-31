@@ -23,12 +23,10 @@ import geotrellis.spark.tiling.PixelExtent
 import geotrellis.spark.tiling.TileExtent
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.HdfsUtils
-
 import org.apache.commons.codec.binary.Base64
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.Job
-
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
@@ -185,14 +183,19 @@ object PyramidMetadata {
         case None    => false
       }
     }
+
     val (files, optMetas) = allFiles.map(getMetadata(_)).filter(filterNone(_)).unzip
+
+    def isPixelSizeEqual(l: Tuple2[Double, Double], r: Tuple2[Double, Double]) =
+      (l._1 - r._1).abs < 0.0001 && (l._2 - r._2).abs < 0.0001
+
     val meta = optMetas.flatten.reduceLeft { (acc, meta) =>
       if (acc.bands != meta.bands)
-        sys.error("Error: All input tifs must have the same number of bands ${acc.bands} != ${meta.bands}")
-      if (acc.pixelSize != meta.pixelSize)
-        sys.error("Error: All input tifs must have the same resolution ${acc.pixelSize} != ${meta.pixelSize}")
+        sys.error(s"Error: All input tifs must have the same number of bands ${acc.bands} != ${meta.bands}")
+      if (!isPixelSizeEqual(acc.pixelSize, meta.pixelSize))
+        sys.error(s"Error: All input tifs must have the same resolution ${acc.pixelSize} != ${meta.pixelSize}")
       if (acc.rasterType != meta.rasterType)
-        sys.error("Error: All input tifs must have same raster type ${acc.rasterType} != ${meta.rasterType}")
+        sys.error(s"Error: All input tifs must have same raster type ${acc.rasterType} != ${meta.rasterType}")
       if ((acc.nodata.isNaN() && !meta.nodata.isNaN()) || (!acc.nodata.isNaN() && acc.nodata != meta.nodata))
         sys.error(s"Error: All input tifs must have same nodata value ${acc.nodata} != ${meta.nodata}")
 
@@ -235,3 +238,4 @@ object PyramidMetadata {
   def readFromJobConf(conf: Configuration) = fromBase64(conf.get(PyramidMetadata.JobConfKey))
 
 }
+
