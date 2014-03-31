@@ -1,4 +1,4 @@
-/**************************************************************************
+/*
  * Copyright (c) 2014 Azavea.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **************************************************************************/
+ */
 
 object Version {
   val geotrellis  = "0.10.0-SNAPSHOT"
   val scala       = "2.10.3"
-  val geotools    = "9.5"
+  val geotools    = "11.0"
   val akka        = "2.2.3"
   val spray       = "1.2.0"
   val jackson     = "1.6.1"

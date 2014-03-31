@@ -1,4 +1,4 @@
-/**************************************************************************
+/*
  * Copyright (c) 2014 Azavea.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **************************************************************************/
+ */
 
 package geotrellis.data
 
@@ -32,7 +32,7 @@ class GeoTiffIntReadState(path:String,
   private var data:Array[Int] = null
 
   private def initializeNoData(reader:gce.geotiff.GeoTiffReader) = 
-    noData = reader.getMetadata.getNoData.toInt
+    noData = d2i(reader.getMetadata.getNoData)
 
   def initSource(pos:Int, size:Int) {
     val x = 0

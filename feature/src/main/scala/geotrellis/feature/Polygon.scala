@@ -1,4 +1,4 @@
-/**************************************************************************
+/*
  * Copyright (c) 2014 Azavea.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **************************************************************************/
+ */
 
 package geotrellis.feature
 
@@ -319,7 +319,7 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     jtsGeom.overlaps(g.jtsGeom)
 
   /**
-   * Tests whether this Polygon touches the specified geometry g.
+   * Tests whether this Polygon touches the specified Geometry g.
    * Returns true if the DE-9IM Intersection Matrix for the two geometries is
    * FT*******, F**T***** or F***T****.
    */

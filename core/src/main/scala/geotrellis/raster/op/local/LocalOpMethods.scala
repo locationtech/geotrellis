@@ -1,4 +1,4 @@
-/**************************************************************************
+/*
  * Copyright (c) 2014 Azavea.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **************************************************************************/
+ */
 
 package geotrellis.raster.op.local
 
@@ -188,6 +188,22 @@ trait LocalOpMethods[+Repr <: RasterSource]
 
   /** Takes the arc tangent 2 of each raster cell value. */
   def localAtan2(rs: RasterSource): RasterSource = combine(rs, "Atan2")(Atan2(_,_))
+
+  /** Assigns to each cell the value within the given rasters that is the nth min */
+  def localMinN(n:Int,rss:Seq[RasterSource]):RasterSource =
+    combine(rss)(MinN(n,_))
+
+  /** Assigns to each cell the value within the given rasters that is the nth min */
+  def localMinN(n:Int,rss:RasterSource*)(implicit d:DI):RasterSource =
+    localMinN(n,rss)
+
+  /** Assigns to each cell the value within the given rasters that is the nth max */
+  def localMaxN(n:Int,rss:Seq[RasterSource]):RasterSource =
+    combine(rss)(MaxN(n,_))
+
+  /** Assigns to each cell the value within the given rasters that is the nth max */
+  def localMaxN(n:Int,rss:RasterSource*)(implicit d:DI):RasterSource =
+    localMaxN(n,rss)
 
   /** Masks this raster by the given GeoJSON. */
   def mask(geoJson: String): RasterSource =
