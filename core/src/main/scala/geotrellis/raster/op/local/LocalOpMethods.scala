@@ -151,11 +151,11 @@ trait LocalOpMethods[+Repr <: RasterSource]
   def localMean(rss:RasterSource*)(implicit d:DI): RasterSource = 
     localMean(rss)
 
-  /** Assigns to each cell the value within the given rasters that is the least numerous. */
+ /** Gives the count of unique values at each location in a set of Rasters.*/
   def localVariety(rss:Seq[RasterSource]):RasterSource = 
     combine(rss, "Variety")(Variety(_))
 
-  /** Assigns to each cell the value within the given rasters that is the least numerous. */
+ /** Gives the count of unique values at each location in a set of Rasters.*/
   def localVariety(rss:RasterSource*)(implicit d:DI):RasterSource = 
     localVariety(rss)
 

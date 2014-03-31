@@ -39,7 +39,7 @@ object Variety extends Serializable {
 
     val layerCount = rs.length
     if(layerCount == 0) {
-      sys.error(s"Can't compute majority of empty sequence")
+      sys.error(s"Can't compute variety of empty sequence")
     } else {
       val re = rs(0).rasterExtent
       val cols = re.cols

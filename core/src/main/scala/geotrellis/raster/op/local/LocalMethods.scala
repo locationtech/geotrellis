@@ -176,4 +176,12 @@ trait LocalMethods extends AddMethods
     */
   def localTanh(): Raster =
     Tanh(self)
+
+ /** Gives the count of unique values at each location in a set of Rasters.*/
+  def localVariety(rs:Seq[Raster]):Raster =
+    Variety(self +: rs)
+
+ /** Gives the count of unique values at each location in a set of Rasters.*/
+  def localVariety(rs:Raster*)(implicit d:DI):Raster =
+    localVariety(rs)
 }
