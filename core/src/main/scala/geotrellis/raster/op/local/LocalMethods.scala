@@ -34,6 +34,8 @@ trait LocalMethods extends AddMethods
                       with GreaterMethods
                       with LessMethods
                       with LessOrEqualMethods
+                      with MajorityMethods
+                      with MinorityMethods
                       with PowMethods { self: Raster =>
 
   /**

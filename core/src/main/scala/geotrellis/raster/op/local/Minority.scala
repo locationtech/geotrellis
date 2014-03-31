@@ -42,7 +42,7 @@ object Minority extends Serializable {
 
     val layerCount = rs.length
     if(layerCount == 0) {
-      sys.error(s"Can't compute majority of empty sequence")
+      sys.error(s"Can't compute minority of empty sequence")
     } else {
       val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
       val re = rs(0).rasterExtent
@@ -130,4 +130,22 @@ trait MinorityOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
   def localMinority(n:Int,rss:RasterSource*)(implicit d:DI):RasterSource = 
     localMinority(n,rss)
+}
+
+trait MinorityMethods { self: Raster =>
+  /** Assigns to each cell the value within the given rasters that is the least numerous. */
+  def localMinority(rs:Seq[Raster]):Raster =
+    Minority(self +: rs)
+
+  /** Assigns to each cell the value within the given rasters that is the least numerous. */
+  def localMinority(rs:Raster*)(implicit d:DI):Raster =
+    localMinority(rs)
+
+  /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
+  def localMinority(n:Int,rs:Seq[Raster]):Raster =
+    Minority(n,self +: rs)
+
+  /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
+  def localMinority(n:Int,rs:Raster*)(implicit d:DI):Raster =
+    localMinority(n,rs)
 }

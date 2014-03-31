@@ -85,4 +85,43 @@ class MinoritySpec extends FunSpec
       assertEqual(r1.localMinority(4,r1,r2,r3).get, Array.fill(6*8)(NaN))
     }
   }
+  describe("Minority methods") {
+    it("takes minority on rasters sources of all one value") {
+      val r1 = createRaster(Array.fill(6*8)(1), 6,8)
+      val r2 = createRaster(Array.fill(6*8)(5), 6,8)
+      val r3 = createRaster(Array.fill(6*8)(1), 6,8)
+      val r4 = createRaster(Array.fill(6*8)(7), 6,8)
+      val r5 = createRaster(Array.fill(6*8)(1), 6,8)
+      val r6 = createRaster(Array.fill(6*8)(7), 6,8)
+      val r7 = createRaster(Array.fill(6*8)(NODATA), 6,8)
+
+      assertEqual(r1.localMinority(r2,r3,r4,r5,r6,r7), Array.fill(6*8)(5))
+      assertEqual(r1.localMinority(1,r2,r3,r4,r5,r6), Array.fill(6*8)(7))
+      assertEqual(r1.localMinority(2,r1,r2,r3,r4,r5,r6), Array.fill(6*8)(1))
+      assertEqual(r1.localMinority(0,r1,r1,r2), Array.fill(6*8)(5))
+      assertEqual(r1.localMinority(1,r1,r1,r2), Array.fill(6*8)(1))
+      assertEqual(r1.localMinority(2,r1,r1,r2), Array.fill(6*8)(NODATA))
+      assertEqual(r1.localMinority(3,r1,r2,r3), Array.fill(6*8)(NODATA))
+      assertEqual(r1.localMinority(4,r1,r2,r3), Array.fill(6*8)(NODATA))
+    }
+
+    it("takes minority on double rasters sources of all one value") {
+      val r1 = createRaster(Array.fill(6*8)(1.1), 6,8)
+      val r2 = createRaster(Array.fill(6*8)(5.5), 6,8)
+      val r3 = createRaster(Array.fill(6*8)(1.1), 6,8)
+      val r4 = createRaster(Array.fill(6*8)(7.7), 6,8)
+      val r5 = createRaster(Array.fill(6*8)(1.1), 6,8)
+      val r6 = createRaster(Array.fill(6*8)(7.7), 6,8)
+      val r7 = createRaster(Array.fill(6*8)(NaN), 6,8)
+
+      assertEqual(r1.localMinority(r2,r3,r4,r5,r6,r7), Array.fill(6*8)(5.5))
+      assertEqual(r1.localMinority(1,r2,r3,r4,r5,r6), Array.fill(6*8)(7.7))
+      assertEqual(r1.localMinority(2,r1,r2,r3,r4,r5,r6), Array.fill(6*8)(1.1))
+      assertEqual(r1.localMinority(0,r1,r1,r2), Array.fill(6*8)(5.5))
+      assertEqual(r1.localMinority(1,r1,r1,r2), Array.fill(6*8)(1.1))
+      assertEqual(r1.localMinority(2,r1,r1,r2), Array.fill(6*8)(NaN))
+      assertEqual(r1.localMinority(3,r1,r2,r3), Array.fill(6*8)(NaN))
+      assertEqual(r1.localMinority(4,r1,r2,r3), Array.fill(6*8)(NaN))
+    }
+  }
 }
