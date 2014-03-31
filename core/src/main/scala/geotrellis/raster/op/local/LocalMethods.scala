@@ -182,6 +182,14 @@ trait LocalMethods extends AddMethods
     Variety(self +: rs)
 
  /** Gives the count of unique values at each location in a set of Rasters.*/
-  def localVariety(rs:Raster*)(implicit d:DI):Raster =
-    localVariety(rs)
+  def localVariety(r:Raster*)(implicit d:DI):Raster =
+    localVariety(r)
+
+  /** Takes the mean of the values of each cell in the set of rasters. */
+  def localMean(rs: Seq[Raster]): Raster =
+    Mean(self +: rs)
+
+  /** Takes the mean of the values of each cell in the set of rasters. */
+  def localMean(r:Raster*)(implicit d:DI): Raster =
+    localMean(r)
 }
