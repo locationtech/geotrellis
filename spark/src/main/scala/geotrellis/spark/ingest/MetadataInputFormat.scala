@@ -17,8 +17,6 @@
 package geotrellis.spark.ingest
 
 import geotrellis._
-import geotrellis.spark.cmd.ingest.TiffTiler
-import geotrellis.spark.metadata.PyramidMetadata
 
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.InputSplit
@@ -27,33 +25,37 @@ import org.apache.hadoop.mapreduce.RecordReader
 import org.apache.hadoop.mapreduce.TaskAttemptContext
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
+import org.apache.spark.Logging
 
-class IngestInputFormat extends FileInputFormat[Long, Raster] {
+class MetadataInputFormat extends FileInputFormat[String, GeoTiff.Metadata] {
   override def isSplitable(context: JobContext, fileName: Path) = false
 
-  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[Long, Raster] =
-    new IngestRecordReader
+  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[String, GeoTiff.Metadata] =
+    new MetadataRecordReader
 
 }
 
-class IngestRecordReader extends RecordReader[Long, Raster] {
-  private var tiles: List[(Long, Raster)] = null
-  private var index: Int = -1
+class MetadataRecordReader extends RecordReader[String, GeoTiff.Metadata] with Logging {
+  private var file: String = null
+  private var meta: GeoTiff.Metadata = null
+  private var readFirstRecord: Boolean = false
 
-  def initialize(split: InputSplit, context: TaskAttemptContext) = {
-    val file = split.asInstanceOf[FileSplit].getPath()
-    val meta = PyramidMetadata.readFromJobConf(context.getConfiguration())
-    tiles = TiffTiler.tile(file, meta, context.getConfiguration())
+  override def initialize(split: InputSplit, context: TaskAttemptContext) = {
+    val filePath = split.asInstanceOf[FileSplit].getPath()
+    GeoTiff.getMetadata(filePath, context.getConfiguration()) match {
+      case Some(m) => {meta = m}
+      case None    => readFirstRecord = true
+    }
+    file = filePath.toUri().toString()
   }
 
-  def close = {}
-  def getCurrentKey = tiles(index)._1
-  def getCurrentValue = tiles(index)._2
-  def getProgress = (index + 1) / tiles.length
-  def nextKeyValue = {
-    index = index + 1
-    index < tiles.length
+  override def getCurrentKey = file
+  override def getCurrentValue = {
+    readFirstRecord = true
+    meta
   }
+  override def getProgress = 1
+  override def nextKeyValue = !readFirstRecord
+  override def close = {}
 
-  
 }

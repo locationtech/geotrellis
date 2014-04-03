@@ -16,225 +16,211 @@
 
 package geotrellis.spark.cmd
 import geotrellis._
-import geotrellis.spark.ingest.GeoTiff
-import geotrellis.raster.RasterData
+import geotrellis.spark.Tile
+import geotrellis.spark.cmd.ingest.TiffTiler
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
+import geotrellis.spark.ingest.IngestInputFormat
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.rdd.RasterSplitGenerator
 import geotrellis.spark.rdd.TileIdPartitioner
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.HdfsUtils
 import geotrellis.spark.utils.SparkUtils
+
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.MapFile
 import org.apache.hadoop.io.SequenceFile
 import org.apache.spark.Logging
+import org.apache.spark.SerializableWritable
+import org.apache.spark.SparkContext._
 import org.geotools.coverage.grid.GridCoverage2D
-import java.awt.image.DataBufferByte
-import java.awt.image.DataBufferDouble
-import java.awt.image.DataBufferFloat
-import java.awt.image.DataBufferInt
-import java.awt.image.DataBufferShort
-import java.net.URL
+
 import com.quantifind.sumac.ArgMain
-import org.apache.hadoop.conf.Configuration
+import com.quantifind.sumac.FieldArgs
+import com.quantifind.sumac.validation.Required
 
 /**
  * @author akini
  *
  * Ingest GeoTIFFs into ArgWritable.
  *
- * Ingest --input <path-to-tiffs> --output <path-to-raster> --sparkMaster <spark-master-ip>
- *
+ * Works in two modes: 
+ * 
+ * Local - all processing is done on a single node in RAM and not using Spark. Use this if
+ * ingesting a single file or a bunch of files that do not overlap. Also, all files in 
+ * aggregate must fit in RAM. The non-overlapping constraint is due to there not being 
+ * any mosaicing in local mode
+ * 
+ * Command for local mode: 
+ * Ingest --input <path-to-tiffs> --output <path-to-raster>
  * e.g., Ingest --input file:///home/akini/test/small_files/all-ones.tif --output file:///tmp/all-ones
  *
+ * Spark - all processing is done in Spark. Use this if ingesting multiple files, which in 
+ * aggregate do not fit on a single node's RAM. Or multiple files which may overlap.
+ *  
  * Constraints:
  *
  * --input <path-to-tiffs> - this can either be a directory or a single tiff file and has to be on the local fs.
- * Currently, mosaicing is not implemented so only the single tiff file case is tested
  *
  * --output <path-to-raster> - this can be either on hdfs (hdfs://) or local fs (file://). If the directory
  * already exists, it is deleted
  *
  *
- * Outstanding issues:
- * 1. Mosaicing overlapping tiles
- *
  */
-object Ingest extends ArgMain[CommandArguments] with Logging {
 
-  final val DefaultProjection = "EPSG:4326"
+class IngestArguments extends FieldArgs {
+  @Required var input: String = _
+  @Required var output: String = _
+  var sparkMaster: String = _
+}
+
+object Ingest extends ArgMain[IngestArguments] with Logging {
+
   System.setProperty("com.sun.media.jai.disableMediaLib", "true")
 
-  //var dumpDir: String = null
-
-  def main(args: CommandArguments) {
+  def main(args: IngestArguments) {
     val inPath = new Path(args.input)
     val outPath = new Path(args.output)
-
-    /*dumpDir = args.dumpDir
-    logInfo(s"Deleting and creating dump directory: $dumpDir")
-    val dir = new File(dumpDir)
-    dir.delete()
-    dir.mkdirs()*/
+    val sparkMaster = args.sparkMaster
+    val runLocal = sparkMaster == null
 
     val conf = SparkUtils.createHadoopConfiguration
-
-    val (files, meta) = PyramidMetadata.fromTifFiles(inPath, conf)
-    println("------- FILES ------")
-    println(files.mkString("\n"))
-    println("\n\n\n")
-    println("------- META ------")
-    println(meta)
-
-    val tiles = files.flatMap(file => tiffToTiles(file, meta, conf))
 
     logInfo(s"Deleting and creating output path: $outPath")
     val outFs = outPath.getFileSystem(conf)
     outFs.delete(outPath, true)
     outFs.mkdirs(outPath)
 
-    logInfo("Saving metadata: ")
-    logInfo(meta.toString)
-    meta.save(outPath, conf)
+    if (runLocal) {
+      val (files, meta) = PyramidMetadata.fromTifFiles(inPath, conf)
+      logInfo("------- FILES ------")
+      logInfo(files.mkString("\n"))
+      logInfo("\n\n\n")
+      logInfo("------- META ------")
+      logInfo(meta.toString)
+      meta.save(outPath, conf)
 
-    val outPathWithZoom = new Path(outPath, meta.maxZoomLevel.toString)
-    logInfo(s"Creating Output Path With Zoom: $outPathWithZoom")
-    outFs.mkdirs(outPathWithZoom)
+      val tiles = files.flatMap(file => TiffTiler.tile(file, meta, conf))
 
+      val outPathWithZoom = createZoomDirectory(outPath, meta.maxZoomLevel, outFs)
+
+      val partitioner = createPartitioner(outPathWithZoom, meta, conf)
+
+      val key = new TileIdWritable()
+
+      // open as many writers as number of partitions
+      def openWriters(num: Int) = {
+        val writers = new Array[MapFile.Writer](num)
+        for (i <- 0 until num) {
+          val mapFilePath = new Path(outPathWithZoom, f"part-${i}%05d")
+
+          writers(i) = new MapFile.Writer(conf, outFs, mapFilePath.toUri.toString,
+            classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.NONE)
+
+        }
+        writers
+      }
+
+      setOutputParameters(conf)
+      val writers = openWriters(partitioner.numPartitions)
+      try {
+        tiles.foreach {
+          case (tileId, tile) => {
+            key.set(tileId)
+            writers(partitioner.getPartition(key)).append(key, ArgWritable.fromRasterData(tile.toArrayRaster.data))
+            //logInfo(s"Saved tileId=${tileId},partition=${partitioner.getPartition(key)}")
+          }
+        }
+      }
+      finally {
+        writers.foreach(_.close)
+      }
+      logInfo(s"Done saving ${tiles.length} tiles")
+    }
+
+    else {
+      // run on spark
+      val sc = SparkUtils.createSparkContext(sparkMaster, "Ingest")
+
+      try {
+        val (files, meta) = PyramidMetadata.fromTifFiles(inPath, conf, sc)
+
+        logInfo("------- META ------")
+        logInfo(meta.toString)
+        meta.save(outPath, conf)
+        meta.writeToJobConf(conf)
+
+        // if less than 10 input files, print them out
+        if (files.length < 10) {
+          logInfo("------- FILES ------")
+          logInfo(files.mkString("\n"))
+        }
+
+        val outPathWithZoom = createZoomDirectory(outPath, meta.maxZoomLevel, outFs)
+
+        val partitioner = createPartitioner(outPathWithZoom, meta, conf)
+
+        val newConf = HdfsUtils.putFilesInConf(files.mkString(","), conf)
+        val rdd = sc.newAPIHadoopRDD(newConf, classOf[IngestInputFormat], classOf[Long], classOf[Raster])
+        setOutputParameters(newConf)
+
+        val broadCastedConf = sc.broadcast(new SerializableWritable(newConf))
+        val outPathWithZoomStr = outPathWithZoom.toUri().toString()
+        val res =
+          rdd.map(t => Tile(t._1, t._2).toWritable)
+            .partitionBy(partitioner)
+            .reduceByKey((tile1, tile2) => tile2) // pick the later one
+            .mapPartitionsWithIndex({ (index, iter) =>
+              {
+                val conf = broadCastedConf.value.value
+                val buf = iter.toArray.sortWith((x, y) => x._1.get() < y._1.get())
+
+                val mapFilePath = new Path(outPathWithZoomStr, f"part-${index}%05d")
+                val fs = mapFilePath.getFileSystem(conf)
+                val fsRep = fs.getDefaultReplication()
+                logInfo(s"Working on partition ${index} with rep = (${conf.getInt("dfs.replication", -1)}, ${fsRep})")
+                val writer = new MapFile.Writer(conf, fs, mapFilePath.toUri.toString,
+                  classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.RECORD)
+                buf.foreach(writableTile => writer.append(writableTile._1, writableTile._2))
+                writer.close()
+                iter
+              }
+            }, true)
+        logInfo(s"Done saving ${res.count()} tiles")
+      }
+      finally {
+        sc.stop
+      }
+    }
+  }
+
+  // mutates conf
+  private def setOutputParameters(conf: Configuration): Unit = {
+    conf.set("io.map.index.interval", "1")
+    //conf.setInt("dfs.replication", 1)
+  }
+  
+  private def createPartitioner(rasterPath: Path, meta: PyramidMetadata, conf: Configuration): TileIdPartitioner = {
     val tileExtent = meta.metadataForBaseZoom.tileExtent
     val (zoom, tileSize, rasterType) = (meta.maxZoomLevel, meta.tileSize, meta.rasterType)
     val splitGenerator = RasterSplitGenerator(tileExtent, zoom,
       TmsTiling.tileSizeBytes(tileSize, rasterType),
       HdfsUtils.blockSize(conf))
 
-    val partitioner = TileIdPartitioner(splitGenerator, outPathWithZoom, conf)
+    val partitioner = TileIdPartitioner(splitGenerator, rasterPath, conf)
 
     logInfo("Saving splits: " + partitioner)
-
-    val key = new TileIdWritable()
-
-    // open as many writers as number of partitions
-    def openWriters(num: Int) = {
-      val writers = new Array[MapFile.Writer](num)
-      for (i <- 0 until num) {
-        val mapFilePath = new Path(outPathWithZoom, f"part-${i}%05d")
-
-        writers(i) = new MapFile.Writer(conf, outFs, mapFilePath.toUri.toString,
-          classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.NONE)
-
-      }
-      writers
-    }
-
-    conf.set("io.map.index.interval", "1")
-    val writers = openWriters(partitioner.numPartitions)
-    try {
-      tiles.foreach {
-        case (tileId, tile) => {
-          key.set(tileId)
-          writers(partitioner.getPartition(key)).append(key, ArgWritable.fromRasterData(tile.toArrayRaster.data))
-          //logInfo(s"Saved tileId=${tileId},partition=${partitioner.getPartition(key)}")
-        }
-      }
-    }
-    finally {
-      writers.foreach(_.close)
-    }
-    logInfo(s"Done saving ${tiles.length} tiles")
+    partitioner
   }
-
-  private def tiffToTiles(file: Path, pyMeta: PyramidMetadata, conf: Configuration): List[(Long, Raster)] = {
-    val raster = GeoTiff.withReader(file, conf) { reader =>
-      {
-        val image = GeoTiff.getGridCoverage2D(reader)
-        val imageMeta = GeoTiff.getMetadata(reader)
-        warp(image, imageMeta, pyMeta)
-      }
-    }
-    val (zoom, tileSize, rasterType, nodata) =
-      (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType, pyMeta.nodata)
-    val extent = raster.rasterExtent.extent
-    val tileExtent = TmsTiling.extentToTile(extent, zoom, tileSize)
-
-    val tiles = for {
-      ty <- tileExtent.ymin to tileExtent.ymax
-      tx <- tileExtent.xmin to tileExtent.xmax
-      tileId = TmsTiling.tileId(tx, ty, zoom)
-      extent = TmsTiling.tileToExtent(tx, ty, zoom, tileSize)
-      cropRasterTmp = CroppedRaster(raster, extent)
-      // TODO - do away with the second crop. It is put in as workaround for the case when 
-      // CroppedRaster's translation from Extent to gridBounds ends up giving us an extra row/col
-      cropRaster = CroppedRaster(cropRasterTmp, GridBounds(0, 0, tileSize - 1, tileSize - 1))
-    } yield (tileId, cropRaster)
-
-    /* debugging stuff 
-     
-     def dump = {
-      logInfo("-------------- dumping data for debugging purposes -------------")
-      logInfo(s"first, dumping the original raster before warping to ${dumpDir}/original.tif")
-      GeoTiffWriter.write(s"$dumpDir/original.tif", r, pyMeta.nodata)
-
-      logInfo(s"now, dumping the warped raster to ${dumpDir}/warped.tif")
-      GeoTiffWriter.write(s"$dumpDir/warped.tif", wr, pyMeta.nodata)
-
-      logInfo(s"finally, dumping the tiles to ${dumpDir}/tile-[tileId].tif")
-      tiles.foreach {
-        case (tileId, cr1, cr2) => {
-          val (tx, ty) = TmsTiling.tileXY(tileId, zoom)
-          GeoTiffWriter.write(s"${dumpDir}/tile-${tileId}.tif", cr2, pyMeta.nodata)
-          logInfo(s"---------tx: $tx, ty: $ty file: tile-${tileId}.tif: cr1: rows=${cr1.rows}, cols=${cr1.cols}, rdLen=${cr1.toArrayRaster.data.length}, cr2: rows=${cr2.rows}, cols=${cr2.cols}, rdLen=${cr2.toArrayRaster.data.length}")
-        }
-      }
-      logInfo("-------------- end dumping data for debugging purposes -------------")
-
-    }
-    dump
-    
-    end debugging stuff */
-
-    tiles.toList
-  }
-
-  private def warp(image: GridCoverage2D, imgMeta: GeoTiff.Metadata, pyMeta: PyramidMetadata): Raster = {
-
-    val (pixelWidth, pixelHeight) = imgMeta.pixels
-
-    val (zoom, tileSize, rasterType, nodata) =
-      (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType, pyMeta.nodata)
-
-    def buildRaster = {
-      val extent = Extent(imgMeta.bounds.getLowerCorner.getOrdinate(0),
-        imgMeta.bounds.getLowerCorner.getOrdinate(1),
-        imgMeta.bounds.getUpperCorner.getOrdinate(0),
-        imgMeta.bounds.getUpperCorner.getOrdinate(1))
-      val re = RasterExtent(extent, pixelWidth, pixelHeight)
-      val rawDataBuff = image.getRenderedImage().getData().getDataBuffer()
-      val rd = rasterType match {
-        case TypeDouble => RasterData(rawDataBuff.asInstanceOf[DataBufferDouble].getData(), tileSize, tileSize)
-        case TypeFloat  => RasterData(rawDataBuff.asInstanceOf[DataBufferFloat].getData(), tileSize, tileSize)
-        case TypeInt    => RasterData(rawDataBuff.asInstanceOf[DataBufferInt].getData(), tileSize, tileSize)
-        case TypeShort  => RasterData(rawDataBuff.asInstanceOf[DataBufferShort].getData(), tileSize, tileSize)
-        case TypeByte   => RasterData(rawDataBuff.asInstanceOf[DataBufferByte].getData(), tileSize, tileSize)
-        case _          => sys.error("Unrecognized AWT type - " + rasterType)
-      }
-      val trd = NoDataHandler.removeUserNoData(rd, nodata)
-      Raster(trd, re)
-    }
-
-    val origRaster = buildRaster
-    val res = TmsTiling.resolution(zoom, tileSize)
-    val newRe = RasterExtent(origRaster.rasterExtent.extent, res, res)
-    //println(s"re: ${re},newRe: ${newRe}")
-    //val start = System.currentTimeMillis
-    //println(s"[extent,cols,rows,cellwidth,cellheight,rdLen,bufLen]: ")
-    //println(s"Before Warp: [${r.rasterExtent},${r.cols},${r.rows},${r.rasterExtent.cellwidth},${r.rasterExtent.cellheight},${r.toArrayRaster.data.length},${rawDataBuff.asInstanceOf[DataBufferFloat].getData().length}]")
-    val warpRaster = origRaster.warp(newRe)
-    //val end = System.currentTimeMillis
-    //println(s"After Warp: [${wr.rasterExtent},${wr.cols},${wr.rows},${wr.rasterExtent.cellwidth},cellheight=${wr.rasterExtent.cellheight},${wr.toArrayRaster.data.length}]")
-    //println(s"Warp operation took ${end - start} ms.")
-    warpRaster
+  
+  private def createZoomDirectory(pyramid: Path, zoom: Int, fs: FileSystem): Path = {
+    val outPathWithZoom = new Path(pyramid, zoom.toString)
+    logInfo(s"Creating Output Path With Zoom: $outPathWithZoom")
+    fs.mkdirs(outPathWithZoom)
+    outPathWithZoom
   }
 
   /* debugging only */

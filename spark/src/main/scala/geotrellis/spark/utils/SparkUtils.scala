@@ -17,9 +17,10 @@
 package geotrellis.spark.utils
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.Logging
-import org.apache.spark.SparkContext
-import java.io.File
 import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+
+import java.io.File
 
 object SparkUtils extends Logging {
   def createSparkContext(sparkMaster: String, appName: String) = {

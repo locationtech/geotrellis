@@ -20,6 +20,8 @@ import org.apache.hadoop.fs.FileStatus
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.LocalFileSystem
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapreduce.Job
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 
 import java.io.BufferedReader
 import java.io.Closeable
@@ -34,7 +36,13 @@ import scala.util.Random
 abstract class LineScanner extends Iterator[String] with Closeable
 
 object HdfsUtils {
-
+  
+  def putFilesInConf(filesAsCsv: String, inConf: Configuration): Configuration = {
+    val job = new Job(inConf)
+    FileInputFormat.setInputPaths(job, filesAsCsv)
+    job.getConfiguration()
+  }
+  
   /* get the HDFS block size from the Hadoop configuration */
   def blockSize(conf: Configuration): Long = conf.getLong("dfs.blocksize", 64 * 1024 * 1024)
 

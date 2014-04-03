@@ -30,29 +30,29 @@ import scala.collection.mutable.Set
  */
 object GeoTiff extends Logging {
 
+  final val DefaultProjection = "EPSG:4326"
+
   private lazy val formats = {
     HdfsImageInputStreamSpi.register
     loadFormats
   }
-  private val hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:4326"))
+  private val hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode(DefaultProjection))
 
   case class Metadata(
-    bounds: GeneralEnvelope,
+    extent: Extent,
     pixelSize: Tuple2[Double, Double],
     pixels: Tuple2[Int, Int],
     bands: Int,
     rasterType: Int,
     nodata: Double)
-
   /*
    * Get metadata out of the underlying tiff if it is accepted, 
    * and close the reader. If tiff is not accepted, return None
    */
-  def getMetadata(path: Path, conf: Configuration): Option[Metadata] =
-    accepts(path, conf) match {
-      case None    => None
-      case Some(_) => withReader(path, conf) { reader => Some(getMetadata(reader)) }
-    }
+  def getMetadata(path: Path, conf: Configuration): Option[Metadata] = _accepts(path, conf) match {
+    case Some(_) => withReader(path, conf) { reader => Some(getMetadata(reader)) }
+    case None    => None
+  }
 
   /*
    * Get metadata out of an existing reader
@@ -65,7 +65,10 @@ object GeoTiff extends Logging {
     val bands = coverage.getNumSampleDimensions
     val rasterType = coverage.getRenderedImage().getSampleModel().getDataType()
     val nodata = reader.asInstanceOf[GTGeoTiffReader].getMetadata().getNoData()
-    Metadata(coverage.getEnvelope.asInstanceOf[GeneralEnvelope], pixelSize, pixels, bands, rasterType, nodata)
+    val env = coverage.getEnvelope.asInstanceOf[GeneralEnvelope]
+    val extent = Extent(env.getLowerCorner().getOrdinate(0), env.getLowerCorner().getOrdinate(1),
+      env.getUpperCorner().getOrdinate(0), env.getUpperCorner().getOrdinate(1))
+    Metadata(extent, pixelSize, pixels, bands, rasterType, nodata)
   }
 
   /*
@@ -84,19 +87,30 @@ object GeoTiff extends Logging {
   def getGridCoverage2D(reader: AbstractGridCoverage2DReader): GridCoverage2D =
     reader.read(null)
 
+  def accepts(path: Path, conf: Configuration): Boolean = _accepts(path, conf) match {
+    case Some(_) => true
+    case None    => false
+  }
+
+  private def _accepts(path: Path, conf: Configuration): Option[AbstractGridFormat] = {
+    val stream = path.getFileSystem(conf).open(path)
+    val afgOpt = _accepts(stream)
+    stream.close()
+    afgOpt
+  }
+
+  private def _accepts(obj: Object): Option[AbstractGridFormat] =
+    formats.find(_.accepts(obj, hints))
+
   private def close(reader: AbstractGridCoverage2DReader): Unit =
     reader.getSource().asInstanceOf[FSDataInputStream].close
 
   private def getReader(path: Path, conf: Configuration): AbstractGridCoverage2DReader = {
-    //logInfo("Loading Image file: " + path.toString());
-
     val stream = path.getFileSystem(conf).open(path)
-    //logInfo("before fastFormatFinder")
-    val format = accepts(stream) match {
+    val format = _accepts(stream) match {
       case Some(f) => f
       case None    => sys.error("Couldn't find format")
     }
-    //logInfo("before getReader")
     format.getReader(stream, hints)
   }
 
@@ -105,18 +119,7 @@ object GeoTiff extends Logging {
     spis.map(_.createFormat())
   }
 
-  private def accepts(path: Path, conf: Configuration): Option[AbstractGridFormat] = {
-    val stream = path.getFileSystem(conf).open(path)
-    val afgOpt = accepts(stream)
-    stream.close()
-    afgOpt
-  }
-
-  private def accepts(obj: Object): Option[AbstractGridFormat] =
-    formats.find(_.accepts(obj, hints))
-
   private def printClassLoader: Unit = {
-    logInfo("printing classpath -------")
     val cl = ClassLoader.getSystemClassLoader()
     import java.net.URLClassLoader
     val urls = cl.asInstanceOf[URLClassLoader].getURLs()

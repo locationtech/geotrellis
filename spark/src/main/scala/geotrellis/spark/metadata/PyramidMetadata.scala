@@ -18,21 +18,22 @@ package geotrellis.spark.metadata
 import geotrellis._
 import geotrellis.RasterType
 import geotrellis.spark.ingest.GeoTiff
-import geotrellis.spark.cmd.Ingest
+import geotrellis.spark.ingest.MetadataInputFormat
 import geotrellis.spark.tiling.PixelExtent
 import geotrellis.spark.tiling.TileExtent
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.HdfsUtils
+
 import org.apache.commons.codec.binary.Base64
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapreduce.Job
+import org.apache.spark.SparkContext
+
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.PrintWriter
-import java.net.URL
 
 /**
  * @author akini
@@ -161,12 +162,13 @@ object PyramidMetadata {
   }
 
   /*
-   * Constructs a metadata from tiff files 
+   * Constructs a metadata from tiff files. All processing is done in local mode, i.e., 
+   * outside Spark and in RAM. 
    * 
    * path - path to a tiff file or directory containing TIFF files. The directory can be 
    * arbitrarily deep, and will be recursively searched for all TIFF files
    */
-  def fromTifFiles(tiffPath: Path, conf: Configuration): Tuple2[List[Path], PyramidMetadata] = {
+  def fromTifFiles(tiffPath: Path, conf: Configuration): Tuple2[Seq[Path], PyramidMetadata] = {
 
     val fs = tiffPath.getFileSystem(conf)
 
@@ -186,41 +188,26 @@ object PyramidMetadata {
 
     val (files, optMetas) = allFiles.map(getMetadata(_)).filter(filterNone(_)).unzip
 
-    def isPixelSizeEqual(l: Tuple2[Double, Double], r: Tuple2[Double, Double]) =
-      (l._1 - r._1).abs < 0.0001 && (l._2 - r._2).abs < 0.0001
+    val meta = optMetas.flatten.reduceLeft { reduceGeoTiffMeta(_, _) }
 
-    val meta = optMetas.flatten.reduceLeft { (acc, meta) =>
-      if (acc.bands != meta.bands)
-        sys.error(s"Error: All input tifs must have the same number of bands ${acc.bands} != ${meta.bands}")
-      if (!isPixelSizeEqual(acc.pixelSize, meta.pixelSize))
-        sys.error(s"Error: All input tifs must have the same resolution ${acc.pixelSize} != ${meta.pixelSize}")
-      if (acc.rasterType != meta.rasterType)
-        sys.error(s"Error: All input tifs must have same raster type ${acc.rasterType} != ${meta.rasterType}")
-      if ((acc.nodata.isNaN() && !meta.nodata.isNaN()) || (!acc.nodata.isNaN() && acc.nodata != meta.nodata))
-        sys.error(s"Error: All input tifs must have same nodata value ${acc.nodata} != ${meta.nodata}")
+    (files, fromGeoTiffMeta(meta))
+  }
 
-      acc.bounds.add(meta.bounds)
-      acc
-    }
-
-    val tileSize = TmsTiling.DefaultTileSize
-
-    val zoom = math.max(TmsTiling.zoom(meta.pixelSize._1, tileSize),
-      TmsTiling.zoom(meta.pixelSize._2, tileSize))
-
-    val (w, s, e, n) =
-      (meta.bounds.getLowerCorner.getOrdinate(0),
-        meta.bounds.getLowerCorner.getOrdinate(1),
-        meta.bounds.getUpperCorner.getOrdinate(0),
-        meta.bounds.getUpperCorner.getOrdinate(1))
-
-    val extent = Extent(w, s, e, n)
-    val tileExtent = TmsTiling.extentToTile(extent, zoom, tileSize)
-    val pixelExtent = TmsTiling.extentToPixel(extent, zoom, tileSize)
-
-    (files,
-      PyramidMetadata(extent, tileSize, meta.bands, meta.nodata, meta.rasterType, zoom,
-        Map(zoom.toString -> RasterMetadata(pixelExtent, tileExtent))))
+  /*
+   * Constructs a metadata from tiff files. All processing is done in Spark 
+   * 
+   * path - path to a tiff file or directory containing TIFF files. The directory can be 
+   * arbitrarily deep, and will be recursively searched for all TIFF files
+   */
+  def fromTifFiles(tiffPath: Path, conf: Configuration, sc: SparkContext): Tuple2[Seq[Path], PyramidMetadata] = {
+    val allFiles = HdfsUtils.listFiles(tiffPath, conf)
+    val newConf = HdfsUtils.putFilesInConf(allFiles.mkString(","), conf)
+    val (acceptedFiles, metas) = sc.newAPIHadoopRDD(newConf,
+      classOf[MetadataInputFormat],
+      classOf[String],
+      classOf[GeoTiff.Metadata]).collect.unzip
+    val globalMeta = metas.reduceLeft(PyramidMetadata.reduceGeoTiffMeta(_, _))
+    (acceptedFiles.map(new Path(_)), PyramidMetadata.fromGeoTiffMeta(globalMeta))
   }
 
   def fromBase64(encoded: String): PyramidMetadata = {
@@ -237,5 +224,33 @@ object PyramidMetadata {
 
   def readFromJobConf(conf: Configuration) = fromBase64(conf.get(PyramidMetadata.JobConfKey))
 
+  private def isPixelSizeEqual(l: Tuple2[Double, Double], r: Tuple2[Double, Double]) =
+    (l._1 - r._1).abs < 0.0001 && (l._2 - r._2).abs < 0.0001
+
+  private def reduceGeoTiffMeta(acc: GeoTiff.Metadata, meta: GeoTiff.Metadata): GeoTiff.Metadata = {
+    if (acc.bands != meta.bands)
+      sys.error(s"Error: All input tifs must have the same number of bands ${acc.bands} != ${meta.bands}")
+    if (!isPixelSizeEqual(acc.pixelSize, meta.pixelSize))
+      sys.error(s"Error: All input tifs must have the same resolution ${acc.pixelSize} != ${meta.pixelSize}")
+    if (acc.rasterType != meta.rasterType)
+      sys.error(s"Error: All input tifs must have same raster type ${acc.rasterType} != ${meta.rasterType}")
+    if ((acc.nodata.isNaN() && !meta.nodata.isNaN()) || (!acc.nodata.isNaN() && acc.nodata != meta.nodata))
+      sys.error(s"Error: All input tifs must have same nodata value ${acc.nodata} != ${meta.nodata}")
+
+    GeoTiff.Metadata(acc.extent.combine(meta.extent), acc.pixelSize, acc.pixels, acc.bands, acc.rasterType, acc.nodata)
+  }
+
+  private def fromGeoTiffMeta(meta: GeoTiff.Metadata): PyramidMetadata = {
+    val tileSize = TmsTiling.DefaultTileSize
+
+    val zoom = math.max(TmsTiling.zoom(meta.pixelSize._1, tileSize),
+      TmsTiling.zoom(meta.pixelSize._2, tileSize))
+
+    val tileExtent = TmsTiling.extentToTile(meta.extent, zoom, tileSize)
+    val pixelExtent = TmsTiling.extentToPixel(meta.extent, zoom, tileSize)
+
+    PyramidMetadata(meta.extent, tileSize, meta.bands, meta.nodata, meta.rasterType, zoom,
+      Map(zoom.toString -> RasterMetadata(pixelExtent, tileExtent)))
+  }
 }
 
