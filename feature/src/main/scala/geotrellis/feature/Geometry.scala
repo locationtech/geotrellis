@@ -28,15 +28,18 @@ trait Geometry {
   def withinDistance(other: Geometry, dist: Double): Boolean =
     jtsGeom.isWithinDistance(other.jtsGeom, dist)
 
-  def centroid: PointOrNoResult = 
+  def centroid: PointOrNoResult =
     jtsGeom.getCentroid 
 
-  def interiorPoint: PointOrNoResult = 
+  def interiorPoint: PointOrNoResult =
     jtsGeom.getInteriorPoint 
 
-  // TODO: decide if this should be the Object.equals() override
-  def equals(g: Geometry): Boolean =
-    jtsGeom.equals(g)
+  override
+  def equals(other: Any): Boolean =
+    other match {
+      case g: Geometry => jtsGeom.equals(g.jtsGeom)
+      case _ => false
+    }
 
 }
 
