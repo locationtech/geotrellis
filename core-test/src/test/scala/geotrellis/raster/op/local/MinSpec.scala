@@ -296,7 +296,7 @@ class MinSpec extends FunSpec
   describe("Min on Rasters") {
     it("mins a constant value to each cell of an int valued raster") {
       val r = positiveIntegerRaster
-      val result = get(r.localMin(50))
+      val result = r.localMin(50)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val expected = if(r.get(col,row) < 50) { r.get(col,row) }
@@ -308,7 +308,7 @@ class MinSpec extends FunSpec
     }
     it("produces NODATA for NODATA cells of an int valued raster") {
       val r = positiveIntegerNoDataRaster
-      val result = get(r.localMin(50))
+      val result = r.localMin(50)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(col % 2 == 1) {
@@ -320,7 +320,7 @@ class MinSpec extends FunSpec
 
     it("mins a constant value to each cell of an double valued raster") {
       val r = probabilityRaster
-      val result = get(r.localMin(1))
+      val result = r.localMin(1)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           result.getDouble(col,row) should not be (1.0)
@@ -330,7 +330,7 @@ class MinSpec extends FunSpec
 
     it("produces Double.NaN for Double.NaN cells of an Double valued raster") {
       val r = probabilityNoDataRaster
-      val result = get(r.localMin(-1))
+      val result = r.localMin(-1)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(col % 2 == 1) {
@@ -342,7 +342,7 @@ class MinSpec extends FunSpec
 
     it("mins a double constant value to each cell of an int valued raster") {
       val r = positiveIntegerRaster
-      val result = get(r.localMin(40.1))
+      val result = r.localMin(40.1)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val expected = if(r.get(col,row) < 40.1) { r.get(col,row) }
@@ -355,7 +355,7 @@ class MinSpec extends FunSpec
 
     it("takes NODATA for NODATA cells of an int valued raster and double constant") {
       val r = positiveIntegerNoDataRaster
-      val result = get(r.localMin(52.4))
+      val result = r.localMin(52.4)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(col % 2 == 1) {
@@ -367,7 +367,7 @@ class MinSpec extends FunSpec
 
     it("mins a double constant value to each cell of an double valued raster") {
       val r = probabilityRaster
-      val result = get(r.localMin(.3))
+      val result = r.localMin(.3)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           val expected = if(r.getDouble(col,row) < .3) { r.getDouble(col,row) }
@@ -380,7 +380,7 @@ class MinSpec extends FunSpec
 
     it("prodcues NaN for Double.NaN cells of an Double valued raster") {
       val r = probabilityNoDataRaster
-      val result = get(r.localMin(-.04))
+      val result = r.localMin(-.04)
       for(col <- 0 until r.cols) {
         for(row <- 0 until r.rows) {
           if(col % 2 == 1) {
@@ -393,15 +393,15 @@ class MinSpec extends FunSpec
     it("sets all data to NODATA if constant is NODATA") {
       val r1 = positiveIntegerNoDataRaster
       val r2 = probabilityNoDataRaster
-      assertEqual(get(r1.localMin(NODATA)),r1.map(z=>NODATA))
-      assertEqual(get(r2.localMin(NODATA)),r2.map(z=>NODATA))
+      assertEqual(r1.localMin(NODATA),r1.map(z=>NODATA))
+      assertEqual(r2.localMin(NODATA),r2.map(z=>NODATA))
     }
 
     it("sets all data to NaN if constant is Double.NaN") {
       val r1 = positiveIntegerNoDataRaster
       val r2 = probabilityNoDataRaster
-      assertEqual(get(r1.localMin(Double.NaN)),r1.mapDouble(z=>Double.NaN))
-      assertEqual(get(r2.localMin(Double.NaN)),r2.mapDouble(z=>Double.NaN))
+      assertEqual(r1.localMin(Double.NaN),r1.mapDouble(z=>Double.NaN))
+      assertEqual(r2.localMin(Double.NaN),r2.mapDouble(z=>Double.NaN))
     }
 
     it("mins two integer rasters") {
@@ -411,8 +411,8 @@ class MinSpec extends FunSpec
       val r2 = createRaster(Array( 1,  -2, 13, -5,
                                    12, -7,  3, -2,
                                    8 , -6, 12, -7), 4,3)
-      val result1 = get(r1.localMin(r2))
-      val result2 = get(r2.localMin(r1))
+      val result1 = r1.localMin(r2)
+      val result2 = r2.localMin(r1)
       for(col <- 0 until 4) {
         for(row <- 0 until 3) {
           if(col % 2 != 1) {
@@ -433,8 +433,8 @@ class MinSpec extends FunSpec
       val r2 = createRaster(Array( .1,  .2, .13, -.5,
                                    .12, -.7,  .3, -.2,
                                    .8 , -.6, .12, -.7), 4,3)
-      val result1 = get(r1.localMin(r2))
-      val result2 = get(r2.localMin(r1))
+      val result1 = r1.localMin(r2)
+      val result2 = r2.localMin(r1)
       for(col <- 0 until 4) {
         for(row <- 0 until 3) {
           if(col % 2 != 1) {
@@ -455,8 +455,8 @@ class MinSpec extends FunSpec
       val r2 = createRaster(Array( 1,  -2, 13, -5,
                                    12, -7,  3, -2,
                                    8 , -6, NODATA, -7), 4,3)
-      val result1 = get(r1.localMin(r2))
-      val result2 = get(r2.localMin(r1))
+      val result1 = r1.localMin(r2)
+      val result2 = r2.localMin(r1)
       for(col <- 0 until 4) {
         for(row <- 0 until 3) {
           val z1 = r1.get(col,row)
@@ -483,8 +483,8 @@ class MinSpec extends FunSpec
       val r2 = createRaster(Array( .1,  .2, .13, NODATA.toDouble - 1,
                                    .12, -.7,  .3, -.2,
                                    .8 , -.6, .12, -.7), 4,3)
-      val result1 = get(r1.localMin(r2))
-      val result2 = get(r2.localMin(r1))
+      val result1 = r1.localMin(r2)
+      val result2 = r2.localMin(r1)
       for(col <- 0 until 4) {
         for(row <- 0 until 3) {
           val z1 = r1.getDouble(col,row)

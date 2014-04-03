@@ -24,7 +24,7 @@ import geotrellis._
 object Sin extends Serializable {
   /**
     * Takes the sine of each raster cell value.
-    * Always returns a double raster.
+    * @info Always returns a double raster.
     */
   def apply(r: Raster): Raster = 
     r.convert(TypeDouble)

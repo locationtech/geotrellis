@@ -120,8 +120,8 @@ class AndSpec extends FunSpec
 
       val s1 = Seq(r1, r3)
       val s2 = Seq(r2, r3)
-      val result1 = get(r0xF & s1)
-      val result2 = get(r0xF & s2)
+      val result1 = r0xF & s1
+      val result2 = r0xF & s2
       for (y <- 0 until 10) {
         for (x <- 0 until 10) {
           result1.get(x,y) should be (1)
