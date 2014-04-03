@@ -96,6 +96,7 @@ object GeotrellisBuild extends Build {
   val defaultAssemblySettings = 
     assemblySettings ++
     Seq(
+      test in assembly := {},
       mergeStrategy in assembly <<= (mergeStrategy in assembly) {
         (old) => {
           case "reference.conf" => MergeStrategy.concat
@@ -273,11 +274,10 @@ object GeotrellisBuild extends Build {
           "xalan" % "xalan" % "2.7.1",
           "org.apache.spark" %% "spark-core" % "0.9.0-incubating" excludeAll (
               ExclusionRule(organization = "org.apache.hadoop")),
-          "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4",
+          "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4" excludeAll (
+	      ExclusionRule(organization = "hsqldb")),
           "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0",
           "com.quantifind" %% "sumac" % "0.2.3",
-	        "commons-io" % "commons-io" % "2.4",
-          scalaxyLoops % "provided",
           scalatest % "test"
         ),
       resolvers += "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
