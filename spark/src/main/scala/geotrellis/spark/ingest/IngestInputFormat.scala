@@ -17,7 +17,6 @@
 package geotrellis.spark.ingest
 
 import geotrellis._
-import geotrellis.spark.cmd.ingest.TiffTiler
 import geotrellis.spark.metadata.PyramidMetadata
 
 import org.apache.hadoop.fs.Path
