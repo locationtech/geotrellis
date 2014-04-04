@@ -173,11 +173,6 @@ class MultiPointSpec extends FunSpec with ShouldMatchers {
       val p = Polygon(Line(Point(0,0), Point(2,0), Point(2,2), Point(0,2), Point(0,0)))
       val mp = MultiPolygon(p)
       mpt | mp should be (PolygonResult(p))
-//      val result = mpt | mp
-//      result match {
-//        case PolygonResult(poly) => poly.equals(p) should be (true)
-//        case _ => fail()
-//      }
     }
 
     it ("should union with a MultiPolygon and return a MultiPolygonResult") {
@@ -202,8 +197,204 @@ class MultiPointSpec extends FunSpec with ShouldMatchers {
       }
     }
 
+    // -- Difference
 
+    it ("should difference with a Geometry and return a NoResult") {
+      val mp = MultiPoint(Set(Point(1,1), Point(5,5)))
+      val l = Line(Point(1,1), Point(5,5))
+      mp - l should be (NoResult)
+    }
 
+    it ("should difference with a Geometry and return a PointResult") {
+      val mp = MultiPoint(Set(Point(1,1), Point(5,5)))
+      val p = Point(1,1)
+      mp - p should be (PointResult(Point(5,5)))
+    }
+
+    it ("should difference with a Geometry and return a MultiPointResult") {
+      val mp = MultiPoint(Set(Point(1,1), Point(5,5)))
+      val ml = MultiLine(Set())
+      mp - ml should be (MultiPointResult(Set(Point(1,1), Point(5,5))))
+    }
+
+    // -- SymDifference
+
+    it ("should symDifference with a MultiPoint and return a NoResult") {
+      val mp1 = MultiPoint(Set())
+      val mp2 = MultiPoint(Set())
+      mp1.symDifference(mp2) should be (NoResult)
+    }
+
+    it ("should symDifference with a MultiPoint and return a PointResult") {
+      val mp1 = MultiPoint(Set(Point(1,1), Point(5,5)))
+      val mp2 = MultiPoint(Set(Point(1,1)))
+      mp1.symDifference(mp2) should be (PointResult(Point(5,5)))
+    }
+
+    it ("should symDifference with a MultiPoint and return a MultiPointResult") {
+      val mp1 = MultiPoint(Set(Point(1,1), Point(5,5)))
+      val mp2 = MultiPoint(Set(Point(1,1), Point(4,4)))
+      mp1.symDifference(mp2) should be (MultiPointResult(Set(Point(4,4), Point(5,5))))
+    }
+
+    it ("should symDifference with a MultiLine and return a NoResult") {
+      val mp = MultiPoint(Set())
+      val ml = MultiLine(Set())
+      mp.symDifference(ml) should be (NoResult)
+    }
+
+    // I thought this would be a PointResult
+    it ("should symDifference with an empty MultiLine and return a MultiPointResult") {
+      val mp = MultiPoint(Set(Point(1,1)))
+      val ml = MultiLine(Set())
+      mp.symDifference(ml) should be (MultiPointResult(Set(Point(1,1))))
+    }
+
+    it ("should symDifference with a MultiLine and return a LineResult") {
+      val mp = MultiPoint(Set(Point(2,2)))
+      val l = Line(Point(1,1), Point(5,5))
+      val ml = MultiLine(Set(l))
+      mp.symDifference(ml) should be (LineResult(l))
+    }
+
+    it ("should symDifference with an empty MultiLine and return a MultiPointResult with more than one Point") {
+      val mp = MultiPoint(Set(Point(1,1), Point(5,5)))
+      val ml = MultiLine(Set())
+      mp.symDifference(ml) should be (MultiPointResult(Set(Point(1,1), Point(5,5))))
+    }
+
+    it ("should symDifference with a MultiLine and return a MultiLineResult") {
+      val mp = MultiPoint(Set(Point(2,2)))
+      val l1 = Line(Point(1,1), Point(5,5))
+      val l2 = Line(Point(2,6), Point(6,6))
+      val ml = MultiLine(Set(l1, l2))
+      mp.symDifference(ml) should be (MultiLineResult(Set(l1, l2)))
+    }
+
+    it ("should symDifference with a MultiLine and return a GeometryCollectionResult") {
+      val mp = MultiPoint(Set(Point(12,12)))
+      val l1 = Line(Point(1,1), Point(5,5))
+      val l2 = Line(Point(2,6), Point(6,6))
+      val ml = MultiLine(Set(l1, l2))
+      val expected: GeometryCollection =
+        GeometryCollection(points = Set(Point(12,12)), lines = Set(l1, l2))
+      val result = mp.symDifference(ml)
+      result match {
+        case GeometryCollectionResult(gc) => gc should be (expected)
+        case _ => fail()
+      }
+    }
+
+    it ("should symDifference with a MultiPolygon and return a NoResult") {
+      val mpt = MultiPoint(Set())
+      val mp = MultiPolygon(Set())
+      mpt.symDifference(mp) should be (NoResult)
+    }
+
+    // I thought this would be a PointResult
+    it ("should symDifference with an empty MultiPolygon and return a MultiPointResult") {
+      val mpt = MultiPoint(Set(Point(1,1)))
+      val mp = MultiPolygon(Set())
+      mpt.symDifference(mp) should be (MultiPointResult(Set(Point(1,1))))
+    }
+
+    it ("should symDifference with a MultiPolygon and return a PolygonResult") {
+      val mpt = MultiPoint(Set(Point(2,2)))
+      val p = Polygon(Line(Point(1,1), Point(5,5), Point(1,5), Point(1,1)))
+      val mp = MultiPolygon(Set(p))
+      mpt.symDifference(mp) should be (PolygonResult(p))
+    }
+
+    it ("should symDifference with an empty MultiPolygon and return a MultiPointResult with more than one Point") {
+      val mpt = MultiPoint(Set(Point(1,1), Point(5,5)))
+      val mp = MultiPolygon(Set())
+      mpt.symDifference(mp) should be (MultiPointResult(Set(Point(1,1), Point(5,5))))
+    }
+
+    it ("should symDifference with a MultiPolygon and return a MultiPolygonResult") {
+      val mpt = MultiPoint(Set(Point(2,2)))
+      val p1 = Polygon(Line(Point(1,1), Point(5,5), Point(1,5), Point(1,1)))
+      val p2 = Polygon(Line(Point(2,6), Point(6,6), Point(6, 10), Point(2,6)))
+      val mp = MultiPolygon(Set(p1, p2))
+      mpt.symDifference(mp) should be (MultiPolygonResult(Set(p1, p2)))
+    }
+
+    it ("should symDifference with a MultiPolygon and return a GeometryCollectionResult") {
+      val mpt = MultiPoint(Set(Point(0,0)))
+      val p1 = Polygon(Line(Point(1,1), Point(1,5), Point(5,5), Point(5,1), Point(1,1)))
+      val p2 = Polygon(Line(Point(1,11), Point(1,15), Point(5, 15), Point(5,11), Point(1,11)))
+      val mp = MultiPolygon(Set(p1, p2))
+      val expected: GeometryCollection =
+        GeometryCollection(points = Set(Point(0,0)), polygons = Set(p1, p2))
+      val result = mpt.symDifference(mp)
+      result match {
+        case GeometryCollectionResult(gc) => gc should be (expected)
+        case _ => fail()
+      }
+    }
+
+    // -- Convex Hull
+
+    it ("should convexHull and return a Polygon") {
+      // if all 3 of these points form a straight line, then it doesn't return a Polygon
+      val mp = MultiPoint(Point(1,1), Point(2,2), Point(3,13))
+      val result = mp.convexHull()
+      result match {
+        case Polygon(_) => // expected
+        case _ => fail()
+      }
+    }
+
+    // -- Predicates
+
+    it ("should contain a Point") {
+      val mp = MultiPoint(Point(1,1), Point(5,5))
+      val p = Point(1,1)
+      mp.contains(p) should be (true)
+    }
+
+    it ("should contain a MultiPoint") {
+      val mp1 = MultiPoint(Point(1,1), Point(5,5), Point(6,6))
+      val mp2 = MultiPoint(Point(1,1), Point(6,6))
+      mp1.contains(mp2) should be (true)
+    }
+
+    it ("should be covered by a Point") {
+      val mp = MultiPoint(Point(1,1))
+      val p = Point(1,1)
+      mp.coveredBy(p) should be (true)
+    }
+
+    it ("should be cover by a MultiPoint") {
+      val mp1 = MultiPoint(Point(1,1), Point(2,2), Point(3,3))
+      val mp2 = MultiPoint(Point(1,1), Point(3,3))
+      mp1.covers(mp2) should be (true)
+    }
+
+    it ("should overlap a MultiPoint") {
+      val mp1 = MultiPoint(Point(1,1), Point(2,2))
+      val mp2 = MultiPoint(Point(1,1), Point(3,3))
+      mp1.overlaps(mp2) should be (true)
+    }
+
+    it ("should touch a Line") {
+      val mp = MultiPoint(Point(1,1), Point(2,2))
+      val l = Line(Point(2,2), Point(5,5))
+      mp.touches(l) should be (true)
+    }
+
+    it ("should touch a Polygon") {
+      val mp = MultiPoint(Point(1,1), Point(2,2))
+      val p = Polygon(Line(Point(2,2), Point(2,5), Point(5,5), Point(5,2), Point(2,2)))
+      mp.touches(p) should be (true)
+    }
+
+    it ("should be within a Point") {
+      val mp = MultiPoint(Point(1,1))
+      val p = Point(1,1)
+      mp.within(p) should be (true)
+    }
 
   }
+
 }

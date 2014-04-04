@@ -185,14 +185,14 @@ case class Point(jtsGeom: jts.Point) extends Geometry
    * Computes a Result that represents a Geometry made up of this Point, if it
    * is not in ml, and all the points in ml that are not this Point.
    */
-  def symDifference(ml: MultiLine): ZeroDimensionsMultiLineSymDifferenceResult =
+  def symDifference(ml: MultiLine): PointMultiLineSymDifferenceResult =
     jtsGeom.symDifference(ml.jtsGeom)
 
   /**
    * Computes a Result that represents a Geometry made up of this Point, if it
    * is not in mp, and all the points in mp that are not this Point.
    */
-  def symDifference(mp: MultiPolygon): ZeroDimensionsMultiPolygonSymDifferenceResult =
+  def symDifference(mp: MultiPolygon): PointMultiPolygonSymDifferenceResult =
     jtsGeom.symDifference(mp.jtsGeom)
 
 

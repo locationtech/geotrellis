@@ -125,7 +125,7 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
 
   // -- SymDifference
 
-  def symDifference(g: ZeroDimensions): ZeroDimensionsMultiPolygonSymDifferenceResult =
+  def symDifference(g: ZeroDimensions): PointMultiPolygonSymDifferenceResult =
     jtsGeom.symDifference(g.jtsGeom)
 
   def symDifference(g: OneDimension): OneDimensionMultiPolygonSymDifferenceResult =

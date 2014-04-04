@@ -101,3 +101,5 @@ trait MultiGeometry extends Geometry
   // def coordinate:(Double,Double) = jts.getCoordinate
   // def coordinates:Seq[(Double,Double)] = jts.getCoordinates
   // def dimension = jts.getDimension
+
+  // TODO: ask about union/symDiff of a Multi with only one Pont/Line/Polygon with an empty Multi returning a Multi instead of just a Point/Line/Polgyon

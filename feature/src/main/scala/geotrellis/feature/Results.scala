@@ -291,13 +291,15 @@ object TwoDimensionsTwoDimensionsDifferenceResult {
     }
 }
 
-abstract sealed trait MultiPointDifferenceResult
-object MultiPointDifferenceResult {
-  implicit def jtsToResult(geom: jts.Geometry): MultiPointDifferenceResult =
+abstract sealed trait MultiPointGeometryDifferenceResult
+object MultiPointGeometryDifferenceResult {
+  implicit def jtsToResult(geom: jts.Geometry): MultiPointGeometryDifferenceResult =
     geom match {
+      case g: jts.Geometry if g.isEmpty => NoResult
       case p: jts.Point => PointResult(p)
-      case ps: jts.MultiPoint => MultiPointResult(ps)
-      case _ => NoResult
+      case mp: jts.MultiPoint => MultiPointResult(mp)
+      case _ =>
+        sys.error(s"Unexpected result for MultiPoint-Geometry difference: ${geom.getGeometryType}")
     }
 }
 
@@ -382,16 +384,31 @@ object ZeroDimensionsLineSymDifferenceResult {
     }
 }
 
-abstract sealed trait ZeroDimensionsMultiLineSymDifferenceResult
-object ZeroDimensionsMultiLineSymDifferenceResult {
-  implicit def jtsToResult(geom: jts.Geometry): ZeroDimensionsMultiLineSymDifferenceResult =
+abstract sealed trait PointMultiLineSymDifferenceResult
+object PointMultiLineSymDifferenceResult {
+  implicit def jtsToResult(geom: jts.Geometry): PointMultiLineSymDifferenceResult =
     geom match {
       case p: jts.Point => PointResult(p)
       case l: jts.LineString => LineResult(l)
       case ml: jts.MultiLineString => MultiLineResult(ml)
       case gc: jts.GeometryCollection => GeometryCollectionResult(gc)
       case _ =>
-        sys.error(s"Unexpected result for ZeroDimensions-MultiLine symDifference: ${geom.getGeometryType}")
+        sys.error(s"Unexpected result for Point-MultiLine symDifference: ${geom.getGeometryType}")
+    }
+}
+
+abstract sealed trait MultiPointMultiLineSymDifferenceResult
+object MultiPointMultiLineSymDifferenceResult {
+  implicit def jtsToResult(geom: jts.Geometry): MultiPointMultiLineSymDifferenceResult =
+    geom match {
+      case g: jts.Geometry if g.isEmpty => NoResult
+//      case p: jts.Point => PointResult(p)
+      case l: jts.LineString => LineResult(l)
+      case mp: jts.MultiPoint => MultiPointResult(mp)
+      case ml: jts.MultiLineString => MultiLineResult(ml)
+      case gc: jts.GeometryCollection => GeometryCollectionResult(gc)
+      case _ =>
+        sys.error(s"Unexpected result for MultiPoint-MultiLine symDifference: ${geom.getGeometryType}")
     }
 }
 
@@ -406,16 +423,31 @@ object ZeroDimensionsPolygonSymDifferenceResult {
     }
 }
 
-abstract sealed trait ZeroDimensionsMultiPolygonSymDifferenceResult
-object ZeroDimensionsMultiPolygonSymDifferenceResult {
-  implicit def jtsToResult(geom: jts.Geometry): ZeroDimensionsMultiPolygonSymDifferenceResult =
+abstract sealed trait PointMultiPolygonSymDifferenceResult
+object PointMultiPolygonSymDifferenceResult {
+  implicit def jtsToResult(geom: jts.Geometry): PointMultiPolygonSymDifferenceResult =
     geom match {
       case pt: jts.Point => PointResult(pt)
       case p: jts.Polygon => PolygonResult(p)
       case mp: jts.MultiPolygon => MultiPolygonResult(mp)
       case gc: jts.GeometryCollection => GeometryCollectionResult(gc)
       case _ =>
-        sys.error(s"Unexpected result for ZeroDimensions-MultiPolygon symDifference: ${geom.getGeometryType}")
+        sys.error(s"Unexpected result for Point-MultiPolygon symDifference: ${geom.getGeometryType}")
+    }
+}
+
+abstract sealed trait MultiPointMultiPolygonSymDifferenceResult
+object MultiPointMultiPolygonSymDifferenceResult {
+  implicit def jtsToResult(geom: jts.Geometry): MultiPointMultiPolygonSymDifferenceResult =
+    geom match {
+      case g: jts.Geometry if g.isEmpty => NoResult
+//      case pt: jts.Point => PointResult(pt)
+      case p: jts.Polygon => PolygonResult(p)
+      case mpt: jts.MultiPoint => MultiPointResult(mpt)
+      case mp: jts.MultiPolygon => MultiPolygonResult(mp)
+      case gc: jts.GeometryCollection => GeometryCollectionResult(gc)
+      case _ =>
+        sys.error(s"Unexpected result for MultiPoint-MultiPolygon symDifference: ${geom.getGeometryType}")
     }
 }
 
@@ -489,7 +521,7 @@ case object NoResult extends Result
   with PointGeometryDifferenceResult
   with LineAtLeastOneDimensionDifferenceResult
   with TwoDimensionsTwoDimensionsDifferenceResult
-  with MultiPointDifferenceResult
+  with MultiPointGeometryDifferenceResult
   with PointPointSymDifferenceResult
   with OneDimensionOneDimensionSymDifferenceResult
   with TwoDimensionsTwoDimensionsSymDifferenceResult
@@ -499,6 +531,8 @@ case object NoResult extends Result
   with MultiPointMultiLineUnionResult
   with MultiPointMultiPolygonUnionResult
   with PointOrNoResult
+  with MultiPointMultiLineSymDifferenceResult
+  with MultiPointMultiPolygonSymDifferenceResult
 
 case class PointResult(p: Point) extends Result
   with PointGeometryIntersectionResult
@@ -507,18 +541,20 @@ case class PointResult(p: Point) extends Result
   with MultiPointAtLeastOneDimensionIntersectionResult
   with PointZeroDimensionsUnionResult
   with PointGeometryDifferenceResult
-  with MultiPointDifferenceResult
+  with MultiPointGeometryDifferenceResult
   with ZeroDimensionsMultiPointSymDifferenceResult
   with MultiPointMultiPointIntersectionResult
   with LineMultiPolygonUnionResult
   with PointMultiLineUnionResult
   with PointMultiPolygonUnionResult
-  with ZeroDimensionsMultiLineSymDifferenceResult
-  with ZeroDimensionsMultiPolygonSymDifferenceResult
+  with PointMultiLineSymDifferenceResult
+  with PointMultiPolygonSymDifferenceResult
   with MultiPointMultiPointUnionResult
-  with MultiPointMultiLineUnionResult
-  with MultiPointMultiPolygonUnionResult
+//  with MultiPointMultiLineUnionResult
+//  with MultiPointMultiPolygonUnionResult
   with PointOrNoResult
+//  with MultiPointMultiLineSymDifferenceResult
+//  with MultiPointMultiPolygonSymDifferenceResult
 
 case class LineResult(l: Line) extends Result
   with OneDimensionAtLeastOneDimensionIntersectionResult
@@ -530,10 +566,11 @@ case class LineResult(l: Line) extends Result
   with PolygonBoundaryResult
   with ZeroDimensionsLineSymDifferenceResult
   with OneDimensionOneDimensionSymDifferenceResult
-  with ZeroDimensionsMultiLineSymDifferenceResult
+  with PointMultiLineSymDifferenceResult
   with LineMultiPolygonUnionResult
   with OneDimensionMultiPolygonSymDifferenceResult
   with MultiPointMultiLineUnionResult
+  with MultiPointMultiLineSymDifferenceResult
 
 object LineResult {
   implicit def jtsToResult(geom: jts.Geometry): LineResult =
@@ -554,17 +591,18 @@ case class PolygonResult(p: Polygon) extends Result
   with ZeroDimensionsPolygonSymDifferenceResult
   with OneDimensionPolygonSymDifferenceResult
   with TwoDimensionsTwoDimensionsSymDifferenceResult
-  with ZeroDimensionsMultiPolygonSymDifferenceResult
+  with PointMultiPolygonSymDifferenceResult
   with OneDimensionMultiPolygonSymDifferenceResult
   with PointMultiPolygonUnionResult
   with MultiPointMultiPolygonUnionResult
+  with MultiPointMultiPolygonSymDifferenceResult
 
 case class MultiPointResult(ps: Set[Point]) extends Result
   with TwoDimensionsTwoDimensionsIntersectionResult
   with MultiPointAtLeastOneDimensionIntersectionResult
   with PointZeroDimensionsUnionResult
   with OneDimensionBoundaryResult
-  with MultiPointDifferenceResult
+  with MultiPointGeometryDifferenceResult
   with PointPointSymDifferenceResult
   with ZeroDimensionsMultiPointSymDifferenceResult
   with OneDimensionAtLeastOneDimensionIntersectionResult
@@ -572,6 +610,8 @@ case class MultiPointResult(ps: Set[Point]) extends Result
   with MultiPointMultiPointUnionResult
   with MultiPointMultiLineUnionResult
   with MultiPointMultiPolygonUnionResult
+  with MultiPointMultiLineSymDifferenceResult
+  with MultiPointMultiPolygonSymDifferenceResult
 
 case class MultiLineResult(ls: Set[Line]) extends Result
   with TwoDimensionsTwoDimensionsIntersectionResult
@@ -581,9 +621,10 @@ case class MultiLineResult(ls: Set[Line]) extends Result
   with MultiLinePointDifferenceResult
   with PolygonBoundaryResult
   with OneDimensionOneDimensionSymDifferenceResult
-  with ZeroDimensionsMultiLineSymDifferenceResult
+  with PointMultiLineSymDifferenceResult
   with OneDimensionAtLeastOneDimensionIntersectionResult
   with MultiPointMultiLineUnionResult
+  with MultiPointMultiLineSymDifferenceResult
 
 object MultiLineResult {
   implicit def jtsToResult(geom: jts.Geometry): MultiLineResult =
@@ -601,10 +642,11 @@ case class MultiPolygonResult(ps: Set[Polygon]) extends Result
   with TwoDimensionsTwoDimensionsDifferenceResult
   with MultiPolygonXDifferenceResult
   with TwoDimensionsTwoDimensionsSymDifferenceResult
-  with ZeroDimensionsMultiPolygonSymDifferenceResult
+  with PointMultiPolygonSymDifferenceResult
   with OneDimensionMultiPolygonSymDifferenceResult
   with PointMultiPolygonUnionResult
   with MultiPointMultiPolygonUnionResult
+  with MultiPointMultiPolygonSymDifferenceResult
 
 case class GeometryCollectionResult(gc: GeometryCollection) extends Result
   with TwoDimensionsTwoDimensionsIntersectionResult
@@ -615,10 +657,12 @@ case class GeometryCollectionResult(gc: GeometryCollection) extends Result
   with ZeroDimensionsLineSymDifferenceResult
   with ZeroDimensionsPolygonSymDifferenceResult
   with OneDimensionPolygonSymDifferenceResult
-  with ZeroDimensionsMultiLineSymDifferenceResult
-  with ZeroDimensionsMultiPolygonSymDifferenceResult
+  with PointMultiLineSymDifferenceResult
+  with PointMultiPolygonSymDifferenceResult
   with OneDimensionMultiPolygonSymDifferenceResult
   with OneDimensionAtLeastOneDimensionIntersectionResult
   with PointMultiPolygonUnionResult
   with MultiPointMultiLineUnionResult
   with MultiPointMultiPolygonUnionResult
+  with MultiPointMultiLineSymDifferenceResult
+  with MultiPointMultiPolygonSymDifferenceResult

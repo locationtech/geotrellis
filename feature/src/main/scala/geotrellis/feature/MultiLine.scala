@@ -136,7 +136,7 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
 
   // -- SymDifference
 
-  def symDifference(g: ZeroDimensions): ZeroDimensionsMultiLineSymDifferenceResult =
+  def symDifference(g: ZeroDimensions): PointMultiLineSymDifferenceResult =
     jtsGeom.symDifference(g.jtsGeom)
 
   def symDifference(g: OneDimension): OneDimensionOneDimensionSymDifferenceResult =
