@@ -17,10 +17,10 @@
 package geotrellis.spark.cmd
 import geotrellis._
 import geotrellis.spark.Tile
-import geotrellis.spark.cmd.ingest.TiffTiler
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.ingest.IngestInputFormat
+import geotrellis.spark.ingest.TiffTiler
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.rdd.RasterSplitGenerator
 import geotrellis.spark.rdd.TileIdPartitioner

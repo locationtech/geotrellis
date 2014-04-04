@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.cmd.ingest
+package geotrellis.spark.ingest
 
 import geotrellis._
 import geotrellis.raster.RasterData
@@ -35,7 +35,6 @@ import java.awt.image.DataBufferDouble
 import java.awt.image.DataBufferFloat
 import java.awt.image.DataBufferInt
 import java.awt.image.DataBufferShort
-import geotrellis.spark.ingest.GeoTiff
 
 object TiffTiler {
   
