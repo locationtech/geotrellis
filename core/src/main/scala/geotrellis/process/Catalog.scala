@@ -87,6 +87,58 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String,sour
         }
     }
 
+  def layerCount(layerId:LayerId):Int =
+    layerId.store match {
+      case Some(ds) =>
+        stores.get(ds) match {
+          case Some(store) =>
+            store.getRasterLayer(layerId.name) match {
+              case Some(layer) => 1
+              case None => 0
+            }
+          case None => 0
+        }
+      case None => stores.values.flatMap(_.getRasterLayer(layerId.name)).toList.length
+    }
+
+  def layerExists(layerId:LayerId):Boolean =
+    layerId.store match {
+      case Some(ds) =>
+        stores.get(ds) match {
+          case Some(store) =>
+            store.getRasterLayer(layerId.name) match {
+              case Some(layer) => true
+              case None => false
+            }
+          case None => false
+        }
+      case None =>
+        stores.values.flatMap(_.getRasterLayer(layerId.name)).toList match {
+          case Nil => false
+          case layer :: Nil => true
+          case _ => true
+        }
+    }
+
+  def layerUniquelyExists(layerId:LayerId):Boolean =
+    layerId.store match {
+      case Some(ds) =>
+        stores.get(ds) match {
+          case Some(store) =>
+            store.getRasterLayer(layerId.name) match {
+              case Some(layer) => true
+              case None => false
+            }
+          case None => false
+        }
+      case None =>
+        stores.values.flatMap(_.getRasterLayer(layerId.name)).toList match {
+          case Nil => false
+          case layer :: Nil => true
+          case _ => false
+        }
+    }
+
   def getStore(name:String) = stores.get(name)
 }
 

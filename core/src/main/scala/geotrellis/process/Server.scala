@@ -90,6 +90,8 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
   def run[T](op:Op[T]):OperationResult[T] = 
     _run(op)
 
+  def layerCount(layerId:LayerId):Int = catalog.layerCount(layerId)
+
   private[process] def _run[T](op:Op[T]):OperationResult[T] = {
     log("server._run called with %s" format op)
 
