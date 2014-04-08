@@ -284,6 +284,31 @@ object GeotrellisBuild extends Build {
     ) ++ 
     defaultAssemblySettings ++ 
     net.virtualvoid.sbt.graph.Plugin.graphSettings
+
+  // Project: gdal
+
+  lazy val gdal: Project =
+    Project("gdal", file("gdal"))
+      .settings(gdalSettings: _*)
+      .dependsOn(core, geotools % "test")
+
+  lazy val gdalSettings =
+    Seq(
+      name := "geotrellis-gdal",
+      libraryDependencies ++=
+        Seq(
+//          "com.azavea.geotrellis" % "gdal" % "1.10.1",
+          "org.gdal" % "gdal" % "1.9.2",
+          "com.azavea.geotrellis" %% "gdal-scala" % "0.1.0-SNAPSHOT",
+          scalatest % "test"
+        ),
+      resolvers ++=
+        Seq(
+          "OpenGeo" at "http://repo.opengeo.org/"
+        ),
+      fork in test := true
+    ) ++
+    defaultAssemblySettings
     
   // Project: geotools
 
@@ -388,6 +413,28 @@ object GeotrellisBuild extends Build {
         jts
       )
     )
+
+  // Project: gdal-benchmark
+
+  lazy val gdalBenchmark: Project =
+    Project("gdal-benchmark", file("gdal-benchmark"))
+      .settings(gdalBenchmarkSettings:_*)
+      .dependsOn(gdal, geotools)
+
+  lazy val gdalBenchmarkSettings = 
+    Seq(
+        organization := "com.azavea.geotrellis",
+        name := "gdal-benchmark",
+
+        scalaVersion := "2.10.3",
+        // raise memory limits here if necessary
+        javaOptions += "-Xmx2G",
+        javaOptions += "-Djava.library.path=/usr/local/lib",
+
+        // enable forking in both run and test
+        fork := true
+    ) ++
+    defaultAssemblySettings
 
   // Project: benchmark
 
