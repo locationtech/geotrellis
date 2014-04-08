@@ -17,13 +17,11 @@
 package geotrellis.spark.rdd
 import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.utils._
-
 import org.apache.commons.codec.binary.Base64
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FSDataInputStream
 import org.apache.hadoop.fs.LocalFileSystem
 import org.apache.hadoop.fs.Path
-
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -33,9 +31,11 @@ import java.io.ObjectOutputStream
 import java.io.PrintWriter
 import java.nio.ByteBuffer
 import java.util.Scanner
-
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
+import geotrellis.spark.cmd.CommandArguments
+import com.quantifind.sumac.ArgMain
+import geotrellis.spark.tiling.TmsTiling
 
 class TileIdPartitioner extends org.apache.spark.Partitioner {
 
@@ -50,13 +50,13 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
 
   // get min,max tileId in a given partition
   def range(partition: Int): (TileIdWritable, TileIdWritable) = {
-    val min = if(partition == 0) Long.MinValue else splits(partition-1).get + 1
-    val max = if(partition == splits.length) Long.MaxValue else splits(partition).get
+    val min = if (partition == 0) Long.MinValue else splits(partition - 1).get + 1
+    val max = if (partition == splits.length) Long.MaxValue else splits(partition).get
     (TileIdWritable(min), TileIdWritable(max))
   }
-  
+
   // TODO override equals and hashCode
-  
+
   private def findPartition(key: Any) = {
     val index = java.util.Arrays.binarySearch(splits.asInstanceOf[Array[Object]], key)
     if (index < 0)
@@ -81,7 +81,7 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
   }
 }
 
-object TileIdPartitioner {
+object TileIdPartitioner extends ArgMain[CommandArguments] {
   final val SplitFile = "splits"
 
   /* construct a partitioner from the splits file, if one exists */
@@ -113,7 +113,8 @@ object TileIdPartitioner {
               TileIdWritable(ByteBuffer.wrap(Base64.decodeBase64(line.getBytes)).getLong)
           }
           splits.toArray
-        } finally {
+        }
+        finally {
           in.close
         }
       case None =>
@@ -137,9 +138,22 @@ object TileIdPartitioner {
     splits.length
   }
 
-  def printSplits(raster: Path, conf: Configuration) {
+  private def printSplits(raster: Path, conf: Configuration): Unit = {
+    val zoom = raster.getName().toInt
     val splits = readSplits(raster, conf)
-    splits.zipWithIndex.foreach(t => println("Split #%d: %d".format(t._2, t._1.get)))
+    splits.zipWithIndex.foreach {
+      case (tileId, index) => {
+        val (tx, ty) = TmsTiling.tileXY(tileId.get, zoom)
+        println(s"Split #${index}: tileId=${tileId.get}, tx=${tx}, ty=${ty}")
+      }
+    }
   }
+
+  def main(args: CommandArguments) {
+    val input = new Path(args.input)
+    val conf = SparkUtils.createHadoopConfiguration
+    printSplits(input, conf)
+  }
+
 }
 

@@ -15,10 +15,11 @@
  */
 
 package geotrellis.spark
+import geotrellis.spark.utils.HdfsUtils
 import geotrellis.spark.utils.SparkUtils
 
-import org.apache.commons.io.FileUtils
 import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.FileUtil
 import org.apache.hadoop.fs.Path
 import org.scalatest._
 import org.scalatest.BeforeAndAfterAll
@@ -63,8 +64,8 @@ trait TestEnvironment extends BeforeAndAfterAll {self: Suite =>
   
   // clean up the test directory after the test
   // note that this afterAll is not inherited from BeforeAndAfterAll, its callers are
-  override def afterAll() = FileUtils.deleteDirectory(new File(outputLocal.toUri()))
-
+  override def afterAll() = FileUtil.fullyDelete(new File(outputLocal.toUri()))
+ 
   // root directory name on both local file system and hdfs for all tests
   private final val outputHome = "testFiles"
 
@@ -77,7 +78,7 @@ trait TestEnvironment extends BeforeAndAfterAll {self: Suite =>
     if (!outputHomeLocalHandle.exists)
       outputHomeLocalHandle.mkdirs()
 
-    val hadoopTmpDir = conf.get("hadoop.tmp.dir", "/tmp")
+    val hadoopTmpDir = HdfsUtils.getTempDir(conf)
 
     // file handle to the test directory on local file system
     val outputLocalHandle = new File(outputHomeLocalHandle.toString(), name)
