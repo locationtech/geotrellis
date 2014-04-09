@@ -15,27 +15,25 @@
  */
 
 package geotrellis.spark.rdd
+import geotrellis.spark.cmd.CommandArguments
 import geotrellis.spark.formats.TileIdWritable
+import geotrellis.spark.metadata.PyramidMetadata
+import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils._
+
 import org.apache.commons.codec.binary.Base64
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FSDataInputStream
-import org.apache.hadoop.fs.LocalFileSystem
 import org.apache.hadoop.fs.Path
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileReader
-import java.io.InputStreamReader
+
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.PrintWriter
 import java.nio.ByteBuffer
-import java.util.Scanner
+
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
-import geotrellis.spark.cmd.CommandArguments
+
 import com.quantifind.sumac.ArgMain
-import geotrellis.spark.tiling.TmsTiling
 
 class TileIdPartitioner extends org.apache.spark.Partitioner {
 
@@ -146,6 +144,18 @@ object TileIdPartitioner extends ArgMain[CommandArguments] {
         val (tx, ty) = TmsTiling.tileXY(tileId.get, zoom)
         println(s"Split #${index}: tileId=${tileId.get}, tx=${tx}, ty=${ty}")
       }
+    }
+
+    // print the increments unless there were no splits
+    if (!splits.isEmpty) {
+      val meta = PyramidMetadata(raster.getParent(), conf)
+      val tileExtent = meta.metadataForBaseZoom.tileExtent
+      val (tileSize, rasterType) = (meta.tileSize, meta.rasterType)
+
+      val inc = RasterSplitGenerator.computeIncrement(tileExtent,
+        TmsTiling.tileSizeBytes(tileSize, rasterType),
+        HdfsUtils.blockSize(conf))
+      println(s"(xInc,yInc) = ${inc}")
     }
   }
 
