@@ -178,5 +178,6 @@ object RasterSource {
     new RasterSource(rasterDef, tileOps)
   }
 
-  def layerCount(layerId:LayerId):Int = server.layerCount(layerId)
+  def layerExists(layerId:LayerId):Boolean = server.layerExists(layerId)
+  def layerExists(layerName:String):Boolean = server.layerExists(LayerId(None, layerName))
 }

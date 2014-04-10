@@ -239,9 +239,14 @@ class CatalogSpec extends FunSpec
       """
 
       val catalog = Catalog.fromJSON(noCacheAllLine)
+
       val layer1 = catalog.getRasterLayer(LayerId("store1","quadborder")).get
       val layer2 = catalog.getRasterLayer(LayerId("store2","quadborder")).get
       layer1.info.rasterExtent should not be (layer2.info.rasterExtent)
+      catalog.layerExists(LayerId("store2", "elevation")) should be (true)
+      catalog.layerExists(LayerId("store2", "nonexisting-layer")) should be (false)
+      catalog.layerExists(LayerId("elevation")) should be (true)
+      catalog.layerExists(LayerId("nonexisting-store")) should be (false)
     }
   }
 }
