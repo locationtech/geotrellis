@@ -87,6 +87,25 @@ case class Catalog(name:String, stores:Map[String, DataStore], json: String,sour
         }
     }
 
+  def layerExists(layerId:LayerId):Boolean =
+    layerId.store match {
+      case Some(ds) =>
+        stores.get(ds) match {
+          case Some(store) =>
+            store.getRasterLayer(layerId.name) match {
+              case Some(layer) => true
+              case None => false
+            }
+          case None => false
+        }
+      case None =>
+        stores.values.flatMap(_.getRasterLayer(layerId.name)).toList match {
+          case Nil => false
+          case layer :: Nil => true
+          case _ => true
+        }
+    }
+
   def getStore(name:String) = stores.get(name)
 }
 
