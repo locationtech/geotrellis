@@ -35,7 +35,7 @@ object SplitGenerator {
 case class RasterSplitGenerator(
   tileExtent: TileExtent,
   zoom: Int,
-  increment: Tuple2[Int, Int])
+  increment: (Int, Int))
   extends SplitGenerator {
   // if increment is -1 getSplits return an empty sequence
   // also, we start with s+(i-1) as the first split point needs to be there, not at s    

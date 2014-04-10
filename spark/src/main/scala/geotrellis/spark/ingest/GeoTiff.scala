@@ -40,8 +40,8 @@ object GeoTiff extends Logging {
 
   case class Metadata(
     extent: Extent,
-    pixelSize: Tuple2[Double, Double],
-    pixels: Tuple2[Int, Int],
+    pixelSize: (Double, Double),
+    pixels: (Int, Int),
     bands: Int,
     rasterType: Int,
     nodata: Double)
