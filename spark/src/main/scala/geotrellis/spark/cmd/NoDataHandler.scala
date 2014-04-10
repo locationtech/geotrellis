@@ -20,8 +20,6 @@ import geotrellis._
 import geotrellis.raster.MutableRasterData
 import geotrellis.raster.RasterData
 
-import scalaxy.loops._
-
 object NoDataHandler {
 
   def removeUserNoData(rd: MutableRasterData, userNoData: Double): MutableRasterData = {
@@ -30,7 +28,7 @@ object NoDataHandler {
      * because the apply/update methods handle conversion of NODATA to the appropriate types
      * via macros i2f, i2b, respectively 
      */
-    for (i <- 0 until rd.length optimized) {
+    for (i <- 0 until rd.length) {
       if (rd(i) == userNoData) rd(i) = NODATA
     }
     rd
