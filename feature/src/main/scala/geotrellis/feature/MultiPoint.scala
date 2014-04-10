@@ -26,6 +26,8 @@ object MultiPoint {
 
   def apply(ps: Traversable[Point]): MultiPoint =
     MultiPoint(factory.createMultiPoint(ps.map(_.jtsGeom).toArray))
+
+  implicit def jts2MultiPoint(jtsGeom: jts.MultiPoint): MultiPoint = apply(jtsGeom)
 }
 
 case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry 
