@@ -26,6 +26,8 @@ object MultiLine {
 
   def apply(ls: Traversable[Line])(implicit d: DummyImplicit): MultiLine = 
     MultiLine(factory.createMultiLineString(ls.map(_.jtsGeom).toArray))
+
+  implicit def jts2MultiLine(jtsGeom: jts.MultiLineString): MultiLine = apply(jtsGeom)
 }
 
 case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry 
