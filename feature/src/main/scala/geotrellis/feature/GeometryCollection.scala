@@ -24,6 +24,10 @@ import scala.collection.mutable
 class GeometryCollection(val points: Set[Point],
                          val lines: Set[Line],
                          val polygons: Set[Polygon],
+                         val multiPoints: Set[MultiPoint],
+                         val multiLines: Set[MultiLine],
+                         val multiPolygons: Set[MultiPolygon],
+                         val geometryCollections: Set[GeometryCollection],
                          val jtsGeom: jts.GeometryCollection) extends Geometry {
 
   lazy val area: Double =
@@ -41,47 +45,84 @@ class GeometryCollection(val points: Set[Point],
 }
 
 object GeometryCollection {
-
   implicit def jtsToGeometryCollection(gc: jts.GeometryCollection): GeometryCollection =
     apply(gc)
 
-  def apply(points: Set[Point] = Set(), lines: Set[Line] = Set(), polygons: Set[Polygon] = Set()): GeometryCollection = {
-    val jtsGeom = factory.createGeometryCollection((points ++ lines ++ polygons).map(_.jtsGeom).toArray)
-    new GeometryCollection(points, lines, polygons, jtsGeom)
+  def apply(points: Set[Point] = Set(), lines: Set[Line] = Set(), polygons: Set[Polygon] = Set(),
+             multiPoints: Set[MultiPoint] = Set(),
+             multiLines: Set[MultiLine] = Set(),
+             multiPolygons: Set[MultiPolygon] = Set(),
+             geometryCollections: Set[GeometryCollection] = Set()
+           ): GeometryCollection =
+  {
+    val jtsGeom = factory.createGeometryCollection(
+      (points ++ lines ++ polygons ++ multiPoints ++ multiLines ++ multiPolygons ++ geometryCollections)
+        .map(_.jtsGeom).toArray
+    )
+    new GeometryCollection(points, lines, polygons, multiPoints, multiLines, multiPolygons, geometryCollections, jtsGeom)
+  }
+
+  def apply(geoms: Traversable[Geometry]): GeometryCollection = {
+    val points = mutable.Set[Point]()
+    val lines = mutable.Set[Line]()
+    val polygons = mutable.Set[Polygon]()
+    val multiPoints = mutable.Set[MultiPoint]()
+    val multiLines = mutable.Set[MultiLine]()
+    val multiPolygons = mutable.Set[MultiPolygon]()
+    val collections = mutable.Set[GeometryCollection]()
+    geoms.foreach{ _ match {
+      case p: Point => points += p
+      case mp: MultiPoint => multiPoints += mp
+      case l: Line => lines += l
+      case ml: MultiLine => multiLines += ml
+      case p: Polygon => polygons += p
+      case mp: MultiPolygon => multiPolygons += mp
+      case gc: GeometryCollection => collections += gc
+    }}
+
+    apply(
+      points.toSet, lines.toSet, polygons.toSet,
+      multiPoints.toSet, multiLines.toSet, multiPolygons.toSet,
+      collections.toSet
+    )
   }
 
   def apply(gc: jts.GeometryCollection): GeometryCollection = {
-    val (points, lines, polygons) = collectGeometries(gc)
-    new GeometryCollection(points, lines, polygons, gc)
+    val (points, lines, polygons, multiPoints, multiLines, multiPolygons, collections) = collectGeometries(gc)
+    new GeometryCollection(points, lines, polygons, multiPoints, multiLines, multiPolygons, collections, gc)
   }
+
 
   def unapply(gc: GeometryCollection): Some[(Set[Point], Set[Line], Set[Polygon])] =
     Some((gc.points, gc.lines, gc.polygons))
 
   @inline final private 
-  def collectGeometries(gc: jts.GeometryCollection): (Set[Point], Set[Line], Set[Polygon]) = {
+  def collectGeometries(gc: jts.GeometryCollection):
+    (Set[Point], Set[Line], Set[Polygon], Set[MultiPoint], Set[MultiLine], Set[MultiPolygon], Set[GeometryCollection]) =
+  {
     val points = mutable.Set[Point]()
     val lines = mutable.Set[Line]()
     val polygons = mutable.Set[Polygon]()
+    val multiPoints = mutable.Set[MultiPoint]()
+    val multiLines = mutable.Set[MultiLine]()
+    val multiPolygons = mutable.Set[MultiPolygon]()
+    val collections = mutable.Set[GeometryCollection]()
 
     val len = gc.getNumGeometries
-
     for(i <- 0 until len) {
       gc.getGeometryN(i) match {
         case p: jts.Point => points += p
-        case mp: jts.MultiPoint => points ++= mp
+        case mp: jts.MultiPoint => multiPoints += mp
         case l: jts.LineString => lines += l
-        case ml: jts.MultiLineString => lines ++= ml
+        case ml: jts.MultiLineString => multiLines += ml
         case p: jts.Polygon => polygons += p
-        case mp: jts.MultiPolygon => polygons ++= mp
-        case gc: jts.GeometryCollection =>
-          val (ps, ls, polys) = collectGeometries(gc)
-          points ++= ps
-          lines ++= ls
-          polygons ++= polys
+        case mp: jts.MultiPolygon => multiPolygons += mp
+        case gc: jts.GeometryCollection => collections += gc
       }
     }
 
-    (points.toSet, lines.toSet, polygons.toSet)
+    (points.toSet, lines.toSet, polygons.toSet,
+      multiPoints.toSet, multiLines.toSet, multiPolygons.toSet,
+      collections.toSet)
   }
 }
