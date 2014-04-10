@@ -26,6 +26,8 @@ object MultiPolygon {
 
   def apply(ps: Traversable[Polygon]): MultiPolygon =
     MultiPolygon(factory.createMultiPolygon(ps.map(_.jtsGeom).toArray))
+
+  implicit def jts2MultiPolygon(jtsGeom: jts.MultiPolygon): MultiPolygon = apply(jtsGeom)
 }
 
 case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry 
