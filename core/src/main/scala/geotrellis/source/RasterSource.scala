@@ -179,5 +179,5 @@ object RasterSource {
   }
 
   def layerExists(layerId:LayerId):Boolean = server.layerExists(layerId)
-  def layerExists(layerName:String):Boolean = server.layerExists(LayerId(None, layerName))
+  def layerExists(layerName:String):Boolean = server.layerExists(layerName)
 }

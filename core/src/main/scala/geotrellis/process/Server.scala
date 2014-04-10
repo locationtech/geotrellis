@@ -91,6 +91,7 @@ class Server (id:String, val catalog:Catalog) extends Serializable {
     _run(op)
 
   def layerExists(layerId:LayerId):Boolean = catalog.layerExists(layerId)
+  def layerExists(layerName:String):Boolean = catalog.layerExists(LayerId(None,layerName))
 
   private[process] def _run[T](op:Op[T]):OperationResult[T] = {
     log("server._run called with %s" format op)
