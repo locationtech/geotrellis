@@ -4,20 +4,19 @@ import org.scalatest._
 
 import geotrellis.feature._
 
-import spray._
-import spray.json._
-
 import spray.httpx.unmarshalling._
 import spray.httpx.marshalling._
 import spray.http._
 import HttpCharsets._
 import MediaTypes._
 
-import spray.json.DefaultJsonProtocol
+import spray.httpx.SprayJsonSupport
+import GeometryFormats._
+import spray.json._
 import DefaultJsonProtocol._
 
+class GeometryFormatsSpec extends FlatSpec with ShouldMatchers with SprayJsonSupport {
 
-class GeometryFormatsSpec extends FlatSpec with ShouldMatchers with GeoJsonSupport {
   val point = Point(6.0,1.2)
   val line = Line(Point(1,2) :: Point(1,3) :: Nil)
 
@@ -135,10 +134,10 @@ class GeometryFormatsSpec extends FlatSpec with ShouldMatchers with GeoJsonSuppo
           |}""".stripMargin
       )
 
-    //TODO: What if list: List[Geometry]
-    val list: Seq[Geometry] = List(point, line)
-    marshal(list) should equal (Right(body))
-    body.as[Seq[Geometry]] should equal (Right(list))
+    //What if list: List[Geometry], won't work, JsonFormat is invariant on it's type-parameter
+    //To get that functionality you would need a separate marshaller that is contravariant (that way danger lies)
+    val gc: GeometryCollection = GeometryCollection(List(point, line))
+    marshal(gc) should equal (Right(body))
+    body.as[GeometryCollection] should equal (Right(gc))
   }
-
 }
