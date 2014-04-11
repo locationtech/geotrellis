@@ -9,17 +9,21 @@ import FeatureFormats._
 import DefaultJsonProtocol._
 
 /**
-  * Accumulates GeoJson from Feature class instances.
-  *
-  * Each individual feature is parametrized on a class we need to accumulate geoJson per
-  * instance of an object in order to use implicit scope resolution in finding the correct format.
-  *
- * This is the object that is created when GeoJson FeatureCollection is deserialized
+ * Accumulates GeoJson from Feature class instances.
+ *
+ * During serialization:
+ * Each individual feature is parametrized on a class we need to accumulate geoJson per
+ * instance of an object in order to use implicit scope resolution in finding the correct format.
+ *
+ * Features may be added using the .add, addAll methods, they are buffered as JsValues until .toJson is called
+ *
+ * During deserialization:
+ * This object is instantiated with list of JsValues representing features.
+ * It may be queried using .getAll[F <: Feature[_] ] method.
  *
  * It aggregates feature objects with data member still encoded in json
  */
 class JsonFeatureCollection(features: List[JsValue] = Nil) {
-
   var buffer = features
 
   //-- Used for Serialization
@@ -38,6 +42,13 @@ class JsonFeatureCollection(features: List[JsValue] = Nil) {
     )
 
   //-- Used for Deserialization
+  /**
+   * This method locates the correct JsonFormat for F through implicit scope and
+   * attempts to use it to parse each contained JsValue.
+   *
+   * @tparam F type of Feature to return
+   * @return Vector or Feature objects that were successfully parsed
+   */
   def getAll[F <: Feature[_] :JsonFormat]: Vector[F] = {
     val ret = new VectorBuilder[F]()
     features.foreach{ f =>
@@ -64,5 +75,6 @@ object JsonFeatureCollection{
   def apply[D: JsonWriter](features: Traversable[Feature[D]]){
     val fc = new JsonFeatureCollection()
     fc ++= features.toList
+    fc
   }
 }
