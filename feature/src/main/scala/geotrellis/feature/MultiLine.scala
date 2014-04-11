@@ -185,4 +185,5 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   def within(g: AtLeastOneDimension): Boolean =
     jtsGeom.within(g.jtsGeom)
 
+  override def toString = jtsGeom.toString
 }

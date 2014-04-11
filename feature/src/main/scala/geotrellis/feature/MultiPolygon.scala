@@ -170,4 +170,5 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
   def within(g: TwoDimensions): Boolean =
     jtsGeom.within(g.jtsGeom)
 
+  override def toString = jtsGeom.toString
 }

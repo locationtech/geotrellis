@@ -154,4 +154,5 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   def within(g: Geometry): Boolean =
     jtsGeom.within(g.jtsGeom)
 
+  override def toString = jtsGeom.toString
 }

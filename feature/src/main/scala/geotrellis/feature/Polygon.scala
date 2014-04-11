@@ -340,4 +340,5 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
   def within(g: TwoDimensions): Boolean =
     jtsGeom.within(g.jtsGeom)
 
+  override def toString = jtsGeom.toString
 }
