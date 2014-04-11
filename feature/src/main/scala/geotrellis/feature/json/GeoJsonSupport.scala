@@ -1,10 +1,12 @@
 package geotrellis.feature.json
 
 import spray.httpx.SprayJsonSupport
-import spray.json.DefaultJsonProtocol
+import spray.json._
 
 /**
- * Can be mixed in with a spray service (or imported) to allow marshalling of Geometry and Feature objects
+ * A trait providing automatic to and from JSON marshalling/unmarshalling using spray-json implicits.
+ * parameter for writing json and will attempt to attach it to Feature/Geometry json representations.
  */
-trait GeoJsonSupport extends SprayJsonSupport with GeometryFormats with FeatureFormats with DefaultJsonProtocol
+trait GeoJsonSupport extends SprayJsonSupport with GeometryFormats with FeatureFormats with CrsFormats with DefaultJsonProtocol
+
 object GeoJsonSupport extends GeoJsonSupport

@@ -19,11 +19,7 @@ trait FeatureFormats {
       case Seq(JsString("Feature"), geom, data) =>
         val g = geom.convertTo[G]
         val d = data.convertTo[D]
-
         create(g,d)
-//        else
-//          throw new DeserializationException(s"GeoJSON Feature read error, unexpected geometry: $g")
-
       case _ => throw new DeserializationException("Feature expected")
     }
   }

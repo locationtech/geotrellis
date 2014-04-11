@@ -1,6 +1,7 @@
 package geotrellis.feature.json
 
 import spray.json._
+import geotrellis.feature._
 
 sealed abstract trait CRS {
   def toJson:JsValue
@@ -52,4 +53,9 @@ case class LinkedCRS(href: String, crsType: String = "") extends CRS {
       )
     )
 }
+
+/**
+ * Used as a named tuple to extract and insert CRS field in GeoJSON objects
+ */
+case class WithCrs[T](t: T, crs: CRS)
 
