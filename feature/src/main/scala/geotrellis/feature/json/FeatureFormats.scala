@@ -23,7 +23,11 @@ trait FeatureFormats {
         g match {
           case g: Point => PointFeature(g, d)
           case g: Line => LineFeature(g, d)
-          case _ => ???
+          case g: Polygon => PolygonFeature(g, d)
+          case g: MultiPoint => MultiPointFeature(g, d)
+          case g: MultiLine => MultiLineFeature(g, d)
+          case g: MultiPolygon => MultiPolygonFeature(g, d)
+          case g: GeometryCollection => GeometryCollectionFeature(g, d)
         }
       case _ => throw new DeserializationException("Feature expected")
     }
