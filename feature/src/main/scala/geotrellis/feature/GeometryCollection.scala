@@ -37,7 +37,14 @@ class GeometryCollection(
 
   override def equals(that: Any): Boolean = {
     that match {
-      case other: GeometryCollection => jtsGeom == other.jtsGeom
+      case that: GeometryCollection =>
+        //this allows to match equality ignoring the order or membership
+        this.points == that.points &&
+        this.lines == that.lines &&
+        this.polygons == that.polygons &&
+        this.multiLines == that.multiLines &&
+        this.multiPolygons == that.multiPolygons &&
+        this.geometryCollections == that.geometryCollections
       case _ => false
     }
   }
@@ -45,7 +52,7 @@ class GeometryCollection(
   override def hashCode(): Int  =
     jtsGeom.hashCode()
 
-  override def toString: String = jtsGeom.toString()
+  override def toString: String = jtsGeom.toString
 }
 
 object GeometryCollection {
