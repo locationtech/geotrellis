@@ -54,8 +54,8 @@ trait GeometryFormats {
     )
 
     def read(value: JsValue) = value.asJsObject.getFields("type", "coordinates") match {
-      case Seq(JsString("Point"), JsArray(Seq(JsNumber(x), JsNumber(y)))) =>
-        Point(x.toDouble, y.toDouble)
+      case Seq(JsString("Point"), point) =>
+        readPointCords(point)
       case _ => throw new DeserializationException("Point geometry expected")
     }
   }
@@ -67,7 +67,8 @@ trait GeometryFormats {
     )
 
     def read(value: JsValue) = value.asJsObject.getFields("type", "coordinates") match {
-      case Seq(JsString("LineString"), points) => readLineCords(points)
+      case Seq(JsString("LineString"), points) =>
+        readLineCords(points)
       case _ => throw new DeserializationException("LineString geometry expected")
     }
   }
@@ -143,8 +144,8 @@ trait GeometryFormats {
 
     def read(value: JsValue) = value.asJsObject.getFields("type", "geometries") match {
       case Seq(JsString("GeometryCollection"), JsArray(geomsJson)) =>
-        val geoms = geomsJson.map(GeometryFormat.read(_))
-        GeometryCollection(geoms)
+        GeometryCollection(geomsJson.map(g => GeometryFormat.read(g)))
+      case _ => throw new DeserializationException("GeometryCollection expected")
     }
   }
 
@@ -156,6 +157,7 @@ trait GeometryFormats {
       case o: MultiPolygon => o.toJson
       case o: MultiPoint => o.toJson
       case o: MultiLine => o.toJson
+      case o: GeometryCollection => o.toJson
       case _ => throw new SerializationException("Unknown Geometry")
     }
 
