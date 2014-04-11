@@ -1,8 +1,7 @@
-package geotrellis.feature.spec.json
+package geotrellis.feature.json
 
 import org.scalatest._
 import geotrellis.feature._
-import geotrellis.feature.json._
 
 class GeoJsonSpec extends FlatSpec with ShouldMatchers {
   "GeoJson package" should "go from Geometry to String" in {
@@ -31,4 +30,28 @@ class GeoJsonSpec extends FlatSpec with ShouldMatchers {
     GeoJson.parseFeature[String](json) should equal (expected)
     json.parseFeature[String] should equal (expected)
   }
+
+
+
+  case class SomeData(name: String, value: Double)
+  implicit val someDataFormat = jsonFormat2(SomeData)
+
+  it should "parse from string with custom data without fuss" in {
+    val jsonFeature =
+      """{
+        |  "type": "Feature",
+        |  "geometry": {
+        |    "type": "Point",
+        |    "coordinates": [1.0, 44.0]
+        |  },
+        |  "properties": {
+        |    "name": "Bob",
+        |    "value": 32.2
+        |  }
+        |}""".stripMargin
+    val expected = PointFeature(Point(1,44), SomeData("Bob", 32.2))
+
+    jsonFeature.parseFeature[SomeData] should equal (expected)
+  }
 }
+
