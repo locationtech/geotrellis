@@ -44,6 +44,8 @@ class GeometryCollection(
 
   override def hashCode(): Int  =
     jtsGeom.hashCode()
+
+  override def toString: String = jtsGeom.toString()
 }
 
 object GeometryCollection {
@@ -71,40 +73,13 @@ object GeometryCollection {
   }
 
   def apply(gc: jts.GeometryCollection): GeometryCollection = {
-    val (points, lines, polygons, multiPoints, multiLines, multiPolygons, collections) = collectGeometries(gc)
-    new GeometryCollection(points, lines, polygons, multiPoints, multiLines, multiPolygons, collections, gc)
+    val builder = new GeometryCollectionBuilder()
+    for (i <- 0 until gc.getNumGeometries){
+      builder += gc.getGeometryN(i)
+    }
+    builder.result()
   }
 
   def unapply(gc: GeometryCollection): Some[(Set[Point], Set[Line], Set[Polygon])] =
     Some((gc.points, gc.lines, gc.polygons))
-
-  @inline final private 
-  def collectGeometries(gc: jts.GeometryCollection):
-    (Set[Point], Set[Line], Set[Polygon], Set[MultiPoint], Set[MultiLine], Set[MultiPolygon], Set[GeometryCollection]) =
-  {
-    val points = mutable.Set[Point]()
-    val lines = mutable.Set[Line]()
-    val polygons = mutable.Set[Polygon]()
-    val multiPoints = mutable.Set[MultiPoint]()
-    val multiLines = mutable.Set[MultiLine]()
-    val multiPolygons = mutable.Set[MultiPolygon]()
-    val collections = mutable.Set[GeometryCollection]()
-
-    val len = gc.getNumGeometries
-    for(i <- 0 until len) {
-      gc.getGeometryN(i) match {
-        case p: jts.Point => points += p
-        case mp: jts.MultiPoint => multiPoints += mp
-        case l: jts.LineString => lines += l
-        case ml: jts.MultiLineString => multiLines += ml
-        case p: jts.Polygon => polygons += p
-        case mp: jts.MultiPolygon => multiPolygons += mp
-        case gc: jts.GeometryCollection => collections += gc
-      }
-    }
-
-    (points.toSet, lines.toSet, polygons.toSet,
-      multiPoints.toSet, multiLines.toSet, multiPolygons.toSet,
-      collections.toSet)
-  }
 }
