@@ -86,4 +86,28 @@ class FeatureFormatsSpec extends FlatSpec with ShouldMatchers with GeoJsonSuppor
     fc.getAll[PointFeature[Int]] should contain (pointFeature)
     fc.getAll[LineFeature[Int]] should contain (lineFeature)
   }
+
+  case class SomeData(name: String, value: Double)
+  implicit val someDataFormat = jsonFormat2(SomeData)
+  it should "be able to handle Feature with custom data" in {
+    val f = PointFeature(Point(1,44), SomeData("Bob", 32.2))
+
+    val body =
+      jsonBody (
+      """{
+        |  "type": "Feature",
+        |  "geometry": {
+        |    "type": "Point",
+        |    "coordinates": [1.0, 44.0]
+        |  },
+        |  "properties": {
+        |    "name": "Bob",
+        |    "value": 32.2
+        |  }
+        |}""".stripMargin
+      )
+
+    marshal(f) should equal (Right(body))
+    body.as[PointFeature[SomeData]] should equal (Right(f))
+  }
 }
