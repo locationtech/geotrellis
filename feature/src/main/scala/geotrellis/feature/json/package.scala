@@ -9,9 +9,9 @@ package object json extends DefaultJsonProtocol {
   //extend DefaultJsonProtocol so anybody that imports me also has JsonFormats for Scala primitives, used in Features.
 
   object GeoJson {
-    def parseGeometry(json: String):Geometry =
+    def parseGeometry(json: String): Geometry =
       GeometryFormat.read(json.parseJson)
-    def parseFeature[D: JsonFormat](json: String):Feature[D] =
+    def parseFeature[D: JsonFormat](json: String): Feature[D] =
       readFeatureJson[D](json.parseJson)
   }
 
