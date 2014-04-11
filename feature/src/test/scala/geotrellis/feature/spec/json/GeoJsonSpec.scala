@@ -2,6 +2,8 @@ package geotrellis.feature.json
 
 import org.scalatest._
 import geotrellis.feature._
+import spray.httpx.unmarshalling.DeserializationError
+import spray.json.DeserializationException
 
 class GeoJsonSpec extends FlatSpec with ShouldMatchers {
   "GeoJson package" should "go from Geometry to String" in {
@@ -19,24 +21,31 @@ class GeoJsonSpec extends FlatSpec with ShouldMatchers {
     val json = """{"type":"Point","coordinates":[1.0,1.0]}"""
     val expected = Point(1,1)
 
-    GeoJson.parseGeometry(json) should equal (expected)
-    json.parseGeometry should equal (expected)
+    GeoJson.parse[Geometry](json) should equal (expected)
+    GeoJson.parse[Point](json) should equal (expected)
   }
 
   it should "parse from string to simple Feature" in {
     val json = """{"type":"Feature","geometry":{"type":"Point","coordinates":[1.0,1.0]},"properties":"Data"}"""
     val expected = PointFeature(Point(1,1), "Data")
 
-    GeoJson.parseFeature[String](json) should equal (expected)
-    json.parseFeature[String] should equal (expected)
+    GeoJson.parse[Feature[String]](json) should equal (expected)
+    GeoJson.parse[PointFeature[String]](json) should equal (expected)
   }
 
+  it should "fail when you ask for the wrong feature" in {
+    val json = """{"type":"Feature","geometry":{"type":"Point","coordinates":[1.0,1.0]},"properties":"Data"}"""
+    val expected = PointFeature(Point(1,1), "Data")
 
-
-  case class SomeData(name: String, value: Double)
-  implicit val someDataFormat = jsonFormat2(SomeData)
+    intercept[DeserializationException] {
+      GeoJson.parse[LineFeature[String]](json) should equal(expected)
+    }
+  }
 
   it should "parse from string with custom data without fuss" in {
+    case class SomeData(name: String, value: Double)
+    implicit val someDataFormat = jsonFormat2(SomeData)
+
     val jsonFeature =
       """{
         |  "type": "Feature",
@@ -51,7 +60,7 @@ class GeoJsonSpec extends FlatSpec with ShouldMatchers {
         |}""".stripMargin
     val expected = PointFeature(Point(1,44), SomeData("Bob", 32.2))
 
-    jsonFeature.parseFeature[SomeData] should equal (expected)
+    jsonFeature.parseGeoJson[PointFeature[SomeData]] should equal (expected)
   }
 }
 

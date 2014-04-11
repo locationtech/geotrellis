@@ -5,14 +5,11 @@ import spray.json.JsonFormat
 import geotrellis.feature.json.FeatureFormats._
 import geotrellis.feature.json.GeometryFormats.GeometryFormat
 
-package object json extends DefaultJsonProtocol {
+package object json extends DefaultJsonProtocol with GeometryFormats with FeatureFormats {
   //extend DefaultJsonProtocol so anybody that imports me also has JsonFormats for Scala primitives, used in Features.
 
   object GeoJson {
-    def parseGeometry(json: String): Geometry =
-      GeometryFormat.read(json.parseJson)
-    def parseFeature[D: JsonFormat](json: String): Feature[D] =
-      readFeatureJson[D](json.parseJson)
+    def parse[T: JsonFormat](json: String) = json.parseJson.convertTo[T]
   }
 
   implicit class RichGeometry(geom: Geometry){
@@ -24,7 +21,6 @@ package object json extends DefaultJsonProtocol {
   }
 
   implicit class RichString(s: String){
-    def parseGeometry = GeoJson.parseGeometry(s)
-    def parseFeature[D: JsonFormat] = GeoJson.parseFeature[D](s)
+    def parseGeoJson[T: JsonFormat] = s.parseJson.convertTo[T]
   }
 }
