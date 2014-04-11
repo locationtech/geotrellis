@@ -2,9 +2,9 @@ package geotrellis.feature.json
 
 import geotrellis.feature._
 import spray.json._
+import GeometryFormats._
 
-object FeatureFormats {
-  import GeometryFormats._
+trait FeatureFormats {
 
   def writeFeatureJson[D: JsonWriter](obj: Feature[D]): JsValue = {
     JsObject(
@@ -67,3 +67,5 @@ object FeatureFormats {
     override def write(obj: JsonFeatureCollection): JsValue = obj.toJson
   }
 }
+
+object FeatureFormats extends FeatureFormats
