@@ -1,6 +1,5 @@
 package geotrellis.feature
 
-import com.vividsolutions.jts.geom
 import GeomFactory._
 
 import com.vividsolutions.jts.{geom => jts}
