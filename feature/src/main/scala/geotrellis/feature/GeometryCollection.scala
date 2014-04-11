@@ -21,14 +21,16 @@ import GeomFactory._
 import com.vividsolutions.jts.{geom => jts}
 import scala.collection.mutable
 
-class GeometryCollection(val points: Set[Point],
-                         val lines: Set[Line],
-                         val polygons: Set[Polygon],
-                         val multiPoints: Set[MultiPoint],
-                         val multiLines: Set[MultiLine],
-                         val multiPolygons: Set[MultiPolygon],
-                         val geometryCollections: Set[GeometryCollection],
-                         val jtsGeom: jts.GeometryCollection) extends Geometry {
+class GeometryCollection(
+    val points: Set[Point],
+    val lines: Set[Line],
+    val polygons: Set[Polygon],
+    val multiPoints: Set[MultiPoint],
+    val multiLines: Set[MultiLine],
+    val multiPolygons: Set[MultiPolygon],
+    val geometryCollections: Set[GeometryCollection],
+    val jtsGeom: jts.GeometryCollection
+  ) extends Geometry {
 
   lazy val area: Double =
     jtsGeom.getArea
@@ -63,35 +65,15 @@ object GeometryCollection {
   }
 
   def apply(geoms: Traversable[Geometry]): GeometryCollection = {
-    val points = mutable.Set[Point]()
-    val lines = mutable.Set[Line]()
-    val polygons = mutable.Set[Polygon]()
-    val multiPoints = mutable.Set[MultiPoint]()
-    val multiLines = mutable.Set[MultiLine]()
-    val multiPolygons = mutable.Set[MultiPolygon]()
-    val collections = mutable.Set[GeometryCollection]()
-    geoms.foreach{ _ match {
-      case p: Point => points += p
-      case mp: MultiPoint => multiPoints += mp
-      case l: Line => lines += l
-      case ml: MultiLine => multiLines += ml
-      case p: Polygon => polygons += p
-      case mp: MultiPolygon => multiPolygons += mp
-      case gc: GeometryCollection => collections += gc
-    }}
-
-    apply(
-      points.toSet, lines.toSet, polygons.toSet,
-      multiPoints.toSet, multiLines.toSet, multiPolygons.toSet,
-      collections.toSet
-    )
+    val builder = new GeometryCollectionBuilder()
+    builder ++= geoms
+    builder.result()
   }
 
   def apply(gc: jts.GeometryCollection): GeometryCollection = {
     val (points, lines, polygons, multiPoints, multiLines, multiPolygons, collections) = collectGeometries(gc)
     new GeometryCollection(points, lines, polygons, multiPoints, multiLines, multiPolygons, collections, gc)
   }
-
 
   def unapply(gc: GeometryCollection): Some[(Set[Point], Set[Line], Set[Polygon])] =
     Some((gc.points, gc.lines, gc.polygons))
