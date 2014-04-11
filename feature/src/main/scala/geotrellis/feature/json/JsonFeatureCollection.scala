@@ -72,7 +72,7 @@ class JsonFeatureCollection(features: List[JsValue] = Nil) {
 object JsonFeatureCollection{
   def apply() = new JsonFeatureCollection()
 
-  def apply[D: JsonWriter](features: Traversable[Feature[D]]){
+  def apply[D: JsonWriter](features: Traversable[Feature[D]]) = {
     val fc = new JsonFeatureCollection()
     fc ++= features.toList
     fc
