@@ -8,7 +8,7 @@ import scala.collection.mutable
 
 /**
  * Builder for GeometryCollection.
- * jts types can be added using the implicit conversions provided in this package.
+ * This builder can accumulate from both geotrellis geometries and JTS geometries
  */
 class GeometryCollectionBuilder {
   val points = mutable.Set[Point]()
@@ -35,9 +35,22 @@ class GeometryCollectionBuilder {
   def ++=(geoms: Traversable[Geometry]) =
     addAll(geoms)
 
-  def addAll(geoms: Iterator[Geometry]) =
+
+  def add(geom: jts.Geometry) = geom match {
+    //implicit conversions are happening here
+    case p: jts.Point => points += p
+    case mp: jts.MultiPoint => multiPoints += mp
+    case l: jts.LineString => lines += l
+    case ml: jts.MultiLineString => multiLines += ml
+    case p: jts.Polygon => polygons += p
+    case mp: jts.MultiPolygon => multiPolygons += mp
+    case gc: jts.GeometryCollection => collections += gc
+  }
+  def +=(geom: jts.Geometry) = add(geom)
+
+  def addAll(geoms: Traversable[jts.Geometry])(implicit d: DummyImplicit) =
     geoms.foreach(g=> add(g))
-  def ++=(geoms: Iterator[Geometry]) =
+  def ++=(geoms: Traversable[jts.Geometry])(implicit d: DummyImplicit) =
     addAll(geoms)
 
   def result(): GeometryCollection = {
