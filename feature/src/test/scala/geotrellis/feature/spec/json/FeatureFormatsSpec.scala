@@ -3,19 +3,14 @@ package geotrellis.feature.json
 import org.scalatest._
 import geotrellis.feature._
 
-import spray.json.DefaultJsonProtocol
-
 import spray.httpx.unmarshalling._
 import spray.httpx.marshalling._
 import spray.http._
 import HttpCharsets._
 import MediaTypes._
-import spray.httpx.SprayJsonSupport
 
 
-class FeatureFormatsSpec extends FlatSpec with ShouldMatchers with SprayJsonSupport {
-  import DefaultJsonProtocol._
-  import FeatureFormats._
+class FeatureFormatsSpec extends FlatSpec with ShouldMatchers with GeoJsonSupport {
 
   val pointFeature = PointFeature(Point(6.0,1.2), 123)
   val lineFeature = LineFeature(Line(Point(1,2) :: Point(1,3) :: Nil), 321)

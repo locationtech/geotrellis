@@ -10,12 +10,7 @@ import spray.http._
 import HttpCharsets._
 import MediaTypes._
 
-import spray.httpx.SprayJsonSupport
-import GeometryFormats._
-import spray.json._
-import DefaultJsonProtocol._
-
-class GeometryFormatsSpec extends FlatSpec with ShouldMatchers with SprayJsonSupport {
+class GeometryFormatsSpec extends FlatSpec with ShouldMatchers with GeoJsonSupport {
 
   val point = Point(6.0,1.2)
   val line = Line(Point(1,2) :: Point(1,3) :: Nil)
