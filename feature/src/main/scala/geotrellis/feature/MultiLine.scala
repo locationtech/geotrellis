@@ -26,11 +26,20 @@ object MultiLine {
 
   def apply(ls: Traversable[Line])(implicit d: DummyImplicit): MultiLine = 
     MultiLine(factory.createMultiLineString(ls.map(_.jtsGeom).toArray))
+
+  implicit def jts2MultiLine(jtsGeom: jts.MultiLineString): MultiLine = apply(jtsGeom)
 }
 
 case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry 
                                                  with Relatable
                                                  with OneDimension {
+
+  /** Returns the Lines contained in MultiLine. */
+  lazy val lines: Array[Line] = {
+    for (i <- 0 until jtsGeom.getNumGeometries) yield {
+      Line(jtsGeom.getGeometryN(i).asInstanceOf[jts.LineString])
+    }
+  }.toArray
 
   lazy val isClosed: Boolean =
     jtsGeom.isClosed
@@ -176,4 +185,5 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   def within(g: AtLeastOneDimension): Boolean =
     jtsGeom.within(g.jtsGeom)
 
+  override def toString = jtsGeom.toString
 }
