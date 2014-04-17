@@ -27,6 +27,12 @@ object RenderPng {
 
   def apply(r:Op[Raster], colorBreaks:Op[ColorBreaks], noDataColor:Op[Int],h:Histogram):RenderPng =
     RenderPng(r,colorBreaks,noDataColor,Some(h))
+
+  def apply(r:Op[Raster], colorBreaks:Op[ColorBreaks], noDataColor:Op[Int], colors:Array[Int]):RenderPng =
+    RenderPng(r,ColorBreaks(colorBreaks.limits, colors),noDataColor,None)
+
+  def apply(r:Op[Raster], colorBreaks:Op[ColorBreaks], noDataColor:Op[Int], h:Histogram, colors:Array[Int]):RenderPng =
+    RenderPng(r,ColorBreaks(colorBreaks.limits, colors),noDataColor,Some(h))
 }
 
 /**
