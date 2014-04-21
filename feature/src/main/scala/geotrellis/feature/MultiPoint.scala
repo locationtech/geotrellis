@@ -26,11 +26,20 @@ object MultiPoint {
 
   def apply(ps: Traversable[Point]): MultiPoint =
     MultiPoint(factory.createMultiPoint(ps.map(_.jtsGeom).toArray))
+
+  implicit def jts2MultiPoint(jtsGeom: jts.MultiPoint): MultiPoint = apply(jtsGeom)
 }
 
 case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry 
                                              with Relatable
                                              with ZeroDimensions {
+
+  /** Returns the Points contained in MultiPoint. */
+  lazy val points: Array[Point] = {
+    for (i <- 0 until jtsGeom.getNumPoints) yield {
+      Point(jtsGeom.getGeometryN(i).asInstanceOf[jts.Point])
+    }
+  }.toArray
 
   // -- Intersection
 
@@ -145,4 +154,5 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   def within(g: Geometry): Boolean =
     jtsGeom.within(g.jtsGeom)
 
+  override def toString = jtsGeom.toString
 }

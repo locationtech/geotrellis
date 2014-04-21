@@ -249,4 +249,5 @@ case class Point(jtsGeom: jts.Point) extends Geometry
   def within(g: Geometry): Boolean =
     jtsGeom.within(g.jtsGeom)
 
+  override def toString = jtsGeom.toString
 }
