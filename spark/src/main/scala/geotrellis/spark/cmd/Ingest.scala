@@ -119,7 +119,7 @@ object Ingest extends ArgMain[IngestArgs] with Logging {
           val mapFilePath = new Path(outPathWithZoom, f"part-${i}%05d")
 
           writers(i) = new MapFile.Writer(hadoopConf, outFs, mapFilePath.toUri.toString,
-            classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.NONE)
+            classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.RECORD)
 
         }
         writers
