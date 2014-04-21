@@ -17,6 +17,8 @@
 package geotrellis.spark.cmd
 import geotrellis._
 import geotrellis.spark.Tile
+import geotrellis.spark.cmd.args.HadoopArgs
+import geotrellis.spark.cmd.args.SparkArgs
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.ingest.IngestInputFormat
@@ -55,7 +57,7 @@ import com.quantifind.sumac.validation.Required
  * any mosaicing in local mode
  * 
  * Command for local mode: 
- * Ingest --input <path-to-tiffs> --output <path-to-raster>
+ * Ingest --input <path-to-tiffs> --outputpyramid <path-to-pyramid>
  * e.g., Ingest --input file:///home/akini/test/small_files/all-ones.tif --output file:///tmp/all-ones
  *
  * Spark - all processing is done in Spark. Use this if ingesting multiple files, which in 
@@ -63,51 +65,50 @@ import com.quantifind.sumac.validation.Required
  *  
  * Constraints:
  *
- * --input <path-to-tiffs> - this can either be a directory or a single tiff file and has to be on the local fs.
+ * --input <path-to-tiffs> - this can either be a directory or a single tiff file and can either be in local fs or hdfs
  *
- * --output <path-to-raster> - this can be either on hdfs (hdfs://) or local fs (file://). If the directory
+ * --outputpyramid <path-to-raster> - this can be either on hdfs (hdfs://) or local fs (file://). If the directory
  * already exists, it is deleted
  *
  *
  */
 
-class IngestArguments extends FieldArgs {
+class IngestArgs extends SparkArgs with HadoopArgs {
   @Required var input: String = _
-  @Required var output: String = _
-  var sparkMaster: String = _
+  @Required var outputpyramid: String = _
 }
 
-object Ingest extends ArgMain[IngestArguments] with Logging {
+object Ingest extends ArgMain[IngestArgs] with Logging {
 
   System.setProperty("com.sun.media.jai.disableMediaLib", "true")
 
-  def main(args: IngestArguments) {
+  def main(args: IngestArgs) {
     val inPath = new Path(args.input)
-    val outPath = new Path(args.output)
+    val outPath = new Path(args.outputpyramid)
     val sparkMaster = args.sparkMaster
     val runLocal = sparkMaster == null
 
-    val conf = SparkUtils.createHadoopConfiguration
+    val hadoopConf = args.hadoopConf
 
     logInfo(s"Deleting and creating output path: $outPath")
-    val outFs = outPath.getFileSystem(conf)
+    val outFs = outPath.getFileSystem(hadoopConf)
     outFs.delete(outPath, true)
     outFs.mkdirs(outPath)
 
     if (runLocal) {
-      val (files, meta) = PyramidMetadata.fromTifFiles(inPath, conf)
+      val (files, meta) = PyramidMetadata.fromTifFiles(inPath, hadoopConf)
       logInfo("------- FILES ------")
       logInfo(files.mkString("\n"))
       logInfo("\n\n\n")
       logInfo("------- META ------")
       logInfo(meta.toString)
-      meta.save(outPath, conf)
+      meta.save(outPath, hadoopConf)
 
-      val tiles = files.flatMap(file => TiffTiler.tile(file, meta, conf))
+      val tiles = files.flatMap(file => TiffTiler.tile(file, meta, hadoopConf))
 
       val outPathWithZoom = createZoomDirectory(outPath, meta.maxZoomLevel, outFs)
 
-      val partitioner = createPartitioner(outPathWithZoom, meta, conf)
+      val partitioner = createPartitioner(outPathWithZoom, meta, hadoopConf)
 
       val key = new TileIdWritable()
 
@@ -117,14 +118,14 @@ object Ingest extends ArgMain[IngestArguments] with Logging {
         for (i <- 0 until num) {
           val mapFilePath = new Path(outPathWithZoom, f"part-${i}%05d")
 
-          writers(i) = new MapFile.Writer(conf, outFs, mapFilePath.toUri.toString,
+          writers(i) = new MapFile.Writer(hadoopConf, outFs, mapFilePath.toUri.toString,
             classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.NONE)
 
         }
         writers
       }
 
-      setOutputParameters(conf)
+      setOutputParameters(hadoopConf)
       val writers = openWriters(partitioner.numPartitions)
       try {
         tiles.foreach {
@@ -143,15 +144,15 @@ object Ingest extends ArgMain[IngestArguments] with Logging {
 
     else {
       // run on spark
-      val sc = SparkUtils.createSparkContext(sparkMaster, "Ingest")
+      val sc = args.sparkContext("Ingest")
 
       try {
-        val (files, meta) = PyramidMetadata.fromTifFiles(inPath, conf, sc)
+        val (files, meta) = PyramidMetadata.fromTifFiles(inPath, hadoopConf, sc)
 
         logInfo("------- META ------")
         logInfo(meta.toString)
-        meta.save(outPath, conf)
-        meta.writeToJobConf(conf)
+        meta.save(outPath, hadoopConf)
+        meta.writeToJobConf(hadoopConf)
 
         // if less than 10 input files, print them out
         if (files.length < 10) {
@@ -161,9 +162,9 @@ object Ingest extends ArgMain[IngestArguments] with Logging {
 
         val outPathWithZoom = createZoomDirectory(outPath, meta.maxZoomLevel, outFs)
 
-        val partitioner = createPartitioner(outPathWithZoom, meta, conf)
+        val partitioner = createPartitioner(outPathWithZoom, meta, hadoopConf)
 
-        val newConf = HdfsUtils.putFilesInConf(files.mkString(","), conf)
+        val newConf = HdfsUtils.putFilesInConf(files.mkString(","), hadoopConf)
         val rdd = sc.newAPIHadoopRDD(newConf, classOf[IngestInputFormat], classOf[Long], classOf[Raster])
         setOutputParameters(newConf)
 
@@ -197,7 +198,7 @@ object Ingest extends ArgMain[IngestArguments] with Logging {
     }
   }
 
-  // mutates conf
+  // mutates hadoopConf
   private def setOutputParameters(conf: Configuration): Unit = {
     conf.set("io.map.index.interval", "1")
     //conf.setInt("dfs.replication", 1)
@@ -206,13 +207,15 @@ object Ingest extends ArgMain[IngestArguments] with Logging {
   private def createPartitioner(rasterPath: Path, meta: PyramidMetadata, conf: Configuration): TileIdPartitioner = {
     val tileExtent = meta.metadataForBaseZoom.tileExtent
     val (zoom, tileSize, rasterType) = (meta.maxZoomLevel, meta.tileSize, meta.rasterType)
-    val splitGenerator = RasterSplitGenerator(tileExtent, zoom,
-      TmsTiling.tileSizeBytes(tileSize, rasterType),
-      HdfsUtils.blockSize(conf))
+    val tileSizeBytes = TmsTiling.tileSizeBytes(tileSize, rasterType)
+    val blockSizeBytes = HdfsUtils.blockSize(conf)
+    val splitGenerator = RasterSplitGenerator(tileExtent, zoom, tileSizeBytes, blockSizeBytes)
 
     val partitioner = TileIdPartitioner(splitGenerator, rasterPath, conf)
 
-    logInfo("Saving splits: " + partitioner)
+    logInfo(s"SplitGenerator params (tileSize,blockSize,increment) = (${tileSizeBytes}, ${blockSizeBytes}," + 
+            s"${RasterSplitGenerator.computeIncrement(tileExtent, tileSizeBytes, blockSizeBytes)}")
+    logInfo(s"Saving splits: " + partitioner)
     partitioner
   }
   

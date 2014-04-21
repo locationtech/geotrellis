@@ -15,7 +15,7 @@
  */
 
 package geotrellis.spark.rdd
-import geotrellis.spark.cmd.CommandArguments
+import geotrellis.spark.cmd.args.RasterArgs
 import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.tiling.TmsTiling
@@ -79,7 +79,7 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
   }
 }
 
-object TileIdPartitioner extends ArgMain[CommandArguments] {
+object TileIdPartitioner extends ArgMain[RasterArgs] {
   final val SplitFile = "splits"
 
   /* construct a partitioner from the splits file, if one exists */
@@ -159,8 +159,8 @@ object TileIdPartitioner extends ArgMain[CommandArguments] {
     }
   }
 
-  def main(args: CommandArguments) {
-    val input = new Path(args.input)
+  def main(args: RasterArgs) {
+    val input = new Path(args.inputraster)
     val conf = SparkUtils.createHadoopConfiguration
     printSplits(input, conf)
   }

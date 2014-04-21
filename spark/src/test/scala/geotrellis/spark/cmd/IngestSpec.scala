@@ -37,7 +37,7 @@ class IngestSpec extends FunSpec with TestEnvironment with ShouldMatchers {
 
     // ingest the all-ones tif
     val allOnes = new Path(inputHome, "all-ones.tif")
-    val cmd = s"--input ${allOnes.toString} --output ${outputLocal}"
+    val cmd = s"--input ${allOnes.toString} --outputpyramid ${outputLocal}"
         
     Ingest.main(cmd.split(' '))
     val raster = new Path(outputLocal, "10")
