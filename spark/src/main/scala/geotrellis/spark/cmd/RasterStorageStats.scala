@@ -27,12 +27,18 @@ object RasterStorageStats extends ArgMain[CommandArguments] {
 
     val stats = partDirs.zipWithIndex.map({
       case (partDir, index) =>
-        val dataFileSt = fs.getFileStatus(new Path(partDir, "data"))
+        val dataFile = new Path(partDir, "data")
+        val dataReader = new SequenceFile.Reader(fs, dataFile, conf)
+        val isCompressed = dataReader.isCompressed()
+        dataReader.close()
+        
+        val dataFileSt = fs.getFileStatus(dataFile)
+        
         val blockSize = dataFileSt.getBlockSize()
         val bytes = dataFileSt.getLen().toInt
         val blocks = math.ceil(bytes / blockSize.toFloat).toInt
 
-        val indexFile = new Path(partDir, "index")
+        val indexFile = new Path(partDir, "index")        
         val indexReader = new SequenceFile.Reader(fs, indexFile, conf)
         val key = new TileIdWritable()
         var tiles = 0
@@ -41,7 +47,7 @@ object RasterStorageStats extends ArgMain[CommandArguments] {
           tiles = tiles + 1
         }
         indexReader.close()
-        println(s"File ${partDir.getName()}: tiles=${tiles} len=${bytes} blocks=${blocks} blockSize=${blockSize}")
+        println(s"File ${partDir.getName()}: tiles=${tiles} len=${bytes} blocks=${blocks} blockSize=${blockSize} isCompressed=${isCompressed}")
         (index, tiles, blocks, bytes)
     })
 
