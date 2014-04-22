@@ -50,14 +50,14 @@ case class Point(jtsGeom: jts.Point) extends Geometry
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Point and g.
    */
-  def &(g: Geometry): PointOrNoResult =
+  def &(g: Geometry): PointGeometryIntersectionResult =
     intersection(g)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Point and g.
    */
-  def intersection(g: Geometry): PointOrNoResult =
+  def intersection(g: Geometry): PointGeometryIntersectionResult =
     jtsGeom.intersection(g.jtsGeom)
 
 
@@ -123,14 +123,14 @@ case class Point(jtsGeom: jts.Point) extends Geometry
    * Computes a Result that represents a Geometry made up of this Point and all
    * the points in mp.
    */
-  def |(mp: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
+  def |(mp: MultiPolygon): PointMultiPolygonUnionResult =
     union(mp)
 
   /**
    * Computes a Result that represents a Geometry made up of this Point and all
    * the points in mp.
    */
-  def union(mp: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
+  def union(mp: MultiPolygon): PointMultiPolygonUnionResult =
     jtsGeom.union(mp.jtsGeom)
 
 
@@ -155,7 +155,7 @@ case class Point(jtsGeom: jts.Point) extends Geometry
 
   /**
    * Computes a Result that represents a Geometry made up of this Point, if it
-   * is not in p, and all the points in p that are not this Point.
+   * is not in p, and p if it is not this Point.
    */
   def symDifference(p: Point): PointPointSymDifferenceResult =
     jtsGeom.symDifference(p.jtsGeom)
@@ -185,14 +185,14 @@ case class Point(jtsGeom: jts.Point) extends Geometry
    * Computes a Result that represents a Geometry made up of this Point, if it
    * is not in ml, and all the points in ml that are not this Point.
    */
-  def symDifference(ml: MultiLine): ZeroDimensionsMultiLineSymDifferenceResult =
+  def symDifference(ml: MultiLine): PointMultiLineSymDifferenceResult =
     jtsGeom.symDifference(ml.jtsGeom)
 
   /**
    * Computes a Result that represents a Geometry made up of this Point, if it
    * is not in mp, and all the points in mp that are not this Point.
    */
-  def symDifference(mp: MultiPolygon): ZeroDimensionsMultiPolygonSymDifferenceResult =
+  def symDifference(mp: MultiPolygon): PointMultiPolygonSymDifferenceResult =
     jtsGeom.symDifference(mp.jtsGeom)
 
 
