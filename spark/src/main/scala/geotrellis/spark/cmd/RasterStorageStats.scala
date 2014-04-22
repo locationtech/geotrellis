@@ -1,13 +1,11 @@
 package geotrellis.spark.cmd
 import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.rdd.TileIdPartitioner
-
 import geotrellis.spark.utils.SparkUtils
-
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.SequenceFile
-
 import com.quantifind.sumac.ArgMain
+import geotrellis.spark.cmd.args.RasterArgs
 
 /*
  * Utility for printing storage statistics for a Raster, and for verifying every tile
@@ -15,9 +13,9 @@ import com.quantifind.sumac.ArgMain
  * 
  * RasterStorageStats --input <path-to-raster>
  */
-object RasterStorageStats extends ArgMain[CommandArguments] {
-  def main(args: CommandArguments): Unit = {
-    val inputRasterPath = new Path(args.input) 
+object RasterStorageStats extends ArgMain[RasterArgs] {
+  def main(args: RasterArgs): Unit = {
+    val inputRasterPath = new Path(args.inputraster) 
     val partDirGlob = new Path(inputRasterPath, "part*")
     val conf = SparkUtils.createHadoopConfiguration
     val fs = inputRasterPath.getFileSystem(conf)
