@@ -145,6 +145,7 @@ object GeotrellisBuild extends Build {
   lazy val core =
     Project("core", file("core"))
       .dependsOn(macros)
+      .dependsOn(feature)
       .settings(coreSettings: _*)
 
   lazy val coreSettings =

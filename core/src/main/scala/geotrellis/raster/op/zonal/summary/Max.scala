@@ -22,13 +22,13 @@ import geotrellis.feature._
 import geotrellis.feature.rasterize._
 
 object Max extends TileSummary[Int,Int,ValueSource[Int]] {
-  def handlePartialTile[D](pt:PartialTileIntersection[D]):Int = {
+  def handlePartialTile(pt:PartialTileIntersection):Int = {
     val PartialTileIntersection(r,polygons) = pt
     var max = NODATA
-    for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
+    for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Geometry,D] {
-          def apply(col:Int, row:Int, g:Geometry[D]) {
+        new Callback[Geometry] {
+          def apply(col:Int, row:Int, g:Geometry) {
             val z = r.get(col,row)
             if (isData(z) && (z > max || isNoData(max)) ) { max = z }
           }
@@ -55,13 +55,13 @@ object Max extends TileSummary[Int,Int,ValueSource[Int]] {
 }
 
 object MaxDouble extends TileSummary[Double,Double,ValueSource[Double]] {
-  def handlePartialTile[D](pt:PartialTileIntersection[D]):Double = {
+  def handlePartialTile(pt:PartialTileIntersection):Double = {
     val PartialTileIntersection(r,polygons) = pt
     var max = Double.NaN
-    for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
+    for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Geometry,D] {
-          def apply(col:Int, row:Int, g:Geometry[D]) {
+        new Callback[Geometry] {
+          def apply(col:Int, row:Int, g:Geometry) {
             val z = r.getDouble(col,row)
             if (isData(z) && (z > max || isNoData(max))) { max = z }
           }

@@ -47,14 +47,14 @@ object MeanResult {
 }
 
 object Mean extends TileSummary[MeanResult,Double,ValueSource[Double]] {
-  def handlePartialTile[D](pt:PartialTileIntersection[D]):MeanResult = {
+  def handlePartialTile(pt:PartialTileIntersection):MeanResult = {
     val PartialTileIntersection(r,polygons) = pt
     var sum = 0.0
     var count = 0L
     for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Geometry,D] {
-          def apply(col:Int, row:Int, g:Geometry[D]) {
+        new Callback[Geometry] {
+          def apply(col:Int, row:Int, g:Geometry) {
             val z = r.get(col,row)
             if (isData(z)) { sum = sum + z; count = count + 1 }
           }
@@ -72,14 +72,14 @@ object Mean extends TileSummary[MeanResult,Double,ValueSource[Double]] {
 }
 
 object MeanDouble extends TileSummary[MeanResult,Double,ValueSource[Double]] {
-  def handlePartialTile[D](pt:PartialTileIntersection[D]):MeanResult = {
+  def handlePartialTile(pt:PartialTileIntersection):MeanResult = {
     val PartialTileIntersection(r,polygons) = pt
     var sum = 0.0
     var count = 0L
     for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Geometry,D] {
-          def apply(col:Int, row:Int, g:Geometry[D]) {
+        new Callback[Geometry] {
+          def apply(col:Int, row:Int, g:Geometry) {
             val z = r.getDouble(col,row)
             if (isData(z)) { sum = sum + z; count = count + 1 }
           }

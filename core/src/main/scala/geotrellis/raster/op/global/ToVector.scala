@@ -26,12 +26,12 @@ import scala.collection.mutable
 
 case class ToVector(r:Op[Raster], 
                     regionConnectivity:Connectivity = RegionGroupOptions.default.connectivity)
-    extends Operation[List[Polygon[Int]]] {
+    extends Operation[List[PolygonFeature[Int]]] {
   def _run() = runAsync('init :: r :: Nil)
 
   class ToVectorCallback(val polyizer:Polygonizer,
                          val r:Raster,
-                         val v:Int) extends Callback[Polygon,Int] {
+                         val v:Int) extends Callback[Polygon] {
     val innerStarts = mutable.Map[Int,(Int,Int)]()
 
     def linearRings = 
@@ -39,7 +39,7 @@ case class ToVector(r:Op[Raster],
         polyizer.getLinearRing(k, innerStarts(k))
       }
 
-    def apply(col:Int,row:Int,poly:Polygon[Int]) = {
+    def apply(col:Int,row:Int,poly:Polygon) = {
       val innerV = r.get(col,row)
       if(innerV != v) {
         if(innerStarts.contains(innerV)) {
@@ -67,7 +67,8 @@ case class ToVector(r:Op[Raster],
       val r = rgr.raster
       val regionMap = rgr.regionMap
       val processedValues = mutable.Set[Int]()
-      val polygons = mutable.Set[Polygon[Int]]()
+      val polygons = mutable.Set[PolygonFeature[Int]]()
+      val jtsFactory = new geom.GeometryFactory()
 
       var col = 0
       while(col < r.cols) {
@@ -77,17 +78,17 @@ case class ToVector(r:Op[Raster],
           if(isData(regionMap(v))) {
             if(!processedValues.contains(v)) {
               val shell = polyizer.getLinearRing(v,(col,row))
-              val shellPoly = Polygon(
-                new geom.Polygon(shell, Array[geom.LinearRing](), Feature.factory),
+              val shellPoly = PolygonFeature(
+                Polygon(shell) ,
                 rgr.regionMap(v)
               )
 
               val callback = new ToVectorCallback(polyizer,r,v)
 
-              PolygonRasterizer.foreachCellByPolygon(shellPoly, r.rasterExtent)(callback)
+              PolygonRasterizer.foreachCellByPolygon(shellPoly.geom, r.rasterExtent)(callback)
 
-              polygons += Polygon(
-                new geom.Polygon(shell, callback.linearRings.toArray, Feature.factory),
+              polygons += PolygonFeature(
+                new geom.Polygon(shell, callback.linearRings.toArray, jtsFactory),
                 rgr.regionMap(v)
               )
 
@@ -139,6 +140,8 @@ class Polygonizer(val r:Raster) {
   val rows = re.rows
   val halfCellWidth = re.cellwidth / 2.0
   val halfCellHeight = re.cellheight / 2.0
+  val jtsFactory = new geom.GeometryFactory()
+
 
   // Directions
   val NOTFOUND = -1
@@ -286,7 +289,7 @@ class Polygonizer(val r:Raster) {
     return NOTFOUND
   }
 
-  def getPolygon[T](v:Int, data:T):Polygon[T] = {
+  def getPolygon[T](v:Int, data:T):PolygonFeature[T] = {
     // Find upper left start point.
     var sc = 0
     var sr = 0
@@ -304,12 +307,15 @@ class Polygonizer(val r:Raster) {
     getPolygon(v,data,(sc,sr))
   }
 
-  def getPolygon[T](v:Int, data:T,startPoint:(Int,Int)):Polygon[T] = {
+  def getPolygon[T](v:Int, data:T,startPoint:(Int,Int)):PolygonFeature[T] = {
     val shell = getLinearRing(v:Int,startPoint:(Int,Int))
-    Polygon(Feature.factory.createPolygon(shell, Array()),data)
+    PolygonFeature(
+      Polygon(jtsFactory.createPolygon(shell, Array())),
+      data
+    )
   }
 
-  def getLinearRing[T](v:Int, startPoint:(Int,Int)) = {
+  def getLinearRing[T](v:Int, startPoint:(Int,Int)): geom.LinearRing = {
     val points = mutable.ArrayBuffer[geom.Coordinate]()
 
     val startCol = startPoint._1
@@ -376,6 +382,6 @@ class Polygonizer(val r:Raster) {
       points += mark(startCol,startRow,TOPLEFT) // Completes the ring
     }
 
-    Feature.factory.createLinearRing(points.toArray)
+    jtsFactory.createLinearRing(points.toArray)
   }
 }

@@ -23,13 +23,13 @@ import geotrellis.feature.rasterize._
 import geotrellis.statistics._
 
 object Histogram extends TileSummary[Histogram,Histogram,ValueSource[Histogram]] {
-  def handlePartialTile[D](pt:PartialTileIntersection[D]):Histogram = {
+  def handlePartialTile(pt:PartialTileIntersection):Histogram = {
     val PartialTileIntersection(r,polygons) = pt
     val histogram = FastMapHistogram()
-    for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
+    for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Geometry,D] {
-          def apply (col:Int, row:Int, g:Geometry[D]) {
+        new Callback[Geometry] {
+          def apply (col:Int, row:Int, g:Geometry) {
             val z = r.get(col,row)
             if (isData(z)) histogram.countItem(z, 1)
           }

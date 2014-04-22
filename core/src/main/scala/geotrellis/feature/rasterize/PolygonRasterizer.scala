@@ -25,15 +25,15 @@ object PolygonRasterizer {
   /**
    * Apply a function to each raster cell that intersects with a polygon.
    */
-  def foreachCellByPolygon[D](p:Polygon[D], re:RasterExtent, includeExterior:Boolean=false)( f:Callback[Polygon,D]) {
+  def foreachCellByPolygon(p:Polygon, re:RasterExtent, includeExterior:Boolean=false)(f:Callback[Polygon]) {
     // If polygon does not intersect with this raster's extent, skip.
     val rasterGeom = re.extent.asFeature(None).geom
-    if (! p.geom.intersects(rasterGeom)) { return }
+    if (! p.intersects(rasterGeom)) { return }
 
-    processPolygon( p, re:RasterExtent, includeExterior )(f)
+    processPolygon(p, re:RasterExtent, includeExterior)(f)
   }
 
-  def processPolygon[D](p:Polygon[D], re:RasterExtent, includeExterior:Boolean)( f:Callback[Polygon,D]) {
+  def processPolygon(p:Polygon, re:RasterExtent, includeExterior:Boolean)(f:Callback[Polygon]) {
     // Create a global edge table which tracks the minimum and maximum row 
     // for which each edge is relevant.
     val edgeTable = buildEdgeTable(p, re)
@@ -153,7 +153,7 @@ object PolygonRasterizer {
       val minRowDouble = re.mapYToGridDouble(y1)
       val maxRowDouble = re.mapYToGridDouble(y0)
 
-      // If the decimal portion of minRowDouble is <= 0.5, then y0 is in 
+      // If the decimal portion  of minRowDouble is <= 0.5, then y0 is in
       // minimum row whose center line intersects with the line; otherwise, it's
       // floor(minRowDouble) + 1. 
       
@@ -193,8 +193,8 @@ object PolygonRasterizer {
 
   case class EdgeTable(edges:Map[Int, List[Line]], rowMin:Int, rowMax:Int)
 
-  def buildEdgeTable(p:Polygon[_], re:RasterExtent) = {
-    val geom = p.geom 
+  def buildEdgeTable(p:Polygon, re:RasterExtent) = {
+    val geom = p.jtsGeom
     val lines = geom.getExteriorRing.getCoordinates.sliding(2).flatMap {  
       case Array(c1,c2) => Line.create(c1,c2,re)
     }.toList

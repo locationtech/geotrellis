@@ -2,8 +2,7 @@ package geotrellis.feature
 
 import spray.json._
 import spray.json.JsonFormat
-import geotrellis.feature.json.FeatureFormats._
-import geotrellis.feature.json.GeometryFormats.GeometryFormat
+import geotrellis.feature._
 
 package object json extends DefaultJsonProtocol with GeometryFormats with FeatureFormats {
   //extend DefaultJsonProtocol so anybody that imports me also has JsonFormats for Scala primitives, used in Features.

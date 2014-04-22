@@ -35,19 +35,19 @@ import scala.language.higherKinds
  * @param re       RasterExtent to use for iterating through cells
  * @param f        A function that takes (col:Int, row:Int, rasterValue:Int, feature:Feature)
  */
-case class ForEachCellByFeature[G[_] <: Geometry[_], D](feature:Op[G[D]], re:Op[RasterExtent])(f: Callback[G,D])
+case class ForEachCellByFeature[G <: Geometry](feature:Op[G], re:Op[RasterExtent])(f: Callback[G])
      extends Op2(feature,re)({
   (feature, re) =>
     Result(Rasterizer.foreachCellByFeature(feature,re)(f))
 })
 
-case class RasterizeWithValue[D](feature:Op[Geometry[D]], re:Op[RasterExtent], value:Op[Int])
+case class RasterizeWithValue(feature:Op[Geometry], re:Op[RasterExtent], value:Op[Int])
      extends Op3(feature,re,value)({
   (feature, re, value) =>
     Result(Rasterizer.rasterizeWithValue(feature, re, value))
 })
 
-case class Rasterize[D](feature:Op[Geometry[D]], re:Op[RasterExtent])(f:Transformer[Geometry,D,Int])
+case class Rasterize(feature:Op[Geometry], re:Op[RasterExtent])(f:Transformer[Geometry,Int])
      extends Op2(feature,re)({
   (feature, re) =>
     Result(Rasterizer.rasterize(feature,re)(f))
