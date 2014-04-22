@@ -202,6 +202,13 @@ class LineSpec extends FunSpec with ShouldMatchers {
 //
 //    }
 
+    it ("should union with an empty MultiPolygon and return a LineResult") {
+      val l = Line(Point(1,1), Point(2,1))
+      val mp = MultiPolygon(Set())
+      l | mp should be (LineResult(l))
+
+    }
+
     it ("should union with a MultiPolygon and return a PolygonResult") {
       val l = Line(Point(1,1), Point(2,1))
       val p1 = Polygon(Line(Point(0,0), Point(0,4), Point(4,4), Point(4,0), Point(0,0)))
@@ -351,6 +358,12 @@ class LineSpec extends FunSpec with ShouldMatchers {
       val p2 = Polygon(Line(Point(10,10), Point(10,11), Point(11,11), Point(10,10)))
       val mp = MultiPolygon(p1, p2)
       l.symDifference(mp) should be (MultiPolygonResult(Set(p1, p2)))
+    }
+
+    it ("should symDifference with an empty MultiPolygon and return a LineResult") {
+      val l = Line(Point(3,1), Point(4,1))
+      val mp = MultiPolygon(Set())
+      l.symDifference(mp) should be (LineResult(l))
     }
 
     // -- Buffer

@@ -104,6 +104,13 @@ class PointSpec extends FunSpec with ShouldMatchers {
       }
     }
 
+    it ("should union with an empty MultiLine and return a PointResult") {
+      val p = Point(1,1)
+      val ls = MultiLine(Set())
+      val result = p | ls
+      result should be (PointResult(p))
+    }
+
     it ("should union with a MultiLine and return a LineResult") {
       val p = Point(1,1)
       val ls = MultiLine(Set(Line(Point(0,0), Point(2,2))))
@@ -163,6 +170,12 @@ class PointSpec extends FunSpec with ShouldMatchers {
         case GeometryCollectionResult(gc) => gc should be (expected)
         case _ => fail()
       }
+    }
+
+    it ("should union with an empty MultiPolygon and return a PointResult") {
+      val p = Point(1,1)
+      val mp = MultiPolygon(Set())
+      p | mp should be (PointResult(p))
     }
 
     // -- Difference
@@ -262,6 +275,13 @@ class PointSpec extends FunSpec with ShouldMatchers {
       result should be (NoResult)
     }
 
+    it ("should symDifference with an empty MultiLine and return a PointResult") {
+      val p = Point(1,1)
+      val ml = MultiLine(Set())
+      val result = p.symDifference(ml)
+      result should be (PointResult(p))
+    }
+
     it ("should symDifference with a MultiLine and return a LineResult") {
       val p = Point(1,1)
       val l1 = Line(Point(0,0), Point(2,2))
@@ -291,6 +311,13 @@ class PointSpec extends FunSpec with ShouldMatchers {
         case GeometryCollectionResult(gc) => gc should be (expected)
         case _ => fail()
       }
+    }
+
+    it ("should symDifference with an empty MultiPolygon and return a PointResult") {
+      val p = Point(1,1)
+      val mp = MultiPolygon(Set())
+      val result = p.symDifference(mp)
+      result should be (PointResult(p))
     }
 
     it ("should symDifference with a MultiPolygon and return a PolygonResult") {

@@ -50,9 +50,9 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
 
   // -- Intersection
 
-  def &(p: Point): PointOrNoResult =
+  def &(p: Point): PointGeometryIntersectionResult =
     intersection(p)
-  def intersection(p: Point): PointOrNoResult =
+  def intersection(p: Point): PointGeometryIntersectionResult =
     p.intersection(this)
 
   def &(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
@@ -72,14 +72,14 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
 
   // -- Union
 
-  def |(p: Point): AtMostOneDimensionMultiPolygonUnionResult =
+  def |(p: Point): PointMultiPolygonUnionResult =
     union(p)
-  def union(p: Point): AtMostOneDimensionMultiPolygonUnionResult =
-    p.union(this)
+  def union(p: Point): PointMultiPolygonUnionResult =
+    jtsGeom.union(p.jtsGeom)
 
-  def |(l: Line): AtMostOneDimensionMultiPolygonUnionResult =
+  def |(l: Line): LineMultiPolygonUnionResult =
     union(l)
-  def union(l: Line): AtMostOneDimensionMultiPolygonUnionResult =
+  def union(l: Line): LineMultiPolygonUnionResult =
     l.union(this)
 
   def |(p: Polygon): TwoDimensionsTwoDimensionsUnionResult =
@@ -87,13 +87,13 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
   def union(p: Polygon): TwoDimensionsTwoDimensionsUnionResult =
     p.union(this)
 
-  def |(ps: MultiPoint): AtMostOneDimensionMultiPolygonUnionResult =
+  def |(ps: MultiPoint): LineMultiPolygonUnionResult =
     union(ps)
-  def union(ps: MultiPoint): AtMostOneDimensionMultiPolygonUnionResult =
-    ps.union(this)
+  def union(ps: MultiPoint): LineMultiPolygonUnionResult =
+    jtsGeom.union(ps.jtsGeom)
 
   def |(ls: MultiLine) = union(ls)
-  def union(ls: MultiLine): AtMostOneDimensionMultiPolygonUnionResult =
+  def union(ls: MultiLine): LineMultiPolygonUnionResult =
     ls.union(this)
 
   def |(ps: MultiPolygon): TwoDimensionsTwoDimensionsUnionResult =
@@ -135,7 +135,7 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
 
   // -- SymDifference
 
-  def symDifference(g: ZeroDimensions): ZeroDimensionsMultiPolygonSymDifferenceResult =
+  def symDifference(g: ZeroDimensions): PointMultiPolygonSymDifferenceResult =
     jtsGeom.symDifference(g.jtsGeom)
 
   def symDifference(g: OneDimension): OneDimensionMultiPolygonSymDifferenceResult =

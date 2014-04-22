@@ -28,15 +28,18 @@ trait Geometry {
   def withinDistance(other: Geometry, dist: Double): Boolean =
     jtsGeom.isWithinDistance(other.jtsGeom, dist)
 
-  def centroid: PointOrNoResult = 
+  def centroid: PointOrNoResult =
     jtsGeom.getCentroid 
 
-  def interiorPoint: PointOrNoResult = 
+  def interiorPoint: PointOrNoResult =
     jtsGeom.getInteriorPoint 
 
-  // TODO: decide if this should be the Object.equals() override
-  def equals(g: Geometry): Boolean =
-    jtsGeom.equals(g)
+  override
+  def equals(other: Any): Boolean =
+    other match {
+      case g: Geometry => jtsGeom.equals(g.jtsGeom)
+      case _ => false
+    }
 
 }
 
@@ -98,3 +101,5 @@ trait MultiGeometry extends Geometry
   // def coordinate:(Double,Double) = jts.getCoordinate
   // def coordinates:Seq[(Double,Double)] = jts.getCoordinates
   // def dimension = jts.getDimension
+
+  // TODO: ask about union/symDiff of a Multi with only one Pont/Line/Polygon with an empty Multi returning a Multi instead of just a Point/Line/Polgyon
