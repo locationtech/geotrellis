@@ -159,7 +159,6 @@ object MultiPointMultiLineUnionResult {
   implicit def jtsToResult(geom: jts.Geometry): MultiPointMultiLineUnionResult =
     geom match {
       case g: jts.Geometry if g.isEmpty => NoResult
-//      case p: jts.Point => PointResult(p)
       case l: jts.LineString => LineResult(l)
       case mp: jts.MultiPoint => MultiPointResult(mp)
       case ml: jts.MultiLineString => MultiLineResult(ml)
@@ -233,7 +232,6 @@ object MultiPointMultiPolygonUnionResult {
   implicit def jtsToResult(geom: jts.Geometry): MultiPointMultiPolygonUnionResult =
     geom match {
       case g: jts.Geometry if g.isEmpty => NoResult
-//      case pt: jts.Point => PointResult(pt)
       case p: jts.Polygon => PolygonResult(p)
       case mpt: jts.MultiPoint => MultiPointResult(mpt)
       case mp: jts.MultiPolygon => MultiPolygonResult(mp)
@@ -402,7 +400,6 @@ object MultiPointMultiLineSymDifferenceResult {
   implicit def jtsToResult(geom: jts.Geometry): MultiPointMultiLineSymDifferenceResult =
     geom match {
       case g: jts.Geometry if g.isEmpty => NoResult
-//      case p: jts.Point => PointResult(p)
       case l: jts.LineString => LineResult(l)
       case mp: jts.MultiPoint => MultiPointResult(mp)
       case ml: jts.MultiLineString => MultiLineResult(ml)
@@ -441,7 +438,6 @@ object MultiPointMultiPolygonSymDifferenceResult {
   implicit def jtsToResult(geom: jts.Geometry): MultiPointMultiPolygonSymDifferenceResult =
     geom match {
       case g: jts.Geometry if g.isEmpty => NoResult
-//      case pt: jts.Point => PointResult(pt)
       case p: jts.Polygon => PolygonResult(p)
       case mpt: jts.MultiPoint => MultiPointResult(mpt)
       case mp: jts.MultiPolygon => MultiPolygonResult(mp)
@@ -550,11 +546,7 @@ case class PointResult(p: Point) extends Result
   with PointMultiLineSymDifferenceResult
   with PointMultiPolygonSymDifferenceResult
   with MultiPointMultiPointUnionResult
-//  with MultiPointMultiLineUnionResult
-//  with MultiPointMultiPolygonUnionResult
   with PointOrNoResult
-//  with MultiPointMultiLineSymDifferenceResult
-//  with MultiPointMultiPolygonSymDifferenceResult
 
 case class LineResult(l: Line) extends Result
   with OneDimensionAtLeastOneDimensionIntersectionResult

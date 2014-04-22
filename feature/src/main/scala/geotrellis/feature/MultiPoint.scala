@@ -235,6 +235,10 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   /**
    * Computes the smallest convex Polygon that contains all the points in the
    * MultiPoint. Applies only to MultiPoints with three or more points.
+   *
+   * TODO: Assert that the MultiPoint has at least 3 points. Investigate the
+   * case where given 3 points that form a straight line, convexHull() returns
+   * a line instead of a polygon.
    */
   def convexHull(): Polygon =
     jtsGeom.convexHull() match {
