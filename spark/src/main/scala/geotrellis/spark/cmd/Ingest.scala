@@ -208,7 +208,7 @@ object Ingest extends ArgMain[IngestArgs] with Logging {
     val tileExtent = meta.metadataForBaseZoom.tileExtent
     val (zoom, tileSize, rasterType) = (meta.maxZoomLevel, meta.tileSize, meta.rasterType)
     val tileSizeBytes = TmsTiling.tileSizeBytes(tileSize, rasterType)
-    val blockSizeBytes = HdfsUtils.blockSize(conf)
+    val blockSizeBytes = HdfsUtils.defaultBlockSize(rasterPath, conf)
     val splitGenerator = RasterSplitGenerator(tileExtent, zoom, tileSizeBytes, blockSizeBytes)
 
     val partitioner = TileIdPartitioner(splitGenerator, rasterPath, conf)

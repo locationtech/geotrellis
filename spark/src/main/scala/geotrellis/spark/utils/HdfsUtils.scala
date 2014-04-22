@@ -43,8 +43,9 @@ object HdfsUtils {
     job.getConfiguration()
   }
   
-  /* get the HDFS block size from the Hadoop configuration */
-  def blockSize(conf: Configuration): Long = conf.getLong("dfs.blocksize", 64 * 1024 * 1024)
+  /* get the default block size for that path */
+  def defaultBlockSize(path: Path, conf: Configuration): Long =
+    path.getFileSystem(conf).getDefaultBlockSize()
 
   /* 
    * Recursively descend into a directory and and get list of file paths

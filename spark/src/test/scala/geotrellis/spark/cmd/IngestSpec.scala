@@ -70,6 +70,10 @@ class IngestSpec extends FunSpec with TestEnvironment with ShouldMatchers {
     it("should have its data files compressed") {
       verifyCompression(raster)
     }
+    
+    it("should have its block size set correctly") {
+      verifyBlockSize(raster)
+    }
   }
 
   describe("Spark Ingest") {
@@ -101,6 +105,10 @@ class IngestSpec extends FunSpec with TestEnvironment with ShouldMatchers {
 
     it("should have its data files compressed") {
       verifyCompression(raster)
+    }
+    
+    it("should have its block size set correctly") {
+      verifyBlockSize(raster)
     }
   }
 
@@ -146,4 +154,9 @@ class IngestSpec extends FunSpec with TestEnvironment with ShouldMatchers {
     isCompressed should be(true)
   }
 
+  private def verifyBlockSize(raster: Path): Unit = {
+    val expectedBlockSize = localFS.getDefaultBlockSize()
+    val actualBlockSize = localFS.getFileStatus(raster).getBlockSize()
+    actualBlockSize should be(expectedBlockSize)
+  }
 }

@@ -154,7 +154,7 @@ object TileIdPartitioner extends ArgMain[RasterArgs] {
 
       val inc = RasterSplitGenerator.computeIncrement(tileExtent,
         TmsTiling.tileSizeBytes(tileSize, rasterType),
-        HdfsUtils.blockSize(conf))
+        HdfsUtils.defaultBlockSize(raster, conf))
       println(s"(xInc,yInc) = ${inc}")
     }
   }
