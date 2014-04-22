@@ -163,51 +163,6 @@ object PyramidMetadata {
     JacksonWrapper.deserialize[PyramidMetadata](txt)
   }
 
-  /*
-   * Constructs a metadata from tiff files. All processing is done in local mode, i.e., 
-   * outside Spark and in RAM. 
-   * 
-   * path - path to a tiff file or directory containing TIFF files. The directory can be 
-   * arbitrarily deep, and will be recursively searched for all TIFF files
-   */
-  def fromTifFiles(tiffPath: Path, conf: Configuration): (Seq[Path], PyramidMetadata) = {
-    val allFiles = HdfsUtils.listFiles(tiffPath, conf)
-
-    val (files, optMetas) = 
-      allFiles
-        .map { file =>
-          val meta = GeoTiff.getMetadata(file, conf)
-          (file, meta)
-         }
-        .filter { case (file, meta) => meta.isDefined }
-        .unzip
-
-    val meta = optMetas.flatten.reduceLeft(_.merge(_))
-
-    (files, fromGeoTiffMeta(meta))
-  }
-
-  /*
-   * Constructs a metadata from tiff files. All processing is done in Spark 
-   * 
-   * path - path to a tiff file or directory containing TIFF files. The directory can be 
-   * arbitrarily deep, and will be recursively searched for all TIFF files
-   */
-  def fromTifFiles(tiffPath: Path, conf: Configuration, sc: SparkContext): (Seq[Path], PyramidMetadata) = {
-    val allFiles = HdfsUtils.listFiles(tiffPath, conf)
-
-    val newConf = HdfsUtils.putFilesInConf(allFiles.mkString(","), conf)
-
-    val (acceptedFiles, optMetas) = sc.newAPIHadoopRDD(newConf,
-      classOf[MetadataInputFormat],
-      classOf[String],
-      classOf[Option[GeoTiff.Metadata]]).collect.unzip
-
-    val files = acceptedFiles.map(new Path(_))
-    val meta = optMetas.flatten.reduceLeft(_.merge(_))
-    (files, fromGeoTiffMeta(meta))
-  }
-
   def fromBase64(encoded: String): PyramidMetadata = {
     val bytes = Base64.decodeBase64(encoded.getBytes())
 

@@ -100,14 +100,14 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Line and p.
    */
-  def &(p: Point): PointOrNoResult =
+  def &(p: Point): PointGeometryIntersectionResult =
     intersection(p)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Line and p.
    */
-  def intersection(p: Point): PointOrNoResult =
+  def intersection(p: Point): PointGeometryIntersectionResult =
     p.intersection(this)
 
   /**
@@ -128,14 +128,14 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Line and mp.
    */
-  def &(mp: MultiPoint): MultiPointGeometryIntersectionResult =
+  def &(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
     intersection(mp)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Line and mp.
    */
-  def intersection(mp: MultiPoint): MultiPointGeometryIntersectionResult =
+  def intersection(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
     jtsGeom.intersection(mp.jtsGeom)
 
 
@@ -187,14 +187,14 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
    * Computes a Result that represents a Geometry made up of all the points in
    * this Line and mp.
    */
-  def |(mp: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
+  def |(mp: MultiPolygon): LineMultiPolygonUnionResult =
     union(mp)
 
   /**
    * Computes a Result that represents a Geometry made up of all the points in
    * this Line and mp.
    */
-  def union(mp: MultiPolygon): AtMostOneDimensionMultiPolygonUnionResult =
+  def union(mp: MultiPolygon): LineMultiPolygonUnionResult =
     jtsGeom.union(mp.jtsGeom)
 
 

@@ -23,7 +23,9 @@ import org.apache.spark.SparkContext
 import java.io.File
 
 object SparkUtils extends Logging {
-  def createSparkContext(sparkMaster: String, appName: String): SparkContext = {
+  def createSparkConf = new SparkConf()
+  
+  def createSparkContext(sparkMaster: String, appName: String, sparkConf: SparkConf = createSparkConf) = {
     val sparkHome = scala.util.Properties.envOrNone("SPARK_HOME") match {
       case Some(value) => value
       case None        => throw new Error("Oops, SPARK_HOME is not defined")
@@ -34,13 +36,14 @@ object SparkUtils extends Logging {
       case None        => throw new Error("Oops, GEOTRELLIS_HOME is not defined")
     }
    
-    val sparkConf = new SparkConf()
+    sparkConf
       .setMaster(sparkMaster)
       .setAppName(appName)
       .setSparkHome(sparkHome)
       .setJars(Array(jar(gtHome)))
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryo.registrator", "geotrellis.spark.KryoRegistrator")
+
     
     // TODO - find a way to have command line pass these in
     //.set("io.map.index.interval", "1")
@@ -49,7 +52,7 @@ object SparkUtils extends Logging {
 
     new SparkContext(sparkConf)
   }
-
+  
   def createHadoopConfiguration = {
     // TODO - figure out how to get the conf directory automatically added to classpath via sbt
     // - right now it is manually added
