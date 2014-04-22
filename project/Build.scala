@@ -270,6 +270,7 @@ object GeotrellisBuild extends Build {
     Seq(
       name := "geotrellis-spark",
       parallelExecution in Test := false,
+      javaOptions += "-Xmx8G",
       libraryDependencies ++= 
         Seq(
           // first two are just to quell the UnsupportedOperationException in Hadoop's Configuration
@@ -278,8 +279,10 @@ object GeotrellisBuild extends Build {
           "xalan" % "xalan" % "2.7.1",
           "org.apache.spark" %% "spark-core" % "0.9.0-incubating" excludeAll (
               ExclusionRule(organization = "org.apache.hadoop")),
-          "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4" excludeAll (
+          "org.apache.hadoop" % "hadoop-client" % "1.2.1" excludeAll (
 	      ExclusionRule(organization = "hsqldb")),
+          // "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4" excludeAll (
+	  //     ExclusionRule(organization = "hsqldb")),
           "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0",
           "com.quantifind" %% "sumac" % "0.2.3",
           scalatest % "test"
@@ -301,7 +304,6 @@ object GeotrellisBuild extends Build {
       name := "geotrellis-gdal",
       libraryDependencies ++=
         Seq(
-//          "com.azavea.geotrellis" % "gdal" % "1.10.1",
           "org.gdal" % "gdal" % "1.9.2",
           "com.azavea.geotrellis" %% "gdal-scala" % "0.1.0-SNAPSHOT",
           scalatest % "test"

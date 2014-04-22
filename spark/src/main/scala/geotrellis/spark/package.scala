@@ -26,7 +26,8 @@ import org.apache.spark.rdd.RDD
 
 package object spark {
   implicit class SavableRasterWritable(val raster: RDD[WritableTile]) {
-    def save(path: Path) = SaveRasterFunctions.save(raster, path)
+    def save(path: Path): Unit = SaveRasterFunctions.save(raster, path)
+    def save(path: String): Unit = save(new Path(path))
   }
 
   implicit class MakeRasterRDD(val prev: RDD[Tile]) {
@@ -35,5 +36,6 @@ package object spark {
 
   implicit class SavableRasterRDD(val rdd: RasterRDD) {
     def save(path: Path) = SaveRasterFunctions.save(rdd, path)
+    def save(path: String): Unit = save(new Path(path))
   }
 }

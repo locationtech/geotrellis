@@ -64,7 +64,7 @@ trait TestEnvironment extends BeforeAndAfterAll {self: Suite =>
   
   // clean up the test directory after the test
   // note that this afterAll is not inherited from BeforeAndAfterAll, its callers are
-  override def afterAll() = FileUtil.fullyDelete(new File(outputLocal.toUri()))
+//  override def afterAll() = FileUtil.fullyDelete(new File(outputLocal.toUri()))
  
   // root directory name on both local file system and hdfs for all tests
   private final val outputHome = "testFiles"

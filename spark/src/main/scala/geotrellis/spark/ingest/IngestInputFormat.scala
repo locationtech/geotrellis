@@ -41,7 +41,7 @@ class IngestRecordReader extends RecordReader[Long, Raster] {
 
   def initialize(split: InputSplit, context: TaskAttemptContext) = {
     val file = split.asInstanceOf[FileSplit].getPath()
-    val meta = PyramidMetadata.readFromJobConf(context.getConfiguration())
+    val meta = PyramidMetadata.fromJobConf(context.getConfiguration())
     tiles = TiffTiler.tile(file, meta, context.getConfiguration())
   }
 
