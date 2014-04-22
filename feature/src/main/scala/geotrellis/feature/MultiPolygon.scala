@@ -26,11 +26,21 @@ object MultiPolygon {
 
   def apply(ps: Traversable[Polygon]): MultiPolygon =
     MultiPolygon(factory.createMultiPolygon(ps.map(_.jtsGeom).toArray))
+
+  implicit def jts2MultiPolygon(jtsGeom: jts.MultiPolygon): MultiPolygon = apply(jtsGeom)
 }
 
 case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry 
                                                    with Relatable
                                                    with TwoDimensions {
+
+
+  /** Returns the Polygons contained in MultiPolygon. */
+  lazy val polygons: Array[Polygon] = {
+    for (i <- 0 until jtsGeom.getNumGeometries) yield {
+      Polygon(jtsGeom.getGeometryN(i).asInstanceOf[jts.Polygon])
+    }
+  }.toArray
 
   lazy val area: Double =
     jtsGeom.getArea
@@ -160,4 +170,5 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
   def within(g: TwoDimensions): Boolean =
     jtsGeom.within(g.jtsGeom)
 
+  override def toString = jtsGeom.toString
 }

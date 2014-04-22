@@ -26,6 +26,7 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps:Op[Seq[Op[Ra
     extends  RasterSourceLike[RasterSource] {
   def elements = tileOps
   val rasterDefinition = rasterDef
+
 }
 
 object RasterSource {
@@ -176,4 +177,7 @@ object RasterSource {
     val tileOps = Literal(Seq(Literal(r)))
     new RasterSource(rasterDef, tileOps)
   }
+
+  def layerExists(layerId:LayerId):Boolean = server.layerExists(layerId)
+  def layerExists(layerName:String):Boolean = server.layerExists(layerName)
 }

@@ -342,4 +342,5 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   def within(g: AtLeastOneDimension): Boolean =
     jtsGeom.within(g.jtsGeom)
 
+  override def toString = jtsGeom.toString
 }

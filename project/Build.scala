@@ -96,6 +96,7 @@ object GeotrellisBuild extends Build {
   val defaultAssemblySettings = 
     assemblySettings ++
     Seq(
+      test in assembly := {},
       mergeStrategy in assembly <<= (mergeStrategy in assembly) {
         (old) => {
           case "reference.conf" => MergeStrategy.concat
@@ -111,7 +112,7 @@ object GeotrellisBuild extends Build {
   // Project: root
   lazy val root =
     Project("root", file("."))
-      .aggregate(core, coreTest)
+      .aggregate(core, coreTest, feature)
 
   // Project: macros
   lazy val macros =
@@ -129,13 +130,17 @@ object GeotrellisBuild extends Build {
   lazy val feature =
     Project("feature", file("feature"))
       .settings(name := "geotrellis-feature")
-      .settings(libraryDependencies ++= 
+      .settings(libraryDependencies ++=
         Seq(
           scalatest   % "test",
           scalacheck  % "test",
-          jts
+          jts,
+          sprayJson,
+          sprayHttpx,
+          akkaActor
         )
       )
+      .settings(defaultAssemblySettings: _*)
 
   // Project: core
   lazy val core =
@@ -273,17 +278,41 @@ object GeotrellisBuild extends Build {
           "xalan" % "xalan" % "2.7.1",
           "org.apache.spark" %% "spark-core" % "0.9.0-incubating" excludeAll (
               ExclusionRule(organization = "org.apache.hadoop")),
-          "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4",
+          "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4" excludeAll (
+	      ExclusionRule(organization = "hsqldb")),
           "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0",
           "com.quantifind" %% "sumac" % "0.2.3",
-	        "commons-io" % "commons-io" % "2.4",
-          scalaxyLoops % "provided",
           scalatest % "test"
         ),
       resolvers += "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
     ) ++ 
     defaultAssemblySettings ++ 
     net.virtualvoid.sbt.graph.Plugin.graphSettings
+
+  // Project: gdal
+
+  lazy val gdal: Project =
+    Project("gdal", file("gdal"))
+      .settings(gdalSettings: _*)
+      .dependsOn(core, geotools % "test")
+
+  lazy val gdalSettings =
+    Seq(
+      name := "geotrellis-gdal",
+      libraryDependencies ++=
+        Seq(
+//          "com.azavea.geotrellis" % "gdal" % "1.10.1",
+          "org.gdal" % "gdal" % "1.9.2",
+          "com.azavea.geotrellis" %% "gdal-scala" % "0.1.0-SNAPSHOT",
+          scalatest % "test"
+        ),
+      resolvers ++=
+        Seq(
+          "OpenGeo" at "http://repo.opengeo.org/"
+        ),
+      fork in test := true
+    ) ++
+    defaultAssemblySettings
     
   // Project: geotools
 
@@ -388,6 +417,28 @@ object GeotrellisBuild extends Build {
         jts
       )
     )
+
+  // Project: gdal-benchmark
+
+  lazy val gdalBenchmark: Project =
+    Project("gdal-benchmark", file("gdal-benchmark"))
+      .settings(gdalBenchmarkSettings:_*)
+      .dependsOn(gdal, geotools)
+
+  lazy val gdalBenchmarkSettings = 
+    Seq(
+        organization := "com.azavea.geotrellis",
+        name := "gdal-benchmark",
+
+        scalaVersion := "2.10.3",
+        // raise memory limits here if necessary
+        javaOptions += "-Xmx2G",
+        javaOptions += "-Djava.library.path=/usr/local/lib",
+
+        // enable forking in both run and test
+        fork := true
+    ) ++
+    defaultAssemblySettings
 
   // Project: benchmark
 

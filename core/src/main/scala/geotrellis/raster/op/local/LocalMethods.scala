@@ -34,6 +34,8 @@ trait LocalMethods extends AddMethods
                       with GreaterMethods
                       with LessMethods
                       with LessOrEqualMethods
+                      with MajorityMethods
+                      with MinorityMethods
                       with PowMethods { self: Raster =>
 
   /**
@@ -174,4 +176,20 @@ trait LocalMethods extends AddMethods
     */
   def localTanh(): Raster =
     Tanh(self)
+
+ /** Gives the count of unique values at each location in a set of Rasters.*/
+  def localVariety(rs:Seq[Raster]):Raster =
+    Variety(self +: rs)
+
+ /** Gives the count of unique values at each location in a set of Rasters.*/
+  def localVariety(r:Raster*)(implicit d:DI):Raster =
+    localVariety(r)
+
+  /** Takes the mean of the values of each cell in the set of rasters. */
+  def localMean(rs: Seq[Raster]): Raster =
+    Mean(self +: rs)
+
+  /** Takes the mean of the values of each cell in the set of rasters. */
+  def localMean(r:Raster*)(implicit d:DI): Raster =
+    localMean(r)
 }

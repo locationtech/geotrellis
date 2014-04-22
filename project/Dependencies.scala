@@ -48,6 +48,7 @@ object Dependencies {
   val sprayTestkit  = "io.spray"        % "spray-testkit" % Version.spray
   val sprayCan      = "io.spray"        % "spray-can"     % Version.spray
   val sprayHttpx    = "io.spray"        % "spray-httpx"   % Version.spray
+  val sprayJson     = "io.spray"        %% "spray-json"    % "1.2.6"
   
   val apacheMath    = "org.apache.commons" % "commons-math3" % "3.2"
 

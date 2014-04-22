@@ -28,8 +28,7 @@ import geotrellis.spark.metadata.PyramidMetadata
 case class Tile(id: Long, raster: Raster) {
   def tileXY(zoom: Int) =  TmsTiling.tileXY(id, zoom)
 
-  def toWritable() = 
-    (TileIdWritable(id), ArgWritable.fromRaster(raster))
+  def toWritable() = Tile.toWritable(this)
 }
 
 object Tile {

@@ -154,5 +154,65 @@ class VarietySpec extends FunSpec
           assert(false)
       }
     }
+    it("computes variety on raster using local method") {
+      val n = NODATA
+      val r2 = createRaster(
+        Array( n, n, n, n, n, n,
+               n, n, n, n, n, n,
+               n, n, n, n, n, n,
+               n, n, n, n, n, n),
+        6,4
+      )
+
+      val r1 = createRaster(
+        Array( n, 1, n, n, n, n,
+               n, n, 1, n, n, n,
+               n, n, n, 1, n, n,
+               n, n, n, n, 1, n),
+        6,4
+      )
+
+      val r3 = createRaster(
+        Array( n, 2, n, n, n, n,
+               n, n, 2, n, n, n,
+               n, n, n, 2, n, n,
+               n, n, n, n, 1, n),
+        6,4
+      )
+
+      val r4 = createRaster(
+        Array( n, 3, n, n, n, n,
+               n, n, 3, n, n, n,
+               n, n, n, 2, n, n,
+               n, n, n, n, 1, n),
+        6,4
+      )
+
+      val r5 = createRaster(
+        Array( n, 4, n, n, n, n,
+               n, n, 3, n, n, n,
+               n, n, n, 2, n, n,
+               n, n, n, n, 1, n),
+        6,4
+      )
+
+      val result = r1.localVariety(r2,r3,r4,r5)
+
+      for(col <- 0 until 6) {
+        for(row <- 0 until 4) {
+          if(col== row + 1) {
+            col match {
+              case 1 => result.get(col,row) should be (4)
+              case 2 => result.get(col,row) should be (3)
+              case 3 => result.get(col,row) should be (2)
+              case 4 => result.get(col,row) should be (1)
+              case 5 => result.get(col,row) should be (NODATA)
+            }
+          } else {
+            result.get(col,row) should be (NODATA)
+          }
+        }
+      }
+    }
   }
 }
