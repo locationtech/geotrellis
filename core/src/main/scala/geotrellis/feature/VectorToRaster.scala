@@ -61,9 +61,7 @@ object VectorToRaster {
     RasterSource(rd, Seq(IDWInterpolate(points, re, radius)))
   }
 
-  def rasterize(feature:Geometry,
-                   rasterExtent:RasterExtent)
-                  (f:Transformer[Geometry,Int]): RasterSource = {
+  def rasterize(feature: Geometry, rasterExtent: RasterExtent)(f: Transformer[Int]): RasterSource = {
     val rd =
       RasterDefinition(
         LayerId.MEM_RASTER,
@@ -76,9 +74,7 @@ object VectorToRaster {
     RasterSource(rd,Seq(r))
   }
 
-  def rasterize(feature:Geometry,
-                   rasterExtent:RasterExtent,
-                   value:Int): RasterSource = {
+  def rasterize(feature: Geometry, rasterExtent: RasterExtent, value:Int): RasterSource = {
     val rd =
       RasterDefinition(
         LayerId.MEM_RASTER,

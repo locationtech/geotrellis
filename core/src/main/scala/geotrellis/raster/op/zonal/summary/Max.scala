@@ -27,8 +27,8 @@ object Max extends TileSummary[Int,Int,ValueSource[Int]] {
     var max = NODATA
     for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Geometry] {
-          def apply(col:Int, row:Int, g:Geometry) {
+        new Callback {
+          def apply(col:Int, row:Int) {
             val z = r.get(col,row)
             if (isData(z) && (z > max || isNoData(max)) ) { max = z }
           }
@@ -60,8 +60,8 @@ object MaxDouble extends TileSummary[Double,Double,ValueSource[Double]] {
     var max = Double.NaN
     for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Geometry] {
-          def apply(col:Int, row:Int, g:Geometry) {
+        new Callback {
+          def apply(col:Int, row:Int) {
             val z = r.getDouble(col,row)
             if (isData(z) && (z > max || isNoData(max))) { max = z }
           }

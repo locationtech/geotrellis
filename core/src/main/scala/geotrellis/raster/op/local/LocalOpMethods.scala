@@ -213,13 +213,13 @@ trait LocalOpMethods[+Repr <: RasterSource]
       val data = RasterData.emptyByType(tile.rasterType, re.cols, re.rows)
       for(g <- geoms) {
         if(tile.isFloat) {
-          Rasterizer.foreachCellByFeature(g, re)(new Callback[Geometry] {
-            def apply(col: Int, row: Int, g: Geometry) =
+          Rasterizer.foreachCellByFeature(g, re)(new Callback {
+            def apply(col: Int, row: Int) =
               data.setDouble(col,row,tile.getDouble(col,row))
           })
         } else {
-          Rasterizer.foreachCellByFeature(g, re)(new Callback[Geometry] {
-            def apply(col: Int, row: Int, g: Geometry) =
+          Rasterizer.foreachCellByFeature(g, re)(new Callback {
+            def apply(col: Int, row: Int) =
               data.set(col,row,tile.get(col,row))
           })
         }

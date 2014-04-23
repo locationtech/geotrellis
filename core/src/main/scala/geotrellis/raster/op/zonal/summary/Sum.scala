@@ -27,8 +27,8 @@ object Sum extends TileSummary[Long,Long,ValueSource[Long]] {
     var sum: Long = 0L
     for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Polygon] {
-          def apply(col:Int, row:Int, g:Polygon) {
+        new Callback {
+          def apply(col:Int, row:Int) {
             val z = r.get(col,row)
             if (isData(z)) { sum = sum + z }
           }
@@ -55,8 +55,8 @@ object SumDouble extends TileSummary[Double,Double,ValueSource[Double]] {
     var sum = 0.0
     for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Geometry] {
-          def apply(col:Int, row:Int, g:Geometry) {
+        new Callback {
+          def apply(col:Int, row:Int) {
             val z = r.getDouble(col,row)
             if(isData(z)) { sum = sum + z }
           }

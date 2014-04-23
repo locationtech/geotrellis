@@ -27,8 +27,8 @@ object Min extends TileSummary[Int,Int,ValueSource[Int]] {
     var min = NODATA
     for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Polygon] {
-          def apply(col:Int, row:Int, g:Polygon) {
+        new Callback {
+          def apply(col:Int, row:Int) {
             val z = r.get(col,row)
             if (isData(z) && (z < min || isNoData(min)) ) { min = z }
           }
@@ -60,8 +60,8 @@ object MinDouble extends TileSummary[Double,Double,ValueSource[Double]] {
     var min = Double.NaN
     for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Geometry] {
-          def apply(col:Int, row:Int, g:Geometry) {
+        new Callback {
+          def apply(col:Int, row:Int) {
             val z = r.getDouble(col,row)
             if (isData(z) && (z < min || isNoData(min))) { min = z }
           }

@@ -25,7 +25,7 @@ object PolygonRasterizer {
   /**
    * Apply a function to each raster cell that intersects with a polygon.
    */
-  def foreachCellByPolygon(p:Polygon, re:RasterExtent, includeExterior:Boolean=false)(f:Callback[Polygon]) {
+  def foreachCellByPolygon(p:Polygon, re:RasterExtent, includeExterior:Boolean=false)(f:Callback) {
     // If polygon does not intersect with this raster's extent, skip.
     val rasterGeom = re.extent.asFeature(None).geom
     if (! p.intersects(rasterGeom)) { return }
@@ -33,7 +33,7 @@ object PolygonRasterizer {
     processPolygon(p, re:RasterExtent, includeExterior)(f)
   }
 
-  def processPolygon(p:Polygon, re:RasterExtent, includeExterior:Boolean)(f:Callback[Polygon]) {
+  def processPolygon(p:Polygon, re:RasterExtent, includeExterior:Boolean)(f:Callback) {
     // Create a global edge table which tracks the minimum and maximum row 
     // for which each edge is relevant.
     val edgeTable = buildEdgeTable(p, re)
@@ -55,7 +55,7 @@ object PolygonRasterizer {
           val cellRanges = processRanges(fillRanges, includeExterior, re)
           for ( (col0, col1) <- cellRanges;
                 col          <- col0 to col1
-          ) f(col,row,p)
+          ) f(col,row)
         }
 
         activeEdgeTable.dropEdges(row)

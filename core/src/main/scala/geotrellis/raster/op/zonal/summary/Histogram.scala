@@ -28,8 +28,8 @@ object Histogram extends TileSummary[Histogram,Histogram,ValueSource[Histogram]]
     val histogram = FastMapHistogram()
     for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Geometry] {
-          def apply (col:Int, row:Int, g:Geometry) {
+        new Callback {
+          def apply (col:Int, row:Int) {
             val z = r.get(col,row)
             if (isData(z)) histogram.countItem(z, 1)
           }

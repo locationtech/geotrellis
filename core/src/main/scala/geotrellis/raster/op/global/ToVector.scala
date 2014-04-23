@@ -31,7 +31,7 @@ case class ToVector(r:Op[Raster],
 
   class ToVectorCallback(val polyizer:Polygonizer,
                          val r:Raster,
-                         val v:Int) extends Callback[Polygon] {
+                         val v:Int) extends Callback {
     val innerStarts = mutable.Map[Int,(Int,Int)]()
 
     def linearRings = 
@@ -39,7 +39,7 @@ case class ToVector(r:Op[Raster],
         polyizer.getLinearRing(k, innerStarts(k))
       }
 
-    def apply(col:Int,row:Int,poly:Polygon) = {
+    def apply(col:Int,row:Int) = {
       val innerV = r.get(col,row)
       if(innerV != v) {
         if(innerStarts.contains(innerV)) {

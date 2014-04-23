@@ -31,24 +31,24 @@ import scala.language.higherKinds
  *                          While not ideal, this avoids the unavoidable boxing that occurs when a 
  *                          Function3 returns a primitive value.
  * 
- * @param feature  Feature for calculation
+ * @param geom  Feature for calculation
  * @param re       RasterExtent to use for iterating through cells
  * @param f        A function that takes (col:Int, row:Int, rasterValue:Int, feature:Feature)
  */
-case class ForEachCellByFeature[G <: Geometry](feature:Op[G], re:Op[RasterExtent])(f: Callback[G])
-     extends Op2(feature,re)({
-  (feature, re) =>
-    Result(Rasterizer.foreachCellByFeature(feature,re)(f))
+case class ForEachCellByFeature[G <: Geometry](geom: Op[G], re: Op[RasterExtent])(f: Callback)
+     extends Op2(geom,re)({
+  (geom, re) =>
+    Result(Rasterizer.foreachCellByFeature(geom, re)(f))
 })
 
-case class RasterizeWithValue(feature:Op[Geometry], re:Op[RasterExtent], value:Op[Int])
-     extends Op3(feature,re,value)({
-  (feature, re, value) =>
-    Result(Rasterizer.rasterizeWithValue(feature, re, value))
+case class RasterizeWithValue[G <: Geometry](geom: Op[G], re:Op[RasterExtent], value: Op[Int])
+     extends Op3(geom,re,value)({
+  (geom, re, value) =>
+    Result(Rasterizer.rasterizeWithValue(geom, re, value))
 })
 
-case class Rasterize(feature:Op[Geometry], re:Op[RasterExtent])(f:Transformer[Geometry,Int])
-     extends Op2(feature,re)({
-  (feature, re) =>
-    Result(Rasterizer.rasterize(feature,re)(f))
+case class Rasterize[G <: Geometry](geom: Op[G], re: Op[RasterExtent])(f: Transformer[Int])
+     extends Op2(geom,re)({
+  (geom, re) =>
+    Result(Rasterizer.rasterize(geom,re)(f))
 })
