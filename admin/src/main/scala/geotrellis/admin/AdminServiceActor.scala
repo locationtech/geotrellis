@@ -1,15 +1,32 @@
+/*
+ * Copyright (c) 2014 Azavea.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.admin
 
 import geotrellis._
 import geotrellis.process._
 import geotrellis.source._
-import geotrellis.service._
+import geotrellis.services._
 import geotrellis.util.srs
 
 import akka.actor._
 import spray.routing._
 import spray.can.Http
 import spray.http._
+import java.io.FileOutputStream
 
 class AdminServiceActor(val staticContentPath:String) extends Actor with AdminService {
   def actorRefFactory = context
@@ -17,6 +34,7 @@ class AdminServiceActor(val staticContentPath:String) extends Actor with AdminSe
     runRoute {
       get { pathSingleSlash { redirect("index.html",StatusCodes.Found) } } ~
       serviceRoute ~
+      uploadRoute ~
       get { getFromDirectory(staticContentPath) }
     }
 }
@@ -37,6 +55,35 @@ trait AdminService extends HttpService {
         } ~
         pathPrefix("layer") {
           layerRoute
+        }
+      }
+    }
+
+  lazy val uploadRoute =
+    post {
+      pathPrefix("gt") {
+        path("upload") {
+          formFields('store, 'name, 'file.as[Array[Byte]]) { (store, name, file) =>
+            if (name.contains("..") || name.contains("/")) {
+              complete(400, "File name cannot contain .. or /")
+            } else if (!name.endsWith(".arg") && !name.endsWith(".json")) {
+              complete(400, "File type must be .arg or .json")
+            } else {
+              GeoTrellis.server.catalog.getStore(store) match {
+                case Some(datastore) => {
+                  val filePath = datastore.path + "/" + name
+                  val fos = new FileOutputStream(filePath)
+                  try {
+                    fos.write(file)
+                  } finally {
+                    fos.close()
+                  }
+                  complete("File successfully uploaded")
+                }
+                case None => complete(400, "Unrecognized datastore")
+              }
+            }
+          }
         }
       }
     }
