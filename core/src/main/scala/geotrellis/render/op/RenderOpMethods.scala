@@ -64,9 +64,9 @@ trait RenderOpMethods[+Repr <: RasterSource] { self: Repr =>
   def renderPng(colors:Array[Int], numColors:Int):ValueSource[Png] =
     self.converge.mapOp(SimpleRenderPng(_,Color.chooseColors(colors,numColors)))
 
-  def renderPng(colors:Array[Int], colorBreaks:ColorBreaks) =
+  def renderPng(colors:Array[Int], colorBreaks:ColorBreaks): ValueSource[Png] =
     renderPng(ColorBreaks(colorBreaks.limits, colors), 0)
 
-  def renderPng(colors:Array[Int], colorBreaks:ColorBreaks, noDataColor:Int) =
+  def renderPng(colors:Array[Int], colorBreaks:ColorBreaks, noDataColor:Int): ValueSource[Png] =
     self.converge.mapOp(RenderPng(_,colorBreaks,noDataColor, colors))
 }
