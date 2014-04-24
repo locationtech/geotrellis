@@ -53,10 +53,7 @@ class RasterHadoopRDD private (raster: Path, sc: SparkContext, conf: Configurati
   val zoom = raster.getName().toInt
   val meta = PyramidMetadata(pyramidPath, conf)
 
-  def toRasterRDD(): RasterRDD = 
-    toRasterRDD(false)
-
-  def toRasterRDD(addUserNoData: Boolean): RasterRDD = 
+  def toRasterRDD(addUserNoData: Boolean = false): RasterRDD = 
     mapPartitions { partition =>
       partition.map { writableTile =>
         writableTile.toTile(meta, zoom, addUserNoData)

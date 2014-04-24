@@ -45,9 +45,9 @@ class RasterRDD(val prev: RDD[Tile], val opCtx: Context)
   override def compute(split: Partition, context: TaskContext) =
     firstParent.iterator(split, context)
 
-  def toWritable = 
+  def toWritable =
     mapPartitions({ partition =>
-      partition.map(_.toWritable)        
+      partition.map(_.toWritable)
     }, true)
 
   def mapTiles(f: Tile => Tile): RasterRDD =
@@ -56,26 +56,31 @@ class RasterRDD(val prev: RDD[Tile], val opCtx: Context)
         f(tile)
       }
     }, true)
-    .withContext(opCtx)
+      .withContext(opCtx)
 
-  def combineTiles(other: RasterRDD)(f: (Tile,Tile) => Tile): RasterRDD =
+  def combineTiles(other: RasterRDD)(f: (Tile, Tile) => Tile): RasterRDD =
     zipPartitions(other, true) { (partition1, partition2) =>
-      partition1.zip(partition2).map { case (tile1, tile2) =>
-        f(tile1, tile2)
+      partition1.zip(partition2).map {
+        case (tile1, tile2) =>
+          f(tile1, tile2)
       }
     }
-    .withContext(opCtx)
+      .withContext(opCtx)
 }
 
 object RasterRDD {
-  def apply(raster: String, sc: SparkContext): RasterRDD =
-    apply(new Path(raster), sc)
 
-  def apply(raster: Path, sc: SparkContext): RasterRDD =
-    RasterHadoopRDD(raster, sc).toRasterRDD
-
-def apply(raster: String, sc: SparkContext, addUserNoData: Boolean): RasterRDD =
+  def apply(raster: String, sc: SparkContext, addUserNoData: Boolean = false): RasterRDD =
     apply(new Path(raster), sc, addUserNoData)
+
+  /* 
+   * The only reason why there are two variants of apply that take Path and only one 
+   * variant that takes String is because Scala allows at most one overloaded method
+   * with default arguments. I may as well have had one variant of apply that takes 
+   * Path and two that take String
+   */
+  def apply(raster: Path, sc: SparkContext): RasterRDD =
+    RasterHadoopRDD(raster, sc).toRasterRDD()
 
   def apply(raster: Path, sc: SparkContext, addUserNoData: Boolean): RasterRDD =
     RasterHadoopRDD(raster, sc).toRasterRDD(addUserNoData)
