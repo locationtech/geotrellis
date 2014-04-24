@@ -101,4 +101,6 @@ package object feature {
     }
     GeometryCollection(points.toSet, lines.toSet, polygons.toSet)
   }
+
+  implicit def featureToGeometry(f: Feature[_]): Geometry = f.geom
 }
