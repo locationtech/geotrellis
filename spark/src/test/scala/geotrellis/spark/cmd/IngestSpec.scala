@@ -26,58 +26,137 @@ import geotrellis.spark.tiling.TileExtent
 import geotrellis.spark.tiling.TmsTiling
 
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.SequenceFile
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 
 import java.awt.image.DataBuffer
 
+/*
+ * Tests both local and spark ingest mode
+ */
 class IngestSpec extends FunSpec with TestEnvironment with ShouldMatchers {
 
-  describe("Ingest all-ones.tif") {
+  // subdirectories under the test directory for each of the two modes
+  val localTestOutput = new Path(outputLocal, "local")
+  val sparkTestOutput = new Path(outputLocal, "spark")
 
-    // ingest the all-ones tif
+  describe("Local Ingest") {
     val allOnes = new Path(inputHome, "all-ones.tif")
-    val cmd = s"--input ${allOnes.toString} --output ${outputLocal}"
-        
+
+    // do the actual ingest in local mode
+    val cmd = s"--input ${allOnes.toString} --outputpyramid ${localTestOutput}"
     Ingest.main(cmd.split(' '))
-    val raster = new Path(outputLocal, "10")
+
+    val raster = new Path(localTestOutput, "10")
+    val meta = PyramidMetadata(localTestOutput, conf)
 
     it("should create the correct metadata") {
-
-      val expectedMeta = PyramidMetadata(
-        Extent(141.7066666666667, -18.373333333333342, 142.56000000000003, -17.52000000000001),
-        512,
-        1,
-        -9999.0,
-        DataBuffer.TYPE_FLOAT,
-        10,
-        Map("10" -> new RasterMetadata(PixelExtent(0, 0, 1243, 1243), TileExtent(915, 203, 917, 206))))
-
-      val actualMeta = PyramidMetadata(outputLocal, conf)
-
-      actualMeta should be(expectedMeta)
+      verifyMetadata(meta)
     }
 
     it("should have the right zoom level directory") {
-      localFS.exists(raster) should be(true)
+      verifyZoomLevelDirectory(raster)
     }
 
     it("should have the right number of splits for the base zoom level") {
-      val partitioner = TileIdPartitioner(raster, conf)
-      partitioner.numPartitions should be(1)
+      verifyPartitions(raster)
     }
 
     it("should have the correct tiles (checking tileIds)") {
-      val meta = PyramidMetadata(outputLocal, conf)
-      val reader = RasterReader(raster, conf)
-      val actualTileIds = reader.map { case (tw, aw) => tw.get }.toList
-      val tileExtent = meta.metadataForBaseZoom.tileExtent
-      val expectedTileIds = for {
-        ty <- tileExtent.ymin to tileExtent.ymax
-        tx <- tileExtent.xmin to tileExtent.xmax
-      } yield TmsTiling.tileId(tx, ty, meta.maxZoomLevel)
-      actualTileIds should be(expectedTileIds)
-      reader.close()
+      verifyTiles(raster, meta)
     }
+
+    it("should have its data files compressed") {
+      verifyCompression(raster)
+    }
+    
+    it("should have its block size set correctly") {
+      verifyBlockSize(raster)
+    }
+  }
+
+  describe("Spark Ingest") {
+
+    val allOnes = new Path(inputHome, "all-ones.tif")
+
+    // do the actual ingest in spark mode
+    val cmd = s"--input ${allOnes.toString} --outputpyramid ${sparkTestOutput} --sparkMaster local"
+    Ingest.main(cmd.split(' '))
+
+    val raster = new Path(sparkTestOutput, "10")
+    val meta = PyramidMetadata(sparkTestOutput, conf)
+
+    it("should create the correct metadata") {
+      verifyMetadata(meta)
+    }
+
+    it("should have the right zoom level directory") {
+      verifyZoomLevelDirectory(raster)
+    }
+
+    it("should have the right number of splits for the base zoom level") {
+      verifyPartitions(raster)
+    }
+
+    it("should have the correct tiles (checking tileIds)") {
+      verifyTiles(raster, meta)
+    }
+
+    it("should have its data files compressed") {
+      verifyCompression(raster)
+    }
+    
+    it("should have its block size set correctly") {
+      verifyBlockSize(raster)
+    }
+  }
+
+  private def verifyMetadata(actualMeta: PyramidMetadata): Unit = {
+    val expectedMeta = PyramidMetadata(
+      Extent(141.7066666666667, -18.373333333333342, 142.56000000000003, -17.52000000000001),
+      512,
+      1,
+      -9999.0,
+      DataBuffer.TYPE_FLOAT,
+      10,
+      Map("10" -> new RasterMetadata(PixelExtent(0, 0, 1243, 1243), TileExtent(915, 203, 917, 206))))
+
+    actualMeta should be(expectedMeta)
+
+  }
+
+  private def verifyZoomLevelDirectory(raster: Path): Unit =
+    localFS.exists(raster) should be(true)
+
+  private def verifyPartitions(raster: Path): Unit = {
+    val partitioner = TileIdPartitioner(raster, conf)
+    partitioner.numPartitions should be(1)
+  }
+
+  private def verifyTiles(raster: Path, meta: PyramidMetadata): Unit = {
+    val reader = RasterReader(raster, conf)
+    val actualTileIds = reader.map { case (tw, aw) => tw.get }.toList
+    val tileExtent = meta.metadataForBaseZoom.tileExtent
+    val expectedTileIds = for {
+      ty <- tileExtent.ymin to tileExtent.ymax
+      tx <- tileExtent.xmin to tileExtent.xmax
+    } yield TmsTiling.tileId(tx, ty, meta.maxZoomLevel)
+    reader.close()
+    actualTileIds should be(expectedTileIds)
+  }
+
+  private def verifyCompression(raster: Path): Unit = {
+    val dataFile = new Path(new Path(raster, "part-00000"), "data")
+    val dataReader = new SequenceFile.Reader(localFS, dataFile, conf)
+    val isCompressed = dataReader.isCompressed()
+    dataReader.close()
+    isCompressed should be(true)
+  }
+
+  private def verifyBlockSize(raster: Path): Unit = {
+    val expectedBlockSize = localFS.getDefaultBlockSize()
+    val actualBlockSize = localFS.getFileStatus(raster).getBlockSize()
+    actualBlockSize should be(expectedBlockSize)
   }
 }

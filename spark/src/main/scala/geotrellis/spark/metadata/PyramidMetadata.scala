@@ -168,7 +168,7 @@ object PyramidMetadata {
    * path - path to a tiff file or directory containing TIFF files. The directory can be 
    * arbitrarily deep, and will be recursively searched for all TIFF files
    */
-  def fromTifFiles(tiffPath: Path, conf: Configuration): Tuple2[Seq[Path], PyramidMetadata] = {
+  def fromTifFiles(tiffPath: Path, conf: Configuration): (Seq[Path], PyramidMetadata) = {
 
     val fs = tiffPath.getFileSystem(conf)
 
@@ -178,7 +178,7 @@ object PyramidMetadata {
       val meta = GeoTiff.getMetadata(file, conf)
       (file, meta)
     }
-    def filterNone(fileMeta: Tuple2[Path, Option[GeoTiff.Metadata]]) = {
+    def filterNone(fileMeta: (Path, Option[GeoTiff.Metadata])) = {
       val (file, meta) = fileMeta
       meta match {
         case Some(m) => true
@@ -199,7 +199,7 @@ object PyramidMetadata {
    * path - path to a tiff file or directory containing TIFF files. The directory can be 
    * arbitrarily deep, and will be recursively searched for all TIFF files
    */
-  def fromTifFiles(tiffPath: Path, conf: Configuration, sc: SparkContext): Tuple2[Seq[Path], PyramidMetadata] = {
+  def fromTifFiles(tiffPath: Path, conf: Configuration, sc: SparkContext): (Seq[Path], PyramidMetadata) = {
     val allFiles = HdfsUtils.listFiles(tiffPath, conf)
     val newConf = HdfsUtils.putFilesInConf(allFiles.mkString(","), conf)
     val (acceptedFiles, metas) = sc.newAPIHadoopRDD(newConf,
@@ -224,7 +224,7 @@ object PyramidMetadata {
 
   def readFromJobConf(conf: Configuration) = fromBase64(conf.get(PyramidMetadata.JobConfKey))
 
-  private def isPixelSizeEqual(l: Tuple2[Double, Double], r: Tuple2[Double, Double]) =
+  private def isPixelSizeEqual(l: (Double, Double), r: (Double, Double)) =
     (l._1 - r._1).abs < 0.0001 && (l._2 - r._2).abs < 0.0001
 
   private def reduceGeoTiffMeta(acc: GeoTiff.Metadata, meta: GeoTiff.Metadata): GeoTiff.Metadata = {
