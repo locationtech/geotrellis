@@ -10,14 +10,19 @@ import com.google.caliper.Param
 import scala.util.Random
 import geotrellis.raster.op.Viewshed
 
+/*
+ * Current times
+ * [info] CornerRequiredHeight 1363 ==============================
+ * [info] CenterRequiredHeight  680 ==============
+ */
 object ViewshedBenchmark extends BenchmarkRunner(classOf[ViewshedBenchmark])
 class  ViewshedBenchmark extends OperationBenchmark {
   var r: Raster = _
   var re: RasterExtent = _
   var data: IntArrayRasterData = _
 
-  @Param(Array("512","1024","2048","4096","8192"))
-  var size:Int = 0
+  //@Param(Array("512","1024","2048","4096","8192"))
+  var size:Int = 256
 
   override def setUp() {
     r = randomRasterN(size)

@@ -78,12 +78,12 @@ class ViewshedSpec extends FunSpec
       print(Viewshed.computeViewable(3, 3, r).asciiDraw())
     }
     // Generates
-    //    1     1     1     1     0     0     1
-    //    0     1     1     1     0     1     0
-    //    0     0     1     1     1     0     0
-    //    0     0     1     1     1     1     1
-    //    0     0     1     1     1     0     0
-    //    0     1     1     1     0     0     0
-    //    1     1     1     1     0     0     0
+    //    1     1     1     1     0     1     1
+    //    1     1     1     1     0     1     1
+    //    0     1     1     1     1     0     0
+    //    0     1     1     1     1     1     1
+    //    0     1     1     1     1     1     1
+    //    1     1     1     0     1     1     1
+    //    1     1     1     1     1     1     1
   }
 }
