@@ -30,25 +30,10 @@ import org.apache.spark.rdd.RDD
 import org.apache.hadoop.fs.Path
 
 object SaveRasterFunctions extends Logging {
-    
-  def save(raster: RDD[WritableTile], path: Path): Unit = {
-    logInfo("Saving RasterWritableRDD out...")
-    val jobConf = new JobConf(raster.context.hadoopConfiguration)
-    jobConf.set("io.map.index.interval", "1");
-    SequenceFileOutputFormat.setOutputCompressionType(jobConf, SequenceFile.CompressionType.RECORD)
 
-    raster.saveAsHadoopFile(path.toUri().toString(), 
-                            classOf[TileIdWritable], 
-                            classOf[ArgWritable], 
-                            classOf[MapFileOutputFormat], 
-                            jobConf)
-
-    logInfo("End saving RasterWritableRDD out...")
-  }
-
-  def save(raster: RasterRDD, path: Path): Unit = {
-    val zoom = path.getName().toInt
-    val pyramidPath = path.getParent()
+  def save(raster: RasterRDD, rasterPath: Path): Unit = {
+    val zoom = rasterPath.getName().toInt
+    val pyramidPath = rasterPath.getParent()
 
     logInfo("Saving RasterRDD out...")
     val jobConf = new JobConf(raster.context.hadoopConfiguration)
@@ -62,14 +47,18 @@ object SaveRasterFunctions extends Logging {
         }
       }, true)
 
-    writableRDD.saveAsHadoopFile(path.toUri().toString(), 
-                                 classOf[TileIdWritable], 
-                                 classOf[ArgWritable], 
-                                 classOf[MapFileOutputFormat], 
-                                 jobConf)
+    writableRDD.saveAsHadoopFile(
+      rasterPath.toUri().toString(),
+      classOf[TileIdWritable],
+      classOf[ArgWritable],
+      classOf[MapFileOutputFormat],
+      jobConf)
 
-    logInfo(s"Finished saving raster to ${path}")
-    raster.opCtx.toMetadata.save(pyramidPath, raster.context.hadoopConfiguration)
-    logInfo(s"Finished saving metadata to ${pyramidPath}")
+    logInfo(s"Finished saving raster to ${rasterPath}")
+
+    val (meta, partitioner) = raster.opCtx.extract
+    meta.save(pyramidPath, raster.context.hadoopConfiguration)
+    partitioner.save(rasterPath, raster.context.hadoopConfiguration)
+    logInfo(s"Finished saving metadata to ${pyramidPath} and partitioner to ${rasterPath}")
   }
 }
