@@ -185,7 +185,7 @@ object GeotrellisBuild extends Build {
   // Project: core-test
   lazy val coreTest =
     Project("core-test", file("core-test"))
-      .dependsOn(core, testkit)
+      .dependsOn(core, testkit, feature)
       .settings(coreTestSettings: _*)      
       
   lazy val coreTestSettings =

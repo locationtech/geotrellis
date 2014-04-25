@@ -88,7 +88,7 @@ case class ToVector(r:Op[Raster],
               PolygonRasterizer.foreachCellByPolygon(shellPoly.geom, r.rasterExtent)(callback)
 
               polygons += PolygonFeature(
-                new geom.Polygon(shell, callback.linearRings.toArray, jtsFactory),
+                Polygon(Line(shell), callback.linearRings.map(Line.apply).toSet),
                 rgr.regionMap(v)
               )
 

@@ -47,8 +47,8 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
                                          with Relatable
                                          with OneDimension {
 
-  assert(!jtsGeom.isEmpty)
-  assert(jtsGeom.isValid)
+  assert(!jtsGeom.isEmpty, s"LineString Empty: $jtsGeom")
+  assert(jtsGeom.isValid, s"LineString Invalid: $jtsGeom")
 
   lazy val points: List[Point] = jtsGeom.getCoordinates.map(c => Point(c.x, c.y)).toList
 

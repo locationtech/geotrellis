@@ -89,7 +89,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
                   filtered += tiles(row*tileCols + col).map { t =>
                     handleTileIntersection(PartialTileIntersection(t,intersections.ps))
                   }
-
+                case _ => //No match? No Problem
               }
             }
           }

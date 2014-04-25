@@ -24,8 +24,10 @@ object Point {
   def apply(x: Double, y: Double): Point =
     Point(factory.createPoint(new jts.Coordinate(x, y)))
 
-  implicit def jts2Point(jtsGeom: jts.Point): Point = apply(jtsGeom)
+  def apply(t: (Double, Double)): Point =
+    apply(t._1, t._2)
 
+  implicit def jts2Point(jtsGeom: jts.Point): Point = apply(jtsGeom)
 }
 
 case class Point(jtsGeom: jts.Point) extends Geometry

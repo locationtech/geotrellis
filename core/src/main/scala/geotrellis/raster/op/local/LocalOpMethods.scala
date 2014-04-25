@@ -198,10 +198,6 @@ trait LocalOpMethods[+Repr <: RasterSource]
   def localMaxN(n:Int,rss:RasterSource*)(implicit d:DI):RasterSource =
     localMaxN(n,rss)
 
-  /** Masks this raster by the given GeoJSON. */
-  def mask(geoJson: String): RasterSource =
-    mask(GeoJson.parse[Seq[Geometry]](geoJson))
-
   /** Masks this raster by the given Geometry. */
   def mask(geom: Geometry): RasterSource =
     mask(Seq(geom))

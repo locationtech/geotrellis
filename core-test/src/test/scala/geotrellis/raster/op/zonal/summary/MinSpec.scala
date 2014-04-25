@@ -28,7 +28,7 @@ class MinSpec extends ZonalSummarySpec {
   describe("Min") {
     it("computes Minimum") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).asFeature()
+      val zone = Extent(10,-10,30,10).asPolygon
 
       val minOp = rData.zonalMin(zone)
       run(minOp) match {
@@ -61,7 +61,7 @@ class MinSpec extends ZonalSummarySpec {
 
     it("computes Double Minimum") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).asFeature()
+      val zone = Extent(10,-10,30,10).asPolygon
 
       val minDOp = rData.zonalMinDouble(zone)
       run(minDOp) match {

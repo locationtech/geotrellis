@@ -2,7 +2,6 @@ package geotrellis.feature.json
 
 import org.scalatest._
 import geotrellis.feature._
-import spray.httpx.unmarshalling.DeserializationError
 import spray.json.DeserializationException
 
 class GeoJsonSpec extends FlatSpec with ShouldMatchers {

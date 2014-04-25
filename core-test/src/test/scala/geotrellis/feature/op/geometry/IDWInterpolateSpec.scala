@@ -27,6 +27,7 @@ import org.scalatest.matchers.ShouldMatchers
 import geotrellis.testkit._
 
 import com.vividsolutions.jts.{ geom => jts }
+import geotrellis.feature.json._
 
 class IDWInterpolateSpec extends FunSpec 
                             with ShouldMatchers 
@@ -34,20 +35,24 @@ class IDWInterpolateSpec extends FunSpec
                             with RasterBuilders {
   describe("IDWInterpolate") {
     it("matches a QGIS generated IDW raster") {
+      case class DataBox(data: Int)
+
+      import geotrellis.feature.json._
+      implicit val boxFormat = jsonFormat1(DataBox)
+
       val r = get(io.LoadRaster("schoolidw"))
       val re = r.rasterExtent
 
       val path = "core-test/data/schoolgeo.json"
 
       val f = scala.io.Source.fromFile(path)
-      val geoJson = f.mkString
+      val collection = f.mkString.parseGeoJson[JsonFeatureCollection]
+
       f.close
 
-      val geoms = get(LoadGeoJson(geoJson))
-      val points = 
-        (for(g <- geoms) yield {
-          Point(g.geom.asInstanceOf[jts.Point],g.data.get.get("data").getTextValue.toInt)
-        }).toSeq
+      val points = collection.getAllPoints[DataBox].map{ f =>
+        PointFeature(f.geom, f.data.data) //Rest of the test case expects Ints
+      }
 
       val result = VectorToRaster.idwInterpolate(points, re).get
       var count = 0

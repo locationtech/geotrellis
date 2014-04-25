@@ -22,7 +22,10 @@ import scala.collection.mutable
 
 package object feature {
 
-  implicit def tupleToPoint(t: (Double, Double)): Point =
+  implicit def tupleOfIntToPoint(t: (Double, Double)): Point =
+    Point(t._1,t._2)
+
+  implicit def tupleOfDoubleToPoint(t: (Int, Int)): Point =
     Point(t._1,t._2)
 
   implicit def coordinateToPoint(c: jts.Coordinate): Point =

@@ -94,7 +94,7 @@ object PolygonRasterizer {
       val (_, y) = re.gridToMap(0, row)
       this.updateIntercepts(row, re)
       val newEdges = edgeTable.edges
-        .getOrElse(row, List[Line]())
+        .getOrElse(row, List[TestLine]())
         .map( line => Intercept(line, y, re) )
       val allEdges:List[Intercept] = edges ++ newEdges
 
@@ -128,7 +128,7 @@ object PolygonRasterizer {
   }
 
   // Inverse slope: 1/m
-  case class Line(rowMin: Int, rowMax: Int, x0:Double, y0:Double, x1:Double, y1:Double, inverseSlope: Double) {
+  case class TestLine(rowMin: Int, rowMax: Int, x0:Double, y0:Double, x1:Double, y1:Double, inverseSlope: Double) {
     def horizontal:Boolean = rowMin == rowMax
        
     def intercept(y:Double) = 
@@ -136,8 +136,8 @@ object PolygonRasterizer {
   }
 
   
-  object Line {
-    def create(c0:jts.Coordinate, c1:jts.Coordinate, re:RasterExtent):Option[Line] = {
+  object TestLine {
+    def create(c0:jts.Coordinate, c1:jts.Coordinate, re:RasterExtent):Option[TestLine] = {
       // Calculate minimum and maximum row of target raster in which a line through the 
       // center intersects with the edge.
 
@@ -168,7 +168,7 @@ object PolygonRasterizer {
       if (minRow > maxRow || c0.y == c1.y || inverseSlope == java.lang.Double.POSITIVE_INFINITY || inverseSlope == java.lang.Double.NEGATIVE_INFINITY ) // drop horizontal lines 
         None
       else {
-        Some(Line(minRow, maxRow, x0, y0, x1, y1, inverseSlope))
+        Some(TestLine(minRow, maxRow, x0, y0, x1, y1, inverseSlope))
       } 
     }
    
@@ -176,14 +176,14 @@ object PolygonRasterizer {
       x0 + (y - y0) * inverseSlope
   }
 
-  case class Intercept(x:Double, colDouble:Double, line:Line) {
+  case class Intercept(x:Double, colDouble:Double, line:TestLine) {
     //def incrementRow:Intercept = { 
     //  Intercept(x + line.inverseSlope, line)
     //}
   }
 
   object Intercept {
-    def apply(line:Line, y:Double, re:RasterExtent) = {
+    def apply(line:TestLine, y:Double, re:RasterExtent) = {
       val x = line.intercept(y) 
 
       val colDouble = re.mapXToGridDouble(x) 
@@ -191,27 +191,27 @@ object PolygonRasterizer {
     }
   }
 
-  case class EdgeTable(edges:Map[Int, List[Line]], rowMin:Int, rowMax:Int)
+  case class EdgeTable(edges:Map[Int, List[TestLine]], rowMin:Int, rowMax:Int)
 
   def buildEdgeTable(p:Polygon, re:RasterExtent) = {
     val geom = p.jtsGeom
     val lines = geom.getExteriorRing.getCoordinates.sliding(2).flatMap {  
-      case Array(c1,c2) => Line.create(c1,c2,re)
+      case Array(c1,c2) => TestLine.create(c1,c2,re)
     }.toList
     if (lines.length > 0 ) {
       val rowMin = lines.map( _.rowMin ).reduceLeft( math.min(_, _) ) 
       val rowMax = lines.map( _.rowMax ).reduceLeft( math.max(_, _) ) 
 
-      var map = Map[Int,List[Line]]()
+      var map = Map[Int,List[TestLine]]()
       for(line <- lines) {
         // build lists of lines by starting row
         val linelist = map.get(line.rowMin)
-                        .getOrElse(List[Line]())
+                        .getOrElse(List[TestLine]())
         map += (line.rowMin -> (linelist :+ line))
       }
       EdgeTable(map,rowMin,rowMax)
     } else {
-      EdgeTable( Map[Int,List[Line]](), 0, 0 ) 
+      EdgeTable( Map[Int,List[TestLine]](), 0, 0 )
     }
   }
 }
