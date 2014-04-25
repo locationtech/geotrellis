@@ -20,18 +20,21 @@ import geotrellis.RasterExtent
 import geotrellis.RasterType
 import geotrellis.process.LayerId
 import geotrellis.raster.TileLayout
-
 import geotrellis.source.RasterDefinition
+import geotrellis.spark.rdd.TileIdPartitioner
 import geotrellis.spark.tiling.TileExtent
 import geotrellis.spark.tiling.TmsTiling
 
 /* 
- * This is passed between operations and has the RasterDefinition. It also has fields necessary 
- * to reconstruct the original PyramidMetadata. 
+ * The Context is passed between operations, and contains two key fields used to describe and persist 
+ * a RasterRDD: RasterDefinition and TileIdPartitioner.
  * 
- * Also includes conversions in both directions (RasterDefinition -> RasterMetadata and back)
+ * See 'apply' variants for how to build a Context and 'extract' for how to get the original PyramidMetadata
+ * and TileIdPartitioner back to, say, save the RasterRDD.
  */
-case class Context(zoom: Int, tileExtent: TileExtent, userNodata: Double, rasterDefinition: RasterDefinition) {
+
+case class Context(zoom: Int, tileExtent: TileExtent, userNodata: Double, 
+                   rasterDefinition: RasterDefinition, partitioner: TileIdPartitioner) {
 
   /*
    * Conversion of RasterDefinition to RasterMetadata. Note that the created metadata has  
@@ -55,36 +58,42 @@ case class Context(zoom: Int, tileExtent: TileExtent, userNodata: Double, raster
       zoom,
       Map(zoom.toString -> RasterMetadata(pe, tileExtent)))
   }
+  
+  def extract: (PyramidMetadata, TileIdPartitioner) = (toMetadata, partitioner)
 }
 
 object Context {
   /*
-   * Conversion of RasterMetadata to RasterDefinition. In doing the conversion, we use the 
+   * Construct a context given a PyramidMetadata and TileIdPartitioner
+   * 
+   * In converting the PyramidMetadata's RasterMetadata to RasterDefinition, we use the 
    * extent of the tile boundaries and not of the original image boundaries. Hence, we use 
    * tileToExtent instead of plain old 'extent' from PyramidMeta, which corresponds to the 
    * original image boundaries. Also ignored for the same reason is pixelExtent from the 
    * RasterMetadata
    */
-  def fromMetadata(zoom: Int, meta: PyramidMetadata) = {
+  def apply(zoom: Int, meta: PyramidMetadata, partitioner: TileIdPartitioner): Context = {
     val te = meta.rasterMetadata(zoom.toString).tileExtent
     val res = TmsTiling.resolution(zoom, meta.tileSize)
     val re = RasterExtent(TmsTiling.tileToExtent(te, zoom, meta.tileSize), res, res)
 
     // TODO - once TileLayout supports longs, remove the to.Int
     val tl = TileLayout(re, te.width.toInt, te.height.toInt)
-    Context(zoom, te, meta.nodata, re, tl, meta.rasterType)
+    Context(zoom, te, meta.nodata, re, tl, meta.rasterType, partitioner)    
   }
-
+  
   def apply(
     zoom: Int,
     tileExtent: TileExtent,
     userNodata: Double,
     rasterExtent: RasterExtent,
     tileLayout: TileLayout,
-    rasterType: RasterType) =
+    rasterType: RasterType,
+    partitioner: TileIdPartitioner): Context =
     new Context(
       zoom,
       tileExtent,
       userNodata,
-      RasterDefinition(LayerId.MEM_RASTER, rasterExtent, tileLayout, rasterType, false))
+      RasterDefinition(LayerId.MEM_RASTER, rasterExtent, tileLayout, rasterType, false),
+      partitioner)
 }

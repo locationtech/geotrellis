@@ -53,6 +53,9 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
     (TileIdWritable(min), TileIdWritable(max))
   }
 
+  def save(raster: Path, conf: Configuration) =
+    TileIdPartitioner.writeSplits(splits.toSeq.map(_.get), raster, conf)
+
   // TODO override equals and hashCode
 
   private def findPartition(key: Any) = {
@@ -111,8 +114,7 @@ object TileIdPartitioner extends ArgMain[RasterArgs] {
               TileIdWritable(ByteBuffer.wrap(Base64.decodeBase64(line.getBytes)).getLong)
           }
           splits.toArray
-        }
-        finally {
+        } finally {
           in.close
         }
       case None =>
@@ -120,10 +122,11 @@ object TileIdPartitioner extends ArgMain[RasterArgs] {
     }
   }
 
-  private def writeSplits(splitGenerator: SplitGenerator, raster: Path, conf: Configuration): Int = {
-    val splits = splitGenerator.getSplits
+  private def writeSplits(splitGenerator: SplitGenerator, raster: Path, conf: Configuration): Int =
+    writeSplits(splitGenerator.getSplits, raster, conf)
+
+  private def writeSplits(splits: Seq[Long], raster: Path, conf: Configuration): Int = {
     val splitFile = new Path(raster, SplitFile)
-    //println("writing splits to " + splitFile)
     val fs = splitFile.getFileSystem(conf)
     val fdos = fs.create(splitFile)
     val out = new PrintWriter(fdos)

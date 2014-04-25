@@ -59,7 +59,7 @@ class RasterHadoopRDD private (raster: Path, sc: SparkContext, conf: Configurati
         writableTile.toTile(meta, zoom, addUserNoData)
       }
      }
-    .withContext(Context.fromMetadata(zoom, meta))
+    .withContext(Context(zoom, meta, partitioner.get)) // .get is safe because it can't be 'None'
 }
 
 private[rdd]
