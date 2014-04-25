@@ -20,20 +20,17 @@ import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils._
-
 import org.apache.commons.codec.binary.Base64
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.PrintWriter
 import java.nio.ByteBuffer
-
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
-
 import com.quantifind.sumac.ArgMain
+
 
 class TileIdPartitioner extends org.apache.spark.Partitioner {
 
@@ -56,8 +53,14 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
   def save(raster: Path, conf: Configuration) =
     TileIdPartitioner.writeSplits(splits.toSeq.map(_.get), raster, conf)
 
-  // TODO override equals and hashCode
-
+  override def equals(other: Any): Boolean = 
+    other match {
+      case that: TileIdPartitioner => that.splits.deep == splits.deep
+      case _                       => false
+    }
+  
+  override def hashCode: Int = splits.hashCode
+  
   private def findPartition(key: Any) = {
     val index = java.util.Arrays.binarySearch(splits.asInstanceOf[Array[Object]], key)
     if (index < 0)
