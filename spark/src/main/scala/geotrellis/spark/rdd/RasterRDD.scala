@@ -40,6 +40,11 @@ class RasterRDD(val prev: RDD[Tile], val opCtx: Context)
   with MultiplyOpMethods[RasterRDD]
   with DivideOpMethods[RasterRDD] {
 
+  override val partitioner = Some(opCtx.partitioner)
+  
+  // TODO - investigate whether this needs to work on the partitioner's output 
+  // instead of firstParent's partitions (e.g., what if the RasterRDD was created
+  // using an operation that involved modifying partitions (coalescing, cropping, etc.)
   override def getPartitions: Array[Partition] = firstParent.partitions
 
   override def compute(split: Partition, context: TaskContext) =
