@@ -29,28 +29,28 @@ import geotrellis.Extent
 object SpatialIndex {
   def apply(points:Iterable[(Double,Double)])
            (implicit di:DummyImplicit):SpatialIndex[(Double,Double)] = {
-    val si = new SpatialIndex[(Double,Double)](Measure.Dumb)(t=>t)
+    val si = new SpatialIndex[(Double,Double)](Measure.Dumb)
     for(point <- points) {
-      si.insert(point)
+      si.insert(point, point._1, point._2)
     }
     si
   }
 
   def apply[T](points:Iterable[T])(f:T=>(Double,Double)):SpatialIndex[T] = {
-    val si = new SpatialIndex[T](Measure.Dumb)(f)
+    val si = new SpatialIndex[T](Measure.Dumb)
     for(point <- points) {
-      si.insert(point)
+      val (x,y) = f(point)
+      si.insert(point, x, y)
     }
     si
   }
 }
 
-class SpatialIndex[T](val measure:Measure)(f:T=>(Double,Double)) extends Serializable {
+class SpatialIndex[T](val measure:Measure) extends Serializable {
   val rtree = new STRtree
   val points = mutable.Set[T]()
 
-  def insert(v:T) = {
-    val (x,y) = f(v)
+  def insert(v:T, x: Double, y: Double) = {
     rtree.insert(new Envelope(new Coordinate(x,y)), v)
     points.add(v)
   }
@@ -64,27 +64,6 @@ class SpatialIndex[T](val measure:Measure)(f:T=>(Double,Double)) extends Seriali
     rtree.nearestNeighbour(e,null,measure).asInstanceOf[T]
   }
 
-  def nearestInExtent(extent:Extent,pt:(Double,Double)):Option[T] = {
-    val l = pointsInExtent(extent)
-    if(l.isEmpty) { None }
-    else {
-      var nearest = l.head
-      var minDist = {
-        val (x,y) = f(nearest)
-        measure.distance(x,y,pt._1,pt._2)
-      }
-      for(t <- l.tail) {
-        val (x,y) = f(t)
-        val d = measure.distance(pt._1,pt._2,x,y)
-        if(d < minDist) {
-          nearest = t
-          minDist = d
-        }
-      }
-      Some(nearest)
-    }
-  }
-
   def pointsInExtent(extent:Extent):Seq[T] = {
     rtree.query(new Envelope(extent.ymin,extent.ymax,extent.xmin,extent.xmax))
          .map(_.asInstanceOf[T])
@@ -92,12 +71,6 @@ class SpatialIndex[T](val measure:Measure)(f:T=>(Double,Double)) extends Seriali
 
   def pointsInExtentAsJavaList(extent:Extent):List[_] = {
     rtree.query(new Envelope(extent.ymin,extent.ymax,extent.xmin,extent.xmax)).toList
-  }
-  
-  
-  def mergeIn(other:SpatialIndex[T]) = {
-    for(point <- other.points) { insert(point) }
-    this
   }
 }
 
