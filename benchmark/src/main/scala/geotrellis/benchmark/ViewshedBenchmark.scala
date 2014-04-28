@@ -8,7 +8,7 @@ import geotrellis.raster._
 
 import com.google.caliper.Param
 import scala.util.Random
-import geotrellis.raster.op.Viewshed
+import geotrellis.raster.op.global.Viewshed
 
 /*
  * Current times
