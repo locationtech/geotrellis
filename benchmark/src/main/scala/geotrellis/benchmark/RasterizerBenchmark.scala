@@ -20,6 +20,7 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.raster.op._
+import geotrellis.feature._
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Param
@@ -35,7 +36,7 @@ class RasterizerBenchmark extends OperationBenchmark {
   var r: Raster = _
   var re: RasterExtent = _
   var data: IntArrayRasterData = _
-  var poly: feature.Polygon[Int] = _
+  var poly: feature.PolygonFeature[Int] = _
 
   @Param(Array("512","1024","2048","4096","8192"))
   var rasterSize: Int = 0
@@ -44,23 +45,29 @@ class RasterizerBenchmark extends OperationBenchmark {
     r = randomRasterN(rasterSize)
     // rasters go from 0,0 to 10n,10n so we'll stick
     // a triangle in here
-    poly = feature.Polygon(Seq((0,0),(10*rasterSize,0),(10*rasterSize/2, 10*rasterSize),(0,0)), 1)
+
+    val p1 = Point(0,0)
+    val p2 = Point(10*rasterSize,0)
+    val p3 = Point(10*rasterSize/2, 10*rasterSize)
+    poly = PolygonFeature(Polygon(Line(p1,p2,p3,p1)), 1)
   }
 
   def rasterize() {
-    feature.rasterize.Rasterizer.foreachCellByFeature(poly, re)(
-      new feature.rasterize.Callback[feature.Polygon,Int] {
-        def apply(col: Int, row: Int, g: feature.Polygon[Int]) {
+    feature.rasterize.Rasterizer.foreachCellByFeature(poly.geom, re)(
+      new feature.rasterize.Callback {
+        def apply(col: Int, row: Int) {
           data.set(col,row,4)
         }
       })
   }
 
+  //Because of a refactor Callback is not getting a geom as a param, since it can close over it if it really wanted
+  //this renders the following benchmark pointless, but lets preserve this file in case other cases emerge
   def rasterizeUsingValue() {
-    feature.rasterize.Rasterizer.foreachCellByFeature(poly, re)(
-      new feature.rasterize.Callback[feature.Polygon,Int] {
-        def apply(col: Int, row: Int, g: feature.Polygon[Int]) {
-          data.set(col,row,g.data)
+    feature.rasterize.Rasterizer.foreachCellByFeature(poly.geom, re)(
+      new feature.rasterize.Callback {
+        def apply(col: Int, row: Int) {
+          data.set(col,row, poly.data)
         }
       })
   }

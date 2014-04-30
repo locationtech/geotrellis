@@ -146,6 +146,7 @@ object GeotrellisBuild extends Build {
   lazy val core =
     Project("core", file("core"))
       .dependsOn(macros)
+      .dependsOn(feature)
       .settings(coreSettings: _*)
 
   lazy val coreSettings =
@@ -185,7 +186,7 @@ object GeotrellisBuild extends Build {
   // Project: core-test
   lazy val coreTest =
     Project("core-test", file("core-test"))
-      .dependsOn(core, testkit)
+      .dependsOn(core, testkit, feature)
       .settings(coreTestSettings: _*)      
       
   lazy val coreTestSettings =
@@ -217,7 +218,7 @@ object GeotrellisBuild extends Build {
   // Project: services
   lazy val services: Project =
     Project("services", file("services"))
-      .dependsOn(core)
+      .dependsOn(core, feature)
       .settings(name := "geotrellis-services")
 
   // Project: jetty
@@ -243,7 +244,7 @@ object GeotrellisBuild extends Build {
   lazy val admin: Project =
     Project("admin", file("admin"))
       .settings(adminSettings: _*)
-      .dependsOn(core,services)
+      .dependsOn(core,services, feature)
 
   lazy val adminSettings =
     Seq(

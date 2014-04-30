@@ -192,10 +192,10 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
       val p = {
         val re = tr.rasterExtent
         val polyPoints = Seq(
-          re.gridToMap(1,1),re.gridToMap(2,0), re.gridToMap(4,0),re.gridToMap(7,2),
-          re.gridToMap(6,6), re.gridToMap(1,6),re.gridToMap(0,3),re.gridToMap(1,1)
+          Point(re.gridToMap(1,1)), Point(re.gridToMap(2,0)), Point(re.gridToMap(4,0)), Point(re.gridToMap(7,2)),
+          Point(re.gridToMap(6,6)), Point(re.gridToMap(1,6)), Point(re.gridToMap(0,3)), Point(re.gridToMap(1,1))
         )
-        Polygon(polyPoints, 0)
+        Polygon(Line(polyPoints))
       }
 
       val cached =

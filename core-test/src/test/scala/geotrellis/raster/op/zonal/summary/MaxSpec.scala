@@ -28,7 +28,7 @@ class MaxSpec extends ZonalSummarySpec {
   describe("Max") {
     it("computes Maximum") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).asFeature()
+      val zone = Extent(10,-10,30,10).asPolygon
 
       val maxOp = rData.zonalMax(zone)
       run(maxOp) match {
@@ -61,7 +61,7 @@ class MaxSpec extends ZonalSummarySpec {
 
     it("computes Double Maximum") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).asFeature()
+      val zone = Extent(10,-10,30,10).asPolygon
 
       val maxDOp = rData.zonalMaxDouble(zone)
       run(maxDOp) match {
