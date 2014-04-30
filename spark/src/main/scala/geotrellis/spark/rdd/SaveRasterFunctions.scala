@@ -19,7 +19,6 @@ package geotrellis.spark.rdd
 import geotrellis._
 import geotrellis.spark._
 import geotrellis.spark.formats._
-
 import org.apache.hadoop.io.SequenceFile
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.MapFileOutputFormat
@@ -28,6 +27,7 @@ import org.apache.spark.Logging
 import org.apache.spark.SparkContext.rddToPairRDDFunctions
 import org.apache.spark.rdd.RDD
 import org.apache.hadoop.fs.Path
+import geotrellis.spark.metadata.Context
 
 object SaveRasterFunctions extends Logging {
 
@@ -56,7 +56,7 @@ object SaveRasterFunctions extends Logging {
 
     logInfo(s"Finished saving raster to ${rasterPath}")
 
-    val (meta, partitioner) = raster.opCtx.extract
+    val Context(meta, partitioner) = raster.opCtx 
     meta.save(pyramidPath, raster.context.hadoopConfiguration)
     partitioner.save(rasterPath, raster.context.hadoopConfiguration)
     logInfo(s"Finished saving metadata to ${pyramidPath} and partitioner to ${rasterPath}")

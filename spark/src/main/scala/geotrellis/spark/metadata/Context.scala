@@ -33,8 +33,12 @@ import geotrellis.spark.tiling.TmsTiling
  * and TileIdPartitioner back to, say, save the RasterRDD.
  */
 
-case class Context(zoom: Int, tileExtent: TileExtent, userNodata: Double, 
-                   rasterDefinition: RasterDefinition, partitioner: TileIdPartitioner) {
+class Context(val zoom: Int,
+              val tileExtent: TileExtent,
+              val userNodata: Double,
+              val rasterDefinition: RasterDefinition,
+              val partitioner: TileIdPartitioner)
+  extends Serializable {
 
   /*
    * Conversion of RasterDefinition to RasterMetadata. Note that the created metadata has  
@@ -58,8 +62,7 @@ case class Context(zoom: Int, tileExtent: TileExtent, userNodata: Double,
       zoom,
       Map(zoom.toString -> RasterMetadata(pe, tileExtent)))
   }
-  
-  def extract: (PyramidMetadata, TileIdPartitioner) = (toMetadata, partitioner)
+
 }
 
 object Context {
@@ -79,9 +82,9 @@ object Context {
 
     // TODO - once TileLayout supports longs, remove the to.Int
     val tl = TileLayout(re, te.width.toInt, te.height.toInt)
-    Context(zoom, te, meta.nodata, re, tl, meta.rasterType, partitioner)    
+    Context(zoom, te, meta.nodata, re, tl, meta.rasterType, partitioner)
   }
-  
+
   def apply(
     zoom: Int,
     tileExtent: TileExtent,
@@ -96,4 +99,7 @@ object Context {
       userNodata,
       RasterDefinition(LayerId.MEM_RASTER, rasterExtent, tileLayout, rasterType, false),
       partitioner)
+
+  def unapply(c: Context): Option[(PyramidMetadata, TileIdPartitioner)] = Some(c.toMetadata, c.partitioner)
+
 }
