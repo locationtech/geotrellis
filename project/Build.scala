@@ -276,13 +276,14 @@ object GeotrellisBuild extends Build {
           // http://itellity.wordpress.com/2013/05/27/xerces-parse-error-with-hadoop-or-solr-feature-httpapache-orgxmlfeaturesxinclude-is-not-recognized/
           "xerces" % "xercesImpl" % "2.9.1",
           "xalan" % "xalan" % "2.7.1",
-          "org.apache.spark" %% "spark-core" % "0.9.0-incubating" excludeAll (
+          "org.apache.spark" %% "spark-core" % "0.9.1" excludeAll (
               ExclusionRule(organization = "org.apache.hadoop")),
           "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4" excludeAll (
 	      ExclusionRule(organization = "hsqldb")),
           "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0",
           "com.quantifind" %% "sumac" % "0.2.3",
-          scalatest % "test"
+          scalatest % "test",
+	  "org.spire-math" %% "spire" % "0.7.1"
         ),
       resolvers += "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
     ) ++ 
