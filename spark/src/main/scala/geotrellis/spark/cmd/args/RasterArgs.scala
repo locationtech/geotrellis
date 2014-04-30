@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.cmd
+package geotrellis.spark.cmd.args
 
 import com.quantifind.sumac.FieldArgs
 import com.quantifind.sumac.validation.Required
 
-class CommandArguments extends FieldArgs {
-  @Required var input: String = _
-  @Required var output: String = _
-  var sparkMaster: String = _
+class RasterArgs extends FieldArgs {
+  @Required var inputraster: String = _
 }

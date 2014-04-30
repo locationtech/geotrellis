@@ -44,7 +44,7 @@ object TmsTiling {
 
   def tileId(tx: Long, ty: Long, zoom: Int) = (ty * numXTiles(zoom)) + tx
   
-  def tileXY(tileId: Long, zoom: Int): Tuple2[Long, Long] = {
+  def tileXY(tileId: Long, zoom: Int): (Long, Long) = {
     val width = numXTiles(zoom)
     val ty = tileId / width
     val tx = tileId - (ty * width)

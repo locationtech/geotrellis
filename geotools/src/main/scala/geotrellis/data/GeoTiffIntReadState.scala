@@ -32,7 +32,7 @@ class GeoTiffIntReadState(path:String,
   private var data:Array[Int] = null
 
   private def initializeNoData(reader:gce.geotiff.GeoTiffReader) = 
-    noData = reader.getMetadata.getNoData.toInt
+    noData = d2i(reader.getMetadata.getNoData)
 
   def initSource(pos:Int, size:Int) {
     val x = 0

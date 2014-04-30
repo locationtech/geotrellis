@@ -35,11 +35,6 @@ class IDWInterpolateSpec extends FunSpec
                             with RasterBuilders {
   describe("IDWInterpolate") {
     it("matches a QGIS generated IDW raster") {
-      case class DataBox(data: Int)
-
-      import geotrellis.feature.json._
-      implicit val boxFormat = jsonFormat1(DataBox)
-
       val r = get(io.LoadRaster("schoolidw"))
       val re = r.rasterExtent
 
@@ -50,24 +45,17 @@ class IDWInterpolateSpec extends FunSpec
 
       f.close
 
-      val points = collection.getAllPoints[DataBox].map{ f =>
-        PointFeature(f.geom, f.data.data) //Rest of the test case expects Ints
-      }
+      val points = collection.getAllPoints[Int]
 
       val result = VectorToRaster.idwInterpolate(points, re).get
       var count = 0
       for(col <- 0 until re.cols) {
         for(row <- 0 until re.rows) {
-          val v1 = r.get(col,row)
-          val v2 = result.get(col,row)
-          // Allow a small variance
-          if(math.abs(v1-v2) > 1) {
-            count += 1
-          }
+          val actual = result.get(col,row)
+          val expected = r.get(col,row)
+
+          actual should be (expected plusOrMinus 1)
         }
-      }
-      withClue(s"Variance was greater than 1 $count cells.") {
-        count should be (0)
       }
     }
   }
