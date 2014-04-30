@@ -47,9 +47,7 @@ class RasterRDD(val prev: RDD[Tile], val opCtx: Context)
 
   def toWritable = 
     mapPartitions({ partition =>
-      partition.map { tile =>
-        (TileIdWritable(tile.id), ArgWritable.fromRasterData(tile.raster.data))
-      }
+      partition.map(_.toWritable)        
     }, true)
 
   def mapTiles(f: Tile => Tile): RasterRDD =

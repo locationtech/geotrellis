@@ -44,8 +44,7 @@ trait LocalOpMethods[+Repr <: RasterSource]
      with LessOrEqualOpMethods[Repr] 
      with ConditionalOpMethods[Repr] 
      with MajorityOpMethods[Repr] 
-     with MinorityOpMethods[Repr]
-     with VarietyOpMethods[Repr] { self: Repr =>
+     with MinorityOpMethods[Repr] { self: Repr =>
 
   def localCombine[That](rs:RasterSource)
                    (f:(Int,Int)=>Int)
@@ -151,6 +150,14 @@ trait LocalOpMethods[+Repr <: RasterSource]
   /** Takes the mean of the values of each cell in the set of rasters. */
   def localMean(rss:RasterSource*)(implicit d:DI): RasterSource = 
     localMean(rss)
+
+ /** Gives the count of unique values at each location in a set of Rasters.*/
+  def localVariety(rss:Seq[RasterSource]):RasterSource = 
+    combine(rss, "Variety")(Variety(_))
+
+ /** Gives the count of unique values at each location in a set of Rasters.*/
+  def localVariety(rss:RasterSource*)(implicit d:DI):RasterSource = 
+    localVariety(rss)
 
   /** Takes the sine of each raster cell value. */
   def localSin(): RasterSource = map(Sin(_), "Sin")

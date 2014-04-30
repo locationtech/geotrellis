@@ -120,28 +120,28 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and p.
    */
-  def &(p: Point): PointOrNoResult =
+  def &(p: Point): PointGeometryIntersectionResult =
     intersection(p)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and p.
    */
-  def intersection(p: Point): PointOrNoResult =
+  def intersection(p: Point): PointGeometryIntersectionResult =
     jtsGeom.intersection(p.jtsGeom)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and mp.
    */
-  def &(mp: MultiPoint): MultiPointGeometryIntersectionResult =
+  def &(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
     intersection(mp)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and mp.
    */
-  def intersection(mp: MultiPoint): MultiPointGeometryIntersectionResult =
+  def intersection(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
     jtsGeom.intersection(mp.jtsGeom)
 
   /**
@@ -325,7 +325,7 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     jtsGeom.overlaps(g.jtsGeom)
 
   /**
-   * Tests whether this Polygon touches the specified geometry g.
+   * Tests whether this Polygon touches the specified Geometry g.
    * Returns true if the DE-9IM Intersection Matrix for the two geometries is
    * FT*******, F**T***** or F***T****.
    */

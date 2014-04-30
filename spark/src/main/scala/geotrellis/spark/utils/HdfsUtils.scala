@@ -20,6 +20,8 @@ import org.apache.hadoop.fs.FileStatus
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.LocalFileSystem
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapreduce.Job
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 
 import java.io.BufferedReader
 import java.io.Closeable
@@ -29,21 +31,49 @@ import java.io.InputStreamReader
 import java.util.Scanner
 
 import scala.collection.mutable.ListBuffer
+import scala.util.Random
 
 abstract class LineScanner extends Iterator[String] with Closeable
 
 object HdfsUtils {
+  
+  def putFilesInConf(filesAsCsv: String, inConf: Configuration): Configuration = {
+    val job = new Job(inConf)
+    FileInputFormat.setInputPaths(job, filesAsCsv)
+    job.getConfiguration()
+  }
+  
+  /* get the default block size for that path */
+  def defaultBlockSize(path: Path, conf: Configuration): Long =
+    path.getFileSystem(conf).getDefaultBlockSize()
 
-  /* get the HDFS block size from the Hadoop configuration */
-  def blockSize(conf: Configuration): Long = conf.getLong("dfs.blocksize", 64 * 1024 * 1024)
-
-  /* recursively descend into a directory and and get list of file paths */
+  /* 
+   * Recursively descend into a directory and and get list of file paths
+   * The input path can have glob patterns
+   *    e.g. /geotrellis/images/ne*.tif
+   * to only return those files that match "ne*.tif" 
+   */ 
   def listFiles(path: Path, conf: Configuration): List[Path] = {
     val fs = path.getFileSystem(conf)
     val files = new ListBuffer[Path]
-    addFiles(fs.listStatus(path), fs, conf, files)
+    addFiles(fs.globStatus(path), fs, conf, files)
     files.toList
   }
+
+  /* get hadoop's temporary directory */
+  def getTempDir(conf: Configuration): String = conf.get("hadoop.tmp.dir", "/tmp")
+
+  /* 
+   * Create a temporary directory called "dir" under hadoop's temporary directory.  
+   * If "dir" is empty, it generates a random 40-character string as the directory name
+   */ 
+  def createTempDir(conf: Configuration, dir: String = ""): Path = {
+    val dirPath = if (dir == "") new Path(getTempDir(conf), createRandomString(40)) else new Path(dir)
+    dirPath.getFileSystem(conf).mkdirs(dirPath)
+    dirPath
+  }
+
+  def createRandomString(size: Int): String = Random.alphanumeric.take(size).mkString
 
   def getLineScanner(path: String, conf: Configuration): Option[LineScanner] =
     getLineScanner(new Path(path), conf)
@@ -70,7 +100,8 @@ object HdfsUtils {
       case fs =>
         if (!fs.exists(path)) {
           return None
-        } else {
+        }
+        else {
           val fdis = fs.open(path)
           val scanner = new Scanner(new BufferedReader(new InputStreamReader(fdis)))
 

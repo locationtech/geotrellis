@@ -18,7 +18,6 @@ package geotrellis.feature.op.geometry
 
 import geotrellis._
 import geotrellis.feature._
-import geotrellis.feature._
 import geotrellis.raster._
 
 import scalaxy.loops._
@@ -38,13 +37,14 @@ case class IDWInterpolate(points:Op[Seq[PointFeature[Int]]],re:Op[RasterExtent],
       val r = radius match {
         case Some(r: Int) =>
           val rr = r*r
-          val index:SpatialIndex[PointFeature[Int]] = SpatialIndex(points)(p => (p.geom.x,p.geom.y))
+          val index: SpatialIndex[PointFeature[Int]] = SpatialIndex(points)(p => (p.geom.x,p.geom.y))
+
           for(col <- 0 until cols optimized) {
             for(row <- 0 until rows optimized) {
               val destX = re.gridColToMap(col)
               val destY = re.gridRowToMap(row)
               val pts = index.pointsInExtent(Extent(destX - r, destY - r, destX + r, destY + r))
-
+              println(pts.size)
               if (pts.isEmpty) {
                 data.set(col, row, NODATA)
               } else {

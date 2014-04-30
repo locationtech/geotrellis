@@ -75,7 +75,7 @@ object Cursor {
  * @param      analysisArea          Analysis area
  * @param      ext                   The distance from the focus that the
  *                                   bounding box of this cursor extends.
- *                                   e.g. if the bounding box is 9x9, then
+ *                                   e.g. if the bounding box is 3x3, then
  *                                   the distance from center is 1.
  */
 class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
