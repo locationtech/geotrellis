@@ -141,6 +141,23 @@ object GeotrellisBuild extends Build {
         )
       )
       .settings(defaultAssemblySettings: _*)
+      .dependsOn(proj4)
+
+  // Project: proj4
+
+  lazy val proj4 =
+    Project("proj4", file("proj4"))
+      .settings(proj4Settings: _*)
+
+  lazy val proj4Settings =
+    Seq(
+      name := "geotrellis-proj4",
+      libraryDependencies ++= Seq(
+        "junit" % "junit" % "3.8.1" % "test",
+        "com.novocode" % "junit-interface" % "0.9" % "test"
+      )
+    )
+
 
   // Project: core
   lazy val core =
