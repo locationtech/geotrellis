@@ -27,12 +27,12 @@ import com.vividsolutions.jts.geom
  *  @param rasterExtent         RasterExtent of the resulting raster.
  * 
  */
-case class CountPoints(points:Op[Seq[Point[_]]], rasterExtent:Op[RasterExtent]) extends Op2(points,rasterExtent) ({
+case class CountPoints(points:Op[Seq[Point]], rasterExtent:Op[RasterExtent]) extends Op2(points,rasterExtent) ({
   (points,re) =>
     val array = Array.ofDim[Int](re.cols * re.rows).fill(0)
-    for(point <- points.map { p => p.geom }) {
-      val x = point.getX()
-      val y = point.getY()
+    for(point <- points) {
+      val x = point.x
+      val y = point.y
       if(re.extent.containsPoint(x,y)) {
         val index = re.mapXToGrid(x)*re.cols + re.mapYToGrid(y)
         array(index) = array(index) + 1

@@ -27,6 +27,7 @@ import org.scalatest.matchers.ShouldMatchers
 import geotrellis.testkit._
 
 import com.vividsolutions.jts.{ geom => jts }
+import geotrellis.feature.json._
 
 class IDWInterpolateSpec extends FunSpec 
                             with ShouldMatchers 
@@ -40,29 +41,21 @@ class IDWInterpolateSpec extends FunSpec
       val path = "core-test/data/schoolgeo.json"
 
       val f = scala.io.Source.fromFile(path)
-      val geoJson = f.mkString
+      val collection = f.mkString.parseGeoJson[JsonFeatureCollection]
+
       f.close
 
-      val geoms = get(LoadGeoJson(geoJson))
-      val points = 
-        (for(g <- geoms) yield {
-          Point(g.geom.asInstanceOf[jts.Point],g.data.get.get("data").getTextValue.toInt)
-        }).toSeq
+      val points = collection.getAllPoints[Int]
 
       val result = VectorToRaster.idwInterpolate(points, re).get
       var count = 0
       for(col <- 0 until re.cols) {
         for(row <- 0 until re.rows) {
-          val v1 = r.get(col,row)
-          val v2 = result.get(col,row)
-          // Allow a small variance
-          if(math.abs(v1-v2) > 1) {
-            count += 1
-          }
+          val actual = result.get(col,row)
+          val expected = r.get(col,row)
+
+          actual should be (expected plusOrMinus 1)
         }
-      }
-      withClue(s"Variance was greater than 1 $count cells.") {
-        count should be (0)
       }
     }
   }

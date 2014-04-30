@@ -18,6 +18,7 @@ package geotrellis
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
+import geotrellis.feature._
 
 class ExtentTest extends FunSuite with ShouldMatchers {
   test("invalid ranges") {
@@ -93,8 +94,8 @@ class ExtentTest extends FunSuite with ShouldMatchers {
 
   test("get corners") {
     val e = Extent(0.0, 0.0, 10.0, 10.0)
-    assert(e.southWest === (0.0, 0.0))
-    assert(e.northEast === (10.0, 10.0))
+    assert(e.southWest === Point(0.0, 0.0))
+    assert(e.northEast === Point(10.0, 10.0))
   }
 
   test("containsExtent") {

@@ -18,7 +18,7 @@ package geotrellis.feature.op.geometry
 
 import geotrellis._
 import geotrellis.source._
-import geotrellis.feature.Point
+import geotrellis.feature._
 import geotrellis.raster.Kernel
 import geotrellis.raster.Convolver
 
@@ -36,7 +36,7 @@ import geotrellis.raster.Convolver
  *                              If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
  *                              the data values will be rounded to integers.
  */
-case class KernelDensity[D](points:Op[Seq[Point[D]]], 
+case class KernelDensity[D](points:Op[Seq[PointFeature[D]]],
                             transform:Op[D=>Int],
                             kernel:Op[Kernel],
                             rasterExtent:Op[RasterExtent])
@@ -45,8 +45,8 @@ case class KernelDensity[D](points:Op[Seq[Point[D]]],
          val convolver = new Convolver(rasterExtent,kernel)
        
          for(point <- points) {
-           val col = convolver.rasterExtent.mapXToGrid(point.geom.getX())
-           val row = convolver.rasterExtent.mapYToGrid(point.geom.getY())
+           val col = convolver.rasterExtent.mapXToGrid(point.geom.x)
+           val row = convolver.rasterExtent.mapYToGrid(point.geom.y)
            convolver.stampKernel(col,row,transform(point.data))
          }                                                       
          Result(convolver.result)

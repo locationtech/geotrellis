@@ -2,7 +2,6 @@ package geotrellis.feature.json
 
 import org.scalatest._
 import geotrellis.feature._
-import spray.httpx.unmarshalling.DeserializationError
 import spray.json.DeserializationException
 
 class GeoJsonSpec extends FlatSpec with ShouldMatchers {
@@ -31,6 +30,18 @@ class GeoJsonSpec extends FlatSpec with ShouldMatchers {
 
     GeoJson.parse[Feature[String]](json) should equal (expected)
     GeoJson.parse[PointFeature[String]](json) should equal (expected)
+  }
+
+  it should "parse string to points" in {
+    case class DataBox(data: Int)
+
+    implicit val boxFormat = jsonFormat1(DataBox)
+
+    val json = """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2674010.3642432094,264342.94293908775]},"properties":{ "data" : 291 }},{"type":"Feature","geometry":{"type":"Point","coordinates":[2714118.684319839,263231.3878492862]},"properties": { "data": 1273 }}]}"""
+
+    val points = json.parseGeoJson[JsonFeatureCollection].getAllPoints[DataBox]
+
+    points.size should be (2)
   }
 
   it should "fail when you ask for the wrong feature" in {

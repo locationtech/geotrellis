@@ -59,8 +59,8 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
                                          with Relatable
                                          with TwoDimensions {
 
-  assert(!jtsGeom.isEmpty)
-  assert(jtsGeom.isValid)
+  assert(!jtsGeom.isEmpty, s"Polygon Invalid: $jtsGeom")
+  assert(jtsGeom.isValid, s"Polygon Invalid: $jtsGeom")
 
 
   /** Tests whether this Polygon is a rectangle. */

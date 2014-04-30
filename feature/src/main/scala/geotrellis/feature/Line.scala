@@ -47,8 +47,8 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
                                          with Relatable
                                          with OneDimension {
 
-  assert(!jtsGeom.isEmpty)
-  assert(jtsGeom.isValid)
+  assert(!jtsGeom.isEmpty, s"LineString Empty: $jtsGeom")
+  assert(jtsGeom.isValid, s"LineString Invalid: $jtsGeom")
 
   /** Returns this Line's vertices as a list of Points. */
   lazy val points: List[Point] =

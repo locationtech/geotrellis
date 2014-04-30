@@ -41,8 +41,8 @@ class SerializationTest extends FunSuite
     pickle(local.Add(addOp, 2))
     pickle(FastMapHistogram())
     pickle(Statistics(0,0,0,0,0,0))
-    pickle(Point(0,0, None))
-    pickle(Polygon( (1,9) :: (1,6) :: (4,6) :: (4,9) :: (1,9) :: Nil, None ))
+    pickle(Point(0,0))
+    pickle(Polygon( Line(Point(1,9) :: Point(1,6) :: Point(4,6) :: Point(4,9) :: Point(1,9) :: Nil)))
   }
 
   test("Tile Rasters are serializable") {
