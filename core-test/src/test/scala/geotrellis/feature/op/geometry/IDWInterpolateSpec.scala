@@ -17,6 +17,7 @@
 package geotrellis.feature.op.geometry
 
 import geotrellis._
+import geotrellis.io._
 import geotrellis.raster._
 import geotrellis.feature._
 import geotrellis.io._
@@ -35,7 +36,7 @@ class IDWInterpolateSpec extends FunSpec
                             with RasterBuilders {
   describe("IDWInterpolate") {
     it("matches a QGIS generated IDW raster") {
-      val r = get(io.LoadRaster("schoolidw"))
+      val r = get(LoadRaster("schoolidw"))
       val re = r.rasterExtent
 
       val path = "core-test/data/schoolgeo.json"
