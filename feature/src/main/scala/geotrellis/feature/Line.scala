@@ -24,17 +24,17 @@ object Line {
   implicit def jtsToLine(jtsGeom: jts.LineString): Line =
     apply(jtsGeom)
 
+  def apply(points: (Double, Double)*)(implicit d: DummyImplicit): Line =
+    apply(points)
+
+  def apply(points: Traversable[(Double, Double)])(implicit d: DummyImplicit): Line =
+    apply(points.map { case (x,y) => Point(x,y) })
+
   def apply(points: Point*): Line =
     apply(points.toList)
 
-  def apply(points: Seq[Point])(implicit d: DummyImplicit): Line =
-    apply(points.toList)
-
-  def apply(points: Array[Point]): Line =
-    apply(points.toList)
-
-  def apply(points: List[Point]): Line = {
-    if (points.length < 2) {
+  def apply(points: Traversable[Point]): Line = {
+    if (points.size < 2) {
       sys.error("Invalid line: Requires 2 or more points.")
     }
 
