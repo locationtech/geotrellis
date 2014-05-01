@@ -27,7 +27,7 @@ object Polygon {
   def apply(exterior: Line): Polygon =
     apply(exterior, Set())
 
-  def apply(exterior: Line, holes:Set[Line]): Polygon = {
+  def apply(exterior: Line, holes:Traversable[Line]): Polygon = {
     if(!exterior.isClosed) {
       sys.error(s"Cannot create a polygon with unclosed exterior: $exterior")
     }
@@ -50,18 +50,24 @@ object Polygon {
         }
       }).toArray
 
-    factory.createPolygon(extGeom, holeGeoms)
+    val p = factory.createPolygon(extGeom, holeGeoms)
+    // Sometimes polygons are invalid even if they aren't. 
+    // Try buffer(0) per http://tsusiatsoftware.net/jts/jts-faq/jts-faq.html#G
+    if(!p.isValid) { p.buffer(0).asInstanceOf[jts.Polygon] }
+    else { p }
   }
 
 }
 
 case class Polygon(jtsGeom: jts.Polygon) extends Geometry 
-                                         with Relatable
-                                         with TwoDimensions {
+                                            with Relatable
+                                            with TwoDimensions {
 
-  assert(!jtsGeom.isEmpty, s"Polygon Invalid: $jtsGeom")
+  assert(!jtsGeom.isEmpty, s"Polygon Empty: $jtsGeom")
   assert(jtsGeom.isValid, s"Polygon Invalid: $jtsGeom")
 
+  /** Returns a unique representation of the geometry based on standard coordinate ordering. */
+  def normalized(): Polygon = { jtsGeom.normalize ; Polygon(jtsGeom) }
 
   /** Tests whether this Polygon is a rectangle. */
   lazy val isRectangle: Boolean =

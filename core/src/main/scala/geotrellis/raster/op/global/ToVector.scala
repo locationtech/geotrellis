@@ -77,9 +77,33 @@ case class ToVector(r:Op[Raster],
           val v = r.get(col,row)
           if(isData(regionMap(v))) {
             if(!processedValues.contains(v)) {
-              val shell = polyizer.getLinearRing(v,(col,row))
+              val shell = {
+                val lr = polyizer.getLinearRing(v,(col,row))
+                if(!lr.isValid) {
+                  val coords: Array[(Double, Double)] = lr.getCoordinates.map { coord => 
+                    // Need to round decimal places or else JTS invents self-intersections
+                    val x = BigDecimal(coord.x).setScale(12, BigDecimal.RoundingMode.HALF_UP).toDouble
+                    val y = BigDecimal(coord.y).setScale(12, BigDecimal.RoundingMode.HALF_UP).toDouble
+                    (x, y) 
+                  }
+                  val coordsToLastIndex = coords.zipWithIndex.toMap
+                  var i = 1
+                  val len = coords.size
+                  val adjusted = mutable.ListBuffer[(Double,Double)](coords(0))
+                  while(i < len) {
+                    val p = coords(i)
+                    // Jump to the index of last occurance of this point to remove intersection.
+                    i = coordsToLastIndex(p) 
+                    adjusted += p
+                    i += 1
+                  }
+                  val l = jtsFactory.createLinearRing(adjusted.map { case (x, y) => new geom.Coordinate(x,y) }.toArray)
+                  l
+                } else { lr }
+              }
+
               val shellPoly = PolygonFeature(
-                Polygon(shell) ,
+                Polygon(shell),
                 rgr.regionMap(v)
               )
 

@@ -24,17 +24,17 @@ object Line {
   implicit def jtsToLine(jtsGeom: jts.LineString): Line =
     apply(jtsGeom)
 
+  def apply(points: (Double, Double)*)(implicit d: DummyImplicit): Line =
+    apply(points)
+
+  def apply(points: Traversable[(Double, Double)])(implicit d: DummyImplicit): Line =
+    apply(points.map { case (x,y) => Point(x,y) })
+
   def apply(points: Point*): Line =
     apply(points.toList)
 
-  def apply(points: Seq[Point])(implicit d: DummyImplicit): Line =
-    apply(points.toList)
-
-  def apply(points: Array[Point]): Line =
-    apply(points.toList)
-
-  def apply(points: List[Point]): Line = {
-    if (points.length < 2) {
+  def apply(points: Traversable[Point]): Line = {
+    if (points.size < 2) {
       sys.error("Invalid line: Requires 2 or more points.")
     }
 
@@ -49,6 +49,9 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
 
   assert(!jtsGeom.isEmpty, s"LineString Empty: $jtsGeom")
   assert(jtsGeom.isValid, s"LineString Invalid: $jtsGeom")
+
+  /** Returns a unique representation of the geometry based on standard coordinate ordering. */
+  def normalized(): Line = { jtsGeom.normalize ; Line(jtsGeom) }
 
   /** Returns this Line's vertices as a list of Points. */
   lazy val points: List[Point] =
