@@ -27,8 +27,7 @@ public class Proj4FileReader
   	if (inStr == null) {
             throw new IllegalStateException("Unable to access CRS file: " + filename);
   	}
-        BufferedReader reader = new BufferedReader( 
-                                                   new InputStreamReader(inStr) );
+        BufferedReader reader = new BufferedReader( new InputStreamReader(inStr) );
         String[] args;
         try {
             args = readFile(reader, name);

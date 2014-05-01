@@ -17,6 +17,7 @@
 package geotrellis.feature
 
 import com.vividsolutions.jts.{geom => jts}
+import geotrellis.proj4.CRS
 
 trait Geometry {
 

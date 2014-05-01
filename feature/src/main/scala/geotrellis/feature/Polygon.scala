@@ -27,7 +27,7 @@ object Polygon {
   def apply(exterior: Line): Polygon =
     apply(exterior, Set())
 
-  def apply(exterior: Line, holes:Set[Line]): Polygon = {
+  def apply(exterior: Line, holes:Traversable[Line]): Polygon = {
     if(!exterior.isClosed) {
       sys.error(s"Cannot create a polygon with unclosed exterior: $exterior")
     }
