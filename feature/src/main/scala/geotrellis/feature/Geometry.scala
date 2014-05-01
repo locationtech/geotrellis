@@ -20,7 +20,6 @@ import com.vividsolutions.jts.{geom => jts}
 
 trait Geometry {
 
-
   val jtsGeom: jts.Geometry
 
   def distance(other: Geometry): Double =
@@ -40,7 +39,7 @@ trait Geometry {
     other match {
       case g: Geometry => jtsGeom.equals(g.jtsGeom)
       case _ => false
-    }
+  }
 }
 
 object Geometry {
