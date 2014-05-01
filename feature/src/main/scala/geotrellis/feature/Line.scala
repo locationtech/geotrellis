@@ -50,6 +50,9 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   assert(!jtsGeom.isEmpty, s"LineString Empty: $jtsGeom")
   assert(jtsGeom.isValid, s"LineString Invalid: $jtsGeom")
 
+  /** Returns a unique representation of the geometry based on standard coordinate ordering. */
+  def normalized(): Line = { jtsGeom.normalize ; Line(jtsGeom) }
+
   /** Returns this Line's vertices as a list of Points. */
   lazy val points: List[Point] =
     jtsGeom.getCoordinates.map(c => Point(c.x, c.y)).toList

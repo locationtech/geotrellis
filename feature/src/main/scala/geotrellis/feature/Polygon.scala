@@ -66,6 +66,8 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
   assert(!jtsGeom.isEmpty, s"Polygon Empty: $jtsGeom")
   assert(jtsGeom.isValid, s"Polygon Invalid: $jtsGeom")
 
+  /** Returns a unique representation of the geometry based on standard coordinate ordering. */
+  def normalized(): Polygon = { jtsGeom.normalize ; Polygon(jtsGeom) }
 
   /** Tests whether this Polygon is a rectangle. */
   lazy val isRectangle: Boolean =

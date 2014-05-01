@@ -132,8 +132,6 @@ object GeotrellisBuild extends Build {
       .settings(name := "geotrellis-feature")
       .settings(libraryDependencies ++=
         Seq(
-          scalatest   % "test",
-          scalacheck  % "test",
           jts,
           sprayJson,
           sprayHttpx,
@@ -143,8 +141,19 @@ object GeotrellisBuild extends Build {
       .settings(defaultAssemblySettings: _*)
       .dependsOn(proj4)
 
-  // Project: proj4
+  // Project: feature-test
+  lazy val featureTest =
+    Project("feature-test", file("feature-test"))
+      .settings(name := "geotrellis-feature-test")
+      .settings(libraryDependencies ++=
+        Seq(
+          scalatest   % "test",
+          scalacheck  % "test"
+        )
+      )
+      .dependsOn(feature, testkit)
 
+  // Project: proj4
   lazy val proj4 =
     Project("proj4", file("proj4"))
       .settings(proj4Settings: _*)
@@ -157,7 +166,6 @@ object GeotrellisBuild extends Build {
         "com.novocode" % "junit-interface" % "0.9" % "test"
       )
     )
-
 
   // Project: core
   lazy val core =
@@ -203,7 +211,7 @@ object GeotrellisBuild extends Build {
   // Project: core-test
   lazy val coreTest =
     Project("core-test", file("core-test"))
-      .dependsOn(core, testkit, feature)
+      .dependsOn(core, testkit, feature % "compile")
       .settings(coreTestSettings: _*)      
       
   lazy val coreTestSettings =
