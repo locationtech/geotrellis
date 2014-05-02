@@ -5,8 +5,11 @@ import geotrellis.proj4.CRS
 
 package object reproject {
   object Reproject {
+    def apply(t: (Double, Double), src: CRS, dest: CRS): (Double, Double) =
+      proj4.Reproject(t._1, t._2, src, dest)
+
     def apply(p: Point, src: CRS, dest: CRS): Point = {
-      val (x,y) = proj4.Reproject(p.x, p.y, src, dest)
+      val (x,y) = apply((p.x, p.y), src, dest)
       Point(x,y)
     }
 
@@ -83,6 +86,7 @@ package object reproject {
       }
   }
 
+  implicit class RerpojectTuple(t: (Double,Double)) { def reproject(src: CRS, dest: CRS): (Double, Double) = Reproject(t, src, dest) }
   implicit class ReprojectPoint(p: Point) { def reproject(src: CRS, dest: CRS): Point = Reproject(p, src, dest) }
   implicit class ReprojectPointFeature[D](pf: PointFeature[D]) { def reproject(src: CRS, dest: CRS): PointFeature[D] = Reproject(pf, src, dest) }
   implicit class ReprojectLine(l: Line) { def reproject(src: CRS, dest: CRS): Line = Reproject(l, src, dest) }

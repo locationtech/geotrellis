@@ -20,8 +20,9 @@ import geotrellis._
 import geotrellis.source._
 import geotrellis.process.LayerId
 import geotrellis.render.ColorRamps._
-import geotrellis.feature.srs._
 import geotrellis.feature._
+import geotrellis.proj4._
+import geotrellis.feature.reproject._
 
 import Json._
 
@@ -48,8 +49,8 @@ object LayerService {
       .info
       .map(_.rasterExtent.extent)
       .map { extent =>
-        val sw = extent.southWest.transform(`web-mercator`, `lat-lng`)
-        val ne = extent.northEast.transform(`web-mercator`, `lat-lng`)
+        val sw = extent.southWest.reproject(WebMercator, LatLng)
+        val ne = extent.northEast.reproject(WebMercator, LatLng)
 
         s"""{"latmin" : "${sw.y}",
              "latmax" : "${ne.y}",
