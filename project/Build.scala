@@ -432,7 +432,7 @@ object GeotrellisBuild extends Build {
   lazy val featureBenchmark = 
     Project("feature-benchmark", file("feature-benchmark"))
       .settings(featureBenchmarkSettings:_*)
-      .dependsOn(feature % "compile->test")
+      .dependsOn(featureTest % "compile->test")
 
   lazy val featureBenchmarkSettings =
     Seq(
