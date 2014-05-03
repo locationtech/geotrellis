@@ -24,7 +24,7 @@ object Viewshed extends Serializable {
 
     for(col <- 0 until cols) {
       for(row <- 0 until rows) {
-        if (height >= requiredHeights.getDouble(col, row)) {
+        if (height >= requiredHeights.getDouble(col, row)-0.5) {
           data.set(col, row, 1)
         } else {
           data.set(col, row, 0)
@@ -126,7 +126,7 @@ object Viewshed extends Serializable {
           } else if (yLatticeZVals.isEmpty) {
             data.setDouble(col, row, xLatticeZVals.max)
           } else {
-            data.setDouble(col, row, Math.max(xLatticeZVals.max, yLatticeZVals.max))
+            data.setDouble(col, row, math.max(xLatticeZVals.max, yLatticeZVals.max))
           }
         }
       }
