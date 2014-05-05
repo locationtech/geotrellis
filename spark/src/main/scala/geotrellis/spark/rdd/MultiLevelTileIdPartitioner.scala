@@ -13,7 +13,7 @@ class MultiLevelTileIdPartitioner extends org.apache.spark.Partitioner {
 
   override def getPartition(key: Any) = {
     val mltw = key.asInstanceOf[MultiLevelTileIdWritable]
-    partitioners(mltw.zoom).getPartition(mltw.get()) + offsets(mltw.zoom)
+    partitioners(mltw.zoom).getPartition(mltw) + offsets(mltw.zoom)
   }
   override def numPartitions = partitioners.foldLeft(0)((count, entry) => count + entry._2.numPartitions)
   override def toString = {
@@ -28,7 +28,7 @@ class MultiLevelTileIdPartitioner extends org.apache.spark.Partitioner {
 }
 
 object MultiLevelTileIdPartitioner {
-  def apply(splitGenerators: Map[Int, RasterSplitGenerator], pyramid: Path, conf: Configuration): MultiLevelTileIdPartitioner = {
+  def apply(splitGenerators: Map[Int, SplitGenerator], pyramid: Path, conf: Configuration): MultiLevelTileIdPartitioner = {
     val meta = PyramidMetadata(pyramid, conf)
     val mltp = new MultiLevelTileIdPartitioner
 
@@ -37,14 +37,13 @@ object MultiLevelTileIdPartitioner {
         yield (level -> TileIdPartitioner(gen, new Path(pyramid, level.toString), conf))) ++
         Map(meta.maxZoomLevel -> TileIdPartitioner(new Path(pyramid, meta.maxZoomLevel.toString), conf)) // add base zoom level
 
-    var offset = 0
+    var cumOffset = 0
     mltp.offsets =
       (for ((level, partitioner) <- mltp.partitioners.toSeq.sortWith(_._1 > _._1)) yield {
-        val curOffset = offset
-        offset = offset + mltp.partitioners(level).numPartitions
-        (level -> curOffset)
+        val curLevelOffset = cumOffset
+        cumOffset = cumOffset + mltp.partitioners(level).numPartitions
+        (level -> curLevelOffset)
       }).toMap
-
     mltp
   }
 
