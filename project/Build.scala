@@ -265,6 +265,24 @@ object GeotrellisBuild extends Build {
     ) ++
     defaultAssemblySettings
 
+  // Project: slick
+  lazy val geotrellis_slick: Project =
+    Project("slick", file("slick"))
+      .settings(slickSettings: _*)
+      .dependsOn(feature)
+
+  lazy val slickSettings =
+    Seq(
+      name := "geotrellis-slick",
+      libraryDependencies := Seq(
+        slick, 
+        postgresql, 
+        slf4jNop, 
+        scalatest % "test"
+      )
+    ) ++
+    defaultAssemblySettings
+
   // Project: admin
   lazy val admin: Project =
     Project("admin", file("admin"))
