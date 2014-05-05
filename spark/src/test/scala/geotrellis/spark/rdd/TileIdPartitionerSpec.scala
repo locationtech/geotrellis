@@ -92,4 +92,13 @@ class TileIdPartitionerSpec extends FunSpec with TestEnvironment with ShouldMatc
       partitioner.range(2) should be(TileIdWritable(21), TileIdWritable(Long.MaxValue))
     }
   }
+
+  describe("splitGenerator") {
+    val expectedSplits = Seq(10L)
+    val partitioner = getPartitioner(expectedSplits)
+
+    it("should give back the correct splits") {
+      partitioner.splitGenerator.getSplits should be(expectedSplits)
+    }
+  }
 }

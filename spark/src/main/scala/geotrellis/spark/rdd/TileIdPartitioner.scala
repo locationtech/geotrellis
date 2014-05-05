@@ -53,6 +53,10 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
   def save(raster: Path, conf: Configuration) =
     TileIdPartitioner.writeSplits(splits.toSeq.map(_.get), raster, conf)
 
+  def splitGenerator = new SplitGenerator {
+    def getSplits = splits.map(_.get)
+  }
+  
   override def equals(other: Any): Boolean = 
     other match {
       case that: TileIdPartitioner => that.splits.deep == splits.deep
