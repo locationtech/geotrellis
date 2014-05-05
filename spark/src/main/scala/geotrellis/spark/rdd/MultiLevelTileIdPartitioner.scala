@@ -28,14 +28,25 @@ class MultiLevelTileIdPartitioner extends org.apache.spark.Partitioner {
 }
 
 object MultiLevelTileIdPartitioner {
-  def apply(splitGenerators: Map[Int, SplitGenerator], pyramid: Path, conf: Configuration): MultiLevelTileIdPartitioner = {
-    val meta = PyramidMetadata(pyramid, conf)
+
+  /*
+   * Create a multi-level TileIdPartitioner over levels 1 through n, given the split generator for 
+   * those levels and a path to the pyramid. The code will overwrite the splits file for each level
+   * in the generator. 
+   * 
+   */
+  def apply(splitGenerators: Map[Int, SplitGenerator],
+            pyramid: Path,
+            conf: Configuration): MultiLevelTileIdPartitioner = {
     val mltp = new MultiLevelTileIdPartitioner
 
+    // input validation
+    val keys = splitGenerators.keys.toList
+    require(keys.distinct.length == keys.length) // ensure keys are all distinct
+
     mltp.partitioners =
-      (for ((level, gen) <- splitGenerators)
-        yield (level -> TileIdPartitioner(gen, new Path(pyramid, level.toString), conf))) ++
-        Map(meta.maxZoomLevel -> TileIdPartitioner(new Path(pyramid, meta.maxZoomLevel.toString), conf)) // add base zoom level
+      for ((level, gen) <- splitGenerators)
+        yield (level -> TileIdPartitioner(gen, new Path(pyramid, level.toString), conf))
 
     var cumOffset = 0
     mltp.offsets =
