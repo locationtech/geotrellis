@@ -19,10 +19,8 @@ class MultiLevelTileIdPartitioner extends org.apache.spark.Partitioner {
   override def toString = {
     "MultiLevelTileIdPartitioner split points: \n" +
       {
-        partitioners.map {
-          case (level, partitioner) =>
-            s"${level}: ${partitioner}\n"
-        }
+        for((level, partitioner) <- partitioners) 
+          yield s"${level}: ${partitioner}\n"        
       }
   }
 }
