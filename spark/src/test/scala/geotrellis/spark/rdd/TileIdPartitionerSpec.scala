@@ -104,10 +104,9 @@ class TileIdPartitionerSpec extends FunSpec with TestEnvironment with ShouldMatc
 
   describe("java serialization") {
     it("should serdes TileIdPartitioner") {
-      val expectedSplits = Seq(10L)
-      val partitioner = getPartitioner(expectedSplits)
-      val actualSplits = testJavaSerialization(partitioner).splitGenerator.getSplits
-      actualSplits should be(Seq(10L))
+      val expectedP = getPartitioner(Seq(10L))
+      val actualP = testJavaSerialization(expectedP)
+      actualP should be(expectedP)
     }
   }
 }
