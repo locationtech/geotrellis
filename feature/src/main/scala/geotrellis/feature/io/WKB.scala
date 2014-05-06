@@ -1,6 +1,6 @@
 package geotrellis.feature.io
 
-import com.vividsolutions.jts.io.{WKBReader, WKBWriter}
+import com.vividsolutions.jts.io.{WKBReader}
 import com.vividsolutions.jts.{geom => jts}
 import geotrellis.feature._
 
@@ -18,8 +18,11 @@ object WKB {
     Geometry.fromJts[G](readerBox.get.read(WKBReader.hexToBytes(hex)))
   }
 
-  def write(geom: Geometry): Array[Byte] = {
-    if (writerBox.get == null) writerBox.set(new WKBWriter())
-    writerBox.get.write(geom.jtsGeom)
+  def write(geom: Geometry, srid: Int = 0): Array[Byte] = {
+    if (writerBox.get == null) writerBox.set(new WKBWriter(2))
+    if (srid == 0)
+      writerBox.get.write(geom)
+    else
+      writerBox.get.write(geom, Some(srid))
   }
 }
