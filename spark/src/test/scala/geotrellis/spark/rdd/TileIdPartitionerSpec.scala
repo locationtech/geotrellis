@@ -17,11 +17,11 @@
 package geotrellis.spark.rdd
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.formats.TileIdWritable
-
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
+import geotrellis.spark.formats.SerializerTester
 
-class TileIdPartitionerSpec extends FunSpec with TestEnvironment with ShouldMatchers {
+class TileIdPartitionerSpec extends FunSpec with TestEnvironment with ShouldMatchers with SerializerTester {
 
   def getPartitioner(seq: Seq[Long]) = {
     val splitGenerator = new SplitGenerator {
@@ -99,6 +99,15 @@ class TileIdPartitionerSpec extends FunSpec with TestEnvironment with ShouldMatc
 
     it("should give back the correct splits") {
       partitioner.splitGenerator.getSplits should be(expectedSplits)
+    }
+  }
+
+  describe("java serialization") {
+    it("should serdes TileIdPartitioner") {
+      val expectedSplits = Seq(10L)
+      val partitioner = getPartitioner(expectedSplits)
+      val actualSplits = testJavaSerialization(partitioner).splitGenerator.getSplits
+      actualSplits should be(Seq(10L))
     }
   }
 }
