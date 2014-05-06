@@ -1,9 +1,10 @@
 package geotrellis.spark.rdd
 import geotrellis.spark.formats.MultiLevelTileIdWritable
 import geotrellis.spark.metadata.PyramidMetadata
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+import java.io.ObjectOutputStream
+import java.io.ObjectInputStream
 
 class MultiLevelTileIdPartitioner extends org.apache.spark.Partitioner {
   @transient
@@ -15,13 +16,35 @@ class MultiLevelTileIdPartitioner extends org.apache.spark.Partitioner {
     val mltw = key.asInstanceOf[MultiLevelTileIdWritable]
     partitioners(mltw.zoom).getPartition(mltw) + offsets(mltw.zoom)
   }
+  
   override def numPartitions = partitioners.foldLeft(0)((count, entry) => count + entry._2.numPartitions)
+  
   override def toString = {
     "MultiLevelTileIdPartitioner split points: \n" +
       {
-        for((level, partitioner) <- partitioners) 
-          yield s"${level}: ${partitioner}\n"        
+        for ((level, partitioner) <- partitioners)
+          yield s"${level}: ${partitioner}\n"
       }
+  }
+
+  override def equals(other: Any): Boolean =
+    other match {
+      case that: MultiLevelTileIdPartitioner => that.partitioners == partitioners && that.offsets == offsets
+      case _                                 => false
+    }
+
+  override def hashCode: Int = 41 * partitioners.hashCode + offsets.hashCode
+
+  private def writeObject(out: ObjectOutputStream) {
+    out.defaultWriteObject()
+    out.writeObject(partitioners)
+    out.writeObject(offsets)
+  }
+
+  private def readObject(in: ObjectInputStream) {
+    in.defaultReadObject()
+    partitioners = in.readObject().asInstanceOf[Map[Int, TileIdPartitioner]]
+    offsets = in.readObject().asInstanceOf[Map[Int, Int]]
   }
 }
 
