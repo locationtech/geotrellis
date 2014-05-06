@@ -57,10 +57,35 @@ trait PostGisSupport extends PostGisExtensions { driver: JdbcDriver =>
 
     override def valueToSQLLiteral(v: T) = toLiteral(v)
   }
+
+  class ProjectedGeometryJdbcType[G <: Geometry, T <: ProjectedGeometry[G] : ClassTag] extends JdbcType[T] with BaseTypedType[T] {
+
+    def scalaType: ScalaType[T] = ScalaBaseType[T]
+
+    def zero: T = null.asInstanceOf[T]
+
+    def sqlType: Int = java.sql.Types.OTHER
+
+    def sqlTypeName: String = "geometry"
+
+    def setValue(v: T, p: PositionedParameters) = p.setBytes(WKB.write(v.geom))
+
+    def setOption(v: Option[T], p: PositionedParameters) = if (v.isDefined) setValue(v.get, p) else p.setNull(sqlType)
+
+    def nextValue(r: PositionedResult): T = r.nextStringOption().map(fromLiteral[T]).getOrElse(zero)
+
+    def updateValue(v: T, r: PositionedResult) = r.updateBytes(WKB.write(v.geom, v.srid))
+
+    def hasLiteralForm: Boolean = false
+
+    override def valueToSQLLiteral(v: T) = toLiteral[G](v)
+  }
+
 }
 
 object PostGisSupportUtils {  
   def toLiteral(geom: Geometry): String = WKT.write(geom)
+  def toLiteral[G <: Geometry](pg: ProjectedGeometry[G]): String = WKT.write(pg.geom)
 
   def fromLiteral[T <: Geometry](value: String): T = {
     splitRSIDAndWKT(value) match {
