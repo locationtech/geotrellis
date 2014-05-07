@@ -1,6 +1,30 @@
 package geotrellis.slick
 
 import geotrellis.proj4._
-import geotrellis.feature.Geometry
+import geotrellis.feature._
 
-case class ProjectedGeometry[G <: Geometry](srid: Int, geom: G)
+sealed trait ProjectedGeometry{
+  type G <: Geometry
+  val srid: Int  
+  val geom: G
+}
+
+object ProjectedGeometry {
+  implicit def toGeometry(pg: ProjectedGeometry) = pg.geom
+}
+
+case class ProjectedPoint(geom: Point, srid: Int) extends ProjectedGeometry { 
+  type G = Point 
+}
+
+case class ProjectedLine(geom: Line, srid: Int) extends ProjectedGeometry { 
+  type G = Line 
+}
+
+case class ProjectedPolygon(geom: Polygon, srid: Int) extends ProjectedGeometry { 
+  type G = Polygon 
+}
+
+case class ProjectedGeometryCollection(geom: GeometryCollection, srid: Int) extends ProjectedGeometry { 
+  type G = GeometryCollection
+}
