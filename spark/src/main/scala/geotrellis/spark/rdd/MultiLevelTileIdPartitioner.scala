@@ -17,13 +17,22 @@ class MultiLevelTileIdPartitioner extends org.apache.spark.Partitioner {
     partitioners(mltw.zoom).getPartition(mltw) + offsets(mltw.zoom)
   }
   
+  def getPartitionForZoom(key: MultiLevelTileIdWritable) = 
+    partitioners(key.zoom).getPartition(key)
+
   override def numPartitions = partitioners.foldLeft(0)((count, entry) => count + entry._2.numPartitions)
-  
+
   override def toString = {
-    "MultiLevelTileIdPartitioner split points: \n" +
+    "MultiLevelTileIdPartitioner:\n" +
+      "Split points: \n" +
       {
         for ((level, partitioner) <- partitioners)
           yield s"${level}: ${partitioner}\n"
+      } +
+      "Offsets: \n" +
+      {
+        for ((level, offset) <- offsets)
+          yield s"${level}: ${offset}\n"
       }
   }
 
