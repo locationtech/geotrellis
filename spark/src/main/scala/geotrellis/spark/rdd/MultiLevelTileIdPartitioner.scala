@@ -1,5 +1,5 @@
 package geotrellis.spark.rdd
-import geotrellis.spark.formats.MultiLevelTileIdWritable
+import geotrellis.spark.formats.TileIdZoomWritable
 import geotrellis.spark.metadata.PyramidMetadata
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -13,11 +13,11 @@ class MultiLevelTileIdPartitioner extends org.apache.spark.Partitioner {
   private var offsets = Map[Int, Int]()
 
   override def getPartition(key: Any) = {
-    val mltw = key.asInstanceOf[MultiLevelTileIdWritable]
-    partitioners(mltw.zoom).getPartition(mltw) + offsets(mltw.zoom)
+    val tzw = key.asInstanceOf[TileIdZoomWritable]
+    partitioners(tzw.zoom).getPartition(tzw) + offsets(tzw.zoom)
   }
   
-  def getPartitionForZoom(key: MultiLevelTileIdWritable) = 
+  def getPartitionForZoom(key: TileIdZoomWritable) = 
     partitioners(key.zoom).getPartition(key)
 
   override def numPartitions = partitioners.foldLeft(0)((count, entry) => count + entry._2.numPartitions)

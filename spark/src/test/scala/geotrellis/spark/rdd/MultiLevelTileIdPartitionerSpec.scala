@@ -17,7 +17,7 @@
 package geotrellis.spark.rdd
 import geotrellis.Extent
 import geotrellis.spark.TestEnvironment
-import geotrellis.spark.formats.MultiLevelTileIdWritable
+import geotrellis.spark.formats.TileIdZoomWritable
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.metadata.RasterMetadata
 import geotrellis.spark.tiling.PixelExtent
@@ -69,13 +69,13 @@ class MultiLevelTileIdPartitionerSpec extends FunSpec with TestEnvironment with 
     val partitioner = getPartitioner(Map(1 -> Seq(), 2 -> Seq(), 3 -> Seq()))
 
     it("should assign tileId 0 of level 3 to partition 0") {
-      partitioner.getPartition(MultiLevelTileIdWritable(0, 3, 0)) should be(0)
+      partitioner.getPartition(TileIdZoomWritable(0, 3)) should be(0)
     }
     it("should assign tileId 0 of level 2 to partition 1") {
-      partitioner.getPartition(MultiLevelTileIdWritable(0, 2, 0)) should be(1)
+      partitioner.getPartition(TileIdZoomWritable(0, 2)) should be(1)
     }
     it("should assign tileId 0 of level 1 to partition 2") {
-      partitioner.getPartition(MultiLevelTileIdWritable(0, 1, 0)) should be(2)
+      partitioner.getPartition(TileIdZoomWritable(0, 1)) should be(2)
     }
   }
 
@@ -89,39 +89,39 @@ class MultiLevelTileIdPartitionerSpec extends FunSpec with TestEnvironment with 
     val partitioner = getPartitioner(Map(1 -> Seq(), 2 -> Seq(10), 3 -> Seq(10, 20)))
 
     it("should assign tileId 0 (before first split point) of level 3 to partition 0") {
-      partitioner.getPartition(MultiLevelTileIdWritable(0, 3, 0)) should be(0)
+      partitioner.getPartition(TileIdZoomWritable(0, 3)) should be(0)
     }
 
     it("should assign tileId 10 (first split point) of level 3 to partition 0") {
-      partitioner.getPartition(MultiLevelTileIdWritable(10, 3, 0)) should be(0)
+      partitioner.getPartition(TileIdZoomWritable(10, 3)) should be(0)
     }
 
     it("should assign tileId 11 of level 3 (between first and second split points) to partition 1") {
-      partitioner.getPartition(MultiLevelTileIdWritable(11, 3, 0)) should be(1)
+      partitioner.getPartition(TileIdZoomWritable(11, 3)) should be(1)
     }
 
     it("should assign tileId 20 of level 3 (second split point) to partition 1") {
-      partitioner.getPartition(MultiLevelTileIdWritable(20, 3, 0)) should be(1)
+      partitioner.getPartition(TileIdZoomWritable(20, 3)) should be(1)
     }
 
     it("should assign tileId 21 of level 3 (after second split point) to partition 2") {
-      partitioner.getPartition(MultiLevelTileIdWritable(21, 3, 0)) should be(2)
+      partitioner.getPartition(TileIdZoomWritable(21, 3)) should be(2)
     }
 
     it("should assign tileId 0 (before first split point) of level 2 to partition 3") {
-      partitioner.getPartition(MultiLevelTileIdWritable(0, 2, 0)) should be(3)
+      partitioner.getPartition(TileIdZoomWritable(0, 2)) should be(3)
     }
 
     it("should assign tileId 10 (split point) of level 2 to partition 3") {
-      partitioner.getPartition(MultiLevelTileIdWritable(10, 2, 0)) should be(3)
+      partitioner.getPartition(TileIdZoomWritable(10, 2)) should be(3)
     }
 
     it("should assign tileId 21 (greater than max split point) of level 2 to partition 4") {
-      partitioner.getPartition(MultiLevelTileIdWritable(21, 2, 0)) should be(4)
+      partitioner.getPartition(TileIdZoomWritable(21, 2)) should be(4)
     }
 
     it("should assign tileId 0 of level 1 to partition 5") {
-      partitioner.getPartition(MultiLevelTileIdWritable(0, 1, 0)) should be(5)
+      partitioner.getPartition(TileIdZoomWritable(0, 1)) should be(5)
     }
   }
 

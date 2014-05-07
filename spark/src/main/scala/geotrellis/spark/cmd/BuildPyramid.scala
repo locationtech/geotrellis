@@ -44,7 +44,7 @@ import geotrellis.spark.rdd.RasterRDD
 import geotrellis.spark.rdd.SplitGenerator
 import geotrellis.spark.metadata.RasterMetadata
 import geotrellis.spark.rdd.MultiLevelTileIdPartitioner
-import geotrellis.spark.formats.MultiLevelTileIdWritable
+import geotrellis.spark.formats.TileIdZoomWritable
 
 class BuildPyramidArgs extends SparkArgs with HadoopArgs {
   @Required var pyramid: String = _
@@ -77,7 +77,7 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
       zoom <- 1 until meta.maxZoomLevel;
       childTileCoord = TmsTiling.latLonToTile(parExtent.ymin, parExtent.xmin, zoom, meta.tileSize);
       childTileId = TmsTiling.tileId(childTileCoord.tx, childTileCoord.ty, zoom)
-    ) yield (MultiLevelTileIdWritable(childTileId, zoom, tile.id), ArgWritable.fromRasterData(tile.raster.data))
+    ) yield (TileIdZoomWritable(childTileId, zoom), ArgWritable.fromRasterData(tile.raster.data))
   }
 
   def main(args: BuildPyramidArgs) {
@@ -125,10 +125,12 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
           logInfo(s"Working on partition ${index} with rep = (${conf.getInt("dfs.replication", -1)}, ${fsRep})")
           val writer = new MapFile.Writer(conf, fs, mapFilePath.toUri.toString,
             classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.RECORD)
-          buf.foreach(writableTile => println(s"zoom=${zoom}, key=${writableTile._1.get}"))
-            //writer.append(writableTile._1.asInstanceOf[TileIdWritable], writableTile._2.head))
+          //buf.foreach(writableTile => println(s"zoom=${zoom}, key=${writableTile._1.get}"))
 
-          //buf.foreach(writableTile => writer.append(writableTile._1.asInstanceOf[TileIdWritable], writableTile._2.head))
+          buf.foreach { writableTile =>
+            val tw = TileIdWritable(writableTile._1.get)
+            writer.append(tw, writableTile._2.head)
+          }
           writer.close()
           partition
         }
