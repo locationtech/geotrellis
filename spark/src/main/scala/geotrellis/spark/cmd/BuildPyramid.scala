@@ -71,16 +71,17 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
   }
 
   private def decimate(tile: Tile, meta: PyramidMetadata) = {
-    val (parTx,parTy) = TmsTiling.tileXY(tile.id, meta.maxZoomLevel)
+    val (parTx, parTy) = TmsTiling.tileXY(tile.id, meta.maxZoomLevel)
     val parExtent = TmsTiling.tileToExtent(parTx, parTy, meta.maxZoomLevel, meta.tileSize)
-    for(zoom <- 1 until meta.maxZoomLevel;
-    	childTileCoord = TmsTiling.latLonToTile(parExtent.ymin, parExtent.xmin, zoom, meta.tileSize);
-    	childTileId = TmsTiling.tileId(childTileCoord.tx, childTileCoord.ty, zoom))
-      yield(MultiLevelTileIdWritable(childTileId, zoom, tile.id), ArgWritable.fromRasterData(tile.raster.data))      
+    for (
+      zoom <- 1 until meta.maxZoomLevel;
+      childTileCoord = TmsTiling.latLonToTile(parExtent.ymin, parExtent.xmin, zoom, meta.tileSize);
+      childTileId = TmsTiling.tileId(childTileCoord.tx, childTileCoord.ty, zoom)
+    ) yield (MultiLevelTileIdWritable(childTileId, zoom, tile.id), ArgWritable.fromRasterData(tile.raster.data))
   }
-  
+
   def main(args: BuildPyramidArgs) {
-	val sc = args.sparkContext("BuildPyramid")
+    val sc = args.sparkContext("BuildPyramid")
     val pyramid = new Path(args.pyramid)
     val conf = args.hadoopConf
     val meta = PyramidMetadata(pyramid, conf)
@@ -100,16 +101,40 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
 
     val rasterPath = new Path(pyramid, meta.maxZoomLevel.toString)
     val rdd = RasterRDD(rasterPath, sc)
+    val broadCastedConf = sc.broadcast(new SerializableWritable(conf))
     val broadCastedMeta = sc.broadcast(newMeta)
+    val pyramidStr = pyramid.toUri().toString()
     val res = rdd.mapPartitions({ partition =>
       val meta = broadCastedMeta.value
       partition.map { tile =>
         decimate(tile, meta)
       }.flatten
     }, true)
-    .partitionBy(mp)
-    .groupByKey
+      .groupByKey(mp)
+      .mapPartitions({ partition =>
+        {
+          val conf = broadCastedConf.value.value
+          val buf = partition.toArray.sortWith((x, y) => x._1.get() < y._1.get())
+          //println("WHOOO - partitioner = " + mp)
+          val (zoom, index) = (buf.head._1.zoom, mp.getPartitionForZoom(buf.head._1))
+          val outPath = new Path(pyramidStr, zoom.toString)
+          val mapFilePath = new Path(outPath, f"part-${index}%05d")
+          println("writing to " + mapFilePath.toString())
+          val fs = mapFilePath.getFileSystem(conf)
+          val fsRep = fs.getDefaultReplication()
+          logInfo(s"Working on partition ${index} with rep = (${conf.getInt("dfs.replication", -1)}, ${fsRep})")
+          val writer = new MapFile.Writer(conf, fs, mapFilePath.toUri.toString,
+            classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.RECORD)
+          buf.foreach(writableTile => println(s"zoom=${zoom}, key=${writableTile._1.get}"))
+            //writer.append(writableTile._1.asInstanceOf[TileIdWritable], writableTile._2.head))
 
+          //buf.foreach(writableTile => writer.append(writableTile._1.asInstanceOf[TileIdWritable], writableTile._2.head))
+          writer.close()
+          partition
+        }
+      }, true)
+
+    println(s"Result has ${res.count} tuples and partitioner = ${res.partitioner}")
     // TODO - save newMeta
   }
 }
