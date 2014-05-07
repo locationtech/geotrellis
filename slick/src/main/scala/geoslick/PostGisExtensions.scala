@@ -224,9 +224,15 @@ trait PostGisExtensions extends JdbcTypesComponent { driver: JdbcDriver =>
   }
 
   /** Extension methods for postgis Columns */
-  class GeometryColumnExtensionMethods[G1 <: GEOMETRY, P1](val c: Column[P1])(
-            implicit tm: JdbcType[GEOMETRY], tm1: JdbcType[POINT], tm2: JdbcType[LINESTRING], tm3: JdbcType[POLYGON], tm4: JdbcType[GEOMETRYCOLLECTION])
-                  extends ExtensionMethods[G1, P1] {
+  class GeometryColumnExtensionMethods[G1 <: GEOMETRY, P1]
+    (val c: Column[P1])
+    (implicit 
+      tm: JdbcType[GEOMETRY], 
+      tm1: JdbcType[POINT], 
+      tm2: JdbcType[LINESTRING], 
+      tm3: JdbcType[POLYGON], 
+      tm4: JdbcType[GEOMETRYCOLLECTION]
+    ) extends ExtensionMethods[G1, P1] {
 
     /** Geometry Operators */
     def @&&[P2, R](geom: Column[P2])(implicit om: o#to[Boolean, R]) = {
