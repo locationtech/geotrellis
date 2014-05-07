@@ -262,6 +262,29 @@ class PostgisSpec extends FlatSpec with ShouldMatchers {
 
       def * = (id, name, geom)
     }
+  }
 
+  class LineRow(tag: Tag) extends Table[(Int,Line)](tag, "lines") {      
+    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def geom = column[Line]("geom")
+
+    def * = (id, geom)
+  }
+  val LineTable = TableQuery[LineRow]
+
+  it should "wrap PostGIS functions on Geometry Fields" in {
+    db withSession { implicit s => 
+      try { LineTable.ddl.drop } catch { case e: Throwable =>  }
+      LineTable.ddl.create
+
+      LineTable += (0, Line(Point(1,1), Point(1,2)))
+
+      val q = for {
+        line <- LineTable
+      } yield (line.geom.length)
+
+      println(q.selectStatement)
+      println(q.list)
+    }
   }
 }
