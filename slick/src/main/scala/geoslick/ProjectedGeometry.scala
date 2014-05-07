@@ -11,6 +11,15 @@ sealed trait ProjectedGeometry{
 
 object ProjectedGeometry {
   implicit def toGeometry(pg: ProjectedGeometry) = pg.geom
+
+  def apply[T <: ProjectedGeometry](geom: Geometry, srid: Int) = {
+    geom match {
+      case g: Point => ProjectedPoint(g, srid)
+      case g: Line => ProjectedLine(g, srid)
+      case g: Polygon => ProjectedPolygon(g, srid)
+      case g: GeometryCollection => ProjectedGeometryCollection(g, srid)
+    }
+  }
 }
 
 case class ProjectedPoint(geom: Point, srid: Int) extends ProjectedGeometry { 

@@ -63,9 +63,19 @@ trait PostGisProjectionSupport extends PostGisExtensions { driver: JdbcDriver =>
 }
 
 object PostGisProjectionSupportUtils {  
-  def toLiteral(pg: ProjectedGeometry): String = ???
+  def toLiteral(pg: ProjectedGeometry): String = WKT.write(pg.geom)
 
-  def fromLiteral[T <: ProjectedGeometry](value: String): T = ???
+  def fromLiteral[T <: ProjectedGeometry](value: String): T = 
+    splitRSIDAndWKT(value) match {
+      case (srid, wkt) =>
+        val geom =
+          if (wkt.startsWith("00") || wkt.startsWith("01"))
+            WKB.read[Geometry](wkt)
+          else 
+            WKT.read[Geometry](wkt)
+
+        ProjectedGeometry(geom, srid).asInstanceOf[T]
+    }
 
   /** copy from [[org.postgis.PGgeometry#splitSRID]] */
   private def splitRSIDAndWKT(value: String): (Int, String) = {
