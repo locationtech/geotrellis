@@ -34,7 +34,7 @@ object WKBWriter {
 }
 
 class WKBWriter(outputDimension: Int, byteOrder: Int) {
-  require(outputDimension < 2 || outputDimension > 3, "Output dimension must be 2 or 3")
+  require(outputDimension == 2 || outputDimension == 3, s"Output dimension ($outputDimension) must be 2 or 3")
   require(byteOrder == ByteOrderValues.BIG_ENDIAN || byteOrder == ByteOrderValues.LITTLE_ENDIAN, "Invalid byteOrder")
 
   def this(outputDimension: Int) = this(outputDimension, ByteOrderValues.BIG_ENDIAN)
