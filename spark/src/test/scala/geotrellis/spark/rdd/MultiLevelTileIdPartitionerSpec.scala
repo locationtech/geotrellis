@@ -22,14 +22,13 @@ import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.metadata.RasterMetadata
 import geotrellis.spark.tiling.PixelExtent
 import geotrellis.spark.tiling.TileExtent
-
 import org.apache.hadoop.fs.Path
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
-
 import java.awt.image.DataBuffer
+import geotrellis.spark.formats.SerializerTester
 
-class MultiLevelTileIdPartitionerSpec extends FunSpec with TestEnvironment with ShouldMatchers {
+class MultiLevelTileIdPartitionerSpec extends FunSpec with TestEnvironment with ShouldMatchers with SerializerTester {
 
   // maximum number of zoom levels for the pyramid in this test
   final val Levels = 3
@@ -123,6 +122,14 @@ class MultiLevelTileIdPartitionerSpec extends FunSpec with TestEnvironment with 
 
     it("should assign tileId 0 of level 1 to partition 5") {
       partitioner.getPartition(MultiLevelTileIdWritable(0, 1, 0)) should be(5)
+    }
+  }
+
+  describe("java serialization") {
+    it("should serdes MultiLevelTileIdPartitioner") {
+      val expectedP = getPartitioner(Map(1 -> Seq(10), 2 -> Seq(10,20), 3 -> Seq(10,20,30)))
+      val actualP = testJavaSerialization(expectedP)      
+      actualP should be(expectedP)
     }
   }
 }
