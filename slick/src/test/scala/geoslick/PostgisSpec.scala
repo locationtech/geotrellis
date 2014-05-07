@@ -10,7 +10,7 @@ import util._
 class PostgisSpec extends FlatSpec with ShouldMatchers {
   import PostGisDriver.simple._
 
-  class SimpleCity(tag: Tag) extends Table[(Int,String)](tag, "cities") {    
+  class SimpleCity(tag: Tag) extends Table[(Int,String)](tag, "simple_cities") {    
     def id = column[Int]("id", O.PrimaryKey,  O.AutoInc)
     def name = column[String]("name")
 
