@@ -2,13 +2,20 @@ package geotrellis.slick
 
 import org.scalatest._
 
-import PostGisDriver.simple._
 import geotrellis.feature._
+import scala.slick.driver.PostgresDriver
 
 import util._
 
 class PostgisSpec extends FlatSpec with ShouldMatchers {
-  import PostGisDriver.simple._
+  val driver = PostgresDriver
+  import driver.simple._
+  //import support of Subclasses of Geometry
+  val postgis = new PostGisSupport(driver)
+  import postgis._
+  //import support for Subclasses of ProjectedGeometry
+  // val projected = new PostGisProjectionSupport(driver)
+  // import projected._
 
   class SimpleCity(tag: Tag) extends Table[(Int,String)](tag, "simple_cities") {    
     def id = column[Int]("id", O.PrimaryKey,  O.AutoInc)

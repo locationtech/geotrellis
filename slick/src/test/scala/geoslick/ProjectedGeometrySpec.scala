@@ -7,17 +7,13 @@ import scala.slick.driver.PostgresDriver
 
 import util._
 
-trait SomePostGisDriver extends PostgresDriver
-  with PostGisProjectionSupport
-{
-  override val Implicit = new Implicits with PostGisImplicits
-  override val simple = new Implicits with SimpleQL with PostGisImplicits with PostGisAssistants
-}
-
-object SomePostGisDriver extends SomePostGisDriver
 
 class ProjectedGeometrySpec extends FlatSpec with ShouldMatchers with BeforeAndAfter {
-  import SomePostGisDriver.simple._
+  val driver = PostgresDriver
+  import driver.simple._
+  //import support for Subclasses of ProjectedGeometry
+  val projected = new PostGisProjectionSupport(driver)
+  import projected._
 
   val pguser = scala.util.Properties.envOrElse("PGUSER","postgres")
   val pgpass = scala.util.Properties.envOrElse("PGPASS","postgres")

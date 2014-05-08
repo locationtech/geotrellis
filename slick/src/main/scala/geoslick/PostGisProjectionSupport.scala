@@ -1,18 +1,16 @@
 package geotrellis.slick
 
-import scala.slick.driver._
+import scala.slick.driver.JdbcDriver
 import scala.slick.lifted.Column
 import scala.reflect.ClassTag
-import scala.slick.ast.{ScalaBaseType, ScalaType, BaseTypedType}
+import scala.slick.ast.{ScalaBaseType}
 import scala.slick.jdbc.{PositionedResult, PositionedParameters}
 
-import com.vividsolutions.jts.{geom => jts}
 import geotrellis.feature._
 import geotrellis.feature.io._
 
-
-/** copy from [[package com.github.tminglei.slickpg.PgPostGISSupport]] */
-trait PostGisProjectionSupport extends PostGisExtensions { driver: JdbcDriver =>
+/** based on [[package com.github.tminglei.slickpg.PgPostGISSupport]] */
+class PostGisProjectionSupport(override val driver: JdbcDriver) extends PostGisExtensions { 
   import PostGisProjectionSupportUtils._
 
   type GEOMETRY           = ProjectedGeometry
@@ -21,32 +19,33 @@ trait PostGisProjectionSupport extends PostGisExtensions { driver: JdbcDriver =>
   type POLYGON            = ProjectedPolygon
   type GEOMETRYCOLLECTION = ProjectedGeometryCollection
 
-  trait PostGisImplicits {
-    implicit val geometryTypeMapper = new ProjectedGeometryJdbcType[ProjectedGeometry]
-    implicit val pointTypeMapper = new ProjectedGeometryJdbcType[ProjectedPoint]
-    implicit val polygonTypeMapper = new ProjectedGeometryJdbcType[ProjectedPolygon]
-    implicit val lineTypeMapper = new ProjectedGeometryJdbcType[ProjectedLine]
-    implicit val geometryCollectionTypeMapper = new ProjectedGeometryJdbcType[ProjectedGeometryCollection]
-    // implicit val multiPointTypeMapper = new ProjectedGeometryJdbcType[ProjectedGeometry[MultiPoint], MultiPoint]
-    // implicit val multiPolygonTypeMapper = new ProjectedGeometryJdbcType[ProjectedGeometry[MultiPolygon], MultiPolygon]
-    // implicit val multiLineTypeMapper = new ProjectedGeometryJdbcType[ProjectedGeometry[MultiLine], MultiLine]
+  implicit val geometryTypeMapper           = new ProjectedGeometryJdbcType[ProjectedGeometry]
+  implicit val pointTypeMapper              = new ProjectedGeometryJdbcType[ProjectedPoint]
+  implicit val polygonTypeMapper            = new ProjectedGeometryJdbcType[ProjectedPolygon]
+  implicit val lineTypeMapper               = new ProjectedGeometryJdbcType[ProjectedLine]
+  implicit val geometryCollectionTypeMapper = new ProjectedGeometryJdbcType[ProjectedGeometryCollection]
+  // implicit val multiPointTypeMapper = new ProjectedGeometryJdbcType[ProjectedGeometry[MultiPoint], MultiPoint]
+  // implicit val multiPolygonTypeMapper = new ProjectedGeometryJdbcType[ProjectedGeometry[MultiPolygon], MultiPolygon]
+  // implicit val multiLineTypeMapper = new ProjectedGeometryJdbcType[ProjectedGeometry[MultiLine], MultiLine]
 
-    implicit def geometryColumnExtensionMethods[G1 <: ProjectedGeometry](c: Column[G1]) = 
-      new GeometryColumnExtensionMethods[G1, G1](c)
+  implicit def geometryColumnExtensionMethods[G1 <: GEOMETRY](c: Column[G1]) = 
+    new GeometryColumnExtensionMethods[G1, G1](c)
+  
+  implicit def geometryOptionColumnExtensionMethods[G1 <: GEOMETRY](c: Column[Option[G1]]) = 
+    new GeometryColumnExtensionMethods[G1, Option[G1]](c)
+
+  class ProjectedGeometryJdbcType[T <: ProjectedGeometry :ClassTag] extends driver.DriverJdbcType[T] {
+    override def scalaType = ScalaBaseType[T]
     
-    implicit def geometryOptionColumnExtensionMethods[G1 <: ProjectedGeometry](c: Column[Option[G1]]) = 
-      new GeometryColumnExtensionMethods[G1, Option[G1]](c)
-  }
-
-  class ProjectedGeometryJdbcType[T <: ProjectedGeometry :ClassTag] extends JdbcType[T] with BaseTypedType[T] {
-
-    def scalaType: ScalaType[T] = ScalaBaseType[T]
+    override def sqlTypeName: String = "geometry"
+    
+    override def hasLiteralForm: Boolean = false
+    
+    override def valueToSQLLiteral(v: T) = toLiteral(v)
 
     def zero: T = null.asInstanceOf[T]
 
     def sqlType: Int = java.sql.Types.OTHER
-
-    def sqlTypeName: String = "geometry"
 
     def setValue(v: T, p: PositionedParameters) = p.setBytes(WKB.write(v.geom, v.srid))
 
@@ -55,10 +54,6 @@ trait PostGisProjectionSupport extends PostGisExtensions { driver: JdbcDriver =>
     def nextValue(r: PositionedResult): T = r.nextStringOption().map(fromLiteral[T]).getOrElse(zero)
 
     def updateValue(v: T, r: PositionedResult) = r.updateBytes(WKB.write(v.geom, v.srid))
-
-    def hasLiteralForm: Boolean = false
-
-    override def valueToSQLLiteral(v: T) = toLiteral(v)
   }
 }
 

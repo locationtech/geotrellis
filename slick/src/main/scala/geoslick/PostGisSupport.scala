@@ -1,49 +1,52 @@
 package geotrellis.slick
 
-import scala.slick.driver._
+import scala.slick.driver.JdbcDriver
 import scala.slick.lifted.Column
 import scala.reflect.ClassTag
-import scala.slick.ast.{ScalaBaseType, ScalaType, BaseTypedType}
+import scala.slick.ast.{ScalaBaseType}
 import scala.slick.jdbc.{PositionedResult, PositionedParameters}
 
-import com.vividsolutions.jts.{geom => jts}
 import geotrellis.feature._
 import geotrellis.feature.io._
 
-
-/** copy from [[package com.github.tminglei.slickpg.PgPostGISSupport]] */
-trait PostGisSupport extends PostGisExtensions { driver: JdbcDriver =>
+/** based on [[package com.github.tminglei.slickpg.PgPostGISSupport]] */
+class PostGisSupport(override val driver: JdbcDriver) extends PostGisExtensions { 
   import PostGisSupportUtils._
 
-  type GEOMETRY   = Geometry
-  type POINT      = Point
-  type LINESTRING = Line
-  type POLYGON    = Polygon
+  type GEOMETRY           = Geometry
+  type POINT              = Point
+  type LINESTRING         = Line
+  type POLYGON            = Polygon
   type GEOMETRYCOLLECTION = GeometryCollection
 
-  trait PostGisImplicits {
-    implicit val geometryTypeMapper = new GeometryJdbcType[Geometry]
-    implicit val pointTypeMapper = new GeometryJdbcType[Point]
-    implicit val polygonTypeMapper = new GeometryJdbcType[Polygon]
-    implicit val lineTypeMapper = new GeometryJdbcType[Line]
-    implicit val geometryCollectionTypeMapper = new GeometryJdbcType[GeometryCollection]
-    implicit val multiPointTypeMapper = new GeometryJdbcType[MultiPoint]
-    implicit val multiPolygonTypeMapper = new GeometryJdbcType[MultiPolygon]
-    implicit val multiLineTypeMapper = new GeometryJdbcType[MultiLine]
+  implicit val geometryTypeMapper = new GeometryJdbcType[GEOMETRY]
+  implicit val pointTypeMapper = new GeometryJdbcType[POINT]
+  implicit val lineTypeMapper = new GeometryJdbcType[LINESTRING]
+  implicit val polygonTypeMapper = new GeometryJdbcType[POLYGON]
+  implicit val geometryCollectionTypeMapper = new GeometryJdbcType[GEOMETRYCOLLECTION]  
+  implicit val multiPointTypeMapper = new GeometryJdbcType[MultiPoint]
+  implicit val multiPolygonTypeMapper = new GeometryJdbcType[MultiPolygon]
+  implicit val multiLineTypeMapper = new GeometryJdbcType[MultiLine]
 
-    implicit def geometryColumnExtensionMethods[G1 <: Geometry](c: Column[G1]) = new GeometryColumnExtensionMethods[G1, G1](c)
-    implicit def geometryOptionColumnExtensionMethods[G1 <: Geometry](c: Column[Option[G1]]) = new GeometryColumnExtensionMethods[G1, Option[G1]](c)
-  }
+  implicit def geometryColumnExtensionMethods[G1 <: GEOMETRY](c: Column[G1]) = 
+    new GeometryColumnExtensionMethods[G1, G1](c)
+  
+  implicit def geometryOptionColumnExtensionMethods[G1 <: GEOMETRY](c: Column[Option[G1]]) = 
+    new GeometryColumnExtensionMethods[G1, Option[G1]](c)
 
-  class GeometryJdbcType[T <: Geometry : ClassTag] extends JdbcType[T] with BaseTypedType[T] {
-
-    def scalaType: ScalaType[T] = ScalaBaseType[T]
+  
+  class GeometryJdbcType[T <: Geometry : ClassTag] extends driver.DriverJdbcType[T] {
+    override def scalaType = ScalaBaseType[T]
+    
+    override def sqlTypeName: String = "geometry"
+    
+    override def hasLiteralForm: Boolean = false
+    
+    override def valueToSQLLiteral(v: T) = toLiteral(v)
 
     def zero: T = null.asInstanceOf[T]
 
     def sqlType: Int = java.sql.Types.OTHER
-
-    def sqlTypeName: String = "geometry"
 
     def setValue(v: T, p: PositionedParameters) = p.setBytes(WKB.write(v))
 
@@ -52,10 +55,6 @@ trait PostGisSupport extends PostGisExtensions { driver: JdbcDriver =>
     def nextValue(r: PositionedResult): T = r.nextStringOption().map(fromLiteral[T]).getOrElse(zero)
 
     def updateValue(v: T, r: PositionedResult) = r.updateBytes(WKB.write(v))
-
-    def hasLiteralForm: Boolean = false
-
-    override def valueToSQLLiteral(v: T) = toLiteral(v)
   }
 }
 
