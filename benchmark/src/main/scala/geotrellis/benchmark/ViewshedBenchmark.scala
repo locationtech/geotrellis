@@ -11,7 +11,7 @@ import scala.util.Random
 import geotrellis.raster.op.global.Viewshed
 
 /*
- * Current times
+ * Current times for 256x256 (ms)
  * [info] CornerRequiredHeight 1363 ==============================
  * [info] CenterRequiredHeight  680 ==============
  */

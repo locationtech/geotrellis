@@ -1,6 +1,6 @@
 package geotrellis.raster.op.global
 
-import geotrellis.{TypeBit, TypeDouble, ArrayRaster, Raster}
+import geotrellis.{TypeDouble, ArrayRaster, Raster}
 import geotrellis.raster.RasterData
 
 /**
@@ -17,29 +17,7 @@ object ApproxViewshed extends Serializable {
   }
 
   def approxComputeViewable(i:Int,j:Int,r:Raster):Raster = {
-    val re = r.rasterExtent
-    val rows = re.rows
-    val cols = re.cols
-    val data = RasterData.allocByType(TypeBit,cols,rows)
-    val height = {
-      if(r.rasterType.isDouble) {
-        r.getDouble(j, i)
-      }else {
-        r.get(j, i)
-      }
-    }
-    val requiredHeights = approxComputeMinHeightViewable(i, j, r)
-
-    for(col <- 0 until cols) {
-      for(row <- 0 until rows) {
-        if (height >= requiredHeights.getDouble(col, row)) {
-          data.set(col, row, 1)
-        } else {
-          data.set(col, row, 0)
-        }
-      }
-    }
-    ArrayRaster(data,re)
+    r.localEqual(approxComputeMinHeightViewable(i, j, r))
   }
 
   def approxComputeMinHeightViewable(i:Int,j:Int,r:Raster):Raster = {
@@ -64,7 +42,6 @@ object ApproxViewshed extends Serializable {
         }
 
         val xPoints = xPointsPossible.filter {case (x,y) => inBounds(x,y)}
-        System.out.println("Mapping xPoints: " + xPointsPossible.toString)
         xPoints.map {
           case (x,y) =>
             val z = getRasterVal(y,x,r)
@@ -75,25 +52,22 @@ object ApproxViewshed extends Serializable {
               val yInt = yVal.toInt
               val closestHeight = {
                 if (i == x) {
-                  getRasterVal(y, x - math.signum(x-i), r)
+                  data.getDouble(y, x - math.signum(x-i))
                 }else if (yVal.isValidInt) {
-                  getRasterVal(yInt, x - math.signum(x-i), r)
+                  data.getDouble(yInt, x - math.signum(x-i))
                 }else { // need linear interpolation
-                  (yInt + 1 - y) * getRasterVal(yInt, x - math.signum(x-i), r) + (y - yInt) * getRasterVal(yInt + 1, x - math.signum(x-i), r)
+                  (yInt + 1 - yVal) * data.getDouble(yInt, x - math.signum(x-i)) + (yVal - yInt) *  data.getDouble(yInt + 1, x - math.signum(x-i))
                 }
               }
               if (x > i) {
-                data.setDouble(y,x,4)
-                // data.setDouble(y,x,math.max(z, 1.0/(i-(x-1))*(k-closestHeight)+closestHeight))
+                data.setDouble(y,x,math.max(z, 1.0/(i-(x-1))*(k-closestHeight)+closestHeight))
               }else {
-                data.setDouble(y,x,2)
-                // data.setDouble(y,x,math.max(z, -1.0/(i-(x+1))*(k-closestHeight) + closestHeight))
+                data.setDouble(y,x,math.max(z, -1.0/(i-(x+1))*(k-closestHeight) + closestHeight))
               }
             }
         }
 
-        val yPoints = xPointsPossible.filter {case (x,y) => inBounds(x,y)}
-        System.out.println("Mapping yPoints: " + yPointsPossible.toString)
+        val yPoints = yPointsPossible.filter {case (x,y) => inBounds(x,y)}
         yPoints.map {
           case (x,y) =>
             val z = getRasterVal(y,x,r)
@@ -104,19 +78,17 @@ object ApproxViewshed extends Serializable {
               val xInt = xVal.toInt
               val closestHeight = {
                 if (j == y) {
-                  getRasterVal(y - math.signum(y-j), x, r)
+                  data.getDouble(y - math.signum(y-j), x)
                 }else if (xVal.isValidInt) {
-                  getRasterVal(y - math.signum(y-j), xInt, r)
+                  data.getDouble(y - math.signum(y-j), xInt)
                 } else { // need linear interpolation
-                  (xInt + 1 - x) * getRasterVal(y - math.signum(y-j), xInt,r) + (x - xInt) * getRasterVal(y - math.signum(y-j), xInt + 1, r)
+                  (xInt + 1 - xVal) *  data.getDouble(y - math.signum(y-j), xInt) + (xVal - xInt) * data.getDouble(y - math.signum(y-j), xInt + 1)
                 }
               }
               if (y > j) {
-                data.setDouble(y,x,5)
-                // data.setDouble(y,x,math.max(z, 1.0/(j-(y-1))*(k-closestHeight) + closestHeight))
+                data.setDouble(y,x,math.max(z, 1.0/(j-(y-1))*(k-closestHeight) + closestHeight))
               }else {
-                data.setDouble(y,x,3)
-                // data.setDouble(y,x,math.max(z, -1.0/(j-(y+1))*(k-closestHeight) + closestHeight))
+                data.setDouble(y,x,math.max(z, -1.0/(j-(y+1))*(k-closestHeight) + closestHeight))
               }
             }
         }
