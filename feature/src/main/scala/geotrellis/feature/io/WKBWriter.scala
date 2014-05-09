@@ -1,3 +1,4 @@
+
 package geotrellis.feature.io
 
 import java.io.{ByteArrayOutputStream}
@@ -33,6 +34,11 @@ object WKBWriter {
   def toHex(bytes: Array[Byte]): String  =  bytes.map("%02x".format(_)).mkString
 }
 
+/**
+ * Ported from JTS WKBWriter [[package com.vividsolutions.jts.io.WKBWriter]]
+ *
+ * Original Author: Martin Davis
+ */
 class WKBWriter(outputDimension: Int, byteOrder: Int) {
   require(outputDimension == 2 || outputDimension == 3, s"Output dimension ($outputDimension) must be 2 or 3")
   require(byteOrder == ByteOrderValues.BIG_ENDIAN || byteOrder == ByteOrderValues.LITTLE_ENDIAN, "Invalid byteOrder")
