@@ -112,7 +112,7 @@ object GeotrellisBuild extends Build {
   // Project: root
   lazy val root =
     Project("root", file("."))
-      .aggregate(core, coreTest, feature)
+      .aggregate(core, coreTest, feature, geotrellis_slick, proj4)
 
   // Project: macros
   lazy val macros =
@@ -261,6 +261,24 @@ object GeotrellisBuild extends Build {
         slf4jApi,
         slf4jNop,
         asm
+      )
+    ) ++
+    defaultAssemblySettings
+
+  // Project: slick
+  lazy val geotrellis_slick: Project =
+    Project("slick", file("slick"))
+      .settings(slickSettings: _*)
+      .dependsOn(feature)
+
+  lazy val slickSettings =
+    Seq(
+      name := "geotrellis-slick",
+      libraryDependencies := Seq(
+        slick, 
+        postgresql, 
+        slf4jNop, 
+        scalatest % "test"
       )
     ) ++
     defaultAssemblySettings
