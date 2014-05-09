@@ -9,7 +9,24 @@ import scala.slick.jdbc.{PositionedResult, PositionedParameters}
 import geotrellis.feature._
 import geotrellis.feature.io._
 
-/** based on [[package com.github.tminglei.slickpg.PgPostGISSupport]] */
+/** 
+ * This class provides column types and extension methods to work with Geometry columns in PostGIS.
+ *
+ * Sample Usage: 
+ * <code>
+ * val PostGIS = new PostGisSupport(PostgresDriver)
+ * import PostGIS._
+ * 
+ * class City(tag: Tag) extends Table[(Int,String,Point)](tag, "cities") {      
+ *   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+ *   def name = column[String]("name")
+ *   def geom = column[Point]("geom")
+ *   def * = (id, name, geom)
+ * }
+ * </code>
+ *
+ * based on [[package com.github.tminglei.slickpg.PgPostGISSupport]]
+ */
 class PostGisSupport(override val driver: JdbcDriver) extends PostGisExtensions { 
   import PostGisSupportUtils._
 

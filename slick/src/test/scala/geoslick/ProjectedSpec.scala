@@ -8,7 +8,7 @@ import scala.slick.driver.PostgresDriver
 import util._
 
 
-class ProjectedGeometrySpec extends FlatSpec with ShouldMatchers with BeforeAndAfter {
+class ProjectedSpec extends FlatSpec with ShouldMatchers with BeforeAndAfter {
   val driver = PostgresDriver
   import driver.simple._
   //import support for Subclasses of ProjectedGeometry
@@ -26,10 +26,10 @@ class ProjectedGeometrySpec extends FlatSpec with ShouldMatchers with BeforeAndA
                            password=pgpass)
 
 
-  class City(tag: Tag) extends Table[(Int,String,ProjectedPoint)](tag, "cities") {      
+  class City(tag: Tag) extends Table[(Int,String,Projected[Point])](tag, "cities") {      
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
     def name = column[String]("name")
-    def geom = column[ProjectedPoint]("geom")
+    def geom = column[Projected[Point]]("geom")
 
     def * = (id, name, geom)
   }
@@ -40,15 +40,15 @@ class ProjectedGeometrySpec extends FlatSpec with ShouldMatchers with BeforeAndA
       try { CityTable.ddl.drop } catch { case e: Throwable =>  }
       CityTable.ddl.create
 
-      CityTable += (0, "Megacity 1", ProjectedPoint(Point(1,1), 43211))
+      CityTable += (0, "Megacity 1", Projected(Point(1,1), 43211))
 
       CityTable.ddl.drop
     }
   }
 
-  class LineRow(tag: Tag) extends Table[(Int,ProjectedLine)](tag, "lines") {      
+  class LineRow(tag: Tag) extends Table[(Int,Projected[Line])](tag, "lines") {      
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-    def geom = column[ProjectedLine]("geom")
+    def geom = column[Projected[Line]]("geom")
 
     def * = (id, geom)
   }
@@ -59,7 +59,7 @@ class ProjectedGeometrySpec extends FlatSpec with ShouldMatchers with BeforeAndA
       try { LineTable.ddl.drop } catch { case e: Throwable =>  }
       LineTable.ddl.create
 
-      LineTable += (0, ProjectedLine(Line(Point(1,1), Point(1,3)), 3131))
+      LineTable += (0, Projected(Line(Point(1,1), Point(1,3)), 3131))
 
       val q = for {
         line <- LineTable
