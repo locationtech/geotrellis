@@ -343,11 +343,11 @@ object GeotrellisBuild extends Build {
   lazy val gdalSettings =
     Seq(
       name := "geotrellis-gdal",
+      javaOptions += "-Djava.library.path=/usr/local/lib",
       libraryDependencies ++=
         Seq(
-//          "com.azavea.geotrellis" % "gdal" % "1.10.1",
-          "org.gdal" % "gdal" % "1.9.2",
-          "com.azavea.geotrellis" %% "gdal-scala" % "0.1.0-SNAPSHOT",
+          "org.gdal" % "gdal" % "1.10.1",
+          "com.github.scopt" % "scopt_2.10" % "3.2.0",
           scalatest % "test"
         ),
       resolvers ++=
