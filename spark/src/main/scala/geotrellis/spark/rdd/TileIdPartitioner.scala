@@ -164,6 +164,4 @@ object TileIdPartitioner extends ArgMain[RasterArgs] {
     val conf = SparkUtils.createHadoopConfiguration
     printSplits(input, conf)
   }
-
 }
-
