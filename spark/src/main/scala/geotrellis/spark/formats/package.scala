@@ -31,8 +31,7 @@ package object formats {
       val tileId = wt._1.get
 
       val (tileSize, rasterType) = (meta.tileSize, meta.rasterType)
-      val (tx, ty) = TmsTiling.tileXY(tileId, zoom)
-      val extent = TmsTiling.tileToExtent(tx, ty, zoom, tileSize)
+      val extent = TmsTiling.tileToExtent(tileId, zoom, tileSize)
 
       val rd = wt._2.toRasterData(rasterType, tileSize, tileSize)
       if (addUserNoData) NoDataHandler.addUserNoData(rd, meta.nodata) 
@@ -49,8 +48,7 @@ package object formats {
       val tileId = pwt._1.get
 
       val (tileSize, rasterType) = (meta.tileSize, meta.rasterType)
-      val (tx, ty) = TmsTiling.tileXY(tileId, zoom)
-      val extent = TmsTiling.tileToExtent(tx, ty, zoom, tileSize)
+      val extent = TmsTiling.tileToExtent(tileId, zoom, tileSize)
 
       val rd = pwt._2.toPayloadRasterData(rasterType, tileSize, tileSize, payload)
       if(addUserNoData) NoDataHandler.addUserNoData(rd, meta.nodata) 
