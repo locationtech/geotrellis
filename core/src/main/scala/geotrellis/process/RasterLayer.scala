@@ -33,7 +33,6 @@ import scala.concurrent.duration._
 import spray.http._
 import spray.client.pipelining._
 
-import scala.io.Source
 import java.io.File
 
 /**
@@ -106,10 +105,7 @@ object RasterLayer {
   def fromPath(path:String):Try[RasterLayer] =
     try {
       val base = Filesystem.basename(path) + ".json"
-      val src = Source.fromFile(path)
-      val data = src.mkString
-      src.close()
-      fromJSON(data, base)
+      fromJSON(Filesystem.readText(path), base)
     } catch {
       case e:Exception => Failure(e)
     }

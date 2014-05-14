@@ -21,6 +21,8 @@ import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.raster.op._
 import geotrellis.feature._
+import geotrellis.feature.json._
+import geotrellis.feature.rasterize.polygon._
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Param
@@ -38,8 +40,14 @@ class RasterizerBenchmark extends OperationBenchmark {
   var data: IntArrayRasterData = _
   var poly: feature.PolygonFeature[Int] = _
 
-  @Param(Array("512","1024","2048","4096","8192"))
+//  @Param(Array("512","1024","2048","4096","8192"))
+//  @Param(Array("512","1024","2048"))
+  @Param(Array("512"))
   var rasterSize: Int = 0
+
+  var transitPoly: Polygon = null
+  var transitPolyNoHoles: Polygon = null
+  var transitRe: RasterExtent = null
 
   override def setUp() {
     r = randomRasterN(rasterSize)
@@ -50,6 +58,14 @@ class RasterizerBenchmark extends OperationBenchmark {
     val p2 = Point(10*rasterSize,0)
     val p3 = Point(10*rasterSize/2, 10*rasterSize)
     poly = PolygonFeature(Polygon(Line(p1,p2,p3,p1)), 1)
+
+    transitPoly = GeoJson.fromFile[Polygon]("../core-test/data/transitgeo.json")
+    transitPolyNoHoles = Polygon(transitPoly.exterior)
+    val Extent(xmin, ymin, xmax, ymax) = transitPoly.boundingBox.toExtent
+    val dx = (xmax - xmin) / 4
+    val dy = (ymax - ymin) / 4
+    val ext = Extent(xmin - dx, ymin - dy, xmax + dx, ymax + dy)
+    transitRe = RasterExtent(ext, rasterSize, rasterSize)
   }
 
   def rasterize() {
@@ -83,5 +99,21 @@ class RasterizerBenchmark extends OperationBenchmark {
     data = IntArrayRasterData(a, n, n)
 
     Raster(data, re)
+  }
+
+  def timeRasterizeTransitPoly(reps: Int) = run(reps)(rasterizeTransitPoly)
+  def rasterizeTransitPoly = {
+    var x = 0
+    PolygonRasterizer.foreachCellByPolygon(transitPoly, transitRe, true)(new geotrellis.feature.rasterize.Callback {
+      def apply(col: Int, row: Int) = x += (col + row)
+    })
+  }
+
+  def timeRasterizeTransitPolyNoHoles(reps: Int) = run(reps)(rasterizeTransitPolyNoHoles)
+  def rasterizeTransitPolyNoHoles = {
+    var x = 0
+    PolygonRasterizer.foreachCellByPolygon(transitPolyNoHoles, transitRe, true)(new geotrellis.feature.rasterize.Callback {
+      def apply(col: Int, row: Int) = x += (col + row)
+    })
   }
 }

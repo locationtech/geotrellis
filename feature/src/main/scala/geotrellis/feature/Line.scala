@@ -54,8 +54,8 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   def normalized(): Line = { jtsGeom.normalize ; Line(jtsGeom) }
 
   /** Returns this Line's vertices as a list of Points. */
-  lazy val points: List[Point] =
-    jtsGeom.getCoordinates.map(c => Point(c.x, c.y)).toList
+  lazy val points: Array[Point] =
+    jtsGeom.getCoordinates.map(c => Point(c.x, c.y))
 
   /** Tests if the initial vertex equals the final vertex. */
   lazy val isClosed: Boolean =
@@ -78,8 +78,8 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
     jtsGeom.getBoundary
 
   /** Returns this Line's vertices. */
-  lazy val vertices: MultiPoint =
-    jtsGeom.getCoordinates
+  lazy val vertices: Array[Point] =
+    jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
 
   /**
    * Returns a Polygon whose points are (minx, miny), (minx, maxy),

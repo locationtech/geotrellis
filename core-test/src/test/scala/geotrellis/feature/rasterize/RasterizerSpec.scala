@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.feature
+package geotrellis.feature.rasterize
 
 import geotrellis._
 import geotrellis.feature._
@@ -22,7 +22,6 @@ import geotrellis.testkit._
 import math.{max,min,round}
 import org.scalatest.FunSuite
 import org.scalatest.matchers._
-import geotrellis.feature.rasterize.Rasterizer
 
 import geotrellis.testkit._
 import scala.collection.mutable

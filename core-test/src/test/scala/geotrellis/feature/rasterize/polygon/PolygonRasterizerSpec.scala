@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package geotrellis.feature.rasterize
+package geotrellis.feature.rasterize.polygon
 
 import geotrellis._
-import geotrellis.process._
 import geotrellis.source._
 import geotrellis.feature._
+import geotrellis.feature.rasterize._
 import geotrellis.testkit._
 import math.{max,min,round}
 import org.scalatest.FunSuite
-import PolygonRasterizer._
 import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.{geom => jts}
 
@@ -50,30 +49,30 @@ class RasterizePolygonSpec extends FunSuite
     // intersection on cell midpoint
     val square2 = Polygon( Line( (1.0,9.0), (1.0,8.5), (1.0,6.0), (4.0, 6.0), (4.0, 8.5), (4.0, 9.0), (1.0, 9.0) ))
 
-    val edgeTable = PolygonRasterizer.buildEdgeTable(square, re)
-    // y is flipped in grid coordinates
-    assert( edgeTable.edges === Map( 1 -> List(TestLine(1,3,1,6,1,9,0),TestLine(1,3,4,6,4,9,0))))
-    assert( edgeTable.edges.size === 1)
-    assert( edgeTable.rowMin === 1)
-    assert( edgeTable.rowMax === 3)
+    // val edgeTable = EdgeTable(square, re)
+    // // y is flipped in grid coordinates
+    // assert( edgeTable.edges === Map( 1 -> List(TestLine(1,3,1,6,1,9,0),TestLine(1,3,4,6,4,9,0))))
+    // assert( edgeTable.edges.size === 1)
+    // assert( edgeTable.rowMin === 1)
+    // assert( edgeTable.rowMax === 3)
 
-    val diamondTable = PolygonRasterizer.buildEdgeTable(diamond, re)
-    //assert( diamondTable.edges === Map(
-    //  3 -> List(Line(3,6,3,1,1,1,1,1),Line(3,6,0,1,1,1,1,-1)),
-    //  6 -> List(Line(6,9,3,1,1,1,1,-1),Line(6,9,0,1,1,1,1,1))
-    //  ))
-    assert(diamondTable.edges.size === 2)
-    assert( diamondTable.rowMin === 3)
-    assert( diamondTable.rowMax === 8)
+    // val diamondTable = EdgeTable(diamond, re)
+    // //assert( diamondTable.edges === Map(
+    // //  3 -> List(Line(3,6,3,1,1,1,1,1),Line(3,6,0,1,1,1,1,-1)),
+    // //  6 -> List(Line(6,9,3,1,1,1,1,-1),Line(6,9,0,1,1,1,1,1))
+    // //  ))
+    // assert(diamondTable.edges.size === 2)
+    // assert( diamondTable.rowMin === 3)
+    // assert( diamondTable.rowMax === 8)
 
-    val triangleTable = PolygonRasterizer.buildEdgeTable(triangle, re)
-    //  assert( triangleTable.edges === Map (
-    //    2 -> List(Line(2,5,2,1), Line(2,3,2,4)),
-    //    3 -> List(Line(3,5,5,-0.5))
-    //  ))
-    assert(triangleTable.edges.size === 2)
-    assert(triangleTable.rowMin === 2)
-    assert(triangleTable.rowMax === 4)
+    // val triangleTable = EdgeTable(triangle, re)
+    // //  assert( triangleTable.edges === Map (
+    // //    2 -> List(Line(2,5,2,1), Line(2,3,2,4)),
+    // //    3 -> List(Line(3,5,5,-0.5))
+    // //  ))
+    // assert(triangleTable.edges.size === 2)
+    // assert(triangleTable.rowMin === 2)
+    // assert(triangleTable.rowMax === 4)
 
 
     val r1 = Rasterizer.rasterizeWithValue(square, re, 0x11)
@@ -125,10 +124,6 @@ class RasterizePolygonSpec extends FunSuite
   }
 
   test("failing example should work") {
-    import geotrellis.feature.json._
-
-    val geojson = """{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[35.092945313732635,-85.4351806640625],[35.06147690849717,-85.440673828125],[35.08620310578525,-85.37200927734375],[35.092945313732635,-85.4351806640625]]]}}"""
-    val f = geojson.parseGeoJson[PolygonFeature[Unit]]
     val p = Polygon(Line((-9510600.807354769, 4176519.1962707597), (-9511212.30358105,4172238.854275199), (-9503568.600752532,4175602.1747499597), (-9510600.807354769,4176519.1962707597)))
     val re = RasterExtent(Extent(-9509377.814902207,4174073.2405969054,-9508766.318675926,4174684.736823185),2.3886571339098737,2.3886571339044167,256,256)
     val r = Rasterizer.rasterizeWithValue(p, re, 1 )
@@ -199,7 +194,6 @@ class RasterizePolygonSpec extends FunSuite
       //      println("Testing rasterization: " + filename)
       val g1 = new WKTReader().read(json).asInstanceOf[jts.Polygon]
 
-
       if (g1.isValid){
         val count =
         Integer.parseInt(wktFile.getName()
@@ -211,7 +205,7 @@ class RasterizePolygonSpec extends FunSuite
         val p1 = Polygon(g1)
         var sum = 0
         val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)
-        val r = foreachCellByPolygon(p1, re)(
+        val r = PolygonRasterizer.foreachCellByPolygon(p1, re)(
           new Callback {
             def apply(x:Int, y:Int) {
               sum = sum + 1
@@ -233,5 +227,24 @@ class RasterizePolygonSpec extends FunSuite
       val (sum, count) = countRasterizedCells(f, re)
       assert ( sum === count )
     })
+  }
+
+  test("Rasterization of a polygon with a hole in it") {
+    val p = Polygon(
+      Line( (0,0), (4, 0), (4, 4), (0, 4), (0, 0) ),
+      Line( (1, 1), (3, 1), (3, 3), (1, 3), (1, 1) )
+    )
+
+    val re = RasterExtent(Extent(-1, -1, 5, 5), 6, 6)
+
+    var sum = 0
+    PolygonRasterizer.foreachCellByPolygon(p, re)(
+      new Callback {
+        def apply(col: Int, row: Int) {
+          sum = sum + 1
+        }
+      })
+
+    sum should be (12)
   }
 }

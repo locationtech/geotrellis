@@ -18,7 +18,8 @@ package geotrellis.raster.op.global
 
 import geotrellis._
 import geotrellis.feature._
-import geotrellis.feature.rasterize.{PolygonRasterizer, Callback}
+import geotrellis.feature.rasterize.Callback
+import geotrellis.feature.rasterize.polygon.PolygonRasterizer
 
 import com.vividsolutions.jts.geom
 

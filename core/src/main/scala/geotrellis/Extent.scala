@@ -151,6 +151,7 @@ case class Extent(xmin:Double, ymin:Double, xmax:Double, ymax:Double) {
     Polygon(Line(northEast, southEast, southWest, northWest, northEast)),
     data
   )
+
   /**
    * Return extent as a Polygon geometry.
    */
