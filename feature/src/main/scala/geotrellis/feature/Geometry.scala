@@ -74,6 +74,8 @@ trait Relatable { self: Geometry =>
 trait MultiGeometry extends Geometry
 
 
+// TODO: Get rid of all this, but make sure there's nothing in here that needs to be implemented. 
+
   /* TO BE IMPLEMENTED ON A PER TYPE BASIS */
 
   // equal (with tolerance?)

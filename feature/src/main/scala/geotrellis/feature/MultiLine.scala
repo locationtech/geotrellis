@@ -50,6 +50,11 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   lazy val boundary: OneDimensionBoundaryResult =
     jtsGeom.getBoundary
 
+  /** Returns this MulitLine's vertices. */
+  lazy val vertices: Array[Point] =
+    jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
+
+
   // -- Intersection
 
   def &(p: Point): PointGeometryIntersectionResult =

@@ -16,8 +16,9 @@
 
 package geotrellis.feature.rasterize
 
-import geotrellis.feature._
 import geotrellis._
+import geotrellis.feature._
+import geotrellis.feature.rasterize.polygon.PolygonRasterizer
 
 import scala.language.higherKinds
 
@@ -31,16 +32,6 @@ trait Transformer[+B] {
 
 
 object Rasterizer {
-  /**
-   * Create a raster from a geometry feature.
-   * @param feature       Feature to rasterize
-   * @param rasterExtent  Definition of raster to create
-   * @param f             Function that returns single value to burn
-   */ 
-  @deprecated(message = "Use rasterizeWithValue(feature, rasterExtent, value)", since = "0.9.0")
-  def rasterizeWithValue[D](feature:Feature[D], rasterExtent:RasterExtent)(f:(D) => Int): Raster =
-    rasterizeWithValue(feature.geom , rasterExtent, f(feature.data))
-
   /**
    * Create a raster from a geometry feature.
    * @param geom       Feature to rasterize

@@ -14,25 +14,20 @@
  * limitations under the License.
  */
 
-package geotrellis.process
+package geotrellis.feature.rasterize.polygon
 
 import geotrellis._
 
-abstract class RasterLayerType()
+case class Intercept(x:Double, colDouble:Double, line:TestLine) {
+  def colDouble(re: RasterExtent, y: Double) = 
+    re.mapXToGridDouble(line.intercept(y))
+}
 
-case object ArgFile extends RasterLayerType
-case object AsciiFile extends RasterLayerType
-case object Tiled extends RasterLayerType
-case object ConstantRaster extends RasterLayerType
+object Intercept {
+  def apply(line:TestLine, y:Double, re:RasterExtent) = {
+    val x = line.intercept(y)
 
-object RasterLayerType {
-  implicit def stringToRasterLayerType(s: String) = {
-    s match {
-      case "constant" => ConstantRaster
-      case "asc" => AsciiFile
-      case "arg" => ArgFile
-      case "tiled" => Tiled
-      case _ => sys.error(s"$s is not a valid raster layer type.")
-    }
+    val colDouble = re.mapXToGridDouble(x)
+    new Intercept(x, colDouble, line)
   }
 }

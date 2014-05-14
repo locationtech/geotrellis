@@ -50,6 +50,10 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
   lazy val boundary: MultiLineResult =
     jtsGeom.getBoundary
 
+  /** Returns this MulitPolygon's vertices. */
+  lazy val vertices: Array[Point] =
+    jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
+
   // -- Intersection
 
   def &(p: Point): PointGeometryIntersectionResult =

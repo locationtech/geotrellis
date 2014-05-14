@@ -27,6 +27,9 @@ object Polygon {
   def apply(exterior: Line): Polygon =
     apply(exterior, Set())
 
+  def apply(exterior: Line, holes:Line*): Polygon = 
+    apply(exterior, holes)
+
   def apply(exterior: Line, holes:Traversable[Line]): Polygon = {
     if(!exterior.isClosed) {
       sys.error(s"Cannot create a polygon with unclosed exterior: $exterior")
@@ -83,9 +86,17 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
 
   /** Returns the hole rings of this Polygon. */
   lazy val holes: Array[Line] = {
-    for (i <- 0 until jtsGeom.getNumInteriorRing()) yield
+    for (i <- 0 until numberOfHoles) yield
       Line(jtsGeom.getInteriorRingN(i))
   }.toArray
+
+  /** Returns true if this Polygon contains holes */
+  lazy val hasHoles: Boolean =
+    numberOfHoles > 0
+
+  /** Returns the number of holes in this Polygon */
+  lazy val numberOfHoles: Int =
+    jtsGeom.getNumInteriorRing
 
   /**
    * Returns the boundary of this Polygon.
@@ -96,8 +107,8 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     jtsGeom.getBoundary
 
   /** Returns this Polygon's vertices. */
-  lazy val vertices: MultiPoint =
-    jtsGeom.getCoordinates
+  lazy val vertices: Array[Point] =
+    jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
 
   /**
    * Returns a Polygon whose points are (minx, miny), (minx, maxy),
