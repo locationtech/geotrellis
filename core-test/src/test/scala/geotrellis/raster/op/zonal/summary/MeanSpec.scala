@@ -28,7 +28,7 @@ class MeanSpec extends ZonalSummarySpec {
   describe("Mean") {
     it("computes Mean") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).asFeature()
+      val zone = Extent(10,-10,30,10).asPolygon
 
       val meanOp = rData.zonalMean(zone)
       run(meanOp) match {
@@ -66,7 +66,7 @@ class MeanSpec extends ZonalSummarySpec {
 
     it("computes Double Mean") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).asFeature()
+      val zone = Extent(10,-10,30,10).asPolygon
 
       val meanDOp = rData.zonalMeanDouble(zone)
       run(meanDOp) match {

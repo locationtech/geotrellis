@@ -20,7 +20,9 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.source._
 import geotrellis.services._
-import geotrellis.util.srs
+
+import geotrellis.proj4._
+import geotrellis.feature.reproject._
 
 import akka.actor._
 import spray.routing._
@@ -140,7 +142,7 @@ trait AdminService extends HttpService {
         'lng.as[Double],
         'size.as[Int] ? 7) { (store,layer,lat,lng,size) =>
         val layerId = LayerId(store,layer)
-        val (x,y) = srs.LatLng.transform(lng,lat,srs.WebMercator)
+        val (x,y) = (lng,lat).reproject(LatLng, WebMercator)
 
         RasterSource(layerId)
           .converge

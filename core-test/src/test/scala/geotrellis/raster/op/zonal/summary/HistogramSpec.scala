@@ -28,7 +28,7 @@ class HistogramSpec extends ZonalSummarySpec {
   describe("zonalHistogram") {
     it("computes Histogram") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).asFeature()
+      val zone = Extent(10,-10,30,10).asPolygon
 
       val histOp = rData.zonalHistogram(zone)
       run(histOp) match {

@@ -32,11 +32,11 @@ class SemivariogramSpec extends FunSpec
                             with RasterBuilders {
   describe("Semivariogram") {
     it("Semivariogram (Bucketed)") {
-      val points = Seq[Point[Int]](
-        Point(0.0,0.0,10),
-        Point(1.0,0.0,20),
-        Point(4.0,4.0,60),
-        Point(0.0,6.0,80)
+      val points = Seq[PointFeature[Int]](
+        PointFeature(Point(0.0,0.0),10),
+        PointFeature(Point(1.0,0.0),20),
+        PointFeature(Point(4.0,4.0),60),
+        PointFeature(Point(0.0,6.0),80)
         )
 
       /* would make pairs:
@@ -68,11 +68,11 @@ class SemivariogramSpec extends FunSpec
     }
 
     it("Semivariogram (Bucketed w/ Limit)") {
-      val points = Seq[Point[Int]](
-        Point(0.0,0.0,10),
-        Point(1.0,0.0,20),
-        Point(4.0,4.0,60),
-        Point(0.0,6.0,80)
+      val points = Seq[PointFeature[Int]](
+        PointFeature(Point(0.0,0.0),10),
+        PointFeature(Point(1.0,0.0),20),
+        PointFeature(Point(4.0,4.0),60),
+        PointFeature(Point(0.0,6.0),80)
         )
 
       /* would make pairs:
@@ -106,12 +106,12 @@ class SemivariogramSpec extends FunSpec
     }
 
     it("Semivariogram (Non-Bucketed)") {
-      val points = Seq[Point[Int]](
-        Point(0.0,0.0,10),
-        Point(0.0,0.0,16),
-        Point(1.0,0.0,20),
-        Point(0.0,1.0,24),
-        Point(2.0,2.0,50)
+      val points = Seq[PointFeature[Int]](
+        PointFeature(Point(0.0,0.0),10),
+        PointFeature(Point(0.0,0.0),16),
+        PointFeature(Point(1.0,0.0),20),
+        PointFeature(Point(0.0,1.0),24),
+        PointFeature(Point(2.0,2.0),50)
         )
 
       /* would make pairs:
@@ -150,12 +150,12 @@ class SemivariogramSpec extends FunSpec
     }
 
     it("Semivariogram (Non-Bucketed w/ Limit)") {
-      val points = Seq[Point[Int]](
-        Point(0.0,0.0,10),
-        Point(0.0,0.0,16),
-        Point(1.0,0.0,20),
-        Point(0.0,1.0,24),
-        Point(2.0,2.0,50)
+      val points = Seq[PointFeature[Int]](
+        PointFeature(Point(0.0,0.0),10),
+        PointFeature(Point(0.0,0.0),16),
+        PointFeature(Point(1.0,0.0),20),
+        PointFeature(Point(0.0,1.0),24),
+        PointFeature(Point(2.0,2.0),50)
         )
 
       /* would make pairs:

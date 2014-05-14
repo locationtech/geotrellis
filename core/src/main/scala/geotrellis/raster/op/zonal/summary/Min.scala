@@ -22,13 +22,13 @@ import geotrellis.feature._
 import geotrellis.feature.rasterize._
 
 object Min extends TileSummary[Int,Int,ValueSource[Int]] {
-  def handlePartialTile[D](pt:PartialTileIntersection[D]):Int = {
+  def handlePartialTile(pt:PartialTileIntersection):Int = {
     val PartialTileIntersection(r,polygons) = pt
     var min = NODATA
-    for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
+    for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Geometry,D] {
-          def apply(col:Int, row:Int, g:Geometry[D]) {
+        new Callback {
+          def apply(col:Int, row:Int) {
             val z = r.get(col,row)
             if (isData(z) && (z < min || isNoData(min)) ) { min = z }
           }
@@ -55,13 +55,13 @@ object Min extends TileSummary[Int,Int,ValueSource[Int]] {
 }
 
 object MinDouble extends TileSummary[Double,Double,ValueSource[Double]] {
-  def handlePartialTile[D](pt:PartialTileIntersection[D]):Double = {
+  def handlePartialTile(pt:PartialTileIntersection):Double = {
     val PartialTileIntersection(r,polygons) = pt
     var min = Double.NaN
-    for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
+    for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Geometry,D] {
-          def apply(col:Int, row:Int, g:Geometry[D]) {
+        new Callback {
+          def apply(col:Int, row:Int) {
             val z = r.getDouble(col,row)
             if (isData(z) && (z < min || isNoData(min))) { min = z }
           }

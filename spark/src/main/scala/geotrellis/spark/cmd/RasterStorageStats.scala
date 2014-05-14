@@ -41,7 +41,7 @@ object RasterStorageStats extends ArgMain[RasterArgs] {
         val bytes = dataFileSt.getLen()
         val blocks = math.ceil(bytes / blockSize.toFloat).toInt
 
-        val indexFile = new Path(partDir, "index")        
+        val indexFile = new Path(partDir, "index")
         val indexReader = new SequenceFile.Reader(fs, indexFile, conf)
         val key = new TileIdWritable()
         var tiles = 0

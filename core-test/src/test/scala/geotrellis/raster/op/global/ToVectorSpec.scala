@@ -42,9 +42,8 @@ class ToVectorSpec extends FunSpec
   def bl(col:Int,row:Int) = (d(col),d(row+1)* -10)        // Bottom left
   def br(col:Int,row:Int) = (d(col+1),(d(row)+1)* -10)    // Bottom right
 
-  def assertOnesPolygon(polygon:Polygon[Int],expectedCoords:List[(Double,Double)]) = {
-    polygon.data should be (1)
-    assertCoords(polygon.geom.getCoordinates.map(c => (c.x,c.y)),expectedCoords)
+  def assertPolygon(polygon:Polygon,expectedCoords:List[(Double,Double)]) = {
+    assertCoords(polygon.jtsGeom.getCoordinates.map(c => (c.x,c.y)),expectedCoords)
   }
 
   def assertCoords(coordinates:Seq[(Double,Double)],expectedCoords:List[(Double,Double)]) = {
@@ -88,20 +87,20 @@ class ToVectorSpec extends FunSpec
       val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
 
       val geoms = get(ToVector(r))
+      val onesCoords = List(
+        (1.0,0.0), (3.0,-0.0),
+        (1.0,-20.0),(3.0,-20.0),
+        (3.0,-20.0), (5.0,-20.0),
+        (3.0,-40.0), (5.0,-40.0))
 
-      val onesCoords = List(   (1.0,0.0), (3.0,-0.0),
-                            (1.0,-20.0),(3.0,-20.0),
-                                                    (3.0,-20.0), (5.0,-20.0),
-                                                    (3.0,-40.0), (5.0,-40.0))
-      val ones = geoms.filter(_.data == 1).map(_.asInstanceOf[Polygon[Int]]).toList
+      val ones = geoms.filter(_.data == 1).toList
       ones.length should be (2)
 
       ones.map { polygon =>
         polygon.data should be (1)
-        val coordinates = polygon.geom.getCoordinates.map(c => (c.x,c.y))
+        val coordinates = polygon.geom.jtsGeom.getCoordinates.map(c => (c.x,c.y))
         coordinates.length should be (5)
-
-        coordinates.map { c => 
+        coordinates.map { c =>
           withClue (s"$c in expected coordinate set:") { onesCoords.contains(c) should be (true) }
         }
       }
@@ -125,16 +124,22 @@ class ToVectorSpec extends FunSpec
 
       val geoms = get(ToVector(r))
 
-      val onesCoords = List( tl(1,1),                     tr(3,1),
-                                    br(1,1),     bl(3,1),
-                            
-                            bl(1,3),br(1,3),
-                                        tl(2,4),   tl(3,4),
-                                        bl(2,4),          br(3,4))
+      val onesCoords = List( tl(1,1), tr(3,1),
+                             bl(1,3), br(1,3),
+                             bl(2,4), br(3,4))
 
-      val ones = geoms.filter(_.data == 1).map(_.asInstanceOf[Polygon[Int]]).toList
+      val holeCoords = List( br(1,1), bl(3,1),
+                             tl(2,4), tl(3,4) )
+
+      val ones = geoms.filter(_.data == 1).toList
       ones.length should be (1)
-      assertOnesPolygon(ones(0),onesCoords)
+      val poly = ones(0).geom
+      val shell = poly.exterior
+      val holes = poly.holes
+      holes.length should be (1)
+      val hole = holes(0)
+      assertCoords(shell.jtsGeom.getCoordinates.map { c => (c.x, c.y) }, onesCoords)
+      assertCoords(hole.jtsGeom.getCoordinates.map { c => (c.x, c.y) }, holeCoords)
     }
 
     it("should vectorize an off shape.") {
@@ -179,10 +184,10 @@ class ToVectorSpec extends FunSpec
 
       geoms.length should be (2)
 
-      val ones = geoms.filter(_.data == 1).map(_.asInstanceOf[Polygon[Int]]).toList
+      val ones = geoms.filter(_.data == 1).map(_.asInstanceOf[PolygonFeature[Int]]).toList
       ones.length should be (1)
 
-      ones.map(assertOnesPolygon(_,onesCoords))
+      ones.map(assertPolygon(_,onesCoords))
     }
 
     it("should vectorize an shape with a nodata seperation line.") {
@@ -207,7 +212,7 @@ class ToVectorSpec extends FunSpec
       val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
       val geoms = get(ToVector(r))
 
-      val onesCoords = List( 
+      val shellCoords = List( 
         tl(0,0),                               tr(3,0),
                 br(0,0),               bl(3,0),
         bl(0,1),br(0,1),              
@@ -217,18 +222,28 @@ class ToVectorSpec extends FunSpec
         tl(0,4),tr(0,4),       tl(2,4),tr(2,4),                
                 br(0,4),       bl(2,4),
 
-                br(0,5),               br(2,5),
-
                                                    tl(3,6),tl(4,6),
-                tr(0,7),                           tl(3,7),br(3,6),br(4,6),
+                                                           br(3,6),br(4,6),
         bl(0,7),                                           br(3,7)
+      )
+
+      val holeCoords = List(
+        br(0,5), br(2,5),
+        tr(0,7), tr(2,7)
       )
 
       withClue ("Number of polygons did not match expected:") { geoms.length should be (4) }
 
-      val ones = geoms.filter(_.data == 1).map(_.asInstanceOf[Polygon[Int]]).toList
+      val ones = geoms.filter(_.data == 1).map(_.asInstanceOf[PolygonFeature[Int]]).toList
       ones.length should be (1)
-      assertOnesPolygon(ones(0),onesCoords)
+
+      val poly = ones(0).geom
+      val shell = poly.exterior
+      val holes = poly.holes
+      holes.length should be (1)
+      val hole = holes(0)
+      assertCoords(shell.jtsGeom.getCoordinates.map { c => (c.x, c.y) }, shellCoords)
+      assertCoords(hole.jtsGeom.getCoordinates.map { c => (c.x, c.y) }, holeCoords)
     }
 
     it("should vectorize an shape with a hole.") {
@@ -267,16 +282,16 @@ class ToVectorSpec extends FunSpec
 
       withClue ("Number of polygons did not match expected:") { geoms.length should be (1) }
 
-      val ones = geoms.filter(_.data == 1).map(_.asInstanceOf[Polygon[Int]]).toList
+      val ones = geoms.filter(_.data == 1).map(_.asInstanceOf[PolygonFeature[Int]]).toList
       ones.length should be (1)
       val polygon = ones(0)
 
       polygon.data should be (1)
-      val shellCoordinates = polygon.geom.getExteriorRing.getCoordinates.map(c => (c.x,c.y))
+      val shellCoordinates = polygon.geom.jtsGeom.getExteriorRing.getCoordinates.map(c => (c.x,c.y))
       assertCoords(shellCoordinates,expectedShellCoords)
 
-      polygon.geom.getNumInteriorRing() should be (1)
-      val holeCoordinates = polygon.geom.getInteriorRingN(0).getCoordinates.map(c => (c.x,c.y))
+      polygon.geom.jtsGeom.getNumInteriorRing() should be (1)
+      val holeCoordinates = polygon.geom.jtsGeom.getInteriorRingN(0).getCoordinates.map(c => (c.x,c.y))
       assertCoords(holeCoordinates,expectedHoleCoords)
     }
 
@@ -327,18 +342,18 @@ class ToVectorSpec extends FunSpec
 
       withClue ("Number of polygons did not match expected:") { geoms.length should be (1) }
 
-      val ones = geoms.filter(_.data == 1).map(_.asInstanceOf[Polygon[Int]]).toList
+      val ones = geoms.filter(_.data == 1).map(_.asInstanceOf[PolygonFeature[Int]]).toList
       ones.length should be (1)
       val polygon = ones(0)
 
       polygon.data should be (1)
-      val shellCoordinates = polygon.geom.getExteriorRing.getCoordinates.map(c => (c.x,c.y))
+      val shellCoordinates = polygon.geom.jtsGeom.getExteriorRing.getCoordinates.map(c => (c.x,c.y))
       assertCoords(shellCoordinates,expectedShellCoords)
 
-      polygon.geom.getNumInteriorRing() should be (2)
-      val holeCoordinates = polygon.geom.getInteriorRingN(0).getCoordinates.map(c => (c.x,c.y))
+      polygon.geom.jtsGeom.getNumInteriorRing() should be (2)
+      val holeCoordinates = polygon.geom.jtsGeom.getInteriorRingN(0).getCoordinates.map(c => (c.x,c.y))
       assertCoords(holeCoordinates,expectedHoleCoords)
-      val holeCoordinates2 = polygon.geom.getInteriorRingN(1).getCoordinates.map(c => (c.x,c.y))
+      val holeCoordinates2 = polygon.geom.jtsGeom.getInteriorRingN(1).getCoordinates.map(c => (c.x,c.y))
       assertCoords(holeCoordinates2,expectedHoleCoords2)
     }
 
@@ -413,7 +428,7 @@ class ToVectorSpec extends FunSpec
       toVector.length should be (1)
       val geom = toVector.head.geom
 
-      val coordinates = geom.getCoordinates
+      val coordinates = geom.jtsGeom.getCoordinates
 
       coordinates.length should be (5)
 
@@ -448,7 +463,7 @@ class ToVectorSpec extends FunSpec
       toVector.length should be (1)
       val geom = toVector.head.geom
 
-      val coordinates = geom.getCoordinates
+      val coordinates = geom.jtsGeom.getCoordinates
 
       coordinates.length should be (7)
 
@@ -491,7 +506,7 @@ class ToVectorSpec extends FunSpec
       toVector.length should be (1)
       val geom = toVector.head.geom
 
-      val coordinates = geom.getCoordinates
+      val coordinates = geom.jtsGeom.getCoordinates
 
       coordinates.length should be (7)
 

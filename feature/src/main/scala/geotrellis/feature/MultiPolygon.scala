@@ -34,6 +34,8 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
                                                    with Relatable
                                                    with TwoDimensions {
 
+  /** Returns a unique representation of the geometry based on standard coordinate ordering. */
+  def normalized(): MultiPolygon = { jtsGeom.normalize ; MultiPolygon(jtsGeom) }
 
   /** Returns the Polygons contained in MultiPolygon. */
   lazy val polygons: Array[Polygon] = {

@@ -33,6 +33,7 @@ class JsonFeatureCollection(features: List[JsValue] = Nil) {
 
   def addAll[D: JsonWriter](features: Seq[Feature[D]]) =
     features.foreach{ f => buffer = writeFeatureJson[D](f) :: buffer }
+
   def ++=[D: JsonWriter](features: Seq[Feature[D]]) = addAll(features)
 
   def toJson: JsValue =

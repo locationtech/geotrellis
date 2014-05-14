@@ -24,7 +24,6 @@ trait FeatureFormats {
     }
   }
 
-
   implicit def featureFormat[D: JsonFormat] = new RootJsonFormat[Feature[D]] {
     override def read(json: JsValue): Feature[D] =
       readFeatureJson[D, Geometry, Feature[D]](json){ case (geom, d) => geom match {
