@@ -22,13 +22,13 @@ import geotrellis.feature._
 import geotrellis.feature.rasterize._
 
 object Sum extends TileSummary[Long,Long,ValueSource[Long]] {
-  def handlePartialTile[D](pt:PartialTileIntersection[D]):Long = {
+  def handlePartialTile(pt:PartialTileIntersection):Long = {
     val PartialTileIntersection(r,polygons) = pt
     var sum: Long = 0L
-    for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
+    for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Geometry,D] {
-          def apply(col:Int, row:Int, g:Geometry[D]) {
+        new Callback {
+          def apply(col:Int, row:Int) {
             val z = r.get(col,row)
             if (isData(z)) { sum = sum + z }
           }
@@ -50,13 +50,13 @@ object Sum extends TileSummary[Long,Long,ValueSource[Long]] {
 }
 
 object SumDouble extends TileSummary[Double,Double,ValueSource[Double]] {
-  def handlePartialTile[D](pt:PartialTileIntersection[D]):Double = {
+  def handlePartialTile(pt:PartialTileIntersection):Double = {
     val PartialTileIntersection(r,polygons) = pt
     var sum = 0.0
-    for(p <- polygons.asInstanceOf[List[Polygon[D]]]) {
+    for(p <- polygons) {
       Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
-        new Callback[Geometry,D] {
-          def apply(col:Int, row:Int, g:Geometry[D]) {
+        new Callback {
+          def apply(col:Int, row:Int) {
             val z = r.getDouble(col,row)
             if(isData(z)) { sum = sum + z }
           }

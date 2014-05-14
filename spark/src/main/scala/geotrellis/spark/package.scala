@@ -25,11 +25,6 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 
 package object spark {
-  implicit class SavableRasterWritable(val raster: RDD[WritableTile]) {
-    def save(path: Path): Unit = SaveRasterFunctions.save(raster, path)
-    def save(path: String): Unit = save(new Path(path))
-  }
-
   implicit class MakeRasterRDD(val prev: RDD[Tile]) {
     def withContext(ctx: Context) = new RasterRDD(prev, ctx)
   }

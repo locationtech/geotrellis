@@ -20,20 +20,17 @@ import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils._
-
 import org.apache.commons.codec.binary.Base64
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.PrintWriter
 import java.nio.ByteBuffer
-
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
-
 import com.quantifind.sumac.ArgMain
+
 
 class TileIdPartitioner extends org.apache.spark.Partitioner {
 
@@ -53,8 +50,21 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
     (TileIdWritable(min), TileIdWritable(max))
   }
 
-  // TODO override equals and hashCode
+  def save(raster: Path, conf: Configuration) =
+    TileIdPartitioner.writeSplits(splits.toSeq.map(_.get), raster, conf)
 
+  def splitGenerator = new SplitGenerator {
+    def getSplits = splits.map(_.get)
+  }
+  
+  override def equals(other: Any): Boolean = 
+    other match {
+      case that: TileIdPartitioner => that.splits.deep == splits.deep
+      case _                       => false
+    }
+  
+  override def hashCode: Int = splits.hashCode
+  
   private def findPartition(key: Any) = {
     val index = java.util.Arrays.binarySearch(splits.asInstanceOf[Array[Object]], key)
     if (index < 0)
@@ -111,8 +121,7 @@ object TileIdPartitioner extends ArgMain[RasterArgs] {
               TileIdWritable(ByteBuffer.wrap(Base64.decodeBase64(line.getBytes)).getLong)
           }
           splits.toArray
-        }
-        finally {
+        } finally {
           in.close
         }
       case None =>
@@ -120,10 +129,11 @@ object TileIdPartitioner extends ArgMain[RasterArgs] {
     }
   }
 
-  private def writeSplits(splitGenerator: SplitGenerator, raster: Path, conf: Configuration): Int = {
-    val splits = splitGenerator.getSplits
+  private def writeSplits(splitGenerator: SplitGenerator, raster: Path, conf: Configuration): Int =
+    writeSplits(splitGenerator.getSplits, raster, conf)
+
+  private def writeSplits(splits: Seq[Long], raster: Path, conf: Configuration): Int = {
     val splitFile = new Path(raster, SplitFile)
-    //println("writing splits to " + splitFile)
     val fs = splitFile.getFileSystem(conf)
     val fdos = fs.create(splitFile)
     val out = new PrintWriter(fdos)
@@ -164,6 +174,4 @@ object TileIdPartitioner extends ArgMain[RasterArgs] {
     val conf = SparkUtils.createHadoopConfiguration
     printSplits(input, conf)
   }
-
 }
-

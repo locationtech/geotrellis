@@ -34,9 +34,9 @@ case object Exponential extends ModelType
 */
 object Semivariogram {
   case class Bucket(start:Double,end:Double) {
-    private val points = mutable.Set[(Point[Int],Point[Int])]()
+    private val points = mutable.Set[(PointFeature[Int],PointFeature[Int])]()
 
-    def add(x:Point[Int],y:Point[Int]) = points += ((x,y))
+    def add(x:PointFeature[Int],y:PointFeature[Int]) = points += ((x,y))
 
     def contains(x:Double) =
       if(start==end) x == start
@@ -66,22 +66,23 @@ object Semivariogram {
     f(elements,List[(T,T)]())
   }
 
-  def apply(pts:Seq[Point[Int]],radius:Option[Int]=None,lag:Int=0,model:ModelType):Function1[Double,Double] = {
+  def apply(pts:Seq[PointFeature[Int]],radius:Option[Int]=None,lag:Int=0,model:ModelType):Function1[Double,Double] = {
+    def distance(p1: Point, p2: Point) = math.abs(math.sqrt(math.pow(p1.x - p2.x,2) + math.pow(p1.y - p2.y,2)))
 
     // ignore points without a value
     val validPts = pts.filter(pt => pt.data != NODATA)
 
     // every pair of points and their distance from each other
-    val distancePairs:Seq[(Double,(Point[Int],Point[Int]))] =
+    val distancePairs:Seq[(Double,(PointFeature[Int],PointFeature[Int]))] =
       radius match {
         case Some(dmax) =>
           makePairs(validPts.toList)
-            .map{ case(a,b) => (math.abs(a - b), (a,b)) }
+            .map{ case(a,b) => (distance(a.geom, b.geom), (a,b)) }
             .filter { case (distance,_) => distance <= dmax }
             .toSeq
         case None =>
             makePairs(validPts.toList)
-              .map{ case(a,b) => (math.abs(a - b), (a,b)) }
+              .map{ case(a,b) => (distance(a.geom, b.geom), (a,b)) }
               .toSeq
       }
 

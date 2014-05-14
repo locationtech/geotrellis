@@ -28,7 +28,7 @@ class SumSpec extends ZonalSummarySpec {
   describe("Sum") {
     it("computes Sum") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).asFeature()
+      val zone = Extent(10,-10,30,10).asPolygon
 
       val sumOp = rData.zonalSum(zone)
       run(sumOp) match {
@@ -45,9 +45,9 @@ class SumSpec extends ZonalSummarySpec {
     it("fails on nonintersecting zone") {
       // Test non-intersecting polygons (issue #412)
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).asFeature()
+      val zone = Extent(10,-10,30,10).asPolygon
 
-      val nonintersecting = Extent(100,120,100,120).asFeature(())
+      val nonintersecting = Extent(100,120,110,130).asPolygon
       val sumOp2 = rData.zonalSum(nonintersecting)
       run(sumOp2) match {
         case Complete(result,success) =>
@@ -76,7 +76,7 @@ class SumSpec extends ZonalSummarySpec {
 
     it("computes Double Sum") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).asFeature()
+      val zone = Extent(10,-10,30,10).asPolygon
 
       val sumDOp = rData.zonalSumDouble(zone)
       run(sumDOp) match {

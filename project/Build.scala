@@ -112,7 +112,7 @@ object GeotrellisBuild extends Build {
   // Project: root
   lazy val root =
     Project("root", file("."))
-      .aggregate(core, coreTest, feature)
+      .aggregate(core, coreTest)
 
   // Project: macros
   lazy val macros =
@@ -132,8 +132,6 @@ object GeotrellisBuild extends Build {
       .settings(name := "geotrellis-feature")
       .settings(libraryDependencies ++=
         Seq(
-          scalatest   % "test",
-          scalacheck  % "test",
           jts,
           sprayJson,
           sprayHttpx,
@@ -141,11 +139,39 @@ object GeotrellisBuild extends Build {
         )
       )
       .settings(defaultAssemblySettings: _*)
+      .dependsOn(proj4)
+
+  // Project: feature-test
+  lazy val featureTest =
+    Project("feature-test", file("feature-test"))
+      .settings(name := "geotrellis-feature-test")
+      .settings(libraryDependencies ++=
+        Seq(
+          scalatest   % "test",
+          scalacheck  % "test"
+        )
+      )
+      .dependsOn(feature, testkit)
+
+  // Project: proj4
+  lazy val proj4 =
+    Project("proj4", file("proj4"))
+      .settings(proj4Settings: _*)
+
+  lazy val proj4Settings =
+    Seq(
+      name := "geotrellis-proj4",
+      libraryDependencies ++= Seq(
+        "junit" % "junit" % "3.8.1" % "test",
+        "com.novocode" % "junit-interface" % "0.9" % "test"
+      )
+    )
 
   // Project: core
   lazy val core =
     Project("core", file("core"))
       .dependsOn(macros)
+      .dependsOn(feature)
       .settings(coreSettings: _*)
 
   lazy val coreSettings =
@@ -185,7 +211,7 @@ object GeotrellisBuild extends Build {
   // Project: core-test
   lazy val coreTest =
     Project("core-test", file("core-test"))
-      .dependsOn(core, testkit)
+      .dependsOn(core, testkit, feature % "compile")
       .settings(coreTestSettings: _*)      
       
   lazy val coreTestSettings =
@@ -217,7 +243,7 @@ object GeotrellisBuild extends Build {
   // Project: services
   lazy val services: Project =
     Project("services", file("services"))
-      .dependsOn(core)
+      .dependsOn(core, feature)
       .settings(name := "geotrellis-services")
 
   // Project: jetty
@@ -239,11 +265,29 @@ object GeotrellisBuild extends Build {
     ) ++
     defaultAssemblySettings
 
+  // Project: slick
+  lazy val geotrellis_slick: Project =
+    Project("slick", file("slick"))
+      .settings(slickSettings: _*)
+      .dependsOn(feature)
+
+  lazy val slickSettings =
+    Seq(
+      name := "geotrellis-slick",
+      libraryDependencies := Seq(
+        slick, 
+        postgresql, 
+        slf4jNop, 
+        scalatest % "test"
+      )
+    ) ++
+    defaultAssemblySettings
+
   // Project: admin
   lazy val admin: Project =
     Project("admin", file("admin"))
       .settings(adminSettings: _*)
-      .dependsOn(core,services)
+      .dependsOn(core,services, feature)
 
   lazy val adminSettings =
     Seq(
@@ -277,7 +321,7 @@ object GeotrellisBuild extends Build {
           // http://itellity.wordpress.com/2013/05/27/xerces-parse-error-with-hadoop-or-solr-feature-httpapache-orgxmlfeaturesxinclude-is-not-recognized/
           "xerces" % "xercesImpl" % "2.9.1",
           "xalan" % "xalan" % "2.7.1",
-          "org.apache.spark" %% "spark-core" % "0.9.0-incubating" excludeAll (
+          "org.apache.spark" %% "spark-core" % "0.9.1" excludeAll (
               ExclusionRule(organization = "org.apache.hadoop")),
           "org.apache.hadoop" % "hadoop-client" % "1.2.1" excludeAll (
 	      ExclusionRule(organization = "hsqldb")),
@@ -285,7 +329,8 @@ object GeotrellisBuild extends Build {
 	  //     ExclusionRule(organization = "hsqldb")),
           "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0",
           "com.quantifind" %% "sumac" % "0.2.3",
-          scalatest % "test"
+          scalatest % "test",
+	  "org.spire-math" %% "spire" % "0.7.1"
         ),
       resolvers += "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
     ) ++ 
@@ -302,10 +347,11 @@ object GeotrellisBuild extends Build {
   lazy val gdalSettings =
     Seq(
       name := "geotrellis-gdal",
+      javaOptions += "-Djava.library.path=/usr/local/lib",
       libraryDependencies ++=
         Seq(
-          "org.gdal" % "gdal" % "1.9.2",
-          "com.azavea.geotrellis" %% "gdal-scala" % "0.1.0-SNAPSHOT",
+          "org.gdal" % "gdal" % "1.10.1",
+          "com.github.scopt" % "scopt_2.10" % "3.2.0",
           scalatest % "test"
         ),
       resolvers ++=
@@ -408,7 +454,7 @@ object GeotrellisBuild extends Build {
   lazy val featureBenchmark = 
     Project("feature-benchmark", file("feature-benchmark"))
       .settings(featureBenchmarkSettings:_*)
-      .dependsOn(feature % "compile->test")
+      .dependsOn(featureTest % "compile->test")
 
   lazy val featureBenchmarkSettings =
     Seq(

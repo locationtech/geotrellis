@@ -17,16 +17,16 @@
 package geotrellis.feature.rasterize
 
 import geotrellis._
-import geotrellis.feature.op.geometry.{Buffer,GetCentroid}
 import geotrellis.process._
 import geotrellis.source._
 import geotrellis.feature._
 import geotrellis.testkit._
 import math.{max,min,round}
 import org.scalatest.FunSuite
-import geotrellis.feature.op.geometry.GetEnvelope
-import geotrellis.feature.op.geometry.Intersect
 import PolygonRasterizer._
+import com.vividsolutions.jts.io.WKTReader
+import com.vividsolutions.jts.{geom => jts}
+
 
 class RasterizePolygonSpec extends FunSuite
     with TestServer
@@ -40,19 +40,19 @@ class RasterizePolygonSpec extends FunSuite
     val raster = Raster(data, g)
     val re = raster.rasterExtent
 
-    val square  = Polygon( (1,9) :: (1,6) :: (4,6) :: (4,9) :: (1,9) :: Nil, () )
-    val diamond = Polygon( List((3,7), (6,4), (3,1), (0,4), (3,7)), ())
-    val triangle = Polygon( List((2,8),(5,5),(6,7), (6,7), (2,8)),() )
+    val square  = Polygon( Line((1,9), (1,6), (4,6), (4,9), (1,9)) )
+    val diamond = Polygon( Line((3,7), (6,4), (3,1), (0,4), (3,7)))
+    val triangle = Polygon( Line((2,8),(5,5),(6,7), (6,7), (2,8)))
 
-    val outsideSquare = Polygon( (51,59) :: (51,56) :: (54,56) :: (54,59) :: (51,59) :: Nil, ())
-    val envelopingSquare = Extent(0.0, 0.0, 10.0, 10.0).asFeature(())
+    val outsideSquare = Polygon( Line((51,59), (51,56), (54,56), (54,59), (51,59)) )
+    val envelopingSquare = Extent(0.0, 0.0, 10.0, 10.0).asPolygon
 
     // intersection on cell midpoint
-    val square2 = Polygon( (1.0,9.0) :: (1.0,8.5) :: (1.0,6.0) :: (4.0, 6.0) :: (4.0, 8.5) :: (4.0, 9.0) :: (1.0, 9.0) :: Nil, () )
+    val square2 = Polygon( Line( (1.0,9.0), (1.0,8.5), (1.0,6.0), (4.0, 6.0), (4.0, 8.5), (4.0, 9.0), (1.0, 9.0) ))
 
     val edgeTable = PolygonRasterizer.buildEdgeTable(square, re)
     // y is flipped in grid coordinates
-    assert( edgeTable.edges === Map( 1 -> List(Line(1,3,1,6,1,9,0),Line(1,3,4,6,4,9,0))))
+    assert( edgeTable.edges === Map( 1 -> List(TestLine(1,3,1,6,1,9,0),TestLine(1,3,4,6,4,9,0))))
     assert( edgeTable.edges.size === 1)
     assert( edgeTable.rowMin === 1)
     assert( edgeTable.rowMax === 3)
@@ -120,20 +120,16 @@ class RasterizePolygonSpec extends FunSuite
     val r6 = Rasterizer.rasterizeWithValue(envelopingSquare, re, 0x66)
     //      println(r6.asciiDraw())
 
-    val emptyGeom = outsideSquare.geom.intersection(envelopingSquare.geom)
-
-    val r7 = Rasterizer.rasterizeWithValue(Feature(emptyGeom, ()), re, 0x77)
-    sum = 0
-    r7.foreach(f => if (isData(f)) sum = sum + 1 )
-    assert(sum === 0)
+    val emptyGeom = outsideSquare.intersection(envelopingSquare)
     // LoadWKT()
   }
 
   test("failing example should work") {
-    val geojson = """{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[35.092945313732635,-85.4351806640625],[35.06147690849717,-85.440673828125],[35.08620310578525,-85.37200927734375]]]}}"""
-    val fOp = io.LoadGeoJsonFeature(geojson)
-    val f = get(fOp)
-    val p = Polygon(List((-9510600.807354769, 4176519.1962707597), (-9511212.30358105,4172238.854275199), (-9503568.600752532,4175602.1747499597), (-9510600.807354769,4176519.1962707597)),())
+    import geotrellis.feature.json._
+
+    val geojson = """{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[35.092945313732635,-85.4351806640625],[35.06147690849717,-85.440673828125],[35.08620310578525,-85.37200927734375],[35.092945313732635,-85.4351806640625]]]}}"""
+    val f = geojson.parseGeoJson[PolygonFeature[Unit]]
+    val p = Polygon(Line((-9510600.807354769, 4176519.1962707597), (-9511212.30358105,4172238.854275199), (-9503568.600752532,4175602.1747499597), (-9510600.807354769,4176519.1962707597)))
     val re = RasterExtent(Extent(-9509377.814902207,4174073.2405969054,-9508766.318675926,4174684.736823185),2.3886571339098737,2.3886571339044167,256,256)
     val r = Rasterizer.rasterizeWithValue(p, re, 1 )
     var sum = 0
@@ -142,7 +138,7 @@ class RasterizePolygonSpec extends FunSuite
   }
 
   test("polygon rasterization: more complex polygons") {
-    val p1 = Polygon (List((-74.6229572569999, 41.5930024740001),
+    val p1 = Polygon (Line((-74.6229572569999, 41.5930024740001),
       (-74.6249086829999, 41.5854607480001),
       (-74.6087045219999, 41.572877582),
       (-74.6396698609999, 41.5479203780001),
@@ -159,7 +155,7 @@ class RasterizePolygonSpec extends FunSuite
       (-74.6494842519999, 41.5467347190001),
       (-74.6459184919999, 41.565179846),
       (-74.6344289929999, 41.5694043560001),
-      (-74.6229572569999, 41.5930024740001)), ())
+      (-74.6229572569999, 41.5930024740001)))
     
     val tileExtent = Extent( -88.57589314970001, 35.15178531379998, -70.29017892250002, 53.43749954099997)
     // val rasterExtent = RasterExtent(tileExtent, 0.008929,0.008929, 2048, 2048 )
@@ -201,25 +197,32 @@ class RasterizePolygonSpec extends FunSuite
       val json = scala.io.Source.fromFile(wktFile).mkString
       val filename = wktFile.getName()
       //      println("Testing rasterization: " + filename)
-      val count =
+      val g1 = new WKTReader().read(json).asInstanceOf[jts.Polygon]
+
+
+      if (g1.isValid){
+        val count =
         Integer.parseInt(wktFile.getName()
           .subSequence(0, filename.length - 4)
           .toString
           .split("_")
           .last)
-      //      println("count: " + count)
-      val g1 = get(io.LoadWkt(json))
-      val p1 = Polygon(g1.geom, ())
-      var sum = 0
-      val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)
-      val r = foreachCellByPolygon(p1, re)(
-        new Callback[Polygon,Unit] {
-          def apply(x:Int, y:Int, p:Polygon[Unit]) {
-            sum = sum + 1
-          }
-        })
 
-      (sum, count)
+        val p1 = Polygon(g1)
+        var sum = 0
+        val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)
+        val r = foreachCellByPolygon(p1, re)(
+          new Callback {
+            def apply(x:Int, y:Int) {
+              sum = sum + 1
+            }
+          })
+
+        (sum, count)
+      }else{
+        (0,0)
+      }
+
     }
 
     val f = new java.io.File("core-test/data/feature/")

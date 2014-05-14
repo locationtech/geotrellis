@@ -125,7 +125,6 @@ trait GeometryFormats {
     )
   }
 
-
   implicit object GeometryCollectionFormat extends RootJsonFormat[GeometryCollection] {
     def write(gc: GeometryCollection) = JsObject(
       "type" -> JsString("GeometryCollection"),
