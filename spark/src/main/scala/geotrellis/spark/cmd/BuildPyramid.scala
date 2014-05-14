@@ -62,16 +62,16 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
     // Addendum for #2: base zoom is no longer part of mp, so #2 can be ignored
     val splits = getSplits(meta, HdfsUtils.defaultBlockSize(pyramid, conf))
     val mp = MultiLevelTileIdPartitioner(splits, pyramid, conf)
-    println(mp)
+    logInfo(s"${mp}")
 
     val rasterPath = new Path(pyramid, meta.maxZoomLevel.toString)
     val rdd = RasterRDD(rasterPath, sc)
-    
+
     // broadcast configuration and metadata
     val broadCastedConf = sc.broadcast(new SerializableWritable(conf))
     val broadCastedMeta = sc.broadcast(meta)
     val pyramidStr = pyramid.toUri().toString()
-    
+
     val res = rdd
       .mapPartitions({ partition =>
         val meta = broadCastedMeta.value
@@ -81,27 +81,30 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
       .mapPartitions({ partition =>
         val meta = broadCastedMeta.value
         val conf = broadCastedConf.value.value
-        val buf = partition.toArray.sortWith((x, y) => x._1.get() < y._1.get())
-        val (zoom, index) = (buf.head._1.zoom, mp.getPartitionForZoom(buf.head._1))
-        val outPath = new Path(pyramidStr, zoom.toString)
-        val mapFilePath = new Path(outPath, f"part-${index}%05d")
-        val fs = mapFilePath.getFileSystem(conf)
-        val fsRep = fs.getDefaultReplication()
-        conf.set("io.map.index.interval", "1")
-        logInfo(s"Working on partition ${index} with rep = (${conf.getInt("dfs.replication", -1)}, ${fsRep})")
-        val writer = new MapFile.Writer(conf, fs, mapFilePath.toUri.toString,
-          classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.RECORD)
 
-        buf.foreach { tiles =>
-          val (tw, aw) = Stitcher.stitch(tiles, meta)
-          writer.append(tw, aw)
+        // if partition is empty don't create a part file
+        if (!partition.isEmpty) {
+          val buf = partition.toArray.sortWith((x, y) => x._1.get() < y._1.get())
+          val (zoom, index) = (buf.head._1.zoom, mp.getPartitionForZoom(buf.head._1))
+          val outPath = new Path(pyramidStr, zoom.toString)
+          val mapFilePath = new Path(outPath, f"part-${index}%05d")
+          val fs = mapFilePath.getFileSystem(conf)
+          conf.set("io.map.index.interval", "1")
+          logInfo(s"Working on partition ${index}")
+          val writer = new MapFile.Writer(conf, fs, mapFilePath.toUri.toString,
+            classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.RECORD)
+
+          buf.foreach { tiles =>
+            val (tw, aw) = Stitcher.stitch(tiles, meta)
+            writer.append(tw, aw)
+          }
+          writer.close()
         }
-        writer.close()
         partition
       }, true)
 
     meta.save(pyramid, conf)
-    println(s"Result has ${res.count} tuples")
+    logInfo(s"Result has ${res.count} tuples")
   }
 
   private def fillMetadata(meta: PyramidMetadata): PyramidMetadata = {
@@ -117,7 +120,7 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
   }
 
   private def getSplits(meta: PyramidMetadata, blockSize: Long): Map[Int, SplitGenerator] = {
-    println("Using blocksize = " + blockSize)
+    logInfo("Creating RasterSplitGenerator, using blocksize = " + blockSize)
     val tileSize = TmsTiling.tileSizeBytes(meta.tileSize, meta.rasterType)
     for ((zoom, rm) <- meta.rasterMetadata if zoom.toInt < meta.maxZoomLevel)
       yield (zoom.toInt -> RasterSplitGenerator(rm.tileExtent, zoom.toInt, tileSize, blockSize))
@@ -194,10 +197,17 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
         // TODO - use spire
         for (py <- 0 until chPtTs) {
           for (px <- 0 until chPtTs) {
-            if (!chPtRd.isFloat) {
-              chRd.set(chPx + px, chPy + py, chPtRd.get(px, py))
-            } else {
-              chRd.setDouble(chPx + px, chPy + py, chPtRd.getDouble(px, py))
+            
+            // occasionally we may get chPx,chPy wrong (needs to be investigated why)
+            // this guards the ArrayOutOfBoundsException
+            val x = chPx + px
+            val y = chPy + py
+            if (x < meta.tileSize && y < meta.tileSize) {
+              if (!chPtRd.isFloat) {
+                chRd.set(chPx + px, chPy + py, chPtRd.get(px, py))
+              } else {
+                chRd.setDouble(chPx + px, chPy + py, chPtRd.getDouble(px, py))
+              }
             }
           }
         }
