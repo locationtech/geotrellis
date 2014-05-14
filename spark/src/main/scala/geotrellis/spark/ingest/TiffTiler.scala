@@ -87,8 +87,8 @@ object TiffTiler {
         case TypeByte   => RasterData(rawDataBuff.asInstanceOf[DataBufferByte].getData(), tileSize, tileSize)
         case _          => sys.error("Unrecognized AWT type - " + rasterType)
       }
-      val trd = NoDataHandler.removeUserNoData(rd, nodata)
-      Raster(trd, re)
+      NoDataHandler.removeUserNoData(rd, nodata)
+      Raster(rd, re)
     }
 
     val origRaster = buildRaster

@@ -29,6 +29,10 @@ class ArgWritable(bytes: Array[Byte]) extends BytesWritable(bytes) with Logging 
    */
   def this() = this(Array[Byte]())
 
+  def rasterBytes(awType: RasterType, cols: Int, rows: Int): Int = awType match {
+    case TypeBit => rows
+    case _       => cols * rows * awType.bytes
+  }
   def toRasterData(awType: RasterType, cols: Int, rows: Int) = {
     /* 
      * The slice is done in cases where the backing byte array in BytesWritable 
@@ -39,11 +43,7 @@ class ArgWritable(bytes: Array[Byte]) extends BytesWritable(bytes) with Logging 
      * BitArrayRasterData is a bit special since every row is a byte, cols = 8  
      *
      */
-    val bytes = awType match {
-      case TypeBit => rows
-      case _ => cols * rows * awType.bytes
-    }
-    RasterData.fromArrayByte(getBytes.slice(0, bytes), awType, cols, rows)
+    RasterData.fromArrayByte(getBytes.slice(0, rasterBytes(awType, cols, rows)), awType, cols, rows)
   }
 }
 

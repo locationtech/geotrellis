@@ -19,30 +19,34 @@ package geotrellis.spark.cmd
 import geotrellis._
 import geotrellis.raster.MutableRasterData
 import geotrellis.raster.RasterData
+import spire.syntax.cfor._
 
 object NoDataHandler {
 
-  def removeUserNoData(rd: MutableRasterData, userNoData: Double): MutableRasterData = {
+  def removeUserNoData(rd: MutableRasterData, userNoData: Double): Unit = {
     /* 
      * This handles all types of RasterData - e.g., FloatArrayRasterData, ByteArrayRasterData
      * because the apply/update methods handle conversion of NODATA to the appropriate types
      * via macros i2f, i2b, respectively 
      */
-    for (i <- 0 until rd.length) {
+    cfor(0)(_ < rd.length, _ + 1) {i =>
       if (rd(i) == userNoData) rd(i) = NODATA
     }
-    rd
   }
 
-  def addUserNoData(rd: MutableRasterData, userNoData: Double): RasterData = {
+  def addUserNoData(rd: MutableRasterData, userNoData: Double): Unit = {
     /* 
      * This handles all types of RasterData - e.g., FloatArrayRasterData, ByteArrayRasterData
-     * because the scala will convert the raw types to either Double or Int as per the argument
-     * of the anonymous function
+     * because of the updateDouble vs. update call
      */
-    if (rd.isFloat)
-      rd.mapDouble((i: Double) => if (isNoData(i)) userNoData else i)
-    else
-      rd.map((i: Int) => if (isNoData(i)) userNoData.toInt else i)
+    cfor(0)(_ < rd.length, _ + 1) {i =>
+      if (isNoData(rd(i))) {
+        if(rd.isFloat)
+          rd.updateDouble(i, userNoData)
+        else
+          rd.update(i, userNoData.toInt)
+        
+      } 
+    }
   }
 }

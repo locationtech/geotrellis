@@ -17,16 +17,19 @@
 package geotrellis.spark
 
 import geotrellis.spark.formats.ArgWritable
+import geotrellis.spark.formats.PayloadArgWritable
 import geotrellis.spark.formats.TileIdWritable
+import geotrellis.spark.formats.TileIdZoomWritable
 
-import org.apache.spark.serializer.{KryoRegistrator => SparkKryoRegistrator}
+import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
 
 import com.esotericsoftware.kryo.Kryo
 
-
 class KryoRegistrator extends SparkKryoRegistrator {
-	override def registerClasses(kryo: Kryo) {
-	  val r = kryo.register(classOf[TileIdWritable])
-	  val s = kryo.register(classOf[ArgWritable])
-	}
+  override def registerClasses(kryo: Kryo) {
+    kryo.register(classOf[TileIdWritable])
+    kryo.register(classOf[ArgWritable])
+    kryo.register(classOf[TileIdZoomWritable])
+    kryo.register(classOf[PayloadArgWritable])
+  }
 }
