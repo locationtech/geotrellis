@@ -34,5 +34,5 @@ case class PixelExtent(xmin: Long, ymin: Long, xmax: Long, ymax: Long) {
 case class Pixel(px: Long, py: Long)
 
 object Bounds {
-	final val World = Extent(-180, -90, 180, 90)
+	final val World = Extent(-180, -90, 179.99999, 89.99999)
 }

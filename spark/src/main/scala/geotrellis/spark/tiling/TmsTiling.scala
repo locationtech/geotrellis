@@ -73,6 +73,11 @@ object TmsTiling {
       (ty + 1) * tileSize * res - 90) // upper/north (lat, y)
   }
   
+  def tileToExtent(tileId: Long, zoom: Int, tileSize: Int): Extent = {
+    val (tx,ty) = tileXY(tileId, zoom)
+    tileToExtent(tx, ty, zoom, tileSize)
+  }
+  
   def tileToExtent(te: TileExtent, zoom: Int, tileSize: Int): Extent = {
     val ll = tileToExtent(te.xmin, te.ymin, zoom, tileSize)
     val ur = tileToExtent(te.xmax, te.ymax, zoom, tileSize)
@@ -91,12 +96,17 @@ object TmsTiling {
         TmsTiling.latLonToPixels(extent.ymax, extent.xmax, zoom, tileSize))
     PixelExtent(0, 0, pixelUpper.px - pixelLower.px, pixelUpper.py - pixelLower.py)    
   }
-  
+   
   def latLonToPixels(lat: Double, lon: Double, zoom: Int, tileSize: Int): Pixel = {
     val res = resolution(zoom, tileSize)
     new Pixel(((180 + lon) / res).toLong, ((90 + lat) / res).toLong)
   }
 
+  def latLonToPixelsUL(lat: Double, lon: Double, zoom: Int, tileSize: Int): Pixel = {
+    val p = latLonToPixels(lat, lon, zoom, tileSize)
+    new Pixel(p.px, (numYTiles(zoom) * tileSize) - p.py - 1)
+  }
+  
   def pixelsToTile(px: Double, py: Double, tileSize: Int): TileCoord = {
     new TileCoord((px / tileSize).toLong, (py / tileSize).toLong)
   }
