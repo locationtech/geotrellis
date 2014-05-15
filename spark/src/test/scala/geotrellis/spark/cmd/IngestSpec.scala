@@ -46,7 +46,7 @@ class IngestSpec extends FunSpec with TestEnvironment with ShouldMatchers {
 
     // do the actual ingest in local mode
     val cmd = s"--input ${allOnes.toString} --outputpyramid ${localTestOutput}"
-    Ingest.main(cmd.split(' '))
+    IngestCommand.main(cmd.split(' '))
 
     val raster = new Path(localTestOutput, "10")
     val meta = PyramidMetadata(localTestOutput, conf)
@@ -82,7 +82,7 @@ class IngestSpec extends FunSpec with TestEnvironment with ShouldMatchers {
 
     // do the actual ingest in spark mode
     val cmd = s"--input ${allOnes.toString} --outputpyramid ${sparkTestOutput} --sparkMaster local"
-    Ingest.main(cmd.split(' '))
+    IngestCommand.main(cmd.split(' '))
 
     val raster = new Path(sparkTestOutput, "10")
     val meta = PyramidMetadata(sparkTestOutput, conf)

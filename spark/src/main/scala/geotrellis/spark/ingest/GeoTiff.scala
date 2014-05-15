@@ -36,6 +36,7 @@ object GeoTiff extends Logging {
     HdfsImageInputStreamSpi.register
     loadFormats
   }
+
   private val hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode(DefaultProjection))
 
   case class Metadata(
@@ -44,7 +45,25 @@ object GeoTiff extends Logging {
     pixels: (Int, Int),
     bands: Int,
     rasterType: Int,
-    nodata: Double)
+    nodata: Double) {
+
+    private def isPixelSizeEqual(l: (Double, Double), r: (Double, Double)) =
+      (l._1 - r._1).abs < 0.0001 && (l._2 - r._2).abs < 0.0001
+
+    def merge(other: Metadata): Metadata = {
+      if (bands != other.bands)
+        sys.error(s"Error: All input tifs must have the same number of bands ${bands} != ${other.bands}")
+      if (!isPixelSizeEqual(pixelSize, other.pixelSize))
+        sys.error(s"Error: All input tifs must have the same resolution ${pixelSize} != ${other.pixelSize}")
+      if (rasterType != other.rasterType)
+        sys.error(s"Error: All input tifs must have same raster type ${rasterType} != ${other.rasterType}")
+      if ((nodata.isNaN() && !other.nodata.isNaN()) || (!nodata.isNaN() && nodata != other.nodata))
+        sys.error(s"Error: All input tifs must have same nodata value ${nodata} != ${other.nodata}")
+
+      Metadata(extent.combine(other.extent), pixelSize, pixels, bands, rasterType, nodata)
+    }
+  }
+
   /*
    * Get metadata out of the underlying tiff if it is accepted, 
    * and close the reader. If tiff is not accepted, return None
@@ -87,10 +106,11 @@ object GeoTiff extends Logging {
   def getGridCoverage2D(reader: AbstractGridCoverage2DReader): GridCoverage2D =
     reader.read(null)
 
-  def accepts(path: Path, conf: Configuration): Boolean = _accepts(path, conf) match {
-    case Some(_) => true
-    case None    => false
-  }
+  def accepts(path: Path, conf: Configuration): Boolean = 
+    _accepts(path, conf) match {
+      case Some(_) => true
+      case None    => false
+    }
 
   private def _accepts(path: Path, conf: Configuration): Option[AbstractGridFormat] = {
     val stream = path.getFileSystem(conf).open(path)
@@ -107,10 +127,11 @@ object GeoTiff extends Logging {
 
   private def getReader(path: Path, conf: Configuration): AbstractGridCoverage2DReader = {
     val stream = path.getFileSystem(conf).open(path)
-    val format = _accepts(stream) match {
-      case Some(f) => f
-      case None    => sys.error("Couldn't find format")
-    }
+    val format = 
+      _accepts(stream) match {
+        case Some(f) => f
+        case None    => sys.error("Couldn't find format")
+      }
     format.getReader(stream, hints)
   }
 

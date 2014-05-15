@@ -31,5 +31,6 @@ package object spark {
 
   implicit class SavableRasterRDD(val rdd: RasterRDD) {
     def save(path: Path) = SaveRasterFunctions.save(rdd, path)
+    def save(path: String): Unit = save(new Path(path))
   }
 }
