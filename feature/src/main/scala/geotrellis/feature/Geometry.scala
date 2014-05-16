@@ -17,6 +17,7 @@
 package geotrellis.feature
 
 import com.vividsolutions.jts.{geom => jts}
+import geotrellis.proj4.CRS
 
 trait Geometry {
 
@@ -39,8 +40,25 @@ trait Geometry {
     other match {
       case g: Geometry => jtsGeom.equals(g.jtsGeom)
       case _ => false
-    }
+  }
+}
 
+object Geometry {
+  /**
+   * Wraps JTS Geometry in correct container and attempts to cast.
+   * Useful when sourcing objects from JTS interface.
+   */
+  def fromJts[G <: Geometry](obj: jts.Geometry): G = {
+    obj match {
+      case obj: jts.Point => Point(obj)
+      case obj: jts.LineString => Line(obj)
+      case obj: jts.Polygon => Polygon(obj)
+      case obj: jts.MultiPoint => MultiPoint(obj)
+      case obj: jts.MultiLineString => MultiLine(obj)
+      case obj: jts.MultiPolygon => MultiPolygon(obj)
+      case obj: jts.GeometryCollection => GeometryCollection(obj)
+    }
+  }.asInstanceOf[G]
 }
 
 trait Relatable { self: Geometry =>
@@ -55,6 +73,8 @@ trait Relatable { self: Geometry =>
 
 trait MultiGeometry extends Geometry
 
+
+// TODO: Get rid of all this, but make sure there's nothing in here that needs to be implemented. 
 
   /* TO BE IMPLEMENTED ON A PER TYPE BASIS */
 

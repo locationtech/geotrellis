@@ -20,9 +20,9 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.raster.op.ConvertType
 import geotrellis.source._
-import geotrellis.data.geojson.GeoJsonReader
 import geotrellis.feature.rasterize.{Rasterizer, Callback}
 import geotrellis.feature.Geometry
+import geotrellis.feature.json._
 
 trait LocalOpMethods[+Repr <: RasterSource] 
   extends LocalMapOpMethods[Repr]
@@ -205,31 +205,24 @@ trait LocalOpMethods[+Repr <: RasterSource]
   def localMaxN(n:Int,rss:RasterSource*)(implicit d:DI):RasterSource =
     localMaxN(n,rss)
 
-  /** Masks this raster by the given GeoJSON. */
-  def mask(geoJson: String): RasterSource =
-    GeoJsonReader.parse(geoJson) match {
-      case Some(geomArray) => mask(geomArray)
-      case None => sys.error(s"Invalid GeoJSON: $geoJson")
-    }
-
-  /** Masks this raster by the given GeoJSON. */
-  def mask[T](geom: Geometry[T]): RasterSource = 
+  /** Masks this raster by the given Geometry. */
+  def mask(geom: Geometry): RasterSource =
     mask(Seq(geom))
 
-  /** Masks this raster by the given GeoJSON. */
-  def mask[T](geoms: Iterable[Geometry[T]]): RasterSource =
+  /** Masks this raster by the given Geometry. */
+  def mask(geoms: Iterable[Geometry]): RasterSource =
     map { tile =>
       val re = tile.rasterExtent
       val data = RasterData.emptyByType(tile.rasterType, re.cols, re.rows)
       for(g <- geoms) {
         if(tile.isFloat) {
-          Rasterizer.foreachCellByFeature(g, re)(new Callback[Geometry,T] {
-            def apply(col: Int, row: Int, g: Geometry[T]) =
+          Rasterizer.foreachCellByFeature(g, re)(new Callback {
+            def apply(col: Int, row: Int) =
               data.setDouble(col,row,tile.getDouble(col,row))
           })
         } else {
-          Rasterizer.foreachCellByFeature(g, re)(new Callback[Geometry,T] {
-            def apply(col: Int, row: Int, g: Geometry[T]) =
+          Rasterizer.foreachCellByFeature(g, re)(new Callback {
+            def apply(col: Int, row: Int) =
               data.set(col,row,tile.get(col,row))
           })
         }

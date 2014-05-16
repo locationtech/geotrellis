@@ -17,7 +17,6 @@
 package geotrellis.process
 
 import scala.collection.mutable
-import scala.io.Source
 import java.io.File
 import geotrellis._
 import geotrellis.process._
@@ -136,12 +135,8 @@ object Catalog {
   /**
    * Build a Catalog instance given a path to a JSON file.
    */
-  def fromPath(path:String): Catalog = {
-    val src = Source.fromFile(path)
-    val data = src.mkString
-    src.close()
-    fromJSON(data,path)
-  }
+  def fromPath(path:String): Catalog =
+    fromJSON(Filesystem.readText(path), path)
 
   def fromJSON(data:String):Catalog = fromJSON(data,"")
 

@@ -36,6 +36,9 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
 
   assert(jtsGeom.isValid)
 
+  /** Returns a unique representation of the geometry based on standard coordinate ordering. */
+  def normalized(): MultiPoint = { jtsGeom.normalize ; MultiPoint(jtsGeom) }
+
   /** Returns the Points contained in MultiPoint. */
   lazy val points: Array[Point] = {
     for (i <- 0 until jtsGeom.getNumPoints) yield {

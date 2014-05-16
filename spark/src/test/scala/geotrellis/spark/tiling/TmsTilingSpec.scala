@@ -91,6 +91,11 @@ class TmsTilingSpec extends FunSpec with ShouldMatchers {
 
       }
     }
+    
+    it("should correctly cap world extents") {
+      Bounds.World.intersect(Extent(-180.001,-90.001,180.001,90.001)) should be(Some(Bounds.World))
+    }
+    		
 
   }
 }

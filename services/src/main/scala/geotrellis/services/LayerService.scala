@@ -20,7 +20,9 @@ import geotrellis._
 import geotrellis.source._
 import geotrellis.process.LayerId
 import geotrellis.render.ColorRamps._
-import geotrellis.util.srs
+import geotrellis.feature._
+import geotrellis.proj4._
+import geotrellis.feature.reproject._
 
 import Json._
 
@@ -46,12 +48,14 @@ object LayerService {
     RasterSource(layer)
       .info
       .map(_.rasterExtent.extent)
-      .map(extent => srs.WebMercator.transform(extent,srs.LatLng))
-      .map { extent => 
-        s"""{"latmin" : "${extent.ymin}",
-             "latmax" : "${extent.ymax}",
-             "lngmin" : "${extent.xmin}",
-             "lngmax" : "${extent.xmax}"}"""
+      .map { extent =>
+        val sw = extent.southWest.reproject(WebMercator, LatLng)
+        val ne = extent.northEast.reproject(WebMercator, LatLng)
+
+        s"""{"latmin" : "${sw.y}",
+             "latmax" : "${ne.y}",
+             "lngmin" : "${sw.x}",
+             "lngmax" : "${sw.x}"}"""
        }
 
   def render(

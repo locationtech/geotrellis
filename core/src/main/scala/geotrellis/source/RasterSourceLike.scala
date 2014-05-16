@@ -17,6 +17,7 @@
 package geotrellis.source
 
 import geotrellis._
+import geotrellis.io._
 import geotrellis.feature._
 import geotrellis.raster.op._
 import geotrellis.statistics.op._
@@ -38,7 +39,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     with zonal.summary.ZonalSummaryOpMethods[Repr]
     with hydrology.HydrologyOpMethods[Repr]
     with stat.StatOpMethods[Repr] 
-    with io.IoOpMethods[Repr] 
+    with IoOpMethods[Repr] 
     with RenderOpMethods[Repr] { self: Repr =>
 
   def tiles = self.elements
@@ -135,7 +136,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
       rasterDefinition
         .flatMap { rd => 
           if(rd.catalogued) {
-            io.LoadRasterLayerInfo(rd.layerId)
+            LoadRasterLayerInfo(rd.layerId)
           } else {
             RasterLayerInfo.fromDefinition(rd)
           }

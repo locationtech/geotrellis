@@ -15,6 +15,7 @@
  */
 
 package geotrellis.spark.cmd
+
 import geotrellis._
 import geotrellis.spark.Tile
 import geotrellis.spark.cmd.args.HadoopArgs
@@ -23,7 +24,10 @@ import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.ingest.IngestInputFormat
 import geotrellis.spark.ingest.TiffTiler
+import geotrellis.spark.ingest.GeoTiff
+import geotrellis.spark.ingest.MetadataInputFormat
 import geotrellis.spark.metadata.PyramidMetadata
+import geotrellis.spark.metadata.JacksonWrapper
 import geotrellis.spark.rdd.RasterSplitGenerator
 import geotrellis.spark.rdd.TileIdPartitioner
 import geotrellis.spark.tiling.TmsTiling
@@ -37,12 +41,17 @@ import org.apache.hadoop.io.MapFile
 import org.apache.hadoop.io.SequenceFile
 import org.apache.spark.Logging
 import org.apache.spark.SerializableWritable
+import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
+import org.apache.spark.broadcast.Broadcast
 import org.geotools.coverage.grid.GridCoverage2D
 
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.FieldArgs
 import com.quantifind.sumac.validation.Required
+
+import java.io.PrintWriter
 
 /**
  * @author akini
@@ -78,155 +87,39 @@ class IngestArgs extends SparkArgs with HadoopArgs {
   @Required var outputpyramid: String = _
 }
 
-object Ingest extends ArgMain[IngestArgs] with Logging {
+case class IngestPaths(inPath: Path, outPath: Path, outFs: FileSystem)
+
+case class IngestData(metadata: PyramidMetadata, files: Seq[Path])
+
+object IngestCommand extends ArgMain[IngestArgs] with Logging {
 
   System.setProperty("com.sun.media.jai.disableMediaLib", "true")
 
-  def main(args: IngestArgs) {
+  def main(args: IngestArgs): Unit = {
+    val hadoopConf = args.hadoopConf
+    hadoopConf.set("io.map.index.interval", "1")
+
     val inPath = new Path(args.input)
     val outPath = new Path(args.outputpyramid)
-    val sparkMaster = args.sparkMaster
-    val runLocal = sparkMaster == null
-
-    val hadoopConf = args.hadoopConf
 
     logInfo(s"Deleting and creating output path: $outPath")
-    val outFs = outPath.getFileSystem(hadoopConf)
+    val outFs: FileSystem = outPath.getFileSystem(hadoopConf)
     outFs.delete(outPath, true)
     outFs.mkdirs(outPath)
 
-    if (runLocal) {
-      val (files, meta) = PyramidMetadata.fromTifFiles(inPath, hadoopConf)
-      logInfo("------- FILES ------")
-      logInfo(files.mkString("\n"))
-      logInfo("\n\n\n")
-      logInfo("------- META ------")
-      logInfo(meta.toString)
-      meta.save(outPath, hadoopConf)
+    val paths = IngestPaths(inPath, outPath, outFs)
 
-      val tiles = files.flatMap(file => TiffTiler.tile(file, meta, hadoopConf))
-
-      val outPathWithZoom = createZoomDirectory(outPath, meta.maxZoomLevel, outFs)
-
-      val partitioner = createPartitioner(outPathWithZoom, meta, hadoopConf)
-
-      val key = new TileIdWritable()
-
-      // open as many writers as number of partitions
-      def openWriters(num: Int) = {
-        val writers = new Array[MapFile.Writer](num)
-        for (i <- 0 until num) {
-          val mapFilePath = new Path(outPathWithZoom, f"part-${i}%05d")
-
-          writers(i) = new MapFile.Writer(hadoopConf, outFs, mapFilePath.toUri.toString,
-            classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.RECORD)
-
-        }
-        writers
-      }
-
-      setOutputParameters(hadoopConf)
-      val writers = openWriters(partitioner.numPartitions)
-      try {
-        tiles.foreach {
-          case (tileId, tile) => {
-            key.set(tileId)
-            writers(partitioner.getPartition(key)).append(key, ArgWritable.fromRasterData(tile.toArrayRaster.data))
-            //logInfo(s"Saved tileId=${tileId},partition=${partitioner.getPartition(key)}")
-          }
-        }
-      }
-      finally {
-        writers.foreach(_.close)
-      }
-      logInfo(s"Done saving ${tiles.length} tiles")
-    }
-
-    else {
-      // run on spark
-      val sc = args.sparkContext("Ingest")
-
-      try {
-        val (files, meta) = PyramidMetadata.fromTifFiles(inPath, hadoopConf, sc)
-
-        logInfo("------- META ------")
-        logInfo(meta.toString)
-        meta.save(outPath, hadoopConf)
-        meta.writeToJobConf(hadoopConf)
-
-        // if less than 10 input files, print them out
-        if (files.length < 10) {
-          logInfo("------- FILES ------")
-          logInfo(files.mkString("\n"))
-        }
-
-        val outPathWithZoom = createZoomDirectory(outPath, meta.maxZoomLevel, outFs)
-
-        val partitioner = createPartitioner(outPathWithZoom, meta, hadoopConf)
-
-        val newConf = HdfsUtils.putFilesInConf(files.mkString(","), hadoopConf)
-        val rdd = sc.newAPIHadoopRDD(newConf, classOf[IngestInputFormat], classOf[Long], classOf[Raster])
-        setOutputParameters(newConf)
-
-        val broadCastedConf = sc.broadcast(new SerializableWritable(newConf))
-        val outPathWithZoomStr = outPathWithZoom.toUri().toString()
-        val res =
-          rdd.map(t => Tile(t._1, t._2).toWritable)
-            .partitionBy(partitioner)
-            .reduceByKey((tile1, tile2) => tile2) // pick the later one
-            .mapPartitionsWithIndex({ (index, iter) =>
-              {
-                val conf = broadCastedConf.value.value
-                val buf = iter.toArray.sortWith((x, y) => x._1.get() < y._1.get())
-
-                val mapFilePath = new Path(outPathWithZoomStr, f"part-${index}%05d")
-                val fs = mapFilePath.getFileSystem(conf)
-                val fsRep = fs.getDefaultReplication()
-                logInfo(s"Working on partition ${index} with rep = (${conf.getInt("dfs.replication", -1)}, ${fsRep})")
-                val writer = new MapFile.Writer(conf, fs, mapFilePath.toUri.toString,
-                  classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.RECORD)
-                buf.foreach(writableTile => writer.append(writableTile._1, writableTile._2))
-                writer.close()
-                iter
-              }
-            }, true)
-        logInfo(s"Done saving ${res.count()} tiles")
-      }
-      finally {
-        sc.stop
-      }
+    args.sparkMaster match {
+      case null => 
+        new LocalIngest(hadoopConf).ingest(paths)
+      case _ => 
+        // run on spark
+        val sc = args.sparkContext("Ingest")
+        new SparkIngest(hadoopConf, sc).ingest(paths)
     }
   }
-
-  // mutates hadoopConf
-  private def setOutputParameters(conf: Configuration): Unit = {
-    conf.set("io.map.index.interval", "1")
-    //conf.setInt("dfs.replication", 1)
-  }
-  
-  private def createPartitioner(rasterPath: Path, meta: PyramidMetadata, conf: Configuration): TileIdPartitioner = {
-    val tileExtent = meta.metadataForBaseZoom.tileExtent
-    val (zoom, tileSize, rasterType) = (meta.maxZoomLevel, meta.tileSize, meta.rasterType)
-    val tileSizeBytes = TmsTiling.tileSizeBytes(tileSize, rasterType)
-    val blockSizeBytes = HdfsUtils.defaultBlockSize(rasterPath, conf)
-    val splitGenerator = RasterSplitGenerator(tileExtent, zoom, tileSizeBytes, blockSizeBytes)
-
-    val partitioner = TileIdPartitioner(splitGenerator, rasterPath, conf)
-
-    logInfo(s"SplitGenerator params (tileSize,blockSize,increment) = (${tileSizeBytes}, ${blockSizeBytes}," + 
-            s"${RasterSplitGenerator.computeIncrement(tileExtent, tileSizeBytes, blockSizeBytes)}")
-    logInfo(s"Saving splits: " + partitioner)
-    partitioner
-  }
-  
-  private def createZoomDirectory(pyramid: Path, zoom: Int, fs: FileSystem): Path = {
-    val outPathWithZoom = new Path(pyramid, zoom.toString)
-    logInfo(s"Creating Output Path With Zoom: $outPathWithZoom")
-    fs.mkdirs(outPathWithZoom)
-    outPathWithZoom
-  }
-
-  /* debugging only */
+   
+  /* debugging only 
   private def inspect(tile: GridCoverage2D): Unit = {
     val env = tile.getEnvelope()
     val r = tile.getRenderedImage().getData()
@@ -239,5 +132,196 @@ object Ingest extends ArgMain[IngestArgs] with Logging {
       val d = r.getSampleFloat(px, py, 0)
       println(s"($px,$py)=$d")
     }
+  */
+}
+
+abstract class Ingest(hadoopConf: Configuration) extends Logging with Serializable {
+  protected
+  def doIngest(ingestData: IngestData, outPathWithZoom: Path, partitioner: TileIdPartitioner, ingestPaths: IngestPaths): Unit
+
+  protected
+  def getIngestData(files: List[Path]): IngestData
+
+  def ingest(paths: IngestPaths): Unit = {
+    val allFiles = HdfsUtils.listFiles(paths.inPath, hadoopConf)
+
+    val ingestData = getIngestData(allFiles)
+
+    // Save pyramid metadata
+    val metaPath = new Path(paths.outPath, PyramidMetadata.MetaFile)
+    val fs = metaPath.getFileSystem(hadoopConf)
+    val fdos = fs.create(metaPath)
+    val out = new PrintWriter(fdos)
+    out.println(JacksonWrapper.prettyPrint(ingestData.metadata))
+    out.close()
+    fdos.close()
+
+    logInfo("------- META ------")
+    logInfo(ingestData.metadata.toString)
+
+    logInfo("------- FILES ------")
+    if (ingestData.files.length < 10) {
+      // if less than 10 input files, print them out
+      logInfo(ingestData.files.mkString("\n"))
+    } else {
+      logInfo((ingestData.files.take(10) ++ Seq("...")) mkString("\n"))
+    }
+
+    val outPathWithZoom = createZoomDirectory(paths.outPath, ingestData.metadata.maxZoomLevel, paths.outFs)
+    val partitioner = createPartitioner(outPathWithZoom, ingestData.metadata, hadoopConf)
+
+    doIngest(ingestData, outPathWithZoom, partitioner, paths)
+  }
+
+  def createPartitioner(rasterPath: Path, meta: PyramidMetadata, hadoopConf: Configuration): TileIdPartitioner = {
+    val tileExtent = meta.metadataForBaseZoom.tileExtent
+    val (zoom, tileSize, rasterType) = (meta.maxZoomLevel, meta.tileSize, meta.rasterType)
+    val tileSizeBytes = TmsTiling.tileSizeBytes(tileSize, rasterType)
+    val blockSizeBytes = HdfsUtils.defaultBlockSize(rasterPath, hadoopConf)
+    val splitGenerator = RasterSplitGenerator(tileExtent, zoom, tileSizeBytes, blockSizeBytes)
+
+    val partitioner = TileIdPartitioner(splitGenerator, rasterPath, hadoopConf)
+
+    logInfo(s"SplitGenerator params (tileSize,blockSize,increment) = (${tileSizeBytes}, ${blockSizeBytes}," + 
+            s"${RasterSplitGenerator.computeIncrement(tileExtent, tileSizeBytes, blockSizeBytes)}")
+    logInfo(s"Saving splits: " + partitioner)
+    partitioner
+  }
+
+  def createZoomDirectory(pyramid: Path, zoom: Int, fs: FileSystem): Path = {
+    val outPathWithZoom = new Path(pyramid, zoom.toString)
+    logInfo(s"Creating Output Path With Zoom: $outPathWithZoom")
+    fs.mkdirs(outPathWithZoom)
+    outPathWithZoom
+  }
+}
+
+object SparkIngest extends Logging {
+  /** Pulled out into the companion object for spark execution.*/
+  def createRdd(
+    rdd: RDD[(Long, Raster)],
+    partitioner: TileIdPartitioner,
+    broadcastedConf: Broadcast[SerializableWritable[Configuration]],
+    outPathWithZoomStr: String
+  ): RDD[(TileIdWritable, ArgWritable)] = {
+     rdd.map(t => Tile(t._1, t._2).toWritable)
+          .partitionBy(partitioner)
+          .reduceByKey((tile1, tile2) => tile2) // pick the later one
+          .mapPartitionsWithIndex( { (index, iter) =>
+            val conf = broadcastedConf.value.value
+            val buf = iter.toArray.sortWith((x, y) => x._1.get() < y._1.get())
+
+            val mapFilePath = new Path(outPathWithZoomStr, f"part-${index}%05d")
+            val fs = mapFilePath.getFileSystem(conf)
+            val fsRep = fs.getDefaultReplication()
+            logInfo(s"Working on partition ${index} with rep = (${conf.getInt("dfs.replication", -1)}, ${fsRep})")
+            val writer = new MapFile.Writer(conf, fs, mapFilePath.toUri.toString,
+              classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.RECORD)
+            buf.foreach(writableTile => writer.append(writableTile._1, writableTile._2))
+            writer.close()
+            iter
+          }, true)
+  }
+}
+
+class SparkIngest(hadoopConf: Configuration, sparkContext: SparkContext) extends Ingest(hadoopConf) {
+
+  def getIngestData(allFiles: List[Path]): IngestData = {
+    val newConf = HdfsUtils.putFilesInConf(allFiles.mkString(","), hadoopConf)
+    
+    val (acceptedFiles, optMetas) =
+      sparkContext
+        .newAPIHadoopRDD(
+          newConf,
+          classOf[MetadataInputFormat],
+          classOf[String],
+          classOf[Option[GeoTiff.Metadata]]
+         )
+        .collect
+        .unzip
+
+    val files = acceptedFiles.map(new Path(_))
+    val meta = optMetas.flatten.reduceLeft(_.merge(_))
+    IngestData(PyramidMetadata.fromGeoTiffMeta(meta), files)
+  }
+
+  def doIngest(ingestData: IngestData, outPathWithZoom: Path, partitioner: TileIdPartitioner, ingestPaths: IngestPaths): Unit = {
+    val IngestData(meta, files) = ingestData
+
+    try {
+      meta.writeToJobConf(hadoopConf)
+      val newConf = HdfsUtils.putFilesInConf(files.mkString(","), hadoopConf)
+      val rdd = sparkContext.newAPIHadoopRDD(newConf, classOf[IngestInputFormat], classOf[Long], classOf[Raster])
+
+      val broadcastedConf = sparkContext.broadcast(new SerializableWritable(newConf))
+
+      // Turn into a string because Path type is not serializable.
+      val outPathWithZoomStr = outPathWithZoom.toUri().toString()
+
+      val res = SparkIngest.createRdd(rdd, partitioner, broadcastedConf, outPathWithZoomStr)
+      logInfo(s"Done saving ${res.count()} tiles")
+    }
+    finally {
+      sparkContext.stop
+    }
+  }
+}
+
+class LocalIngest(hadoopConf: Configuration) extends Ingest(hadoopConf) {
+
+  def getIngestData(allFiles: List[Path]): IngestData = {
+    val (files, optMetas) = 
+      allFiles
+        .map { file =>
+          val meta = GeoTiff.getMetadata(file, hadoopConf)
+          (file, meta)
+         }
+        .filter { case (file, meta) => meta.isDefined }
+        .unzip
+
+    val meta = optMetas.flatten.reduceLeft(_.merge(_))
+
+    IngestData(PyramidMetadata.fromGeoTiffMeta(meta), files)
+  }
+
+  def doIngest(ingestData: IngestData, outPathWithZoom: Path, partitioner: TileIdPartitioner, ingestPaths: IngestPaths): Unit = {
+    val IngestData(meta, files) = ingestData
+
+    val key = new TileIdWritable()
+
+    val tiles: Seq[(Long, Raster)] = 
+      files
+        .map(TiffTiler.tile(_, meta, hadoopConf))
+        .flatten
+
+    // open as many writers as number of partitions
+    val writers = {
+      val num = partitioner.numPartitions
+      val writers = new Array[MapFile.Writer](num)
+      for (i <- 0 until num) {
+        val mapFilePath = new Path(outPathWithZoom, f"part-${i}%05d")
+
+        writers(i) = new MapFile.Writer(hadoopConf, ingestPaths.outFs, mapFilePath.toUri.toString,
+          classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.RECORD)
+      }
+      writers
+    }
+
+    try {
+      for((tileId, tile) <- tiles) {
+        key.set(tileId)
+        val partition = partitioner.getPartition(key)
+        println(s"Partitioner says $partition")
+        val writer = writers(partition)
+        val argWritable = ArgWritable.fromRasterData(tile.toArrayRaster.data)
+
+        writer.append(key, argWritable)
+        logInfo(s"Saved tileId=${tileId},partition=${partitioner.getPartition(key)}")
+      }
+    } finally {
+      writers.foreach(_.close)
+    }
+
+    logInfo(s"Done saving ${tiles.length} tiles")
   }
 }

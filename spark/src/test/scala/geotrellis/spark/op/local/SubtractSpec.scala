@@ -21,6 +21,7 @@ import geotrellis.spark.SharedSparkContext
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.rdd.RasterRDD
 import geotrellis.spark.testfiles.AllHundreds
+import geotrellis.spark.testfiles.AllOnes
 import geotrellis.spark.testfiles.AllTwos
 
 import org.scalatest.FunSpec
@@ -28,6 +29,7 @@ import org.scalatest.FunSpec
 class SubtractSpec extends FunSpec with TestEnvironment with SharedSparkContext with RasterRDDMatchers {
 
   describe("Subtract Operation") {
+    val allOnes = AllOnes(inputHome, conf)
     val allTwos = AllTwos(inputHome, conf)
     val allHundreds = AllHundreds(inputHome, conf)
 
@@ -51,10 +53,11 @@ class SubtractSpec extends FunSpec with TestEnvironment with SharedSparkContext 
 
     it("should subtract multiple rasters") { 
       val hundreds = RasterRDD(allHundreds.path, sc)
+      val ones = RasterRDD(allOnes.path, sc)
       val twos = RasterRDD(allTwos.path, sc)
-      val res = hundreds - twos - twos
+      val res = hundreds - twos - ones
 
-      shouldBe(res, (96, 96, allHundreds.tileCount))
+      shouldBe(res, (97, 97, allHundreds.tileCount))
     }
   }
 }
