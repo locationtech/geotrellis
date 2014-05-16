@@ -1,6 +1,6 @@
 package geotrellis.raster.op.global
 
-import geotrellis.{TypeDouble, ArrayRaster, Raster}
+import geotrellis.{TypeBit, TypeDouble, ArrayRaster, Raster}
 import geotrellis.raster.RasterData
 
 /**
