@@ -27,7 +27,7 @@ import scalaxy.loops._
 
 abstract sealed trait TileIntersection
 
-case class PartialTileIntersection(tile:Raster,intersections:Set[Polygon]) extends TileIntersection
+case class PartialTileIntersection(tile:Raster,intersections:Seq[Polygon]) extends TileIntersection
 case class FullTileIntersection(tile:Raster) extends TileIntersection
 
 trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
@@ -81,13 +81,13 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
               filtered += handleFullTile(row*tileCols + col)
             } else {
               tilePoly.intersection(p) match {
-                case intersections: PolygonResult =>
+                case PolygonResult(intersectionPoly) =>
                   filtered += tiles(row*tileCols + col).map { t =>
-                    handleTileIntersection(PartialTileIntersection(t,Set(intersections.p)))
+                    handleTileIntersection(PartialTileIntersection(t,Seq(intersectionPoly)))
                   }
-                case intersections: MultiPolygonResult =>
+                case MultiPolygonResult(intersectionMultiPoly) =>
                   filtered += tiles(row*tileCols + col).map { t =>
-                    handleTileIntersection(PartialTileIntersection(t,intersections.ps))
+                    handleTileIntersection(PartialTileIntersection(t, intersectionMultiPoly.polygons))
                   }
                 case _ => //No match? No Problem
               }

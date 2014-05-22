@@ -10,13 +10,13 @@ import scala.collection.mutable
  * This builder can accumulate from both geotrellis geometries and JTS geometries
  */
 class GeometryCollectionBuilder {
-  val points = mutable.Set[Point]()
-  val lines = mutable.Set[Line]()
-  val polygons = mutable.Set[Polygon]()
-  val multiPoints = mutable.Set[MultiPoint]()
-  val multiLines = mutable.Set[MultiLine]()
-  val multiPolygons = mutable.Set[MultiPolygon]()
-  val collections = mutable.Set[GeometryCollection]()
+  val points = mutable.ListBuffer[Point]()
+  val lines = mutable.ListBuffer[Line]()
+  val polygons = mutable.ListBuffer[Polygon]()
+  val multiPoints = mutable.ListBuffer[MultiPoint]()
+  val multiLines = mutable.ListBuffer[MultiLine]()
+  val multiPolygons = mutable.ListBuffer[MultiPolygon]()
+  val collections = mutable.ListBuffer[GeometryCollection]()
 
   def add(geom: Geometry) = geom match {
     case p: Point => points += p
@@ -61,8 +61,8 @@ class GeometryCollectionBuilder {
       ).map(_.jtsGeom).toArray
     )
 
-    new GeometryCollection(points.toSet, lines.toSet, polygons.toSet,
-      multiPoints.toSet, multiLines.toSet, multiPolygons.toSet,
-      collections.toSet, jtsGeom)
+    new GeometryCollection(points, lines, polygons,
+      multiPoints, multiLines, multiPolygons,
+      collections, jtsGeom)
   }
 }

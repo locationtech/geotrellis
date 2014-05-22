@@ -17,6 +17,7 @@
 package geotrellis.feature.spec
 
 import geotrellis.feature._
+import geotrellis.testkit.feature._
 
 import com.vividsolutions.jts.{geom=>jts}
 
@@ -61,27 +62,27 @@ class PolygonSpec extends FunSpec with ShouldMatchers {
     it ("should have a boundary that is a MultiLineResult") {
       val l = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
       val h = Line(Point(1,1), Point(1,4), Point(4,4), Point(4,1), Point(1,1))
-      val p = Polygon(l, Set(h))
-      p.boundary should be (MultiLineResult(Set(l, h)))
+      val p = Polygon(l, Seq(h))
+      p.boundary should be (MultiLineResult(Seq(l, h)))
     }
 
     it ("should have vertices") {
       val l = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
       val p = Polygon(l)
-      p.vertices should be (MultiPoint(Point(0,0), Point(0,5), Point(5,5), Point(5,0)))
+      p.vertices should be (Array(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0)))
     }
 
     it ("should have a bounding box whose points are " +
         "(minx, miny), (minx, maxy), (maxx, maxy), (maxx, miny), (minx, miny).") {
       val l = Line(Point(0,0), Point(2,2), Point(4,0), Point(0,0))
       val p = Polygon(l)
-      p.boundingBox should be (Polygon(Line(Point(0,0), Point(0,2), Point(4,2), Point(4,0), Point(0,0))))
+      p.boundingBox should be (BoundingBox(0,0,4,2))
     }
 
     it ("should have a perimeter equal to the length of its boundary") {
       val l = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
       val h = Line(Point(1,1), Point(1,4), Point(4,4), Point(4,1), Point(1,1))
-      val p = Polygon(l, Set(h))
+      val p = Polygon(l, Seq(h))
       p.perimeter should be (20 + 12)
     }
 
@@ -109,7 +110,7 @@ class PolygonSpec extends FunSpec with ShouldMatchers {
       val mp = MultiPoint(p1, p2)
       val l = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
       val p = Polygon(l)
-      p & mp should be (MultiPointResult(Set(p1, p2)))
+      p & mp should be (MultiPointResult(Seq(p1, p2)))
     }
 
     it ("should intersect with a TwoDimensions and return a NoResult") {
@@ -150,7 +151,7 @@ class PolygonSpec extends FunSpec with ShouldMatchers {
       val p1 = Polygon(l1)
       val l2 = Line(Point(5,0), Point(7,0), Point(5,5), Point(10,5), Point(10,-1), Point(5,0))
       val p2 = Polygon(l2)
-      p1 & p2 should be (MultiPointResult(Set(Point(5,0), Point(5,5))))
+      p1 & p2 should be (MultiPointResult(Seq(Point(5,0), Point(5,5))))
     }
 
     it ("should intersect with a TwoDimensions and return a MultiLineResult") {
@@ -159,7 +160,7 @@ class PolygonSpec extends FunSpec with ShouldMatchers {
       val l2 = Line(Point(5,0), Point(5,2), Point(6,2), Point(6,4), Point(5,4),
                     Point(5,6), Point(7,6), Point(7,0), Point(5,0))
       val p2 = Polygon(l2)
-      p1 & p2 should be (MultiLineResult(Set(Line(Point(5,6), Point(5,4)),
+      p1 & p2 should be (MultiLineResult(Seq(Line(Point(5,6), Point(5,4)),
                                              Line(Point(5,2), Point(5,0)))))
     }
 
@@ -169,7 +170,7 @@ class PolygonSpec extends FunSpec with ShouldMatchers {
       val l2 = Line(Point(0,4), Point(0,7), Point(5,7), Point(5,4), Point(3,4),
                     Point(3,6), Point(2,6), Point(2,4), Point(0,4))
       val p2 = Polygon(l2)
-      p1 & p2 should be (MultiPolygonResult(Set(Polygon(Line(Point(0,4), Point(0,5),
+      p1 & p2 should be (MultiPolygonResult(Seq(Polygon(Line(Point(0,4), Point(0,5),
                                                              Point(2,5), Point(2,4), Point(0,4))),
                                                 Polygon(Line(Point(3,5), Point(5,5),
                                                              Point(5,4), Point(3,4), Point(3,5))))))
@@ -182,7 +183,7 @@ class PolygonSpec extends FunSpec with ShouldMatchers {
                     Point(2,4), Point(0,4))
       val p2 = Polygon(l2)
       val expected: GeometryCollection =
-        GeometryCollection(points = Set(Point(5,5)), polygons = Set(Polygon(Line(Point(0,4), Point(0,5),
+        GeometryCollection(points = Seq(Point(5,5)), polygons = Seq(Polygon(Line(Point(0,4), Point(0,5),
           Point(2,5), Point(2,4), Point(0,4)))))
       val result = p1 & p2
       result match {
@@ -208,14 +209,14 @@ class PolygonSpec extends FunSpec with ShouldMatchers {
       val p1 = Polygon(l1)
       val l2 = Line(Point(0,6), Point(0,7), Point(5,7), Point(5,6), Point(0,6))
       val p2 = Polygon(l2)
-      p1 | p2 should be (MultiPolygonResult(Set(p1, p2)))
+      p1 | p2 should be (MultiPolygonResult(Seq(p1, p2)))
     }
 
     it ("should union with a MultiPolygon and return a PolygonResult") {
       val l1 = Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0))
       val p1 = Polygon(l1)
       val l2 = Line(Point(0,4), Point(0,7), Point(5,7), Point(5,4), Point(0,4))
-      val l3 = l2
+      val l3 = Line(Point(0,3), Point(3,3), Point(2,3), Point(2,0), Point(0,3))
       val mp = MultiPolygon(Polygon(l2), Polygon(l3))
       p1 | mp should be (PolygonResult(Polygon(Line(Point(0,0), Point(0,4), Point(0,5), Point(0,7),
         Point(5,7), Point(5,5), Point(5,4), Point(5,0),
@@ -285,20 +286,20 @@ class PolygonSpec extends FunSpec with ShouldMatchers {
       val p2 = Polygon(Line(Point(-2,4), Point(-2,6), Point(12,6), Point(12,4), Point(-2,4)))
       val p3 = Polygon(Line(Point(0,6), Point(0,10), Point(10,10), Point(10,6), Point(0,6)))
       val p4 = Polygon(Line(Point(0,0), Point(0,4), Point(10,4), Point(10,0), Point(0,0)))
-      p1 - p2 should be (MultiPolygonResult(Set(p3, p4)))
+      p1 - p2 should be (MultiPolygonResult(Seq(p3, p4)))
     }
 
     it ("should symDifference with a MultiPolygon and return a NoResult") {
       val p1 = Polygon(Line(Point(0,0), Point(0,10), Point(10,10), Point(10,0), Point(0,0)))
       val p2 = Polygon(Line(Point(10,0), Point(10,10), Point(0,10), Point(0,0), Point(10,0)))
-      val mp = MultiPolygon(Set(p2))
+      val mp = MultiPolygon(Seq(p2))
       p1.symDifference(mp) should be (NoResult)
     }
 
     it ("should symDifference with a Polygon and return a NoResult") {
       val p1 = Polygon(Line(Point(0,0), Point(0,10), Point(10,10), Point(10,0), Point(0,0)))
       val p2 = Polygon(Line(Point(10,0), Point(10,10), Point(0,10), Point(0,0), Point(10,0)))
-      val mp = MultiPolygon(Set(p2))
+      val mp = MultiPolygon(Seq(p2))
       p1.symDifference(mp) should be (NoResult)
     }
 
@@ -312,18 +313,18 @@ class PolygonSpec extends FunSpec with ShouldMatchers {
     it ("should symDifference with a Polygon and return a MultiPolygonResult") {
       val p1 = Polygon(Line(Point(0,0), Point(0,10), Point(10,10), Point(10,0), Point(0,0)))
       val p2 = Polygon(Line(Point(15,0), Point(15,10), Point(25,10), Point(25,0), Point(15,0)))
-      p1.symDifference(p2) should be (MultiPolygonResult(Set(p1, p2)))
+      p1.symDifference(p2) should be (MultiPolygonResult(Seq(p1, p2)))
     }
 
     // -- Buffer
 
     it ("should have a buffer which is a Polygon") {
-      val p = Polygon(Line(Point(0,0), Point(0,10), Point(10,10), Point(10,0), Point(0,0)))
-        val result = p.buffer(5)
-        result match {
-          case Polygon(_) => // expected
-          case _ => fail()
-        }
+      val p: Polygon = SineStar().withSize(100).build()
+      val result = p.buffer(5)
+      result match {
+        case Polygon(_) => // expected
+        case _ => fail()
+      }
     }
 
     // -- Predicates

@@ -40,15 +40,13 @@ object Line {
 
     Line(factory.createLineString(points.map(_.jtsGeom.getCoordinate).toArray))
   }
-
 }
 
 case class Line(jtsGeom: jts.LineString) extends Geometry
-                                         with Relatable
-                                         with OneDimension {
+                                            with Relatable
+                                            with OneDimension {
 
   assert(!jtsGeom.isEmpty, s"LineString Empty: $jtsGeom")
-  assert(jtsGeom.isValid, s"LineString Invalid: $jtsGeom")
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
   def normalized(): Line = { jtsGeom.normalize ; Line(jtsGeom) }
@@ -82,15 +80,10 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
     jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
 
   /**
-   * Returns a Polygon whose points are (minx, miny), (minx, maxy),
-   * (maxx, maxy), (maxx, miny), (minx, miny).
+   * Returns the minimum bounding box that contains this Line.
    */
-  lazy val boundingBox: Polygon =
-    jtsGeom.getEnvelope match {
-      case p: jts.Polygon => Polygon(p)
-      case x =>
-        sys.error(s"Unexpected result for Line boundingBox: ${x.getGeometryType}")
-    }
+  lazy val boundingBox: BoundingBox =
+    jtsGeom.getEnvelopeInternal
 
   /** Returns the length of this Line. */
   lazy val length: Double =
@@ -199,7 +192,6 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
    */
   def union(mp: MultiPolygon): LineMultiPolygonUnionResult =
     jtsGeom.union(mp.jtsGeom)
-
 
   // -- Difference
 
@@ -344,6 +336,4 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
    */
   def within(g: AtLeastOneDimension): Boolean =
     jtsGeom.within(g.jtsGeom)
-
-  override def toString = jtsGeom.toString
 }

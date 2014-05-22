@@ -54,16 +54,16 @@ class PointSpec extends FunSpec with ShouldMatchers {
 
     it ("should union with a ZeroDimensions and return a PointResult") {
       val p = Point(1,1)
-      val zd = Set[Point](Point(1,1))
+      val zd = Seq[Point](Point(1,1))
       val result = p | zd
       result should be (PointResult(Point(1,1)))
     }
 
     it ("should union with a ZeroDimensions and return a MultiPointResult") {
       val p = Point(1,1)
-      val zd = Set[Point](Point(1,1), Point(2,2))
+      val zd = Seq[Point](Point(1,1), Point(2,2))
       val result = p | zd
-      result should be (MultiPointResult(Set[Point](Point(1,1), Point(2,2))))
+      result should be (MultiPointResult(Seq[Point](Point(1,1), Point(2,2))))
     }
 
     it ("should union with a Line and return a LineResult") {
@@ -77,7 +77,7 @@ class PointSpec extends FunSpec with ShouldMatchers {
       val p = Point(1,1)
       val l = Line(Point(0,0), Point(0,2))
       val expected: GeometryCollection =
-        GeometryCollection(points = Set(Point(1,1)), lines = Set(Line(Point(0,0), Point(0,2))))
+        GeometryCollection(points = Seq(Point(1,1)), lines = Seq(Line(Point(0,0), Point(0,2))))
       val result = p | l
       result match {
         case GeometryCollectionResult(gc) => gc should be (expected)
@@ -96,7 +96,7 @@ class PointSpec extends FunSpec with ShouldMatchers {
       val pt = Point(11,11)
       val poly = Polygon(Line(Point(0,0), Point(0,2), Point(2,2), Point(2,0), Point(0,0)))
       val expected: GeometryCollection =
-        GeometryCollection(points = Set(pt), polygons = Set(poly))
+        GeometryCollection(points = Seq(pt), polygons = Seq(poly))
       val result = pt | poly
       result match {
         case GeometryCollectionResult(gc) => gc should be (expected)
@@ -106,14 +106,14 @@ class PointSpec extends FunSpec with ShouldMatchers {
 
     it ("should union with an empty MultiLine and return a PointResult") {
       val p = Point(1,1)
-      val ls = MultiLine(Set())
+      val ls = MultiLine(Seq())
       val result = p | ls
       result should be (PointResult(p))
     }
 
     it ("should union with a MultiLine and return a LineResult") {
       val p = Point(1,1)
-      val ls = MultiLine(Set(Line(Point(0,0), Point(2,2))))
+      val ls = MultiLine(Seq(Line(Point(0,0), Point(2,2))))
       val result = p | ls
       result should be (LineResult(Line(Point(0,0), Point(2,2))))
     }
@@ -122,18 +122,18 @@ class PointSpec extends FunSpec with ShouldMatchers {
       val p = Point(1,1)
       val l1 = Line(Point(0,0), Point(2,2))
       val l2 = Line(Point(0,5), Point(5,5))
-      val ls = MultiLine(Set(l1, l2))
+      val ls = MultiLine(Seq(l1, l2))
       val result = p | ls
-      result should be (MultiLineResult(Set(l1, l2)))
+      result should be (MultiLineResult(Seq(l1, l2)))
     }
 
     it ("should union with a MultiLine and return a GeometryCollectionResult") {
       val p = Point(11,11)
       val l1 = Line(Point(0,0), Point(2,2))
       val l2 = Line(Point(0,5), Point(5,5))
-      val ls = MultiLine(Set(l1, l2))
+      val ls = MultiLine(Seq(l1, l2))
       val expected: GeometryCollection =
-        GeometryCollection(points = Set(p), lines = Set(l1, l2))
+        GeometryCollection(points = Seq(p), lines = Seq(l1, l2))
       val result = p | ls
       result match {
         case GeometryCollectionResult(gc) => gc should be (expected)
@@ -144,7 +144,7 @@ class PointSpec extends FunSpec with ShouldMatchers {
     it ("should union with a MultiPolygon and return a PolygonResult") {
       val pt = Point(1,1)
       val poly = Polygon(Line(Point(0,0), Point(0,2), Point(2,2), Point(2,0), Point(0,0)))
-      val polySet = MultiPolygon(Set(poly))
+      val polySet = MultiPolygon(Seq(poly))
       val result = pt | polySet
       result should be (PolygonResult(poly))
     }
@@ -153,18 +153,18 @@ class PointSpec extends FunSpec with ShouldMatchers {
       val pt = Point(1,1)
       val poly1 = Polygon(Line(Point(0,0), Point(0,2), Point(2,2), Point(2,0), Point(0,0)))
       val poly2 = Polygon(Line(Point(10,0), Point(10,2), Point(12,2), Point(12,0), Point(10,0)))
-      val polySet = MultiPolygon(Set(poly1, poly2))
+      val polySet = MultiPolygon(Seq(poly1, poly2))
       val result = pt | polySet
-      result should be (MultiPolygonResult(Set(poly1, poly2)))
+      result should be (MultiPolygonResult(Seq(poly1, poly2)))
     }
 
     it ("should union with a MultiPolygon and return a GeometryCollectionResult") {
       val pt = Point(11,11)
       val poly1 = Polygon(Line(Point(0,0), Point(0,2), Point(2,2), Point(2,0), Point(0,0)))
       val poly2 = Polygon(Line(Point(10,0), Point(10,2), Point(12,2), Point(12,0), Point(10,0)))
-      val polySet = MultiPolygon(Set(poly1, poly2))
+      val polySet = MultiPolygon(Seq(poly1, poly2))
       val expected: GeometryCollection =
-        GeometryCollection(points = Set(pt), polygons = Set(poly1, poly2))
+        GeometryCollection(points = Seq(pt), polygons = Seq(poly1, poly2))
       val result = pt | polySet
       result match {
         case GeometryCollectionResult(gc) => gc should be (expected)
@@ -174,7 +174,7 @@ class PointSpec extends FunSpec with ShouldMatchers {
 
     it ("should union with an empty MultiPolygon and return a PointResult") {
       val p = Point(1,1)
-      val mp = MultiPolygon(Set())
+      val mp = MultiPolygon(Seq())
       p | mp should be (PointResult(p))
     }
 
@@ -200,7 +200,7 @@ class PointSpec extends FunSpec with ShouldMatchers {
       val p1 = Point(1,1)
       val p2 = Point(2,2)
       val result = p1.symDifference(p2);
-      result should be (MultiPointResult(Set(p2, p1)))
+      result should be (MultiPointResult(Seq(p2, p1)))
     }
 
     it ("should symDifference with a Point and return a NoResult") {
@@ -221,7 +221,7 @@ class PointSpec extends FunSpec with ShouldMatchers {
       val p = Point(11,11)
       val l = Line(Point(0,0), Point(2,2))
       val expected: GeometryCollection =
-        GeometryCollection(points = Set(p), lines = Set(l))
+        GeometryCollection(points = Seq(p), lines = Seq(l))
       val result = p | l
       result match {
         case GeometryCollectionResult(gc) => gc should be (expected)
@@ -240,7 +240,7 @@ class PointSpec extends FunSpec with ShouldMatchers {
       val pt = Point(11,11)
       val poly = Polygon(Line(Point(0,0), Point(0,2), Point(2,2), Point(2,0), Point(0,0)))
       val expected: GeometryCollection =
-        GeometryCollection(points = Set(pt), polygons = Set(poly))
+        GeometryCollection(points = Seq(pt), polygons = Seq(poly))
       val result = pt | poly
       result match {
         case GeometryCollectionResult(gc) => gc should be (expected)
@@ -252,7 +252,7 @@ class PointSpec extends FunSpec with ShouldMatchers {
       val p1 = Point(1,1)
       val p2 = Point(2,2)
       val p3 = Point(1,1)
-      val ps = MultiPoint(Set(p2, p3))
+      val ps = MultiPoint(Seq(p2, p3))
       val result = p1.symDifference(ps)
       result should be (PointResult(p2))
     }
@@ -261,23 +261,23 @@ class PointSpec extends FunSpec with ShouldMatchers {
       val p1 = Point(1,1)
       val p2 = Point(2,2)
       val p3 = Point(3,3)
-      val ps = MultiPoint(Set(p2, p3))
+      val ps = MultiPoint(Seq(p2, p3))
       val result = p1.symDifference(ps)
-      result should be (MultiPointResult(Set(p1, p2, p3)))
+      result should be (MultiPointResult(Seq(p1, p2, p3)))
     }
 
     it ("should symDifference with a MultiPoint and return a NoResult") {
       val p1 = Point(1,1)
       val p2 = Point(1,1)
       val p3 = Point(1,1)
-      val ps = MultiPoint(Set(p2, p3))
+      val ps = MultiPoint(Seq(p2, p3))
       val result = p1.symDifference(ps)
       result should be (NoResult)
     }
 
     it ("should symDifference with an empty MultiLine and return a PointResult") {
       val p = Point(1,1)
-      val ml = MultiLine(Set())
+      val ml = MultiLine(Seq())
       val result = p.symDifference(ml)
       result should be (PointResult(p))
     }
@@ -285,7 +285,7 @@ class PointSpec extends FunSpec with ShouldMatchers {
     it ("should symDifference with a MultiLine and return a LineResult") {
       val p = Point(1,1)
       val l1 = Line(Point(0,0), Point(2,2))
-      val ls = MultiLine(Set(l1))
+      val ls = MultiLine(Seq(l1))
       val result = p.symDifference(ls)
       result should be (LineResult(Line(Point(0,0), Point(2,2))))
     }
@@ -294,18 +294,18 @@ class PointSpec extends FunSpec with ShouldMatchers {
       val p = Point(1,1)
       val l1 = Line(Point(0,0), Point(2,2))
       val l2 = Line(Point(0,0), Point(2,0))
-      val ls = MultiLine(Set(l1, l2))
+      val ls = MultiLine(Seq(l1, l2))
       val result = p.symDifference(ls)
-      result should be (MultiLineResult(Set(l1, l2)))
+      result should be (MultiLineResult(Seq(l1, l2)))
     }
 
     it ("should symDifference with a MultiLine and return a GeometryCollectionResult") {
       val p = Point(11,11)
       val l1 = Line(Point(0,0), Point(2,2))
       val l2 = Line(Point(0,0), Point(0,2))
-      val ls = MultiLine(Set(l1, l2))
+      val ls = MultiLine(Seq(l1, l2))
       val expected: GeometryCollection =
-        GeometryCollection(points = Set(p), lines = Set(l1, l2))
+        GeometryCollection(points = Seq(p), lines = Seq(l1, l2))
       val result = p.symDifference(ls)
       result match {
         case GeometryCollectionResult(gc) => gc should be (expected)
@@ -315,7 +315,7 @@ class PointSpec extends FunSpec with ShouldMatchers {
 
     it ("should symDifference with an empty MultiPolygon and return a PointResult") {
       val p = Point(1,1)
-      val mp = MultiPolygon(Set())
+      val mp = MultiPolygon(Seq())
       val result = p.symDifference(mp)
       result should be (PointResult(p))
     }
@@ -323,7 +323,7 @@ class PointSpec extends FunSpec with ShouldMatchers {
     it ("should symDifference with a MultiPolygon and return a PolygonResult") {
       val pt = Point(1,1)
       val poly = Polygon(Line(Point(0,0), Point(0,2), Point(2,2), Point(2,0), Point(0,0)))
-      val polySet = MultiPolygon(Set(poly))
+      val polySet = MultiPolygon(Seq(poly))
       val result = pt.symDifference(polySet)
       result should be (PolygonResult(poly))
     }
@@ -332,18 +332,18 @@ class PointSpec extends FunSpec with ShouldMatchers {
       val pt = Point(1,1)
       val poly1 = Polygon(Line(Point(0,0), Point(0,2), Point(2,2), Point(2,0), Point(0,0)))
       val poly2 = Polygon(Line(Point(10,0), Point(10,2), Point(12,2), Point(12,0), Point(10,0)))
-      val polySet = MultiPolygon(Set(poly1, poly2))
+      val polySet = MultiPolygon(Seq(poly1, poly2))
       val result = pt.symDifference(polySet)
-      result should be (MultiPolygonResult(Set(poly1, poly2)))
+      result should be (MultiPolygonResult(Seq(poly1, poly2)))
     }
 
     it ("should symDifference with a MultiPolygon and return a GeometryCollectionResult") {
       val pt = Point(11,11)
       val poly1 = Polygon(Line(Point(0,0), Point(0,2), Point(2,2), Point(2,0), Point(0,0)))
       val poly2 = Polygon(Line(Point(10,0), Point(10,2), Point(12,2), Point(12,0), Point(10,0)))
-      val polySet = MultiPolygon(Set(poly1, poly2))
+      val polySet = MultiPolygon(Seq(poly1, poly2))
       val expected: GeometryCollection =
-        GeometryCollection(points = Set(pt), polygons = Set(poly1, poly2))
+        GeometryCollection(points = Seq(pt), polygons = Seq(poly1, poly2))
       val result = pt.symDifference(polySet)
       result match {
         case GeometryCollectionResult(gc) => gc should be (expected)
@@ -382,7 +382,7 @@ class PointSpec extends FunSpec with ShouldMatchers {
       val p1 = Point(1,1)
       val p2 = Point(1,1)
       val p3 = Point(1,1)
-      val ps = MultiPoint(Set(p2, p3))
+      val ps = MultiPoint(Seq(p2, p3))
       val result = p1.contains(ps)
       result should be (true)
     }

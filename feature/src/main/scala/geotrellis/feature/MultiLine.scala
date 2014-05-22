@@ -54,6 +54,12 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   lazy val vertices: Array[Point] =
     jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
 
+  /**
+   * Returns the minimum bounding box that contains all the lines in
+   * this MultiLine.
+   */
+  lazy val boundingBox: BoundingBox =
+    jtsGeom.getEnvelopeInternal
 
   // -- Intersection
 
@@ -192,6 +198,4 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
 
   def within(g: AtLeastOneDimension): Boolean =
     jtsGeom.within(g.jtsGeom)
-
-  override def toString = jtsGeom.toString
 }

@@ -35,7 +35,8 @@ object Info {
 object GeotrellisBuild extends Build {
   import Dependencies._
 
-  val key = AttributeKey[Boolean]("javaOptionsPatched")
+  val featureBenchmarkKey = AttributeKey[Boolean]("featureJavaOptionsPatched")
+  val benchmarkKey = AttributeKey[Boolean]("javaOptionsPatched")
 
   // Default settings
   override lazy val settings = 
@@ -451,19 +452,49 @@ object GeotrellisBuild extends Build {
 
   // Project: feature-benchmark
 
-  lazy val featureBenchmark = 
+  lazy val featureBenchmark: Project = 
     Project("feature-benchmark", file("feature-benchmark"))
-      .settings(featureBenchmarkSettings:_*)
+      .settings(featureBenchmarkSettings: _*)
       .dependsOn(featureTest % "compile->test")
 
-  lazy val featureBenchmarkSettings =
+  def featureBenchmarkSettings =
     Seq(
       name := "geotrellis-feature-benchmark",
       libraryDependencies ++= Seq(
         scalatest % "test",
         scalacheck % "test", 
-        jts
-      )
+        "com.google.guava" % "guava" % "r09",
+        "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
+        "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
+          from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
+        "com.google.code.gson" % "gson" % "1.7.1"
+      ),
+
+      // enable forking in both run and test
+      fork := true,
+
+      // custom kludge to get caliper to see the right classpath
+
+      // we need to add the runtime classpath as a "-cp" argument to the
+      // `javaOptions in run`, otherwise caliper will not see the right classpath
+      // and die with a ConfigurationException unfortunately `javaOptions` is a
+      // SettingsKey and `fullClasspath in Runtime` is a TaskKey, so we need to
+      // jump through these hoops here in order to feed the result of the latter
+      // into the former
+      onLoad in Global ~= { previous => state =>
+        previous {
+          state.get(featureBenchmarkKey) match {
+            case None =>
+              // get the runtime classpath, turn into a colon-delimited string
+              val classPath = Project.runTask(fullClasspath in Runtime in featureBenchmark, state).get._2.toEither.right.get.files.mkString(":")
+              // return a state with javaOptionsPatched = true and javaOptions set correctly
+              Project.extract(state).append(Seq(javaOptions in (featureBenchmark, run) ++= Seq("-Xmx8G", "-cp", classPath)), state.put(featureBenchmarkKey, true))
+            case Some(_) =>
+              state // the javaOptions are already patched
+          }
+        }
+      }
+
     )
 
   // Project: gdal-benchmark
@@ -523,12 +554,12 @@ object GeotrellisBuild extends Build {
       // into the former
       onLoad in Global ~= { previous => state =>
         previous {
-          state.get(key) match {
+          state.get(benchmarkKey) match {
             case None =>
               // get the runtime classpath, turn into a colon-delimited string
               val classPath = Project.runTask(fullClasspath in Runtime in benchmark, state).get._2.toEither.right.get.files.mkString(":")
               // return a state with javaOptionsPatched = true and javaOptions set correctly
-              Project.extract(state).append(Seq(javaOptions in (benchmark, run) ++= Seq("-Xmx8G", "-cp", classPath)), state.put(key, true))
+              Project.extract(state).append(Seq(javaOptions in (benchmark, run) ++= Seq("-Xmx8G", "-cp", classPath)), state.put(benchmarkKey, true))
             case Some(_) =>
               state // the javaOptions are already patched
           }

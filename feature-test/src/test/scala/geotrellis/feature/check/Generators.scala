@@ -33,7 +33,7 @@ object Generators {
   lazy val genLine:Gen[Line] =
     for {
       size <-Gen.choose(2,40)
-      points <- Gen.containerOfN[Set,Point](size,genPoint)
+      points <- Gen.containerOfN[Seq,Point](size,genPoint)
     } yield Line(points.toList)
 
   // Doesn't yet deal with interior rings
@@ -43,10 +43,10 @@ object Generators {
       shareSize <- Gen.choose(3,size)
       subSize1 <- Gen.choose(3,size)
       subSize2 <- Gen.choose(3,size)
-      fullSet <- Gen.containerOfN[Set,Point](size,genPoint)
-      sharedSet <- Gen.pick(shareSize,fullSet).map(_.toSet)
-      subSet1 <- Gen.pick(subSize1,fullSet).map(_.toSet)
-      subSet2 <- Gen.pick(subSize2,fullSet).map(_.toSet)
+      fullSet <- Gen.containerOfN[Seq,Point](size,genPoint)
+      sharedSet <- Gen.pick(shareSize,fullSet).map(_.toSeq)
+      subSet1 <- Gen.pick(subSize1,fullSet).map(_.toSeq)
+      subSet2 <- Gen.pick(subSize2,fullSet).map(_.toSeq)
     } yield {
       val polyOne = (subSet1 ++ sharedSet).convexHull
       val polyTwo = (subSet2 ++ sharedSet).convexHull
