@@ -17,6 +17,7 @@
 package geotrellis.raster.op.global
 
 import geotrellis._
+import geotrellis.feature._
 import geotrellis.raster._
 import geotrellis.source._
 
@@ -45,4 +46,16 @@ trait GlobalOpMethods[+Repr <: RasterSource] { self: Repr =>
 
   def convolve(kernel:Kernel) =
     self.globalOp(Convolve(_,kernel))
+
+  def viewshed(p: Point, exact: Boolean = false) =
+    if(exact)
+      self.global(Viewshed(_, p))
+    else
+      self.global(ApproxViewshed(_, p))
+
+  def viewshedOffsets(p: Point, exact: Boolean = false) =
+    if(exact)
+      self.global(Viewshed.offsets(_, p))
+    else
+      self.global(ApproxViewshed.offsets(_, p))
 }
