@@ -23,6 +23,8 @@ trait Geometry {
 
   val jtsGeom: jts.Geometry
 
+  assert(jtsGeom.isValid, s"Geometry is invalid: $this")
+
   def distance(other: Geometry): Double =
     jtsGeom.distance(other.jtsGeom)
 
@@ -41,6 +43,11 @@ trait Geometry {
       case g: Geometry => jtsGeom.equals(g.jtsGeom)
       case _ => false
   }
+
+  override
+  def hashCode(): Int = jtsGeom.hashCode
+
+  override def toString = jtsGeom.toString
 }
 
 object Geometry {
@@ -80,7 +87,6 @@ trait MultiGeometry extends Geometry
 
   // equal (with tolerance?)
   // equalExact (huh?)
-  // normalize (hmmm)
 
   // isValid ( don't allow invalid? )
 

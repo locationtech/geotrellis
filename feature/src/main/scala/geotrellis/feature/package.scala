@@ -31,78 +31,91 @@ package object feature {
   implicit def coordinateToPoint(c: jts.Coordinate): Point =
     Point(c.x,c.y)
 
-  implicit def tupleSetToMultiPoint(ts: Set[(Double, Double)]): Set[Point] =
+  implicit def tupleSeqToMultiPoint(ts: Set[(Double, Double)]): Set[Point] =
     ts map(t => Point(t._1, t._2))
 
   implicit def tupleListToPointList(tl: List[(Double, Double)]): List[Point] =
     tl map(t => Point(t._1, t._2))
 
+  implicit def tupleListToPointList(tl: Seq[(Double, Double)]): Seq[Point] =
+    tl map(t => Point(t._1, t._2))
+
   implicit def coordinateArrayToMultiPoint(ca: Array[jts.Coordinate]): MultiPoint = {
     val ps = (for (i <- 0 until ca.length) yield {
       Point(ca(i).x, ca(i).y)
-    }).toSet
+    }).toSeq
     MultiPoint(ps)
   }
 
   implicit def pointListToCoordinateArray(ps: List[Point]): Array[jts.Coordinate] =
     ps map(p => new jts.Coordinate(p.x, p.y)) toArray
 
-  implicit def multiPointToSetPoint(mp: jts.MultiPoint): Set[Point] = {
+  implicit def multiPointToSeqPoint(mp: jts.MultiPoint): Seq[Point] = {
     val len = mp.getNumGeometries
       (for (i <- 0 until len) yield {
         Point(mp.getGeometryN(i).asInstanceOf[jts.Point])
-      }).toSet
+      }).toSeq
   }
 
-  implicit def multiLineToSetLine(ml: jts.MultiLineString): Set[Line] = {
+  implicit def multiLineToSeqLine(ml: jts.MultiLineString): Seq[Line] = {
     val len = ml.getNumGeometries
     (for (i <- 0 until len) yield {
       Line(ml.getGeometryN(i).asInstanceOf[jts.LineString])
-    }).toSet
+    }).toSeq
   }
 
-  implicit def multiPolygonToSetPolygon(mp: jts.MultiPolygon): Set[Polygon] = {
+  implicit def multiPolygonToSeqPolygon(mp: jts.MultiPolygon): Seq[Polygon] = {
     val len = mp.getNumGeometries
     (for (i <- 0 until len) yield {
       Polygon(mp.getGeometryN(i).asInstanceOf[jts.Polygon])
-    }).toSet
+    }).toSeq
   }
 
-  implicit def geometryCollectionToSetGeometry(gc: jts.GeometryCollection): Set[Geometry] = {
+  implicit def geometryCollectionToSeqGeometry(gc: jts.GeometryCollection): Seq[Geometry] = {
     val len = gc.getNumGeometries
     (for (i <- 0 until len) yield {
       gc.getGeometryN(i) match {
-        case p: jts.Point => Set[Geometry](Point(p))
-        case mp: jts.MultiPoint => multiPointToSetPoint(mp)
-        case l: jts.LineString => Set[Geometry](Line(l))
-        case ml: jts.MultiLineString => multiLineToSetLine(ml)
-        case p: jts.Polygon => Set[Geometry](Polygon(p))
-        case mp: jts.MultiPolygon => multiPolygonToSetPolygon(mp)
-        case gc: jts.GeometryCollection => geometryCollectionToSetGeometry(gc)
+        case p: jts.Point => Seq[Geometry](Point(p))
+        case mp: jts.MultiPoint => multiPointToSeqPoint(mp)
+        case l: jts.LineString => Seq[Geometry](Line(l))
+        case ml: jts.MultiLineString => multiLineToSeqLine(ml)
+        case p: jts.Polygon => Seq[Geometry](Polygon(p))
+        case mp: jts.MultiPolygon => multiPolygonToSeqPolygon(mp)
+        case gc: jts.GeometryCollection => geometryCollectionToSeqGeometry(gc)
       }
-    }).toSet.flatten
+    }).toSeq.flatten
   }
 
-  implicit def seqPointToMultiPoint(ps: Set[Point]): MultiPoint = MultiPoint(ps)
+  implicit def seqPointToMultiPoint(ps: Seq[Point]): MultiPoint = MultiPoint(ps)
 
-  implicit def seqLineToMultiLine(ps: Set[Line]): MultiLine = MultiLine(ps)
+  implicit def seqLineToMultiLine(ps: Seq[Line]): MultiLine = MultiLine(ps)
 
-  implicit def seqPolygonToMultiPolygon(ps: Set[Polygon]): MultiPolygon = MultiPolygon(ps)
+  implicit def seqPolygonToMultiPolygon(ps: Seq[Polygon]): MultiPolygon = MultiPolygon(ps)
 
-  implicit def seqGeometryToGeometryCollection(gs: Set[Geometry]): GeometryCollection = {
-    val points = mutable.Set[Point]()
-    val lines = mutable.Set[Line]()
-    val polygons = mutable.Set[Polygon]()
+  implicit def seqGeometryToGeometryCollection(gs: Seq[Geometry]): GeometryCollection = {
+    val points = mutable.ListBuffer[Point]()
+    val lines = mutable.ListBuffer[Line]()
+    val polygons = mutable.ListBuffer[Polygon]()
+    val multiPoints = mutable.ListBuffer[MultiPoint]()
+    val multiLines = mutable.ListBuffer[MultiLine]()
+    val multiPolygons = mutable.ListBuffer[MultiPolygon]()
+    val geometryCollections = mutable.ListBuffer[GeometryCollection]()
 
     for(g <- gs) {
       g match {
         case p: Point => points += p
         case l: Line => lines += l
         case p: Polygon => polygons += p
+        case mp: MultiPoint => multiPoints += mp
+        case ml: MultiLine => multiLines += ml
+        case mp: MultiPolygon => multiPolygons += mp
+        case gc: GeometryCollection => geometryCollections += gc
         case _ => sys.error(s"Unknown Geometry type: $g")
       }
     }
-    GeometryCollection(points.toSet, lines.toSet, polygons.toSet)
+    GeometryCollection(points, lines, polygons,
+                       multiPoints, multiLines, multiPolygons,
+                       geometryCollections)
   }
 
   implicit def featureToGeometry(f: Feature[_]): Geometry = f.geom

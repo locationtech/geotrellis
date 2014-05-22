@@ -74,6 +74,13 @@ package object geotrellis {
     }
   }
 
+  // BoundingBox to Extent
+  implicit class BoundingBoxToExtent(bbox: feature.BoundingBox) {
+    def toExtent(): Extent = 
+      Extent(bbox.xmin, bbox.ymin, bbox.xmax, bbox.ymax)
+  }
+
+
   // Use this implicit class to fill arrays ... much faster than Array.fill[Int](dim)(val), etc.
   implicit class ByteArrayFiller(val arr:Array[Byte]) extends AnyVal {
     def fill(v:Byte) = { java.util.Arrays.fill(arr,v) ; arr }

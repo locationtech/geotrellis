@@ -54,6 +54,13 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
   lazy val vertices: Array[Point] =
     jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
 
+  /**
+   * Returns the minimum bounding box that contains all the lines in
+   * this MultiPolygon.
+   */
+  lazy val boundingBox: BoundingBox =
+    jtsGeom.getEnvelopeInternal
+
   // -- Intersection
 
   def &(p: Point): PointGeometryIntersectionResult =
@@ -175,6 +182,4 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
 
   def within(g: TwoDimensions): Boolean =
     jtsGeom.within(g.jtsGeom)
-
-  override def toString = jtsGeom.toString
 }
