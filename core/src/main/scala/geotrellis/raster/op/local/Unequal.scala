@@ -22,17 +22,17 @@ import geotrellis.source._
 /**
  * Determines if values are equal. Sets to 1 if true, else 0.
  */
-object Unequal extends LocalRasterBinaryOp {
-  def combine(z1:Int,z2:Int) = 
-    if(z1 == z2) 0 else 1
+object Unequal extends LocalRasterComparatorOp {
+  def compare(z1:Int,z2:Int):Boolean =
+    if(z1 == z2) false else true
 
-  def combine(z1:Double,z2:Double):Double =
-    if(isNoData(z1)) { if(isNoData(z2)) 0 else 1 }
+  def compare(z1:Double,z2:Double):Boolean =
+    if(isNoData(z1)) { if(isNoData(z2)) false else true }
     else {
-      if(isNoData(z2)) { 1 }
+      if(isNoData(z2)) { true }
       else { 
-        if(z1 == z2) 0
-        else 1
+        if(z1 == z2) false
+        else true
       }
     }
 }
