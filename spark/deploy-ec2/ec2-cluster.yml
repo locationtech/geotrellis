@@ -5,6 +5,83 @@
   gather_facts: False
   
   tasks:
+    - name: EC2 Security group for master
+      local_action:
+        module: ec2_group
+        region: "{{ region }}"
+        name: "{{ cluster_name }}-master"
+        description: "Spark EC2 group"
+        rules:
+          - proto: all
+            group_name: "{{ cluster_name }}-master"
+          - proto: all
+            group_name: "{{ cluster_name }}-slaves"
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: "0.0.0.0/0"
+          - proto: tcp
+            from_port: 8080
+            to_port: 8081
+            cidr_ip: "0.0.0.0/0"
+          - proto: tcp
+            from_port: 19999
+            to_port: 19999
+            cidr_ip: "0.0.0.0/0"
+          - proto: tcp
+            from_port: 50030
+            to_port: 50030
+            cidr_ip: "0.0.0.0/0"
+          - proto: tcp
+            from_port: 50070
+            to_port: 50070
+            cidr_ip: "0.0.0.0/0"
+          - proto: tcp
+            from_port: 60070
+            to_port: 60070
+            cidr_ip: "0.0.0.0/0"
+          - proto: tcp
+            from_port: 4040
+            to_port: 4045
+            cidr_ip: "0.0.0.0/0"
+    
+    - name: EC2 Security group for workers
+      local_action:
+        module: ec2_group
+        region: "{{ region }}"
+        name: "{{ cluster_name }}-slaves"
+        description: "Spark EC2 group"
+        rules:
+          - proto: all
+            group_name: "{{ cluster_name }}-master"
+          - proto: all
+            group_name: "{{ cluster_name }}-slaves"
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: "0.0.0.0/0"
+          - proto: tcp
+            from_port: 8080
+            to_port: 8081
+            cidr_ip: "0.0.0.0/0"
+          - proto: tcp
+            from_port: 50060
+            to_port: 50060
+            cidr_ip: "0.0.0.0/0"
+          - proto: tcp
+            from_port: 50075
+            to_port: 50075
+            cidr_ip: "0.0.0.0/0"
+          - proto: tcp
+            from_port: 60060
+            to_port: 60060
+            cidr_ip: "0.0.0.0/0"
+          - proto: tcp
+            from_port: 60075
+            to_port: 60075
+            cidr_ip: "0.0.0.0/0"
+
+
     - name: Launch master
       local_action: 
         module: ec2 

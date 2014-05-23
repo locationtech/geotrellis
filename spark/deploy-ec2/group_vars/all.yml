@@ -3,7 +3,7 @@ key_name: spark-cluster
 
 image: ami-5bb18832
 instance_type: m1.small    
-
+region: us-east-1
 cluster_name: super-cluster
 
 #These are not used, but basically a reminder these these groups must exist
