@@ -1,0 +1,13 @@
+---
+key_name: spark-cluster
+
+image: ami-5bb18832
+instance_type: m1.small    
+
+cluster_name: super-cluster
+
+#These are not used, but basically a reminder these these groups must exist
+master_group: "{{ cluster_name }}-master"
+worker_group: "{{ cluster_name }}-slaves"
+
+worker_count: 1

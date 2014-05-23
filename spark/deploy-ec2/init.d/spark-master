@@ -1,0 +1,40 @@
+#!/bin/bash
+
+SPARK_HOME="/root/spark"
+
+start() {
+  $SPARK_HOME/sbin/start-master.sh
+}
+
+stop() {
+  $SPARK_HOME/sbin/stop-master.sh
+}
+
+# See how we were called.
+case "$1" in
+  start)
+  start
+  ;;
+  stop)
+  stop
+  ;;
+  status)
+  status $prog
+  ;;
+  restart|force-reload)
+  stop
+  start
+  ;;
+  try-restart|condrestart)
+  if status $prog > /dev/null; then
+      stop
+      start
+  fi
+  ;;
+  reload)
+  exit 3
+  ;;
+  *)
+  echo $"Usage: $0 {start|stop|status|restart|try-restart|force-reload}"
+  exit 2
+esac

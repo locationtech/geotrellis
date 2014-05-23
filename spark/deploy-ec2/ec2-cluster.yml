@@ -1,0 +1,141 @@
+---
+
+- name: Provison Hosts
+  hosts: localhost
+  gather_facts: False
+  
+  tasks:
+    - name: Launch master
+      local_action: 
+        module: ec2 
+        image:          "{{ image }}"         
+        instance_type:  "{{ instance_type }}" 
+        key_name:       "{{ key_name }}" 
+        group:          "{{ cluster_name }}-master"         
+        
+        #Add 'type' tag to instance and use it to control the number of instances running
+        instance_tags:  
+          type: "{{ cluster_name }}-master"
+        count_tag:
+          type: "{{ cluster_name }}-master"
+        exact_count:    1
+
+        wait:           true 
+
+      register: master
+
+    - name: Add master instance to host group
+      add_host:
+        hostname={{ item.public_ip }} 
+        ansible_ssh_user="root"
+        ansible_ssh_private_key_file="{{inventory_dir}}/keys/{{ key_name }}".pem       
+        groups=master,ec2_hosts
+      with_items: master.tagged_instances
+
+
+    - name: Launch workers
+      local_action:
+        module: ec2
+        image:          "{{ image }}"         
+        instance_type:  "{{ instance_type }}" 
+        key_name:       "{{ key_name }}" 
+        group:          "{{ cluster_name }}-slaves" #TODO: This name REALLY bothers me
+
+        instance_tags:  
+          type: "{{ cluster_name }}-worker"
+        count_tag:      
+          type: "{{ cluster_name }}-worker"
+        exact_count:    "{{ worker_count }}"
+
+        wait:           true
+
+      register: workers
+
+    - name: Add worker instance to host group
+      add_host:
+        hostname={{ item.public_ip }} 
+        groups=workers,ec2_hosts
+        ansible_ssh_user="root"
+        ansible_ssh_private_key_file="{{inventory_dir}}/keys/{{ key_name }}".pem       
+      with_items: workers.tagged_instances
+
+
+- name: Setup spark on all hosts
+  hosts: ec2_hosts
+  gather_facts: False
+
+  vars:
+    spark_home: "{{ lookup('env','SPARK_HOME') }}"
+    assembly_dir: assembly/target/scala-2.10
+    spark_jar: spark-assembly-0.9.1-hadoop1.2.1.jar
+
+  tasks:
+    - name: spark conf
+      file: 
+        path: ~/spark/conf
+        state: directory    
+
+    - name: upload conf template
+      template: src={{inventory_dir}}/conf/{{ item }} dest=~/spark/conf
+      with_items:
+        - spark-env.sh
+
+    - name: spark assembly directory
+      file: 
+        path: "~/spark/{{ assembly_dir }}"
+        state: directory    
+
+
+    - name: upload spark assembly
+      synchronize:
+        src:  "{{ spark_home }}/{{ assembly_dir }}/{{ spark_jar }}" 
+        dest: "~/spark/{{ assembly_dir }}/{{ spark_jar }}" 
+
+    - name: upload sbin scripts
+      synchronize: src={{inventory_dir}}/sbin/{{ item }} dest=~/spark/sbin/
+      with_items:
+        - start-master.sh
+        - stop-master.sh
+        - slaves.sh
+        - start-slave.sh
+        - start-slaves.sh
+        - stop-slaves.sh
+        - spark-daemon.sh
+        - spark-config.sh
+
+    - name: upload bin scripts
+      synchronize: src={{inventory_dir}}/bin/{{ item }} dest=~/spark/bin/
+      with_items:
+        - spark-class
+        - compute-classpath.sh
+
+    - name: init.d scirpts
+      synchronize: src={{inventory_dir}}/init.d/{{ item }} dest=/etc/init.d
+      with_items:
+        - spark-master
+        - spark-workers
+
+    - name: set permissions on init.d scripts
+      file: path=/etc/init.d/{{item}}  mode=0744
+      with_items:
+        - spark-master
+        - spark-workers
+
+    - name: spark logs
+      file: 
+        path: ~/spark/logs
+        state: directory
+
+- name: Start spark master
+  hosts: master
+
+  tasks:
+  - name: start spark master service
+    service: name=spark-master state=started enabled=true
+    
+- name: Start spark workers
+  hosts: ec2_hosts
+
+  tasks:
+  - name: start spark workers service
+    service: name=spark-workers state=started enabled=true
