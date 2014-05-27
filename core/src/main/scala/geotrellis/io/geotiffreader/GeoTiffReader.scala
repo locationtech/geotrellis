@@ -25,6 +25,7 @@ object GeoTiffReader {
     read(streamArray)
   }
 
+  // Should have the reader in implicit scope!? for byte order.
   def read(streamArray: Array[Char]): GeoTiff = {
     (streamArray(0), streamArray(1), streamArray(2).toByte) match {
       case ('I', 'I', 42) => readLittleEndianGeoTiff(streamArray)
@@ -33,45 +34,67 @@ object GeoTiffReader {
   }
 
   private def readLittleEndianGeoTiff(streamArray: Array[Char]): GeoTiff = {
-    val offset = GeoTiffReaderUtils.getInt(streamArray, 4)
-    println("firstOffset: " + offset)
+    val offset = GTReaderUtils.getInt(streamArray)(4)
     val ifds = parseLittleEndianIFDs(streamArray, offset)
 
-    return GeoTiff(ifds)
+    return GeoTiff(ifds.toArray)
   }
 
   private def parseLittleEndianIFDs(streamArray: Array[Char], current: Int):
       List[GeoTiffIFD] = {
     if (current == 0) Nil
     else {
-      val entries = GeoTiffReaderUtils.getShort(streamArray, current)
+      val entries = GTReaderUtils.getShort(streamArray)(current)
       println("entries: " + entries)
       val fields = Array.ofDim[GeoTiffField](entries)
-      parseFields(streamArray, fields, current + 2, 0)
-      val offset = GeoTiffReaderUtils.getInt(streamArray,
-        entries * 12 + current + 2)
+      parseFields(streamArray, fields, current + 2, 0, GTDDEmpty())
+      val offset = GTReaderUtils.getInt(streamArray)(entries * 12 + current + 2)
       GeoTiffIFD(fields) :: parseLittleEndianIFDs(streamArray, offset)
     }
   }
 
   private def parseFields(streamArray: Array[Char], fields: Array[GeoTiffField],
-    current: Int, index: Int) {
+    current: Int, index: Int, gtDeps: GTDDependencies) {
     if (index != fields.size) {
-      val tag = GeoTiffReaderUtils.getShort(streamArray, current)
-      println("tag: " + tag)
-      val fieldType = GeoTiffReaderUtils.getShort(streamArray, current + 2)
-      println("fieldType: " + fieldType)
-      val length = GeoTiffReaderUtils.getInt(streamArray, current + 4)
-      println("length: " + length)
-      val dataOffset = GeoTiffReaderUtils.getInt(streamArray, current + 8)
-      println("dataOffset: " + dataOffset)
+      gtDeps match {
+        case GTDDComplete(_, _, metadata) => {
+          val data = GTFieldDataReader.read(streamArray, metadata, gtDeps)
+          fields(index) = GeoTiffField(metadata, data)
+          parseFields(streamArray, fields, current + 12, index + 1, GTDDEmpty())
+        }
+        case _ => {
+          val getShort = GTReaderUtils.getShort(streamArray)(_)
 
-      val metadata = GTFieldMetadata(tag, fieldType, length, dataOffset)
+          val tag = getShort(current)
+          println("tag: " + tag)
+          val fieldType = getShort(current + 2)
+          println("fieldType: " + fieldType)
 
-      val data = GeoTiffFieldDataReader.read(streamArray, metadata)
-      fields(index) = GeoTiffField(metadata, data)
+          val getInt = GTReaderUtils.getInt(streamArray)(_)
+          val length = getInt(current + 4)
+          println("length: " + length)
+          val dataOffset = getInt(current + 8)
+          println("dataOffset: " + dataOffset)
 
-      parseFields(streamArray, fields, current + 12, index + 1)
+          val metadata = GTFieldMetadata(tag, fieldType, length, dataOffset)
+
+          if (tag == 34735) {
+            val newGTDeps = gtDeps.add(metadata)
+            parseFields(streamArray, fields, current + 12, index, newGTDeps)
+          } else {
+            val data = GTFieldDataReader.read(streamArray, metadata)
+            fields(index) = GeoTiffField(metadata, data)
+
+            if (tag == 34736 || tag == 34737) {
+              val newGTDeps = gtDeps.add(data)
+              parseFields(streamArray, fields, current + 12, index + 1,
+                newGTDeps)
+            } else {
+              parseFields(streamArray, fields, current + 12, index + 1, gtDeps)
+            }
+          }
+        }
+      }
     }
   }
 

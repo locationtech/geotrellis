@@ -18,10 +18,8 @@ package geotrellis.io.geotiffreader
 
 object GeoTiff {
 
-  def apply(ifds: List[GeoTiffIFD]) = new GeoTiff(ifds)
+  def apply(ifds: Array[GeoTiffIFD]) = new GeoTiff(ifds)
 
 }
 
-class GeoTiff(ifds: List[GeoTiffIFD]) {
-
-}
+class GeoTiff(ifds: Array[GeoTiffIFD])

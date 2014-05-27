@@ -16,13 +16,56 @@
 
 package geotrellis.io.geotiffreader
 
-object GeoTiffField {
+case class GTFieldMetadata(tag: Int, fieldType: Int,
+  length: Int, offset: Int)
 
-  def apply(metadata: GTFieldMetadata, data: GTFieldData) =
-    new GeoTiffField(metadata, data)
+class GTFieldData { }
 
-}
+case class GeoTiffField(metadata: GTFieldMetadata, data: GTFieldData)
 
-class GeoTiffField(metadata: GTFieldMetadata, data: GTFieldData) {
+case class GTFieldImageWidth(width: Int) extends GTFieldData
 
-}
+case class GTFieldImageHeight(height: Int) extends GTFieldData
+
+case class GTFieldBitsPerSample(bitePerSample: Int) extends GTFieldData
+
+case class GTFieldCompression(compression: Int) extends GTFieldData
+
+case class GTFieldPhotometricInterpretation(photometricInterp: Int)
+    extends GTFieldData
+
+case class GTFieldStripOffsets(stripOffsets: Array[Int]) extends GTFieldData
+
+case class GTFieldSamplesPerPixel(samplesPerPixel: Int) extends GTFieldData
+
+case class GTFieldRowsPerStrip(rowsPerStrip: Int) extends GTFieldData
+
+case class GTFieldStripByteCounts(stripByteCounts: Array[Int])
+    extends GTFieldData
+
+case class GTFieldXResolution(xResolution: Double) extends GTFieldData
+
+case class GTFieldYResolution(yResolution: Double) extends GTFieldData
+
+case class GTFieldResolutionUnit(resolutionUnit: Int) extends GTFieldData
+
+case class GTFieldColorMap(colorMap: Array[Int]) extends GTFieldData
+
+case class GTFieldPlanarConfiguration(planarConfiguration: Int)
+    extends GTFieldData
+
+case class GTFieldModelPixelScale(scaleX: Double, scaleY: Double,
+  scaleZ: Double) extends GTFieldData
+
+case class GTModelTiePoint(i: Double, j: Double, k: Double,
+  x: Double, y: Double, z:Double)
+
+case class GTFieldModelTiePoints(points: Array[GTModelTiePoint])
+    extends GTFieldData
+
+case class GTFieldGeoKeyDirectory(metadata: GTKDMetadata,
+  keyEntries: Array[GTKeyEntry]) extends GTFieldData
+
+case class GTFieldGeoDoubleParams(values: Array[Double]) extends GTFieldData
+
+case class GTFieldGeoAsciiParams(value: String) extends GTFieldData
