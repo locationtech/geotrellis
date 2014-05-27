@@ -135,4 +135,21 @@ class GeometryFormatsSpec extends FlatSpec with ShouldMatchers with GeoJsonSuppo
     marshal(gc) should equal (Right(body))
     body.as[GeometryCollection] should equal (Right(gc))
   }
+
+  it should "read a Feature as if it was a Geometry" in {
+    val line = Line(Point(1,2) :: Point(1,3) :: Nil);
+    val body =
+    jsonBody(
+      """{
+        |  "type": "Feature",
+        |  "geometry": {
+        |    "type": "LineString",
+        |    "coordinates": [[1.0, 2.0], [1.0, 3.0]]
+        |  },
+        |  "properties": 321
+        |}""".stripMargin
+    )
+    //I test it only for a Line, but the logic works for all Geomtries
+    body.as[Line] should equal(Right(line))  
+  }
 }

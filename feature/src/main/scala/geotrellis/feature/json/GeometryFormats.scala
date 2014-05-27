@@ -53,7 +53,7 @@ trait GeometryFormats {
       "coordinates" -> JsArray(JsNumber(p.x), JsNumber(p.y))
     )
 
-    def read(value: JsValue) = value.asJsObject.getFields("type", "coordinates") match {
+    def read(value: JsValue) = unwrapFeature(value).asJsObject.getFields("type", "coordinates") match {
       case Seq(JsString("Point"), point) =>
         readPointCords(point)
       case _ => throw new DeserializationException("Point geometry expected")
@@ -66,7 +66,7 @@ trait GeometryFormats {
       "coordinates" -> writeLineCords(line)
     )
 
-    def read(value: JsValue) = value.asJsObject.getFields("type", "coordinates") match {
+    def read(value: JsValue) = unwrapFeature(value).asJsObject.getFields("type", "coordinates") match {
       case Seq(JsString("LineString"), points) =>
         readLineCords(points)
       case _ => throw new DeserializationException("LineString geometry expected")
@@ -74,7 +74,7 @@ trait GeometryFormats {
   }
 
   implicit object PolygonFormat extends RootJsonFormat[Polygon] {
-    override def read(json: JsValue): Polygon = json.asJsObject.getFields("type", "coordinates") match {
+    override def read(json: JsValue): Polygon = unwrapFeature(json).asJsObject.getFields("type", "coordinates") match {
       case Seq(JsString("Polygon"), linesArray) =>
         readPolygonCords(linesArray)
       case _ => throw new DeserializationException("Polygon geometry expected")
@@ -87,7 +87,7 @@ trait GeometryFormats {
   }
 
   implicit object MultiPointFormat extends RootJsonFormat[MultiPoint] {
-    override def read(json: JsValue): MultiPoint = json.asJsObject.getFields("type", "coordinates") match {
+    override def read(json: JsValue): MultiPoint = unwrapFeature(json).asJsObject.getFields("type", "coordinates") match {
       case Seq(JsString("MultiPoint"), pointArray: JsArray) =>
         MultiPoint(pointArray.elements.map(readPointCords))
       case _ => throw new DeserializationException("MultiPoint geometry expected")
@@ -100,7 +100,7 @@ trait GeometryFormats {
   }
 
   implicit object MultiLineFormat extends RootJsonFormat[MultiLine] {
-    override def read(json: JsValue): MultiLine = json.asJsObject.getFields("type", "coordinates") match {
+    override def read(json: JsValue): MultiLine = unwrapFeature(json).asJsObject.getFields("type", "coordinates") match {
       case Seq(JsString("MultiLineString"), linesArray: JsArray) =>
         MultiLine(linesArray.elements.map(readLineCords))
       case _ => throw new DeserializationException("MultiLine geometry expected")
@@ -113,7 +113,7 @@ trait GeometryFormats {
   }
 
   implicit object MultiPolygonFormat extends RootJsonFormat[MultiPolygon] {
-    override def read(json: JsValue): MultiPolygon = json.asJsObject.getFields("type", "coordinates") match {
+    override def read(json: JsValue): MultiPolygon = unwrapFeature(json).asJsObject.getFields("type", "coordinates") match {
       case Seq(JsString("MultiPolygon"), polygons: JsArray) =>
         MultiPolygon(polygons.elements.map(readPolygonCords))
       case _ => throw new DeserializationException("MultiPolygon geometry expected")
@@ -141,7 +141,7 @@ trait GeometryFormats {
       )
     )
 
-    def read(value: JsValue) = value.asJsObject.getFields("type", "geometries") match {
+    def read(value: JsValue) = unwrapFeature(value).asJsObject.getFields("type", "geometries") match {
       case Seq(JsString("GeometryCollection"), JsArray(geomsJson)) =>
         GeometryCollection(geomsJson.map(g => GeometryFormat.read(g)))
       case _ => throw new DeserializationException("GeometryCollection expected")
@@ -160,7 +160,7 @@ trait GeometryFormats {
       case _ => throw new SerializationException("Unknown Geometry")
     }
 
-    def read(value: JsValue) = value.asJsObject.getFields("type") match {
+    def read(value: JsValue) = unwrapFeature(value).asJsObject.getFields("type") match {
       case Seq(JsString("Point")) => value.convertTo[Point]
       case Seq(JsString("LineString")) => value.convertTo[Line]
       case Seq(JsString("Polygon")) => value.convertTo[Polygon]
@@ -169,6 +169,18 @@ trait GeometryFormats {
       case Seq(JsString("MultiLineString")) => value.convertTo[MultiLine]
       case Seq(JsString("GeometryCollection")) => value.convertTo[GeometryCollection]
       case Seq(JsString(t)) => throw new DeserializationException(s"Unknown Geometry type: $t")
+    }
+  }
+
+  /**
+   * If given JSON is actually a Feature we extract 'geometry' field and discard the rest,
+   * in all other cases the value is returned unaltered.
+   * Thus we can comperehand any Feature as a Geometry if we don't care about 'properties'.
+   */
+  private def unwrapFeature(value: JsValue): JsValue = {
+    value.asJsObject.getFields("type", "geometry") match {
+      case Seq(JsString("Feature"), geom) =>  geom
+      case _ => value
     }
   }
 }
