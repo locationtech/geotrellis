@@ -1,0 +1,12 @@
+---
+
+#Main tasks for hadoop master
+
+- name: Format the namenode
+  shell: creates=~/hadoop/state.namenode.formatted ~/hadoop/bin/hadoop namenode -format -force && touch ~/hadoop/state.namenode.formatted
+
+- name: Stop hdfs
+  shell: ~/hadoop/bin/stop-dfs.sh
+
+- name: Start hdfs
+  shell: ~/hadoop/bin/start-dfs.sh

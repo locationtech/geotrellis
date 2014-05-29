@@ -1,0 +1,20 @@
+---
+
+#Tasks for common role
+
+- name: Install OpenJDK 7 JRE
+  apt: pkg=openjdk-7-jre-headless state=latest install_recommends=yes
+  sudo: yes
+
+#This allows to rsync and ssh between any host in the clusters
+- name: Upload cluster private key to use as id_rsa
+  copy: 
+    src: "{{inventory_dir}}/keys/{{ key_name }}.pem" 
+    dest: ~/.ssh/id_rsa 
+    mode: 0600
+
+- name: Disable SSH known host checking for 172.* subnet
+  copy:
+    src: ssh_config
+    dest: ~/.ssh/config
+    mode: 0644

@@ -24,27 +24,10 @@
             from_port: 8080
             to_port: 8081
             cidr_ip: "0.0.0.0/0"
-          - proto: tcp
-            from_port: 19999
-            to_port: 19999
+        rules_egress:
+          - proto: all
             cidr_ip: "0.0.0.0/0"
-          - proto: tcp
-            from_port: 50030
-            to_port: 50030
-            cidr_ip: "0.0.0.0/0"
-          - proto: tcp
-            from_port: 50070
-            to_port: 50070
-            cidr_ip: "0.0.0.0/0"
-          - proto: tcp
-            from_port: 60070
-            to_port: 60070
-            cidr_ip: "0.0.0.0/0"
-          - proto: tcp
-            from_port: 4040
-            to_port: 4045
-            cidr_ip: "0.0.0.0/0"
-    
+
     - name: EC2 Security group for workers
       local_action:
         module: ec2_group
@@ -60,27 +43,10 @@
             from_port: 22
             to_port: 22
             cidr_ip: "0.0.0.0/0"
-          - proto: tcp
-            from_port: 8080
-            to_port: 8081
+        rules_egress:
+          - proto: all
             cidr_ip: "0.0.0.0/0"
-          - proto: tcp
-            from_port: 50060
-            to_port: 50060
-            cidr_ip: "0.0.0.0/0"
-          - proto: tcp
-            from_port: 50075
-            to_port: 50075
-            cidr_ip: "0.0.0.0/0"
-          - proto: tcp
-            from_port: 60060
-            to_port: 60060
-            cidr_ip: "0.0.0.0/0"
-          - proto: tcp
-            from_port: 60075
-            to_port: 60075
-            cidr_ip: "0.0.0.0/0"
-
+  
 
     - name: Launch master
       local_action: 
@@ -92,19 +58,23 @@
         
         #Add 'type' tag to instance and use it to control the number of instances running
         instance_tags:  
-          type: "{{ cluster_name }}-master"
+          spark-role: "master"
         count_tag:
-          type: "{{ cluster_name }}-master"
+          spark-role: "master"
         exact_count:    1
 
         wait:           true 
 
       register: master
 
+
     - name: Add master instance to host group
       add_host:
-        hostname={{ item.public_ip }} 
-        ansible_ssh_user="root"
+        hostname={{ item.public_ip }}
+        instance_id={{ item.id }}
+        public_ip={{ item.public_ip }}
+        private_ip={{ item.private_ip }}
+        ansible_ssh_user="ubuntu"
         ansible_ssh_private_key_file="{{inventory_dir}}/keys/{{ key_name }}".pem       
         groups=master,ec2_hosts
       with_items: master.tagged_instances
@@ -116,12 +86,12 @@
         image:          "{{ image }}"         
         instance_type:  "{{ instance_type }}" 
         key_name:       "{{ key_name }}" 
-        group:          "{{ cluster_name }}-slaves" #TODO: This name REALLY bothers me
+        group:          "{{ cluster_name }}-slaves"
 
         instance_tags:  
-          type: "{{ cluster_name }}-worker"
+          spark-role: "worker"
         count_tag:      
-          type: "{{ cluster_name }}-worker"
+          spark-role: "worker"
         exact_count:    "{{ worker_count }}"
 
         wait:           true
@@ -131,88 +101,32 @@
     - name: Add worker instance to host group
       add_host:
         hostname={{ item.public_ip }} 
+        instance_id={{ item.id }}
+        public_ip={{ item.public_ip }}
+        private_ip={{ item.private_ip }}        
         groups=workers,ec2_hosts
-        ansible_ssh_user="root"
+        ansible_ssh_user="ubuntu"
         ansible_ssh_private_key_file="{{inventory_dir}}/keys/{{ key_name }}".pem       
       with_items: workers.tagged_instances
+  
+- include: master.yml
 
 
-- name: Setup spark on all hosts
-  hosts: ec2_hosts
-  gather_facts: False
-
-  vars:
-    spark_home: "{{ lookup('env','SPARK_HOME') }}"
-    assembly_dir: assembly/target/scala-2.10
-    spark_jar: spark-assembly-0.9.1-hadoop1.2.1.jar
-
-  tasks:
-    - name: spark conf
-      file: 
-        path: ~/spark/conf
-        state: directory    
-
-    - name: upload conf template
-      template: src={{inventory_dir}}/conf/{{ item }} dest=~/spark/conf
-      with_items:
-        - spark-env.sh
-
-    - name: spark assembly directory
-      file: 
-        path: "~/spark/{{ assembly_dir }}"
-        state: directory    
+# - name: Setup spark on all hosts
+#   hosts: ec2_hosts
+#   gather_facts: False
 
 
-    - name: upload spark assembly
-      synchronize:
-        src:  "{{ spark_home }}/{{ assembly_dir }}/{{ spark_jar }}" 
-        dest: "~/spark/{{ assembly_dir }}/{{ spark_jar }}" 
+# - name: Start spark master
+#   hosts: master
 
-    - name: upload sbin scripts
-      synchronize: src={{inventory_dir}}/sbin/{{ item }} dest=~/spark/sbin/
-      with_items:
-        - start-master.sh
-        - stop-master.sh
-        - slaves.sh
-        - start-slave.sh
-        - start-slaves.sh
-        - stop-slaves.sh
-        - spark-daemon.sh
-        - spark-config.sh
-
-    - name: upload bin scripts
-      synchronize: src={{inventory_dir}}/bin/{{ item }} dest=~/spark/bin/
-      with_items:
-        - spark-class
-        - compute-classpath.sh
-
-    - name: init.d scirpts
-      synchronize: src={{inventory_dir}}/init.d/{{ item }} dest=/etc/init.d
-      with_items:
-        - spark-master
-        - spark-workers
-
-    - name: set permissions on init.d scripts
-      file: path=/etc/init.d/{{item}}  mode=0744
-      with_items:
-        - spark-master
-        - spark-workers
-
-    - name: spark logs
-      file: 
-        path: ~/spark/logs
-        state: directory
-
-- name: Start spark master
-  hosts: master
-
-  tasks:
-  - name: start spark master service
-    service: name=spark-master state=started enabled=true
+#   tasks:
+#   - name: start spark master service
+#     service: name=spark-master state=started enabled=true
     
-- name: Start spark workers
-  hosts: ec2_hosts
+# - name: Start spark workers
+#   hosts: ec2_hosts
 
-  tasks:
-  - name: start spark workers service
-    service: name=spark-workers state=started enabled=true
+#   tasks:
+#   - name: start spark workers service
+#     service: name=spark-workers state=started enabled=true

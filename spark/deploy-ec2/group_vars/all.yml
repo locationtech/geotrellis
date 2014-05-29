@@ -1,13 +1,23 @@
 ---
 key_name: spark-cluster
 
-image: ami-5bb18832
+image: ami-018c9568
 instance_type: m1.small    
 region: us-east-1
 cluster_name: super-cluster
 
-#These are not used, but basically a reminder these these groups must exist
-master_group: "{{ cluster_name }}-master"
-worker_group: "{{ cluster_name }}-slaves"
-
 worker_count: 1
+
+#These volumes will be given to hdfs data nodes
+#recommended device names are from xvdf to xvdp
+hdfs_volumes: [
+  { device: /dev/xvdf, mount: /mnt/data1 },
+  { device: /dev/xvdg, mount: /mnt/data2 }
+]
+hdfs_volume_size: 6
+
+
+#Spark Variables
+spark_home:   "{{ lookup('env','SPARK_HOME') }}"
+assembly_dir: assembly/target/scala-2.10
+spark_jar:    spark-assembly-0.9.1-hadoop1.2.1.jar

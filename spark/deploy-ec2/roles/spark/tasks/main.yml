@@ -1,0 +1,52 @@
+---
+
+#Tasks for spark roles
+
+- file: 
+    path: spark/conf
+    state: directory    
+
+- file: 
+    path: "spark/{{ assembly_dir }}"
+    state: directory   
+
+- name: spark logs
+  file: 
+    path: spark/logs
+    state: directory
+
+- name: upload conf template
+  template: src=conf/{{ item }} dest=~/spark/conf
+  with_items:
+    - spark-env.sh
+    - slaves
+
+- name: upload spark assembly
+  synchronize:
+    src:  "{{ spark_home }}/{{ assembly_dir }}/{{ spark_jar }}" 
+    dest: "~/spark/{{ assembly_dir }}/{{ spark_jar }}" 
+
+- name: upload sbin scripts
+  synchronize: src={{spark_home}}/sbin/{{ item }} dest=~/spark/sbin/
+  with_items:
+    - start-master.sh
+    - stop-master.sh
+    - slaves.sh
+    - start-slave.sh
+    - start-slaves.sh
+    - stop-slaves.sh
+    - spark-daemon.sh
+    - spark-config.sh
+
+- name: upload bin scripts
+  synchronize: src={{spark_home}}/bin/{{ item }} dest=~/spark/bin/
+  with_items:
+    - spark-class
+    - compute-classpath.sh
+
+#These are not used right now, reverting back to ssh-push model
+# - name: init.d scirpts
+#   synchronize: src={{inventory_dir}}/init.d/{{ item }} dest=/etc/init.d
+#   with_items:
+#     - spark-master
+#     - spark-workers
