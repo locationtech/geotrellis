@@ -4,6 +4,7 @@ package geotrellis.benchmark
  * Created by jchien on 4/24/14.
  */
 import geotrellis._
+import geotrellis.feature._
 import geotrellis.raster._
 
 import com.google.caliper.Param

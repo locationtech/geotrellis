@@ -17,6 +17,7 @@
 package geotrellis.data
 
 import geotrellis._
+import geotrellis.feature.Extent
 
 import org.geotools.coverage.grid.GridCoverage2D
 import org.geotools.coverage.grid.GridEnvelope2D

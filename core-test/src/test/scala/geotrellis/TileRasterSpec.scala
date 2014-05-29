@@ -26,7 +26,6 @@ import org.scalatest._
 import scalaxy.loops._
 
 class TileRasterSpec extends FunSpec 
-                        with MustMatchers 
                         with RasterBuilders
                         with TestServer {
   describe("wrap") {

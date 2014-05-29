@@ -64,7 +64,7 @@ class RasterizerBenchmark extends OperationBenchmark {
     val feature.Extent(xmin, ymin, xmax, ymax) = transitPoly.envelope
     val dx = (xmax - xmin) / 4
     val dy = (ymax - ymin) / 4
-    val ext = geotrellis.Extent(xmin - dx, ymin - dy, xmax + dx, ymax + dy)
+    val ext = Extent(xmin - dx, ymin - dy, xmax + dx, ymax + dy)
     transitRe = RasterExtent(ext, rasterSize, rasterSize)
   }
 
@@ -94,7 +94,7 @@ class RasterizerBenchmark extends OperationBenchmark {
 
   def randomRasterN(n: Int) = {
     val a = Array.ofDim[Int](n*n).map(a => Random.nextInt(255))
-    val e = geotrellis.Extent(0,0,10*n,10*n)
+    val e = Extent(0,0,10*n,10*n)
     re = RasterExtent(e, 10,10,n,n)
     data = IntArrayRasterData(a, n, n)
 

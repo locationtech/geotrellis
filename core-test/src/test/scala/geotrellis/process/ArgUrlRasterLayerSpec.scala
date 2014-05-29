@@ -17,8 +17,6 @@
 package geotrellis.process
 
 import org.scalatest._
-import org.scalatest.matchers.MustMatchers
-
 
 import scala.math.abs
 
@@ -41,7 +39,6 @@ import spray.routing._
 import StatusCodes._
 
 class ArgUrlRasterLayerSpec extends FunSpec 
-                               with MustMatchers 
                                with Matchers 
                                with TestServer 
                                with RasterBuilders 

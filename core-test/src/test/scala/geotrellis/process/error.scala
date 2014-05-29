@@ -59,9 +59,9 @@ class FailingOpSpec extends FunSpec
       val op = Defenestrator("Ermintrude Inch")
       val op2 = Window("extremely high")
       val op3 = LargeWindow(Literal(Unit), op2)
-      evaluating { get(op) } should produce [java.lang.RuntimeException]
-      evaluating { get(op2) } should produce [java.lang.RuntimeException]
-      evaluating { get(op3) } should produce [java.lang.RuntimeException]
+      an [java.lang.RuntimeException] should be thrownBy { get(op) }
+      an [java.lang.RuntimeException] should be thrownBy { get(op2) }
+      an [java.lang.RuntimeException] should be thrownBy { get(op3) }
     }
   }
 }

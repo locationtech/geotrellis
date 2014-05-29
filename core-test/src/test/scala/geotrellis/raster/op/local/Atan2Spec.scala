@@ -85,7 +85,7 @@ class Atan2Spec extends FunSpec
               if (x == 5) {
                 angle.isNaN should be (true)
               } else {
-                angle should be (expected plusOrMinus epsilon)
+                angle should be (expected +- epsilon)
               }
             }
           }
@@ -117,7 +117,7 @@ class Atan2Spec extends FunSpec
               val cellValue = result.getDouble(x, y)
               val epsilon = math.ulp(cellValue)
               val expected = expectedAngles(y)
-              cellValue should be (expected plusOrMinus epsilon)
+              cellValue should be (expected +- epsilon)
             }
           }
           for (y <- 5 until 6) {
@@ -153,7 +153,7 @@ class Atan2Spec extends FunSpec
               val cellValue = result.getDouble(x, y)
               val epsilon = math.ulp(cellValue)
               val expected = expectedAngles(y)
-              cellValue should be (expected plusOrMinus epsilon)
+              cellValue should be (expected +- epsilon)
             }
           }
           for (y <- 5 until 6) {
@@ -189,7 +189,7 @@ class Atan2Spec extends FunSpec
               val cellValue = result.getDouble(x, y)
               val epsilon = math.ulp(cellValue)
               val expected = expectedAngles(y)
-              cellValue should be (expected plusOrMinus epsilon)
+              cellValue should be (expected +- epsilon)
             }
           }
           for (y <- 5 until 6) {
@@ -260,7 +260,7 @@ class Atan2Spec extends FunSpec
           if (x == 5) {
             angle.isNaN should be (true)
           } else {
-            angle should be (expected plusOrMinus epsilon)
+            angle should be (expected +- epsilon)
           }
         }
       }
@@ -286,7 +286,7 @@ class Atan2Spec extends FunSpec
           val cellValue = result.getDouble(x, y)
           val epsilon = math.ulp(cellValue)
           val expected = expectedAngles(y)
-          cellValue should be (expected plusOrMinus epsilon)
+          cellValue should be (expected +- epsilon)
         }
       }
       for (y <- 5 until 6) {
@@ -316,7 +316,7 @@ class Atan2Spec extends FunSpec
           val cellValue = result.getDouble(x, y)
           val epsilon = math.ulp(cellValue)
           val expected = expectedAngles(y)
-          cellValue should be (expected plusOrMinus epsilon)
+          cellValue should be (expected +- epsilon)
         }
       }
       for (y <- 5 until 6) {
@@ -346,7 +346,7 @@ class Atan2Spec extends FunSpec
           val cellValue = result.getDouble(x, y)
           val epsilon = math.ulp(cellValue)
           val expected = expectedAngles(y)
-          cellValue should be (expected plusOrMinus epsilon)
+          cellValue should be (expected +- epsilon)
         }
       }
       for (y <- 5 until 6) {

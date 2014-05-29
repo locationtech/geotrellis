@@ -21,6 +21,7 @@ import javax.ws.rs.{GET, Path, DefaultValue, PathParam, QueryParam}
 import javax.ws.rs.core.{Response, Context}
 
 import geotrellis._
+import geotrellis.feature._
 import geotrellis.source._
 import geotrellis.render._
 import ColorRamps._

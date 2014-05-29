@@ -49,7 +49,7 @@ class TanhSpec extends FunSpec
               val epsilon = math.ulp(theTanh)
               val theExpected = expected(y*6 + x)
               if (!(x == 5 && y == 5)) {
-                theTanh should be (theExpected plusOrMinus epsilon)
+                theTanh should be (theExpected +- epsilon)
               } else {
                 theTanh.isNaN should be (true)
               }
@@ -82,7 +82,7 @@ class TanhSpec extends FunSpec
                 val theResult = result.getDouble(x, y)
                 val expectedResult = expected(y*4 + x)
                 val epsilon = math.ulp(theResult)
-                theResult should be (expectedResult plusOrMinus epsilon)
+                theResult should be (expectedResult +- epsilon)
               } else {
                 result.getDouble(x, y).isNaN should be (true)
               }
@@ -115,7 +115,7 @@ class TanhSpec extends FunSpec
           val epsilon = math.ulp(theTanh)
           val theExpected = expected(y*6 + x)
           if (!(x == 5 && y == 5)) {
-            theTanh should be (theExpected plusOrMinus epsilon)
+            theTanh should be (theExpected +- epsilon)
           } else {
             theTanh.isNaN should be (true)
           }
@@ -142,7 +142,7 @@ class TanhSpec extends FunSpec
             val theResult = result.getDouble(x, y)
             val expectedResult = expected(y*4 + x)
             val epsilon = math.ulp(theResult)
-            theResult should be (expectedResult plusOrMinus epsilon)
+            theResult should be (expectedResult +- epsilon)
           } else {
             result.getDouble(x, y).isNaN should be (true)
           }

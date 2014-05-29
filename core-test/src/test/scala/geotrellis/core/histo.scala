@@ -25,7 +25,7 @@ import org.scalatest._
 
 import geotrellis.statistics._
 
-class HistogramSpec extends FunSpec with MustMatchers with Matchers {
+class HistogramSpec extends FunSpec with Matchers {
   def stringToInts(s:String) = {
     s.toCharArray.map { _.toByte - 32 }
   }
@@ -46,8 +46,8 @@ class HistogramSpec extends FunSpec with MustMatchers with Matchers {
           h.countItem(13)
           h.countItem(84)
     
-          h.getMinValue must be === 4
-          h.getMaxValue must be === 84
+          h.getMinValue should be (4)
+          h.getMaxValue should be (84)
         }
     
         // REFACTOR: this should use option
@@ -56,8 +56,8 @@ class HistogramSpec extends FunSpec with MustMatchers with Matchers {
           // min value should be largest possible int
           // max value should be smallest possible int
           // this way it signals that the values don't really make sense
-          h.getMinValue must be === Int.MaxValue
-          h.getMaxValue must be === Int.MinValue
+          h.getMinValue should be (Int.MaxValue)
+          h.getMaxValue should be (Int.MinValue)
         }
     
         it("should store values and retrieve them later") {
@@ -66,12 +66,12 @@ class HistogramSpec extends FunSpec with MustMatchers with Matchers {
           val s = "This is some great test data--see?"
           stringToInts(s).foreach { i => h.countItem(i) }
     
-          h.getItemCount('z'.toByte - 32) must be === 0
-          h.getItemCount('?'.toByte - 32) must be === 1
-          h.getItemCount('T'.toByte - 32) must be === 1
-          h.getItemCount('i'.toByte - 32) must be === 2
-          h.getItemCount('s'.toByte - 32) must be === 5
-          h.getItemCount(' '.toByte - 32) must be === 5
+          h.getItemCount('z'.toByte - 32) should be (0)
+          h.getItemCount('?'.toByte - 32) should be (1)
+          h.getItemCount('T'.toByte - 32) should be (1)
+          h.getItemCount('i'.toByte - 32) should be (2)
+          h.getItemCount('s'.toByte - 32) should be (5)
+          h.getItemCount(' '.toByte - 32) should be (5)
         }
     
         it("should do fancy kinds of counting and uncounting") {
@@ -81,9 +81,9 @@ class HistogramSpec extends FunSpec with MustMatchers with Matchers {
           h.countItem(16, 20)
           h.uncountItem(16)
     
-          h.getTotalCount must be === 42
-          h.getMinValue must be === 6
-          h.getMaxValue must be === 8
+          h.getTotalCount should be (42)
+          h.getMinValue should be (6)
+          h.getMaxValue should be (8)
         }
         
         it("should generate quantile breaks") {
@@ -94,7 +94,7 @@ class HistogramSpec extends FunSpec with MustMatchers with Matchers {
           "43wjtnejinherhoe9980437843t43n8hy8h89huntjhgfjogfdtgj895n34y8nt34tpn"
           stringToInts(s).foreach { i => h.countItem(i) }
           
-          h.getQuantileBreaks(6) must be === Array(23, 67, 71, 73, 78, 90)
+          h.getQuantileBreaks(6) should be (Array(23, 67, 71, 73, 78, 90))
   
           //println(h.generateStatistics)
         }
@@ -108,7 +108,7 @@ class HistogramSpec extends FunSpec with MustMatchers with Matchers {
           h.countItem(5, 80)
           h.countItem(6, 20)
     
-          h.getQuantileBreaks(3) must be === Array(2, 3, 6)
+          h.getQuantileBreaks(3) should be (Array(2, 3, 6))
         }
     
         it("should handle quantile breaks with multiple extreme values") {
@@ -121,37 +121,15 @@ class HistogramSpec extends FunSpec with MustMatchers with Matchers {
           h.countItem(6, 70)
           h.countItem(7, 50)
     
-          h.getQuantileBreaks(5) must be === Array(2, 3, 5, 6, 7)
+          h.getQuantileBreaks(5) should be (Array(2, 3, 5, 6, 7))
         }
-    
-        // we should decide if/how we want to handle this...
-        //it("should handle quantile breaks with multiple extreme levels") {
-        //  val h = ArrayHistogram(10)
-        //  h.countItem(1, 20)
-        //  h.countItem(2, 60)
-        //  h.countItem(3, 10000)
-        //  h.countItem(4, 10)
-        //  h.countItem(5, 1000000000)
-        //  h.countItem(6, 70)
-        //  h.countItem(7, 50)
-        //
-        //  h.getQuantileBreaks(5) must be === Array(2, 3, 5, 6, 7)
-        //}
-    
-        //it("should fail to generate unknown kinds of quantile breaks") {
-        //  val h = builder()
-        //  h.countItem(3, 2)
-        //  h.countItem(5, 3)
-        //  h.countItem(8, 4)
-        //  evaluating { h.getQuantileBreaks(2, 'bad) } should produce [Exception];
-        //}
-        
+            
         it("should serialize to json") {
           val h = ArrayHistogram(10)
           h.countItem(3, 2)
           h.countItem(5, 3)
           h.countItem(8, 5)
-          h.toJSON must be === "[[3,2],[5,3],[8,5]]"
+          h.toJSON should be ("[[3,2],[5,3],[8,5]]")
         }
       }
     }
@@ -166,7 +144,7 @@ class HistogramSpec extends FunSpec with MustMatchers with Matchers {
       h.countItem(3, 10)
       h.countItem(4, 5)
       h.countItem(5, 10)
-      h.getQuantileBreaks(4) must be === Array(0, 1, 2, 5)
+      h.getQuantileBreaks(4) should be (Array(0, 1, 2, 5))
     }
   
     it("should handle a tricky double unbalanced later values") {
@@ -177,7 +155,7 @@ class HistogramSpec extends FunSpec with MustMatchers with Matchers {
       h.countItem(3, 15)
       h.countItem(4, 10)
       h.countItem(5, 5)
-      h.getQuantileBreaks(4) must be === Array(0, 1, 2, 5)
+      h.getQuantileBreaks(4) should be (Array(0, 1, 2, 5))
     }
   }
 
@@ -190,16 +168,16 @@ class HistogramSpec extends FunSpec with MustMatchers with Matchers {
       h.countItem(4, 10)
       h.countItem(5, 10)
 
-      h.getQuantileBreaks(1) must be === Array(5)
-      h.getQuantileBreaks(2) must be === Array(2,5)
-      h.getQuantileBreaks(3) must be === Array(2,3,5)
-      h.getQuantileBreaks(4) must be === Array(1,2,4,5)
-      h.getQuantileBreaks(5) must be === Array(1,2,3,4,5)
-      h.getQuantileBreaks(6) must be === Array(1,2,3,4,5)
-      h.getQuantileBreaks(7) must be === Array(1,2,3,4,5)
-      h.getQuantileBreaks(8) must be === Array(1,2,3,4,5)
-      h.getQuantileBreaks(9) must be === Array(1,2,3,4,5)
-      h.getQuantileBreaks(10) must be === Array(1,2,3,4,5)
+      h.getQuantileBreaks(1) should be (Array(5))
+      h.getQuantileBreaks(2) should be (Array(2,5))
+      h.getQuantileBreaks(3) should be (Array(2,3,5))
+      h.getQuantileBreaks(4) should be (Array(1,2,4,5))
+      h.getQuantileBreaks(5) should be (Array(1,2,3,4,5))
+      h.getQuantileBreaks(6) should be (Array(1,2,3,4,5))
+      h.getQuantileBreaks(7) should be (Array(1,2,3,4,5))
+      h.getQuantileBreaks(8) should be (Array(1,2,3,4,5))
+      h.getQuantileBreaks(9) should be (Array(1,2,3,4,5))
+      h.getQuantileBreaks(10) should be (Array(1,2,3,4,5))
     }
   }
 
@@ -219,16 +197,14 @@ class HistogramSpec extends FunSpec with MustMatchers with Matchers {
   
       val stats = h.generateStatistics
       //println(stats)
-      "%.3f".format(stats.mean) must be === "4.130"
-      stats.median must be === 5
-      stats.mode must be === 5
-      "%.3f".format(stats.stddev) must be === "1.528"
-      stats.zmin must be === 2
-      stats.zmax must be === 7
+      "%.3f".format(stats.mean) should be ("4.130")
+      stats.median should be (5)
+      stats.mode should be (5)
+      "%.3f".format(stats.stddev) should be ("1.528")
+      stats.zmin should be (2)
+      stats.zmax should be (7)
     }
-  }
-    
-  
+  }  
                
   describe("A CompressedArrayHistogram") {
     it("should support different constructors") {
@@ -246,8 +222,8 @@ class HistogramSpec extends FunSpec with MustMatchers with Matchers {
       val vmax = 20
       val h = CompressedArrayHistogram(vmin, vmax)
   
-      h.getMinValue must be === Int.MaxValue
-      h.getMaxValue must be === Int.MinValue
+      h.getMinValue should be (Int.MaxValue)
+      h.getMaxValue should be (Int.MinValue)
   
   
     }
@@ -258,9 +234,9 @@ class HistogramSpec extends FunSpec with MustMatchers with Matchers {
       val size = 10
       val h = CompressedArrayHistogram(vmin, vmax, size)
   
-      h.getItemCount(13) must be === 0
-      h.getItemCount(15) must be === 0
-      h.getItemCount(19) must be === 0
+      h.getItemCount(13) should be (0)
+      h.getItemCount(15) should be (0)
+      h.getItemCount(19) should be (0)
       
       h.countItem(13)
       h.countItem(15)
@@ -273,12 +249,12 @@ class HistogramSpec extends FunSpec with MustMatchers with Matchers {
         val dd = h.decompress(dc)
         //if (c != dc)
         //  printf("%d -> %d -> %d -> %d; %d != %d\n", i, c, d, dc, c, dc)
-        c must be === dc
+        c should be (dc)
       }
   
-      h.getItemCount(13) must be === 0
-      h.getItemCount(15) must be === 0
-      h.getItemCount(19) must be === 3
+      h.getItemCount(13) should be (0)
+      h.getItemCount(15) should be (0)
+      h.getItemCount(19) should be (3)
     }
   
     it("should handle large values") {
@@ -312,8 +288,8 @@ class HistogramSpec extends FunSpec with MustMatchers with Matchers {
       printf("%dms to build, %dms to find min/max, %dms to generate\n", t1 - t0, t2 - t1, t3 - t2)
     
       //println(nearest.toList)
-      //nearest.toList must be === List(1657026, 3326562, 5000550, 6676121, 8350394, 9999963)
-      //lower.toList   must be === List(1656979, 3326562, 5000550, 6676117, 8350394, 9999963)
+      //nearest.toList should be (List(1657026, 3326562, 5000550, 6676121, 8350394, 9999963))
+      //lower.toList   should be (List(1656979, 3326562, 5000550, 6676117, 8350394, 9999963))
     }
   }
 }

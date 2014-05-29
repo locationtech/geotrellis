@@ -114,15 +114,15 @@ class CatalogSpec extends FunSpec
     }
 
     it("should require a catalog name") {
-      evaluating {
+      an [Exception] should be thrownBy {
         Catalog.fromJSON(invalidJson1)
-      } should produce [Exception]
+      }
     }
 
     it("should require a data store path") {
-      evaluating {
+      an [Exception] should be thrownBy {
         Catalog.fromJSON(invalidJson2)
-      } should produce [Exception]
+      }
     }
   }
 

@@ -63,7 +63,7 @@ class SqrtSpec extends FunSpec
               if(isNoData(z) || z < 0.0)
                 isNoData(rz) should be (true)
               else 
-                rz should be (math.sqrt(z) plusOrMinus 1e-5)
+                rz should be (math.sqrt(z) +- 1e-5)
             }
           }
         case Error(msg,failure) =>

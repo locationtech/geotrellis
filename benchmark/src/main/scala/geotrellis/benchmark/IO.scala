@@ -17,6 +17,7 @@
 package geotrellis.benchmark
 
 import geotrellis._
+import geotrellis.feature._
 import geotrellis.process._
 import geotrellis.source._
 import geotrellis.io._

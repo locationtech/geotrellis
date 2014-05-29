@@ -54,7 +54,7 @@ class IDWInterpolateSpec extends FunSpec
           val actual = result.get(col,row)
           val expected = r.get(col,row)
 
-          actual should be (expected plusOrMinus 1)
+          actual should be (expected +- 1)
         }
       }
     }

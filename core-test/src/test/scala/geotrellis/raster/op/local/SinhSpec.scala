@@ -53,7 +53,7 @@ class SinhSpec extends FunSpec
               } else if (theSinh.isInfinite) {
                 theSinh should be (theExpected)
               } else {
-                theSinh should be (theExpected plusOrMinus epsilon)
+                theSinh should be (theExpected +- epsilon)
               }
             }
           }
@@ -84,7 +84,7 @@ class SinhSpec extends FunSpec
                 val theResult = result.getDouble(x, y)
                 val expectedResult = expected(y*4 + x)
                 val epsilon = math.ulp(theResult)
-                theResult should be (expectedResult plusOrMinus epsilon)
+                theResult should be (expectedResult +- epsilon)
               } else {
                 result.getDouble(x, y).isNaN should be (true)
               }
@@ -121,7 +121,7 @@ class SinhSpec extends FunSpec
           } else if (theSinh.isInfinite) {
             theSinh should be (theExpected)
           } else {
-            theSinh should be (theExpected plusOrMinus epsilon)
+            theSinh should be (theExpected +- epsilon)
           }
         }
       }
@@ -146,7 +146,7 @@ class SinhSpec extends FunSpec
             val theResult = result.getDouble(x, y)
             val expectedResult = expected(y*4 + x)
             val epsilon = math.ulp(theResult)
-            theResult should be (expectedResult plusOrMinus epsilon)
+            theResult should be (expectedResult +- epsilon)
           } else {
             result.getDouble(x, y).isNaN should be (true)
           }

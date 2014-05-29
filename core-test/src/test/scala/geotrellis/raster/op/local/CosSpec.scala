@@ -51,7 +51,7 @@ class CosSpec extends FunSpec
               if (x >= 3 && y == 5) {
                 theCos.isNaN should be (true)
               } else {
-                theCos should be (theExpected plusOrMinus epsilon)
+                theCos should be (theExpected +- epsilon)
               }
             }
           }
@@ -82,7 +82,7 @@ class CosSpec extends FunSpec
                 val theResult = result.getDouble(x, y)
                 val expectedResult = expected(y*4 + x)
                 val epsilon = math.ulp(theResult)
-                theResult should be (expectedResult plusOrMinus epsilon)
+                theResult should be (expectedResult +- epsilon)
               } else {
                 result.getDouble(x, y).isNaN should be (true)
               }
@@ -117,7 +117,7 @@ class CosSpec extends FunSpec
           if (x >= 3 && y == 5) {
             theCos.isNaN should be (true)
           } else {
-            theCos should be (theExpected plusOrMinus epsilon)
+            theCos should be (theExpected +- epsilon)
           }
         }
       }
@@ -142,7 +142,7 @@ class CosSpec extends FunSpec
             val theResult = result.getDouble(x, y)
             val expectedResult = expected(y*4 + x)
             val epsilon = math.ulp(theResult)
-            theResult should be (expectedResult plusOrMinus epsilon)
+            theResult should be (expectedResult +- epsilon)
           } else {
             result.getDouble(x, y).isNaN should be (true)
           }

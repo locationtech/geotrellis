@@ -152,10 +152,6 @@ import org.scalatest._
   test("update all raster values") {
     val (r,d) = createFloat32
     for (i <- 0 until 100) d.updateDouble(i, i.toDouble)
-  }
-
-  test("map over raster values") {
-    val (r,d) = createFloat32
     val data2 = d.mapDouble(_ % 3.0)
     assert(data2.applyDouble(0) === 0.0)
     assert(data2.applyDouble(1) === 1.0)

@@ -62,8 +62,8 @@ class SemivariogramSpec extends FunSpec
 
 
       val semivariogram = Semivariogram(points,None,2,Linear)
-      semivariogram(0) should be (sv(0) plusOrMinus 0.0001)
-      semivariogram(10) should be (sv(10) plusOrMinus 0.0001)
+      semivariogram(0) should be (sv(0) +- 0.0001)
+      semivariogram(10) should be (sv(10) +- 0.0001)
     }
 
     it("Semivariogram (Bucketed w/ Limit)") {
@@ -100,8 +100,8 @@ class SemivariogramSpec extends FunSpec
       val limit:Option[Int] = Some(6)
 
       val semivariogram = Semivariogram(points,limit,2,Linear)
-      semivariogram(0) should be (sv(0) plusOrMinus 0.0001)
-      semivariogram(10) should be (sv(10) plusOrMinus 0.0001)
+      semivariogram(0) should be (sv(0) +- 0.0001)
+      semivariogram(10) should be (sv(10) +- 0.0001)
     }
 
     it("Semivariogram (Non-Bucketed)") {
@@ -144,8 +144,8 @@ class SemivariogramSpec extends FunSpec
       val sv = (x:Double) => slope*x + intercept
 
       val semivariogram = Semivariogram(points,None,0,Linear)
-      semivariogram(0) should be (sv(0) plusOrMinus 0.0001)
-      semivariogram(10) should be (sv(10) plusOrMinus 0.0001)
+      semivariogram(0) should be (sv(0) +- 0.0001)
+      semivariogram(10) should be (sv(10) +- 0.0001)
     }
 
     it("Semivariogram (Non-Bucketed w/ Limit)") {
@@ -189,8 +189,8 @@ class SemivariogramSpec extends FunSpec
       val limit:Option[Int] = Some(2)
 
       val semivariogram = Semivariogram(points,limit,0,Linear)
-      semivariogram(0) should be (sv(0) plusOrMinus 0.0001)
-      semivariogram(10) should be (sv(10) plusOrMinus 0.0001)
+      semivariogram(0) should be (sv(0) +- 0.0001)
+      semivariogram(10) should be (sv(10) +- 0.0001)
     }
   }
 }

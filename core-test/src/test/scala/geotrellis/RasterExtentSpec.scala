@@ -37,27 +37,27 @@ class RasterExtentSpec extends FunSpec with Matchers
     }
 
     it("should die when invalid #1") {
-      evaluating {
+      an [Exception] should be thrownBy {
         RasterExtent(e1, 1.0, 1.0, -10, 10)
-      } should produce [Exception];
+      }
     }
 
     it("should die when invalid #2") {
-      evaluating {
+      an [Exception] should be thrownBy {
         RasterExtent(e1, 1.0, 1.0, 10, -10)
-      } should produce [Exception];
+      }
     }
 
     it("should die when invalid #3") {
-      evaluating {
+      an [Exception] should be thrownBy {
         RasterExtent(e1, 0.0, 1.0, 0, 10)
-      } should produce [Exception];
+      }
     }
 
     it("should die when invalid #4") {
-      evaluating {
+      an [Exception] should be thrownBy {
         RasterExtent(e1, 1.0, -1.0, 10, -10)
-      } should produce [Exception];
+      }
     }
 
     val g = RasterExtent(Extent(10.0, 15.0, 90.0, 95.0), 2.0, 2.0, 40, 40)
@@ -77,9 +77,9 @@ class RasterExtentSpec extends FunSpec with Matchers
     it("should combine correctly") {
       g1.combine(g2) should be (g2)
 
-      evaluating {
+      an [Exception] should be thrownBy {
         g1.combine(RasterExtent(e1, 4.0, 4.0, 5, 5))
-      } should produce [Exception];
+      }
     }
 
     it("should change resolution") {

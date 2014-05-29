@@ -23,11 +23,10 @@ import geotrellis.testkit._
 import org.scalatest._
 
 class SimpleOpSyntaxSpec extends FunSpec 
-                            with MustMatchers 
                             with Matchers 
                             with TestServer {
   def testOp[T:Manifest](op:Op[T], expected:T){
-    get(op) must be === expected
+    get(op) should be (expected)
   }
   
   val addOne = (x:Int) => x + 1

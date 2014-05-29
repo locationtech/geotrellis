@@ -33,7 +33,9 @@ class AsciiSpec extends FunSpec
   describe("An AsciiReader") {
     it ("should fail on non-existent files") {
       val path = "/does/not/exist.tif"
-      evaluating { AsciiRasterLayerBuilder.fromFile(path) } should produce [Exception]
+      an [Exception] should be thrownBy {
+        AsciiRasterLayerBuilder.fromFile(path) 
+      }
     }
 
     it ("should write ASCII") {
