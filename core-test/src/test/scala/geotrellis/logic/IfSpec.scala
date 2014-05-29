@@ -19,12 +19,11 @@ package geotrellis.logic
 import geotrellis._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 class IfSpec extends FunSpec 
                 with TestServer
-                with ShouldMatchers {
+                with Matchers {
   describe("the if operation should only eval 1 argument") {
     val ErrorOp = op { (x:Int) => { sys.error("execute this op"); x } }
 

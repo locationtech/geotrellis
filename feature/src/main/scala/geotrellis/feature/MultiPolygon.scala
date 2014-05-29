@@ -55,10 +55,10 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
     jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
 
   /**
-   * Returns the minimum bounding box that contains all the lines in
+   * Returns the minimum extent that contains all the lines in
    * this MultiPolygon.
    */
-  lazy val boundingBox: BoundingBox =
+  lazy val envelope: Extent =
     jtsGeom.getEnvelopeInternal
 
   // -- Intersection

@@ -17,18 +17,20 @@
 package geotrellis.source
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.testkit._
 import geotrellis.process._
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+
 import geotrellis.raster._
 import geotrellis.raster.op._
 import geotrellis.statistics._
 
+import org.scalatest._
+
 class RasterSourceSpec extends FunSpec 
-                        with ShouldMatchers 
-                        with TestServer 
-                        with RasterBuilders {
+                          with Matchers 
+                          with TestServer 
+                          with RasterBuilders {
   def getRasterSource = 
     RasterSource("mtsthelens_tiled_cached")
 

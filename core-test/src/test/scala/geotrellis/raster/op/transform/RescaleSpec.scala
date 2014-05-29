@@ -17,15 +17,15 @@
 package geotrellis.raster.op.transform
 
 import geotrellis._
+import geotrellis.feature.Extent
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
 class RescaleSpec extends FunSpec 
-                            with ShouldMatchers 
-                            with TestServer {
+                     with Matchers 
+                     with TestServer {
   describe("RescaleRaster") {
     it("should resize quad8 correctly") {
 

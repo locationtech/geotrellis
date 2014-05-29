@@ -16,11 +16,11 @@
 
 package geotrellis
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import geotrellis.feature.Extent
 
-class RasterSpec extends FunSpec with MustMatchers 
-                                 with ShouldMatchers {
+import org.scalatest._
+
+class RasterSpec extends FunSpec with Matchers {
   val e = Extent(0.0, 0.0, 10.0, 10.0)
   val g = RasterExtent(e, 1.0, 1.0, 10, 10)
   describe("A Raster") {
@@ -30,18 +30,18 @@ class RasterSpec extends FunSpec with MustMatchers
     val raster = Raster(data, g)
 
     it("should preserve the data") {
-      raster.toArray must be === data
+      raster.toArray should be (data)
     }
 
     it("should get coordinate values") {
-      raster.get(0, 0) must be === 1
+      raster.get(0, 0) should be (1)
     }
 
     it("should create empty rasters") {
       val r = Raster.empty(g)
       val d = r.toArray
       for(i <- 0 until g.cols * g.rows) {
-        d(i) must be === NODATA
+        d(i) should be (NODATA)
       }
     }
 
@@ -52,11 +52,11 @@ class RasterSpec extends FunSpec with MustMatchers
       val r3 = Raster(Array(1,2,3,4), g)
       val r4 = Raster(Array(1,2,3,4), g)
 
-      r1 must not be r0
-      r1 must be === r1
-      r1 must not be r2
-      r1 must be === r3
-      r1 must be === r4
+      r1 should not be (r0)
+      r1 should be (r1)
+      r1 should not be (r2)
+      r1 should be (r3)
+      r1 should be (r4)
     }
 
     it("should normalize from 500-999 to 1-100") {
@@ -85,21 +85,21 @@ class RasterSpec extends FunSpec with MustMatchers
     it("should warp to a target RasterExtent") {
       val targetRE = RasterExtent(ext, 1.5, 1.5, 2, 2)
       val result = raster.warp(targetRE)
-      result.rasterExtent must be === targetRE
+      result.rasterExtent should be (targetRE)
     }
 
     it("should warp to a target Extent") {
       val targetExt = Extent(0.0, 0.0, 6.0, 6.0)
       val result = raster.warp(targetExt)
-      result.rasterExtent.extent must be === targetExt
+      result.rasterExtent.extent should be (targetExt)
     }
 
     it("should warp to target dimensions") {
       val targetCols = 5
       val targetRows = 5
       val result = raster.warp(targetCols, targetRows)
-      result.cols must be === 5
-      result.rows must be === 5
+      result.cols should be (5)
+      result.rows should be (5)
     }
   }
 }

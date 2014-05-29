@@ -23,13 +23,12 @@ import geotrellis.raster.op._
 
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
 import scala.math._
 
 class MaxSpec extends FunSpec with FocalOpSpec
-                              with ShouldMatchers 
+                              with Matchers 
                               with TestServer {
 
   val getMaxResult = Function.uncurried((getCursorResult _).curried((r,n) => focal.Max(r,n)))

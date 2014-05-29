@@ -21,11 +21,10 @@ import geotrellis.feature._
 import geotrellis.process._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
 trait ZonalSummarySpec extends FunSpec
-                          with ShouldMatchers
+                          with Matchers
                           with TestServer
                           with RasterBuilders {
   val tiledRS = 

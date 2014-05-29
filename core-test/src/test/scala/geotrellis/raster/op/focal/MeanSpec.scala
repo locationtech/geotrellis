@@ -22,8 +22,7 @@ import geotrellis.process._
 import geotrellis.source._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
 import scala.math._
 
@@ -31,7 +30,7 @@ import scalaxy.loops._
 
 class MeanSpec extends FunSpec with FocalOpSpec
                                with TestServer
-                               with ShouldMatchers {
+                               with Matchers {
 
   val getCursorMeanResult = (getDoubleCursorResult _).curried((r,n) => Mean(r,n))(Circle(1))
   val getCellwiseMeanResult = Function.uncurried((getDoubleCellwiseResult _).curried((r,n) => Mean(r,n))(Square(1)))

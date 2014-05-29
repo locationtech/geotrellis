@@ -16,19 +16,18 @@
 
 package geotrellis
 
-import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
-import java.io._
-
-
 import geotrellis._
 import geotrellis.testkit._
 import geotrellis.raster.op._
 import geotrellis.statistics._
 import geotrellis.feature._
 
+import org.scalatest._
+
+import java.io._
+
 class SerializationTest extends FunSuite 
-                        with ShouldMatchers 
+                        with Matchers 
                         with RasterBuilders 
                         with TestServer {
 

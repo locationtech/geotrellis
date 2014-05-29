@@ -16,11 +16,10 @@
 
 package geotrellis.util
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 class FilesystemSpec extends FunSpec 
-                        with ShouldMatchers {
+                        with Matchers {
   describe("Filesystem") {
     it("should give the same array for slurp and mapToByteArray for whole array") {
       val path = "core-test/data/fake.img32.json"

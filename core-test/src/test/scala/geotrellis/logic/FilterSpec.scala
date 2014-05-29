@@ -19,12 +19,11 @@ package geotrellis.logic
 import geotrellis._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 class FilterSpec extends FunSpec 
                     with TestServer
-                    with ShouldMatchers {
+                    with Matchers {
   describe("FilterSpec") {
     it("should filter Op[Seq[Int]] with Int to Boolean function") {
       val seq = Literal(Seq(1,2,3,4,5,6,7,8,9,10))

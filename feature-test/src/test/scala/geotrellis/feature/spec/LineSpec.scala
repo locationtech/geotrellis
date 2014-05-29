@@ -20,10 +20,9 @@ import geotrellis.feature._
 
 import com.vividsolutions.jts.{geom=>jts}
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
-class LineSpec extends FunSpec with ShouldMatchers {
+class LineSpec extends FunSpec with Matchers {
   describe("Line") {
 
     it ("should be a closed Line if constructed with l(0) == l(-1)") {
@@ -64,9 +63,9 @@ class LineSpec extends FunSpec with ShouldMatchers {
       l.vertices should be (Array(Point(0,0), Point(1,1), Point(2,2)))
     }
 
-    it ("should have a Polygon bounding box whose points are (minx, miny), (minx, maxy), (maxx, maxy), (max, miny), (minx, miny)") {
+    it ("should have a Polygon envelope whose points are (minx, miny), (minx, maxy), (maxx, maxy), (max, miny), (minx, miny)") {
       val l = Line(Point(0,0), Point(2,3))
-      l.boundingBox should be (BoundingBox(0,0,2,3))
+      l.envelope should be (Extent(0,0,2,3))
     }
 
     it ("should have a length") {

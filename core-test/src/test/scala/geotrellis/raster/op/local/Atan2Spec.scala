@@ -20,15 +20,14 @@ import geotrellis._
 import geotrellis.source._
 import geotrellis.process._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
 class Atan2Spec extends FunSpec
-                with ShouldMatchers
-                with TestServer
-                with RasterBuilders {
+                   with Matchers
+                   with TestServer
+                   with RasterBuilders {
   describe("ArcTan2") {
     it("finds arctan2 of a double raster") {
       val rasterData1 = Array(

@@ -18,13 +18,12 @@ package geotrellis.io
 
 import geotrellis._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
 class LoadFileSpec extends FunSpec 
-                      with ShouldMatchers 
+                      with Matchers 
                       with TestServer 
                       with RasterBuilders {
   describe("LoadFile") {

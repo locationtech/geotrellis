@@ -16,6 +16,7 @@
 
 package geotrellis
 
+import geotrellis.feature.Extent
 import scala.math.{min, max, round, ceil, floor}
 
 case class GeoAttrsError(msg:String) extends Exception(msg)
@@ -70,24 +71,10 @@ case class RasterExtent(extent:Extent, cellwidth:Double, cellheight:Double, cols
   if (cols <= 0) throw GeoAttrsError("invalid cols")
   if (rows <= 0) throw GeoAttrsError("invalid rows")
 
-  val width  = extent.width
-  val height = extent.height
-
   /**
    * The size of the extent, e.g. cols * rows.
    */
   def size = cols * rows
-
-  /**
-   * Compare this object with another GeoAttrs object, as per the comparison
-   * rules in Extent#compare.
-   */
-  def compare(other:RasterExtent) = extent.compare(other.extent)
-
-  /**
-   * Determine if the underlying extent contains the given point.
-   */
-  def containsPoint(x:Double, y:Double) = extent.containsPoint(x, y)
   
   /**
    * Convert map coordinates (x,y) to grid coordinates (col,row).

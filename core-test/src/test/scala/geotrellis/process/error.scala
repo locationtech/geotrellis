@@ -16,8 +16,7 @@
 
 package geotrellis.process
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
+import org.scalatest._
 
 import geotrellis._
 import geotrellis.process._
@@ -52,7 +51,7 @@ case class LargeWindow(a:Op[Unit], b:Op[Unit]) extends Op2(a,b) ({
 })
 
 class FailingOpSpec extends FunSpec 
-                       with MustMatchers 
+                       with Matchers 
                        with TestServer {
 
   describe("A failing operation") {
@@ -60,9 +59,9 @@ class FailingOpSpec extends FunSpec
       val op = Defenestrator("Ermintrude Inch")
       val op2 = Window("extremely high")
       val op3 = LargeWindow(Literal(Unit), op2)
-      evaluating { get(op) } must produce [java.lang.RuntimeException]
-      evaluating { get(op2) } must produce [java.lang.RuntimeException]
-      evaluating { get(op3) } must produce [java.lang.RuntimeException]
+      evaluating { get(op) } should produce [java.lang.RuntimeException]
+      evaluating { get(op2) } should produce [java.lang.RuntimeException]
+      evaluating { get(op3) } should produce [java.lang.RuntimeException]
     }
   }
 }

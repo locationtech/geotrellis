@@ -21,10 +21,9 @@ import geotrellis.statistics.{ArrayHistogram,FastMapHistogram}
 import geotrellis._
 import geotrellis.render._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-class RendererSpec extends FunSpec with ShouldMatchers 
+class RendererSpec extends FunSpec with Matchers 
                                    with RasterBuilders {
   describe("PNG Renderer") {
     it("should work with ArrayHistogram") {

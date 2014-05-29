@@ -21,14 +21,11 @@ import geotrellis.feature._
 import geotrellis.process._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
-
 class MinSpec extends ZonalSummarySpec {
   describe("Min") {
     it("computes Minimum") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).asPolygon
+      val zone = Extent(10,-10,30,10).toPolygon
 
       val minOp = rData.zonalMin(zone)
       run(minOp) match {
@@ -61,7 +58,7 @@ class MinSpec extends ZonalSummarySpec {
 
     it("computes Double Minimum") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).asPolygon
+      val zone = Extent(10,-10,30,10).toPolygon
 
       val minDOp = rData.zonalMinDouble(zone)
       run(minDOp) match {

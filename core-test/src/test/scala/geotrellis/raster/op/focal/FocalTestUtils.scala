@@ -17,14 +17,14 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.raster.op.local._
 import geotrellis.process._
 import geotrellis.raster.op._
 
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
 import scala.math._
 
@@ -106,7 +106,7 @@ case class MockCursor(all:Seq[Int],added:Seq[Int],removed:Seq[Int]) extends Curs
 }
 
 
-trait FocalOpSpec extends RasterBuilders with ShouldMatchers {
+trait FocalOpSpec extends RasterBuilders with Matchers {
   def getSetup[T <: FocalOp[Raster]](createOp:(Raster,Neighborhood)=>T,r:Raster,n:Neighborhood) = {
     val op = createOp(r,n)
     val calc = op.getCalculation(r,n).asInstanceOf[CursorCalculation[Raster] with Initialization]

@@ -17,12 +17,13 @@
 package geotrellis.data.arg
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.data._
 import geotrellis.data.arg._
-import geotrellis._
 import geotrellis.process._
 import geotrellis.testkit._
-import org.scalatest.FunSuite
+import org.scalatest._
+
 import geotrellis.raster.BitArrayRasterData
 
 class Int1Test extends FunSuite 

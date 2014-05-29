@@ -21,13 +21,13 @@ import geotrellis.process._
 import geotrellis.statistics._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
+import org.scalatest.matchers.{Matcher, MatchResult}
 
 import scala.math._
 
 class ModeSpec extends FunSpec with FocalOpSpec
-                               with ShouldMatchers 
+                               with Matchers 
                                with RasterBuilders
                                with TestServer {
 

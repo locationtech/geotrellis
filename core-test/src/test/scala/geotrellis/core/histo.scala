@@ -21,12 +21,11 @@ import math.round
 import scala.util.Random
 import Console.printf
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
+
 import geotrellis.statistics._
 
-class HistogramSpec extends FunSpec with MustMatchers with ShouldMatchers {
+class HistogramSpec extends FunSpec with MustMatchers with Matchers {
   def stringToInts(s:String) = {
     s.toCharArray.map { _.toByte - 32 }
   }

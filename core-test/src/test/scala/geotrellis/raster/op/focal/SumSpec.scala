@@ -17,12 +17,13 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.raster._
 import geotrellis.testkit._
 import geotrellis.source._
 import geotrellis.process._
 
-import org.scalatest.FunSpec
+import org.scalatest._
 
 class SumSpec extends FunSpec with FocalOpSpec 
                               with TestServer {

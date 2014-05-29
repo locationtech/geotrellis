@@ -18,17 +18,16 @@ package geotrellis.raster.op.zonal
 
 import geotrellis._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
 import scala.collection.mutable
 
 class ZonalHistogramSpec extends FunSpec 
-                             with ShouldMatchers 
-                             with TestServer 
-                             with RasterBuilders {
+                            with Matchers 
+                            with TestServer 
+                            with RasterBuilders {
   describe("ZonalHistogram") {
     it("gives correct histogram map for example raster") { 
       val r = createRaster(

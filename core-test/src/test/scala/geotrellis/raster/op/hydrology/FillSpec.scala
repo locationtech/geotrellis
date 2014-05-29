@@ -17,17 +17,17 @@
 package geotrellis.raster.op.hydrology
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.source._
 import geotrellis.raster._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 import geotrellis.testkit._
 
 class FillSpec extends FunSpec 
-                 with ShouldMatchers 
-                 with TestServer 
-                 with RasterBuilders {
+                  with Matchers 
+                  with TestServer 
+                  with RasterBuilders {
   describe("Fill"){
     it("Returns a new raster with sinks removed"){
       var ncols = 3

@@ -18,10 +18,9 @@ package geotrellis.statistics
 
 import geotrellis._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
-class FastMapHistogramSpec extends FunSpec with ShouldMatchers {
+class FastMapHistogramSpec extends FunSpec with Matchers {
   describe("getMode") {
     it("should return NODATA if no items are counted") {
       val h = FastMapHistogram()

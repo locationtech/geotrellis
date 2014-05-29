@@ -17,13 +17,14 @@
 package geotrellis
 
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+
 import geotrellis.testkit._
 import geotrellis.raster.op._
 
+import org.scalatest._
 
 class AndThenTest extends FunSuite 
-                     with ShouldMatchers 
+                     with Matchers 
                      with TestServer {
   test("AndThen should forward operations forward") {
     case class TestOp1(x:Int) extends Op1(x)({x:Int => AndThen(x + 4)})

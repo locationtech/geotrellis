@@ -17,8 +17,8 @@
 
 package geotrellis.process
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
+import org.scalatest._
+
 import scala.concurrent.Lock
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.ExecutionContextExecutorService

@@ -17,16 +17,15 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.source._
 import geotrellis.process._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
-
+import org.scalatest._
 import geotrellis.testkit._
 
 class SubtractSpec extends FunSpec 
-                 with ShouldMatchers 
+                 with Matchers 
                  with TestServer 
                  with RasterBuilders {
   describe("Subtract") {

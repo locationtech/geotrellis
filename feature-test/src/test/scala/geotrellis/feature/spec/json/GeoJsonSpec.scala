@@ -4,7 +4,7 @@ import org.scalatest._
 import geotrellis.feature._
 import spray.json.DeserializationException
 
-class GeoJsonSpec extends FlatSpec with ShouldMatchers {
+class GeoJsonSpec extends FlatSpec with Matchers {
   "GeoJson package" should "go from Geometry to String" in {
     val g = Point(1,1)
 

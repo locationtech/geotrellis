@@ -18,13 +18,12 @@ package geotrellis.io
 
 import geotrellis._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
 class LoadRasterLayerInfoSpec extends FunSpec 
-                                 with ShouldMatchers 
+                                 with Matchers 
                                  with TestServer {
   describe("LoadRasterLayerInfo") {
     it("loads a cached raster.") {

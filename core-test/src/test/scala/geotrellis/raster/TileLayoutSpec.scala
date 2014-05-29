@@ -17,11 +17,11 @@
 package geotrellis.raster
 
 import geotrellis._
+import geotrellis.feature.Extent
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
-class TileLayoutSpec extends FunSpec with ShouldMatchers {
+class TileLayoutSpec extends FunSpec with Matchers {
   describe("TileLayout.fromTileDimensions") {
     it("should map an inverse function correctly.") {
       val extent = Extent(0,0,1000,1000)

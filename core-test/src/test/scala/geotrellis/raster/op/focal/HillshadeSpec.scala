@@ -17,6 +17,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.source._
 import geotrellis.raster.op._
 import geotrellis.statistics.op._
@@ -27,7 +28,7 @@ import geotrellis.raster._
 import geotrellis.render._
 import geotrellis.render.op._
 
-import org.scalatest.FunSuite
+import org.scalatest._
 
 import scalaxy.loops._
 

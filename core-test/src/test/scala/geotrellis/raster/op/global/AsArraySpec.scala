@@ -18,10 +18,9 @@ package geotrellis.raster.op.global
 
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-class AsArraySpec extends FunSpec with ShouldMatchers 
+class AsArraySpec extends FunSpec with Matchers 
                                   with TestServer 
                                   with RasterBuilders {
   describe("AsArray") {

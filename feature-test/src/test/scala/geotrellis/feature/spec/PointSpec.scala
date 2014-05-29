@@ -20,12 +20,9 @@ import geotrellis.feature._
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
-
-
-class PointSpec extends FunSpec with ShouldMatchers {
+class PointSpec extends FunSpec with Matchers {
   describe("Point") {
 
     it ("should return true for comparing points with equal x and y") {

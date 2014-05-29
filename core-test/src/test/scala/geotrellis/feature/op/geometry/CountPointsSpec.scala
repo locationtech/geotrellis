@@ -20,19 +20,14 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.feature._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
 class CountPointsSpec extends FunSpec 
-                         with ShouldMatchers 
+                         with Matchers 
                          with TestServer 
                          with RasterBuilders {
-
-//  def PF[D](x: Double, y: Double, data: D): PointFeature[D] = {
-//    PointFeature(Point(x, y), data)
-//  }
 
   describe("CountPoints") {
     it("returns a zero raster when empty points") {

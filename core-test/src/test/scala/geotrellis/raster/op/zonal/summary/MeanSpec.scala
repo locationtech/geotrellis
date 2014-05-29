@@ -21,14 +21,11 @@ import geotrellis.feature._
 import geotrellis.process._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
-
 class MeanSpec extends ZonalSummarySpec {
   describe("Mean") {
     it("computes Mean") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).asPolygon
+      val zone = Extent(10,-10,30,10).toPolygon
 
       val meanOp = rData.zonalMean(zone)
       run(meanOp) match {
@@ -66,7 +63,7 @@ class MeanSpec extends ZonalSummarySpec {
 
     it("computes Double Mean") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).asPolygon
+      val zone = Extent(10,-10,30,10).toPolygon
 
       val meanDOp = rData.zonalMeanDouble(zone)
       run(meanDOp) match {

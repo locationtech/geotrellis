@@ -16,21 +16,19 @@
 
 package geotrellis.process
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
-import org.scalatest.matchers.ShouldMatchers
-
-import scala.math.abs
-
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.data.arg._
 import geotrellis.testkit._
 import geotrellis.raster._
 import geotrellis.data._
 
+import org.scalatest._
+
+import scala.math.abs
+
 class ArgRasterLayerSpec extends FunSpec 
-                            with MustMatchers 
-                            with ShouldMatchers 
+                            with Matchers 
                             with TestServer 
                             with RasterBuilders {
   describe("A RasterLayer") {
@@ -39,12 +37,12 @@ class ArgRasterLayerSpec extends FunSpec
     it("should build a valid raster") {
       val raster = RasterLayer.fromPath(path1).get.getRaster()
 
-      raster.cols must be === 4
-      raster.rows must be === 4
+      raster.cols should be (4)
+      raster.rows should be (4)
 
       for(y <- 0 until 4) {
         for(x <- 0 until 4) {
-          raster.get(x, y) must be === (16 * (3 - y) + x + 1)
+          raster.get(x, y) should be (16 * (3 - y) + x + 1)
         }
       }
     }
@@ -62,9 +60,9 @@ class ArgRasterLayerSpec extends FunSpec
 
       val base = path2.substring(0, path2.lastIndexOf("."))
 
-      new java.io.File(base + ".arg").delete() must be === true
-      new java.io.File(base + ".json").delete() must be === true
-      data1 must be === data2
+      new java.io.File(base + ".arg").delete() should be (true)
+      new java.io.File(base + ".json").delete() should be (true)
+      data1 should be (data2)
     }
 
     // helper function
@@ -102,7 +100,7 @@ class ArgRasterLayerSpec extends FunSpec
         println("\nexpected:")
         println(expect.toList)
       }
-      ok must be === true
+      ok should be (true)
     }
 
     val nd = NODATA

@@ -17,10 +17,11 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.raster._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
+import org.scalatest._
 
 class MoranSpec extends FunSpec with TestServer {
   val x = Array(0, 1, 0, 1, 0, 1, 0, 1)

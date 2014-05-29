@@ -20,13 +20,11 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 class SimpleOpSyntaxSpec extends FunSpec 
                             with MustMatchers 
-                            with ShouldMatchers 
+                            with Matchers 
                             with TestServer {
   def testOp[T:Manifest](op:Op[T], expected:T){
     get(op) must be === expected

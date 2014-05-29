@@ -22,13 +22,12 @@ import geotrellis.raster.op._
 
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
 import scala.math._
 
 class ConwaySpec extends FunSpec with FocalOpSpec
-                                 with ShouldMatchers {
+                                 with Matchers {
 
   val getConwayResult = Function.uncurried((getCellwiseResult _).curried((r,n) => Conway(r))(Square(1)))
 

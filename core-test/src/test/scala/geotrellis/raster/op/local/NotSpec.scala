@@ -20,13 +20,12 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.source._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
 class NotSpec extends FunSpec 
-                 with ShouldMatchers 
+                 with Matchers 
                  with TestServer 
                  with RasterBuilders {
   describe("Not") {

@@ -20,14 +20,14 @@ import geotrellis._
 import geotrellis.feature._
 import geotrellis.testkit._
 import math.{max,min,round}
-import org.scalatest.FunSuite
-import org.scalatest.matchers._
+
+import org.scalatest._
 
 import geotrellis.testkit._
 import scala.collection.mutable
 
 class RasterizeSpec extends FunSuite with TestServer 
-                                     with ShouldMatchers {
+                                     with Matchers {
    test("Point Rasterization") {
       val e = Extent(0.0, 0.0, 10.0, 10.0)
       val g = RasterExtent(e, 1.0, 1.0, 10, 10)

@@ -20,14 +20,12 @@ import geotrellis._
 
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 class ForEachSpec extends FunSpec 
                      with TestServer
                      with MustMatchers 
-                     with ShouldMatchers {
+                     with Matchers {
   describe("The ForEach operation") {
     it("should work with Array[Int]") {
       val ns = Array(1, 2, 3, 4, 5)

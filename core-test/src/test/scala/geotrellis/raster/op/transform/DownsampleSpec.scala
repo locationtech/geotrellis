@@ -20,14 +20,13 @@ import geotrellis._
 
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import scala.collection.mutable
 
-class DownsampleSpec extends FunSpec with ShouldMatchers 
-                               with TestServer
-                               with RasterBuilders {
+class DownsampleSpec extends FunSpec with Matchers 
+                                     with TestServer
+                                     with RasterBuilders {
   describe("Downsample") {
     it("downsamples with mode") {
       val r = createRaster(Array(1,2,1,1, 2,1,2,2, 3,2,3,3, 4,3,4,4,

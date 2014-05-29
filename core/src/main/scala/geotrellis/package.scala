@@ -52,35 +52,6 @@ package object geotrellis {
   @inline final def i2d(n:Int):Double = if (isNoData(n)) Double.NaN else n.toDouble
   @inline final def d2i(n:Double):Int = if (isNoData(n)) NODATA else n.toInt
 
-  // Polygon to Extent
-  implicit class PolygonToExtent(p: feature.Polygon) {
-    def toExtent(): Extent = {
-      val points = p.vertices
-      val len = points.length
-      val firstPoint = points(0)
-      var xmin = firstPoint.x
-      var xmax = firstPoint.x
-      var ymin = firstPoint.y
-      var ymax = firstPoint.y
-      for(i <- 1 until len) {
-        val pt = points(i)
-        if(pt.x < xmin) { xmin = pt.x }
-        if(pt.x > xmax) { xmax = pt.x }
-        if(pt.y < ymin) { ymin = pt.y }
-        if(pt.y > ymax) { ymax = pt.y }
-      }
-
-      Extent(xmin, ymin, xmax, ymax)
-    }
-  }
-
-  // BoundingBox to Extent
-  implicit class BoundingBoxToExtent(bbox: feature.BoundingBox) {
-    def toExtent(): Extent = 
-      Extent(bbox.xmin, bbox.ymin, bbox.xmax, bbox.ymax)
-  }
-
-
   // Use this implicit class to fill arrays ... much faster than Array.fill[Int](dim)(val), etc.
   implicit class ByteArrayFiller(val arr:Array[Byte]) extends AnyVal {
     def fill(v:Byte) = { java.util.Arrays.fill(arr,v) ; arr }

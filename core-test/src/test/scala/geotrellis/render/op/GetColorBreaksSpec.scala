@@ -17,17 +17,17 @@
 package geotrellis.render.op
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.render._
 import geotrellis.statistics.op.stat._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
 class GetColorBreaksSpec extends FunSpec 
                             with TestServer
-                            with ShouldMatchers {
+                            with Matchers {
   def testRaster = {
     val rasterExtent = RasterExtent(Extent(0.0, 0.0, 100.0, 80.0), 20.0, 20.0, 5, 4)
     val nd = NODATA

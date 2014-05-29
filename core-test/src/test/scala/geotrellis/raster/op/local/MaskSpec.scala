@@ -20,17 +20,16 @@ import geotrellis._
 import geotrellis.source._
 import geotrellis.process._
 import geotrellis.feature._
-import com.vividsolutions.jts.{ geom => jts }
-import org.codehaus.jackson._
+import geotrellis.feature.json._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
+
 import scala.math.min
 
 import geotrellis.testkit._
 
 class MaskSpec extends FunSpec 
-                  with ShouldMatchers 
+                  with Matchers 
                   with TestServer 
                   with RasterBuilders {
   describe("Mask") {
@@ -75,8 +74,6 @@ class MaskSpec extends FunSpec
       val geoJson = """
 {"type":"Feature", "properties":{}, "geometry":{"type":"Polygon", "coordinates":[[[-8369090.2257790025, 4876802.227461054], [-8387435.112564891, 4875204.103461534], [-8388505.230960803, 4857043.545520123], [-8381778.772472589, 4846680.974002159], [-8365574.122478416, 4850266.796002782], [-8362516.641347379, 4876202.9007538855], [-8365956.307619781, 4884296.872970244], [-8369090.2257790025, 4876802.227461054]]]}, "crs":{"type":"name", "properties":{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}}}
 """
-      import geotrellis.feature.json._
-
       val poly = geoJson.parseGeoJson[PolygonFeature[Unit]]
 
       val rs = RasterSource("SBN_inc_percap_tiled")

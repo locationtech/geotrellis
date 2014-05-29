@@ -27,7 +27,7 @@ object PolygonRasterizer {
    * Apply a function to each raster cell that intersects with a polygon.
    */
   def foreachCellByPolygon(p:Polygon, re:RasterExtent, includeExterior:Boolean=false)(f:Callback): Unit = 
-    if (p.intersects(re.extent.asPolygon)) { 
+    if (p.intersects(re.extent)) { 
 
       val (edges, rowMinOrg, rowMaxOrg) = {
         val TestLineSet(lines, rowMin, rowMax) =

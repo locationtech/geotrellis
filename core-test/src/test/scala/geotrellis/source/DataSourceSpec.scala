@@ -19,14 +19,15 @@ package geotrellis.source
 import geotrellis._
 import geotrellis.testkit._
 import geotrellis.process._
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+
 import geotrellis.raster._
 import geotrellis.raster.op._
 import geotrellis.statistics._
 
+import org.scalatest._
+
 class DataSourceSpec extends FunSpec 
-                        with ShouldMatchers 
+                        with Matchers 
                         with TestServer 
                         with RasterBuilders {
   describe("DataSource") {

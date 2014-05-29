@@ -17,12 +17,13 @@
 package geotrellis.raster.op.global
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.testkit._
 import geotrellis.statistics.op.stat._
 
 import scala.collection.mutable
 
-import org.scalatest.FunSpec
+import org.scalatest._
 
 class RegionGroupSpec extends FunSpec
                          with TestServer

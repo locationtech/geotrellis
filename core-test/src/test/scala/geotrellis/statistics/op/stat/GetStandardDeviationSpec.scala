@@ -18,14 +18,14 @@ package geotrellis.statistics.op.stat
 
 import geotrellis._
 import geotrellis.io.LoadFile
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+
+import org.scalatest._
 
 import geotrellis.testkit._
 
 class GetStandardDeviationSpec extends FunSpec 
                                   with TestServer
-                                  with ShouldMatchers {
+                                  with Matchers {
   describe("GetStandardDeviation") {
     it("should match known values from quad8 raster") {
       val r = get(LoadFile("core-test/data/quad8.arg"))

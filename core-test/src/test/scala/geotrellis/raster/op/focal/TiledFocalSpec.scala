@@ -21,7 +21,7 @@ import geotrellis.raster._
 
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
+
 import org.scalatest.matchers._
 
 // 0  1  2  3
@@ -31,7 +31,7 @@ import org.scalatest.matchers._
 
 // @RunWith(classOf[JUnitRunner])
 // class TiledFocalSpec extends FunSpec with FocalOpSpec
-//                                      with ShouldMatchers
+//                                      with Matchers
 //                                      with TestServer 
 //                                      with RasterBuilders {
 // /*  describe("normal min") {

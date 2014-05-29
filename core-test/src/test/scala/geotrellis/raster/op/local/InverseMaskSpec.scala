@@ -20,16 +20,16 @@ import geotrellis._
 import geotrellis.source._
 import geotrellis.process._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
+
 import scala.math.min
 
 import geotrellis.testkit._
 
 class InverseMaskSpec extends FunSpec 
-                  with ShouldMatchers 
-                  with TestServer 
-                  with RasterBuilders {
+                         with Matchers 
+                         with TestServer 
+                         with RasterBuilders {
   describe("Mask") {
     it("should work with integers") {
       val rs1 = createRasterSource(

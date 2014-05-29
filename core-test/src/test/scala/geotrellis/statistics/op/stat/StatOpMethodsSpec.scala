@@ -18,13 +18,14 @@ package geotrellis.statistics.op.stat
 
 import geotrellis._
 import geotrellis.raster.op._
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+
 import geotrellis.testkit.TestServer
 import geotrellis.source.RasterSource
 import geotrellis.statistics.Statistics
 
-class StatOpMethodsSpec extends FunSpec with TestServer with ShouldMatchers {
+import org.scalatest._
+
+class StatOpMethodsSpec extends FunSpec with TestServer with Matchers {
   def rasterSource = RasterSource("quad_tiled")
 
   describe("StatOpMethods") {

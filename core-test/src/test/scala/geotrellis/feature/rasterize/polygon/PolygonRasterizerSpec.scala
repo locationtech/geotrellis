@@ -44,7 +44,7 @@ class RasterizePolygonSpec extends FunSuite
     val triangle = Polygon( Line((2,8),(5,5),(6,7), (6,7), (2,8)))
 
     val outsideSquare = Polygon( Line((51,59), (51,56), (54,56), (54,59), (51,59)) )
-    val envelopingSquare = Extent(0.0, 0.0, 10.0, 10.0).asPolygon
+    val envelopingSquare = Extent(0.0, 0.0, 10.0, 10.0).toPolygon
 
     // intersection on cell midpoint
     val square2 = Polygon( Line( (1.0,9.0), (1.0,8.5), (1.0,6.0), (4.0, 6.0), (4.0, 8.5), (4.0, 9.0), (1.0, 9.0) ))

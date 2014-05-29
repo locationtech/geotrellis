@@ -24,53 +24,51 @@ import com.vividsolutions.jts.geom.Envelope
 import scala.collection.mutable
 import scala.collection.JavaConversions._
 
-import geotrellis.Extent
-
 object SpatialIndex {
-  def apply(points:Iterable[(Double,Double)])
-           (implicit di:DummyImplicit):SpatialIndex[(Double,Double)] = {
-    val si = new SpatialIndex[(Double,Double)](Measure.Dumb)
+  def apply(points: Iterable[(Double, Double)])
+           (implicit di: DummyImplicit): SpatialIndex[(Double, Double)] = {
+    val si = new SpatialIndex[(Double, Double)](Measure.Dumb)
     for(point <- points) {
       si.insert(point, point._1, point._2)
     }
     si
   }
 
-  def apply[T](points:Iterable[T])(f:T=>(Double,Double)):SpatialIndex[T] = {
+  def apply[T](points: Iterable[T])(f: T=>(Double, Double)): SpatialIndex[T] = {
     val si = new SpatialIndex[T](Measure.Dumb)
     for(point <- points) {
-      val (x,y) = f(point)
+      val (x, y) = f(point)
       si.insert(point, x, y)
     }
     si
   }
 }
 
-class SpatialIndex[T](val measure:Measure) extends Serializable {
+class SpatialIndex[T](val measure: Measure) extends Serializable {
   val rtree = new STRtree
   val points = mutable.Set[T]()
 
-  def insert(v:T, x: Double, y: Double) = {
-    rtree.insert(new Envelope(new Coordinate(x,y)), v)
+  def insert(v: T, x: Double, y: Double) = {
+    rtree.insert(new Envelope(new Coordinate(x, y)), v)
     points.add(v)
   }
 
-  def nearest(x:Double,y:Double):T = {
-    rtree.nearestNeighbour(new Envelope(new Coordinate(x,y)),null,measure).asInstanceOf[T]
+  def nearest(x: Double, y: Double): T = {
+    rtree.nearestNeighbour(new Envelope(new Coordinate(x, y)), null, measure).asInstanceOf[T]
   }
 
-  def nearest(pt:(Double,Double)):T = {
-    val e = new Envelope(new Coordinate(pt._1,pt._2))
-    rtree.nearestNeighbour(e,null,measure).asInstanceOf[T]
+  def nearest(pt: (Double, Double)): T = {
+    val e = new Envelope(new Coordinate(pt._1, pt._2))
+    rtree.nearestNeighbour(e, null, measure).asInstanceOf[T]
   }
 
-  def pointsInExtent(extent:Extent):Seq[T] = {
-    rtree.query(new Envelope(extent.ymin,extent.ymax,extent.xmin,extent.xmax))
+  def pointsInExtent(extent: Extent): Seq[T] = {
+    rtree.query(new Envelope(extent.ymin, extent.ymax, extent.xmin, extent.xmax))
          .map(_.asInstanceOf[T])
   }
 
-  def pointsInExtentAsJavaList(extent:Extent):List[_] = {
-    rtree.query(new Envelope(extent.ymin,extent.ymax,extent.xmin,extent.xmax)).toList
+  def pointsInExtentAsJavaList(extent: Extent): List[_] = {
+    rtree.query(new Envelope(extent.ymin, extent.ymax, extent.xmin, extent.xmax)).toList
   }
 }
 
@@ -79,17 +77,17 @@ object Measure {
 }
 
 trait Measure extends ItemDistance with Serializable {
-  def distance(x1:Double,y1:Double,x2:Double,y2:Double):Double
+  def distance(x1: Double, y1: Double, x2: Double, y2: Double): Double
 
-  def distance(i1:ItemBoundable, i2:ItemBoundable):Double = {
+  def distance(i1: ItemBoundable, i2: ItemBoundable): Double = {
     val bound1 = i1.getBounds.asInstanceOf[Envelope]
     val bound2 = i2.getBounds.asInstanceOf[Envelope]
-    distance(bound1.getMinX,bound1.getMinY,bound2.getMinX,bound2.getMinY)
+    distance(bound1.getMinX, bound1.getMinY, bound2.getMinX, bound2.getMinY)
   }
 }
 
 class DumbMeasure() extends Measure {
-  def distance(x1:Double,y1:Double,x2:Double,y2:Double):Double = {
+  def distance(x1: Double, y1: Double, x2: Double, y2: Double): Double = {
     val x = x2 - x1
     val y = y2 - y1
     math.sqrt(x*x + y*y)

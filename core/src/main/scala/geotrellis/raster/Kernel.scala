@@ -17,6 +17,7 @@
 package geotrellis.raster
 
 import geotrellis._
+import geotrellis.feature.Extent
 
 /** 
  * Kernel

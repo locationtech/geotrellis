@@ -21,13 +21,12 @@ import geotrellis.process._
 import geotrellis.raster.op._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
 import scala.math._
 
 class SlopeAspectTests extends FunSpec 
-                          with ShouldMatchers 
+                          with Matchers 
                           with TestServer {
   describe("SurfacePoint") {
     it("should calculate trig values correctly") {

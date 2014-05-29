@@ -16,6 +16,7 @@
 
 package geotrellis
 
+import geotrellis.feature.Extent
 import geotrellis.raster._
 import geotrellis.raster.op._
 import scalaxy.loops._
@@ -111,12 +112,6 @@ trait Raster extends local.LocalMethods {
     if (isFloat || r2.isFloat) combineDouble(r2)(g) else combine(r2)(f)
 
   /**
-   * Test [[geotrellis.RasterExtent]] of other raster w/ our own geographic
-   *attributes.
-   */
-  def compare(other:Raster) = this.rasterExtent.compare(other.rasterExtent)
-
-  /**
    * Normalizes the values of this raster, given the current min and max, to a new min and max.
    * 
    *   @param oldMin    Old mininum value
@@ -124,14 +119,14 @@ trait Raster extends local.LocalMethods {
    *   @param newMin     New minimum value
    *   @param newMax     New maximum value
    */
-  def normalize(oldMin:Int, oldMax:Int, newMin:Int, newMax:Int): Raster = {
+  def normalize(oldMin: Int, oldMax: Int, newMin: Int, newMax: Int): Raster = {
     val dnew = newMax - newMin
     val dold = oldMax - oldMin
     if(dold <= 0 || dnew <= 0) { sys.error(s"Invalid parameters: $oldMin,$oldMax,$newMin,$newMax") }
     mapIfSet(z => ( ((z - oldMin) * dnew) / dold ) + newMin)
   }
 
-  def warp(target:RasterExtent):Raster
+  def warp(target: RasterExtent): Raster
 
   def warp(target: Extent): Raster =
     warp(rasterExtent.createAligned(target))

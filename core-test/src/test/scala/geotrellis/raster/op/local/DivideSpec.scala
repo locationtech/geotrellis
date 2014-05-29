@@ -20,15 +20,14 @@ import geotrellis._
 import geotrellis.source._
 import geotrellis.process._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
 class DivideSpec extends FunSpec 
-                      with ShouldMatchers 
-                      with TestServer 
-                      with RasterBuilders {
+                    with Matchers 
+                    with TestServer 
+                    with RasterBuilders {
   describe("Divide") {
     it("divides a constant value to each cell of an int valued raster, from right hand side") {
       val r = positiveIntegerRaster

@@ -17,6 +17,7 @@
 package geotrellis.raster.op.transform
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.data._
 /**
  * Generate a raster with a new extent and resolution.

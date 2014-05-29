@@ -17,8 +17,9 @@
 package geotrellis.raster
 
 import geotrellis._
+import geotrellis.feature.Extent
 
-import org.scalatest.FunSuite
+import org.scalatest._
 
 class WarpTest extends FunSuite {
   val (cols, rows) = (5, 5)

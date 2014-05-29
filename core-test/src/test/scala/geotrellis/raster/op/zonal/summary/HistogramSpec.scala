@@ -21,14 +21,11 @@ import geotrellis.feature._
 import geotrellis.process._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
-
 class HistogramSpec extends ZonalSummarySpec {
   describe("zonalHistogram") {
     it("computes Histogram") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).asPolygon
+      val zone = Extent(10,-10,30,10).toPolygon
 
       val histOp = rData.zonalHistogram(zone)
       run(histOp) match {

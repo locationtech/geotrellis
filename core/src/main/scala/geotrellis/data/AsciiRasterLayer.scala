@@ -17,6 +17,7 @@
 package geotrellis.data
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.process._
 import geotrellis.util._
 
@@ -28,7 +29,7 @@ extends RasterLayerBuilder {
   val intRe = """^(-?[0-9]+)$""".r
   val floatRe = """^(-?[0-9]+\.[0-9]+)$""".r
 
-  def apply(ds:Option[String],jsonPath:String, json:Config):RasterLayer = {
+  def apply(ds: Option[String],jsonPath: String, json: Config): RasterLayer = {
     val path = 
       if(json.hasPath("path")) {
         json.getString("path")
@@ -41,7 +42,7 @@ extends RasterLayerBuilder {
         }
       }
 
-    val rasterType:RasterType = 
+    val rasterType: RasterType = 
       if(json.hasPath("type")) {
         val t = getRasterType(json)
         if(t.isDouble) {
@@ -72,7 +73,7 @@ extends RasterLayerBuilder {
     }
   }
 
-  def fromFile(path:String, cache:Option[Cache[String]] = None):AsciiRasterLayer = {
+  def fromFile(path: String, cache: Option[Cache[String]] = None): AsciiRasterLayer = {
     val f = new File(path)
     if(!f.exists) {
       sys.error(s"Path $path does not exist")
@@ -94,20 +95,20 @@ extends RasterLayerBuilder {
     new AsciiRasterLayer(info,noDataValue,path)
   }
 
-  def getBufferedReader(path:String) = {
+  def getBufferedReader(path: String) = {
     val fh = new File(path)
     if (!fh.canRead) throw new Exception("you can't read '%s' so how can i?".format(path))
     val fr = new java.io.FileReader(path)
     new BufferedReader(fr)
   }
 
-  def loadMetaData(path:String):(RasterExtent,Int) = {
-    var ncols:Int = 0
-    var nrows:Int = 0
-    var xllcorner:Double = 0.0
-    var yllcorner:Double = 0.0
-    var cellsize:Double = 0.0
-    var nodata_value:Int = -9999
+  def loadMetaData(path: String): (RasterExtent,Int) = {
+    var ncols: Int = 0
+    var nrows: Int = 0
+    var xllcorner: Double = 0.0
+    var yllcorner: Double = 0.0
+    var cellsize: Double = 0.0
+    var nodata_value: Int = -9999
 
     val br = getBufferedReader(path)
 
@@ -149,11 +150,11 @@ extends RasterLayerBuilder {
   }
 }
 
-class AsciiRasterLayer(info:RasterLayerInfo, noDataValue:Int, rasterPath:String) 
+class AsciiRasterLayer(info: RasterLayerInfo, noDataValue: Int, rasterPath: String) 
 extends UntiledRasterLayer(info) {
   private var cached = false
 
-  def getRaster(targetExtent:Option[RasterExtent]) =
+  def getRaster(targetExtent: Option[RasterExtent]) =
     if(isCached) {
       getCache.lookup[Array[Byte]](info.id.toString) match {
         case Some(bytes) =>
@@ -165,7 +166,7 @@ extends UntiledRasterLayer(info) {
       getReader.readPath(info.rasterType,info.rasterExtent,targetExtent)
     }
 
-  def cache(c:Cache[String]) = 
+  def cache(c: Cache[String]) = 
     c.insert(info.id.toString, Filesystem.slurp(rasterPath))
 
   private def getReader = new AsciiReader(rasterPath, noDataValue)

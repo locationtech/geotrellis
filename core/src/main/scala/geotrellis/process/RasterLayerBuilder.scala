@@ -17,6 +17,7 @@
 package geotrellis.process
 
 import geotrellis._
+import geotrellis.feature.Extent
 
 import com.typesafe.config.Config
 

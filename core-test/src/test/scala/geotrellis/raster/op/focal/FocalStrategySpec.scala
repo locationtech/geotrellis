@@ -16,15 +16,15 @@
 
 package geotrellis.raster.op.focal
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
-
 import geotrellis._
 import geotrellis.raster._
+import geotrellis.feature.Extent
+
+import org.scalatest._
 
 import scala.collection.mutable.Set
 
-class FocalStrategySpec extends FunSpec with ShouldMatchers {
+class FocalStrategySpec extends FunSpec with Matchers {
   describe("CursorStrategy") {
     it("should execute the ZigZag traversal strategy correctly") {
       val rex = RasterExtent(Extent(0,0,5,5), 1,1,5,5)

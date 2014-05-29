@@ -18,18 +18,17 @@ package geotrellis.feature
 
 import geotrellis._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
 
-import org.scalatest.junit.JUnitRunner
+import org.scalatest._
+
 import geotrellis.testkit._
 
 import org.apache.commons.math3.stat.regression.SimpleRegression
 
 class SemivariogramSpec extends FunSpec 
-                            with ShouldMatchers 
-                            with TestServer 
-                            with RasterBuilders {
+                           with Matchers 
+                           with TestServer 
+                           with RasterBuilders {
   describe("Semivariogram") {
     it("Semivariogram (Bucketed)") {
       val points = Seq[PointFeature[Int]](

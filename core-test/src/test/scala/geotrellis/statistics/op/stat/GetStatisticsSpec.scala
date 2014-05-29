@@ -20,14 +20,13 @@ import geotrellis._
 import geotrellis.statistics.Statistics
 import geotrellis.io.LoadFile
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
 class GetStatisticsSpec extends FunSpec 
                            with TestServer
-                           with ShouldMatchers {
+                           with Matchers {
   describe("GetStatistics") {
     it("get expected statistics from quad8") {
       val r = io.LoadFile("core-test/data/quad8.arg")

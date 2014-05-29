@@ -16,17 +16,17 @@
 
 package geotrellis.render.png
 
+import geotrellis._
+import geotrellis.feature.Extent
+import geotrellis.render._
+
 import scala.io.{Source}
 
 import java.io.{File,FileInputStream}
 
-import geotrellis._
-import geotrellis.render._
+import org.scalatest._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
-
-class EncoderSpec extends FunSpec with MustMatchers {
+class EncoderSpec extends FunSpec with Matchers {
 
   def parseHexByte(s:String) = Integer.parseInt(s, 16).toByte
   def parseHexBytes(cs:Array[String]) = cs.map(parseHexByte _)
@@ -87,12 +87,12 @@ c5 04 9e f8 03 17 ee 04 00 12 3a 47 85 ae b3 00
       val bytes2 = Array.ofDim[Byte](fh.length.toInt)
       fis.read(bytes2)
       
-      bytes1 must be === bytes2
+      bytes1 should be (bytes2)
     }
     
     it("should match the reference") {
       val bytes1 = encoder.writeByteArray(raster)
-      bytes1 must be === rgba
+      bytes1 should be (rgba)
     }
 
     fh.delete()
@@ -122,7 +122,7 @@ c5 04 9e f8 03 17 ee 04 00 12 3a 47 85 ae b3 00
       val bytes2 = Array.ofDim[Byte](fh.length.toInt)
       fis.read(bytes2)
       
-      bytes1 must be === bytes2
+      bytes1 should be (bytes2)
     }
   
     it("should match the reference") {
@@ -131,7 +131,7 @@ c5 04 9e f8 03 17 ee 04 00 12 3a 47 85 ae b3 00
       println(raster2.cols*raster2.rows)
       println(bytes1.toSeq)
       println(rgb.toSeq)
-      bytes1 must be === rgb
+      bytes1 should be (rgb)
     }
   
     fh.delete()

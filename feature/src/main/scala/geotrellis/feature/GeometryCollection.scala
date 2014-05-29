@@ -79,10 +79,10 @@ class GeometryCollection(
     jtsGeom.getArea
 
   /**
-   * Returns the minimum bounding box that contains all the geometries in
+   * Returns the minimum extent that contains all the geometries in
    * this GeometryCollection.
    */
-  lazy val boundingBox: BoundingBox =
+  lazy val envelope: Extent =
     jtsGeom.getEnvelopeInternal
 
   override def equals(that: Any): Boolean = {

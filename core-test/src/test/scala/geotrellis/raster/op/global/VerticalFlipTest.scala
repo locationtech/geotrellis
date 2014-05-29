@@ -16,13 +16,12 @@
 
 package geotrellis.raster.op.global
 
-
 import geotrellis._
 import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.testkit._
 
-import org.scalatest.FunSuite
+import org.scalatest._
 
 class VerticalFlipTest extends FunSuite 
                           with TestServer {

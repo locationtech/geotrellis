@@ -17,14 +17,14 @@
 package geotrellis.raster
 
 import geotrellis._
+import geotrellis.feature.Extent
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
 class RasterDataSpec extends FunSpec 
-                        with ShouldMatchers 
+                        with Matchers 
                         with TestServer 
                         with RasterBuilders {
   describe("convert") {

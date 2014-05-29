@@ -16,19 +16,18 @@
 
 package geotrellis.process
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
-import geotrellis.{Extent,RasterExtent}
-import geotrellis.raster.IntConstant
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.testkit._
+import geotrellis.raster.IntConstant
+
+import org.scalatest._
 
 import scala.collection.JavaConversions._
 import java.io.File
 
 class CatalogSpec extends FunSpec 
-                     with MustMatchers 
-                     with ShouldMatchers 
+                     with Matchers 
                      with TestServer {
 
   val absoluteDatapath = new File("core-test/data/data").getAbsolutePath
@@ -78,7 +77,7 @@ class CatalogSpec extends FunSpec
     it("should load when empty") {
       val found = Catalog.fromJSON(json0)
       val expected = Catalog("catalog1", Map.empty[String, DataStore], json0, "")
-      found must be === expected
+      found should be (expected)
     }
 
     it("should load from valid JSON") {
@@ -111,7 +110,7 @@ class CatalogSpec extends FunSpec
         ),
         jsonLoader, ""
       )
-      found must be === expected
+      found should be (expected)
     }
 
     it("should require a catalog name") {

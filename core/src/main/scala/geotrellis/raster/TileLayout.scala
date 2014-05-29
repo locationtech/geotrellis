@@ -17,6 +17,7 @@
 package geotrellis.raster
 
 import geotrellis._
+import geotrellis.feature.Extent
 
 object TileLayout {
   def apply(re:RasterExtent, tileCols:Int, tileRows:Int):TileLayout =

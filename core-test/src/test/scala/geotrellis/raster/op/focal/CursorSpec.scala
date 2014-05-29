@@ -23,10 +23,9 @@ import geotrellis.testkit._
 import scala.collection.mutable.Set
 import scala.math._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-class CursorSpec extends FunSpec with ShouldMatchers with RasterBuilders {
+class CursorSpec extends FunSpec with Matchers with RasterBuilders {
 
   def checkSet(r:Raster,set:CellSet,cursor:Cursor,m:Movement,center:(Int,Int),expected:Seq[Int]) = {
     center match { 

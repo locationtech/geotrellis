@@ -21,12 +21,11 @@ import geotrellis._
 import scala.collection.mutable.Set
 import scala.math._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import Movement._
 
-class CursorMaskSpec extends FunSpec with ShouldMatchers {
+class CursorMaskSpec extends FunSpec with Matchers {
   val testArray = Array(Array( 1,  2,  3,  4),
                         Array( 5,  6,  7,  8),
                         Array( 9, 10, 11, 12),

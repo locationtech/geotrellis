@@ -17,6 +17,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.source._
 import geotrellis.process._
 import geotrellis.raster._
@@ -25,10 +26,9 @@ import geotrellis.raster.op.transform._
 
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
-class SlopeSpec extends FunSpec with ShouldMatchers
+class SlopeSpec extends FunSpec with Matchers
                                 with TestServer {
   describe("Slope") {
     it("should match gdal computed slope raster") {

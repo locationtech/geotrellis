@@ -25,7 +25,7 @@ import scala.collection.mutable
 
 import com.vividsolutions.jts.{geom => jts}
 
-import org.scalatest.FunSpec
+import org.scalatest._
 
 class ToVectorSpec extends FunSpec
                       with TestServer

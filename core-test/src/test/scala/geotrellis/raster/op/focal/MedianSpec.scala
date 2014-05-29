@@ -23,15 +23,14 @@ import geotrellis.process._
 import geotrellis.statistics._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
 import scalaxy.loops._
 import scala.math._
 
 class MedianSpec extends FunSpec with TestServer
                                  with FocalOpSpec
-                                 with ShouldMatchers {
+                                 with Matchers {
 
   describe("Median") {
     it("should match worked out results") {

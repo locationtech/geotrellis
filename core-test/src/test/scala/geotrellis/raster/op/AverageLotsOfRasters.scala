@@ -17,12 +17,13 @@
 package geotrellis.raster.op
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.process._
 import geotrellis.raster.op._
 import geotrellis.testkit._
 import geotrellis.raster.op.local.Add
 
-import org.scalatest.FunSuite
+import org.scalatest._
 
 class AverageLotsOfRastersTest extends FunSuite 
                                   with TestServer {

@@ -21,10 +21,9 @@ import geotrellis._
 import scala.collection.mutable.Set
 import scala.math._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-class NeighborhoodSpec extends FunSpec with ShouldMatchers {
+class NeighborhoodSpec extends FunSpec with Matchers {
   describe("Circle") {
     it("should mask all values outside the radius of a 7x7 circle neighborhood") {
       val expectedMaskedValues = Set((0,0),(0,1),(1,0),(0,6),(1,6),(0,5),(6,0),(6,1),(0,5),(6,6),(6,5),(5,6),

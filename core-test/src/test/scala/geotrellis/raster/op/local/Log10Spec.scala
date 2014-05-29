@@ -20,15 +20,14 @@ import geotrellis._
 import geotrellis.source._
 import geotrellis.process._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
 class Log10Spec extends FunSpec
-                 with ShouldMatchers
-                 with TestServer
-                 with RasterBuilders {
+                   with Matchers
+                   with TestServer
+                   with RasterBuilders {
   describe("Log10") {
     it("takes log10 of int tiled RasterSource") {
       val rs = createRasterSource(

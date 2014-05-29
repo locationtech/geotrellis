@@ -12,7 +12,7 @@ import spray.http._
 import HttpCharsets._
 import MediaTypes._
 
-class CrsSpec extends FlatSpec with ShouldMatchers with GeoJsonSupport {
+class CrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
   val point = Point(6.0,1.2)
   val line = Line(Point(1,2) :: Point(1,3) :: Nil)
   val crs = NamedCRS("napkin:map:sloppy")

@@ -33,8 +33,8 @@ case class CountPoints(points:Op[Seq[Point]], rasterExtent:Op[RasterExtent]) ext
     for(point <- points) {
       val x = point.x
       val y = point.y
-      if(re.extent.containsPoint(x,y)) {
-        val index = re.mapXToGrid(x)*re.cols + re.mapYToGrid(y)
+      if(re.extent.contains(point)) {
+        val index = re.mapXToGrid(point.x)*re.cols + re.mapYToGrid(point.y)
         array(index) = array(index) + 1
       }
     }

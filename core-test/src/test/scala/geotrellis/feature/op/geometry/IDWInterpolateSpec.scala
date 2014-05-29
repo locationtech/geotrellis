@@ -22,8 +22,7 @@ import geotrellis.raster._
 import geotrellis.feature._
 import geotrellis.io._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
@@ -31,7 +30,7 @@ import com.vividsolutions.jts.{ geom => jts }
 import geotrellis.feature.json._
 
 class IDWInterpolateSpec extends FunSpec 
-                            with ShouldMatchers 
+                            with Matchers 
                             with TestServer 
                             with RasterBuilders {
   describe("IDWInterpolate") {

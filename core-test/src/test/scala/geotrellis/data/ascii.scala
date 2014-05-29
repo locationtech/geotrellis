@@ -17,18 +17,13 @@
 package geotrellis.data
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.raster._
 
-import geotrellis._
-import geotrellis.testkit._
-
-import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 class AsciiSpec extends FunSpec 
-                   with MustMatchers 
-                   with ShouldMatchers {
+                   with Matchers {
   val data:Array[Int] = (1 to 100).toArray
 
   val e = Extent(19.0, 9.0, 49.0, 39.0)
@@ -47,7 +42,7 @@ class AsciiSpec extends FunSpec
 
     it ("should read ASCII") {
       val r2 = AsciiRasterLayerBuilder.fromFile("/tmp/foo.asc").getRaster()
-      r2 must be === r
+      r2 should be (r)
     }
 
   }

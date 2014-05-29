@@ -21,8 +21,7 @@ import geotrellis.source._
 import geotrellis.process._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
+import org.scalatest._
 
 import scalaxy.loops._
 

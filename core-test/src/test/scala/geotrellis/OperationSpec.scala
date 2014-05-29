@@ -18,13 +18,12 @@ package geotrellis
 
 import geotrellis._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
 class OperationSpec extends FunSpec 
-                       with ShouldMatchers 
+                       with Matchers 
                        with TestServer {
   describe("Operation.flatten") {
     it("should flatten an Op[Op[Int]] into an Op[Int]") {

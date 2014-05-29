@@ -21,7 +21,7 @@ import geotrellis.raster._
 import geotrellis.feature._
 import geotrellis.testkit._
 
-import org.scalatest.FunSuite
+import org.scalatest._
 
 class KernelDensitySpec extends FunSuite with TestServer {
   test("kernel density") {

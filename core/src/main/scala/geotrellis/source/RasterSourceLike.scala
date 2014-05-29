@@ -174,7 +174,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
             for(tRow <- 0 until tRows optimized) {
               val sourceRasterExtent = resLayout.getRasterExtent(tCol, tRow)
               val sourceExtent = resLayout.getExtent(tCol, tRow)
-              sourceExtent.intersect(targetExtent) match {
+              sourceExtent.intersection(targetExtent) match {
                 case Some(ext) =>
                   val cols = math.ceil((ext.xmax - ext.xmin) / re.cellwidth).toInt
                   val rows = math.ceil((ext.ymax - ext.ymin) / re.cellheight).toInt

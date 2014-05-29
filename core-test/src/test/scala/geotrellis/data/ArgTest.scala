@@ -17,9 +17,10 @@
 package geotrellis.data
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.raster._
 
-import org.scalatest.FunSuite
+import org.scalatest._
 
 class ArgTest extends FunSuite {
   var r:Raster = null

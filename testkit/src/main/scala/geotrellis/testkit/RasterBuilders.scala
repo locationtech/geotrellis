@@ -17,6 +17,7 @@
 package geotrellis.testkit
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.raster._
 import geotrellis.process._
 import geotrellis.source._

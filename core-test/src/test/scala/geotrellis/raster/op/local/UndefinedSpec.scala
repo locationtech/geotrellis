@@ -20,15 +20,14 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.source._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
 class UndefinedSpec extends FunSpec 
-                    with ShouldMatchers 
-                    with TestServer 
-                    with RasterBuilders {
+                       with Matchers 
+                       with TestServer 
+                       with RasterBuilders {
   describe("Undefined") {
     it("returns correct result for an integer raster") {
       val r = positiveIntegerNoDataRaster

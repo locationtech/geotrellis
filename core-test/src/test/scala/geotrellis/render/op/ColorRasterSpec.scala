@@ -21,10 +21,9 @@ import geotrellis.render._
 import geotrellis.testkit._
 import geotrellis.data._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-class ColorRasterSpec extends FunSpec with ShouldMatchers 
+class ColorRasterSpec extends FunSpec with Matchers 
                                       with TestServer 
                                       with RasterBuilders {
   describe("ColorRaster - Integers") {

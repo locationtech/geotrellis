@@ -19,15 +19,14 @@ package geotrellis.raster.op.local
 import geotrellis._
 import geotrellis.process._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import geotrellis.testkit._
 
 class OrSpec extends FunSpec 
-                 with ShouldMatchers 
-                 with TestServer 
-                 with RasterBuilders {
+                with Matchers 
+                with TestServer 
+                with RasterBuilders {
   describe("Or") {
     it("ors an Int raster or a constant") {
       assertEqual(Or(createValueRaster(10,9),3), createValueRaster(10,11))

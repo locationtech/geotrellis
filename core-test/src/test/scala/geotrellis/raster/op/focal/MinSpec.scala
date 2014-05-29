@@ -22,11 +22,10 @@ import geotrellis.raster._
 
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
 class MinSpec extends FunSpec with FocalOpSpec
-                              with ShouldMatchers
+                              with Matchers
                               with TestServer {
   describe("Min") {
     it("square min r=1") {

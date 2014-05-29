@@ -19,12 +19,11 @@ package geotrellis.logic
 import geotrellis._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 class MapOpSpec extends FunSpec 
                    with TestServer
-                   with ShouldMatchers {
+                   with Matchers {
   describe("MapOp") {
     it("should call a function with no arguments") {
       var called = false

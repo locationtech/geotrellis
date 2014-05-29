@@ -21,10 +21,9 @@ import geotrellis.testkit.feature._
 
 import com.vividsolutions.jts.{geom=>jts}
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
-class PolygonSpec extends FunSpec with ShouldMatchers {
+class PolygonSpec extends FunSpec with Matchers {
   describe("Polygon") {
     it("should be a closed Polygon if constructed with l(0) == l(-1)") {
       val p = Polygon(Line(List[(Double,Double)]((0,0),(1,0),(1,1),(0,1),(0,0))))
@@ -72,11 +71,11 @@ class PolygonSpec extends FunSpec with ShouldMatchers {
       p.vertices should be (Array(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0)))
     }
 
-    it ("should have a bounding box whose points are " +
+    it ("should have an envelope whose points are " +
         "(minx, miny), (minx, maxy), (maxx, maxy), (maxx, miny), (minx, miny).") {
       val l = Line(Point(0,0), Point(2,2), Point(4,0), Point(0,0))
       val p = Polygon(l)
-      p.boundingBox should be (BoundingBox(0,0,4,2))
+      p.envelope should be (Extent(0,0,4,2))
     }
 
     it ("should have a perimeter equal to the length of its boundary") {

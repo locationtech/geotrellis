@@ -21,7 +21,7 @@ import geotrellis.raster._
 import geotrellis.feature._
 import geotrellis.testkit._
 
-import org.scalatest.FunSuite
+import org.scalatest._
 
 class ConvolveSpec extends FunSuite with TestServer {
   def doit(in1: Array[Int], in2: Array[Int], out: Array[Int]) = {

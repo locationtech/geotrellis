@@ -19,13 +19,12 @@ package geotrellis.raster
 import geotrellis._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
 class DoubleArrayRasterDataSpec extends FunSpec 
-                                  with ShouldMatchers 
-                                  with TestServer 
-                                  with RasterBuilders {
+                                   with Matchers 
+                                   with TestServer 
+                                   with RasterBuilders {
   describe("DoubleArrayRasterData.toByteArray") {
     it("converts back and forth.") {
       val data = probabilityRaster.asInstanceOf[ArrayRaster].data

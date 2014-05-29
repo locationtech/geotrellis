@@ -17,15 +17,15 @@
 package geotrellis.data.arg
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.data._
 import geotrellis.data.arg._
-import geotrellis._
 import geotrellis.testkit._
 
 import geotrellis.process._
 import geotrellis.raster._
 
-import org.scalatest.FunSuite
+import org.scalatest._
 
  class ArgTest extends FunSuite 
                   with TestServer {
@@ -122,5 +122,45 @@ import org.scalatest.FunSuite
     println(raster.asciiDraw)
     println(r2.asciiDraw)
     assert(r2.toArrayRaster.data === raster.toArrayRaster.data)
+  }
+
+   def createFloat32: (Raster, MutableRasterData) = {
+     val d = FloatArrayRasterData.ofDim(10, 10)
+     val e = Extent(0.0, 0.0, 10.0, 10.0)
+     val re = RasterExtent(e, 1.0, 1.0, 10, 10)
+     val r = Raster(d, re)
+     (r, d)
+   }
+
+  test("make sure it contains 100 cells") {
+    val (r,d) = createFloat32
+    assert((r.rasterExtent.cols*r.rasterExtent.rows) === 100)
+  }
+
+  test("make sure it's an array of zeros") {
+    val (r,d) = createFloat32
+    assert(d.toArrayDouble === Array.fill(100)(0.0))
+  }
+
+  test("update raster.data(3)") {
+    val (r,d) = createFloat32
+    assert(d.applyDouble(3) === 0.0)
+    d.updateDouble(3, 99.0)
+    assert(d.applyDouble(3) === 99.0)
+  }
+
+  test("update all raster values") {
+    val (r,d) = createFloat32
+    for (i <- 0 until 100) d.updateDouble(i, i.toDouble)
+  }
+
+  test("map over raster values") {
+    val (r,d) = createFloat32
+    val data2 = d.mapDouble(_ % 3.0)
+    assert(data2.applyDouble(0) === 0.0)
+    assert(data2.applyDouble(1) === 1.0)
+    assert(data2.applyDouble(2) === 2.0)
+    assert(data2.applyDouble(3) === 0.0)
+    assert(data2(0) === 0)
   }
 }

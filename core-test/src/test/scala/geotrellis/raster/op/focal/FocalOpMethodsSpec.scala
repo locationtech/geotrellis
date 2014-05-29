@@ -22,7 +22,7 @@ import geotrellis.testkit._
 import geotrellis.source._
 import geotrellis.process._
 
-import org.scalatest.FunSpec
+import org.scalatest._
 
 class FocalOpMethodsSpec extends FunSpec with FocalOpSpec 
                                          with TestServer {

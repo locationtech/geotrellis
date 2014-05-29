@@ -17,13 +17,13 @@
 package geotrellis.raster.op.transform
 
 import geotrellis._
+import geotrellis.feature.Extent
 
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-class CropSpec extends FunSpec with ShouldMatchers 
+class CropSpec extends FunSpec with Matchers 
                                with TestServer
                                with RasterBuilders {
   describe("Crop") {

@@ -19,12 +19,11 @@ package geotrellis.logic
 import geotrellis._
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 class CollectSpec extends FunSpec 
                      with TestServer
-                     with ShouldMatchers {
+                     with Matchers {
   describe("Collect") {
     it("should take a Seq of Op[Int]'s and turn it into a Seq[Int]") {
       val seq = Seq(Literal(1),Literal(2),Literal(3))
