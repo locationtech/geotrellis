@@ -14,36 +14,49 @@
  * limitations under the License.
  */
 
-package geotrellis
+package geotrellis.raster
 
 import java.awt.image.DataBuffer
 
-sealed abstract class RasterType(val precedence: Int, val float: Boolean, val name: String) extends Serializable {
-  def bits = if (float) precedence / 10 else precedence
+sealed abstract class CellType(val bits: Int, val name: String, val isFloatingPoint: Boolean) extends Serializable {
   def bytes = bits / 8
-  def union(rhs: RasterType) = if (precedence < rhs.precedence) rhs else this
-  def intersect(rhs: RasterType) = if (precedence < rhs.precedence) this else rhs
+  def union(rhs: CellType) = 
+    if (bits < rhs.bits) 
+      rhs 
+    else if (bits < rhs.bits)
+      this
+    else if (isFloatingPoint && !rhs.isFloatingPoint)
+      this
+    else
+      rhs
 
-  def contains(rhs: RasterType) = precedence >= rhs.precedence
+  def intersect(rhs: CellType) = 
+    if (bits < rhs.bits)
+      this
+    else if (bits < rhs.bits)
+      rhs
+    else if (isFloatingPoint && !rhs.isFloatingPoint)
+      rhs
+    else
+      this
 
-  def isDouble = precedence > 32
+  def contains(rhs: RasterType) = bits >= rhs.bits
 
   def numBytes(size: Int) = bytes * size
-
 }
 
-case object TypeBit extends RasterType(1, false, "bool") {
+case object TypeBit extends CellType(1, "bool", false) {
   override final def numBytes(size: Int) = (size + 7) / 8
 }
 
-case object TypeByte extends RasterType(8, false, "int8")
-case object TypeShort extends RasterType(16, false, "int16")
-case object TypeInt extends RasterType(32, false, "int32")
-case object TypeFloat extends RasterType(320, true, "float32")
-case object TypeDouble extends RasterType(640, true, "float64")
+case object TypeByte extends CellType(8, "int8", false)
+case object TypeShort extends CellType(16, "int16", false)
+case object TypeInt extends CellType(32, "int32", false)
+case object TypeFloat extends CellType(32, "float32", true)
+case object TypeDouble extends CellType(64, "float64", true)
 
-object RasterType {
-  def fromAwtType(awtType: Int): RasterType = awtType match {
+object CellType {
+  def fromAwtType(awtType: Int): CellType = awtType match {
     case DataBuffer.TYPE_BYTE   => TypeByte
     case DataBuffer.TYPE_DOUBLE => TypeDouble
     case DataBuffer.TYPE_FLOAT  => TypeFloat
@@ -52,7 +65,7 @@ object RasterType {
     case _                      => sys.error(s"Oops type $awtType is not supported")
   }
 
-  def toAwtType(rasterType: RasterType): Int = rasterType match {
+  def toAwtType(cellType: CellType): Int = cellType match {
     case TypeBit | TypeByte => DataBuffer.TYPE_BYTE
     case TypeDouble         => DataBuffer.TYPE_DOUBLE
     case TypeFloat          => DataBuffer.TYPE_FLOAT

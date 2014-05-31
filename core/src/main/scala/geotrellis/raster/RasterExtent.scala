@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis
+package geotrellis.raster
 
 import geotrellis.feature.Extent
 import scala.math.{min, max, round, ceil, floor}

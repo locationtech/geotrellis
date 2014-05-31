@@ -39,14 +39,15 @@ object Tile {
 /**
  * Base trait for the Tile data type.
  */
-trait Tile extends local.LocalMethods {
+trait Tile extends Raster with local.LocalMethods {
+  type This = Tile
+
   val cols: Int
   val rows: Int
   lazy val dimensions: (Int, Int) = (cols, rows)
   lazy val length = cols * rows
 
-  val rasterType: TileType
-  def isFloat: Boolean = rasterType.float
+  val cellType: CellType
 
   /**
    * Get value at given coordinates.
@@ -63,12 +64,10 @@ trait Tile extends local.LocalMethods {
   def toArrayDouble(): Array[Double]
   def toArrayByte(): Array[Byte]
 
-  def data: ArrayTile
-
   def convert(typ: TileType): Tile
 
   def dualForeach(f: Int => Unit)(g: Double => Unit): Unit =
-    if (isFloat) foreachDouble(g) else foreach(f)
+    if (cellType.isFloatingPoint) foreachDouble(g) else foreach(f)
 
   def foreach(f: Int=>Unit): Unit =
     for(col <- 0 until cols optimized) {
