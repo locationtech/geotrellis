@@ -22,15 +22,15 @@ import geotrellis.feature._
 import geotrellis.feature.rasterize._
 import geotrellis.statistics._
 
-object Histogram extends TileSummary[Histogram,Histogram,ValueSource[Histogram]] {
-  def handlePartialTile(pt:PartialTileIntersection):Histogram = {
-    val PartialTileIntersection(r,polygons) = pt
+object Histogram extends TileSummary[Histogram, Histogram, ValueSource[Histogram]] {
+  def handlePartialTile(pt: PartialTileIntersection): Histogram = {
+    val PartialTileIntersection(r, rasterExtent, polygons) = pt
     val histogram = FastMapHistogram()
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
+      Rasterizer.foreachCellByFeature(p, rasterExtent)(
         new Callback {
-          def apply (col:Int, row:Int) {
-            val z = r.get(col,row)
+          def apply (col: Int, row: Int) {
+            val z = r.get(col, row)
             if (isData(z)) histogram.countItem(z, 1)
           }
         }
@@ -40,12 +40,12 @@ object Histogram extends TileSummary[Histogram,Histogram,ValueSource[Histogram]]
     histogram
   }
 
-  def handleFullTile(ft:FullTileIntersection):Histogram = {
+  def handleFullTile(ft: FullTileIntersection): Histogram = {
     val histogram = FastMapHistogram()
-    ft.tile.foreach((z:Int) => if (isData(z)) histogram.countItem(z, 1))
+    ft.tile.foreach((z: Int) => if (isData(z)) histogram.countItem(z, 1))
     histogram
   }
 
-  def converge(ds:DataSource[Histogram,_]) =
+  def converge(ds: DataSource[Histogram, _]) =
     ds.map(x=>x).converge // Map to kick in the CanBuildFrom for HistogramDS
 }

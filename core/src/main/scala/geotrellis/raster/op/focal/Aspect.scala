@@ -45,7 +45,7 @@ import Angles._
   */
 case class Aspect(r:Op[Raster],neighbors:Op[TileNeighbors]) 
     extends FocalOp[Raster](r,Square(1),neighbors)({
-  (r,n) => new SurfacePointCalculation[Raster] with DoubleRasterDataResult {
+  (r,n) => new SurfacePointCalculation[Raster] with DoubleArrayTileResult {
     def setValue(x:Int,y:Int,s:SurfacePoint) {
       data.setDouble(x,y,degrees(s.aspect))
     }

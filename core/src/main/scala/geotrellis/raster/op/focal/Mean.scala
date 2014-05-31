@@ -53,7 +53,7 @@ object Mean {
   def apply(r:Op[Raster],n:Op[Neighborhood]) = new Mean(r,n,TileNeighbors.NONE)
 }
 
-case class CursorMeanCalc() extends CursorCalculation[Raster] with DoubleRasterDataResult {
+case class CursorMeanCalc() extends CursorCalculation[Raster] with DoubleArrayTileResult {
   var count:Int = 0
   var sum:Int = 0
 
@@ -70,7 +70,7 @@ case class CursorMeanCalc() extends CursorCalculation[Raster] with DoubleRasterD
   }
 }
 
-case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleRasterDataResult {
+case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleArrayTileResult {
   var count:Int = 0
   var sum:Int = 0
 
@@ -94,7 +94,7 @@ case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleRas
   def reset() = { count = 0 ; sum = 0 }
 }
 
-case class CursorMeanCalcDouble() extends CursorCalculation[Raster] with DoubleRasterDataResult {
+case class CursorMeanCalcDouble() extends CursorCalculation[Raster] with DoubleArrayTileResult {
   var count:Int = 0
   var sum:Double = 0.0
 
@@ -111,7 +111,7 @@ case class CursorMeanCalcDouble() extends CursorCalculation[Raster] with DoubleR
   }
 }
 
-case class CellwiseMeanCalcDouble() extends CellwiseCalculation[Raster] with DoubleRasterDataResult {
+case class CellwiseMeanCalcDouble() extends CellwiseCalculation[Raster] with DoubleArrayTileResult {
   var count:Int = 0
   var sum:Double = 0.0
 

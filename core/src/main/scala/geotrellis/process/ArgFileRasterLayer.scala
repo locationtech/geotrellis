@@ -27,7 +27,7 @@ import java.io.File
 
 object ArgFileRasterLayerBuilder
 extends RasterLayerBuilder {
-  def apply(ds:Option[String],jsonPath:String, json:Config):RasterLayer = {
+  def apply(ds: Option[String], jsonPath: String, json: Config): RasterLayer = {
     val f = 
       if(json.hasPath("path")) {
         val f = new File(json.getString("path"))
@@ -48,12 +48,12 @@ extends RasterLayerBuilder {
       val cols = json.getInt("cols")
       val rows = json.getInt("rows")
 
-      val (cellWidth,cellHeight) = getCellWidthAndHeight(json)
+      val (cellWidth, cellHeight) = getCellWidthAndHeight(json)
       val rasterExtent = RasterExtent(getExtent(json), cellWidth, cellHeight, cols, rows)
 
       val info = 
         RasterLayerInfo(
-          LayerId(ds,getName(json)),
+          LayerId(ds, getName(json)),
           getRasterType(json),
           rasterExtent,
           getEpsg(json),
@@ -62,24 +62,24 @@ extends RasterLayerBuilder {
           getCacheFlag(json)
         )
 
-      new ArgFileRasterLayer(info,f.getAbsolutePath)
+      new ArgFileRasterLayer(info, f.getAbsolutePath)
     }
   }
 }
 
-class ArgFileRasterLayer(info:RasterLayerInfo, val rasterPath:String) 
+class ArgFileRasterLayer(info: RasterLayerInfo, val rasterPath: String) 
 extends UntiledRasterLayer(info) {
-  def getRaster(targetExtent:Option[RasterExtent]) = {
+  def getRaster(targetExtent: Option[RasterExtent]) = {
     if(isCached) {
       getCache.lookup[Array[Byte]](info.id.toString) match {
         case Some(bytes) =>
           targetExtent match {
             case Some(re) =>
               val data = ArgReader.warpBytes(bytes, info.rasterType, info.rasterExtent, re)
-              Raster(data,re)
+              Raster(data, re.cols, re.rows)
             case None =>
-              val data = RasterData.fromArrayByte(bytes,info.rasterType,info.rasterExtent.cols,info.rasterExtent.rows)
-              Raster(data,info.rasterExtent)
+              val data = RasterData.fromArrayByte(bytes, info.rasterType, info.rasterExtent.cols, info.rasterExtent.rows)
+              Raster(data, info.rasterExtent.cols, info.rasterExtent.rows)
           }
         case None =>
           sys.error("Cache problem: Layer thinks it's cached but it is in fact not cached.")
@@ -95,6 +95,6 @@ extends UntiledRasterLayer(info) {
 
   }
 
-  def cache(c:Cache[String]) = 
+  def cache(c: Cache[String]) = 
         c.insert(info.id.toString, Filesystem.slurp(rasterPath))
 }

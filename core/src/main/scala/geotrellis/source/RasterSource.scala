@@ -17,12 +17,13 @@
 package geotrellis.source
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.process.{LayerId, RasterLayer}
 import geotrellis.raster.op._
 import geotrellis.statistics.Histogram
 import geotrellis.raster._
 
-class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps:Op[Seq[Op[Raster]]]) 
+class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[Raster]]]) 
     extends  RasterSourceLike[RasterSource] {
   def elements = tileOps
   val rasterDefinition = rasterDef
@@ -30,26 +31,26 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps:Op[Seq[Op[Ra
 }
 
 object RasterSource {
-  def fromPath(path:String):RasterSource = 
-    fromPath(path,None)
+  def fromPath(path: String): RasterSource = 
+    fromPath(path, None)
 
-  def fromPath(path:String,rasterExtent:RasterExtent):RasterSource =
-    fromPath(path,Some(rasterExtent))
+  def fromPath(path: String, rasterExtent: RasterExtent): RasterSource =
+    fromPath(path, Some(rasterExtent))
 
-  def fromPath(path:String,targetExtent:Option[RasterExtent]):RasterSource =
-    apply(io.LoadRasterLayerFromPath(path),targetExtent)
+  def fromPath(path: String, targetExtent: Option[RasterExtent]): RasterSource =
+    apply(io.LoadRasterLayerFromPath(path), targetExtent)
 
   def fromUrl(jsonUrl: String): RasterSource =
     fromUrl(jsonUrl, None)
 
-  def fromUrl(jsonUrl: String, targetExtent:RasterExtent): RasterSource =
+  def fromUrl(jsonUrl: String, targetExtent: RasterExtent): RasterSource =
     fromUrl(jsonUrl, Some(targetExtent))
 
-  def fromUrl(jsonUrl: String, targetExtent:Option[RasterExtent]): RasterSource =
-    apply(io.LoadRasterLayerFromUrl(jsonUrl),targetExtent)
+  def fromUrl(jsonUrl: String, targetExtent: Option[RasterExtent]): RasterSource =
+    apply(io.LoadRasterLayerFromUrl(jsonUrl), targetExtent)
 
-  def apply(rasterLayer:Op[RasterLayer],targetExtent:Option[RasterExtent])
-           (implicit d:DI): RasterSource = {
+  def apply(rasterLayer: Op[RasterLayer], targetExtent: Option[RasterExtent])
+           (implicit d: DI): RasterSource = {
     val rasterDef = 
       rasterLayer map { layer =>
         RasterDefinition(layer.info.id,
@@ -68,50 +69,50 @@ object RasterSource {
           rasterLayer.map { layer =>
             (for(tileRow <- 0 until layer.info.tileLayout.tileRows;
               tileCol <- 0 until layer.info.tileLayout.tileCols) yield {
-              Literal(layer.getTile(tileCol,tileRow))
+              Literal(layer.getTile(tileCol, tileRow))
             })
           }
       }
 
-    RasterSource(rasterDef,tileOps)
+    RasterSource(rasterDef, tileOps)
   }
 
-  def apply(name:String):RasterSource =
-    RasterSource(io.LoadRasterDefinition(LayerId(name)),None)
+  def apply(name: String): RasterSource =
+    RasterSource(io.LoadRasterDefinition(LayerId(name)), None)
 
-  def apply(name:String,rasterExtent:RasterExtent):RasterSource =
-    RasterSource(io.LoadRasterDefinition(LayerId(name)),Some(rasterExtent))
+  def apply(name: String, rasterExtent: RasterExtent): RasterSource =
+    RasterSource(io.LoadRasterDefinition(LayerId(name)), Some(rasterExtent))
 
-  def apply(store:String,name:String):RasterSource =
-    RasterSource(io.LoadRasterDefinition(LayerId(store,name)),None)
+  def apply(store: String, name: String): RasterSource =
+    RasterSource(io.LoadRasterDefinition(LayerId(store, name)), None)
 
-  def apply(store:String,name:String,rasterExtent:RasterExtent):RasterSource =
-    RasterSource(io.LoadRasterDefinition(LayerId(store,name)),Some(rasterExtent))
+  def apply(store: String, name: String, rasterExtent: RasterExtent): RasterSource =
+    RasterSource(io.LoadRasterDefinition(LayerId(store, name)), Some(rasterExtent))
 
-  def apply(layerId:LayerId):RasterSource =
-    RasterSource(io.LoadRasterDefinition(layerId),None)
+  def apply(layerId: LayerId): RasterSource =
+    RasterSource(io.LoadRasterDefinition(layerId), None)
 
-  def apply(layerId:LayerId,rasterExtent:RasterExtent):RasterSource =
-    RasterSource(io.LoadRasterDefinition(layerId),Some(rasterExtent))
+  def apply(layerId: LayerId, rasterExtent: RasterExtent): RasterSource =
+    RasterSource(io.LoadRasterDefinition(layerId), Some(rasterExtent))
 
-  def apply(rasterDef:Op[RasterDefinition]):RasterSource = 
-    apply(rasterDef,None)
+  def apply(rasterDef: Op[RasterDefinition]): RasterSource = 
+    apply(rasterDef, None)
 
-  def apply(rasterDef:Op[RasterDefinition],targetExtent:RasterExtent):RasterSource = 
-    apply(rasterDef,Some(targetExtent))
+  def apply(rasterDef: Op[RasterDefinition], targetExtent: RasterExtent): RasterSource = 
+    apply(rasterDef, Some(targetExtent))
 
-  def apply(rasterDef:Op[RasterDefinition],targetExtent:Option[RasterExtent]):RasterSource = {
+  def apply(rasterDef: Op[RasterDefinition], targetExtent: Option[RasterExtent]): RasterSource = {
     val tileOps = 
       targetExtent match {
         case re @ Some(_) =>
           rasterDef.map { rd =>
-            Seq(io.LoadRaster(rd.layerId,re))
+            Seq(io.LoadRaster(rd.layerId, re))
           }
         case None =>
           rasterDef.map { rd =>
             (for(tileRow <- 0 until rd.tileLayout.tileRows;
               tileCol <- 0 until rd.tileLayout.tileCols) yield {
-              io.LoadTile(rd.layerId,tileCol,tileRow)
+              io.LoadTile(rd.layerId, tileCol, tileRow)
             })
           }
       }
@@ -119,15 +120,15 @@ object RasterSource {
     new RasterSource(rasterDef, tileOps)
   }
 
-  def apply(rasterDef:Op[RasterDefinition],tileOps:Op[Seq[Op[Raster]]]) =
+  def apply(rasterDef: Op[RasterDefinition], tileOps: Op[Seq[Op[Raster]]]) =
     new RasterSource(rasterDef, tileOps)
 
   /** Create a RasterSource who's tile ops are the tiles of a TileRaster. */
-  def apply(tiledRaster:TileRaster):RasterSource = {
+  def apply(tiledRaster: TileRaster, extent: Extent): RasterSource = {
     val rasterDef = 
       RasterDefinition(
         LayerId("LiteralTileRaster"),
-        tiledRaster.rasterExtent,
+        RasterExtent(extent, tiledRaster.cols, tiledRaster.rows),
         tiledRaster.tileLayout,
         tiledRaster.rasterType
       )
@@ -137,11 +138,11 @@ object RasterSource {
     new RasterSource(rasterDef, tileOps)
   }
 
-  def apply(tiledRaster:Op[TileRaster])(implicit d:DI):RasterSource = {
-    val rasterDef = tiledRaster.map { tr =>
+  def apply(tiledRaster: Op[TileRaster], extent: Op[Extent])(implicit d: DI): RasterSource = {
+    val rasterDef = (tiledRaster, extent).map { (tr, ext) =>
       RasterDefinition(
         LayerId("LiteralTileRaster"),
-        tr.rasterExtent,
+        RasterExtent(ext, tr.cols, tr.rows),
         tr.tileLayout,
         tr.rasterType
       )
@@ -150,34 +151,34 @@ object RasterSource {
     new RasterSource(rasterDef, tileOps)
   }
 
-  def apply(raster:Op[Raster])(implicit d:DI,d2:DI):RasterSource = {
+  def apply(raster: Op[Raster], extent: Op[Extent])(implicit d: DI, d2: DI): RasterSource = {
     val rasterDef = 
-      raster.map { r =>
-        val (cols,rows) = (r.rasterExtent.cols,r.rasterExtent.rows)
+      (raster, extent).map { (r, ext) =>
         RasterDefinition(LayerId("LiteralRaster"),
-                         r.rasterExtent,
-                         TileLayout.singleTile(cols,rows),
-                         r.rasterType)
+          RasterExtent(ext, r.cols, r.rows),
+          TileLayout.singleTile(r.cols, r.rows),
+          r.rasterType
+        )
       }
 
     val tileOps = Literal(Seq(raster))
     new RasterSource(rasterDef, tileOps)
   }
 
-  def apply(r:Raster):RasterSource = {
+  def apply(r: Raster, extent: Extent): RasterSource = {
     val rasterDef = 
       Literal {
-        val (cols,rows) = (r.rasterExtent.cols,r.rasterExtent.rows)
         RasterDefinition(LayerId("LiteralRaster"),
-                         r.rasterExtent,
-                         TileLayout.singleTile(cols,rows),
-                         r.rasterType)
+          RasterExtent(extent, r.cols, r.rows),
+          TileLayout.singleTile(r.cols, r.rows),
+          r.rasterType
+        )
       }
 
     val tileOps = Literal(Seq(Literal(r)))
     new RasterSource(rasterDef, tileOps)
   }
 
-  def layerExists(layerId:LayerId):Boolean = server.layerExists(layerId)
-  def layerExists(layerName:String):Boolean = server.layerExists(layerName)
+  def layerExists(layerId: LayerId): Boolean = server.layerExists(layerId)
+  def layerExists(layerName: String): Boolean = server.layerExists(layerName)
 }

@@ -16,7 +16,7 @@
 
 package geotrellis.feature.op.geometry
 
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.feature._
 import com.vividsolutions.jts.geom
 
@@ -27,8 +27,8 @@ import com.vividsolutions.jts.geom
  *  @param rasterExtent         RasterExtent of the resulting raster.
  * 
  */
-case class CountPoints(points:Op[Seq[Point]], rasterExtent:Op[RasterExtent]) extends Op2(points,rasterExtent) ({
-  (points,re) =>
+case class CountPoints(points: Op[Seq[Point]], rasterExtent: Op[RasterExtent]) extends Op2(points, rasterExtent) ({
+  (points, re) =>
     val array = Array.ofDim[Int](re.cols * re.rows).fill(0)
     for(point <- points) {
       val x = point.x
@@ -38,5 +38,5 @@ case class CountPoints(points:Op[Seq[Point]], rasterExtent:Op[RasterExtent]) ext
         array(index) = array(index) + 1
       }
     }
-    Result(Raster(array,re))
+    Result(Tile(array, re.cols, re.rows))
 })

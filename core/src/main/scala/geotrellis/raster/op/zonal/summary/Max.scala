@@ -21,15 +21,15 @@ import geotrellis.source._
 import geotrellis.feature._
 import geotrellis.feature.rasterize._
 
-object Max extends TileSummary[Int,Int,ValueSource[Int]] {
-  def handlePartialTile(pt:PartialTileIntersection):Int = {
-    val PartialTileIntersection(r,polygons) = pt
+object Max extends TileSummary[Int, Int, ValueSource[Int]] {
+  def handlePartialTile(pt: PartialTileIntersection): Int = {
+    val PartialTileIntersection(r, rasterExtent, polygons) = pt
     var max = NODATA
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
+      Rasterizer.foreachCellByFeature(p, rasterExtent)(
         new Callback {
-          def apply(col:Int, row:Int) {
-            val z = r.get(col,row)
+          def apply(col: Int, row: Int) {
+            val z = r.get(col, row)
             if (isData(z) && (z > max || isNoData(max)) ) { max = z }
           }
         }
@@ -38,31 +38,31 @@ object Max extends TileSummary[Int,Int,ValueSource[Int]] {
     max
   }
 
-  def handleFullTile(ft:FullTileIntersection):Int = {
+  def handleFullTile(ft: FullTileIntersection): Int = {
     var max = NODATA
-    ft.tile.foreach { (x:Int) =>
+    ft.tile.foreach { (x: Int) =>
       if (isData(x) && (x > max || isNoData(max))) { max = x }
     }
     max
   }
 
-  def converge(ds:DataSource[Int,_]) =
-    ds.reduce { (a,b) => 
+  def converge(ds: DataSource[Int, _]) =
+    ds.reduce { (a, b) => 
       if(isNoData(a)) { b } 
       else if(isNoData(b)) { a }
-      else { math.max(a,b) }
+      else { math.max(a, b) }
     }
 }
 
-object MaxDouble extends TileSummary[Double,Double,ValueSource[Double]] {
-  def handlePartialTile(pt:PartialTileIntersection):Double = {
-    val PartialTileIntersection(r,polygons) = pt
+object MaxDouble extends TileSummary[Double, Double, ValueSource[Double]] {
+  def handlePartialTile(pt: PartialTileIntersection): Double = {
+    val PartialTileIntersection(r, rasterExtent, polygons) = pt
     var max = Double.NaN
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
+      Rasterizer.foreachCellByFeature(p, rasterExtent)(
         new Callback {
-          def apply(col:Int, row:Int) {
-            val z = r.getDouble(col,row)
+          def apply(col: Int, row: Int) {
+            val z = r.getDouble(col, row)
             if (isData(z) && (z > max || isNoData(max))) { max = z }
           }
         }
@@ -72,16 +72,16 @@ object MaxDouble extends TileSummary[Double,Double,ValueSource[Double]] {
     max
   }
 
-  def handleFullTile(ft:FullTileIntersection):Double = {
+  def handleFullTile(ft: FullTileIntersection): Double = {
     var max = Double.NaN
-    ft.tile.foreach((x:Int) => if (isData(x) && (x > max || isNoData(max))) { max = x })
+    ft.tile.foreach((x: Int) => if (isData(x) && (x > max || isNoData(max))) { max = x })
     max
   }
 
-  def converge(ds:DataSource[Double,_]) =
-    ds.reduce { (a,b) =>
+  def converge(ds: DataSource[Double, _]) =
+    ds.reduce { (a, b) =>
       if(isNoData(a)) { b } 
       else if(isNoData(b)) { a }
-      else { math.max(a,b) }
+      else { math.max(a, b) }
     }
 }

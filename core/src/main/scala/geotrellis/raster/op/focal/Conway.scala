@@ -30,7 +30,7 @@ import geotrellis.raster.TileNeighbors
  * [[http://en.wikipedia.org/wiki/Conway's_Game_of_Life wikipedia]].
  */
 case class Conway(r:Op[Raster],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,Square(1),tns)({
-  (r,n) => new CellwiseCalculation[Raster] with ByteRasterDataResult {
+  (r,n) => new CellwiseCalculation[Raster] with ByteArrayTileResult {
     var count = 0
 
     def add(r:Raster, x:Int, y:Int) = {

@@ -27,63 +27,63 @@ import java.util.PriorityQueue
   * @param costOp     Cost Raster (Int)
   * @param pointsOp   List of starting points as tuples
   *
-  * @note    Operation will only work with integer typed Cost Rasters (TypeBit,TypeByte,TypeShort,TypeInt).
-  *          If a double typed Cost Raster (TypeFloat,TypeDouble) is passed in, those costs will be rounded
+  * @note    Operation will only work with integer typed Cost Rasters (TypeBit, TypeByte, TypeShort, TypeInt).
+  *          If a double typed Cost Raster (TypeFloat, TypeDouble) is passed in, those costs will be rounded
   *          to their floor integer values.
   * 
   */
-final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int,Int)]]) extends Op[Raster] {
-  def _run() = runAsync(List(costOp,pointsOp))
+final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int, Int)]]) extends Op[Raster] {
+  def _run() = runAsync(List(costOp, pointsOp))
 
-  val nextSteps:Steps = {
+  val nextSteps: Steps = {
     case List(cost, points) => costDistance(
-      cost.asInstanceOf[Raster], points.asInstanceOf[List[(Int,Int)]])
+      cost.asInstanceOf[Raster], points.asInstanceOf[List[(Int, Int)]])
   }  
 
-  def isValid(c: Int, r: Int, cost: Raster):Boolean =
+  def isValid(c: Int, r: Int, cost: Raster): Boolean =
     c >= 0 && r >= 0 && c < cost.cols && r < cost.rows
 
   final class Dir(val dc: Int, val dr: Int) {
     val diag = !(dc == 0 || dr == 0)
 
-    lazy val cornerOffsets = (dc,dr) match {
-      case (-1,-1) => Array((0,-1),(-1,0))
-      case ( 1,-1) => Array((0,-1),( 1,0))
-      case (-1, 1) => Array((0, 1),(-1,0))
-      case ( 1, 1) => Array((0, 1),( 1,0))
-      case _ => Array[(Int,Int)]()
+    lazy val cornerOffsets = (dc, dr) match {
+      case (-1, -1) => Array((0, -1), (-1, 0))
+      case ( 1, -1) => Array((0, -1), ( 1, 0))
+      case (-1, 1) => Array((0, 1), (-1, 0))
+      case ( 1, 1) => Array((0, 1), ( 1, 0))
+      case _ => Array[(Int, Int)]()
     }
 
-    def apply(c: Int, r: Int) = (c+dc,r+dr)
+    def apply(c: Int, r: Int) = (c+dc, r + dr)
 
     lazy val unitDistance = if (diag) 1.41421356237 else 1.0
   }
 
-  val dirs:Array[Dir] = Array(
-    (-1,-1), ( 0,-1), ( 1,-1),
+  val dirs: Array[Dir] = Array(
+    (-1, -1), ( 0, -1), ( 1, -1),
     (-1, 0),          ( 1, 0),
-    (-1, 1), ( 0, 1), ( 1, 1)).map { case (c,r) => new Dir(c,r) }
+    (-1, 1), ( 0, 1), ( 1, 1)).map { case (c, r) => new Dir(c, r) }
 
 
   /**
     * Input: 
-    * (c,r) => Source cell
-    * (dc,dr) => Delta (direction)
+    * (c, r) => Source cell
+    * (dc, dr) => Delta (direction)
     * cost => Cost raster
     * d => C-D output raster
     * 
     * Output:
-    * List((c,r)) <- list of cells set
+    * List((c, r)) <- list of cells set
     */    
-  def calcCostCell(c: Int, r: Int, dir: Dir, cost: Raster, d: DoubleArrayRasterData) = {
-    val cr = dir(c,r)
+  def calcCostCell(c: Int, r: Int, dir: Dir, cost: Raster, d: DoubleArrayTile) = {
+    val cr = dir(c, r)
 
-    if (isValid(cr._1,cr._2,cost)) {
+    if (isValid(cr._1, cr._2, cost)) {
       val prev = d.getDouble(cr._1, cr._2)
       if (prev == 0.0) { // This is a source cell, don't override and shortcircuit early
         None
       } else {
-        val source = d.getDouble(c,r)
+        val source = d.getDouble(c, r)
 
         // Previous value could be NODATA
         val prevCost = if (isNoData(prev)) java.lang.Double.MAX_VALUE else prev
@@ -119,7 +119,7 @@ final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int,Int)]]) 
           val r1 = p._2 + r
           val cost1 = calcCost(c, r, c1, r1, cost)
           if (cost1.isDefined) {
-            val cost2 = calcCost(c1, r1, dir(c,r), cost)
+            val cost2 = calcCost(c1, r1, dir(c, r), cost)
             if (cost2.isDefined) {
               curMinCost = math.min(curMinCost, source + cost1.get + cost2.get)
             }
@@ -144,9 +144,9 @@ final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int,Int)]]) 
     }
   }
 
-  type Cost = (Int,Int,Double)
+  type Cost = (Int, Int, Double)
 
-  def calcNeighbors(c: Int, r: Int, cost: Raster, d: DoubleArrayRasterData, p: PriorityQueue[Cost]) {
+  def calcNeighbors(c: Int, r: Int, cost: Raster, d: DoubleArrayTile, p: PriorityQueue[Cost]) {
     val l = dirs.length
     var z = 0
 
@@ -161,31 +161,31 @@ final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int,Int)]]) 
 
   def factor(c: Int, r: Int, c1: Int, r1: Int) = if (c == c1 || r == r1) 1.0 else 1.41421356237
 
-  def safeGet(c: Int, r: Int, cost: Raster):IOption = IOption(cost.get(c,r))
+  def safeGet(c: Int, r: Int, cost: Raster): IOption = IOption(cost.get(c, r))
 
-  def calcCost(c: Int, r: Int, c2: Int, r2: Int, cost: Raster):DOption = {
-    val cost1 = safeGet(c,r,cost)
-    val cost2 = safeGet(c2,r2,cost)
+  def calcCost(c: Int, r: Int, c2: Int, r2: Int, cost: Raster): DOption = {
+    val cost1 = safeGet(c, r, cost)
+    val cost2 = safeGet(c2, r2, cost)
 
     if (cost1.isDefined && cost2.isDefined) {
-      DOption(factor(c,r,c2,r2) * (cost1.get + cost2.get) / 2.0)
+      DOption(factor(c, r, c2, r2) * (cost1.get + cost2.get) / 2.0)
     } else {
       DOption.None
     }
   }
 
-  def calcCost(c: Int, r: Int, cr2: (Int, Int), cost: Raster):DOption =
-    calcCost(c,r,cr2._1,cr2._2,cost)
+  def calcCost(c: Int, r: Int, cr2: (Int, Int), cost: Raster): DOption =
+    calcCost(c, r, cr2._1, cr2._2, cost)
 
-  def calcCost(c: Int, r: Int, dir: Dir, cost: Raster):DOption = 
-    calcCost(c,r,dir(c,r),cost)
+  def calcCost(c: Int, r: Int, dir: Dir, cost: Raster): DOption = 
+    calcCost(c, r, dir(c, r), cost)
 
-  def costDistance(cost: Raster, points: List[(Int,Int)]) = {
-    val rasterExtent = cost.rasterExtent
-    val output = DoubleArrayRasterData.empty(rasterExtent.cols, rasterExtent.rows)
+  def costDistance(cost: Raster, points: List[(Int, Int)]) = {
+    val (cols, rows) = cost.dimensions
+    val output = DoubleArrayTile.empty(cols, rows)
 
-    for((c,r) <- points)
-      output.setDouble(c,r,0.0)
+    for((c, r) <- points)
+      output.setDouble(c, r, 0.0)
 
     val pqueue = new PriorityQueue(
         1000, new java.util.Comparator[Cost] {
@@ -193,24 +193,24 @@ final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int,Int)]]) 
           def compare(a: Cost, b: Cost) = a._3.compareTo(b._3)
         })
 
-    for((c,r) <- points) {
-      calcNeighbors(c,r, cost, output, pqueue)
+    for((c, r) <- points) {
+      calcNeighbors(c, r, cost, output, pqueue)
     }
 
-    var head:Cost = pqueue.poll
+    var head: Cost = pqueue.poll
     while(head != null) {
       val c = head._1
       val r = head._2
       val v = head._3
 
-      if (v == output.getDouble(c,r)) {
-        calcNeighbors(c,r, cost, output, pqueue)
+      if (v == output.getDouble(c, r)) {
+        calcNeighbors(c, r, cost, output, pqueue)
       }
 
       head = pqueue.poll
     }
 
-    Result(Raster(output,rasterExtent))
+    Result(Raster(output, cols, rows))
   }
 }
 

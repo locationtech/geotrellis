@@ -37,13 +37,14 @@ import geotrellis.data._
  *                     If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
  *                     the data values will be rounded to integers.
  */
-case class Rescale(r:Op[Raster], rescalePct:Op[Double]) extends Op2(r,rescalePct) ({
-  (r,rescalePct) => {
-    val re = r.rasterExtent
-    val cw = re.cellwidth / rescalePct
-    val ch = re.cellheight / rescalePct
-    val newRasterExtent = re.withResolution(cw, ch)
-    Result(r.warp(newRasterExtent))
-  }
-})
+// case class Rescale(r:Op[Raster], rescalePct:Op[Double]) extends Op2(r,rescalePct) ({
+//   (r,rescalePct) => {
+//     val re = r.rasterExtent
+//     val cw = re.cellwidth / rescalePct
+//     val ch = re.cellheight / rescalePct
+//     val newRasterExtent = re.withResolution(cw, ch)
+//     Result(r.warp(newRasterExtent))
+//   }
+// })
 
+// TODO: DELETE?

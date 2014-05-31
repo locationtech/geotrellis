@@ -27,11 +27,12 @@ import scalaxy.loops._
 
 abstract sealed trait TileIntersection
 
-case class PartialTileIntersection(tile: Raster, intersections: Seq[Polygon]) extends TileIntersection
+case class PartialTileIntersection(tile: Raster, rasterExtent: RasterExtent, intersections: Seq[Polygon]) 
+    extends TileIntersection
 case class FullTileIntersection(tile: Raster) extends TileIntersection
 
 trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self: Repr =>
-  def mapIntersecting[B,That](p: Polygon)
+  def mapIntersecting[B, That](p: Polygon)
                                (handleTileIntersection: TileIntersection=>B)
                                (implicit bf: CanBuildSourceFrom[Repr, B, That]): That =
     _mapIntersecting(p, None)(handleTileIntersection)(bf.apply(this))
@@ -72,8 +73,9 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self: Repr =>
 
         for(col <- 0 until tileCols optimized) {
           for(row <- 0 until tileRows optimized) {
+            val rasterExtent = rl.getRasterExtent(col, row)
             val tilePoly =
-              rl.getRasterExtent(col, row)
+              rasterExtent
                 .extent
                 .toPolygon
 
@@ -83,11 +85,12 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self: Repr =>
               tilePoly.intersection(p) match {
                 case PolygonResult(intersectionPoly) =>
                   filtered += tiles(row*tileCols + col).map { t =>
-                    handleTileIntersection(PartialTileIntersection(t, Seq(intersectionPoly)))
+                    handleTileIntersection(PartialTileIntersection(t, rasterExtent, Seq(intersectionPoly)))
                   }
                 case MultiPolygonResult(intersectionMultiPoly) =>
                   filtered += tiles(row*tileCols + col).map { t =>
-                    handleTileIntersection(PartialTileIntersection(t, intersectionMultiPoly.polygons))
+                    val pti = PartialTileIntersection(t, rasterExtent, intersectionMultiPoly.polygons)
+                    handleTileIntersection(pti)
                   }
                 case _ => //No match? No Problem
               }
@@ -108,8 +111,8 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self: Repr =>
     tileSummary.converge {
       self.mapIntersecting(p, cachedResult) { tileIntersection =>
         tileIntersection match {
-          case ft @ FullTileIntersection(_) => tileSummary.handleFullTile(ft)
-          case pt @ PartialTileIntersection(_, _) => tileSummary.handlePartialTile(pt)
+          case ft: FullTileIntersection => tileSummary.handleFullTile(ft)
+          case pt: PartialTileIntersection => tileSummary.handlePartialTile(pt)
         }
       }
     }

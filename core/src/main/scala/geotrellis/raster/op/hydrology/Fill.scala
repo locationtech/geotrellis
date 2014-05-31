@@ -55,7 +55,7 @@ object Fill {
 
 case class CursorFillCalc() extends CursorCalculation[Raster]
                                with Initialization1[FillOptions]
-                               with IntRasterDataResult {
+                               with IntArrayTileResult {
   private var threshold:Int = 0
 
   def init(r:Raster,options:FillOptions) = {
@@ -90,7 +90,7 @@ case class CursorFillCalc() extends CursorCalculation[Raster]
 
 case class CursorFillCalcDouble() extends CursorCalculation[Raster]
                                      with Initialization1[FillOptions]
-                                     with DoubleRasterDataResult {
+                                     with DoubleArrayTileResult {
   private var threshold:Double = 0.0
 
     def init(r:Raster,options:FillOptions) = {

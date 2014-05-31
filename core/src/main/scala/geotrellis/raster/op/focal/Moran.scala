@@ -41,7 +41,7 @@ import geotrellis.statistics.{Statistics,FastMapHistogram}
  */
 case class RasterMoransI(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) 
     extends FocalOp[Raster](r,n,tns)({
-  (r,n) => new CursorCalculation[Raster] with DoubleRasterDataResult {
+  (r,n) => new CursorCalculation[Raster] with DoubleArrayTileResult {
     var mean = 0.0
     var `stddev^2` = 0.0
 

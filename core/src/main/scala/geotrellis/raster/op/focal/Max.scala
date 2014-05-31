@@ -34,7 +34,7 @@ import scala.math._
 case class Max(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends FocalOp(r,n,tns)({
   (r,n) =>
     if(r.isFloat){
-       new CursorCalculation[Raster] with DoubleRasterDataResult { 
+       new CursorCalculation[Raster] with DoubleArrayTileResult { 
          def calc(r:Raster, cursor:Cursor) = {
            var m = Double.MinValue
            cursor.allCells.foreach { (x,y) => 
@@ -46,7 +46,7 @@ case class Max(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends Fo
       }
       
     }else{
-      new CursorCalculation[Raster] with IntRasterDataResult { 
+      new CursorCalculation[Raster] with IntArrayTileResult { 
         def calc(r:Raster, cursor:Cursor) = {
           var m = Int.MinValue
           cursor.allCells.foreach { (x,y) => 

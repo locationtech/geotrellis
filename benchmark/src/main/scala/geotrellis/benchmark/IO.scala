@@ -55,7 +55,7 @@ class IOBenchmark extends OperationBenchmark {
     val layer = GeoTrellis.get(LoadRasterLayer(id)).asInstanceOf[ArgFileRasterLayer]
     path = layer.rasterPath
     typ = layer.info.rasterType
-    rasterExtent = RasterSource(id).get.rasterExtent
+    rasterExtent = layer.info.rasterExtent
     val RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows) =
       rasterExtent
 
@@ -123,7 +123,7 @@ class ReadAndWarpBenchmark extends OperationBenchmark {
     val layer = GeoTrellis.get(LoadRasterLayer(id)).asInstanceOf[ArgFileRasterLayer]
     path = layer.rasterPath
     typ = layer.info.rasterType
-    extent = RasterSource(id).get.rasterExtent
+    extent = layer.info.rasterExtent
     targetExtent = RasterExtent(extent.extent,size,size)
   }
 
@@ -135,7 +135,7 @@ class ReadAndWarpBenchmark extends OperationBenchmark {
   def timeNewReaderWithWarp(reps:Int) = run(reps)(newReaderWithWarp)
   def newReaderWithWarp = { 
     val r = arg.ArgReader.read(path,typ,extent) 
-    r.warp(targetExtent)
+    r.warp(extent.extent, targetExtent)
   }
 
   def timeOldReaderWithExtent(reps:Int) = run(reps)(oldReaderWithExtent)
@@ -173,7 +173,7 @@ class SmallTileReadAndWarpBenchmark extends OperationBenchmark {
     val layer = GeoTrellis.get(LoadRasterLayer(id)).asInstanceOf[ArgFileRasterLayer]
     path = layer.rasterPath
     typ = layer.info.rasterType
-    rasterExtent = RasterSource(id).get.rasterExtent
+    rasterExtent = layer.info.rasterExtent
     val RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows) =
       rasterExtent
 
@@ -189,7 +189,7 @@ class SmallTileReadAndWarpBenchmark extends OperationBenchmark {
   def timeNewReaderWithWarp(reps:Int) = run(reps)(newReaderWithWarp)
   def newReaderWithWarp = { 
     val r = arg.ArgReader.read(path,typ,rasterExtent) 
-    r.warp(targetExtent)
+    r.warp(rasterExtent.extent, targetExtent)
   }
 
   def timeOldReaderWithExtent(reps:Int) = run(reps)(oldReaderWithExtent)

@@ -2,7 +2,7 @@ package geotrellis.raster.op.global
 
 import geotrellis._
 import geotrellis.feature.Point
-import geotrellis.raster.RasterData
+import geotrellis.raster.ArrayTile
 
 import scalaxy.loops._
 
@@ -11,30 +11,19 @@ import scalaxy.loops._
  */
 object ApproxViewshed extends Serializable {
 
-  def apply(r: Raster, p: Point): Raster = {
-    val (col, row) = r.rasterExtent.mapToGrid(p.x, p.y)
-    apply(r, col, row)
-  }
-
   def apply(r: Raster, col: Int, row: Int): Raster = {
     r.localEqual(offsets(r, col, row))
   }
 
-  def offsets(r:Raster, p: Point): Raster = {
-    val (col, row) = r.rasterExtent.mapToGrid(p.x, p.y)
-    offsets(r, col, row)
-  }
-
   def offsets(r: Raster, startCol: Int, startRow: Int): Raster = {
-    val re = r.rasterExtent
-    val rows = re.rows
-    val cols = re.cols
+    val rows = r.rows
+    val cols = r.cols
 
     if(startCol < 0 || startCol >= cols || startRow < 0 && startRow >= rows) {
       sys.error("Point indices out of bounds")
     } else {
       val k = r.getDouble(startCol, startRow)
-      val data = RasterData.allocByType(TypeDouble,cols,rows)
+      val data = ArrayTile.allocByType(TypeDouble,cols,rows)
       data.setDouble(startCol, startRow, k)
 
       val maxLayer = List((rows - startRow), (cols - startCol), startRow + 1, startCol + 1).max
@@ -113,7 +102,7 @@ object ApproxViewshed extends Serializable {
         }
       }
 
-      ArrayRaster(data,re)
+      ArrayRaster(data, cols, rows)
     }
   }
 }

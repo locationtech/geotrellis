@@ -23,19 +23,19 @@ import scalaxy.loops._
 import java.nio.ByteBuffer
 
 trait WarpAssign {
-  def apply(srcIndex:Int,dstIndex:Int):Unit
+  def apply(srcIndex: Int, dstIndex: Int): Unit
 }
 
-class ArrayWarpAssign[@specialized(Byte,Short,Int,Float,Double) T](src:Array[T], dst:Array[T]) 
+class ArrayWarpAssign[@specialized(Byte, Short, Int, Float, Double) T](src: Array[T], dst: Array[T]) 
     extends WarpAssign {
-  final def apply(srcIndex:Int,dstIndex:Int):Unit = {
+  final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src(srcIndex)
   }
 }
 
-final class BitWarpAssign(src:Array[Byte],dst:Array[Byte])
+final class BitWarpAssign(src: Array[Byte], dst: Array[Byte])
       extends WarpAssign {
-  final def apply(srcIndex:Int,dstIndex:Int):Unit = {
+  final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     val i = srcIndex
     val z = (src(i >> 3) >> (i & 7)) & 1
     val div = dstIndex >> 3
@@ -49,50 +49,55 @@ final class BitWarpAssign(src:Array[Byte],dst:Array[Byte])
   }
 }
 
-class ByteBufferWarpAssign(src:ByteBuffer,dst:Array[Byte])
+class ByteBufferWarpAssign(src: ByteBuffer, dst: Array[Byte])
     extends WarpAssign {
-  final def apply(srcIndex:Int,dstIndex:Int):Unit = {
+  final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src.get(srcIndex)
   }
 }
 
-class ShortBufferWarpAssign(src:ByteBuffer,dst:Array[Short])
+class ShortBufferWarpAssign(src: ByteBuffer, dst: Array[Short])
     extends WarpAssign {
   final val width = TypeShort.bytes
-  final def apply(srcIndex:Int,dstIndex:Int):Unit = {
+  final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src.getShort(srcIndex*width)
   }
 }
 
-class IntBufferWarpAssign(src:ByteBuffer,dst:Array[Int])
+class IntBufferWarpAssign(src: ByteBuffer, dst: Array[Int])
     extends WarpAssign {
   final val width = TypeInt.bytes
-  final def apply(srcIndex:Int,dstIndex:Int):Unit = {
+  final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src.getInt(srcIndex*width)
   }
 }
 
-class FloatBufferWarpAssign(src:ByteBuffer,dst:Array[Float])
+class FloatBufferWarpAssign(src: ByteBuffer, dst: Array[Float])
     extends WarpAssign {
   final val width = TypeFloat.bytes
-  final def apply(srcIndex:Int,dstIndex:Int):Unit = {
+  final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src.getFloat(srcIndex*width)
   }
 }
 
-class DoubleBufferWarpAssign(src:ByteBuffer,dst:Array[Double])
+class DoubleBufferWarpAssign(src: ByteBuffer, dst: Array[Double])
     extends WarpAssign {
   final val width = TypeDouble.bytes
-  final def apply(srcIndex:Int,dstIndex:Int):Unit = {
+  final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src.getDouble(srcIndex*width)
   }
 }
 
 object Warp {
-  def apply[@specialized(Byte,Short,Int,Float,Double) T](current:RasterExtent,target:RasterExtent,source:Array[T],result:Array[T]):Unit =
-    apply(current,target,new ArrayWarpAssign(source,result))
+  def apply[@specialized(Byte, Short, Int, Float, Double) T](
+    current: RasterExtent, 
+    target: RasterExtent, 
+    source: Array[T], 
+    result: Array[T]
+  ): Unit =
+    apply(current, target, new ArrayWarpAssign(source, result))
 
-  def apply(current:RasterExtent,target:RasterExtent,assign:WarpAssign):Unit = {
+  def apply(current: RasterExtent, target: RasterExtent, assign: WarpAssign): Unit = {
     if(!current.extent.intersects(target.extent)) {
       return
     }
@@ -170,7 +175,7 @@ object Warp {
             if (src_col >= 0 && src_col < src_cols &&
                 src_i < src_size && src_i >= 0) {
               val dst_i = dst_span + dst_col
-              assign(src_i,dst_i)
+              assign(src_i, dst_i)
             }
             
             // increase our X map coordinate

@@ -38,7 +38,7 @@ object Rasterizer {
    * @param rasterExtent  Definition of raster to create
    * @param value         Single value to burn
    */ 
-  def rasterizeWithValue(geom: Geometry, rasterExtent:RasterExtent, value: Int): Raster = {
+  def rasterizeWithValue(geom: Geometry, rasterExtent: RasterExtent, value: Int): Tile = {
     val cols = rasterExtent.cols
     val array = Array.ofDim[Int](rasterExtent.cols * rasterExtent.rows).fill(NODATA)
     val f2 = new Callback {
@@ -47,7 +47,7 @@ object Rasterizer {
         }
       }
     foreachCellByFeature(geom, rasterExtent)(f2)
-    Raster(array,rasterExtent)
+    Tile(array, rasterExtent.cols, rasterExtent.rows)
   } 
 
   /**
@@ -56,16 +56,16 @@ object Rasterizer {
    * @param rasterExtent  Definition of raster to create
    * @param f             Function that takes col, row, feature and returns value to burn
    */ 
-  def rasterize(feature:Geometry, rasterExtent:RasterExtent)(f:Transformer[Int]) = {
+  def rasterize(feature: Geometry, rasterExtent: RasterExtent)(f: Transformer[Int]) = {
     val cols = rasterExtent.cols
     val array = Array.ofDim[Int](rasterExtent.cols * rasterExtent.rows).fill(NODATA)
     val f2 = new Callback {
         def apply(col: Int, row: Int) {
-          array(row * cols + col) = f(col,row)
+          array(row * cols + col) = f(col, row)
         }
     }
     foreachCellByFeature(feature, rasterExtent)(f2)
-    Raster(array,rasterExtent)
+    Tile(array, rasterExtent.cols, rasterExtent.rows)
   }
    
   /**
@@ -79,9 +79,9 @@ object Rasterizer {
    * 
    * @param geom  Feature for calculation
    * @param re       RasterExtent to use for iterating through cells
-   * @param f        A function that takes (col:Int, row:Int, rasterValue:Int, feature:Feature)
+   * @param f        A function that takes (col: Int, row: Int, rasterValue: Int, feature: Feature)
    */
-  def foreachCellByFeature(geom: Geometry, re:RasterExtent)(f: Callback): Unit = {
+  def foreachCellByFeature(geom: Geometry, re: RasterExtent)(f: Callback): Unit = {
     geom match {
       case p: Point         => foreachCellByPoint(p, re)(f)
       case p: MultiPoint    => foreachCellByMultiPoint(p, re)(f)
@@ -102,7 +102,7 @@ object Rasterizer {
   def foreachCellByPoint(geom: Point, re: RasterExtent)(f: Callback) {
     val col = re.mapXToGrid(geom.x)
     val row = re.mapYToGrid(geom.y)
-    f(col,row)
+    f(col, row)
   }
 
   def foreachCellByMultiPoint(p: MultiPoint, re: RasterExtent)(f: Callback) {
@@ -113,26 +113,26 @@ object Rasterizer {
    * Invoke a function on each point in a sequences of Points.
    */
   def foreachCellByPointSeq(pSet: Seq[Point], re: RasterExtent)(f: Callback) {
-    pSet.foreach(foreachCellByPoint(_,re)(f))
+    pSet.foreach(foreachCellByPoint(_, re)(f))
   }
   
   /**
    * Apply function f to every cell contained within MultiLineString.
    * @param g   MultiLineString used to define zone
    * @param re  RasterExtent used to determine cols and rows
-   * @param f   Function to apply: f(cols,row,feature)
+   * @param f   Function to apply: f(cols, row, feature)
    */
   def foreachCellByMultiLineString(g: MultiLine, re: RasterExtent)(f: Callback) {
-    g.lines.foreach(foreachCellByLineString(_,re)(f))
+    g.lines.foreach(foreachCellByLineString(_, re)(f))
   }
 
   /**
-   * Apply function f(col,row,feature) to every cell contained within polygon.
+   * Apply function f(col, row, feature) to every cell contained within polygon.
    * @param p   Polygon used to define zone
    * @param re  RasterExtent used to determine cols and rows
-   * @param f   Function to apply: f(cols,row,feature)
+   * @param f   Function to apply: f(cols, row, feature)
    */
-  def foreachCellByPolygon(p:Polygon, re:RasterExtent)(f: Callback) {
+  def foreachCellByPolygon(p: Polygon, re: RasterExtent)(f: Callback) {
      PolygonRasterizer.foreachCellByPolygon(p, re)(f)
   }
 
@@ -141,10 +141,10 @@ object Rasterizer {
    *
    * @param p   MultiPolygon used to define zone
    * @param re  RasterExtent used to determine cols and rows
-   * @param f   Function to apply: f(cols,row,feature)
+   * @param f   Function to apply: f(cols, row, feature)
    */
-  def foreachCellByMultiPolygon[D](p:MultiPolygon, re:RasterExtent)(f: Callback) {
-    p.polygons.foreach(PolygonRasterizer.foreachCellByPolygon(_,re)(f))
+  def foreachCellByMultiPolygon[D](p: MultiPolygon, re: RasterExtent)(f: Callback) {
+    p.polygons.foreach(PolygonRasterizer.foreachCellByPolygon(_, re)(f))
   }
 
   /**
@@ -170,10 +170,10 @@ object Rasterizer {
    *
    * @param    p                  LineString used to define zone
    * @param    re                 RasterExtent used to determine cols and rows
-   * @param    skipLast           'true' if the function should skip function calling the last cell (x1,y1).
+   * @param    skipLast           'true' if the function should skip function calling the last cell (x1, y1).
    *                              This is useful for not duplicating end points when calling for multiple
    *                              line segments
-   * @param    f                  Function to apply: f(cols,row,feature)
+   * @param    f                  Function to apply: f(cols, row, feature)
    */
   def foreachCellInGridLine[D](x0: Int, y0: Int, x1: Int, y1: Int, p: Line, re: RasterExtent, skipLast: Boolean = false)
                               (f: Callback) = {
@@ -189,13 +189,13 @@ object Rasterizer {
 
     while(x != x1 || y != y1){
       if(0 <= x && x < re.cols &&
-         0 <= y && y < re.rows) { f(x,y); }
+         0 <= y && y < re.rows) { f(x, y); }
       e2 = err;
       if (e2 > -dx) { err -= dy; x += sx; }
       if (e2 < dy) { err += dx; y += sy; }
     }
     if(!skipLast &&
        0 <= x && x < re.cols &&
-       0 <= y && y < re.rows) { f(x,y); }
+       0 <= y && y < re.rows) { f(x, y); }
   }
 }

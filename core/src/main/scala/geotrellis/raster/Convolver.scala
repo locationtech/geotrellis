@@ -21,21 +21,18 @@ import geotrellis._
 /**
  * Supplies functionaltiy to operations that do convolution.
  */
-case class Convolver(rasterExtent:RasterExtent,k:Kernel) {
-
-  val cols = rasterExtent.cols
-  val rows = rasterExtent.rows
+case class Convolver(cols: Int, rows: Int, k: Kernel) {
 
   val kraster = k.raster
   var kernelcols = kraster.cols
   var kernelrows = kraster.rows
 
-  val data:IntArrayRasterData = IntArrayRasterData.empty(rasterExtent.cols,rasterExtent.rows)
+  val tile: IntArrayTile = IntArrayTile.empty(cols, rows)
 
-  def stampKernel(col:Int,row:Int,z:Int) = {
+  def stampKernel(col: Int, row: Int, z: Int) = {
     if(z == 0) {
-      val o = data.get(col,row)
-      data.set(col,row,
+      val o = tile.get(col, row)
+      tile.set(col, row,
         if(isNoData(o)) 0
         else o
       )
@@ -57,15 +54,15 @@ case class Convolver(rasterExtent:RasterExtent,k:Kernel) {
           if (r >= 0 && c >= 0 && r < rows && c < cols &&
             kcol >= 0 && krow >= 0 && kcol < kernelcols && krow < kernelrows) {
 
-            val k = kraster.get(kcol,krow)
+            val k = kraster.get(kcol, krow)
             if (isData(k)) {
-              val o = data.get(c,r)
+              val o = tile.get(c, r)
               val w = if (isNoData(o)) {
                 k * z
               } else {
                 o + k*z
               }
-              data.set(c,r,w)
+              tile.set(c, r, w)
             }
           }
 
@@ -81,5 +78,5 @@ case class Convolver(rasterExtent:RasterExtent,k:Kernel) {
     }
   }
 
-  def result = Raster(data,rasterExtent)
+  def result = tile
 }

@@ -17,6 +17,7 @@
 package geotrellis.source
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.process.LayerId
 import geotrellis.raster.TileLayout
 
@@ -32,12 +33,13 @@ case class RasterDefinition(layerId:LayerId,
 }
 
 object RasterDefinition {
-
-  def fromRaster(r: Raster): RasterDefinition = 
+  def fromRaster(r: Raster, extent: Extent): RasterDefinition = {
+    val rasterExtent = RasterExtent(extent, r.cols, r.rows)
     RasterDefinition(
       LayerId.MEM_RASTER,
-      r.rasterExtent,
-      TileLayout.singleTile(r.rasterExtent),
+      rasterExtent,
+      TileLayout.singleTile(rasterExtent),
       r.rasterType,
       false)
+  }
 }

@@ -104,20 +104,14 @@ object ImmutableMinN extends Serializable {
     apply(n,rs)
 
   def apply(n:Int,rs:Seq[Raster])(implicit d:DI):Raster = {
-    if(Set(rs.map(_.rasterExtent)).size != 1) {
-      val rasterExtents = rs.map(_.rasterExtent).toSeq
-      throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
-        s"$rasterExtents are not all equal")
-    }
+    rs.assertEqualDimensions
 
     val layerCount = rs.length
     if(layerCount < n) {
       sys.error(s"Not enough values to compute Nth")
     } else {
       val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
-      val re = rs(0).rasterExtent
-      val cols = re.cols
-      val rows = re.rows
+      val (cols, rows) = rs.head.dimensions
       val data = RasterData.allocByType(newRasterType,cols,rows)
 
       for(col <- 0 until cols) {
@@ -131,7 +125,7 @@ object ImmutableMinN extends Serializable {
           }
         }
       }
-      ArrayRaster(data,re)
+      ArrayRaster(data, cols, rows)
     }
   }
 }
@@ -142,20 +136,14 @@ object ArrayMinN extends Serializable {
     apply(n,rs)
 
   def apply(n:Int,rs:Seq[Raster])(implicit d:DI):Raster = {
-    if(Set(rs.map(_.rasterExtent)).size != 1) {
-      val rasterExtents = rs.map(_.rasterExtent).toSeq
-      throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
-        s"$rasterExtents are not all equal")
-    }
+    rs.assertEqualDimensions
 
     val layerCount = rs.length
     if(layerCount < n) {
       sys.error(s"Not enough values to compute Nth")
     } else {
       val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
-      val re = rs(0).rasterExtent
-      val cols = re.cols
-      val rows = re.rows
+      val (cols, rows) = rs.head.dimensions
       val data = RasterData.allocByType(newRasterType,cols,rows)
 
       for(col <- 0 until cols) {
@@ -177,7 +165,7 @@ object ArrayMinN extends Serializable {
           }
         }
       }
-      ArrayRaster(data,re)
+      ArrayRaster(data, cols, rows)
     }
   }
 }

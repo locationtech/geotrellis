@@ -34,7 +34,7 @@ import scala.math._
 case class Min(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,n,tns)({
   (r,n) =>
     if(r.isFloat){
-      new CursorCalculation[Raster] with DoubleRasterDataResult {
+      new CursorCalculation[Raster] with DoubleArrayTileResult {
         def calc(r:Raster,cursor:Cursor) = {
   
           var m:Double = Double.NaN
@@ -49,7 +49,7 @@ case class Min(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends Fo
       }
  
     }else{
-      new CursorCalculation[Raster] with IntRasterDataResult {
+      new CursorCalculation[Raster] with IntArrayTileResult {
         def calc(r:Raster,cursor:Cursor) = {
   
           var m = NODATA

@@ -35,6 +35,7 @@ import scala.util.Random
 object FocalOperationsBenchmark extends BenchmarkRunner(classOf[FocalOperationsBenchmark])
 class FocalOperationsBenchmark extends OperationBenchmark {
 
+  var re: RasterExtent = null
   var r:Raster = null
 
   var rs:RasterSource = null
@@ -45,26 +46,26 @@ class FocalOperationsBenchmark extends OperationBenchmark {
   override def setUp() {
     val name = "SBN_inc_percap"
 
-    val e = Extent(-8475497.88485957, 4825540.69147447,
+    val extent = Extent(-8475497.88485957, 4825540.69147447,
                    -8317922.884859569, 4954765.69147447)
-    val re = RasterExtent(e, 75.0, 75.0, 2101, 1723)
+    re = RasterExtent(extent, 75.0, 75.0, 2101, 1723)
     r = get(LoadRaster(name, re))
 
     rs = RasterSource(name,re).cached
 
     tiledRS256 = {
       val tileLayout = TileLayout.fromTileDimensions(re,256,256)
-      RasterSource(TileRaster.wrap(r,tileLayout,cropped = false))
+      RasterSource(TileRaster.wrap(r,tileLayout,cropped = false), extent)
     }
     tiledRS512 = {
       val tileLayout = TileLayout.fromTileDimensions(re,512,512)
-      RasterSource(TileRaster.wrap(r,tileLayout,cropped = false))
+      RasterSource(TileRaster.wrap(r,tileLayout,cropped = false), extent)
     }
   }
 
   def timeConway(reps:Int) = run(reps)(get(focal.Conway(r)))
 
-  def timeHillshade(reps:Int) = run(reps)(get(focal.Hillshade(r)))
+  def timeHillshade(reps:Int) = run(reps)(get(focal.Hillshade(r, re.cellSize)))
   def timeSlope(reps:Int) = run(reps)(get(focal.Slope(r,1.0)))
   def timeAspect(reps:Int) = run(reps)(get(focal.Aspect(r)))
 
@@ -115,5 +116,5 @@ class FocalOperationsBenchmark extends OperationBenchmark {
   def timeSumSquare22(reps:Int) = run(reps)(get(focal.Sum(r,focal.Square(22))))
 //  def timeSumSquare22Tiled512(reps:Int) = run(reps)(focal.Sum(tiledR512,focal.Square(22)))
 
-  def timeConvolve(reps:Int) = run(reps)(get(global.Convolve(r,Kernel.gaussian(5,5.0,4.0,50.0))))
+  def timeConvolve(reps:Int) = run(reps)(get(global.Convolve(r,Kernel.gaussian(5,4.0,50.0))))
 }

@@ -43,8 +43,7 @@ class DataMap extends OperationBenchmark {
     val len = size * size
     ints = init(len)(Random.nextInt)
     doubles = init(len)(Random.nextDouble)
-    val re = RasterExtent(Extent(0, 0, size, size), 1.0, 1.0, size, size)
-    raster = Raster(init(len)(Random.nextInt), re)
+    raster = Raster(init(len)(Random.nextInt), size, size)
 
     bitData = new BitArrayRasterData(init((len + 7) / 8)(Random.nextInt.toByte), size, size)
     byteData = new ByteArrayRasterData(init(len)(Random.nextInt.toByte), size, size)

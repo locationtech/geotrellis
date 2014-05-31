@@ -25,19 +25,19 @@ import scalaxy.loops._
 /**
  * IDW Interpolation
  */
-case class IDWInterpolate(points:Op[Seq[PointFeature[Int]]],re:Op[RasterExtent],radius:Op[Option[Int]]=None)
-    extends Op3(points,re,radius)({
-  (points,re,radius) =>
+case class IDWInterpolate(points: Op[Seq[PointFeature[Int]]], re: Op[RasterExtent], radius: Op[Option[Int]] = None)
+    extends Op3(points, re, radius)({
+  (points, re, radius) =>
     val cols = re.cols
     val rows = re.rows
-    val data = RasterData.emptyByType(TypeInt, cols, rows)
+    val tile = ArrayTile.emptyByType(TypeInt, cols, rows)
     if(points.isEmpty) {
-      Result(Raster(data,re))
+      Result(tile)
     } else {
       val r = radius match {
         case Some(r: Int) =>
           val rr = r*r
-          val index: SpatialIndex[PointFeature[Int]] = SpatialIndex(points)(p => (p.geom.x,p.geom.y))
+          val index: SpatialIndex[PointFeature[Int]] = SpatialIndex(points)(p => (p.geom.x, p.geom.y))
 
           for(col <- 0 until cols optimized) {
             for(row <- 0 until rows optimized) {
@@ -46,7 +46,7 @@ case class IDWInterpolate(points:Op[Seq[PointFeature[Int]]],re:Op[RasterExtent],
               val pts = index.pointsInExtent(Extent(destX - r, destY - r, destX + r, destY + r))
               println(pts.size)
               if (pts.isEmpty) {
-                data.set(col, row, NODATA)
+                tile.set(col, row, NODATA)
               } else {
                 var s = 0.0
                 var c = 0
@@ -67,10 +67,10 @@ case class IDWInterpolate(points:Op[Seq[PointFeature[Int]]],re:Op[RasterExtent],
                 }
 
                 if (c == 0) {
-                  data.set(col, row, NODATA)
+                  tile.set(col, row, NODATA)
                 } else {
                   val mean = s / ws
-                  data.set(col, row, mean.toInt)
+                  tile.set(col, row, mean.toInt)
                 }
               }
             }
@@ -97,14 +97,14 @@ case class IDWInterpolate(points:Op[Seq[PointFeature[Int]]],re:Op[RasterExtent],
               }
 
               if (c == 0) {
-                data.set(col, row, NODATA)
+                tile.set(col, row, NODATA)
               } else {
                 val mean = s / ws
-                data.set(col, row, mean.toInt)
+                tile.set(col, row, mean.toInt)
               }
             }
           }
       }
-      Result(Raster(data,re))
+      Result(tile)
     }
 })

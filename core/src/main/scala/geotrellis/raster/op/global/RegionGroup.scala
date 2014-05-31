@@ -19,29 +19,29 @@ package geotrellis.raster.op.global
 import geotrellis._
 import scalaxy.loops._
 import scala.collection.mutable
-import geotrellis.raster.IntArrayRasterData
+import geotrellis.raster.IntArrayTile
 
 abstract sealed trait Connectivity
 case object FourNeighbors extends Connectivity
 case object EightNeighbors extends Connectivity
 
-case class RegionGroupResult(raster:Raster,regionMap:Map[Int,Int])
+case class RegionGroupResult(raster: Raster, regionMap: Map[Int, Int])
 
 object RegionGroupOptions { val default = RegionGroupOptions() }
 case class RegionGroupOptions(
-  connectivity:Connectivity = FourNeighbors,
-  ignoreNoData:Boolean = true
+  connectivity: Connectivity = FourNeighbors,
+  ignoreNoData: Boolean = true
 )
 
-case class RegionGroup(r:Op[Raster], options:RegionGroupOptions = RegionGroupOptions.default) 
+case class RegionGroup(r: Op[Raster], options: RegionGroupOptions = RegionGroupOptions.default) 
 extends Op1(r)({
   r =>
     var regionId = -1
     val regions = new RegionPartition()
-    val regionMap = mutable.Map[Int,Int]()
+    val regionMap = mutable.Map[Int, Int]()
     val cols = r.cols
     val rows = r.rows
-    val data = IntArrayRasterData.empty(cols,rows)
+    val data = IntArrayTile.empty(cols, rows)
     val ignoreNoData = options.ignoreNoData
 
     /* Go through each cell row by row, and set all considered neighbors
@@ -58,34 +58,34 @@ extends Op1(r)({
       for (row <- 0 until rows optimized) {
         var valueToLeft = NODATA
         for (col <- 0 until cols optimized) {
-          val v = r.get(col,row)
+          val v = r.get(col, row)
           if(isData(v) || !ignoreNoData) {
             val top =
-              if(row > 0) { r.get(col,row - 1) }
+              if(row > 0) { r.get(col, row - 1) }
               else { v + 1 }
 
             if(v == top) {
               // Value to north is the same region
-              val topRegion = data.get(col,row-1)
-              data.set(col,row,topRegion)
+              val topRegion = data.get(col, row-1)
+              data.set(col, row, topRegion)
 
               if(v == valueToLeft && col > 0) {
                 // Value to west is also same region
-                val leftRegion = data.get(col-1,row)
+                val leftRegion = data.get(col-1, row)
                 if(leftRegion != topRegion) {
                   // Set the north and west regions equal
-                  regions.add(topRegion,data.get(col-1,row))
+                  regions.add(topRegion, data.get(col-1, row))
                 }
               }
             } else {
               if(v == valueToLeft && col > 0) {
                 // Value to west is same region
-                data.set(col,row,data.get(col-1,row))
+                data.set(col, row, data.get(col-1, row))
               } else {
                 // This value represents a new region
                 regionId += 1
                 regions.add(regionId)
-                data.set(col,row,regionId)
+                data.set(col, row, regionId)
                 regionMap(regionId) = v
               }
             }
@@ -99,87 +99,87 @@ extends Op1(r)({
         var valueToTopLeft = NODATA
         var valueToTop = NODATA
         for (col <- 0 until cols optimized) {
-          val v = r.get(col,row)
+          val v = r.get(col, row)
           val topRight =
-            if(row > 0 && col < cols-1) { r.get(col+1,row - 1) }
+            if(row > 0 && col < cols-1) { r.get(col+1, row - 1) }
             else { v + 1 }
 
           if(col == 0) {
-            if(row > 0) { valueToTop = r.get(col,row - 1) }
+            if(row > 0) { valueToTop = r.get(col, row - 1) }
             else { valueToTop = v + 1 }
           }
 
           if(isData(v) || !ignoreNoData) {
             if(v == topRight) {
               // Value to north east is the same region
-              val topRightRegion = data.get(col+1,row-1)
-              data.set(col,row,topRightRegion)
+              val topRightRegion = data.get(col+1, row-1)
+              data.set(col, row, topRightRegion)
               if(v == valueToLeft && col > 0) {
                 // Value to west is also same region
-                val leftRegion = data.get(col-1,row)
+                val leftRegion = data.get(col-1, row)
                 if(leftRegion != topRightRegion) {
                   // Set the north and west regions equal
-                  regions.add(topRightRegion,data.get(col-1,row))
+                  regions.add(topRightRegion, data.get(col-1, row))
                 }
               }
               if(v == valueToTopLeft && col > 0 && row > 0) {
                 // Value to northwest is also same region
-                val topLeftRegion = data.get(col-1,row-1)
+                val topLeftRegion = data.get(col-1, row-1)
                 if(topLeftRegion != topRightRegion) {
                   // Set the north and west regions equal
-                  regions.add(topRightRegion,data.get(col-1,row-1))
+                  regions.add(topRightRegion, data.get(col-1, row-1))
                 }
               }
               if(v == valueToTop && row > 0) {
                 // Value to north is also same region
-                val topRegion = data.get(col,row-1)
+                val topRegion = data.get(col, row-1)
                 if(topRegion != topRightRegion) {
                   // Set the north and west regions equal
-                  regions.add(topRightRegion,data.get(col,row-1))
+                  regions.add(topRightRegion, data.get(col, row-1))
                 }
               }
             } else {
               if(v == valueToTop) {
                 // Value to north east is the same region
-                val topRegion = data.get(col,row-1)
-                data.set(col,row,topRegion)
+                val topRegion = data.get(col, row-1)
+                data.set(col, row, topRegion)
                 if(v == valueToLeft && col > 0) {
                   // Value to west is also same region
-                  val leftRegion = data.get(col-1,row)
+                  val leftRegion = data.get(col-1, row)
                   if(leftRegion != topRegion) {
                     // Set the north and west regions equal
-                    regions.add(topRegion,data.get(col-1,row))
+                    regions.add(topRegion, data.get(col-1, row))
                   }
                 }
                 if(v == valueToTopLeft && col > 0 && row > 0) {
                   // Value to northwest is also same region
-                  val topLeftRegion = data.get(col-1,row-1)
+                  val topLeftRegion = data.get(col-1, row-1)
                   if(topLeftRegion != topRegion) {
                     // Set the north and west regions equal
-                    regions.add(topRegion,data.get(col-1,row-1))
+                    regions.add(topRegion, data.get(col-1, row-1))
                   }
                 }
               } else {
                 if(v == valueToLeft && col > 0) {
                   // Value to west is same region
-                  val westRegion = data.get(col-1,row)
-                  data.set(col,row,westRegion)
+                  val westRegion = data.get(col-1, row)
+                  data.set(col, row, westRegion)
                   if(v == valueToTopLeft && col > 0 && row > 0) {
                     // Value to northwest is also same region
-                    val topLeftRegion = data.get(col-1,row-1)
+                    val topLeftRegion = data.get(col-1, row-1)
                     if(topLeftRegion != westRegion) {
                       // Set the north and west regions equal
-                      regions.add(westRegion,data.get(col-1,row-1))
+                      regions.add(westRegion, data.get(col-1, row-1))
                     }
                   }
                 } else {
                   if(v == valueToTopLeft && col > 0 && row > 0) {
-                    data.set(col,row,data.get(col-1,row-1))
+                    data.set(col, row, data.get(col-1, row-1))
                   } else {
                     // This value represents a new region
                     regionId += 1
                     regions.add(regionId)
-                    data.set(col,row,regionId)
+                    data.set(col, row, regionId)
                     regionMap(regionId) = v
                   }
                 }
@@ -197,7 +197,7 @@ extends Op1(r)({
     
     for (row <- 0 until rows optimized) {
       for (col <- 0 until cols optimized) {
-        val v = data.get(col,row)
+        val v = data.get(col, row)
         if(isData(v) || !ignoreNoData) { 
           val cls = regions.getClass(v)
           if(cls != v && regionMap.contains(v)) {
@@ -206,25 +206,25 @@ extends Op1(r)({
             }
             regionMap.remove(v) 
           }
-          data.set(col,row,regions.getClass(v))
+          data.set(col, row, regions.getClass(v))
         }
       }
     }
 
-  Result(RegionGroupResult(Raster(data,r.rasterExtent),regionMap.toMap))
+  Result(RegionGroupResult(Raster(data, cols, rows), regionMap.toMap))
 })
 
 class RegionPartition() {
-  val regionMap = mutable.Map[Int,Partition]()
+  val regionMap = mutable.Map[Int, Partition]()
 
   object Partition {
-    def apply(x:Int) = {
+    def apply(x: Int) = {
       val p = new Partition
       p += x
       p
     }
 
-    def apply(x:Int,y:Int) = {
+    def apply(x: Int, y: Int) = {
       val p = new Partition
       p += x
       p += y
@@ -238,13 +238,13 @@ class RegionPartition() {
 
     def min = _min
 
-    def +=(x:Int) = {
+    def +=(x: Int) = {
       regionMap(x) = this
       members += x
       if(x < _min) { _min = x }
     }
 
-    def absorb(other:Partition) =
+    def absorb(other: Partition) =
       if(this != other) {
         for(m <- other.members) { +=(m) }
       }
@@ -252,16 +252,16 @@ class RegionPartition() {
     override def toString = s"PARTITION($min)"
   }
 
-  def add(x:Int) =
+  def add(x: Int) =
     if(!regionMap.contains(x)) {
       Partition(x)
     }
 
-  def add(x:Int,y:Int):Unit = {
+  def add(x: Int, y: Int): Unit = {
     if(!regionMap.contains(x)) {
       if(!regionMap.contains(y)) {
         // x and y are not mapped
-        Partition(x,y)
+        Partition(x, y)
       } else {
         // x is not mapped, y is mapped
         regionMap(y) += x
@@ -276,7 +276,7 @@ class RegionPartition() {
     }
   }
 
-  def getClass(x:Int) = 
+  def getClass(x: Int) = 
     if(!regionMap.contains(x)) { sys.error(s"There is no partition containing $x") }
     else {
       regionMap(x).min

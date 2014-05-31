@@ -21,15 +21,15 @@ import geotrellis.source._
 import geotrellis.feature._
 import geotrellis.feature.rasterize._
 
-object Min extends TileSummary[Int,Int,ValueSource[Int]] {
-  def handlePartialTile(pt:PartialTileIntersection):Int = {
-    val PartialTileIntersection(r,polygons) = pt
+object Min extends TileSummary[Int, Int, ValueSource[Int]] {
+  def handlePartialTile(pt: PartialTileIntersection): Int = {
+    val PartialTileIntersection(r, rasterExtent, polygons) = pt
     var min = NODATA
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
+      Rasterizer.foreachCellByFeature(p, rasterExtent)(
         new Callback {
-          def apply(col:Int, row:Int) {
-            val z = r.get(col,row)
+          def apply(col: Int, row: Int) {
+            val z = r.get(col, row)
             if (isData(z) && (z < min || isNoData(min)) ) { min = z }
           }
         }
@@ -38,31 +38,31 @@ object Min extends TileSummary[Int,Int,ValueSource[Int]] {
     min
   }
 
-  def handleFullTile(ft:FullTileIntersection):Int = {
+  def handleFullTile(ft: FullTileIntersection): Int = {
     var min = NODATA
-    ft.tile.foreach { (x:Int) =>
+    ft.tile.foreach { (x: Int) =>
       if (isData(x) && (x < min || isNoData(min))) { min = x }
     }
     min
   }
 
-  def converge(ds:DataSource[Int,_]) =
-    ds.reduce { (a,b) => 
+  def converge(ds: DataSource[Int, _]) =
+    ds.reduce { (a, b) => 
       if(isNoData(a)) { b } 
       else if(isNoData(b)) { a }
-      else { math.min(a,b) }
+      else { math.min(a, b) }
     }
 }
 
-object MinDouble extends TileSummary[Double,Double,ValueSource[Double]] {
-  def handlePartialTile(pt:PartialTileIntersection):Double = {
-    val PartialTileIntersection(r,polygons) = pt
+object MinDouble extends TileSummary[Double, Double, ValueSource[Double]] {
+  def handlePartialTile(pt: PartialTileIntersection): Double = {
+    val PartialTileIntersection(r, rasterExtent, polygons) = pt
     var min = Double.NaN
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
+      Rasterizer.foreachCellByFeature(p, rasterExtent)(
         new Callback {
-          def apply(col:Int, row:Int) {
-            val z = r.getDouble(col,row)
+          def apply(col: Int, row: Int) {
+            val z = r.getDouble(col, row)
             if (isData(z) && (z < min || isNoData(min))) { min = z }
           }
         }
@@ -72,16 +72,16 @@ object MinDouble extends TileSummary[Double,Double,ValueSource[Double]] {
     min
   }
 
-  def handleFullTile(ft:FullTileIntersection):Double = {
+  def handleFullTile(ft: FullTileIntersection): Double = {
     var min = Double.NaN
-    ft.tile.foreach((x:Int) => if (isData(x) && (x < min || isNoData(min))) { min = x })
+    ft.tile.foreach((x: Int) => if (isData(x) && (x < min || isNoData(min))) { min = x })
     min
   }
 
-  def converge(ds:DataSource[Double,_]) =
-    ds.reduce { (a,b) =>
+  def converge(ds: DataSource[Double, _]) =
+    ds.reduce { (a, b) =>
       if(isNoData(a)) { b } 
       else if(isNoData(b)) { a }
-      else { math.min(a,b) }
+      else { math.min(a, b) }
     }
 }

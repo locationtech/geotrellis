@@ -89,9 +89,16 @@ trait FocalOpMethods[+Repr <: RasterSource] { self: Repr =>
 
   def focalAspect = focal(Square(1))((r,_,nbs) => Aspect(r,nbs))
   def focalSlope = focal(Square(1))((r,_,nbs) => Slope(r,nbs))
-  def focalHillshade = focal(Square(1))((r,_,nbs) => Hillshade(r,nbs))
+
+  def focalHillshade = 
+    focal(Square(1)) { (r,_,nbs) =>
+      Hillshade(r,nbs, rasterDefinition.map(_.rasterExtent.cellSize))
+    }
+
   def focalHillshade(azimuth:Double,altitude:Double,zFactor:Double) =
-    focal(Square(1))((r,_,nbs) => Hillshade(r,nbs,azimuth,altitude,zFactor))
+    focal(Square(1)) { (r,_,nbs) => 
+      Hillshade(r, nbs, rasterDefinition.map(_.rasterExtent.cellSize), azimuth, altitude, zFactor)
+    }
 
   def focalMoransI(n:Neighborhood) =
     self.globalOp(RasterMoransI(_,n))

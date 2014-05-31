@@ -17,7 +17,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
-import geotrellis.raster.RasterData
+import geotrellis.raster.ArrayTile
 import geotrellis.ArrayRaster
 import geotrellis.GeoAttrsError
 
@@ -84,38 +84,32 @@ object MaxN extends Serializable {
     }
   }
 
-  def apply(n:Int,rs:Raster*):Raster =
-    apply(n,rs)
+  def apply(n: Int, rs: Raster*): Raster =
+    apply(n, rs)
 
-  def apply(n:Int,rs:Seq[Raster])(implicit d:DI):Raster = {
-    if(Set(rs.map(_.rasterExtent)).size != 1) {
-      val rasterExtents = rs.map(_.rasterExtent).toSeq
-      throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
-        s"$rasterExtents are not all equal")
-    }
+  def apply(n: Int, rs: Seq[Raster])(implicit d: DI): Raster = {
+    rs.assertEqualDimensions
 
     val layerCount = rs.length
     if(layerCount < n) {
       sys.error(s"Not enough values to compute Nth")
     } else {
       val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
-      val re = rs(0).rasterExtent
-      val cols = re.cols
-      val rows = re.rows
-      val data = RasterData.allocByType(newRasterType,cols,rows)
+      val (cols, rows) = rs(0).dimensions
+      val data = ArrayTile.allocByType(newRasterType, cols, rows)
 
       for(col <- 0 until cols) {
         for(row <- 0 until rows) {
           if(newRasterType.isDouble) {
-            val maxN = findNthDoubleInPlace(ArrayView(rs.map(r => r.getDouble(col,row)).filter(num => !isNoData(num)).toArray), n)
+            val maxN = findNthDoubleInPlace(ArrayView(rs.map(r => r.getDouble(col, row)).filter(num => !isNoData(num)).toArray), n)
             data.setDouble(col, row, maxN)
           }else { // integer values
-            val maxN = findNthIntInPlace(ArrayView(rs.map(r => r.get(col,row)).filter(num => !isNoData(num)).toArray), n)
+            val maxN = findNthIntInPlace(ArrayView(rs.map(r => r.get(col, row)).filter(num => !isNoData(num)).toArray), n)
             data.set(col, row, maxN)
           }
         }
       }
-      ArrayRaster(data,re)
+      ArrayRaster(data, cols, rows)
     }
   }
 }

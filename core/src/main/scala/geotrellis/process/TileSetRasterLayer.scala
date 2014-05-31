@@ -57,14 +57,14 @@ extends RasterLayerBuilder {
       val cols = layoutCols * pixelCols
       val rows = layoutRows * pixelRows
 
-      val (cw,ch) = getCellWidthAndHeight(json)
+      val (cw, ch) = getCellWidthAndHeight(json)
 
       val rasterExtent = RasterExtent(getExtent(json), cw, ch, cols, rows)
       val layout = TileLayout(layoutCols, layoutRows, pixelCols, pixelRows)
 
       val info = 
         RasterLayerInfo(
-          LayerId(ds,getName(json)),
+          LayerId(ds, getName(json)),
           getRasterType(json),
           rasterExtent,
           getEpsg(json),
@@ -74,7 +74,7 @@ extends RasterLayerBuilder {
           getCacheFlag(json)
         )
 
-      new TileSetRasterLayer(info,tileDirPath,layout)
+      new TileSetRasterLayer(info, tileDirPath, layout)
     }
   }
 }
@@ -98,7 +98,7 @@ extends RasterLayer(info) {
         // load an ArrayRasterData for the extent.
 
         // Create destination raster data
-        val data = RasterData.emptyByType(info.rasterType,re.cols,re.rows)
+        val data = RasterData.emptyByType(info.rasterType, re.cols, re.rows)
 
         // Collect data from intersecting tiles
         val targetExtent = re.extent
@@ -106,16 +106,16 @@ extends RasterLayer(info) {
         val loader = getTileLoader()
         for(tcol <- 0 until tileLayout.tileCols optimized) { 
           for(trow <- 0 until tileLayout.tileRows optimized) {
-            val sourceRasterExtent = resLayout.getRasterExtent(tcol,trow)
-            val sourceExtent = resLayout.getExtent(tcol,trow)
+            val sourceRasterExtent = resLayout.getRasterExtent(tcol, trow)
+            val sourceExtent = resLayout.getExtent(tcol, trow)
             sourceExtent.intersection(targetExtent) match {
               case Some(ext) =>
                 val cols = math.ceil((ext.xmax - ext.xmin) / re.cellwidth).toInt
                 val rows = math.ceil((ext.ymax - ext.ymin) / re.cellheight).toInt
-                val tileRe = RasterExtent(ext,re.cellwidth,re.cellheight,cols,rows)
+                val tileRe = RasterExtent(ext, re.cellwidth, re.cellheight, cols, rows)
 
                 // Read section of the tile
-                val rasterPart = loader.getTile(tcol,trow,Some(tileRe))
+                val rasterPart = loader.getTile(tcol, trow, Some(tileRe))
 
                 // Copy over the values to the correct place in the raster data
                 for(partCol <- 0 until cols optimized) {
@@ -137,22 +137,22 @@ extends RasterLayer(info) {
             }
           }
         }
-        Raster(data, re)
+        Raster(data, re.cols, re.rows)
       case None => 
         val loader = getTileLoader()
         val tiles = mutable.ListBuffer[Raster]()
         for(col <- 0 until tileLayout.tileCols optimized) {
           for(row <- 0 until tileLayout.tileRows optimized) {
-            tiles += loader.getTile(col,row,None)
+            tiles += loader.getTile(col, row, None)
           }
         }
-        TileRaster(tiles.toSeq, info.rasterExtent, tileLayout).toArrayRaster
+        TileRaster(tiles.toSeq, tileLayout).toArrayRaster
     }
   }
 
   override
   def getRaster(extent: Extent): Raster = 
-    CroppedRaster(getRaster(None), extent)
+    CroppedRaster(getRaster(None), info.rasterExtent.gridBoundsFor(extent))
 
   def getTile(col: Int, row: Int, targetExtent: Option[RasterExtent]) = 
     getTileLoader().getTile(col, row, targetExtent)
@@ -180,7 +180,7 @@ abstract class TileLoader(tileSetInfo: RasterLayerInfo,
   val rasterExtent = tileSetInfo.rasterExtent
 
   def getTile(col: Int, row: Int, targetExtent: Option[RasterExtent]): Raster = {
-    val re = resLayout.getRasterExtent(col,row)
+    val re = resLayout.getRasterExtent(col, row)
     if(col < 0 || row < 0 ||
        tileLayout.tileCols <= col || tileLayout.tileRows <= row) {
       val tre = 
@@ -189,26 +189,26 @@ abstract class TileLoader(tileSetInfo: RasterLayerInfo,
           case None => re
         }
 
-      Raster(IntConstant(NODATA, tre.cols, tre.rows),  rasterExtent)
+      Raster(IntConstant(NODATA, tre.cols, tre.rows),  tre.cols, tre.rows)
     } else {
-      loadRaster(col,row,re,targetExtent)
+      loadRaster(col, row, re, targetExtent)
     }
   }
 
   protected def loadRaster(col: Int, row: Int, re: RasterExtent, tre: Option[RasterExtent]): Raster
 }
 
-class DiskTileLoader(tileSetInfo:RasterLayerInfo,
-                     tileLayout:TileLayout,
-                     tileDirPath:String)
-extends TileLoader(tileSetInfo,tileLayout) {
+class DiskTileLoader(tileSetInfo: RasterLayerInfo,
+                     tileLayout: TileLayout,
+                     tileDirPath: String)
+extends TileLoader(tileSetInfo, tileLayout) {
   def loadRaster(col: Int, row: Int, re: RasterExtent, targetExtent: Option[RasterExtent]): Raster = {
     val path = TileSetRasterLayer.tilePath(tileDirPath, tileSetInfo.id, col, row)
     targetExtent match {
       case Some(tre) => 
-        ArgReader.read(path,tileSetInfo.rasterType,re,tre)
+        ArgReader.read(path, tileSetInfo.rasterType, re, tre)
       case None => 
-        ArgReader.read(path,tileSetInfo.rasterType,re)
+        ArgReader.read(path, tileSetInfo.rasterType, re)
     }
 
   }
@@ -217,17 +217,17 @@ extends TileLoader(tileSetInfo,tileLayout) {
 class CacheTileLoader(info: RasterLayerInfo,
                       tileLayout: TileLayout,
                       c: Cache[String])
-extends TileLoader(info,tileLayout) {
+extends TileLoader(info, tileLayout) {
   def loadRaster(col: Int, row: Int, re: RasterExtent, targetExtent: Option[RasterExtent]): Raster = {
     c.lookup[Array[Byte]](TileSetRasterLayer.tileName(info.id, col, row)) match {
       case Some(bytes) =>
         targetExtent match {
           case Some(tre) => 
             val data = ArgReader.warpBytes(bytes, info.rasterType, re, tre)
-            Raster(data, tre)
+            Raster(data, tre.cols, tre.rows)
           case None => 
             val data = RasterData.fromArrayByte(bytes, info.rasterType, re.cols, re.rows)
-            Raster(data, re)
+            Raster(data, re.cols, re.rows)
         }
       case None =>
         sys.error("Cache problem: Tile thinks it's cached but it is in fact not cached.")

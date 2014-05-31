@@ -52,7 +52,7 @@ object Sum {
 }
 
 class CursorSumCalc extends CursorCalculation[Raster] 
-    with IntRasterDataResult {
+    with IntArrayTileResult {
   var total = 0
 
   def calc(r:Raster,cursor:Cursor) = {
@@ -76,7 +76,7 @@ class CursorSumCalc extends CursorCalculation[Raster]
 }
 
 class CellwiseSumCalc extends CellwiseCalculation[Raster]
-    with IntRasterDataResult {
+    with IntArrayTileResult {
   var total = 0
   
   def add(r:Raster,x:Int,y:Int) = { 
@@ -96,7 +96,7 @@ class CellwiseSumCalc extends CellwiseCalculation[Raster]
 }
 
 class CursorDoubleSumCalc extends CursorCalculation[Raster] 
-    with DoubleRasterDataResult {
+    with DoubleArrayTileResult {
   var total = 0.0
 
   def calc(r:Raster,cursor:Cursor) = {
@@ -120,7 +120,7 @@ class CursorDoubleSumCalc extends CursorCalculation[Raster]
 }
 
 class CellwiseDoubleSumCalc extends CellwiseCalculation[Raster]
-    with DoubleRasterDataResult {
+    with DoubleArrayTileResult {
   var total = 0.0
   
   def add(r:Raster,x:Int,y:Int) = { 

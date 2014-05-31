@@ -21,15 +21,15 @@ import geotrellis.source._
 import geotrellis.feature._
 import geotrellis.feature.rasterize._
 
-object Sum extends TileSummary[Long,Long,ValueSource[Long]] {
-  def handlePartialTile(pt:PartialTileIntersection):Long = {
-    val PartialTileIntersection(r,polygons) = pt
+object Sum extends TileSummary[Long, Long, ValueSource[Long]] {
+  def handlePartialTile(pt: PartialTileIntersection): Long = {
+    val PartialTileIntersection(r, rasterExtent, polygons) = pt
     var sum: Long = 0L
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
+      Rasterizer.foreachCellByFeature(p, rasterExtent)(
         new Callback {
-          def apply(col:Int, row:Int) {
-            val z = r.get(col,row)
+          def apply(col: Int, row: Int) {
+            val z = r.get(col, row)
             if (isData(z)) { sum = sum + z }
           }
         }
@@ -39,25 +39,25 @@ object Sum extends TileSummary[Long,Long,ValueSource[Long]] {
     sum
   }
 
-  def handleFullTile(ft:FullTileIntersection):Long = {
+  def handleFullTile(ft: FullTileIntersection): Long = {
     var s = 0L
-    ft.tile.foreach((x:Int) => if (isData(x)) s = s + x)
+    ft.tile.foreach((x: Int) => if (isData(x)) s = s + x)
     s
   }
 
-  def converge(ds:DataSource[Long,_]) =
+  def converge(ds: DataSource[Long, _]) =
     ds.reduce(_+_)
 }
 
-object SumDouble extends TileSummary[Double,Double,ValueSource[Double]] {
-  def handlePartialTile(pt:PartialTileIntersection):Double = {
-    val PartialTileIntersection(r,polygons) = pt
+object SumDouble extends TileSummary[Double, Double, ValueSource[Double]] {
+  def handlePartialTile(pt: PartialTileIntersection): Double = {
+    val PartialTileIntersection(r, rasterExtent, polygons) = pt
     var sum = 0.0
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, r.rasterExtent)(
+      Rasterizer.foreachCellByFeature(p, rasterExtent)(
         new Callback {
-          def apply(col:Int, row:Int) {
-            val z = r.getDouble(col,row)
+          def apply(col: Int, row: Int) {
+            val z = r.getDouble(col, row)
             if(isData(z)) { sum = sum + z }
           }
         }
@@ -67,12 +67,12 @@ object SumDouble extends TileSummary[Double,Double,ValueSource[Double]] {
     sum
   }
 
-  def handleFullTile(ft:FullTileIntersection):Double = {
+  def handleFullTile(ft: FullTileIntersection): Double = {
     var s = 0.0
-    ft.tile.foreachDouble((x:Double) => if (isData(x)) s = s + x)
+    ft.tile.foreachDouble((x: Double) => if (isData(x)) s = s + x)
     s
   }
 
-  def converge(ds:DataSource[Double,_]) =
+  def converge(ds: DataSource[Double, _]) =
     ds.reduce(_+_)
 }

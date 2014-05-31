@@ -45,8 +45,9 @@ class ConstantAdd extends OperationBenchmark {
 
   override def setUp() {
     val id = layers(rasterType)
-    op = Add(loadRaster(id,size,size),13)
-    source = 13 +: RasterSource(loadRaster(id, size, size))
+    val re =  getRasterExtent(id, size, size)
+    op = Add(RasterSource(id,re).get,13)
+    source = 13 +: RasterSource(RasterSource(id,re).get, re.extent)
   }
 
   def timeConstantAddOp(reps:Int) = run(reps)(constantAddOp)

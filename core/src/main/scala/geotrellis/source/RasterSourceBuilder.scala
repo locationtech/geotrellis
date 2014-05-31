@@ -49,24 +49,25 @@ object RasterSourceBuilder {
   * Should only be used for in memory rasters, i.e. mapping a ValueSource
   * to a RasterSource.
   */
-class BareRasterSourceBuilder extends SourceBuilder[Raster,RasterSource] {
-  private var _dataDefinition:Op[RasterDefinition] = null
-  private var _ops:Op[Seq[Op[Raster]]] = null
+// TODO: FIXME!
+// class BareRasterSourceBuilder extends SourceBuilder[Raster,RasterSource] {
+//   private var _dataDefinition:Op[RasterDefinition] = null
+//   private var _ops:Op[Seq[Op[Raster]]] = null
 
-  def setOp(op: Op[Seq[Op[Raster]]]): this.type = {
-    _ops = op
-    this
-  }
+//   def setOp(op: Op[Seq[Op[Raster]]]): this.type = {
+//     _ops = op
+//     this
+//   }
 
-  def setRasterDefinition(dfn: Op[RasterDefinition]): this.type = 
-    sys.error("Shouldn't be setting the RasterDefinition of a BareRasterSourceBuilder, use RasterSourceBuilder instead.")
+//   def setRasterDefinition(dfn: Op[RasterDefinition]): this.type = 
+//     sys.error("Shouldn't be setting the RasterDefinition of a BareRasterSourceBuilder, use RasterSourceBuilder instead.")
 
-  def result = {
-    val rasterDefinition = 
-      for(seq <- _ops;
-          r <- seq.head) yield {
-        RasterDefinition.fromRaster(r)
-      }
-    new RasterSource(rasterDefinition,_ops)
-  }
-}
+//   def result = {
+//     val rasterDefinition = 
+//       for(seq <- _ops;
+//           r <- seq.head) yield {
+//         RasterDefinition.fromRaster(r)
+//       }
+//     new RasterSource(rasterDefinition,_ops)
+//   }
+// }

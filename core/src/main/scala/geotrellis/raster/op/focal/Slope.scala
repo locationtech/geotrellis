@@ -87,7 +87,7 @@ object Slope {
   */
 class Slope(r:Op[Raster], ns:Op[TileNeighbors], zFactor:Op[Double]) 
     extends FocalOp1[Double,Raster](r,Square(1),ns,zFactor)({
-  (r,n) => new SurfacePointCalculation[Raster] with DoubleRasterDataResult 
+  (r,n) => new SurfacePointCalculation[Raster] with DoubleArrayTileResult 
                                                with Initialization1[Double] {
     var zFactor = 0.0
 

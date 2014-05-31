@@ -17,11 +17,11 @@
 package geotrellis.raster.op.focal
 
 import scala.collection.mutable
-import scala.math.{min,max}
+import scala.math.{min, max}
 import geotrellis._
 import Movement._
 
-sealed trait Movement { val isVertical:Boolean }
+sealed trait Movement { val isVertical: Boolean }
 
 /**
  * Movements used to move a [[Cursor]] around, and to track it's movements.
@@ -41,7 +41,7 @@ trait CellSet {
    * @param    f      Function that takes col and row coordinates, that will be called
    *                  for each cell contained in this CellSet.
    */
-  def foreach(f:(Int,Int)=>Unit):Unit
+  def foreach(f: (Int, Int)=>Unit): Unit
 }
 
 
@@ -56,15 +56,15 @@ object Cursor {
    *                      for extent and mask.
    * @param analysisArea  Analysis area
    */
-  def apply(r:Raster,n:Neighborhood,analysisArea:GridBounds):Cursor = {
-    val result = new Cursor(r,analysisArea,n.extent)
+  def apply(r: Raster, n: Neighborhood, analysisArea: GridBounds): Cursor = {
+    val result = new Cursor(r, analysisArea, n.extent)
     if(n.hasMask) { result.setMask(n.mask) }
     result
   }
 
-  def apply(r:Raster,n:Neighborhood):Cursor =  apply(r,n,GridBounds(r))
+  def apply(r: Raster, n: Neighborhood): Cursor =  apply(r, n, GridBounds(r))
 
-  def apply(r:Raster,extent:Int):Cursor = new Cursor(r,GridBounds(r),extent)
+  def apply(r: Raster, extent: Int): Cursor = new Cursor(r, GridBounds(r), extent)
 }
 
 /**
@@ -78,9 +78,9 @@ object Cursor {
  *                                   e.g. if the bounding box is 3x3, then
  *                                   the distance from center is 1.
  */
-class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
-  private val rows = r.rasterExtent.rows
-  private val cols = r.rasterExtent.cols
+class Cursor(r: Raster, analysisArea: GridBounds, val extent: Int) {
+  private val rows = r.rows
+  private val cols = r.cols
 
   // How many columns from the left/top of the input raster does the analysis area begin?
   val analysisOffsetCols = analysisArea.colMin
@@ -88,7 +88,7 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
 
   private val d = 2*extent + 1
 
-  private var mask:CursorMask = null
+  private var mask: CursorMask = null
   private var hasMask = false
 
   // Values to track the bound of the cursor
@@ -133,12 +133,12 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
    * @param   col    Column of raster to center on.
    * @param   row    Row of raster to center on.
    */
-  def centerOn(col:Int,row:Int) = { 
+  def centerOn(col: Int, row: Int) = { 
     movement = NoMovement
     _col = col
     _row = row
 
-    _colmin = max(0,_col - extent)
+    _colmin = max(0, _col - extent)
     _colmax = min(cols - 1, _col + extent)
     _rowmin = max(0, _row - extent)
     _rowmax = min(rows - 1, _row + extent)
@@ -156,9 +156,9 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
    * are accounted for.
    *
    * param     m     Movement enum that represents moving the cursor
-   *                 Up,Down,Left or Right.
+   *                 Up, Down, Left or Right.
    */
-  def move(m:Movement) = {
+  def move(m: Movement) = {
     movement = m
     m match {
       case Up => 
@@ -180,7 +180,7 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
       case _ => 
     }
 
-    _colmin = max(0,_col - extent)
+    _colmin = max(0, _col - extent)
     _colmax = min(cols - 1, _col + extent)
     _rowmin = max(0, _row - extent)
     _rowmax = min(rows - 1, _row + extent)
@@ -191,16 +191,16 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
    * @param     f    Function that takes a col and row of the neighborhood coordinates
    *                 and returns true if that cell should be masked.
    *                 The neighborhood coordinates are the size of the cursor's
-   *                 bounding box, with (0,0) being the top right corner.
+   *                 bounding box, with (0, 0) being the top right corner.
    */
-  def setMask(f:(Int,Int) => Boolean) = {
+  def setMask(f: (Int, Int) => Boolean) = {
     hasMask = true
-    mask = new CursorMask(d,f)
+    mask = new CursorMask(d, f)
   }
 
   /** A [[CellSet]] reperesenting all unmasked cells that are within the cursor bounds. */
   val allCells = new CellSet {
-    def foreach(f:(Int,Int)=>Unit) = Cursor.this.foreach(f)
+    def foreach(f: (Int, Int)=>Unit) = Cursor.this.foreach(f)
   }
 
   /** A [[CellSet]] reperesenting unmasked cells currently within the cursor bounds,
@@ -209,7 +209,7 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
    *  as allCells.
    */
   val addedCells = new CellSet {
-    def foreach(f:(Int,Int)=>Unit) = { Cursor.this.foreachAdded(f) }
+    def foreach(f: (Int, Int)=>Unit) = { Cursor.this.foreachAdded(f) }
   }
 
   /** A [[CellSet]] reperesenting cells that were moved outside the cursor bounds,
@@ -217,7 +217,7 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
    *  If the cursor has not been moved this will be a no-op.
    */
   val removedCells = new CellSet {
-    def foreach(f:(Int,Int)=>Unit) = Cursor.this.foreachRemoved(f)
+    def foreach(f: (Int, Int)=>Unit) = Cursor.this.foreachRemoved(f)
   }
 
   /**
@@ -227,14 +227,14 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
    * @param     f         Function that receives from each cell
    *                      it's col and row coordinates and it's value.
    */
-  protected def foreach(f: (Int,Int)=>Unit):Unit = {
+  protected def foreach(f: (Int, Int)=>Unit): Unit = {
     if(!hasMask) {
       var y = _rowmin
       var x = 0
       while(y <= _rowmax) {
         x = _colmin
         while(x <= _colmax) {
-          f(x,y)
+          f(x, y)
           x += 1
         }
         y += 1
@@ -246,7 +246,7 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
           val xRaster = x + (_col-extent)
           val yRaster = y + (_row-extent)
           if(_colmin <= xRaster && xRaster <= _colmax && _rowmin <= yRaster && yRaster <= _rowmax) {
-            f(xRaster,yRaster)
+            f(xRaster, yRaster)
           }
         }
         y += 1
@@ -268,7 +268,7 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
    * @param     f         Function that receives from each cell it's
    *                      col and row coordinates and it's value.
    */
-  protected def foreachAdded(f:(Int,Int)=>Unit):Unit = {
+  protected def foreachAdded(f: (Int, Int)=>Unit): Unit = {
     if(movement == NoMovement) {
       foreach(f) 
     } else if (movement.isVertical) {
@@ -276,14 +276,14 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
         if(!hasMask) {
           var x = _colmin
           while(x <= _colmax) {
-            f(x,addedRow)
+            f(x, addedRow)
             x += 1
           }
         } else {
           mask.foreachX(addedRow-(_row-extent)) { x =>
             val xRaster = x+(_col-extent)
             if(0 <= xRaster && xRaster <= cols) {
-              f(xRaster,addedRow)
+              f(xRaster, addedRow)
             }
           }
         }
@@ -293,7 +293,7 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
         if(!hasMask) {
           var y = _rowmin
           while(y <= _rowmax) {
-            f(addedCol,y)
+            f(addedCol, y)
             y += 1
           }
         } else {
@@ -301,14 +301,14 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
             mask.foreachWestColumn { y =>
               val yRaster = y+(_row-extent)
               if(0 <= yRaster && yRaster < rows) {
-                f(addedCol,yRaster)
+                f(addedCol, yRaster)
               }
             }
           } else { // Right
             mask.foreachEastColumn { y =>
               val yRaster = y+(_row-extent)
               if(0 <= yRaster && yRaster < rows) {
-                f(addedCol,yRaster)
+                f(addedCol, yRaster)
               }
             }
           }
@@ -317,11 +317,11 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
     }
 
     if(hasMask) {
-      mask.foreachUnmasked(movement) { (x,y) =>
+      mask.foreachUnmasked(movement) { (x, y) =>
         val xRaster = x+(_col-extent)
         val yRaster = y+(_row-extent)
         if(0 <= xRaster && xRaster < cols && 0 <= yRaster && yRaster < rows) {
-          f(xRaster,yRaster)
+          f(xRaster, yRaster)
         }
       }
     }
@@ -341,7 +341,7 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
    * @param     f         Function that receives from each cell it's
    *                      col and row coordinates and it's value.
    */
-  protected def foreachRemoved(f:(Int,Int)=>Unit):Unit = {
+  protected def foreachRemoved(f: (Int, Int)=>Unit): Unit = {
     if(movement == NoMovement) { return }
 
     if(movement.isVertical) {
@@ -349,7 +349,7 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
         if(!hasMask) {
           var x = _colmin
           while(x <= _colmax) {
-            f(x,removedRow)
+            f(x, removedRow)
             x += 1
           }
         } else {
@@ -357,7 +357,7 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
             mask.foreachX(d-1) { x =>
               val xRaster = x+(_col-extent)
               if(0 <= xRaster && xRaster < cols) {
-                f(xRaster,removedRow)
+                f(xRaster, removedRow)
               }
             }
           }
@@ -365,7 +365,7 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
             mask.foreachX(0) { x =>
               val xRaster = x+(_col-extent)
               if(0 <= xRaster && xRaster < cols) {
-                f(xRaster,removedRow)
+                f(xRaster, removedRow)
               }
             }
           }
@@ -376,7 +376,7 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
         if(!hasMask) {
           var y = _rowmin
           while(y <= _rowmax) {
-            f(removedCol,y)
+            f(removedCol, y)
             y += 1
           }
         } else {
@@ -384,14 +384,14 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
             mask.foreachEastColumn { y =>
               val yRaster = y+(_row-extent)
               if(0 <= yRaster && yRaster < rows) {
-                f(removedCol,yRaster)
+                f(removedCol, yRaster)
               }
             }
           } else { //Right
             mask.foreachWestColumn { y =>
               val yRaster = y+(_row-extent)
               if(0 <= yRaster && yRaster < rows) {
-                f(removedCol,yRaster)
+                f(removedCol, yRaster)
               }
             }
           }
@@ -400,23 +400,23 @@ class Cursor(r:Raster, analysisArea:GridBounds, val extent:Int) {
     }
 
     if(hasMask) {
-      mask.foreachMasked(movement) { (x,y) =>
+      mask.foreachMasked(movement) { (x, y) =>
         val xRaster = x+(_col-extent)
         val yRaster = y+(_row-extent)
         if(0 <= xRaster && xRaster < cols && 0 <= yRaster && yRaster < rows) {
-          f(xRaster,yRaster)
+          f(xRaster, yRaster)
         }
       }
     }
   }
 
-  def asciiDraw:String = {
+  def asciiDraw: String = {
     val sb = new StringBuilder
     var row = 0
-    allCells.foreach { (cl,rw) =>
+    allCells.foreach { (cl, rw) =>
       if(row != rw) { sb.append("\n") ; row += 1 }
-      val s = r.get(cl,rw).toString
-      val pad = " " * math.max(6 - s.length,0)
+      val s = r.get(cl, rw).toString
+      val pad = " " * math.max(6 - s.length, 0)
       sb.append(s"$pad$s")
     }
     sb.toString

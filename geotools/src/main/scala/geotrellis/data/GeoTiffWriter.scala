@@ -17,6 +17,7 @@
 package geotrellis.data
 
 import geotrellis._
+import geotrellis.feature.Extent
 import geotrellis.data.geotiff._
 
 
@@ -30,12 +31,12 @@ object GeoTiffWriter extends Writer {
   def rasterType = "geotiff" 
   def dataType = ""
 
-  def write(path:String, raster:Raster, name:String) {
-    Encoder.writePath(path, raster, settings(raster.rasterType))   
+  def write(path: String, raster: Raster, extent: Extent, name: String) {
+    Encoder.writePath(path, raster, RasterExtent(extent, raster.cols, raster.rows), settings(raster.rasterType))   
   }
   
-  def write(path:String, raster:Raster, nodata:Double) {
-    Encoder.writePath(path, raster, settings(raster.rasterType).setNodata(nodata))   
+  def write(path: String, raster: Raster, extent: Extent, nodata: Double) {
+    Encoder.writePath(path, raster, RasterExtent(extent, raster.cols, raster.rows), settings(raster.rasterType).setNodata(nodata))   
   }
   
   private def settings(rasterType: RasterType) = rasterType match {

@@ -35,7 +35,7 @@ import scala.math._
 case class StandardDeviation(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,n,tns)({
   (r,n) => 
     if(r.isFloat) {
-      new CursorCalculation[Raster] with DoubleRasterDataResult {
+      new CursorCalculation[Raster] with DoubleArrayTileResult {
         var count:Int = 0
         var sum:Double = 0
 
@@ -64,7 +64,7 @@ case class StandardDeviation(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbor
         }
       }
     } else {
-      new CursorCalculation[Raster] with DoubleRasterDataResult {
+      new CursorCalculation[Raster] with DoubleArrayTileResult {
       var count:Int = 0
       var sum:Int = 0
 

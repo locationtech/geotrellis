@@ -36,8 +36,8 @@ case class ZonalHistogram(data: Op[Raster], zones: Op[Raster])
   (raster, zones) => {
     val histMap = mutable.Map[Int,FastMapHistogram]()
 
-    val rows  = raster.rasterExtent.rows
-    val cols  = raster.rasterExtent.cols
+    val rows  = raster.rows
+    val cols  = raster.cols
 
     for(row <- 0 until rows optimized) {
       for(col <- 0 until cols optimized) {

@@ -48,8 +48,7 @@ class GenericRaster extends OperationBenchmark {
 
   override def setUp() {
     val len = size * size
-    val re = RasterExtent(Extent(0, 0, size, size), 1.0, 1.0, size, size)
-    raster = Raster(init(len)(Random.nextInt), re)
+    raster = Raster(init(len)(Random.nextInt), size, size)
     genericRaster = new GRaster(init(len)(Random.nextInt))
 
   }

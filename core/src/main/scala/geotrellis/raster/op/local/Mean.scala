@@ -26,31 +26,25 @@ import scalaxy.loops._
  * The mean of values at each location in a set of Rasters.
  */
 object Mean extends Serializable {
-  def apply(rs:Raster*)(implicit d: DI): Raster = apply(rs)
+  def apply(rs: Raster*)(implicit d: DI): Raster = apply(rs)
 
   def apply(rs: Seq[Raster]): Raster = {
-    if(Set(rs.map(_.rasterExtent)).size != 1) {
-      val rasterExtents = rs.map(_.rasterExtent).toSeq
-      throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
-        s"$rasterExtents are not all equal")
-    }
+    rs.assertEqualDimensions
 
     val layerCount = rs.length
     if(layerCount == 0) {
       sys.error(s"Can't compute mean of empty sequence")
     } else {
       val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
-      val re = rs(0).rasterExtent
-      val cols = re.cols
-      val rows = re.rows
-      val data = RasterData.allocByType(newRasterType,cols,rows)
+      val (cols, rows) = rs(0).dimensions
+      val data = ArrayTile.allocByType(newRasterType, cols, rows)
       if(newRasterType.isDouble) {
         for(col <- 0 until cols optimized) {
           for(row <- 0 until rows optimized) {
             var count = 0
             var sum = 0.0
             for(i <- 0 until layerCount optimized) {
-              val v = rs(i).getDouble(col,row)
+              val v = rs(i).getDouble(col, row)
               if(isData(v)) {
                 count += 1
                 sum += v
@@ -58,9 +52,9 @@ object Mean extends Serializable {
             }
 
             if(count > 0) {
-              data.setDouble(col,row,sum/count)
+              data.setDouble(col, row, sum/count)
             } else {
-              data.setDouble(col,row,Double.NaN)
+              data.setDouble(col, row, Double.NaN)
             }
           }
         }
@@ -70,21 +64,21 @@ object Mean extends Serializable {
             var count = 0
             var sum = 0
             for(i <- 0 until layerCount optimized) {
-              val v = rs(i).get(col,row)
+              val v = rs(i).get(col, row)
               if(isData(v)) {
                 count += 1
                 sum += v
               }
             }
             if(count > 0) {
-              data.set(col,row,sum/count)
+              data.set(col, row, sum/count)
             } else {
-              data.set(col,row,NODATA)
+              data.set(col, row, NODATA)
             }
           }
         }
       }
-      ArrayRaster(data,re)
+      ArrayRaster(data, cols, rows)
     }
   }
 }

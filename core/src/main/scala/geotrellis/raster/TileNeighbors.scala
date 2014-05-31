@@ -24,45 +24,45 @@ import scala.collection.mutable
 
 object TileNeighbors {
   val NONE = new TileNeighbors {
-    def n:Option[Op[Raster]] = None 
-    def ne:Option[Op[Raster]] = None 
-    def e:Option[Op[Raster]] = None 
-    def se:Option[Op[Raster]] = None 
-    def s:Option[Op[Raster]] = None 
-    def sw:Option[Op[Raster]] = None 
-    def w:Option[Op[Raster]] = None 
-    def nw:Option[Op[Raster]] = None 
+    def n: Option[Op[Tile]] = None 
+    def ne: Option[Op[Tile]] = None 
+    def e: Option[Op[Tile]] = None 
+    def se: Option[Op[Tile]] = None 
+    def s: Option[Op[Tile]] = None 
+    def sw: Option[Op[Tile]] = None 
+    def w: Option[Op[Tile]] = None 
+    def nw: Option[Op[Tile]] = None 
 
-    def getNeighbors:Op[Seq[Option[Raster]]] = Literal(Seq[Option[Raster]]())
+    def getNeighbors: Op[Seq[Option[Tile]]] = Literal(Seq[Option[Tile]]())
   }
 }
 
 trait TileNeighbors {
   /** North */
-  def n:Option[Op[Raster]]
+  def n: Option[Op[Tile]]
   /** NorthEast */
-  def ne:Option[Op[Raster]]
+  def ne: Option[Op[Tile]]
   /** East */
-  def e:Option[Op[Raster]]
+  def e: Option[Op[Tile]]
   /** SoutEast */
-  def se:Option[Op[Raster]]
+  def se: Option[Op[Tile]]
   /** South */
-  def s:Option[Op[Raster]]
+  def s: Option[Op[Tile]]
   /** SouthWest */
-  def sw:Option[Op[Raster]]
+  def sw: Option[Op[Tile]]
   /** West */
-  def w:Option[Op[Raster]]
+  def w: Option[Op[Tile]]
   /** NorthWest */
-  def nw:Option[Op[Raster]]
+  def nw: Option[Op[Tile]]
 
-  def getNeighbors:Op[Seq[Option[Raster]]]
+  def getNeighbors: Op[Seq[Option[Tile]]]
 }
 
 /** 
  * Tile Neighbors that are represented by a sequence of neighboring tiles,
- * in the order (n,ne,e,se,s,sw,w,nw)
+ * in the order (n, ne, e, se, s, sw, w, nw)
  */
-case class SeqTileNeighbors(seq:Seq[Option[Op[Raster]]]) extends TileNeighbors {
+case class SeqTileNeighbors(seq: Seq[Option[Op[Tile]]]) extends TileNeighbors {
   def n = seq(0)
   def ne = seq(1)
   def e = seq(2)
@@ -73,7 +73,7 @@ case class SeqTileNeighbors(seq:Seq[Option[Op[Raster]]]) extends TileNeighbors {
   def nw = seq(7)
 
   def getNeighbors =
-    if(seq.flatten.isEmpty) { Literal(Seq[Option[Raster]]()) }
+    if(seq.flatten.isEmpty) { Literal(Seq[Option[Tile]]()) }
     else {
       logic.Collect(
         seq.map {

@@ -172,7 +172,7 @@ final class CalcFastFocalMean(r:Raster, n:Int) {
     }
 
     // we have all our data, so let's return it!
-    Result(Raster(out, r.rasterExtent))
+    Result(Raster(out, r.cols, r.rows))
   }
 
   /**

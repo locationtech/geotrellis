@@ -28,36 +28,33 @@ import scalaxy.loops._
  * @return     An TypeInt raster with the count values.
  */
 object Variety extends Serializable {
-  def apply(r:Raster*)(implicit d:DI):Raster =
+  def apply(r: Raster*)(implicit d: DI): Raster =
     apply(r)
-  def apply(rs:Seq[Raster]):Raster = {
-    if(Set(rs.map(_.rasterExtent)).size != 1) {
-      val rasterExtents = rs.map(_.rasterExtent).toSeq
-      throw new GeoAttrsError("Cannot combine rasters with different raster extents." +
-        s"$rasterExtents are not all equal")
+  def apply(rs: Seq[Raster]): Raster = {
+    if(Set(rs.map(_.dimensions)).size != 1) {
+      val dimensions = rs.map(_.dimensions).toSeq
+      throw new GeoAttrsError("Cannot combine rasters with different dimensions." +
+        s"$dimensions are not all equal")
     }
 
     val layerCount = rs.length
     if(layerCount == 0) {
       sys.error(s"Can't compute variety of empty sequence")
     } else {
-      val re = rs(0).rasterExtent
-      val cols = re.cols
-      val rows = re.rows
-      val data = RasterData.allocByType(TypeInt,cols,rows)
+      val (cols, rows) = rs(0).dimensions
+      val data = ArrayTile.allocByType(TypeInt, cols, rows)
 
       for(col <- 0 until cols optimized) {
         for(row <- 0 until rows optimized) {
           val variety =
-            rs.map(r => r.get(col,row))
+            rs.map(r => r.get(col, row))
               .toSet
               .filter(isData(_))
               .size
-          data.set(col,row,
-            if(variety == 0) { NODATA } else { variety })
+          data.set(col, row, if(variety == 0) { NODATA } else { variety })
         }
       }
-      Raster(data,re)
+      Raster(data, cols, rows)
     }
   }
 }

@@ -19,9 +19,8 @@ package geotrellis.testkit
 import geotrellis._
 import geotrellis.raster.op._
 import geotrellis.process._
-import org.scalatest.{BeforeAndAfter,Suite}
-import org.scalatest.matchers._
 import geotrellis.source.DataSource
+import org.scalatest._
 
 object TestServer {
   lazy val init = {
@@ -29,8 +28,7 @@ object TestServer {
   }
 }
 
-trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
-//  val server = TestServer.server
+trait TestServer extends Suite with BeforeAndAfter with Matchers {
   TestServer.init
 
   def run[T](op:Op[T]):OperationResult[T] = GeoTrellis.run(op)
@@ -71,8 +69,8 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
 
   def assertEqual(r:Op[Raster],arr:Array[Double],threshold:Double):Unit = {
     val raster = get(r)
-    val cols = raster.rasterExtent.cols
-    val rows = raster.rasterExtent.rows
+    val cols = raster.cols
+    val rows = raster.rows
     for(row <- 0 until rows) {
       for(col <- 0 until cols) {
         val v1 = raster.getDouble(col,row)
@@ -88,7 +86,7 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
             }
           } else {
             withClue(s"Value at ($col,$row) are not the same:") {
-              v1 should be (v2 plusOrMinus threshold)
+              v1 should be (v2 +- threshold)
             }
           }
         }
@@ -103,25 +101,6 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
     val r1 = get(rOp1)
     val r2 = get(rOp2)
     
-    withClue("Extent xmins are not equal") { 
-      r1.rasterExtent.extent.xmin should be (r2.rasterExtent.extent.xmin plusOrMinus threshold)
-    }
-    withClue("Extent ymins are not equal") { 
-      r1.rasterExtent.extent.ymin should be (r2.rasterExtent.extent.ymin plusOrMinus threshold)
-    }
-    withClue("Extent xmaxs are not equal") { 
-      r1.rasterExtent.extent.xmax should be (r2.rasterExtent.extent.xmax plusOrMinus threshold)
-    }
-    withClue("Extent ymaxs are not equal") { 
-      r1.rasterExtent.extent.ymax should be (r2.rasterExtent.extent.ymax plusOrMinus threshold)
-    }
-    withClue("RasterExtent cellwidths are not equal") { 
-      r1.rasterExtent.cellwidth should be (r2.rasterExtent.cellwidth plusOrMinus threshold)
-    }
-    withClue("RasterExtent cellheights are not equal") { 
-      r1.rasterExtent.cellheight should be (r2.rasterExtent.cellheight plusOrMinus threshold)
-    }
-
     withClue("Columns are not equal") { r1.cols should be (r2.cols) }
     withClue("Rows are not equal") { r1.rows should be (r2.rows) }
     withClue("isFloat properties are not equal") { r1.isFloat should be (r2.isFloat) }

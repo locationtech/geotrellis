@@ -40,9 +40,9 @@ case class ZonalPercentage(r: Op[Raster], zones: Op[Raster])
     val zonesToValueCounts = mutable.Map[Int,mutable.Map[Int,Int]]()       
     val zoneTotals = mutable.Map[Int,Int]()
 
-    val (cols,rows) = (r.rasterExtent.cols,r.rasterExtent.rows)
-    if(r.rasterExtent.cols != zones.rasterExtent.cols ||
-       r.rasterExtent.rows != zones.rasterExtent.rows) {
+    val (cols,rows) = (r.cols,r.rows)
+    if(r.cols != zones.cols ||
+       r.rows != zones.rows) {
       sys.error(s"The zone raster is not the same dimensions as the data raster.")
     }
 
@@ -65,7 +65,7 @@ case class ZonalPercentage(r: Op[Raster], zones: Op[Raster])
       }
     }
 
-    val data = IntArrayRasterData.empty(cols,rows)
+    val data = IntArrayTile.empty(cols,rows)
 
     for (row <- 0 until rows optimized) {
       for (col <- 0 until cols optimized) {
@@ -77,5 +77,5 @@ case class ZonalPercentage(r: Op[Raster], zones: Op[Raster])
       }
     }
 
-    Result(Raster(data,r.rasterExtent))
+    Result(Raster(data, cols, rows))
 })

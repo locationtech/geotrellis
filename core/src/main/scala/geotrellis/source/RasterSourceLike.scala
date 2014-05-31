@@ -30,8 +30,8 @@ import scalaxy.loops._
 import scala.collection.mutable
 
 trait RasterSourceLike[+Repr <: RasterSource] 
-    extends DataSourceLike[Raster,Raster, Repr]
-    with DataSource[Raster,Raster] 
+    extends DataSourceLike[Raster, Raster, Repr]
+    with DataSource[Raster, Raster] 
     with local.LocalOpMethods[Repr] 
     with focal.FocalOpMethods[Repr]
     with global.GlobalOpMethods[Repr]
@@ -43,25 +43,25 @@ trait RasterSourceLike[+Repr <: RasterSource]
     with RenderOpMethods[Repr] { self: Repr =>
 
   def tiles = self.elements
-  def rasterDefinition:Op[RasterDefinition]
+  def rasterDefinition: Op[RasterDefinition]
 
-  def convergeOp():Op[Raster] =
+  def convergeOp(): Op[Raster] =
     tiles.flatMap { ts =>
       if(ts.size == 1) { ts(0) }
       else { 
-        (rasterDefinition,logic.Collect(ts)).map { (rd,tileSeq) =>
-          TileRaster(tileSeq,rd.rasterExtent,rd.tileLayout).toArrayRaster
+        (rasterDefinition, logic.Collect(ts)).map { (rd, tileSeq) =>
+          TileRaster(tileSeq, rd.tileLayout).toArrayRaster
         }
       }
     }
 
-  def global[That](f:Raster=>Raster)
-                  (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
-    val tileOps:Op[Seq[Op[Raster]]] =
-      (rasterDefinition,logic.Collect(tiles)).map { (rd,tileSeq) =>
+  def global[That](f: Raster=>Raster)
+                  (implicit bf: CanBuildSourceFrom[Repr, Raster, That]): That = {
+    val tileOps: Op[Seq[Op[Raster]]] =
+      (rasterDefinition, logic.Collect(tiles)).map { (rd, tileSeq) =>
         if(rd.isTiled) {
-          val r = f(TileRaster(tileSeq.toSeq, rd.rasterExtent,rd.tileLayout))
-          TileRaster.split(r,rd.tileLayout).map(Literal(_))
+          val r = f(TileRaster(tileSeq.toSeq, rd.tileLayout))
+          TileRaster.split(r, rd.tileLayout).map(Literal(_))
         } else {
           Seq(f(tileSeq(0)))
         }
@@ -72,13 +72,13 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.result
   }
 
-  def globalOp[T,That](f:Raster=>Op[Raster])
-                      (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
-    val tileOps:Op[Seq[Op[Raster]]] =
-      (rasterDefinition,logic.Collect(tiles)).flatMap { (rd,tileSeq) =>
+  def globalOp[T, That](f: Raster=>Op[Raster])
+                      (implicit bf: CanBuildSourceFrom[Repr, Raster, That]): That = {
+    val tileOps: Op[Seq[Op[Raster]]] =
+      (rasterDefinition, logic.Collect(tiles)).flatMap { (rd, tileSeq) =>
         if(rd.isTiled) {
-          f(TileRaster(tileSeq.toSeq, rd.rasterExtent,rd.tileLayout)).map { r =>
-            TileRaster.split(r,rd.tileLayout).map(Literal(_))
+          f(TileRaster(tileSeq.toSeq, rd.tileLayout)).map { r =>
+            TileRaster.split(r, rd.tileLayout).map(Literal(_))
           }
         } else {
           Seq(f(tileSeq(0)))
@@ -90,7 +90,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.result
   }
 
-  def convert(newType:RasterType) = {
+  def convert(newType: RasterType) = {
     val newDef = rasterDefinition.map(_.withType(newType))
     val ops = tiles.map { seq => seq.map { tile => tile.map { r => r.convert(newType) } } }
     val builder = new RasterSourceBuilder()
@@ -101,37 +101,37 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.result
   }
 
-  def min():ValueSource[Int] = 
+  def min(): ValueSource[Int] = 
     self.map(_.findMinMax._1)
-        .reduce { (m1,m2) =>
+        .reduce { (m1, m2) =>
           if(isNoData(m1)) m2
           else if(isNoData(m2)) m1
-          else math.min(m1,m2)
+          else math.min(m1, m2)
          }
 
-  def max():ValueSource[Int] = 
+  def max(): ValueSource[Int] = 
     self.map(_.findMinMax._2)
-        .reduce { (m1,m2) =>
+        .reduce { (m1, m2) =>
           if(isNoData(m1)) m2
           else if(isNoData(m2)) m1
-          else math.max(m1,m2)
+          else math.max(m1, m2)
          }
 
-  def minMax():ValueSource[(Int,Int)] = 
+  def minMax(): ValueSource[(Int, Int)] = 
     self.map(_.findMinMax)
-        .reduce { (mm1,mm2) =>
-          val (min1,max1) = mm1
-          val (min2,max2) = mm2
+        .reduce { (mm1, mm2) =>
+          val (min1, max1) = mm1
+          val (min2, max2) = mm2
           (if(isNoData(min1)) min2
            else if(isNoData(min2)) min1
-           else math.min(min1,min2),
+           else math.min(min1, min2), 
            if(isNoData(max1)) max2
            else if(isNoData(max2)) max1
-           else math.max(max1,max2)
+           else math.max(max1, max2)
           )
          }
 
-  def info:ValueSource[process.RasterLayerInfo] = 
+  def info: ValueSource[process.RasterLayerInfo] = 
     ValueSource(
       rasterDefinition
         .flatMap { rd => 
@@ -143,7 +143,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
         }
     )
 
-  def rasterExtent:ValueSource[RasterExtent] =
+  def rasterExtent: ValueSource[RasterExtent] =
     ValueSource(rasterDefinition.map(_.rasterExtent))
 
   private def warp(targetOp: Op[RasterExtent]): RasterSource = {
@@ -153,7 +153,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
         RasterDefinition(
           rd.layerId,
           target,
-          TileLayout.singleTile(target.cols,target.rows),
+          TileLayout.singleTile(target.cols, target.rows),
           rd.rasterType
         )
       }
@@ -167,12 +167,11 @@ trait RasterSourceLike[+Repr <: RasterSource]
           val targetExtent = target.extent
           val resLayout = tileLayout.getResolutionLayout(re)
 
-          val warped = mutable.ListBuffer[Op[Raster]]()
+          val warped = mutable.ListBuffer[Op[(Raster, Extent)]]()
           val tCols = tileLayout.tileCols
           val tRows = tileLayout.tileRows
           for(tCol <- 0 until tCols optimized) {
             for(tRow <- 0 until tRows optimized) {
-              val sourceRasterExtent = resLayout.getRasterExtent(tCol, tRow)
               val sourceExtent = resLayout.getExtent(tCol, tRow)
               sourceExtent.intersection(targetExtent) match {
                 case Some(ext) =>
@@ -181,28 +180,27 @@ trait RasterSourceLike[+Repr <: RasterSource]
                   val tileRe = RasterExtent(ext, re.cellwidth, re.cellheight, cols, rows)
 
                   // Read section of the tile
-                  warped += seq(tCols * tRow + tCol).map(_.warp(tileRe))
+                  warped += seq(tCols * tRow + tCol).map { r => (r.warp(sourceExtent, tileRe), ext) }
                 case None => // pass
               }
             }
           }
 
           if (warped.size == 0) {
-            Seq(Literal(Raster(RasterData.emptyByType(rd.rasterType, target.cols, target.rows), target)))
+            Seq(Literal(Raster(RasterData.emptyByType(rd.rasterType, target.cols, target.rows), target.cols, target.rows)))
           } else if (warped.size == 1) {
-            warped.toSeq
+            Seq(warped.head.map(_._1))
           } else {
 
             // Create destination raster data
             logic.Collect(warped) map { warped =>
               val data = RasterData.emptyByType(rd.rasterType, re.cols, re.rows)
 
-              for(rasterPart <- warped) {
-                val tileRe = rasterPart.rasterExtent
-
+              for((rasterPart, extent) <- warped) {
                 // Copy over the values to the correct place in the raster data
-                val cols = tileRe.cols
-                val rows = tileRe.rows
+                val cols = rasterPart.cols
+                val rows = rasterPart.rows
+                val tileRe = RasterExtent(extent, cols, rows)
 
                 if (rd.rasterType.isDouble) {
                   for(partCol <- 0 until cols optimized) {
@@ -234,15 +232,15 @@ trait RasterSourceLike[+Repr <: RasterSource]
                   }
                 }
               }
-              Seq(Literal(Raster(data, target)))
+              Seq(Literal(Raster(data, target.cols, target.rows)))
             }
           }
         } else {
-          Seq(seq(0).map(_.warp(target)))
+          Seq(seq(0).map(_.warp(rd.rasterExtent.extent, target)))
         }
       }
 
-    RasterSource(newDef,newOp)
+    RasterSource(newDef, newOp)
   }
 
   def warp(target: RasterExtent): RasterSource =

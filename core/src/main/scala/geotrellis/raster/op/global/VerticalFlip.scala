@@ -26,13 +26,12 @@ import geotrellis.process._
  * The geographic extent will remain unchanged.
  *
  * @note    VerticalFlip does not currently support Double raster data.
- *          If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *          If you use a Raster with a Double RasterType (TypeFloat, TypeDouble)
  *          the data values will be rounded to integers.
  */
-case class VerticalFlip(r:Op[Raster]) extends Op1(r) ({
+case class VerticalFlip(r: Op[Raster]) extends Op1(r) ({
   r =>
-    val cols = r.cols
-    val rows = r.cols
+    val (cols, rows) = r.dimensions
     val data = r.toArray
     val data2 = Array.ofDim[Int](data.length)
  
@@ -48,5 +47,5 @@ case class VerticalFlip(r:Op[Raster]) extends Op1(r) ({
       }
       y += 1
     }
-    Result(Raster(data2,r.rasterExtent))
+    Result(Raster(data2, cols, rows))
 })

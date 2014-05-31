@@ -41,7 +41,7 @@ object Mode {
   def apply(r:Op[Raster],n:Op[Neighborhood]) = new Mode(r,n,TileNeighbors.NONE)
 }
 
-class CursorModeCalc(extent:Int) extends CursorCalculation[Raster] with IntRasterDataResult 
+class CursorModeCalc(extent:Int) extends CursorCalculation[Raster] with IntArrayTileResult 
                                                                    with MedianModeCalculation {
   initArray(extent)
                                                          
@@ -60,7 +60,7 @@ class CursorModeCalc(extent:Int) extends CursorCalculation[Raster] with IntRaste
   }
 }
 
-class CellwiseModeCalc(extent:Int) extends CellwiseCalculation[Raster] with IntRasterDataResult 
+class CellwiseModeCalc(extent:Int) extends CellwiseCalculation[Raster] with IntArrayTileResult 
                                                                        with MedianModeCalculation {
   initArray(extent)
 

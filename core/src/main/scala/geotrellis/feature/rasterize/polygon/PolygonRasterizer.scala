@@ -26,7 +26,7 @@ object PolygonRasterizer {
   /**
    * Apply a function to each raster cell that intersects with a polygon.
    */
-  def foreachCellByPolygon(p:Polygon, re:RasterExtent, includeExterior:Boolean=false)(f:Callback): Unit = 
+  def foreachCellByPolygon(p: Polygon, re: RasterExtent, includeExterior: Boolean=false)(f: Callback): Unit = 
     if (p.intersects(re.extent)) { 
 
       val (edges, rowMinOrg, rowMaxOrg) = {
@@ -41,7 +41,7 @@ object PolygonRasterizer {
         (lines.groupBy(_.rowMin), rowMin, rowMax)
        }
 
-      var activeEdges:List[Intercept] = List[Intercept]()
+      var activeEdges: List[Intercept] = List[Intercept]()
 
       if (rowMaxOrg > 0 && rowMinOrg < re.rows) {
         val rowMin = math.max(0, rowMinOrg)
@@ -70,7 +70,7 @@ object PolygonRasterizer {
                 } else {
                   ( math.floor(leftLine.colDouble + 0.5).toInt,  math.floor(rightLine.colDouble - 0.5).toInt )
                 }
-              for(col <- math.max(minCol,0) to math.min(maxCol, re.cols - 1 )) {
+              for(col <- math.max(minCol, 0) to math.min(maxCol, re.cols - 1 )) {
                 f(col, row)
               }
             }             

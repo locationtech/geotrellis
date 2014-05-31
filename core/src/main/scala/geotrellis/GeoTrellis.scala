@@ -21,7 +21,7 @@ import geotrellis.process._
 import geotrellis.source._
 
 object GeoTrellis {
-  private var _server:Server = null
+  private var _server: Server = null
   def server = {
     if(!isInit) {
       init()
@@ -31,9 +31,9 @@ object GeoTrellis {
 
   def isInit: Boolean = _server != null
 
-  def init():Unit = init(GeoTrellisConfig())
+  def init(): Unit = init(GeoTrellisConfig())
 
-  def init(config:GeoTrellisConfig, name:String = "geotrellis-server"):Unit = {
+  def init(config: GeoTrellisConfig, name: String = "geotrellis-server"): Unit = {
     if(_server!= null) {
       sys.error("GeoTrellis has already been initialized. You must only initiliaze once before shutdown.")
     }
@@ -50,19 +50,19 @@ object GeoTrellis {
     _server = Server(name, catalog)
   }
 
-  def run[T](op: Op[T]):OperationResult[T] = {
+  def run[T](op: Op[T]): OperationResult[T] = {
     server.run(op)
   }
 
-  def run[T](source: DataSource[_,T]):OperationResult[T] = {
+  def run[T](source: DataSource[_, T]): OperationResult[T] = {
     server.run(source)
   }
 
-  def get[T](op: Op[T]):T = {
+  def get[T](op: Op[T]): T = {
     server.get(op)
   }
 
-  def get[T](source: DataSource[_,T]):T = {
+  def get[T](source: DataSource[_, T]): T = {
     server.get(source)
   }
 

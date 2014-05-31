@@ -31,11 +31,12 @@ object CanBuildSourceFrom  extends Priority1Implicits {
       RasterSourceBuilder(rasterSrc)
   }
 
-  implicit def canBuildRasterFromValue =  new CanBuildSourceFrom[ValueSource[_], Raster, RasterSource] {
-    def apply() = new BareRasterSourceBuilder
-    def apply(rasterSrc:ValueSource[_]) =
-      new BareRasterSourceBuilder
-  }
+  // TODO: FIXME!
+  // implicit def canBuildRasterFromValue =  new CanBuildSourceFrom[ValueSource[_], Raster, RasterSource] {
+  //   def apply() = new BareRasterSourceBuilder
+  //   def apply(rasterSrc:ValueSource[_]) =
+  //     new BareRasterSourceBuilder
+  //}
 }
 
 trait Priority1Implicits extends Priority2Implicits { this: CanBuildSourceFrom.type =>

@@ -28,57 +28,57 @@ trait RasterBuilders {
 
   def createConsecutiveRaster(d:Int):Raster = {
     val arr = (for(i <- 1 to d*d) yield i).toArray
-    Raster(arr, RasterExtent(Extent(0,0,d,d),1,1,d,d))
+    Raster(arr, d, d)
   }
 
   def createConsecutiveRaster(cols:Int,rows:Int, startingFrom:Int = 1):Raster = {
     val arr = (for(i <- startingFrom to cols*rows + (startingFrom - 1)) yield i).toArray
-    Raster(arr, RasterExtent(Extent(0,-rows,cols*10,0),10,1,cols,rows))
+    Raster(arr, cols, rows)
   }
 
   def createOnesRaster(d:Int):Raster = {
     val arr = (for(i <- 1 to d*d) yield 1).toArray
-    Raster(arr, RasterExtent(Extent(0,0,d,d),1,1,d,d))
+    Raster(arr, d, d)
   }
 
   def createValueRaster(d:Int,v:Int):Raster = {
-    Raster(Array.fill(d*d)(v), RasterExtent(Extent(0,0,d,d),1,1,d,d))
+    Raster(Array.fill(d*d)(v), d, d)
   }
 
   def createValueRaster(d:Int,v:Double):Raster = {
-    Raster(Array.fill(d*d)(v), RasterExtent(Extent(0,0,d,d),1,1,d,d))
+    Raster(Array.fill(d*d)(v), d, d)
   }
 
   def createValueRaster(cols:Int,rows:Int,v:Int):Raster = {
-    Raster(Array.fill(rows*cols)(v), RasterExtent(Extent(0,-rows,cols*10,0),10,1,cols,rows))
+    Raster(Array.fill(rows*cols)(v), cols, rows)
   }
 
   def createValueRaster(cols:Int,rows:Int,v:Double):Raster = {
-    Raster(Array.fill(cols*rows)(v), RasterExtent(Extent(0,-rows,cols*10,0),10,1,cols,rows))
+    Raster(Array.fill(cols*rows)(v), cols, rows)
   }
 
   def createRaster(arr:Array[Int]) = {
     val d = scala.math.sqrt(arr.length).toInt
     if(d > scala.math.round(d)) { sys.error("Array must be square") }
-    Raster(arr, RasterExtent(Extent(0,0,d,d),1,1,d,d))
+    Raster(arr, d, d)
   }
 
   def createRaster(arr:Array[Float]) = {
     val d = scala.math.sqrt(arr.length).toInt
     if(d > scala.math.round(d)) { sys.error("Array must be square") }
-    Raster(FloatArrayRasterData(arr,d,d), RasterExtent(Extent(0,0,d,d),1,1,d,d))
+    Raster(FloatArrayRasterData(arr,d,d), d, d)
   }
 
   def createRaster(arr:Array[Byte]) = {
     val d = scala.math.sqrt(arr.length).toInt
     if(d > scala.math.round(d)) { sys.error("Array must be square") }
-    Raster(ByteArrayRasterData(arr,d,d), RasterExtent(Extent(0,0,d,d),1,1,d,d))
+    Raster(ByteArrayRasterData(arr,d,d), d, d)
   }
 
   def createRaster(arr:Array[Short]) = {
     val d = scala.math.sqrt(arr.length).toInt
     if(d > scala.math.round(d)) { sys.error("Array must be square") }
-    Raster(ShortArrayRasterData(arr,d,d), RasterExtent(Extent(0,0,d,d),1,1,d,d))
+    Raster(ShortArrayRasterData(arr,d,d), d, d)
   }
 
 
@@ -86,26 +86,26 @@ trait RasterBuilders {
     val d = scala.math.sqrt(arr.length).toInt
     if(d > scala.math.round(d)) { sys.error("Array must be square") }
     
-    Raster(arr, RasterExtent(Extent(0,0,d,d),1,1,d,d))
+    Raster(arr, d, d)
   }
 
   def createRaster(arr:Array[Int],cols:Int,rows:Int) = {
-    Raster(arr, RasterExtent(Extent(0,-rows,cols*10,0),10,1,cols,rows))
+    Raster(arr, cols, rows)
   }
 
   def createRaster(arr:Array[Double],cols:Int,rows:Int) = {
-    Raster(arr, RasterExtent(Extent(0,-rows,cols*10,0),10,1,cols,rows))
+    Raster(arr, cols, rows)
   }
 
   def createNoData(cols:Int,rows:Int,t:RasterType = TypeInt) =
-    Raster(RasterData.emptyByType(t,cols,rows), RasterExtent(Extent(0,-rows,cols*10,0),10,1,cols,rows))
+    Raster(RasterData.emptyByType(t,cols,rows), cols, rows)
 
   def replaceValues(r:Raster,valueMap:Map[(Int,Int),Int]) = {
     val arr = for(row <- 0 until r.rows; col <- 0 until r.cols) yield {
       if(valueMap.contains((col,row))) { valueMap((col,row)) }
       else { r.get(col,row) }
     }
-    Raster(arr.toArray, r.rasterExtent)
+    Raster(arr.toArray, r.cols, r.rows)
   }
 
   def createRasterSource(arr:Array[Int],tileCols:Int,tileRows:Int,pixelCols:Int,pixelRows:Int):RasterSource =
@@ -136,17 +136,16 @@ trait RasterBuilders {
     val rasters = 
       (for(r <- 0 until tileRows;
         c <- 0 until tileCols) yield {
-        val xmin = c*pixelCols*cellwidth
-        val xmax = xmin + (pixelCols*cellwidth)
-        val ymin = r*(-pixelRows)*cellheight
-        val ymax = ymin + (pixelRows*cellheight)
-        Raster(tiles(r)(c),
-          RasterExtent(Extent(xmin,ymin,xmax,ymax),cellwidth,cellheight,pixelCols,pixelRows)
-        )
+        Raster(tiles(r)(c), pixelCols, pixelRows)
       }).toSeq
 
+    val xmin = 0
+    val xmax = tileCols * pixelCols * cellwidth
+    val ymin = -1 * tileRows * pixelRows * cellheight
+    val ymax = 0
+
     val ops = rasters.map(Literal(_))
-    val re = rasters.map(_.rasterExtent).reduce(_.combine(_))
+    val re = RasterExtent(Extent(xmin, ymin, xmax, ymax), tileCols*pixelCols, tileRows*pixelRows)
     val tileLayout = TileLayout(tileCols,tileRows,pixelCols,pixelRows)
 
     RasterSource(RasterDefinition(LayerId("test"),re,tileLayout,TypeInt),ops)
@@ -184,13 +183,17 @@ trait RasterBuilders {
         val xmax = xmin + (pixelCols*cellwidth)
         val ymin = r*(-pixelRows)*cellheight
         val ymax = ymin + (pixelRows*cellheight)
-        Raster(tiles(r)(c), 
-          RasterExtent(Extent(xmin,ymin,xmax,ymax),cellwidth,cellheight,pixelCols,pixelRows)
-        )
+        Raster(tiles(r)(c), pixelCols, pixelRows)
       }).toSeq
 
+    val xmin = 0
+    val xmax = tileCols * pixelCols * cellwidth
+    val ymin = -1 * tileRows * pixelRows * cellheight
+    val ymax = 0
+
     val ops = rasters.map(Literal(_))
-    val re = rasters.map(_.rasterExtent).reduce(_.combine(_))
+    val re = RasterExtent(Extent(xmin, ymin, xmax, ymax), tileCols*pixelCols, tileRows*pixelRows)
+
     val tileLayout = TileLayout(tileCols,tileRows,pixelCols,pixelRows)
 
     RasterSource(RasterDefinition(LayerId("test"),re,tileLayout,TypeDouble),ops)
@@ -210,9 +213,7 @@ trait RasterBuilders {
                     33, 47, 29, 1, 39, 67, 49, 100, 25,
                     20, 53, 65, 17, 61, 50, 87, 99, 52,
                     11, 82, 30, 26, 27, 95, 97, 57, 14 )
-    val ext = Extent(0,-100,900,0)
-    val re = RasterExtent(ext, 100,10,9,10)
-    Raster(arr,re)
+    Raster(arr, 9, 10)
   }
 
   /**
@@ -229,9 +230,7 @@ trait RasterBuilders {
                     0.09, 0.41, 0.02, 0.29, 0.54, 0.03, 0.62, 0.19, 0.53,
                     0.98, 0.82, 0.93, 0.27, 0.42, 0.44, 0.55, 0.15, 0.01,
                     0.74, 0.77, 0.75, 0.49, 0.33, 0.68, 0.79, 0.16, 0.78)
-    val ext = Extent(0,-100,900,0)
-    val re = RasterExtent(ext, 100,10,9,10)
-    Raster(arr,re)
+    Raster(arr, 9, 10)
   }
 
   /**
@@ -250,9 +249,7 @@ trait RasterBuilders {
                     33,  n, 29,  n, 39,  n, 49,  n, 25,
                     20,  n, 65,  n, 61,  n, 87,  n, 52,
                     11,  n, 30,  n, 27,  n, 97,  n, 14 )
-    val ext = Extent(0,-100,900,0)
-    val re = RasterExtent(ext, 100,10,9,10)
-    Raster(arr,re)
+    Raster(arr, 9, 10)
   }
 
   /**
@@ -271,9 +268,7 @@ trait RasterBuilders {
                     0.09, n, 0.02, n, 0.54, n, 0.62, n, 0.53,
                     0.98, n, 0.93, n, 0.42, n, 0.55, n, 0.01,
                     0.74, n, 0.75, n, 0.33, n, 0.79, n, 0.78)
-    val ext = Extent(0,-100,900,0)
-    val re = RasterExtent(ext, 100,10,9,10)
-    Raster(arr,re)
+    Raster(arr, 9, 10)
   }
 
   /**
@@ -290,9 +285,7 @@ trait RasterBuilders {
       35, 119, 106,  38,  57,  15,  67,  54,  27,  76,  34,  80,  31,  55,
       44,  71,  50,  37,  27,  70,  34, 120,  22,  62, 109, 113,  54,  32,
       81,  76,  31,  81,  63,  26,  65,  71,  29, 121,   3,  55, 107,  56)
-    val ext = Extent(0,-100,1400,-10)
-    val re = RasterExtent(ext,100,10,14,9)
-    Raster(ByteArrayRasterData(arr,14,9),re)
+    Raster(ByteArrayRasterData(arr,14,9), 14, 9)
   }
 
   /**
@@ -310,16 +303,11 @@ trait RasterBuilders {
       35, 119,   n,  38,  57,  15,  67,  54,  27,  76,  34,  n,  31,  55,
       44,  71,  50,  37,  27,  70,  34, 120,  22,  62, 109, 113,  54,  32,
       81,  76,  31,  81,  63,  26,  65,  71,  29, 121,   3,  n, 107,  56)
-    val ext = Extent(0,-100,1400,-10)
-    val re = RasterExtent(ext,100,10,14,9)
-    Raster(ByteArrayRasterData(arr,14,9),re)
+    Raster(ByteArrayRasterData(arr,14,9), 14, 9)
   }
 
-  def getIntFilledRaster(n:Int) = {
-    val e = Extent(0.0, 0.0, 10.0, 10.0)
-    val re = RasterExtent(e, 1.0, 1.0, 10, 10)
-    Raster(Array.fill(100)(n), re)
-  }
+  def getIntFilledRaster(n:Int) =
+    Raster(Array.fill(100)(n), 10, 10)
 
   /* prints out a raster to console */
   def printR(r:Raster) {

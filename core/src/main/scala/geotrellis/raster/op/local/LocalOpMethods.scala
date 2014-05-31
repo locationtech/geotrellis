@@ -21,7 +21,7 @@ import geotrellis.raster._
 import geotrellis.raster.op.ConvertType
 import geotrellis.source._
 import geotrellis.feature.rasterize.{Rasterizer, Callback}
-import geotrellis.feature.Geometry
+import geotrellis.feature.{Geometry, Extent}
 import geotrellis.feature.json._
 
 trait LocalOpMethods[+Repr <: RasterSource] 
@@ -46,14 +46,14 @@ trait LocalOpMethods[+Repr <: RasterSource]
      with MajorityOpMethods[Repr] 
      with MinorityOpMethods[Repr] { self: Repr =>
 
-  def localCombine[That](rs:RasterSource)
-                   (f:(Int,Int)=>Int)
-                   (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
+  def localCombine[That](rs: RasterSource)
+                   (f: (Int, Int)=>Int)
+                   (implicit bf: CanBuildSourceFrom[Repr, Raster, That]): That = {
     val tileOps =
-      (tiles,rs.tiles).map { (ts1,ts2) =>
-        for((t1,t2) <- ts1.zip(ts2)) yield {
-          (t1,t2).map { (r1,r2) =>
-            r1.dualCombine(r2)(f)((z1:Double, z2:Double) => i2d(f(d2i(z1), d2i(z2))))
+      (tiles, rs.tiles).map { (ts1, ts2) =>
+        for((t1, t2) <- ts1.zip(ts2)) yield {
+          (t1, t2).map { (r1, r2) =>
+            r1.dualCombine(r2)(f)((z1: Double, z2: Double) => i2d(f(d2i(z1), d2i(z2))))
           }
         }
       }
@@ -64,14 +64,14 @@ trait LocalOpMethods[+Repr <: RasterSource]
   }
 
 
-  def localCombineDouble[That](rs:RasterSource)
-                             (f:(Double,Double)=>Double)
-                             (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
+  def localCombineDouble[That](rs: RasterSource)
+                             (f: (Double, Double)=>Double)
+                             (implicit bf: CanBuildSourceFrom[Repr, Raster, That]): That = {
     val tileOps = 
-      (tiles,rs.tiles).map { (ts1,ts2) =>
-        for((t1,t2) <- ts1.zip(ts2)) yield {
-          (t1,t2).map { (r1,r2) =>
-            r1.dualCombine(r2)((z1:Int,z2:Int)=>d2i(f(i2d(z1), i2d(z2))))(f)
+      (tiles, rs.tiles).map { (ts1, ts2) =>
+        for((t1, t2) <- ts1.zip(ts2)) yield {
+          (t1, t2).map { (r1, r2) =>
+            r1.dualCombine(r2)((z1: Int, z2: Int)=>d2i(f(i2d(z1), i2d(z2))))(f)
           }
         }
       }
@@ -80,14 +80,14 @@ trait LocalOpMethods[+Repr <: RasterSource]
     builder.result
   }
 
-  def localDualCombine[That](rs:RasterSource)
-                       (fInt:(Int,Int)=>Int)
-                       (fDouble:(Double,Double)=>Double)
-                       (implicit bf:CanBuildSourceFrom[Repr,Raster,That]):That = {
+  def localDualCombine[That](rs: RasterSource)
+                       (fInt: (Int, Int)=>Int)
+                       (fDouble: (Double, Double)=>Double)
+                       (implicit bf: CanBuildSourceFrom[Repr, Raster, That]): That = {
     val tileOps =
-      (tiles,rs.tiles).map { (ts1,ts2) =>
-        for((t1,t2) <- ts1.zip(ts2)) yield {
-          (t1,t2).map { (r1,r2) =>
+      (tiles, rs.tiles).map { (ts1, ts2) =>
+        for((t1, t2) <- ts1.zip(ts2)) yield {
+          (t1, t2).map { (r1, r2) =>
             r1.dualCombine(r2)(fInt)(fDouble)
           }
         }
@@ -136,27 +136,27 @@ trait LocalOpMethods[+Repr <: RasterSource]
   def localUndefined(): RasterSource = map(Undefined(_), "Undefined")
 
   /** Masks this raster based on cell values of the second raster. See [[Mask]]. */
-  def localMask(rs:RasterSource,readMask:Int,writeMask:Int): RasterSource = 
-    combine(rs, "localMask")(Mask(_,_,readMask,writeMask))
+  def localMask(rs: RasterSource, readMask: Int, writeMask: Int): RasterSource = 
+    combine(rs, "localMask")(Mask(_, _, readMask, writeMask))
 
   /** InverseMasks this raster based on cell values of the second raster. See [[InverseMask]]. */
-  def localInverseMask(rs:RasterSource,readMask:Int,writeMask:Int): RasterSource = 
-    combine(rs, "localMask")(InverseMask(_,_,readMask,writeMask))
+  def localInverseMask(rs: RasterSource, readMask: Int, writeMask: Int): RasterSource = 
+    combine(rs, "localMask")(InverseMask(_, _, readMask, writeMask))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
   def localMean(rss: Seq[RasterSource]): RasterSource = 
     combine(rss, "Mean")(Mean(_))
 
   /** Takes the mean of the values of each cell in the set of rasters. */
-  def localMean(rss:RasterSource*)(implicit d:DI): RasterSource = 
+  def localMean(rss: RasterSource*)(implicit d: DI): RasterSource = 
     localMean(rss)
 
  /** Gives the count of unique values at each location in a set of Rasters.*/
-  def localVariety(rss:Seq[RasterSource]):RasterSource = 
+  def localVariety(rss: Seq[RasterSource]): RasterSource = 
     combine(rss, "Variety")(Variety(_))
 
  /** Gives the count of unique values at each location in a set of Rasters.*/
-  def localVariety(rss:RasterSource*)(implicit d:DI):RasterSource = 
+  def localVariety(rss: RasterSource*)(implicit d: DI): RasterSource = 
     localVariety(rss)
 
   /** Takes the sine of each raster cell value. */
@@ -187,46 +187,47 @@ trait LocalOpMethods[+Repr <: RasterSource]
   def localAtan(): RasterSource = map(Atan(_), "Atan")
 
   /** Takes the arc tangent 2 of each raster cell value. */
-  def localAtan2(rs: RasterSource): RasterSource = combine(rs, "Atan2")(Atan2(_,_))
+  def localAtan2(rs: RasterSource): RasterSource = combine(rs, "Atan2")(Atan2(_, _))
 
   /** Assigns to each cell the value within the given rasters that is the nth min */
-  def localMinN(n:Int,rss:Seq[RasterSource]):RasterSource =
-    combine(rss)(MinN(n,_))
+  def localMinN(n: Int, rss: Seq[RasterSource]): RasterSource =
+    combine(rss)(MinN(n, _))
 
   /** Assigns to each cell the value within the given rasters that is the nth min */
-  def localMinN(n:Int,rss:RasterSource*)(implicit d:DI):RasterSource =
-    localMinN(n,rss)
+  def localMinN(n: Int, rss: RasterSource*)(implicit d: DI): RasterSource =
+    localMinN(n, rss)
 
   /** Assigns to each cell the value within the given rasters that is the nth max */
-  def localMaxN(n:Int,rss:Seq[RasterSource]):RasterSource =
-    combine(rss)(MaxN(n,_))
+  def localMaxN(n: Int, rss: Seq[RasterSource]): RasterSource =
+    combine(rss)(MaxN(n, _))
 
   /** Assigns to each cell the value within the given rasters that is the nth max */
-  def localMaxN(n:Int,rss:RasterSource*)(implicit d:DI):RasterSource =
-    localMaxN(n,rss)
+  def localMaxN(n: Int, rss: RasterSource*)(implicit d: DI): RasterSource =
+    localMaxN(n, rss)
 
   /** Masks this raster by the given Geometry. */
   def mask(geom: Geometry): RasterSource =
     mask(Seq(geom))
 
   /** Masks this raster by the given Geometry. */
-  def mask(geoms: Iterable[Geometry]): RasterSource =
+  def mask(extent: Extent, geoms: Iterable[Geometry]): RasterSource =
     map { tile =>
-      val re = tile.rasterExtent
-      val data = RasterData.emptyByType(tile.rasterType, re.cols, re.rows)
+      val (cols, rows) = tile.dimensions
+      val re = RasterExtent(extent, cols, rows)
+      val data = ArrayTile.emptyByType(tile.rasterType, cols, rows)
       for(g <- geoms) {
         if(tile.isFloat) {
           Rasterizer.foreachCellByFeature(g, re)(new Callback {
             def apply(col: Int, row: Int) =
-              data.setDouble(col,row,tile.getDouble(col,row))
+              data.setDouble(col, row, tile.getDouble(col, row))
           })
         } else {
           Rasterizer.foreachCellByFeature(g, re)(new Callback {
             def apply(col: Int, row: Int) =
-              data.set(col,row,tile.get(col,row))
+              data.set(col, row, tile.get(col, row))
           })
         }
       }
-      Raster(data,re)
+      Raster(data, cols, rows)
     }
 }

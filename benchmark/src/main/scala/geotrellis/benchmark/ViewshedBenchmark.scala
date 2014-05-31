@@ -32,7 +32,7 @@ class  ViewshedBenchmark extends OperationBenchmark {
       re = RasterExtent(e, 10, 10, size, size)
       data = IntArrayRasterData(a, size, size)
 
-      Raster(data, re)
+      Raster(data, size, size)
     }
   }
 

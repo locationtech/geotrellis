@@ -22,40 +22,61 @@ import geotrellis.raster._
 import geotrellis.source._
 
 trait GlobalOpMethods[+Repr <: RasterSource] { self: Repr =>
-  def rescale(newMin:Int,newMax:Int) = {
+  def rescale(newMin: Int, newMax: Int) = {
     self.global { r =>
-      val (min,max) = r.findMinMax
-      r.normalize(min,max,newMin,newMax)
+      val (min, max) = r.findMinMax
+      r.normalize(min, max, newMin, newMax)
     }
   }
 
   def toVector() = 
-    self.converge.mapOp(ToVector(_))
+    self.converge.mapOp(ToVector(_, rasterDefinition.map(_.rasterExtent.extent)))
 
   def asArray() = 
     self.converge.mapOp(AsArray(_))
 
-  def regionGroup(options:RegionGroupOptions = RegionGroupOptions.default) =
-    self.converge.mapOp(RegionGroup(_,options))
+  def regionGroup(options: RegionGroupOptions = RegionGroupOptions.default) =
+    self.converge.mapOp(RegionGroup(_, options))
 
   def verticalFlip() =
     self.globalOp(VerticalFlip(_))
 
-  def costDistance(points: Seq[(Int,Int)]) = 
-    self.globalOp(CostDistance(_,points))
+  def costDistance(points: Seq[(Int, Int)]) = 
+    self.globalOp(CostDistance(_, points))
 
-  def convolve(kernel:Kernel) =
-    self.globalOp(Convolve(_,kernel))
+  def convolve(kernel: Kernel) =
+    self.globalOp(Convolve(_, kernel))
 
   def viewshed(p: Point, exact: Boolean = false) =
     if(exact)
-      self.global(Viewshed(_, p))
+      self.globalOp { r => 
+        rasterDefinition.map { rd =>
+          val (col, row) = rd.rasterExtent.mapToGrid(p.x, p.y)
+          Viewshed(r, col, row) 
+        }
+      }
     else
-      self.global(ApproxViewshed(_, p))
+      self.globalOp { r => 
+        rasterDefinition.map { rd =>
+          val (col, row) = rd.rasterExtent.mapToGrid(p.x, p.y)
+          ApproxViewshed(r, col, row)
+        }
+      }
 
   def viewshedOffsets(p: Point, exact: Boolean = false) =
     if(exact)
-      self.global(Viewshed.offsets(_, p))
+      self.globalOp { r => 
+        rasterDefinition.map { rd =>
+          val (col, row) = rd.rasterExtent.mapToGrid(p.x, p.y)
+          Viewshed.offsets(r, col, row) 
+        }
+      }
     else
-      self.global(ApproxViewshed.offsets(_, p))
+      self.globalOp { r => 
+        rasterDefinition.map { rd =>
+          val (col, row) = rd.rasterExtent.mapToGrid(p.x, p.y)
+          ApproxViewshed.offsets(r, col, row)
+        }
+      }
+
 }

@@ -17,39 +17,46 @@
 package geotrellis.raster
 
 import geotrellis._
+import geotrellis.feature.Extent
 
 import scalaxy.loops._
 
-final case class DoubleConstant(n:Double, cols:Int, rows:Int) extends RasterData {
+final case class DoubleConstantTile(n: Double, cols: Int, rows: Int) extends ArrayTile {
   def getType = TypeDouble
-  def apply(i:Int) = n.asInstanceOf[Int]
-  def applyDouble(i:Int) = n
-  def length = cols * rows
-  def alloc(cols:Int, rows:Int) = DoubleArrayRasterData.empty(cols, rows)
-  def mutable = DoubleArrayRasterData(Array.ofDim[Double](length).fill(n), cols, rows)
+  def apply(i: Int) = n.asInstanceOf[Int]
+  def applyDouble(i: Int) = n
+  def alloc(cols: Int, rows: Int) = DoubleArrayTile.empty(cols, rows)
+  def mutable = DoubleArrayTile(Array.ofDim[Double](length).fill(n), cols, rows)
   def copy = this
 
-  override def combine(other:RasterData)(f:(Int,Int) => Int) = {
+  override def combine(other: ArrayTile)(f: (Int, Int) => Int) = {
     val i = n.toInt
     other.map(z => f(i, z))
   }
 
-  override def map(f:Int => Int) = IntConstant(f(n.toInt), cols, rows)
-  override def foreach(f: Int => Unit) = foreachDouble(z => f(z.toInt))
+  override def map(f: Int => Int) = 
+    IntConstantTile(f(n.toInt), cols, rows)
 
-  override def combineDouble(other:RasterData)(f:(Double,Double) => Double) = other.mapDouble(z => f(n, z))
-  override def mapDouble(f:Double => Double) = DoubleConstant(f(n), cols, rows)
+  override def foreach(f: Int => Unit) = 
+    foreachDouble(z => f(z.toInt))
+
+  override def combineDouble(other: ArrayTile)(f: (Double, Double) => Double) = 
+    other.mapDouble(z => f(n, z))
+
+  override def mapDouble(f: Double => Double) = 
+    DoubleConstantTile(f(n), cols, rows)
+
   override def foreachDouble(f: Double => Unit) = {
     var i = 0
     val len = length
     while (i < len) { f(n); i += 1 }
   }
 
-  def force():RasterData = {
-    val forcedData = RasterData.allocByType(getType,cols,rows)
+  def force(): ArrayTile = {
+    val forcedData = ArrayTile.allocByType(getType, cols, rows)
     for(col <- 0 until cols optimized) {
       for(row <- 0 until rows optimized) {
-        forcedData.setDouble(col,row,n)
+        forcedData.setDouble(col, row, n)
       }
     }
     forcedData
@@ -57,6 +64,6 @@ final case class DoubleConstant(n:Double, cols:Int, rows:Int) extends RasterData
   
   def toArrayByte: Array[Byte] = Array(n.toByte)
 
-  def warp(current:RasterExtent,target:RasterExtent):RasterData =
-    DoubleConstant(n,target.cols,target.rows)
+  def warp(current: Extent, target: RasterExtent): ArrayTile =
+    DoubleConstantTile(n, target.cols, target.rows)
 }

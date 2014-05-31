@@ -43,7 +43,7 @@ object Median {
   def apply(r:Op[Raster],n:Op[Neighborhood]) = new Median(r,n,TileNeighbors.NONE)
 }
 
-class CursorMedianCalc(extent:Int) extends CursorCalculation[Raster] with IntRasterDataResult 
+class CursorMedianCalc(extent:Int) extends CursorCalculation[Raster] with IntArrayTileResult 
                                                                      with MedianModeCalculation {
   initArray(extent)
                                                          
@@ -62,7 +62,7 @@ class CursorMedianCalc(extent:Int) extends CursorCalculation[Raster] with IntRas
   }
 }
 
-class CellwiseMedianCalc(extent:Int) extends CellwiseCalculation[Raster] with IntRasterDataResult 
+class CellwiseMedianCalc(extent:Int) extends CellwiseCalculation[Raster] with IntArrayTileResult 
                                                                          with MedianModeCalculation {
   initArray(extent)
 

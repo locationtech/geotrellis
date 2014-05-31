@@ -18,7 +18,7 @@ package geotrellis.raster.op.transform
 
 import geotrellis._
 import geotrellis.feature.Extent
-import geotrellis.raster.RasterData
+import geotrellis.raster.ArrayTile
 import geotrellis.raster.op.focal.CellSet
 
 /**
@@ -37,61 +37,54 @@ import geotrellis.raster.op.focal.CellSet
  *<pre>
  * // Downsamples to a 4x3 raster according to the max value of the input raster.
  *
- * val op = Downsample(r,4,3)({
+ * val op = Downsample(r, 4, 3)({
  *   cellSet =>
  *     var maxValue = Int.MinValue
- *     cellSet.foreach({ (col,row) => if(col < r.cols && row < r.rows) maxValue = math.max(r.get(col,row),maxValue) })
+ *     cellSet.foreach({ (col, row) => if(col < r.cols && row < r.rows) maxValue = math.max(r.get(col, row), maxValue) })
  *     maxValue
  * })
  * </pre> 
  */
 case class Downsample(r: Raster, cols: Int, rows: Int)(f:CellSet=>Int)
-     extends Op4(r,cols,rows,f)({
-       (r,cols,rows,f) =>
+     extends Op4(r, cols, rows, f)({
+       (r, cols, rows, f) =>
          val colsPerBlock = math.ceil(r.cols / cols.toDouble).toInt
          val rowsPerBlock = math.ceil(r.rows / rows.toDouble).toInt  
-         val cellwidth = colsPerBlock * r.rasterExtent.cellwidth
-         val cellheight = rowsPerBlock * r.rasterExtent.cellheight
-         val xmin = r.rasterExtent.extent.xmin
-         val ymin = r.rasterExtent.extent.ymin
-         val ext = Extent(xmin,ymin,xmin + cellwidth*cols,ymin + cellheight*rows)
-         val re = RasterExtent(ext,cellwidth,cellheight, cols, rows)
          
-         val data = RasterData.emptyByType(r.rasterType, cols, rows)
+         val data = ArrayTile.emptyByType(r.rasterType, cols, rows)
 
-         val cellSet = new DownsampleCellSet(colsPerBlock,rowsPerBlock)
+         val cellSet = new DownsampleCellSet(colsPerBlock, rowsPerBlock)
          var col = 0
          while(col < cols) {
            var row = 0
            while(row < rows) {
-             cellSet.focusOn(col,row)
-             data.set(col,row, f(cellSet))
+             cellSet.focusOn(col, row)
+             data.set(col, row, f(cellSet))
              row += 1
            }
            col += 1
          }
-         Result(Raster(data,re))
+         Result(Raster(data, cols, rows))
 })
 
-class DownsampleCellSet(val colsPerBlock:Int, val rowsPerBlock:Int) extends CellSet {
+class DownsampleCellSet(val colsPerBlock: Int, val rowsPerBlock: Int) extends CellSet {
   private var focusCol = 0
   private var focusRow = 0
 
-  def focusOn(col:Int,row:Int) = {
+  def focusOn(col:Int, row:Int) = {
     focusCol = col
     focusRow = row
   }
   
-  def foreach(f:(Int,Int)=>Unit):Unit = {
+  def foreach(f:(Int, Int)=>Unit):Unit = {
     var col = 0
     while(col < colsPerBlock) {
       var row = 0      
       while(row < rowsPerBlock) {
-        f(focusCol*colsPerBlock + col, focusRow*rowsPerBlock + row)
+        f(focusCol * colsPerBlock + col, focusRow * rowsPerBlock + row)
         row += 1
       }
       col += 1
     }
   }
 }
-

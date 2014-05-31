@@ -54,9 +54,9 @@ class RasterMap extends OperationBenchmark {
   override def setUp() {
     val len = size * size
     val re = RasterExtent(Extent(0, 0, size, size), 1.0, 1.0, size, size)
-    raster = Raster(init(len)(Random.nextInt), re)
+    raster = Raster(init(len)(Random.nextInt), size, size)
 
-    doubleRaster = Raster(init(len)(Random.nextDouble), re)
+    doubleRaster = Raster(init(len)(Random.nextDouble), size, size)
 
     val re2 = getRasterExtent(names(0), size, size)
 
