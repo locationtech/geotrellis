@@ -25,15 +25,15 @@ import java.nio.ByteBuffer
  * ArrayTile based on Array[Short] (each cell as a Short).
  */
 final case class ShortArrayTile(array: Array[Short], cols: Int, rows: Int)
-    extends MutableArrayTile with IntBasedArray {
-  def getType = TypeShort
-  def alloc(cols: Int, rows: Int) = ShortArrayTile.ofDim(cols, rows)
+    extends MutableArrayTile with IntBasedArrayTile {
+
+  val cellType = TypeShort
+
   def apply(i: Int) = s2i(array(i))
   def update(i: Int, z: Int) { array(i) = i2s(z) }
-  def copy = ShortArrayTile(array.clone, cols, rows)
 
-  def toArrayByte: Array[Byte] = {
-    val pixels = new Array[Byte](array.length * getType.bytes)
+  def toBytes: Array[Byte] = {
+    val pixels = new Array[Byte](array.length * cellType.bytes)
     val bytebuff = ByteBuffer.wrap(pixels)
     bytebuff.asShortBuffer.put(array)
     pixels
@@ -51,12 +51,16 @@ final case class ShortArrayTile(array: Array[Short], cols: Int, rows: Int)
 }
 
 object ShortArrayTile {
-  def ofDim(cols: Int, rows: Int) = 
+  def ofDim(cols: Int, rows: Int): ShortArrayTile = 
     new ShortArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
-  def empty(cols: Int, rows: Int) = 
+
+  def empty(cols: Int, rows: Int): ShortArrayTile = 
     new ShortArrayTile(Array.ofDim[Short](cols * rows).fill(shortNODATA), cols, rows)
 
-  def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int) = {
+  def fill(v: Short, cols: Int, rows: Int): ShortArrayTile =
+    new ShortArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows)
+
+  def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int): ShortArrayTile = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
     val shortBuffer = byteBuffer.asShortBuffer()
     val shortArray = new Array[Short](bytes.length / TypeShort.bytes)

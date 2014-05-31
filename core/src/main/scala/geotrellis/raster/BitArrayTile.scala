@@ -23,7 +23,7 @@ import scalaxy.loops._
 
 /**
  * ArrayTile based on an Array[Byte] as a bitmask; values are 0 and 1.
- * Thus, there are 8 boolean (0/1) values per byte in the array. For example,
+ * Thus, there are 8 boolean (0 / 1) values per byte in the array. For example,
  * Array(11, 9) corresponds to (0 0 0 0 1 0 1 1), (0 0 0 0 1 0 0 1) which
  * means that we have 5 cells set to 1 and 11 cells set to 0.
  *
@@ -46,9 +46,11 @@ final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
   if (array.length != (size + 7) / 8) {
     sys.error(s"BitArrayTile array length must be ${(size + 7) / 8}, was ${array.length}")
   }
-  def getType = TypeBit
-  def alloc(cols: Int, rows: Int) = BitArrayTile.ofDim(cols, rows)
+
+  val cellType = TypeBit
+
   def apply(i: Int) = ((array(i >> 3) >> (i & 7)) & 1).asInstanceOf[Int]
+
   def update(i: Int, z: Int): Unit = {
     val div = i >> 3
     if ((z & 1) == 0) {
@@ -59,7 +61,6 @@ final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
       array(div) = (array(div) | (1 << (i & 7))).toByte
     }
   }
-  def copy = BitArrayTile(array.clone, cols, rows)
 
   override def map(f: Int => Int) = {
     val f0 = f(0) & 1
@@ -84,9 +85,9 @@ final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
 
   override def mapDouble(f: Double => Double) = map(z => d2i(f(i2d(z))))
 
-  def toArrayByte: Array[Byte] = array
+  def toBytes: Array[Byte] = array.clone
 
-  def warp(current: Extent, target: RasterExtent): ArrayRaster = {
+  def warp(current: Extent, target: RasterExtent): ArrayTile = {
     val warped = Array.ofDim[Byte]((target.cols * target.rows + 7) / 8).fill(byteNODATA)
     Warp(RasterExtent(current, cols, rows), target, new BitWarpAssign(array, warped))
     BitArrayTile(warped, target.cols, target.rows)
@@ -94,8 +95,21 @@ final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
 }
 
 object BitArrayTile {
-  def ofDim(cols: Int, rows: Int) = new BitArrayTile(Array.ofDim[Byte](((cols * rows) + 7) / 8), cols, rows)
-  def empty(cols: Int, rows: Int) = ofDim(cols, rows)
+  def ofDim(cols: Int, rows: Int): BitArrayTile = 
+    new BitArrayTile(Array.ofDim[Byte](((cols * rows) + 7) / 8), cols, rows)
 
-  def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int) = BitArrayTile(bytes, cols, rows)
+  def empty(cols: Int, rows: Int): BitArrayTile = 
+    ofDim(cols, rows)
+
+  def fill(v: Int, cols: Int, rows: Int): BitArrayTile = 
+    if(v == 0) 
+      ofDim(cols, rows)
+    else 
+      new BitArrayTile(Array.ofDim[Byte](((cols * rows) + 7) / 8).fill(1), cols, rows)
+
+  def fill(v: Boolean, cols: Int, rows: Int): BitArrayTile = 
+    fill(if(v) 1 else 0, cols, rows)
+
+  def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int): BitArrayTile = 
+    BitArrayTile(bytes, cols, rows)
 }

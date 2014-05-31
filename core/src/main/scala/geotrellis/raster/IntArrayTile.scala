@@ -25,16 +25,17 @@ import java.nio.ByteBuffer
  * ArrayTile based on Array[Int] (each cell as an Int).
  */
 final case class IntArrayTile(array: Array[Int], cols: Int, rows: Int) 
-    extends MutableArrayTile with IntBasedArray {
-  def getType = TypeInt
-  def alloc(cols: Int, rows: Int) = IntArrayTile.ofDim(cols, rows)
+    extends MutableArrayTile with IntBasedArrayTile {
+
+  val cellType = TypeInt
+
   def apply(i: Int) = array(i)
   def update(i: Int, z: Int) { array(i) = z }
-  def copy = IntArrayTile(array.clone, cols, rows)
+  
   override def toArray = array.clone
 
-  def toArrayByte: Array[Byte] = {
-    val pixels = new Array[Byte](array.length * getType.bytes)
+  def toBytes: Array[Byte] = {
+    val pixels = new Array[Byte](array.length * cellType.bytes)
     val bytebuff = ByteBuffer.wrap(pixels)
     bytebuff.asIntBuffer.put(array)
     pixels
@@ -48,10 +49,14 @@ final case class IntArrayTile(array: Array[Int], cols: Int, rows: Int)
 }
 
 object IntArrayTile {
-  def ofDim(cols: Int, rows: Int) = 
+  def ofDim(cols: Int, rows: Int): IntArrayTile = 
     new IntArrayTile(Array.ofDim[Int](cols * rows), cols, rows)
-  def empty(cols: Int, rows: Int) = 
+
+  def empty(cols: Int, rows: Int): IntArrayTile = 
     new IntArrayTile(Array.ofDim[Int](cols * rows).fill(NODATA), cols, rows)
+
+  def fill(v: Int, cols: Int, rows: Int): IntArrayTile =
+    new IntArrayTile(Array.ofDim[Int](cols * rows).fill(v), cols, rows)
  
   def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int) = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)

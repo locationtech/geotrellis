@@ -16,40 +16,23 @@
 
 package geotrellis.raster
 
-import geotrellis._
 import geotrellis.feature.Extent
 
 import scalaxy.loops._
 import scala.collection.mutable
-
-//object CroppedRaster {
-  // def apply(sourceRaster: Raster, gridBounds: GridBounds): CroppedRaster = 
-  //   CroppedRaster(sourceRaster, gridBounds)
-
-  // def apply(sourceRaster: Raster, extent: Extent): CroppedRaster =
-  //   CroppedRaster(sourceRaster, sourceRaster.rasterExtent.gridBoundsFor(extent), extent)
-//}
 
 case class CroppedTile(sourceTile: Tile,
                          gridBounds: GridBounds) 
   extends Tile {
   val cols = gridBounds.width
   val rows = gridBounds.height
-  // val rasterExtent = RasterExtent(extent,
-  //                                 sourceRaster.rasterExtent.cellwidth,
-  //                                 sourceRaster.rasterExtent.cellheight,
-  //                                 gridBounds.width,
-  //                                 gridBounds.height)
-  def force = toArrayTile
-  val rasterType = sourceTile.rasterType
+
+  val cellType = sourceTile.cellType
 
   private val colMin = gridBounds.colMin
   private val rowMin = gridBounds.rowMin
   private val sourceCols = sourceTile.cols
   private val sourceRows = sourceTile.rows
-
-  def warp(source: Extent, target: RasterExtent) = 
-    toArrayTile.warp(source, target)
 
   def get(col: Int, row: Int): Int = {
     val c = col + gridBounds.colMin
@@ -57,7 +40,7 @@ case class CroppedTile(sourceTile: Tile,
     if(c < 0 || r < 0 || c >= sourceCols || r >= sourceRows) {
       NODATA
     } else {
-      sourceTile.get(c,r)
+      sourceTile.get(c, r)
     }
   }
 
@@ -68,111 +51,113 @@ case class CroppedTile(sourceTile: Tile,
     if(c < 0 || r < 0 || c >= sourceCols || r >= sourceRows) {
       Double.NaN
     } else {
-      sourceTile.getDouble(col+gridBounds.colMin,row+gridBounds.rowMin)
+      sourceTile.getDouble(col + gridBounds.colMin, row + gridBounds.rowMin)
     }
   }
 
   def toArrayTile: ArrayTile = {
-    val data = ArrayTile.allocByType(rasterType,cols,rows)
-    if(!isFloat) {
+    val tile = ArrayTile.alloc(cellType, cols, rows)
+
+    if(!cellType.isFloatingPoint) {
       for(row <- 0 until rows optimized) {
         for(col <- 0 until cols optimized) {
-          data.set(col, row, get(col,row))
+          tile.set(col, row, get(col, row))
         }
       }
     } else {
       for(row <- 0 until rows optimized) {
         for(col <- 0 until cols optimized) {
-          data.setDouble(col, row, getDouble(col,row))
+          tile.setDouble(col, row, getDouble(col, row))
         }
       }
     }
-    ArrayTile(data, cols, rows)
+
+    tile
   }
 
   def toArray: Array[Int] = {
     val arr = Array.ofDim[Int](cols * rows)
+
     var i = 0
     for(row <- 0 until rows optimized) {
       for(col <- 0 until cols optimized) {
-        arr(i) = get(col,row)
+        arr(i) = get(col, row)
         i += 1
       }
     }
+
     arr
   }
 
   def toArrayDouble: Array[Double] = {
     val arr = Array.ofDim[Double](cols * rows)
+
     var i = 0
     for(row <- 0 until rows optimized) {
       for(col <- 0 until cols optimized) {
-        arr(i) = getDouble(col,row)
+        arr(i) = getDouble(col, row)
         i += 1
       }
     }
+
     arr
   }
 
-  def toArrayByte(): Array[Byte] = toArrayTile.toArrayByte
+  def toBytes(): Array[Byte] = toArrayTile.toBytes
 
-  def data: ArrayTile = toArrayTile.data
-
-  def copy() = 
-    if(isFloat) {
-      Tile(toArray, cols, rows) 
-    } else {
-      Tile(toArrayDouble, cols, rows)
-    }
-
-  def convert(typ: RasterType): Tile = 
-    sourceTile.convert(typ)
+  def convert(newCellType: CellType): Tile =
+    sourceTile.convert(newCellType)
 
   def map(f: Int => Int): Tile = {
-    val data = ArrayTile.allocByType(rasterType, cols, rows)
+    val tile = ArrayTile.alloc(cellType, cols, rows)
+
     for(row <- 0 until rows optimized) {
       for(col <- 0 until cols optimized) {
-        data.set(col,row, get(col,row))
+        tile.set(col, row, get(col, row))
       }
     }
-    ArrayTile(data, cols, rows)
+
+    tile
   }
 
-  def combine(r2: Tile)(f: (Int, Int) => Int): Tile = {
-    if(this.dimensions != r2.dimensions) {
-      throw new GeoAttrsError("Cannot combine rasters with different dimensions." +
-                             s"$dimensions does not match ${r2.dimensions}")
-    }
-    val data = ArrayTile.allocByType(rasterType, cols, rows)
+  def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
+    (this, other).assertEqualDimensions
+
+    val tile = ArrayTile.alloc(cellType, cols, rows)
     for(row <- 0 until rows optimized) {
       for(col <- 0 until cols optimized) {
-        data.set(col, row, f(get(col, row), r2.get(col, row)))
+        tile.set(col, row, f(get(col, row), other.get(col, row)))
       }
     }
-    Tile(data, cols, rows)
+
+    tile
   }
 
   def mapDouble(f: Double =>Double): Tile = {
-    val data = ArrayTile.allocByType(rasterType, cols, rows)
+    val tile = ArrayTile.alloc(cellType, cols, rows)
+
     for(row <- 0 until rows optimized) {
       for(col <- 0 until cols optimized) {
-        data.setDouble(col, row, getDouble(col,row))
+        tile.setDouble(col, row, getDouble(col, row))
       }
     }
-    ArrayTile(data, cols, rows)
+
+    tile
   }
 
-  def combineDouble(r2: Tile)(f: (Double, Double) => Double): Tile = {
-    if(this.dimensions != r2.dimensions) {
-      throw new GeoAttrsError("Cannot combine rasters with different dimensions." +
-                             s"$dimensions does not match ${r2.dimensions}")
-    }
-    val data = ArrayTile.allocByType(rasterType, cols, rows)
+  def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = {
+    (this, other).assertEqualDimensions
+
+    val tile = ArrayTile.alloc(cellType, cols, rows)
     for(row <- 0 until rows optimized) {
       for(col <- 0 until cols optimized) {
-        data.setDouble(col, row, f(getDouble(col, row), r2.getDouble(col, row)))
+        tile.setDouble(col, row, f(getDouble(col, row), other.getDouble(col, row)))
       }
     }
-    Tile(data, cols, rows)
+
+    tile
   }
+
+  def warp(source: Extent, target: RasterExtent): Tile = 
+    toArrayTile.warp(source, target)
 }

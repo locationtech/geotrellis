@@ -5,7 +5,7 @@ trait Raster {
 
   val cellType: CellType
 
-  def convert(cellType: CellType): this.type
+  def convert(cellType: CellType): This
 
   def dualForeach(f: Int => Unit)(g: Double => Unit): Unit =
     if (cellType.isFloatingPoint) foreachDouble(g) else foreach(f)

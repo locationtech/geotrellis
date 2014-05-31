@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis
+package geotrellis.raster
 
-import geotrellis.raster._
 import geotrellis.feature.Extent
+
 import scalaxy.loops._
 import scala.collection.mutable
 
@@ -88,32 +88,32 @@ case class CompositeTile(tiles: Seq[Tile],
 
   private val tileList = tiles.toList
   private val tileCols = tileLayout.tileCols
-  private def getTile(tcol: Int, trow: Int) = tileList(trow*tileCols+tcol)
+  private def getTile(tcol: Int, trow: Int) = tileList(trow * tileCols + tcol)
 
-  val rasterType = tiles(0).rasterType
+  val cellType: CellType = tiles(0).cellType
 
-  def warp(source: Extent, target: TileExtent) = 
+  def warp(source: Extent, target: RasterExtent) = 
     toArrayTile.warp(source, target)
 
   def toArrayTile(): ArrayTile = {
-    if (cols.toLong*rows.toLong > Int.MaxValue.toLong) {
+    if (cols.toLong * rows.toLong > Int.MaxValue.toLong) {
       sys.error("This tiled raster is too big to convert into an array.") 
     } else {
-      val data = ArrayTile.allocByType(rasterType, cols, rows)
-      val len = cols*rows
+      val tile = ArrayTile.alloc(cellType, cols, rows)
+      val len = cols * rows
       val tileCols = tileLayout.tileCols
       val tileRows = tileLayout.tileRows
       val pixelCols = tileLayout.pixelCols
       val pixelRows = tileLayout.pixelRows
-      if(!isFloat) {
+      if(!cellType.isFloatingPoint) {
         for(tcol <- 0 until tileCols optimized) {
           for(trow <- 0 until tileRows optimized) {
-            val tile = getTile(tcol, trow)
+            val sourceTile = getTile(tcol, trow)
             for(prow <- 0 until pixelRows optimized) {
               for(pcol <- 0 until pixelCols optimized) {
                 val acol = (pixelCols * tcol) + pcol
                 val arow = (pixelRows * trow) + prow
-                data.set(acol, arow, tile.get(pcol, prow))
+                tile.set(acol, arow, sourceTile.get(pcol, prow))
               }
             }
           }
@@ -121,32 +121,32 @@ case class CompositeTile(tiles: Seq[Tile],
       } else {
         for(tcol <- 0 until tileCols optimized) {
           for(trow <- 0 until tileRows optimized) {
-            val tile = getTile(tcol, trow)
+            val sourceTile = getTile(tcol, trow)
             for(prow <- 0 until pixelRows optimized) {
               for(pcol <- 0 until pixelCols optimized) {
                 val acol = (pixelCols * tcol) + pcol
                 val arow = (pixelRows * trow) + prow
-                data.setDouble(acol, arow, tile.getDouble(pcol, prow))
+                tile.setDouble(acol, arow, sourceTile.getDouble(pcol, prow))
               }
             }
           }
         }
       }
-      ArrayTile(data, cols, rows)
+      tile
     }
   }
 
   def toArray(): Array[Int] = {
-    if (cols.toLong*rows.toLong > Int.MaxValue.toLong) {
+    if (cols.toLong * rows.toLong > Int.MaxValue.toLong) {
       sys.error("This tiled raster is too big to convert into an array.") 
     } else {
-      val arr = Array.ofDim[Int](cols*rows)
-      val len = cols*rows
+      val arr = Array.ofDim[Int](cols * rows)
+      val len = cols * rows
       val tileCols = tileLayout.tileCols
       val tileRows = tileLayout.tileRows
       val pixelCols = tileLayout.pixelCols
       val pixelRows = tileLayout.pixelRows
-      val totalCols = tileCols*pixelCols
+      val totalCols = tileCols * pixelCols
 
       for(tcol <- 0 until tileCols optimized) {
         for(trow <- 0 until tileRows optimized) {
@@ -155,7 +155,7 @@ case class CompositeTile(tiles: Seq[Tile],
             for(pcol <- 0 until pixelCols optimized) {
               val acol = (pixelCols * tcol) + pcol
               val arow = (pixelRows * trow) + prow
-              arr(arow*totalCols + acol) = tile.get(pcol, prow)
+              arr(arow * totalCols + acol) = tile.get(pcol, prow)
             }
           }
         }
@@ -165,16 +165,16 @@ case class CompositeTile(tiles: Seq[Tile],
   }
 
   def toArrayDouble(): Array[Double] = {
-    if (cols.toLong*rows.toLong > Int.MaxValue.toLong) {
+    if (cols.toLong * rows.toLong > Int.MaxValue.toLong) {
       sys.error("This tiled raster is too big to convert into an array.") 
     } else {
-      val arr = Array.ofDim[Double](cols*rows)
-      val len = cols*rows
+      val arr = Array.ofDim[Double](cols * rows)
+      val len = cols * rows
       val tileCols = tileLayout.tileCols
       val tileRows = tileLayout.tileRows
       val pixelCols = tileLayout.pixelCols
       val pixelRows = tileLayout.pixelRows
-      val totalCols = tileCols*pixelCols
+      val totalCols = tileCols * pixelCols
 
       for(tcol <- 0 until tileCols optimized) {
         for(trow <- 0 until tileRows optimized) {
@@ -183,7 +183,7 @@ case class CompositeTile(tiles: Seq[Tile],
             for(pcol <- 0 until pixelCols optimized) {
               val acol = (pixelCols * tcol) + pcol
               val arow = (pixelRows * trow) + prow
-              arr(arow*totalCols + acol) = tile.getDouble(pcol, prow)
+              arr(arow * totalCols + acol) = tile.getDouble(pcol, prow)
             }
           }
         }
@@ -192,9 +192,7 @@ case class CompositeTile(tiles: Seq[Tile],
     }
   }
 
-  def toArrayByte(): Array[Byte] = toArrayTile.toArrayByte
-
-  def data: ArrayTile = toArrayTile.data
+  def toBytes(): Array[Byte] = toArrayTile.toBytes
 
   def get(col: Int, row: Int): Int = {
     val tcol = col / tileLayout.pixelCols
@@ -205,7 +203,7 @@ case class CompositeTile(tiles: Seq[Tile],
     getTile(tcol, trow).get(pcol, prow)
   }
 
-  def getDouble(col: Int, row: Int) = {
+  def getDouble(col: Int, row: Int): Double = {
     val tcol = col / tileLayout.pixelCols
     val trow = row / tileLayout.pixelRows
     val pcol = col % tileLayout.pixelCols
@@ -213,55 +211,51 @@ case class CompositeTile(tiles: Seq[Tile],
     getTile(tcol, trow).getDouble(pcol, prow)
   }
 
-  def convert(rasterType: TileType): Tile =
-    CompositeTile(tiles.map(_.convert(rasterType)), tileLayout)
+  def convert(cellType: CellType): Tile =
+    CompositeTile(tiles.map(_.convert(cellType)), tileLayout)
 
   def map(f: Int => Int): Tile = {
-    val data = ArrayTile.allocByType(rasterType, cols, rows)
+    val tile = ArrayTile.alloc(cellType, cols, rows)
     for(row <- 0 until rows optimized) {
       for(col <- 0 until cols optimized) {
-        data.set(col, row, get(col, row))
+        tile.set(col, row, get(col, row))
       }
     }
-    ArrayTile(data, cols, rows)
+    tile
   }
 
-  def combine(r2: Tile)(f: (Int, Int) => Int): Tile = {
-    if(this.dimensions != r2.dimensions) {
-      throw new GeoAttrsError("Cannot combine rasters with different dimensions." +
-                             s"$dimensions does not match ${r2.dimensions}")
-    }
-    val tile = ArrayTile.allocByType(rasterType, cols, rows)
+  def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
+    (this, other).assertEqualDimensions
+
+    val tile = ArrayTile.alloc(cellType, cols, rows)
     for(row <- 0 until rows optimized) {
       for(col <- 0 until cols optimized) {
-        data.set(col, row, f(get(col, row), r2.get(col, row)))
+        tile.set(col, row, f(get(col, row), other.get(col, row)))
       }
     }
     tile
   }
 
   def mapDouble(f: Double =>Double): Tile = {
-    val data = ArrayTile.allocByType(rasterType, cols, rows)
+    val tile = ArrayTile.alloc(cellType, cols, rows)
     for(row <- 0 until rows optimized) {
       for(col <- 0 until cols optimized) {
-        data.setDouble(col, row, getDouble(col, row))
+        tile.setDouble(col, row, getDouble(col, row))
       }
     }
-    ArrayTile(data, cols, rows)
+    tile
   }
 
-  def combineDouble(r2: Tile)(f: (Double, Double) => Double): Tile = {
-    if(this.dimensions != r2.dimensions) {
-      throw new GeoAttrsError("Cannot combine rasters with different dimensions." +
-                             s"$dimensions does not match ${r2.dimensions}")
-    }
-    val data = ArrayTile.allocByType(rasterType, cols, rows)
+  def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = {
+    (this, other).assertEqualDimensions
+
+    val tile = ArrayTile.alloc(cellType, cols, rows)
     for(row <- 0 until rows optimized) {
       for(col <- 0 until cols optimized) {
-        data.setDouble(col, row, f(getDouble(col, row), r2.getDouble(col, row)))
+        tile.setDouble(col, row, f(getDouble(col, row), other.getDouble(col, row)))
       }
     }
-    Tile(data, cols, rows)
+    tile
   }
 
   override

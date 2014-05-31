@@ -20,27 +20,27 @@ import java.awt.image.DataBuffer
 
 sealed abstract class CellType(val bits: Int, val name: String, val isFloatingPoint: Boolean) extends Serializable {
   def bytes = bits / 8
-  def union(rhs: CellType) = 
-    if (bits < rhs.bits) 
-      rhs 
-    else if (bits < rhs.bits)
+  def union(other: CellType) = 
+    if (bits < other.bits) 
+      other
+    else if (bits < other.bits)
       this
-    else if (isFloatingPoint && !rhs.isFloatingPoint)
+    else if (isFloatingPoint && !other.isFloatingPoint)
       this
     else
-      rhs
+      other
 
-  def intersect(rhs: CellType) = 
-    if (bits < rhs.bits)
+  def intersect(other: CellType) = 
+    if (bits < other.bits)
       this
-    else if (bits < rhs.bits)
-      rhs
-    else if (isFloatingPoint && !rhs.isFloatingPoint)
-      rhs
+    else if (bits < other.bits)
+      other
+    else if (isFloatingPoint && !other.isFloatingPoint)
+      other
     else
       this
 
-  def contains(rhs: RasterType) = bits >= rhs.bits
+  def contains(other: CellType) = bits >= other.bits
 
   def numBytes(size: Int) = bytes * size
 }

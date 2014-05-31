@@ -16,30 +16,25 @@
 
 package geotrellis.raster
 
-import getorellis._
 import geotrellis.feature.Extent
-import geotrellis.raster.op._
 
 import scalaxy.loops._
 
 object Tile {
-  def apply(arr: ArrayTile, cols: Int, rows: Int): Tile = 
-    ArrayTile(arr, cols, rows)
-
   def apply(arr: Array[Int], cols: Int, rows: Int): Tile = 
-    ArrayTile(IntArrayTile(arr, cols, rows), cols, rows)
+    IntArrayTile(arr, cols, rows)
 
   def apply(arr: Array[Double], cols: Int, rows: Int): Tile = 
-    ArrayTile(DoubleArrayTile(arr, cols, rows), cols, rows)
+    DoubleArrayTile(arr, cols, rows)
 
   def empty(cols: Int, rows: Int): Tile = 
-    ArrayTile(IntArrayTile.empty(cols, rows), cols, rows)
+    IntArrayTile.empty(cols, rows)
 }
 
 /**
  * Base trait for the Tile data type.
  */
-trait Tile extends Raster with local.LocalMethods {
+trait Tile extends Raster /*with local.LocalMethods*/ {
   type This = Tile
 
   val cols: Int
@@ -62,12 +57,7 @@ trait Tile extends Raster with local.LocalMethods {
   def toArrayTile(): ArrayTile
   def toArray(): Array[Int]
   def toArrayDouble(): Array[Double]
-  def toArrayByte(): Array[Byte]
-
-  def convert(typ: TileType): Tile
-
-  def dualForeach(f: Int => Unit)(g: Double => Unit): Unit =
-    if (cellType.isFloatingPoint) foreachDouble(g) else foreach(f)
+  def toBytes(): Array[Byte]
 
   def foreach(f: Int=>Unit): Unit =
     for(col <- 0 until cols optimized) {
@@ -88,27 +78,6 @@ trait Tile extends Raster with local.LocalMethods {
 
   def mapDouble(f: Double => Double): Tile
   def combineDouble(r2: Tile)(f: (Double, Double) => Double): Tile
-
-  def mapIfSet(f: Int => Int): Tile =
-    map { i =>
-      if(isNoData(i)) i
-      else f(i)
-    }
-
-  def mapIfSetDouble(f: Double => Double): Tile =
-    mapDouble { d =>
-      if(isNoData(d)) d
-      else f(d)
-    }
-
-  def dualMap(f: Int => Int)(g: Double => Double) =
-    if (isFloat) mapDouble(g) else map(f)
-
-  def dualMapIfSet(f: Int => Int)(g: Double => Double) =
-    if (isFloat) mapIfSetDouble(g) else mapIfSet(f)
-
-  def dualCombine(r2: Tile)(f: (Int, Int) => Int)(g: (Double, Double) => Double) =
-    if (isFloat || r2.isFloat) combineDouble(r2)(g) else combine(r2)(f)
 
   /**
    * Normalizes the values of this raster, given the current min and max, to a new min and max.

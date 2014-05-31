@@ -32,8 +32,6 @@ case class Kernel(raster: Tile) {
 
 object Kernel {
   implicit def raster2Kernel(r: Tile): Kernel = Kernel(r)
-  implicit def raster2KernelOp(r: Tile): Op[Kernel] = Literal(Kernel(r))
-  implicit def rasterOp2Kernel(r: Op[Tile]): Op[Kernel] = r.map(Kernel(_))
   
   /**
    * Creates a Gaussian kernel. Can be used with the [[Convolve]] or [[KernelDensity]] operations.

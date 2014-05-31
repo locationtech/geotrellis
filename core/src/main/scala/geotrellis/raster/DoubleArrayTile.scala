@@ -26,15 +26,16 @@ import java.nio.ByteBuffer
  */
 final case class DoubleArrayTile(array: Array[Double], cols: Int, rows: Int)
   extends MutableArrayTile with DoubleBasedArray {
-  def getType = TypeDouble
-  def alloc(cols: Int, rows: Int) = DoubleArrayTile.ofDim(cols, rows)
+
+  val cellType = TypeDouble
+
   def applyDouble(i: Int) = array(i)
   def updateDouble(i: Int, z: Double) = array(i) = z
-  def copy = DoubleArrayTile(array.clone, cols, rows)
+
   override def toArrayDouble = array.clone
 
-  def toArrayByte: Array[Byte] = {
-    val pixels = new Array[Byte](array.length * getType.bytes)
+  def toBytes: Array[Byte] = {
+    val pixels = new Array[Byte](array.length * cellType.bytes)
     val bytebuff = ByteBuffer.wrap(pixels)
     bytebuff.asDoubleBuffer.put(array)
     pixels
@@ -48,12 +49,16 @@ final case class DoubleArrayTile(array: Array[Double], cols: Int, rows: Int)
 }
 
 object DoubleArrayTile {
-  def ofDim(cols: Int, rows: Int) = 
+  def ofDim(cols: Int, rows: Int): DoubleArrayTile = 
     new DoubleArrayTile(Array.ofDim[Double](cols * rows), cols, rows)
-  def empty(cols: Int, rows: Int) = 
+
+  def empty(cols: Int, rows: Int): DoubleArrayTile = 
     new DoubleArrayTile(Array.ofDim[Double](cols * rows).fill(Double.NaN), cols, rows)
 
-  def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int) = {
+  def fill(v: Double, cols: Int, rows: Int): DoubleArrayTile =
+    new DoubleArrayTile(Array.ofDim[Double](cols * rows).fill(v), cols, rows)
+
+  def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int): DoubleArrayTile = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
     val doubleBuffer = byteBuffer.asDoubleBuffer()
     val doubleArray = new Array[Double](bytes.length / TypeDouble.bytes)

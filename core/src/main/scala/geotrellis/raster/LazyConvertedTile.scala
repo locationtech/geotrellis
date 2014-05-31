@@ -22,7 +22,7 @@ import geotrellis.feature.Extent
 import scalaxy.loops._
 
 /**
- * LazyConvert represents a lazily-applied conversion to any type.
+ * LazyConvertedTile represents a lazily-applied conversion to any type.
  *
  * @note     If you care converting to a RasterType with less bits
  *           than the type of the underlying data, you are responsible
@@ -30,26 +30,21 @@ import scalaxy.loops._
  *           therefore converting from a TypeInt to TypeByte could still
  *           return values greater than 127 from apply().
  */
-final case class LazyConvertedTile(inner: ArrayTile, typ: RasterType)
-  extends ArrayRaster {
-
-  final def getType = typ
-  final def alloc(cols: Int, rows: Int) = 
-    ArrayRaster.allocByType(typ, cols, rows)
+final case class LazyConvertedTile(inner: ArrayTile, cellType: CellType)
+  extends ArrayTile {
 
   val cols = inner.cols
   val rows = inner.rows
 
   def apply(i: Int) = inner.apply(i)
   def applyDouble(i: Int) = inner.applyDouble(i)
-  def copy = force
+
   override def toArray = inner.toArray
   override def toArrayDouble = inner.toArrayDouble
 
-  def mutable(): MutableArrayTile = {
-    val rasterType = getType
-    val forcedData = ArrayTile.allocByType(rasterType, cols, rows)
-    if(rasterType.isDouble) {
+  def force(): ArrayTile = {
+    val forcedData = ArrayTile.alloc(cellType, cols, rows)
+    if(cellType.isFloatingPoint) {
       for(col <- 0 until cols optimized) {
         for(row <- 0 until rows optimized) {
           forcedData.setDouble(col, row, inner.getDouble(col, row))
@@ -64,10 +59,9 @@ final case class LazyConvertedTile(inner: ArrayTile, typ: RasterType)
     }
     forcedData
   }
-  def force(): ArrayTile = mutable
   
-  def toArrayByte: Array[Byte] = force.toArrayByte
+  def toBytes: Array[Byte] = force.toBytes
 
   def warp(current: Extent, target: RasterExtent): ArrayTile =
-    LazyConvert(inner.warp(current, target), typ)
+    LazyConvertedTile(inner.warp(current, target), cellType)
 }

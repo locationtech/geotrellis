@@ -31,7 +31,7 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
 }
 
 object GridBounds {
-  def apply(r: Raster): GridBounds = 
+  def apply(r: Tile): GridBounds = 
     GridBounds(0, 0, r.cols, r.rows)
 }
 
@@ -214,7 +214,7 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
     * Will warp the extent, but keep the resolution, and preserve north and
     * west borders
     */
-  def adjustTo(tileLayout: raster.TileLayout) = {
+  def adjustTo(tileLayout: TileLayout) = {
     val totalCols = tileLayout.pixelCols * tileLayout.tileCols
     val totalRows = tileLayout.pixelRows * tileLayout.tileRows
 
