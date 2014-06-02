@@ -16,7 +16,7 @@
 
 package geotrellis.io.geotiff
 
-import GTReaderUtils._
+import ReaderUtils._
 
 import scala.io.BufferedSource
 
@@ -37,30 +37,33 @@ object GeoTiffReader {
 
   private def readLittleEndianGeoTiff(streamArray: Array[Char]): GeoTiff = {
     val offset = getInt(streamArray)(4)
-    val ifds = parseLittleEndianIFDs(streamArray, offset)
+    val ifds = parseLittleEndianIFDs(streamArray, offset).toArray
 
-    return GeoTiff(ifds.toArray)
+    GeoTiff(ifds)
   }
 
   private def parseLittleEndianIFDs(streamArray: Array[Char], current: Int):
-      List[IFDTags] = {
+      List[IFD] = {
     if (current == 0) Nil
     else {
       val entries = getShort(streamArray)(current)
-      val tags = IFDTags(count = entries)
-      parseFields(streamArray, current + 2, tags, 0, None)
+      val tags = parseTags(streamArray, current + 2,
+        IFDTags(count = entries), 0, None)
+
+      val image = ImageReader.read(streamArray, tags)
+
       val offset = getInt(streamArray)(entries * 12 + current + 2)
-      tags :: parseLittleEndianIFDs(streamArray, offset)
+      IFD(tags) :: parseLittleEndianIFDs(streamArray, offset)
     }
   }
 
-  private def parseFields(streamArray: Array[Char], current: Int,
+  private def parseTags(streamArray: Array[Char], current: Int,
     tags: IFDTags, index: Int, gkMetadata: Option[TagMetadata]): IFDTags = {
     (tags.geoTiffTags.doubles, tags.geoTiffTags.asciis,
       tags.geoTiffTags.geoKeyDirectory, index, gkMetadata) match {
       case (_, _, _, tags.count, _) => tags
-      case (Some(_), Some(_), None, _, Some(metadata)) => parseFields(
-        streamArray, current + 12, GTFieldDataReader.read(streamArray, metadata,
+      case (Some(_), Some(_), None, _, Some(metadata)) => parseTags(
+        streamArray, current + 12, TagReader.read(streamArray, metadata,
           tags), index + 1, None)
       case _ => {
         val getShortValue = getShort(streamArray)(_)
@@ -72,11 +75,11 @@ object GeoTiffReader {
           getIntValue(current + 8))
 
         if (metadata.tag == 34735) {
-          parseFields(streamArray, current + 12, tags, index,
+          parseTags(streamArray, current + 12, tags, index,
             Some(metadata))
         } else {
-          val newTag = GTFieldDataReader.read(streamArray, metadata, tags)
-          parseFields(streamArray, current + 12, newTag, index + 1,
+          val newTag = TagReader.read(streamArray, metadata, tags)
+          parseTags(streamArray, current + 12, newTag, index + 1,
             gkMetadata)
         }
       }

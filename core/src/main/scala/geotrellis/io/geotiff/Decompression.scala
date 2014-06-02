@@ -16,4 +16,8 @@
 
 package geotrellis.io.geotiff
 
-case class GeoTiff(ifds: Array[IFD])
+object Decompression {
+
+  def uncompress() = 5
+
+}

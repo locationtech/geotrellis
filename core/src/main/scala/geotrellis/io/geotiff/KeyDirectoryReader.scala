@@ -16,7 +16,7 @@
 
 package geotrellis.io.geotiff
 
-import GTReaderUtils._
+import ReaderUtils._
 
 case class KeyDirectoryReader(asciis: String, doubles: Array[Double]) {
 

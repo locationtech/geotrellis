@@ -148,3 +148,5 @@ case class IFDTags(
   yCbCrTags: IFDYCbCrTags = IFDYCbCrTags(),
   geoTiffTags: IFDGeoTiffTags = IFDGeoTiffTags()
 )
+
+case class IFD(tags: IFDTags)
