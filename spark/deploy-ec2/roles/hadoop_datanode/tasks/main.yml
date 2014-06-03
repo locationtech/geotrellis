@@ -1,0 +1,30 @@
+---
+
+#Main tasks for hadoop datanode
+- apt: name=hadoop-hdfs-datanode state=present force=yes
+  sudo: yes
+
+- name: Attach some EBS volumes
+  local_action:
+    module: ec2_vol
+    instance: "{{ instance_id }}"        
+    device_name: "{{ item.device }}"
+    volume_size: "{{ hdfs_volume_size }}"
+  with_items: hdfs_volumes
+
+- name: Format Hadoop data partitions as ext3
+  filesystem: fstype="ext3" dev="{{ item.device }}"
+  with_items: hdfs_volumes
+  sudo: yes
+
+- file: path="{{item.mount}}" owner=hdfs mode=0755 state=directory
+  sudo: yes
+  with_items: hdfs_volumes
+
+- name: Mount Hadoop data partitions
+  mount: name="{{item.mount}}" src="{{item.device}}" fstype=ext3 state=mounted
+  with_items: hdfs_volumes
+  sudo: yes
+
+- service: name=hadoop-hdfs-datanode state=started
+  sudo: yes

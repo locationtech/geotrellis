@@ -6,19 +6,19 @@
   roles: 
     - common
     - hadoop
-    - spark
   gather_facts: False
-
   vars:
-    env: 
-      HADOOP_CONF: /home/ubuntu/hadoop/conf
-      HADOOP_PREFIX: /home/ubuntu/hadoop
-      JAVA_HOME: /usr/lib/jvm/java-7-openjdk-amd64/jre/
-
-- name: Setup hadoop master
-  hosts: master
-  roles: 
-    - hadoop_master
-  gather_facts: False
-
+    #This will ve used to write hadoop config files
+    namenode_ip: "{{ hostvars[groups['master'][0]]['private_ip'] }}"
   
+
+- name: Hadop NameNodes
+  hosts: master
+  roles:
+    - hadoop_namenode
+
+- name: Hadoop DataNodes
+  hosts: workers
+  roles: 
+    - hadoop_datanode
+  gather_facts: False

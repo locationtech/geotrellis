@@ -1,0 +1,18 @@
+---
+
+#Main tasks for hadoop namenode
+- apt: name=hadoop-hdfs-namenode state=present force=yes
+  sudo: yes
+
+- file: path=/var/hadoop-hdfs/ owner=hdfs mode=0755 state=directory
+  sudo: yes
+
+- name: Format the namenode
+  shell: hdfs namenode -format creates=/var/hadoop-hdfs/namenode
+  sudo_user: hdfs  
+
+- service: name=hadoop-hdfs-namenode state=started
+  sudo: yes
+
+#This supports using the hadoop scripts
+- lineinfile: dest=.bashrc  regexp="^export HADOOP_CONF=" line="export HADOOP_CONF=/etc/hadoop/conf"

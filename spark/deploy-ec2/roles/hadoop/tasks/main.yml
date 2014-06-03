@@ -1,51 +1,16 @@
 ---
 
-#Tasks to setup hadoop
-
-- name: Download hadoop-1.2.1 tarball  
-  get_url: 
-    url: http://apache.claz.org/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz 
-    dest: ~/hadoop.tgz   
-    sha256sum: 94a1181771f173bdb55c8f901722825866396091f0516bdd12b34dc3de1706a1
-  register: get_hadoop
-
-- shell: tar -xzvf ~/hadoop.tgz
-  when: get_hadoop|changed
-
-- shell: mv ~/hadoop-1.2.1 ~/hadoop
-  when: get_hadoop|changed
-
-#These tasks assume that these partitions are allocated and attached by ec2 setup script
+#Main tasks for hadoop master
 
 
-- name: Attach some EBS volumes
-  local_action:
-    module: ec2_vol
-    instance: "{{ instance_id }}"        
-    device_name: "{{ item.device }}"
-    volume_size: "{{ hdfs_volume_size }}"
-  with_items: hdfs_volumes
-
-- name: Format Hadoop data partitions as ext3
-  filesystem: fstype="ext3" dev="{{ item.device }}"
-  with_items: hdfs_volumes
-  sudo: yes
-
-- name: Mount Hadoop data partitions
-  mount: name="{{item.mount}}" src="{{item.device}}" fstype=ext3 state=mounted
-  with_items: hdfs_volumes
+- apt: name=hadoop-hdfs state=present force=yes
   sudo: yes
 
 - name: Upload Hadoop config
-  template: src=conf/{{ item }} dest=~/hadoop/conf
+  template: src=conf/{{ item }} dest=/etc/hadoop/conf
   with_items:
     - core-site.xml
     - hdfs-site.xml
     - hadoop-env.sh
-    - masters
-    - slaves
-
-#This supports using the hadoop scripts
-- lineinfile: dest=.bashrc  regexp="^export HADOOP_CONF=" line="export HADOOP_CONF=/home/ubuntu/hadoop/conf"
-- lineinfile: dest=.bashrc  regexp="^export HADOOP_PREFIX=" line="export HADOOP_PREFIX=/home/ubuntu/hadoop"
-#- lineinfile: dest=.bashrc  regexp="^export JAVA_HOME=" line="export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/jre/"
+    - log4j.properties
+  sudo: yes

@@ -1,24 +1,23 @@
 # Set Hadoop-specific environment variables here.
 
-# Disable IPv6.
-export HADOOP_OPTS="-Djava.net.preferIPv4Stack=true $HADOOP_OPTS"
-
 # The only required environment variable is JAVA_HOME.  All others are
 # optional.  When running a distributed configuration it is best to
 # set JAVA_HOME in this file, so that it is correctly defined on
 # remote nodes.
 
 # The java implementation to use.  Required.
-# export JAVA_HOME=/usr/lib/j2sdk1.5-sun
-export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/jre/
+export JAVA_HOME={{env.JAVA_HOME}}
+
 # Extra Java CLASSPATH elements.  Optional.
-export HADOOP_CLASSPATH="/usr/lib/hadoop-hdfs/lib:$HADOOP_CLASSPATH"
+# export HADOOP_CLASSPATH=
 
 # The maximum amount of heap to use, in MB. Default is 1000.
 # export HADOOP_HEAPSIZE=2000
 
 # Extra Java runtime options.  Empty by default.
 # export HADOOP_OPTS=-server
+export HADOOP_OPTS="-Djava.security.krb5.realm=-Djava.security.krb5.kdc="
+
 
 # Command specific options appended to HADOOP_OPTS when specified
 export HADOOP_NAMENODE_OPTS="-Dcom.sun.management.jmxremote $HADOOP_NAMENODE_OPTS"
@@ -48,6 +47,9 @@ export HADOOP_JOBTRACKER_OPTS="-Dcom.sun.management.jmxremote $HADOOP_JOBTRACKER
 # export HADOOP_SLAVE_SLEEP=0.1
 
 # The directory where pid files are stored. /tmp by default.
+# NOTE: this should be set to a directory that can only be written to by 
+#       the users that are going to run the hadoop daemons.  Otherwise there is
+#       the potential for a symlink attack.
 # export HADOOP_PID_DIR=/var/hadoop/pids
 
 # A string representing this instance of hadoop. $USER by default.
@@ -55,5 +57,3 @@ export HADOOP_JOBTRACKER_OPTS="-Dcom.sun.management.jmxremote $HADOOP_JOBTRACKER
 
 # The scheduling priority for daemon processes.  See 'man nice'.
 # export HADOOP_NICENESS=10
-
-export HADOOP_CLIENT_OPTS="-Xms268435456 -Xmx268435456 $HADOOP_CLIENT_OPTS"
