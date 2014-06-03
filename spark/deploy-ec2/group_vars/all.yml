@@ -11,10 +11,9 @@ worker_count: 1
 #These volumes will be given to hdfs data nodes
 #recommended device names are from xvdf to xvdp
 hdfs_volumes: [
-  { device: /dev/xvdf, mount: /mnt/data1 },
-  { device: /dev/xvdg, mount: /mnt/data2 }
+  { device: /dev/xvdf, mount: /mnt/data1, size: 10 },
+  { device: /dev/xvdg, mount: /mnt/data2, size: 10 }
 ]
-hdfs_volume_size: 6
 
 
 #Spark Variables

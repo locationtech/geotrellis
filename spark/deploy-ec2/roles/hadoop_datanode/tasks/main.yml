@@ -9,7 +9,7 @@
     module: ec2_vol
     instance: "{{ instance_id }}"        
     device_name: "{{ item.device }}"
-    volume_size: "{{ hdfs_volume_size }}"
+    volume_size: "{{ item.size }}"
   with_items: hdfs_volumes
 
 - name: Format Hadoop data partitions as ext3
