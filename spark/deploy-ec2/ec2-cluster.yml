@@ -20,10 +20,8 @@
             from_port: 22
             to_port: 22
             cidr_ip: "0.0.0.0/0"
-          - proto: tcp
-            from_port: 8080
-            to_port: 8081
-            cidr_ip: "0.0.0.0/0"
+          - proto: all
+            cidr_ip: "216.158.51.82/31"
         rules_egress:
           - proto: all
             cidr_ip: "0.0.0.0/0"

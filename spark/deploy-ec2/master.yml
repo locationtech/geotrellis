@@ -15,6 +15,7 @@
 - name: Hadop NameNodes
   hosts: master
   roles:
+    - pptpd
     - hadoop_namenode
 
 - name: Hadoop DataNodes
