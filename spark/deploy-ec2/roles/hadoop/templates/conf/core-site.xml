@@ -4,7 +4,7 @@
 <configuration>
   <property>
     <name>fs.defaultFS</name>
-    <value>hdfs://{{ namenode_ip }}:8020</value>
+    <value>hdfs://{{ hadoop_namenode }}:8020</value>
   </property>
   <property>
     <name>fs.trash.interval</name>

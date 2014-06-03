@@ -1,5 +1,7 @@
 ---
-key_name: spark-cluster
+
+ec2_key_name: spark-cluster
+ec2_key_file: keys/spark-cluster.pem
 
 image: ami-018c9568
 instance_type: m1.small    

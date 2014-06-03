@@ -1,0 +1,14 @@
+---
+
+- name: Stopping Cluster
+  hosts: localhost
+  gather_facts: False
+  
+  tasks:
+    - include_vars: group_vars/cluster.yml  
+
+    - name: Stop Cluster
+      local_action: 
+        module: ec2 
+        instance_ids: "{{ cluster_instance_ids }}"
+        state: absent

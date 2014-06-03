@@ -4,6 +4,6 @@
 - name: Impose social constructs and roles on an innocent server
   hosts: ec2_hosts
   roles: 
-    #- common
+    - common
   gather_facts: False
   

@@ -1,1 +1,4 @@
-localhost
+[master]
+
+[workers]
+

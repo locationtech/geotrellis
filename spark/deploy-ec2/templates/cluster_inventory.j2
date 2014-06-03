@@ -1,0 +1,19 @@
+[master]
+{% for host in master.tagged_instances %}
+{{ host.public_ip }} instance_id={{host.id}} private_ip={{host.private_ip}} private_dns_name={{host.private_dns_name}}
+{% endfor %}
+
+[workers]
+{% for host in workers.tagged_instances %}
+{{ host.public_ip }} instance_id={{host.id}} private_ip={{host.private_ip}} private_dns_name={{host.private_dns_name}} 
+{% endfor %}
+
+
+[master:vars]
+ansible_ssh_user=ubuntu
+ansible_ssh_private_key_file={{ ec2_key_file }}
+
+[workers:vars]
+ansible_ssh_user=ubuntu
+ansible_ssh_private_key_file={{ ec2_key_file }}
+

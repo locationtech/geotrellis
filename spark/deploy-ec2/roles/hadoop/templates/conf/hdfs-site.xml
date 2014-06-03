@@ -8,11 +8,11 @@
   </property>
   <property>
     <name>dfs.namenode.servicerpc-address</name>
-    <value>{{ namenode_ip }}:8022</value>
+    <value>{{ hadoop_namenode }}:8022</value>
   </property>
   <property>
     <name>dfs.https.address</name>
-    <value>{{ namenode_ip }}:50470</value>
+    <value>{{ hadoop_namenode }}:50470</value>
   </property>
   <property>
     <name>dfs.https.port</name>
@@ -20,7 +20,7 @@
   </property>
   <property>
     <name>dfs.namenode.http-address</name>
-    <value>{{ namenode_ip }}:50070</value>
+    <value>{{ hadoop_namenode }}:50070</value>
   </property>
  <property>
     <name>dfs.namenode.name.dir</name>

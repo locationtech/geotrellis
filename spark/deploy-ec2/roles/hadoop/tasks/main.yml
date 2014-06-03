@@ -1,10 +1,10 @@
 ---
 
 #Main tasks for hadoop master
-
-
 - apt: name=hadoop-hdfs state=present force=yes
   sudo: yes
+
+- include_vars: group_vars/cluster.yml  
 
 - name: Upload Hadoop config
   template: src=conf/{{ item }} dest=/etc/hadoop/conf
