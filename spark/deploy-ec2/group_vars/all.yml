@@ -14,9 +14,3 @@ hdfs_volumes: [
   { device: /dev/xvdf, mount: /mnt/data1, size: 10 },
   { device: /dev/xvdg, mount: /mnt/data2, size: 10 }
 ]
-
-
-#Spark Variables
-spark_home:   "{{ lookup('env','SPARK_HOME') }}"
-assembly_dir: assembly/target/scala-2.10
-spark_jar:    spark-assembly-0.9.1-hadoop1.2.1.jar
