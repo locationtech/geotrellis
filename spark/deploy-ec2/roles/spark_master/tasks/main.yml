@@ -1,0 +1,8 @@
+---
+
+#Tasks for spark roles
+- apt: name=spark-master state=present force=yes
+  sudo: yes
+
+- service: name=spark-master state=started
+  sudo: yes

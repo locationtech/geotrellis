@@ -4,22 +4,6 @@
 - name: Impose social constructs and roles on an innocent server
   hosts: ec2_hosts
   roles: 
-    - common
-    - hadoop
+    #- common
   gather_facts: False
-  vars:
-    #This will ve used to write hadoop config files
-    namenode_ip: "{{ hostvars[groups['master'][0]]['private_ip'] }}"
   
-
-- name: Hadop NameNodes
-  hosts: master
-  roles:
-    - pptpd
-    - hadoop_namenode
-
-- name: Hadoop DataNodes
-  hosts: workers
-  roles: 
-    - hadoop_datanode
-  gather_facts: False

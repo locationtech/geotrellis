@@ -1,0 +1,16 @@
+---
+
+- name: Master
+  hosts: master
+  roles:
+    #- pptpd
+    #- hadoop
+    #- hadoop_namenode
+    - spark
+    - spark_master
+  gather_facts: False
+
+  vars:
+    #This will ve used to write hadoop config files
+    namenode_ip: "{{ hostvars[groups['master'][0]]['private_ip'] }}"
+    spark_master: "{{ hostvars[groups['master'][0]]['private_dns_name'] }}"

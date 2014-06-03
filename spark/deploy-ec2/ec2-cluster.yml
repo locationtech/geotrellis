@@ -52,17 +52,13 @@
         image:          "{{ image }}"         
         instance_type:  "{{ instance_type }}" 
         key_name:       "{{ key_name }}" 
-        group:          "{{ cluster_name }}-master"         
-        
-        #Add 'type' tag to instance and use it to control the number of instances running
+        group:          "{{ cluster_name }}-master"                 
         instance_tags:  
           spark-role: "master"
         count_tag:
           spark-role: "master"
         exact_count:    1
-
         wait:           true 
-
       register: master
 
 
@@ -72,6 +68,7 @@
         instance_id={{ item.id }}
         public_ip={{ item.public_ip }}
         private_ip={{ item.private_ip }}
+        private_dns_name={{ item.private_dns_name }}
         ansible_ssh_user="ubuntu"
         ansible_ssh_private_key_file="{{inventory_dir}}/keys/{{ key_name }}".pem       
         groups=master,ec2_hosts
@@ -85,15 +82,12 @@
         instance_type:  "{{ instance_type }}" 
         key_name:       "{{ key_name }}" 
         group:          "{{ cluster_name }}-slaves"
-
         instance_tags:  
           spark-role: "worker"
         count_tag:      
           spark-role: "worker"
         exact_count:    "{{ worker_count }}"
-
         wait:           true
-
       register: workers
 
     - name: Add worker instance to host group
@@ -101,30 +95,14 @@
         hostname={{ item.public_ip }} 
         instance_id={{ item.id }}
         public_ip={{ item.public_ip }}
+        private_dns_name={{ item.private_dns_name }}
         private_ip={{ item.private_ip }}        
         groups=workers,ec2_hosts
         ansible_ssh_user="ubuntu"
         ansible_ssh_private_key_file="{{inventory_dir}}/keys/{{ key_name }}".pem       
       with_items: workers.tagged_instances
   
+- include: common.yml
 - include: master.yml
+- include: workers.yml
 
-
-# - name: Setup spark on all hosts
-#   hosts: ec2_hosts
-#   gather_facts: False
-
-
-# - name: Start spark master
-#   hosts: master
-
-#   tasks:
-#   - name: start spark master service
-#     service: name=spark-master state=started enabled=true
-    
-# - name: Start spark workers
-#   hosts: ec2_hosts
-
-#   tasks:
-#   - name: start spark workers service
-#     service: name=spark-workers state=started enabled=true

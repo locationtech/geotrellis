@@ -1,6 +1,0 @@
-{% for host in groups['master'] %}
-{{ hostvars[host]['private_ip'] }}
-{% endfor %}
-{% for host in groups['workers'] %}
-{{ hostvars[host]['private_ip'] }}
-{% endfor %}

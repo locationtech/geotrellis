@@ -24,7 +24,6 @@
 - name: Enable IP forwarding
   lineinfile: 
     dest: /etc/sysctl.conf
-    regexp: "^#net.ipv4.ip_forward=1" 
     line: net.ipv4.ip_forward=1
   sudo: yes
   notify: Reload sysctl
