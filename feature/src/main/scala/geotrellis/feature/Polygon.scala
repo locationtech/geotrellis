@@ -20,7 +20,6 @@ import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
 
 object Polygon {
-
   implicit def jtsToPolygon(jtsGeom: jts.Polygon): Polygon =
     Polygon(jtsGeom)
 
@@ -54,12 +53,11 @@ object Polygon {
       }).toArray
 
     val p = factory.createPolygon(extGeom, holeGeoms)
-    // Sometimes polygons are invalid even if they aren't. 
+    // Sometimes polygons are invalid even if they aren't.
     // Try buffer(0) per http://tsusiatsoftware.net/jts/jts-faq/jts-faq.html#G
     if(!p.isValid) { p.buffer(0).asInstanceOf[jts.Polygon] }
     else { p }
   }
-
 }
 
 case class Polygon(jtsGeom: jts.Polygon) extends Geometry 
@@ -67,7 +65,6 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
                                             with TwoDimensions {
 
   assert(!jtsGeom.isEmpty, s"Polygon Empty: $jtsGeom")
-  assert(jtsGeom.isValid, s"Polygon Invalid: $jtsGeom")
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
   def normalized(): Polygon = { jtsGeom.normalize ; Polygon(jtsGeom) }
@@ -111,15 +108,10 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
 
   /**
-   * Returns a Polygon whose points are (minx, miny), (minx, maxy),
-   * (maxx, maxy), (maxx, miny), (minx, miny).
+   * Returns the minimum bounding box that contains this Polygon.
    */
-  lazy val boundingBox: Polygon =
-    jtsGeom.getEnvelope match {
-      case p: jts.Polygon => Polygon(p)
-      case x =>
-        sys.error(s"Unexpected result for Polygon boundingBox: ${x.getGeometryType}")
-    }
+  lazy val boundingBox: BoundingBox =
+    jtsGeom.getEnvelopeInternal
 
   /**
    * Returns this Polygon's perimeter.
@@ -131,7 +123,6 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
 
 
   // -- Intersection
-
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
@@ -356,6 +347,4 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
    */
   def within(g: TwoDimensions): Boolean =
     jtsGeom.within(g.jtsGeom)
-
-  override def toString = jtsGeom.toString
 }

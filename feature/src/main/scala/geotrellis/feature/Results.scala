@@ -529,7 +529,7 @@ case object NoResult extends GeometryResult
   with MultiPointMultiLineSymDifferenceResult
   with MultiPointMultiPolygonSymDifferenceResult
 
-case class PointResult(p: Point) extends GeometryResult
+case class PointResult(geom: Point) extends GeometryResult
   with PointGeometryIntersectionResult
   with OneDimensionAtLeastOneDimensionIntersectionResult
   with TwoDimensionsTwoDimensionsIntersectionResult
@@ -547,7 +547,7 @@ case class PointResult(p: Point) extends GeometryResult
   with MultiPointMultiPointUnionResult
   with PointOrNoResult
 
-case class LineResult(l: Line) extends GeometryResult
+case class LineResult(geom: Line) extends GeometryResult
   with OneDimensionAtLeastOneDimensionIntersectionResult
   with TwoDimensionsTwoDimensionsIntersectionResult
   with ZeroDimensionsLineUnionResult
@@ -572,7 +572,7 @@ object LineResult {
     }
 }
 
-case class PolygonResult(p: Polygon) extends GeometryResult
+case class PolygonResult(geom: Polygon) extends GeometryResult
   with TwoDimensionsTwoDimensionsIntersectionResult
   with AtMostOneDimensionPolygonUnionResult
   with TwoDimensionsTwoDimensionsUnionResult
@@ -588,7 +588,7 @@ case class PolygonResult(p: Polygon) extends GeometryResult
   with MultiPointMultiPolygonUnionResult
   with MultiPointMultiPolygonSymDifferenceResult
 
-case class MultiPointResult(ps: Set[Point]) extends GeometryResult
+case class MultiPointResult(geom: MultiPoint) extends GeometryResult
   with TwoDimensionsTwoDimensionsIntersectionResult
   with MultiPointAtLeastOneDimensionIntersectionResult
   with PointZeroDimensionsUnionResult
@@ -604,7 +604,7 @@ case class MultiPointResult(ps: Set[Point]) extends GeometryResult
   with MultiPointMultiLineSymDifferenceResult
   with MultiPointMultiPolygonSymDifferenceResult
 
-case class MultiLineResult(ls: Set[Line]) extends GeometryResult
+case class MultiLineResult(geom: MultiLine) extends GeometryResult
   with TwoDimensionsTwoDimensionsIntersectionResult
   with LineOneDimensionUnionResult
   with LineAtLeastOneDimensionDifferenceResult
@@ -626,7 +626,7 @@ object MultiLineResult {
     }
 }
 
-case class MultiPolygonResult(ps: Set[Polygon]) extends GeometryResult
+case class MultiPolygonResult(geom: MultiPolygon) extends GeometryResult
   with TwoDimensionsTwoDimensionsIntersectionResult
   with TwoDimensionsTwoDimensionsUnionResult
   with LineMultiPolygonUnionResult
@@ -639,7 +639,7 @@ case class MultiPolygonResult(ps: Set[Polygon]) extends GeometryResult
   with MultiPointMultiPolygonUnionResult
   with MultiPointMultiPolygonSymDifferenceResult
 
-case class GeometryCollectionResult(gc: GeometryCollection) extends GeometryResult
+case class GeometryCollectionResult(geom: GeometryCollection) extends GeometryResult
   with TwoDimensionsTwoDimensionsIntersectionResult
   with ZeroDimensionsLineUnionResult
   with AtMostOneDimensionPolygonUnionResult
