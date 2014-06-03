@@ -1,6 +1,7 @@
 ---
-
-- name: Stopping Cluster
+#Note: this will only terminate a running cluster
+# it will have no effect on stopped cluster
+- name: Terminating Cluster
   hosts: localhost
   gather_facts: False
   
@@ -11,4 +12,5 @@
       local_action: 
         module: ec2 
         instance_ids: "{{ cluster_instance_ids }}"
-        state: absent
+        state: 'absent'
+
