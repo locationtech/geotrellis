@@ -17,6 +17,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.source._
 
 /**
@@ -25,7 +26,7 @@ import geotrellis.source._
  * @note        NoData values will cause the results of this operation
  *              to be NODATA or Double.NaN.
  */
-object Divide extends LocalRasterBinaryOp {
+object Divide extends LocalTileBinaryOp {
   def combine(z1:Int,z2:Int) =
     if (isNoData(z1) || isNoData(z2)) NODATA
     else if (z2 == 0) NODATA
@@ -63,29 +64,29 @@ trait DivideOpMethods[+Repr <: RasterSource] { self: Repr =>
   def /(rss:Seq[RasterSource]): RasterSource = localDivide(rss)
 }
 
-trait DivideMethods { self: Raster =>
+trait DivideMethods { self: Tile =>
   /** Divide each value of the raster by a constant value.*/
-  def localDivide(i: Int): Raster = Divide(self, i)
+  def localDivide(i: Int): Tile = Divide(self, i)
   /** Divide each value of the raster by a constant value.*/
-  def /(i: Int): Raster = localDivide(i)
+  def /(i: Int): Tile = localDivide(i)
   /** Divide a constant value by each cell value.*/
-  def localDivideValue(i: Int): Raster = Divide(i,self)
+  def localDivideValue(i: Int): Tile = Divide(i,self)
   /** Divide a constant value by each cell value.*/
-  def /:(i: Int): Raster = localDivideValue(i)
+  def /:(i: Int): Tile = localDivideValue(i)
   /** Divide each value of a raster by a double constant value.*/
-  def localDivide(d: Double): Raster = Divide(self, d)
+  def localDivide(d: Double): Tile = Divide(self, d)
   /** Divide each value of a raster by a double constant value.*/
-  def /(d: Double): Raster = localDivide(d)
+  def /(d: Double): Tile = localDivide(d)
   /** Divide a double constant value by each cell value.*/
-  def localDivideValue(d: Double): Raster = Divide(d,self)
+  def localDivideValue(d: Double): Tile = Divide(d,self)
   /** Divide a double constant value by each cell value.*/
-  def /:(d: Double): Raster = localDivideValue(d)
+  def /:(d: Double): Tile = localDivideValue(d)
   /** Divide the values of each cell in each raster. */
-  def localDivide(r:Raster): Raster = Divide(self, r)
+  def localDivide(r:Tile): Tile = Divide(self, r)
   /** Divide the values of each cell in each raster. */
-  def /(r: Raster): Raster = localDivide(r)
+  def /(r: Tile): Tile = localDivide(r)
   /** Divide the values of each cell in each raster. */
-  def localDivide(rs: Seq[Raster]): Raster = Divide(self +: rs)
+  def localDivide(rs: Seq[Tile]): Tile = Divide(self +: rs)
   /** Divide the values of each cell in each raster. */
-  def /(rs: Seq[Raster]): Raster = localDivide(rs)
+  def /(rs: Seq[Tile]): Tile = localDivide(rs)
 }

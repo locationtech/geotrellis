@@ -17,11 +17,11 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
-import geotrellis.raster.TileNeighbors
+import geotrellis.raster._
 
-/** Computes the next step of Conway's Game of Life for a given [[Raster]].
+/** Computes the next step of Conway's Game of Life for a given [[Tile]].
  *
- * @param    r      Raster that represents a state of Conway's Game of Life,
+ * @param    r      Tile that represents a state of Conway's Game of Life,
  *                  where NODATA values are dead cells and any other value
  *                  is counted as alive cells.
  * @param    tns    TileNeighbors that describe the neighboring tiles.
@@ -29,29 +29,29 @@ import geotrellis.raster.TileNeighbors
  * @see A description of Conway's Game of Life can be found on
  * [[http://en.wikipedia.org/wiki/Conway's_Game_of_Life wikipedia]].
  */
-case class Conway(r:Op[Raster],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,Square(1),tns)({
-  (r,n) => new CellwiseCalculation[Raster] with ByteArrayTileResult {
+case class Conway(r:Op[Tile],tns:Op[TileNeighbors]) extends FocalOp[Tile](r,Square(1),tns)({
+  (r,n) => new CellwiseCalculation[Tile] with ByteArrayTileResult {
     var count = 0
 
-    def add(r:Raster, x:Int, y:Int) = {
+    def add(r:Tile, x:Int, y:Int) = {
       val z = r.get(x,y)
       if (isData(z)) {
         count += 1
       }
     }
 
-    def remove(r:Raster, x:Int, y:Int) = {
+    def remove(r:Tile, x:Int, y:Int) = {
       val z = r.get(x,y)
       if (isData(z)) {
         count -= 1
       }
     } 
 
-    def setValue(x:Int,y:Int) = data.set(x,y, if(count == 3 || count == 2) 1 else NODATA)
+    def setValue(x:Int,y:Int) = tile.set(x,y, if(count == 3 || count == 2) 1 else NODATA)
     def reset() = { count = 0 }
   }
 })
 
 object Conway {
-  def apply(r:Op[Raster]):Conway = new Conway(r, TileNeighbors.NONE)
+  def apply(r:Op[Tile]):Conway = new Conway(r, TileNeighbors.NONE)
 }

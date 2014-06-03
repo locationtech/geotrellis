@@ -28,7 +28,7 @@ import geotrellis.source._
  * @note        If used with Double typed rasters, the values
  *              will be rounded to Ints.
  */
-object And extends LocalRasterBinaryOp {
+object And extends LocalTileBinaryOp {
   def combine(z1:Int,z2:Int) =
     if (isNoData(z1) || isNoData(z2)) NODATA
     else z1 & z2
@@ -55,19 +55,19 @@ trait AndOpMethods[+Repr <: RasterSource] { self: Repr =>
   def &(rss:Seq[RasterSource]): RasterSource = localAnd(rss)
 }
 
-trait AndMethods { self: Raster =>
+trait AndMethods { self: Tile =>
   /** And a constant Int value to each cell. */
-  def localAnd(i: Int): Raster = And(self, i)
+  def localAnd(i: Int): Tile = And(self, i)
   /** And a constant Int value to each cell. */
-  def &(i:Int): Raster = localAnd(i)
+  def &(i:Int): Tile = localAnd(i)
   /** And a constant Int value to each cell. */
-  def &:(i:Int): Raster = localAnd(i)
+  def &:(i:Int): Tile = localAnd(i)
   /** And the values of each cell in each raster.  */
-  def localAnd(r:Raster): Raster = And(self, r)
+  def localAnd(r:Tile): Tile = And(self, r)
   /** And the values of each cell in each raster. */
-  def &(r:Raster): Raster = localAnd(r)
+  def &(r:Tile): Tile = localAnd(r)
   /** And the values of each cell in each raster.  */
-  def localAnd(rs:Seq[Raster]): Raster = And(self +: rs)
+  def localAnd(rs:Seq[Tile]): Tile = And(self +: rs)
   /** And the values of each cell in each raster. */
-  def &(rs:Seq[Raster]): Raster = localAnd(rs)
+  def &(rs:Seq[Tile]): Tile = localAnd(rs)
 }

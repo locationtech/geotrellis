@@ -26,15 +26,15 @@ import scalaxy.loops._
 /**
  * Computes the convolution of two rasters.
  *
- * @param      r       Raster to convolve.
+ * @param      r       Tile to convolve.
  * @param      k       Kernel that represents the convolution filter.
  * @param      tns     TileNeighbors that describe the neighboring tiles.
  *
  * @note               Convolve does not currently support Double raster data.
- *                     If you use a Raster with a Double RasterType (TypeFloat, TypeDouble)
+ *                     If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
  *                     the data values will be rounded to integers.
  */
-case class Convolve(r: Op[Raster], k: Op[Kernel]) extends Op2(r, k)({
+case class Convolve(r: Op[Tile], k: Op[Kernel]) extends Op2(r, k)({
   (r, kernel) => 
     val cols = r.cols
     val rows = r.rows

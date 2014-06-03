@@ -16,7 +16,7 @@
 
 package geotrellis.process
 
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.feature.Extent
 import geotrellis.util._
 
@@ -84,14 +84,14 @@ abstract class RasterLayer(val info: RasterLayerInfo) {
 
   protected def cache(c: Cache[String]): Unit
 
-  def getRaster(): Raster = getRaster(None)
-  def getRaster(targetExtent: Option[RasterExtent]): Raster
+  def getRaster(): Tile = getRaster(None)
+  def getRaster(targetExtent: Option[RasterExtent]): Tile
 
   def getRaster(extent: Extent): Raster = 
     getRaster(Some(info.rasterExtent.createAligned(extent)))
 
-  def getTile(tileCol: Int, tileRow: Int): Raster = getTile(tileCol, tileRow,None)
-  def getTile(tileCol: Int, tileRow: Int, targetExtent: Option[RasterExtent]): Raster
+  def getTile(tileCol: Int, tileRow: Int): Tile = getTile(tileCol, tileRow,None)
+  def getTile(tileCol: Int, tileRow: Int, targetExtent: Option[RasterExtent]): Tile
 }
 
 abstract class UntiledRasterLayer(info: RasterLayerInfo) extends RasterLayer(info) {

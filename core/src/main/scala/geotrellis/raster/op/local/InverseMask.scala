@@ -17,6 +17,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 
 object InverseMask extends Serializable {
 /**
@@ -27,7 +28,7 @@ object InverseMask extends Serializable {
  * For example, if *all* cells in the second raster are set to the readMask value,
  * the output raster will be identical to the first raster.
  */
-  def apply(r1: Raster, r2: Raster, readMask: Int, writeMask: Int): Raster =
+  def apply(r1: Tile, r2: Tile, readMask: Int, writeMask: Int): Tile =
     r1.dualCombine(r2) { (z1: Int,z2: Int) => if (z2 == readMask) z1 else writeMask }
                        { (z1: Double,z2: Double) => if (d2i(z2) == readMask) z1 else i2d(writeMask) }
 }

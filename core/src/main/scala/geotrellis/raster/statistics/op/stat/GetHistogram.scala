@@ -17,6 +17,7 @@
 package geotrellis.raster.statistics.op.stat
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.raster.statistics._ 
 import geotrellis.process._
 

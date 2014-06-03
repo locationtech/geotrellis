@@ -16,7 +16,6 @@
 
 package geotrellis.raster.op.zonal.summary
 
-import geotrellis._
 import geotrellis.source._
 
 trait TileSummary[T,V,That <: DataSource[_,V]] {

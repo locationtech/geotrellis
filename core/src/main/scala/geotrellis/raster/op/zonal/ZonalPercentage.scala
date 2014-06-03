@@ -31,10 +31,10 @@ import scalaxy.loops._
  * Percentages are integer values from 0 - 100.
  * 
  * @note    ZonalPercentage does not currently support Double raster data.
- *          If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *          If you use a Raster with a Double CellType (TypeFloat,TypeDouble)
  *          the data values will be rounded to integers.
  */
-case class ZonalPercentage(r: Op[Raster], zones: Op[Raster]) 
+case class ZonalPercentage(r: Op[Tile], zones: Op[Tile]) 
      extends Op2(r, zones) ({
   (r, zones) => 
     val zonesToValueCounts = mutable.Map[Int,mutable.Map[Int,Int]]()       
@@ -65,7 +65,7 @@ case class ZonalPercentage(r: Op[Raster], zones: Op[Raster])
       }
     }
 
-    val data = IntArrayTile.empty(cols,rows)
+    val tile = IntArrayTile.empty(cols,rows)
 
     for (row <- 0 until rows optimized) {
       for (col <- 0 until cols optimized) {
@@ -73,9 +73,9 @@ case class ZonalPercentage(r: Op[Raster], zones: Op[Raster])
         val z = zones.get(col,row)
         val count = zonesToValueCounts(z)(v)
         val total = zoneTotals(z)
-        data.set(col,row,math.round((count/total.toDouble)*100).toInt)
+        tile.set(col,row,math.round((count/total.toDouble)*100).toInt)
       }
     }
 
-    Result(Raster(data, cols, rows))
+    Result(tile)
 })

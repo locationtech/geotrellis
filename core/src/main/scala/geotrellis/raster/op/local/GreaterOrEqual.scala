@@ -17,12 +17,13 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.source._
 
 /**
  * Determines if values are greater than or equal to other values. Sets to 1 if true, else 0.
  */
-object GreaterOrEqual extends LocalRasterComparatorOp {
+object GreaterOrEqual extends LocalTileComparatorOp {
   def compare(z1:Int,z2:Int):Boolean =
     if(z1 >= z2) true else false
 
@@ -98,63 +99,63 @@ trait GreaterOrEqualOpMethods[+Repr <: RasterSource] { self: Repr =>
   def >=(rs:RasterSource): RasterSource = localGreaterOrEqual(rs)
 }
 
-trait GreaterOrEqualMethods { self: Raster =>
+trait GreaterOrEqualMethods { self: Tile =>
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
    * integer, else 0.
    */
-  def localGreaterOrEqual(i: Int): Raster = GreaterOrEqual(self, i)
+  def localGreaterOrEqual(i: Int): Tile = GreaterOrEqual(self, i)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
    * integer, else 0.
    */
-  def localGreaterOrEqualRightAssociative(i: Int): Raster = GreaterOrEqual(i, self)
+  def localGreaterOrEqualRightAssociative(i: Int): Tile = GreaterOrEqual(i, self)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
     * integer, else 0.
    */
-  def >=(i:Int): Raster = localGreaterOrEqual(i)
+  def >=(i:Int): Tile = localGreaterOrEqual(i)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
    * integer, else 0.
    */
-  def >=:(i:Int): Raster = localGreaterOrEqualRightAssociative(i)
+  def >=:(i:Int): Tile = localGreaterOrEqualRightAssociative(i)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
    * double, else 0.
    */
-  def localGreaterOrEqual(d: Double): Raster = GreaterOrEqual(self, d)
+  def localGreaterOrEqual(d: Double): Tile = GreaterOrEqual(self, d)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
    * double, else 0.
    */
-  def localGreaterOrEqualRightAssociative(d: Double): Raster = GreaterOrEqual(d, self)
+  def localGreaterOrEqualRightAssociative(d: Double): Tile = GreaterOrEqual(d, self)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
    * double, else 0.
    */
-  def >=(d:Double): Raster = localGreaterOrEqual(d)
+  def >=(d:Double): Tile = localGreaterOrEqual(d)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than or equal to the input
    * double, else 0.
    */
-  def >=:(d:Double): Raster = localGreaterOrEqualRightAssociative(d)
+  def >=:(d:Double): Tile = localGreaterOrEqualRightAssociative(d)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.
    */
-  def localGreaterOrEqual(r:Raster): Raster = GreaterOrEqual(self,r)
+  def localGreaterOrEqual(r:Tile): Tile = GreaterOrEqual(self,r)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than or equal to the next raster, else 0.
    */
-  def >=(r:Raster): Raster = localGreaterOrEqual(r)
+  def >=(r:Tile): Tile = localGreaterOrEqual(r)
 }

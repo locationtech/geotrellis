@@ -16,8 +16,10 @@
 
 package geotrellis.raster.io
 
-import geotrellis.render._
-import geotrellis.render.png._
+import geotrellis._
+import geotrellis.raster._
+import geotrellis.raster.render._
+import geotrellis.raster.render.png._
 
 /**
  * Write out a PNG graphic file to the file system at the specified path.

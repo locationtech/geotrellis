@@ -17,11 +17,12 @@
 package geotrellis.raster.op.global
 
 import geotrellis._
+import geotrellis.raster._
 
 /**
  * Converts a raster to an integer array.
  */
-case class AsArray(r:Op[Raster]) extends Op1(r)({ 
+case class AsArray(r:Op[Tile]) extends Op1(r)({ 
   r => 
     Result(r.toArray)
 })
@@ -29,7 +30,7 @@ case class AsArray(r:Op[Raster]) extends Op1(r)({
 /**
  * Converts a raster to a double array.
  */
-case class AsArrayDouble(r:Op[Raster]) extends Op1(r)({
+case class AsArrayDouble(r:Op[Tile]) extends Op1(r)({
   r =>  
     Result(r.toArrayDouble)
 })

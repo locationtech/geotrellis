@@ -17,6 +17,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.feature.Extent
 
 import scala.math._
@@ -159,7 +160,7 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
    * the value at the focus is added in place of out-of-border neighborhood
    * values.
    *
-   * @param     raster        Raster to execute against.
+   * @param     raster        Tile to execute against.
    * @param     n             Neighborhood used (must be [[Square]] with dimension 1)
    * @param     neighbors     Neighboring tiles
    * 
@@ -170,7 +171,7 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
    *                          the raster value will still be used.
    *
    */
-  def execute(raster: Raster, n: Neighborhood, neighbors: Seq[Option[Raster]]): Unit = {
+  def execute(raster: Tile, n: Neighborhood, neighbors: Seq[Option[Tile]]): Unit = {
     val (r, analysisArea) = TileWithNeighbors(raster, neighbors)
 
     val colMin = analysisArea.colMin
@@ -186,7 +187,7 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
     cellHeight = cellSize.height
 
     if(colBorderMax < 3 || rowBorderMax < 3) { 
-      sys.error(s"Raster is too small to get surface values. ($colBorderMax, $rowBorderMax)") 
+      sys.error(s"Tile is too small to get surface values. ($colBorderMax, $rowBorderMax)") 
     }
 
     def getValSafe(col: Int, row: Int, focalVal: Double) = {

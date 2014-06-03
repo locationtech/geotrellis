@@ -17,18 +17,19 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 
 import scala.annotation.tailrec
 
-class RasterReducer(handle:(Int,Int)=>Int)(handleDouble:(Double,Double)=>Double) {
+class TileReducer(handle: (Int, Int)=>Int)(handleDouble: (Double, Double)=>Double) {
   // This class benchmarks fast, if you change it be sure to compare performance.
-  def apply(seq:Seq[Raster]):Raster =
-    handleRasters(seq.toList)
+  def apply(seq: Seq[Tile]): Tile =
+    handleTiles(seq.toList)
 
-  @tailrec final def reduce(d:Raster, rasters:List[Raster]):Raster = {
+  @tailrec final def reduce(d: Tile, rasters: List[Tile]): Tile = {
     rasters match {
       case Nil => d
-      case r :: rs => if (r.isFloat) {
+      case r :: rs => if (r.cellType.isFloatingPoint) {
         reduceDouble(d.combineDouble(r)(handleDouble), rs)
       } else {
         reduce(d.combine(r)(handle), rs)
@@ -36,17 +37,17 @@ class RasterReducer(handle:(Int,Int)=>Int)(handleDouble:(Double,Double)=>Double)
     }
   }
 
-  @tailrec final def reduceDouble(d:Raster, rasters:List[Raster]):Raster = {
+  @tailrec final def reduceDouble(d: Tile, rasters: List[Tile]): Tile = {
     rasters match {
       case Nil => d
       case r :: rs => reduceDouble(d.combineDouble(r)(handleDouble), rs)
     }
   }
 
-  def handleRasters(rasters:List[Raster]) = {
+  def handleTiles(rasters: List[Tile]) = {
     val (r :: rs) = rasters
 
-    if (r.isFloat) {
+    if (r.cellType.isFloatingPoint) {
       reduceDouble(r, rs)
     } else {
       reduce(r, rs)

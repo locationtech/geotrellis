@@ -16,7 +16,7 @@
 
 package geotrellis.raster.statistics
 
-import geotrellis.raster.Tile
+import geotrellis.raster._
 import math.{abs, ceil, min, max, sqrt}
 
 object ArrayHistogram {

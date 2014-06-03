@@ -16,6 +16,8 @@
 
 package geotrellis.raster.io.geotiff
 
+import geotrellis.raster._
+
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.File

@@ -18,14 +18,14 @@ package geotrellis.raster.op.transform
 
 import geotrellis._
 import geotrellis.feature.Extent
-import geotrellis.data._
+
 /**
  * Generate a raster with a new extent and resolution.
  *
  * This uses a nearest-neighbor algorithm to resize a raster.
  *
  * @note               Resample does not currently support Double raster data.
- *                     If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *                     If you use a Raster with a Double CellType (TypeFloat,TypeDouble)
  *                     the data values will be rounded to integers.
  */
 // case class Resize(r:Op[Raster], rasterExtent:Op[RasterExtent]) 

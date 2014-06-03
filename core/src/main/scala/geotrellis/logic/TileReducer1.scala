@@ -20,7 +20,7 @@ import scala.math.{ min, max }
 
 import geotrellis._
 import geotrellis.process._
-import geotrellis.statistics._
+import geotrellis.raster.statistics._
 import geotrellis.raster._
 import geotrellis.feature.Polygon
 

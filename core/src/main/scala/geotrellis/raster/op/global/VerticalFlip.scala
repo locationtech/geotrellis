@@ -17,8 +17,7 @@
 package geotrellis.raster.op.global
 
 import geotrellis._
-import geotrellis._
-import geotrellis.process._
+import geotrellis.raster._
 
 /**
  * Flip the data for a raster along the X-axis.
@@ -26,14 +25,14 @@ import geotrellis.process._
  * The geographic extent will remain unchanged.
  *
  * @note    VerticalFlip does not currently support Double raster data.
- *          If you use a Raster with a Double RasterType (TypeFloat, TypeDouble)
+ *          If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
  *          the data values will be rounded to integers.
  */
-case class VerticalFlip(r: Op[Raster]) extends Op1(r) ({
+case class VerticalFlip(r: Op[Tile]) extends Op1(r) ({
   r =>
     val (cols, rows) = r.dimensions
     val data = r.toArray
-    val data2 = Array.ofDim[Int](data.length)
+    val data2 = Array.ofDim[Int](data.size)
  
     var y = 0
     var x = 0
@@ -47,5 +46,5 @@ case class VerticalFlip(r: Op[Raster]) extends Op1(r) ({
       }
       y += 1
     }
-    Result(Raster(data2, cols, rows))
+    Result(ArrayTile(data2, cols, rows))
 })

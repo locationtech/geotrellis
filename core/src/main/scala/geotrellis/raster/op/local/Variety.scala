@@ -23,14 +23,14 @@ import geotrellis.source._
 import scalaxy.loops._
 
 /**
- * Variety gives the count of unique values at each location in a set of Rasters.
+ * Variety gives the count of unique values at each location in a set of Tiles.
  * 
  * @return     An TypeInt raster with the count values.
  */
 object Variety extends Serializable {
-  def apply(r: Raster*)(implicit d: DI): Raster =
+  def apply(r: Tile*)(implicit d: DI): Tile =
     apply(r)
-  def apply(rs: Seq[Raster]): Raster = {
+  def apply(rs: Seq[Tile]): Tile = {
     if(Set(rs.map(_.dimensions)).size != 1) {
       val dimensions = rs.map(_.dimensions).toSeq
       throw new GeoAttrsError("Cannot combine rasters with different dimensions." +
@@ -42,7 +42,7 @@ object Variety extends Serializable {
       sys.error(s"Can't compute variety of empty sequence")
     } else {
       val (cols, rows) = rs(0).dimensions
-      val data = ArrayTile.allocByType(TypeInt, cols, rows)
+      val tile = ArrayTile.alloc(TypeInt, cols, rows)
 
       for(col <- 0 until cols optimized) {
         for(row <- 0 until rows optimized) {
@@ -51,10 +51,10 @@ object Variety extends Serializable {
               .toSet
               .filter(isData(_))
               .size
-          data.set(col, row, if(variety == 0) { NODATA } else { variety })
+          tile.set(col, row, if(variety == 0) { NODATA } else { variety })
         }
       }
-      Raster(data, cols, rows)
+      tile
     }
   }
 }

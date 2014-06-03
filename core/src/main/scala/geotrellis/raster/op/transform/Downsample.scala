@@ -18,7 +18,7 @@ package geotrellis.raster.op.transform
 
 import geotrellis._
 import geotrellis.feature.Extent
-import geotrellis.raster.ArrayTile
+import geotrellis.raster._
 import geotrellis.raster.op.focal.CellSet
 
 /**
@@ -45,13 +45,13 @@ import geotrellis.raster.op.focal.CellSet
  * })
  * </pre> 
  */
-case class Downsample(r: Raster, cols: Int, rows: Int)(f:CellSet=>Int)
+case class Downsample(r: Tile, cols: Int, rows: Int)(f: CellSet=>Int)
      extends Op4(r, cols, rows, f)({
        (r, cols, rows, f) =>
          val colsPerBlock = math.ceil(r.cols / cols.toDouble).toInt
          val rowsPerBlock = math.ceil(r.rows / rows.toDouble).toInt  
          
-         val data = ArrayTile.emptyByType(r.rasterType, cols, rows)
+         val tile = ArrayTile.empty(r.cellType, cols, rows)
 
          val cellSet = new DownsampleCellSet(colsPerBlock, rowsPerBlock)
          var col = 0
@@ -59,24 +59,24 @@ case class Downsample(r: Raster, cols: Int, rows: Int)(f:CellSet=>Int)
            var row = 0
            while(row < rows) {
              cellSet.focusOn(col, row)
-             data.set(col, row, f(cellSet))
+             tile.set(col, row, f(cellSet))
              row += 1
            }
            col += 1
          }
-         Result(Raster(data, cols, rows))
+         Result(tile)
 })
 
 class DownsampleCellSet(val colsPerBlock: Int, val rowsPerBlock: Int) extends CellSet {
   private var focusCol = 0
   private var focusRow = 0
 
-  def focusOn(col:Int, row:Int) = {
+  def focusOn(col: Int, row: Int) = {
     focusCol = col
     focusRow = row
   }
   
-  def foreach(f:(Int, Int)=>Unit):Unit = {
+  def foreach(f: (Int, Int)=>Unit): Unit = {
     var col = 0
     while(col < colsPerBlock) {
       var row = 0      

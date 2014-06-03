@@ -16,11 +16,10 @@
 
 package geotrellis.raster.op.zonal.summary
 
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.source._
-import geotrellis.feature._
 import geotrellis.feature.rasterize._
-import geotrellis.statistics._
+import geotrellis.raster.statistics._
 
 object Histogram extends TileSummary[Histogram, Histogram, ValueSource[Histogram]] {
   def handlePartialTile(pt: PartialTileIntersection): Histogram = {

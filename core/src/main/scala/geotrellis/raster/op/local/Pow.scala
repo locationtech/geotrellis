@@ -17,6 +17,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.source._
 
 /**
@@ -25,7 +26,7 @@ import geotrellis.source._
  * @note        NoData values will cause the results of this operation
  *              to be NODATA or Double.NaN.
  */
-object Pow extends LocalRasterBinaryOp {
+object Pow extends LocalTileBinaryOp {
   def combine(z1:Int,z2:Int) =
     if (isNoData(z1) || isNoData(z2)) NODATA
     else if (z2 == 0) NODATA
@@ -62,29 +63,29 @@ trait PowOpMethods[+Repr <: RasterSource] { self: Repr =>
   def **(rss:Seq[RasterSource]): RasterSource = localPow(rss)
 }
 
-trait PowMethods { self: Raster =>
+trait PowMethods { self: Tile =>
   /** Pow each value of the raster by a constant value.*/
-  def localPow(i: Int): Raster = Pow(self, i)
+  def localPow(i: Int): Tile = Pow(self, i)
   /** Pow each value of the raster by a constant value.*/
-  def **(i:Int): Raster = localPow(i)
+  def **(i:Int): Tile = localPow(i)
   /** Pow a constant value by each cell value.*/
-  def localPowValue(i:Int): Raster = Pow(i, self)
+  def localPowValue(i:Int): Tile = Pow(i, self)
   /** Pow a constant value by each cell value.*/
-  def **:(i:Int): Raster = localPowValue(i)
+  def **:(i:Int): Tile = localPowValue(i)
   /** Pow each value of a raster by a double constant value.*/
-  def localPow(d: Double): Raster = Pow(self, d)
+  def localPow(d: Double): Tile = Pow(self, d)
   /** Pow each value of a raster by a double constant value.*/
-  def **(d:Double): Raster = localPow(d)
+  def **(d:Double): Tile = localPow(d)
   /** Pow a double constant value by each cell value.*/
-  def localPowValue(d:Double): Raster = Pow(d,self)
+  def localPowValue(d:Double): Tile = Pow(d,self)
   /** Pow a double constant value by each cell value.*/
-  def **:(d:Double): Raster = localPowValue(d)
+  def **:(d:Double): Tile = localPowValue(d)
   /** Pow the values of each cell in each raster. */
-  def localPow(r:Raster): Raster = Pow(self,r)
+  def localPow(r:Tile): Tile = Pow(self,r)
   /** Pow the values of each cell in each raster. */
-  def **(r:Raster): Raster = localPow(r)
+  def **(r:Tile): Tile = localPow(r)
   /** Pow the values of each cell in each raster. */
-  def localPow(rs:Seq[Raster]): Raster = Pow(self +: rs)
+  def localPow(rs:Seq[Tile]): Tile = Pow(self +: rs)
   /** Pow the values of each cell in each raster. */
-  def **(rs:Seq[Raster]): Raster = localPow(rs)
+  def **(rs:Seq[Tile]): Tile = localPow(rs)
 }

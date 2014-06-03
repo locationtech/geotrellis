@@ -19,17 +19,18 @@ package geotrellis.raster.op.zonal.summary
 import geotrellis._
 import geotrellis.source._
 import geotrellis.feature._
+import geotrellis.raster._
 import geotrellis.feature.rasterize._
-import geotrellis.statistics._
+import geotrellis.raster.statistics._
 
 import scala.collection.mutable
 import scalaxy.loops._
 
 abstract sealed trait TileIntersection
 
-case class PartialTileIntersection(tile: Raster, rasterExtent: RasterExtent, intersections: Seq[Polygon]) 
+case class PartialTileIntersection(tile: Tile, rasterExtent: RasterExtent, intersections: Seq[Polygon]) 
     extends TileIntersection
-case class FullTileIntersection(tile: Raster) extends TileIntersection
+case class FullTileIntersection(tile: Tile) extends TileIntersection
 
 trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self: Repr =>
   def mapIntersecting[B, That](p: Polygon)

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * 
- * http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE - 2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@
 package geotrellis.source
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.raster.op.local._
 
 /** This class gives the ability to apply a local operation
@@ -25,10 +26,10 @@ import geotrellis.raster.op.local._
   * the raster loading by loading some number of RasterSources
   * simultaneously, use this class to group the RasterSources.
   */
-case class RasterSourceSeq(seq:Seq[RasterSource]) {
+case class RasterSourceSeq(seq: Seq[RasterSource]) {
   val rasterDefinition = seq.head.rasterDefinition
 
-  def applyOp(f:Seq[Op[Raster]]=>Op[Raster]) = {
+  def applyOp(f: Seq[Op[Tile]]=>Op[Tile]) = {
     val builder = new RasterSourceBuilder()
     builder.setRasterDefinition(rasterDefinition)
     builder.setOp {
@@ -38,7 +39,7 @@ case class RasterSourceSeq(seq:Seq[RasterSource]) {
   }
 
   /** Adds all the rasters in the sequence */
-  def localAdd():RasterSource = applyOp(Add(_))
+  def localAdd(): RasterSource = applyOp(Add(_))
 
   /** Takes the difference of the rasters in the sequence from left to right */
   def difference() = localSubtract

@@ -15,7 +15,7 @@
  */
 
 import geotrellis.source.CanBuildSourceFrom
-import geotrellis.statistics.Histogram
+import geotrellis.raster.statistics.Histogram
 
 import language.experimental.macros
 

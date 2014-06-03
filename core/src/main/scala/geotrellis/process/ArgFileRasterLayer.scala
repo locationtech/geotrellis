@@ -54,7 +54,7 @@ extends RasterLayerBuilder {
       val info = 
         RasterLayerInfo(
           LayerId(ds, getName(json)),
-          getRasterType(json),
+          getCellType(json),
           rasterExtent,
           getEpsg(json),
           getXskew(json),
@@ -75,10 +75,10 @@ extends UntiledRasterLayer(info) {
         case Some(bytes) =>
           targetExtent match {
             case Some(re) =>
-              val data = ArgReader.warpBytes(bytes, info.rasterType, info.rasterExtent, re)
+              val data = ArgReader.warpBytes(bytes, info.cellType, info.rasterExtent, re)
               Raster(data, re.cols, re.rows)
             case None =>
-              val data = RasterData.fromArrayByte(bytes, info.rasterType, info.rasterExtent.cols, info.rasterExtent.rows)
+              val data = RasterData.fromArrayByte(bytes, info.cellType, info.rasterExtent.cols, info.rasterExtent.rows)
               Raster(data, info.rasterExtent.cols, info.rasterExtent.rows)
           }
         case None =>
@@ -87,9 +87,9 @@ extends UntiledRasterLayer(info) {
     } else {
       targetExtent match {
         case Some(re) =>
-          ArgReader.read(rasterPath, info.rasterType, info.rasterExtent, re)
+          ArgReader.read(rasterPath, info.cellType, info.rasterExtent, re)
         case None =>
-          ArgReader.read(rasterPath, info.rasterType, info.rasterExtent)
+          ArgReader.read(rasterPath, info.cellType, info.rasterExtent)
       }
     }
 

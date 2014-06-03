@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.render.png
+package geotrellis.raster.render.png
 
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream

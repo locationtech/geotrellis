@@ -23,22 +23,22 @@ import geotrellis.logic.Collect
 import scalaxy.loops._
 
 /**
- * The mean of values at each location in a set of Rasters.
+ * The mean of values at each location in a set of Tiles.
  */
 object Mean extends Serializable {
-  def apply(rs: Raster*)(implicit d: DI): Raster = apply(rs)
+  def apply(rs: Tile*)(implicit d: DI): Tile = apply(rs)
 
-  def apply(rs: Seq[Raster]): Raster = {
+  def apply(rs: Seq[Tile]): Tile = {
     rs.assertEqualDimensions
 
     val layerCount = rs.length
     if(layerCount == 0) {
       sys.error(s"Can't compute mean of empty sequence")
     } else {
-      val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
+      val newCellType = rs.map(_.cellType).reduce(_.union(_))
       val (cols, rows) = rs(0).dimensions
-      val data = ArrayTile.allocByType(newRasterType, cols, rows)
-      if(newRasterType.isDouble) {
+      val tile = ArrayTile.alloc(newCellType, cols, rows)
+      if(newCellType.isFloatingPoint) {
         for(col <- 0 until cols optimized) {
           for(row <- 0 until rows optimized) {
             var count = 0
@@ -52,9 +52,9 @@ object Mean extends Serializable {
             }
 
             if(count > 0) {
-              data.setDouble(col, row, sum/count)
+              tile.setDouble(col, row, sum/count)
             } else {
-              data.setDouble(col, row, Double.NaN)
+              tile.setDouble(col, row, Double.NaN)
             }
           }
         }
@@ -71,14 +71,14 @@ object Mean extends Serializable {
               }
             }
             if(count > 0) {
-              data.set(col, row, sum/count)
+              tile.set(col, row, sum/count)
             } else {
-              data.set(col, row, NODATA)
+              tile.set(col, row, NODATA)
             }
           }
         }
       }
-      ArrayRaster(data, cols, rows)
+      tile
     }
   }
 }

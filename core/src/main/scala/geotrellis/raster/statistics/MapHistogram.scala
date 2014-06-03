@@ -16,6 +16,8 @@
 
 package geotrellis.raster.statistics
 
+import geotrellis.raster._
+
 import scala.collection.mutable.Map
 import scala.math.{max, min}
 import scala.util.Sorting

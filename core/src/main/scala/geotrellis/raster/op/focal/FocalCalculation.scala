@@ -34,7 +34,7 @@ trait FocalCalculation[T] extends Resulting[T] {
   /**
    * @param re	Optional extent of the analysis area (where the focal operation will be executed)
    */
-  def execute(r: Raster, n: Neighborhood, neighbors: Seq[Option[Raster]]): Unit
+  def execute(r: Tile, n: Neighborhood, neighbors: Seq[Option[Tile]]): Unit
 }
 
 /**
@@ -42,10 +42,10 @@ trait FocalCalculation[T] extends Resulting[T] {
  */
 trait CursorCalculation[T] extends FocalCalculation[T] {
   def traversalStrategy: Option[TraversalStrategy] = None
-  def execute(r: Raster, n: Neighborhood, neighbors: Seq[Option[Raster]]): Unit = 
+  def execute(r: Tile, n: Neighborhood, neighbors: Seq[Option[Tile]]): Unit = 
     CursorStrategy.execute(r, n, this, traversalStrategy, neighbors)
   
-  def calc(r: Raster, cur: Cursor): Unit
+  def calc(r: Tile, cur: Cursor): Unit
 }
 
 /**
@@ -53,13 +53,13 @@ trait CursorCalculation[T] extends FocalCalculation[T] {
  */
 trait CellwiseCalculation[T] extends FocalCalculation[T] {
   def traversalStrategy: Option[TraversalStrategy] = None
-  def execute(r: Raster, n: Neighborhood, neighbors: Seq[Option[Raster]]) = n match {
+  def execute(r: Tile, n: Neighborhood, neighbors: Seq[Option[Tile]]) = n match {
       case s: Square => CellwiseStrategy.execute(r, s, this, traversalStrategy, neighbors)
       case _ => sys.error("Cannot use cellwise calculation with this traversal strategy.")
     }
   
-  def add(r: Raster, x: Int, y: Int)
-  def remove(r: Raster, x: Int, y: Int)
+  def add(r: Tile, x: Int, y: Int)
+  def remove(r: Tile, x: Int, y: Int)
   def reset(): Unit
   def setValue(x: Int, y: Int)
 }
@@ -71,155 +71,150 @@ trait CellwiseCalculation[T] extends FocalCalculation[T] {
 
 /** Trait defining the ability to initialize the focal calculation with a raster. */
 trait Initialization { 
-  def init(r: Raster): Unit 
-
-  // def getRasterExtent(r: Raster, reOpt: Option[RasterExtent]): RasterExtent = reOpt match {
-  // 	case None => r.rasterExtent
-  // 	case Some(re) => re 
-  // }  
+  def init(r: Tile): Unit 
 }
 
 /** Trait defining the ability to initialize the focal calculation with a raster and one other parameter. */
-trait Initialization1[A]       { def init(r: Raster, a: A): Unit }
+trait Initialization1[A]       { def init(r: Tile, a: A): Unit }
 
 /** Trait defining the ability to initialize the focal calculation with a raster and two other parameters. */
-trait Initialization2[A, B]     { def init(r: Raster, a: A, b: B): Unit }
+trait Initialization2[A, B]     { def init(r: Tile, a: A, b: B): Unit }
 
 /** Trait defining the ability to initialize the focal calculation with a raster and three other parameters. */
-trait Initialization3[A, B, C]   { def init(r: Raster, a: A, b: B, c: C): Unit }
+trait Initialization3[A, B, C]   { def init(r: Tile, a: A, b: B, c: C): Unit }
 
 /** Trait defining the ability to initialize the focal calculation with a raster and four other parameters. */
-trait Initialization4[A, B, C, D] { def init(r: Raster, a: A, b: B, c: C, d: D): Unit }
+trait Initialization4[A, B, C, D] { def init(r: Tile, a: A, b: B, c: C, d: D): Unit }
 
 /*
  * Mixin's that define common raster-result functionality
  * for FocalCalculations.
- * Access the resulting raster's array data through the 
- * 'data' member.
+ * Access the resulting raster's array tile through the 
+ * 'tile' member.
  */
 
 /**
  * Defines a focal calculation as returning
- * a [[Raster]] with [[BitArrayTile]], and defines
- * the [[Initialization]].init function for setting up the data.
+ * a [[Tile]] with [[BitArrayTile]], and defines
+ * the [[Initialization]].init function for setting up the tile.
  */
-trait BitArrayTileResult extends Initialization with Resulting[Raster] {
+trait BitArrayTileResult extends Initialization with Resulting[Tile] {
   /** [[BitArrayTile]] that will be returned by the focal calculation */
-  var data: BitArrayTile = null
+  var tile: BitArrayTile = null
 
   var cols: Int = 0
   var rows: Int = 0
 
-  def init(r: Raster) = {
+  def init(r: Tile) = {
     cols = r.cols
     rows = r.rows
-    data = BitArrayTile.empty(cols, rows)
+    tile = BitArrayTile.empty(cols, rows)
   }
 
-  def result = Raster(data, cols, rows)
+  def result = tile
 }
 
 /**
  * Defines a focal calculation as returning
- * a [[Raster]] with [[ByteArrayTile]], and defines
- * the [[Initialization]].init function for setting up the data.
+ * a [[Tile]] with [[ByteArrayTile]], and defines
+ * the [[Initialization]].init function for setting up the tile.
  */
-trait ByteArrayTileResult extends Initialization with Resulting[Raster] {
+trait ByteArrayTileResult extends Initialization with Resulting[Tile] {
   /** [[ByteArrayTile]] that will be returned by the focal calculation */
-  var data: ByteArrayTile = null
+  var tile: ByteArrayTile = null
 
   var cols: Int = 0
   var rows: Int = 0
 
-  def init(r: Raster) = {
+  def init(r: Tile) = {
     cols = r.cols
     rows = r.rows
-    data = ByteArrayTile.empty(cols, rows)
+    tile = ByteArrayTile.empty(cols, rows)
   }
 
-  def result = Raster(data, cols, rows)
+  def result = tile
 }
 
 /**
  * Defines a focal calculation as returning
- * a [[Raster]] with [[ShortArrayTile]], and defines
- * the [[Initialization]].init function for setting up the data.
+ * a [[Tile]] with [[ShortArrayTile]], and defines
+ * the [[Initialization]].init function for setting up the tile.
  */
-trait ShortArrayTileResult extends Initialization with Resulting[Raster] {
+trait ShortArrayTileResult extends Initialization with Resulting[Tile] {
   /** [[ShortArrayTile]] that will be returned by the focal calculation */
-  var data: ShortArrayTile = null
+  var tile: ShortArrayTile = null
 
   var cols: Int = 0
   var rows: Int = 0
 
-  def init(r: Raster) = {
+  def init(r: Tile) = {
     cols = r.cols
     rows = r.rows
-    data = ShortArrayTile.empty(cols, rows)
+    tile = ShortArrayTile.empty(cols, rows)
   }
 
-  def result = Raster(data, cols, rows)
+  def result = tile
 }
 
 /**
  * Defines a focal calculation as returning
- * a [[Raster]] with [[IntArrayTile]], and defines
- * the [[Initialization]].init function for setting up the data.
+ * a [[Tile]] with [[IntArrayTile]], and defines
+ * the [[Initialization]].init function for setting up the tile.
  */
-trait IntArrayTileResult extends Initialization with Resulting[Raster] {
+trait IntArrayTileResult extends Initialization with Resulting[Tile] {
   /** [[IntArrayTile]] that will be returned by the focal calculation */
-  var data: IntArrayTile = null
+  var tile: IntArrayTile = null
 
   var cols: Int = 0
   var rows: Int = 0
 
-  def init(r: Raster) = {
+  def init(r: Tile) = {
     cols = r.cols
     rows = r.rows
-    data = IntArrayTile.empty(cols, rows)
+    tile = IntArrayTile.empty(cols, rows)
   }
 
-  def result = Raster(data, cols, rows)
+  def result = tile
 }
 
 /**
  * Defines a focal calculation as returning
- * a [[Raster]] with [[FloatArrayTile]], and defines
- * the [[Initialization]].init function for setting up the data.
+ * a [[Tile]] with [[FloatArrayTile]], and defines
+ * the [[Initialization]].init function for setting up the tile.
  */
-trait FloatArrayTileResult extends Initialization with Resulting[Raster] {
+trait FloatArrayTileResult extends Initialization with Resulting[Tile] {
   /** [[FloatArrayTile]] that will be returned by the focal calculation */
-  var data: FloatArrayTile = null
+  var tile: FloatArrayTile = null
 
   var cols: Int = 0
   var rows: Int = 0
 
-  def init(r: Raster) = {
+  def init(r: Tile) = {
     cols = r.cols
     rows = r.rows
-    data = FloatArrayTile.empty(cols, rows)
+    tile = FloatArrayTile.empty(cols, rows)
   }
 
-  def result = Raster(data, cols, rows)
+  def result = tile
 }
 
 /**
  * Defines a focal calculation as returning
- * a [[Raster]] with [[DoubleArrayTile]], and defines
- * the [[Initialization]].init function for setting up the data.
+ * a [[Tile]] with [[DoubleArrayTile]], and defines
+ * the [[Initialization]].init function for setting up the tile.
  */
-trait DoubleArrayTileResult extends Initialization with Resulting[Raster] {
+trait DoubleArrayTileResult extends Initialization with Resulting[Tile] {
   /** [[DoubleArrayTile]] that will be returned by the focal calculation */
-  var data: DoubleArrayTile = null
+  var tile: DoubleArrayTile = null
 
   var cols: Int = 0
   var rows: Int = 0
 
-  def init(r: Raster) = {
+  def init(r: Tile) = {
     cols = r.cols
     rows = r.rows
-    data = DoubleArrayTile.empty(cols, rows)
+    tile = DoubleArrayTile.empty(cols, rows)
   }
 
-  def result = Raster(data, cols, rows)
+  def result = tile
 }

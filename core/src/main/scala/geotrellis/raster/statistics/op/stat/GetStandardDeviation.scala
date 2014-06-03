@@ -17,6 +17,7 @@
 package geotrellis.raster.statistics.op.stat
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.raster.statistics._
 
 /*
@@ -40,7 +41,7 @@ case class GetStandardDeviation(r: Op[Tile], h: Op[Histogram], factor: Int) exte
   def step2(stats: Statistics, raster: Tile): StepOutput[Tile] = {
     val indata = raster.toArray
     val len = indata.length
-    val outdata = Array.ofDim[Int](len)
+    val result = Array.ofDim[Int](len)
 
     val mean = stats.mean
     val stddev = stats.stddev
@@ -48,10 +49,10 @@ case class GetStandardDeviation(r: Op[Tile], h: Op[Histogram], factor: Int) exte
     var i = 0
     while (i < len) {
       val delta = indata(i) - mean
-      outdata(i) = (delta * factor / stddev).toInt
+      result(i) = (delta * factor / stddev).toInt
       i += 1
     }
     
-    Result(Tile(outdata, raster.cols, raster.rows))
+    Result(ArrayTile(result, raster.cols, raster.rows))
   }
 }

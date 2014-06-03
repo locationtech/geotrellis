@@ -273,7 +273,7 @@ case class CompositeTile(tiles: Seq[Tile],
             } else {
               s"$v"
             }
-            val pad = " " * math.max(6 - s.length, 0)
+            val pad = " " * math.max(6 - s.size, 0)
             sb.append(s"$pad$s")
           }
           if(tileCol != tileLayout.tileCols - 1) {

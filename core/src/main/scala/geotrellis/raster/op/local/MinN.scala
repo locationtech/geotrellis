@@ -17,9 +17,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
-import geotrellis.raster.ArrayTile
-import geotrellis.ArrayRaster
-import geotrellis.GeoAttrsError
+import geotrellis.raster._
 
 /**
  * Implementation to find the Nth minimum element of a set of rasters for each cell.
@@ -85,32 +83,32 @@ object MinN extends Serializable {
     }
   }
 
-  def apply(n: Int, rs: Raster*): Raster =
+  def apply(n: Int, rs: Tile*): Tile =
     apply(n, rs)
 
-  def apply(n: Int, rs: Seq[Raster])(implicit d: DI): Raster = {
+  def apply(n: Int, rs: Seq[Tile])(implicit d: DI): Tile = {
     rs.assertEqualDimensions
 
     val layerCount = rs.length
     if(layerCount < n) {
       sys.error(s"Not enough values to compute Nth")
     } else {
-      val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
+      val newCellType = rs.map(_.cellType).reduce(_.union(_))
       val (cols, rows) = rs(0).dimensions
-      val data = ArrayTile.allocByType(newRasterType, cols, rows)
+      val tile = ArrayTile.alloc(newCellType, cols, rows)
 
       for(col <- 0 until cols) {
         for(row <- 0 until rows) {
-          if(newRasterType.isDouble) {
+          if(newCellType.isFloatingPoint) {
             val minN = findNthDoubleInPlace(ArrayView(rs.map(r => r.getDouble(col, row)).filter(num => !isNoData(num)).toArray), n)
-            data.setDouble(col, row, minN)
+            tile.setDouble(col, row, minN)
           }else { // integer values
           val minN = findNthIntInPlace(ArrayView(rs.map(r => r.get(col, row)).filter(num => !isNoData(num)).toArray), n)
-            data.set(col, row, minN)
+            tile.set(col, row, minN)
           }
         }
       }
-      ArrayRaster(data, cols, rows)
+      tile
     }
   }
 }

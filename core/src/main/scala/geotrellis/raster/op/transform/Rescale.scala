@@ -17,7 +17,6 @@
 package geotrellis.raster.op.transform
 
 import geotrellis._
-import geotrellis.data._
 
 /**
  * Rescale the size of a raster by a fixed percentage, maintaining the aspect ratio.
@@ -34,7 +33,7 @@ import geotrellis.data._
  * @param rescalePct  Fraction of input raster size.
  *
  * @note               Rescale does not currently support Double raster data.
- *                     If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *                     If you use a Raster with a Double CellType (TypeFloat,TypeDouble)
  *                     the data values will be rounded to integers.
  */
 // case class Rescale(r:Op[Raster], rescalePct:Op[Double]) extends Op2(r,rescalePct) ({

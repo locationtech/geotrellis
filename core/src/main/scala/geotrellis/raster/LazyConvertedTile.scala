@@ -24,7 +24,7 @@ import scalaxy.loops._
 /**
  * LazyConvertedTile represents a lazily-applied conversion to any type.
  *
- * @note     If you care converting to a RasterType with less bits
+ * @note     If you care converting to a CellType with less bits
  *           than the type of the underlying data, you are responsible
  *           for managing overflow. This convert does not do any casting;
  *           therefore converting from a TypeInt to TypeByte could still

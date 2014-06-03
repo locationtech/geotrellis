@@ -17,6 +17,7 @@
 package geotrellis.raster.op.global
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.feature._
 import geotrellis.feature.rasterize.Callback
 import geotrellis.feature.rasterize.polygon.PolygonRasterizer
@@ -25,14 +26,14 @@ import com.vividsolutions.jts.geom
 
 import scala.collection.mutable
 
-case class ToVector(r: Op[Raster],
+case class ToVector(r: Op[Tile],
                     extent: Op[Extent],
                     regionConnectivity: Connectivity = RegionGroupOptions.default.connectivity)
     extends Operation[List[PolygonFeature[Int]]] {
   def _run() = runAsync('init :: r :: extent :: Nil)
 
   class ToVectorCallback(val polyizer: Polygonizer,
-                         val r: Raster,
+                         val r: Tile,
                          val v: Int) extends Callback {
     val innerStarts = mutable.Map[Int, (Int, Int)]()
 
@@ -57,7 +58,7 @@ case class ToVector(r: Op[Raster],
   }
 
   val nextSteps: Steps = {
-    case 'init :: (r: Raster) :: (extent: Extent) :: Nil => 
+    case 'init :: (r: Tile) :: (extent: Extent) :: Nil => 
       val regionGroupOptions = 
         RegionGroupOptions(
           connectivity = regionConnectivity,
@@ -163,7 +164,7 @@ case class ToVector(r: Op[Raster],
  *  L        D      TL      U      TR       R    BR, TR
  * 
  */
-class Polygonizer(val r: Raster, rasterExtent: RasterExtent) {
+class Polygonizer(val r: Tile, rasterExtent: RasterExtent) {
   val cols = r.cols
   val rows = r.rows
   val halfCellWidth = rasterExtent.cellwidth / 2.0

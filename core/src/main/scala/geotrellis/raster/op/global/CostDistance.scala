@@ -24,23 +24,23 @@ import java.util.PriorityQueue
   * Generate a Cost-Distance raster based on a set of starting points and a cost
   * raster
   *
-  * @param costOp     Cost Raster (Int)
+  * @param costOp     Cost Tile (Int)
   * @param pointsOp   List of starting points as tuples
   *
-  * @note    Operation will only work with integer typed Cost Rasters (TypeBit, TypeByte, TypeShort, TypeInt).
-  *          If a double typed Cost Raster (TypeFloat, TypeDouble) is passed in, those costs will be rounded
+  * @note    Operation will only work with integer typed Cost Tiles (TypeBit, TypeByte, TypeShort, TypeInt).
+  *          If a double typed Cost Tile (TypeFloat, TypeDouble) is passed in, those costs will be rounded
   *          to their floor integer values.
   * 
   */
-final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int, Int)]]) extends Op[Raster] {
+final case class CostDistance(costOp: Op[Tile], pointsOp: Op[Seq[(Int, Int)]]) extends Op[Tile] {
   def _run() = runAsync(List(costOp, pointsOp))
 
   val nextSteps: Steps = {
     case List(cost, points) => costDistance(
-      cost.asInstanceOf[Raster], points.asInstanceOf[List[(Int, Int)]])
+      cost.asInstanceOf[Tile], points.asInstanceOf[List[(Int, Int)]])
   }  
 
-  def isValid(c: Int, r: Int, cost: Raster): Boolean =
+  def isValid(c: Int, r: Int, cost: Tile): Boolean =
     c >= 0 && r >= 0 && c < cost.cols && r < cost.rows
 
   final class Dir(val dc: Int, val dr: Int) {
@@ -75,7 +75,7 @@ final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int, Int)]])
     * Output:
     * List((c, r)) <- list of cells set
     */    
-  def calcCostCell(c: Int, r: Int, dir: Dir, cost: Raster, d: DoubleArrayTile) = {
+  def calcCostCell(c: Int, r: Int, dir: Dir, cost: Tile, d: DoubleArrayTile) = {
     val cr = dir(c, r)
 
     if (isValid(cr._1, cr._2, cost)) {
@@ -146,7 +146,7 @@ final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int, Int)]])
 
   type Cost = (Int, Int, Double)
 
-  def calcNeighbors(c: Int, r: Int, cost: Raster, d: DoubleArrayTile, p: PriorityQueue[Cost]) {
+  def calcNeighbors(c: Int, r: Int, cost: Tile, d: DoubleArrayTile, p: PriorityQueue[Cost]) {
     val l = dirs.length
     var z = 0
 
@@ -161,9 +161,9 @@ final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int, Int)]])
 
   def factor(c: Int, r: Int, c1: Int, r1: Int) = if (c == c1 || r == r1) 1.0 else 1.41421356237
 
-  def safeGet(c: Int, r: Int, cost: Raster): IOption = IOption(cost.get(c, r))
+  def safeGet(c: Int, r: Int, cost: Tile): IOption = IOption(cost.get(c, r))
 
-  def calcCost(c: Int, r: Int, c2: Int, r2: Int, cost: Raster): DOption = {
+  def calcCost(c: Int, r: Int, c2: Int, r2: Int, cost: Tile): DOption = {
     val cost1 = safeGet(c, r, cost)
     val cost2 = safeGet(c2, r2, cost)
 
@@ -174,13 +174,13 @@ final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int, Int)]])
     }
   }
 
-  def calcCost(c: Int, r: Int, cr2: (Int, Int), cost: Raster): DOption =
+  def calcCost(c: Int, r: Int, cr2: (Int, Int), cost: Tile): DOption =
     calcCost(c, r, cr2._1, cr2._2, cost)
 
-  def calcCost(c: Int, r: Int, dir: Dir, cost: Raster): DOption = 
+  def calcCost(c: Int, r: Int, dir: Dir, cost: Tile): DOption = 
     calcCost(c, r, dir(c, r), cost)
 
-  def costDistance(cost: Raster, points: List[(Int, Int)]) = {
+  def costDistance(cost: Tile, points: List[(Int, Int)]) = {
     val (cols, rows) = cost.dimensions
     val output = DoubleArrayTile.empty(cols, rows)
 
@@ -210,13 +210,13 @@ final case class CostDistance(costOp: Op[Raster], pointsOp: Op[Seq[(Int, Int)]])
       head = pqueue.poll
     }
 
-    Result(Raster(output, cols, rows))
+    Result(output)
   }
 }
 
 /**
   * Represents an optional integer
-  * using 'Raster NODATA' as a flag
+  * using 'Tile NODATA' as a flag
   */
 private [global] 
 class IOption(val v: Int) extends AnyVal {

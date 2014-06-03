@@ -17,6 +17,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 
 /**
  * Operation to get the Cosine of values.
@@ -25,7 +26,7 @@ object Cos extends Serializable {
   /** Takes the Cosine of each raster cell value.
     * @info Always returns a double raster.
     */
-  def apply(r: Raster): Raster =
+  def apply(r: Tile): Tile =
     r.convert(TypeDouble) 
      .mapDouble(z => math.cos(z))
 }

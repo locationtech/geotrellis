@@ -26,7 +26,7 @@ import geotrellis.source._
  * @note        NoData values will cause the results of this operation
  *              to be NODATA or Double.NaN.
  */
-object Subtract extends LocalRasterBinaryOp {
+object Subtract extends LocalTileBinaryOp {
   def combine(z1:Int,z2:Int) =
     if (isNoData(z1) || isNoData(z2)) NODATA
     else z1 - z2
@@ -63,29 +63,29 @@ trait SubtractOpMethods[+Repr <: RasterSource] { self: Repr =>
   def -(rss:Seq[RasterSource]): RasterSource = localSubtract(rss)
 }
 
-trait SubtractMethods { self: Raster =>
+trait SubtractMethods { self: Tile =>
   /** Subtract a constant value from each cell.*/
-  def localSubtract(i: Int): Raster = Subtract(self, i)
+  def localSubtract(i: Int): Tile = Subtract(self, i)
   /** Subtract a constant value from each cell.*/
-  def -(i: Int): Raster = localSubtract(i)
+  def -(i: Int): Tile = localSubtract(i)
   /** Subtract each value of a cell from a constant value. */
-  def localSubtractFrom(i: Int): Raster = Subtract(i, self)
+  def localSubtractFrom(i: Int): Tile = Subtract(i, self)
   /** Subtract each value of a cell from a constant value. */
-  def -:(i: Int): Raster = localSubtract(i)
+  def -:(i: Int): Tile = localSubtract(i)
   /** Subtract a double constant value from each cell.*/
-  def localSubtract(d: Double): Raster = Subtract(self, d)
+  def localSubtract(d: Double): Tile = Subtract(self, d)
   /** Subtract a double constant value from each cell.*/
-  def -(d: Double): Raster = localSubtract(d)
+  def -(d: Double): Tile = localSubtract(d)
   /** Subtract each value of a cell from a double constant value. */
-  def localSubtractFrom(d: Double): Raster = Subtract(d, self)
+  def localSubtractFrom(d: Double): Tile = Subtract(d, self)
   /** Subtract each value of a cell from a double constant value. */
-  def -:(d: Double): Raster = localSubtractFrom(d)
+  def -:(d: Double): Tile = localSubtractFrom(d)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(r: Raster): Raster = Subtract(self, r)
+  def localSubtract(r: Tile): Tile = Subtract(self, r)
   /** Subtract the values of each cell in each raster. */
-  def -(r: Raster): Raster = localSubtract(r)
+  def -(r: Tile): Tile = localSubtract(r)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(rs: Seq[Raster]): Raster = Subtract(self +: rs)
+  def localSubtract(rs: Seq[Tile]): Tile = Subtract(self +: rs)
   /** Subtract the values of each cell in each raster. */
-  def -(rs: Seq[Raster]): Raster = localSubtract(rs)
+  def -(rs: Seq[Tile]): Tile = localSubtract(rs)
 }

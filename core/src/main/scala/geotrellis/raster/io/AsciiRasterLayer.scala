@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.io
+package geotrellis.raster.io
 
-import geotrellis.feature.Extent
+import geotrellis.raster._
 import geotrellis.process._
+import geotrellis.feature.Extent
 import geotrellis.util._
 
 import java.io.{File, BufferedReader}
@@ -41,10 +42,10 @@ extends RasterLayerBuilder {
         }
       }
 
-    val rasterType: RasterType = 
+    val cellType: CellType = 
       if(json.hasPath("type")) {
-        val t = getRasterType(json)
-        if(t.isDouble) {
+        val t = getCellType(json)
+        if(t.isFloatingPoint) {
           throw new java.io.IOException(s"[ERROR] Layer at $jsonPath has Ascii type and a Double data type. " +
                                          "This is not currently supported.")
         }
@@ -61,7 +62,7 @@ extends RasterLayerBuilder {
       val info = 
         RasterLayerInfo(
           LayerId(ds, getName(json)),
-          rasterType,
+          cellType,
           rasterExtent,
           getEpsg(json),
           getXskew(json),
@@ -157,12 +158,12 @@ extends UntiledRasterLayer(info) {
     if(isCached) {
       getCache.lookup[Array[Byte]](info.id.toString) match {
         case Some(bytes) =>
-          getReader.readCache(bytes, info.rasterType, info.rasterExtent, targetExtent)
+          getReader.readCache(bytes, info.cellType, info.rasterExtent, targetExtent)
         case None =>
           sys.error("Cache problem: Layer things it's cached but it is in fact not cached.")
       }
     } else {
-      getReader.readPath(info.rasterType, info.rasterExtent, targetExtent)
+      getReader.readPath(info.cellType, info.rasterExtent, targetExtent)
     }
 
   def cache(c: Cache[String]) = 

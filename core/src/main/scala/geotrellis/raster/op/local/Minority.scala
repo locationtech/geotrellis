@@ -24,16 +24,16 @@ import scalaxy.loops._
 import scala.collection.mutable
 
 object Minority extends Serializable {
-  def apply(r: Raster*): Raster =
+  def apply(r: Tile*): Tile =
     apply(0, r)
 
-  def apply(rs: Seq[Raster])(implicit d: DI): Raster =
+  def apply(rs: Seq[Tile])(implicit d: DI): Tile =
     apply(0, rs)
 
-  def apply(level: Int, rs: Raster*): Raster =
+  def apply(level: Int, rs: Tile*): Tile =
     apply(level, rs)
 
-  def apply(level: Int, rs: Seq[Raster])(implicit d: DI): Raster = {
+  def apply(level: Int, rs: Seq[Tile])(implicit d: DI): Tile = {
     // TODO: Replace all of these with rs.assertEqualDimensions
     if(Set(rs.map(_.dimensions)).size != 1) {
       val dimensions = rs.map(_.dimensions).toSeq
@@ -45,11 +45,11 @@ object Minority extends Serializable {
     if(layerCount == 0) {
       sys.error(s"Can't compute minority of empty sequence")
     } else {
-      val newRasterType = rs.map(_.rasterType).reduce(_.union(_))
+      val newCellType = rs.map(_.cellType).reduce(_.union(_))
       val (cols, rows) = rs(0).dimensions
-      val data = ArrayTile.allocByType(newRasterType, cols, rows)
+      val tile = ArrayTile.alloc(newCellType, cols, rows)
 
-      if(newRasterType.isDouble) {
+      if(newCellType.isFloatingPoint) {
         val counts = mutable.Map[Double, Int]()
 
         for(col <- 0 until cols) {
@@ -75,7 +75,7 @@ object Minority extends Serializable {
             val m =
               if(len >= level) { sorted(len-level) }
               else { Double.NaN }
-            data.setDouble(col, row, m)
+            tile.setDouble(col, row, m)
           }
         }
       } else {
@@ -104,11 +104,11 @@ object Minority extends Serializable {
             val m =
               if(len >= level) { sorted(len-level) }
               else { NODATA }
-            data.set(col, row, m)
+            tile.set(col, row, m)
           }
         }
       }
-      ArrayRaster(data, cols, rows)
+      tile
     }
   }
 }
@@ -131,20 +131,20 @@ trait MinorityOpMethods[+Repr <: RasterSource] { self: Repr =>
     localMinority(n, rss)
 }
 
-trait MinorityMethods { self: Raster =>
+trait MinorityMethods { self: Tile =>
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
-  def localMinority(rs: Seq[Raster]): Raster =
+  def localMinority(rs: Seq[Tile]): Tile =
     Minority(self +: rs)
 
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
-  def localMinority(rs: Raster*)(implicit d: DI): Raster =
+  def localMinority(rs: Tile*)(implicit d: DI): Tile =
     localMinority(rs)
 
   /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
-  def localMinority(n: Int, rs: Seq[Raster]): Raster =
+  def localMinority(n: Int, rs: Seq[Tile]): Tile =
     Minority(n, self +: rs)
 
   /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
-  def localMinority(n: Int, rs: Raster*)(implicit d: DI): Raster =
+  def localMinority(n: Int, rs: Tile*)(implicit d: DI): Tile =
     localMinority(n, rs)
 }

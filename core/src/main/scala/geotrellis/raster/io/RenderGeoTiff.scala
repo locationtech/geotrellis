@@ -16,15 +16,17 @@
 
 package geotrellis.raster.io
 
+import geotrellis._
+import geotrellis.raster._
+import geotrellis.raster.io.geotiff._
 import geotrellis.feature.Extent
-import geotrellis.io.geotiff._
 
 /**
   * Render a raster as a GeoTiff.
   */
 case class RenderGeoTiff(r: Op[Tile], extent: Op[Extent], compression: Compression) extends Op2(r, extent) ({
   (r, extent) => {
-    val settings = r.rasterType match {
+    val settings = r.cellType match {
       case TypeBit | TypeByte => Settings(ByteSample, Signed, true, compression)
       case TypeShort => Settings(ShortSample, Signed, true, compression)
       case TypeInt => Settings(IntSample, Signed, true, compression)

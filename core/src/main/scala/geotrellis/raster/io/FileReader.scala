@@ -14,43 +14,45 @@
  * limitations under the License.
  */
 
-package geotrellis.io
+package geotrellis.raster.io
+
+import geotrellis.raster._
 
 import java.io.File
 
 abstract class FileReader(val path: String) {
   def readStateFromCache(bytes: Array[Byte], 
-                         rasterType: RasterType, 
+                         cellType: CellType, 
                          rasterExtent: RasterExtent,
                          targetExtent: RasterExtent): ReadState
 
-  def readStateFromPath(rasterType: RasterType, 
+  def readStateFromPath(cellType: CellType, 
                         rasterExtent: RasterExtent,
                         targetExtent: RasterExtent): ReadState
 
-  def readPath(rasterType: RasterType,
+  def readPath(cellType: CellType,
                rasterExtent: RasterExtent,
                targetExtent: Option[RasterExtent]): Raster =
-    readPath(rasterType, rasterExtent, targetExtent.getOrElse(rasterExtent))
+    readPath(cellType, rasterExtent, targetExtent.getOrElse(rasterExtent))
 
-  def readPath(rasterType: RasterType, 
+  def readPath(cellType: CellType, 
                rasterExtent: RasterExtent, 
                target: RasterExtent): Raster = 
-    readRaster(readStateFromPath(rasterType, 
+    readRaster(readStateFromPath(cellType, 
                                  rasterExtent,
                                  target))
 
   def readCache(bytes: Array[Byte], 
-                rasterType: RasterType, 
+                cellType: CellType, 
                 rasterExtent: RasterExtent, 
                 targetExtent: Option[RasterExtent]): Raster = 
-    readCache(bytes, rasterType, rasterExtent, targetExtent.getOrElse(rasterExtent))
+    readCache(bytes, cellType, rasterExtent, targetExtent.getOrElse(rasterExtent))
 
   def readCache(bytes: Array[Byte], 
-                rasterType: RasterType, 
+                cellType: CellType, 
                 rasterExtent: RasterExtent, 
                 targetExtent: RasterExtent): Raster = 
-    readRaster(readStateFromCache(bytes, rasterType, rasterExtent, targetExtent))
+    readRaster(readStateFromCache(bytes, cellType, rasterExtent, targetExtent))
 
   private def readRaster(readState: ReadState) = 
     try {

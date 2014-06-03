@@ -17,6 +17,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.source._
 
 import scala.annotation.tailrec
@@ -27,7 +28,7 @@ import scala.annotation.tailrec
  * @note        NoData values will cause the results of this operation
  *              to be NODATA or Double.NaN.
  */
-object Add extends LocalRasterBinaryOp {
+object Add extends LocalTileBinaryOp {
   def combine(z1:Int,z2:Int) = 
     if (isNoData(z1) || isNoData(z2)) NODATA
     else z1 + z2
@@ -60,25 +61,25 @@ trait AddOpMethods[+Repr <: RasterSource] { self: Repr =>
   def +(rss:Seq[RasterSource]): RasterSource = localAdd(rss)
 }
 
-trait AddMethods { self: Raster =>
+trait AddMethods { self: Tile =>
   /** Add a constant Int value to each cell. */
-  def localAdd(i: Int): Raster = Add(self, i)
+  def localAdd(i: Int): Tile = Add(self, i)
   /** Add a constant Int value to each cell. */
-  def +(i: Int): Raster = localAdd(i)
+  def +(i: Int): Tile = localAdd(i)
   /** Add a constant Int value to each cell. */
-  def +:(i: Int): Raster = localAdd(i)
+  def +:(i: Int): Tile = localAdd(i)
   /** Add a constant Double value to each cell. */
-  def localAdd(d: Double): Raster = Add(self, d)
+  def localAdd(d: Double): Tile = Add(self, d)
   /** Add a constant Double value to each cell. */
-  def +(d: Double): Raster = localAdd(d)
+  def +(d: Double): Tile = localAdd(d)
   /** Add a constant Double value to each cell. */
-  def +:(d: Double): Raster = localAdd(d)
+  def +:(d: Double): Tile = localAdd(d)
   /** Add the values of each cell in each raster.  */
-  def localAdd(r: Raster): Raster = Add(self, r)
+  def localAdd(r: Tile): Tile = Add(self, r)
   /** Add the values of each cell in each raster. */
-  def +(r: Raster): Raster = localAdd(r)
+  def +(r: Tile): Tile = localAdd(r)
   /** Add the values of each cell in each raster.  */
-  def localAdd(rs: Seq[Raster]): Raster = Add(self +: rs)
+  def localAdd(rs: Seq[Tile]): Tile = Add(self +: rs)
   /** Add the values of each cell in each raster. */
-  def +(rs: Seq[Raster]): Raster = localAdd(rs)
+  def +(rs: Seq[Tile]): Tile = localAdd(rs)
 }

@@ -17,6 +17,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.source._
 
 /**
@@ -25,7 +26,7 @@ import geotrellis.source._
  * @note        NoData values will cause the results of this operation
  *              to be NODATA or Double.NaN.
  */
-object Multiply extends LocalRasterBinaryOp {
+object Multiply extends LocalTileBinaryOp {
   def combine(z1:Int,z2:Int) =
     if (isNoData(z1) || isNoData(z2)) NODATA
     else z1 * z2
@@ -58,25 +59,25 @@ trait MultiplyOpMethods[+Repr <: RasterSource] { self: Repr =>
   def *(rss:Seq[RasterSource]): RasterSource = localMultiply(rss)
 }
 
-trait MultiplyMethods { self: Raster =>
+trait MultiplyMethods { self: Tile =>
   /** Multiply a constant value from each cell.*/
-  def localMultiply(i: Int): Raster = Multiply(self, i)
+  def localMultiply(i: Int): Tile = Multiply(self, i)
   /** Multiply a constant value from each cell.*/
-  def *(i: Int): Raster = localMultiply(i)
+  def *(i: Int): Tile = localMultiply(i)
   /** Multiply a constant value from each cell.*/
-  def *:(i: Int): Raster = localMultiply(i)
+  def *:(i: Int): Tile = localMultiply(i)
   /** Multiply a double constant value from each cell.*/
-  def localMultiply(d: Double): Raster = Multiply(self, d)
+  def localMultiply(d: Double): Tile = Multiply(self, d)
   /** Multiply a double constant value from each cell.*/
-  def *(d: Double): Raster = localMultiply(d)
+  def *(d: Double): Tile = localMultiply(d)
   /** Multiply a double constant value from each cell.*/
-  def *:(d: Double): Raster = localMultiply(d)
+  def *:(d: Double): Tile = localMultiply(d)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(r: Raster): Raster = Multiply(self,r)
+  def localMultiply(r: Tile): Tile = Multiply(self,r)
   /** Multiply the values of each cell in each raster. */
-  def *(r: Raster): Raster = localMultiply(r)
+  def *(r: Tile): Tile = localMultiply(r)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(rs: Seq[Raster]): Raster = Multiply(self +: rs)
+  def localMultiply(rs: Seq[Tile]): Tile = Multiply(self +: rs)
   /** Multiply the values of each cell in each raster. */
-  def *(rs: Seq[Raster]): Raster = localMultiply(rs)
+  def *(rs: Seq[Tile]): Tile = localMultiply(rs)
 }

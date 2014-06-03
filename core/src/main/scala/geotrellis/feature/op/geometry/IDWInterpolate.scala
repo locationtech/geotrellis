@@ -51,7 +51,7 @@ case class IDWInterpolate(points: Op[Seq[PointFeature[Int]]], re: Op[RasterExten
                 var s = 0.0
                 var c = 0
                 var ws = 0.0
-                val length = pts.length
+                val length = pts.size
 
                 for(i <- 0 until length optimized) {
                   val point = pts(i)
@@ -76,7 +76,7 @@ case class IDWInterpolate(points: Op[Seq[PointFeature[Int]]], re: Op[RasterExten
             }
           }
         case None =>
-          val length = points.length
+          val length = points.size
           for(col <- 0 until cols optimized) {
             for(row <- 0 until rows optimized) {
               val destX = re.gridColToMap(col)

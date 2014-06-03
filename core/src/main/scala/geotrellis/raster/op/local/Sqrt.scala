@@ -17,6 +17,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.process._
 
 /**
@@ -24,7 +25,7 @@ import geotrellis.process._
  */
 object Sqrt extends Serializable {
   /** Take the square root each value in a raster. */
-  def apply(r: Raster) = 
+  def apply(r: Tile) = 
     r.dualMap { z: Int => if(isNoData(z) || z < 0) NODATA else math.sqrt(z).toInt }
               { z: Double =>math.sqrt(z) }
 }

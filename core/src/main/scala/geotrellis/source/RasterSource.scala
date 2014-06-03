@@ -20,10 +20,10 @@ import geotrellis._
 import geotrellis.feature.Extent
 import geotrellis.process.{LayerId, RasterLayer}
 import geotrellis.raster.op._
-import geotrellis.statistics.Histogram
+import geotrellis.raster.statistics.Histogram
 import geotrellis.raster._
 
-class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[Raster]]]) 
+class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[Tile]]]) 
     extends  RasterSourceLike[RasterSource] {
   def elements = tileOps
   val rasterDefinition = rasterDef
@@ -56,7 +56,7 @@ object RasterSource {
         RasterDefinition(layer.info.id,
                          layer.info.rasterExtent,
                          layer.info.tileLayout,
-                         layer.info.rasterType)
+                         layer.info.cellType)
       }
 
     val tileOps = 
@@ -120,7 +120,7 @@ object RasterSource {
     new RasterSource(rasterDef, tileOps)
   }
 
-  def apply(rasterDef: Op[RasterDefinition], tileOps: Op[Seq[Op[Raster]]]) =
+  def apply(rasterDef: Op[RasterDefinition], tileOps: Op[Seq[Op[Tile]]]) =
     new RasterSource(rasterDef, tileOps)
 
   /** Create a RasterSource who's tile ops are the tiles of a TileRaster. */
@@ -130,7 +130,7 @@ object RasterSource {
         LayerId("LiteralTileRaster"),
         RasterExtent(extent, tiledRaster.cols, tiledRaster.rows),
         tiledRaster.tileLayout,
-        tiledRaster.rasterType
+        tiledRaster.cellType
       )
     
     val tileOps = tiledRaster.tiles.map(Literal(_))
@@ -138,26 +138,26 @@ object RasterSource {
     new RasterSource(rasterDef, tileOps)
   }
 
-  def apply(tiledRaster: Op[TileRaster], extent: Op[Extent])(implicit d: DI): RasterSource = {
+  def apply(tiledRaster: Op[CompositeTile], extent: Op[Extent])(implicit d: DI): RasterSource = {
     val rasterDef = (tiledRaster, extent).map { (tr, ext) =>
       RasterDefinition(
         LayerId("LiteralTileRaster"),
         RasterExtent(ext, tr.cols, tr.rows),
         tr.tileLayout,
-        tr.rasterType
+        tr.cellType
       )
     }
     val tileOps = tiledRaster.map(_.tiles.map(Literal(_)))
     new RasterSource(rasterDef, tileOps)
   }
 
-  def apply(raster: Op[Raster], extent: Op[Extent])(implicit d: DI, d2: DI): RasterSource = {
+  def apply(raster: Op[Tile], extent: Op[Extent])(implicit d: DI, d2: DI): RasterSource = {
     val rasterDef = 
       (raster, extent).map { (r, ext) =>
         RasterDefinition(LayerId("LiteralRaster"),
           RasterExtent(ext, r.cols, r.rows),
           TileLayout.singleTile(r.cols, r.rows),
-          r.rasterType
+          r.cellType
         )
       }
 
@@ -165,13 +165,13 @@ object RasterSource {
     new RasterSource(rasterDef, tileOps)
   }
 
-  def apply(r: Raster, extent: Extent): RasterSource = {
+  def apply(r: Tile, extent: Extent): RasterSource = {
     val rasterDef = 
       Literal {
         RasterDefinition(LayerId("LiteralRaster"),
           RasterExtent(extent, r.cols, r.rows),
           TileLayout.singleTile(r.cols, r.rows),
-          r.rasterType
+          r.cellType
         )
       }
 

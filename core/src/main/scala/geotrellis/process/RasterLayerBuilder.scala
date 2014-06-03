@@ -16,7 +16,7 @@
 
 package geotrellis.process
 
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.feature.Extent
 
 import com.typesafe.config.Config
@@ -69,7 +69,7 @@ trait RasterLayerBuilder {
       0.0
     }
 
-  def getRasterType(json:Config):RasterType = {
+  def getCellType(json:Config):CellType = {
     parseType(json.getString("datatype"))
   }
 
@@ -80,7 +80,7 @@ trait RasterLayerBuilder {
       false
     }
 
-  def parseType(s:String):RasterType = s match {
+  def parseType(s:String):CellType = s match {
     case "bool" => TypeBit
     case "int8" => TypeByte
     case "int16" => TypeShort

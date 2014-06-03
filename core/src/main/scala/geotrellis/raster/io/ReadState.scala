@@ -22,7 +22,6 @@ import java.io.{File, FileInputStream, FileOutputStream}
 import geotrellis._
 import geotrellis.raster._
 import geotrellis.process._
-import geotrellis.raster.IntConstant
 
 import scalaxy.loops._
 
@@ -33,14 +32,14 @@ trait ReadState {
   /**
     * Defines the type of Raster this ReadState will read.
     */
-  def getType: RasterType
+  def getType: CellType
 
   /**
     * Creates the Tile of the resampled Raster.
     * By default creates an ArrayTile of the 
     * type defined by getType.
     */
-  def createTile(cols: Int, rows: Int): MutableArrayTile = Tile.emptyByType(getType, cols, rows)
+  def createTile(cols: Int, rows: Int): MutableArrayTile = ArrayTile.empty(getType, cols, rows)
 
   /**
     * This function is called to initialize the source
@@ -102,7 +101,7 @@ trait ReadState {
     
     // this is the resampled destination array
     val dst_size = dst_cols * dst_rows
-    val resampled = createRasterData(dst_cols, dst_rows)
+    val resampled = createTile(dst_cols, dst_rows)
 
     // these are the min and max columns we will access on this row
     val min_col = (xbase / src_cellwidth).asInstanceOf[Int]

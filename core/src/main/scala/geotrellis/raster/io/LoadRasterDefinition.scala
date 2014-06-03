@@ -16,6 +16,7 @@
 
 package geotrellis.raster.io
 
+import geotrellis._
 import geotrellis.process._
 import geotrellis.source._
 
@@ -36,7 +37,7 @@ case class LoadRasterDefinition(layerId: Op[LayerId]) extends Op[RasterDefinitio
     case (layerId: LayerId) :: Nil => 
       LayerResult { layerLoader =>
         val info = layerLoader.getRasterLayer(layerId).info
-        RasterDefinition(layerId, info.rasterExtent, info.tileLayout, info.rasterType)
+        RasterDefinition(layerId, info.rasterExtent, info.tileLayout, info.cellType)
       }
   }
 }

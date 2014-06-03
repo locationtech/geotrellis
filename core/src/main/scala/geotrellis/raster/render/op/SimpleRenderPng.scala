@@ -16,8 +16,10 @@
 
 package geotrellis.raster.render.op
 
+import geotrellis._
+import geotrellis.raster._
 import geotrellis.raster.render._
-import geotrellis.statistics.op.stat
+import geotrellis.raster.statistics.op.stat
 
 /**
   * Generate a PNG image from a data raster.

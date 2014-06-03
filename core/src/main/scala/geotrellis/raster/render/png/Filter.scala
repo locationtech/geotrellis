@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.render.png
+package geotrellis.raster.render.png
 
 sealed abstract class Filter(val n:Byte)
 case object NoFilter extends Filter(0)

@@ -20,11 +20,11 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.process.LayerId
 
-class RasterSourceBuilder extends SourceBuilder[Raster,RasterSource] {
+class RasterSourceBuilder extends SourceBuilder[Tile,RasterSource] {
   private var _dataDefinition:Op[RasterDefinition] = null
-  private var _ops:Op[Seq[Op[Raster]]] = null
+  private var _ops:Op[Seq[Op[Tile]]] = null
 
-  def setOp(op: Op[Seq[Op[Raster]]]): this.type = {
+  def setOp(op: Op[Seq[Op[Tile]]]): this.type = {
     _ops = op
     this 
   }
@@ -50,11 +50,11 @@ object RasterSourceBuilder {
   * to a RasterSource.
   */
 // TODO: FIXME!
-// class BareRasterSourceBuilder extends SourceBuilder[Raster,RasterSource] {
+// class BareRasterSourceBuilder extends SourceBuilder[Tile,RasterSource] {
 //   private var _dataDefinition:Op[RasterDefinition] = null
-//   private var _ops:Op[Seq[Op[Raster]]] = null
+//   private var _ops:Op[Seq[Op[Tile]]] = null
 
-//   def setOp(op: Op[Seq[Op[Raster]]]): this.type = {
+//   def setOp(op: Op[Seq[Op[Tile]]]): this.type = {
 //     _ops = op
 //     this
 //   }

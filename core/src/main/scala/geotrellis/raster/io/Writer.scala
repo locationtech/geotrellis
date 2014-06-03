@@ -16,6 +16,7 @@
 
 package geotrellis.raster.io
 
+import geotrellis.raster._
 import geotrellis.feature.Extent
 
 import java.io.{BufferedOutputStream, FileOutputStream}
@@ -25,7 +26,7 @@ import java.nio.channels.FileChannel.MapMode._
 trait Writer {
   def write(path: String, raster: Tile, extent: Extent, name: String): Unit
 
-  def rasterType: String
+  def cellType: String
   def dataType: String
 
   def writeMetadataJSON(path: String, name: String, re: RasterExtent) {
@@ -44,7 +45,7 @@ trait Writer {
   "epsg": 3785,
   "yskew": 0.0,
   "xskew": 0.0
-}""".format(name, rasterType, dataType, re.extent.xmin, re.extent.xmax, re.extent.ymin,
+}""".format(name, cellType, dataType, re.extent.xmin, re.extent.xmax, re.extent.ymin,
              re.extent.ymax, re.cols, re.rows, re.cellwidth, re.cellheight)
 
     val bos = new BufferedOutputStream(new FileOutputStream(path))

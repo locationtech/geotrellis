@@ -18,18 +18,18 @@ package geotrellis.raster.op.focal
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.statistics.FastMapHistogram
+import geotrellis.raster.statistics.FastMapHistogram
 
 /** Computes the mode of a neighborhood for a given raster 
  *
- * @param    r      Raster on which to run the focal operation.
+ * @param    r      Tile on which to run the focal operation.
  * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
  * @param    tns    TileNeighbors that describe the neighboring tiles.
  * @note            Mode does not currently support Double raster data.
- *                  If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *                  If you use a Tile with a Double CellType (TypeFloat,TypeDouble)
  *                  the data values will be rounded to integers.
  */
-case class Mode(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,n,tns)({
+case class Mode(r:Op[Tile],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends FocalOp[Tile](r,n,tns)({
   (r,n) => 
     n match {
       case Square(ext) => new CellwiseModeCalc(ext)
@@ -38,14 +38,14 @@ case class Mode(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends F
 })
 
 object Mode {
-  def apply(r:Op[Raster],n:Op[Neighborhood]) = new Mode(r,n,TileNeighbors.NONE)
+  def apply(r:Op[Tile],n:Op[Neighborhood]) = new Mode(r,n,TileNeighbors.NONE)
 }
 
-class CursorModeCalc(extent:Int) extends CursorCalculation[Raster] with IntArrayTileResult 
+class CursorModeCalc(extent:Int) extends CursorCalculation[Tile] with IntArrayTileResult 
                                                                    with MedianModeCalculation {
   initArray(extent)
                                                          
-  def calc(r:Raster,cursor:Cursor) = {
+  def calc(r:Tile,cursor:Cursor) = {
     cursor.removedCells.foreach { (x,y) =>
       val v = r.get(x,y)
       if(isData(v)) {
@@ -56,27 +56,27 @@ class CursorModeCalc(extent:Int) extends CursorCalculation[Raster] with IntArray
       val v = r.get(x,y)
       if(isData(v)) addValue(v)
     }
-    data.set(cursor.col,cursor.row,mode)
+    tile.set(cursor.col,cursor.row,mode)
   }
 }
 
-class CellwiseModeCalc(extent:Int) extends CellwiseCalculation[Raster] with IntArrayTileResult 
+class CellwiseModeCalc(extent:Int) extends CellwiseCalculation[Tile] with IntArrayTileResult 
                                                                        with MedianModeCalculation {
   initArray(extent)
 
-  def add(r:Raster, x:Int, y:Int) = {
+  def add(r:Tile, x:Int, y:Int) = {
     val v = r.get(x,y)
     if (isData(v)) {
       addValue(v)
     }
   }
 
-  def remove(r:Raster, x:Int, y:Int) = {
+  def remove(r:Tile, x:Int, y:Int) = {
     val v = r.get(x,y)
     if (isData(v)) {
       removeValue(v)
     }
   } 
 
-  def setValue(x:Int,y:Int) = { data.setDouble(x,y,mode) }
+  def setValue(x:Int,y:Int) = { tile.setDouble(x,y,mode) }
 }

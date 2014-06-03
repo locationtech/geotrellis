@@ -2,7 +2,7 @@ package geotrellis.raster.op.global
 
 import geotrellis._
 import geotrellis.feature.Point
-import geotrellis.raster.ArrayTile
+import geotrellis.raster._
 
 import scalaxy.loops._
 
@@ -11,11 +11,11 @@ import scalaxy.loops._
  */
 object ApproxViewshed extends Serializable {
 
-  def apply(r: Raster, col: Int, row: Int): Raster = {
+  def apply(r: Tile, col: Int, row: Int): Tile = {
     r.localEqual(offsets(r, col, row))
   }
 
-  def offsets(r: Raster, startCol: Int, startRow: Int): Raster = {
+  def offsets(r: Tile, startCol: Int, startRow: Int): Tile = {
     val rows = r.rows
     val cols = r.cols
 
@@ -23,8 +23,8 @@ object ApproxViewshed extends Serializable {
       sys.error("Point indices out of bounds")
     } else {
       val k = r.getDouble(startCol, startRow)
-      val data = ArrayTile.allocByType(TypeDouble,cols,rows)
-      data.setDouble(startCol, startRow, k)
+      val tile = ArrayTile.alloc(TypeDouble,cols,rows)
+      tile.setDouble(startCol, startRow, k)
 
       val maxLayer = List((rows - startRow), (cols - startCol), startRow + 1, startCol + 1).max
 
@@ -35,28 +35,28 @@ object ApproxViewshed extends Serializable {
             val z = r.getDouble(x,y)
 
             if (layer == 1) {
-              data.setDouble(x,y,z)
+              tile.setDouble(x,y,z)
             }else {
               val xVal = math.abs(1.0 / (startRow - y)) * (startCol - x) + x
               val xInt = xVal.toInt
 
               val closestHeight = {
                 if (startRow == y) {
-                  data.getDouble(x, y - math.signum(y - startRow))
+                  tile.getDouble(x, y - math.signum(y - startRow))
                 } else if (xVal.isValidInt) {
-                  data.getDouble(xInt, y - math.signum(y - startRow))
+                  tile.getDouble(xInt, y - math.signum(y - startRow))
                 } else { // need linear interpolation
-                  (xInt + 1 - xVal) * data.getDouble(xInt, y - math.signum(y - startRow)) +
-                  (xVal - xInt) *  data.getDouble(xInt + 1, y - math.signum(y - startRow))
+                  (xInt + 1 - xVal) * tile.getDouble(xInt, y - math.signum(y - startRow)) +
+                  (xVal - xInt) *  tile.getDouble(xInt + 1, y - math.signum(y - startRow))
                 }
               }
 
               if (y > startRow) {
-                data.setDouble(x, y,
+                tile.setDouble(x, y,
                   math.max(z, 1.0 / (startRow - (y - 1)) * (k - closestHeight) + closestHeight)
                 )
               } else {
-                data.setDouble(x, y,
+                tile.setDouble(x, y,
                   math.max(z, -1.0 / (startRow - (y + 1)) * (k - closestHeight) + closestHeight)
                 )
               }
@@ -67,27 +67,27 @@ object ApproxViewshed extends Serializable {
           if(y >= 0 && y < rows && x >= 0 && x < cols) {
             val z = r.getDouble(x,y)
             if (layer == 1) {
-              data.setDouble(x,y,z)
+              tile.setDouble(x,y,z)
             }else {
               val yVal = math.abs(1.0 / (startCol - x)) * (startRow - y) + y
               val yInt = yVal.toInt
               val closestHeight = {
                 if (startCol == x) {
-                  data.getDouble(x - math.signum(x - startCol), y)
+                  tile.getDouble(x - math.signum(x - startCol), y)
                 }else if (yVal.isValidInt) {
-                  data.getDouble(x - math.signum(x - startCol), yInt)
+                  tile.getDouble(x - math.signum(x - startCol), yInt)
                 } else { // need linear interpolation
-                  (yInt + 1 - yVal) *  data.getDouble(x - math.signum(x-startCol), yInt) + 
-                  (yVal - yInt) * data.getDouble(x - math.signum(x-startCol), yInt + 1)
+                  (yInt + 1 - yVal) *  tile.getDouble(x - math.signum(x-startCol), yInt) + 
+                  (yVal - yInt) * tile.getDouble(x - math.signum(x-startCol), yInt + 1)
                 }
               }
 
               if (x > startCol) {
-                data.setDouble(x, y, 
+                tile.setDouble(x, y, 
                   math.max(z, 1.0 / (startCol - (x - 1)) * (k - closestHeight) + closestHeight)
                 )
               } else {
-                data.setDouble(x, y, 
+                tile.setDouble(x, y, 
                   math.max(z, -1.0 / (startCol - (x+1)) * (k-closestHeight) + closestHeight)
                 )
               }
@@ -102,7 +102,7 @@ object ApproxViewshed extends Serializable {
         }
       }
 
-      ArrayRaster(data, cols, rows)
+      tile
     }
   }
 }

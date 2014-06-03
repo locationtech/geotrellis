@@ -29,29 +29,29 @@ import Angles._
   * direction of maximum gradient of the surface at a given point. It uses Horn's method
   * for computing aspect.
   *
-  * As with slope, aspect is calculated from estimates of the partial derivatives dz/dx and dz/dy.
+  * As with slope, aspect is calculated from estimates of the partial derivatives dz / dx and dz / dy.
   *
   * Aspect is computed in degrees from due north, i.e. as an azimuth in degrees not radians.
   * The expression for aspect is:
   * {{{
-  * val aspect = 270 - 360/(2*Pi) * atan2(`dz/dy`, - `dz/dx`)
+  * val aspect = 270 - 360 / (2 * Pi) * atan2(`dz / dy`, - `dz / dx`)
   * }}}
-  * @param   raster     Raster for which to compute the aspect.
+  * @param   raster     Tile for which to compute the aspect.
   *
   * @see [[SurfacePoint]] for aspect calculation logic.
   * @note Paraphrased from
   * [[http://goo.gl/JCnNP Geospatial Analysis - A comprehensive guide]]
   * (Smit, Longley, and Goodchild)
   */
-case class Aspect(r:Op[Raster],neighbors:Op[TileNeighbors]) 
-    extends FocalOp[Raster](r,Square(1),neighbors)({
-  (r,n) => new SurfacePointCalculation[Raster] with DoubleArrayTileResult {
-    def setValue(x:Int,y:Int,s:SurfacePoint) {
-      data.setDouble(x,y,degrees(s.aspect))
+case class Aspect(r: Op[Tile], neighbors: Op[TileNeighbors]) 
+    extends FocalOp[Tile](r, Square(1), neighbors)({
+  (r, n) => new SurfacePointCalculation[Tile] with DoubleArrayTileResult {
+    def setValue(x: Int, y: Int, s: SurfacePoint) {
+      tile.setDouble(x, y, degrees(s.aspect))
     }
   }
-}) with FocalOperation[Raster]
+}) with FocalOperation[Tile]
 
 object Aspect {
-  def apply(r:Op[Raster]):Aspect = Aspect(r,Literal(TileNeighbors.NONE))
+  def apply(r: Op[Tile]): Aspect = Aspect(r, Literal(TileNeighbors.NONE))
 }

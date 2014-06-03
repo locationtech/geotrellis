@@ -17,6 +17,7 @@
 package geotrellis.raster.op.hydrology
 
 import geotrellis._
+import geotrellis.raster._
 import scala.collection.mutable._
 import geotrellis.raster._
 
@@ -36,7 +37,7 @@ object Accumulation {
     }
   }
 
-  def calcAcc(column: Int, row: Int, data: IntArrayTile, flowDirrection: Raster) = {
+  def calcAcc(column: Int, row: Int, data: IntArrayTile, flowDirrection: Tile) = {
     var c = column
     var r = row
     var sum = data.get(c, r)
@@ -170,19 +171,18 @@ object Accumulation {
   }
 }
 
-case class Accumulation(flowDirrection: Op[Raster]) extends Op1(flowDirrection)({
+case class Accumulation(flowDirrection: Op[Tile]) extends Op1(flowDirrection)({
   flowDirrection =>
 
     val cols = flowDirrection.cols
     val rows = flowDirrection.rows
-    val data = IntArrayTile(Array.ofDim[Int](cols * rows).fill(-1), cols, rows)
+    val tile = IntArrayTile(Array.ofDim[Int](cols * rows).fill(-1), cols, rows)
 
     for(col <- 0 until cols optimized) {
       for(row <- 0 until rows optimized) {
-        Accumulation.calcAcc(col, row, data, flowDirrection)
+        Accumulation.calcAcc(col, row, tile, flowDirrection)
       }
     }
 
-    //convert the IntArrayflowDirrection to a flowDirrection
-    Result(Raster(data, cols, rows))
+    Result(tile)
 })

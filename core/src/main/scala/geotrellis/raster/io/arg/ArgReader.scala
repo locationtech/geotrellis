@@ -22,18 +22,18 @@ import geotrellis.util.Filesystem
 import java.nio.ByteBuffer
 
 object ArgReader {
-  final def read(path: String, typ: RasterType, rasterExtent: RasterExtent): Tile =
+  final def read(path: String, typ: CellType, rasterExtent: RasterExtent): Tile = {
     val cols = rasterExtent.cols
     val rows = rasterExtent.rows
-    Tile.fromArrayByte(Filesystem.slurp(path), typ, cols, rows)
+    ArrayTile.fromArrayByte(Filesystem.slurp(path), typ, cols, rows)
   }
 
-  final def read(path: String, typ: RasterType, rasterExtent: RasterExtent, targetExtent: RasterExtent): Tile = {
-    val size = typ.numBytes(re.size)
+  final def read(path: String, typ: CellType, rasterExtent: RasterExtent, targetExtent: RasterExtent): Tile = {
+    val size = typ.numBytes(rasterExtent.size)
 
-    val cols = re.cols
+    val cols = rasterExtent.cols
     // Find the top-left most and bottom-right cell coordinates
-    val GridBounds(colMin, rowMin, colMax, rowMax) = re.gridBoundsFor(targetRe.extent)
+    val GridBounds(colMin, rowMin, colMax, rowMax) = rasterExtent.gridBoundsFor(targetExtent.extent)
 
     // Get the indices, buffer one col and row on each side
     val startIndex = math.max(typ.numBytes((rowMin-1) * cols + colMin - 1), 0)
@@ -43,13 +43,13 @@ object ArgReader {
       val bytes = Array.ofDim[Byte](size)
       Filesystem.mapToByteArray(path, bytes, startIndex, length)
 
-      warpBytes(bytes, typ, re, targetRe)
+      warpBytes(bytes, typ, rasterExtent, targetExtent)
     } else {
-      Tile.emptyByType(typ, targetRe.cols, targetRe.rows)
+      ArrayTile.empty(typ, targetExtent.cols, targetExtent.rows)
     }
   }
 
-  final def warpBytes(bytes: Array[Byte], typ: RasterType, re: RasterExtent, targetRe: RasterExtent): Tile = {
+  final def warpBytes(bytes: Array[Byte], typ: CellType, re: RasterExtent, targetRe: RasterExtent): Tile = {
     val cols = targetRe.cols
     val rows = targetRe.rows
 

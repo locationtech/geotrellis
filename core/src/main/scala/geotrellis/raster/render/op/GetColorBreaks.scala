@@ -16,8 +16,9 @@
 
 package geotrellis.raster.render.op
 
+import geotrellis._
 import geotrellis.raster.render._
-import geotrellis.statistics.Histogram
+import geotrellis.raster.statistics.Histogram
 
 import scala.math.round
 

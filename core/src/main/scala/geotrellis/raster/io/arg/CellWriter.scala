@@ -19,12 +19,13 @@ package geotrellis.raster.io.arg
 import java.io.DataOutputStream
 
 import geotrellis._
-import geotrellis.io._
+import geotrellis.raster._
+//import geotrellis.raster.io._
 import geotrellis.util._
 import geotrellis.process._
 
 object CellWriter {
-  def byType(typ: RasterType): CellWriter = typ match {
+  def byType(typ: CellType): CellWriter = typ match {
     case TypeBit => BoolCellWriter
     case TypeByte => Int8CellWriter
     case TypeShort => Int16CellWriter

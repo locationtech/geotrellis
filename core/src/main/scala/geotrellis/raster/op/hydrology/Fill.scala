@@ -16,9 +16,9 @@
 
 package geotrellis.raster.op.hydrology
 
-import geotrellis.raster.op.focal._
 import geotrellis._
-import geotrellis.raster.TileNeighbors
+import geotrellis.raster._
+import geotrellis.raster.op.focal._
 
 import scala.math._
 
@@ -29,7 +29,7 @@ object FillOptions {
 
 /** Fills sink values in a raster. Returns a raster of TypeDouble
   *
-  * @param    r         Raster on which to run the focal operation.
+  * @param    r         Tile on which to run the focal operation.
   * @param    options   FillOptions. This allows you to set the threshold appropriately.
   * @param    n         Neighborhood to use for this operation (e.g., [[Square]](1))
   * @param    tns       TileNeighbors that describe the neighboring tiles.
@@ -41,29 +41,29 @@ object FillOptions {
   *                     is incorrectly classifying your data, make sure you have set
   *                     the threshold appropriately.      
   */
-case class Fill(r:Op[Raster],options:FillOptions,tns:Op[TileNeighbors])
+case class Fill(r:Op[Tile],options:FillOptions,tns:Op[TileNeighbors])
     extends FocalOp1(r,Square(1),tns,options)({
       (r,n) =>
-      if(r.isFloat) { new CursorFillCalcDouble }
+      if(r.cellType.isFloatingPoint) { new CursorFillCalcDouble }
       else { new CursorFillCalc }
     })
 
 object Fill {
-  def apply(r:Op[Raster]) = new Fill(r,FillOptions.default,TileNeighbors.NONE)
-  def apply(r:Op[Raster],o:FillOptions) = new Fill(r,o,TileNeighbors.NONE)
+  def apply(r:Op[Tile]) = new Fill(r,FillOptions.default,TileNeighbors.NONE)
+  def apply(r:Op[Tile],o:FillOptions) = new Fill(r,o,TileNeighbors.NONE)
 }
 
-case class CursorFillCalc() extends CursorCalculation[Raster]
+case class CursorFillCalc() extends CursorCalculation[Tile]
                                with Initialization1[FillOptions]
                                with IntArrayTileResult {
   private var threshold:Int = 0
 
-  def init(r:Raster,options:FillOptions) = {
+  def init(r:Tile,options:FillOptions) = {
     threshold = options.threshold.toInt
     super.init(r)
   }
 
-  def calc(r:Raster,c:Cursor) = {
+  def calc(r:Tile,c:Cursor) = {
     var count:Int = 0
     var totalCount:Int = 0
     var sum:Int = 0
@@ -81,24 +81,24 @@ case class CursorFillCalc() extends CursorCalculation[Raster]
     }
 
     if(count == totalCount){
-      data.set(c.col,c.row, sum/totalCount)
+      tile.set(c.col,c.row, sum/totalCount)
     } else {
-      data.set(c.col,c.row,cVal)
+      tile.set(c.col,c.row,cVal)
     }
   }
 }
 
-case class CursorFillCalcDouble() extends CursorCalculation[Raster]
+case class CursorFillCalcDouble() extends CursorCalculation[Tile]
                                      with Initialization1[FillOptions]
                                      with DoubleArrayTileResult {
   private var threshold:Double = 0.0
 
-    def init(r:Raster,options:FillOptions) = {
+    def init(r:Tile,options:FillOptions) = {
     threshold = options.threshold.toInt
     super.init(r)
   }
 
-  def calc(r:Raster,c:Cursor) = {
+  def calc(r:Tile,c:Cursor) = {
     var count:Int = 0
     var totalCount:Int = 0
     var sum:Double = 0
@@ -113,9 +113,9 @@ case class CursorFillCalcDouble() extends CursorCalculation[Raster]
       }
     }
     if(count == totalCount){
-      data.setDouble(c.col,c.row, sum/totalCount)
+      tile.setDouble(c.col,c.row, sum/totalCount)
     } else {
-      data.setDouble(c.col,c.row,cVal)
+      tile.setDouble(c.col,c.row,cVal)
     }
   }
 }

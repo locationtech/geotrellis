@@ -156,11 +156,11 @@ object Rasterizer {
       (re.mapXToGrid(coord.x), re.mapYToGrid(coord.y)) 
     }).toList
 
-    for(i <- 1 until cells.length) {
+    for(i <- 1 until cells.size) {
       foreachCellInGridLine(cells(i-1)._1, 
                             cells(i-1)._2, 
                             cells(i)._1, 
-                            cells(i)._2, line, re, i != cells.length - 1)(f)
+                            cells(i)._2, line, re, i != cells.size - 1)(f)
     }
   }
 

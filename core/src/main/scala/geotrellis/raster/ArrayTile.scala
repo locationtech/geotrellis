@@ -74,7 +74,7 @@ trait ArrayTile extends Tile with Serializable {
   def map(f: Int=>Int): Tile = {
     val output = ArrayTile.alloc(cellType, cols, rows)
     var i = 0
-    val len = length
+    val len = size
     while (i < len) {
       output(i) = f(apply(i))
       i += 1
@@ -92,7 +92,7 @@ trait ArrayTile extends Tile with Serializable {
 
     val output = ArrayTile.alloc(cellType.union(other.cellType), cols, rows)
     var i = 0
-    val len = length
+    val len = size
     while (i < len) {
       output(i) = f(apply(i), other(i))
       i += 1
@@ -114,7 +114,7 @@ trait ArrayTile extends Tile with Serializable {
    * Map each cell in the given raster to a new one, using the given function.
    */
   def mapDouble(f: Double => Double): Tile = {
-    val len = length
+    val len = size
     val tile = ArrayTile.alloc(cellType, cols, rows)
     var i = 0
     while (i < len) {
@@ -134,7 +134,7 @@ trait ArrayTile extends Tile with Serializable {
 
     val output = ArrayTile.alloc(cellType.union(other.cellType), cols, rows)
     var i = 0
-    val len = length
+    val len = size
     while (i < len) {
       output.updateDouble(i, f(applyDouble(i), other.applyDouble(i)))
       i += 1
@@ -154,8 +154,8 @@ trait ArrayTile extends Tile with Serializable {
   override def equals(other: Any): Boolean = other match {
     case r: ArrayTile => {
       if (r == null) return false
-      val len = length
-      if (len != r.length) return false
+      val len = size
+      if (len != r.size) return false
       var i = 0
       while (i < len) {
         if (apply(i) != r(i)) return false
@@ -176,7 +176,7 @@ trait ArrayTile extends Tile with Serializable {
   def toListDouble = toArrayDouble.toList
 
   def toArray: Array[Int] = {
-    val len = length
+    val len = size
     val arr = Array.ofDim[Int](len)
     var i = 0
     while (i < len) {
@@ -187,7 +187,7 @@ trait ArrayTile extends Tile with Serializable {
   }
 
   def toArrayDouble: Array[Double] = {
-    val len = length
+    val len = size
     val arr = Array.ofDim[Double](len)
     var i = 0
     while (i < len) {

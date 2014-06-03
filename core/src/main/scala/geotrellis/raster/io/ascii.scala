@@ -85,34 +85,34 @@ final class AsciiReadState(path: String,
   }
 
   @inline
-  def assignFromSource(sourceIndex: Int, dest: MutableRasterData, destIndex: Int) {
+  def assignFromSource(sourceIndex: Int, dest: MutableArrayTile, destIndex: Int) {
     dest(destIndex) = ints(sourceIndex)
   }
 }
 
 class AsciiReader(path: String, noDataValue: Int) extends FileReader(path) {
-  def readStateFromPath(rasterType: RasterType, 
+  def readStateFromPath(cellType: CellType, 
                         rasterExtent: RasterExtent,
                         targetExtent: RasterExtent): ReadState = {
     new AsciiReadState(path, rasterExtent, targetExtent, noDataValue)
   }
 
   def readStateFromCache(b: Array[Byte], 
-                         rasterType: RasterType,
+                         cellType: CellType,
                          rasterExtent: RasterExtent,
                          targetExtent: RasterExtent) = 
     sys.error("caching ascii grid is not supported")
 }
 
 object AsciiWriter extends Writer {
-  def rasterType = "ascii"
+  def cellType = "ascii"
   def dataType = ""
 
-  def write(path: String, raster: Raster, extent: Extent, name: String) {
+  def write(path: String, raster: Tile, extent: Extent, name: String) {
     write(path, raster, extent, name, NODATA)
   }
 
-  def write(path: String, raster: Raster, extent: Extent, name: String, noData: Int) {
+  def write(path: String, raster: Tile, extent: Extent, name: String, noData: Int) {
     val g = RasterExtent(extent, raster.cols, raster.rows)
     val e = extent
 

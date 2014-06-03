@@ -2,7 +2,7 @@ package geotrellis.raster.op.global
 
 import geotrellis._
 import geotrellis.feature.Point
-import geotrellis.raster.ArrayTile
+import geotrellis.raster._
 
 import scalaxy.loops._
 
@@ -10,9 +10,9 @@ import scalaxy.loops._
  * Created by jchien on 4/24/14.
  */
 object Viewshed extends Serializable {
-  def apply(r: Raster, startCol: Int, startRow: Int): Raster = {
+  def apply(r: Tile, startCol: Int, startRow: Int): Tile = {
     val (cols, rows) = r.dimensions
-    val data = ArrayTile.allocByType(TypeBit,cols,rows)
+    val tile = ArrayTile.alloc(TypeBit,cols,rows)
 
     val height = r.getDouble(startCol, startRow)
 
@@ -22,30 +22,30 @@ object Viewshed extends Serializable {
     for(col <- 0 until cols optimized) {
       for(row <- 0 until rows optimized) {
         if (height >= requiredHeights.getDouble(col, row) - 0.5) {
-          data.set(col, row, 1)
+          tile.set(col, row, 1)
         } else {
-          data.set(col, row, 0)
+          tile.set(col, row, 0)
         }
       }
     }
 
-    ArrayRaster(data, cols, rows)
+    tile
   }
 
-  def offsets(r: Raster, startCol: Int, startRow: Int): Raster = {
+  def offsets(r: Tile, startCol: Int, startRow: Int): Tile = {
     val (cols, rows) = r.dimensions
 
     if(startRow >= rows || startRow < 0 || startCol >= cols || startCol < 0) {
       sys.error("Point indices out of bounds")
     } else {
-      val data = ArrayTile.allocByType(TypeDouble, cols, rows)
+      val tile = ArrayTile.alloc(TypeDouble, cols, rows)
 
       for(col <- 0 until cols optimized) {
         for(row <- 0 until rows optimized) {
           val height = r.getDouble(col, row)
 
           if (isNoData(height)) {
-            data.setDouble(col, row, Double.NaN)
+            tile.setDouble(col, row, Double.NaN)
           }else {
             // Line thru (x1, y1, z1) & (x2, y2, z2) is defined by 
             // (x-x1)/(x2-x1) = (y-y1)/(y2-y1) = (z-z1)/(z2-z1)
@@ -103,11 +103,11 @@ object Viewshed extends Serializable {
               }
             }
 
-            data.setDouble(col, row, max)
+            tile.setDouble(col, row, max)
           }
         }
       }
-      ArrayRaster(data, cols, rows)
+      tile
     }
   }
 }

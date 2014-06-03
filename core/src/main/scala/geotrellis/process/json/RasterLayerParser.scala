@@ -16,13 +16,13 @@
 
 package geotrellis.process.json
 
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.process._
 
 import com.typesafe.config.ConfigFactory
 
 object RasterLayerParser {
-  def parseType(s:String):RasterType = s match {
+  def parseType(s:String):CellType = s match {
     case "bool" => TypeBit
     case "int8" => TypeByte
     case "int16" => TypeShort

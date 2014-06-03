@@ -17,29 +17,29 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
-import geotrellis.raster.TileNeighbors
+import geotrellis.raster._
 
 import scala.math._
 
 /**
  * Computes the standard deviation of a neighborhood for a given raster. Returns a raster of TypeDouble.
  *
- * @param    r      Raster on which to run the focal operation.
+ * @param    r      Tile on which to run the focal operation.
  * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
  * @param    tns     TileNeighbors that describe the neighboring tiles.
  *
  * @note            StandardDeviation does not currently support Double raster data inputs.
- *                  If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *                  If you use a Tile with a Double CellType (TypeFloat,TypeDouble)
  *                  the data values will be rounded to integers.
  */
-case class StandardDeviation(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends FocalOp[Raster](r,n,tns)({
+case class StandardDeviation(r:Op[Tile],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends FocalOp[Tile](r,n,tns)({
   (r,n) => 
-    if(r.isFloat) {
-      new CursorCalculation[Raster] with DoubleArrayTileResult {
+    if(r.cellType.isFloatingPoint) {
+      new CursorCalculation[Tile] with DoubleArrayTileResult {
         var count:Int = 0
         var sum:Double = 0
 
-        def calc(r:Raster,c:Cursor) = {
+        def calc(r:Tile,c:Cursor) = {
           c.removedCells.foreach { (x,y) => 
             val v = r.getDouble(x,y)
             if(isData(v)) { count -= 1; sum -= v } 
@@ -60,15 +60,15 @@ case class StandardDeviation(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbor
             }
           }
 
-          data.setDouble(c.col,c.row,math.sqrt(squares / count.toDouble))
+          tile.setDouble(c.col,c.row,math.sqrt(squares / count.toDouble))
         }
       }
     } else {
-      new CursorCalculation[Raster] with DoubleArrayTileResult {
+      new CursorCalculation[Tile] with DoubleArrayTileResult {
       var count:Int = 0
       var sum:Int = 0
 
-      def calc(r:Raster,c:Cursor) = {
+      def calc(r:Tile,c:Cursor) = {
         c.removedCells.foreach { (x,y) => 
           val v = r.get(x,y)
           if(isData(v)) { count -= 1; sum -= v } 
@@ -88,7 +88,7 @@ case class StandardDeviation(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbor
             squares += math.pow(v - mean,2)
           }
         }
-        data.setDouble(c.col,c.row,math.sqrt(squares / count.toDouble))
+        tile.setDouble(c.col,c.row,math.sqrt(squares / count.toDouble))
       }
     }
   }
@@ -96,5 +96,5 @@ case class StandardDeviation(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbor
 
 
 object StandardDeviation {
-  def apply(r:Op[Raster], n:Op[Neighborhood]) = new StandardDeviation(r,n,TileNeighbors.NONE)
+  def apply(r:Op[Tile], n:Op[Neighborhood]) = new StandardDeviation(r,n,TileNeighbors.NONE)
 }

@@ -43,8 +43,8 @@ final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
   // 3 & 9 -> 1,  that is 00000011 & 00001001 -> 00000001
   // 3 ^ 9 -> 10, that is 00000011 ^ 00001001 -> 00001010
 
-  if (array.length != (size + 7) / 8) {
-    sys.error(s"BitArrayTile array length must be ${(size + 7) / 8}, was ${array.length}")
+  if (array.size != (size + 7) / 8) {
+    sys.error(s"BitArrayTile array length must be ${(size + 7) / 8}, was ${array.size}")
   }
 
   val cellType = TypeBit
@@ -77,7 +77,7 @@ final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
       // inverse (complement) of what we have now
       val clone = array.clone
       var i = 0
-      val len = array.length
+      val len = array.size
       while(i < len) { clone(i) = (array(i) ^ -1).toByte ; i += 1 }
       BitArrayTile(clone, cols, rows)
     }

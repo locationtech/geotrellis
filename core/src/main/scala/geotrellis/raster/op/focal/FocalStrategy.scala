@@ -37,11 +37,11 @@ import TraversalStrategy._
  * what cells have been removed since the last move.
  */
 object CursorStrategy {
-  def execute(r:Raster,
+  def execute(r:Tile,
               n:Neighborhood,
               c:CursorCalculation[_],
               tOpt:Option[TraversalStrategy], 
-              neighbors:Seq[Option[Raster]]):Unit = {
+              neighbors:Seq[Option[Tile]]):Unit = {
     val t = tOpt match {
       case None => ZigZag
       case Some(tStrategy) => tStrategy
@@ -53,7 +53,7 @@ object CursorStrategy {
     execute(rast,cursor,c,t,analysisArea)
   }
 
-  def execute(r:Raster,cursor:Cursor,c:CursorCalculation[_],t:TraversalStrategy,analysisArea:GridBounds):Unit = {
+  def execute(r:Tile,cursor:Cursor,c:CursorCalculation[_],t:TraversalStrategy,analysisArea:GridBounds):Unit = {
     t match {
       case ScanLine => handleScanLine(r, analysisArea, cursor,c)
       case SpiralZag => handleSpiralZag(r,analysisArea,cursor,c)
@@ -61,7 +61,7 @@ object CursorStrategy {
     }
   }
   
-  private def handleSpiralZag(r:Raster,analysisArea:GridBounds,cursor:Cursor,c:CursorCalculation[_]) = {
+  private def handleSpiralZag(r:Tile,analysisArea:GridBounds,cursor:Cursor,c:CursorCalculation[_]) = {
     var colMax = analysisArea.colMax
     var rowMax = analysisArea.rowMax
     var colMin = analysisArea.colMin
@@ -140,7 +140,7 @@ object CursorStrategy {
     }
   }
 
-  private def handleZigZag(r:Raster,analysisArea:GridBounds,cursor:Cursor,c:CursorCalculation[_]) = {
+  private def handleZigZag(r:Tile,analysisArea:GridBounds,cursor:Cursor,c:CursorCalculation[_]) = {
     val colMax = analysisArea.colMax
     val rowMax = analysisArea.rowMax
     val colMin = analysisArea.colMin
@@ -168,7 +168,7 @@ object CursorStrategy {
     }
   }
 
-  private def handleScanLine(r:Raster,analysisArea:GridBounds,cursor:Cursor,c:CursorCalculation[_]) = {
+  private def handleScanLine(r:Tile,analysisArea:GridBounds,cursor:Cursor,c:CursorCalculation[_]) = {
     val colMax = analysisArea.colMax
     val rowMax = analysisArea.rowMax
     val colMin = analysisArea.colMin
@@ -199,11 +199,11 @@ object CursorStrategy {
  * but can only be used for Square or Circle neighborhoods.
  */ 
 object CellwiseStrategy {
-  def execute(r:Raster, 
+  def execute(r:Tile, 
               n:Square,
               c:CellwiseCalculation[_], 
               tOpt:Option[TraversalStrategy], 
-              neighbors:Seq[Option[Raster]]):Unit = {
+              neighbors:Seq[Option[Tile]]):Unit = {
     val t = tOpt match {
       case None => ScanLine
       case Some(tStrategy) => tStrategy
@@ -212,13 +212,13 @@ object CellwiseStrategy {
     execute(rast,n,c,t,analysisArea)
   }
 
-  def execute(r:Raster,n:Square,calc:CellwiseCalculation[_],t:TraversalStrategy,analysisArea:GridBounds):Unit = {
+  def execute(r:Tile,n:Square,calc:CellwiseCalculation[_],t:TraversalStrategy,analysisArea:GridBounds):Unit = {
     t match {
       case _ => handleScanLine(r,n.extent,calc,analysisArea)
     }
   }
 
-  private def handleScanLine(r:Raster,n:Int, calc:CellwiseCalculation[_], analysisArea:GridBounds) = {
+  private def handleScanLine(r:Tile,n:Int, calc:CellwiseCalculation[_], analysisArea:GridBounds) = {
     val rowMin = analysisArea.rowMin
     val colMin = analysisArea.colMin
     val rowMax = analysisArea.rowMax

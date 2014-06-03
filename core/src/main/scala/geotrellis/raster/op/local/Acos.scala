@@ -17,6 +17,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 
 /**
  * Operation to get the arc cosine of values.
@@ -27,7 +28,7 @@ object Acos extends Serializable {
   * Always returns a double tiled raster.
   * If the absolute value of the cell value is > 1, it will be NaN.
   */
-  def apply(r: Raster): Raster =
+  def apply(r: Tile): Tile =
     r.convert(TypeDouble)
      .mapDouble(z => math.acos(z))
 }

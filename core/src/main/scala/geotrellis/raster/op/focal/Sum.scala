@@ -17,11 +17,11 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
-import geotrellis.raster.TileNeighbors
+import geotrellis.raster._
 
 /** Computes the sum of values of a neighborhood for a given raster 
  *
- * @param    r      Raster on which to run the focal operation.
+ * @param    r      Tile on which to run the focal operation.
  * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
  *
  * @note            If the neighborhood is a [[Square]] neighborhood, the sum calucation will use
@@ -29,12 +29,12 @@ import geotrellis.raster.TileNeighbors
  *                  If the neighborhood is of any other type, then [[CursorSumCalc]] is used.
  *
  * @note            Sum does not currently support Double raster data.
- *                  If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *                  If you use a Tile with a Double CellType (TypeFloat,TypeDouble)
  *                  the data values will be rounded to integers.
  */
-case class Sum(r:Op[Raster], n:Op[Neighborhood],ns:Op[TileNeighbors]) extends FocalOp[Raster](r,n,ns)({ 
+case class Sum(r:Op[Tile], n:Op[Neighborhood],ns:Op[TileNeighbors]) extends FocalOp[Tile](r,n,ns)({ 
   (r,n) =>
-    if(r.isFloat){
+    if(r.cellType.isFloatingPoint){
       n match {
         case Square(ext) => new CellwiseDoubleSumCalc
         case _ => new CursorDoubleSumCalc
@@ -48,14 +48,14 @@ case class Sum(r:Op[Raster], n:Op[Neighborhood],ns:Op[TileNeighbors]) extends Fo
 })
 
 object Sum {
-  def apply(r:Op[Raster], n:Op[Neighborhood]) = new Sum(r,n,TileNeighbors.NONE)
+  def apply(r:Op[Tile], n:Op[Neighborhood]) = new Sum(r,n,TileNeighbors.NONE)
 }
 
-class CursorSumCalc extends CursorCalculation[Raster] 
+class CursorSumCalc extends CursorCalculation[Tile] 
     with IntArrayTileResult {
   var total = 0
 
-  def calc(r:Raster,cursor:Cursor) = {
+  def calc(r:Tile,cursor:Cursor) = {
 
     val added = collection.mutable.Set[(Int,Int,Int)]()
     cursor.addedCells.foreach { (x,y) => 
@@ -71,35 +71,35 @@ class CursorSumCalc extends CursorCalculation[Raster]
       if(isData(v)) { total -= r.get(x,y) }
     }
 
-    data.set(cursor.col,cursor.row,total)
+    tile.set(cursor.col,cursor.row,total)
   }
 }
 
-class CellwiseSumCalc extends CellwiseCalculation[Raster]
+class CellwiseSumCalc extends CellwiseCalculation[Tile]
     with IntArrayTileResult {
   var total = 0
   
-  def add(r:Raster,x:Int,y:Int) = { 
+  def add(r:Tile,x:Int,y:Int) = { 
     val v = r.get(x,y)
     if(isData(v)) { total += r.get(x,y) }
   }
 
-  def remove(r:Raster,x:Int,y:Int) = { 
+  def remove(r:Tile,x:Int,y:Int) = { 
     val v = r.get(x,y)
     if(isData(v)) { total -= r.get(x,y) }
   }
 
   def reset() = { total = 0}
   def setValue(x:Int,y:Int) = { 
-    data.set(x,y,total) 
+    tile.set(x,y,total) 
   }
 }
 
-class CursorDoubleSumCalc extends CursorCalculation[Raster] 
+class CursorDoubleSumCalc extends CursorCalculation[Tile] 
     with DoubleArrayTileResult {
   var total = 0.0
 
-  def calc(r:Raster,cursor:Cursor) = {
+  def calc(r:Tile,cursor:Cursor) = {
 
     val added = collection.mutable.Set[(Int,Int,Double)]()
     cursor.addedCells.foreach { (x,y) => 
@@ -115,26 +115,26 @@ class CursorDoubleSumCalc extends CursorCalculation[Raster]
       if(isData(v)) { total -= r.getDouble(x,y) }
     }
 
-    data.setDouble(cursor.col,cursor.row,total)
+    tile.setDouble(cursor.col,cursor.row,total)
   }
 }
 
-class CellwiseDoubleSumCalc extends CellwiseCalculation[Raster]
+class CellwiseDoubleSumCalc extends CellwiseCalculation[Tile]
     with DoubleArrayTileResult {
   var total = 0.0
   
-  def add(r:Raster,x:Int,y:Int) = { 
+  def add(r:Tile,x:Int,y:Int) = { 
     val v = r.getDouble(x,y)
     if(isData(v)) { total += r.getDouble(x,y) }
   }
 
-  def remove(r:Raster,x:Int,y:Int) = { 
+  def remove(r:Tile,x:Int,y:Int) = { 
     val v = r.getDouble(x,y)
     if(isData(v)) { total -= r.getDouble(x,y) }
   }
 
   def reset() = { total = 0.0 }
   def setValue(x:Int,y:Int) = { 
-    data.setDouble(x,y,total) 
+    tile.setDouble(x,y,total) 
   }
 }

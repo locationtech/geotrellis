@@ -18,6 +18,8 @@ package geotrellis.raster.io.arg
 
 import java.io.{BufferedOutputStream, DataOutputStream, FileOutputStream}
 
+import geotrellis.raster._
+import geotrellis.raster.io.Writer
 import geotrellis.feature.Extent
 
 /**
@@ -26,9 +28,9 @@ import geotrellis.feature.Extent
  * Each instance of ArgWriter is provided a data type (e.g. int or float) to 
  * use for output files.
  */
-case class ArgWriter(typ: RasterType) extends Writer {
+case class ArgWriter(typ: CellType) extends Writer {
   def width = typ.bits / 8
-  def rasterType = typ.name
+  def cellType = typ.name
   def dataType = "arg"
 
   /**
@@ -54,18 +56,6 @@ case class ArgWriter(typ: RasterType) extends Writer {
     }
     writeMetadataJSON(base + ".json", metadataName, RasterExtent(extent, raster.cols, raster.rows))
     writeData(base + ".arg", raster)
-  }
-
-  private def writeBytes(data: RasterData, cols: Int, rows: Int, dos: DataOutputStream) {
-    var row = 0
-    while (row < rows) {
-      var col = 0
-      while (col < cols) {
-        dos.writeByte(data.get(col, row))
-        col += 1
-      }
-      row += 1
-    }
   }
 
   private def writeData(path: String, raster: Tile) {

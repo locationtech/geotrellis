@@ -16,6 +16,8 @@
 
 package geotrellis.raster.render.op
 
+import geotrellis._
+import geotrellis.raster._
 import geotrellis.raster.render._
 import geotrellis.source._
 

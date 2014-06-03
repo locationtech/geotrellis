@@ -45,13 +45,13 @@ trait ConstantTile extends Tile {
 
   override def foreach(f: Int => Unit) {
     var i = 0
-    val len = length
+    val len = size
     while (i < len) { f(iVal); i += 1 }
   }
 
   override def foreachDouble(f: Double => Unit) = {
     var i = 0
-    val len = length
+    val len = size
     while (i < len) { f(dVal); i += 1 }
   }
 

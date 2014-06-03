@@ -17,13 +17,13 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
-import geotrellis.raster.TileNeighbors
+import geotrellis.raster._
 
 import scala.math._
 
 /** Computes the mean value of a neighborhood for a given raster. Returns a raster of TypeDouble
  *
- * @param    r      Raster on which to run the focal operation.
+ * @param    r      Tile on which to run the focal operation.
  * @param    n      Neighborhood to use for this operation (e.g., [[Square]](1))
  * @param    tns    TileNeighbors that describe the neighboring tiles.
 
@@ -33,10 +33,10 @@ import scala.math._
  *                  the [[CellwiseMeanCalc]] to perform the calculation, because it is faster.
  *                  If the neighborhood is of any other type, then [[CursorMeanCalc]] is used.
  */
-case class Mean(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors]) 
-    extends FocalOp[Raster](r,n,tns)({
+case class Mean(r:Op[Tile],n:Op[Neighborhood],tns:Op[TileNeighbors]) 
+    extends FocalOp[Tile](r,n,tns)({
   (r,n) =>
-      if(r.isFloat) {
+      if(r.cellType.isFloatingPoint) {
         n match {
           case Square(ext) => new CellwiseMeanCalcDouble
           case _ => new CursorMeanCalcDouble
@@ -50,14 +50,14 @@ case class Mean(r:Op[Raster],n:Op[Neighborhood],tns:Op[TileNeighbors])
 })
 
 object Mean {
-  def apply(r:Op[Raster],n:Op[Neighborhood]) = new Mean(r,n,TileNeighbors.NONE)
+  def apply(r:Op[Tile],n:Op[Neighborhood]) = new Mean(r,n,TileNeighbors.NONE)
 }
 
-case class CursorMeanCalc() extends CursorCalculation[Raster] with DoubleArrayTileResult {
+case class CursorMeanCalc() extends CursorCalculation[Tile] with DoubleArrayTileResult {
   var count:Int = 0
   var sum:Int = 0
 
-  def calc(r:Raster,c:Cursor) = {
+  def calc(r:Tile,c:Cursor) = {
     c.removedCells.foreach { (x,y) => 
       val v = r.get(x,y)
       if(isData(v)) { count -= 1; sum -= v } 
@@ -66,15 +66,15 @@ case class CursorMeanCalc() extends CursorCalculation[Raster] with DoubleArrayTi
       val v = r.get(x,y)
       if(isData(v)) { count += 1; sum += v } 
     }
-    data.setDouble(c.col,c.row,sum / count.toDouble)
+    tile.setDouble(c.col,c.row,sum / count.toDouble)
   }
 }
 
-case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleArrayTileResult {
+case class CellwiseMeanCalc() extends CellwiseCalculation[Tile] with DoubleArrayTileResult {
   var count:Int = 0
   var sum:Int = 0
 
- def add(r:Raster, x:Int, y:Int) = {
+ def add(r:Tile, x:Int, y:Int) = {
     val z = r.get(x,y)
     if (isData(z)) {
       count += 1
@@ -82,7 +82,7 @@ case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleArr
     }
   }
 
-  def remove(r:Raster, x:Int, y:Int) = {
+  def remove(r:Tile, x:Int, y:Int) = {
     val z = r.get(x,y)
     if (isData(z)) {
       count -= 1
@@ -90,15 +90,15 @@ case class CellwiseMeanCalc() extends CellwiseCalculation[Raster] with DoubleArr
     }
   } 
 
-  def setValue(x:Int,y:Int) = { data.setDouble(x,y, sum / count.toDouble) }
+  def setValue(x:Int,y:Int) = { tile.setDouble(x,y, sum / count.toDouble) }
   def reset() = { count = 0 ; sum = 0 }
 }
 
-case class CursorMeanCalcDouble() extends CursorCalculation[Raster] with DoubleArrayTileResult {
+case class CursorMeanCalcDouble() extends CursorCalculation[Tile] with DoubleArrayTileResult {
   var count:Int = 0
   var sum:Double = 0.0
 
-  def calc(r:Raster,c:Cursor) = {
+  def calc(r:Tile,c:Cursor) = {
     c.removedCells.foreach { (x,y) => 
       val v = r.getDouble(x,y)
       if(isData(v)) { count -= 1; sum -= v } 
@@ -107,15 +107,15 @@ case class CursorMeanCalcDouble() extends CursorCalculation[Raster] with DoubleA
       val v = r.getDouble(x,y)
       if(isData(v)) { count += 1; sum += v } 
     }
-    data.setDouble(c.col,c.row,sum / count)
+    tile.setDouble(c.col,c.row,sum / count)
   }
 }
 
-case class CellwiseMeanCalcDouble() extends CellwiseCalculation[Raster] with DoubleArrayTileResult {
+case class CellwiseMeanCalcDouble() extends CellwiseCalculation[Tile] with DoubleArrayTileResult {
   var count:Int = 0
   var sum:Double = 0.0
 
- def add(r:Raster, x:Int, y:Int) = {
+ def add(r:Tile, x:Int, y:Int) = {
     val z = r.getDouble(x,y)
     if (isData(z)) {
       count += 1
@@ -123,7 +123,7 @@ case class CellwiseMeanCalcDouble() extends CellwiseCalculation[Raster] with Dou
     }
   }
 
-  def remove(r:Raster, x:Int, y:Int) = {
+  def remove(r:Tile, x:Int, y:Int) = {
     val z = r.getDouble(x,y)
     if (isData(z)) {
       count -= 1
@@ -131,6 +131,6 @@ case class CellwiseMeanCalcDouble() extends CellwiseCalculation[Raster] with Dou
     }
   } 
 
-  def setValue(x:Int,y:Int) = { data.setDouble(x,y, sum / count) }
+  def setValue(x:Int,y:Int) = { tile.setDouble(x,y, sum / count) }
   def reset() = { count = 0 ; sum = 0.0 }
 }

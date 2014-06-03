@@ -14,32 +14,33 @@
  * limitations under the License.
  */
 
-package geotrellis.render.png
+package geotrellis.raster.render.png
 
 import geotrellis._
-import geotrellis.render._
-import geotrellis.statistics.Histogram
+import geotrellis.raster._
+import geotrellis.raster.render._
+import geotrellis.raster.statistics.Histogram
 
 import scala.collection.mutable
 
-case class Renderer(colorMap:ColorMap, rasterType:RasterType, colorType:ColorType) {
-  def render(r:Raster) = 
-    colorMap.render(r).convert(rasterType)
+case class Renderer(colorMap: ColorMap, cellType: CellType, colorType: ColorType) {
+  def render(r: Tile) = 
+    colorMap.render(r).convert(cellType)
   def settings = Settings(colorType, PaethFilter)
 }
 
 object Renderer {
-  def apply(breaks:ColorBreaks, nodata:Int):Renderer =
+  def apply(breaks: ColorBreaks, nodata: Int): Renderer =
     apply(breaks.limits, breaks.colors, nodata)
 
-  def apply(limits:Array[Int], colors:Array[Int], nodata:Int):Renderer =
-    apply(limits,colors,nodata,None)
+  def apply(limits: Array[Int], colors: Array[Int], nodata: Int): Renderer =
+    apply(limits, colors, nodata, None)
 
-  def apply(limits:Array[Int], colors:Array[Int], nodata:Int,h:Histogram):Renderer =
-    apply(limits,colors,nodata,Some(h))
+  def apply(limits: Array[Int], colors: Array[Int], nodata: Int, h: Histogram): Renderer =
+    apply(limits, colors, nodata, Some(h))
 
   /** Include a precomputed histogram to cache the color map and speed up the rendering. */
-  def apply(limits:Array[Int], colors:Array[Int], nodata:Int,h:Option[Histogram]):Renderer = {
+  def apply(limits: Array[Int], colors: Array[Int], nodata: Int, h: Option[Histogram]): Renderer = {
     val n = limits.length
     if(colors.length < 255) {
       val indices = (0 until colors.length).toArray
@@ -56,7 +57,7 @@ object Renderer {
       rgbs(255) = 0
       as(255) = 0
       val colorType = Indexed(rgbs, as)
-      val colorMap = ColorMap(limits,indices,ColorMapOptions(LessThan,255))
+      val colorMap = ColorMap(limits, indices, ColorMapOptions(LessThan, 255))
       h match {
         case Some(hist) =>
           Renderer(colorMap.cache(hist), TypeByte, colorType)
@@ -76,7 +77,7 @@ object Renderer {
       }
 
       if (grey && opaque) {
-        val colorMap = ColorMap(limits,colors.map(z => (z >> 8) & 0xff),ColorMapOptions(LessThan,nodata))
+        val colorMap = ColorMap(limits, colors.map(z => (z >> 8) & 0xff), ColorMapOptions(LessThan, nodata))
         h match {
           case Some(hist) =>
             Renderer(colorMap.cache(hist), TypeByte, Grey(nodata))
@@ -84,7 +85,7 @@ object Renderer {
             Renderer(colorMap, TypeByte, Grey(nodata))
         }
       } else if (opaque) {
-        val colorMap = ColorMap(limits,colors.map(z => z >> 8),ColorMapOptions(LessThan,nodata))
+        val colorMap = ColorMap(limits, colors.map(z => z >> 8), ColorMapOptions(LessThan, nodata))
         h match {
           case Some(hist) =>
             Renderer(colorMap.cache(hist), TypeInt, Rgb(nodata))
@@ -92,7 +93,7 @@ object Renderer {
             Renderer(colorMap, TypeInt, Rgb(nodata))
         }
       } else if (grey) {
-        val colorMap = ColorMap(limits,colors.map(z => z & 0xffff),ColorMapOptions(LessThan,nodata))
+        val colorMap = ColorMap(limits, colors.map(z => z & 0xffff), ColorMapOptions(LessThan, nodata))
         h match {
           case Some(hist) =>
             Renderer(colorMap.cache(hist), TypeShort, Greya)
@@ -100,7 +101,7 @@ object Renderer {
             Renderer(colorMap, TypeShort, Greya)
         }
       } else {
-        val colorMap = ColorMap(limits,colors,ColorMapOptions(LessThan,nodata))
+        val colorMap = ColorMap(limits, colors, ColorMapOptions(LessThan, nodata))
         h match {
           case Some(hist) =>
             Renderer(colorMap.cache(hist), TypeInt, Rgba)

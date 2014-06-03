@@ -20,7 +20,7 @@ import geotrellis._
 import geotrellis.raster._
 
 object TileWithNeighbors {
-  def apply(r: Raster, neighbors: Seq[Option[Raster]]): (Raster, GridBounds) = 
+  def apply(r: Tile, neighbors: Seq[Option[Tile]]): (Tile, GridBounds) = 
     if(neighbors.isEmpty) {
       (r, GridBounds(0, 0, r.cols-1, r.rows-1))
     } else {
@@ -55,8 +55,8 @@ object TileWithNeighbors {
       val rowMin = if(northRow == 0) 0 else (neighbors(0).get.rows)
       val rowMax = rowMin + r.rows - 1
 
-      val tiledRaster = 
-        TileRaster(Seq(
+      val tiledTile = 
+        CompositeTile(Seq(
           neighbors(7),
           neighbors(0),
           neighbors(1),
@@ -67,6 +67,6 @@ object TileWithNeighbors {
           neighbors(4),
           neighbors(3)
         ).flatten, tileLayout)
-      (tiledRaster, GridBounds(colMin, rowMin, colMax, rowMax))
+      (tiledTile, GridBounds(colMin, rowMin, colMax, rowMax))
     }
 }

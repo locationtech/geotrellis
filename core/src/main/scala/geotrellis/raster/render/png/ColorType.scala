@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.render.png
+package geotrellis.raster.render.png
 
 sealed abstract class ColorType(val n:Byte, val depth:Int)
 

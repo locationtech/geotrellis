@@ -16,7 +16,7 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
+import geotrellis.raster._
 
 trait MedianModeCalculation {
   val modeValue = 0
@@ -29,7 +29,7 @@ trait MedianModeCalculation {
     val d = extent*2 + 1
     d2 = d*d
     arr = Array.ofDim[Int](d2)
-    for(i <- 0 until arr.length) { arr(i) = NODATA }
+    for(i <- 0 until arr.size) { arr(i) = NODATA }
   }
 
   def reset() = { 

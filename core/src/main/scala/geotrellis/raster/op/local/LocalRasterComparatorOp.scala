@@ -1,108 +1,108 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
-import geotrellis.raster.BitArrayTile
+import geotrellis.raster._
 import scalaxy.loops._
 
-trait LocalRasterComparatorOp extends Serializable {
+trait LocalTileComparatorOp extends Serializable {
   val name = {
     val n = getClass.getSimpleName
     if(n.endsWith("$")) n.substring(0, n.length-1)
     else n
   }
-  // Raster - Constant combinations
+  // Tile - Constant combinations
 
   /** Apply to the value from each cell and a constant Int. */
-  def apply(r: Op[Raster], c: Op[Int]): Op[Raster] = {
+  def apply(r: Op[Tile], c: Op[Int]): Op[Tile] = {
     (r, c).map(apply)
       .withName(s"$name[ConstantInt]")
   }
 
   /** Apply to the value from each cell and a constant Double. */
-  def apply(r: Op[Raster], c: Op[Double])(implicit d: DI): Op[Raster] =
+  def apply(r: Op[Tile], c: Op[Double])(implicit d: DI): Op[Tile] =
     (r, c).map(apply)
       .withName(s"$name[ConstantDouble]")
 
   /** Apply to a constant Int and the value from each cell. */
-  def apply(c: Op[Int], r: Op[Raster])(implicit d: DI, d2: DI, d3: DI): Op[Raster] =
+  def apply(c: Op[Int], r: Op[Tile])(implicit d: DI, d2: DI, d3: DI): Op[Tile] =
     (c, r).map(apply)
       .withName(s"$name[ConstantInt]")
 
   /** Apply to a constant Double and the value from each cell. */
-  def apply(c: Op[Double], r: Op[Raster])(implicit d: DI, d2: DI, d3: DI, d4: DI): Op[Raster] =
+  def apply(c: Op[Double], r: Op[Tile])(implicit d: DI, d2: DI, d3: DI, d4: DI): Op[Tile] =
     (c, r).map(apply)
       .withName(s"$name[ConstantDouble]")
 
   /** Apply to the value from each cell and a constant Int. */
-  def apply(r: Raster, c: Int): Raster = {
-    val data = BitArrayTile.ofDim(r.cols, r.rows)
+  def apply(r: Tile, c: Int): Tile = {
+    val tile = BitArrayTile.ofDim(r.cols, r.rows)
     for(col <- 0 until r.cols optimized) {
       for(row <- 0 until r.rows optimized) {
-        data.set(col, row, if(compare(r.get(col, row), c)) 1 else 0)
+        tile.set(col, row, if(compare(r.get(col, row), c)) 1 else 0)
       }
     }
-    Raster(data, r.cols, r.rows)
+    tile
   }
 
   /** Apply to the value from each cell and a constant Double. */
-  def apply(r: Raster, c: Double): Raster = {
-    val data = BitArrayTile.ofDim(r.cols, r.rows)
+  def apply(r: Tile, c: Double): Tile = {
+    val tile = BitArrayTile.ofDim(r.cols, r.rows)
 
     for(col <- 0 until r.cols optimized) {
       for(row <- 0 until r.rows optimized) {
-        data.set(col, row, if(compare(r.getDouble(col, row), c)) 1 else 0)
+        tile.set(col, row, if(compare(r.getDouble(col, row), c)) 1 else 0)
       }
     }
-    Raster(data, r.cols, r.rows)
+    tile
   }
 
   /** Apply to a constant Int and the value from each cell. */
-  def apply(c: Int, r: Raster): Raster = {
-    val data = BitArrayTile.ofDim(r.cols, r.rows)
+  def apply(c: Int, r: Tile): Tile = {
+    val tile = BitArrayTile.ofDim(r.cols, r.rows)
 
     for(col <- 0 until r.cols optimized) {
       for(row <- 0 until r.rows optimized) {
-        data.set(col, row, if(compare(c, r.get(col, row))) 1 else 0)
+        tile.set(col, row, if(compare(c, r.get(col, row))) 1 else 0)
       }
     }
-    Raster(data, r.cols, r.rows)
+    tile
   }
 
   /** Apply to a constant Double and the value from each cell. */
-  def apply(c: Double, r: Raster): Raster = {
-    val data = BitArrayTile.ofDim(r.cols, r.rows)
+  def apply(c: Double, r: Tile): Tile = {
+    val tile = BitArrayTile.ofDim(r.cols, r.rows)
 
     for(col <- 0 until r.cols optimized) {
       for(row <- 0 until r.rows optimized) {
-        data.set(col, row, if(compare(c, r.getDouble(col, row))) 1 else 0)
+        tile.set(col, row, if(compare(c, r.getDouble(col, row))) 1 else 0)
       }
     }
-    Raster(data, r.cols, r.rows)
+    tile
   }
 
-  // Raster - Raster combinations
+  // Tile - Tile combinations
 
   /** Apply this operation to the values of each cell in each raster.  */
-  def apply(r1: Op[Raster], r2: Op[Raster])(implicit d: DI, d2: DI): Op[Raster] =
+  def apply(r1: Op[Tile], r2: Op[Tile])(implicit d: DI, d2: DI): Op[Tile] =
     (r1, r2).map(apply)
-      .withName(s"$name[Rasters]")
+      .withName(s"$name[Tiles]")
 
   /** Apply this operation to the values of each cell in each raster.  */
-  def apply(r1: Raster, r2: Raster): Raster = {
+  def apply(r1: Tile, r2: Tile): Tile = {
     Seq(r1, r2).assertEqualDimensions
     val (cols, rows) = r1.dimensions
-    val data = BitArrayTile.ofDim(cols, rows)
+    val tile = BitArrayTile.ofDim(cols, rows)
 
     for(col <- 0 until cols optimized) {
       for(row <- 0 until rows optimized) {
-        if(r1.rasterType.isDouble) {
-          data.set(col, row, if(compare(r1.getDouble(col, row), r2.getDouble(col, row))) 1 else 0)
+        if(r1.cellType.isFloatingPoint) {
+          tile.set(col, row, if(compare(r1.getDouble(col, row), r2.getDouble(col, row))) 1 else 0)
         }else {
-          data.set(col, row, if(compare(r1.get(col, row), r2.get(col, row))) 1 else 0)
+          tile.set(col, row, if(compare(r1.get(col, row), r2.get(col, row))) 1 else 0)
         }
       }
     }
-    Raster(data, cols, rows)
+    tile
   }
 
 

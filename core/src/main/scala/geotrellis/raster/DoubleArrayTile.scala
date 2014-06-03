@@ -35,7 +35,7 @@ final case class DoubleArrayTile(array: Array[Double], cols: Int, rows: Int)
   override def toArrayDouble = array.clone
 
   def toBytes: Array[Byte] = {
-    val pixels = new Array[Byte](array.length * cellType.bytes)
+    val pixels = new Array[Byte](array.size * cellType.bytes)
     val bytebuff = ByteBuffer.wrap(pixels)
     bytebuff.asDoubleBuffer.put(array)
     pixels
@@ -59,9 +59,9 @@ object DoubleArrayTile {
     new DoubleArrayTile(Array.ofDim[Double](cols * rows).fill(v), cols, rows)
 
   def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int): DoubleArrayTile = {
-    val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
+    val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
     val doubleBuffer = byteBuffer.asDoubleBuffer()
-    val doubleArray = new Array[Double](bytes.length / TypeDouble.bytes)
+    val doubleArray = new Array[Double](bytes.size / TypeDouble.bytes)
     doubleBuffer.get(doubleArray)
 
     DoubleArrayTile(doubleArray, cols, rows)

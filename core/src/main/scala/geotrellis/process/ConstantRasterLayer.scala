@@ -29,18 +29,18 @@ object ConstantRasterLayerBuilder extends RasterLayerBuilder {
     val (cellWidth, cellHeight) = getCellWidthAndHeight(json)
     val rasterExtent = RasterExtent(getExtent(json), cellWidth, cellHeight, cols, rows)
 
-    val rasterType = getRasterType(json)
+    val cellType = getCellType(json)
     val info = 
       RasterLayerInfo(
         LayerId(ds, getName(json)),
-        getRasterType(json),
+        getCellType(json),
         rasterExtent,
         getEpsg(json),
         getXskew(json),
         getYskew(json)
       )
 
-    if(rasterType.isDouble) {
+    if(cellType.isFloatingPoint) {
       new DoubleConstantLayer(info, json.getDouble("constant"))
     } else {
       new IntConstantLayer(info, json.getInt("constant"))

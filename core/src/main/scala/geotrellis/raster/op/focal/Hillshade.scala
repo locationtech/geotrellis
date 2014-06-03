@@ -17,7 +17,7 @@
 package geotrellis.raster.op.focal
 
 import geotrellis._
-import geotrellis.raster.TileNeighbors
+import geotrellis.raster._
 
 import scala.math._
 
@@ -41,15 +41,15 @@ object Hillshade {
    * Create a default hillshade raster, using a default azimuth of 315 degrees,
    * altitude of 45 degrees, and z factor of 1.0.
    *
-   * @param      r         Raster to for which to compute the hill shading.
+   * @param      r         Tile to for which to compute the hill shading.
    * @param      cellSize  cellSize of the raster
    * @param      tns       TileNeighbors that describe the neighboring tiles.
    */
-  def apply(r: Op[Raster], tns: Op[TileNeighbors], cellSize: Op[CellSize]): DirectHillshade = 
+  def apply(r: Op[Tile], tns: Op[TileNeighbors], cellSize: Op[CellSize]): DirectHillshade = 
     DirectHillshade(r, tns, cellSize, 315.0, 45.0, 1.0)
 
 
-  def apply(r: Op[Raster], cellSize: Op[CellSize]): DirectHillshade = 
+  def apply(r: Op[Tile], cellSize: Op[CellSize]): DirectHillshade = 
     DirectHillshade(r, cellSize, 315.0, 45.0, 1.0)
 
   /**
@@ -66,7 +66,7 @@ object Hillshade {
   /**
    * Creates a hillshade operation directly from azimuth, altitude, and zFactor parameters.
    *
-   * @param   r           Raster to for which to compute the hill shading.
+   * @param   r           Tile to for which to compute the hill shading.
    * @param   tns         TileNeighbors that describe the neighboring 
    * @param   cellSize    cellSize of the raster
    * @param   azimuth     Degrees clockwise from north of light source.
@@ -74,10 +74,10 @@ object Hillshade {
    * @param   zFactor     Factor that convers altitude units to map units.
    *                      (map units per elevation unit)
    */
-  def apply(r: Op[Raster], tns: Op[TileNeighbors], cellSize: Op[CellSize], azimuth: Op[Double], altitude: Op[Double], zFactor: Op[Double]) =
+  def apply(r: Op[Tile], tns: Op[TileNeighbors], cellSize: Op[CellSize], azimuth: Op[Double], altitude: Op[Double], zFactor: Op[Double]) =
     DirectHillshade(r, tns, cellSize, azimuth, altitude, zFactor)
 
-  def apply(r: Op[Raster], cellSize: Op[CellSize], azimuth: Op[Double], altitude: Op[Double], zFactor: Op[Double]) =
+  def apply(r: Op[Tile], cellSize: Op[CellSize], azimuth: Op[Double], altitude: Op[Double], zFactor: Op[Double]) =
     DirectHillshade(r, cellSize, azimuth, altitude, zFactor)
 }
 
@@ -86,9 +86,9 @@ object Hillshade {
  *
  * @see [[Hillshade]]
  */
-case class DirectHillshade(r: Op[Raster], tns: Op[TileNeighbors], cellSize: Op[CellSize], azimuth: Op[Double], altitude: Op[Double], zFactor: Op[Double])
-    extends FocalOp4[CellSize, Double, Double, Double, Raster](r, Square(1), tns, cellSize, azimuth, altitude, zFactor)({
-  (raster, n) => new SurfacePointCalculation[Raster] with ShortArrayTileResult 
+case class DirectHillshade(r: Op[Tile], tns: Op[TileNeighbors], cellSize: Op[CellSize], azimuth: Op[Double], altitude: Op[Double], zFactor: Op[Double])
+    extends FocalOp4[CellSize, Double, Double, Double, Tile](r, Square(1), tns, cellSize, azimuth, altitude, zFactor)({
+  (raster, n) => new SurfacePointCalculation[Tile] with ShortArrayTileResult 
                                                      with Initialization4[CellSize, Double, Double, Double] {
     var azimuth = 0.0
     var zenith = 0.0
@@ -100,7 +100,7 @@ case class DirectHillshade(r: Op[Raster], tns: Op[TileNeighbors], cellSize: Op[C
     var cosAz = 0.0
     var sinAz = 0.0
 
-    def init(r: Raster, cs: CellSize, az: Double, al: Double, z: Double) = {
+    def init(r: Tile, cs: CellSize, az: Double, al: Double, z: Double) = {
       super.init(r)
 
       cellSize = cs
@@ -118,15 +118,15 @@ case class DirectHillshade(r: Op[Raster], tns: Op[TileNeighbors], cellSize: Op[C
       val slope = s.slope(zFactor)
       val aspect = s.aspect
 
-      val c = cosAz*s.cosAspect + sinAz*s.sinAspect // cos(azimuth - aspect)
+      val c = cosAz * s.cosAspect + sinAz * s.sinAspect // cos(azimuth - aspect)
       val v = (cosZ * s.cosSlope) + (sinZ * s.sinSlope * c)
-      data.set(x, y, round(127.0 * max(0.0, v)).toInt)      
+      tile.set(x, y, round(127.0 * max(0.0, v)).toInt)      
     }
   }
 }) 
 
 object DirectHillshade {
-  def apply(r: Op[Raster], cellSize: Op[CellSize], azimuth: Op[Double], altitude: Op[Double], zFactor: Op[Double]) = new DirectHillshade(r, TileNeighbors.NONE, cellSize, azimuth, altitude, zFactor)
+  def apply(r: Op[Tile], cellSize: Op[CellSize], azimuth: Op[Double], altitude: Op[Double], zFactor: Op[Double]) = new DirectHillshade(r, TileNeighbors.NONE, cellSize, azimuth, altitude, zFactor)
 }
 
 /**
@@ -139,7 +139,7 @@ object DirectHillshade {
  * @see [[Hillshade]]
  */
 case class IndirectHillshade(aspect: Aspect, slope: Slope, azimuth: Op[Double], altitude: Op[Double]) 
-     extends Operation[Raster] {
+     extends Operation[Tile] {
   def _run() = runAsync(List('init, aspect, slope, azimuth, altitude))
   def productArity = 4
   def canEqual(other: Any) = other.isInstanceOf[IndirectHillshade]
@@ -150,8 +150,8 @@ case class IndirectHillshade(aspect: Aspect, slope: Slope, azimuth: Op[Double], 
     case 3 => altitude
     case _ => new IndexOutOfBoundsException()
   }
-  val nextSteps: PartialFunction[Any, StepOutput[Raster]] = {
-    case 'init :: (aspect: Raster) :: (slope: Raster) :: (azimuth: Double) :: (altitude: Double) :: Nil => 
+  val nextSteps: PartialFunction[Any, StepOutput[Tile]] = {
+    case 'init :: (aspect: Tile) :: (slope: Tile) :: (azimuth: Double) :: (altitude: Double) :: Nil => 
       val az = radians(90.0 - azimuth)
       val ze = radians(90.0 - altitude)
       val cosZe = cos(ze)

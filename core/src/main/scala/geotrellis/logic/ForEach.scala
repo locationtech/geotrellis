@@ -69,7 +69,7 @@ case class ForEach2[A, B, Z:Manifest](opA:Op[Array[A]], opB:Op[Array[B]])
   }
 
   def step2(as:Array[A], bs:Array[B]) = {
-    runAsync((0 until as.length).map(i => f(as(i), bs(i))).toList)
+    runAsync((0 until as.size).map(i => f(as(i), bs(i))).toList)
   }
 }
 
@@ -99,6 +99,6 @@ case class ForEach3[A, B, C, Z:Manifest](opA:Op[Array[A]],
   }
 
   def step2(as:Array[A], bs:Array[B], cs:Array[C]) = {
-    runAsync((0 until as.length).toList.map(i => f(as(i), bs(i), cs(i))))
+    runAsync((0 until as.size).toList.map(i => f(as(i), bs(i), cs(i))))
   }
 }

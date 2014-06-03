@@ -16,6 +16,9 @@
 
 package geotrellis.raster.io.geotiff
 
+import geotrellis._
+import geotrellis.raster._
+
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.File
@@ -25,8 +28,6 @@ import scala.collection.mutable
 import scala.annotation.switch
 
 import scala.math.{ceil, min}
-
-import geotrellis._
 
 // TODO: compression?
 // TODO: color?

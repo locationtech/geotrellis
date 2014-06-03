@@ -16,7 +16,7 @@
 
 package geotrellis.raster.statistics
 
-import geotrellis.raste.Tile
+import geotrellis.raster._
 import scala.math.{ceil, max, min, abs}
 import scala.util.Sorting
 

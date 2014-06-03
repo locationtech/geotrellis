@@ -17,11 +17,11 @@
 package geotrellis.source
 
 import geotrellis._
-import geotrellis.io._
 import geotrellis.feature._
 import geotrellis.raster.op._
-import geotrellis.statistics.op._
-import geotrellis.render.op._
+import geotrellis.raster.statistics.op._
+import geotrellis.raster.render.op._
+import geotrellis.raster.io._
 import geotrellis.process.RasterLayerInfo
 
 import geotrellis.raster._
@@ -30,8 +30,8 @@ import scalaxy.loops._
 import scala.collection.mutable
 
 trait RasterSourceLike[+Repr <: RasterSource] 
-    extends DataSourceLike[Raster, Raster, Repr]
-    with DataSource[Raster, Raster] 
+    extends DataSourceLike[Raster, Tile, Repr]
+    with DataSource[Tile, Tile] 
     with local.LocalOpMethods[Repr] 
     with focal.FocalOpMethods[Repr]
     with global.GlobalOpMethods[Repr]
@@ -45,23 +45,23 @@ trait RasterSourceLike[+Repr <: RasterSource]
   def tiles = self.elements
   def rasterDefinition: Op[RasterDefinition]
 
-  def convergeOp(): Op[Raster] =
+  def convergeOp(): Op[Tile] =
     tiles.flatMap { ts =>
       if(ts.size == 1) { ts(0) }
       else { 
         (rasterDefinition, logic.Collect(ts)).map { (rd, tileSeq) =>
-          TileRaster(tileSeq, rd.tileLayout).toArrayRaster
+          CompositeTile(tileSeq, rd.tileLayout).toArrayTile
         }
       }
     }
 
-  def global[That](f: Raster=>Raster)
-                  (implicit bf: CanBuildSourceFrom[Repr, Raster, That]): That = {
-    val tileOps: Op[Seq[Op[Raster]]] =
+  def global[That](f: Tile=>Tile)
+                  (implicit bf: CanBuildSourceFrom[Repr, Tile, That]): That = {
+    val tileOps: Op[Seq[Op[Tile]]] =
       (rasterDefinition, logic.Collect(tiles)).map { (rd, tileSeq) =>
         if(rd.isTiled) {
-          val r = f(TileRaster(tileSeq.toSeq, rd.tileLayout))
-          TileRaster.split(r, rd.tileLayout).map(Literal(_))
+          val r = f(CompositeTile(tileSeq.toSeq, rd.tileLayout))
+          CompositeTile.split(r, rd.tileLayout).map(Literal(_))
         } else {
           Seq(f(tileSeq(0)))
         }
@@ -72,13 +72,13 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.result
   }
 
-  def globalOp[T, That](f: Raster=>Op[Raster])
-                      (implicit bf: CanBuildSourceFrom[Repr, Raster, That]): That = {
-    val tileOps: Op[Seq[Op[Raster]]] =
+  def globalOp[T, That](f: Tile=>Op[Tile])
+                      (implicit bf: CanBuildSourceFrom[Repr, Tile, That]): That = {
+    val tileOps: Op[Seq[Op[Tile]]] =
       (rasterDefinition, logic.Collect(tiles)).flatMap { (rd, tileSeq) =>
         if(rd.isTiled) {
-          f(TileRaster(tileSeq.toSeq, rd.tileLayout)).map { r =>
-            TileRaster.split(r, rd.tileLayout).map(Literal(_))
+          f(CompositeTile(tileSeq.toSeq, rd.tileLayout)).map { r =>
+            CompositeTile.split(r, rd.tileLayout).map(Literal(_))
           }
         } else {
           Seq(f(tileSeq(0)))
@@ -90,7 +90,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     builder.result
   }
 
-  def convert(newType: RasterType) = {
+  def convert(newType: CellType) = {
     val newDef = rasterDefinition.map(_.withType(newType))
     val ops = tiles.map { seq => seq.map { tile => tile.map { r => r.convert(newType) } } }
     val builder = new RasterSourceBuilder()
@@ -154,11 +154,11 @@ trait RasterSourceLike[+Repr <: RasterSource]
           rd.layerId,
           target,
           TileLayout.singleTile(target.cols, target.rows),
-          rd.rasterType
+          rd.cellType
         )
       }
 
-    val newOp: Op[Seq[Op[Raster]]] =
+    val newOp: Op[Seq[Op[Tile]]] =
       (rasterDefinition, tiles, targetOp).flatMap { (rd, seq, target) =>
         if (rd.isTiled) {
           val re = rd.rasterExtent
@@ -167,7 +167,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
           val targetExtent = target.extent
           val resLayout = tileLayout.getResolutionLayout(re)
 
-          val warped = mutable.ListBuffer[Op[(Raster, Extent)]]()
+          val warped = mutable.ListBuffer[Op[(Tile, Extent)]]()
           val tCols = tileLayout.tileCols
           val tRows = tileLayout.tileRows
           for(tCol <- 0 until tCols optimized) {
@@ -187,14 +187,14 @@ trait RasterSourceLike[+Repr <: RasterSource]
           }
 
           if (warped.size == 0) {
-            Seq(Literal(Raster(RasterData.emptyByType(rd.rasterType, target.cols, target.rows), target.cols, target.rows)))
+            Seq(Literal(ArrayTile.empty(rd.cellType, target.cols, target.rows)))
           } else if (warped.size == 1) {
             Seq(warped.head.map(_._1))
           } else {
 
             // Create destination raster data
             logic.Collect(warped) map { warped =>
-              val data = RasterData.emptyByType(rd.rasterType, re.cols, re.rows)
+              val tile = ArrayTile.empty(rd.cellType, re.cols, re.rows)
 
               for((rasterPart, extent) <- warped) {
                 // Copy over the values to the correct place in the raster data
@@ -202,37 +202,37 @@ trait RasterSourceLike[+Repr <: RasterSource]
                 val rows = rasterPart.rows
                 val tileRe = RasterExtent(extent, cols, rows)
 
-                if (rd.rasterType.isDouble) {
+                if (rd.cellType.isFloatingPoint) {
                   for(partCol <- 0 until cols optimized) {
                     for(partRow <- 0 until rows optimized) {
-                      val dataCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
-                      val dataRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
+                      val tileCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
+                      val tileRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
 
-                      if (!(dataCol < 0 ||
-                            dataCol >= re.cols ||
-                            dataRow < 0 || dataRow >= re.rows)
+                      if (!(tileCol < 0 ||
+                            tileCol >= re.cols ||
+                            tileRow < 0 || tileRow >= re.rows)
                          ) {
-                        data.setDouble(dataCol, dataRow, rasterPart.getDouble(partCol, partRow))
+                        tile.setDouble(tileCol, tileRow, rasterPart.getDouble(partCol, partRow))
                       }
                     }
                   }
                 } else {
                   for(partCol <- 0 until cols optimized) {
                     for(partRow <- 0 until rows optimized) {
-                      val dataCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
-                      val dataRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
-                      if (!(dataCol < 0 ||
-                            dataCol >= re.cols ||
-                            dataRow < 0 ||
-                            dataRow >= re.rows)
+                      val tileCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
+                      val tileRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
+                      if (!(tileCol < 0 ||
+                            tileCol >= re.cols ||
+                            tileRow < 0 ||
+                            tileRow >= re.rows)
                          ) {
-                        data.set(dataCol, dataRow, rasterPart.get(partCol, partRow))
+                        tile.set(tileCol, tileRow, rasterPart.get(partCol, partRow))
                       }
                     }
                   }
                 }
               }
-              Seq(Literal(Raster(data, target.cols, target.rows)))
+              Seq(Literal(tile))
             }
           }
         } else {

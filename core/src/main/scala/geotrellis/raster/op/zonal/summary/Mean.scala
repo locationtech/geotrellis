@@ -16,9 +16,9 @@
 
 package geotrellis.raster.op.zonal.summary
 
-import geotrellis._
-import geotrellis.source._
+import geotrellis.raster._
 import geotrellis.feature._
+import geotrellis.source._
 import geotrellis.feature.rasterize._
 
 case class MeanResult(sum: Double, count: Long) {

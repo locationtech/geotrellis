@@ -17,6 +17,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 
 /**
  * Operation to get the arc sine of values.
@@ -25,7 +26,7 @@ import geotrellis._
  */
 object Asin extends Serializable {
   /** Takes the arc sine of each raster cell value. */
-  def apply(r: Raster): Raster =
+  def apply(r: Tile): Tile =
     r.convert(TypeDouble)
      .mapDouble (z => math.asin(z))
 }

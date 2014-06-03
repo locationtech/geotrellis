@@ -17,7 +17,8 @@
 package geotrellis.raster.op
 
 import geotrellis._
+import geotrellis.raster._
 
-case class ConvertType(r:Op[Raster], t:Op[RasterType]) extends Op2(r, t)({
+case class ConvertType(r:Op[Tile], t:Op[CellType]) extends Op2(r, t)({
   (r, t) => Result(r.convert(t))
 })

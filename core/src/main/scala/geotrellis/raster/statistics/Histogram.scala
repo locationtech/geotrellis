@@ -16,6 +16,7 @@
 
 package geotrellis.raster.statistics
 
+import geotrellis.raster.NODATA
 import math.{abs, round, sqrt}
 
 /**
@@ -65,7 +66,7 @@ abstract trait Histogram extends Serializable {
   def getQuantileBreaks(num: Int): Array[Int]
 
   def getMode(): Int = {
-    if(getTotalCount == 0) { return geotrellis.NODATA }
+    if(getTotalCount == 0) { return NODATA }
     val values = getValues()
     var mode = values(0)
     var count = getItemCount(mode)
@@ -84,7 +85,7 @@ abstract trait Histogram extends Serializable {
   }
 
   def getMedian() = if (getTotalCount == 0) {
-    geotrellis.NODATA
+    NODATA
   } else {
     val values = getValues
     val middle = getTotalCount() / 2
@@ -98,7 +99,7 @@ abstract trait Histogram extends Serializable {
   }
 
   def getMean(): Double = {
-    if(getTotalCount == 0) { return geotrellis.NODATA }
+    if(getTotalCount == 0) { return NODATA }
 
     val values = rawValues()
     var mean = 0.0

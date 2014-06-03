@@ -16,6 +16,7 @@
 
 package geotrellis.raster.io
 
+import geotrellis._
 import geotrellis.process._
 
 object LoadRasterLayer {

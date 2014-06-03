@@ -48,7 +48,7 @@ trait LocalOpMethods[+Repr <: RasterSource]
 
   def localCombine[That](rs: RasterSource)
                    (f: (Int, Int)=>Int)
-                   (implicit bf: CanBuildSourceFrom[Repr, Raster, That]): That = {
+                   (implicit bf: CanBuildSourceFrom[Repr, Tile, That]): That = {
     val tileOps =
       (tiles, rs.tiles).map { (ts1, ts2) =>
         for((t1, t2) <- ts1.zip(ts2)) yield {
@@ -66,7 +66,7 @@ trait LocalOpMethods[+Repr <: RasterSource]
 
   def localCombineDouble[That](rs: RasterSource)
                              (f: (Double, Double)=>Double)
-                             (implicit bf: CanBuildSourceFrom[Repr, Raster, That]): That = {
+                             (implicit bf: CanBuildSourceFrom[Repr, Tile, That]): That = {
     val tileOps = 
       (tiles, rs.tiles).map { (ts1, ts2) =>
         for((t1, t2) <- ts1.zip(ts2)) yield {
@@ -83,7 +83,7 @@ trait LocalOpMethods[+Repr <: RasterSource]
   def localDualCombine[That](rs: RasterSource)
                        (fInt: (Int, Int)=>Int)
                        (fDouble: (Double, Double)=>Double)
-                       (implicit bf: CanBuildSourceFrom[Repr, Raster, That]): That = {
+                       (implicit bf: CanBuildSourceFrom[Repr, Tile, That]): That = {
     val tileOps =
       (tiles, rs.tiles).map { (ts1, ts2) =>
         for((t1, t2) <- ts1.zip(ts2)) yield {
@@ -214,20 +214,20 @@ trait LocalOpMethods[+Repr <: RasterSource]
     map { tile =>
       val (cols, rows) = tile.dimensions
       val re = RasterExtent(extent, cols, rows)
-      val data = ArrayTile.emptyByType(tile.rasterType, cols, rows)
+      val result = ArrayTile.empty(tile.cellType, cols, rows)
       for(g <- geoms) {
-        if(tile.isFloat) {
+        if(tile.cellType.isFloatingPoint) {
           Rasterizer.foreachCellByFeature(g, re)(new Callback {
             def apply(col: Int, row: Int) =
-              data.setDouble(col, row, tile.getDouble(col, row))
+              result.setDouble(col, row, tile.getDouble(col, row))
           })
         } else {
           Rasterizer.foreachCellByFeature(g, re)(new Callback {
             def apply(col: Int, row: Int) =
-              data.set(col, row, tile.get(col, row))
+              result.set(col, row, tile.get(col, row))
           })
         }
       }
-      Raster(data, cols, rows)
+      result:Tile
     }
 }

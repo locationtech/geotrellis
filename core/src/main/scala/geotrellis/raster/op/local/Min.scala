@@ -17,6 +17,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.source._
 
 /**
@@ -25,7 +26,7 @@ import geotrellis.source._
  * @note          Min handles NoData values such that taking the Min
  *                between a value and NoData returns NoData.
  */
-object Min extends LocalRasterBinaryOp {
+object Min extends LocalTileBinaryOp {
   def combine(z1:Int,z2:Int) =
     if (isNoData(z1) || isNoData(z2)) NODATA
     else math.min(z1,z2)
@@ -46,13 +47,13 @@ trait MinOpMethods[+Repr <: RasterSource] { self: Repr =>
   def localMin(rss:Seq[RasterSource]): RasterSource = self.combineOp(rss)(Min(_))
 }
 
-trait MinMethods { self: Raster =>
+trait MinMethods { self: Tile =>
   /** Min a constant Int value to each cell. */
-  def localMin(i: Int): Raster = Min(self, i)
+  def localMin(i: Int): Tile = Min(self, i)
   /** Min a constant Double value to each cell. */
-  def localMin(d: Double): Raster = Min(self, d)
+  def localMin(d: Double): Tile = Min(self, d)
   /** Min the values of each cell in each raster.  */
-  def localMin(r:Raster): Raster = Min(self, r)
+  def localMin(r:Tile): Tile = Min(self, r)
   /** Min the values of each cell in each raster.  */
-  def localMin(rs:Seq[Raster]): Raster = Min(self +: rs)
+  def localMin(rs:Seq[Tile]): Tile = Min(self +: rs)
 }

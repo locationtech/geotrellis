@@ -17,13 +17,14 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 
 /**
- * Computes the Log of Raster values.
+ * Computes the Log of Tile values.
  */
 object Log extends Serializable {
-  /** Computes the Log of a Raster. */
-  def apply(r: Raster): Raster =
+  /** Computes the Log of a Tile. */
+  def apply(r: Tile): Tile =
     r.dualMap { z: Int => if(isNoData(z)) z else math.log(z).toInt }
               { z: Double => math.log(z) }
 }
@@ -33,7 +34,7 @@ object Log extends Serializable {
  */
 object Log10 extends Serializable {
   /** Takes the Log base 10 of each raster cell value. */
-  def apply(r: Raster): Raster =
+  def apply(r: Tile): Tile =
     r.dualMap { z: Int => if(isNoData(z)) z else math.log10(z).toInt }
               { z: Double => math.log10(z) }
 }

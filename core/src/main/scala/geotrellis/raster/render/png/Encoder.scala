@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.render.png
+package geotrellis.raster.render.png
+
+import geotrellis.raster._
 
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
@@ -29,30 +31,28 @@ import java.util.zip.DeflaterOutputStream
 
 import scala.math.abs
 
-import geotrellis._
-
 import Util._
 
-case class Encoder(settings:Settings) {
+case class Encoder(settings: Settings) {
   // magic numbers from the PNG spec
-  final val SIGNATURE:Array[Byte] = Array[Byte](137.asInstanceOf[Byte], 80, 78, 71, 13, 10, 26, 10)
-  final val IHDR:Int = 0x49484452
-  final val BKGD:Int = 0x624b4744
-  final val PLTE:Int = 0x504c5445
-  final val TRNS:Int = 0x74524e53
-  final val IDAT:Int = 0x49444154
-  final val IEND:Int = 0x49454E44
+  final val SIGNATURE: Array[Byte] = Array[Byte](137.asInstanceOf[Byte], 80, 78, 71, 13, 10, 26, 10)
+  final val IHDR: Int = 0x49484452
+  final val BKGD: Int = 0x624b4744
+  final val PLTE: Int = 0x504c5445
+  final val TRNS: Int = 0x74524e53
+  final val IDAT: Int = 0x49444154
+  final val IEND: Int = 0x49454E44
 
   // filter byte signature
-  final val FILTER:Byte = settings.filter.n
+  final val FILTER: Byte = settings.filter.n
 
   // pixel depth in bytes
-  final val DEPTH:Int = settings.colorType.depth
+  final val DEPTH: Int = settings.colorType.depth
 
   // how many bits to shift to get the uppermost byte.
-  final val SHIFT:Int = (DEPTH - 1) * 8
+  final val SHIFT: Int = (DEPTH - 1) * 8
 
-  def writeHeader(dos:DataOutputStream, raster:Raster) {
+  def writeHeader(dos: DataOutputStream, raster: Tile) {
     val width = raster.cols
     val height = raster.rows
 
@@ -63,14 +63,14 @@ case class Encoder(settings:Settings) {
     cIHDR.writeInt(width)
     cIHDR.writeInt(height)
     cIHDR.writeByte(8); // 8 bits per component
-    cIHDR.writeByte(settings.colorType.n) // color type (0,2,3,4,6)
+    cIHDR.writeByte(settings.colorType.n) // color type (0, 2, 3, 4, 6)
     cIHDR.writeByte(0) // DEFLATE compression
     cIHDR.writeByte(0) // adaptive filtering
     cIHDR.writeByte(0) // no interlacing
     cIHDR.writeTo(dos)
   }
 
-  def writeBackgroundInfo(dos:DataOutputStream) {
+  def writeBackgroundInfo(dos: DataOutputStream) {
     settings.colorType match {
       case Grey(t) => {
         // write a single 2-byte color value
@@ -116,11 +116,11 @@ case class Encoder(settings:Settings) {
     }
   }
 
-  // def createByteBuffer(raster:Raster) =
+  // def createByteBuffer(raster: Tile) =
   //   ByteBuffer.wrap(raster.toArrayByte)
 
-  def createByteBuffer(raster:Raster) = {
-    val size = raster.length
+  def createByteBuffer(raster: Tile) = {
+    val size = raster.size
     val data = raster.toArray
     val bb = ByteBuffer.allocate(size * DEPTH)
 
@@ -134,7 +134,7 @@ case class Encoder(settings:Settings) {
   }
 
   // TODO: figure out how to share code without impacting performance
-  def writePixelData(dos:DataOutputStream, raster:Raster) {
+  def writePixelData(dos: DataOutputStream, raster: Tile) {
     settings.filter match {
       case PaethFilter => writePixelDataPaeth(dos, raster)
       case NoFilter => writePixelDataNoFilter(dos, raster)
@@ -142,7 +142,7 @@ case class Encoder(settings:Settings) {
     }
   }
 
-  def writePixelDataNoFilter(dos:DataOutputStream, raster:Raster) {
+  def writePixelDataNoFilter(dos: DataOutputStream, raster: Tile) {
     // dereference some useful information from the raster
     val cols = raster.cols
     val size = cols * raster.rows
@@ -182,7 +182,7 @@ case class Encoder(settings:Settings) {
     cIDAT.writeTo(dos)
   }
 
-  def writePixelDataPaeth(dos:DataOutputStream, raster:Raster) {
+  def writePixelDataPaeth(dos: DataOutputStream, raster: Tile) {
     // dereference some useful information from the raster
     val cols = raster.cols
     val size = cols * raster.rows
@@ -205,7 +205,7 @@ case class Encoder(settings:Settings) {
     val lineOut = Array.ofDim[Byte](byteWidth)
     var prevLine = Array.ofDim[Byte](byteWidth)
     var currLine = Array.ofDim[Byte](byteWidth)
-    var tmp:Array[Byte] = null
+    var tmp: Array[Byte] = null
 
     var yspan = 0
 
@@ -225,14 +225,14 @@ case class Encoder(settings:Settings) {
       while (j < byteWidth) {
         // the names a, b, c and p are actually used in the PNG spec, so we
         // use them here. they correspond to three neighbors.
-        val a:Int = currLine(j - DEPTH) & 0xff // left
-        val b:Int = prevLine(j) & 0xff // above
-        var c:Int = prevLine(j - DEPTH) & 0xff // above + left
+        val a: Int = currLine(j - DEPTH) & 0xff // left
+        val b: Int = prevLine(j) & 0xff // above
+        var c: Int = prevLine(j - DEPTH) & 0xff // above + left
 
-        // find the distance of a,b,c from "p" (p = a + b - c)
-        var pa:Int = b - c
-        var pb:Int = a - c
-        var pc:Int = pa + pb
+        // find the distance of a, b, c from "p" (p = a + b - c)
+        var pa: Int = b - c
+        var pb: Int = a - c
+        var pc: Int = pa + pb
         if (pa < 0) pa = -pa
         if (pb < 0) pb = -pb
         if (pc < 0) pc = -pc
@@ -265,12 +265,12 @@ case class Encoder(settings:Settings) {
   }
 
   // signal the end of the PNG data
-  def writeEnd(dos:DataOutputStream) {
+  def writeEnd(dos: DataOutputStream) {
     val cIEND = new Chunk(IEND)
     cIEND.writeTo(dos)
   }
 
-  def writeOutputStream(os:OutputStream, raster:Raster) {
+  def writeOutputStream(os: OutputStream, raster: Tile) {
     // wrap our actual OutputStream to enable us to write bytes and such.
     val dos = new DataOutputStream(os)
 
@@ -288,13 +288,13 @@ case class Encoder(settings:Settings) {
     dos.flush()
   }
 
-  def writeByteArray(raster:Raster) = {
+  def writeByteArray(raster: Tile) = {
     val baos = new ByteArrayOutputStream()
     writeOutputStream(baos, raster)
     baos.toByteArray
   }
 
-  def writePath(path:String, raster:Raster) {
+  def writePath(path: String, raster: Tile) {
     val fos = new FileOutputStream(new File(path))
     writeOutputStream(fos, raster)
     fos.close()

@@ -20,27 +20,16 @@ import geotrellis.feature.Extent
 
 import scalaxy.loops._
 
-object Tile {
-  def apply(arr: Array[Int], cols: Int, rows: Int): Tile = 
-    IntArrayTile(arr, cols, rows)
-
-  def apply(arr: Array[Double], cols: Int, rows: Int): Tile = 
-    DoubleArrayTile(arr, cols, rows)
-
-  def empty(cols: Int, rows: Int): Tile = 
-    IntArrayTile.empty(cols, rows)
-}
-
 /**
  * Base trait for the Tile data type.
  */
-trait Tile extends Raster /*with local.LocalMethods*/ {
+trait Tile extends Raster with op.local.LocalMethods {
   type This = Tile
 
   val cols: Int
   val rows: Int
   lazy val dimensions: (Int, Int) = (cols, rows)
-  lazy val length = cols * rows
+  lazy val size = cols * rows
 
   val cellType: CellType
 

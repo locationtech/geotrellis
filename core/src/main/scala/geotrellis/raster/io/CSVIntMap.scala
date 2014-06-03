@@ -16,8 +16,10 @@
 
 package geotrellis.raster.io
 
+import geotrellis._
+
 import scala.collection.mutable.Map
-import geotrellis.process._
+
 
 /**
  * Create a Map of (String, String) => Int from a CSV file 

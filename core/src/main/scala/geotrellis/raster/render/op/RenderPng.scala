@@ -16,9 +16,11 @@
 
 package geotrellis.raster.render.op
 
+import geotrellis._
+import geotrellis.raster._
 import geotrellis.raster.render._
 import geotrellis.raster.render.png._
-import geotrellis.statistics.Histogram
+import geotrellis.raster.statistics.Histogram
 
 object RenderPng {
   def apply(r: Op[Tile], colorBreaks: Op[ColorBreaks], noDataColor: Op[Int]): RenderPng =
@@ -38,12 +40,12 @@ object RenderPng {
   * values should be painted with which colors.  To that end, you'll need to
   * generate a ColorBreaks object which represents the value ranges and the
   * assigned color.  One way to create these color breaks is to use the
-  * [[geotrellis.statistics.op.stat.GetClassBreaks]] operation to generate
+  * [[geotrellis.raster.statistics.op.stat.GetClassBreaks]] operation to generate
   * quantile class breaks. 
   *
   * Example usage:
   * {{{
-  *   import geotrellis.statistics.op._
+  *   import geotrellis.raster.statistics.op._
   *
   *   val rOp = io.LoadRaster("foo") // get a data raster
   *   val colors = Array(0xFF0000FF, 0x00FF00FF) // red and green in RGBA values

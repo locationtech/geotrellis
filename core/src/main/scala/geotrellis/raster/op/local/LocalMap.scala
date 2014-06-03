@@ -17,6 +17,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.source._
 
 /**
@@ -29,7 +30,7 @@ import geotrellis.source._
  * </pre>
  */
 object LocalMap extends Serializable {
-  def apply(r:Op[Raster])(f:Int => Int) =
+  def apply(r:Op[Tile])(f:Int => Int) =
     r.map(_.dualMap(f)({ z:Double => i2d(f(d2i(z))) }))
      .withName("LocalMap")
 
@@ -45,7 +46,7 @@ object LocalMap extends Serializable {
    * val result = BinaryLocalMap(r1, r2, {(a:Int, b:Int) => a + b} )
    * </pre>
    */
-  def apply(r1:Op[Raster], r2:Op[Raster])(f:(Int,Int) => Int) = 
+  def apply(r1:Op[Tile], r2:Op[Tile])(f:(Int,Int) => Int) = 
     (r1,r2).map { (a,b) => a.dualCombine(b)(f)((z1:Double, z2:Double) => i2d(f(d2i(z1), d2i(z2)))) }
            .withName("LocalMap")
 }
@@ -60,7 +61,7 @@ object LocalMap extends Serializable {
  * </pre>
  */
 object  LocalMapDouble extends Serializable {
-  def apply(r:Op[Raster])(f:Double => Double) =
+  def apply(r:Op[Tile])(f:Double => Double) =
     r.map(_.dualMap({ z:Int => d2i(f(i2d(z))) })(f))
      .withName("LocalMapDouble")
 
@@ -76,7 +77,7 @@ object  LocalMapDouble extends Serializable {
    * val result = BinaryLocalMap(r1, r2, {(a:Double, b:Double) => a + b} )
    * </pre>
    */
-  def apply(r1:Op[Raster], r2:Op[Raster])(f:(Double,Double) => Double) = 
+  def apply(r1:Op[Tile], r2:Op[Tile])(f:(Double,Double) => Double) = 
     (r1,r2).map { (a,b) => a.dualCombine(b)((z1:Int,z2:Int)=>d2i(f(i2d(z1), i2d(z2))))(f) }
            .withName("LocalMap")
 }

@@ -17,8 +17,8 @@
 package geotrellis.raster.op.zonal
 
 import geotrellis._
-import geotrellis.process._
-import geotrellis.statistics._
+import geotrellis.raster._
+import geotrellis.raster.statistics._
 
 import scalaxy.loops._
 
@@ -28,10 +28,10 @@ import scala.collection.mutable
  * Given a raster, return a histogram summary of the cells within each zone.
  *
  * @note    ZonalHistogram does not currently support Double raster data.
- *          If you use a Raster with a Double RasterType (TypeFloat,TypeDouble)
+ *          If you use a Raster with a Double CellType (TypeFloat,TypeDouble)
  *          the data values will be rounded to integers.
  */
-case class ZonalHistogram(data: Op[Raster], zones: Op[Raster]) 
+case class ZonalHistogram(data: Op[Tile], zones: Op[Tile]) 
      extends Op2(data, zones) ({
   (raster, zones) => {
     val histMap = mutable.Map[Int,FastMapHistogram]()

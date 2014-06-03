@@ -17,7 +17,8 @@
 package geotrellis.source
 
 import geotrellis._
-import geotrellis.statistics._
+import geotrellis.raster._
+import geotrellis.raster.statistics.{Histogram, FastMapHistogram}
 
 trait CanBuildSourceFrom[-From, Elem, +To] extends AnyRef {
   def apply(): SourceBuilder[Elem, To]
@@ -25,7 +26,7 @@ trait CanBuildSourceFrom[-From, Elem, +To] extends AnyRef {
 }
 
 object CanBuildSourceFrom  extends Priority1Implicits {
-  implicit def canBuildRasterSource =  new CanBuildSourceFrom[RasterSource, Raster, RasterSource] {
+  implicit def canBuildRasterSource =  new CanBuildSourceFrom[RasterSource, Tile, RasterSource] {
     def apply() = new RasterSourceBuilder
     def apply(rasterSrc:RasterSource) =
       RasterSourceBuilder(rasterSrc)

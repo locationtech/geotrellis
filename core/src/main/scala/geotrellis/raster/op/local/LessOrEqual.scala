@@ -17,12 +17,13 @@
 package geotrellis.raster.op.local
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.source._
 
 /**
  * Determines if values are less than or equal to other values. Sets to 1 if true, else 0.
  */
-object LessOrEqual extends LocalRasterComparatorOp {
+object LessOrEqual extends LocalTileComparatorOp {
   def compare(z1:Int,z2:Int):Boolean =
     if(z1 <= z2) true else false
 
@@ -98,63 +99,63 @@ trait LessOrEqualOpMethods[+Repr <: RasterSource] { self: Repr =>
   def <=(rs:RasterSource): RasterSource = localLessOrEqual(rs)
 }
 
-trait LessOrEqualMethods { self: Raster =>
+trait LessOrEqualMethods { self: Tile =>
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * integer, else 0.
    */
-  def localLessOrEqual(i: Int): Raster = LessOrEqual(self, i)
+  def localLessOrEqual(i: Int): Tile = LessOrEqual(self, i)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * integer, else 0.
    */
-  def localLessOrEqualRightAssociative(i: Int): Raster = LessOrEqual(i, self)
+  def localLessOrEqualRightAssociative(i: Int): Tile = LessOrEqual(i, self)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
     * integer, else 0.
    */
-  def <=(i:Int): Raster = localLessOrEqual(i)
+  def <=(i:Int): Tile = localLessOrEqual(i)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * integer, else 0.
    */
-  def <=:(i:Int): Raster = localLessOrEqualRightAssociative(i)
+  def <=:(i:Int): Tile = localLessOrEqualRightAssociative(i)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * double, else 0.
    */
-  def localLessOrEqual(d: Double): Raster = LessOrEqual(self, d)
+  def localLessOrEqual(d: Double): Tile = LessOrEqual(self, d)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * double, else 0.
    */
-  def localLessOrEqualRightAssociative(d: Double): Raster = LessOrEqual(d, self)
+  def localLessOrEqualRightAssociative(d: Double): Tile = LessOrEqual(d, self)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * double, else 0.
    */
-  def <=(d:Double): Raster = localLessOrEqual(d)
+  def <=(d:Double): Tile = localLessOrEqual(d)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * double, else 0.
    */
-  def <=:(d:Double): Raster = localLessOrEqualRightAssociative(d)
+  def <=:(d:Double): Tile = localLessOrEqualRightAssociative(d)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are less than or equal to the next raster, else 0.
    */
-  def localLessOrEqual(r:Raster): Raster = LessOrEqual(self,r)
+  def localLessOrEqual(r:Tile): Tile = LessOrEqual(self,r)
   /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
+   * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are less than or equal to the next raster, else 0.
    */
-  def <=(r:Raster): Raster = localLessOrEqual(r)
+  def <=(r:Tile): Tile = localLessOrEqual(r)
 }

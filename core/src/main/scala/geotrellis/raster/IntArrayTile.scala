@@ -35,7 +35,7 @@ final case class IntArrayTile(array: Array[Int], cols: Int, rows: Int)
   override def toArray = array.clone
 
   def toBytes: Array[Byte] = {
-    val pixels = new Array[Byte](array.length * cellType.bytes)
+    val pixels = new Array[Byte](array.size * cellType.bytes)
     val bytebuff = ByteBuffer.wrap(pixels)
     bytebuff.asIntBuffer.put(array)
     pixels
@@ -59,9 +59,9 @@ object IntArrayTile {
     new IntArrayTile(Array.ofDim[Int](cols * rows).fill(v), cols, rows)
  
   def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int) = {
-    val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
+    val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
     val intBuffer = byteBuffer.asIntBuffer()
-    val intArray = new Array[Int](bytes.length / TypeInt.bytes)
+    val intArray = new Array[Int](bytes.size / TypeInt.bytes)
     intBuffer.get(intArray)
 
     IntArrayTile(intArray, cols, rows)

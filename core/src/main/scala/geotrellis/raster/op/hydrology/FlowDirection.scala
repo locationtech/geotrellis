@@ -22,14 +22,14 @@ import scala.math._
 
 object FlowDirection {
   /** Determine flow direction of the cell at (c, r) in given raster */
-  def flow(c: Int, r: Int, raster: Raster) = {
+  def flow(c: Int, r: Int, raster: Tile) = {
     val neighbors = getNeighbors(c, r, raster)
     val max = neighbors.values.max
     neighbors.filter { case(_, v) => v == max }.keys.reduce(_+_)
   }
   
   /** Produces a map of available immediate neighbors and their drop in elevation from the provided cell */
-  def getNeighbors(c: Int, r: Int, raster: Raster): Map[Int, Double] = {
+  def getNeighbors(c: Int, r: Int, raster: Tile): Map[Int, Double] = {
     val center = raster.get(c, r)
     val ncols = raster.cols
     val nrows = raster.rows
@@ -66,7 +66,7 @@ object FlowDirection {
   }
 
   /** Determines whether or not the cell at (c, r) in given raster is a sink */
-  def isSink(c: Int, r: Int, raster: Raster) = {
+  def isSink(c: Int, r: Int, raster: Tile) = {
     getNeighbors(c, r, raster).values.foldLeft(true)( _ && _ < 0)
   }
 }
@@ -75,7 +75,7 @@ object FlowDirection {
  *  Operation to compute a flow direction raster from an elevation raster
  *  
  *  The directional encoding is from:
- *    Greenlee,D. D. 1987. "Raster and Vector Processing for Scanned Linework."
+ *    Greenlee,D. D. 1987. "Tile and Vector Processing for Scanned Linework."
  *    Photogrammetric Engineering and Remote Sensing (ISSN 0099-1112),vol. 53,Oct. 1987,p. 1383-1387.
  *  
  *  The direction of flow is towards the neighboring cell with the largest drop in elevation. If two 
@@ -86,22 +86,22 @@ object FlowDirection {
  *
  *  @param        raster           Elevation raster the operation will run against. 
  */
-case class FlowDirection(raster: Op[Raster]) extends Op1(raster)({
+case class FlowDirection(raster: Op[Tile]) extends Op1(raster)({
   (raster) =>
     val (cols, rows) = raster.dimensions
-    val data = IntArrayTile(Array.ofDim[Int](rows * cols), cols, rows)
+    val tile = IntArrayTile(Array.ofDim[Int](rows * cols), cols, rows)
     var r = 0
     while (r < rows) {
       var c = 0
       while (c < cols) {
         if (isNoData(raster.get(c, r)) || (FlowDirection.isSink(c, r, raster))) {
-          data.set(c, r, NODATA)
+          tile.set(c, r, NODATA)
         } else {
-          data.set(c, r, FlowDirection.flow(c, r, raster))
+          tile.set(c, r, FlowDirection.flow(c, r, raster))
         }        
         c = c + 1
       }
       r = r + 1
     }
-    Result(Raster(data, cols, rows))
+    Result(tile)
 })

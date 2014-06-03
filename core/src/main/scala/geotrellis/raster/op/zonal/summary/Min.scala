@@ -16,9 +16,8 @@
 
 package geotrellis.raster.op.zonal.summary
 
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.source._
-import geotrellis.feature._
 import geotrellis.feature.rasterize._
 
 object Min extends TileSummary[Int, Int, ValueSource[Int]] {

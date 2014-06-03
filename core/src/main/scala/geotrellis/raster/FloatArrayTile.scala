@@ -33,7 +33,7 @@ final case class FloatArrayTile(array: Array[Float], cols: Int, rows: Int)
   def updateDouble(i: Int, z: Double) = array(i) = z.toFloat
 
   def toBytes: Array[Byte] = {
-    val pixels = new Array[Byte](array.length * cellType.bytes)
+    val pixels = new Array[Byte](array.size * cellType.bytes)
     val bytebuff = ByteBuffer.wrap(pixels)
     bytebuff.asFloatBuffer.put(array)
     pixels
@@ -57,9 +57,9 @@ object FloatArrayTile {
     new FloatArrayTile(Array.ofDim[Float](cols * rows).fill(v), cols, rows)
 
   def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int): FloatArrayTile = {
-    val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
+    val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
     val floatBuffer = byteBuffer.asFloatBuffer()
-    val floatArray = new Array[Float](bytes.length / TypeFloat.bytes)
+    val floatArray = new Array[Float](bytes.size / TypeFloat.bytes)
     floatBuffer.get(floatArray)
 
     FloatArrayTile(floatArray, cols, rows)
