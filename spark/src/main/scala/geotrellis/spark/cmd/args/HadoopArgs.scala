@@ -12,7 +12,6 @@ trait HadoopArgs extends FieldArgs with ArgsParser with Logging {
     
     if (hadoopOpts != null) {
       val hadoopArgs = parseArgs(hadoopOpts)
-      hadoopArgs.foreach { case (k, v) => logInfo(s"key=${k}, val=${v}") }
       hadoopArgs.foreach { case (k, v) => hadoopConf.set(k, v) }
     }
     hadoopConf
