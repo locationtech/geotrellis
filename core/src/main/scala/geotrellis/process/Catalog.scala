@@ -19,10 +19,11 @@ package geotrellis.process
 import scala.collection.mutable
 import java.io.File
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.process._
 import geotrellis.util._
 import geotrellis.util.Filesystem
-import geotrellis.data.AsciiRasterLayerBuilder
+import geotrellis.raster.io.AsciiRasterLayerBuilder
 
 import com.typesafe.config.Config
 

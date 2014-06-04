@@ -33,8 +33,6 @@ import scalaxy.loops._
  */
 final case class BitArrayTile(array: Array[Byte], cols: Int, rows: Int)
   extends MutableArrayTile with IntBasedArrayTile {
-  val size = cols * rows
-
   // i >> 3 is the same as i / 8 but faster
   // i & 7 is the same as i % 8 but faster
   // i & 1 is the same as i % 2 but faster

@@ -17,6 +17,7 @@
 package geotrellis.feature.rasterize
 
 import geotrellis._
+import geotrellis.raster._
 import geotrellis.feature._
 import geotrellis.feature.rasterize.polygon.PolygonRasterizer
 
@@ -47,7 +48,7 @@ object Rasterizer {
         }
       }
     foreachCellByFeature(geom, rasterExtent)(f2)
-    Tile(array, rasterExtent.cols, rasterExtent.rows)
+    ArrayTile(array, rasterExtent.cols, rasterExtent.rows)
   } 
 
   /**
@@ -65,7 +66,7 @@ object Rasterizer {
         }
     }
     foreachCellByFeature(feature, rasterExtent)(f2)
-    Tile(array, rasterExtent.cols, rasterExtent.rows)
+    ArrayTile(array, rasterExtent.cols, rasterExtent.rows)
   }
    
   /**

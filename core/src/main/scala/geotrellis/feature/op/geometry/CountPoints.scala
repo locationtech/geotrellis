@@ -16,6 +16,7 @@
 
 package geotrellis.feature.op.geometry
 
+import geotrellis._
 import geotrellis.raster._
 import geotrellis.feature._
 import com.vividsolutions.jts.geom
@@ -38,5 +39,5 @@ case class CountPoints(points: Op[Seq[Point]], rasterExtent: Op[RasterExtent]) e
         array(index) = array(index) + 1
       }
     }
-    Result(Tile(array, re.cols, re.rows))
+    Result(ArrayTile(array, re.cols, re.rows))
 })

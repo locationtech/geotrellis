@@ -19,7 +19,7 @@ package geotrellis.process
 import geotrellis._
 import geotrellis.raster._
 import geotrellis.util._
-import geotrellis.data.arg.ArgReader
+import geotrellis.raster.io.arg.ArgReader
 
 import com.typesafe.config.Config
 
@@ -75,11 +75,9 @@ extends UntiledRasterLayer(info) {
         case Some(bytes) =>
           targetExtent match {
             case Some(re) =>
-              val data = ArgReader.warpBytes(bytes, info.cellType, info.rasterExtent, re)
-              Raster(data, re.cols, re.rows)
+              ArgReader.warpBytes(bytes, info.cellType, info.rasterExtent, re)
             case None =>
-              val data = RasterData.fromArrayByte(bytes, info.cellType, info.rasterExtent.cols, info.rasterExtent.rows)
-              Raster(data, info.rasterExtent.cols, info.rasterExtent.rows)
+              ArrayTile.fromArrayByte(bytes, info.cellType, info.rasterExtent.cols, info.rasterExtent.rows)
           }
         case None =>
           sys.error("Cache problem: Layer thinks it's cached but it is in fact not cached.")

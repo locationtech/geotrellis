@@ -32,12 +32,12 @@ abstract class FileReader(val path: String) {
 
   def readPath(cellType: CellType,
                rasterExtent: RasterExtent,
-               targetExtent: Option[RasterExtent]): Raster =
+               targetExtent: Option[RasterExtent]): Tile =
     readPath(cellType, rasterExtent, targetExtent.getOrElse(rasterExtent))
 
   def readPath(cellType: CellType, 
                rasterExtent: RasterExtent, 
-               target: RasterExtent): Raster = 
+               target: RasterExtent): Tile = 
     readRaster(readStateFromPath(cellType, 
                                  rasterExtent,
                                  target))
@@ -45,13 +45,13 @@ abstract class FileReader(val path: String) {
   def readCache(bytes: Array[Byte], 
                 cellType: CellType, 
                 rasterExtent: RasterExtent, 
-                targetExtent: Option[RasterExtent]): Raster = 
+                targetExtent: Option[RasterExtent]): Tile = 
     readCache(bytes, cellType, rasterExtent, targetExtent.getOrElse(rasterExtent))
 
   def readCache(bytes: Array[Byte], 
                 cellType: CellType, 
                 rasterExtent: RasterExtent, 
-                targetExtent: RasterExtent): Raster = 
+                targetExtent: RasterExtent): Tile = 
     readRaster(readStateFromCache(bytes, cellType, rasterExtent, targetExtent))
 
   private def readRaster(readState: ReadState) = 

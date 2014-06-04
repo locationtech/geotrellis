@@ -17,7 +17,7 @@
 package geotrellis.process
 
 import geotrellis._
-import geotrellis.raster.{IntConstant, DoubleConstant}
+import geotrellis.raster._
 
 import com.typesafe.config.Config
 
@@ -55,7 +55,7 @@ extends UntiledRasterLayer(info) {
       case Some(rext) => rext
       case None => info.rasterExtent
     }
-    Raster(IntConstant(value, re.cols, re.rows), re.cols, re.rows)
+    IntConstantTile(value, re.cols, re.rows)
   }
 
   def cache(c: Cache[String]) = {} // No-op
@@ -68,7 +68,7 @@ extends UntiledRasterLayer(info) {
       case Some(rext) => rext
       case None => info.rasterExtent
     }
-    Raster(DoubleConstant(value, re.cols, re.rows), re.cols, re.rows)
+    DoubleConstantTile(value, re.cols, re.rows)
   }
 
   def cache(c: Cache[String]) = {} // No-op

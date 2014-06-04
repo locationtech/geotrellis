@@ -123,31 +123,31 @@ object RasterSource {
   def apply(rasterDef: Op[RasterDefinition], tileOps: Op[Seq[Op[Tile]]]) =
     new RasterSource(rasterDef, tileOps)
 
-  /** Create a RasterSource who's tile ops are the tiles of a TileRaster. */
-  def apply(tiledRaster: TileRaster, extent: Extent): RasterSource = {
+  /** Create a RasterSource who's tile ops are the tiles of a CompositeTile. */
+  def apply(compositeTile: CompositeTile, extent: Extent): RasterSource = {
     val rasterDef = 
       RasterDefinition(
-        LayerId("LiteralTileRaster"),
-        RasterExtent(extent, tiledRaster.cols, tiledRaster.rows),
-        tiledRaster.tileLayout,
-        tiledRaster.cellType
+        LayerId("LiteralCompositeTile"),
+        RasterExtent(extent, compositeTile.cols, compositeTile.rows),
+        compositeTile.tileLayout,
+        compositeTile.cellType
       )
     
-    val tileOps = tiledRaster.tiles.map(Literal(_))
+    val tileOps = compositeTile.tiles.map(Literal(_))
 
     new RasterSource(rasterDef, tileOps)
   }
 
-  def apply(tiledRaster: Op[CompositeTile], extent: Op[Extent])(implicit d: DI): RasterSource = {
-    val rasterDef = (tiledRaster, extent).map { (tr, ext) =>
+  def apply(compositeTile: Op[CompositeTile], extent: Op[Extent])(implicit d: DI): RasterSource = {
+    val rasterDef = (compositeTile, extent).map { (tr, ext) =>
       RasterDefinition(
-        LayerId("LiteralTileRaster"),
+        LayerId("LiteralCompositeTile"),
         RasterExtent(ext, tr.cols, tr.rows),
         tr.tileLayout,
         tr.cellType
       )
     }
-    val tileOps = tiledRaster.map(_.tiles.map(Literal(_)))
+    val tileOps = compositeTile.map(_.tiles.map(Literal(_)))
     new RasterSource(rasterDef, tileOps)
   }
 

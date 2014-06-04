@@ -17,6 +17,7 @@
 package geotrellis.feature.rasterize.polygon
 
 import geotrellis._
+import geotrellis.raster.RasterExtent
 
 case class Intercept(x:Double, colDouble:Double, line:TestLine) {
   def colDouble(re: RasterExtent, y: Double) = 

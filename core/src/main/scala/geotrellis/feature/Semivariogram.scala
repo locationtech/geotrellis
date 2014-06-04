@@ -17,6 +17,7 @@
 package geotrellis.feature
 
 import geotrellis._
+import geotrellis.raster.NODATA
 
 import scala.collection.mutable
 import org.apache.commons.math3.stat.regression.SimpleRegression

@@ -30,7 +30,7 @@ import scalaxy.loops._
 import scala.collection.mutable
 
 trait RasterSourceLike[+Repr <: RasterSource] 
-    extends DataSourceLike[Raster, Tile, Repr]
+    extends DataSourceLike[Tile, Tile, Repr]
     with DataSource[Tile, Tile] 
     with local.LocalOpMethods[Repr] 
     with focal.FocalOpMethods[Repr]

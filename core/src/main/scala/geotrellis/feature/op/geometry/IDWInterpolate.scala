@@ -30,7 +30,7 @@ case class IDWInterpolate(points: Op[Seq[PointFeature[Int]]], re: Op[RasterExten
   (points, re, radius) =>
     val cols = re.cols
     val rows = re.rows
-    val tile = ArrayTile.emptyByType(TypeInt, cols, rows)
+    val tile = ArrayTile.empty(TypeInt, cols, rows)
     if(points.isEmpty) {
       Result(tile)
     } else {
