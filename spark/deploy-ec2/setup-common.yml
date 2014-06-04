@@ -2,7 +2,7 @@
 
 #Playbook to configure cluster master
 - name: Impose social constructs and roles on an innocent server
-  hosts: ec2_hosts
+  hosts: all
   roles: 
     - common
   gather_facts: False

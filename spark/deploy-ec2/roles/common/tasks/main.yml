@@ -8,7 +8,7 @@
 #This allows to rsync and ssh between any host in the clusters
 - name: Upload cluster private key to use as id_rsa
   copy: 
-    src: "{{inventory_dir}}/keys/{{ key_name }}.pem" 
+    src: "{{ ec2_key_file }}" 
     dest: ~/.ssh/id_rsa 
     mode: 0600
 

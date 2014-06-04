@@ -24,15 +24,15 @@
   </property>
  <property>
     <name>dfs.namenode.name.dir</name>
-    <value>/var/hadoop-hdfs/namenode</value>
+    <value>file:/var/hadoop-hdfs/namenode</value>
   </property>
  <property>
     <name>dfs.datanode.data.dir</name>
-    <value>{{ hdfs_volumes|map(attribute='mount')|join(',') }}</value>
+    <value>{{ hdfs.volumes|map(attribute='mount')|join(',') }}</value>
   </property>  
   <property>
     <name>dfs.replication</name>
-    <value>3</value>
+    <value>{{ hdfs.replication }}</value>
   </property>
   <property>
     <name>dfs.blocksize</name>
