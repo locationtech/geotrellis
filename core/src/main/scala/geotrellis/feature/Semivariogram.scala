@@ -16,8 +16,7 @@
 
 package geotrellis.feature
 
-import geotrellis._
-import geotrellis.raster.NODATA
+import geotrellis.raster._
 
 import scala.collection.mutable
 import org.apache.commons.math3.stat.regression.SimpleRegression
@@ -130,5 +129,18 @@ object Semivariogram {
       case Circular => ???
       case Spherical => ???
     }
+  }
+
+  def countPoints(points: Seq[Point], rasterExtent: RasterExtent): Tile = {
+    val array = Array.ofDim[Int](re.cols * re.rows).fill(0)
+    for(point <- points) {
+      val x = point.x
+      val y = point.y
+      if(re.extent.contains(point)) {
+        val index = re.mapXToGrid(point.x)*re.cols + re.mapYToGrid(point.y)
+        array(index) = array(index) + 1
+      }
+    }
+    ArrayTile(array, re.cols, re.rows)
   }
 }
