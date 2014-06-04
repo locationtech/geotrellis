@@ -5,6 +5,11 @@ cluster_name: super-cluster
 ec2_key_name: spark-cluster
 ec2_key_file: keys/spark-cluster.pem
 
+#These are used by HDFS to copy from S3 buckets
+aws:
+  key_id: AI...
+  key_secret: asdf...
+
 region: us-east-1
 instance_type: m3.large
 image: ami-018c9568

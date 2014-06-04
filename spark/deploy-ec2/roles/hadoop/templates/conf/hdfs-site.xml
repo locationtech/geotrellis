@@ -66,4 +66,13 @@
     <name>dfs.datanode.hdfs-blocks-metadata.enabled</name>
     <value>true</value>
   </property>
+
+  <property>
+    <name>fs.s3n.awsAccessKeyId</name>
+    <value>{{ aws.key_id }}</value>
+  </property>
+  <property>
+    <name>fs.s3n.awsSecretAccessKey</name>
+    <value>{{ aws.key_secret }}</value>
+    </property>
 </configuration>
