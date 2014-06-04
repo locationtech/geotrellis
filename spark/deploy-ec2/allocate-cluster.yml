@@ -107,4 +107,5 @@
       local_action: template src=templates/cluster_inventory.j2 dest=./hosts
 
 
-#- include: setup-cluster.yml
+#Install JVM and other prep stuff
+- include: setup-common.yml

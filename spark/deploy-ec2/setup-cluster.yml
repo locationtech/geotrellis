@@ -1,5 +1,4 @@
 ---
 
-- include: setup-common.yml
 - include: setup-master.yml
 - include: setup-workers.yml
