@@ -16,29 +16,55 @@
 
 package geotrellis.raster.op.global
 
-import geotrellis._
 import geotrellis.raster._
+
 import java.util.PriorityQueue
 
 /**
   * Generate a Cost-Distance raster based on a set of starting points and a cost
   * raster
   *
-  * @param costOp     Cost Tile (Int)
-  * @param pointsOp   List of starting points as tuples
+  * @param cost     Cost Tile (Int)
+  * @param points   List of starting points as tuples
   *
   * @note    Operation will only work with integer typed Cost Tiles (TypeBit, TypeByte, TypeShort, TypeInt).
   *          If a double typed Cost Tile (TypeFloat, TypeDouble) is passed in, those costs will be rounded
   *          to their floor integer values.
   * 
   */
-final case class CostDistance(costOp: Op[Tile], pointsOp: Op[Seq[(Int, Int)]]) extends Op[Tile] {
-  def _run() = runAsync(List(costOp, pointsOp))
+object CostDistance {
+  def apply(cost: Tile, points: Seq[(Int, Int)]): Tile = {
+    val (cols, rows) = cost.dimensions
+    val output = DoubleArrayTile.empty(cols, rows)
 
-  val nextSteps: Steps = {
-    case List(cost, points) => costDistance(
-      cost.asInstanceOf[Tile], points.asInstanceOf[List[(Int, Int)]])
-  }  
+    for((c, r) <- points)
+      output.setDouble(c, r, 0.0)
+
+    val pqueue = new PriorityQueue(
+        1000, new java.util.Comparator[Cost] {
+          override def equals(a: Any) = a.equals(this)
+          def compare(a: Cost, b: Cost) = a._3.compareTo(b._3)
+        })
+
+    for((c, r) <- points) {
+      calcNeighbors(c, r, cost, output, pqueue)
+    }
+
+    var head: Cost = pqueue.poll
+    while(head != null) {
+      val c = head._1
+      val r = head._2
+      val v = head._3
+
+      if (v == output.getDouble(c, r)) {
+        calcNeighbors(c, r, cost, output, pqueue)
+      }
+
+      head = pqueue.poll
+    }
+
+    output
+  }
 
   def isValid(c: Int, r: Int, cost: Tile): Boolean =
     c >= 0 && r >= 0 && c < cost.cols && r < cost.rows
@@ -54,7 +80,7 @@ final case class CostDistance(costOp: Op[Tile], pointsOp: Op[Seq[(Int, Int)]]) e
       case _ => Array[(Int, Int)]()
     }
 
-    def apply(c: Int, r: Int) = (c+dc, r + dr)
+    def apply(c: Int, r: Int) = (c + dc, r + dr)
 
     lazy val unitDistance = if (diag) 1.41421356237 else 1.0
   }
@@ -70,7 +96,7 @@ final case class CostDistance(costOp: Op[Tile], pointsOp: Op[Seq[(Int, Int)]]) e
     * (c, r) => Source cell
     * (dc, dr) => Delta (direction)
     * cost => Cost raster
-    * d => C-D output raster
+    * d => C - D output raster
     * 
     * Output:
     * List((c, r)) <- list of cells set
@@ -179,39 +205,6 @@ final case class CostDistance(costOp: Op[Tile], pointsOp: Op[Seq[(Int, Int)]]) e
 
   def calcCost(c: Int, r: Int, dir: Dir, cost: Tile): DOption = 
     calcCost(c, r, dir(c, r), cost)
-
-  def costDistance(cost: Tile, points: List[(Int, Int)]) = {
-    val (cols, rows) = cost.dimensions
-    val output = DoubleArrayTile.empty(cols, rows)
-
-    for((c, r) <- points)
-      output.setDouble(c, r, 0.0)
-
-    val pqueue = new PriorityQueue(
-        1000, new java.util.Comparator[Cost] {
-          override def equals(a: Any) = a.equals(this)
-          def compare(a: Cost, b: Cost) = a._3.compareTo(b._3)
-        })
-
-    for((c, r) <- points) {
-      calcNeighbors(c, r, cost, output, pqueue)
-    }
-
-    var head: Cost = pqueue.poll
-    while(head != null) {
-      val c = head._1
-      val r = head._2
-      val v = head._3
-
-      if (v == output.getDouble(c, r)) {
-        calcNeighbors(c, r, cost, output, pqueue)
-      }
-
-      head = pqueue.poll
-    }
-
-    Result(output)
-  }
 }
 
 /**

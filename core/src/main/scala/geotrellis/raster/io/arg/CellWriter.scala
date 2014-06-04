@@ -20,9 +20,7 @@ import java.io.DataOutputStream
 
 import geotrellis._
 import geotrellis.raster._
-//import geotrellis.raster.io._
 import geotrellis.util._
-import geotrellis.process._
 
 object CellWriter {
   def byType(typ: CellType): CellWriter = typ match {

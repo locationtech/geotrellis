@@ -3,6 +3,8 @@ package geotrellis
 import language.experimental.macros
 
 package object raster {
+  type DI = DummyImplicit
+
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue 
   @inline final val shortNODATA = Short.MinValue
@@ -56,8 +58,6 @@ package object raster {
   implicit class DoubleArrayFiller(val arr: Array[Double]) extends AnyVal {
     def fill(v: Double) = { java.util.Arrays.fill(arr, v) ; arr }
   }
-
-  type Png = Array[Byte]
 
   implicit class TraversableTileExtentsion(rs: Traversable[Tile]) {
     def assertEqualDimensions(): Unit =

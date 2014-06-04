@@ -16,9 +16,7 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
 
 /**
  * Determines if values are less than or equal to other values. Sets to 1 if true, else 0.
@@ -36,67 +34,6 @@ object LessOrEqual extends LocalTileComparatorOp {
         else false
       }
     }
-}
-
-trait LessOrEqualOpMethods[+Repr <: RasterSource] { self: Repr =>
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is less than or equal to the input
-   * integer, else 0.
-   */
-  def localLessOrEqual(i: Int): RasterSource = self.mapOp(LessOrEqual(_, i))
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is less than or equal to the input
-   * integer, else 0.
-   */
-  def localLessOrEqualRightAssociative(i: Int): RasterSource = self.mapOp(LessOrEqual(i, _))
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is less than or equal to the input
-    * integer, else 0.
-   */
-  def <=(i:Int): RasterSource = localLessOrEqual(i)
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is less than or equal to the input
-   * integer, else 0.
-   */
-  def <=:(i:Int): RasterSource = localLessOrEqualRightAssociative(i)
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is less than or equal to the input
-   * double, else 0.
-   */
-  def localLessOrEqual(d: Double): RasterSource = self.mapOp(LessOrEqual(_, d))
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is less than or equal to the input
-   * double, else 0.
-   */
-  def localLessOrEqualRightAssociative(d: Double): RasterSource = self.mapOp(LessOrEqual(d, _))
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is less than or equal to the input
-   * double, else 0.
-   */
-  def <=(d:Double): RasterSource = localLessOrEqual(d)
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is less than or equal to the input
-   * double, else 0.
-   */
-  def <=:(d:Double): RasterSource = localLessOrEqualRightAssociative(d)
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell valued of the rasters are less than or equal to the next raster, else 0.
-   */
-  def localLessOrEqual(rs:RasterSource): RasterSource = self.combineOp(rs)(LessOrEqual(_,_))
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell valued of the rasters are less than or equal to the next raster, else 0.
-   */
-  def <=(rs:RasterSource): RasterSource = localLessOrEqual(rs)
 }
 
 trait LessOrEqualMethods { self: Tile =>

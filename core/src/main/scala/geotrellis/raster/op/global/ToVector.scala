@@ -16,7 +16,6 @@
 
 package geotrellis.raster.op.global
 
-import geotrellis._
 import geotrellis.raster._
 import geotrellis.feature._
 import geotrellis.feature.rasterize.Callback
@@ -26,111 +25,108 @@ import com.vividsolutions.jts.geom
 
 import scala.collection.mutable
 
-case class ToVector(r: Op[Tile],
-                    extent: Op[Extent],
-                    regionConnectivity: Connectivity = RegionGroupOptions.default.connectivity)
-    extends Operation[List[PolygonFeature[Int]]] {
-  def _run() = runAsync('init :: r :: extent :: Nil)
+object ToVector {
+  def apply(
+    tile: Tile, 
+    extent: Extent,
+    regionConnectivity: Connectivity = RegionGroupOptions.default.connectivity
+  ): List[PolygonFeature[Int]] = {
+    class ToVectorCallback(val polyizer: Polygonizer,
+      val r: Tile,
+      val v: Int) extends Callback {
+      val innerStarts = mutable.Map[Int, (Int, Int)]()
 
-  class ToVectorCallback(val polyizer: Polygonizer,
-                         val r: Tile,
-                         val v: Int) extends Callback {
-    val innerStarts = mutable.Map[Int, (Int, Int)]()
+      def linearRings =
+        for(k <- innerStarts.keys) yield {
+          polyizer.getLinearRing(k, innerStarts(k))
+        }
 
-    def linearRings = 
-      for(k <- innerStarts.keys) yield {
-        polyizer.getLinearRing(k, innerStarts(k))
-      }
-
-    def apply(col: Int, row: Int) = {
-      val innerV = r.get(col, row)
-      if(innerV != v) {
-        if(innerStarts.contains(innerV)) {
-          val (pcol, prow) = innerStarts(innerV)
-          if(col < pcol || ((col == pcol) && row < prow)) {
+      def apply(col: Int, row: Int) = {
+        val innerV = r.get(col, row)
+        if(innerV != v) {
+          if(innerStarts.contains(innerV)) {
+            val (pcol, prow) = innerStarts(innerV)
+            if(col < pcol || ((col == pcol) && row < prow)) {
+              innerStarts(innerV) = (col, row)
+            }
+          } else {
             innerStarts(innerV) = (col, row)
           }
-        } else {
-          innerStarts(innerV) = (col, row)
         }
       }
     }
-  }
 
-  val nextSteps: Steps = {
-    case 'init :: (r: Tile) :: (extent: Extent) :: Nil => 
-      val regionGroupOptions = 
-        RegionGroupOptions(
-          connectivity = regionConnectivity,
-          ignoreNoData = false
-        )
-      runAsync('regioned :: RegionGroup(r, regionGroupOptions) :: extent :: Nil)
+    val regionGroupOptions =
+      RegionGroupOptions(
+        connectivity = regionConnectivity,
+        ignoreNoData = false
+      )
+    val rgr = RegionGroup(tile, regionGroupOptions)
 
-    case 'regioned :: (rgr: RegionGroupResult) :: (extent: Extent) :: Nil =>
-      val r = rgr.raster
-      val regionMap = rgr.regionMap
-      val rasterExtent = RasterExtent(extent, r.cols, r.rows)
-      val polyizer = new Polygonizer(r, rasterExtent)
+    val r = rgr.raster
+    val regionMap = rgr.regionMap
+    val rasterExtent = RasterExtent(extent, r.cols, r.rows)
+    val polyizer = new Polygonizer(r, rasterExtent)
 
-      val processedValues = mutable.Set[Int]()
-      val polygons = mutable.Set[PolygonFeature[Int]]()
-      val jtsFactory = new geom.GeometryFactory()
+    val processedValues = mutable.Set[Int]()
+    val polygons = mutable.Set[PolygonFeature[Int]]()
+    val jtsFactory = new geom.GeometryFactory()
 
-      var col = 0
-      while(col < r.cols) {
-        var row = 0
-        while(row < r.rows) {
-          val v = r.get(col, row)
-          if(isData(regionMap(v))) {
-            if(!processedValues.contains(v)) {
-              val shell = {
-                val lr = polyizer.getLinearRing(v, (col, row))
-                if(!lr.isValid) {
-                  val coords: Array[(Double, Double)] = lr.getCoordinates.map { coord => 
-                    // Need to round decimal places or else JTS invents self-intersections
-                    val x = BigDecimal(coord.x).setScale(12, BigDecimal.RoundingMode.HALF_UP).toDouble
-                    val y = BigDecimal(coord.y).setScale(12, BigDecimal.RoundingMode.HALF_UP).toDouble
-                    (x, y) 
-                  }
-                  val coordsToLastIndex = coords.zipWithIndex.toMap
-                  var i = 1
-                  val len = coords.size
-                  val adjusted = mutable.ListBuffer[(Double, Double)](coords(0))
-                  while(i < len) {
-                    val p = coords(i)
-                    // Jump to the index of last occurance of this point to remove intersection.
-                    i = coordsToLastIndex(p) 
-                    adjusted += p
-                    i += 1
-                  }
-                  val l = jtsFactory.createLinearRing(adjusted.map { case (x, y) => new geom.Coordinate(x, y) }.toArray)
-                  l
-                } else { lr }
-              }
-
-              val shellPoly = PolygonFeature(
-                Polygon(shell),
-                rgr.regionMap(v)
-              )
-
-              val callback = new ToVectorCallback(polyizer, r, v)
-
-              PolygonRasterizer.foreachCellByPolygon(shellPoly.geom, rasterExtent)(callback)
-
-              polygons += PolygonFeature(
-                Polygon(Line(shell), callback.linearRings.map(Line.apply).toSet),
-                rgr.regionMap(v)
-              )
-
-              processedValues += v
+    var col = 0
+    while(col < r.cols) {
+      var row = 0
+      while(row < r.rows) {
+        val v = r.get(col, row)
+        if(isData(regionMap(v))) {
+          if(!processedValues.contains(v)) {
+            val shell = {
+              val lr = polyizer.getLinearRing(v, (col, row))
+              if(!lr.isValid) {
+                val coords: Array[(Double, Double)] = lr.getCoordinates.map { coord =>
+                  // Need to round decimal places or else JTS invents self-intersections
+                  val x = BigDecimal(coord.x).setScale(12, BigDecimal.RoundingMode.HALF_UP).toDouble
+                  val y = BigDecimal(coord.y).setScale(12, BigDecimal.RoundingMode.HALF_UP).toDouble
+                  (x, y)
+                }
+                val coordsToLastIndex = coords.zipWithIndex.toMap
+                var i = 1
+                val len = coords.size
+                val adjusted = mutable.ListBuffer[(Double, Double)](coords(0))
+                while(i < len) {
+                  val p = coords(i)
+                  // Jump to the index of last occurance of this point to remove intersection.
+                  i = coordsToLastIndex(p)
+                  adjusted += p
+                  i += 1
+                }
+                val l = jtsFactory.createLinearRing(adjusted.map { case (x, y) => new geom.Coordinate(x, y) }.toArray)
+                l
+              } else { lr }
             }
-          }
-          row += 1
-        }
-        col += 1
-      }
 
-      Result(polygons.toList)
+            val shellPoly = PolygonFeature(
+              Polygon(shell),
+              rgr.regionMap(v)
+            )
+
+            val callback = new ToVectorCallback(polyizer, r, v)
+
+            PolygonRasterizer.foreachCellByPolygon(shellPoly.geom, rasterExtent)(callback)
+
+            polygons += PolygonFeature(
+              Polygon(Line(shell), callback.linearRings.map(Line.apply).toSet),
+              rgr.regionMap(v)
+            )
+
+            processedValues += v
+          }
+        }
+        row += 1
+      }
+      col += 1
+    }
+
+    polygons.toList
   }
 }
 

@@ -1,8 +1,7 @@
 package geotrellis.raster.op.global
 
-import geotrellis._
-import geotrellis.feature.Point
 import geotrellis.raster._
+import geotrellis.feature.Point
 
 import scalaxy.loops._
 

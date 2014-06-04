@@ -16,9 +16,7 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
 
 /**
  * Xor's cell values of rasters or Int values.
@@ -36,23 +34,6 @@ object Xor extends LocalTileBinaryOp {
   def combine(z1:Double,z2:Double) = 
     if(isNoData(z1) || isNoData(z2)) Double.NaN
     else i2d(d2i(z1) ^ d2i(z2))
-}
-
-trait XorOpMethods[+Repr <: RasterSource] { self: Repr =>
-  /** Xor a constant Int value to each cell. */
-  def localXor(i: Int): RasterSource = self.mapOp(Xor(_, i))
-  /** Xor a constant Int value to each cell. */
-  def ^(i:Int): RasterSource = localXor(i)
-  /** Xor a constant Int value to each cell. */
-  def ^:(i:Int): RasterSource = localXor(i)
-  /** Xor the values of each cell in each raster.  */
-  def localXor(rs:RasterSource): RasterSource = self.combineOp(rs)(Xor(_,_))
-  /** Xor the values of each cell in each raster. */
-  def ^(rs:RasterSource): RasterSource = localXor(rs)
-  /** Xor the values of each cell in each raster. */
-  def localXor(rss:Seq[RasterSource]): RasterSource = self.combineOp(rss)(Xor(_))
-  /** Xor the values of each cell in each raster. */
-  def ^(rss:Seq[RasterSource]): RasterSource = localXor(rss)
 }
 
 trait XorMethods { self: Tile =>

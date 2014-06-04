@@ -16,9 +16,7 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
 
 import scalaxy.loops._
 

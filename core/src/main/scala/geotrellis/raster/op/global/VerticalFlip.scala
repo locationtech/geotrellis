@@ -28,8 +28,8 @@ import geotrellis.raster._
  *          If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
  *          the data values will be rounded to integers.
  */
-case class VerticalFlip(r: Op[Tile]) extends Op1(r) ({
-  r =>
+object VerticalFlip {
+  def apply(r: Tile): Tile = {
     val (cols, rows) = r.dimensions
     val data = r.toArray
     val data2 = Array.ofDim[Int](data.size)
@@ -46,5 +46,6 @@ case class VerticalFlip(r: Op[Tile]) extends Op1(r) ({
       }
       y += 1
     }
-    Result(ArrayTile(data2, cols, rows))
-})
+    ArrayTile(data2, cols, rows)
+  }
+}

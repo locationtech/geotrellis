@@ -16,9 +16,7 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
 
 import scalaxy.loops._
 import scala.collection.mutable
@@ -111,24 +109,6 @@ object Minority extends Serializable {
       tile
     }
   }
-}
-
-trait MinorityOpMethods[+Repr <: RasterSource] { self: Repr =>
-  /** Assigns to each cell the value within the given rasters that is the least numerous. */
-  def localMinority(rss: Seq[RasterSource]): RasterSource = 
-    combine(rss, "Minority")(Minority(_))
-
-  /** Assigns to each cell the value within the given rasters that is the least numerous. */
-  def localMinority(rss: RasterSource*)(implicit d: DI): RasterSource = 
-    localMinority(rss)
-
-  /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
-  def localMinority(n: Int, rss: Seq[RasterSource]): RasterSource = 
-    combine(rss, "Minority")(Minority(n, _))
-
-  /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
-  def localMinority(n: Int, rss: RasterSource*)(implicit d: DI): RasterSource = 
-    localMinority(n, rss)
 }
 
 trait MinorityMethods { self: Tile =>

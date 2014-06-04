@@ -16,9 +16,7 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.process._
 
 /**
  * Maps values to 1 if the are NoData values, otherwise 0.

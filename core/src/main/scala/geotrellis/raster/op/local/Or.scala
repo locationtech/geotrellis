@@ -16,9 +16,7 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
 
 /**
  * Or's cell values of rasters or Int values.
@@ -36,23 +34,6 @@ object Or extends LocalTileBinaryOp {
   def combine(z1:Double,z2:Double) =
     if (isNoData(z1) || isNoData(z2)) Double.NaN
     else i2d(d2i(z1) | d2i(z2))
-}
-
-trait OrOpMethods[+Repr <: RasterSource] { self: Repr =>
-  /** Or a constant Int value to each cell. */
-  def localOr(i: Int): RasterSource = self.mapOp(Or(_, i))
-  /** Or a constant Int value to each cell. */
-  def |(i:Int): RasterSource = localOr(i)
-  /** Or a constant Int value to each cell. */
-  def |:(i:Int): RasterSource = localOr(i)
-  /** Or the values of each cell in each raster.  */
-  def localOr(rs:RasterSource): RasterSource = self.combineOp(rs)(Or(_,_))
-  /** Or the values of each cell in each raster. */
-  def |(rs:RasterSource): RasterSource = localOr(rs)
-  /** Or the values of each cell in each raster.  */
-  def localOr(rss:Seq[RasterSource]): RasterSource = self.combineOp(rss)(Or(_))
-  /** Or the values of each cell in each raster. */
-  def |(rss:Seq[RasterSource]): RasterSource = localOr(rss)
 }
 
 trait OrMethods { self: Tile =>

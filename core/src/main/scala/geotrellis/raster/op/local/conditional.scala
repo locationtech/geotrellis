@@ -16,9 +16,7 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
 
 /**
  * Maps all cells matching `cond` to Int `trueValue`.
@@ -78,52 +76,6 @@ object IfCell extends Serializable {
     r1.dualCombine(r2) { (z1,z2) => if(cond(i2d(z1),i2d(z2))) d2i(trueValue) else d2i(falseValue) }
                        { (z1,z2) => if (cond(z1, z2)) trueValue else falseValue }
 }
-
-
-trait ConditionalOpMethods[+Repr <: RasterSource] { self: Repr =>
-  /** Maps all cells matching `cond` to Int `trueValue`.*/
-  def localIf(cond:Int => Boolean,trueValue:Int): RasterSource =
-    map(IfCell(_,cond,trueValue), "IfCell")
-
-  /** Maps all cells matching `cond` to Double `trueValue`.*/
-  def localIf(cond:Double => Boolean,trueValue:Double): RasterSource =
-    map(IfCell(_,cond,trueValue), "IfCell")
-
-  /** Set all values of output raster to one value or another based on whether a
-   * condition is true or false.  */
-  def localIf(cond:Int => Boolean,trueValue:Int,falseValue:Int): RasterSource =
-    map(IfCell(_,cond,trueValue,falseValue), "IfCell")
-
-  /** Set all values of output raster to one value or another based on whether a
-   * condition is true or false for Double values.  */
-  def localIf(cond:Double => Boolean,trueValue:Double,falseValue:Double): RasterSource =
-    map(IfCell(_,cond,trueValue,falseValue), "IfCell")
-
-  /** Given a condition over two rasters, set the value of each cell in the output
-   * to a specified value if the condition is true given the corresponding values in
-   * each of the two input rasters. */
-  def localIf(rs:RasterSource,cond:(Int,Int)=>Boolean,trueValue:Int): RasterSource =
-    combine(rs, "BinaryIfCell")(IfCell(_,_,cond,trueValue))
-
-  /** Given a Double condition over two rasters, set the value of each cell in the output
-   * to a specified value if the condition is true given the corresponding values in
-   * each of the two input rasters. */
-  def localIf(rs:RasterSource,cond:(Double,Double)=>Boolean,trueValue:Double): RasterSource =
-    combine(rs, "BinaryIfCell")(IfCell(_,_,cond,trueValue))
-
-  /** Given a condition over two rasters, set the value of each cell in the output
-   * to a specified true or false value after testing the specified condition on
-   * the corresponding values in each of the two input rasters.*/
-  def localIf(rs:RasterSource,cond:(Int,Int)=>Boolean,trueValue:Int,falseValue:Int): RasterSource =
-    combine(rs, "BinaryIfElseCell")(IfCell(_,_,cond,trueValue,falseValue))
-
-  /** Given a Double condition over two rasters, set the value of each cell in the output
-   * to a specified true or false value after testing the specified condition on
-   * the corresponding values in each of the two input rasters.*/
-  def localIf(rs:RasterSource,cond:(Double,Double)=>Boolean,trueValue:Double,falseValue:Double): RasterSource =
-    combine(rs, "BinaryIfElseCell")(IfCell(_,_,cond,trueValue,falseValue))
-}
-
 
 trait ConditionalMethods {self: Tile =>
   def localIf(cond:Int => Boolean,trueValue:Int): Tile =

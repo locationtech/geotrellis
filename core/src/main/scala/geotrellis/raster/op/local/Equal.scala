@@ -16,9 +16,7 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
 
 /**
  * Determines if values are equal. Sets to 1 if true, else 0.
@@ -36,55 +34,6 @@ object Equal extends LocalTileComparatorOp {
         else false
       }
     }
-}
-
-trait EqualOpMethods[+Repr <: RasterSource] { self: Repr =>
-  /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is equal to the input
-   * integer, else 0.
-   */
-  def localEqual(i: Int): RasterSource = self.mapOp(Equal(_, i))
-  /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is equal to the input
-   * integer, else 0.
-   */
-  def ===(i:Int): RasterSource = localEqual(i)
-  /**
-   * Returns a Tile with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is equal to the input
-   * integer, else 0.
-   */
-  def ===:(i:Int): RasterSource = localEqual(i)
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is equal to the input
-   * double, else 0.
-   */
-  def localEqual(d: Double): RasterSource = self.mapOp(Equal(_, d))
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is equal to the input
-   * double, else 0.
-   */
-  def ===(d:Double): RasterSource = localEqual(d)
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell value of the input raster is equal to the input
-   * double, else 0.
-   */
-  def ===:(d:Double): RasterSource = localEqual(d)
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell valued of the rasters are equal, else 0.
-   */
-  def localEqual(rs:RasterSource): RasterSource = self.combineOp(rs)(Equal(_,_))
-  /**
-   * Returns a Raster with data of TypeBit, where cell values equal 1 if
-   * the corresponding cell valued of the rasters are equal, else 0.
-   */
-  def ===(rs:RasterSource): RasterSource = localEqual(rs)
 }
 
 trait EqualMethods {self: Tile =>

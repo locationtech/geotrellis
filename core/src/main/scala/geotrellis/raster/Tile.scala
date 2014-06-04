@@ -83,6 +83,31 @@ trait Tile extends Raster with op.local.LocalMethods {
     mapIfSet(z => ( ((z - oldMin) * dnew) / dold ) + newMin)
   }
 
+  /**
+   * Normalizes the values of this raster, given the current min and max, to a new min and max.
+   * 
+   *   @param oldMin    Old mininum value
+   *   @param oldMax    Old maximum value
+   *   @param newMin     New minimum value
+   *   @param newMax     New maximum value
+   */
+  def normalize(oldMin: Double, oldMax: Double, newMin: Double, newMax: Double): Tile = {
+    val dnew = newMax - newMin
+    val dold = oldMax - oldMin
+    if(dold <= 0 || dnew <= 0) { sys.error(s"Invalid parameters: $oldMin, $oldMax, $newMin, $newMax") }
+    mapIfSetDouble(z => ( ((z - oldMin) * dnew) / dold ) + newMin)
+  }
+
+  def rescale(newMin: Int, newMax: Int) = {
+    val (min, max) = findMinMax
+    r.normalize(min, max, newMin, newMax)
+  }
+
+  def rescale(newMin: Double, newMax: Double) = {
+    val (min, max) = findMinMaxDouble
+    r.normalize(min, max, newMin, newMax)
+  }
+
   def warp(source: Extent, target: RasterExtent): Tile
 
   def warp(source: Extent, target: Extent): Tile =
@@ -90,6 +115,51 @@ trait Tile extends Raster with op.local.LocalMethods {
 
   def warp(source: Extent, targetCols: Int, targetRows: Int): Tile =
     warp(source, RasterExtent(source, targetCols, targetRows))
+
+  def crop(extent: Extent): Tile = 
+    CroppedTile(this, extent)
+
+  def downsample(newCols: Int, newRows: Int)(f: CellSet => Int): Tile = {
+    val colsPerBlock = math.ceil(r.cols / newCols.toDouble).toInt
+    val rowsPerBlock = math.ceil(r.rows / newRows.toDouble).toInt
+    
+    val tile = ArrayTile.empty(r.cellType, newCols, newRows)
+
+    val cellSet: CellSet { def focusOn(col: Int, row: Int): Unit } = 
+      new CellSet {
+        private var focusCol = 0
+        private var focusRow = 0
+
+        def focusOn(col: Int, row: Int) = {
+          focusCol = col
+          focusRow = row
+        }
+        
+        def foreach(f: (Int, Int)=>Unit): Unit = {
+          var col = 0
+          while(col < colsPerBlock) {
+            var row = 0
+            while(row < rowsPerBlock) {
+              f(focusCol * colsPerBlock + col, focusRow * rowsPerBlock + row)
+              row += 1
+            }
+            col += 1
+          }
+        }
+    }
+
+    var col = 0
+    while(col < newCols) {
+      var row = 0
+      while(row < newRows) {
+        cellSet.focusOn(col, row)
+        tile.set(col, row, f(cellSet))
+        row += 1
+      }
+      col += 1
+    }
+    tile
+  }
 
   /**
    * Return tuple of highest and lowest value in raster.

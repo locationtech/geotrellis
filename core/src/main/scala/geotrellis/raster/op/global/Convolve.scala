@@ -16,10 +16,8 @@
 
 package geotrellis.raster.op.global
 
-import geotrellis._
 import geotrellis.raster._
 import geotrellis.feature.Point
-import geotrellis.feature.op._
 
 import scalaxy.loops._
 
@@ -28,27 +26,27 @@ import scalaxy.loops._
  *
  * @param      r       Tile to convolve.
  * @param      k       Kernel that represents the convolution filter.
- * @param      tns     TileNeighbors that describe the neighboring tiles.
  *
  * @note               Convolve does not currently support Double raster data.
  *                     If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
  *                     the data values will be rounded to integers.
  */
-case class Convolve(r: Op[Tile], k: Op[Kernel]) extends Op2(r, k)({
-  (r, kernel) => 
-    val cols = r.cols
-    val rows = r.rows
+object Convolve {
+  def apply(t: Tile, kernel: Kernel): Tile = {
+    val cols = t.cols
+    val rows = t.rows
 
     val convolver = new Convolver(cols, rows, kernel)
 
     for(row <- 0 until rows optimized) {
       for(col <- 0 until cols optimized) {
-        val z = r.get(col, row)
+        val z = t.get(col, row)
         if (isData(z)) {
           convolver.stampKernel(col, row, z)
         }
       }
     }
 
-    Result(convolver.result)
-})
+    convolver.result
+  }
+}

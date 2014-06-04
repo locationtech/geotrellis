@@ -16,6 +16,8 @@
 
 package geotrellis.raster.render
 
+import geotrellis.raster.statistics.Histogram
+
 /**
   * ColorBreaks describes a way to render a raster into a colored image.
   *
@@ -82,5 +84,10 @@ object ColorBreaks {
     } else {
       new ColorBreaks(limits, colors)
     }
+  }
+
+  def apply(histogram: Histogram, colors: Array[Int]): ColorBreaks = {
+    val limits = histogram.getQuantileBreaks(colors.length)
+    assign(limits, colors)
   }
 }

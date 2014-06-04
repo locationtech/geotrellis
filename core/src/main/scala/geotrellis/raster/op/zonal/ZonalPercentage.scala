@@ -16,7 +16,6 @@
 
 package geotrellis.raster.op.zonal
 
-import geotrellis._
 import geotrellis.raster._
 
 import scala.collection.mutable
@@ -31,16 +30,15 @@ import scalaxy.loops._
  * Percentages are integer values from 0 - 100.
  * 
  * @note    ZonalPercentage does not currently support Double raster data.
- *          If you use a Raster with a Double CellType (TypeFloat,TypeDouble)
+ *          If you use a Raster with a Double CellType (TypeFloat, TypeDouble)
  *          the data values will be rounded to integers.
  */
-case class ZonalPercentage(r: Op[Tile], zones: Op[Tile]) 
-     extends Op2(r, zones) ({
-  (r, zones) => 
-    val zonesToValueCounts = mutable.Map[Int,mutable.Map[Int,Int]]()       
-    val zoneTotals = mutable.Map[Int,Int]()
+case class ZonalPercentage {
+  def apply(r: Tile, zones: Tile): Tile = {
+    val zonesToValueCounts = mutable.Map[Int, mutable.Map[Int, Int]]()       
+    val zoneTotals = mutable.Map[Int, Int]()
 
-    val (cols,rows) = (r.cols,r.rows)
+    val (cols, rows) = (r.cols, r.rows)
     if(r.cols != zones.cols ||
        r.rows != zones.rows) {
       sys.error(s"The zone raster is not the same dimensions as the data raster.")
@@ -48,11 +46,11 @@ case class ZonalPercentage(r: Op[Tile], zones: Op[Tile])
 
     for (row <- 0 until rows optimized) {
       for (col <- 0 until cols optimized) {
-        val value = r.get(col,row)
-        val zone = zones.get(col,row)
+        val value = r.get(col, row)
+        val zone = zones.get(col, row)
 
         if(!zonesToValueCounts.contains(zone)) { 
-          zonesToValueCounts(zone) = mutable.Map[Int,Int]()
+          zonesToValueCounts(zone) = mutable.Map[Int, Int]()
           zoneTotals(zone) = 0
         }
         zoneTotals(zone) += 1
@@ -65,17 +63,18 @@ case class ZonalPercentage(r: Op[Tile], zones: Op[Tile])
       }
     }
 
-    val tile = IntArrayTile.empty(cols,rows)
+    val tile = IntArrayTile.empty(cols, rows)
 
     for (row <- 0 until rows optimized) {
       for (col <- 0 until cols optimized) {
-        val v = r.get(col,row)
-        val z = zones.get(col,row)
+        val v = r.get(col, row)
+        val z = zones.get(col, row)
         val count = zonesToValueCounts(z)(v)
         val total = zoneTotals(z)
-        tile.set(col,row,math.round((count/total.toDouble)*100).toInt)
+        tile.set(col, row, math.round((count / total.toDouble) * 100).toInt)
       }
     }
 
-    Result(tile)
-})
+    tile
+  }
+}

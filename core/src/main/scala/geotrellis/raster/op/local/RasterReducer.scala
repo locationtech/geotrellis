@@ -16,7 +16,6 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
 import geotrellis.raster._
 
 import scala.annotation.tailrec

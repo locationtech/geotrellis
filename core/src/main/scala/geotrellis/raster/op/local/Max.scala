@@ -16,9 +16,7 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
 
 /**
  * Gets maximum values.
@@ -34,17 +32,6 @@ object Max extends LocalTileBinaryOp {
   def combine(z1:Double,z2:Double) =
     if (isNoData(z1) || isNoData(z2)) Double.NaN
     else math.max(z1,z2)
-}
-
-trait MaxOpMethods[+Repr <: RasterSource] { self: Repr =>
-  /** Max a constant Int value to each cell. */
-  def localMax(i: Int): RasterSource = self.mapOp(Max(_, i))
-  /** Max a constant Double value to each cell. */
-  def localMax(d: Double): RasterSource = self.mapOp(Max(_, d))
-  /** Max the values of each cell in each raster.  */
-  def localMax(rs:RasterSource): RasterSource = self.combineOp(rs)(Max(_,_))
-  /** Max the values of each cell in each raster.  */
-  def localMax(rss:Seq[RasterSource]): RasterSource = self.combineOp(rss)(Max(_))
 }
 
 trait MaxMethods { self: Tile =>

@@ -16,9 +16,7 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
 
 /**
  * Operation to And values.
@@ -36,23 +34,6 @@ object And extends LocalTileBinaryOp {
   def combine(z1:Double,z2:Double) =
     if (isNoData(z1) || isNoData(z2)) Double.NaN
     else i2d(d2i(z1) & d2i(z2))
-}
-
-trait AndOpMethods[+Repr <: RasterSource] { self: Repr =>
-  /** And a constant Int value to each cell. */
-  def localAnd(i: Int): RasterSource = self.mapOp(And(_, i))
-  /** And a constant Int value to each cell. */
-  def &(i:Int): RasterSource = localAnd(i)
-  /** And a constant Int value to each cell. */
-  def &:(i:Int): RasterSource = localAnd(i)
-  /** And the values of each cell in each raster.  */
-  def localAnd(rs:RasterSource): RasterSource = self.combineOp(rs)(And(_,_))
-  /** And the values of each cell in each raster. */
-  def &(rs:RasterSource): RasterSource = localAnd(rs)
-  /** And the values of each cell in each raster.  */
-  def localAnd(rss:Seq[RasterSource]): RasterSource = self.combineOp(rss)(And(_))
-  /** And the values of each cell in each raster. */
-  def &(rss:Seq[RasterSource]): RasterSource = localAnd(rss)
 }
 
 trait AndMethods { self: Tile =>

@@ -16,9 +16,7 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
 
 /**
  * Divides values.
@@ -35,33 +33,6 @@ object Divide extends LocalTileBinaryOp {
   def combine(z1:Double,z2:Double) =
     if (z2 == 0) Double.NaN
     else z1 / z2
-}
-
-trait DivideOpMethods[+Repr <: RasterSource] { self: Repr =>
-  /** Divide each value of the raster by a constant value.*/
-  def localDivide(i: Int): RasterSource = self.mapOp(Divide(_, i))
-  /** Divide each value of the raster by a constant value.*/
-  def /(i:Int) = localDivide(i)
-  /** Divide a constant value by each cell value.*/
-  def localDivideValue(i:Int): RasterSource = self.mapOp(Divide(i,_))
-  /** Divide a constant value by each cell value.*/
-  def /:(i:Int): RasterSource = localDivideValue(i)
-  /** Divide each value of a raster by a double constant value.*/
-  def localDivide(d: Double): RasterSource = self.mapOp(Divide(_, d))
-  /** Divide each value of a raster by a double constant value.*/
-  def /(d:Double): RasterSource = localDivide(d)
-  /** Divide a double constant value by each cell value.*/
-  def localDivideValue(d:Double): RasterSource = self.mapOp(Divide(d,_))
-  /** Divide a double constant value by each cell value.*/
-  def /:(d:Double): RasterSource = localDivideValue(d)
-  /** Divide the values of each cell in each raster. */
-  def localDivide(rs:RasterSource): RasterSource = self.combineOp(rs)(Divide(_,_))
-  /** Divide the values of each cell in each raster. */
-  def /(rs:RasterSource): RasterSource = localDivide(rs)
-  /** Divide the values of each cell in each raster. */
-  def localDivide(rss:Seq[RasterSource]): RasterSource = self.combineOp(rss)(Divide(_))
-  /** Divide the values of each cell in each raster. */
-  def /(rss:Seq[RasterSource]): RasterSource = localDivide(rss)
 }
 
 trait DivideMethods { self: Tile =>
