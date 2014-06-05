@@ -105,7 +105,3 @@
     
     - name: Update EC2 Hosts Inventory
       local_action: template src=templates/cluster_inventory.j2 dest=./hosts
-
-
-#Install JVM and other prep stuff
-- include: setup-common.yml
