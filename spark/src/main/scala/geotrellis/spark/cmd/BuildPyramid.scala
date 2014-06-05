@@ -32,12 +32,14 @@ import geotrellis.spark.rdd.SplitGenerator
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.HdfsUtils
 
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.MapFile
 import org.apache.hadoop.io.SequenceFile
 import org.apache.spark.Logging
 import org.apache.spark.SerializableWritable
 import org.apache.spark.SparkContext._
+import org.apache.spark.SparkContext
 
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Required
@@ -51,7 +53,10 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
     val sc = args.sparkContext("BuildPyramid")
     val pyramid = new Path(args.pyramid)
     val conf = args.hadoopConf
-
+    build(sc, pyramid, conf)
+  }
+  
+  def build(sc: SparkContext, pyramid: Path, conf: Configuration) {
     // fill metadata with info on all higher levels
     val meta = fillMetadata(PyramidMetadata(pyramid, conf))
 
@@ -197,7 +202,7 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
         // TODO - use spire
         for (py <- 0 until chPtTs) {
           for (px <- 0 until chPtTs) {
-            
+
             // occasionally we may get chPx,chPy wrong (needs to be investigated why)
             // this guards the ArrayOutOfBoundsException
             val x = chPx + px

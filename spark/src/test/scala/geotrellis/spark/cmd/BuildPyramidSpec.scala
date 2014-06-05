@@ -1,32 +1,53 @@
-package geotrellis.spark.cmd
-import org.apache.hadoop.fs.Path
-import org.scalatest.FunSpec
-import geotrellis.spark.TestEnvironment
-import org.scalatest.matchers.ShouldMatchers
-import org.apache.hadoop.fs.FileUtil
-import geotrellis.spark.metadata.PyramidMetadata
-import geotrellis.spark.rdd.TileIdPartitioner
-import geotrellis.spark.storage.RasterReader
-import geotrellis.spark.tiling.TmsTiling
-import org.apache.hadoop.io.SequenceFile
+/*
+ * Copyright (c) 2014 DigitalGlobe.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-class BuildPyramidSpec extends FunSpec with TestEnvironment with RasterVerifyMethods {
+package geotrellis.spark.cmd
+
+import geotrellis.spark.metadata.PyramidMetadata
+import geotrellis.spark.SharedSparkContext
+import geotrellis.spark.TestEnvironment
+import org.apache.hadoop.fs.FileUtil
+import org.apache.hadoop.fs.Path
+import org.scalatest.Suite
+import org.scalatest.FunSpec
+
+trait BuildPyramidSetup extends TestEnvironment with SharedSparkContext { self: Suite =>
+  val allOnesOrig = new Path(inputHome, "all-ones")
+  val allOnes = new Path(outputLocal, "all-ones")
+  
+  // delete may seem redundant with the "overwrite" flag in FileUtil.copy but 
+  // apparently it is not, since it throws an exception if it finds the directory pre-existing
+  localFS.delete(allOnes, true)
+  FileUtil.copy(localFS, allOnesOrig, localFS, allOnes.getParent(),
+    false /* deleteSource */ ,
+    true /* overwrite */ ,
+    conf)
+
+  // lazy so runs only after the BuildPyramid.build runs
+  lazy val meta = PyramidMetadata(allOnes, conf)
+  
+  override def beforeAll() {
+    super.beforeAll()
+    BuildPyramid.build(sc, allOnes, conf)
+  }
+}
+
+class BuildPyramidSpec extends FunSpec with RasterVerifyMethods with BuildPyramidSetup {
 
   describe("Build Pyramid") {
-    val allOnesOrig = new Path(inputHome, "all-ones")
-    val allOnes = new Path(outputLocal, "all-ones")
-
-    // copy over the all-ones base raster from the test directory
-    FileUtil.copy(localFS, allOnesOrig, localFS, allOnes.getParent(),
-      false /* deleteSource */ ,
-      true /* overwrite */ ,
-      conf)
-
-    // build the pyramid
-    val cmd = s"--pyramid ${allOnes.toString} --sparkMaster local"
-    BuildPyramid.main(cmd.split(' '))
-
-    val meta = PyramidMetadata(allOnes, conf)
 
     it("should create the correct metadata") {
 
