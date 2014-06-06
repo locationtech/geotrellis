@@ -1,6 +1,0 @@
-{% for host in groups['master'] %}
-ubuntu@{{ hostvars[host]['private_ip'] }}
-{% endfor %}
-{% for host in groups['workers'] %}
-ubuntu@{{ hostvars[host]['private_ip'] }}
-{% endfor %}

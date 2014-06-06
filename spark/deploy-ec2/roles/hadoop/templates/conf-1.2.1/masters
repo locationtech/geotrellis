@@ -1,3 +1,0 @@
-{% for host in groups['master'] %}
-ubuntu@{{ hostvars[host]['private_ip'] }}
-{% endfor %}
