@@ -35,7 +35,7 @@ export SPARK_MASTER_WEBUI_PORT=18080
 export SPARK_MASTER_PORT=7077
 export SPARK_WORKER_PORT=7078
 export SPARK_WORKER_WEBUI_PORT=18081
-export SPARK_WORKER_DIR=/var/run/spark/work
+export SPARK_WORKER_DIR=/tmp/spark/work
 export SPARK_LOG_DIR=/var/log/spark
 
 
