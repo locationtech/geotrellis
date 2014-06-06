@@ -241,9 +241,7 @@ class SparkIngest(hadoopConf: Configuration, sparkContext: SparkContext) extends
         .unzip
 
     val files = acceptedFiles.map(new Path(_))
-    logInfo(s"-- Accepted Files: $files")
     val meta = optMetas.flatten.reduceLeft(_.merge(_))
-    logInfo(s"-- GeoTiffMeta: $meta")
     IngestData(PyramidMetadata.fromGeoTiffMeta(meta), files)
   }
 
@@ -253,7 +251,6 @@ class SparkIngest(hadoopConf: Configuration, sparkContext: SparkContext) extends
     try {
       meta.writeToJobConf(hadoopConf)
       val newConf = HdfsUtils.putFilesInConf(files.mkString(","), hadoopConf)
-      logInfo("--- New Hadoop Conf: $newConf")
       val rdd = sparkContext.newAPIHadoopRDD(newConf, classOf[IngestInputFormat], classOf[Long], classOf[Raster])
 
       val broadcastedConf = sparkContext.broadcast(new SerializableWritable(newConf))
