@@ -1,8 +1,12 @@
 ---
+hadoop_namenode: {{master.tagged_instances[0].private_dns_name}}
 
 spark_master: {{master.tagged_instances[0].private_dns_name}}
 
-hadoop_namenode: {{master.tagged_instances[0].private_dns_name}}
+spark_workers:
+{% for host in workers.tagged_instances %}
+  - {{ host.private_ip }}
+{% endfor %}
 
 cluster_instance_ids:
 {% for host in master.tagged_instances %}
