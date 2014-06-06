@@ -4,5 +4,12 @@
 - apt: name=spark-master state=present force=yes
   sudo: yes
 
+- apt: name=zip state=present install_recommends=yes
+  sudo: yes
+
+#this is nice for development, where you might be building on master
+- template: src=push-spark-assembly.sh dest=~/push-spark-assembly.sh
+- file: path=~/push-spark-assembly.sh mode=755
+
 - service: name=spark-master state=started
   sudo: yes
