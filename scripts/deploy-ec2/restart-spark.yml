@@ -1,0 +1,17 @@
+---
+
+- name: Restart Spark Master
+  hosts: master
+  gather_facts: False
+
+  tasks:
+    - service: name=spark-master state=restarted
+      sudo: yes
+
+- name: Restart Spark Workers
+  hosts: workers
+  gather_facts: False
+
+  tasks:
+    - service: name=spark-worker state=restarted
+      sudo: yes

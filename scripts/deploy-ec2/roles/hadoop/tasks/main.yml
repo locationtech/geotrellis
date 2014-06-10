@@ -1,0 +1,17 @@
+---
+
+#Main tasks for hadoop master
+- apt: name=hadoop-hdfs state=present force=yes
+  sudo: yes
+
+- include_vars: group_vars/cluster.yml  
+
+- name: Upload Hadoop config
+  template: src=conf/{{ item }} dest=/etc/hadoop/conf
+  with_items:
+    - core-site.xml
+    - hdfs-site.xml
+    - hadoop-env.sh
+    - log4j.properties
+  sudo: yes
+  notify: Restart Hadoop
