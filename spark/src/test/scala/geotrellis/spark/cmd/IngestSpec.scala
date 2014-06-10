@@ -35,7 +35,7 @@ import java.awt.image.DataBuffer
 /*
  * Tests both local and spark ingest mode
  */
-class IngestSpec extends FunSpec with TestEnvironment with ShouldMatchers {
+class IngestSpec extends FunSpec with TestEnvironment with RasterVerifyMethods {
 
   // subdirectories under the test directory for each of the two modes
   val localTestOutput = new Path(outputLocal, "local")
@@ -70,7 +70,7 @@ class IngestSpec extends FunSpec with TestEnvironment with ShouldMatchers {
     it("should have its data files compressed") {
       verifyCompression(raster)
     }
-    
+
     it("should have its block size set correctly") {
       verifyBlockSize(raster)
     }
@@ -106,7 +106,7 @@ class IngestSpec extends FunSpec with TestEnvironment with ShouldMatchers {
     it("should have its data files compressed") {
       verifyCompression(raster)
     }
-    
+
     it("should have its block size set correctly") {
       verifyBlockSize(raster)
     }
@@ -123,30 +123,32 @@ class IngestSpec extends FunSpec with TestEnvironment with ShouldMatchers {
       Map("10" -> new RasterMetadata(PixelExtent(0, 0, 1243, 1243), TileExtent(915, 203, 917, 206))))
 
     actualMeta should be(expectedMeta)
-
   }
+}
 
-  private def verifyZoomLevelDirectory(raster: Path): Unit =
+trait RasterVerifyMethods extends ShouldMatchers { self: TestEnvironment =>
+  def verifyZoomLevelDirectory(raster: Path): Unit =
     localFS.exists(raster) should be(true)
 
-  private def verifyPartitions(raster: Path): Unit = {
+  def verifyPartitions(raster: Path): Unit = {
     val partitioner = TileIdPartitioner(raster, conf)
     partitioner.numPartitions should be(1)
   }
 
-  private def verifyTiles(raster: Path, meta: PyramidMetadata): Unit = {
+  def verifyTiles(raster: Path, meta: PyramidMetadata): Unit = {
+    val zoom = raster.getName()
     val reader = RasterReader(raster, conf)
     val actualTileIds = reader.map { case (tw, aw) => tw.get }.toList
-    val tileExtent = meta.metadataForBaseZoom.tileExtent
+    val tileExtent = meta.rasterMetadata(zoom).tileExtent
     val expectedTileIds = for {
       ty <- tileExtent.ymin to tileExtent.ymax
       tx <- tileExtent.xmin to tileExtent.xmax
-    } yield TmsTiling.tileId(tx, ty, meta.maxZoomLevel)
+    } yield TmsTiling.tileId(tx, ty, zoom.toInt)
     reader.close()
     actualTileIds should be(expectedTileIds)
   }
 
-  private def verifyCompression(raster: Path): Unit = {
+  def verifyCompression(raster: Path): Unit = {
     val dataFile = new Path(new Path(raster, "part-00000"), "data")
     val dataReader = new SequenceFile.Reader(localFS, dataFile, conf)
     val isCompressed = dataReader.isCompressed()
@@ -154,7 +156,7 @@ class IngestSpec extends FunSpec with TestEnvironment with ShouldMatchers {
     isCompressed should be(true)
   }
 
-  private def verifyBlockSize(raster: Path): Unit = {
+  def verifyBlockSize(raster: Path): Unit = {
     val expectedBlockSize = localFS.getDefaultBlockSize()
     val actualBlockSize = localFS.getFileStatus(raster).getBlockSize()
     actualBlockSize should be(expectedBlockSize)

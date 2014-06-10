@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+// spark hadoop env variable
+import scala.util.Properties
+
 import sbt._
 import sbt.Keys._
 
@@ -337,6 +340,12 @@ object GeotrellisBuild extends Build {
       .dependsOn(raster, testkit % "test")
       .dependsOn(geotools)
 
+  // using hadoop and spark version from environment was inspired by Spark itself
+  val DEFAULT_HADOOP_VERSION = "0.20.2-cdh3u4"
+  lazy val hadoopVersion = Properties.envOrElse("SPARK_HADOOP_VERSION", DEFAULT_HADOOP_VERSION)
+
+  val DEFAULT_SPARK_VERSION = "0.9.1"
+  lazy val sparkVersion = Properties.envOrElse("SPARK_VERSION", DEFAULT_SPARK_VERSION)
   lazy val sparkSettings =
     Seq(
       name := "geotrellis-spark",
@@ -348,12 +357,10 @@ object GeotrellisBuild extends Build {
           // http://itellity.wordpress.com/2013/05/27/xerces-parse-error-with-hadoop-or-solr-feature-httpapache-orgxmlfeaturesxinclude-is-not-recognized/
           "xerces" % "xercesImpl" % "2.9.1",
           "xalan" % "xalan" % "2.7.1",
-          "org.apache.spark" %% "spark-core" % "0.9.1" excludeAll (
+          "org.apache.spark" %% "spark-core" % sparkVersion excludeAll (
               ExclusionRule(organization = "org.apache.hadoop")),
-          "org.apache.hadoop" % "hadoop-client" % "1.2.1" excludeAll (
-              ExclusionRule(organization = "hsqldb")),
-          // "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4" excludeAll (
-          //     ExclusionRule(organization = "hsqldb")),
+           "org.apache.hadoop" % "hadoop-client" % hadoopVersion excludeAll (
+	       ExclusionRule(organization = "hsqldb")),
           "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0",
           "com.quantifind" %% "sumac" % "0.2.3",
           scalatest % "test",

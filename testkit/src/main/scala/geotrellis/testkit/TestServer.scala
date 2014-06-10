@@ -112,7 +112,7 @@ trait TestServer extends Suite with BeforeAndAfter with Matchers {
               isNoData(v1) should be (true)
             }
           }
-r
+
           if(math.abs(v1 - v2) >= threshold) {
             withClue(s"Failure at (${col}, ${row}) - V1: $v1  V2: $v2") {
               v1 should be (v2)

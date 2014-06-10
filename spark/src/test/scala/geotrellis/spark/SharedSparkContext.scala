@@ -15,6 +15,8 @@
  */
 
 package geotrellis.spark
+import geotrellis.spark.utils.SparkUtils
+
 import org.apache.spark.SparkContext
 import org.scalatest._
 import org.scalatest.BeforeAndAfterAll
@@ -30,9 +32,7 @@ trait SharedSparkContext extends BeforeAndAfterAll { self: Suite =>
 
   override def beforeAll() {
     System.setProperty("spark.master.port", "0")    
-    // we don't call the version in SparkUtils as that moves the jar file dependency around
-    // and that is not needed for local spark context
-    _sc = new SparkContext("local", self.suiteName)
+    _sc = SparkUtils.createSparkContext("local", self.suiteName)
     super.beforeAll()
   }
 

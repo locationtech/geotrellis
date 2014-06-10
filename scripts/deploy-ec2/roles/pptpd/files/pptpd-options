@@ -1,0 +1,85 @@
+###############################################################################
+# $Id$
+#
+# Sample Poptop PPP options file /etc/ppp/pptpd-options
+# Options used by PPP when a connection arrives from a client.
+# This file is pointed to by /etc/pptpd.conf option keyword.
+# Changes are effective on the next connection.  See "man pppd".
+#
+# You are expected to change this file to suit your system.  As
+# packaged, it requires PPP 2.4.2 and the kernel MPPE module.
+###############################################################################
+ms-dns 172.31.0.2
+
+# Authentication
+
+# Name of the local system for authentication purposes
+# (must match the second field in /etc/ppp/chap-secrets entries)
+name pptpd
+
+# Optional: domain name to use for authentication
+# domain mydomain.net
+
+# Strip the domain prefix from the username before authentication.
+# (applies if you use pppd with chapms-strip-domain patch)
+#chapms-strip-domain
+
+
+# Encryption
+# (There have been multiple versions of PPP with encryption support,
+# choose with of the following sections you will use.)
+
+
+# BSD licensed ppp-2.4.2 upstream with MPPE only, kernel module ppp_mppe.o
+# {{{
+refuse-pap
+refuse-chap
+refuse-mschap
+# Require the peer to authenticate itself using MS-CHAPv2 [Microsoft
+# Challenge Handshake Authentication Protocol, Version 2] authentication.
+require-mschap-v2
+# Require MPPE 128-bit encryption
+# (note that MPPE requires the use of MSCHAP-V2 during authentication)
+require-mppe-128
+# }}}
+
+
+
+
+# Network and Routing
+proxyarp
+
+# Normally pptpd passes the IP address to pppd, but if pptpd has been
+# given the delegate option in pptpd.conf or the --delegate command line
+# option, then pppd will use chap-secrets or radius to allocate the
+# client IP address.  The default local IP address used at the server
+# end is often the same as the address of the server.  To override this,
+# specify the local IP address here.
+# (you must not use this unless you have used the delegate option)
+#10.8.0.100
+
+# Debian: do not replace the default route
+nodefaultroute
+
+# Miscellaneous
+
+# Create a UUCP-style lock file for the pseudo-tty to ensure exclusive
+# access.
+lock
+
+# Disable BSD-Compress compression
+nobsdcomp
+
+# Disable Van Jacobson compression
+# (needed on some networks with Windows 9x/ME/XP clients, see posting to
+# poptop-server on 14th April 2005 by Pawel Pokrywka and followups,
+# http://marc.theaimsgroup.com/?t=111343175400006&r=1&w=2 )
+novj
+novjccomp
+
+# turn off logging to stderr, since this may be redirected to pptpd,
+# which may trigger a loopback
+nologfd
+
+# put plugins here
+# (putting them higher up may cause them to sent messages to the pty)
