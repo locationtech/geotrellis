@@ -18,6 +18,7 @@ package geotrellis.raster.op.focal
 
 import geotrellis._
 import geotrellis.raster._
+import geotrellis.engine._
 
 import scala.math._
 
@@ -29,66 +30,66 @@ import scala.math._
  * @param    tns     TileNeighbors that describe the neighboring tiles.
  *
  * @note            StandardDeviation does not currently support Double raster data inputs.
- *                  If you use a Tile with a Double CellType (TypeFloat,TypeDouble)
+ *                  If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
  *                  the data values will be rounded to integers.
  */
-case class StandardDeviation(r:Op[Tile],n:Op[Neighborhood],tns:Op[TileNeighbors]) extends FocalOp[Tile](r,n,tns)({
-  (r,n) => 
+case class StandardDeviation(r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors]) extends FocalOp[Tile](r, n, tns)({
+  (r, n) => 
     if(r.cellType.isFloatingPoint) {
       new CursorCalculation[Tile] with DoubleArrayTileResult {
-        var count:Int = 0
-        var sum:Double = 0
+        var count: Int = 0
+        var sum: Double = 0
 
-        def calc(r:Tile,c:Cursor) = {
-          c.removedCells.foreach { (x,y) => 
-            val v = r.getDouble(x,y)
+        def calc(r: Tile, c: Cursor) = {
+          c.removedCells.foreach { (x, y) => 
+            val v = r.getDouble(x, y)
             if(isData(v)) { count -= 1; sum -= v } 
           }
           
-          c.addedCells.foreach { (x,y) => 
-            val v = r.getDouble(x,y)
+          c.addedCells.foreach { (x, y) => 
+            val v = r.getDouble(x, y)
             if(isData(v)) { count += 1; sum += v }
           }
 
           val mean = sum / count.toDouble
           var squares = 0.0
 
-          c.allCells.foreach { (x,y) =>
-            var v = r.getDouble(x,y)
+          c.allCells.foreach { (x, y) =>
+            var v = r.getDouble(x, y)
             if(isData(v)) { 
-              squares += math.pow(v - mean,2)
+              squares += math.pow(v - mean, 2)
             }
           }
 
-          tile.setDouble(c.col,c.row,math.sqrt(squares / count.toDouble))
+          tile.setDouble(c.col, c.row, math.sqrt(squares / count.toDouble))
         }
       }
     } else {
       new CursorCalculation[Tile] with DoubleArrayTileResult {
-      var count:Int = 0
-      var sum:Int = 0
+      var count: Int = 0
+      var sum: Int = 0
 
-      def calc(r:Tile,c:Cursor) = {
-        c.removedCells.foreach { (x,y) => 
-          val v = r.get(x,y)
+      def calc(r: Tile, c: Cursor) = {
+        c.removedCells.foreach { (x, y) => 
+          val v = r.get(x, y)
           if(isData(v)) { count -= 1; sum -= v } 
         }
         
-        c.addedCells.foreach { (x,y) => 
-          val v = r.get(x,y)
+        c.addedCells.foreach { (x, y) => 
+          val v = r.get(x, y)
           if(isData(v)) { count += 1; sum += v }
         }
 
         val mean = sum / count.toDouble
         var squares = 0.0
 
-        c.allCells.foreach { (x,y) =>
-          var v = r.get(x,y)
+        c.allCells.foreach { (x, y) =>
+          var v = r.get(x, y)
           if(isData(v)) { 
-            squares += math.pow(v - mean,2)
+            squares += math.pow(v - mean, 2)
           }
         }
-        tile.setDouble(c.col,c.row,math.sqrt(squares / count.toDouble))
+        tile.setDouble(c.col, c.row, math.sqrt(squares / count.toDouble))
       }
     }
   }
@@ -96,5 +97,5 @@ case class StandardDeviation(r:Op[Tile],n:Op[Neighborhood],tns:Op[TileNeighbors]
 
 
 object StandardDeviation {
-  def apply(r:Op[Tile], n:Op[Neighborhood]) = new StandardDeviation(r,n,TileNeighbors.NONE)
+  def apply(r: Op[Tile], n: Op[Neighborhood]) = new StandardDeviation(r, n, TileNeighbors.NONE)
 }

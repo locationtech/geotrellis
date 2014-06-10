@@ -18,9 +18,7 @@ import geotrellis.raster.op.global.Viewshed
  */
 object ViewshedBenchmark extends BenchmarkRunner(classOf[ViewshedBenchmark])
 class  ViewshedBenchmark extends OperationBenchmark {
-  var r: Raster = _
-  var re: RasterExtent = _
-  var data: IntArrayRasterData = _
+  var r: Tile = _
 
   //@Param(Array("512","1024","2048","4096","8192"))
   var size:Int = 256
@@ -28,11 +26,7 @@ class  ViewshedBenchmark extends OperationBenchmark {
   override def setUp() {
     r = {
       val a = Array.ofDim[Int](size * size).map(a => Random.nextInt(255))
-      val e = Extent(0, 0, 10 * size, 10 * size)
-      re = RasterExtent(e, 10, 10, size, size)
-      data = IntArrayRasterData(a, size, size)
-
-      Raster(data, size, size)
+      IntArrayTile(a, size, size)
     }
   }
 

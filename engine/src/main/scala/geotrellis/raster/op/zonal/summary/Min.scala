@@ -17,8 +17,7 @@
 package geotrellis.raster.op.zonal.summary
 
 import geotrellis.raster._
-import geotrellis.source._
-import geotrellis.feature.rasterize._
+import geotrellis.raster.rasterize._
 
 object Min extends TileSummary[Int, Int, ValueSource[Int]] {
   def handlePartialTile(pt: PartialTileIntersection): Int = {

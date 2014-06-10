@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-package geotrellis.source
+package geotrellis.raster
 
-import geotrellis._
-import geotrellis.raster._
+import geotrellis.engine._
 import geotrellis.feature.Extent
-import geotrellis.process.LayerId
-import geotrellis.raster.TileLayout
+import geotrellis.engine.LayerId
 
-case class RasterDefinition(layerId:LayerId,
-                            rasterExtent:RasterExtent,
-                            tileLayout:TileLayout,
-                            cellType:CellType,
-                            catalogued:Boolean = true) {
+case class RasterDefinition(layerId: LayerId,
+                            rasterExtent: RasterExtent,
+                            tileLayout: TileLayout,
+                            cellType: CellType,
+                            catalogued: Boolean = true) {
   def isTiled = tileLayout.isTiled
 
   def withType(newType: CellType) =

@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.logic
+package geotrellis.engine.logic
 
-import geotrellis._
-import geotrellis.process._
+import geotrellis.engine._
 
 /**
  * Conditionally executes one of two operations; if the Boolean Operation evaluates true, the first

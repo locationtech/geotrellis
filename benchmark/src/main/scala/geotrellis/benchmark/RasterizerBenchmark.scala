@@ -17,12 +17,12 @@
 package geotrellis.benchmark
 
 import geotrellis._
-import geotrellis.process._
+import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.op._
 import geotrellis.feature._
 import geotrellis.feature.json._
-import geotrellis.feature.rasterize.polygon._
+import geotrellis.raster.rasterize.polygon._
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Param
@@ -37,7 +37,7 @@ object RasterizerBenchmark extends BenchmarkRunner(classOf[RasterizerBenchmark])
 class RasterizerBenchmark extends OperationBenchmark {
   var r: Raster = _
   var re: RasterExtent = _
-  var data: IntArrayRasterData = _
+  var tile: IntArrayTile = _
   var poly: feature.PolygonFeature[Int] = _
 
 //  @Param(Array("512","1024","2048","4096","8192"))
@@ -69,10 +69,10 @@ class RasterizerBenchmark extends OperationBenchmark {
   }
 
   def rasterize() {
-    feature.rasterize.Rasterizer.foreachCellByFeature(poly.geom, re)(
-      new feature.rasterize.Callback {
+    raster.rasterize.Rasterizer.foreachCellByFeature(poly.geom, re)(
+      new raster.rasterize.Callback {
         def apply(col: Int, row: Int) {
-          data.set(col,row,4)
+          tile.set(col,row,4)
         }
       })
   }
@@ -80,10 +80,10 @@ class RasterizerBenchmark extends OperationBenchmark {
   //Because of a refactor Callback is not getting a geom as a param, since it can close over it if it really wanted
   //this renders the following benchmark pointless, but lets preserve this file in case other cases emerge
   def rasterizeUsingValue() {
-    feature.rasterize.Rasterizer.foreachCellByFeature(poly.geom, re)(
-      new feature.rasterize.Callback {
+    raster.rasterize.Rasterizer.foreachCellByFeature(poly.geom, re)(
+      new raster.rasterize.Callback {
         def apply(col: Int, row: Int) {
-          data.set(col,row, poly.data)
+          tile.set(col,row, poly.data)
         }
       })
   }
@@ -94,17 +94,13 @@ class RasterizerBenchmark extends OperationBenchmark {
 
   def randomRasterN(n: Int) = {
     val a = Array.ofDim[Int](n*n).map(a => Random.nextInt(255))
-    val e = Extent(0,0,10*n,10*n)
-    re = RasterExtent(e, 10,10,n,n)
-    data = IntArrayRasterData(a, n, n)
-
-    Raster(data, n, n)
+    IntArrayTile(a, n, n)
   }
 
   def timeRasterizeTransitPoly(reps: Int) = run(reps)(rasterizeTransitPoly)
   def rasterizeTransitPoly = {
     var x = 0
-    PolygonRasterizer.foreachCellByPolygon(transitPoly, transitRe, true)(new geotrellis.feature.rasterize.Callback {
+    PolygonRasterizer.foreachCellByPolygon(transitPoly, transitRe, true)(new geotrellis.raster.rasterize.Callback {
       def apply(col: Int, row: Int) = x += (col + row)
     })
   }
@@ -112,7 +108,7 @@ class RasterizerBenchmark extends OperationBenchmark {
   def timeRasterizeTransitPolyNoHoles(reps: Int) = run(reps)(rasterizeTransitPolyNoHoles)
   def rasterizeTransitPolyNoHoles = {
     var x = 0
-    PolygonRasterizer.foreachCellByPolygon(transitPolyNoHoles, transitRe, true)(new geotrellis.feature.rasterize.Callback {
+    PolygonRasterizer.foreachCellByPolygon(transitPolyNoHoles, transitRe, true)(new geotrellis.raster.rasterize.Callback {
       def apply(col: Int, row: Int) = x += (col + row)
     })
   }

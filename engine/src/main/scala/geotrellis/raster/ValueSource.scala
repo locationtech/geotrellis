@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.source
+package geotrellis.raster
 
-import geotrellis._
+import geotrellis.engine._
 
 class ValueSource[+T](val element:Op[T]) extends ValueSourceLike[T, ValueSource[T]] {
   val elements = Literal(Seq(element))

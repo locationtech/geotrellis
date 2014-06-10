@@ -18,6 +18,8 @@ package geotrellis.raster.op.hydrology
 
 import geotrellis._
 import geotrellis.raster._
+import geotrellis.engine._
+
 import scala.math._
 
 object FlowDirection {
@@ -25,7 +27,7 @@ object FlowDirection {
   def flow(c: Int, r: Int, raster: Tile) = {
     val neighbors = getNeighbors(c, r, raster)
     val max = neighbors.values.max
-    neighbors.filter { case(_, v) => v == max }.keys.reduce(_+_)
+    neighbors.filter { case(_, v) => v == max }.keys.reduce(_ + _)
   }
   
   /** Produces a map of available immediate neighbors and their drop in elevation from the provided cell */
@@ -48,21 +50,21 @@ object FlowDirection {
     // coordinates of the 8 neighbours
     val map = 
       Map[Int, (Int, Int)](
-        ( 1,   (c+1, r)    ),
-        ( 2,   (c+1, r+1)  ),
-        ( 4,   (c, r+1)    ),
-        ( 8,   (c-1, r+1)  ),
-        (16,   (c-1, r)    ),
-        (32,   (c-1, r-1)  ),
-        (64,   (c, r-1)    ),
-        (128,  (c+1, r-1)  )
+        ( 1,   (c + 1, r)      ),
+        ( 2,   (c + 1, r + 1)  ),
+        ( 4,   (c, r + 1)      ),
+        ( 8,   (c - 1, r + 1)  ),
+        (16,   (c - 1, r)      ),
+        (32,   (c - 1, r - 1)  ),
+        (64,   (c, r - 1)      ),
+        (128,  (c + 1, r - 1)  )
       )
     // remove invalid neighbours and produce map of drop-values
       map.filter { case(_, (col, row)) =>
         0 <= col && col < ncols &&
         0 <= row && row < nrows &&
         isData(raster.get(col, row))
-      }.map { case (k, v) => k -> (center-raster.get(v._1, v._2)) / distances(k) }
+      }.map { case (k, v) => k -> (center - raster.get(v._1, v._2)) / distances(k) }
   }
 
   /** Determines whether or not the cell at (c, r) in given raster is a sink */

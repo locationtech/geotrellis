@@ -18,7 +18,7 @@ package geotrellis.raster.op.focal
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
+import geotrellis.engine._
 
 trait FocalOpMethods[+Repr <: RasterSource] { self: Repr =>
     def zipWithNeighbors: Op[Seq[(Op[Tile], TileNeighbors)]] = 

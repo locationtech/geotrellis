@@ -18,7 +18,6 @@ package geotrellis.raster.op.local
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
 
 trait LocalMapOpMethods[+Repr <: RasterSource] { self: Repr =>
     /** Map the integer values of a each cell to a new integer value. */
@@ -50,7 +49,7 @@ trait LocalMapOpMethods[+Repr <: RasterSource] { self: Repr =>
       double function, otherwise map using the integer function. */
   def localDualMap(fInt:Int=>Int)(fDouble:Double=>Double) =
     self.map { tile =>
-      tile.map(_.dualMap(fInt)(fDouble)
+      tile.dualMap(fInt)(fDouble)
     }
 
   /** For each cell whose value is not a NoData, if the type of the raster is a double type, 

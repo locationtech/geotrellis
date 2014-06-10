@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.source
+package geotrellis.raster
 
-import geotrellis._
 import geotrellis.raster._
 import geotrellis.raster.op.local._
+import geotrellis.engine._
 
 /** This class gives the ability to apply a local operation
   * that reduces a sequence of rasters to a set of rasters
@@ -38,32 +38,69 @@ case class RasterSourceSeq(seq: Seq[RasterSource]) {
     builder.result
   }
 
-  /** Adds all the rasters in the sequence */
-  def localAdd(): RasterSource = applyOp(Add(_))
+  // /** Adds all the rasters in the sequence */
+  def localAdd(): RasterSource = 
+    applyOp { tileOps =>
+      logic.Collect(tileOps).map { tiles: Seq[Tile] => Add(tiles) }
+    }
 
   /** Takes the difference of the rasters in the sequence from left to right */
   def difference() = localSubtract
+
   /** Takes the difference of the rasters in the sequence from left to right */
-  def localSubtract() = applyOp(Subtract(_))
+  def localSubtract() = 
+    applyOp { tileOps =>
+      logic.Collect(tileOps).map { tiles: Seq[Tile] => Subtract(tiles) }
+    }
+
   /** Takes the product of the rasters in the sequence */
   def product() = localMultiply
+
   /** Takes the product of the rasters in the sequence */
-  def localMultiply() = applyOp(Multiply(_))
+  def localMultiply() = 
+    applyOp { tileOps =>
+      logic.Collect(tileOps).map { tiles: Seq[Tile] => Multiply(tiles) }
+    }
+
   /** Divides the rasters in the sequence from left to right */
-  def localDivide() = applyOp(Multiply(_))
+  def localDivide() = 
+    applyOp { tileOps =>
+      logic.Collect(tileOps).map { tiles: Seq[Tile] => Divide(tiles) }
+    }
 
   /** Takes the max of each cell value */
-  def max() = applyOp(Max(_))
+  def max() = 
+    applyOp { tileOps =>
+      logic.Collect(tileOps).map { tiles: Seq[Tile] => Max(tiles) }
+    }
+
   /** Takes the min of each cell value */
-  def min() = applyOp(Min(_))
+  def min() = 
+    applyOp { tileOps =>
+      logic.Collect(tileOps).map { tiles: Seq[Tile] => Min(tiles) }
+    }
 
   /** Takes the logical And of each cell value */
-  def and() = applyOp(And(_))
+  def and() = 
+    applyOp { tileOps =>
+      logic.Collect(tileOps).map { tiles: Seq[Tile] => And(tiles) }
+    }
+
   /** Takes the logical Or of each cell value */
-  def or() = applyOp(Or(_))
+  def or() = 
+    applyOp { tileOps =>
+      logic.Collect(tileOps).map { tiles: Seq[Tile] => Or(tiles) }
+    }
+
   /** Takes the logical Xor of each cell value */
-  def xor() = applyOp(Xor(_))
+  def xor() = 
+    applyOp { tileOps =>
+      logic.Collect(tileOps).map { tiles: Seq[Tile] => Xor(tiles) }
+    }
 
   /** Raises each cell value to the power of the next raster, from left to right */
-  def exponentiate() = applyOp(Pow(_))
+  def exponentiate() = 
+    applyOp { tileOps =>
+      logic.Collect(tileOps).map { tiles: Seq[Tile] => Pow(tiles) }
+    }
 }

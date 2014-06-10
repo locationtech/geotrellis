@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.source
+package geotrellis.raster
 
-import geotrellis._
-import geotrellis.raster._
+import geotrellis.engine._
 
 trait SourceBuilder[Elem, +To] {
   var op: Op[Seq[Op[Elem]]] = null

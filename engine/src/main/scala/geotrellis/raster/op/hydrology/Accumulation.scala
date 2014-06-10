@@ -18,10 +18,11 @@ package geotrellis.raster.op.hydrology
 
 import geotrellis._
 import geotrellis.raster._
-import scala.collection.mutable._
-import geotrellis.raster._
+import geotrellis.engine._
 
 import scalaxy.loops._
+
+import scala.collection.mutable._
 
 object Accumulation {
   //checks if the encoded value includes the dirrecrion

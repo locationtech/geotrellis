@@ -30,8 +30,8 @@ import scala.collection.JavaConversions._
 class CatalogService {
   @GET
   def catalog(
-    @Context req:HttpServletRequest
-  ):Response = {
+    @Context req: HttpServletRequest
+  ): Response = {
     OK.json(CatalogService.getJson)
       .allowCORS()
   }

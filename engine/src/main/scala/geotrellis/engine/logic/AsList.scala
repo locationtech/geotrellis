@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.logic
+package geotrellis.engine.logic
 
-import geotrellis._
+import geotrellis.engine._
 
 /**
  * Return the result of the input operation as a List.

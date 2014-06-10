@@ -18,7 +18,7 @@ package geotrellis.raster.io
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.process._
+import geotrellis.engine._
 
 /**
  * Load the raster data for a particular extent/resolution from the specified file.

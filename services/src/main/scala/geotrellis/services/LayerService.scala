@@ -16,10 +16,10 @@
 
 package geotrellis.services
 
-import geotrellis._
-import geotrellis.source._
-import geotrellis.process.LayerId
-import geotrellis.render.ColorRamps._
+import geotrellis.engine._
+import geotrellis.raster._
+import geotrellis.raster.render.Png
+import geotrellis.raster.render.ColorRamps._
 import geotrellis.feature._
 import geotrellis.proj4._
 import geotrellis.feature.reproject._
@@ -27,24 +27,24 @@ import geotrellis.feature.reproject._
 import Json._
 
 object LayerService {
-  def getInfo(layer:LayerId):ValueSource[String] =
+  def getInfo(layer: LayerId): ValueSource[String] =
     RasterSource(layer)
       .info
       .map { info =>
         s"""{
             "name" : "${info.id.name}",
             "rasterExtent" : ${info.rasterExtent.toJson},
-            "datatype" :" ${info.rasterType}"
+            "datatype" :" ${info.cellType}"
            }"""
        }
 
-  def getBreaks(layer:LayerId,numBreaks:Int):ValueSource[String] =
+  def getBreaks(layer: LayerId, numBreaks: Int): ValueSource[String] =
       RasterSource(layer)
         .classBreaks(numBreaks)
         .map (Json.classBreaks(_))
 
   /** Gets the raster's extent in lat long coordinates (assuming it's in Web Mercator) */
-  def getBoundingBox(layer:LayerId):ValueSource[String] =
+  def getBoundingBox(layer: LayerId): ValueSource[String] =
     RasterSource(layer)
       .info
       .map(_.rasterExtent.extent)
@@ -59,33 +59,33 @@ object LayerService {
        }
 
   def render(
-    bbox:String,
-    cols:Int,
-    rows:Int,
-    layer:LayerId,
-    breaksString:String,
-    colorRampKey:String
-  ):ValueSource[Array[Byte]] = {
+    bbox: String,
+    cols: Int,
+    rows: Int,
+    layer: LayerId,
+    breaksString: String,
+    colorRampKey: String
+  ): ValueSource[Png] = {
     val extent = Extent.fromString(bbox)
 
     val breaks = breaksString.split(",").map(_.toInt)
 
-    render(RasterExtent(extent, cols, rows),layer,breaks,colorRampKey)
+    render(RasterExtent(extent, cols, rows), layer, breaks, colorRampKey)
   }
 
   def render(
-    rasterExtent:RasterExtent,
-    layer:LayerId,
-    breaks:Array[Int],
-    colorRampKey:String
-  ):ValueSource[Array[Byte]] = {
+    rasterExtent: RasterExtent,
+    layer: LayerId,
+    breaks: Array[Int],
+    colorRampKey: String
+  ): ValueSource[Png] = {
     val ramp = {
-      val cr = ColorRampMap.getOrElse(colorRampKey,BlueToRed)
+      val cr = ColorRampMap.getOrElse(colorRampKey, BlueToRed)
       if(cr.toArray.length < breaks.length) { cr.interpolate(breaks.length) }
       else { cr }
     }
 
-    RasterSource(layer,rasterExtent)
-      .renderPng(ramp,breaks)
+    RasterSource(layer, rasterExtent)
+      .renderPng(ramp, breaks)
   }
 }

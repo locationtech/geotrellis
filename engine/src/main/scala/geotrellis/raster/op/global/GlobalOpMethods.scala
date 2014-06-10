@@ -19,7 +19,7 @@ package geotrellis.raster.op.global
 import geotrellis._
 import geotrellis.feature._
 import geotrellis.raster._
-import geotrellis.source._
+import geotrellis.engine._
 
 trait GlobalOpMethods[+Repr <: RasterSource] { self: Repr =>
   def convolve(kernel: Kernel) =
@@ -35,12 +35,14 @@ trait GlobalOpMethods[+Repr <: RasterSource] { self: Repr =>
     self.global(_.rescale(newMin, newMax))
 
   def toVector() = 
-    self.converge.mapOp { tile =>
-      rasterDefinition.map { rd => ToVector(tile, rd.rasterExtent.extent) }
+    self.converge.mapOp { tileOp =>
+      (tileOp, rasterDefinition).map { (tile, rd) => 
+        tile.toVector(rd.rasterExtent.extent) 
+      }
     }
 
   def regionGroup(options: RegionGroupOptions = RegionGroupOptions.default) =
-    self.converge.map(RegionGroup(_, options))
+    self.converge.map(_.regionGroup(options))
 
   def verticalFlip() =
     self.global(VerticalFlip(_))

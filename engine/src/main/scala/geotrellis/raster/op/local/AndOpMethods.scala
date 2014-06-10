@@ -18,7 +18,7 @@ package geotrellis.raster.op.local
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
+import geotrellis.raster._
 
 trait AndOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** And a constant Int value to each cell. */

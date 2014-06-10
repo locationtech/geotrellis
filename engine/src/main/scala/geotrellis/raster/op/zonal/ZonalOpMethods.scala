@@ -18,7 +18,8 @@ package geotrellis.raster.op.zonal
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
+import geotrellis.raster.stats.Histogram
+import geotrellis.engine._
 
 import scalaxy.loops._
 
@@ -34,8 +35,8 @@ trait ZonalOpMethods[+Repr <: RasterSource] { self: Repr =>
    */
   def zonalHistogram(zonesSource: RasterSource): ValueSource[Map[Int, Histogram]] =
     ValueSource(
-      (self.convergeOp, zonesSource.convergeOp).map { (r, zones) =>
-        ZonalHistogram(r, zones)
+      (self.convergeOp, zonesSource.convergeOp).map { (tile, zones) =>
+        ZonalHistogram(tile, zones)
       }
     )
 
@@ -52,7 +53,10 @@ trait ZonalOpMethods[+Repr <: RasterSource] { self: Repr =>
    *          the data values will be rounded to integers.
    */
   def zonalPercentage(zonesSource: RasterSource): RasterSource =
-    self.converge.combine(zonesSource.converge) { (r, zones) =>
-      ZonalPercentage(t1, zones)
-    }
+    RasterSource(
+      self.converge.combine(zonesSource.converge) { (tile, zones) =>
+        ZonalPercentage(tile, zones)
+      }.convergeOp,
+      rasterDefinition.map(_.rasterExtent.extent)
+    )
 }

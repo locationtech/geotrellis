@@ -18,6 +18,8 @@ package geotrellis.raster.op.focal
 
 import geotrellis._
 import geotrellis.raster._
+import geotrellis.engine._
+
 import scala.math._
 
 /**

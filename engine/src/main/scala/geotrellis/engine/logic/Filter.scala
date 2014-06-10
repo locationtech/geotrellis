@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.logic
+package geotrellis.engine.logic
 
-import geotrellis._
-import geotrellis.process._
+import geotrellis.engine._
 
 object Filter {
   def apply[A](ops:Op[Seq[A]], condition:(A) => Boolean) = ops.map(_.filter(condition))

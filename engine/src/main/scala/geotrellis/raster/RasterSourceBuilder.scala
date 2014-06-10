@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.source
+package geotrellis.raster
   
-import geotrellis._
-import geotrellis.raster._
-import geotrellis.process.LayerId
+import geotrellis.engine._
 
 class RasterSourceBuilder extends SourceBuilder[Tile,RasterSource] {
   private var _dataDefinition:Op[RasterDefinition] = null
@@ -49,7 +47,6 @@ object RasterSourceBuilder {
   * Should only be used for in memory rasters, i.e. mapping a ValueSource
   * to a RasterSource.
   */
-// TODO: FIXME!
 // class BareRasterSourceBuilder extends SourceBuilder[Tile,RasterSource] {
 //   private var _dataDefinition:Op[RasterDefinition] = null
 //   private var _ops:Op[Seq[Op[Tile]]] = null

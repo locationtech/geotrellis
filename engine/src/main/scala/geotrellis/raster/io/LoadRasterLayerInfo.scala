@@ -17,7 +17,7 @@
 package geotrellis.raster.io
 
 import geotrellis._
-import geotrellis.process._
+import geotrellis.engine._
 
 object LoadRasterLayerInfo {
   def apply(n: String): LoadRasterLayerInfo = 

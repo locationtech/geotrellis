@@ -18,6 +18,7 @@ package geotrellis.raster.op.focal
 
 import geotrellis._
 import geotrellis.raster._
+import geotrellis.engine._
 
 /** Computes the sum of values of a neighborhood for a given raster 
  *
@@ -29,11 +30,11 @@ import geotrellis.raster._
  *                  If the neighborhood is of any other type, then [[CursorSumCalc]] is used.
  *
  * @note            Sum does not currently support Double raster data.
- *                  If you use a Tile with a Double CellType (TypeFloat,TypeDouble)
+ *                  If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
  *                  the data values will be rounded to integers.
  */
-case class Sum(r:Op[Tile], n:Op[Neighborhood],ns:Op[TileNeighbors]) extends FocalOp[Tile](r,n,ns)({ 
-  (r,n) =>
+case class Sum(r: Op[Tile], n: Op[Neighborhood], ns: Op[TileNeighbors]) extends FocalOp[Tile](r, n, ns)({ 
+  (r, n) =>
     if(r.cellType.isFloatingPoint){
       n match {
         case Square(ext) => new CellwiseDoubleSumCalc
@@ -48,30 +49,30 @@ case class Sum(r:Op[Tile], n:Op[Neighborhood],ns:Op[TileNeighbors]) extends Foca
 })
 
 object Sum {
-  def apply(r:Op[Tile], n:Op[Neighborhood]) = new Sum(r,n,TileNeighbors.NONE)
+  def apply(r: Op[Tile], n: Op[Neighborhood]) = new Sum(r, n, TileNeighbors.NONE)
 }
 
 class CursorSumCalc extends CursorCalculation[Tile] 
     with IntArrayTileResult {
   var total = 0
 
-  def calc(r:Tile,cursor:Cursor) = {
+  def calc(r: Tile, cursor: Cursor) = {
 
-    val added = collection.mutable.Set[(Int,Int,Int)]()
-    cursor.addedCells.foreach { (x,y) => 
-      val v = r.get(x,y)
-      added += ((x,y,v))
-      if(isData(v)) { total += r.get(x,y) }
+    val added = collection.mutable.Set[(Int, Int, Int)]()
+    cursor.addedCells.foreach { (x, y) => 
+      val v = r.get(x, y)
+      added += ((x, y, v))
+      if(isData(v)) { total += r.get(x, y) }
     }
 
-    val removed = collection.mutable.Set[(Int,Int,Int)]()
-    cursor.removedCells.foreach { (x,y) => 
-      val v = r.get(x,y)
-      removed += ((x,y,v))
-      if(isData(v)) { total -= r.get(x,y) }
+    val removed = collection.mutable.Set[(Int, Int, Int)]()
+    cursor.removedCells.foreach { (x, y) => 
+      val v = r.get(x, y)
+      removed += ((x, y, v))
+      if(isData(v)) { total -= r.get(x, y) }
     }
 
-    tile.set(cursor.col,cursor.row,total)
+    tile.set(cursor.col, cursor.row, total)
   }
 }
 
@@ -79,19 +80,19 @@ class CellwiseSumCalc extends CellwiseCalculation[Tile]
     with IntArrayTileResult {
   var total = 0
   
-  def add(r:Tile,x:Int,y:Int) = { 
-    val v = r.get(x,y)
-    if(isData(v)) { total += r.get(x,y) }
+  def add(r: Tile, x: Int, y: Int) = { 
+    val v = r.get(x, y)
+    if(isData(v)) { total += r.get(x, y) }
   }
 
-  def remove(r:Tile,x:Int,y:Int) = { 
-    val v = r.get(x,y)
-    if(isData(v)) { total -= r.get(x,y) }
+  def remove(r: Tile, x: Int, y: Int) = { 
+    val v = r.get(x, y)
+    if(isData(v)) { total -= r.get(x, y) }
   }
 
   def reset() = { total = 0}
-  def setValue(x:Int,y:Int) = { 
-    tile.set(x,y,total) 
+  def setValue(x: Int, y: Int) = { 
+    tile.set(x, y, total) 
   }
 }
 
@@ -99,23 +100,23 @@ class CursorDoubleSumCalc extends CursorCalculation[Tile]
     with DoubleArrayTileResult {
   var total = 0.0
 
-  def calc(r:Tile,cursor:Cursor) = {
+  def calc(r: Tile, cursor: Cursor) = {
 
-    val added = collection.mutable.Set[(Int,Int,Double)]()
-    cursor.addedCells.foreach { (x,y) => 
-      val v = r.getDouble(x,y)
-      added += ((x,y,v))
-      if(isData(v)) { total += r.getDouble(x,y) }
+    val added = collection.mutable.Set[(Int, Int, Double)]()
+    cursor.addedCells.foreach { (x, y) => 
+      val v = r.getDouble(x, y)
+      added += ((x, y, v))
+      if(isData(v)) { total += r.getDouble(x, y) }
     }
 
-    val removed = collection.mutable.Set[(Int,Int,Double)]()
-    cursor.removedCells.foreach { (x,y) => 
-      val v = r.getDouble(x,y)
-      removed += ((x,y,v))
-      if(isData(v)) { total -= r.getDouble(x,y) }
+    val removed = collection.mutable.Set[(Int, Int, Double)]()
+    cursor.removedCells.foreach { (x, y) => 
+      val v = r.getDouble(x, y)
+      removed += ((x, y, v))
+      if(isData(v)) { total -= r.getDouble(x, y) }
     }
 
-    tile.setDouble(cursor.col,cursor.row,total)
+    tile.setDouble(cursor.col, cursor.row, total)
   }
 }
 
@@ -123,18 +124,18 @@ class CellwiseDoubleSumCalc extends CellwiseCalculation[Tile]
     with DoubleArrayTileResult {
   var total = 0.0
   
-  def add(r:Tile,x:Int,y:Int) = { 
-    val v = r.getDouble(x,y)
-    if(isData(v)) { total += r.getDouble(x,y) }
+  def add(r: Tile, x: Int, y: Int) = { 
+    val v = r.getDouble(x, y)
+    if(isData(v)) { total += r.getDouble(x, y) }
   }
 
-  def remove(r:Tile,x:Int,y:Int) = { 
-    val v = r.getDouble(x,y)
-    if(isData(v)) { total -= r.getDouble(x,y) }
+  def remove(r: Tile, x: Int, y: Int) = { 
+    val v = r.getDouble(x, y)
+    if(isData(v)) { total -= r.getDouble(x, y) }
   }
 
   def reset() = { total = 0.0 }
-  def setValue(x:Int,y:Int) = { 
-    tile.setDouble(x,y,total) 
+  def setValue(x: Int, y: Int) = { 
+    tile.setDouble(x, y, total) 
   }
 }

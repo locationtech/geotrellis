@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package geotrellis.source
+package geotrellis.raster
 
-import geotrellis._
 import geotrellis.feature.Extent
-import geotrellis.process.{LayerId, RasterLayer}
+import geotrellis.engine.{LayerId, RasterLayer}
 import geotrellis.raster.op._
-import geotrellis.raster.statistics.Histogram
-import geotrellis.raster._
+import geotrellis.raster.stats.Histogram
+import geotrellis.engine._
 
 class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[Tile]]]) 
     extends  RasterSourceLike[RasterSource] {
@@ -179,6 +178,6 @@ object RasterSource {
     new RasterSource(rasterDef, tileOps)
   }
 
-  def layerExists(layerId: LayerId): Boolean = server.layerExists(layerId)
-  def layerExists(layerName: String): Boolean = server.layerExists(layerName)
+  def layerExists(layerId: LayerId): Boolean = engine.layerExists(layerId)
+  def layerExists(layerName: String): Boolean = engine.layerExists(layerName)
 }

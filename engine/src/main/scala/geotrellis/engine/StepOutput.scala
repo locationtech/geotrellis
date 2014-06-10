@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis
-
-import geotrellis.process._
+package geotrellis.engine
 
 /**
  * When run, Operations will return a StepOutput. This will either indicate a

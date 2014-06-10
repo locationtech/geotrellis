@@ -19,10 +19,11 @@ package geotrellis.raster.op.hydrology
 import geotrellis._
 import geotrellis.raster._
 import geotrellis.raster.op.focal._
+import geotrellis.engine._
 
 import scala.math._
 
-case class FillOptions(threshold:Double)
+case class FillOptions(threshold: Double)
 object FillOptions {
   val default = FillOptions(20.0)
 }
@@ -41,49 +42,49 @@ object FillOptions {
   *                     is incorrectly classifying your data, make sure you have set
   *                     the threshold appropriately.      
   */
-case class Fill(r:Op[Tile],options:FillOptions,tns:Op[TileNeighbors])
-    extends FocalOp1(r,Square(1),tns,options)({
-      (r,n) =>
+case class Fill(r: Op[Tile], options: FillOptions, tns: Op[TileNeighbors])
+    extends FocalOp1(r, Square(1), tns, options)({
+      (r, n) =>
       if(r.cellType.isFloatingPoint) { new CursorFillCalcDouble }
       else { new CursorFillCalc }
     })
 
 object Fill {
-  def apply(r:Op[Tile]) = new Fill(r,FillOptions.default,TileNeighbors.NONE)
-  def apply(r:Op[Tile],o:FillOptions) = new Fill(r,o,TileNeighbors.NONE)
+  def apply(r: Op[Tile]) = new Fill(r, FillOptions.default, TileNeighbors.NONE)
+  def apply(r: Op[Tile], o: FillOptions) = new Fill(r, o, TileNeighbors.NONE)
 }
 
 case class CursorFillCalc() extends CursorCalculation[Tile]
                                with Initialization1[FillOptions]
                                with IntArrayTileResult {
-  private var threshold:Int = 0
+  private var threshold: Int = 0
 
-  def init(r:Tile,options:FillOptions) = {
+  def init(r: Tile, options: FillOptions) = {
     threshold = options.threshold.toInt
     super.init(r)
   }
 
-  def calc(r:Tile,c:Cursor) = {
-    var count:Int = 0
-    var totalCount:Int = 0
-    var sum:Int = 0
-    val cVal = r.get(c.col,c.row)
+  def calc(r: Tile, c: Cursor) = {
+    var count: Int = 0
+    var totalCount: Int = 0
+    var sum: Int = 0
+    val cVal = r.get(c.col, c.row)
     c.allCells
-      .foreach { (col,row) =>
+      .foreach { (col, row) =>
       if(c.col != col || c.row != row){
-        if((r.get(col,row)-cVal).abs > threshold ){
+        if((r.get(col, row) - cVal).abs > threshold ){
           count = count + 1
         }
         totalCount = totalCount + 1
-        sum = sum + r.get(col,row)
+        sum = sum + r.get(col, row)
       }
 
     }
 
     if(count == totalCount){
-      tile.set(c.col,c.row, sum/totalCount)
+      tile.set(c.col, c.row, sum / totalCount)
     } else {
-      tile.set(c.col,c.row,cVal)
+      tile.set(c.col, c.row, cVal)
     }
   }
 }
@@ -91,31 +92,31 @@ case class CursorFillCalc() extends CursorCalculation[Tile]
 case class CursorFillCalcDouble() extends CursorCalculation[Tile]
                                      with Initialization1[FillOptions]
                                      with DoubleArrayTileResult {
-  private var threshold:Double = 0.0
+  private var threshold: Double = 0.0
 
-    def init(r:Tile,options:FillOptions) = {
+    def init(r: Tile, options: FillOptions) = {
     threshold = options.threshold.toInt
     super.init(r)
   }
 
-  def calc(r:Tile,c:Cursor) = {
-    var count:Int = 0
-    var totalCount:Int = 0
-    var sum:Double = 0
-    val cVal:Double = r.getDouble(c.col,c.row)
-    c.allCells.foreach { (col,row) =>
+  def calc(r: Tile, c: Cursor) = {
+    var count: Int = 0
+    var totalCount: Int = 0
+    var sum: Double = 0
+    val cVal: Double = r.getDouble(c.col, c.row)
+    c.allCells.foreach { (col, row) =>
       if(c.col != col || c.row != row){
-        if((r.getDouble(col,row)-cVal).abs > threshold ){
+        if((r.getDouble(col, row) - cVal).abs > threshold ){
           count = count + 1
         }
         totalCount = totalCount + 1
-        sum = sum + r.get(col,row)
+        sum = sum + r.get(col, row)
       }
     }
     if(count == totalCount){
-      tile.setDouble(c.col,c.row, sum/totalCount)
+      tile.setDouble(c.col, c.row, sum / totalCount)
     } else {
-      tile.setDouble(c.col,c.row,cVal)
+      tile.setDouble(c.col, c.row, cVal)
     }
   }
 }

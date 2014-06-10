@@ -18,7 +18,7 @@ package geotrellis.raster.io
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.process._
+import geotrellis.engine._
 
 object LoadRasterUrl {
   def apply(url: Op[String]): LoadRasterUrl = LoadRasterUrl(url, None)

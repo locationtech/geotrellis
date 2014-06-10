@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.source
+package geotrellis.raster
 
-import geotrellis._
 import geotrellis.feature._
 import geotrellis.raster.op._
-import geotrellis.raster.statistics.op._
+import geotrellis.raster.stats._
 import geotrellis.raster.render.op._
 import geotrellis.raster.io._
-import geotrellis.process.RasterLayerInfo
-
-import geotrellis.raster._
+import geotrellis.engine._
 
 import scalaxy.loops._
 import scala.collection.mutable
@@ -38,8 +35,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     with zonal.ZonalOpMethods[Repr]
     with zonal.summary.ZonalSummaryOpMethods[Repr]
     with hydrology.HydrologyOpMethods[Repr]
-    with stat.StatOpMethods[Repr] 
-    with IoOpMethods[Repr] 
+    with stats.StatOpMethods[Repr] 
     with RenderOpMethods[Repr] { self: Repr =>
 
   def tiles = self.elements
@@ -131,7 +127,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
           )
          }
 
-  def info: ValueSource[process.RasterLayerInfo] = 
+  def info: ValueSource[RasterLayerInfo] = 
     ValueSource(
       rasterDefinition
         .flatMap { rd => 

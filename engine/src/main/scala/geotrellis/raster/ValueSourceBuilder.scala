@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.source
+package geotrellis.raster
 
-import geotrellis._
+import geotrellis.engine._
 
 /**
  * Bulid a data source with a single value.

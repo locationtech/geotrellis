@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.logic.applicative
+package geotrellis.engine.logic.applicative
 
-import geotrellis._
-import geotrellis.process._
+import geotrellis.engine._
 
 /**
  * This corresponds to Haskell's "apply" (<*>) on Functor.

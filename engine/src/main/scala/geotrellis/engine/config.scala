@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis
+package geotrellis.engine
 
 import com.typesafe.config.{ConfigFactory,Config}
 

@@ -18,7 +18,8 @@ package geotrellis.raster.op.focal
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.raster.statistics.FastMapHistogram
+import geotrellis.raster.stats.FastMapHistogram
+import geotrellis.engine._
 
 /** Computes the median value of a neighborhood for a given raster 
  *
@@ -27,12 +28,12 @@ import geotrellis.raster.statistics.FastMapHistogram
  * @param    tns    TileNeighbors that describe the neighboring tiles.
  *
  * @note    Median does not currently support Double raster data.
- *          If you use a Tile with a Double CellType (TypeFloat,TypeDouble)
+ *          If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
  *          the data values will be rounded to integers.
  */
-case class Median(r:Op[Tile],n:Op[Neighborhood],tns:Op[TileNeighbors]) 
-    extends FocalOp[Tile](r,n,tns)({
-  (r,n) => 
+case class Median(r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors]) 
+    extends FocalOp[Tile](r, n, tns)({
+  (r, n) => 
     n match {
       case Square(ext) => new CellwiseMedianCalc(ext)
       case _ => new CursorMedianCalc(n.extent)
@@ -40,45 +41,45 @@ case class Median(r:Op[Tile],n:Op[Neighborhood],tns:Op[TileNeighbors])
 })
 
 object Median {
-  def apply(r:Op[Tile],n:Op[Neighborhood]) = new Median(r,n,TileNeighbors.NONE)
+  def apply(r: Op[Tile], n: Op[Neighborhood]) = new Median(r, n, TileNeighbors.NONE)
 }
 
-class CursorMedianCalc(extent:Int) extends CursorCalculation[Tile] with IntArrayTileResult 
+class CursorMedianCalc(extent: Int) extends CursorCalculation[Tile] with IntArrayTileResult 
                                                                      with MedianModeCalculation {
   initArray(extent)
                                                          
-  def calc(r:Tile,cursor:Cursor) = {
-    cursor.removedCells.foreach { (x,y) =>
-      val v = r.get(x,y)
+  def calc(r: Tile, cursor: Cursor) = {
+    cursor.removedCells.foreach { (x, y) =>
+      val v = r.get(x, y)
       if(isData(v)) {
         removeValue(v)
       }
     }
-    cursor.addedCells.foreach { (x,y) =>
-      val v = r.get(x,y)
+    cursor.addedCells.foreach { (x, y) =>
+      val v = r.get(x, y)
       if(isData(v)) addValueOrdered(v)
     }
-    tile.set(cursor.col,cursor.row,median)
+    tile.set(cursor.col, cursor.row, median)
   }
 }
 
-class CellwiseMedianCalc(extent:Int) extends CellwiseCalculation[Tile] with IntArrayTileResult 
+class CellwiseMedianCalc(extent: Int) extends CellwiseCalculation[Tile] with IntArrayTileResult 
                                                                          with MedianModeCalculation {
   initArray(extent)
 
-  def add(r:Tile, x:Int, y:Int) = {
-    val v = r.get(x,y)
+  def add(r: Tile, x: Int, y: Int) = {
+    val v = r.get(x, y)
     if (isData(v)) {
       addValueOrdered(v)
     }
   }
 
-  def remove(r:Tile, x:Int, y:Int) = {
-    val v = r.get(x,y)
+  def remove(r: Tile, x: Int, y: Int) = {
+    val v = r.get(x, y)
     if (isData(v)) {
       removeValue(v)
     }
   } 
 
-  def setValue(x:Int,y:Int) = { tile.setDouble(x,y,median) }
+  def setValue(x: Int, y: Int) = { tile.setDouble(x, y, median) }
 }

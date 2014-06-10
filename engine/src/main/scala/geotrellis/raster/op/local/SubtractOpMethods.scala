@@ -18,7 +18,7 @@ package geotrellis.raster.op.local
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.source._
+import geotrellis.raster._
 
 trait SubtractOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Subtract a constant value from each cell.*/

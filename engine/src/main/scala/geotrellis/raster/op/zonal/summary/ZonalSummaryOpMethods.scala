@@ -17,11 +17,11 @@
 package geotrellis.raster.op.zonal.summary
 
 import geotrellis._
-import geotrellis.source._
-import geotrellis.feature._
 import geotrellis.raster._
-import geotrellis.feature.rasterize._
-import geotrellis.raster.statistics._
+import geotrellis.raster.stats._
+import geotrellis.raster.rasterize._
+import geotrellis.feature._
+import geotrellis.engine._
 
 import scala.collection.mutable
 import scalaxy.loops._

@@ -17,8 +17,8 @@
 package geotrellis.raster.io
 
 import geotrellis._
-import geotrellis.process._
-import geotrellis.source._
+import geotrellis.engine._
+import geotrellis.raster._
 
 object LoadRasterDefinition {
   def apply(n: String): LoadRasterDefinition =

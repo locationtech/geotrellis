@@ -16,7 +16,7 @@
 
 package geotrellis.raster.op.zonal.summary
 
-import geotrellis.source._
+import geotrellis.raster._
 
 trait TileSummary[T,V,That <: DataSource[_,V]] {
   def handlePartialTile(pt:PartialTileIntersection):T

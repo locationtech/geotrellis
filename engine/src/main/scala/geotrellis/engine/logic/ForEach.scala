@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.logic
+package geotrellis.engine.logic
+
+import geotrellis.engine._
 
 import scala.{PartialFunction => PF}
-import geotrellis._
 
 object ForEach {
   def apply[A, Z:Manifest](a:Op[Array[A]])(f:(A) => Op[Z]) = ForEach1(a)(f)

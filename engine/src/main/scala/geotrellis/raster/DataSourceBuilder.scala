@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package geotrellis.source
+package geotrellis.raster
 
-import geotrellis._
+import geotrellis.engine._
 
 /**
  * Bulid a data source with a converging function. 
  */
-case class DataSourceBuilder[E,V](convergeFunction:(Op[Seq[Op[E]]]) => Op[V]) extends SourceBuilder[E,DataSource[E,V]] {
-  var _dataDefinition:Op[Seq[Op[E]]] = null
+case class DataSourceBuilder[E, V](convergeFunction: (Op[Seq[Op[E]]]) => Op[V]) extends SourceBuilder[E, DataSource[E, V]] {
+  var _dataDefinition: Op[Seq[Op[E]]] = null
 
-  def result = new DataSource[E,V] {
+  def result = new DataSource[E, V] {
     val elements = _dataDefinition
     def convergeOp() = convergeFunction(elements)
   }

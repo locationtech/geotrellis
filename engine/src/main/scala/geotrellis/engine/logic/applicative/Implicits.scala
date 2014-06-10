@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.logic.applicative
+package geotrellis.engine.logic.applicative
 
-import geotrellis._
+import geotrellis.engine._
 import language.implicitConversions
 
 /**
@@ -28,7 +28,7 @@ import language.implicitConversions
  * val f = (a:Int) => (b:Int) => (c:Int) => a + b * c
  * val op = f <@> 1 <*> 2 <*> 3
  *
- * server.run(op) // returns 7
+ * engine.run(op) // returns 7
  */
 object Implicits {
   implicit def applyOperator[A, Z:Manifest](lhs:Op[A => Z]) = new {

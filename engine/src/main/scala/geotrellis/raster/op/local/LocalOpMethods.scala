@@ -18,9 +18,8 @@ package geotrellis.raster.op.local
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.raster.op.ConvertType
-import geotrellis.source._
-import geotrellis.feature.rasterize.{Rasterizer, Callback}
+import geotrellis.raster._
+import geotrellis.raster.rasterize.{Rasterizer, Callback}
 import geotrellis.feature.{Geometry, Extent}
 import geotrellis.feature.json._
 

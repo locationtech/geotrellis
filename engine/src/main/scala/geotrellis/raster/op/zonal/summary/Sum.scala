@@ -17,8 +17,7 @@
 package geotrellis.raster.op.zonal.summary
 
 import geotrellis.raster._
-import geotrellis.source._
-import geotrellis.feature.rasterize._
+import geotrellis.raster.rasterize._
 
 object Sum extends TileSummary[Long, Long, ValueSource[Long]] {
   def handlePartialTile(pt: PartialTileIntersection): Long = {
