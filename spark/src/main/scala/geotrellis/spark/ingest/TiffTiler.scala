@@ -78,7 +78,6 @@ object TiffTiler {
 
     def buildRaster = {
       val re = RasterExtent(imgMeta.extent, pixelWidth, pixelHeight)
-      println(re)
       val rawDataBuff = image.getRenderedImage().getData().getDataBuffer()
       val rd = rasterType match {
         case TypeDouble => RasterData(rawDataBuff.asInstanceOf[DataBufferDouble].getData(), tileSize, tileSize)
