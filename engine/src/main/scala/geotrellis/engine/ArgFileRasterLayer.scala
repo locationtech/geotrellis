@@ -77,7 +77,7 @@ extends UntiledRasterLayer(info) {
             case Some(re) =>
               ArgReader.warpBytes(bytes, info.cellType, info.rasterExtent, re)
             case None =>
-              ArrayTile.fromArrayByte(bytes, info.cellType, info.rasterExtent.cols, info.rasterExtent.rows)
+              ArrayTile.fromBytes(bytes, info.cellType, info.rasterExtent.cols, info.rasterExtent.rows)
           }
         case None =>
           sys.error("Cache problem: Layer thinks it's cached but it is in fact not cached.")

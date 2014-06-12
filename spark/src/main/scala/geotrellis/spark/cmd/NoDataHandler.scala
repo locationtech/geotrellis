@@ -16,35 +16,33 @@
 
 package geotrellis.spark.cmd
 
-import geotrellis._
-import geotrellis.raster.MutableRasterData
-import geotrellis.raster.RasterData
+import geotrellis.raster._
 import spire.syntax.cfor._
 
 object NoDataHandler {
 
-  def removeUserNoData(rd: MutableRasterData, userNoData: Double): Unit = {
+  def removeUserNoData(tile: MutableArrayTile, userNoData: Double): Unit = {
     /* 
-     * This handles all types of RasterData - e.g., FloatArrayRasterData, ByteArrayRasterData
+     * This handles all types of RasterData - e.g., FloatArrayTile, ByteArrayTile
      * because the apply/update methods handle conversion of NODATA to the appropriate types
      * via macros i2f, i2b, respectively 
      */
-    cfor(0)(_ < rd.length, _ + 1) {i =>
-      if (rd(i) == userNoData) rd(i) = NODATA
+    cfor(0)(_ < tile.size, _ + 1) {i =>
+      if (tile(i) == userNoData) tile(i) = NODATA
     }
   }
 
-  def addUserNoData(rd: MutableRasterData, userNoData: Double): Unit = {
+  def addUserNoData(tile: MutableArrayTile, userNoData: Double): Unit = {
     /* 
-     * This handles all types of RasterData - e.g., FloatArrayRasterData, ByteArrayRasterData
+     * This handles all types of RasterData - e.g., FloatArrayTile, ByteArrayTile
      * because of the updateDouble vs. update call
      */
-    cfor(0)(_ < rd.length, _ + 1) {i =>
-      if (isNoData(rd(i))) {
-        if(rd.isFloat)
-          rd.updateDouble(i, userNoData)
+    cfor(0)(_ < tile.size, _ + 1) {i =>
+      if (isNoData(tile(i))) {
+        if(tile.cellType.isFloatingPoint)
+          tile.updateDouble(i, userNoData)
         else
-          rd.update(i, userNoData.toInt)
+          tile.update(i, userNoData.toInt)
         
       } 
     }

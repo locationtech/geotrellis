@@ -16,8 +16,9 @@
 
 package geotrellis.spark.cmd
 
-import geotrellis._
-import geotrellis.spark.Tile
+import geotrellis.raster._
+
+import geotrellis.spark.TmsTile
 import geotrellis.spark.cmd.args.HadoopArgs
 import geotrellis.spark.cmd.args.SparkArgs
 import geotrellis.spark.formats.ArgWritable
@@ -155,8 +156,8 @@ abstract class Ingest(hadoopConf: Configuration) extends Logging with Serializab
 
   def createPartitioner(rasterPath: Path, meta: PyramidMetadata, hadoopConf: Configuration): TileIdPartitioner = {
     val tileExtent = meta.metadataForBaseZoom.tileExtent
-    val (zoom, tileSize, rasterType) = (meta.maxZoomLevel, meta.tileSize, meta.rasterType)
-    val tileSizeBytes = TmsTiling.tileSizeBytes(tileSize, rasterType)
+    val (zoom, tileSize, cellType) = (meta.maxZoomLevel, meta.tileSize, meta.cellType)
+    val tileSizeBytes = TmsTiling.tileSizeBytes(tileSize, cellType)
     val blockSizeBytes = HdfsUtils.defaultBlockSize(rasterPath, hadoopConf)
     val splitGenerator = RasterSplitGenerator(tileExtent, zoom, tileSizeBytes, blockSizeBytes)
 
@@ -179,11 +180,11 @@ abstract class Ingest(hadoopConf: Configuration) extends Logging with Serializab
 object SparkIngest extends Logging {
   /** Pulled out into the companion object for spark execution.*/
   def createRdd(
-    rdd: RDD[(Long, Raster)],
+    rdd: RDD[(Long, Tile)],
     partitioner: TileIdPartitioner,
     broadcastedConf: Broadcast[SerializableWritable[Configuration]],
     outPathWithZoomStr: String): RDD[(TileIdWritable, ArgWritable)] = {
-    rdd.map(t => Tile(t._1, t._2).toWritable)
+    rdd.map(t => TmsTile(t._1, t._2).toWritable)
       .partitionBy(partitioner)
       .reduceByKey((tile1, tile2) => tile2) // pick the later one
       .mapPartitionsWithIndex({ (index, iter) =>
@@ -229,7 +230,7 @@ class SparkIngest(hadoopConf: Configuration, sparkContext: SparkContext) extends
     try {
       meta.writeToJobConf(hadoopConf)
       val newConf = HdfsUtils.putFilesInConf(files.mkString(","), hadoopConf)
-      val rdd = sparkContext.newAPIHadoopRDD(newConf, classOf[IngestInputFormat], classOf[Long], classOf[Raster])
+      val rdd = sparkContext.newAPIHadoopRDD(newConf, classOf[IngestInputFormat], classOf[Long], classOf[Tile])
 
       val broadcastedConf = sparkContext.broadcast(new SerializableWritable(newConf))
 
@@ -266,7 +267,7 @@ class LocalIngest(hadoopConf: Configuration) extends Ingest(hadoopConf) {
 
     val key = new TileIdWritable()
 
-    val tiles: Seq[(Long, Raster)] =
+    val tiles: Seq[(Long, Tile)] =
       files
         .map(TiffTiler.tile(_, meta, hadoopConf))
         .flatten
@@ -290,7 +291,7 @@ class LocalIngest(hadoopConf: Configuration) extends Ingest(hadoopConf) {
         val partition = partitioner.getPartition(key)
         println(s"Partitioner says $partition")
         val writer = writers(partition)
-        val argWritable = ArgWritable.fromRasterData(tile.toArrayRaster.data)
+        val argWritable = ArgWritable.fromTile(tile.toArrayTile)
 
         writer.append(key, argWritable)
         logInfo(s"Saved tileId=${tileId},partition=${partitioner.getPartition(key)}")

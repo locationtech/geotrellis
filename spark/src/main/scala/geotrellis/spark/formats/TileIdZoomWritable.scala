@@ -21,8 +21,9 @@ class TileIdZoomWritable extends TileIdWritable with Serializable {
 
   override def equals(that: Any): Boolean =
     that match {
-      case other: TileIdZoomWritable => _zoom == other.zoom && super.equals(that)
-      case _                               => false
+      case other: TileIdZoomWritable => 
+        _zoom == other.zoom && super.equals(that)
+      case _ => false
     }
 
   override def write(out: DataOutput) {
@@ -35,6 +36,7 @@ class TileIdZoomWritable extends TileIdWritable with Serializable {
     _zoom = in.readInt()
   }
 }
+
 object TileIdZoomWritable {
   def apply(tileId: Long, zoom: Int): TileIdZoomWritable = {
     val tzw = new TileIdZoomWritable

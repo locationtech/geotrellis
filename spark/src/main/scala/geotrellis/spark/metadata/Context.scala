@@ -16,14 +16,20 @@
 
 package geotrellis.spark.metadata
 
-import geotrellis.RasterExtent
-import geotrellis.RasterType
-import geotrellis.process.LayerId
+import geotrellis.raster._
 import geotrellis.raster.TileLayout
-import geotrellis.source.RasterDefinition
 import geotrellis.spark.rdd.TileIdPartitioner
 import geotrellis.spark.tiling.TileExtent
 import geotrellis.spark.tiling.TmsTiling
+
+case class RasterDefinition(rasterExtent: RasterExtent,
+                            tileLayout: TileLayout,
+                            cellType: CellType) {
+  def isTiled = tileLayout.isTiled
+
+  def withType(newType: CellType) =
+    new RasterDefinition(rasterExtent, tileLayout, newType)
+}
 
 /* 
  * The Context is passed between operations, and contains two key fields used to describe and persist 
@@ -58,7 +64,7 @@ class Context(val zoom: Int,
       rasterDefinition.tileLayout.pixelCols,
       PyramidMetadata.MaxBands,
       userNodata,
-      RasterType.toAwtType(rasterDefinition.rasterType),
+      CellType.toAwtType(rasterDefinition.cellType),
       zoom,
       Map(zoom.toString -> RasterMetadata(pe, tileExtent)))
   }
@@ -82,7 +88,7 @@ object Context {
 
     // TODO - once TileLayout supports longs, remove the to.Int
     val tl = TileLayout(re, te.width.toInt, te.height.toInt)
-    Context(zoom, te, meta.nodata, re, tl, meta.rasterType, partitioner)
+    Context(zoom, te, meta.nodata, re, tl, meta.cellType, partitioner)
   }
 
   def apply(
@@ -91,13 +97,13 @@ object Context {
     userNodata: Double,
     rasterExtent: RasterExtent,
     tileLayout: TileLayout,
-    rasterType: RasterType,
+    cellType: CellType,
     partitioner: TileIdPartitioner): Context =
     new Context(
       zoom,
       tileExtent,
       userNodata,
-      RasterDefinition(LayerId.MEM_RASTER, rasterExtent, tileLayout, rasterType, false),
+      RasterDefinition(rasterExtent, tileLayout, cellType),
       partitioner)
 
   def unapply(c: Context): Option[(PyramidMetadata, TileIdPartitioner)] = Some(c.toMetadata, c.partitioner)

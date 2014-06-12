@@ -58,7 +58,7 @@ object DoubleArrayTile {
   def fill(v: Double, cols: Int, rows: Int): DoubleArrayTile =
     new DoubleArrayTile(Array.ofDim[Double](cols * rows).fill(v), cols, rows)
 
-  def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int): DoubleArrayTile = {
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): DoubleArrayTile = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
     val doubleBuffer = byteBuffer.asDoubleBuffer()
     val doubleArray = new Array[Double](bytes.size / TypeDouble.bytes)

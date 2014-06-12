@@ -1,5 +1,6 @@
 package geotrellis.spark.formats
-import geotrellis._
+
+import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.metadata._
 
@@ -28,9 +29,9 @@ import java.io.DataOutputStream
  * 
  */
 class PayloadArgWritable(bytes: Array[Byte]) extends ArgWritable(bytes) {
-  def toPayloadRasterData(awType: RasterType, cols: Int, rows: Int, payload: Writable) = {
-    val rd = toRasterData(awType, cols, rows)
-    val payloadStart = rasterBytes(awType, cols, rows)
+  def toPayloadTile(cellType: CellType, cols: Int, rows: Int, payload: Writable) = {
+    val rd = toTile(cellType, cols, rows)
+    val payloadStart = cellType.numBytes(cols * rows)
     assert(bytes.length > payloadStart)
     // extract the payload
     val bais = new ByteArrayInputStream(bytes, payloadStart, bytes.length - payloadStart)
@@ -42,17 +43,24 @@ class PayloadArgWritable(bytes: Array[Byte]) extends ArgWritable(bytes) {
 }
 
 object PayloadArgWritable {
-  def apply(bytes: Array[Byte]) = new PayloadArgWritable(bytes)
+  def apply(bytes: Array[Byte]): PayloadArgWritable = 
+    new PayloadArgWritable(bytes)
 
-  def fromPayloadRasterData(data: RasterData, payload: Writable) = PayloadArgWritable(serialize(data, payload))
-  def fromPayloadRaster(raster: Raster, payload: Writable) = fromPayloadRasterData(raster.data, payload)
-  
-  private def serialize(data: RasterData, payload: Writable): Array[Byte] = {
+  def apply(tile: Tile, payload: Writable): PayloadArgWritable = 
+    apply(tile.toArrayTile, payload)
+
+  def apply(tile: ArrayTile, payload: Writable): PayloadArgWritable = {
     val baos = new ByteArrayOutputStream()
     val dos = new DataOutputStream(baos)
-    payload.write(dos)
-    val bytes = data.toArrayByte ++ baos.toByteArray
-    dos.close()
-    bytes
+
+    val bytes = 
+      try {
+        payload.write(dos)
+        tile.toBytes ++ baos.toByteArray
+      } finally {
+        dos.close()
+      }
+
+    PayloadArgWritable(bytes) 
   }
 }

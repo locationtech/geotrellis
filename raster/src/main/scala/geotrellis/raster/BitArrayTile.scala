@@ -108,6 +108,6 @@ object BitArrayTile {
   def fill(v: Boolean, cols: Int, rows: Int): BitArrayTile = 
     fill(if(v) 1 else 0, cols, rows)
 
-  def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int): BitArrayTile = 
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): BitArrayTile = 
     BitArrayTile(bytes, cols, rows)
 }

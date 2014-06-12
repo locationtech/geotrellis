@@ -25,7 +25,7 @@ object ArgReader {
   final def read(path: String, typ: CellType, rasterExtent: RasterExtent): Tile = {
     val cols = rasterExtent.cols
     val rows = rasterExtent.rows
-    ArrayTile.fromArrayByte(Filesystem.slurp(path), typ, cols, rows)
+    ArrayTile.fromBytes(Filesystem.slurp(path), typ, cols, rows)
   }
 
   final def read(path: String, typ: CellType, rasterExtent: RasterExtent, targetExtent: RasterExtent): Tile = {

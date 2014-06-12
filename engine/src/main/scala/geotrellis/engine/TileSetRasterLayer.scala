@@ -223,7 +223,7 @@ extends TileLoader(info, tileLayout) {
           case Some(tre) => 
             ArgReader.warpBytes(bytes, info.cellType, re, tre)
           case None => 
-            ArrayTile.fromArrayByte(bytes, info.cellType, re.cols, re.rows)
+            ArrayTile.fromBytes(bytes, info.cellType, re.cols, re.rows)
         }
       case None =>
         sys.error("Cache problem: Tile thinks it's cached but it is in fact not cached.")

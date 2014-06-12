@@ -196,7 +196,7 @@ object GeotrellisBuild extends Build {
         akkaCluster,
         jacksonCore,
         jacksonMapper,
-        scalaxyLoops % "provided",
+//        scalaxyLoops,
         sprayClient, // for reading args from URLs,
         apacheMath
       )
@@ -256,7 +256,7 @@ object GeotrellisBuild extends Build {
         akkaCluster,
         jacksonCore,
         jacksonMapper,
-        scalaxyLoops % "provided",
+        scalaxyLoops,
         sprayClient // for reading args from URLs,
       )
     ) ++
@@ -566,7 +566,7 @@ object GeotrellisBuild extends Build {
 
       libraryDependencies ++= Seq(
         "org.spire-math" %% "spire" % "0.7.1",
-        scalaxyLoops % "provided",
+        scalaxyLoops,
         "com.google.guava" % "guava" % "r09",
         "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
         "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"

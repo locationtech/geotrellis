@@ -16,10 +16,9 @@
 
 package geotrellis.engine
 
-import geotrellis._
-import geotrellis.raster.io.arg.ArgReader
 import geotrellis.raster._
-import geotrellis.util._
+import geotrellis.raster.io.arg.ArgReader
+import geotrellis.raster.io.Filesystem
 
 import akka.actor.ActorSystem
 import akka.io.IO
@@ -113,7 +112,7 @@ extends UntiledRasterLayer(info) {
       case Some(re) =>
         ArgReader.warpBytes(arr: Array[Byte], info.cellType, info.rasterExtent, re)
       case None =>
-        ArrayTile.fromArrayByte(arr, info.cellType, info.rasterExtent.cols, info.rasterExtent.rows)
+        ArrayTile.fromBytes(arr, info.cellType, info.rasterExtent.cols, info.rasterExtent.rows)
       }
   }
 }

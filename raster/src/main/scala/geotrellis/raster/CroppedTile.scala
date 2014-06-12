@@ -21,8 +21,22 @@ import geotrellis.feature.Extent
 import scalaxy.loops._
 import scala.collection.mutable
 
+object CroppedTile {
+  def apply(sourceTile: Tile,
+            sourceExtent: Extent,
+            targetExtent: Extent): CroppedTile =
+    CroppedTile(
+      sourceTile,
+      RasterExtent(
+        sourceExtent,
+        sourceTile.cols, 
+        sourceTile.rows
+      ).gridBoundsFor(targetExtent)
+    )
+}
+
 case class CroppedTile(sourceTile: Tile,
-                         gridBounds: GridBounds) 
+                       gridBounds: GridBounds)
   extends Tile {
   val cols = gridBounds.width
   val rows = gridBounds.height

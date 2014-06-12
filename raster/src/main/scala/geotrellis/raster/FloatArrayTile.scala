@@ -56,7 +56,7 @@ object FloatArrayTile {
   def fill(v: Float, cols: Int, rows: Int): FloatArrayTile =
     new FloatArrayTile(Array.ofDim[Float](cols * rows).fill(v), cols, rows)
 
-  def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int): FloatArrayTile = {
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): FloatArrayTile = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
     val floatBuffer = byteBuffer.asFloatBuffer()
     val floatArray = new Array[Float](bytes.size / TypeFloat.bytes)

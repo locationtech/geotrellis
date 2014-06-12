@@ -29,7 +29,7 @@ object Dependencies {
   val scalatest     = "org.scalatest"       %  "scalatest_2.10"  % "2.1.7"
   val scalacheck    = "org.scalacheck"      %% "scalacheck"      % "1.11.1"
   val scalaReflect  = "org.scala-lang"      %  "scala-reflect"   % "2.10.2"
-  val scalaxyLoops  = "com.nativelibs4java" %% "scalaxy-loops"   % "0.3-SNAPSHOT"
+  val scalaxyLoops  = "com.nativelibs4java" %% "scalaxy-loops"   % "0.1"
   val sigar         = "org.hyperic"         %  "sigar"           % "1.6.4"  
   val jts           = "com.vividsolutions"  %  "jts"             % "1.13"
 

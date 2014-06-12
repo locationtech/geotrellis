@@ -50,6 +50,6 @@ object ByteArrayTile {
   def fill(v: Byte, cols: Int, rows: Int): ByteArrayTile =
     new ByteArrayTile(Array.ofDim[Byte](cols * rows).fill(v), cols, rows)
 
-  def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int): ByteArrayTile = 
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): ByteArrayTile = 
     ByteArrayTile(bytes, cols, rows)
 }

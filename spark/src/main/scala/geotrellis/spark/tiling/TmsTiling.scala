@@ -16,8 +16,8 @@
 
 package geotrellis.spark.tiling
 
-import geotrellis.RasterType
-import geotrellis.Extent
+import geotrellis.raster._
+import geotrellis.feature.Extent
 
 /**
  * @author akini
@@ -118,6 +118,6 @@ object TmsTiling {
     new TileCoord(tx, ty)
   }
 
-  def tileSizeBytes(tileSize: Int, rasterType: RasterType): Int = 
-    tileSize * tileSize * rasterType.bytes
+  def tileSizeBytes(tileSize: Int, cellType: CellType): Int = 
+    tileSize * tileSize * cellType.bytes
 }

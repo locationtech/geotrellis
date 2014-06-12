@@ -41,14 +41,14 @@ object ArrayTile {
       case TypeDouble => DoubleArrayTile.empty(cols, rows)
     }
 
-  def fromArrayByte(bytes: Array[Byte], t: CellType, cols: Int, rows: Int) = 
+  def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int) = 
     t match {
-      case TypeBit    => BitArrayTile.fromArrayByte(bytes, cols, rows)
-      case TypeByte   => ByteArrayTile.fromArrayByte(bytes, cols, rows)
-      case TypeShort  => ShortArrayTile.fromArrayByte(bytes, cols, rows)
-      case TypeInt    => IntArrayTile.fromArrayByte(bytes, cols, rows)
-      case TypeFloat  => FloatArrayTile.fromArrayByte(bytes, cols, rows)
-      case TypeDouble => DoubleArrayTile.fromArrayByte(bytes, cols, rows)
+      case TypeBit    => BitArrayTile.fromBytes(bytes, cols, rows)
+      case TypeByte   => ByteArrayTile.fromBytes(bytes, cols, rows)
+      case TypeShort  => ShortArrayTile.fromBytes(bytes, cols, rows)
+      case TypeInt    => IntArrayTile.fromBytes(bytes, cols, rows)
+      case TypeFloat  => FloatArrayTile.fromBytes(bytes, cols, rows)
+      case TypeDouble => DoubleArrayTile.fromBytes(bytes, cols, rows)
     }
 
   def apply(arr: Array[Byte], cols: Int, rows: Int) = ByteArrayTile(arr, cols, rows)

@@ -1,6 +1,7 @@
 package geotrellis.spark.ingest
 
-import geotrellis._
+import geotrellis.raster._
+import geotrellis.feature.Extent
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FSDataInputStream
@@ -44,7 +45,7 @@ object GeoTiff extends Logging {
     pixelSize: (Double, Double),
     pixels: (Int, Int),
     bands: Int,
-    rasterType: Int,
+    cellType: Int,
     nodata: Double) {
 
     private def isPixelSizeEqual(l: (Double, Double), r: (Double, Double)) =
@@ -55,12 +56,12 @@ object GeoTiff extends Logging {
         sys.error(s"Error: All input tifs must have the same number of bands ${bands} != ${other.bands}")
       if (!isPixelSizeEqual(pixelSize, other.pixelSize))
         sys.error(s"Error: All input tifs must have the same resolution ${pixelSize} != ${other.pixelSize}")
-      if (rasterType != other.rasterType)
-        sys.error(s"Error: All input tifs must have same raster type ${rasterType} != ${other.rasterType}")
+      if (cellType != other.cellType)
+        sys.error(s"Error: All input tifs must have same raster type ${cellType} != ${other.cellType}")
       if ((nodata.isNaN() && !other.nodata.isNaN()) || (!nodata.isNaN() && nodata != other.nodata))
         sys.error(s"Error: All input tifs must have same nodata value ${nodata} != ${other.nodata}")
 
-      Metadata(extent.combine(other.extent), pixelSize, pixels, bands, rasterType, nodata)
+      Metadata(extent.combine(other.extent), pixelSize, pixels, bands, cellType, nodata)
     }
   }
 
@@ -82,12 +83,12 @@ object GeoTiff extends Logging {
     val pixelSize = (math.abs(envelope.getWidth), math.abs(envelope.getHeight))
     val pixels = (coverage.getRenderedImage().getWidth(), coverage.getRenderedImage().getHeight())
     val bands = coverage.getNumSampleDimensions
-    val rasterType = coverage.getRenderedImage().getSampleModel().getDataType()
+    val cellType = coverage.getRenderedImage().getSampleModel().getDataType()
     val nodata = reader.asInstanceOf[GTGeoTiffReader].getMetadata().getNoData()
     val env = coverage.getEnvelope.asInstanceOf[GeneralEnvelope]
     val extent = Extent(env.getLowerCorner().getOrdinate(0), env.getLowerCorner().getOrdinate(1),
       env.getUpperCorner().getOrdinate(0), env.getUpperCorner().getOrdinate(1))
-    Metadata(extent, pixelSize, pixels, bands, rasterType, nodata)
+    Metadata(extent, pixelSize, pixels, bands, cellType, nodata)
   }
 
   /*

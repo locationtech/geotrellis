@@ -60,7 +60,7 @@ object ShortArrayTile {
   def fill(v: Short, cols: Int, rows: Int): ShortArrayTile =
     new ShortArrayTile(Array.ofDim[Short](cols * rows).fill(v), cols, rows)
 
-  def fromArrayByte(bytes: Array[Byte], cols: Int, rows: Int): ShortArrayTile = {
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): ShortArrayTile = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
     val shortBuffer = byteBuffer.asShortBuffer()
     val shortArray = new Array[Short](bytes.length / TypeShort.bytes)
