@@ -19,7 +19,7 @@ package geotrellis.raster.op.global
 import geotrellis.raster._
 import geotrellis.feature.Point
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 /**
  * Computes the convolution of two rasters.
@@ -38,8 +38,8 @@ object Convolve {
 
     val convolver = new Convolver(cols, rows, kernel)
 
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         val z = t.get(col, row)
         if (isData(z)) {
           convolver.stampKernel(col, row, z)

@@ -20,7 +20,7 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.engine._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 import scala.collection.mutable._
 
@@ -179,8 +179,8 @@ case class Accumulation(flowDirrection: Op[Tile]) extends Op1(flowDirrection)({
     val rows = flowDirrection.rows
     val tile = IntArrayTile(Array.ofDim[Int](cols * rows).fill(-1), cols, rows)
 
-    for(col <- 0 until cols optimized) {
-      for(row <- 0 until rows optimized) {
+    cfor(0)(_ < cols, _ + 1) { col =>
+      cfor(0)(_ < rows, _ + 1) { row =>
         Accumulation.calcAcc(col, row, tile, flowDirrection)
       }
     }

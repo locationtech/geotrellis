@@ -19,7 +19,7 @@ package geotrellis.raster.op.zonal
 import geotrellis.raster._
 import geotrellis.raster.stats._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 import scala.collection.mutable
 
@@ -38,8 +38,8 @@ object ZonalHistogram {
     val rows  = tile.rows
     val cols  = tile.cols
 
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         val v = tile.get(col, row)
         val z = zones.get(col, row)
         if(!histMap.contains(z)) { histMap(z) = FastMapHistogram() }

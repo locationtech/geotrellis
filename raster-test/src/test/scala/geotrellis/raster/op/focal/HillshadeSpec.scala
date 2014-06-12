@@ -30,7 +30,7 @@ import geotrellis.render.op._
 
 import org.scalatest._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 class HillshadeSpec extends FunSuite 
                        with TestServer 

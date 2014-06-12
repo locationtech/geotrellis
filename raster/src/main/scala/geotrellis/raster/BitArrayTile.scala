@@ -19,7 +19,7 @@ package geotrellis.raster
 import geotrellis._
 import geotrellis.feature.Extent
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 /**
  * ArrayTile based on an Array[Byte] as a bitmask; values are 0 and 1.

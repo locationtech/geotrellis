@@ -22,7 +22,7 @@ import java.io.{File, FileInputStream, FileOutputStream}
 import geotrellis._
 import geotrellis.raster._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 trait ReadState {
   val rasterExtent: RasterExtent
@@ -110,7 +110,7 @@ trait ReadState {
     var y = ybase
 
     // loop over rows
-    for (dst_row <- 0 until dst_rows optimized) {
+    cfor(0)(_ < dst_rows, _ + 1) { dst_row =>
       // calculate the Y grid coordinate to read from
       val src_row = (src_rows - (y / src_cellheight).asInstanceOf[Int] - 1)
 
@@ -125,7 +125,7 @@ trait ReadState {
         var x = xbase
         
         // loop over cols
-        for (dst_col <- 0 until dst_cols optimized) {
+        cfor(0)(_ < dst_cols, _ + 1) { dst_col =>
           // calculate the X grid coordinate to read from
           val src_col = (x / src_cellwidth).asInstanceOf[Int]
           

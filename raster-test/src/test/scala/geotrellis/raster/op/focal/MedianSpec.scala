@@ -25,7 +25,7 @@ import geotrellis.testkit._
 
 import org.scalatest._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 import scala.math._
 
 class MedianSpec extends FunSpec with TestServer

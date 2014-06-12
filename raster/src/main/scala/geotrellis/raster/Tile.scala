@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import geotrellis.feature.Extent
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 /**
  * Base trait for the Tile data type.
@@ -49,15 +49,15 @@ trait Tile extends Raster {
   def toBytes(): Array[Byte]
 
   def foreach(f: Int=>Unit): Unit =
-    for(col <- 0 until cols optimized) {
-      for(row <- 0 until rows optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         f(get(col, row))
       }
     }
 
   def foreachDouble(f: Double=>Unit): Unit =
-    for(col <- 0 until cols optimized) {
-      for(row <- 0 until rows optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         f(getDouble(col, row))
       }
     }

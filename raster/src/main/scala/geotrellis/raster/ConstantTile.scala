@@ -21,7 +21,7 @@ import geotrellis.feature.Extent
 
 import java.nio.ByteBuffer
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 trait ConstantTile extends Tile {
   protected val iVal: Int

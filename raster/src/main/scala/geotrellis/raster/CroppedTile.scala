@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import geotrellis.feature.Extent
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 import scala.collection.mutable
 
 object CroppedTile {
@@ -73,14 +73,14 @@ case class CroppedTile(sourceTile: Tile,
     val tile = ArrayTile.alloc(cellType, cols, rows)
 
     if(!cellType.isFloatingPoint) {
-      for(row <- 0 until rows optimized) {
-        for(col <- 0 until cols optimized) {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
           tile.set(col, row, get(col, row))
         }
       }
     } else {
-      for(row <- 0 until rows optimized) {
-        for(col <- 0 until cols optimized) {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
           tile.setDouble(col, row, getDouble(col, row))
         }
       }
@@ -93,8 +93,8 @@ case class CroppedTile(sourceTile: Tile,
     val arr = Array.ofDim[Int](cols * rows)
 
     var i = 0
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         arr(i) = get(col, row)
         i += 1
       }
@@ -107,8 +107,8 @@ case class CroppedTile(sourceTile: Tile,
     val arr = Array.ofDim[Double](cols * rows)
 
     var i = 0
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         arr(i) = getDouble(col, row)
         i += 1
       }
@@ -125,8 +125,8 @@ case class CroppedTile(sourceTile: Tile,
   def map(f: Int => Int): Tile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
 
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         tile.set(col, row, get(col, row))
       }
     }
@@ -138,8 +138,8 @@ case class CroppedTile(sourceTile: Tile,
     (this, other).assertEqualDimensions
 
     val tile = ArrayTile.alloc(cellType, cols, rows)
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         tile.set(col, row, f(get(col, row), other.get(col, row)))
       }
     }
@@ -150,8 +150,8 @@ case class CroppedTile(sourceTile: Tile,
   def mapDouble(f: Double =>Double): Tile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
 
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         tile.setDouble(col, row, getDouble(col, row))
       }
     }
@@ -163,8 +163,8 @@ case class CroppedTile(sourceTile: Tile,
     (this, other).assertEqualDimensions
 
     val tile = ArrayTile.alloc(cellType, cols, rows)
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         tile.setDouble(col, row, f(getDouble(col, row), other.getDouble(col, row)))
       }
     }

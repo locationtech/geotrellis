@@ -4,7 +4,7 @@ import geotrellis.raster._
 import geotrellis.raster.op.local._
 import geotrellis.feature.Point
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 /**
  * Created by jchien on 4/30/14.
@@ -94,7 +94,7 @@ object ApproxViewshed extends Serializable {
             }
           }
 
-        for(ii <- 0 until (2 * layer) optimized) {
+        cfor(0)(_ < (2 * layer), _ + 1) { ii =>
           doY(startCol - layer + ii, startRow - layer)
           doY(startCol + layer - ii, startRow + layer)
           doX(startCol - layer, startRow + layer - ii)

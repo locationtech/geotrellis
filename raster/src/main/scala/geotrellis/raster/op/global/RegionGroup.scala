@@ -20,7 +20,7 @@ import geotrellis.raster._
 
 import scala.collection.mutable
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 abstract sealed trait Connectivity
 case object FourNeighbors extends Connectivity
@@ -55,9 +55,9 @@ object RegionGroup {
      * and to try and avoid a mess of conditionals.
      */
     if(options.connectivity == FourNeighbors) {
-      for (row <- 0 until rows optimized) {
+      cfor(0)(_ < rows, _ + 1) { row =>
         var valueToLeft = NODATA
-        for (col <- 0 until cols optimized) {
+        cfor(0)(_ < cols, _ + 1) { col =>
           val v = r.get(col, row)
           if(isData(v) || !ignoreNoData) {
             val top =
@@ -94,11 +94,11 @@ object RegionGroup {
         }
       }
     } else {
-      for (row <- 0 until rows optimized) {
+      cfor(0)(_ < rows, _ + 1) { row =>
         var valueToLeft = NODATA
         var valueToTopLeft = NODATA
         var valueToTop = NODATA
-        for (col <- 0 until cols optimized) {
+        cfor(0)(_ < cols, _ + 1) { col =>
           val v = r.get(col, row)
           val topRight =
             if(row > 0 && col < cols - 1) { r.get(col + 1, row - 1) }
@@ -194,9 +194,9 @@ object RegionGroup {
     }
 
     // Set equivilant regions to minimum
-    
-    for (row <- 0 until rows optimized) {
-      for (col <- 0 until cols optimized) {
+
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         val v = tile.get(col, row)
         if(isData(v) || !ignoreNoData) { 
           val cls = regions.getClass(v)

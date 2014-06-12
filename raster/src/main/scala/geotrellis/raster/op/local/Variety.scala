@@ -18,7 +18,7 @@ package geotrellis.raster.op.local
 
 import geotrellis.raster._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 /**
  * Variety gives the count of unique values at each location in a set of Tiles.
@@ -42,8 +42,8 @@ object Variety extends Serializable {
       val (cols, rows) = rs(0).dimensions
       val tile = ArrayTile.alloc(TypeInt, cols, rows)
 
-      for(col <- 0 until cols optimized) {
-        for(row <- 0 until rows optimized) {
+      cfor(0)(_ < cols, _ + 1) { col =>
+        cfor(0)(_ < rows, _ + 1) { row =>
           val variety =
             rs.map(r => r.get(col, row))
               .toSet

@@ -23,7 +23,7 @@ import geotrellis.testkit._
 
 import org.scalatest._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 class TileRasterSpec extends FunSpec 
                         with RasterBuilders

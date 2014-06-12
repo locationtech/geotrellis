@@ -19,7 +19,7 @@ package geotrellis.raster
 import geotrellis._
 import geotrellis.feature.Extent
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 /**
  * LazyConvertedTile represents a lazily-applied conversion to any type.
@@ -45,14 +45,14 @@ final case class LazyConvertedTile(inner: ArrayTile, cellType: CellType)
   def force(): ArrayTile = {
     val forcedData = ArrayTile.alloc(cellType, cols, rows)
     if(cellType.isFloatingPoint) {
-      for(col <- 0 until cols optimized) {
-        for(row <- 0 until rows optimized) {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
           forcedData.setDouble(col, row, inner.getDouble(col, row))
         }
       }
     } else {
-      for(col <- 0 until cols optimized) {
-        for(row <- 0 until rows optimized) {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
           forcedData.set(col, row, inner.get(col, row))
         }
       }

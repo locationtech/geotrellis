@@ -2,7 +2,7 @@ package geotrellis.raster.op.local
 
 import geotrellis.raster._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 trait LocalTileComparatorOp extends Serializable {
   val name = {
@@ -15,8 +15,8 @@ trait LocalTileComparatorOp extends Serializable {
   /** Apply to the value from each cell and a constant Int. */
   def apply(r: Tile, c: Int): Tile = {
     val tile = BitArrayTile.ofDim(r.cols, r.rows)
-    for(col <- 0 until r.cols optimized) {
-      for(row <- 0 until r.rows optimized) {
+    cfor(0)(_ < r.cols, _ + 1) { col =>
+      cfor(0)(_ < r.rows, _ + 1) { row =>
         tile.set(col, row, if(compare(r.get(col, row), c)) 1 else 0)
       }
     }
@@ -27,8 +27,8 @@ trait LocalTileComparatorOp extends Serializable {
   def apply(r: Tile, c: Double): Tile = {
     val tile = BitArrayTile.ofDim(r.cols, r.rows)
 
-    for(col <- 0 until r.cols optimized) {
-      for(row <- 0 until r.rows optimized) {
+    cfor(0)(_ < r.cols, _ + 1) { col =>
+      cfor(0)(_ < r.rows, _ + 1) { row =>
         tile.set(col, row, if(compare(r.getDouble(col, row), c)) 1 else 0)
       }
     }
@@ -39,8 +39,8 @@ trait LocalTileComparatorOp extends Serializable {
   def apply(c: Int, r: Tile): Tile = {
     val tile = BitArrayTile.ofDim(r.cols, r.rows)
 
-    for(col <- 0 until r.cols optimized) {
-      for(row <- 0 until r.rows optimized) {
+    cfor(0)(_ < r.cols, _ + 1) { col =>
+      cfor(0)(_ < r.rows, _ + 1) { row =>
         tile.set(col, row, if(compare(c, r.get(col, row))) 1 else 0)
       }
     }
@@ -51,8 +51,8 @@ trait LocalTileComparatorOp extends Serializable {
   def apply(c: Double, r: Tile): Tile = {
     val tile = BitArrayTile.ofDim(r.cols, r.rows)
 
-    for(col <- 0 until r.cols optimized) {
-      for(row <- 0 until r.rows optimized) {
+    cfor(0)(_ < r.cols, _ + 1) { col =>
+      cfor(0)(_ < r.rows, _ + 1) { row =>
         tile.set(col, row, if(compare(c, r.getDouble(col, row))) 1 else 0)
       }
     }
@@ -67,8 +67,8 @@ trait LocalTileComparatorOp extends Serializable {
     val (cols, rows) = r1.dimensions
     val tile = BitArrayTile.ofDim(cols, rows)
 
-    for(col <- 0 until cols optimized) {
-      for(row <- 0 until rows optimized) {
+    cfor(0)(_ < r1.cols, _ + 1) { col =>
+      cfor(0)(_ < r1.rows, _ + 1) { row =>
         if(r1.cellType.isFloatingPoint) {
           tile.set(col, row, if(compare(r1.getDouble(col, row), r2.getDouble(col, row))) 1 else 0)
         }else {

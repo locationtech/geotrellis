@@ -26,7 +26,7 @@ import org.scalatest._
 
 import scala.math._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 class MeanSpec extends FunSpec with FocalOpSpec
                                with TestServer

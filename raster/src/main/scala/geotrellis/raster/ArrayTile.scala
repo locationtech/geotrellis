@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import geotrellis.feature.Extent
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 object ArrayTile {
   def alloc(t: CellType, cols: Int, rows: Int): MutableArrayTile = 

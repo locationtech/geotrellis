@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import geotrellis.feature.Extent
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 import scala.collection.mutable
 
 object CompositeTile {
@@ -64,8 +64,8 @@ object CompositeTile {
     val pRows = tileLayout.pixelRows
 
     val tiles = mutable.ListBuffer[Tile]()
-    for(trow <- 0 until tileLayout.tileRows optimized) {
-      for(tcol <- 0 until tileLayout.tileCols optimized) {
+    cfor(0)(_ < tileLayout.tileRows, _ + 1) { trow =>
+      cfor(0)(_ < tileLayout.tileCols, _ + 1) { tcol =>
         val firstCol = tcol * pCols
         val lastCol = firstCol + pCols - 1
         val firstRow = trow * pRows
@@ -106,11 +106,11 @@ case class CompositeTile(tiles: Seq[Tile],
       val pixelCols = tileLayout.pixelCols
       val pixelRows = tileLayout.pixelRows
       if(!cellType.isFloatingPoint) {
-        for(tcol <- 0 until tileCols optimized) {
-          for(trow <- 0 until tileRows optimized) {
+        cfor(0)(_ < tileRows, _ + 1) { trow =>
+          cfor(0)(_ < tileCols, _ + 1) { tcol =>
             val sourceTile = getTile(tcol, trow)
-            for(prow <- 0 until pixelRows optimized) {
-              for(pcol <- 0 until pixelCols optimized) {
+            cfor(0)(_ < pixelRows, _ + 1) { prow =>
+              cfor(0)(_ < pixelCols, _ + 1) { pcol =>
                 val acol = (pixelCols * tcol) + pcol
                 val arow = (pixelRows * trow) + prow
                 tile.set(acol, arow, sourceTile.get(pcol, prow))
@@ -119,11 +119,11 @@ case class CompositeTile(tiles: Seq[Tile],
           }
         }
       } else {
-        for(tcol <- 0 until tileCols optimized) {
-          for(trow <- 0 until tileRows optimized) {
+        cfor(0)(_ < tileRows, _ + 1) { trow =>
+          cfor(0)(_ < tileCols, _ + 1) { tcol =>
             val sourceTile = getTile(tcol, trow)
-            for(prow <- 0 until pixelRows optimized) {
-              for(pcol <- 0 until pixelCols optimized) {
+            cfor(0)(_ < pixelRows, _ + 1) { prow =>
+              cfor(0)(_ < pixelCols, _ + 1) { pcol =>
                 val acol = (pixelCols * tcol) + pcol
                 val arow = (pixelRows * trow) + prow
                 tile.setDouble(acol, arow, sourceTile.getDouble(pcol, prow))
@@ -148,11 +148,11 @@ case class CompositeTile(tiles: Seq[Tile],
       val pixelRows = tileLayout.pixelRows
       val totalCols = tileCols * pixelCols
 
-      for(tcol <- 0 until tileCols optimized) {
-        for(trow <- 0 until tileRows optimized) {
+      cfor(0)(_ < tileRows, _ + 1) { trow =>
+        cfor(0)(_ < tileCols, _ + 1) { tcol =>
           val tile = getTile(tcol, trow)
-          for(prow <- 0 until pixelRows optimized) {
-            for(pcol <- 0 until pixelCols optimized) {
+          cfor(0)(_ < pixelRows, _ + 1) { prow =>
+            cfor(0)(_ < pixelCols, _ + 1) { pcol =>
               val acol = (pixelCols * tcol) + pcol
               val arow = (pixelRows * trow) + prow
               arr(arow * totalCols + acol) = tile.get(pcol, prow)
@@ -176,11 +176,11 @@ case class CompositeTile(tiles: Seq[Tile],
       val pixelRows = tileLayout.pixelRows
       val totalCols = tileCols * pixelCols
 
-      for(tcol <- 0 until tileCols optimized) {
-        for(trow <- 0 until tileRows optimized) {
+      cfor(0)(_ < tileRows, _ + 1) { trow =>
+        cfor(0)(_ < tileCols, _ + 1) { tcol =>
           val tile = getTile(tcol, trow)
-          for(prow <- 0 until pixelRows optimized) {
-            for(pcol <- 0 until pixelCols optimized) {
+          cfor(0)(_ < pixelRows, _ + 1) { prow =>
+            cfor(0)(_ < pixelCols, _ + 1) { pcol =>
               val acol = (pixelCols * tcol) + pcol
               val arow = (pixelRows * trow) + prow
               arr(arow * totalCols + acol) = tile.getDouble(pcol, prow)
@@ -216,8 +216,8 @@ case class CompositeTile(tiles: Seq[Tile],
 
   def map(f: Int => Int): Tile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         tile.set(col, row, get(col, row))
       }
     }
@@ -228,8 +228,8 @@ case class CompositeTile(tiles: Seq[Tile],
     (this, other).assertEqualDimensions
 
     val tile = ArrayTile.alloc(cellType, cols, rows)
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         tile.set(col, row, f(get(col, row), other.get(col, row)))
       }
     }
@@ -238,8 +238,8 @@ case class CompositeTile(tiles: Seq[Tile],
 
   def mapDouble(f: Double =>Double): Tile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         tile.setDouble(col, row, getDouble(col, row))
       }
     }
@@ -250,8 +250,8 @@ case class CompositeTile(tiles: Seq[Tile],
     (this, other).assertEqualDimensions
 
     val tile = ArrayTile.alloc(cellType, cols, rows)
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         tile.setDouble(col, row, f(getDouble(col, row), other.getDouble(col, row)))
       }
     }
@@ -278,7 +278,7 @@ case class CompositeTile(tiles: Seq[Tile],
           }
           if(tileCol != tileLayout.tileCols - 1) {
             val pad = " " * 5
-            sb.append(s"$pad| ")
+            sb.append(s"$pad| ")r
           }
         }
         sb.append(s"\n")

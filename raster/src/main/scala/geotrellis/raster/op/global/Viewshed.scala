@@ -3,7 +3,7 @@ package geotrellis.raster.op.global
 import geotrellis.raster._
 import geotrellis.feature.Point
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 /**
  * Created by jchien on 4/24/14.
@@ -18,8 +18,8 @@ object Viewshed extends Serializable {
     val requiredHeights = 
       offsets(r, startCol, startRow)
 
-    for(col <- 0 until cols optimized) {
-      for(row <- 0 until rows optimized) {
+    cfor(0)(_ < cols, _ + 1) { col =>
+      cfor(0)(_ < rows, _ + 1) { row =>
         if (height >= requiredHeights.getDouble(col, row) - 0.5) {
           tile.set(col, row, 1)
         } else {
@@ -39,8 +39,8 @@ object Viewshed extends Serializable {
     } else {
       val tile = ArrayTile.alloc(TypeDouble, cols, rows)
 
-      for(col <- 0 until cols optimized) {
-        for(row <- 0 until rows optimized) {
+      cfor(0)(_ < cols, _ + 1) { col =>
+        cfor(0)(_ < rows, _ + 1) { row =>
           val height = r.getDouble(col, row)
 
           if (isNoData(height)) {
@@ -58,7 +58,7 @@ object Viewshed extends Serializable {
                   (row + 1, startRow)
                 }
 
-              for( y <- rowMin to rowMax optimized) {
+              cfor(rowMin)(_ <= rowMax, _ + 1) { y =>
                 val x = (y - startRow).toDouble / (row - startRow) * (col - startCol) + startCol
 
                 val xInt = x.toInt
@@ -84,7 +84,7 @@ object Viewshed extends Serializable {
                   (col + 1, startCol)
                 }
 
-              for (x <- colMin to colMax optimized) {
+              cfor(colMin)(_ <= colMax, _ + 1) { x =>
                 val y = (x - startCol).toDouble / (col - startCol) * (row - startRow) + startRow
 
                 val yInt = y.toInt

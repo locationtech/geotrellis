@@ -20,7 +20,7 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.raster._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 import scala.collection.mutable
 
 trait MajorityOpMethods[+Repr <: RasterSource] { self: Repr =>
