@@ -146,7 +146,8 @@ case class IFDTags(
   colimetryTags: IFDColimetryTags = IFDColimetryTags(),
   jpegTags: IFDJPEGTags = IFDJPEGTags(),
   yCbCrTags: IFDYCbCrTags = IFDYCbCrTags(),
-  geoTiffTags: IFDGeoTiffTags = IFDGeoTiffTags()
+  geoTiffTags: IFDGeoTiffTags = IFDGeoTiffTags(),
+  imageBytes: Option[Array[Char]] = None
 )
 
 case class IFD(tags: IFDTags)

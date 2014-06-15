@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+//http://docs.oracle.com/javase/7/docs/api/java/nio/ByteBuffer.html
+
 package geotrellis.io.geotiff
 
 import ReaderUtils._

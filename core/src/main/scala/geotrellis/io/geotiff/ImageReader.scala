@@ -18,6 +18,8 @@ package geotrellis.io.geotiff
 
 import ReaderUtils._
 
+import geotrellis.io.geotiff.decompression.DecompressionObject._
+
 object ImageReader {
 
   def read(streamArray: Array[Char], tags: IFDTags) = {
@@ -28,33 +30,11 @@ object ImageReader {
   def readStripeImage(streamArray: Array[Char], tags: IFDTags) = {
     val stripOffsets = tags.basics.stripOffsets.get
     val stripByteCounts = tags.basics.stripByteCounts.get
-    val strips = for (i <- 0 until stripOffsets.size) yield {
+    val strips = (for (i <- 0 until stripOffsets.size) yield {
       streamArray.drop(stripOffsets(i)).take(stripByteCounts(i))
-    }
+    }).toArray
 
-    val imageLength = tags.basics.imageLength.get
-    val rowsPerStrip = tags.basics.rowsPerStrip
-    val rowByteLength = stripByteCounts(0) / rowsPerStrip
-
-    val rowsUnFlattened = for (i <- 0 until stripOffsets.size) yield {
-      val strip = strips(i)
-      val mod = imageLength % rowsPerStrip
-      val threshold = i == stripOffsets.size - 1 && mod != 0 match {
-        case true => mod
-        case _ => rowsPerStrip
-      }
-
-      for (j <- 0 until threshold) yield {
-        strips.drop(j * rowByteLength).take(rowByteLength)
-      }
-    }
-
-    val rows = rowsUnFlattened.flatten
-
-    tags.basics.compression match {
-      case 1 => rows
-      case 2 =>
-    }
+    tags.uncompress(strips)
   }
 
   def readTileImage(streamArray: Array[Char], tags: IFDTags) = {
