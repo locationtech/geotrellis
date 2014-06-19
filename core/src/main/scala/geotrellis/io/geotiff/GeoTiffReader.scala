@@ -14,79 +14,69 @@
  * limitations under the License.
  */
 
-//http://docs.oracle.com/javase/7/docs/api/java/nio/ByteBuffer.html
-
 package geotrellis.io.geotiff
-
-import ReaderUtils._
 
 import scala.io.BufferedSource
 
-object GeoTiffReader {
+import java.nio.{ByteBuffer, ByteOrder}
 
-  def read(stream: BufferedSource): GeoTiff = {
-    val streamArray = stream.toArray
-    read(streamArray)
+class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
+
+case class GeoTiffReader(byteBuffer: ByteBuffer) {
+
+  val tagReader = TagReader(byteBuffer)
+
+  val imageReader = ImageReader(byteBuffer)
+
+  def this(source: BufferedSource) =
+    this(ByteBuffer.wrap(source.map(_.toByte).toArray))
+
+  def read(): GeoTiff = {
+    setByteBufferPosition
+    setByteOrder
+    validateTiffVersion
+    byteBuffer.position(byteBuffer.getInt)
+    GeoTiff(readImageDirectories.toVector)
   }
 
-  // Should have the reader in implicit scope!? for byte order.
-  def read(streamArray: Array[Char]): GeoTiff = {
-    (streamArray(0), streamArray(1), streamArray(2).toByte) match {
-      case ('I', 'I', 42) => readLittleEndianGeoTiff(streamArray)
-      case ('M', 'M', 42) => readBigEndianGeoTiff(streamArray)
+  private def setByteBufferPosition = byteBuffer.position(0)
+
+  private def setByteOrder {
+    (byteBuffer.get.toChar, byteBuffer.get.toChar) match {
+      case ('I', 'I') => byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
+      case ('M', 'M') => byteBuffer.order(ByteOrder.BIG_ENDIAN)
+      case _ => throw new MalformedGeoTiffException("incorrect byte order")
     }
   }
 
-  private def readLittleEndianGeoTiff(streamArray: Array[Char]): GeoTiff = {
-    val offset = getInt(streamArray)(4)
-    val ifds = parseLittleEndianIFDs(streamArray, offset).toArray
+  private def validateTiffVersion = if (byteBuffer.getChar != 42)
+    throw new MalformedGeoTiffException("bad identification number (not 42)")
 
-    GeoTiff(ifds)
-  }
-
-  private def parseLittleEndianIFDs(streamArray: Array[Char], current: Int):
-      List[IFD] = {
-    if (current == 0) Nil
-    else {
-      val entries = getShort(streamArray)(current)
-      val tags = parseTags(streamArray, current + 2,
-        IFDTags(count = entries), 0, None)
-
-      val image = ImageReader.read(streamArray, tags)
-
-      val offset = getInt(streamArray)(entries * 12 + current + 2)
-      IFD(tags) :: parseLittleEndianIFDs(streamArray, offset)
-    }
-  }
-
-  private def parseTags(streamArray: Array[Char], current: Int,
-    tags: IFDTags, index: Int, gkMetadata: Option[TagMetadata]): IFDTags = {
-    (tags.geoTiffTags.doubles, tags.geoTiffTags.asciis,
-      tags.geoTiffTags.geoKeyDirectory, index, gkMetadata) match {
-      case (_, _, _, tags.count, _) => tags
-      case (Some(_), Some(_), None, _, Some(metadata)) => parseTags(
-        streamArray, current + 12, TagReader.read(streamArray, metadata,
-          tags), index + 1, None)
+  private def readImageDirectories: List[ImageDirectory] =
+    byteBuffer.position match {
+      case 0 => Nil
       case _ => {
-        val getShortValue = getShort(streamArray)(_)
-        val getIntValue = getInt(streamArray)(_)
-
-        val metadata = TagMetadata(getShortValue(current),
-          getShortValue(current + 2),
-          getIntValue(current + 4),
-          getIntValue(current + 8))
-
-        if (metadata.tag == 34735) {
-          parseTags(streamArray, current + 12, tags, index,
-            Some(metadata))
-        } else {
-          val newTag = TagReader.read(streamArray, metadata, tags)
-          parseTags(streamArray, current + 12, newTag, index + 1,
-            gkMetadata)
-        }
+        val current = byteBuffer.position
+        val entries = byteBuffer.getShort
+        val directory = readImageDirectory(ImageDirectory(count = entries), 0)
+        byteBuffer.position(entries * 12 + current + 2)
+        directory :: readImageDirectories
       }
     }
-  }
 
-  private def readBigEndianGeoTiff(streamArray: Array[Char]): GeoTiff = ???
+  private def readImageDirectory(directory: ImageDirectory, index: Int,
+    geoKeysMetadata: Option[TagMetadata] = None): ImageDirectory =
+    if (index == directory.count - 1) {
+      val newDirectory = tagReader.read(directory, geoKeysMetadata.get)
+      imageReader.read(newDirectory)
+    } else {
+      val metadata = TagMetadata(byteBuffer.getShort, byteBuffer.getShort,
+        byteBuffer.getInt, byteBuffer.getInt)
+
+      if (metadata.tag == 34735) readImageDirectory(directory, index,
+        Some(metadata))
+      else readImageDirectory(tagReader.read(directory, metadata), index + 1,
+        geoKeysMetadata)
+    }
+
 }

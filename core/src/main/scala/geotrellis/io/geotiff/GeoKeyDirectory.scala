@@ -28,12 +28,12 @@ case class GeoKeyDirectory(
 case class ConfigKeys(
   gtModelType: Option[Int] = None,
   gtRasterType: Option[Int] = None,
-  gtCitation: Option[Array[String]] = None
+  gtCitation: Option[Vector[String]] = None
 )
 
 case class GeogCSParameterKeys(
   geogType: Option[Int] = None,
-  geogCitation: Option[Array[String]] = None,
+  geogCitation: Option[Vector[String]] = None,
   geogGeodeticDatum: Option[Int] = None,
   geogPrimeMeridian: Option[Int] = None,
   geogLinearUnits: Option[Int] = None,
@@ -42,45 +42,45 @@ case class GeogCSParameterKeys(
   geogEllipsoid: Option[Int] = None,
   geogSemiMajorAxis: Option[Int] = None,
   geogSemiMinorAxis: Option[Int] = None,
-  geogInvFlattening: Option[Array[Double]] = None,
+  geogInvFlattening: Option[Vector[Double]] = None,
   geogAzimuthUnits: Option[Int] = None,
   geogPrimeMeridianLong: Option[Double] = None
 )
 
 case class ProjectedCSParameterKeys(
   projectedCSType: Option[Int] = None,
-  pcsCitation: Option[Array[String]] = None,
+  pcsCitation: Option[Vector[String]] = None,
   projection: Option[Int] = None,
   projCoordTrans: Option[Int] = None,
   projLinearUnits: Option[Int] = None,
-  projLinearUnitSize: Option[Array[Double]] = None,
-  projStdparallel1: Option[Array[Double]] = None,
-  projStdparallel2: Option[Array[Double]] = None,
-  projNatOriginLong: Option[Array[Double]] = None,
-  projNatOriginLat: Option[Array[Double]] = None,
+  projLinearUnitSize: Option[Vector[Double]] = None,
+  projStdparallel1: Option[Vector[Double]] = None,
+  projStdparallel2: Option[Vector[Double]] = None,
+  projNatOriginLong: Option[Vector[Double]] = None,
+  projNatOriginLat: Option[Vector[Double]] = None,
   projectedFalsings: ProjectedFalsings = ProjectedFalsings(),
-  projCenterLong: Option[Array[Double]] = None,
-  projCenterLat: Option[Array[Double]] = None,
-  projCenterEasting: Option[Array[Double]] = None,
-  projCenterNorthing: Option[Array[Double]] = None,
-  projScaleAtNatOrigin: Option[Array[Double]] = None,
-  projScaleAtCenter: Option[Array[Double]] = None,
-  projAzimuthAngle: Option[Array[Double]] = None,
-  projStraightVertpoleLong: Option[Array[Double]] = None
+  projCenterLong: Option[Vector[Double]] = None,
+  projCenterLat: Option[Vector[Double]] = None,
+  projCenterEasting: Option[Vector[Double]] = None,
+  projCenterNorthing: Option[Vector[Double]] = None,
+  projScaleAtNatOrigin: Option[Vector[Double]] = None,
+  projScaleAtCenter: Option[Vector[Double]] = None,
+  projAzimuthAngle: Option[Vector[Double]] = None,
+  projStraightVertpoleLong: Option[Vector[Double]] = None
 )
 
 case class ProjectedFalsings(
-  projFalseEasting: Option[Array[Double]] = None,
-  projFalseNorthing: Option[Array[Double]] = None,
-  projFalseOriginLong: Option[Array[Double]] = None,
-  projFalseOriginLat: Option[Array[Double]] = None,
-  projFalseOriginEasting: Option[Array[Double]] = None,
-  projFalseOriginNorthing: Option[Array[Double]] = None
+  projFalseEasting: Option[Vector[Double]] = None,
+  projFalseNorthing: Option[Vector[Double]] = None,
+  projFalseOriginLong: Option[Vector[Double]] = None,
+  projFalseOriginLat: Option[Vector[Double]] = None,
+  projFalseOriginEasting: Option[Vector[Double]] = None,
+  projFalseOriginNorthing: Option[Vector[Double]] = None
 )
 
 case class VerticalCSKeys(
   verticalCSType: Option[Int] = None,
-  verticalCitation: Option[Array[String]] = None,
+  verticalCitation: Option[Vector[String]] = None,
   verticalDatum: Option[Int] = None,
   verticalUnits: Option[Int] = None
 )

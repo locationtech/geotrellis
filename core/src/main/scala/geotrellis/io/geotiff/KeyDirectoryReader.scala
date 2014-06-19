@@ -16,139 +16,157 @@
 
 package geotrellis.io.geotiff
 
-import ReaderUtils._
+import java.nio.ByteBuffer
 
-case class KeyDirectoryReader(asciis: String, doubles: Array[Double]) {
+case class KeyDirectoryReader(byteBuffer: ByteBuffer,
+  directory: ImageDirectory) {
 
-  def read(streamArray: Array[Char], offset: Int, directory:
-      GeoKeyDirectory, index: Int): GeoKeyDirectory = index match {
-    case directory.count => directory
+  def read(geoKeyDirectory: GeoKeyDirectory, index: Int = 0):
+      GeoKeyDirectory = index match {
+    case geoKeyDirectory.count => geoKeyDirectory
     case _ => {
-      val getShortValue = getShort(streamArray)(_)
+      val keyEntryMetadata = KeyMetadata(
+        byteBuffer.getShort,
+        byteBuffer.getShort,
+        byteBuffer.getShort,
+        byteBuffer.getShort
+      )
 
-      val current = offset + index * 8
-      val keyID = getShortValue(current)
-      val tiffTagLocation = getShortValue(current + 2)
-      val count = getShortValue(current + 4)
-      val valueOffset = getShortValue(current + 6)
+      val updatedDirectory = readKeyEntry(keyEntryMetadata, geoKeyDirectory)
 
-      val keyEntryMetadata = KeyMetadata(keyID, tiffTagLocation, count,
-        valueOffset)
-
-      val newDirectory = readKeyEntry(streamArray, keyEntryMetadata,
-        current + 8, directory)
-
-      read(streamArray, offset, newDirectory, index + 1)
+      read(updatedDirectory, index + 1)
     }
   }
 
-  private def readKeyEntry(streamArray: Array[Char], metadata: KeyMetadata,
-    offset: Int, directory: GeoKeyDirectory) = (metadata.tiffTagLocation,
-      metadata.count) match {
-    case (0, _) => readShort(metadata.keyID, metadata.valueOffset, directory)
-    case (34735, _) => readShorts(metadata, offset, directory)
-    case (34736, _) => readDoubles(metadata, directory)
-    case (34737, _) => readAsciis(metadata, directory)
+  private def readKeyEntry(keyMetadata: KeyMetadata,
+    geoKeyDirectory: GeoKeyDirectory)  =
+    (keyMetadata.tiffTagLocation,  keyMetadata.count) match {
+      case (0, _) => readShort(keyMetadata, geoKeyDirectory)
+      case (34735, _) => readShorts(keyMetadata, geoKeyDirectory)
+      case (34736, _) => readDoubles(keyMetadata, geoKeyDirectory)
+      case (34737, _) => readAsciis(keyMetadata, geoKeyDirectory)
+    }
+
+  private def readShort(keyMetadata: KeyMetadata,
+    geoKeyDirectory: GeoKeyDirectory) = keyMetadata.keyID match {
+    case 1024 => geoKeyDirectory.copy(configKeys =
+      geoKeyDirectory.configKeys.copy(gtModelType =
+        Some(keyMetadata.valueOffset)))
+    case 1025 => geoKeyDirectory.copy(configKeys =
+      geoKeyDirectory.configKeys.copy(gtRasterType =
+        Some(keyMetadata.valueOffset)))
+    case 2048 => geoKeyDirectory.copy(geogCSParameterKeys =
+      geoKeyDirectory.geogCSParameterKeys.copy(geogType =
+        Some(keyMetadata.valueOffset)))
+    case 2052 => geoKeyDirectory.copy(geogCSParameterKeys =
+      geoKeyDirectory.geogCSParameterKeys.copy(geogLinearUnits =
+        Some(keyMetadata.valueOffset)))
+    case 2054 => geoKeyDirectory.copy(geogCSParameterKeys =
+      geoKeyDirectory.geogCSParameterKeys.copy(geogAngularUnits =
+        Some(keyMetadata.valueOffset)))
+    case 3072 => geoKeyDirectory.copy(projectedCSParameterKeys = geoKeyDirectory.
+        projectedCSParameterKeys.copy(projectedCSType =
+          Some(keyMetadata.valueOffset)))
+    case 3074 => geoKeyDirectory.copy(projectedCSParameterKeys = geoKeyDirectory.
+        projectedCSParameterKeys.copy(projection =
+          Some(keyMetadata.valueOffset)))
+    case 3075 => geoKeyDirectory.copy(projectedCSParameterKeys = geoKeyDirectory.
+        projectedCSParameterKeys.copy(projCoordTrans =
+          Some(keyMetadata.valueOffset)))
+    case 3076 => geoKeyDirectory.copy(projectedCSParameterKeys = geoKeyDirectory.
+        projectedCSParameterKeys.copy(projLinearUnits =
+          Some(keyMetadata.valueOffset)))
   }
 
-  private def readShort(keyID: Int, value: Int, directory:
-      GeoKeyDirectory) = keyID match {
-    case 1024 => directory.copy(configKeys = directory.configKeys.copy(
-      gtModelType = Some(value)))
-    case 1025 => directory.copy(configKeys = directory.configKeys.copy(
-      gtRasterType = Some(value)))
-    case 2048 => directory.copy(geogCSParameterKeys =
-      directory.geogCSParameterKeys.copy(geogType = Some(value)))
-    case 2052 => directory.copy(geogCSParameterKeys =
-      directory.geogCSParameterKeys.copy(geogLinearUnits = Some(value)))
-    case 2054 => directory.copy(geogCSParameterKeys =
-      directory.geogCSParameterKeys.copy(geogAngularUnits = Some(value)))
-    case 3072 => directory.copy(projectedCSParameterKeys = directory.
-        projectedCSParameterKeys.copy(projectedCSType = Some(value)))
-    case 3074 => directory.copy(projectedCSParameterKeys = directory.
-        projectedCSParameterKeys.copy(projection = Some(value)))
-    case 3075 => directory.copy(projectedCSParameterKeys = directory.
-        projectedCSParameterKeys.copy(projCoordTrans = Some(value)))
-    case 3076 => directory.copy(projectedCSParameterKeys = directory.
-        projectedCSParameterKeys.copy(projLinearUnits = Some(value)))
+  private def readShorts(keyMetadata: KeyMetadata,
+    geoKeyDirectory: GeoKeyDirectory) = geoKeyDirectory
 
-  }
+  private def readDoubles(keyMetadata: KeyMetadata,
+    geoKeyDirectory: GeoKeyDirectory) = {
+    val doubles = directory.geoTiffTags.doubles.get.drop(
+      keyMetadata.valueOffset).take(keyMetadata.count)
 
-  private def readShorts(metadata: KeyMetadata, offset: Int, directory:
-      GeoKeyDirectory) = {
-    directory
-  }
-
-  private def readDoubles(metadata: KeyMetadata, directory: GeoKeyDirectory) = {
-    val doubleArray = doubles.drop(metadata.valueOffset).take(metadata.count)
-
-    metadata.keyID match {
-      case 2059 => directory.copy(geogCSParameterKeys = directory.
-          geogCSParameterKeys.copy(geogInvFlattening = Some(doubleArray)))
-      case 3078 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projStdparallel1 = Some(doubleArray)))
-      case 3079 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projStdparallel2 = Some(doubleArray)))
-      case 3080 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projNatOriginLong = Some(doubleArray)))
-      case 3081 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projNatOriginLat = Some(doubleArray)))
-      case 3082 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projectedFalsings = directory.
-            projectedCSParameterKeys.projectedFalsings.copy(projFalseEasting
-              = Some(doubleArray))))
-      case 3083 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projectedFalsings = directory.
-            projectedCSParameterKeys.projectedFalsings.copy(projFalseNorthing
-              = Some(doubleArray))))
-      case 3084 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projectedFalsings = directory.
-            projectedCSParameterKeys.projectedFalsings.copy(projFalseOriginLong
-              = Some(doubleArray))))
-      case 3085 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projectedFalsings = directory.
-            projectedCSParameterKeys.projectedFalsings.copy(projFalseOriginLat
-              = Some(doubleArray))))
-      case 3086 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projectedFalsings = directory.
-            projectedCSParameterKeys.projectedFalsings.copy(
-              projFalseOriginEasting = Some(doubleArray))))
-      case 3087 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projectedFalsings = directory.
-            projectedCSParameterKeys.projectedFalsings.copy(
-              projFalseOriginNorthing = Some(doubleArray))))
-      case 3088 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projCenterLong = Some(doubleArray)))
-      case 3089 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projCenterLat = Some(doubleArray)))
-      case 3090 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projCenterEasting = Some(doubleArray)))
-      case 3091 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projCenterNorthing = Some(doubleArray)))
-      case 3092 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projScaleAtNatOrigin =
-            Some(doubleArray)))
-      case 3093 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projScaleAtCenter = Some(doubleArray)))
-      case 3094 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projAzimuthAngle = Some(doubleArray)))
-      case 3095 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(projStraightVertpoleLong
-            = Some(doubleArray)))
+    keyMetadata.keyID match {
+      case 2059 => geoKeyDirectory.copy(geogCSParameterKeys = geoKeyDirectory.
+          geogCSParameterKeys.copy(geogInvFlattening = Some(doubles)))
+      case 3078 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projStdparallel1 =
+          Some(doubles)))
+      case 3079 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projStdparallel2 =
+          Some(doubles)))
+      case 3080 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projNatOriginLong =
+          Some(doubles)))
+      case 3081 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projNatOriginLat =
+          Some(doubles)))
+      case 3082 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projectedFalsings =
+          geoKeyDirectory.projectedCSParameterKeys.projectedFalsings.copy(
+            projFalseEasting = Some(doubles))))
+      case 3083 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projectedFalsings =
+          geoKeyDirectory.projectedCSParameterKeys.projectedFalsings.copy(
+            projFalseNorthing = Some(doubles))))
+      case 3084 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projectedFalsings =
+          geoKeyDirectory.projectedCSParameterKeys.projectedFalsings.copy(
+            projFalseOriginLong = Some(doubles))))
+      case 3085 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projectedFalsings =
+          geoKeyDirectory.projectedCSParameterKeys.projectedFalsings.copy(
+            projFalseOriginLat = Some(doubles))))
+      case 3086 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projectedFalsings =
+          geoKeyDirectory.projectedCSParameterKeys.projectedFalsings.copy(
+            projFalseOriginEasting = Some(doubles))))
+      case 3087 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projectedFalsings =
+          geoKeyDirectory.projectedCSParameterKeys.projectedFalsings.copy(
+            projFalseOriginNorthing = Some(doubles))))
+      case 3088 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projCenterLong =
+          Some(doubles)))
+      case 3089 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projCenterLat =
+          Some(doubles)))
+      case 3090 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projCenterEasting =
+          Some(doubles)))
+      case 3091 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projCenterNorthing =
+          Some(doubles)))
+      case 3092 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projScaleAtNatOrigin =
+          Some(doubles)))
+      case 3093 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projScaleAtCenter =
+          Some(doubles)))
+      case 3094 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projAzimuthAngle =
+          Some(doubles)))
+      case 3095 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(projStraightVertpoleLong
+          = Some(doubles)))
     }
   }
 
-  private def readAsciis(metadata: KeyMetadata, directory: GeoKeyDirectory) = {
-    val stringArray = getPartialString(asciis, metadata.valueOffset,
-      metadata.count)
+  private def readAsciis(metadata: KeyMetadata,
+    geoKeyDirectory: GeoKeyDirectory) = {
+    val strings = directory.geoTiffTags.asciis.get.substring(
+      metadata.valueOffset,
+      metadata.count
+    ).split("\\|").toVector
 
     metadata.keyID match {
-      case 1026 => directory.copy(configKeys = directory.configKeys.
-          copy(gtCitation = Some(stringArray)))
-      case 2049 => directory.copy(geogCSParameterKeys = directory.
-          geogCSParameterKeys.copy(geogCitation = Some(stringArray)))
-      case 3073 => directory.copy(projectedCSParameterKeys = directory.
-          projectedCSParameterKeys.copy(pcsCitation = Some(stringArray)))
+      case 1026 => geoKeyDirectory.copy(configKeys = geoKeyDirectory.configKeys.
+          copy(gtCitation = Some(strings)))
+      case 2049 => geoKeyDirectory.copy(geogCSParameterKeys = geoKeyDirectory.
+          geogCSParameterKeys.copy(geogCitation = Some(strings)))
+      case 3073 => geoKeyDirectory.copy(projectedCSParameterKeys =
+        geoKeyDirectory.projectedCSParameterKeys.copy(pcsCitation =
+          Some(strings)))
     }
   }
 

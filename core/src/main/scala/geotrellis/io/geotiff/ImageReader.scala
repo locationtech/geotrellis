@@ -16,29 +16,33 @@
 
 package geotrellis.io.geotiff
 
-import ReaderUtils._
+import java.nio.ByteBuffer
 
-import geotrellis.io.geotiff.decompression.DecompressionObject._
+import geotrellis.io.geotiff.utils.ByteBufferUtils._
+import geotrellis.io.geotiff.decompression.Decompression._
 
-object ImageReader {
+case class ImageReader(byteBuffer: ByteBuffer) {
 
-  def read(streamArray: Array[Char], tags: IFDTags) = {
-    if (!tags.basics.stripOffsets.isEmpty) readStripeImage(streamArray, tags)
-    else readTileImage(streamArray, tags)
+  def read(directory: ImageDirectory): ImageDirectory =
+    if (!directory.basicTags.stripOffsets.isEmpty) readStripeImage(directory)
+    else readTileImage(directory)
+
+  private def readStripeImage(directory: ImageDirectory) = {
+    val stripOffsets = directory.basicTags.stripOffsets.get
+    val stripByteCounts = directory.basicTags.stripByteCounts.get
+
+    val oldOffset = byteBuffer.position
+
+    val bytes = (for (i <- 0 until stripOffsets.size) yield {
+      byteBuffer.position(stripOffsets(i))
+      byteBuffer.getByteVector(stripByteCounts(i))
+    }).flatten.toVector
+
+    byteBuffer.position(oldOffset)
+
+    directory.uncompress(bytes)
   }
 
-  def readStripeImage(streamArray: Array[Char], tags: IFDTags) = {
-    val stripOffsets = tags.basics.stripOffsets.get
-    val stripByteCounts = tags.basics.stripByteCounts.get
-    val strips = (for (i <- 0 until stripOffsets.size) yield {
-      streamArray.drop(stripOffsets(i)).take(stripByteCounts(i))
-    }).toArray
-
-    tags.uncompress(strips)
-  }
-
-  def readTileImage(streamArray: Array[Char], tags: IFDTags) = {
-
-  }
+  private def readTileImage(directory: ImageDirectory) = directory
 
 }

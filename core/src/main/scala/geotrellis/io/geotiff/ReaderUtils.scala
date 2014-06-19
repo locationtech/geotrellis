@@ -51,7 +51,7 @@ object ReaderUtils {
     streamArray.drop(index).take(length - 1).mkString
 
   def getPartialString(string: String, start: Int, length: Int) =
-    string.substring(start, length).mkString.split("\\|")
+    string.substring(start, length).split("\\|")
 
   def getFractionalDataArray(streamArray: Array[Char],
     metadata: TagMetadata) = {

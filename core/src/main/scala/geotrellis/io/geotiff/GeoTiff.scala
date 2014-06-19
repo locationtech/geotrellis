@@ -16,4 +16,4 @@
 
 package geotrellis.io.geotiff
 
-case class GeoTiff(ifds: Array[IFD])
+case class GeoTiff(directories: IndexedSeq[ImageDirectory])

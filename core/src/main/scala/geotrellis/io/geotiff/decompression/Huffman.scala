@@ -21,12 +21,12 @@ import geotrellis.io.geotiff._
 
 import scala.collection.immutable.HashMap
 
-object HuffmanObject {
+object HuffmanDecompression {
 
-  implicit class Huffman(strips: Array[Array[Char]]) {
+  implicit class Huffman(bytes: Vector[Byte]) {
 
-    def uncompressHuffman(tags: IFDTags) = {
-      strips.flatten
+    def uncompressHuffman(directory: ImageDirectory): Vector[Byte] = {
+      bytes
     }
 
   }

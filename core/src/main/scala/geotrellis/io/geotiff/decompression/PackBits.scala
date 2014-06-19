@@ -18,28 +18,28 @@ package geotrellis.io.geotiff.decompression
 
 import geotrellis.io.geotiff._
 
-object PackBitsObject {
+object PackBitsDecompression {
 
-  implicit class PackBits(strips: Array[Array[Char]]) {
+  implicit class PackBits(bytes: Vector[Byte]) {
 
-    def uncompressPackBits(tags: IFDTags) = {
-      val flattenedStrips = strips.flatten
-      val size = tags.basics.imageWidth.get * tags.basics.imageLength.get
-      var buf = Vector.empty[Char]
+    def uncompressPackBits(directory: ImageDirectory): Vector[Byte] = {
+      val size =
+        directory.basicTags.imageWidth.get * directory.basicTags.imageLength.get
+      var buf = Vector.empty[Byte]
 
       var i = 0
       while (buf.size != size) {
-        val n = flattenedStrips(i)
+        val n = bytes(i)
         if (n <= 127) {
-          buf = buf ++ flattenedStrips.drop(i).take(n)
-        } else if (n < 255) {
-          buf = buf ++ (for (i <- 0 until n) yield (flattenedStrips(i)))
+          buf = buf ++ bytes.drop(i).take(n)
+        } else if (n > -128) {
+          buf = buf ++ (for (i <- 0 until -n) yield (bytes(i)))
         }
 
         i += 1
       }
 
-      buf.toArray
+      buf.toVector
     }
 
   }

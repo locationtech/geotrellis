@@ -20,7 +20,6 @@ import geotrellis.raster._
 import geotrellis.source._
 import geotrellis.process._
 import geotrellis.testkit._
-import geotrellis.io.geotiff._
 
 import scala.io.{Source, Codec}
 

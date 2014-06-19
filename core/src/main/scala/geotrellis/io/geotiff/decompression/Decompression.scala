@@ -17,36 +17,22 @@
 package geotrellis.io.geotiff.decompression
 
 import geotrellis.io.geotiff._
-import geotrellis.io.geotiff.decompression.HuffmanObject._
-import geotrellis.io.geotiff.decompression.PackBitsObject._
+import geotrellis.io.geotiff.decompression.HuffmanDecompression._
+import geotrellis.io.geotiff.decompression.PackBitsDecompression._
 
-object DecompressionObject {
+object Decompression {
 
-  implicit class Decompression(tags: IFDTags) {
+  implicit class Decompression(directory: ImageDirectory) {
 
-    def uncompress(strips: Array[Array[Char]]): IFDTags =
-      tags.basics.compression match {
-        case 1 => tags.copy(imageBytes = Some(strips.flatten))
-        case 2 => tags.copy(imageBytes = Some(strips.uncompressHuffman(tags)))
-        case 32773 => tags.copy(imageBytes =
-          Some(strips.uncompressPackBits(tags)))
+    def uncompress(bytes: Vector[Byte]): ImageDirectory =
+      directory.basicTags.compression match {
+        case 1 => directory.copy(imageBytes = Some(bytes))
+        case 2 => directory.copy(imageBytes =
+          Some(bytes.uncompressHuffman(directory)))
+        case 32773 => directory.copy(imageBytes =
+          Some(bytes.uncompressPackBits(directory)))
       }
 
-  }
-
-  def splitToRows(strips: Array[Array[Char]], tags: IFDTags) = {
-    val rowsPerStrip = tags.basics.rowsPerStrip
-    val rowLength = tags.basics.imageWidth.get
-    val mod = tags.basics.imageLength.get % rowsPerStrip
-    (for (i <- 0 until strips.length) yield {
-      val strip = strips(i)
-      val threshold = if (i == strips.length - 1 && mod != 0) mod else
-        rowsPerStrip
-
-      (for (j <- 0 until threshold) yield {
-        strip.drop(j * rowLength).take(rowLength)
-      }).toArray
-    }).flatten.toArray
   }
 
 }
