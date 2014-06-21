@@ -18,6 +18,8 @@ package geotrellis.io.geotiff
 
 import java.nio.ByteBuffer
 
+import geotrellis.io.geotiff.utils.ByteBufferUtils._
+
 case class KeyDirectoryReader(byteBuffer: ByteBuffer,
   directory: ImageDirectory) {
 
@@ -26,10 +28,10 @@ case class KeyDirectoryReader(byteBuffer: ByteBuffer,
     case geoKeyDirectory.count => geoKeyDirectory
     case _ => {
       val keyEntryMetadata = KeyMetadata(
-        byteBuffer.getShort,
-        byteBuffer.getShort,
-        byteBuffer.getShort,
-        byteBuffer.getShort
+        byteBuffer.getUnsignedShort,
+        byteBuffer.getUnsignedShort,
+        byteBuffer.getUnsignedShort,
+        byteBuffer.getUnsignedShort
       )
 
       val updatedDirectory = readKeyEntry(keyEntryMetadata, geoKeyDirectory)

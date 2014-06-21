@@ -22,81 +22,96 @@ object ByteBufferUtils {
 
   implicit class ByteBufferUtilities(byteBuffer: ByteBuffer) {
 
+    def getUnsignedShort = byteBuffer.getChar.toInt
+
     def getByteVector(length: Int): Vector[Byte] =
       (for (i <- 0 until length) yield byteBuffer.get).toVector
 
     def getByteVector(length: Int, valueOffset: Int): Vector[Int] =
       if (length <= 4) {
         val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
-          putInt(valueOffset)
+          putInt(0, valueOffset)
           (for (i <- 0 until length) yield bb.get.toInt).toVector
       } else {
-        val oldOffset = byteBuffer.position
+        val oldPos = byteBuffer.position
+
         byteBuffer.position(valueOffset)
         val arr = (for (i <- 0 until length) yield
           byteBuffer.get.toInt).toVector
-        byteBuffer.position(oldOffset)
+
+        byteBuffer.position(oldPos)
+
         arr
       }
 
     def getShortVector(length: Int, valueOffset: Int): Vector[Int] =
       if (length <= 2) {
         val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
-          putInt(valueOffset)
+          putInt(0, valueOffset)
           (for (i <- 0 until length) yield bb.getShort.toInt).toVector
       } else {
-        val oldOffset = byteBuffer.position
+        val oldPos = byteBuffer.position
+
         byteBuffer.position(valueOffset)
         val arr = (for (i <- 0 until length) yield
           byteBuffer.getShort.toInt).toVector
-        byteBuffer.position(oldOffset)
+
+        byteBuffer.position(oldPos)
+
         arr
       }
 
     def getIntVector(length: Int, valueOffset: Int): Vector[Int] =
       if (length == 1) {
         val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
-          putInt(valueOffset)
+          putInt(0, valueOffset)
           (for (i <- 0 until length) yield bb.getInt).toVector
       } else {
-        val oldOffset = byteBuffer.position
+        val oldPos = byteBuffer.position
+
         byteBuffer.position(valueOffset)
         val arr = (for (i <- 0 until length) yield byteBuffer.getInt).toVector
-        byteBuffer.position(oldOffset)
+
+        byteBuffer.position(oldPos)
+
         arr
       }
 
-
-
     def getString(length: Int, offset: Int): String = {
-      val oldOffset = byteBuffer.position
+      val oldPos = byteBuffer.position
+
       byteBuffer.position(offset)
       val string = (for (i <- 0 until length) yield
         byteBuffer.get.toChar).mkString
-      byteBuffer.position(oldOffset)
+
+      byteBuffer.position(oldPos)
+
       string
     }
 
     def getFractionalVector(length: Int, offset: Int) = {
-      val oldOffset = byteBuffer.position
+      val oldPos = byteBuffer.position
+
       byteBuffer.position(offset)
       val fractionals = (for (i <- 0 until length) yield (byteBuffer.getInt,
         byteBuffer.getInt)).toVector
-      byteBuffer.position(oldOffset)
+
+      byteBuffer.position(oldPos)
+
       fractionals
     }
 
     def getDoubleVector(length: Int, offset: Int) = {
-      val oldOffset = byteBuffer.position
+      val oldPos = byteBuffer.position
+
       byteBuffer.position(offset)
       val doubles = (for (i <- 0 until length) yield
         byteBuffer.getDouble).toVector
-      byteBuffer.position(oldOffset)
+
+      byteBuffer.position(oldPos)
+
       doubles
     }
-
-    def getShortFromInt(value: Int) = ByteBuffer.allocate(4)
-      .order(byteBuffer.order).putInt(value).getShort.toInt
 
   }
 

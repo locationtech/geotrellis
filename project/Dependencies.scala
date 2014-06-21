@@ -23,16 +23,19 @@ object Dependencies {
     "maven2 dev repository"   at "http://download.java.net/maven/2",
     "Typesafe Repo"           at "http://repo.typesafe.com/typesafe/releases/",
     "spray repo"              at "http://repo.spray.io/",
-    "sonatypeSnapshots"       at "http://oss.sonatype.org/content/repositories/snapshots"
+    "sonatypeReleases"        at "https://oss.sonatype.org/content/repositories/releases/",
+    "sonatypeSnapshots"       at "https://oss.sonatype.org/content/repositories/snapshots/"
   )
 
-  val scalatest     = "org.scalatest"       %  "scalatest_2.10"  % "2.0.M5b"
-  val scalacheck    = "org.scalacheck"      %% "scalacheck"      % "1.11.1"
-  val scalaReflect  = "org.scala-lang"      %  "scala-reflect"   % "2.10.2"
-  val scalaxyLoops  = "com.nativelibs4java" %% "scalaxy-loops"   % "0.3-SNAPSHOT"
-  val sigar         = "org.hyperic"         %  "sigar"           % "1.6.4"
-  val jts           = "com.vividsolutions"  %  "jts"             % "1.13"
-  //val shapeless     = "com.chuusai"         %% "shapeless"       % "2.0.0"
+  val scalatest      = "org.scalatest"              %  "scalatest_2.10"  % "2.0.M5b"
+  val scalacheck     = "org.scalacheck"             %% "scalacheck"      % "1.11.1"
+  val scalaReflect   = "org.scala-lang"             %  "scala-reflect"   % "2.10.2"
+  val scalaxyLoops   = "com.nativelibs4java"        %% "scalaxy-loops"   % "0.3-SNAPSHOT"
+  val sigar          = "org.hyperic"                %  "sigar"           % "1.6.4"
+  val jts            = "com.vividsolutions"         %  "jts"             % "1.13"
+  val scalaz         = "org.scalaz"                 %% "scalaz-core"     % "7.0.6"
+  val monocleCore    = "com.github.julien-truffaut" %% "monocle-core"    % "0.4.0"
+  val monocleMacro   = "com.github.julien-truffaut" %% "monocle-macro"   % "0.4.0"
 
   val akkaKernel    = "com.typesafe.akka" %% "akka-kernel"  % Version.akka
   val akkaRemote    = "com.typesafe.akka" %% "akka-remote"  % Version.akka

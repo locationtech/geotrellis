@@ -20,6 +20,10 @@ import java.nio.ByteBuffer
 
 import geotrellis.io.geotiff.utils.ByteBufferUtils._
 
+import geotrellis.io.geotiff.ImageDirectoryLenses._
+
+import monocle.syntax._
+
 case class TagReader(byteBuffer: ByteBuffer) {
 
   def read(directory: ImageDirectory, tagMetadata: TagMetadata):
@@ -28,37 +32,38 @@ case class TagReader(byteBuffer: ByteBuffer) {
     case (33550, _, _) => readModelPixelScaleTag(directory, tagMetadata)
     case (33922, _, _) => readModelTiePointsTag(directory, tagMetadata)
     case (34735, _, _) => readGeoKeyDirectoryTag(directory, tagMetadata)
-    case (_, 1, _) => readByteVectorTag(directory, tagMetadata)
-    case (_, 2, _) => readAsciiVectorTag(directory, tagMetadata)
-    case (_, 3, 1) => readShortTag(directory, tagMetadata)
-    case (_, 3, _) => readShortVectorTag(directory, tagMetadata)
-    case (_, 4, 1) => readIntTag(directory, tagMetadata)
-    case (_, 4, _) => readIntVectorTag(directory, tagMetadata)
-    case (_, 5, 1) => readFractionalTag(directory, tagMetadata)
-    case (_, 5, _) => readFractionalVectorTag(directory, tagMetadata)
-    case (_, 12, _) => readDoubleVectorTag(directory, tagMetadata)
+    case (_, 1, _) => readBytesTag(directory, tagMetadata)
+    case (_, 2, _) => readAsciisTag(directory, tagMetadata)
+    case (_, 3, _) => readShortsTag(directory, tagMetadata)
+    case (_, 4, _) => readIntsTag(directory, tagMetadata)
+    case (_, 5, _) => readFractionalsTag(directory, tagMetadata)
+    case (_, 12, _) => readDoublesTag(directory, tagMetadata)
   }
 
   private def readModelPixelScaleTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
-    val offset = byteBuffer.position
+
+    val oldPos = byteBuffer.position
+
     byteBuffer.position(tagMetadata.offset)
 
     val scaleX = byteBuffer.getDouble
     val scaleY = byteBuffer.getDouble
     val scaleZ = byteBuffer.getDouble
 
-    byteBuffer.position(offset)
+    byteBuffer.position(oldPos)
 
-    directory.copy(geoTiffTags = directory.geoTiffTags.copy(modelPixelScale =
-      Some((scaleX, scaleY, scaleZ))))
+    directory |-> modelPixelScaleLens set(Some(scaleX, scaleY,
+      scaleZ))
   }
 
   private def readModelTiePointsTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
+
+    val oldPos = byteBuffer.position
+
     val numberOfPoints = tagMetadata.length / 6
 
-    val offset = byteBuffer.position
     byteBuffer.position(tagMetadata.offset)
 
     val points = (for (i <- 0 until numberOfPoints) yield ModelTiePoint(
@@ -70,16 +75,15 @@ case class TagReader(byteBuffer: ByteBuffer) {
       byteBuffer.getDouble
     )).toVector
 
-    byteBuffer.position(offset)
+    byteBuffer.position(oldPos)
 
-    directory.copy(geoTiffTags =
-      directory.geoTiffTags.copy(modelTiePoints = Some(points)))
+    directory |-> modelTiePointsLens set(Some(points))
   }
 
   private def readGeoKeyDirectoryTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
 
-    val offset = byteBuffer.position
+    val oldPos = byteBuffer.position
 
     byteBuffer.position(tagMetadata.offset)
 
@@ -96,245 +100,141 @@ case class TagReader(byteBuffer: ByteBuffer) {
     val geoKeyDirectory = keyDirectoryReader.read(GeoKeyDirectory(count =
       numberOfKeys))
 
-    byteBuffer.position(offset)
+    byteBuffer.position(oldPos)
 
-    directory.copy(geoTiffTags = directory.geoTiffTags.copy(geoKeyDirectory =
-      Some(geoKeyDirectory)))
+    directory |-> geoKeyDirectoryLens set(Some(geoKeyDirectory))
   }
 
-  private def readByteVectorTag(directory: ImageDirectory,
+  private def readBytesTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
+
     val bytes = byteBuffer.getByteVector(tagMetadata.length, tagMetadata.offset)
 
     tagMetadata.tag match {
-      case 336 => directory.copy(cmykTags = directory.cmykTags.copy(dotRange =
-        Some(bytes)))
-      case 338 => directory.copy(nonBasicTags =
-        directory.nonBasicTags.copy(extraSamples = Some(bytes)))
+      case 336 => directory |-> dotRangeLens set(Some(bytes))
+      case 338 => directory |-> extraSamplesLens set(Some(bytes))
     }
   }
 
-  private def readAsciiVectorTag(directory: ImageDirectory,
+  private def readAsciisTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
+
     val string = byteBuffer.getString(tagMetadata.length, tagMetadata.offset)
 
     tagMetadata.tag match {
-      case 270 => directory.copy(metadataTags =
-        directory.metadataTags.copy(imageDesc = Some(string)))
-      case 271 => directory.copy(metadataTags =
-        directory.metadataTags.copy(maker = Some(string)))
-      case 272 => directory.copy(metadataTags =
-        directory.metadataTags.copy(model = Some(string)))
-      case 305 => directory.copy(metadataTags =
-        directory.metadataTags.copy(software = Some(string)))
-      case 315 => directory.copy(metadataTags =
-        directory.metadataTags.copy(artist = Some(string)))
-      case 316 => directory.copy(metadataTags =
-        directory.metadataTags.copy(computer = Some(string)))
-      case 33432 => directory.copy(metadataTags =
-        directory.metadataTags.copy(copyright = Some(string)))
-      case 34737 => directory.copy(geoTiffTags =
-        directory.geoTiffTags.copy(asciis = Some(string)))
+      case 270 => directory |-> imageDescLens set(Some(string))
+      case 271 => directory |-> makerLens set(Some(string))
+      case 272 => directory |-> modelLens set(Some(string))
+      case 305 => directory |-> softwareLens set(Some(string))
+      case 315 => directory |-> artistLens set(Some(string))
+      case 316 => directory |-> computerLens set(Some(string))
+      case 33432 => directory |-> copyrightLens set(Some(string))
+      case 34737 => directory |-> asciisLens set(Some(string))
     }
   }
 
-  private def readShortTag(directory: ImageDirectory,
-    tagMetadata: TagMetadata) = {
-    val short = byteBuffer.getShortFromInt(tagMetadata.offset)
-
-    tagMetadata.tag match {
-      case 255 => directory.copy(nonBasicTags =
-        directory.nonBasicTags.copy(subfileType = Some(short)))
-      case 256 => directory.copy(basicTags =
-        directory.basicTags.copy(imageWidth = Some(short)))
-      case 257 => directory.copy(basicTags =
-        directory.basicTags.copy(imageLength = Some(short)))
-      case 258 => directory.copy(basicTags =
-        directory.basicTags.copy(bitsPerSample = Vector(short)))
-      case 259 => directory.copy(basicTags =
-        directory.basicTags.copy(compression = short))
-      case 262 => directory.copy(basicTags = directory.basicTags.copy(
-        photometricInterp = Some(short)))
-      case 263 => directory.copy(nonBasicTags = directory.nonBasicTags.copy(
-        thresholding = short))
-      case 264 => directory.copy(nonBasicTags =
-        directory.nonBasicTags.copy(cellWidth = Some(short)))
-      case 265 => directory.copy(nonBasicTags =
-        directory.nonBasicTags.copy(cellLength = Some(short)))
-      case 266 => directory.copy(nonBasicTags =
-        directory.nonBasicTags.copy(fillOrder = Some(short)))
-      case 274 => directory.copy(nonBasicTags = directory.nonBasicTags.copy(
-        orientation = Some(short)))
-      case 277 => directory.copy(basicTags = directory.basicTags.copy(
-        samplesPerPixel = short))
-      case 278 => directory.copy(basicTags = directory.basicTags.copy(
-        rowsPerStrip = short))
-      case 284 => directory.copy(nonBasicTags = directory.nonBasicTags.copy(
-        planarConfiguration
-          = Some(short)))
-      case 290 => directory.copy(nonBasicTags = directory.nonBasicTags.copy(
-        grayResponseUnit
-          = Some(short)))
-      case 296 => directory.copy(basicTags =
-        directory.basicTags.copy(resolutionUnit = Some(short)))
-      case 317 => directory.copy(nonBasicTags =
-        directory.nonBasicTags.copy(predictor = Some(short)))
-      case 322 => directory.copy(tileTags = directory.tileTags.copy(
-        tileWidth = Some(short)))
-      case 323 => directory.copy(tileTags = directory.tileTags.copy(
-        tileLength = Some(short)))
-      case 332 => directory.copy(cmykTags = directory.cmykTags.copy(
-        inkSet = Some(short)))
-      case 334 => directory.copy(cmykTags = directory.cmykTags.copy(
-        numberOfInks = Some(short)))
-      case 512 => directory.copy(jpegTags = directory.jpegTags.copy(
-        jpegProc = Some(short)))
-      case 513 => directory.copy(jpegTags = directory.jpegTags.copy(
-        jpegInterchangeFormat = Some(short)))
-      case 514 => directory.copy(jpegTags = directory.jpegTags.copy(
-        jpegInterchangeFormatLength = Some(short)))
-      case 515 => directory.copy(jpegTags = directory.jpegTags.copy(
-        jpegRestartInterval = Some(short)))
-      case 531 => directory.copy(yCbCrTags = directory.yCbCrTags.copy(
-        yCbCrPositioning = Some(short)))
-    }
-  }
-
-  private def readShortVectorTag(directory: ImageDirectory,
+  private def readShortsTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
     val shorts = byteBuffer.getShortVector(tagMetadata.length,
       tagMetadata.offset)
 
     tagMetadata.tag match {
-      case 258 => directory.copy(basicTags = directory.basicTags.copy(
-        bitsPerSample = shorts))
-      case 273 => directory.copy(basicTags = directory.basicTags.copy(
-        stripOffsets = Some(shorts)))
-      case 279 => directory.copy(basicTags = directory.basicTags.copy(
-        stripByteCounts = Some(shorts)))
-      case 280 => directory.copy(dataSampleFormatTags =
-        directory.dataSampleFormatTags.copy(minSampleValues = Some(shorts)))
-      case 281 => directory.copy(dataSampleFormatTags =
-        directory.dataSampleFormatTags.copy(maxSampleValues = Some(shorts)))
-      case 291 => directory.copy(nonBasicTags =
-        directory.nonBasicTags.copy(grayResponseCurve = Some(shorts)))
-      case 297 => directory.copy(documentationTags =
-        directory.documentationTags.copy(pageNumbers = Some(shorts)))
-      case 301 => directory.copy(colimetryTags = directory.colimetryTags.copy(
-        transferFunction = Some(shorts)))
-      case 320 => directory.copy(basicTags = directory.basicTags.copy(colorMap =
-        Some(shorts)))
-      case 321 => directory.copy(nonBasicTags =
-        directory.nonBasicTags.copy(halftoneHints = Some(shorts)))
-      case 325 => directory.copy(tileTags = directory.tileTags.copy(
-        tileByteCounts = Some(shorts)))
-      case 336 => directory.copy(cmykTags = directory.cmykTags.copy(dotRange =
-        Some(shorts)))
-      case 339 => directory.copy(dataSampleFormatTags =
-        directory.dataSampleFormatTags.copy(sampleFormat = Some(shorts)))
-      case 342 => directory.copy(colimetryTags = directory.colimetryTags.copy(
-        transferRange = Some(shorts)))
-      case 517 => directory.copy(jpegTags = directory.jpegTags.copy(
-        jpegLosslessPredictors = Some(shorts)))
-      case 518 => directory.copy(jpegTags = directory.jpegTags.copy(
-        jpegPointTransforms = Some(shorts)))
+      case 255 => directory |-> subfileTypeLens set(Some(shorts(0)))
+      case 256 => directory |-> imageWidthLens set(Some(shorts(0)))
+      case 257 => directory |-> imageLengthLens set(Some(shorts(0)))
+      case 259 => directory |-> compressionLens set(shorts(0))
+      case 262 => directory |-> photometricInterpLens set(Some(shorts(0)))
+      case 263 => directory |-> thresholdingLens set(shorts(0))
+      case 264 => directory |-> cellWidthLens set(Some(shorts(0)))
+      case 265 => directory |-> cellLengthLens set(Some(shorts(0)))
+      case 266 => directory |-> fillOrderLens set(Some(shorts(0)))
+      case 274 => directory |-> orientationLens set(Some(shorts(0)))
+      case 277 => directory |-> samplesPerPixelLens set(shorts(0))
+      case 278 => directory |-> rowsPerStripLens set(shorts(0))
+      case 284 => directory |-> planarConfigurationLens set(Some(shorts(0)))
+      case 290 => directory |-> grayResponseUnitLens set(Some(shorts(0)))
+      case 296 => directory |-> resolutionUnitLens set(Some(shorts(0)))
+      case 317 => directory |-> predictorLens set(Some(shorts(0)))
+      case 322 => directory |-> tileWidthLens set(Some(shorts(0)))
+      case 323 => directory |-> tileLengthLens set(Some(shorts(0)))
+      case 332 => directory |-> inkSetLens set(Some(shorts(0)))
+      case 334 => directory |-> numberOfInksLens set(Some(shorts(0)))
+      case 512 => directory |-> jpegProcLens set(Some(shorts(0)))
+      case 513 => directory |-> jpegInterchangeFormatLens set(Some(shorts(0)))
+      case 514 => directory |-> jpegInterchangeFormatLengthLens set(
+        Some(shorts(0)))
+      case 515 => directory |-> jpegRestartIntervalLens set(Some(shorts(0)))
+      case 531 => directory |-> yCbCrPositioningLens set(Some(shorts(0)))
+      case 258 => directory |-> bitsPerSampleLens set(shorts)
+      case 273 => directory |-> stripOffsetsLens set(Some(shorts))
+      case 279 => directory |-> stripByteCountsLens set(Some(shorts))
+      case 280 => directory |-> minSampleValuesLens set(Some(shorts))
+      case 281 => directory |-> maxSampleValuesLens set(Some(shorts))
+      case 291 => directory |-> grayResponseCurveLens set(Some(shorts))
+      case 297 => directory |-> pageNumbersLens set(Some(shorts))
+      case 301 => directory |-> transferFunctionLens set(Some(shorts))
+      case 320 => directory |-> colorMapLens set(Some(shorts))
+      case 321 => directory |-> halftoneHintsLens set(Some(shorts))
+      case 325 => directory |-> tileByteCountsLens set(Some(shorts))
+      case 336 => directory |-> dotRangeLens set(Some(shorts))
+      case 339 => directory |-> sampleFormatLens set(Some(shorts))
+      case 342 => directory |-> transferRangeLens set(Some(shorts))
+      case 517 => directory |-> jpegLosslessPredictorsLens set(Some(shorts))
+      case 518 => directory |-> jpegPointTransformsLens set(Some(shorts))
     }
   }
 
-  private def readIntTag(directory: ImageDirectory,
-    tagMetadata: TagMetadata) = {
-    val int = tagMetadata.offset
-
-    tagMetadata.tag match {
-      case 254 => directory.copy(nonBasicTags =
-        directory.nonBasicTags.copy(newSubfileType = Some(int)))
-      case 256 => directory.copy(basicTags = directory.basicTags.copy(
-        imageWidth = Some(int)))
-      case 257 => directory.copy(basicTags = directory.basicTags.copy(
-        imageLength = Some(int)))
-      case 292 => directory.copy(nonBasicTags =
-        directory.nonBasicTags.copy(t4Options = Some(int)))
-      case 293 => directory.copy(nonBasicTags =
-        directory.nonBasicTags.copy(t6Options = Some(int)))
-      case 322 => directory.copy(tileTags = directory.tileTags.copy(tileWidth
-          = Some(int)))
-      case 323 => directory.copy(tileTags = directory.tileTags.copy(tileLength
-          = Some(int)))
-      case 513 => directory.copy(jpegTags = directory.jpegTags.copy(
-        jpegInterchangeFormat = Some(int)))
-      case 514 => directory.copy(jpegTags = directory.jpegTags.copy(
-        jpegInterchangeFormatLength = Some(int)))
-    }
-  }
-
-  private def readIntVectorTag(directory: ImageDirectory,
+  private def readIntsTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
     val ints = byteBuffer.getIntVector(tagMetadata.length, tagMetadata.offset)
 
     tagMetadata.tag match {
-      case 273 => directory.copy(basicTags = directory.basicTags.copy(
-        stripOffsets = Some(ints)))
-      case 279 => directory.copy(basicTags = directory.basicTags.copy(
-        stripByteCounts = Some(ints)))
-      case 288 => directory.copy(nonBasicTags = directory.nonBasicTags.copy(
-        freeOffsets = Some(ints)))
-      case 289 => directory.copy(nonBasicTags = directory.nonBasicTags.copy(
-        freeByteCounts = Some(ints)))
-      case 324 => directory.copy(tileTags = directory.tileTags.copy(tileOffsets
-          = Some(ints)))
-      case 325 => directory.copy(tileTags = directory.tileTags.copy(tileOffsets
-          = Some(ints)))
-      case 519 => directory.copy(jpegTags = directory.jpegTags.copy(jpegQTables
-          = Some(ints)))
-      case 520 => directory.copy(jpegTags = directory.jpegTags.copy(jpegDCTables
-          = Some(ints)))
-      case 521 => directory.copy(jpegTags = directory.jpegTags.copy(jpegACTables
-          = Some(ints)))
-      case 532 => directory.copy(colimetryTags = directory.colimetryTags.copy(
-        referenceBlackWhite = Some(ints)))
+      case 254 => directory |-> newSubfileTypeLens set(Some(ints(0)))
+      case 256 => directory |-> imageWidthLens set(Some(ints(0)))
+      case 257 => directory |-> imageLengthLens set(Some(ints(0)))
+      case 292 => directory |-> t4OptionsLens set(Some(ints(0)))
+      case 293 => directory |-> t6OptionsLens set(Some(ints(0)))
+      case 322 => directory |-> tileWidthLens set(Some(ints(0)))
+      case 323 => directory |-> tileLengthLens set(Some(ints(0)))
+      case 513 => directory |-> jpegInterchangeFormatLens set(Some(ints(0)))
+      case 514 => directory |-> jpegInterchangeFormatLengthLens set(
+        Some(ints(0)))
+      case 273 => directory |-> stripOffsetsLens set(Some(ints))
+      case 279 => directory |-> stripByteCountsLens set(Some(ints))
+      case 288 => directory |-> freeOffsetsLens set(Some(ints))
+      case 289 => directory |-> freeByteCountsLens set(Some(ints))
+      case 324 => directory |-> tileOffsetsLens set(Some(ints))
+      case 325 => directory |-> tileByteCountsLens set(Some(ints))
+      case 519 => directory |-> jpegQTablesLens set(Some(ints))
+      case 520 => directory |-> jpegDCTablesLens set(Some(ints))
+      case 521 => directory |-> jpegACTablesLens set(Some(ints))
+      case 532 => directory |-> referenceBlackWhiteLens set(Some(ints))
     }
   }
 
-  private def readFractionalTag(directory: ImageDirectory,
-    tagMetadata: TagMetadata) = {
-    val fractional = byteBuffer.getFractionalVector(tagMetadata.length,
-      tagMetadata.offset)(0)
-
-    tagMetadata.tag match {
-      case 282 => directory.copy(basicTags = directory.basicTags.copy(
-        xResolution = Some(fractional)))
-      case 283 => directory.copy(basicTags = directory.basicTags.copy(
-        yResolution = Some(fractional)))
-    }
-  }
-
-  private def readFractionalVectorTag(directory: ImageDirectory,
+  private def readFractionalsTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
     val fractionals = byteBuffer.getFractionalVector(tagMetadata.length,
       tagMetadata.offset)
 
     tagMetadata.tag match {
-      case 286 => directory.copy(documentationTags =
-        directory.documentationTags.copy(xPositions = Some(fractionals)))
-      case 287 => directory.copy(documentationTags =
-        directory.documentationTags.copy(yPositions = Some(fractionals)))
-      case 318 => directory.copy(colimetryTags = directory.colimetryTags.copy(
-        whitePoints = Some(fractionals)))
-      case 319 => directory.copy(colimetryTags = directory.colimetryTags.copy(
-        primaryChromaticities = Some(fractionals)))
-      case 529 => directory.copy(yCbCrTags = directory.yCbCrTags.copy(
-        yCbCrCoefficients = Some(fractionals)))
+      case 282 => directory |-> xResolutionLens set(Some(fractionals(0)))
+      case 283 => directory |-> yResolutionLens set(Some(fractionals(0)))
+      case 286 => directory |-> xPositionsLens set(Some(fractionals))
+      case 287 => directory |-> yPositionsLens set(Some(fractionals))
+      case 318 => directory |-> whitePointsLens set(Some(fractionals))
+      case 319 => directory |-> primaryChromaticitiesLens set(Some(fractionals))
+      case 529 => directory |-> yCbCrCoefficientsLens set(Some(fractionals))
     }
   }
 
-  private def readDoubleVectorTag(directory: ImageDirectory,
+  private def readDoublesTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
     val doubles = byteBuffer.getDoubleVector(tagMetadata.length,
       tagMetadata.offset)
 
     tagMetadata.tag match {
-      case 34736 => directory.copy(geoTiffTags = directory.geoTiffTags.copy(
-        doubles = Some(doubles)))
+      case 34736 => directory |-> doublesLens set(Some(doubles))
     }
   }
 

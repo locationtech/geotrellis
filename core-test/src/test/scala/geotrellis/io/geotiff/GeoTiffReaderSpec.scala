@@ -35,7 +35,7 @@ class GeoTiffReaderSpec extends FunSpec
   describe("read raster") {
     it("reads econic.tif") {
       val source = Source.fromFile("core-test/data/econic.tif")(Codec.ISO8859)
-      assert(GeoTiffReader.read(source) != null)
+      assert(GeoTiffReader(source).read != null)
       source.close()
     }
   }
