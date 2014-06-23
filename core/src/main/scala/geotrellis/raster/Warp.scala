@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import geotrellis._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 import java.nio.ByteBuffer
 
@@ -146,7 +146,7 @@ object Warp {
     // start at the Y-center of the first dst grid cell
     var y = ybase
 
-      for(dst_row <- 0 until dst_rows optimized) {
+      cfor(0)(_ < dst_rows, _ + 1) { dst_row =>
         // calculate the Y grid coordinate to read from
         val src_row = (src_rows - (y / src_cellheight).toInt - 1)
   
@@ -160,7 +160,7 @@ object Warp {
           var x = xbase
           
           // loop over cols
-          for(dst_col <- startCol until dst_cols optimized) {
+          cfor(startCol)(_ < dst_cols, _ + 1) { dst_col =>
             // calculate the X grid coordinate to read from
             val src_col = (x / src_cellwidth).toInt
             

@@ -41,7 +41,7 @@ object Dependencies {
   val jacksonCore   = "org.codehaus.jackson" % "jackson-core-asl"   % Version.jackson
   val jacksonMapper = "org.codehaus.jackson" % "jackson-mapper-asl" % Version.jackson
   
-  val spire         = "org.spire-math" %% "spire" % "0.7.1"
+  val spire         = "org.spire-math" %% "spire" % "0.7.5"
   
   val sprayClient   = "io.spray"        % "spray-client"  % Version.spray
   val sprayRouting  = "io.spray"        % "spray-routing" % Version.spray

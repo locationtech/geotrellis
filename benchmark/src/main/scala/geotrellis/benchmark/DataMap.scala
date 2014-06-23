@@ -104,18 +104,6 @@ class DataMap extends OperationBenchmark {
     goal
   }
 
-  import scalaxy.loops._
-
-  def timeScalaxyLoop(reps:Int) = run(reps)(scalaxyLoop)
-  def scalaxyLoop = {
-    val goal = ints.clone
-    val len = goal.length
-    for(i <- 0 until len optimized)  {
-      val z = goal(i)
-      if (isData(z)) goal(i) = z * 2
-    }
-  }
- 
   def timeRasterWhileLoop(reps:Int) = run(reps)(rasterWhileLoop)
   def rasterWhileLoop = {
     val rcopy = raster.toArrayRaster

@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import geotrellis._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 /**
  * LazyConvert represents a lazily-applied conversion to any type.
@@ -49,14 +49,14 @@ final case class LazyConvert(data: RasterData, typ: RasterType)
     val rasterType = getType
     val forcedData = RasterData.allocByType(rasterType,cols,rows)
     if(rasterType.isDouble) {
-      for(col <- 0 until cols optimized) {
-        for(row <- 0 until rows optimized) {
+      cfor(0)(_ < cols, _ + 1) { col =>
+        cfor(0)(_ < rows, _ + 1) { row =>
           forcedData.setDouble(col,row,data.getDouble(col,row))
         }
       }
     } else {
-      for(col <- 0 until cols optimized) {
-        for(row <- 0 until rows optimized) {
+      cfor(0)(_ < cols, _ + 1) { col =>
+        cfor(0)(_ < rows, _ + 1) { row =>
           forcedData.set(col,row,data.get(col,row))
         }
       }

@@ -25,7 +25,7 @@ import geotrellis.raster._
 import com.typesafe.config.Config
 import java.io.File
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 import scala.collection.mutable
 
 object TileSetRasterLayerBuilder
@@ -103,8 +103,8 @@ extends RasterLayer(info) {
         val targetExtent = re.extent
         val resLayout = tileLayout.getResolutionLayout(info.rasterExtent)
         val loader = getTileLoader()
-        for(tcol <- 0 until tileLayout.tileCols optimized) { 
-          for(trow <- 0 until tileLayout.tileRows optimized) {
+        cfor(0)(_ < tileLayout.tileCols, _ + 1) { tcol => 
+          cfor(0)(_ < tileLayout.tileRows, _ + 1) { trow =>
             val sourceRasterExtent = resLayout.getRasterExtent(tcol,trow)
             val sourceExtent = resLayout.getExtent(tcol,trow)
             sourceExtent.intersect(targetExtent) match {
@@ -117,8 +117,8 @@ extends RasterLayer(info) {
                 val rasterPart = loader.getTile(tcol,trow,Some(tileRe))
 
                 // Copy over the values to the correct place in the raster data
-                for(partCol <- 0 until cols optimized) {
-                  for(partRow <- 0 until rows optimized) {
+                cfor(0)(_ < cols, _ + 1) { partCol =>
+                  cfor(0)(_ < rows, _ + 1) { partRow =>
                     val dataCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
                     val dataRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
                     if(!(dataCol < 0 || dataCol >= re.cols ||
@@ -140,8 +140,8 @@ extends RasterLayer(info) {
       case None => 
         val loader = getTileLoader()
         val tiles = mutable.ListBuffer[Raster]()
-        for(col <- 0 until tileLayout.tileCols optimized) {
-          for(row <- 0 until tileLayout.tileRows optimized) {
+        cfor(0)(_ < tileLayout.tileCols, _ + 1) { col =>
+          cfor(0)(_ < tileLayout.tileRows, _ + 1) { row =>
             tiles += loader.getTile(col,row,None)
           }
         }
