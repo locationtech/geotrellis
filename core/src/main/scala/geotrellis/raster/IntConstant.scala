@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import geotrellis._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 final case class IntConstant(n: Int, cols: Int, rows: Int) extends RasterData {
   def getType = TypeInt
@@ -44,8 +44,8 @@ final case class IntConstant(n: Int, cols: Int, rows: Int) extends RasterData {
 
   def force(): RasterData = {
     val forcedData = RasterData.allocByType(getType, cols, rows)
-    for (col <- 0 until cols optimized) {
-      for (row <- 0 until rows optimized) {
+    cfor(0)(_ < cols, _ + 1) { col =>
+      cfor(0)(_ < rows, _ + 1) { row =>
         forcedData.set(col, row, n)
       }
     }

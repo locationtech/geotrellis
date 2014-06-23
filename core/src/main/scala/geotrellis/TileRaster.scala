@@ -17,7 +17,7 @@
 package geotrellis
 
 import geotrellis.raster._
-import scalaxy.loops._
+import spire.syntax.cfor._
 import scala.collection.mutable
 
 object TileRaster {
@@ -63,8 +63,8 @@ object TileRaster {
     val pRows = tileLayout.pixelRows
 
     val tiles = mutable.ListBuffer[Raster]()
-    for(trow <- 0 until tileLayout.tileRows optimized) {
-      for(tcol <- 0 until tileLayout.tileCols optimized) {
+    cfor(0)(_ < tileLayout.tileRows, _ + 1) { trow =>
+      cfor(0)(_ < tileLayout.tileCols, _ + 1) { tcol =>
         val firstCol = tcol * pCols
         val lastCol = firstCol + pCols - 1
         val firstRow = trow * pRows
@@ -102,11 +102,11 @@ case class TileRaster(tiles:Seq[Raster],
       val pixelCols = tileLayout.pixelCols
       val pixelRows = tileLayout.pixelRows
       if(!isFloat) {
-        for(tcol <- 0 until tileCols optimized) {
-          for(trow <- 0 until tileRows optimized) {
+        cfor(0)(_ < tileCols, _ + 1) { tcol =>
+          cfor(0)(_ < tileRows, _ + 1) { trow =>
             val tile = getTile(tcol,trow)
-            for(prow <- 0 until pixelRows optimized) {
-              for(pcol <- 0 until pixelCols optimized) {
+            cfor(0)(_ < pixelRows, _ + 1) { prow =>
+              cfor(0)(_ < pixelCols, _ + 1) { pcol =>
                 val acol = (pixelCols * tcol) + pcol
                 val arow = (pixelRows * trow) + prow
                 data.set(acol,arow,tile.get(pcol,prow))
@@ -115,11 +115,11 @@ case class TileRaster(tiles:Seq[Raster],
           }
         }
       } else {
-        for(tcol <- 0 until tileCols optimized) {
-          for(trow <- 0 until tileRows optimized) {
+        cfor(0)(_ < tileCols, _ + 1) { tcol =>
+          cfor(0)(_ < tileRows, _ + 1) { trow =>
             val tile = getTile(tcol,trow)
-            for(prow <- 0 until pixelRows optimized) {
-              for(pcol <- 0 until pixelCols optimized) {
+            cfor(0)(_ < pixelRows, _ + 1) { prow =>
+              cfor(0)(_ < pixelCols, _ + 1) { pcol =>
                 val acol = (pixelCols * tcol) + pcol
                 val arow = (pixelRows * trow) + prow
                 data.setDouble(acol,arow,tile.getDouble(pcol,prow))
@@ -144,11 +144,11 @@ case class TileRaster(tiles:Seq[Raster],
       val pixelRows = tileLayout.pixelRows
       val totalCols = tileCols*pixelCols
 
-      for(tcol <- 0 until tileCols optimized) {
-        for(trow <- 0 until tileRows optimized) {
+      cfor(0)(_ < tileCols, _ + 1) { tcol =>
+        cfor(0)(_ < tileRows, _ + 1) { trow =>
           val tile = getTile(tcol,trow)
-          for(prow <- 0 until pixelRows optimized) {
-            for(pcol <- 0 until pixelCols optimized) {
+          cfor(0)(_ < pixelRows, _ + 1) { prow =>
+            cfor(0)(_ < pixelCols, _ + 1) { pcol =>
               val acol = (pixelCols * tcol) + pcol
               val arow = (pixelRows * trow) + prow
               arr(arow*totalCols + acol) = tile.get(pcol,prow)
@@ -172,11 +172,11 @@ case class TileRaster(tiles:Seq[Raster],
       val pixelRows = tileLayout.pixelRows
       val totalCols = tileCols*pixelCols
 
-      for(tcol <- 0 until tileCols optimized) {
-        for(trow <- 0 until tileRows optimized) {
+      cfor(0)(_ < tileCols, _ + 1) { tcol =>
+        cfor(0)(_ < tileRows, _ + 1) { trow =>
           val tile = getTile(tcol,trow)
-          for(prow <- 0 until pixelRows optimized) {
-            for(pcol <- 0 until pixelCols optimized) {
+          cfor(0)(_ < pixelRows, _ + 1) { prow =>
+            cfor(0)(_ < pixelCols, _ + 1) { pcol =>
               val acol = (pixelCols * tcol) + pcol
               val arow = (pixelRows * trow) + prow
               arr(arow*totalCols + acol) = tile.getDouble(pcol,prow)
@@ -214,8 +214,8 @@ case class TileRaster(tiles:Seq[Raster],
 
   def map(f: Int => Int): Raster = {
     val data = RasterData.allocByType(rasterType,cols,rows)
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         data.set(col,row, get(col,row))
       }
     }
@@ -228,8 +228,8 @@ case class TileRaster(tiles:Seq[Raster],
                              s"$rasterExtent does not match ${r2.rasterExtent}")
     }
     val data = RasterData.allocByType(rasterType,cols,rows)
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         data.set(col,row, f(get(col,row),r2.get(col,row)))
       }
     }
@@ -238,8 +238,8 @@ case class TileRaster(tiles:Seq[Raster],
 
   def mapDouble(f:Double =>Double):Raster = {
     val data = RasterData.allocByType(rasterType,cols,rows)
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         data.setDouble(col,row, getDouble(col,row))
       }
     }
@@ -252,8 +252,8 @@ case class TileRaster(tiles:Seq[Raster],
                              s"$rasterExtent does not match ${r2.rasterExtent}")
     }
     val data = RasterData.allocByType(rasterType,cols,rows)
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         data.setDouble(col,row, f(getDouble(col,row),r2.getDouble(col,row)))
       }
     }

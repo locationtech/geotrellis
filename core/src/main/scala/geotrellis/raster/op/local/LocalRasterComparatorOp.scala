@@ -2,7 +2,7 @@ package geotrellis.raster.op.local
 
 import geotrellis._
 import geotrellis.raster.BitArrayRasterData
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 trait LocalRasterComparatorOp extends Serializable {
   val name = {
@@ -36,8 +36,8 @@ trait LocalRasterComparatorOp extends Serializable {
   /** Apply to the value from each cell and a constant Int. */
   def apply(r: Raster, c: Int): Raster = {
     val data = BitArrayRasterData.ofDim(r.cols, r.rows)
-    for(col <- 0 until r.cols optimized) {
-      for(row <- 0 until r.rows optimized) {
+    cfor(0)(_ < r.cols, _ + 1) { col =>
+      cfor(0)(_ < r.rows, _ + 1) { row =>
         data.set(col,row, if(compare(r.get(col, row), c)) 1 else 0)
       }
     }
@@ -48,8 +48,8 @@ trait LocalRasterComparatorOp extends Serializable {
   def apply(r: Raster, c: Double): Raster = {
     val data = BitArrayRasterData.ofDim(r.cols, r.rows)
 
-    for(col <- 0 until r.cols optimized) {
-      for(row <- 0 until r.rows optimized) {
+    cfor(0)(_ < r.cols, _ + 1) { col =>
+      cfor(0)(_ < r.rows, _ + 1) { row =>
         data.set(col,row, if(compare(r.getDouble(col, row), c)) 1 else 0)
       }
     }
@@ -60,8 +60,8 @@ trait LocalRasterComparatorOp extends Serializable {
   def apply(c: Int, r: Raster): Raster = {
     val data = BitArrayRasterData.ofDim(r.cols, r.rows)
 
-    for(col <- 0 until r.cols optimized) {
-      for(row <- 0 until r.rows optimized) {
+    cfor(0)(_ < r.cols, _ + 1) { col =>
+      cfor(0)(_ < r.rows, _ + 1) { row =>
         data.set(col,row, if(compare(c, r.get(col, row))) 1 else 0)
       }
     }
@@ -72,8 +72,8 @@ trait LocalRasterComparatorOp extends Serializable {
   def apply(c: Double, r: Raster): Raster = {
     val data = BitArrayRasterData.ofDim(r.cols, r.rows)
 
-    for(col <- 0 until r.cols optimized) {
-      for(row <- 0 until r.rows optimized) {
+    cfor(0)(_ < r.cols, _ + 1) { col =>
+      cfor(0)(_ < r.rows, _ + 1) { row =>
         data.set(col,row, if(compare(c, r.getDouble(col, row))) 1 else 0)
       }
     }
@@ -91,8 +91,8 @@ trait LocalRasterComparatorOp extends Serializable {
   def apply(r1: Raster,r2: Raster): Raster = {
     val data = BitArrayRasterData.ofDim(r1.cols, r1.rows)
 
-    for(col <- 0 until r1.cols optimized) {
-      for(row <- 0 until r1.rows optimized) {
+    cfor(0)(_ < r1.cols, _ + 1) { col =>
+      cfor(0)(_ < r1.rows, _ + 1) { row =>
         if(r1.rasterType.isDouble) {
           data.set(col,row, if(compare(r1.getDouble(col, row), r2.getDouble(col, row))) 1 else 0)
         }else {

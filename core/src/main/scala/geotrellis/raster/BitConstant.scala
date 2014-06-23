@@ -18,7 +18,7 @@ package geotrellis.raster
 
 import geotrellis._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 object BitConstant {
   def apply(v:Boolean, cols:Int, rows:Int):BitConstant =
@@ -58,8 +58,8 @@ final case class BitConstant(n:Byte, cols:Int, rows:Int) extends RasterData {
 
   def force():RasterData = {
     val forcedData = RasterData.allocByType(getType,cols,rows)
-    for(col <- 0 until cols optimized) {
-      for(row <- 0 until rows optimized) {
+    cfor(0)(_ < cols, _ + 1) { col =>
+      cfor(0)(_ < rows, _ + 1) { row =>
         forcedData.set(col,row,n)
       }
     }

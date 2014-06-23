@@ -21,7 +21,7 @@ import geotrellis.raster._
 
 import scala.collection.mutable
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 /**
  * Given a raster and a raster representing it's zones, sets all pixels
@@ -46,8 +46,8 @@ case class ZonalPercentage(r: Op[Raster], zones: Op[Raster])
       sys.error(s"The zone raster is not the same dimensions as the data raster.")
     }
 
-    for (row <- 0 until rows optimized) {
-      for (col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         val value = r.get(col,row)
         val zone = zones.get(col,row)
 
@@ -67,8 +67,8 @@ case class ZonalPercentage(r: Op[Raster], zones: Op[Raster])
 
     val data = IntArrayRasterData.empty(cols,rows)
 
-    for (row <- 0 until rows optimized) {
-      for (col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         val v = r.get(col,row)
         val z = zones.get(col,row)
         val count = zonesToValueCounts(z)(v)
