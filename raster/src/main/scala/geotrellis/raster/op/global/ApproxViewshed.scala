@@ -94,6 +94,7 @@ object ApproxViewshed extends Serializable {
             }
           }
 
+
         cfor(0)(_ < (2 * layer), _ + 1) { ii =>
           doY(startCol - layer + ii, startRow - layer)
           doY(startCol + layer - ii, startRow + layer)

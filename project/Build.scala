@@ -364,7 +364,7 @@ object GeotrellisBuild extends Build {
           "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0",
           "com.quantifind" %% "sumac" % "0.2.3",
           scalatest % "test",
-          "org.spire-math" %% "spire" % "0.7.1"
+          spire
         ),
       resolvers += "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
     ) ++ 

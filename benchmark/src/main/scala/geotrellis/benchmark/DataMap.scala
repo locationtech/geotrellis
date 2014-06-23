@@ -107,7 +107,6 @@ class DataMap extends OperationBenchmark {
   def tileWhileLoop = {
     val rcopy = tile.toArrayTile
     val goal = rcopy.toArray
-
     var i = 0
     val len = goal.size
     while (i < len) {

@@ -17,7 +17,6 @@
 package geotrellis.engine
 
 import geotrellis.engine._
-import geotrellis.util.Filesystem
 
 import scala.util._
 

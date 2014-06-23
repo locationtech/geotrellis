@@ -103,8 +103,8 @@ class TileRasterSpec extends FunSpec
       val tiled = TileRaster.wrap(r,tileLayout,cropped = false)
       val backToArray = tiled.toArrayRaster
 
-      for(col <- 0 until backToArray.cols optimized) {
-        for(row <- 0 until backToArray.rows optimized) {
+      cfor(0)(_ < backToArray.cols, _ + 1) { col =>
+        cfor(0)(_ < backToArray.rows, _ + 1) { row =>
           if(col >= r.cols || row >= r.rows) {
             withClue (s"Tile grid coord $col,$row is out of raste bounds, so it should be NoData") {
               isNoData(backToArray.get(col,row)) should be (true)

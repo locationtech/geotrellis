@@ -19,7 +19,6 @@ package geotrellis.engine
 import scala.collection.mutable
 import java.io.File
 import geotrellis._
-import geotrellis.util.Filesystem
 
 import scala.util._
 

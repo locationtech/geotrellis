@@ -194,7 +194,6 @@ object RegionGroup {
     }
 
     // Set equivilant regions to minimum
-
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         val v = tile.get(col, row)
