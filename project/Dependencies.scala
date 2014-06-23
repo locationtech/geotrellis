@@ -29,7 +29,6 @@ object Dependencies {
   val scalatest     = "org.scalatest"       %  "scalatest_2.10"  % "2.0.M5b"
   val scalacheck    = "org.scalacheck"      %% "scalacheck"      % "1.11.1"
   val scalaReflect  = "org.scala-lang"      %  "scala-reflect"   % "2.10.2"
-  val scalaxyLoops  = "com.nativelibs4java" %% "scalaxy-loops"   % "0.3-SNAPSHOT"
   val sigar         = "org.hyperic"         %  "sigar"           % "1.6.4"  
   val jts           = "com.vividsolutions"  %  "jts"             % "1.13"
 
@@ -41,7 +40,7 @@ object Dependencies {
   val jacksonCore   = "org.codehaus.jackson" % "jackson-core-asl"   % Version.jackson
   val jacksonMapper = "org.codehaus.jackson" % "jackson-mapper-asl" % Version.jackson
   
-  val spire         = "org.spire-math" %% "spire" % "0.7.1"
+  val spire         = "org.spire-math" %% "spire" % "0.7.5"
   
   val sprayClient   = "io.spray"        % "spray-client"  % Version.spray
   val sprayRouting  = "io.spray"        % "spray-routing" % Version.spray

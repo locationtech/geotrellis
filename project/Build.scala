@@ -196,7 +196,7 @@ object GeotrellisBuild extends Build {
         akkaCluster,
         jacksonCore,
         jacksonMapper,
-        scalaxyLoops % "provided",
+        spire,
         sprayClient, // for reading args from URLs,
         apacheMath
       )
@@ -229,7 +229,7 @@ object GeotrellisBuild extends Build {
       libraryDependencies ++= Seq(
         akkaActor % "test",
         scalatest % "test",      
-        scalaxyLoops % "test",
+        spire,
         sprayClient % "test",
         sprayRouting % "test"
       )
@@ -338,7 +338,7 @@ object GeotrellisBuild extends Build {
           "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0",
           "com.quantifind" %% "sumac" % "0.2.3",
           scalatest % "test",
-	  "org.spire-math" %% "spire" % "0.7.1"
+          spire
         ),
       resolvers += "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
     ) ++ 
@@ -539,8 +539,7 @@ object GeotrellisBuild extends Build {
       javaOptions += "-Xmx8G",
 
       libraryDependencies ++= Seq(
-        "org.spire-math" %% "spire" % "0.7.1",
-        scalaxyLoops % "provided",
+        spire,
         "com.google.guava" % "guava" % "r09",
         "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
         "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"

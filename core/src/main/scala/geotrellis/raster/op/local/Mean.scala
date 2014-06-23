@@ -20,7 +20,7 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.logic.Collect
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 /**
  * The mean of values at each location in a set of Rasters.
@@ -45,11 +45,11 @@ object Mean extends Serializable {
       val rows = re.rows
       val data = RasterData.allocByType(newRasterType,cols,rows)
       if(newRasterType.isDouble) {
-        for(col <- 0 until cols optimized) {
-          for(row <- 0 until rows optimized) {
+        cfor(0)(_ < cols, _ + 1) { col =>
+          cfor(0)(_ < rows, _ + 1) { row =>
             var count = 0
             var sum = 0.0
-            for(i <- 0 until layerCount optimized) {
+            cfor(0)(_ < layerCount, _ + 1) { i =>
               val v = rs(i).getDouble(col,row)
               if(isData(v)) {
                 count += 1
@@ -65,11 +65,11 @@ object Mean extends Serializable {
           }
         }
       } else {
-        for(col <- 0 until cols optimized) {
-          for(row <- 0 until rows optimized) {
+        cfor(0)(_ < cols, _ + 1) { col =>
+          cfor(0)(_ < rows, _ + 1) { row =>
             var count = 0
             var sum = 0
-            for(i <- 0 until layerCount optimized) {
+            cfor(0)(_ < layerCount, _ + 1) { i =>
               val v = rs(i).get(col,row)
               if(isData(v)) {
                 count += 1

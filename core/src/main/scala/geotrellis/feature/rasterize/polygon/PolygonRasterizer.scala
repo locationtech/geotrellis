@@ -20,7 +20,7 @@ import geotrellis._
 import geotrellis.feature._
 import geotrellis.feature.rasterize._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 object PolygonRasterizer {
   /**
