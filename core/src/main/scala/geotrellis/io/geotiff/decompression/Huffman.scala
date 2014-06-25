@@ -19,19 +19,7 @@ package geotrellis.io.geotiff.decompression
 import geotrellis.io.geotiff.decompression._
 import geotrellis.io.geotiff._
 
-import scala.collection.immutable.HashMap
-
-object HuffmanDecompression {
-
-  implicit class Huffman(bytes: Vector[Byte]) {
-
-    def uncompressHuffman(directory: ImageDirectory): Vector[Byte] = {
-      bytes
-    }
-
-  }
-
-}
+import scala.collection.mutable.ListBuffer
 
 object HuffmanColor extends Enumeration {
 
@@ -68,7 +56,8 @@ case class Node(left: Option[Node], right: Option[Node],
 
 }
 
-object HuffmanCodeTree {
+object HuffmanCodeTree { //alternative => print the tree and then have it on
+                         //compile time?!
 
   val values = List(
     (List(0, 0, 1, 1, 0, 1, 0, 1) -> Value(0, White, true)),
@@ -280,6 +269,69 @@ object HuffmanCodeTree {
     }
 
     iterate(values)
+  }
+
+}
+
+object HuffmanDecompression {
+
+  import HuffmanCodeTree._
+
+  implicit class Huffman(bytes: Vector[Byte]) {
+
+    def uncompressHuffman(directory: ImageDirectory): Vector[Byte] = {
+      def decode(bytes: Vector[Byte], start: Node): List[Value] = bytes match {
+        case (byte +: bs) => {
+          var buf = ListBuffer[Value]()
+          var current = start
+
+          for (i <- 7 to 0 by -1) {
+
+            val next = if ((byte & (1 << i)) != 0) current.right else
+              current.left
+
+            next match {
+              case Some(node) => {
+                current = node
+              }
+              case None => current.value match {
+                case Some(value) => {
+                  buf += value
+                  current = root
+                }
+                case None => //might be wrong
+                  throw new MalformedGeoTiffException("bad huffman encoding")
+              }
+            }
+          }
+
+          buf.toList ::: decode(bs, current)
+        }
+        case Vector() => Nil
+      }
+
+      def transform(list: List[Value], stack: List[Value]): List[Byte] =
+        list match {
+          case (x :: xs) => if (x.terminating) valueStackToByteList(x ::
+              stack, None) ::: transform(xs, Nil)
+          else transform(xs, x :: stack)
+          case Nil => Nil
+        }
+
+      transform(decode(bytes, root), Nil).toVector
+    }
+
+    private def valueStackToByteList(stack: List[Value],
+      optColor: Option[HuffmanColor]): List[Byte] =
+      stack match {
+        case (x :: xs) => {
+          val color = optColor getOrElse x.color
+          val byteKind = if (color == Black) 255.toByte else 0.toByte
+          val bytes = (for (i <- 0 until x.value) yield (byteKind)).toList
+          bytes ::: valueStackToByteList(stack, Some(color))
+        }
+        case Nil => Nil
+      }
   }
 
 }

@@ -19,6 +19,8 @@ package geotrellis.io.geotiff
 import monocle.syntax._
 import monocle.Macro._
 
+import scala.collection.immutable.HashMap
+
 case class TagMetadata(tag: Int, fieldType: Int,
   length: Int, offset: Int)
 
@@ -39,17 +41,17 @@ case class MetadataTags(
 case class BasicTags(
   bitsPerSample: Vector[Int] = Vector.empty,
   colorMap: Option[Vector[Int]] = None,
-  imageLength: Option[Int] = None,
-  imageWidth: Option[Int] = None,
+  imageLength: Option[Long] = None,
+  imageWidth: Option[Long] = None,
   compression: Int = 1,
   photometricInterp: Option[Int] = None,
   resolutionUnit: Option[Int] = None,
-  rowsPerStrip: Int = (1 << 31) - 1,
+  rowsPerStrip: Long = (1 << 31) - 1,
   samplesPerPixel: Int = 1,
   stripByteCounts: Option[Vector[Int]] = None,
   stripOffsets: Option[Vector[Int]] = None,
-  xResolution: Option[(Int, Int)] = None,
-  yResolution: Option[(Int, Int)] = None
+  xResolution: Option[(Long, Long)] = None,
+  yResolution: Option[(Long, Long)] = None
 )
 
 case class NonBasicTags(
@@ -57,23 +59,24 @@ case class NonBasicTags(
   cellWidth: Option[Int] = None,
   extraSamples: Option[Vector[Int]] = None,
   fillOrder: Option[Int] = None,
-  freeByteCounts: Option[Vector[Int]] = None,
-  freeOffsets: Option[Vector[Int]] = None,
+  freeByteCounts: Option[Vector[Long]] = None,
+  freeOffsets: Option[Vector[Long]] = None,
   grayResponseCurve: Option[Vector[Int]] = None,
   grayResponseUnit: Option[Int] = None,
-  newSubfileType: Option[Int] = None,
+  newSubfileType: Option[Long] = None,
   orientation: Option[Int] = None,
   planarConfiguration: Option[Int] = None,
   subfileType: Option[Int] = None,
   thresholding: Int = 1,
-  t4Options: Option[Int] = None,
-  t6Options: Option[Int] = None,
+  t4Options: Option[Long] = None,
+  t6Options: Option[Long] = None,
   halftoneHints: Option[Vector[Int]] = None,
   predictor: Option[Int] = None
 )
 
 case class GeoTiffTags(
   modelTiePoints: Option[Vector[ModelTiePoint]] = None,
+  modelTransformation: Option[Vector[Double]] = None,
   modelPixelScale: Option[(Double, Double, Double)] = None,
   geoKeyDirectory: Option[GeoKeyDirectory] = None,
   doubles: Option[Vector[Double]] = None,
@@ -81,18 +84,18 @@ case class GeoTiffTags(
 )
 
 case class DocumentationTags(
-  documentNames: Option[String] = None,
-  pageNames: Option[String] = None,
+  documentName: Option[String] = None,
+  pageName: Option[String] = None,
   pageNumbers: Option[Vector[Int]] = None,
-  xPositions: Option[Vector[(Int, Int)]] = None,
-  yPositions: Option[Vector[(Int, Int)]] = None
+  xPositions: Option[Vector[(Long, Long)]] = None,
+  yPositions: Option[Vector[(Long, Long)]] = None
 )
 
 case class TileTags(
-  tileWidth: Option[Int] = None,
-  tileLength: Option[Int] = None,
-  tileOffsets: Option[Vector[Int]] = None,
-  tileByteCounts: Option[Vector[Int]] = None
+  tileWidth: Option[Long] = None,
+  tileLength: Option[Long] = None,
+  tileOffsets: Option[Vector[Long]] = None,
+  tileByteCounts: Option[Vector[Long]] = None
 )
 
 case class CmykTags(
@@ -105,34 +108,43 @@ case class CmykTags(
 
 case class DataSampleFormatTags(
   sampleFormat: Option[Vector[Int]] = None,
-  maxSampleValues: Option[Vector[Int]] = None,
-  minSampleValues: Option[Vector[Int]] = None
+  maxSampleValues: Option[Vector[Long]] = None,
+  minSampleValues: Option[Vector[Long]] = None
 )
 
 case class ColimetryTags(
-  whitePoints: Option[Vector[(Int, Int)]] = None,
-  primaryChromaticities: Option[Vector[(Int, Int)]] = None,
+  whitePoints: Option[Vector[(Long, Long)]] = None,
+  primaryChromaticities: Option[Vector[(Long, Long)]] = None,
   transferFunction: Option[Vector[Int]] = None,
   transferRange: Option[Vector[Int]] = None,
-  referenceBlackWhite: Option[Vector[Int]] = None
+  referenceBlackWhite: Option[Vector[Long]] = None
 )
 
 case class JpegTags(
   jpegProc: Option[Int] = None,
-  jpegInterchangeFormat: Option[Int] = None,
-  jpegInterchangeFormatLength: Option[Int] = None,
+  jpegInterchangeFormat: Option[Long] = None,
+  jpegInterchangeFormatLength: Option[Long] = None,
   jpegRestartInterval: Option[Int] = None,
   jpegLosslessPredictors: Option[Vector[Int]] = None,
   jpegPointTransforms: Option[Vector[Int]] = None,
-  jpegQTables: Option[Vector[Int]] = None,
-  jpegDCTables: Option[Vector[Int]] = None,
-  jpegACTables: Option[Vector[Int]] = None
+  jpegQTables: Option[Vector[Long]] = None,
+  jpegDCTables: Option[Vector[Long]] = None,
+  jpegACTables: Option[Vector[Long]] = None
 )
 
 case class YCbCrTags(
-  yCbCrCoefficients: Option[Vector[(Int, Int)]] = None,
+  yCbCrCoefficients: Option[Vector[(Long, Long)]] = None,
   yCbCrSubSampling: Option[Vector[Int]] = None,
   yCbCrPositioning: Option[Int] = None
+)
+
+case class NonStandardizedTags(
+  asciisMap: HashMap[Int, String] = HashMap[Int, String](),
+  longsMap: HashMap[Int, Vector[Long]] = HashMap[Int, Vector[Long]](),
+  fractionalsMap: HashMap[Int, Vector[(Long, Long)]] = HashMap[Int,
+    Vector[(Long, Long)]](),
+  undefinedMap: HashMap[Int, Vector[Byte]] = HashMap[Int, Vector[Byte]](),
+  doublesMap: HashMap[Int, Vector[Double]] = HashMap[Int, Vector[Double]]()
 )
 
 case class ImageDirectory(
@@ -148,6 +160,7 @@ case class ImageDirectory(
   colimetryTags: ColimetryTags = ColimetryTags(),
   jpegTags: JpegTags = JpegTags(),
   yCbCrTags: YCbCrTags = YCbCrTags(),
+  nonStandardizedTags: NonStandardizedTags = NonStandardizedTags(),
   imageBytes: Option[Vector[Byte]] = None
 )
 
@@ -181,9 +194,9 @@ object ImageDirectoryLenses {
   val colorMapLens = basicTagsLens |-> mkLens[BasicTags,
     Option[Vector[Int]]]("colorMap")
   val imageLengthLens = basicTagsLens |-> mkLens[BasicTags,
-    Option[Int]]("imageLength")
+    Option[Long]]("imageLength")
   val imageWidthLens = basicTagsLens |-> mkLens[BasicTags,
-    Option[Int]]("imageWidth")
+    Option[Long]]("imageWidth")
   val compressionLens = basicTagsLens |-> mkLens[BasicTags,
     Int]("compression")
   val photometricInterpLens = basicTagsLens |-> mkLens[BasicTags,
@@ -191,7 +204,7 @@ object ImageDirectoryLenses {
   val resolutionUnitLens = basicTagsLens |-> mkLens[BasicTags,
     Option[Int]]("resolutionUnit")
   val rowsPerStripLens = basicTagsLens |-> mkLens[BasicTags,
-    Int]("rowsPerStrip")
+    Long]("rowsPerStrip")
   val samplesPerPixelLens = basicTagsLens |-> mkLens[BasicTags,
     Int]("samplesPerPixel")
   val stripByteCountsLens = basicTagsLens |-> mkLens[BasicTags,
@@ -199,9 +212,9 @@ object ImageDirectoryLenses {
   val stripOffsetsLens = basicTagsLens |-> mkLens[BasicTags,
     Option[Vector[Int]]]("stripOffsets")
   val xResolutionLens = basicTagsLens |-> mkLens[BasicTags,
-    Option[(Int, Int)]]("xResolution")
+    Option[(Long, Long)]]("xResolution")
   val yResolutionLens = basicTagsLens |-> mkLens[BasicTags,
-    Option[(Int, Int)]]("yResolution")
+    Option[(Long, Long)]]("yResolution")
 
   val nonBasicTagsLens = mkLens[ImageDirectory, NonBasicTags]("nonBasicTags")
 
@@ -214,15 +227,15 @@ object ImageDirectoryLenses {
   val fillOrderLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Option[Int]]("fillOrder")
   val freeByteCountsLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
-    Option[Vector[Int]]]("freeByteCounts")
+    Option[Vector[Long]]]("freeByteCounts")
   val freeOffsetsLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
-    Option[Vector[Int]]]("freeOffsets")
+    Option[Vector[Long]]]("freeOffsets")
   val grayResponseCurveLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Option[Vector[Int]]]("grayResponseCurve")
   val grayResponseUnitLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Option[Int]]("grayResponseUnit")
   val newSubfileTypeLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
-    Option[Int]]("newSubfileType")
+    Option[Long]]("newSubfileType")
   val orientationLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Option[Int]]("orientation")
   val planarConfigurationLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
@@ -232,9 +245,9 @@ object ImageDirectoryLenses {
   val thresholdingLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Int]("thresholding")
   val t4OptionsLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
-    Option[Int]]("t4Options")
+    Option[Long]]("t4Options")
   val t6OptionsLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
-    Option[Int]]("t6Options")
+    Option[Long]]("t6Options")
   val halftoneHintsLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Option[Vector[Int]]]("halftoneHints")
   val predictorLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
@@ -246,6 +259,8 @@ object ImageDirectoryLenses {
     Option[Vector[ModelTiePoint]]]("modelTiePoints")
   val modelPixelScaleLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
     Option[(Double, Double, Double)]]("modelPixelScale")
+  val modelTransformationLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
+    Option[Vector[Double]]]("modelTransformation")
   val geoKeyDirectoryLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
     Option[GeoKeyDirectory]]("geoKeyDirectory")
   val doublesLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
@@ -256,27 +271,27 @@ object ImageDirectoryLenses {
   val documentationTagsLens = mkLens[ImageDirectory,
     DocumentationTags]("documentationTags")
 
-  val documentNamesLens = documentationTagsLens |->
-  mkLens[DocumentationTags, Option[String]]("documentNames")
-  val pageNamesLens = documentationTagsLens |->
-  mkLens[DocumentationTags, Option[String]]("pageNames")
+  val documentNameLens = documentationTagsLens |->
+  mkLens[DocumentationTags, Option[String]]("documentName")
+  val pageNameLens = documentationTagsLens |->
+  mkLens[DocumentationTags, Option[String]]("pageName")
   val pageNumbersLens = documentationTagsLens |->
   mkLens[DocumentationTags, Option[Vector[Int]]]("pageNumbers")
   val xPositionsLens = documentationTagsLens |->
-  mkLens[DocumentationTags, Option[Vector[(Int, Int)]]]("xPositions")
+  mkLens[DocumentationTags, Option[Vector[(Long, Long)]]]("xPositions")
   val yPositionsLens = documentationTagsLens |->
-  mkLens[DocumentationTags, Option[Vector[(Int, Int)]]]("yPositions")
+  mkLens[DocumentationTags, Option[Vector[(Long, Long)]]]("yPositions")
 
   val tileTagsLens = mkLens[ImageDirectory, TileTags]("tileTags")
 
   val tileWidthLens = tileTagsLens |-> mkLens[TileTags,
-    Option[Int]]("tileWidth")
+    Option[Long]]("tileWidth")
   val tileLengthLens = tileTagsLens |-> mkLens[TileTags,
-    Option[Int]]("tileLength")
+    Option[Long]]("tileLength")
   val tileOffsetsLens = tileTagsLens |-> mkLens[TileTags,
-    Option[Vector[Int]]]("tileOffsets")
+    Option[Vector[Long]]]("tileOffsets")
   val tileByteCountsLens = tileTagsLens |-> mkLens[TileTags,
-    Option[Vector[Int]]]("tileByteCounts")
+    Option[Vector[Long]]]("tileByteCounts")
 
   val cmykTagsLens = mkLens[ImageDirectory, CmykTags]("cmykTags")
 
@@ -297,31 +312,31 @@ object ImageDirectoryLenses {
   val sampleFormatLens = dataSampleFormatTagsLens |->
   mkLens[DataSampleFormatTags, Option[Vector[Int]]]("sampleFormat")
   val maxSampleValuesLens = dataSampleFormatTagsLens |->
-  mkLens[DataSampleFormatTags, Option[Vector[Int]]]("maxSampleValues")
+  mkLens[DataSampleFormatTags, Option[Vector[Long]]]("maxSampleValues")
   val minSampleValuesLens = dataSampleFormatTagsLens |->
-  mkLens[DataSampleFormatTags, Option[Vector[Int]]]("minSampleValues")
+  mkLens[DataSampleFormatTags, Option[Vector[Long]]]("minSampleValues")
 
   val colimetryTagsLens = mkLens[ImageDirectory, ColimetryTags]("colimetryTags")
 
   val whitePointsLens = colimetryTagsLens |-> mkLens[ColimetryTags,
-    Option[Vector[(Int, Int)]]]("whitePoints")
+    Option[Vector[(Long, Long)]]]("whitePoints")
   val primaryChromaticitiesLens = colimetryTagsLens |-> mkLens[
-    ColimetryTags, Option[Vector[(Int, Int)]]]("primaryChromaticities")
+    ColimetryTags, Option[Vector[(Long, Long)]]]("primaryChromaticities")
   val transferFunctionLens = colimetryTagsLens |-> mkLens[ColimetryTags,
     Option[Vector[Int]]]("transferFunction")
   val transferRangeLens = colimetryTagsLens |-> mkLens[ColimetryTags,
     Option[Vector[Int]]]("transferRange")
   val referenceBlackWhiteLens = colimetryTagsLens |-> mkLens[
-    ColimetryTags,  Option[Vector[Int]]]("referenceBlackWhite")
+    ColimetryTags,  Option[Vector[Long]]]("referenceBlackWhite")
 
   val jpegTagsLens = mkLens[ImageDirectory, JpegTags]("jpegTags")
 
   val jpegProcLens = jpegTagsLens |-> mkLens[JpegTags,
     Option[Int]]("jpegProc")
   val jpegInterchangeFormatLens = jpegTagsLens |-> mkLens[JpegTags,
-    Option[Int]]("jpegInterchangeFormat")
+    Option[Long]]("jpegInterchangeFormat")
   val jpegInterchangeFormatLengthLens = jpegTagsLens |-> mkLens[
-    JpegTags, Option[Int]]("jpegInterchangeFormatLength")
+    JpegTags, Option[Long]]("jpegInterchangeFormatLength")
   val jpegRestartIntervalLens = jpegTagsLens |-> mkLens[JpegTags,
     Option[Int]]("jpegRestartInterval")
   val jpegLosslessPredictorsLens = jpegTagsLens |-> mkLens[JpegTags,
@@ -329,141 +344,36 @@ object ImageDirectoryLenses {
   val jpegPointTransformsLens = jpegTagsLens |-> mkLens[JpegTags,
     Option[Vector[Int]]]("jpegPointTransforms")
   val jpegQTablesLens = jpegTagsLens |-> mkLens[JpegTags,
-    Option[Vector[Int]]]("jpegQTables")
+    Option[Vector[Long]]]("jpegQTables")
   val jpegDCTablesLens = jpegTagsLens |-> mkLens[JpegTags,
-    Option[Vector[Int]]]("jpegDCTables")
+    Option[Vector[Long]]]("jpegDCTables")
   val jpegACTablesLens = jpegTagsLens |-> mkLens[JpegTags,
-    Option[Vector[Int]]]("jpegACTables")
+    Option[Vector[Long]]]("jpegACTables")
 
   val yCbCrTagsLens = mkLens[ImageDirectory, YCbCrTags]("yCbCrTags")
 
   val yCbCrCoefficientsLens = yCbCrTagsLens |-> mkLens[YCbCrTags,
-    Option[Vector[(Int, Int)]]]("yCbCrCoefficients")
+    Option[Vector[(Long, Long)]]]("yCbCrCoefficients")
   val yCbCrSubSamplingLens = yCbCrTagsLens |-> mkLens[YCbCrTags,
     Option[Vector[Int]]]("yCbCrSubSampling")
   val yCbCrPositioningLens = yCbCrTagsLens |-> mkLens[YCbCrTags,
     Option[Int]]("yCbCrPositioning")
 
+  val nonStandardizedTagsLens = mkLens[ImageDirectory,
+    NonStandardizedTags]("nonStandardizedTags")
+
+  val asciisMapLens = nonStandardizedTagsLens |-> mkLens[NonStandardizedTags,
+    HashMap[Int, String]]("asciisMap")
+  val longsMapLens = nonStandardizedTagsLens |-> mkLens[NonStandardizedTags,
+    HashMap[Int, Vector[Long]]]("longsMap")
+  val fractionalsMapLens = nonStandardizedTagsLens |-> mkLens[
+    NonStandardizedTags, HashMap[Int, Vector[(Long, Long)]]]("fractionalsMap")
+  val undefinedMapLens = nonStandardizedTagsLens |-> mkLens[NonStandardizedTags,
+    HashMap[Int, Vector[Byte]]]("undefinedMap")
+  val doublesMapLens = nonStandardizedTagsLens |-> mkLens[NonStandardizedTags,
+    HashMap[Int, Vector[Double]]]("doublesMap")
+
   val imageBytesLens = mkLens[ImageDirectory,
     Option[Vector[Byte]]]("imageBytes")
 
 }
-
-/*object ImageDirectoryLenses {
-
- val countLens = lens[ImageDirectory] >> 'count
-
- val metaDataTagsLens = lens[ImageDirectory] >> 'metadataTags
-
- val artistLens = metaDataTagsLens >> 'artist
- val copyrightLens = metaDataTagsLens >> 'copyright
- val dateTimeLens = metaDataTagsLens >> 'dateTime
- val computerLens = metaDataTagsLens >> 'computer
- val imageDescLens = metaDataTagsLens >> 'imageDesc
- val makerLens = metaDataTagsLens >> 'maker
- val modelLens = metaDataTagsLens >> 'model
- val softwareLens = metaDataTagsLens >> 'software
-
- val basicTagsLens = lens[ImageDirectory] >> 'basicTags
-
- val bitsPerSampleLens = basicTagsLens >> 'bitsPerSample
- val colorMapLens = basicTagsLens >> 'colorMap
- val imageLengthLens = basicTagsLens >> 'imageLength
- val imageWidthLens = basicTagsLens >> 'imageWidth
- val compressionLens = basicTagsLens >> 'compression
- val photometricInterpLens = basicTagsLens >> 'photometricInterp
- val resolutionUnitLens = basicTagsLens >> 'resolutionUnit
- val rowsPerStripLens = basicTagsLens >> 'rowsPerStrip
- val samplesPerPixelLens = basicTagsLens >> 'samplesPerPixel
- val stripByteCountsLens = basicTagsLens >> 'stripByteCounts
- val stripOffsetsLens = basicTagsLens >> 'stripOffsets
- val xResolutionLens = basicTagsLens >> 'xResolution
- val yResolutionLens = basicTagsLens >> 'yResolution
-
- val nonBasicTagsLens = lens[ImageDirectory] >> 'nonBasicTags
-
- val cellLengthLens = nonBasicTagsLens >> 'cellLength
- val cellWidthLens = nonBasicTagsLens >> 'cellWidth
- val extraSamplesLens = nonBasicTagsLens >> 'extraSamples
- val fillOrderLens = nonBasicTagsLens >> 'fillOrder
- val freeByteCountsLens = nonBasicTagsLens >> 'freeByteCounts
- val freeOffsetsLens = nonBasicTagsLens >> 'freeOffsets
- val grayResponseCurveLens = nonBasicTagsLens >> 'grayResponseCurve
- val grayResponseUnitLens = nonBasicTagsLens >> 'grayResponseUnit
- val newSubfileTypeLens = nonBasicTagsLens >> 'newSubfileType
- val orientationLens = nonBasicTagsLens >> 'orientation
- val planarConfigurationLens = nonBasicTagsLens >> 'planarConfiguration
- val subfileTypeLens = nonBasicTagsLens >> 'subfileType
- val thresholdingLens = nonBasicTagsLens >> 'thresholding
- val t4OptionsLens = nonBasicTagsLens >> 't4Options
- val t6OptionsLens = nonBasicTagsLens >> 't6Options
- val halftoneHintsLens = nonBasicTagsLens >> 'halftoneHints
- val predictorLens = nonBasicTagsLens >> 'predictor
-
- val geoTiffTagsLens = lens[ImageDirectory] >> 'geoTiffTags
-
- val modelTiePointsLens = geoTiffTagsLens >> 'modelTiePoints
- val modePixelScaleLens = geoTiffTagsLens >> 'modelPixelScale
- val geoKeyDirectoryLens = geoTiffTagsLens >> 'geoKeyDirectory
- val doublesLens = geoTiffTagsLens >> 'doubles
- val asciisLens = geoTiffTagsLens >> 'asciis
-
- val documentationTagsLens = lens[ImageDirectory] >> 'documentationTags
-
- val documentNamesLens = documentationTagsLens >> 'documentNames
- val pageNamesLens = documentationTagsLens >> 'pageNames
- val pageNumbersLens = documentationTagsLens >> 'pageNumbers
- val xPositionsLens = documentationTagsLens >> 'xPositions
- val yPositionsLens = documentationTagsLens >> 'yPositions
-
- val tileTagsLens = lens[ImageDirectory] >> 'tileTags
-
- val tileWidthLens = tileTagsLens >> 'tileWidth
- val tileLengthLens = tileTagsLens >> 'tileLength
- val tileOffsetsLens = tileTagsLens >> 'tileOffsets
- val tileByteCountsLens = tileTagsLens >> 'tileByteCounts
-
- val cmykTagsLens = lens[ImageDirectory] >> 'cmykTags
-
- val inkSetLens = cmykTagsLens >> 'inkSet
- val numberOfInksLens = cmykTagsLens >> 'numberOfInks
- val inkNamesLens = cmykTagsLens >> 'inkNames
- val dotRangeLens = cmykTagsLens >> 'dotRange
- val targetPrintersLens = cmykTagsLens >> 'targetPrinters
-
- val dataSampleFormatTagsLens = lens[ImageDirectory] >> 'dataSampleFormatTags
-
- val sampleFormatLens = dataSampleFormatTagsLens >> 'sampleFormat
- val maxSampleValuesLens = dataSampleFormatTagsLens >> 'maxSampleValues
- val minSampleValuesLens = dataSampleFormatTagsLens >> 'minSampleValues
-
- val colimetryTagsLens = lens[ImageDirectory] >> 'colimetryTags
-
- val whitePointsLens = colimetryTagsLens >> 'whitePoints
- val primaryChromaticitiesLens = colimetryTagsLens >> 'primaryChromaticities
- val transferFunctionLens = colimetryTagsLens >> 'transferFunction
- val transferRangeLens = colimetryTagsLens >> 'transferRange
- val referenceBlackWhiteLens = colimetryTagsLens >> 'referenceBlackWhite
-
- val jpegTagsLens = lens[ImageDirectory] >> 'jpegTags
-
- val jpegProcLens = jpegTagsLens >> 'jpegProc
- val jpegInterchangeFormatLens = jpegTagsLens >> 'jpegInterchangeFormat
- val jpegInterchangeFormatLengthLens =
- jpegTagsLens >> 'jpegInterchangeFormatLength
- val jpegRestartIntervalLens = jpegTagsLens >> 'jpegRestartInterval
- val jpegLosslessPredictorsLens = jpegTagsLens >> 'jpegLosslessPredictors
- val jpegPointTransformsLens = jpegTagsLens >> 'jpegPointTransforms
- val jpegQTablesLens = jpegTagsLens >> 'jpegQTables
- val jpegDCTablesLens = jpegTagsLens >> 'jpegDCTables
- val jpegACTablesLens = jpegTagsLens >> 'jpegACTables
-
- val yCbCrTagsLens = lens[ImageDirectory] >> 'yCbCrTags
-
- val yCbCrCoefficientsLens = yCbCrTagsLens >> 'yCbCrCoefficients
- val yCbCrSubSamplingLens = yCbCrTagsLens >> 'yCbCrSubSampling
- val yCbCrPositioningLens = yCbCrTagsLens >> 'yCbCrPositioning
-
- val imageBytesLens = lens[ImageDirectory] >> 'imageBytes
-
- }*/

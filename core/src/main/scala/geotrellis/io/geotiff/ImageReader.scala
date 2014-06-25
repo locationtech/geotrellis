@@ -35,7 +35,7 @@ case class ImageReader(byteBuffer: ByteBuffer) {
 
     val bytes = (for (i <- 0 until stripOffsets.size) yield {
       byteBuffer.position(stripOffsets(i))
-      byteBuffer.getByteVector(stripByteCounts(i))
+      byteBuffer.getSignedByteVector(stripByteCounts(i))
     }).flatten.toVector
 
     byteBuffer.position(oldOffset)

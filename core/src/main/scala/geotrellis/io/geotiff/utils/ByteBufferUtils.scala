@@ -22,22 +22,38 @@ object ByteBufferUtils {
 
   implicit class ByteBufferUtilities(byteBuffer: ByteBuffer) {
 
+    private def ub2s(byte: Byte): Short =
+      (byte.toInt + (if (byte < 0) 255 else 0)).toShort
+
+    private def us2i(short: Short): Int =
+      short.toInt + (if (short < 0) 32767 else 0)
+
+    private def ui2l(int: Int): Long =
+      int.toLong + (if (int < 0) 2147483647 else 0)
+
+    def goToNextImageDirectory(current: Int, entries: Int) =
+      byteBuffer.position(entries * 12 +
+        current + 2).position(byteBuffer.getInt)
+
     def getUnsignedShort = byteBuffer.getChar.toInt
 
-    def getByteVector(length: Int): Vector[Byte] =
-      (for (i <- 0 until length) yield byteBuffer.get).toVector
+    def getUnsignedShort(value: Int) = ByteBuffer.allocate(4).
+      order(byteBuffer.order).putInt(0, value).getChar.toInt
 
-    def getByteVector(length: Int, valueOffset: Int): Vector[Int] =
+    def getByteVector(length: Int): Vector[Short] =
+      (for (i <- 0 until length) yield ub2s(byteBuffer.get)).toVector
+
+    def getByteVector(length: Int, valueOffset: Int): Vector[Short] =
       if (length <= 4) {
         val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
           putInt(0, valueOffset)
-          (for (i <- 0 until length) yield bb.get.toInt).toVector
+          (for (i <- 0 until length) yield ub2s(bb.get)).toVector
       } else {
         val oldPos = byteBuffer.position
 
         byteBuffer.position(valueOffset)
         val arr = (for (i <- 0 until length) yield
-          byteBuffer.get.toInt).toVector
+          ub2s(byteBuffer.get)).toVector
 
         byteBuffer.position(oldPos)
 
@@ -48,29 +64,30 @@ object ByteBufferUtils {
       if (length <= 2) {
         val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
           putInt(0, valueOffset)
-          (for (i <- 0 until length) yield bb.getShort.toInt).toVector
+          (for (i <- 0 until length) yield us2i(bb.getShort)).toVector
       } else {
         val oldPos = byteBuffer.position
 
         byteBuffer.position(valueOffset)
         val arr = (for (i <- 0 until length) yield
-          byteBuffer.getShort.toInt).toVector
+          us2i(byteBuffer.getShort)).toVector
 
         byteBuffer.position(oldPos)
 
         arr
       }
 
-    def getIntVector(length: Int, valueOffset: Int): Vector[Int] =
+    def getIntVector(length: Int, valueOffset: Int): Vector[Long] =
       if (length == 1) {
         val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
           putInt(0, valueOffset)
-          (for (i <- 0 until length) yield bb.getInt).toVector
+          (for (i <- 0 until length) yield ui2l(bb.getInt)).toVector
       } else {
         val oldPos = byteBuffer.position
 
         byteBuffer.position(valueOffset)
-        val arr = (for (i <- 0 until length) yield byteBuffer.getInt).toVector
+        val arr = (for (i <- 0 until length) yield ui2l(byteBuffer.getInt))
+          .toVector
 
         byteBuffer.position(oldPos)
 
@@ -89,7 +106,74 @@ object ByteBufferUtils {
       string
     }
 
-    def getFractionalVector(length: Int, offset: Int) = {
+    def getFractionalVector(length: Int, offset: Int): Vector[(Long, Long)] = {
+      val oldPos = byteBuffer.position
+
+      byteBuffer.position(offset)
+      val fractionals = (for (i <- 0 until length) yield
+        (ui2l(byteBuffer.getInt), ui2l(byteBuffer.getInt))).toVector
+
+      byteBuffer.position(oldPos)
+
+      fractionals
+    }
+
+    def getSignedByteVector(length: Int, valueOffset: Int): Vector[Byte] =
+      if (length <= 4) {
+        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
+          putInt(0, valueOffset)
+          (for (i <- 0 until length) yield bb.get).toVector
+      } else {
+        val oldPos = byteBuffer.position
+
+        byteBuffer.position(valueOffset)
+        val arr = (for (i <- 0 until length) yield
+          byteBuffer.get).toVector
+
+        byteBuffer.position(oldPos)
+
+        arr
+      }
+
+    def getSignedByteVector(length: Int): Vector[Byte] =
+      (for (i <- 0 until length) yield (byteBuffer.get)).toVector
+
+
+    def getSignedShortVector(length: Int, valueOffset: Int): Vector[Short] =
+      if (length <= 2) {
+        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
+          putInt(0, valueOffset)
+          (for (i <- 0 until length) yield bb.getShort).toVector
+      } else {
+        val oldPos = byteBuffer.position
+
+        byteBuffer.position(valueOffset)
+        val arr = (for (i <- 0 until length) yield
+          byteBuffer.getShort).toVector
+
+        byteBuffer.position(oldPos)
+
+        arr
+      }
+
+    def getSignedIntVector(length: Int, valueOffset: Int): Vector[Int] =
+      if (length == 1) {
+        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
+          putInt(0, valueOffset)
+          (for (i <- 0 until length) yield bb.getInt).toVector
+      } else {
+        val oldPos = byteBuffer.position
+
+        byteBuffer.position(valueOffset)
+        val arr = (for (i <- 0 until length) yield byteBuffer.getInt).toVector
+
+        byteBuffer.position(oldPos)
+
+        arr
+      }
+
+    def getSignedFractionalVector(length: Int,
+      offset: Int): Vector[(Int, Int)] = {
       val oldPos = byteBuffer.position
 
       byteBuffer.position(offset)
@@ -100,6 +184,23 @@ object ByteBufferUtils {
 
       fractionals
     }
+
+    def getFloatVector(length: Int, valueOffset: Int): Vector[Float] =
+      if (length <= 2) {
+        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
+          putInt(0, valueOffset)
+          (for (i <- 0 until length) yield bb.getFloat).toVector
+      } else {
+        val oldPos = byteBuffer.position
+
+        byteBuffer.position(valueOffset)
+        val arr = (for (i <- 0 until length) yield
+          byteBuffer.getFloat).toVector
+
+        byteBuffer.position(oldPos)
+
+        arr
+      }
 
     def getDoubleVector(length: Int, offset: Int) = {
       val oldPos = byteBuffer.position

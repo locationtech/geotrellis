@@ -32,11 +32,24 @@ class GeoTiffReaderSpec extends FunSpec
     with MustMatchers
     with RasterBuilders
     with TestServer {
+
+  private def read(filePath: String) {
+    val source = Source.fromFile(filePath)(Codec.ISO8859)
+    assert(GeoTiffReader(source).read != null)
+    source.close()
+  }
+
   describe("read raster") {
-    it("reads econic.tif") {
-      val source = Source.fromFile("core-test/data/econic.tif")(Codec.ISO8859)
-      assert(GeoTiffReader(source).read != null)
-      source.close()
+    it("reads econic.tif without errors") {
+      read("core-test/data/econic.tif")
+    }
+
+    it("reads aspect.tif without errors") {
+      read("core-test/data/aspect.tif")
+    }
+
+    it("reads slope.tif without errors") {
+      read("core-test/data/slope.tif")
     }
   }
 }

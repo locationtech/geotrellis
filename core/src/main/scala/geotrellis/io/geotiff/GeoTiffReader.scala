@@ -64,8 +64,7 @@ case class GeoTiffReader(byteBuffer: ByteBuffer) {
         val current = byteBuffer.position
         val entries = byteBuffer.getShort
         val directory = readImageDirectory(ImageDirectory(count = entries), 0)
-        byteBuffer.position(entries * 12 + current + 2).position(
-          byteBuffer.getInt)
+        byteBuffer.goToNextImageDirectory(current, entries)
         directory :: readImageDirectories
       }
     }
@@ -83,7 +82,7 @@ case class GeoTiffReader(byteBuffer: ByteBuffer) {
         byteBuffer.getUnsignedShort, byteBuffer.getInt, byteBuffer.getInt)
 
       if (metadata.tag == 34735) readImageDirectory(directory, index + 1,
-        Some(metadata))
+        Some(metadata)) //Change to enums instead of tag
       else readImageDirectory(tagReader.read(directory, metadata), index + 1,
         geoKeysMetadata)
     }
