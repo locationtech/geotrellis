@@ -194,7 +194,7 @@ abstract trait Histogram extends Serializable {
   }
 
   def toJSON = {
-    val counts = getValues.map(v => s"[$v, ${getItemCount(v)}]").mkString(", ")
+    val counts = getValues.map(v => s"[$v,${getItemCount(v)}]").mkString(",")
     s"[$counts]"
   }
 }
