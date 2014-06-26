@@ -87,7 +87,7 @@ extends UntiledRasterLayer(info) {
         case Some(re) =>
           ArgReader.read(rasterPath, info.cellType, info.rasterExtent, re)
         case None =>
-          ArgReader.read(rasterPath, info.cellType, info.rasterExtent)
+          ArgReader.read(rasterPath, info.cellType, info.rasterExtent.cols, info.rasterExtent.rows)
       }
     }
 

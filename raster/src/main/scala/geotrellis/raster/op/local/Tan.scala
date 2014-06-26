@@ -20,10 +20,11 @@ import geotrellis.raster._
 
 /**
  * Operation to get the Tangent of values.
+ * @info Always returns a double or float raster.
  */
 object Tan extends Serializable {
-  /** Takes the Tangent of each raster cell value. */
   def apply(r: Tile): Tile =
-    r.convert(TypeDouble)
+    (if(r.cellType.isFloatingPoint) r
+     else r.convert(TypeDouble))
      .mapDouble(z => math.tan(z))
 }

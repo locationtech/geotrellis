@@ -16,9 +16,7 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
-import geotrellis.process._
-import geotrellis.source._
+import geotrellis.raster._
 
 import org.scalatest._
 
@@ -26,96 +24,32 @@ import geotrellis.testkit._
 
 class AndSpec extends FunSpec 
                  with Matchers 
-                 with TestServer 
-                 with RasterBuilders {
+                 with TestEngine 
+                 with TileBuilders {
   describe("And") {
     it("ands an Int raster and a constant") {
-      assertEqual(And(createValueRaster(10,9),3), createValueRaster(10,1))
+      assertEqual(createValueTile(10,9) & 3, createValueTile(10,1))
+      assertEqual(createValueTile(10,9) & 0, createValueTile(10,0))
     }
 
     it("ands two Int rasters") {
-      val op = And(createValueRaster(10,9),createValueRaster(10,3))
-      assertEqual(op, 
-                  createValueRaster(10,1))
+      val result = createValueTile(10,9) & (createValueTile(10,3))
+      assertEqual(result, createValueTile(10,1))
     }
 
     it("ands a Double raster and a constant") {
-      assertEqual(And(createValueRaster(10,9.4),3), createValueRaster(10,1.0))
+      assertEqual(createValueTile(10,9.4) & 3, createValueTile(10,1.0))
     }
 
     it("ands two Double rasters") {
-      assertEqual(And(createValueRaster(10,9.9),createValueRaster(10,3.2)), 
-                  createValueRaster(10,1.0))
-    }
-
-    it("ands three tiled RasterSources correctly") {
-      val rs1 = createRasterSource(
-        Array( NODATA,1,1, 1,1,1, 1,1,1,
-               1,1,1, 1,1,1, 1,1,1,
-
-               1,1,1, 1,1,1, 1,1,1,
-               1,1,1, 1,1,1, 1,1,1),
-        3,2,3,2)
-
-      val rs2 = createRasterSource(
-        Array( 2,2,2, 2,2,2, 2,2,2,
-               2,2,2, 2,2,2, 2,2,2,
-
-               2,2,2, 2,2,2, 2,2,2,
-               2,2,2, 2,2,2, 2,2,2),
-        3,2,3,2)
-
-      val rs3 = createRasterSource(
-        Array( 3,3,3, 3,3,3, 3,3,3,
-               3,3,3, 3,3,3, 3,3,3,
-
-               3,3,3, 3,3,3, 3,3,3,
-               3,3,3, 3,3,3, 3,3,3),
-        3,2,3,2)
-
-      run(rs1 & rs2 & rs3) match {
-        case Complete(result,success) =>
-          //println(success)
-          for(row <- 0 until 4) {
-            for(col <- 0 until 9) {
-              if(row == 0 && col == 0)
-                result.get(col,row) should be (NODATA)
-              else
-                result.get(col,row) should be (1^2^3)
-            }
-          }
-        case Error(msg,failure) =>
-          println(msg)
-          println(failure)
-          assert(false)
-      }
-    }
-  }
-  describe("And on Raster") {
-    it("ands an Int raster and a constant") {
-      assertEqual(createValueRaster(10,9) & 3, createValueRaster(10,1))
-      assertEqual(createValueRaster(10,9) & 0, createValueRaster(10,0))
-    }
-
-    it("ands two Int rasters") {
-      val result = createValueRaster(10,9) & (createValueRaster(10,3))
-      assertEqual(result,
-                  createValueRaster(10,1))
-    }
-
-    it("ands a Double raster and a constant") {
-      assertEqual(createValueRaster(10,9.4) & (3), createValueRaster(10,1.0))
-    }
-
-    it("ands two Double rasters") {
-      assertEqual(createValueRaster(10,9.9) & (createValueRaster(10,3.2)),
-                  createValueRaster(10,1.0))
+      assertEqual(createValueTile(10,9.9) & (createValueTile(10,3.2)),
+                  createValueTile(10,1.0))
     }
     it("ands a Seq of rasters") {
-      val r1 = createValueRaster(10, 1)
-      val r2 = createValueRaster(10, 2)
-      val r3 = createValueRaster(10, 3)
-      val r0xF = createValueRaster(10, 15)
+      val r1 = createValueTile(10, 1)
+      val r2 = createValueTile(10, 2)
+      val r3 = createValueTile(10, 3)
+      val r0xF = createValueTile(10, 15)
 
       val s1 = Seq(r1, r3)
       val s2 = Seq(r2, r3)

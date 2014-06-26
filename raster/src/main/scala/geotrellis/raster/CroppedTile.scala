@@ -119,15 +119,12 @@ case class CroppedTile(sourceTile: Tile,
 
   def toBytes(): Array[Byte] = toArrayTile.toBytes
 
-  def convert(newCellType: CellType): Tile =
-    sourceTile.convert(newCellType)
-
   def map(f: Int => Int): Tile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
 
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
-        tile.set(col, row, get(col, row))
+        tile.set(col, row, f(get(col, row)))
       }
     }
 
@@ -152,7 +149,7 @@ case class CroppedTile(sourceTile: Tile,
 
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
-        tile.setDouble(col, row, getDouble(col, row))
+        tile.setDouble(col, row, f(getDouble(col, row)))
       }
     }
 

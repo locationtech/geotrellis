@@ -20,13 +20,11 @@ import geotrellis.raster._
 
 /**
  * Operation to get the hyperbolic tangent of values.
+ * @info Always returns a double or float raster.
  */
 object Tanh extends Serializable {
-  /**
-   * Takes the hyperbolic tan of each raster cell value.
-   * @info Always returns a double raster.
-   */
   def apply(r: Tile): Tile = 
-    r.convert(TypeDouble)
+    (if(r.cellType.isFloatingPoint) r
+     else r.convert(TypeDouble))
      .mapDouble(z => math.tanh(z))
 }

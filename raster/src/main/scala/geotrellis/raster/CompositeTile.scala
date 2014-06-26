@@ -211,14 +211,11 @@ case class CompositeTile(tiles: Seq[Tile],
     getTile(tcol, trow).getDouble(pcol, prow)
   }
 
-  def convert(cellType: CellType): Tile =
-    CompositeTile(tiles.map(_.convert(cellType)), tileLayout)
-
   def map(f: Int => Int): Tile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
-        tile.set(col, row, get(col, row))
+        tile.set(col, row, f(get(col, row)))
       }
     }
     tile
@@ -240,7 +237,7 @@ case class CompositeTile(tiles: Seq[Tile],
     val tile = ArrayTile.alloc(cellType, cols, rows)
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
-        tile.setDouble(col, row, getDouble(col, row))
+        tile.setDouble(col, row, f(getDouble(col, row)))
       }
     }
     tile

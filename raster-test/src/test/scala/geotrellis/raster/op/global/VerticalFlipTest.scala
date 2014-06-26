@@ -16,23 +16,17 @@
 
 package geotrellis.raster.op.global
 
-import geotrellis._
-import geotrellis.process._
 import geotrellis.raster._
 import geotrellis.testkit._
 
 import org.scalatest._
 
 class VerticalFlipTest extends FunSuite 
-                          with TestServer {
+                          with TestEngine {
   test("load valid raster") {
-    val op1 = io.LoadRaster("test:fs","quadborder")
-    val op2 = VerticalFlip(op1)
-    val op3 = VerticalFlip(op2)
-
-    val r1 = get(op1)
-    val r2 = get(op2)
-    val r3 = get(op3)
+    val r1 = RasterSource("test:fs","quadborder").get
+    val r2 = r1.verticalFlip
+    val r3 = r2.verticalFlip
 
     assert(r1 === r3)
 

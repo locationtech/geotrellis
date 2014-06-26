@@ -24,8 +24,8 @@ import geotrellis.raster._
  * if abs(cell_value) > 1, return NaN in that cell.
  */
 object Asin extends Serializable {
-  /** Takes the arc sine of each raster cell value. */
   def apply(r: Tile): Tile =
-    r.convert(TypeDouble)
+    (if(r.cellType.isFloatingPoint) r
+     else r.convert(TypeDouble))
      .mapDouble (z => math.asin(z))
 }

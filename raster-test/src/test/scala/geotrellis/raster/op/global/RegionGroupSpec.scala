@@ -16,21 +16,21 @@
 
 package geotrellis.raster.op.global
 
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.feature.Extent
+import geotrellis.raster.stats._
 import geotrellis.testkit._
-import geotrellis.statistics.op.stat._
 
 import scala.collection.mutable
 
 import org.scalatest._
 
 class RegionGroupSpec extends FunSpec
-                         with TestServer
-                         with RasterBuilders {
+                         with TestEngine
+                         with TileBuilders {
   describe("RegionGroup") {
     it("should group regions.") {
-      val r = createRaster(
+      val r = createTile(
         Array(NODATA,NODATA,NODATA,NODATA,     9,
               NODATA,NODATA,     9,     9,     9,
               NODATA,     9,NODATA,     5,     5,
@@ -39,16 +39,16 @@ class RegionGroupSpec extends FunSpec
                    7,     7,NODATA,     9,     9),
           5, 6
       )
-      val regions = get(RegionGroup(r)).raster
+      val regions = r.regionGroup.raster
 
-      val histogram = get(GetHistogram(regions))
+      val histogram = regions.histogram
       val count = histogram.getValues.length
       count should be (4)
 
     }
 
     it("should group regions with a connectivity of 8 neighbors.") {
-      val r = createRaster(
+      val r = createTile(
         Array(NODATA,NODATA,NODATA,NODATA,     9,
               NODATA,NODATA,     9,     9,     9,
               NODATA,     9,NODATA,     5,     5,
@@ -58,9 +58,9 @@ class RegionGroupSpec extends FunSpec
           5, 6
       )
       val options = RegionGroupOptions(connectivity = EightNeighbors)
-      val regions = get(RegionGroup(r,options)).raster
+      val regions = r.regionGroup(options).raster
 
-      val histogram = get(GetHistogram(regions))
+      val histogram = regions.histogram
       val count = histogram.getValues.length
       count should be (3)
 
@@ -68,7 +68,7 @@ class RegionGroupSpec extends FunSpec
 
     it("should group regions on larger example.") {
       val n = NODATA
-      val r = createRaster(
+      val r = createTile(
         Array( n, 1, 1, n, n, n, n, n, n, n, 7, 7, n, n, n, n, n,
                n, 1, 1, n, n, n, n, n, n, n, 7, 7, n, n, n, n, n,
                n, n, n, 1, 1, n, n, n, n, n, 7, n, n, 7, n, n, n,
@@ -90,9 +90,9 @@ class RegionGroupSpec extends FunSpec
                17,18
       )
 
-      val RegionGroupResult(regions,regionMap) = get(RegionGroup(r))
+      val RegionGroupResult(regions,regionMap) = r.regionGroup
 
-      val histogram = get(GetHistogram(regions))
+      val histogram = regions.histogram
       val count = histogram.getValues.length
       count should be (8)
       
@@ -120,7 +120,7 @@ class RegionGroupSpec extends FunSpec
 
     it("should group regions on larger example without ignoringNoData.") {
       val n = NODATA
-      val r = createRaster(
+      val r = createTile(
         Array( n, 1, 1, n, n, n, n, n, n, n, 7, 7, n, n, n, n, n,
                n, 1, 1, n, n, n, n, n, n, n, 7, 7, n, n, n, n, n,
                n, n, n, 1, 1, n, n, n, n, n, 7, n, n, 7, n, n, n,
@@ -143,9 +143,9 @@ class RegionGroupSpec extends FunSpec
       )
 
       val RegionGroupResult(regions,regionMap) = 
-        get(RegionGroup(r,RegionGroupOptions(ignoreNoData = false)))
+        r.regionGroup(RegionGroupOptions(ignoreNoData = false))
 
-      val histogram = get(GetHistogram(regions))
+      val histogram = regions.histogram
       val count = histogram.getValues.length
       count should be (9)
       
@@ -171,7 +171,7 @@ class RegionGroupSpec extends FunSpec
 
     it("should group regions when regions are concentric.") {
       val n = NODATA
-      val r = createRaster(
+      val r = createTile(
         Array(
                n, n, 7, 7, 7, n, n,
                n, 7, 7, 5, 7, 7, n,
@@ -185,9 +185,9 @@ class RegionGroupSpec extends FunSpec
                7,8
       )
 
-      val RegionGroupResult(regions,regionMap) = get(RegionGroup(r))
+      val RegionGroupResult(regions,regionMap) = r.regionGroup
 
-      val histogram = get(GetHistogram(regions))
+      val histogram = regions.histogram
       val count = histogram.getValues.length
       count should be (4)
       
@@ -212,7 +212,7 @@ class RegionGroupSpec extends FunSpec
 
     it("should group regions when region has NODATA holes.") {
       val n = NODATA
-      val r = createRaster(
+      val r = createTile(
         Array(
                n, n, n, n, n, n, n,
                n, n, 5, 5, 5, n, n,
@@ -226,9 +226,9 @@ class RegionGroupSpec extends FunSpec
                7,8
       )
 
-      val RegionGroupResult(regions,regionMap) = get(RegionGroup(r))
+      val RegionGroupResult(regions,regionMap) = r.regionGroup
 
-      val histogram = get(GetHistogram(regions))
+      val histogram = regions.histogram
       val count = histogram.getValues.length
       count should be (1)
       
@@ -265,9 +265,9 @@ class RegionGroupSpec extends FunSpec
       val ymin = -70
       val ymax = 0
 
-      val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
-      val RegionGroupResult(regions,regionMap) = get(RegionGroup(r))
-      val histogram = get(GetHistogram(regions))
+      val r = ArrayTile(arr, cols, rows)
+      val RegionGroupResult(regions,regionMap) = r.regionGroup
+      val histogram = regions.histogram
       val count = histogram.getValues.length
       count should be (4)
       
@@ -309,10 +309,10 @@ class RegionGroupSpec extends FunSpec
       val ymin = -70
       val ymax = 0
 
-      val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
+      val r = ArrayTile(arr, cols, rows)
       val RegionGroupResult(regions,regionMap) = 
-        get(RegionGroup(r,RegionGroupOptions(ignoreNoData = false)))
-      val histogram = get(GetHistogram(regions))
+        r.regionGroup(RegionGroupOptions(ignoreNoData = false))
+      val histogram = regions.histogram
       val count = histogram.getValues.length
       count should be (7)
       
@@ -332,8 +332,8 @@ class RegionGroupSpec extends FunSpec
 
 
 class RegionPartitionSpec extends FunSpec
-                             with TestServer
-                             with RasterBuilders {
+                             with TestEngine
+                             with TileBuilders {
   describe("RegionPartition") {
     it("should work in a once problematic case") {
       val rp = new RegionPartition()

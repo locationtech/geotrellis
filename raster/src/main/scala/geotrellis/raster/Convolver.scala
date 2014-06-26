@@ -23,9 +23,9 @@ import geotrellis._
  */
 case class Convolver(cols: Int, rows: Int, k: Kernel) {
 
-  val kraster = k.raster
-  var kernelcols = kraster.cols
-  var kernelrows = kraster.rows
+  val ktile = k.tile
+  var kernelcols = ktile.cols
+  var kernelrows = ktile.rows
 
   val tile: IntArrayTile = IntArrayTile.empty(cols, rows)
 
@@ -54,13 +54,13 @@ case class Convolver(cols: Int, rows: Int, k: Kernel) {
           if (r >= 0 && c >= 0 && r < rows && c < cols &&
             kcol >= 0 && krow >= 0 && kcol < kernelcols && krow < kernelrows) {
 
-            val k = kraster.get(kcol, krow)
+            val k = ktile.get(kcol, krow)
             if (isData(k)) {
               val o = tile.get(c, r)
               val w = if (isNoData(o)) {
                 k * z
               } else {
-                o + k*z
+                o + k * z
               }
               tile.set(c, r, w)
             }

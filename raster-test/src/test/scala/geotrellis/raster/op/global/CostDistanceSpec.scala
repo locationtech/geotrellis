@@ -16,7 +16,6 @@
 
 package geotrellis.raster.op.global
 
-import geotrellis._
 import geotrellis.raster._
 import geotrellis.feature._
 import geotrellis.testkit._
@@ -25,24 +24,15 @@ import org.scalatest._
 
 import scala.language.implicitConversions
 
-class CostDistanceSpec extends FunSuite with TestServer {
-  implicit def arrayIsRasterOp(a: Array[Int]): Op[Raster] = {
-    val size = math.sqrt(a.length).toInt    
+class CostDistanceSpec extends FunSuite with TestEngine {
+  implicit def array2Tile(a: Array[Int]): Tile = {
+    val size = math.sqrt(a.length).toInt
 
-    val e = Extent(0,0,10*size,10*size)
-    val re = RasterExtent(e, 10,10,size,size)
-    val data = IntArrayRasterData(a, size, size)
-
-    Literal(Raster(data, re))
+    IntArrayTile(a, size, size)
   }
 
-  def asRaster(a: Array[Int], cols: Int, rows: Int): Op[Raster] = {
-    val e = Extent(0,0,10*cols,10*rows)
-    val re = RasterExtent(e, 10,10,cols,rows)
-    val data = IntArrayRasterData(a, cols, rows)
-
-    Literal( Raster(data, re))
-  }
+  def asTile(a: Array[Int], cols: Int, rows: Int): Tile =
+    IntArrayTile(a, cols, rows)
   
   test("ESRI example") {
     val n = NODATA
@@ -50,7 +40,7 @@ class CostDistanceSpec extends FunSuite with TestServer {
 
     // Example from ESRI
     // http://webhelp.esri.com/arcgisdesktop/9.2/index.cfm?TopicName=Cost_Distance_algorithm
-    val costRaster = Array(
+    val costTile = Array(
       1,3,4,4,3,2,
       4,6,2,3,7,6,
       5,8,7,5,6,6,
@@ -64,7 +54,7 @@ class CostDistanceSpec extends FunSuite with TestServer {
       (2,1),
       (0,5))
 
-    val cd = CostDistance(costRaster, points)
+    val cd = CostDistance(costTile, points)
 
     val d = get(cd).toArrayDouble
 
@@ -87,7 +77,7 @@ class CostDistanceSpec extends FunSuite with TestServer {
 
     // Example from GRASS
     // http://grass.osgeo.org/grass64/manuals/r.cost.html
-    val costRaster = asRaster(Array(
+    val costTile = asTile(Array(
        2 , 2 , 1 , 1 , 5 , 5 , 5 ,
        2 , 2 , 8 , 8 , 5 , 2 , 1 ,
        7 , 1 , 1 , 8 , 2 , 2 , 2 ,
@@ -97,7 +87,7 @@ class CostDistanceSpec extends FunSuite with TestServer {
 
     val points = Seq((5,4))
 
-    val cd = CostDistance(costRaster, points)
+    val cd = CostDistance(costTile, points)
 
     val d = get(cd).toArrayDouble
     
@@ -118,6 +108,6 @@ class CostDistanceSpec extends FunSuite with TestServer {
     }
   }
 
-  def print(d: DoubleArrayRasterData):Unit = println(d.array.toList.map(i => " %04.1f " format i).grouped(d.cols).map(_.mkString(",")).mkString("\n"))
+  def print(d: DoubleArrayTile):Unit = println(d.array.toList.map(i => " %04.1f " format i).grouped(d.cols).map(_.mkString(",")).mkString("\n"))
 
 }

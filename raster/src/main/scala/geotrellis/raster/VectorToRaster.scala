@@ -16,7 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis._
 import geotrellis.feature._
 import geotrellis.raster.rasterize._
 
@@ -152,4 +151,25 @@ object VectorToRaster {
 
   def rasterize(feature: Geometry, rasterExtent: RasterExtent, value:Int): Tile =
     Rasterizer.rasterizeWithValue(feature, rasterExtent, value)
+
+/**
+ * Gives a raster that represents the number of occuring points per cell.
+ * 
+ *  @param points               Sequence of points to be counted.
+ *  @param rasterExtent         RasterExtent of the resulting raster.
+ * 
+ */
+  def countPoints(points: Seq[Point], rasterExtent: RasterExtent): Tile = {
+    val (cols, rows) = (rasterExtent.cols, rasterExtent.rows)
+    val array = Array.ofDim[Int](cols * rows).fill(0)
+    for(point <- points) {
+      val x = point.x
+      val y = point.y
+      if(rasterExtent.extent.intersects(x,y)) {
+        val index = rasterExtent.mapXToGrid(x) * cols + rasterExtent.mapYToGrid(y)
+        array(index) = array(index) + 1
+      }
+    }
+    IntArrayTile(array, cols, rows)
+  }
 }

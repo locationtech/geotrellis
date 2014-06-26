@@ -16,9 +16,8 @@
 
 package geotrellis.admin
 
-import geotrellis._
-import geotrellis.process._
-import geotrellis.source._
+import geotrellis.raster._
+import geotrellis.engine._
 import geotrellis.services._
 
 import geotrellis.proj4._
@@ -71,7 +70,7 @@ trait AdminService extends HttpService {
             } else if (!name.endsWith(".arg") && !name.endsWith(".json")) {
               complete(400, "File type must be .arg or .json")
             } else {
-              GeoTrellis.server.catalog.getStore(store) match {
+              GeoTrellis.engine.catalog.getStore(store) match {
                 case Some(datastore) => {
                   val filePath = datastore.path + "/" + name
                   val fos = new FileOutputStream(filePath)
@@ -126,9 +125,9 @@ trait AdminService extends HttpService {
         'colorRamp) { (bbox,width,height,store,layer,breaks,colorRamp) =>
         val layerId = LayerId(store,layer)
         LayerService.render(bbox,width,height,layerId,breaks,colorRamp).run match {
-          case Complete(v,_) => 
+          case Complete(png,_) => 
             respondWithMediaType(MediaTypes.`image/png`) {
-              complete(v)
+              complete(png.bytes)
             }
           case Error(message,trace) => failWith(new RuntimeException(message+trace))
         }
@@ -143,11 +142,12 @@ trait AdminService extends HttpService {
         'size.as[Int] ? 7) { (store,layer,lat,lng,size) =>
         val layerId = LayerId(store,layer)
         val (x,y) = (lng,lat).reproject(LatLng, WebMercator)
-
-        RasterSource(layerId)
+        val rs = RasterSource(layerId)
+        val rasterExtent = rs.rasterExtent.get
+        rs
           .converge
           .map { rast =>
-            val (col,row) = rast.rasterExtent.mapToGrid(x,y)
+            val (col,row) = rasterExtent.mapToGrid(x,y)
             for(r <- (row - size) to (row + size);
               c <- (col - size) to (col + size)) yield {
               if(0 <= c && c <= rast.cols &&

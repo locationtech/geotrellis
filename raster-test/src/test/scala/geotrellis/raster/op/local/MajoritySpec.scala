@@ -16,7 +16,7 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
+import geotrellis.raster._
 
 import org.scalatest._
 
@@ -24,17 +24,17 @@ import geotrellis.testkit._
 
 class MajoritySpec extends FunSpec 
                       with Matchers 
-                      with TestServer 
-                      with RasterBuilders {
+                      with TestEngine 
+                      with TileBuilders {
   describe("Majority") {
     it("takes majority on rasters of all one value") {
-      val r1 = createRaster(Array.fill(7*8)(1), 7, 8)
-      val r2 = createRaster(Array.fill(7*8)(5), 7, 8)
-      val r3 = createRaster(Array.fill(7*8)(1), 7, 8)
-      val r4 = createRaster(Array.fill(7*8)(7), 7, 8)
-      val r5 = createRaster(Array.fill(7*8)(1), 7, 8)
-      val r6 = createRaster(Array.fill(7*8)(7), 7, 8)
-      val r7 = createRaster(Array.fill(7*8)(NODATA), 7, 8)
+      val r1 = createTile(Array.fill(7*8)(1), 7, 8)
+      val r2 = createTile(Array.fill(7*8)(5), 7, 8)
+      val r3 = createTile(Array.fill(7*8)(1), 7, 8)
+      val r4 = createTile(Array.fill(7*8)(7), 7, 8)
+      val r5 = createTile(Array.fill(7*8)(1), 7, 8)
+      val r6 = createTile(Array.fill(7*8)(7), 7, 8)
+      val r7 = createTile(Array.fill(7*8)(NODATA), 7, 8)
 
       assertEqual(Majority(r1,r2,r3,r4,r5,r6,r7), Array.fill(7*8)(1))
       assertEqual(Majority(1,r1,r2,r3,r4,r5,r6), Array.fill(7*8)(7))
@@ -46,73 +46,33 @@ class MajoritySpec extends FunSpec
       assertEqual(Majority(4,r1,r2,r3), Array.fill(7*8)(NODATA))
     }
 
-    it("takes majority on rasters sources of all one value") {
-      val r1 = createRasterSource(Array.fill(6*8)(8), 2,2,3,4)
-      val r2 = createRasterSource(Array.fill(6*8)(5), 2,2,3,4)
-      val r3 = createRasterSource(Array.fill(6*8)(8), 2,2,3,4)
-      val r4 = createRasterSource(Array.fill(6*8)(7), 2,2,3,4)
-      val r5 = createRasterSource(Array.fill(6*8)(8), 2,2,3,4)
-      val r6 = createRasterSource(Array.fill(6*8)(7), 2,2,3,4)
-      val r7 = createRasterSource(Array.fill(6*8)(NODATA), 2,2,3,4)
+    it("takes majority on rasters of all another value") {
+      val r1 = createTile(Array.fill(6*8)(8), 6, 8)
+      val r2 = createTile(Array.fill(6*8)(5), 6, 8)
+      val r3 = createTile(Array.fill(6*8)(8), 6, 8)
+      val r4 = createTile(Array.fill(6*8)(7), 6, 8)
+      val r5 = createTile(Array.fill(6*8)(8), 6, 8)
+      val r6 = createTile(Array.fill(6*8)(7), 6, 8)
+      val r7 = createTile(Array.fill(6*8)(NODATA), 6, 8)
 
-      assertEqual(r1.localMajority(r2,r3,r4,r5,r6,r7).get, Array.fill(6*8)(8))
-      assertEqual(r1.localMajority(1,r2,r3,r4,r5,r6).get, Array.fill(6*8)(7))
-      assertEqual(r1.localMajority(2,r1,r2,r3,r4,r5,r6).get, Array.fill(6*8)(5))
-      assertEqual(r1.localMajority(0,r1,r1,r2).get, Array.fill(6*8)(8))
-      assertEqual(r1.localMajority(1,r1,r1,r2).get, Array.fill(6*8)(5))
-      assertEqual(r1.localMajority(2,r1,r1,r2).get, Array.fill(6*8)(NODATA))
-      assertEqual(r1.localMajority(3,r1,r2,r3).get, Array.fill(6*8)(NODATA))
-      assertEqual(r1.localMajority(4,r1,r2,r3).get, Array.fill(6*8)(NODATA))
-    }
-
-    it("takes majority on double rasters sources of all one value") {
-      val r1 = createRasterSource(Array.fill(6*8)(1.1), 2,2,3,4)
-      val r2 = createRasterSource(Array.fill(6*8)(5.5), 2,2,3,4)
-      val r3 = createRasterSource(Array.fill(6*8)(1.1), 2,2,3,4)
-      val r4 = createRasterSource(Array.fill(6*8)(7.7), 2,2,3,4)
-      val r5 = createRasterSource(Array.fill(6*8)(1.1), 2,2,3,4)
-      val r6 = createRasterSource(Array.fill(6*8)(7.7), 2,2,3,4)
-      val r7 = createRasterSource(Array.fill(6*8)(NaN), 2,2,3,4)
-
-      assertEqual(r1.localMajority(r2,r3,r4,r5,r6,r7).get, Array.fill(6*8)(1.1))
-      assertEqual(r1.localMajority(1,r2,r3,r4,r5,r6).get, Array.fill(6*8)(7.7))
-      assertEqual(r1.localMajority(2,r1,r2,r3,r4,r5,r6).get, Array.fill(6*8)(5.5))
-      assertEqual(r1.localMajority(0,r1,r1,r2).get, Array.fill(6*8)(1.1))
-      assertEqual(r1.localMajority(1,r1,r1,r2).get, Array.fill(6*8)(5.5))
-      assertEqual(r1.localMajority(2,r1,r1,r2).get, Array.fill(6*8)(NaN))
-      assertEqual(r1.localMajority(3,r1,r2,r3).get, Array.fill(6*8)(NaN))
-      assertEqual(r1.localMajority(4,r1,r2,r3).get, Array.fill(6*8)(NaN))
-    }
-
-  }
-  describe("Majority method") {
-    it("takes majority on rasters of all one value") {
-      val r1 = createRaster(Array.fill(6*8)(8), 6, 8)
-      val r2 = createRaster(Array.fill(6*8)(5), 6, 8)
-      val r3 = createRaster(Array.fill(6*8)(8), 6, 8)
-      val r4 = createRaster(Array.fill(6*8)(7), 6, 8)
-      val r5 = createRaster(Array.fill(6*8)(8), 6, 8)
-      val r6 = createRaster(Array.fill(6*8)(7), 6, 8)
-      val r7 = createRaster(Array.fill(6*8)(NODATA), 6, 8)
-
-      assertEqual(r1.localMajority(r2, r3, r4, r5, r6, r7):Raster, Array.fill(6*8)(8))
-      assertEqual(r1.localMajority(1,r2,r3,r4,r5,r6):Raster, Array.fill(6*8)(7))
-      assertEqual(r1.localMajority(2,r1,r2,r3,r4,r5,r6):Raster, Array.fill(6*8)(5))
-      assertEqual(r1.localMajority(0,r1,r1,r2):Raster, Array.fill(6*8)(8))
-      assertEqual(r1.localMajority(1,r1,r1,r2):Raster, Array.fill(6*8)(5))
-      assertEqual(r1.localMajority(2,r1,r1,r2):Raster, Array.fill(6*8)(NODATA))
-      assertEqual(r1.localMajority(3,r1,r2,r3):Raster, Array.fill(6*8)(NODATA))
-      assertEqual(r1.localMajority(4,r1,r2,r3):Raster, Array.fill(6*8)(NODATA))
+      assertEqual(r1.localMajority(r2, r3, r4, r5, r6, r7), Array.fill(6*8)(8))
+      assertEqual(r1.localMajority(1,r2,r3,r4,r5,r6), Array.fill(6*8)(7))
+      assertEqual(r1.localMajority(2,r1,r2,r3,r4,r5,r6), Array.fill(6*8)(5))
+      assertEqual(r1.localMajority(0,r1,r1,r2), Array.fill(6*8)(8))
+      assertEqual(r1.localMajority(1,r1,r1,r2), Array.fill(6*8)(5))
+      assertEqual(r1.localMajority(2,r1,r1,r2), Array.fill(6*8)(NODATA))
+      assertEqual(r1.localMajority(3,r1,r2,r3), Array.fill(6*8)(NODATA))
+      assertEqual(r1.localMajority(4,r1,r2,r3), Array.fill(6*8)(NODATA))
     }
 
     it("takes majority on double rasters of all one value") {
-      val r1 = createRaster(Array.fill(6*8)(1.1), 6, 8)
-      val r2 = createRaster(Array.fill(6*8)(5.5), 6, 8)
-      val r3 = createRaster(Array.fill(6*8)(1.1), 6, 8)
-      val r4 = createRaster(Array.fill(6*8)(7.7), 6, 8)
-      val r5 = createRaster(Array.fill(6*8)(1.1), 6, 8)
-      val r6 = createRaster(Array.fill(6*8)(7.7), 6, 8)
-      val r7 = createRaster(Array.fill(6*8)(NaN), 6, 8)
+      val r1 = createTile(Array.fill(6*8)(1.1), 6, 8)
+      val r2 = createTile(Array.fill(6*8)(5.5), 6, 8)
+      val r3 = createTile(Array.fill(6*8)(1.1), 6, 8)
+      val r4 = createTile(Array.fill(6*8)(7.7), 6, 8)
+      val r5 = createTile(Array.fill(6*8)(1.1), 6, 8)
+      val r6 = createTile(Array.fill(6*8)(7.7), 6, 8)
+      val r7 = createTile(Array.fill(6*8)(NaN), 6, 8)
 
       assertEqual(r1.localMajority(r2,r3,r4,r5,r6,r7), Array.fill(6*8)(1.1))
       assertEqual(r1.localMajority(1,r2,r3,r4,r5,r6), Array.fill(6*8)(7.7))

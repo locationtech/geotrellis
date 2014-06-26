@@ -24,25 +24,25 @@ class IntConstantTest extends FunSuite {
   val size = 4
 
   test("building") {
-    val d1 = IntConstant(99, 2, 2)
-    val d2 = IntArrayRasterData(Array.fill(size)(99), 2, 2)
-    assert(d1 === d2)
+    val d1 = IntConstantTile(99, 2, 2)
+    val d2 = IntArrayTile(Array.fill(size)(99), 2, 2)
+    assert(d1.toArray === d2.toArray)
   }
 
   test("basic operations") {
-    val d = IntConstant(99, 2, 2)
+    val d = IntConstantTile(99, 2, 2)
 
-    assert(d.length === size)
-    assert(d.getType === TypeInt)
-    assert(d(0) === 99)
-    assert(d.applyDouble(0) === 99.0)
+    assert(d.size === size)
+    assert(d.cellType === TypeInt)
+    assert(d.get(0,0) === 99)
+    assert(d.getDouble(0,0) === 99.0)
   }
 
   test("map") {
-    val d1 = IntConstant(99, 2, 2)
+    val d1 = IntConstantTile(99, 2, 2)
     val d2 = d1.map(_ + 1)
 
-    assert(d2.isInstanceOf[IntConstant])
-    assert(d2(0) === 100)
+    assert(d2.isInstanceOf[IntConstantTile])
+    assert(d2.get(0,0) === 100)
   }
 }

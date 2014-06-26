@@ -59,7 +59,7 @@ class RasterizerBenchmark extends OperationBenchmark {
     val p3 = Point(10*rasterSize/2, 10*rasterSize)
     poly = PolygonFeature(Polygon(Line(p1,p2,p3,p1)), 1)
 
-    transitPoly = GeoJson.fromFile[Polygon]("../core-test/data/transitgeo.json")
+    transitPoly = GeoJson.fromFile[Polygon]("../raster-test/data/transitgeo.json")
     transitPolyNoHoles = Polygon(transitPoly.exterior)
     val feature.Extent(xmin, ymin, xmax, ymax) = transitPoly.envelope
     val dx = (xmax - xmin) / 4

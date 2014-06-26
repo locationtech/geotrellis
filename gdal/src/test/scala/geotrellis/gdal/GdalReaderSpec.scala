@@ -7,7 +7,7 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers._
 
 class GdalReaderSpec extends FunSpec with ShouldMatchers {
-  val path = "core-test/data/slope.tif"
+  val path = "raster-test/data/slope.tif"
 
   describe("reading a GeoTiff") {
     it("should match one read with GeoTools") {

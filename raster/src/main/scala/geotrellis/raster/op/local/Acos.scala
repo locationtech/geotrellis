@@ -20,14 +20,12 @@ import geotrellis.raster._
 
 /**
  * Operation to get the arc cosine of values.
+ * Always returns a double tiled raster.
+ * If the absolute value of the cell value is > 1, it will be NaN.
  */
 object Acos extends Serializable {
-  /** 
-  * Takes the arc cosine of each raster cell value. 
-  * Always returns a double tiled raster.
-  * If the absolute value of the cell value is > 1, it will be NaN.
-  */
   def apply(r: Tile): Tile =
-    r.convert(TypeDouble)
+    (if(r.cellType.isFloatingPoint) r
+     else r.convert(TypeDouble))
      .mapDouble(z => math.acos(z))
 }

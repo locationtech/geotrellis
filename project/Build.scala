@@ -139,7 +139,8 @@ object GeotrellisBuild extends Build {
           jts,
           sprayJson,
           sprayHttpx,
-          akkaActor
+          akkaActor,        
+          apacheMath
         )
       )
       .settings(defaultAssemblySettings: _*)
@@ -197,8 +198,7 @@ object GeotrellisBuild extends Build {
         jacksonCore,
         jacksonMapper,
         spire,
-        sprayClient, // for reading args from URLs,
-        apacheMath
+        sprayClient // for reading args from URLs,
       )
     ) ++
     defaultAssemblySettings ++

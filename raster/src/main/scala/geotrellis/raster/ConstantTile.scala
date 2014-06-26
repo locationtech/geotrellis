@@ -33,6 +33,7 @@ trait ConstantTile extends Tile {
   def toArray(): Array[Int] = Array.ofDim[Int](cols * rows).fill(iVal)
   def toArrayDouble(): Array[Double] = Array.ofDim[Double](cols * rows).fill(dVal)
 
+  override
   def convert(newType: CellType): Tile = 
     newType match {
       case TypeBit => BitConstantTile(if(iVal == 0) false else true, cols, rows)

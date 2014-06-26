@@ -206,7 +206,7 @@ extends TileLoader(tileSetInfo, tileLayout) {
       case Some(tre) => 
         ArgReader.read(path, tileSetInfo.cellType, re, tre)
       case None => 
-        ArgReader.read(path, tileSetInfo.cellType, re)
+        ArgReader.read(path, tileSetInfo.cellType, re.cols, re.rows)
     }
 
   }

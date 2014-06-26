@@ -64,8 +64,6 @@ object ArrayTile {
  * Designed to be a near drop-in replacement for Array in many cases.
  */
 trait ArrayTile extends Tile with Serializable {
-  def convert(cellType: CellType): ArrayTile = LazyConvertedTile(this, cellType)
-
   def toArrayTile = this
 
   /**

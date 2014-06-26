@@ -76,7 +76,7 @@ class IOBenchmark extends OperationBenchmark {
   def rasterSourceWithExtent = { RasterSource(layers(cellType), targetExtent).get }
 
   def timeNewReader(reps: Int) = run(reps)(newReader)
-  def newReader = { arg.ArgReader.read(path, typ, rasterExtent) }
+  def newReader = { arg.ArgReader.read(path, typ, rasterExtent, rasterExtent) }
 
   def timeNewReaderWithExtent(reps: Int) = run(reps)(newReaderWithExtent)
   def newReaderWithExtent = { 
@@ -124,7 +124,7 @@ class ReadAndWarpBenchmark extends OperationBenchmark {
 
   def timeNewReaderWithWarp(reps: Int) = run(reps)(newReaderWithWarp)
   def newReaderWithWarp = { 
-    val r = arg.ArgReader.read(path, typ, extent) 
+    val r = arg.ArgReader.read(path, typ, extent, extent) 
     r.warp(extent.extent, targetExtent)
   }
 }
@@ -174,7 +174,7 @@ class SmallTileReadAndWarpBenchmark extends OperationBenchmark {
 
   def timeNewReaderWithWarp(reps: Int) = run(reps)(newReaderWithWarp)
   def newReaderWithWarp = { 
-    val r = arg.ArgReader.read(path, typ, rasterExtent) 
+    val r = arg.ArgReader.read(path, typ, rasterExtent.cols, rasterExtent.rows) 
     r.warp(rasterExtent.extent, targetExtent)
   }
 }

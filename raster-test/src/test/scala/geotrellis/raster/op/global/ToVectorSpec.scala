@@ -16,10 +16,9 @@
 
 package geotrellis.raster.op.global
 
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.testkit._
 import geotrellis.feature._
-import geotrellis.source._
 
 import scala.collection.mutable
 
@@ -28,8 +27,8 @@ import com.vividsolutions.jts.{geom => jts}
 import org.scalatest._
 
 class ToVectorSpec extends FunSpec
-                      with TestServer
-                      with RasterBuilders {
+                      with TestEngine
+                      with TileBuilders {
   val cw = 1
   val ch = 10
   val xmin = 0
@@ -84,9 +83,11 @@ class ToVectorSpec extends FunSpec
       val xmax = 6
       val ymin = -50
 
-      val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
+      val extent = Extent(xmin,ymin,xmax,ymax)
 
-      val geoms = get(ToVector(r))
+      val r = ArrayTile(arr, cols, rows)
+
+      val geoms = r.toVector(extent)
       val onesCoords = List(
         (1.0,0.0), (3.0,-0.0),
         (1.0,-20.0),(3.0,-20.0),
@@ -120,9 +121,10 @@ class ToVectorSpec extends FunSpec
       val xmax = 6
       val ymin = -50
 
-      val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
+      val extent = Extent(xmin,ymin,xmax,ymax)
+      val r = ArrayTile(arr, cols, rows)
 
-      val geoms = get(ToVector(r))
+      val geoms = r.toVector(extent)
 
       val onesCoords = List( tl(1,1), tr(3,1),
                              bl(1,3), br(1,3),
@@ -167,10 +169,10 @@ class ToVectorSpec extends FunSpec
       val xmax = 12
       val ymin = -140
 
-      val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
+      val extent = Extent(xmin,ymin,xmax,ymax)
+      val r = ArrayTile(arr, cols, rows)
 
-
-      val geoms = get(ToVector(r))
+      val geoms = r.toVector(extent)
 
       val onesCoords = List(  tl(4,3), tr(5,3),                       tl(9,3), tr(10,3),
                     tl(3,4), tl(4,4),                                
@@ -209,8 +211,9 @@ class ToVectorSpec extends FunSpec
       val xmax = 5
       val ymin = -80
 
-      val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
-      val geoms = get(ToVector(r))
+      val extent = Extent(xmin,ymin,xmax,ymax)
+      val r = ArrayTile(arr, cols, rows)
+      val geoms = r.toVector(extent)
 
       val shellCoords = List( 
         tl(0,0),                               tr(3,0),
@@ -262,9 +265,10 @@ class ToVectorSpec extends FunSpec
       val xmax = 5
       val ymin = -40
 
-      val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
+      val extent = Extent(xmin,ymin,xmax,ymax)
+      val r = ArrayTile(arr, cols, rows)
 
-      val geoms = get(ToVector(r))
+      val geoms = r.toVector(extent)
 
       val expectedShellCoords = List( 
 
@@ -314,10 +318,11 @@ class ToVectorSpec extends FunSpec
       val xmax = 5
       val ymin = -60
 
-      val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
+      val extent = Extent(xmin,ymin,xmax,ymax)
+      val r = ArrayTile(arr, cols, rows)
 
 
-      val geoms = get(ToVector(r))
+      val geoms = r.toVector(extent)
 
       val expectedShellCoords = List( 
                 tl(1,0),     tr(3,0),
@@ -376,32 +381,35 @@ class ToVectorSpec extends FunSpec
       val xmax = 5
       val ymin = -60
 
-      val r = Raster(arr,RasterExtent(Extent(xmin,ymin,xmax,ymax),cw,ch,cols,rows))
+      val extent = Extent(xmin,ymin,xmax,ymax)
+      val r = ArrayTile(arr, cols, rows)
 
-
-      val geoms = get(ToVector(r))
+      val geoms = r.toVector(extent)
 
       withClue ("Number of polygons did not match expected:") { geoms.length should be (3) }
     }
 
     it("should vectorize a raster that was at one point not vectorizing properly") {
-      val r = getRaster("vectorbugger")
-      val op = ToVector(r)
-      val vect = get(op)
+      val rs = RasterSource("vectorbugger")
+      val r = rs.get
+      val extent = rs.rasterExtent.get.extent
+      val vect = r.toVector(extent)
     }
 
     it("should vectorize another raster that was at one point not vectorizing properly") {
       println("Running test on vectorbugger2...")
-      val r = getRaster("vectorbugger2")
-      val op = ToVector(r)
-      val vect = get(op)
+      val rs = RasterSource("vectorbugger2")
+      val r = rs.get
+      val extent = rs.rasterExtent.get.extent
+      val vect = r.toVector(extent)
     }
 
     it("should vectorize yet another raster that was at one point not vectorizing properly") {
       println("Running test on vectorbugger3...")
-      val r = getRaster("vectorbugger3")
-      val op = ToVector(r)
-      val vect = get(op)
+      val rs = RasterSource("vectorbugger3")
+      val r = rs.get
+      val extent = rs.rasterExtent.get.extent
+      val vect = r.toVector(extent)
     }
 
     it("should vectorize a two cell polygon") {
@@ -419,11 +427,10 @@ class ToVectorSpec extends FunSpec
       val cols = 3
       val rows = 4
 
-      val extent = Extent(0,-4,2,0)
-      val rasterExtent = RasterExtent(extent,1,1,3,4)
-      val r = Raster(arr,rasterExtent)
+      val extent = Extent(0,-4,3,0)
+      val r = ArrayTile(arr, cols, rows)
 
-      val toVector = RasterSource(r).toVector.get
+      val toVector = r.toVector(extent)
 
       toVector.length should be (1)
       val geom = toVector.head.geom
@@ -451,14 +458,14 @@ class ToVectorSpec extends FunSpec
         )
 
 
-      val cols = 3
+      val cols = 4
       val rows = 4
 
-      val extent = Extent(0,-4,3,0)
-      val rasterExtent = RasterExtent(extent,1,1,4,4)
-      val r = Raster(arr,rasterExtent)
+      val extent = Extent(0,-4,4,0)
+      val r = ArrayTile(arr, cols, rows)
 
-      val toVector = RasterSource(r).toVector.get
+      val toVector = r.toVector(extent)
+      println(toVector.toSeq)
 
       toVector.length should be (1)
       val geom = toVector.head.geom
@@ -494,14 +501,13 @@ class ToVectorSpec extends FunSpec
         )
 
 
-      val cols = 3
+      val cols = 4
       val rows = 4
 
-      val extent = Extent(0,-4,3,0)
-      val rasterExtent = RasterExtent(extent,1,1,4,4)
-      val r = Raster(arr,rasterExtent)
+      val extent = Extent(0,-4,4,0)
+      val r = ArrayTile(arr, cols, rows)
 
-      val toVector = RasterSource(r).toVector.get
+      val toVector = r.toVector(extent)
 
       toVector.length should be (1)
       val geom = toVector.head.geom

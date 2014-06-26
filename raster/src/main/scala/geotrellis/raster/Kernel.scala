@@ -23,23 +23,23 @@ import geotrellis.feature.Extent
  * Kernel
  *
  * Represents a neighborhood that is represented by
- * a raster.
+ * a tile.
  */
-case class Kernel(raster: Tile) {
-  if(raster.rows != raster.cols) sys.error("Kernel raster must be square")
-  if(raster.rows % 2 != 1) sys.error("Kernel raster must have odd dimension")
+case class Kernel(tile: Tile) {
+  if(tile.rows != tile.cols) sys.error("Kernel tile must be square")
+  if(tile.rows % 2 != 1) sys.error("Kernel tile must have odd dimension")
 }
 
 object Kernel {
-  implicit def raster2Kernel(r: Tile): Kernel = Kernel(r)
+  implicit def tile2Kernel(r: Tile): Kernel = Kernel(r)
   
   /**
    * Creates a Gaussian kernel. Can be used with the [[Convolve]] or [[KernelDensity]] operations.
    *
-   * @param    size           Number of rows of the resulting raster.
+   * @param    size           Number of rows of the resulting tile.
    * @param    sigma          Sigma parameter for Gaussian
    * @param    amp            Amplitude for Gaussian. Will be the value at the center of
-   *                          the resulting raster.
+   *                          the resulting tile.
    *
    * @note                    Tile will be TypeInt
    */
@@ -67,8 +67,8 @@ object Kernel {
   /**
    * Creates a Circle kernel. Can be used with the [[Convolve]] or [[KernelDensity]] operations.
    *
-   * @param       size           Number of rows in the resulting raster.
-   * @param       cellWidth      Cell width of the resutling raster.
+   * @param       size           Number of rows in the resulting tile.
+   * @param       cellWidth      Cell width of the resutling tile.
    * @param       rad            Radius of the circle.
    *
    * @note                       Tile will be TypeInt 

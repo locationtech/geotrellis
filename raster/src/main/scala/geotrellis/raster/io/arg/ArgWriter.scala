@@ -58,7 +58,7 @@ case class ArgWriter(typ: CellType) extends Writer {
     writeData(base + ".arg", raster)
   }
 
-  private def writeData(path: String, raster: Tile) {
+  def writeData(path: String, raster: Tile) {
     val dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)))
     CellWriter.byType(typ).writeCells(raster, dos)
     dos.close()

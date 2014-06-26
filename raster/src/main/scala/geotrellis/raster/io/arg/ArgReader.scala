@@ -22,9 +22,7 @@ import geotrellis.raster.io.Filesystem
 import java.nio.ByteBuffer
 
 object ArgReader {
-  final def read(path: String, typ: CellType, rasterExtent: RasterExtent): Tile = {
-    val cols = rasterExtent.cols
-    val rows = rasterExtent.rows
+  final def read(path: String, typ: CellType, cols: Int, rows: Int): Tile = {
     ArrayTile.fromBytes(Filesystem.slurp(path), typ, cols, rows)
   }
 

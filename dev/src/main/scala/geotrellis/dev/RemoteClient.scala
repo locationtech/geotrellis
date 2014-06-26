@@ -61,7 +61,7 @@ import geotrellis.source._
 import geotrellis.statistics._
 
 class RemoteClientApplication extends Bootable {
-  val server = new Server("remoteServer", Catalog.fromPath("core-test/data/catalog.json"))
+  val server = new Server("remoteServer", Catalog.fromPath("raster-test/data/catalog.json"))
   val router = server.getRouter()
 
   def startup() {

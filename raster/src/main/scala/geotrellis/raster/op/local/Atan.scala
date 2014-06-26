@@ -20,10 +20,12 @@ import geotrellis.raster._
 
 /**
  * Operation to get the Arc Tangent of values.
+ * @info A double raster is always returned.
  */
 object Atan extends Serializable {
   /** Takes the Arc Tangent of each raster cell value. */
   def apply(r: Tile): Tile = 
-    r.convert(TypeDouble)
+    (if(r.cellType.isFloatingPoint) r
+     else r.convert(TypeDouble))
      .mapDouble(z => math.atan(z))
 }

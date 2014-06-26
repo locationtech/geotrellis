@@ -33,6 +33,9 @@ trait Tile extends Raster {
 
   val cellType: CellType
 
+  def convert(cellType: CellType): Tile = 
+    LazyConvertedTile(this, cellType)
+
   /**
    * Get value at given coordinates.
    */

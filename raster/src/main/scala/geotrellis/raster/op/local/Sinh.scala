@@ -20,13 +20,11 @@ import geotrellis.raster._
 
 /**
  * Operation to get the sinh of values.
+ * @info Always returns a double or float raster.
  */
 object Sinh extends Serializable {
-  /**
-   * Takes the hyperbolic sine of each raster cell value.
-   * @info Always returns a double raster.
-   */
   def apply(r: Tile): Tile = 
-    r.convert(TypeDouble)
-     .mapDouble(z => math.sinh(z))
+    (if(r.cellType.isFloatingPoint) r
+     else r.convert(TypeDouble))
+    .mapDouble(z => math.sinh(z))
 }
