@@ -21,6 +21,106 @@ import monocle.Macro._
 
 import scala.collection.immutable.HashMap
 
+object TiffFieldType {
+
+  val BytesFieldType = 1
+  val AsciisFieldType = 2
+  val ShortsFieldType = 3
+  val IntsFieldType = 4
+  val FractionalsFieldType = 5
+  val SignedBytesFieldType = 6
+  val UndefinedFieldType = 7
+  val SignedShortsFieldType = 8
+  val SignedIntsFieldType = 9
+  val SignedFractionalsFieldType = 10
+  val FloatsFieldType = 11
+  val DoublesFieldType = 12
+
+}
+
+object Tags {
+
+  val NewSubfileTypeTag = 254
+  val SubfileTypeTag = 255
+  val ImageWidthTag = 256
+  val ImageLengthTag = 257
+  val BitsPerSampleTag = 258
+  val CompressionTag = 259
+  val PhotometricInterpTag = 262
+  val ThresholdingTag = 263
+  val CellWidthTag = 264
+  val CellLengthTag = 265
+  val FillOrderTag = 266
+  val DocumentNameTag = 269
+  val ImageDescTag = 270
+  val MakerTag = 271
+  val ModelTag = 272
+  val StripOffsetsTag = 273
+  val OrientationTag = 274
+  val SamplesPerPixelTag = 277
+  val RowsPerStripTag = 278
+  val StripByteCountsTag = 279
+  val MinSampleValueTag = 280
+  val MaxSampleValueTag = 281
+  val XResolutionTag = 282
+  val YResolutionTag = 283
+  val PlanarConfigurationTag = 284
+  val PageNameTag = 285
+  val XPositionTag = 286
+  val YPositionTag = 287
+  val FreeOffsetsTag = 288
+  val FreeByteCountsTag = 289
+  val GrayResponseUnitTag = 290
+  val GrayResponseCurveTag = 291
+  val T4OptionsTag = 292
+  val T6OptionsTag = 293
+  val ResolutionUnitTag = 296
+  val PageNumberTag = 297
+  val TransferFunctionTag = 301
+  val SoftwareTag = 305
+  val DateTimeTag = 306
+  val ArtistTag = 315
+  val HostComputerTag = 316
+  val PredictorTag = 317
+  val WhitePointTag = 318
+  val PrimaryChromaticitiesTag = 319
+  val ColorMapTag = 320
+  val HalftoneHintsTag = 321
+  val TileWidthTag = 322
+  val TileLengthTag = 323
+  val TileOffsetsTag = 324
+  val TileByteCountsTag = 325
+  val InkSetTag = 332
+  val InkNamesTag = 333
+  val NumberOfInksTag = 334
+  val DotRangeTag = 336
+  val TargetPrinterTag = 337
+  val ExtraSamplesTag = 338
+  val SampleFormatTag = 339
+  val TransferRangeTag = 342
+  val JpegProcTag = 512
+  val JpegInterchangeFormatTag = 513
+  val JpegInterchangeFormatLengthTag = 514
+  val JpegRestartIntervalTag = 515
+  val JpegLosslessPredictorsTag = 517
+  val JpegPointTransformsTag = 518
+  val JpegQTablesTag = 519
+  val JpegDCTablesTag = 520
+  val JpegACTablesTag = 521
+  val YCbCrCoefficientsTag = 529
+  val YCbCrSubSamplingTag = 530
+  val YCbCrPositioningTag = 531
+  val ReferenceBlackWhiteTag = 532
+  val CopyrightTag = 33432
+  val ModelPixelScaleTag = 33550
+  val ModelTiePointsTag = 33922
+  val ModelTransformationTag = 34264
+  val GeoKeyDirectoryTag = 34735
+  val DoublesTag = 34736
+  val AsciisTag = 34737
+
+}
+
 case class TagMetadata(tag: Int, fieldType: Int,
   length: Int, offset: Int)
 
@@ -31,7 +131,7 @@ case class MetadataTags(
   artist: Option[String] = None,
   copyright: Option[String] = None,
   dateTime: Option[String] = None,
-  computer: Option[String] = None,
+  hostComputer: Option[String] = None,
   imageDesc: Option[String] = None,
   maker: Option[String] = None,
   model: Option[String] = None,
@@ -39,10 +139,10 @@ case class MetadataTags(
 )
 
 case class BasicTags(
-  bitsPerSample: Vector[Int] = Vector.empty,
+  bitsPerSample: Option[Vector[Int]] = None,
   colorMap: Option[Vector[Int]] = None,
-  imageLength: Option[Long] = None,
-  imageWidth: Option[Long] = None,
+  imageLength: Long = 0,
+  imageWidth: Long = 0,
   compression: Int = 1,
   photometricInterp: Option[Int] = None,
   resolutionUnit: Option[Int] = None,
@@ -86,7 +186,7 @@ case class GeoTiffTags(
 case class DocumentationTags(
   documentName: Option[String] = None,
   pageName: Option[String] = None,
-  pageNumbers: Option[Vector[Int]] = None,
+  pageNumber: Option[Vector[Int]] = None,
   xPositions: Option[Vector[(Long, Long)]] = None,
   yPositions: Option[Vector[(Long, Long)]] = None
 )
@@ -94,8 +194,8 @@ case class DocumentationTags(
 case class TileTags(
   tileWidth: Option[Long] = None,
   tileLength: Option[Long] = None,
-  tileOffsets: Option[Vector[Long]] = None,
-  tileByteCounts: Option[Vector[Long]] = None
+  tileOffsets: Option[Vector[Int]] = None,
+  tileByteCounts: Option[Vector[Int]] = None
 )
 
 case class CmykTags(
@@ -108,8 +208,8 @@ case class CmykTags(
 
 case class DataSampleFormatTags(
   sampleFormat: Option[Vector[Int]] = None,
-  maxSampleValues: Option[Vector[Long]] = None,
-  minSampleValues: Option[Vector[Long]] = None
+  maxSampleValue: Option[Vector[Long]] = None,
+  minSampleValue: Option[Vector[Long]] = None
 )
 
 case class ColimetryTags(
@@ -161,8 +261,23 @@ case class ImageDirectory(
   jpegTags: JpegTags = JpegTags(),
   yCbCrTags: YCbCrTags = YCbCrTags(),
   nonStandardizedTags: NonStandardizedTags = NonStandardizedTags(),
-  imageBytes: Option[Vector[Byte]] = None
-)
+  imageBytes: Vector[Byte] = Vector[Byte]()
+) {
+
+  import ImageDirectoryLenses._
+
+  def bitsPerPixel(): Int = this |-> bitsPerSampleLens get match {
+    case Some(v) => v.sum
+    case None => this |-> samplesPerPixelLens get
+  }
+
+  def imageRowBitsSize(): Long = (this |-> imageWidthLens get) * bitsPerPixel
+
+  def imageBitsSize(): Long =  (this |-> imageLengthLens get) * imageRowBitsSize
+
+  def hasStripStorage(): Boolean = (this |-> tileOffsetsLens get).isEmpty
+
+}
 
 object ImageDirectoryLenses {
 
@@ -176,8 +291,8 @@ object ImageDirectoryLenses {
     Option[String]]("copyright")
   val dateTimeLens = metaDataTagsLens |-> mkLens[MetadataTags,
     Option[String]]("dateTime")
-  val computerLens = metaDataTagsLens |-> mkLens[MetadataTags,
-    Option[String]]("computer")
+  val hostComputerLens = metaDataTagsLens |-> mkLens[MetadataTags,
+    Option[String]]("hostComputer")
   val imageDescLens = metaDataTagsLens |-> mkLens[MetadataTags,
     Option[String]]("imageDesc")
   val makerLens = metaDataTagsLens |-> mkLens[MetadataTags,
@@ -190,13 +305,11 @@ object ImageDirectoryLenses {
   val basicTagsLens = mkLens[ImageDirectory, BasicTags]("basicTags")
 
   val bitsPerSampleLens = basicTagsLens |-> mkLens[BasicTags,
-    Vector[Int]]("bitsPerSample")
+    Option[Vector[Int]]]("bitsPerSample")
   val colorMapLens = basicTagsLens |-> mkLens[BasicTags,
     Option[Vector[Int]]]("colorMap")
-  val imageLengthLens = basicTagsLens |-> mkLens[BasicTags,
-    Option[Long]]("imageLength")
-  val imageWidthLens = basicTagsLens |-> mkLens[BasicTags,
-    Option[Long]]("imageWidth")
+  val imageLengthLens = basicTagsLens |-> mkLens[BasicTags, Long]("imageLength")
+  val imageWidthLens = basicTagsLens |-> mkLens[BasicTags, Long]("imageWidth")
   val compressionLens = basicTagsLens |-> mkLens[BasicTags,
     Int]("compression")
   val photometricInterpLens = basicTagsLens |-> mkLens[BasicTags,
@@ -275,8 +388,8 @@ object ImageDirectoryLenses {
   mkLens[DocumentationTags, Option[String]]("documentName")
   val pageNameLens = documentationTagsLens |->
   mkLens[DocumentationTags, Option[String]]("pageName")
-  val pageNumbersLens = documentationTagsLens |->
-  mkLens[DocumentationTags, Option[Vector[Int]]]("pageNumbers")
+  val pageNumberLens = documentationTagsLens |->
+  mkLens[DocumentationTags, Option[Vector[Int]]]("pageNumber")
   val xPositionsLens = documentationTagsLens |->
   mkLens[DocumentationTags, Option[Vector[(Long, Long)]]]("xPositions")
   val yPositionsLens = documentationTagsLens |->
@@ -289,9 +402,9 @@ object ImageDirectoryLenses {
   val tileLengthLens = tileTagsLens |-> mkLens[TileTags,
     Option[Long]]("tileLength")
   val tileOffsetsLens = tileTagsLens |-> mkLens[TileTags,
-    Option[Vector[Long]]]("tileOffsets")
+    Option[Vector[Int]]]("tileOffsets")
   val tileByteCountsLens = tileTagsLens |-> mkLens[TileTags,
-    Option[Vector[Long]]]("tileByteCounts")
+    Option[Vector[Int]]]("tileByteCounts")
 
   val cmykTagsLens = mkLens[ImageDirectory, CmykTags]("cmykTags")
 
@@ -311,10 +424,10 @@ object ImageDirectoryLenses {
 
   val sampleFormatLens = dataSampleFormatTagsLens |->
   mkLens[DataSampleFormatTags, Option[Vector[Int]]]("sampleFormat")
-  val maxSampleValuesLens = dataSampleFormatTagsLens |->
-  mkLens[DataSampleFormatTags, Option[Vector[Long]]]("maxSampleValues")
-  val minSampleValuesLens = dataSampleFormatTagsLens |->
-  mkLens[DataSampleFormatTags, Option[Vector[Long]]]("minSampleValues")
+  val maxSampleValueLens = dataSampleFormatTagsLens |->
+  mkLens[DataSampleFormatTags, Option[Vector[Long]]]("maxSampleValue")
+  val minSampleValueLens = dataSampleFormatTagsLens |->
+  mkLens[DataSampleFormatTags, Option[Vector[Long]]]("minSampleValue")
 
   val colimetryTagsLens = mkLens[ImageDirectory, ColimetryTags]("colimetryTags")
 
@@ -373,7 +486,6 @@ object ImageDirectoryLenses {
   val doublesMapLens = nonStandardizedTagsLens |-> mkLens[NonStandardizedTags,
     HashMap[Int, Vector[Double]]]("doublesMap")
 
-  val imageBytesLens = mkLens[ImageDirectory,
-    Option[Vector[Byte]]]("imageBytes")
+  val imageBytesLens = mkLens[ImageDirectory, Vector[Byte]]("imageBytes")
 
 }

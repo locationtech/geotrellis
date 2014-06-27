@@ -16,10 +16,10 @@
 
 package geotrellis.io.geotiff.decompression
 
+import scala.collection.mutable.ListBuffer
+
 import geotrellis.io.geotiff.decompression._
 import geotrellis.io.geotiff._
-
-import scala.collection.mutable.ListBuffer
 
 object HuffmanColor extends Enumeration {
 
@@ -277,9 +277,10 @@ object HuffmanDecompression {
 
   import HuffmanCodeTree._
 
-  implicit class Huffman(bytes: Vector[Byte]) {
+  implicit class Huffman(matrix: Vector[Vector[Byte]]) {
 
-    def uncompressHuffman(directory: ImageDirectory): Vector[Byte] = {
+    def uncompressHuffman(): Vector[Byte] = {
+
       def decode(bytes: Vector[Byte], start: Node): List[Value] = bytes match {
         case (byte +: bs) => {
           var buf = ListBuffer[Value]()
@@ -318,7 +319,7 @@ object HuffmanDecompression {
           case Nil => Nil
         }
 
-      transform(decode(bytes, root), Nil).toVector
+      matrix.map(row => transform(decode(row, root), Nil)).flatten.toVector
     }
 
     private def valueStackToByteList(stack: List[Value],
@@ -326,7 +327,7 @@ object HuffmanDecompression {
       stack match {
         case (x :: xs) => {
           val color = optColor getOrElse x.color
-          val byteKind = if (color == Black) 255.toByte else 0.toByte
+          val byteKind = if (color == Black) 255.toByte else 0.toByte //should write 0 or 1 bits (bitset)
           val bytes = (for (i <- 0 until x.value) yield (byteKind)).toList
           bytes ::: valueStackToByteList(stack, Some(color))
         }

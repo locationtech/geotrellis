@@ -16,30 +16,41 @@
 
 package geotrellis.io.geotiff.decompression
 
+import monocle.syntax._
+
 import geotrellis.io.geotiff._
+import geotrellis.io.geotiff.ImageDirectoryLenses._
 
 object PackBitsDecompression {
 
-  implicit class PackBits(bytes: Vector[Byte]) {
+  implicit class PackBits(matrix: Vector[Vector[Byte]]) {
 
     def uncompressPackBits(directory: ImageDirectory): Vector[Byte] = {
-      val size =
-        directory.basicTags.imageWidth.get * directory.basicTags.imageLength.get
-      var buf = Vector.empty[Byte]
 
-      var i = 0
-      while (buf.size != size) {
-        val n = bytes(i)
-        if (n <= 127) {
-          buf = buf ++ bytes.drop(i).take(n)
-        } else if (n > -128) {
-          buf = buf ++ (for (i <- 0 until -n) yield (bytes(i)))
+      def uncompressPackBitsBytes(row: Vector[Byte]) = {
+
+        val imageRowByteSize = directory.imageRowBitsSize / 8
+
+        var buf = Vector.empty[Byte]
+
+        var i = 0
+        while (buf.size != imageRowByteSize) {
+          val n = row(i)
+          if (n <= 127) {
+            i += n
+            buf = buf ++ row.drop(i).take(n)
+          } else if (n > -128) {
+            i += 1
+            buf = buf ++ (for (i <- 0 until -n) yield (row(i)))
+          }
+
+          i += 1
         }
 
-        i += 1
+        buf.toVector
       }
 
-      buf.toVector
+      matrix.map(uncompressPackBitsBytes(_)).flatten.toVector
     }
 
   }

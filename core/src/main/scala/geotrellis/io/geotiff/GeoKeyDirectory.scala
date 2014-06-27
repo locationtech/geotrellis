@@ -21,6 +21,59 @@ import monocle.Macro._
 
 import scala.collection.immutable.HashMap
 
+object GeoKeys {
+
+  val GTModelTypeGeoKey = 1024
+  val GTRasterTypeGeoKey = 1025
+  val GTCitationGeoKey = 1026
+
+  val GeogTypeGeoKey = 2048
+  val GeogCitationGeoKey = 2049
+  val GeogGeodeticDatumGeoKey = 2050
+  val GeogPrimeMeridianGeoKey = 2051
+  val GeogLinearUnitsGeoKey = 2052
+  val GeogLinearUnitSizeGeoKey = 2053
+  val GeogAngularUnitsGeoKey = 2054
+  val GeogAngularUnitSizeGeoKey = 2055
+  val GeogEllipsoidGeoKey = 2056
+  val GeogSemiMajorAxisGeoKey = 2057
+  val GeogSemiMinorAxisGeoKey = 2058
+  val GeogInvFlatteningGeoKey = 2059
+  val GeogAzimuthUnitsGeoKey = 2060
+  val GeogPrimeMeridianLongGeoKey = 2061
+
+  val ProjectedCSTypeGeoKey = 3072
+  val PCSCitationGeoKey = 3073
+  val ProjectionGeoKey = 3074
+  val ProjCoordTransGeoKey = 3075
+  val ProjLinearUnitsGeoKey = 3076
+  val ProjLinearUnitSizeGeoKey = 3077
+  val ProjStdParallel1GeoKey = 3078
+  val ProjStdParallel2GeoKey = 3079
+  val ProjNatOriginLongGeoKey = 3080
+  val ProjNatOriginLatGeoKey = 3081
+  val ProjFalseEastingGeoKey = 3082
+  val ProjFalseNorthingGeoKey = 3083
+  val ProjFalseOriginLongGeoKey = 3084
+  val ProjFalseOriginLatGeoKey = 3085
+  val ProjFalseOriginEastingGeoKey = 3086
+  val ProjFalseOriginNorthingGeoKey = 3087
+  val ProjCenterLongGeoKey = 3088
+  val ProjCenterLatGeoKey = 3089
+  val ProjCenterEastingGeoKey = 3090
+  val ProjCenterNorthingGeoKey = 3091
+  val ProjScaleAtNatOriginGeoKey = 3092
+  val ProjScaleAtCenterGeoKey = 3093
+  val ProjAzimuthAngleGeoKey = 3094
+  val ProjStraightVertPoleLongGeoKey = 3095
+
+  val VerticalCSTypeGeoKey = 4096
+  val VerticalCitationGeoKey = 4097
+  val VerticalDatumGeoKey = 4098
+  val VerticalUnitsGeoKey = 4099
+
+}
+
 case class ConfigKeys(
   gtModelType: Option[Int] = None,
   gtRasterType: Option[Int] = None,
@@ -35,7 +88,7 @@ case class GeogCSParameterKeys(
   geogLinearUnits: Option[Int] = None,
   geogLinearUnitSize: Option[Vector[Double]] = None,
   geogAngularUnits: Option[Int] = None,
-  geogAngularUnitsSize: Option[Vector[Double]] = None,
+  geogAngularUnitSize: Option[Vector[Double]] = None,
   geogEllipsoid: Option[Int] = None,
   geogSemiMajorAxis: Option[Vector[Double]] = None,
   geogSemiMinorAxis: Option[Vector[Double]] = None,
@@ -50,9 +103,9 @@ case class ProjectedCSParameterKeys(
   projection: Option[Int] = None,
   projCoordTrans: Option[Int] = None,
   projLinearUnits: Option[Int] = None,
-  projLinearUnitsSize: Option[Vector[Double]] = None,
-  projStdparallel1: Option[Vector[Double]] = None,
-  projStdparallel2: Option[Vector[Double]] = None,
+  projLinearUnitSize: Option[Vector[Double]] = None,
+  projStdParallel1: Option[Vector[Double]] = None,
+  projStdParallel2: Option[Vector[Double]] = None,
   projNatOriginLong: Option[Vector[Double]] = None,
   projNatOriginLat: Option[Vector[Double]] = None,
   projectedFalsings: ProjectedFalsings = ProjectedFalsings(),
@@ -63,7 +116,7 @@ case class ProjectedCSParameterKeys(
   projScaleAtNatOrigin: Option[Vector[Double]] = None,
   projScaleAtCenter: Option[Vector[Double]] = None,
   projAzimuthAngle: Option[Vector[Double]] = None,
-  projStraightVertpoleLong: Option[Vector[Double]] = None
+  projStraightVertPoleLong: Option[Vector[Double]] = None
 )
 
 case class ProjectedFalsings(
@@ -130,12 +183,12 @@ object GeoKeyDirectoryLenses {
     GeogCSParameterKeys, Option[Int]]("geogPrimeMeridian")
   val geogLinearUnitsLens = geogCSParameterKeysLens |-> mkLens[
     GeogCSParameterKeys, Option[Int]]("geogLinearUnits")
-  val geogLinearUnitsSizeLens = geogCSParameterKeysLens |-> mkLens[
+  val geogLinearUnitSizeLens = geogCSParameterKeysLens |-> mkLens[
     GeogCSParameterKeys, Option[Vector[Double]]]("geogLinearUnitSize")
   val geogAngularUnitsLens = geogCSParameterKeysLens |-> mkLens[
     GeogCSParameterKeys, Option[Int]]("geogAngularUnits")
-  val geogAngularUnitsSizeLens = geogCSParameterKeysLens |-> mkLens[
-    GeogCSParameterKeys, Option[Vector[Double]]]("geogAngularUnitsSize")
+  val geogAngularUnitSizeLens = geogCSParameterKeysLens |-> mkLens[
+    GeogCSParameterKeys, Option[Vector[Double]]]("geogAngularUnitSize")
   val geogEllipsoidLens = geogCSParameterKeysLens |-> mkLens[
     GeogCSParameterKeys, Option[Int]]("geogEllipsoid")
   val geogSemiMajorAxisLens = geogCSParameterKeysLens |-> mkLens[
@@ -162,12 +215,12 @@ object GeoKeyDirectoryLenses {
     ProjectedCSParameterKeys, Option[Int]]("projCoordTrans")
   val projLinearUnitsLens = projectedCSParameterKeysLens |-> mkLens[
     ProjectedCSParameterKeys, Option[Int]]("projLinearUnits")
-  val projLinearUnitsSizeLens = projectedCSParameterKeysLens |-> mkLens[
-    ProjectedCSParameterKeys, Option[Vector[Double]]]("projLinearUnitsSize")
-  val projStdparallel1Lens = projectedCSParameterKeysLens |-> mkLens[
-    ProjectedCSParameterKeys, Option[Vector[Double]]]("projStdparallel1")
-  val projStdparallel2Lens = projectedCSParameterKeysLens |-> mkLens[
-    ProjectedCSParameterKeys, Option[Vector[Double]]]("projStdparallel2")
+  val projLinearUnitSizeLens = projectedCSParameterKeysLens |-> mkLens[
+    ProjectedCSParameterKeys, Option[Vector[Double]]]("projLinearUnitSize")
+  val projStdParallel1Lens = projectedCSParameterKeysLens |-> mkLens[
+    ProjectedCSParameterKeys, Option[Vector[Double]]]("projStdParallel1")
+  val projStdParallel2Lens = projectedCSParameterKeysLens |-> mkLens[
+    ProjectedCSParameterKeys, Option[Vector[Double]]]("projStdParallel2")
   val projNatOriginLongLens = projectedCSParameterKeysLens |-> mkLens[
     ProjectedCSParameterKeys, Option[Vector[Double]]]("projNatOriginLong")
   val projNatOriginLatLens = projectedCSParameterKeysLens |-> mkLens[
@@ -203,8 +256,9 @@ object GeoKeyDirectoryLenses {
     ProjectedCSParameterKeys, Option[Vector[Double]]]("projScaleAtCenter")
   val projAzimuthAngleLens = projectedCSParameterKeysLens |-> mkLens[
     ProjectedCSParameterKeys, Option[Vector[Double]]]("projAzimuthAngle")
-  val projStraightVertpoleLongLens = projectedCSParameterKeysLens |-> mkLens[
-    ProjectedCSParameterKeys, Option[Vector[Double]]]("projStraightVertpoleLong")
+  val projStraightVertPoleLongLens = projectedCSParameterKeysLens |-> mkLens[
+    ProjectedCSParameterKeys,
+    Option[Vector[Double]]]("projStraightVertPoleLong")
 
   val verticalCSKeysLens = mkLens[GeoKeyDirectory,
     VerticalCSKeys]("verticalCSKeys")
