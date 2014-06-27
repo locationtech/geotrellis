@@ -15,7 +15,7 @@
  */
 
 package geotrellis.spark.rdd
-import geotrellis.Extent
+import geotrellis.feature.Extent
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.formats.TileIdZoomWritable
 import geotrellis.spark.metadata.PyramidMetadata

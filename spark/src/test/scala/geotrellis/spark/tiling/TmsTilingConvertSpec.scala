@@ -15,7 +15,7 @@
  */
 
 package geotrellis.spark.tiling
-import geotrellis.RasterExtent
+import geotrellis.raster.RasterExtent
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.testfiles.AllOnes
 
