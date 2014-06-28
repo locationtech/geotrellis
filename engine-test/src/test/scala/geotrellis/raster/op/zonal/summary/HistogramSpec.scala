@@ -16,16 +16,17 @@
 
 package geotrellis.raster.op.zonal.summary
 
-import geotrellis._
+import geotrellis.raster._
+import geotrellis.raster.stats._
 import geotrellis.feature._
-import geotrellis.process._
+import geotrellis.engine._
 import geotrellis.testkit._
 
 class HistogramSpec extends ZonalSummarySpec {
   describe("zonalHistogram") {
     it("computes Histogram") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).toPolygon
+      val zone = Extent(10,-10,50,10).toPolygon
 
       val histOp = rData.zonalHistogram(zone)
       run(histOp) match {
@@ -41,7 +42,7 @@ class HistogramSpec extends ZonalSummarySpec {
     }
 
     it("computes Histogram for raster source and 5 edge polygon") {
-      val h = statistics.FastMapHistogram()
+      val h = FastMapHistogram()
 
       for(z <- containedCells.map { case (col,row) => tiledR.get(col,row) }) {
         if (isData(z)) { h.countItem(z, 1) }

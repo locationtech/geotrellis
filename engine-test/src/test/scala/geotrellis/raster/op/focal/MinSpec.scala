@@ -16,9 +16,8 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
-import geotrellis.process._
 import geotrellis.raster._
+import geotrellis.engine._
 
 import geotrellis.testkit._
 
@@ -29,7 +28,7 @@ class MinSpec extends FunSpec with FocalOpSpec
                               with TestEngine {
   describe("Min") {
     it("square min r=1") {
-      val r = createRaster((0 until 16).toArray)
+      val r = createTile((0 until 16).toArray)
       assertEqual(Min(r, Square(1)), Array(0, 0, 1, 2,
                                            0, 0, 1, 2,
                                            4, 4, 5, 6,
@@ -37,7 +36,7 @@ class MinSpec extends FunSpec with FocalOpSpec
     }
 
     it("square min r=2") {
-      val r = createRaster((0 until 16).toArray)
+      val r = createTile((0 until 16).toArray)
       assertEqual(Min(r, Square(2)), Array(0, 0, 0, 1,
                                            0, 0, 0, 1,
                                            0, 0, 0, 1,
@@ -45,7 +44,7 @@ class MinSpec extends FunSpec with FocalOpSpec
     }
 
     it("square min r=3+") {
-      val r = createRaster((0 until 16).toArray)
+      val r = createTile((0 until 16).toArray)
       val data0 = (0 until 16).map(z => 0).toArray
       assertEqual(Min(r, Square(3)), data0)
       assertEqual(Min(r, Square(4)), data0)
@@ -53,7 +52,7 @@ class MinSpec extends FunSpec with FocalOpSpec
     }
 
     it("circle min r=1") {
-      val r = createRaster((0 until 16).toArray)
+      val r = createTile((0 until 16).toArray)
       assertEqual(Min(r, Square(1)), Array(0, 0, 1, 2,
                                            0, 0, 1, 2,
                                            4, 4, 5, 6,
@@ -61,7 +60,7 @@ class MinSpec extends FunSpec with FocalOpSpec
     }
 
     it("circle min r=2") {
-      val r = createRaster((0 until 16).toArray)
+      val r = createTile((0 until 16).toArray)
       assertEqual(Min(r, Circle(2)), Array(0, 0, 0, 1,
                                            0, 0, 1, 2,
                                            0, 1, 2, 3,
@@ -69,7 +68,7 @@ class MinSpec extends FunSpec with FocalOpSpec
     }
 
     it("circle min r=3") {
-      val r = createRaster((0 until 16).toArray)
+      val r = createTile((0 until 16).toArray)
       assertEqual(Min(r, Circle(3)), Array(0, 0, 0, 0,
                                            0, 0, 0, 1,
                                            0, 0, 0, 1,
@@ -77,7 +76,7 @@ class MinSpec extends FunSpec with FocalOpSpec
     }
 
     it("circle min r=4+") {
-      val r = createRaster((0 until 16).toArray)
+      val r = createTile((0 until 16).toArray)
       val data0 = (0 until 16).map(z => 0).toArray
       assertEqual(Min(r, Circle(4)), Array(0, 0, 0, 0,
                                            0, 0, 0, 0,

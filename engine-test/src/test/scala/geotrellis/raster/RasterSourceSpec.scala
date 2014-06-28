@@ -16,21 +16,19 @@
 
 package geotrellis.raster
 
-import geotrellis._
+import geotrellis.engine._
 import geotrellis.feature.Extent
 import geotrellis.testkit._
-import geotrellis.process._
 
-import geotrellis.raster._
+import geotrellis.raster.stats._
 import geotrellis.raster.op._
-import geotrellis.statistics._
 
 import org.scalatest._
 
 class RasterSourceSpec extends FunSpec 
                           with Matchers 
                           with TestEngine 
-                          with RasterBuilders {
+                          with TileBuilders {
   def getRasterSource = 
     RasterSource("mtsthelens_tiled_cached")
 
@@ -39,13 +37,13 @@ class RasterSourceSpec extends FunSpec
 
   describe("convert") {
     it("converts an integer RasterSource to a double RasterSource") {
-      val rs = RasterSource(createRaster(
+      val rs = createRasterSource(
         Array( 1,10,100,1000,2,2,2,2,2,
                2,20,200,2000,2,2,2,2,2,
                3,30,300,3000,2,2,2,2,2,
                4,40,400,4000,2,2,2,2,2),
-        9,4))
-      rs.convert(TypeDouble).get.rasterType should be (TypeDouble)
+        9,4)
+      rs.convert(TypeDouble).get.cellType should be (TypeDouble)
     }
   }
 
@@ -87,7 +85,7 @@ class RasterSourceSpec extends FunSpec
       val d1 = getRasterSource
 
       val d2:RasterSource = d1.localAdd(3)
-      val d3:RasterSource  = d2 mapOp(local.Add(_, 3))
+      val d3:RasterSource  = d2 map(local.Add(_, 3))
       val d4:RasterSource = d3 map(r => r.map(z => z + 3))
       val d5:DataSource[Int,Seq[Int]] = d3 map(r => r.findMinMax._2)
       
@@ -102,13 +100,6 @@ class RasterSourceSpec extends FunSpec
       result3.get(100,100) should be (3239)
       result4.get(100,100) should be (3242)
       result5.head should be (6026)
-    }
-
-    it("should return a RasterSource from a ValueSource map") {
-      val rs = ValueSource(1) map { i => byteRaster }
-      rs.isInstanceOf[RasterSource] should be (true)
-      assertEqual(byteRaster,rs.get)
-      rs.info.get.rasterExtent should be (byteRaster.rasterExtent)
     }
 
     it("should return a RasterSource when calling .distribute") {
@@ -169,12 +160,12 @@ class RasterSourceSpec extends FunSpec
       //          4,40,400,4000,2,2,2,2,2),
       //   1,1,9,4)
 
-      val rs = RasterSource(createRaster(
+      val rs = createRasterSource(
         Array( 1,10,100,1000,2,2,2,2,2,
                2,20,200,2000,2,2,2,2,2,
                3,30,300,3000,2,2,2,2,2,
                4,40,400,4000,2,2,2,2,2),
-        9,4))
+        9,4)
 
 
       val RasterExtent(Extent(xmin,_,_,ymax),cw,ch,cols,rows) = rs.rasterExtent.get
@@ -215,13 +206,12 @@ class RasterSourceSpec extends FunSpec
     }
 
     it("should crop to a target Extent") {
-      val rs = RasterSource(createRaster(
+      val rs = createRasterSource(
                  Array(1, 10, 100, 1000, 2, 2, 2, 2, 2,
                        2, 20, 200, 2000, 2, 2, 2, 2, 2,
                        3, 30, 300, 3000, 2, 2, 2, 2, 2,
                        4, 40, 400, 4000, 2, 2, 2, 2, 2),
                  9, 4)
-               )
 
       val RasterExtent(Extent(xmin, ymin, _, _), cw, ch, _, _) = rs.rasterExtent.get
       val newExt = Extent(xmin, ymin, xmin + (cw * 4), ymin + (ch * 2))
@@ -237,13 +227,12 @@ class RasterSourceSpec extends FunSpec
     }
 
     it("should crop to target dimensions") {
-      val rs = RasterSource(createRaster(
+      val rs = createRasterSource(
                  Array(2, 10, 2, 100, 2, 1000, 2, 10000,
                        2, 20, 2, 200, 2, 2000, 2, 20000,
                        2, 30, 2, 300, 2, 3000, 2, 30000,
                        2, 40, 2, 400, 2, 4000, 2, 40000),
                  8, 4)
-               )
 
       val RasterExtent(Extent(_, _, _, _), _, _, cols, rows) = rs.rasterExtent.get
       val newCols = cols - 4

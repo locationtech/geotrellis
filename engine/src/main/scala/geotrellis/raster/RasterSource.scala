@@ -101,22 +101,26 @@ object RasterSource {
     apply(rasterDef, Some(targetExtent))
 
   def apply(rasterDef: Op[RasterDefinition], targetExtent: Option[RasterExtent]): RasterSource = {
-    val tileOps = 
+    val (rd, tileOps) = 
       targetExtent match {
-        case re @ Some(_) =>
-          rasterDef.map { rd =>
-            Seq(io.LoadRaster(rd.layerId, re))
-          }
+        case reOp @ Some(re) =>
+          ( rasterDef.map(_.withRasterExtent(re)),
+            rasterDef.map { rd =>
+              Seq(io.LoadRaster(rd.layerId, reOp))
+            }
+          )
         case None =>
-          rasterDef.map { rd =>
-            (for(tileRow <- 0 until rd.tileLayout.tileRows;
-              tileCol <- 0 until rd.tileLayout.tileCols) yield {
-              io.LoadTile(rd.layerId, tileCol, tileRow)
-            })
-          }
+          ( rasterDef,
+            rasterDef.map { rd =>
+              (for(tileRow <- 0 until rd.tileLayout.tileRows;
+                tileCol <- 0 until rd.tileLayout.tileCols) yield {
+                io.LoadTile(rd.layerId, tileCol, tileRow)
+              })
+            }
+          )
       }
 
-    new RasterSource(rasterDef, tileOps)
+    new RasterSource(rd, tileOps)
   }
 
   def apply(rasterDef: Op[RasterDefinition], tileOps: Op[Seq[Op[Tile]]]) =

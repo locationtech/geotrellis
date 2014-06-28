@@ -16,9 +16,9 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
 import geotrellis.feature.Extent
 import geotrellis.raster._
+import geotrellis.engine._
 import geotrellis.testkit._
 
 import org.scalatest._
@@ -32,8 +32,7 @@ class MoranSpec extends FunSpec with TestEngine {
   val arr = (0 until 64).map {
     z => if ((z % 16) < 8) z % 2 else (z + 1) % 2
   }.toArray
-  val data = IntArrayTile(arr, 8, 8)
-  val chess = Raster(data, re)
+  val chess = IntArrayTile(arr, 8, 8)
 
   import geotrellis.process._
 
@@ -51,12 +50,12 @@ class MoranSpec extends FunSpec with TestEngine {
 
   describe("RasterMoransI") {
     it("computes square moran (chess)") {
-      val r = get(RasterMoransI(chess, Nesw(1)))
+      val r = get(TileMoransI(chess, Nesw(1)))
       assert(r.toArrayDouble === Array.fill(64)(-1.0))
     }
     
     it("computes diagonal moran (chess)") {
-      val r = get(RasterMoransI(chess, Square(1)))
+      val r = get(TileMoransI(chess, Square(1)))
       assert(r.getDouble(0, 0) === (-1.0 / 3))
       assert(r.getDouble(1, 0) === -0.2)
       assert(r.getDouble(0, 1) === -0.2)

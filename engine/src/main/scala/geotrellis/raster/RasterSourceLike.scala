@@ -190,7 +190,8 @@ trait RasterSourceLike[+Repr <: RasterSource]
 
             // Create destination raster data
             logic.Collect(warped) map { warped =>
-              val tile = ArrayTile.empty(rd.cellType, re.cols, re.rows)
+              println(s"Collecting $re")
+              val tile = ArrayTile.empty(rd.cellType, target.cols, target.rows)
 
               for((rasterPart, extent) <- warped) {
                 // Copy over the values to the correct place in the raster data

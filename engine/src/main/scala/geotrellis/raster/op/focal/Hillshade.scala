@@ -90,7 +90,7 @@ object Hillshade {
 case class DirectHillshade(r: Op[Tile], tns: Op[TileNeighbors], cellSize: Op[CellSize], azimuth: Op[Double], altitude: Op[Double], zFactor: Op[Double])
     extends FocalOp4[CellSize, Double, Double, Double, Tile](r, Square(1), tns, cellSize, azimuth, altitude, zFactor)({
   (raster, n) => new SurfacePointCalculation[Tile] with ShortArrayTileResult 
-                                                     with Initialization4[CellSize, Double, Double, Double] {
+                                                   with Initialization4[CellSize, Double, Double, Double] {
     var azimuth = 0.0
     var zenith = 0.0
     var zFactor = 0.0

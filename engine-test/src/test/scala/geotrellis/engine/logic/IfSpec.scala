@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.logic
+package geotrellis.engine.logic
 
-import geotrellis._
+import geotrellis.engine._
 import geotrellis.testkit._
 
 import org.scalatest._
@@ -25,7 +25,7 @@ class IfSpec extends FunSpec
                 with TestEngine
                 with Matchers {
   describe("the if operation should only eval 1 argument") {
-    val ErrorOp = op { (x:Int) => { sys.error("execute this op"); x } }
+    val ErrorOp = Op { (x:Int) => { sys.error("execute this op"); x } }
 
     val result1 = get(If(Literal(true), Literal(1), ErrorOp(2)))
     result1 should be (1)

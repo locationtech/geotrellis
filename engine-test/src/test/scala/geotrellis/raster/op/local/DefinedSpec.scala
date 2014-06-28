@@ -16,9 +16,8 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
-import geotrellis.process._
-import geotrellis.source._
+import geotrellis.raster._
+import geotrellis.engine._
 
 import org.scalatest._
 
@@ -29,28 +28,6 @@ class DefinedSpec extends FunSpec
                      with TestEngine 
                      with TileBuilders {
   describe("Defined") {
-    it("returns correct result for an integer raster") {
-      val r = positiveIntegerNoDataRaster
-      val result = get(Defined(r))
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          if(isNoData(r.get(col,row))) result.get(col,row) should be (0)
-          else result.get(col,row) should be (1)
-        }
-      }
-    }
-
-    it("returns correct result for a double raster") {
-      val r = probabilityNoDataRaster
-      val result = get(Defined(r))
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          if(isNoData(r.getDouble(col,row))) result.get(col,row) should be (0)
-          else result.get(col,row) should be (1)
-        }
-      }
-    }
-
     it("returns correct result for a double raster source correctly") {
       val rs = RasterSource("mtsthelens_tiled")
 
@@ -58,8 +35,8 @@ class DefinedSpec extends FunSpec
       run(rs.localDefined) match {
         case Complete(result,success) =>
 //          println(success)
-          for(row <- 0 until r.rasterExtent.rows / 3) {
-            for(col <- 0 until r.rasterExtent.cols / 3) {
+          for(row <- 0 until r.rows / 3) {
+            for(col <- 0 until r.cols / 3) {
               val z = r.getDouble(col,row)
               val rz = result.get(col,row)
               if(isNoData(z))
@@ -99,29 +76,6 @@ class DefinedSpec extends FunSpec
           println(msg)
           println(failure)
           assert(false)
-      }
-    }
-  }
-  describe("Defined raster method") {
-    it("returns correct result for an integer raster") {
-      val r = positiveIntegerNoDataRaster
-      val result = r.localDefined()
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          if(isNoData(r.get(col,row))) result.get(col,row) should be (0)
-          else result.get(col,row) should be (1)
-        }
-      }
-    }
-
-    it("returns correct result for a double raster") {
-      val r = probabilityNoDataRaster
-      val result = r.localDefined()
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          if(isNoData(r.getDouble(col,row))) result.get(col,row) should be (0)
-          else result.get(col,row) should be (1)
-        }
       }
     }
   }

@@ -26,9 +26,13 @@ case class RasterDefinition(layerId: LayerId,
                             cellType: CellType,
                             catalogued: Boolean = true) {
   def isTiled = tileLayout.isTiled
+  lazy val resolutionLayout = tileLayout.getResolutionLayout(rasterExtent)
 
   def withType(newType: CellType) =
-    new RasterDefinition(layerId, rasterExtent, tileLayout, newType)
+    new RasterDefinition(layerId, rasterExtent, tileLayout, newType, catalogued)
+
+  def withRasterExtent(target: RasterExtent) =
+    new RasterDefinition(layerId, target, TileLayout.singleTile(target), cellType, catalogued)
 }
 
 object RasterDefinition {

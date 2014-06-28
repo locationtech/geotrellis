@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis
+package geotrellis.engine
 
-import geotrellis.process._
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.testkit._
 
 import org.scalatest._

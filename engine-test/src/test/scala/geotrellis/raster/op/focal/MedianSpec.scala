@@ -16,11 +16,9 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
-import geotrellis.source._
 import geotrellis.raster._
-import geotrellis.process._
-import geotrellis.statistics._
+import geotrellis.engine._
+import geotrellis.raster.stats._
 import geotrellis.testkit._
 
 import org.scalatest._
@@ -34,11 +32,11 @@ class MedianSpec extends FunSpec with TestEngine
 
   describe("Median") {
     it("should match worked out results") {
-      val r = createRaster(Array(3, 4, 1, 1, 1,
-                                 7, 4, 0, 1, 0,
-                                 3, 3, 7, 7, 1,
-                                 0, 7, 2, 0, 0,
-                                 6, 6, 6, 5, 5))
+      val r = createTile(Array(3, 4, 1, 1, 1,
+                               7, 4, 0, 1, 0,
+                               3, 3, 7, 7, 1,
+                               0, 7, 2, 0, 0,
+                               6, 6, 6, 5, 5))
 
       var result = get(Median(r,Square(1)))
 
@@ -110,12 +108,13 @@ class MedianSpec extends FunSpec with TestEngine
       val name = "SBN_inc_percap"
 
       val source = RasterSource(name)
+      val rasterExtent = source.rasterExtent.get
       val r = source.get
 
       val expected = source.focalMedian(Square(3)).get
 
-      val tileLayout = TileLayout.fromTileDimensions(r.rasterExtent,256,256)
-      val rs = RasterSource(TileRaster.wrap(r,tileLayout,cropped = false))
+      val tileLayout = TileLayout.fromTileDimensions(rasterExtent,256,256)
+      val rs = RasterSource(CompositeTile.wrap(r,tileLayout,cropped = false), rasterExtent.extent)
 
       rs.focalMedian(Square(3)).run match {
         case Complete(value,hist) =>

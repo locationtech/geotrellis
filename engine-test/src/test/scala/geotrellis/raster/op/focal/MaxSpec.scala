@@ -16,10 +16,9 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
-import geotrellis.raster.op.local._
-import geotrellis.process._
+import geotrellis.raster._
 import geotrellis.raster.op._
+import geotrellis.engine._
 
 import geotrellis.testkit._
 
@@ -41,7 +40,7 @@ class MaxSpec extends FunSpec with FocalOpSpec
     }
 
     it("should agree with a manually worked out example") {
-      val r = createRaster(Array[Int](1,1,1,1,
+      val r = createTile(Array[Int](1,1,1,1,
                                       2,2,2,2,
                                       3,3,3,3,
                                       1,1,4,4))
@@ -54,7 +53,7 @@ class MaxSpec extends FunSpec with FocalOpSpec
     }
 
     it("should agree with a manually worked out example with doubles") {
-      val r = createRaster(Array[Double](1.2,1.3,1.1,1.4,
+      val r = createTile(Array[Double](1.2,1.3,1.1,1.4,
                                          2.4,2.1,2.5,2.2,
                                          3.1,3.5,3.2,3.1,
                                          1.9,1.1,4.4,4.9))

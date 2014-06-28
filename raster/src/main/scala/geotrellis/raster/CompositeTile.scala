@@ -82,7 +82,7 @@ object CompositeTile {
 }
 
 case class CompositeTile(tiles: Seq[Tile],
-                      tileLayout: TileLayout) extends Tile {
+                         tileLayout: TileLayout) extends Tile {
   val cols = tileLayout.totalCols
   val rows = tileLayout.totalRows
 

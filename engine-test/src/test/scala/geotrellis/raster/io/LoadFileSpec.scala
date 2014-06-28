@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.io
+package geotrellis.raster.io
 
-import geotrellis._
+import geotrellis.raster._
 
 import org.scalatest._
 
@@ -25,7 +25,7 @@ import geotrellis.testkit._
 class LoadFileSpec extends FunSpec 
                       with Matchers 
                       with TestEngine 
-                      with RasterBuilders {
+                      with TileBuilders {
   describe("LoadFile") {
     it("loads a test raster.") {
       val raster = get(LoadFile("raster-test/data/fake.img8.arg"))
@@ -35,12 +35,12 @@ class LoadFileSpec extends FunSpec
     }
 
     it("should load fake.img8 with resampling") {
-      val realRaster = get(io.LoadFile("raster-test/data/fake.img8.arg"))
-      val re = get(io.LoadRasterExtentFromFile("raster-test/data/fake.img8.arg"))
+      val realRaster = get(LoadFile("raster-test/data/fake.img8.arg"))
+      val re = get(LoadRasterExtentFromFile("raster-test/data/fake.img8.arg"))
       val extent = re.extent
 
       val resampleRasterExtent = RasterExtent(extent, 2, 2) 
-      val raster = get(io.LoadFile("raster-test/data/fake.img8.arg", resampleRasterExtent))
+      val raster = get(LoadFile("raster-test/data/fake.img8.arg", resampleRasterExtent))
       printR(realRaster)
       println(re)
       printR(raster)

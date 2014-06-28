@@ -44,15 +44,24 @@ import Angles._
   * [[http://goo.gl/JCnNP Geospatial Analysis - A comprehensive guide]]
   * (Smit, Longley, and Goodchild)
   */
-case class Aspect(r: Op[Tile], neighbors: Op[TileNeighbors]) 
-    extends FocalOp[Tile](r, Square(1), neighbors)({
-  (r, n) => new SurfacePointCalculation[Tile] with DoubleArrayTileResult {
+case class Aspect(r: Op[Tile], neighbors: Op[TileNeighbors], cellSize: Op[CellSize]) 
+    extends FocalOp1[CellSize, Tile](r, Square(1), neighbors, cellSize)({
+  (r, n) => new SurfacePointCalculation[Tile] 
+      with DoubleArrayTileResult 
+      with Initialization1[CellSize] {
     def setValue(x: Int, y: Int, s: SurfacePoint) {
       tile.setDouble(x, y, degrees(s.aspect))
+    }
+
+    def init(r: Tile, cs: CellSize) = {
+      super.init(r)
+
+      cellSize = cs
     }
   }
 }) with FocalOperation[Tile]
 
 object Aspect {
-  def apply(r: Op[Tile]): Aspect = Aspect(r, Literal(TileNeighbors.NONE))
+  def apply(r: Op[Tile], cellSize: Op[CellSize]): Aspect = 
+    Aspect(r, Literal(TileNeighbors.NONE), cellSize)
 }

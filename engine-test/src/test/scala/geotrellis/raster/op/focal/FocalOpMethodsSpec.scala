@@ -16,11 +16,9 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
 import geotrellis.raster._
 import geotrellis.testkit._
-import geotrellis.source._
-import geotrellis.process._
+import geotrellis.engine._
 
 import org.scalatest._
 
@@ -44,7 +42,7 @@ class FocalOpMethodsSpec extends FunSpec with FocalOpSpec
         3,4,3,2
       )
 
-      val neighborsOp:Op[Seq[(Raster,Seq[Option[Raster]])]] = 
+      val neighborsOp:Op[Seq[(Tile,Seq[Option[Tile]])]] = 
         rs1.zipWithNeighbors
            .map { seq =>
               seq.map { case (rOp,tileNeighbors) =>

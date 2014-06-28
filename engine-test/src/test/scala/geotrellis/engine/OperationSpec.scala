@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis
+package geotrellis.engine
 
-import geotrellis._
+import geotrellis.raster._
 
 import org.scalatest._
 
@@ -38,8 +38,8 @@ class OperationSpec extends FunSpec
       val op = 
         for(i <- Literal(1) if i == 2) yield { Literal(i+10) }
       run(op) match {
-        case process.Complete(_,_) => withClue("Should have failed") { assert(false) }
-        case process.Error(_,_) =>
+        case Complete(_,_) => withClue("Should have failed") { assert(false) }
+        case Error(_,_) =>
       }
     }
 
@@ -48,8 +48,8 @@ class OperationSpec extends FunSpec
         for(i <- Literal(1) if i == 1) yield { Literal(i+10) }
 
       run(op) match {
-        case process.Complete(_,_) => 
-        case process.Error(_,_) => withClue("Should not have failed") { assert(false) }
+        case Complete(_,_) => 
+        case Error(_,_) => withClue("Should not have failed") { assert(false) }
       } 
     }
   }

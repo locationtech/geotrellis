@@ -16,13 +16,10 @@
 
 package geotrellis.process
 
-import geotrellis._
+import geotrellis.engine._
 import geotrellis.feature.Extent
-import geotrellis.source._
-import geotrellis.data.arg._
 import geotrellis.testkit._
 import geotrellis.raster._
-import geotrellis.data._
 
 import org.scalatest._
 
@@ -31,7 +28,7 @@ import scala.math.abs
 class TileSetRasterLayerSpec extends FunSpec 
                             with Matchers 
                             with TestEngine 
-                            with RasterBuilders {
+                            with TileBuilders {
   describe("A TileSetRasterLayer") {
     it("should get a cropped version correctly") {
       val re = RasterSource("albers_DevelopedLand").rasterExtent.get
@@ -45,7 +42,7 @@ class TileSetRasterLayerSpec extends FunSpec
 
       val rs = RasterSource("albers_DevelopedLand", newRe)
 
-      rs.get.rasterExtent should be (newRe)
+      rs.rasterExtent.get should be (newRe)
     }
   }
 

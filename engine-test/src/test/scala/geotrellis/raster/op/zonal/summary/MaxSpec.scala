@@ -16,9 +16,9 @@
 
 package geotrellis.raster.op.zonal.summary
 
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.feature._
-import geotrellis.process._
+import geotrellis.engine._
 import geotrellis.testkit._
 
 class MaxSpec extends ZonalSummarySpec {

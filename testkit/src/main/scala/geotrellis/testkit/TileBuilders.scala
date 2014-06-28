@@ -106,6 +106,9 @@ trait TileBuilders {
     ArrayTile(arr.toArray, r.cols, r.rows)
   }
 
+  def createRasterSource(arr: Array[Int], pixelCols: Int, pixelRows: Int): RasterSource =
+    createRasterSource(arr, 1, 1, pixelCols, pixelRows)
+
   def createRasterSource(arr: Array[Int], tileCols: Int, tileRows: Int, pixelCols: Int, pixelRows: Int): RasterSource =
     createRasterSource(arr, tileCols, tileRows, pixelCols, pixelRows, 10.0, 1.0)
 

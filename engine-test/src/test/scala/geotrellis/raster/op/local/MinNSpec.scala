@@ -16,7 +16,8 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
+import geotrellis.raster._
+import geotrellis.engine._
 
 import org.scalatest._
 
@@ -31,25 +32,6 @@ class MinNSpec extends FunSpec
                   with TileBuilders {
 
   describe("MinN") {
-    it("takes nth min of each cell of int valued rasters") {
-      val r1 = createTile(Array.fill(7*8)(1), 7, 8)
-      val r2 = createTile(Array.fill(7*8)(-2), 7, 8)
-      val r3 = createTile(Array.fill(7*8)(0), 7, 8)
-      val r4 = createTile(Array.fill(7*8)(-1), 7, 8)
-      val r5 = createTile(Array.fill(7*8)(2), 7, 8)
-      val r6 = createTile(Array.fill(7*8)(1), 7, 8)
-      val r7 = createTile(Array.fill(7*8)(NODATA), 7, 8)
-      assertEqual(MinN(0,r1,r2,r3,r4,r5,r6,r7), Array.fill(7*8)(-2))
-      assertEqual(MinN(1,r1,r2,r3,r4,r5,r6,r7), Array.fill(7*8)(-1))
-      assertEqual(MinN(2,r1,r2,r3,r4,r5,r6,r7), Array.fill(7*8)(0))
-      assertEqual(MinN(2,r1,r2,r3,r5,r6,r7), Array.fill(7*8)(1))
-      assertEqual(MinN(2,r2,r3,r4,r5,r6), Array.fill(7*8)(0))
-      assertEqual(MinN(3,r1,r2,r3,r4,r5,r6,r7), Array.fill(7*8)(1))
-      assertEqual(MinN(4,r1,r2,r3,r4,r5,r6,r7), Array.fill(7*8)(1))
-      assertEqual(MinN(5,r1,r2,r3,r4,r5,r6,r7), Array.fill(7*8)(2))
-      assertEqual(MinN(6,r1,r2,r3,r4,r5,r6,r7), Array.fill(7*8)(NODATA))
-    }
-
     it("takes nth min on rasters sources of all one value") {
       val r1 = createRasterSource(Array.fill(6*8)(10), 2,2,3,4)
       val r2 = createRasterSource(Array.fill(6*8)(-100), 2,2,3,4)

@@ -35,7 +35,7 @@ class SimpleOpSyntaxSpec extends FunSpec
       val plusOne = Op { (i:Int) => i + 1 }
       testOp(plusOne(1), 2)
       
-      val alternatePlusOne = op(addOne)
+      val alternatePlusOne = Op(addOne)
       testOp(alternatePlusOne(1),2)
     }
 

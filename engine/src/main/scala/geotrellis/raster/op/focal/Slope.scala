@@ -28,39 +28,43 @@ object Slope {
    * Creates a slope operation with a default zFactor of 1.0.
    *
    * @param   raster     Tile for which to compute the aspect.
+   * @param      cellSize  cellSize of the raster
    */
-  def apply(r: Op[Tile]): Slope =
-    new Slope(r, TileNeighbors.NONE, 1.0)
+  def apply(r: Op[Tile], cs: Op[CellSize]): Slope =
+    new Slope(r, TileNeighbors.NONE, cs, 1.0)
 
   /**
    * Creates a slope operation with a default zFactor of 1.0.
    *
    * @param   raster     Tile for which to compute the aspect.
    * @param      tns     TileNeighbors that describe the neighboring tiles.
+   * @param      cellSize  cellSize of the raster
    */
-  def apply(r: Op[Tile], tns: Op[TileNeighbors]): Slope =
-    new Slope(r, tns, 1.0)
+  def apply(r: Op[Tile], tns: Op[TileNeighbors], cs: Op[CellSize]): Slope =
+    new Slope(r, tns, cs, 1.0)
 
   /**
    * Creates a slope operation.
    *
    * @param   raster     Tile for which to compute the aspect.
+   * @param   cellSize  cellSize of the raster
    * @param   zFactor    Number of map units to one elevation unit.
    *                     The z factor is the multiplicative factor to convert elevation units
    */
-  def apply(r: Op[Tile], zFactor: Op[Double])(implicit di: DummyImplicit): Slope =
-    new Slope(r, TileNeighbors.NONE, zFactor)
+  def apply(r: Op[Tile], cs: Op[CellSize], zFactor: Op[Double])(implicit di: DummyImplicit): Slope =
+    new Slope(r, TileNeighbors.NONE, cs, zFactor)
 
   /**
    * Creates a slope operation.
    *
    * @param   raster     Tile for which to compute the aspect.
-   * @param      tns     TileNeighbors that describe the neighboring tiles.
+   * @param   tns        TileNeighbors that describe the neighboring tiles.
+   * @param   cellSize   cellSize of the raster
    * @param   zFactor    Number of map units to one elevation unit.
    *                     The z factor is the multiplicative factor to convert elevation units
    */
-  def apply(r: Op[Tile], zFactor: Op[Double], tns: Op[TileNeighbors]): Slope =
-    new Slope(r, tns, zFactor)
+  def apply(r: Op[Tile], tns: Op[TileNeighbors], cs: Op[CellSize], zFactor: Op[Double]): Slope =
+    new Slope(r, tns, cs, zFactor)
 }
 
 /** Calculates the slope of each cell in a raster.
@@ -79,6 +83,7 @@ object Slope {
   * }}}
   *
   * @param   raster     Tile for which to compute the aspect.
+  * @param   cellSize   cellSize of the raster
   * @param   zFactor    Number of map units to one elevation unit.
   *                     The z factor is the multiplicative factor to convert elevation units
   * 
@@ -86,14 +91,15 @@ object Slope {
   * @see [[http://goo.gl/JCnNP Geospatial Analysis - A comprehensive guide]]
   * (Smit, Longley, and Goodchild)
   */
-class Slope(r: Op[Tile], ns: Op[TileNeighbors], zFactor: Op[Double]) 
-    extends FocalOp1[Double, Tile](r, Square(1), ns, zFactor)({
+class Slope(r: Op[Tile], ns: Op[TileNeighbors], cellSize: Op[CellSize], zFactor: Op[Double]) 
+    extends FocalOp2[CellSize, Double, Tile](r, Square(1), ns, cellSize, zFactor)({
   (r, n) => new SurfacePointCalculation[Tile] with DoubleArrayTileResult 
-                                               with Initialization1[Double] {
+                                              with Initialization2[CellSize, Double] {
     var zFactor = 0.0
 
-    override def init(r: Tile, z: Double) = {
+    override def init(r: Tile, cs: CellSize, z: Double) = {
       super.init(r)
+      cellSize = cs
       zFactor = z
     }
 

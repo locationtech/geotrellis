@@ -16,9 +16,8 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
-import geotrellis.process._
-import geotrellis.statistics._
+import geotrellis.raster._
+import geotrellis.engine._
 import geotrellis.testkit._
 
 import org.scalatest._
@@ -28,14 +27,14 @@ import scala.math._
 
 class ModeSpec extends FunSpec with FocalOpSpec
                                with Matchers 
-                               with RasterBuilders
+                               with TileBuilders
                                with TestEngine {
 
   val getModeResult = Function.uncurried((getCursorResult _).curried((r,n) => Mode(r,n)))
 
   describe("Mode") {
     it("should match worked out results") {
-      val r = createRaster(Array(3, 4, 1, 1, 1,
+      val r = createTile(Array(3, 4, 1, 1, 1,
                                  7, 4, 0, 1, 0,
                                  3, 3, 7, 7, 1,
                                  0, 7, 2, 0, 0,

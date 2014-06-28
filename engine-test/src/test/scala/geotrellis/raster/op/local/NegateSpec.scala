@@ -16,9 +16,8 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
-import geotrellis.process._
-import geotrellis.source._
+import geotrellis.raster._
+import geotrellis.engine._
 
 import org.scalatest._
 
@@ -29,26 +28,6 @@ class NegateSpec extends FunSpec
                     with TestEngine 
                     with TileBuilders {
   describe("Negate") {
-    it("negates an integer raster") {
-      val r = positiveIntegerRaster
-      val result = get(Negate(r))
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          result.get(col,row) should be (-r.get(col,row))
-        }
-      }
-    }
-
-    it("negates a double raster") {
-      val r = probabilityRaster
-      val result = get(Negate(r))
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          result.getDouble(col,row) should be (-r.getDouble(col,row))
-        }
-      }
-    }
-
     it("negates a double raster source correctly") {
       val rs = RasterSource("mtsthelens_tiled")
 
@@ -56,8 +35,8 @@ class NegateSpec extends FunSpec
       run(-rs) match {
         case Complete(result,success) =>
 //          println(success)
-          for(row <- 0 until r.rasterExtent.rows / 3) {
-            for(col <- 0 until r.rasterExtent.cols / 3) {
+          for(row <- 0 until r.rows / 3) {
+            for(col <- 0 until r.cols / 3) {
               val z = r.getDouble(col,row)
               val rz = result.getDouble(col,row)
               if(isNoData(z))
@@ -97,27 +76,6 @@ class NegateSpec extends FunSpec
           println(msg)
           println(failure)
           assert(false)
-      }
-    }
-  }
-  describe("Negate on Raster") {
-    it("negates an integer raster") {
-      val r = positiveIntegerRaster
-      val result = r.localNegate
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          result.get(col,row) should be (-r.get(col,row))
-        }
-      }
-    }
-
-    it("negates a double raster") {
-      val r = probabilityRaster
-      val result = r.localNegate
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          result.getDouble(col,row) should be (-r.getDouble(col,row))
-        }
       }
     }
   }

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.io
+package geotrellis.raster.io
 
-import geotrellis._
+import geotrellis.raster._
 
 import org.scalatest._
 

@@ -15,7 +15,7 @@
  */
 
 
-package geotrellis.process
+package geotrellis.engine
 
 import org.scalatest._
 

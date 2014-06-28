@@ -17,7 +17,7 @@
 package geotrellis.raster.op.local
 
 import geotrellis.raster._
-import geotrellis.process._
+import geotrellis.engine._
 
 import org.scalatest._
 
@@ -78,49 +78,6 @@ class AbsSpec extends FunSpec
           println(msg)
           println(failure)
           assert(false)
-      }
-    }
-  }
-
-  describe("Abs on Raster") {
-    it("takes the absolute value of each cell of an int tiled raster") {
-      val rasterData = Array(
-         1,-1, 1,  -1, 1,-1,  1,-1, NODATA,
-        -1, 1,-1,   1,-1, 1, -1, 1,-1,
-
-         1,-1, 1,  -1, 1,-1,  1,-1, 1,
-        -1, 1,-1,   1,-1, 1, -1, 1,-1
-      )
-      val r = createTile(rasterData, 9, 4)
-      val result = r.localAbs()
-
-      for (y <- 0 until 4) {
-        for (x <- 0 until 9) {
-          if (x == 8 && y == 0)
-            result.get(x, y) should be (NODATA)
-          else
-            result.get(x, y) should be (1)
-        }
-      }
-    }
-
-    it("takes the absolute value of each cell of a double tiled raster") {
-      val rasterData = Array(
-         2.6,-2.6, 2.6,  -2.6, 2.6,-2.6,  2.6,-2.6, 2.6,
-        -2.6, 2.6,-2.6,   2.6,-2.6, 2.6, -2.6, 2.6,-2.6,
-
-         2.6,-2.6, 2.6,  -2.6, 2.6,-2.6,  2.6,-2.6, Double.NaN,
-        -2.6, 2.6,-2.6,   2.6,-2.6, 2.6, -2.6, 2.6,-2.6
-      )
-      val r = createTile(rasterData, 9, 4)
-      val result = r.localAbs()
-      for (y <- 0 until 4) {
-        for (x <- 0 until 9) {
-          if (x == 8 && y == 2)
-            result.getDouble(x, y).isNaN should be (true)
-          else
-            result.getDouble(x, y) should be (2.6)
-        }
       }
     }
   }

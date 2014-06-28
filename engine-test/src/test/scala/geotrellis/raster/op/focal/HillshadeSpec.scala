@@ -16,17 +16,12 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
-import geotrellis.feature.Extent
-import geotrellis.source._
-import geotrellis.raster.op._
-import geotrellis.statistics.op._
-import geotrellis.process._
-import geotrellis.data._
-import geotrellis.testkit._
 import geotrellis.raster._
-import geotrellis.render._
-import geotrellis.render.op._
+import geotrellis.engine._
+import geotrellis.feature.Extent
+import geotrellis.raster.op._
+import geotrellis.raster.render._
+import geotrellis.testkit._
 
 import org.scalatest._
 
@@ -34,8 +29,8 @@ import spire.syntax.cfor._
 
 class HillshadeSpec extends FunSuite 
                        with TestEngine 
-                       with RasterBuilders {
-  def grayscale(n:Int) = {
+                       with TileBuilders {
+  def grayscale(n: Int) = {
     val ns = (1 to 128).toArray
     val limits = ns.map(i => i * n)
     val colors = ns.map(i => ((i * 65536 * 2 + i * 256 * 2 + i * 2) << 8) | 255)
@@ -54,13 +49,13 @@ class HillshadeSpec extends FunSuite
                     0, 2452, 2461, 2483, 0,
                     0, 2447, 2455, 2477, 0,
                     0, 0, 0, 0, 0)
-    val data = IntArrayTile(arr, 5, 5)
-    val r = Raster(data, re)
+    val tile = IntArrayTile(arr, 5, 5)
 
-    val h = get(Hillshade(Aspect(r),Slope(r,1.0),315.0,45.0))
-    val h2 = get(Hillshade(r,315.0,45.0,1.0))
+    val cs = CellSize(5.0, 5.0)
+    val h = get(Hillshade(Aspect(tile, cs), Slope(tile, cs, 1.0), 315.0, 45.0))
+    val h2 = get(Hillshade(tile, CellSize(5.0, 5.0), 315.0, 45.0, 1.0))
     assert(h.get(2, 2) === 77)
-    assert(h2.get(2,2) === 77)
+    assert(h2.get(2, 2) === 77)
   }
 
   test("Hillshade works with raster source") {
@@ -70,14 +65,13 @@ class HillshadeSpec extends FunSuite
 
             0, 2452, 2461,        2483, 0, 0,
             0, 2447, 2455,        2477, 0, 0),
-      2,2,3,2,5,5)
+      2, 2, 3, 2, 5, 5)
 
-    run(rs.focalHillshade(315.0,45.0,1.0)) match {
-      case Complete(result,success) =>
+    run(rs.focalHillshade(315.0, 45.0, 1.0)) match {
+      case Complete(result, success) =>
         //          println(success)
-        printR(result)
         assert(result.get(2, 2) === 77)
-      case Error(msg,failure) =>
+      case Error(msg, failure) =>
         println(msg)
         println(failure)
         assert(false)
@@ -85,24 +79,25 @@ class HillshadeSpec extends FunSuite
   }
 
   test("should get the same result for split raster") {
+    val rasterExtent = RasterSource(LayerId("test:fs", "elevation")).rasterExtent.get
     val rOp = getRaster("elevation")
-    val nonTiledSlope = Hillshade(rOp,315.0,45.0,1.0)
+    val nonTiledSlope = Hillshade(rOp, rasterExtent.cellSize, 315.0, 45.0, 1.0)
 
     val tiled =
       rOp.map { r =>
-        val (tcols,trows) = (11,20)
-        val pcols = r.rasterExtent.cols / tcols
-        val prows = r.rasterExtent.rows / trows
-        val tl = TileLayout(tcols,trows,pcols,prows)
-        TileRaster.wrap(r,tl)
+        val (tcols, trows) = (11, 20)
+        val pcols = r.cols / tcols
+        val prows = r.rows / trows
+        val tl = TileLayout(tcols, trows, pcols, prows)
+        CompositeTile.wrap(r, tl)
       }
 
-    val rs = RasterSource(tiled)
-    run(rs.focalHillshade(315.0,45.0,1.0)) match {
-      case Complete(result,success) =>
+    val rs = RasterSource(tiled, rasterExtent.extent)
+    run(rs.focalHillshade(315.0, 45.0, 1.0)) match {
+      case Complete(result, success) =>
         //          println(success)
-        assertEqual(result,nonTiledSlope)
-      case Error(msg,failure) =>
+        assertEqual(result, nonTiledSlope)
+      case Error(msg, failure) =>
         println(msg)
         println(failure)
         assert(false)
@@ -114,32 +109,34 @@ class HillshadeSpec extends FunSuite
 
     val source = RasterSource(name)
 
-
     val r = source.get
-    val tileLayout = TileLayout.fromTileDimensions(r.rasterExtent,256,256)
-    val rs = RasterSource(TileRaster.wrap(r,tileLayout,cropped = false))
+    val rasterExtent = source.rasterExtent.get
+    val tileLayout = TileLayout.fromTileDimensions(rasterExtent, 256, 256)
+    val extent = rasterExtent.adjustTo(tileLayout).extent
+
+    val rs = RasterSource(CompositeTile.wrap(r, tileLayout, cropped = false), extent)
 
     val expected = source.focalHillshade.get
     rs.focalHillshade.run match {
-      case Complete(value,hist) =>
+      case Complete(value, hist) =>
         // Dont check last col or last row. 
         // Reason is, because the offsetting of the tiles, the tiled version
         // pulls in NoData's where the non tiled just has the edge value,
         // so the calculations produce different results. Which makes sense.
         // So if your going for accuracy don't tile something that create NoData 
         // borders.
-        cfor(0)(_ < expected.cols-1, _ + 1) { col =>
-          cfor(0)(_ < expected.rows-1, _ + 1) { row =>
-            withClue (s"Value different at $col,$row: ") {
-              val v1 = value.getDouble(col,row)
-              val v2 = expected.getDouble(col,row)
+        cfor(0)(_ < expected.cols - 1, _ + 1) { col =>
+          cfor(0)(_ < expected.rows - 1, _ + 1) { row =>
+            withClue (s"Value different at $col, $row: ") {
+              val v1 = value.getDouble(col, row)
+              val v2 = expected.getDouble(col, row)
               if(isNoData(v1)) isNoData(v2) should be (true)
               else if(isNoData(v2)) isNoData(v1) should be (true)
               else v1 should be (v2)
             }
           }
         }
-      case Error(message,trace) =>
+      case Error(message, trace) =>
         println(message)
         assert(false)
     }

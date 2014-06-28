@@ -42,13 +42,10 @@ class SurfacePoint() {
   def aspect() = {
     var a = atan2(`dz/dy`, -`dz/dx`)
 
-    if (`dz/dx` == 0 && `dz/dy` == 0)
-    {
+    if (`dz/dx` == 0 && `dz/dy` == 0) {
       /* Flat area */
       a = Double.NaN
-    } 
-    else
-    {
+    } else {
       if (a < 0) { a += 2*Pi }
     }
 

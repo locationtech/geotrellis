@@ -17,6 +17,7 @@
 package geotrellis.engine
 
 import geotrellis.raster._
+import geotrellis.raster.io._
 import geotrellis.feature.Extent
 
 import org.scalatest._
@@ -34,7 +35,7 @@ class AsciiSpec extends FunSpec
     }
 
     it ("should write ASCII") {
-      AsciiWriter.write("/tmp/foo.asc", tile, "foo")
+      AsciiWriter.write("/tmp/foo.asc", tile, Extent(0, 0, 10, 10), "foo")
     }
 
     it ("should read ASCII") {

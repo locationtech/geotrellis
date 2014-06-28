@@ -16,16 +16,16 @@
 
 package geotrellis.raster.op.zonal.summary
 
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.feature._
-import geotrellis.process._
+import geotrellis.engine._
 import geotrellis.testkit._
 
 class SumSpec extends ZonalSummarySpec {
   describe("Sum") {
     it("computes Sum") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).toPolygon
+      val zone = Extent(10,-10,50,10).toPolygon
 
       val sumOp = rData.zonalSum(zone)
       run(sumOp) match {
@@ -73,7 +73,7 @@ class SumSpec extends ZonalSummarySpec {
 
     it("computes Double Sum") {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
-      val zone = Extent(10,-10,30,10).toPolygon
+      val zone = Extent(10,-10,50,10).toPolygon
 
       val sumDOp = rData.zonalSumDouble(zone)
       run(sumDOp) match {

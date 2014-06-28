@@ -16,7 +16,7 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
+import geotrellis.raster._
 
 object TestCursor {
   /*
@@ -33,16 +33,16 @@ object TestCursor {
    *                X 0 X 0 X
    *                                        """)
    */
-  private def getActualLines(s:String) = {
+  private def getActualLines(s: String) = {
     s.split("\n")
-     .map { row => row.filter { c => Seq('X','0').contains(c) } }
+     .map { row => row.filter { c => Seq('X', '0').contains(c) } }
      .filter { x => x != "" }
   }
   
-  def maskFuncFromString(s:String) = {
+  def maskFuncFromString(s: String) = {
     val actualLines = getActualLines(s)
     val d = actualLines.length
-    val arr = Array.ofDim[Boolean](d,d)
+    val arr = Array.ofDim[Boolean](d, d)
     var x = 0; var y = 0
 
     for(row <- actualLines) {
@@ -56,20 +56,20 @@ object TestCursor {
       }
       y += 1
     }
-    (x:Int,y:Int) => arr(y)(x)
+    (x: Int, y: Int) => arr(y)(x)
   }
 
-  def maskFromString(s:String) = {
+  def maskFromString(s: String) = {
     new CursorMask(getActualLines(s).length, maskFuncFromString(s))
   }
 
-  def fromString(r:Raster, s:String) = {
+  def fromString(r: Tile, s: String) = {
     val actualLines = getActualLines(s)
     if(actualLines.length % 2 == 0) {
       throw new Exception("Can't create a cursor with even dimension!")
     }
-    val d = ((actualLines.length - 1)/2).toInt
-    val c = Cursor(r,d)
+    val d = ((actualLines.length - 1) / 2).toInt
+    val c = Cursor(r, d)
     c.setMask(maskFuncFromString(s))
     c
   }

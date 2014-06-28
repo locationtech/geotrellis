@@ -16,8 +16,8 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
-import geotrellis.process._
+import geotrellis.raster._
+import geotrellis.engine._
 import geotrellis.raster.op._
 import geotrellis.testkit._
 

@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis
+package geotrellis.engine
 
-import geotrellis._
-import geotrellis.testkit._
+import geotrellis.raster._
+import geotrellis.raster.io._
 import geotrellis.raster.op._
-import geotrellis.statistics._
+import geotrellis.raster.stats._
 import geotrellis.feature._
+import geotrellis.testkit._
 
 import org.scalatest._
 
@@ -28,7 +29,7 @@ import java.io._
 
 class SerializationTest extends FunSuite 
                         with Matchers 
-                        with RasterBuilders 
+                        with TileBuilders 
                         with TestEngine {
 
   // Operations and data objects that may be sent remotely must be serializable.
@@ -45,7 +46,7 @@ class SerializationTest extends FunSuite
   }
 
   test("Tile Rasters are serializable") {
-    pickle(run(io.LoadRaster("mtsthelens_tiled")))
+    pickle(run(LoadRaster("mtsthelens_tiled")))
   }
 
   def pickle(o:AnyRef) = {

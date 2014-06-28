@@ -16,10 +16,9 @@
 
 package geotrellis.raster.op.hydrology
 
-import geotrellis._
-import geotrellis.feature.Extent
-import geotrellis.source._
 import geotrellis.raster._
+import geotrellis.feature.Extent
+import geotrellis.engine._
 
 import org.scalatest._
 import geotrellis.testkit._
@@ -39,28 +38,24 @@ class FillSpec extends FunSpec
             7,8,9),
             ncols,nrows)
 
-      val inRaster = Raster(m, re)
       val o = IntArrayTile(Array[Int](
             1,2,3,
             4,5,6,
             7,8,9),
             ncols,nrows)
-      val outRaster = Raster(o, re)
-      assertEqual(Fill(inRaster),outRaster )
+      assertEqual(Fill(m), o)
     } 
 
     it("Does not remove non-sink even past the threshold"){
       var ncols = 3
       var nrows = 3
-      val re = RasterExtent(Extent(0,0,1,1),1,1,ncols,nrows)
       val m = IntArrayTile(Array[Int](
             1,2,100,
             4,55,130,
             80,145,132),
             ncols,nrows)
 
-      val inRaster = Raster(m, re)
-      assertEqual(RasterSource(inRaster).fill(FillOptions(50)).get, inRaster)
+      assertEqual(RasterSource(m, Extent(0,0,1,1)).fill(FillOptions(50)).get, m)
     } 
   }
 }

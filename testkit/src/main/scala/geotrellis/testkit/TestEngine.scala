@@ -43,7 +43,9 @@ trait TestEngine extends Suite with BeforeAndAfter with Matchers {
     assertEqual(get(r), arr)
 
   def assertEqual(r: Tile, arr: Array[Int]): Unit = {
-    (r.cols * r.rows) should be (arr.length)
+    withClue(s"Sizes do not match.") {
+      (r.cols * r.rows) should be (arr.length)
+    }
     for(row <- 0 until r.rows) {
       for(col <- 0 until r.cols) {
         withClue(s"Value at ($col, $row) are not the same") {
@@ -83,13 +85,12 @@ trait TestEngine extends Suite with BeforeAndAfter with Matchers {
     }
   }
 
-
   def assertEqual(r: Op[Tile], r2: Op[Tile]): Unit = assertEqual(r, r2, 0.0000000001)
 
   def assertEqual(rOp1: Op[Tile], rOp2: Op[Tile], threshold: Double): Unit = {
     val r1 = get(rOp1)
     val r2 = get(rOp2)
-    
+
     withClue("Columns are not equal") { r1.cols should be (r2.cols) }
     withClue("Rows are not equal") { r1.rows should be (r2.rows) }
     withClue("cellTypes are not equal") { r1.cellType should be (r2.cellType) }

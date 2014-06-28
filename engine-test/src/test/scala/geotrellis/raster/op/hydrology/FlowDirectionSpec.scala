@@ -16,10 +16,9 @@
 
 package geotrellis.raster.op.hydrology
 
-import geotrellis._
 import geotrellis.feature.Extent
-import geotrellis.source._
 import geotrellis.raster._
+import geotrellis.engine._
 
 import org.scalatest._
 
@@ -34,7 +33,6 @@ class FlowDirectionSpec extends FunSpec with Matchers
     it("should match computed elevation raster") {
       val ncols = 6
       val nrows = 6
-      val r_extent = RasterExtent(Extent(0,0,1,1),1,1,ncols,nrows)
       val e = IntArrayTile(Array[Int](78,72,69,71,58,49,
                                             74,67,56,49,46,50,
                                             69,53,44,37,38,48,
@@ -42,7 +40,7 @@ class FlowDirectionSpec extends FunSpec with Matchers
                                             68,61,47,21,16,19,
                                             74,53,34,12,11,12),
                             ncols,nrows)
-      val e_raster = Raster(e, r_extent)
+
       val m = IntArrayTile(Array[Int](2,2,2,4,4,8,
                                             2,2,2,4,4,8,
                                             1,1,2,4,8,4,
@@ -50,44 +48,38 @@ class FlowDirectionSpec extends FunSpec with Matchers
                                             2,2,1,4,4,4,
                                             1,1,1,1,NODATA,16),
                             ncols,nrows)
-      val m_raster = Raster(m, r_extent)
-      val e_computed = FlowDirection(e_raster)
-      assertEqual(e_computed, m_raster)
+      val computed = FlowDirection(e)
+      assertEqual(computed, m)
     }
 
     it("should have NODATA direction for sinks") {
       val ncols = 3
       val nrows = 3
-      val r_extent = RasterExtent(Extent(0,0,1,1),1,1,ncols,nrows)
       val e = IntArrayTile(Array[Int](5,5,5,
                                             5,1,5,
                                             5,5,5),
                             ncols,nrows)
-      val e_raster = Raster(e, r_extent)
       val m = IntArrayTile(Array[Int](2,4,8,
                                             1,NODATA,16,
                                             128,64,32),
                             ncols,nrows)
-      val m_raster = Raster(m, r_extent)
-      val e_computed = FlowDirection(e_raster)
-      assertEqual(e_computed, m_raster)
+
+      val computed = FlowDirection(e)
+      assertEqual(computed, m)
     }
 
     it("should ignore NODATA values when computing directions") {
       val ncols = 3
       val nrows = 3
-      val r_extent = RasterExtent(Extent(0,0,1,1),1,1,ncols,nrows)
       val e = IntArrayTile(Array[Int](8,5,6,
                                             NODATA,5,6,
                                             9,6,7),
                             ncols,nrows)
-      val e_raster = Raster(e, r_extent)
       val m = IntArrayTile(Array[Int](1,4,16,
                                             NODATA,64,16,
                                             1,64,32),
                             ncols,nrows)
-      val m_raster = Raster(m, r_extent)
-      val e_computed = RasterSource(e_raster).flowDirection.get
-      assertEqual(e_computed, m_raster)
+       val computed = RasterSource(e, Extent(0,0,1,1)).flowDirection.get
+      assertEqual(computed, m)
     }
   }}

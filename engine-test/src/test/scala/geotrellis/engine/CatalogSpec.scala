@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.process
+package geotrellis.engine
 
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.feature.Extent
 import geotrellis.testkit._
-import geotrellis.raster.IntConstant
 
 import org.scalatest._
 
@@ -133,7 +132,7 @@ class CatalogSpec extends FunSpec
 
     it("should create IntConstant arg") {
       val result = get(io.LoadRaster("constant"))
-      assert(result.asInstanceOf[ArrayRaster].data.isInstanceOf[IntConstant])
+      result.asInstanceOf[IntConstantTile]
     }
 
     it("should correctly recognize to cache all") {

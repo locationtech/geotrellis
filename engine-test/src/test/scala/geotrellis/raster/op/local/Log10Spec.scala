@@ -16,9 +16,8 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
-import geotrellis.source._
-import geotrellis.process._
+import geotrellis.raster._
+import geotrellis.engine._
 
 import org.scalatest._
 

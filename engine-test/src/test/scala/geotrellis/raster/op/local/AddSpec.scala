@@ -16,10 +16,9 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.feature.Extent
-import geotrellis.source._
-import geotrellis.process._
+import geotrellis.engine._
 
 import org.scalatest._
 import geotrellis.testkit._
@@ -29,77 +28,6 @@ class AddSpec extends FunSpec
                  with TestEngine 
                  with TileBuilders {
   describe("Add") {
-    it("adds a constant value to each cell of an int valued raster") {
-      val r = positiveIntegerRaster
-      val result = get(Add(r,5))
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          result.get(col,row) should be (r.get(col,row) + 5)
-        }
-      }
-    }
-
-    it("adds a constant value to each cell of an double valued raster") {
-      val r = probabilityRaster
-      val result = get(Add(r,1))
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          result.getDouble(col,row) should be (r.getDouble(col,row) + 1.0)
-        }
-      }
-    }
-
-    it("adds a double constant value to each cell of an int valued raster") {
-      val r = positiveIntegerRaster
-      val result = get(Add(r,5.1))
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          result.get(col,row) should be ( (r.get(col,row) + 5.1).toInt)
-        }
-      }
-    }
-
-    it("adds a double constant value to each cell of an double valued raster") {
-      val r = probabilityRaster
-      val result = get(Add(r,.3))
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          result.getDouble(col,row) should be (r.getDouble(col,row) + 0.3)
-        }
-      }
-    }
-
-    it("adds an integer raster to itself") {
-      val r = positiveIntegerRaster
-      val result = get(Add(r,r))
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          result.get(col,row) should be (r.get(col,row) * 2)
-        }
-      }
-    }
-
-    it("adds a double raster to itself") {
-      val r = probabilityRaster
-      val result = get(Add(r,r))
-      for(col <- 0 until r.cols) {
-        for(row <- 0 until r.rows) {
-          result.getDouble(col,row) should be (r.getDouble(col,row) * 2.0)
-        }
-      }
-    }
-
-    it("adds three rasters correctly") {
-      val e = Extent(0.0, 0.0, 10.0, 10.0)
-      val re = RasterExtent(e, 1.0, 1.0, 10, 10)
-
-      val r1 = Raster(Array.fill(100)(3), re)
-      val r2 = Raster(Array.fill(100)(6), re)
-      val r3 = Raster(Array.fill(100)(9), re)
-
-      assert(get(Add(r1, r2)) === r3)
-    }
-
     it("adds two tiled RasterSources correctly") {
       val rs1 = RasterSource("quad_tiled")
       val rs2 = RasterSource("quad_tiled2")
@@ -109,8 +37,8 @@ class AddSpec extends FunSpec
       run(rs1 + rs2) match {
         case Complete(result,success) =>
 //          println(success)
-          for(row <- 0 until r1.rasterExtent.rows) {
-            for(col <- 0 until r1.rasterExtent.cols) {
+          for(row <- 0 until r1.rows) {
+            for(col <- 0 until r1.cols) {
               result.get(col,row) should be (r1.get(col,row) + r2.get(col,row))
             }
           }
@@ -162,44 +90,6 @@ class AddSpec extends FunSpec
           println(failure)
           assert(false)
       }
-    }
-  }
-  
-  describe("Add with sequences of rasters") {
-    val e = Extent(0.0, 0.0, 10.0, 10.0)
-    val re = RasterExtent(e, 1.0, 1.0, 10, 10)
-
-    def ri(n:Int) = Raster(Array.fill(100)(n), re)
-    def rd(n:Double) = Raster(Array.fill(100)(n), re)
-
-    def addInts(ns:Int*) = Add(ns.map(n => ri(n)))
-    def addDoubles(ns:Double*) = Add(ns.map(n => rd(n)))
-
-    it("adds integers") {
-      val a = 3
-      val b = 6
-      val c = 9
-      val n = NODATA
-
-      assertEqual(addInts(a, b),ri(c))
-      assertEqual(addInts(n, b),ri(n))
-      assertEqual(addInts(c, n),ri(n))
-      assertEqual(addInts(n, n),ri(n))
-    }
-
-    it("adds doubles") {
-      val a = 3000000000.0
-      val b = 6000000000.0
-      val c = 9000000000.0
-      val x = a + a + b + b + c
-      val n = Double.NaN
-
-      assertEqual(addDoubles(a, b),rd(c))
-      assertEqual(addDoubles(n, b),rd(n))
-      assertEqual(addDoubles(c, n),rd(n))
-      assertEqual(addDoubles(n, n),rd(n))
-
-      assertEqual(addDoubles(a, a, b, b, c),rd(x))
     }
   }
 }

@@ -16,12 +16,10 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
 import geotrellis.feature.Extent
 import geotrellis.raster._
 import geotrellis.testkit._
-import geotrellis.source._
-import geotrellis.process._
+import geotrellis.engine._
 
 import org.scalatest._
 
@@ -34,8 +32,8 @@ class SumSpec extends FunSpec with FocalOpSpec
   val e = Extent(0.0, 0.0, 4.0, 4.0)
   val re = RasterExtent(e, 1.0, 1.0, 4, 4)
 
-  val r = Raster(IntConstant(1, 4, 4), re)
-  val rd = Raster(DoubleConstant(1.1, 4, 4), re)
+  val r = IntConstantTile(1, 4, 4)
+  val rd = DoubleConstantTile(1.1, 4, 4)
 
   val data16 = Array(16, 16, 16, 16,
                      16, 16, 16, 16,

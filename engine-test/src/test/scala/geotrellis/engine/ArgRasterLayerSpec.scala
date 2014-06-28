@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package geotrellis.process
+package geotrellis.engine
 
-import geotrellis._
-import geotrellis.feature.Extent
-import geotrellis.data.arg._
-import geotrellis.testkit._
 import geotrellis.raster._
-import geotrellis.data._
+import geotrellis.raster.io.arg._
+import geotrellis.feature.Extent
+import geotrellis.testkit._
 
 import org.scalatest._
 
@@ -30,7 +28,7 @@ import scala.math.abs
 class ArgRasterLayerSpec extends FunSpec 
                             with Matchers 
                             with TestEngine 
-                            with RasterBuilders {
+                            with TileBuilders {
   describe("A RasterLayer") {
     val path1 = "raster-test/data/fake.img8.json"
     	 
@@ -48,12 +46,14 @@ class ArgRasterLayerSpec extends FunSpec
     }
 
     it("should write out args") {
-      val raster = RasterLayer.fromPath(path1).get.getRaster()
+      val layer = RasterLayer.fromPath(path1).get
+      val raster = layer.getRaster()
+      val rasterExtent = layer.info.rasterExtent
 
       val fh = java.io.File.createTempFile("foog", ".arg")
       val path2 = fh.getPath
 
-      ArgWriter(TypeByte).write(path2, raster, "name")
+      ArgWriter(TypeByte).write(path2, raster, rasterExtent.extent, "name")
 
       val data1 = scala.io.Source.fromFile(path2).mkString
       val data2 = scala.io.Source.fromFile("raster-test/data/fake.img8.arg").mkString

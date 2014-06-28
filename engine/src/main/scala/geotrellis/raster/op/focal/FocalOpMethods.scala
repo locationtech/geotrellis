@@ -87,8 +87,15 @@ trait FocalOpMethods[+Repr <: RasterSource] { self: Repr =>
   def focalMode(n: Neighborhood) = focal(n)(Mode(_, _, _))
   def focalStandardDeviation(n: Neighborhood) = focal(n)(StandardDeviation(_, _, _))
 
-  def focalAspect = focal(Square(1))((r, _, nbs) => Aspect(r, nbs))
-  def focalSlope = focal(Square(1))((r, _, nbs) => Slope(r, nbs))
+  def focalAspect = 
+    focal(Square(1)) { (r, _, nbs) => 
+      Aspect(r, nbs, rasterDefinition.map(_.rasterExtent.cellSize))
+    }
+
+  def focalSlope = 
+    focal(Square(1)) { (r, _, nbs) => 
+      Slope(r, nbs, rasterDefinition.map(_.rasterExtent.cellSize))
+    }
 
   def focalHillshade = 
     focal(Square(1)) { (r, _, nbs) =>

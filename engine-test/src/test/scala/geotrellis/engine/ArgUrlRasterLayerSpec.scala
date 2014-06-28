@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.process
+package geotrellis.engine
 
 import org.scalatest._
 
 import scala.math.abs
 
-import geotrellis._
-import geotrellis.data.arg._
-import geotrellis.testkit._
 import geotrellis.raster._
-import geotrellis.data._
+import geotrellis.testkit._
 
 import akka.actor._
 import akka.io.IO
@@ -41,7 +38,7 @@ import StatusCodes._
 class ArgUrlRasterLayerSpec extends FunSpec 
                                with Matchers 
                                with TestEngine 
-                               with RasterBuilders 
+                               with TileBuilders 
                                with BeforeAndAfterAll {
     def actor(routingSettings:RoutingSettings) = 
       new HttpServiceActor {

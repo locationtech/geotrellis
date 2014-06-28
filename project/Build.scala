@@ -215,12 +215,12 @@ object GeotrellisBuild extends Build {
   // Project: raster-test
   lazy val rasterTest =
     Project("raster-test", file("raster-test"))
-      .dependsOn(raster, testkit, feature % "compile")
+      .dependsOn(raster, testkit)
       .settings(rasterTestSettings: _*)      
       
   lazy val rasterTestSettings =
     Seq(
-      name := "geotrellis-test",
+      name := "geotrellis-raster-test",
       parallelExecution := false,
       fork in test := false,
       javaOptions in run += "-Xmx2G",
@@ -261,6 +261,31 @@ object GeotrellisBuild extends Build {
       )
     ) ++
     defaultAssemblySettings
+
+  // Project: engine
+  lazy val engineTest =
+    Project("engine-test", file("engine-test"))
+      .dependsOn(engine, testkit)
+      .settings(engineTestSettings:_*)
+
+  lazy val engineTestSettings =
+    Seq(
+      name := "geotrellis-engine-test",
+      parallelExecution := false,
+      fork in test := false,
+      javaOptions in run += "-Xmx2G",
+      scalacOptions in compile ++=
+        Seq("-optimize"),
+      libraryDependencies ++= Seq(
+        akkaActor % "test",
+        scalatest % "test",      
+        spire % "test",
+        sprayClient % "test",
+        sprayRouting % "test"
+      )
+    ) ++
+    defaultAssemblySettings
+
   
   // Project: testkit
   lazy val testkit: Project =

@@ -16,9 +16,9 @@
 
 package geotrellis.raster.op.zonal.summary
 
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.feature._
-import geotrellis.process._
+import geotrellis.engine._
 import geotrellis.testkit._
 
 import org.scalatest._
@@ -47,11 +47,12 @@ trait ZonalSummarySpec extends FunSpec
       ),
       3,2,3,2)
 
+  val rasterExtent = tiledRS.rasterExtent.get
   val tiledR = get(tiledRS)
   val tiledRDouble = get(tiledRSDouble)
 
   val poly = {
-    val re = tiledR.rasterExtent
+    val re = rasterExtent
     val polyPoints = Seq(
       re.gridToMap(2,1), re.gridToMap(4,0),re.gridToMap(7,2),
       re.gridToMap(5,3), re.gridToMap(2,2),re.gridToMap(2,1)

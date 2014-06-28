@@ -63,8 +63,8 @@ class FocalOperationsBenchmark extends OperationBenchmark {
   def timeConway(reps: Int) = run(reps)(get(focal.Conway(r)))
 
   def timeHillshade(reps: Int) = run(reps)(get(focal.Hillshade(r, re.cellSize)))
-  def timeSlope(reps: Int) = run(reps)(get(focal.Slope(r, 1.0)))
-  def timeAspect(reps: Int) = run(reps)(get(focal.Aspect(r)))
+  def timeSlope(reps: Int) = run(reps)(get(focal.Slope(r, re.cellSize, 1.0)))
+  def timeAspect(reps: Int) = run(reps)(get(focal.Aspect(r, re.cellSize)))
 
   def timeMax(reps: Int) = run(reps)(get(focal.Max(r, focal.Square(1))))
 

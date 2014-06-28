@@ -16,10 +16,9 @@
 
 package geotrellis.raster.op.zonal.summary
 
-import geotrellis._
-import geotrellis.feature.Extent
+import geotrellis.raster._
 import geotrellis.feature._
-import geotrellis.process._
+import geotrellis.engine._
 import geotrellis.testkit._
 
 import org.scalatest._
@@ -46,9 +45,9 @@ class ZonalSummaryOpMethodsSpec extends FunSpec
           3,4,3,2)
 
       val tr = rs.get
+      val re = rs.rasterExtent.get
 
       val p = {
-        val re = tr.rasterExtent
         val polyPoints = Seq(
           Point(re.gridToMap(1,1)), Point(re.gridToMap(2,0)), Point(re.gridToMap(4,0)), Point(re.gridToMap(7,2)),
           Point(re.gridToMap(6,6)), Point(re.gridToMap(1,6)), Point(re.gridToMap(0,3)), Point(re.gridToMap(1,1))

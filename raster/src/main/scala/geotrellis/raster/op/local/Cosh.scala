@@ -20,11 +20,9 @@ import geotrellis.raster._
 
 /**
  * Operation to get the hyperbolic cosine of values.
+ * @info A double raster is always returned.
  */
 object Cosh extends Serializable {
-  /** Takes the hyperboic cosine of each raster cell value.
-    * @info Always returns a double or float raster.
-    */
   def apply(r: Tile): Tile =
     (if(r.cellType.isFloatingPoint) r
      else r.convert(TypeDouble))

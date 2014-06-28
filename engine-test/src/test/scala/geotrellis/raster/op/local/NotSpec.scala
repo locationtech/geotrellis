@@ -16,9 +16,8 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
-import geotrellis.process._
-import geotrellis.source._
+import geotrellis.raster._
+import geotrellis.engine._
 
 import org.scalatest._
 
@@ -29,11 +28,6 @@ class NotSpec extends FunSpec
                  with TestEngine 
                  with TileBuilders {
   describe("Not") {
-    it("negates an Int raster") {
-      assertEqual(Not(createValueRaster(10,9)), 
-                  createValueRaster(10,-10))
-    }
-
     it("negates a raster source") {
       val rs1 = createRasterSource(
         Array( NODATA,1,1, 1,1,1, 1,1,1,
@@ -59,12 +53,6 @@ class NotSpec extends FunSpec
           println(failure)
           assert(false)
       }
-    }
-  }
-  describe("Not on Raster") {
-    it("negates an Int raster") {
-      assertEqual(Not(createValueRaster(10,9)),
-                  createValueRaster(10,-10))
     }
   }
 }

@@ -24,7 +24,7 @@ import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 import scala.language.higherKinds
 
 trait Callback {
-  def apply(col: Int, row: Int)
+  def apply(col: Int, row: Int): Unit
 }
 
 trait Transformer[+B] {

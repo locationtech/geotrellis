@@ -16,10 +16,8 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.process._
-import geotrellis.source._
+import geotrellis.engine._
 import geotrellis.testkit._
 
 import org.scalatest._
@@ -138,12 +136,13 @@ class MeanSpec extends FunSpec with FocalOpSpec
       val name = "SBN_inc_percap"
 
       val source = RasterSource(name)
+      val rasterExtent = source.rasterExtent.get
       val r = source.get
 
       val expected = source.focalMean(Square(3)).get
 
-      val tileLayout = TileLayout.fromTileDimensions(r.rasterExtent,256,256)
-      val rs = RasterSource(TileRaster.wrap(r,tileLayout,cropped = false))
+      val tileLayout = TileLayout.fromTileDimensions(rasterExtent,256,256)
+      val rs = RasterSource(CompositeTile.wrap(r,tileLayout,cropped = false), rasterExtent.extent)
 
       rs.focalMean(Square(3)).run match {
         case Complete(value,hist) =>

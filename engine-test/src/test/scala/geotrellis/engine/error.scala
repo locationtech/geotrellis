@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.process
+package geotrellis.engine
 
 import org.scalatest._
 
-import geotrellis._
-import geotrellis.process._
+import geotrellis.engine._
 import geotrellis.testkit._
 
 case class Defenestrator(msg:String) extends Operation[Unit] {

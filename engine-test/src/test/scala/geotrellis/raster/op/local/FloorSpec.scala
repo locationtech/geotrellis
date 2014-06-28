@@ -16,9 +16,8 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
-import geotrellis.source._
-import geotrellis.process._
+import geotrellis.raster._
+import geotrellis.engine._
 
 import org.scalatest._
 
@@ -80,49 +79,6 @@ class FloorSpec extends FunSpec
           println(msg)
           println(failure)
           assert(false)
-      }
-    }
-  }
-  describe("Floor on Raster") {
-    it("takes floor of int Raster") {
-      val r = createTile(
-        Array( NODATA,1,1, 1,1,1, 1,1,1,
-               1,1,1, 1,1,1, 1,1,1,
-
-               1,1,1, 1,1,1, 1,1,1,
-               1,1,1, 1,1,1, 1,1,1),
-        9, 4)
-
-      val result = r.localFloor()
-
-      for(row <- 0 until 4) {
-        for(col <- 0 until 9) {
-          if(row == 0 && col == 0)
-            result.get(col,row) should be (NODATA)
-          else
-            result.get(col,row) should be (1)
-        }
-      }
-    }
-
-    it("takes floor of Double Raster") {
-      val r = createTile(
-        Array( Double.NaN,1.3,1.3, 1.3,1.3,1.3, 1.3,1.3,1.3,
-               1.3,1.3,1.3, 1.3,1.3,1.3, 1.3,1.3,1.3,
-
-               1.3,1.3,1.3, 1.3,1.3,1.3, 1.3,1.3,1.3,
-               1.3,1.3,1.3, 1.3,1.3,1.3, 1.3,1.3,1.3),
-        9, 4)
-
-      val result = r.localFloor()
-
-      for(row <- 0 until 4) {
-        for(col <- 0 until 9) {
-          if(row == 0 && col == 0)
-            isNoData(result.getDouble(col,row)) should be (true)
-          else
-            result.getDouble(col,row) should be (1.0)
-        }
       }
     }
   }

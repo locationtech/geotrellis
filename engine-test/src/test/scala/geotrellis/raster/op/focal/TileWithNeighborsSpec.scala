@@ -16,12 +16,10 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
 import geotrellis.feature.Extent
 import geotrellis.raster._
 import geotrellis.testkit._
-import geotrellis.source._
-import geotrellis.process._
+import geotrellis.engine._
 
 import org.scalatest._
 
@@ -228,11 +226,9 @@ class TileWithNeighborsSpec extends FunSpec with FocalOpSpec
     }
 
     it("should tile correctly for an untiled raster") {
-      val e = Extent(0.0, 0.0, 4.0, 4.0)
-      val re = RasterExtent(e, 1.0, 1.0, 4, 4)
-      val r = Raster(IntConstant(1, 4, 4), re)
+      val r = IntConstantTile(1, 4, 4)
       val (tiled,analysisArea) = 
-        TileWithNeighbors(r,Seq[Option[Raster]]())
+        TileWithNeighbors(r,Seq[Option[Tile]]())
       analysisArea should be (GridBounds(0,0,3,3))
       assertEqual(r,tiled)
     }

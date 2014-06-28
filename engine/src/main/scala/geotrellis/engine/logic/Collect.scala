@@ -30,10 +30,10 @@ case class CollectMap[K, V](map: Op[Map[K, Op[V]]]) extends Op[Map[K, V]] {
   }
 }
 
-// object Collect {
-//   def apply[K, V](m: Op[Map[K, Op[V]]]) = 
-//     CollectMap(m)
-// }
+object Collect {
+  def apply[K, V](m: Op[Map[K, Op[V]]]): CollectMap[K, V] = 
+    CollectMap(m)
+}
 
 /**
  * Takes a sequence of operations, and returns a Sequence of the results of those operations.
