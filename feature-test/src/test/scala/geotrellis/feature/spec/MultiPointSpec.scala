@@ -372,14 +372,14 @@ class MultiPointSpec extends FunSpec with ShouldMatchers {
     }
 
     it ("should cross a Line") {
-      val mp = MultiPoint(Set(Point(5,5), Point(0,0)))
+      val mp = MultiPoint(Seq(Point(5,5), Point(0,0)))
       val l = Line(Point(3,3), Point(6,6))
       mp.crosses(l) should be (true)
     }
 
     it ("should cross a MultiPolygon") {
-      val mp = MultiPoint(Set(Point(5,5), Point(0,0)))
-      val mpoly = MultiPolygon(Set(Polygon(Line(Point(3,3), Point(3,6), Point(6,6), Point(6,3), Point(3,3)))))
+      val mp = MultiPoint(Seq(Point(5,5), Point(0,0)))
+      val mpoly = MultiPolygon(Seq(Polygon(Line(Point(3,3), Point(3,6), Point(6,6), Point(6,3), Point(3,3)))))
       mp.crosses(mpoly) should be (true)
     }
 

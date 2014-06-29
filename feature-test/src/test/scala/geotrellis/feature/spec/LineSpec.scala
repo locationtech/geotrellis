@@ -193,15 +193,15 @@ class LineSpec extends FunSpec with ShouldMatchers {
     }
 
     // This throws a topology exception
-   it ("should union with a MultiPolygon and return a PolygonResult topo") {
-     val l = Line(Point(0,0), Point(2,2))
-     val p1 = Polygon(Line(Point(0,0), Point(0,2.1), Point(2.1,2.1), Point(2.1,0), Point(0,0)))
+    it ("should union with a MultiPolygon and return a PolygonResult topo") {
+      val l = Line(Point(0,0), Point(2,2))
+      val p1 = Polygon(Line(Point(0,0), Point(0,2.1), Point(2.1,2.1), Point(2.1,0), Point(0,0)))
 //     val p2 = Polygon(Line(Point(0,0), Point(0,1.2), Point(2.1,0), Point(0,0)))
-     val p2 = Polygon(Line(Point(-5,-5), Point(-5,0), Point(0,-1), Point(-5,-5)))
-     val mp = MultiPolygon(p1, p2)
-     mp | l should be (MultiPolygonResult(mp))
+      val p2 = Polygon(Line(Point(-5,-5), Point(-5,0), Point(0,-1), Point(-5,-5)))
+      val mp = MultiPolygon(p1, p2)
+      mp | l should be (MultiPolygonResult(mp))
 
-   }
+    }
 
     it ("should union with an empty MultiPolygon and return a LineResult") {
       val l = Line(Point(1,1), Point(2,1))
