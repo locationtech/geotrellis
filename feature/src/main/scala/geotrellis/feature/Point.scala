@@ -171,7 +171,7 @@ case class Point(jtsGeom: jts.Point) extends Geometry
    * Computes a Result that represents a Geometry made up of this Point, if it
    * is not in p, and all the points in p that are not this Point.
    */
-  def symDifference(p: Polygon): ZeroDimensionsPolygonSymDifferenceResult =
+  def symDifference(p: Polygon): AtMostOneDimensionPolygonSymDifferenceResult =
     jtsGeom.symDifference(p.jtsGeom)
 
   /**

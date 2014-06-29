@@ -242,15 +242,7 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
    * this Polygon that are not in g and all the points in g that are not in
    * this Polygon.
    */
-  def symDifference(g: ZeroDimensions): ZeroDimensionsPolygonSymDifferenceResult =
-    jtsGeom.symDifference(g.jtsGeom)
-
-  /**
-   * Computes a Result that represents a Geometry made up of all the points in
-   * this Polygon that are not in g and all the points in g that are not in
-   * this Polygon.
-   */
-  def symDifference(g: OneDimension): OneDimensionPolygonSymDifferenceResult =
+  def symDifference(g: AtMostOneDimension): AtMostOneDimensionPolygonSymDifferenceResult =
     jtsGeom.symDifference(g.jtsGeom)
 
   /**

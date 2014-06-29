@@ -31,8 +31,8 @@ object MultiPoint {
 }
 
 case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry 
-                                             with Relatable
-                                             with ZeroDimensions {
+                                               with Relatable
+                                               with ZeroDimensions {
 
   assert(jtsGeom.isValid)
 
@@ -218,7 +218,7 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
    * this MultiPoint that are not in p and all the points in p that are not in
    * this MultiPoint.
    */
-  def symDifference(p: Polygon): ZeroDimensionsPolygonSymDifferenceResult =
+  def symDifference(p: Polygon): AtMostOneDimensionPolygonSymDifferenceResult =
     jtsGeom.symDifference(p.jtsGeom)
 
   /**
@@ -283,6 +283,14 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
    */
   def covers(g: ZeroDimensions): Boolean =
     jtsGeom.covers(g.jtsGeom)
+
+  /**
+   * Tests whether this MultiPoint crosses the specified AtLeastOneDimension g.
+   * Returns true if the DE-9IM Intersection Matrix for the two geometries is
+   * T*T****** (P/L and P/A).
+   */
+  def crosses(g: AtLeastOneDimension): Boolean =
+    jtsGeom.crosses(g.jtsGeom)
 
   /**
    * Tests whether this MultiPoint overlaps the specified MultiPoint mp.

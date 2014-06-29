@@ -213,24 +213,24 @@ class LineSpec extends FunSpec with ShouldMatchers {
       val l = Line(Point(1,1), Point(2,1))
       val p1 = Polygon(Line(Point(0,0), Point(0,4), Point(4,4), Point(4,0), Point(0,0)))
       val p2 = p1
-      val mp = MultiPolygon(p1, p2)
+      val mp = MultiPolygon(Set(p1, p2))
       l | mp should be (PolygonResult(p1))
 
     }
 
     it ("should union with a MultiPolygon and return a MultiPolygonResult") {
       val l = Line(Point(1,1), Point(2,1))
-      val p1 = Polygon(Line(Point(1,2), Point(1,3), Point(3,3), Point(3,2), Point(1,2)))
+      val p1 = Polygon(Line(Point(1,12), Point(1,13), Point(3,13), Point(3,12), Point(1,12)))
       val p2 = Polygon(Line(Point(0,0), Point(0,4), Point(4,4), Point(4,0), Point(0,0)))
-      val mp = MultiPolygon(p1, p2)
+      val mp = MultiPolygon(Set(p1, p2))
       l | mp should be (MultiPolygonResult(Set(p1, p2)))
     }
 
     it ("should union with a MultiPolygon and return a GeometryCollectionResult") {
       val l = Line(Point(10,10), Point(20,10))
-      val p1 = Polygon(Line(Point(1,2), Point(1,3), Point(3,3), Point(3,2), Point(1,2)))
+      val p1 = Polygon(Line(Point(1,12), Point(1,13), Point(3,13), Point(3,12), Point(1,12)))
       val p2 = Polygon(Line(Point(0,0), Point(0,4), Point(4,4), Point(4,0), Point(0,0)))
-      val mp = MultiPolygon(p1, p2)
+      val mp = MultiPolygon(Set(p1, p2))
       val expected: GeometryCollection =
         GeometryCollection(lines = Set(l), polygons = Set(p1, p2))
       val result = l | mp

@@ -108,7 +108,7 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
    * by this Line and p.
    */
   def intersection(p: Point): PointGeometryIntersectionResult =
-    p.intersection(this)
+    jtsGeom.intersection(p.jtsGeom)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
@@ -252,7 +252,7 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
    * this Line that are not in p and all the points in p that are not in
    * this Line.
    */
-  def symDifference(p: Polygon): OneDimensionPolygonSymDifferenceResult =
+  def symDifference(p: Polygon): AtMostOneDimensionPolygonSymDifferenceResult =
     jtsGeom.symDifference(p.jtsGeom)
 
   /**
@@ -260,7 +260,7 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
    * this Line that are not in mp and all the points in mp that are not in
    * this Line.
    */
-  def symDifference(mp: MultiPolygon): OneDimensionMultiPolygonSymDifferenceResult =
+  def symDifference(mp: MultiPolygon): LineMultiPolygonSymDifferenceResult =
     jtsGeom.symDifference(mp.jtsGeom)
 
 
@@ -303,20 +303,20 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
     jtsGeom.covers(g.jtsGeom)
 
   /**
-   * Tests whether this Line crosses the specified AtLeastOneDimension g.
-   * Returns true if the DE-9IM Intersection Matrix for the two geometries is
-   * 0******** (L/L) or T*T****** (L/A).
-   */
-  def crosses(g: AtLeastOneDimension): Boolean =
-    jtsGeom.crosses(g.jtsGeom)
-
-  /**
    * Tests whether this Line crosses the specified MultiPoint mp.
    * Returns true if the DE-9IM Intersection Matrix for the two geometries is
    * T*****T** (L/P).
    */
   def crosses(mp: MultiPoint): Boolean =
     jtsGeom.crosses(mp.jtsGeom)
+
+  /**
+   * Tests whether this Line crosses the specified AtLeastOneDimension g.
+   * Returns true if the DE-9IM Intersection Matrix for the two geometries is
+   * 0******** (L/L) or T*T****** (L/A).
+   */
+  def crosses(g: AtLeastOneDimension): Boolean =
+    jtsGeom.crosses(g.jtsGeom)
 
   /**
    * Tests whether this Line overlaps the specified OneDimension g.
