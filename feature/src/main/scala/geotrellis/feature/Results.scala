@@ -335,7 +335,7 @@ object MultiLineGeometryDifferenceResult {
       case l: jts.LineString => LineResult(l)
       case ml: jts.MultiLineString => MultiLineResult(ml)
       case _ =>
-        sys.error(s"Unexpected result for MultiLine-ZeroDimensions difference: ${geom.getGeometryType}")
+        sys.error(s"Unexpected result for MultiLine-Geometry difference: ${geom.getGeometryType}")
     }
 }
 

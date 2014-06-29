@@ -358,11 +358,11 @@ class PolygonSpec extends FunSpec with ShouldMatchers {
 
     it ("should have a buffer which is a Polygon") {
       val p: Polygon = SineStar().withSize(100).build()
-        val result = p.buffer(5)
-        result match {
-          case Polygon(_) => // expected
-          case _ => fail()
-        }
+      val result = p.buffer(5)
+      result match {
+        case Polygon(_) => // expected
+        case _ => fail()
+      }
     }
 
     // -- Predicates
