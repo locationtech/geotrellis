@@ -20,14 +20,16 @@ import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
 
 object Polygon {
-
   implicit def jtsToPolygon(jtsGeom: jts.Polygon): Polygon =
     Polygon(jtsGeom)
 
   def apply(exterior: Line): Polygon =
     apply(exterior, Set())
 
-  def apply(exterior: Line, holes:Set[Line]): Polygon = {
+  def apply(exterior: Line, holes:Line*): Polygon = 
+    apply(exterior, holes)
+
+  def apply(exterior: Line, holes:Traversable[Line]): Polygon = {
     if(!exterior.isClosed) {
       sys.error(s"Cannot create a polygon with unclosed exterior: $exterior")
     }
@@ -50,18 +52,22 @@ object Polygon {
         }
       }).toArray
 
-    factory.createPolygon(extGeom, holeGeoms)
+    val p = factory.createPolygon(extGeom, holeGeoms)
+    // Sometimes polygons are invalid even if they aren't.
+    // Try buffer(0) per http://tsusiatsoftware.net/jts/jts-faq/jts-faq.html#G
+    if(!p.isValid) { p.buffer(0).asInstanceOf[jts.Polygon] }
+    else { p }
   }
-
 }
 
 case class Polygon(jtsGeom: jts.Polygon) extends Geometry 
-                                         with Relatable
-                                         with TwoDimensions {
+                                            with Relatable
+                                            with TwoDimensions {
 
-  assert(!jtsGeom.isEmpty)
-  assert(jtsGeom.isValid)
+  assert(!jtsGeom.isEmpty, s"Polygon Empty: $jtsGeom")
 
+  /** Returns a unique representation of the geometry based on standard coordinate ordering. */
+  def normalized(): Polygon = { jtsGeom.normalize ; Polygon(jtsGeom) }
 
   /** Tests whether this Polygon is a rectangle. */
   lazy val isRectangle: Boolean =
@@ -77,9 +83,17 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
 
   /** Returns the hole rings of this Polygon. */
   lazy val holes: Array[Line] = {
-    for (i <- 0 until jtsGeom.getNumInteriorRing()) yield
+    for (i <- 0 until numberOfHoles) yield
       Line(jtsGeom.getInteriorRingN(i))
   }.toArray
+
+  /** Returns true if this Polygon contains holes */
+  lazy val hasHoles: Boolean =
+    numberOfHoles > 0
+
+  /** Returns the number of holes in this Polygon */
+  lazy val numberOfHoles: Int =
+    jtsGeom.getNumInteriorRing
 
   /**
    * Returns the boundary of this Polygon.
@@ -90,19 +104,14 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     jtsGeom.getBoundary
 
   /** Returns this Polygon's vertices. */
-  lazy val vertices: MultiPoint =
-    jtsGeom.getCoordinates
+  lazy val vertices: Array[Point] =
+    jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
 
   /**
-   * Returns a Polygon whose points are (minx, miny), (minx, maxy),
-   * (maxx, maxy), (maxx, miny), (minx, miny).
+   * Returns the minimum bounding box that contains this Polygon.
    */
-  lazy val boundingBox: Polygon =
-    jtsGeom.getEnvelope match {
-      case p: jts.Polygon => Polygon(p)
-      case x =>
-        sys.error(s"Unexpected result for Polygon boundingBox: ${x.getGeometryType}")
-    }
+  lazy val boundingBox: BoundingBox =
+    jtsGeom.getEnvelopeInternal
 
   /**
    * Returns this Polygon's perimeter.
@@ -114,7 +123,6 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
 
 
   // -- Intersection
-
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
@@ -331,6 +339,4 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
    */
   def within(g: TwoDimensions): Boolean =
     jtsGeom.within(g.jtsGeom)
-
-  override def toString = jtsGeom.toString
 }

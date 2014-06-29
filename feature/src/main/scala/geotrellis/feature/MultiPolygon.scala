@@ -34,6 +34,8 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
                                                    with Relatable
                                                    with TwoDimensions {
 
+  /** Returns a unique representation of the geometry based on standard coordinate ordering. */
+  def normalized(): MultiPolygon = { jtsGeom.normalize ; MultiPolygon(jtsGeom) }
 
   /** Returns the Polygons contained in MultiPolygon. */
   lazy val polygons: Array[Polygon] = {
@@ -47,6 +49,17 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
 
   lazy val boundary: MultiLineResult =
     jtsGeom.getBoundary
+
+  /** Returns this MulitPolygon's vertices. */
+  lazy val vertices: Array[Point] =
+    jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
+
+  /**
+   * Returns the minimum bounding box that contains all the lines in
+   * this MultiPolygon.
+   */
+  lazy val boundingBox: BoundingBox =
+    jtsGeom.getEnvelopeInternal
 
   // -- Intersection
 
@@ -169,6 +182,4 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
 
   def within(g: TwoDimensions): Boolean =
     jtsGeom.within(g.jtsGeom)
-
-  override def toString = jtsGeom.toString
 }

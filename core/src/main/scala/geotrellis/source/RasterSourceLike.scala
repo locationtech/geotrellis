@@ -17,6 +17,7 @@
 package geotrellis.source
 
 import geotrellis._
+import geotrellis.io._
 import geotrellis.feature._
 import geotrellis.raster.op._
 import geotrellis.statistics.op._
@@ -25,7 +26,7 @@ import geotrellis.process.RasterLayerInfo
 
 import geotrellis.raster._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 import scala.collection.mutable
 
 trait RasterSourceLike[+Repr <: RasterSource] 
@@ -38,7 +39,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
     with zonal.summary.ZonalSummaryOpMethods[Repr]
     with hydrology.HydrologyOpMethods[Repr]
     with stat.StatOpMethods[Repr] 
-    with io.IoOpMethods[Repr] 
+    with IoOpMethods[Repr] 
     with RenderOpMethods[Repr] { self: Repr =>
 
   def tiles = self.elements
@@ -135,7 +136,7 @@ trait RasterSourceLike[+Repr <: RasterSource]
       rasterDefinition
         .flatMap { rd => 
           if(rd.catalogued) {
-            io.LoadRasterLayerInfo(rd.layerId)
+            LoadRasterLayerInfo(rd.layerId)
           } else {
             RasterLayerInfo.fromDefinition(rd)
           }
@@ -169,8 +170,8 @@ trait RasterSourceLike[+Repr <: RasterSource]
           val warped = mutable.ListBuffer[Op[Raster]]()
           val tCols = tileLayout.tileCols
           val tRows = tileLayout.tileRows
-          for(tCol <- 0 until tCols optimized) {
-            for(tRow <- 0 until tRows optimized) {
+          cfor(0)(_ < tCols, _ + 1) { tCol =>
+            cfor(0)(_ < tRows, _ + 1) { tRow =>
               val sourceRasterExtent = resLayout.getRasterExtent(tCol, tRow)
               val sourceExtent = resLayout.getExtent(tCol, tRow)
               sourceExtent.intersect(targetExtent) match {
@@ -204,8 +205,8 @@ trait RasterSourceLike[+Repr <: RasterSource]
                 val rows = tileRe.rows
 
                 if (rd.rasterType.isDouble) {
-                  for(partCol <- 0 until cols optimized) {
-                    for(partRow <- 0 until rows optimized) {
+                  cfor(0)(_ < cols, _ + 1) { partCol =>
+                    cfor(0)(_ < rows, _ + 1) { partRow =>
                       val dataCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
                       val dataRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
 
@@ -218,8 +219,8 @@ trait RasterSourceLike[+Repr <: RasterSource]
                     }
                   }
                 } else {
-                  for(partCol <- 0 until cols optimized) {
-                    for(partRow <- 0 until rows optimized) {
+                  cfor(0)(_ < cols, _ + 1) { partCol =>
+                    cfor(0)(_ < rows, _ + 1) { partRow =>
                       val dataCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
                       val dataRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
                       if (!(dataCol < 0 ||

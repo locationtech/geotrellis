@@ -18,9 +18,9 @@ package geotrellis.feature
 
 import com.vividsolutions.jts.{geom => jts}
 
-abstract sealed trait Result
-object Result {
-  implicit def jtsToResult(geom: jts.Geometry): Result =
+abstract sealed trait GeometryResult
+object GeometryResult {
+  implicit def jtsToResult(geom: jts.Geometry): GeometryResult =
     geom match {
       case null => NoResult
       case g: jts.Geometry if g.isEmpty => NoResult
@@ -483,7 +483,7 @@ object AtMostOneDimensionPolygonSymDifferenceResult {
       case p: jts.Polygon => PolygonResult(p)
       case gc: jts.GeometryCollection => GeometryCollectionResult(gc)
       case _ =>
-        sys.error(s"Unexpected result for Line-Polygon symDifference: ${geom.getGeometryType}")
+        sys.error(s"Unexpected result for AtMostOneDimension-Polygon symDifference: ${geom.getGeometryType}")
     }
 }
 
@@ -538,8 +538,7 @@ object PointOrNoResult {
     }
 }
 
-
-case object NoResult extends Result
+case object NoResult extends GeometryResult
   with PointGeometryIntersectionResult
   with OneDimensionAtLeastOneDimensionIntersectionResult
   with TwoDimensionsTwoDimensionsIntersectionResult
@@ -565,7 +564,7 @@ case object NoResult extends Result
   with MultiLineGeometryDifferenceResult
   with MultiLineMultiPolygonSymDifferenceResult
 
-case class PointResult(p: Point) extends Result
+case class PointResult(geom: Point) extends GeometryResult
   with PointGeometryIntersectionResult
   with OneDimensionAtLeastOneDimensionIntersectionResult
   with TwoDimensionsTwoDimensionsIntersectionResult
@@ -583,7 +582,7 @@ case class PointResult(p: Point) extends Result
   with MultiPointMultiPointUnionResult
   with PointOrNoResult
 
-case class LineResult(l: Line) extends Result
+case class LineResult(geom: Line) extends GeometryResult
   with OneDimensionAtLeastOneDimensionIntersectionResult
   with TwoDimensionsTwoDimensionsIntersectionResult
   with ZeroDimensionsLineUnionResult
@@ -610,7 +609,7 @@ object LineResult {
     }
 }
 
-case class PolygonResult(p: Polygon) extends Result
+case class PolygonResult(geom: Polygon) extends GeometryResult
   with TwoDimensionsTwoDimensionsIntersectionResult
   with AtMostOneDimensionPolygonUnionResult
   with TwoDimensionsTwoDimensionsUnionResult
@@ -627,7 +626,7 @@ case class PolygonResult(p: Polygon) extends Result
   with MultiLineMultiPolygonUnionResult
   with MultiLineMultiPolygonSymDifferenceResult
 
-case class MultiPointResult(ps: Set[Point]) extends Result
+case class MultiPointResult(geom: MultiPoint) extends GeometryResult
   with TwoDimensionsTwoDimensionsIntersectionResult
   with MultiPointAtLeastOneDimensionIntersectionResult
   with PointZeroDimensionsUnionResult
@@ -643,7 +642,7 @@ case class MultiPointResult(ps: Set[Point]) extends Result
   with MultiPointMultiLineSymDifferenceResult
   with MultiPointMultiPolygonSymDifferenceResult
 
-case class MultiLineResult(ls: Set[Line]) extends Result
+case class MultiLineResult(geom: MultiLine) extends GeometryResult
   with TwoDimensionsTwoDimensionsIntersectionResult
   with LineOneDimensionUnionResult
   with LineAtLeastOneDimensionDifferenceResult
@@ -668,7 +667,7 @@ object MultiLineResult {
     }
 }
 
-case class MultiPolygonResult(ps: Set[Polygon]) extends Result
+case class MultiPolygonResult(geom: MultiPolygon) extends GeometryResult
   with TwoDimensionsTwoDimensionsIntersectionResult
   with TwoDimensionsTwoDimensionsUnionResult
   with LineMultiPolygonUnionResult
@@ -683,7 +682,7 @@ case class MultiPolygonResult(ps: Set[Polygon]) extends Result
   with MultiLineMultiPolygonUnionResult
   with MultiLineMultiPolygonSymDifferenceResult
 
-case class GeometryCollectionResult(gc: GeometryCollection) extends Result
+case class GeometryCollectionResult(geom: GeometryCollection) extends GeometryResult
   with TwoDimensionsTwoDimensionsIntersectionResult
   with ZeroDimensionsLineUnionResult
   with AtMostOneDimensionPolygonUnionResult

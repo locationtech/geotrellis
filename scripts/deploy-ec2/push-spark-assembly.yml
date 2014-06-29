@@ -1,0 +1,11 @@
+---
+
+- name: Push latest goetrellis-spark to workers
+  hosts: workers
+  gather_facts: False
+
+  tasks:
+
+  - file: path="~/geotrellis/spark/target/scala-2.10/" state=directory
+
+  - copy: src="{{ lookup('env','GEOTRELLIS_HOME') }}/geotrellis-spark-assembly-0.10.0-SNAPSHOT.jar" dest="~/geotrellis/spark/target/scala-2.10"

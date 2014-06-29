@@ -34,6 +34,9 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
                                                    with Relatable
                                                    with OneDimension {
 
+  /** Returns a unique representation of the geometry based on standard coordinate ordering. */
+  def normalized(): MultiLine = { jtsGeom.normalize ; MultiLine(jtsGeom) }
+
   /** Returns the Lines contained in this MultiLine. */
   lazy val lines: Array[Line] = {
     for (i <- 0 until jtsGeom.getNumGeometries) yield {
@@ -55,6 +58,16 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   lazy val boundary: OneDimensionBoundaryResult =
     jtsGeom.getBoundary
 
+  /** Returns this MulitLine's vertices. */
+  lazy val vertices: Array[Point] =
+    jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
+
+  /**
+   * Returns the minimum bounding box that contains all the lines in
+   * this MultiLine.
+   */
+  lazy val boundingBox: BoundingBox =
+    jtsGeom.getEnvelopeInternal
 
   // -- Intersection
 
@@ -208,6 +221,7 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
 
   // -- SymDifference
 
+
   /**
    * Computes a Result that represents a Geometry made up of all the points in
    * this MultiLine that are not in p and the point p if it is not in this
@@ -315,5 +329,4 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
    */
   def within(g: AtLeastOneDimension): Boolean =
     jtsGeom.within(g.jtsGeom)
-
 }

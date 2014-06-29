@@ -34,7 +34,8 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
                                                with Relatable
                                                with ZeroDimensions {
 
-  assert(jtsGeom.isValid)
+  /** Returns a unique representation of the geometry based on standard coordinate ordering. */
+  def normalized(): MultiPoint = { jtsGeom.normalize ; MultiPoint(jtsGeom) }
 
   /** Returns the Points contained in MultiPoint. */
   lazy val points: Array[Point] = {
@@ -43,6 +44,12 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
     }
   }.toArray
 
+  /**
+   * Returns the minimum bounding box that contains all the points
+   * of this MultiPoint.
+   */
+  lazy val boundingBox: BoundingBox =
+    jtsGeom.getEnvelopeInternal
 
   // -- Intersection
 
@@ -315,6 +322,4 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
    */
   def within(g: Geometry): Boolean =
     jtsGeom.within(g.jtsGeom)
-
-  override def toString = jtsGeom.toString
 }

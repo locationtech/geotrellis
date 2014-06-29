@@ -23,32 +23,32 @@ import geotrellis.feature.rasterize._
 import geotrellis.statistics._
 
 import scala.collection.mutable
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 abstract sealed trait TileIntersection
 
-case class PartialTileIntersection[D](tile:Raster,intersections:List[Polygon[D]]) extends TileIntersection
+case class PartialTileIntersection(tile:Raster,intersections:Seq[Polygon]) extends TileIntersection
 case class FullTileIntersection(tile:Raster) extends TileIntersection
 
 trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
-  def mapIntersecting[B,That,D](p:Op[feature.Polygon[D]])
+  def mapIntersecting[B,That](p:Op[Polygon])
                                (handleTileIntersection:TileIntersection=>B)
                                (implicit bf:CanBuildSourceFrom[Repr,B,That]):That =
     _mapIntersecting(p,None)(handleTileIntersection)(bf.apply(this))
 
-  def mapIntersecting[B,That,D](p:Op[feature.Polygon[D]],fullTileResults:DataSource[B,_])
+  def mapIntersecting[B,That](p:Op[Polygon],fullTileResults:DataSource[B,_])
                                (handleTileIntersection:TileIntersection=>B)
                                (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = 
     _mapIntersecting(p,Some(fullTileResults))(handleTileIntersection)(bf.apply(this))
 
-  def mapIntersecting[B,That,D](p:Op[feature.Polygon[D]],fullTileResults:Option[DataSource[B,_]])
+  def mapIntersecting[B,That](p:Op[Polygon],fullTileResults:Option[DataSource[B,_]])
                                (handleTileIntersection:TileIntersection=>B)
                                (implicit bf:CanBuildSourceFrom[Repr,B,That]):That = 
     _mapIntersecting(p,fullTileResults)(handleTileIntersection)(bf.apply(this))
 
 
   private 
-  def _mapIntersecting[B,That,D](p:Op[feature.Polygon[D]],fullTileResults:Option[DataSource[B,_]])
+  def _mapIntersecting[B,That](p:Op[Polygon],fullTileResults:Option[DataSource[B,_]])
                                 (handleTileIntersection:TileIntersection=>B)
                                 (builder:SourceBuilder[B,That]):That = {
     val newOp = 
@@ -70,22 +70,26 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
               }
           }
 
-        for(col <- 0 until tileCols optimized) {
-          for(row <- 0 until tileRows optimized) {
+        cfor(0)(_ < tileCols, _ + 1) { col =>
+          cfor(0)(_ < tileRows, _ + 1) { row =>
             val tilePoly =
               rl.getRasterExtent(col,row)
                 .extent
-                .asFeature()
-                .geom
+                .asPolygon
 
-            if(p.geom.contains(tilePoly)) {              
+            if(p.contains(tilePoly)) {
               filtered += handleFullTile(row*tileCols + col)
             } else {
-              val intersections = tilePoly.intersection(p.geom).asPolygonSet.map(Polygon(_,0))
-              if(!intersections.isEmpty) {
-                filtered += tiles(row*tileCols + col).map { t =>
-                  handleTileIntersection(PartialTileIntersection(t,intersections))
-                }
+              tilePoly.intersection(p) match {
+                case PolygonResult(intersectionPoly) =>
+                  filtered += tiles(row*tileCols + col).map { t =>
+                    handleTileIntersection(PartialTileIntersection(t,Seq(intersectionPoly)))
+                  }
+                case MultiPolygonResult(intersectionMultiPoly) =>
+                  filtered += tiles(row*tileCols + col).map { t =>
+                    handleTileIntersection(PartialTileIntersection(t, intersectionMultiPoly.polygons))
+                  }
+                case _ => //No match? No Problem
               }
             }
           }
@@ -99,8 +103,8 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
   }
 
   private 
-  def zonalSummary[T,V,That <: DataSource[_,V],D]
-    (tileSummary:TileSummary[T,V,That], p:Op[Polygon[D]], cachedResult:Option[DataSource[T,_]]) =
+  def zonalSummary[T,V,That <: DataSource[_,V]]
+    (tileSummary:TileSummary[T,V,That], p:Op[Polygon], cachedResult:Option[DataSource[T,_]]) =
     tileSummary.converge {
       self.mapIntersecting(p,cachedResult) { tileIntersection =>
         tileIntersection match {
@@ -110,57 +114,57 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
       }
     }
 
-  def zonalHistogram[D](p:Op[feature.Polygon[D]]):ValueSource[Histogram] =
+  def zonalHistogram(p:Op[Polygon]):ValueSource[Histogram] =
     zonalSummary(Histogram,p,None)
 
-  def zonalHistogram[D](p:Op[feature.Polygon[D]],cached:DataSource[Histogram,_]):ValueSource[Histogram] =
+  def zonalHistogram(p:Op[Polygon],cached:DataSource[Histogram,_]):ValueSource[Histogram] =
     zonalSummary(Histogram,p,Some(cached))
 
-  def zonalSum[D](p:Op[feature.Polygon[D]]):ValueSource[Long] =
+  def zonalSum(p:Op[Polygon]):ValueSource[Long] =
     zonalSummary(Sum,p,None)
 
-  def zonalSum[D](p:Op[feature.Polygon[D]],cached:DataSource[Long,_]):ValueSource[Long] =
+  def zonalSum(p:Op[Polygon],cached:DataSource[Long,_]):ValueSource[Long] =
     zonalSummary(Sum,p,Some(cached))
 
-  def zonalSumDouble[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
+  def zonalSumDouble(p:Op[Polygon]):ValueSource[Double] =
     zonalSummary(SumDouble,p,None)
 
-  def zonalSumDouble[D](p:Op[feature.Polygon[D]],cached:DataSource[Double,_]):ValueSource[Double] =
+  def zonalSumDouble(p:Op[Polygon],cached:DataSource[Double,_]):ValueSource[Double] =
     zonalSummary(SumDouble,p,Some(cached))
 
-  def zonalMin[D](p:Op[feature.Polygon[D]]):ValueSource[Int] =
+  def zonalMin(p:Op[Polygon]):ValueSource[Int] =
     zonalSummary(Min,p,None)
 
-  def zonalMin[D](p:Op[feature.Polygon[D]],cached:DataSource[Int,_]):ValueSource[Int] =
+  def zonalMin(p:Op[Polygon],cached:DataSource[Int,_]):ValueSource[Int] =
     zonalSummary(Min,p,Some(cached))
 
-  def zonalMinDouble[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
+  def zonalMinDouble(p:Op[Polygon]):ValueSource[Double] =
     zonalSummary(MinDouble,p,None)
 
-  def zonalMinDouble[D](p:Op[feature.Polygon[D]],cached:DataSource[Double,_]):ValueSource[Double] =
+  def zonalMinDouble(p:Op[Polygon],cached:DataSource[Double,_]):ValueSource[Double] =
     zonalSummary(MinDouble,p,Some(cached))
 
-  def zonalMax[D](p:Op[feature.Polygon[D]]):ValueSource[Int] =
+  def zonalMax(p:Op[Polygon]):ValueSource[Int] =
     zonalSummary(Max,p,None)
 
-  def zonalMax[D](p:Op[feature.Polygon[D]],cached:DataSource[Int,_]):ValueSource[Int] =
+  def zonalMax(p:Op[Polygon],cached:DataSource[Int,_]):ValueSource[Int] =
     zonalSummary(Max,p,Some(cached))
 
-  def zonalMaxDouble[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
+  def zonalMaxDouble(p:Op[Polygon]):ValueSource[Double] =
     zonalSummary(MaxDouble,p,None)
 
-  def zonalMaxDouble[D](p:Op[feature.Polygon[D]],cached:DataSource[Double,_]):ValueSource[Double] =
+  def zonalMaxDouble(p:Op[Polygon],cached:DataSource[Double,_]):ValueSource[Double] =
     zonalSummary(MaxDouble,p,Some(cached))
 
-  def zonalMean[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
+  def zonalMean(p:Op[Polygon]):ValueSource[Double] =
     zonalSummary(Mean,p,None)
 
-  def zonalMean[D](p:Op[feature.Polygon[D]],cached:DataSource[MeanResult,_]):ValueSource[Double] =
+  def zonalMean(p:Op[Polygon],cached:DataSource[MeanResult,_]):ValueSource[Double] =
     zonalSummary(Mean,p,Some(cached))
 
-  def zonalMeanDouble[D](p:Op[feature.Polygon[D]]):ValueSource[Double] =
+  def zonalMeanDouble(p:Op[Polygon]):ValueSource[Double] =
     zonalSummary(MeanDouble,p,None)
 
-  def zonalMeanDouble[D](p:Op[feature.Polygon[D]],cached:DataSource[MeanResult,_]):ValueSource[Double] =
+  def zonalMeanDouble(p:Op[Polygon],cached:DataSource[MeanResult,_]):ValueSource[Double] =
     zonalSummary(MeanDouble,p,Some(cached))
 }

@@ -44,14 +44,14 @@ object TiffTiler {
    */
   def tile(file: Path, pyMeta: PyramidMetadata, conf: Configuration): List[(Long, Raster)] = {
     val raster = GeoTiff.withReader(file, conf) { reader =>
-      {
-        val image = GeoTiff.getGridCoverage2D(reader)
-        val imageMeta = GeoTiff.getMetadata(reader)
-        warp(image, imageMeta, pyMeta)
-      }
+      val image = GeoTiff.getGridCoverage2D(reader)
+      val imageMeta = GeoTiff.getMetadata(reader)
+      warp(image, imageMeta, pyMeta)
     }
+
     val (zoom, tileSize, rasterType, nodata) =
       (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType, pyMeta.nodata)
+
     val extent = raster.rasterExtent.extent
     val tileExtent = TmsTiling.extentToTile(extent, zoom, tileSize)
 
@@ -87,8 +87,8 @@ object TiffTiler {
         case TypeByte   => RasterData(rawDataBuff.asInstanceOf[DataBufferByte].getData(), tileSize, tileSize)
         case _          => sys.error("Unrecognized AWT type - " + rasterType)
       }
-      val trd = NoDataHandler.removeUserNoData(rd, nodata)
-      Raster(trd, re)
+      NoDataHandler.removeUserNoData(rd, nodata)
+      Raster(rd, re)
     }
 
     val origRaster = buildRaster

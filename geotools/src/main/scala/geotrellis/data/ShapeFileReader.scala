@@ -45,12 +45,12 @@ object ShapeFileReader {
     simpleFeatures.toList
   }
 
-  def readPoints[D](path:String,dataField:String):Seq[Point[D]] = {
+  def readPoints[D](path:String,dataField:String):Seq[PointFeature[D]] = {
     // Convert to GeoTrellis features
     readSimpleFeatures(path) map { ft =>
       val geom = ft.getAttribute(0).asInstanceOf[jts.Point]
       val data = ft.getAttribute(dataField).asInstanceOf[D]
-      Point(geom,data)
+      PointFeature(geom,data)
     }
   }
 }

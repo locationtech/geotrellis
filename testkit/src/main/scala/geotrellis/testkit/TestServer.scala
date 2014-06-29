@@ -103,7 +103,24 @@ trait TestServer extends Suite with BeforeAndAfter with ShouldMatchers {
     val r1 = get(rOp1)
     val r2 = get(rOp2)
     
-    withClue("Raster extends are not equal") { r1.rasterExtent should be (r2.rasterExtent) }
+    withClue("Extent xmins are not equal") { 
+      r1.rasterExtent.extent.xmin should be (r2.rasterExtent.extent.xmin plusOrMinus threshold)
+    }
+    withClue("Extent ymins are not equal") { 
+      r1.rasterExtent.extent.ymin should be (r2.rasterExtent.extent.ymin plusOrMinus threshold)
+    }
+    withClue("Extent xmaxs are not equal") { 
+      r1.rasterExtent.extent.xmax should be (r2.rasterExtent.extent.xmax plusOrMinus threshold)
+    }
+    withClue("Extent ymaxs are not equal") { 
+      r1.rasterExtent.extent.ymax should be (r2.rasterExtent.extent.ymax plusOrMinus threshold)
+    }
+    withClue("RasterExtent cellwidths are not equal") { 
+      r1.rasterExtent.cellwidth should be (r2.rasterExtent.cellwidth plusOrMinus threshold)
+    }
+    withClue("RasterExtent cellheights are not equal") { 
+      r1.rasterExtent.cellheight should be (r2.rasterExtent.cellheight plusOrMinus threshold)
+    }
 
     withClue("Columns are not equal") { r1.cols should be (r2.cols) }
     withClue("Rows are not equal") { r1.rows should be (r2.rows) }

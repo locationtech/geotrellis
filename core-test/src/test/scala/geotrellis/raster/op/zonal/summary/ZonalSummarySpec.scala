@@ -57,7 +57,7 @@ trait ZonalSummarySpec extends FunSpec
       re.gridToMap(2,1), re.gridToMap(4,0),re.gridToMap(7,2),
       re.gridToMap(5,3), re.gridToMap(2,2),re.gridToMap(2,1)
     )
-    Polygon(polyPoints, 0)
+    Polygon(Line(polyPoints.map{Point.apply}))
   }
 
 //      Polygon vertices are 0's (not contianed cells)

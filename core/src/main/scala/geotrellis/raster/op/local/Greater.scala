@@ -22,17 +22,17 @@ import geotrellis.source._
 /**
  * Determines if values are greater than other values. Sets to 1 if true, else 0.
  */
-object Greater extends LocalRasterBinaryOp {
-  def combine(z1:Int,z2:Int) =
-    if(z1 > z2) 1 else 0
+object Greater extends LocalRasterComparatorOp {
+  def compare(z1:Int,z2:Int):Boolean =
+    if(z1 > z2) true else false
 
-  def combine(z1:Double,z2:Double):Double =
-    if(isNoData(z1)) { 0 }
+  def compare(z1:Double,z2:Double):Boolean =
+    if(isNoData(z1)) { false }
     else {
-      if(isNoData(z2)) { 0 }
+      if(isNoData(z2)) { false }
       else { 
-        if(z1 > z2) 1 
-        else 0 
+        if(z1 > z2) true
+        else false
       }
     }
 }

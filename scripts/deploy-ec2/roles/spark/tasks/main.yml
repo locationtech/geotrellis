@@ -1,0 +1,13 @@
+---
+
+#Tasks for spark roles
+- name: Install spark base
+  apt: name=spark-core state=present force=yes
+  sudo: yes
+
+
+- name: Upload spark config
+  template: src=spark-env.sh dest=/etc/spark/conf/spark-env.sh
+  sudo: yes
+  notify:
+    - Restart Spark

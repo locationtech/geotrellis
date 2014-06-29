@@ -1,0 +1,25 @@
+---
+
+#Tasks for common role
+- name: Install OpenJDK 7 JRE
+  apt: pkg=openjdk-7-jre-headless state=latest install_recommends=yes
+  sudo: yes
+
+#This allows to rsync and ssh between any host in the clusters
+- name: Upload cluster private key to use as id_rsa
+  copy: 
+    src: "{{ ec2_key_file }}" 
+    dest: ~/.ssh/id_rsa 
+    mode: 0600
+
+- name: Disable SSH known host checking for 172.* subnet
+  copy:
+    src: ssh_config
+    dest: ~/.ssh/config
+    mode: 0644
+
+- name: Add Cloudera apt repo  
+  apt_repository:
+    repo: "deb [arch=amd64] http://archive.cloudera.com/cdh5/ubuntu/precise/amd64/cdh precise-cdh5 contrib"
+    state: present
+  sudo: yes

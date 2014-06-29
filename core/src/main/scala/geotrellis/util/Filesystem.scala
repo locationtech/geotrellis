@@ -73,4 +73,13 @@ object Filesystem {
   }
 
   def join(parts:String*) = parts.mkString(File.separator)
+
+  def readText(path: String): String = {
+    val src = scala.io.Source.fromFile(path)
+    try {
+      src.mkString
+    } finally {
+      src.close()
+    }
+  }
 }

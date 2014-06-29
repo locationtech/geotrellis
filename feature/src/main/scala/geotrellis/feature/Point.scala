@@ -20,20 +20,23 @@ import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
 
 object Point {
-
   def apply(x: Double, y: Double): Point =
     Point(factory.createPoint(new jts.Coordinate(x, y)))
 
+  def apply(t: (Double, Double)): Point =
+    apply(t._1, t._2)
+
   implicit def jts2Point(jtsGeom: jts.Point): Point = apply(jtsGeom)
 
+  implicit def jtsCoord2Point(coord: jts.Coordinate): Point = 
+    Point(factory.createPoint(coord))
 }
 
 case class Point(jtsGeom: jts.Point) extends Geometry
-                                     with Relatable
-                                     with ZeroDimensions {
+                                        with Relatable
+                                        with ZeroDimensions {
 
   assert(!jtsGeom.isEmpty)
-  assert(jtsGeom.isValid)
 
   /** The Point's x-coordinate */
   val x: Double =
@@ -43,6 +46,8 @@ case class Point(jtsGeom: jts.Point) extends Geometry
   val y: Double =
     jtsGeom.getY
 
+  private[feature] def toCoordinate() =
+    new jts.Coordinate(x, y)
 
   // -- Intersection
 
@@ -248,6 +253,4 @@ case class Point(jtsGeom: jts.Point) extends Geometry
    */
   def within(g: Geometry): Boolean =
     jtsGeom.within(g.jtsGeom)
-
-  override def toString = jtsGeom.toString
 }

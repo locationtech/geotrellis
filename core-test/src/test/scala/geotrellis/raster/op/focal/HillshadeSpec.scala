@@ -29,7 +29,7 @@ import geotrellis.render.op._
 
 import org.scalatest.FunSuite
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 class HillshadeSpec extends FunSuite 
                        with TestServer 
@@ -127,8 +127,8 @@ class HillshadeSpec extends FunSuite
         // so the calculations produce different results. Which makes sense.
         // So if your going for accuracy don't tile something that create NoData 
         // borders.
-        for(col <- 0 until expected.cols-1 optimized) {
-          for(row <- 0 until expected.rows-1 optimized) {
+        cfor(0)(_ < expected.cols-1, _ + 1) { col =>
+          cfor(0)(_ < expected.rows-1, _ + 1) { row =>
             withClue (s"Value different at $col,$row: ") {
               val v1 = value.getDouble(col,row)
               val v2 = expected.getDouble(col,row)
