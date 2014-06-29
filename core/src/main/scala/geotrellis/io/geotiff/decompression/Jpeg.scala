@@ -66,16 +66,18 @@ object JpegDecompression {
         case None => None
       }
 
-      matrix.map(uncompressJpeg(_, directory, jpegTables)).flatten.toVector
+      matrix.map(uncompressJpegSegment(_, directory,
+        jpegTables)).flatten.toVector
     }
 
-    private def uncompressJpeg(row: Vector[Byte], directory: ImageDirectory,
-      jpegTables: Option[JpegTables]) = {
-      val byteBuffer = ByteBuffer.wrap(row.toArray).order(ByteOrder.BIG_ENDIAN)
+    private def uncompressJpegSegment(segment: Vector[Byte],
+      directory: ImageDirectory, jpegTables: Option[JpegTables]) = {
+      val byteBuffer = ByteBuffer.wrap(segment.toArray).
+        order(ByteOrder.BIG_ENDIAN)
       validateHeader(byteBuffer)
 
 
-      row
+      segment
     }
 
     private def readJpegHeader(byteBuffer: ByteBuffer,

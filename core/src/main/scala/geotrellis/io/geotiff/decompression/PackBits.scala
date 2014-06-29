@@ -25,38 +25,36 @@ object PackBitsDecompression {
 
   implicit class PackBits(matrix: Vector[Vector[Byte]]) {
 
-    def uncompressPackBits(directory: ImageDirectory): Vector[Byte] = {
+    def uncompressPackBits(directory: ImageDirectory): Vector[Byte] =
+      matrix.par.map(uncompressPackBitsSegment(_)).flatten.toVector
 
-      def uncompressPackBitsBytes(row: Vector[Byte]) = {
+    private def uncompressPackBitsSegment(segment: Vector[Byte]) = {
 
-        val imageRowByteSize = directory.imageRowBitsSize / 8
+      val imageSegmentByteSize = 0 //directory.imageSegmentBitsSize / 8
 
-        val array = new Array[Byte](imageRowByteSize.toInt)
+      val array = new Array[Byte](imageSegmentByteSize.toInt)
 
-        var i = 0
-        var total = 0
-        while (total != imageRowByteSize) {
-          if (i >= row.length)
-            throw new MalformedGeoTiffException("bad packbits decompression")
+      var i = 0
+      var total = 0
+      while (total != imageSegmentByteSize) {
+        if (i >= segment.length)
+          throw new MalformedGeoTiffException("bad packbits decompression")
 
-          val n = row(i)
+        val n = segment(i)
+        i += 1
+        if (n >= 0 && n <= 127) {
+          for (j <- 0 to n) array(total + j) = segment(i + j)
+          i += n + 1
+          total += n + 1
+        } else if (n > -128 && n < 0) {
+          val b = segment(i)
           i += 1
-          if (n >= 0 && n <= 127) {
-            for (j <- 0 to n) array(total + j) = row(i + j)
-            i += n + 1
-            total += n + 1
-          } else if (n > -128 && n < 0) {
-            val b = row(i)
-            i += 1
-            for (j <- 0 to -n) array(total + j) = b
-            total += -n + 1
-          }
+          for (j <- 0 to -n) array(total + j) = b
+          total += -n + 1
         }
-
-        array.toVector
       }
 
-      matrix.par.map(uncompressPackBitsBytes(_)).flatten.toVector
+      array.toVector
     }
 
   }

@@ -458,7 +458,7 @@ object GeotrellisBuild extends Build {
 
   // Project: feature-benchmark
 
-  lazy val featureBenchmark =
+  lazy val featureBenchmark: Project =
     Project("feature-benchmark", file("feature-benchmark"))
       .settings(featureBenchmarkSettings: _*)
       .dependsOn(featureTest % "compile->test")
@@ -500,6 +500,7 @@ object GeotrellisBuild extends Build {
           }
         }
       }
+
     )
 
   // Project: gdal-benchmark

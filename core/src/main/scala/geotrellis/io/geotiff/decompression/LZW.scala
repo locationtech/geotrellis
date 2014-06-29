@@ -41,11 +41,11 @@ object LZWDecompression {
     val EoICode = 257
 
     def uncompressLZW(): Vector[Byte] =
-      matrix.map(uncompressLZWBytes(_)).flatten.toVector
+      matrix.map(uncompressLZWSegment(_)).flatten.toVector
 
-    private def uncompressLZWBytes(row: Vector[Byte]) = {
+    private def uncompressLZWSegment(segment: Vector[Byte]) = {
       var buf = Vector[Byte]()
-      val bitSet = BitSet.valueOf(row.toArray)
+      val bitSet = BitSet.valueOf(segment.toArray)
 
       var index = 0
       var threshold = 9

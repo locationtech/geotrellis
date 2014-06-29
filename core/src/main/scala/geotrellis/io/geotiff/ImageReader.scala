@@ -26,6 +26,7 @@ import geotrellis.io.geotiff.utils.ByteBufferUtils._
 import geotrellis.io.geotiff.decompression.HuffmanDecompression._
 import geotrellis.io.geotiff.decompression.LZWDecompression._
 import geotrellis.io.geotiff.decompression.JpegDecompression._
+import geotrellis.io.geotiff.decompression.ZLibDecompression._
 import geotrellis.io.geotiff.decompression.PackBitsDecompression._
 
 case class ImageReader(byteBuffer: ByteBuffer) {
@@ -35,6 +36,7 @@ case class ImageReader(byteBuffer: ByteBuffer) {
   val LZWCoded = 5
   val JpegOldCoded = 6
   val JpegCoded = 7
+  val ZLibCoded = 8
   val PackBitsCoded = 32773
 
   def read(directory: ImageDirectory): ImageDirectory = {
@@ -48,6 +50,7 @@ case class ImageReader(byteBuffer: ByteBuffer) {
         "old jpeg (compression = 6) is deprecated."
       )
       case JpegCoded => matrix.uncompressJpeg(directory)
+      case ZLibCoded => matrix.uncompressZLib(directory)
       case PackBitsCoded => matrix.uncompressPackBits(directory)
       case compression => throw new GeoTiffReaderLimitationException(
         s"compression type $compression is not supported by this reader."

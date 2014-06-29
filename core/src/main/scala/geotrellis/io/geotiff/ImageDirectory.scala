@@ -273,9 +273,11 @@ case class ImageDirectory(
     case None => this |-> samplesPerPixelLens get
   }
 
-  def imageRowBitsSize(): Long = (this |-> imageWidthLens get) * bitsPerPixel
+  def imageSegmentBitsSize(): Long =
+    (this |-> imageWidthLens get) * bitsPerPixel
 
-  def imageBitsSize(): Long =  (this |-> imageLengthLens get) * imageRowBitsSize
+  def imageBitsSize(): Long =
+    (this |-> imageLengthLens get) * imageSegmentBitsSize
 
   def hasStripStorage(): Boolean = (this |-> tileOffsetsLens get).isEmpty
 

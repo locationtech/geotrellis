@@ -26,8 +26,6 @@ import scala.io.{Source, Codec}
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
-import scalaxy.loops._
-
 class GeoTiffReaderSpec extends FunSpec
     with MustMatchers
     with RasterBuilders
