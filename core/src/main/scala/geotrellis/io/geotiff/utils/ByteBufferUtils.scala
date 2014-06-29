@@ -26,10 +26,10 @@ object ByteBufferUtils {
       (byte.toInt + (if (byte < 0) 255 else 0)).toShort
 
     private def us2i(short: Short): Int =
-      short.toInt + (if (short < 0) 32767 else 0)
+      short.toInt + (if (short < 0) 65536 else 0)
 
     private def ui2l(int: Int): Long =
-      int.toLong + (if (int < 0) 2147483647 else 0)
+      int.toLong + (if (int < 0) 4294967296L else 0L)
 
     def goToNextImageDirectory(current: Int, entries: Int) =
       byteBuffer.position(entries * 12 +

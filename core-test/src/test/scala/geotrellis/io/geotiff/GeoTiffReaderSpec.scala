@@ -35,12 +35,14 @@ class GeoTiffReaderSpec extends FunSpec
 
   private def read(filePath: String) {
     val source = Source.fromFile(filePath)(Codec.ISO8859)
-    assert(GeoTiffReader(source).read != null)
+    val geoTiff = GeoTiffReader(source).read
     source.close()
+
+    assert(geoTiff != null)
   }
 
-  describe("read raster") {
-    it("reads econic.tif without errors") {
+  describe("read geotiffs") {
+    /*it("reads econic.tif without errors") {
       read("core-test/data/econic.tif")
     }
 
@@ -50,6 +52,10 @@ class GeoTiffReaderSpec extends FunSpec
 
     it("reads slope.tif without errors") {
       read("core-test/data/slope.tif")
+    }*/
+
+    it("reads packbits.tif without errors") {
+      read("core-test/data/packbits.tif")
     }
   }
 }

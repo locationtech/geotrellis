@@ -31,26 +31,32 @@ object PackBitsDecompression {
 
         val imageRowByteSize = directory.imageRowBitsSize / 8
 
-        var buf = Vector.empty[Byte]
+        val array = new Array[Byte](imageRowByteSize.toInt)
 
         var i = 0
-        while (buf.size != imageRowByteSize) {
-          val n = row(i)
-          if (n <= 127) {
-            i += n
-            buf = buf ++ row.drop(i).take(n)
-          } else if (n > -128) {
-            i += 1
-            buf = buf ++ (for (i <- 0 until -n) yield (row(i)))
-          }
+        var total = 0
+        while (total != imageRowByteSize) {
+          if (i >= row.length)
+            throw new MalformedGeoTiffException("bad packbits decompression")
 
+          val n = row(i)
           i += 1
+          if (n >= 0 && n <= 127) {
+            for (j <- 0 to n) array(total + j) = row(i + j)
+            i += n + 1
+            total += n + 1
+          } else if (n > -128 && n < 0) {
+            val b = row(i)
+            i += 1
+            for (j <- 0 to -n) array(total + j) = b
+            total += -n + 1
+          }
         }
 
-        buf.toVector
+        array.toVector
       }
 
-      matrix.map(uncompressPackBitsBytes(_)).flatten.toVector
+      matrix.par.map(uncompressPackBitsBytes(_)).flatten.toVector
     }
 
   }

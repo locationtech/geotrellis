@@ -24,15 +24,17 @@ import java.nio.ByteBuffer
 import geotrellis.io.geotiff.ImageDirectoryLenses._
 import geotrellis.io.geotiff.utils.ByteBufferUtils._
 import geotrellis.io.geotiff.decompression.HuffmanDecompression._
-import geotrellis.io.geotiff.decompression.PackBitsDecompression._
 import geotrellis.io.geotiff.decompression.LZWDecompression._
+import geotrellis.io.geotiff.decompression.JpegDecompression._
+import geotrellis.io.geotiff.decompression.PackBitsDecompression._
 
 case class ImageReader(byteBuffer: ByteBuffer) {
 
   val Uncompressed = 1
   val HuffmanCoded = 2
   val LZWCoded = 5
-  val JpegCoded = 6
+  val JpegOldCoded = 6
+  val JpegCoded = 7
   val PackBitsCoded = 32773
 
   def read(directory: ImageDirectory): ImageDirectory = {
@@ -42,7 +44,14 @@ case class ImageReader(byteBuffer: ByteBuffer) {
       case Uncompressed => matrix.flatten
       case HuffmanCoded => matrix.uncompressHuffman
       case LZWCoded => matrix.uncompressLZW
+      case JpegOldCoded => throw new MalformedGeoTiffException(
+        "old jpeg (compression = 6) is deprecated."
+      )
+      case JpegCoded => matrix.uncompressJpeg(directory)
       case PackBitsCoded => matrix.uncompressPackBits(directory)
+      case compression => throw new GeoTiffReaderLimitationException(
+        s"compression type $compression is not supported by this reader."
+      )
     }
 
     directory |-> imageBytesLens set(uncompressedImage)

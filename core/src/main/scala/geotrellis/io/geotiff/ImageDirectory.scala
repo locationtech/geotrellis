@@ -98,6 +98,7 @@ object Tags {
   val ExtraSamplesTag = 338
   val SampleFormatTag = 339
   val TransferRangeTag = 342
+  val JpegTablesTag = 347
   val JpegProcTag = 512
   val JpegInterchangeFormatTag = 513
   val JpegInterchangeFormatLengthTag = 514
@@ -221,6 +222,7 @@ case class ColimetryTags(
 )
 
 case class JpegTags(
+  jpegTables: Option[Vector[Byte]] = None,
   jpegProc: Option[Int] = None,
   jpegInterchangeFormat: Option[Long] = None,
   jpegInterchangeFormatLength: Option[Long] = None,
@@ -444,6 +446,8 @@ object ImageDirectoryLenses {
 
   val jpegTagsLens = mkLens[ImageDirectory, JpegTags]("jpegTags")
 
+  val jpegTablesLens = jpegTagsLens |-> mkLens[JpegTags,
+    Option[Vector[Byte]]]("jpegTables")
   val jpegProcLens = jpegTagsLens |-> mkLens[JpegTags,
     Option[Int]]("jpegProc")
   val jpegInterchangeFormatLens = jpegTagsLens |-> mkLens[JpegTags,

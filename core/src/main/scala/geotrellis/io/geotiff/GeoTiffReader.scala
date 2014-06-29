@@ -24,6 +24,9 @@ import geotrellis.io.geotiff.utils.ByteBufferUtils._
 
 class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
 
+class GeoTiffReaderLimitationException(msg: String)
+    extends RuntimeException(msg)
+
 object GeoTiffReader {
 
   def apply(source: BufferedSource): GeoTiffReader =

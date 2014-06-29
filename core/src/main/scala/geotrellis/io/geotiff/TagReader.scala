@@ -297,8 +297,11 @@ case class TagReader(byteBuffer: ByteBuffer) {
     val bytes = byteBuffer.getSignedByteVector(tagMetadata.length,
       tagMetadata.offset)
 
-    directory |-> undefinedMapLens modify (_ + (tagMetadata.tag
-      -> bytes))
+    tagMetadata.tag match {
+      case JpegTablesTag => directory |-> jpegTablesLens set(Some(bytes))
+      case tag => directory |-> undefinedMapLens modify (_ + (tag -> bytes))
+    }
+
   }
 
   private def readSignedShortsTag(directory: ImageDirectory,
