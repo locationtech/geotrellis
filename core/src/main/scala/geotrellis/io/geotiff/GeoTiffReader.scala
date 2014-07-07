@@ -22,6 +22,8 @@ import java.nio.{ByteBuffer, ByteOrder}
 
 import geotrellis.io.geotiff.utils.ByteBufferUtils._
 
+import geotrellis.io.geotiff.Tags._
+
 class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
 
 class GeoTiffReaderLimitationException(msg: String)
@@ -74,18 +76,19 @@ case class GeoTiffReader(byteBuffer: ByteBuffer) {
 
   private def readImageDirectory(directory: ImageDirectory, index: Int,
     geoKeysMetadata: Option[TagMetadata] = None): ImageDirectory =
-    if (index == directory.count) geoKeysMetadata match {
-      case Some(tagMetadata) => {
-        val newDirectory = tagReader.read(directory, geoKeysMetadata.get)
-        imageReader.read(newDirectory)
+    if (index == directory.count) {
+      val newDirectory = geoKeysMetadata match {
+        case Some(tagMetadata) => tagReader.read(directory, geoKeysMetadata.get)
+        case None => directory
       }
-      case None => throw new MalformedGeoTiffException("no geokey tag")
+
+      imageReader.read(newDirectory)
     } else {
       val metadata = TagMetadata(byteBuffer.getUnsignedShort,
         byteBuffer.getUnsignedShort, byteBuffer.getInt, byteBuffer.getInt)
 
-      if (metadata.tag == 34735) readImageDirectory(directory, index + 1,
-        Some(metadata)) //Change to enums instead of tag
+      if (metadata.tag == GeoKeyDirectoryTag)
+        readImageDirectory(directory, index + 1, Some(metadata))
       else readImageDirectory(tagReader.read(directory, metadata), index + 1,
         geoKeysMetadata)
     }

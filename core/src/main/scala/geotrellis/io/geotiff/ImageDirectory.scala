@@ -21,6 +21,20 @@ import monocle.Macro._
 
 import scala.collection.immutable.HashMap
 
+object CompressionType {
+
+  val Uncompressed = 1
+  val HuffmanCoded = 2
+  val GroupThreeCoded = 3
+  val GroupFourCoded = 4
+  val LZWCoded = 5
+  val JpegOldCoded = 6
+  val JpegCoded = 7
+  val ZLibCoded = 8
+  val PackBitsCoded = 32773
+
+}
+
 object TiffFieldType {
 
   val BytesFieldType = 1
@@ -169,8 +183,8 @@ case class NonBasicTags(
   planarConfiguration: Option[Int] = None,
   subfileType: Option[Int] = None,
   thresholding: Int = 1,
-  t4Options: Option[Long] = None,
-  t6Options: Option[Long] = None,
+  t4Options: Int = 0,
+  t6Options: Option[Int] = None,
   halftoneHints: Option[Vector[Int]] = None,
   predictor: Option[Int] = None
 )
@@ -268,18 +282,52 @@ case class ImageDirectory(
 
   import ImageDirectoryLenses._
 
+  def hasStripStorage(): Boolean = (this |-> tileOffsetsLens get).isEmpty
+
+  def tileBitsSize(): Option[Long] =
+    ((this |-> tileWidthLens get), (this |-> tileLengthLens get)) match {
+      case (Some(tileWidth), Some(tileLength)) =>
+        Some(bitsPerPixel * tileWidth * tileLength)
+      case _ => None
+    }
+
+  def rowsInStrip(index: Int): Option[Long] = if (hasStripStorage) {
+    this |-> stripByteCountsLens get match {
+      case Some(stripByteCounts) => {
+        val rowsPerStrip = this |-> rowsPerStripLens get
+        val imageLength = this |-> imageLengthLens get
+        val numberOfStrips = stripByteCounts.size
+        val rest = imageLength % rowsPerStrip
+
+        if (index == numberOfStrips - 1) {
+          Some(if (rest == 0) rowsPerStrip else rest)
+        } else if (index >= 0 && index < numberOfStrips - 1) {
+          Some(rowsPerStrip)
+        } else {
+          throw new IllegalArgumentException("index is bad.")
+        }
+      }
+      case None => throw new MalformedGeoTiffException("bad rows/tile structure")
+    }
+  } else None
+
+  def rowsInSegment(index: Int): Int = if (hasStripStorage)
+    rowsInStrip(index).get.toInt
+  else
+    (this |-> tileLengthLens get).get.toInt
+
   def bitsPerPixel(): Int = this |-> bitsPerSampleLens get match {
     case Some(v) => v.sum
     case None => this |-> samplesPerPixelLens get
   }
 
-  def imageSegmentBitsSize(): Long =
-    (this |-> imageWidthLens get) * bitsPerPixel
+  def imageSegmentBitsSize(index: Option[Int] = None): Long =
+    if (hasStripStorage && !index.isEmpty)
+      rowsInStrip(index.get).get * (this |-> imageWidthLens get) * bitsPerPixel
+    else tileBitsSize.get
 
-  def imageBitsSize(): Long =
-    (this |-> imageLengthLens get) * imageSegmentBitsSize
-
-  def hasStripStorage(): Boolean = (this |-> tileOffsetsLens get).isEmpty
+  def rowSize(): Int = (if (hasStripStorage) (this |-> imageWidthLens get)
+  else (this |-> tileWidthLens get).get).toInt
 
 }
 
@@ -362,9 +410,9 @@ object ImageDirectoryLenses {
   val thresholdingLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Int]("thresholding")
   val t4OptionsLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
-    Option[Long]]("t4Options")
+    Int]("t4Options")
   val t6OptionsLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
-    Option[Long]]("t6Options")
+    Option[Int]]("t6Options")
   val halftoneHintsLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Option[Vector[Int]]]("halftoneHints")
   val predictorLens = nonBasicTagsLens |-> mkLens[NonBasicTags,

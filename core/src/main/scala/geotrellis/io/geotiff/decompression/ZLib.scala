@@ -24,17 +24,20 @@ object ZLibDecompression {
 
   implicit class ZLib(matrix: Vector[Vector[Byte]]) {
 
-    def uncompressZLib(directory: ImageDirectory): Vector[Byte] =
-      matrix.map(uncompressZLibSegment(_, directory)).flatten.toVector
+    def uncompressZLib(implicit directory: ImageDirectory): Vector[Byte] =
+      matrix.zipWithIndex.par.map{ case(segment, i) =>
+        uncompressZLibSegment(segment, i) }.flatten.toVector
 
-    private def uncompressZLibSegment(segment: Vector[Byte],
-      directory: ImageDirectory) = {
+    private def uncompressZLibSegment(segment: Vector[Byte], index: Int)
+      (implicit directory: ImageDirectory) = {
       val segmentArray = segment.toArray
 
       try {
         val decompressor = new Inflater()
+
         decompressor.setInput(segmentArray, 0, segmentArray.length)
-        val resultSize = directory.imageSegmentBitsSize / 8
+
+        val resultSize = directory.imageSegmentBitsSize(Some(index)) / 8
         val result = new Array[Byte](resultSize.toInt)
         decompressor.inflate(result)
         result.toVector

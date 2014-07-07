@@ -55,5 +55,9 @@ class GeoTiffReaderSpec extends FunSpec
     it("reads packbits.tif without errors") {
       read("core-test/data/packbits.tif")
     }
+
+    it("reads compression_4_regular_tiff.tif without errors") {
+      read("core-test/data/compression_4_regular_tiff.tif")
+    }
   }
 }

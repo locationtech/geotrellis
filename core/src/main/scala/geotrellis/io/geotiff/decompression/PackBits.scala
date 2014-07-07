@@ -25,12 +25,14 @@ object PackBitsDecompression {
 
   implicit class PackBits(matrix: Vector[Vector[Byte]]) {
 
-    def uncompressPackBits(directory: ImageDirectory): Vector[Byte] =
-      matrix.par.map(uncompressPackBitsSegment(_)).flatten.toVector
+    def uncompressPackBits(implicit directory: ImageDirectory): Vector[Byte] =
+      matrix.zipWithIndex.par.map{ case(segment, i) =>
+        uncompressPackBitsSegment(segment, i) }.flatten.toVector
 
-    private def uncompressPackBitsSegment(segment: Vector[Byte]) = {
+    private def uncompressPackBitsSegment(segment: Vector[Byte], index: Int)
+      (implicit directory: ImageDirectory) = {
 
-      val imageSegmentByteSize = 0 //directory.imageSegmentBitsSize / 8
+      val imageSegmentByteSize = directory.imageSegmentBitsSize(Some(index)) / 8
 
       val array = new Array[Byte](imageSegmentByteSize.toInt)
 

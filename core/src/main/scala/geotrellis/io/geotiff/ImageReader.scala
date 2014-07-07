@@ -21,9 +21,12 @@ import monocle.Macro._
 
 import java.nio.ByteBuffer
 
+import geotrellis.io.geotiff.CompressionType._
 import geotrellis.io.geotiff.ImageDirectoryLenses._
 import geotrellis.io.geotiff.utils.ByteBufferUtils._
 import geotrellis.io.geotiff.decompression.HuffmanDecompression._
+import geotrellis.io.geotiff.decompression.GroupThreeDecompression._
+import geotrellis.io.geotiff.decompression.GroupFourDecompression._
 import geotrellis.io.geotiff.decompression.LZWDecompression._
 import geotrellis.io.geotiff.decompression.JpegDecompression._
 import geotrellis.io.geotiff.decompression.ZLibDecompression._
@@ -31,20 +34,14 @@ import geotrellis.io.geotiff.decompression.PackBitsDecompression._
 
 case class ImageReader(byteBuffer: ByteBuffer) {
 
-  val Uncompressed = 1
-  val HuffmanCoded = 2
-  val LZWCoded = 5
-  val JpegOldCoded = 6
-  val JpegCoded = 7
-  val ZLibCoded = 8
-  val PackBitsCoded = 32773
-
   def read(directory: ImageDirectory): ImageDirectory = {
     val matrix = readMatrix(directory)
 
     val uncompressedImage = directory |-> compressionLens get match {
       case Uncompressed => matrix.flatten
       case HuffmanCoded => matrix.uncompressHuffman
+      case GroupThreeCoded => matrix.uncompressGroupThree(directory)
+      case GroupFourCoded => matrix.uncompressGroupFour(directory)
       case LZWCoded => matrix.uncompressLZW
       case JpegOldCoded => throw new MalformedGeoTiffException(
         "old jpeg (compression = 6) is deprecated."
