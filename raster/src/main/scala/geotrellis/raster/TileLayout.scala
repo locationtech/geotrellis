@@ -107,10 +107,13 @@ case class ResolutionLayout(re: RasterExtent, pixelCols: Int, pixelRows: Int) {
   def getYCoord(row: Int): Double = 
     re.extent.ymax - (row * re.cellheight * pixelRows)
 
-  def getExtent(c: Int, r: Int) = {
+  def getExtent(c: Int, r: Int): Extent = {
     Extent(getXCoord(c), getYCoord(r + 1), getXCoord(c + 1), getYCoord(r))
   }
 
-  def getRasterExtent(c: Int, r: Int) = 
+  def getExtent(tileIndex: Int): Extent = {
+    val col = i % 
+
+  def getRasterExtent(c: Int, r: Int): RasterExtent = 
     RasterExtent(getExtent(c, r), re.cellwidth, re.cellheight, pixelCols, pixelRows)
 }

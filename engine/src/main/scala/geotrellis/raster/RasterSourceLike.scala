@@ -51,6 +51,28 @@ trait RasterSourceLike[+Repr <: RasterSource]
       }
     }
 
+  def getExtent(tileIndex: Int): Extent = ???
+
+  def mapWithExtent[B, That](f: (Tile, Extent) => B)(implicit bf: CanBuildSourceFrom[Repr, B, That]): That = {
+    val name = s"RasterSource mapWithExtent"
+
+    val builder = bf.apply(this)
+
+    val newOp = 
+      elements.map { tileOps =>
+        tileOps.zipWithIndex.map { case (tileOp, i) =>
+          tileOp.map { tile =>
+          f(tile, getExtent(i))
+          }
+        }
+      }
+        .withName(name)
+    builder.setOp(newOp)
+    val result = builder.result()
+    result
+  }
+
+
   def global[That](f: Tile=>Tile)
                   (implicit bf: CanBuildSourceFrom[Repr, Tile, That]): That = {
     val tileOps: Op[Seq[Op[Tile]]] =
