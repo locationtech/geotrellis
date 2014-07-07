@@ -43,7 +43,6 @@ class RasterHadoopRDD private (raster: Path, sc: SparkContext, conf: Configurati
     classOf[TileIdWritable],
     classOf[ArgWritable],
     conf) {
-
   /*
    * Overriding the partitioner with a TileIdPartitioner 
    */
