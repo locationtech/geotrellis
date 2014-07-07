@@ -4,7 +4,7 @@ import geotrellis._
 import geotrellis.feature._
 import geotrellis.raster._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 /**
  * IDW Interpolation
@@ -25,8 +25,8 @@ case class IDWInterpolate(points:Op[Seq[Point[Int]]],re:Op[RasterExtent],radius:
         case Some(r) =>
           val rr = r*r
           val index:SpatialIndex[Point[Int]] = SpatialIndex(points)(p => (p.x,p.y))
-          for(col <- 0 until cols optimized) {
-            for(row <- 0 until rows optimized) {
+          cfor(0)(_ < cols, _ + 1) { col =>
+            cfor(0)(_ < rows, _ + 1) { row =>
               val destX = re.gridColToMap(col)
               val destY = re.gridRowToMap(row)
               val pts = index.pointsInExtent(Extent(destX - r, destY - r, destX + r, destY + r))
@@ -39,7 +39,7 @@ case class IDWInterpolate(points:Op[Seq[Point[Int]]],re:Op[RasterExtent],radius:
                 var ws = 0.0
                 val length = pts.length
 
-                for(i <- 0 until length optimized) {
+                cfor(0)(_ < length, _ + 1) { i =>
                   val point = pts(i)
                   val dX = (destX - point.x)
                   val dY = (destY - point.y)
@@ -63,15 +63,15 @@ case class IDWInterpolate(points:Op[Seq[Point[Int]]],re:Op[RasterExtent],radius:
           }
         case None =>
           val length = points.length
-          for(col <- 0 until cols optimized) {
-            for(row <- 0 until rows optimized) {
+          cfor(0)(_ < cols, _ + 1) { col =>
+            cfor(0)(_ < rows, _ + 1) { row =>
               val destX = re.gridColToMap(col)
               val destY = re.gridRowToMap(row)
               var s = 0.0
               var c = 0
               var ws = 0.0
 
-              for(i <- 0 until length optimized) {
+              cfor(0)(_ < length, _ + 1) { i =>
                 val point = points(i)
                 val dX = (destX - point.x)
                 val dY = (destY - point.y)

@@ -4,7 +4,7 @@ import geotrellis._
 import geotrellis.testutil._
 import geotrellis.statistics.op.stat._
 
-import spire.syntax._
+import spire.syntax.cfor._
 import scala.collection.mutable
 
 import org.scalatest.FunSpec

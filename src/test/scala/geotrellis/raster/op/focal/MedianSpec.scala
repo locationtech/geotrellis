@@ -10,7 +10,7 @@ import geotrellis.testutil._
 import org.scalatest.FunSpec
 import org.scalatest.matchers._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 import scala.math._
 
 class MedianSpec extends FunSpec with TestServer
@@ -104,8 +104,8 @@ class MedianSpec extends FunSpec with TestServer
 
       rs.focalMedian(Square(3)).run match {
         case Complete(value,hist) =>
-          for(col <- 0 until expected.cols optimized) {
-            for(row <- 0 until expected.rows optimized) {
+          cfor(0)(_ < expected.cols, _ + 1) { col =>
+            cfor(0)(_ < expected.rows, _ + 1) { row =>
               withClue (s"Value different at $col,$row: ") {
                 val v1 = expected.getDouble(col,row)
                 val v2 = value.getDouble(col,row)

@@ -2,7 +2,7 @@ package geotrellis.raster
 
 import geotrellis._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 object RasterData {
   def largestType(lhs: RasterData, rhs: RasterData) = {

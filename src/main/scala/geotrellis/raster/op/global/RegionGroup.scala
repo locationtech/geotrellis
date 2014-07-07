@@ -1,7 +1,7 @@
 package geotrellis.raster.op.global
 
 import geotrellis._
-import spire.syntax._
+import spire.syntax.cfor._
 import scala.collection.mutable
 import geotrellis.raster.IntArrayRasterData
 

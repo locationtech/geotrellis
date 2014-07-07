@@ -1,7 +1,7 @@
 package geotrellis
 
 import geotrellis.raster._
-import scalaxy.loops._
+import spire.syntax.cfor._
 import scala.collection.mutable
 
 object CroppedRaster {
@@ -53,14 +53,14 @@ case class CroppedRaster(sourceRaster:Raster,
   def toArrayRaster:ArrayRaster = {
     val data = RasterData.allocByType(rasterType,cols,rows)
     if(!isFloat) {
-      for(row <- 0 until rows optimized) {
-        for(col <- 0 until cols optimized) {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
           data.set(col, row, get(col,row))
         }
       }
     } else {
-      for(row <- 0 until rows optimized) {
-        for(col <- 0 until cols optimized) {
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
           data.setDouble(col, row, getDouble(col,row))
         }
       }
@@ -71,8 +71,8 @@ case class CroppedRaster(sourceRaster:Raster,
   def toArray: Array[Int] = {
     val arr = Array.ofDim[Int](rasterExtent.cols*rasterExtent.rows)
     var i = 0
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         arr(i) = get(col,row)
         i += 1
       }
@@ -83,8 +83,8 @@ case class CroppedRaster(sourceRaster:Raster,
   def toArrayDouble: Array[Double] = {
     val arr = Array.ofDim[Double](rasterExtent.cols*rasterExtent.rows)
     var i = 0
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         arr(i) = getDouble(col,row)
         i += 1
       }
@@ -106,8 +106,8 @@ case class CroppedRaster(sourceRaster:Raster,
 
   def map(f: Int => Int): Raster = {
     val data = RasterData.allocByType(rasterType,cols,rows)
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         data.set(col,row, get(col,row))
       }
     }
@@ -120,8 +120,8 @@ case class CroppedRaster(sourceRaster:Raster,
                              s"$rasterExtent does not match ${r2.rasterExtent}")
     }
     val data = RasterData.allocByType(rasterType,cols,rows)
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         data.set(col,row, f(get(col,row),r2.get(col,row)))
       }
     }
@@ -130,8 +130,8 @@ case class CroppedRaster(sourceRaster:Raster,
 
   def mapDouble(f:Double =>Double):Raster = {
     val data = RasterData.allocByType(rasterType,cols,rows)
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         data.setDouble(col,row, getDouble(col,row))
       }
     }
@@ -144,8 +144,8 @@ case class CroppedRaster(sourceRaster:Raster,
                              s"$rasterExtent does not match ${r2.rasterExtent}")
     }
     val data = RasterData.allocByType(rasterType,cols,rows)
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         data.setDouble(col,row, f(getDouble(col,row),r2.getDouble(col,row)))
       }
     }

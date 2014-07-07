@@ -5,7 +5,7 @@ import geotrellis.raster._
 
 import scala.collection.mutable
 
-import spire.syntax._
+import spire.syntax.cfor._
 
 /**
  * Given a raster and a raster representing it's zones, sets all pixels

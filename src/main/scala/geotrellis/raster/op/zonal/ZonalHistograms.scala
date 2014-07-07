@@ -4,7 +4,7 @@ import geotrellis._
 import geotrellis.process._
 import geotrellis.statistics._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 import scala.collection.mutable
 
@@ -23,8 +23,8 @@ case class ZonalHistogram(data: Op[Raster], zones: Op[Raster])
     val rows  = raster.rasterExtent.rows
     val cols  = raster.rasterExtent.cols
 
-    for(row <- 0 until rows optimized) {
-      for(col <- 0 until cols optimized) {
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
         val v = raster.get(col,row)
         val z = zones.get(col,row)
         if(!histMap.contains(z)) { histMap(z) = FastMapHistogram() }

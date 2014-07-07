@@ -1,7 +1,7 @@
 package geotrellis
 
 import geotrellis.raster._
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 object Raster {
   def apply(arr:RasterData, re:RasterExtent):Raster = 
@@ -50,15 +50,15 @@ trait Raster {
     if (isFloat) foreachDouble(g) else foreach(f)
 
   def foreach(f:Int=>Unit):Unit =
-    for(col <- 0 until cols optimized) {
-      for(row <- 0 until rows optimized) {
+    cfor(0)(_ < cols, _ + 1) { col =>
+      cfor(0)(_ < rows, _ + 1) { row =>
         f(get(col,row))
       }
     }
 
   def foreachDouble(f:Double=>Unit):Unit =
-    for(col <- 0 until cols optimized) {
-      for(row <- 0 until rows optimized) {
+    cfor(0)(_ < cols, _ + 1) { col =>
+      cfor(0)(_ < rows, _ + 1) { row =>
         f(getDouble(col,row))
       }
     }

@@ -8,7 +8,7 @@ import geotrellis.raster._
 import geotrellis.process._
 import geotrellis.raster.IntConstant
 
-import spire.syntax._
+import spire.syntax.cfor._
 
 trait ReadState {
   val rasterExtent:RasterExtent

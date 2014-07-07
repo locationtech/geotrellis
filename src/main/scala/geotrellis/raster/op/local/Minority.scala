@@ -4,7 +4,7 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.source._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 import scala.collection.mutable
 
 object Minority extends Serializable {
