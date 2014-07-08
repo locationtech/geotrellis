@@ -134,8 +134,7 @@ object GeotrellisBuild extends Build {
         "com.typesafe.akka" %% "akka-cluster" % Version.akka,
         "org.codehaus.jackson" % "jackson-core-asl" % "1.6.1",
         "org.codehaus.jackson" % "jackson-mapper-asl" % "1.6.1",
-        "org.spire-math" %% "spire" % "0.4.0",
-        "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided",
+        "org.spire-math" %% "spire" % "0.7.5",
         "io.spray"       % "spray-client" % "1.2.0", // for reading args from URLs,
         "io.spray"       % "spray-routing" % "1.2.0" % "test",
         "org.apache.commons" % "commons-math3" % "3.2"
@@ -357,8 +356,7 @@ object GeotrellisBuild extends Build {
         "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
           from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
         "com.google.code.gson" % "gson" % "1.7.1",
-        "org.spire-math" %% "spire" % "0.4.0",
-        "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided"
+        "org.spire-math" %% "spire" % "0.7.5"
       ),
       resolvers ++= Seq(
         "NL4J Repository" at "http://nativelibs4java.sourceforge.net/maven/",

@@ -9,7 +9,7 @@ import geotrellis.process.RasterLayerInfo
 
 import geotrellis.raster._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 import scala.collection.mutable
 
 trait RasterSourceLike[+Repr <: RasterSource] 
@@ -142,8 +142,8 @@ trait RasterSourceLike[+Repr <: RasterSource]
 
         val warped = mutable.ListBuffer[Op[Raster]]()
         val tCols = tileLayout.tileCols
-        for(tcol <- 0 until tCols optimized) {
-          for(trow <- 0 until tileLayout.tileRows optimized) {
+        cfor(0)(_ < tCols, _ + 1) { tcol =>
+          cfor(0)(_ < tileLayout.tileRows, _ + 1) { trow =>
             val sourceRasterExtent = resLayout.getRasterExtent(tcol,trow)
             val sourceExtent = resLayout.getExtent(tcol,trow)
             sourceExtent.intersect(targetExtent) match {
@@ -174,8 +174,8 @@ trait RasterSourceLike[+Repr <: RasterSource]
               val cols = tileRe.cols
               val rows = tileRe.rows
               if(rd.rasterType.isDouble) {
-                for(partCol <- 0 until cols optimized) {
-                  for(partRow <- 0 until rows optimized) {
+                cfor(0)(_ < cols, _ + 1) { partCol =>
+                  cfor(0)(_ < rows, _ + 1) { partRow =>
                     val dataCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
                     val dataRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
                     if(!(dataCol < 0 || dataCol >= re.cols ||
@@ -185,8 +185,8 @@ trait RasterSourceLike[+Repr <: RasterSource]
                   }
                 }
               } else {
-                for(partCol <- 0 until cols optimized) {
-                  for(partRow <- 0 until rows optimized) {
+                cfor(0)(_ < cols, _ + 1) { partCol =>
+                  cfor(0)(_ < rows, _ + 1) { partRow =>
                     val dataCol = re.mapXToGrid(tileRe.gridColToMap(partCol))
                     val dataRow = re.mapYToGrid(tileRe.gridRowToMap(partRow))
                     if(!(dataCol < 0 || dataCol >= re.cols ||

@@ -2,7 +2,7 @@ package geotrellis
 
 import geotrellis.raster._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 case class ArrayRaster(data:RasterData,rasterExtent:RasterExtent) extends Raster {
   val rasterType = data.getType

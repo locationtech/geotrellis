@@ -7,7 +7,7 @@ import geotrellis.feature.rasterize._
 import geotrellis.statistics._
 
 import scala.collection.mutable
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 abstract sealed trait TileIntersection
 
@@ -54,8 +54,8 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self:Repr =>
               }
           }
 
-        for(col <- 0 until tileCols optimized) {
-          for(row <- 0 until tileRows optimized) {
+        cfor(0)(_ < tileCols, _ + 1) { col =>
+          cfor(0)(_ < tileRows, _ + 1) { row =>
             val tilePoly =
               rl.getRasterExtent(col,row)
                 .extent

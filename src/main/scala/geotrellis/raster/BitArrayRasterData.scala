@@ -2,7 +2,7 @@ package geotrellis.raster
 
 import geotrellis._
 
-import scalaxy.loops._
+import spire.syntax.cfor._
 
 /**
  * RasterData based on an Array[Byte] as a bitmask; values are 0 and 1.
