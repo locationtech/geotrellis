@@ -113,7 +113,14 @@ class MedianSpec extends FunSpec with TestEngine
 
       val expected = source.focalMedian(Square(3)).get
 
-      val tileLayout = TileLayout.fromTileDimensions(rasterExtent,256,256)
+      val tileLayout =
+        TileLayout(
+          (rasterExtent.cols / 256) + 1,
+          (rasterExtent.rows / 256) + 1,
+          256,
+          256
+        )
+
       val rs = RasterSource(CompositeTile.wrap(r,tileLayout,cropped = false), rasterExtent.extent)
 
       rs.focalMedian(Square(3)).run match {

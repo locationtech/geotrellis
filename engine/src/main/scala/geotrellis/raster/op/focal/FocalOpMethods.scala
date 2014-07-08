@@ -25,7 +25,6 @@ trait FocalOpMethods[+Repr <: RasterSource] { self: Repr =>
       (self.tiles, self.rasterDefinition).map { (seq, rd) =>
         val re = rd.rasterExtent
         val tileLayout = rd.tileLayout
-        val rl = tileLayout.getResolutionLayout(re)
 
         val colMax = tileLayout.tileCols - 1
         val rowMax = tileLayout.tileRows - 1

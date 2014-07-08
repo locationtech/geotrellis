@@ -141,7 +141,14 @@ class MeanSpec extends FunSpec with FocalOpSpec
 
       val expected = source.focalMean(Square(3)).get
 
-      val tileLayout = TileLayout.fromTileDimensions(rasterExtent,256,256)
+      val tileLayout =
+        TileLayout(
+          (rasterExtent.cols + 255) / 256,
+          (rasterExtent.rows + 255) / 256,
+          256,
+          256
+        )
+
       val rs = RasterSource(CompositeTile.wrap(r,tileLayout,cropped = false), rasterExtent.extent)
 
       rs.focalMean(Square(3)).run match {

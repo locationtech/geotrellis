@@ -100,12 +100,11 @@ extends RasterLayer(info) {
 
         // Collect data from intersecting tiles
         val targetExtent = re.extent
-        val resLayout = tileLayout.getResolutionLayout(info.rasterExtent)
+        val tileExtents = TileExtents(info.rasterExtent.extent, tileLayout)
         val loader = getTileLoader()
         cfor(0)(_ < tileLayout.tileRows, _ + 1) { trow =>
           cfor(0)(_ < tileLayout.tileCols, _ + 1) { tcol =>
-            val sourceRasterExtent = resLayout.getRasterExtent(tcol, trow)
-            val sourceExtent = resLayout.getExtent(tcol, trow)
+            val sourceExtent = tileExtents(tcol, trow)
             sourceExtent.intersection(targetExtent) match {
               case Some(ext) =>
                 val cols = math.ceil((ext.xmax - ext.xmin) / re.cellwidth).toInt
@@ -139,8 +138,8 @@ extends RasterLayer(info) {
       case None => 
         val loader = getTileLoader()
         val tiles = mutable.ListBuffer[Tile]()
-        cfor(0)(_ < tileLayout.tileCols, _ + 1) { col =>
-          cfor(0)(_ < tileLayout.tileRows, _ + 1) { row =>
+        cfor(0)(_ < tileLayout.tileRows, _ + 1) { row =>
+          cfor(0)(_ < tileLayout.tileCols, _ + 1) { col =>
             tiles += loader.getTile(col, row, None)
           }
         }
@@ -173,12 +172,12 @@ extends RasterLayer(info) {
 
 abstract class TileLoader(tileSetInfo: RasterLayerInfo,
                           tileLayout: TileLayout) extends Serializable {
-  val resLayout = tileLayout.getResolutionLayout(tileSetInfo.rasterExtent)
+  val tileExtents = TileExtents(tileSetInfo.rasterExtent.extent, tileLayout)
 
   val rasterExtent = tileSetInfo.rasterExtent
 
   def getTile(col: Int, row: Int, targetExtent: Option[RasterExtent]): Tile = {
-    val re = resLayout.getRasterExtent(col, row)
+    val re = RasterExtent(tileExtents(col, row), tileLayout.pixelCols, tileLayout.pixelRows)
     if(col < 0 || row < 0 ||
        tileLayout.tileCols <= col || tileLayout.tileRows <= row) {
       val tre = 

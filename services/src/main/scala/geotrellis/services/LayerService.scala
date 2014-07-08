@@ -55,7 +55,7 @@ object LayerService {
         s"""{"latmin" : "${sw.y}",
              "latmax" : "${ne.y}",
              "lngmin" : "${sw.x}",
-             "lngmax" : "${sw.x}"}"""
+             "lngmax" : "${ne.x}"}"""
        }
 
   def render(

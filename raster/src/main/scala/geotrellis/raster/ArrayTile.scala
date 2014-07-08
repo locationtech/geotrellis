@@ -168,7 +168,9 @@ trait ArrayTile extends Tile with Serializable {
   def applyDouble(i: Int): Double
 
   def get(col: Int, row: Int) = apply(row * cols + col)
-  def getDouble(col: Int, row: Int) = applyDouble(row * cols + col)
+  def getDouble(col: Int, row: Int) = {
+//    println(s"$row * $cols + $col") ; 
+    applyDouble(row * cols + col) }
 
   def toList = toArray.toList
   def toListDouble = toArrayDouble.toList

@@ -49,10 +49,9 @@ class RasterSourceSpec extends FunSpec
 
   describe("RasterSource") {
     it("should load a tiled raster with a target extent") {
-      val RasterExtent(Extent(xmin,_,_,ymax),cw,ch,_,_) =
+      val rasterExtent @ RasterExtent(Extent(xmin,_,_,ymax),cw,ch,_,_) =
         RasterSource("mtsthelens_tiled")
-          .info
-          .map(_.rasterExtent)
+          .rasterExtent
           .get
 
       val newRe = 
@@ -63,10 +62,29 @@ class RasterSourceSpec extends FunSpec
       val uncropped = RasterSource("mtsthelens_tiled").get
       val cropped = RasterSource("mtsthelens_tiled",newRe).get
 
+      var count = 0
       for(row <- 0 until 256) {
         for(col <- 0 until 256) {
           withClue(s"Failed at ($col,$row)") {
             uncropped.get(col,row) should be (cropped.get(col,row))
+          }
+        }
+      }
+    }
+
+    it("should match tiled and non-tiled rasters") {
+      val layer = get(io.LoadRasterLayer("SBN_inc_percap_tiled"))
+      val tiled = layer.getRaster
+      val nonTiledRe = RasterSource("SBN_inc_percap").rasterExtent.get
+      val nonTiled = RasterSource("SBN_inc_percap").get
+
+      // println(s"${layer.info.rasterExtent} ${tiled.cols}, ${tiled.rows}")
+      // println(s"$nonTiledRe ${nonTiled.cols}, ${nonTiled.rows}")
+
+      for(row <- 0 until nonTiled.rows) {
+        for(col <- 0 until nonTiled.cols) {
+          withClue(s"Failed at ($col,$row)") {
+            nonTiled.get(col,row) should be (tiled.get(col,row))
           }
         }
       }

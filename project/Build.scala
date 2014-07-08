@@ -334,6 +334,7 @@ object GeotrellisBuild extends Build {
   lazy val adminSettings =
     Seq(
       name := "geotrellis-admin",
+      fork := true,
       libraryDependencies ++= Seq(
         scalatest % "test",
         sprayTestkit % "test",
@@ -531,9 +532,25 @@ object GeotrellisBuild extends Build {
           state.get(featureBenchmarkKey) match {
             case None =>
               // get the runtime classpath, turn into a colon-delimited string
-              val classPath = Project.runTask(fullClasspath in Runtime in featureBenchmark, state).get._2.toEither.right.get.files.mkString(":")
-              // return a state with javaOptionsPatched = true and javaOptions set correctly
-              Project.extract(state).append(Seq(javaOptions in (featureBenchmark, run) ++= Seq("-Xmx8G", "-cp", classPath)), state.put(featureBenchmarkKey, true))
+              Project
+                .runTask(fullClasspath in Runtime in featureBenchmark, state)
+                .get
+                ._2
+                .toEither match {
+                  case Right(x) =>
+                    val classPath =
+                      x.files
+                       .mkString(":")
+                    // return a state with javaOptionsPatched = true and javaOptions set correctly
+                    Project
+                      .extract(state)
+                      .append(
+                        Seq(javaOptions in (benchmark, run) ++= Seq("-Xmx8G", "-cp", classPath)),
+                        state.put(featureBenchmarkKey, true)
+                      )
+                  case _ => state
+                }
+
             case Some(_) =>
               state // the javaOptions are already patched
           }
@@ -601,9 +618,24 @@ object GeotrellisBuild extends Build {
           state.get(benchmarkKey) match {
             case None =>
               // get the runtime classpath, turn into a colon-delimited string
-              val classPath = Project.runTask(fullClasspath in Runtime in benchmark, state).get._2.toEither.right.get.files.mkString(":")
-              // return a state with javaOptionsPatched = true and javaOptions set correctly
-              Project.extract(state).append(Seq(javaOptions in (benchmark, run) ++= Seq("-Xmx8G", "-cp", classPath)), state.put(benchmarkKey, true))
+              Project
+                .runTask(fullClasspath in Runtime in benchmark, state)
+                .get
+                ._2
+                .toEither match {
+                  case Right(x) =>
+                    val classPath =
+                      x.files
+                       .mkString(":")
+                    // return a state with javaOptionsPatched = true and javaOptions set correctly
+                    Project
+                      .extract(state)
+                      .append(
+                        Seq(javaOptions in (benchmark, run) ++= Seq("-Xmx8G", "-cp", classPath)),
+                        state.put(benchmarkKey, true)
+                      )
+                  case _ => state
+                }
             case Some(_) =>
               state // the javaOptions are already patched
           }

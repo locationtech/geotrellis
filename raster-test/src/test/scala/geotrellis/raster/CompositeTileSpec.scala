@@ -78,7 +78,13 @@ class CompositeTileSpec extends FunSpec
       val rasterExtent = RasterSource(name).rasterExtent.get
       val r = RasterSource(name).get
 
-      val tileLayout = TileLayout.fromTileDimensions(rasterExtent, 256, 256)
+      val tileLayout = 
+        TileLayout(
+          rasterExtent.cols / 256,
+          rasterExtent.rows / 256,
+          256,
+          256
+        )
       val tiled = CompositeTile.wrap(r, tileLayout, cropped = true)
       tiled.tiles.map( t => t.asInstanceOf[CroppedTile])
     }
@@ -89,7 +95,13 @@ class CompositeTileSpec extends FunSpec
       val rasterExtent = RasterSource(name).rasterExtent.get
       val r = RasterSource(name).get
 
-      val tileLayout = TileLayout.fromTileDimensions(rasterExtent, 256, 256)
+      val tileLayout = 
+        TileLayout(
+          rasterExtent.cols / 256,
+          rasterExtent.rows / 256,
+          256,
+          256
+        )
       val tiled = CompositeTile.wrap(r, tileLayout, cropped = false)
       tiled.tiles.map( t => t.asInstanceOf[ArrayTile])
     }
@@ -100,7 +112,13 @@ class CompositeTileSpec extends FunSpec
       val rasterExtent = RasterSource(name).rasterExtent.get
       val r = RasterSource(name).get
 
-      val tileLayout = TileLayout.fromTileDimensions(rasterExtent, 256, 256)
+      val tileLayout = 
+        TileLayout(
+          rasterExtent.cols / 256,
+          rasterExtent.rows / 256,
+          256,
+          256
+        )
       val tiled = CompositeTile.wrap(r, tileLayout, cropped = false)
       val backToArray = tiled.toArrayTile
 

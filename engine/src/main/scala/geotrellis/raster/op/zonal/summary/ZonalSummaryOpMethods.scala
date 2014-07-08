@@ -55,7 +55,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self: Repr =>
                                 (builder: SourceBuilder[B, That]): That = {
     val newOp = 
       (rasterDefinition, tiles).map { (rd, tiles) =>
-        val rl = rd.tileLayout.getResolutionLayout(rd.rasterExtent)
+        val tileExtents = TileExtents(rd.rasterExtent.extent, rd.tileLayout)
         val tileCols = rd.tileLayout.tileCols
         val tileRows = rd.tileLayout.tileRows
         val filtered = mutable.ListBuffer[Op[B]]()
@@ -74,23 +74,30 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self: Repr =>
 
         cfor(0)(_ < tileCols, _ + 1) { col =>
           cfor(0)(_ < tileRows, _ + 1) { row =>
-            val rasterExtent = rl.getRasterExtent(col, row)
-            val tilePoly =
-              rasterExtent
-                .extent
-                .toPolygon
+            val extent = tileExtents(col, row)
 
-            if(p.contains(tilePoly)) {
+            if(p.contains(extent)) {
               filtered += handleFullTile(row*tileCols + col)
             } else {
-              tilePoly.intersection(p) match {
+              p.intersection(extent) match {
                 case PolygonResult(intersectionPoly) =>
-                  filtered += tiles(row*tileCols + col).map { t =>
-                    handleTileIntersection(PartialTileIntersection(t, rasterExtent, Seq(intersectionPoly)))
+                  filtered += tiles(row * tileCols + col).map { t =>
+                    handleTileIntersection(
+                      PartialTileIntersection(
+                        t, 
+                        RasterExtent(extent, rd.tileLayout.pixelCols, rd.tileLayout.pixelRows), 
+                        Seq(intersectionPoly)
+                      )
+                    )
                   }
                 case MultiPolygonResult(intersectionMultiPoly) =>
                   filtered += tiles(row*tileCols + col).map { t =>
-                    val pti = PartialTileIntersection(t, rasterExtent, intersectionMultiPoly.polygons)
+                    val pti = 
+                      PartialTileIntersection(
+                        t, 
+                        RasterExtent(extent, rd.tileLayout.pixelCols, rd.tileLayout.pixelRows), 
+                        intersectionMultiPoly.polygons
+                      )
                     handleTileIntersection(pti)
                   }
                 case _ => //No match? No Problem

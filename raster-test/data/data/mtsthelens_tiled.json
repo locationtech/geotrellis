@@ -3,7 +3,7 @@
     "cellwidth": 10.0,
     "cols": "1200",
     "datatype": "float32",
-    "epsg": "26710",
+    "epsg": 26710,
     "layer": "mtsthelens_tiled",
     "layout_cols": "3",
     "layout_rows": "4",
@@ -13,10 +13,10 @@
     "rows": "1600",
     "tile_base": "mtsthelens_tiled",
     "type": "tiled",
-    "xmax": 567610.0,
+    "xmax": 569820.0,
     "xmin": 557820.0,
     "xskew": 0,
     "ymax": 5121980.0,
-    "ymin": 5107980.0,
+    "ymin": 5105980.0,
     "yskew": 0
 }

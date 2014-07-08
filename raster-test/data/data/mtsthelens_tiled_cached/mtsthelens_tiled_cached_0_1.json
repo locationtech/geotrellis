@@ -3,7 +3,7 @@
     "cellwidth": 10.0,
     "cols": 400,
     "datatype": "float32",
-    "epsg": "26710",
+    "epsg": 26710,
     "layer": "mtsthelens_tiled_cached_0_1",
     "rows": 400,
     "type": "arg",

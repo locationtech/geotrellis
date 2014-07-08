@@ -83,8 +83,10 @@ object CompositeTile {
 
 case class CompositeTile(tiles: Seq[Tile],
                          tileLayout: TileLayout) extends Tile {
-  val cols = tileLayout.totalCols
-  val rows = tileLayout.totalRows
+  assert(tileLayout.totalCols.isValidInt, "Total cols is not integer, cannot create such a large composite tile.")
+  assert(tileLayout.totalRows.isValidInt, "Total rows is not integer, cannot create such a large composite tile.")
+  val cols = tileLayout.totalCols.toInt
+  val rows = tileLayout.totalRows.toInt
 
   private val tileList = tiles.toList
   private val tileCols = tileLayout.tileCols

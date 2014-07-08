@@ -205,35 +205,34 @@ trait LocalOpMethods[+Repr <: RasterSource]
     localMaxN(n, rss)
 
   /** Masks this raster by the given Geometry. */
-  // def mask(geom: Geometry): RasterSource = {
-  //   mask(Seq(geom))
-  // }
-  //TODO: Fix this
+  def mask(geom: Geometry): RasterSource = {
+    mask(Seq(geom))
+  }
 
   /** Masks this raster by the given Geometry. */
-  // def mask(geoms: Iterable[Geometry]): RasterSource = {
-  //   mapOp { tileOp =>
-  //     (tileOp, rasterDefinition).map { (tile, rd) =>
-  //       val res = rd.resolutionLayout.getExtent(
-  //       val (cols, rows) = tile.dimensions
-  //       val re = RasterExtent(extent, cols, rows)
-  //       val result = ArrayTile.empty(tile.cellType, cols, rows)
-  //       for(g <- geoms) {
-  //         if(tile.cellType.isFloatingPoint) {
-  //           Rasterizer.foreachCellByFeature(g, re)(new Callback {
-  //             def apply(col: Int, row: Int) =
-  //               result.setDouble(col, row, tile.getDouble(col, row))
-  //           })
-  //         } else {
-  //           Rasterizer.foreachCellByFeature(g, re)(new Callback {
-  //             def apply(col: Int, row: Int) =
-  //               result.set(col, row, tile.get(col, row))
-  //           })
-  //         }
-  //       }
-  //       result:Tile
-  //     }
-  //   }
-  // }
+  def mask(geoms: Iterable[Geometry]): RasterSource = {
+    mapOp { tileOp =>
+      (tileOp, rasterDefinition).map { (tile, rd) =>
+        val res = rd.resolutionLayout.getExtent(
+        val (cols, rows) = tile.dimensions
+        val re = RasterExtent(extent, cols, rows)
+        val result = ArrayTile.empty(tile.cellType, cols, rows)
+        for(g <- geoms) {
+          if(tile.cellType.isFloatingPoint) {
+            Rasterizer.foreachCellByFeature(g, re)(new Callback {
+              def apply(col: Int, row: Int) =
+                result.setDouble(col, row, tile.getDouble(col, row))
+            })
+          } else {
+            Rasterizer.foreachCellByFeature(g, re)(new Callback {
+              def apply(col: Int, row: Int) =
+                result.set(col, row, tile.get(col, row))
+            })
+          }
+        }
+        result:Tile
+      }
+    }
+  }
 
 }

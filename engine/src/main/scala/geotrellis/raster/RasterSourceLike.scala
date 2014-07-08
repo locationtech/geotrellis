@@ -51,28 +51,6 @@ trait RasterSourceLike[+Repr <: RasterSource]
       }
     }
 
-  def getExtent(tileIndex: Int): Extent = ???
-
-  def mapWithExtent[B, That](f: (Tile, Extent) => B)(implicit bf: CanBuildSourceFrom[Repr, B, That]): That = {
-    val name = s"RasterSource mapWithExtent"
-
-    val builder = bf.apply(this)
-
-    val newOp = 
-      elements.map { tileOps =>
-        tileOps.zipWithIndex.map { case (tileOp, i) =>
-          tileOp.map { tile =>
-          f(tile, getExtent(i))
-          }
-        }
-      }
-        .withName(name)
-    builder.setOp(newOp)
-    val result = builder.result()
-    result
-  }
-
-
   def global[That](f: Tile=>Tile)
                   (implicit bf: CanBuildSourceFrom[Repr, Tile, That]): That = {
     val tileOps: Op[Seq[Op[Tile]]] =
@@ -183,14 +161,14 @@ trait RasterSourceLike[+Repr <: RasterSource]
           val tileLayout = rd.tileLayout
 
           val targetExtent = target.extent
-          val resLayout = tileLayout.getResolutionLayout(re)
+          val tileExtents = TileExtents(re.extent, tileLayout)
 
           val warped = mutable.ListBuffer[Op[(Tile, Extent)]]()
           val tCols = tileLayout.tileCols
           val tRows = tileLayout.tileRows
           cfor(0)(_ < tCols, _ + 1) { tCol =>
             cfor(0)(_ < tRows, _ + 1) { tRow =>
-              val sourceExtent = resLayout.getExtent(tCol, tRow)
+              val sourceExtent = tileExtents(tCol, tRow)
               sourceExtent.intersection(targetExtent) match {
                 case Some(ext) =>
                   val cols = math.ceil((ext.xmax - ext.xmin) / re.cellwidth).toInt
@@ -212,7 +190,6 @@ trait RasterSourceLike[+Repr <: RasterSource]
 
             // Create destination raster data
             logic.Collect(warped) map { warped =>
-              println(s"Collecting $re")
               val tile = ArrayTile.empty(rd.cellType, target.cols, target.rows)
 
               for((rasterPart, extent) <- warped) {

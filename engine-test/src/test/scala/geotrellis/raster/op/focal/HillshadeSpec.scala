@@ -111,7 +111,14 @@ class HillshadeSpec extends FunSuite
 
     val r = source.get
     val rasterExtent = source.rasterExtent.get
-    val tileLayout = TileLayout.fromTileDimensions(rasterExtent, 256, 256)
+    val tileLayout =
+      TileLayout(
+        (rasterExtent.cols + 255) / 256,
+        (rasterExtent.rows + 255) / 256,
+        256,
+        256
+      )
+
     val extent = rasterExtent.adjustTo(tileLayout).extent
 
     val rs = RasterSource(CompositeTile.wrap(r, tileLayout, cropped = false), extent)

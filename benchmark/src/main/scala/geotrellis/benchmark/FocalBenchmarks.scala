@@ -51,11 +51,15 @@ class FocalOperationsBenchmark extends OperationBenchmark {
     rs = RasterSource(name, re).cached
 
     tiledRS256 = {
-      val tileLayout = TileLayout.fromTileDimensions(re, 256, 256)
+      val tileCols = (re.cols + 256 - 1) / 256
+      val tileRows = (re.rows + 256 - 1) / 256
+      val tileLayout = TileLayout(tileCols, tileRows, 256, 256)
       RasterSource(CompositeTile.wrap(r, tileLayout, cropped = false), extent)
     }
     tiledRS512 = {
-      val tileLayout = TileLayout.fromTileDimensions(re, 512, 512)
+      val tileCols = (re.cols + 512 - 1) / 512
+      val tileRows = (re.rows + 512 - 1) / 512
+      val tileLayout = TileLayout(tileCols, tileRows, 512, 512)
       RasterSource(CompositeTile.wrap(r, tileLayout, cropped = false), extent)
     }
   }

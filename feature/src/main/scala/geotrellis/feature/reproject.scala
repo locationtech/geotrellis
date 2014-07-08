@@ -28,6 +28,13 @@ package object reproject {
         p.holes.map{ apply(_, src, dest) }
       )
 
+    def apply(extent: Extent, src: CRS, dest: CRS): Extent = {
+      val sw = extent.southWest.reproject(src, dest)
+      val ne = extent.northEast.reproject(src, dest)
+      Extent(sw.x,sw.y,ne.x,ne.y)
+    }
+
+
     def apply[D](pf: PolygonFeature[D], src: CRS, dest: CRS): PolygonFeature[D] =
       PolygonFeature(apply(pf.geom, src, dest), pf.data)
 
@@ -92,6 +99,7 @@ package object reproject {
   implicit class ReprojectLine(l: Line) { def reproject(src: CRS, dest: CRS): Line = Reproject(l, src, dest) }
   implicit class ReprojectLineFeature[D](lf: LineFeature[D]) { def reproject(src: CRS, dest: CRS): LineFeature[D] = Reproject(lf, src, dest) }
   implicit class ReprojectPolygon(p: Polygon) { def reproject(src: CRS, dest: CRS): Polygon = Reproject(p, src, dest) }
+  implicit class ReprojectExtent(e: Extent) { def reproject(src: CRS, dest: CRS): Extent = Reproject(e, src, dest) }
   implicit class ReprojectPolygonFeature[D](pf: PolygonFeature[D]) { def reproject(src: CRS, dest: CRS): PolygonFeature[D] = Reproject(pf, src, dest) }
   implicit class ReprojectMultiPoint(mp: MultiPoint) { def reproject(src: CRS, dest: CRS): MultiPoint = Reproject(mp, src, dest) }
   implicit class ReprojectMultiPointFeature[D](mpf: MultiPointFeature[D]) { def reproject(src: CRS, dest: CRS): MultiPointFeature[D] = Reproject(mpf, src, dest) }
