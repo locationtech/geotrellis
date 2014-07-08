@@ -10,7 +10,7 @@ import ls.Plugin.LsKeys
 import ls.Plugin.lsSettings
 
 object Version {
-  val geotrellis = "0.9.1"
+  val geotrellis = "0.9.2"
   val scala = "2.10.3"
   val akka = "2.2.3"
   val geotools = "9.5"
