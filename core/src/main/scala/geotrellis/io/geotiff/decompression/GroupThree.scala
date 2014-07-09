@@ -22,23 +22,36 @@ import monocle.Macro._
 import geotrellis.io.geotiff._
 import geotrellis.io.geotiff.ImageDirectoryLenses._
 
-case class T4Options(t4Options: Int = 0) {
-  val is2DCoding = (t4Options & (1 << 0)) != 0
-  val uncompressedMode = (t4Options & (1 << 1)) != 0
-  val fillBitsBeforeEOL = (t4Options & (1 << 2)) != 0
-}
+case class T4Options(options: Int = 0, fillOrder: Int)
 
 object GroupThreeDecompression {
 
   implicit class GroupThree(matrix: Vector[Vector[Byte]]) {
 
-    def uncompressGroupThree(directory: ImageDirectory): Vector[Byte] = {
-      implicit val t4Options = T4Options(directory |-> t4OptionsLens get)
-      matrix.map(uncompressGroupThreeSegment(_)).flatten.toVector
+    def uncompressGroupThree(implicit directory: ImageDirectory): Vector[Byte] = {
+      implicit val t4Options = T4Options(directory |-> t4OptionsLens get,
+        directory |-> fillOrderLens get)
+      matrix.zipWithIndex.par.map{ case(segment, i) =>
+        uncompressGroupThreeSegment(segment, i) }.flatten.toVector
     }
 
-    private def uncompressGroupThreeSegment(segment: Vector[Byte])
-      (implicit t4Options: T4Options) = segment
+    private def uncompressGroupThreeSegment(segment: Vector[Byte], index: Int)
+      (implicit t4Options: T4Options, directory: ImageDirectory) = {
+
+      val length = directory.rowsInSegment(index)
+      val width = directory.rowSize
+
+      val decompressor = new TIFFFaxDecoder(t4Options.fillOrder, width, length)
+
+      val inputArray = segment.toArray
+      val outputArray = Array.ofDim[Byte](length * width)
+
+      decompressor.decode2D(outputArray, inputArray, 0, length,
+        t4Options.options)
+
+      outputArray
+
+    }
 
   }
 

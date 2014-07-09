@@ -166,7 +166,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
       case ThresholdingTag => directory |-> thresholdingLens set(shorts(0))
       case CellWidthTag => directory |-> cellWidthLens set(Some(shorts(0)))
       case CellLengthTag => directory |-> cellLengthLens set(Some(shorts(0)))
-      case FillOrderTag => directory |-> fillOrderLens set(Some(shorts(0)))
+      case FillOrderTag => directory |-> fillOrderLens set(shorts(0))
       case OrientationTag => directory |-> orientationLens set(Some(shorts(0)))
       case SamplesPerPixelTag =>
         directory |-> samplesPerPixelLens set(shorts(0))

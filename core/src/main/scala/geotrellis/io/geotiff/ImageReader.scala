@@ -27,6 +27,7 @@ import geotrellis.io.geotiff.utils.ByteBufferUtils._
 import geotrellis.io.geotiff.decompression.HuffmanDecompression._
 import geotrellis.io.geotiff.decompression.GroupThreeDecompression._
 import geotrellis.io.geotiff.decompression.GroupFourDecompression._
+import geotrellis.io.geotiff.decompression.GroupFourDecompression._
 import geotrellis.io.geotiff.decompression.LZWDecompression._
 import geotrellis.io.geotiff.decompression.JpegDecompression._
 import geotrellis.io.geotiff.decompression.ZLibDecompression._
@@ -39,7 +40,7 @@ case class ImageReader(byteBuffer: ByteBuffer) {
 
     val uncompressedImage = directory |-> compressionLens get match {
       case Uncompressed => matrix.flatten
-      case HuffmanCoded => matrix.uncompressHuffman
+      case HuffmanCoded => matrix.uncompressHuffman(directory)
       case GroupThreeCoded => matrix.uncompressGroupThree(directory)
       case GroupFourCoded => matrix.uncompressGroupFour(directory)
       case LZWCoded => matrix.uncompressLZW

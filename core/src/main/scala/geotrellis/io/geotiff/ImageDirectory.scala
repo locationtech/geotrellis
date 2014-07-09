@@ -19,6 +19,9 @@ package geotrellis.io.geotiff
 import monocle.syntax._
 import monocle.Macro._
 
+import geotrellis._
+import geotrellis.raster._
+
 import scala.collection.immutable.HashMap
 
 object CompressionType {
@@ -49,6 +52,15 @@ object TiffFieldType {
   val SignedFractionalsFieldType = 10
   val FloatsFieldType = 11
   val DoublesFieldType = 12
+
+}
+
+object SampleFormat {
+
+  val UnsignedInt = 1
+  val SignedInt = 2
+  val FloatingPoint = 3
+  val Undefined = 4
 
 }
 
@@ -173,7 +185,7 @@ case class NonBasicTags(
   cellLength: Option[Int] = None,
   cellWidth: Option[Int] = None,
   extraSamples: Option[Vector[Int]] = None,
-  fillOrder: Option[Int] = None,
+  fillOrder: Int = 1,
   freeByteCounts: Option[Vector[Long]] = None,
   freeOffsets: Option[Vector[Long]] = None,
   grayResponseCurve: Option[Vector[Int]] = None,
@@ -329,6 +341,95 @@ case class ImageDirectory(
   def rowSize(): Int = (if (hasStripStorage) (this |-> imageWidthLens get)
   else (this |-> tileWidthLens get).get).toInt
 
+  def toRaster(): Raster = {
+    val cols = this |-> imageWidthLens get
+    val rows = this |-> imageLengthLens get
+
+    // How do we get the xmin, ymin, xmax, ymax coordinates
+    // of the geographical envelope of the GeoTIFF?
+    val extent: Extent = Extent(293518.1886150768,5680494.194041155,890338.5054657329,6267530.571271311)
+
+    val bytes: Array[Byte] = imageBytes.toArray
+
+    this |-> bitsPerSampleLens get match {
+      case Some(bitsPerSampleArray) if (bitsPerSampleArray.size > 0) => {
+        val bitsPerSample = bitsPerSampleArray(0)
+        val sampleFormat = this |-> sampleFormatLens get
+
+        import SampleFormat._
+
+        val cellType =
+          if (bitsPerSample == 1)
+            TypeBit
+          else if (bitsPerSample <= 8)
+            TypeByte
+          else if (bitsPerSample <= 16)
+            TypeShort
+          else if (bitsPerSample == 32 && sampleFormat == UnsignedInt
+            || sampleFormat == SignedInt)
+            TypeInt
+          else if (bitsPerSample == 32 && sampleFormat == FloatingPoint)
+            TypeFloat
+          else if (bitsPerSample == 64)
+            TypeDouble
+          else throw new MalformedGeoTiffException("bad bitspersample or sampleformat")
+
+        // if( poDS->nBitsPerSample <= 8 )
+        // {
+        //     eDataType = GDT_Byte;
+        //     if( nSampleFormat == SAMPLEFORMAT_INT )
+        //         SetMetadataItem( "PIXELTYPE", "SIGNEDBYTE", "IMAGE_STRUCTURE" );
+
+        // }
+        // else if( poDS->nBitsPerSample <= 16 )
+        // {
+        //     if( nSampleFormat == SAMPLEFORMAT_INT )
+        //         eDataType = GDT_Int16;
+        //     else
+        //         eDataType = GDT_UInt16;
+        // }
+        // else if( poDS->nBitsPerSample == 32 )
+        // {
+        //     if( nSampleFormat == SAMPLEFORMAT_COMPLEXINT )
+        //         eDataType = GDT_CInt16;
+        //     else if( nSampleFormat == SAMPLEFORMAT_IEEEFP )
+        //         eDataType = GDT_Float32;
+        //     else if( nSampleFormat == SAMPLEFORMAT_INT )
+        //         eDataType = GDT_Int32;
+        //     else
+        //         eDataType = GDT_UInt32;
+        // }
+        // else if( poDS->nBitsPerSample == 64 )
+        // {
+        //     if( nSampleFormat == SAMPLEFORMAT_IEEEFP )
+        //         eDataType = GDT_Float64;
+        //     else if( nSampleFormat == SAMPLEFORMAT_COMPLEXIEEEFP )
+        //         eDataType = GDT_CFloat32;
+        //     else if( nSampleFormat == SAMPLEFORMAT_COMPLEXINT )
+        //         eDataType = GDT_CInt32;
+        // }
+        // else if( poDS->nBitsPerSample == 128 )
+        // {
+        //     if( nSampleFormat == SAMPLEFORMAT_COMPLEXIEEEFP )
+        //         eDataType = GDT_CFloat64;
+        // }
+
+
+        val rd = RasterData.fromArrayByte(bytes, cellType, cols.toInt, rows.toInt)
+
+        val r = Raster(rd, RasterExtent(extent, cols, rows))
+
+        // Write to core-test/data/data
+        import geotrellis.data.arg.ArgWriter
+        val path = "/Users/johanstenberg/Documents/programmering/GSOC/eclipse-geotrellis/geotrellis/core-test/data/data/sampleimage1.arg"
+        new ArgWriter(cellType).write(path, r, "sampleimage1")
+
+        r
+      }
+      case _ => throw new MalformedGeoTiffException("no bits per sample!")
+    }
+  }
+
 }
 
 object ImageDirectoryLenses {
@@ -389,8 +490,7 @@ object ImageDirectoryLenses {
     Option[Int]]("cellWidth")
   val extraSamplesLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Option[Vector[Int]]]("extraSamples")
-  val fillOrderLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
-    Option[Int]]("fillOrder")
+  val fillOrderLens = nonBasicTagsLens |-> mkLens[NonBasicTags, Int]("fillOrder")
   val freeByteCountsLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Option[Vector[Long]]]("freeByteCounts")
   val freeOffsetsLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
