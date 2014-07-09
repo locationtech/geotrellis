@@ -289,7 +289,6 @@ class LocalIngest(hadoopConf: Configuration) extends Ingest(hadoopConf) {
       for ((tileId, tile) <- tiles) {
         key.set(tileId)
         val partition = partitioner.getPartition(key)
-        println(s"Partitioner says $partition")
         val writer = writers(partition)
         val argWritable = ArgWritable.fromTile(tile.toArrayTile)
 
