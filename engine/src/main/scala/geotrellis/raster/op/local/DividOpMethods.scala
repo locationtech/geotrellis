@@ -22,27 +22,27 @@ import geotrellis.raster._
 
 trait DivideOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Divide each value of the raster by a constant value.*/
-  def localDivide(i: Int): RasterSource = self.map(Divide(_, i))
+  def localDivide(i: Int): RasterSource = self.mapTile(Divide(_, i))
   /** Divide each value of the raster by a constant value.*/
   def /(i: Int) = localDivide(i)
   /** Divide a constant value by each cell value.*/
-  def localDivideValue(i: Int): RasterSource = self.map(Divide(i, _))
+  def localDivideValue(i: Int): RasterSource = self.mapTile(Divide(i, _))
   /** Divide a constant value by each cell value.*/
   def /: (i: Int): RasterSource = localDivideValue(i)
   /** Divide each value of a raster by a double constant value.*/
-  def localDivide(d: Double): RasterSource = self.map(Divide(_, d))
+  def localDivide(d: Double): RasterSource = self.mapTile(Divide(_, d))
   /** Divide each value of a raster by a double constant value.*/
   def /(d: Double): RasterSource = localDivide(d)
   /** Divide a double constant value by each cell value.*/
-  def localDivideValue(d: Double): RasterSource = self.map(Divide(d, _))
+  def localDivideValue(d: Double): RasterSource = self.mapTile(Divide(d, _))
   /** Divide a double constant value by each cell value.*/
   def /: (d: Double): RasterSource = localDivideValue(d)
   /** Divide the values of each cell in each raster. */
-  def localDivide(rs: RasterSource): RasterSource = self.combine(rs)(Divide(_, _))
+  def localDivide(rs: RasterSource): RasterSource = self.combineTile(rs)(Divide(_, _))
   /** Divide the values of each cell in each raster. */
   def /(rs: RasterSource): RasterSource = localDivide(rs)
   /** Divide the values of each cell in each raster. */
-  def localDivide(rss: Seq[RasterSource]): RasterSource = self.combine(rss)(Divide(_))
+  def localDivide(rss: Seq[RasterSource]): RasterSource = self.combineTile(rss)(Divide(_))
   /** Divide the values of each cell in each raster. */
   def /(rss: Seq[RasterSource]): RasterSource = localDivide(rss)
 }

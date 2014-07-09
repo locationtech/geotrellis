@@ -18,6 +18,7 @@ package geotrellis.raster.op.zonal.summary
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize._
+import geotrellis.engine._
 
 object Max extends TileSummary[Int, Int, ValueSource[Int]] {
   def handlePartialTile(pt: PartialTileIntersection): Int = {

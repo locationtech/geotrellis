@@ -26,7 +26,7 @@ trait UnequalOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell value of the input raster is equal to the input
    * integer, else 0.
    */
-  def localUnequal(i: Int): RasterSource = self.map(Unequal(_, i))
+  def localUnequal(i: Int): RasterSource = self.mapTile(Unequal(_, i))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
@@ -44,7 +44,7 @@ trait UnequalOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell value of the input raster is equal to the input
    * intenger, else 0.
    */
-  def localUnequal(d: Double): RasterSource = self.map(Unequal(_, d))
+  def localUnequal(d: Double): RasterSource = self.mapTile(Unequal(_, d))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
@@ -61,7 +61,7 @@ trait UnequalOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.
    */
-  def localUnequal(rs: RasterSource): RasterSource = self.combine(rs)(Unequal(_, _))
+  def localUnequal(rs: RasterSource): RasterSource = self.combineTile(rs)(Unequal(_, _))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.

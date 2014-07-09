@@ -26,13 +26,13 @@ trait GreaterOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell value of the input raster is greater than the input
    * integer, else 0.
    */
-  def localGreater(i: Int): RasterSource = self.map(Greater(_, i))
+  def localGreater(i: Int): RasterSource = self.mapTile(Greater(_, i))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * integer, else 0.
    */
-  def localGreaterRightAssociative(i: Int): RasterSource = self.map(Greater(i, _))
+  def localGreaterRightAssociative(i: Int): RasterSource = self.mapTile(Greater(i, _))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
@@ -52,13 +52,13 @@ trait GreaterOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell value of the input raster is greater than the input
    * double, else 0.
    */
-  def localGreater(d: Double): RasterSource = self.map(Greater(_, d))
+  def localGreater(d: Double): RasterSource = self.mapTile(Greater(_, d))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
    * double, else 0.
    */
-  def localGreaterRightAssociative(d: Double): RasterSource = self.map(Greater(d, _))
+  def localGreaterRightAssociative(d: Double): RasterSource = self.mapTile(Greater(d, _))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is greater than the input
@@ -77,7 +77,7 @@ trait GreaterOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than the next raster, else 0.
    */
-  def localGreater(rs:RasterSource): RasterSource = self.combine(rs)(Greater(_,_))
+  def localGreater(rs:RasterSource): RasterSource = self.combineTile(rs)(Greater(_,_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are greater than the next raster, else 0.

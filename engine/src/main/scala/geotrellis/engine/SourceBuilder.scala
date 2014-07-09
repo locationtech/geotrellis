@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.raster
-
-import geotrellis.engine._
+package geotrellis.engine
 
 trait SourceBuilder[Elem, +To] {
   var op: Op[Seq[Op[Elem]]] = null
   def setOp(op: Op[Seq[Op[Elem]]]): this.type  
-  var rasterExtent: RasterExtent = null
   def result(): To
 }
 

@@ -22,23 +22,23 @@ import geotrellis.raster._
 
 trait MultiplyOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Multiply a constant value from each cell.*/
-  def localMultiply(i: Int): RasterSource = self.map(Multiply(_, i))
+  def localMultiply(i: Int): RasterSource = self.mapTile(Multiply(_, i))
   /** Multiply a constant value from each cell.*/
   def *(i: Int): RasterSource = localMultiply(i)
   /** Multiply a constant value from each cell.*/
   def *:(i: Int): RasterSource = localMultiply(i)
   /** Multiply a double constant value from each cell.*/
-  def localMultiply(d: Double): RasterSource = self.map(Multiply(_, d))
+  def localMultiply(d: Double): RasterSource = self.mapTile(Multiply(_, d))
   /** Multiply a double constant value from each cell.*/
   def *(d: Double): RasterSource = localMultiply(d)
   /** Multiply a double constant value from each cell.*/
   def *:(d: Double): RasterSource = localMultiply(d)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(rs: RasterSource): RasterSource = self.combine(rs)(Multiply(_, _))
+  def localMultiply(rs: RasterSource): RasterSource = self.combineTile(rs)(Multiply(_, _))
   /** Multiply the values of each cell in each raster. */
   def *(rs: RasterSource): RasterSource = localMultiply(rs)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(rss: Seq[RasterSource]): RasterSource = self.combine(rss)(Multiply(_))
+  def localMultiply(rss: Seq[RasterSource]): RasterSource = self.combineTile(rss)(Multiply(_))
   /** Multiply the values of each cell in each raster. */
   def *(rss: Seq[RasterSource]): RasterSource = localMultiply(rss)
 }

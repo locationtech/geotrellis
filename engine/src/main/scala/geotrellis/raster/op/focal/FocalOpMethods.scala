@@ -64,16 +64,11 @@ trait FocalOpMethods[+Repr <: RasterSource] { self: Repr =>
       }
 
   def focal[T, That](n: Neighborhood)
-                   (op: (Op[Tile], Op[Neighborhood], TileNeighbors)=>FocalOperation[T])
-                   (implicit bf: CanBuildSourceFrom[Repr, T, That]): That = {
-    val builder = bf.apply(this)
-    
-    val newOp = 
+                   (op: (Op[Tile], Op[Neighborhood], TileNeighbors)=>FocalOperation[Tile]): RasterSource = {
+    val tileOps = 
       zipWithNeighbors.map(_.map { case (t, ns) => op(t, n, ns) })
 
-    builder.setOp(newOp)
-    val result = builder.result()
-    result
+    new RasterSource(rasterDefinition, tileOps)
   }
 
   def focalSum(n: Neighborhood) = focal(n)(Sum(_, _, _))

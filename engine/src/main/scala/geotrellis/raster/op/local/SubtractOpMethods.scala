@@ -22,27 +22,27 @@ import geotrellis.raster._
 
 trait SubtractOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Subtract a constant value from each cell.*/
-  def localSubtract(i: Int): RasterSource = self.map(Subtract(_, i))
+  def localSubtract(i: Int): RasterSource = self.mapTile(Subtract(_, i))
   /** Subtract a constant value from each cell.*/
   def -(i: Int) = localSubtract(i)
   /** Subtract each value of a cell from a constant value. */
-  def localSubtractFrom(i: Int): RasterSource = self.map(Subtract(i, _))
+  def localSubtractFrom(i: Int): RasterSource = self.mapTile(Subtract(i, _))
   /** Subtract each value of a cell from a constant value. */
   def -:(i: Int) = localSubtract(i)
   /** Subtract a double constant value from each cell.*/
-  def localSubtract(d: Double): RasterSource = self.map(Subtract(_, d))
+  def localSubtract(d: Double): RasterSource = self.mapTile(Subtract(_, d))
   /** Subtract a double constant value from each cell.*/
   def -(d: Double) = localSubtract(d)
   /** Subtract each value of a cell from a double constant value. */
-  def localSubtractFrom(d: Double): RasterSource = self.map(Subtract(d, _))
+  def localSubtractFrom(d: Double): RasterSource = self.mapTile(Subtract(d, _))
   /** Subtract each value of a cell from a double constant value. */
   def -:(d: Double) = localSubtractFrom(d)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(rs: RasterSource): RasterSource = self.combine(rs)(Subtract(_, _))
+  def localSubtract(rs: RasterSource): RasterSource = self.combineTile(rs)(Subtract(_, _))
   /** Subtract the values of each cell in each raster. */
   def -(rs: RasterSource): RasterSource = localSubtract(rs)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(rss: Seq[RasterSource]): RasterSource = self.combine(rss)(Subtract(_))
+  def localSubtract(rss: Seq[RasterSource]): RasterSource = self.combineTile(rss)(Subtract(_))
   /** Subtract the values of each cell in each raster. */
   def -(rss:Seq[RasterSource]): RasterSource = localSubtract(rss)
 }

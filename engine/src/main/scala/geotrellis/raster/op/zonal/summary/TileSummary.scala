@@ -17,9 +17,10 @@
 package geotrellis.raster.op.zonal.summary
 
 import geotrellis.raster._
+import geotrellis.engine._
 
-trait TileSummary[T,V,That <: DataSource[_,V]] {
-  def handlePartialTile(pt:PartialTileIntersection):T
-  def handleFullTile(pt:FullTileIntersection):T
-  def converge(ds: DataSource[T,_]):That
+trait TileSummary[T,V,That <: OpSource[V]] {
+  def handlePartialTile(pt: PartialTileIntersection): T
+  def handleFullTile(pt: FullTileIntersection): T
+  def converge(ds: DataSource[T,_]): That
 }

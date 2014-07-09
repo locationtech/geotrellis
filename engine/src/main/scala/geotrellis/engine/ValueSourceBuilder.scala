@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package geotrellis.raster
+package geotrellis.engine
 
-import geotrellis.engine._
+/**
+ * Bulid a data source with a single value.
+ */
+class ValueSourceBuilder[E:Manifest] extends SourceBuilder[E,ValueSource[E]] {
+  var _dataDefinition:Op[E] = null
 
-class ValueSource[+T](val element:Op[T]) extends ValueSourceLike[T, ValueSource[T]] {
-  val elements = Literal(Seq(element))
-}
+  def result = new ValueSource[E](_dataDefinition)
 
-object ValueSource {
-  def apply[T](element:Op[T]):ValueSource[T] = new ValueSource(element)
- }
-
-trait ValueSourceLike[+T, +Repr <: ValueSource[T]] 
-    extends DataSourceLike[T,T, Repr]
-    with DataSource[T,T] { self: Repr => 
-  def convergeOp() = self.element
+  def setOp(op: Op[Seq[Op[E]]]): this.type = {
+    this._dataDefinition = op flatMap { _.apply(0) }
+    this
+  }
 }

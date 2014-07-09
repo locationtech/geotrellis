@@ -15,7 +15,6 @@
  */
 package geotrellis
 
-import geotrellis.raster.CanBuildSourceFrom
 import geotrellis.raster.stats.Histogram
 
 import geotrellis.raster._
@@ -25,7 +24,6 @@ import language.experimental.macros
 package object engine {
   implicit lazy val engine = GeoTrellis.engine
 
-  type Callback[+T] = (List[Any]) => StepOutput[T]
   type Args = List[Any]
 
   type Op[+A] = Operation[A]
@@ -71,8 +69,7 @@ package object engine {
     def collect() = logic.Collect(seq)
   }
 
-  type SeqSource[+T] = DataSource[T, Seq[T]]
-  type HistogramSource = DataSource[Histogram, Histogram]
+  type SeqSource[T] = DataSource[T, Seq[T]]
 
   implicit def iterableRasterSourceToRasterSourceSeq(iterable: Iterable[RasterSource]): RasterSourceSeq =
     RasterSourceSeq(iterable.toSeq)

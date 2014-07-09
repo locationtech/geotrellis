@@ -16,22 +16,22 @@
 
 package geotrellis.raster.render.op
 
-import geotrellis._
 import geotrellis.raster._
 import geotrellis.raster.render._
+import geotrellis.engine._
 
 trait RenderOpMethods[+Repr <: RasterSource] { self: Repr =>
   def color(breaksToColors: Map[Int, Int]): RasterSource =
     color(breaksToColors, ColorMapOptions.Default)
 
   def color(breaksToColors: Map[Int, Int], options: ColorMapOptions): RasterSource =
-    map(_.color(breaksToColors, options))
+    mapTile(_.color(breaksToColors, options))
 
   def color(breaksToColors: Map[Double, Int])(implicit d: DI): RasterSource =
     color(breaksToColors, ColorMapOptions.Default)
 
   def color(breaksToColors: Map[Double, Int], options: ColorMapOptions)(implicit d: DI): RasterSource =
-    map(_.color(breaksToColors, options))
+    mapTile(_.color(breaksToColors, options))
 
   /** Generate a PNG from a raster of RGBA integer values.
     *

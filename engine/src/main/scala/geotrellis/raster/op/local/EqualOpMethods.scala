@@ -26,7 +26,7 @@ trait EqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell value of the input raster is equal to the input
    * integer, else 0.
    */
-  def localEqual(i: Int): RasterSource = self.map(Equal(_, i))
+  def localEqual(i: Int): RasterSource = self.mapTile(Equal(_, i))
   /**
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
@@ -44,7 +44,7 @@ trait EqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell value of the input raster is equal to the input
    * double, else 0.
    */
-  def localEqual(d: Double): RasterSource = self.map(Equal(_, d))
+  def localEqual(d: Double): RasterSource = self.mapTile(Equal(_, d))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
@@ -61,7 +61,7 @@ trait EqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are equal, else 0.
    */
-  def localEqual(rs: RasterSource): RasterSource = self.combine(rs)(Equal(_, _))
+  def localEqual(rs: RasterSource): RasterSource = self.combineTile(rs)(Equal(_, _))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are equal, else 0.

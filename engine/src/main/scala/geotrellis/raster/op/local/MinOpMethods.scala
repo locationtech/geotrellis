@@ -22,11 +22,11 @@ import geotrellis.raster._
 
 trait MinOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Min a constant Int value to each cell. */
-  def localMin(i: Int): RasterSource = self.map(Min(_, i))
+  def localMin(i: Int): RasterSource = self.mapTile(Min(_, i))
   /** Min a constant Double value to each cell. */
-  def localMin(d: Double): RasterSource = self.map(Min(_, d))
+  def localMin(d: Double): RasterSource = self.mapTile(Min(_, d))
   /** Min the values of each cell in each raster.  */
-  def localMin(rs: RasterSource): RasterSource = self.combine(rs)(Min(_, _))
+  def localMin(rs: RasterSource): RasterSource = self.combineTile(rs)(Min(_, _))
   /** Min the values of each cell in each raster.  */
-  def localMin(rss: Seq[RasterSource]): RasterSource = self.combine(rss)(Min(_))
+  def localMin(rss: Seq[RasterSource]): RasterSource = self.combineTile(rss)(Min(_))
 }

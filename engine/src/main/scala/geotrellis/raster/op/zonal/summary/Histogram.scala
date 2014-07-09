@@ -19,6 +19,7 @@ package geotrellis.raster.op.zonal.summary
 import geotrellis.raster._
 import geotrellis.raster.rasterize._
 import geotrellis.raster.stats._
+import geotrellis.engine._
 
 object Histogram extends TileSummary[Histogram, Histogram, ValueSource[Histogram]] {
   def handlePartialTile(pt: PartialTileIntersection): Histogram = {
@@ -45,5 +46,5 @@ object Histogram extends TileSummary[Histogram, Histogram, ValueSource[Histogram
   }
 
   def converge(ds: DataSource[Histogram, _]) =
-    ds.map(x=>x).converge // Map to kick in the CanBuildFrom for HistogramDS
+    ds.converge(FastMapHistogram.fromHistograms(_)) 
 }

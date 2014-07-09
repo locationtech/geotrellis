@@ -20,8 +20,10 @@ import geotrellis.raster._
 import geotrellis.engine._
 
 trait StatOpMethods[+Repr <: RasterSource] { self: Repr =>
-  def tileHistograms(): HistogramSource = this map (_.histogram)
-  def histogram(): ValueSource[Histogram] = this map(_.histogram) converge
+  private def convergeHistograms(histograms: Seq[Histogram]): Histogram = FastMapHistogram.fromHistograms(histograms)
+
+  def tileHistograms(): DataSource[Histogram, Histogram] = this map (_.histogram) withConverge(convergeHistograms)
+  def histogram(): ValueSource[Histogram] = this map(_.histogram) converge(convergeHistograms)
   def statistics(): ValueSource[Statistics] = histogram().map{ h => h.generateStatistics() }
   def classBreaks(numBreaks: Int): ValueSource[Array[Int]] = histogram map (_.getQuantileBreaks(numBreaks))
 }

@@ -22,17 +22,17 @@ import geotrellis.raster._
 
 trait AndOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** And a constant Int value to each cell. */
-  def localAnd(i: Int): RasterSource = self.map(And(_, i))
+  def localAnd(i: Int): RasterSource = self.mapTile(And(_, i))
   /** And a constant Int value to each cell. */
   def &(i: Int): RasterSource = localAnd(i)
   /** And a constant Int value to each cell. */
   def &: (i: Int): RasterSource = localAnd(i)
   /** And the values of each cell in each raster.  */
-  def localAnd(rs: RasterSource): RasterSource = self.combine(rs)(And(_, _))
+  def localAnd(rs: RasterSource): RasterSource = self.combineTile(rs)(And(_, _))
   /** And the values of each cell in each raster. */
   def &(rs: RasterSource): RasterSource = localAnd(rs)
   /** And the values of each cell in each raster.  */
-  def localAnd(rss: Seq[RasterSource]): RasterSource = self.combine(rss)(And(_))
+  def localAnd(rss: Seq[RasterSource]): RasterSource = self.combineTile(rss)(And(_))
   /** And the values of each cell in each raster. */
   def &(rss: Seq[RasterSource]): RasterSource = localAnd(rss)
 }

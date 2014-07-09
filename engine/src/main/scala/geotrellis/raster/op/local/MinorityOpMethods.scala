@@ -26,7 +26,7 @@ import scala.collection.mutable
 trait MinorityOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
   def localMinority(rss: Seq[RasterSource]): RasterSource = 
-    combine(rss, "Minority")(Minority(_))
+    combineTile(rss, "Minority")(Minority(_))
 
   /** Assigns to each cell the value within the given rasters that is the least numerous. */
   def localMinority(rss: RasterSource*)(implicit d: DI): RasterSource = 
@@ -34,7 +34,7 @@ trait MinorityOpMethods[+Repr <: RasterSource] { self: Repr =>
 
   /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
   def localMinority(n: Int, rss: Seq[RasterSource]): RasterSource = 
-    combine(rss, "Minority")(Minority(n, _))
+    combineTile(rss, "Minority")(Minority(n, _))
 
   /** Assigns to each cell the value within the given rasters that is the nth least numerous. */
   def localMinority(n: Int, rss: RasterSource*)(implicit d: DI): RasterSource = 

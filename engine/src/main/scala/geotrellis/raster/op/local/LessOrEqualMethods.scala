@@ -26,13 +26,13 @@ trait LessOrEqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell value of the input raster is less than or equal to the input
    * integer, else 0.
    */
-  def localLessOrEqual(i: Int): RasterSource = self.map(LessOrEqual(_, i))
+  def localLessOrEqual(i: Int): RasterSource = self.mapTile(LessOrEqual(_, i))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * integer, else 0.
    */
-  def localLessOrEqualRightAssociative(i: Int): RasterSource = self.map(LessOrEqual(i, _))
+  def localLessOrEqualRightAssociative(i: Int): RasterSource = self.mapTile(LessOrEqual(i, _))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
@@ -50,13 +50,13 @@ trait LessOrEqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell value of the input raster is less than or equal to the input
    * double, else 0.
    */
-  def localLessOrEqual(d: Double): RasterSource = self.map(LessOrEqual(_, d))
+  def localLessOrEqual(d: Double): RasterSource = self.mapTile(LessOrEqual(_, d))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
    * double, else 0.
    */
-  def localLessOrEqualRightAssociative(d: Double): RasterSource = self.map(LessOrEqual(d, _))
+  def localLessOrEqualRightAssociative(d: Double): RasterSource = self.mapTile(LessOrEqual(d, _))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than or equal to the input
@@ -73,7 +73,7 @@ trait LessOrEqualOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are less than or equal to the next raster, else 0.
    */
-  def localLessOrEqual(rs:RasterSource): RasterSource = self.combine(rs)(LessOrEqual(_,_))
+  def localLessOrEqual(rs:RasterSource): RasterSource = self.combineTile(rs)(LessOrEqual(_,_))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are less than or equal to the next raster, else 0.

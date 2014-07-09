@@ -24,23 +24,23 @@ import scala.annotation.tailrec
 
 trait AddOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Add a constant Int value to each cell. */
-  def localAdd(i: Int): RasterSource = self.map(Add(_, i))
+  def localAdd(i: Int): RasterSource = self.mapTile(Add(_, i))
   /** Add a constant Int value to each cell. */
   def +(i: Int): RasterSource = localAdd(i)
   /** Add a constant Int value to each cell. */
   def +: (i: Int): RasterSource = localAdd(i)
   /** Add a constant Double value to each cell. */
-  def localAdd(d: Double): RasterSource = self.map(Add(_, d))
+  def localAdd(d: Double): RasterSource = self.mapTile(Add(_, d))
   /** Add a constant Double value to each cell. */
   def +(d: Double): RasterSource = localAdd(d)
   /** Add a constant Double value to each cell. */
   def +: (d: Double): RasterSource = localAdd(d)
   /** Add the values of each cell in each raster.  */
-  def localAdd(rs: RasterSource): RasterSource = self.combine(rs)(Add(_, _))
+  def localAdd(rs: RasterSource): RasterSource = self.combineTile(rs)(Add(_, _))
   /** Add the values of each cell in each raster. */
   def +(rs: RasterSource): RasterSource = localAdd(rs)
   /** Add the values of each cell in each raster.  */
-  def localAdd(rss: Seq[RasterSource]): RasterSource = self.combine(rss)(Add(_))
+  def localAdd(rss: Seq[RasterSource]): RasterSource = self.combineTile(rss)(Add(_))
   /** Add the values of each cell in each raster. */
   def +(rss: Seq[RasterSource]): RasterSource = localAdd(rss)
 }

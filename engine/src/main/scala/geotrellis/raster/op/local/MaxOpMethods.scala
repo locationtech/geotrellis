@@ -22,11 +22,11 @@ import geotrellis.raster._
 
 trait MaxOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Max a constant Int value to each cell. */
-  def localMax(i: Int): RasterSource = self.map(Max(_, i))
+  def localMax(i: Int): RasterSource = self.mapTile(Max(_, i))
   /** Max a constant Double value to each cell. */
-  def localMax(d: Double): RasterSource = self.map(Max(_, d))
+  def localMax(d: Double): RasterSource = self.mapTile(Max(_, d))
   /** Max the values of each cell in each raster.  */
-  def localMax(rs:RasterSource): RasterSource = self.combine(rs)(Max(_,_))
+  def localMax(rs:RasterSource): RasterSource = self.combineTile(rs)(Max(_,_))
   /** Max the values of each cell in each raster.  */
-  def localMax(rss:Seq[RasterSource]): RasterSource = self.combine(rss)(Max(_))
+  def localMax(rss:Seq[RasterSource]): RasterSource = self.combineTile(rss)(Max(_))
 }

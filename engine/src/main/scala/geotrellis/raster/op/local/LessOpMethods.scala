@@ -26,13 +26,13 @@ trait LessOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell value of the input raster is less than the input
    * integer, else 0.
    */
-  def localLess(i: Int): RasterSource = self.map(Less(_, i))
+  def localLess(i: Int): RasterSource = self.mapTile(Less(_, i))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
    * integer, else 0.
    */
-  def localLessRightAssociative(i: Int): RasterSource = self.map(Less(i, _))
+  def localLessRightAssociative(i: Int): RasterSource = self.mapTile(Less(i, _))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
@@ -52,13 +52,13 @@ trait LessOpMethods[+Repr <: RasterSource] { self: Repr =>
    * the corresponding cell value of the input raster is less than the input
    * double, else 0.
    */
-  def localLess(d: Double): RasterSource = self.map(Less(_, d))
+  def localLess(d: Double): RasterSource = self.mapTile(Less(_, d))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
    * double, else 0.
    */
-  def localLessRightAssociative(d: Double): RasterSource = self.map(Less(d, _))
+  def localLessRightAssociative(d: Double): RasterSource = self.mapTile(Less(d, _))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is less than the input
@@ -77,7 +77,7 @@ trait LessOpMethods[+Repr <: RasterSource] { self: Repr =>
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are less than the next raster, else 0.
    */
-  def localLess(rs: RasterSource): RasterSource = self.combine(rs)(Less(_, _))
+  def localLess(rs: RasterSource): RasterSource = self.combineTile(rs)(Less(_, _))
   /**
    * Returns a Raster with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are less than the next raster, else 0.

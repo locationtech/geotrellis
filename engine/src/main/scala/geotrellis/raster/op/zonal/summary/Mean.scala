@@ -19,6 +19,7 @@ package geotrellis.raster.op.zonal.summary
 import geotrellis.raster._
 import geotrellis.feature._
 import geotrellis.raster.rasterize._
+import geotrellis.engine._
 
 case class MeanResult(sum: Double, count: Long) {
   def mean: Double = if (count == 0) {

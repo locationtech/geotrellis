@@ -22,17 +22,17 @@ import geotrellis.raster._
 
 trait OrOpMethods[+Repr <: RasterSource] { self: Repr =>
   /** Or a constant Int value to each cell. */
-  def localOr(i: Int): RasterSource = self.map(Or(_, i))
+  def localOr(i: Int): RasterSource = self.mapTile(Or(_, i))
   /** Or a constant Int value to each cell. */
   def |(i:Int): RasterSource = localOr(i)
   /** Or a constant Int value to each cell. */
   def |:(i:Int): RasterSource = localOr(i)
   /** Or the values of each cell in each raster.  */
-  def localOr(rs:RasterSource): RasterSource = self.combine(rs)(Or(_,_))
+  def localOr(rs:RasterSource): RasterSource = self.combineTile(rs)(Or(_,_))
   /** Or the values of each cell in each raster. */
   def |(rs:RasterSource): RasterSource = localOr(rs)
   /** Or the values of each cell in each raster.  */
-  def localOr(rss:Seq[RasterSource]): RasterSource = self.combine(rss)(Or(_))
+  def localOr(rss:Seq[RasterSource]): RasterSource = self.combineTile(rss)(Or(_))
   /** Or the values of each cell in each raster. */
   def |(rss:Seq[RasterSource]): RasterSource = localOr(rss)
 }

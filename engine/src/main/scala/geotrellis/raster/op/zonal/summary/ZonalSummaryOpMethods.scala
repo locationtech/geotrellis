@@ -34,25 +34,21 @@ case class FullTileIntersection(tile: Tile) extends TileIntersection
 
 trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self: Repr =>
   def mapIntersecting[B, That](p: Polygon)
-                               (handleTileIntersection: TileIntersection=>B)
-                               (implicit bf: CanBuildSourceFrom[Repr, B, That]): That =
-    _mapIntersecting(p, None)(handleTileIntersection)(bf.apply(this))
+                              (handleTileIntersection: TileIntersection=>B): DataSource[B, _] =
+    _mapIntersecting(p, None)(handleTileIntersection)
 
   def mapIntersecting[B, That](p: Polygon, fullTileResults: DataSource[B, _])
-                               (handleTileIntersection: TileIntersection=>B)
-                               (implicit bf: CanBuildSourceFrom[Repr, B, That]): That = 
-    _mapIntersecting(p, Some(fullTileResults))(handleTileIntersection)(bf.apply(this))
+                               (handleTileIntersection: TileIntersection=>B): DataSource[B, _] = 
+    _mapIntersecting(p, Some(fullTileResults))(handleTileIntersection)
 
   def mapIntersecting[B, That](p: Polygon, fullTileResults: Option[DataSource[B, _]])
-                               (handleTileIntersection: TileIntersection=>B)
-                               (implicit bf: CanBuildSourceFrom[Repr, B, That]): That = 
-    _mapIntersecting(p, fullTileResults)(handleTileIntersection)(bf.apply(this))
+                               (handleTileIntersection: TileIntersection=>B): DataSource[B, _] = 
+    _mapIntersecting(p, fullTileResults)(handleTileIntersection)
 
 
   private 
   def _mapIntersecting[B, That](p: Polygon, fullTileResults: Option[DataSource[B, _]])
-                                (handleTileIntersection: TileIntersection=>B)
-                                (builder: SourceBuilder[B, That]): That = {
+                                (handleTileIntersection: TileIntersection=>B): DataSource[B, _] = {
     val newOp = 
       (rasterDefinition, tiles).map { (rd, tiles) =>
         val tileExtents = TileExtents(rd.rasterExtent.extent, rd.tileLayout)
@@ -108,13 +104,11 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self: Repr =>
         filtered.toSeq
       }
 
-    builder.setOp(newOp)
-    val result = builder.result()
-    result
+    DataSource(newOp)
   }
 
   private 
-  def zonalSummary[T, V, That <: DataSource[_, V]](
+  def zonalSummary[T, V, That <: OpSource[V]](
     tileSummary: TileSummary[T, V, That], 
     p: Polygon, 
     cachedResult: Option[DataSource[T, _]]
