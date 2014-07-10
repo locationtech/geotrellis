@@ -27,8 +27,7 @@ import geotrellis.spark.tiling.TmsTiling
 
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.SequenceFile
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import java.awt.image.DataBuffer
 

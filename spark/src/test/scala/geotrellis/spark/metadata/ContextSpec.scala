@@ -21,8 +21,7 @@ import geotrellis.raster.TileLayout
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.testfiles.AllOnes
 import geotrellis.spark.tiling.TmsTiling
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 /*
  * This is split into two classes as one mixes in TestEnvironmentFixture and the other mixes 

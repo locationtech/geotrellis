@@ -30,10 +30,9 @@ import geotrellis.raster.FloatArrayTile
 import geotrellis.raster.IntArrayTile
 import geotrellis.raster.ShortArrayTile
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-class PayloadArgWritableSpec extends FunSpec with ShouldMatchers {
+class PayloadArgWritableSpec extends FunSpec with Matchers {
   describe("conversion from/to PayloadArgWritable") {
 
     val cols = 2
