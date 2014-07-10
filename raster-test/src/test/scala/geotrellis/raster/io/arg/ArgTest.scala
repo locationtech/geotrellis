@@ -23,7 +23,7 @@ import geotrellis.testkit._
 import org.scalatest._
 
 class ArgTest extends FunSuite
-    with TestEngine {
+                 with TestEngine {
   val array =
     Array(NODATA, -1, 2, -3,
       4, -5, 6, -7,

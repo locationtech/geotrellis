@@ -161,7 +161,7 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
 
       val tileMap = (meta.maxZoomLevel - 1 to 1 by -1).foldLeft(initCond) { (m, zoom) =>
         val chTs = tileSizeForZoomLevel(tileSize, maxZoom, zoom)
-        val chTxTy = TmsTiling.latLonToTile(parExtent.ymin, parExtent.xmin, zoom, tileSize)
+        val chTxTy = TmsTiling.latLonToTile(parExtent.ymin, parExtent.xmin, zoom)
         val chTileId = TmsTiling.tileId(chTxTy.tx, chTxTy.ty, zoom)
 
         val (_, prevRd, prevExtent) = m(zoom + 1)

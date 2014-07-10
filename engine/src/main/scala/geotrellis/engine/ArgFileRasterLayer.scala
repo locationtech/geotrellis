@@ -16,7 +16,6 @@
 
 package geotrellis.engine
 
-import geotrellis._
 import geotrellis.raster._
 import geotrellis.raster.io.Filesystem
 import geotrellis.raster.io.arg.ArgReader
@@ -90,9 +89,8 @@ extends UntiledRasterLayer(info) {
           ArgReader.read(rasterPath, info.cellType, info.rasterExtent.cols, info.rasterExtent.rows)
       }
     }
-
   }
 
   def cache(c: Cache[String]) = 
-        c.insert(info.id.toString, Filesystem.slurp(rasterPath))
+    c.insert(info.id.toString, Filesystem.slurp(rasterPath))
 }

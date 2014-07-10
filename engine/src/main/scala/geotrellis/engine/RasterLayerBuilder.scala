@@ -27,14 +27,14 @@ import com.typesafe.config.Config
  * Information out of the metadata json files.
  */
 trait RasterLayerBuilder {
-  def apply(path:String, json:Config):RasterLayer =
-    apply(None,path,json)
+  def apply(path: String, json: Config): RasterLayer =
+    apply(None, path, json)
 
-  def apply(ds:Option[String],path:String, json:Config):RasterLayer
+  def apply(ds: Option[String], path: String, json: Config): RasterLayer
 
-  def getName(json:Config) = json.getString("layer")
+  def getName(json: Config) = json.getString("layer")
 
-  def getExtent(json:Config) = {
+  def getExtent(json: Config) = {
     val xmin = json.getDouble("xmin")
     val ymin = json.getDouble("ymin")
     val xmax = json.getDouble("xmax")
@@ -42,45 +42,45 @@ trait RasterLayerBuilder {
     Extent(xmin, ymin, xmax, ymax)
   }
 
-  def getCellWidthAndHeight(json:Config):(Double,Double) = {
+  def getCellWidthAndHeight(json: Config): (Double, Double) = {
     val cellWidth = json.getDouble("cellwidth")
     val cellHeight = json.getDouble("cellheight")
-    (cellWidth,cellHeight)
+    (cellWidth, cellHeight)
   }
 
-  def getEpsg(json:Config) = 
+  def getEpsg(json: Config) = 
     if(json.hasPath("epsg")) {
       json.getInt("epsg")
     } else {
       3785
     }
 
-  def getXskew(json:Config) = 
+  def getXskew(json: Config) = 
     if(json.hasPath("xskew")) {
       json.getDouble("xskew")
     } else {
       0.0
     }
 
-  def getYskew(json:Config) = 
+  def getYskew(json: Config) = 
     if(json.hasPath("yskew")) {
       json.getDouble("yskew")
     } else {
       0.0
     }
 
-  def getCellType(json:Config):CellType = {
+  def getCellType(json: Config): CellType = {
     parseType(json.getString("datatype"))
   }
 
-  def getCacheFlag(json:Config):Boolean = 
+  def getCacheFlag(json: Config): Boolean = 
     if(json.hasPath("cache")) {
       json.getBoolean("cache")
     } else {
       false
     }
 
-  def parseType(s:String):CellType = s match {
+  def parseType(s: String): CellType = s match {
     case "bool" => TypeBit
     case "int8" => TypeByte
     case "int16" => TypeShort
