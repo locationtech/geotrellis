@@ -85,9 +85,7 @@ object Context {
     val te = meta.rasterMetadata(zoom.toString).tileExtent
     val res = TmsTiling.resolution(zoom, meta.tileSize)
     val re = RasterExtent(TmsTiling.tileToExtent(te, zoom, meta.tileSize), res, res)
-
-    // TODO - once TileLayout supports longs, remove the to.Int
-    val tl = TileLayout(re, te.width.toInt, te.height.toInt)
+    val tl = TileLayout(te.width.toInt, te.height.toInt, meta.tileSize, meta.tileSize)
     Context(zoom, te, meta.nodata, re, tl, meta.cellType, partitioner)
   }
 
