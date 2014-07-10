@@ -18,7 +18,6 @@ package geotrellis.spark.tiling
 import geotrellis.Extent
 
 import org.scalatest._
-import org.scalatest.Matchers._
 
 class TmsTilingSpec extends FunSpec with Matchers {
   // taken from "Tile-Based Geospatial Information Systems Principles and Practices" by John T. Sample • Elias Ioup

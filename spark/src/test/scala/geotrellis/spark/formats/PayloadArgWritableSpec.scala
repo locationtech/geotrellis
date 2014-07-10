@@ -19,10 +19,9 @@ package geotrellis.spark.formats
 import geotrellis._
 import geotrellis.raster._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-class PayloadArgWritableSpec extends FunSpec with ShouldMatchers {
+class PayloadArgWritableSpec extends FunSpec with Matchers {
   describe("conversion from/to PayloadArgWritable") {
 
     val cols = 2
