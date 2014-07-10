@@ -19,10 +19,9 @@ import geotrellis.spark.TestEnvironment
 import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.testfiles.AllOnes
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-class RasterReaderSpec extends FunSpec with TestEnvironment with ShouldMatchers {
+class RasterReaderSpec extends FunSpec with TestEnvironment with Matchers {
 
   private def read(start: Long, end: Long): Int = {
     val allOnes = AllOnes(inputHome, conf).path

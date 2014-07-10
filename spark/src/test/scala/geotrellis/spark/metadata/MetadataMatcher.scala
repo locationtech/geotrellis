@@ -1,5 +1,5 @@
 package geotrellis.spark.metadata
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 import geotrellis.spark.tiling.TmsTiling
 
 

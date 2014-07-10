@@ -319,9 +319,9 @@ object GeotrellisBuild extends Build {
           "xerces" % "xercesImpl" % "2.9.1",
           "xalan" % "xalan" % "2.7.1",
           "org.apache.spark" %% "spark-core" % sparkVersion excludeAll (
-              ExclusionRule(organization = "org.apache.hadoop")),
-           "org.apache.hadoop" % "hadoop-client" % hadoopVersion excludeAll (
-	       ExclusionRule(organization = "hsqldb")),
+            ExclusionRule(organization = "org.apache.hadoop")),
+          "org.apache.hadoop" % "hadoop-client" % hadoopVersion excludeAll (
+	          ExclusionRule(organization = "hsqldb")),
           "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0",
           "com.quantifind" %% "sumac" % "0.2.3",
           scalatest % "test",

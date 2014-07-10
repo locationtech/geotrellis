@@ -1,8 +1,7 @@
 package geotrellis.spark.formats
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-class TileIdWritableSpec extends FunSpec with ShouldMatchers with SerializerTester {
+class TileIdWritableSpec extends FunSpec with Matchers with SerializerTester {
   describe("java serialization") {
     it("should serdes TileIdWritable") {
       val tw = TileIdWritable(1)

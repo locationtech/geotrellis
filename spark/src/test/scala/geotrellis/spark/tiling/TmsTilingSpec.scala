@@ -17,10 +17,9 @@
 package geotrellis.spark.tiling
 import geotrellis.Extent
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-class TmsTilingSpec extends FunSpec with ShouldMatchers {
+class TmsTilingSpec extends FunSpec with Matchers {
   // taken from "Tile-Based Geospatial Information Systems Principles and Practices" by John T. Sample • Elias Ioup
   // for 512x512 tiles
   val tileSize = 512
@@ -49,7 +48,7 @@ class TmsTilingSpec extends FunSpec with ShouldMatchers {
   describe("tile resolutions") {
     it("resolution: should spit out the right resolutions given the zoom") {
       val actual = (0 to resolutions.length).map(zoom => TmsTiling.resolution(zoom + 1, tileSize))
-      (actual zip resolutions).foreach(t => t._1 should be(t._2 plusOrMinus TmsTiling.Epsilon))
+      (actual zip resolutions).foreach(t => t._1 should be(t._2 +- TmsTiling.Epsilon))
     }
 
     it("zoom: should spit out the right zoom given the resolution") {
@@ -83,7 +82,7 @@ class TmsTilingSpec extends FunSpec with ShouldMatchers {
       for (zoom <- 1 to TmsTiling.MaxZoomLevel) {
         val extent = Extent(-180.0, -90.0, // low left corner 
           179.99999, 89.99999) // upper right corner
-        val tileExtent = TmsTiling.extentToTile(extent, zoom, tileSize)
+        val tileExtent = TmsTiling.extentToTile(extent, zoom, tileSize)        
         tileExtent.xmin should be(0)
         tileExtent.ymin should be(0)
         tileExtent.xmax should be(TmsTiling.numXTiles(zoom) - 1)

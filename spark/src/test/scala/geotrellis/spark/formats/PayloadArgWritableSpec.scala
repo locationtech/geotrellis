@@ -17,23 +17,11 @@
 package geotrellis.spark.formats
 
 import geotrellis._
-import geotrellis.TypeBit
-import geotrellis.TypeByte
-import geotrellis.TypeDouble
-import geotrellis.TypeFloat
-import geotrellis.TypeInt
-import geotrellis.TypeShort
-import geotrellis.raster.BitArrayRasterData
-import geotrellis.raster.ByteArrayRasterData
-import geotrellis.raster.DoubleArrayRasterData
-import geotrellis.raster.FloatArrayRasterData
-import geotrellis.raster.IntArrayRasterData
-import geotrellis.raster.ShortArrayRasterData
+import geotrellis.raster._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-class PayloadArgWritableSpec extends FunSpec with ShouldMatchers {
+class PayloadArgWritableSpec extends FunSpec with Matchers {
   describe("conversion from/to PayloadArgWritable") {
 
     val cols = 2
@@ -41,62 +29,57 @@ class PayloadArgWritableSpec extends FunSpec with ShouldMatchers {
     val size = cols * rows
     val payload = TileIdWritable(100L)
     it("should convert from Array of ints and a payload to PayloadArgWritable and back") {
-      val expectedRD = Array.ofDim[Int](size).fill(1)
+      val expectedRD = Array.fill[Int](size)(1)
       val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
       val actualRD =
-        PayloadArgWritable
-          .fromPayloadRasterData(IntArrayRasterData(expectedRD, cols, rows), payload)
+        PayloadArgWritable.fromPayloadRasterData(IntArrayRasterData(expectedRD, cols, rows), payload)
           .toPayloadRasterData(TypeInt, cols, rows, actualTW)
       expectedRD should be(actualRD.asInstanceOf[IntArrayRasterData].array)
       payload should be(actualTW)
     }
 
     it("should convert from Array of shorts and a payload to PayloadArgWritable and back") {
-      val expectedRD = Array.ofDim[Short](size).fill(1)
+      val expectedRD = Array.fill[Short](size)(1)
       val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
       val actualRD =
-        PayloadArgWritable
-          .fromPayloadRasterData(ShortArrayRasterData(expectedRD, cols, rows), payload)
+        PayloadArgWritable.fromPayloadRasterData(ShortArrayRasterData(expectedRD, cols, rows), payload)
           .toPayloadRasterData(TypeShort, cols, rows, actualTW)
       expectedRD should be(actualRD.asInstanceOf[ShortArrayRasterData].array)
       payload should be(actualTW)
     }
 
     it("should convert from Array of doubles and a payload to PayloadArgWritable and back") {
-      val expectedRD = Array.ofDim[Double](size).fill(1)
+      val expectedRD = Array.fill[Double](size)(1)
       val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
       val actualRD =
-        PayloadArgWritable
-          .fromPayloadRasterData(DoubleArrayRasterData(expectedRD, cols, rows), payload)
+        PayloadArgWritable.fromPayloadRasterData(DoubleArrayRasterData(expectedRD, cols, rows), payload)
           .toPayloadRasterData(TypeDouble, cols, rows, actualTW)
       expectedRD should be(actualRD.asInstanceOf[DoubleArrayRasterData].array)
       payload should be(actualTW)
     }
 
     it("should convert from Array of floats and a payload to PayloadArgWritable and back") {
-      val expectedRD = Array.ofDim[Float](size).fill(1)
+      val expectedRD = Array.fill[Float](size)(1)
       val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
       val actualRD =
-        PayloadArgWritable
-          .fromPayloadRasterData(FloatArrayRasterData(expectedRD, cols, rows), payload)
+        PayloadArgWritable.fromPayloadRasterData(FloatArrayRasterData(expectedRD, cols, rows), payload)
           .toPayloadRasterData(TypeFloat, cols, rows, actualTW)
       expectedRD should be(actualRD.asInstanceOf[FloatArrayRasterData].array)
       payload should be(actualTW)
     }
 
     it("should convert from Array of bytes and a payload to PayloadArgWritable and back") {
-      val expectedRD = Array.ofDim[Byte](size).fill(1)
+      val expectedRD = Array.fill[Byte](size)(1)
       val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
       val actualRD =
-        PayloadArgWritable
-          .fromPayloadRasterData(ByteArrayRasterData(expectedRD, cols, rows), payload)
+        PayloadArgWritable.fromPayloadRasterData(ByteArrayRasterData(expectedRD, cols, rows), payload)
           .toPayloadRasterData(TypeByte, cols, rows, actualTW)
       expectedRD should be(actualRD.asInstanceOf[ByteArrayRasterData].array)
       payload should be(actualTW)
     }
 
     it("should convert from Array of bytes (actually, bit masks) to PayloadArgWritable and back") {
-      val expectedRD = Array.ofDim[Byte](size).fill(1)
+      val expectedRD = Array.fill[Byte](size)(1)
       val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
 
       // bit mask length is 8x4 since there are 4 bytes of length 8 bits each
@@ -104,8 +87,7 @@ class PayloadArgWritableSpec extends FunSpec with ShouldMatchers {
       val rows = 4
 
       val actualRD =
-        PayloadArgWritable
-          .fromPayloadRasterData(BitArrayRasterData(expectedRD, cols, rows), payload)
+        PayloadArgWritable.fromPayloadRasterData(BitArrayRasterData(expectedRD, cols, rows), payload)
           .toPayloadRasterData(TypeBit, cols, rows, actualTW)
       expectedRD should be(actualRD.asInstanceOf[BitArrayRasterData].array)
       payload should be(actualTW)

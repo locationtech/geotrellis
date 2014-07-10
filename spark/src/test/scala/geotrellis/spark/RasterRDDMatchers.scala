@@ -17,9 +17,9 @@
 package geotrellis.spark
 
 import geotrellis.spark.rdd.RasterRDD
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-trait RasterRDDMatchers extends ShouldMatchers {
+trait RasterRDDMatchers extends Matchers {
   
   /* 
    * Takes a 3-tuple, min, max, and count and checks
