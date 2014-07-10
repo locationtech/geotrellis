@@ -10,7 +10,7 @@
   "tileSize" : 512,
   "bands" : 1,
   "nodata" : -9999.0,
-  "awtRasterType" : 4,
+  "awtCellType" : 4,
   "maxZoomLevel" : 10,
   "rasterMetadata" : {
     "10" : {

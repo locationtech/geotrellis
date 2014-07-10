@@ -38,34 +38,34 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
   val width = xmax - xmin
   val height = ymax - ymin
 
-  lazy val min = Point(xmin, ymin)
-  lazy val max = Point(xmax, ymax)
+  def min = Point(xmin, ymin)
+  def max = Point(xmax, ymax)
 
   /**
    * The SW corner (xmin, ymin) as a Point.
    */
-  lazy val southWest = Point(xmin, ymin)
+  def southWest = Point(xmin, ymin)
 
   /**
    * The SE corner (xmax, ymin) as a Point.
    */
-  lazy val southEast = Point(xmax, ymin)
+  def southEast = Point(xmax, ymin)
  
   /**
    * The NE corner (xmax, ymax) as a Point.
    */
-  lazy val northEast = Point(xmax, ymax)
+  def northEast = Point(xmax, ymax)
 
   /**
    * The NW corner (xmin, ymax) as a Point.
    */
-  lazy val northWest = Point(xmin, ymax)
+  def northWest = Point(xmin, ymax)
 
-  lazy val area = width * height
-  lazy val minExtent = if(width < height) width else height
-  lazy val maxExtent = if(width > height) width else height
+  def area = width * height
+  def minExtent = if(width < height) width else height
+  def maxExtent = if(width > height) width else height
 
-  lazy val center: Point = 
+  def center: Point = 
     Point((xmin + xmax) / 2.0, (ymin + ymax) / 2.0)
 
   def intersects(other: Extent): Boolean =
