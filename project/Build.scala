@@ -466,36 +466,6 @@ object GeotrellisBuild extends Build {
     Project("demo", file("demo"))
       .dependsOn(jetty)
 
-  // Project: tasks
-  lazy val tasks: Project =
-    Project("tasks", file("tasks"))
-      .settings(tasksSettings: _*)
-      .dependsOn(raster, geotools)
-
-  lazy val tasksSettings =
-    Seq(
-      libraryDependencies ++= 
-        Seq(
-          jcommander,
-          reflections
-        ),
-      libraryDependencies <+= 
-        (sbtVersion) { v =>
-          v.split('.').toList match {
-            case "0" :: "11" :: "3" :: Nil  =>
-              "org.scala-sbt" %%
-              "launcher-interface" %
-              v % "provided"
-            case _ =>
-              "org.scala-sbt" %
-              "launcher-interface" %
-              v % "provided"
-          }
-        },
-      mainClass in Compile := Some("geotrellis.run.Tasks")
-    ) ++
-    defaultAssemblySettings
-
   // Project: feature-benchmark
 
   lazy val featureBenchmark: Project = 
