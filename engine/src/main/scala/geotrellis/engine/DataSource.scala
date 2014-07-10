@@ -16,6 +16,8 @@
 
 package geotrellis.engine
 
+import akka.actor.ActorRef
+
 import scala.language.higherKinds
 
 /**
@@ -23,6 +25,8 @@ import scala.language.higherKinds
  * or loaded in memory on a specific machine. 
   */
 trait DataSource[T, +V] extends OpSource[V] {
+  type Self <: DataSource[T, V]
+
   def elements(): Op[Seq[Op[T]]]
   def converge() = ValueSource(convergeOp.withName("Converge"))
   def converge[B](f: Seq[T]=>B): ValueSource[B] =
@@ -30,15 +34,17 @@ trait DataSource[T, +V] extends OpSource[V] {
 
   def withConverge[B](f: Seq[T] => B): DataSource[T, B] = 
     new DataSource[T, B] {
-      def withElements(ops: Op[Seq[Op[T]]]): DataSource[T, B] =
-        DataSource(ops).withConverge(f)
-
+      type Self = DataSource[T, B]
       def elements() = DataSource.this.elements
 
       def convergeOp: Op[B] = logic.Collect(elements).map(f)
-    }
 
-  def withElements(newElements: Op[Seq[Op[T]]]): DataSource[T, V]
+      def distribute(cluster: Option[ActorRef]): DataSource[T, B] =
+        DataSource.this.distribute(cluster) withConverge(f)
+
+      def cached(implicit engine: Engine): DataSource[T, B] =
+        DataSource.this.cached(engine) withConverge(f)
+    }
 
   /** apply a function to elements **/
   def map[B](f: T => B): SeqSource[B] = 
@@ -54,7 +60,7 @@ trait DataSource[T, +V] extends OpSource[V] {
 
   /** apply a function to element operations **/
   def mapOp[B](f: Op[T]=>Op[B], name: String): SeqSource[B] =
-    DataSource(elements.map(_.map(f)).withName(name))
+    SeqSource(elements.map(_.map(f)).withName(name))
 
   def combine[B, C](ds: DataSource[B, _])(f: (T, B)=>C): SeqSource[C] = 
     combineOp(ds)( { (a, b) => (a, b).map(f(_, _)) })
@@ -88,7 +94,7 @@ trait DataSource[T, +V] extends OpSource[V] {
         }
       }).withName(name)
 
-    DataSource(newElements)
+    SeqSource(newElements)
   }
 
   def combineOp[T1 >: T, B](dss: Seq[DataSource[T1, _]], name: String)
@@ -98,7 +104,7 @@ trait DataSource[T, +V] extends OpSource[V] {
         seq.transpose.map(f)
       }.withName(name)
 
-    DataSource(newElements)
+    SeqSource(newElements)
   }
   def reduce[T1 >: T](reducer: (T1, T1) => T1): ValueSource[T1] = 
     reduceLeft(reducer)
@@ -115,34 +121,32 @@ trait DataSource[T, +V] extends OpSource[V] {
   def foldRight[B](z: B)(folder: (T, B)=>B): ValueSource[B] =
     converge(_.foldRight(z)(folder))
 
-  def distribute[T1 >: T]: DataSource[T, V] =
-    withElements(elements.map { seq => seq.map(RemoteOperation(_, None)) })
+  def distributeOps(cluster: Option[ActorRef]): Op[Seq[Op[T]]] =
+    elements.map { seq => seq.map(RemoteOperation(_, cluster)) }
 
-  def distribute[T1 >: T](cluster: akka.actor.ActorRef): DataSource[T, V] =
-    withElements(elements.map { seq => seq.map(RemoteOperation(_, Some(cluster))) })
+  def distribute: Self =
+    distribute(None)
 
-  def cached[R1 >: DataSource[T, V], T1 >: T](implicit engine: Engine): DataSource[T, V] =
-    withElements(Literal(engine.get(elements).map { op => Literal(engine.get(op)) }))
+  def distribute(cluster: ActorRef): Self =
+    distribute(Some(cluster))
+
+  def distribute(cluster: Option[ActorRef]): Self
+
+  def cachedOps(implicit engine: Engine): Op[Seq[Op[T]]] = Literal(engine.get(elements).map { op => Literal(engine.get(op)) })
+
+  def cached(implicit engine: Engine): Self
 }
 
 object DataSource {
-  def convergeSeq[A](elementOps: (Op[Seq[Op[A]]])) = {
+  def convergeSeq[A](elementOps: (Op[Seq[Op[A]]])) =
     logic.Collect(elementOps)
-  }
 
   def fromValues[T](elements: T*): SeqSource[T] =
     fromValues(elements)
 
   def fromValues[T](elements: Seq[T])(implicit d: DI): SeqSource[T] =
-    apply(Literal(elements.map(Literal(_))))
+    SeqSource(Literal(elements.map(Literal(_))))
 
-  def fromSources[T](sources: Seq[DataSource[_, T]]): SeqSource[T] =
-    apply(Literal(sources.map(_.convergeOp)))
-
-  def apply[T](es: Op[Seq[Op[T]]]): SeqSource[T] =
-    new DataSource[T, Seq[T]] {
-      def withElements(newElements: Op[Seq[Op[T]]]) = DataSource(newElements)
-      val elements = es
-      def convergeOp() = logic.Collect(elements)
-    }
+  def fromSources[T](sources: Seq[OpSource[T]]): SeqSource[T] =
+    SeqSource(Literal(sources.map(_.convergeOp)))
 }

@@ -16,7 +16,8 @@
 
 package geotrellis.raster.op.zonal
 
-import geotrellis._
+import geotrellis.raster._
+import geotrellis.raster.stats._
 
 import org.scalatest._
 
@@ -142,7 +143,7 @@ class ZonalHistogramSpec extends FunSpec
               .toMap
         }
 
-      val result = get(rs.zonalHistogram(zonesSource))
+      val result: Map[Int, Histogram] = rs.zonalHistogram(zonesSource).get
 
       result.keys should be (expected.keys)
 

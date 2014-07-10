@@ -104,7 +104,7 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self: Repr =>
         filtered.toSeq
       }
 
-    DataSource(newOp)
+    SeqSource(newOp)
   }
 
   private 

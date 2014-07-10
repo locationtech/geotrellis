@@ -28,8 +28,7 @@ class HistogramSpec extends ZonalSummarySpec {
       val rData = createRasterSource(Array.fill(40*40)(1),4,4,10,10)
       val zone = Extent(10,-10,50,10).toPolygon
 
-      val histOp = rData.zonalHistogram(zone)
-      run(histOp) match {
+      rData.zonalHistogram(zone).run match {
         case Complete(result,success) =>
           //           println(success)
           result.getItemCount(1) should equal (40)
@@ -48,7 +47,7 @@ class HistogramSpec extends ZonalSummarySpec {
         if (isData(z)) { h.countItem(z, 1) }
       }
 
-      run(tiledRS.zonalHistogram(poly)) match {
+      tiledRS.zonalHistogram(poly).run match {
         case Complete(result,success) =>
           //           println(success)
           for(row <- 0 until tiledR.rows) {

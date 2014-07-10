@@ -29,6 +29,8 @@ import geotrellis.raster.render.op._
 import geotrellis.raster.io._
 import geotrellis.engine._
 
+import akka.actor.ActorRef
+
 import spire.syntax.cfor._
 import scala.collection.mutable
 
@@ -43,11 +45,19 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
     with hydrology.HydrologyOpMethods[RasterSource]
     with stats.StatOpMethods[RasterSource] 
     with RenderOpMethods[RasterSource] {
+  type Self = RasterSource
+
   def elements = tileOps
   val rasterDefinition = rasterDef
 
   def tiles = elements
-  // def rasterDefinition: Op[RasterDefinition]
+  def tilesWithExtents: Op[Seq[Op[(Tile, Extent)]]] =
+    (rasterDefinition, tiles).map { (rd, seq) =>
+      val tileExtents = rd.tileExtents
+      seq.zipWithIndex.map { case (tileOp, tileIndex) =>
+        tileOp map { tile => (tile, tileExtents(tileIndex)) }
+      }
+    }
 
   def withElements(newElements: Op[Seq[Op[Tile]]]): DataSource[Tile, Tile] =
     RasterSource(rasterDefinition, newElements)
@@ -107,6 +117,24 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
     RasterSource(rasterDefinition, newOp)
   }
 
+  /** apply a function to elements, and return the appropriate datasource **/
+  def mapTileWithExtent(f: (Tile, Extent) => Tile): RasterSource = 
+    mapTileWithExtentOp { op => op.map { case (tile, extent) => f(tile, extent) } }
+
+  /** apply a function to elements, and return the appropriate datasource **/
+  def mapTileWithExtent(f: (Tile, Extent) => Tile, name: String): RasterSource =
+    mapTileWithExtentOp({ op => op.map { case (tile, extent) => f(tile, extent) } }, name)
+
+  /** apply a function to element operations, and return the appropriate datasource **/
+  def mapTileWithExtentOp(f: Op[(Tile, Extent)] => Op[Tile]): RasterSource = 
+    mapTileWithExtentOp(f, s"${getClass.getSimpleName} map")
+
+  /** apply a function to element operations, and return the appropriate datasource **/
+  def mapTileWithExtentOp(f: Op[(Tile, Extent)] => Op[Tile], name: String): RasterSource = {
+    val newOp = tilesWithExtents.map(_.map(f)).withName(name)
+    RasterSource(rasterDefinition, newOp)
+  }
+
   def combineTile(rs: RasterSource)(f: (Tile, Tile)=> Tile) =
     combineTileOp(rs)( { (a, b) => (a, b).map(f(_, _)) })
 
@@ -147,12 +175,8 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
   def convert(newType: CellType) = {
     val newDef = rasterDefinition.map(_.withType(newType))
     val ops = tiles.map { seq => seq.map { tile => tile.map { r => r.convert(newType) } } }
-    val builder = new RasterSourceBuilder()
 
-    builder.setRasterDefinition(newDef)
-    builder.setOp(ops)
-
-    builder.result
+    RasterSource(newDef, ops)
   }
 
   def min(): ValueSource[Int] = 
@@ -305,6 +329,9 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
 
   def warp(targetCols: Int, targetRows: Int): RasterSource =
     warp(rasterDefinition.map(_.rasterExtent.withDimensions(targetCols, targetRows)))
+
+  def distribute(cluster: Option[ActorRef]) = RasterSource(rasterDefinition, distributeOps(cluster))
+  def cached(implicit engine: Engine) = RasterSource(rasterDefinition, cachedOps(engine))
 
 }
 

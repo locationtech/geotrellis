@@ -42,9 +42,9 @@ class GlobalOpMethodsSpec extends FunSpec
         ),
         3,4,3,2
       )
-      get(rs1.min) should be (1)
-      get(rs1.max) should be (20)
-      get(rs1.minMax) should be ((1,20))
+      rs1.min.get should be (1)
+      rs1.max.get should be (20)
+      rs1.minMax.get should be ((1,20))
     }
   }
 }

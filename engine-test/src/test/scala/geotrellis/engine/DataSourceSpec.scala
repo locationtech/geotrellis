@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.raster
+package geotrellis.engine
 
 import geotrellis.raster.op._
 import geotrellis.testkit._
-import geotrellis.engine._
 
 import org.scalatest._
 
@@ -36,7 +35,7 @@ class DataSourceSpec extends FunSpec
           MockOperation { () => wasRan(i) += 1 } 
         }
 
-      val ds = DataSource(mockOps.toSeq)
+      val ds = SeqSource(mockOps.toSeq)
       wasRan should be (Array(0,0,0,0))
       val dsCached = ds.cached
       wasRan should be (Array(1,1,1,1))

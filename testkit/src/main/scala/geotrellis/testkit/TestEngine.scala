@@ -32,9 +32,9 @@ trait TestEngine extends Suite with BeforeAndAfter with Matchers {
   TestEngine.init
 
   def run[T](op: Op[T]): OperationResult[T] = GeoTrellis.run(op)
-  def run[T](src: DataSource[_, T]): OperationResult[T] = GeoTrellis.run(src)
+  def run[T](src: OpSource[T]): OperationResult[T] = GeoTrellis.run(src)
   def get[T](op: Op[T]): T = GeoTrellis.get(op)
-  def get[T](src: DataSource[_, T]): T = GeoTrellis.get(src)
+  def get[T](src: OpSource[T]): T = GeoTrellis.get(src)
 
   def getRaster(name: String): Op[Tile] = getRaster("test:fs", name)
   def getRaster(ds: String, name: String): Op[Tile] = io.LoadRaster(ds, name)

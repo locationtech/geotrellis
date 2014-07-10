@@ -103,8 +103,8 @@ class RasterSourceSpec extends FunSpec
       val d1 = getRasterSource
 
       val d2:RasterSource = d1.localAdd(3)
-      val d3:RasterSource  = d2 map(local.Add(_, 3))
-      val d4:RasterSource = d3 map(r => r.map(z => z + 3))
+      val d3:RasterSource  = d2 mapTile(local.Add(_, 3))
+      val d4:RasterSource = d3 mapTile(r => r.map(z => z + 3))
       val d5:DataSource[Int,Seq[Int]] = d3 map(r => r.findMinMax._2)
       
       val result1 = get(d1)
@@ -128,7 +128,7 @@ class RasterSourceSpec extends FunSpec
       val d = getRasterSource
 
       val hist = d.tileHistograms
-      val hist2:DataSource[Histogram,Histogram] = d.map( (h:Raster) => FastMapHistogram() )
+      val hist2:DataSource[Histogram,Histogram] = d.tileHistograms
       case class MinFromHistogram(h:Op[Histogram]) extends Op1(h)({
         (h) => Result(h.getMinValue)
       })

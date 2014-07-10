@@ -29,14 +29,8 @@ import geotrellis.engine._
 case class RasterSourceSeq(seq: Seq[RasterSource]) {
   val rasterDefinition = seq.head.rasterDefinition
 
-  def applyOp(f: Seq[Op[Tile]]=>Op[Tile]) = {
-    val builder = new RasterSourceBuilder()
-    builder.setRasterDefinition(rasterDefinition)
-    builder.setOp {
-      seq.map(_.tiles).mapOps(_.transpose.map(f))
-    }
-    builder.result
-  }
+  def applyOp(f: Seq[Op[Tile]]=>Op[Tile]) =
+    RasterSource(rasterDefinition, seq.map(_.tiles).mapOps(_.transpose.map(f)))
 
   // /** Adds all the rasters in the sequence */
   def localAdd(): RasterSource = 

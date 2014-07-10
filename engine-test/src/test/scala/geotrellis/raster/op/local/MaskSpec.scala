@@ -79,7 +79,7 @@ class MaskSpec extends FunSpec
       val rs = RasterSource("SBN_inc_percap_tiled")
       val raster = rs.get
 
-      val masked = rs.mask(re.extent, poly).get
+      val masked = rs.mask(poly).get
 
       // rasterize.Rasterizer.foreachCellByFeature(g, re)(new rasterize.Callback {
       //   def apply(col: Int, row: Int) = {

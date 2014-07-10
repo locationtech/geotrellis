@@ -69,15 +69,13 @@ package object engine {
     def collect() = logic.Collect(seq)
   }
 
-  type SeqSource[T] = DataSource[T, Seq[T]]
-
   implicit def iterableRasterSourceToRasterSourceSeq(iterable: Iterable[RasterSource]): RasterSourceSeq =
     RasterSourceSeq(iterable.toSeq)
 
-  implicit def dataSourceSeqToSeqSource[T](iterable: Iterable[DataSource[_, T]]): SeqSource[T] =
+  implicit def dataSourceSeqToSeqSource[T](iterable: Iterable[OpSource[T]]): SeqSource[T] =
     DataSource.fromSources(iterable.toSeq)
 
-  implicit class DataSourceSeqWrapper[T](dss: Seq[DataSource[_, T]]) {
+  implicit class DataSourceSeqWrapper[T](dss: Seq[OpSource[T]]) {
     def collectSources(): SeqSource[T] = DataSource.fromSources(dss)
   }
 }

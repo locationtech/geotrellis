@@ -53,7 +53,7 @@ object GeoTrellis {
     engine.run(op)
   }
 
-  def run[T](source: DataSource[_, T]): OperationResult[T] = {
+  def run[T](source: OpSource[T]): OperationResult[T] = {
     engine.run(source)
   }
 
@@ -61,7 +61,7 @@ object GeoTrellis {
     engine.get(op)
   }
 
-  def get[T](source: DataSource[_, T]): T = {
+  def get[T](source: OpSource[T]): T = {
     engine.get(source)
   }
 

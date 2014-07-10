@@ -72,7 +72,7 @@ class FocalMeanBenchmark extends OperationBenchmark {
     fastSource =
       RasterSource(name, re)
         .cached
-        .mapOp(FastFocalMean(_, 1))
+        .mapTileOp(FastFocalMean(_, 1))
   }
 
   def timeMeanOp(reps: Int) = run(reps)(meanOp)
