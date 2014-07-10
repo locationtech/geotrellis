@@ -15,7 +15,7 @@
  */
 
 package geotrellis.spark.metadata
-import geotrellis.feature.Extent
+import geotrellis.Extent
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.tiling.PixelExtent
 import geotrellis.spark.tiling.TileExtent

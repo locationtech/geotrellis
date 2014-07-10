@@ -17,18 +17,7 @@
 package geotrellis.spark.formats
 
 import geotrellis._
-import geotrellis.raster.TypeBit
-import geotrellis.raster.TypeByte
-import geotrellis.raster.TypeDouble
-import geotrellis.raster.TypeFloat
-import geotrellis.raster.TypeInt
-import geotrellis.raster.TypeShort
-import geotrellis.raster.BitArrayTile
-import geotrellis.raster.ByteArrayTile
-import geotrellis.raster.DoubleArrayTile
-import geotrellis.raster.FloatArrayTile
-import geotrellis.raster.IntArrayTile
-import geotrellis.raster.ShortArrayTile
+import geotrellis.raster._
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
@@ -44,9 +33,9 @@ class PayloadArgWritableSpec extends FunSpec with ShouldMatchers {
       val expectedRD = Array.fill[Int](size)(1)
       val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
       val actualRD =
-        PayloadArgWritable(IntArrayTile(expectedRD, cols, rows), payload)
-          .toPayloadTile(TypeInt, cols, rows, actualTW)
-      expectedRD should be(actualRD.asInstanceOf[IntArrayTile].array)
+        PayloadArgWritable.fromPayloadRasterData(IntArrayRasterData(expectedRD, cols, rows), payload)
+          .toPayloadRasterData(TypeInt, cols, rows, actualTW)
+      expectedRD should be(actualRD.asInstanceOf[IntArrayRasterData].array)
       payload should be(actualTW)
     }
 
@@ -54,9 +43,9 @@ class PayloadArgWritableSpec extends FunSpec with ShouldMatchers {
       val expectedRD = Array.fill[Short](size)(1)
       val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
       val actualRD =
-        PayloadArgWritable(ShortArrayTile(expectedRD, cols, rows), payload)
-          .toPayloadTile(TypeShort, cols, rows, actualTW)
-      expectedRD should be(actualRD.asInstanceOf[ShortArrayTile].array)
+        PayloadArgWritable.fromPayloadRasterData(ShortArrayRasterData(expectedRD, cols, rows), payload)
+          .toPayloadRasterData(TypeShort, cols, rows, actualTW)
+      expectedRD should be(actualRD.asInstanceOf[ShortArrayRasterData].array)
       payload should be(actualTW)
     }
 
@@ -64,9 +53,9 @@ class PayloadArgWritableSpec extends FunSpec with ShouldMatchers {
       val expectedRD = Array.fill[Double](size)(1)
       val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
       val actualRD =
-        PayloadArgWritable(DoubleArrayTile(expectedRD, cols, rows), payload)
-          .toPayloadTile(TypeDouble, cols, rows, actualTW)
-      expectedRD should be(actualRD.asInstanceOf[DoubleArrayTile].array)
+        PayloadArgWritable.fromPayloadRasterData(DoubleArrayRasterData(expectedRD, cols, rows), payload)
+          .toPayloadRasterData(TypeDouble, cols, rows, actualTW)
+      expectedRD should be(actualRD.asInstanceOf[DoubleArrayRasterData].array)
       payload should be(actualTW)
     }
 
@@ -74,9 +63,9 @@ class PayloadArgWritableSpec extends FunSpec with ShouldMatchers {
       val expectedRD = Array.fill[Float](size)(1)
       val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
       val actualRD =
-        PayloadArgWritable(FloatArrayTile(expectedRD, cols, rows), payload)
-          .toPayloadTile(TypeFloat, cols, rows, actualTW)
-      expectedRD should be(actualRD.asInstanceOf[FloatArrayTile].array)
+        PayloadArgWritable.fromPayloadRasterData(FloatArrayRasterData(expectedRD, cols, rows), payload)
+          .toPayloadRasterData(TypeFloat, cols, rows, actualTW)
+      expectedRD should be(actualRD.asInstanceOf[FloatArrayRasterData].array)
       payload should be(actualTW)
     }
 
@@ -84,9 +73,9 @@ class PayloadArgWritableSpec extends FunSpec with ShouldMatchers {
       val expectedRD = Array.fill[Byte](size)(1)
       val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
       val actualRD =
-        PayloadArgWritable(ByteArrayTile(expectedRD, cols, rows), payload)
-          .toPayloadTile(TypeByte, cols, rows, actualTW)
-      expectedRD should be(actualRD.asInstanceOf[ByteArrayTile].array)
+        PayloadArgWritable.fromPayloadRasterData(ByteArrayRasterData(expectedRD, cols, rows), payload)
+          .toPayloadRasterData(TypeByte, cols, rows, actualTW)
+      expectedRD should be(actualRD.asInstanceOf[ByteArrayRasterData].array)
       payload should be(actualTW)
     }
 
@@ -99,9 +88,9 @@ class PayloadArgWritableSpec extends FunSpec with ShouldMatchers {
       val rows = 4
 
       val actualRD =
-        PayloadArgWritable(BitArrayTile(expectedRD, cols, rows), payload)
-          .toPayloadTile(TypeBit, cols, rows, actualTW)
-      expectedRD should be(actualRD.asInstanceOf[BitArrayTile].array)
+        PayloadArgWritable.fromPayloadRasterData(BitArrayRasterData(expectedRD, cols, rows), payload)
+          .toPayloadRasterData(TypeBit, cols, rows, actualTW)
+      expectedRD should be(actualRD.asInstanceOf[BitArrayRasterData].array)
       payload should be(actualTW)
 
     }

@@ -16,7 +16,7 @@
 
 package geotrellis.spark.metadata
 
-import geotrellis.raster.RasterExtent
+import geotrellis.RasterExtent
 import geotrellis.raster.TileLayout
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.testfiles.AllOnes

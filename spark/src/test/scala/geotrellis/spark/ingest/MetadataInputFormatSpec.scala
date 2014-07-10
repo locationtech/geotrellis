@@ -16,7 +16,7 @@
 
 package geotrellis.spark.ingest
 
-import geotrellis.feature.Extent
+import geotrellis.Extent
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.metadata.RasterMetadata

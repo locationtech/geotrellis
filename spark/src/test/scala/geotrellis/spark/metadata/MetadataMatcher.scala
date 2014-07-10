@@ -19,7 +19,7 @@ trait MetadataMatcher extends ShouldMatchers {
     newMeta.extent should be(oldE)
     newMeta.tileSize should be(oldTileSize)
     newMeta.bands should be(PyramidMetadata.MaxBands)
-    newMeta.awtCellType should be(oldMeta.awtCellType)
+    newMeta.awtRasterType should be(oldMeta.awtRasterType)
     newMeta.maxZoomLevel should be(oldZoom)
 
     // we can't just use meta.metadataForBaseZoom since pixelExtent there corresponds to the 

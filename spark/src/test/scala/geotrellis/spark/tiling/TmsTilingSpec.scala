@@ -15,9 +15,10 @@
  */
 
 package geotrellis.spark.tiling
-import geotrellis.feature.Extent
+import geotrellis.Extent
 
 import org.scalatest._
+import org.scalatest.Matchers._
 
 class TmsTilingSpec extends FunSpec with Matchers {
   // taken from "Tile-Based Geospatial Information Systems Principles and Practices" by John T. Sample • Elias Ioup
@@ -92,7 +93,7 @@ class TmsTilingSpec extends FunSpec with Matchers {
     }
     
     it("should correctly cap world extents") {
-      Bounds.World.intersection(Extent(-180.001,-90.001,180.001,90.001)) should be(Some(Bounds.World))
+      Bounds.World.intersect(Extent(-180.001,-90.001,180.001,90.001)) should be(Some(Bounds.World))
     }
     		
 
