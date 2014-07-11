@@ -9,20 +9,20 @@ import spray.json._
  */
 trait GeometryFormats {
   /** Writes point to JsArray as [x, y] */
-  private def writePointCords(point: Point): JsArray =
+  private def writePointCoords(point: Point): JsArray =
     JsArray(JsNumber(point.x), JsNumber(point.y))
 
   /** JsArray of [x, y] arrays */
-  private def writeLineCords(line: Line): JsArray =
-    JsArray(line.points.map(writePointCords).toList)
+  private def writeLineCoords(line: Line): JsArray =
+    JsArray(line.points.map(writePointCoords).toList)
 
   /** JsArray of Lines for the polygin, first line is exterior, rest are holes*/
-  private def writePolygonCords(polygon: Polygon): JsArray =
-    JsArray(writeLineCords(polygon.exterior) :: polygon.holes.map(writeLineCords).toList)
+  private def writePolygonCoords(polygon: Polygon): JsArray =
+    JsArray(writeLineCoords(polygon.exterior) :: polygon.holes.map(writeLineCoords).toList)
 
 
   /** Reads Point from JsArray of [x, y] */
-  private def readPointCords(value: JsValue): Point = value match {
+  private def readPointCoords(value: JsValue): Point = value match {
     case arr: JsArray =>
       arr.elements match {
         case Seq(JsNumber(x), JsNumber(y)) =>
@@ -33,16 +33,20 @@ trait GeometryFormats {
   }
 
   /** Reads Line as JsArray of [x, y] point elements */
-  private def readLineCords(value: JsValue): Line = value match {
+  private def readLineCoords(value: JsValue): Line = value match {
     case arr: JsArray =>
-      Line( arr.elements.map(readPointCords) )
+      Line( arr.elements.map(readPointCoords) )
     case _ => throw new DeserializationException("Line coordinates array expected")
   }
 
   /** Reads Polygon from JsArray containg Lines for polygon */
-  private def readPolygonCords(value: JsValue): Polygon = value match {
+  private def readPolygonCoords(value: JsValue): Polygon = value match {
     case arr: JsArray =>
-      val lines: List[Line] = arr.elements.map(readLineCords)
+      val lines: List[Line] = 
+        arr.elements
+           .map(readLineCoords)
+           .map(_.closed)
+
       Polygon(lines.head, lines.tail.toSet)
     case _ => throw new DeserializationException("Polygon coordinates array expected")
   }
@@ -55,7 +59,7 @@ trait GeometryFormats {
 
     def read(value: JsValue) = value.asJsObject.getFields("type", "coordinates") match {
       case Seq(JsString("Point"), point) =>      
-        readPointCords(point)
+        readPointCoords(point)
       case Seq(JsString("Feature")) => 
         read(unwrapFeature(value))
       case _ => throw new DeserializationException("Point geometry expected")
@@ -65,12 +69,12 @@ trait GeometryFormats {
   implicit object LineFormat extends RootJsonFormat[Line] {
     def write(line: Line) = JsObject(
       "type" -> JsString("LineString"),
-      "coordinates" -> writeLineCords(line)
+      "coordinates" -> writeLineCoords(line)
     )
 
     def read(value: JsValue) = value.asJsObject.getFields("type", "coordinates") match {
       case Seq(JsString("LineString"), points) =>
-        readLineCords(points)
+        readLineCoords(points)
       case Seq(JsString("Feature")) => 
         read(unwrapFeature(value))        
       case _ => throw new DeserializationException("LineString geometry expected")
@@ -80,7 +84,7 @@ trait GeometryFormats {
   implicit object PolygonFormat extends RootJsonFormat[Polygon] {
     override def read(json: JsValue): Polygon = json.asJsObject.getFields("type", "coordinates") match {
       case Seq(JsString("Polygon"), linesArray) =>
-        readPolygonCords(linesArray)
+        readPolygonCoords(linesArray)
       case Seq(JsString("Feature")) => 
         read(unwrapFeature(json))
       case _ => throw new DeserializationException("Polygon geometry expected")
@@ -88,14 +92,14 @@ trait GeometryFormats {
 
     override def write(obj: Polygon): JsValue = JsObject(
       "type" -> JsString("Polygon"),
-      "coordinates" -> writePolygonCords(obj)
+      "coordinates" -> writePolygonCoords(obj)
     )
   }
 
   implicit object MultiPointFormat extends RootJsonFormat[MultiPoint] {
     override def read(json: JsValue): MultiPoint = json.asJsObject.getFields("type", "coordinates") match {
       case Seq(JsString("MultiPoint"), pointArray: JsArray) =>
-        MultiPoint(pointArray.elements.map(readPointCords))
+        MultiPoint(pointArray.elements.map(readPointCoords))
       case Seq(JsString("Feature")) => 
         read(unwrapFeature(json))
       case _ => throw new DeserializationException("MultiPoint geometry expected")
@@ -103,14 +107,14 @@ trait GeometryFormats {
 
     override def write(obj: MultiPoint): JsValue = JsObject(
       "type" -> JsString("MultiPoint"),
-      "coordinates" -> JsArray(obj.points.map(writePointCords).toList)
+      "coordinates" -> JsArray(obj.points.map(writePointCoords).toList)
     )
   }
 
   implicit object MultiLineFormat extends RootJsonFormat[MultiLine] {
     override def read(json: JsValue): MultiLine = json.asJsObject.getFields("type", "coordinates") match {
       case Seq(JsString("MultiLineString"), linesArray: JsArray) =>
-        MultiLine(linesArray.elements.map(readLineCords))
+        MultiLine(linesArray.elements.map(readLineCoords))
       case Seq(JsString("Feature")) => 
         read(unwrapFeature(json))
       case _ => throw new DeserializationException("MultiLine geometry expected")
@@ -118,14 +122,14 @@ trait GeometryFormats {
 
     override def write(obj: MultiLine): JsValue = JsObject(
       "type" -> JsString("MultiLineString"),
-      "coordinates" -> JsArray(obj.lines.map(writeLineCords).toList)
+      "coordinates" -> JsArray(obj.lines.map(writeLineCoords).toList)
     )
   }
 
   implicit object MultiPolygonFormat extends RootJsonFormat[MultiPolygon] {
     override def read(json: JsValue): MultiPolygon = json.asJsObject.getFields("type", "coordinates") match {
       case Seq(JsString("MultiPolygon"), polygons: JsArray) =>
-        MultiPolygon(polygons.elements.map(readPolygonCords))
+        MultiPolygon(polygons.elements.map(readPolygonCoords))
       case Seq(JsString("Feature")) => 
         read(unwrapFeature(json))
       case _ => throw new DeserializationException("MultiPolygon geometry expected")
@@ -133,7 +137,7 @@ trait GeometryFormats {
 
     override def write(obj: MultiPolygon): JsValue =  JsObject(
       "type" -> JsString("MultiPolygon"),
-      "coordinates" -> JsArray(obj.polygons.map(writePolygonCords).toList)
+      "coordinates" -> JsArray(obj.polygons.map(writePolygonCoords).toList)
     )
   }
 
