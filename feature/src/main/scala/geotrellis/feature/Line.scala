@@ -89,6 +89,12 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   lazy val length: Double =
     jtsGeom.getLength
 
+  /** Returns a closed version of the line. If already closed, just return this. */
+  def closed(): Line =
+    if(isClosed) this
+    else {
+      Line(points :+ points.head)
+    }
 
   // -- Intersection
 
