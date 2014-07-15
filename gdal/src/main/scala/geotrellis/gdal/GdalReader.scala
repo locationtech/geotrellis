@@ -1,10 +1,10 @@
 package geotrellis.gdal
 
-import geotrellis._
 import geotrellis.raster._
+import geotrellis.feature.Extent
 
 object GdalReader {
-  def read(path: String, band: Int = 1): Raster = {
+  def read(path: String, band: Int = 1): (Tile, RasterExtent) = {
     val gdalRaster: RasterDataSet = Gdal.open(path)
 
     val extent = Extent(gdalRaster.xmin, 
@@ -20,6 +20,6 @@ object GdalReader {
 
     val rasterExtent = RasterExtent(extent, cols, rows)
 
-    Raster(gdalRaster.bands(band - 1).toRasterData, rasterExtent)
+    (gdalRaster.bands(band - 1).toTile, rasterExtent)
   }
 }

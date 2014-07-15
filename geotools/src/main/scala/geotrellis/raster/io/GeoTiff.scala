@@ -135,7 +135,7 @@ object GeoTiff {
     }
   }
 
-  def readRaster(path: String) = {
+  def readRaster(path: String): (Tile, RasterExtent) = {
     val reader = getReader(path)
     val cov = getGridCoverage2D(reader)
     val rasterExtent = loadRasterExtent(cov)
@@ -150,6 +150,6 @@ object GeoTiff {
 
     val raster = readState.loadRaster()
     readState.destroy()
-    raster
+    (raster, rasterExtent)
   }
 }

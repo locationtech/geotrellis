@@ -77,7 +77,7 @@ class SmallIOBenchmark extends OperationBenchmark {
     )
 
   var source: RasterSource = null
-  var op: Op[Raster] = null
+  var op: Op[Tile] = null
 
   var re: RasterExtent = null
   var baseRe: RasterExtent = null

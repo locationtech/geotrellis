@@ -31,14 +31,14 @@ case class MeanResult(sum: Double, count: Long) {
 }
 
 object MeanResult {
-  def fromFullTile(tile: Raster) = {
+  def fromFullTile(tile: Tile) = {
     var s = 0
     var c = 0L
     tile.foreach((x: Int) => if (isData(x)) { s = s + x; c = c + 1 })
     MeanResult(s, c)
   }
 
-  def fromFullTileDouble(tile: Raster) = {
+  def fromFullTileDouble(tile: Tile) = {
     var s = 0.0
     var c = 0L
     tile.foreachDouble((x: Double) => if (isData(x)) { s = s + x; c = c + 1 })

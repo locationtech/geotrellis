@@ -1,6 +1,7 @@
 package geotrellis.gdal
 
 import geotrellis.raster._
+import geotrellis.feature.Extent
 
 import org.gdal.gdal.Band
 import org.gdal.gdal.gdal
@@ -111,32 +112,32 @@ class RasterBand(band: Band, cols: Int, rows: Int) {
     arr
   }
 
-  def toRasterData(): RasterData = {
-    val typ = rasterType match {
-      case TypeUnknown => geotrellis.TypeDouble
-      case TypeByte => geotrellis.TypeShort // accounts for unsigned
-      case TypeUInt16 => geotrellis.TypeInt // accounts for unsigned
-      case TypeInt16 => geotrellis.TypeShort
-      case TypeUInt32 => geotrellis.TypeFloat // accounts for unsigned
-      case TypeInt32 => geotrellis.TypeInt
-      case TypeFloat32 => geotrellis.TypeFloat
-      case TypeFloat64 => geotrellis.TypeDouble
+  def toTile(): Tile = {
+    val cellType = rasterType match {
+      case TypeUnknown => geotrellis.raster.TypeDouble
+      case TypeByte => geotrellis.raster.TypeShort // accounts for unsigned
+      case TypeUInt16 => geotrellis.raster.TypeInt // accounts for unsigned
+      case TypeInt16 => geotrellis.raster.TypeShort
+      case TypeUInt32 => geotrellis.raster.TypeFloat // accounts for unsigned
+      case TypeInt32 => geotrellis.raster.TypeInt
+      case TypeFloat32 => geotrellis.raster.TypeFloat
+      case TypeFloat64 => geotrellis.raster.TypeDouble
       case TypeCInt16 => ???
       case TypeCInt32 => ???
       case TypeCFloat32 => ???
       case TypeCFloat64 => ???
     }
 
-    val data = 
-      (typ match {
-        case geotrellis.TypeShort =>
-          ShortArrayRasterData(dataShort, cols, rows)
-        case geotrellis.TypeInt => 
-          IntArrayRasterData(dataInt, cols, rows)
-        case geotrellis.TypeFloat =>
-          FloatArrayRasterData(dataFloat, cols, rows)
-        case geotrellis.TypeDouble =>
-          DoubleArrayRasterData(dataDouble, cols, rows)
+    val tile = 
+      (cellType match {
+        case geotrellis.raster.TypeShort =>
+          ShortArrayTile(dataShort, cols, rows)
+        case geotrellis.raster.TypeInt => 
+          IntArrayTile(dataInt, cols, rows)
+        case geotrellis.raster.TypeFloat =>
+          FloatArrayTile(dataFloat, cols, rows)
+        case geotrellis.raster.TypeDouble =>
+          DoubleArrayTile(dataDouble, cols, rows)
       }).mutable
 
     // Replace NODATA values
@@ -146,7 +147,7 @@ class RasterBand(band: Band, cols: Int, rows: Int) {
         while(col < cols) {
           var row = 0
           while(row < rows) {
-            if(data.getDouble(col,row) == nd) { data.set(col, row, geotrellis.NODATA) }
+            if(tile.getDouble(col,row) == nd) { tile.set(col, row, NODATA) }
             row += 1
           }
           col += 1
@@ -154,6 +155,6 @@ class RasterBand(band: Band, cols: Int, rows: Int) {
       case None =>
     }
 
-    data
+    tile
   }
 }

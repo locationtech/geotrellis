@@ -9,6 +9,7 @@ import spray.http._
 import HttpCharsets._
 import MediaTypes._
 
+import spray.json.DefaultJsonProtocol._
 
 class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
 
