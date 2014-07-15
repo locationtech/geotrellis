@@ -31,33 +31,44 @@ class GeoTiffReaderSpec extends FunSpec
     with RasterBuilders
     with TestServer {
 
-  private def read(filePath: String) {
+  val argPath = "core-test/data/data/"
+  val filePathToTestData = "core-test/data/"
+
+  private def readAndSave(fileName: String) {
+    val filePath = filePathToTestData + fileName
     val source = Source.fromFile(filePath)(Codec.ISO8859)
     val geoTiff = GeoTiffReader(source).read
-    source.close()
+    geoTiff.imageDirectories.foreach(x => {
+      val currentFileName = math.abs(x.hashCode) + "-" + fileName.substring(0,
+        fileName.length - 4) + ".arg"
+      x.writeRasterToArg(argPath + currentFileName, currentFileName)
+      }
+    )
+
+    source.close
 
     assert(geoTiff != null)
   }
 
   describe("read geotiffs") {
-    /*it("reads econic.tif without errors") {
-      read("core-test/data/econic.tif")
+    it("reads econic.tif without errors") {
+      readAndSave("econic.tif")
     }
 
     it("reads aspect.tif without errors") {
-      read("core-test/data/aspect.tif")
+      readAndSave("aspect.tif")
     }
 
     it("reads slope.tif without errors") {
-      read("core-test/data/slope.tif")
-    }*/
+      readAndSave("slope.tif")
+    }
 
     it("reads packbits.tif without errors") {
-      read("core-test/data/packbits.tif")
+      readAndSave("packbits.tif")
     }
 
     it("reads compression_4_regular_tiff.tif without errors") {
-      read("core-test/data/compression_4_regular_tiff.tif")
+      readAndSave("compression_4_regular_tiff.tif")
     }
   }
 }

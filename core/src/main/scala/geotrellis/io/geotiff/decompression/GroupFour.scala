@@ -35,7 +35,7 @@ object GroupFourDecompression {
         case None => throw new MalformedGeoTiffException("no T6Options")
       }
 
-      matrix.zipWithIndex./*par.*/map{ case(segment, i) =>
+      matrix.zipWithIndex.par.map{ case(segment, i) =>
         uncompressGroupFourSegment(segment, i) }.flatten.toVector
     }
 
@@ -49,7 +49,7 @@ object GroupFourDecompression {
       val decompressor = new TIFFFaxDecoder(t6Options.fillOrder, width, length)
 
       val inputArray = segment.toArray
-      val outputArray = Array.ofDim[Byte](length * width)
+      val outputArray = Array.ofDim[Byte]((length * width + 7) / 8)
 
       decompressor.decodeT6(outputArray, inputArray, 0, length, t6Options.options)
 

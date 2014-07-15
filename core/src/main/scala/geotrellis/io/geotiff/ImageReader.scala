@@ -21,9 +21,12 @@ import monocle.Macro._
 
 import java.nio.ByteBuffer
 
+import geotrellis.io.geotiff._
 import geotrellis.io.geotiff.CompressionType._
 import geotrellis.io.geotiff.ImageDirectoryLenses._
+
 import geotrellis.io.geotiff.utils.ByteBufferUtils._
+
 import geotrellis.io.geotiff.decompression.HuffmanDecompression._
 import geotrellis.io.geotiff.decompression.GroupThreeDecompression._
 import geotrellis.io.geotiff.decompression.GroupFourDecompression._
@@ -55,7 +58,9 @@ case class ImageReader(byteBuffer: ByteBuffer) {
       )
     }
 
-    directory |-> imageBytesLens set(uncompressedImage)
+    val imageBytes = ImageConverter(directory).convert(uncompressedImage)
+
+    directory |-> imageBytesLens set(imageBytes)
   }
 
   def readMatrix(directory: ImageDirectory): Vector[Vector[Byte]] =

@@ -21,6 +21,7 @@ import monocle.Macro._
 
 import geotrellis._
 import geotrellis.raster._
+import geotrellis.data.arg.ArgWriter
 
 import scala.collection.immutable.HashMap
 
@@ -168,8 +169,8 @@ case class MetadataTags(
 case class BasicTags(
   bitsPerSample: Option[Vector[Int]] = None,
   colorMap: Option[Vector[Int]] = None,
-  imageLength: Long = 0,
-  imageWidth: Long = 0,
+  imageLength: Int = 0,
+  imageWidth: Int = 0,
   compression: Int = 1,
   photometricInterp: Option[Int] = None,
   resolutionUnit: Option[Int] = None,
@@ -234,7 +235,7 @@ case class CmykTags(
 )
 
 case class DataSampleFormatTags(
-  sampleFormat: Option[Vector[Int]] = None,
+  sampleFormat: Vector[Int] = Vector(1),
   maxSampleValue: Option[Vector[Long]] = None,
   minSampleValue: Option[Vector[Long]] = None
 )
@@ -341,94 +342,49 @@ case class ImageDirectory(
   def rowSize(): Int = (if (hasStripStorage) (this |-> imageWidthLens get)
   else (this |-> tileWidthLens get).get).toInt
 
+  // What about multiple samples?
+  def cellType(): RasterType =
+    (this |-> bitsPerSampleLens get, this |-> sampleFormatLens get) match {
+      case (Some(bitsPerSampleArray), sampleFormatArray)
+          if (bitsPerSampleArray.size > 0 && sampleFormatArray.size > 0) => {
+            val bitsPerSample = bitsPerSampleArray(0)
+
+            val sampleFormat = sampleFormatArray(0)
+
+            import SampleFormat._
+
+            if (bitsPerSample == 1) TypeBit
+            else if (bitsPerSample <= 8) TypeByte
+            else if (bitsPerSample <= 16) TypeShort
+            else if (bitsPerSample == 32 && sampleFormat == UnsignedInt
+              || sampleFormat == SignedInt) TypeInt
+            else if (bitsPerSample == 32 && sampleFormat == FloatingPoint) TypeFloat
+            else if (bitsPerSample == 64 && sampleFormat == FloatingPoint) TypeDouble
+            else throw new MalformedGeoTiffException("bad bitspersample or sampleformat")
+          }
+
+      case _ => throw new MalformedGeoTiffException("no bitsPerSample values!")
+    }
+
   def toRaster(): Raster = {
     val cols = this |-> imageWidthLens get
     val rows = this |-> imageLengthLens get
 
     // How do we get the xmin, ymin, xmax, ymax coordinates
     // of the geographical envelope of the GeoTIFF?
-    val extent: Extent = Extent(293518.1886150768,5680494.194041155,890338.5054657329,6267530.571271311)
+    val extent = Extent(293518.188615, 5680494.19404, 890338.5054, 6267530.5712)
 
-    val bytes: Array[Byte] = imageBytes.toArray
+    val rd = RasterData.fromArrayByte(imageBytes.toArray, cellType, cols, rows)
 
-    this |-> bitsPerSampleLens get match {
-      case Some(bitsPerSampleArray) if (bitsPerSampleArray.size > 0) => {
-        val bitsPerSample = bitsPerSampleArray(0)
-        val sampleFormat = this |-> sampleFormatLens get
-
-        import SampleFormat._
-
-        val cellType =
-          if (bitsPerSample == 1)
-            TypeBit
-          else if (bitsPerSample <= 8)
-            TypeByte
-          else if (bitsPerSample <= 16)
-            TypeShort
-          else if (bitsPerSample == 32 && sampleFormat == UnsignedInt
-            || sampleFormat == SignedInt)
-            TypeInt
-          else if (bitsPerSample == 32 && sampleFormat == FloatingPoint)
-            TypeFloat
-          else if (bitsPerSample == 64)
-            TypeDouble
-          else throw new MalformedGeoTiffException("bad bitspersample or sampleformat")
-
-        // if( poDS->nBitsPerSample <= 8 )
-        // {
-        //     eDataType = GDT_Byte;
-        //     if( nSampleFormat == SAMPLEFORMAT_INT )
-        //         SetMetadataItem( "PIXELTYPE", "SIGNEDBYTE", "IMAGE_STRUCTURE" );
-
-        // }
-        // else if( poDS->nBitsPerSample <= 16 )
-        // {
-        //     if( nSampleFormat == SAMPLEFORMAT_INT )
-        //         eDataType = GDT_Int16;
-        //     else
-        //         eDataType = GDT_UInt16;
-        // }
-        // else if( poDS->nBitsPerSample == 32 )
-        // {
-        //     if( nSampleFormat == SAMPLEFORMAT_COMPLEXINT )
-        //         eDataType = GDT_CInt16;
-        //     else if( nSampleFormat == SAMPLEFORMAT_IEEEFP )
-        //         eDataType = GDT_Float32;
-        //     else if( nSampleFormat == SAMPLEFORMAT_INT )
-        //         eDataType = GDT_Int32;
-        //     else
-        //         eDataType = GDT_UInt32;
-        // }
-        // else if( poDS->nBitsPerSample == 64 )
-        // {
-        //     if( nSampleFormat == SAMPLEFORMAT_IEEEFP )
-        //         eDataType = GDT_Float64;
-        //     else if( nSampleFormat == SAMPLEFORMAT_COMPLEXIEEEFP )
-        //         eDataType = GDT_CFloat32;
-        //     else if( nSampleFormat == SAMPLEFORMAT_COMPLEXINT )
-        //         eDataType = GDT_CInt32;
-        // }
-        // else if( poDS->nBitsPerSample == 128 )
-        // {
-        //     if( nSampleFormat == SAMPLEFORMAT_COMPLEXIEEEFP )
-        //         eDataType = GDT_CFloat64;
-        // }
-
-
-        val rd = RasterData.fromArrayByte(bytes, cellType, cols.toInt, rows.toInt)
-
-        val r = Raster(rd, RasterExtent(extent, cols, rows))
-
-        // Write to core-test/data/data
-        import geotrellis.data.arg.ArgWriter
-        val path = "/Users/johanstenberg/Documents/programmering/GSOC/eclipse-geotrellis/geotrellis/core-test/data/data/sampleimage1.arg"
-        new ArgWriter(cellType).write(path, r, "sampleimage1")
-
-        r
-      }
-      case _ => throw new MalformedGeoTiffException("no bits per sample!")
-    }
+    Raster(rd, RasterExtent(extent, cols, rows))
   }
+
+  def writeRasterToArg(path: String, imageName: String): Unit =
+    writeRasterToArg(path, imageName, cellType, toRaster)
+
+  def writeRasterToArg(path: String, imageName: String, cellType: RasterType,
+    raster: Raster): Unit =
+    new ArgWriter(cellType).write(path, raster, imageName)
 
 }
 
@@ -461,8 +417,8 @@ object ImageDirectoryLenses {
     Option[Vector[Int]]]("bitsPerSample")
   val colorMapLens = basicTagsLens |-> mkLens[BasicTags,
     Option[Vector[Int]]]("colorMap")
-  val imageLengthLens = basicTagsLens |-> mkLens[BasicTags, Long]("imageLength")
-  val imageWidthLens = basicTagsLens |-> mkLens[BasicTags, Long]("imageWidth")
+  val imageLengthLens = basicTagsLens |-> mkLens[BasicTags, Int]("imageLength")
+  val imageWidthLens = basicTagsLens |-> mkLens[BasicTags, Int]("imageWidth")
   val compressionLens = basicTagsLens |-> mkLens[BasicTags,
     Int]("compression")
   val photometricInterpLens = basicTagsLens |-> mkLens[BasicTags,
@@ -575,7 +531,7 @@ object ImageDirectoryLenses {
     DataSampleFormatTags]("dataSampleFormatTags")
 
   val sampleFormatLens = dataSampleFormatTagsLens |->
-  mkLens[DataSampleFormatTags, Option[Vector[Int]]]("sampleFormat")
+  mkLens[DataSampleFormatTags, Vector[Int]]("sampleFormat")
   val maxSampleValueLens = dataSampleFormatTagsLens |->
   mkLens[DataSampleFormatTags, Option[Vector[Long]]]("maxSampleValue")
   val minSampleValueLens = dataSampleFormatTagsLens |->

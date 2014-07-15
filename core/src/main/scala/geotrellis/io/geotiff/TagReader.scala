@@ -212,7 +212,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
         Some(shorts))
       case DotRangeTag => directory |-> dotRangeLens set(Some(shorts))
       case SampleFormatTag =>
-        directory |-> sampleFormatLens set(Some(shorts))
+        directory |-> sampleFormatLens set(shorts)
       case TransferRangeTag =>
         directory |-> transferRangeLens set(Some(shorts))
       case JpegLosslessPredictorsTag =>
@@ -231,8 +231,8 @@ case class TagReader(byteBuffer: ByteBuffer) {
     tagMetadata.tag match {
       case NewSubfileTypeTag =>
         directory |-> newSubfileTypeLens set(Some(ints(0)))
-      case ImageWidthTag => directory |-> imageWidthLens set(ints(0))
-      case ImageLengthTag => directory |-> imageLengthLens set(ints(0))
+      case ImageWidthTag => directory |-> imageWidthLens set(ints(0).toInt)
+      case ImageLengthTag => directory |-> imageLengthLens set(ints(0).toInt)
       case T4OptionsTag => directory |-> t4OptionsLens set(ints(0).toInt)
       case T6OptionsTag => directory |-> t6OptionsLens set(Some(ints(0).toInt))
       case TileWidthTag => directory |-> tileWidthLens set(Some(ints(0)))
