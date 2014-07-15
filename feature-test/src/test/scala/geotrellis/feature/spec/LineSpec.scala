@@ -73,6 +73,17 @@ class LineSpec extends FunSpec with Matchers {
       l.length should be (2)
     }
 
+    it ("should close a line") {
+      val l = Line(Point(0,0), Point(2,0), Point(2,2), Point(0,2))
+      l.closed should be (Line(Point(0,0), Point(2,0), Point(2,2), Point(0,2), Point(0,0)))
+    }
+
+    it ("should close a line if already closed") {
+      val l = Line(Point(0,0), Point(2,0), Point(2,2), Point(0,2), Point(0,0))
+      l.closed should be (Line(Point(0,0), Point(2,0), Point(2,2), Point(0,2), Point(0,0)))
+    }
+
+
     // -- Intersection
 
     it ("should intersect with a Point and return a PointResult") {
