@@ -16,15 +16,12 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis.raster._
 import geotrellis.raster.op._
 import geotrellis.engine._
 
 import geotrellis.testkit._
 
 import org.scalatest._
-
-import scala.math._
 
 class MaxSpec extends FunSpec with FocalOpSpec
                               with Matchers 

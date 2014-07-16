@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,13 +16,9 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.feature.Extent
 
 import scala.math._
-
-import Angles._
 
 /** A representation of the approximated partial derivatives of a raster cell,
  *  and the slope and aspect that can be calculated from those values.
@@ -168,7 +164,7 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
    *                          the raster value will still be used.
    *
    */
-  def execute(raster: Tile, n: Neighborhood, neighbors: Seq[Option[Tile]]): Unit = {
+  def execute(raster: Tile, n: Neighborhood, neighbors: Seq[Option[Tile]]): T = {
     val (r, analysisArea) = TileWithNeighbors(raster, neighbors)
 
     val colMin = analysisArea.colMin
@@ -315,5 +311,7 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
     east(1) = getValSafe(col+1, row  , focalValue)
     east(2) = getValSafe(col+1, row+1, focalValue)
     setValue(col-colMin, row-rowMin)
+
+    result
   }
 }

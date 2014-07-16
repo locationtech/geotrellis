@@ -17,12 +17,8 @@
 package geotrellis.raster.op.focal
 
 import geotrellis.raster._
-
 import geotrellis.testkit._
-
 import scala.collection.mutable.Set
-import scala.math._
-
 import org.scalatest._
 
 class CursorSpec extends FunSpec with Matchers with TileBuilders {

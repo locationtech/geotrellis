@@ -33,34 +33,5 @@ import scala.math._
  *                     If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
  *                     the data values will be rounded to integers.
  */
-case class Max(r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors]) extends FocalOp(r, n, tns)({
-  (r, n) =>
-    if(r.cellType.isFloatingPoint) {
-       new CursorCalculation[Tile] with DoubleArrayTileResult { 
-         def calc(r: Tile, cursor: Cursor) = {
-           var m = Double.MinValue
-           cursor.allCells.foreach { (x, y) => 
-             val v = r.getDouble(x, y)
-             if(v > m) { m = v }
-          }
-          tile.setDouble(cursor.col, cursor.row, m)
-        }  
-      }
-      
-    }else{
-      new CursorCalculation[Tile] with IntArrayTileResult { 
-        def calc(r: Tile, cursor: Cursor) = {
-          var m = Int.MinValue
-          cursor.allCells.foreach { (x, y) => 
-            val v = r.get(x, y)
-            if(v > m) { m = v }
-          }
-          tile.set(cursor.col, cursor.row, m)
-        }  
-      }
-    } 
-})
-
-object Max {
-  def apply(r: Op[Tile], n: Op[Neighborhood]) = new Max(r, n, TileNeighbors.NONE)
-}
+case class Max(r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors] = TileNeighbors.NONE)
+  extends FocalOp(r, n, tns)(MaxCalculation.apply)

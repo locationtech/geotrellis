@@ -87,7 +87,6 @@ class MeanSpec extends FunSpec with FocalOpSpec
 
       run(rs1.focalMean(Square(1))) match {
         case Complete(result,success) =>
-//          println(success)
           assertEqual(result,
             Array(5.666,  3.8,2.166,    1.666,   2.5, 4.166,    5.166, 5.166,   4.5,
                     5.6,3.875,2.777,    1.888, 2.666, 3.555,    4.111,   4.0, 3.666,

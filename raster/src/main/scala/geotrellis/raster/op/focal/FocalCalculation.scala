@@ -16,7 +16,6 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
 import geotrellis.raster._
 
 /**
@@ -31,10 +30,7 @@ trait Resulting[T] {
  * a focal operation.
  */
 trait FocalCalculation[T] extends Resulting[T] {
-  /**
-   * @param re	Optional extent of the analysis area (where the focal operation will be executed)
-   */
-  def execute(r: Tile, n: Neighborhood, neighbors: Seq[Option[Tile]]): Unit
+  def execute(r: Tile, n: Neighborhood, neighbors: Seq[Option[Tile]] = Nil): T
 }
 
 /**
@@ -42,8 +38,10 @@ trait FocalCalculation[T] extends Resulting[T] {
  */
 trait CursorCalculation[T] extends FocalCalculation[T] {
   def traversalStrategy: Option[TraversalStrategy] = None
-  def execute(r: Tile, n: Neighborhood, neighbors: Seq[Option[Tile]]): Unit = 
+  def execute(r: Tile, n: Neighborhood, neighbors: Seq[Option[Tile]]): T = {
     CursorStrategy.execute(r, n, this, traversalStrategy, neighbors)
+    result
+  }
   
   def calc(r: Tile, cur: Cursor): Unit
 }
@@ -54,7 +52,9 @@ trait CursorCalculation[T] extends FocalCalculation[T] {
 trait CellwiseCalculation[T] extends FocalCalculation[T] {
   def traversalStrategy: Option[TraversalStrategy] = None
   def execute(r: Tile, n: Neighborhood, neighbors: Seq[Option[Tile]]) = n match {
-      case s: Square => CellwiseStrategy.execute(r, s, this, traversalStrategy, neighbors)
+      case s: Square =>
+        CellwiseStrategy.execute(r, s, this, traversalStrategy, neighbors)
+        result
       case _ => sys.error("Cannot use cellwise calculation with this traversal strategy.")
     }
   
@@ -70,9 +70,7 @@ trait CellwiseCalculation[T] extends FocalCalculation[T] {
  */
 
 /** Trait defining the ability to initialize the focal calculation with a raster. */
-trait Initialization { 
-  def init(r: Tile): Unit 
-}
+trait Initialization{ def init(r: Tile): Unit }
 
 /** Trait defining the ability to initialize the focal calculation with a raster and one other parameter. */
 trait Initialization1[A]       { def init(r: Tile, a: A): Unit }

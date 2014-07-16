@@ -18,7 +18,6 @@ package geotrellis.raster.op.focal
 
 import geotrellis.raster._
 
-import scala.collection.mutable
 import scala.math.{min, max}
 
 sealed trait Movement { val isVertical: Boolean }
@@ -65,7 +64,7 @@ object Cursor {
  *
  * @param      r                     Tile that this cursor runs over
  * @param      analysisArea          Analysis area
- * @param      ext                   The distance from the focus that the
+ * @param      extent                The distance from the focus that the
  *                                   bounding box of this cursor extends.
  *                                   e.g. if the bounding box is 3x3, then
  *                                   the distance from center is 1.
@@ -96,7 +95,7 @@ class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
   private var addedRow = 0
   private var removedRow = 0
 
-   var movement = NoMovement
+  var movement = NoMovement
 
   // Values to track the focus of the cursor
   private var _col = 0
@@ -136,7 +135,7 @@ class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
     _rowmax = min(rows - 1, _row + extent)
   }
 
-  /*
+  /**
    * Move the cursor one cell space in a horizontal
    * of vertical direction. The cursor will keep track
    * of what cells became added by this move (covered by the cursor

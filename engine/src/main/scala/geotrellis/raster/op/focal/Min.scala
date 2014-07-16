@@ -16,11 +16,8 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
 import geotrellis.raster._
 import geotrellis.engine._
-
-import scala.math._
 
 /** Computes the minimum value of a neighborhood for a given raster 
  *
@@ -32,40 +29,5 @@ import scala.math._
  *                  If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
  *                  the data values will be rounded to integers.
  */
-case class Min(r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors]) extends FocalOp[Tile](r, n, tns)({
-  (r, n) =>
-    if(r.cellType.isFloatingPoint){
-      new CursorCalculation[Tile] with DoubleArrayTileResult {
-        def calc(r: Tile, cursor: Cursor) = {
-  
-          var m: Double = Double.NaN
-          cursor.allCells.foreach { 
-            (col, row) => {
-              val v = r.getDouble(col, row)
-              if(isData(v) && (v < m || isNoData(m))) { m = v }
-            }
-          }
-          tile.setDouble(cursor.col, cursor.row, m)
-        }
-      }
- 
-    }else{
-      new CursorCalculation[Tile] with IntArrayTileResult {
-        def calc(r: Tile, cursor: Cursor) = {
-  
-          var m = NODATA
-          cursor.allCells.foreach { 
-            (col, row) => {
-              val v = r.get(col, row)
-              if(isData(v) && (v < m || isNoData(m))) { m = v }
-            }
-          }
-          tile.set(cursor.col, cursor.row, m)
-        }
-      }
-    }
-})
-
-object Min {
-  def apply(r: Op[Tile], n: Op[Neighborhood]) = new Min(r, n, TileNeighbors.NONE)
-}
+case class Min(r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors] = TileNeighbors.NONE)
+  extends FocalOp[Tile](r, n, tns)(MinCalculation.apply)

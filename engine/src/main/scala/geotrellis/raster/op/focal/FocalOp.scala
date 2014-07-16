@@ -16,11 +16,8 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
 import geotrellis.raster._
 import geotrellis.engine._
-
-import scala.math._
 
 /**
  * Focal Operation that takes a raster and a neighborhood.

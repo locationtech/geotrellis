@@ -16,9 +16,7 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.raster.stats.FastMapHistogram
 import geotrellis.engine._
 
 /** Computes the mode of a neighborhood for a given raster 
@@ -30,54 +28,7 @@ import geotrellis.engine._
  *                  If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
  *                  the data values will be rounded to integers.
  */
-case class Mode(r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors]) extends FocalOp[Tile](r, n, tns)({
-  (r, n) => 
-    n match {
-      case Square(ext) => new CellwiseModeCalc(ext)
-      case _ => new CursorModeCalc(n.extent)
-    }
-})
+case class Mode(r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors] = TileNeighbors.NONE)
+  extends FocalOp[Tile](r, n, tns)(ModeCalculation.apply)
 
-object Mode {
-  def apply(r: Op[Tile], n: Op[Neighborhood]) = new Mode(r, n, TileNeighbors.NONE)
-}
 
-class CursorModeCalc(extent: Int) extends CursorCalculation[Tile] with IntArrayTileResult 
-                                                                   with MedianModeCalculation {
-  initArray(extent)
-                                                         
-  def calc(r: Tile, cursor: Cursor) = {
-    cursor.removedCells.foreach { (x, y) =>
-      val v = r.get(x, y)
-      if(isData(v)) {
-        removeValue(v)
-      }
-    }
-    cursor.addedCells.foreach { (x, y) =>
-      val v = r.get(x, y)
-      if(isData(v)) addValue(v)
-    }
-    tile.set(cursor.col, cursor.row, mode)
-  }
-}
-
-class CellwiseModeCalc(extent: Int) extends CellwiseCalculation[Tile] with IntArrayTileResult 
-                                                                       with MedianModeCalculation {
-  initArray(extent)
-
-  def add(r: Tile, x: Int, y: Int) = {
-    val v = r.get(x, y)
-    if (isData(v)) {
-      addValue(v)
-    }
-  }
-
-  def remove(r: Tile, x: Int, y: Int) = {
-    val v = r.get(x, y)
-    if (isData(v)) {
-      removeValue(v)
-    }
-  } 
-
-  def setValue(x: Int, y: Int) = { tile.setDouble(x, y, mode) }
-}

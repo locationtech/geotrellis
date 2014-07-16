@@ -18,9 +18,7 @@ package geotrellis.raster.op.focal
 
 import geotrellis.raster._
 import geotrellis.engine._
-
 import geotrellis.testkit._
-
 import org.scalatest._
 
 class MinSpec extends FunSpec with FocalOpSpec
@@ -49,14 +47,6 @@ class MinSpec extends FunSpec with FocalOpSpec
       assertEqual(Min(r, Square(3)), data0)
       assertEqual(Min(r, Square(4)), data0)
       assertEqual(Min(r, Square(5)), data0)
-    }
-
-    it("circle min r=1") {
-      val r = createTile((0 until 16).toArray)
-      assertEqual(Min(r, Square(1)), Array(0, 0, 1, 2,
-                                           0, 0, 1, 2,
-                                           4, 4, 5, 6,
-                                           8, 8, 9, 10))
     }
 
     it("circle min r=2") {
@@ -110,7 +100,6 @@ class MinSpec extends FunSpec with FocalOpSpec
 
       run(rs1.focalMin(Square(1))) match {
         case Complete(result,success) =>
-//          println(success)
           assertEqual(result,
             Array(1, 1, 1,    1, 1, 2,    2, 2, 2,
                   1, 1, 1,    1, 1, 1,    1, 1, 2,
@@ -121,7 +110,6 @@ class MinSpec extends FunSpec with FocalOpSpec
           println(msg)
           println(failure)
           assert(false)
-
       }
     }
 
@@ -166,7 +154,6 @@ class MinSpec extends FunSpec with FocalOpSpec
 
       run(rs1.focalMin(Square(2))) match {
         case Complete(result,success) =>
-//          println(success)
           assertEqual(result,
             Array(3, 2, 2,    2, 2, 2,    2, 2, 2,
                   3, 2, 2,    2, 2, 2,    2, 2, 2,
@@ -194,7 +181,6 @@ class MinSpec extends FunSpec with FocalOpSpec
 
       run(rs1.focalMin(Circle(1))) match {
         case Complete(result,success) =>
-          //println(success)
           assertEqual(result,
             Array(7, 4, 2,    2, 2, 2,    2, 3, nd,
                   3, 2, 2,    2, 2, 2,    2, 3, 2,
@@ -202,8 +188,6 @@ class MinSpec extends FunSpec with FocalOpSpec
                   2, 3, 2,    2, 2, 2,    3, 2, 2,
                   2, 2, 4,    3, 3, 3,    3, 4, 2))
         case Error(msg,failure) =>
-          // println(msg)
-          // println(failure)
           assert(false)
 
       }
