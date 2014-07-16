@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,7 +29,7 @@ object RasterLayerParser {
     case "int32" => TypeInt
     case "float32" => TypeFloat
     case "float64" => TypeDouble
-    case s => sys.error("unsupported datatype '%s'" format s)
+    case s => sys.error(s"unsupported datatype '$s'")
   }
 
   def apply(jsonString:String,path:String = "") = {
@@ -38,7 +38,7 @@ object RasterLayerParser {
 
         Catalog.getRasterLayerBuilder(layerType) match {
           case Some(builder) => builder(path,json)
-          case None => 
+          case None =>
             throw new java.io.IOException(s"Raster layer defined at $path has raster layer type $layerType " +
                                            "for which this catalog has no builder.")
         }
