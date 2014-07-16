@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -82,7 +82,7 @@ class Encoder(dos:DataOutputStream, raster:Raster, val settings:Settings) {
   /**
    * Number of bits per sample. Should either be a multiple of 8, or evenly
    * divide 8 (i.e. 1, 2 or 4).
-   */ 
+   */
   final def bitsPerSample:Int = settings.size.bits
   final def bytesPerSample:Int = settings.size.bits / 8
 
@@ -301,7 +301,7 @@ class Encoder(dos:DataOutputStream, raster:Raster, val settings:Settings) {
       case (Unsigned, 8) => Const.sint8
       case (Unsigned, 16) => Const.sint16
       case (Unsigned, 32) => Const.sint32
-      case tpl => sys.error("unsupported: %s" format tpl)
+      case tpl => sys.error("unsupported: $tpl")
     }
 
     // 10. y resolution, 1 pixel per unit
@@ -385,7 +385,7 @@ class Encoder(dos:DataOutputStream, raster:Raster, val settings:Settings) {
       todoDouble(6378137.0) // ellipsoid
       todoDouble(6378137.0) // semi major axis
       todoDouble(0.0)       // prime meridian
-      
+
       // 20. esri citation junk (tag is only needed when esriCompat is true)
       writeString(0x87b1, "PCS Name = WGS_1984_Web_Mercator|GCS Name = GCS_WGS_1984_Major_Auxiliary_Sphere|Datum = WGS_1984_Major_Auxiliary_Sphere|Ellipsoid = WGS_1984_Major_Auxiliary_Sphere|Primem = Greenwich||")
 
@@ -411,7 +411,7 @@ class Encoder(dos:DataOutputStream, raster:Raster, val settings:Settings) {
 }
 
 /**
- * The Encoder object provides several useful static methods for encoding 
+ * The Encoder object provides several useful static methods for encoding
  * raster data, which create Encoder instances on demand.
  */
 object Encoder {

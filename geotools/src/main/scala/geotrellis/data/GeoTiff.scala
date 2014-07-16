@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,7 +46,7 @@ object GeoTiff {
       case false => None
       case true => {
         val coverage = getGridCoverage2D(url, epsg)
-        val reader = getReader(url, epsg)		
+        val reader = getReader(url, epsg)
         val envelope = coverage.getGridGeometry().gridToWorld(new GridEnvelope2D(0, 0, 1, 1));
         val pixelSize = (math.abs(envelope.getWidth), math.abs(envelope.getHeight))
         val pixels = (coverage.getRenderedImage().getWidth(),coverage.getRenderedImage().getHeight())
@@ -57,8 +57,8 @@ object GeoTiff {
       }
     }
 
-  /* By default we get a EPSG:3785 reader. Since Scala doesn't allow multiple overloaded methods with 
-   * default arguments, we have two variants of getReader that take URL instead of one 
+  /* By default we get a EPSG:3785 reader. Since Scala doesn't allow multiple overloaded methods with
+   * default arguments, we have two variants of getReader that take URL instead of one
    */
   def getReader(url: URL): GTGeoTiffReader =
     getReader(url.asInstanceOf[Object], "EPSG:3785")
@@ -68,7 +68,7 @@ object GeoTiff {
 
   def getReader(path: String, epsg: String = "EPSG:3785"): GTGeoTiffReader = {
     val fh = new File(path)
-    if (!fh.canRead) sys.error("can't read %s".format(path))
+    if (!fh.canRead) sys.error(s"can't read $path")
 
     getReader(fh, epsg)
   }
@@ -103,8 +103,8 @@ object GeoTiff {
     RasterExtent(e, cellwidth, cellheight, cols, rows)
   }
 
-  /* By default we use projection EPSG:3785. Since Scala doesn't allow multiple overloaded methods with 
-   * default arguments, we have two variants of getGridCoverage2D that take URL instead of one  
+  /* By default we use projection EPSG:3785. Since Scala doesn't allow multiple overloaded methods with
+   * default arguments, we have two variants of getGridCoverage2D that take URL instead of one
    */
   def getGridCoverage2D(url: URL): GridCoverage2D =
     getReader(url).read(null)

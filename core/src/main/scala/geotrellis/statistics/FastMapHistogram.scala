@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,20 +42,20 @@ object FastMapHistogram {
     hs.foreach(h => total.update(h))
     total
   }
-  
+
   /**
    * Create a histogram from double values in a raster.
    *
    * FastMapHistogram only works with integer values, which is good for performance
-   * but means that, in order to use FastMapHistogram with double values, each value 
+   * but means that, in order to use FastMapHistogram with double values, each value
    * must be multiplied by a power of ten to preserve significant fractional digits.
    *
    * For example, if you want to save one significant digit (2.1 from 2.123), set
    * sigificantDigits to 1, and the histogram will save 2.1 as "21".
    *
-   * Important: Be sure that the maximum value in the rater multiplied by 
-   *            10 ^ significantDigits does not overflow Int.MaxValue (2,147,483,647). 
-   */ 
+   * Important: Be sure that the maximum value in the rater multiplied by
+   *            10 ^ significantDigits does not overflow Int.MaxValue (2,147,483,647).
+   */
   def fromRasterDouble(r:Raster, significantDigits:Int) = {
     val h = FastMapHistogram()
     val multiplier = math.pow(10, significantDigits)
@@ -64,7 +64,7 @@ object FastMapHistogram {
   }
 }
 
-class FastMapHistogram(_size:Int, _buckets:Array[Int], _used:Int, _total:Int) 
+class FastMapHistogram(_size:Int, _buckets:Array[Int], _used:Int, _total:Int)
     extends MutableHistogram {
   if (_size <= 0) error("initializeSize must be > 0")
 
@@ -124,7 +124,7 @@ class FastMapHistogram(_size:Int, _buckets:Array[Int], _used:Int, _total:Int)
     }
 
     // should never happen
-    error("should not happen: item=%s mask=%s" format (item, mask))
+    error(s"should not happen: item=$item mask=$mask")
     -1
   }
 

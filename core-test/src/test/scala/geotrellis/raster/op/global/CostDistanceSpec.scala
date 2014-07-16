@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,9 +25,11 @@ import org.scalatest.FunSuite
 
 import scala.language.implicitConversions
 
+import java.util.Locale
+
 class CostDistanceSpec extends FunSuite with TestServer {
   implicit def arrayIsRasterOp(a: Array[Int]): Op[Raster] = {
-    val size = math.sqrt(a.length).toInt    
+    val size = math.sqrt(a.length).toInt
 
     val e = Extent(0,0,10*size,10*size)
     val re = RasterExtent(e, 10,10,size,size)
@@ -43,7 +45,7 @@ class CostDistanceSpec extends FunSuite with TestServer {
 
     Literal( Raster(data, re))
   }
-  
+
   test("ESRI example") {
     val n = NODATA
     val N = Double.NaN
@@ -74,9 +76,9 @@ class CostDistanceSpec extends FunSuite with TestServer {
       8.0, 7.1, 4.5, 4.9, 8.9, 12.7,
       5.0, 7.5, 10.5,  N, 10.6, 9.2,
       2.5, 5.7, 6.4,   N, 7.1, 11.1,
-      0.0, 1.5, 3.5, 5.0, 7.0, 10.5).map(i => " %04.1f " format i)
+      0.0, 1.5, 3.5, 5.0, 7.0, 10.5).map(i => " %04.1f ".formatLocal(Locale.ENGLISH, i))
 
-    val strings = d.map(i => " %04.1f " format i)
+    val strings = d.map(i => " %04.1f ".formatLocal(Locale.ENGLISH, i))
 
     for(i <- 0 until strings.length) {
       strings(i) should be (expected(i))
@@ -100,7 +102,7 @@ class CostDistanceSpec extends FunSuite with TestServer {
     val cd = CostDistance(costRaster, points)
 
     val d = get(cd).toArrayDouble
-    
+
     val expected = Array(
       22,21,21,20,17,15,14,
       20,19,22,20,15,12,11,
@@ -118,6 +120,6 @@ class CostDistanceSpec extends FunSuite with TestServer {
     }
   }
 
-  def print(d: DoubleArrayRasterData):Unit = println(d.array.toList.map(i => " %04.1f " format i).grouped(d.cols).map(_.mkString(",")).mkString("\n"))
+  def print(d: DoubleArrayRasterData):Unit = println(d.array.toList.map(i => " %04.1f ".formatLocal(Locale.ENGLISH, i)).grouped(d.cols).map(_.mkString(",")).mkString("\n"))
 
 }

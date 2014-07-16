@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,7 +37,7 @@ object RawEncoder {
     case Settings(ByteSample, _, _, _, _) => new RawByteEncoder(encoder)
     case Settings(ShortSample, _, _, _, _) => new RawShortEncoder(encoder)
     case Settings(IntSample, _, _, _, _) => new RawIntEncoder(encoder)
-    case s => sys.error("can't encoder %s" format s)
+    case s => sys.error(s"can't encoder $s")
   }
 }
 
