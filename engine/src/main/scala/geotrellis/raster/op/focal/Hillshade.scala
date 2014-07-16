@@ -87,7 +87,10 @@ object Hillshade {
  * @see [[Hillshade]]
  */
 case class DirectHillshade(r: Op[Tile], tns: Op[TileNeighbors], cellSize: Op[CellSize], azimuth: Op[Double], altitude: Op[Double], zFactor: Op[Double])
-    extends FocalOp4[CellSize, Double, Double, Double, Tile](r, Square(1), tns, cellSize, azimuth, altitude, zFactor)(HillshadeCalculation.apply)
+    extends FocalOperation4[CellSize, Double, Double, Double, Tile](r, Square(1), tns, cellSize, azimuth, altitude, zFactor)
+{
+  override def getCalculation(r: Tile, n: Neighborhood) = HillshadeCalculation(r, n)
+}
 
 object DirectHillshade {
   def apply(r: Op[Tile], cellSize: Op[CellSize], azimuth: Op[Double], altitude: Op[Double], zFactor: Op[Double]) = new DirectHillshade(r, TileNeighbors.NONE, cellSize, azimuth, altitude, zFactor)

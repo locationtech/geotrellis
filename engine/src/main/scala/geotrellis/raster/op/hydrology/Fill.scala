@@ -16,12 +16,9 @@
 
 package geotrellis.raster.op.hydrology
 
-import geotrellis._
 import geotrellis.raster._
 import geotrellis.raster.op.focal._
 import geotrellis.engine._
-
-import scala.math._
 
 case class FillOptions(threshold: Double)
 object FillOptions {
@@ -32,7 +29,6 @@ object FillOptions {
   *
   * @param    r         Tile on which to run the focal operation.
   * @param    options   FillOptions. This allows you to set the threshold appropriately.
-  * @param    n         Neighborhood to use for this operation (e.g., [[Square]](1))
   * @param    tns       TileNeighbors that describe the neighboring tiles.
 
   * @return             Returns a double value raster that is the computed Fill for each neighborhood.
@@ -43,16 +39,54 @@ object FillOptions {
   *                     the threshold appropriately.      
   */
 case class Fill(r: Op[Tile], options: FillOptions, tns: Op[TileNeighbors])
-    extends FocalOp1(r, Square(1), tns, options)({
-      (r, n) =>
-      if(r.cellType.isFloatingPoint) { new CursorFillCalcDouble }
-      else { new CursorFillCalc }
-    })
+    extends FocalOperation1[FillOptions, Tile](r, Square(1), tns, options)
+{
+  def getCalculation(r: Tile, n: Neighborhood) = {
+    if (r.cellType.isFloatingPoint) {
+      new CursorFillCalcDouble
+    } else {
+      new CursorFillCalc
+    }
+  }
+}
 
 object Fill {
   def apply(r: Op[Tile]) = new Fill(r, FillOptions.default, TileNeighbors.NONE)
   def apply(r: Op[Tile], o: FillOptions) = new Fill(r, o, TileNeighbors.NONE)
 }
+
+case class CursorFillCalcDouble() extends CursorCalculation[Tile]
+with Initialization1[FillOptions]
+with DoubleArrayTileResult {
+  private var threshold: Double = 0.0
+
+  def init(r: Tile, options: FillOptions) = {
+    threshold = options.threshold.toInt
+    super.init(r)
+  }
+
+  def calc(r: Tile, c: Cursor) = {
+    var count: Int = 0
+    var totalCount: Int = 0
+    var sum: Double = 0
+    val cVal: Double = r.getDouble(c.col, c.row)
+    c.allCells.foreach { (col, row) =>
+      if(c.col != col || c.row != row){
+        if((r.getDouble(col, row) - cVal).abs > threshold ){
+          count = count + 1
+        }
+        totalCount = totalCount + 1
+        sum = sum + r.get(col, row)
+      }
+    }
+    if(count == totalCount){
+      tile.setDouble(c.col, c.row, sum / totalCount)
+    } else {
+      tile.setDouble(c.col, c.row, cVal)
+    }
+  }
+}
+
 
 case class CursorFillCalc() extends CursorCalculation[Tile]
                                with Initialization1[FillOptions]
@@ -88,36 +122,3 @@ case class CursorFillCalc() extends CursorCalculation[Tile]
     }
   }
 }
-
-case class CursorFillCalcDouble() extends CursorCalculation[Tile]
-                                     with Initialization1[FillOptions]
-                                     with DoubleArrayTileResult {
-  private var threshold: Double = 0.0
-
-    def init(r: Tile, options: FillOptions) = {
-    threshold = options.threshold.toInt
-    super.init(r)
-  }
-
-  def calc(r: Tile, c: Cursor) = {
-    var count: Int = 0
-    var totalCount: Int = 0
-    var sum: Double = 0
-    val cVal: Double = r.getDouble(c.col, c.row)
-    c.allCells.foreach { (col, row) =>
-      if(c.col != col || c.row != row){
-        if((r.getDouble(col, row) - cVal).abs > threshold ){
-          count = count + 1
-        }
-        totalCount = totalCount + 1
-        sum = sum + r.get(col, row)
-      }
-    }
-    if(count == totalCount){
-      tile.setDouble(c.col, c.row, sum / totalCount)
-    } else {
-      tile.setDouble(c.col, c.row, cVal)
-    }
-  }
-}
-

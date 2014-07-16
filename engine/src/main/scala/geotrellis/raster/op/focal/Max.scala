@@ -16,11 +16,8 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis._
 import geotrellis.raster._
 import geotrellis.engine._
-
-import scala.math._
 
 /**
  * Computes the maximum value of a neighborhood for a given raster.
@@ -34,4 +31,7 @@ import scala.math._
  *                     the data values will be rounded to integers.
  */
 case class Max(r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors] = TileNeighbors.NONE)
-  extends FocalOp(r, n, tns)(MaxCalculation.apply)
+  extends FocalOperation0[Tile](r, n, tns)
+{
+  override def getCalculation(r: Tile, n: Neighborhood) = MaxCalculation(r, n)
+}

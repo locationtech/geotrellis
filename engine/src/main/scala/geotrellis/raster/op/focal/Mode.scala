@@ -29,6 +29,9 @@ import geotrellis.engine._
  *                  the data values will be rounded to integers.
  */
 case class Mode(r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors] = TileNeighbors.NONE)
-  extends FocalOp[Tile](r, n, tns)(ModeCalculation.apply)
+  extends FocalOperation0[Tile](r, n, tns)
+{
+  override def getCalculation(r: Tile, n: Neighborhood) = ModeCalculation(r, n)
+}
 
 

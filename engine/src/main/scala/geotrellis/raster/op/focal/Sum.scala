@@ -34,4 +34,7 @@ import geotrellis.engine._
  *                  the data values will be rounded to integers.
  */
 case class Sum(r: Op[Tile], n: Op[Neighborhood], ns: Op[TileNeighbors] = TileNeighbors.NONE)
-  extends FocalOp[Tile](r, n, ns)(SumCalculation.apply)
+  extends FocalOperation0[Tile](r, n, ns)
+{
+  override def getCalculation(r: Tile, n: Neighborhood) = SumCalculation(r, n)
+}

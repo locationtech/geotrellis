@@ -32,4 +32,7 @@ import geotrellis.engine._
  *                  If the neighborhood is of any other type, then [[CursorMeanCalc]] is used.
  */
 case class Mean(r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors] = TileNeighbors.NONE)
-    extends FocalOp[Tile](r, n, tns)(MeanCalculation.apply)
+    extends FocalOperation0[Tile](r, n, tns)
+{
+  override def getCalculation(r: Tile, n: Neighborhood) = MeanCalculation(r, n)
+}

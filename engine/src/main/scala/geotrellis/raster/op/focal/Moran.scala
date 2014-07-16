@@ -39,7 +39,10 @@ import geotrellis.engine._
  *                        of a double typed Tile (TypeFloat, TypeDouble).
  */
 case class TileMoransI(r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors] = TileNeighbors.NONE)
-    extends FocalOp[Tile](r, n, tns)(TileMoransICalculation.apply)
+    extends FocalOperation0[Tile](r, n, tns)
+{
+  override def getCalculation(r: Tile, n: Neighborhood) = TileMoransICalculation(r, n)
+}
 
 /** Calculates global spatial autocorrelation of a raster based on the similarity to
  * neighboring values.
@@ -60,4 +63,7 @@ case class TileMoransI(r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors] 
  *                        of a double typed Tile (TypeFloat, TypeDouble).
  */
 case class ScalarMoransI(r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors] = TileNeighbors.NONE)
-  extends FocalOp(r, n, tns)(ScalarMoransICalculation.apply)
+  extends FocalOperation0[Double](r, n, tns)
+{
+  override def getCalculation(r: Tile, n: Neighborhood) = ScalarMoransICalculation(r, n)
+}

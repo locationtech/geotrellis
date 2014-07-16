@@ -42,7 +42,10 @@ import geotrellis.engine._
   * (Smit, Longley, and Goodchild)
   */
 case class Aspect(r: Op[Tile], neighbors: Op[TileNeighbors], cellSize: Op[CellSize]) 
-    extends FocalOp1[CellSize, Tile](r, Square(1), neighbors, cellSize)(AspectCalculation.apply)
+    extends FocalOperation1[CellSize, Tile](r, Square(1), neighbors, cellSize)
+{
+  def getCalculation(r: Tile, n: Neighborhood) = AspectCalculation(r, n)
+}
 
 object Aspect {
   def apply(r: Op[Tile], cellSize: Op[CellSize]): Aspect = 

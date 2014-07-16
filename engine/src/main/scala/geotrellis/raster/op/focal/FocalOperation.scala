@@ -19,104 +19,6 @@ package geotrellis.raster.op.focal
 import geotrellis.raster._
 import geotrellis.engine._
 
-/**
- * Focal Operation that takes a raster and a neighborhood.
- *
- * @param        r           Tile the focal operation will run against.
- * @param        n           Neighborhood to use with this focal operation.
- * @param        tns         TileNeighbors that describe the neighboring tiles.
- * @param        getCalc     Function that returns a [[FocalCalculation]] based
- *                           on the raster and neighborhood. This allows flexibility
- *                           in what calculation to use; if some calculations are faster
- *                           for some neighborhoods (e.g., using a [[CellwiseCalculation]]
- *                           for [[Square]] neighborhoods and a [[CursorCalculation]] for
- *                           all other neighborhoods), or if you want to change the calculation
- *                           based on the raster's data type, you can do so by returning the
- *                           correct [[FocalCalculation]] from this function.
- *
- * @tparam       T           Return type of the Operation.
- */
-class FocalOp[T](r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors])
-                (getCalc: (Tile, Neighborhood)=>FocalCalculation[T] with Initialization)                  
-extends FocalOperation0[T](r, n, tns) {
-  def getCalculation(r: Tile, n: Neighborhood) = { getCalc(r, n) }
-}
-
-/**
- * Focal Operation that takes a raster, a neighborhood, and one other argument.
- *
- * @param        r           Tile the focal operation will run against.
- * @param        n           Neighborhood to use with this focal operation.
- * @param        tns         TileNeighbors that describe the neighboring tiles.
- * @param        a           Argument of type A.
- * @param        getCalc     See notes for same parameter in [[FocalOp]]
- *
- * @tparam       T           Return type of the Operation.
- */
-class FocalOp1[A, T](r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors], a: Op[A])
-                   (getCalc: (Tile, Neighborhood)=>FocalCalculation[T] with Initialization1[A])
-extends FocalOperation1[A, T](r, n, tns, a){
-  def getCalculation(r: Tile, n: Neighborhood) = { getCalc(r, n) }
-}
-
-/**
- * Focal Operation that takes a raster, a neighborhood, and two other arguments.
- *
- * @param        r           Tile the focal operation will run against.
- * @param        n           Neighborhood to use with this focal operation.
- * @param        tns         TileNeighbors that describe the neighboring tiles.
- * @param        a           Argument of type A.
- * @param        b           Argument of type B.
- * @param        getCalc     See notes for same parameter in [[FocalOp]]
- *
- * @tparam       T           Return type of the Operation.
- */
-class FocalOp2[A, B, T](r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors],
-                      a: Op[A], b: Op[B])
-                     (getCalc: (Tile, Neighborhood)=>FocalCalculation[T] with Initialization2[A, B])
-extends FocalOperation2[A, B, T](r, n, tns, a, b){
-  def getCalculation(r: Tile, n: Neighborhood) = { getCalc(r, n) }
-}
-
-/**
- * Focal Operation that takes a raster, a neighborhood, and three other arguments.
- *
- * @param        r           Tile the focal operation will run against.
- * @param        n           Neighborhood to use with this focal operation.
- * @param        tns         TileNeighbors that describe the neighboring tiles.
- * @param        a           Argument of type A.
- * @param        b           Argument of type B.
- * @param        c           Argument of type C.
- * @param        getCalc     See notes for same parameter in [[FocalOp]]
- *
- * @tparam       T           Return type of the Operation.
- */
-class FocalOp3[A, B, C, T](r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors],
-                        a: Op[A], b: Op[B], c: Op[C])
-                       (getCalc: (Tile, Neighborhood)=>FocalCalculation[T] with Initialization3[A, B, C])
-extends FocalOperation3[A, B, C, T](r, n, tns, a, b, c){
-  def getCalculation(r: Tile, n: Neighborhood) = { getCalc(r, n) }
-}
-
-/**
- * Focal Operation that takes a raster, a neighborhood, and four other arguments.
- *
- * @param        r           Tile the focal operation will run against.
- * @param        n           Neighborhood to use with this focal operation.
- * @param        tns         TileNeighbors that describe the neighboring tiles.
- * @param        a           Argument of type A.
- * @param        b           Argument of type B.
- * @param        c           Argument of type C.
- * @param        d           Argument of type D.
- * @param        getCalc     See notes for same parameter in [[FocalOp]]
- *
- * @tparam       T           Return type of the Operation.
- */
-class FocalOp4[A, B, C, D, T](r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors], a: Op[A], b: Op[B], c: Op[C], d: Op[D])
-                         (getCalc: (Tile, Neighborhood)=>FocalCalculation[T] with Initialization4[A, B, C, D])
-extends FocalOperation4[A, B, C, D, T](r, n, tns, a, b, c, d){
-  def getCalculation(r: Tile, n: Neighborhood) = { getCalc(r, n) }
-}
 
 trait FocalOperation[T] extends Operation[T]
 
@@ -165,7 +67,7 @@ abstract class FocalOperation0[T](r: Op[Tile], n: Op[Neighborhood], tns: Op[Tile
    * @param     r       Tile that the focal calculation will run against.
    * @param     n       Neighborhood that will be used in the focal operation.
    */
-  def getCalculation(r: Tile, n: Neighborhood): FocalCalculation[T] with Initialization 
+  def getCalculation(r: Tile, n: Neighborhood): FocalCalculation[T] with Initialization
 }
 
 /**

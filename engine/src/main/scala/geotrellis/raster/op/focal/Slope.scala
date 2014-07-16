@@ -88,5 +88,8 @@ object Slope {
   * @see [[http://goo.gl/JCnNP Geospatial Analysis - A comprehensive guide]]
   * (Smit, Longley, and Goodchild)
   */
-class Slope(r: Op[Tile], ns: Op[TileNeighbors], cellSize: Op[CellSize], zFactor: Op[Double]) 
-    extends FocalOp2[CellSize, Double, Tile](r, Square(1), ns, cellSize, zFactor)(SlopeCalculation.apply)
+class Slope(r: Op[Tile], ns: Op[TileNeighbors], cellSize: Op[CellSize], zFactor: Op[Double])
+  extends FocalOperation2[CellSize, Double, Tile](r, Square(1), ns, cellSize, zFactor) {
+
+  override def getCalculation(r: Tile, n: Neighborhood) = SlopeCalculation.apply(r, n)
+}

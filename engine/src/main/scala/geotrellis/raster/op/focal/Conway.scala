@@ -30,5 +30,8 @@ import geotrellis.engine._
  * [[http://en.wikipedia.org/wiki/Conway's_Game_of_Life wikipedia]].
  */
 case class Conway(r: Op[Tile], tns: Op[TileNeighbors] = TileNeighbors.NONE)
-  extends FocalOp[Tile](r, Square(1), tns)(ConwayCalculation.apply)
+  extends FocalOperation0[Tile](r, Square(1), tns)
+{
+  def getCalculation(r: Tile, n: Neighborhood) = ConwayCalculation(r, n)
+}
 

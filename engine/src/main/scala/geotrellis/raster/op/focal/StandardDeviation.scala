@@ -31,4 +31,7 @@ import geotrellis.engine._
  *                  the data values will be rounded to integers.
  */
 case class StandardDeviation(r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors] = TileNeighbors.NONE)
-  extends FocalOp[Tile](r, n, tns)(StandardDeviationCalculation.apply)
+  extends FocalOperation0[Tile](r, n, tns)
+{
+  override def getCalculation(r: Tile, n: Neighborhood) = StandardDeviationCalculation(r, n)
+}
