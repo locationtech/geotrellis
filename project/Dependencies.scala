@@ -26,7 +26,7 @@ object Dependencies {
     "sonatypeSnapshots"       at "http://oss.sonatype.org/content/repositories/snapshots"
   )
 
-  val scalatest     = "org.scalatest"       %  "scalatest_2.10"  % "2.1.7"
+  val scalatest     = "org.scalatest"       %  "scalatest_2.10"  % "2.2.0"
   val scalacheck    = "org.scalacheck"      %% "scalacheck"      % "1.11.1"
   val scalaReflect  = "org.scala-lang"      %  "scala-reflect"   % "2.10.2"
   val sigar         = "org.hyperic"         %  "sigar"           % "1.6.4"  

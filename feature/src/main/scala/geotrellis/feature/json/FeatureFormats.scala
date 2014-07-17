@@ -5,7 +5,6 @@ import spray.json._
 import GeometryFormats._
 
 trait FeatureFormats {
-
   def writeFeatureJson[D: JsonWriter](obj: Feature[D]): JsValue = {
     JsObject(
       "type" -> JsString("Feature"),

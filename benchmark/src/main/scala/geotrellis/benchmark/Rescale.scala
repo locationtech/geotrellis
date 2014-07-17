@@ -30,7 +30,7 @@ class RescaleBenchmark extends OperationBenchmark {
   @Param(Array("256", "512", "1024", "2048", "4096", "8192"))
   var size: Int = 0
 
-  var op: Op[Raster] = null
+  var op: Op[Tile] = null
   var source: RasterSource = null
   override def setUp() {
     val re = getRasterExtent(name, size, size)

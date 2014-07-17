@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-package geotrellis.data
+package geotrellis.raster.io
 
-import geotrellis._
-import geotrellis.source._
+import geotrellis.engine._
 import geotrellis.raster._
-import geotrellis.process._
-import geotrellis.statistics.FastMapHistogram
-import geotrellis.statistics.op._
+import geotrellis.feature.Extent
+import geotrellis.raster.stats.FastMapHistogram
 
 import geotrellis.testkit._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
 import org.geotools.gce.geotiff.GeoTiffFormat
 import org.geotools.factory.Hints
@@ -47,24 +44,24 @@ import java.awt.image.BufferedImage
 import java.awt.image.DataBuffer
 import java.awt.Transparency
 
-class GeoTiffSpec extends FunSpec with TestEngine with ShouldMatchers {
+class GeoTiffSpec extends FunSpec with TestEngine with Matchers {
   describe("A GeoTiffReader") {
     it ("should fail on non-existent files") {
       val path = "/does/not/exist.tif"
-      evaluating { GeoTiff.readRaster(path) } should produce [Exception];
+      an [Exception] should be thrownBy { GeoTiff.readRaster(path) }
     }
 
     it ("should load correct extent & gridToMap should work") {
       val path = "raster-test/data/econic.tif"
-      val raster1 = GeoTiff.readRaster(path)
-      val (xmap, ymap) = raster1.rasterExtent.gridToMap(0,0)
-      xmap should be (-15381.615 plusOrMinus 0.001)
-      ymap should be (15418.729 plusOrMinus 0.001)
+      val (_, rasterExtent) = GeoTiff.readRaster(path)
+      val (xmap, ymap) = rasterExtent.gridToMap(0,0)
+      xmap should be (-15381.615 +- 0.001)
+      ymap should be (15418.729 +- 0.001)
     }
 
     it("should correctly translate NODATA values for an int raster which has no NODATA value associated") {
       val path = "geotools/data/cea.tif"
-      val raster = GeoTiff.readRaster(path)
+      val (raster, rasterExtent) = GeoTiff.readRaster(path)
       val (cols, rows) = (raster.cols, raster.rows)
 
       // Find NODATA value
@@ -95,29 +92,28 @@ class GeoTiffSpec extends FunSpec with TestEngine with ShouldMatchers {
       val rasterExtent = RasterExtent(e, 60.0, 60.0, 513, 513)
 
       val path = "raster-test/data/econic.tif"
-      val raster1 = GeoTiff.readRaster(path)//.warp(rasterExtent)
+      val (raster1, _) = GeoTiff.readRaster(path)//.warp(rasterExtent)
 
       val raster2 = GeoTiffRasterLayerBuilder.fromTif(path).getRaster()//(Some(rasterExtent))
       assertEqual(raster1,raster2)
     }
 
     it ("should write") {
-      val r = GeoTiff.readRaster("raster-test/data/econic.tif")
-      GeoTiffWriter.write("/tmp/written.tif", r, "foo")
+      val (r, re) = GeoTiff.readRaster("raster-test/data/econic.tif")
+      GeoTiffWriter.write("/tmp/written.tif", r, re.extent, "foo")
     }
 
     it ("should write floating point rasters") {
       val e = Extent(100.0, 400.0, 120.0, 420.0)
-      val re = RasterExtent(e, 10.0, 10.0, 2, 2)
-      val data = DoubleArrayRasterData(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
-      val r = Raster(data, re)
-      GeoTiffWriter.write("/tmp/float.tif", r, "float")
+      val tile = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
+ 
+      GeoTiffWriter.write("/tmp/float.tif", tile, e, "float")
     }
 
     it ("should retain Float32 type when converting tif to arg") {
       val path = "raster-test/data/aspect.tif"
-      val raster = GeoTiff.readRaster(path)
-      raster.rasterType should be (TypeFloat)
+      val (raster, _) = GeoTiff.readRaster(path)
+      raster.cellType should be (TypeFloat)
     }
 
     it ("should translate NODATA correctly") {
@@ -125,9 +121,8 @@ class GeoTiffSpec extends FunSpec with TestEngine with ShouldMatchers {
       // Then gdalwarp was used to change the NoData value for slope.tif to -9999.
       // If the NoData values are translated correctly, then all NoData values from the read in GTiff
       // should correspond to NoData values of the directly read arg.
-      import geotiff._
       val originalArg = RasterSource.fromPath("raster-test/data/data/slope.arg").get
-      val translatedTif = GeoTiff.readRaster("raster-test/data/slope.tif")
+      val (translatedTif, _) = GeoTiff.readRaster("raster-test/data/slope.tif")
 
       translatedTif.rows should be (originalArg.rows)
       translatedTif.cols should be (originalArg.cols)

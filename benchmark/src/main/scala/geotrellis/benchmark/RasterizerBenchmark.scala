@@ -35,7 +35,7 @@ import scala.util.Random
 
 object RasterizerBenchmark extends BenchmarkRunner(classOf[RasterizerBenchmark])
 class RasterizerBenchmark extends OperationBenchmark {
-  var r: Raster = _
+  var r: Tile = _
   var re: RasterExtent = _
   var tile: IntArrayTile = _
   var poly: feature.PolygonFeature[Int] = _

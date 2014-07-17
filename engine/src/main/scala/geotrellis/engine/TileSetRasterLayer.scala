@@ -148,7 +148,7 @@ extends RasterLayer(info) {
   }
 
   override
-  def getRaster(extent: Extent): Raster = 
+  def getRaster(extent: Extent): Tile = 
     CroppedTile(getRaster(None), info.rasterExtent.gridBoundsFor(extent))
 
   def getTile(col: Int, row: Int, targetExtent: Option[RasterExtent]) = 

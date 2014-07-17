@@ -40,7 +40,7 @@ class ConstantAdd extends OperationBenchmark {
   @Param(Array("128", "256", "512"))
   var size: Int = 0
 
-  var op: Op[Raster] = null
+  var op: Op[Tile] = null
   var source: RasterSource = null
 
   override def setUp() {

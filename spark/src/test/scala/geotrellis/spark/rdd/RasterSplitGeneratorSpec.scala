@@ -18,11 +18,9 @@ package geotrellis.spark.rdd
 
 import geotrellis.spark.tiling.TileExtent
 
-import org.scalatest.FunSpec
+import org.scalatest._
 
-import org.scalatest.matchers.ShouldMatchers
-
-class RasterSplitGeneratorSpec extends FunSpec with ShouldMatchers {
+class RasterSplitGeneratorSpec extends FunSpec with Matchers {
 
   describe("RasterSplitGenerator") {
     it("should yield an increment of (-1, -1) (no splits) if tilesPerBlock >= tileCount") {

@@ -21,10 +21,33 @@ import geotrellis.feature.Extent
 import spire.syntax.cfor._
 
 /**
- * Base trait for the Tile data type.
+ * Base trait for a Tile.
  */
-trait Tile extends Raster {
-  type This = Tile
+trait Tile {
+
+  def dualForeach(f: Int => Unit)(g: Double => Unit): Unit =
+    if (cellType.isFloatingPoint) foreachDouble(g) else foreach(f)
+
+  def mapIfSet(f: Int => Int): Tile =
+    map { i =>
+      if(isNoData(i)) i
+      else f(i)
+    }
+
+  def mapIfSetDouble(f: Double => Double): Tile =
+    mapDouble { d =>
+      if(isNoData(d)) d
+      else f(d)
+    }
+
+  def dualMap(f: Int => Int)(g: Double => Double): Tile =
+    if (cellType.isFloatingPoint) mapDouble(g) else map(f)
+
+  def dualMapIfSet(f: Int => Int)(g: Double => Double): Tile =
+    if (cellType.isFloatingPoint) mapIfSetDouble(g) else mapIfSet(f)
+
+  def dualCombine(r2: Tile)(f: (Int, Int) => Int)(g: (Double, Double) => Double): Tile =
+    if (cellType.union(r2.cellType).isFloatingPoint) combineDouble(r2)(g) else combine(r2)(f)
 
   val cols: Int
   val rows: Int
