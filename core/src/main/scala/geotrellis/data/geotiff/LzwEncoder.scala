@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,7 +47,7 @@ object LzwEncoder {
     case Settings(ByteSample, _, _, _, _) => new LzwByteEncoder(encoder)
     case Settings(ShortSample, _, _, _, _) => new LzwShortEncoder(encoder)
     case Settings(IntSample, _, _, _, _) => new LzwIntEncoder(encoder)
-    case s => sys.error("can't encoder %s" format s)
+    case s => sys.error(s"can't encoder $s")
   }
 }
 
@@ -191,7 +191,7 @@ abstract class LzwEncoder(encoder:Encoder) {
   def getCode(s:String): Int = {
     if (!stringTable.contains(s)) {
       // stringTable.toList.sorted.foreach {
-      //   case (k, v) => println("  k=%s v=%s" format (xyz(k), v))
+      //   case (k, v) => println(s"  k=${xyz(k)} v=$v")
       // }
       sys.error(s"no code found for ${xyz(s)}")
     }
@@ -254,7 +254,7 @@ abstract class LzwEncoder(encoder:Encoder) {
    * complete 2 byte "chunks" at a time.
    */
   def writeCode(code:Int) {
-    //println("**writeCode(%s)" format code)
+    //println(s"**writeCode($code)")
     buffer |= code << (32 - codeBits - bufpos)
     bufpos += codeBits
     if (bufpos > 16) {

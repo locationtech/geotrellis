@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,17 +20,19 @@ import geotrellis.raster._
 import geotrellis.raster.op._
 import spire.syntax.cfor._
 
+import java.util.Locale
+
 object Raster {
-  def apply(arr:RasterData, re:RasterExtent):Raster = 
+  def apply(arr:RasterData, re:RasterExtent):Raster =
     ArrayRaster(arr,re)
 
-  def apply(arr:Array[Int], re:RasterExtent):Raster = 
+  def apply(arr:Array[Int], re:RasterExtent):Raster =
     ArrayRaster(IntArrayRasterData(arr, re.cols, re.rows), re)
 
-  def apply(arr:Array[Double], re:RasterExtent):Raster = 
+  def apply(arr:Array[Double], re:RasterExtent):Raster =
     ArrayRaster(DoubleArrayRasterData(arr, re.cols, re.rows), re)
 
-  def empty(re:RasterExtent):Raster = 
+  def empty(re:RasterExtent):Raster =
     ArrayRaster(IntArrayRasterData.empty(re.cols, re.rows), re)
 }
 
@@ -118,7 +120,7 @@ trait Raster extends local.LocalMethods {
 
   /**
    * Normalizes the values of this raster, given the current min and max, to a new min and max.
-   * 
+   *
    *   @param oldMin    Old mininum value
    *   @param oldMax    Old maximum value
    *   @param newMin     New minimum value
@@ -151,7 +153,7 @@ trait Raster extends local.LocalMethods {
     var zmin = Int.MaxValue
     var zmax = Int.MinValue
 
-    foreach { 
+    foreach {
       z => if (isData(z)) {
         zmin = math.min(zmin, z)
         zmax = math.max(zmax, z)
@@ -160,7 +162,7 @@ trait Raster extends local.LocalMethods {
 
     if(zmin == Int.MaxValue) { zmin = NODATA }
     (zmin, zmax)
-  } 
+  }
 
   /**
    * Return tuple of highest and lowest value in raster.
@@ -187,7 +189,7 @@ trait Raster extends local.LocalMethods {
   /**
    * Return ascii art of this raster.
    */
-  def asciiDraw():String = { 
+  def asciiDraw():String = {
     val sb = new StringBuilder
     for(row <- 0 until rows) {
       for(col <- 0 until cols) {
@@ -197,11 +199,11 @@ trait Raster extends local.LocalMethods {
         } else {
           s"$v"
         }
-        val pad = " " * math.max(6 - s.length,0) 
+        val pad = " " * math.max(6 - s.length,0)
         sb.append(s"$pad$s")
       }
       sb += '\n'
-    }      
+    }
     sb += '\n'
     sb.toString
   }
@@ -217,7 +219,7 @@ trait Raster extends local.LocalMethods {
         if (isNoData(z)) {
           s += ".."
         } else {
-          s += "%02X".format(z)
+          s += "%02X".formatLocal(Locale.ENGLISH, z)
         }
       }
       s += "\n"

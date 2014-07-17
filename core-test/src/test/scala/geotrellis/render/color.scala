@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,9 +19,11 @@ package geotrellis.render
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
+import java.util.Locale
+
 object ColorSpec {
-  def hexstringify(colors:Array[Int]) = colors.map{ "%08x".format(_) }.toList 
-  def getColorString(colors:Array[Int]) = colors.map("%06X" format _).mkString(",")
+  def hexstringify(colors:Array[Int]) = colors.map{ "%08x".formatLocal(Locale.ENGLISH, _) }.toList
+  def getColorString(colors:Array[Int]) = colors.map("%06X".formatLocal(Locale.ENGLISH, _)).mkString(",")
 }
 
 class ColorSpec extends FunSpec with MustMatchers {
@@ -32,7 +34,7 @@ class ColorSpec extends FunSpec with MustMatchers {
     def getColorStringLinear(numColors:Int) =
       ColorSpec.getColorString(Color.chooseColors(color1,color2,numColors))
 
-    def getColorStringArray(numColors:Int) = 
+    def getColorStringArray(numColors:Int) =
       ColorSpec.getColorString(Color.chooseColors(colorArray,numColors))
 
     it("should provide 1 color") {
@@ -58,7 +60,7 @@ class ColorSpec extends FunSpec with MustMatchers {
     it("should unzip colors") {
       val n = 0xff9900ff
       val (r, g, b, a) = Color.unzip(n)
-      println("n=%s, r=%s g=%s b=%s a=%s" format (n, r, g, b, a))
+      println(s"n=$n, r=$r g=$g b=$b a=$a")
       r must be === 0xff
       g must be === 0x99
       b must be === 0x00
@@ -67,7 +69,7 @@ class ColorSpec extends FunSpec with MustMatchers {
   }
 
   describe("MultiColorRangeChooser()") {
-    def getColors(baseColors:Array[Int], numColors:Int) = 
+    def getColors(baseColors:Array[Int], numColors:Int) =
       Color.chooseColors(baseColors,numColors)
 
     it("should work 1") {
@@ -78,14 +80,14 @@ class ColorSpec extends FunSpec with MustMatchers {
 
     it("should work 2") {
       val baseColors = Array(0x0000ffff, 0xff0000ff)
-      val colors = getColors(baseColors,baseColors.length)      
+      val colors = getColors(baseColors,baseColors.length)
       colors.toList must be === baseColors.toList
     }
 
     it("should work 3") {
       val baseColors = Array(0x0000ffff, 0x00ff00ff, 0xff0000ff)
       val colors = getColors(baseColors,baseColors.length)
-      colors.map{ "%06x".format(_) }.toList must be === baseColors.map { "%06x".format(_) }.toList
+      colors.map{ "%06x".formatLocal(Locale.ENGLISH, _) }.toList must be === baseColors.map { "%06x".formatLocal(Locale.ENGLISH, _) }.toList
     }
 
     it("should work 6") {
@@ -93,14 +95,14 @@ class ColorSpec extends FunSpec with MustMatchers {
       val colors = getColors(baseColors,baseColors.length)
       colors.toList must be === baseColors.toList
     }
-    
+
     it ("should interpolate") {
       val baseColors = Array(0x0000ffff, 0xff0000ff)
       val expectedColors = Array(0x0000ffff, 0x7f0080ff, 0xff0000ff)
       val colors = getColors(baseColors,3)
       ColorSpec.hexstringify(colors) must be === ColorSpec.hexstringify(expectedColors)
     }
-    
+
     it ("should interpolate 5 colors between 3 given") {
       val baseColors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
       val expected = Array(0xff0000ff, 0x807f00ff, 0x00ff00ff, 0x00807fff, 0x0000ffff)
@@ -118,7 +120,7 @@ class ColorSpec extends FunSpec with MustMatchers {
       cb.colors must be === colors
     }
   }
-  
+
   describe("ColorRamp") {
     it("should return the correct colors") {
       val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
@@ -138,7 +140,7 @@ class ColorSpec extends FunSpec with MustMatchers {
       println(interpolatedColors.colors)
       ColorSpec.hexstringify(interpolatedColors.toArray) must be === ColorSpec.hexstringify(expected)
     }
-    
+
     it("should create an alpha gradient") {
       val colors = Array(0xff0000ff, 0x00ff00ff, 0x0000ffff)
       val expected = Array(0xff000000, 0x00ff007f, 0x0000ffff)

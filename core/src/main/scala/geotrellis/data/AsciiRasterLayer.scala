@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,7 +29,7 @@ extends RasterLayerBuilder {
   val floatRe = """^(-?[0-9]+\.[0-9]+)$""".r
 
   def apply(ds:Option[String],jsonPath:String, json:Config):RasterLayer = {
-    val path = 
+    val path =
       if(json.hasPath("path")) {
         json.getString("path")
       } else {
@@ -41,7 +41,7 @@ extends RasterLayerBuilder {
         }
       }
 
-    val rasterType:RasterType = 
+    val rasterType:RasterType =
       if(json.hasPath("type")) {
         val t = getRasterType(json)
         if(t.isDouble) {
@@ -58,7 +58,7 @@ extends RasterLayerBuilder {
     } else {
       val (rasterExtent,noDataValue) = loadMetaData(path)
 
-      val info = 
+      val info =
         RasterLayerInfo(
           LayerId(ds,getName(json)),
           rasterType,
@@ -81,7 +81,7 @@ extends RasterLayerBuilder {
 
     val name = Filesystem.basename(f.getName)
 
-    val info = 
+    val info =
       RasterLayerInfo(
         LayerId(name),
         TypeInt,
@@ -96,7 +96,7 @@ extends RasterLayerBuilder {
 
   def getBufferedReader(path:String) = {
     val fh = new File(path)
-    if (!fh.canRead) throw new Exception("you can't read '%s' so how can i?".format(path))
+    if (!fh.canRead) throw new Exception(s"you can't read '$path' so how can i?")
     val fr = new java.io.FileReader(path)
     new BufferedReader(fr)
   }
@@ -116,10 +116,10 @@ extends RasterLayerBuilder {
       while (!done) {
         val line = br.readLine().trim()
         val toks = line.split(" ")
-  
-        if (line == null) throw new Exception("premature end of file: %s".format(path))
-        if (toks.length == 0) throw new Exception("illegal empty line: %s".format(path))
-  
+
+        if (line == null) throw new Exception(s"premature end of file: $path")
+        if (toks.length == 0) throw new Exception(s"illegal empty line: $path")
+
         if (line.charAt(0).isDigit) {
           done = true
         } else {
@@ -130,8 +130,8 @@ extends RasterLayerBuilder {
             case Array("yllcorner", floatRe(n)) => yllcorner = n.toDouble
             case Array("cellsize", floatRe(n)) => cellsize = n.toDouble
             case Array("nodata_value", intRe(n)) => nodata_value = n.toInt
-  
-            case _ => throw new Exception("mal-formed line '%s'".format(line))
+
+            case _ => throw new Exception(s"mal-formed line '$line'")
           }
         }
       }
@@ -149,7 +149,7 @@ extends RasterLayerBuilder {
   }
 }
 
-class AsciiRasterLayer(info:RasterLayerInfo, noDataValue:Int, rasterPath:String) 
+class AsciiRasterLayer(info:RasterLayerInfo, noDataValue:Int, rasterPath:String)
 extends UntiledRasterLayer(info) {
   private var cached = false
 
@@ -165,7 +165,7 @@ extends UntiledRasterLayer(info) {
       getReader.readPath(info.rasterType,info.rasterExtent,targetExtent)
     }
 
-  def cache(c:Cache[String]) = 
+  def cache(c:Cache[String]) =
     c.insert(info.id.toString, Filesystem.slurp(rasterPath))
 
   private def getReader = new AsciiReader(rasterPath, noDataValue)

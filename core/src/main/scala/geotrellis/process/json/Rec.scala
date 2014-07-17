@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +34,7 @@ trait Rec[T] {
 
 case class CatalogRec(catalog:String,
                       stores:List[DataStoreRec]) extends Rec[Catalog] {
-  def create(json:String, source:String) = 
+  def create(json:String, source:String) =
     Catalog(catalog, stores.map(s => s.name -> s.create).toMap, json, source)
   def name = catalog
 }
@@ -53,7 +53,7 @@ case class DataStoreRec(store:String,
   }
 
   if (!f.isDirectory) {
-    sys.error("store %s is not a directory" format path)
+    sys.error(s"store $path is not a directory")
   }
 
   val hasCacheAll = if(params.contains("cacheAll")) {
