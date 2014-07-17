@@ -24,10 +24,6 @@ import sbt.Keys._
 import sbtassembly.Plugin._
 import AssemblyKeys._
 
-// ls.implicit.ly
-import ls.Plugin.LsKeys
-import ls.Plugin.lsSettings
-
 object Info {
   val description = 
     "GeoTrellis is an open source geographic data processing engine for high performance applications."
@@ -202,15 +198,6 @@ object GeotrellisBuild extends Build {
       )
     ) ++
     defaultAssemblySettings
-    lsSettings ++
-    Seq(
-      (LsKeys.tags in LsKeys.lsync) :=
-        Info.tags,
-      (LsKeys.docsUrl in LsKeys.lsync) := 
-        Some(new URL(Info.url)),
-      (description in LsKeys.lsync) := 
-        Info.description
-    )
 
   // Project: core-test
   lazy val coreTest =
