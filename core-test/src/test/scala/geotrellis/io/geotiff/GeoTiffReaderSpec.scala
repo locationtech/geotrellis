@@ -40,7 +40,7 @@ class GeoTiffReaderSpec extends FunSpec
     val geoTiff = GeoTiffReader(source).read
     geoTiff.imageDirectories.foreach(x => {
       val currentFileName = math.abs(x.hashCode) + "-" + fileName.substring(0,
-        fileName.length - 4) + ".arg"
+        fileName.length - 4)
       x.writeRasterToArg(argPath + currentFileName, currentFileName)
       }
     )
