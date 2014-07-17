@@ -62,5 +62,10 @@ class CellwiseModeCalc(extent: Int)
     }
   }
 
-  def setValue(x: Int, y: Int) = { tile.setDouble(x, y, mode) }
+  def setValue(x: Int, y: Int) = {
+    if (x == 0 && y == 3) {
+      println(s"mode=${mode}  ${arr.mkString(",")}")
+    }
+    tile.setDouble(x, y, mode)
+  }
 }

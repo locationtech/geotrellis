@@ -141,34 +141,41 @@ trait MedianModeCalculation {
     var modeCount = 1
     var curValue = m
     var curCount = 1
+    var noMode = false
 
     var break = false
     while(!break) {
       val v = arr(i)
+
       if(isNoData(v)) {
         if(curCount > modeCount) {
           m = curValue
           modeCount = curCount
+          noMode = false
+        } else if (curCount == modeCount && curValue != m) {
+          noMode = true
         }
-        
-        break = true
-      }
-        else {
-          if(v == curValue) {
-            curCount += 1
-          } else {
-            if(curCount > modeCount) {
-              m = curValue
-              modeCount = curCount
-            }
-            curValue = v
-            curCount = 1
-          }
-          i += 1
-          if(i == d2) break = true
-        }
-    }
 
-    m
+        break = true
+      } else {
+        if(v == curValue) {
+          curCount += 1
+        } else {
+          if (curCount > modeCount) {
+            m = curValue
+            modeCount = curCount
+            noMode = false
+          } else if (curCount == modeCount) {
+            noMode = true
+          }
+
+          curValue = v
+          curCount = 1
+        }
+        i += 1
+        if(i == d2) break = true
+      }
+    }
+    if (noMode) NODATA else m
   }
 }
