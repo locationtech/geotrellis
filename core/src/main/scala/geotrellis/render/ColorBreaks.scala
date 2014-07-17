@@ -45,8 +45,14 @@ case class ColorBreaks(limits:Array[Int], colors:Array[Int]) {
     lastColor
   }
 
-  override def toString =
-    s"""ColorBreaks(${limits.mkString("Array(", ", ", ")")}, ${colors.map("%08x" formatLocal(Locale.ENGLISH, _)).mkString("Array(", ", ", ")")}"""
+  override def toString = {
+    val limitsStr = limits.mkString("Array(", ", ", ")")
+    val colorsStr =
+      colors
+        .map("%08x" formatLocal(Locale.ENGLISH, _))
+        .mkString("Array(", ", ", ")")
+    s"ColorBreaks($limitsStr, $colorsStr)"
+  }
 }
 
 object ColorBreaks {

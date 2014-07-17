@@ -33,8 +33,8 @@ class HistogramSpec extends FunSpec with MustMatchers with ShouldMatchers {
     s.toCharArray.map { _.toByte - 32 }
   }
   val kinds = List(("ArrayHistogram", ArrayHistogram, () => {ArrayHistogram(100)}),
-    ("MapHistogram", MapHistogram, () => {MapHistogram()}),
-    ("FastMapHistogram", FastMapHistogram, () => {FastMapHistogram()}))
+                   ("MapHistogram", MapHistogram, () => {MapHistogram()}),
+                   ("FastMapHistogram", FastMapHistogram, () => {FastMapHistogram()}))
   kinds.foreach {
     case (name, cls, builder) => {
       describe("A " + name) {

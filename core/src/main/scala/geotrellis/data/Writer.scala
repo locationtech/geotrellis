@@ -30,21 +30,21 @@ trait Writer {
 
   def writeMetadataJSON(path:String, name:String, re:RasterExtent) {
     val metadata = s"""{
-      "layer": "$name",
-      "datatype": "$rasterType",
-      "type": "$dataType",
-      "xmin": ${re.extent.xmin},
-      "xmax": ${re.extent.xmax},
-      "ymin": ${re.extent.ymin},
-      "ymax": ${re.extent.ymax},
-      "cols": ${re.cols},
-      "rows": ${re.rows},
-      "cellwidth": ${re.cellwidth},
-      "cellheight": ${re.cellheight},
-      "epsg": 3785,
-      "yskew": 0.0,
-      "xskew": 0.0
-    }"""
+        |  "layer": "$name",
+        |  "datatype": "$rasterType",
+        |  "type": "$dataType",
+        |  "xmin": ${re.extent.xmin},
+        |  "xmax": ${re.extent.xmax},
+        |  "ymin": ${re.extent.ymin},
+        |  "ymax": ${re.extent.ymax},
+        |  "cols": ${re.cols},
+        |  "rows": ${re.rows},
+        |  "cellwidth": ${re.cellwidth},
+        |  "cellheight": ${re.cellheight},
+        |  "epsg": 3785,
+        |  "yskew": 0.0,
+        |  "xskew": 0.0
+        |}""".stripMargin
 
     val bos = new BufferedOutputStream(new FileOutputStream(path))
     bos.write(metadata.getBytes)

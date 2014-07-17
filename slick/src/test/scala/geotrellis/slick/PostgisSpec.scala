@@ -57,10 +57,10 @@ class PostgisSpec extends FlatSpec with ShouldMatchers {
   val pgdb = scala.util.Properties.envOrElse("PGDB","chicago_gtfs")
   val pghost = scala.util.Properties.envOrElse("PGHOST","localhost:5432")
 
-  val db = Database.forURL("jdbc:postgresql://" + pghost + "/" + pgdb,
-    driver="org.postgresql.Driver",
-    user=pguser,
-    password=pgpass)
+val db = Database.forURL("jdbc:postgresql://" + pghost + "/" + pgdb,
+                           driver="org.postgresql.Driver",
+                           user=pguser,
+                           password=pgpass)
 
   "Environment" should "be sane" in {
     db withSession { implicit s =>
