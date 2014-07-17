@@ -24,12 +24,19 @@ class ModeSpec extends FunSpec with Matchers with TileBuilders with TestEngine {
         7, 1, 1,    1, 2, 2,    2, 9, 8,
         7, 1, 1,    1, 3, 3,    2, 2, 2,
 
-        9, 1, 1,    1, 2, 1,    2, 2, 2,
+        9, 1, 1,    1, 2, 1,    1, 2, 2,
         3, 3, 1,    1, 3, 1,    1, 2, 2)
 
-      val inputTile = createCompositeTile(input, TileLayout(3,2,3,2))
+      val inputTile = createTile(input, 9, 4)
       val expectedTile = createTile(expected, 9, 4)
       val actualTile = inputTile.focalMode(Square(1))
+      println("INTPUT")
+      println(inputTile.asciiDraw)
+      println("ACTUAL")
+      println(actualTile.asciiDraw)
+      println("EXPECTED")
+      println(expectedTile.asciiDraw)
+
 
       assertEqual(actualTile, expectedTile, threshold = 0.001)
     }
