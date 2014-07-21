@@ -50,7 +50,7 @@ trait FocalMethods extends TileMethods {
    * @param   zFactor    Number of map units to one elevation unit.
    * @see [[Slope]]
    */
-  def slope(cs: CellSize, zFactor: Double, bounds: Option[GridBounds] = None): Tile = {
+  def slope(cs: CellSize, zFactor: Double = 1.0, bounds: Option[GridBounds] = None): Tile = {
     Slope(tile, Square(1), bounds, cs, zFactor)
   }
 
@@ -63,13 +63,15 @@ trait FocalMethods extends TileMethods {
     Aspect(tile, Square(1), bounds, cs)
   }
 
+
   /**
    * Computes Hillshade (shaded relief) from a raster.
    * @see [[Hillshade]]
    */
-  def hillshade(cs: CellSize, azimuth: Double, altitude: Double, zFactor: Double, bounds: Option[GridBounds] = None) = {
+  def hillshade(cs: CellSize, azimuth: Double = 315, altitude: Double = 45, zFactor: Double = 1.0, bounds: Option[GridBounds] = None) = {
     Hillshade(tile, Square(1), bounds, cs, azimuth, altitude, zFactor)
   }
+
 
   /** Calculates spatial autocorrelation of cells based on the similarity to neighboring values.
    * @see [[TileMoransICalculation]]
