@@ -23,11 +23,11 @@ class StandardDeviationSpec extends FunSpec with FocalOpSpec
                                             with Matchers {
 
   val getCircleStdResult = (getDoubleCursorResult _).curried(
-    (r,n) => StandardDeviation(r,n)
+    (r,n) => StandardDeviation.calculation(r,n)
   )(Circle(1))
 
   val getSquareStdResult = (getDoubleCursorResult _).curried(
-    (r,n) => StandardDeviation(r,n)
+    (r,n) => StandardDeviation.calculation(r,n)
   )(Square(1))
 
   def mean(xs: List[Int]): Double = xs match {

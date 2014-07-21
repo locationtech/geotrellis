@@ -3,7 +3,7 @@ package geotrellis.raster.op.focal
 import geotrellis.raster._
 
 object Conway {
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
+  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
     new CellwiseCalculation[Tile](tile, n, bounds)
       with ByteArrayTileResult
     {
@@ -27,4 +27,7 @@ object Conway {
       def reset() = { count = 0 }
     }
   }
+
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): Tile =
+    calculation(tile, n, bounds).execute()
 }

@@ -136,7 +136,7 @@ trait FocalOpSpec extends TileBuilders with Matchers {
     var init = true
     for(setup <- setups) {
       val mockCursor = MockCursor.fromAddRemove(setup.adds, setup.removes)
-//      if(init) { calc.init(mockCursor.raster) ; init = false }
+
       calc.calc(mockCursor.raster, mockCursor)
       calc.result.get(0, 0) should equal(setup.result)
     }
@@ -150,7 +150,7 @@ trait FocalOpSpec extends TileBuilders with Matchers {
     var init = true
     for(setup <- setups) {
       val r = MockCursor.fromAddRemove(setup.adds, setup.removes).raster
-//      if(init) { calc.init(r) ; init = false }
+
       var i = 0
       for(x <- setup.adds) {
         calc.add(r, i, 1)
@@ -173,7 +173,7 @@ trait FocalOpSpec extends TileBuilders with Matchers {
     var init = true
     for(setup <- setups) {
       val mockCursor = MockCursor.fromAddRemove(setup.adds, setup.removes)
-//      if(init) { calc.init(mockCursor.raster) ; init = false }
+
       calc.calc(mockCursor.raster, mockCursor)
       calc.result.getDouble(0, 0) should equal(setup.result)
     }
@@ -186,7 +186,6 @@ trait FocalOpSpec extends TileBuilders with Matchers {
     var init = true
     for(setup <- setups) {
       val r = MockCursor.fromAddRemove(setup.adds, setup.removes).raster
-//      if(init) { calc.init(r) ; init = false }
       var i = 0
       for(x <- setup.adds) {
         calc.add(r, i, 1)

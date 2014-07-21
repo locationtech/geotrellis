@@ -14,5 +14,5 @@ trait HydrologyMethods extends TileMethods {
   /** Fills sink values in a raster. Returns a Tile of TypeDouble
     * @see [[Fill]]
     */
-  def fill(threshold: Double): Tile = Fill(tile, Square(1), None, threshold).execute()
+  def fill(threshold: Double): Tile = Fill(tile, Square(1), None, threshold)
 }

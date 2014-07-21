@@ -6,7 +6,7 @@ import geotrellis.raster._
 
 class MinSpec extends FunSpec with Matchers with FocalOpSpec with TestEngine {
 
-  val getMinResult = Function.uncurried((getCursorResult _).curried((r,n) => Min(r,n)))
+  val getMinResult = Function.uncurried((getCursorResult _).curried((r,n) => Min.calculation(r,n)))
 
   describe("Tile focalMin") {
     val tile: Tile = createTile((0 until 16).toArray)

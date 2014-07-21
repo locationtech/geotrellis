@@ -7,10 +7,10 @@ import geotrellis.raster._
 class MaxSpec extends FunSpec with Matchers with TileBuilders with TestEngine with FocalOpSpec {
 
   val getMaxResult = Function.uncurried((getCursorResult _).curried(
-    (r,n) => Max(r,n)
+    (r,n) => Max.calculation(r,n)
   ))
   val getMaxSetup = Function.uncurried((getSetup _).curried(
-    (r,n) => Max(r,n)
+    (r,n) => Max.calculation(r,n)
   ))
   val squareSetup = getMaxSetup(defaultRaster, Square(1))
 

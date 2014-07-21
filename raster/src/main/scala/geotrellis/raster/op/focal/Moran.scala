@@ -20,7 +20,7 @@ import geotrellis.raster.stats.{Statistics, FastMapHistogram}
  *                        of a double typed Tile (TypeFloat, TypeDouble).
  */
 object TileMoransICalculation {
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): FocalCalculation[Tile] = {
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): Tile = {
     new CursorCalculation[Tile](tile, n, bounds)
       with DoubleArrayTileResult
     {
@@ -50,7 +50,7 @@ object TileMoransICalculation {
         tile.setDouble(cursor.col, cursor.row, (base / `stddev^2` * z) / w)
       }
     }
-  }
+  }.execute()
 }
 
 /**
@@ -69,7 +69,7 @@ object TileMoransICalculation {
  *                        of a double typed Tile (TypeFloat, TypeDouble).
  */
 object ScalarMoransICalculation {
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): FocalCalculation[Double] = {
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): Double = {
     new CursorCalculation[Double](tile, n, bounds)
     {
       var mean: Double = 0
@@ -95,5 +95,5 @@ object ScalarMoransICalculation {
 
       def result = count / ws
     }
-  }
+  }.execute()
 }

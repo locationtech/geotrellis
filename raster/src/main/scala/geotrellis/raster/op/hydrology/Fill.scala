@@ -33,13 +33,13 @@ object FillOptions {
  *                     the threshold appropriately.
  */
 object Fill {
-  def apply(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Double): FocalCalculation[Tile] = {
+  def apply(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Double): Tile = {
     if (r.cellType.isFloatingPoint) {
       new CursorFillCalcDouble(r, Square(1), bounds, threshold)
     } else {
       new CursorFillCalc(r, Square(1), bounds, threshold.toInt)
     }
-  }
+  }.execute()
 }
 
 class CursorFillCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Double)

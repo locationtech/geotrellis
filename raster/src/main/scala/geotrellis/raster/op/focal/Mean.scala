@@ -2,9 +2,8 @@ package geotrellis.raster.op.focal
 
 import geotrellis.raster._
 
-object MeanCalculation {
-
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
+object Mean {
+  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
     if(tile.cellType.isFloatingPoint) {
       n match {
         case Square(ext) => new CellwiseMeanCalcDouble(tile, n, bounds)
@@ -17,6 +16,9 @@ object MeanCalculation {
       }
     }
   }
+
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): Tile =
+    calculation(tile, n, bounds).execute()
 }
 
 class CellwiseMeanCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])

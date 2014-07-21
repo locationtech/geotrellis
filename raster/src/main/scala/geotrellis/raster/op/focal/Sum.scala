@@ -3,8 +3,7 @@ package geotrellis.raster.op.focal
 import geotrellis.raster._
 
 object Sum {
-
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
+  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
     if(tile.cellType.isFloatingPoint){
       n match {
         case Square(ext) => new CellwiseDoubleSumCalc(tile, n, bounds)
@@ -18,6 +17,9 @@ object Sum {
     }
 
   }
+
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): Tile =
+    calculation(tile, n, bounds).execute()
 }
 
 class CursorSumCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])

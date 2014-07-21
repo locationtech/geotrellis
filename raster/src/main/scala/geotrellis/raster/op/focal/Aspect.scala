@@ -22,7 +22,7 @@ import geotrellis.raster.op.focal.Angles._
   */
 object Aspect {
 
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], cs: CellSize): FocalCalculation[Tile] = {
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], cs: CellSize): Tile = {
     new SurfacePointCalculation[Tile](tile, n, bounds, cs)
       with DoubleArrayTileResult
     {
@@ -31,5 +31,5 @@ object Aspect {
         tile.setDouble(x, y, degrees(s.aspect))
       }
     }
-  }
+  }.execute()
 }

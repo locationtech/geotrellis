@@ -25,7 +25,7 @@ class ConwaySpec extends FunSpec with FocalOpSpec
   val getConwayResult =
     Function.uncurried(
       (getCellwiseResult _)
-        .curried{(r,n) => Conway(r,n)}(Square(1))
+        .curried{(r,n) => Conway.calculation(r,n)}(Square(1))
     )
 
   val calc = Conway

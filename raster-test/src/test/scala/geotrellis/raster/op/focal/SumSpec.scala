@@ -23,12 +23,12 @@ class SumSpec extends FunSpec with TestEngine with TileBuilders with FocalOpSpec
     16, 16, 16, 16)
 
   val getCursorSumResult = (getCursorResult _).curried{
-    (r,n) => Sum(r,n)
+    (r,n) => Sum.calculation(r,n)
   }(Circle(1))
 
   val getCellwiseSumResult = Function.uncurried(
     (getCellwiseResult _).curried(
-      (r,n) => Sum(r,n)
+      (r,n) => Sum.calculation(r,n)
     )(Square(1))
   )
 
@@ -56,13 +56,13 @@ class SumSpec extends FunSpec with TestEngine with TileBuilders with FocalOpSpec
     }
 
     it("should hold state correctly with cursor calculation") {
-      testCursorSequence((r,n) => Sum(r,n), Circle(1),
+      testCursorSequence((r,n) => Sum.calculation(r,n), Circle(1),
              Seq( SeqTestSetup(Seq(1,2,3,4,5), Seq[Int](), 15),
                   SeqTestSetup(Seq(10,10)    , Seq(2,3,5), 25)) )
     }
 
     it("should hold state correctly with cellwise calculation") {
-      testCellwiseSequence((r,n)=>Sum(r,n), Square(1),
+      testCellwiseSequence((r,n)=>Sum.calculation(r,n), Square(1),
              Seq( SeqTestSetup(Seq(1,2,3,4,5), Seq[Int](), 15),
                   SeqTestSetup(Seq(10,10)    , Seq(2,3,5), 25)) )
     }

@@ -7,9 +7,9 @@ import geotrellis.testkit._
 class MeanSpec extends FunSpec with Matchers with FocalOpSpec with TestEngine {
 
   val getCursorMeanResult = (getDoubleCursorResult _).curried(
-    (r,n) => MeanCalculation(r,n))(Circle(1))
+    (r,n) => Mean.calculation(r,n))(Circle(1))
   val getCellwiseMeanResult = Function.uncurried((getDoubleCellwiseResult _).curried(
-    (r,n) => MeanCalculation(r,n))(Square(1)))
+    (r,n) => Mean.calculation(r,n))(Square(1)))
 
   describe("Tile focalMean") {
     it("should handle all NODATA") {
@@ -41,13 +41,13 @@ class MeanSpec extends FunSpec with Matchers with FocalOpSpec with TestEngine {
     }
 
     it("should hold state correctly with cursor calculation") {
-      testDoubleCursorSequence((r,n) => MeanCalculation(r,n), Circle(1),
+      testDoubleCursorSequence((r,n) => Mean.calculation(r,n), Circle(1),
         Seq( SeqTestSetup(Seq(1,2,3,4,5), Seq[Int](), 3.0),
           SeqTestSetup(Seq(10,10)    , Seq(2,3,5), 6.25)) )
     }
 
     it("should hold state correctly with cellwise calculation") {
-      testDoubleCellwiseSequence((r,n)=>MeanCalculation(r,n), Square(1),
+      testDoubleCellwiseSequence((r,n)=>Mean.calculation(r,n), Square(1),
         Seq( SeqTestSetup(Seq(1,2,3,4,5), Seq[Int](), 3.0),
           SeqTestSetup(Seq(10,10)    , Seq(2,3,5), 6.25)) )
     }

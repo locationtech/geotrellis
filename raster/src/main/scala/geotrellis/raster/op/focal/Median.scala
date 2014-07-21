@@ -3,12 +3,16 @@ package geotrellis.raster.op.focal
 import geotrellis.raster._
 
 
-object MedianCalculation {
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): FocalCalculation[Tile] =
+object Median {
+  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): FocalCalculation[Tile] = {
     n match {
       case Square(ext) => new CellwiseMedianCalc(tile, n, bounds, ext)
       case _ => new CursorMedianCalc(tile, n, bounds, n.extent)
     }
+  }
+
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): Tile =
+    calculation(tile, n, bounds).execute()
 }
 
 class CursorMedianCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], extent: Int)

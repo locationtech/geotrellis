@@ -9,12 +9,16 @@ import geotrellis.raster._
  *                  If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
  *                  the data values will be rounded to integers.
  */
-object ModeCalculation {
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] =
+object Mode {
+  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
     n match {
       case Square(ext) => new CellwiseModeCalc(tile, n, bounds, ext)
       case _ => new CursorModeCalc(tile, n, bounds, n.extent)
     }
+  }
+
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): Tile =
+    calculation(tile, n, bounds).execute()
 }
 
 

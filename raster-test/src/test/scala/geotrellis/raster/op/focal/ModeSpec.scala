@@ -6,7 +6,7 @@ import geotrellis.testkit._
 class ModeSpec extends FunSpec with Matchers with FocalOpSpec with TestEngine {
 
   val getModeResult = Function.uncurried((getCursorResult _).curried(
-    (r,n) => ModeCalculation(r,n)))
+    (r,n) => Mode.calculation(r,n)))
 
   describe("Tile focalMode") {
     it("should match worked out results") {

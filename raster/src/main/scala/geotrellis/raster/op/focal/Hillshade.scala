@@ -19,7 +19,7 @@ import scala.math._
  * @see [[http://goo.gl/DtVDQ Esri Desktop's description of Hillshade.]]
  */
 object Hillshade {
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], cs: CellSize, az: Double, al: Double, z: Double): FocalCalculation[Tile] = {
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], cs: CellSize, az: Double, al: Double, z: Double): Tile = {
     new SurfacePointCalculation[Tile](tile, n, bounds, cs) with
       ShortArrayTileResult
     {
@@ -41,7 +41,7 @@ object Hillshade {
         tile.set(x, y, round(127.0 * max(0.0, v)).toInt)
       }
     }
-  }
+  }.execute()
 
   /** Indirect calculation of hill shading of a tile that uses Aspect and Slope operation results */
   def indirect(aspect: Tile, slope: Tile, azimuth: Double, altitude: Double): Tile = {

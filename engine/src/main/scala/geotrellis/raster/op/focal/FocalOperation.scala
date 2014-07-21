@@ -48,7 +48,7 @@ trait FocalOperation {self: RasterSource =>
 
   protected
   def focal(n: Neighborhood)
-           (calc: (Tile, Neighborhood, Option[GridBounds]) => FocalCalculation[Tile]) =
+           (calc: (Tile, Neighborhood, Option[GridBounds]) => Tile) =
   {
     val tileOps: Op[Seq[Op[Tile]]] =
       zipWithNeighbors.map{ //map into the Op
@@ -57,7 +57,7 @@ trait FocalOperation {self: RasterSource =>
           //Now we're mapping into tile and it's neighbors, in parallel
           (t, ns.getNeighbors).map { case (center: Tile, neighbors: Seq[Option[Tile]]) =>
             val (neighborhoodTile, analysisArea) = TileWithNeighbors(center, neighbors)
-            calc(neighborhoodTile, n, Some(analysisArea)).execute()
+            calc(neighborhoodTile, n, Some(analysisArea))
           }
         }
       }
@@ -67,7 +67,7 @@ trait FocalOperation {self: RasterSource =>
 
   protected
   def focalWithExtent(n: Neighborhood)
-                     (calc: (Tile, Neighborhood, Option[GridBounds], RasterExtent) => FocalCalculation[Tile]) =
+                     (calc: (Tile, Neighborhood, Option[GridBounds], RasterExtent) => Tile) =
   {
     val tileOps: Op[Seq[Op[Tile]]] =
       (rasterDefinition, zipWithNeighbors).map{ case (rd, tiles) =>
@@ -76,7 +76,7 @@ trait FocalOperation {self: RasterSource =>
           (t, ns.getNeighbors).map { case (center: Tile, neighbors: Seq[Option[Tile]]) =>
             val (neighborhoodTile, analysisArea) = TileWithNeighbors(center, neighbors)
             //TODO - here we get the full RasterExtent, should it be RasterExtent of the tile/neighborhoodTile ?
-            calc(neighborhoodTile, n, Some(analysisArea), rd.rasterExtent).execute()
+            calc(neighborhoodTile, n, Some(analysisArea), rd.rasterExtent)
           }
         }
       }
