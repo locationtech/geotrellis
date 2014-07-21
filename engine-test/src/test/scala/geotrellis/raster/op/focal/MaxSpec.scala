@@ -16,61 +16,16 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis.raster._
-import geotrellis.raster.op._
+import org.scalatest._
 import geotrellis.engine._
-
 import geotrellis.testkit._
 
-import org.scalatest._
-
-import scala.math._
-
-class MaxSpec extends FunSpec with FocalOpSpec
+class MaxSpec extends FunSpec with TileBuilders
                               with Matchers 
                               with TestEngine {
 
-  val getMaxResult = Function.uncurried((getCursorResult _).curried((r,n) => focal.Max(r,n)))
-  val getMaxSetup = Function.uncurried((getSetup _).curried((r,n) => focal.Max(r,n)))
-  val squareSetup = getMaxSetup(defaultRaster,Square(1))
 
   describe("Max") {
-    it("should correctly compute a center neighborhood") {
-      squareSetup.result(2,2) should equal (4)
-    }
-
-    it("should agree with a manually worked out example") {
-      val r = createTile(Array[Int](1,1,1,1,
-                                      2,2,2,2,
-                                      3,3,3,3,
-                                      1,1,4,4))
-
-      val maxOp = focal.Max(r,Square(1))
-      assertEqual(maxOp, Array[Int](2,2,2,2,
-                                    3,3,3,3,
-                                    3,4,4,4,
-                                    3,4,4,4))
-    }
-
-    it("should agree with a manually worked out example with doubles") {
-      val r = createTile(Array[Double](1.2,1.3,1.1,1.4,
-                                         2.4,2.1,2.5,2.2,
-                                         3.1,3.5,3.2,3.1,
-                                         1.9,1.1,4.4,4.9))
-
-      val maxOp = focal.Max(r,Square(1))
-      assertEqual(maxOp, Array[Double](2.4,2.5,2.5,2.5,
-                                       3.5,3.5,3.5,3.2,
-                                       3.5,4.4,4.9,4.9,
-                                       3.5,4.4,4.9,4.9))
-    }
-
-    it("should match scala.math.max default sets") {      
-      for(s <- defaultTestSets) {
-        getMaxResult(Square(1),MockCursor.fromAll(s:_*)) should equal (s.max)
-      }
-    }
-
     it("should square max for raster source") {
       val rs1 = createRasterSource(
         Array( nd,7,1,      1,1,1,      1,1,1,

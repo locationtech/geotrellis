@@ -32,7 +32,7 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
 
 object GridBounds {
   def apply(r: Tile): GridBounds = 
-    GridBounds(0, 0, r.cols, r.rows)
+    GridBounds(0, 0, r.cols-1, r.rows-1)
 }
 
 case class CellSize(width: Double, height: Double)

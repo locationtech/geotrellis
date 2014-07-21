@@ -16,7 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.engine._
 import geotrellis.feature.Extent
 import geotrellis.engine.LayerId
 
@@ -33,6 +32,18 @@ case class RasterDefinition(layerId: LayerId,
 
   def withRasterExtent(target: RasterExtent) =
     new RasterDefinition(layerId, target, TileLayout.singleTile(target), cellType, catalogued)
+
+  def tileExtent(tileCol: Int, tileRow: Int): Extent = {
+    val minCol = tileCol * tileLayout.pixelCols
+    val minRow = tileRow * tileLayout.pixelRows
+    val grid = GridBounds(
+      minCol,
+      minRow,
+      minCol + tileLayout.pixelCols - 1,
+      minRow + tileLayout.pixelRows - 1
+    )
+    rasterExtent.extentFor(grid)
+  }
 }
 
 object RasterDefinition {
