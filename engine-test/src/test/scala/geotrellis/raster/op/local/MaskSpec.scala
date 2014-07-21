@@ -20,12 +20,11 @@ import geotrellis.raster._
 import geotrellis.engine._
 import geotrellis.feature._
 import geotrellis.feature.json._
+import geotrellis.testkit._
 
 import org.scalatest._
 
-import scala.math.min
-
-import geotrellis.testkit._
+import spray.json.DefaultJsonProtocol._
 
 class MaskSpec extends FunSpec 
                   with Matchers 

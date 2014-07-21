@@ -71,9 +71,10 @@ case class SeqTileNeighbors(seq: Seq[Option[Op[Tile]]]) extends TileNeighbors {
   def w = seq(6)
   def nw = seq(7)
 
-  def getNeighbors =
-    if(seq.flatten.isEmpty) { Literal(Seq[Option[Tile]]()) }
-    else {
+  def getNeighbors: Op[Seq[Option[Tile]]] =
+    if(seq.flatten.isEmpty) {
+      Literal(Seq[Option[Tile]]())
+    } else {
       logic.Collect(
         seq.map {
           case Some(op) => op.map(Some(_))

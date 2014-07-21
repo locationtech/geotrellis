@@ -200,6 +200,62 @@ trait TileBuilders {
     RasterSource(RasterDefinition(LayerId("test"), re, tileLayout, TypeDouble), ops)
   }
 
+  def createCompositeTile(arr: Array[Int], layout: TileLayout): Tile = {
+    val TileLayout(tileCols, tileRows, pixelCols, pixelRows) = layout
+
+    if(tileCols * pixelCols * tileRows * pixelRows != arr.length) {
+      sys.error("Tile and pixel col rows do not match array length")
+    }
+    val tiles =
+      for(j <- 0 until tileRows) yield {
+        for(i <- 0 until tileCols) yield {
+          createTile(Array.ofDim[Int](pixelCols * pixelRows), pixelCols, pixelRows)
+        }
+      }
+
+    for(tR <- 0 until tileRows) {
+      for(pR <- 0 until pixelRows) {
+        for(tC <- 0 until tileCols) {
+          for(pC <- 0 until pixelCols) {
+            val col = tC * pixelCols + pC
+            val row = tR * pixelRows + pR
+            val v = arr(row * tileCols * pixelCols + col)
+            tiles(tR)(tC)(pR * pixelCols + pC) = v
+          }
+        }
+      }
+    }
+    CompositeTile(tiles.flatten, layout)
+  }
+
+  def createCompositeTile(arr: Array[Double], layout: TileLayout): Tile = {
+    val TileLayout(tileCols, tileRows, pixelCols, pixelRows) = layout
+
+    if(tileCols * pixelCols * tileRows * pixelRows != arr.length) {
+      sys.error("Tile and pixel col rows do not match array length")
+    }
+    val tiles =
+      for(j <- 0 until tileRows) yield {
+        for(i <- 0 until tileCols) yield {
+          Array.ofDim[Double](pixelCols * pixelRows)
+        }
+      }
+
+    for(tR <- 0 until tileRows) {
+      for(pR <- 0 until pixelRows) {
+        for(tC <- 0 until tileCols) {
+          for(pC <- 0 until pixelCols) {
+            val col = tC * pixelCols + pC
+            val row = tR * pixelRows + pR
+            val v = arr(row * tileCols * pixelCols + col)
+            tiles(tR)(tC)(pR * pixelCols + pC) = v
+          }
+        }
+      }
+    }
+    CompositeTile(tiles.flatten.map(a => createTile(a, pixelCols, pixelRows)), layout)
+  }
+
   /**
    * 9x10 raster of 90 numbers between 1 - 100 in random order.
    */

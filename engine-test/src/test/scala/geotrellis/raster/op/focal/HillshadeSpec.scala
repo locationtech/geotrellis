@@ -39,49 +39,10 @@ class HillshadeSpec extends FunSuite
 
   def time() = System.currentTimeMillis()
 
-  // for more information on how hillshade work, see: http://bit.ly/Qj0YPg.
-  // note that we scale by 128 not 256, so our result is 77 instead of 154.
-
-  test("esri hillshade") {
-    val re = RasterExtent(Extent(0.0, 0.0, 25.0, 25.0), 5.0, 5.0, 5, 5)
-    val arr = Array(0, 0, 0, 0, 0,
-                    0, 2450, 2461, 2483, 0,
-                    0, 2452, 2461, 2483, 0,
-                    0, 2447, 2455, 2477, 0,
-                    0, 0, 0, 0, 0)
-    val tile = IntArrayTile(arr, 5, 5)
-
-    val cs = CellSize(5.0, 5.0)
-    val h = get(Hillshade(Aspect(tile, cs), Slope(tile, cs, 1.0), 315.0, 45.0))
-    val h2 = get(Hillshade(tile, CellSize(5.0, 5.0), 315.0, 45.0, 1.0))
-    assert(h.get(2, 2) === 77)
-    assert(h2.get(2, 2) === 77)
-  }
-
-  test("Hillshade works with raster source") {
-    val rs = createRasterSource(
-      Array(0, 0, 0,              0, 0, 0,
-            0, 2450, 2461,        2483, 0, 0,
-
-            0, 2452, 2461,        2483, 0, 0,
-            0, 2447, 2455,        2477, 0, 0),
-      2, 2, 3, 2, 5, 5)
-
-    run(rs.focalHillshade(315.0, 45.0, 1.0)) match {
-      case Complete(result, success) =>
-        //          println(success)
-        assert(result.get(2, 2) === 77)
-      case Error(msg, failure) =>
-        println(msg)
-        println(failure)
-        assert(false)
-    }
-  }
-
   test("should get the same result for split raster") {
     val rasterExtent = RasterSource(LayerId("test:fs", "elevation")).rasterExtent.get
     val rOp = getRaster("elevation")
-    val nonTiledSlope = Hillshade(rOp, rasterExtent.cellSize, 315.0, 45.0, 1.0)
+    val nonTiledSlope = get(rOp).hillshade(rasterExtent.cellSize, 315.0, 45.0, 1.0)
 
     val tiled =
       rOp.map { r =>
@@ -93,7 +54,7 @@ class HillshadeSpec extends FunSuite
       }
 
     val rs = RasterSource(tiled, rasterExtent.extent)
-    run(rs.focalHillshade(315.0, 45.0, 1.0)) match {
+    run(rs.hillshade(315.0, 45.0, 1.0)) match {
       case Complete(result, success) =>
         //          println(success)
         assertEqual(result, nonTiledSlope)
@@ -123,8 +84,8 @@ class HillshadeSpec extends FunSuite
 
     val rs = RasterSource(CompositeTile.wrap(r, tileLayout, cropped = false), extent)
 
-    val expected = source.focalHillshade.get
-    rs.focalHillshade.run match {
+    val expected = source.hillshade.get
+    rs.hillshade.run match {
       case Complete(value, hist) =>
         // Dont check last col or last row. 
         // Reason is, because the offsetting of the tiles, the tiled version

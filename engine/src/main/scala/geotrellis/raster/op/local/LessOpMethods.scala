@@ -16,8 +16,6 @@
 
 package geotrellis.raster.op.local
 
-import geotrellis._
-import geotrellis.raster._
 import geotrellis.raster._
 
 trait LessOpMethods[+Repr <: RasterSource] { self: Repr =>
