@@ -1,6 +1,6 @@
 package geotrellis.raster.op.focal
 
-import geotrellis.raster.Tile
+import geotrellis.raster.{GridBounds, Tile}
 
 /**
  * Computes the maximum value of a neighborhood for a given raster.
@@ -11,13 +11,12 @@ import geotrellis.raster.Tile
  */
 object Max {
 
-  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] = {
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
 
     if (tile.cellType.isFloatingPoint) {
-      new CursorCalculation[Tile](tile, n)
+      new CursorCalculation[Tile](tile, n, bounds)
         with DoubleArrayTileResult
       {
-        init(r)
         def calc(r: Tile, cursor: Cursor) = {
           var m = Double.MinValue
           cursor.allCells.foreach { (x, y) =>
@@ -29,10 +28,9 @@ object Max {
       }
 
     } else {
-      new CursorCalculation[Tile](tile, n)
+      new CursorCalculation[Tile](tile, n, bounds)
         with IntArrayTileResult
       {
-        init(r)
         def calc(r: Tile, cursor: Cursor) = {
           var m = Int.MinValue
           cursor.allCells.foreach { (x, y) =>

@@ -4,28 +4,26 @@ import geotrellis.raster._
 
 object Sum {
 
-  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] = {
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
     if(tile.cellType.isFloatingPoint){
       n match {
-        case Square(ext) => new CellwiseDoubleSumCalc(tile, n)
-        case _ =>           new CursorDoubleSumCalc(tile, n)
+        case Square(ext) => new CellwiseDoubleSumCalc(tile, n, bounds)
+        case _ =>           new CursorDoubleSumCalc(tile, n, bounds)
       }
     }else{
       n match {
-        case Square(ext) => new CellwiseSumCalc(tile, n)
-        case _ =>           new CursorSumCalc(tile, n)
+        case Square(ext) => new CellwiseSumCalc(tile, n, bounds)
+        case _ =>           new CursorSumCalc(tile, n, bounds)
       }
     }
 
   }
 }
 
-class CursorSumCalc(r: Tile, n: Neighborhood)
-  extends CursorCalculation[Tile](r, n)
+class CursorSumCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
+  extends CursorCalculation[Tile](r, n, bounds)
   with IntArrayTileResult
 {
-  init(r)
-
   var total = 0
 
   def calc(r: Tile, cursor: Cursor) = {
@@ -48,12 +46,10 @@ class CursorSumCalc(r: Tile, n: Neighborhood)
   }
 }
 
-class CellwiseSumCalc(r: Tile, n: Neighborhood)
-  extends CellwiseCalculation[Tile](r, n)
+class CellwiseSumCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
+  extends CellwiseCalculation[Tile](r, n, bounds)
   with IntArrayTileResult
 {
-  init(r)
-
   var total = 0
 
   def add(r: Tile, x: Int, y: Int) = {
@@ -72,12 +68,10 @@ class CellwiseSumCalc(r: Tile, n: Neighborhood)
   }
 }
 
-class CursorDoubleSumCalc(r: Tile, n: Neighborhood)
-  extends CursorCalculation[Tile](r, n)
+class CursorDoubleSumCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
+  extends CursorCalculation[Tile](r, n, bounds)
   with DoubleArrayTileResult
 {
-  init(r)
-
   var total = 0.0
 
   def calc(r: Tile, cursor: Cursor) = {
@@ -100,12 +94,10 @@ class CursorDoubleSumCalc(r: Tile, n: Neighborhood)
   }
 }
 
-class CellwiseDoubleSumCalc(r: Tile, n: Neighborhood)
-  extends CellwiseCalculation[Tile](r, n)
+class CellwiseDoubleSumCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
+  extends CellwiseCalculation[Tile](r, n, bounds)
   with DoubleArrayTileResult
 {
-  init(r)
-
   var total = 0.0
 
   def add(r: Tile, x: Int, y: Int) = {

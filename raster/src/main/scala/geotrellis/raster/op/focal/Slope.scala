@@ -22,11 +22,10 @@ import geotrellis.raster.op.focal.Angles._
  */
 object Slope {
 
-  def apply(r: Tile, n: Neighborhood, cs: CellSize, z: Double): FocalCalculation[Tile] = {
-    new SurfacePointCalculation[Tile](r, n, cs)
+  def apply(r: Tile, n: Neighborhood, bounds: Option[GridBounds], cs: CellSize, z: Double): FocalCalculation[Tile] = {
+    new SurfacePointCalculation[Tile](r, n, bounds, cs)
       with DoubleArrayTileResult
     {
-      init(r)
       val zFactor = z
 
       def setValue(x: Int, y: Int, s: SurfacePoint) {

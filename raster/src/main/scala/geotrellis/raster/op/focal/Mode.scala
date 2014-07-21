@@ -10,21 +10,20 @@ import geotrellis.raster._
  *                  the data values will be rounded to integers.
  */
 object ModeCalculation {
-  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] =
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] =
     n match {
-      case Square(ext) => new CellwiseModeCalc(tile, n, ext)
-      case _ => new CursorModeCalc(tile, n, n.extent)
+      case Square(ext) => new CellwiseModeCalc(tile, n, bounds, ext)
+      case _ => new CursorModeCalc(tile, n, bounds, n.extent)
     }
 }
 
 
-class CursorModeCalc(r: Tile, n: Neighborhood, extent: Int)
-  extends CursorCalculation[Tile](r, n)
+class CursorModeCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], extent: Int)
+  extends CursorCalculation[Tile](r, n, bounds)
   with IntArrayTileResult
   with MedianModeCalculation
 {
   initArray(extent)
-  init(r)
 
   def calc(r: Tile, cursor: Cursor) = {
     cursor.removedCells.foreach { (x, y) =>
@@ -42,13 +41,12 @@ class CursorModeCalc(r: Tile, n: Neighborhood, extent: Int)
 }
 
 
-class CellwiseModeCalc(r: Tile, n: Neighborhood, extent: Int)
-  extends CellwiseCalculation[Tile](r, n)
+class CellwiseModeCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], extent: Int)
+  extends CellwiseCalculation[Tile](r, n, bounds)
   with IntArrayTileResult
   with MedianModeCalculation
 {
   initArray(extent)
-  init(r)
 
   def add(r: Tile, x: Int, y: Int) = {
     val v = r.get(x, y)

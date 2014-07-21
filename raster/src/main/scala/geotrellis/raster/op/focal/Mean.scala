@@ -4,29 +4,27 @@ import geotrellis.raster._
 
 object MeanCalculation {
 
-  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] = {
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
     if(tile.cellType.isFloatingPoint) {
       n match {
-        case Square(ext) => new CellwiseMeanCalcDouble(tile, n)
-        case _ => new CursorMeanCalcDouble(tile, n)
+        case Square(ext) => new CellwiseMeanCalcDouble(tile, n, bounds)
+        case _ => new CursorMeanCalcDouble(tile, n, bounds)
       }
     } else {
       n match {
-        case Square(ext) => new CellwiseMeanCalc(tile, n)
-        case _ => new CursorMeanCalc(tile, n)
+        case Square(ext) => new CellwiseMeanCalc(tile, n, bounds)
+        case _ => new CursorMeanCalc(tile, n, bounds)
       }
     }
   }
 }
 
-class CellwiseMeanCalc(r: Tile, n: Neighborhood)
-  extends CellwiseCalculation[Tile](r, n)
+class CellwiseMeanCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
+  extends CellwiseCalculation[Tile](r, n, bounds)
   with DoubleArrayTileResult
 {
   var count: Int = 0
   var sum: Int = 0
-
-  init(r)
 
   def add(r: Tile, x: Int, y: Int) = {
     val z = r.get(x, y)
@@ -48,14 +46,12 @@ class CellwiseMeanCalc(r: Tile, n: Neighborhood)
   def reset() = { count = 0 ; sum = 0 }
 }
 
-class CursorMeanCalc(r: Tile, n: Neighborhood)
-  extends CursorCalculation[Tile](r, n)
+class CursorMeanCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
+  extends CursorCalculation[Tile](r, n, bounds)
   with DoubleArrayTileResult
 {
   var count: Int = 0
   var sum: Int = 0
-
-  init(r)
 
   def calc(r: Tile, c: Cursor) = {
     c.removedCells.foreach { (x, y) =>
@@ -70,14 +66,12 @@ class CursorMeanCalc(r: Tile, n: Neighborhood)
   }
 }
 
-class CursorMeanCalcDouble(r: Tile, n: Neighborhood)
-  extends CursorCalculation[Tile](r, n)
+class CursorMeanCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
+  extends CursorCalculation[Tile](r, n, bounds)
   with DoubleArrayTileResult
 {
   var count: Int = 0
   var sum: Double = 0.0
-
-  init(r)
 
   def calc(r: Tile, c: Cursor) = {
     c.removedCells.foreach { (x, y) =>
@@ -92,14 +86,12 @@ class CursorMeanCalcDouble(r: Tile, n: Neighborhood)
   }
 }
 
-class CellwiseMeanCalcDouble(r: Tile, n: Neighborhood)
-  extends CellwiseCalculation[Tile](r, n)
+class CellwiseMeanCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
+  extends CellwiseCalculation[Tile](r, n, bounds)
   with DoubleArrayTileResult
 {
   var count: Int = 0
   var sum: Double = 0.0
-
-  init(r)
 
   def add(r: Tile, x: Int, y: Int) = {
     val z = r.getDouble(x, y)

@@ -29,9 +29,9 @@ trait FocalOpMethods[+Repr <: RasterSource] extends FocalOperation { self: Repr 
   def focalStandardDeviation(n: Neighborhood) = focal(n)(StandardDeviation.apply)
 
   def tileMoransI(n: Neighborhood) =
-    self.globalOp(TileMoransICalculation.apply(_, n).execute())
+    self.globalOp(TileMoransICalculation.apply(_, n, None).execute())
 
   def scalarMoransI(n: Neighborhood): ValueSource[Double] = {
-    self.converge.map(ScalarMoransICalculation(_, n).execute())
+    self.converge.map(ScalarMoransICalculation(_, n, None).execute())
   }
 }

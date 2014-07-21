@@ -21,6 +21,6 @@ import geotrellis.raster.op.focal._
 
 trait HydrologyOpMethods[+Repr <: RasterSource] extends FocalOperation { self: Repr =>
   def accumulation() = this.globalOp(Accumulation(_))
-  def fill(threshold: Double) = focal(Square(1)) { (r,n) => Fill(r, n, threshold) }
+  def fill(threshold: Double) = focal(Square(1)) { (r,n,bounds) => Fill(r, n, bounds, threshold) }
   def flowDirection() = globalOp(FlowDirection(_))
 }

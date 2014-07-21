@@ -26,33 +26,32 @@ trait Resulting[T] {
 }
 /** Trait defining the ability to initialize the focal calculation with a raster. */
 trait Initialization {
-  def init(r: Tile): Unit
+  //def init(r: Tile): Unit
 }
 
 /**
  * A calculation that a FocalStrategy uses to complete
  * a focal operation.
  */
-trait FocalCalculation[T] extends Resulting[T] {
-  val r: Tile
-  val n: Neighborhood
+abstract class FocalCalculation[T](
+    val r: Tile, n: Neighborhood, analysisArea: Option[GridBounds])
+  extends Resulting[T]
+{
+  val bounds: GridBounds = analysisArea.getOrElse(GridBounds(r))
 
-  def execute(analysisArea: Option[GridBounds] = None): T
+  def execute(): T
 }
 
 /**
  * A focal calculation that uses the Cursor focal strategy.
  */
-abstract class CursorCalculation[T](val r: Tile, val n: Neighborhood)
-  extends FocalCalculation[T]
+abstract class CursorCalculation[T](
+    r: Tile, n: Neighborhood, val analysisArea: Option[GridBounds])
+  extends FocalCalculation[T](r, n, analysisArea)
 {
   def traversalStrategy: Option[TraversalStrategy] = None
-  def execute(analysisArea: Option[GridBounds] = None): T = {
-    CursorStrategy.execute(
-      r, n, this, traversalStrategy,
-      analysisArea.getOrElse(GridBounds(0, 0, r.cols - 1, r.rows-1))
-    )
-
+  def execute(): T = {
+    CursorStrategy.execute( r, n, this, traversalStrategy, bounds)
     result
   }
   
@@ -62,18 +61,15 @@ abstract class CursorCalculation[T](val r: Tile, val n: Neighborhood)
 /**
  * A focal calculation that uses the Cellwise focal strategy
  */
-abstract class CellwiseCalculation[T] (val r: Tile, val n: Neighborhood)
-  extends FocalCalculation[T]
+abstract class CellwiseCalculation[T] (
+    r: Tile, n: Neighborhood, analysisArea: Option[GridBounds])
+  extends FocalCalculation[T](r, n, analysisArea)
 {
   def traversalStrategy: Option[TraversalStrategy] = None
 
-  //TODO - fix this
-  def execute(analysisArea: Option[GridBounds] = None): T = n match {
+  def execute(): T = n match {
     case s: Square =>
-      CellwiseStrategy.execute(
-        r, s, this, traversalStrategy,
-        analysisArea.getOrElse(GridBounds(0, 0, r.cols - 1, r.rows-1))
-      )
+      CellwiseStrategy.execute(r, s, this, traversalStrategy, bounds)
       result
     case _ => sys.error("Cannot use cellwise calculation with this traversal strategy.")
   }
@@ -103,18 +99,17 @@ abstract class CellwiseCalculation[T] (val r: Tile, val n: Neighborhood)
  * a [[Tile]] with [[BitArrayTile]], and defines
  * the [[Initialization]].init function for setting up the tile.
  */
-trait BitArrayTileResult extends Initialization with Resulting[Tile] {
+trait BitArrayTileResult extends Initialization with Resulting[Tile] { self: FocalCalculation[Tile] =>
   /** [[BitArrayTile]] that will be returned by the focal calculation */
-  var tile: BitArrayTile = null
+  val cols: Int = bounds.width
+  val rows: Int = bounds.height
+  val tile: BitArrayTile = BitArrayTile.empty(cols, rows)
 
-  var cols: Int = 0
-  var rows: Int = 0
-
-  def init(r: Tile) = {
-    cols = r.cols
-    rows = r.rows
-    tile = BitArrayTile.empty(cols, rows)
-  }
+//  def init(r: Tile) = {
+//    cols = r.cols
+//    rows = r.rows
+//    tile = BitArrayTile.empty(cols, rows)
+//  }
 
   def result = tile
 }
@@ -124,18 +119,17 @@ trait BitArrayTileResult extends Initialization with Resulting[Tile] {
  * a [[Tile]] with [[ByteArrayTile]], and defines
  * the [[Initialization]].init function for setting up the tile.
  */
-trait ByteArrayTileResult extends Initialization with Resulting[Tile] {
+trait ByteArrayTileResult extends Initialization with Resulting[Tile] { self: FocalCalculation[Tile] =>
   /** [[ByteArrayTile]] that will be returned by the focal calculation */
-  var tile: ByteArrayTile = null
+  val cols: Int = bounds.width
+  val rows: Int = bounds.height
+  val tile: ByteArrayTile = ByteArrayTile.empty(cols, rows)
 
-  var cols: Int = 0
-  var rows: Int = 0
-
-  def init(r: Tile) = {
-    cols = r.cols
-    rows = r.rows
-    tile = ByteArrayTile.empty(cols, rows)
-  }
+//  def init(r: Tile) = {
+//    cols = r.cols
+//    rows = r.rows
+//    tile = ByteArrayTile.empty(cols, rows)
+//  }
 
   def result = tile
 }
@@ -145,18 +139,17 @@ trait ByteArrayTileResult extends Initialization with Resulting[Tile] {
  * a [[Tile]] with [[ShortArrayTile]], and defines
  * the [[Initialization]].init function for setting up the tile.
  */
-trait ShortArrayTileResult extends Initialization with Resulting[Tile] {
+trait ShortArrayTileResult extends Initialization with Resulting[Tile] { self: FocalCalculation[Tile] =>
   /** [[ShortArrayTile]] that will be returned by the focal calculation */
-  var tile: ShortArrayTile = null
+  val cols: Int = bounds.width
+  val rows: Int = bounds.height
+  val tile: ShortArrayTile = ShortArrayTile.empty(cols, rows)
 
-  var cols: Int = 0
-  var rows: Int = 0
-
-  def init(r: Tile) = {
-    cols = r.cols
-    rows = r.rows
-    tile = ShortArrayTile.empty(cols, rows)
-  }
+//  def init(r: Tile) = {
+//    cols = r.cols
+//    rows = r.rows
+//    tile = ShortArrayTile.empty(cols, rows)
+//  }
 
   def result = tile
 }
@@ -166,18 +159,17 @@ trait ShortArrayTileResult extends Initialization with Resulting[Tile] {
  * a [[Tile]] with [[IntArrayTile]], and defines
  * the [[Initialization]].init function for setting up the tile.
  */
-trait IntArrayTileResult extends Initialization with Resulting[Tile] {
+trait IntArrayTileResult extends Initialization with Resulting[Tile] { self: FocalCalculation[Tile] =>
   /** [[IntArrayTile]] that will be returned by the focal calculation */
-  var tile: IntArrayTile = null
+  val cols: Int = bounds.width
+  val rows: Int = bounds.height
+  val tile: IntArrayTile = IntArrayTile.empty(cols, rows)
 
-  var cols: Int = 0
-  var rows: Int = 0
-
-  def init(r: Tile) = {
-    cols = r.cols
-    rows = r.rows
-    tile = IntArrayTile.empty(cols, rows)
-  }
+//  def init(r: Tile) = {
+//    cols = r.cols
+//    rows = r.rows
+//    tile = IntArrayTile.empty(cols, rows)
+//  }
 
   def result = tile
 }
@@ -187,18 +179,17 @@ trait IntArrayTileResult extends Initialization with Resulting[Tile] {
  * a [[Tile]] with [[FloatArrayTile]], and defines
  * the [[Initialization]].init function for setting up the tile.
  */
-trait FloatArrayTileResult extends Initialization with Resulting[Tile] {
+trait FloatArrayTileResult extends Initialization with Resulting[Tile] { self: FocalCalculation[Tile] =>
   /** [[FloatArrayTile]] that will be returned by the focal calculation */
-  var tile: FloatArrayTile = null
+  val cols: Int = bounds.width
+  val rows: Int = bounds.height
+  val tile: FloatArrayTile = FloatArrayTile.empty(cols, rows)
 
-  var cols: Int = 0
-  var rows: Int = 0
-
-  def init(r: Tile) = {
-    cols = r.cols
-    rows = r.rows
-    tile = FloatArrayTile.empty(cols, rows)
-  }
+//  def init(r: Tile) = {
+//    cols = r.cols
+//    rows = r.rows
+//    tile = FloatArrayTile.empty(cols, rows)
+//  }
 
   def result = tile
 }
@@ -208,18 +199,17 @@ trait FloatArrayTileResult extends Initialization with Resulting[Tile] {
  * a [[Tile]] with [[DoubleArrayTile]], and defines
  * the [[Initialization]].init function for setting up the tile.
  */
-trait DoubleArrayTileResult extends Initialization with Resulting[Tile] {
+trait DoubleArrayTileResult extends Initialization with Resulting[Tile] { self: FocalCalculation[Tile] =>
   /** [[DoubleArrayTile]] that will be returned by the focal calculation */
-  var tile: DoubleArrayTile = null
+  val cols: Int = bounds.width
+  val rows: Int = bounds.height
+  val tile: DoubleArrayTile = DoubleArrayTile.empty(cols, rows)
 
-  var cols: Int = 0
-  var rows: Int = 0
-
-  def init(r: Tile) = {
-    cols = r.cols
-    rows = r.rows
-    tile = DoubleArrayTile.empty(cols, rows)
-  }
+//  def init(r: Tile) = {
+//    cols = r.cols
+//    rows = r.rows
+//    tile = DoubleArrayTile.empty(cols, rows)
+//  }
 
   def result = tile
 }

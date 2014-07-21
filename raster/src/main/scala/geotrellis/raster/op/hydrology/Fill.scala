@@ -33,21 +33,19 @@ object FillOptions {
  *                     the threshold appropriately.
  */
 object Fill {
-  def apply(r: Tile, n: Neighborhood, threshold: Double): FocalCalculation[Tile] = {
+  def apply(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Double): FocalCalculation[Tile] = {
     if (r.cellType.isFloatingPoint) {
-      new CursorFillCalcDouble(r, Square(1), threshold)
+      new CursorFillCalcDouble(r, Square(1), bounds, threshold)
     } else {
-      new CursorFillCalc(r, Square(1), threshold.toInt)
+      new CursorFillCalc(r, Square(1), bounds, threshold.toInt)
     }
   }
 }
 
-class CursorFillCalcDouble(r: Tile, n: Neighborhood, threshold: Double)
-  extends CursorCalculation[Tile](r, n)
+class CursorFillCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Double)
+  extends CursorCalculation[Tile](r, n, bounds)
   with DoubleArrayTileResult
 {
-  init(r)
-
   def calc(r: Tile, c: Cursor) = {
     var count: Int = 0
     var totalCount: Int = 0
@@ -71,12 +69,10 @@ class CursorFillCalcDouble(r: Tile, n: Neighborhood, threshold: Double)
 }
 
 
-class CursorFillCalc(r: Tile, n: Neighborhood, threshold: Int)
-  extends CursorCalculation[Tile](r, n)
+class CursorFillCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Int)
+  extends CursorCalculation[Tile](r, n, bounds)
   with IntArrayTileResult
 {
-  init(r)
-
   def calc(r: Tile, c: Cursor) = {
     var count: Int = 0
     var totalCount: Int = 0

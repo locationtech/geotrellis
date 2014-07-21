@@ -11,12 +11,11 @@ import geotrellis.raster._
  */
 object StandardDeviation {
 
-  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] = {
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
     if(tile.cellType.isFloatingPoint) {
-      new CursorCalculation[Tile](tile, n)
+      new CursorCalculation[Tile](tile, n, bounds)
         with DoubleArrayTileResult
       {
-        init(r)
         var count: Int = 0
         var sum: Double = 0
 
@@ -45,10 +44,9 @@ object StandardDeviation {
         }
       }
     } else {
-      new CursorCalculation[Tile](tile, n)
+      new CursorCalculation[Tile](tile, n, bounds)
         with DoubleArrayTileResult
       {
-        init(r)
         var count: Int = 0
         var sum: Int = 0
 

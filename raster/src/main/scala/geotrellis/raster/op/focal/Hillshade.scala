@@ -19,12 +19,10 @@ import scala.math._
  * @see [[http://goo.gl/DtVDQ Esri Desktop's description of Hillshade.]]
  */
 object Hillshade {
-  def apply(tile: Tile, n: Neighborhood, cs: CellSize, az: Double, al: Double, z: Double): FocalCalculation[Tile] = {
-    new SurfacePointCalculation[Tile](tile, n, cs) with
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], cs: CellSize, az: Double, al: Double, z: Double): FocalCalculation[Tile] = {
+    new SurfacePointCalculation[Tile](tile, n, bounds, cs) with
       ShortArrayTileResult
     {
-      init(r)
-
       val azimuth = radians(90.0 - az)
       val zenith = radians(90.0 - al)
       val zFactor = z

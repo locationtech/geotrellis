@@ -22,11 +22,11 @@ import geotrellis.raster.op.focal.Angles._
   */
 object Aspect {
 
-  def apply(tile: Tile, n: Neighborhood, cs: CellSize): FocalCalculation[Tile] = {
-    new SurfacePointCalculation[Tile](tile, n, cs)
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], cs: CellSize): FocalCalculation[Tile] = {
+    new SurfacePointCalculation[Tile](tile, n, bounds, cs)
       with DoubleArrayTileResult
     {
-      init(r)
+      //init(r)
       def setValue(x: Int, y: Int, s: SurfacePoint) {
         tile.setDouble(x, y, degrees(s.aspect))
       }

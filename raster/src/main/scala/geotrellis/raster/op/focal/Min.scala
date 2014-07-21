@@ -10,13 +10,12 @@ import geotrellis.raster._
  *                  the data values will be rounded to integers.
  */
 object Min {
-  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] = {
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
 
     if (tile.cellType.isFloatingPoint)
-      new CursorCalculation[Tile](tile, n)
+      new CursorCalculation[Tile](tile, n, bounds)
         with DoubleArrayTileResult
       {
-        init(r)
         def calc(r: Tile, cursor: Cursor) = {
           var m: Double = Double.NaN
           cursor.allCells.foreach { (col, row) =>
@@ -30,10 +29,9 @@ object Min {
       }
 
     else
-      new CursorCalculation[Tile](tile, n)
+      new CursorCalculation[Tile](tile, n, bounds)
         with IntArrayTileResult
       {
-        init(r)
         def calc(r: Tile, cursor: Cursor) = {
           var m = NODATA
           cursor.allCells.foreach { (col, row) =>

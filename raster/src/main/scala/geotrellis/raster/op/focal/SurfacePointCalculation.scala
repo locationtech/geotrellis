@@ -103,8 +103,8 @@ class SurfacePoint() {
  * For edge cells, the neighborhood points that lie outside the extent of the raster
  * will be counted as having the same value as the focal point.
  */
-abstract class SurfacePointCalculation[T](val r: Tile, val n: Neighborhood, val cellSize: CellSize)
-  extends FocalCalculation[T]
+abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea: Option[GridBounds], val cellSize: CellSize)
+  extends FocalCalculation[T](r, n, analysisArea)
 {
   var lastY = -1
 
@@ -157,14 +157,12 @@ abstract class SurfacePointCalculation[T](val r: Tile, val n: Neighborhood, val 
    *                          the cell is outside the analysis area, but still inside the raster,
    *                          the raster value will still be used.
    */
-  def execute(area: Option[GridBounds] = None): T = {
-    val analysisArea = area.getOrElse(GridBounds(0, 0,r.cols-1, r.rows-1))
+  def execute(): T = {
+    val colMin = bounds.colMin
+    val colMax = bounds.colMax
 
-    val colMin = analysisArea.colMin
-    val colMax = analysisArea.colMax
-
-    val rowMin = analysisArea.rowMin
-    val rowMax = analysisArea.rowMax
+    val rowMin = bounds.rowMin
+    val rowMax = bounds.rowMax
 
     val colBorderMax = r.cols - 1
     val rowBorderMax = r.rows - 1
