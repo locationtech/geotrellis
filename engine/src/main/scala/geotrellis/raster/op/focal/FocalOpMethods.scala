@@ -27,6 +27,7 @@ trait FocalOpMethods[+Repr <: RasterSource] extends FocalOperation { self: Repr 
   def focalMedian(n: Neighborhood) = focal(n)(Median.apply)
   def focalMode(n: Neighborhood) = focal(n)(Mode.apply)
   def focalStandardDeviation(n: Neighborhood) = focal(n)(StandardDeviation.apply)
+  def focalConway() = focal(Square(1))(Conway.apply)
 
   def tileMoransI(n: Neighborhood) =
     self.globalOp(TileMoransICalculation.apply(_, n, None))

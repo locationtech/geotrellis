@@ -40,8 +40,8 @@ trait FocalMethods extends TileMethods {
   }
 
   /** Computes the next step of Conway's Game of Life */
-  def focalConway(n: Neighborhood, bounds: Option[GridBounds] = None): Tile = {
-    Conway(tile, n, bounds)
+  def focalConway(bounds: Option[GridBounds] = None): Tile = {
+    Conway(tile, Square(1), bounds)
   }
 
   /**
