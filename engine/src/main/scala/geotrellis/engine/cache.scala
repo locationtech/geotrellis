@@ -22,7 +22,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable
 
-/** 
+/**
  * Trait for a T-keyed, any valued cache.
  */
 trait Cache[T] extends Serializable {
@@ -53,19 +53,19 @@ trait Cache[T] extends Serializable {
   }
 }
 
-/** 
+/**
  * Simple HashMap backed cache keyed by String and can hold any type.
  */
 class HashCache[T] extends Cache[T] {
   val cache = new mutable.HashMap[T,Any].empty
 
-  def lookup[V](k: T):Option[V] = 
+  def lookup[V](k: T):Option[V] =
     cache.get(k) match {
       case Some(v) => Some(v.asInstanceOf[V])
       case None => None
     }
 
-  def remove[V](k: T):Option[V] = 
+  def remove[V](k: T):Option[V] =
     cache.remove(k) match {
       case Some(v) => Some(v.asInstanceOf[V])
       case None => None
@@ -131,12 +131,12 @@ trait HashBackedCache[K,V] extends CacheStrategy[K,V] {
 
 trait LoggingCache[K,V] extends CacheStrategy[K,V] {
   abstract override def lookup(k: K):Option[V] = super.lookup(k) match {
-    case None => { 
-      //println("Cache miss on %s".format(k));
-      None 
+    case None => {
+      //println(s"Cache miss on $k")
+      None
     }
-    case z => { 
-      //println("Cache hit on %s".format(k));
+    case z => {
+      //println(s"Cache hit on $k")
       z
     }
   }
@@ -146,7 +146,7 @@ trait LoggingCache[K,V] extends CacheStrategy[K,V] {
  * Operations on this cache may required O(N) time to execute (N = size of cache)
  */
 trait BoundedCache[K,V] extends CacheStrategy[K,V] {
-  
+
   /** Return the size of a a given cache item
    * If items are objects (for example) this might just be: (x) => 1
    * If items are arrays of ints and the maxSize is in bytes this function might be:
@@ -172,7 +172,7 @@ trait BoundedCache[K,V] extends CacheStrategy[K,V] {
    */
   def canInsert(v: V) = {
     val ok = currentSize + sizeOf(v) <= maxSize
-    //println("[cache] canInsert says %s (%d + %d <= %d)" format (ok, currentSize, sizeOf(v), maxSize))
+    //println(s"[cache] canInsert says $ok ($currentSize + ${sizeOf(v)} <= $maxSize)")
     ok
   }
 
@@ -190,16 +190,16 @@ trait BoundedCache[K,V] extends CacheStrategy[K,V] {
 
     if (!canInsert(v)) {
       cacheFree(currentSize + sizeOf(v) - maxSize)
-    } 
+    }
 
     if (canInsert(v)) {
       currentSize += sizeOf(v)
-      //println("[Cache] Inserted %s".format(k))
+      //println(s"[Cache] Inserted $k")
       super.insert(k,v)
 
       true
     } else {
-      //println("[Cache] Failed to insert %s (cache full)".format(k))
+      //println(s"[Cache] Failed to insert $k (cache full)")
       false
     }
   }
@@ -209,7 +209,7 @@ trait OrderedBoundedCache[K,V] extends BoundedCache[K,V] {
 
   /** Called when attempt to make space in the cache. This function should
    * return the index of the item to remove next
-   * 
+   *
    * @param k: Seq[K]  first element was accessed most recently
    */
   val removeIdx: Seq[K] => Int
@@ -218,7 +218,7 @@ trait OrderedBoundedCache[K,V] extends BoundedCache[K,V] {
    * @param ltgt: The additional space in the cache requested
    */
   def cacheFree(ltgt: Long):Unit = {
-    //println("[Cache] Attempting to free %d units of data (cache max: %d, cache cur: %d)".format(ltgt, maxSize, currentSize))
+    //println(s"[Cache] Attempting to free $ltgt units of data (cache max: $maxSize, cache cur: $currentSize)")
 
     // if (ltgt > maxSize) {
     //    println("[Cache] File to big to fit in cache at all")
@@ -229,7 +229,7 @@ trait OrderedBoundedCache[K,V] extends BoundedCache[K,V] {
       val item:K = cacheOrder.remove(removeIdx(cacheOrder))
       val removedSize: Long = remove(item) match {
         case Some(v) => {
-//          println("[Cache]\tEvicted %s (%d units) from cache".format(item, sizeOf(v)))
+//          println(s"[Cache]\tEvicted $item (${sizeOf(v)} units) from cache")
           sizeOf(v)
         }
         case None => 0L
@@ -259,11 +259,11 @@ trait OrderedBoundedCache[K,V] extends BoundedCache[K,V] {
   }
 
   abstract override def insert(k: K, v: V) = if (super.insert(k,v)) {
-    prepend(k); true 
+    prepend(k); true
   } else {
     false
   }
-}        
+}
 
 class LRUCache[K,V](val maxSize: Long, val sizeOf: V => Long = (v:V) => 1) extends HashBackedCache[K,V] with OrderedBoundedCache[K,V] with AtomicCache[K,V] with LoggingCache[K,V] {
   val removeIdx: Seq[K] => Int = (s: Seq[K]) => s.length - 1
@@ -309,7 +309,7 @@ trait AtomicCache[K,V] extends CacheStrategy[K,V] {
         // complete.
         smallLock.lock()
         smallLock.unlock()
-        
+
         // v will already have been evaluated by some other thread
         // if there was an error we'll evaluate v
         //super.lookup(k).getOrElse(v)
@@ -317,13 +317,13 @@ trait AtomicCache[K,V] extends CacheStrategy[K,V] {
         resultOpt match {
           case None => {
             val vv = v
-            val t = System.currentTimeMillis - t0            
-            //println("waited on other thread, but failed: %d ms" format (t))
+            val t = System.currentTimeMillis - t0
+            //println(s"waited on other thread, but failed: $t ms")
             vv
           }
           case Some(vv) => {
-            val t = System.currentTimeMillis - t0            
-            //println("waited on other thread: %d ms" format (t))
+            val t = System.currentTimeMillis - t0
+            //println(s"waited on other thread: $t ms")
             vv
           }
         }
@@ -331,8 +331,8 @@ trait AtomicCache[K,V] extends CacheStrategy[K,V] {
         super.lookup(k) match {
           case Some(vv) => {
             bigLock.unlock()
-            val t = System.currentTimeMillis - t0            
-            //println("found in cache: %d ms" format t)
+            val t = System.currentTimeMillis - t0
+            //println(s"found in cache: $t ms")
             vv
           }
           case None => {
@@ -341,7 +341,7 @@ trait AtomicCache[K,V] extends CacheStrategy[K,V] {
             smallLock.lock()
             val vv = try {
               bigLock.unlock()
-            
+
               val vv = v    // Evaluate v
 
               bigLock.lock()
@@ -356,9 +356,9 @@ trait AtomicCache[K,V] extends CacheStrategy[K,V] {
             } finally {
               smallLock.unlock()
             }
-            
-            val t = System.currentTimeMillis - t0            
-            //println("added to cache: %d ms" format t)
+
+            val t = System.currentTimeMillis - t0
+            //println(s"added to cache: $t ms")
             vv
           }
         }
@@ -370,7 +370,7 @@ trait AtomicCache[K,V] extends CacheStrategy[K,V] {
       }
     }
   }
-      
+
 
   abstract override def insert(k: K, v: V):Boolean = {
     bigLock.lock()
@@ -379,5 +379,5 @@ trait AtomicCache[K,V] extends CacheStrategy[K,V] {
     } finally {
       bigLock.unlock()
     }
-  }          
+  }
 }

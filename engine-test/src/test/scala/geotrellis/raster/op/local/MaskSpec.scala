@@ -20,6 +20,7 @@ import geotrellis.raster._
 import geotrellis.engine._
 import geotrellis.feature._
 import geotrellis.feature.json._
+import spray.json.DefaultJsonProtocol._
 
 import org.scalatest._
 

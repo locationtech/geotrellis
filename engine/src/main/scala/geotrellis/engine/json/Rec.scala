@@ -53,7 +53,7 @@ case class DataStoreRec(store:String,
   }
 
   if (!f.isDirectory) {
-    sys.error("store %s is not a directory" format path)
+    sys.error(s"store $path is not a directory")
   }
 
   val hasCacheAll = if(params.contains("cacheAll")) {

@@ -155,9 +155,9 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
    */
   def combine (that: RasterExtent): RasterExtent = {
     if (cellwidth != that.cellwidth)
-      throw GeoAttrsError("illegal cellwidths: %s and %s".format(cellwidth, that.cellwidth))
+      throw GeoAttrsError(s"illegal cellwidths: $cellwidth and ${that.cellwidth}")
     if (cellheight != that.cellheight)
-      throw GeoAttrsError("illegal cellheights: %s and %s".format(cellheight, that.cellheight))
+      throw GeoAttrsError(s"illegal cellheights: $cellheight and ${that.cellheight}")
 
     val newExtent = extent.combine(that.extent)
     val newRows = ceil(newExtent.height / cellheight).toInt

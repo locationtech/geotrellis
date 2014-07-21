@@ -65,6 +65,6 @@ case class EngineActor(engine: Engine) extends Actor {
     case RunCallback(args, pos, cb, client, tracker) =>
       context.actorOf(Props(StepAggregator(engineContext, pos, args, cb, client, tracker)))
 
-    case msg => sys.error("EngineActor recieved unknown message: %s" format msg)
+    case msg => sys.error(s"EngineActor recieved unknown message: $msg")
   }
 }

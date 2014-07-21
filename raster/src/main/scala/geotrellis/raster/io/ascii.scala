@@ -22,6 +22,8 @@ import geotrellis.feature.Extent
 import scala.math.{min, max}
 import java.io._
 
+import java.util.Locale
+
 final class AsciiReadState(path: String,
                            val rasterExtent: RasterExtent,
                            val target: RasterExtent,
@@ -37,7 +39,7 @@ final class AsciiReadState(path: String,
 
   def getBufferedReader() = {
     val fh = new File(path)
-    if (!fh.canRead) throw new Exception("you can't read '%s' so how can i?".format(path))
+    if (!fh.canRead) throw new Exception(s"cannot read $path")
     val fr = new java.io.FileReader(path)
     new BufferedReader(fr)
   }
@@ -55,13 +57,13 @@ final class AsciiReadState(path: String,
       var n = 0
       while (!done) {
         val line = br.readLine()
-        if (line == null) throw new Exception("premature end of file: %s".format(path))
-        if (line.length == 0) throw new Exception("illegal empty line: %s".format(path))
+        if (line == null) throw new Exception(s"premature end of file: $path")
+        if (line.length == 0) throw new Exception(s"illegal empty line: $path")
 
         val toks = line.trim().split(" ")
         if (toks(0).charAt(0).isDigit) {
           if (toks.length != rasterExtent.cols) {
-            throw new Exception("saw %d cols, expected %d: %s".format(toks.length, rasterExtent.cols, path))
+            throw new Exception(s"saw ${toks.length} cols, expected ${rasterExtent.cols}: $path")
           }
 
           var i = 0
@@ -74,7 +76,7 @@ final class AsciiReadState(path: String,
         if (n >= size) done = true
       }
 
-      if (n != size) throw new Exception("saw %d rows, expected %d: %s".format(n, size, path))
+      if (n != size) throw new Exception(s"saw $n rows, expected $size: $path")
 
     } finally {
       br.close()
@@ -117,12 +119,12 @@ object AsciiWriter extends Writer {
 
     val pw = new PrintWriter(new BufferedWriter(new FileWriter(path)))
 
-    pw.write("nrows %d\n".format(g.rows))
-    pw.write("ncols %d\n".format(g.cols))
-    pw.write("xllcorner %.12f\n".format(e.xmin))
-    pw.write("yllcorner %.12f\n".format(e.ymin))
-    pw.write("cellsize %.12f\n".format(g.cellwidth))
-    pw.write("nodata_value %d\n".format(noData))
+    pw.write(s"nrows ${g.rows}\n")
+    pw.write(s"ncols ${g.cols}\n")
+    pw.write("xllcorner %.12f\n".formatLocal(Locale.ENGLISH, e.xmin))
+    pw.write("yllcorner %.12f\n".formatLocal(Locale.ENGLISH, e.ymin))
+    pw.write("cellsize %.12f\n".formatLocal(Locale.ENGLISH, g.cellwidth))
+    pw.write(s"nodata_value $noData\n")
 
     val data = raster.toArray
 

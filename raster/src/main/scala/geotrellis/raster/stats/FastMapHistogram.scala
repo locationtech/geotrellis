@@ -124,7 +124,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _used: Int, _total: Int
     }
 
     // should never happen
-    error("should not happen: item=%s mask=%s" format (item, mask))
+    error(s"should not happen: item=$item mask=$mask")
     -1
   }
 

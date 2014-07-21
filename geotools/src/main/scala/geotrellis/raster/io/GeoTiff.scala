@@ -69,7 +69,7 @@ object GeoTiff {
 
   def getReader(path: String, epsg: String = "EPSG:3785"): GTGeoTiffReader = {
     val fh = new File(path)
-    if (!fh.canRead) sys.error("can't read %s".format(path))
+    if (!fh.canRead) sys.error(s"can't read $path")
 
     getReader(fh, epsg)
   }

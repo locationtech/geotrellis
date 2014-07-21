@@ -93,7 +93,7 @@ class Engine(id: String, val catalog: Catalog) extends Serializable {
   def layerExists(layerName: String): Boolean = catalog.layerExists(LayerId(None, layerName))
 
   private[engine] def _run[T](op: Op[T]): OperationResult[T] = {
-    log("engine._run called with %s" format op)
+    log(s"engine._run called with $op")
 
     val d = Duration.create(60000, TimeUnit.SECONDS)
     implicit val t = Timeout(d)
@@ -105,7 +105,7 @@ class Engine(id: String, val catalog: Catalog) extends Serializable {
     result match {
       case PositionedResult(c: Complete[_], _) => c.asInstanceOf[Complete[T]]
       case PositionedResult(e: Error, _) => e
-      case r => sys.error("unexpected status: %s" format r)
+      case r => sys.error(s"unexpected status: $r")
     }
   }
 }

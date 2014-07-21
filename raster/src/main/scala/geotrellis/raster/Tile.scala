@@ -20,6 +20,8 @@ import geotrellis.feature.Extent
 
 import spire.syntax.cfor._
 
+import java.util.Locale
+
 /**
  * Base trait for a Tile.
  */
@@ -267,7 +269,7 @@ trait Tile {
         if (isNoData(z)) {
           s += ".."
         } else {
-          s += "%02X".format(z)
+          s += "%02X".formatLocal(Locale.ENGLISH, z)
         }
       }
       s += "\n"

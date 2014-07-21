@@ -18,9 +18,12 @@ package geotrellis.raster.render
 
 import org.scalatest._
 
+
+import java.util.Locale
+
 object ColorSpec {
-  def hexstringify(colors:Array[Int]) = colors.map{ "%08x".format(_) }.toList 
-  def getColorString(colors:Array[Int]) = colors.map("%06X" format _).mkString(",")
+  def hexstringify(colors:Array[Int]) = colors.map{ "%08x".formatLocal(Locale.ENGLISH, _) }.toList
+  def getColorString(colors:Array[Int]) = colors.map("%06X".formatLocal(Locale.ENGLISH, _)).mkString(",")
 }
 
 class ColorSpec extends FunSpec with Matchers {
@@ -57,7 +60,7 @@ class ColorSpec extends FunSpec with Matchers {
     it("should unzip colors") {
       val n = 0xff9900ff
       val (r, g, b, a) = Color.unzip(n)
-      println("n=%s, r=%s g=%s b=%s a=%s" format (n, r, g, b, a))
+      println(s"n=$n, r=$r g=$g b=$b a=$a")
       r should be (0xff)
       g should be (0x99)
       b should be (0x00)

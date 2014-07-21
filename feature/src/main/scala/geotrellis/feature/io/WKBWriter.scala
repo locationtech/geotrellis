@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,14 +17,15 @@
 package geotrellis.feature.io
 
 import java.io.{ByteArrayOutputStream}
+import java.util.Locale
 import com.vividsolutions.jts.io.{ByteOrderValues, OutStream, OutputStreamOutStream}
 import geotrellis.feature._
 import com.vividsolutions.jts.{geom => jts}
 import com.vividsolutions.jts.geom.{Coordinate, CoordinateSequence}
 
 /**
- * Constant values used by the WKB format
- */
+  * Constant values used by the WKB format
+  */
 object WKBConstants {
   val wkbXDR: Byte = 0
   val wkbNDR: Byte = 1
@@ -41,19 +42,19 @@ object WKBConstants {
 object WKBWriter {
 
   /**
-   * Converts a byte array to a hexadecimal string.
-   *
-   * @param bytes a byte array
-   * @return a string of hexadecimal digits
-   */
-  def toHex(bytes: Array[Byte]): String  =  bytes.map("%02x".format(_)).mkString
+    * Converts a byte array to a hexadecimal string.
+    *
+    * @param bytes a byte array
+    * @return a string of hexadecimal digits
+    */
+  def toHex(bytes: Array[Byte]): String  =  bytes.map(b => "%02x".formatLocal(Locale.ENGLISH, b)).mkString
 }
 
 /**
- * Ported from JTS WKBWriter [[package com.vividsolutions.jts.io.WKBWriter]]
- *
- * Original Author: Martin Davis
- */
+  * Ported from JTS WKBWriter [[package com.vividsolutions.jts.io.WKBWriter]]
+  *
+  * Original Author: Martin Davis
+  */
 class WKBWriter(outputDimension: Int, byteOrder: Int) {
   require(outputDimension == 2 || outputDimension == 3, s"Output dimension ($outputDimension) must be 2 or 3")
   require(byteOrder == ByteOrderValues.BIG_ENDIAN || byteOrder == ByteOrderValues.LITTLE_ENDIAN, "Invalid byteOrder")
@@ -70,11 +71,11 @@ class WKBWriter(outputDimension: Int, byteOrder: Int) {
   private var srid: Option[Int] = None
 
   /**
-   * Writes a {@link Geometry} into a byte array.
-   *
-   * @param geom the geometry to write
-   * @return the byte array containing the WKB
-   */
+    * Writes a {@link Geometry} into a byte array.
+    *
+    * @param geom the geometry to write
+    * @return the byte array containing the WKB
+    */
   def write(geom: Geometry, srid: Option[Int] = None): Array[Byte] = {
     byteArrayOS.reset()
     this.srid = srid
@@ -83,12 +84,12 @@ class WKBWriter(outputDimension: Int, byteOrder: Int) {
   }
 
   /**
-   * Writes a {@link Geometry} to an {@link OutStream}.
-   *
-   * @param geom the geometry to write
-   * @param os the out stream to write to
-   * @throws IOException if an I/O error occurs
-   */
+    * Writes a {@link Geometry} to an {@link OutStream}.
+    *
+    * @param geom the geometry to write
+    * @param os the out stream to write to
+    * @throws IOException if an I/O error occurs
+    */
   private def write(geom: jts.Geometry, os: OutStream) {
     geom match {
       case g: jts.Point => writePoint(g, os)

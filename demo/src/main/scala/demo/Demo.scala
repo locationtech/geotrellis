@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +34,7 @@ object response {
 object WeightedOverlayArray {
   def apply(rasters:Seq[RasterSource], weights:Seq[Int]):RasterSource = {
 
-    val weightedSum = 
+    val weightedSum =
       rasters.zip(weights).map { case (r,w) => r * w }
              .localAdd
 
@@ -121,7 +121,7 @@ class DemoService1 {
     val png:ValueSource[Png] = output.renderPng(paletteColors, numColors)
 
     format match {
-      case "hello" => 
+      case "hello" =>
         response("text/plain")("hello world")
       case "info" => png.run match {
         case Complete(img, h) =>
@@ -138,7 +138,7 @@ class DemoService1 {
         case Complete(img, _) => 
           response("image/png")(img)
         case Error(msg, trace) =>
-          response("text/plain")("failed: %s\ntrace:\n%s".format(msg, trace))
+          response("text/plain")(s"failed: $msg\ntrace:\n$trace")
       }
     }
   }

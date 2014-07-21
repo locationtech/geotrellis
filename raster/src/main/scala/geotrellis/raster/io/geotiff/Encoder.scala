@@ -301,7 +301,7 @@ class Encoder(dos: DataOutputStream, raster: Tile, re: RasterExtent, val setting
       case (Unsigned, 8) => Const.sint8
       case (Unsigned, 16) => Const.sint16
       case (Unsigned, 32) => Const.sint32
-      case tpl => sys.error("unsupported: %s" format tpl)
+      case tpl => sys.error("unsupported: $tpl")
     }
 
     // 10. y resolution, 1 pixel per unit

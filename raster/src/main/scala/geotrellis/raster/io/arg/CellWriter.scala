@@ -28,7 +28,7 @@ object CellWriter {
     case TypeInt => Int32CellWriter
     case TypeFloat => Float32CellWriter
     case TypeDouble => Float64CellWriter
-    case t => sys.error("raster type %s is not supported yet" format t)
+    case t => sys.error(s"raster type $t is not supported yet")
   }
 }
 

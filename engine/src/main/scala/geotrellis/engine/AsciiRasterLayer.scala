@@ -97,7 +97,7 @@ extends RasterLayerBuilder {
 
   def getBufferedReader(path: String) = {
     val fh = new File(path)
-    if (!fh.canRead) throw new Exception("you can't read '%s' so how can i?".format(path))
+    if (!fh.canRead) throw new Exception(s"cannot read file $path")
     val fr = new java.io.FileReader(path)
     new BufferedReader(fr)
   }
@@ -118,8 +118,8 @@ extends RasterLayerBuilder {
         val line = br.readLine().trim()
         val toks = line.split(" ")
   
-        if (line == null) throw new Exception("premature end of file: %s".format(path))
-        if (toks.length == 0) throw new Exception("illegal empty line: %s".format(path))
+        if (line == null) throw new Exception(s"premature end of file: $path")
+        if (toks.length == 0) throw new Exception(s"illegal empty line: $path")
   
         if (line.charAt(0).isDigit) {
           done = true
@@ -132,7 +132,7 @@ extends RasterLayerBuilder {
             case Array("cellsize", floatRe(n)) => cellsize = n.toDouble
             case Array("nodata_value", intRe(n)) => nodata_value = n.toInt
   
-            case _ => throw new Exception("mal-formed line '%s'".format(line))
+            case _ => throw new Exception(s"mal-formed line '$line'")
           }
         }
       }

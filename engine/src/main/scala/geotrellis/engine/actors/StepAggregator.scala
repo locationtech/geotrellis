@@ -128,6 +128,6 @@ case class StepAggregator[T](engineContext:EngineContext,
       }
     }
 
-    case g => sys.error(s"${this.getClass.getSimpleName} got unknown message: %s" format g)
+    case g => sys.error(s"${this.getClass.getSimpleName} got unknown message: $g")
   }
 }

@@ -87,6 +87,6 @@ trait RasterLayerBuilder {
     case "int32" => TypeInt
     case "float32" => TypeFloat
     case "float64" => TypeDouble
-    case s => sys.error("unsupported datatype '%s'" format s)
+    case s => sys.error(s"unsupported datatype '$s'")
   }
 }

@@ -22,6 +22,8 @@ import geotrellis.testkit._
 
 import org.scalatest._
 
+import java.util.Locale
+
 import scala.language.implicitConversions
 
 class CostDistanceSpec extends FunSuite with TestEngine {
@@ -64,9 +66,9 @@ class CostDistanceSpec extends FunSuite with TestEngine {
       8.0, 7.1, 4.5, 4.9, 8.9, 12.7,
       5.0, 7.5, 10.5,  N, 10.6, 9.2,
       2.5, 5.7, 6.4,   N, 7.1, 11.1,
-      0.0, 1.5, 3.5, 5.0, 7.0, 10.5).map(i => " %04.1f " format i)
+      0.0, 1.5, 3.5, 5.0, 7.0, 10.5).map(i => " %04.1f ".formatLocal(Locale.ENGLISH, i))
 
-    val strings = d.map(i => " %04.1f " format i)
+    val strings = d.map(i => " %04.1f ".formatLocal(Locale.ENGLISH, i))
 
     for(i <- 0 until strings.length) {
       strings(i) should be (expected(i))
@@ -108,6 +110,6 @@ class CostDistanceSpec extends FunSuite with TestEngine {
     }
   }
 
-  def print(d: DoubleArrayTile):Unit = println(d.array.toList.map(i => " %04.1f " format i).grouped(d.cols).map(_.mkString(",")).mkString("\n"))
+  def print(d: DoubleArrayTile):Unit = println(d.array.toList.map(i => " %04.1f ".formatLocal(Locale.ENGLISH, i)).grouped(d.cols).map(_.mkString(",")).mkString("\n"))
 
 }

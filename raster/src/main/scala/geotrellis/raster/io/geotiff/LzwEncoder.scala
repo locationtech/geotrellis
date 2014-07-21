@@ -47,7 +47,7 @@ object LzwEncoder {
     case Settings(ByteSample, _, _, _, _) => new LzwByteEncoder(encoder)
     case Settings(ShortSample, _, _, _, _) => new LzwShortEncoder(encoder)
     case Settings(IntSample, _, _, _, _) => new LzwIntEncoder(encoder)
-    case s => sys.error("can't encoder %s" format s)
+    case s => sys.error(s"can't encoder $s")
   }
 }
 
@@ -190,9 +190,6 @@ abstract class LzwEncoder(encoder: Encoder) {
     */
   def getCode(s: String): Int = {
     if (!stringTable.contains(s)) {
-      // stringTable.toList.sorted.foreach {
-      //   case (k, v) => println("  k=%s v=%s" format (xyz(k), v))
-      // }
       sys.error(s"no code found for ${xyz(s)}")
     }
     stringTable(s)
@@ -254,7 +251,6 @@ abstract class LzwEncoder(encoder: Encoder) {
     * complete 2 byte "chunks" at a time.
     */
   def writeCode(code: Int) {
-    //println("**writeCode(%s)" format code)
     buffer |= code << (32 - codeBits - bufpos)
     bufpos += codeBits
     if (bufpos > 16) {

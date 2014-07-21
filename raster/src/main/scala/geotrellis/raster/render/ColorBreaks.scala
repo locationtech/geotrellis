@@ -17,6 +17,7 @@
 package geotrellis.raster.render
 
 import geotrellis.raster.stats.Histogram
+import java.util.Locale
 
 /**
   * ColorBreaks describes a way to render a raster into a colored image.
@@ -45,10 +46,14 @@ case class ColorBreaks(limits: Array[Int], colors: Array[Int]) {
     lastColor
   }
 
-  override def toString = "ColorBreaks(%s, %s)" format (
-    limits.mkString("Array(", ", ", ")"),
-    colors.map("%08x" format _).mkString("Array(", ", ", ")")
-  )
+  override def toString = {
+    val limitsStr = limits.mkString("Array(", ", ", ")")
+    val colorsStr =
+      colors
+        .map("%08x" formatLocal(Locale.ENGLISH, _))
+        .mkString("Array(", ", ", ")")
+    s"ColorBreaks($limitsStr, $colorsStr)"
+  }
 }
 
 object ColorBreaks {

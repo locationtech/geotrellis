@@ -23,6 +23,8 @@ import Console.printf
 
 import org.scalatest._
 
+import java.util.Locale
+
 class HistogramSpec extends FunSpec with Matchers {
   def stringToInts(s:String) = {
     s.toCharArray.map { _.toByte - 32 }
@@ -195,10 +197,10 @@ class HistogramSpec extends FunSpec with Matchers {
   
       val stats = h.generateStatistics
       //println(stats)
-      "%.3f".format(stats.mean) should be ("4.130")
+      "%.3f".formatLocal(Locale.ENGLISH, stats.mean) should be ("4.130")
       stats.median should be (5)
       stats.mode should be (5)
-      "%.3f".format(stats.stddev) should be ("1.528")
+      "%.3f".formatLocal(Locale.ENGLISH, stats.stddev) should be ("1.528")
       stats.zmin should be (2)
       stats.zmax should be (7)
     }
