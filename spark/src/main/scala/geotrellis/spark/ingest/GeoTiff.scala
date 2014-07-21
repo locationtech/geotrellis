@@ -1,7 +1,7 @@
 package geotrellis.spark.ingest
 
 import geotrellis.raster._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FSDataInputStream

@@ -1,7 +1,7 @@
 package geotrellis.raster.op.global
 
 import geotrellis.raster._
-import geotrellis.feature._
+import geotrellis.vector._
 
 trait GlobalMethods extends TileMethods {
   def convolve(kernel: Kernel) =

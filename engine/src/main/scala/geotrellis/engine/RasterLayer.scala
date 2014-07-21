@@ -18,7 +18,7 @@ package geotrellis.engine
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 import geotrellis.raster.io.Filesystem
 
 import scala.concurrent._

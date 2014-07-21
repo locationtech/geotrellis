@@ -17,7 +17,7 @@
 package geotrellis.spark.tiling
 
 import geotrellis.raster._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 /**
  * @author akini

@@ -17,7 +17,7 @@
 package geotrellis.testkit
 
 import geotrellis.engine._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 import geotrellis.raster._
 
 trait TileBuilders {

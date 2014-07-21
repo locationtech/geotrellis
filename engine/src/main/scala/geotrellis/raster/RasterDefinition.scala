@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 import geotrellis.engine.LayerId
 
 case class RasterDefinition(layerId: LayerId,

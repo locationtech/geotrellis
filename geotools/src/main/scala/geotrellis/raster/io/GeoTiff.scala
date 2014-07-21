@@ -17,7 +17,7 @@
 package geotrellis.raster.io
 
 import geotrellis.raster._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 import org.geotools.coverage.grid.GridCoverage2D
 import org.geotools.coverage.grid.GridEnvelope2D

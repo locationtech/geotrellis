@@ -25,7 +25,7 @@ object Min extends TileSummary[Int, Int, ValueSource[Int]] {
     val PartialTileIntersection(r, rasterExtent, polygons) = pt
     var min = NODATA
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, rasterExtent)(
+      Rasterizer.foreachCellByGeometry(p, rasterExtent)(
         new Callback {
           def apply(col: Int, row: Int) {
             val z = r.get(col, row)
@@ -58,7 +58,7 @@ object MinDouble extends TileSummary[Double, Double, ValueSource[Double]] {
     val PartialTileIntersection(r, rasterExtent, polygons) = pt
     var min = Double.NaN
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, rasterExtent)(
+      Rasterizer.foreachCellByGeometry(p, rasterExtent)(
         new Callback {
           def apply(col: Int, row: Int) {
             val z = r.getDouble(col, row)

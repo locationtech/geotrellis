@@ -18,7 +18,7 @@ package geotrellis.raster.rasterize
 
 import geotrellis._
 import geotrellis.raster._
-import geotrellis.feature._
+import geotrellis.vector._
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 
 import scala.language.higherKinds
@@ -35,7 +35,7 @@ trait Transformer[+B] {
 object Rasterizer {
   /**
    * Create a raster from a geometry feature.
-   * @param geom       Feature to rasterize
+   * @param geom       Geometry to rasterize
    * @param rasterExtent  Definition of raster to create
    * @param value         Single value to burn
    */ 
@@ -47,7 +47,7 @@ object Rasterizer {
           array(row * cols + col) = value
         }
       }
-    foreachCellByFeature(geom, rasterExtent)(f2)
+    foreachCellByGeometry(geom, rasterExtent)(f2)
     ArrayTile(array, rasterExtent.cols, rasterExtent.rows)
   } 
 
@@ -65,7 +65,7 @@ object Rasterizer {
           array(row * cols + col) = f(col, row)
         }
     }
-    foreachCellByFeature(feature, rasterExtent)(f2)
+    foreachCellByGeometry(feature, rasterExtent)(f2)
     ArrayTile(array, rasterExtent.cols, rasterExtent.rows)
   }
    
@@ -82,7 +82,7 @@ object Rasterizer {
    * @param re       RasterExtent to use for iterating through cells
    * @param f        A function that takes (col: Int, row: Int, rasterValue: Int, feature: Feature)
    */
-  def foreachCellByFeature(geom: Geometry, re: RasterExtent)(f: Callback): Unit = {
+  def foreachCellByGeometry(geom: Geometry, re: RasterExtent)(f: Callback): Unit = {
     geom match {
       case p: Point         => foreachCellByPoint(p, re)(f)
       case p: MultiPoint    => foreachCellByMultiPoint(p, re)(f)

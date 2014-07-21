@@ -18,8 +18,8 @@ package geotrellis.raster.op.local
 
 import geotrellis.raster._
 import geotrellis.engine._
-import geotrellis.feature._
-import geotrellis.feature.json._
+import geotrellis.vector._
+import geotrellis.vector.json._
 import geotrellis.testkit._
 
 import spray.json.DefaultJsonProtocol._

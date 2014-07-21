@@ -17,7 +17,7 @@
 package geotrellis.raster.op.hydrology
 
 import geotrellis.raster._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 import geotrellis.engine._
 
 import org.scalatest._

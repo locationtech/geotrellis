@@ -18,7 +18,7 @@ package geotrellis.raster.render.png
 
 import geotrellis.raster._
 import geotrellis.raster.render._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 import scala.io.{Source}
 

@@ -18,7 +18,7 @@ package geotrellis.engine
 
 import geotrellis.raster._
 import geotrellis.raster.io._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 import org.scalatest._
 

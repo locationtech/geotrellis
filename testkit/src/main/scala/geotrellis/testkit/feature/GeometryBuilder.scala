@@ -1,6 +1,6 @@
-package geotrellis.testkit.feature
+package geotrellis.testkit.vector
 
-import geotrellis.feature._
+import geotrellis.vector._
 import com.vividsolutions.jts.{geom => jts}
 import com.vividsolutions.jts.geom.util.SineStarFactory
 import com.vividsolutions.jts.util.GeometricShapeFactory

@@ -20,8 +20,8 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.raster._
 import geotrellis.raster.rasterize.{Rasterizer, Callback}
-import geotrellis.feature.{Geometry, Extent}
-import geotrellis.feature.json._
+import geotrellis.vector.{Geometry, Extent}
+import geotrellis.vector.json._
 
 trait LocalOpMethods[+Repr <: RasterSource] 
   extends LocalMapOpMethods[Repr]
@@ -208,12 +208,12 @@ trait LocalOpMethods[+Repr <: RasterSource]
       val result = ArrayTile.empty(tile.cellType, cols, rows)
       for(g <- geoms) {
         if(tile.cellType.isFloatingPoint) {
-          Rasterizer.foreachCellByFeature(g, re)(new Callback {
+          Rasterizer.foreachCellByGeometry(g, re)(new Callback {
             def apply(col: Int, row: Int) =
               result.setDouble(col, row, tile.getDouble(col, row))
           })
         } else {
-          Rasterizer.foreachCellByFeature(g, re)(new Callback {
+          Rasterizer.foreachCellByGeometry(g, re)(new Callback {
             def apply(col: Int, row: Int) =
               result.set(col, row, tile.get(col, row))
           })

@@ -17,7 +17,7 @@
 package geotrellis.raster.op.global
 
 import geotrellis._
-import geotrellis.feature._
+import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.engine._
 

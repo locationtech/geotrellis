@@ -17,7 +17,7 @@
 package geotrellis.raster.io
 
 import geotrellis.raster._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 import scala.math.{min, max}
 import java.io._

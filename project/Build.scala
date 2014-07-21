@@ -34,7 +34,7 @@ object Info {
 object GeotrellisBuild extends Build {
   import Dependencies._
 
-  val featureBenchmarkKey = AttributeKey[Boolean]("featureJavaOptionsPatched")
+  val vectorBenchmarkKey = AttributeKey[Boolean]("vectorJavaOptionsPatched")
   val benchmarkKey = AttributeKey[Boolean]("javaOptionsPatched")
 
   // Default settings
@@ -126,10 +126,10 @@ object GeotrellisBuild extends Build {
     resolvers += Resolver.sonatypeRepo("snapshots")
   )
 
-  // Project: feature
-  lazy val feature =
-    Project("feature", file("feature"))
-      .settings(name := "geotrellis-feature")
+  // Project: vector
+  lazy val vector =
+    Project("vector", file("vector"))
+      .settings(name := "geotrellis-vector")
       .settings(libraryDependencies ++=
         Seq(
           jts,
@@ -142,17 +142,17 @@ object GeotrellisBuild extends Build {
       .settings(defaultAssemblySettings: _*)
       .dependsOn(proj4)
 
-  // Project: feature-test
-  lazy val featureTest =
-    Project("feature-test", file("feature-test"))
-      .settings(name := "geotrellis-feature-test")
+  // Project: vector-test
+  lazy val vectorTest =
+    Project("vector-test", file("vector-test"))
+      .settings(name := "geotrellis-vector-test")
       .settings(libraryDependencies ++=
         Seq(
           scalatest   % "test",
           scalacheck  % "test"
         )
       )
-      .dependsOn(feature, testkit)
+      .dependsOn(vector, testkit)
 
   // Project: proj4
   lazy val proj4 =
@@ -172,7 +172,7 @@ object GeotrellisBuild extends Build {
   lazy val raster =
     Project("raster", file("raster"))
       .dependsOn(macros)
-      .dependsOn(feature)
+      .dependsOn(vector)
       .settings(rasterSettings: _*)
 
   lazy val rasterSettings =
@@ -285,7 +285,7 @@ object GeotrellisBuild extends Build {
   // Project: services
   lazy val services: Project =
     Project("services", file("services"))
-      .dependsOn(raster, feature, engine)
+      .dependsOn(raster, vector, engine)
       .settings(name := "geotrellis-services")
 
   // Project: jetty
@@ -311,7 +311,7 @@ object GeotrellisBuild extends Build {
   lazy val geotrellis_slick: Project =
     Project("slick", file("slick"))
       .settings(slickSettings: _*)
-      .dependsOn(feature)
+      .dependsOn(vector)
 
   lazy val slickSettings =
     Seq(
@@ -329,7 +329,7 @@ object GeotrellisBuild extends Build {
   lazy val admin: Project =
     Project("admin", file("admin"))
       .settings(adminSettings: _*)
-      .dependsOn(raster,services, feature)
+      .dependsOn(raster, services, vector)
 
   lazy val adminSettings =
     Seq(
@@ -466,16 +466,16 @@ object GeotrellisBuild extends Build {
     Project("demo", file("demo"))
       .dependsOn(jetty)
 
-  // Project: feature-benchmark
+  // Project: vector-benchmark
 
-  lazy val featureBenchmark: Project = 
-    Project("feature-benchmark", file("feature-benchmark"))
-      .settings(featureBenchmarkSettings: _*)
-      .dependsOn(featureTest % "compile->test")
+  lazy val vectorBenchmark: Project = 
+    Project("vector-benchmark", file("vector-benchmark"))
+      .settings(vectorBenchmarkSettings: _*)
+      .dependsOn(vectorTest % "compile->test")
 
-  def featureBenchmarkSettings =
+  def vectorBenchmarkSettings =
     Seq(
-      name := "geotrellis-feature-benchmark",
+      name := "geotrellis-vector-benchmark",
       libraryDependencies ++= Seq(
         scalatest % "test",
         scalacheck % "test", 
@@ -499,11 +499,11 @@ object GeotrellisBuild extends Build {
       // into the former
       onLoad in Global ~= { previous => state =>
         previous {
-          state.get(featureBenchmarkKey) match {
+          state.get(vectorBenchmarkKey) match {
             case None =>
               // get the runtime classpath, turn into a colon-delimited string
               Project
-                .runTask(fullClasspath in Runtime in featureBenchmark, state)
+                .runTask(fullClasspath in Runtime in vectorBenchmark, state)
                 .get
                 ._2
                 .toEither match {
@@ -516,7 +516,7 @@ object GeotrellisBuild extends Build {
                       .extract(state)
                       .append(
                         Seq(javaOptions in (benchmark, run) ++= Seq("-Xmx8G", "-cp", classPath)),
-                        state.put(featureBenchmarkKey, true)
+                        state.put(vectorBenchmarkKey, true)
                       )
                   case _ => state
                 }

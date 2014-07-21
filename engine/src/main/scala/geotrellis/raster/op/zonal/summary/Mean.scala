@@ -17,7 +17,7 @@
 package geotrellis.raster.op.zonal.summary
 
 import geotrellis.raster._
-import geotrellis.feature._
+import geotrellis.vector._
 import geotrellis.raster.rasterize._
 import geotrellis.engine._
 
@@ -52,7 +52,7 @@ object Mean extends TileSummary[MeanResult, Double, ValueSource[Double]] {
     var sum = 0.0
     var count = 0L
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, rasterExtent)(
+      Rasterizer.foreachCellByGeometry(p, rasterExtent)(
         new Callback {
           def apply(col: Int, row: Int) {
             val z = r.get(col, row)
@@ -77,7 +77,7 @@ object MeanDouble extends TileSummary[MeanResult, Double, ValueSource[Double]] {
     var sum = 0.0
     var count = 0L
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, rasterExtent)(
+      Rasterizer.foreachCellByGeometry(p, rasterExtent)(
         new Callback {
           def apply(col: Int, row: Int) {
             val z = r.getDouble(col, row)

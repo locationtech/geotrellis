@@ -1,6 +1,6 @@
 package geotrellis.benchmark
 
-import geotrellis.feature._
+import geotrellis.vector._
 import geotrellis.raster._
 
 import com.google.caliper.Param

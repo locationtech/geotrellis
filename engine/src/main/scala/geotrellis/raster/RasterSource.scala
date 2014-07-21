@@ -16,13 +16,13 @@
 
 package geotrellis.raster
 
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 import geotrellis.engine.{LayerId, RasterLayer}
 import geotrellis.raster.op._
 import geotrellis.raster.stats.Histogram
 import geotrellis.engine._
 
-import geotrellis.feature._
+import geotrellis.vector._
 import geotrellis.raster.op._
 import geotrellis.raster.stats._
 import geotrellis.raster.render.op._

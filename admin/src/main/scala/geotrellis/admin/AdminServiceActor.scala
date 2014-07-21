@@ -21,7 +21,7 @@ import geotrellis.engine._
 import geotrellis.services._
 
 import geotrellis.proj4._
-import geotrellis.feature.reproject._
+import geotrellis.vector.reproject._
 
 import akka.actor._
 import spray.routing._

@@ -17,8 +17,8 @@
 package geotrellis.slick
 
 import geotrellis.proj4.CRS
-import geotrellis.feature._
-import geotrellis.feature.reproject._
+import geotrellis.vector._
+import geotrellis.vector.reproject._
 
 
 object Projected {

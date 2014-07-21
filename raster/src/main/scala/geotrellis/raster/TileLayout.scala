@@ -17,7 +17,7 @@
 package geotrellis.raster
 
 import geotrellis._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 object TileLayout {
   def singleTile(cols: Int, rows: Int) =
