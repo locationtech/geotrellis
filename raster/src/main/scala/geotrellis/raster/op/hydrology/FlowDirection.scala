@@ -16,12 +16,22 @@
 
 package geotrellis.raster.op.hydrology
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.engine._
-
 import scala.math._
 
+/**
+ *  Operation to compute a flow direction raster from an elevation raster
+ *
+ *  The directional encoding is from:
+ *    Greenlee,D. D. 1987. "Tile and Vector Processing for Scanned Linework."
+ *    Photogrammetric Engineering and Remote Sensing (ISSN 0099-1112),vol. 53,Oct. 1987,p. 1383-1387.
+ *
+ *  The direction of flow is towards the neighboring cell with the largest drop in elevation. If two
+ *  or more cells have the same drop in elevation,their directional values are added together. The
+ *  8-bit encoding of the direction preserves the multi-directional property.
+ *
+ *  Sinks, cells which have no drop in elevation towards any neighbor, have no direction of flow.
+ */
 object FlowDirection {
   /** Determine flow direction of the cell at (c, r) in given raster */
   def flow(c: Int, r: Int, raster: Tile) = {
@@ -71,25 +81,9 @@ object FlowDirection {
   def isSink(c: Int, r: Int, raster: Tile) = {
     getNeighbors(c, r, raster).values.foldLeft(true)( _ && _ < 0)
   }
-}
 
-/**
- *  Operation to compute a flow direction raster from an elevation raster
- *  
- *  The directional encoding is from:
- *    Greenlee,D. D. 1987. "Tile and Vector Processing for Scanned Linework."
- *    Photogrammetric Engineering and Remote Sensing (ISSN 0099-1112),vol. 53,Oct. 1987,p. 1383-1387.
- *  
- *  The direction of flow is towards the neighboring cell with the largest drop in elevation. If two 
- *  or more cells have the same drop in elevation,their directional values are added together. The
- *  8-bit encoding of the direction preserves the multi-directional property.
- *  
- *  Sinks, cells which have no drop in elevation towards any neighbor, have no direction of flow.
- *
- *  @param        raster           Elevation raster the operation will run against. 
- */
-case class FlowDirection(raster: Op[Tile]) extends Op1(raster)({
-  (raster) =>
+
+  def apply(raster: Tile): Tile = {
     val (cols, rows) = raster.dimensions
     val tile = IntArrayTile(Array.ofDim[Int](rows * cols), cols, rows)
     var r = 0
@@ -100,10 +94,13 @@ case class FlowDirection(raster: Op[Tile]) extends Op1(raster)({
           tile.set(c, r, NODATA)
         } else {
           tile.set(c, r, FlowDirection.flow(c, r, raster))
-        }        
+        }
         c = c + 1
       }
       r = r + 1
     }
-    Result(tile)
-})
+
+    tile
+  }
+}
+

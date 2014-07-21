@@ -9,12 +9,15 @@ import geotrellis.raster.Tile
  *                     If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
  *                     the data values will be rounded to integers.
  */
-object MaxCalculation {
+object Max {
 
-  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] with Initialization = {
+  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] = {
 
-    if(tile.cellType.isFloatingPoint) {
-      new CursorCalculation[Tile] with DoubleArrayTileResult {
+    if (tile.cellType.isFloatingPoint) {
+      new CursorCalculation[Tile](tile, n)
+        with DoubleArrayTileResult
+      {
+        init(r)
         def calc(r: Tile, cursor: Cursor) = {
           var m = Double.MinValue
           cursor.allCells.foreach { (x, y) =>
@@ -25,8 +28,11 @@ object MaxCalculation {
         }
       }
 
-    }else{
-      new CursorCalculation[Tile] with IntArrayTileResult {
+    } else {
+      new CursorCalculation[Tile](tile, n)
+        with IntArrayTileResult
+      {
+        init(r)
         def calc(r: Tile, cursor: Cursor) = {
           var m = Int.MinValue
           cursor.allCells.foreach { (x, y) =>

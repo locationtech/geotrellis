@@ -22,7 +22,7 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-class TileWithNeighborsSpec extends FunSpec with FocalOpSpec 
+class TileWithNeighborsSpec extends FunSpec with TileBuilders
                                             with TestEngine {
   describe("TileWithNeighbors") {
     it("should tile correctly for 3x2 columns") {

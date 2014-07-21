@@ -22,7 +22,7 @@ import geotrellis.engine._
 
 import org.scalatest._
 
-class FocalOpMethodsSpec extends FunSpec with FocalOpSpec 
+class FocalOpMethodsSpec extends FunSpec with TileBuilders
                                          with TestEngine {
   describe("zipWithNeighbors") {
     it("Gets correct neighbors for 3 x 2 tiles") {

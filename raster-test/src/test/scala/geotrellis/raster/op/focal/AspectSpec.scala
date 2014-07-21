@@ -60,7 +60,7 @@ class AspectSpec extends FunSpec with Matchers with TestEngine with TileBuilders
           1,2,2,2,2,
           1,2,2,1,2), 5, 5)
 
-      val aR = get(Aspect(r, CellSize(5, 5)))
+      val aR = r.aspect(CellSize(5, 5))
 
       // Check left edge
       var value = aR.getDouble(0, 1)

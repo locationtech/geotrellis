@@ -4,18 +4,33 @@ import org.scalatest._
 import geotrellis.testkit._
 import geotrellis.raster._
 
-class MinSpec extends FunSpec with Matchers with TileBuilders with TestEngine {
+class MinSpec extends FunSpec with Matchers with FocalOpSpec with TestEngine {
+
+  val getMinResult = Function.uncurried((getCursorResult _).curried((r,n) => Min(r,n)))
+
   describe("Tile focalMin") {
     val tile: Tile = createTile((0 until 16).toArray)
 
+    it("should match scala.math.max default sets") {
+      for(s <- defaultTestSets) {
+        getMinResult(Square(1),MockCursor.fromAll(s:_*)) should equal ({
+          val x = s.filter(isData(_))
+          if(x.isEmpty) NODATA else x.min
+        })
+      }
+    }
+
     it("square min r=1") {
-      val expected = Array(
+      val expected = createTile(Array(
         0, 0, 1, 2,
         0, 0, 1, 2,
         4, 4, 5, 6,
-        8, 8, 9, 10)
+        8, 8, 9, 10
+      ))
 
-      assertEqual(tile.focalMin(Square(1)), createTile(expected))
+      val actual = tile.focalMin(Square(1))
+
+      assertEqual(actual, expected)
     }
 
     it("square min r=2") {
@@ -37,6 +52,37 @@ class MinSpec extends FunSpec with Matchers with TileBuilders with TestEngine {
 
       assertEqual(tile.focalMin(Circle(2)), createTile(expected))
     }
+
+    it("circle min r=3") {
+      val r = createTile((0 until 16).toArray)
+      assertEqual(r.focalMin(Circle(3)), Array(
+        0, 0, 0, 0,
+        0, 0, 0, 1,
+        0, 0, 0, 1,
+        0, 1, 2, 3))
+    }
+
+    it("circle min r=4+") {
+      val r = createTile((0 until 16).toArray)
+      val data0 = (0 until 16).map(z => 0).toArray
+      assertEqual(r.focalMin(Circle(4)), Array(
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 1))
+      assertEqual(r.focalMin(Circle(5)), data0)
+      assertEqual(r.focalMin(Circle(6)), data0)
+    }
+
+
+    it("square min r=3+") {
+      val r = createTile((0 until 16).toArray)
+      val data0 = (0 until 16).map(z => 0).toArray
+      assertEqual(r.focalMin(Square(3)), data0)
+      assertEqual(r.focalMin(Square(4)), data0)
+      assertEqual(r.focalMin(Square(5)), data0)
+    }
+
 
     it("square min r=1 for CompositeTile") {
       val tile = Array(

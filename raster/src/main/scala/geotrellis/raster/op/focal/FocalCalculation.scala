@@ -24,22 +24,35 @@ import geotrellis.raster._
 trait Resulting[T] {
   def result: T
 }
+/** Trait defining the ability to initialize the focal calculation with a raster. */
+trait Initialization {
+  def init(r: Tile): Unit
+}
 
 /**
  * A calculation that a FocalStrategy uses to complete
  * a focal operation.
  */
 trait FocalCalculation[T] extends Resulting[T] {
-  def execute(r: Tile, n: Neighborhood, neighbors: Seq[Option[Tile]] = Nil): T
+  val r: Tile
+  val n: Neighborhood
+
+  def execute(analysisArea: Option[GridBounds] = None): T
 }
 
 /**
  * A focal calculation that uses the Cursor focal strategy.
  */
-trait CursorCalculation[T] extends FocalCalculation[T] {
+abstract class CursorCalculation[T](val r: Tile, val n: Neighborhood)
+  extends FocalCalculation[T]
+{
   def traversalStrategy: Option[TraversalStrategy] = None
-  def execute(r: Tile, n: Neighborhood, neighbors: Seq[Option[Tile]]): T = {
-    CursorStrategy.execute(r, n, this, traversalStrategy, neighbors)
+  def execute(analysisArea: Option[GridBounds] = None): T = {
+    CursorStrategy.execute(
+      r, n, this, traversalStrategy,
+      analysisArea.getOrElse(GridBounds(0, 0, r.cols - 1, r.rows-1))
+    )
+
     result
   }
   
@@ -49,15 +62,22 @@ trait CursorCalculation[T] extends FocalCalculation[T] {
 /**
  * A focal calculation that uses the Cellwise focal strategy
  */
-trait CellwiseCalculation[T] extends FocalCalculation[T] {
+abstract class CellwiseCalculation[T] (val r: Tile, val n: Neighborhood)
+  extends FocalCalculation[T]
+{
   def traversalStrategy: Option[TraversalStrategy] = None
-  def execute(r: Tile, n: Neighborhood, neighbors: Seq[Option[Tile]]) = n match {
-      case s: Square =>
-        CellwiseStrategy.execute(r, s, this, traversalStrategy, neighbors)
-        result
-      case _ => sys.error("Cannot use cellwise calculation with this traversal strategy.")
-    }
-  
+
+  //TODO - fix this
+  def execute(analysisArea: Option[GridBounds] = None): T = n match {
+    case s: Square =>
+      CellwiseStrategy.execute(
+        r, s, this, traversalStrategy,
+        analysisArea.getOrElse(GridBounds(0, 0, r.cols - 1, r.rows-1))
+      )
+      result
+    case _ => sys.error("Cannot use cellwise calculation with this traversal strategy.")
+  }
+
   def add(r: Tile, x: Int, y: Int)
   def remove(r: Tile, x: Int, y: Int)
   def reset(): Unit
@@ -69,20 +89,7 @@ trait CellwiseCalculation[T] extends FocalCalculation[T] {
  * with a range of variables.
  */
 
-/** Trait defining the ability to initialize the focal calculation with a raster. */
-trait Initialization{ def init(r: Tile): Unit }
 
-/** Trait defining the ability to initialize the focal calculation with a raster and one other parameter. */
-trait Initialization1[A]       { def init(r: Tile, a: A): Unit }
-
-/** Trait defining the ability to initialize the focal calculation with a raster and two other parameters. */
-trait Initialization2[A, B]     { def init(r: Tile, a: A, b: B): Unit }
-
-/** Trait defining the ability to initialize the focal calculation with a raster and three other parameters. */
-trait Initialization3[A, B, C]   { def init(r: Tile, a: A, b: B, c: C): Unit }
-
-/** Trait defining the ability to initialize the focal calculation with a raster and four other parameters. */
-trait Initialization4[A, B, C, D] { def init(r: Tile, a: A, b: B, c: C, d: D): Unit }
 
 /*
  * Mixin's that define common raster-result functionality

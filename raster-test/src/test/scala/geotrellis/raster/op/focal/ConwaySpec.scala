@@ -22,9 +22,13 @@ import org.scalatest._
 class ConwaySpec extends FunSpec with FocalOpSpec
                                  with Matchers {
 
-  val getConwayResult = Function.uncurried((getCellwiseResult _).curried((r,n) => Conway(r))(Square(1)))
+  val getConwayResult =
+    Function.uncurried(
+      (getCellwiseResult _)
+        .curried{(r,n) => Conway(r,n)}(Square(1))
+    )
 
-  val calc = ConwayCalculation
+  val calc = Conway
   describe("Conway's Game of Life") {
     it("should compute death by overpopulation") {
       val s = Seq[Int](1,1,1,1,NODATA,NODATA,NODATA)

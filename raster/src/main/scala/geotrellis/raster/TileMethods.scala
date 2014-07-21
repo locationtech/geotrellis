@@ -7,4 +7,3 @@ package geotrellis.raster
   * [[geotrellis.raster.op.local.LocalMethods]]
   */
 trait TileMethods { val tile: Tile }
-

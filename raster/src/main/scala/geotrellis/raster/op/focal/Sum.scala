@@ -2,28 +2,30 @@ package geotrellis.raster.op.focal
 
 import geotrellis.raster._
 
-object SumCalculation {
+object Sum {
 
-  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] with Initialization = {
+  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] = {
     if(tile.cellType.isFloatingPoint){
       n match {
-        case Square(ext) => new CellwiseDoubleSumCalc
-        case _ => new CursorDoubleSumCalc
+        case Square(ext) => new CellwiseDoubleSumCalc(tile, n)
+        case _ =>           new CursorDoubleSumCalc(tile, n)
       }
     }else{
       n match {
-        case Square(ext) => new CellwiseSumCalc
-        case _ => new CursorSumCalc
+        case Square(ext) => new CellwiseSumCalc(tile, n)
+        case _ =>           new CursorSumCalc(tile, n)
       }
     }
 
   }
 }
 
-class CursorSumCalc
-  extends CursorCalculation[Tile]
+class CursorSumCalc(r: Tile, n: Neighborhood)
+  extends CursorCalculation[Tile](r, n)
   with IntArrayTileResult
 {
+  init(r)
+
   var total = 0
 
   def calc(r: Tile, cursor: Cursor) = {
@@ -46,10 +48,12 @@ class CursorSumCalc
   }
 }
 
-class CellwiseSumCalc
-  extends CellwiseCalculation[Tile]
+class CellwiseSumCalc(r: Tile, n: Neighborhood)
+  extends CellwiseCalculation[Tile](r, n)
   with IntArrayTileResult
 {
+  init(r)
+
   var total = 0
 
   def add(r: Tile, x: Int, y: Int) = {
@@ -68,10 +72,12 @@ class CellwiseSumCalc
   }
 }
 
-class CursorDoubleSumCalc
-  extends CursorCalculation[Tile]
+class CursorDoubleSumCalc(r: Tile, n: Neighborhood)
+  extends CursorCalculation[Tile](r, n)
   with DoubleArrayTileResult
 {
+  init(r)
+
   var total = 0.0
 
   def calc(r: Tile, cursor: Cursor) = {
@@ -94,10 +100,12 @@ class CursorDoubleSumCalc
   }
 }
 
-class CellwiseDoubleSumCalc
-  extends CellwiseCalculation[Tile]
+class CellwiseDoubleSumCalc(r: Tile, n: Neighborhood)
+  extends CellwiseCalculation[Tile](r, n)
   with DoubleArrayTileResult
 {
+  init(r)
+
   var total = 0.0
 
   def add(r: Tile, x: Int, y: Int) = {

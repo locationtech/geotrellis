@@ -9,11 +9,14 @@ import geotrellis.raster._
  *                  If you use a Tile with a Double CellType (TypeFloat, TypeDouble)
  *                  the data values will be rounded to integers.
  */
-object StandardDeviationCalculation {
+object StandardDeviation {
 
-  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] with Initialization = {
+  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] = {
     if(tile.cellType.isFloatingPoint) {
-      new CursorCalculation[Tile] with DoubleArrayTileResult {
+      new CursorCalculation[Tile](tile, n)
+        with DoubleArrayTileResult
+      {
+        init(r)
         var count: Int = 0
         var sum: Double = 0
 
@@ -42,7 +45,10 @@ object StandardDeviationCalculation {
         }
       }
     } else {
-      new CursorCalculation[Tile] with DoubleArrayTileResult {
+      new CursorCalculation[Tile](tile, n)
+        with DoubleArrayTileResult
+      {
+        init(r)
         var count: Int = 0
         var sum: Int = 0
 

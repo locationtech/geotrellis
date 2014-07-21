@@ -16,25 +16,21 @@
 
 package geotrellis.raster.op.hydrology
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.engine._
-
 import spire.syntax.cfor._
-
 import scala.collection.mutable._
 
 object Accumulation {
   //checks if the encoded value includes the dirrecrion
   def doesFlow(value: Int, dir: Int): Boolean = {
     if(value < dir) {
-      return false
+      false
     }
     else {
       if((value >> (math.floor(math.log(dir) / math.log(2)).toInt)) % 2 == 1)
-        return true
+        true
       else
-        return false
+        false
     }
   }
 
@@ -170,11 +166,9 @@ object Accumulation {
       }
     }
   }
-}
 
-case class Accumulation(flowDirrection: Op[Tile]) extends Op1(flowDirrection)({
-  flowDirrection =>
 
+  def apply(flowDirrection: Tile): Tile = {
     val cols = flowDirrection.cols
     val rows = flowDirrection.rows
     val tile = IntArrayTile(Array.ofDim[Int](cols * rows).fill(-1), cols, rows)
@@ -185,5 +179,6 @@ case class Accumulation(flowDirrection: Op[Tile]) extends Op1(flowDirrection)({
       }
     }
 
-    Result(tile)
-})
+    tile
+  }
+}

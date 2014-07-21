@@ -26,54 +26,12 @@ import scala.math._
 
 import spire.syntax.cfor._
 
-class MeanSpec extends FunSpec with FocalOpSpec
+class MeanSpec extends FunSpec with TileBuilders
                                with TestEngine
                                with Matchers {
 
-  val getCursorMeanResult = (getDoubleCursorResult _).curried((r,n) => Mean(r,n))(Circle(1))
-  val getCellwiseMeanResult = Function.uncurried((getDoubleCellwiseResult _).curried((r,n) => Mean(r,n))(Square(1)))
 
   describe("Mean") {
-    it("should handle all NODATA") {
-      isNoData(getCursorMeanResult(MockCursor.fromAll(NODATA,NODATA,NODATA,NODATA))) should be (true)
-    }
-
-    it("should match histogram mean default set in cursor calculation") {      
-      for(s <- defaultTestSets) {
-        val sf = s.filter { x => isData(x) }
-        val expected = sf.sum / sf.length.toDouble
-        if(isNoData(expected)) {
-          isNoData(getCursorMeanResult(MockCursor.fromAddRemove(s,Seq[Int]()))) should equal (true)
-        } else {
-          getCursorMeanResult(MockCursor.fromAddRemove(s,Seq[Int]())) should equal (expected)
-        }
-      }
-    }
-
-    it("should match histogram mean default set in cellwise calculation") {      
-      for(s <- defaultTestSets) {
-        val sf = s.filter { x => isData(x) }
-        val expected = sf.sum / sf.length.toDouble
-        if(isNoData(expected)) {
-          isNoData(getCellwiseMeanResult(s,Seq[Int]())) should equal (true)
-        } else {
-          getCellwiseMeanResult(s,Seq[Int]()) should equal (expected)
-        }
-      }
-    }
-
-    it("should hold state correctly with cursor calculation") {
-      testDoubleCursorSequence((r,n) => Mean(r,n), Circle(1),
-             Seq( SeqTestSetup(Seq(1,2,3,4,5), Seq[Int](), 3.0),
-                  SeqTestSetup(Seq(10,10)    , Seq(2,3,5), 6.25)) )
-    }
-
-    it("should hold state correctly with cellwise calculation") {
-      testDoubleCellwiseSequence((r,n)=>Mean(r,n), Square(1),
-             Seq( SeqTestSetup(Seq(1,2,3,4,5), Seq[Int](), 3.0),
-                  SeqTestSetup(Seq(10,10)    , Seq(2,3,5), 6.25)) )
-    }
-
     it("should square min for raster source") {
       val rs1 = createRasterSource(
         Array( nd,7,1,      1,3,5,      9,8,2,

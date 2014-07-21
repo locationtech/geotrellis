@@ -20,18 +20,19 @@ import geotrellis.raster.stats.{Statistics, FastMapHistogram}
  *                        of a double typed Tile (TypeFloat, TypeDouble).
  */
 object TileMoransICalculation {
-  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] with Initialization = {
-    new CursorCalculation[Tile] with DoubleArrayTileResult {
+  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] = {
+    new CursorCalculation[Tile](tile, n)
+      with DoubleArrayTileResult
+    {
+      init(r)
+
       var mean = 0.0
       var `stddev^2` = 0.0
 
-      override def init(r: Tile) = {
-        super.init(r)
-        val h = FastMapHistogram.fromTile(r)
-        val Statistics(m, _, _, s, _, _) = h.generateStatistics
-        mean = m
-        `stddev^2` = s * s
-      }
+      val h = FastMapHistogram.fromTile(r)
+      val Statistics(m, _, _, s, _, _) = h.generateStatistics
+      mean = m
+      `stddev^2` = s * s
 
       def calc(r: Tile, cursor: Cursor) = {
         var z = 0.0
@@ -69,20 +70,19 @@ object TileMoransICalculation {
  *                        of a double typed Tile (TypeFloat, TypeDouble).
  */
 object ScalarMoransICalculation {
-  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Double] with Initialization = {
-    new CursorCalculation[Double] with Initialization {
+  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Double] = {
+    new CursorCalculation[Double](tile, n)
+    {
       var mean: Double = 0
       var `stddev^2`: Double = 0
 
       var count: Double = 0.0
       var ws: Int = 0
 
-      def init(r: Tile) = {
-        val h = FastMapHistogram.fromTile(r)
-        val Statistics(m, _, _, s, _, _) = h.generateStatistics()
-        mean = m
-        `stddev^2` = s * s
-      }
+      val h = FastMapHistogram.fromTile(r)
+      val Statistics(m, _, _, s, _, _) = h.generateStatistics()
+      mean = m
+      `stddev^2` = s * s
 
       def calc(r: Tile, cursor: Cursor) = {
         val base = r.getDouble(cursor.col, cursor.row) - mean

@@ -1,285 +1,86 @@
-/*
- * Copyright (c) 2014 Azavea.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package geotrellis.raster.op.focal
 
 import geotrellis.raster._
 import geotrellis.engine._
 
+trait FocalOperation {self: RasterSource =>
 
-trait FocalOperation[T] extends Operation[T]
+  def zipWithNeighbors: Op[Seq[(Op[Tile], TileNeighbors)]] =
+    (self.tiles, self.rasterDefinition).map { (seq, rd) =>
+      val tileLayout = rd.tileLayout
 
-/**
- * Base class for a focal operation that takes a raster and a neighborhood.
- *
- * @param        r           Tile the focal operation will run against.
- * @param        n           Neighborhood to use with this focal operation.
- * @param        tns         TileNeighbors that describe the neighboring tiles.
- *
- * @tparam       T           Return type of the Operation.
- */
-abstract class FocalOperation0[T](r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors]) 
-         extends FocalOperation[T] {
-  def _run() = runAsync(List('init, r, n, tns.flatMap(_.getNeighbors)))
-  def productArity = 3
-  def canEqual(other: Any) = other.isInstanceOf[FocalOperation0[_]]
-  def productElement(index: Int) = index match {
-    case 0 => r
-    case 1 => n
-    case 2 => tns
-    case _ => new IndexOutOfBoundsException()
-  }
+      val colMax = tileLayout.tileCols - 1
+      val rowMax = tileLayout.tileRows - 1
 
+      def getTile(tileCol: Int, tileRow: Int): Option[Op[Tile]] =
+        if(0 <= tileCol && tileCol <= colMax &&
+          0 <= tileRow && tileRow <= rowMax) {
+          Some(seq(tileRow * (colMax + 1) + tileCol))
+        } else { None }
 
-  val nextSteps: PartialFunction[Any, StepOutput[T]] = {
-    case 'init :: (r: Tile) :: (n: Neighborhood) :: (neighbors: Seq[_]) :: Nil =>  {
-      val calc = getCalculation(r, n)
-      calc.init(r)
-      calc.execute(r, n, neighbors.asInstanceOf[Seq[Option[Tile]]])
-      Result(calc.result)
+      seq.zipWithIndex.map { case (tile, i) =>
+        val col = i % (colMax + 1)
+        val row = i / (colMax + 1)
+
+        // get tileCols, tileRows, & list of relative neighbor coordinate tuples
+        val tileSeq = Seq(
+          /* North */
+          getTile(col, row - 1),
+          /* NorthEast */
+          getTile(col + 1, row - 1),
+          /* East */
+          getTile(col + 1, row),
+          /* SouthEast */
+          getTile(col + 1, row + 1),
+          /* South */
+          getTile(col, row + 1),
+          /* SouthWest */
+          getTile(col - 1, row + 1),
+          /* West */
+          getTile(col - 1, row),
+          /* NorthWest */
+          getTile(col - 1, row - 1)
+        )
+
+        (tile, SeqTileNeighbors(tileSeq))
+      }
     }
+
+  protected
+  def focal(n: Neighborhood)
+           (calc: (Tile, Neighborhood) => FocalCalculation[Tile]) =
+  {
+    val tileOps: Op[Seq[Op[Tile]]] =
+      zipWithNeighbors.map{ //map into the Op
+        _.map { case (t: Op[Tile], ns: TileNeighbors) => //map over every Op[Tile] and their neighbors
+
+          //Now we're mapping into tile and it's neighbors, in parallel
+          (t, ns.getNeighbors).map { case (center: Tile, neighbors: Seq[Option[Tile]]) =>
+            val (neighborhoodTile, analysisArea) = TileWithNeighbors(center, neighbors)
+            calc(neighborhoodTile, n).execute(Some(analysisArea))
+          }
+        }
+      }
+
+    new RasterSource(rasterDefinition, tileOps)
   }
 
-  /** Gets a calculation to be used with this focal operation for the given raster
-   * neighborhood.
-   *
-   * Choosing the calculation based on on the raster and neighborhood allows flexibility
-   * in what calculation to use; if some calculations are faster
-   * for some neighborhoods (e.g., using a [[CellwiseCalculation]]
-   * for [[Square]] neighborhoods and a [[CursorCalculation]] for
-   * all other neighborhoods), or if you want to change the calculation
-   * based on the raster's data type, you can do so by returning the
-   * correct [[FocalCalculation]] from this function.
-   *
-   * @param     r       Tile that the focal calculation will run against.
-   * @param     n       Neighborhood that will be used in the focal operation.
-   */
-  def getCalculation(r: Tile, n: Neighborhood): FocalCalculation[T] with Initialization
-}
+  protected
+  def focalWithExtent(n: Neighborhood)
+                     (calc: (Tile, Neighborhood, RasterExtent) => FocalCalculation[Tile]) =
+  {
+    val tileOps: Op[Seq[Op[Tile]]] =
+      (rasterDefinition, zipWithNeighbors).map{ case (rd, tiles) =>
+        tiles.map { case (t: Op[Tile], ns: TileNeighbors) => //map over every Op[Tile] and their neighbors
+          //Now we're mapping into tile and it's neighbors, in parallel
+          (t, ns.getNeighbors).map { case (center: Tile, neighbors: Seq[Option[Tile]]) =>
+            val (neighborhoodTile, analysisArea) = TileWithNeighbors(center, neighbors)
+            //TODO - here we get the full RasterExtent, should it be RasterExtent of the tile/neighborhoodTile ?
+            calc(neighborhoodTile, n, rd.rasterExtent).execute(Some(analysisArea))
+          }
+        }
+      }
 
-/**
- * Base class for a focal operation that takes a raster, a neighborhood, and one other argument.
- *
- * @param        r           Tile the focal operation will run against.
- * @param        n           Neighborhood to use with this focal operation.
- * @param        tns         TileNeighbors that describe the neighboring tiles.
- * @param        a           Argument of type A.
- *
- * @tparam       T           Return type of the Operation.
- */
-abstract class FocalOperation1[A, T](r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors], a: Op[A]) 
-    extends FocalOperation[T] {
-  var rasterOp = r
-  def _run() = runAsync(List('init, rasterOp, n, tns.flatMap(_.getNeighbors), a))
-  def productArity = 4
-  def canEqual(other: Any) = other.isInstanceOf[FocalOperation1[_, _]]
-  def productElement(index: Int) = index match {
-    case 0 => r
-    case 1 => n
-    case 2 => tns
-    case 3 => a
-    case _ => new IndexOutOfBoundsException()
+    new RasterSource(rasterDefinition, tileOps)
   }
-  val nextSteps: PartialFunction[Any, StepOutput[T]] = {
-    case 'init :: (r: Tile) :: (n: Neighborhood) :: (neighbors: Seq[_]) :: a :: Nil => 
-      val calc = getCalculation(r, n)
-      calc.init(r, a.asInstanceOf[A])
-      calc.execute(r, n, neighbors.asInstanceOf[Seq[Option[Tile]]])
-      Result(calc.result)
-  }
-
-  /** Gets a calculation to be used with this focal operation for the given raster
-   * neighborhood.
-   *
-   * Choosing the calculation based on on the raster and neighborhood allows flexibility
-   * in what calculation to use; if some calculations are faster
-   * for some neighborhoods (e.g., using a [[CellwiseCalculation]]
-   * for [[Square]] neighborhoods and a [[CursorCalculation]] for
-   * all other neighborhoods), or if you want to change the calculation
-   * based on the raster's data type, you can do so by returning the
-   * correct [[FocalCalculation]] from this function.
-   *
-   * @param     r       Tile that the focal calculation will run against.
-   * @param     n       Neighborhood that will be used in the focal operation.
-   */  
-  def getCalculation(r: Tile, n: Neighborhood): FocalCalculation[T] with Initialization1[A]
-}
-
-/**
- * Base class for a focal operation that takes a raster, a neighborhood, and two other argument.
- *
- * @param        r           Tile the focal operation will run against.
- * @param        n           Neighborhood to use with this focal operation.
- * @param        tns         TileNeighbors that describe the neighboring tiles.
- * @param        a           Argument of type A.
- * @param        b           Argument of type B.
- *
- * @tparam       T           Return type of the Operation.
- */
-abstract class FocalOperation2[A, B, T](r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors],
-                                      a: Op[A], b: Op[B])
-         extends FocalOperation[T] {
-  var rasterOp = r
-  def _run() = runAsync(List('init, rasterOp, n, tns.flatMap(_.getNeighbors), a, b))
-  def productArity = 5
-  def canEqual(other: Any) = other.isInstanceOf[FocalOperation2[_, _, _]]
-  def productElement(index: Int) = index match {
-    case 0 => r
-    case 1 => n
-    case 2 => tns
-    case 3 => a
-    case 4 => b
-    case _ => new IndexOutOfBoundsException()
-  }
-  val nextSteps: PartialFunction[Any, StepOutput[T]] = {
-    case 'init :: (r: Tile) :: (n: Neighborhood) :: (neighbors: Seq[_]) :: a :: b :: Nil => 
-      val calc = getCalculation(r, n)
-      calc.init(r,
-                a.asInstanceOf[A],
-                b.asInstanceOf[B])
-      calc.execute(r, n, neighbors.asInstanceOf[Seq[Option[Tile]]])
-      Result(calc.result)
-  }
-
-  /** Gets a calculation to be used with this focal operation for the given raster
-   * neighborhood.
-   *
-   * Choosing the calculation based on on the raster and neighborhood allows flexibility
-   * in what calculation to use; if some calculations are faster
-   * for some neighborhoods (e.g., using a [[CellwiseCalculation]]
-   * for [[Square]] neighborhoods and a [[CursorCalculation]] for
-   * all other neighborhoods), or if you want to change the calculation
-   * based on the raster's data type, you can do so by returning the
-   * correct [[FocalCalculation]] from this function.
-   *
-   * @param     r       Tile that the focal calculation will run against.
-   * @param     n       Neighborhood that will be used in the focal operation.
-   */  
-  def getCalculation(r: Tile, n: Neighborhood): FocalCalculation[T] with Initialization2[A, B]
-}
-
-/**
- * Base class for a focal operation that takes a raster, a neighborhood, and three other argument.
- *
- * @param        r           Tile the focal operation will run against.
- * @param        n           Neighborhood to use with this focal operation.
- * @param        tns         TileNeighbors that describe the neighboring tiles.
- * @param        a           Argument of type A.
- * @param        b           Argument of type B.
- * @param        c           Argument of type C.
- *
- * @tparam       T           Return type of the Operation.
- */
-abstract class FocalOperation3[A, B, C, T](r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors],
-                                        a: Op[A], b: Op[B], c: Op[C]) 
-         extends FocalOperation[T] {
-  var rasterOp: Operation[Tile] = r 
-  def _run() = runAsync(List('init, rasterOp, n, tns.flatMap(_.getNeighbors), a, b, c))
-  def productArity = 5
-  def canEqual(other: Any) = other.isInstanceOf[FocalOperation3[_, _, _, _]]
-  def productElement(index: Int) = index match {
-    case 0 => r
-    case 1 => n
-    case 2 => tns
-    case 3 => a
-    case 4 => b
-    case 5 => c
-    case _ => new IndexOutOfBoundsException()
-  }
-  val nextSteps: PartialFunction[Any, StepOutput[T]] = {
-    case 'init :: (r: Tile) :: (n: Neighborhood) :: (neighbors: Seq[_]) :: a :: b :: c :: Nil => 
-      val calc = getCalculation(r, n)
-      calc.init(r, a.asInstanceOf[A],
-                b.asInstanceOf[B],
-                c.asInstanceOf[C])
-      calc.execute(r, n, neighbors.asInstanceOf[Seq[Option[Tile]]])
-      Result(calc.result)
-  }
-  
-  /** Gets a calculation to be used with this focal operation for the given raster
-   * neighborhood.
-   *
-   * Choosing the calculation based on on the raster and neighborhood allows flexibility
-   * in what calculation to use; if some calculations are faster
-   * for some neighborhoods (e.g., using a [[CellwiseCalculation]]
-   * for [[Square]] neighborhoods and a [[CursorCalculation]] for
-   * all other neighborhoods), or if you want to change the calculation
-   * based on the raster's data type, you can do so by returning the
-   * correct [[FocalCalculation]] from this function.
-   *
-   * @param     r       Tile that the focal calculation will run against.
-   * @param     n       Neighborhood that will be used in the focal operation.
-   */
-  def getCalculation(r: Tile, n: Neighborhood): FocalCalculation[T] with Initialization3[A, B, C]
-}
-
-/**
- * Base class for a focal operation that takes a raster, a neighborhood, and four other argument.
- *
- * @param        r           Tile the focal operation will run against.
- * @param        n           Neighborhood to use with this focal operation.
- * @param        tns         TileNeighbors that describe the neighboring tiles.
- * @param        a           Argument of type A.
- * @param        b           Argument of type B.
- * @param        c           Argument of type C.
- * @param        d           Argument of type D.
- *
- * @tparam       T           Return type of the Operation.
- */
-abstract class FocalOperation4[A, B, C, D, T](r: Op[Tile], n: Op[Neighborhood], tns: Op[TileNeighbors],
-                                          a: Op[A], b: Op[B], c: Op[C], d: Op[D])
-         extends FocalOperation[T] {
-  var rasterOp = r
-  def _run() = runAsync(List('init, rasterOp, n, tns.flatMap(_.getNeighbors), a, b, c, d))
-  def productArity = 6
-  def canEqual(other: Any) = other.isInstanceOf[FocalOperation4[_, _, _, _, _]]
-  def productElement(index: Int) = index match {
-    case 0 => r
-    case 1 => n
-    case 2 => tns
-    case 3 => a
-    case 4 => b
-    case 5 => c
-    case 6 => d
-    case _ => new IndexOutOfBoundsException()
-  }
-  val nextSteps: PartialFunction[Any, StepOutput[T]] = {
-    case 'init :: (r: Tile) :: (n: Neighborhood) :: (neighbors: Seq[_]) :: a :: b :: c :: d :: Nil => 
-      val calc = getCalculation(r, n)
-      calc.init(r, a.asInstanceOf[A],
-                  b.asInstanceOf[B],
-                  c.asInstanceOf[C],
-                  d.asInstanceOf[D])
-      calc.execute(r, n, neighbors.asInstanceOf[Seq[Option[Tile]]])
-      Result(calc.result)
-  }
-  
-  /** Gets a calculation to be used with this focal operation for the given raster
-   * neighborhood.
-   *
-   * Choosing the calculation based on on the raster and neighborhood allows flexibility
-   * in what calculation to use; if some calculations are faster
-   * for some neighborhoods (e.g., using a [[CellwiseCalculation]]
-   * for [[Square]] neighborhoods and a [[CursorCalculation]] for
-   * all other neighborhoods), or if you want to change the calculation
-   * based on the raster's data type, you can do so by returning the
-   * correct [[FocalCalculation]] from this function.
-   *
-   * @param     r       Tile that the focal calculation will run against.
-   * @param     n       Neighborhood that will be used in the focal operation.
-   */
-  def getCalculation(r: Tile, n: Neighborhood): FocalCalculation[T] with Initialization4[A, B, C, D]
 }

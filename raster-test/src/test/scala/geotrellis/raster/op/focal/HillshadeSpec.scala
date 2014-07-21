@@ -52,8 +52,8 @@ class HillshadeSpec extends FunSuite with TestEngine with TileBuilders {
     val tile = IntArrayTile(arr, 5, 5)
 
     val cs = CellSize(5.0, 5.0)
-    val aspect = get(Aspect(tile, cs))
-    val slope = get(Slope(tile, cs, 1.0))
+    val aspect = tile.aspect(cs)
+    val slope = tile.slope(cs, 1.0)
 
     val h = (aspect, slope).hillshade(315.0, 45.0)
     val h2 = tile.hillshade(cs, 315.0, 45.0, 1.0)

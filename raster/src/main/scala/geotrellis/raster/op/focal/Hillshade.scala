@@ -18,34 +18,21 @@ import scala.math._
  *
  * @see [[http://goo.gl/DtVDQ Esri Desktop's description of Hillshade.]]
  */
-object HillshadeCalculation {
+object Hillshade {
+  def apply(tile: Tile, n: Neighborhood, cs: CellSize, az: Double, al: Double, z: Double): FocalCalculation[Tile] = {
+    new SurfacePointCalculation[Tile](tile, n, cs) with
+      ShortArrayTileResult
+    {
+      init(r)
 
-  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] with Initialization4[CellSize, Double, Double, Double] = {
-    new SurfacePointCalculation[Tile] with ShortArrayTileResult
-      with Initialization4[CellSize, Double, Double, Double] {
-      var azimuth = 0.0
-      var zenith = 0.0
-      var zFactor = 0.0
+      val azimuth = radians(90.0 - az)
+      val zenith = radians(90.0 - al)
+      val zFactor = z
 
-      // Caches trig values for speed
-      var cosZ = 0.0
-      var sinZ = 0.0
-      var cosAz = 0.0
-      var sinAz = 0.0
-
-      def init(r: Tile, cs: CellSize, az: Double, al: Double, z: Double) = {
-        super.init(r)
-
-        cellSize = cs
-        azimuth = radians(90.0 - az)
-        zenith = radians(90.0 - al)
-        zFactor = z
-
-        cosZ = cos(zenith)
-        sinZ = sin(zenith)
-        cosAz = cos(azimuth)
-        sinAz = sin(azimuth)
-      }
+      val cosZ = cos(zenith)
+      val sinZ = sin(zenith)
+      val cosAz = cos(azimuth)
+      val sinAz = sin(azimuth)
 
       def setValue(x: Int, y: Int, s: SurfacePoint) {
         val slope = s.slope(zFactor)

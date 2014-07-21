@@ -20,20 +20,14 @@ import geotrellis.raster.op.focal.Angles._
  * }}}
  *
  */
-object SlopeCalculation {
+object Slope {
 
-  def apply(t: Tile, n: Neighborhood): FocalCalculation[Tile] with Initialization2[CellSize, Double] = {
-    new SurfacePointCalculation[Tile]
+  def apply(r: Tile, n: Neighborhood, cs: CellSize, z: Double): FocalCalculation[Tile] = {
+    new SurfacePointCalculation[Tile](r, n, cs)
       with DoubleArrayTileResult
-      with Initialization2[CellSize, Double]
     {
-      var zFactor = 0.0
-
-      override def init(r: Tile, cs: CellSize, z: Double) = {
-        super.init(r)
-        cellSize = cs
-        zFactor = z
-      }
+      init(r)
+      val zFactor = z
 
       def setValue(x: Int, y: Int, s: SurfacePoint) {
         tile.setDouble(x, y, degrees(s.slope(zFactor)))

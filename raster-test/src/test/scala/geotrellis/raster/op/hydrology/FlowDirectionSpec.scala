@@ -16,12 +16,8 @@
 
 package geotrellis.raster.op.hydrology
 
-import geotrellis.feature.Extent
 import geotrellis.raster._
-import geotrellis.engine._
-
 import org.scalatest._
-
 import geotrellis.testkit._
 
 class FlowDirectionSpec extends FunSpec with Matchers 
@@ -34,19 +30,19 @@ class FlowDirectionSpec extends FunSpec with Matchers
       val ncols = 6
       val nrows = 6
       val e = IntArrayTile(Array[Int](78,72,69,71,58,49,
-                                            74,67,56,49,46,50,
-                                            69,53,44,37,38,48,
-                                            64,58,55,22,31,24,
-                                            68,61,47,21,16,19,
-                                            74,53,34,12,11,12),
+                                      74,67,56,49,46,50,
+                                      69,53,44,37,38,48,
+                                      64,58,55,22,31,24,
+                                      68,61,47,21,16,19,
+                                      74,53,34,12,11,12),
                             ncols,nrows)
 
       val m = IntArrayTile(Array[Int](2,2,2,4,4,8,
-                                            2,2,2,4,4,8,
-                                            1,1,2,4,8,4,
-                                            128,128,1,2,4,8,
-                                            2,2,1,4,4,4,
-                                            1,1,1,1,NODATA,16),
+                                      2,2,2,4,4,8,
+                                      1,1,2,4,8,4,
+                                      128,128,1,2,4,8,
+                                      2,2,1,4,4,4,
+                                      1,1,1,1,NODATA,16),
                             ncols,nrows)
       val computed = FlowDirection(e)
       assertEqual(computed, m)
@@ -56,12 +52,12 @@ class FlowDirectionSpec extends FunSpec with Matchers
       val ncols = 3
       val nrows = 3
       val e = IntArrayTile(Array[Int](5,5,5,
-                                            5,1,5,
-                                            5,5,5),
+                                      5,1,5,
+                                      5,5,5),
                             ncols,nrows)
       val m = IntArrayTile(Array[Int](2,4,8,
-                                            1,NODATA,16,
-                                            128,64,32),
+                                      1,NODATA,16,
+                                      128,64,32),
                             ncols,nrows)
 
       val computed = FlowDirection(e)
@@ -72,14 +68,14 @@ class FlowDirectionSpec extends FunSpec with Matchers
       val ncols = 3
       val nrows = 3
       val e = IntArrayTile(Array[Int](8,5,6,
-                                            NODATA,5,6,
-                                            9,6,7),
+                                 NODATA,5,6,
+                                      9,6,7),
                             ncols,nrows)
       val m = IntArrayTile(Array[Int](1,4,16,
-                                            NODATA,64,16,
-                                            1,64,32),
+                                 NODATA,64,16,
+                                      1,64,32),
                             ncols,nrows)
-       val computed = RasterSource(e, Extent(0,0,1,1)).flowDirection.get
+       val computed = e.flowDirection
       assertEqual(computed, m)
     }
   }}

@@ -39,11 +39,12 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
     extends DataSource[Tile, Tile]
     with local.LocalOpMethods[RasterSource] 
     with focal.FocalOpMethods[RasterSource]
+    with focal.ElevationOpMethods[RasterSource]
+    with hydrology.HydrologyOpMethods[RasterSource]
     with global.GlobalOpMethods[RasterSource]
     with zonal.ZonalOpMethods[RasterSource]
     with zonal.summary.ZonalSummaryOpMethods[RasterSource]
-    with hydrology.HydrologyOpMethods[RasterSource]
-    with stats.StatOpMethods[RasterSource] 
+    with stats.StatOpMethods[RasterSource]
     with RenderOpMethods[RasterSource] {
   type Self = RasterSource
 

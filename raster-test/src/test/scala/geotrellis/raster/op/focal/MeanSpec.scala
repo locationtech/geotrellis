@@ -1,10 +1,57 @@
 package geotrellis.raster.op.focal
 
+import geotrellis.raster._
 import org.scalatest._
 import geotrellis.testkit._
 
-class MeanSpec extends FunSpec with Matchers with TileBuilders with TestEngine {
+class MeanSpec extends FunSpec with Matchers with FocalOpSpec with TestEngine {
+
+  val getCursorMeanResult = (getDoubleCursorResult _).curried(
+    (r,n) => MeanCalculation(r,n))(Circle(1))
+  val getCellwiseMeanResult = Function.uncurried((getDoubleCellwiseResult _).curried(
+    (r,n) => MeanCalculation(r,n))(Square(1)))
+
   describe("Tile focalMean") {
+    it("should handle all NODATA") {
+      isNoData(getCursorMeanResult(MockCursor.fromAll(NODATA,NODATA,NODATA,NODATA))) should be (true)
+    }
+
+    it("should match histogram mean default set in cursor calculation") {
+      for(s <- defaultTestSets) {
+        val sf = s.filter { x => isData(x) }
+        val expected = sf.sum / sf.length.toDouble
+        if(isNoData(expected)) {
+          isNoData(getCursorMeanResult(MockCursor.fromAddRemove(s,Seq[Int]()))) should equal (true)
+        } else {
+          getCursorMeanResult(MockCursor.fromAddRemove(s,Seq[Int]())) should equal (expected)
+        }
+      }
+    }
+
+    it("should match histogram mean default set in cellwise calculation") {
+      for(s <- defaultTestSets) {
+        val sf = s.filter { x => isData(x) }
+        val expected = sf.sum / sf.length.toDouble
+        if(isNoData(expected)) {
+          isNoData(getCellwiseMeanResult(s,Seq[Int]())) should equal (true)
+        } else {
+          getCellwiseMeanResult(s,Seq[Int]()) should equal (expected)
+        }
+      }
+    }
+
+    it("should hold state correctly with cursor calculation") {
+      testDoubleCursorSequence((r,n) => MeanCalculation(r,n), Circle(1),
+        Seq( SeqTestSetup(Seq(1,2,3,4,5), Seq[Int](), 3.0),
+          SeqTestSetup(Seq(10,10)    , Seq(2,3,5), 6.25)) )
+    }
+
+    it("should hold state correctly with cellwise calculation") {
+      testDoubleCellwiseSequence((r,n)=>MeanCalculation(r,n), Square(1),
+        Seq( SeqTestSetup(Seq(1,2,3,4,5), Seq[Int](), 3.0),
+          SeqTestSetup(Seq(10,10)    , Seq(2,3,5), 6.25)) )
+    }
+
 
     it("square mean") {
       val input = Array[Int](

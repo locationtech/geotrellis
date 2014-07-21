@@ -103,7 +103,9 @@ class SurfacePoint() {
  * For edge cells, the neighborhood points that lie outside the extent of the raster
  * will be counted as having the same value as the focal point.
  */
-trait SurfacePointCalculation[T] extends FocalCalculation[T] {
+abstract class SurfacePointCalculation[T](val r: Tile, val n: Neighborhood, val cellSize: CellSize)
+  extends FocalCalculation[T]
+{
   var lastY = -1
 
   var cellWidth = 0.0
@@ -115,14 +117,10 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
 
   val s = new SurfacePoint
 
-  var cellSize: CellSize = null
-
   /** Sets a result at (x, y) from a [[SurfacePoint]]
    *
    * Implementors need to provide this function to store the
    * results of the surface point calculation.
-   *
-   * @see For an example, see [[Aspect]]
    */
   def setValue(x: Int, y: Int, s: SurfacePoint): Unit
 
@@ -153,19 +151,14 @@ trait SurfacePointCalculation[T] extends FocalCalculation[T] {
    * the value at the focus is added in place of out-of-border neighborhood
    * values.
    *
-   * @param     raster        Tile to execute against.
-   * @param     n             Neighborhood used (must be [[Square]] with dimension 1)
-   * @param     neighbors     Neighboring tiles
-   * 
    * @note                    Assumes a [[Square]](1) neighborhood.
    * @note                    All values in the neighborhood that are outside the raster grid
    *                          are counted as having the focal value. Note that in the case
    *                          the cell is outside the analysis area, but still inside the raster,
    *                          the raster value will still be used.
-   *
    */
-  def execute(raster: Tile, n: Neighborhood, neighbors: Seq[Option[Tile]]): T = {
-    val (r, analysisArea) = TileWithNeighbors(raster, neighbors)
+  def execute(area: Option[GridBounds] = None): T = {
+    val analysisArea = area.getOrElse(GridBounds(0, 0,r.cols-1, r.rows-1))
 
     val colMin = analysisArea.colMin
     val colMax = analysisArea.colMax

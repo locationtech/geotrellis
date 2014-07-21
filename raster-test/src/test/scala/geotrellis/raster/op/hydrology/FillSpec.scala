@@ -29,8 +29,8 @@ class FillSpec extends FunSpec
                   with TileBuilders {
   describe("Fill"){
     it("Returns a new raster with sinks removed"){
-      var ncols = 3
-      var nrows = 3
+      val ncols = 3
+      val nrows = 3
       val re = RasterExtent(Extent(0,0,1,1),1,1,ncols,nrows)
       val m = IntArrayTile(Array[Int](
             1,2,3,
@@ -43,19 +43,19 @@ class FillSpec extends FunSpec
             4,5,6,
             7,8,9),
             ncols,nrows)
-      assertEqual(Fill(m), o)
+      assertEqual(m.fill(20), o)
     } 
 
     it("Does not remove non-sink even past the threshold"){
-      var ncols = 3
-      var nrows = 3
+      val ncols = 3
+      val nrows = 3
       val m = IntArrayTile(Array[Int](
             1,2,100,
             4,55,130,
             80,145,132),
             ncols,nrows)
 
-      assertEqual(RasterSource(m, Extent(0,0,1,1)).fill(FillOptions(50)).get, m)
+      assertEqual(m.fill(50), m)
     } 
   }
 }

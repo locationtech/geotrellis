@@ -22,8 +22,13 @@ import org.scalatest._
 class StandardDeviationSpec extends FunSpec with FocalOpSpec
                                             with Matchers {
 
-  val getCircleStdResult = (getDoubleCursorResult _).curried((r,n) => StandardDeviation(r,n))(Circle(1))
-  val getSquareStdResult = (getDoubleCursorResult _).curried((r,n) => StandardDeviation(r,n))(Square(1))
+  val getCircleStdResult = (getDoubleCursorResult _).curried(
+    (r,n) => StandardDeviation(r,n)
+  )(Circle(1))
+
+  val getSquareStdResult = (getDoubleCursorResult _).curried(
+    (r,n) => StandardDeviation(r,n)
+  )(Square(1))
 
   def mean(xs: List[Int]): Double = xs match {
     case Nil => Double.NaN

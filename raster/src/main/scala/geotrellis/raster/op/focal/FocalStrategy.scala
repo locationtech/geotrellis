@@ -37,23 +37,25 @@ import TraversalStrategy._
  * what cells have been removed since the last move.
  */
 object CursorStrategy {
-  def execute(r:Tile,
-              n:Neighborhood,
-              c:CursorCalculation[_],
-              tOpt:Option[TraversalStrategy], 
-              neighbors:Seq[Option[Tile]]):Unit = {
-    val t = tOpt match {
+  def execute(tile: Tile,
+              n: Neighborhood,
+              c: CursorCalculation[_],
+              tOpt: Option[TraversalStrategy],
+              analysisArea: GridBounds): Unit = {
+    val strat = tOpt match {
       case None => ZigZag
       case Some(tStrategy) => tStrategy
     }
-    // Get the tile raster
-    val (rast,analysisArea) = TileWithNeighbors(r,neighbors)
 
-    val cursor = Cursor(rast,n,analysisArea)
-    execute(rast,cursor,c,t,analysisArea)
+    val cursor = Cursor(tile, n, analysisArea)
+    execute(tile, cursor, c, strat, analysisArea)
   }
 
-  def execute(r:Tile,cursor:Cursor,c:CursorCalculation[_],t:TraversalStrategy,analysisArea:GridBounds):Unit = {
+  def execute(r:Tile,
+              cursor:Cursor,
+              c:CursorCalculation[_],
+              t:TraversalStrategy,
+              analysisArea:GridBounds): Unit = {
     t match {
       case ScanLine => handleScanLine(r, analysisArea, cursor,c)
       case SpiralZag => handleSpiralZag(r,analysisArea,cursor,c)
@@ -202,14 +204,13 @@ object CellwiseStrategy {
   def execute(r:Tile, 
               n:Square,
               c:CellwiseCalculation[_], 
-              tOpt:Option[TraversalStrategy], 
-              neighbors:Seq[Option[Tile]]):Unit = {
-    val t = tOpt match {
+              tOpt:Option[TraversalStrategy],
+              analysisArea: GridBounds):Unit = {
+    val strat = tOpt match {
       case None => ScanLine
       case Some(tStrategy) => tStrategy
     }
-    val (rast,analysisArea) = TileWithNeighbors(r,neighbors)
-    execute(rast,n,c,t,analysisArea)
+    execute(r, n ,c , strat, analysisArea)
   }
 
   def execute(r:Tile,n:Square,calc:CellwiseCalculation[_],t:TraversalStrategy,analysisArea:GridBounds):Unit = {

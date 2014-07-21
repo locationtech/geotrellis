@@ -38,7 +38,7 @@ class FocalStrategySpec extends FunSpec with Matchers {
       var lastY = 0
       var lastX = -1
 
-      val calc = new CursorCalculation[Int] {
+      val calc = new CursorCalculation[Int](r, Square(1)) {
         def result = 0
         def calc(r: Tile, cursor: Cursor) = {
           if(cursor.row != 0 || cursor.col != 0 ) { cursor.isReset should equal(false) }
@@ -69,7 +69,7 @@ class FocalStrategySpec extends FunSpec with Matchers {
       var lastY = -1
       var lastX = 0
 
-      val calc = new CursorCalculation[Int] {
+      val calc = new CursorCalculation[Int](r, Square(1)) {
         def result = 0
         def calc(r: Tile, cursor: Cursor) = {
           if(lastY != cursor.row) {

@@ -4,8 +4,26 @@ import org.scalatest._
 import geotrellis.testkit._
 import geotrellis.raster._
 
-class MaxSpec extends FunSpec with Matchers with TileBuilders with TestEngine {
+class MaxSpec extends FunSpec with Matchers with TileBuilders with TestEngine with FocalOpSpec {
+
+  val getMaxResult = Function.uncurried((getCursorResult _).curried(
+    (r,n) => Max(r,n)
+  ))
+  val getMaxSetup = Function.uncurried((getSetup _).curried(
+    (r,n) => Max(r,n)
+  ))
+  val squareSetup = getMaxSetup(defaultRaster, Square(1))
+
   describe("Tile focalMax") {
+    it("should correctly compute a center neighborhood") {
+      squareSetup.result(2,2) should equal (4)
+    }
+
+    it("should match scala.math.max default sets") {
+      for(s <- defaultTestSets) {
+        getMaxResult(Square(1),MockCursor.fromAll(s:_*)) should equal (s.max)
+      }
+    }
 
     it("square max r=1") {
       val tile: Tile = createTile(Array[Int](

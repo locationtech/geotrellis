@@ -20,18 +20,15 @@ import geotrellis.raster.op.focal.Angles._
   * }}}
   *
   */
-object AspectCalculation {
+object Aspect {
 
-  def apply(tile: Tile, n: Neighborhood): FocalCalculation[Tile] with Initialization1[CellSize] = {
-    new SurfacePointCalculation[Tile] with DoubleArrayTileResult with Initialization1[CellSize]
+  def apply(tile: Tile, n: Neighborhood, cs: CellSize): FocalCalculation[Tile] = {
+    new SurfacePointCalculation[Tile](tile, n, cs)
+      with DoubleArrayTileResult
     {
+      init(r)
       def setValue(x: Int, y: Int, s: SurfacePoint) {
         tile.setDouble(x, y, degrees(s.aspect))
-      }
-
-      def init(r: Tile, cs: CellSize) = {
-        super.init(r)
-        cellSize = cs
       }
     }
   }
