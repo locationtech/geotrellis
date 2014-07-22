@@ -203,28 +203,35 @@ class LineSpec extends FunSpec with Matchers {
     }
 
     // This throws a topology exception
-   it ("should union with a MultiPolygon and return a PolygonResult topo") {
-     val l = Line(Point(0,0), Point(2,2))
-     val p1 = Polygon(Line(Point(0,0), Point(0,2.1), Point(2.1,2.1), Point(2.1,0), Point(0,0)))
+    it ("should union with a MultiPolygon and return a PolygonResult topo") {
+      val l = Line(Point(0,0), Point(2,2))
+      val p1 = Polygon(Line(Point(0,0), Point(0,2.1), Point(2.1,2.1), Point(2.1,0), Point(0,0)))
 //     val p2 = Polygon(Line(Point(0,0), Point(0,1.2), Point(2.1,0), Point(0,0)))
-     val p2 = Polygon(Line(Point(-5,-5), Point(-5,0), Point(0,-1), Point(-5,-5)))
-     val mp = MultiPolygon(p1, p2)
-     mp | l should be (MultiPolygonResult(mp))
+      val p2 = Polygon(Line(Point(-5,-5), Point(-5,0), Point(0,-1), Point(-5,-5)))
+      val mp = MultiPolygon(p1, p2)
+      mp | l should be (MultiPolygonResult(mp))
 
-   }
+    }
 
     it ("should union with an empty MultiPolygon and return a LineResult") {
       val l = Line(Point(1,1), Point(2,1))
       val mp = MultiPolygon(Seq())
       l | mp should be (LineResult(l))
+    }
 
+    it ("should union with a MultiPolygon and return a PolygonResult") {
+      val l = Line(Point(1,1), Point(2,1))
+      val p1 = Polygon(Line(Point(0,0), Point(0,4), Point(4,4), Point(4,0), Point(0,0)))
+      val p2 = p1
+      val mp = MultiPolygon(Seq(p1, p2))
+      l | mp should be (PolygonResult(p1))
     }
 
     it ("should union with a MultiPolygon and return a MultiPolygonResult") {
       val l = Line(Point(1,1), Point(2,1))
       val p1 = Polygon(Line(Point(3,4), Point(3,5), Point(5,5), Point(5,3), Point(3,4)))
       val p2 = Polygon(Line(Point(0.5,0.5), Point(2.5,0.5), Point(2.5,2.5), Point(0.5,2.5), Point(0.5,0.5)))
-      val mp = MultiPolygon(p1, p2)
+      val mp = MultiPolygon(Seq(p1, p2))
       l | mp should be (MultiPolygonResult(Seq(p1, p2)))
     }
 
@@ -232,7 +239,7 @@ class LineSpec extends FunSpec with Matchers {
       val l = Line(Point(10,10), Point(20,10))
       val p1 = Polygon(Line(Point(1,2), Point(1,3), Point(3,3), Point(3,2), Point(1,2)))
       val p2 = Polygon(Line(Point(0,0), Point(0,-4), Point(-4,-4), Point(-4,0), Point(0,0)))
-      val mp = MultiPolygon(p1, p2)
+      val mp = MultiPolygon(Seq(p1, p2))
       val expected: GeometryCollection =
         GeometryCollection(lines = Seq(l), polygons = Seq(p1, p2))
       val result = l | mp
@@ -378,6 +385,8 @@ class LineSpec extends FunSpec with Matchers {
         case _ => fail()
       }
     }
+
+    // -- Predicates
 
     it ("should contain a Point") {
       val p = Point(1,1)
