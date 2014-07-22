@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.feature._
+import geotrellis.vector._
 import geotrellis.raster.rasterize._
 
 import spire.syntax.cfor._

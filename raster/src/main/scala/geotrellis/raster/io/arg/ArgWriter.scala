@@ -20,7 +20,7 @@ import java.io.{BufferedOutputStream, DataOutputStream, FileOutputStream}
 
 import geotrellis.raster._
 import geotrellis.raster.io.Writer
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 /**
  * ArgWriter will write a raster to disk in ARG format.

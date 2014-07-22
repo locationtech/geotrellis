@@ -20,8 +20,8 @@ import geotrellis._
 import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.op._
-import geotrellis.feature._
-import geotrellis.feature.json._
+import geotrellis.vector._
+import geotrellis.vector.json._
 import geotrellis.raster.rasterize.polygon._
 
 import com.google.caliper.Benchmark
@@ -38,7 +38,7 @@ class RasterizerBenchmark extends OperationBenchmark {
   var r: Tile = _
   var re: RasterExtent = _
   var tile: IntArrayTile = _
-  var poly: feature.PolygonFeature[Int] = _
+  var poly: vector.PolygonFeature[Int] = _
 
 //  @Param(Array("512","1024","2048","4096","8192"))
 //  @Param(Array("512","1024","2048"))
@@ -61,7 +61,7 @@ class RasterizerBenchmark extends OperationBenchmark {
 
     transitPoly = GeoJson.fromFile[Polygon]("../raster-test/data/transitgeo.json")
     transitPolyNoHoles = Polygon(transitPoly.exterior)
-    val feature.Extent(xmin, ymin, xmax, ymax) = transitPoly.envelope
+    val vector.Extent(xmin, ymin, xmax, ymax) = transitPoly.envelope
     val dx = (xmax - xmin) / 4
     val dy = (ymax - ymin) / 4
     val ext = Extent(xmin - dx, ymin - dy, xmax + dx, ymax + dy)
@@ -69,7 +69,7 @@ class RasterizerBenchmark extends OperationBenchmark {
   }
 
   def rasterize() {
-    raster.rasterize.Rasterizer.foreachCellByFeature(poly.geom, re)(
+    raster.rasterize.Rasterizer.foreachCellByGeometry(poly.geom, re)(
       new raster.rasterize.Callback {
         def apply(col: Int, row: Int) {
           tile.set(col,row,4)
@@ -80,7 +80,7 @@ class RasterizerBenchmark extends OperationBenchmark {
   //Because of a refactor Callback is not getting a geom as a param, since it can close over it if it really wanted
   //this renders the following benchmark pointless, but lets preserve this file in case other cases emerge
   def rasterizeUsingValue() {
-    raster.rasterize.Rasterizer.foreachCellByFeature(poly.geom, re)(
+    raster.rasterize.Rasterizer.foreachCellByGeometry(poly.geom, re)(
       new raster.rasterize.Callback {
         def apply(col: Int, row: Int) {
           tile.set(col,row, poly.data)

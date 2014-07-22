@@ -16,7 +16,7 @@
 
 package geotrellis.spark.tiling
 
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 case class TileCoord(tx: Long, ty: Long)
 

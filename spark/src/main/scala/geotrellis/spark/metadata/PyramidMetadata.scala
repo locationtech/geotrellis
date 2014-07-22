@@ -17,7 +17,7 @@
 package geotrellis.spark.metadata
 
 import geotrellis.raster._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 import geotrellis.spark.ingest.GeoTiff
 import geotrellis.spark.ingest.MetadataInputFormat

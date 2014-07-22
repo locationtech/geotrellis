@@ -23,7 +23,7 @@ import javax.ws.rs.core.{Response, Context}
 
 // import core geotrellis types
 import geotrellis.raster._
-import geotrellis.feature._
+import geotrellis.vector._
 import geotrellis.raster.render._
 import geotrellis.engine._
 

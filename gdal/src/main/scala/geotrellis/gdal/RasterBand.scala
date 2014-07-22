@@ -1,7 +1,7 @@
 package geotrellis.gdal
 
 import geotrellis.raster._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 import org.gdal.gdal.Band
 import org.gdal.gdal.gdal

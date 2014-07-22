@@ -17,7 +17,7 @@
 package geotrellis.data
 
 import geotrellis._
-import geotrellis.feature._
+import geotrellis.vector._
 import geotrellis.raster.op._
 
 import org.geotools.data.simple._

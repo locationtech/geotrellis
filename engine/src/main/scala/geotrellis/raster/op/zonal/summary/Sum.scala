@@ -25,7 +25,7 @@ object Sum extends TileSummary[Long, Long, ValueSource[Long]] {
     val PartialTileIntersection(r, rasterExtent, polygons) = pt
     var sum: Long = 0L
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, rasterExtent)(
+      Rasterizer.foreachCellByGeometry(p, rasterExtent)(
         new Callback {
           def apply(col: Int, row: Int) {
             val z = r.get(col, row)
@@ -53,7 +53,7 @@ object SumDouble extends TileSummary[Double, Double, ValueSource[Double]] {
     val PartialTileIntersection(r, rasterExtent, polygons) = pt
     var sum = 0.0
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, rasterExtent)(
+      Rasterizer.foreachCellByGeometry(p, rasterExtent)(
         new Callback {
           def apply(col: Int, row: Int) {
             val z = r.getDouble(col, row)

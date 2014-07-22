@@ -18,7 +18,7 @@ package geotrellis.raster.io.arg
 
 import geotrellis.raster._
 import geotrellis.raster.io.Filesystem
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 import com.typesafe.config.ConfigFactory
 

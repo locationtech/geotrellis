@@ -20,7 +20,7 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.raster.stats._
 import geotrellis.raster.rasterize._
-import geotrellis.feature._
+import geotrellis.vector._
 import geotrellis.engine._
 
 import scala.collection.mutable

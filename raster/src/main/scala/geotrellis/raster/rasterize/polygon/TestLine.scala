@@ -1,7 +1,7 @@
 package geotrellis.raster.rasterize.polygon
 
 import geotrellis.raster.RasterExtent
-import geotrellis.feature._
+import geotrellis.vector._
 
 case class TestLine(rowMin: Int, rowMax: Int, x0:Double, y0:Double, x1:Double, y1:Double, inverseSlope: Double) {
   def horizontal:Boolean = rowMin == rowMax

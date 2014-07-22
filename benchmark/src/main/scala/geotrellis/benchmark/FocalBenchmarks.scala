@@ -16,7 +16,7 @@
 
 package geotrellis.benchmark
 
-import geotrellis.feature._
+import geotrellis.vector._
 import geotrellis.engine._
 import geotrellis.raster.op.focal._
 import geotrellis.raster._

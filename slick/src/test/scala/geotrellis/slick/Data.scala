@@ -19,8 +19,8 @@
 package geotrellis.slick
 
 import com.vividsolutions.jts.{geom => jts}
-import geotrellis.feature._
-import geotrellis.feature.io._
+import geotrellis.vector._
+import geotrellis.vector.io._
 
 object util {
 

@@ -26,7 +26,7 @@ object Histogram extends TileSummary[Histogram, Histogram, ValueSource[Histogram
     val PartialTileIntersection(r, rasterExtent, polygons) = pt
     val histogram = FastMapHistogram()
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, rasterExtent)(
+      Rasterizer.foreachCellByGeometry(p, rasterExtent)(
         new Callback {
           def apply (col: Int, row: Int) {
             val z = r.get(col, row)

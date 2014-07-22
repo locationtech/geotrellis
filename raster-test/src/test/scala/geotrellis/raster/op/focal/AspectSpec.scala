@@ -16,7 +16,7 @@
 
 package geotrellis.raster.op.focal
 
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 import geotrellis.raster._
 import geotrellis.engine._
 import geotrellis.testkit._

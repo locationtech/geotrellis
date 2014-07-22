@@ -17,7 +17,7 @@
 package geotrellis.raster
 
 import geotrellis._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 case class TileExtents(extent: Extent, tileLayout: TileLayout) {
   val cellSize = tileLayout.cellSize(extent)

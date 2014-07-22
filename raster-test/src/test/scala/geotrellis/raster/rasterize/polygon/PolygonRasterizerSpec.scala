@@ -18,7 +18,7 @@ package geotrellis.raster.rasterize.polygon
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize._
-import geotrellis.feature._
+import geotrellis.vector._
 import geotrellis.testkit._
 
 import math.{max,min,round}
@@ -189,7 +189,7 @@ class RasterizePolygonSpec extends FunSuite
 
     }
 
-    val f = new java.io.File("raster-test/data/feature/")
+    val f = new java.io.File("raster-test/data/vector/")
     val fs = f.listFiles.filter(_.getPath().endsWith(".wkt"))
 
     val re = RasterExtent( Extent(0, 0, 300, 300), 1, 1, 300, 300)

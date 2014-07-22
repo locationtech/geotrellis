@@ -1,7 +1,7 @@
 package geotrellis.raster.op.global
 
 import geotrellis.raster._
-import geotrellis.feature.Point
+import geotrellis.vector.Point
 
 import spire.syntax.cfor._
 

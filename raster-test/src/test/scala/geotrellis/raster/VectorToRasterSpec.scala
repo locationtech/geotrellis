@@ -16,8 +16,8 @@
 
 package geotrellis.raster
 
-import geotrellis.feature._
-import geotrellis.feature.json._
+import geotrellis.vector._
+import geotrellis.vector.json._
 import geotrellis.testkit._
 import spray.json.DefaultJsonProtocol._
 

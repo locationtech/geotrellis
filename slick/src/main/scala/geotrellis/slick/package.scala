@@ -16,7 +16,7 @@
 
 package geotrellis
 
-import geotrellis.feature._
+import geotrellis.vector._
 
 package object slick {
   implicit class ExtendGeometry[G <: Geometry](g: G) {

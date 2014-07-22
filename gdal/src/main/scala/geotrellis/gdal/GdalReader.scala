@@ -1,7 +1,7 @@
 package geotrellis.gdal
 
 import geotrellis.raster._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 object GdalReader {
   def read(path: String, band: Int = 1): (Tile, RasterExtent) = {

@@ -20,9 +20,9 @@ import geotrellis.engine._
 import geotrellis.raster._
 import geotrellis.raster.render.Png
 import geotrellis.raster.render.ColorRamps._
-import geotrellis.feature._
+import geotrellis.vector._
 import geotrellis.proj4._
-import geotrellis.feature.reproject._
+import geotrellis.vector.reproject._
 
 import Json._
 

@@ -1,7 +1,7 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 object GeoTiff {
   def render(tile: Tile, extent: Extent, compression: Compression): Array[Byte] = {

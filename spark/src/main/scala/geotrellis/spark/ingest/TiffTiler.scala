@@ -17,7 +17,7 @@
 package geotrellis.spark.ingest
 
 import geotrellis.raster._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 import geotrellis.spark.cmd.NoDataHandler
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.tiling.TmsTiling

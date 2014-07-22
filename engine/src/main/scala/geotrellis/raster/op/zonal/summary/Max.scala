@@ -25,7 +25,7 @@ object Max extends TileSummary[Int, Int, ValueSource[Int]] {
     val PartialTileIntersection(r, rasterExtent, polygons) = pt
     var max = NODATA
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, rasterExtent)(
+      Rasterizer.foreachCellByGeometry(p, rasterExtent)(
         new Callback {
           def apply(col: Int, row: Int) {
             val z = r.get(col, row)
@@ -58,7 +58,7 @@ object MaxDouble extends TileSummary[Double, Double, ValueSource[Double]] {
     val PartialTileIntersection(r, rasterExtent, polygons) = pt
     var max = Double.NaN
     for(p <- polygons) {
-      Rasterizer.foreachCellByFeature(p, rasterExtent)(
+      Rasterizer.foreachCellByGeometry(p, rasterExtent)(
         new Callback {
           def apply(col: Int, row: Int) {
             val z = r.getDouble(col, row)

@@ -16,7 +16,7 @@
 package geotrellis.spark.cmd
 
 import geotrellis.raster._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 
 import geotrellis.spark._
 import geotrellis.spark.cmd.args.HadoopArgs
