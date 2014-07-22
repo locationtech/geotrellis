@@ -27,8 +27,8 @@ import geotrellis.services._
 class Color {
   @GET
   def get(
-    @Context req:HttpServletRequest
-  ):Response = {
+    @Context req: HttpServletRequest
+  ): Response = {
     // Return JSON with information on color ramps.
     OK.json(ColorRampMap.getJson)
       .allowCORS()

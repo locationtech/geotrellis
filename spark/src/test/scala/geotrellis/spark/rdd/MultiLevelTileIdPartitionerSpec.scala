@@ -15,7 +15,7 @@
  */
 
 package geotrellis.spark.rdd
-import geotrellis.Extent
+import geotrellis.feature.Extent
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.formats.TileIdZoomWritable
 import geotrellis.spark.metadata.PyramidMetadata
@@ -23,12 +23,11 @@ import geotrellis.spark.metadata.RasterMetadata
 import geotrellis.spark.tiling.PixelExtent
 import geotrellis.spark.tiling.TileExtent
 import org.apache.hadoop.fs.Path
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 import java.awt.image.DataBuffer
 import geotrellis.spark.formats.SerializerTester
 
-class MultiLevelTileIdPartitionerSpec extends FunSpec with TestEnvironment with ShouldMatchers with SerializerTester {
+class MultiLevelTileIdPartitionerSpec extends FunSpec with TestEnvironment with Matchers with SerializerTester {
 
   // maximum number of zoom levels for the pyramid in this test
   final val Levels = 3

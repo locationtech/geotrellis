@@ -9,8 +9,9 @@ import spray.http._
 import HttpCharsets._
 import MediaTypes._
 
+import spray.json.DefaultJsonProtocol._
 
-class FeatureFormatsSpec extends FlatSpec with ShouldMatchers with GeoJsonSupport {
+class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
 
   val pointFeature = PointFeature(Point(6.0,1.2), 123)
   val lineFeature = LineFeature(Line(Point(1,2) :: Point(1,3) :: Nil), 321)

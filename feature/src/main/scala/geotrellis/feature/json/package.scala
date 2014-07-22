@@ -2,8 +2,9 @@ package geotrellis.feature
 
 import spray.json._
 import spray.json.JsonFormat
+import spray.httpx.SprayJsonSupport
 
-package object json extends GeoJsonSupport {
+package object json extends GeoJsonSupport with SprayJsonSupport {
   //extend DefaultJsonProtocol so anybody that imports me also has JsonFormats for Scala primitives, used in Features.
 
   implicit class RichGeometry(geom: Geometry){

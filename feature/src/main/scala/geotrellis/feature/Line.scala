@@ -80,9 +80,9 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
     jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
 
   /**
-   * Returns the minimum bounding box that contains this Line.
+   * Returns the minimum extent that contains this Line.
    */
-  lazy val boundingBox: BoundingBox =
+  lazy val envelope: Extent =
     jtsGeom.getEnvelopeInternal
 
   /** Returns the length of this Line. */

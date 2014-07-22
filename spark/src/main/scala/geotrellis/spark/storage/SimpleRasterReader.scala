@@ -16,17 +16,19 @@
 
 package geotrellis.spark.storage
 
+import geotrellis.raster._
+import geotrellis.spark.utils.SparkUtils
 import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.formats.ArgWritable
+import geotrellis.spark.rdd.TileIdPartitioner
+
 import org.apache.hadoop.conf.Configuration
-import geotrellis.raster.FloatArrayRasterData
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.MapFile
 import org.apache.hadoop.fs.FileUtil
-import geotrellis.spark.utils.SparkUtils
 import org.apache.hadoop.fs.FileStatus
+
 import java.io.Closeable
-import geotrellis.spark.rdd.TileIdPartitioner
 
 /* 
  * An Iterable-based reader. Note that even though Iterables have a rich set of methods

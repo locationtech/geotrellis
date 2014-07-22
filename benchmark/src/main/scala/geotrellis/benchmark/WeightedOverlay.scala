@@ -16,13 +16,12 @@
 
 package geotrellis.benchmark
 
-import geotrellis._
-import geotrellis.source._
+import geotrellis.engine._
+import geotrellis.raster._
 import geotrellis.raster.op._
 import geotrellis.raster.op.local._
-import geotrellis.statistics.op.stat._
-import geotrellis.io._
-import geotrellis.render.op._
+import geotrellis.raster.stats._
+import geotrellis.raster.render._
 
 import com.google.caliper.Param
 
@@ -38,23 +37,12 @@ class WeightedOverlay extends OperationBenchmark {
   @Param(Array("256","512", "1024", "2048", "4096"))
   var size:Int = 0
 
-  var op:Op[Png] = null
   var source:ValueSource[Png] = null
   var sourceSeq:ValueSource[Png] = null
 
   override def setUp() {
     val re = getRasterExtent(names(0), size, size)
     val total = weights.sum
-    val rs = (0 until n).map(i => Multiply(LoadRaster(names(i), re), weights(i)))
-    val weightedAdd = Add(rs: _*)
-    val divided = Divide(weightedAdd, total)
-    op = 
-      divided flatMap { r =>
-        GetHistogram(r) flatMap { h =>
-          val breaksOp = GetColorBreaks(h, colors)
-          RenderPng(r, breaksOp, 0)
-        }
-      }
 
     source = 
       (0 until n).map(i => RasterSource(names(i),re) * weights(i))
@@ -69,9 +57,6 @@ class WeightedOverlay extends OperationBenchmark {
                  .renderPng(colors)
   }
 
-  def timeWeightedOverlayOp(reps:Int) = run(reps)(weightedOverlayOp)
-  def weightedOverlayOp = get(op)
-
   def timeWeightedOverlaySource(reps:Int) = run(reps)(weightedOverlaySource)
   def weightedOverlaySource = get(source)
 
@@ -85,7 +70,7 @@ class WeightedOverlayOverTypes extends OperationBenchmark {
   var size:Int = 0
 
   @Param(Array("bit","byte","short","int","float","double"))
-  var rasterType = ""
+  var cellType = ""
 
   val layers = 
     Map(
@@ -102,40 +87,26 @@ class WeightedOverlayOverTypes extends OperationBenchmark {
 
   val colors = Array(0x0000FF, 0x0080FF, 0x00FF80, 0xFFFF00, 0xFF8000, 0xFF0000)
 
-  var op:Op[Png] = null
   var source:ValueSource[Png] = null
   var sourceSeq:ValueSource[Png] = null
 
   override def setUp() {
     val weights = (0 until layerCount).map(i => Random.nextInt).toArray
-    val re = getRasterExtent(layers(rasterType), size, size)
+    val re = getRasterExtent(layers(cellType), size, size)
     val total = weights.sum
-    val rs = (0 until layerCount).map(i => Multiply(LoadRaster(layers(rasterType), re), weights(i)))
-    val weightedAdd = Add(rs: _*)
-    val divided = Divide(weightedAdd, total)
-    op = 
-      divided flatMap { r =>
-        GetHistogram(r) flatMap { h =>
-          val breaksOp = GetColorBreaks(h, colors)
-          RenderPng(r, breaksOp, 0)
-        }
-      }
 
     source = 
-      (0 until layerCount).map(i => RasterSource(layers(rasterType),re) * weights(i))
+      (0 until layerCount).map(i => RasterSource(layers(cellType),re) * weights(i))
                           .reduce(_+_)
                           .localDivide(total)
                           .renderPng(colors)
 
     sourceSeq = 
-      (0 until layerCount).map(i => RasterSource(layers(rasterType),re) * weights(i))
+      (0 until layerCount).map(i => RasterSource(layers(cellType),re) * weights(i))
                           .localAdd
                           .localDivide(total)
                           .renderPng(colors)
   }
-
-  def timeWeightedOverlayOp(reps:Int) = run(reps)(weightedOverlayOp)
-  def weightedOverlayOp = get(op)
 
   def timeWeightedOverlaySource(reps:Int) = run(reps)(weightedOverlaySource)
   def weightedOverlaySource = get(source)

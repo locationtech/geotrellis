@@ -16,11 +16,11 @@
 
 package geotrellis.services
 
-import geotrellis._
+import geotrellis.engine._
 import geotrellis.services.Json._
 
 
 object CatalogService {
   def getJson() =
-    GeoTrellis.server.catalog.toJson
+    GeoTrellis.engine.catalog.toJson
 }

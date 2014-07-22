@@ -45,10 +45,10 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   }.toArray
 
   /**
-   * Returns the minimum bounding box that contains all the points
+   * Returns the minimum extent that contains all the points
    * of this MultiPoint.
    */
-  lazy val boundingBox: BoundingBox =
+  lazy val envelope: Extent =
     jtsGeom.getEnvelopeInternal
 
   // -- Intersection

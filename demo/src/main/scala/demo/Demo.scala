@@ -22,9 +22,10 @@ import javax.ws.rs.{GET, Path, DefaultValue, QueryParam}
 import javax.ws.rs.core.{Response, Context}
 
 // import core geotrellis types
-import geotrellis._
-import geotrellis.render._
-import geotrellis.source._
+import geotrellis.raster._
+import geotrellis.feature._
+import geotrellis.raster.render._
+import geotrellis.engine._
 
 object response {
   def apply(mime:String)(data:Any) = Response.ok(data).`type`(mime).build()
@@ -123,20 +124,20 @@ class DemoService1 {
       case "hello" =>
         response("text/plain")("hello world")
       case "info" => png.run match {
-        case process.Complete(img, h) =>
+        case Complete(img, h) =>
           val ms = h.elapsedTime
           val url = s"demo1?format=png&${req.getQueryString}"
           println(url)
           val html = Demo.infoPage(cols.toInt, rows.toInt, ms, url, h.toString)
           response("text/html; charset=UTF-8")(html)
-        case process.Error(msg, trace) => {
-          response("text/plain")("failed: $msg\ntrace:\n$trace")
+        case Error(msg, trace) => {
+          response("text/plain")("failed: %s\ntrace:\n%s".format(msg, trace))
         }
       }
       case _ => png.run match {
-        case process.Complete(img, _) =>
+        case Complete(img, _) => 
           response("image/png")(img)
-        case process.Error(msg, trace) =>
+        case Error(msg, trace) =>
           response("text/plain")(s"failed: $msg\ntrace:\n$trace")
       }
     }

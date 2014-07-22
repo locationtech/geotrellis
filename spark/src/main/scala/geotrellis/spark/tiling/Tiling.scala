@@ -16,16 +16,22 @@
 
 package geotrellis.spark.tiling
 
-import geotrellis.Extent
+import geotrellis.feature.Extent
 
 case class TileCoord(tx: Long, ty: Long) 
 
+/* Represents the dimensions of the tiles of a RasterRDD
+ * based on a zoom level and world grid.
+ */
 case class TileExtent(xmin: Long, ymin: Long, xmax: Long, ymax: Long) {
   def width = xmax - xmin + 1
   def height = ymax - ymin + 1
 } 
 
-// width/height is non-inclusive 
+/* Represents the width and hieght of the raster pre-ingest 
+ * (which might not match up with the TileExtent based on tile division).
+ * @note    width/height is non-inclusive 
+ */
 case class PixelExtent(xmin: Long, ymin: Long, xmax: Long, ymax: Long) {
   def width = xmax - xmin
   def height = ymax - ymin
@@ -34,5 +40,5 @@ case class PixelExtent(xmin: Long, ymin: Long, xmax: Long, ymax: Long) {
 case class Pixel(px: Long, py: Long)
 
 object Bounds {
-	final val World = Extent(-180, -90, 179.99999, 89.99999)
+  final val World = Extent(-180, -90, 179.99999, 89.99999)
 }

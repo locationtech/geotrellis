@@ -20,10 +20,9 @@ import geotrellis.feature._
 
 import com.vividsolutions.jts.{geom=>jts}
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
-class MultiPointSpec extends FunSpec with ShouldMatchers {
+class MultiPointSpec extends FunSpec with Matchers {
   describe("MultiPoint") {
 
     // -- Intersection

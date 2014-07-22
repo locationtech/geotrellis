@@ -108,9 +108,9 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
 
   /**
-   * Returns the minimum bounding box that contains this Polygon.
+   * Returns the minimum extent that contains this Polygon.
    */
-  lazy val boundingBox: BoundingBox =
+  lazy val envelope: Extent =
     jtsGeom.getEnvelopeInternal
 
   /**

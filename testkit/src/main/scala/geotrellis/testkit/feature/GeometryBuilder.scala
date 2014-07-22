@@ -24,8 +24,8 @@ trait GeometryBuilder[T <: Geometry] {
 
   def build(): T
 
-  def withBoundingBox(boundingBox: BoundingBox): GeometryBuilder[T] = {
-    factory.setEnvelope(boundingBox.jtsEnvelope)
+  def withEnvelope(extent: Extent): GeometryBuilder[T] = {
+    factory.setEnvelope(new jts.Envelope(extent.xmin, extent.xmax, extent.ymin, extent.ymax))
     this
   }
 

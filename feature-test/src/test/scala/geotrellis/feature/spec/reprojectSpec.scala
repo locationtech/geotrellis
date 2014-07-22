@@ -22,10 +22,9 @@ import geotrellis.feature.json._
 import geotrellis.proj4._
 import geotrellis.testkit.feature._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers._
+import org.scalatest._
 
-class ReprojectSpec extends FunSpec with ShouldMatchers {
+class ReprojectSpec extends FunSpec with Matchers {
   describe("reprojection") {
     it("should reproject a bounding box from WebMercator to LatLng and vica versa") {
       //-111.09374999999999,34.784483415461345,-75.322265625,43.29919735147067
