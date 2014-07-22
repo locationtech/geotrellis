@@ -18,7 +18,14 @@ package geotrellis.spark.tiling
 
 import geotrellis.feature.Extent
 
-case class TileCoord(tx: Long, ty: Long) 
+case class TileCoord(tx: Long, ty: Long)
+
+/**
+ * Span of consecutive tile IDs, inclusive
+ * @param min minimum TMS Tile ID in the span
+ * @param max maximum TMS Tile ID in the span
+ */
+case class TileSpan(min: Long, max: Long)
 
 /* Represents the dimensions of the tiles of a RasterRDD
  * based on a zoom level and world grid.
@@ -26,6 +33,18 @@ case class TileCoord(tx: Long, ty: Long)
 case class TileExtent(xmin: Long, ymin: Long, xmax: Long, ymax: Long) {
   def width = xmax - xmin + 1
   def height = ymax - ymin + 1
+
+  /**
+   * Return a range from min tileId to max tileID for every row in the extent
+   */
+  def getRowRanges(zoom: Int): Seq[TileSpan] =
+    for (y <- ymin to ymax)
+    yield TileSpan(TmsTiling.tileId(xmin, y, zoom), TmsTiling.tileId(xmax, y, zoom))
+
+  def contains(zoom: Int)(tileId: Long) = {
+    val (x, y) = TmsTiling.tileXY(tileId, zoom)
+    (x <= xmax && x >= xmin) && (y <= ymax && y >= ymin)
+  }
 } 
 
 /* Represents the width and hieght of the raster pre-ingest 
