@@ -30,11 +30,9 @@ import geotrellis.raster.FloatArrayTile
 import geotrellis.raster.IntArrayTile
 import geotrellis.raster.ShortArrayTile
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-
-class ArgWritableSpec extends FunSpec with ShouldMatchers {
+class ArgWritableSpec extends FunSpec with Matchers {
   describe("conversion from/to ArgWritable") {
 
     val cols = 2

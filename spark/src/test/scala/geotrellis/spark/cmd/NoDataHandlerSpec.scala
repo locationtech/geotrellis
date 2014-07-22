@@ -14,10 +14,9 @@ import geotrellis.raster.FloatArrayTile
 import geotrellis.raster.IntArrayTile
 import geotrellis.raster.ShortArrayTile
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-class NoDataHandlerSpec extends FunSpec with ShouldMatchers {
+class NoDataHandlerSpec extends FunSpec with Matchers {
   describe("add/remove user nodata") {
 
     val cols = 2
