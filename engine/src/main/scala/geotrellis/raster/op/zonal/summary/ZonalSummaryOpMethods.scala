@@ -26,12 +26,6 @@ import geotrellis.engine._
 import scala.collection.mutable
 import spire.syntax.cfor._
 
-abstract sealed trait TileIntersection
-
-case class PartialTileIntersection(tile: Tile, rasterExtent: RasterExtent, intersections: Seq[Polygon]) 
-    extends TileIntersection
-case class FullTileIntersection(tile: Tile) extends TileIntersection
-
 trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self: Repr =>
   def mapIntersecting[B, That](p: Polygon)
                               (handleTileIntersection: TileIntersection=>B): DataSource[B, _] =
@@ -81,22 +75,24 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self: Repr =>
                     handleTileIntersection(
                       PartialTileIntersection(
                         t, 
-                        RasterExtent(extent, rd.tileLayout.pixelCols, rd.tileLayout.pixelRows), 
-                        Seq(intersectionPoly)
+                        extent,
+                        intersectionPoly
                       )
                     )
                   }
-                case MultiPolygonResult(intersectionMultiPoly) =>
-                  filtered += tiles(row*tileCols + col).map { t =>
-                    val pti = 
-                      PartialTileIntersection(
-                        t, 
-                        RasterExtent(extent, rd.tileLayout.pixelCols, rd.tileLayout.pixelRows), 
-                        intersectionMultiPoly.polygons
-                      )
-                    handleTileIntersection(pti)
+                case MultiPolygonResult(mp) =>
+                  for(p <- mp.polygons) {
+                    filtered += tiles(row*tileCols + col).map { t =>
+                      val pti =
+                        PartialTileIntersection(
+                          t,
+                          extent,
+                          p
+                        )
+                      handleTileIntersection(pti)
+                    }
                   }
-                case _ => //No match? No Problem
+                case _ => //No match? No Problem!
               }
             }
           }
@@ -107,20 +103,13 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self: Repr =>
     SeqSource(newOp)
   }
 
-  private 
-  def zonalSummary[T, V, That <: OpSource[V]](
-    tileSummary: TileSummary[T, V, That], 
+  def zonalSummary[T, U](
+    handler: TileIntersectionHandler[T, U], 
     p: Polygon, 
     cachedResult: Option[DataSource[T, _]]
-  ) =
-    tileSummary.converge {
-      self.mapIntersecting(p, cachedResult) { tileIntersection =>
-        tileIntersection match {
-          case ft: FullTileIntersection => tileSummary.handleFullTile(ft)
-          case pt: PartialTileIntersection => tileSummary.handlePartialTile(pt)
-        }
-      }
-    }
+  ): ValueSource[U] =
+    mapIntersecting(p, cachedResult)(handler)
+      .converge(handler.combineResults)
 
   def zonalHistogram(p: Polygon): ValueSource[Histogram] =
     zonalSummary(Histogram, p, None)
@@ -169,10 +158,4 @@ trait ZonalSummaryOpMethods[+Repr <: RasterSource] { self: Repr =>
 
   def zonalMean(p: Polygon, cached: DataSource[MeanResult, _]): ValueSource[Double] =
     zonalSummary(Mean, p, Some(cached))
-
-  def zonalMeanDouble(p: Polygon): ValueSource[Double] =
-    zonalSummary(MeanDouble, p, None)
-
-  def zonalMeanDouble(p: Polygon, cached: DataSource[MeanResult, _]): ValueSource[Double] =
-    zonalSummary(MeanDouble, p, Some(cached))
 }
