@@ -334,10 +334,13 @@ case class ImageDirectory(
     case None => this |-> samplesPerPixelLens get
   }
 
+  def imageSegmentByteSize(index: Option[Int] = None): Long =
+    (imageSegmentBitsSize(index) + 7) / 8
+
   def imageSegmentBitsSize(index: Option[Int] = None): Long =
     if (hasStripStorage && !index.isEmpty)
       rowsInStrip(index.get).get * (this |-> imageWidthLens get) * bitsPerPixel
-    else tileBitsSize.get
+    else tileBitsSize.get * bitsPerPixel
 
   def rowSize(): Int = (if (hasStripStorage) (this |-> imageWidthLens get)
   else (this |-> tileWidthLens get).get).toInt

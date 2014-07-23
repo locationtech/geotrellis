@@ -32,13 +32,13 @@ object PackBitsDecompression {
     private def uncompressPackBitsSegment(segment: Vector[Byte], index: Int)
       (implicit directory: ImageDirectory) = {
 
-      val imageSegmentByteSize = directory.imageSegmentBitsSize(Some(index)) / 8
+      val size = directory.imageSegmentByteSize(Some(index)).toInt
 
-      val array = new Array[Byte](imageSegmentByteSize.toInt)
+      val array = new Array[Byte](size)
 
       var i = 0
       var total = 0
-      while (total != imageSegmentByteSize) {
+      while (total != size) {
         if (i >= segment.length)
           throw new MalformedGeoTiffException("bad packbits decompression")
 

@@ -34,41 +34,115 @@ class GeoTiffReaderSpec extends FunSpec
   val argPath = "core-test/data/data/"
   val filePathToTestData = "core-test/data/"
 
-  private def readAndSave(fileName: String) {
+  private def read(fileName: String): GeoTiff = {
     val filePath = filePathToTestData + fileName
     val source = Source.fromFile(filePath)(Codec.ISO8859)
-    val geoTiff = GeoTiffReader(source).read
-    geoTiff.imageDirectories.foreach(x => {
-      val currentFileName = math.abs(x.hashCode) + "-" + fileName.substring(0,
-        fileName.length - 4)
-      x.writeRasterToArg(argPath + currentFileName, currentFileName)
-      }
-    )
+
+    val geotiff = GeoTiffReader(source).read
 
     source.close
 
-    assert(geoTiff != null)
+    geotiff
   }
 
-  describe("read geotiffs") {
-    it("reads econic.tif without errors") {
+  private def readAndSave(fileName: String) {
+    val geoTiff = read(fileName)
+
+    geoTiff.imageDirectories.foreach(ifd => {
+      val currentFileName = math.abs(ifd.hashCode) + "-" + fileName.substring(0,
+        fileName.length - 4)
+
+      ifd.writeRasterToArg(argPath + currentFileName, currentFileName)
+      }
+    )
+  }
+
+  /*describe ("read geotiffs without runtime errors") {
+
+    it ("reads econic.tif") {
       readAndSave("econic.tif")
     }
 
-    it("reads aspect.tif without errors") {
+    it ("reads aspect.tif") {
       readAndSave("aspect.tif")
     }
 
-    it("reads slope.tif without errors") {
+    it ("reads slope.tif") {
       readAndSave("slope.tif")
     }
 
-    it("reads packbits.tif without errors") {
+    it ("reads packbits.tif") {
       readAndSave("packbits.tif")
     }
 
-    it("reads compression_4_regular_tiff.tif without errors") {
-      readAndSave("compression_4_regular_tiff.tif")
+  }*/
+
+  private def compareGeoTiffImages(decomp: GeoTiff, uncomp: GeoTiff) {
+    decomp.imageDirectories.size must equal  (uncomp.imageDirectories.size)
+
+    decomp.imageDirectories zip uncomp.imageDirectories foreach {
+      case (first, second) =>
+
+      /*val d = first.imageBytes.take(200)
+      val u = second.imageBytes.take(200)
+
+      println(s"first 2 in decomp: ${d.take(20).toString}")
+      println(s"first 2 in uncomp: ${u.take(20).toString}")
+
+      var r = 0
+      for (i <- 0 until d.size) {
+        if (d(i) != u(i)) {
+          println(s"diff at index $i => d($i) = ${d(i)} != u($i) = ${u(i)}")
+          r += 1;
+        } else {
+          println(s"same at index $i => ${d(i)}")
+        }
+        if (r > 10) 1 / 0
+      }*/
+
+
+      first.imageBytes.size must equal (second.imageBytes.size)
+      first.imageBytes must equal (second.imageBytes)
+    }
+  }
+
+  describe ("reading compressed file should yield same image array as uncompressed file") {
+
+    it ("should read aspect_jpeg.tif and match uncompressed file") {
+
+    }
+
+    it ("should read econic_lzw.tif and match uncompressed file") {
+      val decomp = read("econic_lzw.tif")
+      val uncomp = read("econic.tif")
+
+      compareGeoTiffImages(decomp, uncomp)
+    }
+
+    it ("should read econic_packbits.tif and match uncompressed file") {
+      val decomp = read("econic_packbits.tif")
+      val uncomp = read("econic.tif")
+
+      compareGeoTiffImages(decomp, uncomp)
+    }
+
+    it ("should read econic_zlib.tif and match uncompressed file") {
+      val decomp = read("econic_zlib.tif")
+      val uncomp = read("econic.tif")
+
+      compareGeoTiffImages(decomp, uncomp)
+    }
+
+    it ("should read econic_CCITTRLE.tif and match uncompressed file") {
+
+    }
+
+    it ("should read econic_CCITTFAX3.tif and match uncompressed file") {
+
+    }
+
+    it ("should read econic_CCITTFAX4.tif and match uncompressed file") {
+
     }
   }
 }

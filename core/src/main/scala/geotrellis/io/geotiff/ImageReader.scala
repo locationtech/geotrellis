@@ -46,7 +46,7 @@ case class ImageReader(byteBuffer: ByteBuffer) {
       case HuffmanCoded => matrix.uncompressHuffman(directory)
       case GroupThreeCoded => matrix.uncompressGroupThree(directory)
       case GroupFourCoded => matrix.uncompressGroupFour(directory)
-      case LZWCoded => matrix.uncompressLZW
+      case LZWCoded => matrix.uncompressLZW(directory)
       case JpegOldCoded => throw new MalformedGeoTiffException(
         "old jpeg (compression = 6) is deprecated."
       )
