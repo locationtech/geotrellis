@@ -18,8 +18,11 @@ package geotrellis.benchmark
 
 import geotrellis.vector._
 import geotrellis.engine._
-import geotrellis.raster.op.focal._
+import geotrellis.engine.op.focal._
+import geotrellis.engine.op.elevation._
 import geotrellis.raster._
+import geotrellis.raster.op.focal._
+import geotrellis.raster.op.elevation._
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Param

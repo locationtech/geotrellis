@@ -21,6 +21,7 @@ import geotrellis.vector._
 import geotrellis.raster.op.focal.Square
 import geotrellis.raster.op._
 import geotrellis.engine._
+import geotrellis.engine.op.focal._
 
 import com.google.caliper.Param
 

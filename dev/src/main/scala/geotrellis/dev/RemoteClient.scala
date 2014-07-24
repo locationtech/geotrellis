@@ -19,11 +19,14 @@ package geotrellis.dev
 import akka.kernel.Bootable
 import scala.util.Random
 
-import com.typesafe.config.ConfigFactory
-import akka.actor.{ ActorRef, Props, Actor, ActorSystem }
 import geotrellis.engine._
+import geotrellis.engine.op.local._
+import geotrellis.engine.stats._
 import geotrellis.raster._
 import geotrellis.raster.stats._
+
+import com.typesafe.config.ConfigFactory
+import akka.actor.{ ActorRef, Props, Actor, ActorSystem }
 
 import akka.cluster.routing.ClusterRouterConfig
 import akka.cluster.routing.ClusterRouterSettings

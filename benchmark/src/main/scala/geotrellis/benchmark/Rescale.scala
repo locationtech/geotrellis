@@ -18,7 +18,7 @@ package geotrellis.benchmark
 
 import geotrellis.engine._
 import geotrellis.raster._
-import geotrellis.raster.op.global
+import geotrellis.engine.op.global._
 
 import com.google.caliper.Param
 

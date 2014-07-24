@@ -16,9 +16,7 @@
 
 package geotrellis.engine
 
-import geotrellis._
 import geotrellis.raster._
-import geotrellis.raster.RasterDefinition
 
 case class RasterLayerInfo(id: LayerId,
                            cellType: CellType,

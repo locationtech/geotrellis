@@ -19,6 +19,7 @@ package geotrellis.raster.io.arg
 import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.testkit._
+import geotrellis.engine.io.LoadFile
 
 import org.scalatest._
 
@@ -34,7 +35,7 @@ class ArgTest extends FunSuite
   val tile = IntArrayTile(array, 4, 4)
   val extent = Extent(10.0, 11.0, 14.0, 15.0)
 
-  def loadRaster(path:String) = get(io.LoadFile(path))
+  def loadRaster(path:String) = get(LoadFile(path))
 
   test("test float compatibility") {
     assert(isNoData(tile.applyDouble(0)))
