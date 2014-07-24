@@ -17,11 +17,14 @@
 package geotrellis.benchmark
 
 import geotrellis.engine._
+import geotrellis.engine.op.local._
+import geotrellis.engine.op.global._
+import geotrellis.engine.render._
+import geotrellis.engine.io._
 import geotrellis.raster._
-import geotrellis.raster.op.global
+import geotrellis.raster.op.global._
 import geotrellis.raster.op.local._
 import geotrellis.raster.stats._
-import geotrellis.raster.io._
 import geotrellis.raster.render._
 import geotrellis.raster.render.png._
 

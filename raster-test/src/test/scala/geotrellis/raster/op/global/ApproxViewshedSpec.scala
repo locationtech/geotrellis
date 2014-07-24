@@ -2,6 +2,7 @@ package geotrellis.raster.op.global
 
 import geotrellis.raster._
 import geotrellis.raster.op.local._
+import geotrellis.engine._
 
 import org.scalatest._
 

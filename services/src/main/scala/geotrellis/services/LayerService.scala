@@ -17,6 +17,8 @@
 package geotrellis.services
 
 import geotrellis.engine._
+import geotrellis.engine.render._
+import geotrellis.engine.stats._
 import geotrellis.raster._
 import geotrellis.raster.render.Png
 import geotrellis.raster.render.ColorRamps._

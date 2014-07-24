@@ -18,7 +18,7 @@ package geotrellis.benchmark
 
 import geotrellis.engine._
 import geotrellis.raster._
-import geotrellis.raster.op.local._
+import geotrellis.engine.op.local._
 import geotrellis.raster.stats._
 import geotrellis.raster.render._
 

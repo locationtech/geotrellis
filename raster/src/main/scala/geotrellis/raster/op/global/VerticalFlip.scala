@@ -19,6 +19,8 @@ package geotrellis.raster.op.global
 import geotrellis._
 import geotrellis.raster._
 
+import spire.syntax.cfor._
+
 /**
  * Flip the data for a raster along the X-axis.
  *
@@ -29,23 +31,17 @@ import geotrellis.raster._
  *          the data values will be rounded to integers.
  */
 object VerticalFlip {
-  def apply(r: Tile): Tile = {
-    val (cols, rows) = r.dimensions
-    val data = r.toArray
-    val data2 = Array.ofDim[Int](data.size)
- 
-    var y = 0
-    var x = 0
-    while (y < rows) {
-      x = 0
-      val yspan = y * cols
-      val yspan2 = (cols - 1 - y) * cols
-      while (x < cols) {
-        data2(yspan2 + x) = data(yspan + x)
-        x += 1
+  def apply(tile: Tile): Tile = {
+    val (cols, rows) = tile.dimensions
+    val data2 = Array.ofDim[Int](cols * rows)
+
+    cfor(0)(_ < rows, _ + 1) { row =>
+      val flipRow = rows - row - 1
+      cfor(0)(_ < cols, _ + 1) { col =>
+        data2(flipRow * cols + col) = tile.get(col, row)
       }
-      y += 1
     }
+
     ArrayTile(data2, cols, rows)
   }
 }

@@ -23,6 +23,7 @@ import javax.ws.rs.core.{Response, Context}
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.engine._
+import geotrellis.engine.render._
 import geotrellis.raster.render._
 import ColorRamps._
 
