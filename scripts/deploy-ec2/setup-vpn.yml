@@ -1,12 +1,9 @@
 ---
 
-- name: Master
+- name: Vpn
   hosts: master
   roles:
-    - hadoop
-    - hadoop_namenode
-    - spark
-    - spark_master
+    - pptpd
   gather_facts: False
 
   tasks:
