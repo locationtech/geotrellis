@@ -351,7 +351,6 @@ object GeotrellisBuild extends Build {
     Project("spark", file("spark"))
       .settings(sparkSettings: _*)
       .dependsOn(raster, testkit % "test")
-      .dependsOn(geotools)
 
   // using hadoop and spark version from environment was inspired by Spark itself
   val DEFAULT_HADOOP_VERSION = "0.20.2-cdh3u4"
@@ -382,9 +381,17 @@ object GeotrellisBuild extends Build {
           ),
           "com.quantifind" %% "sumac" % "0.2.3",
           scalatest % "test",
-          spire, sprayRouting, sprayCan
+          spire, sprayRouting, sprayCan,
+          "org.geotools" % "gt-main" % Version.geotools,
+          "org.geotools" % "gt-coverage" % Version.geotools,
+          "org.geotools" % "gt-geotiff" % Version.geotools,
+          "org.geotools" % "gt-epsg-hsql" % Version.geotools,
+          "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
         ),
-      resolvers += "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
+      resolvers ++= Seq(
+        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos",
+        "Geotools" at "http://download.osgeo.org/webdav/geotools/"
+      )
     ) ++ 
     defaultAssemblySettings ++ 
     net.virtualvoid.sbt.graph.Plugin.graphSettings
