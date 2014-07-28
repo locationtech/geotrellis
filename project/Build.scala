@@ -135,7 +135,6 @@ object GeotrellisBuild extends Build {
           jts,
           sprayJson,
           sprayHttpx,
-          akkaActor,        
           apacheMath
         )
       )
@@ -177,20 +176,16 @@ object GeotrellisBuild extends Build {
 
   lazy val rasterSettings =
     Seq(
-      name := "geotrellis",
+      name := "geotrellis-raster",
       parallelExecution := false,
       fork in test := false,
       javaOptions in run += "-Xmx2G",
       scalacOptions in compile ++=
         Seq("-optimize"),
       libraryDependencies ++= Seq(
-        scalatest % "test",
+        "com.typesafe" % "config" % "1.2.1",
         scalaReflect,
         jts,
-        akkaKernel,
-        akkaRemote,
-        akkaActor,
-        akkaCluster,
         jacksonCore,
         jacksonMapper,
         spire,
@@ -214,7 +209,6 @@ object GeotrellisBuild extends Build {
       scalacOptions in compile ++=
         Seq("-optimize"),
       libraryDependencies ++= Seq(
-        akkaActor % "test",
         scalatest % "test",      
         spire % "test",
         sprayClient % "test",
@@ -264,7 +258,6 @@ object GeotrellisBuild extends Build {
       scalacOptions in compile ++=
         Seq("-optimize"),
       libraryDependencies ++= Seq(
-        akkaActor % "test",
         scalatest % "test",      
         spire % "test",
         sprayClient % "test",
