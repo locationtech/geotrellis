@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,12 +19,12 @@
 package geotrellis.slick
 
 import com.vividsolutions.jts.{geom => jts}
-import geotrellis.feature._
-import geotrellis.feature.io._
+import geotrellis.vector._
+import geotrellis.vector.io._
 
 object util {
 
-  def data: Array[(String, Point)] = 
+  def data: Array[(String, Point)] =
 """[ABE]  40.65   75.43  Allentown,PA
 [AOO]  40.30   78.32  Altoona,PA
 [BVI]  40.75   80.33  Beaver Falls,PA
@@ -55,16 +55,11 @@ object util {
   .map(str => (str.substring(7,12), str.substring(15,20), str.substring(22)))
   .map(_ match {
     case (lat,lng,city) =>
-      (city, WKT.read[Point]("POINT(%f %f)" format (lng.toDouble, lat.toDouble)))
+      (city, WKT.read[Point](s"POINT(${lng.toDouble} ${lat.toDouble})"))
   })
 
-  def bboxBuffer(x: Double, y: Double, d: Double) = 
-    WKT.read[Polygon]("POLYGON((%f %f, %f %f, %f %f, %f %f, %f %f))" format (
-          x - d, y - d,
-          x - d, y + d,
-          x + d, y + d,
-          x + d, y - d,
-          x - d, y - d))
+  def bboxBuffer(x: Double, y: Double, d: Double) =
+    WKT.read[Polygon](s"POLYGON((${x - d} ${y - d}, ${x - d} ${y + d}, ${x + d} ${y + d}, ${x + d} ${y - d}, ${x - d} ${y - d}))")
 
   def pt(x: Double, y: Double) = Point(x, y)
 }

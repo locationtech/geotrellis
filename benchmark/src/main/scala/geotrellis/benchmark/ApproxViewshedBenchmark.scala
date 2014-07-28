@@ -1,6 +1,6 @@
 package geotrellis.benchmark
 
-import geotrellis.{Raster, RasterExtent, Extent}
+import geotrellis.vector._
 import geotrellis.raster._
 
 import com.google.caliper.Param
@@ -14,9 +14,7 @@ import geotrellis.raster.op.global.ApproxViewshed
  */
 object ApproxViewshedBenchmark extends BenchmarkRunner(classOf[ApproxViewshedBenchmark])
 class  ApproxViewshedBenchmark extends OperationBenchmark {
-  var r: Raster = _
-  var re: RasterExtent = _
-  var data: IntArrayRasterData = _
+  var r: Tile = _
 
   //@Param(Array("512","1024","2048","4096","8192"))
   var size:Int = 256
@@ -24,11 +22,7 @@ class  ApproxViewshedBenchmark extends OperationBenchmark {
   override def setUp() {
     r = {
       val a = Array.ofDim[Int](size * size).map(a => Random.nextInt(255))
-      val e = Extent(0, 0, 10 * size, 10 * size)
-      re = RasterExtent(e, 10, 10, size, size)
-      data = IntArrayRasterData(a, size, size)
-
-      Raster(data, re)
+      IntArrayTile(a, size, size)
     }
   }
 

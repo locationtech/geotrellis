@@ -32,7 +32,7 @@ import akka.cluster.routing.ClusterRouterSettings
 import akka.cluster.routing.AdaptiveLoadBalancingRouter
 import akka.cluster.routing.SystemLoadAverageMetricsSelector
 
-import geotrellis.process._
+import geotrellis.engine._
 
 
 // Run 'RemoteServer' in different sbt terminals, like the following.
@@ -49,10 +49,10 @@ class RemoteServerApplication extends Bootable {
   val id = "remoteServer"
 
   println()
-  val f = new java.io.File( "core-test/data/catalog.json" ).getCanonicalPath
+  val f = new java.io.File( "raster-test/data/catalog.json" ).getCanonicalPath
   println(f)
   //val f = "src/test/resources/catalog.json"
-  val server = new Server(id, Catalog.fromPath(f))
+  val server = new Engine(id, Catalog.fromPath(f))
 
   def startup() { }
 

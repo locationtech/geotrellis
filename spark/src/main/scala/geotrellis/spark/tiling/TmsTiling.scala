@@ -16,8 +16,8 @@
 
 package geotrellis.spark.tiling
 
-import geotrellis.RasterType
-import geotrellis.Extent
+import geotrellis.raster._
+import geotrellis.vector.Extent
 
 /**
  * @author akini
@@ -85,8 +85,8 @@ object TmsTiling {
   }
   
   def extentToTile(extent: Extent, zoom: Int, tileSize: Int): TileExtent = {
-    val ll = latLonToTile(extent.ymin, extent.xmin, zoom, tileSize)
-    val ur = latLonToTile(extent.ymax, extent.xmax, zoom, tileSize)
+    val ll = latLonToTile(extent.ymin, extent.xmin, zoom)
+    val ur = latLonToTile(extent.ymax, extent.xmax, zoom)
     new TileExtent(ll.tx, ll.ty, ur.tx, ur.ty)
   }
 
@@ -112,12 +112,12 @@ object TmsTiling {
   }
 
   // slightly modified version of equations 2.9 and 2.10
-  def latLonToTile(lat: Double, lon: Double, zoom: Int, tileSize: Int): TileCoord = {
+  def latLonToTile(lat: Double, lon: Double, zoom: Int): TileCoord = {
     val tx = ((180 + lon) * (numXTiles(zoom) / 360.0)).toLong
     val ty = ((90 + lat) * (numYTiles(zoom) / 180.0)).toLong
     new TileCoord(tx, ty)
   }
 
-  def tileSizeBytes(tileSize: Int, rasterType: RasterType): Int = 
-    tileSize * tileSize * rasterType.bytes
+  def tileSizeBytes(tileSize: Int, cellType: CellType): Int = 
+    tileSize * tileSize * cellType.bytes
 }

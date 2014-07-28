@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 package geotrellis.spark.cmd
-import geotrellis._
-import geotrellis.raster.RasterData
-import geotrellis.spark.Tile
+
+import geotrellis.raster._
+import geotrellis.vector.Extent
+
+import geotrellis.spark._
 import geotrellis.spark.cmd.args.HadoopArgs
 import geotrellis.spark.cmd.args.SparkArgs
-import geotrellis.spark.formats.ArgWritable
-import geotrellis.spark.formats.PayloadArgWritable
-import geotrellis.spark.formats.TileIdWritable
-import geotrellis.spark.formats.TileIdZoomWritable
-import geotrellis.spark.metadata.PyramidMetadata
-import geotrellis.spark.metadata.RasterMetadata
-import geotrellis.spark.rdd.MultiLevelTileIdPartitioner
-import geotrellis.spark.rdd.RasterRDD
-import geotrellis.spark.rdd.RasterSplitGenerator
-import geotrellis.spark.rdd.SplitGenerator
+import geotrellis.spark.formats._
+import geotrellis.spark.metadata._
+import geotrellis.spark.rdd._
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils.HdfsUtils
 
@@ -43,6 +38,8 @@ import org.apache.spark.SparkContext
 
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Required
+
+import scala.collection.mutable
 
 class BuildPyramidArgs extends SparkArgs with HadoopArgs {
   @Required var pyramid: String = _
@@ -62,7 +59,8 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
 
     // make splits for each higher level
     // TODO - revisit the "saving" of splits 
-    // 1. Splits shouldn't be saved before the job is complete - needs refactoring of TileIdPartitioner's apply that takes gen
+    // 1. Splits shouldn't be saved before the job is complete - 
+    //    needs refactoring of TileIdPartitioner's apply that takes gen
     // 2. The base zoom level shouldn't be rewritten. This will be made easier once #1 is done. 
     // Addendum for #2: base zoom is no longer part of mp, so #2 can be ignored
     val splits = getSplits(meta, HdfsUtils.defaultBlockSize(pyramid, conf))
@@ -89,7 +87,9 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
 
         // if partition is empty don't create a part file
         if (!partition.isEmpty) {
-          val buf = partition.toArray.sortWith((x, y) => x._1.get() < y._1.get())
+          val buf = partition.toArray.sortWith { (x, y) => 
+            x._1.get() < y._1.get()
+          }
           val (zoom, index) = (buf.head._1.zoom, mp.getPartitionForZoom(buf.head._1))
           val outPath = new Path(pyramidStr, zoom.toString)
           val mapFilePath = new Path(outPath, f"part-${index}%05d")
@@ -126,18 +126,22 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
 
   private def getSplits(meta: PyramidMetadata, blockSize: Long): Map[Int, SplitGenerator] = {
     logInfo("Creating RasterSplitGenerator, using blocksize = " + blockSize)
-    val tileSize = TmsTiling.tileSizeBytes(meta.tileSize, meta.rasterType)
+
+    val tileBytes = TmsTiling.tileSizeBytes(meta.tileSize, meta.cellType)
+
     for ((zoom, rm) <- meta.rasterMetadata if zoom.toInt < meta.maxZoomLevel)
-      yield (zoom.toInt -> RasterSplitGenerator(rm.tileExtent, zoom.toInt, tileSize, blockSize))
+      yield (zoom.toInt -> RasterSplitGenerator(rm.tileExtent, zoom.toInt, tileBytes, blockSize))
   }
 
   private def tileSizeForZoomLevel(tileSize: Int, maxZoom: Int, zoom: Int): Int =
     math.max(1, (tileSize / math.pow(2, maxZoom - zoom)).toInt)
 
-  // this object encapsulates the actual warping work of warping a single tile into multiple tiles, one for each zoom levels 
+  /** This object encapsulates the actual warping work of warping a single tile 
+    * into multiple tiles, one for each zoom levels.
+    */
   private object MultiLevelWarper {
-    // warp the input tile to each of the higher pyramid levels
-    def warp(tile: Tile, meta: PyramidMetadata): Seq[(TileIdZoomWritable, PayloadArgWritable)] = {
+    /** warp the input tile to each of the higher pyramid levels */
+    def warp(tmsTile: TmsTile, meta: PyramidMetadata): Seq[(TileIdZoomWritable, PayloadArgWritable)] = {
       // Nomenclature -           
       // par or parent is the input tile, typically from base zoom, 
       // ch or child is the tile being warped into, which is one for each zoom level, and differing sizes 
@@ -145,32 +149,44 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
       // at each higher zoom level, "previous" is always a unique tile
       val (maxZoom, tileSize) = (meta.maxZoomLevel, meta.tileSize)
 
-      val parTzw = TileIdZoomWritable(tile.id, maxZoom)
-      val parRd = tile.raster.data
-      val parExtent = tile.raster.rasterExtent
-      val parExtent2 = TmsTiling.tileToExtent(tile.id, maxZoom, tileSize)
-      assert(parExtent.extent == parExtent2)
+      val parTzw = TileIdZoomWritable(tmsTile.id, maxZoom)
+      val parTile = tmsTile.tile
+      val parExtent: Extent = TmsTiling.tileToExtent(tmsTile.id, maxZoom, tileSize)
 
       // initialize the map with info on the input tile, we'll remove it later before returning from warp 
-      val initCond = collection.mutable.Map[Int, (TileIdZoomWritable, RasterData, RasterExtent)](maxZoom -> (parTzw, parRd, parExtent))
+      val initCond = 
+        mutable.Map[Int, (TileIdZoomWritable, Tile, Extent)](
+          maxZoom -> (parTzw, parTile, parExtent)
+        )
+
       val tileMap = (meta.maxZoomLevel - 1 to 1 by -1).foldLeft(initCond) { (m, zoom) =>
         val chTs = tileSizeForZoomLevel(tileSize, maxZoom, zoom)
-        val chTxTy = TmsTiling.latLonToTile(parExtent.extent.ymin, parExtent.extent.xmin, zoom, tileSize)
+        val chTxTy = TmsTiling.latLonToTile(parExtent.ymin, parExtent.xmin, zoom)
         val chTileId = TmsTiling.tileId(chTxTy.tx, chTxTy.ty, zoom)
 
-        val prev = m(zoom + 1)
-        val (prevRd, prevExtent) = (prev._2, prev._3)
-        val chExtent = RasterExtent(prevExtent.extent, chTs, chTs)
+        val (_, prevRd, prevExtent) = m(zoom + 1)
+
+        val chExtent = RasterExtent(prevExtent, chTs, chTs)
+
         val chRd = prevRd.warp(prevExtent, chExtent)
         //println(s"Mapper: z=${zoom}, tid=${chTileId} parTid=${prev._1.get()}, chTs=${chTs}")
-        m += (zoom -> (TileIdZoomWritable(chTileId, zoom), chRd, chExtent))
+        m += (zoom -> (TileIdZoomWritable(chTileId, zoom), chRd, prevExtent))
       }
+
       tileMap -= maxZoom
-      tileMap.values.toSeq.map(t => (t._1, PayloadArgWritable.fromPayloadRasterData(t._2, parTzw)))
+
+      tileMap
+        .values
+        .toSeq
+        .map { t =>
+          (t._1, PayloadArgWritable(t._2, parTzw))
+        }
     }
   }
 
-  // this object encapsulates the stitching of multiple tiles from one zoom level onto a single tile of a higher zoom level 
+  /** This object encapsulates the stitching of multiple tiles from one zoom level 
+    * onto a single tile of a higher zoom level .
+    */
   private object Stitcher {
     def stitch(tiles: (TileIdZoomWritable, Seq[PayloadArgWritable]), meta: PyramidMetadata): (TileIdWritable, ArgWritable) = {
       // Nomenclature -           
@@ -184,12 +200,12 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
       val chCorner = TmsTiling.latLonToPixelsUL(chExtent.ymax, chExtent.xmin, chZoom, meta.tileSize)
 
       val parTzw = new TileIdZoomWritable()
-      val chRd = RasterData.emptyByType(meta.rasterType, meta.tileSize, meta.tileSize)
+      val chRd = ArrayTile.empty(meta.cellType, meta.tileSize, meta.tileSize)
       val chPtTs = tileSizeForZoomLevel(meta.tileSize, meta.maxZoomLevel, chZoom)
 
       for (paw <- tiles._2) {
         // get the raster
-        val chPtRd = paw.toPayloadRasterData(meta.rasterType, chPtTs, chPtTs, parTzw)
+        val chPtRd = paw.toPayloadTile(meta.cellType, chPtTs, chPtTs, parTzw)
         assert(chPtRd.cols == chPtTs && chPtRd.rows == chPtTs)
 
         // get the location into child raster to start painting into
@@ -208,7 +224,7 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
             val x = chPx + px
             val y = chPy + py
             if (x < meta.tileSize && y < meta.tileSize) {
-              if (!chPtRd.isFloat) {
+              if (!chPtRd.cellType.isFloatingPoint) {
                 chRd.set(chPx + px, chPy + py, chPtRd.get(px, py))
               } else {
                 chRd.setDouble(chPx + px, chPy + py, chPtRd.getDouble(px, py))
@@ -217,7 +233,7 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
           }
         }
       }
-      (TileIdWritable(chTileId), ArgWritable.fromRasterData(chRd))
+      (TileIdWritable(chTileId), ArgWritable.fromTile(chRd))
     }
   }
 }

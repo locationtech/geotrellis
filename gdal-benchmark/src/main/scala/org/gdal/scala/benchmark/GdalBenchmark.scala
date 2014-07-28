@@ -37,8 +37,8 @@ object Bench {
 object RasterReadBenchmark {
 
   def main(args: Array[String]): Unit = {
-    val path = "../core-test/data/slope.tif"
-    val argPath = "../core-test/data/data/slope.json"
+    val path = "../raster-test/data/slope.tif"
+    val argPath = "../raster-test/data/data/slope.json"
 
     val gdalTime = Bench.bench(10, { p: String => geotrellis.gdal.GdalReader.read(path) }, path)
     val geotoolsTime = Bench.bench(10, { p: String => geotrellis.data.GeoTiff.readRaster(path) }, path)

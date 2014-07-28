@@ -4,13 +4,13 @@
     "ymin" : -18.373333333333342,
     "xmax" : 142.56000000000003,
     "ymax" : -17.52000000000001,
-    "height" : 0.8533333333333317,
-    "width" : 0.8533333333333246
+    "width" : 0.8533333333333246,
+    "height" : 0.8533333333333317
   },
   "tileSize" : 512,
   "bands" : 1,
   "nodata" : -9999.0,
-  "awtRasterType" : 4,
+  "awtCellType" : 4,
   "maxZoomLevel" : 10,
   "rasterMetadata" : {
     "10" : {

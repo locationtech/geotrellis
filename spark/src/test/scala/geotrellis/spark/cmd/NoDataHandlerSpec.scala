@@ -1,71 +1,70 @@
 package geotrellis.spark.cmd
 
-import geotrellis._
-import geotrellis.TypeBit
-import geotrellis.TypeByte
-import geotrellis.TypeDouble
-import geotrellis.TypeFloat
-import geotrellis.TypeInt
-import geotrellis.TypeShort
-import geotrellis.raster.BitArrayRasterData
-import geotrellis.raster.ByteArrayRasterData
-import geotrellis.raster.DoubleArrayRasterData
-import geotrellis.raster.FloatArrayRasterData
-import geotrellis.raster.IntArrayRasterData
-import geotrellis.raster.ShortArrayRasterData
+import geotrellis.raster._
+import geotrellis.raster.TypeBit
+import geotrellis.raster.TypeByte
+import geotrellis.raster.TypeDouble
+import geotrellis.raster.TypeFloat
+import geotrellis.raster.TypeInt
+import geotrellis.raster.TypeShort
+import geotrellis.raster.BitArrayTile
+import geotrellis.raster.ByteArrayTile
+import geotrellis.raster.DoubleArrayTile
+import geotrellis.raster.FloatArrayTile
+import geotrellis.raster.IntArrayTile
+import geotrellis.raster.ShortArrayTile
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-class NoDataHandlerSpec extends FunSpec with ShouldMatchers {
+class NoDataHandlerSpec extends FunSpec with Matchers {
   describe("add/remove user nodata") {
 
     val cols = 2
     val rows = 1
     val size = cols * rows
 
-    it("should correctly add/remove a user-defined nodata value to/from a FloatArrayRasterData") {
+    it("should correctly add/remove a user-defined nodata value to/from a FloatArrayTile") {
       val userNoData = -9999.0f
-      val origRd = FloatArrayRasterData(Array[Float](1.0f, Float.NaN), cols, rows)
-      val addedRd = origRd.copy
+      val origRd = FloatArrayTile(Array[Float](1.0f, Float.NaN), cols, rows)
+      val addedRd = origRd.copy()
       NoDataHandler.addUserNoData(addedRd, userNoData)
 
       {
-        val actualUndAdded = addedRd.asInstanceOf[FloatArrayRasterData].array
-        val expectedUndAdded = FloatArrayRasterData(Array[Float](1.0f, userNoData), cols, rows).array
+        val actualUndAdded = addedRd.asInstanceOf[FloatArrayTile].array
+        val expectedUndAdded = FloatArrayTile(Array[Float](1.0f, userNoData), cols, rows).array
         expectedUndAdded should be(actualUndAdded)
       }
 
-      val removedRd = addedRd.copy
+      val removedRd = addedRd.copy()
       NoDataHandler.removeUserNoData(removedRd, userNoData)
       
       {
-        val actualUndRemoved = removedRd.asInstanceOf[FloatArrayRasterData].array
-        val expectedUndRemoved = origRd.asInstanceOf[FloatArrayRasterData].array
+        val actualUndRemoved = removedRd.asInstanceOf[FloatArrayTile].array
+        val expectedUndRemoved = origRd.asInstanceOf[FloatArrayTile].array
         expectedUndRemoved(0) should be(actualUndRemoved(0))
         expectedUndRemoved(1).isNaN should be(true)
       }
     }
     
-    it("should correctly add/remove a user-defined nodata value to/from a IntArrayRasterData") {
+    it("should correctly add/remove a user-defined nodata value to/from a IntArrayTile") {
       // user's nodata is Int.MaxVal whereas NODATA = Int.MinVal
       val userNoData = Int.MaxValue
-      val origRd = IntArrayRasterData(Array[Int](1, NODATA), cols, rows)
-      val addedRd = origRd.copy
+      val origRd = IntArrayTile(Array[Int](1, NODATA), cols, rows)
+      val addedRd = origRd.copy()
       NoDataHandler.addUserNoData(addedRd, userNoData)
 
       {
-        val actualUndAdded = addedRd.asInstanceOf[IntArrayRasterData].array
-        val expectedUndAdded = IntArrayRasterData(Array[Int](1, userNoData), cols, rows).array
+        val actualUndAdded = addedRd.asInstanceOf[IntArrayTile].array
+        val expectedUndAdded = IntArrayTile(Array[Int](1, userNoData), cols, rows).array
         expectedUndAdded should be(actualUndAdded)
       }
 
-      val removedRd = addedRd.copy
+      val removedRd = addedRd.copy()
       NoDataHandler.removeUserNoData(removedRd, userNoData)
       
       {
-        val actualUndRemoved = removedRd.asInstanceOf[IntArrayRasterData].array
-        val expectedUndRemoved = origRd.asInstanceOf[IntArrayRasterData].array
+        val actualUndRemoved = removedRd.asInstanceOf[IntArrayTile].array
+        val expectedUndRemoved = origRd.asInstanceOf[IntArrayTile].array
         expectedUndRemoved should be(actualUndRemoved)
       }
     }

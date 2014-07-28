@@ -33,8 +33,8 @@ import scala.reflect.ClassTag
 import scala.slick.ast.{ScalaBaseType}
 import scala.slick.jdbc.{PositionedResult, PositionedParameters}
 
-import geotrellis.feature._
-import geotrellis.feature.io._
+import geotrellis.vector._
+import geotrellis.vector.io._
 
 /** 
  * This class provides column types and extension methods to work with Geometry columns in PostGIS.

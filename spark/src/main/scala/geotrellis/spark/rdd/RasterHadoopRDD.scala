@@ -56,7 +56,7 @@ class RasterHadoopRDD private (raster: Path, sc: SparkContext, conf: Configurati
   def toRasterRDD(addUserNoData: Boolean = false): RasterRDD = 
     mapPartitions { partition =>
       partition.map { writableTile =>
-        writableTile.toTile(meta, zoom, addUserNoData)
+        writableTile.toTmsTile(meta, zoom, addUserNoData)
       }
      }
     .withContext(Context(zoom, meta, partitioner.get)) // .get is safe because it can't be 'None'

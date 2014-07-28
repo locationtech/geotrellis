@@ -3,9 +3,9 @@ package geotrellis.testkit
 import org.scalatest._
 import matchers._
 
-import geotrellis.feature._
+import geotrellis.vector._
 
-package object feature {
+package object vector {
   object GeometryMatcher {
     def apply[T <: Geometry](geom: T, t: Double, matchFunc: (T,T, Double) => Boolean) =
       new GeometryMatcher[T] { 

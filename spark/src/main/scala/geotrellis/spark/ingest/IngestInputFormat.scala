@@ -16,7 +16,7 @@
 
 package geotrellis.spark.ingest
 
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.spark.metadata.PyramidMetadata
 
 import org.apache.hadoop.fs.Path
@@ -27,16 +27,16 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 
-class IngestInputFormat extends FileInputFormat[Long, Raster] {
+class IngestInputFormat extends FileInputFormat[Long, Tile] {
   override def isSplitable(context: JobContext, fileName: Path) = false
 
-  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[Long, Raster] =
+  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[Long, Tile] =
     new IngestRecordReader
 
 }
 
-class IngestRecordReader extends RecordReader[Long, Raster] {
-  private var tiles: List[(Long, Raster)] = null
+class IngestRecordReader extends RecordReader[Long, Tile] {
+  private var tiles: List[(Long, Tile)] = null
   private var index: Int = -1
 
   def initialize(split: InputSplit, context: TaskAttemptContext) = {
@@ -53,6 +53,4 @@ class IngestRecordReader extends RecordReader[Long, Raster] {
     index = index + 1
     index < tiles.length
   }
-
-  
 }

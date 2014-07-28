@@ -17,9 +17,9 @@
 package geotrellis.spark
 
 import geotrellis.spark.rdd.RasterRDD
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-trait RasterRDDMatchers extends ShouldMatchers {
+trait RasterRDDMatchers extends Matchers {
   
   /* 
    * Takes a 3-tuple, min, max, and count and checks
@@ -27,7 +27,7 @@ trait RasterRDDMatchers extends ShouldMatchers {
    * b. if number of tiles == count
    */  
   def shouldBe(rdd: RasterRDD, minMaxCount: (Int, Int, Long)): Unit = {
-    val res = rdd.map(_.raster.findMinMax).collect
+    val res = rdd.map(_.tile.findMinMax).collect
     val (min, max, count) = minMaxCount
     res.count(_ == (min, max)) should be(count)
     res.length should be(count)
@@ -39,7 +39,7 @@ trait RasterRDDMatchers extends ShouldMatchers {
    * b. if number of tiles == count
    */   
   def shouldBe(rdd: RasterRDD, value: Int, count: Int): Unit = {
-    val res = rdd.map(_.raster).collect
+    val res = rdd.map(_.tile).collect
 
     res.foreach { r =>
       for (col <- 0 until r.cols) {

@@ -17,24 +17,22 @@
 package geotrellis.spark.formats
 
 import geotrellis._
-import geotrellis.TypeBit
-import geotrellis.TypeByte
-import geotrellis.TypeDouble
-import geotrellis.TypeFloat
-import geotrellis.TypeInt
-import geotrellis.TypeShort
-import geotrellis.raster.BitArrayRasterData
-import geotrellis.raster.ByteArrayRasterData
-import geotrellis.raster.DoubleArrayRasterData
-import geotrellis.raster.FloatArrayRasterData
-import geotrellis.raster.IntArrayRasterData
-import geotrellis.raster.ShortArrayRasterData
+import geotrellis.raster.TypeBit
+import geotrellis.raster.TypeByte
+import geotrellis.raster.TypeDouble
+import geotrellis.raster.TypeFloat
+import geotrellis.raster.TypeInt
+import geotrellis.raster.TypeShort
+import geotrellis.raster.BitArrayTile
+import geotrellis.raster.ByteArrayTile
+import geotrellis.raster.DoubleArrayTile
+import geotrellis.raster.FloatArrayTile
+import geotrellis.raster.IntArrayTile
+import geotrellis.raster.ShortArrayTile
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 
-
-class ArgWritableSpec extends FunSpec with ShouldMatchers {
+class ArgWritableSpec extends FunSpec with Matchers {
   describe("conversion from/to ArgWritable") {
 
     val cols = 2
@@ -42,44 +40,44 @@ class ArgWritableSpec extends FunSpec with ShouldMatchers {
     val size = cols * rows
     
     it("should convert from Array of ints to ArgWritable and back") {
-      val expected = Array.ofDim[Int](size).fill(1)
-      val actual = ArgWritable.fromRasterData(IntArrayRasterData(expected, cols, rows)).toRasterData(TypeInt, cols, rows)
-      expected should be(actual.asInstanceOf[IntArrayRasterData].array)
+      val expected = Array.fill[Int](size)(1)
+      val actual = ArgWritable.fromTile(IntArrayTile(expected, cols, rows)).toTile(TypeInt, cols, rows)
+      expected should be(actual.asInstanceOf[IntArrayTile].array)
     }
 
     it("should convert from Array of shorts to ArgWritable and back") {
-      val expected = Array.ofDim[Short](size).fill(1)
-      val actual = ArgWritable.fromRasterData(ShortArrayRasterData(expected, cols, rows)).toRasterData(TypeShort, cols, rows)
-      expected should be(actual.asInstanceOf[ShortArrayRasterData].array)
+      val expected = Array.fill[Short](size)(1)
+      val actual = ArgWritable.fromTile(ShortArrayTile(expected, cols, rows)).toTile(TypeShort, cols, rows)
+      expected should be(actual.asInstanceOf[ShortArrayTile].array)
     }
 
     it("should convert from Array of doubles to ArgWritable and back") {
-      val expected = Array.ofDim[Double](size).fill(1)
-      val actual = ArgWritable.fromRasterData(DoubleArrayRasterData(expected, cols, rows)).toRasterData(TypeDouble, cols, rows)
-      expected should be(actual.asInstanceOf[DoubleArrayRasterData].array)
+      val expected = Array.fill[Double](size)(1)
+      val actual = ArgWritable.fromTile(DoubleArrayTile(expected, cols, rows)).toTile(TypeDouble, cols, rows)
+      expected should be(actual.asInstanceOf[DoubleArrayTile].array)
     }
 
     it("should convert from Array of floats to ArgWritable and back") {
-      val expected = Array.ofDim[Float](size).fill(1)
-      val actual = ArgWritable.fromRasterData(FloatArrayRasterData(expected, cols, rows)).toRasterData(TypeFloat, cols, rows)
-      expected should be(actual.asInstanceOf[FloatArrayRasterData].array)
+      val expected = Array.fill[Float](size)(1)
+      val actual = ArgWritable.fromTile(FloatArrayTile(expected, cols, rows)).toTile(TypeFloat, cols, rows)
+      expected should be(actual.asInstanceOf[FloatArrayTile].array)
     }
 
     it("should convert from Array of bytes to ArgWritable and back") {
-      val expected = Array.ofDim[Byte](size).fill(1)
-      val actual = ArgWritable.fromRasterData(ByteArrayRasterData(expected, cols, rows)).toRasterData(TypeByte, cols, rows)
-      expected should be(actual.asInstanceOf[ByteArrayRasterData].array)
+      val expected = Array.fill[Byte](size)(1)
+      val actual = ArgWritable.fromTile(ByteArrayTile(expected, cols, rows)).toTile(TypeByte, cols, rows)
+      expected should be(actual.asInstanceOf[ByteArrayTile].array)
     }
 
     it("should convert from Array of bytes (actually, bit masks) to ArgWritable and back") {
-      val expected = Array.ofDim[Byte](size).fill(1)
+      val expected = Array.fill[Byte](size)(1)
       
       // bit mask length is 8x4 since there are 4 bytes of length 8 bits each
       val cols = 8
       val rows = 4
       
-      val actual = ArgWritable.fromRasterData(BitArrayRasterData(expected, cols, rows)).toRasterData(TypeBit, cols, rows)
-      expected should be(actual.asInstanceOf[BitArrayRasterData].array)
+      val actual = ArgWritable.fromTile(BitArrayTile(expected, cols, rows)).toTile(TypeBit, cols, rows)
+      expected should be(actual.asInstanceOf[BitArrayTile].array)
     }
   }
 }

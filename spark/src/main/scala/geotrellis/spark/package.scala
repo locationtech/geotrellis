@@ -16,6 +16,8 @@
 
 package geotrellis
 
+import geotrellis.raster._
+
 import geotrellis.spark.formats._
 import geotrellis.spark.metadata.Context
 import geotrellis.spark.rdd.RasterRDD
@@ -25,7 +27,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 
 package object spark {
-  implicit class MakeRasterRDD(val prev: RDD[Tile]) {
+  implicit class MakeRasterRDD(val prev: RDD[TmsTile]) {
     def withContext(ctx: Context) = new RasterRDD(prev, ctx)
   }
 

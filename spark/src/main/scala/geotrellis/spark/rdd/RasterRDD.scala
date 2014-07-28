@@ -33,8 +33,8 @@ import org.apache.spark.rdd.RDD
 
 import org.apache.hadoop.fs.Path
 
-class RasterRDD(val prev: RDD[Tile], val opCtx: Context)
-  extends RDD[Tile](prev)
+class RasterRDD(val prev: RDD[TmsTile], val opCtx: Context)
+  extends RDD[TmsTile](prev)
   with AddOpMethods[RasterRDD]
   with SubtractOpMethods[RasterRDD]
   with MultiplyOpMethods[RasterRDD]
@@ -55,22 +55,22 @@ class RasterRDD(val prev: RDD[Tile], val opCtx: Context)
       partition.map(_.toWritable)
     }, true)
 
-  def mapTiles(f: Tile => Tile): RasterRDD =
+  def mapTiles(f: TmsTile => TmsTile): RasterRDD =
     mapPartitions({ partition =>
       partition.map { tile =>
         f(tile)
       }
     }, true)
-      .withContext(opCtx)
+    .withContext(opCtx)
 
-  def combineTiles(other: RasterRDD)(f: (Tile, Tile) => Tile): RasterRDD =
+  def combineTiles(other: RasterRDD)(f: (TmsTile, TmsTile) => TmsTile): RasterRDD =
     zipPartitions(other, true) { (partition1, partition2) =>
       partition1.zip(partition2).map {
         case (tile1, tile2) =>
           f(tile1, tile2)
       }
     }
-      .withContext(opCtx)
+    .withContext(opCtx)
 }
 
 object RasterRDD {
