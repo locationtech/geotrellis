@@ -20,6 +20,6 @@
 
 - name: Add Cloudera apt repo  
   apt_repository:
-    repo: "deb [arch=amd64] http://archive.cloudera.com/cdh5/ubuntu/precise/amd64/cdh precise-cdh5.1.0 contrib"
+    repo: "deb [arch=amd64] http://archive.cloudera.com/cdh5/ubuntu/precise/amd64/cdh {{cdh.repo}} contrib"
     state: present
   sudo: yes
