@@ -2,7 +2,7 @@
 
 #Tasks for common role
 - name: Install OpenJDK 7 JRE
-  apt: pkg=openjdk-7-jre-headless state=latest install_recommends=yes
+  apt: pkg=openjdk-7-jre-headless state=latest install_recommends=yes update_cache=yes
   sudo: yes
 
 #This allows to rsync and ssh between any host in the clusters
@@ -20,6 +20,6 @@
 
 - name: Add Cloudera apt repo  
   apt_repository:
-    repo: "deb [arch=amd64] http://archive.cloudera.com/cdh5/ubuntu/precise/amd64/cdh precise-cdh5 contrib"
+    repo: "deb [arch=amd64] http://archive.cloudera.com/cdh5/ubuntu/precise/amd64/cdh {{cdh.repo}} contrib"
     state: present
   sudo: yes

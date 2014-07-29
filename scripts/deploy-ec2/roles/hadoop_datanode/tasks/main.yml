@@ -7,6 +7,7 @@
 - name: Attach some EBS volumes
   local_action:
     module: ec2_vol
+    region: "{{ region }}"
     instance: "{{ instance_id }}"        
     device_name: "{{ item.device }}"
     volume_size: "{{ item.size }}"
