@@ -188,7 +188,7 @@ object BuildPyramid extends ArgMain[BuildPyramidArgs] with Logging {
     * onto a single tile of a higher zoom level .
     */
   private object Stitcher {
-    def stitch(tiles: (TileIdZoomWritable, Seq[PayloadArgWritable]), meta: PyramidMetadata): (TileIdWritable, ArgWritable) = {
+    def stitch(tiles: (TileIdZoomWritable, Iterable[PayloadArgWritable]), meta: PyramidMetadata): (TileIdWritable, ArgWritable) = {
       // Nomenclature -           
       // ch or child is the tile being written to, so 512x512, 
       // par or parent is the tile from base zoom, and
