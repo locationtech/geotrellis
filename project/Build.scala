@@ -349,7 +349,7 @@ object GeotrellisBuild extends Build {
   val DEFAULT_HADOOP_VERSION = "0.20.2-cdh3u4"
   lazy val hadoopVersion = Properties.envOrElse("SPARK_HADOOP_VERSION", DEFAULT_HADOOP_VERSION)
 
-  val DEFAULT_SPARK_VERSION = "0.9.1"
+  val DEFAULT_SPARK_VERSION = "1.0.0"
   lazy val sparkVersion = Properties.envOrElse("SPARK_VERSION", DEFAULT_SPARK_VERSION)
   lazy val sparkSettings =
     Seq(
