@@ -16,7 +16,7 @@ To set up a spark\HDFS cluster, follow these steps:
 
 Spark and Hadoop anslible `roles` contain config files under `templates` folder, which you may optionally edit.
 
-## Allocate cluster
+## Allocate the cluster
 
 `ansible-playbook allocate-cluster.yml -i localhost,`
 
@@ -28,17 +28,13 @@ It is safe to run this playbook multiple times, it uses instances tags to make s
 
 _Note_: When instances are restarted/rebooted they sometimes are given different IPs. When this happens it is important to re-run this script to refresh the `hosts` inventory.
 
-## Setup cluster
-
-`ansible-playbook setup-common.yml -i hosts`
-
-This playbook will install the OpenJDK 7, perform key management to make sure instances can ssh amongst themselves and add the Cloudera apt repository. This is a separate playbook because it is likely to only be run once.
+## Setup the cluster
 
 `ansible-playbook setup-cluster.yml -i hosts`
 
-This script will perform all the Spark and HDFS configurations. When running this script multiple times, changes in the config files will cause respective services to restart. HDFS NameNode will only be formatted the first time.
+This playbook will install the OpenJDK 7, perform key management to make sure instances can ssh amongst themselves and add the Cloudera apt repository. This script will then perform all the Spark and HDFS configurations. When running this script multiple times, changes in the config files will cause respective services to restart. HDFS NameNode will only be formatted the first time.
 
-## Setup VPN
+## Setup VPN access into the cluster (optional)
 
 This is an optional step that will allow you to use the `pptp` vpn client to connect to the master node of the spark cluster and use the (web interfaces for monitoring and instrumentation)[http://spark.apache.org/docs/latest/monitoring.html].
 
