@@ -3,6 +3,7 @@
 - name: Master
   hosts: master
   roles:
+    - common
     - hadoop
     - hadoop_namenode
     - spark

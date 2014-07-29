@@ -1,8 +1,9 @@
 ---
 
-- name: Wrokers
+- name: Workers
   hosts: workers
   roles: 
+    - common
     - hadoop
     - hadoop_datanode
     - spark
