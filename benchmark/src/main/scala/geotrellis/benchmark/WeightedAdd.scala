@@ -24,8 +24,6 @@ import geotrellis.raster.render._
 
 import com.google.caliper.Param
 
-import RasterSourceSeq._
-
 object WeightedAdd extends BenchmarkRunner(classOf[WeightedAdd])
 class WeightedAdd extends OperationBenchmark {
   // val names = Array("SBN_farm_mkt", "SBN_RR_stops_walk", "SBN_inc_percap", "SBN_street_den_1k")

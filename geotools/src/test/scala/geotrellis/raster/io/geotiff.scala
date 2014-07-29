@@ -18,6 +18,7 @@ package geotrellis.raster.io
 
 import geotrellis.engine._
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff.GeoTiffWriter
 import geotrellis.vector.Extent
 import geotrellis.raster.stats.FastMapHistogram
 
@@ -98,22 +99,12 @@ class GeoTiffSpec extends FunSpec with TestEngine with Matchers {
       assertEqual(raster1,raster2)
     }
 
-    it ("should write") {
+    it ("should write and read back in the same") {
       val (r, re) = GeoTiff.readRaster("raster-test/data/econic.tif")
       GeoTiffWriter.write("/tmp/written.tif", r, re.extent, "foo")
-    }
-
-    it ("should write floating point rasters") {
-      val e = Extent(100.0, 400.0, 120.0, 420.0)
-      val tile = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
- 
-      GeoTiffWriter.write("/tmp/float.tif", tile, e, "float")
-    }
-
-    it ("should retain Float32 type when converting tif to arg") {
-      val path = "raster-test/data/aspect.tif"
-      val (raster, _) = GeoTiff.readRaster(path)
-      raster.cellType should be (TypeFloat)
+      val (r2, re2) = GeoTiff.readRaster("/tmp/written.tif")
+      re should be (re2)
+      assertEqual(r, r2)
     }
 
     it ("should translate NODATA correctly") {

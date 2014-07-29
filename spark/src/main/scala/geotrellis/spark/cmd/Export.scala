@@ -16,7 +16,7 @@
 
 package geotrellis.spark.cmd
 import geotrellis.raster._
-import geotrellis.raster.io.GeoTiffWriter
+import geotrellis.raster.io.geotiff.GeoTiffWriter
 
 import geotrellis.spark._
 import geotrellis.spark.cmd.args.HadoopArgs

@@ -69,9 +69,6 @@ package object engine {
     def collect() = logic.Collect(seq)
   }
 
-  implicit def iterableRasterSourceToRasterSourceSeq(iterable: Iterable[RasterSource]): RasterSourceSeq =
-    RasterSourceSeq(iterable.toSeq)
-
   implicit def dataSourceSeqToSeqSource[T](iterable: Iterable[OpSource[T]]): SeqSource[T] =
     DataSource.fromSources(iterable.toSeq)
 
