@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io
+package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
+import geotrellis.raster.io._
 import geotrellis.vector.Extent
-import geotrellis.raster.io.geotiff._
 
-
-/**
- * This GeoTiffWriter is deprecated.
- *
- * See geotrellis.data.geotiff.Encoder for the preferred approach to
- * encoding rasters to geotiff files.
- */
 object GeoTiffWriter extends Writer {
   def cellType = "geotiff" 
   def dataType = ""
