@@ -22,10 +22,10 @@ object BitSetUtils {
 
   implicit class ByteBufferUtilities(bitSet: BitSet) {
 
-    def toByteVector(): Vector[Byte] = {
-      val bytes = Array.ofDim[Byte]((bitSet.size + 7) / 8)
+    def toByteVector(size: Int): Vector[Byte] = {
+      val bytes = Array.ofDim[Byte]((size + 7) / 8)
 
-      for (i <- 0 until bitSet.size)
+      for (i <- 0 until size)
         if (bitSet.get(i))
           bytes(i / 8) = (bytes(i / 8).toInt | (1 << (i % 8))).toByte
 

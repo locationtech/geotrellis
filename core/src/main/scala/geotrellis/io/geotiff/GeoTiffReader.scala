@@ -79,7 +79,7 @@ case class GeoTiffReader(byteBuffer: ByteBuffer) {
     if (index == directory.count) {
       val newDirectory = geoKeysMetadata match {
         case Some(tagMetadata) => tagReader.read(directory, geoKeysMetadata.get)
-        case None => directory//throw new MalformedGeoTiffException("no geokey directory") TODO
+        case None => throw new MalformedGeoTiffException("no geokey directory")
       }
 
       imageReader.read(newDirectory)

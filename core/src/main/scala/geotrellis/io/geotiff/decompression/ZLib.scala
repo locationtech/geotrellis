@@ -24,9 +24,9 @@ object ZLibDecompression {
 
   implicit class ZLib(matrix: Vector[Vector[Byte]]) {
 
-    def uncompressZLib(implicit directory: ImageDirectory): Vector[Byte] =
+    def uncompressZLib(implicit directory: ImageDirectory): Vector[Vector[Byte]] =
       matrix.zipWithIndex.par.map{ case(segment, i) =>
-        uncompressZLibSegment(segment, i) }.flatten.toVector
+        uncompressZLibSegment(segment, i) }.toVector
 
     private def uncompressZLibSegment(segment: Vector[Byte], index: Int)
       (implicit directory: ImageDirectory) = {

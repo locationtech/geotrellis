@@ -295,7 +295,7 @@ case class ImageDirectory(
 
   import ImageDirectoryLenses._
 
-  def hasStripStorage(): Boolean = (this |-> tileOffsetsLens get).isEmpty
+  def hasStripStorage(): Boolean = (this |-> tileWidthLens get).isEmpty
 
   def tileBitsSize(): Option[Long] =
     ((this |-> tileWidthLens get), (this |-> tileLengthLens get)) match {
@@ -363,7 +363,9 @@ case class ImageDirectory(
               || sampleFormat == SignedInt) TypeInt
             else if (bitsPerSample == 32 && sampleFormat == FloatingPoint) TypeFloat
             else if (bitsPerSample == 64 && sampleFormat == FloatingPoint) TypeDouble
-            else throw new MalformedGeoTiffException("bad bitspersample or sampleformat")
+            else throw new MalformedGeoTiffException(
+              "bad/unsupported bitspersample or sampleformat"
+            )
           }
 
       case _ => throw new MalformedGeoTiffException("no bitsPerSample values!")

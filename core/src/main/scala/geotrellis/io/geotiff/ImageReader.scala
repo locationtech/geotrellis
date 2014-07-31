@@ -42,7 +42,7 @@ case class ImageReader(byteBuffer: ByteBuffer) {
     val matrix = readMatrix(directory)
 
     val uncompressedImage = directory |-> compressionLens get match {
-      case Uncompressed => matrix.flatten
+      case Uncompressed => matrix
       case HuffmanCoded => matrix.uncompressHuffman(directory)
       case GroupThreeCoded => matrix.uncompressGroupThree(directory)
       case GroupFourCoded => matrix.uncompressGroupFour(directory)

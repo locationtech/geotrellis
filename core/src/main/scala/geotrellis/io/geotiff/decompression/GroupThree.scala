@@ -28,11 +28,11 @@ object GroupThreeDecompression {
 
   implicit class GroupThree(matrix: Vector[Vector[Byte]]) {
 
-    def uncompressGroupThree(implicit directory: ImageDirectory): Vector[Byte] = {
+    def uncompressGroupThree(implicit directory: ImageDirectory): Vector[Vector[Byte]] = {
       implicit val t4Options = T4Options(directory |-> t4OptionsLens get,
         directory |-> fillOrderLens get)
       matrix.zipWithIndex.par.map{ case(segment, i) =>
-        uncompressGroupThreeSegment(segment, i) }.flatten.toVector
+        uncompressGroupThreeSegment(segment, i) }.toVector
     }
 
     private def uncompressGroupThreeSegment(segment: Vector[Byte], index: Int)
@@ -44,13 +44,12 @@ object GroupThreeDecompression {
       val decompressor = new TIFFFaxDecoder(t4Options.fillOrder, width, length)
 
       val inputArray = segment.toArray
-      val outputArray = Array.ofDim[Byte](length * width)
+      val outputArray = Array.ofDim[Byte]((length * width + 7) / 8)
 
       decompressor.decode2D(outputArray, inputArray, 0, length,
         t4Options.options)
 
-      outputArray
-
+      outputArray.toVector
     }
 
   }

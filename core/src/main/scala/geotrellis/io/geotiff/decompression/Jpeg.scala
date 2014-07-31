@@ -60,14 +60,14 @@ object JpegDecompression {
 
     import JpegTags._
 
-    def uncompressJpeg(directory: ImageDirectory): Vector[Byte] = {
+    def uncompressJpeg(directory: ImageDirectory): Vector[Vector[Byte]] = {
       val jpegTables = directory |-> jpegTablesLens get match {
         case Some(v) => Some(JpegTables())
         case None => None
       }
 
       matrix.map(uncompressJpegSegment(_, directory,
-        jpegTables)).flatten.toVector
+        jpegTables)).toVector
     }
 
     private def uncompressJpegSegment(segment: Vector[Byte],

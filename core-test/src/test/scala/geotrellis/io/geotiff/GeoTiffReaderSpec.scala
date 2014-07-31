@@ -23,6 +23,8 @@ import geotrellis.testkit._
 
 import scala.io.{Source, Codec}
 
+import java.util.BitSet
+
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
@@ -53,58 +55,27 @@ class GeoTiffReaderSpec extends FunSpec
         fileName.length - 4)
 
       ifd.writeRasterToArg(argPath + currentFileName, currentFileName)
-      }
-    )
+    })
   }
 
-  /*describe ("read geotiffs without runtime errors") {
+  private def compareGeoTiffImages(first: GeoTiff, second: GeoTiff) {
+    first.imageDirectories.size must equal (second.imageDirectories.size)
 
-    it ("reads econic.tif") {
-      readAndSave("econic.tif")
+    first.imageDirectories zip second.imageDirectories foreach {
+      case (firstIFD, secondIFD) =>
+
+        firstIFD.imageBytes.size must equal (secondIFD.imageBytes.size)
+        firstIFD.imageBytes must equal (secondIFD.imageBytes)
     }
+  }
 
-    it ("reads aspect.tif") {
+  /*describe ("reading file and saving output") {
+
+    it ("should read aspect.tif and save") {
       readAndSave("aspect.tif")
     }
 
-    it ("reads slope.tif") {
-      readAndSave("slope.tif")
-    }
-
-    it ("reads packbits.tif") {
-      readAndSave("packbits.tif")
-    }
-
   }*/
-
-  private def compareGeoTiffImages(decomp: GeoTiff, uncomp: GeoTiff) {
-    decomp.imageDirectories.size must equal  (uncomp.imageDirectories.size)
-
-    decomp.imageDirectories zip uncomp.imageDirectories foreach {
-      case (first, second) =>
-
-      /*val d = first.imageBytes.take(200)
-      val u = second.imageBytes.take(200)
-
-      println(s"first 2 in decomp: ${d.take(20).toString}")
-      println(s"first 2 in uncomp: ${u.take(20).toString}")
-
-      var r = 0
-      for (i <- 0 until d.size) {
-        if (d(i) != u(i)) {
-          println(s"diff at index $i => d($i) = ${d(i)} != u($i) = ${u(i)}")
-          r += 1;
-        } else {
-          println(s"same at index $i => ${d(i)}")
-        }
-        if (r > 10) 1 / 0
-      }*/
-
-
-      first.imageBytes.size must equal (second.imageBytes.size)
-      first.imageBytes must equal (second.imageBytes)
-    }
-  }
 
   describe ("reading compressed file should yield same image array as uncompressed file") {
 
@@ -113,36 +84,56 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it ("should read econic_lzw.tif and match uncompressed file") {
-      val decomp = read("econic_lzw.tif")
+      val decomp = read("geotiff-reader-tiffs/econic_lzw.tif")
       val uncomp = read("econic.tif")
 
       compareGeoTiffImages(decomp, uncomp)
     }
 
     it ("should read econic_packbits.tif and match uncompressed file") {
-      val decomp = read("econic_packbits.tif")
+      val decomp = read("geotiff-reader-tiffs/econic_packbits.tif")
       val uncomp = read("econic.tif")
 
       compareGeoTiffImages(decomp, uncomp)
     }
 
     it ("should read econic_zlib.tif and match uncompressed file") {
-      val decomp = read("econic_zlib.tif")
+      val decomp = read("geotiff-reader-tiffs/econic_zlib.tif")
       val uncomp = read("econic.tif")
 
       compareGeoTiffImages(decomp, uncomp)
     }
 
-    it ("should read econic_CCITTRLE.tif and match uncompressed file") {
+    it ("should read bilevel_CCITTRLE.tif and match uncompressed file") {
+      val decomp = read("geotiff-reader-tiffs/bilevel_CCITTRLE.tif")
+      val uncomp = read("geotiff-reader-tiffs/bilevel.tif")
 
+      compareGeoTiffImages(decomp, uncomp)
     }
 
-    it ("should read econic_CCITTFAX3.tif and match uncompressed file") {
+    it ("should read bilevel_CCITTFAX3.tif and match uncompressed file") {
+      val decomp = read("geotiff-reader-tiffs/bilevel_CCITTFAX3.tif")
+      val uncomp = read("geotiff-reader-tiffs/bilevel.tif")
 
+      compareGeoTiffImages(decomp, uncomp)
     }
 
-    it ("should read econic_CCITTFAX4.tif and match uncompressed file") {
+    it ("should read bilevel_CCITTFAX4.tif and match uncompressed file") {
+      val decomp = read("geotiff-reader-tiffs/bilevel_CCITTFAX4.tif")
+      val uncomp = read("geotiff-reader-tiffs/bilevel.tif")
 
+      compareGeoTiffImages(decomp, uncomp)
     }
+  }
+
+  describe ("reading tiled file should yield same image as strip files") {
+
+    it ("should read bilevel_tiled.tif and match strip file") {
+      val tiled = read("geotiff-reader-tiffs/bilevel_tiled.tif")
+      val striped = read("geotiff-reader-tiffs/bilevel.tif")
+
+      compareGeoTiffImages(tiled, striped)
+    }
+
   }
 }

@@ -42,7 +42,7 @@ object LZWDecompression {
     val ClearCode = 256
     val EoICode = 257
 
-    def uncompressLZW(directory: ImageDirectory): Vector[Byte] = {
+    def uncompressLZW(directory: ImageDirectory): Vector[Vector[Byte]] = {
       val horizontalPredictor = directory |-> predictorLens get match {
         case Some(predictor) if (predictor == 2) => true
         case None | Some(1) => false
@@ -64,7 +64,7 @@ object LZWDecompression {
       matrix.zipWithIndex.par.map{
         case (segment, i) => uncompressLZWSegment(segment, i, directory,
           horizontalPredictor)
-      }.flatten.toVector
+      }.toVector
     }
 
     private def uncompressLZWSegment(segment: Vector[Byte], segmentIndex: Int,

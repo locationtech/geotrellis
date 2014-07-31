@@ -28,7 +28,7 @@ object GroupFourDecompression {
 
   implicit class GroupFour(matrix: Vector[Vector[Byte]]) {
 
-    def uncompressGroupFour(implicit directory: ImageDirectory): Vector[Byte] = {
+    def uncompressGroupFour(implicit directory: ImageDirectory): Vector[Vector[Byte]] = {
       implicit val t6Options = directory |-> t6OptionsLens get match {
         case Some(t6OptionsInt) => T6Options(t6OptionsInt,
           directory |-> fillOrderLens get)
@@ -36,7 +36,7 @@ object GroupFourDecompression {
       }
 
       matrix.zipWithIndex.par.map{ case(segment, i) =>
-        uncompressGroupFourSegment(segment, i) }.flatten.toVector
+        uncompressGroupFourSegment(segment, i) }.toVector
     }
 
     //Always 2d coding, each segment encoded seperately, all white line first
@@ -53,7 +53,7 @@ object GroupFourDecompression {
 
       decompressor.decodeT6(outputArray, inputArray, 0, length, t6Options.options)
 
-      outputArray
+      outputArray.toVector
     }
 
   }

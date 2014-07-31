@@ -26,9 +26,9 @@ object HuffmanDecompression {
 
   implicit class Huffman(matrix: Vector[Vector[Byte]]) {
 
-    def uncompressHuffman(implicit directory: ImageDirectory): Vector[Byte] =
+    def uncompressHuffman(implicit directory: ImageDirectory): Vector[Vector[Byte]] =
       matrix.zipWithIndex.par.map{ case(segment, i) =>
-        uncompressGroupThree1DSegment(segment, i) }.flatten.toVector
+        uncompressGroupThree1DSegment(segment, i) }.toVector
 
     private def uncompressGroupThree1DSegment(segment: Vector[Byte], index: Int)
       (implicit directory: ImageDirectory) = {
@@ -41,11 +41,11 @@ object HuffmanDecompression {
       val decompressor = new TIFFFaxDecoder(fillOrder, width, length)
 
       val inputArray = segment.toArray
-      val outputArray = Array.ofDim[Byte](length * width)
+      val outputArray = Array.ofDim[Byte]((length * width + 7) / 8)
 
       decompressor.decode1D(outputArray, inputArray, 0, length)
 
-      outputArray
+      outputArray.toVector
     }
 
   }

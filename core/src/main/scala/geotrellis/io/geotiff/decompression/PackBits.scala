@@ -25,9 +25,9 @@ object PackBitsDecompression {
 
   implicit class PackBits(matrix: Vector[Vector[Byte]]) {
 
-    def uncompressPackBits(implicit directory: ImageDirectory): Vector[Byte] =
+    def uncompressPackBits(implicit directory: ImageDirectory): Vector[Vector[Byte]] =
       matrix.zipWithIndex.par.map{ case(segment, i) =>
-        uncompressPackBitsSegment(segment, i) }.flatten.toVector
+        uncompressPackBitsSegment(segment, i) }.toVector
 
     private def uncompressPackBitsSegment(segment: Vector[Byte], index: Int)
       (implicit directory: ImageDirectory) = {
