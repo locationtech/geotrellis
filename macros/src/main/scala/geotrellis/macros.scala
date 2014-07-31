@@ -16,7 +16,6 @@
 
 package geotrellis
 
-//import language.experimental.macros
 import scala.reflect.macros.Context
 
 object Macros {

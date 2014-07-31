@@ -26,10 +26,9 @@ object Dependencies {
     "sonatypeSnapshots"       at "http://oss.sonatype.org/content/repositories/snapshots"
   )
 
-  val scalatest     = "org.scalatest"       %  "scalatest_2.10"  % "2.0.M5b"
+  val scalatest     = "org.scalatest"       %  "scalatest_2.10"  % "2.2.0"
   val scalacheck    = "org.scalacheck"      %% "scalacheck"      % "1.11.1"
   val scalaReflect  = "org.scala-lang"      %  "scala-reflect"   % "2.10.2"
-  val scalaxyLoops  = "com.nativelibs4java" %% "scalaxy-loops"   % "0.3-SNAPSHOT"
   val sigar         = "org.hyperic"         %  "sigar"           % "1.6.4"  
   val jts           = "com.vividsolutions"  %  "jts"             % "1.13"
 
@@ -41,7 +40,7 @@ object Dependencies {
   val jacksonCore   = "org.codehaus.jackson" % "jackson-core-asl"   % Version.jackson
   val jacksonMapper = "org.codehaus.jackson" % "jackson-mapper-asl" % Version.jackson
   
-  val spire         = "org.spire-math" %% "spire" % "0.7.1"
+  val spire         = "org.spire-math" %% "spire" % "0.7.5"
   
   val sprayClient   = "io.spray"        % "spray-client"  % Version.spray
   val sprayRouting  = "io.spray"        % "spray-routing" % Version.spray
@@ -60,6 +59,7 @@ object Dependencies {
   
   val jcommander    = "com.beust"       % "jcommander"    % "1.23"
   val reflections   = "org.reflections" % "reflections"  % "0.9.5"
-  
- 
+
+  val slick         = "com.typesafe.slick" %% "slick"      % "2.0.1"
+  val postgresql    = "postgresql"         % "postgresql"  % "9.1-901.jdbc4"
 }

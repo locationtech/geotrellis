@@ -16,29 +16,36 @@
 
 package geotrellis.spark
 
-import geotrellis._
+import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.metadata._
 import geotrellis.spark.cmd.NoDataHandler
+import org.apache.hadoop.io.Writable
 
 package object formats {
   type WritableTile = (TileIdWritable, ArgWritable)
 
   implicit class WritableTileWrapper(wt: WritableTile) {
-    def toTile(meta: PyramidMetadata, zoom: Int, addUserNoData: Boolean = false): Tile = {
+    def toTmsTile(meta: PyramidMetadata, zoom: Int, addUserNoData: Boolean = false): TmsTile = {
       val tileId = wt._1.get
 
-      val (tileSize, rasterType) = (meta.tileSize, meta.rasterType)
-      val (tx, ty) = TmsTiling.tileXY(tileId, zoom)
-      val extent = TmsTiling.tileToExtent(tx, ty, zoom, tileSize)
+      val tile = wt._2.toTile(meta.cellType, meta.tileSize, meta.tileSize)
+      if (addUserNoData) NoDataHandler.addUserNoData(tile, meta.nodata)
 
-      val rd = wt._2.toRasterData(rasterType, tileSize, tileSize)
-      val trd = if(addUserNoData) NoDataHandler.addUserNoData(rd, meta.nodata) else rd
+      TmsTile(tileId, tile)
+    }
+  }
 
-      val raster = Raster(trd, RasterExtent(extent, tileSize, tileSize))
+  type PayloadWritableTile = (TileIdWritable, PayloadArgWritable)
+  implicit class PayloadWritableTileWrapper(pwt: PayloadWritableTile) {
+    def toPayloadTile(meta: PyramidMetadata, zoom: Int, payload: Writable, addUserNoData: Boolean = false): TmsTile = {
+      val tileId = pwt._1.get
 
-      Tile(tileId, raster)
+      val tile = pwt._2.toTile(meta.cellType, meta.tileSize, meta.tileSize)
+      if (addUserNoData) NoDataHandler.addUserNoData(tile, meta.nodata)
+
+      TmsTile(tileId, tile)
     }
   }
 }

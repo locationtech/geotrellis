@@ -27,25 +27,24 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import org.apache.spark.Logging
 
-class MetadataInputFormat extends FileInputFormat[String, GeoTiff.Metadata] {
+class MetadataInputFormat extends FileInputFormat[String, Option[GeoTiff.Metadata]] {
   override def isSplitable(context: JobContext, fileName: Path) = false
 
-  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[String, GeoTiff.Metadata] =
+  override def createRecordReader(
+    split: InputSplit, 
+    context: TaskAttemptContext): RecordReader[String, Option[GeoTiff.Metadata]] =
     new MetadataRecordReader
 
 }
 
-class MetadataRecordReader extends RecordReader[String, GeoTiff.Metadata] with Logging {
+class MetadataRecordReader extends RecordReader[String, Option[GeoTiff.Metadata]] with Logging {
   private var file: String = null
-  private var meta: GeoTiff.Metadata = null
+  private var meta: Option[GeoTiff.Metadata] = null
   private var readFirstRecord: Boolean = false
 
   override def initialize(split: InputSplit, context: TaskAttemptContext) = {
     val filePath = split.asInstanceOf[FileSplit].getPath()
-    GeoTiff.getMetadata(filePath, context.getConfiguration()) match {
-      case Some(m) => {meta = m}
-      case None    => readFirstRecord = true
-    }
+    meta = GeoTiff.getMetadata(filePath, context.getConfiguration())
     file = filePath.toUri().toString()
   }
 

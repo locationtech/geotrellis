@@ -16,7 +16,7 @@
 
 package geotrellis.jetty
 
-import geotrellis._
+import geotrellis.engine._
 
 /**
  * Starts a webserver on the configured port that will serve any rest

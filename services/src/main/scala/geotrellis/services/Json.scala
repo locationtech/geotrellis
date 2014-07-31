@@ -16,18 +16,18 @@
 
 package geotrellis.services
 
-import geotrellis._
-import geotrellis.process._
+import geotrellis.raster._
+import geotrellis.engine._
 
 import scala.language.existentials
 import scala.language.implicitConversions
 
-trait JsonWrapper { def toJson():String }
+trait JsonWrapper { def toJson(): String }
 
 object Json {
   def wrap(json: => String) = new JsonWrapper { def toJson() = json }
 
-  implicit def RasterExtentToJson(re:RasterExtent):JsonWrapper = wrap {
+  implicit def RasterExtentToJson(re: RasterExtent): JsonWrapper = wrap {
     val latLong = re.extent
     s"""{
           "cols" : "${re.cols}",
@@ -44,7 +44,7 @@ object Json {
         }"""
   }
 
-  implicit def CatalogToJson(catalog:Catalog):JsonWrapper = wrap {
+  implicit def CatalogToJson(catalog: Catalog): JsonWrapper = wrap {
     s"""{   "name" :  "${catalog.name}",
             "stores" : [ """ + 
                    (for(store <- catalog.stores.values) yield {
@@ -57,6 +57,6 @@ object Json {
         }"""
   }
 
-  def classBreaks(breaks:Array[Int]) = 
+  def classBreaks(breaks: Array[Int]) = 
     s"""{ "classBreaks" : ${breaks.mkString("[", ",", "]")} }"""
 }

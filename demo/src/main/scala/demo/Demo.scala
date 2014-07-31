@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,9 +22,10 @@ import javax.ws.rs.{GET, Path, DefaultValue, QueryParam}
 import javax.ws.rs.core.{Response, Context}
 
 // import core geotrellis types
-import geotrellis._
-import geotrellis.render._
-import geotrellis.source._
+import geotrellis.raster._
+import geotrellis.vector._
+import geotrellis.raster.render._
+import geotrellis.engine._
 
 object response {
   def apply(mime:String)(data:Any) = Response.ok(data).`type`(mime).build()
@@ -33,7 +34,7 @@ object response {
 object WeightedOverlayArray {
   def apply(rasters:Seq[RasterSource], weights:Seq[Int]):RasterSource = {
 
-    val weightedSum = 
+    val weightedSum =
       rasters.zip(weights).map { case (r,w) => r * w }
              .localAdd
 
@@ -120,24 +121,24 @@ class DemoService1 {
     val png:ValueSource[Png] = output.renderPng(paletteColors, numColors)
 
     format match {
-      case "hello" => 
+      case "hello" =>
         response("text/plain")("hello world")
       case "info" => png.run match {
-        case process.Complete(img, h) =>
+        case Complete(img, h) =>
           val ms = h.elapsedTime
           val url = s"demo1?format=png&${req.getQueryString}"
           println(url)
           val html = Demo.infoPage(cols.toInt, rows.toInt, ms, url, h.toString)
           response("text/html; charset=UTF-8")(html)
-        case process.Error(msg, trace) => {
+        case Error(msg, trace) => {
           response("text/plain")("failed: %s\ntrace:\n%s".format(msg, trace))
         }
       }
       case _ => png.run match {
-        case process.Complete(img, _) => 
+        case Complete(img, _) => 
           response("image/png")(img)
-        case process.Error(msg, trace) =>
-          response("text/plain")("failed: %s\ntrace:\n%s".format(msg, trace))
+        case Error(msg, trace) =>
+          response("text/plain")(s"failed: $msg\ntrace:\n$trace")
       }
     }
   }

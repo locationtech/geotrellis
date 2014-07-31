@@ -17,24 +17,27 @@
 package geotrellis.spark.testfiles
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.metadata.Context
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+import geotrellis.spark.rdd.TileIdPartitioner
 
-class TestFiles(file: Path, conf: Configuration) {
+class TestFiles(pyramid: Path, conf: Configuration) {
 
   val (meta, opCtx) = setup
 
-  val path = new Path(file, meta.maxZoomLevel.toString)
-
+  val raster = new Path(pyramid, meta.maxZoomLevel.toString)
+  
+  def path = raster
+  
   def rasterDefinition = opCtx.rasterDefinition
   def rasterExtent = rasterDefinition.rasterExtent
   def tileLayout = rasterDefinition.tileLayout
   def tileCount = opCtx.rasterDefinition.tileLayout.tileCols * opCtx.rasterDefinition.tileLayout.tileRows
 
-  private def setup = {
-    val meta = PyramidMetadata(file, conf)
-    (meta, Context.fromMetadata(meta.maxZoomLevel, meta))
+  private def setup: (PyramidMetadata, Context) = {
+    val meta = PyramidMetadata(pyramid, conf)
+    val partitioner = TileIdPartitioner(new Path(pyramid, meta.maxZoomLevel.toString), conf)
+    (meta, Context(meta.maxZoomLevel, meta, partitioner))
   }
 }
 

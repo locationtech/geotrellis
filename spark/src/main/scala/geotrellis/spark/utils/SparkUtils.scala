@@ -23,7 +23,6 @@ import org.apache.spark.SparkContext
 import java.io.File
 
 object SparkUtils extends Logging {
-   
   def createSparkConf = new SparkConf()
   
   def createSparkContext(sparkMaster: String, appName: String, sparkConf: SparkConf = createSparkConf) = {
@@ -38,17 +37,12 @@ object SparkUtils extends Logging {
     }
    
     sparkConf
-    .setMaster(sparkMaster)
-    .setAppName(appName)
-    .setSparkHome(sparkHome)
-    .setJars(Array(jar(gtHome)))
-    .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-    .set("spark.kryo.registrator", "geotrellis.spark.KryoRegistrator")
-    
-    // TODO - find a way to have command line pass these in
-    //.set("io.map.index.interval", "1")
-    //.set("dfs.replication","1")
-    //.set("spark.akka.timeout","10000")
+      .setMaster(sparkMaster)
+      .setAppName(appName)
+      .setSparkHome(sparkHome)
+      .setJars(Array(jar(gtHome)))
+      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .set("spark.kryo.registrator", "geotrellis.spark.KryoRegistrator")   
 
     new SparkContext(sparkConf)
   }
@@ -89,7 +83,7 @@ object SparkUtils extends Logging {
     
     val matches = findJar(new File(gtHome)).flatten
     if (matches.length == 1) {
-      val firstMatch = prefix(matches(0).getAbsolutePath)      
+      val firstMatch = prefix(matches(0).getAbsolutePath)
       logInfo(s"Found unique match for geotrellis-spark jar: ${firstMatch}")
       firstMatch
     } else if (matches.length > 1) {

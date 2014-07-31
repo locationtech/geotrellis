@@ -1,6 +1,7 @@
 package geotrellis.spark.ingest
 
-import geotrellis._
+import geotrellis.raster._
+import geotrellis.vector.Extent
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FSDataInputStream
@@ -36,6 +37,7 @@ object GeoTiff extends Logging {
     HdfsImageInputStreamSpi.register
     loadFormats
   }
+
   private val hints = new Hints(Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode(DefaultProjection))
 
   case class Metadata(
@@ -43,8 +45,26 @@ object GeoTiff extends Logging {
     pixelSize: (Double, Double),
     pixels: (Int, Int),
     bands: Int,
-    rasterType: Int,
-    nodata: Double)
+    cellType: Int,
+    nodata: Double) {
+
+    private def isPixelSizeEqual(l: (Double, Double), r: (Double, Double)) =
+      (l._1 - r._1).abs < 0.0001 && (l._2 - r._2).abs < 0.0001
+
+    def merge(other: Metadata): Metadata = {
+      if (bands != other.bands)
+        sys.error(s"Error: All input tifs must have the same number of bands ${bands} != ${other.bands}")
+      if (!isPixelSizeEqual(pixelSize, other.pixelSize))
+        sys.error(s"Error: All input tifs must have the same resolution ${pixelSize} != ${other.pixelSize}")
+      if (cellType != other.cellType)
+        sys.error(s"Error: All input tifs must have same raster type ${cellType} != ${other.cellType}")
+      if ((nodata.isNaN() && !other.nodata.isNaN()) || (!nodata.isNaN() && nodata != other.nodata))
+        sys.error(s"Error: All input tifs must have same nodata value ${nodata} != ${other.nodata}")
+
+      Metadata(extent.combine(other.extent), pixelSize, pixels, bands, cellType, nodata)
+    }
+  }
+
   /*
    * Get metadata out of the underlying tiff if it is accepted, 
    * and close the reader. If tiff is not accepted, return None
@@ -63,12 +83,12 @@ object GeoTiff extends Logging {
     val pixelSize = (math.abs(envelope.getWidth), math.abs(envelope.getHeight))
     val pixels = (coverage.getRenderedImage().getWidth(), coverage.getRenderedImage().getHeight())
     val bands = coverage.getNumSampleDimensions
-    val rasterType = coverage.getRenderedImage().getSampleModel().getDataType()
+    val cellType = coverage.getRenderedImage().getSampleModel().getDataType()
     val nodata = reader.asInstanceOf[GTGeoTiffReader].getMetadata().getNoData()
     val env = coverage.getEnvelope.asInstanceOf[GeneralEnvelope]
     val extent = Extent(env.getLowerCorner().getOrdinate(0), env.getLowerCorner().getOrdinate(1),
       env.getUpperCorner().getOrdinate(0), env.getUpperCorner().getOrdinate(1))
-    Metadata(extent, pixelSize, pixels, bands, rasterType, nodata)
+    Metadata(extent, pixelSize, pixels, bands, cellType, nodata)
   }
 
   /*
@@ -87,10 +107,11 @@ object GeoTiff extends Logging {
   def getGridCoverage2D(reader: AbstractGridCoverage2DReader): GridCoverage2D =
     reader.read(null)
 
-  def accepts(path: Path, conf: Configuration): Boolean = _accepts(path, conf) match {
-    case Some(_) => true
-    case None    => false
-  }
+  def accepts(path: Path, conf: Configuration): Boolean = 
+    _accepts(path, conf) match {
+      case Some(_) => true
+      case None    => false
+    }
 
   private def _accepts(path: Path, conf: Configuration): Option[AbstractGridFormat] = {
     val stream = path.getFileSystem(conf).open(path)
@@ -107,10 +128,11 @@ object GeoTiff extends Logging {
 
   private def getReader(path: Path, conf: Configuration): AbstractGridCoverage2DReader = {
     val stream = path.getFileSystem(conf).open(path)
-    val format = _accepts(stream) match {
-      case Some(f) => f
-      case None    => sys.error("Couldn't find format")
-    }
+    val format = 
+      _accepts(stream) match {
+        case Some(f) => f
+        case None    => sys.error("Couldn't find format")
+      }
     format.getReader(stream, hints)
   }
 

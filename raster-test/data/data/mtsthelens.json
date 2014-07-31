@@ -1,0 +1,16 @@
+{
+    "xmax": 567610.0,
+    "xmin": 557820.0,
+    "ymax": 5121980.0,
+    "ymin": 5107980.0,
+    "cellheight": 10.0,
+    "cellwidth": 10.0,
+    "cols": 979,
+    "rows": 1400,
+    "datatype": "float32",
+    "layer": "mtsthelens",
+    "type": "arg",
+    "xskew": 0,
+    "yskew": 0,
+    "epsg": "26710"
+}

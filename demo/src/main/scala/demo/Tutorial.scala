@@ -20,9 +20,10 @@ import javax.servlet.http.{HttpServletRequest}
 import javax.ws.rs.{GET, Path, DefaultValue, PathParam, QueryParam}
 import javax.ws.rs.core.{Response, Context}
 
-import geotrellis._
-import geotrellis.source._
-import geotrellis.render._
+import geotrellis.raster._
+import geotrellis.vector._
+import geotrellis.engine._
+import geotrellis.raster.render._
 import ColorRamps._
 
 @Path("/greeting")

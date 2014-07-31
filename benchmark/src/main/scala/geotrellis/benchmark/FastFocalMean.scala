@@ -16,40 +16,38 @@
 
 package geotrellis.benchmark
 
-import geotrellis._
+import geotrellis.raster._
+import geotrellis.vector._
 import geotrellis.raster.op.focal.Square
 import geotrellis.raster.op._
-import geotrellis.process._
-import geotrellis.source._
-import geotrellis.raster._
-import geotrellis.io._
+import geotrellis.engine._
 
 import com.google.caliper.Param
 
 object FocalMeanBenchmark extends BenchmarkRunner(classOf[FocalMeanBenchmark])
 class FocalMeanBenchmark extends OperationBenchmark {
-//  @Param(Array("256","512", "1024"))
+//  @Param(Array("256", "512", "1024"))
   // @Param(Array("256"))
-  // var size:Int = 0
+  // var size: Int = 0
 
-  // @Param(Array("bit","byte","short","int","float","double"))
-  // var rasterType = ""
+  // @Param(Array("bit", "byte", "short", "int", "float", "double"))
+  // var cellType = ""
 
   // val layers = 
   //   Map(
-  //     ("bit","wm_DevelopedLand"),
+  //     ("bit", "wm_DevelopedLand"),
   //     ("byte", "SBN_car_share"),
-  //     ("short","travelshed-int16"),
-  //     ("int","travelshed-int32"),
-  //     ("float","aspect"), 
-  //     ("double","aspect-double")
+  //     ("short", "travelshed-int16"),
+  //     ("int", "travelshed-int32"),
+  //     ("float", "aspect"), 
+  //     ("double", "aspect-double")
   //   )
 
-  var op:Op[Raster] = null
-  var fastOp:Op[Raster] = null
+  var op: Op[Tile] = null
+  var fastOp: Op[Tile] = null
 
-  var source:RasterSource = null
-  var fastSource:RasterSource = null
+  var source: RasterSource = null
+  var fastSource: RasterSource = null
 
   override def setUp() {
     // From old FocalBenchmarks
@@ -58,41 +56,41 @@ class FocalMeanBenchmark extends OperationBenchmark {
                    -8317922.884859569, 4954765.69147447)
     val re = RasterExtent(e, 75.0, 75.0, 2101, 1723)
 
-    // val name = layers(rasterType)
+    // val name = layers(cellType)
     // val re = getRasterExtent(name, size, size)
 
-    val raster = get(LoadRaster(name,re))
+    val raster = RasterSource(name, re).get
 
     op = focal.Mean(raster, Square(1))
-    fastOp = FastFocalMean(raster,1)
+    fastOp = FastFocalMean(raster, 1)
 
     source = 
-      RasterSource(name,re)
+      RasterSource(name, re)
         .cached
         .focalMean(Square(1))
 
     fastSource =
-      RasterSource(name,re)
+      RasterSource(name, re)
         .cached
-        .mapOp(FastFocalMean(_,1))
+        .mapTileOp(FastFocalMean(_, 1))
   }
 
-  def timeMeanOp(reps:Int) = run(reps)(meanOp)
+  def timeMeanOp(reps: Int) = run(reps)(meanOp)
   def meanOp = get(op)
 
-  def timeFastMeanOp(reps:Int) = run(reps)(fastMeanOp)
+  def timeFastMeanOp(reps: Int) = run(reps)(fastMeanOp)
   def fastMeanOp = get(fastOp)
 
 
-  def timeMeanSource(reps:Int) = run(reps)(meanSource)
+  def timeMeanSource(reps: Int) = run(reps)(meanSource)
   def meanSource = get(source)
 
-  def timeFastMeanSource(reps:Int) = run(reps)(fastMeanSource)
+  def timeFastMeanSource(reps: Int) = run(reps)(fastMeanSource)
   def fastMeanSource = get(fastSource)
 }
 
-case class FastFocalMean(r:Op[Raster], n:Int) extends Op1(r)({
-  r => new CalcFastFocalMean(r, n).calc
+case class FastFocalMean(r: Op[Tile], n: Int) extends Op1(r)({
+  r => Result(new CalcFastFocalMean(r, n).calc)
 })
 
 /**
@@ -104,12 +102,12 @@ case class FastFocalMean(r:Op[Raster], n:Int) extends Op1(r)({
  * the radius plus one. Thus, radius=1 means a 3x3 square kernel (9 cells), and
  * radius=3 means a 7x7 square kernel (49 cells).
  */
-final class CalcFastFocalMean(r:Raster, n:Int) {
+final class CalcFastFocalMean(r: Tile, n: Int) {
   // get an array-like interface to the data
-  final val data = r.toArrayRaster.data
+  final val data = r.toArrayTile
 
   // raster data used to store the results
-  final val out = data.alloc(r.cols, r.rows)
+  final val out = ArrayTile.alloc(TypeInt, r.cols, r.rows)
 
   // this is the length of a side of the square kernel
   final val radius = n
@@ -129,7 +127,7 @@ final class CalcFastFocalMean(r:Raster, n:Int) {
   /**
    * This is the function that manages the whole calculation.
    */
-  final def calc = {
+  final def calc: Tile = {
     // dereference rows for faster access
     val rows = r.rows
 
@@ -170,8 +168,7 @@ final class CalcFastFocalMean(r:Raster, n:Int) {
       row += 1
     }
 
-    // we have all our data, so let's return it!
-    Result(Raster(out, r.rasterExtent))
+    out
   }
 
   /**
@@ -184,7 +181,7 @@ final class CalcFastFocalMean(r:Raster, n:Int) {
    * raster each sum will involve diameter cells, and then at the right we will
    * taper back to down (radius + 1) cells.
    */
-  final def precalc(row:Int) {
+  final def precalc(row: Int) {
     // dereference cols, rows and line for faster access
     val cols = r.cols
     val rows = r.rows
@@ -209,7 +206,7 @@ final class CalcFastFocalMean(r:Raster, n:Int) {
 
     // now we start looping through the "left" edge of the row, that is, the
     // part where we don't have to start taking cells out of the sum (the space
-    // between column 0 and column radius+1). "j" is the index of the cell
+    // between column 0 and column radius + 1). "j" is the index of the cell
     // whose kernel we're processing, and "i" is still the leading edge.
     var j = 0
     while (j <= radius) {
@@ -273,7 +270,7 @@ final class CalcFastFocalMean(r:Raster, n:Int) {
    * results in the out. After we've called sumall() on all rows, the
    * calculation will be complete.
    */
-  final def sumall(row:Int) {
+  final def sumall(row: Int) {
     val cols = r.cols
     val rows = r.rows
     val span = row * cols
@@ -281,7 +278,7 @@ final class CalcFastFocalMean(r:Raster, n:Int) {
     // loop over every cell in this row. for each of them, sum the appropriate
     // row sums from all the rows in the kernel.
     //
-    // note that we always loop over all the rows in sumsByCol/countsByCol.
+    // note that we always loop over all the rows in sumsByCol / countsByCol.
     // this means that it's important that these structures start out zero, and
     // are zero'd appropriately as we move off the bottom raster edge.
     var x = 0
@@ -305,7 +302,7 @@ final class CalcFastFocalMean(r:Raster, n:Int) {
    * Initialize a particular line to zeros. We need to do this once we're on
    * the "right edge" of the raster and don't have new data to use.
    */
-  final def zero(row:Int) {
+  final def zero(row: Int) {
     var x = 0
     val y = row % diameter
     val cols = r.cols
