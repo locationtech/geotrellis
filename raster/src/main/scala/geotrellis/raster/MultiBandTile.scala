@@ -20,8 +20,9 @@ trait MultiBandTile {
   
   val cellType: CellType
   
-  def convert(cellType: CellType): MultiBandTile
   def getBand(bandNo: Int): Tile
-  def map(f: Int => Int): MultiBandTile
-  def mapDouble(f: Double => Double): MultiBandTile
+  
+//  def convert(cellType: CellType): MultiBandTile
+//  def map(f: Int => Int): MultiBandTile
+//  def mapDouble(f: Double => Double): MultiBandTile
 }

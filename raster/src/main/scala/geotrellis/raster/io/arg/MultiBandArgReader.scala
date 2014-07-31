@@ -2,6 +2,7 @@ package geotrellis.raster.io.arg
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
+import geotrellis.raster.io._
 
 import com.typesafe.config.ConfigFactory
 
@@ -25,20 +26,18 @@ object MultibandArgReader {
     
     val noOfBands: Int = json.getInt("bands")
 
-    val argPath = getPaths()
-    
-    def getPaths(): Array[String] = {
-      val paths: Array[String] = Array("0")
-      if(json.hasPath("path")) {
-        val p = json.getString("path")
-        for(i <- 0 until noOfBands) yield { paths(i)= p+"-band"+i+".arg" }
-      } else {
-        val layerName = json.getString("layer")
-        // Default to a .arg file with the same name as the layer name.
-        for(i <- 0 until noOfBands) yield { paths(i)= layerName+"-band"+i+".arg" }
-      }
-      paths
-    }
+    val argPath = {
+     val paths: Array[String] = Array("0")
+     if(json.hasPath("path")) {
+       val p = json.getString("path")
+       for(i <- 0 until noOfBands) yield { paths(i)= p+"-band"+i+".arg" }
+     } else {
+       val layerName = json.getString("layer")
+       // Default to a .arg file with the same name as the layer name.
+       for(i <- 0 until noOfBands) yield { paths(i)= layerName+"-band"+i+".arg" }
+     }
+     paths
+  }
 
     val cellType =
       json.getString("datatype") match {
