@@ -27,7 +27,7 @@ object MultibandArgReader {
     val noOfBands: Int = json.getInt("bands")
 
     val argPath = {
-     val paths: Array[String] = Array("0")
+     val paths: Array[String] = new Array[String](noOfBands)
      if(json.hasPath("path")) {
        val p = json.getString("path")
        for(i <- 0 until noOfBands) yield { paths(i)= p+"-band"+i+".arg" }
