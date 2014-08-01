@@ -19,12 +19,13 @@ package geotrellis
 import geotrellis.raster._
 
 import geotrellis.spark.formats._
+import geotrellis.spark.tiling._
 import geotrellis.spark.metadata.Context
 import geotrellis.spark.rdd.RasterRDD
 import geotrellis.spark.rdd.SaveRasterFunctions
 
 import org.apache.hadoop.fs.Path
-import org.apache.spark.rdd.RDD
+import org.apache.spark.rdd._
 
 package object spark {
   implicit class MakeRasterRDD(val prev: RDD[TmsTile]) {
@@ -35,4 +36,19 @@ package object spark {
     def save(path: Path) = SaveRasterFunctions.save(rdd, path)
     def save(path: String): Unit = save(new Path(path))
   }
+
+  implicit def tmsTileRddToTupleRdd(rdd: RDD[TmsTile]): RDD[(Long, Tile)] =
+    rdd.map { case TmsTile(id, tile) => (id, tile) }
+
+  implicit def tupleRddToTmsTileRdd(rdd: RDD[(Long, Tile)]): RDD[TmsTile] =
+    rdd.map { case (id, tile) => TmsTile(id, tile) }
+
+  implicit def tmsTileRddToPairwiseRddFunctions(rdd: RDD[TmsTile]): PairRDDFunctions[Long, Tile] =
+    new PairRDDFunctions(tmsTileRddToTupleRdd(rdd))
+
+  // implicit class TmsTileRddFunctions(val rdd: RDD[TmsTile]) {
+  //   def partitionBy(partitioner: org.apache.spark.Partitioner): RDD[TmsTile] = {
+  //     .partitionBy(partitioner)
+  //   }
+  // }
 }

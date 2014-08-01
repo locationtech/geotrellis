@@ -32,7 +32,6 @@ import geotrellis.spark.metadata.Context
 object SaveRasterFunctions extends Logging {
 
   def save(raster: RasterRDD, rasterPath: Path): Unit = {
-    val zoom = rasterPath.getName().toInt
     val pyramidPath = rasterPath.getParent()
 
     logInfo("Saving RasterRDD out...")
@@ -41,11 +40,9 @@ object SaveRasterFunctions extends Logging {
     SequenceFileOutputFormat.setOutputCompressionType(jobConf, SequenceFile.CompressionType.RECORD)
 
     val writableRDD =
-      raster.mapPartitions({ partition =>
-        partition.map { tile =>
-          tile.toWritable
-        }
-      }, true)
+      raster.map { tile =>
+        tile.toWritable
+      }
 
     writableRDD.saveAsHadoopFile(
       rasterPath.toUri().toString(),

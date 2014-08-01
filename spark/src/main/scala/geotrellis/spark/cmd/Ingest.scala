@@ -17,21 +17,15 @@
 package geotrellis.spark.cmd
 
 import geotrellis.raster._
+import geotrellis.vector.Extent
 
 import geotrellis.spark.TmsTile
-import geotrellis.spark.cmd.args.HadoopArgs
-import geotrellis.spark.cmd.args.SparkArgs
-import geotrellis.spark.formats.ArgWritable
-import geotrellis.spark.formats.TileIdWritable
-import geotrellis.spark.ingest.GeoTiff
-import geotrellis.spark.ingest.IngestInputFormat
-import geotrellis.spark.ingest.MetadataInputFormat
-import geotrellis.spark.ingest.TiffTiler
-import geotrellis.spark.metadata.JacksonWrapper
-import geotrellis.spark.metadata.PyramidMetadata
-import geotrellis.spark.rdd.RasterSplitGenerator
-import geotrellis.spark.rdd.TileIdPartitioner
-import geotrellis.spark.tiling.TmsTiling
+import geotrellis.spark.cmd.args._
+import geotrellis.spark.formats._
+import geotrellis.spark.ingest._
+import geotrellis.spark.metadata._
+import geotrellis.spark.tiling._
+import geotrellis.spark.rdd._
 import geotrellis.spark.utils.HdfsUtils
 
 import org.apache.hadoop.conf.Configuration
@@ -39,17 +33,18 @@ import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.MapFile
 import org.apache.hadoop.io.SequenceFile
-import org.apache.spark.Logging
-import org.apache.spark.SerializableWritable
-import org.apache.spark.SparkContext
+
+import org.apache.spark._
 import org.apache.spark.SparkContext._
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.rdd.RDD
+import org.apache.spark.rdd._
 
 import java.io.PrintWriter
 
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Required
+
+import spire.syntax.cfor._
 
 /**
  * @author akini
@@ -95,26 +90,170 @@ object IngestCommand extends ArgMain[IngestArgs] with Logging {
 
   def main(args: IngestArgs): Unit = {
     val hadoopConf = args.hadoopConf
+    hadoopConf.set("io.map.index.interval", "1")
 
     val inPath = new Path(args.input)
     val outPath = new Path(args.outputpyramid)
 
-    val sc = if (args.sparkMaster == null) null else args.sparkContext("Ingest")
-    ingest(inPath, outPath, hadoopConf, sc)
+    logInfo(s"Deleting and creating output path: $outPath")
+    val outFs: FileSystem = outPath.getFileSystem(hadoopConf)
+    outFs.delete(outPath, true)
+    outFs.mkdirs(outPath)
+
+    if (args.sparkMaster == null)
+      ingest(inPath, outPath, hadoopConf)
+    else
+      newIngest(inPath, outPath, hadoopConf, args.sparkContext("Ingest"))
   }
 
-  def ingest(input: Path, output: Path, conf: Configuration, sc: SparkContext) {
-    conf.set("io.map.index.interval", "1")
-    logInfo(s"Deleting and creating output path: $output")
+  def newIngest(input: Path, output: Path, conf: Configuration, sc: SparkContext): Unit = {
+    case class TileInfo(tileId: Long, extent: Extent)
+
+    //(tileScheme, crs).tileIdsForExtent(extent)
+    def tileIdsForExtent(extent: Extent): Seq[TileInfo] = {
+      val zoom = TmsTiling.MaxZoomLevel
+      val tileSize = TmsTiling.DefaultTileSize
+      val tileExtent = 
+        TmsTiling.extentToTile(
+          extent,
+          zoom,
+          tileSize
+        )
+      val tileInfos =
+        for { tcol <- tileExtent.xmin to tileExtent.xmax;
+              trow <- tileExtent.ymin to tileExtent.ymax } yield {
+          val id = TmsTiling.tileId(tcol, trow, zoom)
+          val extent = TmsTiling.tileToExtent(tcol, trow, zoom, tileSize)
+          TileInfo(id, extent)
+        }
+
+      tileInfos.toSeq
+    }
+
+    implicit class ValueBurner(val tile: MutableArrayTile) {
+      def burnValues(other: Tile): MutableArrayTile = {
+        Seq(tile, other).assertEqualDimensions
+        if(tile.cellType.isFloatingPoint) {
+          cfor(0)(_ < tile.rows, _ + 1) { row =>
+            cfor(0)(_ < tile.cols, _ + 1) { col =>
+              if(isNoData(tile.getDouble(col, row))) { 
+                tile.setDouble(col, row, other.getDouble(col, row)) 
+              }
+            }
+          }
+        } else {
+          cfor(0)(_ < tile.rows, _ + 1) { row =>
+            cfor(0)(_ < tile.cols, _ + 1) { col =>
+              if(isNoData(tile.get(col, row))) { 
+                tile.setDouble(col, row, other.get(col, row)) 
+              }
+            }
+          }
+        }
+
+        tile
+      }
+
+      def burnValues(extent: Extent, otherExtent: Extent, other: Tile): MutableArrayTile = {
+        val re = RasterExtent(extent, tile.cols, tile.rows)
+        val GridBounds(colMin, colMax, rowMin, rowMax) = re.gridBoundsFor(otherExtent)
+        val otherRe = RasterExtent(otherExtent, other.cols, other.rows)
+
+        def thisToOther(col: Int, row: Int): (Int, Int) = {
+          val (x, y) = re.gridToMap(col, row)
+          otherRe.mapToGrid(x, y)
+        }
+
+        if(tile.cellType.isFloatingPoint) {
+          cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
+            cfor(colMin)(_ <= colMax, _ + 1) { col =>
+              if(isNoData(tile.getDouble(col, row))) {
+                val (otherCol, otherRow) = thisToOther(col, row)
+                tile.setDouble(col, row, other.getDouble(otherCol, otherRow))
+              }
+            }
+          }
+        } else {
+          cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
+            cfor(colMin)(_ <= colMax, _ + 1) { col =>
+              if(isNoData(tile.get(col, row))) {
+                val (otherCol, otherRow) = thisToOther(col, row)
+                tile.set(col, row, other.get(otherCol, otherRow))
+              }
+            }
+          }
+
+        }
+
+        tile
+      }
+    }
+
+    val partitioner: Partitioner = ???
+
+    //////////////////////
+
+    val allFiles = HdfsUtils.listFiles(input, conf)
+    val newConf = HdfsUtils.putFilesInConf(allFiles.mkString(","), conf)
+
+    val geotiffRdd = 
+      sc.newAPIHadoopRDD(newConf, classOf[GeotiffInputFormat], classOf[Extent], classOf[Tile])
+
+    val (extent, cellType, cellSize): (Extent, CellType, CellSize) =
+      geotiffRdd
+        .map { case (extent, tile) => (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows)) }
+        .reduce { (t1, t2) =>
+          val (e1, ct1, cs1) = t1
+          val (e2, ct2, cs2) = t2
+          (e1.combine(e2), ct1.union(ct2),
+            if(cs1.resolution < cs2.resolution) cs1 else cs2
+          )
+         }
+
+    val tileScheme: TilingScheme = DefaultTilingScheme
+    val zoomLevel: ZoomLevel = tileScheme.zoomLevelFor(cellSize)
+
+    val bcZoomLevel = sc.broadcast(zoomLevel)
+
+    val tiles: RDD[TmsTile] =
+      geotiffRdd
+        .flatMap { case (extent, tile) =>
+          val zoomLevel = bcZoomLevel.value
+          zoomLevel.tileIdsForExtent(extent).map { case tileId  => (tileId, (tileId, extent, tile)) }
+         }
+        .combineByKey( 
+          { case (tileId, extent, tile) =>
+            val zoomLevel = bcZoomLevel.value
+            val tmsTile = ArrayTile.empty(cellType, zoomLevel.tileCols, zoomLevel.tileRows)
+            tmsTile.burnValues(zoomLevel.extentForTile(tileId), extent, tile)
+          },
+          { (tmsTile: MutableArrayTile, tup: (Long, Extent, Tile)) =>
+            val zoomLevel = bcZoomLevel.value
+            val (tileId, extent, tile) = tup
+            tmsTile.burnValues(zoomLevel.extentForTile(tileId), extent, tile)
+          },
+          { (tmsTile1: MutableArrayTile , tmsTile2: MutableArrayTile) =>
+            tmsTile1.burnValues(tmsTile2)
+          }
+         )
+        .map { case (id, tile) => TmsTile(id, tile) }
+
+     tiles
+       .partitionBy(partitioner)
+       .withContext(???)
+       .save(output)
+
+  }
+
+  def ingest(input: Path, output: Path, conf: Configuration): Unit = {
     val outFs: FileSystem = output.getFileSystem(conf)
-    outFs.delete(output, true)
-    outFs.mkdirs(output)
 
     val paths = IngestPaths(input, output, outFs)
-    if (sc == null)
-      new LocalIngest(conf).ingest(paths)
-    else
-      new SparkIngest(conf, sc).ingest(paths)
+
+    val allFiles = HdfsUtils.listFiles(paths.inPath, conf)
+    val newConf = HdfsUtils.putFilesInConf(allFiles.mkString(","), conf)
+
+    new LocalIngest(conf).ingest(paths)
   }
 }
 
@@ -187,19 +326,23 @@ object SparkIngest extends Logging {
     rdd.map(t => TmsTile(t._1, t._2).toWritable)
       .partitionBy(partitioner)
       .reduceByKey((tile1, tile2) => tile2) // pick the later one
-      .mapPartitionsWithIndex({ (index, iter) =>
+      .mapPartitionsWithIndex({ (index, tmsTiles) =>
         val conf = broadcastedConf.value.value
-        val buf = iter.toArray.sortWith((x, y) => x._1.get() < y._1.get())
+        val sortedTiles = tmsTiles.toArray.sortWith((x, y) => x._1.get() < y._1.get())
 
         val mapFilePath = new Path(outPathWithZoomStr, f"part-${index}%05d")
         val fs = mapFilePath.getFileSystem(conf)
-        val fsRep = fs.getDefaultReplication()
+        val fsRep = fs.getDefaultReplication(mapFilePath)
         logInfo(s"Working on partition ${index} with rep = (${conf.getInt("dfs.replication", -1)}, ${fsRep})")
         val writer = new MapFile.Writer(conf, fs, mapFilePath.toUri.toString,
           classOf[TileIdWritable], classOf[ArgWritable], SequenceFile.CompressionType.RECORD)
-        buf.foreach(writableTile => writer.append(writableTile._1, writableTile._2))
+
+        for( (id, arg) <- sortedTiles) {
+          writer.append(id, arg)
+        }
+
         writer.close()
-        iter
+        tmsTiles
       }, true)
   }
 }

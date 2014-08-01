@@ -32,6 +32,9 @@ import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 
 import org.scalatest._
+import org.scalatest.mock.MockitoSugar
+import org.mockito.Mockito._
+
 import scala.collection.JavaConversions._
 
 import java.awt.image.DataBuffer
@@ -40,8 +43,17 @@ import java.awt.image.DataBuffer
  * Tests both local and spark ingest mode
  */
 class MetadataInputFormatSpec extends FunSpec 
+                                 with MockitoSugar
                                  with Matchers
                                  with TestEnvironment {
+  def taskAttemptContext = {
+    val id = new TaskAttemptID("foo", 0, false, 1, 2)
+    val tc = mock[TaskAttemptContext]
+    when(tc.getTaskAttemptID).thenReturn(id)
+    when(tc.getConfiguration).thenReturn(conf)
+    tc
+  }
+
   describe("MetadataInputFormat") {
     it("should handle tiff file") {
       val allOnes = new Path(inputHome, "all-ones.tif")
@@ -51,8 +63,7 @@ class MetadataInputFormatSpec extends FunSpec
       val mif = new MetadataInputFormat
       val split = mif.getSplits(job).head
 
-      val id = new TaskAttemptID("foo", 0, false, 1, 2)
-      val tc = new TaskAttemptContext(conf, id)
+      val tc = taskAttemptContext
       val rr = mif.createRecordReader(split, tc)
 
       rr.initialize(split, tc)
@@ -68,8 +79,7 @@ class MetadataInputFormatSpec extends FunSpec
       val mif = new MetadataInputFormat
       val split = mif.getSplits(job).head
 
-      val id = new TaskAttemptID("foo", 0, false, 1, 2)
-      val tc = new TaskAttemptContext(conf, id)
+      val tc = taskAttemptContext
       val rr = mif.createRecordReader(split, tc)
 
       rr.initialize(split, tc)

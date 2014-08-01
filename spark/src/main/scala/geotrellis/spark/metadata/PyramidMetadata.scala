@@ -188,6 +188,7 @@ object PyramidMetadata {
     // if the lon/lat is past the world bounds (which it can be, say, -180.001), 
     // then our TmsTiling calculations go awry. So we cap it here to world bounds,
     // which is slightly smaller than the right and northern edge
+    println(meta.extent)
     val cappedExtent = Bounds.World.intersection(meta.extent).get
     val tileExtent = TmsTiling.extentToTile(cappedExtent, zoom, tileSize)
     val pixelExtent = TmsTiling.extentToPixel(cappedExtent, zoom, tileSize)

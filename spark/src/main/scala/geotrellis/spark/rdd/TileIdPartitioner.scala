@@ -31,13 +31,12 @@ import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
 import com.quantifind.sumac.ArgMain
 
-
 class TileIdPartitioner extends org.apache.spark.Partitioner {
 
   @transient
   private var splits = new Array[TileIdWritable](0)
 
-  override def getPartition(key: Any) = findPartition(key)
+  override def getPartition(key: Any): Int = findPartition(key)
   override def numPartitions = splits.length + 1
   override def toString = "TileIdPartitioner split points: " + {
     if (splits.isEmpty) "Empty" else splits.zipWithIndex.mkString
@@ -96,6 +95,13 @@ object TileIdPartitioner extends ArgMain[RasterArgs] {
   def apply(raster: Path, conf: Configuration): TileIdPartitioner = {
     val tp = new TileIdPartitioner
     tp.splits = readSplits(raster, conf)
+    tp
+  }
+
+  /* construct a partitioner from the splits file, if one exists */
+  def apply(splits: Array[TileIdWritable]): TileIdPartitioner = {
+    val tp = new TileIdPartitioner
+    tp.splits = splits
     tp
   }
 

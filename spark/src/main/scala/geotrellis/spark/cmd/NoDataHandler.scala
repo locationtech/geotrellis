@@ -22,6 +22,7 @@ import spire.syntax.cfor._
 object NoDataHandler {
 
   def removeUserNoData(tile: MutableArrayTile, userNoData: Double): Unit = {
+    println(s"                     ${tile.size} ${tile.cols} ${tile.rows}")
     /* 
      * This handles all types of RasterData - e.g., FloatArrayTile, ByteArrayTile
      * because the apply/update methods handle conversion of NODATA to the appropriate types
@@ -42,8 +43,7 @@ object NoDataHandler {
         if(tile.cellType.isFloatingPoint)
           tile.updateDouble(i, userNoData)
         else
-          tile.update(i, userNoData.toInt)
-        
+          tile.update(i, userNoData.toInt)        
       } 
     }
   }
