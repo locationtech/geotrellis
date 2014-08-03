@@ -89,7 +89,7 @@ case class GeoKeyReader(byteBuffer: ByteBuffer,
         geoKeyDirectory |-> verticalDatumLens set(Some(short))
       case VerticalUnitsGeoKey =>
         geoKeyDirectory |-> verticalUnitsLens set(Some(short))
-      case tag => geoKeyDirectory |-> shortMapLens modify (_ + (tag
+      case tag => geoKeyDirectory |-> geoKeyShortMapLens modify (_ + (tag
           -> short))
     }
   }
@@ -150,7 +150,7 @@ case class GeoKeyReader(byteBuffer: ByteBuffer,
         geoKeyDirectory |-> projAzimuthAngleLens set(Some(doubles))
       case ProjStraightVertPoleLongGeoKey =>
         geoKeyDirectory |-> projStraightVertPoleLongLens set(Some(doubles))
-      case tag => geoKeyDirectory |-> doublesMapLens modify (_ + (tag
+      case tag => geoKeyDirectory |-> geoKeyDoublesMapLens modify (_ + (tag
           -> doubles))
     }
   }
@@ -171,7 +171,7 @@ case class GeoKeyReader(byteBuffer: ByteBuffer,
         geoKeyDirectory |-> pcsCitationLens set(Some(strings))
       case VerticalCitationGeoKey =>
         geoKeyDirectory |-> verticalCitationLens set(Some(strings))
-      case tag => geoKeyDirectory |-> asciisMapLens modify (_ + (tag
+      case tag => geoKeyDirectory |-> geoKeyAsciisMapLens modify (_ + (tag
           -> strings))
     }
   }

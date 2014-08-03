@@ -74,6 +74,12 @@ object GeoKeys {
 
 }
 
+object CommonPublicValues {
+
+  val UndefinedCPV = 0
+  val UserDefinedCPV = 32767
+}
+
 case class ConfigKeys(
   gtModelType: Option[Int] = None,
   gtRasterType: Option[Int] = None,
@@ -155,7 +161,23 @@ case class GeoKeyDirectory(
     ProjectedCSParameterKeys(),
   verticalCSKeys: VerticalCSKeys = VerticalCSKeys(),
   nonStandardizedKeys: NonStandardizedKeys = NonStandardizedKeys()
-)
+) {
+
+  def getDoublesVectorFromMaps(key: Int) = {
+    val doublesMap = nonStandardizedKeys.doublesMap
+
+    if (!doublesMap.contains(key)) {
+      val shortMap = nonStandardizedKeys.shortMap
+      if (!shortMap.contains(key)) throw new MalformedGeoTiffException(
+        s"couldn't find geokey $key"
+      )
+      else Vector(shortMap(key).toDouble)
+    } else doublesMap(key)
+  }
+
+  def getDoubleFromMaps(key: Int) = getDoublesVectorFromMaps(key)(0)
+
+}
 
 object GeoKeyDirectoryLenses {
 
@@ -275,11 +297,11 @@ object GeoKeyDirectoryLenses {
   val nonStandardizedKeysLens = mkLens[GeoKeyDirectory,
     NonStandardizedKeys]("nonStandardizedKeys")
 
-  val shortMapLens = nonStandardizedKeysLens |-> mkLens[NonStandardizedKeys,
+  val geoKeyShortMapLens = nonStandardizedKeysLens |-> mkLens[NonStandardizedKeys,
     HashMap[Int, Int]]("shortMap")
-  val doublesMapLens = nonStandardizedKeysLens |-> mkLens[NonStandardizedKeys,
+  val geoKeyDoublesMapLens = nonStandardizedKeysLens |-> mkLens[NonStandardizedKeys,
     HashMap[Int, Vector[Double]]]("doublesMap")
-  val asciisMapLens = nonStandardizedKeysLens |-> mkLens[NonStandardizedKeys,
+  val geoKeyAsciisMapLens = nonStandardizedKeysLens |-> mkLens[NonStandardizedKeys,
     HashMap[Int, Vector[String]]]("asciisMap")
 
 }

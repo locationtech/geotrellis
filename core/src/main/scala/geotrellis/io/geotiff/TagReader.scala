@@ -79,14 +79,18 @@ case class TagReader(byteBuffer: ByteBuffer) {
 
     byteBuffer.position(tagMetadata.offset)
 
-    val points = (for (i <- 0 until numberOfPoints) yield ModelTiePoint(
-      byteBuffer.getDouble,
-      byteBuffer.getDouble,
-      byteBuffer.getDouble,
-      byteBuffer.getDouble,
-      byteBuffer.getDouble,
-      byteBuffer.getDouble
-    )).toVector
+    val points = (for (i <- 0 until numberOfPoints) yield ((
+      Pixel3D(
+        byteBuffer.getDouble,
+        byteBuffer.getDouble,
+        byteBuffer.getDouble
+      ),
+      Pixel3D(
+        byteBuffer.getDouble,
+        byteBuffer.getDouble,
+        byteBuffer.getDouble
+      )
+    ))).toVector
 
     byteBuffer.position(oldPos)
 
@@ -188,7 +192,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
         directory |-> jpegInterchangeFormatLens set(Some(shorts(0)))
       case JpegInterchangeFormatLengthTag =>
         directory |-> jpegInterchangeFormatLengthLens set(
-        Some(shorts(0)))
+          Some(shorts(0)))
       case JpegRestartIntervalTag =>
         directory |-> jpegRestartIntervalLens set(Some(shorts(0)))
       case YCbCrPositioningTag =>
@@ -241,7 +245,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
         directory |-> jpegInterchangeFormatLens set(Some(ints(0)))
       case JpegInterchangeFormatLengthTag =>
         directory |-> jpegInterchangeFormatLengthLens set(
-        Some(ints(0)))
+          Some(ints(0)))
       case StripOffsetsTag =>
         directory |-> stripOffsetsLens set(Some(ints.map(_.toInt)))
       case StripByteCountsTag =>
@@ -347,7 +351,18 @@ case class TagReader(byteBuffer: ByteBuffer) {
 
     tagMetadata.tag match {
       case ModelTransformationTag =>
-        directory |-> modelTransformationLens set(Some(doubles))
+        if (doubles.size != 16)
+          throw new MalformedGeoTiffException("bad model tranformations")
+      else {
+        val matrix = Vector(
+          Vector(doubles(0), doubles(1), doubles(2), doubles(3)),
+          Vector(doubles(4), doubles(5), doubles(6), doubles(7)),
+          Vector(doubles(8), doubles(9), doubles(10), doubles(11)),
+          Vector(doubles(12), doubles(13), doubles(14), doubles(15))
+        )
+
+        directory |-> modelTransformationLens set(Some(matrix))
+      }
       case DoublesTag => directory |-> doublesLens set(Some(doubles))
       case tag => directory |-> doublesMapLens modify(_ + (tag -> doubles))
     }

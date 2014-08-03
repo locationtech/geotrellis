@@ -23,6 +23,8 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.data.arg.ArgWriter
 
+import geotrellis.io.geotiff.utils.VectorUtils._
+
 import scala.collection.immutable.HashMap
 
 object CompressionType {
@@ -149,11 +151,29 @@ object Tags {
 
 }
 
+case class Coordinate(x: Double = 0, y: Double = 0)
+
+case class GeoTiffCoordinates(
+  minX: Coordinate = Coordinate(),
+  minY: Coordinate = Coordinate(),
+  maxX: Coordinate = Coordinate(),
+  maxY: Coordinate = Coordinate()
+)
+
+object Pixel3D {
+
+  def fromVector(v: Vector[Double]): Pixel3D =
+    if (v.size == 3) Pixel3D(v(0), v(1), v(2))
+    else throw new IllegalArgumentException(
+      "3D pixel needs vector with size 3 (x, y ,z)"
+    )
+
+}
+
+case class Pixel3D(x: Double, y: Double, z: Double)
+
 case class TagMetadata(tag: Int, fieldType: Int,
   length: Int, offset: Int)
-
-case class ModelTiePoint(i: Double, j: Double, k: Double,
-  x: Double, y: Double, z:Double)
 
 case class MetadataTags(
   artist: Option[String] = None,
@@ -203,8 +223,8 @@ case class NonBasicTags(
 )
 
 case class GeoTiffTags(
-  modelTiePoints: Option[Vector[ModelTiePoint]] = None,
-  modelTransformation: Option[Vector[Double]] = None,
+  modelTiePoints: Option[Vector[(Pixel3D, Pixel3D)]] = None,
+  modelTransformation: Option[Vector[Vector[Double]]] = None,
   modelPixelScale: Option[(Double, Double, Double)] = None,
   geoKeyDirectory: Option[GeoKeyDirectory] = None,
   doubles: Option[Vector[Double]] = None,
@@ -290,7 +310,8 @@ case class ImageDirectory(
   jpegTags: JpegTags = JpegTags(),
   yCbCrTags: YCbCrTags = YCbCrTags(),
   nonStandardizedTags: NonStandardizedTags = NonStandardizedTags(),
-  imageBytes: Vector[Byte] = Vector[Byte]()
+  imageBytes: Vector[Byte] = Vector[Byte](),
+  coordinates: GeoTiffCoordinates = GeoTiffCoordinates()
 ) {
 
   import ImageDirectoryLenses._
@@ -344,6 +365,39 @@ case class ImageDirectory(
 
   def rowSize(): Int = (if (hasStripStorage) (this |-> imageWidthLens get)
   else (this |-> tileWidthLens get).get).toInt
+
+  def getRasterBoundaries: Vector[Pixel3D] = {
+    val imageWidth = (this |-> imageWidthLens get).toInt
+    val imageLength = (this |-> imageLengthLens get).toInt
+
+    Vector(
+      Pixel3D(0, 0, getDoubleValue(0, 0)),
+      Pixel3D(0, imageLength - 1, getDoubleValue(0, imageLength - 1))
+    )
+  }
+
+  def getDoubleValue(x: Int, y: Int): Double = {
+    val imageWidth = (this |-> imageWidthLens get).toInt
+    val imageLength = (this |-> imageLengthLens get).toInt
+
+    val index = y * imageLength + x
+
+    if (x >= imageWidth || y >= imageLength) throw new IllegalArgumentException(
+      s"x or y out of bounds x: $x, y: $y, imageWidth: $imageWidth, imageLength: $imageLength"
+    ) else cellType match {
+      case TypeBit => {
+        val byteIndex = index / 8
+        val bitIndex = index % 8
+
+        ((imageBytes(byteIndex) & (1 << bitIndex)) >> bitIndex).toDouble
+      }
+      case TypeByte => imageBytes.readIntNumber(1, index).toDouble
+      case TypeShort => imageBytes.readIntNumber(2, index).toDouble
+      case TypeInt => imageBytes.readIntNumber(4, index).toDouble
+      case TypeFloat => imageBytes.readFloatPointNumber(4, index)
+      case TypeDouble => imageBytes.readFloatPointNumber(8, index)
+    }
+  }
 
   // What about multiple samples?
   def cellType(): RasterType =
@@ -482,11 +536,11 @@ object ImageDirectoryLenses {
   val geoTiffTagsLens = mkLens[ImageDirectory, GeoTiffTags]("geoTiffTags")
 
   val modelTiePointsLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
-    Option[Vector[ModelTiePoint]]]("modelTiePoints")
+    Option[Vector[(Pixel3D, Pixel3D)]]]("modelTiePoints")
   val modelPixelScaleLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
     Option[(Double, Double, Double)]]("modelPixelScale")
   val modelTransformationLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
-    Option[Vector[Double]]]("modelTransformation")
+    Option[Vector[Vector[Double]]]]("modelTransformation")
   val geoKeyDirectoryLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
     Option[GeoKeyDirectory]]("geoKeyDirectory")
   val doublesLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
@@ -603,4 +657,5 @@ object ImageDirectoryLenses {
 
   val imageBytesLens = mkLens[ImageDirectory, Vector[Byte]]("imageBytes")
 
+  val coordinatesLens = mkLens[ImageDirectory, GeoTiffCoordinates]("coordinates")
 }

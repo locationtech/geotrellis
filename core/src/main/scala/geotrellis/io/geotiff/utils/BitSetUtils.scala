@@ -20,7 +20,7 @@ import java.util.BitSet
 
 object BitSetUtils {
 
-  implicit class ByteBufferUtilities(bitSet: BitSet) {
+  implicit class BitSetUtilities(bitSet: BitSet) {
 
     def toByteVector(size: Int): Vector[Byte] = {
       val bytes = Array.ofDim[Byte]((size + 7) / 8)
