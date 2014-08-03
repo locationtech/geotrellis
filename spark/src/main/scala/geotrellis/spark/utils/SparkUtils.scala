@@ -42,13 +42,7 @@ object SparkUtils extends Logging {
       .setSparkHome(sparkHome)
       .setJars(Array(jar(gtHome)))
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.kryo.registrator", "geotrellis.spark.KryoRegistrator")
-
-    
-    // TODO - find a way to have command line pass these in
-    //.set("io.map.index.interval", "1")
-    //.set("dfs.replication","1")
-    //.set("spark.akka.timeout","10000")
+      .set("spark.kryo.registrator", "geotrellis.spark.KryoRegistrator")   
 
     new SparkContext(sparkConf)
   }

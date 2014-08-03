@@ -18,7 +18,7 @@ package geotrellis.slick
 
 import org.scalatest._
 
-import geotrellis.feature._
+import geotrellis.vector._
 import scala.slick.driver.PostgresDriver
 
 import util._

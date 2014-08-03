@@ -16,8 +16,9 @@
 
 package geotrellis.spark.metadata
 
-import geotrellis._
-import geotrellis.RasterType
+import geotrellis.raster._
+import geotrellis.vector.Extent
+
 import geotrellis.spark.ingest.GeoTiff
 import geotrellis.spark.ingest.MetadataInputFormat
 import geotrellis.spark.tiling.Bounds
@@ -53,7 +54,7 @@ case class RasterMetadata(pixelExtent: PixelExtent, tileExtent: TileExtent)
 /* ------Note to self------- 
  * Three workarounds that'd be good to resolve eventually:
  * 
- * Using Int instead of RasterType for rasterType (issue with nested case classes that take 
+ * Using Int instead of CellType for cellType (issue with nested case classes that take 
  * constructor arguments)
  * Using Map[String,..] instead of Map[Int,..] for rasterMetadata 
  * Right now I'm using Double for nodata because it's not clear whether we need an array or not. 
@@ -72,11 +73,11 @@ case class PyramidMetadata(
   tileSize: Int,
   bands: Int,
   nodata: Double,
-  awtRasterType: Int,
+  awtCellType: Int,
   maxZoomLevel: Int,
   rasterMetadata: Map[String, RasterMetadata]) {
 
-  def rasterType: RasterType = RasterType.fromAwtType(awtRasterType)
+  def cellType: CellType = CellType.fromAwtType(awtCellType)
 
   def save(pyramid: Path, conf: Configuration) = {
     val metaPath = new Path(pyramid, PyramidMetadata.MetaFile)
@@ -98,7 +99,7 @@ case class PyramidMetadata(
           this.bands == other.bands &&
           ((isNoData(this.nodata) && isNoData(other.nodata)) ||
             (this.nodata == other.nodata)) &&
-            this.awtRasterType == other.awtRasterType &&
+            this.awtCellType == other.awtCellType &&
             this.maxZoomLevel == other.maxZoomLevel &&
             this.rasterMetadata == other.rasterMetadata)
       }
@@ -114,7 +115,7 @@ case class PyramidMetadata(
               41 + extent.hashCode)
               + tileSize.hashCode)
               + nodata.hashCode)
-              + rasterType.hashCode)
+              + cellType.hashCode)
               + maxZoomLevel.hashCode)
   +rasterMetadata.hashCode
 
@@ -187,7 +188,7 @@ object PyramidMetadata {
     // if the lon/lat is past the world bounds (which it can be, say, -180.001), 
     // then our TmsTiling calculations go awry. So we cap it here to world bounds,
     // which is slightly smaller than the right and northern edge
-    val cappedExtent = Bounds.World.intersect(meta.extent).get
+    val cappedExtent = Bounds.World.intersection(meta.extent).get
     val tileExtent = TmsTiling.extentToTile(cappedExtent, zoom, tileSize)
     val pixelExtent = TmsTiling.extentToPixel(cappedExtent, zoom, tileSize)
 
@@ -196,7 +197,7 @@ object PyramidMetadata {
       tileSize, 
       meta.bands, 
       meta.nodata, 
-      meta.rasterType, 
+      meta.cellType, 
       zoom,
       Map(zoom.toString -> RasterMetadata(pixelExtent, tileExtent))
     )

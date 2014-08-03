@@ -1,5 +1,5 @@
 package geotrellis.spark.metadata
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 import geotrellis.spark.tiling.TmsTiling
 
 
@@ -19,7 +19,7 @@ trait MetadataMatcher extends ShouldMatchers {
     newMeta.extent should be(oldE)
     newMeta.tileSize should be(oldTileSize)
     newMeta.bands should be(PyramidMetadata.MaxBands)
-    newMeta.awtRasterType should be(oldMeta.awtRasterType)
+    newMeta.awtCellType should be(oldMeta.awtCellType)
     newMeta.maxZoomLevel should be(oldZoom)
 
     // we can't just use meta.metadataForBaseZoom since pixelExtent there corresponds to the 

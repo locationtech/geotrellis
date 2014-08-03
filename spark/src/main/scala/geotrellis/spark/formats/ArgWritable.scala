@@ -16,9 +16,8 @@
 
 package geotrellis.spark.formats
 
-import geotrellis._
-import geotrellis.RasterType
-import geotrellis.raster.RasterData
+import geotrellis.raster._
+
 import org.apache.hadoop.io.BytesWritable
 import org.apache.spark.Logging
 
@@ -29,29 +28,29 @@ class ArgWritable(bytes: Array[Byte]) extends BytesWritable(bytes) with Logging 
    */
   def this() = this(Array[Byte]())
 
-  def rasterBytes(awType: RasterType, cols: Int, rows: Int): Int = awType match {
-    case TypeBit => rows
-    case _       => cols * rows * awType.bytes
-  }
-  def toRasterData(awType: RasterType, cols: Int, rows: Int) = {
+  def toTile(cellType: CellType, cols: Int, rows: Int) = {
     /* 
      * The slice is done in cases where the backing byte array in BytesWritable 
      * is larger than expected, so a simple getBytes would get the larger array
-     * and RasterData would be thrown off. See BytesWritable.setSize, which calls
+     * and Tile would be thrown off. See BytesWritable.setSize, which calls
      * setCapacity with 1.5 * size if the array needs to be grown
      * 
-     * BitArrayRasterData is a bit special since every row is a byte, cols = 8  
+     * BitArrayTile is a bit special since every row is a byte, cols = 8  
      *
      */
-    RasterData.fromArrayByte(getBytes.slice(0, rasterBytes(awType, cols, rows)), awType, cols, rows)
+    ArrayTile.fromBytes(getBytes.slice(0, cellType.numBytes(cols * rows)), cellType, cols, rows)
   }
 }
 
 object ArgWritable {
-  def apply(len: Int, fillValue: Byte) = new ArgWritable(Array.ofDim[Byte](len).fill(fillValue))
-  def apply(bytes: Array[Byte]) = new ArgWritable(bytes)
-  def apply(aw: ArgWritable) = new ArgWritable(aw.getBytes)
+  def apply(len: Int, fillValue: Byte): ArgWritable = 
+    new ArgWritable(Array.ofDim[Byte](len).fill(fillValue))
 
-  def fromRasterData(data: RasterData) = ArgWritable(data.toArrayByte)
-  def fromRaster(raster: Raster) = ArgWritable.fromRasterData(raster.data)
+  def apply(bytes: Array[Byte]): ArgWritable = 
+    new ArgWritable(bytes)
+
+  def apply(aw: ArgWritable): ArgWritable = 
+    new ArgWritable(aw.getBytes)
+
+  def fromTile(tile: Tile) = ArgWritable(tile.toBytes)
 }

@@ -1,6 +1,6 @@
 package geotrellis.benchmark
 
-import geotrellis.{Raster, RasterExtent, Extent}
+import geotrellis.vector._
 import geotrellis.raster._
 
 import com.google.caliper.Param
@@ -14,34 +14,27 @@ import geotrellis.raster.op.global.ApproxViewshed
  */
 object ApproxViewshedBenchmark extends BenchmarkRunner(classOf[ApproxViewshedBenchmark])
 class  ApproxViewshedBenchmark extends OperationBenchmark {
-  var r: Raster = _
-  var re: RasterExtent = _
-  var data: IntArrayRasterData = _
+  var r: Tile = _
 
   //@Param(Array("512","1024","2048","4096","8192"))
   var size:Int = 256
 
   override def setUp() {
-    r = randomRasterN(size)
-  }
-
-  def cornerViewable() {
-    ApproxViewshed.approxComputeViewable(0, 0, r)
-  }
-  def centerViewable () {
-    ApproxViewshed.approxComputeViewable(size/2, size/2, r)
-  }
-
-  def randomRasterN(n: Int):Raster = {
-    val a = Array.ofDim[Int](n*n).map(a => Random.nextInt(255))
-    val e = Extent(0,0,10*n,10*n)
-    re = RasterExtent(e, 10,10,n,n)
-    data = IntArrayRasterData(a, n, n)
-
-    Raster(data, re)
+    r = {
+      val a = Array.ofDim[Int](size * size).map(a => Random.nextInt(255))
+      IntArrayTile(a, size, size)
+    }
   }
 
   def timeCornerViewable(reps:Int) = run(reps)(cornerViewable)
+  def cornerViewable() {
+    ApproxViewshed(r, 0, 0)
+  }
+
   def timeCenterViewable(reps:Int) = run(reps)(centerViewable)
+  def centerViewable () {
+    ApproxViewshed(r, size/2, size/2)
+  }
+
 }
 

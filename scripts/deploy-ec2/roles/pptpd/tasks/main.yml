@@ -1,0 +1,41 @@
+---
+
+#PPTP role
+- apt: name=pptpd state=present force=yes
+  sudo: yes
+
+- template: src=pptpd.conf dest=/etc/pptpd.conf
+  sudo: yes
+  notify: Restart pptpd
+
+- template: src=pptpd.conf dest=/etc/pptpd.conf
+  sudo: yes
+  notify: Restart pptpd
+
+- copy: src={{ item }} dest=/etc/ppp/{{ item }}
+  with_items:
+    - pptpd-options
+    - chap-secrets
+  sudo: yes
+  notify: 
+    - Restart pptpd
+    - Restart networking
+
+- name: Enable IP forwarding
+  lineinfile: 
+    dest: /etc/sysctl.conf
+    line: net.ipv4.ip_forward=1
+  sudo: yes
+  notify: Reload sysctl
+
+- name: Enable MASQUERADE
+  lineinfile: 
+    dest: /etc/rc.local
+    line: iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+    insertbefore: "exit 0"
+  sudo: yes
+  notify: Enable MASQUERADE
+
+- name: Start pptpd
+  service: name=pptpd state=started
+  sudo: yes

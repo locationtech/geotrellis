@@ -160,10 +160,10 @@ object TileIdPartitioner extends ArgMain[RasterArgs] {
     if (!splits.isEmpty) {
       val meta = PyramidMetadata(raster.getParent(), conf)
       val tileExtent = meta.metadataForBaseZoom.tileExtent
-      val (tileSize, rasterType) = (meta.tileSize, meta.rasterType)
+      val (tileSize, cellType) = (meta.tileSize, meta.cellType)
 
       val inc = RasterSplitGenerator.computeIncrement(tileExtent,
-        TmsTiling.tileSizeBytes(tileSize, rasterType),
+        TmsTiling.tileSizeBytes(tileSize, cellType),
         HdfsUtils.defaultBlockSize(raster, conf))
       println(s"(xInc,yInc) = ${inc}")
     }

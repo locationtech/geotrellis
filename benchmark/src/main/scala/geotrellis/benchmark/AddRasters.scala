@@ -16,8 +16,9 @@
 
 package geotrellis.benchmark
 
-import geotrellis._
-import geotrellis.source._
+import geotrellis.engine._
+import geotrellis.engine.op.local._
+import geotrellis.raster._
 import geotrellis.raster.op.local._
 
 import com.google.caliper.Param
@@ -30,7 +31,9 @@ class AddRasters extends OperationBenchmark {
   var source:RasterSource = null
 
   override def setUp() {
-    val r = RasterSource(loadRaster("SBN_farm_mkt", size, size))
+    val id = "SBN_farm_mkt"
+    val re =  getRasterExtent(id, size, size)
+    val r = RasterSource(RasterSource(id, re).get, re.extent)
     val r1 = r+1
     val r2 = r+2
     val r3 = r+3

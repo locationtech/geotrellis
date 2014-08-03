@@ -16,11 +16,12 @@
 
 package geotrellis.spark.ingest
 
-import geotrellis._
-import geotrellis.raster.RasterData
+import geotrellis.raster._
+import geotrellis.vector.Extent
 import geotrellis.spark.cmd.NoDataHandler
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.tiling.TmsTiling
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.InputSplit
@@ -30,6 +31,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import org.geotools.coverage.grid.GridCoverage2D
+
 import java.awt.image.DataBufferByte
 import java.awt.image.DataBufferDouble
 import java.awt.image.DataBufferFloat
@@ -42,63 +44,60 @@ object TiffTiler {
    * Given a path to a tiff, this produces a set of tiles for that tiff. Uses CroppedRaster 
    * from core geotrellis to produce the actual tiles  
    */
-  def tile(file: Path, pyMeta: PyramidMetadata, conf: Configuration): List[(Long, Raster)] = {
-    val raster = GeoTiff.withReader(file, conf) { reader =>
-      val image = GeoTiff.getGridCoverage2D(reader)
-      val imageMeta = GeoTiff.getMetadata(reader)
-      warp(image, imageMeta, pyMeta)
-    }
+  def tile(file: Path, pyMeta: PyramidMetadata, conf: Configuration): List[(Long, Tile)] = {
+    val (raster, extent) =
+      GeoTiff.withReader[(Tile, Extent)](file, conf) { reader =>
+        val image = GeoTiff.getGridCoverage2D(reader)
+        val imageMeta = GeoTiff.getMetadata(reader)
+        (warp(image, imageMeta, pyMeta), imageMeta.extent)
+      }
 
-    val (zoom, tileSize, rasterType, nodata) =
-      (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType, pyMeta.nodata)
+    val (zoom, tileSize, cellType, nodata) =
+      (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.cellType, pyMeta.nodata)
 
-    val extent = raster.rasterExtent.extent
     val tileExtent = TmsTiling.extentToTile(extent, zoom, tileSize)
 
     val tiles = for {
       ty <- tileExtent.ymin to tileExtent.ymax
       tx <- tileExtent.xmin to tileExtent.xmax
       tileId = TmsTiling.tileId(tx, ty, zoom)
-      extent = TmsTiling.tileToExtent(tx, ty, zoom, tileSize)
-      cropRasterTmp = CroppedRaster(raster, extent)
+      // can the third argument just be tileExtent?
+      cropTileTmp = CroppedTile(raster, extent, TmsTiling.tileToExtent(tx, ty, zoom, tileSize))
       // TODO - do away with the second crop. It is put in as workaround for the case when 
       // CroppedRaster's translation from Extent to gridBounds ends up giving us an extra row/col
-      cropRaster = CroppedRaster(cropRasterTmp, GridBounds(0, 0, tileSize - 1, tileSize - 1))
+      cropRaster = CroppedTile(cropTileTmp, GridBounds(0, 0, tileSize - 1, tileSize - 1))
     } yield (tileId, cropRaster)
 
     tiles.toList
   }
 
-  private def warp(image: GridCoverage2D, imgMeta: GeoTiff.Metadata, pyMeta: PyramidMetadata): Raster = {
-
+  private def warp(image: GridCoverage2D, imgMeta: GeoTiff.Metadata, pyMeta: PyramidMetadata): Tile = {
     val (pixelWidth, pixelHeight) = imgMeta.pixels
 
-    val (zoom, tileSize, rasterType, nodata) =
-      (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.rasterType, pyMeta.nodata)
+    val (zoom, tileSize, cellType, nodata) =
+      (pyMeta.maxZoomLevel, pyMeta.tileSize, pyMeta.cellType, pyMeta.nodata)
 
-    def buildRaster = {
-      val re = RasterExtent(imgMeta.extent, pixelWidth, pixelHeight)
+    val origRaster = {
       val rawDataBuff = image.getRenderedImage().getData().getDataBuffer()
-      val rd = rasterType match {
-        case TypeDouble => RasterData(rawDataBuff.asInstanceOf[DataBufferDouble].getData(), tileSize, tileSize)
-        case TypeFloat  => RasterData(rawDataBuff.asInstanceOf[DataBufferFloat].getData(), tileSize, tileSize)
-        case TypeInt    => RasterData(rawDataBuff.asInstanceOf[DataBufferInt].getData(), tileSize, tileSize)
-        case TypeShort  => RasterData(rawDataBuff.asInstanceOf[DataBufferShort].getData(), tileSize, tileSize)
-        case TypeByte   => RasterData(rawDataBuff.asInstanceOf[DataBufferByte].getData(), tileSize, tileSize)
-        case _          => sys.error("Unrecognized AWT type - " + rasterType)
+      val tile = cellType match {
+        case TypeDouble => ArrayTile(rawDataBuff.asInstanceOf[DataBufferDouble].getData(), tileSize, tileSize)
+        case TypeFloat  => ArrayTile(rawDataBuff.asInstanceOf[DataBufferFloat].getData(), tileSize, tileSize)
+        case TypeInt    => ArrayTile(rawDataBuff.asInstanceOf[DataBufferInt].getData(), tileSize, tileSize)
+        case TypeShort  => ArrayTile(rawDataBuff.asInstanceOf[DataBufferShort].getData(), tileSize, tileSize)
+        case TypeByte   => ArrayTile(rawDataBuff.asInstanceOf[DataBufferByte].getData(), tileSize, tileSize)
+        case _          => sys.error("Unrecognized AWT type - " + cellType)
       }
-      NoDataHandler.removeUserNoData(rd, nodata)
-      Raster(rd, re)
+      NoDataHandler.removeUserNoData(tile, nodata)
+      tile
     }
 
-    val origRaster = buildRaster
     val res = TmsTiling.resolution(zoom, tileSize)
-    val newRe = RasterExtent(origRaster.rasterExtent.extent, res, res)
+    val newRe = RasterExtent(imgMeta.extent, res, res)
     //println(s"re: ${re},newRe: ${newRe}")
     //val start = System.currentTimeMillis
     //println(s"[extent,cols,rows,cellwidth,cellheight,rdLen,bufLen]: ")
     //println(s"Before Warp: [${r.rasterExtent},${r.cols},${r.rows},${r.rasterExtent.cellwidth},${r.rasterExtent.cellheight},${r.toArrayRaster.data.length},${rawDataBuff.asInstanceOf[DataBufferFloat].getData().length}]")
-    val warpRaster = origRaster.warp(newRe)
+    val warpRaster = origRaster.warp(imgMeta.extent, newRe)
     //val end = System.currentTimeMillis
     //println(s"After Warp: [${wr.rasterExtent},${wr.cols},${wr.rows},${wr.rasterExtent.cellwidth},cellheight=${wr.rasterExtent.cellheight},${wr.toArrayRaster.data.length}]")
     //println(s"Warp operation took ${end - start} ms.")

@@ -1,0 +1,17 @@
+---
+
+- name: Reload sysctl
+  shell: sysctl -p
+  sudo: yes
+
+- name: Restart pptpd
+  service: name=pptpd state=restarted
+  sudo: yes
+
+- name: Restart networking
+  service: name=networking state=restarted
+  sudo: yes
+  
+- name: Enable MASQUERADE
+  shell: iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+  sudo: yes

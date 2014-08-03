@@ -16,7 +16,7 @@
 
 package geotrellis.spark.ingest
 
-import geotrellis.Extent
+import geotrellis.vector.Extent
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.metadata.RasterMetadata
@@ -31,8 +31,7 @@ import org.apache.hadoop.io.SequenceFile
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 import scala.collection.JavaConversions._
 
 import java.awt.image.DataBuffer
@@ -41,7 +40,7 @@ import java.awt.image.DataBuffer
  * Tests both local and spark ingest mode
  */
 class MetadataInputFormatSpec extends FunSpec 
-                                 with ShouldMatchers
+                                 with Matchers
                                  with TestEnvironment {
   describe("MetadataInputFormat") {
     it("should handle tiff file") {

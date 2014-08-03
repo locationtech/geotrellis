@@ -169,8 +169,7 @@ var layerViewer = (function() {
             layer = ls; 
             if(!layer) { return; }
             
-
-            var bbox = layer.bbox
+            var bbox = layer.bbox;
             var southWest = new L.LatLng(bbox.latmin, bbox.lngmin);
             var northEast = new L.LatLng(bbox.latmax, bbox.lngmax);
             var bounds = new L.LatLngBounds(southWest, northEast);

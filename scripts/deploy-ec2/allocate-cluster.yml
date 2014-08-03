@@ -1,0 +1,108 @@
+---
+
+- name: Provison EC2 Cluster
+  hosts: localhost
+  gather_facts: False
+  
+  tasks:
+    - name: EC2 Security group for master
+      local_action:
+        module: ec2_group
+        region: "{{ region }}"
+        name: "{{ cluster_name }}-master"
+        description: "master group"
+        rules:
+          - proto: all
+            group_name: "{{ cluster_name }}-master"
+          - proto: all
+            group_name: "{{ cluster_name }}-slaves"
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: "0.0.0.0/0"
+          - proto: all
+            cidr_ip: "{{ allow_vpn_from_subnet }}"
+        rules_egress:
+          - proto: all
+            cidr_ip: "0.0.0.0/0"
+
+    - name: EC2 Security group for workers
+      local_action:
+        module: ec2_group
+        region: "{{ region }}"
+        name: "{{ cluster_name }}-slaves"
+        description: "worker group"
+        rules:
+          - proto: all
+            group_name: "{{ cluster_name }}-master"
+          - proto: all
+            group_name: "{{ cluster_name }}-slaves"
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: "0.0.0.0/0"
+        rules_egress:
+          - proto: all
+            cidr_ip: "0.0.0.0/0"
+  
+    - name: Launch master
+      local_action: 
+        module: ec2 
+        image:          "{{ image }}" 
+        instance_type:  "{{ instance_type }}"
+        key_name:       "{{ ec2_key_name }}"
+        group:          "{{ cluster_name }}-master"
+        region:         "{{ region }}"
+        instance_tags:  
+          spark-role: "master"
+        count_tag:
+          spark-role: "master"
+        exact_count:    1
+        wait:           true
+      register: master
+
+    - name: Add master instance to host group
+      add_host:
+        hostname={{ item.public_ip }}
+        groups=ec2_hosts,master
+        ansible_ssh_user="ubuntu"
+        ansible_ssh_private_key_file="{{ ec2_key_file }}"       
+        instance_id={{ item.id }}
+        public_ip={{ item.public_ip }}
+        private_ip={{ item.private_ip }}
+        private_dns_name={{ item.private_dns_name }}
+      with_items: master.tagged_instances
+
+    - name: Launch workers
+      local_action:
+        module: ec2
+        image:          "{{ image }}"         
+        instance_type:  "{{ instance_type }}" 
+        key_name:       "{{ ec2_key_name }}" 
+        group:          "{{ cluster_name }}-slaves"
+        region:         "{{ region }}"
+        instance_tags:  
+          spark-role: "worker"
+        count_tag:      
+          spark-role: "worker"
+        exact_count:    "{{ worker_count }}"
+        wait:           true
+      register: workers
+
+    - name: Add worker instance to host group
+      add_host:
+        hostname={{ item.public_ip }} 
+        ansible_ssh_user="ubuntu"
+        ansible_ssh_private_key_file="{{ ec2_key_file }}"       
+        groups=ec2_hosts,workers
+        instance_id={{ item.id }}
+        public_ip={{ item.public_ip }}
+        private_ip={{ item.private_ip }}        
+        private_dns_name={{ item.private_dns_name }}        
+      with_items: workers.tagged_instances
+ 
+    - name: Update Cluster Variables
+      local_action: template src=templates/cluster_vars.j2 dest=./group_vars/cluster.yml
+    
+    - name: Update EC2 Hosts Inventory
+      local_action: template src=templates/cluster_inventory.j2 dest=./hosts
