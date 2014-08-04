@@ -42,7 +42,7 @@ case class MultibandArgWriter(typ: CellType){
     
     writeMetadataJSON(base, metadataName,multiBandTile.bands, RasterExtent(extent, multiBandTile.cols, multiBandTile.rows))
     
-    for(i <- 0 until multiBandTile.bands) yield { writeData(base+"-band"+i+".arg", multiBandTile.data(i)) }
+    for(i <- 0 until multiBandTile.bands) yield { writeData(base+"-band"+i+".arg", multiBandTile.getBand(i)) }
   }
     
   private def writeMetadataJSON(path: String, name: String, noOfBands: Int, re: RasterExtent) {

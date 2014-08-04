@@ -11,16 +11,6 @@ class MultiBandArgSpec extends FunSpec
                        with Matchers {
    describe("MultiBandArgReader and MultiBandArgWriter") {
      
-//     it("MultiBandArgWriter check") {
-//       val fromRasterSource = RasterSource("SBN_inc_percap").get
-//       val extent = Extent(-8475497.88485957, 4825540.69147447, -8317922.884859569, 4954765.69147447)
-//       
-//       MultibandArgWriter(TypeByte).write("raster-test/data/sbn/MultiBand_SBN_inc_percap.json", MultiBandTile(Array(fromRasterSource)), extent, "MultiBand_SBN_inc_percap")
-//       val fromArgReader = ArgReader.read("raster-test/data/sbn/MultiBand_SBN_inc_percap.json")
-//       
-//       assertEqual(fromArgReader, fromRasterSource)
-//     }
-     
      it("MultiBandArgReader check"){
         val fromRasterSource = RasterSource("SBN_inc_percap").get
         val extent = Extent(-8475497.88485957, 4825540.69147447, -8317922.884859569, 4954765.69147447)
@@ -28,7 +18,7 @@ class MultiBandArgSpec extends FunSpec
         MultibandArgWriter(TypeByte).write("raster-test/data/sbn/MultiBand_SBN_inc_percap.json", MultiBandTile(Array(fromRasterSource)), extent, "MultiBand_SBN_inc_percap")
         val fromArgReader = MultibandArgReader.read("raster-test/data/sbn/MultiBand_SBN_inc_percap.json")
         
-        assertEqual(fromArgReader.data(0), fromRasterSource) 
+        assertEqual(fromArgReader.getBand(0), fromRasterSource) 
      }
      
      it("should write MultiBandTile and match with Read MultiBandTile"){
@@ -68,10 +58,10 @@ class MultiBandArgSpec extends FunSpec
        
        val fromArgReader: MultiBandTile = MultibandArgReader.read("raster-test/data/multiband-data/test-multibandtile.json")
        
-       assertEqual(fromArgReader.data(0), multiBandTile.data(0))
-       assertEqual(fromArgReader.data(1), multiBandTile.data(1))
-       assertEqual(fromArgReader.data(2), multiBandTile.data(2))
-       assertEqual(fromArgReader.data(3), multiBandTile.data(3))
+       assertEqual(fromArgReader.getBand(0), multiBandTile.getBand(0))
+       assertEqual(fromArgReader.getBand(1), multiBandTile.getBand(1))
+       assertEqual(fromArgReader.getBand(2), multiBandTile.getBand(2))
+       assertEqual(fromArgReader.getBand(3), multiBandTile.getBand(3))
      }
    }
    

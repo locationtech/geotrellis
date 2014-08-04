@@ -11,7 +11,6 @@ object MultiBandTile{
 
 trait MultiBandTile {
 
-  val data: Array[Tile]
   val cols: Int
   val rows: Int
   val bands: Int

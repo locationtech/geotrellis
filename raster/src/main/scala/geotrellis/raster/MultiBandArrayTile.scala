@@ -1,16 +1,14 @@
 package geotrellis.raster
 
 case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile with Serializable {
-  val data = multiBandData 
-  val cols: Int = data(0).cols
-  val rows: Int = data(0).rows
-  val bands: Int = data.length
-//  lazy val dimensions: (Int, Int) = (cols, rows)
-//  lazy val sizeOfBand = cols * rows
+   
+  val cols: Int = multiBandData (0).cols
+  val rows: Int = multiBandData (0).rows
+  val bands: Int = multiBandData.length
   
-  val cellType: CellType = data(0).cellType
+  val cellType: CellType = multiBandData (0).cellType
   
-  def getBand(bandNo: Int): Tile = data(bandNo)
+  def getBand(bandNo: Int): Tile = multiBandData (bandNo)
   
 //  def convert(cellType: CellType): MultiBandTile 
 //  def map(f: Int => Int): MultiBandTile
