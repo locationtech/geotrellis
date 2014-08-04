@@ -17,7 +17,7 @@
 package geotrellis.spark.metadata
 
 import geotrellis.raster._
-import geotrellis.feature.Extent
+import geotrellis.vector.Extent
 import geotrellis.raster.TileLayout
 import geotrellis.spark.rdd.TileIdPartitioner
 import geotrellis.spark.tiling.TileExtent

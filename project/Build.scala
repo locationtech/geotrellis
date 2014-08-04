@@ -346,7 +346,7 @@ object GeotrellisBuild extends Build {
       .dependsOn(raster, testkit % "test")
 
   // using hadoop and spark version from environment was inspired by Spark itself
-  val DEFAULT_HADOOP_VERSION = "0.20.2-cdh3u4"
+  val DEFAULT_HADOOP_VERSION = "2.3.0-cdh5.1.0"
   lazy val hadoopVersion = Properties.envOrElse("SPARK_HADOOP_VERSION", DEFAULT_HADOOP_VERSION)
 
   val DEFAULT_SPARK_VERSION = "1.0.0"
