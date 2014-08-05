@@ -84,8 +84,83 @@ class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
     marshal(jsonFeatures) should equal (Right(body))
 
     val fc = body.as[JsonFeatureCollection].right.get
-    fc.getAll[PointFeature[Int]] should contain (pointFeature)
-    fc.getAll[LineFeature[Int]] should contain (lineFeature)
+    fc.getAllFeatures[PointFeature[Int]] should contain (pointFeature)
+    fc.getAllFeatures[LineFeature[Int]] should contain (lineFeature)
+  }
+
+  it should "parse polygons out of a feature collection" in {
+    val geojson = 
+      """
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -115.40039062500001,
+                            37.71859032558816
+                        ],
+                        [
+                            -115.40039062500001,
+                            42.391008609205045
+                        ],
+                        [
+                            -105.99609375000001,
+                            42.391008609205045
+                        ],
+                        [
+                            -105.99609375000001,
+                            37.71859032558816
+                        ],
+                        [
+                            -115.40039062500001,
+                            37.71859032558816
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -98.21777343750001,
+                            38.47939467327645
+                        ],
+                        [
+                            -98.21777343750001,
+                            41.27780646738185
+                        ],
+                        [
+                            -90.6591796875,
+                            41.27780646738185
+                        ],
+                        [
+                            -90.6591796875,
+                            38.47939467327645
+                        ],
+                        [
+                            -98.21777343750001,
+                            38.47939467327645
+                        ]
+                    ]
+                ]
+            }
+        }
+    ]
+}"""
+
+    val features = geojson.parseGeoJson[JsonFeatureCollection].getAllPolygons()
+    features.length should be (2)
   }
 
   case class SomeData(name: String, value: Double)
