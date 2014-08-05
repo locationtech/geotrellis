@@ -533,7 +533,7 @@ case class ImageDirectory(
         "this reader doesn't support user defined raster types."
       )
       case Some(v) => v == 1
-      case None => false
+      case None => true
     }
 
 }
