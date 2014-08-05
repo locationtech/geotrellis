@@ -121,8 +121,11 @@ object GeotrellisBuild extends Build {
 
   lazy val macrosSettings = Seq(
     name := "geotrellis-macros",
-    addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.2" % "2.0.0-SNAPSHOT"),
-    libraryDependencies ++= Seq(scalaReflect),
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
+    libraryDependencies ++= Seq(
+      scalaReflect,
+      "org.scalamacros" %% "quasiquotes" % "2.0.1"
+    ),
     resolvers += Resolver.sonatypeRepo("snapshots")
   )
 
