@@ -23,10 +23,9 @@ import scala.io.{Source, Codec}
 
 import java.util.BitSet
 
-import org.scalatest.FunSpec
-import org.scalatest.MustMatchers
+import org.scalatest._
 
-class GeoTiffReaderSpec extends FunSpec with MustMatchers {
+class GeoTiffReaderSpec extends FunSpec with Matchers {
 
   val argPath = "raster-test/data/data/"
   val filePathToTestData = "raster-test/data/"
@@ -54,13 +53,13 @@ class GeoTiffReaderSpec extends FunSpec with MustMatchers {
   }
 
   private def compareGeoTiffImages(first: GeoTiff, second: GeoTiff) {
-    first.imageDirectories.size must equal (second.imageDirectories.size)
+    first.imageDirectories.size should equal (second.imageDirectories.size)
 
     first.imageDirectories zip second.imageDirectories foreach {
       case (firstIFD, secondIFD) =>
 
-        firstIFD.imageBytes.size must equal (secondIFD.imageBytes.size)
-        firstIFD.imageBytes must equal (secondIFD.imageBytes)
+        firstIFD.imageBytes.size should equal (secondIFD.imageBytes.size)
+        firstIFD.imageBytes should equal (secondIFD.imageBytes)
     }
   }
 
