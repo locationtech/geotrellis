@@ -42,7 +42,7 @@ class VectorToRasterSpec extends FunSpec
       val collection = f.mkString.parseGeoJson[JsonFeatureCollection]
       f.close
 
-      val points = collection.getAllPoints[Int]
+      val points = collection.getAllPointFeatures[Int]
 
       val result = VectorToRaster.idwInterpolate(points, re)
       var count = 0
