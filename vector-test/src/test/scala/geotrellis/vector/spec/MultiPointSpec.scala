@@ -96,14 +96,14 @@ class MultiPointSpec extends FunSpec with Matchers {
     // -- Union
 
     it ("should union with a MultiPoint and return a NoResult") {
-      val mp1 = MultiPoint(Seq())
-      val mp2 = MultiPoint(Seq())
+      val mp1 = MultiPoint.EMPTY
+      val mp2 = MultiPoint.EMPTY
       mp1 | mp2 should be (NoResult)
     }
 
     it ("should union with an empty MultiPoint and return a MultiPointResult") {
       val mp1 = MultiPoint(Point(1,1))
-      val mp2 = MultiPoint(Seq())
+      val mp2 = MultiPoint.EMPTY
       mp1 | mp2 should be (MultiPointResult(Seq(Point(1,1))))
     }
 
@@ -120,7 +120,7 @@ class MultiPointSpec extends FunSpec with Matchers {
     }
 
     it ("should union with a MultiLine and return a NoResult") {
-      val mp = MultiPoint(Seq())
+      val mp = MultiPoint.EMPTY
       val ml = MultiLine(Seq())
       mp | ml should be (NoResult)
     }
@@ -156,7 +156,7 @@ class MultiPointSpec extends FunSpec with Matchers {
     }
 
     it ("should union with a MultiPolygon and return a NoResult") {
-      val mpt = MultiPoint(Seq())
+      val mpt = MultiPoint.EMPTY
       val mp = MultiPolygon(Seq())
       mpt | mp should be (NoResult)
     }
@@ -219,8 +219,8 @@ class MultiPointSpec extends FunSpec with Matchers {
     // -- SymDifference
 
     it ("should symDifference with a MultiPoint and return a NoResult") {
-      val mp1 = MultiPoint(Seq())
-      val mp2 = MultiPoint(Seq())
+      val mp1 = MultiPoint.EMPTY
+      val mp2 = MultiPoint.EMPTY
       mp1.symDifference(mp2) should be (NoResult)
     }
 
@@ -237,7 +237,7 @@ class MultiPointSpec extends FunSpec with Matchers {
     }
 
     it ("should symDifference with a MultiLine and return a NoResult") {
-      val mp = MultiPoint(Seq())
+      val mp = MultiPoint.EMPTY
       val ml = MultiLine(Seq())
       mp.symDifference(ml) should be (NoResult)
     }
@@ -285,7 +285,7 @@ class MultiPointSpec extends FunSpec with Matchers {
     }
 
     it ("should symDifference with a MultiPolygon and return a NoResult") {
-      val mpt = MultiPoint(Seq())
+      val mpt = MultiPoint.EMPTY
       val mp = MultiPolygon(Seq())
       mpt.symDifference(mp) should be (NoResult)
     }

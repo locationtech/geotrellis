@@ -21,6 +21,8 @@ import GeomFactory._
 import com.vividsolutions.jts.{geom=>jts}
 
 object MultiLine {
+  lazy val EMPTY = MultiLine(Seq[Line]())
+
   def apply(ls: Line*): MultiLine = 
     MultiLine(ls)
 

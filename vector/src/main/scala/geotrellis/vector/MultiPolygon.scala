@@ -21,6 +21,8 @@ import GeomFactory._
 import com.vividsolutions.jts.{geom => jts}
 
 object MultiPolygon {
+  lazy val EMPTY = MultiPolygon(Seq[Polygon]())
+
   def apply(ps: Polygon*): MultiPolygon = 
     apply(ps)
 

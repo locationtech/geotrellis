@@ -21,11 +21,16 @@ import GeomFactory._
 import com.vividsolutions.jts.{geom => jts}
 
 object MultiPoint {
+  lazy val EMPTY = MultiPoint(Seq[Point]())
+
   def apply(ps: Point*): MultiPoint = 
     apply(ps)
 
   def apply(ps: Traversable[Point]): MultiPoint =
     MultiPoint(factory.createMultiPoint(ps.map(_.jtsGeom).toArray))
+
+  def apply(ps: Traversable[(Double, Double)])(implicit d: DummyImplicit): MultiPoint =
+    MultiPoint(factory.createMultiPoint(ps.map { p => new jts.Coordinate(p._1, p._2) }.toArray))
 
   implicit def jts2MultiPoint(jtsGeom: jts.MultiPoint): MultiPoint = apply(jtsGeom)
 }

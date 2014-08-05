@@ -6,11 +6,11 @@ trait CRS {
   private[proj4] val crs: CoordinateReferenceSystem
 
   protected def factory = CRS.crsFactory
-}
 
-// Common CRS's
-object WebMercator extends CRS { lazy val crs = factory.createFromName("EPSG:3857") }
-object LatLng extends CRS { lazy val crs = factory.createFromName("EPSG:4326") }
+  /** Override this function to handle reprojecting to another CRS in a more performant way */
+  def alternateTransform(dest: CRS): Option[(Double, Double) => (Double, Double)] =
+    None
+}
 
 object CRS {
   private val crsFactory = new CRSFactory
