@@ -42,7 +42,7 @@ class GeoJsonSpec extends FlatSpec with Matchers {
 
     val json = """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2674010.3642432094,264342.94293908775]},"properties":{ "data" : 291 }},{"type":"Feature","geometry":{"type":"Point","coordinates":[2714118.684319839,263231.3878492862]},"properties": { "data": 1273 }}]}"""
 
-    val points = json.parseGeoJson[JsonFeatureCollection].getAllPoints[DataBox]
+    val points = json.parseGeoJson[JsonFeatureCollection].getAllPointFeatures[DataBox]
 
     points.size should be (2)
   }
