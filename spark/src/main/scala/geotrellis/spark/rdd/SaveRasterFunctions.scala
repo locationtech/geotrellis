@@ -16,7 +16,6 @@
 
 package geotrellis.spark.rdd
 
-import geotrellis._
 import geotrellis.spark._
 import geotrellis.spark.formats._
 import org.apache.hadoop.io.SequenceFile
@@ -40,9 +39,7 @@ object SaveRasterFunctions extends Logging {
     SequenceFileOutputFormat.setOutputCompressionType(jobConf, SequenceFile.CompressionType.RECORD)
 
     val writableRDD =
-      raster.map { tile =>
-        tile.toWritable
-      }
+      raster.sortByKey().map(TmsTile(_).toWritable)
 
     writableRDD.saveAsHadoopFile(
       rasterPath.toUri().toString(),

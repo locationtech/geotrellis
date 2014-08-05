@@ -28,7 +28,7 @@ class ArgWritable(bytes: Array[Byte]) extends BytesWritable(bytes) with Logging 
    */
   def this() = this(Array[Byte]())
 
-  def toTile(cellType: CellType, cols: Int, rows: Int) = {
+  def toTile(cellType: CellType, cols: Int, rows: Int): MutableArrayTile = {
     /* 
      * The slice is done in cases where the backing byte array in BytesWritable 
      * is larger than expected, so a simple getBytes would get the larger array
@@ -38,7 +38,22 @@ class ArgWritable(bytes: Array[Byte]) extends BytesWritable(bytes) with Logging 
      * BitArrayTile is a bit special since every row is a byte, cols = 8  
      *
      */
-    ArrayTile.fromBytes(getBytes.slice(0, cellType.numBytes(cols * rows)), cellType, cols, rows)
+    println(s"               INNNTAKE    $cols $rows ${getBytes.size} ${cellType.numBytes(cols*rows)}")
+    val x = getBytes.slice(0, cellType.numBytes(cols * rows)).filter(_ != Byte.MinValue)
+    if(!x.isEmpty)
+      println(s"           INTAKE           ${x.max}")
+
+    val t = ArrayTile.fromBytes(getBytes.slice(0, cellType.numBytes(cols * rows)), cellType, cols, rows)
+    if(!x.isEmpty) {
+      val x2 = t.toBytes.filter(_ != Byte.MinValue)
+      if(!x2.isEmpty) {
+        println(s"           INTAKE  2         ${x2.max}")
+      } else {
+        println(s"           INTAKE  2         EMPTY!!!")
+      }
+    }
+    t
+
   }
 }
 
@@ -52,5 +67,9 @@ object ArgWritable {
   def apply(aw: ArgWritable): ArgWritable = 
     new ArgWritable(aw.getBytes)
 
-  def fromTile(tile: Tile) = ArgWritable(tile.toBytes)
+  def fromTile(tile: Tile) = {
+    val x = tile.toBytes
+    println(s"           asdf           ${x.size}")
+    ArgWritable(tile.toBytes)
+  }
 }

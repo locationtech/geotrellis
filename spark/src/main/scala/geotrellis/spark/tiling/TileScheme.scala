@@ -31,16 +31,22 @@ object TilingScheme {
   //* Default tiling scheme for WSG84
   def GEODETIC = new TilingScheme {
     val extent = Extent(-180, -90, 179.99999, 89.99999)
-    val tileSize = 512
+
+    def zoomLevelFor(cellSize: CellSize): ZoomLevel = {
+      val l = 
+        math.max(TmsTiling.zoom(cellSize.width, 512),
+          TmsTiling.zoom(cellSize.height, 512))
+      zoomLevel(l)
+    }
 
     def zoomLevel(l: Int): ZoomLevel = 
       new ZoomLevel {
         val level = l
 
-        val tileCols = math.pow(2, l).toLong
-        val tileRows = math.pow(2, l - 1).toLong
-        val pixelCols = tileSize
-        val pixelRows = tileSize
+        val tileCols = math.pow(2, l).toInt
+        val tileRows = math.pow(2, l - 1).toInt
+        val pixelCols = 512
+        val pixelRows = 512
     }
   }
 }
@@ -53,23 +59,25 @@ trait ZoomLevel extends Serializable {
   val tileCols: Int
   val tileRows: Int
 
-  val totalCols: Long = pixelCols.toLong * tileCols
-  val totalRows: Long = pixelRows.toLong * tileRows
+  lazy val totalCols: Long = pixelCols.toLong * tileCols
+  lazy val totalRows: Long = pixelRows.toLong * tileRows
+
+  lazy val tileSize: Int = pixelCols // TODO: Remove
 
   def latLonToTile(lat: Double, lon: Double, zoom: Int): TileCoord = {
-    val tx =  { 
-      (180 + lon) * (tileCols / 360.0)
-    }.toLong
+    val tx = ((180 + lon) * (tileCols / 360.0)).toLong
     val ty = ((90 + lat) * (tileRows / 180.0)).toLong
     new TileCoord(tx, ty)
   }
 
+  def tileExtentForExtent(extent: Extent): TileExtent = { 
+    val ll = latLonToTile(extent.ymin, extent.xmin, level)
+    val ur = latLonToTile(extent.ymax, extent.xmax, level)
+    new TileExtent(ll.tx, ll.ty, ur.tx, ur.ty)
+  }
+
   def tileIdsForExtent(extent: Extent): Seq[Long] = {
-    val tileExtent = { 
-      val ll = latLonToTile(extent.ymin, extent.xmin, level)
-      val ur = latLonToTile(extent.ymax, extent.xmax, level)
-      new TileExtent(ll.tx, ll.ty, ur.tx, ur.ty)
-    }
+    val tileExtent = tileExtentForExtent(extent)
 
     val tileInfos =
       for { tcol <- tileExtent.xmin to tileExtent.xmax;
@@ -82,8 +90,4 @@ trait ZoomLevel extends Serializable {
 
   def extentForTile(tileId: Long): Extent =
     TmsTiling.tileToExtent(tileId, level, TmsTiling.DefaultTileSize)
-}
-
-object DefaultTilingScheme extends TilingScheme {
-
 }

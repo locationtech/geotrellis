@@ -22,14 +22,16 @@ import spire.syntax.cfor._
 object NoDataHandler {
 
   def removeUserNoData(tile: MutableArrayTile, userNoData: Double): Unit = {
-    println(s"                     ${tile.size} ${tile.cols} ${tile.rows}")
     /* 
      * This handles all types of RasterData - e.g., FloatArrayTile, ByteArrayTile
      * because the apply/update methods handle conversion of NODATA to the appropriate types
      * via macros i2f, i2b, respectively 
      */
-    cfor(0)(_ < tile.size, _ + 1) {i =>
-      if (tile(i) == userNoData) tile(i) = NODATA
+    cfor(0)(_ < tile.size, _ + 1) { i =>
+      val v = tile.applyDouble(i)
+      if (isData(v)) {
+        if(v == userNoData) tile.updateDouble(i, Double.NaN)
+      }
     }
   }
 

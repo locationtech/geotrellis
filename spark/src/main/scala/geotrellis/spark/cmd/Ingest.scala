@@ -17,9 +17,9 @@
 package geotrellis.spark.cmd
 
 import geotrellis.raster._
-import geotrellis.vector.Extent
+import geotrellis.vector._
 
-import geotrellis.spark.TmsTile
+import geotrellis.spark._
 import geotrellis.spark.cmd.args._
 import geotrellis.spark.formats._
 import geotrellis.spark.ingest._
@@ -102,104 +102,24 @@ object IngestCommand extends ArgMain[IngestArgs] with Logging {
 
     if (args.sparkMaster == null)
       ingest(inPath, outPath, hadoopConf)
-    else
-      newIngest(inPath, outPath, hadoopConf, args.sparkContext("Ingest"))
+    else {
+      val sparkContext = args.sparkContext("Ingest")
+      try {
+        newIngest(inPath, outPath, hadoopConf, sparkContext)
+      } finally {
+        sparkContext.stop
+      }
+    }
   }
 
   def newIngest(input: Path, output: Path, conf: Configuration, sc: SparkContext): Unit = {
-    case class TileInfo(tileId: Long, extent: Extent)
-
-    //(tileScheme, crs).tileIdsForExtent(extent)
-    def tileIdsForExtent(extent: Extent): Seq[TileInfo] = {
-      val zoom = TmsTiling.MaxZoomLevel
-      val tileSize = TmsTiling.DefaultTileSize
-      val tileExtent = 
-        TmsTiling.extentToTile(
-          extent,
-          zoom,
-          tileSize
-        )
-      val tileInfos =
-        for { tcol <- tileExtent.xmin to tileExtent.xmax;
-              trow <- tileExtent.ymin to tileExtent.ymax } yield {
-          val id = TmsTiling.tileId(tcol, trow, zoom)
-          val extent = TmsTiling.tileToExtent(tcol, trow, zoom, tileSize)
-          TileInfo(id, extent)
-        }
-
-      tileInfos.toSeq
-    }
-
-    implicit class ValueBurner(val tile: MutableArrayTile) {
-      def burnValues(other: Tile): MutableArrayTile = {
-        Seq(tile, other).assertEqualDimensions
-        if(tile.cellType.isFloatingPoint) {
-          cfor(0)(_ < tile.rows, _ + 1) { row =>
-            cfor(0)(_ < tile.cols, _ + 1) { col =>
-              if(isNoData(tile.getDouble(col, row))) { 
-                tile.setDouble(col, row, other.getDouble(col, row)) 
-              }
-            }
-          }
-        } else {
-          cfor(0)(_ < tile.rows, _ + 1) { row =>
-            cfor(0)(_ < tile.cols, _ + 1) { col =>
-              if(isNoData(tile.get(col, row))) { 
-                tile.setDouble(col, row, other.get(col, row)) 
-              }
-            }
-          }
-        }
-
-        tile
-      }
-
-      def burnValues(extent: Extent, otherExtent: Extent, other: Tile): MutableArrayTile = {
-        val re = RasterExtent(extent, tile.cols, tile.rows)
-        val GridBounds(colMin, colMax, rowMin, rowMax) = re.gridBoundsFor(otherExtent)
-        val otherRe = RasterExtent(otherExtent, other.cols, other.rows)
-
-        def thisToOther(col: Int, row: Int): (Int, Int) = {
-          val (x, y) = re.gridToMap(col, row)
-          otherRe.mapToGrid(x, y)
-        }
-
-        if(tile.cellType.isFloatingPoint) {
-          cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
-            cfor(colMin)(_ <= colMax, _ + 1) { col =>
-              if(isNoData(tile.getDouble(col, row))) {
-                val (otherCol, otherRow) = thisToOther(col, row)
-                tile.setDouble(col, row, other.getDouble(otherCol, otherRow))
-              }
-            }
-          }
-        } else {
-          cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
-            cfor(colMin)(_ <= colMax, _ + 1) { col =>
-              if(isNoData(tile.get(col, row))) {
-                val (otherCol, otherRow) = thisToOther(col, row)
-                tile.set(col, row, other.get(otherCol, otherRow))
-              }
-            }
-          }
-
-        }
-
-        tile
-      }
-    }
-
-    val partitioner: Partitioner = ???
-
-    //////////////////////
-
     val allFiles = HdfsUtils.listFiles(input, conf)
     val newConf = HdfsUtils.putFilesInConf(allFiles.mkString(","), conf)
 
-    val geotiffRdd = 
+    val geotiffRdd: RDD[(Extent, Tile)] = 
       sc.newAPIHadoopRDD(newConf, classOf[GeotiffInputFormat], classOf[Extent], classOf[Tile])
 
-    val (extent, cellType, cellSize): (Extent, CellType, CellSize) =
+    val (uncappedExtent, cellType, cellSize): (Extent, CellType, CellSize) =
       geotiffRdd
         .map { case (extent, tile) => (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows)) }
         .reduce { (t1, t2) =>
@@ -210,10 +130,47 @@ object IngestCommand extends ArgMain[IngestArgs] with Logging {
           )
          }
 
-    val tileScheme: TilingScheme = DefaultTilingScheme
+    val tileScheme: TilingScheme = TilingScheme.GEODETIC
     val zoomLevel: ZoomLevel = tileScheme.zoomLevelFor(cellSize)
 
+    val extent = tileScheme.extent.intersection(uncappedExtent).get
+
+    val tileSizeBytes = TmsTiling.tileSizeBytes(zoomLevel.tileSize, cellType)
+    val blockSizeBytes = HdfsUtils.defaultBlockSize(input, conf)
+
+    val tileExtent = zoomLevel.tileExtentForExtent(extent)
+    println(s"$extent to $tileExtent")
+
+    val splitGenerator = RasterSplitGenerator(tileExtent, zoomLevel.level, tileSizeBytes, blockSizeBytes)
+    val partitioner = RasterRddPartitioner(splitGenerator.splits)
+
     val bcZoomLevel = sc.broadcast(zoomLevel)
+
+    val rasterMetadata = 
+      RasterMetadata(TmsTiling.extentToPixel(extent, zoomLevel.level, zoomLevel.tileSize), tileExtent)        
+
+    val meta: PyramidMetadata = 
+      PyramidMetadata(
+        extent,
+        zoomLevel.tileSize,
+        1,
+        Byte.MinValue.toDouble,
+        CellType.toAwtType(cellType),
+        zoomLevel.level,
+        Map(zoomLevel.level.toString -> rasterMetadata))
+
+    // Save pyramid metadata
+    val metaPath = new Path(output, PyramidMetadata.MetaFile)
+    val fs = metaPath.getFileSystem(conf)
+    val fdos = fs.create(metaPath)
+    val out = new PrintWriter(fdos)
+    out.println(JacksonWrapper.prettyPrint(meta))
+    out.close()
+    fdos.close()
+
+    val outPathWithZoom = new Path(output, zoomLevel.level.toString)
+    // logInfo(s"Creating Output Path With Zoom: $outPathWithZoom")
+    // fs.mkdirs(outPathWithZoom)
 
     val tiles: RDD[TmsTile] =
       geotiffRdd
@@ -237,12 +194,63 @@ object IngestCommand extends ArgMain[IngestArgs] with Logging {
           }
          )
         .map { case (id, tile) => TmsTile(id, tile) }
+        .partitionBy(partitioner)
 
-     tiles
-       .partitionBy(partitioner)
-       .withContext(???)
-       .save(output)
+    val context: Context = 
+      Context(zoomLevel.level, meta, TileIdPartitioner(partitioner.splits.map(TileIdWritable(_))))
 
+    val (min, max) = 
+      tiles.map(_.tile.findMinMax)
+           .reduce { (t1, t2) =>
+             val (min1, max1) = t1
+             val (min2, max2) = t2
+             val min = 
+               if(isNoData(min1)) min2 
+               else { 
+                 if(isNoData(min2)) min1 
+                 else math.min(min1, min2)
+               }
+             val max = 
+               if(isNoData(max1)) max2
+               else {
+                 if(isNoData(max2)) max1
+                 else math.max(max1, max2)
+               }
+             (min, max)
+            }
+
+    val count = tiles.count
+
+    tiles
+      .withContext(context)
+      .save(outPathWithZoom)
+
+    val rdd = RasterRDD(outPathWithZoom, sc)
+
+    val (min2, max2) = 
+      rdd.map(_.tile.findMinMax)
+         .reduce { (t1, t2) =>
+           val (min1, max1) = t1
+           val (min2, max2) = t2
+           val min = 
+             if(isNoData(min1)) min2 
+             else { 
+               if(isNoData(min2)) min1 
+               else math.min(min1, min2)
+             }
+           val max = 
+             if(isNoData(max1)) max2
+             else {
+               if(isNoData(max2)) max1
+               else math.max(max1, max2)
+             }
+           (min, max)
+          }
+
+    val count2 = rdd.count
+
+    print(s"FIN: ($min, $max) COUNT: ${count}")
+    print(s"FIN2: ($min2, $max2) COUNT: ${count2}")
   }
 
   def ingest(input: Path, output: Path, conf: Configuration): Unit = {
