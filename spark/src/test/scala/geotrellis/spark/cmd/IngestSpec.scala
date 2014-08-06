@@ -40,40 +40,40 @@ class IngestSpec extends FunSpec with TestEnvironment with RasterVerifyMethods {
   val localTestOutput = new Path(outputLocal, "local")
   val sparkTestOutput = new Path(outputLocal, "spark")
 
-  describe("Local Ingest") {
-    val allOnes = new Path(inputHome, "all-ones.tif")
+  // describe("Local Ingest") {
+  //   val allOnes = new Path(inputHome, "all-ones.tif")
 
-    // do the actual ingest in local mode
-    val cmd = s"--input ${allOnes.toString} --outputpyramid ${localTestOutput}"
-    IngestCommand.main(cmd.split(' '))
+  //   // do the actual ingest in local mode
+  //   val cmd = s"--input ${allOnes.toString} --outputpyramid ${localTestOutput}"
+  //   IngestCommand.main(cmd.split(' '))
 
-    val raster = new Path(localTestOutput, "10")
-    val meta = PyramidMetadata(localTestOutput, conf)
+  //   val raster = new Path(localTestOutput, "10")
+  //   val meta = PyramidMetadata(localTestOutput, conf)
 
-    it("should create the correct metadata") {
-      verifyMetadata(meta)
-    }
+  //   it("should create the correct metadata") {
+  //     verifyMetadata(meta)
+  //   }
 
-    it("should have the right zoom level directory") {
-      verifyZoomLevelDirectory(raster)
-    }
+  //   it("should have the right zoom level directory") {
+  //     verifyZoomLevelDirectory(raster)
+  //   }
 
-    it("should have the right number of splits for the base zoom level") {
-      verifyPartitions(raster)
-    }
+  //   it("should have the right number of splits for the base zoom level") {
+  //     verifyPartitions(raster)
+  //   }
 
-    it("should have the correct tiles (checking tileIds)") {
-      verifyTiles(raster, meta)
-    }
+  //   it("should have the correct tiles (checking tileIds)") {
+  //     verifyTiles(raster, meta)
+  //   }
 
-    it("should have its data files compressed") {
-      verifyCompression(raster)
-    }
+  //   it("should have its data files compressed") {
+  //     verifyCompression(raster)
+  //   }
 
-    it("should have its block size set correctly") {
-      verifyBlockSize(raster)
-    }
-  }
+  //   it("should have its block size set correctly") {
+  //     verifyBlockSize(raster)
+  //   }
+  // }
 
   describe("Spark Ingest") {
 

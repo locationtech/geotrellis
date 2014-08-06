@@ -1,4 +1,5 @@
 package geotrellis.spark.rdd
+
 import geotrellis.spark.SharedSparkContext
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.metadata.MetadataMatcher
@@ -23,16 +24,11 @@ class SaveRasterSpec
       val ones = RasterRDD(allOnes.path, sc)
       val twos = ones + ones
       val twosPath = new Path(outputLocal, ones.opCtx.zoom.toString)
-      mkdir(twosPath)
       twos.save(twosPath)
       
       // compare metadata
-      val newMeta = PyramidMetadata(outputLocal, conf)           
+      val newMeta = PyramidMetadata(outputLocal, conf)
       shouldBe(allOnes.meta, newMeta)
-
-      // compare partitioner
-      val newPartitioner = TileIdPartitioner(twosPath, conf)
-      newPartitioner should be(ones.partitioner.get)
     }
   }
 }

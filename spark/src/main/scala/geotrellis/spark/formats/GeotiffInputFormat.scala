@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 DigitalGlobe.
+ * Copyright (c) 2014 Azavea.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.ingest
+package geotrellis.spark.formats
 
 import geotrellis.raster._
-import geotrellis.spark.metadata.PyramidMetadata
+import geotrellis.raster.io.geotiff.reader._
+import geotrellis.vector.Extent
+import geotrellis.spark.utils.HdfsUtils
 
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.FSDataInputStream
+
 import org.apache.hadoop.mapreduce.InputSplit
 import org.apache.hadoop.mapreduce.JobContext
 import org.apache.hadoop.mapreduce.RecordReader
@@ -27,30 +31,34 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 
-class IngestInputFormat extends FileInputFormat[Long, Tile] {
+import java.nio.ByteBuffer
+
+class GeotiffInputFormat extends FileInputFormat[Extent, Tile] {
   override def isSplitable(context: JobContext, fileName: Path) = false
 
-  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[Long, Tile] =
-    new IngestRecordReader
+  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[Extent, Tile] =
+    new GeotiffRecordReader
 
 }
 
-class IngestRecordReader extends RecordReader[Long, Tile] {
-  private var tiles: List[(Long, Tile)] = null
-  private var index: Int = -1
+case class GeotiffData(cellType: CellType, userNoData: Double)
+
+class GeotiffRecordReader extends RecordReader[Extent, Tile] {
+  private var tup: (Extent, Tile) = null
+  private var hasNext: Boolean = true
 
   def initialize(split: InputSplit, context: TaskAttemptContext) = {
-    val file = split.asInstanceOf[FileSplit].getPath()
-    val meta = PyramidMetadata.fromJobConf(context.getConfiguration())
-    tiles = TiffTiler.tile(file, meta, context.getConfiguration())
+    val path = split.asInstanceOf[FileSplit].getPath()
+    val conf = context.getConfiguration()
+    val bytes = HdfsUtils.readBytes(path, conf)
+
+    tup =
+      GeoTiffReader(bytes).read().imageDirectories(0).toRaster.swap
   }
 
   def close = {}
-  def getCurrentKey = tiles(index)._1
-  def getCurrentValue = tiles(index)._2
-  def getProgress = (index + 1) / tiles.length
-  def nextKeyValue = {
-    index = index + 1
-    index < tiles.length
-  }
+  def getCurrentKey = tup._1
+  def getCurrentValue = { hasNext = false ; tup._2 }
+  def getProgress = 1
+  def nextKeyValue = hasNext
 }

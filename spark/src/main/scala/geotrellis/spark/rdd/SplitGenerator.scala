@@ -25,11 +25,11 @@ import geotrellis.spark.tiling.TmsTiling
  *
  */
 trait SplitGenerator {
-  def getSplits: Seq[Long]
+  def splits: Array[Long]
 }
 
 object SplitGenerator {
-  def EMPTY = new SplitGenerator { def getSplits = Seq() }
+  def EMPTY = new SplitGenerator { def splits = Array() }
 }
 
 case class RasterSplitGenerator(
@@ -37,9 +37,9 @@ case class RasterSplitGenerator(
   zoom: Int,
   increment: (Int, Int))
   extends SplitGenerator {
-  // if increment is -1 getSplits return an empty sequence
+  // if increment is -1 splits return an empty sequence
   // also, we start with s+(i-1) as the first split point needs to be there, not at s    
-  def getSplits = {
+  def splits: Array[Long] = {
     val (xi, yi) = increment
 
     // we can't have a case where both x and y have non-trivial (i.e., neither -1 or 1) increments
@@ -51,11 +51,13 @@ case class RasterSplitGenerator(
         y <- tileExtent.ymin to tileExtent.ymax;
         x <- xr
       ) yield TmsTiling.tileId(x, y, zoom)
-      splits.dropRight(1)
+      splits.dropRight(1).toArray
     }
     else {
-      for (y <- tileExtent.ymin + (yi - 1) until tileExtent.ymax by yi)
+      val splits = 
+        for (y <- tileExtent.ymin + (yi - 1) until tileExtent.ymax by yi)
         yield TmsTiling.tileId(tileExtent.xmax, y, zoom)
+      splits.toArray
     }
 
   }
@@ -88,8 +90,9 @@ object RasterSplitGenerator {
   def computeIncrement(tileExtent: TileExtent, tileSizeBytes: Int, blockSizeBytes: Long) = {
     val tilesPerBlock = (blockSizeBytes / tileSizeBytes).toInt
     val tileCount = tileExtent.width * tileExtent.height
+    println(s"${tileCount} / ${tilesPerBlock} (${blockSizeBytes} ${tileSizeBytes})")
        
-    // return -1 if it doesn't make sense to have splits, getSplits will handle this accordingly
+    // return -1 if it doesn't make sense to have splits, splits will handle this accordingly
     val increment =
       if (blockSizeBytes <= 0 || tilesPerBlock >= tileCount)
         (-1, -1)

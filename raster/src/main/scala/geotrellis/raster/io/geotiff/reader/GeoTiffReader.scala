@@ -30,10 +30,11 @@ class GeoTiffReaderLimitationException(msg: String)
     extends RuntimeException(msg)
 
 object GeoTiffReader {
-
   def apply(source: BufferedSource): GeoTiffReader =
-    GeoTiffReader(ByteBuffer.wrap(source.map(_.toByte).toArray))
+    GeoTiffReader(source.map(_.toByte).toArray)
 
+  def apply(bytes: Array[Byte]): GeoTiffReader =
+    GeoTiffReader(ByteBuffer.wrap(bytes, 0, bytes.size))
 }
 
 case class GeoTiffReader(byteBuffer: ByteBuffer) {

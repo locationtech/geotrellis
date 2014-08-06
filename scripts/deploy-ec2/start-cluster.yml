@@ -11,5 +11,6 @@
     - name: Stop Cluster
       local_action: 
         module: ec2 
+        region: "{{ region }}" 
         instance_ids: "{{ cluster_instance_ids }}"
         state: running

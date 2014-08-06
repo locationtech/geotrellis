@@ -17,10 +17,16 @@
 package geotrellis.spark.metadata
 
 import geotrellis.raster._
+import geotrellis.vector.Extent
 import geotrellis.raster.TileLayout
 import geotrellis.spark.rdd.TileIdPartitioner
 import geotrellis.spark.tiling.TileExtent
 import geotrellis.spark.tiling.TmsTiling
+
+case class RasterRDDMetadata(
+  extent: Extent,
+  cellType: CellType
+)
 
 case class RasterDefinition(rasterExtent: RasterExtent,
                             tileLayout: TileLayout,
@@ -68,7 +74,6 @@ class Context(val zoom: Int,
       zoom,
       Map(zoom.toString -> RasterMetadata(pe, tileExtent)))
   }
-
 }
 
 object Context {
