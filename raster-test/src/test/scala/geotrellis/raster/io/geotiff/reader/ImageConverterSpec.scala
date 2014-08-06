@@ -25,8 +25,7 @@ import java.util.BitSet
 import geotrellis.raster.io.geotiff.reader.utils.BitSetUtils._
 import geotrellis.raster.io.geotiff.reader.utils.ByteInverterUtils._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
+import org.scalatest._
 
 class ImageConverterSpec extends FunSpec with MustMatchers {
 

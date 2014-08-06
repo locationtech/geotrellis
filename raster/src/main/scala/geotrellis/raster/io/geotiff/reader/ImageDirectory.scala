@@ -152,6 +152,7 @@ object Tags {
   val GeoKeyDirectoryTag = 34735
   val DoublesTag = 34736
   val AsciisTag = 34737
+  val GDALInternalNoDataTag = 42113
 
 }
 
@@ -232,7 +233,8 @@ case class GeoTiffTags(
   modelPixelScale: Option[(Double, Double, Double)] = None,
   geoKeyDirectory: Option[GeoKeyDirectory] = None,
   doubles: Option[Vector[Double]] = None,
-  asciis: Option[String] = None
+  asciis: Option[String] = None,
+  gdalInternalNoData: Option[String] = None
 )
 
 case class DocumentationTags(
@@ -480,7 +482,7 @@ case class ImageDirectory(
           val scaleY = (pixel.y - first.y) * pixelScales._2
           val scaleZ = (pixel.z - first.z) * pixelScales._3
 
-          Pixel3D(scaleX + second.x, scaleY + second.y, scaleZ + second.z)
+          Pixel3D(scaleX + second.x, second.y - scaleY, scaleZ + second.z)
         }
 
         getExtentFromModelFunction(modelFunc)
@@ -518,13 +520,13 @@ case class ImageDirectory(
   private def getExtentFromModelFunction(func: Pixel3D => Pixel3D) = {
     val modelPixels = getRasterBoundaries.map(func)
 
-    val (minX, minY) = (modelPixels(0).x, modelPixels(1).y)
-    val (maxX, maxY) = (modelPixels(1).x, modelPixels(0).y)
+    val (minX, minY) = (modelPixels(0).x, modelPixels(0).y)
+    val (maxX, maxY) = (modelPixels(1).x, modelPixels(1).y)
 
     Extent(minX, minY, maxX, maxY)
   }
 
-  private def hasPixelArea(): Boolean =
+  def hasPixelArea(): Boolean =
     (geoKeyDirectory |-> gtRasterTypeLens get) match {
       case Some(UndefinedCPV) => throw new MalformedGeoTiffException(
         "the raster type must be present."
@@ -638,6 +640,8 @@ object ImageDirectoryLenses {
     Option[Vector[Double]]]("doubles")
   val asciisLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
     Option[String]]("asciis")
+  val gdalInternalNoDataLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
+    Option[String]]("gdalInternalNoData")
 
   val documentationTagsLens = mkLens[ImageDirectory,
     DocumentationTags]("documentationTags")
