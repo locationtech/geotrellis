@@ -384,18 +384,11 @@ object GeotrellisBuild extends Build {
           ),
           "com.quantifind" %% "sumac" % "0.2.3",
           spire, sprayRouting, sprayCan,
-          "org.geotools" % "gt-main" % Version.geotools,
-          "org.geotools" % "gt-coverage" % Version.geotools,
-          "org.geotools" % "gt-geotiff" % Version.geotools,
-          "org.geotools" % "gt-epsg-hsql" % Version.geotools,
-          "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
           scalatest % "test",
           "org.mockito" % "mockito-core" % "1.9.5" % "test"
-//          "org.scalamock" %% "scalamock-scalatest-support" % "3.0.1" % "test"
         ),
       resolvers ++= Seq(
-        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos",
-        "Geotools" at "http://download.osgeo.org/webdav/geotools/"
+        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
       )
     ) ++
     defaultAssemblySettings ++

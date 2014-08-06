@@ -35,6 +35,10 @@ package object spark {
     def withContext(ctx: Context) = new RasterRDD(prev, ctx)
   }
 
+  implicit class MakeRasterRDD2(val prev: RDD[(Long, Tile)]) {
+    def withContext(ctx: Context) = new RasterRDD(prev, ctx)
+  }
+
   implicit class SavableRasterRDD(val rdd: RasterRDD) {
     def save(path: Path) = SaveRasterFunctions.save(rdd, path)
     def save(path: String): Unit = save(new Path(path))

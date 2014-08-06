@@ -22,7 +22,6 @@ import geotrellis.vector._
 import geotrellis.spark._
 import geotrellis.spark.cmd.args._
 import geotrellis.spark.formats._
-import geotrellis.spark.ingest._
 import geotrellis.spark.metadata._
 import geotrellis.spark.tiling._
 import geotrellis.spark.rdd._
@@ -58,13 +57,6 @@ import spire.syntax.cfor._
   * aggregate must fit in RAM. The non-overlapping constraint is due to there not being
   * any mosaicing in local mode
   *
-  * Command for local mode:
-  * Ingest --input <path-to-tiffs> --outputpyramid <path-to-pyramid>
-  * e.g., Ingest --input file:///home/akini/test/small_files/all-ones.tif --output file:///tmp/all-ones
-  *
-  * Spark - all processing is done in Spark. Use this if ingesting multiple files, which in
-  * aggregate do not fit on a single node's RAM. Or multiple files which may overlap.
-  *
   * Constraints:
   *
   * --input <path-to-tiffs> - this can either be a directory or a single tiff file and can either be in local fs or hdfs
@@ -72,8 +64,7 @@ import spire.syntax.cfor._
   * --outputpyramid <path-to-raster> - this can be either on hdfs (hdfs://) or local fs (file://). If the directory
   * already exists, it is deleted
   * 
-  * --sparkMaster local[10]
-  *
+  * --sparkMaster <spark-name>   i.e. local[10]
   *
   */
 
@@ -113,12 +104,7 @@ object IngestCommand extends ArgMain[IngestArgs] with Logging {
     val geotiffRdd: RDD[(Extent, Tile)] = 
       sc.newAPIHadoopRDD(newConf, classOf[GeotiffInputFormat], classOf[Extent], classOf[Tile])
 
-    // geotiffRdd.map { case (e, t) => println(s"(${t.cols}x${t.rows}) t.") }.count
-
-    // return
-
-
-
+    logInfo(s"Computing metadata from raster set...")
     val (uncappedExtent, cellType, cellSize): (Extent, CellType, CellSize) =
       geotiffRdd
         .map { case (extent, tile) => (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows)) }
@@ -135,19 +121,18 @@ object IngestCommand extends ArgMain[IngestArgs] with Logging {
 
     val extent = tileScheme.extent.intersection(uncappedExtent).get
 
+    logInfo(s"Metadata: $extent, cellType = $cellType, cellSize = $cellSize")
+
     val tileSizeBytes = TmsTiling.tileSizeBytes(zoomLevel.tileSize, cellType)
     val blockSizeBytes = HdfsUtils.defaultBlockSize(input, conf)
 
     val tileExtent = zoomLevel.tileExtentForExtent(extent)
-    println(s"$extent to $tileExtent")
 
     val splitGenerator = RasterSplitGenerator(tileExtent, zoomLevel.level, tileSizeBytes, blockSizeBytes)
     val partitioner = RasterRddPartitioner(splitGenerator.splits)
 
-    val bcZoomLevel = sc.broadcast(zoomLevel)
-
     val rasterMetadata = 
-      RasterMetadata(TmsTiling.extentToPixel(extent, zoomLevel.level, zoomLevel.tileSize), tileExtent)        
+      RasterMetadata(TmsTiling.extentToPixel(extent, zoomLevel.level, zoomLevel.tileSize), tileExtent)
 
     val meta: PyramidMetadata = 
       PyramidMetadata(
@@ -158,6 +143,9 @@ object IngestCommand extends ArgMain[IngestArgs] with Logging {
         CellType.toAwtType(cellType),
         zoomLevel.level,
         Map(zoomLevel.level.toString -> rasterMetadata))
+
+    val context: Context = 
+      Context(zoomLevel.level, meta, TileIdPartitioner(partitioner.splits.map(TileIdWritable(_))))
 
     // Save pyramid metadata
     val metaPath = new Path(output, PyramidMetadata.MetaFile)
@@ -170,6 +158,9 @@ object IngestCommand extends ArgMain[IngestArgs] with Logging {
 
     val outPathWithZoom = new Path(output, zoomLevel.level.toString)
 
+    val bcZoomLevel = sc.broadcast(zoomLevel)
+
+    // This is the mosaicing function. RDD[(Extent, Tile)] => RDD[TmsTile]
     val tiles: RDD[TmsTile] =
       geotiffRdd
         .flatMap { case (extent, tile) =>
@@ -192,24 +183,12 @@ object IngestCommand extends ArgMain[IngestArgs] with Logging {
           }
          )
         .map { case (id, tile) => TmsTile(id, tile) }
-        .partitionBy(partitioner)
 
-    val context: Context = 
-      Context(zoomLevel.level, meta, TileIdPartitioner(partitioner.splits.map(TileIdWritable(_))))
-
-    val rasterRdd = 
-      tiles
-        .withContext(context)
-
-    println(s"PRE-SAVE MIN MAX: ${rasterRdd.minMax}")
-
-    rasterRdd
+    tiles
+      .partitionBy(partitioner)
+      .withContext(context)
       .save(outPathWithZoom)
 
-    val minMax =
-      RasterRDD(outPathWithZoom, sc)
-        .minMax
-
-    println(s"SAVED MIN MAX: $minMax")
+    logInfo(s"Saved raster at zoom level ${zoomLevel.level} to $outPathWithZoom")
   }
 }
