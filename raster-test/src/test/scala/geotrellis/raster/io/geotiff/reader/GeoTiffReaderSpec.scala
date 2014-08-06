@@ -21,6 +21,7 @@ import monocle.Macro._
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
+import geotrellis.raster.io.arg.ArgReader
 import geotrellis.testkit._
 
 import scala.io.{Source, Codec}
@@ -31,7 +32,10 @@ import java.nio.ByteBuffer
 
 import org.scalatest._
 
-class GeoTiffReaderSpec extends FunSpec with MustMatchers with BeforeAndAfterAll {
+class GeoTiffReaderSpec extends FunSpec 
+                           with Matchers
+                           with BeforeAndAfterAll 
+                           with TestEngine {
 
   var writtenFiles = Vector[String]()
 
@@ -77,13 +81,13 @@ class GeoTiffReaderSpec extends FunSpec with MustMatchers with BeforeAndAfterAll
   }
 
   private def compareGeoTiffImages(first: GeoTiff, second: GeoTiff) {
-    first.imageDirectories.size must equal (second.imageDirectories.size)
+    first.imageDirectories.size should equal (second.imageDirectories.size)
 
     first.imageDirectories zip second.imageDirectories foreach {
       case (firstIFD, secondIFD) =>
 
-        firstIFD.imageBytes.size must equal (secondIFD.imageBytes.size)
-        firstIFD.imageBytes must equal (secondIFD.imageBytes)
+        firstIFD.imageBytes.size should equal (secondIFD.imageBytes.size)
+        firstIFD.imageBytes should equal (secondIFD.imageBytes)
     }
   }
 
@@ -93,6 +97,19 @@ class GeoTiffReaderSpec extends FunSpec with MustMatchers with BeforeAndAfterAll
       readAndSave("aspect.tif")
     }
 
+  }
+
+  describe ("reading an ESRI generated Float32 geotiff with 0 NoData value") {
+    it("matches an arg produced from geotrellis.gdal reader of that tif") {
+      val (readTile, _) = 
+        read("geotiff-reader-tiffs/us_ext_clip_esri.tif")
+          .imageDirectories.head.toRaster
+
+      val expectedTile =
+        ArgReader.read(s"$filePathToTestData/geotiff-reader-tiffs/us_ext_clip_esri.json")
+
+      assertEqual(readTile, expectedTile)
+    }
   }
 
   describe ("reading compressed file must yield same image array as uncompressed file") {
@@ -164,50 +181,50 @@ class GeoTiffReaderSpec extends FunSpec with MustMatchers with BeforeAndAfterAll
 
       val ifd = aspect.imageDirectories(0)
 
-      (ifd |-> imageWidthLens get) must equal (1500L)
+      (ifd |-> imageWidthLens get) should equal (1500L)
 
-      (ifd |-> imageLengthLens get) must equal (1350L)
+      (ifd |-> imageLengthLens get) should equal (1350L)
 
       ifd |-> bitsPerSampleLens get match {
-        case Some(v) if (v.size == 1) => v(0) must equal (32)
+        case Some(v) if (v.size == 1) => v(0) should equal (32)
         case None => fail
       }
 
-      (ifd |-> compressionLens get) must equal (1)
+      (ifd |-> compressionLens get) should equal (1)
 
       ifd |-> photometricInterpLens get match {
-        case Some(pi) => pi must equal (1)
+        case Some(pi) => pi should equal (1)
         case None => fail
       }
 
       ifd |-> stripOffsetsLens get match {
-        case Some(stripOffsets) => stripOffsets.size must equal (1350)
+        case Some(stripOffsets) => stripOffsets.size should equal (1350)
         case None => fail
       }
 
-      (ifd |-> samplesPerPixelLens get) must equal (1)
+      (ifd |-> samplesPerPixelLens get) should equal (1)
 
-      (ifd |-> rowsPerStripLens get) must equal (1L)
+      (ifd |-> rowsPerStripLens get) should equal (1L)
 
       ifd |-> stripByteCountsLens get match {
-        case Some(stripByteCounts) => stripByteCounts.size must equal (1350)
+        case Some(stripByteCounts) => stripByteCounts.size should equal (1350)
         case None => fail
       }
 
       ifd |-> planarConfigurationLens get match {
-        case Some(planarConfiguration) => planarConfiguration must equal (1)
+        case Some(planarConfiguration) => planarConfiguration should equal (1)
         case None => fail
       }
 
       val sampleFormats = (ifd |-> sampleFormatLens get)
-      sampleFormats.size must equal (1)
-      sampleFormats(0) must equal (3)
+      sampleFormats.size should equal (1)
+      sampleFormats(0) should equal (3)
 
       ifd |-> modelPixelScaleLens get match {
         case Some(modelPixelScales) => {
-          modelPixelScales._1 must equal (10.0)
-          modelPixelScales._2 must equal (10.0)
-          modelPixelScales._3 must equal (0.0)
+          modelPixelScales._1 should equal (10.0)
+          modelPixelScales._2 should equal (10.0)
+          modelPixelScales._3 should equal (0.0)
         }
         case None => fail
       }
@@ -215,18 +232,18 @@ class GeoTiffReaderSpec extends FunSpec with MustMatchers with BeforeAndAfterAll
       ifd |-> modelTiePointsLens get match {
         case Some(modelTiePoints) if (modelTiePoints.size == 1) => {
           val (p1, p2) = modelTiePoints(0)
-          p1.x must equal (0.0)
-          p1.y must equal (0.0)
-          p1.z must equal (0.0)
-          p2.x must equal (630000.0)
-          p2.y must equal (228500.0)
-          p2.z must equal (0.0)
+          p1.x should equal (0.0)
+          p1.y should equal (0.0)
+          p1.z should equal (0.0)
+          p2.x should equal (630000.0)
+          p2.y should equal (228500.0)
+          p2.z should equal (0.0)
         }
         case None => fail
       }
 
       ifd |-> gdalInternalNoDataLens get match {
-        case Some(gdalInternalNoData) => gdalInternalNoData must equal ("-9999")
+        case Some(gdalInternalNoData) => gdalInternalNoData should equal ("-9999")
         case None => fail
       }
     }
@@ -236,14 +253,14 @@ class GeoTiffReaderSpec extends FunSpec with MustMatchers with BeforeAndAfterAll
 
       val ifd = aspect.imageDirectories(0)
 
-      ifd.hasPixelArea must be (true)
+      ifd.hasPixelArea should be (true)
 
-      val minX = ifd.extent.xmin must equal (630000.0)
-      val minY = ifd.extent.ymin must equal (215000.0)
-      val maxX = ifd.extent.xmax must equal (645000.0)
-      val maxY = ifd.extent.ymax must equal (228500.0)
+      val minX = ifd.extent.xmin should equal (630000.0)
+      val minY = ifd.extent.ymin should equal (215000.0)
+      val maxX = ifd.extent.xmax should equal (645000.0)
+      val maxY = ifd.extent.ymax should equal (228500.0)
 
-      ifd.cellType must equal (TypeFloat)
+      ifd.cellType should equal (TypeFloat)
 
       val knownNoData = -9999f
 
