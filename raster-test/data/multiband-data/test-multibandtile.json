@@ -1,0 +1,18 @@
+{
+  "layer": "test-multibandtile",
+  "datatype": "int32",
+  "type": "arg",
+  "bands": "4",
+  "path": "raster-test/data/multiband-data/test-multibandtile",
+  "xmin": 10.0,
+  "xmax": 14.0,
+  "ymin": 11.0,
+  "ymax": 15.0,
+  "cols": 4,
+  "rows": 4,
+  "cellwidth": 1.0,
+  "cellheight": 1.0,
+  "epsg": 3785,
+  "yskew": 0.0,
+  "xskew": 0.0
+}
