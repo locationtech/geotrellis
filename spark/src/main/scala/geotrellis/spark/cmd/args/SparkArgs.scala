@@ -4,7 +4,7 @@ import com.quantifind.sumac.FieldArgs
 import geotrellis.spark.utils.SparkUtils
 
 trait SparkArgs extends FieldArgs with ArgsParser {
-  var sparkMaster: String = _
+  var sparkMaster: String = "local[1]"
   var sparkOpts: String = _
   
   def sparkContext(appName: String) = {

@@ -56,7 +56,17 @@ object HdfsUtils {
   def listFiles(path: Path, conf: Configuration): List[Path] = {
     val fs = path.getFileSystem(conf)
     val files = new ListBuffer[Path]
-    addFiles(fs.globStatus(path), fs, conf, files)
+
+    def addFiles(fileStatuses: Array[FileStatus]): Unit = {
+      for (fst <- fileStatuses) {
+        if (fst.isDir())
+          addFiles(fs.listStatus(fst.getPath()))
+        else
+          files += fst.getPath()
+      }
+    }
+
+    addFiles(fs.globStatus(path))
     files.toList
   }
 
@@ -114,19 +124,6 @@ object HdfsUtils {
 
           Some(lineScanner)
         }
-    }
-  }
-
-  private def addFiles(fileStatuses: Array[FileStatus],
-                       fs: FileSystem,
-                       conf: Configuration,
-                       files: ListBuffer[Path]): Unit = {
-    for (fst <- fileStatuses) {
-      if (fst.isDir())
-        addFiles(fs.listStatus(fst.getPath()), fs, conf, files)
-      else
-        files += fst.getPath()
-
     }
   }
 }

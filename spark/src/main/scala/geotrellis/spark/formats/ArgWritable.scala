@@ -38,22 +38,7 @@ class ArgWritable(bytes: Array[Byte]) extends BytesWritable(bytes) with Logging 
      * BitArrayTile is a bit special since every row is a byte, cols = 8  
      *
      */
-    println(s"               INNNTAKE    $cols $rows ${getBytes.size} ${cellType.numBytes(cols*rows)}")
-    val x = getBytes.slice(0, cellType.numBytes(cols * rows)).filter(_ != Byte.MinValue)
-    if(!x.isEmpty)
-      println(s"           INTAKE           ${x.max}")
-
-    val t = ArrayTile.fromBytes(getBytes.slice(0, cellType.numBytes(cols * rows)), cellType, cols, rows)
-    if(!x.isEmpty) {
-      val x2 = t.toBytes.filter(_ != Byte.MinValue)
-      if(!x2.isEmpty) {
-        println(s"           INTAKE  2         ${x2.max}")
-      } else {
-        println(s"           INTAKE  2         EMPTY!!!")
-      }
-    }
-    t
-
+    ArrayTile.fromBytes(getBytes.slice(0, cellType.numBytes(cols * rows)), cellType, cols, rows)
   }
 }
 
@@ -68,8 +53,6 @@ object ArgWritable {
     new ArgWritable(aw.getBytes)
 
   def fromTile(tile: Tile) = {
-    val x = tile.toBytes
-    println(s"           asdf           ${x.size}")
     ArgWritable(tile.toBytes)
   }
 }
