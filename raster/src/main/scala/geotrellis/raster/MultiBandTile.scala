@@ -52,7 +52,6 @@ trait MultiBandTile {
     }
 
   def dualMapIfSet(f: Int => Int)(g: Double => Double): MultiBandTile =
-    if (cellType.isFloatingPoint) mapIfSetDouble(g) 
+    if (cellType.isFloatingPoint) mapIfSetDouble(g)
     else mapIfSet(f)
-
 }
