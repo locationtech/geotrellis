@@ -1,22 +1,22 @@
 package geotrellis.raster.io.arg
 
-import java.io.{BufferedOutputStream, DataOutputStream, FileOutputStream}
+import java.io.{ BufferedOutputStream, DataOutputStream, FileOutputStream }
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
 /**
  * MultiBandArgWriter will write a MultiBandRaster to disk in ARG format.
- * 
- * Each instance of MultiBandArgWriter is provided a data type (e.g. int or float) to 
+ *
+ * Each instance of MultiBandArgWriter is provided a data type (e.g. int or float) to
  * use for output files.
  */
 
-case class MultibandArgWriter(typ: CellType){
+case class MultibandArgWriter(typ: CellType) {
   def width = typ.bits / 8
   def cellType = typ.name
   def dataType = "arg"
-    
+
   /**
    * Write a MultiBandRaster in ARG format to the specified path.
    *
@@ -31,20 +31,20 @@ case class MultibandArgWriter(typ: CellType){
    * @param multiBandTile: MultiBandRaster to write to disk
    * @param metadataName: Name to be included in json metadata as 'layer', used in catalog
    */
-    
-  def write(outputFilePath: String, multiBandTile: MultiBandTile, extent: Extent, metadataName: String){
+
+  def write(outputFilePath: String, multiBandTile: MultiBandTile, extent: Extent, metadataName: String) {
     val path = outputFilePath
     val base: String = if (path.endsWith(".arg") || path.endsWith(".json") || path.endsWith(".")) {
       path.substring(0, path.lastIndexOf("."))
     } else {
-      path 
+      path
     }
-    
-    writeMetadataJSON(base, metadataName,multiBandTile.bands, RasterExtent(extent, multiBandTile.cols, multiBandTile.rows))
-    
-    for(i <- 0 until multiBandTile.bands) yield { writeData(base+"-band"+i+".arg", multiBandTile.getBand(i)) }
+
+    writeMetadataJSON(base, metadataName, multiBandTile.bands, RasterExtent(extent, multiBandTile.cols, multiBandTile.rows))
+
+    for (i <- 0 until multiBandTile.bands) yield { writeData(base + "-band" + i + ".arg", multiBandTile.getBand(i)) }
   }
-    
+
   private def writeMetadataJSON(path: String, name: String, noOfBands: Int, re: RasterExtent) {
     val metadata = s"""{
         |  "layer": "$name",
@@ -65,11 +65,11 @@ case class MultibandArgWriter(typ: CellType){
         |  "xskew": 0.0
         |}""".stripMargin
 
-    val bos = new BufferedOutputStream(new FileOutputStream(path+".json"))
+    val bos = new BufferedOutputStream(new FileOutputStream(path + ".json"))
     bos.write(metadata.getBytes)
     bos.close
   }
-  
+
   def writeData(path: String, raster: Tile) {
     val dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)))
     CellWriter.byType(typ).writeCells(raster, dos)

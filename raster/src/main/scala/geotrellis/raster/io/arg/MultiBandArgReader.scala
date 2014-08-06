@@ -14,30 +14,30 @@ object MultibandArgReader {
   /** Reads multiband arg from the jsom metadata file. */
   final def read(path: String): MultiBandTile =
     readBands(path, None)
-    
+
   /** Reads multiband arg from the jsom metadata file. */
   final def read(path: String, targetRasterExtent: RasterExtent): MultiBandTile =
     readBands(path, Some(targetRasterExtent))
-    
+
   private final def readBands(path: String, targetRasterExtent: Option[RasterExtent]): MultiBandTile = {
     val json = ConfigFactory.parseString(Filesystem.readText(path))
     val layerType = json.getString("type").toLowerCase
-    if(layerType != "arg") { sys.error(s"Cannot read raster layer type $layerType, must be arg") }
-    
+    if (layerType != "arg") { sys.error(s"Cannot read raster layer type $layerType, must be arg") }
+
     val noOfBands: Int = json.getInt("bands")
 
     val argPath = {
-     val paths: Array[String] = new Array[String](noOfBands)
-     if(json.hasPath("path")) {
-       val p = json.getString("path")
-       for(i <- 0 until noOfBands) yield { paths(i)= p+"-band"+i+".arg" }
-     } else {
-       val layerName = json.getString("layer")
-       // Default to a .arg file with the same name as the layer name.
-       for(i <- 0 until noOfBands) yield { paths(i)= layerName+"-band"+i+".arg" }
-     }
-     paths
-  }
+      val paths: Array[String] = new Array[String](noOfBands)
+      if (json.hasPath("path")) {
+        val p = json.getString("path")
+        for (i <- 0 until noOfBands) yield { paths(i) = p + "-band" + i + ".arg" }
+      } else {
+        val layerName = json.getString("layer")
+        // Default to a .arg file with the same name as the layer name.
+        for (i <- 0 until noOfBands) yield { paths(i) = layerName + "-band" + i + ".arg" }
+      }
+      paths
+    }
 
     val cellType =
       json.getString("datatype") match {
@@ -65,7 +65,7 @@ object MultibandArgReader {
         MultiBandTile(argPath.map(f => ArgReader.read(f, cellType, RasterExtent(extent, cols, rows), te)))
       case None =>
         MultiBandTile(argPath.map(f => ArgReader.read(f, cellType, cols, rows)))
-    } 
+    }
   }
-  
+
 }
