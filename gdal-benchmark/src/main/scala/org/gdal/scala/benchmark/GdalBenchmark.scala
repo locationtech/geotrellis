@@ -2,10 +2,6 @@ package org.gdal.scala.benchmark
 
 import java.lang.System.currentTimeMillis
 
-import geotrellis._
-import geotrellis.source._
-import geotrellis.process._
-
 object Bench {
   def bench[T](times:Int,body: T => Unit, v:T):Long = {
     // One warmup
@@ -41,13 +37,18 @@ object RasterReadBenchmark {
     val argPath = "../raster-test/data/data/slope.json"
 
     val gdalTime = Bench.bench(10, { p: String => geotrellis.gdal.GdalReader.read(path) }, path)
-    val geotoolsTime = Bench.bench(10, { p: String => geotrellis.data.GeoTiff.readRaster(path) }, path)
+    val geotoolsTime = Bench.bench(10, { p: String => geotrellis.raster.io.GeoTiff.readRaster(path) }, path)
+    val nativeTime = Bench.bench( 10, { p: String => 
+      geotrellis.raster.io.geotiff.reader.GeoTiffReader(p).read().imageDirectories.head.toRaster 
+    }, path)
+
     val geotrellisTime = Bench.bench(10, { p: String => 
-      RasterLayer.fromPath(p).get.getRaster
+      geotrellis.raster.io.arg.ArgReader.read(p)
     }, argPath)
 
     println(s"GDAL took $gdalTime ms.")
     println(s"GeoTools took $geotoolsTime ms.")
-    println(s"GeoTrellis took $geotrellisTime ms.")
+    println(s"Native reader took $nativeTime ms.")
+    println(s"ARG reading took $geotrellisTime ms.")
   }
 }
