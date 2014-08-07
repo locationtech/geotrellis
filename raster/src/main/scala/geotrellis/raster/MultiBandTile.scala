@@ -31,13 +31,13 @@ trait MultiBandTile {
 
   def convert(cellType: CellType): MultiBandTile
 
-  def combine(firstBandIndex: Int, secondBandIndex: Int)(f: (Int, Int) => Int): Tile
+  def combine(other: MultiBandTile)(f: (Int, Int) => Int): MultiBandTile
 
-  def combineDouble(firstBandIndex: Int, secondBandIndex: Int)(f: (Double, Double) => Double): Tile
+  def combineDouble(other: MultiBandTile)(f: (Double, Double) => Double): MultiBandTile
 
-  def dualCombine(firstBandIndex: Int, secondBandIndex: Int)(f: (Int, Int) => Int)(g: (Double, Double) => Double): Tile =
-    if (cellType.isFloatingPoint) combineDouble(firstBandIndex, secondBandIndex)(g)
-    else combine(firstBandIndex, secondBandIndex)(f)
+  def dualCombine(other: MultiBandTile)(f: (Int, Int) => Int)(g: (Double, Double) => Double): MultiBandTile =
+    if (cellType.isFloatingPoint) combineDouble(other)(g)
+    else combine(other)(f)
 
   def mapIfSet(f: Int => Int): MultiBandTile =
     map { i =>
@@ -54,4 +54,5 @@ trait MultiBandTile {
   def dualMapIfSet(f: Int => Int)(g: Double => Double): MultiBandTile =
     if (cellType.isFloatingPoint) mapIfSetDouble(g)
     else mapIfSet(f)
+
 }

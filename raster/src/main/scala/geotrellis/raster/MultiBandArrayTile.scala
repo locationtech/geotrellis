@@ -36,22 +36,26 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
     MultiBandTile(outputData)
   }
 
-  def combine(firstBandIndex: Int, secondBandIndex: Int)(f: (Int, Int) => Int): Tile = {
-    if (bands < 2)
-      throw new IndexOutOfBoundsException("MultiBandTile.length < 2")
-    else if (firstBandIndex >= bands || secondBandIndex >= bands)
-      throw new IndexOutOfBoundsException("MultiBandTile.length < (firstBandIndex or secondBandIndex)")
-    else
-      this.getBand(firstBandIndex).combine(this.getBand(secondBandIndex))(f)
+  def combine(other: MultiBandTile)(f: (Int, Int) => Int): MultiBandTile = {
+    if (this.bands != other.bands){
+      throw new IndexOutOfBoundsException("MultiBandTile.bands")
+    }else if (this.dimensions != other.dimensions){
+      throw new Exception("MultiBandTile.dimensions") 
+    }else {
+      val output = (for (i <- 0 until this.bands) yield { this.getBand(i).combine(other.getBand(i))(f)}).toArray
+      MultiBandTile(output)
+    }
   }
 
-  def combineDouble(firstBandIndex: Int, secondBandIndex: Int)(f: (Double, Double) => Double): Tile = {
-    if (bands < 2)
-      throw new IndexOutOfBoundsException("MultiBandTile.bands < 2")
-    else if (firstBandIndex >= bands || secondBandIndex >= bands)
-      throw new IndexOutOfBoundsException("MultiBandTile.bands < (firstBandIndex or secondBandIndex)")
-    else
-      this.getBand(firstBandIndex).combineDouble(this.getBand(secondBandIndex))(f)
+  def combineDouble(other: MultiBandTile)(f: (Double, Double) => Double): MultiBandTile = {
+    if (this.bands != other.bands){
+      throw new IndexOutOfBoundsException("MultiBandTile.bands")
+    }else if (this.dimensions != other.dimensions){
+      throw new Exception("MultiBandTile.dimensions") 
+    }else {
+      val output = (for (i <- 0 until this.bands) yield { this.getBand(i).combineDouble(other.getBand(i))(f)}).toArray
+      MultiBandTile(output)
+    }
   }
 
   override def equals(other: Any): Boolean = other match {
@@ -68,5 +72,4 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
     }
     case _ => false
   }
-
 }
