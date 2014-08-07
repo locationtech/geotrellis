@@ -72,4 +72,25 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
     }
     case _ => false
   }
+  
+  def combine(first: Int, last: Int)(f: (Int, Int) => Int): Tile = {
+    if(bands < 2){
+      throw new IndexOutOfBoundsException("MultiBandTile.band")
+    }else if(bands <= first || bands <= last){
+      throw new IndexOutOfBoundsException("MultiBandTile.band with Index")
+    }else{
+      getBand(first).combine(getBand(last))(f)
+    }
+  }
+
+  def combineDouble(first: Int, last: Int)(f: (Double, Double) => Double): Tile = {
+    if(bands < 2){
+      throw new IndexOutOfBoundsException("MultiBandTile.band")
+    }else if(bands <= first || bands <= last){
+      throw new IndexOutOfBoundsException("MultiBandTile.band with Index")
+    }else{
+      getBand(first).combineDouble(getBand(last))(f)
+    }
+  }
+  
 }

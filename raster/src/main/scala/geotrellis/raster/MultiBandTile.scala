@@ -55,4 +55,12 @@ trait MultiBandTile {
     if (cellType.isFloatingPoint) mapIfSetDouble(g)
     else mapIfSet(f)
 
+  def combine(first: Int, last: Int)(f: (Int, Int) => Int): Tile
+
+  def combineDouble(first: Int, last: Int)(f: (Double, Double) => Double): Tile
+
+  def dualCombine(first: Int, last: Int)(f: (Int, Int) => Int)(g: (Double, Double) => Double): Tile =
+    if (cellType.isFloatingPoint) combineDouble(first, last)(g)
+    else combine(first, last)(f)
+    
 }
