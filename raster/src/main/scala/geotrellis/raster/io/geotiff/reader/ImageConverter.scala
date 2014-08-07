@@ -20,6 +20,7 @@ import monocle.syntax._
 import monocle.Macro._
 
 import java.util.BitSet
+import java.nio.ByteBuffer
 
 import geotrellis._
 import geotrellis.raster._
@@ -30,12 +31,20 @@ import geotrellis.raster.io.geotiff.reader.utils.BitSetUtils._
 
 case class ImageConverter(directory: ImageDirectory) {
 
-  def convert(uncompressedImage: Vector[Vector[Byte]]): Vector[Byte] =
-    if (!directory.hasStripStorage) tiledImageToRowImage(uncompressedImage)
-    else if (directory.bitsPerPixel == 1) stripBitImageOverflow(uncompressedImage)
-    else if (directory.cellType == TypeFloat) flipToFloat(uncompressedImage.flatten)
-    else if (directory.cellType == TypeDouble) flipToDouble(uncompressedImage.flatten)
-    else uncompressedImage.flatten
+  def convert(uncompressedImage: Vector[Vector[Byte]]): Vector[Byte] = {
+    val image =
+      if (!directory.hasStripStorage) tiledImageToRowImage(uncompressedImage)
+      else if (directory.bitsPerPixel == 1) stripBitImageOverflow(uncompressedImage)
+      else if (directory.cellType == TypeFloat) flipToFloat(uncompressedImage.flatten)
+      else if (directory.cellType == TypeDouble) flipToDouble(uncompressedImage.flatten)
+      else uncompressedImage.flatten
+
+    directory |-> gdalInternalNoDataLens get match {
+      case Some(gdalNoDataString) => replaceGDALNoDataWithNODATA(image,
+        gdalNoDataString, directory.cellType)
+        case None => image
+    }
+  }
 
   private def flipToFloat(image: Vector[Byte]) = flip(image, 4)
 
@@ -83,8 +92,6 @@ case class ImageConverter(directory: ImageDirectory) {
 
     val overflow = (8 - tileWidth % 8) % 8
 
-    //println(s"widthRes: $widthRes, overflow: $overflow, imageLength: $imageLength")
-
     for (i <- 0 until imageLength) {
       for (j <- 0 until tilesWidth) {
         val index = j + (i / tileLength) * tilesWidth
@@ -93,17 +100,6 @@ case class ImageConverter(directory: ImageDirectory) {
         val start = (i % tileLength) * (tileWidth + overflow)
         val length = if (j == tilesWidth - 1 && widthRes != 0)
           widthRes else tileWidth
-
-        /*if (j == tilesWidth - 1) {
-          //println(s"tile bits: resIndex: $resIndex")
-          for (i <- start until start + 14)
-            //if (tileBitSet.get(i)) print("1   ") else print("0   ")
-
-          //println()
-          for (i <- 896 until 896 + 14)
-            //print(s"$i ")
-          //println()
-        }*/
 
         bitSetCopy(
           tileBitSet,
@@ -216,6 +212,106 @@ case class ImageConverter(directory: ImageDirectory) {
 
     resBitSet.toByteVector(resSize)
 
+  }
+
+  def replaceGDALNoDataWithNODATA(image: Vector[Byte], gdalNoDataString: String,
+    cellType: CellType) = cellType match {
+    case TypeByte => {
+      val noData = gdalNoDataString.toInt.toByte
+      image.map(x => if (x == noData) byteNODATA else x)
+    }
+    case TypeShort => {
+      val newArr = image.toArray
+
+      val noData = gdalNoDataString.toInt
+
+      val noDataGT = Vector[Byte](
+        (shortNODATA >> 8).toByte,
+        (shortNODATA & 0xff).toByte
+      )
+
+      var i = 0
+      while (i < image.size) {
+        val short = image(i) << 8 + image(i + 1)
+
+        if (short == noData)
+          for (j <- 0 until 2)
+            newArr(i + j) = noDataGT(j)
+
+        i += 2
+      }
+
+      newArr.toVector
+    }
+    case TypeShort | TypeInt => {
+      val newArr = image.toArray
+
+      val noData = gdalNoDataString.toInt
+
+      val indexRun = if (cellType == TypeShort) 2 else 4
+
+      val noDataGT = Vector[Byte](
+        (NODATA >> 24).toByte,
+        ((NODATA & 0xff0000) >> 16).toByte,
+        ((NODATA & 0xff00) >> 8).toByte,
+        (NODATA & 0xff).toByte
+      ).drop( if (cellType == TypeShort) 2 else 0)
+
+      var i = 0
+      while (i < image.size) {
+        val v =
+          if (cellType == TypeShort) image(i) << 8 + image(i + 1)
+          else  image(i) << 24 + image(i + 1) << 16 + image(i + 2) << 8 + image(i + 3)
+
+        if (v == noData)
+          for (j <- 0 until indexRun)
+            newArr(j + i) = noDataGT(j)
+
+        i += indexRun
+      }
+
+      newArr.toVector
+    }
+    case TypeFloat | TypeDouble => {
+      val newArr = image.toArray
+
+      val noData = gdalNoDataString.toDouble
+      val bb = ByteBuffer.allocate(8)
+
+      if (cellType == TypeFloat) bb.putFloat(Float.NaN)
+      else bb.putDouble(Double.NaN)
+
+      bb.position(0)
+
+      val indexRun = if (cellType == TypeFloat) 4 else 8
+      val loopBB = ByteBuffer.allocate(8)
+
+      var i = 0
+      while (i < image.size) {
+        for (j <- i until i + indexRun)
+          loopBB.put(image(j))
+
+        loopBB.position(0)
+
+        val current =
+          if (cellType == TypeFloat) loopBB.getFloat.toDouble
+          else loopBB.getDouble
+
+        loopBB.clear
+
+        if (current == noData) {
+          for (j <- i until i + indexRun)
+            newArr(j) = bb.get
+
+          bb.position(0)
+        }
+
+        i += indexRun
+      }
+
+      newArr.toVector
+    }
+    case TypeBit => image
   }
 
 }
