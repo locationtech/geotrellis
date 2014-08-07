@@ -93,4 +93,22 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
     }
   }
   
+  def ndvi(redBandIndex: Int, greenBandIndex: Int): Tile = {
+    if(bands < 2)
+      throw new IndexOutOfBoundsException("MultiBandTile.bands < 2")
+    else if(redBandIndex >= bands || greenBandIndex >= bands)
+      throw new IndexOutOfBoundsException("MultiBandTile.bands < (redBandIndex or greenBandIndex)")
+    else
+      combine(redBandIndex, greenBandIndex)((r,g) => (r-g)/(r+g))
+  }
+  
+  def ndviDouble(redBandIndex: Int, greenBandIndex: Int): Tile = {
+    if(bands < 2)
+      throw new IndexOutOfBoundsException("MultiBandTile.bands < 2")
+    else if(redBandIndex >= bands || greenBandIndex >= bands)
+      throw new IndexOutOfBoundsException("MultiBandTile.bands < (redBandIndex or greenBandIndex)")
+    else
+      combineDouble(redBandIndex, greenBandIndex)((r,g) => (r-g)/(r+g))
+  }
+  
 }

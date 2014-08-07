@@ -62,5 +62,14 @@ trait MultiBandTile {
   def dualCombine(first: Int, last: Int)(f: (Int, Int) => Int)(g: (Double, Double) => Double): Tile =
     if (cellType.isFloatingPoint) combineDouble(first, last)(g)
     else combine(first, last)(f)
-    
+
+  def ndvi(redBandIndex: Int, greenBandIndex: Int): Tile
+
+  def ndviDouble(redBandIndex: Int, greenBandIndex: Int): Tile
+
+  def dualndvi(redBandIndex: Int, greenBandIndex: Int): Tile = {
+    if (cellType.isFloatingPoint) ndviDouble(redBandIndex, greenBandIndex)
+    else ndvi(redBandIndex, greenBandIndex)
+  }
+  
 }
