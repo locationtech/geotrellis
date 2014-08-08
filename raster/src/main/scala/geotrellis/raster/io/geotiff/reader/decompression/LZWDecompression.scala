@@ -31,15 +31,15 @@ import spire.syntax.cfor._
 
 object LZWDecompression {
   implicit class LZW(matrix: Array[Array[Byte]]) {
+    val tableLimit = 4096
+
     final val initialStringTable = {
-      val arr = Array.ofDim[Array[Byte]](256)
+      val arr = Array.ofDim[Array[Byte]](tableLimit)
       cfor(0)(_ < 256, _ + 1) { i =>
         arr(i) = Array(i.toByte)
       }
       arr
     }
-
-    val tableLimit = 4096
 
     val limitMap = HashMap[Int, Int](
       9 -> 510,
