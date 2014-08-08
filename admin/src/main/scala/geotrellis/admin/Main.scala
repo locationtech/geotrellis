@@ -16,7 +16,7 @@
 
 package geotrellis.admin
 
-import geotrellis._
+import geotrellis.engine._
 
 import akka.actor.{ActorSystem, Props}
 import akka.io.IO
@@ -33,7 +33,7 @@ object Main {
     GeoTrellis.init
     println(s"SERVERING STATIC CONTENT FROM $staticContentPath")
     try {
-      implicit val system = GeoTrellis.server.system
+      implicit val system = GeoTrellis.engine.system
 
       val service = system.actorOf(Props(classOf[AdminServiceActor],staticContentPath), "admin-service")
       IO(Http) ! Http.Bind(service, host, port = port)

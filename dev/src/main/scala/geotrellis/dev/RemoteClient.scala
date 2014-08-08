@@ -19,13 +19,14 @@ package geotrellis.dev
 import akka.kernel.Bootable
 import scala.util.Random
 
+import geotrellis.engine._
+import geotrellis.engine.op.local._
+import geotrellis.engine.stats._
+import geotrellis.raster._
+import geotrellis.raster.stats._
+
 import com.typesafe.config.ConfigFactory
 import akka.actor.{ ActorRef, Props, Actor, ActorSystem }
-import geotrellis.raster.op._
-import geotrellis.process._
-import geotrellis._
-import geotrellis.raster._
-import geotrellis.statistics.op._
 
 import akka.cluster.routing.ClusterRouterConfig
 import akka.cluster.routing.ClusterRouterSettings
@@ -54,14 +55,10 @@ import akka.cluster.Cluster
 import akka.cluster.ClusterEvent.CurrentClusterState
 import akka.cluster.ClusterEvent.MemberUp
 
-import geotrellis.process._
 import akka.serialization._
 
-import geotrellis.source._
-import geotrellis.statistics._
-
 class RemoteClientApplication extends Bootable {
-  val server = new Server("remoteServer", Catalog.fromPath("core-test/data/catalog.json"))
+  val server = new Engine("remoteEngine", Catalog.fromPath("raster-test/data/catalog.json"))
   val router = server.getRouter()
 
   def startup() {
@@ -112,8 +109,8 @@ object RemoteClient {
   }
 
 
-  def testSerialization(remoteOp:AnyRef, server:Server) {
-    val serialization = SerializationExtension(server.system)
+  def testSerialization(remoteOp:AnyRef, engine: Engine) {
+    val serialization = SerializationExtension(engine.system)
     val serializer = serialization.findSerializerFor(remoteOp)
     val bytes = serializer.toBinary(remoteOp)
     val back = serializer.fromBinary(bytes, manifest = None)

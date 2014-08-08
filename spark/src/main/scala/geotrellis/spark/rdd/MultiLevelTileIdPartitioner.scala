@@ -1,4 +1,6 @@
 package geotrellis.spark.rdd
+
+
 import geotrellis.spark.formats.TileIdZoomWritable
 import geotrellis.spark.metadata.PyramidMetadata
 import org.apache.hadoop.conf.Configuration
@@ -20,9 +22,13 @@ class MultiLevelTileIdPartitioner extends org.apache.spark.Partitioner {
   def getPartitionForZoom(key: TileIdZoomWritable) = 
     partitioners(key.zoom).getPartition(key)
 
-  override def numPartitions = partitioners.foldLeft(0)((count, entry) => count + entry._2.numPartitions)
+  override def numPartitions = 
+    partitioners
+      .foldLeft(0) { case (count, (_, tileIdPartitioner)) => 
+        count + tileIdPartitioner.numPartitions 
+       }
 
-  override def toString = {
+  override def toString =
     "MultiLevelTileIdPartitioner:\n" +
       "Split points: \n" +
       {
@@ -34,7 +40,6 @@ class MultiLevelTileIdPartitioner extends org.apache.spark.Partitioner {
         for ((level, offset) <- offsets)
           yield s"${level}: ${offset}\n"
       }
-  }
 
   override def equals(other: Any): Boolean =
     other match {

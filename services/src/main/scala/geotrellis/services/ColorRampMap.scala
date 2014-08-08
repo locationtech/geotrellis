@@ -16,7 +16,7 @@
 
 package geotrellis.services
 
-import geotrellis.render._
+import geotrellis.raster.render._
 
 /** Provides a string keyed map to predefined color ramps
   * to be used for coloring rendered rasters.

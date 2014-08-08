@@ -3,7 +3,7 @@
 - name: Master
   hosts: master
   roles:
-    - pptpd
+    - common
     - hadoop
     - hadoop_namenode
     - spark

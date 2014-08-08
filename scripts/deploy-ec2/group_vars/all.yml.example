@@ -27,3 +27,13 @@ hdfs:
     { device: /dev/xvdg, mount: /mnt/data2, size: 64 }
   ]
   replication: 3
+
+# If you need to connect to the cluster VPN, set this to
+# your local network's public subnet. It will be included
+# as part of the security group for the master instance.
+allow_vpn_from_subnet: 0.0.0.0/32
+
+cdh:
+  repo: precise-cdh5.1.0
+  spark_version: 1.0.0-cdh5.1.0
+  hadoop_version: 2.3.0-cdh5.1.0

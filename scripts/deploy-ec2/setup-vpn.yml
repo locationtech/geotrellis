@@ -1,0 +1,11 @@
+---
+
+- name: Vpn
+  hosts: master
+  roles:
+    - pptpd
+  gather_facts: False
+
+  tasks:
+    - include_vars: group_vars/cluster.yml
+  

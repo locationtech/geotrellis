@@ -19,12 +19,11 @@ package geotrellis.spark.rdd
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.metadata.Context
-import geotrellis.spark.op.local.AddOpMethods
-import geotrellis.spark.op.local.DivideOpMethods
-import geotrellis.spark.op.local.MultiplyOpMethods
-import geotrellis.spark.op.local.SubtractOpMethods
+import geotrellis.spark.op.local._
 import geotrellis.spark.formats.ArgWritable
 import geotrellis.spark.formats.TileIdWritable
+
+import geotrellis.raster._
 
 import org.apache.spark.Partition
 import org.apache.spark.SparkContext
@@ -33,15 +32,13 @@ import org.apache.spark.rdd.RDD
 
 import org.apache.hadoop.fs.Path
 
-class RasterRDD(val prev: RDD[Tile], val opCtx: Context)
-  extends RDD[Tile](prev)
+class RasterRDD(val prev: RDD[TmsTile], val opCtx: Context)
+  extends RDD[TmsTile](prev)
   with AddOpMethods[RasterRDD]
   with SubtractOpMethods[RasterRDD]
   with MultiplyOpMethods[RasterRDD]
   with DivideOpMethods[RasterRDD] {
 
-  override val partitioner = Some(opCtx.partitioner)
-  
   // TODO - investigate whether this needs to work on the partitioner's output 
   // instead of firstParent's partitions (e.g., what if the RasterRDD was created
   // using an operation that involved modifying partitions (coalescing, cropping, etc.)
@@ -55,22 +52,42 @@ class RasterRDD(val prev: RDD[Tile], val opCtx: Context)
       partition.map(_.toWritable)
     }, true)
 
-  def mapTiles(f: Tile => Tile): RasterRDD =
+  def mapTiles(f: TmsTile => TmsTile): RasterRDD =
     mapPartitions({ partition =>
       partition.map { tile =>
         f(tile)
       }
     }, true)
-      .withContext(opCtx)
+    .withContext(opCtx)
 
-  def combineTiles(other: RasterRDD)(f: (Tile, Tile) => Tile): RasterRDD =
+  def combineTiles(other: RasterRDD)(f: (TmsTile, TmsTile) => TmsTile): RasterRDD =
     zipPartitions(other, true) { (partition1, partition2) =>
       partition1.zip(partition2).map {
         case (tile1, tile2) =>
           f(tile1, tile2)
       }
     }
-      .withContext(opCtx)
+    .withContext(opCtx)
+
+  def minMax: (Int, Int) = 
+    map(_.tile.findMinMax)
+      .reduce { (t1, t2) =>
+        val (min1, max1) = t1
+        val (min2, max2) = t2
+        val min = 
+          if(isNoData(min1)) min2 
+          else { 
+            if(isNoData(min2)) min1 
+            else math.min(min1, min2)
+          }
+        val max = 
+          if(isNoData(max1)) max2
+          else {
+            if(isNoData(max2)) max1
+            else math.max(max1, max2)
+          }
+        (min, max)
+       }
 }
 
 object RasterRDD {
