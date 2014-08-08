@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
+import geotrellis.raster.io.Filesystem
 import geotrellis.testkit._
 
 import scala.io.{Source, Codec}
@@ -32,13 +33,7 @@ class GeoTiffReaderSpec extends FunSpec with Matchers {
 
   private def read(fileName: String): GeoTiff = {
     val filePath = filePathToTestData + fileName
-    val source = Source.fromFile(filePath)(Codec.ISO8859)
-
-    val geotiff = GeoTiffReader(source).read
-
-    source.close
-
-    geotiff
+    GeoTiffReader(filePath).read
   }
 
   private def readAndSave(fileName: String) {

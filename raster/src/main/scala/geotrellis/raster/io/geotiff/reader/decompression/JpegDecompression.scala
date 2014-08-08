@@ -24,6 +24,8 @@ import monocle.Macro._
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
 
+import spire.syntax.cfor._
+
 object JpegTags {
 
   val SOI = 0xd8
@@ -56,28 +58,29 @@ case class JpegTables()
 
 object JpegDecompression {
 
-  implicit class Jpeg(matrix: Vector[Vector[Byte]]) {
+  implicit class Jpeg(matrix: Array[Array[Byte]]) {
 
     import JpegTags._
 
-    def uncompressJpeg(directory: ImageDirectory): Vector[Vector[Byte]] = {
+    def uncompressJpeg(directory: ImageDirectory): Array[Array[Byte]] = {
+      ??? // TODO: IMPLIMENT THIS
       val jpegTables = directory |-> jpegTablesLens get match {
         case Some(v) => Some(JpegTables())
         case None => None
       }
 
-      matrix.map(uncompressJpegSegment(_, directory,
-        jpegTables)).toVector
-    }
+      val len = matrix.length
+      val arr = Array.ofDim[Array[Byte]](len)
 
-    private def uncompressJpegSegment(segment: Vector[Byte],
-      directory: ImageDirectory, jpegTables: Option[JpegTables]) = {
-      val byteBuffer = ByteBuffer.wrap(segment.toArray).
-        order(ByteOrder.BIG_ENDIAN)
-      validateHeader(byteBuffer)
+      cfor(0)(_ < len, _ + 1) { i =>
+        val segment = matrix(i)
+        val byteBuffer = ByteBuffer.wrap(segment).order(ByteOrder.BIG_ENDIAN)
+        validateHeader(byteBuffer)
 
+        arr(i) = segment
+      }
 
-      segment
+      arr
     }
 
     private def readJpegHeader(byteBuffer: ByteBuffer,

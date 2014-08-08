@@ -18,9 +18,11 @@ package geotrellis.raster.io.geotiff.reader.utils
 
 import java.nio.{ByteBuffer, ByteOrder}
 
-object VectorUtils {
+import spire.syntax.cfor._
 
-  implicit class VectorUtilities(vector: Vector[Byte]) {
+object ArrayUtils {
+
+  implicit class ArrayUtilities(arr: Array[Byte]) {
 
     def readIntNumber(byteSize: Int, index: Int): Int = {
       if (byteSize != 1 && byteSize != 2 && byteSize != 4)
@@ -31,8 +33,9 @@ object VectorUtils {
 
       var int = 0
 
-      for (i <- start until end)
-        int += vector(i) << i * 8
+      cfor(start)(_ < end, _ + 1) { i =>
+        int += arr(i) << i * 8
+      }
 
       int
     }
@@ -46,8 +49,9 @@ object VectorUtils {
 
       val bb = ByteBuffer.allocate(byteSize).order(ByteOrder.LITTLE_ENDIAN)
 
-      for (i <- start until end)
-        bb.put(vector(i))
+      cfor(start)(_ < end, _ + 1) { i =>
+        bb.put(arr(i))
+      }
 
       bb.position(0)
       if (byteSize == 4) bb.getFloat.toDouble

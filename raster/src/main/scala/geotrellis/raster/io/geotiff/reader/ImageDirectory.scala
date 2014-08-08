@@ -23,7 +23,7 @@ import geotrellis._
 import geotrellis.raster._
 import geotrellis.raster.io.arg.ArgWriter
 
-import geotrellis.raster.io.geotiff.reader.utils.VectorUtils._
+import geotrellis.raster.io.geotiff.reader.utils.ArrayUtils._
 import geotrellis.raster.io.geotiff.reader.utils.MatrixUtils._
 import geotrellis.raster.io.geotiff.reader.CommonPublicValues._
 
@@ -166,7 +166,7 @@ case class GeoTiffCoordinates(
 
 object Pixel3D {
 
-  def fromVector(v: Vector[Double]): Pixel3D =
+  def fromArray(v: Array[Double]): Pixel3D =
     if (v.size == 3) Pixel3D(v(0), v(1), v(2))
     else throw new IllegalArgumentException(
       "3D pixel needs vector with size 3 (x, y ,z)"
@@ -191,8 +191,8 @@ case class MetadataTags(
 )
 
 case class BasicTags(
-  bitsPerSample: Option[Vector[Int]] = None,
-  colorMap: Option[Vector[Int]] = None,
+  bitsPerSample: Option[Array[Int]] = None,
+  colorMap: Option[Array[Int]] = None,
   imageLength: Int = 0,
   imageWidth: Int = 0,
   compression: Int = 1,
@@ -200,8 +200,8 @@ case class BasicTags(
   resolutionUnit: Option[Int] = None,
   rowsPerStrip: Long = (1 << 31) - 1,
   samplesPerPixel: Int = 1,
-  stripByteCounts: Option[Vector[Int]] = None,
-  stripOffsets: Option[Vector[Int]] = None,
+  stripByteCounts: Option[Array[Int]] = None,
+  stripOffsets: Option[Array[Int]] = None,
   xResolution: Option[(Long, Long)] = None,
   yResolution: Option[(Long, Long)] = None
 )
@@ -209,11 +209,11 @@ case class BasicTags(
 case class NonBasicTags(
   cellLength: Option[Int] = None,
   cellWidth: Option[Int] = None,
-  extraSamples: Option[Vector[Int]] = None,
+  extraSamples: Option[Array[Int]] = None,
   fillOrder: Int = 1,
-  freeByteCounts: Option[Vector[Long]] = None,
-  freeOffsets: Option[Vector[Long]] = None,
-  grayResponseCurve: Option[Vector[Int]] = None,
+  freeByteCounts: Option[Array[Long]] = None,
+  freeOffsets: Option[Array[Long]] = None,
+  grayResponseCurve: Option[Array[Int]] = None,
   grayResponseUnit: Option[Int] = None,
   newSubfileType: Option[Long] = None,
   orientation: Option[Int] = None,
@@ -222,82 +222,82 @@ case class NonBasicTags(
   thresholding: Int = 1,
   t4Options: Int = 0,
   t6Options: Option[Int] = None,
-  halftoneHints: Option[Vector[Int]] = None,
+  halftoneHints: Option[Array[Int]] = None,
   predictor: Option[Int] = None
 )
 
 case class GeoTiffTags(
-  modelTiePoints: Option[Vector[(Pixel3D, Pixel3D)]] = None,
-  modelTransformation: Option[Vector[Vector[Double]]] = None,
+  modelTiePoints: Option[Array[(Pixel3D, Pixel3D)]] = None,
+  modelTransformation: Option[Array[Array[Double]]] = None,
   modelPixelScale: Option[(Double, Double, Double)] = None,
   geoKeyDirectory: Option[GeoKeyDirectory] = None,
-  doubles: Option[Vector[Double]] = None,
+  doubles: Option[Array[Double]] = None,
   asciis: Option[String] = None
 )
 
 case class DocumentationTags(
   documentName: Option[String] = None,
   pageName: Option[String] = None,
-  pageNumber: Option[Vector[Int]] = None,
-  xPositions: Option[Vector[(Long, Long)]] = None,
-  yPositions: Option[Vector[(Long, Long)]] = None
+  pageNumber: Option[Array[Int]] = None,
+  xPositions: Option[Array[(Long, Long)]] = None,
+  yPositions: Option[Array[(Long, Long)]] = None
 )
 
 case class TileTags(
   tileWidth: Option[Long] = None,
   tileLength: Option[Long] = None,
-  tileOffsets: Option[Vector[Int]] = None,
-  tileByteCounts: Option[Vector[Int]] = None
+  tileOffsets: Option[Array[Int]] = None,
+  tileByteCounts: Option[Array[Int]] = None
 )
 
 case class CmykTags(
   inkSet: Option[Int] = None,
   numberOfInks: Option[Int] = None,
   inkNames: Option[String] = None,
-  dotRange: Option[Vector[Int]] = None,
+  dotRange: Option[Array[Int]] = None,
   targetPrinters: Option[String] = None
 )
 
 case class DataSampleFormatTags(
-  sampleFormat: Vector[Int] = Vector(1),
-  maxSampleValue: Option[Vector[Long]] = None,
-  minSampleValue: Option[Vector[Long]] = None
+  sampleFormat: Array[Int] = Array(1),
+  maxSampleValue: Option[Array[Long]] = None,
+  minSampleValue: Option[Array[Long]] = None
 )
 
 case class ColimetryTags(
-  whitePoints: Option[Vector[(Long, Long)]] = None,
-  primaryChromaticities: Option[Vector[(Long, Long)]] = None,
-  transferFunction: Option[Vector[Int]] = None,
-  transferRange: Option[Vector[Int]] = None,
-  referenceBlackWhite: Option[Vector[Long]] = None
+  whitePoints: Option[Array[(Long, Long)]] = None,
+  primaryChromaticities: Option[Array[(Long, Long)]] = None,
+  transferFunction: Option[Array[Int]] = None,
+  transferRange: Option[Array[Int]] = None,
+  referenceBlackWhite: Option[Array[Long]] = None
 )
 
 case class JpegTags(
-  jpegTables: Option[Vector[Byte]] = None,
+  jpegTables: Option[Array[Byte]] = None,
   jpegProc: Option[Int] = None,
   jpegInterchangeFormat: Option[Long] = None,
   jpegInterchangeFormatLength: Option[Long] = None,
   jpegRestartInterval: Option[Int] = None,
-  jpegLosslessPredictors: Option[Vector[Int]] = None,
-  jpegPointTransforms: Option[Vector[Int]] = None,
-  jpegQTables: Option[Vector[Long]] = None,
-  jpegDCTables: Option[Vector[Long]] = None,
-  jpegACTables: Option[Vector[Long]] = None
+  jpegLosslessPredictors: Option[Array[Int]] = None,
+  jpegPointTransforms: Option[Array[Int]] = None,
+  jpegQTables: Option[Array[Long]] = None,
+  jpegDCTables: Option[Array[Long]] = None,
+  jpegACTables: Option[Array[Long]] = None
 )
 
 case class YCbCrTags(
-  yCbCrCoefficients: Option[Vector[(Long, Long)]] = None,
-  yCbCrSubSampling: Option[Vector[Int]] = None,
+  yCbCrCoefficients: Option[Array[(Long, Long)]] = None,
+  yCbCrSubSampling: Option[Array[Int]] = None,
   yCbCrPositioning: Option[Int] = None
 )
 
 case class NonStandardizedTags(
   asciisMap: HashMap[Int, String] = HashMap[Int, String](),
-  longsMap: HashMap[Int, Vector[Long]] = HashMap[Int, Vector[Long]](),
-  fractionalsMap: HashMap[Int, Vector[(Long, Long)]] = HashMap[Int,
-    Vector[(Long, Long)]](),
-  undefinedMap: HashMap[Int, Vector[Byte]] = HashMap[Int, Vector[Byte]](),
-  doublesMap: HashMap[Int, Vector[Double]] = HashMap[Int, Vector[Double]]()
+  longsMap: HashMap[Int, Array[Long]] = HashMap[Int, Array[Long]](),
+  fractionalsMap: HashMap[Int, Array[(Long, Long)]] = HashMap[Int,
+    Array[(Long, Long)]](),
+  undefinedMap: HashMap[Int, Array[Byte]] = HashMap[Int, Array[Byte]](),
+  doublesMap: HashMap[Int, Array[Double]] = HashMap[Int, Array[Double]]()
 )
 
 case class ImageDirectory(
@@ -314,7 +314,7 @@ case class ImageDirectory(
   jpegTags: JpegTags = JpegTags(),
   yCbCrTags: YCbCrTags = YCbCrTags(),
   nonStandardizedTags: NonStandardizedTags = NonStandardizedTags(),
-  imageBytes: Vector[Byte] = Vector[Byte]()
+  imageBytes: Array[Byte] = Array[Byte]()
 ) {
 
   import ImageDirectoryLenses._
@@ -359,6 +359,7 @@ case class ImageDirectory(
     case None => this |-> samplesPerPixelLens get
   }
 
+  // TODO: Isn't this just row size? Rows need to all be the same length.
   def imageSegmentByteSize(index: Option[Int] = None): Long =
     (imageSegmentBitsSize(index) + 7) / 8
 
@@ -370,11 +371,11 @@ case class ImageDirectory(
   def rowSize(): Int = (if (hasStripStorage) (this |-> imageWidthLens get)
   else (this |-> tileWidthLens get).get).toInt
 
-  def getRasterBoundaries: Vector[Pixel3D] = {
+  def getRasterBoundaries: Array[Pixel3D] = {
     val imageWidth = (this |-> imageWidthLens get).toInt
     val imageLength = (this |-> imageLengthLens get).toInt
 
-    Vector(
+    Array(
       Pixel3D(0, imageLength, getDoubleValue(0, imageLength - 1)),
       Pixel3D(imageWidth, 0, getDoubleValue(imageWidth - 1, 0))
     )
@@ -462,14 +463,14 @@ case class ImageDirectory(
     }
   }
 
-  private def transformationModelSpace(modelTransformation: Vector[Vector[Double]]) = {
-    def matrixMult(pixel: Pixel3D) = Pixel3D.fromVector((modelTransformation *
-      Vector(Vector(pixel.x, pixel.y, pixel.z, 1))).flatten.take(3))
+  private def transformationModelSpace(modelTransformation: Array[Array[Double]]) = {
+    def matrixMult(pixel: Pixel3D) = Pixel3D.fromArray((modelTransformation *
+      Array(Array(pixel.x, pixel.y, pixel.z, 1))).flatten.take(3))
 
     getExtentFromModelFunction(matrixMult)
   }
 
-  private def tiePointsModelSpace(tiePoints: Vector[(Pixel3D, Pixel3D)],
+  private def tiePointsModelSpace(tiePoints: Array[(Pixel3D, Pixel3D)],
     pixelScaleOption: Option[(Double, Double, Double)]) =
     pixelScaleOption match {
       case Some(pixelScales) => {
@@ -494,7 +495,8 @@ case class ImageDirectory(
         var maxX = 0.0
         var maxY = 0.0
 
-        for (i <- 0 until 4) {
+        var i = 0
+        while(i < 4) {
           val xt = if (i % 2 == 1) imageWidth - 1 else 0
           val yt = if (i >= 2) imageLength - 1 else 0
 
@@ -508,6 +510,8 @@ case class ImageDirectory(
             if (i == 1 || i == 3) maxX = pixel.x
             if (i == 2 || i == 3) minY = pixel.y
           }
+
+          i += 1
         }
 
         Extent(minX, minY, maxX, maxY)
@@ -564,9 +568,9 @@ object ImageDirectoryLenses {
   val basicTagsLens = mkLens[ImageDirectory, BasicTags]("basicTags")
 
   val bitsPerSampleLens = basicTagsLens |-> mkLens[BasicTags,
-    Option[Vector[Int]]]("bitsPerSample")
+    Option[Array[Int]]]("bitsPerSample")
   val colorMapLens = basicTagsLens |-> mkLens[BasicTags,
-    Option[Vector[Int]]]("colorMap")
+    Option[Array[Int]]]("colorMap")
   val imageLengthLens = basicTagsLens |-> mkLens[BasicTags, Int]("imageLength")
   val imageWidthLens = basicTagsLens |-> mkLens[BasicTags, Int]("imageWidth")
   val compressionLens = basicTagsLens |-> mkLens[BasicTags,
@@ -580,9 +584,9 @@ object ImageDirectoryLenses {
   val samplesPerPixelLens = basicTagsLens |-> mkLens[BasicTags,
     Int]("samplesPerPixel")
   val stripByteCountsLens = basicTagsLens |-> mkLens[BasicTags,
-    Option[Vector[Int]]]("stripByteCounts")
+    Option[Array[Int]]]("stripByteCounts")
   val stripOffsetsLens = basicTagsLens |-> mkLens[BasicTags,
-    Option[Vector[Int]]]("stripOffsets")
+    Option[Array[Int]]]("stripOffsets")
   val xResolutionLens = basicTagsLens |-> mkLens[BasicTags,
     Option[(Long, Long)]]("xResolution")
   val yResolutionLens = basicTagsLens |-> mkLens[BasicTags,
@@ -595,14 +599,14 @@ object ImageDirectoryLenses {
   val cellWidthLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Option[Int]]("cellWidth")
   val extraSamplesLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
-    Option[Vector[Int]]]("extraSamples")
+    Option[Array[Int]]]("extraSamples")
   val fillOrderLens = nonBasicTagsLens |-> mkLens[NonBasicTags, Int]("fillOrder")
   val freeByteCountsLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
-    Option[Vector[Long]]]("freeByteCounts")
+    Option[Array[Long]]]("freeByteCounts")
   val freeOffsetsLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
-    Option[Vector[Long]]]("freeOffsets")
+    Option[Array[Long]]]("freeOffsets")
   val grayResponseCurveLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
-    Option[Vector[Int]]]("grayResponseCurve")
+    Option[Array[Int]]]("grayResponseCurve")
   val grayResponseUnitLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Option[Int]]("grayResponseUnit")
   val newSubfileTypeLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
@@ -620,22 +624,22 @@ object ImageDirectoryLenses {
   val t6OptionsLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Option[Int]]("t6Options")
   val halftoneHintsLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
-    Option[Vector[Int]]]("halftoneHints")
+    Option[Array[Int]]]("halftoneHints")
   val predictorLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Option[Int]]("predictor")
 
   val geoTiffTagsLens = mkLens[ImageDirectory, GeoTiffTags]("geoTiffTags")
 
   val modelTiePointsLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
-    Option[Vector[(Pixel3D, Pixel3D)]]]("modelTiePoints")
+    Option[Array[(Pixel3D, Pixel3D)]]]("modelTiePoints")
   val modelPixelScaleLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
     Option[(Double, Double, Double)]]("modelPixelScale")
   val modelTransformationLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
-    Option[Vector[Vector[Double]]]]("modelTransformation")
+    Option[Array[Array[Double]]]]("modelTransformation")
   val geoKeyDirectoryLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
     Option[GeoKeyDirectory]]("geoKeyDirectory")
   val doublesLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
-    Option[Vector[Double]]]("doubles")
+    Option[Array[Double]]]("doubles")
   val asciisLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
     Option[String]]("asciis")
 
@@ -647,11 +651,11 @@ object ImageDirectoryLenses {
   val pageNameLens = documentationTagsLens |->
   mkLens[DocumentationTags, Option[String]]("pageName")
   val pageNumberLens = documentationTagsLens |->
-  mkLens[DocumentationTags, Option[Vector[Int]]]("pageNumber")
+  mkLens[DocumentationTags, Option[Array[Int]]]("pageNumber")
   val xPositionsLens = documentationTagsLens |->
-  mkLens[DocumentationTags, Option[Vector[(Long, Long)]]]("xPositions")
+  mkLens[DocumentationTags, Option[Array[(Long, Long)]]]("xPositions")
   val yPositionsLens = documentationTagsLens |->
-  mkLens[DocumentationTags, Option[Vector[(Long, Long)]]]("yPositions")
+  mkLens[DocumentationTags, Option[Array[(Long, Long)]]]("yPositions")
 
   val tileTagsLens = mkLens[ImageDirectory, TileTags]("tileTags")
 
@@ -660,9 +664,9 @@ object ImageDirectoryLenses {
   val tileLengthLens = tileTagsLens |-> mkLens[TileTags,
     Option[Long]]("tileLength")
   val tileOffsetsLens = tileTagsLens |-> mkLens[TileTags,
-    Option[Vector[Int]]]("tileOffsets")
+    Option[Array[Int]]]("tileOffsets")
   val tileByteCountsLens = tileTagsLens |-> mkLens[TileTags,
-    Option[Vector[Int]]]("tileByteCounts")
+    Option[Array[Int]]]("tileByteCounts")
 
   val cmykTagsLens = mkLens[ImageDirectory, CmykTags]("cmykTags")
 
@@ -673,7 +677,7 @@ object ImageDirectoryLenses {
   val inkNamesLens = cmykTagsLens |-> mkLens[CmykTags,
     Option[String]]("inkNames")
   val dotRangeLens = cmykTagsLens |-> mkLens[CmykTags,
-    Option[Vector[Int]]]("dotRange")
+    Option[Array[Int]]]("dotRange")
   val targetPrintersLens = cmykTagsLens |-> mkLens[CmykTags,
     Option[String]]("targetPrinters")
 
@@ -681,29 +685,29 @@ object ImageDirectoryLenses {
     DataSampleFormatTags]("dataSampleFormatTags")
 
   val sampleFormatLens = dataSampleFormatTagsLens |->
-  mkLens[DataSampleFormatTags, Vector[Int]]("sampleFormat")
+  mkLens[DataSampleFormatTags, Array[Int]]("sampleFormat")
   val maxSampleValueLens = dataSampleFormatTagsLens |->
-  mkLens[DataSampleFormatTags, Option[Vector[Long]]]("maxSampleValue")
+  mkLens[DataSampleFormatTags, Option[Array[Long]]]("maxSampleValue")
   val minSampleValueLens = dataSampleFormatTagsLens |->
-  mkLens[DataSampleFormatTags, Option[Vector[Long]]]("minSampleValue")
+  mkLens[DataSampleFormatTags, Option[Array[Long]]]("minSampleValue")
 
   val colimetryTagsLens = mkLens[ImageDirectory, ColimetryTags]("colimetryTags")
 
   val whitePointsLens = colimetryTagsLens |-> mkLens[ColimetryTags,
-    Option[Vector[(Long, Long)]]]("whitePoints")
+    Option[Array[(Long, Long)]]]("whitePoints")
   val primaryChromaticitiesLens = colimetryTagsLens |-> mkLens[
-    ColimetryTags, Option[Vector[(Long, Long)]]]("primaryChromaticities")
+    ColimetryTags, Option[Array[(Long, Long)]]]("primaryChromaticities")
   val transferFunctionLens = colimetryTagsLens |-> mkLens[ColimetryTags,
-    Option[Vector[Int]]]("transferFunction")
+    Option[Array[Int]]]("transferFunction")
   val transferRangeLens = colimetryTagsLens |-> mkLens[ColimetryTags,
-    Option[Vector[Int]]]("transferRange")
+    Option[Array[Int]]]("transferRange")
   val referenceBlackWhiteLens = colimetryTagsLens |-> mkLens[
-    ColimetryTags,  Option[Vector[Long]]]("referenceBlackWhite")
+    ColimetryTags,  Option[Array[Long]]]("referenceBlackWhite")
 
   val jpegTagsLens = mkLens[ImageDirectory, JpegTags]("jpegTags")
 
   val jpegTablesLens = jpegTagsLens |-> mkLens[JpegTags,
-    Option[Vector[Byte]]]("jpegTables")
+    Option[Array[Byte]]]("jpegTables")
   val jpegProcLens = jpegTagsLens |-> mkLens[JpegTags,
     Option[Int]]("jpegProc")
   val jpegInterchangeFormatLens = jpegTagsLens |-> mkLens[JpegTags,
@@ -713,22 +717,22 @@ object ImageDirectoryLenses {
   val jpegRestartIntervalLens = jpegTagsLens |-> mkLens[JpegTags,
     Option[Int]]("jpegRestartInterval")
   val jpegLosslessPredictorsLens = jpegTagsLens |-> mkLens[JpegTags,
-    Option[Vector[Int]]]("jpegLosslessPredictors")
+    Option[Array[Int]]]("jpegLosslessPredictors")
   val jpegPointTransformsLens = jpegTagsLens |-> mkLens[JpegTags,
-    Option[Vector[Int]]]("jpegPointTransforms")
+    Option[Array[Int]]]("jpegPointTransforms")
   val jpegQTablesLens = jpegTagsLens |-> mkLens[JpegTags,
-    Option[Vector[Long]]]("jpegQTables")
+    Option[Array[Long]]]("jpegQTables")
   val jpegDCTablesLens = jpegTagsLens |-> mkLens[JpegTags,
-    Option[Vector[Long]]]("jpegDCTables")
+    Option[Array[Long]]]("jpegDCTables")
   val jpegACTablesLens = jpegTagsLens |-> mkLens[JpegTags,
-    Option[Vector[Long]]]("jpegACTables")
+    Option[Array[Long]]]("jpegACTables")
 
   val yCbCrTagsLens = mkLens[ImageDirectory, YCbCrTags]("yCbCrTags")
 
   val yCbCrCoefficientsLens = yCbCrTagsLens |-> mkLens[YCbCrTags,
-    Option[Vector[(Long, Long)]]]("yCbCrCoefficients")
+    Option[Array[(Long, Long)]]]("yCbCrCoefficients")
   val yCbCrSubSamplingLens = yCbCrTagsLens |-> mkLens[YCbCrTags,
-    Option[Vector[Int]]]("yCbCrSubSampling")
+    Option[Array[Int]]]("yCbCrSubSampling")
   val yCbCrPositioningLens = yCbCrTagsLens |-> mkLens[YCbCrTags,
     Option[Int]]("yCbCrPositioning")
 
@@ -738,13 +742,13 @@ object ImageDirectoryLenses {
   val asciisMapLens = nonStandardizedTagsLens |-> mkLens[NonStandardizedTags,
     HashMap[Int, String]]("asciisMap")
   val longsMapLens = nonStandardizedTagsLens |-> mkLens[NonStandardizedTags,
-    HashMap[Int, Vector[Long]]]("longsMap")
+    HashMap[Int, Array[Long]]]("longsMap")
   val fractionalsMapLens = nonStandardizedTagsLens |-> mkLens[
-    NonStandardizedTags, HashMap[Int, Vector[(Long, Long)]]]("fractionalsMap")
+    NonStandardizedTags, HashMap[Int, Array[(Long, Long)]]]("fractionalsMap")
   val undefinedMapLens = nonStandardizedTagsLens |-> mkLens[NonStandardizedTags,
-    HashMap[Int, Vector[Byte]]]("undefinedMap")
+    HashMap[Int, Array[Byte]]]("undefinedMap")
   val doublesMapLens = nonStandardizedTagsLens |-> mkLens[NonStandardizedTags,
-    HashMap[Int, Vector[Double]]]("doublesMap")
+    HashMap[Int, Array[Double]]]("doublesMap")
 
-  val imageBytesLens = mkLens[ImageDirectory, Vector[Byte]]("imageBytes")
+  val imageBytesLens = mkLens[ImageDirectory, Array[Byte]]("imageBytes")
 }
