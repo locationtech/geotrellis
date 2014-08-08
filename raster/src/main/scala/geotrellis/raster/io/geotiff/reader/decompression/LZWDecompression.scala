@@ -105,7 +105,8 @@ object LZWDecompression {
 
         var printed = 0
 
-        def writeString(string: Array[Byte]) = {
+        @inline
+        final def writeString(string: Array[Byte]) = {
           System.arraycopy(
             string,
             0,
@@ -152,9 +153,9 @@ object LZWDecompression {
 
           val samplesPerPixel = directory |-> samplesPerPixelLens get
 
-          for (i <- 0 until height) {
-            var count = samplesPerPixel * (i * width + 1)
-            for (j <- samplesPerPixel until width * samplesPerPixel) {
+          cfor(0)(_ < height, _ + 1) { j =>
+            var count = samplesPerPixel * (j * width + 1)
+            cfor(samplesPerPixel)(_ < width * samplesPerPixel, _ + 1) { k =>
               outputArray(count) = (outputArray(count) + outputArray(count - samplesPerPixel)).toByte
               count += 1
             }
