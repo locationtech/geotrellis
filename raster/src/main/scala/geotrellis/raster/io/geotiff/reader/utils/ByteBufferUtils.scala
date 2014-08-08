@@ -80,20 +80,21 @@ object ByteBufferUtils {
       arr
     }
 
+
     final def getShortArray(length: Int, valueOffset: Int): Array[Int] = {
       val arr = Array.ofDim[Int](length)
 
       if (length <= 2) {
         val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset)
         cfor(0)(_ < length, _ + 1) { i =>
-          us2i(bb.getShort)
+          arr(i) = us2i(bb.getShort)
         }
       } else {
         val oldPos = byteBuffer.position
         byteBuffer.position(valueOffset)
 
         cfor(0)(_ < length, _ + 1) { i =>
-          us2i(byteBuffer.getShort)
+          arr(i) = us2i(byteBuffer.getShort)
         }
 
         byteBuffer.position(oldPos)
@@ -274,3 +275,4 @@ object ByteBufferUtils {
     }
   }
 }
+

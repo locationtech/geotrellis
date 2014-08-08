@@ -105,8 +105,7 @@ object LZWDecompression {
 
         var printed = 0
 
-        @inline
-        final def writeString(string: Array[Byte]) = {
+        def writeString(string: Array[Byte]) = {
           System.arraycopy(
             string,
             0,
