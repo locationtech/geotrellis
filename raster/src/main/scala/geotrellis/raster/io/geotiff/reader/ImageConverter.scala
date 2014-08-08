@@ -32,17 +32,20 @@ import geotrellis.raster.io.geotiff.reader.utils.BitSetUtils._
 case class ImageConverter(directory: ImageDirectory) {
 
   def convert(uncompressedImage: Vector[Vector[Byte]]): Vector[Byte] = {
-    val image =
+    val stripedImage =
       if (!directory.hasStripStorage) tiledImageToRowImage(uncompressedImage)
       else if (directory.bitsPerPixel == 1) stripBitImageOverflow(uncompressedImage)
-      else if (directory.cellType == TypeFloat) flipToFloat(uncompressedImage.flatten)
-      else if (directory.cellType == TypeDouble) flipToDouble(uncompressedImage.flatten)
       else uncompressedImage.flatten
+
+    val image =
+      if (directory.cellType == TypeFloat) flipToFloat(stripedImage)
+      else if (directory.cellType == TypeDouble) flipToDouble(stripedImage)
+      else stripedImage
 
     directory |-> gdalInternalNoDataLens get match {
       case Some(gdalNoDataString) => replaceGDALNoDataWithNODATA(image,
         gdalNoDataString, directory.cellType)
-        case None => image
+      case None => image
     }
   }
 

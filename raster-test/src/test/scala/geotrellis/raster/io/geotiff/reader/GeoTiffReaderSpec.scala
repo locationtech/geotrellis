@@ -32,9 +32,9 @@ import java.nio.ByteBuffer
 
 import org.scalatest._
 
-class GeoTiffReaderSpec extends FunSpec 
+class GeoTiffReaderSpec extends FunSpec
                            with Matchers
-                           with BeforeAndAfterAll 
+                           with BeforeAndAfterAll
                            with TestEngine {
 
   var writtenFiles = Vector[String]()
@@ -100,8 +100,9 @@ class GeoTiffReaderSpec extends FunSpec
   }
 
   describe ("reading an ESRI generated Float32 geotiff with 0 NoData value") {
+
     it("matches an arg produced from geotrellis.gdal reader of that tif") {
-      val (readTile, _) = 
+      val (readTile, _) =
         read("geotiff-reader-tiffs/us_ext_clip_esri.tif")
           .imageDirectories.head.toRaster
 
@@ -110,6 +111,7 @@ class GeoTiffReaderSpec extends FunSpec
 
       assertEqual(readTile, expectedTile)
     }
+
   }
 
   describe ("reading compressed file must yield same image array as uncompressed file") {
@@ -168,6 +170,13 @@ class GeoTiffReaderSpec extends FunSpec
     it ("must read bilevel_tiled.tif and match strip file") {
       val tiled = read("geotiff-reader-tiffs/bilevel_tiled.tif")
       val striped = read("geotiff-reader-tiffs/bilevel.tif")
+
+      compareGeoTiffImages(tiled, striped)
+    }
+
+    it ("must read us_ext_clip_esri.tif and match strip file") {
+      val tiled = read("geotiff-reader-tiffs/us_ext_clip_esri.tif")
+      val striped = read("geotiff-reader-tiffs/us_ext_clip_esri_stripes.tif")
 
       compareGeoTiffImages(tiled, striped)
     }
