@@ -116,8 +116,8 @@ class GeoTiffReaderSpec extends FunSpec
 
   describe ("reading slope.tif") {
     it("should match the ARG version") {
-      val path = "../raster-test/data/slope.tif"
-      val argPath = "../raster-test/data/data/slope.json"
+      val path = "slope.tif"
+      val argPath = s"$filePathToTestData/data/slope.json"
 
       val (readTile, _) =
         read(path)

@@ -386,7 +386,7 @@ case class ImageDirectory(
     val imageWidth = (this |-> imageWidthLens get).toInt
     val imageLength = (this |-> imageLengthLens get).toInt
 
-    val index = y * imageLength + x
+    val index = y * imageWidth + x
 
     if (x >= imageWidth || y >= imageLength) throw new IllegalArgumentException(
       s"x or y out of bounds x: $x, y: $y, imageWidth: $imageWidth, imageLength: $imageLength"
