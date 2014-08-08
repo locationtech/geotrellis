@@ -18,202 +18,259 @@ package geotrellis.raster.io.geotiff.reader.utils
 
 import java.nio.ByteBuffer
 
+import spire.syntax.cfor._
+
 object ByteBufferUtils {
 
   implicit class ByteBufferUtilities(byteBuffer: ByteBuffer) {
 
-    private def ub2s(byte: Byte): Short =
+    @inline
+    final private def ub2s(byte: Byte): Short =
       (byte.toInt + (if (byte < 0) 255 else 0)).toShort
 
-    private def us2i(short: Short): Int =
+    @inline
+    final private def us2i(short: Short): Int =
       short.toInt + (if (short < 0) 65536 else 0)
 
-    private def ui2l(int: Int): Long =
+    @inline
+    final private def ui2l(int: Int): Long =
       int.toLong + (if (int < 0) 4294967296L else 0L)
 
-    def goToNextImageDirectory(current: Int, entries: Int) =
+    @inline
+    final def goToNextImageDirectory(current: Int, entries: Int) =
       byteBuffer.position(entries * 12 +
         current + 2).position(byteBuffer.getInt)
 
-    def getUnsignedShort = byteBuffer.getChar.toInt
+    @inline
+    final def getUnsignedShort: Int = byteBuffer.getChar.toInt
 
-    def getUnsignedShort(value: Int) = ByteBuffer.allocate(4).
+    @inline
+    final def getUnsignedShort(value: Int): Int = ByteBuffer.allocate(4).
       order(byteBuffer.order).putInt(0, value).getChar.toInt
 
-    def getByteVector(length: Int): Vector[Short] =
-      (for (i <- 0 until length) yield ub2s(byteBuffer.get)).toVector
+    final def getByteArray(length: Int): Array[Short] = {
+      val arr = Array.ofDim[Short](length)
 
-    def getByteVector(length: Int, valueOffset: Int): Vector[Short] =
+      cfor(0)( _ < length, _ + 1) { i =>
+        arr(i) = ub2s(byteBuffer.get)
+      }
+
+      arr
+    }
+
+    final def getByteArray(length: Int, valueOffset: Int): Array[Short] = {
+      val arr = Array.ofDim[Short](length)
+
       if (length <= 4) {
-        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
-          putInt(0, valueOffset)
-          (for (i <- 0 until length) yield ub2s(bb.get)).toVector
+        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset)
+        cfor(0)( _ < length, _ + 1) { i =>
+          arr(i) = ub2s(bb.get)
+        }
       } else {
         val oldPos = byteBuffer.position
-
         byteBuffer.position(valueOffset)
-        val arr = (for (i <- 0 until length) yield
-          ub2s(byteBuffer.get)).toVector
+
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = ub2s(byteBuffer.get)
+        }
 
         byteBuffer.position(oldPos)
-
-        arr
       }
 
-    def getShortVector(length: Int, valueOffset: Int): Vector[Int] =
+      arr
+    }
+
+    final def getShortArray(length: Int, valueOffset: Int): Array[Int] = {
+      val arr = Array.ofDim[Int](length)
+
       if (length <= 2) {
-        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
-          putInt(0, valueOffset)
-          (for (i <- 0 until length) yield us2i(bb.getShort)).toVector
+        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset)
+        cfor(0)(_ < length, _ + 1) { i =>
+          us2i(bb.getShort)
+        }
       } else {
         val oldPos = byteBuffer.position
-
         byteBuffer.position(valueOffset)
-        val arr = (for (i <- 0 until length) yield
-          us2i(byteBuffer.getShort)).toVector
+
+        cfor(0)(_ < length, _ + 1) { i =>
+          us2i(byteBuffer.getShort)
+        }
 
         byteBuffer.position(oldPos)
-
-        arr
       }
 
-    def getIntVector(length: Int, valueOffset: Int): Vector[Long] =
+      arr
+    }
+
+    final def getIntArray(length: Int, valueOffset: Int): Array[Long] = {
+      val arr = Array.ofDim[Long](length)
+
       if (length == 1) {
-        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
-          putInt(0, valueOffset)
-          (for (i <- 0 until length) yield ui2l(bb.getInt)).toVector
+        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset)
+        arr(0) = ui2l(bb.getInt)
       } else {
         val oldPos = byteBuffer.position
 
         byteBuffer.position(valueOffset)
-        val arr = (for (i <- 0 until length) yield ui2l(byteBuffer.getInt))
-          .toVector
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = ui2l(byteBuffer.getInt)
+        }
 
         byteBuffer.position(oldPos)
-
-        arr
       }
 
-    def getString(length: Int, offset: Int): String = {
-      val oldPos = byteBuffer.position
+      arr
+    }
 
+    final def getString(length: Int, offset: Int): String = {
+      val oldPos = byteBuffer.position
       byteBuffer.position(offset)
-      val string = (for (i <- 0 until length) yield
-        byteBuffer.get.toChar).mkString
+
+      val sb = new StringBuilder
+      cfor(0)(_ < length, _ + 1) { i =>
+        sb.append(byteBuffer.get.toChar)
+      }
 
       byteBuffer.position(oldPos)
 
-      string
+      sb.toString
     }
 
-    def getFractionalVector(length: Int, offset: Int): Vector[(Long, Long)] = {
-      val oldPos = byteBuffer.position
+    final def getFractionalArray(length: Int, offset: Int): Array[(Long, Long)] = {
+      val arr = Array.ofDim[(Long, Long)](length)
 
+      val oldPos = byteBuffer.position
       byteBuffer.position(offset)
-      val fractionals = (for (i <- 0 until length) yield
-        (ui2l(byteBuffer.getInt), ui2l(byteBuffer.getInt))).toVector
+
+      cfor(0)(_ < length, _ + 1) { i =>
+        arr(i) = (ui2l(byteBuffer.getInt), ui2l(byteBuffer.getInt))
+      }
 
       byteBuffer.position(oldPos)
 
-      fractionals
+      arr
     }
 
-    def getSignedByteVector(length: Int, valueOffset: Int): Vector[Byte] =
+    final def getSignedByteArray(length: Int, valueOffset: Int): Array[Byte] = {
+      val arr = Array.ofDim[Byte](length)
+
       if (length <= 4) {
-        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
-          putInt(0, valueOffset)
-          (for (i <- 0 until length) yield bb.get).toVector
+        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset)
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = bb.get
+        }
       } else {
         val oldPos = byteBuffer.position
-
         byteBuffer.position(valueOffset)
-        val arr = (for (i <- 0 until length) yield
-          byteBuffer.get).toVector
+
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = byteBuffer.get
+        }
 
         byteBuffer.position(oldPos)
-
-        arr
       }
 
-    def getSignedByteVector(length: Int): Vector[Byte] =
-      (for (i <- 0 until length) yield (byteBuffer.get)).toVector
+      arr
+    }
 
+    final def getSignedByteArray(length: Int): Array[Byte] = {
+      val arr = Array.ofDim[Byte](length)
+      cfor(0)(_ < length, _ + 1) { i =>
+        arr(i) = byteBuffer.get
+      }
+      arr
+    }
 
-    def getSignedShortVector(length: Int, valueOffset: Int): Vector[Short] =
+    final def getSignedShortArray(length: Int, valueOffset: Int): Array[Short] = {
+      val arr = Array.ofDim[Short](length)
+
       if (length <= 2) {
-        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
-          putInt(0, valueOffset)
-          (for (i <- 0 until length) yield bb.getShort).toVector
+        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset)
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = bb.getShort
+        }
       } else {
         val oldPos = byteBuffer.position
-
         byteBuffer.position(valueOffset)
-        val arr = (for (i <- 0 until length) yield
-          byteBuffer.getShort).toVector
+
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = byteBuffer.getShort
+        }
 
         byteBuffer.position(oldPos)
-
-        arr
       }
 
-    def getSignedIntVector(length: Int, valueOffset: Int): Vector[Int] =
+      arr
+    }
+
+    final def getSignedIntArray(length: Int, valueOffset: Int): Array[Int] = {
+      val arr = Array.ofDim[Int](1)
+
       if (length == 1) {
-        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
-          putInt(0, valueOffset)
-          (for (i <- 0 until length) yield bb.getInt).toVector
+        arr(0) = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset).getInt
       } else {
         val oldPos = byteBuffer.position
-
         byteBuffer.position(valueOffset)
-        val arr = (for (i <- 0 until length) yield byteBuffer.getInt).toVector
+
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = byteBuffer.getInt
+        }
 
         byteBuffer.position(oldPos)
-
-        arr
       }
 
-    def getSignedFractionalVector(length: Int,
-      offset: Int): Vector[(Int, Int)] = {
-      val oldPos = byteBuffer.position
+      arr
+    }
 
+    final def getSignedFractionalArray(length: Int, offset: Int): Array[(Int, Int)] = {
+      val arr = Array.ofDim[(Int, Int)](length)
+
+      val oldPos = byteBuffer.position
       byteBuffer.position(offset)
-      val fractionals = (for (i <- 0 until length) yield (byteBuffer.getInt,
-        byteBuffer.getInt)).toVector
+
+      cfor(0)(_ < length, _ + 1) { i =>
+        arr(i) = (byteBuffer.getInt, byteBuffer.getInt)
+      }
 
       byteBuffer.position(oldPos)
 
-      fractionals
+      arr
     }
 
-    def getFloatVector(length: Int, valueOffset: Int): Vector[Float] =
+    final def getFloatArray(length: Int, valueOffset: Int): Array[Float] = {
+      val arr = Array.ofDim[Float](length)
+
       if (length <= 2) {
-        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).
-          putInt(0, valueOffset)
-          (for (i <- 0 until length) yield bb.getFloat).toVector
+        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset)
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = bb.getFloat
+        }
       } else {
         val oldPos = byteBuffer.position
-
         byteBuffer.position(valueOffset)
-        val arr = (for (i <- 0 until length) yield
-          byteBuffer.getFloat).toVector
+
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = byteBuffer.getFloat
+        }
 
         byteBuffer.position(oldPos)
-
-        arr
       }
+      arr
+    }
 
-    def getDoubleVector(length: Int, offset: Int) = {
+    final def getDoubleArray(length: Int, offset: Int): Array[Double] = {
+      val arr = Array.ofDim[Double](length)
+
       val oldPos = byteBuffer.position
-
       byteBuffer.position(offset)
-      val doubles = (for (i <- 0 until length) yield
-        byteBuffer.getDouble).toVector
+
+      cfor(0)(_ < length, _ + 1) { i =>
+        arr(i) = byteBuffer.getDouble
+      }
 
       byteBuffer.position(oldPos)
 
-      doubles
+      arr
     }
-
   }
-
 }

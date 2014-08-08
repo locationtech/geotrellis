@@ -28,7 +28,7 @@ class ArgWritable(bytes: Array[Byte]) extends BytesWritable(bytes) with Logging 
    */
   def this() = this(Array[Byte]())
 
-  def toTile(cellType: CellType, cols: Int, rows: Int) = {
+  def toTile(cellType: CellType, cols: Int, rows: Int): MutableArrayTile = {
     /* 
      * The slice is done in cases where the backing byte array in BytesWritable 
      * is larger than expected, so a simple getBytes would get the larger array
@@ -52,5 +52,7 @@ object ArgWritable {
   def apply(aw: ArgWritable): ArgWritable = 
     new ArgWritable(aw.getBytes)
 
-  def fromTile(tile: Tile) = ArgWritable(tile.toBytes)
+  def fromTile(tile: Tile) = {
+    ArgWritable(tile.toBytes)
+  }
 }

@@ -38,14 +38,14 @@ abstract class LineScanner extends Iterator[String] with Closeable
 object HdfsUtils {
   
   def putFilesInConf(filesAsCsv: String, inConf: Configuration): Configuration = {
-    val job = new Job(inConf)
+    val job = Job.getInstance(inConf)
     FileInputFormat.setInputPaths(job, filesAsCsv)
     job.getConfiguration()
   }
   
   /* get the default block size for that path */
   def defaultBlockSize(path: Path, conf: Configuration): Long =
-    path.getFileSystem(conf).getDefaultBlockSize()
+    path.getFileSystem(conf).getDefaultBlockSize(path)
 
   /* 
    * Recursively descend into a directory and and get list of file paths
@@ -56,7 +56,17 @@ object HdfsUtils {
   def listFiles(path: Path, conf: Configuration): List[Path] = {
     val fs = path.getFileSystem(conf)
     val files = new ListBuffer[Path]
-    addFiles(fs.globStatus(path), fs, conf, files)
+
+    def addFiles(fileStatuses: Array[FileStatus]): Unit = {
+      for (fst <- fileStatuses) {
+        if (fst.isDirectory())
+          addFiles(fs.listStatus(fst.getPath()))
+        else
+          files += fst.getPath()
+      }
+    }
+
+    addFiles(fs.globStatus(path))
     files.toList
   }
 
@@ -77,6 +87,30 @@ object HdfsUtils {
 
   def getLineScanner(path: String, conf: Configuration): Option[LineScanner] =
     getLineScanner(new Path(path), conf)
+
+  def readBytes(path: Path, conf: Configuration): Array[Byte] = {
+    val fs = path.getFileSystem(conf)
+
+    val len =
+      fs.getFileStatus(path).getLen match {
+        case l if l > Int.MaxValue.toLong =>
+          sys.error(s"Cannot read path $path because it's too big..." +
+            "you must tile your rasters to smaller tiles!")
+        case l => l.toInt
+      }
+
+    val bytes = Array.ofDim[Byte](len)
+
+    val stream = fs.open(path)
+
+    try {
+      stream.readFully(0, bytes)
+    } finally {
+      stream.close()
+    }
+
+    bytes
+  }
 
   def getLineScanner(path: Path, conf: Configuration): Option[LineScanner] = {
     path.getFileSystem(conf) match {
@@ -114,19 +148,6 @@ object HdfsUtils {
 
           Some(lineScanner)
         }
-    }
-  }
-
-  private def addFiles(fileStatuses: Array[FileStatus],
-                       fs: FileSystem,
-                       conf: Configuration,
-                       files: ListBuffer[Path]): Unit = {
-    for (fst <- fileStatuses) {
-      if (fst.isDir())
-        addFiles(fs.listStatus(fst.getPath()), fs, conf, files)
-      else
-        files += fst.getPath()
-
     }
   }
 }

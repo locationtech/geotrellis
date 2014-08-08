@@ -26,44 +26,45 @@ import geotrellis.raster._
 
 import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
 import geotrellis.raster.io.geotiff.reader.utils.ByteInverterUtils._
-import geotrellis.raster.io.geotiff.reader.utils.BitSetUtils._
+
+import spire.syntax.cfor._
 
 case class ImageConverter(directory: ImageDirectory) {
 
-  def convert(uncompressedImage: Vector[Vector[Byte]]): Vector[Byte] =
+  def convert(uncompressedImage: Array[Array[Byte]]): Array[Byte] =
     if (!directory.hasStripStorage) tiledImageToRowImage(uncompressedImage)
     else if (directory.bitsPerPixel == 1) stripBitImageOverflow(uncompressedImage)
     else if (directory.cellType == TypeFloat) flipToFloat(uncompressedImage.flatten)
     else if (directory.cellType == TypeDouble) flipToDouble(uncompressedImage.flatten)
     else uncompressedImage.flatten
 
-  private def flipToFloat(image: Vector[Byte]) = flip(image, 4)
+  private def flipToFloat(image: Array[Byte]): Array[Byte] = flip(image, 4)
 
-  private def flipToDouble(image: Vector[Byte]) = flip(image, 8)
+  private def flipToDouble(image: Array[Byte]): Array[Byte] = flip(image, 8)
 
-  private def flip(image: Vector[Byte], flipSize: Int) = {
+  private def flip(image: Array[Byte], flipSize: Int): Array[Byte] = {
     val size = image.size
     val arr = Array.ofDim[Byte](size)
 
     var i = 0
     while (i < size) {
-      for (j <- 0 until 4)
-        arr(i + j) = image(i + flipSize - j - 1)
+      arr(i) = image(i + flipSize - 1)
+      arr(i + 1) = image(i + flipSize - 2)
+      arr(i + 2) = image(i + flipSize - 3)
+      arr(i + 3) = image(i + flipSize - 4)
 
       i += flipSize
     }
 
-    arr.toVector
+    arr
   }
 
-  private def tiledImageToRowImage(tiledImage: Vector[Vector[Byte]]) = {
-    val arrayImage = tiledImage.map(_.toArray).toArray
-
-    if (directory.bitsPerPixel == 1) bitTiledImageToRowImage(arrayImage)
-    else byteTiledImageToRowImage(arrayImage)
+  private def tiledImageToRowImage(tiledImage: Array[Array[Byte]]): Array[Byte] = {
+    if (directory.bitsPerPixel == 1) bitTiledImageToRowImage(tiledImage)
+    else byteTiledImageToRowImage(tiledImage)
   }
 
-  private def bitTiledImageToRowImage(tiledImage: Array[Array[Byte]]) = {
+  private def bitTiledImageToRowImage(tiledImage: Array[Array[Byte]]): Array[Byte] = {
 
     val tiledImageBitSets = tiledImage.map(x => BitSet.valueOf(x.map(invertByte(_))))
 
@@ -85,8 +86,8 @@ case class ImageConverter(directory: ImageDirectory) {
 
     //println(s"widthRes: $widthRes, overflow: $overflow, imageLength: $imageLength")
 
-    for (i <- 0 until imageLength) {
-      for (j <- 0 until tilesWidth) {
+    cfor(0)(_ < imageLength, _ + 1) { i =>
+      cfor(0)(_ < tilesWidth, _ + 1) { j =>
         val index = j + (i / tileLength) * tilesWidth
         val tileBitSet = tiledImageBitSets(index)
 
@@ -117,14 +118,16 @@ case class ImageConverter(directory: ImageDirectory) {
       }
     }
 
-    resBitSet.toByteVector(resBitSetSize)
+    resBitSet.toByteArray()
   }
 
-  private def bitSetCopy(src: BitSet, srcPos: Int, dest: BitSet, destPos: Int, length: Int) =
-    for (i <- 0 until length)
+  private def bitSetCopy(src: BitSet, srcPos: Int, dest: BitSet, destPos: Int, length: Int): Unit = {
+    cfor(0)(_ < length, _ + 1) { i =>
       if (src.get(srcPos + i)) dest.set(destPos + i)
+    }
+  }
 
-  private def byteTiledImageToRowImage(tiledImage: Array[Array[Byte]]) = {
+  private def byteTiledImageToRowImage(tiledImage: Array[Array[Byte]]): Array[Byte] = {
 
     val bytesPerPixel = (directory.bitsPerPixel + 7) / 8
 
@@ -145,8 +148,8 @@ case class ImageConverter(directory: ImageDirectory) {
     val resArray = Array.ofDim[Byte](imageWidth * imageLength * bytesPerPixel)
     var resArrayIndex = 0
 
-    for (i <- 0 until imageLength) {
-      for (j <- 0 until tilesWidth) {
+    cfor(0)(_ < imageLength, _ + 1) { i =>
+      cfor(0)(_ < tilesWidth, _ + 1) { j =>
         val tile = tiledImage(j + (i / tileLength) * tilesWidth)
         val start = (i % tileLength) * tileWidth * bytesPerPixel
         val length = bytesPerPixel * (if (j == tilesWidth - 1 && widthRes != 0)
@@ -164,10 +167,10 @@ case class ImageConverter(directory: ImageDirectory) {
       }
     }
 
-    resArray.toVector
+    resArray
   }
 
-  private def stripBitImageOverflow(image: Vector[Vector[Byte]]) = {
+  private def stripBitImageOverflow(image: Array[Array[Byte]]) = {
 
     val imageWidth = (directory |-> imageWidthLens get).toInt
     val imageLength = (directory |-> imageLengthLens get).toInt
@@ -178,14 +181,15 @@ case class ImageConverter(directory: ImageDirectory) {
     val rowByteSize = (imageWidth + 7) / 8
     val tempBitSetArray = Array.ofDim[Byte](rowByteSize)
 
-    for (i <- 0 until image.size) {
+    cfor(0)(_ < image.size, _ + 1) { i =>
       val rowsInSegment = directory.rowsInSegment(i)
       val current = image(i).toArray
 
-      for (j <- 0 until current.size)
+      cfor(0)(_ < current.size, _ + 1) { j =>
         current(j) = invertByte(current(j))
+      }
 
-      for (j <- 0 until rowsInSegment) {
+      cfor(0)(_ < rowsInSegment, _ + 1) { j => 
         System.arraycopy(
           current,
           j * rowByteSize,
@@ -202,7 +206,7 @@ case class ImageConverter(directory: ImageDirectory) {
     val resSize = imageWidth * imageLength
     val resBitSet = new BitSet(resSize)
 
-    for (i <- 0 until imageLength) {
+    cfor(0)(_ < imageLength, _ + 1) { i =>
       val bs = rowBitSetsArray(i)
 
       bitSetCopy(
@@ -214,8 +218,6 @@ case class ImageConverter(directory: ImageDirectory) {
       )
     }
 
-    resBitSet.toByteVector(resSize)
-
+    resBitSet.toByteArray()
   }
-
 }

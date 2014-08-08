@@ -160,7 +160,7 @@ case class GeoKeyReader(byteBuffer: ByteBuffer,
     val strings = directory.geoTiffTags.asciis.get.substring(
       metadata.valueOffset,
       metadata.count + metadata.valueOffset
-    ).split("\\|").toVector
+    ).split("\\|").toArray
 
     metadata.keyID match {
       case GTCitationGeoKey =>

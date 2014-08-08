@@ -22,31 +22,32 @@ import monocle.Macro._
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
 
-object HuffmanDecompression {
+import spire.syntax.cfor._
 
-  implicit class Huffman(matrix: Vector[Vector[Byte]]) {
+object GroupThreeDecompression {
 
-    def uncompressHuffman(implicit directory: ImageDirectory): Vector[Vector[Byte]] =
-      matrix.zipWithIndex.par.map{ case(segment, i) =>
-        uncompressGroupThree1DSegment(segment, i) }.toVector
-
-    private def uncompressGroupThree1DSegment(segment: Vector[Byte], index: Int)
-      (implicit directory: ImageDirectory) = {
-
+  implicit class GroupThree(matrix: Array[Array[Byte]]) {
+    def uncompressGroupThree(implicit directory: ImageDirectory): Array[Array[Byte]] = {
+      val options = directory |-> t4OptionsLens get
       val fillOrder = directory |-> fillOrderLens get
+      val len = matrix.length
+      var arr = Array.ofDim[Array[Byte]](len)
 
-      val length = directory.rowsInSegment(index)
-      val width = directory.rowSize
+      cfor(0)(_ < len, _ + 1) { i =>
+        val segment = matrix(i)
+        val length = directory.rowsInSegment(i)
+        val width = directory.rowSize
+        val decompressor = new TIFFFaxDecoder(fillOrder, width, length)
 
-      val decompressor = new TIFFFaxDecoder(fillOrder, width, length)
+        val outputArray = Array.ofDim[Byte]((length * width + 7) / 8)
 
-      val inputArray = segment.toArray
-      val outputArray = Array.ofDim[Byte]((length * width + 7) / 8)
+        decompressor.decode2D(outputArray, segment, 0, length, options)
 
-      decompressor.decode1D(outputArray, inputArray, 0, length)
+        arr(i) = outputArray
+      }
 
-      outputArray.toVector
+      arr
     }
-
   }
+
 }
