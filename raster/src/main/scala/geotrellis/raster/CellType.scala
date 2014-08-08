@@ -65,6 +65,15 @@ object CellType {
     case _                      => sys.error(s"Oops type $awtType is not supported")
   }
 
+  def fromString(name: String): CellType = name match {
+    case "int8"     => TypeByte
+    case "int16"    => TypeShort
+    case "int32"    => TypeInt
+    case "float32"  => TypeFloat
+    case "float64"  => TypeDouble
+    case _ => sys.error(s"Oops type $name is not supported")
+  }
+
   def toAwtType(cellType: CellType): Int = cellType match {
     case TypeBit | TypeByte => DataBuffer.TYPE_BYTE
     case TypeDouble         => DataBuffer.TYPE_DOUBLE
