@@ -370,6 +370,19 @@ class MultiPointSpec extends FunSpec with Matchers {
       mp1.covers(mp2) should be (true)
     }
 
+    it ("should cross a Line") {
+      val mp = MultiPoint(Seq(Point(5,5), Point(0,0)))
+      val l = Line(Point(3,3), Point(6,6))
+      mp.crosses(l) should be (true)
+    }
+
+    it ("should cross a MultiPolygon") {
+      val mp = MultiPoint(Seq(Point(5,5), Point(0,0)))
+      val mpoly = 
+        MultiPolygon(Seq(Polygon(Line(Point(3,3), Point(3,6), Point(6,6), Point(6,3), Point(3,3)))))
+      mp.crosses(mpoly) should be (true)
+    }
+
     it ("should overlap a MultiPoint") {
       val mp1 = MultiPoint(Point(1,1), Point(2,2))
       val mp2 = MultiPoint(Point(1,1), Point(3,3))
