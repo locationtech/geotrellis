@@ -234,7 +234,7 @@ case class GeoTiffTags(
   geoKeyDirectory: Option[GeoKeyDirectory] = None,
   doubles: Option[Vector[Double]] = None,
   asciis: Option[String] = None,
-  gdalInternalNoData: Option[String] = None
+  gdalInternalNoData: Option[Double] = None
 )
 
 case class DocumentationTags(
@@ -641,7 +641,7 @@ object ImageDirectoryLenses {
   val asciisLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
     Option[String]]("asciis")
   val gdalInternalNoDataLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
-    Option[String]]("gdalInternalNoData")
+    Option[Double]]("gdalInternalNoData")
 
   val documentationTagsLens = mkLens[ImageDirectory,
     DocumentationTags]("documentationTags")

@@ -43,8 +43,8 @@ case class ImageConverter(directory: ImageDirectory) {
       else stripedImage
 
     directory |-> gdalInternalNoDataLens get match {
-      case Some(gdalNoDataString) => replaceGDALNoDataWithNODATA(image,
-        gdalNoDataString, directory.cellType)
+      case Some(gdalNoData) => replaceGDALNoDataWithNODATA(image,
+        gdalNoData, directory.cellType)
       case None => image
     }
   }
@@ -217,16 +217,16 @@ case class ImageConverter(directory: ImageDirectory) {
 
   }
 
-  def replaceGDALNoDataWithNODATA(image: Vector[Byte], gdalNoDataString: String,
+  def replaceGDALNoDataWithNODATA(image: Vector[Byte], gdalNoData: Double,
     cellType: CellType) = cellType match {
     case TypeByte => {
-      val noData = gdalNoDataString.toInt.toByte
+      val noData = gdalNoData.toByte
       image.map(x => if (x == noData) byteNODATA else x)
     }
     case TypeShort => {
       val newArr = image.toArray
 
-      val noData = gdalNoDataString.toInt
+      val noData = gdalNoData.toInt
 
       val noDataGT = Vector[Byte](
         (shortNODATA >> 8).toByte,
@@ -249,7 +249,7 @@ case class ImageConverter(directory: ImageDirectory) {
     case TypeShort | TypeInt => {
       val newArr = image.toArray
 
-      val noData = gdalNoDataString.toInt
+      val noData = gdalNoData.toInt
 
       val indexRun = if (cellType == TypeShort) 2 else 4
 
@@ -278,7 +278,7 @@ case class ImageConverter(directory: ImageDirectory) {
     case TypeFloat | TypeDouble => {
       val newArr = image.toArray
 
-      val noData = gdalNoDataString.toDouble
+      val noData = gdalNoData
       val bb = ByteBuffer.allocate(8)
 
       if (cellType == TypeFloat) bb.putFloat(Float.NaN)

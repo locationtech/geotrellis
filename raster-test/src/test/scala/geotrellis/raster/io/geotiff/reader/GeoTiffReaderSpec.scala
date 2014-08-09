@@ -268,7 +268,7 @@ class GeoTiffReaderSpec extends FunSpec
       }
 
       ifd |-> gdalInternalNoDataLens get match {
-        case Some(gdalInternalNoData) => gdalInternalNoData should equal ("-9999")
+        case Some(gdalInternalNoData) => gdalInternalNoData should equal (-9999.0)
         case None => fail
       }
     }
