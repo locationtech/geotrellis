@@ -237,4 +237,7 @@ object RasterExtent {
     val cols = ((extent.xmax - extent.xmin) / cellwidth).toInt
     RasterExtent(extent, cellwidth, cellheight, cols, rows)
   }
+
+  def apply(tile: Tile, extent: Extent): RasterExtent =
+    apply(extent, tile.cols, tile.rows)
 }
