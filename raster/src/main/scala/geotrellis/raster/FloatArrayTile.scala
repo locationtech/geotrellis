@@ -19,6 +19,7 @@ package geotrellis.raster
 import geotrellis._
 import geotrellis.vector.Extent
 
+import spire.syntax.cfor._
 import java.nio.ByteBuffer
 
 /**
@@ -64,4 +65,24 @@ object FloatArrayTile {
 
     FloatArrayTile(floatArray, cols, rows)
   }
+
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Float): FloatArrayTile = 
+    if(isNoData(replaceNoData)) 
+      fromBytes(bytes, cols, rows)
+    else {
+      val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
+      val floatBuffer = byteBuffer.asFloatBuffer()
+      val len = bytes.size / TypeFloat.bytes
+      val floatArray = new Array[Float](len)
+
+      cfor(0)(_ < len, _ + 1) { i =>
+        val v = floatBuffer.get(i)
+        if(v == replaceNoData) 
+          floatArray(i) = Float.NaN
+        else
+          floatArray(i) = v
+      }
+
+      FloatArrayTile(floatArray, cols, rows)
+    }
 }

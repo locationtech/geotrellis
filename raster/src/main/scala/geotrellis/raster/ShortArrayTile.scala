@@ -19,6 +19,7 @@ package geotrellis.raster
 import geotrellis._
 import geotrellis.vector.Extent
 
+import spire.syntax.cfor._
 import java.nio.ByteBuffer
 
 /**
@@ -68,4 +69,23 @@ object ShortArrayTile {
 
     ShortArrayTile(shortArray, cols, rows)
   }
+
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Short): ShortArrayTile = 
+    if(isNoData(replaceNoData))
+      fromBytes(bytes, cols, rows)
+    else {
+      val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.length)
+      val shortBuffer = byteBuffer.asShortBuffer()
+      val len = bytes.length / TypeShort.bytes
+      val shortArray = new Array[Short](len)
+      cfor(0)(_ < len, _ + 1) { i =>
+        val v = shortBuffer.get(i)
+        if(v == replaceNoData)
+          shortArray(i) = shortNODATA
+        else
+          shortArray(i) = v
+      }
+
+      ShortArrayTile(shortArray, cols, rows)
+    }
 }

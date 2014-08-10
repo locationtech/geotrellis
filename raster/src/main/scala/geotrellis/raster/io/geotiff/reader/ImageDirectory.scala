@@ -437,7 +437,13 @@ case class ImageDirectory(
     val cols = this |-> imageWidthLens get
     val rows = this |-> imageLengthLens get
 
-    val tile = ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows)
+   val tile =
+     this |-> gdalInternalNoDataLens get match {
+       case Some(gdalNoData) =>
+         ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows, gdalNoData)
+       case None =>
+         ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows)
+     }
 
     (tile, extent)
   }

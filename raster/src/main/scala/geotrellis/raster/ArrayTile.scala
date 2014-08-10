@@ -41,7 +41,7 @@ object ArrayTile {
       case TypeDouble => DoubleArrayTile.empty(cols, rows)
     }
 
-  def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int) = 
+  def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int): MutableArrayTile = 
     t match {
       case TypeBit    => BitArrayTile.fromBytes(bytes, cols, rows)
       case TypeByte   => ByteArrayTile.fromBytes(bytes, cols, rows)
@@ -49,6 +49,16 @@ object ArrayTile {
       case TypeInt    => IntArrayTile.fromBytes(bytes, cols, rows)
       case TypeFloat  => FloatArrayTile.fromBytes(bytes, cols, rows)
       case TypeDouble => DoubleArrayTile.fromBytes(bytes, cols, rows)
+    }
+
+  def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int, replaceNoData: Double): MutableArrayTile = 
+    t match {
+      case TypeBit    => BitArrayTile.fromBytes(bytes, cols, rows, if(replaceNoData == 0) 0 else 1)
+      case TypeByte   => ByteArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toByte)
+      case TypeShort  => ShortArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toShort)
+      case TypeInt    => IntArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toInt)
+      case TypeFloat  => FloatArrayTile.fromBytes(bytes, cols, rows, replaceNoData.toFloat)
+      case TypeDouble => DoubleArrayTile.fromBytes(bytes, cols, rows, replaceNoData)
     }
 
   def apply(arr: Array[Byte], cols: Int, rows: Int) = ByteArrayTile(arr, cols, rows)
