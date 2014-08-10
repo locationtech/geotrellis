@@ -152,6 +152,7 @@ object Tags {
   val GeoKeyDirectoryTag = 34735
   val DoublesTag = 34736
   val AsciisTag = 34737
+  val GDALInternalNoDataTag = 42113
 
 }
 
@@ -232,7 +233,9 @@ case class GeoTiffTags(
   modelPixelScale: Option[(Double, Double, Double)] = None,
   geoKeyDirectory: Option[GeoKeyDirectory] = None,
   doubles: Option[Array[Double]] = None,
-  asciis: Option[String] = None
+  asciis: Option[String] = None,
+  gdalInternalNoData: Option[Double] = None
+
 )
 
 case class DocumentationTags(
@@ -385,7 +388,7 @@ case class ImageDirectory(
     val imageWidth = (this |-> imageWidthLens get).toInt
     val imageLength = (this |-> imageLengthLens get).toInt
 
-    val index = y * imageLength + x
+    val index = y * imageWidth + x
 
     if (x >= imageWidth || y >= imageLength) throw new IllegalArgumentException(
       s"x or y out of bounds x: $x, y: $y, imageWidth: $imageWidth, imageLength: $imageLength"
@@ -423,7 +426,7 @@ case class ImageDirectory(
             else if (bitsPerSample == 32 && sampleFormat == FloatingPoint) TypeFloat
             else if (bitsPerSample == 64 && sampleFormat == FloatingPoint) TypeDouble
             else throw new MalformedGeoTiffException(
-              "bad/unsupported bitspersample or sampleformat"
+              s"bad/unsupported bitspersample or sampleformat: $bitsPerSample or $sampleFormat"
             )
           }
 
@@ -434,7 +437,13 @@ case class ImageDirectory(
     val cols = this |-> imageWidthLens get
     val rows = this |-> imageLengthLens get
 
-    val tile = ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows)
+   val tile =
+     this |-> gdalInternalNoDataLens get match {
+       case Some(gdalNoData) =>
+         ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows, gdalNoData)
+       case None =>
+         ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows)
+     }
 
     (tile, extent)
   }
@@ -481,7 +490,7 @@ case class ImageDirectory(
           val scaleY = (pixel.y - first.y) * pixelScales._2
           val scaleZ = (pixel.z - first.z) * pixelScales._3
 
-          Pixel3D(scaleX + second.x, scaleY + second.y, scaleZ + second.z)
+          Pixel3D(scaleX + second.x, second.y - scaleY, scaleZ + second.z)
         }
 
         getExtentFromModelFunction(modelFunc)
@@ -522,13 +531,13 @@ case class ImageDirectory(
   private def getExtentFromModelFunction(func: Pixel3D => Pixel3D) = {
     val modelPixels = getRasterBoundaries.map(func)
 
-    val (minX, minY) = (modelPixels(0).x, modelPixels(1).y)
-    val (maxX, maxY) = (modelPixels(1).x, modelPixels(0).y)
+    val (minX, minY) = (modelPixels(0).x, modelPixels(0).y)
+    val (maxX, maxY) = (modelPixels(1).x, modelPixels(1).y)
 
     Extent(minX, minY, maxX, maxY)
   }
 
-  private def hasPixelArea(): Boolean =
+  def hasPixelArea(): Boolean =
     (geoKeyDirectory |-> gtRasterTypeLens get) match {
       case Some(UndefinedCPV) => throw new MalformedGeoTiffException(
         "the raster type must be present."
@@ -642,6 +651,8 @@ object ImageDirectoryLenses {
     Option[Array[Double]]]("doubles")
   val asciisLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
     Option[String]]("asciis")
+  val gdalInternalNoDataLens = geoTiffTagsLens |-> mkLens[GeoTiffTags,
+    Option[Double]]("gdalInternalNoData")
 
   val documentationTagsLens = mkLens[ImageDirectory,
     DocumentationTags]("documentationTags")

@@ -110,4 +110,10 @@ object BitArrayTile {
 
   def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): BitArrayTile = 
     BitArrayTile(bytes, cols, rows)
+
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Int): BitArrayTile = 
+    if(replaceNoData == 0)
+      fromBytes(bytes, cols, rows)
+    else 
+      ofDim(cols, rows)
 }

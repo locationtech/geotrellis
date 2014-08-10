@@ -18,6 +18,7 @@ package geotrellis.raster
 
 import geotrellis.vector.Extent
 
+import spire.syntax.cfor._
 import java.nio.ByteBuffer
 
 /**
@@ -41,15 +42,29 @@ final case class ByteArrayTile(array: Array[Byte], cols: Int, rows: Int)
 }
 
 object ByteArrayTile {
-  def ofDim(cols: Int, rows: Int): ByteArrayTile = 
+  def ofDim(cols: Int, rows: Int): ByteArrayTile =
     new ByteArrayTile(Array.ofDim[Byte](cols * rows), cols, rows)
 
-  def empty(cols: Int, rows: Int): ByteArrayTile = 
+  def empty(cols: Int, rows: Int): ByteArrayTile =
     new ByteArrayTile(Array.ofDim[Byte](cols * rows).fill(byteNODATA), cols, rows)
 
   def fill(v: Byte, cols: Int, rows: Int): ByteArrayTile =
     new ByteArrayTile(Array.ofDim[Byte](cols * rows).fill(v), cols, rows)
 
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): ByteArrayTile = 
-    ByteArrayTile(bytes, cols, rows)
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): ByteArrayTile =
+    ByteArrayTile(bytes.clone, cols, rows)
+
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Byte): ByteArrayTile =
+    if(isNoData(replaceNoData))
+      fromBytes(bytes, cols, rows)
+    else {
+      val arr = bytes.clone
+      cfor(0)(_ < arr.size, _ + 1) { i =>
+        val v = bytes(i)
+        if(v == replaceNoData)
+          arr(i) = byteNODATA
+        arr(i) = bytes(i)
+      }
+      ByteArrayTile(arr, cols, rows)
+    }
 }

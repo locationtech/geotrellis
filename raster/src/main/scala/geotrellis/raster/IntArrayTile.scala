@@ -19,6 +19,7 @@ package geotrellis.raster
 import geotrellis._
 import geotrellis.vector.Extent
 
+import spire.syntax.cfor._
 import java.nio.ByteBuffer
 
 /**
@@ -58,7 +59,7 @@ object IntArrayTile {
   def fill(v: Int, cols: Int, rows: Int): IntArrayTile =
     new IntArrayTile(Array.ofDim[Int](cols * rows).fill(v), cols, rows)
  
-  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int) = {
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): IntArrayTile = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
     val intBuffer = byteBuffer.asIntBuffer()
     val intArray = new Array[Int](bytes.size / TypeInt.bytes)
@@ -66,4 +67,24 @@ object IntArrayTile {
 
     IntArrayTile(intArray, cols, rows)
   }
+
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Int): IntArrayTile = 
+    if(isNoData(replaceNoData))
+      fromBytes(bytes, cols, rows)
+    else {
+      val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
+      val intBuffer = byteBuffer.asIntBuffer()
+      val len = bytes.size / TypeInt.bytes
+      val intArray = new Array[Int](len)
+
+      cfor(0)(_ < len, _ + 1) { i =>
+        val v = intBuffer.get(i)
+        if(v == replaceNoData)
+          intArray(i) = NODATA
+        else
+          intArray(i) = v
+      }
+
+      IntArrayTile(intArray, cols, rows)
+    }
 }

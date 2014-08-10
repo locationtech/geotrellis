@@ -24,8 +24,7 @@ import scala.io.{Source, Codec}
 import java.util.BitSet
 import geotrellis.raster.io.geotiff.reader.utils.ByteInverterUtils._
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.MustMatchers
+import org.scalatest._
 
 class ImageConverterSpec extends FunSpec with MustMatchers {
 
@@ -155,61 +154,6 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
       convertedImage must equal (correct)
 
     }
-
-    it ("should convert first 3 bytes pixel tiled image to a row image and match correct result") {
-
-      val imageWidth = 2
-      val imageLength = 6
-
-      val tileWidth = 1
-      val tileLength = 3
-
-      val bitsPerPixel = 24
-
-      val directory = createTiledDirectory(imageWidth, imageLength, bitsPerPixel,
-        tileWidth, tileLength)
-
-      val imageConverter = ImageConverter(directory)
-
-      val tiled: Array[Array[Byte]] = Array(
-        Array[Byte](
-          1, 2, 1,
-          1, 2, 1,
-          3, 1, 2
-        ),
-        Array[Byte](
-          1, 2, 1,
-          1, 2, 1,
-          3, 1, 2
-        ),
-        Array[Byte](
-          1, 2, 1,
-          1, 2, 1,
-          3, 1, 2
-        ),
-        Array[Byte](
-          1, 2, 1,
-          1, 2, 1,
-          3, 1, 2
-        )
-      )
-
-      val convertedImage = imageConverter.convert(tiled)
-
-      val correct: Array[Byte] = Array(
-        1, 2, 1, 1, 2, 1,
-        1, 2, 1, 1, 2, 1,
-        3, 1, 2, 3, 1, 2,
-        1, 2, 1, 1, 2, 1,
-        1, 2, 1, 1, 2, 1,
-        3, 1, 2, 3, 1, 2
-      )
-
-      convertedImage.size must equal (correct.size)
-      convertedImage must equal (correct)
-
-    }
-
   }
 
   // Note that the TIFF format has byte inversions on these bit images.
