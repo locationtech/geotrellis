@@ -109,7 +109,7 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
 
   def |(ls: MultiLine) = union(ls)
   def union(ls: MultiLine): LineMultiPolygonUnionResult =
-    ls.union(this)
+    jtsGeom.union(ls.jtsGeom)
 
   def |(ps: MultiPolygon): TwoDimensionsTwoDimensionsUnionResult =
     union(ps)
@@ -153,7 +153,7 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
   def symDifference(g: ZeroDimensions): PointMultiPolygonSymDifferenceResult =
     jtsGeom.symDifference(g.jtsGeom)
 
-  def symDifference(g: OneDimension): OneDimensionMultiPolygonSymDifferenceResult =
+  def symDifference(g: OneDimension): LineMultiPolygonSymDifferenceResult =
     jtsGeom.symDifference(g.jtsGeom)
 
   def symDifference(g: TwoDimensions): TwoDimensionsTwoDimensionsSymDifferenceResult =

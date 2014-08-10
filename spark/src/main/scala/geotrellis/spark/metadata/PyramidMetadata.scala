@@ -19,8 +19,6 @@ package geotrellis.spark.metadata
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-import geotrellis.spark.ingest.GeoTiff
-import geotrellis.spark.ingest.MetadataInputFormat
 import geotrellis.spark.tiling.Bounds
 import geotrellis.spark.tiling.PixelExtent
 import geotrellis.spark.tiling.TileExtent
@@ -178,29 +176,5 @@ object PyramidMetadata {
   }
 
   def fromJobConf(conf: Configuration) = fromBase64(conf.get(PyramidMetadata.JobConfKey))
-
-  def fromGeoTiffMeta(meta: GeoTiff.Metadata): PyramidMetadata = {
-    val tileSize = TmsTiling.DefaultTileSize
-    		
-    val zoom = math.max(TmsTiling.zoom(meta.pixelSize._1, tileSize),
-      TmsTiling.zoom(meta.pixelSize._2, tileSize))
-
-    // if the lon/lat is past the world bounds (which it can be, say, -180.001), 
-    // then our TmsTiling calculations go awry. So we cap it here to world bounds,
-    // which is slightly smaller than the right and northern edge
-    val cappedExtent = Bounds.World.intersection(meta.extent).get
-    val tileExtent = TmsTiling.extentToTile(cappedExtent, zoom, tileSize)
-    val pixelExtent = TmsTiling.extentToPixel(cappedExtent, zoom, tileSize)
-
-    PyramidMetadata(
-      cappedExtent, 
-      tileSize, 
-      meta.bands, 
-      meta.nodata, 
-      meta.cellType, 
-      zoom,
-      Map(zoom.toString -> RasterMetadata(pixelExtent, tileExtent))
-    )
-  }
 }
 

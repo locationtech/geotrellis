@@ -20,24 +20,40 @@ import geotrellis.spark.formats.TileIdWritable
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.tiling.TmsTiling
 import geotrellis.spark.utils._
+import org.apache.spark.Partitioner
 import org.apache.commons.codec.binary.Base64
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.PrintWriter
 import java.nio.ByteBuffer
+
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
-import com.quantifind.sumac.ArgMain
 
+case class RasterRddPartitioner(val splits: Array[Long]) extends Partitioner {
+  override def getPartition(key: Any): Int = {
+    val index = java.util.Arrays.binarySearch(splits, key.asInstanceOf[Long])
+    if (index < 0)
+      (index + 1) * -1
+    else
+      index
+  }
+
+  override def numPartitions = splits.length + 1
+  override def toString = "TileIdPartitioner split points: " + {
+    if (splits.isEmpty) "Empty" else splits.zipWithIndex.mkString
+  }
+}
 
 class TileIdPartitioner extends org.apache.spark.Partitioner {
 
   @transient
   private var splits = new Array[TileIdWritable](0)
 
-  override def getPartition(key: Any) = findPartition(key)
+  override def getPartition(key: Any): Int = findPartition(key)
   override def numPartitions = splits.length + 1
   override def toString = "TileIdPartitioner split points: " + {
     if (splits.isEmpty) "Empty" else splits.zipWithIndex.mkString
@@ -52,10 +68,6 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
 
   def save(raster: Path, conf: Configuration) =
     TileIdPartitioner.writeSplits(splits.toSeq.map(_.get), raster, conf)
-
-  def splitGenerator = new SplitGenerator {
-    def getSplits = splits.map(_.get)
-  }
   
   override def equals(other: Any): Boolean = 
     other match {
@@ -89,13 +101,20 @@ class TileIdPartitioner extends org.apache.spark.Partitioner {
   }
 }
 
-object TileIdPartitioner extends ArgMain[RasterArgs] {
+object TileIdPartitioner {
   final val SplitFile = "splits"
 
   /* construct a partitioner from the splits file, if one exists */
   def apply(raster: Path, conf: Configuration): TileIdPartitioner = {
     val tp = new TileIdPartitioner
     tp.splits = readSplits(raster, conf)
+    tp
+  }
+
+  /* construct a partitioner from the splits file, if one exists */
+  def apply(splits: Array[TileIdWritable]): TileIdPartitioner = {
+    val tp = new TileIdPartitioner
+    tp.splits = splits
     tp
   }
 
@@ -130,7 +149,7 @@ object TileIdPartitioner extends ArgMain[RasterArgs] {
   }
 
   private def writeSplits(splitGenerator: SplitGenerator, raster: Path, conf: Configuration): Int =
-    writeSplits(splitGenerator.getSplits, raster, conf)
+    writeSplits(splitGenerator.splits, raster, conf)
 
   private def writeSplits(splits: Seq[Long], raster: Path, conf: Configuration): Int = {
     val splitFile = new Path(raster, SplitFile)

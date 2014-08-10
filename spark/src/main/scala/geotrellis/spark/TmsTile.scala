@@ -31,3 +31,8 @@ case class TmsTile(id: Long, tile: Tile) {
   def toWritable() =
     (TileIdWritable(id), ArgWritable.fromTile(tile))
 }
+
+object TmsTile {
+  def apply(tup: (Long, Tile)): TmsTile = 
+    TmsTile(tup._1, tup._2)
+}

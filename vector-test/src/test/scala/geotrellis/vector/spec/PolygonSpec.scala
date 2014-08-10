@@ -36,7 +36,7 @@ class PolygonSpec extends FunSpec with Matchers {
       }
     }
 
-    it ("should be a rectangle if constructed with a rectangular set of points") {
+    it ("should be a rectangle if constructed with a rectangular Seq of points") {
       val p = Polygon(Line(Point(0,0), Point(0,5), Point(5,5), Point(5,0), Point(0,0)))
       p.isRectangle should be (true)
     }
@@ -286,6 +286,44 @@ class PolygonSpec extends FunSpec with Matchers {
       val p3 = Polygon(Line(Point(0,6), Point(0,10), Point(10,10), Point(10,6), Point(0,6)))
       val p4 = Polygon(Line(Point(0,0), Point(0,4), Point(10,4), Point(10,0), Point(0,0)))
       p1 - p2 should be (MultiPolygonResult(Seq(p3, p4)))
+    }
+
+    // -- SymDifference
+
+    it ("should symDifference with a MultiPoint and return a PolygonResult") {
+      val p = Polygon(Line(Point(0,0), Point(0,10), Point(10,10), Point(10,0), Point(0,0)))
+      val mp = MultiPoint(Seq(Point(5,5), Point(6,6)))
+      p.symDifference(mp) should be (PolygonResult(p))
+    }
+
+    it ("should symDifference with a MultiPoint and return a GeometryCollectionResult") {
+      val p = Polygon(Line(Point(0,0), Point(0,10), Point(10,10), Point(10,0), Point(0,0)))
+      val mp = MultiPoint(Seq(Point(50,50), Point(60,60)))
+      val expected: GeometryCollection =
+        GeometryCollection(points = Seq(Point(50,50), Point(60,60)), polygons = Seq(p))
+      val result = p.symDifference(mp)
+      result match {
+        case GeometryCollectionResult(gc) => gc should be (expected)
+       case _ => fail()
+      }
+    }
+
+    it ("should symDifference with a MultiLine and return a PolygonResult") {
+      val p = Polygon(Line(Point(0,0), Point(0,10), Point(10,10), Point(10,0), Point(0,0)))
+      val ml = MultiLine(Seq(Line(Point(5,5), Point(6,6))))
+      p.symDifference(ml) should be (PolygonResult(p))
+    }
+
+    it ("should symDifference with a MultiLine and return a GeometryCollectionResult") {
+      val p = Polygon(Line(Point(0,0), Point(0,10), Point(10,10), Point(10,0), Point(0,0)))
+      val ml = MultiLine(Seq(Line(Point(50,50), Point(60,60))))
+      val expected: GeometryCollection =
+        GeometryCollection(lines = Seq(Line(Point(50,50), Point(60,60))), polygons = Seq(p))
+      val result = p.symDifference(ml)
+      result match {
+        case GeometryCollectionResult(gc) => gc should be (expected)
+        case _ => fail()
+      }
     }
 
     it ("should symDifference with a MultiPolygon and return a NoResult") {

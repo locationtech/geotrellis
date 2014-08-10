@@ -26,15 +26,15 @@ import java.io.File
 import java.nio.ByteBuffer
 
 object ArgReader {
-  /** Reads an arg from the jsom metadata file. */
+  /** Reads an arg from the json metadata file. */
   final def read(path: String): Tile =
     read(path, None)
 
-  /** Reads an arg from the jsom metadata file. */
+  /** Reads an arg from the json metadata file. */
   final def read(path: String, targetRasterExtent: RasterExtent): Tile =
     read(path, Some(targetRasterExtent))
 
-  /** Reads an arg from the jsom metadata file. */
+  /** Reads an arg from the json metadata file. */
   private final def read(path: String, targetRasterExtent: Option[RasterExtent]): Tile = {
     val json = ConfigFactory.parseString(Filesystem.readText(path))
     val layerType = json.getString("type").toLowerCase
