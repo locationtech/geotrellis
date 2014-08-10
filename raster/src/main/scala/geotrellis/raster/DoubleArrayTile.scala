@@ -19,6 +19,7 @@ package geotrellis.raster
 import geotrellis._
 import geotrellis.vector.Extent
 
+import spire.syntax.cfor._
 import java.nio.ByteBuffer
 
 /**
@@ -65,4 +66,24 @@ object DoubleArrayTile {
 
     DoubleArrayTile(doubleArray, cols, rows)
   }
+
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int, replaceNoData: Double): DoubleArrayTile = 
+    if(isNoData(replaceNoData))
+    fromBytes(bytes, cols, rows)
+    else {
+      val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
+      val doubleBuffer = byteBuffer.asDoubleBuffer()
+      val len = bytes.size / TypeDouble.bytes
+      val doubleArray = new Array[Double](len)
+
+      cfor(0)(_ < len, _ + 1) { i =>
+        val v = doubleBuffer.get(i)
+        if(v == replaceNoData) 
+          doubleArray(i) = Double.NaN
+        else
+          doubleArray(i) = v
+      }
+
+      DoubleArrayTile(doubleArray, cols, rows)
+    }
 }

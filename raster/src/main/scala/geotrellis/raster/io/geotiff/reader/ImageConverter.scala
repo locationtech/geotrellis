@@ -20,6 +20,7 @@ import monocle.syntax._
 import monocle.Macro._
 
 import java.util.BitSet
+import java.nio.ByteBuffer
 
 import geotrellis._
 import geotrellis.raster._
@@ -31,12 +32,16 @@ import spire.syntax.cfor._
 
 case class ImageConverter(directory: ImageDirectory) {
 
-  def convert(uncompressedImage: Array[Array[Byte]]): Array[Byte] =
-    if (!directory.hasStripStorage) tiledImageToRowImage(uncompressedImage)
-    else if (directory.bitsPerPixel == 1) stripBitImageOverflow(uncompressedImage)
-    else if (directory.cellType == TypeFloat) flipToFloat(uncompressedImage.flatten)
-    else if (directory.cellType == TypeDouble) flipToDouble(uncompressedImage.flatten)
-    else uncompressedImage.flatten
+  def convert(uncompressedImage: Array[Array[Byte]]): Array[Byte] = {
+    val stripedImage =
+      if (!directory.hasStripStorage) tiledImageToRowImage(uncompressedImage)
+      else if (directory.bitsPerPixel == 1) stripBitImageOverflow(uncompressedImage)
+      else uncompressedImage.flatten
+
+    if (directory.cellType == TypeFloat) flipToFloat(stripedImage)
+    else if (directory.cellType == TypeDouble) flipToDouble(stripedImage)
+    else stripedImage
+  }
 
   private def flipToFloat(image: Array[Byte]): Array[Byte] = flip(image, 4)
 
@@ -84,8 +89,6 @@ case class ImageConverter(directory: ImageDirectory) {
 
     val overflow = (8 - tileWidth % 8) % 8
 
-    //println(s"widthRes: $widthRes, overflow: $overflow, imageLength: $imageLength")
-
     cfor(0)(_ < imageLength, _ + 1) { i =>
       cfor(0)(_ < tilesWidth, _ + 1) { j =>
         val index = j + (i / tileLength) * tilesWidth
@@ -94,17 +97,6 @@ case class ImageConverter(directory: ImageDirectory) {
         val start = (i % tileLength) * (tileWidth + overflow)
         val length = if (j == tilesWidth - 1 && widthRes != 0)
           widthRes else tileWidth
-
-        /*if (j == tilesWidth - 1) {
-          //println(s"tile bits: resIndex: $resIndex")
-          for (i <- start until start + 14)
-            //if (tileBitSet.get(i)) print("1   ") else print("0   ")
-
-          //println()
-          for (i <- 896 until 896 + 14)
-            //print(s"$i ")
-          //println()
-        }*/
 
         bitSetCopy(
           tileBitSet,

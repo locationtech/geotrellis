@@ -155,6 +155,10 @@ case class TagReader(byteBuffer: ByteBuffer) {
       case HostComputerTag => directory |-> hostComputerLens set(Some(string))
       case CopyrightTag => directory |-> copyrightLens set(Some(string))
       case AsciisTag => directory |-> asciisLens set(Some(string))
+      case GDALInternalNoDataTag => directory |-> gdalInternalNoDataLens set(
+        Some(string.filter(_ != '\0').map(x =>
+          if (x.toByte == 3) '0' else x).toDouble)
+      )
       case tag => directory |-> asciisMapLens modify(_ + (tag -> string))
     }
   }
@@ -356,16 +360,16 @@ case class TagReader(byteBuffer: ByteBuffer) {
       case ModelTransformationTag =>
         if (doubles.size != 16)
           throw new MalformedGeoTiffException("bad model tranformations")
-      else {
-        val matrix = Array(
-          Array(doubles(0), doubles(1), doubles(2), doubles(3)),
-          Array(doubles(4), doubles(5), doubles(6), doubles(7)),
-          Array(doubles(8), doubles(9), doubles(10), doubles(11)),
-          Array(doubles(12), doubles(13), doubles(14), doubles(15))
-        )
+        else {
+          val matrix = Array(
+            Array(doubles(0), doubles(1), doubles(2), doubles(3)),
+            Array(doubles(4), doubles(5), doubles(6), doubles(7)),
+            Array(doubles(8), doubles(9), doubles(10), doubles(11)),
+            Array(doubles(12), doubles(13), doubles(14), doubles(15))
+          )
 
-        directory |-> modelTransformationLens set(Some(matrix))
-      }
+          directory |-> modelTransformationLens set(Some(matrix))
+        }
       case DoublesTag => directory |-> doublesLens set(Some(doubles))
       case tag => directory |-> doublesMapLens modify(_ + (tag -> doubles))
     }
