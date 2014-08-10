@@ -220,6 +220,13 @@ class LineSpec extends FunSpec with Matchers {
 
     }
 
+ it ("should union with a MultiPolygon and return a PolygonResult") {
+      val l = Line(Point(1,1), Point(2,1))
+      val p1 = Polygon(Line(Point(0,0), Point(0,4), Point(4,4), Point(4,0), Point(0,0)))
+      val mp = MultiPolygon(Seq(p1))
+      l | mp should be (PolygonResult(p1))
+     }
+
     it ("should union with a MultiPolygon and return a MultiPolygonResult") {
       val l = Line(Point(1,1), Point(2,1))
       val p1 = Polygon(Line(Point(3,4), Point(3,5), Point(5,5), Point(5,3), Point(3,4)))
@@ -378,6 +385,8 @@ class LineSpec extends FunSpec with Matchers {
         case _ => fail()
       }
     }
+
+    // -- Predicates
 
     it ("should contain a Point") {
       val p = Point(1,1)

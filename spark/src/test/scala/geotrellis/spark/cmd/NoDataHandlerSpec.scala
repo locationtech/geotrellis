@@ -1,29 +1,18 @@
 package geotrellis.spark.cmd
 
 import geotrellis.raster._
-import geotrellis.raster.TypeBit
-import geotrellis.raster.TypeByte
-import geotrellis.raster.TypeDouble
-import geotrellis.raster.TypeFloat
-import geotrellis.raster.TypeInt
-import geotrellis.raster.TypeShort
-import geotrellis.raster.BitArrayTile
-import geotrellis.raster.ByteArrayTile
-import geotrellis.raster.DoubleArrayTile
-import geotrellis.raster.FloatArrayTile
-import geotrellis.raster.IntArrayTile
-import geotrellis.raster.ShortArrayTile
+
+import geotrellis.testkit._
 
 import org.scalatest._
 
-class NoDataHandlerSpec extends FunSpec with Matchers {
+class NoDataHandlerSpec extends FunSpec with Matchers with TestEngine {
   describe("add/remove user nodata") {
-
-    val cols = 2
-    val rows = 1
-    val size = cols * rows
-
     it("should correctly add/remove a user-defined nodata value to/from a FloatArrayTile") {
+      val cols = 2
+      val rows = 1
+      val size = cols * rows
+
       val userNoData = -9999.0f
       val origRd = FloatArrayTile(Array[Float](1.0f, Float.NaN), cols, rows)
       val addedRd = origRd.copy()
@@ -48,6 +37,10 @@ class NoDataHandlerSpec extends FunSpec with Matchers {
     
     it("should correctly add/remove a user-defined nodata value to/from a IntArrayTile") {
       // user's nodata is Int.MaxVal whereas NODATA = Int.MinVal
+      val cols = 2
+      val rows = 1
+      val size = cols * rows
+
       val userNoData = Int.MaxValue
       val origRd = IntArrayTile(Array[Int](1, NODATA), cols, rows)
       val addedRd = origRd.copy()
@@ -67,6 +60,29 @@ class NoDataHandlerSpec extends FunSpec with Matchers {
         val expectedUndRemoved = origRd.asInstanceOf[IntArrayTile].array
         expectedUndRemoved should be(actualUndRemoved)
       }
+    }
+
+    it("should correctly add/remove a user-defined nodata value to/from a ByteArrayTile") {
+      // user's nodata is Int.MaxVal whereas NODATA = Int.MinVal
+      val cols = 256
+      val rows = 256
+      val size = cols * rows
+
+      val userNoData = Byte.MaxValue
+      val gtArr = Array.ofDim[Byte](cols*rows).fill(byteNODATA)
+      val userArr = Array.ofDim[Byte](cols*rows).fill(userNoData)
+      val gtTile = ByteArrayTile(gtArr, cols, rows)
+      val userTile = ByteArrayTile(userArr, cols, rows)
+
+      val addedTile = gtTile.copy()
+      NoDataHandler.addUserNoData(addedTile, userNoData)
+
+      assertEqual(addedTile, userTile)
+
+      val removedTile = addedTile.copy()
+      NoDataHandler.removeUserNoData(removedTile, userNoData)
+
+      assertEqual(removedTile, gtTile)
     }
   }
 }

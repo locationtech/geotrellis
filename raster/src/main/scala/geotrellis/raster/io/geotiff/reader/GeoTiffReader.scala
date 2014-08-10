@@ -16,13 +16,12 @@
 
 package geotrellis.raster.io.geotiff.reader
 
-import scala.io.BufferedSource
-
-import java.nio.{ByteBuffer, ByteOrder}
-
+import geotrellis.raster.io.Filesystem
 import geotrellis.raster.io.geotiff.reader.utils.ByteBufferUtils._
-
 import geotrellis.raster.io.geotiff.reader.Tags._
+
+import scala.io._
+import java.nio.{ByteBuffer, ByteOrder}
 
 class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
 
@@ -30,10 +29,11 @@ class GeoTiffReaderLimitationException(msg: String)
     extends RuntimeException(msg)
 
 object GeoTiffReader {
+  def apply(path: String): GeoTiffReader =
+    apply(Filesystem.slurp(path))
 
-  def apply(source: BufferedSource): GeoTiffReader =
-    GeoTiffReader(ByteBuffer.wrap(source.map(_.toByte).toArray))
-
+  def apply(bytes: Array[Byte]): GeoTiffReader =
+    GeoTiffReader(ByteBuffer.wrap(bytes, 0, bytes.size))
 }
 
 case class GeoTiffReader(byteBuffer: ByteBuffer) {

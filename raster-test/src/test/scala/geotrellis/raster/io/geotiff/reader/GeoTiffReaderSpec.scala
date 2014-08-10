@@ -54,13 +54,7 @@ class GeoTiffReaderSpec extends FunSpec
 
   private def read(fileName: String): GeoTiff = {
     val filePath = filePathToTestData + fileName
-    val source = Source.fromFile(filePath)(Codec.ISO8859)
-
-    val geotiff = GeoTiffReader(source).read
-
-    source.close
-
-    geotiff
+    GeoTiffReader(filePath).read
   }
 
   private def readAndSave(fileName: String) {

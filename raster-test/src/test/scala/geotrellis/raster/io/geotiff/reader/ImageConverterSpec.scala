@@ -22,7 +22,6 @@ import geotrellis.testkit._
 import scala.io.{Source, Codec}
 
 import java.util.BitSet
-import geotrellis.raster.io.geotiff.reader.utils.BitSetUtils._
 import geotrellis.raster.io.geotiff.reader.utils.ByteInverterUtils._
 
 import org.scalatest._
@@ -32,7 +31,7 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
   private def createTiledDirectory(width: Int, length: Int,
     bitsPerPixel: Int, tWidth: Int, tLength: Int) = ImageDirectory(
     count = 0,
-      basicTags = BasicTags(bitsPerSample = Some(Vector(bitsPerPixel)),
+      basicTags = BasicTags(bitsPerSample = Some(Array(bitsPerPixel)),
         imageLength = length, imageWidth = width
       ),
       tileTags = TileTags(tileWidth = Some(tWidth), tileLength = Some(tLength))
@@ -55,33 +54,33 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
 
       val imageConverter = ImageConverter(directory)
 
-      val tiled: Vector[Vector[Byte]] = Vector(
-        Vector[Byte](
+      val tiled: Array[Array[Byte]] = Array(
+        Array[Byte](
           1, 2, 1,
           1, 2, 1,
           3, 1, 2
         ),
-        Vector[Byte](
+        Array[Byte](
           1, 2, 1,
           1, 2, 1,
           3, 1, 2
         ),
-        Vector[Byte](
+        Array[Byte](
           1, 2, 1,
           1, 2, 1,
           3, 1, 2
         ),
-        Vector[Byte](
+        Array[Byte](
           1, 2, 1,
           1, 2, 1,
           3, 1, 2
         ),
-        Vector[Byte](
+        Array[Byte](
           1, 2, 1,
           1, 2, 1,
           3, 1, 2
         ),
-        Vector[Byte](
+        Array[Byte](
           1, 2, 1,
           1, 2, 1,
           3, 1, 2
@@ -90,7 +89,7 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
 
       val convertedImage = imageConverter.convert(tiled)
 
-      val correct: Vector[Byte] = Vector(
+      val correct: Array[Byte] = Array(
         1, 2, 1, 1, 2, 1, 1, 2,
         1, 2, 1, 1, 2, 1, 1, 2,
         3, 1, 2, 3, 1, 2, 3, 1,
@@ -117,23 +116,23 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
 
       val imageConverter = ImageConverter(directory)
 
-      val tiled: Vector[Vector[Byte]] = Vector(
-        Vector[Byte](
+      val tiled: Array[Array[Byte]] = Array(
+        Array[Byte](
           1, 2, 1,
           1, 2, 1,
           3, 1, 2
         ),
-        Vector[Byte](
+        Array[Byte](
           1, 2, 1,
           1, 2, 1,
           3, 1, 2
         ),
-        Vector[Byte](
+        Array[Byte](
           1, 2, 1,
           1, 2, 1,
           3, 1, 2
         ),
-        Vector[Byte](
+        Array[Byte](
           1, 2, 1,
           1, 2, 1,
           3, 1, 2
@@ -142,7 +141,7 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
 
       val convertedImage = imageConverter.convert(tiled)
 
-      val correct: Vector[Byte] = Vector(
+      val correct: Array[Byte] = Array(
         1, 2, 1, 1, 2, 1,
         1, 2, 1, 1, 2, 1,
         3, 1, 2, 3, 1, 2,
@@ -155,7 +154,6 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
       convertedImage must equal (correct)
 
     }
-
   }
 
   // Note that the TIFF format has byte inversions on these bit images.
@@ -211,13 +209,13 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
           firstTileBitSet.set(i)
       }
 
-      val tile = (firstTileBitSet.toByteVector(4) ++
-        secondTileBitSet.toByteVector(4) ++ firstTileBitSet.toByteVector(4) ++
-        secondTileBitSet.toByteVector(4)).map(invertByte(_))
+      val tile = (firstTileBitSet.toByteArray ++
+        secondTileBitSet.toByteArray ++ firstTileBitSet.toByteArray ++
+        secondTileBitSet.toByteArray).map(invertByte(_))
 
 
 
-      val tiled: Vector[Vector[Byte]] = Vector(
+      val tiled: Array[Array[Byte]] = Array(
         tile, tile,
         tile, tile
       )
@@ -229,7 +227,7 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
         for (j <- 0 until imageLength)
           if (i % 2 == 1 || j % 2 == 1) correctBitSet.set(i * imageWidth + j)
 
-      val correct = correctBitSet.toByteVector(36)
+      val correct = correctBitSet.toByteArray
 
       convertedImage.size must equal (correct.size)
       convertedImage must equal (correct)
@@ -273,23 +271,23 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
         else thirdTileBitSet.set(i)
       }
 
-      val firstTile = (firstTileBitSet.toByteVector(3) ++
-        secondTileBitSet.toByteVector(3) ++ firstTileBitSet.toByteVector(3))
+      val firstTile = (firstTileBitSet.toByteArray ++
+        secondTileBitSet.toByteArray ++ firstTileBitSet.toByteArray)
         .map(invertByte(_))
 
-      val secondTile = (thirdTileBitSet.toByteVector(3) ++
-        secondTileBitSet.toByteVector(3) ++ thirdTileBitSet.toByteVector(3))
+      val secondTile = (thirdTileBitSet.toByteArray ++
+        secondTileBitSet.toByteArray ++ thirdTileBitSet.toByteArray)
         .map(invertByte(_))
 
-      val thirdTile = (secondTileBitSet.toByteVector(3) ++
-        firstTileBitSet.toByteVector(3) ++ secondTileBitSet.toByteVector(3))
+      val thirdTile = (secondTileBitSet.toByteArray ++
+        firstTileBitSet.toByteArray ++ secondTileBitSet.toByteArray)
         .map(invertByte(_))
 
-      val fourthTile = (secondTileBitSet.toByteVector(3) ++
-        thirdTileBitSet.toByteVector(3) ++ secondTileBitSet.toByteVector(3))
+      val fourthTile = (secondTileBitSet.toByteArray ++
+        thirdTileBitSet.toByteArray ++ secondTileBitSet.toByteArray)
         .map(invertByte(_))
 
-      val tiled: Vector[Vector[Byte]] = Vector(
+      val tiled: Array[Array[Byte]] = Array(
         firstTile, secondTile,
         thirdTile, fourthTile
       )
@@ -301,7 +299,7 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
         for (j <- 0 until imageLength)
           if (i % 2 == 1 || j % 2 == 1) correctBitSet.set(i * imageWidth + j)
 
-      val correct = correctBitSet.toByteVector(36)
+      val correct = correctBitSet.toByteArray
 
       convertedImage.size must equal (correct.size)
       convertedImage must equal (correct)

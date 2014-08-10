@@ -20,7 +20,7 @@ import java.util.BitSet
 
 object MatrixUtils {
 
-  implicit class MatrixUtilities(matrix: Vector[Vector[Double]]) {
+  implicit class MatrixUtilities(matrix: Array[Array[Double]]) {
 
     def validateAsMatrix =
       if (matrix.size != 0) {
@@ -34,7 +34,7 @@ object MatrixUtils {
         true
       } else throw new IllegalArgumentException("empty matrices not allowed")
 
-    def *(second: Vector[Vector[Double]]): Vector[Vector[Double]] = {
+    def *(second: Array[Array[Double]]): Array[Array[Double]] = {
       matrix.validateAsMatrix
       second.validateAsMatrix
 
@@ -55,7 +55,7 @@ object MatrixUtils {
           }
         }
 
-        res.map(_.toVector).toVector
+        res
       } else throw new IllegalArgumentException("matrices not fitting together")
     }
 

@@ -353,7 +353,7 @@ object GeotrellisBuild extends Build {
       .dependsOn(raster, testkit % "test")
 
   // using hadoop and spark version from environment was inspired by Spark itself
-  val DEFAULT_HADOOP_VERSION = "0.20.2-cdh3u4"
+  val DEFAULT_HADOOP_VERSION = "2.3.0-cdh5.1.0"
   lazy val hadoopVersion = Properties.envOrElse("SPARK_HADOOP_VERSION", DEFAULT_HADOOP_VERSION)
 
   val DEFAULT_SPARK_VERSION = "1.0.0"
@@ -373,24 +373,22 @@ object GeotrellisBuild extends Build {
             ExclusionRule(organization = "org.apache.hadoop"),
             ExclusionRule(organization = "com.google.code.findbugs")
           ),
-          "org.apache.hadoop" % "hadoop-client" % hadoopVersion excludeAll (
+          "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "compile" excludeAll (
+	    ExclusionRule(organization = "hsqldb")
+          ),
+          "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4" % "test" excludeAll (
 	    ExclusionRule(organization = "hsqldb")
           ),
           "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0" excludeAll (
             ExclusionRule(organization = "com.google.code.findbugs")
           ),
           "com.quantifind" %% "sumac" % "0.2.3",
-          scalatest % "test",
           spire, sprayRouting, sprayCan,
-          "org.geotools" % "gt-main" % Version.geotools,
-          "org.geotools" % "gt-coverage" % Version.geotools,
-          "org.geotools" % "gt-geotiff" % Version.geotools,
-          "org.geotools" % "gt-epsg-hsql" % Version.geotools,
-          "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
+          scalatest % "test",
+          "org.mockito" % "mockito-core" % "1.9.5" % "test"
         ),
       resolvers ++= Seq(
-        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos",
-        "Geotools" at "http://download.osgeo.org/webdav/geotools/"
+        "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
       )
     ) ++
     defaultAssemblySettings ++
@@ -574,7 +572,6 @@ object GeotrellisBuild extends Build {
     Seq(
       // raise memory limits here if necessary
       javaOptions += "-Xmx8G",
-
       libraryDependencies ++= Seq(
         spire,
         "com.google.guava" % "guava" % "r09",

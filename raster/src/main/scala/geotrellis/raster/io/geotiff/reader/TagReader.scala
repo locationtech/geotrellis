@@ -26,6 +26,7 @@ import geotrellis.raster.io.geotiff.reader.Tags._
 import geotrellis.raster.io.geotiff.reader.TiffFieldType._
 
 import monocle.syntax._
+import spire.syntax.cfor._
 
 case class TagReader(byteBuffer: ByteBuffer) {
 
@@ -78,18 +79,22 @@ case class TagReader(byteBuffer: ByteBuffer) {
 
     byteBuffer.position(tagMetadata.offset)
 
-    val points = (for (i <- 0 until numberOfPoints) yield ((
-      Pixel3D(
-        byteBuffer.getDouble,
-        byteBuffer.getDouble,
-        byteBuffer.getDouble
-      ),
-      Pixel3D(
-        byteBuffer.getDouble,
-        byteBuffer.getDouble,
-        byteBuffer.getDouble
-      )
-    ))).toVector
+    val points = Array.ofDim[(Pixel3D, Pixel3D)](numberOfPoints)
+    cfor(0)(_ < numberOfPoints, _ + 1) { i =>
+      points(i) =
+        (
+          Pixel3D(
+            byteBuffer.getDouble,
+            byteBuffer.getDouble,
+            byteBuffer.getDouble
+          ),
+          Pixel3D(
+            byteBuffer.getDouble,
+            byteBuffer.getDouble,
+            byteBuffer.getDouble
+          )
+        )
+    }
 
     byteBuffer.position(oldPos)
 
@@ -124,7 +129,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
   private def readBytesTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
 
-    val bytes = byteBuffer.getByteVector(tagMetadata.length, tagMetadata.offset)
+    val bytes = byteBuffer.getByteArray(tagMetadata.length, tagMetadata.offset)
 
     tagMetadata.tag match {
       case DotRangeTag =>
@@ -160,7 +165,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
 
   private def readShortsTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
-    val shorts = byteBuffer.getShortVector(tagMetadata.length,
+    val shorts = byteBuffer.getShortArray(tagMetadata.length,
       tagMetadata.offset)
 
     tagMetadata.tag match {
@@ -233,7 +238,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
 
   private def readIntsTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
-    val ints = byteBuffer.getIntVector(tagMetadata.length, tagMetadata.offset)
+    val ints = byteBuffer.getIntArray(tagMetadata.length, tagMetadata.offset)
 
     tagMetadata.tag match {
       case NewSubfileTypeTag =>
@@ -270,7 +275,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
 
   private def readFractionalsTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
-    val fractionals = byteBuffer.getFractionalVector(tagMetadata.length,
+    val fractionals = byteBuffer.getFractionalArray(tagMetadata.length,
       tagMetadata.offset)
 
     tagMetadata.tag match {
@@ -292,7 +297,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
 
   private def readSignedBytesTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
-    val bytes = byteBuffer.getSignedByteVector(tagMetadata.length,
+    val bytes = byteBuffer.getSignedByteArray(tagMetadata.length,
       tagMetadata.offset)
 
     directory |-> longsMapLens modify (_ + (tagMetadata.tag
@@ -301,7 +306,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
 
   private def readUndefinedTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
-    val bytes = byteBuffer.getSignedByteVector(tagMetadata.length,
+    val bytes = byteBuffer.getSignedByteArray(tagMetadata.length,
       tagMetadata.offset)
 
     tagMetadata.tag match {
@@ -313,7 +318,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
 
   private def readSignedShortsTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
-    val shorts = byteBuffer.getSignedShortVector(tagMetadata.length,
+    val shorts = byteBuffer.getSignedShortArray(tagMetadata.length,
       tagMetadata.offset)
 
     directory |-> longsMapLens modify(_ + (tagMetadata.tag
@@ -322,7 +327,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
 
   private def readSignedIntsTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
-    val ints = byteBuffer.getSignedIntVector(tagMetadata.length,
+    val ints = byteBuffer.getSignedIntArray(tagMetadata.length,
       tagMetadata.offset)
 
     directory |-> longsMapLens modify(_ + (tagMetadata.tag ->
@@ -331,7 +336,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
 
   private def readSignedFractionalsTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
-    val fractionals = byteBuffer.getSignedFractionalVector(tagMetadata.length,
+    val fractionals = byteBuffer.getSignedFractionalArray(tagMetadata.length,
       tagMetadata.offset)
 
     directory |-> fractionalsMapLens modify(_ + (tagMetadata.tag
@@ -340,7 +345,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
 
   private def readFloatsTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
-    val floats = byteBuffer.getFloatVector(tagMetadata.length,
+    val floats = byteBuffer.getFloatArray(tagMetadata.length,
       tagMetadata.offset)
 
     directory |-> doublesMapLens modify(_ + (tagMetadata.tag
@@ -349,19 +354,18 @@ case class TagReader(byteBuffer: ByteBuffer) {
 
   private def readDoublesTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
-    val doubles = byteBuffer.getDoubleVector(tagMetadata.length,
-      tagMetadata.offset)
+    val doubles = byteBuffer.getDoubleArray(tagMetadata.length, tagMetadata.offset)
 
     tagMetadata.tag match {
       case ModelTransformationTag =>
         if (doubles.size != 16)
           throw new MalformedGeoTiffException("bad model tranformations")
         else {
-          val matrix = Vector(
-            Vector(doubles(0), doubles(1), doubles(2), doubles(3)),
-            Vector(doubles(4), doubles(5), doubles(6), doubles(7)),
-            Vector(doubles(8), doubles(9), doubles(10), doubles(11)),
-            Vector(doubles(12), doubles(13), doubles(14), doubles(15))
+          val matrix = Array(
+            Array(doubles(0), doubles(1), doubles(2), doubles(3)),
+            Array(doubles(4), doubles(5), doubles(6), doubles(7)),
+            Array(doubles(8), doubles(9), doubles(10), doubles(11)),
+            Array(doubles(12), doubles(13), doubles(14), doubles(15))
           )
 
           directory |-> modelTransformationLens set(Some(matrix))

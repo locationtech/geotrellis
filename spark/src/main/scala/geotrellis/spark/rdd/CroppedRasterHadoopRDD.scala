@@ -1,6 +1,7 @@
 package geotrellis.spark.rdd
 
 import geotrellis.spark.formats._
+import geotrellis.spark.utils._
 import geotrellis.spark.metadata._
 import geotrellis.spark.tiling._
 
@@ -11,7 +12,7 @@ import org.apache.hadoop.mapreduce.lib.input._
 import org.apache.hadoop.conf._
 
 class CroppedRasterHadoopRDD private (
-    raster: Path, extent: TileExtent, sc: SparkContext, conf: Configuration)
+    path: Path, extent: TileExtent, sc: SparkContext, conf: Configuration)
   extends PreFilteredHadoopRDD[TileIdWritable, ArgWritable](
     sc,
     classOf[SequenceFileInputFormat[TileIdWritable, ArgWritable]],
@@ -20,10 +21,10 @@ class CroppedRasterHadoopRDD private (
     conf)
 {
   /** Overriding the partitioner with a TileIdPartitioner */
-  override val partitioner = Some(TileIdPartitioner(raster, conf))
+  override val partitioner = Some(TileIdPartitioner(path, conf))
 
-  @transient val pyramidPath = raster.getParent()
-  val zoom = raster.getName().toInt
+  @transient val pyramidPath = path.getParent()
+  val zoom = path.getName().toInt
   val meta = PyramidMetadata(pyramidPath, conf)
 
   /**
@@ -64,18 +65,16 @@ object CroppedRasterHadoopRDD {
   final val SeqFileGlob = "/*[0-9]*/data"
 
   /**
-   *  @param raster   Fully qualified path to the raster (with zoom level)
+   *  @param path   Fully qualified path to the raster (with zoom level)
    * 	                  e.g. hdfs:///geotrellis/images/mypyramid/10
    *
    * @param  sc       The spark context
    */
-  def apply(raster: String, extent: TileExtent, sc: SparkContext): CroppedRasterHadoopRDD =
-    apply(new Path(raster), extent, sc)
+  def apply(path: String, extent: TileExtent, sc: SparkContext): CroppedRasterHadoopRDD =
+    apply(new Path(path), extent, sc)
 
-  def apply(raster: Path, extent: TileExtent, sc: SparkContext): CroppedRasterHadoopRDD = {
-    val job = new Job(sc.hadoopConfiguration)
-    val globbedPath = raster.suffix(SeqFileGlob)
-    FileInputFormat.addInputPath(job, globbedPath)
-    new CroppedRasterHadoopRDD(raster, extent, sc, job.getConfiguration)
+  def apply(path: Path, extent: TileExtent, sc: SparkContext): CroppedRasterHadoopRDD = {
+    val updatedConf = sc.hadoopConfiguration.withInputPath(path.suffix(SeqFileGlob))
+    new CroppedRasterHadoopRDD(path, extent, sc, updatedConf)
   }
 }

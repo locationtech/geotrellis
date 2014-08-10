@@ -20,31 +20,40 @@ import java.util.zip.Inflater
 
 import geotrellis.raster.io.geotiff.reader._
 
+import spire.syntax.cfor._
+
 object ZLibDecompression {
 
-  implicit class ZLib(matrix: Vector[Vector[Byte]]) {
-
-    def uncompressZLib(implicit directory: ImageDirectory): Vector[Vector[Byte]] =
-      matrix.zipWithIndex.par.map{ case(segment, i) =>
-        uncompressZLibSegment(segment, i) }.toVector
-
-    private def uncompressZLibSegment(segment: Vector[Byte], index: Int)
-      (implicit directory: ImageDirectory) = {
-      val segmentArray = segment.toArray
+  implicit class ZLib(matrix: Array[Array[Byte]]) {
+    def uncompressZLib(directory: ImageDirectory): Array[Array[Byte]] = {
+      val len = matrix.length
+      val arr = Array.ofDim[Array[Byte]](len)
 
       try {
-        val decompressor = new Inflater()
+        cfor(0)(_ < len, _ + 1) { i =>
+          val segment = matrix(i)
 
-        decompressor.setInput(segmentArray, 0, segmentArray.length)
 
-        val resultSize = directory.imageSegmentBitsSize(Some(index)) / 8
-        val result = new Array[Byte](resultSize.toInt)
-        decompressor.inflate(result)
-        result.toVector
+          val decompressor = new Inflater()
+
+          decompressor.setInput(segment, 0, segment.length)
+
+          // This would *have* to be 'cols' across, or else it's invalid.
+          val resultSize = directory.imageSegmentBitsSize(Some(i)) / 8
+          val result = new Array[Byte](resultSize.toInt)
+          decompressor.inflate(result)
+          arr(i) = result
+        }
       } catch {
         case e: Exception =>
           throw new MalformedGeoTiffException("bad zlib compression")
       }
+
+      arr
+    }
+
+    private def uncompressZLibSegment(segment: Vector[Byte], index: Int)
+      (implicit directory: ImageDirectory) = {
     }
 
   }
