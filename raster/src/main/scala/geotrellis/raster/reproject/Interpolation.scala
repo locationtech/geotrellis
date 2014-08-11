@@ -33,24 +33,36 @@ object Interpolation {
 }
 
 class NearestNeighborInterpolation(tile: Tile, extent: Extent) extends Interpolation {
-  val re = RasterExtent(tile, extent)
+  private val re = RasterExtent(tile, extent)
+  private val cols = tile.cols
+  private val rows = tile.rows
 
   def interpolate(x: Double, y: Double): Int = {
     val col = re.mapXToGrid(x)
     val row = re.mapYToGrid(y)
-    tile.get(col, row)
+    if(0 < col && col < cols && 0 < row && row < rows) {
+      tile.get(col, row)
+    }
+    else
+      NODATA
   }
 
   def interpolateDouble(x: Double, y: Double): Double = {
     val col = re.mapXToGrid(x)
     val row = re.mapYToGrid(y)
-    tile.getDouble(col, row)
+    if(0 < col && col < cols && 0 < row && row < rows)
+      tile.getDouble(col, row)
+    else
+      Double.NaN
   }
 
 }
 
 class BilinearInterpolation(tile: Tile, extent: Extent) extends Interpolation {
-  val re = RasterExtent(tile, extent)
+  private val re = RasterExtent(tile, extent)
+  private val cols = tile.cols
+  private val rows = tile.rows
+
 
   // Define bounds outside of which we will consider the source as NoData
   private val westBound = extent.xmin
@@ -87,11 +99,36 @@ class BilinearInterpolation(tile: Tile, extent: Extent) extends Interpolation {
       val topRow = bottomRow + 1
       val topY = bottomY + cellheight
 
+      val contribTopLeft = 
+        if(0 < leftCol && leftCol < cols && 0 < topRow && topRow < rows) {
+          tile.get(leftCol, topRow)
+        } else 0
+
+      val contribTopRight = 
+        if(0 < rightCol && rightCol < cols && 0 < topRow && topRow < rows) {
+          tile.get(rightCol, topRow)
+        } else 0
+
+
+      val contribBottomLeft = 
+        if(0 < leftCol && leftCol < cols && 0 < bottomRow && bottomRow < rows) {
+          tile.get(leftCol, bottomRow)
+        } else 0
+
+
+      val contribBottomRight = 
+        if(0 < rightCol && rightCol < cols && 0 < bottomRow && bottomRow < rows) {
+          tile.get(rightCol, bottomRow)
+        } else 0
+
+
       (inverseDeltas *
-      ( (tile.get(leftCol, topRow) * (dright * dbottom) ) +
-        (tile.get(rightCol, topRow) * (dleft * dbottom) ) +
-        (tile.get(leftCol, bottomRow) * (dright * dtop) ) +
-        (tile.get(rightCol, bottomRow) * (dleft * dtop) ) )).toInt
+        ( (contribTopLeft * dright * dbottom) +
+          (contribTopRight * dleft * dbottom) +
+          (contribBottomLeft * dright * dtop) +
+          (contribBottomRight * dleft * dtop) 
+        )
+      ).toInt
     }
 
   def interpolateDouble(x: Double, y: Double): Double =

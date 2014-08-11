@@ -11,11 +11,15 @@ package object reproject {
   // the second two arrays with transformed coordinates (srcX, srcY, dstX, dstY)
   type RowTransform = (Array[Double], Array[Double], Array[Double], Array[Double]) => Unit
 
-  implicit val defaultReprojectOptions = ReprojectOptions.DEFAULT
-
   implicit class ReprojectExtentsion(val tile: Tile) {
-    def reproject(extent: Extent, src: CRS, dest: CRS)(implicit options: ReprojectOptions): (Tile, Extent) = 
-      Reproject(tile, extent, src, dest)(options)
+    def reproject(extent: Extent, src: CRS, dest: CRS): (Tile, Extent) = 
+      reproject(extent, src, dest, ReprojectOptions.DEFAULT)
+
+    def reproject(method: InterpolationMethod, extent: Extent, src: CRS, dest: CRS): (Tile, Extent) = 
+      reproject(extent, src, dest, ReprojectOptions(method = method))
+
+    def reproject(extent: Extent, src: CRS, dest: CRS, options: ReprojectOptions): (Tile, Extent) =
+      Reproject(tile, extent, src, dest, options)
   }
 }
 

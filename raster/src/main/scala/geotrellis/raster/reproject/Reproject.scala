@@ -6,13 +6,13 @@ import geotrellis.proj4._
 
 import spire.syntax.cfor._
 
-case class ReprojectOptions(method: InterpolationMethod = Bilinear, errorThreshold: Double = 0.125)
+case class ReprojectOptions(method: InterpolationMethod = NearestNeighbor, errorThreshold: Double = 0.125)
 object ReprojectOptions {
   val DEFAULT = ReprojectOptions()
 }
 
 object Reproject {
-  def apply(tile: Tile, extent: Extent, src: CRS, dest: CRS)(implicit options: ReprojectOptions): (Tile, Extent) = {
+  def apply(tile: Tile, extent: Extent, src: CRS, dest: CRS, options: ReprojectOptions): (Tile, Extent) = {
     val re = RasterExtent(extent, tile.cols, tile.rows)
 
     val transform = Transform(src, dest)
@@ -30,8 +30,16 @@ object Reproject {
         RowTransform.exact(inverseTransform)
 
     // The map coordinates of the destination raster
+    val (topLeftX, topLeftY) = newRe.gridToMap(0,0)
     val destX = Array.ofDim[Double](newCols)
-    val destY = Array.ofDim[Double](newCols)
+    var currX = topLeftX
+    cfor(0)(_ < newCols, _ + 1) { i =>
+      destX(i) = currX
+      currX += newCellWidth
+    }
+
+    val destY = Array.ofDim[Double](newCols).fill(topLeftY)
+
     
     // The map coordinates of the source raster, transformed from the
     // destination map coordinates on each row iteration
@@ -50,7 +58,7 @@ object Reproject {
           newTile.setDouble(col, row, v)
 
           // Add row height for next iteration
-          destY(col) += newCellHeight
+          destY(col) -= newCellHeight
         }
       }
     } else {
@@ -59,15 +67,18 @@ object Reproject {
         // Reproject this whole row.
         rowTransform(destX, destY, srcX, srcY)
         cfor(0)(_ < newCols, _ + 1) { col =>
-          val v = interpolate(srcX(col), srcY(col))
+          val x = srcX(col)
+          val y = srcY(col)
+          val v = interpolate(x, y)
           newTile.set(col, row, v)
 
           // Add row height for next iteration
-          destY(col) += newCellHeight
+          destY(col) -= newCellHeight
         }
       }
     }
 
+    println(s"$extent")
     (newTile, newExtent)
   }
 }

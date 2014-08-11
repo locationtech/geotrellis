@@ -48,6 +48,19 @@ object ReprojectRasterExtent {
           if(currentXmax < x1)
             currentXmax = x1
         }
+
+        if(y1 < y2) {
+          if(y1 < currentYmin) 
+            currentYmin = y1
+          if(currentYmax < y2)
+            currentYmax = y2
+        } else {
+          if(y2 < currentYmin) 
+            currentYmin = y2
+          if(currentYmax < y1)
+            currentYmax = y1
+        }
+
       }
 
       if(i < ylen) {
@@ -63,6 +76,18 @@ object ReprojectRasterExtent {
             currentXmin = x2
           if(currentXmax < x1)
             currentXmax = x1
+        }
+
+        if(y1 < y2) {
+          if(y1 < currentYmin) 
+            currentYmin = y1
+          if(currentYmax < y2)
+            currentYmax = y2
+        } else {
+          if(y2 < currentYmin) 
+            currentYmin = y2
+          if(currentYmax < y1)
+            currentYmax = y1
         }
       }
     }
@@ -83,11 +108,14 @@ object ReprojectRasterExtent {
     val extent = re.extent
     val newExtent = reprojectExtent(re, transform)
 
-    val distance = math.sqrt(extent.width*extent.width + extent.height*extent.height)
+    val distance = math.sqrt(newExtent.width*newExtent.width + newExtent.height*newExtent.height)
     val pixelSize = distance / math.sqrt(re.cols * re.cols + re.rows * re.rows)
-    val newCols = (newExtent.width / pixelSize).toInt
-    val newRows = (newExtent.height / pixelSize).toInt
+    val newCols = math.ceil(newExtent.width / pixelSize).toInt
+    val newRows = math.ceil(newExtent.height / pixelSize).toInt
 
-    RasterExtent(newExtent, newCols, newRows)
+    // Adjust the extent to match the pixel size.
+    val adjustedExtent = Extent(newExtent.xmin, newExtent.ymax - (pixelSize*newRows), newExtent.xmin + (pixelSize*newCols), newExtent.ymax)
+
+    RasterExtent(adjustedExtent, newCols, newRows)
   }
 }
