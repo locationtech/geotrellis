@@ -25,6 +25,7 @@ import geotrellis.raster.io.arg.ArgWriter
 
 import geotrellis.raster.io.geotiff.reader.utils.ArrayUtils._
 import geotrellis.raster.io.geotiff.reader.utils.MatrixUtils._
+import geotrellis.raster.io.geotiff.reader.utils.ParseUtils._
 import geotrellis.raster.io.geotiff.reader.CommonPublicValues._
 
 import geotrellis.vector.Extent
@@ -437,13 +438,13 @@ case class ImageDirectory(
     val cols = this |-> imageWidthLens get
     val rows = this |-> imageLengthLens get
 
-   val tile =
-     this |-> gdalInternalNoDataLens get match {
-       case Some(gdalNoData) =>
-         ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows, gdalNoData)
-       case None =>
-         ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows)
-     }
+    val tile =
+      this |-> gdalInternalNoDataLens get match {
+        case Some(gdalNoData) =>
+          ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows, gdalNoData)
+        case None =>
+          ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows)
+      }
 
     (tile, extent)
   }
@@ -549,6 +550,8 @@ case class ImageDirectory(
       case None => true
     }
 
+  def setGDALNoData(input: String) =
+    this |-> gdalInternalNoDataLens set (parseGDALNoDataString(input))
 }
 
 object ImageDirectoryLenses {
