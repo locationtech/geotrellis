@@ -38,6 +38,7 @@ object RowTransform {
     transform: Transform, errorThreshold: Double, 
     srcX: Array[Double], srcY: Array[Double], destX: Array[Double], destY: Array[Double], 
     startIndex: Int, length: Int): Unit = {
+
     if(length == 2) return
 
     val midPoint = startIndex + ((length - 1) / 2)
@@ -52,7 +53,7 @@ object RowTransform {
       val xmax = destX(startIndex + length - 1)
       val xmin = destX(startIndex)
       val ymax = destY(startIndex + length - 1)
-      val ymin = destY(startIndex + length - 1)
+      val ymin = destY(startIndex)
 
       val dx = srcXMax - srcXMin
       val deltaX = (xmax - xmin) / dx
@@ -64,18 +65,20 @@ object RowTransform {
 
       if(error > errorThreshold) {
         // Compute against the two halves of the row
-        computeApprox(transform, errorThreshold, srcX, srcY, destX, destY, startIndex, midPoint - startIndex + 1)
-        computeApprox(transform, errorThreshold, srcX, srcY, destX, destY, midPoint, length - midPoint)
+        computeApprox(transform, errorThreshold, srcX, srcY, destX, destY, 
+          startIndex, midPoint - startIndex + 1)
+        computeApprox(transform, errorThreshold, srcX, srcY, destX, destY, 
+          midPoint, startIndex + length - midPoint)
       } else {
         // Fill out the values based on the linear interpolation
         cfor(startIndex + 1)(_ < startIndex + length - 1, _ + 1) { i =>
-          if(i != midPoint) {
-            destX(i) = xmin + (deltaX * dx)
-            destY(i) = ymin + (deltaY * dx)
+          if(startIndex + i != midPoint) {
+            var dxi = srcX(i + startIndex) - srcXMin
+            destX(i) = xmin + (deltaX * dxi)
+            destY(i) = ymin + (deltaY * dxi)
           }
         }
       }
     }
   }
-
 }

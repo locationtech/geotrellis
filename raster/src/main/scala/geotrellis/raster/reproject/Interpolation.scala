@@ -40,9 +40,9 @@ class NearestNeighborInterpolation(tile: Tile, extent: Extent) extends Interpola
   def interpolate(x: Double, y: Double): Int = {
     val col = re.mapXToGrid(x)
     val row = re.mapYToGrid(y)
-    if(0 < col && col < cols && 0 < row && row < rows) {
+
+    if(0 <= col && col < cols && 0 <= row && row < rows)
       tile.get(col, row)
-    }
     else
       NODATA
   }
@@ -50,9 +50,10 @@ class NearestNeighborInterpolation(tile: Tile, extent: Extent) extends Interpola
   def interpolateDouble(x: Double, y: Double): Double = {
     val col = re.mapXToGrid(x)
     val row = re.mapYToGrid(y)
-    if(0 < col && col < cols && 0 < row && row < rows)
+
+    if(0 <= col && col < cols && 0 <= row && row < rows)
       tile.getDouble(col, row)
-    else
+    else  
       Double.NaN
   }
 
@@ -100,24 +101,24 @@ class BilinearInterpolation(tile: Tile, extent: Extent) extends Interpolation {
       val topY = bottomY + cellheight
 
       val contribTopLeft = 
-        if(0 < leftCol && leftCol < cols && 0 < topRow && topRow < rows) {
+        if(0 <= leftCol && leftCol < cols && 0 <= topRow && topRow < rows) {
           tile.get(leftCol, topRow)
         } else 0
 
       val contribTopRight = 
-        if(0 < rightCol && rightCol < cols && 0 < topRow && topRow < rows) {
+        if(0 <= rightCol && rightCol < cols && 0 <= topRow && topRow < rows) {
           tile.get(rightCol, topRow)
         } else 0
 
 
       val contribBottomLeft = 
-        if(0 < leftCol && leftCol < cols && 0 < bottomRow && bottomRow < rows) {
+        if(0 <= leftCol && leftCol < cols && 0 <= bottomRow && bottomRow < rows) {
           tile.get(leftCol, bottomRow)
         } else 0
 
 
       val contribBottomRight = 
-        if(0 < rightCol && rightCol < cols && 0 < bottomRow && bottomRow < rows) {
+        if(0 <= rightCol && rightCol < cols && 0 <= bottomRow && bottomRow < rows) {
           tile.get(rightCol, bottomRow)
         } else 0
 

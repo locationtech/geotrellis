@@ -215,6 +215,7 @@ object GeotrellisBuild extends Build {
         Seq("-optimize"),
       libraryDependencies ++= Seq(
         scalatest % "test",
+        scalacheck  % "test",
         spire % "test",
         sprayClient % "test",
         sprayRouting % "test"

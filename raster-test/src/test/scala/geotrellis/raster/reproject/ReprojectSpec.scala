@@ -14,7 +14,7 @@ class ReprojectSpec extends FunSpec
                        with TileBuilders
                        with TestEngine {
   describe("reprojects in approximation to GDAL") {
-    it("should (approximately) match a GDAL bilinear interpolation on nlcd tile") {
+    ignore("should (approximately) match a GDAL bilinear interpolation on nlcd tile") {
       val (source, extent) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_wsg84.tif").read.imageDirectories.head.toRaster
       val (expected, expectedExtent) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-bilinear.tif").read.imageDirectories.head.toRaster
 
@@ -43,11 +43,13 @@ class ReprojectSpec extends FunSpec
       diffCount should be (0)
     }
 
-    ignore("should (approximately) match a GDAL nearest neighbor interpolation on nlcd tile") {
-      val (source, extent) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_wsg84.tif").read.imageDirectories.head.toRaster
-      val (expected, expectedExtent) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").read.imageDirectories.head.toRaster
-
-      val (actual, actualExtent) = source.reproject(extent, LatLng, WebMercator, ReprojectOptions(NearestNeighbor, 0.0))
+    it("should (approximately) match a GDAL nearest neighbor interpolation on nlcd tile") {
+      val (source, extent) = 
+        GeoTiffReader("raster-test/data/reproject/nlcd_tile_wsg84.tif").read.imageDirectories.head.toRaster
+      val (expected, expectedExtent) = 
+        GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").read.imageDirectories.head.toRaster
+      val (actual, actualExtent) = 
+        source.reproject(extent, LatLng, WebMercator, ReprojectOptions(NearestNeighbor, 0.0))
 
       actual.rows should be (expected.rows)
       actual.cols should be (expected.cols)
@@ -56,6 +58,56 @@ class ReprojectSpec extends FunSpec
       actualExtent.xmax should be (expectedExtent.xmax +- 0.00001)
       actualExtent.ymin should be (expectedExtent.ymin +- 0.00001)
       actualExtent.ymax should be (expectedExtent.ymax +- 0.00001)
+
+      cfor(0)(_ < actual.rows-1, _ + 1) { row =>
+        cfor(0)(_ < actual.cols-1, _ + 1) { col =>
+          withClue(s"Failed on ($col, $row): ") {
+            actual.getDouble(col, row) should be (expected.getDouble(col, row))
+          }
+        }
+      }
+    }
+
+    it("should (approximately) match a GDAL nearest neighbor interpolation on slope tif") {
+      val (source, extent) = 
+        GeoTiffReader("raster-test/data/reproject/slope_webmercator.tif").read.imageDirectories.head.toRaster
+      val (expected, expectedExtent) = 
+        GeoTiffReader("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").read.imageDirectories.head.toRaster
+      val (actual, actualExtent) = 
+        source.reproject(extent, WebMercator, LatLng, ReprojectOptions(NearestNeighbor, 0.0))
+
+      actual.rows should be (expected.rows)
+      actual.cols should be (expected.cols)
+
+      actualExtent.xmin should be (expectedExtent.xmin +- 0.00001)
+      actualExtent.xmax should be (expectedExtent.xmax +- 0.00001)
+      actualExtent.ymax should be (expectedExtent.ymax +- 0.00001)
+      actualExtent.ymin should be (expectedExtent.ymin +- 0.00001)
+
+      cfor(0)(_ < actual.rows-1, _ + 1) { row =>
+        cfor(0)(_ < actual.cols-1, _ + 1) { col =>
+          withClue(s"Failed on ($col, $row): ") {
+            actual.getDouble(col, row) should be (expected.getDouble(col, row))
+          }
+        }
+      }
+    }
+
+    it("should (approximately) match a GDAL nearest neighbor interpolation on slope tif and an error threshold of 0.125") {
+      val (source, extent) = 
+        GeoTiffReader("raster-test/data/reproject/slope_webmercator.tif").read.imageDirectories.head.toRaster
+      val (expected, expectedExtent) = 
+        GeoTiffReader("raster-test/data/reproject/slope_wsg84-nearestneighbor-er0.125.tif").read.imageDirectories.head.toRaster
+      val (actual, actualExtent) = 
+        source.reproject(extent, WebMercator, LatLng, ReprojectOptions(NearestNeighbor, 0.125))
+
+      actual.rows should be (expected.rows)
+      actual.cols should be (expected.cols)
+
+      actualExtent.xmin should be (expectedExtent.xmin +- 0.00001)
+      actualExtent.xmax should be (expectedExtent.xmax +- 0.00001)
+      actualExtent.ymax should be (expectedExtent.ymax +- 0.00001)
+      actualExtent.ymin should be (expectedExtent.ymin +- 0.00001)
 
       cfor(0)(_ < actual.rows-1, _ + 1) { row =>
         cfor(0)(_ < actual.cols-1, _ + 1) { col =>

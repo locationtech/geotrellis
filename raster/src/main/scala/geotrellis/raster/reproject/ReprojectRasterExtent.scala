@@ -18,7 +18,7 @@ object ReprojectRasterExtent {
    * edge) transforming into output coordinates in order to get an extents box.
    */
   def reprojectExtent(re: RasterExtent, transform: Transform): Extent = {
-    val PIXEL_STEP = 20
+    val PIXEL_STEP = 50
 
     val Extent(xmin, ymin, xmax, ymax) = re.extent
     val cellwidth = re.cellwidth
@@ -110,8 +110,9 @@ object ReprojectRasterExtent {
 
     val distance = math.sqrt(newExtent.width*newExtent.width + newExtent.height*newExtent.height)
     val pixelSize = distance / math.sqrt(re.cols * re.cols + re.rows * re.rows)
-    val newCols = math.ceil(newExtent.width / pixelSize).toInt
-    val newRows = math.ceil(newExtent.height / pixelSize).toInt
+
+    val newCols = ((newExtent.width / pixelSize) + 0.5).toInt
+    val newRows = ((newExtent.height / pixelSize) + 0.5).toInt
 
     // Adjust the extent to match the pixel size.
     val adjustedExtent = Extent(newExtent.xmin, newExtent.ymax - (pixelSize*newRows), newExtent.xmin + (pixelSize*newCols), newExtent.ymax)

@@ -14,6 +14,8 @@ object ReprojectOptions {
 object Reproject {
   def apply(tile: Tile, extent: Extent, src: CRS, dest: CRS, options: ReprojectOptions): (Tile, Extent) = {
     val re = RasterExtent(extent, tile.cols, tile.rows)
+    val cellwidth = re.cellwidth
+    val cellheight = re.cellheight
 
     val transform = Transform(src, dest)
     val newRe @ RasterExtent(newExtent, newCellWidth, newCellHeight, newCols, newRows) =
@@ -69,6 +71,7 @@ object Reproject {
         cfor(0)(_ < newCols, _ + 1) { col =>
           val x = srcX(col)
           val y = srcY(col)
+
           val v = interpolate(x, y)
           newTile.set(col, row, v)
 
@@ -78,7 +81,6 @@ object Reproject {
       }
     }
 
-    println(s"$extent")
     (newTile, newExtent)
   }
 }
