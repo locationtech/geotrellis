@@ -43,7 +43,7 @@ object GroupFourDecompression {
         val length = directory.rowsInSegment(i)
         val width = directory.rowSize
 
-        val decompressor = new TIFFFaxDecoder(fillOrder, width, length)
+        val decompressor = TiffFaxDecompressor(fillOrder, width, length)
 
         val inputArray = segment.toArray
         val outputArray = Array.ofDim[Byte]((length * width + 7) / 8)

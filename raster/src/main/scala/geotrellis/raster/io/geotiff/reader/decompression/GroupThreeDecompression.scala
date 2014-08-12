@@ -37,7 +37,7 @@ object GroupThreeDecompression {
         val segment = matrix(i)
         val length = directory.rowsInSegment(i)
         val width = directory.rowSize
-        val decompressor = new TIFFFaxDecoder(fillOrder, width, length)
+        val decompressor = TiffFaxDecompressor(fillOrder, width, length)
 
         val outputArray = Array.ofDim[Byte]((length * width + 7) / 8)
 
