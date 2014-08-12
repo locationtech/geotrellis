@@ -34,13 +34,13 @@ object HuffmanDecompression {
         val fillOrder = directory |-> fillOrderLens get
         val length = directory.rowsInSegment(i)
         val width = directory.rowSize
-        val decompressor = new TIFFFaxDecoder(fillOrder, width, length)
+        val decompressor = TiffFaxDecompressor(fillOrder, width, length)
 
         val outputArray = Array.ofDim[Byte]((length * width + 7) / 8)
 
         decompressor.decode1D(outputArray, segment, 0, length)
 
-        arr(i) =outputArray
+        arr(i) = outputArray
       }
 
       arr
