@@ -75,6 +75,24 @@ class RasterSourceSpec extends FunSpec
       }
     }
 
+    it("should mapWithExtent to a sequence of ints") {
+      val RasterExtent(expectedExtent, _, _,_,_) =
+        RasterSource("mtsthelens_tiled")
+          .rasterExtent
+          .get
+
+      val combinedExtent = 
+      RasterSource("mtsthelens_tiled")
+        .mapWithExtent { (tile, extent) =>
+          extent
+         }
+        .converge
+        .get
+        .reduce(_.combine(_))
+
+      combinedExtent should be (expectedExtent)
+    }
+
     it("should match tiled and non-tiled rasters") {
       val layer = get(io.LoadRasterLayer("SBN_inc_percap_tiled"))
       val tiled = layer.getRaster
