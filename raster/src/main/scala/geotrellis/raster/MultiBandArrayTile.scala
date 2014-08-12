@@ -1,7 +1,8 @@
 package geotrellis.raster
 
 import geotrellis.vector.Extent
-import com.sun.org.apache.xalan.internal.xsltc.compiler.ConcatCall
+
+import spire.syntax.cfor._
 
 case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile with Serializable {
 
@@ -21,7 +22,10 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
    * check whether each Tile in multiBandData
    *  has similar CellType, Rows and Cols
    */
-  for (i <- 1 until bands if (multiBandData(i).cols != cols || multiBandData(i).rows != rows || multiBandData(i).cellType != cellType)) yield { sys.error("All band should have same cols, rows and Type, Band at Index $i is differ") }
+  cfor(0)(_ < bands, _ + 1) { band =>
+    if (multiBandData(band).cols != cols || multiBandData(band).rows != rows || multiBandData(band).cellType != cellType)
+      sys.error("All band should have same cols, rows and Type, Band at Index $band is differ")
+  }
 
   def getBand(bandNo: Int): Tile = {
     if (bandNo < bands)
@@ -31,27 +35,42 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
   }
 
   def map(f: Int => Int): MultiBandTile = {
-    val outputData = (for (i <- 0 until bands) yield { this.getBand(i).map(f) }).toArray
+    val outputData = Array.ofDim[Tile](bands) 
+    cfor(0)(_ < bands, _ + 1) { band =>
+      outputData(band) = getBand(band).map(f)
+    }
     MultiBandTile(outputData)
   }
 
   def mapDouble(f: Double => Double): MultiBandTile = {
-    val outputData = (for (i <- 0 until bands) yield { this.getBand(i).mapDouble(f) }).toArray
+    val outputData = Array.ofDim[Tile](bands) 
+    cfor(0)(_ < bands, _ + 1) { band =>
+      outputData(band) = getBand(band).mapDouble(f)
+    }
     MultiBandTile(outputData)
   }
 
   def convert(cellType: CellType): MultiBandTile = {
-    val outputData = (for (i <- 0 until bands) yield { this.getBand(i).convert(cellType) }).toArray
+    val outputData = Array.ofDim[Tile](bands) 
+    cfor(0)(_ < bands, _ + 1) { band =>
+      outputData(band) = getBand(band).convert(cellType)
+    }
     MultiBandTile(outputData)
   }
 
+  /**
+   * combine two multibandtiles according to given function
+   */
   def combine(other: MultiBandTile)(f: (Int, Int) => Int): MultiBandTile = {
     if (this.bands != other.bands) {
       throw new IndexOutOfBoundsException("MultiBandTile.bands")
     } else if (this.dimensions != other.dimensions) {
       throw new Exception("MultiBandTile dimensions of bands are not Equal")
     } else {
-      val output = (for (i <- 0 until this.bands) yield { this.getBand(i).combine(other.getBand(i))(f) }).toArray
+      val output = Array.ofDim[Tile](bands) 
+      cfor(0)(_ < bands, _ + 1) { band =>
+        output(band) = getBand(band).combine(other.getBand(band))(f)
+      }
       MultiBandTile(output)
     }
   }
@@ -62,15 +81,23 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
     } else if (this.dimensions != other.dimensions) {
       throw new Exception("MultiBandTile dimensions of bands are not Equal")
     } else {
-      val output = (for (i <- 0 until this.bands) yield { this.getBand(i).combineDouble(other.getBand(i))(f) }).toArray
+      val output = Array.ofDim[Tile](bands) 
+      cfor(0)(_ < bands, _ + 1) { band =>
+        output(band) = getBand(band).combineDouble(other.getBand(band))(f)
+      }
       MultiBandTile(output)
     }
   }
 
+  /**
+   *  combine bands in a single multibandtile according to given function
+   */
   def combine(first: Int, last: Int)(f: (Int, Int) => Int): Tile = {
     if (first < bands || last < bands) {
       var result = getBand(first)
-      for (i <- first + 1 to last) yield { result = result.combine(getBand(i))(f) }
+      cfor(first + 1)(_ < last, _ + 1) { band =>
+        result = result.combine(getBand(band))(f)
+      } 
       result
     } else {
       throw new IndexOutOfBoundsException("MultiBandTile.bands")
@@ -80,7 +107,9 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
   def combineDouble(first: Int, last: Int)(f: (Double, Double) => Double): Tile = {
     if (first < bands || last < bands) {
       var result = getBand(first)
-      for (i <- first + 1 to last) yield { result = result.combineDouble(getBand(i))(f) }
+      cfor(first + 1)(_ < last, _ + 1) { band =>
+        result = result.combineDouble(getBand(band))(f)
+      } 
       result
     } else {
       throw new IndexOutOfBoundsException("MultiBandTile.bands")
@@ -89,19 +118,25 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
 
   def warp(source: Extent, target: RasterExtent): MultiBandTile = {
     val outPutData = Array.ofDim[Tile](bands)
-    for (i <- 0 until bands) yield { outPutData(i) = getBand(i).warp(source, target) }
+    cfor(0)(_ < bands, _ + 1) { band =>
+      outPutData(band) = getBand(band).warp(source, target) 
+    }
     MultiBandTile(outPutData)
   }
 
   def warp(source: Extent, target: Extent): MultiBandTile = {
     val outPutData = Array.ofDim[Tile](bands)
-    for (i <- 0 until bands) yield { outPutData(i) = getBand(i).warp(source, target) }
+    cfor(0)(_ < bands, _ + 1) { band =>
+      outPutData(band) = getBand(band).warp(source, target) 
+    } 
     MultiBandTile(outPutData)
   }
 
   def warp(source: Extent, targetCols: Int, targetRows: Int): MultiBandTile = {
     val outPutData = Array.ofDim[Tile](bands)
-    for (i <- 0 until bands) yield { outPutData(i) = getBand(i).warp(source, targetCols, targetRows) }
+    cfor(0)(_ < bands, _ + 1) { band =>
+      outPutData(band) = getBand(band).warp(source, targetCols, targetRows)
+    } 
     MultiBandTile(outPutData)
   }
 

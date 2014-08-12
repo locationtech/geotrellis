@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.raster.io._
 
+import spire.syntax.cfor._
 import com.typesafe.config.ConfigFactory
 
 import java.io.File
@@ -30,11 +31,15 @@ object MultibandArgReader {
       val paths: Array[String] = new Array[String](noOfBands)
       if (json.hasPath("path")) {
         val p = json.getString("path")
-        for (i <- 0 until noOfBands) yield { paths(i) = p + "-band" + i + ".arg" }
+        cfor(0)(_ < noOfBands, _ + 1) { band =>
+          paths(band) = p + "-band" + band + ".arg" 
+        }
       } else {
         val layerName = json.getString("layer")
         // Default to a .arg file with the same name as the layer name.
-        for (i <- 0 until noOfBands) yield { paths(i) = layerName + "-band" + i + ".arg" }
+        cfor(0)(_ < noOfBands, _ + 1) { band =>
+          paths(band) = layerName + "-band" + band + ".arg" 
+        }
       }
       paths
     }

@@ -2,6 +2,8 @@ package geotrellis.raster
 
 import geotrellis.vector.Extent
 
+import spire.syntax.cfor._
+
 object MultiBandTile {
   def apply(arr: Array[Tile]): MultiBandTile =
     MultiBandArrayTile(arr)
@@ -11,7 +13,9 @@ object MultiBandTile {
       sys.error("There should be at least two Tiles to be MultiBandTile")
     } else {
       val output = Array.ofDim[Tile](noOfBands)
-      for (i <- 0 until noOfBands) yield { output(i) = ArrayTile.empty(cellType, cols, rows) }
+      cfor(0)(_ < noOfBands, _ + 1) { band =>
+        output(band) = ArrayTile.empty(cellType, cols, rows) 
+      }
       MultiBandTile(output)
     }
 }
@@ -40,12 +44,25 @@ trait MultiBandTile {
 
   def convert(cellType: CellType): MultiBandTile
 
+  /**
+   * combine two multibandtiles according to given function
+   */
   def combine(other: MultiBandTile)(f: (Int, Int) => Int): MultiBandTile
   def combineDouble(other: MultiBandTile)(f: (Double, Double) => Double): MultiBandTile
 
   def dualCombine(other: MultiBandTile)(f: (Int, Int) => Int)(g: (Double, Double) => Double): MultiBandTile =
     if (cellType.isFloatingPoint) combineDouble(other)(g)
     else combine(other)(f)
+
+  /**
+   *  combine bands in a single multibandtile according to given function
+   */
+  def combine(first: Int, last: Int)(f: (Int, Int) => Int): Tile
+  def combineDouble(first: Int, last: Int)(f: (Double, Double) => Double): Tile
+
+  def dualCombine(first: Int, last: Int)(f: (Int, Int) => Int)(g: (Double, Double) => Double): Tile =
+    if (cellType.isFloatingPoint) combineDouble(first, last)(g)
+    else combine(first, last)(f)
 
   def mapIfSet(f: Int => Int): MultiBandTile =
     map { i =>
@@ -62,13 +79,6 @@ trait MultiBandTile {
   def dualMapIfSet(f: Int => Int)(g: Double => Double): MultiBandTile =
     if (cellType.isFloatingPoint) mapIfSetDouble(g)
     else mapIfSet(f)
-
-  def combine(first: Int, last: Int)(f: (Int, Int) => Int): Tile
-  def combineDouble(first: Int, last: Int)(f: (Double, Double) => Double): Tile
-
-  def dualCombine(first: Int, last: Int)(f: (Int, Int) => Int)(g: (Double, Double) => Double): Tile =
-    if (cellType.isFloatingPoint) combineDouble(first, last)(g)
-    else combine(first, last)(f)
 
   def warp(source: Extent, target: RasterExtent): MultiBandTile
   def warp(source: Extent, target: Extent): MultiBandTile
@@ -108,4 +118,5 @@ trait MultiBandTile {
   def localMultiply(): Tile
   def localDivide(constnt: Int): MultiBandTile
   def localDivide(): Tile
+
 }

@@ -5,6 +5,8 @@ import java.io.{ BufferedOutputStream, DataOutputStream, FileOutputStream }
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
+import spire.syntax.cfor._
+
 /**
  * MultiBandArgWriter will write a MultiBandRaster to disk in ARG format.
  *
@@ -42,7 +44,9 @@ case class MultibandArgWriter(typ: CellType) {
 
     writeMetadataJSON(base, metadataName, multiBandTile.bands, RasterExtent(extent, multiBandTile.cols, multiBandTile.rows))
 
-    for (i <- 0 until multiBandTile.bands) yield { writeData(base + "-band" + i + ".arg", multiBandTile.getBand(i)) }
+    cfor(0)(_<multiBandTile.bands,_+1){ band=>
+      writeData(base + "-band" + band + ".arg", multiBandTile.getBand(band))
+    }
   }
 
   private def writeMetadataJSON(path: String, name: String, noOfBands: Int, re: RasterExtent) {
