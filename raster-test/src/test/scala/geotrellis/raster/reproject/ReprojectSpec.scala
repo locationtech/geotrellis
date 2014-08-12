@@ -14,7 +14,7 @@ class ReprojectSpec extends FunSpec
                        with TileBuilders
                        with TestEngine {
   describe("reprojects in approximation to GDAL") {
-    ignore("should (approximately) match a GDAL bilinear interpolation on nlcd tile") {
+    it("should (approximately) match a GDAL bilinear interpolation on nlcd tile") {
       val (source, extent) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_wsg84.tif").read.imageDirectories.head.toRaster
       val (expected, expectedExtent) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-bilinear.tif").read.imageDirectories.head.toRaster
 
@@ -32,9 +32,9 @@ class ReprojectSpec extends FunSpec
       var notNoData = 0 
       cfor(0)(_ < actual.rows, _ + 1) { row =>
         cfor(0)(_ < actual.cols, _ + 1) { col =>
-          // withClue(s"Failed on ($col, $row): ") {
-          //   actual.getDouble(col, row) should be (expected.getDouble(col, row))
-          // }          
+          withClue(s"Failed on ($col, $row): ") {
+            actual.getDouble(col, row) should be (expected.getDouble(col, row))
+          }          
           if(actual.getDouble(col, row) != expected.getDouble(col, row)) { diffCount += 1 }
           if(isData(actual.getDouble(col, row))) { notNoData += 1 }
         }

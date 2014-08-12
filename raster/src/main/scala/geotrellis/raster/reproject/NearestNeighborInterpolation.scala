@@ -27,5 +27,4 @@ class NearestNeighborInterpolation(tile: Tile, extent: Extent) extends Interpola
     else  
       Double.NaN
   }
-
 }

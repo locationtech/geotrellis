@@ -23,7 +23,7 @@ object Interpolation {
   def apply(method: InterpolationMethod, tile: Tile, extent: Extent): Interpolation =
     method match {
       case NearestNeighbor => new NearestNeighborInterpolation(tile, extent)
-      case Bilinear => new BilinearInterpolation(tile, extent)
+      case Bilinear => ???
       case Cubic => ???
       case CubicSpline => ???
       case Lanczos => ???
