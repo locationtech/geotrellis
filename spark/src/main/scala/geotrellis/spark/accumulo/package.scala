@@ -1,5 +1,6 @@
 package geotrellis.spark
 
+import org.apache.accumulo.core.client.security.tokens.AuthenticationToken
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.client.mapreduce.{InputFormatBase, AccumuloInputFormat}
 import org.apache.accumulo.core.data.{Key, Value, Range => ARange}
@@ -8,47 +9,59 @@ import org.apache.spark._
 import org.apache.spark.rdd._
 import scala.collection.JavaConversions._
 import geotrellis.raster._
-
-import scala.reflect.ClassTag
-
+import geotrellis.spark.tiling._
+import org.apache.accumulo.core.client.mapreduce.lib.util.{ConfiguratorBase => CB}
 
 package object accumulo {
 
   implicit class AccumuloLoadFunctions(sc: SparkContext)
   {
-    def accumuloRDD[K: TileAccumuloFormat](table: String): RDD[(K, Tile)] = {
+    def setZooKeeperInstance(instance: String, hosts: String) =
+      CB.setZooKeeperInstance(classOf[AccumuloInputFormat], sc.hadoopConfiguration, instance, hosts)
+
+    def setAccumuloCredential(user: String, token: AuthenticationToken) =
+      CB.setConnectorInfo(classOf[AccumuloInputFormat], sc.hadoopConfiguration, user, token)
+
+    /**
+     * @param table   name of the accumulo table
+     * @param layer   name of the layer, "nlcd-2011:12"
+     *                this encodes both the column family and the zoom level
+     * @param extent  tile extent, will usually be used to refine row selection
+     */
+    def accumuloRDD[K, L](table: String, layer: L, extent: Option[TileExtent] = None)
+      (implicit format: AccumuloFormat[K, L]): RDD[(K, Tile)] =
+    {
       val job = new Job(sc.hadoopConfiguration)
       InputFormatBase.setInputTableName(job, table)
-      InputFormatBase.setRanges(job, new ARange() :: Nil)
+      InputFormatBase.setRanges(job, format.ranges(layer, extent))
 
       //If I had query parameters I would have to use InputFormatBase
       // to declare some iterators and set some ARanges
       // So where should they come from ?
+      // TODO: Set some filters here to represent a query
 
-      val format = implicitly[TileAccumuloFormat[K]]
       sc.newAPIHadoopRDD(
         job.getConfiguration, classOf[AccumuloInputFormat], classOf[Key], classOf[Value]
       ).map { case (key, value) => format.read(key,value)}
     }
   }
 
-  implicit class AccumuloSaveFunctions[K: ClassTag](rdd: RDD[(K, Tile)])
-  {
-    def saveAccumulo(table: String, accumuloConnector: Connector)
-                    (implicit format: TileAccumuloFormat[K]): Unit =
+  implicit class AccumuloSaveFunctions[K, L](rdd: RDD[(K, Tile)]) {
+    def saveAccumulo(table: String, layer: L, accumuloConnector: Connector)
+                    (implicit format: AccumuloFormat[K, L])
     {
       val sc = rdd.sparkContext
       val connectorBC = sc.broadcast(accumuloConnector)
+
       sc.runJob(rdd, { partition: Iterator[(K, Tile)] =>
         val cfg = new BatchWriterConfig()
         val writer = connectorBC.value.createBatchWriter(table, cfg)
 
         partition.foreach { row =>
-          writer.addMutation(format.write(row))
+          writer.addMutation(format.write(layer, row))
         }
-        writer.close
+        writer.close()
       })
     }
   }
-
 }
