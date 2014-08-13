@@ -78,43 +78,60 @@ object IngestCommand extends ArgMain[IngestArgs] with Logging {
   System.setProperty("com.sun.media.jai.disableMediaLib", "true")
 
   def main(args: IngestArgs): Unit = {
-    val hadoopConf = args.hadoopConf
-    hadoopConf.set("io.map.index.interval", "1")
+    val conf = args.hadoopConf
+    conf.set("io.map.index.interval", "1")
 
     val inPath = new Path(args.input)
     val outPath = new Path(args.outputpyramid)
 
     logInfo(s"Deleting and creating output path: $outPath")
-    val outFs: FileSystem = outPath.getFileSystem(hadoopConf)
+    val outFs: FileSystem = outPath.getFileSystem(conf)
     outFs.delete(outPath, true)
     outFs.mkdirs(outPath)
 
     val sparkContext = args.sparkContext("Ingest")
     try {
-      ingest(inPath, outPath, hadoopConf, sparkContext)
+      val rdd = {
+        val allFiles = HdfsUtils.listFiles(inPath, conf)
+        val newConf = HdfsUtils.putFilesInConf(allFiles.mkString(","), conf)
+
+        geotiffRdd(newConf, sparkContext)
+      }
+      
+      val (context, zoomLevel) = metadata(rdd, inPath, conf)
+      val tiles = tileRdd(rdd, zoomLevel, sparkContext)
+
+      val ingestSave = 
+        if(true) {
+          val tableName: String = ???
+          val layerName: String = ???
+
+          new AccumuloIngest(zoomLevel, tableName, layerName)
+        } else {
+          new MapFileIngest(context, zoomLevel, outPath, conf)
+        }
+
+      ingestSave.save(tiles)
     } finally {
       sparkContext.stop
     }
   }
 
-  def ingest(input: Path, output: Path, conf: Configuration, sc: SparkContext): Unit = {
-    val allFiles = HdfsUtils.listFiles(input, conf)
-    val newConf = HdfsUtils.putFilesInConf(allFiles.mkString(","), conf)
+  def geotiffRdd(conf: Configuration, sc: SparkContext): RDD[(Extent, Tile)] =
+      sc.newAPIHadoopRDD(conf, classOf[GeotiffInputFormat], classOf[Extent], classOf[Tile])
 
-    val geotiffRdd: RDD[(Extent, Tile)] = 
-      sc.newAPIHadoopRDD(newConf, classOf[GeotiffInputFormat], classOf[Extent], classOf[Tile])
-
+  def metadata(rdd: RDD[(Extent, Tile)], inPath: Path, conf: Configuration): (Context, ZoomLevel) = {
     logInfo(s"Computing metadata from raster set...")
     val (uncappedExtent, cellType, cellSize): (Extent, CellType, CellSize) =
-      geotiffRdd
+      rdd
         .map { case (extent, tile) => (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows)) }
         .reduce { (t1, t2) =>
-          val (e1, ct1, cs1) = t1
-          val (e2, ct2, cs2) = t2
-          (e1.combine(e2), ct1.union(ct2),
-            if(cs1.resolution < cs2.resolution) cs1 else cs2
-          )
-         }
+        val (e1, ct1, cs1) = t1
+        val (e2, ct2, cs2) = t2
+        (e1.combine(e2), ct1.union(ct2),
+          if(cs1.resolution < cs2.resolution) cs1 else cs2
+        )
+      }
 
     val tileScheme: TilingScheme = TilingScheme.GEODETIC
     val zoomLevel: ZoomLevel = tileScheme.zoomLevelFor(cellSize)
@@ -123,18 +140,19 @@ object IngestCommand extends ArgMain[IngestArgs] with Logging {
 
     logInfo(s"Metadata: $extent, cellType = $cellType, cellSize = $cellSize")
 
-    val tileSizeBytes = TmsTiling.tileSizeBytes(zoomLevel.tileSize, cellType)
-    val blockSizeBytes = HdfsUtils.defaultBlockSize(input, conf)
-
     val tileExtent = zoomLevel.tileExtentForExtent(extent)
+
+    val tileSizeBytes = TmsTiling.tileSizeBytes(zoomLevel.tileSize, cellType)
+    val blockSizeBytes = HdfsUtils.defaultBlockSize(inPath, conf)
 
     val splitGenerator = RasterSplitGenerator(tileExtent, zoomLevel.level, tileSizeBytes, blockSizeBytes)
     val partitioner = RasterRddPartitioner(splitGenerator.splits)
 
-    val rasterMetadata = 
+
+    val rasterMetadata =
       RasterMetadata(TmsTiling.extentToPixel(extent, zoomLevel.level, zoomLevel.tileSize), tileExtent)
 
-    val meta: PyramidMetadata = 
+    val meta: PyramidMetadata =
       PyramidMetadata(
         extent,
         zoomLevel.tileSize,
@@ -144,45 +162,69 @@ object IngestCommand extends ArgMain[IngestArgs] with Logging {
         zoomLevel.level,
         Map(zoomLevel.level.toString -> rasterMetadata))
 
-    val context: Context = 
+    val context: Context =
       Context(zoomLevel.level, meta, TileIdPartitioner(partitioner.splits.map(TileIdWritable(_))))
 
+    (context, zoomLevel)
+  }
+
+  // This is the mosaicing function. RDD[(Extent, Tile)] => RDD[TmsTile]
+  def tileRdd(rdd: RDD[(Extent, Tile)], zoomLevel: ZoomLevel, sc: SparkContext): RDD[TmsTile] = {
+    val bcZoomLevel = sc.broadcast(zoomLevel)
+    rdd
+      .flatMap { case (extent, tile) =>
+        val zoomLevel = bcZoomLevel.value
+        zoomLevel.tileIdsForExtent(extent).map { case tileId  => (tileId, (tileId, extent, tile)) }
+       }
+      .combineByKey( 
+        { case (tileId, extent, tile) =>
+          val zoomLevel = bcZoomLevel.value
+          val tmsTile = ArrayTile.empty(tile.cellType, zoomLevel.pixelCols, zoomLevel.pixelRows)
+          tmsTile.burnValues(zoomLevel.extentForTile(tileId), extent, tile)
+        },
+        { (tmsTile: MutableArrayTile, tup: (Long, Extent, Tile)) =>
+          val zoomLevel = bcZoomLevel.value
+          val (tileId, extent, tile) = tup
+          tmsTile.burnValues(zoomLevel.extentForTile(tileId), extent, tile)
+        },
+        { (tmsTile1: MutableArrayTile , tmsTile2: MutableArrayTile) =>
+          tmsTile1.burnValues(tmsTile2)
+        }
+       )
+      .map { case (id, tile) => TmsTile(id, tile) }
+  }
+}
+
+trait Ingest extends Logging {
+  def save(tiles: RDD[TmsTile]): Unit
+}
+
+class AccumuloIngest(zoomLeve: ZoomLevel, tableName: String, layerName: String) extends Ingest {
+  def save(tiles: RDD[TmsTile]): Unit = ???
+}
+
+class MapFileIngest(context: Context, zoomLevel: ZoomLevel, outPath: Path, conf: Configuration) extends Ingest {
+  def save(tiles: RDD[TmsTile]): Unit = {
+    val metadata = context.toMetadata
+
+    val tileSizeBytes = TmsTiling.tileSizeBytes(zoomLevel.tileSize, metadata.cellType)
+    val blockSizeBytes = HdfsUtils.defaultBlockSize(outPath, conf)
+
+    val tileExtent = metadata.rasterMetadata.head._2.tileExtent
+
+    val splitGenerator = RasterSplitGenerator(tileExtent, zoomLevel.level, tileSizeBytes, blockSizeBytes)
+    val partitioner = RasterRddPartitioner(splitGenerator.splits)
+    
     // Save pyramid metadata
-    val metaPath = new Path(output, PyramidMetadata.MetaFile)
+    val metaPath = new Path(outPath, PyramidMetadata.MetaFile)
     val fs = metaPath.getFileSystem(conf)
     val fdos = fs.create(metaPath)
     val out = new PrintWriter(fdos)
-    out.println(JacksonWrapper.prettyPrint(meta))
+    out.println(JacksonWrapper.prettyPrint(metadata))
     out.close()
     fdos.close()
 
-    val outPathWithZoom = new Path(output, zoomLevel.level.toString)
-
-    val bcZoomLevel = sc.broadcast(zoomLevel)
-
-    // This is the mosaicing function. RDD[(Extent, Tile)] => RDD[TmsTile]
-    val tiles: RDD[TmsTile] =
-      geotiffRdd
-        .flatMap { case (extent, tile) =>
-          val zoomLevel = bcZoomLevel.value
-          zoomLevel.tileIdsForExtent(extent).map { case tileId  => (tileId, (tileId, extent, tile)) }
-         }
-        .combineByKey( 
-          { case (tileId, extent, tile) =>
-            val zoomLevel = bcZoomLevel.value
-            val tmsTile = ArrayTile.empty(cellType, zoomLevel.pixelCols, zoomLevel.pixelRows)
-            tmsTile.burnValues(zoomLevel.extentForTile(tileId), extent, tile)
-          },
-          { (tmsTile: MutableArrayTile, tup: (Long, Extent, Tile)) =>
-            val zoomLevel = bcZoomLevel.value
-            val (tileId, extent, tile) = tup
-            tmsTile.burnValues(zoomLevel.extentForTile(tileId), extent, tile)
-          },
-          { (tmsTile1: MutableArrayTile , tmsTile2: MutableArrayTile) =>
-            tmsTile1.burnValues(tmsTile2)
-          }
-         )
-        .map { case (id, tile) => TmsTile(id, tile) }
+    val outPathWithZoom = new Path(outPath, zoomLevel.level.toString)
 
     tiles
       .partitionBy(partitioner)
@@ -190,5 +232,6 @@ object IngestCommand extends ArgMain[IngestArgs] with Logging {
       .save(outPathWithZoom)
 
     logInfo(s"Saved raster at zoom level ${zoomLevel.level} to $outPathWithZoom")
+
   }
 }
