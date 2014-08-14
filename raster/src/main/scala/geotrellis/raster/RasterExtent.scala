@@ -75,10 +75,10 @@ object CellSize {
  */
 case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, cols: Int, rows: Int) {
 
-  if (cellwidth  <= 0.0) throw GeoAttrsError("invalid cell-width")
-  if (cellheight <= 0.0) throw GeoAttrsError("invalid cell-height")
-  if (cols <= 0) throw GeoAttrsError("invalid cols")
-  if (rows <= 0) throw GeoAttrsError("invalid rows")
+  if (cellwidth  <= 0.0) throw GeoAttrsError(s"invalid cell-width: $cellwidth")
+  if (cellheight <= 0.0) throw GeoAttrsError(s"invalid cell-height: $cellheight")
+  if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
+  if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
 
   /**
    * The size of the extent, e.g. cols * rows.
@@ -244,4 +244,7 @@ object RasterExtent {
     val rows = (extent.height / cellheight).toInt
     RasterExtent(extent, cellwidth, cellheight, cols, rows)
   }
+
+  def apply(tile: Tile, extent: Extent): RasterExtent =
+    apply(extent, tile.cols, tile.rows)
 }
