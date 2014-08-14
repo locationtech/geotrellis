@@ -17,7 +17,6 @@
 package geotrellis.raster.io.geotiff.reader
 
 import monocle.syntax._
-import monocle.Macro._
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
@@ -33,9 +32,9 @@ import java.nio.ByteBuffer
 import org.scalatest._
 
 class GeoTiffReaderSpec extends FunSpec
-                           with Matchers
-                           with BeforeAndAfterAll
-                           with TestEngine {
+    with Matchers
+    with BeforeAndAfterAll
+    with TestEngine {
 
   var writtenFiles = Vector[String]()
 
@@ -124,10 +123,10 @@ class GeoTiffReaderSpec extends FunSpec
     }
   }
 
+  // Apparently GDAL supports a ton of different compressions.
+  // In the coming days we will work to add support for as many as possible.
   describe ("reading compressed file must yield same image array as uncompressed file") {
 
-    // This is the last bit left of the geotiff reader before it becomes
-    // fully compliant with all the compression format GDAL supports.
     ignore ("must read aspect_jpeg.tif and match uncompressed file") {
 
     }
@@ -211,10 +210,7 @@ class GeoTiffReaderSpec extends FunSpec
 
       (ifd |-> compressionLens get) should equal (1)
 
-      ifd |-> photometricInterpLens get match {
-        case Some(pi) => pi should equal (1)
-        case None => fail
-      }
+      (ifd |-> photometricInterpLens get) should equal (1)
 
       ifd |-> stripOffsetsLens get match {
         case Some(stripOffsets) => stripOffsets.size should equal (1350)
@@ -299,6 +295,58 @@ class GeoTiffReaderSpec extends FunSpec
       }
 
     }
+
+    it ("must match colormap.tif colormap") {
+      val colorMappedTiff = read("geotiff-reader-tiffs/colormap.tif")
+
+      val ifd = colorMappedTiff.imageDirectories(0)
+
+      val colorMap = (ifd |-> colorMapLens get) getOrElse fail
+
+      val nonCommonsMap = collection.immutable.HashMap[Int, (Byte, Byte, Byte)](
+        1 -> (0.toByte, 249.toByte, 0.toByte),
+        11 -> (71.toByte, 107.toByte, 160.toByte),
+        12 -> (209.toByte, 221.toByte, 249.toByte),
+        21 -> (221.toByte, 201.toByte, 201.toByte),
+        22 -> (216.toByte, 147.toByte, 130.toByte),
+        23 -> (237.toByte, 0.toByte, 0.toByte),
+        24 -> (170.toByte, 0.toByte, 0.toByte),
+        31 -> (178.toByte, 173.toByte, 163.toByte),
+        32 -> (249.toByte, 249.toByte, 249.toByte),
+        41 -> (104.toByte, 170.toByte, 99.toByte),
+        42 -> (28.toByte, 99.toByte, 48.toByte),
+        43 -> (181.toByte, 201.toByte, 142.toByte),
+        51 -> (165.toByte, 140.toByte, 48.toByte),
+        52 -> (204.toByte, 186.toByte, 124.toByte),
+        71 -> (226.toByte, 226.toByte, 193.toByte),
+        72 -> (201.toByte, 201.toByte, 119.toByte),
+        73 -> (153.toByte, 193.toByte, 71.toByte),
+        74 -> (119.toByte, 173.toByte, 147.toByte),
+        81 -> (219.toByte, 216.toByte, 60.toByte),
+        82 -> (170.toByte, 112.toByte, 40.toByte),
+        90 -> (186.toByte, 216.toByte, 234.toByte),
+        91 -> (181.toByte, 211.toByte, 229.toByte),
+        92 -> (181.toByte, 211.toByte, 229.toByte),
+        93 -> (181.toByte, 211.toByte, 229.toByte),
+        94 -> (181.toByte, 211.toByte, 229.toByte),
+        95 -> (112.toByte, 163.toByte, 186.toByte)
+      )
+
+      val commonValue: (Short, Short, Short) = (0, 0, 0)
+
+      colorMap.size should equal (256)
+
+      val dv = 255.0
+
+      def convert(short: Short): Byte = math.floor(short / dv).toByte
+
+      for (i <- 0 until colorMap.size) {
+        val (v1, v2, v3) = colorMap(i)
+        val c = (convert(v1), convert(v2), convert(v3))
+        c should equal (nonCommonsMap.getOrElse(i, commonValue))
+      }
+    }
+
   }
 
 }
