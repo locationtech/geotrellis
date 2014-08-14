@@ -151,40 +151,40 @@ object Warp {
     // start at the Y-center of the first dst grid cell
     var y = ybase
 
-      cfor(0)(_ < dst_rows, _ + 1) { dst_row =>
-        // calculate the Y grid coordinate to read from
-        val src_row = (src_rows - (y / src_cellheight).toInt - 1)
-  
-        // pre-calculate some spans we'll use a bunch
-        val src_span = src_row * src_cols
-        val dst_span = dst_row * dst_cols
+    cfor(0)(_ < dst_rows, _ + 1) { dst_row =>
+      // calculate the Y grid coordinate to read from
+      val src_row = (src_rows - (y / src_cellheight).toInt - 1)
+      
+      // pre-calculate some spans we'll use a bunch
+      val src_span = src_row * src_cols
+      val dst_span = dst_row * dst_cols
 
-        if (src_span + min_col < src_size && src_span + max_col >= 0) {
+      if (src_span + min_col < src_size && src_span + max_col >= 0) {
 
-          // start at the X-center of the first dst grid cell
-          var x = xbase
+        // start at the X-center of the first dst grid cell
+        var x = xbase
+        
+        // loop over cols
+        cfor(startCol)(_ < dst_cols, _ + 1) { dst_col =>
+          // calculate the X grid coordinate to read from
+          val src_col = (x / src_cellwidth).toInt
           
-          // loop over cols
-          cfor(startCol)(_ < dst_cols, _ + 1) { dst_col =>
-            // calculate the X grid coordinate to read from
-            val src_col = (x / src_cellwidth).toInt
-            
-            // compute src and dst indices and ASSIGN!
-            val src_i = src_span + src_col
+          // compute src and dst indices and ASSIGN!
+          val src_i = src_span + src_col
 
-            if (src_col >= 0 && src_col < src_cols &&
-                src_i < src_size && src_i >= 0) {
-              val dst_i = dst_span + dst_col
-              assign(src_i, dst_i)
-            }
-            
-            // increase our X map coordinate
-            x += dst_cellwidth
+          if (src_col >= 0 && src_col < src_cols &&
+            src_i < src_size && src_i >= 0) {
+            val dst_i = dst_span + dst_col
+            assign(src_i, dst_i)
           }
+          
+          // increase our X map coordinate
+          x += dst_cellwidth
         }
-
-        // decrease our Y map coordinate
-        y -= dst_cellheight
       }
+
+      // decrease our Y map coordinate
+      y -= dst_cellheight
+    }
   }
 }
