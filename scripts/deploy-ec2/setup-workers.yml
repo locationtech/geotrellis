@@ -8,6 +8,7 @@
     - hadoop_datanode
     - spark
     - spark_worker
+    - accumulo
   gather_facts: False
 
   tasks:

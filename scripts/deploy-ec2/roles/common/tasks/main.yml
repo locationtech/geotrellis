@@ -5,6 +5,17 @@
   apt: pkg=openjdk-7-jdk state=latest install_recommends=yes
   sudo: yes
 
+- name: There's no place like $JAVA_HOME
+  lineinfile: 
+    dest="/etc/environment"
+    regexp="^JAVA_HOME=" 
+    line="JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/jre"
+  sudo: yes
+
+- name: Install Git
+  apt: pkg=git state=latest install_recommends=yes
+  sudo: yes
+
 #This allows to rsync and ssh between any host in the clusters
 - name: Upload cluster private key to use as id_rsa
   copy: 
