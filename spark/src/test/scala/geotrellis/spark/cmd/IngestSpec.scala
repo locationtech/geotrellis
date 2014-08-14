@@ -16,14 +16,12 @@
 
 package geotrellis.spark.cmd
 import geotrellis.vector.Extent
-import geotrellis.spark.TestEnvironment
-import geotrellis.spark.metadata.PyramidMetadata
-import geotrellis.spark.metadata.RasterMetadata
+import geotrellis.spark._
+import geotrellis.spark.metadata._
 import geotrellis.spark.rdd.TileIdPartitioner
-import geotrellis.spark.storage.RasterReader
-import geotrellis.spark.tiling.PixelExtent
-import geotrellis.spark.tiling.TileExtent
-import geotrellis.spark.tiling.TmsTiling
+import geotrellis.spark.io.hadoop._
+import geotrellis.spark.io.hadoop.reader.RasterReader
+import geotrellis.spark.tiling._
 
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.SequenceFile
@@ -34,80 +32,48 @@ import java.awt.image.DataBuffer
 /*
  * Tests both local and spark ingest mode
  */
-class IngestSpec extends FunSpec with TestEnvironment with RasterVerifyMethods {
+class IngestSpec extends FunSpec 
+                    with TestEnvironment 
+                    with RasterVerifyMethods 
+                    with OnlyIfCanRunSpark {
 
   // subdirectories under the test directory for each of the two modes
   val localTestOutput = new Path(outputLocal, "local")
   val sparkTestOutput = new Path(outputLocal, "spark")
 
-  // describe("Local Ingest") {
-  //   val allOnes = new Path(inputHome, "all-ones.tif")
-
-  //   // do the actual ingest in local mode
-  //   val cmd = s"--input ${allOnes.toString} --outputpyramid ${localTestOutput}"
-  //   IngestCommand.main(cmd.split(' '))
-
-  //   val raster = new Path(localTestOutput, "10")
-  //   val meta = PyramidMetadata(localTestOutput, conf)
-
-  //   it("should create the correct metadata") {
-  //     verifyMetadata(meta)
-  //   }
-
-  //   it("should have the right zoom level directory") {
-  //     verifyZoomLevelDirectory(raster)
-  //   }
-
-  //   it("should have the right number of splits for the base zoom level") {
-  //     verifyPartitions(raster)
-  //   }
-
-  //   it("should have the correct tiles (checking tileIds)") {
-  //     verifyTiles(raster, meta)
-  //   }
-
-  //   it("should have its data files compressed") {
-  //     verifyCompression(raster)
-  //   }
-
-  //   it("should have its block size set correctly") {
-  //     verifyBlockSize(raster)
-  //   }
-  // }
-
   describe("Spark Ingest") {
+    ifCanRunSpark { 
+      val allOnes = new Path(inputHome, "all-ones.tif")
 
-    val allOnes = new Path(inputHome, "all-ones.tif")
+      val cmd = s"--input ${allOnes.toString} --outputpyramid ${sparkTestOutput} --sparkMaster local"
+      HadoopIngestCommand.main(cmd.split(' '))
 
-    // do the actual ingest in spark mode
-    val cmd = s"--input ${allOnes.toString} --outputpyramid ${sparkTestOutput} --sparkMaster local"
-    IngestCommand.main(cmd.split(' '))
+      val raster = new Path(sparkTestOutput, "10")
+      val meta = PyramidMetadata(sparkTestOutput, conf)
 
-    val raster = new Path(sparkTestOutput, "10")
-    val meta = PyramidMetadata(sparkTestOutput, conf)
+      it("should create the correct metadata") {
+        verifyMetadata(meta)
+      }
 
-    it("should create the correct metadata") {
-      verifyMetadata(meta)
-    }
+      it("should have the right zoom level directory") {
+        verifyZoomLevelDirectory(raster)
+      }
 
-    it("should have the right zoom level directory") {
-      verifyZoomLevelDirectory(raster)
-    }
+      it("should have the right number of splits for the base zoom level") {
+        verifyPartitions(raster)
+      }
 
-    it("should have the right number of splits for the base zoom level") {
-      verifyPartitions(raster)
-    }
+      it("should have the correct tiles (checking tileIds)") {
+        verifyTiles(raster, meta)
+      }
 
-    it("should have the correct tiles (checking tileIds)") {
-      verifyTiles(raster, meta)
-    }
+      it("should have its data files compressed") {
+        verifyCompression(raster)
+      }
 
-    it("should have its data files compressed") {
-      verifyCompression(raster)
-    }
-
-    it("should have its block size set correctly") {
-      verifyBlockSize(raster)
+      it("should have its block size set correctly") {
+        verifyBlockSize(raster)
+      }
     }
   }
 
@@ -130,7 +96,7 @@ trait RasterVerifyMethods extends ShouldMatchers { self: TestEnvironment =>
     localFS.exists(raster) should be(true)
 
   def verifyPartitions(raster: Path): Unit = {
-    val partitioner = TileIdPartitioner(raster, conf)
+    val partitioner = TileIdPartitioner(HadoopUtils.readSplits(raster, conf))
     partitioner.numPartitions should be(1)
   }
 

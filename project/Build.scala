@@ -363,6 +363,7 @@ object GeotrellisBuild extends Build {
   lazy val sparkSettings =
     Seq(
       name := "geotrellis-spark",
+      fork in Test := true,
       parallelExecution in Test := false,
       javaOptions += "-Xmx8G",
       libraryDependencies ++=

@@ -16,21 +16,16 @@
 
 package geotrellis.spark.rdd
 
+import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.metadata.Context
 import geotrellis.spark.op.local._
-import geotrellis.spark.formats.ArgWritable
-import geotrellis.spark.formats.TileIdWritable
-
-import geotrellis.raster._
 
 import org.apache.spark.Partition
 import org.apache.spark.SparkContext
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
-
-import org.apache.hadoop.fs.Path
 
 class RasterRDD(val prev: RDD[TmsTile], val opCtx: Context)
   extends RDD[TmsTile](prev)
@@ -46,11 +41,6 @@ class RasterRDD(val prev: RDD[TmsTile], val opCtx: Context)
 
   override def compute(split: Partition, context: TaskContext) =
     firstParent.iterator(split, context)
-
-  def toWritable =
-    mapPartitions({ partition =>
-      partition.map(_.toWritable)
-    }, true)
 
   def mapTiles(f: TmsTile => TmsTile): RasterRDD =
     mapPartitions({ partition =>
@@ -88,22 +78,4 @@ class RasterRDD(val prev: RDD[TmsTile], val opCtx: Context)
           }
         (min, max)
        }
-}
-
-object RasterRDD {
-
-  def apply(raster: String, sc: SparkContext, addUserNoData: Boolean = false): RasterRDD =
-    apply(new Path(raster), sc, addUserNoData)
-
-  /* 
-   * The only reason why there are two variants of apply that take Path and only one 
-   * variant that takes String is because Scala allows at most one overloaded method
-   * with default arguments. I may as well have had one variant of apply that takes 
-   * Path and two that take String
-   */
-  def apply(raster: Path, sc: SparkContext): RasterRDD =
-    RasterHadoopRDD(raster, sc).toRasterRDD()
-
-  def apply(raster: Path, sc: SparkContext, addUserNoData: Boolean): RasterRDD =
-    RasterHadoopRDD(raster, sc).toRasterRDD(addUserNoData)
 }

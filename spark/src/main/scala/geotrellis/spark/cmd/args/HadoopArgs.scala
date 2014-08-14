@@ -8,7 +8,7 @@ trait HadoopArgs extends FieldArgs with ArgsParser with Logging {
   var hadoopOpts: String = _
   
   lazy val hadoopConf = {
-    val hadoopConf = SparkUtils.createHadoopConfiguration
+    val hadoopConf = SparkUtils.hadoopConfiguration
     
     if (hadoopOpts != null) {
       val hadoopArgs = parseArgs(hadoopOpts)

@@ -24,7 +24,8 @@ import geotrellis.spark.cmd.args.RasterArgs
 import geotrellis.spark.cmd.args.SparkArgs
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.rdd.RasterRDD
-import geotrellis.spark.storage.RasterReader
+import geotrellis.spark.io.hadoop._
+import geotrellis.spark.io.hadoop.reader.RasterReader
 import geotrellis.spark.tiling.TmsTiling
 
 import org.apache.hadoop.conf.Configuration
@@ -130,7 +131,7 @@ object Export extends ArgMain[ExportArgs] with Logging {
     dir.mkdirs()
 
     try {
-      val rrdd = RasterRDD(rasterPath.toUri.toString, sc, true)
+      val rrdd = sc.hadoopRasterRDD(rasterPath.toUri.toString)
 
       for (tmsTile <- rrdd) {
         val (tx, ty) = tmsTile.tileXY(zoom)

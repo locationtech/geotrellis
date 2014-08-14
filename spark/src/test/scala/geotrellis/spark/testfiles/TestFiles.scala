@@ -15,8 +15,10 @@
  */
 
 package geotrellis.spark.testfiles
+
 import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.metadata.Context
+import geotrellis.spark.io.hadoop._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import geotrellis.spark.rdd.TileIdPartitioner
@@ -36,7 +38,8 @@ class TestFiles(pyramid: Path, conf: Configuration) {
 
   private def setup: (PyramidMetadata, Context) = {
     val meta = PyramidMetadata(pyramid, conf)
-    val partitioner = TileIdPartitioner(new Path(pyramid, meta.maxZoomLevel.toString), conf)
+    val partitioner = 
+      TileIdPartitioner(HadoopUtils.readSplits(new Path(pyramid, meta.maxZoomLevel.toString), conf))
     (meta, Context(meta.maxZoomLevel, meta, partitioner))
   }
 }

@@ -1,6 +1,7 @@
 package geotrellis.spark.tiling
 
 import geotrellis.raster._
+import geotrellis.proj4._
 import geotrellis.vector.Extent
 
 // trait TileCoordinate {
@@ -21,6 +22,7 @@ import geotrellis.vector.Extent
 
 trait TilingScheme {
   val extent: Extent
+  val crs: CRS
 
   def zoomLevelFor(cellSize: CellSize): ZoomLevel
 
@@ -31,6 +33,7 @@ object TilingScheme {
   //* Default tiling scheme for WSG84
   def GEODETIC = new TilingScheme {
     val extent = Extent(-180, -90, 179.99999, 89.99999)
+    val crs = LatLng
 
     def zoomLevelFor(cellSize: CellSize): ZoomLevel = {
       val l = 

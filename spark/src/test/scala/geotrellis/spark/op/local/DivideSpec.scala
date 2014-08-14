@@ -16,45 +16,49 @@
 
 package geotrellis.spark.op.local
 
-import geotrellis.spark.RasterRDDMatchers
-import geotrellis.spark.SharedSparkContext
-import geotrellis.spark.TestEnvironment
-import geotrellis.spark.rdd.RasterRDD
+import geotrellis.spark._
+import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles.AllHundreds
 import geotrellis.spark.testfiles.AllTwos
 
 import org.scalatest.FunSpec
 
-class DivideSpec extends FunSpec with TestEnvironment with SharedSparkContext with RasterRDDMatchers {
+class DivideSpec extends FunSpec 
+                    with TestEnvironment 
+                    with SharedSparkContext 
+                    with RasterRDDMatchers
+                    with OnlyIfCanRunSpark {
 
   describe("Divide Operation") {
-    val allTwos = AllTwos(inputHome, conf)
-    val allHundreds = AllHundreds(inputHome, conf)
+    ifCanRunSpark {
+      val allTwos = AllTwos(inputHome, conf)
+      val allHundreds = AllHundreds(inputHome, conf)
 
-    it("should divide raster values by a constant") { 
+      it("should divide raster values by a constant") {
 
-      val twos = RasterRDD(allTwos.path, sc)
+        val twos = sc.hadoopRasterRDD(allTwos.path)
 
-      val ones = twos / 2
+        val ones = twos / 2
 
-      shouldBe(ones, (1, 1, allTwos.tileCount))
-    }
+        shouldBe(ones, (1, 1, allTwos.tileCount))
+      }
 
-    it("should divide from a constant, raster values") { 
+      it("should divide from a constant, raster values") {
 
-      val twos = RasterRDD(allTwos.path, sc)
+        val twos = sc.hadoopRasterRDD(allTwos.path)
 
-      val ones = 2 /: twos
+        val ones = 2 /: twos
 
-      shouldBe(ones, (1, 1, allTwos.tileCount))
-    }
+        shouldBe(ones, (1, 1, allTwos.tileCount))
+      }
 
-    it("should divide multiple rasters") { 
-      val hundreds = RasterRDD(allHundreds.path, sc)
-      val twos = RasterRDD(allTwos.path, sc)
-      val res = hundreds / twos / twos
+      it("should divide multiple rasters") {
+        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val res = hundreds / twos / twos
 
-      shouldBe(res, (25, 25, allHundreds.tileCount))
+        shouldBe(res, (25, 25, allHundreds.tileCount))
+      }
     }
   }
 }

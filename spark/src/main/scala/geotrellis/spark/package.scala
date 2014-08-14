@@ -19,11 +19,9 @@ package geotrellis
 import geotrellis.raster._
 import geotrellis.vector._
 
-import geotrellis.spark.formats._
 import geotrellis.spark.tiling._
 import geotrellis.spark.metadata.Context
 import geotrellis.spark.rdd.RasterRDD
-import geotrellis.spark.rdd.SaveRasterFunctions
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd._
@@ -31,17 +29,27 @@ import org.apache.spark.rdd._
 import spire.syntax.cfor._
 
 package object spark {
+  type TileId = Long
+
+  /** The thing I miss the most from F# */
+  implicit def toPipe[A](x : A) = 
+    new { def |> [T](f : A => T) = f(x) }
+
+  implicit def toPipe2[A, B](tup : (A, B)) = 
+    new { def |> [T](f : (A, B) => T) = f(tup._1, tup._2) }
+
+  implicit def toPipe3[A, B, C](tup : (A, B, C)) = 
+    new { def |> [T](f : (A, B, C) => T) = f(tup._1, tup._2, tup._3) }
+
+  implicit def toPipe4[A, B, C, D](tup : (A, B, C, D)) = 
+    new { def |> [T](f : (A, B, C, D) => T) = f(tup._1, tup._2, tup._3, tup._4) }
+
   implicit class MakeRasterRDD(val prev: RDD[TmsTile]) {
     def withContext(ctx: Context) = new RasterRDD(prev, ctx)
   }
 
   implicit class MakeRasterRDD2(val prev: RDD[(Long, Tile)]) {
     def withContext(ctx: Context) = new RasterRDD(prev, ctx)
-  }
-
-  implicit class SavableRasterRDD(val rdd: RasterRDD) {
-    def save(path: Path) = SaveRasterFunctions.save(rdd, path)
-    def save(path: String): Unit = save(new Path(path))
   }
 
   implicit def tmsTileRddToTupleRdd(rdd: RDD[TmsTile]): RDD[(Long, Tile)] =

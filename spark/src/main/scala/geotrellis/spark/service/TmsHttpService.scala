@@ -7,6 +7,7 @@ import spray.http.MediaTypes
 import geotrellis.raster.render.png._
 import geotrellis.spark.tiling._
 import geotrellis.spark.rdd._
+import geotrellis.spark.io.hadoop._
 import geotrellis.spark.cmd.TmsArgs
 
 import org.apache.hadoop.fs.Path
