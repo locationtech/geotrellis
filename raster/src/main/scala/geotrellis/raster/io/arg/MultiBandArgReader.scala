@@ -3,12 +3,11 @@ package geotrellis.raster.io.arg
 import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.raster.io._
-
 import spire.syntax.cfor._
 import com.typesafe.config.ConfigFactory
-
 import java.io.File
 import java.nio.ByteBuffer
+import geotrellis.raster.multiband.MultiBandTile
 
 object MultibandArgReader {
 

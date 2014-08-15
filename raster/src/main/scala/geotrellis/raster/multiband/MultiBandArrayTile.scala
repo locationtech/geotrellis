@@ -1,8 +1,11 @@
-package geotrellis.raster
+package geotrellis.raster.multiband
 
 import geotrellis.vector.Extent
-
 import spire.syntax.cfor._
+import geotrellis.raster.CellType
+import geotrellis.raster.RasterExtent
+import geotrellis.raster.Tile
+import geotrellis.raster._
 
 case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile with Serializable {
 
@@ -35,7 +38,7 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
   }
 
   def map(f: Int => Int): MultiBandTile = {
-    val outputData = Array.ofDim[Tile](bands) 
+    val outputData = Array.ofDim[Tile](bands)
     cfor(0)(_ < bands, _ + 1) { band =>
       outputData(band) = getBand(band).map(f)
     }
@@ -43,7 +46,7 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
   }
 
   def mapDouble(f: Double => Double): MultiBandTile = {
-    val outputData = Array.ofDim[Tile](bands) 
+    val outputData = Array.ofDim[Tile](bands)
     cfor(0)(_ < bands, _ + 1) { band =>
       outputData(band) = getBand(band).mapDouble(f)
     }
@@ -51,7 +54,7 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
   }
 
   def convert(cellType: CellType): MultiBandTile = {
-    val outputData = Array.ofDim[Tile](bands) 
+    val outputData = Array.ofDim[Tile](bands)
     cfor(0)(_ < bands, _ + 1) { band =>
       outputData(band) = getBand(band).convert(cellType)
     }
@@ -67,7 +70,7 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
     } else if (this.dimensions != other.dimensions) {
       throw new Exception("MultiBandTile dimensions of bands are not Equal")
     } else {
-      val output = Array.ofDim[Tile](bands) 
+      val output = Array.ofDim[Tile](bands)
       cfor(0)(_ < bands, _ + 1) { band =>
         output(band) = getBand(band).combine(other.getBand(band))(f)
       }
@@ -81,7 +84,7 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
     } else if (this.dimensions != other.dimensions) {
       throw new Exception("MultiBandTile dimensions of bands are not Equal")
     } else {
-      val output = Array.ofDim[Tile](bands) 
+      val output = Array.ofDim[Tile](bands)
       cfor(0)(_ < bands, _ + 1) { band =>
         output(band) = getBand(band).combineDouble(other.getBand(band))(f)
       }
@@ -97,7 +100,7 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
       var result = getBand(first)
       cfor(first + 1)(_ < last, _ + 1) { band =>
         result = result.combine(getBand(band))(f)
-      } 
+      }
       result
     } else {
       throw new IndexOutOfBoundsException("MultiBandTile.bands")
@@ -109,7 +112,7 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
       var result = getBand(first)
       cfor(first + 1)(_ < last, _ + 1) { band =>
         result = result.combineDouble(getBand(band))(f)
-      } 
+      }
       result
     } else {
       throw new IndexOutOfBoundsException("MultiBandTile.bands")
@@ -119,7 +122,7 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
   def warp(source: Extent, target: RasterExtent): MultiBandTile = {
     val outPutData = Array.ofDim[Tile](bands)
     cfor(0)(_ < bands, _ + 1) { band =>
-      outPutData(band) = getBand(band).warp(source, target) 
+      outPutData(band) = getBand(band).warp(source, target)
     }
     MultiBandTile(outPutData)
   }
@@ -127,8 +130,8 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
   def warp(source: Extent, target: Extent): MultiBandTile = {
     val outPutData = Array.ofDim[Tile](bands)
     cfor(0)(_ < bands, _ + 1) { band =>
-      outPutData(band) = getBand(band).warp(source, target) 
-    } 
+      outPutData(band) = getBand(band).warp(source, target)
+    }
     MultiBandTile(outPutData)
   }
 
@@ -136,7 +139,7 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
     val outPutData = Array.ofDim[Tile](bands)
     cfor(0)(_ < bands, _ + 1) { band =>
       outPutData(band) = getBand(band).warp(source, targetCols, targetRows)
-    } 
+    }
     MultiBandTile(outPutData)
   }
 
@@ -279,4 +282,21 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
   def localDivide(): Tile = {
     this.combine(0, this.bands - 1)((a, b) => a / b)
   }
+
+  def localDefined(): MultiBandTile = {
+    this.map(a => if (isNoData(a)) 0 else 1)
+  }
+
+  def localUndefined(): MultiBandTile = {
+    this.map(a => if (isNoData(a)) 1 else 0)
+  }
+
+  def localPow(constant: Int): MultiBandTile = {
+    this.map(a => math.pow(a.toDouble, constant.toDouble).toInt)
+  }
+
+  def localSqrt(): MultiBandTile = {
+    this.map(a => math.sqrt(a.toDouble).toInt)
+  }
+  
 }

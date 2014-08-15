@@ -3,6 +3,7 @@ package geotrellis.raster.io.arg
 import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.testkit._
+import geotrellis.raster.multiband.MultiBandTile
 
 import org.scalatest._
 

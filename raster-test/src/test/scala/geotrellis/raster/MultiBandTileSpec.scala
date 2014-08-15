@@ -5,6 +5,7 @@ import geotrellis.testkit._
 import geotrellis.raster.op.local._
 import org.scalatest._
 import scala.collection.mutable
+import geotrellis.raster.multiband.MultiBandTile
 
 class MultiBandTileSpec extends FunSpec
   with Matchers

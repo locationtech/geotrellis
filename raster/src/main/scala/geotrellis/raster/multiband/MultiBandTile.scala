@@ -1,8 +1,12 @@
-package geotrellis.raster
+package geotrellis.raster.multiband
 
 import geotrellis.vector.Extent
-
 import spire.syntax.cfor._
+import geotrellis.raster.ArrayTile
+import geotrellis.raster.CellType
+import geotrellis.raster.RasterExtent
+import geotrellis.raster.Tile
+import geotrellis.raster._
 
 object MultiBandTile {
   def apply(arr: Array[Tile]): MultiBandTile =
@@ -118,5 +122,10 @@ trait MultiBandTile {
   def localMultiply(): Tile
   def localDivide(constnt: Int): MultiBandTile
   def localDivide(): Tile
+  def localDefined(): MultiBandTile
+  def localUndefined(): MultiBandTile
+  def localPow(constant: Int): MultiBandTile
+  def localSqrt(): MultiBandTile
+  
 
 }

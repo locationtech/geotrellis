@@ -1,11 +1,10 @@
 package geotrellis.raster.io.arg
 
 import java.io.{ BufferedOutputStream, DataOutputStream, FileOutputStream }
-
 import geotrellis.raster._
 import geotrellis.vector.Extent
-
 import spire.syntax.cfor._
+import geotrellis.raster.multiband.MultiBandTile
 
 /**
  * MultiBandArgWriter will write a MultiBandRaster to disk in ARG format.
