@@ -82,6 +82,11 @@ class MapFileIngestArgs extends IngestArgs {
 class AccumuloIngestArgs extends IngestArgs {
   @Required var table: String = _
   @Required var layer: String = _
+  @Required var zookeeper: String = _
+  @Required var instance: String = _
+  @Required var user: String = _
+  @Required var password: String = _
+
 }
 
 object MapFileIngestCommand extends ArgMain[MapFileIngestArgs] with Logging {
@@ -110,7 +115,8 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
     val sparkContext = args.sparkContext("Ingest")
 
     try{
-      val jest = new AccumuloIngest(sparkContext, conf)(new Path(args.input), args.table, args.layer)
+      val jest = new AccumuloIngest(sparkContext, conf)(new Path(args.input),
+        args.table, args.layer, args.zookeeper, args.instance, args.user, args.password)
       jest.ingest()
     } finally {
       sparkContext.stop
@@ -214,14 +220,16 @@ abstract class Ingest(sc: SparkContext, conf: Configuration)(inPath: Path) exten
   def save(tiles: RDD[TmsTile], ctx: Context, zoomLevel: ZoomLevel)
 }
 
-class AccumuloIngest(sc: SparkContext, conf: Configuration)(inPath: Path, tableName: String, layerName: String)
+class AccumuloIngest(sc: SparkContext, conf: Configuration)(
+  inPath: Path, tableName: String, layerName: String,
+  zookeeper: String, instanceName: String, user: String, password: String)
   extends Ingest(sc, conf)(inPath) {
 
   def save(tiles: RDD[TmsTile], ctx: Context, zoomLevel: ZoomLevel) = {
     import geotrellis.spark.accumulo._
 
-    val instance = new ZooKeeperInstance("gis", "localhost")
-    val connector = instance.getConnector("root", new PasswordToken("secret"))
+    val instance = new ZooKeeperInstance(instanceName, zookeeper)
+    val connector = instance.getConnector(user, new PasswordToken(password))
 
     implicit val format = new TmsTilingAccumuloFormat
 
