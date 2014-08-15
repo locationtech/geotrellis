@@ -59,7 +59,7 @@ object HdfsUtils {
 
     def addFiles(fileStatuses: Array[FileStatus]): Unit = {
       for (fst <- fileStatuses) {
-        if (fst.isDirectory())
+        if (fst.isDir())
           addFiles(fs.listStatus(fst.getPath()))
         else
           files += fst.getPath()

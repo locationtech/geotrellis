@@ -31,5 +31,6 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[ArgWritable])
     kryo.register(classOf[TileIdZoomWritable])
     kryo.register(classOf[PayloadArgWritable])
+    kryo.register(classOf[org.apache.accumulo.core.client.impl.ConnectorImpl])
   }
 }

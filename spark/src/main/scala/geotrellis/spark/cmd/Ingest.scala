@@ -26,12 +26,15 @@ import geotrellis.spark.metadata._
 import geotrellis.spark.tiling._
 import geotrellis.spark.rdd._
 import geotrellis.spark.utils.HdfsUtils
+import org.apache.accumulo.core.client.ZooKeeperInstance
+import org.apache.accumulo.core.client.security.tokens.PasswordToken
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.MapFile
 import org.apache.hadoop.io.SequenceFile
+import org.apache.hadoop.mapreduce.Job
 
 import org.apache.spark._
 import org.apache.spark.SparkContext._
@@ -70,68 +73,105 @@ import spire.syntax.cfor._
 
 class IngestArgs extends SparkArgs with HadoopArgs {
   @Required var input: String = _
+}
+
+class MapFileIngestArgs extends IngestArgs {
   @Required var outputpyramid: String = _
 }
 
-object IngestCommand extends ArgMain[IngestArgs] with Logging {
+class AccumuloIngestArgs extends IngestArgs {
+  @Required var table: String = _
+  @Required var layer: String = _
+  @Required var zookeeper: String = _
+  @Required var instance: String = _
+  @Required var user: String = _
+  @Required var password: String = _
 
+}
+
+object MapFileIngestCommand extends ArgMain[MapFileIngestArgs] with Logging {
   System.setProperty("com.sun.media.jai.disableMediaLib", "true")
 
-  def main(args: IngestArgs): Unit = {
+  def main(args: MapFileIngestArgs): Unit = {
     val conf = args.hadoopConf
     conf.set("io.map.index.interval", "1")
-
-    val inPath = new Path(args.input)
-    val outPath = new Path(args.outputpyramid)
-
-    logInfo(s"Deleting and creating output path: $outPath")
-    val outFs: FileSystem = outPath.getFileSystem(conf)
-    outFs.delete(outPath, true)
-    outFs.mkdirs(outPath)
-
     val sparkContext = args.sparkContext("Ingest")
-    try {
-      val rdd = {
-        val allFiles = HdfsUtils.listFiles(inPath, conf)
-        val newConf = HdfsUtils.putFilesInConf(allFiles.mkString(","), conf)
 
-        geotiffRdd(newConf, sparkContext)
-      }
-      
-      val (context, zoomLevel) = metadata(rdd, inPath, conf)
-      val tiles = tileRdd(rdd, zoomLevel, sparkContext)
-
-      val ingestSave = 
-        if(true) {
-          val tableName: String = ???
-          val layerName: String = ???
-
-          new AccumuloIngest(zoomLevel, tableName, layerName)
-        } else {
-          new MapFileIngest(context, zoomLevel, outPath, conf)
-        }
-
-      ingestSave.save(tiles)
+    try{
+      val jest = new MapFileIngest(sparkContext, conf)(new Path(args.input), new Path(args.outputpyramid))
+      jest.ingest()
     } finally {
       sparkContext.stop
     }
   }
+}
 
-  def geotiffRdd(conf: Configuration, sc: SparkContext): RDD[(Extent, Tile)] =
-      sc.newAPIHadoopRDD(conf, classOf[GeotiffInputFormat], classOf[Extent], classOf[Tile])
+object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
+  System.setProperty("com.sun.media.jai.disableMediaLib", "true")
 
-  def metadata(rdd: RDD[(Extent, Tile)], inPath: Path, conf: Configuration): (Context, ZoomLevel) = {
+  def main(args: AccumuloIngestArgs): Unit = {
+    val conf = args.hadoopConf
+    conf.set("io.map.index.interval", "1")
+    val sparkContext = args.sparkContext("Ingest")
+
+    try{
+      val jest = new AccumuloIngest(sparkContext, conf)(new Path(args.input),
+        args.table, args.layer, args.zookeeper, args.instance, args.user, args.password)
+      jest.ingest()
+    } finally {
+      sparkContext.stop
+    }
+  }
+}
+
+abstract class Ingest(sc: SparkContext, conf: Configuration)(inPath: Path) extends Logging {
+  def geotiffRdd: RDD[(Extent, Tile)] = {
+    val allFiles = HdfsUtils.listFiles(inPath, conf)
+    val newConf = HdfsUtils.putFilesInConf(allFiles.mkString(","), conf)
+    sc.newAPIHadoopRDD(newConf, classOf[GeotiffInputFormat], classOf[Extent], classOf[Tile])
+  }
+
+  // This is the mosaicing function. RDD[(Extent, Tile)] => RDD[TmsTile]
+  def tileRdd(rdd: RDD[(Extent, Tile)], zoomLevel: ZoomLevel): RDD[TmsTile] = {
+    val bcZoomLevel = sc.broadcast(zoomLevel)
+
+    rdd
+    .flatMap { case (extent, tile) =>
+      val zoomLevel = bcZoomLevel.value
+      zoomLevel.tileIdsForExtent(extent).map { case tileId  => (tileId, (tileId, extent, tile)) }
+    }
+    .combineByKey(
+      { case (tileId, extent, tile) =>
+        val zoomLevel = bcZoomLevel.value
+        val tmsTile = ArrayTile.empty(tile.cellType, zoomLevel.pixelCols, zoomLevel.pixelRows)
+        tmsTile.burnValues(zoomLevel.extentForTile(tileId), extent, tile)
+      },
+      { (tmsTile: MutableArrayTile, tup: (Long, Extent, Tile)) =>
+        val zoomLevel = bcZoomLevel.value
+        val (tileId, extent, tile) = tup
+        tmsTile.burnValues(zoomLevel.extentForTile(tileId), extent, tile)
+      },
+      { (tmsTile1: MutableArrayTile , tmsTile2: MutableArrayTile) =>
+        tmsTile1.burnValues(tmsTile2)
+      }
+    )
+    .map { case (id, tile) => TmsTile(id, tile) }
+  }
+
+  def metadata(rdd: RDD[(Extent, Tile)]): (Context, ZoomLevel) = {
     logInfo(s"Computing metadata from raster set...")
     val (uncappedExtent, cellType, cellSize): (Extent, CellType, CellSize) =
       rdd
         .map { case (extent, tile) => (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows)) }
         .reduce { (t1, t2) =>
-        val (e1, ct1, cs1) = t1
-        val (e2, ct2, cs2) = t2
-        (e1.combine(e2), ct1.union(ct2),
-          if(cs1.resolution < cs2.resolution) cs1 else cs2
-        )
-      }
+          val (e1, ct1, cs1) = t1
+          val (e2, ct2, cs2) = t2
+          (
+            e1.combine(e2),
+            ct1.union(ct2),
+            if(cs1.resolution < cs2.resolution) cs1 else cs2
+          )
+        }
 
     val tileScheme: TilingScheme = TilingScheme.GEODETIC
     val zoomLevel: ZoomLevel = tileScheme.zoomLevelFor(cellSize)
@@ -168,49 +208,51 @@ object IngestCommand extends ArgMain[IngestArgs] with Logging {
     (context, zoomLevel)
   }
 
-  // This is the mosaicing function. RDD[(Extent, Tile)] => RDD[TmsTile]
-  def tileRdd(rdd: RDD[(Extent, Tile)], zoomLevel: ZoomLevel, sc: SparkContext): RDD[TmsTile] = {
-    val bcZoomLevel = sc.broadcast(zoomLevel)
-    rdd
-      .flatMap { case (extent, tile) =>
-        val zoomLevel = bcZoomLevel.value
-        zoomLevel.tileIdsForExtent(extent).map { case tileId  => (tileId, (tileId, extent, tile)) }
-       }
-      .combineByKey( 
-        { case (tileId, extent, tile) =>
-          val zoomLevel = bcZoomLevel.value
-          val tmsTile = ArrayTile.empty(tile.cellType, zoomLevel.pixelCols, zoomLevel.pixelRows)
-          tmsTile.burnValues(zoomLevel.extentForTile(tileId), extent, tile)
-        },
-        { (tmsTile: MutableArrayTile, tup: (Long, Extent, Tile)) =>
-          val zoomLevel = bcZoomLevel.value
-          val (tileId, extent, tile) = tup
-          tmsTile.burnValues(zoomLevel.extentForTile(tileId), extent, tile)
-        },
-        { (tmsTile1: MutableArrayTile , tmsTile2: MutableArrayTile) =>
-          tmsTile1.burnValues(tmsTile2)
-        }
-       )
-      .map { case (id, tile) => TmsTile(id, tile) }
+
+  def ingest() = {
+    val rdd = geotiffRdd
+    val (context, zoomLevel) = metadata(rdd)
+    val tiles = tileRdd(rdd, zoomLevel)
+
+    save(tiles, context, zoomLevel)
+  }
+
+  def save(tiles: RDD[TmsTile], ctx: Context, zoomLevel: ZoomLevel)
+}
+
+class AccumuloIngest(sc: SparkContext, conf: Configuration)(
+  inPath: Path, tableName: String, layerName: String,
+  zookeeper: String, instanceName: String, user: String, password: String)
+  extends Ingest(sc, conf)(inPath) {
+
+  def save(tiles: RDD[TmsTile], ctx: Context, zoomLevel: ZoomLevel) = {
+    import geotrellis.spark.accumulo._
+
+    val instance = new ZooKeeperInstance(instanceName, zookeeper)
+    val connector = instance.getConnector(user, new PasswordToken(password))
+
+    implicit val format = new TmsTilingAccumuloFormat
+
+    tiles
+      .map(tms => tms.id -> tms.tile)
+      .saveAccumulo(tableName,  TmsLayer(layerName, zoomLevel.level), connector)(format)
   }
 }
 
-trait Ingest extends Logging {
-  def save(tiles: RDD[TmsTile]): Unit
-}
+class MapFileIngest(sc: SparkContext, conf: Configuration)(inPath: Path, outPath: Path)
+  extends Ingest(sc, conf)(inPath) {
 
-class AccumuloIngest(zoomLeve: ZoomLevel, tableName: String, layerName: String) extends Ingest {
-  def save(tiles: RDD[TmsTile]): Unit = ???
-}
+  def save(tiles: RDD[TmsTile], context: Context, zoomLevel: ZoomLevel) = {
+    logInfo(s"Deleting and creating output path: $outPath")
+    val outFs: FileSystem = outPath.getFileSystem(conf)
+    outFs.delete(outPath, true)
+    outFs.mkdirs(outPath)
 
-class MapFileIngest(context: Context, zoomLevel: ZoomLevel, outPath: Path, conf: Configuration) extends Ingest {
-  def save(tiles: RDD[TmsTile]): Unit = {
-    val metadata = context.toMetadata
+    val pyramidMetadata = context.toMetadata
+    val tileExtent = pyramidMetadata.rasterMetadata.head._2.tileExtent
 
-    val tileSizeBytes = TmsTiling.tileSizeBytes(zoomLevel.tileSize, metadata.cellType)
+    val tileSizeBytes = TmsTiling.tileSizeBytes(zoomLevel.tileSize, pyramidMetadata.cellType)
     val blockSizeBytes = HdfsUtils.defaultBlockSize(outPath, conf)
-
-    val tileExtent = metadata.rasterMetadata.head._2.tileExtent
 
     val splitGenerator = RasterSplitGenerator(tileExtent, zoomLevel.level, tileSizeBytes, blockSizeBytes)
     val partitioner = RasterRddPartitioner(splitGenerator.splits)
@@ -220,7 +262,7 @@ class MapFileIngest(context: Context, zoomLevel: ZoomLevel, outPath: Path, conf:
     val fs = metaPath.getFileSystem(conf)
     val fdos = fs.create(metaPath)
     val out = new PrintWriter(fdos)
-    out.println(JacksonWrapper.prettyPrint(metadata))
+    out.println(JacksonWrapper.prettyPrint(pyramidMetadata))
     out.close()
     fdos.close()
 
@@ -232,6 +274,5 @@ class MapFileIngest(context: Context, zoomLevel: ZoomLevel, outPath: Path, conf:
       .save(outPathWithZoom)
 
     logInfo(s"Saved raster at zoom level ${zoomLevel.level} to $outPathWithZoom")
-
   }
 }
