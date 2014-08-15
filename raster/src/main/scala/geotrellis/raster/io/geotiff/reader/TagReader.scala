@@ -18,15 +18,17 @@ package geotrellis.raster.io.geotiff.reader
 
 import java.nio.ByteBuffer
 
+import monocle.syntax._
+import spire.syntax.cfor._
+
+import scala.collection._
+
 import geotrellis.raster.io.geotiff.reader.utils.ByteBufferUtils._
 
 import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
 
 import geotrellis.raster.io.geotiff.reader.Tags._
 import geotrellis.raster.io.geotiff.reader.TiffFieldType._
-
-import monocle.syntax._
-import spire.syntax.cfor._
 
 case class TagReader(byteBuffer: ByteBuffer) {
 
@@ -171,7 +173,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
       case ImageLengthTag => directory |-> imageLengthLens set(shorts(0))
       case CompressionTag => directory |-> compressionLens set(shorts(0))
       case PhotometricInterpTag =>
-        directory |-> photometricInterpLens set(Some(shorts(0)))
+        directory |-> photometricInterpLens set(shorts(0))
       case ThresholdingTag => directory |-> thresholdingLens set(shorts(0))
       case CellWidthTag => directory |-> cellWidthLens set(Some(shorts(0)))
       case CellLengthTag => directory |-> cellLengthLens set(Some(shorts(0)))
@@ -215,7 +217,7 @@ case class TagReader(byteBuffer: ByteBuffer) {
       case PageNumberTag => directory |-> pageNumberLens set(Some(shorts))
       case TransferFunctionTag =>
         directory |-> transferFunctionLens set(Some(shorts))
-      case ColorMapTag => directory |-> colorMapLens set(Some(shorts))
+      case ColorMapTag => setColorMap(directory, shorts)
       case HalftoneHintsTag => directory |-> halftoneHintsLens set(Some(shorts))
       case TileByteCountsTag => directory |-> tileByteCountsLens set(
         Some(shorts))
@@ -232,6 +234,23 @@ case class TagReader(byteBuffer: ByteBuffer) {
           shorts.map(_.toLong)))
     }
   }
+
+  private def setColorMap(directory: ImageDirectory, shorts: Array[Int]): ImageDirectory =
+    if ((directory |-> photometricInterpLens get) == 3) {
+      val divider = shorts.size / 3
+
+      var i = 0
+      val arr = Array.ofDim[(Short, Short, Short)](divider)
+
+      for (i <- 0 until divider)
+        arr(i) = (shorts(i).toShort, shorts(i + divider).toShort,
+          shorts(i + 2 * divider).toShort)
+
+      directory |-> colorMapLens set Some(arr)
+    }
+    else throw new MalformedGeoTiffException(
+      "Colormap without Photometric Interpetation = 3."
+    )
 
   private def readIntsTag(directory: ImageDirectory,
     tagMetadata: TagMetadata) = {
