@@ -19,7 +19,6 @@ package geotrellis.spark.rdd
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-import geotrellis.spark.metadata.Context
 import geotrellis.spark.op.local._
 
 import org.apache.spark.Partition
@@ -27,37 +26,36 @@ import org.apache.spark.SparkContext
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
 
-class RasterRDD(val prev: RDD[TmsTile], val opCtx: Context)
+class RasterRDD(val prev: RDD[TmsTile], val metaData: LayerMetaData)
   extends RDD[TmsTile](prev)
   with AddOpMethods[RasterRDD]
   with SubtractOpMethods[RasterRDD]
   with MultiplyOpMethods[RasterRDD]
   with DivideOpMethods[RasterRDD] {
 
-  // TODO - investigate whether this needs to work on the partitioner's output 
-  // instead of firstParent's partitions (e.g., what if the RasterRDD was created
-  // using an operation that involved modifying partitions (coalescing, cropping, etc.)
   override def getPartitions: Array[Partition] = firstParent.partitions
 
   override def compute(split: Partition, context: TaskContext) =
     firstParent.iterator(split, context)
 
   def mapTiles(f: TmsTile => TmsTile): RasterRDD =
-    mapPartitions({ partition =>
-      partition.map { tile =>
-        f(tile)
-      }
-    }, true)
-    .withContext(opCtx)
+    asRasterRDD(metaData) {
+      mapPartitions({ partition =>
+        partition.map { tile =>
+          f(tile)
+        }
+      }, true)
+    }
 
   def combineTiles(other: RasterRDD)(f: (TmsTile, TmsTile) => TmsTile): RasterRDD =
-    zipPartitions(other, true) { (partition1, partition2) =>
-      partition1.zip(partition2).map {
-        case (tile1, tile2) =>
-          f(tile1, tile2)
+    asRasterRDD(metaData) {
+      zipPartitions(other, true) { (partition1, partition2) =>
+        partition1.zip(partition2).map {
+          case (tile1, tile2) =>
+            f(tile1, tile2)
+        }
       }
     }
-    .withContext(opCtx)
 
   def minMax: (Int, Int) = 
     map(_.tile.findMinMax)

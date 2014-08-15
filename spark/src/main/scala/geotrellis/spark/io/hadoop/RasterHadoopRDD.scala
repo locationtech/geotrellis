@@ -36,30 +36,20 @@ import org.apache.spark.rdd.NewHadoopRDD
  * (TileIdWritable, ArgWritable) or (Long, Raster), the latter being the deserialized 
  * form of the former. See companion object 
  */
-class RasterHadoopRDD private (path: Path, sc: SparkContext, conf: Configuration)
+class RasterHadoopRDD private (sc: SparkContext, conf: Configuration, path: Path)
   extends NewHadoopRDD[TileIdWritable, ArgWritable](
     sc,
     classOf[SequenceFileInputFormat[TileIdWritable, ArgWritable]],
     classOf[TileIdWritable],
     classOf[ArgWritable],
     conf) {
+  lazy val metaData = 
+    HadoopUtils.readLayerMetaData(path, context.hadoopConfiguration)
 
-  /*
-   * Overriding the partitioner with a TileIdPartitioner 
-   */
-  override val partitioner = Some(TileIdPartitioner(HadoopUtils.readSplits(path, conf)))
-
-  @transient val pyramidPath = path.getParent()
-  val zoom = path.getName().toInt
-  val meta = PyramidMetadata(pyramidPath, conf)
-
-  def toRasterRDD(): RasterRDD = 
-    mapPartitions { partition =>
-      partition.map { writableTile =>
-        writableTile.toTmsTile(meta, zoom)
-      }
-     }
-    .withContext(Context(zoom, meta, partitioner.get))
+  def toRasterRDD: RasterRDD = 
+    asRasterRDD(metaData) {
+      map { _.toTmsTile(metaData) }
+    }
 }
 
 object RasterHadoopRDD {
@@ -73,8 +63,8 @@ object RasterHadoopRDD {
 
   def apply(path: Path, sc: SparkContext): RasterHadoopRDD = {
     val updatedConf = 
-      sc.hadoopConfiguration.withInputPath(path.suffix(HadoopUtils.SeqFileGlob))
+      sc.hadoopConfiguration.withInputPath(path.suffix(HadoopUtils.SEQFILE_GLOB))
 
-    new RasterHadoopRDD(path, sc, updatedConf)
+    new RasterHadoopRDD(sc, updatedConf, path)
   }
 }

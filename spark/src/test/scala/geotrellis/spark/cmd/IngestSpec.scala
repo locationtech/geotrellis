@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.cmd
+package geotrellis.spark.ingest
+
+import geotrellis.raster._
 import geotrellis.vector.Extent
+
 import geotrellis.spark._
-import geotrellis.spark.metadata._
-import geotrellis.spark.rdd.TileIdPartitioner
+import geotrellis.spark.rdd._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.reader.RasterReader
 import geotrellis.spark.tiling._
@@ -49,10 +51,10 @@ class IngestSpec extends FunSpec
       HadoopIngestCommand.main(cmd.split(' '))
 
       val raster = new Path(sparkTestOutput, "10")
-      val meta = PyramidMetadata(sparkTestOutput, conf)
+      val metaData = HadoopUtils.readLayerMetaData(sparkTestOutput, conf)
 
       it("should create the correct metadata") {
-        verifyMetadata(meta)
+        verifyMetadata(metaData)
       }
 
       it("should have the right zoom level directory") {
@@ -64,7 +66,7 @@ class IngestSpec extends FunSpec
       }
 
       it("should have the correct tiles (checking tileIds)") {
-        verifyTiles(raster, meta)
+        verifyTiles(raster, metaData)
       }
 
       it("should have its data files compressed") {
@@ -77,15 +79,12 @@ class IngestSpec extends FunSpec
     }
   }
 
-  private def verifyMetadata(actualMeta: PyramidMetadata): Unit = {
-    val expectedMeta = PyramidMetadata(
+  private def verifyMetadata(actualMeta: LayerMetaData): Unit = {
+    val expectedMeta = LayerMetaData(
+      TypeFloat,
       Extent(141.7066666666667, -18.373333333333342, 142.56000000000003, -17.52000000000001),
-      512,
-      1,
-      -9999.0,
-      DataBuffer.TYPE_FLOAT,
-      10,
-      Map("10" -> new RasterMetadata(PixelExtent(0, 0, 1243, 1243), TileExtent(915, 203, 917, 206))))
+      TilingScheme.GEODETIC.zoomLevel(10)
+    )
 
     actualMeta should be(expectedMeta)
   }
@@ -100,11 +99,11 @@ trait RasterVerifyMethods extends ShouldMatchers { self: TestEnvironment =>
     partitioner.numPartitions should be(1)
   }
 
-  def verifyTiles(raster: Path, meta: PyramidMetadata): Unit = {
+  def verifyTiles(raster: Path, meta: LayerMetaData): Unit = {
     val zoom = raster.getName()
     val reader = RasterReader(raster, conf)
     val actualTileIds = reader.map { case (tw, aw) => tw.get }.toList
-    val tileExtent = meta.rasterMetadata(zoom).tileExtent
+    val tileExtent = meta.zoomLevel.tileExtentForExtent(meta.extent)
     val expectedTileIds = for {
       ty <- tileExtent.ymin to tileExtent.ymax
       tx <- tileExtent.xmin to tileExtent.xmax

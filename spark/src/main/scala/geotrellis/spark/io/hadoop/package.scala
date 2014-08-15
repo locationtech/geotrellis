@@ -5,7 +5,6 @@ import geotrellis.spark.rdd._
 import geotrellis.spark._
 import geotrellis.spark.utils._
 import geotrellis.spark.io.hadoop.formats._
-import geotrellis.spark.metadata.Context
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
@@ -51,10 +50,9 @@ package object hadoop {
       }, true)
 
 
-    def saveAsHadoopRasterRDD(path: String): Unit = saveAsHadoopRasterRDD(new Path(path))
+    def saveAsHadoopRasterRDD(path: String): Unit = 
+      saveAsHadoopRasterRDD(new Path(path))
     def saveAsHadoopRasterRDD(path: Path) = {
-      val pyramidPath = path.getParent()
-
       val conf = rdd.context.hadoopConfiguration
 
       logInfo("Saving RasterRDD out...")
@@ -74,26 +72,19 @@ package object hadoop {
 
       logInfo(s"Finished saving raster to ${path}")
 
-      val Context(meta, partitioner) = rdd.opCtx
-      meta.save(pyramidPath, conf)
-      partitioner.save(path, conf)
-
-      logInfo(s"Finished saving metadata to ${pyramidPath} and partitioner to ${path}")
-    }
-  }
-
-  implicit class TileIdPartitionerWrapper(partitioner: TileIdPartitioner) extends Logging {
-    def save(path: Path, conf: Configuration): Unit = {
-      // Save the splits
-      val splitFile = new Path(path, HadoopUtils.SplitFile)
-      val fs = splitFile.getFileSystem(conf)
-      val fdos = fs.create(splitFile)
-      val out = new PrintWriter(fdos)
-      for(split <- partitioner.splits) {
-        out.println(new String(Base64.encodeBase64(ByteBuffer.allocate(8).putLong(split).array())))
+      rdd.partitioner match {
+        case Some(partitioner) =>
+          partitioner match {
+            case p: TileIdPartitioner => 
+              HadoopUtils.writeSplits(p.splits, path, conf)
+            case _ =>
+          }
+        case _ =>
       }
-      out.close()
-      fdos.close()
+
+      HadoopUtils.writeLayerMetaData(rdd.metaData, path, rdd.context.hadoopConfiguration)
+
+      logInfo(s"Finished saving ${path}")
     }
   }
 

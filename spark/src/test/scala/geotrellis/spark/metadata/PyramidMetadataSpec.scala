@@ -15,37 +15,37 @@
  */
 
 package geotrellis.spark.metadata
-import geotrellis.vector.Extent
-import geotrellis.spark.TestEnvironment
-import geotrellis.spark.tiling.PixelExtent
-import geotrellis.spark.tiling.TileExtent
+// import geotrellis.vector.Extent
+// import geotrellis.spark.TestEnvironment
+// import geotrellis.spark.tiling.PixelExtent
+// import geotrellis.spark.tiling.TileExtent
 
-import org.scalatest._
+// import org.scalatest._
 
-import java.awt.image.DataBuffer
+// import java.awt.image.DataBuffer
 
-class PyramidMetadataSpec extends FunSpec with TestEnvironment with Matchers {
+// class PyramidMetadataSpec extends FunSpec with TestEnvironment with Matchers {
 
-  describe("PyramidMetadata") {
-    val meta = PyramidMetadata(
-      Extent(1, 1, 1, 1),
-      512,
-      1,
-      Double.NaN,
-      DataBuffer.TYPE_FLOAT,
-      10,
-      Map("1" -> new RasterMetadata(PixelExtent(0, 0, 0, 0), TileExtent(0, 0, 0, 0))))
+//   describe("PyramidMetadata") {
+//     val meta = PyramidMetadata(
+//       Extent(1, 1, 1, 1),
+//       512,
+//       1,
+//       Double.NaN,
+//       DataBuffer.TYPE_FLOAT,
+//       10,
+//       Map("1" -> new RasterMetadata(PixelExtent(0, 0, 0, 0), TileExtent(0, 0, 0, 0))))
 
-    it("should correctly save and read the metadata") {
-      meta.save(outputLocal, conf)
-      val newMeta = PyramidMetadata(outputLocal, conf)
-      meta should be(newMeta)
-    }
+//     it("should correctly save and read the metadata") {
+//       meta.save(outputLocal, conf)
+//       val newMeta = PyramidMetadata(outputLocal, conf)
+//       meta should be(newMeta)
+//     }
 
-    it("should correctly encode and decode Base64") {
-      val origMeta = PyramidMetadata.fromBase64(meta.toBase64)
-      meta should be(origMeta)
-    }
+//     it("should correctly encode and decode Base64") {
+//       val origMeta = PyramidMetadata.fromBase64(meta.toBase64)
+//       meta should be(origMeta)
+//     }
 
-  }
-}
+//   }
+// }

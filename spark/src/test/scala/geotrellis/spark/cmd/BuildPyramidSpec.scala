@@ -16,12 +16,12 @@
 
 package geotrellis.spark.cmd
 
-import geotrellis.spark.metadata.PyramidMetadata
-import geotrellis.spark._
-import org.apache.hadoop.fs.FileUtil
-import org.apache.hadoop.fs.Path
-import org.scalatest.Suite
-import org.scalatest.FunSpec
+// import geotrellis.spark.metadata.PyramidMetadata
+// import geotrellis.spark._
+// import org.apache.hadoop.fs.FileUtil
+// import org.apache.hadoop.fs.Path
+// import org.scalatest.Suite
+// import org.scalatest.FunSpec
 
 //abstract class BuildPyramidSetup extends TestEnvironment with SharedSparkContext { self: Suite =>
 // class BuildPyramidSpec extends FunSpec 

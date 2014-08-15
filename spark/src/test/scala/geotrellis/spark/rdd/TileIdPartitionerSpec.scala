@@ -31,7 +31,7 @@ class TileIdPartitionerSpec extends FunSpec with TestEnvironment with Matchers w
    */
   describe("getPartition on non-empty partitioner") {
 
-    val partitioner = getPartitioner(Seq(10, 20))
+    val partitioner = getPartitioner(Seq(10L, 20L))
 
     it("should assign tileId Long.MinValue to partition 0") {
       partitioner.getPartition(Long.MinValue) should be(0)
@@ -42,30 +42,30 @@ class TileIdPartitionerSpec extends FunSpec with TestEnvironment with Matchers w
     }
 
     it("should assign tileId 0 (minimum key) to partition 0") {
-      partitioner.getPartition(0) should be(0)
+      partitioner.getPartition(0L) should be(0)
     }
 
     it("should assign tileId 10 (first split point) to partition 0") {
-      partitioner.getPartition(10) should be(0)
+      partitioner.getPartition(10L) should be(0)
     }
 
     it("should assign tileId 11 (between first and second split points) to partition 1") {
-      partitioner.getPartition(11) should be(1)
+      partitioner.getPartition(11L) should be(1)
     }
 
     it("should assign tileId 20 (second split point) to partition 1") {
-      partitioner.getPartition(20) should be(1)
+      partitioner.getPartition(20L) should be(1)
     }
 
     it("should assign tileId 21 (greater than maximum split point) to partition 2") {
-      partitioner.getPartition(21) should be(2)
+      partitioner.getPartition(21L) should be(2)
     }
   }
 
   describe("getPartition on empty partitioner") {
     val partitioner = getPartitioner(Seq())
     it("should assign all tiles to partition 0") {
-      partitioner.getPartition(0) should be(0)
+      partitioner.getPartition(0L) should be(0)
       partitioner.getPartition(Long.MaxValue) should be(0)
     }
   }
@@ -74,16 +74,16 @@ class TileIdPartitionerSpec extends FunSpec with TestEnvironment with Matchers w
    * 10 and 20, then these are the valid ranges for those partitions
    */
   describe("range") {
-    val partitioner = getPartitioner(Seq(10, 20))
+    val partitioner = getPartitioner(Seq(10L, 20L))
 
     it("should handle range of partition 0") {
-      partitioner.range(0) should be(Long.MinValue, 10)
+      partitioner.range(0) should be(Long.MinValue, 10L)
     }
     it("should handle range of partition 1") {
-      partitioner.range(1) should be(11, 20)
+      partitioner.range(1) should be(11L, 20L)
     }
     it("should handle range of partition 2") {
-      partitioner.range(2) should be(21, Long.MaxValue)
+      partitioner.range(2) should be(21L, Long.MaxValue)
     }
   }
 
@@ -100,7 +100,7 @@ class TileIdPartitionerSpec extends FunSpec with TestEnvironment with Matchers w
     it("should serdes TileIdPartitioner") {
       val expectedP = getPartitioner(Seq(10L))
       val actualP = testJavaSerialization(expectedP)
-      actualP should be(expectedP)
+      actualP.splits.toSeq should be(expectedP.splits.toSeq)
     }
   }
 }

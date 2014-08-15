@@ -1,13 +1,13 @@
 package geotrellis.spark.rdd
 
 
-import geotrellis.spark.metadata.PyramidMetadata
+// import geotrellis.spark.metadata.PyramidMetadata
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
+// import org.apache.hadoop.conf.Configuration
+// import org.apache.hadoop.fs.Path
 
-import java.io.ObjectOutputStream
-import java.io.ObjectInputStream
+// import java.io.ObjectOutputStream
+// import java.io.ObjectInputStream
 
 // class MultiLevelTileIdPartitioner extends org.apache.spark.Partitioner {
 //   @transient

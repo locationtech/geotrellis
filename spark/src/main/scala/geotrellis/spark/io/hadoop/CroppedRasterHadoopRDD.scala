@@ -21,12 +21,9 @@ class CroppedRasterHadoopRDD private (
     classOf[ArgWritable],
     conf)
 {
-  /** Overriding the partitioner with a TileIdPartitioner */
-  override val partitioner = Some(TileIdPartitioner(HadoopUtils.readSplits(path, conf)))
+  lazy val metaData = HadoopUtils.readLayerMetaData(path, context.hadoopConfiguration)
 
-  @transient val pyramidPath = path.getParent()
-  val zoom = path.getName().toInt
-  val meta = PyramidMetadata(pyramidPath, conf)
+  override val partitioner = Some(TileIdPartitioner(HadoopUtils.readSplits(path, conf)))
 
   /**
    * returns true if specific partition has TileIDs for extent
@@ -45,21 +42,18 @@ class CroppedRasterHadoopRDD private (
     }
 
     val (min, max) = partitioner.get.range(p.index)
-    intersects(extent.getRowRanges(zoom), TileSpan(min, max))
+    intersects(extent.getRowRanges(metaData.zoomLevel.level), TileSpan(min, max))
   }
 
   /**
    * returns true if the specific TileID is in the extent
    */
-  def includeKey(key: TileIdWritable): Boolean = extent.contains(zoom)(key.get)
+  def includeKey(key: TileIdWritable): Boolean = extent.contains(metaData.zoomLevel.level)(key.get)
 
-  def toRasterRDD(addUserNoData: Boolean = false): RasterRDD =
-    mapPartitions { partition =>
-      partition.map { writableTile =>
-        writableTile.toTmsTile(meta, zoom)
-      }
+  def toRasterRDD(): RasterRDD =
+    asRasterRDD(metaData) {
+      map(_.toTmsTile(metaData))
     }
-    .withContext(Context(zoom, meta, partitioner.get)) // .get is safe because it can't be 'None'
 }
 
 object CroppedRasterHadoopRDD {

@@ -20,11 +20,11 @@ import geotrellis.raster._
 import geotrellis.raster.io._
 import geotrellis.vector.Extent
 
-object GeoTiffWriter extends Writer {
+object GeoTiffWriter {
   def cellType = "geotiff" 
   def dataType = ""
 
-  def write(path: String, tile: Tile, extent: Extent, name: String) {
+  def write(path: String, tile: Tile, extent: Extent) {
     Encoder.writePath(path, tile, RasterExtent(extent, tile.cols, tile.rows), settings(tile.cellType))   
   }
   

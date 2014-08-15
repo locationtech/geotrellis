@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.rdd
-import geotrellis.vector.Extent
-import geotrellis.spark.TestEnvironment
-import geotrellis.spark.io.hadoop.formats.TileIdZoomWritable
-import geotrellis.spark.metadata.PyramidMetadata
-import geotrellis.spark.metadata.RasterMetadata
-import geotrellis.spark.tiling.PixelExtent
-import geotrellis.spark.tiling.TileExtent
-import org.apache.hadoop.fs.Path
-import org.scalatest._
-import java.awt.image.DataBuffer
-import geotrellis.spark.io.hadoop.formats.SerializerTester
+// package geotrellis.spark.rdd
+// import geotrellis.vector.Extent
+// import geotrellis.spark.TestEnvironment
+// import geotrellis.spark.io.hadoop.formats.TileIdZoomWritable
+// import geotrellis.spark.metadata.PyramidMetadata
+// import geotrellis.spark.metadata.RasterMetadata
+// import geotrellis.spark.tiling.PixelExtent
+// import geotrellis.spark.tiling.TileExtent
+// import org.apache.hadoop.fs.Path
+// import org.scalatest._
+// import java.awt.image.DataBuffer
+// import geotrellis.spark.io.hadoop.formats.SerializerTester
 
 // class MultiLevelTileIdPartitionerSpec extends FunSpec with TestEnvironment with Matchers with SerializerTester {
 

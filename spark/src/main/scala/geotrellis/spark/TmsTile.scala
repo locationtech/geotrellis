@@ -20,7 +20,6 @@ import geotrellis.raster._
 
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-import geotrellis.spark.metadata.PyramidMetadata
 
 case class TmsTile(id: Long, tile: Tile) {
   def tileXY(zoom: Int) =

@@ -20,10 +20,8 @@ import geotrellis.raster._
 import geotrellis.vector._
 
 import geotrellis.spark.tiling._
-import geotrellis.spark.metadata.Context
-import geotrellis.spark.rdd.RasterRDD
+import geotrellis.spark.rdd._
 
-import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd._
 
 import spire.syntax.cfor._
@@ -32,24 +30,20 @@ package object spark {
   type TileId = Long
 
   /** The thing I miss the most from F# */
-  implicit def toPipe[A](x : A) = 
-    new { def |> [T](f : A => T) = f(x) }
-
-  implicit def toPipe2[A, B](tup : (A, B)) = 
-    new { def |> [T](f : (A, B) => T) = f(tup._1, tup._2) }
-
-  implicit def toPipe3[A, B, C](tup : (A, B, C)) = 
-    new { def |> [T](f : (A, B, C) => T) = f(tup._1, tup._2, tup._3) }
-
-  implicit def toPipe4[A, B, C, D](tup : (A, B, C, D)) = 
-    new { def |> [T](f : (A, B, C, D) => T) = f(tup._1, tup._2, tup._3, tup._4) }
-
-  implicit class MakeRasterRDD(val prev: RDD[TmsTile]) {
-    def withContext(ctx: Context) = new RasterRDD(prev, ctx)
+  implicit class toPipe[A](x : A) { 
+    def |> [T](f : A => T) = f(x) 
   }
 
-  implicit class MakeRasterRDD2(val prev: RDD[(Long, Tile)]) {
-    def withContext(ctx: Context) = new RasterRDD(prev, ctx)
+  implicit class toPipe2[A, B](tup : (A, B)) {
+    def |> [T](f : (A, B) => T) = f(tup._1, tup._2) 
+  }
+
+  implicit class toPipe3[A, B, C](tup : (A, B, C)) {
+    def |> [T](f : (A, B, C) => T) = f(tup._1, tup._2, tup._3) 
+  }
+
+  implicit class toPipe4[A, B, C, D](tup : (A, B, C, D)) {
+    def |> [T](f : (A, B, C, D) => T) = f(tup._1, tup._2, tup._3, tup._4)
   }
 
   implicit def tmsTileRddToTupleRdd(rdd: RDD[TmsTile]): RDD[(Long, Tile)] =
@@ -63,71 +57,4 @@ package object spark {
 
   implicit def tmsTileRddToOrderedRddFunctions(rdd: RDD[TmsTile]): OrderedRDDFunctions[Long, Tile, (Long, Tile)] =
     new OrderedRDDFunctions(tmsTileRddToTupleRdd(rdd))
-
-  implicit class ValueBurner(val tile: MutableArrayTile) {
-    def burnValues(other: Tile): MutableArrayTile = {
-      Seq(tile, other).assertEqualDimensions
-      if(tile.cellType.isFloatingPoint) {
-        cfor(0)(_ < tile.rows, _ + 1) { row =>
-          cfor(0)(_ < tile.cols, _ + 1) { col =>
-            if(isNoData(tile.getDouble(col, row))) {
-              tile.setDouble(col, row, other.getDouble(col, row))
-            }
-          }
-        }
-      } else {
-        cfor(0)(_ < tile.rows, _ + 1) { row =>
-          cfor(0)(_ < tile.cols, _ + 1) { col =>
-            if(isNoData(tile.get(col, row))) {
-              tile.setDouble(col, row, other.get(col, row))
-            }
-          }
-        }
-      }
-
-      tile
-    }
-
-    def burnValues(extent: Extent, otherExtent: Extent, other: Tile): MutableArrayTile =
-      otherExtent & extent match {
-        case PolygonResult(sharedExtent) =>
-          val re = RasterExtent(extent, tile.cols, tile.rows)
-          val GridBounds(colMin, colMax, rowMin, rowMax) = re.gridBoundsFor(sharedExtent)
-          val otherRe = RasterExtent(otherExtent, other.cols, other.rows)
-
-          def thisToOther(col: Int, row: Int): (Int, Int) = {
-            val (x, y) = re.gridToMap(col, row)
-            otherRe.mapToGrid(x, y)
-          }
-
-          if(tile.cellType.isFloatingPoint) {
-            cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
-              cfor(colMin)(_ <= colMax, _ + 1) { col =>
-                if(isNoData(tile.getDouble(col, row))) {
-                  val (otherCol, otherRow) = thisToOther(col, row)
-                  if(otherCol > 0 && otherCol < other.cols &&
-                    otherRow > 0 && otherRow < other.rows)
-                    tile.setDouble(col, row, other.getDouble(otherCol, otherRow))
-                }
-              }
-            }
-          } else {
-            cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
-              cfor(colMin)(_ <= colMax, _ + 1) { col =>
-                if(isNoData(tile.get(col, row))) {
-                  val (otherCol, otherRow) = thisToOther(col, row)
-                  if(otherCol > 0 && otherCol < other.cols &&
-                    otherRow > 0 && otherRow < other.rows)
-                    tile.set(col, row, other.get(otherCol, otherRow))
-                }
-              }
-            }
-
-          }
-
-          tile
-        case _ =>
-          tile
-      }
-  }
 }

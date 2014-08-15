@@ -18,6 +18,7 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.raster._
 import geotrellis.spark._
+import geotrellis.spark.rdd._
 import geotrellis.spark.tiling._
 import geotrellis.spark.metadata._
 
@@ -26,9 +27,12 @@ import org.apache.hadoop.io.Writable
 package object formats {
   type WritableTile = (TileIdWritable, ArgWritable)
   implicit class WritableTileWrapper(wt: WritableTile) {
-    def toTmsTile(meta: PyramidMetadata, zoom: Int): TmsTile = {
-      val tileId = wt._1.get
-      val tile = wt._2.toTile(meta.cellType, meta.tileSize, meta.tileSize)
+    def toTmsTile(metaData: LayerMetaData): TmsTile = {
+      val zoomLevel = metaData.zoomLevel
+      val tileId = 
+        wt._1.get
+      val tile = 
+        wt._2.toTile(metaData.cellType, zoomLevel.tileCols, zoomLevel.tileRows)
 
       TmsTile(tileId, tile)
     }
@@ -36,9 +40,12 @@ package object formats {
 
   type PayloadWritableTile = (TileIdWritable, PayloadArgWritable)
   implicit class PayloadWritableTileWrapper(pwt: PayloadWritableTile) {
-    def toPayloadTile(meta: PyramidMetadata, zoom: Int, payload: Writable): TmsTile = {
-      val tileId = pwt._1.get
-      val tile = pwt._2.toTile(meta.cellType, meta.tileSize, meta.tileSize)
+    def toPayloadTile(metaData: LayerMetaData): TmsTile = {
+      val zoomLevel = metaData.zoomLevel
+      val tileId = 
+        pwt._1.get
+      val tile = 
+        pwt._2.toTile(metaData.cellType, zoomLevel.tileCols, zoomLevel.tileRows)
 
       TmsTile(tileId, tile)
     }
