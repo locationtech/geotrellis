@@ -30,7 +30,7 @@ import geotrellis.raster.io.geotiff.reader.CommonPublicValues._
 
 import geotrellis.vector.Extent
 
-import scala.collection.immutable.HashMap
+import scala.collection.immutable.{HashMap, Map}
 
 object CompressionType {
 
@@ -194,11 +194,11 @@ case class MetadataTags(
 
 case class BasicTags(
   bitsPerSample: Option[Array[Int]] = None,
-  colorMap: Option[Array[Int]] = None,
+  colorMap: Option[Array[(Short, Short, Short)]] = None,
   imageLength: Int = 0,
   imageWidth: Int = 0,
   compression: Int = 1,
-  photometricInterp: Option[Int] = None,
+  photometricInterp: Int = -1,
   resolutionUnit: Option[Int] = None,
   rowsPerStrip: Long = (1 << 31) - 1,
   samplesPerPixel: Int = 1,
@@ -582,13 +582,13 @@ object ImageDirectoryLenses {
   val bitsPerSampleLens = basicTagsLens |-> mkLens[BasicTags,
     Option[Array[Int]]]("bitsPerSample")
   val colorMapLens = basicTagsLens |-> mkLens[BasicTags,
-    Option[Array[Int]]]("colorMap")
+    Option[Array[(Short, Short, Short)]]]("colorMap")
   val imageLengthLens = basicTagsLens |-> mkLens[BasicTags, Int]("imageLength")
   val imageWidthLens = basicTagsLens |-> mkLens[BasicTags, Int]("imageWidth")
   val compressionLens = basicTagsLens |-> mkLens[BasicTags,
     Int]("compression")
   val photometricInterpLens = basicTagsLens |-> mkLens[BasicTags,
-    Option[Int]]("photometricInterp")
+    Int]("photometricInterp")
   val resolutionUnitLens = basicTagsLens |-> mkLens[BasicTags,
     Option[Int]]("resolutionUnit")
   val rowsPerStripLens = basicTagsLens |-> mkLens[BasicTags,
