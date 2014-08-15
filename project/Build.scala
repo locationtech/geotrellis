@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-// spark hadoop env variable
-import scala.util.Properties
-
 import sbt._
 import sbt.Keys._
 
@@ -354,12 +351,6 @@ object GeotrellisBuild extends Build {
       .settings(sparkSettings: _*)
       .dependsOn(raster, testkit % "test")
 
-  // using hadoop and spark version from environment was inspired by Spark itself
-  val DEFAULT_HADOOP_VERSION = "2.3.0-cdh5.1.0"
-  lazy val hadoopVersion = Properties.envOrElse("SPARK_HADOOP_VERSION", DEFAULT_HADOOP_VERSION)
-
-  val DEFAULT_SPARK_VERSION = "1.0.0"
-  lazy val sparkVersion = Properties.envOrElse("SPARK_VERSION", DEFAULT_SPARK_VERSION)
   lazy val sparkSettings =
     Seq(
       name := "geotrellis-spark",
@@ -372,17 +363,19 @@ object GeotrellisBuild extends Build {
           // http://itellity.wordpress.com/2013/05/27/xerces-parse-error-with-hadoop-or-solr-feature-httpapache-orgxmlfeaturesxinclude-is-not-recognized/
           "xerces" % "xercesImpl" % "2.9.1",
           "xalan" % "xalan" % "2.7.1",
-          "org.apache.spark" %% "spark-core" % sparkVersion
-            excludeAll (
-              ExclusionRule(organization = "org.apache.hadoop"),
-              ExclusionRule(organization = "com.google.code.findbugs")
-            ),
-          "org.apache.hadoop" % "hadoop-client" % hadoopVersion % "compile"
-            excludeAll (ExclusionRule(organization = "hsqldb")),
-          "org.apache.hadoop" % "hadoop-client" % "0.20.2-cdh3u4" % "test"
-            excludeAll (ExclusionRule(organization = "hsqldb")),
-          "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0"
-            excludeAll (ExclusionRule(organization = "com.google.code.findbugs")),
+          "org.apache.spark" %% "spark-core" % Version.spark excludeAll (
+            ExclusionRule(organization = "org.apache.hadoop"),
+            ExclusionRule(organization = "com.google.code.findbugs")
+          ),
+          "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "compile" excludeAll (
+	    ExclusionRule(organization = "hsqldb")
+          ),
+          "org.apache.hadoop" % "hadoop-client" % "2.4.1" % "test" excludeAll (
+	    ExclusionRule(organization = "hsqldb")
+          ),
+          "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0" excludeAll (
+            ExclusionRule(organization = "com.google.code.findbugs")
+          ),
           "com.quantifind" %% "sumac" % "0.2.3",
           spire, sprayRouting, sprayCan,
           scalatest % "test",
