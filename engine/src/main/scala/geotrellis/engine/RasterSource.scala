@@ -120,6 +120,24 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
     RasterSource(rasterDefinition, newOp)
   }
 
+  /** apply a function to elements, and return the appropriate datasource **/
+  def mapWithExtent[T](f: (Tile, Extent) => T)(implicit d: DummyImplicit): SeqSource[T] = 
+    mapWithExtentOp { op => op.map { case (tile, extent) => f(tile, extent) } }
+
+  /** apply a function to elements, and return the appropriate datasource **/
+  def mapWithExtent[T](f: (Tile, Extent) => T, name: String)(implicit d: DummyImplicit): SeqSource[T] =
+    mapWithExtentOp({ op => op.map { case (tile, extent) => f(tile, extent) } }, name)
+
+  /** apply a function to element operations, and return the appropriate datasource **/
+  def mapWithExtentOp[T](f: Op[(Tile, Extent)] => Op[T])(implicit d: DummyImplicit): SeqSource[T] = 
+    mapWithExtentOp(f, s"${getClass.getSimpleName} map")
+
+  /** apply a function to element operations, and return the appropriate datasource **/
+  def mapWithExtentOp[T](f: Op[(Tile, Extent)] => Op[T], name: String)(implicit d: DummyImplicit): SeqSource[T] = {
+    val newOp = tilesWithExtents.map(_.map(f)).withName(name)
+    SeqSource(newOp)
+  }
+
   def combineTile(rs: RasterSource)(f: (Tile, Tile)=> Tile) =
     combineTileOp(rs)( { (a, b) => (a, b).map(f(_, _)) })
 
