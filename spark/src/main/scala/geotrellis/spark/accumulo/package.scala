@@ -35,9 +35,6 @@ package object accumulo {
       InputFormatBase.setInputTableName(job, table)
       InputFormatBase.setRanges(job, format.ranges(layer, extent))
 
-      //If I had query parameters I would have to use InputFormatBase
-      // to declare some iterators and set some ARanges
-      // So where should they come from ?
       // TODO: Set some filters here to represent a query
 
       sc.newAPIHadoopRDD(
@@ -46,9 +43,9 @@ package object accumulo {
     }
   }
 
-  implicit class AccumuloSaveFunctions[K, L](rdd: RDD[(K, Tile)]) {
-    def saveAccumulo(table: String, layer: L, accumuloConnector: Connector)
-                    (implicit format: AccumuloFormat[K, L])
+  implicit class AccumuloSaveFunctions[K](rdd: RDD[(K, Tile)]) {
+    def saveAccumulo[L](table: String, layer: L, accumuloConnector: Connector)
+                    (implicit format: AccumuloFormat[K, L]): Unit =
     {
       val sc = rdd.sparkContext
       val connectorBC = sc.broadcast(accumuloConnector)

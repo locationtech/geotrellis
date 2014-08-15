@@ -81,7 +81,7 @@ class IngestSpec extends FunSpec with TestEnvironment with RasterVerifyMethods {
 
     // do the actual ingest in spark mode
     val cmd = s"--input ${allOnes.toString} --outputpyramid ${sparkTestOutput} --sparkMaster local"
-    IngestCommand.main(cmd.split(' '))
+    MapFileIngestCommand.main(cmd.split(' '))
 
     val raster = new Path(sparkTestOutput, "10")
     val meta = PyramidMetadata(sparkTestOutput, conf)
