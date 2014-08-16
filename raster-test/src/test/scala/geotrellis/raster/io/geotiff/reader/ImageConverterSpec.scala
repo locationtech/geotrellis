@@ -52,7 +52,7 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
       val directory = createTiledDirectory(imageWidth, imageLength, bitsPerPixel,
         tileWidth, tileLength)
 
-      val imageConverter = ImageConverter(directory)
+      val imageConverter = ImageConverter(directory, false)
 
       val tiled: Array[Array[Byte]] = Array(
         Array[Byte](
@@ -114,7 +114,7 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
       val directory = createTiledDirectory(imageWidth, imageLength, bitsPerPixel,
         tileWidth, tileLength)
 
-      val imageConverter = ImageConverter(directory)
+      val imageConverter = ImageConverter(directory, false)
 
       val tiled: Array[Array[Byte]] = Array(
         Array[Byte](
@@ -197,7 +197,7 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
       val directory = createTiledDirectory(imageWidth, imageLength, bitsPerPixel,
         tileWidth, tileLength)
 
-      val imageConverter = ImageConverter(directory)
+      val imageConverter = ImageConverter(directory, false)
 
       val firstTileBitSet = new BitSet(4)
       val secondTileBitSet = new BitSet(4)
@@ -258,7 +258,7 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
       val directory = createTiledDirectory(imageWidth, imageLength, bitsPerPixel,
         tileWidth, tileLength)
 
-      val imageConverter = ImageConverter(directory)
+      val imageConverter = ImageConverter(directory, false)
 
       val firstTileBitSet = new BitSet(3)
       val secondTileBitSet = new BitSet(3)
