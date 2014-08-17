@@ -18,7 +18,7 @@ object MultiBandTile {
     } else {
       val output = Array.ofDim[Tile](noOfBands)
       cfor(0)(_ < noOfBands, _ + 1) { band =>
-        output(band) = ArrayTile.empty(cellType, cols, rows) 
+        output(band) = ArrayTile.empty(cellType, cols, rows)
       }
       MultiBandTile(output)
     }
@@ -87,45 +87,5 @@ trait MultiBandTile {
   def warp(source: Extent, target: RasterExtent): MultiBandTile
   def warp(source: Extent, target: Extent): MultiBandTile
   def warp(source: Extent, targetCols: Int, targetRows: Int): MultiBandTile
-
-  /**
-   * implementation of Local sequence methods on single MultiBandTile
-   */
-  def min(first: Int, last: Int): Tile
-  def minDouble(first: Int, last: Int): Tile
-  def dualMin(first: Int, last: Int): Tile
-
-  def max(first: Int, last: Int): Tile
-  def maxDouble(first: Int, last: Int): Tile
-  def dualMax(first: Int, last: Int): Tile
-
-  def mean(first: Int, last: Int): Tile
-  def meanDouble(first: Int, last: Int): Tile
-  def dualMean(first: Int, last: Int): Tile
-
-  def ndvi(redBandIndex: Int, greenBandIndex: Int): Tile
-  def ndviDouble(redBandIndex: Int, greenBandIndex: Int): Tile
-
-  def dualndvi(redBandIndex: Int, greenBandIndex: Int): Tile = {
-    if (cellType.isFloatingPoint) ndviDouble(redBandIndex, greenBandIndex)
-    else ndvi(redBandIndex, greenBandIndex)
-  }
-
-  /**
-   * Implementation of Local specific operations on single MultiBandTile
-   */
-  def localAdd(constant: Int): MultiBandTile
-  def localAdd(): Tile
-  def localSubtract(constant: Int): MultiBandTile
-  def localSubtract(): Tile
-  def localMultiply(constant: Int): MultiBandTile
-  def localMultiply(): Tile
-  def localDivide(constnt: Int): MultiBandTile
-  def localDivide(): Tile
-  def localDefined(): MultiBandTile
-  def localUndefined(): MultiBandTile
-  def localPow(constant: Int): MultiBandTile
-  def localSqrt(): MultiBandTile
-  
 
 }
