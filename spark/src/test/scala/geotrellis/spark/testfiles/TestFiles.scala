@@ -24,14 +24,12 @@ import org.apache.hadoop.fs.Path
 
 class TestFiles(val path: Path, conf: Configuration) {
 
-  val metaData @ LayerMetaData(cellType, exent, zoomLevel) = setup
+  val metaData @ LayerMetaData(cellType, exent, zoomLevel) = 
+    HadoopUtils.readLayerMetaData(path, conf)
 
   def tileCount = 
     zoomLevel.tileCols * zoomLevel.tileRows
 
-  private def setup: LayerMetaData = {
-    HadoopUtils.readLayerMetaData(path, conf)
-  }
 }
 
 object AllOnes {
@@ -44,4 +42,70 @@ object AllTwos {
 
 object AllHundreds {
   def apply(prefix: Path, conf: Configuration) = new TestFiles(new Path(prefix, "all-hundreds/10"), conf)
+}
+
+/** Use this command to create test files when there's a breaking change to the files (i.e. TileIdWritable package move) */
+object Main {
+  import geotrellis.raster._
+  import geotrellis.vector._
+  import geotrellis.spark._
+  import geotrellis.spark.tiling._
+  import geotrellis.spark.utils._
+  import geotrellis.spark.rdd._
+  import org.apache.spark._
+
+  def main(args: Array[String]):Unit = {
+    val cellType = TypeShort
+    val extent = Extent(141.7066666666667, -18.373333333333342, 142.56000000000003, -17.52000000000001)
+    val tilingScheme = TilingScheme.GEODETIC
+    val zoomLevel = tilingScheme.zoomLevel(10)
+    val metaData = LayerMetaData(cellType, extent, zoomLevel)
+    val (tileCols, tileRows) =  (zoomLevel.tileCols, zoomLevel.tileRows)
+    val tileSize = tileCols * tileRows
+
+    val tileExtent = zoomLevel.tileExtentForExtent(extent)
+
+    val testFiles = List(
+      1 -> "all-ones",
+      2 -> "all-twos",
+      100 -> "all-hundreds"
+    )
+
+//    val sc = SparkUtils.createSparkContext("local", "create-test-files")
+    val sc = new SparkContext("local", "create-test-files")
+    val conf = sc.hadoopConfiguration
+    val localFS = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
+    val prefix = new Path(localFS.getWorkingDirectory, "src/test/resources")
+
+
+    for((v, name) <- testFiles) {
+      println(s"Creating test RasterRDD $name with value $v")
+      val tmsTiles =
+        tileExtent.map(zoomLevel.level) { tileId =>
+          val arr = Array.ofDim[Float](tileSize).fill(v)
+          TmsTile(tileId, ArrayTile(arr, tileCols, tileRows))
+        }
+
+      val path = new Path(prefix, s"$name/${zoomLevel.level}")
+      println(s"Deleting $path if it exists")
+      localFS.delete(path, true)
+
+      val partitioner = {
+        val tileSizeBytes = TmsTiling.tileSizeBytes(zoomLevel.tileSize, cellType)
+        val blockSizeBytes = HdfsUtils.defaultBlockSize(path, conf)
+        val splitGenerator =
+          RasterSplitGenerator(tileExtent, zoomLevel.level, tileSizeBytes, blockSizeBytes)
+        TileIdPartitioner(splitGenerator.splits)
+      }
+
+      val rdd =
+        sc.parallelize(tmsTiles)
+          .partitionBy(partitioner)
+          .toRasterRDD(metaData)
+
+      rdd.saveAsHadoopRasterRDD(path)
+      println(s"Saved $name")
+    }
+
+  }
 }

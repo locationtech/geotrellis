@@ -20,7 +20,6 @@ import geotrellis.spark._
 import geotrellis.spark.rdd._
 import geotrellis.spark.utils._
 import geotrellis.spark.io.hadoop.formats._
-import geotrellis.spark.metadata._
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path

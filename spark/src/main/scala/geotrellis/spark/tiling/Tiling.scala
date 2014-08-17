@@ -16,7 +16,10 @@
 
 package geotrellis.spark.tiling
 
+import geotrellis.spark._
 import geotrellis.vector.Extent
+
+import spire.syntax.cfor._
 
 case class TileCoord(tx: Long, ty: Long)
 
@@ -30,9 +33,23 @@ case class TileSpan(min: Long, max: Long)
 /* Represents the dimensions of the tiles of a RasterRDD
  * based on a zoom level and world grid.
  */
-case class TileExtent(xmin: Long, ymin: Long, xmax: Long, ymax: Long) {
-  def width = xmax - xmin + 1
-  def height = ymax - ymin + 1
+case class TileExtent(xmin: TileId, ymin: TileId, xmax: TileId, ymax: TileId) {
+  def coordinateToId(col: Long, row: Long, zoom: Int): TileId = {
+    TmsTiling.tileId(col, row, zoom)
+  }
+
+  lazy val width = (xmax - xmin + 1).toInt
+  lazy val height = (ymax - ymin + 1).toInt
+
+  def tiles(zoom: Int): Array[TileId] = {
+    val arr = Array.ofDim[TileId](width*height)
+    cfor(0)(_ < height, _ + 1) { row =>
+      cfor(0)(_ < width, _ + 1) { col =>
+        arr(row * width + col) = coordinateToId(col, row, zoom)
+      }
+    }
+    arr
+  }
 
   /**
    * Return a range from min tileId to max tileID for every row in the extent
@@ -45,6 +62,12 @@ case class TileExtent(xmin: Long, ymin: Long, xmax: Long, ymax: Long) {
     val (x, y) = TmsTiling.tileXY(tileId, zoom)
     (x <= xmax && x >= xmin) && (y <= ymax && y >= ymin)
   }
+
+  def foreach(zoom: Int)(f: Long => Unit): Unit = 
+    tiles(zoom).foreach(f)
+
+  def map[T](zoom: Int)(f: Long => T): Seq[T] = 
+    tiles(zoom).map(f)
 } 
 
 /* Represents the width and hieght of the raster pre-ingest 

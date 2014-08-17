@@ -15,31 +15,31 @@
  */
 package geotrellis.spark.cmd
 
-import geotrellis.raster._
-import geotrellis.vector.Extent
+// import geotrellis.raster._
+// import geotrellis.vector.Extent
 
-import geotrellis.spark._
-import geotrellis.spark.cmd.args.HadoopArgs
-import geotrellis.spark.cmd.args.SparkArgs
-import geotrellis.spark.io.hadoop._
-import geotrellis.spark.metadata._
-import geotrellis.spark.rdd._
-import geotrellis.spark.tiling.TmsTiling
-import geotrellis.spark.utils.HdfsUtils
+// import geotrellis.spark._
+// import geotrellis.spark.cmd.args.HadoopArgs
+// import geotrellis.spark.cmd.args.SparkArgs
+// import geotrellis.spark.io.hadoop._
+// import geotrellis.spark.metadata._
+// import geotrellis.spark.rdd._
+// import geotrellis.spark.tiling.TmsTiling
+// import geotrellis.spark.utils.HdfsUtils
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.MapFile
-import org.apache.hadoop.io.SequenceFile
-import org.apache.spark.Logging
-import org.apache.spark.SerializableWritable
-import org.apache.spark.SparkContext._
-import org.apache.spark.SparkContext
+// import org.apache.hadoop.conf.Configuration
+// import org.apache.hadoop.fs.Path
+// import org.apache.hadoop.io.MapFile
+// import org.apache.hadoop.io.SequenceFile
+// import org.apache.spark.Logging
+// import org.apache.spark.SerializableWritable
+// import org.apache.spark.SparkContext._
+// import org.apache.spark.SparkContext
 
-import com.quantifind.sumac.ArgMain
-import com.quantifind.sumac.validation.Required
+// import com.quantifind.sumac.ArgMain
+// import com.quantifind.sumac.validation.Required
 
-import scala.collection.mutable
+// import scala.collection.mutable
 
 // class BuildPyramidArgs extends SparkArgs with HadoopArgs {
 //   @Required var pyramid: String = _

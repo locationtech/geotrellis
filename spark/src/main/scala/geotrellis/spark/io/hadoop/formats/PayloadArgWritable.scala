@@ -2,7 +2,6 @@ package geotrellis.spark.io.hadoop.formats
 
 import geotrellis.raster._
 import geotrellis.spark._
-import geotrellis.spark.metadata._
 
 import org.apache.hadoop.io.Writable
 

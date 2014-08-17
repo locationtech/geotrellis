@@ -3,7 +3,6 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark.rdd._
 import geotrellis.spark.utils._
 import geotrellis.spark.io.hadoop.formats._
-import geotrellis.spark.metadata._
 import geotrellis.spark.tiling._
 
 import org.apache.spark._
