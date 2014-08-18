@@ -31,6 +31,6 @@
 
 - name: Add Cloudera apt repo
   apt_repository:
-    repo: "deb [arch=amd64] http://archive.cloudera.com/cdh5/ubuntu/precise/amd64/cdh {{cdh.repo}} contrib"
+    repo: "deb [arch=amd64] http://archive.cloudera.com/cdh5/ubuntu/{{ ansible_distribution_release }}/amd64/cdh {{cdh.repo}} contrib"
     state: present
   sudo: yes

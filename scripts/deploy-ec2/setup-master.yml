@@ -7,7 +7,5 @@
     - hadoop
     - spark
 
-  gather_facts: False 
-
   tasks:
     - include_vars: group_vars/cluster.yml

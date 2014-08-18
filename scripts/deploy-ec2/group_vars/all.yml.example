@@ -34,6 +34,6 @@ hdfs:
 allow_vpn_from_subnet: 0.0.0.0/32
 
 cdh:
-  repo: precise-cdh5.1.0
+  repo: {{ ansible_distribution_release }}-cdh5.1.0
   spark_version: 1.0.0-cdh5.1.0
   hadoop_version: 2.3.0-cdh5.1.0
