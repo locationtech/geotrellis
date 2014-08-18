@@ -84,7 +84,7 @@ package object spark {
       otherExtent & extent match {
         case PolygonResult(sharedExtent) =>
           val re = RasterExtent(extent, tile.cols, tile.rows)
-          val GridBounds(colMin, colMax, rowMin, rowMax) = re.gridBoundsFor(sharedExtent)
+          val GridBounds(colMin, rowMin, colMax, rowMax) = re.gridBoundsFor(sharedExtent)
           val otherRe = RasterExtent(otherExtent, other.cols, other.rows)
 
           def thisToOther(col: Int, row: Int): (Int, Int) = {
@@ -97,8 +97,8 @@ package object spark {
               cfor(colMin)(_ <= colMax, _ + 1) { col =>
                 if(isNoData(tile.getDouble(col, row))) {
                   val (otherCol, otherRow) = thisToOther(col, row)
-                  if(otherCol > 0 && otherCol < other.cols &&
-                    otherRow > 0 && otherRow < other.rows)
+                  if(otherCol >= 0 && otherCol < other.cols &&
+                    otherRow >= 0 && otherRow < other.rows)
                     tile.setDouble(col, row, other.getDouble(otherCol, otherRow))
                 }
               }
@@ -108,8 +108,8 @@ package object spark {
               cfor(colMin)(_ <= colMax, _ + 1) { col =>
                 if(isNoData(tile.get(col, row))) {
                   val (otherCol, otherRow) = thisToOther(col, row)
-                  if(otherCol > 0 && otherCol < other.cols &&
-                    otherRow > 0 && otherRow < other.rows)
+                  if(otherCol >= 0 && otherCol < other.cols &&
+                    otherRow >= 0 && otherRow < other.rows)
                     tile.set(col, row, other.get(otherCol, otherRow))
                 }
               }
