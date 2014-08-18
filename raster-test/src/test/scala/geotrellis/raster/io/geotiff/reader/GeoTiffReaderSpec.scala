@@ -80,6 +80,7 @@ class GeoTiffReaderSpec extends FunSpec
       case (firstIFD, secondIFD) =>
 
         firstIFD.imageBytes.size should equal (secondIFD.imageBytes.size)
+
         firstIFD.imageBytes should equal (secondIFD.imageBytes)
     }
   }
@@ -169,6 +170,13 @@ class GeoTiffReaderSpec extends FunSpec
     it ("must read bilevel_CCITTFAX4.tif and match uncompressed file") {
       val decomp = read("geotiff-reader-tiffs/bilevel_CCITTFAX4.tif")
       val uncomp = read("geotiff-reader-tiffs/bilevel.tif")
+
+      compareGeoTiffImages(decomp, uncomp)
+    }
+
+    it ("must read all-ones.tif and match uncompressed file") {
+      val decomp = read("geotiff-reader-tiffs/all-ones.tif")
+      val uncomp = read("geotiff-reader-tiffs/all-ones-no-comp.tif")
 
       compareGeoTiffImages(decomp, uncomp)
     }

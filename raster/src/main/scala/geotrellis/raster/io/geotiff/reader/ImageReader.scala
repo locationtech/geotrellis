@@ -19,7 +19,7 @@ package geotrellis.raster.io.geotiff.reader
 import monocle.syntax._
 import monocle.Macro._
 
-import java.nio.ByteBuffer
+import java.nio.{ByteBuffer, ByteOrder}
 
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.reader.CompressionType._
@@ -42,7 +42,7 @@ case class ImageReader(byteBuffer: ByteBuffer) {
   def read(directory: ImageDirectory): ImageDirectory = {
     val matrix = readMatrix(directory)
 
-    val uncompressedImage: Array[Array[Byte]] = 
+    val uncompressedImage: Array[Array[Byte]] =
       directory |-> compressionLens get match {
         case Uncompressed => matrix
         case HuffmanCoded => matrix.uncompressHuffman(directory)
@@ -50,17 +50,18 @@ case class ImageReader(byteBuffer: ByteBuffer) {
         case GroupFourCoded => matrix.uncompressGroupFour(directory)
         case LZWCoded => matrix.uncompressLZW(directory)
         case JpegCoded => matrix.uncompressJpeg(directory)
-        case ZLibCoded => matrix.uncompressZLib(directory)
+        case ZLibCoded | PkZipCoded => matrix.uncompressZLib(directory)
         case PackBitsCoded => matrix.uncompressPackBits(directory)
-        case JpegOldCoded => 
+        case JpegOldCoded =>
           val msg = "old jpeg (compression = 6) is deprecated."
           throw new MalformedGeoTiffException(msg)
-        case compression => 
+        case compression =>
           val msg = s"compression type $compression is not supported by this reader."
           throw new GeoTiffReaderLimitationException(msg)
       }
 
-    val imageBytes = ImageConverter(directory).convert(uncompressedImage)
+    val imageBytes = ImageConverter(directory,
+      byteBuffer.order == ByteOrder.BIG_ENDIAN).convert(uncompressedImage)
 
     directory |-> imageBytesLens set(imageBytes)
   }
