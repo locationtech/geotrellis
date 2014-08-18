@@ -1,0 +1,38 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+def local_ip
+  `ipconfig getifaddr eth0 || ipconfig getifaddr en0`.strip
+end
+
+VAGRANTFILE_API_VERSION = "2"
+SPARK_WORKERS = 2
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
+  cluster.vm.box = "ubuntu/precise64"
+
+  # cluster.vm.provider "virtualbox" do |v|
+  #   v.memory = 1024
+  #   v.cpus = 2
+  # end
+
+  # Wire up the proxy
+  if Vagrant.has_plugin?("vagrant-proxyconf")
+    cluster.proxy.http     = "http://#{local_ip}:8123/"
+    cluster.proxy.https    = "http://#{local_ip}:8123/"
+    cluster.proxy.no_proxy = "localhost,127.0.0.1"
+  end
+
+  cluster.vm.define "spark-master" do |machine|
+    machine.vm.hostname = "spark-master"
+    # machine.vm.network "forwarded_port", guest: 8080, host: 8080
+
+    machine.vm.provision "ansible" do |ansible|
+      ansible.playbook = "./setup-master.yml"
+      ansible.groups = {
+        "master" => [ "spark-master" ],
+        "development:children" => [ "master" ]
+      }
+    end
+  end
+end
