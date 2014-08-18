@@ -6,7 +6,6 @@
     - common
     - hadoop
     - spark
-    - accumulo
 
   gather_facts: False 
 

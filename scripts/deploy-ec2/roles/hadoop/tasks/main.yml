@@ -30,6 +30,12 @@
     line="HADOOP_CONF_DIR=/etc/hadoop/conf"
   sudo: yes
 
+- lineinfile: 
+    dest="/etc/environment"
+    regexp="^HADOOP_CONF=" 
+    line="HADOOP_CONF=/etc/hadoop/conf"
+  sudo: yes
+
 - include: "namenode.yml"
   when: '"master" in group_names'
 

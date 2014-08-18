@@ -5,7 +5,7 @@
   gather_facts: False
   
   tasks:
-    - name: EC2 Security group for cluster
+    - name: EC2 VPC Group for cluster
       local_action:
         module: ec2_group
         region: "{{ region }}"

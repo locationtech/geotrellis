@@ -9,11 +9,6 @@
 - shell: dpkg -i /tmp/{{accumulo_deb}}  creates=/etc/accumulo
   sudo: yes
 
-- name: Initilize Accumulo
-  shell: sudo accumulo init --instance-name gis --password secret creates=/accumulo/tables
-  sudo: yes
-  when: '"master" in group_names'
-
 - name: Upload Accumulo init.d script
   template: src=init.d/accumulo dest=/etc/init.d/accumulo
   sudo: yes
@@ -39,5 +34,10 @@
   sudo: yes
   notify: Restart Accumulo
 
-- service: name=accumulo state=started
+- name: Initilize Accumulo
+  shell: sudo accumulo init --instance-name {{accumulo.instance}} --password {{accumulo.password}} creates=/accumulo/tables
+  sudo: yes
+  when: '"master" in group_names'
+
+- service: name=accumulo state=started enabled=yes
   sudo: yes

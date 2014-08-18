@@ -27,5 +27,5 @@
   sudo: yes
   with_items: hdfs.volumes
 
-- service: name=hadoop-hdfs-datanode state=started
+- service: name=hadoop-hdfs-datanode state=started enabled=yes
   sudo: yes

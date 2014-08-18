@@ -12,8 +12,5 @@
   sudo_user: hdfs 
   sudo: yes
 
-- service: name=hadoop-hdfs-namenode state=started
+- service: name=hadoop-hdfs-namenode state=started enabled=yes
   sudo: yes
-
-#This supports using the hadoop scripts
-- lineinfile: dest=.bashrc  regexp="^export HADOOP_CONF=" line="export HADOOP_CONF=/etc/hadoop/conf"

@@ -2,8 +2,10 @@
 
 - name: Restart Hadoop Datanode
   service: name=hadoop-hdfs-datanode state=restarted
+  when: '"workers" in group_names'
   sudo: yes
 
 - name: Restart Hadoop Namenode
   service: name=hadoop-hdfs-namenode state=restarted
+  when: '"master" in group_names'
   sudo: yes

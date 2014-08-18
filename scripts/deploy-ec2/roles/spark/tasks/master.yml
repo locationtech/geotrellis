@@ -15,7 +15,7 @@
 - template: src=push-spark-assembly.sh dest=~/push-spark-assembly.sh
 - file: path=~/push-spark-assembly.sh mode=755
 
-- service: name=spark-master state=started
+- service: name=spark-master state=started enabled=yes
   sudo: yes
 
 - lineinfile: 
