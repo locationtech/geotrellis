@@ -1,6 +1,7 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
+import geotrellis.spark.json._
 import geotrellis.spark.rdd._
 import geotrellis.spark.json._
 import geotrellis.spark.utils._
@@ -27,12 +28,12 @@ object HadoopUtils {
     HdfsUtils.getLineScanner(splitFile, conf) match {
       case Some(in) =>
         try {
-          val splits = new mutable.ListBuffer[TileIdWritable]
+          val splits = new mutable.ListBuffer[TileId]
           for (line <- in) {
             splits +=
-            TileIdWritable(ByteBuffer.wrap(Base64.decodeBase64(line.getBytes)).getLong)
+            ByteBuffer.wrap(Base64.decodeBase64(line.getBytes)).getLong
           }
-          splits.toArray.map(_.get)
+          splits.toArray
         } finally {
           in.close
         }
@@ -79,7 +80,7 @@ object HadoopUtils {
     val fdos = fs.create(metaPath)
     val out = new PrintWriter(fdos)
     try {
-      out.println()
+      out.println(metaData.toJson)
     } finally {
       out.close()
       fdos.close()

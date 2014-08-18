@@ -90,7 +90,6 @@ object RasterSplitGenerator {
   def computeIncrement(tileExtent: TileExtent, tileSizeBytes: Int, blockSizeBytes: Long) = {
     val tilesPerBlock = (blockSizeBytes / tileSizeBytes).toInt
     val tileCount = tileExtent.width * tileExtent.height
-    println(s"${tileCount} / ${tilesPerBlock} (${blockSizeBytes} ${tileSizeBytes})")
        
     // return -1 if it doesn't make sense to have splits, splits will handle this accordingly
     val increment =

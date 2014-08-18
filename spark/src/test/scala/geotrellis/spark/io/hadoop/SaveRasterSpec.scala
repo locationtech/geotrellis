@@ -1,8 +1,7 @@
-package geotrellis.spark.rdd
+package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.rdd._
-import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles.AllOnes
 
 import org.apache.hadoop.fs.Path
@@ -18,18 +17,18 @@ class SaveRasterSpec
     ifCanRunSpark {
       val allOnes = AllOnes(inputHome, conf)
 
-      it("should produce the expected PyramidMetadata and TileIdPartitioner") {
+      it("should produce the expected metadata") {
         val ones = sc.hadoopRasterRDD(allOnes.path)
         val twos = ones + ones
         val twosPath = new Path(outputLocal, "twos/" + twos.metaData.zoomLevel.level.toString)
         twos.saveAsHadoopRasterRDD(twosPath)
         
         // compare metadata
-        val newMetaData = HadoopUtils.readLayerMetaData(outputLocal, conf)
+        val newMetaData = HadoopUtils.readLayerMetaData(twosPath, conf)
         newMetaData should be (allOnes.metaData)
 
         // compare tiles
-        val rdd = sc.hadoopRasterRDD(outputLocal)
+        val rdd = sc.hadoopRasterRDD(twosPath)
         val actualTiles = rdd.collect
         val expectedTiles = twos.collect
       }

@@ -33,6 +33,8 @@ class RasterRDD(val prev: RDD[TmsTile], val metaData: LayerMetaData)
   with MultiplyOpMethods[RasterRDD]
   with DivideOpMethods[RasterRDD] {
 
+  override val partitioner = prev.partitioner
+
   override def getPartitions: Array[Partition] = firstParent.partitions
 
   override def compute(split: Partition, context: TaskContext) =

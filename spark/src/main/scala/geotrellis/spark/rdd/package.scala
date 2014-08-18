@@ -13,6 +13,8 @@ package object rdd {
   }
 
   implicit class MakeRasterRDD2(val prev: RDD[(Long, Tile)]) {
-    def toRasterRDD(metaData: LayerMetaData) = new RasterRDD(prev, metaData)
+    def prevAsTmsTiles = 
+      prev.mapPartitions({ seq => seq.map { case (id, tile) => TmsTile(id, tile) } }, true)
+    def toRasterRDD(metaData: LayerMetaData) = new RasterRDD(prevAsTmsTiles, metaData)
   }
 }

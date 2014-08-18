@@ -67,9 +67,10 @@ object SparkUtils extends Logging {
       .setMaster(sparkMaster)
       .setAppName(appName)
       .setSparkHome(sparkHome)
-      .setJars(Array(geoTrellisJar))
-      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.kryo.registrator", "geotrellis.spark.io.hadoop.KryoRegistrator")
+      .set("spark.executor.extraClassPath", geoTrellisJar)
+//      .setJars(Array(geoTrellisJar))
+      // .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      // .set("spark.kryo.registrator", "geotrellis.spark.io.hadoop.KryoRegistrator")
 
     new SparkContext(sparkConf)
   }
@@ -110,7 +111,8 @@ object SparkUtils extends Logging {
     
     val matches = findJar(new File(gtHome)).flatten
     if (matches.length == 1) {
-      val firstMatch = prefix(matches(0).getAbsolutePath)
+//      val firstMatch = prefix(matches(0).getAbsolutePath)
+      val firstMatch = matches(0).getAbsolutePath
       logInfo(s"Found unique match for geotrellis-spark jar: ${firstMatch}")
       Some(firstMatch)
     } else if (matches.length > 1) {

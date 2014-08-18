@@ -45,7 +45,7 @@ case class TileExtent(xmin: TileId, ymin: TileId, xmax: TileId, ymax: TileId) {
     val arr = Array.ofDim[TileId](width*height)
     cfor(0)(_ < height, _ + 1) { row =>
       cfor(0)(_ < width, _ + 1) { col =>
-        arr(row * width + col) = coordinateToId(col, row, zoom)
+        arr(row * width + col) = coordinateToId(col + xmin, row + ymin, zoom)
       }
     }
     arr
@@ -68,6 +68,9 @@ case class TileExtent(xmin: TileId, ymin: TileId, xmax: TileId, ymax: TileId) {
 
   def map[T](zoom: Int)(f: Long => T): Seq[T] = 
     tiles(zoom).map(f)
+
+  def count(zoom: Int): Long = 
+    tiles(zoom).size
 } 
 
 /* Represents the width and hieght of the raster pre-ingest 

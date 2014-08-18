@@ -86,7 +86,6 @@ object HadoopIngestCommand extends ArgMain[IngestArgs] with Logging {
         }
 
         val outPathWithZoom = new Path(outPath, zoomLevel.level.toString)
-
         tiles
           .partitionBy(partitioner)
           .toRasterRDD(metaData)

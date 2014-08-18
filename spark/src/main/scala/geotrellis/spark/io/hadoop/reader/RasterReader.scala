@@ -119,10 +119,13 @@ case class RasterReader(
 
       def isData(fst: FileStatus) = fst.getPath.getName.equals("data")
 
-      def isMapFileDir(path: Path) = fs.listStatus(path).find(isData(_)) match {
-        case Some(f) => true
-        case None    => false
-      }
+      def isMapFileDir(path: Path) = 
+        fs
+          .listStatus(path)
+          .find(isData(_)) match {
+            case Some(f) => true
+            case None    => false
+          }
 
       val readers = for {
         dir <- dirs

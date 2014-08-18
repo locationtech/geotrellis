@@ -40,8 +40,9 @@ class IngestSpec extends FunSpec
                     with OnlyIfCanRunSpark {
 
   // subdirectories under the test directory for each of the two modes
-  val localTestOutput = new Path(outputLocal, "local")
   val sparkTestOutput = new Path(outputLocal, "spark")
+
+  clearTestDirectory()
 
   describe("Spark Ingest") {
     ifCanRunSpark { 
@@ -50,31 +51,31 @@ class IngestSpec extends FunSpec
       val cmd = s"--input ${allOnes.toString} --outputpyramid ${sparkTestOutput} --sparkMaster local"
       HadoopIngestCommand.main(cmd.split(' '))
 
-      val raster = new Path(sparkTestOutput, "10")
-      val metaData = HadoopUtils.readLayerMetaData(sparkTestOutput, conf)
+      val rasterPath = new Path(sparkTestOutput, "10")
+      val metaData = HadoopUtils.readLayerMetaData(rasterPath, conf)
 
       it("should create the correct metadata") {
         verifyMetadata(metaData)
       }
 
       it("should have the right zoom level directory") {
-        verifyZoomLevelDirectory(raster)
+        verifyZoomLevelDirectory(rasterPath)
       }
 
       it("should have the right number of splits for the base zoom level") {
-        verifyPartitions(raster)
+        verifyPartitions(rasterPath)
       }
 
       it("should have the correct tiles (checking tileIds)") {
-        verifyTiles(raster, metaData)
+        verifyTiles(rasterPath, metaData)
       }
 
       it("should have its data files compressed") {
-        verifyCompression(raster)
+        verifyCompression(rasterPath)
       }
 
       it("should have its block size set correctly") {
-        verifyBlockSize(raster)
+        verifyBlockSize(rasterPath)
       }
     }
   }

@@ -76,7 +76,7 @@ trait TestEnvironment extends BeforeAndAfterAll {self: Suite =>
       handle.mkdirs()    
   }
   
-  override def beforeAll() = FileUtil.fullyDelete(new File(outputLocal.toUri()))
+  def clearTestDirectory() = FileUtil.fullyDelete(new File(outputLocal.toUri()))
 
   // clean up the test directory after the test
   // note that this afterAll is not inherited from BeforeAndAfterAll, its callers are

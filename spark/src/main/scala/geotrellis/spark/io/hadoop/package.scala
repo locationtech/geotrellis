@@ -52,6 +52,7 @@ package object hadoop {
 
     def saveAsHadoopRasterRDD(path: String): Unit = 
       saveAsHadoopRasterRDD(new Path(path))
+
     def saveAsHadoopRasterRDD(path: Path) = {
       val conf = rdd.context.hadoopConfiguration
 
