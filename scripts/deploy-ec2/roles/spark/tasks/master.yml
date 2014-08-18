@@ -1,0 +1,39 @@
+---
+
+#Tasks for spark roles
+
+- apt: name=spark-master state=present force=yes
+  sudo: yes
+
+- apt: name=zip state=present install_recommends=yes
+  sudo: yes
+
+- git: repo=https://github.com/geotrellis/geotrellis
+       dest=/home/ubuntu/geotrellis
+
+#this is nice for development, where you might be building on master
+- template: src=push-spark-assembly.sh dest=~/push-spark-assembly.sh
+- file: path=~/push-spark-assembly.sh mode=755
+
+- service: name=spark-master state=started enabled=yes
+  sudo: yes
+
+- lineinfile: 
+    dest="~/.bashrc" 
+    regexp="^export SPARK_HOME="  
+    line="export SPARK_HOME=/usr/lib/spark"
+
+- lineinfile: 
+    dest="~/.bashrc"
+    regexp="^export SPARK_VERSION=" 
+    line="export SPARK_VERSION={{cdh.spark_version}}"
+
+- lineinfile: 
+    dest="~/.bashrc"
+    regexp="^export SPARK_HADOOP_VERSION=" 
+    line="export SPARK_HADOOP_VERSION={{cdh.hadoop_version}}"
+
+- lineinfile: 
+    dest="~/.bashrc"
+    regexp="^export GEOTRELLIS_HOME=" 
+    line="export GEOTRELLIS_HOME=/home/ubuntu/geotrellis/spark/target/scala-2.10"

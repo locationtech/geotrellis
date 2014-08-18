@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+  <!-- Put your site-specific accumulo configurations here. The available configuration values along with their defaults are documented in docs/config.html Unless 
+    you are simply testing at your workstation, you will most definitely need to change the three entries below. -->
+
+  <property>
+    <name>instance.zookeeper.host</name>
+    <value>{{spark_master}}:2181</value>
+    <description>comma separated list of zookeeper servers</description>
+  </property>
+
+  <property>
+    <name>logger.dir.walog</name>
+    <value>walogs</value>
+    <description>The property only needs to be set if upgrading from 1.4 which used to store write-ahead logs on the local 
+      filesystem. In 1.5 write-ahead logs are stored in DFS.  When 1.5 is started for the first time it will copy any 1.4 
+      write ahead logs into DFS.  It is possible to specify a comma-separated list of directories.
+    </description>
+  </property>
+
+  <property>
+    <name>instance.secret</name>
+    <value>cf886eb962b5e12de38f23efa9c1087e</value>
+    <description>A secret unique to a given instance that all servers must know in order to communicate with one another.
+      Change it before initialization. To
+      change it later use ./bin/accumulo org.apache.accumulo.server.util.ChangeSecret --old [oldpasswd] --new [newpasswd],
+      and then update this file.
+    </description>
+  </property>
+
+  <property>
+    <name>tserver.memory.maps.max</name>
+    <value>256M</value>
+  </property>
+
+  <property>
+    <name>tserver.memory.maps.native.enabled</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>tserver.cache.data.size</name>
+    <value>15M</value>
+  </property>
+
+  <property>
+    <name>tserver.cache.index.size</name>
+    <value>40M</value>
+  </property>
+
+  <property>
+    <name>trace.token.property.password</name>
+    <!-- change this to the root user's password, and/or change the user below -->
+    <value>secret</value>
+  </property>
+
+  <property>
+    <name>trace.user</name>
+    <value>root</value>
+  </property>
+
+  <property>
+    <name>tserver.sort.buffer.size</name>
+    <value>50M</value>
+  </property>
+
+  <property>
+    <name>tserver.walog.max.size</name>
+    <value>256M</value>
+  </property>
+
+  <property>
+    <name>general.classpaths</name>
+    <!--
+       Add the following for Hadoop2, actual needs depend on Hadoop installation details.
+       This list may be excessive, but this should cause no issues. Append these values
+       after the $HADOOP_PREFIX entries
+
+       $HADOOP_PREFIX/share/hadoop/common/.*.jar,
+       $HADOOP_PREFIX/share/hadoop/common/lib/.*.jar,
+       $HADOOP_PREFIX/share/hadoop/hdfs/.*.jar,
+       $HADOOP_PREFIX/share/hadoop/mapreduce/.*.jar,
+       $HADOOP_PREFIX/share/hadoop/yarn/.*.jar,
+       /usr/lib/hadoop/.*.jar,
+       /usr/lib/hadoop/lib/.*.jar,
+       /usr/lib/hadoop-hdfs/.*.jar,
+       /usr/lib/hadoop-mapreduce/.*.jar,
+       /usr/lib/hadoop-yarn/.*.jar,
+    -->
+    <value>
+      $ACCUMULO_HOME/server/target/classes/,
+      $ACCUMULO_HOME/lib/accumulo-server.jar,
+      $ACCUMULO_HOME/core/target/classes/,
+      $ACCUMULO_HOME/lib/accumulo-core.jar,
+      $ACCUMULO_HOME/start/target/classes/,
+      $ACCUMULO_HOME/lib/accumulo-start.jar,
+      $ACCUMULO_HOME/fate/target/classes/,
+      $ACCUMULO_HOME/lib/accumulo-fate.jar,
+      $ACCUMULO_HOME/proxy/target/classes/,
+      $ACCUMULO_HOME/lib/accumulo-proxy.jar,
+      $ACCUMULO_HOME/lib/[^.].*.jar,
+      $ZOOKEEPER_HOME/zookeeper[^.].*.jar,
+      $HADOOP_CONF_DIR,
+      $HADOOP_PREFIX/[^.].*.jar,
+      $HADOOP_PREFIX/lib/[^.].*.jar,
+       $HADOOP_PREFIX/share/hadoop/common/.*.jar,
+       $HADOOP_PREFIX/share/hadoop/common/lib/.*.jar,
+       $HADOOP_PREFIX/share/hadoop/hdfs/.*.jar,
+       $HADOOP_PREFIX/share/hadoop/mapreduce/.*.jar,
+       $HADOOP_PREFIX/share/hadoop/yarn/.*.jar,
+       /usr/lib/hadoop/.*.jar,
+       /usr/lib/hadoop/lib/.*.jar,
+       /usr/lib/hadoop-hdfs/.*.jar,
+       /usr/lib/hadoop-mapreduce/.*.jar,
+       /usr/lib/hadoop-yarn/.*.jar
+    </value>
+    <description>Classpaths that accumulo checks for updates and class files.
+      When using the Security Manager, please remove the ".../target/classes/" values.
+    </description>
+  </property>
+</configuration>

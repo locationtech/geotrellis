@@ -4,5 +4,5 @@
 - apt: name=spark-worker state=present force=yes
   sudo: yes
 
-- service: name=spark-worker state=started
+- service: name=spark-worker state=started enabled=yes
   sudo: yes

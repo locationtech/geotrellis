@@ -5,9 +5,8 @@
   roles: 
     - common
     - hadoop
-    - hadoop_datanode
     - spark
-    - spark_worker
+
   gather_facts: False
 
   tasks:

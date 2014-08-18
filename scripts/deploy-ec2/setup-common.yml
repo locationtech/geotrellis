@@ -1,9 +1,0 @@
----
-
-#Playbook to configure cluster master
-- name: Impose social constructs and roles on an innocent server
-  hosts: all
-  roles: 
-    - common
-  gather_facts: False
-  

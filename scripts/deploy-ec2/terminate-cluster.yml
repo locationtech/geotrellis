@@ -8,10 +8,17 @@
   tasks:
     - include_vars: group_vars/cluster.yml  
 
-    - name: Stop Cluster
+    - name: Terminate Cluster
       local_action: 
         module: ec2 
         region: "{{ region }}" 
         instance_ids: "{{ cluster_instance_ids }}"
         state: 'absent'
 
+    - name: Delete the cluster VPC
+      local_action:
+        module: ec2_group
+        region: "{{ region }}"
+        name: "{{ cluster_name }}"
+        description: "{{ cluster_name }} security group"
+        state: absent
