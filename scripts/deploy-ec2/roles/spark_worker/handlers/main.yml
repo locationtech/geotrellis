@@ -1,5 +1,0 @@
----
-
-- name: Restart Spark
-  service: name=spark-worker state=restarted
-  sudo: yes

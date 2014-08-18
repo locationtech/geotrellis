@@ -1,0 +1,8 @@
+
+- name: Restart ZooKeeper
+  service: name=zookeeper-server state=restarted
+  sudo: yes
+
+- name: Restart Accumulo
+  service: name=accumulo state=restarted
+  sudo: yes

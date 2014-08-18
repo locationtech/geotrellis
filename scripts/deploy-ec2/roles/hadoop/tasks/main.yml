@@ -14,4 +14,30 @@
     - hadoop-env.sh
     - log4j.properties
   sudo: yes
-  notify: Restart Hadoop
+  notify: 
+    - Restart Hadoop Datanode
+    - Restart Hadoop Namenode
+
+- lineinfile: 
+    dest="/etc/environment"
+    regexp="^HADOOP_PREFIX=" 
+    line="HADOOP_PREFIX=/usr/lib/hadoop"
+  sudo: yes
+
+- lineinfile: 
+    dest="/etc/environment"
+    regexp="^HADOOP_CONF_DIR=" 
+    line="HADOOP_CONF_DIR=/etc/hadoop/conf"
+  sudo: yes
+
+- lineinfile: 
+    dest="/etc/environment"
+    regexp="^HADOOP_CONF=" 
+    line="HADOOP_CONF=/etc/hadoop/conf"
+  sudo: yes
+
+- include: "namenode.yml"
+  when: '"master" in group_names'
+
+- include: "datanode.yml"
+  when: '"workers" in group_names'

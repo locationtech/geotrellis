@@ -1,0 +1,11 @@
+---
+
+- name: Restart Spark Worker
+  service: name=spark-worker state=restarted
+  when: '"workers" in group_names'
+  sudo: yes
+
+- name: Restart Spark Master
+  service: name=spark-master state=restarted
+  when: '"master" in group_names'
+  sudo: yes

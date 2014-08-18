@@ -30,7 +30,14 @@ import geotrellis.raster.io.geotiff.reader.utils.ByteInverterUtils._
 
 import spire.syntax.cfor._
 
-case class ImageConverter(directory: ImageDirectory) {
+object ImageConverter {
+
+  def apply(directory: ImageDirectory, isBigEndian: Boolean) =
+    new ImageConverter(directory, isBigEndian)
+
+}
+
+class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
 
   def convert(uncompressedImage: Array[Array[Byte]]): Array[Byte] = {
     val stripedImage =
@@ -38,9 +45,12 @@ case class ImageConverter(directory: ImageDirectory) {
       else if (directory.bitsPerPixel == 1) stripBitImageOverflow(uncompressedImage)
       else uncompressedImage.flatten
 
-    if (directory.cellType == TypeFloat) flipToFloat(stripedImage)
-    else if (directory.cellType == TypeDouble) flipToDouble(stripedImage)
-    else stripedImage
+    if (directory.cellType == TypeFloat && !isBigEndian)
+      flipToFloat(stripedImage)
+    else if (directory.cellType == TypeDouble && !isBigEndian)
+      flipToDouble(stripedImage)
+    else
+      stripedImage
   }
 
   private def flipToFloat(image: Array[Byte]): Array[Byte] = flip(image, 4)
@@ -181,7 +191,7 @@ case class ImageConverter(directory: ImageDirectory) {
         current(j) = invertByte(current(j))
       }
 
-      cfor(0)(_ < rowsInSegment, _ + 1) { j => 
+      cfor(0)(_ < rowsInSegment, _ + 1) { j =>
         System.arraycopy(
           current,
           j * rowByteSize,

@@ -14,7 +14,7 @@ aws:
 #Ubuntu 12.04 LTS AMI
 region: us-east-1
 instance_type: m3.large
-image: ami-018c9568
+image: ami-bc5182d4
 
 #Spark/HDFS workers
 worker_count: 3

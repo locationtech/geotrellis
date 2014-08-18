@@ -5,11 +5,9 @@
   roles:
     - common
     - hadoop
-    - hadoop_namenode
     - spark
-    - spark_master
-  gather_facts: False
+
+  gather_facts: False 
 
   tasks:
     - include_vars: group_vars/cluster.yml
-  

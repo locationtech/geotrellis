@@ -1,0 +1,43 @@
+---
+
+- include_vars: group_vars/cluster.yml
+
+- include: zookeeper.yml
+
+- get_url: url={{accumulo_url}} dest=/tmp/{{accumulo_deb}} mode=0440
+
+- shell: dpkg -i /tmp/{{accumulo_deb}}  creates=/etc/accumulo
+  sudo: yes
+
+- name: Upload Accumulo init.d script
+  template: src=init.d/accumulo dest=/etc/init.d/accumulo
+  sudo: yes
+
+- name: Accumulo inti.d script is executable
+  file: path=/etc/init.d/accumulo mode=0755
+  sudo: yes
+
+- name: Upload Accumulo Config
+  template: src=conf/{{ item }} dest=/etc/accumulo/conf
+  with_items:
+    - accumulo-env.sh
+    - accumulo-metrics.xml
+    - accumulo-site.xml
+    - gc
+    - generic_logger.xml
+    - log4j.properties
+    - masters
+    - monitor
+    - monitor_logger.xml
+    - slaves
+    - tracers
+  sudo: yes
+  notify: Restart Accumulo
+
+- name: Initilize Accumulo
+  shell: sudo accumulo init --instance-name {{accumulo.instance}} --password {{accumulo.password}} creates=/accumulo/tables
+  sudo: yes
+  when: '"master" in group_names'
+
+- service: name=accumulo state=started enabled=yes
+  sudo: yes
