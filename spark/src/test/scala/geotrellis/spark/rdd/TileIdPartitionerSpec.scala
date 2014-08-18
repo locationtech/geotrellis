@@ -24,7 +24,7 @@ class TileIdPartitionerSpec extends FunSpec with TestEnvironment with Matchers w
 
   def getPartitioner(seq: Seq[Long]) = {
     val splitGenerator = new SplitGenerator {
-      def getSplits = seq
+      def splits = seq.toArray
     }
     val pyramid = outputLocal
     TileIdPartitioner(splitGenerator, pyramid, conf)
@@ -89,15 +89,6 @@ class TileIdPartitionerSpec extends FunSpec with TestEnvironment with Matchers w
     }
     it("should handle range of partition 2") {
       partitioner.range(2) should be(TileIdWritable(21), TileIdWritable(Long.MaxValue))
-    }
-  }
-
-  describe("splitGenerator") {
-    val expectedSplits = Seq(10L)
-    val partitioner = getPartitioner(expectedSplits)
-
-    it("should give back the correct splits") {
-      partitioner.splitGenerator.getSplits should be(expectedSplits)
     }
   }
 
