@@ -4,7 +4,8 @@
 - apt: name=hadoop-hdfs state=present force=yes
   sudo: yes
 
-- include_vars: group_vars/cluster.yml  
+- include_vars: group_vars/cluster.yml
+  when: '"development" not in group_names'
 
 - name: Upload Hadoop config
   template: src=conf/{{ item }} dest=/etc/hadoop/conf
@@ -14,25 +15,25 @@
     - hadoop-env.sh
     - log4j.properties
   sudo: yes
-  notify: 
+  notify:
     - Restart Hadoop Datanode
     - Restart Hadoop Namenode
 
-- lineinfile: 
+- lineinfile:
     dest="/etc/environment"
-    regexp="^HADOOP_PREFIX=" 
+    regexp="^HADOOP_PREFIX="
     line="HADOOP_PREFIX=/usr/lib/hadoop"
   sudo: yes
 
-- lineinfile: 
+- lineinfile:
     dest="/etc/environment"
-    regexp="^HADOOP_CONF_DIR=" 
+    regexp="^HADOOP_CONF_DIR="
     line="HADOOP_CONF_DIR=/etc/hadoop/conf"
   sudo: yes
 
-- lineinfile: 
+- lineinfile:
     dest="/etc/environment"
-    regexp="^HADOOP_CONF=" 
+    regexp="^HADOOP_CONF="
     line="HADOOP_CONF=/etc/hadoop/conf"
   sudo: yes
 
