@@ -3,12 +3,12 @@
 - name: Master
   hosts: master
   roles:
+    - common
+    - hadoop
+    - spark
     - accumulo
-    # - spark
-    # - spark_master
-    # - hadoop
-    # - hadoop_namenode
 
-  gather_facts: False
- 
- 
+  gather_facts: False 
+
+  tasks:
+    - include_vars: group_vars/cluster.yml

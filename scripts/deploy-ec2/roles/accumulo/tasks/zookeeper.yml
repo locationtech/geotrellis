@@ -1,0 +1,18 @@
+---
+
+- name: Install ZooKeeper Server 
+  apt: name=zookeeper-server state=present force=yes
+  sudo: yes
+
+- name: Init ZooKeeper
+  shell: /etc/init.d/zookeeper-server init creates=/var/lib/zookeeper
+  sudo: yes
+  notify:
+    Restart ZooKeeper
+ 
+- name: Register ZOOKEEPER_HOME
+  lineinfile: 
+    dest="/etc/environment"
+    regexp="^ZOOKEEPER_HOME=" 
+    line="ZOOKEEPER_HOME=/usr/lib/zookeeper"
+  sudo: yes

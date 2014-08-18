@@ -1,48 +1,25 @@
 ---
+
 - include_vars: group_vars/cluster.yml
- 
+
+- include: zookeeper.yml
+
 - get_url: url={{accumulo_url}} dest=/tmp/{{accumulo_deb}} mode=0440
 
 - shell: dpkg -i /tmp/{{accumulo_deb}}  creates=/etc/accumulo
   sudo: yes
 
-- name: Install ZooKeeper Server 
-  apt: name=zookeeper-server state=present force=yes
-  sudo: yes
-
-- shell: /etc/init.d/zookeeper-server init creates=/var/lib/zookeeper
-  sudo: yes
-  notify:
-    Restart ZooKeeper
-
 - name: Initilize Accumulo
   shell: sudo accumulo init --instance-name gis --password secret creates=/accumulo/tables
   sudo: yes
-  when: '"workers" not in group_names'
-
-- lineinfile: 
-    dest="/etc/environment"
-    regexp="^ZOOKEEPER_HOME=" 
-    line="ZOOKEEPER_HOME=/usr/lib/zookeeper"
-  sudo: yes
-
-- lineinfile: 
-    dest="/etc/environment"
-    regexp="^HADOOP_PREFIX=" 
-    line="HADOOP_PREFIX=/usr/lib/hadoop"
-  sudo: yes
-
-- lineinfile: 
-    dest="/etc/environment"
-    regexp="^HADOOP_CONF_DIR=" 
-    line="HADOOP_CONF_DIR=/etc/hadoop/conf"
-  sudo: yes
+  when: '"master" in group_names'
 
 - name: Upload Accumulo init.d script
   template: src=init.d/accumulo dest=/etc/init.d/accumulo
   sudo: yes
 
-- file: path=/etc/init.d/accumulo mode=0755
+- name: Accumulo inti.d script is executable
+  file: path=/etc/init.d/accumulo mode=0755
   sudo: yes
 
 - name: Upload Accumulo Config
@@ -61,3 +38,6 @@
     - tracers
   sudo: yes
   notify: Restart Accumulo
+
+- service: name=accumulo state=started
+  sudo: yes

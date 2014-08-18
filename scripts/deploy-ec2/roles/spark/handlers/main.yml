@@ -1,0 +1,9 @@
+---
+
+- name: Restart Spark Master
+  service: name=spark-worker state=restarted
+  sudo: yes
+
+- name: Restart Spark Worker
+  service: name=spark-master state=restarted
+  sudo: yes

@@ -1,0 +1,9 @@
+---
+
+- name: Restart Hadoop Datanode
+  service: name=hadoop-hdfs-datanode state=restarted
+  sudo: yes
+
+- name: Restart Hadoop Namenode
+  service: name=hadoop-hdfs-namenode state=restarted
+  sudo: yes

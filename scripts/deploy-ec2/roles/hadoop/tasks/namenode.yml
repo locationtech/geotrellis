@@ -7,7 +7,7 @@
 - file: path=/var/hadoop-hdfs/namenode owner=hdfs group=hadoop mode=0755 state=directory
   sudo: yes
 
-- name: Format the namenode
+- name: Format the Namenode
   shell: hdfs namenode -format creates=/var/hadoop-hdfs/namenode/current
   sudo_user: hdfs 
   sudo: yes

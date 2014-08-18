@@ -11,4 +11,12 @@
   template: src=spark-env.sh dest=/etc/spark/conf/spark-env.sh
   sudo: yes
   notify:
-    - Restart Spark
+    - Restart Spark Master
+    - Restart Spark Worker
+
+
+- include: "master.yml"
+  when: '"master" in group_names'
+
+- include: "worker.yml"
+  when: '"workers" in group_names'
