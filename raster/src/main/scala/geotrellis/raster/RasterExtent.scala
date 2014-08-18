@@ -35,7 +35,14 @@ object GridBounds {
     GridBounds(0, 0, r.cols-1, r.rows-1)
 }
 
-case class CellSize(width: Double, height: Double)
+case class CellSize(width: Double, height: Double) {
+  lazy val resolution: Double = math.sqrt(width*height)
+}
+
+object CellSize {
+  def apply(extent: Extent, cols: Int, rows: Int): CellSize =
+    CellSize(extent.width / cols, extent.height / rows)
+}
 
 /**
  * RasterExtent objects represent the geographic extent (envelope) of a raster.
@@ -68,10 +75,10 @@ case class CellSize(width: Double, height: Double)
  */
 case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, cols: Int, rows: Int) {
 
-  if (cellwidth  <= 0.0) throw GeoAttrsError("invalid cell-width")
-  if (cellheight <= 0.0) throw GeoAttrsError("invalid cell-height")
-  if (cols <= 0) throw GeoAttrsError("invalid cols")
-  if (rows <= 0) throw GeoAttrsError("invalid rows")
+  if (cellwidth  <= 0.0) throw GeoAttrsError(s"invalid cell-width: $cellwidth")
+  if (cellheight <= 0.0) throw GeoAttrsError(s"invalid cell-height: $cellheight")
+  if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
+  if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
 
   /**
    * The size of the extent, e.g. cols * rows.
@@ -227,14 +234,17 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
 
 object RasterExtent {
   def apply(extent: Extent, cols: Int, rows: Int): RasterExtent = {
-    val cw = (extent.xmax - extent.xmin) / cols
-    val ch = (extent.ymax - extent.ymin) / rows
+    val cw = extent.width / cols
+    val ch = extent.height / rows
     RasterExtent(extent, cw, ch, cols, rows)
   }
 
   def apply(extent: Extent, cellwidth: Double, cellheight: Double): RasterExtent = {
-    val rows = ((extent.ymax - extent.ymin) / cellheight).toInt
-    val cols = ((extent.xmax - extent.xmin) / cellwidth).toInt
+    val cols = (extent.width / cellwidth).toInt
+    val rows = (extent.height / cellheight).toInt
     RasterExtent(extent, cellwidth, cellheight, cols, rows)
   }
+
+  def apply(tile: Tile, extent: Extent): RasterExtent =
+    apply(extent, tile.cols, tile.rows)
 }

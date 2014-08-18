@@ -22,10 +22,12 @@ import javax.ws.rs.{GET, Path, DefaultValue, QueryParam}
 import javax.ws.rs.core.{Response, Context}
 
 // import core geotrellis types
-import geotrellis.raster._
 import geotrellis.vector._
+import geotrellis.raster._
 import geotrellis.raster.render._
 import geotrellis.engine._
+import geotrellis.engine.op.local._
+import geotrellis.engine.render._
 
 object response {
   def apply(mime:String)(data:Any) = Response.ok(data).`type`(mime).build()

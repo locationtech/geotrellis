@@ -25,12 +25,14 @@ import com.google.caliper.Param
 import scala.util.Random
 import scala.annotation.tailrec
 
+// This times tile loops, as well as provides grounds to test timing of various Array methods.
 object DataMap extends BenchmarkRunner(classOf[DataMap])
 class DataMap extends OperationBenchmark {
   //@Param(Array("64", "128", "256", "512", "1024", "2048", "4096"))
   @Param(Array("2048"))
   var size: Int = 0
 
+  var bytes: Array[Byte] = null
   var ints: Array[Int] = null
   var doubles: Array[Double] = null
   var tile: Tile = null
@@ -40,12 +42,13 @@ class DataMap extends OperationBenchmark {
 
   override def setUp() {
     val len = size * size
+    bytes = init(len)(Random.nextInt.toByte)
     ints = init(len)(Random.nextInt)
     doubles = init(len)(Random.nextDouble)
     tile = ArrayTile(init(len)(Random.nextInt), size, size)
 
     bitTile = new BitArrayTile(init((len + 7) / 8)(Random.nextInt.toByte), size, size)
-    byteTile = new ByteArrayTile(init(len)(Random.nextInt.toByte), size, size)
+    byteTile = new ByteArrayTile(bytes, size, size)
     shortTile = new ShortArrayTile(init(len)(Random.nextInt.toShort), size, size)
   }
 
@@ -172,6 +175,38 @@ class DataMap extends OperationBenchmark {
   def shortTileMap = shortTile.map(z => if (isData(z)) z * 2 else NODATA)
 }
 
+object ByteBufferBenchmarks extends BenchmarkRunner(classOf[ByteBufferBenchmarks])
+class ByteBufferBenchmarks extends OperationBenchmark {
+  import java.nio.ByteBuffer
+  import spire.syntax.cfor._
+
+  @Param(Array("2048", "4096"))
+  var size: Int = 0
+
+  var bytes: Array[Byte] = null
+
+  override def setUp() {
+    val len = size * size
+    bytes = init(len * 8)(Random.nextInt.toByte)
+  }
+
+  def timeDoubleByteBufferBulkCopy(reps: Int) = run(reps)(doubleByteBufferBulkCopy)
+  def doubleByteBufferBulkCopy = {
+    val doubles: Array[Double] = Array.ofDim[Double](size*size)
+    val buf = ByteBuffer.wrap(bytes).asDoubleBuffer
+    buf.get(doubles)
+  }
+
+  def timeDoubleByteBufferItemCopy(reps: Int) = run(reps)(doubleByteBufferItemCopy)
+  def doubleByteBufferItemCopy = {
+    val doubles: Array[Double] = Array.ofDim[Double](size*size)
+    val buf = ByteBuffer.wrap(bytes).asDoubleBuffer
+    cfor(0)(_ < size*size, _ + 1) { i =>
+      doubles(i) = buf.get(i)
+    }
+  }
+}
+
 /** Result: Array.fill is really slow and should not be used */
 object ArrayFill extends BenchmarkRunner(classOf[ArrayFill])
 class ArrayFill extends OperationBenchmark {
@@ -227,5 +262,4 @@ class ArrayFill extends OperationBenchmark {
   def fillerDoubles = {
     Array.ofDim[Double](size * size).fill(Double.NaN)
   }
-
 }

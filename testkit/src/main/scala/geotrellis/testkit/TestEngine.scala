@@ -20,6 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.io._
 import geotrellis.raster.op._
 import geotrellis.engine._
+import geotrellis.engine.io._
 import org.scalatest._
 
 object TestEngine {
@@ -37,7 +38,7 @@ trait TestEngine extends Suite with BeforeAndAfter with Matchers {
   def get[T](src: OpSource[T]): T = GeoTrellis.get(src)
 
   def getRaster(name: String): Op[Tile] = getRaster("test:fs", name)
-  def getRaster(ds: String, name: String): Op[Tile] = io.LoadRaster(ds, name)
+  def getRaster(ds: String, name: String): Op[Tile] = LoadRaster(ds, name)
 
   def assertEqual(r: Op[Tile], arr: Array[Int]): Unit =
     assertEqual(get(r), arr)

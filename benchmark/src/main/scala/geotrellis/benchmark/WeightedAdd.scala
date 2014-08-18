@@ -18,13 +18,11 @@ package geotrellis.benchmark
 
 import geotrellis.engine._
 import geotrellis.raster._
-import geotrellis.raster.op.local._
+import geotrellis.engine.op.local._
 import geotrellis.raster.stats._
 import geotrellis.raster.render._
 
 import com.google.caliper.Param
-
-import RasterSourceSeq._
 
 object WeightedAdd extends BenchmarkRunner(classOf[WeightedAdd])
 class WeightedAdd extends OperationBenchmark {

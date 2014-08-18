@@ -17,6 +17,7 @@
 package geotrellis.raster.io.arg
 
 import geotrellis.raster._
+import geotrellis.engine._
 import geotrellis.vector.Extent
 import geotrellis.testkit._
 

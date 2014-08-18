@@ -21,6 +21,8 @@ import GeomFactory._
 import com.vividsolutions.jts.{geom=>jts}
 
 object MultiLine {
+  lazy val EMPTY = MultiLine(Seq[Line]())
+
   def apply(ls: Line*): MultiLine = 
     MultiLine(ls)
 
@@ -31,22 +33,30 @@ object MultiLine {
 }
 
 case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry 
-                                                 with Relatable
-                                                 with OneDimension {
+                                                      with Relatable
+                                                      with OneDimension {
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
   def normalized(): MultiLine = { jtsGeom.normalize ; MultiLine(jtsGeom) }
 
-  /** Returns the Lines contained in MultiLine. */
+  /** Returns the Lines contained in this MultiLine. */
   lazy val lines: Array[Line] = {
     for (i <- 0 until jtsGeom.getNumGeometries) yield {
       Line(jtsGeom.getGeometryN(i).asInstanceOf[jts.LineString])
     }
   }.toArray
 
+  /** Tests if the initial vertex equals the final vertex for every Line in
+    * this MultiLine. */
   lazy val isClosed: Boolean =
     jtsGeom.isClosed
 
+  /**
+   * Returns the boundary of this MultiLine.
+   * The boundary of a non-closed MultiLine consists of all the end points of
+   * the non-closed lines that make up the MultiLine. The boundary of a closed
+   * MultiLine is empty.
+   */
   lazy val boundary: OneDimensionBoundaryResult =
     jtsGeom.getBoundary
 
@@ -61,141 +71,264 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   lazy val envelope: Extent =
     jtsGeom.getEnvelopeInternal
 
-  // -- Intersection
+// -- Intersection
 
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this MultiLine and p.
+   */
   def &(p: Point): PointGeometryIntersectionResult =
     intersection(p)
+
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this MultiLine and p.
+   */
   def intersection(p: Point): PointGeometryIntersectionResult =
-    p.intersection(this)
+    jtsGeom.intersection(p.jtsGeom)
 
-  def &(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
-    intersection(l)
-  def intersection(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
-    l.intersection(this)
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this MultiLine and g.
+   */
+  def &(g: AtLeastOneDimension): OneDimensionAtLeastOneDimensionIntersectionResult =
+    intersection(g)
 
-  def &(p: Polygon): OneDimensionAtLeastOneDimensionIntersectionResult =
-    intersection(p)
-  def intersection(p: Polygon): OneDimensionAtLeastOneDimensionIntersectionResult =
-    p.intersection(this)
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this MultiLine and g.
+   */
+  def intersection(g: AtLeastOneDimension): OneDimensionAtLeastOneDimensionIntersectionResult =
+    jtsGeom.intersection(g.jtsGeom)
 
-  def &(ps: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
-    intersection(ps)
-  def intersection(ps: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
-    ps.intersection(this)
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this MultiLine and mp.
+   */
+  def &(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
+    intersection(mp)
 
-  def &(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
-    intersection(ls)
-  def intersection(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
-    jtsGeom.intersection(ls.jtsGeom)
+  /**
+   * Computes a Result that represents a Geometry made up of the points shared
+   * by this MultiLine and mp.
+   */
+  def intersection(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
+    jtsGeom.intersection(mp.jtsGeom)
 
-  def &(ps: MultiPolygon): OneDimensionAtLeastOneDimensionIntersectionResult =
-    intersection(ps)
-  def intersection(ps: MultiPolygon): OneDimensionAtLeastOneDimensionIntersectionResult =
-    jtsGeom.intersection(ps.jtsGeom)
 
   // -- Union
 
+
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine and p.
+   */
   def |(p: Point): PointMultiLineUnionResult =
     union(p)
-  def union(p: Point): PointMultiLineUnionResult =
-    p.union(this)
 
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine and p.
+   */
+  def union(p: Point): PointMultiLineUnionResult =
+    jtsGeom.union(p.jtsGeom)
+
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine and l.
+   */
   def |(l: Line): LineOneDimensionUnionResult =
     union(l)
-  def union(l:Line): LineOneDimensionUnionResult =
-    l.union(this)
 
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine and l.
+   */
+  def union(l:Line): LineOneDimensionUnionResult =
+    jtsGeom.union(l.jtsGeom)
+
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine and p.
+   */
   def |(p: Polygon): AtMostOneDimensionPolygonUnionResult =
     union(p)
+
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine and p.
+   */
   def union(p: Polygon): AtMostOneDimensionPolygonUnionResult =
     jtsGeom.union(p.jtsGeom)
 
-  def |(ps: MultiPoint): PointMultiLineUnionResult =
-    union(ps)
-  def union(ps: MultiPoint): PointMultiLineUnionResult =
-    jtsGeom.union(ps.jtsGeom)
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine and mp.
+   */
+  def |(mp: MultiPoint): MultiPointMultiLineUnionResult =
+    union(mp)
 
-  def |(ls: MultiLine): LineOneDimensionUnionResult =
-    union(ls)
-  def union(ls: MultiLine): LineOneDimensionUnionResult =
-    jtsGeom.union(ls.jtsGeom)
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine and mp.
+   */
+  def union(mp: MultiPoint): MultiPointMultiLineUnionResult =
+    jtsGeom.union(mp.jtsGeom)
 
-  def |(ps: MultiPolygon): LineMultiPolygonUnionResult =
-    union(ps)
-  def union(ps: MultiPolygon): LineMultiPolygonUnionResult =
-    jtsGeom.union(ps.jtsGeom)
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine and ml.
+   */
+  def |(ml: MultiLine): MultiLineMultiLineUnionResult =
+    union(ml)
+
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine and ml.
+   */
+  def union(ml: MultiLine): MultiLineMultiLineUnionResult =
+    jtsGeom.union(ml.jtsGeom)
+
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine and mp.
+   */
+  def |(mp: MultiPolygon): MultiLineMultiPolygonUnionResult =
+    union(mp)
+
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine and mp.
+   */
+  def union(mp: MultiPolygon): MultiLineMultiPolygonUnionResult =
+    jtsGeom.union(mp.jtsGeom)
+
 
   // -- Difference
 
-  def -(p: Point): MultiLinePointDifferenceResult =
-    difference(p)
-  def difference(p: Point): MultiLinePointDifferenceResult =
-    jtsGeom.difference(p.jtsGeom)
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine that are not in g.
+   */
+  def -(g: Geometry): MultiLineGeometryDifferenceResult =
+    difference(g)
 
-  def -(l: Line): LineAtLeastOneDimensionDifferenceResult =
-    difference(l)
-  def difference(l: Line): LineAtLeastOneDimensionDifferenceResult =
-    jtsGeom.difference(l.jtsGeom)
-  
-  def -(p: Polygon): LineAtLeastOneDimensionDifferenceResult =
-    difference(p)
-  def difference(p: Polygon): LineAtLeastOneDimensionDifferenceResult =
-    jtsGeom.difference(p.jtsGeom)
-  
-  def -(ps: MultiPoint): MultiLinePointDifferenceResult =
-    difference(ps)
-  def difference(ps: MultiPoint): MultiLinePointDifferenceResult = 
-    jtsGeom.difference(ps.jtsGeom)
-  
-  def -(ls: MultiLine): LineAtLeastOneDimensionDifferenceResult =
-    difference(ls)
-  def difference(ls: MultiLine): LineAtLeastOneDimensionDifferenceResult =
-    jtsGeom.difference(ls.jtsGeom)
-  
-  def -(ps: MultiPolygon): LineAtLeastOneDimensionDifferenceResult =
-    difference(ps)
-  def difference(ps: MultiPolygon): LineAtLeastOneDimensionDifferenceResult =
-    jtsGeom.difference(ps.jtsGeom)
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine that are not in g.
+   */
+  def difference(g: Geometry): MultiLineGeometryDifferenceResult =
+    jtsGeom.difference(g.jtsGeom)
+
 
   // -- SymDifference
 
-  def symDifference(g: ZeroDimensions): PointMultiLineSymDifferenceResult =
-    jtsGeom.symDifference(g.jtsGeom)
 
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine that are not in p and the point p if it is not in this
+   * MultiLine.
+   */
+  def symDifference(p: Point): PointMultiLineSymDifferenceResult =
+    jtsGeom.symDifference(p.jtsGeom)
+
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine that are not in mp and all the points in mp that are not in
+   * this MultiLine.
+   */
+  def symDifference(mp: MultiPoint): MultiPointMultiLineSymDifferenceResult =
+    jtsGeom.symDifference(mp.jtsGeom)
+
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine that are not in g and all the points in g that are not in
+   * this MultiLine.
+   */
   def symDifference(g: OneDimension): OneDimensionOneDimensionSymDifferenceResult =
     jtsGeom.symDifference(g.jtsGeom)
 
-  def symDifference(p: Polygon): OneDimensionPolygonSymDifferenceResult =
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine that are not in p and all the points in p that are not in
+   * this MultiLine.
+   */
+  def symDifference(p: Polygon): AtMostOneDimensionPolygonSymDifferenceResult =
     jtsGeom.symDifference(p.jtsGeom)
 
-  def symDifference(ps: MultiPolygon): OneDimensionMultiPolygonSymDifferenceResult =
-    jtsGeom.symDifference(ps.jtsGeom)
+  /**
+   * Computes a Result that represents a Geometry made up of all the points in
+   * this MultiLine that are not in mp and all the points in mp that are not in
+   * this MultiLine.
+   */
+  def symDifference(mp: MultiPolygon): MultiLineMultiPolygonSymDifferenceResult =
+    jtsGeom.symDifference(mp.jtsGeom)
+
 
   // -- Predicates
 
+
+  /**
+   * Tests whether this MultiLine contains the specified AtMostOneDimension g.
+   * Returns true if the DE-9IM Intersection Matrix for the two geometries is
+   * T*****FF*.
+   */
   def contains(g: AtMostOneDimension): Boolean =
     jtsGeom.contains(g.jtsGeom)
 
+  /**
+   * Tests whether this MultiLine is covered by the specified AtLeastOneDimension g.
+   * Returns true if the DE-9IM Intersection Matrix for the two geometries is T*F**F*** or
+   * *TF**F*** or **FT*F*** or **F*TF***.
+   */
   def coveredBy(g: AtLeastOneDimension): Boolean =
     jtsGeom.coveredBy(g.jtsGeom)
 
+  /**
+   * Tests whether this MultiLine covers the specified AtMostOneDimension g.
+   * Returns true if the DE-9IM Intersection Matrix for the two geometries is
+   * T*****FF* or *T****FF* or ***T**FF* or ****T*FF*.
+   */
   def covers(g: AtMostOneDimension): Boolean =
     jtsGeom.covers(g.jtsGeom)
 
+  /**
+   * Tests whether this MultiLine crosses the specified MultiPoint mp.
+   * Returns true if the DE-9IM Intersection Matrix for the two geometries is
+   * T*****T** (L/P).
+   */
+  def crosses(mp: MultiPoint): Boolean =
+    jtsGeom.crosses(mp.jtsGeom)
+
+  /**
+   * Tests whether this MultiLine crosses the specified AtLeastOneDimension g.
+   * Returns true if the DE-9IM Intersection Matrix for the two geometries is
+   * 0******** (L/L) or T*****T** (L/P and L/A).
+   */
   def crosses(g: AtLeastOneDimension): Boolean =
     jtsGeom.crosses(g.jtsGeom)
 
-  /** A MultiLine crosses a MultiPoint when it covers
-      some points but does not cover others */
-  def crosses(ps: MultiPoint): Boolean =
-    jtsGeom.crosses(ps.jtsGeom)
-
+  /**
+   * Tests whether this MultiLine overlaps the specified OneDimension g.
+   * Returns true if The DE-9IM Intersection Matrix for the two geometries is
+   * 1*T***T**.
+   */
   def overlaps(g: OneDimension): Boolean =
     jtsGeom.overlaps(g.jtsGeom)
 
-  def touches(g: AtLeastOneDimension): Boolean =
+  /**
+   * Tests whether this MultiLine touches the specified Geometry g.
+   * Returns true if the DE-9IM Intersection Matrix for the two geometries is
+   * FT*******, F**T***** or F***T****.
+   */
+  def touches(g: Geometry): Boolean =
     jtsGeom.touches(g.jtsGeom)
 
+  /**
+   * Tests whether this MultiLine is within the specified AtLeastOneDimension g.
+   * Returns true if the DE-9IM Intersection Matrix for the two geometries is
+   * T*F**F***.
+   */
   def within(g: AtLeastOneDimension): Boolean =
     jtsGeom.within(g.jtsGeom)
 }

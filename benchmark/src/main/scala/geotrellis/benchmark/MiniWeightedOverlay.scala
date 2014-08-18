@@ -19,6 +19,7 @@ package geotrellis.benchmark
 import geotrellis.raster._
 import geotrellis.raster.op.local._
 import geotrellis.engine._
+import geotrellis.engine.op.local._
 
 import com.google.caliper.Param
 
@@ -84,10 +85,10 @@ class SmallIOBenchmark extends OperationBenchmark {
 
   override def setUp() {
     val name = layers(cellType)
-    baseRe = get(geotrellis.raster.io.LoadRasterExtent(name))
+    baseRe = get(geotrellis.engine.io.LoadRasterExtent(name))
     re = getRasterExtent(name, size, size)
 
-    op = geotrellis.raster.io.LoadRaster(name, re)
+    op = geotrellis.engine.io.LoadRaster(name, re)
     source = RasterSource(name, re)
   }
 
@@ -101,5 +102,5 @@ class SmallIOBenchmark extends OperationBenchmark {
   def reader = geotrellis.raster.io.arg.ArgReader.read(path, TypeFloat, baseRe, re)
 
   def timeLoadTwoRaster(reps: Int) = run(reps)(loadTwoRaster)
-  def loadTwoRaster = get(geotrellis.raster.io.LoadRaster(layers(cellType)))
+  def loadTwoRaster = get(geotrellis.engine.io.LoadRaster(layers(cellType)))
 }

@@ -96,14 +96,14 @@ class MultiPointSpec extends FunSpec with Matchers {
     // -- Union
 
     it ("should union with a MultiPoint and return a NoResult") {
-      val mp1 = MultiPoint(Seq())
-      val mp2 = MultiPoint(Seq())
+      val mp1 = MultiPoint.EMPTY
+      val mp2 = MultiPoint.EMPTY
       mp1 | mp2 should be (NoResult)
     }
 
     it ("should union with an empty MultiPoint and return a MultiPointResult") {
       val mp1 = MultiPoint(Point(1,1))
-      val mp2 = MultiPoint(Seq())
+      val mp2 = MultiPoint.EMPTY
       mp1 | mp2 should be (MultiPointResult(Seq(Point(1,1))))
     }
 
@@ -120,7 +120,7 @@ class MultiPointSpec extends FunSpec with Matchers {
     }
 
     it ("should union with a MultiLine and return a NoResult") {
-      val mp = MultiPoint(Seq())
+      val mp = MultiPoint.EMPTY
       val ml = MultiLine(Seq())
       mp | ml should be (NoResult)
     }
@@ -156,7 +156,7 @@ class MultiPointSpec extends FunSpec with Matchers {
     }
 
     it ("should union with a MultiPolygon and return a NoResult") {
-      val mpt = MultiPoint(Seq())
+      val mpt = MultiPoint.EMPTY
       val mp = MultiPolygon(Seq())
       mpt | mp should be (NoResult)
     }
@@ -219,8 +219,8 @@ class MultiPointSpec extends FunSpec with Matchers {
     // -- SymDifference
 
     it ("should symDifference with a MultiPoint and return a NoResult") {
-      val mp1 = MultiPoint(Seq())
-      val mp2 = MultiPoint(Seq())
+      val mp1 = MultiPoint.EMPTY
+      val mp2 = MultiPoint.EMPTY
       mp1.symDifference(mp2) should be (NoResult)
     }
 
@@ -237,7 +237,7 @@ class MultiPointSpec extends FunSpec with Matchers {
     }
 
     it ("should symDifference with a MultiLine and return a NoResult") {
-      val mp = MultiPoint(Seq())
+      val mp = MultiPoint.EMPTY
       val ml = MultiLine(Seq())
       mp.symDifference(ml) should be (NoResult)
     }
@@ -285,7 +285,7 @@ class MultiPointSpec extends FunSpec with Matchers {
     }
 
     it ("should symDifference with a MultiPolygon and return a NoResult") {
-      val mpt = MultiPoint(Seq())
+      val mpt = MultiPoint.EMPTY
       val mp = MultiPolygon(Seq())
       mpt.symDifference(mp) should be (NoResult)
     }
@@ -368,6 +368,19 @@ class MultiPointSpec extends FunSpec with Matchers {
       val mp1 = MultiPoint(Point(1,1), Point(2,2), Point(3,3))
       val mp2 = MultiPoint(Point(1,1), Point(3,3))
       mp1.covers(mp2) should be (true)
+    }
+
+    it ("should cross a Line") {
+      val mp = MultiPoint(Seq(Point(5,5), Point(0,0)))
+      val l = Line(Point(3,3), Point(6,6))
+      mp.crosses(l) should be (true)
+    }
+
+    it ("should cross a MultiPolygon") {
+      val mp = MultiPoint(Seq(Point(5,5), Point(0,0)))
+      val mpoly = 
+        MultiPolygon(Seq(Polygon(Line(Point(3,3), Point(3,6), Point(6,6), Point(6,3), Point(3,3)))))
+      mp.crosses(mpoly) should be (true)
     }
 
     it ("should overlap a MultiPoint") {

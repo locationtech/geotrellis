@@ -21,18 +21,23 @@ import GeomFactory._
 import com.vividsolutions.jts.{geom => jts}
 
 object MultiPoint {
+  lazy val EMPTY = MultiPoint(Seq[Point]())
+
   def apply(ps: Point*): MultiPoint = 
     apply(ps)
 
   def apply(ps: Traversable[Point]): MultiPoint =
     MultiPoint(factory.createMultiPoint(ps.map(_.jtsGeom).toArray))
 
+  def apply(ps: Traversable[(Double, Double)])(implicit d: DummyImplicit): MultiPoint =
+    MultiPoint(factory.createMultiPoint(ps.map { p => new jts.Coordinate(p._1, p._2) }.toArray))
+
   implicit def jts2MultiPoint(jtsGeom: jts.MultiPoint): MultiPoint = apply(jtsGeom)
 }
 
 case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry 
-                                             with Relatable
-                                             with ZeroDimensions {
+                                                  with Relatable
+                                                  with ZeroDimensions {
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
   def normalized(): MultiPoint = { jtsGeom.normalize ; MultiPoint(jtsGeom) }
@@ -225,7 +230,7 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
    * this MultiPoint that are not in p and all the points in p that are not in
    * this MultiPoint.
    */
-  def symDifference(p: Polygon): ZeroDimensionsPolygonSymDifferenceResult =
+  def symDifference(p: Polygon): AtMostOneDimensionPolygonSymDifferenceResult =
     jtsGeom.symDifference(p.jtsGeom)
 
   /**
@@ -290,6 +295,14 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
    */
   def covers(g: ZeroDimensions): Boolean =
     jtsGeom.covers(g.jtsGeom)
+
+  /**
+    * Tests whether this MultiPoint crosses the specified AtLeastOneDimension g.
+    * Returns true if the DE-9IM Intersection Matrix for the two geometries is
+    * T*T****** (P/L and P/A).
+    */
+  def crosses(g: AtLeastOneDimension): Boolean =
+    jtsGeom.crosses(g.jtsGeom)
 
   /**
    * Tests whether this MultiPoint overlaps the specified MultiPoint mp.

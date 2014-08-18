@@ -21,7 +21,7 @@
             to_port: 22
             cidr_ip: "0.0.0.0/0"
           - proto: all
-            cidr_ip: "216.158.51.82/31"
+            cidr_ip: "{{ allow_vpn_from_subnet }}"
         rules_egress:
           - proto: all
             cidr_ip: "0.0.0.0/0"
@@ -45,20 +45,20 @@
           - proto: all
             cidr_ip: "0.0.0.0/0"
   
-
     - name: Launch master
       local_action: 
         module: ec2 
-        image:          "{{ image }}"         
-        instance_type:  "{{ instance_type }}" 
-        key_name:       "{{ ec2_key_name }}" 
-        group:          "{{ cluster_name }}-master"                 
+        image:          "{{ image }}" 
+        instance_type:  "{{ instance_type }}"
+        key_name:       "{{ ec2_key_name }}"
+        group:          "{{ cluster_name }}-master"
+        region:         "{{ region }}"
         instance_tags:  
           spark-role: "master"
         count_tag:
           spark-role: "master"
         exact_count:    1
-        wait:           true 
+        wait:           true
       register: master
 
     - name: Add master instance to host group
@@ -80,6 +80,7 @@
         instance_type:  "{{ instance_type }}" 
         key_name:       "{{ ec2_key_name }}" 
         group:          "{{ cluster_name }}-slaves"
+        region:         "{{ region }}"
         instance_tags:  
           spark-role: "worker"
         count_tag:      
