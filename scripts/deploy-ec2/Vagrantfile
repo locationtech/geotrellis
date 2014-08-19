@@ -6,7 +6,6 @@ def local_ip
 end
 
 VAGRANTFILE_API_VERSION = "2"
-SPARK_WORKERS = 2
 SPARK_WORKER_DISKS = 2
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
@@ -22,7 +21,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
   cluster.vm.define "spark-master" do |machine|
     machine.vm.hostname = "spark-master"
     machine.vm.synced_folder "../../", "/home/vagrant/geotrellis"
-    # machine.vm.network "forwarded_port", guest: 8080, host: 8080
+    machine.vm.network "private_network", ip: "33.33.33.10"
 
     machine.vm.provider "virtualbox" do |v|
       v.memory = 1024
@@ -38,28 +37,55 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
     end
   end
 
-  (1..SPARK_WORKERS).each do |worker_index|
-    cluster.vm.define "spark-worker-0#{worker_index}" do |machine|
-      machine.vm.hostname = "spark-worker-0#{worker_index}"
+  cluster.vm.define "spark-worker-01" do |machine|
+    machine.vm.hostname = "spark-worker-01"
+    machine.vm.network "private_network", ip: "33.33.33.11"
 
-      machine.vm.provider "virtualbox" do |v|
-        v.memory = 1024
-        v.cpus = 2
+    machine.vm.provider "virtualbox" do |v|
+      v.memory = 1024
+      v.cpus = 2
 
-        (1..SPARK_WORKER_DISKS).each do |disk_index|
-          v.customize ["createhd", "--filename", ".vagrant/spark-worker-disk-0#{disk_index}.vdi", "--size", 10000]
-          v.customize ["storageattach", :id, "--storagectl", "SATAController", "--port", 3 + disk_index,
-            "--device", 0, "--type", "hdd", "--medium", ".vagrant/spark-worker-disk-0#{disk_index}.vdi"]
-        end
+      (1..SPARK_WORKER_DISKS).each do |disk_index|
+        v.customize ["createhd", "--filename", ".vagrant/spark-worker-01-disk-0#{disk_index}.vdi", "--size", 10000]
+        v.customize ["storageattach", :id, "--storagectl", "SATAController", "--port", 3 + disk_index,
+          "--device", 0, "--type", "hdd", "--medium", ".vagrant/spark-worker-01-disk-0#{disk_index}.vdi"]
       end
+    end
 
-      machine.vm.provision "ansible" do |ansible|
-        ansible.playbook = "./setup-workers.yml"
-        ansible.groups = {
-          "workers" => (1..SPARK_WORKER_DISKS).map { |i| "spark-worker-0#{i}" },
-          "development:children" => [ "workers" ]
-        }
+    machine.vm.provision "ansible" do |ansible|
+      ansible.playbook = "./setup-workers.yml"
+      ansible.groups = {
+        "master" => [ "spark-master" ],
+        "workers" => [ "spark-worker-01", "spark-worker-02" ],
+        "development:children" => [ "master", "workers" ]
+      }
+      ansible.limit = [ "master", "spark-worker-01"]
+    end
+  end
+
+  cluster.vm.define "spark-worker-02" do |machine|
+    machine.vm.hostname = "spark-worker-02"
+    machine.vm.network "private_network", ip: "33.33.33.12"
+
+    machine.vm.provider "virtualbox" do |v|
+      v.memory = 1024
+      v.cpus = 2
+
+      (1..SPARK_WORKER_DISKS).each do |disk_index|
+        v.customize ["createhd", "--filename", ".vagrant/spark-worker-02-disk-0#{disk_index}.vdi", "--size", 10000]
+        v.customize ["storageattach", :id, "--storagectl", "SATAController", "--port", 3 + disk_index,
+          "--device", 0, "--type", "hdd", "--medium", ".vagrant/spark-worker-02-disk-0#{disk_index}.vdi"]
       end
+    end
+
+    machine.vm.provision "ansible" do |ansible|
+      ansible.playbook = "./setup-workers.yml"
+      ansible.groups = {
+        "master" => [ "spark-master" ],
+        "workers" => [ "spark-worker-01", "spark-worker-02" ],
+        "development:children" => [ "master", "workers" ]
+      }
+      ansible.limit = [ "master", "spark-worker-02"]
     end
   end
 end
