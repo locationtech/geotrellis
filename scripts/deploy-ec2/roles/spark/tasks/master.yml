@@ -10,6 +10,7 @@
 
 - git: repo=https://github.com/geotrellis/geotrellis
        dest=/home/{{ ansible_ssh_user }}/geotrellis
+  when: '"development" not in group_names'
 
 #this is nice for development, where you might be building on master
 - template: src=push-spark-assembly.sh dest=~/push-spark-assembly.sh
