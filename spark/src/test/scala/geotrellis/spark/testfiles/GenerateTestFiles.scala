@@ -39,7 +39,7 @@ object GenerateTestFiles {
     val (tileCols, tileRows) =  (zoomLevel.tileCols, zoomLevel.tileRows)
     val tileSize = tileCols * tileRows
 
-    val tileExtent = zoomLevel.tileExtentForExtent(extent)
+    val tileExtent = zoomLevel.tileExtent(extent)
     println(s"    $tileExtent")
 
     val testFiles = List(
@@ -57,7 +57,7 @@ object GenerateTestFiles {
     for((v, name) <- testFiles) {
       println(s"Creating test RasterRDD $name with value $v")
       val tmsTiles =
-        tileExtent.map(zoomLevel) { tileId =>
+        tileExtent.tileIds.map { tileId =>
           val arr = Array.ofDim[Float](tileSize).fill(v)
           TmsTile(tileId, ArrayTile(arr, tileCols, tileRows))
         }
@@ -73,6 +73,8 @@ object GenerateTestFiles {
           RasterSplitGenerator(tileExtent, zoomLevel, tileSizeBytes, blockSizeBytes)
         TileIdPartitioner(splitGenerator.splits)
       }
+
+      tmsTiles.foreach { tile => println(tile.id) }
 
       val rdd =
         sc.parallelize(tmsTiles)

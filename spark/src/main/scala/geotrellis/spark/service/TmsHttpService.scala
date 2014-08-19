@@ -35,8 +35,8 @@ trait TmsHttpService extends HttpService {
   def rootRoute =
     pathPrefix("tms" / Segment / IntNumber / IntNumber / IntNumber ) { (layer, zoom, x , y) =>
       val pyramidPath = new Path(s"${args.root}/$layer")
-      val extent = TileExtent(x,y,x,y) //this is a one tile extent
       val zoomLevel = TilingScheme.GEODETIC.zoomLevel(zoom)
+      val extent = zoomLevel.tileExtent(x,y,x,y) //this is a one tile extent
       val rdd = sc.accumuloRDD("tiles2", TmsLayer(layer, zoomLevel), Some(extent))
 
       respondWithMediaType(MediaTypes.`image/png`) { complete {

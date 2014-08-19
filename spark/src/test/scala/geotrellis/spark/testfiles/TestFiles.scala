@@ -26,10 +26,8 @@ class TestFiles(val path: Path, conf: Configuration) {
   val metaData @ LayerMetaData(cellType, extent, zoomLevel) = 
     HadoopUtils.readLayerMetaData(path, conf)
 
-  def tileCount =
-    zoomLevel
-      .tileExtentForExtent(extent)
-      .count(zoomLevel)
+  def tileCount = 
+    zoomLevel.tileExtent(extent).tileIds.size
 }
 
 object AllOnes {

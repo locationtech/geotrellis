@@ -88,7 +88,7 @@ object Export extends ArgMain[ExportArgs] with Logging {
     val (rasterPath, output, metaData, hadoopConf) = extractFromArgs(args)
     val LayerMetaData(cellType, extent, zoomLevel) = metaData
     // get extents and layout
-    val tileExtent = zoomLevel.tileExtentForExtent(extent)
+    val tileExtent = zoomLevel.tileExtent(extent)
     val res = TmsTiling.resolution(zoomLevel.level, zoomLevel.tileRows)
     val layout = 
       TileLayout(tileExtent.width.toInt, tileExtent.height.toInt, zoomLevel.tileCols, zoomLevel.tileRows)

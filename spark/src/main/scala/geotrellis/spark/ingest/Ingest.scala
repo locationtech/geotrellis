@@ -60,18 +60,18 @@ class Ingest(sc: SparkContext) {
       sourceTiles
         .flatMap { case (extent, tile) =>
           val zoomLevel = bcMetaData.value.zoomLevel
-          zoomLevel.tileIdsForExtent(extent).map { case tileId  => (tileId, (tileId, extent, tile)) }
+          zoomLevel.tileExtent(extent).tileIds.map { case tileId  => (tileId, (tileId, extent, tile)) }
          }
         .combineByKey( 
           { case (tileId, extent, tile) =>
             val LayerMetaData(cellType, _, zoomLevel) = bcMetaData.value
             val tmsTile = ArrayTile.empty(cellType, zoomLevel.pixelCols, zoomLevel.pixelRows)
-            tmsTile.merge(zoomLevel.extentForTile(tileId), extent, tile)
+            tmsTile.merge(zoomLevel.extent(tileId), extent, tile)
           },
           { (tmsTile: MutableArrayTile, tup: (Long, Extent, Tile)) =>
             val zoomLevel = bcMetaData.value.zoomLevel
             val (tileId, extent, tile) = tup
-            tmsTile.merge(zoomLevel.extentForTile(tileId), extent, tile)
+            tmsTile.merge(zoomLevel.extent(tileId), extent, tile)
           },
           { (tmsTile1: MutableArrayTile , tmsTile2: MutableArrayTile) =>
             tmsTile1.merge(tmsTile2)
@@ -86,8 +86,6 @@ class Ingest(sc: SparkContext) {
     setMetaData |>
     mosaic |>
     sink
-
-  //   apply(source, { (rdd, meta) => ObservableCollection((rdd, meta)) }, sink)
 
   // def apply(source: =>RDD[(Extent, Tile)], pyramid: (Sink) => (RDD[TmsTile], LayerMetaData) => Unit, sink:  Sink): Unit =
   //   source |>

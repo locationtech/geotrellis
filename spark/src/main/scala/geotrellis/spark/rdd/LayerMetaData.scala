@@ -5,6 +5,8 @@ import geotrellis.vector.Extent
 import geotrellis.spark.tiling._
 
 case class LayerMetaData(cellType: CellType, extent: Extent, zoomLevel: ZoomLevel) {
+  lazy val tileExtent = zoomLevel.tileExtent(extent)
+
   override
   def hashCode = 
     (cellType, extent, zoomLevel.level).hashCode

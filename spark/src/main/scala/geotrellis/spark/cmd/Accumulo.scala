@@ -41,7 +41,7 @@ object Accumulo extends ArgMain[AccumuloArgs] with Serializable {
       sc.accumuloRDD(
         "tiles2", 
         TmsLayer("nlcd-2012", zoomLevel),
-        Some(TileExtent(669,1529, 670, 1530))
+        Some(zoomLevel.tileExtent(669,1529, 670, 1530))
       )
     println(rdd.map(_._1).foreach(println))
     sc.stop()

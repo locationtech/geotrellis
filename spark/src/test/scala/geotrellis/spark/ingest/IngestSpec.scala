@@ -103,14 +103,12 @@ trait RasterVerifyMethods extends ShouldMatchers { self: TestEnvironment =>
 
   def verifyTiles(raster: Path, meta: LayerMetaData): Unit = {
     val zoomLevel = meta.zoomLevel
+    val expectedTileIds = zoomLevel.tileExtent(meta.extent).tileIds
+
     val reader = RasterReader(raster, conf)
     val actualTileIds = reader.map { case (tw, aw) => tw.get }.toList
-    val tileExtent = zoomLevel.tileExtentForExtent(meta.extent)
-    val expectedTileIds = for {
-      ty <- tileExtent.ymin to tileExtent.ymax
-      tx <- tileExtent.xmin to tileExtent.xmax
-    } yield zoomLevel.tileId(tx, ty)
     reader.close()
+
     actualTileIds should be(expectedTileIds)
   }
 

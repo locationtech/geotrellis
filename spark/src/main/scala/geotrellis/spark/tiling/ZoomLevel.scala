@@ -3,7 +3,10 @@ package geotrellis.spark.tiling
 import geotrellis.spark._
 import geotrellis.vector.Extent
 
-trait ZoomLevel extends Serializable {
+// Consists of a isomorphism TileCoord -> TileId
+// and an isomporphism TileId -> (Double, Double)
+// Should these be broken out, possibly for variance in index schemes (e.g. z-ordering)?
+trait ZoomLevel extends TileIdTransform with Serializable {
   val level: Int
   val extent: Extent
 
@@ -12,48 +15,41 @@ trait ZoomLevel extends Serializable {
   val tileCols: Int
   val tileRows: Int
 
+  lazy val tileWidth: Double = extent.width / tileCols
+  lazy val tileHeight: Double = extent.height / tileRows
+
   lazy val totalCols: Long = pixelCols.toLong * tileCols
   lazy val totalRows: Long = pixelRows.toLong * tileRows
 
-  def tileId(tx: Int, ty: Int): TileId
-  def tileXY(tileId: TileId): (Int, Int)
-
   def mapToTile(x: Double, y: Double): TileCoord = {
-    val tx =
+    val tcol =
       ((x - extent.xmin) / extent.width) * tileCols
 
-    val ty =
+    val trow =
       ((extent.ymax - y) / extent.height) * tileRows
 
-    new TileCoord(tx.toInt, ty.toInt)
+    new TileCoord(tcol.toInt, trow.toInt)
   }
 
-  def extentToTile(extent: Extent, tileSize: Int): TileExtent = {
-    val ll = mapToTile(extent.xmin, extent.ymin)
-    val ur = mapToTile(extent.xmax, extent.ymax)
-    new TileExtent(ll.tx, ll.ty, ur.tx, ur.ty)
+  def tileExtent(xmin: Int, ymin: Int, xmax: Int, ymax: Int): TileExtent =
+    TileExtent(xmin, ymin, xmax, ymax)(this)
+
+  def tileExtent(extent: Extent): TileExtent = { 
+    val (llx, lly) = mapToTile(extent.xmin, extent.ymin)
+    val (urx, ury) = mapToTile(extent.xmax, extent.ymax)
+    tileExtent(llx, ury, urx, lly)
   }
 
-  def tileExtentForExtent(extent: Extent): TileExtent = { 
-    val ll = mapToTile(extent.xmin, extent.ymin)
-    val ur = mapToTile(extent.xmax, extent.ymax)
-    new TileExtent(ll.tx, ur.ty, ur.tx, ll.ty)
-  }
+  def extent(tcol: Long, trow: Long): Extent =
+    Extent(
+      extent.xmin + tcol * tileWidth,
+      extent.ymax - (trow + 1) * tileHeight,
+      extent.xmin + (tcol + 1) * tileWidth,
+      extent.ymax - trow * tileHeight
+    )
 
-  def tileIdsForExtent(extent: Extent): Seq[Long] = {
-    val tileExtent = tileExtentForExtent(extent)
-
-    val tileInfos =
-      for { tcol <- tileExtent.xmin to tileExtent.xmax;
-        trow <- tileExtent.ymin to tileExtent.ymax } yield {
-        tileId(tcol, trow)
-      }
-
-    tileInfos.toSeq
-  }
-
-  def extentForTile(tileId: Long): Extent = {
-    val (tx, ty) = tileXY(tileId)
-    TmsTiling.tileToExtent(tx, ty, level, TmsTiling.DefaultTileSize)
+  def extent(tileId: TileId): Extent = {
+    val (tcol,trow) = tileCoord(tileId)
+    extent(tcol, trow)
   }
 }

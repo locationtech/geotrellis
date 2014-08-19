@@ -77,7 +77,7 @@ object HadoopIngestCommand extends ArgMain[IngestArgs] with Logging {
         val LayerMetaData(cellType, extent, zoomLevel) = metaData
 
         val partitioner = {
-          val tileExtent = zoomLevel.tileExtentForExtent(extent)
+          val tileExtent = zoomLevel.tileExtent(extent)
           val tileSizeBytes = zoomLevel.tileCols * zoomLevel.tileRows * cellType.bytes
           val blockSizeBytes = HdfsUtils.defaultBlockSize(inPath, conf)
           val splitGenerator =

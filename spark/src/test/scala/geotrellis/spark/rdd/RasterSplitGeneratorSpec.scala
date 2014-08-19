@@ -26,12 +26,12 @@ class RasterSplitGeneratorSpec extends FunSpec with Matchers {
       val zoomLevel = TilingScheme.GEODETIC.zoomLevel(1)
 
       // tilesPerBlock == tileCount
-      RasterSplitGenerator.computeIncrement(TileExtent(0, 0, 1, 1), 1, 4) should be((-1, -1))
-      RasterSplitGenerator(TileExtent(0, 0, 1, 1), zoomLevel, 1, 4).splits should be(Seq.empty)
+      RasterSplitGenerator.computeIncrement(zoomLevel.tileExtent(0, 0, 1, 1), 1, 4) should be((-1, -1))
+      RasterSplitGenerator(zoomLevel.tileExtent(0, 0, 1, 1), zoomLevel, 1, 4).splits should be(Seq.empty)
 
       // tilesPerBlock > tileCount
-      RasterSplitGenerator.computeIncrement(TileExtent(0, 0, 1, 1), 1, 5) should be((-1, -1))
-      RasterSplitGenerator(TileExtent(0, 0, 1, 1), zoomLevel, 1, 5).splits should be(Seq.empty)
+      RasterSplitGenerator.computeIncrement(zoomLevel.tileExtent(0, 0, 1, 1), 1, 5) should be((-1, -1))
+      RasterSplitGenerator(zoomLevel.tileExtent(0, 0, 1, 1), zoomLevel, 1, 5).splits should be(Seq.empty)
     }
 
     it("should yield an increment of 2 tiles per split if tileExtent.width > tilesPerBlock") {
@@ -48,15 +48,16 @@ class RasterSplitGeneratorSpec extends FunSpec with Matchers {
        * Note that the compressionFactor isn't playing a role here because of rounding to Int
        */
 
-      RasterSplitGenerator.computeIncrement(TileExtent(0, 0, 4, 4), 1, 2) should be((2, 1))
+      RasterSplitGenerator.computeIncrement(zoomLevel.tileExtent(0, 0, 4, 4), 1, 2) should be((2, 1))
 
       val splits = 
-        RasterSplitGenerator(TileExtent(0, 0, 4, 4), zoomLevel, 1, 2).splits 
+        RasterSplitGenerator(zoomLevel.tileExtent(0, 0, 4, 4), zoomLevel, 1, 2).splits 
       splits should be(Seq(1,3,4,9,11,12,17,19,20,25,27,28,33,35))
     }
 
     it("should yield an increment of > 1 (row per split) if tileCount > tilesPerBlock >= tileExtent.width") {
-      RasterSplitGenerator.computeIncrement(TileExtent(0, 0, 2, 2), 1, 6) should be((-1, 2))
+      val zoomLevel = TilingScheme.GEODETIC.zoomLevel(1)
+      RasterSplitGenerator.computeIncrement(zoomLevel.tileExtent(0, 0, 2, 2), 1, 6) should be((-1, 2))
     }
   }
 }

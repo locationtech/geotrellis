@@ -23,10 +23,14 @@ import geotrellis.spark.testfiles.AllOnes
 import org.scalatest._
 
 class RasterReaderSpec extends FunSpec with TestEnvironment with Matchers {
+  def tileSpans =
+    AllOnes(inputHome, conf).metaData.tileExtent.rowSpans
 
-  private def read(start: Long, end: Long): Int = {
-    val allOnes = AllOnes(inputHome, conf).path
-    val reader = RasterReader(allOnes, conf, start, end)
+  def tileIds = AllOnes(inputHome, conf).metaData.tileExtent.tileIds
+
+  def read(start: Long, end: Long): Int = {
+    val allOnes = AllOnes(inputHome, conf)
+    val reader = RasterReader(allOnes.path, conf, start, end)
     val numEntries = reader.count(_ => true)
     reader.close()
     numEntries
@@ -34,19 +38,22 @@ class RasterReaderSpec extends FunSpec with TestEnvironment with Matchers {
 
   describe("RasterReader") {
     it("should retrieve all entries") {
-      read(208787, 211861) should be(12)
+      read(tileIds.min, tileIds.max) should be(12)
     }
     it("should retrieve all entries when no range is specified") {
       read(Long.MinValue, Long.MaxValue) should be(12)
     }
     it("should handle a non-existent start and end") {
-      read(0, 209810) should be(3)
+      val tileId = tileSpans.head.max
+      read(0, tileId) should be(3)
     }
     it("should be able to skip a partition") {
-      read(210838, Long.MaxValue) should be(3)
+      val tileId = tileSpans.last.min
+      read(tileId, Long.MaxValue) should be(3)
     }
     it("should be handle start=end") {
-      read(209811, 209811) should be(1)
+      val tileId = tileIds(10)
+      read(tileId, tileId) should be(1)
     }
   }
 }

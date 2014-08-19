@@ -35,7 +35,7 @@ class TmsTilingAccumuloFormat extends AccumuloFormat[Long, TmsLayer] {
     extent match {
       case None     => new ARange() :: Nil
       case Some(te) => 
-        te.rowRanges(layer.zoomLevel).map{ ts => 
+        te.rowSpans.map{ ts => 
           new ARange(rowId(ts.min, layer), rowId(ts.max, layer))
         }
     }
