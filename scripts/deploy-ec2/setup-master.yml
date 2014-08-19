@@ -2,6 +2,9 @@
 
 - name: Master
   hosts: master
+  vars:
+    hadoop_namenode: "{{ hostvars['spark-master']['ansible_eth1']['ipv4']['address'] }}"
+    spark_master: "{{ hostvars['spark-master']['ansible_eth1']['ipv4']['address'] }}"
   roles:
     - common
     - hadoop
