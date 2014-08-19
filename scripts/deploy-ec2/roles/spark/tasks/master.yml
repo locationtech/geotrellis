@@ -13,7 +13,10 @@
 
 #this is nice for development, where you might be building on master
 - template: src=push-spark-assembly.sh dest=~/push-spark-assembly.sh
+  when: '"development" not in group_names'
+
 - file: path=~/push-spark-assembly.sh mode=755
+  when: '"development" not in group_names'
 
 - service: name=spark-master state=started enabled=yes
   sudo: yes

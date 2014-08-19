@@ -12,6 +12,7 @@
     device_name: "{{ item.device }}"
     volume_size: "{{ item.size }}"
   with_items: hdfs.volumes
+  when: '"development" not in group_names'
 
 - name: Format Hadoop data partitions as ext3
   filesystem: fstype="ext3" dev="{{ item.device }}"
