@@ -96,6 +96,24 @@ trait GeometryFormats {
     )
   }
 
+  implicit object ExtentFormat extends RootJsonFormat[Extent] {
+    def write(extent: Extent) = 
+      JsObject(
+        "xmin" -> JsNumber(extent.xmin),
+        "ymin" -> JsNumber(extent.ymin),
+        "xmax" -> JsNumber(extent.xmax),
+        "ymax" -> JsNumber(extent.ymax)
+      )
+
+    def read(value: JsValue): Extent =
+      value.asJsObject.getFields("xmin", "ymin", "xmax", "ymax") match {
+        case Seq(JsNumber(xmin), JsNumber(ymin), JsNumber(xmax), JsNumber(ymax)) =>
+          Extent(xmin.toDouble, ymin.toDouble, xmax.toDouble, ymax.toDouble)
+        case _ =>
+          throw new DeserializationException("Extent [xmin,ymin,xmax,ymax] expected")
+      }
+  }
+
   implicit object MultiPointFormat extends RootJsonFormat[MultiPoint] {
     override def read(json: JsValue): MultiPoint = json.asJsObject.getFields("type", "coordinates") match {
       case Seq(JsString("MultiPoint"), pointArray: JsArray) =>

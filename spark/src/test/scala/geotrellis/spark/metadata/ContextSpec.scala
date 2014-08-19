@@ -16,42 +16,42 @@
 
 package geotrellis.spark.metadata
 
-import geotrellis.raster.RasterExtent
-import geotrellis.raster.TileLayout
-import geotrellis.spark.TestEnvironment
-import geotrellis.spark.testfiles.AllOnes
-import geotrellis.spark.tiling.TmsTiling
-import org.scalatest._
+// import geotrellis.raster.RasterExtent
+// import geotrellis.raster.TileLayout
+// import geotrellis.spark.TestEnvironment
+// import geotrellis.spark.testfiles.AllOnes
+// import geotrellis.spark.tiling.TmsTiling
+// import org.scalatest._
 
-/*
- * This is split into two classes as one mixes in TestEnvironmentFixture and the other mixes 
- * in TestEnvironment
- */ 
-class ContextSpec extends FunSpec with TestEnvironment with MetadataMatcher {
-  val allOnes = AllOnes(inputHome, conf)
-  val meta = allOnes.meta
-  val te = meta.metadataForBaseZoom.tileExtent
-  val layout = allOnes.tileLayout
-  val rasterExtent = allOnes.rasterExtent
-  val zoom = meta.maxZoomLevel
-  val tileSize = meta.tileSize
-  val res = TmsTiling.resolution(zoom, tileSize)
+// /*
+//  * This is split into two classes as one mixes in TestEnvironmentFixture and the other mixes 
+//  * in TestEnvironment
+//  */ 
+// class ContextSpec extends FunSpec with TestEnvironment with MetadataMatcher {
+//   val allOnes = AllOnes(inputHome, conf)
+//   val meta = allOnes.meta
+//   val te = meta.metadataForBaseZoom.tileExtent
+//   val layout = allOnes.tileLayout
+//   val rasterExtent = allOnes.rasterExtent
+//   val zoom = meta.maxZoomLevel
+//   val tileSize = meta.tileSize
+//   val res = TmsTiling.resolution(zoom, tileSize)
 
-  describe("RasterMetadata to RasterDefinition conversion tests") {
-    it("should have the correct tile layout") {
-      layout should be(TileLayout(te.width.toInt, te.height.toInt, tileSize, tileSize))
-    }
-    it("should have the correct raster extent") {
-      val e = TmsTiling.tileToExtent(te, zoom, tileSize)
-      val cols = tileSize * te.width
-      val rows = tileSize * te.height
-      rasterExtent should be(RasterExtent(e, res, res, cols.toInt, rows.toInt))
-    }
-  }
-  describe("RasterDefinition to RasterMetadata conversion tests") {
-    it("should have the original raster metadata") {
-      val newMeta = allOnes.opCtx.toMetadata
-      shouldBe(meta, newMeta)
-    }
-  }
-}
+//   describe("RasterMetadata to RasterDefinition conversion tests") {
+//     it("should have the correct tile layout") {
+//       layout should be(TileLayout(te.width.toInt, te.height.toInt, tileSize, tileSize))
+//     }
+//     it("should have the correct raster extent") {
+//       val e = TmsTiling.tileToExtent(te, zoom, tileSize)
+//       val cols = tileSize * te.width
+//       val rows = tileSize * te.height
+//       rasterExtent should be(RasterExtent(e, res, res, cols.toInt, rows.toInt))
+//     }
+//   }
+//   describe("RasterDefinition to RasterMetadata conversion tests") {
+//     it("should have the original raster metadata") {
+//       val newMeta = allOnes.opCtx.toMetadata
+//       shouldBe(meta, newMeta)
+//     }
+//   }
+// }

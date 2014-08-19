@@ -43,6 +43,8 @@ sealed abstract class CellType(val bits: Int, val name: String, val isFloatingPo
   def contains(other: CellType) = bits >= other.bits
 
   def numBytes(size: Int) = bytes * size
+
+  override def toString: String = name
 }
 
 case object TypeBit extends CellType(1, "bool", false) {
@@ -62,7 +64,7 @@ object CellType {
     case DataBuffer.TYPE_FLOAT  => TypeFloat
     case DataBuffer.TYPE_INT    => TypeInt
     case DataBuffer.TYPE_SHORT  => TypeShort
-    case _                      => sys.error(s"Oops type $awtType is not supported")
+    case _                      => sys.error(s"Cell type with AWT type $awtType is not supported")
   }
 
   def fromString(name: String): CellType = name match {
@@ -71,7 +73,7 @@ object CellType {
     case "int32"    => TypeInt
     case "float32"  => TypeFloat
     case "float64"  => TypeDouble
-    case _ => sys.error(s"Oops type $name is not supported")
+    case _ => sys.error(s"Cell type $name is not supported")
   }
 
   def toAwtType(cellType: CellType): Int = cellType match {

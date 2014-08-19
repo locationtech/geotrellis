@@ -21,6 +21,29 @@ import org.apache.spark.SparkContext
 import org.scalatest._
 import org.scalatest.BeforeAndAfterAll
 
+trait OnlyIfCanRunSpark extends FunSpec { 
+  def ifCanRunSpark(f: =>Unit): Unit = {
+    val gtHome = 
+      SparkUtils.geoTrellisHome match {
+        case Some(path) => path
+        case None =>
+          val path = new java.io.File("target/scala-2.10/").getAbsolutePath
+          SparkUtils.setGeoTrellisHome(path)
+          path
+      }
+
+    scala.util.Properties.envOrNone("SPARK_HOME") match {
+        case Some(sparkHome) =>
+          SparkUtils.findGeoTrellisJar(gtHome) match {
+            case Some(_) => f
+            case None => ignore(s"WARNING: No Geotrellis JAR found at $gtHome" ) { }
+          }
+        case _ => 
+          ignore("WARNING: DEFINE SPARK_HOME and GEOTRELLIS_HOME env variables" ) { }
+    }
+  }
+}
+
 /* 
  * Creates a local SparkContext for use in all tests in a suite 
  */

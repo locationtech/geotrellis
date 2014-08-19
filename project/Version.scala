@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
+import scala.util.Properties
+
 object Version {
+  def either(environmentVariable: String, default: String): String =
+    Properties.envOrElse(environmentVariable, default)
+
   val geotrellis  = "0.10.0-SNAPSHOT"
   val scala       = "2.10.4"
   val geotools    = "11.0"
   val akka        = "2.2.4"
   val spray       = "1.2.1"
   val jackson     = "1.6.1"
+  lazy val hadoop      = either("SPARK_HADOOP_VERSION", "2.4.1")
+  lazy val spark       = either("SPARK_VERSION", "1.0.2")
 }
