@@ -21,22 +21,18 @@
 - service: name=spark-master state=started enabled=yes
   sudo: yes
 
-- lineinfile: 
-    dest="~/.bashrc" 
-    regexp="^export SPARK_HOME="  
-    line="export SPARK_HOME=/usr/lib/spark"
+- name: Add SPARK_HOME for all users
+  copy: src=spark_home.sh dest=/etc/profile.d
+  sudo: yes
 
-- lineinfile: 
-    dest="~/.bashrc"
-    regexp="^export SPARK_VERSION=" 
-    line="export SPARK_VERSION={{cdh.spark_version}}"
+- name: Add SPARK_VERSION for all users
+  copy: src=spark_version.sh dest=/etc/profile.d
+  sudo: yes
 
-- lineinfile: 
-    dest="~/.bashrc"
-    regexp="^export SPARK_HADOOP_VERSION=" 
-    line="export SPARK_HADOOP_VERSION={{cdh.hadoop_version}}"
+- name: Add SPARK_HADOOP_VERSION for all users
+  copy: src=spark_hadoop_version.sh dest=/etc/profile.d
+  sudo: yes
 
-- lineinfile: 
-    dest="~/.bashrc"
-    regexp="^export GEOTRELLIS_HOME=" 
-    line="export GEOTRELLIS_HOME=/home/ubuntu/geotrellis/spark/target/scala-2.10"
+- name: Add GEOTRELLIS_HOME for all users
+  copy: src=geotrellis_home.sh dest=/etc/profile.d
+  sudo: yes
