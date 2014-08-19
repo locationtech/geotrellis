@@ -50,7 +50,9 @@ class RasterSplitGeneratorSpec extends FunSpec with Matchers {
 
       RasterSplitGenerator.computeIncrement(TileExtent(0, 0, 4, 4), 1, 2) should be((2, 1))
 
-      RasterSplitGenerator(TileExtent(0, 0, 4, 4), zoomLevel, 1, 2).splits should be(Seq(1,3,4,9,11,12,17,19,20,25,27,28,33,35)) 
+      val splits = 
+        RasterSplitGenerator(TileExtent(0, 0, 4, 4), zoomLevel, 1, 2).splits 
+      splits should be(Seq(1,3,4,9,11,12,17,19,20,25,27,28,33,35))
     }
 
     it("should yield an increment of > 1 (row per split) if tileCount > tilesPerBlock >= tileExtent.width") {

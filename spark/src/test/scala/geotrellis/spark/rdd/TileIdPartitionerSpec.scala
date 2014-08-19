@@ -20,7 +20,6 @@ import org.scalatest._
 import geotrellis.spark.io.hadoop.formats.SerializerTester
 
 class TileIdPartitionerSpec extends FunSpec with TestEnvironment with Matchers with SerializerTester {
-
   def getPartitioner(seq: Traversable[Long]) = {
     TileIdPartitioner(seq.toArray)
   }

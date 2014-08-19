@@ -29,7 +29,7 @@ class GeoTiffSpec extends FunSpec with TestEngine with Matchers {
       val e = Extent(100.0, 400.0, 120.0, 420.0)
       val tile = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
  
-      GeoTiffWriter.write("/tmp/float.tif", tile, e, "float")
+      GeoTiffWriter.write("/tmp/float.tif", tile, e)
     }
   }
 }
