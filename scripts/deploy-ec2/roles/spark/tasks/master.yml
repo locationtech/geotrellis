@@ -9,7 +9,7 @@
   sudo: yes
 
 - git: repo=https://github.com/geotrellis/geotrellis
-       dest=/home/ubuntu/geotrellis
+       dest=/home/{{ ansible_ssh_user }}/geotrellis
 
 #this is nice for development, where you might be building on master
 - template: src=push-spark-assembly.sh dest=~/push-spark-assembly.sh
