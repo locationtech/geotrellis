@@ -23,19 +23,19 @@ trait AccumuloFormat[INDEX, LAYER] extends Serializable {
 }
 
 
-case class TmsLayer(name: String, zoom: Int)
+case class TmsLayer(name: String, zoomLevel: ZoomLevel)
 
 class TmsTilingAccumuloFormat extends AccumuloFormat[Long, TmsLayer] {
   val rowIdRx = """(\d+)_(\d+)""".r // (zoom)_(TmsTilingId)
   val layerRx = """(\w+):(\d+)""".r
 
-  def rowId(id: Long, layer: TmsLayer) = new Text(s"${layer.zoom}_${id}")
+  def rowId(id: Long, layer: TmsLayer) = new Text(s"${layer.zoomLevel.level}_${id}")
   
   override def ranges(layer: TmsLayer, extent: Option[TileExtent]): Seq[ARange] = {
     extent match {
       case None     => new ARange() :: Nil
       case Some(te) => 
-        te.getRowRanges(layer.zoom).map{ ts => 
+        te.rowRanges(layer.zoomLevel).map{ ts => 
           new ARange(rowId(ts.min, layer), rowId(ts.max, layer))
         }
     }

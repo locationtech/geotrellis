@@ -20,13 +20,14 @@ import geotrellis.raster._
 import geotrellis.vector.Extent
 
 import geotrellis.spark._
+import geotrellis.spark.utils._
 import geotrellis.spark.rdd._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.reader.RasterReader
 import geotrellis.spark.tiling._
 
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.SequenceFile
+import org.apache.hadoop.io._
 import org.scalatest._
 
 import java.awt.image.DataBuffer
@@ -101,28 +102,29 @@ trait RasterVerifyMethods extends ShouldMatchers { self: TestEnvironment =>
   }
 
   def verifyTiles(raster: Path, meta: LayerMetaData): Unit = {
-    val zoom = raster.getName()
+    val zoomLevel = meta.zoomLevel
     val reader = RasterReader(raster, conf)
     val actualTileIds = reader.map { case (tw, aw) => tw.get }.toList
-    val tileExtent = meta.zoomLevel.tileExtentForExtent(meta.extent)
+    val tileExtent = zoomLevel.tileExtentForExtent(meta.extent)
     val expectedTileIds = for {
       ty <- tileExtent.ymin to tileExtent.ymax
       tx <- tileExtent.xmin to tileExtent.xmax
-    } yield TmsTiling.tileId(tx, ty, zoom.toInt)
+    } yield zoomLevel.tileId(tx, ty)
     reader.close()
     actualTileIds should be(expectedTileIds)
   }
 
   def verifyCompression(raster: Path): Unit = {
     val dataFile = new Path(new Path(raster, "part-00000"), "data")
-    val dataReader = new SequenceFile.Reader(localFS, dataFile, conf)
+    val dataReader = 
+      HdfsUtils.getSequenceFileReader(localFS, dataFile, conf)
     val isCompressed = dataReader.isCompressed()
     dataReader.close()
     isCompressed should be(true)
   }
 
   def verifyBlockSize(raster: Path): Unit = {
-    val expectedBlockSize = localFS.getDefaultBlockSize()
+    val expectedBlockSize = localFS.getDefaultBlockSize(raster)
     val actualBlockSize = localFS.getFileStatus(raster).getBlockSize()
     actualBlockSize should be(expectedBlockSize)
   }

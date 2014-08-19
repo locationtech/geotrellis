@@ -16,8 +16,7 @@
 
 package geotrellis.spark.rdd
 
-import geotrellis.spark.tiling.TileExtent
-import geotrellis.spark.tiling.TmsTiling
+import geotrellis.spark.tiling._
 
 /*
  * SplitsGenerator provides an interface to derive split points with a default implementation
@@ -34,7 +33,7 @@ object SplitGenerator {
 
 case class RasterSplitGenerator(
   tileExtent: TileExtent,
-  zoom: Int,
+  zoomLevel: ZoomLevel,
   increment: (Int, Int))
   extends SplitGenerator {
   // if increment is -1 splits return an empty sequence
@@ -50,13 +49,13 @@ case class RasterSplitGenerator(
       val splits = for (
         y <- tileExtent.ymin to tileExtent.ymax;
         x <- xr
-      ) yield TmsTiling.tileId(x, y, zoom)
+      ) yield zoomLevel.tileId(x, y)
       splits.dropRight(1).toArray
     }
     else {
       val splits = 
         for (y <- tileExtent.ymin + (yi - 1) until tileExtent.ymax by yi)
-        yield TmsTiling.tileId(tileExtent.xmax, y, zoom)
+        yield zoomLevel.tileId(tileExtent.xmax, y)
       splits.toArray
     }
 
@@ -69,8 +68,8 @@ object RasterSplitGenerator {
   // assume tiles can be compressed 30% (so, compressionFactor - 1)
   final val CompressionFactor = 1.3
   
-  def apply(tileExtent: TileExtent, zoom: Int, tileSizeBytes: Int, blockSizeBytes: Long) = {
-    new RasterSplitGenerator(tileExtent, zoom, computeIncrement(tileExtent, tileSizeBytes, blockSizeBytes))
+  def apply(tileExtent: TileExtent, zoomLevel: ZoomLevel, tileSizeBytes: Int, blockSizeBytes: Long) = {
+    new RasterSplitGenerator(tileExtent, zoomLevel, computeIncrement(tileExtent, tileSizeBytes, blockSizeBytes))
   }
 
   /*

@@ -41,13 +41,13 @@ class CroppedRasterHadoopRDD private (
     }
 
     val (min, max) = partitioner.get.range(p.index)
-    intersects(extent.getRowRanges(metaData.zoomLevel.level), TileSpan(min, max))
+    intersects(extent.rowRanges(metaData.zoomLevel), TileSpan(min, max))
   }
 
   /**
    * returns true if the specific TileID is in the extent
    */
-  def includeKey(key: TileIdWritable): Boolean = extent.contains(metaData.zoomLevel.level)(key.get)
+  def includeKey(key: TileIdWritable): Boolean = extent.contains(metaData.zoomLevel)(key.get)
 
   def toRasterRDD(): RasterRDD =
     asRasterRDD(metaData) {

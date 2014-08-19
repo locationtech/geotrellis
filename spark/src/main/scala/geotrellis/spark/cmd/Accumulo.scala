@@ -36,7 +36,13 @@ object Accumulo extends ArgMain[AccumuloArgs] with Serializable {
 //    val connector = instance.getConnector("root", new PasswordToken("secret"))
 //    rdd.saveAccumulo("tiles2",  TmsLayer("nlcd-2011", 12), connector)
 
-    val rdd = sc.accumuloRDD("tiles2", TmsLayer("nlcd-2012", 12), Some(TileExtent(669,1529, 670, 1530)))
+    val zoomLevel = TilingScheme.GEODETIC.zoomLevel(12)
+    val rdd = 
+      sc.accumuloRDD(
+        "tiles2", 
+        TmsLayer("nlcd-2012", zoomLevel),
+        Some(TileExtent(669,1529, 670, 1530))
+      )
     println(rdd.map(_._1).foreach(println))
     sc.stop()
   }

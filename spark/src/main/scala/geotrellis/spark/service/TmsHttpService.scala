@@ -36,7 +36,8 @@ trait TmsHttpService extends HttpService {
     pathPrefix("tms" / Segment / IntNumber / IntNumber / IntNumber ) { (layer, zoom, x , y) =>
       val pyramidPath = new Path(s"${args.root}/$layer")
       val extent = TileExtent(x,y,x,y) //this is a one tile extent
-      val rdd = sc.accumuloRDD("tiles2", TmsLayer(layer, zoom), Some(extent))
+      val zoomLevel = TilingScheme.GEODETIC.zoomLevel(zoom)
+      val rdd = sc.accumuloRDD("tiles2", TmsLayer(layer, zoomLevel), Some(extent))
 
       respondWithMediaType(MediaTypes.`image/png`) { complete {
         //at least in the local case it is faster to do collect then encode

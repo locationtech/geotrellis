@@ -57,7 +57,7 @@ object GenerateTestFiles {
     for((v, name) <- testFiles) {
       println(s"Creating test RasterRDD $name with value $v")
       val tmsTiles =
-        tileExtent.map(zoomLevel.level) { tileId =>
+        tileExtent.map(zoomLevel) { tileId =>
           val arr = Array.ofDim[Float](tileSize).fill(v)
           TmsTile(tileId, ArrayTile(arr, tileCols, tileRows))
         }
@@ -67,10 +67,10 @@ object GenerateTestFiles {
       localFS.delete(path, true)
 
       val partitioner = {
-        val tileSizeBytes = TmsTiling.tileSizeBytes(zoomLevel.tileSize, cellType)
+        val tileSizeBytes = zoomLevel.tileCols * zoomLevel.tileRows * cellType.bytes
         val blockSizeBytes = HdfsUtils.defaultBlockSize(path, conf)
         val splitGenerator =
-          RasterSplitGenerator(tileExtent, zoomLevel.level, tileSizeBytes, blockSizeBytes)
+          RasterSplitGenerator(tileExtent, zoomLevel, tileSizeBytes, blockSizeBytes)
         TileIdPartitioner(splitGenerator.splits)
       }
 

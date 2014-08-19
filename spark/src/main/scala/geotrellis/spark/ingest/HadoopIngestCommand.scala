@@ -78,10 +78,10 @@ object HadoopIngestCommand extends ArgMain[IngestArgs] with Logging {
 
         val partitioner = {
           val tileExtent = zoomLevel.tileExtentForExtent(extent)
-          val tileSizeBytes = TmsTiling.tileSizeBytes(zoomLevel.tileSize, cellType)
+          val tileSizeBytes = zoomLevel.tileCols * zoomLevel.tileRows * cellType.bytes
           val blockSizeBytes = HdfsUtils.defaultBlockSize(inPath, conf)
           val splitGenerator =
-            RasterSplitGenerator(tileExtent, zoomLevel.level, tileSizeBytes, blockSizeBytes)
+            RasterSplitGenerator(tileExtent, zoomLevel, tileSizeBytes, blockSizeBytes)
           TileIdPartitioner(splitGenerator.splits)
         }
 
