@@ -9,7 +9,7 @@
   sudo: yes
 
 - name: Upload spark config
-  template: src=spark-env.sh dest=/etc/spark/conf/spark-env.sh
+  template: src=spark-env.sh.j2 dest=/etc/spark/conf/spark-env.sh
   sudo: yes
   notify:
     - Restart Spark Master
