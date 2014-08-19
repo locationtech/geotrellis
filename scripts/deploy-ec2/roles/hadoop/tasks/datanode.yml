@@ -1,7 +1,7 @@
 ---
 
 #Main tasks for hadoop datanode
-- apt: name=hadoop-hdfs-datanode state=present force=yes
+- apt: name=hadoop-hdfs-datanode state=present
   sudo: yes
 
 - name: Attach some EBS volumes

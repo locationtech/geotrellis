@@ -31,7 +31,11 @@
     mode: 0644
   when: '"development" not in group_names'
 
-- name: Add Cloudera apt repo
+- name: Add Cloudera APT key
+  apt_key: url=http://archive.cloudera.com/cdh5/ubuntu/{{ ansible_distribution_release }}/amd64/cdh/archive.key state=present
+  sudo: yes
+
+- name: Add Cloudera APT repository
   apt_repository:
     repo: "deb [arch=amd64] http://archive.cloudera.com/cdh5/ubuntu/{{ ansible_distribution_release }}/amd64/cdh {{cdh.repo}} contrib"
     state: present

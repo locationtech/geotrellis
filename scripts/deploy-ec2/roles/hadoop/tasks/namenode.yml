@@ -1,7 +1,7 @@
 ---
 
 #Main tasks for hadoop namenode
-- apt: name=hadoop-hdfs-namenode state=present force=yes
+- apt: name=hadoop-hdfs-namenode state=present
   sudo: yes
 
 - file: path=/var/hadoop-hdfs/namenode owner=hdfs group=hadoop mode=0755 state=directory

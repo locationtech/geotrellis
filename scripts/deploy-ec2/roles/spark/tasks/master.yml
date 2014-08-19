@@ -2,7 +2,7 @@
 
 #Tasks for spark roles
 
-- apt: name=spark-master state=present force=yes
+- apt: name=spark-master state=present
   sudo: yes
 
 - apt: name=zip state=present install_recommends=yes

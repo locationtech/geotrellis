@@ -1,7 +1,7 @@
 ---
 
 #Main tasks for hadoop master
-- apt: name=hadoop-hdfs state=present force=yes
+- apt: name=hadoop-hdfs state=present
   sudo: yes
 
 - include_vars: group_vars/cluster.yml
