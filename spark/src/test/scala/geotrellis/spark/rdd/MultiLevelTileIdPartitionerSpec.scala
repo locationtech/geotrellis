@@ -54,7 +54,7 @@ class MultiLevelTileIdPartitionerSpec extends FunSpec with TestEnvironment with 
   def getPartitioner(splits: Map[Int, Seq[Long]]) = {
     val splitGenerators = splits.map {
       case (level, splitSeq) =>
-        (level, new SplitGenerator { def getSplits = splitSeq })
+        (level, new SplitGenerator { def splits = splitSeq.toArray })
     }
     val pyramid = outputLocal
     MultiLevelTileIdPartitioner(splitGenerators, pyramid, conf)

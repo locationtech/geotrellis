@@ -26,10 +26,10 @@ class RasterSplitGeneratorSpec extends FunSpec with Matchers {
     it("should yield an increment of (-1, -1) (no splits) if tilesPerBlock >= tileCount") {
       // tilesPerBlock == tileCount
       RasterSplitGenerator.computeIncrement(TileExtent(0, 0, 1, 1), 1, 4) should be((-1, -1))
-      RasterSplitGenerator(TileExtent(0, 0, 1, 1), 1, 1, 4).getSplits should be(Seq.empty)
+      RasterSplitGenerator(TileExtent(0, 0, 1, 1), 1, 1, 4).splits should be(Seq.empty)
       // tilesPerBlock > tileCount
       RasterSplitGenerator.computeIncrement(TileExtent(0, 0, 1, 1), 1, 5) should be((-1, -1))
-      RasterSplitGenerator(TileExtent(0, 0, 1, 1), 1, 1, 5).getSplits should be(Seq.empty)
+      RasterSplitGenerator(TileExtent(0, 0, 1, 1), 1, 1, 5).splits should be(Seq.empty)
     }
     it("should yield an increment of 2 tiles per split if tileExtent.width > tilesPerBlock") {
       /* 
@@ -43,7 +43,7 @@ class RasterSplitGeneratorSpec extends FunSpec with Matchers {
        * Note that the compressionFactor isn't playing a role here because of rounding to Int
        */
       RasterSplitGenerator.computeIncrement(TileExtent(0, 0, 4, 4), 1, 2) should be((2, 1))
-      RasterSplitGenerator(TileExtent(0, 0, 4, 4), 3, 1, 2).getSplits should be(Seq(1,3,4,9,11,12,17,19,20,25,27,28,33,35)) 
+      RasterSplitGenerator(TileExtent(0, 0, 4, 4), 3, 1, 2).splits should be(Seq(1,3,4,9,11,12,17,19,20,25,27,28,33,35))
     }
     it("should yield an increment of > 1 (row per split) if tileCount > tilesPerBlock >= tileExtent.width") {
       RasterSplitGenerator.computeIncrement(TileExtent(0, 0, 2, 2), 1, 6) should be((-1, 2))
