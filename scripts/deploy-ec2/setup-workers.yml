@@ -7,8 +7,6 @@
     - hadoop
     - spark
 
-  gather_facts: False
-
   tasks:
     - include_vars: group_vars/cluster.yml
       when: '"development" not in group_names'
