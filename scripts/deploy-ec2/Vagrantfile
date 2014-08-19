@@ -7,6 +7,7 @@ end
 
 VAGRANTFILE_API_VERSION = "2"
 SPARK_WORKERS = 2
+SPARK_WORKER_DISKS = 2
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
   cluster.vm.box = "ubuntu/precise64"
@@ -34,6 +35,31 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
         "master" => [ "spark-master" ],
         "development:children" => [ "master" ]
       }
+    end
+  end
+
+  (1..SPARK_WORKERS).each do |worker_index|
+    cluster.vm.define "spark-worker-0#{worker_index}" do |machine|
+      machine.vm.hostname = "spark-worker-0#{worker_index}"
+
+      machine.vm.provider "virtualbox" do |v|
+        v.memory = 1024
+        v.cpus = 2
+
+        (1..SPARK_WORKER_DISKS).each do |disk_index|
+          v.customize ["createhd", "--filename", ".vagrant/spark-worker-disk-0#{disk_index}.vdi", "--size", 10000]
+          v.customize ["storageattach", :id, "--storagectl", "SATAController", "--port", 3 + disk_index,
+            "--device", 0, "--type", "hdd", "--medium", ".vagrant/spark-worker-disk-0#{disk_index}.vdi"]
+        end
+      end
+
+      machine.vm.provision "ansible" do |ansible|
+        ansible.playbook = "./setup-workers.yml"
+        ansible.groups = {
+          "workers" => (1..SPARK_WORKER_DISKS).map { |i| "spark-worker-0#{i}" },
+          "development:children" => [ "workers" ]
+        }
+      end
     end
   end
 end
