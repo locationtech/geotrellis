@@ -21,7 +21,13 @@ import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
 
-case class TileCoord(tx: Int, ty: Int)
+trait TileIdTransform {
+  def tileId(tileCoord: TileCoord): TileId =
+    tileId(tileCoord._1, tileCoord._2)
+
+  def tileId(tx: Int, ty: Int): TileId
+  def tileCoord(tileId: TileId): TileCoord
+}
 
 /**
  * Span of consecutive tile IDs, inclusive
@@ -30,22 +36,25 @@ case class TileCoord(tx: Int, ty: Int)
  */
 case class TileSpan(min: Long, max: Long)
 
+object TileExtent {
+  def apply(xmin: Int, ymin: Int, xmax: Int, ymax: Int)(tileTransform: TileIdTransform): TileExtent =
+    new TileExtent(xmin, ymin, xmax, ymax)(tileTransform)
+}
+
 /* Represents the dimensions of the tiles of a RasterRDD
  * based on a zoom level and world grid.
  */
-case class TileExtent(xmin: Int, ymin: Int, xmax: Int, ymax: Int) {
-  private def coordinateToId(col: Int, row: Int, zoomLevel: ZoomLevel): TileId = {
-    zoomLevel.tileId(col, row)
-  }
-
+class TileExtent(val xmin: Int, val ymin: Int, val xmax: Int, val ymax: Int)
+                (tileTransform: TileIdTransform) {
   lazy val width = (xmax - xmin + 1)
   lazy val height = (ymax - ymin + 1)
 
-  def tiles(zoomLevel: ZoomLevel): Array[TileId] = {
+  lazy val tileIds: Array[TileId] = {
     val arr = Array.ofDim[TileId](width*height)
     cfor(0)(_ < height, _ + 1) { row =>
       cfor(0)(_ < width, _ + 1) { col =>
-        arr(row * width + col) = coordinateToId(col + xmin, row + ymin, zoomLevel)
+        arr(row * width + col) = 
+          tileTransform.tileId(col + xmin, row + ymin)
       }
     }
     arr
@@ -54,21 +63,24 @@ case class TileExtent(xmin: Int, ymin: Int, xmax: Int, ymax: Int) {
   /**
    * Return a range from min tileId to max tileID for every row in the extent
    */
-  def rowRanges(zoomLevel: ZoomLevel): Seq[TileSpan] =
+  def rowSpans: Seq[TileSpan] =
     for (y <- ymin to ymax) yield 
-      TileSpan(zoomLevel.tileId(xmin, y), zoomLevel.tileId(xmax, y))
+      TileSpan(tileTransform.tileId(xmin, y), tileTransform.tileId(xmax, y))
 
-  def contains(zoomLevel: ZoomLevel)(tileId: Long) = {
-    val (x, y) = zoomLevel.tileXY(tileId)
+  def contains(tileId: Long) = {
+    val (x, y) = tileTransform.tileCoord(tileId)
     (x <= xmax && x >= xmin) && (y <= ymax && y >= ymin)
   }
 
-  def foreach(zoomLevel: ZoomLevel)(f: Long => Unit): Unit = 
-    tiles(zoomLevel).foreach(f)
+  override
+  def hashCode = (xmin, ymin, xmax, ymax).hashCode
 
-  def map[T](zoomLevel: ZoomLevel)(f: Long => T): Seq[T] = 
-    tiles(zoomLevel).map(f)
-
-  def count(zoomLevel: ZoomLevel): Long = 
-    tiles(zoomLevel).size
+  override
+  def equals(o: Any): Boolean =
+    o match {
+      case other: TileExtent =>
+        (other.xmin, other.ymin, other.xmax, other.ymax)
+          .equals((xmin, ymin, xmax, ymax))
+      case _ => false
+    }
 } 

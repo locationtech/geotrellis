@@ -1,42 +1,45 @@
 package geotrellis.spark.tiling
 
-import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.proj4._
 import geotrellis.vector.Extent
 import geotrellis.vector.reproject._
 
-case class TmsTilingScheme(crs: CRS, tileSize: Int) extends TilingScheme {
-  val extent = {
-    val ll = Extent(-180, -90, 179.99999, 89.99999)
-    if(crs != LatLng) { ll.reproject(LatLng, crs) } else ll
-  }
+object TmsTilingScheme {
+  val DEFAULT_TILE_SIZE = 512
 
-  def zoomLevelFor(cellSize: CellSize): ZoomLevel = {
-    val l =
-      math.max(
-        TmsTiling.zoom(cellSize.width, 512),
-        TmsTiling.zoom(cellSize.height, 512)
-      )
-    zoomLevel(l)
-  }
+  def apply(tileSize: Int = DEFAULT_TILE_SIZE) =
+    new TilingScheme {
+      private def zoom(res: Double, tileSize: Int, worldSpan: Double): Int = {
+        val resWithEp = res + 0.00000001
 
-  def zoomLevel(l: Int): ZoomLevel =
-    new TmsZoomLevel(l, tileSize, extent)
-}
+        for(i <- 1 to 20) {
+          val resolution = worldSpan / (tileCols(i) * tileSize).toDouble
+          if(resWithEp >= resolution)
+            return i
+        }
+        return 0
+      }
 
-class TmsZoomLevel(val level: Int, tileSize: Int, val extent: Extent) extends ZoomLevel {
-  val tileCols = math.pow(2, level).toInt
-  val tileRows = math.pow(2, level - 1).toInt
-  val pixelCols = tileSize
-  val pixelRows = tileSize
+      def tileCols(level: Int): Int = math.pow(2, level).toInt
+      def tileRows(level: Int): Int = math.pow(2, level - 1).toInt
 
-  def tileId(tx: Int, ty: Int): TileId = 
-    (ty * tileCols) + tx
+      /** TODO: Improve this algorithm */
+      def layoutFor(extent: Extent, cellSize: CellSize): LayoutLevel = {
+        val l =
+          math.max(
+            zoom(cellSize.width, tileSize, extent.width),
+            zoom(cellSize.height, tileSize, extent.height)
+          )
 
-  def tileXY(tileId: TileId): (Int, Int) = {
-    val ty = tileId / tileRows
-    val tx = tileId - (ty * tileRows)
-    (tx.toInt, ty.toInt)
-  }
+        level(l)
+      }
+
+      def level(id: Int): LayoutLevel = {
+        if(id < 1) 
+          sys.error("TMS Tiling scheme does not have levels below 1")
+
+        LayoutLevel(id, TileLayout(tileCols(id), tileRows(id), tileSize, tileSize))
+      }
+    }
 }

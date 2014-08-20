@@ -26,7 +26,7 @@ import org.osgeo.proj4j.units.Units;
  * @see CRSFactory
  *
  */
-public class CoordinateReferenceSystem 
+public class CoordinateReferenceSystem implements java.io.Serializable
 {
     // allows specifying transformations which convert to/from Geographic coordinates on the same datum
     public static final CoordinateReferenceSystem CS_GEO = new CoordinateReferenceSystem("CS_GEO", null, null, null);

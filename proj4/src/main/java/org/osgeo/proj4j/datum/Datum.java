@@ -43,7 +43,7 @@ import org.osgeo.proj4j.ProjCoordinate;
  * Notable datums in common use include {@link #NAD83} and {@link #WGS84}.
  * 
  */
-public class Datum 
+public class Datum implements java.io.Serializable
 {
   public static final int TYPE_UNKNOWN = 0;
   public static final int TYPE_WGS84 = 1;

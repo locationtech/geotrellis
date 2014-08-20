@@ -12,7 +12,7 @@ import org.apache.hadoop.mapreduce.lib.input._
 import org.apache.hadoop.conf._
 
 class CroppedRasterHadoopRDD private (
-    path: Path, extent: TileExtent, sc: SparkContext, conf: Configuration)
+    path: Path, tileExtent: TileExtent, sc: SparkContext, conf: Configuration)
   extends PreFilteredHadoopRDD[TileIdWritable, ArgWritable](
     sc,
     classOf[SequenceFileInputFormat[TileIdWritable, ArgWritable]],
@@ -25,7 +25,7 @@ class CroppedRasterHadoopRDD private (
   override val partitioner = Some(TileIdPartitioner(HadoopUtils.readSplits(path, conf)))
 
   /**
-   * returns true if specific partition has TileIDs for extent
+   * returns true if specific partition has TileIDs for tileExtent
    */
   def includePartition(p: Partition): Boolean = {
     //test if partition range intersects with a set of row ranges
@@ -41,13 +41,13 @@ class CroppedRasterHadoopRDD private (
     }
 
     val (min, max) = partitioner.get.range(p.index)
-    intersects(extent.rowRanges(metaData.zoomLevel), TileSpan(min, max))
+    intersects(tileExtent.rowSpans, TileSpan(min, max))
   }
 
   /**
    * returns true if the specific TileID is in the extent
    */
-  def includeKey(key: TileIdWritable): Boolean = extent.contains(metaData.zoomLevel)(key.get)
+  def includeKey(key: TileIdWritable): Boolean = tileExtent.contains(key.get)
 
   def toRasterRDD(): RasterRDD =
     asRasterRDD(metaData) {
@@ -64,11 +64,11 @@ object CroppedRasterHadoopRDD {
    *
    * @param  sc       The spark context
    */
-  def apply(path: String, extent: TileExtent, sc: SparkContext): CroppedRasterHadoopRDD =
-    apply(new Path(path), extent, sc)
+  def apply(path: String, tileExtent: TileExtent, sc: SparkContext): CroppedRasterHadoopRDD =
+    apply(new Path(path), tileExtent, sc)
 
-  def apply(path: Path, extent: TileExtent, sc: SparkContext): CroppedRasterHadoopRDD = {
+  def apply(path: Path, tileExtent: TileExtent, sc: SparkContext): CroppedRasterHadoopRDD = {
     val updatedConf = sc.hadoopConfiguration.withInputPath(path.suffix(SeqFileGlob))
-    new CroppedRasterHadoopRDD(path, extent, sc, updatedConf)
+    new CroppedRasterHadoopRDD(path, tileExtent, sc, updatedConf)
   }
 }

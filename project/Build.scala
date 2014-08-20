@@ -51,6 +51,7 @@ object GeotrellisBuild extends Build {
           "-unchecked",
           "-Yinline-warnings",
           "-language:implicitConversions",
+          "-language:reflectiveCalls",
           "-language:postfixOps",
           "-language:existentials",
           "-feature"),

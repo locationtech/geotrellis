@@ -1,6 +1,6 @@
 package geotrellis.spark.io.accumulo
 
-
+import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.spark.tiling._
 import org.apache.accumulo.core.data.{Key, Mutation, Value, Range => ARange}
@@ -13,7 +13,7 @@ import org.apache.hadoop.io.Text
 trait AccumuloFormat[INDEX, LAYER] extends Serializable {
   type Params
 
-  def ranges(layer: LAYER, extent: Option[TileExtent]): Seq[ARange]
+  def ranges(layer: LAYER, spans: Option[Seq[(TileId, TileId)]]): Seq[ARange]
 
   def write(layer: LAYER, id: INDEX, tile: Tile): Mutation
   def write(layer: LAYER, tup: (INDEX, Tile)): Mutation = write(layer, tup._1, tup._2)
@@ -22,21 +22,20 @@ trait AccumuloFormat[INDEX, LAYER] extends Serializable {
   def read(row: (Key, Value)): (INDEX, Tile) = read(row._1, row._2)
 }
 
-
-case class TmsLayer(name: String, zoomLevel: ZoomLevel)
+case class TmsLayer(name: String, levelId: Int)
 
 class TmsTilingAccumuloFormat extends AccumuloFormat[Long, TmsLayer] {
   val rowIdRx = """(\d+)_(\d+)""".r // (zoom)_(TmsTilingId)
   val layerRx = """(\w+):(\d+)""".r
 
-  def rowId(id: Long, layer: TmsLayer) = new Text(s"${layer.zoomLevel.level}_${id}")
+  def rowId(id: Long, layer: TmsLayer) = new Text(s"${layer.levelId}_${id}")
   
-  override def ranges(layer: TmsLayer, extent: Option[TileExtent]): Seq[ARange] = {
-    extent match {
+  override def ranges(layer: TmsLayer, spans: Option[Seq[(TileId, TileId)]]): Seq[ARange] = {
+    spans match {
       case None     => new ARange() :: Nil
-      case Some(te) => 
-        te.rowRanges(layer.zoomLevel).map{ ts => 
-          new ARange(rowId(ts.min, layer), rowId(ts.max, layer))
+      case Some(s) => 
+        s.map{ ts => 
+          new ARange(rowId(ts._1, layer), rowId(ts._2, layer))
         }
     }
   }

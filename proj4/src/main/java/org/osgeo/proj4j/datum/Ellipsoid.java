@@ -48,7 +48,7 @@ package org.osgeo.proj4j.datum;
  *   
  * @see Datum
  */
-public class Ellipsoid implements Cloneable
+public class Ellipsoid implements Cloneable, java.io.Serializable
 {
 
   public String name;

@@ -18,6 +18,7 @@ package geotrellis.spark.ingest
 
 import geotrellis.raster._
 import geotrellis.vector._
+import geotrellis.proj4._
 
 import geotrellis.spark._
 import geotrellis.spark.tiling._
@@ -35,23 +36,34 @@ object Ingest { def apply(sc: SparkContext): Ingest = new Ingest(sc) }
 class Ingest(sc: SparkContext) {
   type Sink = (RDD[TmsTile], LayerMetaData)=>Unit
 
-  def setMetaData(sourceTiles: RDD[(Extent, Tile)]): (RDD[(Extent, Tile)], LayerMetaData) =  {
-    val (uncappedExtent, cellType, cellSize): (Extent, CellType, CellSize) =
-      sourceTiles
-        .map { case (extent, tile) => (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows)) }
-        .reduce { (t1, t2) =>
-        val (e1, ct1, cs1) = t1
-        val (e2, ct2, cs2) = t2
-        (e1.combine(e2), ct1.union(ct2),
-          if(cs1.resolution < cs2.resolution) cs1 else cs2
-        )
-      }
+  // TODO: Read CRS from Source
+  def setMetaData(crs: CRS, tilingScheme: TilingScheme): RDD[(Extent, Tile)] => (RDD[(Extent, Tile)], LayerMetaData) = {
+    def _setMetaData(sourceTiles: RDD[(Extent, Tile)]): (RDD[(Extent, Tile)], LayerMetaData) =  {
+      val (uncappedExtent, cellType, cellSize): (Extent, CellType, CellSize) =
+        sourceTiles
+          .map { case (extent, tile) => (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows)) }
+          .reduce { (t1, t2) =>
+          val (e1, ct1, cs1) = t1
+          val (e2, ct2, cs2) = t2
+          (e1.combine(e2), ct1.union(ct2),
+            if(cs1.resolution < cs2.resolution) cs1 else cs2
+          )
+        }
 
-    val tileScheme: TilingScheme = TilingScheme.GEODETIC
-    val zoomLevel: ZoomLevel = tileScheme.zoomLevelFor(cellSize)
+      // TODO: Allow variance of TilingScheme and TileIndexScheme
+      val tileScheme: TilingScheme = TilingScheme.TMS
+      val tileIndexScheme: TileIndexScheme = RowIndexScheme
 
-    val extent = tileScheme.extent.intersection(uncappedExtent).get
-    (sourceTiles, LayerMetaData(cellType, extent, zoomLevel))
+      val worldExtent = crs.worldExtent
+      val layerLevel: LayoutLevel = tileScheme.layoutFor(worldExtent, cellSize)
+
+      val extent = worldExtent.intersection(uncappedExtent).get
+
+      val metaData =
+        LayerMetaData(cellType, extent, crs, layerLevel, tileIndexScheme)
+      (sourceTiles, metaData)
+    }
+    _setMetaData
   }
 
   def mosaic(sourceTiles: RDD[(Extent, Tile)], metaData: LayerMetaData): (RDD[TmsTile], LayerMetaData) = {
@@ -59,19 +71,25 @@ class Ingest(sc: SparkContext) {
     val tiles =
       sourceTiles
         .flatMap { case (extent, tile) =>
-          val zoomLevel = bcMetaData.value.zoomLevel
-          zoomLevel.tileIdsForExtent(extent).map { case tileId  => (tileId, (tileId, extent, tile)) }
+          val metaData = bcMetaData.value
+          metaData
+            .mapToGrid(extent)
+            .coords
+            .map { coord =>
+              val tileId = metaData.gridToIndex(coord)
+              (tileId, (tileId, extent, tile)) 
+            }
          }
         .combineByKey( 
           { case (tileId, extent, tile) =>
-            val LayerMetaData(cellType, _, zoomLevel) = bcMetaData.value
-            val tmsTile = ArrayTile.empty(cellType, zoomLevel.pixelCols, zoomLevel.pixelRows)
-            tmsTile.merge(zoomLevel.extentForTile(tileId), extent, tile)
+            val metaData = bcMetaData.value
+            val tmsTile = ArrayTile.empty(metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
+            tmsTile.merge(metaData.indexToMap(tileId), extent, tile)
           },
           { (tmsTile: MutableArrayTile, tup: (Long, Extent, Tile)) =>
-            val zoomLevel = bcMetaData.value.zoomLevel
+            val metaData = bcMetaData.value
             val (tileId, extent, tile) = tup
-            tmsTile.merge(zoomLevel.extentForTile(tileId), extent, tile)
+            tmsTile.merge(metaData.indexToMap(tileId), extent, tile)
           },
           { (tmsTile1: MutableArrayTile , tmsTile2: MutableArrayTile) =>
             tmsTile1.merge(tmsTile2)
@@ -81,13 +99,11 @@ class Ingest(sc: SparkContext) {
     (tiles, metaData)
   }
 
-  def apply(source: =>RDD[(Extent, Tile)], sink:  Sink): Unit =
+  def apply(source: =>RDD[(Extent, Tile)], sink:  Sink, crs: CRS, tilingScheme: TilingScheme): Unit =
     source |>
-    setMetaData |>
+    setMetaData(crs, tilingScheme) |>
     mosaic |>
     sink
-
-  //   apply(source, { (rdd, meta) => ObservableCollection((rdd, meta)) }, sink)
 
   // def apply(source: =>RDD[(Extent, Tile)], pyramid: (Sink) => (RDD[TmsTile], LayerMetaData) => Unit, sink:  Sink): Unit =
   //   source |>

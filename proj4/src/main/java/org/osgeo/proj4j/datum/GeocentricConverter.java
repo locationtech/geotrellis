@@ -14,7 +14,7 @@ import org.osgeo.proj4j.util.ProjectionMath;
  * @author Martin Davis
  *
  */
-public class GeocentricConverter 
+public class GeocentricConverter implements  java.io.Serializable
 {
   /*
    * 

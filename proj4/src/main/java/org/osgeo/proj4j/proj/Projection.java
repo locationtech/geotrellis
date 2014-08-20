@@ -33,7 +33,7 @@ import org.osgeo.proj4j.util.ProjectionMath;
  * distinguished by different values for the
  * projection parameters.
  */
-public abstract class Projection implements Cloneable {
+public abstract class Projection implements Cloneable, java.io.Serializable {
 
     /**
      * The minimum latitude of the bounds of this projection
