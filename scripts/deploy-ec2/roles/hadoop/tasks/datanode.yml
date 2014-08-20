@@ -1,7 +1,7 @@
 ---
 
 #Main tasks for hadoop datanode
-- apt: name=hadoop-hdfs-datanode state=present force=yes
+- apt: name=hadoop-hdfs-datanode state=present
   sudo: yes
 
 - name: Attach some EBS volumes
@@ -12,11 +12,22 @@
     device_name: "{{ item.device }}"
     volume_size: "{{ item.size }}"
   with_items: hdfs.volumes
+  when: '"development" not in group_names'
 
-- name: Format Hadoop data partitions as ext3
+- name: Format EBS Hadoop data partitions as ext3
   filesystem: fstype="ext3" dev="{{ item.device }}"
   with_items: hdfs.volumes
   sudo: yes
+  when: '"development" not in group_names'
+
+  # Needed until is in a release:
+  #   https://github.com/ansible/ansible/pull/8002
+  #
+- name: Format Vagrant Hadoop data partitions as ext3
+  command: "mkfs.ext3 {{ item.device }} -F"
+  with_items: hdfs.volumes
+  sudo: yes
+  when: '"development" in group_names'
 
 - name: Mount Hadoop data partitions
   mount: name="{{item.mount}}" src="{{item.device}}" fstype=ext3 state=mounted

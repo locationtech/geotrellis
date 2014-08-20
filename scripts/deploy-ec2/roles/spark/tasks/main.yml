@@ -2,13 +2,14 @@
 #Tasks for spark roles
 
 - include_vars: group_vars/cluster.yml
+  when: '"development" not in group_names'
 
 - name: Install spark base
-  apt: name=spark-core state=present force=yes
+  apt: name=spark-core state=present
   sudo: yes
 
 - name: Upload spark config
-  template: src=spark-env.sh dest=/etc/spark/conf/spark-env.sh
+  template: src=spark-env.sh.j2 dest=/etc/spark/conf/spark-env.sh
   sudo: yes
   notify:
     - Restart Spark Master

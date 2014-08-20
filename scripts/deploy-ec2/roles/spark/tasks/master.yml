@@ -2,38 +2,38 @@
 
 #Tasks for spark roles
 
-- apt: name=spark-master state=present force=yes
+- apt: name=spark-master state=present
   sudo: yes
 
 - apt: name=zip state=present install_recommends=yes
   sudo: yes
 
 - git: repo=https://github.com/geotrellis/geotrellis
-       dest=/home/ubuntu/geotrellis
+       dest=/home/{{ ansible_ssh_user }}/geotrellis
+  when: '"development" not in group_names'
 
 #this is nice for development, where you might be building on master
-- template: src=push-spark-assembly.sh dest=~/push-spark-assembly.sh
+- template: src=push-spark-assembly.sh.j2 dest=~/push-spark-assembly.sh
+  when: '"development" not in group_names'
+
 - file: path=~/push-spark-assembly.sh mode=755
+  when: '"development" not in group_names'
 
 - service: name=spark-master state=started enabled=yes
   sudo: yes
 
-- lineinfile: 
-    dest="~/.bashrc" 
-    regexp="^export SPARK_HOME="  
-    line="export SPARK_HOME=/usr/lib/spark"
+- name: Add SPARK_HOME for all users
+  template: src=spark_home.sh.j2 dest=/etc/profile.d/spark_home.sh
+  sudo: yes
 
-- lineinfile: 
-    dest="~/.bashrc"
-    regexp="^export SPARK_VERSION=" 
-    line="export SPARK_VERSION={{cdh.spark_version}}"
+- name: Add SPARK_VERSION for all users
+  template: src=spark_version.sh.j2 dest=/etc/profile.d/spark_version.sh
+  sudo: yes
 
-- lineinfile: 
-    dest="~/.bashrc"
-    regexp="^export SPARK_HADOOP_VERSION=" 
-    line="export SPARK_HADOOP_VERSION={{cdh.hadoop_version}}"
+- name: Add SPARK_HADOOP_VERSION for all users
+  template: src=spark_hadoop_version.sh.j2 dest=/etc/profile.d/spark_hadoop_version.sh
+  sudo: yes
 
-- lineinfile: 
-    dest="~/.bashrc"
-    regexp="^export GEOTRELLIS_HOME=" 
-    line="export GEOTRELLIS_HOME=/home/ubuntu/geotrellis/spark/target/scala-2.10"
+- name: Add GEOTRELLIS_HOME for all users
+  template: src=geotrellis_home.sh.j2 dest=/etc/profile.d/geotrellis_home.sh
+  sudo: yes

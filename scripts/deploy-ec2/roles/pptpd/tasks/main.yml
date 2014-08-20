@@ -1,7 +1,7 @@
 ---
 
 #PPTP role
-- apt: name=pptpd state=present force=yes
+- apt: name=pptpd state=present
   sudo: yes
 
 - template: src=pptpd.conf dest=/etc/pptpd.conf

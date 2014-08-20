@@ -1,7 +1,7 @@
 ---
 
-- name: Install ZooKeeper Server 
-  apt: name=zookeeper-server state=present force=yes
+- name: Install ZooKeeper Server
+  apt: name=zookeeper-server state=present
   sudo: yes
 
 - name: Init ZooKeeper

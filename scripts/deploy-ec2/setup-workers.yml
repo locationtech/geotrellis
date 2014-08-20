@@ -1,14 +1,19 @@
 ---
 
+- name: Master
+  hosts: master
+  tasks: []
+
 - name: Workers
   hosts: workers
-  roles: 
+  vars:
+    hadoop_namenode: "{{ hostvars['spark-master']['ansible_eth1']['ipv4']['address'] }}"
+    spark_master: "{{ hostvars['spark-master']['ansible_eth1']['ipv4']['address'] }}"
+  roles:
     - common
     - hadoop
     - spark
 
-  gather_facts: False
-
   tasks:
     - include_vars: group_vars/cluster.yml
-  
+      when: '"development" not in group_names'
