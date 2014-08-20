@@ -1,16 +1,20 @@
 package geotrellis.spark.io
 
+import geotrellis.spark.tiling._
+import geotrellis.spark.rdd._
+import geotrellis.raster._
+
+import org.apache.spark._
+import org.apache.spark.rdd._
+import org.apache.hadoop.mapreduce.Job
+
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.client.mapreduce.{InputFormatBase, AccumuloInputFormat}
 import org.apache.accumulo.core.data.{Key, Value, Range => ARange}
-import org.apache.hadoop.mapreduce.Job
-import org.apache.spark._
-import org.apache.spark.rdd._
-import scala.collection.JavaConversions._
-import geotrellis.raster._
-import geotrellis.spark.tiling._
 import org.apache.accumulo.core.client.mapreduce.lib.util.{ConfiguratorBase => CB}
+
+import scala.collection.JavaConversions._
 
 package object accumulo {
 
@@ -26,14 +30,41 @@ package object accumulo {
      * @param table   name of the accumulo table
      * @param layer   name of the layer, "nlcd-2011:12"
      *                this encodes both the column family and the zoom level
+     */
+    def accumuloRDD[K, L](table: String, layer: L)
+      (implicit format: AccumuloFormat[K, L]): RDD[(K, Tile)] =
+      accumuloRDD(table, layer, None)(format)
+
+    /**
+     * @param table   name of the accumulo table
+     * @param layer   name of the layer, "nlcd-2011:12"
+     *                this encodes both the column family and the zoom level
      * @param extent  tile extent, will usually be used to refine row selection
      */
-    def accumuloRDD[K, L](table: String, layer: L, extent: Option[TileExtent] = None)
+    def accumuloRDD[K, L](table: String, layer: L, gridBounds: GridBounds)
+      (implicit format: AccumuloFormat[K, L]): RDD[(K, Tile)] =
+      accumuloRDD(table, layer, Some(gridBounds))(format)
+
+    /**
+     * @param table     name of the accumulo table
+     * @param layer     name of the layer, "nlcd-2011:12"
+     *                  this encodes both the column family and the zoom level
+     * @param rowSpans  option sequence of row spans, will usually be used to refine row selection
+     */
+    def accumuloRDD[K, L](table: String, layer: L, gridBounds: Option[GridBounds])
       (implicit format: AccumuloFormat[K, L]): RDD[(K, Tile)] =
     {
+      // TODO: Read metadata, so we can figure out how the grid coordinates translate to TileIds
+      val metaData: LayerMetaData = ???
+
+      val spans = 
+        gridBounds.map { gb =>
+          gb.coords.map(metaData.gridToIndex(_)).spans
+        }
+
       val job = Job.getInstance(sc.hadoopConfiguration)
       InputFormatBase.setInputTableName(job, table)
-      InputFormatBase.setRanges(job, format.ranges(layer, extent))
+      InputFormatBase.setRanges(job, format.ranges(layer, spans))
 
       // TODO: Set some filters here to represent a query
 

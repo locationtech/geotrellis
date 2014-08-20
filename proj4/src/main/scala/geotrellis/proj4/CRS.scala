@@ -10,6 +10,9 @@ trait CRS {
   /** Override this function to handle reprojecting to another CRS in a more performant way */
   def alternateTransform(dest: CRS): Option[(Double, Double) => (Double, Double)] =
     None
+
+  def toProj4String: String =
+    crs.getParameterString
 }
 
 object CRS {

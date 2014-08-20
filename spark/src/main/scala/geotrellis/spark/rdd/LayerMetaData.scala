@@ -1,23 +1,18 @@
 package geotrellis.spark.rdd
 
+import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.spark.tiling._
+import geotrellis.proj4._
 
-case class LayerMetaData(cellType: CellType, extent: Extent, zoomLevel: ZoomLevel) {
-  lazy val tileExtent = zoomLevel.tileExtent(extent)
+case class LayerMetaData(cellType: CellType, extent: Extent, crs: CRS, level: LayoutLevel, tileIndexScheme: TileIndexScheme) 
+    extends MapGridTransformDelegate with IndexGridTransformDelegate with MapIndexTransform {
+  lazy val mapGridTransform = MapGridTransform(crs, tileLayout.tileDimensions)
+  lazy val indexGridTransform = tileIndexScheme(tileLayout.tileDimensions)
 
-  override
-  def hashCode = 
-    (cellType, extent, zoomLevel.level).hashCode
+  lazy val gridBounds = mapToGrid(extent)
+  lazy val tileIds = gridToIndex(gridBounds)
+  def tileLayout = level.tileLayout
 
-  override
-  def equals(o: Any): Boolean = 
-    o match {
-      case other: LayerMetaData =>
-        (other.cellType, other.extent, other.zoomLevel.level).equals(
-          (cellType, extent, zoomLevel.level)
-        )
-      case _ => false
-    }
 }

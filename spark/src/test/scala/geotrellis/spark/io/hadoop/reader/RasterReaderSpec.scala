@@ -17,6 +17,7 @@
 package geotrellis.spark.io.hadoop.reader
 
 import geotrellis.spark.TestEnvironment
+import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.testfiles.AllOnes
 
@@ -24,9 +25,9 @@ import org.scalatest._
 
 class RasterReaderSpec extends FunSpec with TestEnvironment with Matchers {
   def tileSpans =
-    AllOnes(inputHome, conf).metaData.tileExtent.rowSpans
+    AllOnes(inputHome, conf).metaData.tileIds.spans
 
-  def tileIds = AllOnes(inputHome, conf).metaData.tileExtent.tileIds
+  def tileIds = AllOnes(inputHome, conf).metaData.tileIds
 
   def read(start: Long, end: Long): Int = {
     val allOnes = AllOnes(inputHome, conf)
@@ -44,11 +45,11 @@ class RasterReaderSpec extends FunSpec with TestEnvironment with Matchers {
       read(Long.MinValue, Long.MaxValue) should be(12)
     }
     it("should handle a non-existent start and end") {
-      val tileId = tileSpans.head.max
+      val tileId = tileSpans.head._2
       read(0, tileId) should be(3)
     }
     it("should be able to skip a partition") {
-      val tileId = tileSpans.last.min
+      val tileId = tileSpans.last._1
       read(tileId, Long.MaxValue) should be(3)
     }
     it("should be handle start=end") {

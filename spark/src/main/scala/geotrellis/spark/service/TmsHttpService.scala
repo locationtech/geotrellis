@@ -1,5 +1,6 @@
 package geotrellis.spark.service
 
+import geotrellis.raster._
 import geotrellis.raster.render.png._
 import geotrellis.spark.tiling._
 import geotrellis.spark.rdd._
@@ -35,9 +36,10 @@ trait TmsHttpService extends HttpService {
   def rootRoute =
     pathPrefix("tms" / Segment / IntNumber / IntNumber / IntNumber ) { (layer, zoom, x , y) =>
       val pyramidPath = new Path(s"${args.root}/$layer")
-      val zoomLevel = TilingScheme.GEODETIC.zoomLevel(zoom)
-      val extent = zoomLevel.tileExtent(x,y,x,y) //this is a one tile extent
-      val rdd = sc.accumuloRDD("tiles2", TmsLayer(layer, zoomLevel), Some(extent))
+      val zoomLevel = zoom
+//      val tileId = zoomLevel.tileId(x,y) //this is a one tile extent
+      // TODO: FIX! This needs to go from tile coordinates -> TileId
+      val rdd = sc.accumuloRDD("tiles2", TmsLayer(layer, zoom), GridBounds(x, y, x, y))
 
       respondWithMediaType(MediaTypes.`image/png`) { complete {
         //at least in the local case it is faster to do collect then encode

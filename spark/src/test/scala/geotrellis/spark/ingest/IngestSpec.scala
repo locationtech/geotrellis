@@ -18,6 +18,7 @@ package geotrellis.spark.ingest
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
+import geotrellis.proj4._
 
 import geotrellis.spark._
 import geotrellis.spark.utils._
@@ -85,7 +86,9 @@ class IngestSpec extends FunSpec
     val expectedMeta = LayerMetaData(
       TypeFloat,
       Extent(141.7066666666667, -18.373333333333342, 142.56000000000003, -17.52000000000001),
-      TilingScheme.GEODETIC.zoomLevel(10)
+      LatLng,
+      TilingScheme.TMS.level(10),
+      RowIndexScheme
     )
 
     actualMeta should be(expectedMeta)
@@ -102,8 +105,7 @@ trait RasterVerifyMethods extends ShouldMatchers { self: TestEnvironment =>
   }
 
   def verifyTiles(raster: Path, meta: LayerMetaData): Unit = {
-    val zoomLevel = meta.zoomLevel
-    val expectedTileIds = zoomLevel.tileExtent(meta.extent).tileIds
+    val expectedTileIds = meta.mapToIndex(meta.extent)
 
     val reader = RasterReader(raster, conf)
     val actualTileIds = reader.map { case (tw, aw) => tw.get }.toList

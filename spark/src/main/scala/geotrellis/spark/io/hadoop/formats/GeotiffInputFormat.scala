@@ -16,10 +16,12 @@
 
 package geotrellis.spark.io.hadoop.formats
 
+import geotrellis.spark.utils.HdfsUtils
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.vector.Extent
-import geotrellis.spark.utils.HdfsUtils
+import geotrellis.vector.Extent
+import geotrellis.proj4._
 
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.FSDataInputStream
@@ -52,8 +54,13 @@ class GeotiffRecordReader extends RecordReader[Extent, Tile] {
     val conf = context.getConfiguration()
     val bytes = HdfsUtils.readBytes(path, conf)
 
-    tup =
-      GeoTiffReader(bytes).read().imageDirectories(0).toRaster.swap
+    val (tile, extent) =
+      GeoTiffReader(bytes).read().imageDirectories(0).toRaster
+
+    // TODO: Get CRS from geoTiff
+    val crs = LatLng
+
+    tup = (extent, tile)
   }
 
   def close = {}

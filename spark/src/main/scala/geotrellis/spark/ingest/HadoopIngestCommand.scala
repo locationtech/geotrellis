@@ -8,6 +8,7 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.rdd._
 import geotrellis.spark.utils.HdfsUtils
 import geotrellis.raster._
+import geotrellis.proj4._
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
@@ -70,31 +71,31 @@ object HadoopIngestCommand extends ArgMain[IngestArgs] with Logging {
     outFs.delete(outPath, true)
     outFs.mkdirs(outPath)
 
+    val crs = LatLng
+
     val sparkContext = args.sparkContext("Ingest")
     try {
       val source = sparkContext.hadoopGeoTiffRDD(inPath)
       val sink = { (tiles: RDD[TmsTile], metaData: LayerMetaData) =>
-        val LayerMetaData(cellType, extent, zoomLevel) = metaData
-
         val partitioner = {
-          val tileExtent = zoomLevel.tileExtent(extent)
-          val tileSizeBytes = zoomLevel.tileCols * zoomLevel.tileRows * cellType.bytes
+          val gridBounds = metaData.mapToGrid(metaData.extent)
+          val tileSizeBytes = gridBounds.width * gridBounds.height * metaData.cellType.bytes
           val blockSizeBytes = HdfsUtils.defaultBlockSize(inPath, conf)
           val splitGenerator =
-            RasterSplitGenerator(tileExtent, zoomLevel, tileSizeBytes, blockSizeBytes)
+            RasterSplitGenerator(gridBounds, metaData, tileSizeBytes, blockSizeBytes)
           TileIdPartitioner(splitGenerator.splits)
         }
 
-        val outPathWithZoom = new Path(outPath, zoomLevel.level.toString)
+        val outPathWithZoom = new Path(outPath, metaData.level.id.toString)
         tiles
           .partitionBy(partitioner)
           .toRasterRDD(metaData)
           .saveAsHadoopRasterRDD(outPathWithZoom)
 
-        logInfo(s"Saved raster at zoom level ${zoomLevel.level} to $outPathWithZoom")
+        logInfo(s"Saved raster at zoom level ${metaData.level.id} to $outPathWithZoom")
       }
 
-      Ingest(sparkContext)(source, sink)
+      Ingest(sparkContext)(source, sink, crs, TilingScheme.TMS)
 
     } finally {
       sparkContext.stop

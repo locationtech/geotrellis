@@ -18,6 +18,7 @@ package geotrellis.spark.testfiles
 
 import geotrellis.raster._
 import geotrellis.vector._
+import geotrellis.proj4._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling._
@@ -33,14 +34,10 @@ object GenerateTestFiles {
   def main(args: Array[String]):Unit = {
     val cellType = TypeFloat
     val extent = Extent(141.7066666666667, -18.373333333333342, 142.56000000000003, -17.52000000000001)
-    val tilingScheme = TilingScheme.GEODETIC
-    val zoomLevel = tilingScheme.zoomLevel(10)
-    val metaData = LayerMetaData(cellType, extent, zoomLevel)
-    val (tileCols, tileRows) =  (zoomLevel.tileCols, zoomLevel.tileRows)
+    val layoutLevel = TilingScheme.TMS.level(10)
+    val metaData = LayerMetaData(cellType, extent, LatLng, layoutLevel, RowIndexScheme)
+    val (tileCols, tileRows) =  (metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
     val tileSize = tileCols * tileRows
-
-    val tileExtent = zoomLevel.tileExtent(extent)
-    println(s"    $tileExtent")
 
     val testFiles = List(
       1 -> "all-ones",
@@ -57,20 +54,20 @@ object GenerateTestFiles {
     for((v, name) <- testFiles) {
       println(s"Creating test RasterRDD $name with value $v")
       val tmsTiles =
-        tileExtent.tileIds.map { tileId =>
+        metaData.tileIds.map { tileId =>
           val arr = Array.ofDim[Float](tileSize).fill(v)
           TmsTile(tileId, ArrayTile(arr, tileCols, tileRows))
         }
 
-      val path = new Path(prefix, s"$name/${zoomLevel.level}")
+      val path = new Path(prefix, s"$name/${metaData.level.id}")
       println(s"Deleting $path if it exists")
       localFS.delete(path, true)
 
       val partitioner = {
-        val tileSizeBytes = zoomLevel.tileCols * zoomLevel.tileRows * cellType.bytes
+        val tileSizeBytes = metaData.tileLayout.tileCols * metaData.tileLayout.tileRows * cellType.bytes
         val blockSizeBytes = HdfsUtils.defaultBlockSize(path, conf)
         val splitGenerator =
-          RasterSplitGenerator(tileExtent, zoomLevel, tileSizeBytes, blockSizeBytes)
+          RasterSplitGenerator(metaData.gridBounds, metaData, tileSizeBytes, blockSizeBytes)
         TileIdPartitioner(splitGenerator.splits)
       }
 

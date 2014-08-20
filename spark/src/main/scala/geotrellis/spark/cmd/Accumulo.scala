@@ -4,6 +4,7 @@ import geotrellis.spark.io.accumulo._
 import geotrellis.spark.tiling._
 import geotrellis.spark.cmd.args.{HadoopArgs, SparkArgs}
 import geotrellis.spark.rdd._
+import geotrellis.raster._
 
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Required
@@ -36,12 +37,12 @@ object Accumulo extends ArgMain[AccumuloArgs] with Serializable {
 //    val connector = instance.getConnector("root", new PasswordToken("secret"))
 //    rdd.saveAccumulo("tiles2",  TmsLayer("nlcd-2011", 12), connector)
 
-    val zoomLevel = TilingScheme.GEODETIC.zoomLevel(12)
+    val zoomLevel = 12
     val rdd = 
       sc.accumuloRDD(
         "tiles2", 
         TmsLayer("nlcd-2012", zoomLevel),
-        Some(zoomLevel.tileExtent(669,1529, 670, 1530))
+        GridBounds(669, 1529, 670, 1530)
       )
     println(rdd.map(_._1).foreach(println))
     sc.stop()

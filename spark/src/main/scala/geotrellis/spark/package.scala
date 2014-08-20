@@ -18,6 +18,7 @@ package geotrellis
 
 import geotrellis.raster._
 import geotrellis.vector._
+import geotrellis.proj4._
 
 import geotrellis.spark.tiling._
 import geotrellis.spark.rdd._
@@ -28,6 +29,8 @@ import spire.syntax.cfor._
 
 package object spark {
   type TileId = Long
+  type ProjectedExtent = (Extent, CRS)
+  type Dimensions = (Int, Int)
 
   /** The thing I miss the most from F# */
   implicit class toPipe[A](x : A) { 
