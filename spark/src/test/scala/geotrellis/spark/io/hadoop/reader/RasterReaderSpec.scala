@@ -41,17 +41,21 @@ class RasterReaderSpec extends FunSpec with TestEnvironment with Matchers {
     it("should retrieve all entries") {
       read(tileIds.min, tileIds.max) should be(12)
     }
+
     it("should retrieve all entries when no range is specified") {
       read(Long.MinValue, Long.MaxValue) should be(12)
     }
-    it("should handle a non-existent start and end") {
+
+    it("should handle a non-existent start and first row end") {
       val tileId = tileSpans.head._2
       read(0, tileId) should be(3)
     }
+
     it("should be able to skip a partition") {
       val tileId = tileSpans.last._1
       read(tileId, Long.MaxValue) should be(3)
     }
+
     it("should be handle start=end") {
       val tileId = tileIds(10)
       read(tileId, tileId) should be(1)

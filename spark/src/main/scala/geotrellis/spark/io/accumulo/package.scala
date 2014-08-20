@@ -1,5 +1,6 @@
 package geotrellis.spark.io
 
+import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.rdd._
 import geotrellis.raster._
@@ -35,15 +36,19 @@ package object accumulo {
       (implicit format: AccumuloFormat[K, L]): RDD[(K, Tile)] =
       accumuloRDD(table, layer, None)(format)
 
+    def accumuloRasterRDD[K, L](table: String, layer: L)
+      (implicit format: AccumuloFormat[K, L]): RDD[(K, Tile)] =
+      accumuloRDD(table, layer)(format)
+
     /**
      * @param table   name of the accumulo table
      * @param layer   name of the layer, "nlcd-2011:12"
      *                this encodes both the column family and the zoom level
      * @param extent  tile extent, will usually be used to refine row selection
      */
-    def accumuloRDD[K, L](table: String, layer: L, gridBounds: GridBounds)
+    def accumuloRasterRDD[K, L](table: String, layer: L, gridBounds: GridBounds)
       (implicit format: AccumuloFormat[K, L]): RDD[(K, Tile)] =
-      accumuloRDD(table, layer, Some(gridBounds))(format)
+      accumuloRasterRDD(table, layer, gridBounds, GridCoordScheme)(format)
 
     /**
      * @param table     name of the accumulo table
@@ -51,16 +56,20 @@ package object accumulo {
      *                  this encodes both the column family and the zoom level
      * @param rowSpans  option sequence of row spans, will usually be used to refine row selection
      */
-    def accumuloRDD[K, L](table: String, layer: L, gridBounds: Option[GridBounds])
+    def accumuloRasterRDD[K, L](table: String, layer: L, tileBounds: TileBounds, coordScheme: TileCoordScheme)
       (implicit format: AccumuloFormat[K, L]): RDD[(K, Tile)] =
     {
       // TODO: Read metadata, so we can figure out how the grid coordinates translate to TileIds
       val metaData: LayerMetaData = ???
 
       val spans = 
-        gridBounds.map { gb =>
-          gb.coords.map(metaData.gridToIndex(_)).spans
-        }
+        metaData.withCoordScheme(coordScheme).tileToIndex(tileBounds).spans
+
+      accumuloRDD(table, layer, Some(spans))(format)
+    }
+
+    def accumuloRDD[K, L](table: String, layer: L, spans: Option[Seq[(Long, Long)]])
+      (implicit format: AccumuloFormat[K, L]): RDD[(K, Tile)] = {
 
       val job = Job.getInstance(sc.hadoopConfiguration)
       InputFormatBase.setInputTableName(job, table)

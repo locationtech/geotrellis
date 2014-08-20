@@ -2,7 +2,7 @@ package geotrellis.proj4
 
 import org.osgeo.proj4j._
 
-trait CRS {
+trait CRS extends Serializable {
   private[proj4] val crs: CoordinateReferenceSystem
 
   protected def factory = CRS.crsFactory
@@ -13,6 +13,17 @@ trait CRS {
 
   def toProj4String: String =
     crs.getParameterString
+
+  // TODO: Do these better once more things are ported
+  override
+  def hashCode = toProj4String.hashCode
+
+  override
+  def equals(o: Any): Boolean =
+    o match {
+      case other: CRS => other.toProj4String == toProj4String
+      case _ => false 
+    }
 }
 
 object CRS {

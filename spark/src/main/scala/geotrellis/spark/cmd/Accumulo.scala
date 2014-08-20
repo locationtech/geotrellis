@@ -18,8 +18,6 @@ import org.apache.spark.Logging
 
 class AccumuloArgs extends SparkArgs with HadoopArgs
 
-
-
 object Accumulo extends ArgMain[AccumuloArgs] with Serializable {
   def main(args: AccumuloArgs) {
 
@@ -39,7 +37,7 @@ object Accumulo extends ArgMain[AccumuloArgs] with Serializable {
 
     val zoomLevel = 12
     val rdd = 
-      sc.accumuloRDD(
+      sc.accumuloRasterRDD(
         "tiles2", 
         TmsLayer("nlcd-2012", zoomLevel),
         GridBounds(669, 1529, 670, 1530)

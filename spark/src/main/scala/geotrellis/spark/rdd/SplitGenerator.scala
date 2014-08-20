@@ -70,7 +70,8 @@ object RasterSplitGenerator {
   final val CompressionFactor = 1.3
   
   def apply(gridBounds: GridBounds, indexGridTransform: IndexGridTransform, tileSizeBytes: Int, blockSizeBytes: Long) = {
-    new RasterSplitGenerator(gridBounds, indexGridTransform, computeIncrement(gridBounds, tileSizeBytes, blockSizeBytes))
+    val increment = computeIncrement(gridBounds, tileSizeBytes, blockSizeBytes)
+    new RasterSplitGenerator(gridBounds, indexGridTransform, increment)
   }
 
   /*

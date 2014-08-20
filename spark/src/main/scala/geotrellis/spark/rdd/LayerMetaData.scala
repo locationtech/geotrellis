@@ -15,4 +15,9 @@ case class LayerMetaData(cellType: CellType, extent: Extent, crs: CRS, level: La
   lazy val tileIds = gridToIndex(gridBounds)
   def tileLayout = level.tileLayout
 
+  def withCoordScheme(coordScheme: TileCoordScheme) = 
+    TileCoordIndexMapTransform(coordScheme(tileLayout.tileCols, tileLayout.tileRows), indexGridTransform, mapGridTransform)
 }
+
+case class TileCoordIndexMapTransform(tileGridTransform: TileGridTransform, indexGridTransform: IndexGridTransform, mapGridTransform: MapGridTransform) 
+    extends MapGridTransformDelegate with IndexGridTransformDelegate with MapIndexTransform with TileIndexTransform with TileMapTransform 

@@ -39,7 +39,11 @@ trait TmsHttpService extends HttpService {
       val zoomLevel = zoom
 //      val tileId = zoomLevel.tileId(x,y) //this is a one tile extent
       // TODO: FIX! This needs to go from tile coordinates -> TileId
-      val rdd = sc.accumuloRDD("tiles2", TmsLayer(layer, zoom), GridBounds(x, y, x, y))
+//      val rdd = sc.accumuloRDD("tiles2", TmsLayer(layer, zoom), GridBounds(x, y, x, y))
+
+//      val tileIds: Seq[TileId] = catalog.layer(layer, zoom).metaData.tileToIndex(TmsTileScheme, gridBounds)
+
+      val rdd = sc.accumuloRasterRDD("tiles2", TmsLayer(layer, zoom), GridBounds(x, y, x, y), TmsCoordScheme)
 
       respondWithMediaType(MediaTypes.`image/png`) { complete {
         //at least in the local case it is faster to do collect then encode

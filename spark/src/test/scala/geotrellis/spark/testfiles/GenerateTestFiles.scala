@@ -50,6 +50,7 @@ object GenerateTestFiles {
     val localFS = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
     val prefix = new Path(localFS.getWorkingDirectory, "src/test/resources")
 
+    println(metaData.level.tileLayout)
 
     for((v, name) <- testFiles) {
       println(s"Creating test RasterRDD $name with value $v")
@@ -60,7 +61,6 @@ object GenerateTestFiles {
         }
 
       val path = new Path(prefix, s"$name/${metaData.level.id}")
-      println(s"Deleting $path if it exists")
       localFS.delete(path, true)
 
       val partitioner = {
@@ -71,7 +71,7 @@ object GenerateTestFiles {
         TileIdPartitioner(splitGenerator.splits)
       }
 
-      tmsTiles.foreach { tile => println(tile.id) }
+      //tmsTiles.foreach { tile => println(tile.id) }
 
       val rdd =
         sc.parallelize(tmsTiles)
@@ -79,7 +79,6 @@ object GenerateTestFiles {
           .toRasterRDD(metaData)
 
       rdd.saveAsHadoopRasterRDD(path)
-      println(s"Saved $name")
     }
   }
 }

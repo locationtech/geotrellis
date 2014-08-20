@@ -26,7 +26,7 @@ package object tiling {
       val len = sorted.size
       var currMin = sorted(0)
       var currMax = sorted(0)
-      var i = 2
+      var i = 1
       while(i < len) {
         val id = sorted(i)
         if(id != currMax + 1) {

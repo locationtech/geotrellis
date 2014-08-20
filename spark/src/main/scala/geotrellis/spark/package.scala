@@ -31,6 +31,7 @@ package object spark {
   type TileId = Long
   type ProjectedExtent = (Extent, CRS)
   type Dimensions = (Int, Int)
+  type TileBounds = GridBounds
 
   /** The thing I miss the most from F# */
   implicit class toPipe[A](x : A) { 

@@ -33,7 +33,7 @@ object MapGridTransform {
     new DefaultMapGridTransform(extent, tileCols, tileRows)
 }
 
-trait MapGridTransform {
+trait MapGridTransform extends Serializable {
   def mapToGrid(extent: Extent): GridBounds
   def mapToGrid(coord: MapCoord): GridCoord =
     mapToGrid(coord._1, coord._2)
@@ -44,6 +44,12 @@ trait MapGridTransform {
     gridToMap(coord._1, coord._2)
 
   def gridToMap(col: Int, row: Int): Extent
+
+  def gridToMap(gridBounds: GridBounds): Extent = {
+    val northWest = gridToMap(gridBounds.colMin, gridBounds.rowMin)
+    val southEast = gridToMap(gridBounds.colMax, gridBounds.rowMax)
+    northWest.combine(southEast)
+  }
 }
 
 class DefaultMapGridTransform(extent: Extent, tileCols: Int, tileRows: Int) extends MapGridTransform  {
