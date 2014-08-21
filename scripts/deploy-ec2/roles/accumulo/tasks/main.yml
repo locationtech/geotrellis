@@ -1,7 +1,5 @@
 ---
 
-- include_vars: group_vars/cluster.yml
-
 - include: zookeeper.yml
 
 - get_url: url={{accumulo_url}} dest=/tmp/{{accumulo_deb}} mode=0440

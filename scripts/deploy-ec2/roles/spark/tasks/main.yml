@@ -1,9 +1,6 @@
 ---
 #Tasks for spark roles
 
-- include_vars: group_vars/cluster.yml
-  when: '"development" not in group_names'
-
 - name: Install spark base
   apt: name=spark-core state=present
   sudo: yes

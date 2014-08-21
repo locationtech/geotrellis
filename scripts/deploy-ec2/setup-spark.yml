@@ -1,0 +1,15 @@
+---
+
+- name: Master
+  hosts: master
+  vars:
+    spark_master: "{{ hostvars['master']['ansible_eth1']['ipv4']['address'] }}"
+  roles:
+    - spark
+
+- name: Workers
+  hosts: workers
+  vars:
+    spark_master: "{{ hostvars['master']['ansible_eth1']['ipv4']['address'] }}"
+  roles:
+    - spark

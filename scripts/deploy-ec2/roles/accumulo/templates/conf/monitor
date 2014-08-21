@@ -15,5 +15,5 @@
 
 
 {% for host in groups['master'] %}
-{{hostvars[host]['private_ip']}}
+{{hostvars[host]['ansible_eth1']}}
 {% endfor %}
