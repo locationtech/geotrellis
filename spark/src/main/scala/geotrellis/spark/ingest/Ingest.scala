@@ -17,7 +17,9 @@
 package geotrellis.spark.ingest
 
 import geotrellis.raster._
+import geotrellis.raster.reproject._
 import geotrellis.vector._
+import geotrellis.vector.reproject._
 import geotrellis.proj4._
 
 import geotrellis.spark._
@@ -36,7 +38,18 @@ object Ingest { def apply(sc: SparkContext): Ingest = new Ingest(sc) }
 class Ingest(sc: SparkContext) {
   type Sink = (RDD[TmsTile], LayerMetaData)=>Unit
 
-  // TODO: Read CRS from Source
+  // TODO: Read source CRS from Source
+  def reproject(sourceCRS: CRS, destCRS: CRS): RDD[(Extent, Tile)] => RDD[(Extent, Tile)] =
+    if(sourceCRS == destCRS)
+      { x => x }
+    else {
+      def _reproject(sourceTiles: RDD[(Extent, Tile)]): RDD[(Extent, Tile)] =
+        sourceTiles.map { case (extent, tile) =>
+          tile.reproject(extent, sourceCRS, destCRS).swap
+        }
+      _reproject
+    }
+
   def setMetaData(crs: CRS, tilingScheme: TilingScheme): RDD[(Extent, Tile)] => (RDD[(Extent, Tile)], LayerMetaData) = {
     def _setMetaData(sourceTiles: RDD[(Extent, Tile)]): (RDD[(Extent, Tile)], LayerMetaData) =  {
       val (uncappedExtent, cellType, cellSize): (Extent, CellType, CellSize) =
@@ -51,11 +64,10 @@ class Ingest(sc: SparkContext) {
         }
 
       // TODO: Allow variance of TilingScheme and TileIndexScheme
-      val tileScheme: TilingScheme = TilingScheme.TMS
       val tileIndexScheme: TileIndexScheme = RowIndexScheme
 
       val worldExtent = crs.worldExtent
-      val layerLevel: LayoutLevel = tileScheme.layoutFor(worldExtent, cellSize)
+      val layerLevel: LayoutLevel = tilingScheme.layoutFor(worldExtent, cellSize)
 
       val extent = worldExtent.intersection(uncappedExtent).get
 
@@ -99,9 +111,10 @@ class Ingest(sc: SparkContext) {
     (tiles, metaData)
   }
 
-  def apply(source: =>RDD[(Extent, Tile)], sink:  Sink, crs: CRS, tilingScheme: TilingScheme): Unit =
+  def apply(source: =>RDD[(Extent, Tile)], sink:  Sink, sourceCRS: CRS, destCRS: CRS, tilingScheme: TilingScheme): Unit =
     source |>
-    setMetaData(crs, tilingScheme) |>
+    reproject(sourceCRS, destCRS) |>
+    setMetaData(destCRS, tilingScheme) |>
     mosaic |>
     sink
 
