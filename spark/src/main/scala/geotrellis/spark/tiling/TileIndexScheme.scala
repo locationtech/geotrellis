@@ -11,6 +11,11 @@ object TileIndexScheme {
     }
 }
 
+/**
+ * Tile Index Scheme provides an object that is able to map from
+ * a given Grid Coordinate, where the origin is upper left corner
+ * and tuple (x, y) represents (col, row), to a linear index.
+ */
 trait TileIndexScheme extends Serializable {
   def tag: String
 

@@ -6,6 +6,10 @@ import geotrellis.vector.Extent
 import geotrellis.vector.reproject._
 import geotrellis.proj4._
 
+/**
+ * Allows extending classes to act as a [[MapGridTransform]],
+ *  using their <code>mapGridTransform</code> field as a delegate
+ */
 trait MapGridTransformDelegate extends MapGridTransform {
   val mapGridTransform: MapGridTransform
 
@@ -33,6 +37,12 @@ object MapGridTransform {
     new DefaultMapGridTransform(extent, tileCols, tileRows)
 }
 
+/**
+ * Transforms between geographic map coordinates and tile grid coordinates.
+ * Since geographic point can only be mapped to a grid tile that contains that point,
+ * transformation from [[Extent]] to [[GridBounds]] to [[Extent]] will likely not
+ * produce the original geographic extent, but a larger one.
+ */
 trait MapGridTransform extends Serializable {
   def mapToGrid(extent: Extent): GridBounds
   def mapToGrid(coord: MapCoord): GridCoord =

@@ -4,19 +4,21 @@ import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-trait TileIndexTransform extends Serializable {
-  val tileGridTransform: TileGridTransform
-  val indexGridTransform: IndexGridTransform 
-
+/**
+ * Transforms between linear tile index and a tiling scheme tile coordinates
+ * through the grid coordinates, using the transitive property by chaining
+ * the transformations of its abstract members.
+ */
+trait TileIndexTransform extends Serializable {self: TileGridTransform with IndexGridTransform =>
   def tileToIndex(coord: TileCoord): TileId =
     tileToIndex(coord._1, coord._2)
 
   def tileToIndex(tx: Int, ty: Int): TileId =
-    tileGridTransform.tileToGrid(tx, ty) |> indexGridTransform.gridToIndex
+    tileToGrid(tx, ty) |> gridToIndex
 
   def tileToIndex(tileBounds: TileBounds): Array[TileId] =
-    tileGridTransform.tileToGrid(tileBounds) |> indexGridTransform.gridToIndex
+    tileToGrid(tileBounds) |> gridToIndex
 
   def indexToTile(tileId: TileId): TileCoord =
-    indexGridTransform.indexToGrid(tileId) |> tileGridTransform.gridToTile
+    indexToGrid(tileId) |> gridToTile
 }
