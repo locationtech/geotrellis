@@ -71,7 +71,8 @@ object HadoopIngestCommand extends ArgMain[IngestArgs] with Logging {
     outFs.delete(outPath, true)
     outFs.mkdirs(outPath)
 
-    val crs = LatLng
+    val sourceCRS = LatLng
+    val destCRS = LatLng
 
     val sparkContext = args.sparkContext("Ingest")
     try {
@@ -95,7 +96,7 @@ object HadoopIngestCommand extends ArgMain[IngestArgs] with Logging {
         logInfo(s"Saved raster at zoom level ${metaData.level.id} to $outPathWithZoom")
       }
 
-      Ingest(sparkContext)(source, sink, crs, TilingScheme.TMS)
+      Ingest(sparkContext)(source, sink, sourceCRS, destCRS, TilingScheme.TMS)
 
     } finally {
       sparkContext.stop
