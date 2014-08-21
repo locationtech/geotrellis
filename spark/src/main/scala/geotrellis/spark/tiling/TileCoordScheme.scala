@@ -12,11 +12,16 @@ object TileCoordScheme {
     }
 }
 
+/**
+ * Tile Coordinate Scheme provides an object that is able to map from
+ * a given Tile Coordinate Scheme to a Grid Coordinate, where the
+ * origin is upper left corner and tuple (x, y) represents (col, row).
+ */
 trait TileCoordScheme extends Serializable { 
   def tag: String 
 
-  def apply(tileDimensions: Dimensions): TileGridTransform = 
-    apply(tileDimensions._1, tileDimensions._2)
+  def apply(gridDimensions: Dimensions): TileGridTransform =
+    apply(gridDimensions._1, gridDimensions._2)
 
   def apply(tileCols: Int, tileRows: Int): TileGridTransform
 }

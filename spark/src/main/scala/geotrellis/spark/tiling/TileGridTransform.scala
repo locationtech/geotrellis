@@ -3,6 +3,10 @@ package geotrellis.spark.tiling
 import geotrellis.spark._
 import geotrellis.raster._
 
+/**
+ * Allows extending classes to act as [[TileGridTransform]],
+ *  using their <code>tileGridTransform</code> field as a delegate
+ */
 trait TileGridTransformDelegate extends TileGridTransform {
   val tileGridTransform: TileGridTransform
 
@@ -13,6 +17,13 @@ trait TileGridTransformDelegate extends TileGridTransform {
     tileGridTransform.gridToTile(col, row)
 }
 
+/**
+ * Transforms between grid coordinates, which always have upper left as origin,
+ * to tiling scheme coordinates, which may have different origin and axis orientation.
+ *
+ *  ex: TMS tiling scheme has lower left as it's origin
+ *      Bing tiling scheme has upper left as it's origin
+ */
 trait TileGridTransform extends Serializable {
   def tileToGrid(coord: TileCoord): GridCoord =
     tileToGrid(coord._1, coord._2)
