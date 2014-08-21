@@ -553,6 +553,9 @@ case class ImageDirectory(
 
   def setGDALNoData(input: String) =
     this |-> gdalInternalNoDataLens set (parseGDALNoDataString(input))
+
+  lazy val proj4String: Option[String] = GeoTiffCSParser(this).getProj4String
+
 }
 
 object ImageDirectoryLenses {

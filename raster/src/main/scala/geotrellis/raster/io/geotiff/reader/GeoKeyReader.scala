@@ -59,7 +59,7 @@ case class GeoKeyReader(byteBuffer: ByteBuffer,
     val short = byteBuffer.getUnsignedShort(keyMetadata.valueOffset)
 
     keyMetadata.keyID match {
-      case GTModelTypeGeoKey => geoKeyDirectory |-> gtModelTypeLens set(Some(short))
+      case GTModelTypeGeoKey => geoKeyDirectory |-> gtModelTypeLens set(short)
       case GTRasterTypeGeoKey =>
         geoKeyDirectory |-> gtRasterTypeLens set(Some(short))
       case GeogTypeGeoKey => geoKeyDirectory |-> geogTypeLens set(Some(short))
@@ -76,11 +76,11 @@ case class GeoKeyReader(byteBuffer: ByteBuffer,
       case GeogAzimuthUnitsGeoKey =>
         geoKeyDirectory |-> geogAzimuthUnitsLens set(Some(short))
       case ProjectedCSTypeGeoKey =>
-        geoKeyDirectory |-> projectedCSTypeLens set(Some(short))
+        geoKeyDirectory |-> projectedCSTypeLens set(short)
       case ProjectionGeoKey =>
         geoKeyDirectory |-> projectionLens set(Some(short))
       case ProjCoordTransGeoKey =>
-        geoKeyDirectory |-> projCoordTransLens set(Some(short))
+        geoKeyDirectory |-> projCoordTransLens set(short)
       case ProjLinearUnitsGeoKey =>
         geoKeyDirectory |-> projLinearUnitsLens set(Some(short))
       case VerticalCSTypeGeoKey =>
@@ -101,55 +101,57 @@ case class GeoKeyReader(byteBuffer: ByteBuffer,
 
     keyMetadata.keyID match {
       case GeogLinearUnitSizeGeoKey =>
-        geoKeyDirectory |-> geogLinearUnitSizeLens set(Some(doubles))
+        geoKeyDirectory |-> geogLinearUnitSizeLens set(Some(doubles(0)))
       case GeogAngularUnitSizeGeoKey =>
-        geoKeyDirectory |-> geogAngularUnitSizeLens set(Some(doubles))
+        geoKeyDirectory |-> geogAngularUnitSizeLens set(Some(doubles(0)))
       case GeogSemiMajorAxisGeoKey =>
-        geoKeyDirectory |-> geogSemiMajorAxisLens set(Some(doubles))
+        geoKeyDirectory |-> geogSemiMajorAxisLens set(Some(doubles(0)))
       case GeogSemiMinorAxisGeoKey =>
-        geoKeyDirectory |-> geogSemiMinorAxisLens set(Some(doubles))
+        geoKeyDirectory |-> geogSemiMinorAxisLens set(Some(doubles(0)))
       case GeogInvFlatteningGeoKey =>
-        geoKeyDirectory |-> geogInvFlatteningLens set(Some(doubles))
+        geoKeyDirectory |-> geogInvFlatteningLens set(Some(doubles(0)))
       case GeogPrimeMeridianLongGeoKey =>
-        geoKeyDirectory |-> geogPrimeMeridianLongLens set(Some(doubles))
+        geoKeyDirectory |-> geogPrimeMeridianLongLens set(Some(doubles(0)))
       case ProjLinearUnitSizeGeoKey =>
-        geoKeyDirectory |-> projLinearUnitSizeLens set(Some(doubles))
+        geoKeyDirectory |-> projLinearUnitSizeLens set(Some(doubles(0)))
       case ProjStdParallel1GeoKey =>
-        geoKeyDirectory |-> projStdParallel1Lens set(Some(doubles))
+        geoKeyDirectory |-> projStdParallel1Lens set(Some(doubles(0)))
       case ProjStdParallel2GeoKey =>
-        geoKeyDirectory |-> projStdParallel2Lens set(Some(doubles))
+        geoKeyDirectory |-> projStdParallel2Lens set(Some(doubles(0)))
       case ProjNatOriginLongGeoKey =>
-        geoKeyDirectory |-> projNatOriginLongLens set(Some(doubles))
+        geoKeyDirectory |-> projNatOriginLongLens set(Some(doubles(0)))
       case ProjNatOriginLatGeoKey =>
-        geoKeyDirectory |-> projNatOriginLatLens set(Some(doubles))
+        geoKeyDirectory |-> projNatOriginLatLens set(Some(doubles(0)))
       case ProjFalseEastingGeoKey =>
-        geoKeyDirectory |-> projFalseEastingLens set(Some(doubles))
+        geoKeyDirectory |-> projFalseEastingLens set(Some(doubles(0)))
       case ProjFalseNorthingGeoKey =>
-        geoKeyDirectory |-> projFalseNorthingLens set(Some(doubles))
+        geoKeyDirectory |-> projFalseNorthingLens set(Some(doubles(0)))
       case ProjFalseOriginLongGeoKey =>
-        geoKeyDirectory |-> projFalseOriginLongLens set(Some(doubles))
+        geoKeyDirectory |-> projFalseOriginLongLens set(Some(doubles(0)))
       case ProjFalseOriginLatGeoKey =>
-        geoKeyDirectory |-> projFalseOriginLatLens set(Some(doubles))
+        geoKeyDirectory |-> projFalseOriginLatLens set(Some(doubles(0)))
       case ProjFalseOriginEastingGeoKey =>
-        geoKeyDirectory |-> projFalseOriginEastingLens set(Some(doubles))
+        geoKeyDirectory |-> projFalseOriginEastingLens set(Some(doubles(0)))
       case ProjFalseOriginNorthingGeoKey =>
-        geoKeyDirectory |-> projFalseOriginNorthingLens set(Some(doubles))
+        geoKeyDirectory |-> projFalseOriginNorthingLens set(Some(doubles(0)))
       case ProjCenterLongGeoKey =>
-        geoKeyDirectory |-> projCenterLongLens set(Some(doubles))
+        geoKeyDirectory |-> projCenterLongLens set(Some(doubles(0)))
       case ProjCenterLatGeoKey =>
-        geoKeyDirectory |-> projCenterLatLens set(Some(doubles))
+        geoKeyDirectory |-> projCenterLatLens set(Some(doubles(0)))
       case ProjCenterEastingGeoKey =>
-        geoKeyDirectory |-> projCenterEastingLens set(Some(doubles))
+        geoKeyDirectory |-> projCenterEastingLens set(Some(doubles(0)))
       case ProjCenterNorthingGeoKey =>
-        geoKeyDirectory |-> projCenterNorthingLens set(Some(doubles))
+        geoKeyDirectory |-> projCenterNorthingLens set(Some(doubles(0)))
       case ProjScaleAtNatOriginGeoKey =>
-        geoKeyDirectory |-> projScaleAtNatOriginLens set(Some(doubles))
+        geoKeyDirectory |-> projScaleAtNatOriginLens set(Some(doubles(0)))
       case ProjScaleAtCenterGeoKey =>
-        geoKeyDirectory |-> projScaleAtCenterLens set(Some(doubles))
+        geoKeyDirectory |-> projScaleAtCenterLens set(Some(doubles(0)))
       case ProjAzimuthAngleGeoKey =>
-        geoKeyDirectory |-> projAzimuthAngleLens set(Some(doubles))
+        geoKeyDirectory |-> projAzimuthAngleLens set(Some(doubles(0)))
       case ProjStraightVertPoleLongGeoKey =>
-        geoKeyDirectory |-> projStraightVertPoleLongLens set(Some(doubles))
+        geoKeyDirectory |-> projStraightVertPoleLongLens set(Some(doubles(0)))
+      case ProjRectifiedGridAngleGeoKey =>
+        geoKeyDirectory |-> projRectifiedGridAngleLens set(Some(doubles(0)))
       case tag => geoKeyDirectory |-> geoKeyDoublesMapLens modify (_ + (tag
           -> doubles))
     }

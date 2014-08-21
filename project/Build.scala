@@ -167,7 +167,8 @@ object GeotrellisBuild extends Build {
       name := "geotrellis-proj4",
       libraryDependencies ++= Seq(
         "junit" % "junit" % "3.8.1" % "test",
-        "com.novocode" % "junit-interface" % "0.9" % "test"
+        "com.novocode" % "junit-interface" % "0.9" % "test",
+        scalaCSV
       )
     )
 
@@ -195,7 +196,8 @@ object GeotrellisBuild extends Build {
         spire,
         monocleCore,
         monocleMacro,
-        sprayClient // for reading args from URLs,
+        sprayClient, // for reading args from URLs,
+        scalaCSV
       )
     ) ++
     defaultAssemblySettings
