@@ -23,11 +23,20 @@
   # Needed until is in a release:
   #   https://github.com/ansible/ansible/pull/8002
   #
+- name: Check if device already has a file system
+  command: blkid -c /dev/null -o value -s TYPE {{ item.device }}
+  with_items: hdfs.volumes
+  register: existing_fs
+  changed_when: existing_fs.rc == 2
+  failed_when: False
+  sudo: yes
+  when: '"development" in group_names'
+
 - name: Format Vagrant Hadoop data partitions as ext3
   command: "mkfs.ext3 {{ item.device }} -F"
   with_items: hdfs.volumes
   sudo: yes
-  when: '"development" in group_names'
+  when: '"development" in group_names and existing_fs|changed'
 
 - name: Mount Hadoop data partitions
   mount: name="{{item.mount}}" src="{{item.device}}" fstype=ext3 state=mounted
