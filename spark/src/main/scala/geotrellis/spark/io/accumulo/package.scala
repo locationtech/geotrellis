@@ -63,7 +63,7 @@ package object accumulo {
       val metaData: LayerMetaData = ???
 
       val spans = 
-        metaData.withCoordScheme(coordScheme).tileToIndex(tileBounds).spans
+        metaData.transform.withCoordScheme(coordScheme).tileToIndex(tileBounds).spans
 
       accumuloRDD(table, layer, Some(spans))(format)
     }

@@ -67,11 +67,9 @@ object GenerateTestFiles {
         val tileSizeBytes = metaData.tileLayout.tileCols * metaData.tileLayout.tileRows * cellType.bytes
         val blockSizeBytes = HdfsUtils.defaultBlockSize(path, conf)
         val splitGenerator =
-          RasterSplitGenerator(metaData.gridBounds, metaData, tileSizeBytes, blockSizeBytes)
+          RasterSplitGenerator(metaData.gridBounds, metaData.transform, tileSizeBytes, blockSizeBytes)
         TileIdPartitioner(splitGenerator.splits)
       }
-
-      //tmsTiles.foreach { tile => println(tile.id) }
 
       val rdd =
         sc.parallelize(tmsTiles)

@@ -105,7 +105,7 @@ trait RasterVerifyMethods extends ShouldMatchers { self: TestEnvironment =>
   }
 
   def verifyTiles(raster: Path, meta: LayerMetaData): Unit = {
-    val expectedTileIds = meta.mapToIndex(meta.extent)
+    val expectedTileIds = meta.transform.mapToIndex(meta.extent)
 
     val reader = RasterReader(raster, conf)
     val actualTileIds = reader.map { case (tw, aw) => tw.get }.toList

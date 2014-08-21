@@ -79,11 +79,11 @@ object HadoopIngestCommand extends ArgMain[IngestArgs] with Logging {
       val source = sparkContext.hadoopGeoTiffRDD(inPath)
       val sink = { (tiles: RDD[TmsTile], metaData: LayerMetaData) =>
         val partitioner = {
-          val gridBounds = metaData.mapToGrid(metaData.extent)
+          val gridBounds = metaData.transform.mapToGrid(metaData.extent)
           val tileSizeBytes = gridBounds.width * gridBounds.height * metaData.cellType.bytes
           val blockSizeBytes = HdfsUtils.defaultBlockSize(inPath, conf)
           val splitGenerator =
-            RasterSplitGenerator(gridBounds, metaData, tileSizeBytes, blockSizeBytes)
+            RasterSplitGenerator(gridBounds, metaData.transform, tileSizeBytes, blockSizeBytes)
           TileIdPartitioner(splitGenerator.splits)
         }
 

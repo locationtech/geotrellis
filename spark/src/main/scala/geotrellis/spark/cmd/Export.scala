@@ -96,8 +96,8 @@ object Export extends ArgMain[ExportArgs] with Logging {
     // TMS tiles start from lower left corner whereas CompositeTile expects them to start from  
     // upper left, so we need to re-sort the array
     def compare(left: TmsTile, right: TmsTile): Boolean = {
-      val (lx, ly) = metaData.indexToGrid(left.id)
-      val (rx, ry) = metaData.indexToGrid(right.id)
+      val (lx, ly) = metaData.transform.indexToGrid(left.id)
+      val (rx, ry) = metaData.transform.indexToGrid(right.id)
       (ly > ry) || (ly == ry && lx < rx)
     }
 
@@ -128,9 +128,9 @@ object Export extends ArgMain[ExportArgs] with Logging {
       val rrdd = sc.hadoopRasterRDD(rasterPath.toUri.toString)
 
       for (tmsTile <- rrdd) {
-        val (tx, ty) = metaData.indexToGrid(tmsTile.id)
+        val (tx, ty) = metaData.transform.indexToGrid(tmsTile.id)
         val extent = 
-          metaData.indexToMap(tmsTile.id)
+          metaData.transform.indexToMap(tmsTile.id)
         GeoTiffWriter.write(s"${output}/tile-${tmsTile.id}.tif", tmsTile.tile, extent)
         logInfo(s"---------tx: ${tx}, ty: ${ty} file: tile-${tmsTile.id}.tif")
       }
