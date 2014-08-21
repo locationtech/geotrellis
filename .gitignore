@@ -28,3 +28,4 @@ _SUCCESS
 *.swp
 *.swo
 *.sublime-*
+.vagrant
