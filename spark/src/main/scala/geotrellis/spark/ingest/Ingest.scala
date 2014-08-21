@@ -85,10 +85,11 @@ class Ingest(sc: SparkContext) {
         .flatMap { case (extent, tile) =>
           val metaData = bcMetaData.value
           metaData
+            .transform
             .mapToGrid(extent)
             .coords
             .map { coord =>
-              val tileId = metaData.gridToIndex(coord)
+              val tileId = metaData.transform.gridToIndex(coord)
               (tileId, (tileId, extent, tile)) 
             }
          }
@@ -96,12 +97,12 @@ class Ingest(sc: SparkContext) {
           { case (tileId, extent, tile) =>
             val metaData = bcMetaData.value
             val tmsTile = ArrayTile.empty(metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
-            tmsTile.merge(metaData.indexToMap(tileId), extent, tile)
+            tmsTile.merge(metaData.transform.indexToMap(tileId), extent, tile)
           },
           { (tmsTile: MutableArrayTile, tup: (Long, Extent, Tile)) =>
             val metaData = bcMetaData.value
             val (tileId, extent, tile) = tup
-            tmsTile.merge(metaData.indexToMap(tileId), extent, tile)
+            tmsTile.merge(metaData.transform.indexToMap(tileId), extent, tile)
           },
           { (tmsTile1: MutableArrayTile , tmsTile2: MutableArrayTile) =>
             tmsTile1.merge(tmsTile2)
