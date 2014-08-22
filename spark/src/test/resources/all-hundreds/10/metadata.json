@@ -1,1 +1,1 @@
-{"cellType":"float32","extent":{"xmin":141.7066666666667,"ymin":-18.373333333333342,"xmax":142.56000000000003,"ymax":-17.52000000000001},"zoomLevel":10}
+{"cellType":"float32","extent":{"xmin":141.7066666666667,"ymin":-18.373333333333342,"xmax":142.56000000000003,"ymax":-17.52000000000001},"crs":"+proj=longlat +datum=WGS84 +no_defs ","layoutLevel":{"id":10,"tileLayout":{"tileCols":1024,"tileRows":512,"pixelCols":512,"pixelRows":512}},"tileIndexScheme":"row_index"}

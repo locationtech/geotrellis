@@ -88,6 +88,7 @@ case class RasterReader(
         }
         return false
       }
+
       /*
        *  1. found = readers[curPartition].next(currentKey, value)
        *  2. if !found increment curPartition, ensure that its within limits, and 

@@ -27,11 +27,10 @@ package object formats {
   type WritableTile = (TileIdWritable, ArgWritable)
   implicit class WritableTileWrapper(wt: WritableTile) {
     def toTmsTile(metaData: LayerMetaData): TmsTile = {
-      val zoomLevel = metaData.zoomLevel
       val tileId = 
         wt._1.get
       val tile = 
-        wt._2.toTile(metaData.cellType, zoomLevel.tileCols, zoomLevel.tileRows)
+        wt._2.toTile(metaData.cellType, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
 
       TmsTile(tileId, tile)
     }
@@ -40,11 +39,10 @@ package object formats {
   type PayloadWritableTile = (TileIdWritable, PayloadArgWritable)
   implicit class PayloadWritableTileWrapper(pwt: PayloadWritableTile) {
     def toPayloadTile(metaData: LayerMetaData): TmsTile = {
-      val zoomLevel = metaData.zoomLevel
-      val tileId = 
+       val tileId = 
         pwt._1.get
       val tile = 
-        pwt._2.toTile(metaData.cellType, zoomLevel.tileCols, zoomLevel.tileRows)
+        pwt._2.toTile(metaData.cellType, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
 
       TmsTile(tileId, tile)
     }

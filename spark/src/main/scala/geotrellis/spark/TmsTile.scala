@@ -21,10 +21,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 
-case class TmsTile(id: Long, tile: Tile) {
-  def tileXY(zoom: Int) =
-    TmsTiling.tileXY(id, zoom)
-}
+case class TmsTile(id: Long, tile: Tile)
 
 object TmsTile {
   def apply(tup: (Long, Tile)): TmsTile = 

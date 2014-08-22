@@ -23,13 +23,11 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 
 class TestFiles(val path: Path, conf: Configuration) {
-  val metaData @ LayerMetaData(cellType, extent, zoomLevel) = 
+  val metaData = 
     HadoopUtils.readLayerMetaData(path, conf)
 
-  def tileCount =
-    zoomLevel
-      .tileExtentForExtent(extent)
-      .count(zoomLevel)
+  def tileCount = 
+    metaData.tileIds.size
 }
 
 object AllOnes {

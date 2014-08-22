@@ -20,7 +20,7 @@ class SaveRasterSpec
       it("should produce the expected metadata") {
         val ones = sc.hadoopRasterRDD(allOnes.path)
         val twos = ones + ones
-        val twosPath = new Path(outputLocal, "twos/" + twos.metaData.zoomLevel.level.toString)
+        val twosPath = new Path(outputLocal, "twos/" + twos.metaData.level.id.toString)
         twos.saveAsHadoopRasterRDD(twosPath)
         
         // compare metadata

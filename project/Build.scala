@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2014 Azavea.
  *
@@ -51,6 +52,7 @@ object GeotrellisBuild extends Build {
           "-unchecked",
           "-Yinline-warnings",
           "-language:implicitConversions",
+          "-language:reflectiveCalls",
           "-language:postfixOps",
           "-language:existentials",
           "-feature"),
@@ -145,14 +147,14 @@ object GeotrellisBuild extends Build {
   // Project: vector-test
   lazy val vectorTest =
     Project("vector-test", file("vector-test"))
-      .settings(name := "geotrellis-vector-test")
-      .settings(libraryDependencies ++=
-        Seq(
-          scalatest   % "test",
-          scalacheck  % "test"
-        )
-      )
       .dependsOn(vector, testkit)
+      .settings(name := "geotrellis-vector-test")
+      .settings(libraryDependencies ++= Seq(
+        scalatest   % "test",
+        scalacheck  % "test"
+      )
+    )
+
 
   // Project: proj4
   lazy val proj4 =
@@ -163,8 +165,9 @@ object GeotrellisBuild extends Build {
     Seq(
       name := "geotrellis-proj4",
       libraryDependencies ++= Seq(
-        "junit" % "junit" % "3.8.1" % "test",
-        "com.novocode" % "junit-interface" % "0.9" % "test"
+        "org.parboiled" %% "parboiled" % "2.0.0" % "test",
+        scalatest   % "test",
+        scalacheck  % "test"
       )
     )
 

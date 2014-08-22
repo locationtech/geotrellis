@@ -19,6 +19,8 @@ package geotrellis.raster
 import geotrellis.vector.Extent
 import scala.math.{min, max, round, ceil, floor}
 
+import spire.syntax.cfor._
+
 case class GeoAttrsError(msg: String) extends Exception(msg)
 
 /**
@@ -28,6 +30,17 @@ case class GeoAttrsError(msg: String) extends Exception(msg)
 case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   val width = colMax - colMin + 1
   val height = rowMax - rowMin + 1
+
+  def coords: Array[(Int, Int)] = {
+    val arr = Array.ofDim[(Int, Int)](width*height)
+    cfor(0)(_ < height, _ + 1) { row =>
+      cfor(0)(_ < width, _ + 1) { col =>
+        arr(row * width + col) = 
+          (col + colMin, row + rowMin)
+      }
+    }
+    arr
+  }
 }
 
 object GridBounds {
