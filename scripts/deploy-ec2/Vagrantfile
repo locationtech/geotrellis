@@ -10,17 +10,6 @@ SPARK_WORKERS=2
 SPARK_WORKER_DISKS = 2
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
-  # def local_ip
-  #   `ipconfig getifaddr eth0 || ipconfig getifaddr en0`.strip
-  # end
-
-  # # Wire up the proxy
-  # if Vagrant.has_plugin?("vagrant-proxyconf")
-  #   cluster.proxy.http     = "http://#{local_ip}:8123/"
-  #   cluster.proxy.https    = "http://#{local_ip}:8123/"
-  #   cluster.proxy.no_proxy = "localhost,127.0.0.1"
-  # end
-
   cluster.vm.box = "ubuntu/precise64"
 
   # Wire up the proxy
@@ -44,9 +33,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
 
   (11..(10+SPARK_WORKERS)).each_with_index do |last_octet, index|
     index = index + 1
+    (workers ||= []) << :"worker-#{index}"
 
     cluster.vm.define "worker-#{index}" do |machine|
-      machine.vm.hostname = "worker-01"
+      machine.vm.hostname = "worker-#{index}"
       machine.vm.network "private_network", ip: "33.33.33.#{last_octet}"
 
       machine.vm.provider "virtualbox" do |v|
@@ -62,13 +52,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
 
       if (index) == SPARK_WORKERS 
         machine.vm.provision "ansible" do |ansible|
-        ansible.playbook = "./setup-cluster.yml"
-        ansible.groups = {
-          "master" => [ "master" ],
-          "workers" => [ "worker-1", "worker-2" ],
-          "development:children" => [ "master", "workers" ]
-        } #TODO: the lists of machiens should be generated from the loop
-        ansible.limit = "all"
+          ansible.playbook = "./setup-cluster.yml"
+          ansible.groups = {
+            "master" => [ "master" ],
+            "workers" => workers,
+            "development:children" => [ "master", "workers" ]
+          }
+          ansible.limit = "development"
         end
       end
     end
