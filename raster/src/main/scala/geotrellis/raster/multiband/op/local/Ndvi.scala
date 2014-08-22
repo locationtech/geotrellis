@@ -13,6 +13,10 @@ object Ndvi extends Serializable {
     if (f > m.bands || l > m.bands) {
       throw new IndexOutOfBoundsException("Index of bands")
     } else {
-      m.getBand(f).dualCombine(m.getBand(l))((r, g) => (r - g) / (r + g))((r, g) => (r - g) / (r + g))
+      m.getBand(f).dualCombine(m.getBand(l))((r, n) =>
+        if ((n+r) == 0) NODATA
+        else (n - r) / (n + r))((r, n) =>
+        if ((n+r) == 0) Double.NaN
+        else (n - r) / (n + r))
     }
 }
