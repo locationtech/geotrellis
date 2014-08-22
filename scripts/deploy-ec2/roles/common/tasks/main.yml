@@ -2,7 +2,7 @@
 
 #Tasks for common role
 - name: Install OpenJDK 7 JDK
-  apt: pkg=openjdk-7-jdk state=present install_recommends=yes
+  apt: pkg=openjdk-7-jdk state=present install_recommends=yes update_cache=yes
   sudo: yes
 
 - name: There's no place like $JAVA_HOME
