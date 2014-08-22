@@ -6,6 +6,8 @@ This directory contains a set of Ansible scripts that will deploy a Spark/Hadoop
   - Python >2.5
   - [Ansible >1.6](http://www.ansible.com/home) (For Ubuntu users, [check here to install the latest version](http://docs.ansible.com/intro_installation.html#latest-releases-via-apt-ubuntu))
   - [Boto](http://boto.readthedocs.org/en/latest/)
+  - polipo proxy (Vagrant will attempt to use the proxy on the master)
+  - https://github.com/smdahlen/vagrant-hostmanager (required to make HDFS happy)
 
 To set up a spark\HDFS cluster, follow these steps:
 
