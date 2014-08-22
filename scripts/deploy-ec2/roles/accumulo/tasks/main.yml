@@ -32,10 +32,17 @@
   sudo: yes
   notify: Restart Accumulo
 
+- name: Check /accumulo exists in HDFS
+  command: hadoop fs -ls /accumulo
+  register: existing_accumulo
+  changed_when: existing_accumulo.rc == 1
+  failed_when: False
+  sudo: yes
+
 - name: Initilize Accumulo
   shell: sudo accumulo init --instance-name {{accumulo.instance}} --password {{accumulo.password}} creates=/accumulo/tables
   sudo: yes
-  when: '"master" in group_names'
+  when: '"master" in group_names and existing_accumulo|changed'
 
 - service: name=accumulo state=started enabled=yes
   sudo: yes
