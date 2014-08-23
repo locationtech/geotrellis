@@ -519,7 +519,7 @@ class GeoTiffCSParser(directory: ImageDirectory) {
         case Some(map) => map.get(SemiMajorAxisCode) match {
           case Some(semiMajorStr) =>
             if (semiMajorStr != "" && semiMajorStr.toDouble != 0.0) {
-              val semiMajor = map.get(UOMCodeLowerCase) match {
+              val semiMajor = map.get(UOMCode) match {
                 case Some(code) if (code != "") => getLengthInfo(code.toInt) match {
                   case Some(conv) => semiMajorStr.toDouble * conv
                   case None => semiMajorStr.toDouble
@@ -868,15 +868,26 @@ class GeoTiffCSParser(directory: ImageDirectory) {
 
     val units = projectedLinearUnitsMap.get(gtgp.length) match {
       case Some(unit) => s" +units=$unit"
-      case None => s" +tometer=${gtgp.lengthInMeters}"
+      case None => s" +to_meter=${gtgp.lengthInMeters}"
     }
 
-    val falseEastingParams = gtgp.projectionParameters(5)
-    val falseNorthingParams = gtgp.projectionParameters(6)
-    val falseEasting = if (falseEastingParams == null) 0.0 else falseEastingParams._2
-    val falseNorthing = if (falseNorthingParams == null) 0.0 else falseNorthingParams._2
+    val falseEastingParams =
+      if (gtgp.projectionParameters.size >= 6) Some(gtgp.projectionParameters(5))
+      else None
+    val falseNorthingParams =
+      if (gtgp.projectionParameters.size >= 7) Some(gtgp.projectionParameters(6))
+      else None
 
-    // TODO: formatting decimal crap and fix code dup
+    val falseEasting = falseEastingParams match {
+      case Some(tup) => tup._2
+      case None => 0.0
+    }
+
+    val falseNorthing = falseNorthingParams match {
+      case Some(tup) => tup._2
+      case None => 0.0
+    }
+
     if (gtgp.model == ModelTypeGeographic)
       proj4SB.append("+proj=latlng")
     else if (gtgp.mapSystem == MapSys_UTM_North)
@@ -1080,8 +1091,6 @@ class GeoTiffCSParser(directory: ImageDirectory) {
       proj4SB.append(
         s"+proj=nzmg +lat_0=$lat_0 +lon_0=$lon_0 +x_0=$x_0 +y_0=$y_0"
       )
-    } else if (gtgp.ctProjection == CT_TransvMercator_SouthOriented) {
-      // TODO: unsupported by Proj4
     } else if (gtgp.ctProjection == CT_ObliqueMercator) {
       val lat_0 = gtgp.projectionParameters(0)._2
       val lonc = gtgp.projectionParameters(1)._2
@@ -1109,11 +1118,9 @@ class GeoTiffCSParser(directory: ImageDirectory) {
       proj4SB.append(s" +a=${gtgp.semiMajor} +b=${gtgp.semiMinor}")
     }
 
-    if (proj4SB.length == 0) None
-    else {
-      proj4SB.append(units)
-      Some(proj4SB.toString)
-    }
+    if (proj4SB.length == 0 ||
+      gtgp.ctProjection == CT_TransvMercator_SouthOriented) None
+    else Some(proj4SB.append(units).toString)
   }
 
 }

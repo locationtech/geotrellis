@@ -56,7 +56,7 @@ case class GeoKeyReader(byteBuffer: ByteBuffer,
 
   private def readShort(keyMetadata: GeoKeyMetadata,
     geoKeyDirectory: GeoKeyDirectory) = {
-    val short = byteBuffer.getUnsignedShort(keyMetadata.valueOffset)
+    val short = keyMetadata.valueOffset
 
     keyMetadata.keyID match {
       case GTModelTypeGeoKey => geoKeyDirectory |-> gtModelTypeLens set(short)

@@ -370,60 +370,60 @@ class GeoTiffReaderSpec extends FunSpec
   describe ("reads GeoTiff CS correctly") {
 
     it ("should read slope.tif CS correctly") {
-     val tiff = read("slope.tif")
+      val tiff = read("slope.tif")
 
-     val proj4String = tiff.imageDirectories.head.proj4String getOrElse fail
+      val proj4String = tiff.imageDirectories.head.proj4String getOrElse fail
 
-     proj4String should equal ("+proj=utm +zone=10 +ellps=clrk66 +units=m")
-     }
+      proj4String should equal ("+proj=utm +zone=10 +ellps=clrk66 +units=m")
+    }
 
-     it ("should read aspect.tif CS correctly") {
-     val tiff = read("aspect.tif")
+    it ("should read aspect.tif CS correctly") {
+      val tiff = read("aspect.tif")
 
-     val proj4String = tiff.imageDirectories.head.proj4String getOrElse fail
+      val proj4String = tiff.imageDirectories.head.proj4String getOrElse fail
 
-     val tiffProj4Map = proj4StringToMap(proj4String)
+      val tiffProj4Map = proj4StringToMap(proj4String)
 
-     val correctProj4Map = HashMap[String, String](
-     "proj" -> "lcc", "lat_0" -> "33.750000000", "lon_0" -> "-79.000000000",
-     "lat_1" -> "36.166666667", "lat_2" -> "34.333333333", "x_0" -> "609601.220",
-     "y_0" -> "0.000", "ellps" -> "GRS80", "units" -> "m"
-     )
+      val correctProj4Map = HashMap[String, String](
+        "proj" -> "lcc", "lat_0" -> "33.750000000", "lon_0" -> "-79.000000000",
+        "lat_1" -> "36.166666667", "lat_2" -> "34.333333333", "x_0" -> "609601.220",
+        "y_0" -> "0.000", "ellps" -> "GRS80", "units" -> "m"
+      )
 
-     compareValues(tiffProj4Map, correctProj4Map, "proj", false)
-     compareValues(tiffProj4Map, correctProj4Map, "ellps", false)
-     compareValues(tiffProj4Map, correctProj4Map, "units", false)
-     compareValues(tiffProj4Map, correctProj4Map, "lat_0", true)
-     compareValues(tiffProj4Map, correctProj4Map, "lon_0", true)
-     compareValues(tiffProj4Map, correctProj4Map, "lat_1", true)
-     compareValues(tiffProj4Map, correctProj4Map, "lat_2", true)
-     compareValues(tiffProj4Map, correctProj4Map, "x_0", true)
-     compareValues(tiffProj4Map, correctProj4Map, "y_0", true)
-     }
+      compareValues(tiffProj4Map, correctProj4Map, "proj", false)
+      compareValues(tiffProj4Map, correctProj4Map, "ellps", false)
+      compareValues(tiffProj4Map, correctProj4Map, "units", false)
+      compareValues(tiffProj4Map, correctProj4Map, "lat_0", true)
+      compareValues(tiffProj4Map, correctProj4Map, "lon_0", true)
+      compareValues(tiffProj4Map, correctProj4Map, "lat_1", true)
+      compareValues(tiffProj4Map, correctProj4Map, "lat_2", true)
+      compareValues(tiffProj4Map, correctProj4Map, "x_0", true)
+      compareValues(tiffProj4Map, correctProj4Map, "y_0", true)
+    }
 
-     it ("should read econic.tif CS correctly") {
-     val tiff = read("econic.tif")
+    it ("should read econic.tif CS correctly") {
+      val tiff = read("econic.tif")
 
-     val proj4String = tiff.imageDirectories.head.proj4String getOrElse fail
+      val proj4String = tiff.imageDirectories.head.proj4String getOrElse fail
 
-     val tiffProj4Map = proj4StringToMap(proj4String)
+      val tiffProj4Map = proj4StringToMap(proj4String)
 
-     val correctProj4Map = HashMap[String, String](
-     "proj" -> "eqdc", "lat_1" -> "33.903634028", "lat_2" -> "33.625290028",
-     "lat_0" -> "33.764462028", "lon_0" -> "-117.474542889", "x_0" -> "0.000",
-     "y_0" -> "0.000", "ellps" -> "clrk66", "units" -> "m"
-     )
+      val correctProj4Map = HashMap[String, String](
+        "proj" -> "eqdc", "lat_1" -> "33.903634028", "lat_2" -> "33.625290028",
+        "lat_0" -> "33.764462028", "lon_0" -> "-117.474542889", "x_0" -> "0.000",
+        "y_0" -> "0.000", "ellps" -> "clrk66", "units" -> "m"
+      )
 
-     compareValues(tiffProj4Map, correctProj4Map, "proj", false)
-     compareValues(tiffProj4Map, correctProj4Map, "ellps", false)
-     compareValues(tiffProj4Map, correctProj4Map, "units", false)
-     compareValues(tiffProj4Map, correctProj4Map, "lat_1", true)
-     compareValues(tiffProj4Map, correctProj4Map, "lat_2", true)
-     compareValues(tiffProj4Map, correctProj4Map, "lat_0", true)
-     compareValues(tiffProj4Map, correctProj4Map, "lon_0", true)
-     compareValues(tiffProj4Map, correctProj4Map, "x_0", true)
-     compareValues(tiffProj4Map, correctProj4Map, "y_0", true)
-     }
+      compareValues(tiffProj4Map, correctProj4Map, "proj", false)
+      compareValues(tiffProj4Map, correctProj4Map, "ellps", false)
+      compareValues(tiffProj4Map, correctProj4Map, "units", false)
+      compareValues(tiffProj4Map, correctProj4Map, "lat_1", true)
+      compareValues(tiffProj4Map, correctProj4Map, "lat_2", true)
+      compareValues(tiffProj4Map, correctProj4Map, "lat_0", true)
+      compareValues(tiffProj4Map, correctProj4Map, "lon_0", true)
+      compareValues(tiffProj4Map, correctProj4Map, "x_0", true)
+      compareValues(tiffProj4Map, correctProj4Map, "y_0", true)
+    }
 
     it ("should read bilevel.tif CS correctly") {
       val tiff = read("geotiff-reader-tiffs/bilevel.tif")
@@ -447,6 +447,54 @@ class GeoTiffReaderSpec extends FunSpec
       compareValues(tiffProj4Map, correctProj4Map, "y_0", true)
       compareValues(tiffProj4Map, correctProj4Map, "a", true)
       compareValues(tiffProj4Map, correctProj4Map, "b", true, 1e-3)
+    }
+
+    it ("should read all-ones.tif CS correctly") {
+      val tiff = read("geotiff-reader-tiffs/all-ones.tif")
+
+      val proj4String = tiff.imageDirectories.head.proj4String getOrElse fail
+
+      val tiffProj4Map = proj4StringToMap(proj4String)
+
+      val correctProj4Map = HashMap[String, String](
+        "proj" -> "latlng", "ellps" -> "WGS84", "to_meter" -> "1.0"
+      )
+
+      compareValues(tiffProj4Map, correctProj4Map, "proj", false)
+      compareValues(tiffProj4Map, correctProj4Map, "ellps", false)
+      compareValues(tiffProj4Map, correctProj4Map, "to_meter", true)
+    }
+
+    it ("should read colormap.tif CS correctly") {
+      val tiff = read("geotiff-reader-tiffs/colormap.tif")
+
+      val proj4String = tiff.imageDirectories.head.proj4String getOrElse fail
+
+      val tiffProj4Map = proj4StringToMap(proj4String)
+
+      val correctProj4Map = HashMap[String, String](
+        "proj" -> "latlng", "ellps" -> "WGS84", "to_meter" -> "1.0"
+      )
+
+      compareValues(tiffProj4Map, correctProj4Map, "proj", false)
+      compareValues(tiffProj4Map, correctProj4Map, "ellps", false)
+      compareValues(tiffProj4Map, correctProj4Map, "to_meter", true)
+    }
+
+    it ("should read us_ext_clip_esri.tif CS correctly") {
+      val tiff = read("geotiff-reader-tiffs/us_ext_clip_esri.tif")
+
+      val proj4String = tiff.imageDirectories.head.proj4String getOrElse fail
+
+      val tiffProj4Map = proj4StringToMap(proj4String)
+
+      val correctProj4Map = HashMap[String, String](
+        "proj" -> "latlng", "ellps" -> "WGS84", "to_meter" -> "1.0"
+      )
+
+      compareValues(tiffProj4Map, correctProj4Map, "proj", false)
+      compareValues(tiffProj4Map, correctProj4Map, "ellps", false)
+      compareValues(tiffProj4Map, correctProj4Map, "to_meter", true)
     }
 
   }

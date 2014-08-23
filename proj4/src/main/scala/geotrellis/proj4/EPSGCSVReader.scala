@@ -29,7 +29,6 @@ object CSVFileConstants {
   val SourceGeoCRSCode       = "SOURCE_GEOGCRS_CODE"
   val DatumCode              = "DATUM_CODE"
   val PrimeMeridianCode      = "PRIME_MERIDIAN_CODE"
-  val UOMCodeLowerCase       = "uom_code" // Do the csv lib match upper to lower case?
   val FactorBCode            = "FACTOR_B"
   val FactorCCode            = "FACTOR_C"
   val EllipsoidCode          = "ELLIPSOID_CODE"
@@ -60,7 +59,7 @@ class EPSGCSVReader {
     getValues("gdal_datum.csv", code, DatumCode)
 
   def getUnitOfMeasureValues(code: Int): Option[Map[String, String]] =
-    getValues("unit_of_measure.csv", code, UOMCodeLowerCase)
+    getValues("unit_of_measure.csv", code, UOMCode)
 
   def getGCSEPSGValues(code: Int): Option[Map[String, String]] = {
     val overrideMap = getValues("gcs.override.csv", code, CoordRefSysCode)
@@ -78,7 +77,7 @@ class EPSGCSVReader {
     fileName: String,
     code: Int,
     codeFlag: String): Option[Map[String, String]] = {
-    val reader = CSVReader.open(new File(fileName))
+    val reader = CSVReader.open(new File(s"proj4/src/main/resources/$fileName"))
     val maps = reader.allWithHeaders
 
     maps.filter(_.get(codeFlag) == Some(code.toString)).headOption
