@@ -2,38 +2,7 @@
 
 cluster_name: super-cluster
 
-#Baked into AMIs when created by EC2
-ec2_key_name: spark-cluster
-ec2_key_file: keys/spark-cluster.pem
-
-#These are used by HDFS to copy from S3 buckets
-aws:
-  key_id:     <AKI...>
-  key_secret: <...>
-
-#Ubuntu 12.04 LTS AMI
-region: us-east-1
-instance_type: m3.large
-image: ami-018c9568
-
-#Spark/HDFS workers
-worker_count: 3
-
-#These volumes will be given to hdfs data nodes
-#recommended device names are from xvdf to xvdp
-hdfs:
-  volumes: [
-    { device: /dev/xvdf, mount: /mnt/data1, size: 64 },
-    { device: /dev/xvdg, mount: /mnt/data2, size: 64 }
-  ]
-  replication: 3
-
-# If you need to connect to the cluster VPN, set this to
-# your local network's public subnet. It will be included
-# as part of the security group for the master instance.
-allow_vpn_from_subnet: 0.0.0.0/32
-
 cdh:
-  repo: precise-cdh5.1.0
+  repo: {{ ansible_distribution_release }}-cdh5.1.0
   spark_version: 1.0.0-cdh5.1.0
   hadoop_version: 2.3.0-cdh5.1.0

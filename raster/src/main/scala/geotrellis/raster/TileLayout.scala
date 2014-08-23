@@ -44,12 +44,7 @@ case class TileLayout(tileCols: Int, tileRows: Int, pixelCols: Int, pixelRows: I
    */
   def totalRows: Long = tileRows.toLong * pixelRows
 
-  /** Gets the index of a tile at col, row. */
-  def getTileIndex(col: Long, row: Long) =
-    row * tileCols + col
-
-  def getTileXY(index: Long) =
-    (index % tileCols, index / tileCols)
+  def tileDimensions: (Int, Int) = (tileCols, tileRows)
     
   def cellSize(extent: Extent): CellSize = 
     CellSize(extent.width / totalCols, extent.height / totalRows)

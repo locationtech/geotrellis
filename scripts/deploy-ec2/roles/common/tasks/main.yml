@@ -1,25 +1,42 @@
 ---
 
 #Tasks for common role
-- name: Install OpenJDK 7 JRE
-  apt: pkg=openjdk-7-jre-headless state=latest install_recommends=yes update_cache=yes
+- name: Install OpenJDK 7 JDK
+  apt: pkg=openjdk-7-jdk state=present install_recommends=yes
+  sudo: yes
+
+- name: There's no place like $JAVA_HOME
+  lineinfile:
+    dest="/etc/environment"
+    regexp="^JAVA_HOME="
+    line="JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/jre"
+  sudo: yes
+
+- name: Install Git
+  apt: pkg=git state=present install_recommends=yes
   sudo: yes
 
 #This allows to rsync and ssh between any host in the clusters
 - name: Upload cluster private key to use as id_rsa
-  copy: 
-    src: "{{ ec2_key_file }}" 
-    dest: ~/.ssh/id_rsa 
+  copy:
+    src: "{{ ec2_key_file }}"
+    dest: ~/.ssh/id_rsa
     mode: 0600
+  when: '"development" not in group_names'
 
 - name: Disable SSH known host checking for 172.* subnet
   copy:
     src: ssh_config
     dest: ~/.ssh/config
     mode: 0644
+  when: '"development" not in group_names'
 
-- name: Add Cloudera apt repo  
+- name: Add Cloudera APT key
+  apt_key: url=http://archive.cloudera.com/cdh5/ubuntu/{{ ansible_distribution_release }}/amd64/cdh/archive.key state=present
+  sudo: yes
+
+- name: Add Cloudera APT repository
   apt_repository:
-    repo: "deb [arch=amd64] http://archive.cloudera.com/cdh5/ubuntu/precise/amd64/cdh {{cdh.repo}} contrib"
+    repo: "deb [arch=amd64] http://archive.cloudera.com/cdh5/ubuntu/{{ ansible_distribution_release }}/amd64/cdh {{cdh.repo}} contrib"
     state: present
   sudo: yes

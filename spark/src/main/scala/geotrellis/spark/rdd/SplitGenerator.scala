@@ -16,8 +16,8 @@
 
 package geotrellis.spark.rdd
 
-import geotrellis.spark.tiling.TileExtent
-import geotrellis.spark.tiling.TmsTiling
+import geotrellis.spark.tiling._
+import geotrellis.raster._
 
 /*
  * SplitsGenerator provides an interface to derive split points with a default implementation
@@ -33,8 +33,8 @@ object SplitGenerator {
 }
 
 case class RasterSplitGenerator(
-  tileExtent: TileExtent,
-  zoom: Int,
+  gridBounds: GridBounds,
+  indexGridTransform: IndexGridTransform,
   increment: (Int, Int))
   extends SplitGenerator {
   // if increment is -1 splits return an empty sequence
@@ -45,18 +45,18 @@ case class RasterSplitGenerator(
     // we can't have a case where both x and y have non-trivial (i.e., neither -1 or 1) increments
     assert(!(xi > -1 && yi > 1))
     if (xi > -1) {
-      val xl = (tileExtent.xmin + (xi - 1) to tileExtent.xmax by xi).toList
-      val xr = if (tileExtent.width % xi == 0) xl else xl :+ tileExtent.xmax
+      val xl = (gridBounds.colMin + (xi - 1) to gridBounds.colMax by xi).toList
+      val xr = if (gridBounds.width % xi == 0) xl else xl :+ gridBounds.colMax
       val splits = for (
-        y <- tileExtent.ymin to tileExtent.ymax;
+        y <- gridBounds.rowMin to gridBounds.rowMax;
         x <- xr
-      ) yield TmsTiling.tileId(x, y, zoom)
+      ) yield indexGridTransform.gridToIndex(x, y)
       splits.dropRight(1).toArray
     }
     else {
       val splits = 
-        for (y <- tileExtent.ymin + (yi - 1) until tileExtent.ymax by yi)
-        yield TmsTiling.tileId(tileExtent.xmax, y, zoom)
+        for (row <- gridBounds.rowMin + (yi - 1) until gridBounds.rowMax by yi)
+        yield indexGridTransform.gridToIndex(gridBounds.colMax, row)
       splits.toArray
     }
 
@@ -69,8 +69,9 @@ object RasterSplitGenerator {
   // assume tiles can be compressed 30% (so, compressionFactor - 1)
   final val CompressionFactor = 1.3
   
-  def apply(tileExtent: TileExtent, zoom: Int, tileSizeBytes: Int, blockSizeBytes: Long) = {
-    new RasterSplitGenerator(tileExtent, zoom, computeIncrement(tileExtent, tileSizeBytes, blockSizeBytes))
+  def apply(gridBounds: GridBounds, indexGridTransform: IndexGridTransform, tileSizeBytes: Int, blockSizeBytes: Long) = {
+    val increment = computeIncrement(gridBounds, tileSizeBytes, blockSizeBytes)
+    new RasterSplitGenerator(gridBounds, indexGridTransform, increment)
   }
 
   /*
@@ -87,19 +88,18 @@ object RasterSplitGenerator {
    * 3. Otherwise, we figure how many roles of tiles can fit onto a block, so we return [-1, Y]
    * using tilesPerBlock and compression factor.
    */
-  def computeIncrement(tileExtent: TileExtent, tileSizeBytes: Int, blockSizeBytes: Long) = {
+  def computeIncrement(gridBounds: GridBounds, tileSizeBytes: Int, blockSizeBytes: Long) = {
     val tilesPerBlock = (blockSizeBytes / tileSizeBytes).toInt
-    val tileCount = tileExtent.width * tileExtent.height
-    println(s"${tileCount} / ${tilesPerBlock} (${blockSizeBytes} ${tileSizeBytes})")
+    val tileCount = gridBounds.width * gridBounds.height
        
     // return -1 if it doesn't make sense to have splits, splits will handle this accordingly
     val increment =
       if (blockSizeBytes <= 0 || tilesPerBlock >= tileCount)
         (-1, -1)
-      else if (tileExtent.width > tilesPerBlock)
+      else if (gridBounds.width > tilesPerBlock)
         ((tilesPerBlock * CompressionFactor).toInt, 1)
       else
-        (-1, ((tilesPerBlock / tileExtent.width) * CompressionFactor).toInt)
+        (-1, ((tilesPerBlock / gridBounds.width) * CompressionFactor).toInt)
 
     increment
   }

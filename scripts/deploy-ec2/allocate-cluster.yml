@@ -5,42 +5,22 @@
   gather_facts: False
   
   tasks:
-    - name: EC2 Security group for master
+    - name: EC2 VPC Group for cluster
       local_action:
         module: ec2_group
         region: "{{ region }}"
-        name: "{{ cluster_name }}-master"
-        description: "master group"
+        name: "{{ cluster_name }}"
+        description: "{{ cluster_name }} security group"
         rules:
-          - proto: all
-            group_name: "{{ cluster_name }}-master"
-          - proto: all
-            group_name: "{{ cluster_name }}-slaves"
           - proto: tcp
             from_port: 22
             to_port: 22
             cidr_ip: "0.0.0.0/0"
           - proto: all
             cidr_ip: "{{ allow_vpn_from_subnet }}"
-        rules_egress:
           - proto: all
-            cidr_ip: "0.0.0.0/0"
+            group_name: "{{ cluster_name }}"
 
-    - name: EC2 Security group for workers
-      local_action:
-        module: ec2_group
-        region: "{{ region }}"
-        name: "{{ cluster_name }}-slaves"
-        description: "worker group"
-        rules:
-          - proto: all
-            group_name: "{{ cluster_name }}-master"
-          - proto: all
-            group_name: "{{ cluster_name }}-slaves"
-          - proto: tcp
-            from_port: 22
-            to_port: 22
-            cidr_ip: "0.0.0.0/0"
         rules_egress:
           - proto: all
             cidr_ip: "0.0.0.0/0"
@@ -51,12 +31,12 @@
         image:          "{{ image }}" 
         instance_type:  "{{ instance_type }}"
         key_name:       "{{ ec2_key_name }}"
-        group:          "{{ cluster_name }}-master"
+        group:          "{{ cluster_name }}"
         region:         "{{ region }}"
         instance_tags:  
-          spark-role: "master"
+          spark-role: "{{ cluster_name }}-master"
         count_tag:
-          spark-role: "master"
+          spark-role: "{{ cluster_name }}-master"
         exact_count:    1
         wait:           true
       register: master
@@ -79,12 +59,12 @@
         image:          "{{ image }}"         
         instance_type:  "{{ instance_type }}" 
         key_name:       "{{ ec2_key_name }}" 
-        group:          "{{ cluster_name }}-slaves"
+        group:          "{{ cluster_name }}"
         region:         "{{ region }}"
         instance_tags:  
-          spark-role: "worker"
+          spark-role: "{{ cluster_name }}-worker"
         count_tag:      
-          spark-role: "worker"
+          spark-role: "{{ cluster_name }}-worker"
         exact_count:    "{{ worker_count }}"
         wait:           true
       register: workers

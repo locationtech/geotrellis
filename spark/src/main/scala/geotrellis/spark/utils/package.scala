@@ -12,5 +12,11 @@ package object utils {
       FileInputFormat.addInputPath(job, path)
       job.getConfiguration
     }
+
+    /** Creates a Configuration with all files in a directory (recursively searched)*/
+    def withInputDirectory(path: Path): Configuration = {
+      val allFiles = HdfsUtils.listFiles(path, config)
+      HdfsUtils.putFilesInConf(allFiles.mkString(","), config)
+    }
   }
 }

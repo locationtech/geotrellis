@@ -29,7 +29,7 @@
  <property>
     <name>dfs.datanode.data.dir</name>
     <value>{{ hdfs.volumes|map(attribute='mount')|join(',') }}</value>
-  </property>  
+  </property>
   <property>
     <name>dfs.replication</name>
     <value>{{ hdfs.replication }}</value>
@@ -67,6 +67,7 @@
     <value>true</value>
   </property>
 
+  {% if "development" not in group_names %}
   <property>
     <name>fs.s3n.awsAccessKeyId</name>
     <value>{{ aws.key_id }}</value>
@@ -74,5 +75,6 @@
   <property>
     <name>fs.s3n.awsSecretAccessKey</name>
     <value>{{ aws.key_secret }}</value>
-    </property>
+  </property>
+  {% endif %}
 </configuration>

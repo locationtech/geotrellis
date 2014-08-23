@@ -16,48 +16,50 @@
 
 package geotrellis.spark.op.local
 
-import geotrellis.spark.RasterRDDMatchers
-import geotrellis.spark.SharedSparkContext
-import geotrellis.spark.TestEnvironment
-import geotrellis.spark.rdd.RasterRDD
-import geotrellis.spark.testfiles.AllHundreds
-import geotrellis.spark.testfiles.AllOnes
-import geotrellis.spark.testfiles.AllTwos
+import geotrellis.spark._
+import geotrellis.spark.io.hadoop._
+import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
-class SubtractSpec extends FunSpec with TestEnvironment with SharedSparkContext with RasterRDDMatchers {
+class SubtractSpec extends FunSpec 
+                      with TestEnvironment 
+                      with SharedSparkContext 
+                      with RasterRDDMatchers
+                      with OnlyIfCanRunSpark {
 
   describe("Subtract Operation") {
-    val allOnes = AllOnes(inputHome, conf)
-    val allTwos = AllTwos(inputHome, conf)
-    val allHundreds = AllHundreds(inputHome, conf)
+    ifCanRunSpark {
+      val allOnes = AllOnes(inputHome, conf)
+      val allTwos = AllTwos(inputHome, conf)
+      val allHundreds = AllHundreds(inputHome, conf)
 
-    it("should subtract a constant from a raster") { 
+      it("should subtract a constant from a raster") {
 
-      val twos = RasterRDD(allTwos.path, sc)
+        val twos = sc.hadoopRasterRDD(allTwos.path)
 
-      val ones = twos - 1
+        val ones = twos - 1
 
-      shouldBe(ones, (1, 1, allTwos.tileCount))
-    }
+        shouldBe(ones, (1, 1, allTwos.tileCount))
+      }
 
-    it("should subtract from a constant, raster values") { 
+      it("should subtract from a constant, raster values") {
 
-      val twos = RasterRDD(allTwos.path, sc)
+        val twos = sc.hadoopRasterRDD(allTwos.path)
 
-      val ones = 3 -: twos
+        val ones = 3 -: twos
 
-      shouldBe(ones, (1, 1, allTwos.tileCount))
-    }
+        shouldBe(ones, (1, 1, allTwos.tileCount))
+      }
 
-    it("should subtract multiple rasters") { 
-      val hundreds = RasterRDD(allHundreds.path, sc)
-      val ones = RasterRDD(allOnes.path, sc)
-      val twos = RasterRDD(allTwos.path, sc)
-      val res = hundreds - twos - ones
+      it("should subtract multiple rasters") {
+        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val ones = sc.hadoopRasterRDD(allOnes.path)
+        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val res = hundreds - twos - ones
 
-      shouldBe(res, (97, 97, allHundreds.tileCount))
+        shouldBe(res, (97, 97, allHundreds.tileCount))
+      }
     }
   }
 }

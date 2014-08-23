@@ -19,13 +19,13 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiffWriter
 
 import geotrellis.spark._
+import geotrellis.spark.rdd._
 import geotrellis.spark.cmd.args.HadoopArgs
 import geotrellis.spark.cmd.args.RasterArgs
 import geotrellis.spark.cmd.args.SparkArgs
-import geotrellis.spark.metadata.PyramidMetadata
 import geotrellis.spark.rdd.RasterRDD
-import geotrellis.spark.storage.RasterReader
-import geotrellis.spark.tiling.TmsTiling
+import geotrellis.spark.io.hadoop._
+import geotrellis.spark.io.hadoop.reader.RasterReader
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -84,14 +84,11 @@ object Export extends ArgMain[ExportArgs] with Logging {
   }
 
   private def exportSingle(args: ExportArgs) {
-    val (rasterPath, zoom, output, meta, hadoopConf) = extractFromArgs(args)
-    
+    val (rasterPath, output, metaData, hadoopConf) = extractFromArgs(args)
     // get extents and layout
-    val (tileSize, cellType) = (meta.tileSize, meta.cellType)
-    val tileExtent = meta.rasterMetadata(zoom.toString).tileExtent
-    val res = TmsTiling.resolution(zoom, tileSize)
-    val extent = TmsTiling.tileToExtent(tileExtent, zoom, tileSize)
-    val layout = TileLayout(tileExtent.width.toInt, tileExtent.height.toInt, tileSize, tileSize)
+    val gridBounds = metaData.gridBounds
+    val layout = 
+      TileLayout(gridBounds.width.toInt, gridBounds.height.toInt, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
 
     // open the reader
     val reader = RasterReader(rasterPath, hadoopConf)
@@ -99,13 +96,13 @@ object Export extends ArgMain[ExportArgs] with Logging {
     // TMS tiles start from lower left corner whereas CompositeTile expects them to start from  
     // upper left, so we need to re-sort the array
     def compare(left: TmsTile, right: TmsTile): Boolean = {
-      val (lx, ly) = left.tileXY(zoom)
-      val (rx, ry) = right.tileXY(zoom)
+      val (lx, ly) = metaData.transform.indexToGrid(left.id)
+      val (rx, ry) = metaData.transform.indexToGrid(right.id)
       (ly > ry) || (ly == ry && lx < rx)
     }
 
     val tiles =
-      reader.map(_.toTmsTile(meta, zoom))
+      reader.map(_.toTmsTile(metaData))
         .toList
         .sortWith(compare)
         .map(_.tile)
@@ -113,14 +110,12 @@ object Export extends ArgMain[ExportArgs] with Logging {
     reader.close()
 
     val tile = CompositeTile(tiles, layout).toArrayTile
-    GeoTiffWriter.write(s"${output}", tile, extent, meta.nodata)
+    GeoTiffWriter.write(s"${output}", tile, metaData.extent)
     logInfo(s"---------finished writing to file ${output}")
   }
 
   private def exportTiles(args: ExportArgs) {
-    val (rasterPath, zoom, output, meta, hadoopConf) = extractFromArgs(args)
-    
-    val (tileSize, cellType) = (meta.tileSize, meta.cellType)
+    val (rasterPath, output, metaData, hadoopConf) = extractFromArgs(args)
 
     val sc = args.sparkContext("Export")
 
@@ -130,12 +125,13 @@ object Export extends ArgMain[ExportArgs] with Logging {
     dir.mkdirs()
 
     try {
-      val rrdd = RasterRDD(rasterPath.toUri.toString, sc, true)
+      val rrdd = sc.hadoopRasterRDD(rasterPath.toUri.toString)
 
       for (tmsTile <- rrdd) {
-        val (tx, ty) = tmsTile.tileXY(zoom)
-        val extent = TmsTiling.tileToExtent(tmsTile.id, zoom, rrdd.opCtx.rasterDefinition.tileLayout.pixelCols)
-        GeoTiffWriter.write(s"${output}/tile-${tmsTile.id}.tif", tmsTile.tile, extent, meta.nodata)
+        val (tx, ty) = metaData.transform.indexToGrid(tmsTile.id)
+        val extent = 
+          metaData.transform.indexToMap(tmsTile.id)
+        GeoTiffWriter.write(s"${output}/tile-${tmsTile.id}.tif", tmsTile.tile, extent)
         logInfo(s"---------tx: ${tx}, ty: ${ty} file: tile-${tmsTile.id}.tif")
       }
 
@@ -147,12 +143,11 @@ object Export extends ArgMain[ExportArgs] with Logging {
     }
   }
 
-  private def extractFromArgs(args: ExportArgs): Tuple5[Path, Int, String, PyramidMetadata, Configuration] = {
-    val rasterPath = new Path(args.inputraster)
-    val (pyramidPath, zoom) = (rasterPath.getParent, rasterPath.getName.toInt)
-    val output = args.output
+  private def extractFromArgs(args: ExportArgs): (Path, String, LayerMetaData, Configuration) = {
     val hadoopConf = args.hadoopConf
-    val meta = PyramidMetadata(pyramidPath, hadoopConf)
-    (rasterPath, zoom, output, meta, hadoopConf)
+    val rasterPath = new Path(args.inputraster)
+    val metaData = HadoopUtils.readLayerMetaData(rasterPath, hadoopConf)
+    val output = args.output
+    (rasterPath, output, metaData, hadoopConf)
   }
 }

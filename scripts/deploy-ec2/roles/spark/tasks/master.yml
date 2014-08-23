@@ -1,0 +1,39 @@
+---
+
+#Tasks for spark roles
+
+- apt: name=spark-master state=present
+  sudo: yes
+
+- apt: name=zip state=present install_recommends=yes
+  sudo: yes
+
+- git: repo=https://github.com/geotrellis/geotrellis
+       dest=/home/{{ ansible_ssh_user }}/geotrellis
+  when: '"development" not in group_names'
+
+#this is nice for development, where you might be building on master
+- template: src=push-spark-assembly.sh.j2 dest=~/push-spark-assembly.sh
+  when: '"development" not in group_names'
+
+- file: path=~/push-spark-assembly.sh mode=755
+  when: '"development" not in group_names'
+
+- service: name=spark-master state=started enabled=yes
+  sudo: yes
+
+- name: Add SPARK_HOME for all users
+  template: src=spark_home.sh.j2 dest=/etc/profile.d/spark_home.sh
+  sudo: yes
+
+- name: Add SPARK_VERSION for all users
+  template: src=spark_version.sh.j2 dest=/etc/profile.d/spark_version.sh
+  sudo: yes
+
+- name: Add SPARK_HADOOP_VERSION for all users
+  template: src=spark_hadoop_version.sh.j2 dest=/etc/profile.d/spark_hadoop_version.sh
+  sudo: yes
+
+- name: Add GEOTRELLIS_HOME for all users
+  template: src=geotrellis_home.sh.j2 dest=/etc/profile.d/geotrellis_home.sh
+  sudo: yes

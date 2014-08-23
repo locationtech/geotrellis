@@ -103,7 +103,7 @@ class PostGisProjectionSupport(override val driver: JdbcDriver) extends PostGisE
 }
 
 object PostGisProjectionSupportUtils {  
-  def toLiteral(pg: Projected[Geometry]): String = WKT.write(pg.geom)
+  def toLiteral(pg: Projected[Geometry]): String = s"SRID=${pg.srid};${WKT.write(pg.geom)}"
 
   def fromLiteral[T <: Projected[_]](value: String): T = 
     splitRSIDAndWKT(value) match {
@@ -114,7 +114,10 @@ object PostGisProjectionSupportUtils {
           else 
             WKT.read[Geometry](wkt)
 
-        Projected(geom, srid).asInstanceOf[T]
+        if (srid != -1)
+          Projected(geom, srid).asInstanceOf[T]
+        else
+          Projected(geom, geom.jtsGeom.getSRID).asInstanceOf[T]
     }
 
   /** copy from [[org.postgis.PGgeometry#splitSRID]] */

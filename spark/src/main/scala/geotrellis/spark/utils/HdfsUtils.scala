@@ -15,6 +15,7 @@
  */
 
 package geotrellis.spark.utils
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileStatus
 import org.apache.hadoop.fs.FileSystem
@@ -22,6 +23,7 @@ import org.apache.hadoop.fs.LocalFileSystem
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
+import org.apache.hadoop.io._
 
 import java.io.BufferedReader
 import java.io.Closeable
@@ -68,6 +70,11 @@ object HdfsUtils {
 
     addFiles(fs.globStatus(path))
     files.toList
+  }
+
+  def getSequenceFileReader(fs: FileSystem, path: Path, conf: Configuration ): SequenceFile.Reader = {
+    val (uri, dir) = (fs.getUri(), fs.getWorkingDirectory())
+    new SequenceFile.Reader(conf, SequenceFile.Reader.file(path.makeQualified(uri, dir)))
   }
 
   /* get hadoop's temporary directory */

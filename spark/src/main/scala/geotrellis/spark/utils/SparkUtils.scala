@@ -24,6 +24,21 @@ import java.io.File
 
 object SparkUtils extends Logging {
   def createSparkConf = new SparkConf()
+
+  private val gtHomeLock = new Object()
+  private var _geoTrellisHome: Option[String] = None
+  def geoTrellisHome = _geoTrellisHome
+  def setGeoTrellisHome(path: String): Unit = 
+    _geoTrellisHome match {
+      case Some(s) => 
+        if(s != _geoTrellisHome) {
+          sys.error(s"GeoTrellis Home directory already set to $s")
+        }
+      case None =>
+        gtHomeLock.synchronized {
+          _geoTrellisHome = Some(path)
+        }
+    }
   
   def createSparkContext(sparkMaster: String, appName: String, sparkConf: SparkConf = createSparkConf) = {
     val sparkHome = scala.util.Properties.envOrNone("SPARK_HOME") match {
@@ -31,23 +46,36 @@ object SparkUtils extends Logging {
       case None        => throw new Error("Oops, SPARK_HOME is not defined")
     }
 
-    val gtHome = scala.util.Properties.envOrNone("GEOTRELLIS_HOME") match {
-      case Some(value) => value
-      case None        => throw new Error("Oops, GEOTRELLIS_HOME is not defined")
-    }
+    val gtHome = 
+      _geoTrellisHome match {
+        case Some(s) => s
+        case None => 
+          scala.util.Properties.envOrNone("GEOTRELLIS_HOME") match {
+            case Some(value) => value
+            case None        => throw new Error("Oops, GEOTRELLIS_HOME is not defined")
+          }
+      }
    
+    val geoTrellisJar = 
+      findGeoTrellisJar(gtHome) match {
+        case Some(p) => p
+        case None => 
+          sys.error(s"Couldn't find geotrellis jar at $gtHome")
+      }
+
     sparkConf
       .setMaster(sparkMaster)
       .setAppName(appName)
       .setSparkHome(sparkHome)
-      .setJars(Array(jar(gtHome)))
-      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.kryo.registrator", "geotrellis.spark.KryoRegistrator")   
+      .set("spark.executor.extraClassPath", geoTrellisJar)
+//      .setJars(Array(geoTrellisJar))
+      // .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      // .set("spark.kryo.registrator", "geotrellis.spark.io.hadoop.KryoRegistrator")
 
     new SparkContext(sparkConf)
   }
   
-  def createHadoopConfiguration = {
+  def hadoopConfiguration = {
     // TODO - figure out how to get the conf directory automatically added to classpath via sbt
     // - right now it is manually added
     Configuration.addDefaultResource("core-site.xml")
@@ -65,7 +93,7 @@ object SparkUtils extends Logging {
    *  and the jar lives in /usr/local/geotrellis/geotrellis-spark_2.10-0.10.0-SNAPSHOT.jar
    *  then this gets returned: "local:/usr/local/geotrellis/geotrellis-spark_2.10-0.10.0-SNAPSHOT.jar" 
    **/
-  def jar(gtHome: String): String = {
+  def findGeoTrellisJar(gtHome: String): Option[String] = {
     def isMatch(fileName: String): Boolean = "geotrellis-spark(.)*.jar".r.findFirstIn(fileName) match {
       case Some(_) => true
       case None    => false
@@ -83,17 +111,18 @@ object SparkUtils extends Logging {
     
     val matches = findJar(new File(gtHome)).flatten
     if (matches.length == 1) {
-      val firstMatch = prefix(matches(0).getAbsolutePath)
+//      val firstMatch = prefix(matches(0).getAbsolutePath)
+      val firstMatch = matches(0).getAbsolutePath
       logInfo(s"Found unique match for geotrellis-spark jar: ${firstMatch}")
-      firstMatch
+      Some(firstMatch)
     } else if (matches.length > 1) {
       logInfo(s"Found ${matches.length} matches for geotrellis-spark jar: ")
       logInfo("{" + matches.mkString(",") + "}")
       val firstMatch = prefix(matches(0).getAbsolutePath)
       logInfo("Using first match: " + firstMatch)
-      firstMatch
+      Some(firstMatch)
     } else {
-      sys.error("Couldn't find geotrellis jar")
+      None
     }
   }
 }

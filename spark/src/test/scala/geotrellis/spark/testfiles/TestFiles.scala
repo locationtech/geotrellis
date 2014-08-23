@@ -15,40 +15,29 @@
  */
 
 package geotrellis.spark.testfiles
-import geotrellis.spark.metadata.PyramidMetadata
-import geotrellis.spark.metadata.Context
+
+import geotrellis.spark.io.hadoop._
+import geotrellis.spark.rdd._
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import geotrellis.spark.rdd.TileIdPartitioner
 
-class TestFiles(pyramid: Path, conf: Configuration) {
+class TestFiles(val path: Path, conf: Configuration) {
+  val metaData = 
+    HadoopUtils.readLayerMetaData(path, conf)
 
-  val (meta, opCtx) = setup
-
-  val raster = new Path(pyramid, meta.maxZoomLevel.toString)
-  
-  def path = raster
-  
-  def rasterDefinition = opCtx.rasterDefinition
-  def rasterExtent = rasterDefinition.rasterExtent
-  def tileLayout = rasterDefinition.tileLayout
-  def tileCount = opCtx.rasterDefinition.tileLayout.tileCols * opCtx.rasterDefinition.tileLayout.tileRows
-
-  private def setup: (PyramidMetadata, Context) = {
-    val meta = PyramidMetadata(pyramid, conf)
-    val partitioner = TileIdPartitioner(new Path(pyramid, meta.maxZoomLevel.toString), conf)
-    (meta, Context(meta.maxZoomLevel, meta, partitioner))
-  }
+  def tileCount = 
+    metaData.tileIds.size
 }
 
 object AllOnes {
-  def apply(prefix: Path, conf: Configuration) = new TestFiles(new Path(prefix, "all-ones"), conf)
+  def apply(prefix: Path, conf: Configuration) = new TestFiles(new Path(prefix, "all-ones/10"), conf)
 }
 
 object AllTwos {
-  def apply(prefix: Path, conf: Configuration) = new TestFiles(new Path(prefix, "all-twos"), conf)
+  def apply(prefix: Path, conf: Configuration) = new TestFiles(new Path(prefix, "all-twos/10"), conf)
 }
 
 object AllHundreds {
-  def apply(prefix: Path, conf: Configuration) = new TestFiles(new Path(prefix, "all-hundreds"), conf)
+  def apply(prefix: Path, conf: Configuration) = new TestFiles(new Path(prefix, "all-hundreds/10"), conf)
 }

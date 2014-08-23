@@ -1,0 +1,11 @@
+---
+
+#Spark/HDFS workers
+worker_count: 2
+
+hdfs:
+  volumes: [
+    { device: /dev/sdb, mount: /mnt/data1, size: 10 },
+    { device: /dev/sdc, mount: /mnt/data2, size: 10 }
+  ]
+  replication: 3

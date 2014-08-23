@@ -11,10 +11,8 @@ object Transform {
 }
 
 object Proj4Transform {
-  private val transformFactory = new CoordinateTransformFactory
-
   def apply(src: CRS, dest: CRS): Transform = {
-    val t = transformFactory.createTransform(src.crs, dest.crs)
+    val t = new BasicCoordinateTransform(src.crs, dest.crs)
 
     { (x: Double, y: Double) =>
       val srcP = new ProjCoordinate(x, y)
