@@ -110,7 +110,7 @@ extends UntiledRasterLayer(info) {
   private def fromBytes(arr: Array[Byte], target: Option[RasterExtent]) = {
     target match {
       case Some(re) =>
-        ArgReader.warpBytes(arr: Array[Byte], info.cellType, info.rasterExtent, re)
+        ArgReader.resampleBytes(arr: Array[Byte], info.cellType, info.rasterExtent, re)
       case None =>
         ArrayTile.fromBytes(arr, info.cellType, info.rasterExtent.cols, info.rasterExtent.rows)
       }

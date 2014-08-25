@@ -163,10 +163,10 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
     val colMax = ceil((subExtent.xmax - extent.xmin) / cellwidth).toInt - 1
     val rowMax = ceil((extent.ymax - subExtent.ymin) / cellheight).toInt - 1
     
-    GridBounds(colMin,
-               rowMin,
-               colMax,
-               rowMax)
+    GridBounds(math.max(colMin, 0),
+               math.max(rowMin, 0),
+               math.min(colMax, cols - 1),
+               math.min(rowMax, cols - 1))
   }
   
   /**
@@ -231,17 +231,17 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
   }
 
   /** Adjusts a raster extent so that in can encompass the tile layout.
-    * Will warp the extent, but keep the resolution, and preserve north and
+    * Will resample the extent, but keep the resolution, and preserve north and
     * west borders
     */
   def adjustTo(tileLayout: TileLayout) = {
     val totalCols = tileLayout.pixelCols * tileLayout.tileCols
     val totalRows = tileLayout.pixelRows * tileLayout.tileRows
 
-    val warpedExtent = Extent(extent.xmin, extent.ymax - (cellheight*totalRows),
+    val resampledExtent = Extent(extent.xmin, extent.ymax - (cellheight*totalRows),
                         extent.xmin + (cellwidth*totalCols), extent.ymax)
 
-    RasterExtent(warpedExtent, cellwidth, cellheight, totalCols, totalRows)
+    RasterExtent(resampledExtent, cellwidth, cellheight, totalCols, totalRows)
   }
 }
 

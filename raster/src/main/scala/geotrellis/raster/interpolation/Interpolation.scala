@@ -1,7 +1,9 @@
-package geotrellis.raster.reproject
+package geotrellis.raster.interpolation
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
+
+object InterpolationMethod { val DEFAULT = NearestNeighbor }
 
 abstract sealed class InterpolationMethod
 
@@ -20,6 +22,9 @@ trait Interpolation {
 }
 
 object Interpolation {
+  def apply(method: InterpolationMethod, raster: Raster): Interpolation =
+    apply(method, raster.tile, raster.extent)
+
   def apply(method: InterpolationMethod, tile: Tile, extent: Extent): Interpolation =
     method match {
       case NearestNeighbor => new NearestNeighborInterpolation(tile, extent)

@@ -16,25 +16,26 @@
 
 package geotrellis.raster
 
-import geotrellis._
+import geotrellis.raster.interpolation._
+import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
 
 import java.nio.ByteBuffer
 
-trait WarpAssign {
+trait ResampleAssign {
   def apply(srcIndex: Int, dstIndex: Int): Unit
 }
 
-class ArrayWarpAssign[@specialized(Byte, Short, Int, Float, Double) T](src: Array[T], dst: Array[T]) 
-    extends WarpAssign {
+class ArrayResampleAssign[@specialized(Byte, Short, Int, Float, Double) T](src: Array[T], dst: Array[T]) 
+    extends ResampleAssign {
   final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src(srcIndex)
   }
 }
 
-final class BitWarpAssign(src: Array[Byte], dst: Array[Byte])
-      extends WarpAssign {
+final class BitResampleAssign(src: Array[Byte], dst: Array[Byte])
+      extends ResampleAssign {
   final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     val i = srcIndex
     val z = (src(i >> 3) >> (i & 7)) & 1
@@ -49,55 +50,55 @@ final class BitWarpAssign(src: Array[Byte], dst: Array[Byte])
   }
 }
 
-class ByteBufferWarpAssign(src: ByteBuffer, dst: Array[Byte])
-    extends WarpAssign {
+class ByteBufferResampleAssign(src: ByteBuffer, dst: Array[Byte])
+    extends ResampleAssign {
   final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src.get(srcIndex)
   }
 }
 
-class ShortBufferWarpAssign(src: ByteBuffer, dst: Array[Short])
-    extends WarpAssign {
+class ShortBufferResampleAssign(src: ByteBuffer, dst: Array[Short])
+    extends ResampleAssign {
   final val width = TypeShort.bytes
   final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src.getShort(srcIndex*width)
   }
 }
 
-class IntBufferWarpAssign(src: ByteBuffer, dst: Array[Int])
-    extends WarpAssign {
+class IntBufferResampleAssign(src: ByteBuffer, dst: Array[Int])
+    extends ResampleAssign {
   final val width = TypeInt.bytes
   final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src.getInt(srcIndex*width)
   }
 }
 
-class FloatBufferWarpAssign(src: ByteBuffer, dst: Array[Float])
-    extends WarpAssign {
+class FloatBufferResampleAssign(src: ByteBuffer, dst: Array[Float])
+    extends ResampleAssign {
   final val width = TypeFloat.bytes
   final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src.getFloat(srcIndex*width)
   }
 }
 
-class DoubleBufferWarpAssign(src: ByteBuffer, dst: Array[Double])
-    extends WarpAssign {
+class DoubleBufferResampleAssign(src: ByteBuffer, dst: Array[Double])
+    extends ResampleAssign {
   final val width = TypeDouble.bytes
   final def apply(srcIndex: Int, dstIndex: Int): Unit = {
     dst(dstIndex) = src.getDouble(srcIndex*width)
   }
 }
 
-object Warp {
+object Resample {
   def apply[@specialized(Byte, Short, Int, Float, Double) T](
     current: RasterExtent, 
     target: RasterExtent, 
     source: Array[T], 
     result: Array[T]
   ): Unit =
-    apply(current, target, new ArrayWarpAssign(source, result))
+    apply(current, target, new ArrayResampleAssign(source, result))
 
-  def apply(current: RasterExtent, target: RasterExtent, assign: WarpAssign): Unit = {
+  def apply(current: RasterExtent, target: RasterExtent, assign: ResampleAssign): Unit = {
     if(!current.extent.intersects(target.extent)) {
       return
     }
@@ -186,5 +187,35 @@ object Warp {
       // decrease our Y map coordinate
       y -= dst_cellheight
     }
+  }
+
+  def apply(sourceTile: Tile, sourceExtent: Extent, targetExtent:RasterExtent, method: InterpolationMethod): ArrayTile = {
+    val interpolation = Interpolation(method, sourceTile, sourceExtent)
+    val (cols, rows) = (targetExtent.cols, targetExtent.rows)
+    val tile = ArrayTile.empty(sourceTile.cellType, cols, rows)
+
+    if(tile.cellType.isFloatingPoint) {
+      val interpolate = interpolation.interpolateDouble _
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
+          val x = targetExtent.gridColToMap(col)
+          val y = targetExtent.gridRowToMap(row)
+          val v = interpolate(x, y)
+          tile.setDouble(col, row, v)
+        }
+      }
+    } else {
+      val interpolate = interpolation.interpolate _
+      cfor(0)(_ < rows, _ + 1) { row =>
+        cfor(0)(_ < cols, _ + 1) { col =>
+          val x = targetExtent.gridColToMap(col)
+          val y = targetExtent.gridRowToMap(row)
+          val v = interpolate(x, y)
+          tile.set(col, row, v)
+        }
+      }
+    }
+    
+    tile
   }
 }

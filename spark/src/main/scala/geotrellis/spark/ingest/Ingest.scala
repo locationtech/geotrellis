@@ -17,6 +17,7 @@
 package geotrellis.spark.ingest
 
 import geotrellis.raster._
+import geotrellis.raster.mosaic._
 import geotrellis.raster.reproject._
 import geotrellis.vector._
 import geotrellis.vector.reproject._
@@ -86,10 +87,8 @@ class Ingest(sc: SparkContext) {
           val metaData = bcMetaData.value
           metaData
             .transform
-            .mapToGrid(extent)
-            .coords
-            .map { coord =>
-              val tileId = metaData.transform.gridToIndex(coord)
+            .mapToIndex(extent)
+            .map { tileId =>
               (tileId, (tileId, extent, tile)) 
             }
          }

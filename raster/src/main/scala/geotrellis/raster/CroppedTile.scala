@@ -16,6 +16,7 @@
 
 package geotrellis.raster
 
+import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
@@ -169,6 +170,6 @@ case class CroppedTile(sourceTile: Tile,
     tile
   }
 
-  def warp(source: Extent, target: RasterExtent): Tile = 
-    toArrayTile.warp(source, target)
+  def resample(source: Extent, target: RasterExtent, method: InterpolationMethod): Tile = 
+    toArrayTile.resample(source, target, method)
 }

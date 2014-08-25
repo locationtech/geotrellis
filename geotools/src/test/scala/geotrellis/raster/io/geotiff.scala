@@ -93,7 +93,7 @@ class GeoTiffSpec extends FunSpec with TestEngine with Matchers {
       val rasterExtent = RasterExtent(e, 60.0, 60.0, 513, 513)
 
       val path = "raster-test/data/econic.tif"
-      val (raster1, _) = GeoTiff.readRaster(path)//.warp(rasterExtent)
+      val (raster1, _) = GeoTiff.readRaster(path)//.resample(rasterExtent)
 
       val raster2 = GeoTiffRasterLayerBuilder.fromTif(path).getRaster()//(Some(rasterExtent))
       assertEqual(raster1,raster2)
@@ -109,7 +109,7 @@ class GeoTiffSpec extends FunSpec with TestEngine with Matchers {
 
     it ("should translate NODATA correctly") {
       // This test was set up by taking an ARG, slope.arg, and converting it to TIF using GDAL.
-      // Then gdalwarp was used to change the NoData value for slope.tif to -9999.
+      // Then gdalwap was used to change the NoData value for slope.tif to -9999.
       // If the NoData values are translated correctly, then all NoData values from the read in GTiff
       // should correspond to NoData values of the directly read arg.
       val originalArg = RasterSource.fromPath("raster-test/data/data/slope.arg").get

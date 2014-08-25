@@ -101,7 +101,7 @@ class GeoTiffReaderSpec extends FunSpec
           .imageDirectories.head.toRaster
 
       val expectedTile =
-        ArgReader.read(s"$filePathToTestData/geotiff-reader-tiffs/us_ext_clip_esri.json")
+        ArgReader.read(s"$filePathToTestData/geotiff-reader-tiffs/us_ext_clip_esri.json").tile
 
       assertEqual(readTile, expectedTile)
     }
@@ -118,7 +118,7 @@ class GeoTiffReaderSpec extends FunSpec
           .imageDirectories.head.toRaster
 
       val expectedTile =
-        ArgReader.read(argPath)
+        ArgReader.read(argPath).tile
 
       assertEqual(readTile, expectedTile)
     }

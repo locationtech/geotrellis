@@ -167,7 +167,7 @@ class RasterExtentSpec extends FunSpec with Matchers
     it("should handle subExtents that are out of bounds") {
       val rasterExtent = sampleRasterExtent
       val subExtent = Extent(-26,-100,30,-60)
-      val expected = GridBounds(-18,3,9,4)
+      val expected = GridBounds(0,3,9,4)
       rasterExtent.gridBoundsFor(subExtent) should be (expected)
     }
   }

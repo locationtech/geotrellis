@@ -27,15 +27,15 @@ import java.nio.ByteBuffer
 
 object ArgReader {
   /** Reads an arg from the json metadata file. */
-  final def read(path: String): Tile =
+  final def read(path: String): Raster =
     read(path, None)
 
   /** Reads an arg from the json metadata file. */
-  final def read(path: String, targetRasterExtent: RasterExtent): Tile =
+  final def read(path: String, targetRasterExtent: RasterExtent): Raster =
     read(path, Some(targetRasterExtent))
 
   /** Reads an arg from the json metadata file. */
-  private final def read(path: String, targetRasterExtent: Option[RasterExtent]): Tile = {
+  private final def read(path: String, targetRasterExtent: Option[RasterExtent]): Raster = {
     val json = ConfigFactory.parseString(Filesystem.readText(path))
     val layerType = json.getString("type").toLowerCase
     if(layerType != "arg") { sys.error(s"Cannot read raster layer type $layerType, must be arg") }
@@ -69,18 +69,17 @@ object ArgReader {
     val cols = json.getInt("cols")
     val rows = json.getInt("rows")
 
+    val xmin = json.getDouble("xmin")
+    val ymin = json.getDouble("ymin")
+    val xmax = json.getDouble("xmax")
+    val ymax = json.getDouble("ymax")
+    val extent = Extent(xmin, ymin, xmax, ymax)
+
     targetRasterExtent match {
       case Some(te) =>
-
-        val xmin = json.getDouble("xmin")
-        val ymin = json.getDouble("ymin")
-        val xmax = json.getDouble("xmax")
-        val ymax = json.getDouble("ymax")
-        val extent = Extent(xmin, ymin, xmax, ymax)
-
-        read(argPath, cellType, RasterExtent(extent, cols, rows), te)
+        (read(argPath, cellType, RasterExtent(extent, cols, rows), te), te.extent)
       case None =>
-        read(argPath, cellType, cols, rows)
+        (read(argPath, cellType, cols, rows), extent)
     }
   }
 
@@ -103,47 +102,47 @@ object ArgReader {
       val bytes = Array.ofDim[Byte](size)
       Filesystem.mapToByteArray(path, bytes, startIndex, length)
 
-      warpBytes(bytes, typ, rasterExtent, targetExtent)
+      resampleBytes(bytes, typ, rasterExtent, targetExtent)
     } else {
       ArrayTile.empty(typ, targetExtent.cols, targetExtent.rows)
     }
   }
 
-  final def warpBytes(bytes: Array[Byte], typ: CellType, re: RasterExtent, targetRe: RasterExtent): Tile = {
+  final def resampleBytes(bytes: Array[Byte], typ: CellType, re: RasterExtent, targetRe: RasterExtent): Tile = {
     val cols = targetRe.cols
     val rows = targetRe.rows
 
     typ match {
       case TypeBit =>
-        val warped = Array.ofDim[Byte]((cols*rows + 7)/8)
-        Warp(re, targetRe, new BitWarpAssign(bytes, warped))
-        BitArrayTile(warped, cols, rows)
+        val resampled = Array.ofDim[Byte]((cols*rows + 7)/8)
+        Resample(re, targetRe, new BitResampleAssign(bytes, resampled))
+        BitArrayTile(resampled, cols, rows)
       case TypeByte =>
         // ByteBuffer assign benchmarked faster than just using Array[Byte] for source.
         val buffer = ByteBuffer.wrap(bytes)
-        val warped = Array.ofDim[Byte](cols*rows).fill(byteNODATA)
-        Warp(re, targetRe, new ByteBufferWarpAssign(buffer, warped))
-        ByteArrayTile(warped, cols, rows)
+        val resampled = Array.ofDim[Byte](cols*rows).fill(byteNODATA)
+        Resample(re, targetRe, new ByteBufferResampleAssign(buffer, resampled))
+        ByteArrayTile(resampled, cols, rows)
       case TypeShort =>
         val buffer = ByteBuffer.wrap(bytes)
-        val warped = Array.ofDim[Short](cols*rows).fill(shortNODATA)
-        Warp(re, targetRe, new ShortBufferWarpAssign(buffer, warped))
-        ShortArrayTile(warped, cols, rows)
+        val resampled = Array.ofDim[Short](cols*rows).fill(shortNODATA)
+        Resample(re, targetRe, new ShortBufferResampleAssign(buffer, resampled))
+        ShortArrayTile(resampled, cols, rows)
       case TypeInt =>
         val buffer = ByteBuffer.wrap(bytes)
-        val warped = Array.ofDim[Int](cols*rows).fill(NODATA)
-        Warp(re, targetRe, new IntBufferWarpAssign(buffer, warped))
-        IntArrayTile(warped, cols, rows)
+        val resampled = Array.ofDim[Int](cols*rows).fill(NODATA)
+        Resample(re, targetRe, new IntBufferResampleAssign(buffer, resampled))
+        IntArrayTile(resampled, cols, rows)
       case TypeFloat =>
         val buffer = ByteBuffer.wrap(bytes)
-        val warped = Array.ofDim[Float](cols*rows).fill(Float.NaN)
-        Warp(re, targetRe, new FloatBufferWarpAssign(buffer, warped))
-        FloatArrayTile(warped, cols, rows)
+        val resampled = Array.ofDim[Float](cols*rows).fill(Float.NaN)
+        Resample(re, targetRe, new FloatBufferResampleAssign(buffer, resampled))
+        FloatArrayTile(resampled, cols, rows)
       case TypeDouble =>
         val buffer = ByteBuffer.wrap(bytes)
-        val warped = Array.ofDim[Double](cols*rows).fill(Double.NaN)
-        Warp(re, targetRe, new DoubleBufferWarpAssign(buffer, warped))
-        DoubleArrayTile(warped, cols, rows)
+        val resampled = Array.ofDim[Double](cols*rows).fill(Double.NaN)
+        Resample(re, targetRe, new DoubleBufferResampleAssign(buffer, resampled))
+        DoubleArrayTile(resampled, cols, rows)
     }
   }
 }

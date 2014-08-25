@@ -29,7 +29,7 @@ class ArgReaderSpec extends FunSpec
   describe("ArgReader") {
     it("should read from metadata and match a RasterSource") {
       val fromRasterSource = RasterSource("SBN_inc_percap").get
-      val fromArgReader = ArgReader.read("raster-test/data/sbn/SBN_inc_percap.json")
+      val fromArgReader = ArgReader.read("raster-test/data/sbn/SBN_inc_percap.json").tile
 
       assertEqual(fromArgReader, fromRasterSource)
     }
@@ -42,7 +42,7 @@ class ArgReaderSpec extends FunSpec
       val target = RasterExtent(Extent(xmin + qw, ymin + qh, xmax - qw, ymax - qh), cols / 3, rows / 3)
 
       val fromRasterSource = RasterSource("SBN_inc_percap", target).get
-      val fromArgReader = ArgReader.read("raster-test/data/sbn/SBN_inc_percap.json", target)
+      val fromArgReader = ArgReader.read("raster-test/data/sbn/SBN_inc_percap.json", target).tile
 
       assertEqual(fromArgReader, fromRasterSource)
     }

@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis._
+import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
@@ -117,6 +117,6 @@ final case class LazyConvertedTile(inner: Tile, cellType: CellType)
     tile
   }
 
-  def warp(source: Extent, target: RasterExtent): Tile = 
-    LazyConvertedTile(inner.warp(source, target), cellType)
+  def resample(source: Extent, target: RasterExtent, method: InterpolationMethod): Tile = 
+    LazyConvertedTile(inner.resample(source, target, method), cellType)
 }

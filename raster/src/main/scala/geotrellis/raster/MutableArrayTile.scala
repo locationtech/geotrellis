@@ -16,7 +16,9 @@
 
 package geotrellis.raster
 
-import geotrellis._
+import geotrellis.vector._
+
+import spire.syntax.cfor._
 
 /**
  * MutableArrayTile is an ArrayTile whose cells can be written to

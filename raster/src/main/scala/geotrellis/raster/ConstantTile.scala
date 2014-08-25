@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis._
+import geotrellis.raster.interpolation._
 import geotrellis.vector.Extent
 
 import java.nio.ByteBuffer
@@ -74,7 +74,7 @@ final case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends Const
 
   def toBytes(): Array[Byte] = Array(iVal.toByte)
 
-  def warp(current: Extent, target: RasterExtent): Tile =
+  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
     BitConstantTile(v, target.cols, target.rows)
 }
 
@@ -88,7 +88,7 @@ final case class ByteConstantTile(v: Byte, cols: Int, rows: Int) extends Constan
 
   def toBytes(): Array[Byte] = Array(v)
 
-  def warp(current: Extent, target: RasterExtent): Tile =
+  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
     ByteConstantTile(v, target.cols, target.rows)
 }
 
@@ -106,7 +106,7 @@ final case class ShortConstantTile(v: Short, cols: Int, rows: Int) extends Const
     arr
   }
 
-  def warp(current: Extent, target: RasterExtent): Tile =
+  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
     ShortConstantTile(v, target.cols, target.rows)
 }
 
@@ -124,7 +124,7 @@ final case class IntConstantTile(v: Int, cols: Int, rows: Int) extends ConstantT
     arr
   }
 
-  def warp(current: Extent, target: RasterExtent): Tile =
+  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
     IntConstantTile(v, target.cols, target.rows)
 }
 
@@ -142,7 +142,7 @@ final case class FloatConstantTile(v: Float, cols: Int, rows: Int) extends Const
     arr
   }
 
-  def warp(current: Extent, target: RasterExtent): Tile =
+  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
     FloatConstantTile(v, target.cols, target.rows)
 }
 
@@ -160,6 +160,6 @@ final case class DoubleConstantTile(v: Double, cols: Int, rows: Int) extends Con
     arr
   }
 
-  def warp(current: Extent, target: RasterExtent): Tile =
+  def resample(current: Extent, target: RasterExtent, method: InterpolationMethod): Tile =
     DoubleConstantTile(v, target.cols, target.rows)
 }
