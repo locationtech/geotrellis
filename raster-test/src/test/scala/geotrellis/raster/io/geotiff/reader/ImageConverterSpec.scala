@@ -26,7 +26,7 @@ import geotrellis.raster.io.geotiff.reader.utils.ByteInverterUtils._
 
 import org.scalatest._
 
-class ImageConverterSpec extends FunSpec with MustMatchers {
+class ImageConverterSpec extends FunSpec with Matchers {
 
   private def createTiledDirectory(width: Int, length: Int,
     bitsPerPixel: Int, tWidth: Int, tLength: Int) = ImageDirectory(
@@ -97,8 +97,8 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
         1, 2, 1, 1, 2, 1, 1, 2
       )
 
-      convertedImage.size must equal (correct.size)
-      convertedImage must equal (correct)
+      convertedImage.size should equal (correct.size)
+      convertedImage should equal (correct)
     }
 
     it ("should convert second byte tiled image to a byte row image and match correct result") {
@@ -150,8 +150,8 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
         3, 1, 2, 3, 1, 2
       )
 
-      convertedImage.size must equal (correct.size)
-      convertedImage must equal (correct)
+      convertedImage.size should equal (correct.size)
+      convertedImage should equal (correct)
 
     }
   }
@@ -229,8 +229,8 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
 
       val correct = correctBitSet.toByteArray
 
-      convertedImage.size must equal (correct.size)
-      convertedImage must equal (correct)
+      convertedImage.size should equal (correct.size)
+      convertedImage should equal (correct)
 
     }
 
@@ -301,8 +301,8 @@ class ImageConverterSpec extends FunSpec with MustMatchers {
 
       val correct = correctBitSet.toByteArray
 
-      convertedImage.size must equal (correct.size)
-      convertedImage must equal (correct)
+      convertedImage.size should equal (correct.size)
+      convertedImage should equal (correct)
 
     }
 

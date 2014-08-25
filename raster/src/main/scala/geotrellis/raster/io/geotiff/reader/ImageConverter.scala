@@ -17,7 +17,6 @@
 package geotrellis.raster.io.geotiff.reader
 
 import monocle.syntax._
-import monocle.Macro._
 
 import java.util.BitSet
 import java.nio.ByteBuffer
@@ -73,6 +72,9 @@ class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
 
     arr
   }
+
+  private def setCorrectOrientation(image: Array[Byte]) =
+    OrientationConverter(directory).setCorrectOrientation(image)
 
   private def tiledImageToRowImage(tiledImage: Array[Array[Byte]]): Array[Byte] = {
     if (directory.bitsPerPixel == 1) bitTiledImageToRowImage(tiledImage)

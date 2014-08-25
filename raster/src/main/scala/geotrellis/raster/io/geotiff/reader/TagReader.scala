@@ -172,15 +172,13 @@ case class TagReader(byteBuffer: ByteBuffer) {
       case ImageWidthTag => directory |-> imageWidthLens set(shorts(0))
       case ImageLengthTag => directory |-> imageLengthLens set(shorts(0))
       case CompressionTag => directory |-> compressionLens set(shorts(0))
-      case PhotometricInterpTag =>
-        directory |-> photometricInterpLens set(shorts(0))
+      case PhotometricInterpTag => directory |-> photometricInterpLens set(shorts(0))
       case ThresholdingTag => directory |-> thresholdingLens set(shorts(0))
       case CellWidthTag => directory |-> cellWidthLens set(Some(shorts(0)))
       case CellLengthTag => directory |-> cellLengthLens set(Some(shorts(0)))
       case FillOrderTag => directory |-> fillOrderLens set(shorts(0))
-      case OrientationTag => directory |-> orientationLens set(Some(shorts(0)))
-      case SamplesPerPixelTag =>
-        directory |-> samplesPerPixelLens set(shorts(0))
+      case OrientationTag => directory |-> orientationLens set(shorts(0))
+      case SamplesPerPixelTag => directory |-> samplesPerPixelLens set(shorts(0))
       case RowsPerStripTag => directory |-> rowsPerStripLens set(shorts(0))
       case PlanarConfigurationTag =>
         directory |-> planarConfigurationLens set(Some(shorts(0)))
