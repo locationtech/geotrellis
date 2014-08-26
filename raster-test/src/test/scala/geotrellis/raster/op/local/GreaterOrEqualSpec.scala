@@ -152,5 +152,29 @@ class GreaterOrEqualSpec extends FunSpec
         }
       }
     }
+    
+    it("checks double valued raster against int constant(compare -5.6 against -5, -5.6 >= -5 should be false)") {
+
+      val a = Array(0.0, 4.0, -5.6, 6.4,
+      -1.5, 2.7, -3.8, -7.8,
+      12.6, -13.3, 14.5, -15.7,
+      8.6, -9.0, 10.5, -11.9)
+
+      val r = DoubleArrayTile(a, 4, 4)
+      val result = r >= -5
+
+      val a1 = Array[Byte](1, 1, 0, 1,
+        1, 1, 1, 0,
+        1, 0, 1, 0,
+        1, 0, 1, 0)
+
+      val expected = ByteArrayTile(a1, 4, 4)
+
+      for (col <- 0 until r.cols) {
+        for (row <- 0 until r.rows) {
+          result.get(col, row) should be(expected.get(col, row))
+        }
+      }
+    }
   }
 }
