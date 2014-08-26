@@ -30,10 +30,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
     end
   end
 
-
+  workers = []
   (11..(10+SPARK_WORKERS)).each_with_index do |last_octet, index|
     index = index + 1
-    (workers ||= []) << :"worker-#{index}"
+    workers.push("worker-#{index}")
 
     cluster.vm.define "worker-#{index}" do |machine|
       machine.vm.hostname = "worker-#{index}"
