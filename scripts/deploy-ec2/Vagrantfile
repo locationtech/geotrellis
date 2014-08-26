@@ -28,7 +28,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
     machine.vm.network "private_network", ip: "33.33.33.10"
 
     machine.vm.provider "virtualbox" do |v|
-      v.memory = 1024
+      v.memory = 2048
       v.cpus = 2
     end
   end
