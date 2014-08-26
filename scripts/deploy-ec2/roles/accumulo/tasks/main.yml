@@ -7,12 +7,24 @@
 - shell: dpkg -i /tmp/{{accumulo_deb}}  creates=/etc/accumulo
   sudo: yes
 
-- name: Upload Accumulo init.d script
-  template: src=init.d/accumulo dest=/etc/init.d/accumulo
+- name: Upload Accumulo init.d scripts
+  template: src=init.d/{{ item }} dest=/etc/init.d/{{ item }}
+  with_items:
+    - accumulo-master
+    - accumulo-tserver
+    - accumulo-monitor
+    - accumulo-tracer
+    - accumulo-gc
   sudo: yes
 
 - name: Accumulo inti.d script is executable
-  file: path=/etc/init.d/accumulo mode=0755
+  file: path=/etc/init.d/{{ item }} mode=0755
+  with_items:
+    - accumulo-master
+    - accumulo-tserver
+    - accumulo-monitor
+    - accumulo-tracer
+    - accumulo-gc
   sudo: yes
 
 - name: Upload Accumulo Config
@@ -44,5 +56,15 @@
   sudo: yes
   when: '"master" in group_names and existing_accumulo|changed'
 
-- service: name=accumulo state=started enabled=yes
+- service: name={{ item }} state=started enabled=yes
+  with_items:
+    - accumulo-master
+    - accumulo-monitor
+    - accumulo-tracer
+    - accumulo-gc
   sudo: yes
+  when: '"master" in group_names'
+
+- service: name=accumulo-tserver state=started enabled=yes
+  sudo: yes
+  when: '"workers" in group_names'
