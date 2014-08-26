@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2014 Azavea.
  *
@@ -167,7 +166,8 @@ object GeotrellisBuild extends Build {
       libraryDependencies ++= Seq(
         "org.parboiled" %% "parboiled" % "2.0.0" % "test",
         scalatest   % "test",
-        scalacheck  % "test"
+        scalacheck  % "test",
+        scalaCSV
       )
     )
 
@@ -195,7 +195,8 @@ object GeotrellisBuild extends Build {
         spire,
         monocleCore,
         monocleMacro,
-        sprayClient // for reading args from URLs,
+        sprayClient, // for reading args from URLs,
+        scalaCSV
       )
     ) ++
     defaultAssemblySettings

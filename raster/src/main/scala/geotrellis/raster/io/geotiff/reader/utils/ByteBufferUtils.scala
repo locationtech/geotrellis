@@ -44,10 +44,6 @@ object ByteBufferUtils {
     @inline
     final def getUnsignedShort: Int = byteBuffer.getChar.toInt
 
-    @inline
-    final def getUnsignedShort(value: Int): Int = ByteBuffer.allocate(4).
-      order(byteBuffer.order).putInt(0, value).getChar.toInt
-
     final def getByteArray(length: Int): Array[Short] = {
       val arr = Array.ofDim[Short](length)
 
