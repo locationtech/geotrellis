@@ -14,5 +14,5 @@
 # limitations under the License.
 
 {% for host in groups['master'] %}
-{{hostvars[host]['ansible_eth1']}}
+{{hostvars[host]['ansible_eth1']['ipv4']['address']}}
 {% endfor %}
