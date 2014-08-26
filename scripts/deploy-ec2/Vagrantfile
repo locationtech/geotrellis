@@ -12,6 +12,9 @@ SPARK_WORKER_DISKS = 2
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
   cluster.vm.box = "ubuntu/precise64"
 
+  # Enable host manager
+  cluster.hostmanager.enabled = true
+
   # Wire up the proxy
   if Vagrant.has_plugin?("vagrant-proxyconf")
     cluster.proxy.http     = "http://#{local_ip}:8123/"
