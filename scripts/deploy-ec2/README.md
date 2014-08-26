@@ -18,6 +18,8 @@ https://github.com/smdahlen/vagrant-hostmanager
 
 `$ vagrant plugin install vagrant-hostmanager`
 
+This plugin will place all the hosts in the Vagrant file in /etc/hosts on each of the VMs
+
 Hadoop requires that it's hosts has an forward lookup in order to bind the network interfaces, even if hosts are configured as IPs. It seems to perform ip -> host -> ip lookup in order to arrive at the interface it will bind to.
 
 ### Vagrant up
