@@ -39,7 +39,6 @@ import geotrellis.raster.io.geotiff.reader.CoordinateTransformTypes._
 import geotrellis.proj4.EPSGCSVReader
 import geotrellis.proj4.CSVFileConstants._
 
-
 case class GeoTiffGDALParameters(
   var defNSet: Int = 1,
   var model: Int = UserDefinedCPV,
@@ -68,6 +67,10 @@ object GeoTiffCSParser {
   def apply(directory: ImageDirectory) = new GeoTiffCSParser(directory)
 
 }
+
+/**
+  * This class is indirectly ported from the GDAL github repository.
+  */
 
 class GeoTiffCSParser(directory: ImageDirectory) {
 
