@@ -53,7 +53,7 @@ class AsinSpec extends FunSpec
       }
     }
 
-    it("is NaN when the absolute value of the cell of a double raster > 1") {
+    it("is NaN when the absolute value of the cell of a double multiband raster > 1") {
       val mb = absDubmb
       val result = mb.localAsin
 
@@ -68,7 +68,7 @@ class AsinSpec extends FunSpec
     }
 
     it("finds arccos of an int multiband raster") {
-      val mb = arcMB
+      val mb = arcIntMB
       val expectedAngles = Array(0.0, 0.5, -0.5, Double.NaN, Double.NaN, Double.NaN).map(x => x * math.Pi)
       val result = mb.localAsin
 

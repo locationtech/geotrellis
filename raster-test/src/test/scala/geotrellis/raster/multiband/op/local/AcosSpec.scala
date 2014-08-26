@@ -71,7 +71,7 @@ class AcosSpec extends FunSpec
     }
 
     it("finds arccos of an int multiband raster") {
-      val mb = arcMB
+      val mb = arcIntMB 
       val expectedAngles = Array(0.5, 0.0, 1.0,
         Double.NaN, Double.NaN, Double.NaN)
         .map(x => x * math.Pi)

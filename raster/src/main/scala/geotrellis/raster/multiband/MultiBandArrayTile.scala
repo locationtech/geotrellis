@@ -98,7 +98,7 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
   def combine(first: Int, last: Int)(f: (Int, Int) => Int): Tile = {
     if (first < bands || last < bands) {
       var result = getBand(first)
-      cfor(first + 1)(_ < last, _ + 1) { band =>
+      cfor(first + 1)(_ <= last, _ + 1) { band =>
         result = result.combine(getBand(band))(f)
       }
       result
@@ -110,7 +110,7 @@ case class MultiBandArrayTile(multiBandData: Array[Tile]) extends MultiBandTile 
   def combineDouble(first: Int, last: Int)(f: (Double, Double) => Double): Tile = {
     if (first < bands || last < bands) {
       var result = getBand(first)
-      cfor(first + 1)(_ < last, _ + 1) { band =>
+      cfor(first + 1)(_ <= last, _ + 1) { band =>
         result = result.combineDouble(getBand(band))(f)
       }
       result
