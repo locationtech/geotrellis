@@ -146,5 +146,29 @@ class LessSpec extends FunSpec
         }
       }
     }
+    
+    it("checks double valued raster against int constant right associative(compare 6 against 6.9, 6 < 6.9 should be true)") {
+
+      val a = Array(0.0, -1.0, 2.5, -3.2,
+        4.8, -5.67, 6.90, -7.4,
+        8.7, -9.0, 10.3, -11.6,
+        12.4, -13.9, 14.5, -15.1)
+
+      val r = DoubleArrayTile(a, 4, 4)
+      val result = 6 <<: r
+
+      val a1 = Array[Byte](0, 0, 0, 0,
+        0, 0, 1, 0,
+        1, 0, 1, 0,
+        1, 0, 1, 0)
+
+      val expected = ByteArrayTile(a1, 4, 4)
+
+      for (col <- 0 until r.cols) {
+        for (row <- 0 until r.rows) {
+          result.get(col, row) should be(expected.get(col, row))
+        }
+      }
+    }
   }
 }
