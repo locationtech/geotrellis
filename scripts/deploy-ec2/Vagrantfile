@@ -43,7 +43,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
       machine.vm.network "private_network", ip: "33.33.33.#{last_octet}"
 
       machine.vm.provider "virtualbox" do |v|
-        v.memory = 1024
+        v.memory = 2048
         v.cpus = 2
 
         (1..SPARK_WORKER_DISKS).each do |disk_index|
@@ -53,7 +53,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
         end
       end
 
-      if (index) == SPARK_WORKERS 
+      if (index) == SPARK_WORKERS
         machine.vm.provision "ansible" do |ansible|
           ansible.playbook = "./setup-cluster.yml"
           ansible.groups = {
