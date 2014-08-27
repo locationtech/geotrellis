@@ -7,6 +7,12 @@
 - shell: dpkg -i /tmp/{{accumulo_deb}}  creates=/etc/accumulo
   sudo: yes
 
+- name: Set Accumulo sysctl settings
+  template: src=sysctl_accumulo.conf.j2 dest=/etc/sysctl.d/accumulo.conf
+  notify:
+    - Update sysctl
+  sudo: yes
+
 - name: Upload Accumulo init.d scripts
   template: src=init.d/{{ item }} dest=/etc/init.d/{{ item }}
   with_items:

@@ -19,3 +19,7 @@
     - accumulo-tserver
   when: '"workers" in group_names'
   sudo: yes
+
+- name: Update sysctl
+  command: sysctl -e -p /etc/sysctl.d/accumulo.conf
+  sudo: yes
