@@ -81,8 +81,5 @@
         private_dns_name={{ item.private_dns_name }}        
       with_items: workers.tagged_instances
  
-    - name: Update Cluster Variables
-      local_action: template src=templates/cluster_vars.j2 dest=./group_vars/cluster.yml
-    
     - name: Update EC2 Hosts Inventory
       local_action: template src=templates/cluster_inventory.j2 dest=./hosts
