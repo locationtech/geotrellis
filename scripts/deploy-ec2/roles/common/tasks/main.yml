@@ -40,3 +40,11 @@
     repo: "deb [arch=amd64] http://archive.cloudera.com/cdh5/ubuntu/{{ ansible_distribution_release }}/amd64/cdh {{cdh.repo}} contrib"
     state: present
   sudo: yes
+
+- name: Remove 127.0.1.1 from /etc/hosts
+  lineinfile:
+    dest="/etc/hosts"
+    regexp="^127.0.1.1"
+    line=""
+  sudo: yes
+  when: '"development" in group_names'
