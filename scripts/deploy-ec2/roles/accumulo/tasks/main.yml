@@ -71,7 +71,8 @@
   changed_when: existing_accumulo.rc == 1
   failed_when: False
   sudo: yes
-
+  when: '"master" in group_names and existing_accumulo|changed'
+  
 - name: Initilize Accumulo
   shell: sudo accumulo init --instance-name {{accumulo.instance}} --password {{accumulo.password}} creates=/accumulo/tables
   sudo: yes
