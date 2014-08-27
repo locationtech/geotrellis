@@ -4,7 +4,8 @@
 - name: Update APT cache
   apt: update_cache=yes
   when: '"development" in group_names'
-
+  sudo: yes
+  
 - name: Install OpenJDK 7 JDK
   apt: pkg=openjdk-7-jdk state=present install_recommends=yes
   sudo: yes
