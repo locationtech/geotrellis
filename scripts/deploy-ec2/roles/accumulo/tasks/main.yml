@@ -42,7 +42,9 @@
     - slaves
     - tracers
   sudo: yes
-  notify: Restart Accumulo
+  notify:
+    - Restart Accumulo Master
+    - Restart Accumulo Slave
 
 - name: Check /accumulo exists in HDFS
   command: hadoop fs -ls /accumulo
