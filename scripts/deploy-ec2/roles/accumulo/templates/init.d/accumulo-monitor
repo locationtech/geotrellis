@@ -27,9 +27,7 @@
 ### END INIT INFO
 
 . /lib/lsb/init-functions
-BIGTOP_DEFAULTS_DIR=${BIGTOP_DEFAULTS_DIR-/etc/default}
-[ -n "${BIGTOP_DEFAULTS_DIR}" -a -r ${BIGTOP_DEFAULTS_DIR}/hadoop ] && . ${BIGTOP_DEFAULTS_DIR}/hadoop
-[ -n "${BIGTOP_DEFAULTS_DIR}" -a -r ${BIGTOP_DEFAULTS_DIR}/hadoop-hdfs-namenode ] && . ${BIGTOP_DEFAULTS_DIR}/hadoop-hdfs-namenode
+[ -n /etc/default -a -r /etc/default/accumulo ] && . /etc/default/accumulo
 
 # Autodetect JAVA_HOME if not defined
 . /usr/lib/bigtop-utils/bigtop-detect-javahome

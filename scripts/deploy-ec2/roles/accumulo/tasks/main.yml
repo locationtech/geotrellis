@@ -7,6 +7,25 @@
 - shell: dpkg -i /tmp/{{accumulo_deb}}  creates=/etc/accumulo
   sudo: yes
 
+- name: Ensure that the Accumulo defaults file exists
+  file: path=/etc/default/accumulo state=touch
+  sudo: yes
+
+- name: Set Accumulo ulimit
+  lineinfile: dest=/etc/default/accumulo
+              line="ulimit -n 65536"
+              state=present
+  notify:
+    - Restart Accumulo Master
+    - Restart Accumulo Slave
+  sudo: yes
+
+- name: Set Accumulo sysctl settings
+  template: src=sysctl_accumulo.conf.j2 dest=/etc/sysctl.d/accumulo.conf
+  notify:
+    - Update sysctl
+  sudo: yes
+
 - name: Upload Accumulo init.d scripts
   template: src=init.d/{{ item }} dest=/etc/init.d/{{ item }}
   with_items:
@@ -42,7 +61,9 @@
     - slaves
     - tracers
   sudo: yes
-  notify: Restart Accumulo
+  notify:
+    - Restart Accumulo Master
+    - Restart Accumulo Slave
 
 - name: Check /accumulo exists in HDFS
   command: hadoop fs -ls /accumulo
@@ -56,7 +77,16 @@
   sudo: yes
   when: '"master" in group_names and existing_accumulo|changed'
 
-- service: name={{ item }} state=started enabled=yes
+- command: update-rc.d {{ item }} defaults 30
+  with_items:
+    - accumulo-master
+    - accumulo-monitor
+    - accumulo-tracer
+    - accumulo-gc
+  sudo: yes
+  when: '"master" in group_names'
+
+- service: name={{ item }} state=started
   with_items:
     - accumulo-master
     - accumulo-monitor

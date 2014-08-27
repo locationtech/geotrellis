@@ -3,6 +3,23 @@
   service: name=zookeeper-server state=restarted
   sudo: yes
 
-- name: Restart Accumulo
-  service: name=accumulo state=restarted
+- name: Restart Accumulo Master
+  service: name={{ item }} state=restarted
+  with_items:
+    - accumulo-master
+    - accumulo-monitor
+    - accumulo-tracer
+    - accumulo-gc
+  when: '"master" in group_names'
+  sudo: yes
+
+- name: Restart Accumulo Slave
+  service: name={{ item }} state=restarted
+  with_items:
+    - accumulo-tserver
+  when: '"workers" in group_names'
+  sudo: yes
+
+- name: Update sysctl
+  command: sysctl -e -p /etc/sysctl.d/accumulo.conf
   sudo: yes

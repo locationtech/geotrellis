@@ -70,6 +70,10 @@
     <name>dfs.datanode.hdfs-blocks-metadata.enabled</name>
     <value>true</value>
   </property>
+  <property>
+    <name>dfs.datanode.synconclose</name>
+    <value>true</value>
+  </property>
 
   {% if "development" not in group_names %}
   <property>

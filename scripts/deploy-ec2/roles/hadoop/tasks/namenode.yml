@@ -12,14 +12,5 @@
   sudo_user: hdfs 
   sudo: yes
 
-# This entry messes up the Hadoop interface binding, causing it to bind to the local interface
-- lineinfile:
-    dest="/etc/hosts"
-    regexp="^127.0.1.1"
-    line=""
-  sudo: yes
-  notify: Restart Hadoop Namenode
-  when: '"development" in group_names'
-
 - service: name=hadoop-hdfs-namenode state=started enabled=yes
   sudo: yes
