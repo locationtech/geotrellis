@@ -3,6 +3,8 @@
 accumulo_deb: accumulo-1.5.1-bin.deb
 accumulo_url: http://apache.mesi.com.ar/accumulo/1.5.1/{{accumulo_deb}}
 
+
 accumulo:
   instance: gis
   password: secret
+  secret: cf886eb962b5e12de38f23efa9c1087e

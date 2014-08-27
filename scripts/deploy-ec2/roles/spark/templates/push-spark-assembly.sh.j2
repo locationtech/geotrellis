@@ -7,11 +7,11 @@ ASSEMBLY_DIR=~/geotrellis/spark/target/scala-2.10
 zip -d $ASSEMBLY_DIR/$ASSEMBLY_JAR META-INF/*.SF
 zip -d $ASSEMBLY_DIR/$ASSEMBLY_JAR META-INF/*.RSA
 
-{% for host in spark_workers %}
-ssh ubuntu@{{host}} mkdir -p $ASSEMBLY_DIR
+{% for host in groups['workers'] %}
+ssh ubuntu@{{hostvars[host]['ansible_' + eth]['ipv4']['address']}} mkdir -p $ASSEMBLY_DIR
 {% endfor %}
 
 #PUSH!
-{% for host in spark_workers %}
-rsync -v -e ssh $ASSEMBLY_DIR/$ASSEMBLY_JAR ubuntu@{{host}}:$ASSEMBLY_DIR/$ASSEMBLY_JAR
+{% for host in groups['workers'] %}
+rsync -v -e ssh $ASSEMBLY_DIR/$ASSEMBLY_JAR ubuntu@{{hostvars[host]['ansible_' + eth]['ipv4']['address']}}:$ASSEMBLY_DIR/$ASSEMBLY_JAR
 {% endfor %}

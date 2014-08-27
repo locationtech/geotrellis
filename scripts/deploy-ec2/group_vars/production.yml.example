@@ -26,6 +26,8 @@ hdfs:
   ]
   replication: 3
 
+eth: "eth0"
+
 # If you need to connect to the cluster VPN, set this to
 # your local network's public subnet. It will be included
 # as part of the security group for the master instance.
