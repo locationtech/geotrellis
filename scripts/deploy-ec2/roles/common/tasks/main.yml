@@ -48,3 +48,15 @@
     line=""
   sudo: yes
   when: '"development" in group_names'
+
+- lineinfile:
+    dest="/etc/security/limits.conf"
+    regexp="soft nofile"
+    line="* soft nofile 65536"
+  sudo: yes
+
+- lineinfile:
+    dest="/etc/security/limits.conf"
+    regexp="hard nofile"
+    line="* hard nofile 65536"
+  sudo: yes
