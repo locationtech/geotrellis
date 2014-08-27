@@ -3,7 +3,7 @@
 - name: Master
   hosts: master
   vars:
-    hadoop_namenode: "{{ hostvars['master']['ansible_eth1']['ipv4']['address'] }}"
+    hadoop_namenode: "{{ hostvars['master']['ansible_' + eth]['ipv4']['address'] }}"
   roles:
     - common
     - hadoop
@@ -11,7 +11,7 @@
 - name: Workers
   hosts: workers
   vars:
-    hadoop_namenode: "{{ hostvars['master']['ansible_eth1']['ipv4']['address'] }}"
+    hadoop_namenode: "{{ hostvars['master']['ansible_' + eth]['ipv4']['address'] }}"
   roles:
     - common
     - hadoop

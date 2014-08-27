@@ -3,15 +3,15 @@
 - name: Master
   hosts: master
   vars:
-    zookeeper_host: "{{ hostvars['master']['ansible_eth1']['ipv4']['address'] }}"
-    accumulo_master: "{{ hostvars['master']['ansible_eth1']['ipv4']['address'] }}"
+    zookeeper_host: "{{ hostvars['master']['ansible_' + eth]['ipv4']['address'] }}"
+    accumulo_master: "{{ hostvars['master']['ansible_' + eth]['ipv4']['address'] }}"
   roles:
     - accumulo
 
 - name: Workers
   hosts: workers
   vars:
-    zookeeper_host: "{{ hostvars['master']['ansible_eth1']['ipv4']['address'] }}"
-    accumulo_master: "{{ hostvars['master']['ansible_eth1']['ipv4']['address'] }}"
+    zookeeper_host: "{{ hostvars['master']['ansible_' + eth]['ipv4']['address'] }}"
+    accumulo_master: "{{ hostvars['master']['ansible_' + eth]['ipv4']['address'] }}"
   roles:
     - accumulo

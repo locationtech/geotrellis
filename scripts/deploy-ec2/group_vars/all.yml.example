@@ -6,3 +6,5 @@ cdh:
   repo: {{ ansible_distribution_release }}-cdh5.1.0
   spark_version: 1.0.0-cdh5.1.0
   hadoop_version: 2.3.0-cdh5.1.0
+
+eth: "eth0"
