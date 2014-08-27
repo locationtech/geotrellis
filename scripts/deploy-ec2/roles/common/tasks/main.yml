@@ -1,8 +1,12 @@
 ---
 
-#Tasks for common role
+#This is needed for Dev, Production should use nightly build AMIs
+- name: Update APT cache
+  apt: update_cache=yes
+  when: '"development" in group_names'
+
 - name: Install OpenJDK 7 JDK
-  apt: pkg=openjdk-7-jdk state=present install_recommends=yes update_cache=yes
+  apt: pkg=openjdk-7-jdk state=present install_recommends=yes
   sudo: yes
 
 - name: There's no place like $JAVA_HOME
