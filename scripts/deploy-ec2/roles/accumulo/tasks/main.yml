@@ -58,7 +58,16 @@
   sudo: yes
   when: '"master" in group_names and existing_accumulo|changed'
 
-- service: name={{ item }} state=started enabled=yes
+- command: update-rc.d {{ item }} defaults 30
+  with_items:
+    - accumulo-master
+    - accumulo-monitor
+    - accumulo-tracer
+    - accumulo-gc
+  sudo: yes
+  when: '"master" in group_names'
+
+- service: name={{ item }} state=started
   with_items:
     - accumulo-master
     - accumulo-monitor
