@@ -24,7 +24,7 @@ trait AccumuloFormat[INDEX, LAYER] extends Serializable {
 
 case class TmsLayer(name: String, levelId: Int)
 
-class TmsTilingAccumuloFormat extends AccumuloFormat[Long, TmsLayer] {
+class TmsTilingAccumuloFormat extends AccumuloFormat[TileId, TmsLayer] {
   val rowIdRx = """(\d+)_(\d+)""".r // (zoom)_(TmsTilingId)
   val layerRx = """(\w+):(\d+)""".r
 

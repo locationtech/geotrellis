@@ -83,9 +83,9 @@ package object accumulo {
     }
   }
 
-  implicit class AccumuloSaveFunctions[K](rdd: RDD[(K, Tile)]) {
+  implicit class AccumuloSaveFunctions[K](rdd: RasterRDD) {
     def saveAccumulo[L](table: String, layer: L, accumuloConnector: Connector)
-                    (implicit format: AccumuloFormat[K, L]): Unit =
+                    (implicit format: AccumuloFormat[TileId, L]): Unit =
     {
       val sc = rdd.sparkContext
       val connectorBC = sc.broadcast(accumuloConnector)
