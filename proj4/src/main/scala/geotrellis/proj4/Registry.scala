@@ -20,6 +20,8 @@ import scala.collection.immutable.HashMap
 
 object Registry {
 
+  def apply: Registry = new Registry()
+
   val datums = Array(
     Datum.WGS84,
     Datum.GGRS87,
@@ -79,9 +81,6 @@ object Registry {
     new Ellipsoid("NAD27", 6378249.145, 0.0, 293.4663, "NAD27: Clarke 1880 mod."),
     new Ellipsoid("NAD83", 6378137.0, 0.0, 298.257222101, "NAD83: GRS 1980 (IUGG, 1980)")
   )
-
-  def getEllipsoid(name: String) = ellipsoids.filter(_.shortName == name).headOption
-
 
   private val projectionRegistry = HashMap[String, Class](
     "aea" -> AlbersProjection.class,
@@ -194,5 +193,11 @@ class Registry {
     }
     case None => None
   }
+
+  def getEllipsoid(name: String): Option[Ellipsoid] =
+    ellipsoids.filter(_.shortName == name).headOption
+
+  def getDatum(code: String): Option[Datum] =
+    datums.filter(_.code == code).headOption
 
 }

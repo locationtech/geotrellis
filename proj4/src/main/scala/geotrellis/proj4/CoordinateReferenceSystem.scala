@@ -22,11 +22,11 @@ object CoordinateReferenceSystem {
 
 }
 
-class CoordinateReferenceSystem(
+case class CoordinateReferenceSystem(
   inputName: String = "null-proj",
-  val parameters: Option[Array[String]] = None,
-  val datum: Option[Datum] = None,
-  val projection: Option[Projection] = None
+  parameters: Option[Array[String]] = None,
+  datum: Option[Datum] = None,
+  projection: Option[Projection] = None
 ) {
 
   val name = projection match {
