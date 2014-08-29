@@ -36,8 +36,8 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
     val sourceCRS = LatLng
     val destCRS = LatLng
 
-    val accumulo = AccumuloInstance(
-      args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
+    val instance = new ZooKeeperInstance(args.instance, args.zookeeper)
+    val connector = instance.getConnector(args.user, new PasswordToken(args.password))
 
     implicit val format = new TmsTilingAccumuloFormat
 
@@ -47,7 +47,7 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
       val sink = { (tiles: RDD[TmsTile], metaData: LayerMetaData) =>
         val raster: RasterRDD = new RasterRDD(tiles, metaData)
 
-        raster.saveAccumulo(accumulo.connector)(args.table,  TmsLayer(args.layer, metaData.level.id))(format)
+        raster.saveAccumulo(connector)(args.table,  TmsLayer(args.layer, metaData.level.id))(format)
 
         logInfo(s"Saved raster to accumulo table: ${args.table}.")
       }
