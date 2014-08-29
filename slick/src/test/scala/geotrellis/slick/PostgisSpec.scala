@@ -227,13 +227,13 @@ val db = Database.forURL("jdbc:postgresql://" + pghost + "/" + pgdb,
       OptCity ++= cities
 
       val q1 = for {
-        c <- OptCity if c.geom isNull
+        c <- OptCity if c.geom isEmpty
       } yield (c.name, c.geom)
 
       q1.list should equal (List(("london",None)))
 
       val q2 = for {
-        c <- OptCity if c.geom isNotNull
+        c <- OptCity if c.geom isDefined
       } yield c.name
 
       q2.list should equal (List("washington","paris"))

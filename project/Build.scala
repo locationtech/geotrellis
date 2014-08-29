@@ -323,7 +323,8 @@ object GeotrellisBuild extends Build {
         scalatest % "test"
       )
     ) ++
-    defaultAssemblySettings
+    defaultAssemblySettings ++
+    net.virtualvoid.sbt.graph.Plugin.graphSettings
 
   // Project: admin
   lazy val admin: Project =
