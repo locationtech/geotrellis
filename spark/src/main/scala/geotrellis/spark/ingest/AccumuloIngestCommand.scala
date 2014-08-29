@@ -4,20 +4,18 @@ import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling._
 import geotrellis.spark.rdd._
-import geotrellis.spark.utils.HdfsUtils
 import geotrellis.proj4._
 import org.apache.accumulo.core.client.ZooKeeperInstance
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 
-import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs._
 
 import org.apache.spark._
 import org.apache.spark.rdd._
 
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Required
-
+import geotrellis.spark.io.accumulo._
 
 class AccumuloIngestArgs extends IngestArgs {
   @Required var table: String = _
@@ -42,18 +40,20 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
     val sourceCRS = LatLng
     val destCRS = LatLng
 
-    val instance = new ZooKeeperInstance(args.instance, args.zookeeper)
-    val connector = instance.getConnector(args.user, new PasswordToken(args.password))
-    import geotrellis.spark.io.accumulo._
+    val accumulo = AccumuloInstance(
+      args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
+
+//    val table = AccumuloTmsTable(args.table, accumulo.connector)
     implicit val format = new TmsTilingAccumuloFormat
 
-    val sparkContext = args.sparkContext("Ingest")
+
+    implicit val sparkContext = args.sparkContext("Ingest")
     try {
       val source = sparkContext.hadoopGeoTiffRDD(inPath)
       val sink = { (tiles: RDD[TmsTile], metaData: LayerMetaData) =>
+        val raster: RasterRDD = new RasterRDD(tiles, metaData)
 
-        val raster = new RasterRDD(tiles, metaData)
-        raster.saveAccumulo(args.table,  TmsLayer(args.layer, metaData.level.id), connector)(format)
+        raster.saveAccumulo(accumulo.connector)(args.table,  TmsLayer(args.layer, metaData.level.id))(format)
 
         logInfo(s"Saved raster to accumulo table: ${args.table}.")
       }

@@ -14,9 +14,7 @@ import spray.can.Http
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Required
 
-class TmsArgs extends SparkArgs with HadoopArgs {
-  @Required var root: String = _
-}
+class TmsArgs extends SparkArgs with HadoopArgs
 
 object TMS extends ArgMain[TmsArgs] {
   def main(args: TmsArgs) {

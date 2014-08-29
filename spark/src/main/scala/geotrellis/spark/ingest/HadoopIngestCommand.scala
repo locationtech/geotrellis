@@ -30,9 +30,11 @@ import spire.syntax.cfor._
 
 class IngestArgs extends SparkArgs with HadoopArgs {
   @Required var input: String = _
-  @Required var outputpyramid: String = _
 }
 
+class HadoopIngestArgs extends IngestArgs {
+  @Required var outputpyramid: String = _
+}
 /**
   * @author akini
   *
@@ -55,11 +57,11 @@ class IngestArgs extends SparkArgs with HadoopArgs {
   * --sparkMaster <spark-name>   i.e. local[10]
   *
   */
-object HadoopIngestCommand extends ArgMain[IngestArgs] with Logging {
+object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
 
   System.setProperty("com.sun.media.jai.disableMediaLib", "true")
 
-  def main(args: IngestArgs): Unit = {
+  def main(args: HadoopIngestArgs): Unit = {
     val conf = args.hadoopConf
     conf.set("io.map.index.interval", "1")
 
