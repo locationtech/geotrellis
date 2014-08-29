@@ -13,8 +13,8 @@ import org.apache.hadoop.conf.Configuration
 
 
 case class AccumuloInstance(instanceName: String, zookeeper: String, user: String, token: AuthenticationToken) {
-  val instance = new ZooKeeperInstance(instanceName, zookeeper)
-  val connector = instance.getConnector(user, token)
+  def instance = new ZooKeeperInstance(instanceName, zookeeper)
+  def connector = instance.getConnector(user, token)
 
   def initAccumuloInputFormat(sc: SparkContext): Unit =
     initAccumuloInputFormat(sc.hadoopConfiguration)
