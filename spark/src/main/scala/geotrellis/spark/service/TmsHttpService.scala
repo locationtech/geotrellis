@@ -1,6 +1,7 @@
 package geotrellis.spark.service
 
 import geotrellis.raster._
+import geotrellis.raster.op.local._
 import geotrellis.raster.render.png._
 import geotrellis.spark.tiling._
 import geotrellis.spark.rdd._
@@ -37,12 +38,22 @@ trait TmsHttpService extends HttpService {
 
   def rootRoute =
     pathPrefix("tms" / Segment / IntNumber / IntNumber / IntNumber ) { (layer, zoom, x , y) =>
-      val rdd = sc.accumuloRDD(accumulo.connector)(
+      val rdd1 = sc.accumuloRDD(accumulo.connector)(
         "tiles",  TmsLayer(layer, zoom), Some(GridBounds(x, y, x, y), TmsCoordScheme))
 
+      val rdd2 = sc.accumuloRDD(accumulo.connector)(
+        "tiles",  TmsLayer(layer, zoom), Some(GridBounds(x, y, x, y), TmsCoordScheme))
+
+      val out = rdd1.combineTiles(rdd2){case (tms1, tms2) =>
+        require(tms1.id == tms2.id)
+        val res = tms1.tile.localAdd(tms2.tile)
+        TmsTile(tms1.id, res)
+      }
+
       respondWithMediaType(MediaTypes.`image/png`) { complete {
+        val tile = out.first.tile
         //at least in the local case it is faster to do collect then encode
-        Encoder(Settings(Rgba, PaethFilter)).writeByteArray(rdd.first.tile)
+        Encoder(Settings(Rgba, PaethFilter)).writeByteArray(tile)
       } }
     }
 }
