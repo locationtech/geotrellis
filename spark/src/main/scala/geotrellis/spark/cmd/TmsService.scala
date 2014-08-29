@@ -1,10 +1,7 @@
 package geotrellis.spark.cmd
 
-import geotrellis.spark.cmd.args.{SparkArgs, HadoopArgs}
+import geotrellis.spark.cmd.args._
 import geotrellis.spark.service.TmsHttpActor
-
-import org.apache.hadoop.fs.Path
-import org.apache.spark.Logging
 
 import akka.actor.{ActorSystem, Props}
 import akka.io.IO
@@ -14,7 +11,7 @@ import spray.can.Http
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Required
 
-class TmsArgs extends SparkArgs with HadoopArgs
+class TmsArgs extends AccumuloArgs with SparkArgs with HadoopArgs
 
 object TMS extends ArgMain[TmsArgs] {
   def main(args: TmsArgs) {

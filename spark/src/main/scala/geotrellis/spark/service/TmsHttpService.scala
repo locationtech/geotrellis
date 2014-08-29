@@ -31,9 +31,10 @@ trait TmsHttpService extends HttpService {
   val args: TmsArgs
   val sc = args.sparkContext("TMS Service")
 
-  val accumulo = AccumuloInstance("gis", "localhost", "root", new PasswordToken("secret"))
-  sc.setZooKeeperInstance("gis", "localhost")
-  sc.setAccumuloCredential("root", new PasswordToken("secret"))
+  val accumulo = AccumuloInstance(
+    args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
+  accumulo.initAccumuloInputFormat(sc)
+
   implicit val format = new TmsTilingAccumuloFormat
 
   def rootRoute =

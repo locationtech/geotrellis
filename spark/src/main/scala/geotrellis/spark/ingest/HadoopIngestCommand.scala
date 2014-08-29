@@ -28,9 +28,7 @@ import com.quantifind.sumac.validation.Required
 
 import spire.syntax.cfor._
 
-class IngestArgs extends SparkArgs with HadoopArgs {
-  @Required var input: String = _
-}
+
 
 class HadoopIngestArgs extends IngestArgs {
   @Required var outputpyramid: String = _

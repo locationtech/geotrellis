@@ -1,6 +1,7 @@
 package geotrellis.spark.ingest
 
 import geotrellis.spark._
+import geotrellis.spark.cmd.args.AccumuloArgs
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling._
 import geotrellis.spark.rdd._
@@ -17,14 +18,9 @@ import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Required
 import geotrellis.spark.io.accumulo._
 
-class AccumuloIngestArgs extends IngestArgs {
+class AccumuloIngestArgs extends IngestArgs with AccumuloArgs {
   @Required var table: String = _
   @Required var layer: String = _
-  @Required var zookeeper: String = _
-  @Required var instance: String = _
-  @Required var user: String = _
-  @Required var password: String = _
-
 }
 
 object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
@@ -43,9 +39,7 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
     val accumulo = AccumuloInstance(
       args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
 
-//    val table = AccumuloTmsTable(args.table, accumulo.connector)
     implicit val format = new TmsTilingAccumuloFormat
-
 
     implicit val sparkContext = args.sparkContext("Ingest")
     try {
