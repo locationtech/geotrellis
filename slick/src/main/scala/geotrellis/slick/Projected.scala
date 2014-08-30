@@ -42,7 +42,7 @@ object Projected {
  */
 case class Projected[+G <: Geometry](geom: G, srid: Int) {
   def reproject(src: CRS, dest: CRS)(destSRID: Int): Projected[G] =    
-    Projected(Reproject(geom, src, dest).asInstanceOf[G], destSRID)
+    Projected(geom.reproject(src, dest), destSRID)
 
   def withSRID(newSRID: Int): Projected[G] = 
     Projected(geom, newSRID)

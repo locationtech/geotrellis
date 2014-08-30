@@ -13,8 +13,7 @@ class MosaicSpec extends FunSpec
                            with TileBuilders
                            with TestEngine {
   describe("MosaicBuilder") {
-    // THIS IS FAILING...BAD!
-    ignore("should mosaic a tile split by CompositeTile back into itself") {
+    it("should mosaic a tile split by CompositeTile back into itself") {
       val totalCols = 1000
       val totalRows = 1500
       val tileCols = 2
@@ -42,7 +41,12 @@ class MosaicSpec extends FunSpec
       val builder = new MosaicBuilder(tile.cellType, extent, tile.cols, tile.rows)
 
       rasters.foreach(builder += _)
-      assertEqual(builder.result.tile, tile)
+      val result = builder.result.tile
+
+      assertEqual(result.crop(GridBounds(0, 0, 0, 1491)), tile.crop(GridBounds(0, 0, 0, 1491)))
+
+      println(s"(${tile.cols}, ${tile.rows}")
+      assertEqual(result, tile)
     }
   }
 

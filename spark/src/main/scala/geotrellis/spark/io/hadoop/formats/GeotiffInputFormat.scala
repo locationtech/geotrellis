@@ -45,7 +45,7 @@ class GeotiffInputFormat extends FileInputFormat[Extent, Tile] {
 
 case class GeotiffData(cellType: CellType, userNoData: Double)
 
-class GeotiffRecordReader extends RecordReader[Extent, Tile] {
+class GeotiffRecordReader extends RecordReader[ProjectedExtent, Tile)] {
   private var tup: (Extent, Tile) = null
   private var hasNext: Boolean = true
 
@@ -60,7 +60,7 @@ class GeotiffRecordReader extends RecordReader[Extent, Tile] {
     // TODO: Get CRS from geoTiff
     val crs = LatLng
 
-    tup = (extent, tile)
+    tup = (ProjectedExtent(extent, crs), tile)
   }
 
   def close = {}

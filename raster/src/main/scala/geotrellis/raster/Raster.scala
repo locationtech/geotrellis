@@ -10,6 +10,9 @@ object Raster {
 
   implicit def tupSwapToRaster(tup: (Extent, Tile)): Raster =
     Raster(tup._2, tup._1)
+
+  implicit def rasterToTile(r: Raster): Tile =
+    r.tile
 }
 
 case class Raster(tile: Tile, extent: Extent) {

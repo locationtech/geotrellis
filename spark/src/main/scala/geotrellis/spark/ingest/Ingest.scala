@@ -17,7 +17,7 @@
 package geotrellis.spark.ingest
 
 import geotrellis.raster._
-import geotrellis.raster.mosaic._
+
 import geotrellis.raster.reproject._
 import geotrellis.vector._
 import geotrellis.vector.reproject._

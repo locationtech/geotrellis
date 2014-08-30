@@ -28,6 +28,12 @@ object ProjectedRaster {
 
   implicit def tupSwapToRaster(tup: (CRS, Raster)): ProjectedRaster =
     ProjectedRaster(tup._2, tup._1)
+
+  implicit def projectedToRaster(p: ProjectedRaster): Raster =
+    p.raster
+
+  implicit def projectedToTile(p: ProjectedRaster): Tile =
+    p.raster.tile
 }
 
 case class ProjectedRaster(raster: Raster, crs: CRS) {

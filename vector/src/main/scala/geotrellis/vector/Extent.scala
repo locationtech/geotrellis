@@ -26,6 +26,11 @@ object Extent {
     Extent(env)
 }
 
+case class ProjectedExtent(extent: Extent, crs: CRS) {
+  def reproject(dest: CRS): Extent = 
+    extent.reproject(crs, dest)
+}
+
 /**
  * An Extent represents a rectangular region of geographic space (with a
  * particular projection). It is expressed in map coordinates.

@@ -35,7 +35,7 @@ package object hadoop {
     def hadoopGeoTiffRDD(path: String): RDD[(Extent, Tile)] =
       hadoopGeoTiffRDD(new Path(path))
 
-    def hadoopGeoTiffRDD(path: Path): RDD[(Extent, Tile)] = {
+    def hadoopGeoTiffRDD(path: Path): RDD[(ProjectedExtent, Tile)] = {
       val updatedConf = 
         sc.hadoopConfiguration.withInputDirectory(path)
 
