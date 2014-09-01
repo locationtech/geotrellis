@@ -16,9 +16,17 @@
 
 package geotrellis.proj4.parser
 
-import geotrellis.proj4.util.ProjectionMath._
+import monocle.syntax._
 
 import collection.immutable.Map
+
+import geotrellis.proj4.util.ProjectionMath._
+import geotrellis.proj4.proj.Projection
+import geotrellis.proj4.proj.ProjectionBuilderLenses._
+import geotrellis.proj4.proj.ProjectionBuilders._
+import geotrellis.proj4.units._
+import geotrellis.proj4.datum._
+import geotrellis.proj4._
 
 object Proj4Parser {
 
@@ -31,7 +39,7 @@ class Proj4Parser(private val registry: Registry) {
   def parse(name: String, args: Array[String]): CoordinateReferenceSystem = {
     val parameters = createParameterMap(args)
 
-    if (!isValid(parameters.keySet))
+    if (!Proj4Keyword.isValid(parameters.keySet))
       throw new IllegalArgumentException(
         "One or more of the arguments provided isn't valid."
       )
@@ -43,115 +51,122 @@ class Proj4Parser(private val registry: Registry) {
 
     val projection = parseProjection(parameters, ellipsoid)
 
-    CoordinateReferenceSystem(name, Some(args), Some(datum), Some(projection))
+    CoordinateReferenceSystem(name, Some(args), datum, projection)
   }
 
   private def parseProjection(
-    parameters: Map[String, Option[String]],
+    parameters: Map[String, String],
     ellipsoid: Ellipsoid): Projection = {
-    var projection = parameters.get(Proj4Keyword.proj) match {
+    var projectionBuilder = parameters.get(Proj4Keyword.proj) match {
       case Some(code) =>
-        registry.getProjection(code) getOrElse {
+        registry.getProjectionBuilder(code) getOrElse {
           throw new InvalidValueException("Unknown projection: $code.")
         }
       case None => throw new IllegalStateException("No proj flag specified.")
     }
 
-    projection = projection.set(ellipsoid)
+    projectionBuilder = projectionBuilder |-> ellipsoidLens set ellipsoid
 
-    projection = params.get(Proj4Keyword.alpha) match {
-      case Some(s) => projection.setAlphaDegrees(s.toDouble)
-      case None => projection
+    projectionBuilder = parameters.get(Proj4Keyword.alpha) match {
+      case Some(s) => projectionBuilder.setAlphaDegrees(s.toDouble)
+      case None => projectionBuilder
     }
 
-    projection = params.get(Proj4Keyword.lonc) match {
-      case Some(s) => projection.setLonCDegrees(s.toDouble)
-      case None => projection
+    projectionBuilder = parameters.get(Proj4Keyword.lonc) match {
+      case Some(s) => projectionBuilder.setLonCDegrees(s.toDouble)
+      case None => projectionBuilder
     }
 
-    projection = params.get(Proj4Keyword.lat_0) match {
-      case Some(s) => projection.setProjectionLatitudeDegrees(parseAngle(s))
-      case None => projection
+    projectionBuilder = parameters.get(Proj4Keyword.lat_0) match {
+      case Some(s) => projectionBuilder.setProjectionLatitudeDegrees(parseAngle(s))
+      case None => projectionBuilder
     }
 
-    projection = params.get(Proj4Keyword.lon_0) match {
-      case Some(s) => projection.setProjectionLongitudeDegrees(parseAngle(s))
-      case None => projection
+    projectionBuilder = parameters.get(Proj4Keyword.lon_0) match {
+      case Some(s) => projectionBuilder.setProjectionLongitudeDegrees(parseAngle(s))
+      case None => projectionBuilder
     }
 
-    projection = params.get(Proj4Keyword.lat_1) match {
-      case Some(s) => projection.setProjectionLatitude1Degrees(parseAngle(s))
-      case None => projection
+    projectionBuilder = parameters.get(Proj4Keyword.lat_1) match {
+      case Some(s) => projectionBuilder.setProjectionLatitude1Degrees(parseAngle(s))
+      case None => projectionBuilder
     }
 
-    projection = params.get(Proj4Keyword.lat_2) match {
-      case Some(s) => projection.setProjectionLatitude2Degrees(parseAngle(s))
-      case None => projection
+    projectionBuilder = parameters.get(Proj4Keyword.lat_2) match {
+      case Some(s) => projectionBuilder.setProjectionLatitude2Degrees(parseAngle(s))
+      case None => projectionBuilder
     }
 
-    projection = params.get(Proj4Keyword.lat_ts) match {
-      case Some(s) => projection.setTrueScaleLatitudeDegrees(parseAngle(s))
-      case None => projection
+    projectionBuilder = parameters.get(Proj4Keyword.lat_ts) match {
+      case Some(s) => projectionBuilder.setTrueScaleLatitudeDegrees(parseAngle(s))
+      case None => projectionBuilder
     }
 
-    projection = params.get(Proj4Keyword.x_0) match {
-      case Some(s) => projection.setFalseEasting(s.toDouble)
-      case None => projection
+    projectionBuilder = parameters.get(Proj4Keyword.x_0) match {
+      case Some(s) => projectionBuilder |-> falseEastingLens set s.toDouble
+      case None => projectionBuilder
     }
 
-    projection = params.get(Proj4Keyword.y_0) match {
-      case Some(s) => projection.setFalseNorthing(s.toDouble)
-      case None => projection
+    projectionBuilder = parameters.get(Proj4Keyword.y_0) match {
+      case Some(s) => projectionBuilder |-> falseNorthingLens set s.toDouble
+      case None => projectionBuilder
     }
 
-    projection = params.get(Proj4Keyword.k_0) match {
-      case Some(s) => projection.setScaleFactor(s.toDouble)
-      case None => params.get(Proj4Keyword.k) match {
-        case Some(s) => projection.setScaleFactor(s.toDouble)
-        case None => projection
+    val scaleFactor = parameters.get(Proj4Keyword.k_0) match {
+      case Some(s) => s.toDouble
+      case None => parameters.get(Proj4Keyword.k) match {
+        case Some(s) => s.toDouble
+        case None => projectionBuilder.scaleFactor
       }
     }
 
-    projection = params.get(Proj4Keyword.units) match {
-      case Some(code) => Units.findUnits(code) match {
-        case Some(unit) =>
-          projection.setFromMetres(1 / unit.value).setUnits(unit)
-        case None =>
-          throw new InvalidValueException(s"Unknown unit: $code.")
+    projectionBuilder = projectionBuilder |-> scaleFactorLens set scaleFactor
+
+    projectionBuilder = parameters.get(Proj4Keyword.units) match {
+      case Some(code) => {
+        val unit = Units.findUnits(code)
+          projectionBuilder = projectionBuilder |-> fromMetresLens set 1 / unit.value
+          projectionBuilder = projectionBuilder |-> unitOptionLens set Some(unit)
+
+          projectionBuilder
+        }
+      case None => projectionBuilder
+    }
+
+    projectionBuilder = parameters.get(Proj4Keyword.to_meter) match {
+      case Some(s) => projectionBuilder |-> fromMetresLens set 1 / s.toDouble
+      case None => projectionBuilder
+    }
+
+    if (parameters.contains(Proj4Keyword.south)) {
+      projectionBuilder = projectionBuilder |-> isSouthLens set true
+
+      projectionBuilder = projectionBuilder.name match {
+        case tmercProjectionName | utmProjectionName =>
+          parameters.get(Proj4Keyword.zone) match {
+            case Some(s) => projectionBuilder.setUTMZone(s.toInt)
+            case None => projectionBuilder
+          }
+        case _ => projectionBuilder
       }
-      case None => projection
     }
 
-    projection = params.get(Proj4Keyword.to_meter) match {
-      case Some(s) => projection.setFromMetres(1 / s.toDouble)
-      case None => projection
-    }
-
-    if (params.contains(Proj4Keyword.south)) {
-      projection = projection.setSouthernHemisphere(true)
-
-      projection = projection match {
-        case p: TransverseMercatorProjection => p.setUTMZone(s.toInt)
-        case _ => projection
-      }
-    }
-
-    projection.initialize
+    projectionBuilder.build
   }
 
   private def parseDatum(
-    parameters: Map[String, Option[String]],
+    parameters: Map[String, String],
     datumParametersInput: DatumParameters): DatumParameters = {
-    var datumParameters = params.get(Proj4Keyword.towgs84) match {
+    var datumParameters = parameters.get(Proj4Keyword.towgs84) match {
       case Some(toWGS84) =>
         datumParametersInput.setDatumTransform(parseToWGS84(toWGS84))
       case None => datumParametersInput
     }
 
-    params.get(Proj4Keyword.datum) match {
+    parameters.get(Proj4Keyword.datum) match {
       case Some(code) => registry.getDatum(code) match {
         case Some(datum) => datumParameters.setDatum(datum)
-        case None => throw new InvalidValueException(s"Unknown datum: $datum.")
+        case None => throw new InvalidValueException(s"Unknown datum: $code.")
       }
       case None => datumParameters
     }
@@ -174,7 +189,7 @@ class Proj4Parser(private val registry: Registry) {
   }
 
   private def parseEllipsoid(
-    parameters: Map[String, Option[String]],
+    parameters: Map[String, String],
     datumParametersInput: DatumParameters): DatumParameters = {
 
     var datumParameters = parameters.get(Proj4Keyword.ellps) match {
@@ -216,17 +231,18 @@ class Proj4Parser(private val registry: Registry) {
   }
 
   private def parseEllipsoidRA(
-    parameters: Map[String, Option[String]],
+    parameters: Map[String, String],
     datumParameters: DatumParameters): DatumParameters =
-    if (parameters.contains(Proj4Keyword.R_A)) datumParameters.setR_A
-    else datumPrameters
+    if (parameters.contains(Proj4Keyword.R_A)) datumParameters.setRA
+    else datumParameters
 
-  private def createParameterMap(args: String): Map[String, Option[String]] =
+  private def createParameterMap(args: Array[String]): Map[String, String] =
     args.map(x => if (x.startsWith("+")) x.substring(1) else x).map(x => {
       val index = x.indexOf('=')
       if (index != -1) (x.substring(0, index) -> Some(x.substring(index + 1)))
       else (x -> None)
     }).groupBy(_._1).map { case (a, b) => (a, b.head._2) }
+      .filter { case (a, b) => b.isEmpty }.map { case (a, b) => (a -> b.get) }
 
   private def parseAngle(s: String): Double = Angle.parse(s)
 

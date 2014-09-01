@@ -18,6 +18,8 @@ package geotrellis.proj4.util
 
 import scala.collection.mutable.HashMap
 
+import geotrellis.proj4._
+
 object CRSCache {
 
   val projectionCache = HashMap[String, CoordinateReferenceSystem]()

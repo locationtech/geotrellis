@@ -16,6 +16,8 @@
 
 package geotrellis.proj4.parser
 
+import geotrellis.proj4.units.AngleFormat
+
 object ParameterUtil {
 
   val format = new AngleFormat(AngleFormat.ddmmssPattern, true)

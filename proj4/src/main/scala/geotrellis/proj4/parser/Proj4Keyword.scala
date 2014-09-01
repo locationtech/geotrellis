@@ -16,6 +16,8 @@
 
 package geotrellis.proj4.parser
 
+import scala.collection.immutable.HashSet
+
 object Proj4Keyword {
 
   val a = "a"
@@ -75,6 +77,6 @@ object Proj4Keyword {
     supportedParams.contains(paramKey)
 
   def isValid(keySet: Set[String]): Boolean =
-    keySet.filter(!isSupported).size == 0
+    keySet.filter(!isSupported(_)).size == 0
 
 }

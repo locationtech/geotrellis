@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.proj4
+package geotrellis.proj4.proj
 
 import geotrellis.proj4.util.ProjectionMath._
+import geotrellis.proj4.units._
+import geotrellis.proj4._
 
 object Projection {
 
@@ -47,36 +49,45 @@ object Projection {
 }
 
 abstract class Projection(
-  protected val minLatitude = -math.Pi / 2,
-  protected val minLongitude = -math.Pi,
-  protected val maxLatitude = math.Pi / 2,
-  protected val maxLongitude = math.Pi,
-  protected val projectionLatitude = 0.0,
-  protected val projectionLongitude = 0.0,
-  protected val projectionLatitude1 = 0.0,
-  protected val projectionLatitude2 = 0.0,
-  protected val alpha = Double.NaN,
-  protected val lonc = Double.NaN,
-  protected val scaleFactor = 1.0,
-  protected val falseEasting = 0,
-  protected val falseNorthing = 0,
-  protected val isSouth = false,
-  protected val trueScaleLatitude = 0.0,
-  protected val a = 0,
-  protected val e = 0,
-  protected val es = 0,
-  protected val one_es = 0,
-  protected val rone_es = 0,
-  protected ellipsoid = Ellipsoid.SPHERE,
-  protected val spherical = false,
-  protected val geocentric = false,
-  protected val name: Option[String] = None,
-  protected val fromMetres = 1,
-  protected val totalScale = 0,
-  private val totalFalseEasting = 0,
-  private val totalFalseNorthing = 0,
-  protected val unit: Option[Unit] = None,
+  val name: String,
+  val minLatitude: Double,
+  val minLongitude: Double,
+  val maxLatitude: Double,
+  val maxLongitude: Double,
+  val projectionLatitude: Double,
+  val projectionLongitude: Double,
+  val projectionLatitude1: Double,
+  val projectionLatitude2: Double,
+  val trueScaleLatitude: Double,
+  val alpha: Double,
+  val lonc: Double,
+  val scaleFactor: Double,
+  val falseEasting: Double,
+  val falseNorthing: Double,
+  val isSouth: Boolean,
+  val ellipsoid: Ellipsoid,
+  val fromMetres: Double,
+  val unitOption: Option[Unit],
+  val zoneOption: Option[Int]
 ) {
+
+  val a: Double = ellipsoid.equatorRadius
+
+  val e: Double = ellipsoid.eccentricity
+
+  val es: Double = ellipsoid.eccentricity2
+
+  val spherical: Boolean = e == 0.0
+
+  val oneEs: Double = 1 - es
+
+  val rOneEs: Double = 1.0 / oneEs
+
+  val totalScale: Double = a * fromMetres
+
+  val totalFalseEasting: Double = falseEasting * fromMetres
+
+  val totalFalseNorthing: Double = falseNorthing * fromMetres
 
   def project(source: ProjCoordinate, dest: ProjCoordinate): ProjCoordinate = {
     val x =
@@ -84,22 +95,24 @@ abstract class Projection(
         normalizeLongitude(source.x * DTR - projectionLongitude)
       else source.x * DTR
 
-    projectRadians(x, soruce.y * DTR, dest)
+    projectRadians(x, source.y * DTR, dest)
   }
 
-  def projectRadians(source: ProjCoordinate: dest: ProjCoordinate): ProjCoordinate =
+  def projectRadians(source: ProjCoordinate, dest: ProjCoordinate): ProjCoordinate =
     project(source, dest)
 
   def projectRadians(x: Double, y: Double, dest: ProjCoordinate): ProjCoordinate = {
     val pDest = project(x, y, dest)
 
-    if (unit == Units.DEGREES)
-      ProjCoordinate(pDest.x * RTD, pDest.y * RTD, pDest.z)
-    else
-      ProjCoordinate(
-        totalScale * dest.x + totalFalseEasting,
-        totalScale * dest.y + totalFalseNorthing,
-        pDest.z)
+    unitOption match {
+      case Some(Units.DEGREES) =>
+        ProjCoordinate(pDest.x * RTD, pDest.y * RTD, pDest.z)
+      case _ =>
+        ProjCoordinate(
+          totalScale * dest.x + totalFalseEasting,
+          totalScale * dest.y + totalFalseNorthing,
+          pDest.z)
+    }
   }
 
   protected def project(
@@ -115,14 +128,13 @@ abstract class Projection(
   def inverseProjectRadians(
     source: ProjCoordinate,
     dest: ProjCoordinate): ProjCoordinate = {
-    val (x, y) =
-      if (unit == Units.DEGREES)
-        (source.x * DTR, source.y * DTR)
-      else
-        (
-          (source.x - totalFalseEasting) / totalScale,
-          (source.y - totalFalseNorthing) / totalScale
-        )
+    val (x, y) = unitOption match {
+      case Some(Units.DEGREES) => (source.x * DTR, source.y * DTR)
+      case _ => (
+        (source.x - totalFalseEasting) / totalScale,
+        (source.y - totalFalseNorthing) / totalScale
+      )
+    }
 
     val pDest = projectInverse(x, y, dest)
     val dstX =
@@ -137,7 +149,7 @@ abstract class Projection(
     )
   }
 
-  def projectInverse(x: Double, y: Double, dest: ProjCoordinate)
+  def projectInverse(x: Double, y: Double, dest: ProjCoordinate): ProjCoordinate
 
   def isConformal: Boolean = false
 
@@ -154,6 +166,31 @@ abstract class Projection(
     minLongitude <= xn && xn <= maxLongitude && minLatitude <= y && y <= maxLatitude
   }
 
-  def setName(name: String): Projection =
+  def getPROJ4Description: String = {
+    val format = new AngleFormat(AngleFormat.ddmmssPattern, false)
+    val sb = new StringBuffer()
+
+    sb.append(s"+proj=${name} +a=$a")
+
+    if (es != 0) sb.append(s" +es=$es")
+
+    sb.append(" +lon_0=")
+    format.format(projectionLongitude, sb)
+
+    sb.append(" +lat_0=")
+    format.format(projectionLatitude, sb)
+
+    if (falseEasting != 1) sb.append(s" +x_0=$falseEasting")
+
+    if (falseNorthing != 1) sb.append(s" +y_0=$falseNorthing")
+
+    if (scaleFactor != 1) sb.append(s" +k=$scaleFactor")
+
+    if (fromMetres != 1) sb.append(s" +fr_meters=$fromMetres")
+
+    sb.toString
+  }
+
+  override def toString: String = "None"
 
 }

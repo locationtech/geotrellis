@@ -22,60 +22,53 @@ class BasicCoordinateTransform(
   val sourceCRS: CoordinateReferenceSystem,
   val targetCRS: CoordinateReferenceSystem) extends CoordinateTransform {
 
-  val doInverseProjection =
-    (sourceCRS != null && sourceCRS != CoordinateReferenceSystem.CS_GEO)
-  val doForwardProjection =
-    (targetCRS != null && targetCRS != CoordinateReferenceSystem.CS_GEO)
-  val doDatumTransform = doInverseProjection &&
-  doForwardProjection && sourceCRS.getDatum != targetCRS.getDatum
+  val doDatumTransform = sourceCRS.datum != targetCRS.datum
 
   val transformViaGeocentric =
-    doDatumTransform && ((sourceCRS.getDatum.getEllipsoid != targetCRS.getDatum.getEllipsoid) ||
-      sourceCRS.getDatum.hasTransformToWGS84 || targetCRS.getDatum.hasTransformToWGS84)
+    doDatumTransform && ((sourceCRS.datum.getEllipsoid != targetCRS.datum.getEllipsoid) ||
+      sourceCRS.datum.hasTransformToWGS84 || targetCRS.datum.hasTransformToWGS84)
 
-  val sourceGeoConv =
+  val sourceGeoConverter =
     if (transformViaGeocentric)
-      Some(new GeocentricConverter(sourceCRS.getDatum.getEllipsoid))
+      Some(new GeocentricConverter(sourceCRS.datum.getEllipsoid))
     else
       None
 
-  val targetGeoConv =
+  val targetGeoConverter =
     if (transformViaGeocentric)
-      Some(new GeocentricConverter(targetCRS.getDatum.getEllipsoid))
+      Some(new GeocentricConverter(targetCRS.datum.getEllipsoid))
     else
       None
 
   def transform(
     source: ProjCoordinate,
     target: ProjCoordinate): ProjCoordinate = {
-    if (doInverseProjection)
-      sourceCRS.getProjection.inverseProjectRadians(source, geoCoord)
-    else
-      geoCoord.setValue(source)
+    var (s, t, g) = (source, target, ProjCoordinate(0, 0))
+    g = sourceCRS.projection.inverseProjectRadians(s, g)
 
-    geoCoord.clearZ
+    g = ProjCoordinate(g.x, g.y)
 
-    if (doDatumTransform) datumTransform(geoCoord)
+    g = if (doDatumTransform) datumTransform(g) else g
 
-    if (doForwardProjection)
-      targetCRS.getProjection().projectRadians(geoCoord, target)
-    else
-      target.setValue(geoCoord)
-
-    target
+    targetCRS.projection.projectRadians(g, target)
   }
 
-  private def datumTransformation(pt: ProjCoordinate) =
-    if (sourceCRS.getDatum != targetCRS.getDatum && transformViaGeocentric) {
-      sourceGeoConv.convertGeodeticToGeocentric(pt)
+  private def datumTransformation(pc: ProjCoordinate): ProjCoordinate =
+    if (doDatumTransform && transformViaGeocentric) {
+      var p = sourceGeoConverter.convertGeodeticToGeocentric(pc)
 
-      if (sourceCRS.getDatum.hasTransformToWGS84)
-        sourceCRS.getDatum.transformFromGeocentricToWgs84(pt)
+      p =
+        if (sourceCRS.datum.hasTransformToWGS84)
+          sourceCRS.datum.transformFromGeocentricToWgs84(p)
+        else
+          p
 
-      if (targetCRS.getDatum.hasTransformToWGS84)
-        targetCRS.getDatum.transformFromGeocentricToWgs84(pt)
+      p =
+        if (targetCRS.datum.hasTransformToWGS84)
+          targetCRS.datum.transformFromGeocentricToWgs84(p)
+        else p
 
-      targettGeoConv.convertGeocentricToGeodetic(pt)
-    }
+      targetGeoConverter.convertGeocentricToGeodetic(p)
+    } else pc
 
 }

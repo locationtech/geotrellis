@@ -16,6 +16,8 @@
 
 package geotrellis.proj4.parser
 
+import geotrellis.proj4.datum._
+
 object DatumParameters {
 
   val SIXTH = 0.1666666666666666667
@@ -32,6 +34,8 @@ case class DatumParameters(
   optEllipsoid: Option[Ellipsoid],
   a: Double = Double.NaN,
   es: Double = Double.NaN) {
+
+  import DatumParameters._
 
   def this() = this(None, Array[Double](), None)
 
@@ -69,13 +73,13 @@ case class DatumParameters(
   def setB(b: Double): DatumParameters =
     DatumParameters(optDatum, datumTransform, None, a, 1 - (b * b) / (a * a))
 
-  def setES(es: Double): DatumParams =
+  def setES(es: Double): DatumParameters =
     DatumParameters(optDatum, datumTransform, None, a, es)
 
-  def setRF(rf: Double): DatumParams =
+  def setRF(rf: Double): DatumParameters =
     DatumParameters(optDatum, datumTransform, None, a, rf * (2 - rf))
 
-  def setRA: DatumParams =
+  def setRA: DatumParameters =
     DatumParameters(optDatum, datumTransform, None,
       a * (1 - es * (SIXTH + es * (RA4 + es * RA6))), es)
 

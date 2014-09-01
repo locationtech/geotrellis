@@ -16,40 +16,29 @@
 
 package geotrellis.proj4
 
-object CoordinateReferenceSystem {
-
-  val CS_GEO = new CoordinateReferenceSystem("CS_GEO")
-
-}
+import geotrellis.proj4.datum.Datum
+import geotrellis.proj4.proj.Projection
 
 case class CoordinateReferenceSystem(
-  inputName: String = "null-proj",
-  parameters: Option[Array[String]] = None,
-  datum: Option[Datum] = None,
-  projection: Option[Projection] = None
+  inputName: String,
+  parameters: Option[Array[String]],
+  datum: Datum,
+  projection: Projection
 ) {
 
-  val name = projection match {
-    case Some(proj) if (inputName == "null-proj") => s"${proj.getName}-CS"
-    case _ => inputName
-  }
+  val name = s"${projection.name}-CS"
 
-  val parameterString = params match {
-    case Some(params) => params.foldLeft("")((a, b) => s"$a $b").trim
-    case None => ""
+  val parametersString: Option[String] = parameters match {
+    case Some(p) => Some(p.foldLeft("")((a, b) => s"$a $b").trim)
+    case None => None
   }
 
   def createGeographic: CoordinateReferenceSystem = {
-    val ellipsoid = projection match {
-      case Some(proj) => Some(proj.ellipsoid)
-      case None => None
-    }
+    val ellipsoid = projection.ellipsoid
 
     val geoProjection = new LongLatProjection(ellipsoid, Units.DEGREES)
-    val crsName = = datum match {
-      case Some(d) => "GEO-" + d.getCode
-      case None => "null-proj"
-    }
+
+    val crsName = "GEO-${datum.getCode}"
 
     new CoordinateReferenceSystem(crsName, None, datum, geoProjection)
   }

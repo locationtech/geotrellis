@@ -23,13 +23,7 @@ object ProjCoordinate {
   val DECIMAL_FORMAT_PATTERN = "0.0###############"
   val DECIMAL_FORMAT = new DecimalFormat(DECIMAL_FORMAT_PATTERN)
 
-}
-
-case class ProjCoordinate(x: Double = 0.0, y: Double = 0.0, z: Double = Double.NaN) {
-
-  import ProjCoordinate._
-
-  def this(args: String) = if (args.startsWith("ProjCoordinate: ")) {
+  def apply(args: String): ProjCoordinate = if (args.startsWith("ProjCoordinate: ")) {
     val parts = args.substring(17, args.length - 2).split(" ")
 
     if (parts.length != 2 && parts.length != 3)
@@ -37,15 +31,21 @@ case class ProjCoordinate(x: Double = 0.0, y: Double = 0.0, z: Double = Double.N
         "The input string was not in the proper format."
       )
 
-    val x = Double.parseDouble(parts(0))
-    val y = Double.parseDouble(parts(1))
+    val x = parts(0).toDouble
+    val y = parts(1).toDouble
 
-    val z = if (parts.length == 3) Double.parseDouble(parts(2)) else Double.NaN
+    val z = if (parts.length == 3) parts(2).toDouble else Double.NaN
 
-    this(x, y, z)
+    ProjCoordinate(x, y, z)
   } else throw new IllegalArgumentException(
     "The input string was not in the proper format."
   )
+
+}
+
+case class ProjCoordinate(x: Double = 0.0, y: Double = 0.0, z: Double = Double.NaN) {
+
+  import ProjCoordinate._
 
   def areXOrdinatesEqual(compare: ProjCoordinate, epsilon: Double): Boolean =
     math.abs(x - compare.x) < epsilon

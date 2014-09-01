@@ -29,6 +29,27 @@ object Datum {
   val DEFAULT_TRANSFORM = Vector(0.0, 0.0, 0.0)
 
   val ELLIPSOID_E2_TOLERANCE = 0.000000000050
+
+  val WGS84 =
+    Datum("WGS84", 0,0,0, Ellipsoid.WGS84, "WGS84")
+  val GGRS87 =
+    Datum("GGRS87", -199.87,74.79,246.62, Ellipsoid.GRS80, "Greek_Geodetic_Reference_System_1987")
+  val NAD83 =
+    Datum("NAD83", 0,0,0, Ellipsoid.GRS80,"North_American_Datum_1983")
+  val NAD27 =
+    Datum("NAD27", "@conus,@alaska,@ntv2_0.gsb,@ntv1_can.dat", Ellipsoid.CLARKE_1866,"North_American_Datum_1927")
+  val POTSDAM =
+    Datum("potsdam", 606.0,23.0,413.0, Ellipsoid.BESSEL, "Potsdam Rauenberg 1950 DHDN")
+  val CARTHAGE =
+    Datum("carthage",-263.0,6.0,431.0, Ellipsoid.CLARKE_1880, "Carthage 1934 Tunisia")
+  val HERMANNSKOGEL =
+    Datum("hermannskogel", 653.0,-212.0,449.0, Ellipsoid.BESSEL, "Hermannskogel")
+  val IRE65 =
+    Datum("ire65", 482.530,-130.596,564.557,-1.042,-0.214,-0.631,8.15, Ellipsoid.MOD_AIRY, "Ireland 1965")
+  val NZGD49 =
+    Datum("nzgd49", 59.47,-5.04,187.44,0.47,-0.1,1.024,-4.5993, Ellipsoid.INTERNATIONAL, " Zealand Geodetic Datum 1949")
+  val OSEB36 =
+    Datum("OSGB36", 446.448,-125.157,542.060,0.1502,0.2470,0.8421,-20.4894, Ellipsoid.AIRY, "Airy 1830")
 }
 
 case class Datum(

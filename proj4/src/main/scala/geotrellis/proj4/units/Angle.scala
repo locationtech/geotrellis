@@ -17,22 +17,23 @@
 package geotrellis.proj4.units
 
 import geotrellis.proj4.units.AngleFormat._
+import geotrellis.proj4.util._
 
 object Angle {
 
-  def parse(s: String): Double = {
+  def parse(input: String): Double = {
     var negate = false
-    val length = s.length
+    val length = input.length
 
     val text =
-      if (length > 0) Char.toUpperCase(text.charAt(length - 1)) match {
+      if (length > 0) input.charAt(length - 1).toUpper match {
         case (CH_W | CH_E) => {
           negate = true
-          s.substring(0, length - 1)
+          input.substring(0, length - 1)
         }
-        case _ => s.substring(0, length - 1)
+        case _ => input.substring(0, length - 1)
       }
-      else s
+      else input
 
     val i = text.indexOf(CH_DEG_ABBREV) match {
       case -1 => text.indexOf(CH_DEG_SYMBOL)
@@ -54,7 +55,7 @@ object Angle {
       if (j != -1) {
         if (j != 0) m = mmss.substring(0, j).toDouble
 
-        if (mmss.endsWith(STR_SEC_ABBREV) || mms.endsWith(STR_SEC_SYMBOL))
+        if (mmss.endsWith(STR_SEC_ABBREV) || mmss.endsWith(STR_SEC_SYMBOL))
           mmss = mmss.substring(0, mmss.length - 1)
 
         if (j != mmss.length - 1)

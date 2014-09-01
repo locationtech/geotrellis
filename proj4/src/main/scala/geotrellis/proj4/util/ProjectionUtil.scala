@@ -16,6 +16,8 @@
 
 package geotrellis.proj4.util
 
+import geotrellis.proj4._
+
 object ProjectionUtil {
 
   def toString(projCoordinate: ProjCoordinate): String =

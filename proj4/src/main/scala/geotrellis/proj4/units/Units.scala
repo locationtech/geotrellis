@@ -18,7 +18,7 @@ package geotrellis.proj4.units
 
 object Units {
 
-  val DEGREES = DegreeUnit()
+  val DEGREES = Unit("degree", "degrees", "deg", 1)
   val RADIANS = Unit("radian", "radians", "rad", math.toDegrees(1))
   val ARC_MINUTES = Unit("arc minute", "arc minutes", "min", 1/60.0)
   val ARC_SECONDS = Unit("arc second", "arc seconds", "sec", 1/3600.0)

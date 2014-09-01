@@ -16,6 +16,8 @@
 
 package geotrellis.proj4.util
 
+import geotrellis.proj4._
+
 object ProjectionMath {
 
   val HALF_PI = math.Pi / 2
@@ -71,7 +73,7 @@ object ProjectionMath {
 
   def atan2(y: Double, x: Double): Double = math.atan2(y, x)
 
-  def trunc(v: Double): Double = if (v < 0.0) math.ciel(v) else math.floor(v)
+  def trunc(v: Double): Double = if (v < 0.0) math.ceil(v) else math.floor(v)
 
   def frac(v: Double): Double = v - trunc(v)
 
@@ -152,7 +154,7 @@ object ProjectionMath {
   def takeSign(a: Int, b: Int): Int =
     if (b < 0) -math.abs(a) else math.abs(a)
 
-  def cross(x1: Double, y1: Double, x2: Double, y2: DOuble): Double = x1 * y2 - x2 * y1
+  def cross(x1: Double, y1: Double, x2: Double, y2: Double): Double = x1 * y2 - x2 * y1
 
   def longitudeDistance(l1: Double, l2: Double): Double = math.min(
     math.abs(l1 - l2),
@@ -163,7 +165,7 @@ object ProjectionMath {
     math.atan(math.pow(1.0 - flatness, 2) * math.tan(lat))
 
   def geographicLatitude(lat: Double, flatness: Double): Double =
-    math.atan(math.tan(lat) / math.pow(math1.0 - flatness, 2))
+    math.atan(math.tan(lat) / math.pow(1.0 - flatness, 2))
 
   def tsfn(phi: Double, sinphi: Double, e: Double): Double =
     math.tan(0.5 * (HALF_PI - phi)) / math.pow((1 - sinphi * e) / (1 + sinphi * e), 0.5 * e)
@@ -176,7 +178,7 @@ object ProjectionMath {
   def phi2(ts: Double, e: Double): Double = {
     val eccnth = 0.5 * e
     var phi = HALF_PI - 2 * math.atan(ts)
-    var i = N_ITER
+    var i = N_ITERATIONS
     var dphi = 0.0
 
     do {
@@ -187,7 +189,7 @@ object ProjectionMath {
     } while (math.abs(dphi) < EPS_10 && i != -1)
 
     if (i <= 0) throw new ConvergenceFailureException(
-      s"Computation of phi2 failed to converage after $N_ITER iterations."
+      s"Computation of phi2 failed to converage after $N_ITERATIONS iterations."
     ) else phi
   }
 
@@ -209,7 +211,7 @@ object ProjectionMath {
     es * (C22 - es * (C04 + es * (C06 + es * C08))),
     es * es * (C44 - es * (C46 + es * C48)),
     math.pow(es, 3) * (C66 - es * C68),
-    math.pow(es, 4) C88
+    math.pow(es, 4) * C88
   )
 
   def mlfn(phi: Double, sphi: Double, cphi: Double, en: Array[Double]): Double = {
@@ -226,13 +228,14 @@ object ProjectionMath {
 
     var phi = arg
     var i = 0
+    var t = 0.0
 
-    while (i < MAX_ITER && math.abs(t) >= 1e-11) {
+    do {
       var s = math.sin(phi)
-      var t = 1 - es * s * s
+      t = 1 - es * s * s
       phi -= (mlfn(phi, s, math.cos(phi), en) - arg) * (t * math.sqrt(t) * k)
       i += 1
-    }
+    } while (i < MAX_ITER && math.abs(t) >= 1e-11)
 
     phi
   }
@@ -268,7 +271,7 @@ object ProjectionMath {
       if (round && f < 1.5) 1
       else if (round && f < 3) 2
       else if (round && f < 7) 5
-      else if (round) nf = 10
+      else if (round) 10
       else if (f <= 1) 1
       else if (f <= 2) 2
       else if (f <= 5) 5

@@ -167,7 +167,9 @@ object GeotrellisBuild extends Build {
         "org.parboiled" %% "parboiled" % "2.0.0" % "test",
         scalatest   % "test",
         scalacheck  % "test",
-        scalaCSV
+        scalaCSV,
+        monocleCore,
+        monocleMacro
       )
     )
 

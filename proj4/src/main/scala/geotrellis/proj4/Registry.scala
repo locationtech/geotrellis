@@ -18,6 +18,9 @@ package geotrellis.proj4
 
 import scala.collection.immutable.HashMap
 
+import geotrellis.proj4.proj.ProjectionBuilders._
+import geotrellis.proj4.proj._
+
 object Registry {
 
   def apply: Registry = new Registry()
@@ -82,93 +85,100 @@ object Registry {
     new Ellipsoid("NAD83", 6378137.0, 0.0, 298.257222101, "NAD83: GRS 1980 (IUGG, 1980)")
   )
 
-  private val projectionRegistry = HashMap[String, Class](
-    "aea" -> AlbersProjection.class,
-    "aeqd" -> EquidistantAzimuthalProjection.class,
-    "airy" -> AiryProjection.class,
-    "aitoff" -> AitoffProjection.class,
-    "alsk" -> Projection.class,
-    "apian" -> Projection.class,
-    "august" -> AugustProjection.class,
-    "bacon" -> Projection.class,
-    "bipc" -> BipolarProjection.class,
-    "boggs" -> BoggsProjection.class,
-    "bonne" -> BonneProjection.class,
-    "cass" -> CassiniProjection.class,
-    "cc" -> CentralCylindricalProjection.class,
-    "cea" -> Projection.class,
-    "collg" -> CollignonProjection.class,
-    "crast" -> CrasterProjection.class,
-    "denoy" -> DenoyerProjection.class,
-    "eck1" -> Eckert1Projection.class,
-    "eck2" -> Eckert2Projection.class,
-    "eck4" -> Eckert4Projection.class,
-    "eck5" -> Eckert5Projection.class,
-    "eck6" -> Eckert6Projection.class,
-    "eqc" -> PlateCarreeProjection.class,
-    "eqdc" -> EquidistantConicProjection.class,
-    "euler" -> EulerProjection.class,
-    "fahey" -> FaheyProjection.class,
-    "fouc" -> FoucautProjection.class,
-    "fouc_s" -> FoucautSinusoidalProjection.class,
-    "gall" -> GallProjection.class,
-    "gnom" -> GnomonicAzimuthalProjection.class,
-    "goode" -> GoodeProjection.class,
-    "hammer" -> HammerProjection.class,
-    "hatano" -> HatanoProjection.class,
-    "kav5" -> KavraiskyVProjection.class,
-    "laea" -> LambertAzimuthalEqualAreaProjection.class,
-    "lagrng" -> LagrangeProjection.class,
-    "larr" -> LarriveeProjection.class,
-    "lask" -> LaskowskiProjection.class,
-    "latlong" -> LongLatProjection.class,
-    "longlat" -> LongLatProjection.class,
-    "lcc" -> LambertConformalConicProjection.class,
-    "leac" -> LambertEqualAreaConicProjection.class,
-    "loxim" -> LoximuthalProjection.class,
-    "lsat" -> LandsatProjection.class,
-    "mbt_fps" -> McBrydeThomasFlatPolarSine2Projection.class,
-    "mbtfpp" -> McBrydeThomasFlatPolarParabolicProjection.class,
-    "mbtfpq" -> McBrydeThomasFlatPolarQuarticProjection.class,
-    "merc" -> MercatorProjection.class,
-    "mill" -> MillerProjection.class,
-    "moll" -> MolleweideProjection.class,
-    "murd1" -> Murdoch1Projection.class,
-    "murd2" -> Murdoch2Projection.class,
-    "murd3" -> Murdoch3Projection.class,
-    "nell" -> NellProjection.class,
-    "nicol" -> NicolosiProjection.class,
-    "nsper" -> PerspectiveProjection.class,
-    "omerc" -> ObliqueMercatorProjection.class,
-    "ortho" -> OrthographicAzimuthalProjection.class,
-    "pconic" -> PerspectiveConicProjection.class,
-    "poly" -> PolyconicProjection.class,
-    "putp2" -> PutninsP2Projection.class,
-    "putp4p" -> PutninsP4Projection.class,
-    "putp5" -> PutninsP5Projection.class,
-    "putp5p" -> PutninsP5PProjection.class,
-    "qua_aut" -> QuarticAuthalicProjection.class,
-    "robin" -> RobinsonProjection.class,
-    "rpoly" -> RectangularPolyconicProjection.class,
-    "sinu" -> SinusoidalProjection.class,
-    "somerc" -> SwissObliqueMercatorProjection.class,
-    "stere" -> StereographicAzimuthalProjection.class,
-    "sterea" -> ObliqueStereographicAlternativeProjection.class,
-    "tcc" -> TranverseCentralCylindricalProjection.class,
-    "tcea" -> TransverseCylindricalEqualArea.class,
-    "tmerc" -> TransverseMercatorProjection.class,
-    "urmfps" -> UrmaevFlatPolarSinusoidalProjection.class,
-    "utm" -> TransverseMercatorProjection.class,
-    "vandg" -> VanDerGrintenProjection.class,
-    "vitk1" -> VitkovskyProjection.class,
-    "wag1" -> Wagner1Projection.class,
-    "wag2" -> Wagner2Projection.class,
-    "wag3" -> Wagner3Projection.class,
-    "wag4" -> Wagner4Projection.class,
-    "wag5" -> Wagner5Projection.class,
-    "wag7" -> Wagner7Projection.class,
-    "weren" -> WerenskioldProjection.class,
-    "wintri" -> WinkelTripelProjection.class
+  private val projectionBuilderRegistry = HashMap[String, ProjectionBuilder](
+    albersProjectionName -> albersProjectionBuilder,
+    equidistantAzimuthalProjectionName -> equidistantAzimuthalProjectionBuilder,
+    airyProjectionName -> airyProjecitonBuilder,
+    aitoffProjectionName -> aitoffProjectionBuilder,
+    alskProjectionName -> alskProjectionBuilder,
+    apianProjectionName -> apianProjectionBuilder,
+    augustProjectionName -> augustProjectionBuilder,
+    baconProjectionName -> baconProjectionBuilder,
+    bipolarProjectionName -> bipolarProjectionBuilder,
+    boggsProjectionName -> boggsProjectionBuilder,
+    bonneProjectionName -> bonneProjectionBuilder,
+    cassiniProjectionName -> cassiniProjectionBuilder,
+    centralCylindricalProjectionName -> centralCylindricalProjectionBuilder,
+    ceaProjectionName -> ceaProjectionBuilder,
+    collignonProjectionName -> collignonProjectionBuilder,
+    crasterProjectionName -> crasterProjectionBuilder,
+    denoyerProjectionName -> denoyerProjectionBuilder,
+    eckert1ProjectionName -> eckert1ProjectionBuilder,
+    eckert2ProjectionName -> eckert2ProjectionBuilder,
+    eckert4ProjectionName -> eckert4ProjectionBuilder,
+    eckert5ProjectionName -> eckert5ProjectionBuilder,
+    eckert6ProjectionName -> eckert6ProjectionBuilder,
+    plateCarreeProjectionName -> plateCarreeProjectionBuilder,
+    equidistantConicProjectionName -> equidistantConicProjectionBuilder,
+    eulerProjectionName -> eulerProjectionBuilder,
+    faheyProjectionName -> faheyProjectionBuilder,
+    foucautProjectionName -> foucautProjectionBuilder,
+    foucautSinusoidalProjectionName -> foucautSinusoidalProjectionBuilder,
+    gallProjectionName -> gallProjectionBuilder,
+    gnomonicAzimuthalProjectionName -> gnomonicAzimuthalProjectionBuilder,
+    goodeProjectionName -> goodeProjectionBuilder,
+    hammerProjectionName -> hammerProjectionBuilder,
+    hatanoProjectionName -> hatanoProjectionBuilder,
+    kavraiskyProjectionName -> kavraiskyProjectionBuilder,
+    lambertAzimuthalEqualAreaProjectionName ->
+      lambertAzimuthalEqualAreaProjectionBuilder,
+    lagrangeProjectionName -> lagrangeProjectionBuilder,
+    larriveeProjectionName -> larriveeProjectionBuilder,
+    laskowskiProjectionName -> laskowskiProjectionBuilder,
+    latLongProjectionName -> latLongProjectionBuilder,
+    longLatProjectionName -> longLatProjectionBuilder,
+    lambertConformalConicProjectionName -> lambertConformalConicProjectionBuilder,
+    lambertEqualAreaConicProjectionName -> lambertEqualAreaConicProjectionBuilder,
+    loximuthalProjectionName -> loximuthalProjectionBuilder,
+    landsatProjectionName -> landsatProjectionBuilder,
+    mcBrydeThomasFlatPolarSine2ProjectionName ->
+      mcBrydeThomasFlatPolarSine2ProjectionBuilder,
+    mcBrydeThomasFlatPolarParabolicProjectionName ->
+      mcBrydeThomasFlatPolarParabolicProjectionBuilder,
+    mcBrydeThomasFlatPolarQuarticProjectionName ->
+      mcBrydeThomasFlatPolarQuarticProjectionBuilder,
+    mercatorProjectionName -> mercatorProjectionBuilder,
+    millerProjectionName -> millerProjectionBuilder,
+    molleweideProjectionName -> molleweideProjectionBuilder,
+    murdoch1ProjectionName -> murdoch1ProjectionBuilder,
+    murdoch2ProjectionName -> murdoch2ProjectionBuilder,
+    murdoch3ProjectionName -> murdoch3ProjectionBuilder,
+    nellProjectionName -> nellProjectionBuilder,
+    nicolosiProjectionName -> nicolosiProjectionBuilder,
+    perspectiveProjectionName -> perspectiveProjectionBuilder,
+    obliqueMercatorProjectionName -> obliqueMercatorProjectionBuilder,
+    ortographicAzimuthalProjectionName -> ortographicAzimuthalProjectionBuilder,
+    perspectiveConicProjectionName -> perspectiveConicProjectionBuilder,
+    polyconicProjectionName -> polyconicProjectionBuilder,
+    putninsP2ProjectionName -> putninsP2ProjectionBuilder,
+    putninsP4PProjectionName -> putninsP4PProjectionBuilder,
+    putninsP5ProjectionName -> putninsP5ProjectionBuilder,
+    putninsP5PProjectionName -> putninsP5PProjectionBuilder,
+    quarticAuthalicProjectionName -> quarticAuthalicProjectionBuilder,
+    robinsonProjectionName -> robinsonProjectionBuilder,
+    rectangularPolyconicProjectionName -> rectangularPolyconicProjectionBuilder,
+    sinusoidalProjectionName -> sinusoidalProjectionBuilder,
+    swissObliqueMercatorProjectionName -> swissObliqueMercatorProjectionBuilder,
+    stereographicAzimuthalProjectionName -> stereographicAzimuthalProjectionBuilder,
+    obliqueStereographicAlternativeProjectionName ->
+      obliqueStereographicAlternativeProjectionBuilder,
+    transverseCentralCylindricalProjectionName ->
+      transverseCentralCylindricalProjectionBuilder,
+    transverseCylindricalEqualAreaProjectionName ->
+      transverseCylindricalEqualAreaProjectionBuilder,
+    tmercProjectionName -> tmercProjectionBuilder,
+    urmaevFlatPolarSinusoidalProjectionName ->
+      urmaevFlatPolarSinusoidalProjectionBuilder,
+    vanDerGrintenProjectionName -> vanDerGrintenProjectionBuilder,
+    vitkovskyProjectionName -> vitkovskyProjectionBuilder,
+    wagner1ProjectionName -> wagner1ProjectionBuilder,
+    wagner2ProjectionName -> wagner2ProjectionBuilder,
+    wagner3ProjectionName -> wagner3ProjectionBuilder,
+    wagner4ProjectionName -> wagner4ProjectionBuilder,
+    wagner5ProjectionName -> wagner5ProjectionBuilder,
+    wagner7ProjectionName -> wagner7ProjectionBuilder,
+    werenskioldProjectionName -> werenskioldProjectionBuilder,
+    winkelTripelProjectionName -> winkelTripelProjectionBuilder
   )
 }
 
@@ -176,23 +186,8 @@ class Registry {
 
   import Registry._
 
-  def getProjection(name: String): Option[Projection] = projectionRegistry.get(name) match {
-    case Some(clas) => try {
-      val projection = clas.newInstance
-      projection.setName(name)
-      Some(Projection)
-    } catch {
-      case iae: IllegalAccessException => {
-        iae.printStackTrace
-        None
-      }
-      case ie: InstantiationException => {
-        ie.printStackTrace
-        None
-      }
-    }
-    case None => None
-  }
+  def getProjectionBuilder(name: String): Option[ProjectionBuilder] =
+    projectionBuilderRegistry.get(name)
 
   def getEllipsoid(name: String): Option[Ellipsoid] =
     ellipsoids.filter(_.shortName == name).headOption

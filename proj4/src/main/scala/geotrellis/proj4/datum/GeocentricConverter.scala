@@ -29,7 +29,7 @@ object GeocentricConverter {
 
 }
 
-case class GeocentricConverter(a: Double, b: double) {
+case class GeocentricConverter(a: Double, b: Double) {
 
   val a2 = a * a
   val b2 = b * b
@@ -88,7 +88,7 @@ case class GeocentricConverter(a: Double, b: double) {
     var height = 0.0
 
     if (rr / a >= genau) {
-      val longitude if (p / a < genau) 0.0 else math.atan2(y, x)
+      val longitude = if (p / a < genau) 0.0 else math.atan2(y, x)
 
       do {
         iterations += 1

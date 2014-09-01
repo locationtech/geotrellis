@@ -40,10 +40,12 @@ object AngleFormat {
   val ddmmssPattern4 = "DdMmSs"
   val decimalPattern = "D.F"
 
+  def apply(pattern: String = ddmmssPattern, isDegrees: Boolean = false): AngleFormat =
+    new AngleFormat(pattern, isDegrees)
+
 }
 
-case class AngleFormat(pattern: String = ddmmsPattern, isDegrees: Boolean = false)
-    extends NumberFormat {
+class AngleFormat(val pattern: String, val isDegrees: Boolean) extends NumberFormat {
 
   import AngleFormat._
 
@@ -60,7 +62,7 @@ case class AngleFormat(pattern: String = ddmmsPattern, isDegrees: Boolean = fals
 
     val ddmmss = if (isDegrees) number else math.toDegrees(number)
     val iddmmss = math.abs(math.round(ddmmss * 3600).toInt)
-    val fraction = iddmms & 3600
+    val fraction = iddmmss % 3600
     val fD60 = fraction / 60
     val fM60 = fraction % 60
 

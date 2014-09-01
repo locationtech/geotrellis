@@ -26,7 +26,7 @@ object Unit {
   val AREA_UNIT = 2
   val VOLUME_UNIT = 3
 
-  val format = {
+  val format: NumberFormat = {
     val f = NumberFormat.getNumberInstance
     f.setMaximumFractionDigits(2)
     f.setGroupingUsed(false)
@@ -37,25 +37,25 @@ object Unit {
 
 case class Unit(name: String, plural: String, abbreviation: String, value: Double) {
 
-  import Unit._
-
   def toBase(n: Double): Double = n * value
 
   def fromBase(n: Double): Double = n / value
 
   def parse(s: String): Double = try {
-    format.parse(s).toDouble
+    Unit.format.parse(s).doubleValue
   } catch {
-    pe: ParseException => throw new NumberFormatException(pe.getMessage)
+    case pe: ParseException => throw new NumberFormatException(pe.getMessage)
   }
 
-  def format(n: Double): String = s"${format.format(n)} $abbreviation"
+  def format(n: Double): String = s"${Unit.format.format(n)} $abbreviation"
 
-  def format(n: Double, abbrev: Double): String =
-    if (abbrev) format(n) else format.format(n)
+  def format(n: Double, abbrev: Boolean): String =
+    if (abbrev) format(n) else Unit.format.format(n)
 
-  def format(x: Double, y: Double, abbrev: Boolean): String =
-    s"${format.format(x)/${format.format(y) " + if (abbrev) abbreviation else ""
+  def format(x: Double, y: Double, abbrev: Boolean): String = {
+    val tail = if (abbrev) abbreviation else ""
+    s"${Unit.format.format(x)}/${Unit.format.format(y)} $tail"
+  }
 
   def format(x: Double, y: Double): String = format(x, y, true)
 
