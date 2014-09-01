@@ -19,38 +19,49 @@ package geotrellis.proj4.datum
 import geotrellis.proj4.ProjCoordinate
 
 object Ellipsoid {
-
-  def apply(
-    name: String,
-    shortName: String,
-    equatorRadius: Double = 1.0,
-    poleRadius: Double = 1.0,
-    eccentricity: Double = 1.0,
-    eccentricity2: Double = 1.0): Ellipsoid = new Ellipsoid(shortName,
-      equatorRadius,
-      poleRadius,
-      eccentricity,
-      eccentricity2,
-      name
-  )
+  lazy val NULL = Ellipsoid("NULL", "NULL", Double.NaN, Double.NaN, Double.NaN)
 
   def apply(
     shortName: String,
     equatorRadius: Double,
     poleRadiusInput: Double,
     reciprocalFlattening: Double,
-    name: String): Ellipsoid = new Ellipsoid(shortName,
-      equatorRadius,
-      poleRadiusInput,
-      reciprocalFlattening,
-      name
-  )
+    name: String
+  ): Ellipsoid = {
+    if (poleRadiusInput == 0.0 && reciprocalFlattening == 0.0)
+      throw new IllegalArgumentException(
+        "One of poleRadius or reciprocalFlattening must be specified"
+      )
+
+    val (poleRadius, eccentrity2) =
+      if (reciprocalFlattening != 0.0) {
+        val flattening = 1.0 / reciprocalFlattening
+        val eccentrity2 = 2 * flattening - flattening * flattening
+        val poleRadius = equatorRadius * math.sqrt(1.0 - eccentrity2)
+
+        (poleRadius, eccentrity2)
+      } else {
+        val eccentrity2 =
+          1.0 - (poleRadiusInput * poleRadiusInput) / (equatorRadius * equatorRadius)
+        (poleRadiusInput, eccentrity2)
+      }
+
+    val eccentricity = math.sqrt(eccentrity2)
+
+    apply(name, shortName, equatorRadius, poleRadius, eccentricity, eccentrity2)
+  }
 
   def apply(
     shortName: String,
     equatorRadius: Double,
     eccentricity2: Double,
-    name: String): Ellipsoid = new Ellipsoid(shortName, equatorRadius, eccentrity2, name)
+    name: String
+  ): Ellipsoid = {
+    val poleRadius = equatorRadius * math.sqrt(1 - eccentricity2)
+    val eccentricity = math.sqrt(eccentricity2)
+
+    apply(name, shortName, equatorRadius, poleRadius, eccentricity, eccentricity2)
+  }
 
   val INTERNATIONAL = Ellipsoid("intl",
     6378388.0, 0.0, 297.0, "International 1909 (Hayford)")
@@ -247,50 +258,9 @@ case class Ellipsoid(
   eccentricity: Double = 1.0,
   eccentricity2: Double = 1.0
 ) {
-
-  def this(
-    shortName: String,
-    equatorRadius: Double,
-    poleRadiusInput: Double,
-    reciprocalFlattening: Double,
-    name: String): Ellipsoid = {
-    if (poleRadius == 0.0 && reciprocalFlattening == 0.0)
-      throw new IllegalArgumentException(
-        "One of poleRadius or reciprocalFlattening must be specified"
-      )
-
-    val (poleRadius, eccentrity2) =
-      if (reciprocalFlattening != 0.0) {
-        val flattening = 1.0 / reciprocalFlattening
-        val eccentrity2 = 2 * flattening - flattening * flattening
-        val poleRadius = equatorRadius * math.sqrt(1.0 - eccentrity2)
-
-        (poleRadius, eccentrity2)
-      } else {
-        val eccentrity2 =
-          1.0 - (poleRadiusInput * poleRadiusInput) / (equatorRadius * equatorRadius)
-        (poleRadiusInput, eccentrity2)
-      }
-
-    val eccentricity = math.sqrt(eccentrity2)
-
-    this(name, shortName, equatorRadius, poleRadius, eccentricity, eccentrity2)
-  }
-
-  def this(
-    shortName: String,
-    equatorRadius: Double,
-    eccentricity2: Double,
-    name: String): Ellipsoid = {
-    val poleRadius = equatorRadius * math.sqrt(1 - eccentricity2)
-    val eccentricity = math.sqrt(eccentricity2)
-
-    this(name, shortName, equatorRadius, poleRadius, eccentricity, eccentrity2)
-  }
-
   override def equals(that: Any) = that match {
-    case e: Ellipsoid => equatorRadius == e.equatorRadius
-      && eccentricity2 == e.eccentricity2
+    case e: Ellipsoid => 
+      equatorRadius == e.equatorRadius && eccentricity2 == e.eccentricity2
     case _ => false
   }
 

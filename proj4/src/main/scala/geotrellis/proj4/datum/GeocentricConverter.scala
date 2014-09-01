@@ -29,7 +29,7 @@ object GeocentricConverter {
 
 }
 
-case class GeocentricConverter(a: Double, b: double) {
+class GeocentricConverter(a: Double, b: Double) {
 
   val a2 = a * a
   val b2 = b * b
@@ -49,7 +49,7 @@ case class GeocentricConverter(a: Double, b: double) {
       else projCoordinate.x
 
     val longitude =
-      if (projCoordinate.y > math.Pi) projCoordinate - 2 * math.Pi
+      if (projCoordinate.y > math.Pi) projCoordinate.y - 2 * math.Pi
       else projCoordinate.y
 
     val sinLat = math.sin(latitude)
@@ -68,31 +68,33 @@ case class GeocentricConverter(a: Double, b: double) {
     val genau2 = genau * genau
     val maxIterations = 30
 
-    val x  = p.x;
-    val y = p.y;
+    val x = projCoordinate.x
+    val y = projCoordinate.y
     val z = if (projCoordinate.hasValidZOrdinate) projCoordinate.z else 0
 
-    val p = math.sqrt(x * x + y * y)
-    val rr = math.sqrt(x * x + y * y + z * z)
-    val ct = z / rr
-    val st = p / rr
+    val p = math.sqrt(x * x + y * y) /* distance between semi-minor axis and location */
+    val rr = math.sqrt(x * x + y * y + z * z) /* distance between center and location */
+    val ct = z / rr /* sin of geocentric latitude */
+    val st = p / rr /* cos of geocentric latitude */
     var rx = 1.0 / math.sqrt(1 - e2 * (2 - e2) * st * st)
     var rk = 0.0
-    var rn = 0.0
-    var cphi0 = st * (1.0 - e2) * rx
-    var sphi0 = ct * rx
-    var cphi = 0.0
-    var sphi = 0.0
+    var rn = 0.0 /* Earth radius at location */
+    var cphi0 = st * (1.0 - e2) * rx /* cos of start or old geodetic latitude in iterations */
+    var sphi0 = ct * rx /* sin of start or old geodetic latitude in iterations */
+    var sdphi = 0.0 /* end-criterium: addition-theorem of sin(Latitude(iter)-Latitude(iter-1)) */
+
+    var cphi = 0.0 /* cos of searched geodetic latitude */
+    var sphi = 0.0 /* sin of searched geodetic latitude */
     var iter = 0
 
     var height = 0.0
 
     if (rr / a >= genau) {
-      val longitude if (p / a < genau) 0.0 else math.atan2(y, x)
+      val longitude = if (p / a < genau) 0.0 else math.atan2(y, x)
 
       do {
-        iterations += 1
-        rn = this.a / math.sqrt(1 - e2 * sphi0 * spih0)
+        iter += 1
+        rn = this.a / math.sqrt(1 - e2 * sphi0 * sphi0)
 
         height = p * cphi0 + z * sphi0 - rn * (1 - e2 * sphi0 * sphi0)
 
@@ -100,7 +102,7 @@ case class GeocentricConverter(a: Double, b: double) {
         rx = 1 / math.sqrt(1 - rk * (2 - rk) * st * st)
         cphi = st * (1 - rk) * rx
         sphi = ct * rx
-        sdphi = sphi * cphi0 - cphi * sphi0
+        val sdphi = sphi * cphi0 - cphi * sphi0
         cphi0 = cphi
         sphi0 = sphi
 
@@ -109,7 +111,9 @@ case class GeocentricConverter(a: Double, b: double) {
       val latitude = math.atan(sphi / math.abs(cphi))
 
       ProjCoordinate(longitude, latitude, height)
-    } else projCoordinate
+    } else {
+      projCoordinate
+    }
   }
 
 }

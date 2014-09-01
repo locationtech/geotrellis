@@ -16,12 +16,38 @@
 
 package geotrellis.proj4.io
 
+import geotrellis.proj4._
+
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.StreamTokenizer
+
 import collection.mutable.ArrayBuffer
+import scala.io.Source
 
 class Proj4FileReader {
 
   def readParametersFromFile(authorityCode: String, name: String): Array[String] = {
+    // TODO: read comment preceding CS string as CS description
+    // TODO: use simpler parser than StreamTokenizer for speed and flexibility
+    // TODO: parse CSes line-at-a-time (this allows preserving CS param string for later access)
+    
+    val filename = "/nad/" + authorityCode.toLowerCase
+    val inStr = getClass.getResourceAsStream( filename )
+    if (inStr == null) {
+      throw new IllegalStateException(s"Unable to access CRS file: $filename")
+    }
 
+    val reader = new BufferedReader( new InputStreamReader(inStr) )
+    try {
+      readFile(reader, name)
+    }
+    finally {
+      if (reader != null)
+        reader.close()
+    }
   }
 
   private def createTokenizer(reader: BufferedReader): StreamTokenizer = {
@@ -45,7 +71,7 @@ class Proj4FileReader {
     t
   }
 
-  private def readFile(reader: BufferedReader, name: String): Option[Array[String]] = {
+  private def readFile(reader: BufferedReader, name: String): Array[String] = {
     val t = createTokenizer(reader)
 
     t.nextToken
@@ -94,33 +120,28 @@ class Proj4FileReader {
       if (crsName != name) ab.clear
     }
 
-    if (ab.isEmpty) None
-    else Some(ab.toArray)
+    ab.toArray
   }
 
-  def addParam(ab: ArrayBuffer, key: String, value: Option[String]) = {
+  def addParam(ab: ArrayBuffer[String], key: String, value: Option[String]) = {
     val plusKey = if (!key.startsWith("+")) s"+$key" else key
 
-    ab += value match {
-      case Some(v) => s"$plusKey=$v"
-      case None => plusKey
-    }
-  }
-
-  def getParameters(crsName: String): Option[Array[String]] = {
-    try {
-      val p = crsName.indexOf(":")
-      if (p >= 0) {
-        val auth = crsName.substring(0, p)
-        val id = crsName.substring(p + 1)
-        Some(readParametersFromFile(auth, id))
-      } else None
-    } catch {
-      case ioe: IOException => {
-        e.printStackTrace
-        None
+    ab += {
+      value match {
+        case Some(v) => s"$plusKey=$v"
+        case None => plusKey
       }
     }
   }
 
+  def getParameters(crsName: String): Array[String] = {
+    val p = crsName.indexOf(":")
+    if (p >= 0) {
+      val auth = crsName.substring(0, p)
+      val id = crsName.substring(p + 1)
+      readParametersFromFile(auth, id)
+    } else {
+      throw new UnsupportedParameterException(s"Invalid CRS name: $crsName")
+    }
+  }
 }

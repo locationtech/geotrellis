@@ -19,33 +19,33 @@ package geotrellis.proj4
 import java.text.DecimalFormat
 
 object ProjCoordinate {
-
   val DECIMAL_FORMAT_PATTERN = "0.0###############"
   val DECIMAL_FORMAT = new DecimalFormat(DECIMAL_FORMAT_PATTERN)
 
+  def apply(args: String): ProjCoordinate=
+    if (args.startsWith("ProjCoordinate: ")) {
+      val parts = args.substring(17, args.length - 2).split(" ")
+
+      if (parts.length != 2 && parts.length != 3)
+        throw new IllegalArgumentException(
+          "The input string was not in the proper format."
+        )
+
+      val x = parts(0).toDouble
+      val y = parts(1).toDouble
+
+      val z = if (parts.length == 3) parts(2).toDouble else Double.NaN
+
+      this(x, y, z)
+    } 
+    else {
+      throw new IllegalArgumentException("The input string was not in the proper format.")
+    }
 }
 
 case class ProjCoordinate(x: Double = 0.0, y: Double = 0.0, z: Double = Double.NaN) {
-
-  import ProjCoordinate._
-
-  def this(args: String) = if (args.startsWith("ProjCoordinate: ")) {
-    val parts = args.substring(17, args.length - 2).split(" ")
-
-    if (parts.length != 2 && parts.length != 3)
-      throw new IllegalArgumentException(
-        "The input string was not in the proper format."
-      )
-
-    val x = Double.parseDouble(parts(0))
-    val y = Double.parseDouble(parts(1))
-
-    val z = if (parts.length == 3) Double.parseDouble(parts(2)) else Double.NaN
-
-    this(x, y, z)
-  } else throw new IllegalArgumentException(
-    "The input string was not in the proper format."
-  )
+  import ProjCoordinate.DECIMAL_FORMAT_PATTERN
+  import ProjCoordinate.DECIMAL_FORMAT
 
   def areXOrdinatesEqual(compare: ProjCoordinate, epsilon: Double): Boolean =
     math.abs(x - compare.x) < epsilon
@@ -69,21 +69,24 @@ case class ProjCoordinate(x: Double = 0.0, y: Double = 0.0, z: Double = Double.N
 
   lazy val toShortString: String = {
     val sb = new StringBuilder()
-    builder.append("[")
-    builder.append(DECIMAL_FORMAT.format(x).replace(",", "."))
-    builder.append(", ")
-    builder.append(DECIMAL_FORMAT.format(y).replace(",", "."))
+    sb.append("[")
+    sb.append(DECIMAL_FORMAT.format(x).replace(",", "."))
+    sb.append(", ")
+    sb.append(DECIMAL_FORMAT.format(y).replace(",", "."))
 
-    if (!Double.isNaN(z)) builder.append(s", $z")
+    if (!java.lang.Double.isNaN(z)) sb.append(s", $z")
 
-    builder.append("]")
+    sb.append("]")
 
-    builder.toString()
+    sb.toString()
   }
 
-  lazy val hasValidZOrdinate: Boolean = Double.isNaN(z)
+  lazy val hasValidZOrdinate: Boolean = java.lang.Double.isNaN(z)
 
   lazy val hasValidXAndYOrdinates: Boolean =
-    !Double.isNaN(x) && !Double.isNaN(y) && !Double.isInfinite(x) && !Double.isInfinite(y)
+    !java.lang.Double.isNaN(x) && 
+    !java.lang.Double.isNaN(y) && 
+    !java.lang.Double.isInfinite(x) && 
+    !java.lang.Double.isInfinite(y)
 
 }

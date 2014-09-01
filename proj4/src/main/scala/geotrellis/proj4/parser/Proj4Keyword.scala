@@ -62,19 +62,25 @@ object Proj4Keyword {
   val no_defs = "no_defs"
   val wktext = "wktext"
 
-  private val supportedParams = HashSet[String](
-    a, rf, f, alpha, es, b, datum, ellps,
-    R_A,
-    k, k_0, lat_ts, lat_0, lat_1, lat_2, lon_0, lonc,
-    x_0, y_0,
-    proj, south, towgs84, to_meter, units, zone,
-    title, no_defs, wktext, nadgrids
-  )
+  private val supportedParams = 
+    Set(
+      a, rf, f, alpha, es, b, datum, ellps,
+      R_A,
+      k, k_0, lat_ts, lat_0, lat_1, lat_2, lon_0, lonc,
+      x_0, y_0,
+      proj, south, towgs84, to_meter, units, zone,
+      title, no_defs, wktext, nadgrids
+    )
 
   def isSupported(paramKey: String): Boolean =
     supportedParams.contains(paramKey)
 
-  def isValid(keySet: Set[String]): Boolean =
-    keySet.filter(!isSupported).size == 0
-
+  /** Returns list of unsupported keys if is not valid, otherwise None */
+  def invalidKeys(keySet: Set[String]): Option[List[String]] = {
+    val l = keySet.filter(!isSupported(_)).toList
+    if(l.size != 0)
+      Some(l)
+    else
+      None
+  }
 }

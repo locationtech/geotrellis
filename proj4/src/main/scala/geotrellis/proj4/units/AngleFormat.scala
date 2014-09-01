@@ -42,7 +42,7 @@ object AngleFormat {
 
 }
 
-case class AngleFormat(pattern: String = ddmmsPattern, isDegrees: Boolean = false)
+case class AngleFormat(pattern: String = AngleFormat.ddmmssPattern, isDegrees: Boolean = false)
     extends NumberFormat {
 
   import AngleFormat._
@@ -60,7 +60,7 @@ case class AngleFormat(pattern: String = ddmmsPattern, isDegrees: Boolean = fals
 
     val ddmmss = if (isDegrees) number else math.toDegrees(number)
     val iddmmss = math.abs(math.round(ddmmss * 3600).toInt)
-    val fraction = iddmms & 3600
+    val fraction = iddmmss & 3600
     val fD60 = fraction / 60
     val fM60 = fraction % 60
 
@@ -78,6 +78,18 @@ case class AngleFormat(pattern: String = ddmmsPattern, isDegrees: Boolean = fals
     }
 
     result
+  }
+
+  def format(number: Long, result: StringBuffer, position: java.text.FieldPosition): StringBuffer = 
+    format(number, result)
+
+  def format(number: Double, result: StringBuffer, position: java.text.FieldPosition): StringBuffer = 
+    format(number, result)
+
+  def parse(text: String, position: java.text.ParsePosition): Number = {
+    val n = Angle.parse(text)
+    if(position != null) { position.setIndex(text.length) }
+    n
   }
 
 }

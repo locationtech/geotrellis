@@ -16,44 +16,51 @@
 
 package geotrellis.proj4
 
+import geotrellis.proj4.datum._
+
+import org.osgeo.proj4j.proj._
+
 object CoordinateReferenceSystem {
+  def apply(datum: Datum, projection: Projection): CoordinateReferenceSystem =
+    new CoordinateReferenceSystem(datum, projection)
 
-  val CS_GEO = new CoordinateReferenceSystem("CS_GEO")
+  def apply(name: String, datum: Datum, projection: Projection): CoordinateReferenceSystem =
+    new CoordinateReferenceSystem(datum, projection, Some(name))
 
+  def apply(name: String, datum: Datum, projection: Projection, inputParameters: Array[String]): CoordinateReferenceSystem =
+    new CoordinateReferenceSystem(datum, projection, Some(name), Some(inputParameters))
 }
 
-case class CoordinateReferenceSystem(
-  inputName: String = "null-proj",
-  parameters: Option[Array[String]] = None,
-  datum: Option[Datum] = None,
-  projection: Option[Projection] = None
+class CoordinateReferenceSystem(
+  val datum: Datum,
+  val projection: Projection,
+  inputName: Option[String] = None,
+  inputParameters: Option[Array[String]] = None
 ) {
 
-  val name = projection match {
-    case Some(proj) if (inputName == "null-proj") => s"${proj.getName}-CS"
-    case _ => inputName
-  }
-
-  val parameterString = params match {
-    case Some(params) => params.foldLeft("")((a, b) => s"$a $b").trim
-    case None => ""
-  }
-
-  def createGeographic: CoordinateReferenceSystem = {
-    val ellipsoid = projection match {
-      case Some(proj) => Some(proj.ellipsoid)
-      case None => None
+  val name = 
+    inputName match {
+      case Some(n) => n
+      case _ => s"${projection.getName}-CS"
     }
 
-    val geoProjection = new LongLatProjection(ellipsoid, Units.DEGREES)
-    val crsName = = datum match {
-      case Some(d) => "GEO-" + d.getCode
-      case None => "null-proj"
+  val parameters: Array[String] =
+    inputParameters match {
+      case Some(ip) => ip
+      case _ =>
+        /** TODO: Should be able to create parameter string from CRS info */
+        Array[String]()
     }
 
-    new CoordinateReferenceSystem(crsName, None, datum, geoProjection)
+  val parameterString = 
+    parameters.mkString(" ").trim
+
+  def createGeographic(): CoordinateReferenceSystem = {
+    val geoProjection = new LongLatProjection
+    val crsName = "GEO-" + datum.code
+
+    CoordinateReferenceSystem(crsName, datum, geoProjection)
   }
 
   override def toString = name
-
 }

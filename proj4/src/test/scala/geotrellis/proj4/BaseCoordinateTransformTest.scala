@@ -1,7 +1,6 @@
 package geotrellis.proj4
 
-import org.osgeo.proj4j._
-import org.osgeo.proj4j.units.Angle
+import geotrellis.proj4.units.Angle
 
 import org.scalatest._
 

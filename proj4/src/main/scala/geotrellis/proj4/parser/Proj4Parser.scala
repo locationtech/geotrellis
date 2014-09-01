@@ -16,149 +16,224 @@
 
 package geotrellis.proj4.parser
 
+import geotrellis.proj4._
+import geotrellis.proj4.units._
+import geotrellis.proj4.datum._
 import geotrellis.proj4.util.ProjectionMath._
+
+import org.osgeo.proj4j.proj._
 
 import collection.immutable.Map
 
 object Proj4Parser {
+  private def createParameterMap(args: Seq[String]): Map[String, Option[String]] =
+    args
+      .map { arg => 
+        val x =
+          if (arg.startsWith("+")) arg.substring(1)
+          else arg
 
-  def apply(registry: Registry): Proj4Parser = new Proj4Parser(registry)
+        val index = x.indexOf('=')
 
-}
-
-class Proj4Parser(private val registry: Registry) {
+        if (index != -1) (x.substring(0, index) -> Some(x.substring(index + 1)))
+        else (x -> None)
+       }
+      .toMap
 
   def parse(name: String, args: Array[String]): CoordinateReferenceSystem = {
-    val parameters = createParameterMap(args)
+    val params = createParameterMap(args)
 
-    if (!isValid(parameters.keySet))
-      throw new IllegalArgumentException(
-        "One or more of the arguments provided isn't valid."
-      )
+    Proj4Keyword.invalidKeys(params.keySet) match {
+      case Some(keys) =>
+        throw new IllegalArgumentException(
+          s"""Invalid proj4 argument(s): ${keys.mkString(", ")}."""
+        )
+      case None =>
+    }
 
-    var datumParameters = parseDatum(parameters, new DatumParameters())
-    datumParameters = parseEllipsoid(parameters, datumParameters)
-    val datum = datumParameters.datum
-    val ellipsoid = datumParameters.ellipsoid
+    val datum @ Datum(_, ellipsoid, _, _) =
+      params.get(Proj4Keyword.datum) match {
+        case Some(Some(code)) =>
+          Registry.getDatum(code) match {
+            case Some(datum) =>
+              datum
+            case None =>
+              throw new InvalidValueException(s"Unknown datum: $code.")
+          }
+        case _ =>
+          val ellipsoid = parseEllipsoid(params)
 
-    val projection = parseProjection(parameters, ellipsoid)
+          if(ellipsoid == Ellipsoid.NULL || ellipsoid == Ellipsoid.WGS84) 
+            Datum.WGS84
+          else {
+            val transform =
+              params.get(Proj4Keyword.towgs84) match {
+                case Some(Some(toWGS84)) =>
+                  parseToWGS84(toWGS84)
+                case _ =>
+                  Datum.Constants.DEFAULT_TRANSFORM
+              }
 
-    CoordinateReferenceSystem(name, Some(args), Some(datum), Some(projection))
+            Datum("User", ellipsoid, "User-defined", transform)
+          }
+      }
+
+    val projection = parseProjection(params, ellipsoid)
+
+    CoordinateReferenceSystem(name, datum, projection, args)
   }
 
-  private def parseProjection(
-    parameters: Map[String, Option[String]],
-    ellipsoid: Ellipsoid): Projection = {
-    var projection = parameters.get(Proj4Keyword.proj) match {
-      case Some(code) =>
-        registry.getProjection(code) getOrElse {
-          throw new InvalidValueException("Unknown projection: $code.")
+  private def parseProjection(params: ProjParams, ellipsoid: Ellipsoid): Projection = {
+    params.get(Proj4Keyword.proj) match {
+      case Some(codeOpt) =>
+        codeOpt match {
+          case Some(code) =>
+            val builder = 
+              Registry.getProjectionBuilder(code) getOrElse {
+                throw new InvalidValueException("Unknown projection: $code.")
+              }
+            builder.setProj4Params(params).build
+          case None =>
+            throw new IllegalStateException("No proj code specified.")
         }
       case None => throw new IllegalStateException("No proj flag specified.")
     }
 
-    projection = projection.set(ellipsoid)
-
-    projection = params.get(Proj4Keyword.alpha) match {
-      case Some(s) => projection.setAlphaDegrees(s.toDouble)
-      case None => projection
-    }
-
-    projection = params.get(Proj4Keyword.lonc) match {
-      case Some(s) => projection.setLonCDegrees(s.toDouble)
-      case None => projection
-    }
-
-    projection = params.get(Proj4Keyword.lat_0) match {
-      case Some(s) => projection.setProjectionLatitudeDegrees(parseAngle(s))
-      case None => projection
-    }
-
-    projection = params.get(Proj4Keyword.lon_0) match {
-      case Some(s) => projection.setProjectionLongitudeDegrees(parseAngle(s))
-      case None => projection
-    }
-
-    projection = params.get(Proj4Keyword.lat_1) match {
-      case Some(s) => projection.setProjectionLatitude1Degrees(parseAngle(s))
-      case None => projection
-    }
-
-    projection = params.get(Proj4Keyword.lat_2) match {
-      case Some(s) => projection.setProjectionLatitude2Degrees(parseAngle(s))
-      case None => projection
-    }
-
-    projection = params.get(Proj4Keyword.lat_ts) match {
-      case Some(s) => projection.setTrueScaleLatitudeDegrees(parseAngle(s))
-      case None => projection
-    }
-
-    projection = params.get(Proj4Keyword.x_0) match {
-      case Some(s) => projection.setFalseEasting(s.toDouble)
-      case None => projection
-    }
-
-    projection = params.get(Proj4Keyword.y_0) match {
-      case Some(s) => projection.setFalseNorthing(s.toDouble)
-      case None => projection
-    }
-
-    projection = params.get(Proj4Keyword.k_0) match {
-      case Some(s) => projection.setScaleFactor(s.toDouble)
-      case None => params.get(Proj4Keyword.k) match {
-        case Some(s) => projection.setScaleFactor(s.toDouble)
-        case None => projection
-      }
-    }
-
-    projection = params.get(Proj4Keyword.units) match {
-      case Some(code) => Units.findUnits(code) match {
-        case Some(unit) =>
-          projection.setFromMetres(1 / unit.value).setUnits(unit)
-        case None =>
-          throw new InvalidValueException(s"Unknown unit: $code.")
-      }
-      case None => projection
-    }
-
-    projection = params.get(Proj4Keyword.to_meter) match {
-      case Some(s) => projection.setFromMetres(1 / s.toDouble)
-      case None => projection
-    }
-
-    if (params.contains(Proj4Keyword.south)) {
-      projection = projection.setSouthernHemisphere(true)
-
-      projection = projection match {
-        case p: TransverseMercatorProjection => p.setUTMZone(s.toInt)
-        case _ => projection
-      }
-    }
-
-    projection.initialize
+    ???
   }
 
-  private def parseDatum(
-    parameters: Map[String, Option[String]],
-    datumParametersInput: DatumParameters): DatumParameters = {
-    var datumParameters = params.get(Proj4Keyword.towgs84) match {
-      case Some(toWGS84) =>
-        datumParametersInput.setDatumTransform(parseToWGS84(toWGS84))
-      case None => datumParametersInput
-    }
+// {
+//     var projection = 
+//       parameters.get(Proj4Keyword.proj) match {
+//         case Some(codeOpt) =>
+//           codeOpt match {
+//             case Some(code) =>
+//               Registry.getProjection(code) getOrElse {
+//                 throw new InvalidValueException("Unknown projection: $code.")
+//               }
+//             case None =>
+//               throw new IllegalStateException("No proj code specified.")
+//           }
+//       case None => throw new IllegalStateException("No proj flag specified.")
+//     }
 
-    params.get(Proj4Keyword.datum) match {
-      case Some(code) => registry.getDatum(code) match {
-        case Some(datum) => datumParameters.setDatum(datum)
-        case None => throw new InvalidValueException(s"Unknown datum: $datum.")
+//     projection = projection.setEllipsoid(ellipsoid)
+
+//     projection = parameters.get(Proj4Keyword.alpha) match {
+//       case Some(s) => projection.setAlphaDegrees(s.toDouble)
+//       case None => projection
+//     }
+
+//     projection = parameters.get(Proj4Keyword.lonc) match {
+//       case Some(s) => projection.setLonCDegrees(s.toDouble)
+//       case None => projection
+//     }
+
+//     projection = parameters.get(Proj4Keyword.lat_0) match {
+//       case Some(s) => projection.setProjectionLatitudeDegrees(Angle.parse(s))
+//       case None => projection
+//     }
+
+//     projection = parameters.get(Proj4Keyword.lon_0) match {
+//       case Some(s) => projection.setProjectionLongitudeDegrees(Angle.parse(s))
+//       case None => projection
+//     }
+
+//     projection = parameters.get(Proj4Keyword.lat_1) match {
+//       case Some(s) => projection.setProjectionLatitude1Degrees(Angle.parse(s))
+//       case None => projection
+//     }
+
+//     projection = parameters.get(Proj4Keyword.lat_2) match {
+//       case Some(s) => projection.setProjectionLatitude2Degrees(Angle.parse(s))
+//       case None => projection
+//     }
+
+//     projection = parameters.get(Proj4Keyword.lat_ts) match {
+//       case Some(s) => projection.setTrueScaleLatitudeDegrees(Angle.parse(s))
+//       case None => projection
+//     }
+
+//     projection = parameters.get(Proj4Keyword.x_0) match {
+//       case Some(s) => projection.setFalseEasting(s.toDouble)
+//       case None => projection
+//     }
+
+//     projection = parameters.get(Proj4Keyword.y_0) match {
+//       case Some(s) => projection.setFalseNorthing(s.toDouble)
+//       case None => projection
+//     }
+
+//     projection = parameters.get(Proj4Keyword.k_0) match {
+//       case Some(s) => projection.setScaleFactor(s.toDouble)
+//       case None => parameters.get(Proj4Keyword.k) match {
+//         case Some(s) => projection.setScaleFactor(s.toDouble)
+//         case None => projection
+//       }
+//     }
+
+//     projection = parameters.get(Proj4Keyword.units) match {
+//       case Some(code) => Units.findUnits(code) match {
+//         case Some(unit) =>
+//           projection.setFromMetres(1 / unit.value).setUnits(unit)
+//         case None =>
+//           throw new InvalidValueException(s"Unknown unit: $code.")
+//       }
+//       case None => projection
+//     }
+
+//     projection = parameters.get(Proj4Keyword.to_meter) match {
+//       case Some(s) => projection.setFromMetres(1 / s.toDouble)
+//       case None => projection
+//     }
+
+//     if (parameters.contains(Proj4Keyword.south)) {
+//       projection = projection.setSouthernHemisphere(true)
+
+//       projection = projection match {
+//         case p: TransverseMercatorProjection => p.setUTMZone(s.toInt)
+//         case _ => projection
+//       }
+//     }
+
+//     projection.initialize
+//   }
+
+  implicit class EllipsoidBuilderProj4Wrapper(eb: EllipsoidBuilder) {
+    def setDouble(params: ProjParams, key: String)(set: (EllipsoidBuilder, Double) => EllipsoidBuilder): EllipsoidBuilder =
+      params.get(key) match {
+        case Some(Some(s)) => set(eb, s.toDouble)
+        case _ => eb
       }
-      case None => datumParameters
+
+    def setExists(params: ProjParams, key: String)(set: EllipsoidBuilder => EllipsoidBuilder): EllipsoidBuilder =
+      if(params.contains(key)) set(eb)
+      else eb
+  }
+
+  private def parseEllipsoid(params: ProjParams): Ellipsoid = {
+    params.get(Proj4Keyword.ellps) match {
+      case Some(Some(code)) =>
+        Registry.getEllipsoid(code) match {
+          case Some(e) => e
+          case None =>
+            throw new InvalidValueException(s"Unknown ellipsoid: $code")
+        }
+      case _ =>
+        new EllipsoidBuilder()
+          .setDouble(params, Proj4Keyword.a)(_.setA(_))
+          .setDouble(params, Proj4Keyword.es)(_.setES(_))
+          .setDouble(params, Proj4Keyword.rf)(_.setRF(_))
+          .setDouble(params, Proj4Keyword.f)(_.setF(_))
+          .setDouble(params, Proj4Keyword.b)(_.setB(_))
+          .setExists(params, Proj4Keyword.R_A)(_.setRA())
+          .build
     }
   }
 
-  private def parseToWGS84(parameterList: String): Array[Double] = {
-    var parameters = parameterList.split(",").map(_.toDouble)
+  private def parseToWGS84(parameterList: String): Vector[Double] = {
+    var parameters = 
+      parameterList.split(",").map(_.toDouble).toVector
 
     if (parameters.size != 3 && parameters.size != 7)
       throw new InvalidValueException(
@@ -166,68 +241,15 @@ class Proj4Parser(private val registry: Registry) {
       )
 
     if (parameters.length > 3) {
-      if (parameters(3) == 0 && parameters(4) == 0 &&
-        parameters(5) == 0 && parameters(6) == 0) parameters.take(3)
-      else parameters.take(3) ++ parameters.drop(3).take(3)
+      if (parameters(3) == 0.0 && parameters(4) == 0.0 &&
+        parameters(5) == 0.0 && parameters(6) == 0.0) {
+        parameters.take(3)
+      } else {
+        parameters.take(3) ++ parameters.drop(3).take(3)
         .map(_ * SECONDS_TO_RAD) :+ parameters(6) / MILLION + 1
-    } else parameters
-  }
-
-  private def parseEllipsoid(
-    parameters: Map[String, Option[String]],
-    datumParametersInput: DatumParameters): DatumParameters = {
-
-    var datumParameters = parameters.get(Proj4Keyword.ellps) match {
-      case Some(code) => registry.getEllipsoid(code) match {
-        case Some(e) => datumParametersInput.setEllipsoid(e)
-        case None => throw new InvalidValueException(
-          s"Unknown ellipsoid: $code"
-        )
       }
-      case None => datumParametersInput
+    } else {
+      parameters
     }
-
-    datumParameters = parameters.get(Proj4Keyword.a) match {
-      case Some(s) => datumParameters.setA(s.toDouble)
-      case None => datumParameters
-    }
-
-    datumParameters = parameters.get(Proj4Keyword.es) match {
-      case Some(s) => datumParameters.setES(s.toDouble)
-      case None => datumParameters
-    }
-
-    datumParameters = parameters.get(Proj4Keyword.rf) match {
-      case Some(s) => datumParameters.setRF(s.toDouble)
-      case None => datumParameters
-    }
-
-    datumParameters = parameters.get(Proj4Keyword.f) match {
-      case Some(s) => datumParameters.setF(s.toDouble)
-      case None => datumParameters
-    }
-
-    datumParameters = parameters.get(Proj4Keyword.b) match {
-      case Some(s) => datumParameters.setB(s.toDouble)
-      case None => datumParameters
-    }
-
-    parseEllipsoidRA(parameters, datumParameters)
   }
-
-  private def parseEllipsoidRA(
-    parameters: Map[String, Option[String]],
-    datumParameters: DatumParameters): DatumParameters =
-    if (parameters.contains(Proj4Keyword.R_A)) datumParameters.setR_A
-    else datumPrameters
-
-  private def createParameterMap(args: String): Map[String, Option[String]] =
-    args.map(x => if (x.startsWith("+")) x.substring(1) else x).map(x => {
-      val index = x.indexOf('=')
-      if (index != -1) (x.substring(0, index) -> Some(x.substring(index + 1)))
-      else (x -> None)
-    }).groupBy(_._1).map { case (a, b) => (a, b.head._2) }
-
-  private def parseAngle(s: String): Double = Angle.parse(s)
-
 }

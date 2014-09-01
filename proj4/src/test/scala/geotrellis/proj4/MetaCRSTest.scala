@@ -1,7 +1,6 @@
 package geotrellis.proj4
 
-import org.osgeo.proj4j._
-import org.osgeo.proj4j.util._
+import geotrellis.proj4.util._
 
 import java.io.File
 import java.io.IOException
@@ -60,8 +59,8 @@ case class MetaCRSTestCase(
 ) {
   val verbose = true
 
-  val srcPt = new ProjCoordinate()
-  val resultPt = new ProjCoordinate()
+  var srcPt = ProjCoordinate()
+  var resultPt = ProjCoordinate()
 
   def sourceCrsName = csName(srcCrsAuth, srcCrs) 
   def targetCrsName = csName(tgtCrsAuth, tgtCrs)
@@ -93,15 +92,12 @@ case class MetaCRSTestCase(
   }
   
   def executeTransform(srcCS: CoordinateReferenceSystem, tgtCS: CoordinateReferenceSystem): Boolean = {
-    srcPt.x = srcOrd1
-    srcPt.y = srcOrd2
-    // Testing: flip axis order to test SS sample file
-    //srcPt.x = srcOrd2
-    //srcPt.y = srcOrd1
+    srcPt = ProjCoordinate(srcOrd1, srcOrd2)
     
     val trans = new BasicCoordinateTransform(srcCS, tgtCS)
 
-    trans.transform(srcPt, resultPt)
+    resultPt =
+      trans.transform(srcPt)
     
     val dx = math.abs(resultPt.x - tgtOrd1)
     val dy = math.abs(resultPt.y - tgtOrd2)
@@ -121,10 +117,10 @@ case class MetaCRSTestCase(
       System.out.println("FAIL")
       System.out.println("Src CRS: ("
         + srcCrsAuth + ":" + srcCrs + ") "
-        + srcCS.getParameterString())
+        + srcCS.parameterString)
       System.out.println("Tgt CRS: ("
         + tgtCrsAuth + ":" + tgtCrs + ") "
-        + tgtCS.getParameterString())
+        + tgtCS.parameterString)
     }
   }
 }

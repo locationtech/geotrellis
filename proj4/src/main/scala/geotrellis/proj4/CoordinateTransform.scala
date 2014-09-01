@@ -18,10 +18,10 @@ package geotrellis.proj4
 
 trait CoordinateTransform {
 
-  def getSourceCRS: CoordinateReferenceSystem
+  def sourceCRS: CoordinateReferenceSystem
 
-  def getTargetCRS: CoordinateReferenceSystem
+  def targetCRS: CoordinateReferenceSystem
 
-  def transform(source: ProjCoordinate, target: ProjCoordinate): ProjCoordinate
+  def transform(source: ProjCoordinate): ProjCoordinate
 
 }

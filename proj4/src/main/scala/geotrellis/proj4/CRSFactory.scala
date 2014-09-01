@@ -16,24 +16,18 @@
 
 package geotrellis.proj4
 
-import org.osgeo.proj4j.io.Proj4FileReader
-import org.osgeo.proj4j.parser.Proj4Parser
+import geotrellis.proj4.io.Proj4FileReader
+import geotrellis.proj4.parser.Proj4Parser
 
 object CRSFactory {
-
   private val csReader = new Proj4FileReader()
-
-  private val registry = new Registry()
-
 }
 
 class CRSFactory {
 
-  val registry = CRSFactory.registry
-
   def createFromName(name: String): CoordinateReferenceSystem = {
     val params = CRSFactory.csReader.getParameters(name)
-    if (parameters == null) throw new UnknownAuthorityCodeException(name)
+    if (params == null) throw new UnknownAuthorityException(name)
 
     createFromParameters(name, params)
   }
@@ -47,8 +41,7 @@ class CRSFactory {
     name: String,
     params: Array[String]): CoordinateReferenceSystem =
     if (params == null) null
-    else new Proj4Parser(registry).parse(name, params)
+    else Proj4Parser.parse(name, params)
 
   private def splitParameters(params: String) = params.split("\\s+")
-
 }

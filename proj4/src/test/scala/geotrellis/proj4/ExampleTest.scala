@@ -1,7 +1,5 @@
 package geotrellis.proj4
 
-import org.osgeo.proj4j._
-
 import org.scalatest._
 
 /**
@@ -38,15 +36,12 @@ class ExampleTest extends FunSuite with Matchers{
      * Create input and output points.
      * These can be constructed once per thread and reused.
      */ 
-    val p = new ProjCoordinate()
-    val p2 = new ProjCoordinate()
-    p.x = lon
-    p.y = lat
+    val p = new ProjCoordinate(lon, lat)
     
     /*
      * Transform point
      */
-    trans.transform(p, p2)
+    val p2 = trans.transform(p)
 
     isInTolerance(p2, expectedX, expectedY, tolerance)
   }
@@ -74,15 +69,11 @@ class ExampleTest extends FunSuite with Matchers{
      * Create input and output points.
      * These can be constructed once per thread and reused.
      */ 
-    val p1 = new ProjCoordinate()
-    val p2 = new ProjCoordinate()
-    p1.x = 500000
-    p1.y = 4649776.22482
-    
+    val p1 = ProjCoordinate(500000, 4649776.22482)
     /*
      * Transform point
      */
-    trans.transform(p1, p2)
+    val p2 = trans.transform(p1)
     
     isInTolerance(p2, 33, 42, 0.000001) should be (true)
   }

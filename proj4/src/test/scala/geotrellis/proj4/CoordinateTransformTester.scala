@@ -1,7 +1,5 @@
 package geotrellis.proj4
 
-import org.osgeo.proj4j._
-
 class CoordinateTransformTester(val verbose: Boolean = true) {
   val ctFactory = new CoordinateTransformFactory()
   val crsFactory = new CRSFactory()
@@ -41,7 +39,7 @@ class CoordinateTransformTester(val verbose: Boolean = true) {
       crsFactory.createFromName(crsSpec)
   
   def crsDisplay(crs: CoordinateReferenceSystem): String =
-    crs.getName() + "(" + crs.getProjection()+"/" + crs.getDatum().getCode() + ")"
+    s"${crs.name} (${crs.projection}/${crs.datum.code})"
   
   def checkTransform(
     srcCRS: String, x1: Double, y1: Double,
@@ -75,8 +73,8 @@ class CoordinateTransformTester(val verbose: Boolean = true) {
     tgtCRS: CoordinateReferenceSystem, p2: ProjCoordinate, tolerance: Double
   ): Boolean = {
     val trans = ctFactory.createTransform(srcCRS, tgtCRS)
-    val pout = new ProjCoordinate()
-    trans.transform(p, pout)
+    val pout =
+      trans.transform(p)
     
     val dx = math.abs(pout.x - p2.x)
     val dy = math.abs(pout.y - p2.y)
@@ -85,10 +83,10 @@ class CoordinateTransformTester(val verbose: Boolean = true) {
     if (verbose) {
       System.out.println(crsDisplay(srcCRS) + " => " + crsDisplay(tgtCRS) )
       System.out.println(
-      	p.toShortString()
+      	p.toString
           + " -> "
-          + pout.toShortString()
-          + " (expected: " + p2.toShortString()
+          + pout.toString
+          + " (expected: " + p2.toString
           + " tol: " + tolerance + " diff: " + delta
           + " )"
       )
@@ -98,8 +96,8 @@ class CoordinateTransformTester(val verbose: Boolean = true) {
     
     if (verbose && ! isInTol) {
       System.out.println("FAIL")
-      System.out.println("Src CRS: " + srcCRS.getParameterString())
-      System.out.println("Tgt CRS: " + tgtCRS.getParameterString())
+      System.out.println("Src CRS: " + srcCRS.parameterString)
+      System.out.println("Tgt CRS: " + tgtCRS.parameterString)
     }
 
     if (verbose) {

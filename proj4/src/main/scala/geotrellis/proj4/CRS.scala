@@ -1,7 +1,5 @@
 package geotrellis.proj4
 
-import org.osgeo.proj4j._
-
 trait CRS extends Serializable {
   private[proj4] val crs: CoordinateReferenceSystem
 
@@ -12,7 +10,7 @@ trait CRS extends Serializable {
     None
 
   def toProj4String: String =
-    crs.getParameterString
+    crs.parameterString
 
   // TODO: Do these better once more things are ported
   override

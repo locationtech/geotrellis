@@ -1,7 +1,5 @@
 package geotrellis.proj4
 
-import org.osgeo.proj4j._
-
 object Transform {
   def apply(src: CRS, dest: CRS): (Double, Double) => (Double, Double) =
     src.alternateTransform(dest) match {
@@ -16,8 +14,7 @@ object Proj4Transform {
 
     { (x: Double, y: Double) =>
       val srcP = new ProjCoordinate(x, y)
-      val destP = new ProjCoordinate
-      t.transform(srcP, destP)
+      val destP = t.transform(srcP)
       (destP.x, destP.y)
     }
   }

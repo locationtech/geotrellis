@@ -23,10 +23,12 @@ object DegreeUnit {
   val format = new AngleFormat(AngleFormat.ddmmssPattern, true)
 
   def parse(s: String): Double = try {
-    format.parse(s).toDouble
+    format.parse(s).doubleValue
   } catch {
-    pe: ParseException => throw new NumberFormatException(pe.getMessage)
+    case pe: ParseException => throw new NumberFormatException(pe.getMessage)
   }
+
+  def apply(): DegreeUnit = new DegreeUnit
 
 }
 

@@ -2,12 +2,12 @@ package geotrellis.proj4.proj
 
 import org.osgeo.proj4j.proj._
 
-import org.osgeo.proj4j.CRSFactory
-import org.osgeo.proj4j.CoordinateReferenceSystem
-import org.osgeo.proj4j.CoordinateTransform
-import org.osgeo.proj4j.CoordinateTransformFactory
-import org.osgeo.proj4j.ProjCoordinate
-import org.osgeo.proj4j.util.ProjectionUtil
+import geotrellis.proj4.CRSFactory
+import geotrellis.proj4.CoordinateReferenceSystem
+import geotrellis.proj4.CoordinateTransform
+import geotrellis.proj4.CoordinateTransformFactory
+import geotrellis.proj4.ProjCoordinate
+import geotrellis.proj4.util.ProjectionUtil
 
 class ProjectionGridRoundTripper(cs: CoordinateReferenceSystem) {
   val ctFactory = new CoordinateTransformFactory
@@ -26,26 +26,25 @@ class ProjectionGridRoundTripper(cs: CoordinateReferenceSystem) {
   def transformCount = _transformCount
   
   def runGrid(tolerance: Double): (Boolean, (Double, Double, Double, Double)) = {
-    val extent @ (minx, miny, maxx, maxy) = gridExtent(cs.getProjection())
+    val extent @ (minx, miny, maxx, maxy) = gridExtent(cs.projection)
     
-    val p = new ProjCoordinate()
     val dx = (maxx - minx) / gridSize
     val dy = (maxy - miny) / gridSize
     for (ix <- 0 to gridSize) {
       for (iy <- 0 to gridSize) {
-	p.x = 
+	val x =
           if(ix == gridSize )
 	    maxx
 	    else
               minx + ix * dx
 
-	p.y = 
+	val y =
           if(iy == gridSize)
 	    maxy
 	  else
             miny + iy * dy
 	
-	if(!roundTrip(p, tolerance))
+	if(!roundTrip(ProjCoordinate(x, y), tolerance))
 	  return (false, extent)
       }
     }
@@ -53,13 +52,10 @@ class ProjectionGridRoundTripper(cs: CoordinateReferenceSystem) {
   }
   
   private def roundTrip(p: ProjCoordinate, tolerance: Double): Boolean = {
-    val p2 = new ProjCoordinate()
-    val p3 = new ProjCoordinate()
-
     _transformCount += 1
     
-    transForward.transform(p, p2)
-    transInverse.transform(p2, p3)
+    val p2 = transForward.transform(p)
+    val p3 = transInverse.transform(p2)
     
     if (debug)
       System.out.println(ProjectionUtil.toString(p) + " -> " + ProjectionUtil.toString(p2) + " ->  " + ProjectionUtil.toString(p3))

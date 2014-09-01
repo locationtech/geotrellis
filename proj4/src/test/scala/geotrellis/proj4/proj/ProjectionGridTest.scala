@@ -4,8 +4,8 @@ import org.osgeo.proj4j.proj._
 
 import org.scalatest._
 
-import org.osgeo.proj4j.CRSFactory
-import org.osgeo.proj4j.CoordinateReferenceSystem
+import geotrellis.proj4.CRSFactory
+import geotrellis.proj4.CoordinateReferenceSystem
 
 /**
   * Tests accuracy and correctness of projecting and reprojecting a grid of geographic coordinates.
@@ -46,7 +46,7 @@ class ProjectionGridTest extends FunSuite with Matchers {
 
       val (isOK, (xmin, ymin, xmax, ymax)) = tripper.runGrid(TOLERANCE)
       
-      System.out.println(code + " - " + cs.getParameterString())
+      System.out.println(code + " - " + cs.parameterString)
       System.out.println(s" - extent: [ $xmin, $ymin, $xmax, $ymax ]")
       System.out.println(s" - tol: $TOLERANCE")
       System.out.println(s" - # pts run = ${tripper.transformCount}")

@@ -16,10 +16,12 @@
 
 package geotrellis.proj4.parser
 
+import geotrellis.proj4.units._
+
 object ParameterUtil {
 
   val format = new AngleFormat(AngleFormat.ddmmssPattern, true)
 
-  def praseAngle(s: String): Double = format.parse(s, None).doubleValue
+  def praseAngle(s: String): Double = format.parse(s, null).doubleValue
 
 }

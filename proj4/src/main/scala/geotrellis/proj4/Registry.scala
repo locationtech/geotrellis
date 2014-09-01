@@ -16,13 +16,14 @@
 
 package geotrellis.proj4
 
-import scala.collection.immutable.HashMap
+import geotrellis.proj4.datum._
+import geotrellis.proj4.proj._
+
+import org.osgeo.proj4j.proj._
 
 object Registry {
 
-  def apply: Registry = new Registry()
-
-  val datums = Array(
+  lazy val datums = Array(
     Datum.WGS84,
     Datum.GGRS87,
     Datum.NAD27,
@@ -35,164 +36,257 @@ object Registry {
     Datum.OSEB36
   )
 
-  val ellipsoids = Array(
+  lazy val ellipsoids = Array(
     Ellipsoid.SPHERE,
-    new Ellipsoid("MERIT", 6378137.0, 0.0, 298.257, "MERIT 1983"),
-    new Ellipsoid("SGS85", 6378136.0, 0.0, 298.257, "Soviet Geodetic System 85"),
+    Ellipsoid("MERIT", 6378137.0, 0.0, 298.257, "MERIT 1983"),
+    Ellipsoid("SGS85", 6378136.0, 0.0, 298.257, "Soviet Geodetic System 85"),
     Ellipsoid.GRS80,
-    new Ellipsoid("IAU76", 6378140.0, 0.0, 298.257, "IAU 1976"),
+    Ellipsoid("IAU76", 6378140.0, 0.0, 298.257, "IAU 1976"),
     Ellipsoid.AIRY,
     Ellipsoid.MOD_AIRY,
-    new Ellipsoid("APL4.9", 6378137.0, 0.0, 298.25, "Appl. Physics. 1965"),
-    new Ellipsoid("NWL9D", 6378145.0, 298.25, 0.0, "Naval Weapons Lab., 1965"),
-    new Ellipsoid("andrae", 6377104.43, 300.0, 0.0, "Andrae 1876 (Den., Iclnd.)"),
-    new Ellipsoid("aust_SA", 6378160.0, 0.0, 298.25, "Australian Natl & S. Amer. 1969"),
-    new Ellipsoid("GRS67", 6378160.0, 0.0, 298.2471674270, "GRS 67 (IUGG 1967)"),
+    Ellipsoid("APL4.9", 6378137.0, 0.0, 298.25, "Appl. Physics. 1965"),
+    Ellipsoid("NWL9D", 6378145.0, 298.25, 0.0, "Naval Weapons Lab., 1965"),
+    Ellipsoid("andrae", 6377104.43, 300.0, 0.0, "Andrae 1876 (Den., Iclnd.)"),
+    Ellipsoid("aust_SA", 6378160.0, 0.0, 298.25, "Australian Natl & S. Amer. 1969"),
+    Ellipsoid("GRS67", 6378160.0, 0.0, 298.2471674270, "GRS 67 (IUGG 1967)"),
     Ellipsoid.BESSEL,
-    new Ellipsoid("bess_nam", 6377483.865, 0.0, 299.1528128, "Bessel 1841 (Namibia)"),
+    Ellipsoid("bess_nam", 6377483.865, 0.0, 299.1528128, "Bessel 1841 (Namibia)"),
     Ellipsoid.CLARKE_1866,
     Ellipsoid.CLARKE_1880,
-    new Ellipsoid("CPM", 6375738.7, 0.0, 334.29, "Comm. des Poids et Mesures 1799"),
-    new Ellipsoid("delmbr", 6376428.0, 0.0, 311.5, "Delambre 1810 (Belgium)"),
-    new Ellipsoid("engelis", 6378136.05, 0.0, 298.2566, "Engelis 1985"),
+    Ellipsoid("CPM", 6375738.7, 0.0, 334.29, "Comm. des Poids et Mesures 1799"),
+    Ellipsoid("delmbr", 6376428.0, 0.0, 311.5, "Delambre 1810 (Belgium)"),
+    Ellipsoid("engelis", 6378136.05, 0.0, 298.2566, "Engelis 1985"),
     Ellipsoid.EVEREST,
-    new Ellipsoid("evrst48", 6377304.063, 0.0, 300.8017, "Everest 1948"),
-    new Ellipsoid("evrst56", 6377301.243, 0.0, 300.8017, "Everest 1956"),
-    new Ellipsoid("evrst69", 6377295.664, 0.0, 300.8017, "Everest 1969"),
-    new Ellipsoid("evrstSS", 6377298.556, 0.0, 300.8017, "Everest (Sabah & Sarawak)"),
-    new Ellipsoid("fschr60", 6378166.0, 0.0, 298.3, "Fischer (Mercury Datum) 1960"),
-    new Ellipsoid("fschr60m", 6378155.0, 0.0, 298.3, "Modified Fischer 1960"),
-    new Ellipsoid("fschr68", 6378150.0, 0.0, 298.3, "Fischer 1968"),
-    new Ellipsoid("helmert", 6378200.0, 0.0, 298.3, "Helmert 1906"),
-    new Ellipsoid("hough", 6378270.0, 0.0, 297.0, "Hough"),
+    Ellipsoid("evrst48", 6377304.063, 0.0, 300.8017, "Everest 1948"),
+    Ellipsoid("evrst56", 6377301.243, 0.0, 300.8017, "Everest 1956"),
+    Ellipsoid("evrst69", 6377295.664, 0.0, 300.8017, "Everest 1969"),
+    Ellipsoid("evrstSS", 6377298.556, 0.0, 300.8017, "Everest (Sabah & Sarawak)"),
+    Ellipsoid("fschr60", 6378166.0, 0.0, 298.3, "Fischer (Mercury Datum) 1960"),
+    Ellipsoid("fschr60m", 6378155.0, 0.0, 298.3, "Modified Fischer 1960"),
+    Ellipsoid("fschr68", 6378150.0, 0.0, 298.3, "Fischer 1968"),
+    Ellipsoid("helmert", 6378200.0, 0.0, 298.3, "Helmert 1906"),
+    Ellipsoid("hough", 6378270.0, 0.0, 297.0, "Hough"),
     Ellipsoid.INTERNATIONAL,
     Ellipsoid.INTERNATIONAL_1967,
     Ellipsoid.KRASSOVSKY,
-    new Ellipsoid("kaula", 6378163.0, 0.0, 298.24, "Kaula 1961"),
-    new Ellipsoid("lerch", 6378139.0, 0.0, 298.257, "Lerch 1979"),
-    new Ellipsoid("mprts", 6397300.0, 0.0, 191.0, "Maupertius 1738"),
-    new Ellipsoid("plessis", 6376523.0, 6355863.0, 0.0, "Plessis 1817 France)"),
-    new Ellipsoid("SEasia", 6378155.0, 6356773.3205, 0.0, "Southeast Asia"),
-    new Ellipsoid("walbeck", 6376896.0, 6355834.8467, 0.0, "Walbeck"),
+    Ellipsoid("kaula", 6378163.0, 0.0, 298.24, "Kaula 1961"),
+    Ellipsoid("lerch", 6378139.0, 0.0, 298.257, "Lerch 1979"),
+    Ellipsoid("mprts", 6397300.0, 0.0, 191.0, "Maupertius 1738"),
+    Ellipsoid("plessis", 6376523.0, 6355863.0, 0.0, "Plessis 1817 France)"),
+    Ellipsoid("SEasia", 6378155.0, 6356773.3205, 0.0, "Southeast Asia"),
+    Ellipsoid("walbeck", 6376896.0, 6355834.8467, 0.0, "Walbeck"),
     Ellipsoid.WGS60,
     Ellipsoid.WGS66,
     Ellipsoid.WGS72,
     Ellipsoid.WGS84,
-    new Ellipsoid("NAD27", 6378249.145, 0.0, 293.4663, "NAD27: Clarke 1880 mod."),
-    new Ellipsoid("NAD83", 6378137.0, 0.0, 298.257222101, "NAD83: GRS 1980 (IUGG, 1980)")
+    Ellipsoid("NAD27", 6378249.145, 0.0, 293.4663, "NAD27: Clarke 1880 mod."),
+    Ellipsoid("NAD83", 6378137.0, 0.0, 298.257222101, "NAD83: GRS 1980 (IUGG, 1980)")
   )
 
-  private val projectionRegistry = HashMap[String, Class](
-    "aea" -> AlbersProjection.class,
-    "aeqd" -> EquidistantAzimuthalProjection.class,
-    "airy" -> AiryProjection.class,
-    "aitoff" -> AitoffProjection.class,
-    "alsk" -> Projection.class,
-    "apian" -> Projection.class,
-    "august" -> AugustProjection.class,
-    "bacon" -> Projection.class,
-    "bipc" -> BipolarProjection.class,
-    "boggs" -> BoggsProjection.class,
-    "bonne" -> BonneProjection.class,
-    "cass" -> CassiniProjection.class,
-    "cc" -> CentralCylindricalProjection.class,
-    "cea" -> Projection.class,
-    "collg" -> CollignonProjection.class,
-    "crast" -> CrasterProjection.class,
-    "denoy" -> DenoyerProjection.class,
-    "eck1" -> Eckert1Projection.class,
-    "eck2" -> Eckert2Projection.class,
-    "eck4" -> Eckert4Projection.class,
-    "eck5" -> Eckert5Projection.class,
-    "eck6" -> Eckert6Projection.class,
-    "eqc" -> PlateCarreeProjection.class,
-    "eqdc" -> EquidistantConicProjection.class,
-    "euler" -> EulerProjection.class,
-    "fahey" -> FaheyProjection.class,
-    "fouc" -> FoucautProjection.class,
-    "fouc_s" -> FoucautSinusoidalProjection.class,
-    "gall" -> GallProjection.class,
-    "gnom" -> GnomonicAzimuthalProjection.class,
-    "goode" -> GoodeProjection.class,
-    "hammer" -> HammerProjection.class,
-    "hatano" -> HatanoProjection.class,
-    "kav5" -> KavraiskyVProjection.class,
-    "laea" -> LambertAzimuthalEqualAreaProjection.class,
-    "lagrng" -> LagrangeProjection.class,
-    "larr" -> LarriveeProjection.class,
-    "lask" -> LaskowskiProjection.class,
-    "latlong" -> LongLatProjection.class,
-    "longlat" -> LongLatProjection.class,
-    "lcc" -> LambertConformalConicProjection.class,
-    "leac" -> LambertEqualAreaConicProjection.class,
-    "loxim" -> LoximuthalProjection.class,
-    "lsat" -> LandsatProjection.class,
-    "mbt_fps" -> McBrydeThomasFlatPolarSine2Projection.class,
-    "mbtfpp" -> McBrydeThomasFlatPolarParabolicProjection.class,
-    "mbtfpq" -> McBrydeThomasFlatPolarQuarticProjection.class,
-    "merc" -> MercatorProjection.class,
-    "mill" -> MillerProjection.class,
-    "moll" -> MolleweideProjection.class,
-    "murd1" -> Murdoch1Projection.class,
-    "murd2" -> Murdoch2Projection.class,
-    "murd3" -> Murdoch3Projection.class,
-    "nell" -> NellProjection.class,
-    "nicol" -> NicolosiProjection.class,
-    "nsper" -> PerspectiveProjection.class,
-    "omerc" -> ObliqueMercatorProjection.class,
-    "ortho" -> OrthographicAzimuthalProjection.class,
-    "pconic" -> PerspectiveConicProjection.class,
-    "poly" -> PolyconicProjection.class,
-    "putp2" -> PutninsP2Projection.class,
-    "putp4p" -> PutninsP4Projection.class,
-    "putp5" -> PutninsP5Projection.class,
-    "putp5p" -> PutninsP5PProjection.class,
-    "qua_aut" -> QuarticAuthalicProjection.class,
-    "robin" -> RobinsonProjection.class,
-    "rpoly" -> RectangularPolyconicProjection.class,
-    "sinu" -> SinusoidalProjection.class,
-    "somerc" -> SwissObliqueMercatorProjection.class,
-    "stere" -> StereographicAzimuthalProjection.class,
-    "sterea" -> ObliqueStereographicAlternativeProjection.class,
-    "tcc" -> TranverseCentralCylindricalProjection.class,
-    "tcea" -> TransverseCylindricalEqualArea.class,
-    "tmerc" -> TransverseMercatorProjection.class,
-    "urmfps" -> UrmaevFlatPolarSinusoidalProjection.class,
-    "utm" -> TransverseMercatorProjection.class,
-    "vandg" -> VanDerGrintenProjection.class,
-    "vitk1" -> VitkovskyProjection.class,
-    "wag1" -> Wagner1Projection.class,
-    "wag2" -> Wagner2Projection.class,
-    "wag3" -> Wagner3Projection.class,
-    "wag4" -> Wagner4Projection.class,
-    "wag5" -> Wagner5Projection.class,
-    "wag7" -> Wagner7Projection.class,
-    "weren" -> WerenskioldProjection.class,
-    "wintri" -> WinkelTripelProjection.class
+  private lazy val projectionRegistry = Map(
+    "aea" -> classOf[AlbersProjection],
+    "aeqd" -> classOf[EquidistantAzimuthalProjection],
+    "airy" -> classOf[AiryProjection],
+    "aitoff" -> classOf[AitoffProjection],
+    "alsk" -> classOf[Projection],
+    "apian" -> classOf[Projection],
+    "august" -> classOf[AugustProjection],
+    "bacon" -> classOf[Projection],
+    "bipc" -> classOf[BipolarProjection],
+    "boggs" -> classOf[BoggsProjection],
+    "bonne" -> classOf[BonneProjection],
+    "cass" -> classOf[CassiniProjection],
+    "cc" -> classOf[CentralCylindricalProjection],
+    "cea" -> classOf[Projection],
+    "collg" -> classOf[CollignonProjection],
+    "crast" -> classOf[CrasterProjection],
+    "denoy" -> classOf[DenoyerProjection],
+    "eck1" -> classOf[Eckert1Projection],
+    "eck2" -> classOf[Eckert2Projection],
+    "eck4" -> classOf[Eckert4Projection],
+    "eck5" -> classOf[Eckert5Projection],
+    "eck6" -> classOf[Eckert6Projection],
+    "eqc" -> classOf[PlateCarreeProjection],
+    "eqdc" -> classOf[EquidistantConicProjection],
+    "euler" -> classOf[EulerProjection],
+    "fahey" -> classOf[FaheyProjection],
+    "fouc" -> classOf[FoucautProjection],
+    "fouc_s" -> classOf[FoucautSinusoidalProjection],
+    "gall" -> classOf[GallProjection],
+    "gnom" -> classOf[GnomonicAzimuthalProjection],
+    "goode" -> classOf[GoodeProjection],
+    "hammer" -> classOf[HammerProjection],
+    "hatano" -> classOf[HatanoProjection],
+    "kav5" -> classOf[KavraiskyVProjection],
+    "laea" -> classOf[LambertAzimuthalEqualAreaProjection],
+    "lagrng" -> classOf[LagrangeProjection],
+    "larr" -> classOf[LarriveeProjection],
+    "lask" -> classOf[LaskowskiProjection],
+    "latlong" -> classOf[LongLatProjection],
+    "longlat" -> classOf[LongLatProjection],
+    "lcc" -> classOf[LambertConformalConicProjection],
+    "leac" -> classOf[LambertEqualAreaConicProjection],
+    "loxim" -> classOf[LoximuthalProjection],
+    "lsat" -> classOf[LandsatProjection],
+    "mbt_fps" -> classOf[McBrydeThomasFlatPolarSine2Projection],
+    "mbtfpp" -> classOf[McBrydeThomasFlatPolarParabolicProjection],
+    "mbtfpq" -> classOf[McBrydeThomasFlatPolarQuarticProjection],
+    "merc" -> classOf[MercatorProjection],
+    "mill" -> classOf[MillerProjection],
+    "moll" -> classOf[MolleweideProjection],
+    "murd1" -> classOf[Murdoch1Projection],
+    "murd2" -> classOf[Murdoch2Projection],
+    "murd3" -> classOf[Murdoch3Projection],
+    "nell" -> classOf[NellProjection],
+    "nicol" -> classOf[NicolosiProjection],
+    "nsper" -> classOf[PerspectiveProjection],
+    "omerc" -> classOf[ObliqueMercatorProjection],
+    "ortho" -> classOf[OrthographicAzimuthalProjection],
+    "pconic" -> classOf[PerspectiveConicProjection],
+    "poly" -> classOf[PolyconicProjection],
+    "putp2" -> classOf[PutninsP2Projection],
+    "putp4p" -> classOf[PutninsP4Projection],
+    "putp5" -> classOf[PutninsP5Projection],
+    "putp5p" -> classOf[PutninsP5PProjection],
+    "qua_aut" -> classOf[QuarticAuthalicProjection],
+    "robin" -> classOf[RobinsonProjection],
+    "rpoly" -> classOf[RectangularPolyconicProjection],
+    "sinu" -> classOf[SinusoidalProjection],
+    "somerc" -> classOf[SwissObliqueMercatorProjection],
+    "stere" -> classOf[StereographicAzimuthalProjection],
+    "sterea" -> classOf[ObliqueStereographicAlternativeProjection],
+    "tcc" -> classOf[TranverseCentralCylindricalProjection],
+    "tcea" -> classOf[TransverseCylindricalEqualArea],
+    "tmerc" -> classOf[TransverseMercatorProjection],
+    "urmfps" -> classOf[UrmaevFlatPolarSinusoidalProjection],
+    "utm" -> classOf[TransverseMercatorProjection],
+    "vandg" -> classOf[VanDerGrintenProjection],
+    "vitk1" -> classOf[VitkovskyProjection],
+    "wag1" -> classOf[Wagner1Projection],
+    "wag2" -> classOf[Wagner2Projection],
+    "wag3" -> classOf[Wagner3Projection],
+    "wag4" -> classOf[Wagner4Projection],
+    "wag5" -> classOf[Wagner5Projection],
+    "wag7" -> classOf[Wagner7Projection],
+    "weren" -> classOf[WerenskioldProjection],
+    "wintri" -> classOf[WinkelTripelProjection]
   )
-}
 
-class Registry {
+  private lazy val projectionBuilderRegistry: Map[String, () => ProjectionBuilder] = 
+    Map(
+      ("aea" , () => new AlbersProjectionBuilder)
+      // "aeqd" -> classOf[EquidistantAzimuthalProjection],
+      // "airy" -> classOf[AiryProjection],
+      // "aitoff" -> classOf[AitoffProjection],
+      // "alsk" -> classOf[Projection],
+      // "apian" -> classOf[Projection],
+      // "august" -> classOf[AugustProjection],
+      // "bacon" -> classOf[Projection],
+      // "bipc" -> classOf[BipolarProjection],
+      // "boggs" -> classOf[BoggsProjection],
+      // "bonne" -> classOf[BonneProjection],
+      // "cass" -> classOf[CassiniProjection],
+      // "cc" -> classOf[CentralCylindricalProjection],
+      // "cea" -> classOf[Projection],
+      // "collg" -> classOf[CollignonProjection],
+      // "crast" -> classOf[CrasterProjection],
+      // "denoy" -> classOf[DenoyerProjection],
+      // "eck1" -> classOf[Eckert1Projection],
+      // "eck2" -> classOf[Eckert2Projection],
+      // "eck4" -> classOf[Eckert4Projection],
+      // "eck5" -> classOf[Eckert5Projection],
+      // "eck6" -> classOf[Eckert6Projection],
+      // "eqc" -> classOf[PlateCarreeProjection],
+      // "eqdc" -> classOf[EquidistantConicProjection],
+      // "euler" -> classOf[EulerProjection],
+      // "fahey" -> classOf[FaheyProjection],
+      // "fouc" -> classOf[FoucautProjection],
+      // "fouc_s" -> classOf[FoucautSinusoidalProjection],
+      // "gall" -> classOf[GallProjection],
+      // "gnom" -> classOf[GnomonicAzimuthalProjection],
+      // "goode" -> classOf[GoodeProjection],
+      // "hammer" -> classOf[HammerProjection],
+      // "hatano" -> classOf[HatanoProjection],
+      // "kav5" -> classOf[KavraiskyVProjection],
+      // "laea" -> classOf[LambertAzimuthalEqualAreaProjection],
+      // "lagrng" -> classOf[LagrangeProjection],
+      // "larr" -> classOf[LarriveeProjection],
+      // "lask" -> classOf[LaskowskiProjection],
+      // "latlong" -> classOf[LongLatProjection],
+      // "longlat" -> classOf[LongLatProjection],
+      // "lcc" -> classOf[LambertConformalConicProjection],
+      // "leac" -> classOf[LambertEqualAreaConicProjection],
+      // "loxim" -> classOf[LoximuthalProjection],
+      // "lsat" -> classOf[LandsatProjection],
+      // "mbt_fps" -> classOf[McBrydeThomasFlatPolarSine2Projection],
+      // "mbtfpp" -> classOf[McBrydeThomasFlatPolarParabolicProjection],
+      // "mbtfpq" -> classOf[McBrydeThomasFlatPolarQuarticProjection],
+      // "merc" -> classOf[MercatorProjection],
+      // "mill" -> classOf[MillerProjection],
+      // "moll" -> classOf[MolleweideProjection],
+      // "murd1" -> classOf[Murdoch1Projection],
+      // "murd2" -> classOf[Murdoch2Projection],
+      // "murd3" -> classOf[Murdoch3Projection],
+      // "nell" -> classOf[NellProjection],
+      // "nicol" -> classOf[NicolosiProjection],
+      // "nsper" -> classOf[PerspectiveProjection],
+      // "omerc" -> classOf[ObliqueMercatorProjection],
+      // "ortho" -> classOf[OrthographicAzimuthalProjection],
+      // "pconic" -> classOf[PerspectiveConicProjection],
+      // "poly" -> classOf[PolyconicProjection],
+      // "putp2" -> classOf[PutninsP2Projection],
+      // "putp4p" -> classOf[PutninsP4Projection],
+      // "putp5" -> classOf[PutninsP5Projection],
+      // "putp5p" -> classOf[PutninsP5PProjection],
+      // "qua_aut" -> classOf[QuarticAuthalicProjection],
+      // "robin" -> classOf[RobinsonProjection],
+      // "rpoly" -> classOf[RectangularPolyconicProjection],
+      // "sinu" -> classOf[SinusoidalProjection],
+      // "somerc" -> classOf[SwissObliqueMercatorProjection],
+      // "stere" -> classOf[StereographicAzimuthalProjection],
+      // "sterea" -> classOf[ObliqueStereographicAlternativeProjection],
+      // "tcc" -> classOf[TranverseCentralCylindricalProjection],
+      // "tcea" -> classOf[TransverseCylindricalEqualArea],
+      // "tmerc" -> classOf[TransverseMercatorProjection],
+      // "urmfps" -> classOf[UrmaevFlatPolarSinusoidalProjection],
+      // "utm" -> classOf[TransverseMercatorProjection],
+      // "vandg" -> classOf[VanDerGrintenProjection],
+      // "vitk1" -> classOf[VitkovskyProjection],
+      // "wag1" -> classOf[Wagner1Projection],
+      // "wag2" -> classOf[Wagner2Projection],
+      // "wag3" -> classOf[Wagner3Projection],
+      // "wag4" -> classOf[Wagner4Projection],
+      // "wag5" -> classOf[Wagner5Projection],
+      // "wag7" -> classOf[Wagner7Projection],
+      // "weren" -> classOf[WerenskioldProjection],
+      // "wintri" -> classOf[WinkelTripelProjection]
+    )
 
-  import Registry._
 
-  def getProjection(name: String): Option[Projection] = projectionRegistry.get(name) match {
-    case Some(clas) => try {
-      val projection = clas.newInstance
-      projection.setName(name)
-      Some(Projection)
-    } catch {
-      case iae: IllegalAccessException => {
-        iae.printStackTrace
-        None
-      }
-      case ie: InstantiationException => {
-        ie.printStackTrace
-        None
-      }
+  def getProjectionBuilder(name: String): Option[ProjectionBuilder] =
+    projectionBuilderRegistry.get(name) match {
+      case Some(builder) => Some(builder())
+      case None => None
     }
-    case None => None
-  }
+
+  // def getProjection(name: String): Option[Projection] = 
+  //   projectionRegistry.get(name) match {
+  //     case Some(clas) => try {
+  //       val projection = clas.newInstance
+  //       projection.setName(name)
+  //       Some(projection)
+  //     } catch {
+  //       case iae: IllegalAccessException => {
+  //         iae.printStackTrace
+  //         None
+  //       }
+  //       case ie: InstantiationException => {
+  //         ie.printStackTrace
+  //         None
+  //       }
+  //     }
+  //     case None => None
+  //   }
 
   def getEllipsoid(name: String): Option[Ellipsoid] =
     ellipsoids.filter(_.shortName == name).headOption

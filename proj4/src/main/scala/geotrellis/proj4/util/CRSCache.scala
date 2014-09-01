@@ -16,11 +16,14 @@
 
 package geotrellis.proj4.util
 
-import scala.collection.mutable.HashMap
+import geotrellis.proj4._
+
+import scala.collection.mutable
 
 object CRSCache {
 
-  val projectionCache = HashMap[String, CoordinateReferenceSystem]()
+  val projectionCache = 
+    mutable.HashMap[String, CoordinateReferenceSystem]()
 
   val crsFactory = new CRSFactory()
 

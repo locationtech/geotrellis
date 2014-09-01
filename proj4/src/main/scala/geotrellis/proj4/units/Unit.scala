@@ -26,7 +26,7 @@ object Unit {
   val AREA_UNIT = 2
   val VOLUME_UNIT = 3
 
-  val format = {
+  val numberFormat = {
     val f = NumberFormat.getNumberInstance
     f.setMaximumFractionDigits(2)
     f.setGroupingUsed(false)
@@ -37,33 +37,34 @@ object Unit {
 
 case class Unit(name: String, plural: String, abbreviation: String, value: Double) {
 
-  import Unit._
+  import Unit.numberFormat
 
   def toBase(n: Double): Double = n * value
 
   def fromBase(n: Double): Double = n / value
 
   def parse(s: String): Double = try {
-    format.parse(s).toDouble
+    numberFormat.parse(s).doubleValue
   } catch {
-    pe: ParseException => throw new NumberFormatException(pe.getMessage)
+    case pe: ParseException => throw new NumberFormatException(pe.getMessage)
   }
 
-  def format(n: Double): String = s"${format.format(n)} $abbreviation"
+  def format(n: Double): String = s"${numberFormat.format(n)} $abbreviation"
 
-  def format(n: Double, abbrev: Double): String =
-    if (abbrev) format(n) else format.format(n)
+  def format(n: Double, abbrev: Boolean): String =
+    if (abbrev) format(n) else numberFormat.format(n)
 
   def format(x: Double, y: Double, abbrev: Boolean): String =
-    s"${format.format(x)/${format.format(y) " + if (abbrev) abbreviation else ""
+    s"${numberFormat.format(x)}/${numberFormat.format(y)} " + (if (abbrev) abbreviation else "")
 
   def format(x: Double, y: Double): String = format(x, y, true)
 
   override def toString: String = plural
 
-  override def equals(that: Any): Boolean = that match {
-    case unit: Unit => unit.value == value
-    case _ => false
-  }
+  override def equals(that: Any): Boolean = 
+    that match {
+      case unit: Unit => unit.value == value
+      case _ => false
+    }
 
 }

@@ -24,7 +24,7 @@ object ProjectionException {
 
 class ProjectionException(message: String) extends Proj4Exception(message) {
 
-  def this(projection: Projection, message: String) =
+  def this(projection: org.osgeo.proj4j.proj.Projection, message: String) =
     this(s"$projection: $message")
 
 }
