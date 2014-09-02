@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,7 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis._
 import geotrellis.raster._
+import geotrellis.proj4.CRS
 
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
@@ -54,7 +55,13 @@ import scala.math.{ceil, min}
   *
   * [1] http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf
   */
-class Encoder(dos: DataOutputStream, raster: Tile, re: RasterExtent, val settings: Settings) {
+class Encoder(
+  dos: DataOutputStream,
+  raster: Tile,
+  re: RasterExtent,
+  val crs: CRS,
+  val settings: Settings) {
+
   val data = raster.toArray
   val cols = raster.cols
   val rows = raster.rows
@@ -82,7 +89,7 @@ class Encoder(dos: DataOutputStream, raster: Tile, re: RasterExtent, val setting
   /**
     * Number of bits per sample. Should either be a multiple of 8, or evenly
     * divide 8 (i.e. 1, 2 or 4).
-    */ 
+    */
   final def bitsPerSample: Int = settings.size.bits
   final def bytesPerSample: Int = settings.size.bits / 8
 
@@ -153,6 +160,25 @@ class Encoder(dos: DataOutputStream, raster: Tile, re: RasterExtent, val setting
     todoShort(loc)
     todoShort(count)
     todoShort(offset)
+  }
+
+  def todoGeoKey(tag: Int, value: Int) {
+    todoShort(tag)
+    todoShort(0)
+    todoShort(1)
+    todoShort(value)
+  }
+
+  private var doubleIndex = 0
+
+  def todoGeoKey(tag: Int, value: Double) {
+    todoShort(tag)
+    todoShort(0)
+    todoShort(1)
+    todoShort(doubleIndex)
+
+    doubleIndex += 1
+    todoDouble(value)
   }
 
   // High-level function to write strings (char arrays). This will do immediate
@@ -341,7 +367,7 @@ class Encoder(dos: DataOutputStream, raster: Tile, re: RasterExtent, val setting
     todoDouble(0.0)    // i
     todoDouble(0.0)    // j
     todoDouble(0.0)    // k = 0.0
-    todoDouble(e.xmin) // x
+      todoDouble(e.xmin) // x
     todoDouble(e.ymax) // y
     todoDouble(0.0)    // z = 0.0
 
@@ -354,26 +380,26 @@ class Encoder(dos: DataOutputStream, raster: Tile, re: RasterExtent, val setting
     if (esriCompat) {
       // ESRI actually defines the projection, etc, inline
       todoGeoTag(0x0001, 1, 2, numGeoTags) //  1. geotif 1.2, N more tags
-      todoGeoTag(0x0400, 0, 1, 1)          //  2. projected data (1)
-      todoGeoTag(0x0401, 0, 1, 1)          //  3. area data (1)
-      todoGeoTag(0x0402, 0x87b1, 33, 0)    //  4. gt citation citation
-      todoGeoTag(0x0800, 0, 1, 0x7fff)     //  5. user-defined geog type
-      todoGeoTag(0x0801, 0x87b1, 151, 33)  //  6. geog citation
-      todoGeoTag(0x0802, 0, 1, 0x7fff)     //  7. user-defined gcs type
-      todoGeoTag(0x0806, 0, 1, 0x238e)     //  8. angular units: degree
-      todoGeoTag(0x0808, 0, 1, 0x7fff)     //  9. user-defined ellipsoid geokey
-      todoGeoTag(0x0809, 0x87b0, 1, 5)     // 10. ellipsoid geokey
-      todoGeoTag(0x080a, 0x87b0, 1, 6)     // 11. semi major axis geokey
-      todoGeoTag(0x080d, 0x87b0, 1, 7)     // 12. prime meridian geokey
-      todoGeoTag(0x0c00, 0, 1, 3857)       // 13. gt projected cs type (3857)
-      todoGeoTag(0x0c02, 0, 1, 0x7fff)     // 14. user-defined projection code
-      todoGeoTag(0x0c03, 0, 1, 7)          // 15. mercator coordinate transform
-      todoGeoTag(0x0c04, 0, 1, 0x2329)     // 16. linear unit size in meters
-      todoGeoTag(0x0c08, 0x87b0, 1, 1)     // 17. nat origin long geokey
-      todoGeoTag(0x0c09, 0x87b0, 1, 0)     // 18. nat origin lat geokey
-      todoGeoTag(0x0c0a, 0x87b0, 1, 3)     // 19. false easting geokey
-      todoGeoTag(0x0c0b, 0x87b0, 1, 4)     // 20. false northing geokey
-      todoGeoTag(0x0c14, 0x87b0, 1, 2)     // 21. scale at nat origin geokey
+        todoGeoTag(0x0400, 0, 1, 1)          //  2. projected data (1)
+        todoGeoTag(0x0401, 0, 1, 1)          //  3. area data (1)
+        todoGeoTag(0x0402, 0x87b1, 33, 0)    //  4. gt citation citation
+        todoGeoTag(0x0800, 0, 1, 0x7fff)     //  5. user-defined geog type
+        todoGeoTag(0x0801, 0x87b1, 151, 33)  //  6. geog citation
+        todoGeoTag(0x0802, 0, 1, 0x7fff)     //  7. user-defined gcs type
+        todoGeoTag(0x0806, 0, 1, 0x238e)     //  8. angular units: degree
+        todoGeoTag(0x0808, 0, 1, 0x7fff)     //  9. user-defined ellipsoid geokey
+        todoGeoTag(0x0809, 0x87b0, 1, 5)     // 10. ellipsoid geokey
+        todoGeoTag(0x080a, 0x87b0, 1, 6)     // 11. semi major axis geokey
+        todoGeoTag(0x080d, 0x87b0, 1, 7)     // 12. prime meridian geokey
+        todoGeoTag(0x0c00, 0, 1, 3857)       // 13. gt projected cs type (3857)
+        todoGeoTag(0x0c02, 0, 1, 0x7fff)     // 14. user-defined projection code
+        todoGeoTag(0x0c03, 0, 1, 7)          // 15. mercator coordinate transform
+        todoGeoTag(0x0c04, 0, 1, 0x2329)     // 16. linear unit size in meters
+        todoGeoTag(0x0c08, 0x87b0, 1, 1)     // 17. nat origin long geokey
+        todoGeoTag(0x0c09, 0x87b0, 1, 0)     // 18. nat origin lat geokey
+        todoGeoTag(0x0c0a, 0x87b0, 1, 3)     // 19. false easting geokey
+        todoGeoTag(0x0c0b, 0x87b0, 1, 4)     // 20. false northing geokey
+        todoGeoTag(0x0c14, 0x87b0, 1, 2)     // 21. scale at nat origin geokey
 
       // 19. geotiff double params (tag only needed when esriCompat is true)
       writeTag(0x87b0, Const.float64, 8, dataOffset)
@@ -385,16 +411,16 @@ class Encoder(dos: DataOutputStream, raster: Tile, re: RasterExtent, val setting
       todoDouble(6378137.0) // ellipsoid
       todoDouble(6378137.0) // semi major axis
       todoDouble(0.0)       // prime meridian
-      
+
       // 20. esri citation junk (tag is only needed when esriCompat is true)
       writeString(0x87b1, "PCS Name = WGS_1984_Web_Mercator|GCS Name = GCS_WGS_1984_Major_Auxiliary_Sphere|Datum = WGS_1984_Major_Auxiliary_Sphere|Ellipsoid = WGS_1984_Major_Auxiliary_Sphere|Primem = Greenwich||")
 
     } else {
       // GDAL only needs these 4 GeoTags
       todoGeoTag(0x0001, 1, 2, numGeoTags) // 1. geotif 1.2, N more tags
-      todoGeoTag(0x0400, 0, 1, 1)          // 2. projected data (1)
-      todoGeoTag(0x0401, 0, 1, 1)          // 3. area data (1)
-      todoGeoTag(0x0c00, 0, 1, 3857)       // 4. gt projected cs type (3857)
+        todoGeoTag(0x0400, 0, 1, 1)          // 2. projected data (1)
+        todoGeoTag(0x0401, 0, 1, 1)          // 3. area data (1)
+        todoGeoTag(0x0c00, 0, 1, 3857)       // 4. gt projected cs type (3857)
     }
 
     // 21. nodata as string (#19 if esriCompat is false)
@@ -408,10 +434,17 @@ class Encoder(dos: DataOutputStream, raster: Tile, re: RasterExtent, val setting
 
     dos.flush()
   }
+
+  private def setCRSParameters(crs: CRS) =  {
+    val proj4String = crs.toProj4String
+
+    val ellipsoid =
+  }
+
 }
 
 /**
-  * The Encoder object provides several useful static methods for encoding 
+  * The Encoder object provides several useful static methods for encoding
   * raster data, which create Encoder instances on demand.
   */
 object Encoder {
@@ -419,22 +452,31 @@ object Encoder {
   /**
     * Encode raster as GeoTIFF and return an array of bytes.
     */
-  def writeBytes(raster: Tile, rasterExtent: RasterExtent, settings: Settings) = {
+  def writeBytes(
+    raster: Tile,
+    rasterExtent: RasterExtent,
+    crs: CRS,
+    settings: Settings): Array[Byte] = {
     val baos = new ByteArrayOutputStream()
     val dos = new DataOutputStream(baos)
-    val encoder = new Encoder(dos, raster, rasterExtent, settings)
-    encoder.write()
+    val encoder = new Encoder(dos, raster, rasterExtent, crs, settings)
+    encoder.write
     baos.toByteArray
   }
 
   /**
     * Encode raster as GeoTIFF and write the data to the given path.
     */
-  def writePath(path: String, raster: Tile, rasterExtent: RasterExtent, settings: Settings) {
+  def writePath(
+    path: String,
+    raster: Tile,
+    rasterExtent: RasterExtent,
+    crs: CRS,
+    settings: Settings) {
     val fos = new FileOutputStream(new File(path))
     val dos = new DataOutputStream(fos)
-    val encoder = new Encoder(dos, raster, rasterExtent, settings)
-    encoder.write()
-    fos.close()
+    val encoder = new Encoder(dos, raster, rasterExtent, crs, settings)
+    encoder.write
+    fos.close
   }
 }

@@ -79,6 +79,7 @@ object CommonPublicValues {
 
   val UndefinedCPV = 0
   val UserDefinedCPV = 32767
+
 }
 
 case class ConfigKeys(

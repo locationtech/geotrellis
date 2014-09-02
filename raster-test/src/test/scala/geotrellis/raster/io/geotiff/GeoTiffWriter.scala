@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,7 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
+import geotrellis.proj4.CRS
 
 import geotrellis.testkit._
 
@@ -28,8 +29,9 @@ class GeoTiffSpec extends FunSpec with TestEngine with Matchers {
     it ("should write floating point rasters") {
       val e = Extent(100.0, 400.0, 120.0, 420.0)
       val tile = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
- 
-      GeoTiffWriter.write("/tmp/float.tif", tile, e)
+      val crs: CRS = null // TODO: use this
+
+      GeoTiffWriter.write("/tmp/float.tif", tile, e, crs)
     }
   }
 }
