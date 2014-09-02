@@ -27,7 +27,7 @@ import scala.slick.driver.PostgresDriver
 
 import util._
 
-class PostgisSpec extends FlatSpec with ShouldMatchers {
+class PostgisSpec extends FlatSpec with ShouldMatchers with TestDatabase {
   val driver = PostgresDriver
   import driver.simple._
   //import support of Subclasses of Geometry
@@ -51,16 +51,6 @@ class PostgisSpec extends FlatSpec with ShouldMatchers {
     def * = (id, name, geom)
   }
   val CityTable = TableQuery[City]
-
-  val pguser = scala.util.Properties.envOrElse("PGUSER","postgres")
-  val pgpass = scala.util.Properties.envOrElse("PGPASS","postgres")
-  val pgdb = scala.util.Properties.envOrElse("PGDB","chicago_gtfs")
-  val pghost = scala.util.Properties.envOrElse("PGHOST","localhost:5432")
-
-val db = Database.forURL("jdbc:postgresql://" + pghost + "/" + pgdb,
-                           driver="org.postgresql.Driver",
-                           user=pguser,
-                           password=pgpass)
 
   "Environment" should "be sane" in {
     db withSession { implicit s =>
@@ -238,7 +228,7 @@ val db = Database.forURL("jdbc:postgresql://" + pghost + "/" + pgdb,
 
       q2.list should equal (List("washington","paris"))
 
-      OptCity.ddl.drop
+//      OptCity.ddl.drop
     }
   }
 

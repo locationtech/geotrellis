@@ -323,7 +323,7 @@ trait PostGisExtensions {
     def isCollection[R](implicit om: o#to[Boolean, R]) = {
         om.column(GeomLibrary.IsCollection, n)
       }
-    def isEmpty[R](implicit om: o#to[Boolean, R]) = {
+    def isGeometryEmpty[R](implicit om: o#to[Boolean, R]) = {
         om.column(GeomLibrary.IsEmpty, n)
       }
     def isRing[R](implicit om: o#to[Boolean, R]) = {

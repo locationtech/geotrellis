@@ -94,14 +94,15 @@ class PostGisSupport(override val driver: JdbcDriver) extends PostGisExtensions 
     def sqlType: Int = java.sql.Types.OTHER
 
     def setValue(v: T, p: PreparedStatement, idx: Int) = p.setBytes(idx, WKB.write(v))
-    def getValue(r: ResultSet, idx: Int) = fromLiteral(r.getString(idx))
+
     def updateValue(v: T, r: ResultSet, idx: Int) = r.updateBytes(idx, WKB.write(v))
 
-    // def setOption(v: Option[T], p: PositionedParameters) = if (v.isDefined) setValue(v.get, p) else p.setNull(sqlType)
-
-    // def nextValue(r: PositionedResult): T = r.nextStringOption().map(fromLiteral[T]).getOrElse(zero)
-
-    // def updateValue(v: T, r: PositionedResult) = r.updateBytes(WKB.write(v))
+    def getValue(r: ResultSet, idx: Int): T = {
+      val s = r.getString(idx)
+      (if(r.wasNull) None else Some(s))
+        .map(fromLiteral[T](_))
+        .getOrElse(zero)
+    }
   }
 }
 
