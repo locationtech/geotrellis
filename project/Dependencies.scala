@@ -64,6 +64,6 @@ object Dependencies {
   val jcommander    = "com.beust"       % "jcommander"    % "1.23"
   val reflections   = "org.reflections" % "reflections"  % "0.9.5"
 
-  val slick         = "com.typesafe.slick" %% "slick"      % "2.0.1"
+  val slick         = "com.typesafe.slick" %% "slick"      % "2.1.0"
   val postgresql    = "postgresql"         % "postgresql"  % "9.1-901.jdbc4"
 }
