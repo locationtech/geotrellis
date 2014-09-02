@@ -87,7 +87,7 @@ trait LocalTileComparatorOp extends Serializable {
 
     cfor(0)(_ < r1.cols, _ + 1) { col =>
       cfor(0)(_ < r1.rows, _ + 1) { row =>
-        if (r1.cellType.isFloatingPoint) {
+        if (r1.cellType.isFloatingPoint || r2.cellType.isFloatingPoint) {
           tile.set(col, row, if (compare(r1.getDouble(col, row), r2.getDouble(col, row))) 1 else 0)
         } else {
           tile.set(col, row, if (compare(r1.get(col, row), r2.get(col, row))) 1 else 0)
