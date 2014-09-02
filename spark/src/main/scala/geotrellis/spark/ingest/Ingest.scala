@@ -33,10 +33,14 @@ import org.apache.spark.broadcast.Broadcast
 
 import spire.syntax.cfor._
 
-object Ingest { def apply(sc: SparkContext): Ingest = new Ingest(sc) }
+object Ingest {
+  type Sink = (RDD[TmsTile], LayerMetaData)=>Unit
+
+  def apply(sc: SparkContext): Ingest = new Ingest(sc)
+}
 
 class Ingest(sc: SparkContext) {
-  type Sink = (RDD[TmsTile], LayerMetaData)=>Unit
+  import Ingest.Sink
 
   // TODO: Read source CRS from Source
   def reproject(sourceCRS: CRS, destCRS: CRS): RDD[(Extent, Tile)] => RDD[(Extent, Tile)] =
