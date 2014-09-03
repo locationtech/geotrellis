@@ -354,26 +354,8 @@ class GeoTiffCSParser(directory: ImageDirectory) {
       (Some(9807), Some(projectionParameters))
     } else (None, None)
 
-  private def epsgProjMethodToCTProjMethod(epsg: Int) = epsg match {
-    case 9801 => CT_LambertConfConic_1SP
-    case 9802 | 9803 => CT_LambertConfConic_2SP
-    case 9804 | 9805 | 9841 | 1024 => CT_Mercator
-    case 9806 => CT_CassiniSoldner
-    case 9807 => CT_TransverseMercator
-    case 9808 => CT_TransvMercator_SouthOriented
-    case 9809 => CT_ObliqueStereographic
-    case 9810 | 9829 => CT_PolarStereographic
-    case 9811 => CT_NewZealandMapGrid
-    case 9812 => CT_ObliqueMercator
-    case 9813 => CT_ObliqueMercator_Laborde
-    case 9814 => CT_ObliqueMercator_Rosenmund
-    case 9815 => CT_HotineObliqueMercatorAzimuthCenter
-    case 9816 => UserDefinedCPV
-    case 9820 | 1027 => CT_LambertAzimEqualArea
-    case 9822 => CT_AlbersEqualArea
-    case 9834 => CT_CylindricalEqualArea
-    case _ => epsg
-  }
+  private def epsgProjMethodToCTProjMethod(epsg: Int) =
+    projMethodToCTProjMethodMap.getOrElse(epsg, epsg)
 
   private def setGTParameterIdentities(ctProjection: Int,
     projParms: Array[(Int, Double)]) = ctProjection match {

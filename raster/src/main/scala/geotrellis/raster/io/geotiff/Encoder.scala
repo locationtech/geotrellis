@@ -162,7 +162,7 @@ class Encoder(
     todoShort(offset)
   }
 
-  def todoGeoKey(tag: Int, value: Int) {
+  def todoGeoKeyInt(tag: Int, value: Int) {
     todoShort(tag)
     todoShort(0)
     todoShort(1)
@@ -171,7 +171,7 @@ class Encoder(
 
   private var doubleIndex = 0
 
-  def todoGeoKey(tag: Int, value: Double) {
+  def todoGeoKeyDouble(tag: Int, value: Double) {
     todoShort(tag)
     todoShort(0)
     todoShort(1)
@@ -437,8 +437,8 @@ class Encoder(
 
   private def setCRSParameters(crs: CRS) =  {
     val proj4String = crs.toProj4String
+    val parser = Proj4StringParser(proj4String)
 
-    val ellipsoid =
   }
 
 }
