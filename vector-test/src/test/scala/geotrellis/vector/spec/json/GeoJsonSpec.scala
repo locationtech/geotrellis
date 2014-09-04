@@ -47,6 +47,27 @@ class GeoJsonSpec extends FlatSpec with Matchers {
     points.size should be (2)
   }
 
+  it should "parse string to points and back again" in {
+    val json="""{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2674010.3642432094,264342.94293908775]}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2714118.684319839,263231.3878492862]}}]}"""
+
+    val points = json.parseGeoJson[JsonFeatureCollection].getAllPoints.sortBy(_.x).toSeq
+
+    points.toGeoJson.parseGeoJson[JsonFeatureCollection].getAllPoints.sortBy(_.x).toSeq should be (points)
+  }
+
+  it should "parse string to point features and back again" in {
+    case class DataBox(data: Int)
+
+    implicit val boxFormat = jsonFormat1(DataBox)
+
+    val json="""{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2674010.3642432094,264342.94293908775]},"properties":{"data":291}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2714118.684319839,263231.3878492862]},"properties":{"data":1273}}]}"""
+
+    val points = json.parseGeoJson[JsonFeatureCollection].getAllPointFeatures[DataBox].sortBy(_.data.data).toSeq
+
+    points.toGeoJson.parseGeoJson[JsonFeatureCollection].getAllPointFeatures[DataBox].sortBy(_.data.data).toSeq should be (points)
+  }
+
+
   it should "fail when you ask for the wrong feature" in {
     val json = """{"type":"Feature","geometry":{"type":"Point","coordinates":[1.0,1.0]},"properties":"Data"}"""
     val expected = PointFeature(Point(1,1), "Data")
