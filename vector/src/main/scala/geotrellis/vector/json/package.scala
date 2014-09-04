@@ -11,7 +11,7 @@ package object json extends GeoJsonSupport with SprayJsonSupport {
     }
   }
 
-  implicit class FeaturesToGeoJson[D: JsonFormat](features: Traversable[PointFeature[D]]) {
+  implicit class FeaturesToGeoJson[D: JsonFormat](features: Traversable[Feature[D]]) {
     def toGeoJson: String = {
       JsonFeatureCollection(features).toJson.compactPrint
     }
