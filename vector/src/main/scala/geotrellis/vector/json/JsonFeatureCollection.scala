@@ -24,7 +24,7 @@ import DefaultJsonProtocol._
  * It aggregates feature objects with data member still encoded in json
  */
 class JsonFeatureCollection(features: List[JsValue] = Nil) {
-  var buffer = features
+  private var buffer = features
 
   //-- Used for Serialization
   def add[D: JsonWriter](feature: Feature[D]) =
@@ -35,6 +35,15 @@ class JsonFeatureCollection(features: List[JsValue] = Nil) {
     features.foreach{ f => buffer = writeFeatureJson[D](f) :: buffer }
 
   def ++=[D: JsonWriter](features: Seq[Feature[D]]) = addAll(features)
+
+  def add(geometry: Geometry) =
+    buffer = geometry.toJson :: buffer
+  def +=(geometry: Geometry) = add(geometry)
+
+  def addAll(geometries: Seq[Geometry]) =
+    geometries.foreach(add(_))
+
+  def ++=(geometries: Seq[Geometry]) = addAll(geometries)
 
   def toJson: JsValue =
     JsObject(
@@ -87,6 +96,12 @@ object JsonFeatureCollection{
   def apply[D: JsonWriter](features: Traversable[Feature[D]]) = {
     val fc = new JsonFeatureCollection()
     fc ++= features.toList
+    fc
+  }
+
+  def apply(geometries: Traversable[Geometry]) = {
+    val fc = new JsonFeatureCollection()
+    fc ++= geometries.toList
     fc
   }
 }
