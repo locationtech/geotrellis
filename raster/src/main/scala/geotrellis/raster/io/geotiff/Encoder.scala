@@ -162,18 +162,11 @@ class Encoder(
     todoShort(offset)
   }
 
-  def todoGeoKeyInt(tag: Int, value: Int) {
-    todoShort(tag)
-    todoShort(0)
-    todoShort(1)
-    todoShort(value)
-  }
-
   private var doubleIndex = 0
 
-  def todoGeoKeyDouble(tag: Int, value: Double) {
+  def todoGeoTagDouble(tag: Int, value: Double) {
     todoShort(tag)
-    todoShort(0)
+    todoShort(0x87b0)
     todoShort(1)
     todoShort(doubleIndex)
 
@@ -435,10 +428,17 @@ class Encoder(
     dos.flush()
   }
 
-  private def setCRSParameters(crs: CRS) =  {
+  private def writeGeoKeyDirectory(crs: CRS) {
     val proj4String = crs.toProj4String
     val parser = Proj4StringParser(proj4String)
+    val (gkis, ds) = parser.parse
 
+    writeTag(0x87af, Const.uint16, gkis.size * 4, dataOffset)
+
+    for ((key, value) <- gkis) todoGeoTag(key, 0, 1, value)
+
+    writeTag(0x87b0, Const.float64, ds.size, dataOffset)
+    ds.foreach(todoDouble(_))
   }
 
 }

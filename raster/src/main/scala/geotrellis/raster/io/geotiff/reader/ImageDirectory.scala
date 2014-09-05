@@ -29,6 +29,7 @@ import geotrellis.raster.io.geotiff.reader.utils.ParseUtils._
 import geotrellis.raster.io.geotiff.reader.CommonPublicValues._
 
 import geotrellis.vector.Extent
+import geotrellis.proj4.CRS
 
 import scala.collection.immutable.{HashMap, Map}
 
@@ -364,7 +365,6 @@ case class ImageDirectory(
     case None => this |-> samplesPerPixelLens get
   }
 
-  // TODO: Isn't this just row size? Rows need to all be the same length.
   def imageSegmentByteSize(index: Option[Int] = None): Long =
     (imageSegmentBitsSize(index) + 7) / 8
 
