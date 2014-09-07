@@ -556,6 +556,11 @@ case class ImageDirectory(
 
   lazy val proj4String: Option[String] = GeoTiffCSParser(this).getProj4String
 
+  lazy val crs: Option[CRS] = proj4String match {
+    case Some(s) => Some(CRS.fromString(s))
+    case None => None
+  }
+
 }
 
 object ImageDirectoryLenses {

@@ -32,6 +32,8 @@ import geotrellis.raster.io.geotiff.reader.ProjectedLinearUnits._
 
 object Proj4StringParser {
 
+  val GeoTiffDoubleTag = 0x87b0
+
   def apply(proj4String: String): Proj4StringParser =
     new Proj4StringParser(proj4String)
 
@@ -81,9 +83,12 @@ class Proj4StringParser(val proj4String: String) {
 
   // This method returns a tuple of the short geokeys and the double geokeys
   // to be written, sorted.
-  lazy val parse: (List[(Int, Int)], List[Double]) = {
+  lazy val parse: (List[(Int, Int, Int, Int)], List[Double]) = {
     val geoKeysIntBuffer = ListBuffer[(Int, Int)]()
     val doublesBuffer = ListBuffer[(Int, Double)]()
+
+    // For the raster type is pixel area
+    geoKeysIntBuffer ++= List((GTRasterTypeGeoKey, 1))
 
     val (projPropsGeoKeysInt, projPropsDoubles) = projProps
     geoKeysIntBuffer ++= projPropsGeoKeysInt
@@ -102,10 +107,12 @@ class Proj4StringParser(val proj4String: String) {
     doublesBuffer ++= linearUnitsDoubles
 
     val doubles = doublesBuffer.toList.sortBy(_._1)
-    val geoKeysInt = (geoKeysIntBuffer.toList ++
-      doubles.zipWithIndex.map(x => (x._1._1, x._2))).sortBy(_._1)
+    val geoKeysInt = geoKeysIntBuffer.toList.map(x => (x._1, 0, 1, x._2))
+    val geoKeys = (geoKeysInt ++
+      doubles.zipWithIndex.map(x => (x._1._1, GeoTiffDoubleTag, 1, x._2))).sortBy(_._1)
 
-    (geoKeysInt, doubles.map(_._2))
+
+    (geoKeys, doubles.map(_._2))
   }
 
   //TODO: Fix more of these.
@@ -123,12 +130,10 @@ class Proj4StringParser(val proj4String: String) {
   }
 
   private lazy val tmercProps = {
-    val pcKey = reversedProjMethodToCTProjMethodMap(CT_TransverseMercator)
-
     val geoKeysInt = List(
       (GTModelTypeGeoKey, ModelTypeProjected),
       (ProjectedCSTypeGeoKey, UserDefinedCPV),
-      (ProjCoordTransGeoKey, pcKey)
+      (ProjCoordTransGeoKey, CT_TransverseMercator)
     )
 
     val doubles = List(
@@ -143,14 +148,13 @@ class Proj4StringParser(val proj4String: String) {
   }
 
   private lazy val utmProps = {
-    val pcKey = reversedProjMethodToCTProjMethodMap(CT_TransverseMercator)
     val zone = getInt("zone")
     val south = proj4Map.contains("south")
 
     val geoKeysInt = List(
       (GTModelTypeGeoKey, ModelTypeProjected),
       (ProjectedCSTypeGeoKey, UserDefinedCPV),
-      (ProjCoordTransGeoKey, pcKey)
+      (ProjCoordTransGeoKey, CT_TransverseMercator)
     )
 
     val doubles = List(
@@ -165,7 +169,6 @@ class Proj4StringParser(val proj4String: String) {
   }
 
   private lazy val lccProps = {
-    val pcKey = reversedProjMethodToCTProjMethodMap(CT_LambertConfConic_1SP)
     val lat0 = getDouble("lat_0")
     val lat1 = getDouble("lat_1")
 
@@ -173,7 +176,7 @@ class Proj4StringParser(val proj4String: String) {
       (GTModelTypeGeoKey, ModelTypeProjected),
       (ProjectedCSTypeGeoKey, UserDefinedCPV),
       (ProjectionGeoKey, UserDefinedCPV),
-      (ProjCoordTransGeoKey, pcKey)
+      (ProjCoordTransGeoKey, CT_LambertConfConic_2SP)
     )
 
     val doublesLB = ListBuffer[(Int, Double)]()
@@ -197,16 +200,14 @@ class Proj4StringParser(val proj4String: String) {
 
   private lazy val gcsOrDatumProps = if (gcs != UserDefinedCPV) {
     (List((GeogTypeGeoKey, gcs)), Nil)
-  } else if (datum != UserDefinedCPV) {
+  } else {
     var geoKeysInt = List(
       (GeogTypeGeoKey, UserDefinedCPV),
       (GeogGeodeticDatumGeoKey, datum)
     )
 
     (geoKeysInt, Nil)
-  } else throw new MalformedProj4Exception(
-    s"Neither datum or GCS specified for proj4 string $proj4String"
-  )
+  }
 
   private lazy val ellipsoidProps = if (gcs == UserDefinedCPV) {
     val geoKeysInt = List((GeogEllipsoidGeoKey, ellipsoid))
