@@ -105,7 +105,7 @@ class Encoder(
   // The addres we expect to see IFD information at.
   final def ifdOffset = imageStartOffset + img.size
 
-  final def numTags = 19
+  final def numTags = 16
 
   // The current address we will write (non-image) "data blocks" to.
   final def dataOffset = ifdOffset + 2 + (numTags * 12) + 4 + baos.size
@@ -248,10 +248,10 @@ class Encoder(
     // number of directory entries
     writeShort(numTags)
     // 1. image width (cols)
-    writeTag(0x0100, Const.uint16, 1, cols)
+    writeTag(0x0100, Const.uint32, 1, cols)
 
     // 2. image length (rows)
-    writeTag(0x0101, Const.uint16, 1, rows)
+    writeTag(0x0101, Const.uint32, 1, rows)
 
     // 3. bits per sample
     writeTag(0x0102, Const.uint16, 1, bitsPerSample)
@@ -302,32 +302,19 @@ class Encoder(
       case tpl => sys.error("unsupported: $tpl")
     }
 
-    // 10. y resolution, 1 pixel per unit
-    writeTag(0x011a, Const.rational, 1, dataOffset)
-    todoInt(1)
-    todoInt(1)
-
-    // 11. x resolution, 1 pixel per unit
-    writeTag(0x011b, Const.rational, 1, dataOffset)
-    todoInt(1)
-    todoInt(1)
-
-    // 12. single image plane (1)
+    // 10. single image plane (1)
     writeTag(0x011c, Const.uint16, 1, 1)
 
-    // 13. resolution unit is undefined (1)
-    writeTag(0x0128, Const.uint16, 1, 1)
-
-    // 14. sample format (1=unsigned, 2=signed, 3=floating point)
+    // 11. sample format (1=unsigned, 2=signed, 3=floating point)
     writeTag(0x0153, Const.uint16, 1, sampleFormat)
 
-    // 15. model pixel scale tag (points to doubles sX, sY, sZ with sZ = 0)
+    // 12. model pixel scale tag (points to doubles sX, sY, sZ with sZ = 0)
     writeTag(0x830e, Const.float64, 3, dataOffset)
     todoDouble(re.cellwidth)  // sx
     todoDouble(re.cellheight) // sy
     todoDouble(0.0)           // sz = 0.0
 
-    // 16. model tie point (doubles I, J, K (grid) and X, Y, Z (geog) with K = Z = 0.0)
+    // 13. model tie point (doubles I, J, K (grid) and X, Y, Z (geog) with K = Z = 0.0)
     writeTag(0x8482, Const.float64, 6, dataOffset)
     todoDouble(0.0)    // i
     todoDouble(0.0)    // j
@@ -336,10 +323,10 @@ class Encoder(
     todoDouble(e.ymax) // y
     todoDouble(0.0)    // z = 0.0
 
-    // 17 - 18. GeoDirectory and Doubles
+    // 14 - 15. GeoDirectory and Doubles
     writeGeoKeyDirectory(crs)
 
-    // 19. nodata as string
+    // 16. nodata as string
     writeString(0xa481, settings.nodataString)
 
     // no more ifd entries

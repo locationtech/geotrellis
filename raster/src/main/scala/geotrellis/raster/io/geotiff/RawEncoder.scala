@@ -29,7 +29,7 @@ import scala.annotation.switch
 import scala.math.{ceil, min}
 
 object RawEncoder {
-  def render(encoder: Encoder) = RawEncoder(encoder).render()
+  def render(encoder: Encoder) = RawEncoder(encoder).render
 
   def apply(encoder: Encoder) = encoder.settings match {
     case Settings(IntSample, Floating, _, _) => new RawFloatEncoder(encoder)
@@ -89,7 +89,7 @@ abstract class RawEncoder(encoder: Encoder) {
 
   def handleCell(i: Int): Unit
 
-  def render(): (Array[Int], Array[Int]) = {
+  def render: (Array[Int], Array[Int]) = {
     var row = 0
 
     while (row < rows) {
