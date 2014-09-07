@@ -341,32 +341,6 @@ object CoordinateTransformTypes {
     9834 -> CT_CylindricalEqualArea
   )
 
-  val reversedProjMethodToCTProjMethodMap = HashMap[Int, Int](
-    CT_LambertConfConic_1SP -> 9801,
-    CT_LambertConfConic_2SP -> 9802,
-    CT_LambertConfConic_2SP -> 9803,
-    CT_Mercator -> 9804,
-    CT_Mercator -> 9805,
-    CT_Mercator -> 9841,
-    CT_Mercator -> 1024,
-    CT_CassiniSoldner -> 9806,
-    CT_TransverseMercator -> 9807,
-    CT_TransvMercator_SouthOriented -> 9808,
-    CT_ObliqueStereographic -> 9809,
-    CT_PolarStereographic -> 9810,
-    CT_PolarStereographic -> 9829,
-    CT_NewZealandMapGrid -> 9811,
-    CT_ObliqueMercator -> 9812,
-    CT_ObliqueMercator_Laborde -> 9813,
-    CT_ObliqueMercator_Rosenmund -> 9814,
-    CT_HotineObliqueMercatorAzimuthCenter -> 9815,
-    UserDefinedCPV -> 9816,
-    CT_LambertAzimEqualArea -> 9820,
-    CT_LambertAzimEqualArea -> 1027,
-    CT_AlbersEqualArea -> 9822,
-    CT_CylindricalEqualArea -> 9834
-  )
-
 }
 
 object EllipsoidTypes {

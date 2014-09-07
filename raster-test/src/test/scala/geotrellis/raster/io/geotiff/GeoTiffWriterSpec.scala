@@ -31,7 +31,7 @@ class GeoTiffWriterSpec extends FunSpec
     with TestEngine
     with GeoTiffTestUtils {
 
-  override def afterAll = purge
+  //override def afterAll = purge
 
   private val testProj4String =
     "+proj=lcc +lat_0=33.750000000 +lon_0=-79.000000000 +lat_1=36.166666667 +lat_2=34.333333333 +x_0=609601.220 +y_0=0.000 +ellps=GRS80 +units=m"
@@ -40,36 +40,26 @@ class GeoTiffWriterSpec extends FunSpec
 
   private val testCRS = CRS.fromString(testProj4String)
 
-  describe ("writing GeoTiffs without errors") {
+  describe ("writing GeoTiffs without errors and with correct tiles, crs and extent") {
 
-    it ("should write floating point rasters without errors") {
+    it ("should write floating point rasters correct") {
       val e = Extent(100.0, 400.0, 120.0, 420.0)
-      val tile = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
+      val r = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
       val crs = testCRS
 
+      //val path = "/Users/johanstenberg/Documents/programmering/geotrellis/geotrellis/raster-test/data/float.tif"
       val path = "/tmp/float.tif"
 
-      GeoTiffWriter.write(path, tile, e, crs)
-
-      addToPurge(path)
-    }
-
-  }
-
-  describe ("writing and then reading GeoTiffs, yielding same Proj4 Strings") {
-
-    it ("should write GeoTiff with testProj4String, and then reading would give same string") {
-      val e = Extent(100.0, 400.0, 120.0, 420.0)
-      val tile = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
-      val crs = testCRS
-
-      val path = "/tmp/float.tif"
-
-      GeoTiffWriter.write(path, tile, e, crs)
+      GeoTiffWriter.write(path, r, e, crs)
 
       addToPurge(path)
 
       val ifd = GeoTiffReader(path).read.imageDirectories.head
+
+      val (raster, extent) = ifd.toRaster
+
+      extent should equal (e)
+      raster should equal (r)
 
       val proj4String = ifd.proj4String getOrElse fail
 

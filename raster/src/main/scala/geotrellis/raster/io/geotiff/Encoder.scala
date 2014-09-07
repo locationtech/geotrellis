@@ -248,10 +248,10 @@ class Encoder(
     // number of directory entries
     writeShort(numTags)
     // 1. image width (cols)
-    writeTag(0x0100, Const.uint32, 1, cols)
+    writeTag(0x0100, Const.uint16, 1, cols)
 
     // 2. image length (rows)
-    writeTag(0x0101, Const.uint32, 1, rows)
+    writeTag(0x0101, Const.uint16, 1, rows)
 
     // 3. bits per sample
     writeTag(0x0102, Const.uint16, 1, bitsPerSample)
