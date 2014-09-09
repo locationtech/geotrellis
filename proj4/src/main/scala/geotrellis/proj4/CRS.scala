@@ -22,7 +22,7 @@ trait CRS extends Serializable {
   def equals(o: Any): Boolean =
     o match {
       case other: CRS => other.toProj4String == toProj4String
-      case _ => false 
+      case _ => false
     }
 }
 
@@ -31,16 +31,16 @@ object CRS {
 
   /**
    * Creates a [[CoordinateReferenceSystem]] (CRS) from a well-known name.
-   * CRS names are of the form: "<tt>authority:code</tt>", 
-   * with the components being: 
+   * CRS names are of the form: "<tt>authority:code</tt>",
+   * with the components being:
    * <ul>
    * <li><b><tt>authority</tt></b> is a code for a namespace supported by
-   * PROJ.4.  
-   * Currently supported values are 
-   * <tt>EPSG</tt>, 
-   * <tt>ESRI</tt>, 
-   * <tt>WORLD</tt>, 
-   * <tt>NA83</tt>, 
+   * PROJ.4.
+   * Currently supported values are
+   * <tt>EPSG</tt>,
+   * <tt>ESRI</tt>,
+   * <tt>WORLD</tt>,
+   * <tt>NA83</tt>,
    * <tt>NAD27</tt>.
    * If no authority is provided, the <tt>EPSG</tt> namespace is assumed.
    * <li><b><tt>code</tt></b> is the id of a coordinate system in the authority namespace.
@@ -53,7 +53,7 @@ object CRS {
    * @param name the name of a coordinate system, with optional authority prefix
    * @return the [[CoordinateReferenceSystem]] corresponding to the given name
    */
-  def fromName(name: String): CRS = 
+  def fromName(name: String): CRS =
     new CRS { val crs = crsFactory.createFromName(name) }
 
   /**

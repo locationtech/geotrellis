@@ -21,13 +21,13 @@ import monocle.syntax._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
 import geotrellis.raster.io.arg.ArgReader
+import geotrellis.raster.io.geotiff.GeoTiffTestUtils
 import geotrellis.testkit._
 
 import scala.io.{Source, Codec}
 
 import scala.collection.immutable.HashMap
 
-import java.io.File
 import java.util.BitSet
 import java.nio.ByteBuffer
 
@@ -36,24 +36,13 @@ import org.scalatest._
 class GeoTiffReaderSpec extends FunSpec
     with Matchers
     with BeforeAndAfterAll
-    with TestEngine {
-
-  val epsilon = 1e-9
-
-  var writtenFiles = Vector[String]()
-
-  def addToWrittenFiles(path: String) = synchronized {
-    writtenFiles = writtenFiles :+ path
-  }
-
-  override def afterAll() = writtenFiles foreach { path =>
-    val file = new File(path)
-    if (file.exists()) file.delete()
-  }
+    with TestEngine
+    with GeoTiffTestUtils {
 
   val argPath = "/tmp/"
   val filePathToTestData = "raster-test/data/"
 
+  override def afterAll = purge
 
   private def read(fileName: String): GeoTiff = {
     val filePath = filePathToTestData + fileName
@@ -72,8 +61,8 @@ class GeoTiffReaderSpec extends FunSpec
       val pathJson = corePath + ".json"
       ifd.writeRasterToArg(corePath, currentFileName)
 
-      addToWrittenFiles(pathArg)
-      addToWrittenFiles(pathJson)
+      addToPurge(pathArg)
+      addToPurge(pathJson)
     })
   }
 
@@ -497,27 +486,6 @@ class GeoTiffReaderSpec extends FunSpec
       compareValues(tiffProj4Map, correctProj4Map, "to_meter", true)
     }
 
-  }
-
-  private def proj4StringToMap(proj4String: String) = proj4String.dropWhile(_ == '+')
-    .split('+').map(_.trim)
-    .groupBy(_.takeWhile(_ != '='))
-    .map(x => (x._1 -> x._2(0)))
-    .map { case (a, b) => (a, b.split('=')(1)) }
-
-  private def compareValues(
-    firstMap: Map[String, String],
-    secondMap: Map[String, String],
-    key: String,
-    isDouble: Boolean,
-    eps: Double = epsilon) = firstMap.get(key) match {
-    case Some(str1) => secondMap.get(key) match {
-      case Some(str2) =>
-        if (isDouble) math.abs(str1.toDouble - str2.toDouble) should be <= eps
-        else str1 should equal (str2)
-      case None => fail
-    }
-    case None => fail
   }
 
 }
