@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 DigitalGlobe.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,37 +37,37 @@ import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Required
 
 /**
- * @author akini
- *
- * Export a raster as GeoTIFF either as a single tiff or tiff-per-tile.
- * The tiff-per-tile use case uses Spark to read the tiles
- *
- *
- * Export 	[--single <boolean>]
- * 			--inputraster <path-to-raster>
- *      	--output <path-to-dir-or-file>
- *       	[--sparkMaster <spark-master-ip>]
- *
- * Single tiff
- * Export --single true --inputraster file:///tmp/all-ones/10 --output /tmp/all-ones-export.tif
- *
- * tiff-per-tile
- * Export --inputraster file:///tmp/all-ones --zoom 10 --output /tmp/all-ones-export --sparkMaster local
- *
- * Constraints:
- *
- * --single <boolean> - this is either true or false (default) depending on whether the output needs
- * to be a single merged tiff or tiff-per-tile
- *
- * --inputraster <path-to-raster> - this can be either on hdfs (hdfs://) or local fs (file://) and is a fully
- * qualified path to the raster
- *
- * --output <path-to-dir-or-file> - this is a file in the case of a single tiff, and a directory in
- * the case of tiff-per-tile. Either way, the output would be on the local file system, and cannot have the 
- * "file://" scheme in it. 
- *
- *
- */
+  * @author akini
+  *
+  * Export a raster as GeoTIFF either as a single tiff or tiff-per-tile.
+  * The tiff-per-tile use case uses Spark to read the tiles
+  *
+  *
+  * Export      [--single <boolean>]
+  *                     --inputraster <path-to-raster>
+  *             --output <path-to-dir-or-file>
+  *             [--sparkMaster <spark-master-ip>]
+  *
+  * Single tiff
+  * Export --single true --inputraster file:///tmp/all-ones/10 --output /tmp/all-ones-export.tif
+  *
+  * tiff-per-tile
+  * Export --inputraster file:///tmp/all-ones --zoom 10 --output /tmp/all-ones-export --sparkMaster local
+  *
+  * Constraints:
+  *
+  * --single <boolean> - this is either true or false (default) depending on whether the output needs
+  * to be a single merged tiff or tiff-per-tile
+  *
+  * --inputraster <path-to-raster> - this can be either on hdfs (hdfs://) or local fs (file://) and is a fully
+  * qualified path to the raster
+  *
+  * --output <path-to-dir-or-file> - this is a file in the case of a single tiff, and a directory in
+  * the case of tiff-per-tile. Either way, the output would be on the local file system, and cannot have the
+  * "file://" scheme in it.
+  *
+  *
+  */
 class ExportArgs extends RasterArgs with SparkArgs with HadoopArgs {
   @Required var output: String = _
 
@@ -87,13 +87,13 @@ object Export extends ArgMain[ExportArgs] with Logging {
     val (rasterPath, output, metaData, hadoopConf) = extractFromArgs(args)
     // get extents and layout
     val gridBounds = metaData.gridBounds
-    val layout = 
+    val layout =
       TileLayout(gridBounds.width.toInt, gridBounds.height.toInt, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
 
     // open the reader
     val reader = RasterReader(rasterPath, hadoopConf)
 
-    // TMS tiles start from lower left corner whereas CompositeTile expects them to start from  
+    // TMS tiles start from lower left corner whereas CompositeTile expects them to start from
     // upper left, so we need to re-sort the array
     def compare(left: TmsTile, right: TmsTile): Boolean = {
       val (lx, ly) = metaData.transform.indexToGrid(left.id)
@@ -110,7 +110,7 @@ object Export extends ArgMain[ExportArgs] with Logging {
     reader.close()
 
     val tile = CompositeTile(tiles, layout).toArrayTile
-    GeoTiffWriter.write(s"${output}", tile, metaData.extent)
+    GeoTiffWriter.write(s"${output}", tile, metaData.extent, metaData.crs)
     logInfo(s"---------finished writing to file ${output}")
   }
 
@@ -129,9 +129,10 @@ object Export extends ArgMain[ExportArgs] with Logging {
 
       for (tmsTile <- rrdd) {
         val (tx, ty) = metaData.transform.indexToGrid(tmsTile.id)
-        val extent = 
+        val extent =
           metaData.transform.indexToMap(tmsTile.id)
-        GeoTiffWriter.write(s"${output}/tile-${tmsTile.id}.tif", tmsTile.tile, extent)
+        val crs = metaData.crs
+        GeoTiffWriter.write(s"${output}/tile-${tmsTile.id}.tif", tmsTile.tile, extent, crs)
         logInfo(s"---------tx: ${tx}, ty: ${ty} file: tile-${tmsTile.id}.tif")
       }
 
