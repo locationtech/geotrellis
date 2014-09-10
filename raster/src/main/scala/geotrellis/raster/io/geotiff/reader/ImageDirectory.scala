@@ -30,6 +30,7 @@ import geotrellis.raster.io.geotiff.reader.CommonPublicValues._
 
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
+import geotrellis.proj4.LatLng
 
 import scala.collection.immutable.{HashMap, Map}
 
@@ -435,7 +436,7 @@ case class ImageDirectory(
       case _ => throw new MalformedGeoTiffException("no bitsPerSample values!")
     }
 
-  def toRaster(): (ArrayTile, Extent) = {
+  def toRaster(): (ArrayTile, Extent, CRS) = {
     val cols = this |-> imageWidthLens get
     val rows = this |-> imageLengthLens get
 
@@ -447,7 +448,7 @@ case class ImageDirectory(
           ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows)
       }
 
-    (tile, extent)
+    (tile, extent, crs)
   }
 
   def writeRasterToArg(path: String, imageName: String): Unit = {
@@ -554,13 +555,14 @@ case class ImageDirectory(
   def setGDALNoData(input: String) =
     this |-> gdalInternalNoDataLens set (parseGDALNoDataString(input))
 
-  lazy val proj4String: Option[String] = GeoTiffCSParser(this).getProj4String
-
-  lazy val crs: Option[CRS] = proj4String match {
-    case Some(s) => Some(CRS.fromString(s))
-    case None => None
+  lazy val proj4String: String = GeoTiffCSParser(this).getProj4String match {
+    case Some(s) => s
+    case None => throw new MalformedGeoTiffException(
+      "Malformed geodata in GeoTiff."
+    )
   }
 
+  lazy val crs: CRS = CRS.fromString(proj4String)
 }
 
 object ImageDirectoryLenses {

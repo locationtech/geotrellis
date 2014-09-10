@@ -235,11 +235,11 @@ class GeoTiffCSParser(directory: ImageDirectory) {
     val optDatumName = optMapSystem match {
       case Some(mapSystem) if (mapSystem == MapSys_UTM_North
         || mapSystem == MapSys_UTM_South) => optDatum match {
-        case Some(GCS_NAD27) => Some("NAD27")
-        case Some(GCS_NAD83) => Some("NAD83")
-        case Some(GCS_WGS_72) => Some("WGS 72")
-        case Some(GCS_WGS_72BE) => Some("WGS 72BE")
-        case Some(GCS_WGS_84) => Some("WGS 84")
+        case Some(Datum_North_American_Datum_1927) => Some("NAD27")
+        case Some(Datum_North_American_Datum_1983) => Some("NAD83")
+        case Some(Datum_WGS72) => Some("WGS 72")
+        case Some(Datum_WGS72_Transit_Broadcast_Ephemeris) => Some("WGS 72BE")
+        case Some(Datum_WGS84) => Some("WGS 84")
         case _ => None
       }
       case _ => None
@@ -286,21 +286,29 @@ class GeoTiffCSParser(directory: ImageDirectory) {
   private def pcsToDatumZoneAndMapSystem(pcs: Int) = {
     var (optDatum, optMapSystem, optZone) =
       if (pcs >= PCS_NAD27_UTM_zone_3N && pcs <= PCS_NAD27_UTM_zone_22N)
-        (Some(GCS_NAD27), Some(MapSys_UTM_North), Some(pcs - PCS_NAD27_UTM_zone_3N + 3))
+        (
+          Some(Datum_North_American_Datum_1983),
+          Some(MapSys_UTM_North),
+          Some(pcs - PCS_NAD27_UTM_zone_3N + 3)
+        )
       else if (pcs >= PCS_NAD83_UTM_zone_3N && pcs <= PCS_NAD83_UTM_zone_23N)
-        (Some(GCS_NAD83), Some(MapSys_UTM_North), Some(pcs - PCS_NAD83_UTM_zone_3N + 3))
+        (
+          Some(Datum_North_American_Datum_1983),
+          Some(MapSys_UTM_North),
+          Some(pcs - PCS_NAD83_UTM_zone_3N + 3)
+        )
       else if (pcs >= PCS_WGS72_UTM_zone_1N && pcs <= PCS_WGS72_UTM_zone_60N)
-        (Some(GCS_WGS_72), Some(MapSys_UTM_North), Some(pcs - PCS_WGS72_UTM_zone_1N + 1))
+        (Some(Datum_WGS72), Some(MapSys_UTM_North), Some(pcs - PCS_WGS72_UTM_zone_1N + 1))
       else if (pcs >= PCS_WGS72_UTM_zone_1S && pcs <= PCS_WGS72_UTM_zone_60S)
-        (Some(GCS_WGS_72), Some(MapSys_UTM_South), Some(pcs - PCS_WGS72_UTM_zone_1S + 1))
+        (Some(Datum_WGS72), Some(MapSys_UTM_South), Some(pcs - PCS_WGS72_UTM_zone_1S + 1))
       else if (pcs >= PCS_WGS72BE_UTM_zone_1N && pcs <= PCS_WGS72BE_UTM_zone_60N)
-        (Some(GCS_WGS_72BE), Some(MapSys_UTM_North), Some(pcs - PCS_WGS72BE_UTM_zone_1N + 1))
+        (Some(Datum_WGS72_Transit_Broadcast_Ephemeris), Some(MapSys_UTM_North), Some(pcs - PCS_WGS72BE_UTM_zone_1N + 1))
       else if (pcs >= PCS_WGS72BE_UTM_zone_1S && pcs <= PCS_WGS72BE_UTM_zone_60S)
-        (Some(GCS_WGS_72BE), Some(MapSys_UTM_South), Some(pcs - PCS_WGS72BE_UTM_zone_1S + 1))
+        (Some(Datum_WGS72_Transit_Broadcast_Ephemeris), Some(MapSys_UTM_South), Some(pcs - PCS_WGS72BE_UTM_zone_1S + 1))
       else if (pcs >= PCS_WGS84_UTM_zone_1N && pcs <= PCS_WGS84_UTM_zone_60N)
-        (Some(GCS_WGS_84), Some(MapSys_UTM_North), Some(pcs - PCS_WGS84_UTM_zone_1N + 1))
+        (Some(Datum_WGS84), Some(MapSys_UTM_North), Some(pcs - PCS_WGS84_UTM_zone_1N + 1))
       else if (pcs >= PCS_WGS84_UTM_zone_1S && pcs <= PCS_WGS84_UTM_zone_60S)
-        (Some(GCS_WGS_84), Some(MapSys_UTM_South), Some(pcs - PCS_WGS84_UTM_zone_1S + 1))
+        (Some(Datum_WGS84), Some(MapSys_UTM_South), Some(pcs - PCS_WGS84_UTM_zone_1S + 1))
       else if (pcs >= PCS_SAD69_UTM_zone_18N && pcs <= PCS_SAD69_UTM_zone_22N)
         (Some(UserDefinedCPV), Some(MapSys_UTM_North), Some(pcs - PCS_SAD69_UTM_zone_18N + 18))
       else if (pcs >= PCS_SAD69_UTM_zone_17S && pcs <= PCS_SAD69_UTM_zone_25S)
@@ -312,11 +320,11 @@ class GeoTiffCSParser(directory: ImageDirectory) {
     if (newPCS <= 15900 && newPCS >= 10000) {
       if ((newPCS % 100) >= 30) {
         optMapSystem = Some(MapSys_State_Plane_83)
-        optDatum = Some(GCS_NAD83)
+        optDatum = Some(Datum_North_American_Datum_1983)
         optZone = Some(newPCS - 10000)
       } else {
         optMapSystem = Some(MapSys_State_Plane_27)
-        optDatum = Some(GCS_NAD27)
+        optDatum = Some(Datum_North_American_Datum_1927)
         optZone = Some(newPCS - 10000 - 30)
       }
     }
@@ -431,6 +439,7 @@ class GeoTiffCSParser(directory: ImageDirectory) {
       case GCS_NAD83 => Some(Datum_North_American_Datum_1983)
       case GCS_WGS_84 => Some(Datum_WGS84)
       case GCS_WGS_72 => Some(Datum_WGS72)
+      case GCS_WGS_72BE => Some(Datum_WGS72_Transit_Broadcast_Ephemeris)
       case _ => None
     }
 
@@ -874,7 +883,7 @@ class GeoTiffCSParser(directory: ImageDirectory) {
     }
 
     if (gtgp.model == ModelTypeGeographic)
-      proj4SB.append("+proj=latlng")
+      proj4SB.append("+proj=latlong")
     else if (gtgp.mapSystem == MapSys_UTM_North)
       proj4SB.append(s"+proj=utm +zone=${gtgp.zone}")
     else if (gtgp.ctProjection == CT_TransverseMercator) {
@@ -1089,7 +1098,17 @@ class GeoTiffCSParser(directory: ImageDirectory) {
       )
     }
 
-    if (gtgp.ellipsoid == Ellipse_WGS_84)
+    if (gtgp.datum == Datum_WGS84)
+      proj4SB.append(" +datum=WGS84")
+    else if (gtgp.datum == Datum_WGS72_Transit_Broadcast_Ephemeris)
+      proj4SB.append(" +datum=WGS72BE")
+    else if (gtgp.datum == Datum_WGS72)
+      proj4SB.append(" +datum=WGS72")
+    else if (gtgp.datum == Datum_North_American_Datum_1927)
+      proj4SB.append(" +datum=NAD27")
+    else if (gtgp.datum == Datum_North_American_Datum_1983)
+      proj4SB.append(" +datum=NAD83")
+    else if (gtgp.ellipsoid == Ellipse_WGS_84)
       proj4SB.append(" +ellps=WGS84")
     else if (gtgp.ellipsoid == Ellipse_Clarke_1866)
       proj4SB.append(" +ellps=clrk66")

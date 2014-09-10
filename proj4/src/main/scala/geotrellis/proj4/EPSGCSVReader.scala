@@ -16,7 +16,7 @@
 
 package geotrellis.proj4
 
-import com.github.tototoshi.csv._
+import au.com.bytecode.opencsv.CSVReader
 
 import java.io.File
 
@@ -77,7 +77,8 @@ class EPSGCSVReader {
     fileName: String,
     code: Int,
     codeFlag: String): Option[Map[String, String]] = {
-    val reader = CSVReader.open(new File(s"proj4/src/main/resources/$fileName"))
+    val reader =
+      new CSVReader(new FileReader(s"proj4/src/main/resources/$fileName"))
     val maps = reader.allWithHeaders
 
     maps.filter(_.get(codeFlag) == Some(code.toString)).headOption
