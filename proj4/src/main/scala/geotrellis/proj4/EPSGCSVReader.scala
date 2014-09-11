@@ -18,7 +18,10 @@ package geotrellis.proj4
 
 import au.com.bytecode.opencsv.CSVReader
 
-import java.io.File
+import scala.collection.JavaConverters._
+import scala.collection.mutable.ListBuffer
+
+import java.io.FileReader
 
 object CSVFileConstants {
 
@@ -26,6 +29,7 @@ object CSVFileConstants {
   val CoordRefSysName        = "COORD_REF_SYS_NAME"
   val UOMCode                = "UOM_CODE"
   val CoordOpCode            = "COORD_OP_CODE"
+  val CoordOpMethodCode      = "COORD_OP_METHOD_CODE"
   val SourceGeoCRSCode       = "SOURCE_GEOGCRS_CODE"
   val DatumCode              = "DATUM_CODE"
   val PrimeMeridianCode      = "PRIME_MERIDIAN_CODE"
@@ -73,15 +77,28 @@ class EPSGCSVReader {
     else getValues("pcs.csv", code, CoordRefSysCode)
   }
 
+  def getProjOpWParmValues(code: Int): Option[Map[String, String]] =
+    getValues("projop_wparm.csv", code, CoordOpCode)
+
   private def getValues(
     fileName: String,
     code: Int,
     codeFlag: String): Option[Map[String, String]] = {
     val reader =
       new CSVReader(new FileReader(s"proj4/src/main/resources/$fileName"))
-    val maps = reader.allWithHeaders
 
-    maps.filter(_.get(codeFlag) == Some(code.toString)).headOption
+    val headers = reader.readNext.map(_.toUpperCase)
+    val listBuffer = ListBuffer[Map[String, String]]()
+
+    var input: Array[String] = reader.readNext
+    var resMap: Option[Map[String, String]] = None
+    while (input != null && resMap == None) {
+      val map = (headers zip input).toMap
+      if (map.get(codeFlag) == Some(code.toString)) resMap = Some(map)
+      else input = reader.readNext
+    }
+
+    resMap
   }
 
 }

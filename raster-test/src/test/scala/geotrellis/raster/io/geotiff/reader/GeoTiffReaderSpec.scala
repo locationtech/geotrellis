@@ -396,10 +396,7 @@ class GeoTiffReaderSpec extends FunSpec
     it ("should read bilevel.tif CS correctly") {
       val tiff = read("geotiff-reader-tiffs/bilevel.tif")
 
-      println("LOOK")
       val crs = tiff.imageDirectories.head.crs
-
-      println(crs.toProj4String)
 
       val correctProj4String = "+proj=tmerc +lat_0=0 +lon_0=-3.45233333 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +units=m +no_defs"
 

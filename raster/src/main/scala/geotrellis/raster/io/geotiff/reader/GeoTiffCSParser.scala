@@ -40,7 +40,6 @@ import geotrellis.proj4.EPSGCSVReader
 import geotrellis.proj4.CSVFileConstants._
 
 case class GeoTiffGDALParameters(
-  var defNSet: Int = 1,
   var model: Int = UserDefinedCPV,
   var pcs: Int = UserDefinedCPV,
   var gcs: Int = UserDefinedCPV,
@@ -97,12 +96,10 @@ class GeoTiffCSParser(directory: ImageDirectory) {
       }
       case _ => UserDefinedCPV
     }
-
     if (gtgp.pcs != UserDefinedCPV && gtgp.projCode == UserDefinedCPV) {
       val (optDatum, optZone, optMapSystem) = pcsToDatumZoneAndMapSystem(gtgp.pcs)
 
       gtgp.zone = optZone.getOrElse(gtgp.zone)
-
 
       if (!optMapSystem.isEmpty) {
         gtgp.projCode = mapSystemToProjection(optMapSystem.get, gtgp.zone)
@@ -159,6 +156,15 @@ class GeoTiffCSParser(directory: ImageDirectory) {
 
       gtgp.semiMajor = optSemiMajor getOrElse gtgp.semiMajor
       gtgp.semiMinor = optSemiMinor getOrElse gtgp.semiMinor
+    } else {
+      gtgp.ellipsoid =
+        (geoKeyDirectory |-> geogCitationLens get)
+          .map(x => x.filter(_.contains("Ellipsoid"))).map(_.headOption) match {
+          case Some(Some(s)) =>
+            if (s.contains("International")) 7022 // same code for all "international" ellipsoids.
+            else UserDefinedCPV
+          case _ => UserDefinedCPV
+        }
     }
 
     gtgp.semiMajor = (geoKeyDirectory |-> geogSemiMajorAxisLens get) getOrElse gtgp.semiMajor
@@ -194,13 +200,9 @@ class GeoTiffCSParser(directory: ImageDirectory) {
     } else gtgp.lengthInMeters =
       (geoKeyDirectory |-> projLinearUnitSizeLens get) getOrElse gtgp.lengthInMeters
 
-    val projCoordTrans = (geoKeyDirectory |-> projCoordTransLens get)
+    gtgp.ctProjection = (geoKeyDirectory |-> projCoordTransLens get) getOrElse gtgp.ctProjection
 
-    if (projCoordTrans != -1) {
-      gtgp.ctProjection = projCoordTrans
-
-      setProjectionParameters(gtgp)
-    }
+    if (gtgp.ctProjection != UserDefinedCPV) setProjectionParameters(gtgp)
 
     getMapSystemAndZone(gtgp.projCode) match {
       case Some((mapSystem, zone)) => {
@@ -235,11 +237,11 @@ class GeoTiffCSParser(directory: ImageDirectory) {
     val optDatumName = optMapSystem match {
       case Some(mapSystem) if (mapSystem == MapSys_UTM_North
         || mapSystem == MapSys_UTM_South) => optDatum match {
-        case Some(Datum_North_American_Datum_1927) => Some("NAD27")
-        case Some(Datum_North_American_Datum_1983) => Some("NAD83")
-        case Some(Datum_WGS72) => Some("WGS 72")
-        case Some(Datum_WGS72_Transit_Broadcast_Ephemeris) => Some("WGS 72BE")
-        case Some(Datum_WGS84) => Some("WGS 84")
+        case Some(GCS_NAD27) => Some("NAD27")
+        case Some(GCS_NAD83) => Some("NAD83")
+        case Some(GCS_WGS_72) => Some("WGS 72")
+        case Some(GCS_WGS_72BE) => Some("WGS 72BE")
+        case Some(GCS_WGS_84) => Some("WGS 84")
         case _ => None
       }
       case _ => None
@@ -287,28 +289,28 @@ class GeoTiffCSParser(directory: ImageDirectory) {
     var (optDatum, optMapSystem, optZone) =
       if (pcs >= PCS_NAD27_UTM_zone_3N && pcs <= PCS_NAD27_UTM_zone_22N)
         (
-          Some(Datum_North_American_Datum_1983),
+          Some(GCS_NAD27),
           Some(MapSys_UTM_North),
           Some(pcs - PCS_NAD27_UTM_zone_3N + 3)
         )
       else if (pcs >= PCS_NAD83_UTM_zone_3N && pcs <= PCS_NAD83_UTM_zone_23N)
         (
-          Some(Datum_North_American_Datum_1983),
+          Some(GCS_NAD83),
           Some(MapSys_UTM_North),
           Some(pcs - PCS_NAD83_UTM_zone_3N + 3)
         )
       else if (pcs >= PCS_WGS72_UTM_zone_1N && pcs <= PCS_WGS72_UTM_zone_60N)
-        (Some(Datum_WGS72), Some(MapSys_UTM_North), Some(pcs - PCS_WGS72_UTM_zone_1N + 1))
+        (Some(GCS_WGS_72), Some(MapSys_UTM_North), Some(pcs - PCS_WGS72_UTM_zone_1N + 1))
       else if (pcs >= PCS_WGS72_UTM_zone_1S && pcs <= PCS_WGS72_UTM_zone_60S)
-        (Some(Datum_WGS72), Some(MapSys_UTM_South), Some(pcs - PCS_WGS72_UTM_zone_1S + 1))
+        (Some(GCS_WGS_72), Some(MapSys_UTM_South), Some(pcs - PCS_WGS72_UTM_zone_1S + 1))
       else if (pcs >= PCS_WGS72BE_UTM_zone_1N && pcs <= PCS_WGS72BE_UTM_zone_60N)
-        (Some(Datum_WGS72_Transit_Broadcast_Ephemeris), Some(MapSys_UTM_North), Some(pcs - PCS_WGS72BE_UTM_zone_1N + 1))
+        (Some(GCS_WGS_72BE), Some(MapSys_UTM_North), Some(pcs - PCS_WGS72BE_UTM_zone_1N + 1))
       else if (pcs >= PCS_WGS72BE_UTM_zone_1S && pcs <= PCS_WGS72BE_UTM_zone_60S)
-        (Some(Datum_WGS72_Transit_Broadcast_Ephemeris), Some(MapSys_UTM_South), Some(pcs - PCS_WGS72BE_UTM_zone_1S + 1))
+        (Some(GCS_WGS_72BE), Some(MapSys_UTM_South), Some(pcs - PCS_WGS72BE_UTM_zone_1S + 1))
       else if (pcs >= PCS_WGS84_UTM_zone_1N && pcs <= PCS_WGS84_UTM_zone_60N)
-        (Some(Datum_WGS84), Some(MapSys_UTM_North), Some(pcs - PCS_WGS84_UTM_zone_1N + 1))
+        (Some(GCS_WGS_84), Some(MapSys_UTM_North), Some(pcs - PCS_WGS84_UTM_zone_1N + 1))
       else if (pcs >= PCS_WGS84_UTM_zone_1S && pcs <= PCS_WGS84_UTM_zone_60S)
-        (Some(Datum_WGS84), Some(MapSys_UTM_South), Some(pcs - PCS_WGS84_UTM_zone_1S + 1))
+        (Some(GCS_WGS_84), Some(MapSys_UTM_South), Some(pcs - PCS_WGS84_UTM_zone_1S + 1))
       else if (pcs >= PCS_SAD69_UTM_zone_18N && pcs <= PCS_SAD69_UTM_zone_22N)
         (Some(UserDefinedCPV), Some(MapSys_UTM_North), Some(pcs - PCS_SAD69_UTM_zone_18N + 18))
       else if (pcs >= PCS_SAD69_UTM_zone_17S && pcs <= PCS_SAD69_UTM_zone_25S)
@@ -360,7 +362,10 @@ class GeoTiffCSParser(directory: ImageDirectory) {
       projectionParameters(6) = (UserDefinedCPV, if (north) 0 else 10000000)
 
       (Some(9807), Some(projectionParameters))
-    } else (None, None)
+    } else csvReader.getProjOpWParmValues(trfCode) match {
+      case Some(map) => (map.get(CoordOpMethodCode).map(_.toInt), None)
+      case None => (None, None)
+    }
 
   private def epsgProjMethodToCTProjMethod(epsg: Int) =
     projMethodToCTProjMethodMap.getOrElse(epsg, epsg)
@@ -896,6 +901,16 @@ class GeoTiffCSParser(directory: ImageDirectory) {
       proj4SB.append(
         s"+proj=tmerc +lat_0=$lat_0 +lon_0=$lon_0 +k=$k +x_0=$x_0 +y_0=$y_0"
       )
+    } else if (gtgp.ctProjection == CT_Mercator) {
+      val lat_ts = gtgp.projectionParameters(0)._2
+      val lon_0 = gtgp.projectionParameters(1)._2
+      val k = gtgp.projectionParameters(4)._2
+      val x_0 = falseEasting
+      val y_0 = falseNorthing
+
+      proj4SB.append(
+        s"+proj=merc +lat_ts=$lat_ts +lon_0=$lon_0 +k=$k +x_0=$x_0 +y_0=$y_0"
+      )
     } else if (gtgp.ctProjection == CT_CassiniSoldner) {
       val lat_0 = gtgp.projectionParameters(0)._2
       val lon_0 = gtgp.projectionParameters(1)._2
@@ -1118,6 +1133,8 @@ class GeoTiffCSParser(directory: ImageDirectory) {
       proj4SB.append(" +ellps=clrk80")
     else if (gtgp.ellipsoid == Ellipse_GRS_1980)
       proj4SB.append(" +ellps=GRS80")
+    else if (gtgp.ellipsoid == Ellipse_International_1924)
+      proj4SB.append(" +ellps=intl")
     else if (gtgp.semiMinor != 0.0 && gtgp.semiMajor != 0.0) {
       proj4SB.append(s" +a=${gtgp.semiMajor} +b=${gtgp.semiMinor}")
     }

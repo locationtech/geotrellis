@@ -109,7 +109,7 @@ case class ProjectedCSParameterKeys(
   projectedCSType: Int = -1,
   pcsCitation: Option[Array[String]] = None,
   projection: Option[Int] = None,
-  projCoordTrans: Int = -1,
+  projCoordTrans: Option[Int] = None,
   projLinearUnits: Option[Int] = None,
   projLinearUnitSize: Option[Double] = None,
   projStdParallel1: Option[Double] = None,
@@ -237,7 +237,7 @@ object GeoKeyDirectoryLenses {
   val projectionLens = projectedCSParameterKeysLens |-> mkLens[
     ProjectedCSParameterKeys, Option[Int]]("projection")
   val projCoordTransLens = projectedCSParameterKeysLens |-> mkLens[
-    ProjectedCSParameterKeys, Int]("projCoordTrans")
+    ProjectedCSParameterKeys, Option[Int]]("projCoordTrans")
   val projLinearUnitsLens = projectedCSParameterKeysLens |-> mkLens[
     ProjectedCSParameterKeys, Option[Int]]("projLinearUnits")
   val projLinearUnitSizeLens = projectedCSParameterKeysLens |-> mkLens[
