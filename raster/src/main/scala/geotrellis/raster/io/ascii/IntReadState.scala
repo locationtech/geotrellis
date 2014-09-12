@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io
+package geotrellis.raster.io.ascii
 
 import geotrellis.raster._
 

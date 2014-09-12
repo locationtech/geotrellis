@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io
+package geotrellis.raster.io.ascii
 
 import scala.math.{Numeric, min, max, abs, round, floor, ceil}
 import java.io.{File, FileInputStream, FileOutputStream}

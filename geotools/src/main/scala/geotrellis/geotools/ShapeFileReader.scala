@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package geotrellis.data
+package geotrellis.geotools
 
-import geotrellis._
 import geotrellis.vector._
 import geotrellis.raster.op._
 
