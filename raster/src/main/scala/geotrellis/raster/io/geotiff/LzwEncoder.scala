@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,11 +42,11 @@ object LzwEncoder {
   def render(encoder: Encoder) = LzwEncoder(encoder).render()
 
   def apply(encoder: Encoder) = encoder.settings match {
-    case Settings(IntSample, Floating, _, _, _) => new LzwFloatEncoder(encoder)
-    case Settings(LongSample, Floating, _, _, _) => new LzwDoubleEncoder(encoder)
-    case Settings(ByteSample, _, _, _, _) => new LzwByteEncoder(encoder)
-    case Settings(ShortSample, _, _, _, _) => new LzwShortEncoder(encoder)
-    case Settings(IntSample, _, _, _, _) => new LzwIntEncoder(encoder)
+    case Settings(IntSample, Floating, _, _) => new LzwFloatEncoder(encoder)
+    case Settings(LongSample, Floating, _, _) => new LzwDoubleEncoder(encoder)
+    case Settings(ByteSample, _, _, _) => new LzwByteEncoder(encoder)
+    case Settings(ShortSample, _, _, _) => new LzwShortEncoder(encoder)
+    case Settings(IntSample, _, _, _) => new LzwIntEncoder(encoder)
     case s => sys.error(s"can't encoder $s")
   }
 }
@@ -81,7 +81,7 @@ class LzwIntEncoder(encoder: Encoder) extends LzwEncoder(encoder) {
 
 class LzwFloatEncoder(encoder: Encoder) extends LzwEncoder(encoder) {
   import java.lang.Float.floatToRawIntBits
-  private val ndf: Float = if (encoder.settings.esriCompat) Float.MinValue else Float.NaN
+  private val ndf: Float = Float.MinValue
   private val ndx: Int = floatToRawIntBits(ndf)
 
   def handleCell(i: Int) {
@@ -96,7 +96,7 @@ class LzwFloatEncoder(encoder: Encoder) extends LzwEncoder(encoder) {
 
 class LzwDoubleEncoder(encoder: Encoder) extends LzwEncoder(encoder) {
   import java.lang.Double.doubleToRawLongBits
-  private val ndf: Double = if (encoder.settings.esriCompat) Double.MinValue else Double.NaN
+  private val ndf: Double = Double.MinValue
   private val ndx: Long = doubleToRawLongBits(ndf)
 
   def handleCell(i: Int) {
