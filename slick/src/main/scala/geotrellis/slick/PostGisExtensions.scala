@@ -32,6 +32,7 @@ import scala.slick.ast.{LiteralNode}
 import scala.slick.ast.Library.{SqlFunction, SqlOperator}
 import scala.slick.driver.{JdbcDriver, PostgresDriver}
 import scala.slick.lifted.FunctionSymbolExtensionMethods._
+import scala.slick.jdbc.JdbcType
 
  /** based on [[package com.github.tminglei.slickpg.PgPostGISExtensions]] */
 trait PostGisExtensions { 
@@ -47,55 +48,55 @@ trait PostGisExtensions {
   trait PostGisAssistants {
     /** Geometry Constructors */
     def geomFromText[P, R](wkt: Column[P], srid: Option[Int] = None)(
-      implicit tm: driver.JdbcType[GEOMETRY], om: OptionMapperDSL.arg[String, P]#to[GEOMETRY, R]) =
+      implicit tm: JdbcType[GEOMETRY], om: OptionMapperDSL.arg[String, P]#to[GEOMETRY, R]) =
       srid match {
         case Some(srid) => om.column(GeomLibrary.GeomFromText, wkt.toNode, LiteralNode(srid))
         case None   => om.column(GeomLibrary.GeomFromText, wkt.toNode)
       }
     def geomFromWKB[P, R](wkb: Column[P], srid: Option[Int] = None)(
-      implicit tm: driver.JdbcType[GEOMETRY], om: OptionMapperDSL.arg[Array[Byte], P]#to[GEOMETRY, R]) =
+      implicit tm: JdbcType[GEOMETRY], om: OptionMapperDSL.arg[Array[Byte], P]#to[GEOMETRY, R]) =
       srid match {
         case Some(srid) => om.column(GeomLibrary.GeomFromWKB, wkb.toNode, LiteralNode(srid))
         case None   => om.column(GeomLibrary.GeomFromWKB, wkb.toNode)
       }
     def geomFromEWKT[P, R](ewkt: Column[P])(
-      implicit tm: driver.JdbcType[GEOMETRY], om: OptionMapperDSL.arg[String, P]#to[GEOMETRY, R]) = {
+      implicit tm: JdbcType[GEOMETRY], om: OptionMapperDSL.arg[String, P]#to[GEOMETRY, R]) = {
         om.column(GeomLibrary.GeomFromEWKT, ewkt.toNode)
       }
     def geomFromEWKB[P, R](ewkb: Column[P])(
-      implicit tm: driver.JdbcType[GEOMETRY], om: OptionMapperDSL.arg[Array[Byte], P]#to[GEOMETRY, R]) = {
+      implicit tm: JdbcType[GEOMETRY], om: OptionMapperDSL.arg[Array[Byte], P]#to[GEOMETRY, R]) = {
         om.column(GeomLibrary.GeomFromEWKB, ewkb.toNode)
       }
     def geomFromGML[P, R](gml: Column[P], srid: Option[Int] = None)(
-      implicit tm: driver.JdbcType[GEOMETRY], om: OptionMapperDSL.arg[String, P]#to[GEOMETRY, R]) =
+      implicit tm: JdbcType[GEOMETRY], om: OptionMapperDSL.arg[String, P]#to[GEOMETRY, R]) =
       srid match {
         case Some(srid) => om.column(GeomLibrary.GeomFromGML, gml.toNode, LiteralNode(srid))
         case None   => om.column(GeomLibrary.GeomFromGML, gml.toNode)
       }
     def geomFromKML[P, R](kml: Column[P])(
-      implicit tm: driver.JdbcType[GEOMETRY], om: OptionMapperDSL.arg[String, P]#to[GEOMETRY, R]) = {
+      implicit tm: JdbcType[GEOMETRY], om: OptionMapperDSL.arg[String, P]#to[GEOMETRY, R]) = {
         om.column(GeomLibrary.GeomFromKML, kml.toNode)
       }
     def geomFromGeoJSON[P, R](json: Column[P])(
-      implicit tm: driver.JdbcType[GEOMETRY], om: OptionMapperDSL.arg[String, P]#to[GEOMETRY, R]) = {
+      implicit tm: JdbcType[GEOMETRY], om: OptionMapperDSL.arg[String, P]#to[GEOMETRY, R]) = {
         om.column(GeomLibrary.GeomFromGeoJSON, json.toNode)
       }
     def makeBox[G1 <: GEOMETRY, P1, G2 <: GEOMETRY, P2, R](lowLeftPoint: Column[P1], upRightPoint: Column[P2])(
-      implicit tm: driver.JdbcType[GEOMETRY], om: OptionMapperDSL.arg[G1, P1]#arg[G2, P2]#to[GEOMETRY, R]) = {
+      implicit tm: JdbcType[GEOMETRY], om: OptionMapperDSL.arg[G1, P1]#arg[G2, P2]#to[GEOMETRY, R]) = {
         om.column(GeomLibrary.MakeBox, lowLeftPoint.toNode, upRightPoint.toNode)
       }
     def makeBox3d[G1 <: GEOMETRY, P1, G2 <: GEOMETRY, P2, R](lowLeftPoint: Column[P1], upRightPoint: Column[P2])(
-      implicit tm: driver.JdbcType[GEOMETRY], om: OptionMapperDSL.arg[G1, P1]#arg[G2, P2]#to[GEOMETRY, R]) = {
+      implicit tm: JdbcType[GEOMETRY], om: OptionMapperDSL.arg[G1, P1]#arg[G2, P2]#to[GEOMETRY, R]) = {
         om.column(GeomLibrary.MakeBox3D, lowLeftPoint.toNode, upRightPoint.toNode)
       }
     def makeEnvelope(xmin: Column[Double], ymin: Column[Double], xmax: Column[Double], ymax: Column[Double], srid: Option[Int] = None)(
-      implicit tm: driver.JdbcType[GEOMETRY], om: OptionMapperDSL.arg[Double, Double]#arg[Double, Double]#to[GEOMETRY, GEOMETRY]) =
+      implicit tm: JdbcType[GEOMETRY], om: OptionMapperDSL.arg[Double, Double]#arg[Double, Double]#to[GEOMETRY, GEOMETRY]) =
       srid match {
         case Some(s) => om.column(GeomLibrary.MakeEnvelope, xmin.toNode, ymin.toNode, xmax.toNode, ymax.toNode, LiteralNode(s))
         case None   =>  om.column(GeomLibrary.MakeEnvelope, xmin.toNode, ymin.toNode, xmax.toNode, ymax.toNode)
       }
     def makePoint[P1, P2, R](x: Column[P1], y: Column[P2], z: Option[Double] = None, m: Option[Double] = None)(
-      implicit tm: driver.JdbcType[GEOMETRY], tm1: driver.JdbcType[POINT], om: OptionMapperDSL.arg[Double, P1]#arg[Double, P2]#to[GEOMETRY, R]) =
+      implicit tm: JdbcType[GEOMETRY], tm1: JdbcType[POINT], om: OptionMapperDSL.arg[Double, P1]#arg[Double, P2]#to[GEOMETRY, R]) =
       (z, m) match {
         case (Some(z), Some(m)) => om.column(GeomLibrary.MakePoint, x.toNode, y.toNode, LiteralNode(z), LiteralNode(m))
         case (Some(z), None) => om.column(GeomLibrary.MakePoint, x.toNode, y.toNode, LiteralNode(z))
@@ -103,11 +104,11 @@ trait PostGisExtensions {
         case (None, None) => om.column(GeomLibrary.MakePoint, x.toNode, y.toNode)
       }
     def makeLine[G1 <: GEOMETRY, P1, G2 <: GEOMETRY, P2, R](point1: Column[P1], point2: Column[P2])(
-      implicit tm: driver.JdbcType[GEOMETRY], om: OptionMapperDSL.arg[G1, P1]#arg[G2, P2]#to[GEOMETRY, R]) = {
+      implicit tm: JdbcType[GEOMETRY], om: OptionMapperDSL.arg[G1, P1]#arg[G2, P2]#to[GEOMETRY, R]) = {
         om.column(GeomLibrary.MakeLine, point1.toNode, point2.toNode)
       }
     def makePolygon[G <: GEOMETRY, P, R](linestring: Column[P])(
-      implicit tm: driver.JdbcType[GEOMETRY], om: OptionMapperDSL.arg[G, P]#to[GEOMETRY, R]) = {
+      implicit tm: JdbcType[GEOMETRY], om: OptionMapperDSL.arg[G, P]#to[GEOMETRY, R]) = {
         om.column(GeomLibrary.MakePolygon, linestring.toNode)
       }
   }
@@ -254,11 +255,11 @@ trait PostGisExtensions {
   class GeometryColumnExtensionMethods[G1 <: GEOMETRY, P1]
     (val c: Column[P1])
     (implicit 
-      tm: driver.JdbcType[GEOMETRY], 
-      tm1: driver.JdbcType[POINT], 
-      tm2: driver.JdbcType[LINESTRING], 
-      tm3: driver.JdbcType[POLYGON], 
-      tm4: driver.JdbcType[GEOMETRYCOLLECTION]
+      tm: JdbcType[GEOMETRY], 
+      tm1: JdbcType[POINT], 
+      tm2: JdbcType[LINESTRING], 
+      tm3: JdbcType[POLYGON], 
+      tm4: JdbcType[GEOMETRYCOLLECTION]
     ) extends ExtensionMethods[G1, P1] {
 
     /** Geometry Operators */
@@ -322,7 +323,7 @@ trait PostGisExtensions {
     def isCollection[R](implicit om: o#to[Boolean, R]) = {
         om.column(GeomLibrary.IsCollection, n)
       }
-    def isEmpty[R](implicit om: o#to[Boolean, R]) = {
+    def isGeometryEmpty[R](implicit om: o#to[Boolean, R]) = {
         om.column(GeomLibrary.IsEmpty, n)
       }
     def isRing[R](implicit om: o#to[Boolean, R]) = {

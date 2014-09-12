@@ -10,14 +10,15 @@ import org.scalatest._
 
 import spire.syntax.cfor._
 
-class ReprojectSpec extends FunSpec 
+// TODO: Use the default crs in each tif?
+class ReprojectSpec extends FunSpec
                        with TileBuilders
                        with TestEngine {
   describe("reprojects in approximation to GDAL") {
     // TODO: Implement Bilinear interpolation for reprojection
     ignore("should (approximately) match a GDAL bilinear interpolation on nlcd tile") {
-      val (source, extent) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_wsg84.tif").read.imageDirectories.head.toRaster
-      val (expected, expectedExtent) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-bilinear.tif").read.imageDirectories.head.toRaster
+      val (source, extent, _) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_wsg84.tif").read.imageDirectories.head.toRaster
+      val (expected, expectedExtent, _) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-bilinear.tif").read.imageDirectories.head.toRaster
 
       val (actual, actualExtent) = source.reproject(extent, LatLng, WebMercator, ReprojectOptions(Bilinear, 0.0))
 
@@ -30,12 +31,12 @@ class ReprojectSpec extends FunSpec
       actualExtent.ymax should be (expectedExtent.ymax +- 0.00001)
 
       var diffCount = 0
-      var notNoData = 0 
+      var notNoData = 0
       cfor(0)(_ < actual.rows, _ + 1) { row =>
         cfor(0)(_ < actual.cols, _ + 1) { col =>
           withClue(s"Failed on ($col, $row): ") {
             actual.getDouble(col, row) should be (expected.getDouble(col, row))
-          }          
+          }
           if(actual.getDouble(col, row) != expected.getDouble(col, row)) { diffCount += 1 }
           if(isData(actual.getDouble(col, row))) { notNoData += 1 }
         }
@@ -45,11 +46,11 @@ class ReprojectSpec extends FunSpec
     }
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on nlcd tile") {
-      val (source, extent) = 
+      val (source, extent, _) =
         GeoTiffReader("raster-test/data/reproject/nlcd_tile_wsg84.tif").read.imageDirectories.head.toRaster
-      val (expected, expectedExtent) = 
+      val (expected, expectedExtent, _) =
         GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").read.imageDirectories.head.toRaster
-      val (actual, actualExtent) = 
+      val (actual, actualExtent) =
         source.reproject(extent, LatLng, WebMercator, ReprojectOptions(NearestNeighbor, 0.0))
 
       actual.rows should be (expected.rows)
@@ -70,11 +71,11 @@ class ReprojectSpec extends FunSpec
     }
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on slope tif") {
-      val (source, extent) = 
+      val (source, extent, _) =
         GeoTiffReader("raster-test/data/reproject/slope_webmercator.tif").read.imageDirectories.head.toRaster
-      val (expected, expectedExtent) = 
+      val (expected, expectedExtent, _) =
         GeoTiffReader("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").read.imageDirectories.head.toRaster
-      val (actual, actualExtent) = 
+      val (actual, actualExtent) =
         source.reproject(extent, WebMercator, LatLng, ReprojectOptions(NearestNeighbor, 0.0))
 
       actual.rows should be (expected.rows)
@@ -95,11 +96,11 @@ class ReprojectSpec extends FunSpec
     }
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on slope tif and an error threshold of 0.125") {
-      val (source, extent) = 
+      val (source, extent, _) =
         GeoTiffReader("raster-test/data/reproject/slope_webmercator.tif").read.imageDirectories.head.toRaster
-      val (expected, expectedExtent) = 
+      val (expected, expectedExtent, _) =
         GeoTiffReader("raster-test/data/reproject/slope_wsg84-nearestneighbor-er0.125.tif").read.imageDirectories.head.toRaster
-      val (actual, actualExtent) = 
+      val (actual, actualExtent) =
         source.reproject(extent, WebMercator, LatLng, ReprojectOptions(NearestNeighbor, 0.125))
 
       actual.rows should be (expected.rows)

@@ -13,7 +13,7 @@ import org.scalatest._
 
 import spire.syntax.cfor._
 
-class RowTransformSpec extends FunSpec 
+class RowTransformSpec extends FunSpec
                           with TileBuilders
                           with TestEngine {
   val path = "raster-test/data/schoolgeo.json"
@@ -64,7 +64,7 @@ class RowTransformSpec extends FunSpec
     }
 
     it("should approximate WebMercator -> LatLng for raster extent") {
-      val (expected, expectedExtent) = 
+      val (expected, expectedExtent, _) =
         GeoTiffReader("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").read.imageDirectories.head.toRaster
       val re = RasterExtent(expected, expectedExtent)
 

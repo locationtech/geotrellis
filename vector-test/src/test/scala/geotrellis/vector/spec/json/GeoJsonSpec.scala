@@ -1,11 +1,12 @@
 package geotrellis.vector.json
 
-import org.scalatest._
 import geotrellis.vector._
-import spray.json.DeserializationException
+import geotrellis.testkit.vector._
 
+import spray.json.DeserializationException
 import spray.json.DefaultJsonProtocol._
 
+import org.scalatest._
 
 class GeoJsonSpec extends FlatSpec with Matchers {
   "GeoJson package" should "go from Geometry to String" in {
@@ -17,6 +18,11 @@ class GeoJsonSpec extends FlatSpec with Matchers {
   it should "go from simple Feature to String" in {
     val f = PointFeature(Point(1,1), "Data")
     f.toGeoJson should equal ("""{"type":"Feature","geometry":{"type":"Point","coordinates":[1.0,1.0]},"properties":"Data"}""")
+  }
+
+  it should "go from simple Feature[Int] to String" in {
+    val f = PointFeature(Point(1,1), 1)
+    f.toGeoJson should equal ("""{"type":"Feature","geometry":{"type":"Point","coordinates":[1.0,1.0]},"properties":1}""")
   }
 
   it should "parse from string to Geometry" in {
@@ -45,6 +51,37 @@ class GeoJsonSpec extends FlatSpec with Matchers {
     val points = json.parseGeoJson[JsonFeatureCollection].getAllPointFeatures[DataBox]
 
     points.size should be (2)
+  }
+
+  it should "parse string to points and back again" in {
+    val json="""{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2674010.3642432094,264342.94293908775]}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2714118.684319839,263231.3878492862]}}]}"""
+
+    val points = json.parseGeoJson[JsonFeatureCollection].getAllPoints.sortBy(_.x).toSeq
+
+    points.toGeoJson.parseGeoJson[JsonFeatureCollection].getAllPoints.sortBy(_.x).toSeq should be (points)
+  }
+
+  it should "parse string to point features and back again" in {
+    case class DataBox(data: Int)
+
+    implicit val boxFormat = jsonFormat1(DataBox)
+
+    val json="""{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[2674010.3642432094,264342.94293908775]},"properties":{"data":291}},{"type":"Feature","geometry":{"type":"Point","coordinates":[2714118.684319839,263231.3878492862]},"properties":{"data":1273}}]}"""
+
+    val points = json.parseGeoJson[JsonFeatureCollection].getAllPointFeatures[DataBox].sortBy(_.data.data).toSeq
+
+    points.toGeoJson.parseGeoJson[JsonFeatureCollection].getAllPointFeatures[DataBox].sortBy(_.data.data).toSeq should be (points)
+  }
+
+  it should "serialize a Seq[MultiPolygonFeature[Int]] to GeoJson" in {
+    def rect(c: Double): Polygon =
+      Rectangle().setCenter((c, c)).withWidth(1.0).withHeight(1.0)
+    val mp = Seq(
+      MultiPolygonFeature(MultiPolygon(rect(0.0), rect(5.0)), 3),
+      MultiPolygonFeature(MultiPolygon(rect(1.0), rect(4.0)), 5)
+    )
+    val json = mp.toGeoJson
+    json.parseGeoJson[JsonFeatureCollection].getAllMultiPolygonFeatures[Int].sortBy(_.data).toSeq should be (mp)
   }
 
   it should "fail when you ask for the wrong feature" in {

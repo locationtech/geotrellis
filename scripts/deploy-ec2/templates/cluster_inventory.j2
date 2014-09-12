@@ -1,13 +1,18 @@
-[master]
 {% for host in master.tagged_instances %}
-{{ host.public_ip }} instance_id={{host.id}} private_ip={{host.private_ip}} private_dns_name={{host.private_dns_name}}
+master ansible_ssh_host={{ host.public_ip }} instance_id={{host.id}} private_ip={{host.private_ip}} private_dns_name={{host.private_dns_name}}
 {% endfor %}
+{% for host in workers.tagged_instances %}
+worker-{{ loop.index }} ansible_ssh_host={{ host.public_ip }} instance_id={{host.id}} private_ip={{host.private_ip}} private_dns_name={{host.private_dns_name}} 
+{% endfor %}
+
+
+[master]
+master
 
 [workers]
 {% for host in workers.tagged_instances %}
-{{ host.public_ip }} instance_id={{host.id}} private_ip={{host.private_ip}} private_dns_name={{host.private_dns_name}} 
+worker-{{ loop.index }}
 {% endfor %}
-
 
 [master:vars]
 ansible_ssh_user=ubuntu

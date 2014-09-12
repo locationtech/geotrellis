@@ -1,7 +1,5 @@
 ---
 
-- include_vars: group_vars/cluster.yml
-
 - include: zookeeper.yml
 
 - get_url: url={{accumulo_url}} dest=/tmp/{{accumulo_deb}} mode=0440
@@ -9,12 +7,43 @@
 - shell: dpkg -i /tmp/{{accumulo_deb}}  creates=/etc/accumulo
   sudo: yes
 
-- name: Upload Accumulo init.d script
-  template: src=init.d/accumulo dest=/etc/init.d/accumulo
+- name: Ensure that the Accumulo defaults file exists
+  file: path=/etc/default/accumulo state=touch
+  sudo: yes
+
+- name: Set Accumulo ulimit
+  lineinfile: dest=/etc/default/accumulo
+              line="ulimit -n 65536"
+              state=present
+  notify:
+    - Restart Accumulo Master
+    - Restart Accumulo Slave
+  sudo: yes
+
+- name: Set Accumulo sysctl settings
+  template: src=sysctl_accumulo.conf.j2 dest=/etc/sysctl.d/accumulo.conf
+  notify:
+    - Update sysctl
+  sudo: yes
+
+- name: Upload Accumulo init.d scripts
+  template: src=init.d/{{ item }} dest=/etc/init.d/{{ item }}
+  with_items:
+    - accumulo-master
+    - accumulo-tserver
+    - accumulo-monitor
+    - accumulo-tracer
+    - accumulo-gc
   sudo: yes
 
 - name: Accumulo inti.d script is executable
-  file: path=/etc/init.d/accumulo mode=0755
+  file: path=/etc/init.d/{{ item }} mode=0755
+  with_items:
+    - accumulo-master
+    - accumulo-tserver
+    - accumulo-monitor
+    - accumulo-tracer
+    - accumulo-gc
   sudo: yes
 
 - name: Upload Accumulo Config
@@ -32,12 +61,41 @@
     - slaves
     - tracers
   sudo: yes
-  notify: Restart Accumulo
+  notify:
+    - Restart Accumulo Master
+    - Restart Accumulo Slave
+
+- name: Check /accumulo exists in HDFS
+  command: hadoop fs -ls /accumulo
+  register: existing_accumulo
+  changed_when: existing_accumulo.rc == 1
+  failed_when: False
+  sudo: yes
+  when: '"master" in group_names'
 
 - name: Initilize Accumulo
   shell: sudo accumulo init --instance-name {{accumulo.instance}} --password {{accumulo.password}} creates=/accumulo/tables
   sudo: yes
+  when: '"master" in group_names and existing_accumulo|changed'
+
+- command: update-rc.d {{ item }} defaults 30
+  with_items:
+    - accumulo-master
+    - accumulo-monitor
+    - accumulo-tracer
+    - accumulo-gc
+  sudo: yes
   when: '"master" in group_names'
 
-- service: name=accumulo state=started enabled=yes
+- service: name={{ item }} state=started
+  with_items:
+    - accumulo-master
+    - accumulo-monitor
+    - accumulo-tracer
+    - accumulo-gc
   sudo: yes
+  when: '"master" in group_names'
+
+- service: name=accumulo-tserver state=started enabled=yes
+  sudo: yes
+  when: '"workers" in group_names'

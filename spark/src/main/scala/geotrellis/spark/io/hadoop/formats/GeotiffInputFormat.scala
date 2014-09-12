@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,18 +35,19 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit
 
 import java.nio.ByteBuffer
 
-class GeotiffInputFormat extends FileInputFormat[Extent, Tile] {
+class GeotiffInputFormat extends FileInputFormat[(Extent, CRS), Tile] {
   override def isSplitable(context: JobContext, fileName: Path) = false
 
-  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[Extent, Tile] =
-    new GeotiffRecordReader
+  override def createRecordReader(
+    split: InputSplit,
+    context: TaskAttemptContext): RecordReader[(Extent, CRS), Tile] = new GeotiffRecordReader
 
 }
 
 case class GeotiffData(cellType: CellType, userNoData: Double)
 
-class GeotiffRecordReader extends RecordReader[Extent, Tile] {
-  private var tup: (Extent, Tile) = null
+class GeotiffRecordReader extends RecordReader[(Extent, CRS), Tile] {
+  private var tup: ((Extent, CRS), Tile) = null
   private var hasNext: Boolean = true
 
   def initialize(split: InputSplit, context: TaskAttemptContext) = {
@@ -54,13 +55,10 @@ class GeotiffRecordReader extends RecordReader[Extent, Tile] {
     val conf = context.getConfiguration()
     val bytes = HdfsUtils.readBytes(path, conf)
 
-    val (tile, extent) =
-      GeoTiffReader(bytes).read().imageDirectories(0).toRaster
+    val (tile, extent, crs) =
+      GeoTiffReader(bytes).read().imageDirectories.head.toRaster
 
-    // TODO: Get CRS from geoTiff
-    val crs = LatLng
-
-    tup = (extent, tile)
+    tup = ((extent, crs), tile)
   }
 
   def close = {}

@@ -5,6 +5,18 @@ import spray.json.JsonFormat
 import spray.httpx.SprayJsonSupport
 
 package object json extends GeoJsonSupport with SprayJsonSupport {
+  implicit class GeometriesToGeoJson(geoms: Traversable[Geometry]) {
+    def toGeoJson: String = {
+      JsonFeatureCollection(geoms).toJson.compactPrint
+    }
+  }
+
+  implicit class FeaturesToGeoJson[D: JsonFormat](features: Traversable[Feature[D]]) {
+    def toGeoJson: String = {
+      JsonFeatureCollection(features).toJson.compactPrint
+    }
+  }
+
   implicit class RichGeometry(geom: Geometry){
     def toGeoJson: String = geom.toJson.compactPrint
 

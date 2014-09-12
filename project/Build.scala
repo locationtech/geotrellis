@@ -167,7 +167,7 @@ object GeotrellisBuild extends Build {
         "org.parboiled" %% "parboiled" % "2.0.0" % "test",
         scalatest   % "test",
         scalacheck  % "test",
-        scalaCSV
+        openCSV
       )
     )
 
@@ -196,7 +196,7 @@ object GeotrellisBuild extends Build {
         monocleCore,
         monocleMacro,
         sprayClient, // for reading args from URLs,
-        scalaCSV
+        openCSV
       )
     ) ++
     defaultAssemblySettings
@@ -220,7 +220,8 @@ object GeotrellisBuild extends Build {
         scalacheck  % "test",
         spire % "test",
         sprayClient % "test",
-        sprayRouting % "test"
+        sprayRouting % "test",
+        openCSV
       )
     ) ++
     defaultAssemblySettings
@@ -326,7 +327,8 @@ object GeotrellisBuild extends Build {
         scalatest % "test"
       )
     ) ++
-    defaultAssemblySettings
+    defaultAssemblySettings ++
+    net.virtualvoid.sbt.graph.Plugin.graphSettings
 
   // Project: admin
   lazy val admin: Project =
