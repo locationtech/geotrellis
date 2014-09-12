@@ -304,7 +304,6 @@ object GeotrellisBuild extends Build {
         jettyWebapp,
         jerseyBundle,
         slf4jApi,
-        slf4jNop,
         asm
       )
     ) ++
@@ -322,7 +321,7 @@ object GeotrellisBuild extends Build {
       libraryDependencies := Seq(
         slick,
         postgresql,
-        slf4jNop,
+        slf4jApi,
         scalatest % "test"
       )
     ) ++
