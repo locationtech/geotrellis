@@ -16,6 +16,8 @@
 
 package geotrellis.raster.io.geotiff.reader
 
+import geotrellis.raster.io.geotiff.reader.CommonPublicValues._
+
 import scala.collection.immutable.HashMap
 
 object ModelTypes {
@@ -251,6 +253,17 @@ object ProjectedLinearUnits {
     LinearMileInternationalNauticalCode -> LinearMileInternationalNautical
   )
 
+  val reversedProjectedLinearUnitsMap = HashMap[String, Int](
+    LinearMeter -> LinearMeterCode,
+    LinearFoot -> LinearFootCode,
+    LinearFootUS -> LinearFootUSCode,
+    LinearFootIndian -> LinearFootIndianCode,
+    LinearLink ->LinearLinkCode,
+    LinearYardIndian -> LinearYardIndianCode,
+    LinearFathom -> LinearFathomCode,
+    LinearMileInternationalNautical -> LinearMileInternationalNauticalCode
+  )
+
 }
 
 object MapSystems {
@@ -301,6 +314,32 @@ object CoordinateTransformTypes {
   val CT_SwissObliqueCylindrical = CT_ObliqueMercator_Rosenmund
   val CT_GaussBoaga = CT_TransverseMercator
   val CT_GaussKruger = CT_TransverseMercator
+
+  val projMethodToCTProjMethodMap = HashMap[Int, Int](
+    9801 -> CT_LambertConfConic_1SP,
+    9802 -> CT_LambertConfConic_2SP,
+    9803 -> CT_LambertConfConic_2SP,
+    9804 -> CT_Mercator,
+    9805 -> CT_Mercator,
+    9841 -> CT_Mercator,
+    1024 -> CT_Mercator,
+    9806 -> CT_CassiniSoldner,
+    9807 -> CT_TransverseMercator,
+    9808 -> CT_TransvMercator_SouthOriented,
+    9809 -> CT_ObliqueStereographic,
+    9810 -> CT_PolarStereographic,
+    9829 -> CT_PolarStereographic,
+    9811 -> CT_NewZealandMapGrid,
+    9812 -> CT_ObliqueMercator,
+    9813 -> CT_ObliqueMercator_Laborde,
+    9814 -> CT_ObliqueMercator_Rosenmund,
+    9815 -> CT_HotineObliqueMercatorAzimuthCenter,
+    9816 -> UserDefinedCPV,
+    9820 -> CT_LambertAzimEqualArea,
+    1027 -> CT_LambertAzimEqualArea,
+    9822 -> CT_AlbersEqualArea,
+    9834 -> CT_CylindricalEqualArea
+  )
 
 }
 

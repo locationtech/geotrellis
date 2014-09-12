@@ -58,7 +58,6 @@ object Dependencies {
   val jettyWebapp   = "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4"
   val jerseyBundle  = "com.sun.jersey"    % "jersey-bundle" % "1.11"
   val slf4jApi      = "org.slf4j"         % "slf4j-api" % "1.6.0"
-  val slf4jNop      = "org.slf4j"         % "slf4j-nop" % "1.6.0"
   val asm           = "asm"               % "asm"       % "3.3.1"
 
   val jcommander    = "com.beust"       % "jcommander"    % "1.23"
