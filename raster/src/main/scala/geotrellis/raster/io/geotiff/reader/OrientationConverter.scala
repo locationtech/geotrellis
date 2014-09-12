@@ -78,7 +78,7 @@ class OrientationConverter(
           val secondIndex = (cols * (i + 1) - j - 1)
           val secondByteIndex = secondIndex / 8
 
-          val firstBitIndex = (Int.MaxValue - firstIndex) % 8 //TODO
+          val firstBitIndex = (Int.MaxValue - firstIndex) % 8
           val secondBitIndex = (Int.MaxValue - secondIndex) % 8
 
           val first = (image(firstByteIndex) & (1 << firstBitIndex)) != 0
