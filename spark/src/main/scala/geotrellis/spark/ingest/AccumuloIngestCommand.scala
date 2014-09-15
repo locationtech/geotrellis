@@ -20,7 +20,7 @@ import geotrellis.spark.io.accumulo._
 class AccumuloIngestArgs extends IngestArgs with AccumuloArgs {
   @Required var table: String = _
   @Required var layer: String = _
-  @Required var pyramid: Boolean = false
+  var pyramid: Boolean = false
 }
 
 object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
