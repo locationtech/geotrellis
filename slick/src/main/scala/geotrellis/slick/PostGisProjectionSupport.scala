@@ -32,6 +32,7 @@ import scala.slick.lifted.Column
 import scala.reflect.ClassTag
 import scala.slick.ast.{ScalaBaseType}
 import scala.slick.jdbc.{PositionedResult, PositionedParameters}
+import java.sql._
 
 import geotrellis.vector._
 import geotrellis.vector.io._
@@ -92,13 +93,16 @@ class PostGisProjectionSupport(override val driver: JdbcDriver) extends PostGisE
 
     def sqlType: Int = java.sql.Types.OTHER
 
-    def setValue(v: T, p: PositionedParameters) = p.setBytes(WKB.write(v.geom, v.srid))
+    def setValue(v: T, p: PreparedStatement, idx: Int) = p.setBytes(idx, WKB.write(v.geom, v.srid))
 
-    def setOption(v: Option[T], p: PositionedParameters) = if (v.isDefined) setValue(v.get, p) else p.setNull(sqlType)
+    def updateValue(v: T, r: ResultSet, idx: Int) = r.updateBytes(idx, WKB.write(v.geom, v.srid))
 
-    def nextValue(r: PositionedResult): T = r.nextStringOption().map(fromLiteral[T]).getOrElse(zero)
-
-    def updateValue(v: T, r: PositionedResult) = r.updateBytes(WKB.write(v.geom, v.srid))
+    def getValue(r: ResultSet, idx: Int): T = {
+      val s = r.getString(idx)
+      (if(r.wasNull) None else Some(s))
+        .map(fromLiteral[T](_))
+        .getOrElse(zero)
+    }
   }
 }
 

@@ -34,7 +34,7 @@ object Dependencies {
   val monocleCore   = "com.github.julien-truffaut" %% "monocle-core"    % "0.4.0"
   val monocleMacro  = "com.github.julien-truffaut" %% "monocle-macro"   % "0.4.0"
 
-  val scalaCSV      = "com.github.tototoshi" %% "scala-csv" % "1.0.0"
+  val openCSV       = "net.sf.opencsv"       % "opencsv"    % "2.3"
 
   val akkaKernel    = "com.typesafe.akka" %% "akka-kernel"  % Version.akka
   val akkaRemote    = "com.typesafe.akka" %% "akka-remote"  % Version.akka
@@ -58,12 +58,11 @@ object Dependencies {
   val jettyWebapp   = "org.eclipse.jetty" % "jetty-webapp" % "8.1.0.RC4"
   val jerseyBundle  = "com.sun.jersey"    % "jersey-bundle" % "1.11"
   val slf4jApi      = "org.slf4j"         % "slf4j-api" % "1.6.0"
-  val slf4jNop      = "org.slf4j"         % "slf4j-nop" % "1.6.0"
   val asm           = "asm"               % "asm"       % "3.3.1"
 
   val jcommander    = "com.beust"       % "jcommander"    % "1.23"
   val reflections   = "org.reflections" % "reflections"  % "0.9.5"
 
-  val slick         = "com.typesafe.slick" %% "slick"      % "2.0.1"
+  val slick         = "com.typesafe.slick" %% "slick"      % "2.1.0"
   val postgresql    = "postgresql"         % "postgresql"  % "9.1-901.jdbc4"
 }

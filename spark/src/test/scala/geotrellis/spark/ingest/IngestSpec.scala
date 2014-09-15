@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 DigitalGlobe.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,9 +36,9 @@ import java.awt.image.DataBuffer
 /*
  * Tests both local and spark ingest mode
  */
-class IngestSpec extends FunSpec 
-                    with TestEnvironment 
-                    with RasterVerifyMethods 
+class IngestSpec extends FunSpec
+                    with TestEnvironment
+                    with RasterVerifyMethods
                     with OnlyIfCanRunSpark {
 
   // subdirectories under the test directory for each of the two modes
@@ -47,7 +47,7 @@ class IngestSpec extends FunSpec
   clearTestDirectory()
 
   describe("Spark Ingest") {
-    ifCanRunSpark { 
+    ifCanRunSpark {
       val allOnes = new Path(inputHome, "all-ones.tif")
 
       val cmd = s"--input ${allOnes.toString} --outputpyramid ${sparkTestOutput} --sparkMaster local"
@@ -91,7 +91,7 @@ class IngestSpec extends FunSpec
       RowIndexScheme
     )
 
-    actualMeta should be(expectedMeta)
+    actualMeta should equal(expectedMeta)
   }
 }
 
@@ -116,7 +116,7 @@ trait RasterVerifyMethods extends ShouldMatchers { self: TestEnvironment =>
 
   def verifyCompression(raster: Path): Unit = {
     val dataFile = new Path(new Path(raster, "part-00000"), "data")
-    val dataReader = 
+    val dataReader =
       HdfsUtils.getSequenceFileReader(localFS, dataFile, conf)
     val isCompressed = dataReader.isCompressed()
     dataReader.close()

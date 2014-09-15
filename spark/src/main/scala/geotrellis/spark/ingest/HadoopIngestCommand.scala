@@ -51,7 +51,7 @@ class HadoopIngestArgs extends IngestArgs {
   *
   * --outputpyramid <path-to-raster> - this can be either on hdfs (hdfs://) or local fs (file://). If the directory
   * already exists, it is deleted
-  * 
+  *
   * --sparkMaster <spark-name>   i.e. local[10]
   *
   */
@@ -71,7 +71,6 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
     outFs.delete(outPath, true)
     outFs.mkdirs(outPath)
 
-    val sourceCRS = LatLng
     val destCRS = LatLng
 
     val sparkContext = args.sparkContext("Ingest")
@@ -96,7 +95,7 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
         logInfo(s"Saved raster at zoom level ${metaData.level.id} to $outPathWithZoom")
       }
 
-      Ingest(sparkContext)(source, sink, sourceCRS, destCRS, TilingScheme.TMS)
+      Ingest(sparkContext)(source, sink, destCRS, TilingScheme.TMS)
 
     } finally {
       sparkContext.stop

@@ -6,6 +6,8 @@ import com.vividsolutions.jts.geom.util.SineStarFactory
 import com.vividsolutions.jts.util.GeometricShapeFactory
 
 object GeometryBuilder {
+  implicit def builderToGeom[T <: Geometry](b: GeometryBuilder[T]): T = b.build
+
   def polygon(f: GeometricShapeFactory => jts.Polygon): GeometryBuilder[Polygon] =
     new GeometryBuilder[Polygon] {
       val factory = new GeometricShapeFactory
