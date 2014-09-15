@@ -9,6 +9,7 @@ import org.apache.accumulo.core.client.mock.MockInstance
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken
 import org.apache.accumulo.core.data.{Key, Mutation, Value, Range => ARange}
 import org.apache.accumulo.core.client.mapreduce.lib.util.{ConfiguratorBase => CB}
+import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.SparkContext
 import org.apache.hadoop.conf.Configuration
 
@@ -29,14 +30,18 @@ case class AccumuloInstance(
   def tileCatalog(implicit sc: SparkContext) =
     new AccumuloCatalog(sc, this, metaDataCatalog)
 
-  def initAccumuloInputFormat(implicit sc: SparkContext): Unit =
-    initAccumuloInputFormat(sc.hadoopConfiguration)
 
-  def initAccumuloInputFormat(conf: Configuration): Unit = {
+  def setAccumuloConfig(conf: Configuration): Unit = {
     if (instanceName == "fake")
       CB.setMockInstance(classOf[AccumuloInputFormat], conf, instanceName)
     else
       CB.setZooKeeperInstance(classOf[AccumuloInputFormat],conf, instanceName, zookeeper)
     CB.setConnectorInfo(classOf[AccumuloInputFormat], conf, user, token)
   }
+
+  def setAccumuloConfig(job: Job): Unit =
+    setAccumuloConfig(job.getConfiguration)
+
+  def initAccumuloInputFormat(implicit sc: SparkContext): Unit =
+    setAccumuloConfig(sc.hadoopConfiguration)
 }

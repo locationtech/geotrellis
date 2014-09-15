@@ -51,7 +51,7 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance, metaDataCata
   override def load(layer: Layer, bounds: Option[(TileBounds, TileCoordScheme)] = None): Option[RasterRDD] =
     metaDataCatalog.get(layer).map { case (table, md) =>
       val job = Job.getInstance(sc.hadoopConfiguration)
-      instance.initAccumuloInputFormat(job.getConfiguration)
+      instance.setAccumuloConfig(job.getConfiguration)
       InputFormatBase.setInputTableName(job, table)
       InputFormatBase.setRanges(job, format.ranges(layer, md, bounds))
 
