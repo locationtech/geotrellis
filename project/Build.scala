@@ -38,75 +38,75 @@ object GeotrellisBuild extends Build {
   // Default settings
   override lazy val settings =
     super.settings ++
-  Seq(
-    shellPrompt := { s => Project.extract(s).currentProject.id + " > " },
-    version := Version.geotrellis,
-    scalaVersion := Version.scala,
-    organization := "com.azavea.geotrellis",
+    Seq(
+      shellPrompt := { s => Project.extract(s).currentProject.id + " > " },
+      version := Version.geotrellis,
+      scalaVersion := Version.scala,
+      organization := "com.azavea.geotrellis",
 
-    // disable annoying warnings about 2.10.x
-    conflictWarning in ThisBuild := ConflictWarning.disable,
-    scalacOptions ++=
-      Seq("-deprecation",
-        "-unchecked",
-        "-Yinline-warnings",
-        "-language:implicitConversions",
-        "-language:reflectiveCalls",
-        "-language:postfixOps",
-        "-language:existentials",
-        "-feature"),
+      // disable annoying warnings about 2.10.x
+      conflictWarning in ThisBuild := ConflictWarning.disable,
+      scalacOptions ++=
+        Seq("-deprecation",
+          "-unchecked",
+          "-Yinline-warnings",
+          "-language:implicitConversions",
+          "-language:reflectiveCalls",
+          "-language:postfixOps",
+          "-language:existentials",
+          "-feature"),
 
-    publishMavenStyle := true,
+      publishMavenStyle := true,
 
-    publishTo <<= version { (v: String) =>
-      val nexus = "https://oss.sonatype.org/"
-      if (v.trim.endsWith("SNAPSHOT"))
-        Some("snapshots" at nexus + "content/repositories/snapshots")
-      else
-        Some("releases" at nexus + "service/local/staging/deploy/maven2")
-    },
+      publishTo <<= version { (v: String) =>
+        val nexus = "https://oss.sonatype.org/"
+        if (v.trim.endsWith("SNAPSHOT"))
+          Some("snapshots" at nexus + "content/repositories/snapshots")
+        else
+          Some("releases" at nexus + "service/local/staging/deploy/maven2")
+      },
 
-    publishArtifact in Test := false,
+      publishArtifact in Test := false,
 
-    pomIncludeRepository := { _ => false },
-    licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
-    homepage := Some(url(Info.url)),
+      pomIncludeRepository := { _ => false },
+      licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
+      homepage := Some(url(Info.url)),
 
-    pomExtra := (
+      pomExtra := (
 
-      <scm>
-        <url>git@github.com:geotrellis/geotrellis.git</url>
-        <connection>scm:git:git@github.com:geotrellis/geotrellis.git</connection>
+        <scm>
+          <url>git@github.com:geotrellis/geotrellis.git</url>
+          <connection>scm:git:git@github.com:geotrellis/geotrellis.git</connection>
         </scm>
         <developers>
-        <developer>
-        <id>joshmarcus</id>
-        <name>Josh Marcus</name>
-        <url>http://github.com/joshmarcus/</url>
+          <developer>
+            <id>joshmarcus</id>
+            <name>Josh Marcus</name>
+            <url>http://github.com/joshmarcus/</url>
           </developer>
-        <developer>
-        <id>lossyrob</id>
-        <name>Rob Emanuele</name>
-        <url>http://github.com/lossyrob/</url>
+          <developer>
+            <id>lossyrob</id>
+            <name>Rob Emanuele</name>
+            <url>http://github.com/lossyrob/</url>
           </developer>
         </developers>)
-  )
+    )
 
   val defaultAssemblySettings =
     assemblySettings ++
-  Seq(
-    test in assembly := {},
-    mergeStrategy in assembly <<= (mergeStrategy in assembly) {
-      (old) => {
-        case "reference.conf" => MergeStrategy.concat
-        case "application.conf" => MergeStrategy.concat
-        case "META-INF/MANIFEST.MF" => MergeStrategy.discard
-        case "META-INF\\MANIFEST.MF" => MergeStrategy.discard
-        case _ => MergeStrategy.first
-      }
-    },
-    resolvers ++= resolutionRepos
-  )
+    Seq(
+      test in assembly := {},
+      mergeStrategy in assembly <<= (mergeStrategy in assembly) {
+        (old) => {
+          case "reference.conf" => MergeStrategy.concat
+          case "application.conf" => MergeStrategy.concat
+          case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+          case "META-INF\\MANIFEST.MF" => MergeStrategy.discard
+          case _ => MergeStrategy.first
+        }
+      },
+      resolvers ++= resolutionRepos
+    )
 
   // Project: root
   lazy val root =
@@ -139,7 +139,7 @@ object GeotrellisBuild extends Build {
           sprayHttpx,
           apacheMath
         )
-    )
+      )
       .settings(defaultAssemblySettings: _*)
       .dependsOn(proj4)
 
@@ -199,7 +199,7 @@ object GeotrellisBuild extends Build {
         openCSV
       )
     ) ++
-  defaultAssemblySettings
+    defaultAssemblySettings
 
   // Project: raster-test
   lazy val rasterTest =
@@ -220,11 +220,10 @@ object GeotrellisBuild extends Build {
         scalacheck  % "test",
         spire % "test",
         sprayClient % "test",
-        sprayRouting % "test",
-        openCSV
+        sprayRouting % "test"
       )
     ) ++
-  defaultAssemblySettings
+    defaultAssemblySettings
 
   // Project: engine
   lazy val engine =
@@ -252,7 +251,7 @@ object GeotrellisBuild extends Build {
         sprayClient // for reading args from URLs,
       )
     ) ++
-  defaultAssemblySettings
+    defaultAssemblySettings
 
   // Project: engine
   lazy val engineTest =
@@ -275,7 +274,7 @@ object GeotrellisBuild extends Build {
         sprayRouting % "test"
       )
     ) ++
-  defaultAssemblySettings
+    defaultAssemblySettings
 
 
   // Project: testkit
@@ -308,7 +307,7 @@ object GeotrellisBuild extends Build {
         asm
       )
     ) ++
-  defaultAssemblySettings
+    defaultAssemblySettings
 
   // Project: slick
   lazy val geotrellis_slick: Project =
@@ -326,8 +325,8 @@ object GeotrellisBuild extends Build {
         scalatest % "test"
       )
     ) ++
-  defaultAssemblySettings ++
-  net.virtualvoid.sbt.graph.Plugin.graphSettings
+    defaultAssemblySettings ++
+    net.virtualvoid.sbt.graph.Plugin.graphSettings
 
   // Project: admin
   lazy val admin: Project =
@@ -347,8 +346,8 @@ object GeotrellisBuild extends Build {
         sprayHttpx
       )
     ) ++
-  spray.revolver.RevolverPlugin.Revolver.settings ++
-  defaultAssemblySettings
+    spray.revolver.RevolverPlugin.Revolver.settings ++
+    defaultAssemblySettings
 
   // Project: spark
   lazy val spark: Project =
@@ -373,10 +372,10 @@ object GeotrellisBuild extends Build {
             ExclusionRule(organization = "com.google.code.findbugs")
           ),
           "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "compile" excludeAll (
-            ExclusionRule(organization = "hsqldb")
+	    ExclusionRule(organization = "hsqldb")
           ),
           "org.apache.hadoop" % "hadoop-client" % "2.4.1" % "test" excludeAll (
-            ExclusionRule(organization = "hsqldb")
+	    ExclusionRule(organization = "hsqldb")
           ),
           "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0" excludeAll (
             ExclusionRule(organization = "com.google.code.findbugs")
@@ -391,8 +390,8 @@ object GeotrellisBuild extends Build {
         "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
       )
     ) ++
-  defaultAssemblySettings ++
-  net.virtualvoid.sbt.graph.Plugin.graphSettings
+    defaultAssemblySettings ++
+    net.virtualvoid.sbt.graph.Plugin.graphSettings
 
   // Project: gdal
 
@@ -417,7 +416,7 @@ object GeotrellisBuild extends Build {
         ),
       fork in test := true
     ) ++
-  defaultAssemblySettings
+    defaultAssemblySettings
 
   // Project: geotools
 
@@ -446,7 +445,7 @@ object GeotrellisBuild extends Build {
         ),
       fork in test := false
     ) ++
-  defaultAssemblySettings
+    defaultAssemblySettings
 
   // Project: dev
 
@@ -469,7 +468,7 @@ object GeotrellisBuild extends Build {
           "-Djava.library.path=./sigar"
         )
     ) ++
-  defaultAssemblySettings
+    defaultAssemblySettings
 
   // Project: demo
   lazy val demo: Project =
@@ -517,19 +516,19 @@ object GeotrellisBuild extends Build {
                 .get
                 ._2
                 .toEither match {
-                case Right(x) =>
-                  val classPath =
-                    x.files
-                      .mkString(":")
-                  // return a state with javaOptionsPatched = true and javaOptions set correctly
-                  Project
-                    .extract(state)
-                    .append(
-                    Seq(javaOptions in (benchmark, run) ++= Seq("-Xmx8G", "-cp", classPath)),
-                      state.put(vectorBenchmarkKey, true)
-                  )
-                case _ => state
-              }
+                  case Right(x) =>
+                    val classPath =
+                      x.files
+                       .mkString(":")
+                    // return a state with javaOptionsPatched = true and javaOptions set correctly
+                    Project
+                      .extract(state)
+                      .append(
+                        Seq(javaOptions in (benchmark, run) ++= Seq("-Xmx8G", "-cp", classPath)),
+                        state.put(vectorBenchmarkKey, true)
+                      )
+                  case _ => state
+                }
 
             case Some(_) =>
               state // the javaOptions are already patched
