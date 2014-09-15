@@ -4,14 +4,13 @@ package geotrellis.spark.io.accumulo
 import geotrellis.spark.{TileId, TmsTile}
 import org.apache.accumulo.core.client._
 import org.apache.accumulo.core.client.mapreduce.AccumuloInputFormat
-import org.apache.accumulo.core.client.mapreduce.lib.util.ConfiguratorBase
+import org.apache.accumulo.core.client.mapreduce.AccumuloOutputFormat
 import org.apache.accumulo.core.client.mock.MockInstance
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken
-import org.apache.accumulo.core.data.{Key, Mutation, Value, Range => ARange}
 import org.apache.accumulo.core.client.mapreduce.lib.util.{ConfiguratorBase => CB}
 import org.apache.hadoop.mapreduce.Job
-import org.apache.spark.SparkContext
 import org.apache.hadoop.conf.Configuration
+import org.apache.spark.SparkContext
 
 
 case class AccumuloInstance(
@@ -37,11 +36,12 @@ case class AccumuloInstance(
     else
       CB.setZooKeeperInstance(classOf[AccumuloInputFormat],conf, instanceName, zookeeper)
     CB.setConnectorInfo(classOf[AccumuloInputFormat], conf, user, token)
+
   }
 
   def setAccumuloConfig(job: Job): Unit =
     setAccumuloConfig(job.getConfiguration)
 
-  def initAccumuloInputFormat(implicit sc: SparkContext): Unit =
+  def setAccumuloConfig(sc: SparkContext): Unit =
     setAccumuloConfig(sc.hadoopConfiguration)
 }
