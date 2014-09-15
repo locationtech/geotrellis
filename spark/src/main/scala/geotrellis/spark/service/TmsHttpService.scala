@@ -29,33 +29,20 @@ class TmsHttpActor(val args: TmsArgs) extends Actor with TmsHttpService {
 
 trait TmsHttpService extends HttpService {
   val args: TmsArgs
-  val sc = args.sparkContext("TMS Service")
+  implicit val sc = args.sparkContext("TMS Service")
 
   val accumulo = AccumuloInstance(
     args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
-  accumulo.initAccumuloInputFormat(sc)
-
-  implicit val format = new TmsTilingAccumuloFormat
+  val catalog = accumulo.tileCatalog
 
   def rootRoute =
     pathPrefix("tms" / Segment / IntNumber / IntNumber / IntNumber ) { (layer, zoom, x , y) =>
-      val rdd1 = sc.accumuloRDD(accumulo.connector)(
-        "tiles",  TmsLayer(layer, zoom), Some(GridBounds(x, y, x, y), TmsCoordScheme))
 
-      val rdd2 = sc.accumuloRDD(accumulo.connector)(
-        "tiles",  TmsLayer(layer, zoom), Some(GridBounds(x, y, x, y), TmsCoordScheme))
-
-      val out = rdd1.combineTiles(rdd2){case (tms1, tms2) =>
-        require(tms1.id == tms2.id)
-        val res = tms1.tile.localAdd(tms2.tile)
-        TmsTile(tms1.id, res)
-      }
+      val rdd = catalog.load(Layer(layer, zoom), Some(GridBounds(x, y, x, y) -> TmsCoordScheme))
 
       respondWithMediaType(MediaTypes.`image/png`) { complete {
-        val tile = out.first.tile
-        //at least in the local case it is faster to do collect then encode
+        val tile = rdd.get.first.tile
         Encoder(Settings(Rgba, PaethFilter)).writeByteArray(tile)
       } }
     }
 }
-
