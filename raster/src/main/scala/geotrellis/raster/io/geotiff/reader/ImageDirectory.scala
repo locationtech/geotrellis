@@ -86,8 +86,8 @@ object Orientations {
 
   val TopLeft = 1
   val TopRight = 2
-  val BottomLeft = 3
-  val BottomRight = 4
+  val BottomRight = 3
+  val BottomLeft = 4
   val LeftTop = 5
   val RightTop = 6
   val RightBottom = 7

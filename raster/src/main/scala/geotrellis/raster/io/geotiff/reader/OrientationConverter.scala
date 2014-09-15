@@ -43,8 +43,8 @@ class OrientationConverter(
   def setCorrectOrientation(image: Array[Byte]): Array[Byte] = orientation match {
     case TopLeft => image
     case TopRight => convertTopRight(image)
-    case BottomLeft => convertBottomLeft(image)
     case BottomRight => convertBottomRight(image)
+    case BottomLeft => convertBottomLeft(image)
     case LeftTop => convertLeftTop(image)
     case RightTop => convertRightTop(image)
     case RightBottom => convertRightBottom(image)
@@ -53,7 +53,24 @@ class OrientationConverter(
       throw new MalformedGeoTiffException(s"Orientation $orientation is not correct.")
   }
 
-  private def convertTopRight(image: Array[Byte]) = {
+  private def convertTopRight(image: Array[Byte]) =
+    swapColumns(image)
+
+  private def convertBottomRight(image: Array[Byte]) =
+    swapRows(swapColumns(image))
+
+  private def convertBottomLeft(image: Array[Byte]) =
+    swapRows(image)
+
+  private def convertLeftTop(image: Array[Byte]) = ???
+
+  private def convertRightTop(image: Array[Byte]) = ???
+
+  private def convertRightBottom(image: Array[Byte]) = ???
+
+  private def convertLeftBottom(image: Array[Byte]) = ???
+
+  private def swapColumns(image: Array[Byte]) =
     if (bitsPerPixel != 1) {
       val bytes = bitsPerPixel / 8
 
@@ -69,13 +86,15 @@ class OrientationConverter(
           }
         }
       }
+
+      image
     } else {
       cfor(0)(_ < rows, _ + 1) { i =>
         cfor(0)(_ < cols / 2, _ + 1) { j =>
-          val firstIndex = (cols * i + j)
+          val firstIndex = cols * i + j
           val firstByteIndex = firstIndex / 8
 
-          val secondIndex = (cols * (i + 1) - j - 1)
+          val secondIndex = cols * (i + 1) - j - 1
           val secondByteIndex = secondIndex / 8
 
           val firstBitIndex = (Int.MaxValue - firstIndex) % 8
@@ -90,21 +109,49 @@ class OrientationConverter(
           }
         }
       }
+
+      image
     }
 
-    image
-  }
+  private def swapRows(image: Array[Byte]) =
+    if (bitsPerPixel != 1) {
+      val bytes = bitsPerPixel / 8
 
-  private def convertBottomLeft(image: Array[Byte]) = ???
+      cfor(0)(_ < rows / 2, _ + 1) { i =>
+        cfor(0)(_ < cols * bytes, _ + 1) { j =>
+          val firstIndex = i * cols * bytes + j
+          val secondIndex = (rows - i - 1) * cols * bytes + j
 
-  private def convertBottomRight(image: Array[Byte]) = ???
+          val t = image(firstIndex)
+          image(firstIndex) = image(secondIndex)
+          image(secondIndex) = t
+        }
+      }
 
-  private def convertLeftTop(image: Array[Byte]) = ???
+      image
+    } else {
+      cfor(0)(_ < rows / 2, _ + 1) { i =>
+        cfor(0)(_ < cols, _ + 1) { j =>
+          val firstIndex = i * cols + j
+          val firstByteIndex = firstIndex / 8
 
-  private def convertRightTop(image: Array[Byte]) = ???
+          val secondIndex = (rows - i - 1) * cols + j
+          val secondByteIndex = secondIndex / 8
 
-  private def convertRightBottom(image: Array[Byte]) = ???
+          val firstBitIndex = (Int.MaxValue - firstIndex) % 8
+          val secondBitIndex = (Int.MaxValue - secondIndex) % 8
 
-  private def convertLeftBottom(image: Array[Byte]) = ???
+          val first = (image(firstByteIndex) & (1 << firstBitIndex)) != 0
+          val second = (image(secondByteIndex) & (1 << secondBitIndex)) != 0
+
+          if (first != second) {
+            image(firstByteIndex) = (image(firstByteIndex) ^ (1 << firstBitIndex)).toByte
+            image(secondByteIndex) = (image(secondByteIndex) ^ (1 << secondBitIndex)).toByte
+          }
+        }
+      }
+
+      image
+    }
 
 }
