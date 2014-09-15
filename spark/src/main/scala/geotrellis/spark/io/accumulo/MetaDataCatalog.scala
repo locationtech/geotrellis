@@ -5,8 +5,9 @@ import org.apache.accumulo.core.client.Connector
 import org.apache.accumulo.core.data.{Key, Value, Mutation}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.hadoop.io.Text
+import org.apache.spark.Logging
 
-class MetaDataCatalog(connector: Connector, val catalogTable: String) {
+class MetaDataCatalog(connector: Connector, val catalogTable: String) extends Logging {
   {//create the metadata table if it does not ext
     val ops = connector.tableOperations()
     if (! ops.exists(catalogTable))
@@ -20,17 +21,22 @@ class MetaDataCatalog(connector: Connector, val catalogTable: String) {
     metadata = metadata updated (layer, table -> metaData)
   }
 
-  def get(layer: Layer): Option[(String, LayerMetaData)] =
-    metadata.get(layer)
+  def get(layer: Layer): Option[(String, LayerMetaData)] = {
+
+    val ret = metadata.get(layer)
+    if (ret.isEmpty)
+      println("CAN'T find the METDATA layer", layer)
+
+    ret
+  }
 
   def fetchAll: Map[Layer, (String, LayerMetaData)] = {
     val scan = connector.createScanner(catalogTable, new Authorizations())
-    scan.fetchColumnFamily(new Text("metadata")) //fetch all metadata
 
     scan.map{ case (key, value) =>
       val meta: LayerMetaData = MetaDataCatalog.decodeMetaData(key, value)
       val table = key.getRow.toString
-      val name: String = key.getColumnQualifier.toString
+      val name: String = key.getColumnFamily.toString
       val layer = Layer(name, meta.level.id)
       layer -> (table, meta)
     }.toMap
@@ -44,7 +50,7 @@ object MetaDataCatalog {
   def encodeMetaData(table: String, layer: Layer, md: LayerMetaData): Mutation = {
     val mutation = new Mutation(new Text(table))
     mutation.put(
-      new Text("metadata"), new Text(layer.asString),
+      new Text(layer.name), new Text(layer.zoom.toString) ,
       System.currentTimeMillis(),
       new Value(md.toJson.prettyPrint.getBytes))
     mutation
