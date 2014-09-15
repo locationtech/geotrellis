@@ -9,6 +9,8 @@ import geotrellis.spark.io.hadoop.formats._
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
+import geotrellis.proj4._
+
 import org.apache.spark._
 import org.apache.spark.rdd._
 import org.apache.spark.SparkContext.rddToPairRDDFunctions
@@ -26,20 +28,25 @@ import java.nio.ByteBuffer
 
 package object hadoop {
   implicit class HadoopSparkContextWrapper(sc: SparkContext) {
-    def hadoopRasterRDD(path: String): RasterRDD = 
+    def hadoopRasterRDD(path: String): RasterRDD =
       hadoopRasterRDD(new Path(path))
 
     def hadoopRasterRDD(path: Path): RasterRDD =
       RasterHadoopRDD(path, sc).toRasterRDD
 
-    def hadoopGeoTiffRDD(path: String): RDD[(Extent, Tile)] =
+    def hadoopGeoTiffRDD(path: String): RDD[((Extent, CRS), Tile)] =
       hadoopGeoTiffRDD(new Path(path))
 
-    def hadoopGeoTiffRDD(path: Path): RDD[(Extent, Tile)] = {
-      val updatedConf = 
+    def hadoopGeoTiffRDD(path: Path): RDD[((Extent, CRS), Tile)] = {
+      val updatedConf =
         sc.hadoopConfiguration.withInputDirectory(path)
 
-      sc.newAPIHadoopRDD(updatedConf, classOf[GeotiffInputFormat], classOf[Extent], classOf[Tile])
+      sc.newAPIHadoopRDD(
+        updatedConf,
+        classOf[GeotiffInputFormat],
+        classOf[(Extent, CRS)],
+        classOf[Tile]
+      )
     }
   }
 
@@ -50,7 +57,7 @@ package object hadoop {
       }, true)
 
 
-    def saveAsHadoopRasterRDD(path: String): Unit = 
+    def saveAsHadoopRasterRDD(path: String): Unit =
       saveAsHadoopRasterRDD(new Path(path))
 
     def saveAsHadoopRasterRDD(path: Path) = {
@@ -76,7 +83,7 @@ package object hadoop {
       rdd.partitioner match {
         case Some(partitioner) =>
           partitioner match {
-            case p: TileIdPartitioner => 
+            case p: TileIdPartitioner =>
               HadoopUtils.writeSplits(p.splits, path, conf)
             case _ =>
           }
