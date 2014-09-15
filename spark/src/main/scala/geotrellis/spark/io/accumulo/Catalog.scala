@@ -1,15 +1,18 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
-import geotrellis.spark.rdd.{RasterRDD, LayerMetaData}
+import geotrellis.spark.rdd._
 import geotrellis.spark.tiling.TileCoordScheme
 
-import org.apache.accumulo.core.client.mapreduce.{InputFormatBase, AccumuloInputFormat}
+import org.apache.accumulo.core.client.mapreduce.{AccumuloOutputFormat, InputFormatBase, AccumuloInputFormat}
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.data.{Range => ARange, Key, Value, Mutation}
+import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
 import org.apache.accumulo.core.util.{Pair => JPair}
+import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConversions._
 
@@ -75,6 +78,7 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance, metaDataCata
     metaDataCatalog.save(table, layer, rdd.metaData)
 
     //save tiles
+    /**
     sc.runJob(rdd, { partition: Iterator[TmsTile] =>
       val cfg = new BatchWriterConfig()
       val writer = _conn.value.createBatchWriter(_table.value, cfg)
@@ -83,5 +87,20 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance, metaDataCata
       }
       writer.close()
     })
+    */
+    val bulk: RDD[(Text, Mutation)] = rdd.map { row =>
+      val table = null
+      val mut: Mutation = _format.value.write(_layer.value, row)
+      (table, mut)
+    }
+    val job = new Job(sc.hadoopConfiguration)
+    AccumuloOutputFormat.setZooKeeperInstance(job, instance.instanceName, instance.zookeeper)
+    AccumuloOutputFormat.setConnectorInfo(job, instance.user, instance.token)
+    AccumuloOutputFormat.setBatchWriterOptions(job, new BatchWriterConfig())
+    AccumuloOutputFormat.setDefaultTableName(job, table)
+
+    bulk.saveAsNewAPIHadoopFile(instance.instanceName,
+      classOf[Text], classOf[Mutation], classOf[AccumuloOutputFormat],
+      job.getConfiguration)
   }
 }
