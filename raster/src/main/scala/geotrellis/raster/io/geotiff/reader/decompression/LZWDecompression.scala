@@ -175,29 +175,17 @@ object LZWDecompression {
 
     val len = arr.length
 
-    val nextArr = Array.ofDim[Byte](len)
-    cfor(0)(_ < len, _ + 1) { i =>
-      nextArr(i) = ByteInverterUtils.invertByte(arr(i))
-    }
-
-    private val bitSet = BitSet.valueOf(nextArr)
-
-    val size = arr.size * 8
-
     private var index = 0
 
     def get(next: Int): Int = {
-      if (next + index > size) {
-        val lastBits = new String((for (i <- index until size) yield (if (bitSet.get(i)) '1' else '0')).toArray)
-
+      if (next + index > len * 8)
         throw new IndexOutOfBoundsException(
-          s"Index out of bounds for BitInputStream: ${this.toString}. Index was: $index and bitSet size is: $size, last bits are: $lastBits, next is: $next so next + index - size = ${next + index - size}"
+          s"Index out of bounds for BitInputStream for LZW decompression."
         )
-      }
 
       val start = index / 8
       val end = (index + next - 1) / 8
-      val ebi = (index + next - 1) % 8 // denna ar fel
+      val ebi = (index + next - 1) % 8
 
       val res =
         if (end - start == 2) {
