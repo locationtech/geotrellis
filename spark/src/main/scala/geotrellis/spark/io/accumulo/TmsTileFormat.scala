@@ -28,7 +28,6 @@ object TmsTileFormat extends TileFormat {
           .tileToIndex(tileBounds)
           .spans
           .map { ts =>
-            println("Setting Range:", rowId(ts._1, layer) -> rowId(ts._2, layer))
             new ARange(rowId(ts._1, layer), rowId(ts._2, layer))
           }
     }
