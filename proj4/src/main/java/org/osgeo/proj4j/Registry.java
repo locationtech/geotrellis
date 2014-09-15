@@ -9,8 +9,8 @@ import org.osgeo.proj4j.proj.*;
 
 /**
  * Supplies predefined values for various library classes
- * such as {@link Ellipsoid}, {@link Datum}, and {@link Projection}. 
- * 
+ * such as {@link Ellipsoid}, {@link Datum}, and {@link Projection}.
+ *
  * @author Martin Davis
  *
  */
@@ -21,7 +21,7 @@ public class Registry {
     initialize();
   }
 
-  public final static Datum[] datums = 
+  public final static Datum[] datums =
   {
     Datum.WGS84,
     Datum.GGRS87,
@@ -45,7 +45,7 @@ public class Registry {
     return null;
   }
 
-  public final static Ellipsoid[] ellipsoids = 
+  public final static Ellipsoid[] ellipsoids =
   {
     Ellipsoid.SPHERE,
     new Ellipsoid("MERIT", 6378137.0, 0.0, 298.257, "MERIT 1983"),
@@ -130,10 +130,10 @@ public class Registry {
     }
     return null;
   }
-  
+
   private synchronized void initialize() {
     // guard against race condition
-    if (projRegistry != null) 
+    if (projRegistry != null)
       return;
     projRegistry = new HashMap();
     register( "aea", AlbersProjection.class, "Albers Equal Area" );
@@ -196,35 +196,22 @@ public class Registry {
     register( "mbtfpq", McBrydeThomasFlatPolarQuarticProjection.class, "McBryde-Thomas Flat-Polar Quartic" );
 //    register( "mbtfps", Projection.class, "McBryde-Thomas Flat-Polar Sinusoidal" );
     register( "merc", MercatorProjection.class, "Mercator" );
-//    register( "mil_os", Projection.class, "Miller Oblated Stereographic" );
     register( "mill", MillerProjection.class, "Miller Cylindrical" );
-//    register( "mpoly", Projection.class, "Modified Polyconic" );
     register( "moll", MolleweideProjection.class, "Mollweide" );
     register( "murd1", Murdoch1Projection.class, "Murdoch I" );
     register( "murd2", Murdoch2Projection.class, "Murdoch II" );
     register( "murd3", Murdoch3Projection.class, "Murdoch III" );
     register( "nell", NellProjection.class, "Nell" );
-//    register( "nell_h", Projection.class, "Nell-Hammer" );
     register( "nicol", NicolosiProjection.class, "Nicolosi Globular" );
     register( "nsper", PerspectiveProjection.class, "Near-sided perspective" );
-//    register( "nzmg", Projection.class, "New Zealand Map Grid" );
-//    register( "ob_tran", Projection.class, "General Oblique Transformation" );
-//    register( "ocea", Projection.class, "Oblique Cylindrical Equal Area" );
-//    register( "oea", Projection.class, "Oblated Equal Area" );
     register( "omerc", ObliqueMercatorProjection.class, "Oblique Mercator" );
-//    register( "ortel", Projection.class, "Ortelius Oval" );
     register( "ortho", OrthographicAzimuthalProjection.class, "Orthographic" );
     register( "pconic", PerspectiveConicProjection.class, "Perspective Conic" );
     register( "poly", PolyconicProjection.class, "Polyconic (American)" );
-//    register( "putp1", Projection.class, "Putnins P1" );
     register( "putp2", PutninsP2Projection.class, "Putnins P2" );
-//    register( "putp3", Projection.class, "Putnins P3" );
-//    register( "putp3p", Projection.class, "Putnins P3'" );
     register( "putp4p", PutninsP4Projection.class, "Putnins P4'" );
     register( "putp5", PutninsP5Projection.class, "Putnins P5" );
     register( "putp5p", PutninsP5PProjection.class, "Putnins P5'" );
-//    register( "putp6", Projection.class, "Putnins P6" );
-//    register( "putp6p", Projection.class, "Putnins P6'" );
     register( "qua_aut", QuarticAuthalicProjection.class, "Quartic Authalic" );
     register( "robin", RobinsonProjection.class, "Robinson" );
     register( "rpoly", RectangularPolyconicProjection.class, "Rectangular Polyconic" );
@@ -234,29 +221,18 @@ public class Registry {
     register( "sterea", ObliqueStereographicAlternativeProjection.class, "Oblique Stereographic Alternative" );
     register( "tcc", TranverseCentralCylindricalProjection.class, "Transverse Central Cylindrical" );
     register( "tcea", TransverseCylindricalEqualArea.class, "Transverse Cylindrical Equal Area" );
-//    register( "tissot", TissotProjection.class, "Tissot Conic" );
     register( "tmerc", TransverseMercatorProjection.class, "Transverse Mercator" );
-//    register( "tpeqd", Projection.class, "Two Point Equidistant" );
-//    register( "tpers", Projection.class, "Tilted perspective" );
-//    register( "ups", Projection.class, "Universal Polar Stereographic" );
-//    register( "urm5", Projection.class, "Urmaev V" );
     register( "urmfps", UrmaevFlatPolarSinusoidalProjection.class, "Urmaev Flat-Polar Sinusoidal" );
     register( "utm", TransverseMercatorProjection.class, "Universal Transverse Mercator (UTM)" );
     register( "vandg", VanDerGrintenProjection.class, "van der Grinten (I)" );
-//    register( "vandg2", Projection.class, "van der Grinten II" );
-//    register( "vandg3", Projection.class, "van der Grinten III" );
-//    register( "vandg4", Projection.class, "van der Grinten IV" );
     register( "vitk1", VitkovskyProjection.class, "Vitkovsky I" );
     register( "wag1", Wagner1Projection.class, "Wagner I (Kavraisky VI)" );
     register( "wag2", Wagner2Projection.class, "Wagner II" );
     register( "wag3", Wagner3Projection.class, "Wagner III" );
     register( "wag4", Wagner4Projection.class, "Wagner IV" );
     register( "wag5", Wagner5Projection.class, "Wagner V" );
-//    register( "wag6", Projection.class, "Wagner VI" );
     register( "wag7", Wagner7Projection.class, "Wagner VII" );
     register( "weren", WerenskioldProjection.class, "Werenskiold I" );
-//    register( "wink1", Projection.class, "Winkel I" );
-//    register( "wink2", Projection.class, "Winkel II" );
     register( "wintri", WinkelTripelProjection.class, "Winkel Tripel" );
   }
 
