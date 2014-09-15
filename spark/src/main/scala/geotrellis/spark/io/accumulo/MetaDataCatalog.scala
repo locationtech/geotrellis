@@ -21,14 +21,8 @@ class MetaDataCatalog(connector: Connector, val catalogTable: String) extends Lo
     metadata = metadata updated (layer, table -> metaData)
   }
 
-  def get(layer: Layer): Option[(String, LayerMetaData)] = {
-
-    val ret = metadata.get(layer)
-    if (ret.isEmpty)
-      println("CAN'T find the METDATA layer", layer)
-
-    ret
-  }
+  def get(layer: Layer): Option[(String, LayerMetaData)] =
+    metadata.get(layer)
 
   def fetchAll: Map[Layer, (String, LayerMetaData)] = {
     val scan = connector.createScanner(catalogTable, new Authorizations())
