@@ -34,6 +34,7 @@ object Pyramid {
           val tile: Option[Tile] = tup match {
             case (None, tile: Some[Tile]) => tile
             case (tile: Some[Tile], None) => tile
+            case (None, None) => None
             case _ => sys.error("Indexing error when merging neighboring tiles")
           }
           tile
