@@ -39,7 +39,7 @@ object Ingest {
   def apply(sc: SparkContext): Ingest = new Ingest(sc)
 }
 
-class Ingest(sc: SparkContext) {
+class Ingest(sc: SparkContext) extends Logging {
   import Ingest.Sink
 
   // TODO: Read source CRS from Source
@@ -116,16 +116,22 @@ class Ingest(sc: SparkContext) {
     (tiles, metaData)
   }
 
+  def pyramid(sink: Sink): Sink  = { case (rdd, metaData) =>
+    def _pyramid(rdd: RDD[TmsTile], md: LayerMetaData): Unit = {
+      logInfo(s"Pyramid: Sinking RDD for level: ${md.level.id}")
+      sink(rdd, md)
+      if (md.level.id > 1) {
+        val (_rdd, _md) = Pyramid.levelUp(rdd, md)
+        _pyramid(_rdd, _md)
+      }
+    }
+    _pyramid(rdd, metaData)
+  }
+
   def apply(source: =>RDD[(Extent, Tile)], sink:  Sink, sourceCRS: CRS, destCRS: CRS, tilingScheme: TilingScheme): Unit =
     source |>
     reproject(sourceCRS, destCRS) |>
     setMetaData(destCRS, tilingScheme) |>
     mosaic |>
-    sink
-
-  // def apply(source: =>RDD[(Extent, Tile)], pyramid: (Sink) => (RDD[TmsTile], LayerMetaData) => Unit, sink:  Sink): Unit =
-  //   source |>
-  //   setMetaData |>
-  //   mosaic |>
-  //   pyramid(sink)
+    pyramid(sink)
 }

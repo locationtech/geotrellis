@@ -6,7 +6,20 @@ import geotrellis.proj4._
 import geotrellis.vector.Extent
 import geotrellis.vector.reproject._
 
-case class LayoutLevel(id: Int, tileLayout: TileLayout)
+case class LayoutLevel(id: Int, tileLayout: TileLayout){
+  def up: LayoutLevel =
+    LayoutLevel(id - 1,
+      TileLayout(tileLayout.tileCols/2, tileLayout.tileRows/2,
+        tileLayout.pixelCols/2, tileLayout.pixelRows/2)
+    )
+
+  def down: LayoutLevel =
+    LayoutLevel(id + 1,
+    TileLayout(tileLayout.tileCols*2, tileLayout.tileRows*2,
+      tileLayout.pixelCols*2, tileLayout.pixelRows*2)
+  )
+
+}
 
 object TilingScheme {
   /** Default tiling scheme for WSG84 */
