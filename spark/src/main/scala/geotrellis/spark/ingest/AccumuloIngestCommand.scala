@@ -53,9 +53,9 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
       val sink = accumuloSink(args.table, args.layer, catalog)
 
       if (args.pyramid)
-        Ingest(sparkContext)(source, Ingest.pyramid(sink), sourceCRS, destCRS, TilingScheme.TMS)
+        Ingest(sparkContext)(source, Ingest.pyramid(sink), destCRS, TilingScheme.TMS)
       else
-        Ingest(sparkContext)(source, sink, sourceCRS, destCRS, TilingScheme.TMS)
+        Ingest(sparkContext)(source, sink, destCRS, TilingScheme.TMS)
 
     } finally {
       sparkContext.stop()
