@@ -46,7 +46,7 @@ class CatalogSpec extends FunSpec
           val raster: RasterRDD = new RasterRDD(tiles, metaData)
           catalog.save(raster, "ones", "tiles")
         }
-        Ingest(sparkContext)(source, sink, LatLng, LatLng, TilingScheme.TMS)
+        Ingest(sparkContext)(source, sink, LatLng, TilingScheme.TMS)
       }
 
       it("be able to map the id to grid") {
