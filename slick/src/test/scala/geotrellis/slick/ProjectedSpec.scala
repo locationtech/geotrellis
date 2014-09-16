@@ -73,4 +73,27 @@ class ProjectedSpec extends FlatSpec with ShouldMatchers with TestDatabase {
       q.list.head should equal (2.0)
     }
   }
+
+  it should "support PostGIS multi points" in {
+    class MPRow(tag: Tag) extends Table[(Int,Projected[MultiPoint])](tag, "points") {
+      def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+      def geom = column[Projected[MultiPoint]]("geom")
+      def * = (id, geom)
+    }
+    val MPTable = TableQuery[MPRow]
+
+    db withSession { implicit s =>
+      try { MPTable.ddl.drop } catch { case e: Throwable =>  }
+      MPTable.ddl.create
+
+      MPTable += (0, Projected(MultiPoint(Point(1,1), Point(2,2)), 3131))
+
+      val q = for {
+        mp <- MPTable
+      } yield {mp.geom.centroid}
+
+     q.list.head should equal ( Projected(Point(1.5, 1.5), 3131) )
+    }
+  }
+
 }
