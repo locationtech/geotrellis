@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.op
+package geotrellis.spark.op
 
-import geotrellis.raster._
+import geotrellis.spark.rdd.RasterRDD
 
-package object hydrology {
-  implicit class HydrologyExtensions(val tile: Tile) extends HydrologyMethods
+package object local {
+  implicit class LocalRasterRDDSourceExtensions(
+    val rasterRDD: RasterRDD) extends LocalRasterRDDMethods { }
+
+  implicit class LocalRasterRDDSeqExtensions(
+    val rasterRDDs: Traversable[RasterRDD]) extends LocalRasterRDDSeqMethods { }
 }
