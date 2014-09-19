@@ -407,7 +407,7 @@ object GeotrellisBuild extends Build {
       javaOptions += "-Djava.library.path=/usr/local/lib",
       libraryDependencies ++=
         Seq(
-          "org.gdal" % "gdal" % "1.10.1",
+//          "org.gdal" % "gdal" % "1.10.1",
           "com.github.scopt" % "scopt_2.10" % "3.2.0",
           scalatest % "test"
         ),
