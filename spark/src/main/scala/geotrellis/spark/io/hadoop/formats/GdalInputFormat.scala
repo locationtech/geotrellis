@@ -35,6 +35,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import org.apache.hadoop.conf.Configuration
+import GdalInputFormat._
 
 /**
  * Uses GDAL to attempt to read a raster file.
@@ -48,23 +49,43 @@ import org.apache.hadoop.conf.Configuration
  * Also note that all the blocks need to be shuffled to a single machine for each file.
  * If the file being ingested is much larger than HDFS block size this will be very inefficient.
  */
-class GdalInputFormat extends FileInputFormat[(Extent, CRS, Map[String, String]), Tile] {
+class GdalInputFormat extends FileInputFormat[GdalRasterInfo, Tile] {
   override def isSplitable(context: JobContext, fileName: Path) = false
 
   override def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
     new GdalRecordReader
 }
 
-class GdalRecordReader extends RecordReader[(Extent, CRS, Map[String, String]), Tile] {
+case class GdalFileInfo(rasterExtent: RasterExtent, crs: CRS, meta: Map[String, String])
+case class GdalRasterInfo(file: GdalFileInfo, bandMeta: Map[String, String])
+
+object GdalInputFormat {
+  def parseMeta(meta: List[String]): Map[String, String] =
+    meta
+      .map(_.split("="))
+      .map(l => l(0) -> l(1))
+      .toMap
+
+  def parseCRS(projection: Option[String]): CRS =
+    projection match {
+      case None => LatLng //This seems to be default for NetCDF
+      case Some(s) => sys.error(s"Don't know how to handle GDAL projection: $s")
+    }
+
+}
+
+class GdalRecordReader extends RecordReader[GdalRasterInfo, Tile] {
+
   private var conf: Configuration = _
   private var file: LocalPath = _
   private var rasterDataSet: RasterDataSet = _
-  private var rasterExtent: Extent = _
-  private var crs: CRS = _
-  private var maxBand: Int = _
+  private var fileInfo: GdalFileInfo = _
+
   private var bandIndex: Int = 0
+  private var maxBand: Int = _
+
   private var band: RasterBand = null
-  private var meta: Map[String, String] = _
+  private var bandMeta: Map[String, String] = _
 
   def initialize(split: InputSplit, context: TaskAttemptContext) = {
     val path = split.asInstanceOf[FileSplit].getPath
@@ -72,15 +93,14 @@ class GdalRecordReader extends RecordReader[(Extent, CRS, Map[String, String]), 
     conf            = context.getConfiguration
     file            = HdfsUtils.localCopy(conf, path)
     rasterDataSet   = Gdal.open(file.path.toUri.getPath)
-    rasterExtent    = rasterDataSet.rasterExtent.extent
     maxBand         = rasterDataSet.maxBandIndex
-    rasterDataSet.projection match {
-      case None =>
-        crs = LatLng //This seems to be default for NetCDF
-      case Some(s) =>
-        //If you got this error, you should know how to handle it now.
-        sys.error(s"Don't know how to handle GDAL projection: $s")
-    }
+
+    fileInfo =
+      GdalFileInfo(
+        rasterExtent = rasterDataSet.rasterExtent,
+        crs = parseCRS(rasterDataSet.projection),
+        meta = parseMeta(rasterDataSet.metadata)
+      )
   }
 
   def close() = file match {
@@ -94,7 +114,7 @@ class GdalRecordReader extends RecordReader[(Extent, CRS, Map[String, String]), 
     if (hasNext) {
       bandIndex += 1
       band = rasterDataSet.band(bandIndex)
-      meta = band
+      bandMeta = band
         .metadata
         .map(_.split("="))
         .map(l => l(0) -> l(1))
@@ -102,7 +122,6 @@ class GdalRecordReader extends RecordReader[(Extent, CRS, Map[String, String]), 
     }
     hasNext
   }
-  def getCurrentKey = (rasterExtent, crs, meta)
+  def getCurrentKey = GdalRasterInfo(fileInfo, bandMeta)
   def getCurrentValue = band.toTile()
-
 }

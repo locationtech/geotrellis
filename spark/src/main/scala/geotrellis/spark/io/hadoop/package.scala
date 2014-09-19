@@ -27,11 +27,14 @@ import java.io.PrintWriter
 import java.nio.ByteBuffer
 
 package object hadoop {
+  /** Upgrades a string to a Hadoop Path URL. Seems dangerous, but not surprising. */
+  implicit def stringToPath(path: String): Path = new Path(path)
+
   implicit class HadoopSparkContextWrapper(sc: SparkContext) {
-    def hadoopRasterRDD(path: String): RasterRDD =
+    def hadoopRasterRDD(path: String): TmsRasterRDD =
       hadoopRasterRDD(new Path(path))
 
-    def hadoopRasterRDD(path: Path): RasterRDD =
+    def hadoopRasterRDD(path: Path): TmsRasterRDD =
       RasterHadoopRDD(path, sc).toRasterRDD
 
     def hadoopGeoTiffRDD(path: String): RDD[((Extent, CRS), Tile)] =
@@ -48,9 +51,22 @@ package object hadoop {
         classOf[Tile]
       )
     }
+
+    def hadoopGdalRDD(path: Path): RDD[(GdalRasterInfo, Tile)] = {
+      val updatedConf =
+        sc.hadoopConfiguration.withInputDirectory(path)
+
+      sc.newAPIHadoopRDD(
+        updatedConf,
+        classOf[GdalInputFormat],
+        classOf[GdalRasterInfo],
+        classOf[Tile]
+      )
+    }
+
   }
 
-  implicit class SavableRasterRDD(val rdd: RasterRDD) extends Logging {
+  implicit class SavableRasterRDD(val rdd: TmsRasterRDD) extends Logging {
     def toWritable =
       rdd.mapPartitions({ partition =>
         partition.map(_.toWritable)
