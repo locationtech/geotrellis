@@ -44,8 +44,6 @@ class GeotiffInputFormat extends FileInputFormat[(Extent, CRS), Tile] {
 
 }
 
-case class GeotiffData(cellType: CellType, userNoData: Double)
-
 class GeotiffRecordReader extends RecordReader[(Extent, CRS), Tile] {
   private var tup: ((Extent, CRS), Tile) = null
   private var hasNext: Boolean = true
