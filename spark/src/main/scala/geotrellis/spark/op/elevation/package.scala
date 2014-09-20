@@ -21,10 +21,10 @@ import geotrellis.spark._
 import geotrellis.spark.rdd.RasterRDD
 
 package object elevation {
-  implicit class ElevationRasterRDDExtensions(
-    val rasterRDD: RasterRDD) extends ElevationMethods
+  implicit class ElevationRasterRDDExtensions(val rasterRDD: RasterRDD)
+      extends ElevationRasterRDDMethods
 
-  implicit class HillshadeTuple(val tuple: Tuple2[RasterRDD, RasterRDD]) {
+  implicit class HillshadeRasterRDDTuple(val tuple: Tuple2[RasterRDD, RasterRDD]) {
     def hillshade(azimuth: Double, altitude: Double) = {
       val (aspect, slope) = tuple
 

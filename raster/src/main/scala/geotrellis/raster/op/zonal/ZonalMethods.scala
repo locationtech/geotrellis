@@ -10,4 +10,3 @@ trait ZonalMethods extends TileMethods {
   def zonalPercentage(zones: Tile): Tile =
     ZonalPercentage(tile, zones)
 }
-

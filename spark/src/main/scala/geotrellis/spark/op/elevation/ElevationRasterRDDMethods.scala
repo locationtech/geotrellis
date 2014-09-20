@@ -7,7 +7,7 @@ import geotrellis.raster.op.focal._
 import geotrellis.spark._
 import geotrellis.spark.rdd.RasterRDD
 
-trait ElevationMethods extends RasterRDDMethods {
+trait ElevationRasterRDDMethods extends RasterRDDMethods {
   /**
    * Calculates the slope of each cell in a raster.
    * @param   cs         cellSize of the raster
