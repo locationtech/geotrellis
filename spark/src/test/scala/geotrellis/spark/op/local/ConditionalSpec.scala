@@ -19,7 +19,7 @@ package geotrellis.spark.op.local
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.rdd.RasterRDD
-import geotrellis.spark.testfiles.{IncreasingFromZero}
+import geotrellis.spark.testfiles.{IncreasingFromZero, DecreasingFromZero}
 
 import org.scalatest.FunSpec
 
@@ -30,35 +30,123 @@ class ConditionalSpec extends FunSpec
     with OnlyIfCanRunSpark {
   describe("Conditional If Operation") {
     ifCanRunSpark {
-      val increasingTiff = IncreasingFromZero(inputHome, conf)
-      val decreasingTiff = DecreasingFromZero(inputHome, conf)
+      val increasing = IncreasingFromZero(inputHome, conf)
+      val decreasing = DecreasingFromZero(inputHome, conf)
+
+      val cols = increasing.metaData.cols
+      val rows = increasing.metaData.rows
+      val tots = cols * rows - 1
 
       it("should change values mod 2 to 1, testing integer method") {
-        val increasingFromZero = sc.hadoopRasterRDD(increasingTiff.path)
-        val res = increasingFromZero.localIf((a: Int) => a % 2 == 0, 1)
+        val inc = sc.hadoopRasterRDD(increasing.path)
+        val res = inc.localIf((a: Int) => a % 2 == 0, 1)
 
-        shouldBe(res, (x: Int, y: Int) => if (x * y % 2 == 0) 1 else x * y)
+        rasterShouldBe(
+          res,
+          (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 1 else y * cols + x
+        )
+
+        rastersShouldHaveSameIds(res, inc)
       }
 
       it("should change values mod 2 to 1 else 0, testing integer method") {
-        val increasingFromZero = sc.hadoopRasterRDD(increasingTiff.path)
-        val res = increasingFromZero.localIf((a: Int) => a % 2 == 0, 1, 0)
+        val inc = sc.hadoopRasterRDD(increasing.path)
+        val res = inc.localIf((a: Int) => a % 2 == 0, 1, 0)
 
-        shouldBe(res, (x: Int, y: Int) => if (x * y % 2 == 0) 1 else 0)
+        rasterShouldBe(
+          res,
+          (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 1 else 0
+        )
+
+        rastersShouldHaveSameIds(res, inc)
       }
 
       it("should change values mod 2 to 1, testing double method") {
-        val increasingFromZero = sc.hadoopRasterRDD(increasingTiff.path)
-        val res = increasingFromZero.localIf((a: Double) => a % 2 == 0, 1)
+        val inc = sc.hadoopRasterRDD(increasing.path)
+        val res = inc.localIf((a: Double) => a % 2 == 0, 1)
 
-        shouldBe(res, (x: Int, y: Int) => if (x * y % 2 == 0) 1 else x * y)
+        rasterShouldBe(
+          res,
+          (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 1 else y * cols + x
+        )
+
+        rastersShouldHaveSameIds(res, inc)
       }
 
       it("should change values mod 2 to 1 else 0, testing double method") {
-        val increasingFromZero = sc.hadoopRasterRDD(increasingTiff.path)
-        val res = increasingFromZero.localIf((a: Double) => a % 2 == 0, 1, 0)
+        val inc = sc.hadoopRasterRDD(increasing.path)
+        val res = inc.localIf((a: Double) => a % 2 == 0, 1, 0)
 
-        shouldBe(res, (x: Int, y: Int) => if (x * y % 2 == 0) 1 else 0)
+        rasterShouldBe(
+          res,
+          (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 1 else 0
+        )
+
+        rastersShouldHaveSameIds(res, inc)
+      }
+
+      it("should if 2 values in 2 rasters are math.abs(diff) <= 1 set to 0 integer method") {
+        val inc = sc.hadoopRasterRDD(increasing.path)
+        val dec = sc.hadoopRasterRDD(decreasing.path)
+
+        val thres = tots / 2.0
+
+        val res = inc.localIf(dec, (a: Int, b: Int) => math.abs(a - b) <= 1, 0)
+
+        rasterShouldBe(
+          res,
+          (x: Int, y: Int) => if (math.abs((y * cols + x) - thres) <= 1) 0 else y * cols + x
+        )
+
+        rastersShouldHaveSameIds(res, inc)
+      }
+
+      it("should if 2 values in 2 rasters are math.abs(diff) <= 1 set to 0 else 1 integer method") {
+        val inc = sc.hadoopRasterRDD(increasing.path)
+        val dec = sc.hadoopRasterRDD(decreasing.path)
+
+        val thres = tots / 2.0
+
+        val res = inc.localIf(dec, (a: Int, b: Int) => math.abs(a - b) <= 1, 0, 0)
+
+        rasterShouldBe(
+          res,
+          (x: Int, y: Int) => if (math.abs((y * cols + x) - thres) <= 1) 0 else 0
+        )
+
+        rastersShouldHaveSameIds(res, inc)
+      }
+
+      it("should if 2 values in 2 rasters are math.abs(diff) <= 1 set to 0 double method") {
+        val inc = sc.hadoopRasterRDD(increasing.path)
+        val dec = sc.hadoopRasterRDD(decreasing.path)
+
+        val thres = tots / 2.0
+
+        val res = inc.localIf(dec, (a: Double, b: Double) => math.abs(a - b) <= 1, 0)
+
+        rasterShouldBe(
+          res,
+          (x: Int, y: Int) => if (math.abs((y * cols + x) - thres) <= 1) 0 else y * cols + x
+        )
+
+        rastersShouldHaveSameIds(res, inc)
+      }
+
+      it("should if 2 values in 2 rasters are math.abs(diff) <= 1 set to 0 else 1 double method") {
+        val inc = sc.hadoopRasterRDD(increasing.path)
+        val dec = sc.hadoopRasterRDD(decreasing.path)
+
+        val thres = tots / 2.0
+
+        val res = inc.localIf(dec, (a: Double, b: Double) => math.abs(a - b) <= 1, 0, 0)
+
+        rasterShouldBe(
+          res,
+          (x: Int, y: Int) => if (math.abs((y * cols + x) - thres) <= 1) 0 else 0
+        )
+
+        rastersShouldHaveSameIds(res, inc)
       }
     }
   }

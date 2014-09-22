@@ -26,7 +26,7 @@ trait RasterRDDMatchers extends Matchers {
    * a. if every tile has a min/max value set to those passed in,
    * b. if number of tiles == count
    */
-  def shouldBe(rdd: RasterRDD, minMaxCount: (Int, Int, Long)): Unit = {
+  def rasterShouldBe(rdd: RasterRDD, minMaxCount: (Int, Int, Int)): Unit = {
     val res = rdd.map(_.tile.findMinMax).collect
     val (min, max, count) = minMaxCount
     res.count(_ == (min, max)) should be(count)
@@ -38,7 +38,7 @@ trait RasterRDDMatchers extends Matchers {
    * a. if every pixel == value, and
    * b. if number of tiles == count
    */
-  def shouldBe(rdd: RasterRDD, value: Int, count: Int): Unit = {
+  def rasterShouldBe(rdd: RasterRDD, value: Int, count: Int): Unit = {
     val res = rdd.map(_.tile).collect
 
     res.foreach { r =>
@@ -52,15 +52,21 @@ trait RasterRDDMatchers extends Matchers {
     res.length should be(count)
   }
 
-  def shouldBe(rdd: RasterRDD, f: (Int, Int) => Int): Unit = {
+  def rasterShouldBe(rdd: RasterRDD, f: (Int, Int) => Int): Unit = {
     val res = rdd.map(_.tile).collect
 
     res.foreach { r =>
       for (col <- 0 until r.cols) {
         for (row <- 0 until r.rows) {
-          r.get(col, row) should be(f(col, row))
+          r.get(col, row) should be (f(col, row))
         }
       }
     }
   }
+
+  def rastersShouldHaveSameIds(first: RasterRDD, second: RasterRDD): Unit =
+    first.collect.sortBy(_.id).zip(second.collect.sortBy(_.id)).foreach {
+      case (TmsTile(t1, r1), TmsTile(t2, r2)) => t1 should be (t2)
+    }
+
 }

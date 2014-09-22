@@ -18,7 +18,7 @@ trait ElevationRasterRDDMethods extends RasterRDDMethods {
     cs: CellSize,
     zFactor: Double = 1.0,
     bounds: Option[GridBounds] = None): RasterRDD = rasterRDD.mapTiles {
-    case TmsTile(r, t) => TmsTile(r, Slope(t, Square(1), bounds, cs, zFactor))
+    case TmsTile(t, r) => TmsTile(t, Slope(r, Square(1), bounds, cs, zFactor))
   }
 
   /**
@@ -28,7 +28,7 @@ trait ElevationRasterRDDMethods extends RasterRDDMethods {
    */
   def aspect(cs: CellSize, bounds: Option[GridBounds] = None): RasterRDD =
     rasterRDD.mapTiles {
-      case TmsTile(r, t) => TmsTile(r, Aspect(t, Square(1), bounds, cs))
+      case TmsTile(t, r) => TmsTile(t, Aspect(r, Square(1), bounds, cs))
     }
 
 
@@ -42,7 +42,7 @@ trait ElevationRasterRDDMethods extends RasterRDDMethods {
     altitude: Double = 45,
     zFactor: Double = 1.0,
     bounds: Option[GridBounds] = None): RasterRDD = rasterRDD.mapTiles {
-    case TmsTile(r, t) =>
-      TmsTile(r, Hillshade(t, Square(1), bounds, cs, azimuth, altitude, zFactor))
+    case TmsTile(t, r) =>
+      TmsTile(t, Hillshade(r, Square(1), bounds, cs, azimuth, altitude, zFactor))
   }
 }

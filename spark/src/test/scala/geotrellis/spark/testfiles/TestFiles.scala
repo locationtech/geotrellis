@@ -66,7 +66,7 @@ object IncreasingFromZero {
 object DecreasingFromZero {
   def apply(prefix: Path, conf: Configuration) =
     new TestFiles(
-      new Path(decreasing, "increasing/10"),
+      new Path(prefix, "decreasing/10"),
       conf
     )
 }

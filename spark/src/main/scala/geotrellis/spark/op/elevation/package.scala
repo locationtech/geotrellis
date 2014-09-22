@@ -29,8 +29,8 @@ package object elevation {
       val (aspect, slope) = tuple
 
       aspect.combineTiles(slope) {
-        case (TmsTile(r1, t1), TmsTile(r2, t2)) =>
-          TmsTile(r1, Hillshade.indirect(t1, t2, azimuth, altitude))
+        case (TmsTile(t1, r1), TmsTile(t2, r2)) =>
+          TmsTile(t1, Hillshade.indirect(r1, r2, azimuth, altitude))
       }
     }
   }

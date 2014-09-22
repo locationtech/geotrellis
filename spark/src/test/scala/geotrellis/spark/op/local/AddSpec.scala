@@ -36,14 +36,24 @@ class AddSpec extends FunSpec
         val ones = sc.hadoopRasterRDD(allOnes.path)
         val twos = ones + 1
 
-        shouldBe(twos, (2, 2, allOnes.tileCount))
+        rasterShouldBe(twos, (2, 2, allOnes.tileCount))
+        rastersShouldHaveSameIds(ones, twos)
+      }
+
+      it("should add a raster to a constant") {
+        val ones = sc.hadoopRasterRDD(allOnes.path)
+        val twos = 1 +: ones
+
+        rasterShouldBe(twos, (2, 2, allOnes.tileCount))
+        rastersShouldHaveSameIds(ones, twos)
       }
 
       it("should add multiple rasters") {
         val ones = sc.hadoopRasterRDD(allOnes.path)
         val threes = ones + ones + ones
 
-        shouldBe(threes, (3, 3, allOnes.tileCount))
+        rasterShouldBe(threes, (3, 3, allOnes.tileCount))
+        rastersShouldHaveSameIds(ones, threes)
       }
     }
   }

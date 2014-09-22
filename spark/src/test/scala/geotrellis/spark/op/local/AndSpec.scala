@@ -19,7 +19,7 @@ package geotrellis.spark.op.local
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.rdd.RasterRDD
-import geotrellis.spark.testfiles.{AllOnes, AllTwos}
+import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
@@ -32,21 +32,33 @@ class AndSpec extends FunSpec
     ifCanRunSpark {
       val allOnes = AllOnes(inputHome, conf)
       val allTwos = AllTwos(inputHome, conf)
+      val allHundreds = AllHundreds(inputHome, conf)
 
-      it("should and a constant with a raster") {
+      it("should and a raster with a constant") {
         val ones = sc.hadoopRasterRDD(allOnes.path)
         val res = ones & 1
 
-        shouldBe(res, (1, 1, allOnes.tileCount))
+        rasterShouldBe(res, (1, 1, allOnes.tileCount))
+        rastersShouldHaveSameIds(ones, res)
       }
 
-      it("should and two different rasters") {
+      it("should and a constant with a raster") {
+        val ones = sc.hadoopRasterRDD(allOnes.path)
+        val res = 1 &: ones
+
+        rasterShouldBe(res, (1, 1, allOnes.tileCount))
+        rastersShouldHaveSameIds(ones, res)
+      }
+
+      it("should and three different rasters") {
         val ones = sc.hadoopRasterRDD(allOnes.path)
         val twos = sc.hadoopRasterRDD(allTwos.path)
+        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
 
-        val res = ones & twos
+        val res = ones & twos & hundreds
 
-        shouldBe(res, (0, 0, allOnes.tileCount))
+        rasterShouldBe(res, (0, 0, allOnes.tileCount))
+        rastersShouldHaveSameIds(ones, res)
       }
     }
   }

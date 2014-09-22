@@ -43,9 +43,9 @@ object GenerateTestFiles {
     val testFiles = List(
       ConstantTestFileValues(1) -> "all-ones",
       ConstantTestFileValues(2) -> "all-twos",
-      ConstantTestFileValues(3) -> "all-hundreds",
-      IncreasingTestFileValues() -> "increasing",
-      DecreasingTestFileValues() -> "decrasing"
+      ConstantTestFileValues(100) -> "all-hundreds",
+      IncreasingTestFileValues(tileCols, tileRows) -> "increasing",
+      DecreasingTestFileValues(tileCols, tileRows) -> "decreasing"
     )
 
     val sc = new SparkContext("local", "create-test-files")

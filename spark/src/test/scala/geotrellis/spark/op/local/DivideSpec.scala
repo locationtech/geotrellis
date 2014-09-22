@@ -35,21 +35,21 @@ class DivideSpec extends FunSpec
       val allHundreds = AllHundreds(inputHome, conf)
 
       it("should divide raster values by a constant") {
-
         val twos = sc.hadoopRasterRDD(allTwos.path)
 
         val ones = twos / 2
 
-        shouldBe(ones, (1, 1, allTwos.tileCount))
+        rasterShouldBe(ones, (1, 1, allTwos.tileCount))
+        rastersShouldHaveSameIds(twos, ones)
       }
 
       it("should divide from a constant, raster values") {
-
         val twos = sc.hadoopRasterRDD(allTwos.path)
 
         val ones = 2 /: twos
 
-        shouldBe(ones, (1, 1, allTwos.tileCount))
+        rasterShouldBe(ones, (1, 1, allTwos.tileCount))
+        rastersShouldHaveSameIds(twos, ones)
       }
 
       it("should divide multiple rasters") {
@@ -57,7 +57,8 @@ class DivideSpec extends FunSpec
         val twos = sc.hadoopRasterRDD(allTwos.path)
         val res = hundreds / twos / twos
 
-        shouldBe(res, (25, 25, allHundreds.tileCount))
+        rasterShouldBe(res, (25, 25, allHundreds.tileCount))
+        rastersShouldHaveSameIds(hundreds, res)
       }
     }
   }

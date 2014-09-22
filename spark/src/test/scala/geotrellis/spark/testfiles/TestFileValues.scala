@@ -31,22 +31,29 @@ class ConstantTestFileValues(v: Int) extends TestFileValues {
 
 object IncreasingTestFileValues {
 
-  def apply(start: Int = 0): IncreasingTestFileValues =
-    new IncreasingTestFileValues(start)
+  def apply(cols: Int, rows: Int, offset: Int = 0): IncreasingTestFileValues =
+    new IncreasingTestFileValues(cols, rows, offset)
 
 }
 
-class IncreasingTestFileValues(offset: Int = 0) extends TestFileValues {
-  override def value(y: Int, x: Int): Int = offset + y * x
+class IncreasingTestFileValues(
+  cols: Int,
+  rows: Int,
+  offset: Int = 0) extends TestFileValues {
+  override def value(y: Int, x: Int): Int = offset + y * cols + x
 }
 
 object DecreasingTestFileValues {
 
-  def apply(start: Int = 0): DecreasingTestFileValues =
-    new DecreasingTestFileValues(start)
+  def apply(cols: Int, rows: Int, offset: Int = 0): DecreasingTestFileValues =
+    new DecreasingTestFileValues(cols, rows, offset)
 
 }
 
-class DecreasingTestFileValues(offset: Int = 0) extends TestFileValues {
-  override def value(y: Int, x: Int): Int = y * x - offset
+class DecreasingTestFileValues(
+  cols: Int,
+  rows: Int,
+  offset: Int = 0) extends TestFileValues {
+  override def value(y: Int, x: Int): Int =
+    cols * rows - (y * cols + x) - offset - 1
 }

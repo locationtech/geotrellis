@@ -13,37 +13,37 @@ trait FocalRasterRDDMethods extends RasterRDDMethods {
   /** Computes the minimum value of a neighborhood */
   def focalMin(n: Neighborhood, bounds: Option[GridBounds] = None): RasterRDD =
     rasterRDD.mapTiles {
-      case TmsTile(r, t) => TmsTile(r, Min(t, n, bounds))
+      case TmsTile(t, r) => TmsTile(t, Min(r, n, bounds))
     }
 
   /** Computes the maximum value of a neighborhood */
   def focalMax(n: Neighborhood, bounds: Option[GridBounds] = None): RasterRDD =
     rasterRDD.mapTiles {
-      case TmsTile(r, t) => TmsTile(r, Max(t, n, bounds))
+      case TmsTile(t, r) => TmsTile(t, Max(r, n, bounds))
     }
 
   /** Computes the mode of a neighborhood */
   def focalMode(n: Neighborhood, bounds: Option[GridBounds] = None): RasterRDD =
     rasterRDD.mapTiles {
-      case TmsTile(r, t) => TmsTile(r, Mode(t, n, bounds))
+      case TmsTile(t, r) => TmsTile(t, Mode(r, n, bounds))
     }
 
   /** Computes the median of a neighborhood */
   def focalMedian(n: Neighborhood, bounds: Option[GridBounds] = None): RasterRDD =
     rasterRDD.mapTiles {
-      case TmsTile(r, t) => TmsTile(r, Median(t, n, bounds))
+      case TmsTile(t, r) => TmsTile(t, Median(r, n, bounds))
     }
 
   /** Computes the mean of a neighborhood */
   def focalMean(n: Neighborhood, bounds: Option[GridBounds] = None): RasterRDD =
     rasterRDD.mapTiles {
-      case TmsTile(r, t) => TmsTile(r, Mean(t, n, bounds))
+      case TmsTile(t, r) => TmsTile(t, Mean(r, n, bounds))
     }
 
   /** Computes the sum of a neighborhood */
   def focalSum(n: Neighborhood, bounds: Option[GridBounds] = None): RasterRDD =
     rasterRDD.mapTiles {
-      case TmsTile(r, t) => TmsTile(r, Sum(t, n, bounds))
+      case TmsTile(t, r) => TmsTile(t, Sum(r, n, bounds))
     }
 
   /** Computes the standard deviation of a neighborhood */
@@ -51,13 +51,13 @@ trait FocalRasterRDDMethods extends RasterRDDMethods {
     n: Neighborhood,
     bounds: Option[GridBounds] = None): RasterRDD =
     rasterRDD.mapTiles {
-      case TmsTile(r, t) => TmsTile(r, StandardDeviation(t, n, bounds))
+      case TmsTile(t, r) => TmsTile(t, StandardDeviation(r, n, bounds))
     }
 
   /** Computes the next step of Conway's Game of Life */
   def focalConway(bounds: Option[GridBounds] = None): RasterRDD =
     rasterRDD.mapTiles {
-      case TmsTile(r, t) => TmsTile(r, Conway(t, Square(1), bounds))
+      case TmsTile(t, r) => TmsTile(t, Conway(r, Square(1), bounds))
     }
 
   /**
@@ -68,7 +68,7 @@ trait FocalRasterRDDMethods extends RasterRDDMethods {
     */
   def tileMoransI(n: Neighborhood, bounds: Option[GridBounds] = None): RasterRDD =
     rasterRDD.mapTiles {
-      case TmsTile(r, t) => TmsTile(r, TileMoransICalculation(t, n, bounds))
+      case TmsTile(t, r) => TmsTile(t, TileMoransICalculation(r, n, bounds))
     }
 
   /**
@@ -81,6 +81,6 @@ trait FocalRasterRDDMethods extends RasterRDDMethods {
     n: Neighborhood,
     bounds: Option[GridBounds] = None): RDD[(Long, Double)] =
     rasterRDD.map {
-      case TmsTile(r, t) => (r, ScalarMoransICalculation(t, n, bounds))
+      case TmsTile(t, r) => (t, ScalarMoransICalculation(r, n, bounds))
     }
 }

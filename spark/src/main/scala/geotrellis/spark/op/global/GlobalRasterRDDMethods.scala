@@ -13,11 +13,11 @@ import org.apache.spark.rdd.RDD
 trait GlobalRasterRDDMethods extends RasterRDDMethods {
 
   def convolve(kernel: Kernel): RasterRDD = rasterRDD.mapTiles {
-    case TmsTile(r, t) => TmsTile(r, Convolve(t, kernel))
+    case TmsTile(t, r) => TmsTile(t, Convolve(r, kernel))
   }
 
   def costDistance(points: Seq[(Int, Int)]): RasterRDD = rasterRDD.mapTiles {
-    case TmsTile(r, t) => TmsTile(r, CostDistance(t, points))
+    case TmsTile(t, r) => TmsTile(t, CostDistance(r, points))
   }
 
   def toVector(
@@ -25,36 +25,36 @@ trait GlobalRasterRDDMethods extends RasterRDDMethods {
     regionConnectivity: Connectivity = RegionGroupOptions.default.connectivity
   ): RDD[(Long, List[PolygonFeature[Int]])] =
     rasterRDD.map {
-      case TmsTile(r, t) => (r, ToVector(t, extent, regionConnectivity))
+      case TmsTile(t, r) => (t, ToVector(r, extent, regionConnectivity))
     }
 
   def regionGroup(
     options: RegionGroupOptions = RegionGroupOptions.default
   ): RDD[(Long, RegionGroupResult)] =
     rasterRDD.map {
-      case TmsTile(r, t) => (r, RegionGroup(t, options))
+      case TmsTile(t, r) => (t, RegionGroup(r, options))
     }
 
   def verticalFlip(): RasterRDD = rasterRDD.mapTiles {
-    case TmsTile(r, t) => TmsTile(r, VerticalFlip(t))
+    case TmsTile(t, r) => TmsTile(t, VerticalFlip(r))
   }
 
   def viewshed(col: Int, row: Int, exact: Boolean = false): RasterRDD =
     rasterRDD.mapTiles {
-      case TmsTile(r, t) =>
+      case TmsTile(t, r) =>
         if (exact)
-          TmsTile(r, Viewshed(t, col, row))
+          TmsTile(t, Viewshed(r, col, row))
         else
-          TmsTile(r, ApproxViewshed(t, col, row))
+          TmsTile(t, ApproxViewshed(r, col, row))
     }
 
 
   def viewshedOffsets(col: Int, row: Int, exact: Boolean = false): RasterRDD =
     rasterRDD.mapTiles {
-      case TmsTile(r, t) =>
+      case TmsTile(t, r) =>
         if (exact)
-          TmsTile(r, Viewshed.offsets(t, col, row))
+          TmsTile(t, Viewshed.offsets(r, col, row))
         else
-          TmsTile(r, ApproxViewshed.offsets(t, col, row))
+          TmsTile(t, ApproxViewshed.offsets(r, col, row))
     }
 }

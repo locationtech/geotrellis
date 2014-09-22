@@ -9,20 +9,20 @@ import geotrellis.spark.rdd.RasterRDD
 trait HydrologyRasterRDDMethods extends RasterRDDMethods {
 
   def accumulation(): RasterRDD = rasterRDD.mapTiles {
-    case TmsTile(r, t) => TmsTile(r, Accumulation(t))
+    case TmsTile(t, r) => TmsTile(t, Accumulation(r))
   }
 
   /**  Operation to compute a flow direction raster from an elevation raster
     * @see [[FlowDirection]]
     */
   def flowDirection(): RasterRDD = rasterRDD.mapTiles {
-    case TmsTile(r, t) => TmsTile(r, FlowDirection(t))
+    case TmsTile(t, r) => TmsTile(t, FlowDirection(r))
   }
 
   /** Fills sink values in a raster. Returns a RasterRDD of TypeDouble
     * @see [[Fill]]
     */
   def fill(threshold: Double): RasterRDD = rasterRDD.mapTiles {
-    case TmsTile(r, t) => TmsTile(r, Fill(t, Square(1), None, threshold))
+    case TmsTile(t, r) => TmsTile(t, Fill(r, Square(1), None, threshold))
   }
 }
