@@ -46,6 +46,7 @@ object Ingest extends Logging {
         _pyramid(_rdd, _md)
       }
     }
+
     _pyramid(rdd, metaData)
   }
 
@@ -55,22 +56,20 @@ object Ingest extends Logging {
 class Ingest(sc: SparkContext) {
   type Sink = (RDD[TmsTile], LayerMetaData) => Unit
 
-  def reproject(destCRS: CRS): RDD[((Extent, CRS), Tile)] => RDD[((Extent, CRS), Tile)] = {
-    def _reproject(sourceTiles: RDD[((Extent, CRS), Tile)]): RDD[((Extent, CRS), Tile)] = {
-      sourceTiles.map { case ((extent, crs), tile) => {
-        if (crs == destCRS) ((extent, crs), tile)
+  def reproject(destCRS: CRS): RDD[((Extent, CRS), Tile)] => RDD[((Extent, CRS), Tile)] =
+    {(sourceTiles: RDD[((Extent, CRS), Tile)]) =>
+      sourceTiles.map { case ((extent, crs), tile) =>
+        if (crs == destCRS)
+          ((extent, crs), tile)
         else {
           val (t, e) = tile.reproject(extent, crs, destCRS)
           ((e, destCRS), t)
         }
       }
-      }
     }
-    _reproject
-  }
 
-  def setMetaData(tilingScheme: TilingScheme): RDD[((Extent, CRS), Tile)] => (RDD[((Extent, CRS), Tile)], LayerMetaData) = {
-    def _setMetaData(sourceTiles: RDD[((Extent, CRS), Tile)]): (RDD[((Extent, CRS), Tile)], LayerMetaData) =  {
+  def setMetaData(tilingScheme: TilingScheme): RDD[((Extent, CRS), Tile)] => (RDD[((Extent, CRS), Tile)], LayerMetaData) =
+    {(sourceTiles: RDD[((Extent, CRS), Tile)]) =>
 
       val (uncappedExtent, cellType, cellSize, crs): (Extent, CellType, CellSize, CRS) =
         sourceTiles
@@ -99,9 +98,6 @@ class Ingest(sc: SparkContext) {
 
       (sourceTiles, metaData)
     }
-
-    _setMetaData
-  }
 
   def mosaic(sourceTiles: RDD[((Extent, CRS), Tile)], metaData: LayerMetaData): (RDD[TmsTile], LayerMetaData) = {
     val bcMetaData = sc.broadcast(metaData)
