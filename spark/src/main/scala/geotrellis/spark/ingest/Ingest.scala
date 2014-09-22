@@ -33,7 +33,24 @@ import org.apache.spark.broadcast.Broadcast
 
 import spire.syntax.cfor._
 
-object Ingest { def apply(sc: SparkContext): Ingest = new Ingest(sc) }
+object Ingest extends Logging {
+  type Sink = (RDD[TmsTile], LayerMetaData)=>Unit
+
+  /** Turn a sink into a pyramiding sink */
+  def pyramid(sink: Sink): Sink  = { case (rdd, metaData) =>
+    def _pyramid(rdd: RDD[TmsTile], md: LayerMetaData): Unit = {
+      logInfo(s"Pyramid: Sinking RDD for level: ${md.level.id}")
+      sink(rdd, md)
+      if (md.level.id > 1) {
+        val (_rdd, _md) = Pyramid.levelUp(rdd, md)
+        _pyramid(_rdd, _md)
+      }
+    }
+    _pyramid(rdd, metaData)
+  }
+
+  def apply(sc: SparkContext): Ingest = new Ingest(sc)
+}
 
 class Ingest(sc: SparkContext) {
   type Sink = (RDD[TmsTile], LayerMetaData) => Unit
@@ -122,14 +139,8 @@ class Ingest(sc: SparkContext) {
 
   def apply(source: =>RDD[((Extent, CRS), Tile)], sink:  Sink, destCRS: CRS, tilingScheme: TilingScheme): Unit =
     source |>
-  reproject(destCRS) |>
-  setMetaData(tilingScheme) |>
-  mosaic |>
-  sink
-
-  // def apply(source: =>RDD[(Extent, Tile)], pyramid: (Sink) => (RDD[TmsTile], LayerMetaData) => Unit, sink:  Sink): Unit =
-  //   source |>
-  //   setMetaData |>
-  //   mosaic |>
-  //   pyramid(sink)
+    reproject(destCRS) |>
+    setMetaData(tilingScheme) |>
+    mosaic |>
+    sink
 }
