@@ -22,31 +22,31 @@ import geotrellis.spark.rdd.RasterRDD
 
 trait SubtractRasterRDDMethods extends RasterRDDMethods {
   /** Subtract a constant value from each cell.*/
-  def localSubtract(i: Int) =
+  def localSubtract(i: Int): RasterRDD =
     rasterRDD.mapTiles { case TmsTile(t, r) => TmsTile(t, Subtract(r, i)) }
   /** Subtract a constant value from each cell.*/
-  def -(i:Int) = localSubtract(i)
+  def -(i: Int): RasterRDD = localSubtract(i)
   /** Subtract each value of a cell from a constant value. */
-  def localSubtractFrom(i: Int) =
+  def localSubtractFrom(i: Int): RasterRDD =
     rasterRDD.mapTiles { case TmsTile(t, r) => TmsTile(t, Subtract(i, r)) }
   /** Subtract each value of a cell from a constant value. */
-  def -:(i:Int) = localSubtractFrom(i)
+  def -:(i: Int): RasterRDD = localSubtractFrom(i)
   /** Subtract a double constant value from each cell.*/
-  def localSubtract(d: Double) =
+  def localSubtract(d: Double): RasterRDD =
     rasterRDD.mapTiles { case TmsTile(t, r) => TmsTile(t, Subtract(r, d)) }
   /** Subtract a double constant value from each cell.*/
-  def -(d:Double) = localSubtract(d)
+  def -(d: Double): RasterRDD = localSubtract(d)
   /** Subtract each value of a cell from a double constant value. */
   def localSubtractFrom(d: Double) =
     rasterRDD.mapTiles { case TmsTile(t, r) => TmsTile(t, Subtract(d, r)) }
   /** Subtract each value of a cell from a double constant value. */
-  def -:(d:Double) = localSubtractFrom(d)
+  def -:(d: Double): RasterRDD = localSubtractFrom(d)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(other: RasterRDD) =
+  def localSubtract(other: RasterRDD): RasterRDD =
     rasterRDD.combineTiles(other) {
       case (TmsTile(t1, r1), TmsTile(t2, r2)) => TmsTile(t1, Subtract(r1, r2))
     }
   /** Subtract the values of each cell in each raster. */
-  def -(other: RasterRDD) = localSubtract(other)
+  def -(other: RasterRDD): RasterRDD = localSubtract(other)
   /** Subtract the values of each cell in each raster. */
 }

@@ -25,7 +25,7 @@ package object elevation {
       extends ElevationRasterRDDMethods
 
   implicit class HillshadeRasterRDDTuple(val tuple: Tuple2[RasterRDD, RasterRDD]) {
-    def hillshade(azimuth: Double, altitude: Double) = {
+    def hillshade(azimuth: Double, altitude: Double): RasterRDD = {
       val (aspect, slope) = tuple
 
       aspect.combineTiles(slope) {

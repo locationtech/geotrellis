@@ -8,14 +8,14 @@ import geotrellis.spark.rdd.RasterRDD
 
 trait HydrologyRasterRDDMethods extends RasterRDDMethods {
 
-  def accumulation() = rasterRDD.mapTiles {
+  def accumulation(): RasterRDD = rasterRDD.mapTiles {
     case TmsTile(r, t) => TmsTile(r, Accumulation(t))
   }
 
   /**  Operation to compute a flow direction raster from an elevation raster
     * @see [[FlowDirection]]
     */
-  def flowDirection() = rasterRDD.mapTiles {
+  def flowDirection(): RasterRDD = rasterRDD.mapTiles {
     case TmsTile(r, t) => TmsTile(r, FlowDirection(t))
   }
 

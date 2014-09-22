@@ -22,30 +22,30 @@ import geotrellis.spark.rdd.RasterRDD
 
 trait DivideRasterRDDMethods extends RasterRDDMethods {
   /** Divide each value of the raster by a constant value.*/
-  def localDivide(i: Int) =
+  def localDivide(i: Int): RasterRDD =
     rasterRDD.mapTiles { case TmsTile(t, r) => TmsTile(t, Divide(r, i)) }
   /** Divide each value of the raster by a constant value.*/
-  def /(i: Int) = localDivide(i)
+  def /(i: Int): RasterRDD = localDivide(i)
   /** Divide a constant value by each cell value.*/
-  def localDivideValue(i: Int) =
+  def localDivideValue(i: Int): RasterRDD =
     rasterRDD.mapTiles { case TmsTile(t, r) => TmsTile(t, Divide(i, r)) }
   /** Divide a constant value by each cell value.*/
-  def /:(i: Int) = localDivideValue(i)
+  def /:(i: Int): RasterRDD = localDivideValue(i)
   /** Divide each value of a raster by a double constant value.*/
-  def localDivide(d: Double) =
+  def localDivide(d: Double): RasterRDD =
     rasterRDD.mapTiles { case TmsTile(t, r) => TmsTile(t, Divide(r, d)) }
   /** Divide each value of a raster by a double constant value.*/
-  def /(d: Double) = localDivide(d)
+  def /(d: Double): RasterRDD = localDivide(d)
   /** Divide a double constant value by each cell value.*/
-  def localDivideValue(d: Double) =
+  def localDivideValue(d: Double): RasterRDD =
     rasterRDD.mapTiles { case TmsTile(t, r) => TmsTile(t, Divide(d, r)) }
   /** Divide a double constant value by each cell value.*/
-  def /:(d: Double) = localDivideValue(d)
+  def /:(d: Double): RasterRDD = localDivideValue(d)
   /** Divide the values of each cell in each raster. */
-  def localDivide(other: RasterRDD) =
+  def localDivide(other: RasterRDD): RasterRDD =
     rasterRDD.combineTiles(other) {
       case (TmsTile(t1, r1), TmsTile(t2, r2)) => TmsTile(t1, Divide(r1, r2))
     }
   /** Divide the values of each cell in each raster. */
-  def /(other: RasterRDD) = localDivide(other)
+  def /(other: RasterRDD): RasterRDD = localDivide(other)
 }

@@ -8,28 +8,32 @@ import geotrellis.vector._
 import geotrellis.spark._
 import geotrellis.spark.rdd.RasterRDD
 
+import org.apache.spark.rdd.RDD
+
 trait GlobalRasterRDDMethods extends RasterRDDMethods {
-  def convolve(kernel: Kernel) = rasterRDD.mapTiles {
+
+  def convolve(kernel: Kernel): RasterRDD = rasterRDD.mapTiles {
     case TmsTile(r, t) => TmsTile(r, Convolve(t, kernel))
   }
 
-  def costDistance(points: Seq[(Int, Int)]) = rasterRDD.mapTiles {
+  def costDistance(points: Seq[(Int, Int)]): RasterRDD = rasterRDD.mapTiles {
     case TmsTile(r, t) => TmsTile(r, CostDistance(t, points))
   }
 
   def toVector(
     extent: Extent,
     regionConnectivity: Connectivity = RegionGroupOptions.default.connectivity
-  ): Seq[List[PolygonFeature[Int]]] =
-    rasterRDD
-      .collect
-      .map(tmsTile => ToVector(tmsTile.tile, extent, regionConnectivity))
+  ): RDD[(Long, List[PolygonFeature[Int]])] =
+    rasterRDD.map {
+      case TmsTile(r, t) => (r, ToVector(t, extent, regionConnectivity))
+    }
 
   def regionGroup(
-    options: RegionGroupOptions = RegionGroupOptions.default): Seq[RegionGroupResult] =
-    rasterRDD
-      .collect
-      .map(tmsTile => RegionGroup(tmsTile.tile, options))
+    options: RegionGroupOptions = RegionGroupOptions.default
+  ): RDD[(Long, RegionGroupResult)] =
+    rasterRDD.map {
+      case TmsTile(r, t) => (r, RegionGroup(t, options))
+    }
 
   def verticalFlip(): RasterRDD = rasterRDD.mapTiles {
     case TmsTile(r, t) => TmsTile(r, VerticalFlip(t))

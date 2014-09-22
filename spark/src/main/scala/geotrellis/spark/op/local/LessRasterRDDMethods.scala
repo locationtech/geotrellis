@@ -67,14 +67,16 @@ trait LessRasterRDDMethods extends RasterRDDMethods {
   def <<:(d: Double): RasterRDD = localLessRightAssociative(d)
   /**
     * Returns a Tile with data of TypeBit, where cell values equal 1 if
-    * the corresponding cell valued of the rasters are less than the next raster, else 0.
+    * the corresponding cell valued of the rasters are less than the next
+    * raster, else 0.
     */
   def localLess(other: RasterRDD): RasterRDD = rasterRDD.combineTiles(other) {
     case (TmsTile(t1, r1), TmsTile(t2, r2)) => TmsTile(t1, Less(r1, r2))
   }
   /**
     * Returns a Tile with data of TypeBit, where cell values equal 1 if
-    * the corresponding cell valued of the rasters are less than the next raster, else 0.
+    * the corresponding cell valued of the rasters are less than the next
+    * raster, else 0.
     */
   def <(other: RasterRDD): RasterRDD = localLess(other)
 }

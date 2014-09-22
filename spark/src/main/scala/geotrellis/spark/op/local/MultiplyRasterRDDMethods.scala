@@ -22,24 +22,24 @@ import geotrellis.spark.rdd.RasterRDD
 
 trait MultiplyRasterRDDMethods extends RasterRDDMethods {
   /** Multiply a constant value from each cell.*/
-  def localMultiply(i: Int) =
+  def localMultiply(i: Int): RasterRDD =
     rasterRDD.mapTiles { case TmsTile(t, r) => TmsTile(t, Multiply(r, i)) }
   /** Multiply a constant value from each cell.*/
-  def *(i:Int) = localMultiply(i)
+  def *(i: Int): RasterRDD = localMultiply(i)
   /** Multiply a constant value from each cell.*/
-  def *:(i:Int) = localMultiply(i)
+  def *:(i: Int): RasterRDD = localMultiply(i)
   /** Multiply a double constant value from each cell.*/
-  def localMultiply(d: Double) =
+  def localMultiply(d: Double): RasterRDD =
     rasterRDD.mapTiles { case TmsTile(t, r) => TmsTile(t, Multiply(r, d)) }
   /** Multiply a double constant value from each cell.*/
-  def *(d:Double) = localMultiply(d)
+  def *(d: Double): RasterRDD = localMultiply(d)
   /** Multiply a double constant value from each cell.*/
-  def *:(d:Double) = localMultiply(d)
+  def *:(d: Double): RasterRDD = localMultiply(d)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(other: RasterRDD) =
+  def localMultiply(other: RasterRDD): RasterRDD =
     rasterRDD.combineTiles(other) {
       case (TmsTile(t1, r1), TmsTile(t2, r2)) => TmsTile(t1, Multiply(r1, r2))
     }
   /** Multiply the values of each cell in each raster. */
-  def *(other: RasterRDD) = localMultiply(other)
+  def *(other: RasterRDD): RasterRDD = localMultiply(other)
 }

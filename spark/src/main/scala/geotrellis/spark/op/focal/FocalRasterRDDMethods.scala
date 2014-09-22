@@ -6,6 +6,8 @@ import geotrellis.raster.op.focal._
 import geotrellis.spark._
 import geotrellis.spark.rdd.RasterRDD
 
+import org.apache.spark.rdd.RDD
+
 trait FocalRasterRDDMethods extends RasterRDDMethods {
 
   /** Computes the minimum value of a neighborhood */
@@ -75,8 +77,10 @@ trait FocalRasterRDDMethods extends RasterRDDMethods {
     *
     * @see [[ScalarMoransICalculation]]
     */
-  def scalarMoransI(n: Neighborhood, bounds: Option[GridBounds] = None): Seq[Double] =
-    rasterRDD
-      .collect
-      .map(tmsTile => ScalarMoransICalculation(tmsTile.tile, n, bounds))
+  def scalarMoransI(
+    n: Neighborhood,
+    bounds: Option[GridBounds] = None): RDD[(Long, Double)] =
+    rasterRDD.map {
+      case TmsTile(r, t) => (r, ScalarMoransICalculation(t, n, bounds))
+    }
 }
