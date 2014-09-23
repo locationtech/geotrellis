@@ -19,7 +19,7 @@ package geotrellis.spark.op.local
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.rdd.RasterRDD
-import geotrellis.spark.testfiles.{IncreasingFromZero, AllOnes}
+import geotrellis.spark.testfiles.{IncreasingTestFile, AllOnesTestFile}
 
 import org.scalatest.FunSpec
 
@@ -30,8 +30,8 @@ class EqualSpec extends FunSpec
     with OnlyIfCanRunSpark {
   describe("Equal Operation") {
     ifCanRunSpark {
-      val increasing = IncreasingFromZero(inputHome, conf)
-      val allOnes = AllOnes(inputHome, conf)
+      val increasing = IncreasingTestFile(inputHome, conf)
+      val allOnes = AllOnesTestFile(inputHome, conf)
 
       val cols = increasing.metaData.cols
 
@@ -43,6 +43,7 @@ class EqualSpec extends FunSpec
           res,
           (x: Int, y: Int) => if (x == 1 && y == 0) 1 else 0
         )
+
         rastersShouldHaveSameIds(inc, res)
       }
 
@@ -54,6 +55,7 @@ class EqualSpec extends FunSpec
           res,
           (x: Int, y: Int) => if (x == 1 && y == 0) 1 else 0
         )
+
         rastersShouldHaveSameIds(inc, res)
       }
 
@@ -66,6 +68,7 @@ class EqualSpec extends FunSpec
           res,
           (x: Int, y: Int) => if (x == 1 && y == 0) 1 else 0
         )
+
         rastersShouldHaveSameIds(inc, res)
       }
     }

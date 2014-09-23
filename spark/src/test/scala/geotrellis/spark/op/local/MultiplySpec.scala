@@ -18,7 +18,7 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.testfiles.AllTwos
+import geotrellis.spark.testfiles.AllTwosTestFile
 
 import org.scalatest.FunSpec
 
@@ -30,7 +30,7 @@ class MultiplySpec extends FunSpec
 
   describe("Multiply Operation") {
     ifCanRunSpark {
-      val allTwos = AllTwos(inputHome, conf)
+      val allTwos = AllTwosTestFile(inputHome, conf)
 
       it("should multiply a constant by a raster") {
         val twos = sc.hadoopRasterRDD(allTwos.path)

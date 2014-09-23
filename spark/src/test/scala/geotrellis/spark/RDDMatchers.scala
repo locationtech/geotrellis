@@ -52,13 +52,19 @@ trait RasterRDDMatchers extends Matchers {
     res.length should be(count)
   }
 
-  def rasterShouldBe(rdd: RasterRDD, f: (Int, Int) => Int): Unit = {
+  def rasterShouldBe(
+    rdd: RasterRDD,
+    f: (Int, Int) => Double,
+    epsilon: Double = 1e-100): Unit = {
     val res = rdd.map(_.tile).collect
 
     res.foreach { r =>
       for (col <- 0 until r.cols) {
         for (row <- 0 until r.rows) {
-          r.get(col, row) should be (f(col, row))
+          val exp = f(col, row)
+          val v = r.getDouble(col, row)
+          if (!exp.isNaN || !v.isNaN)
+            v should be (exp +- epsilon)
         }
       }
     }

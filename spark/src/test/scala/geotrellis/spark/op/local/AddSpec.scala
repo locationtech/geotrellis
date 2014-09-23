@@ -19,7 +19,7 @@ package geotrellis.spark.op.local
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.rdd.RasterRDD
-import geotrellis.spark.testfiles.AllOnes
+import geotrellis.spark.testfiles.AllOnesTestFile
 
 import org.scalatest.FunSpec
 
@@ -30,7 +30,7 @@ class AddSpec extends FunSpec
     with OnlyIfCanRunSpark {
   describe("Add Operation") {
     ifCanRunSpark {
-      val allOnes = AllOnes(inputHome, conf)
+      val allOnes = AllOnesTestFile(inputHome, conf)
 
       it("should add a constant to a raster") {
         val ones = sc.hadoopRasterRDD(allOnes.path)

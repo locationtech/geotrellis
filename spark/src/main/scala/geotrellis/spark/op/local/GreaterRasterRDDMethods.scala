@@ -41,7 +41,7 @@ trait GreaterRasterRDDMethods extends RasterRDDMethods {
     * double, else 0.
     */
   def localGreater(d: Double): RasterRDD = rasterRDD.mapTiles {
-    case TmsTile(t, r) => TmsTile(t, Greater(d, r))
+    case TmsTile(t, r) => TmsTile(t, Greater(r, d))
   }
   /**
     * Returns a RasterRDD with data of TypeBit, where cell values equal 1 if
@@ -49,7 +49,7 @@ trait GreaterRasterRDDMethods extends RasterRDDMethods {
     * double, else 0.
     */
   def localGreaterRightAssociative(d: Double): RasterRDD = rasterRDD.mapTiles {
-    case TmsTile(t, r) => TmsTile(t, Greater(r, d))
+    case TmsTile(t, r) => TmsTile(t, Greater(d, r))
   }
   /**
     * Returns a RasterRDD with data of TypeBit, where cell values equal 1 if

@@ -30,7 +30,7 @@ class TestFiles(val path: Path, conf: Configuration) {
     metaData.tileIds.size
 }
 
-object AllOnes {
+object AllOnesTestFile {
   def apply(prefix: Path, conf: Configuration) =
     new TestFiles(
       new Path(prefix, "all-ones/10"),
@@ -38,7 +38,7 @@ object AllOnes {
     )
 }
 
-object AllTwos {
+object AllTwosTestFile {
   def apply(prefix: Path, conf: Configuration) =
     new TestFiles(
       new Path(prefix, "all-twos/10"),
@@ -46,7 +46,7 @@ object AllTwos {
     )
 }
 
-object AllHundreds {
+object AllHundredsTestFile {
   def apply(prefix: Path, conf: Configuration) =
     new TestFiles(
       new Path(
@@ -55,7 +55,7 @@ object AllHundreds {
     )
 }
 
-object IncreasingFromZero {
+object IncreasingTestFile {
   def apply(prefix: Path, conf: Configuration) =
     new TestFiles(
       new Path(prefix, "increasing/10"),
@@ -63,10 +63,34 @@ object IncreasingFromZero {
     )
 }
 
-object DecreasingFromZero {
+object DecreasingTestFile {
   def apply(prefix: Path, conf: Configuration) =
     new TestFiles(
       new Path(prefix, "decreasing/10"),
+      conf
+    )
+}
+
+object EveryOtherUndefinedTestFile {
+  def apply(prefix: Path, conf: Configuration) =
+    new TestFiles(
+      new Path(prefix, "every-other-undefined/10"),
+      conf
+    )
+}
+
+object EveryOther0Point99Else1Point01TestFile {
+  def apply(prefix: Path, conf: Configuration) =
+    new TestFiles(
+      new Path(prefix, "every-other-0.99-else-1.01/10"),
+      conf
+    )
+}
+
+object EveryOther1ElseMinus1TestFile {
+  def apply(prefix: Path, conf: Configuration) =
+    new TestFiles(
+      new Path(prefix, "every-other-1-else-1/10"),
       conf
     )
 }

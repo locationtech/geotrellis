@@ -18,8 +18,7 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.testfiles.AllHundreds
-import geotrellis.spark.testfiles.AllTwos
+import geotrellis.spark.testfiles.{AllTwosTestFile, AllHundredsTestFile}
 
 import org.scalatest.FunSpec
 
@@ -31,8 +30,8 @@ class DivideSpec extends FunSpec
 
   describe("Divide Operation") {
     ifCanRunSpark {
-      val allTwos = AllTwos(inputHome, conf)
-      val allHundreds = AllHundreds(inputHome, conf)
+      val allTwos = AllTwosTestFile(inputHome, conf)
+      val allHundreds = AllHundredsTestFile(inputHome, conf)
 
       it("should divide raster values by a constant") {
         val twos = sc.hadoopRasterRDD(allTwos.path)

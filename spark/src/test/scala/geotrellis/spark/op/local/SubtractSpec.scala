@@ -30,9 +30,9 @@ class SubtractSpec extends FunSpec
 
   describe("Subtract Operation") {
     ifCanRunSpark {
-      val allOnes = AllOnes(inputHome, conf)
-      val allTwos = AllTwos(inputHome, conf)
-      val allHundreds = AllHundreds(inputHome, conf)
+      val allOnes = AllOnesTestFile(inputHome, conf)
+      val allTwos = AllTwosTestFile(inputHome, conf)
+      val allHundreds = AllHundredsTestFile(inputHome, conf)
 
       it("should subtract a constant from a raster") {
         val twos = sc.hadoopRasterRDD(allTwos.path)

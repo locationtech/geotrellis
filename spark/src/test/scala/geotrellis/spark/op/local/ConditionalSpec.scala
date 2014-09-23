@@ -19,7 +19,7 @@ package geotrellis.spark.op.local
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.rdd.RasterRDD
-import geotrellis.spark.testfiles.{IncreasingFromZero, DecreasingFromZero}
+import geotrellis.spark.testfiles.{IncreasingTestFile, DecreasingTestFile}
 
 import org.scalatest.FunSpec
 
@@ -30,8 +30,8 @@ class ConditionalSpec extends FunSpec
     with OnlyIfCanRunSpark {
   describe("Conditional If Operation") {
     ifCanRunSpark {
-      val increasing = IncreasingFromZero(inputHome, conf)
-      val decreasing = DecreasingFromZero(inputHome, conf)
+      val increasing = IncreasingTestFile(inputHome, conf)
+      val decreasing = DecreasingTestFile(inputHome, conf)
 
       val cols = increasing.metaData.cols
       val rows = increasing.metaData.rows

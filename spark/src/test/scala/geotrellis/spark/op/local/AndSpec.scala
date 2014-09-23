@@ -30,9 +30,9 @@ class AndSpec extends FunSpec
     with OnlyIfCanRunSpark {
   describe("And Operation") {
     ifCanRunSpark {
-      val allOnes = AllOnes(inputHome, conf)
-      val allTwos = AllTwos(inputHome, conf)
-      val allHundreds = AllHundreds(inputHome, conf)
+      val allOnes = AllOnesTestFile(inputHome, conf)
+      val allTwos = AllTwosTestFile(inputHome, conf)
+      val allHundreds = AllHundredsTestFile(inputHome, conf)
 
       it("should and a raster with a constant") {
         val ones = sc.hadoopRasterRDD(allOnes.path)

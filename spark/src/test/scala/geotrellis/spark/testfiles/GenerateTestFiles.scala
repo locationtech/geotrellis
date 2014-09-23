@@ -45,7 +45,10 @@ object GenerateTestFiles {
       ConstantTestFileValues(2) -> "all-twos",
       ConstantTestFileValues(100) -> "all-hundreds",
       IncreasingTestFileValues(tileCols, tileRows) -> "increasing",
-      DecreasingTestFileValues(tileCols, tileRows) -> "decreasing"
+      DecreasingTestFileValues(tileCols, tileRows) -> "decreasing",
+      EveryOtherUndefined(tileCols) -> "every-other-undefined",
+      EveryOther0Point99Else1Point01(tileCols) -> "every-other-0.99-else-1.01",
+      EveryOther1ElseMinus1(tileCols) -> "every-other-1-else-1"
     )
 
     val sc = new SparkContext("local", "create-test-files")

@@ -139,7 +139,7 @@ trait LocalRasterRDDMethods extends RasterRDDMethods
   def localCos(): RasterRDD =
     rasterRDD.mapTiles { case TmsTile(t, r) => TmsTile(t, Cos(r)) }
 
-  /** Takes the hyperboic cosine of each raster cell value.
+  /** Takes the hyperbolic cosine of each raster cell value.
     * @info               Always returns a double raster.
     */
   def localCosh(): RasterRDD =

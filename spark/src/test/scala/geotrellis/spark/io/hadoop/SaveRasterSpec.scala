@@ -2,7 +2,7 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.rdd._
-import geotrellis.spark.testfiles.AllOnes
+import geotrellis.spark.testfiles.AllOnesTestFile
 import geotrellis.spark.op.local._
 
 import org.apache.hadoop.fs.Path
@@ -16,7 +16,7 @@ class SaveRasterSpec
     with OnlyIfCanRunSpark {
   describe("Passing Context and Partitioner through operations tests") {
     ifCanRunSpark {
-      val allOnes = AllOnes(inputHome, conf)
+      val allOnes = AllOnesTestFile(inputHome, conf)
 
       it("should produce the expected metadata") {
         val ones = sc.hadoopRasterRDD(allOnes.path)
