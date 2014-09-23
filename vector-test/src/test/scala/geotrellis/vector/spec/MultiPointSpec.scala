@@ -95,6 +95,32 @@ class MultiPointSpec extends FunSpec with Matchers {
 
     // -- Union
 
+    it("should union itself and merge points") {
+      val mp = 
+        MultiPoint(
+          (0.0, 0.0),
+          (1.0, 1.0),
+          (1.0, 1.0),
+          (2.0, 2.0)
+        )
+
+      val expected = 
+        MultiPoint(
+          (0.0, 0.0),
+          (1.0, 1.0),
+          (2.0, 2.0)
+        )
+
+      val actual = 
+        mp.union match {
+          case MultiPointResult(mp) => mp
+          case PointResult(p) => MultiPoint(p)
+          case NoResult => MultiPoint()
+        }
+
+      actual should be (expected)
+    }
+
     it ("should union with a MultiPoint and return a NoResult") {
       val mp1 = MultiPoint.EMPTY
       val mp2 = MultiPoint.EMPTY

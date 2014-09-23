@@ -103,6 +103,12 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
 
   // -- Union
 
+  /**
+    * Computes the union of the contained points.
+    * Useful for de-duplication.
+    */
+  def union(): MultiPointMultiPointUnionResult =
+    jtsGeom.union
 
   /**
    * Computes a Result that represents a Geometry made up of all the points in
