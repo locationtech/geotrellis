@@ -7,9 +7,9 @@ import org.apache.spark.SparkContext._
 
 
 object Pyramid {
-  def levelUp(rdd: RasterRDD): RasterRDD = {
+  def levelUp(rdd: TmsRasterRDD): TmsRasterRDD = {
     val (nextRdd, nextMd) = levelUp(rdd, rdd.metaData)
-    new RasterRDD(nextRdd, nextMd)
+    new TmsRasterRDD(nextRdd, nextMd)
   }
 
   def levelUp(rdd: RDD[TmsTile], metaData: LayerMetaData): (RDD[TmsTile], LayerMetaData) = {
