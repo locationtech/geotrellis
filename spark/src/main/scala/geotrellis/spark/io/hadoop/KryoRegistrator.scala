@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.hadoop
 
+import geotrellis.spark.TmsTile
 import geotrellis.spark.io.hadoop.formats._
 import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
 
@@ -27,6 +28,8 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[ArgWritable])
     kryo.register(classOf[TileIdZoomWritable])
     kryo.register(classOf[PayloadArgWritable])
+    kryo.register(classOf[TmsTile])
     kryo.register(classOf[org.apache.accumulo.core.client.impl.ConnectorImpl])
+    kryo.register(classOf[org.apache.accumulo.core.client.mock.MockConnector])
   }
 }
