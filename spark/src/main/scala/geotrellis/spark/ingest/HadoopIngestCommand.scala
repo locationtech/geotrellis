@@ -28,11 +28,11 @@ import com.quantifind.sumac.validation.Required
 
 import spire.syntax.cfor._
 
-class IngestArgs extends SparkArgs with HadoopArgs {
-  @Required var input: String = _
+
+
+class HadoopIngestArgs extends IngestArgs {
   @Required var outputpyramid: String = _
 }
-
 /**
   * @author akini
   *
@@ -51,15 +51,15 @@ class IngestArgs extends SparkArgs with HadoopArgs {
   *
   * --outputpyramid <path-to-raster> - this can be either on hdfs (hdfs://) or local fs (file://). If the directory
   * already exists, it is deleted
-  * 
+  *
   * --sparkMaster <spark-name>   i.e. local[10]
   *
   */
-object HadoopIngestCommand extends ArgMain[IngestArgs] with Logging {
+object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
 
   System.setProperty("com.sun.media.jai.disableMediaLib", "true")
 
-  def main(args: IngestArgs): Unit = {
+  def main(args: HadoopIngestArgs): Unit = {
     val conf = args.hadoopConf
     conf.set("io.map.index.interval", "1")
 
@@ -71,7 +71,6 @@ object HadoopIngestCommand extends ArgMain[IngestArgs] with Logging {
     outFs.delete(outPath, true)
     outFs.mkdirs(outPath)
 
-    val sourceCRS = LatLng
     val destCRS = LatLng
 
     val sparkContext = args.sparkContext("Ingest")
@@ -96,7 +95,7 @@ object HadoopIngestCommand extends ArgMain[IngestArgs] with Logging {
         logInfo(s"Saved raster at zoom level ${metaData.level.id} to $outPathWithZoom")
       }
 
-      Ingest(sparkContext)(source, sink, sourceCRS, destCRS, TilingScheme.TMS)
+      Ingest(sparkContext)(source, sink, destCRS, TilingScheme.TMS)
 
     } finally {
       sparkContext.stop

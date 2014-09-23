@@ -25,6 +25,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
   cluster.vm.define "master" do |machine|
     machine.vm.hostname = "master"
     machine.vm.synced_folder "../../", "/home/vagrant/geotrellis"
+    machine.vm.synced_folder "~/.ivy2", "/home/vagrant/.ivy2"
     machine.vm.network "private_network", ip: "33.33.33.10"
 
     machine.vm.provider "virtualbox" do |v|
