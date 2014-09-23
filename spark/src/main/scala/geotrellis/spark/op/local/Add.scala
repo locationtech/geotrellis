@@ -18,9 +18,9 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.raster.op.local.Add
-import geotrellis.spark.rdd.RasterRDD
+import geotrellis.spark.rdd.TmsRasterRDD
 
-trait AddOpMethods[+Repr <: RasterRDD] { self: Repr =>
+trait AddOpMethods[+Repr <: TmsRasterRDD] { self: Repr =>
   /** Add a constant Int value to each cell. */
   def localAdd(i: Int) = 
     self.mapTiles { case TmsTile(t, r) => TmsTile(t, Add(r, i)) }
@@ -36,8 +36,8 @@ trait AddOpMethods[+Repr <: RasterRDD] { self: Repr =>
   /** Add a constant Double value to each cell. */
   def +:(d: Double) = localAdd(d)
   /** Add the values of each cell in each raster.  */
-  def localAdd(rdd: RasterRDD) =
+  def localAdd(rdd: TmsRasterRDD) =
     self.combineTiles(rdd) { case (TmsTile(t1, r1), TmsTile(t2, r2)) => TmsTile(t1, Add(r1, r2)) }
   /** Add the values of each cell in each raster. */
-  def +(rdd: RasterRDD) = localAdd(rdd)
+  def +(rdd: TmsRasterRDD) = localAdd(rdd)
 }

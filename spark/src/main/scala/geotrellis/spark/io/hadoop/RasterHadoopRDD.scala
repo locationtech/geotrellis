@@ -45,8 +45,8 @@ class RasterHadoopRDD private (sc: SparkContext, conf: Configuration, path: Path
   lazy val metaData = 
     HadoopUtils.readLayerMetaData(path, context.hadoopConfiguration)
 
-  def toRasterRDD: RasterRDD = 
-    asRasterRDD(metaData) {
+  def toRasterRDD: TmsRasterRDD =
+    asTmsRasterRDD(metaData) {
       map { _.toTmsTile(metaData) }
     }
 }

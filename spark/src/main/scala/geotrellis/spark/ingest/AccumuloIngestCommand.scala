@@ -27,7 +27,7 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
 
   def accumuloSink(table: String, layer: String, catalog: Catalog): Ingest.Sink = {
     (tiles: RDD[TmsTile], metaData: LayerMetaData) =>
-      val raster: RasterRDD = new RasterRDD(tiles, metaData)
+      val raster: TmsRasterRDD = new TmsRasterRDD(tiles, metaData)
       catalog.save(raster, layer, table)
       logInfo(s"Saved raster '$layer' to accumulo table: ${table}.")
   }

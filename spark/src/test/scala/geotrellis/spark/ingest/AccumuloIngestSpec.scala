@@ -2,7 +2,7 @@ package geotrellis.spark.ingest
 
 import geotrellis.spark.ingest.AccumuloIngestCommand._
 import geotrellis.spark.io.accumulo._
-import geotrellis.spark.rdd.{RasterRDD, LayerMetaData}
+import geotrellis.spark.rdd.{TmsRasterRDD, LayerMetaData}
 import org.apache.accumulo.core.client.Connector
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -39,7 +39,7 @@ class AccumuloIngestSpec extends FunSpec
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sparkContext.hadoopGeoTiffRDD(allOnes)
       val sink = { (tiles: RDD[TmsTile], metaData: LayerMetaData) =>
-        val raster: RasterRDD = new RasterRDD(tiles, metaData)
+        val raster: TmsRasterRDD = new TmsRasterRDD(tiles, metaData)
         catalog.save(raster, "ones", "tiles")
       }
 

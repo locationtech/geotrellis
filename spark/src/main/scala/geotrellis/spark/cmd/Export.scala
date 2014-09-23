@@ -23,7 +23,7 @@ import geotrellis.spark.rdd._
 import geotrellis.spark.cmd.args.HadoopArgs
 import geotrellis.spark.cmd.args.RasterArgs
 import geotrellis.spark.cmd.args.SparkArgs
-import geotrellis.spark.rdd.RasterRDD
+import geotrellis.spark.rdd.TmsRasterRDD
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.reader.RasterReader
 

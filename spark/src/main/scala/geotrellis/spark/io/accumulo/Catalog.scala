@@ -24,15 +24,15 @@ trait Catalog {
    * @param bounds  TileBounds and the scheme which can be used to transform them
    * @return
    */
-  def load(layer: Layer, bounds: Option[(TileBounds, TileCoordScheme)]): Option[RasterRDD]
+  def load(layer: Layer, bounds: Option[(TileBounds, TileCoordScheme)]): Option[TmsRasterRDD]
 
   /**
-   * @param rdd       RasterRDD needing saving
+   * @param rdd       TmsRasterRDD needing saving
    * @param layerName Name for the layer to be saved, zoom information will be extracted from MetaData
    * @param prefix    Prefix to disambiguate the layers mapping to physical storage
    *                    ex: Accumulo Table Name, Hadoop Path prefix
    */
-  def save(rdd: RasterRDD, layerName: String, prefix: String)
+  def save(rdd: TmsRasterRDD, layerName: String, prefix: String)
   /* Note:
     Perhaps it would be nice to have some kind of URL structure to parse and type check the prefix correctly
     an accumulo url could be: accumulo://instanceName/tableName
@@ -51,7 +51,7 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance, metaDataCata
   private val format = TmsTileFormat //to abstract out later?
 
   /* I need zoom level right here in order to know which metadata to get */
-  override def load(layer: Layer, bounds: Option[(TileBounds, TileCoordScheme)] = None): Option[RasterRDD] =
+  override def load(layer: Layer, bounds: Option[(TileBounds, TileCoordScheme)] = None): Option[TmsRasterRDD] =
     metaDataCatalog.get(layer).map { case (table, md) =>
       val job = Job.getInstance(sc.hadoopConfiguration)
       instance.setAccumuloConfig(job.getConfiguration)
@@ -63,10 +63,10 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance, metaDataCata
         job.getConfiguration, classOf[AccumuloInputFormat], classOf[Key], classOf[Value]
       ).map { case (key, value) => _format.value.read(key, value)}
 
-      new RasterRDD(rdd, md)
+      new TmsRasterRDD(rdd, md)
     }
 
-  override def save(rdd: RasterRDD, layerName: String, table: String) = {
+  override def save(rdd: TmsRasterRDD, layerName: String, table: String) = {
     //we could have asked for the layer directly, but this avoids possible mismatch between that and metaData
     val layer = Layer(layerName, rdd.metaData.level.id)
     val _conn = sc.broadcast(instance.connector)

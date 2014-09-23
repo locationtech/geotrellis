@@ -18,7 +18,7 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.rdd.RasterRDD
+import geotrellis.spark.rdd.TmsRasterRDD
 import geotrellis.spark.testfiles.AllOnes
 
 import org.scalatest.FunSpec
