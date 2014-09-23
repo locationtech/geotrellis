@@ -36,16 +36,24 @@ class MultiplySpec extends FunSpec
         val twos = sc.hadoopRasterRDD(allTwos.path)
         val fours = twos * 2
 
-        rasterShouldBe(fours, (4, 4, allTwos.tileCount))
-        rastersShouldHaveSameIds(twos, fours)
+        rasterShouldBe(fours, (4, 4))
+        rastersShouldHaveSameIdsAndTileCount(twos, fours)
+      }
+
+      it("should multiply a raster by a constant") {
+        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val fours = 2 *: twos
+
+        rasterShouldBe(fours, (4, 4))
+        rastersShouldHaveSameIdsAndTileCount(twos, fours)
       }
 
       it("should multiply multiple rasters") {
         val twos = sc.hadoopRasterRDD(allTwos.path)
         val eights = twos * twos * twos
 
-        rasterShouldBe(eights, (8, 8, allTwos.tileCount))
-        rastersShouldHaveSameIds(twos, eights)
+        rasterShouldBe(eights, (8, 8))
+        rastersShouldHaveSameIdsAndTileCount(twos, eights)
       }
     }
   }

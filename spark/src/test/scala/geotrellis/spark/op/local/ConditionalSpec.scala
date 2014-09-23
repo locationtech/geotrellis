@@ -46,7 +46,7 @@ class ConditionalSpec extends FunSpec
           (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 1 else y * cols + x
         )
 
-        rastersShouldHaveSameIds(res, inc)
+        rastersShouldHaveSameIdsAndTileCount(res, inc)
       }
 
       it("should change values mod 2 to 1 else 0, testing integer method") {
@@ -58,7 +58,7 @@ class ConditionalSpec extends FunSpec
           (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 1 else 0
         )
 
-        rastersShouldHaveSameIds(res, inc)
+        rastersShouldHaveSameIdsAndTileCount(res, inc)
       }
 
       it("should change values mod 2 to 1, testing double method") {
@@ -70,7 +70,7 @@ class ConditionalSpec extends FunSpec
           (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 1 else y * cols + x
         )
 
-        rastersShouldHaveSameIds(res, inc)
+        rastersShouldHaveSameIdsAndTileCount(res, inc)
       }
 
       it("should change values mod 2 to 1 else 0, testing double method") {
@@ -82,7 +82,7 @@ class ConditionalSpec extends FunSpec
           (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 1 else 0
         )
 
-        rastersShouldHaveSameIds(res, inc)
+        rastersShouldHaveSameIdsAndTileCount(res, inc)
       }
 
       it("should if 2 values in 2 rasters are math.abs(diff) <= 1 set to 0 integer method") {
@@ -98,7 +98,7 @@ class ConditionalSpec extends FunSpec
           (x: Int, y: Int) => if (math.abs((y * cols + x) - thres) <= 1) 0 else y * cols + x
         )
 
-        rastersShouldHaveSameIds(res, inc)
+        rastersShouldHaveSameIdsAndTileCount(res, inc)
       }
 
       it("should if 2 values in 2 rasters are math.abs(diff) <= 1 set to 0 else 1 integer method") {
@@ -114,7 +114,7 @@ class ConditionalSpec extends FunSpec
           (x: Int, y: Int) => if (math.abs((y * cols + x) - thres) <= 1) 0 else 0
         )
 
-        rastersShouldHaveSameIds(res, inc)
+        rastersShouldHaveSameIdsAndTileCount(res, inc)
       }
 
       it("should if 2 values in 2 rasters are math.abs(diff) <= 1 set to 0 double method") {
@@ -130,7 +130,7 @@ class ConditionalSpec extends FunSpec
           (x: Int, y: Int) => if (math.abs((y * cols + x) - thres) <= 1) 0 else y * cols + x
         )
 
-        rastersShouldHaveSameIds(res, inc)
+        rastersShouldHaveSameIdsAndTileCount(res, inc)
       }
 
       it("should if 2 values in 2 rasters are math.abs(diff) <= 1 set to 0 else 1 double method") {
@@ -146,7 +146,7 @@ class ConditionalSpec extends FunSpec
           (x: Int, y: Int) => if (math.abs((y * cols + x) - thres) <= 1) 0 else 0
         )
 
-        rastersShouldHaveSameIds(res, inc)
+        rastersShouldHaveSameIdsAndTileCount(res, inc)
       }
     }
   }

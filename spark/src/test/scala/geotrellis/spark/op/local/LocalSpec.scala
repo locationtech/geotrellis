@@ -50,7 +50,7 @@ class LocalSpec extends FunSpec
           (x: Int, y: Int) => if (x == 1 && y == 0) -1337 else 1
         )
 
-        rastersShouldHaveSameIds(ones, res)
+        rastersShouldHaveSameIdsAndTileCount(ones, res)
       }
 
       it("should local inverse mask two rasters") {
@@ -64,7 +64,7 @@ class LocalSpec extends FunSpec
           (x: Int, y: Int) => if (x == 1 && y == 0) 1 else -1337
         )
 
-        rastersShouldHaveSameIds(ones, res)
+        rastersShouldHaveSameIdsAndTileCount(ones, res)
       }
 
       it("should set all undefined values to 0 and the rest to one") {
@@ -77,7 +77,7 @@ class LocalSpec extends FunSpec
           (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 0 else 1
         )
 
-        rastersShouldHaveSameIds(everyOther, res)
+        rastersShouldHaveSameIdsAndTileCount(everyOther, res)
       }
 
       it("should set all defined values to 0 and the rest to one") {
@@ -90,7 +90,7 @@ class LocalSpec extends FunSpec
           (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 1 else 0
         )
 
-        rastersShouldHaveSameIds(everyOther, res)
+        rastersShouldHaveSameIdsAndTileCount(everyOther, res)
       }
 
       it("should square root all values in raster") {
@@ -104,7 +104,7 @@ class LocalSpec extends FunSpec
           1e-4
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should root all values in raster") {
@@ -118,7 +118,7 @@ class LocalSpec extends FunSpec
           (x: Int, y: Int) => 1
         )
 
-        rastersShouldHaveSameIds(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo, res)
       }
 
       it("should log all values in raster") {
@@ -132,7 +132,7 @@ class LocalSpec extends FunSpec
           1e-4
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should floor all values in raster") {
@@ -146,7 +146,7 @@ class LocalSpec extends FunSpec
           (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 0 else 1
         )
 
-        rastersShouldHaveSameIds(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo, res)
       }
 
       it("should ceil all values in raster") {
@@ -160,7 +160,7 @@ class LocalSpec extends FunSpec
           (x: Int, y: Int) => if ((y * cols + x) % 2 == 0) 1 else 2
         )
 
-        rastersShouldHaveSameIds(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo, res)
       }
 
       it("should negate all values in raster") {
@@ -173,7 +173,33 @@ class LocalSpec extends FunSpec
           (x: Int, y: Int) => (y * cols + x) * -1
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
+      }
+
+      it("should negate with unary operator all values in raster") {
+        val inc = sc.hadoopRasterRDD(increasing.path)
+
+        val res = -inc
+
+        rasterShouldBe(
+          res,
+          (x: Int, y: Int) => (y * cols + x) * -1
+        )
+
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
+      }
+
+      it("should not all values in raster") {
+        val inc = sc.hadoopRasterRDD(increasing.path)
+
+        val res = inc.localNot
+
+        rasterShouldBe(
+          res,
+          (x: Int, y: Int) => ~(y * cols + x)
+        )
+
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should abs all values in raster") {
@@ -186,7 +212,7 @@ class LocalSpec extends FunSpec
           (x: Int, y: Int) => 1
         )
 
-        rastersShouldHaveSameIds(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo, res)
       }
 
       it("should arc cos all values in raster") {
@@ -201,7 +227,7 @@ class LocalSpec extends FunSpec
           1e-4
         )
 
-        rastersShouldHaveSameIds(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo, res)
       }
 
       it("should arc sin all values in raster") {
@@ -216,22 +242,30 @@ class LocalSpec extends FunSpec
           1e-4
         )
 
-        rastersShouldHaveSameIds(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo, res)
       }
 
-      /*it("should arc tangent 2 all values in raster") { //TODO
-       val inc = sc.hadoopRasterRDD(increasing.path)
+      it("should arc tangent 2 all values in raster") {
+        val evo = sc.hadoopRasterRDD(everyOther0Point99Else1Point01.path)
+        val evoOneMinusOne = sc.hadoopRasterRDD(everyOther1ElseMinus1.path)
 
-       val res = inc.localAtan2
+        val res = evo.localAtan2(evoOneMinusOne)
 
-       rasterShouldBe(
-       res,
-       (x: Int, y: Int) => math.atan2(y * cols + x),
-       1e-4
-       )
+        rasterShouldBe(
+          res,
+          (x: Int, y: Int) => {
+            val (xa, ya) = if ((y * cols + x) % 2 == 0)
+              (0.99, -1)
+            else
+              (1.01, 1)
 
-       rastersShouldHaveSameIds(inc, res)
-       }*/
+            math.atan2(xa, ya)
+          },
+          1e-4
+        )
+
+        rastersShouldHaveSameIdsAndTileCount(evo, res)
+      }
 
       it("should arc tan all values in raster") {
         val evo = sc.hadoopRasterRDD(everyOther0Point99Else1Point01.path)
@@ -245,7 +279,7 @@ class LocalSpec extends FunSpec
           1e-4
         )
 
-        rastersShouldHaveSameIds(evo, res)
+        rastersShouldHaveSameIdsAndTileCount(evo, res)
       }
 
       it("should cos all values in raster") {
@@ -260,22 +294,22 @@ class LocalSpec extends FunSpec
           1e-4
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should hyperbolic cos all values in raster") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
+        val evo = sc.hadoopRasterRDD(everyOther0Point99Else1Point01.path)
 
-        val res = inc.localCosh
+        val res = evo.localCosh
 
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => math.cosh(y * cols + x),
+          (x: Int, y: Int) => math.cosh(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
           1e-4
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(evo, res)
       }
 
       it("should sin all values in raster") {
@@ -290,22 +324,52 @@ class LocalSpec extends FunSpec
           1e-4
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should hyperbolic sin all values in raster") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
+        val evo = sc.hadoopRasterRDD(everyOther0Point99Else1Point01.path)
 
-        val res = inc.localSinh
+        val res = evo.localSinh
 
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => math.sinh(y * cols + x),
+          (x: Int, y: Int) => math.sinh(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
           1e-4
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(evo, res)
+      }
+
+      it("should tan all values in raster") {
+        val evo = sc.hadoopRasterRDD(everyOther0Point99Else1Point01.path)
+
+        val res = evo.localTan
+
+
+        rasterShouldBe(
+          res,
+          (x: Int, y: Int) => math.tan(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
+          1e-4
+        )
+
+        rastersShouldHaveSameIdsAndTileCount(evo, res)
+      }
+
+      it("should hyperbolic tan all values in raster") {
+        val evo = sc.hadoopRasterRDD(everyOther0Point99Else1Point01.path)
+
+        val res = evo.localTanh
+
+
+        rasterShouldBe(
+          res,
+          (x: Int, y: Int) => math.tanh(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
+          1e-4
+        )
+
+        rastersShouldHaveSameIdsAndTileCount(evo, res)
       }
     }
   }

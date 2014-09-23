@@ -38,16 +38,16 @@ class AndSpec extends FunSpec
         val ones = sc.hadoopRasterRDD(allOnes.path)
         val res = ones & 1
 
-        rasterShouldBe(res, (1, 1, allOnes.tileCount))
-        rastersShouldHaveSameIds(ones, res)
+        rasterShouldBe(res, (1, 1))
+        rastersShouldHaveSameIdsAndTileCount(ones, res)
       }
 
       it("should and a constant with a raster") {
         val ones = sc.hadoopRasterRDD(allOnes.path)
         val res = 1 &: ones
 
-        rasterShouldBe(res, (1, 1, allOnes.tileCount))
-        rastersShouldHaveSameIds(ones, res)
+        rasterShouldBe(res, (1, 1))
+        rastersShouldHaveSameIdsAndTileCount(ones, res)
       }
 
       it("should and three different rasters") {
@@ -57,8 +57,8 @@ class AndSpec extends FunSpec
 
         val res = ones & twos & hundreds
 
-        rasterShouldBe(res, (0, 0, allOnes.tileCount))
-        rastersShouldHaveSameIds(ones, res)
+        rasterShouldBe(res, (0, 0))
+        rastersShouldHaveSameIdsAndTileCount(ones, res)
       }
     }
   }

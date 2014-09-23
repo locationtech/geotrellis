@@ -39,8 +39,8 @@ class SubtractSpec extends FunSpec
 
         val ones = twos - 1
 
-        rasterShouldBe(ones, (1, 1, allTwos.tileCount))
-        rastersShouldHaveSameIds(twos, ones)
+        rasterShouldBe(ones, (1, 1))
+        rastersShouldHaveSameIdsAndTileCount(twos, ones)
       }
 
       it("should subtract from a constant, raster values") {
@@ -48,8 +48,8 @@ class SubtractSpec extends FunSpec
 
         val ones = 3 -: twos
 
-        rasterShouldBe(ones, (1, 1, allTwos.tileCount))
-        rastersShouldHaveSameIds(twos, ones)
+        rasterShouldBe(ones, (1, 1))
+        rastersShouldHaveSameIdsAndTileCount(twos, ones)
       }
 
       it("should subtract multiple rasters") {
@@ -58,8 +58,8 @@ class SubtractSpec extends FunSpec
         val twos = sc.hadoopRasterRDD(allTwos.path)
         val res = hundreds - twos - ones
 
-        rasterShouldBe(res, (97, 97, allHundreds.tileCount))
-        rastersShouldHaveSameIds(hundreds, res)
+        rasterShouldBe(res, (97, 97))
+        rastersShouldHaveSameIdsAndTileCount(hundreds, res)
       }
     }
   }

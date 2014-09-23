@@ -19,78 +19,64 @@ package geotrellis.spark.op.local
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.rdd.RasterRDD
-import geotrellis.spark.testfiles.{IncreasingTestFile, AllOnesTestFile}
+import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
-class GreaterOrEqualSpec extends FunSpec
+class MinSpec extends FunSpec
     with TestEnvironment
     with SharedSparkContext
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
-  describe("Greater Or Equal Operation") {
+  describe("Min Operation") {
     ifCanRunSpark {
       val increasing = IncreasingTestFile(inputHome, conf)
-      val allOnes = AllOnesTestFile(inputHome, conf)
+      val decreasing = DecreasingTestFile(inputHome, conf)
 
       val cols = increasing.metaData.cols
+      val rows = increasing.metaData.rows
 
-      it("should check greater or equal between an integer and a raster") {
+      val tots = cols * rows;
+
+      it("should min a raster with an integer") {
         val inc = sc.hadoopRasterRDD(increasing.path)
-        val res = inc >= 1
+        val thresh = tots / 2
+        val res = inc.localMin(thresh)
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => if (x == 0 && y == 0) 0 else 1
+          (x: Int, y: Int) => math.min(y * cols + x, thresh)
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
-      it("should check greater or equal right associative between an integer and a raster") {
+      it("should min a raster with a double") {
         val inc = sc.hadoopRasterRDD(increasing.path)
-        val res = 1 >=: inc
+        val thresh = tots / 2.0
+        val res = inc.localMin(thresh)
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => if (x <= 1 && y == 0) 1 else 0
+          (x: Int, y: Int) => math.min(y * cols + x, thresh)
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
-      it("should check greater or equal between a double and a raster") {
+      it("should min two rasters") {
         val inc = sc.hadoopRasterRDD(increasing.path)
-        val res = inc >= 1.0
+        val dec = sc.hadoopRasterRDD(decreasing.path)
+        val res = inc.localMin(dec)
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => if (x == 0 && y == 0) 0 else 1
-        )
+          (x: Int, y: Int) => {
+            val decV = cols * rows - (y * cols + x) - 1
+            val incV = y * cols + x
 
-        rastersShouldHaveSameIdsAndTileCount(inc, res)
-      }
-
-      it("should check greater or equal right associative between a double and a raster") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val res = 1.0 >=: inc
-
-        rasterShouldBe(
-          res,
-          (x: Int, y: Int) => if (x <= 1 && y == 0) 1 else 0
-        )
-
-        rastersShouldHaveSameIdsAndTileCount(inc, res)
-      }
-
-      it("should check greater or equal between two rasters") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val res = inc >= ones
-
-        rasterShouldBe(
-          res,
-          (x: Int, y: Int) => if (x == 0 && y == 0) 0 else 1
+            math.min(decV, incV)
+          }
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)

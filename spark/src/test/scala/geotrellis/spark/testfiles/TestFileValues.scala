@@ -31,31 +31,24 @@ class ConstantTestFileValues(f: Float) extends TestFileValues {
 
 object IncreasingTestFileValues {
 
-  def apply(cols: Int, rows: Int, offset: Int = 0): IncreasingTestFileValues =
-    new IncreasingTestFileValues(cols, rows, offset)
+  def apply(cols: Int, rows: Int): IncreasingTestFileValues =
+    new IncreasingTestFileValues(cols, rows)
 
 }
 
-class IncreasingTestFileValues(
-  cols: Int,
-  rows: Int,
-  offset: Int = 0) extends TestFileValues {
-  override def value(y: Int, x: Int): Float = offset + y * cols + x
+class IncreasingTestFileValues(cols: Int, rows: Int) extends TestFileValues {
+  override def value(y: Int, x: Int): Float = y * cols + x
 }
 
 object DecreasingTestFileValues {
 
-  def apply(cols: Int, rows: Int, offset: Int = 0): DecreasingTestFileValues =
-    new DecreasingTestFileValues(cols, rows, offset)
+  def apply(cols: Int, rows: Int): DecreasingTestFileValues =
+    new DecreasingTestFileValues(cols, rows)
 
 }
 
-class DecreasingTestFileValues(
-  cols: Int,
-  rows: Int,
-  offset: Int = 0) extends TestFileValues {
-  override def value(y: Int, x: Int): Float =
-    cols * rows - (y * cols + x) - offset - 1
+class DecreasingTestFileValues(cols: Int, rows: Int) extends TestFileValues {
+  override def value(y: Int, x: Int): Float = cols * rows - (y * cols + x) - 1
 }
 
 object EveryOtherUndefined {

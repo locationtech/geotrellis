@@ -44,7 +44,7 @@ class GreaterSpec extends FunSpec
           (x: Int, y: Int) => if (x <= 1 && y == 0) 0 else 1
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should check greater right associative between an integer and a raster") {
@@ -56,7 +56,7 @@ class GreaterSpec extends FunSpec
           (x: Int, y: Int) => if (x == 0 && y == 0) 1 else 0
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should check greater between a double and a raster") {
@@ -68,7 +68,7 @@ class GreaterSpec extends FunSpec
           (x: Int, y: Int) => if (x <= 1 && y == 0) 0 else 1
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should check greater right associative between a double and a raster") {
@@ -80,7 +80,7 @@ class GreaterSpec extends FunSpec
           (x: Int, y: Int) => if (x == 0 && y == 0) 1 else 0
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should check greater or equal between two rasters") {
@@ -92,7 +92,7 @@ class GreaterSpec extends FunSpec
           res,
           (x: Int, y: Int) => if (x <= 1 && y == 0) 0 else 1
         )
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
     }
   }

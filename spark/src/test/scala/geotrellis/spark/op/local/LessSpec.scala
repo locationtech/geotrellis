@@ -44,7 +44,7 @@ class LessSpec extends FunSpec
           (x: Int, y: Int) => if (x == 0 && y == 0) 1 else 0
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should check less right associative between an integer and a raster") {
@@ -56,7 +56,7 @@ class LessSpec extends FunSpec
           (x: Int, y: Int) => if (x <= 1 && y == 0) 0 else 1
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should check less between a double and a raster") {
@@ -68,7 +68,7 @@ class LessSpec extends FunSpec
           (x: Int, y: Int) => if (x == 0 && y == 0) 1 else 0
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should check less right associative between a double and a raster") {
@@ -80,7 +80,7 @@ class LessSpec extends FunSpec
           (x: Int, y: Int) => if (x <= 1 && y == 0) 0 else 1
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should check less between two rasters") {
@@ -93,7 +93,7 @@ class LessSpec extends FunSpec
           (x: Int, y: Int) => if (x == 0 && y == 0) 1 else 0
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
     }
   }

@@ -44,7 +44,7 @@ class EqualSpec extends FunSpec
           (x: Int, y: Int) => if (x == 1 && y == 0) 1 else 0
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should check equal between an double and a raster") {
@@ -56,7 +56,7 @@ class EqualSpec extends FunSpec
           (x: Int, y: Int) => if (x == 1 && y == 0) 1 else 0
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should check equal between two rasters") {
@@ -69,7 +69,7 @@ class EqualSpec extends FunSpec
           (x: Int, y: Int) => if (x == 1 && y == 0) 1 else 0
         )
 
-        rastersShouldHaveSameIds(inc, res)
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
     }
   }

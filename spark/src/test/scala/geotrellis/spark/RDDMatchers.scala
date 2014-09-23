@@ -26,11 +26,10 @@ trait RasterRDDMatchers extends Matchers {
    * a. if every tile has a min/max value set to those passed in,
    * b. if number of tiles == count
    */
-  def rasterShouldBe(rdd: RasterRDD, minMaxCount: (Int, Int, Int)): Unit = {
+  def rasterShouldBe(rdd: RasterRDD, minMax: (Int, Int)): Unit = {
     val res = rdd.map(_.tile.findMinMax).collect
-    val (min, max, count) = minMaxCount
-    res.count(_ == (min, max)) should be(count)
-    res.length should be(count)
+    val (min, max) = minMax
+    res.count(_ == (min, max)) should be(res.length)
   }
 
   /*
@@ -70,9 +69,14 @@ trait RasterRDDMatchers extends Matchers {
     }
   }
 
-  def rastersShouldHaveSameIds(first: RasterRDD, second: RasterRDD): Unit =
+  def rastersShouldHaveSameIdsAndTileCount(
+    first: RasterRDD,
+    second: RasterRDD): Unit = {
     first.collect.sortBy(_.id).zip(second.collect.sortBy(_.id)).foreach {
       case (TmsTile(t1, r1), TmsTile(t2, r2)) => t1 should be (t2)
     }
+
+    first.count should be (second.count)
+  }
 
 }
