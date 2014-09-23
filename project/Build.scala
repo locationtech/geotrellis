@@ -413,7 +413,7 @@ object GeotrellisBuild extends Build {
         ),
       resolvers ++=
         Seq(
-          "OpenGeo" at "http://repo.opengeo.org/"
+          "OpenGeo" at "http://repo.boundlessgeo.com/main"
         ),
       fork in test := true
     ) ++
