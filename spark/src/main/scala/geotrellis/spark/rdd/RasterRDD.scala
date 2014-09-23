@@ -26,21 +26,19 @@ import org.apache.spark.SparkContext
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
 
-class RasterRDD(val prev: RDD[TmsTile], val metaData: LayerMetaData)
-  extends RDD[TmsTile](prev)
-  with AddOpMethods[RasterRDD]
-  with SubtractOpMethods[RasterRDD]
-  with MultiplyOpMethods[RasterRDD]
-  with DivideOpMethods[RasterRDD] {
+case class TileTup[I](id: I, tile: Tile)
 
+class RasterRDD[I](val prev: RDD[TileTup[I]], val metaData: LayerMetaData)
+  extends RDD[TileTup[I]](prev)
+{
   override val partitioner = prev.partitioner
 
   override def getPartitions: Array[Partition] = firstParent.partitions
-
+ 
   override def compute(split: Partition, context: TaskContext) =
     firstParent.iterator(split, context)
 
-  def mapTiles(f: TmsTile => TmsTile): RasterRDD =
+  def mapTiles(f: TileTup[I] => TileTup[I]): RasterRDD[I] =
     asRasterRDD(metaData) {
       mapPartitions({ partition =>
         partition.map { tile =>
@@ -49,7 +47,7 @@ class RasterRDD(val prev: RDD[TmsTile], val metaData: LayerMetaData)
       }, true)
     }
 
-  def combineTiles(other: RasterRDD)(f: (TmsTile, TmsTile) => TmsTile): RasterRDD =
+  def combineTiles(other: RasterRDD[I])(f: (TileTup[I], TileTup[I]) => TileTup[I]): RasterRDD[I] =
     asRasterRDD(metaData) {
       zipPartitions(other, true) { (partition1, partition2) =>
         partition1.zip(partition2).map {
@@ -58,7 +56,7 @@ class RasterRDD(val prev: RDD[TmsTile], val metaData: LayerMetaData)
         }
       }
     }
-
+    
   def minMax: (Int, Int) = 
     map(_.tile.findMinMax)
       .reduce { (t1, t2) =>
