@@ -488,10 +488,9 @@ object GeotrellisBuild extends Build {
       libraryDependencies ++= Seq(
         scalatest % "test",
         scalacheck % "test",
+        caliper,
         "com.google.guava" % "guava" % "r09",
         "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
-        "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
-          from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
         "com.google.code.gson" % "gson" % "1.7.1"
       ),
 
@@ -557,10 +556,9 @@ object GeotrellisBuild extends Build {
 
       libraryDependencies ++= Seq(
         spire,
+        caliper,
         "com.google.guava" % "guava" % "r09",
         "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
-        "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
-          from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
         "com.google.code.gson" % "gson" % "1.7.1"
       ),
 
@@ -619,10 +617,9 @@ object GeotrellisBuild extends Build {
       javaOptions += "-Xmx8G",
       libraryDependencies ++= Seq(
         spire,
+        caliper,
         "com.google.guava" % "guava" % "r09",
         "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
-        "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
-          from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
         "com.google.code.gson" % "gson" % "1.7.1"
       ),
 
