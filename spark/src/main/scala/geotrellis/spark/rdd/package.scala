@@ -1,11 +1,12 @@
 package geotrellis.spark
 
 import geotrellis.raster._
+import geotrellis.vector.Extent
 
 import org.apache.spark.rdd._
 
 package object rdd {
-  def asRasterRDD[I](metaData: LayerMetaData)(f: =>RDD[TileTup[I]]): RasterRDD[I] =
+  def asRasterRDD[K](metaData: LayerMetaData)(f: =>RDD[(K, Tile)]): RasterRDD[K] =
     new RasterRDD(f, metaData)
 
   def asTmsRasterRDD(metaData: LayerMetaData)(f: =>RDD[TmsTile]): TmsRasterRDD =
