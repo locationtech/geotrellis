@@ -26,8 +26,8 @@ import geotrellis.raster.rasterize.polygon._
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Param
-import com.google.caliper.Runner 
-import com.google.caliper.SimpleBenchmark
+import com.google.caliper.runner.CaliperMain 
+import com.google.caliper.Benchmark
 
 import scala.math.{min, max}
 import scala.util.Random
