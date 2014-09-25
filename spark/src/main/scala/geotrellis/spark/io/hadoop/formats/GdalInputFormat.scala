@@ -82,7 +82,7 @@ class GdalRecordReader extends RecordReader[GdalRasterInfo, Tile] {
   private var fileInfo: GdalFileInfo = _
 
   private var bandIndex: Int = 0
-  private var maxBand: Int = _
+  private var bandCount: Int = _
 
   private var band: RasterBand = null
   private var bandMeta: Map[String, String] = _
@@ -93,7 +93,7 @@ class GdalRecordReader extends RecordReader[GdalRasterInfo, Tile] {
     conf            = context.getConfiguration
     file            = HdfsUtils.localCopy(conf, path)
     rasterDataSet   = Gdal.open(file.path.toUri.getPath)
-    maxBand         = rasterDataSet.maxBandIndex
+    bandCount         = rasterDataSet.bandCount
 
     fileInfo =
       GdalFileInfo(
@@ -105,12 +105,12 @@ class GdalRecordReader extends RecordReader[GdalRasterInfo, Tile] {
 
   def close() = file match {
     case LocalPath.Temporary(path) => path.getFileSystem(conf).delete(path)
-    case LocalPath.Original(_) => //leave it well alone
+    case LocalPath.Original(_) => // leave it well alone
   }
 
-  def getProgress = bandIndex / maxBand
+  def getProgress = bandIndex / bandCount
   def nextKeyValue = {
-    val hasNext = bandIndex < maxBand
+    val hasNext = bandIndex < bandCount  // bands are indexed from 1 to bandCount
     if (hasNext) {
       bandIndex += 1
       band = rasterDataSet.band(bandIndex)
