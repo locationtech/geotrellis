@@ -31,28 +31,30 @@ import org.apache.spark.SparkContext._
 
 import scala.reflect.ClassTag
 
+import monocle.syntax._
+import monocle.function.HeadOption._ // to use headOption (a polymorphic optic)
+import monocle.std.string._
 import monocle._
-
 
 /** This is actually the base definition of a Lens. Going to try using those. */
 trait TmsTileId[T] {
   def getTileId: TileId
   def withTileId(id: TileId): T
 }
-/** Stub wrapper that makes any RDD keyed on TileId eligible for 'TmsAddressableRasterRDD' implicit */
+
 
 
 object RasterRDD {
-  implicit class TileIdWrapper(tid: TileId) extends TmsTileId[TileId] {
-    def getTileId: TileId = tid
-    def withTileId(id: TileId): TileId = id
-  }
+  /** Trivial lens to allow us using TileId keyed RDDs without extra effort */
+  implicit val tileIdLens =  SimpleLens[TileId, TileId](x=>x, (e, c) => c)
 
 
   /**
    * Functions that require RasterRDD to have a TMS grid dimension to their key
    */
-  implicit class TmsAddressableRasterRDD[K <% TmsTileId[K]](rdd: RasterRDD[K]) {
+  implicit class TmsAddressableRasterRDD[K](rdd: RasterRDD[K])
+                                           (implicit _id: SimpleLens[K, TileId])
+  {
 
     def pyramidUp: RasterRDD[K] = {
       val metaData = rdd.metaData
@@ -62,7 +64,7 @@ object RasterRDD {
       rdd
       .map {
         case (key, tile: Tile) =>
-          val (x, y) = metaData.transform.indexToGrid(key.getTileId)
+          val (x, y) = metaData.transform.indexToGrid(key |-> _id get)
           val nextId = nextMetaData.transform.gridToIndex(x/2, y/2)
           (key -> nextId) -> (x % 2, y % 2, tile)
       }
@@ -100,7 +102,7 @@ object RasterRDD {
         //Assuming that target extent in the new level will match the combined extent of 2x2 composite
         val targetExtent = nextMetaData.transform.indexToMap(id)
         val warped = tile.warp(targetExtent, cols, rows)
-        (key.withTileId(id), warped)
+        (key |-> _id set(id), warped)
       }
 
       new RasterRDD(nextRdd, nextMetaData)

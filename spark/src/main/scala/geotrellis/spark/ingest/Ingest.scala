@@ -25,6 +25,7 @@ import geotrellis.proj4._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.rdd._
+import monocle.SimpleLens
 
 import org.apache.spark._
 import org.apache.spark.rdd._
@@ -35,6 +36,7 @@ import spire.syntax.cfor._
 
 object Ingest extends Logging {
   type Sink = RasterRDD[TileId] => Unit
+
 
   /** Turn a sink into a pyramiding sink */
   def pyramid(sink: Sink): Sink  = { rdd =>
@@ -65,24 +67,25 @@ class Ingest(sc: SparkContext) {
 
   def setMetaData(tilingScheme: TilingScheme): RDD[((Extent, CRS), Tile)] => RasterRDD[Extent] =
   { sourceTiles =>
+    // TODO: This methods seems like it could be generic, factor it out when there is another use case
+    // TODO: Allow variance of TilingScheme and TileIndexScheme
+    val tileIndexScheme: TileIndexScheme = RowIndexScheme
+
     val (uncappedExtent, cellType, cellSize, crs): (Extent, CellType, CellSize, CRS) =
       sourceTiles
         .map { case ((extent, crs), tile) =>
-          (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows), crs)
-        }
+        (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows), crs)
+      }
         .reduce { (t1, t2) =>
-          val (e1, ct1, cs1, crs1) = t1
-          val (e2, ct2, cs2, crs2) = t2
-          (
-            e1.combine(e2),
-            ct1.union(ct2),
-            if(cs1.resolution < cs2.resolution) cs1 else cs2,
-            crs1
+        val (e1, ct1, cs1, crs1) = t1
+        val (e2, ct2, cs2, crs2) = t2
+        (
+          e1.combine(e2),
+          ct1.union(ct2),
+          if(cs1.resolution < cs2.resolution) cs1 else cs2,
+          crs1
           )
-        }
-
-    // TODO: Allow variance of TilingScheme and TileIndexScheme
-    val tileIndexScheme: TileIndexScheme = RowIndexScheme
+      }
 
     val worldExtent = crs.worldExtent
     val layerLevel: LayoutLevel = tilingScheme.layoutFor(worldExtent, cellSize)
