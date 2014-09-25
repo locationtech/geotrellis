@@ -369,24 +369,22 @@ object GeotrellisBuild extends Build {
           // http://itellity.wordpress.com/2013/05/27/xerces-parse-error-with-hadoop-or-solr-feature-httpapache-orgxmlfeaturesxinclude-is-not-recognized/
           "xerces" % "xercesImpl" % "2.9.1",
           "xalan" % "xalan" % "2.7.1",
-          "org.apache.spark" %% "spark-core" % Version.spark excludeAll (
+          "org.apache.spark" %% "spark-core" % Version.spark
+            excludeAll (
             ExclusionRule(organization = "org.apache.hadoop"),
-            ExclusionRule(organization = "com.google.code.findbugs")
-          ),
-          "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "compile" excludeAll (
-	    ExclusionRule(organization = "hsqldb")
-          ),
-          "org.apache.hadoop" % "hadoop-client" % "2.4.1" % "test" excludeAll (
-	    ExclusionRule(organization = "hsqldb")
-          ),
-          "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0" excludeAll (
-            ExclusionRule(organization = "com.google.code.findbugs")
-          ),
+            ExclusionRule(organization = "com.google.code.findbugs")),
+          "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "compile"
+            excludeAll (ExclusionRule(organization = "hsqldb")),
+          "org.apache.hadoop" % "hadoop-client" % "2.4.1" % "test"
+            excludeAll (ExclusionRule(organization = "hsqldb")),
+          "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0"
+            excludeAll (ExclusionRule(organization = "com.google.code.findbugs")),
           "com.quantifind" %% "sumac" % "0.2.3",
+          "org.mockito" % "mockito-core" % "1.9.5" % "test",
+          "org.apache.accumulo" % "accumulo-core" % "1.5.1",
           spire, sprayRouting, sprayCan,
           scalatest % "test",
-          "org.mockito" % "mockito-core" % "1.9.5" % "test",
-          "org.apache.accumulo" % "accumulo-core" % "1.5.1"
+          monocleCore
         ),
       resolvers ++= Seq(
         "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
