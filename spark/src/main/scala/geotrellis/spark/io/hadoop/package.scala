@@ -3,6 +3,7 @@ package geotrellis.spark.io
 import geotrellis.spark.rdd._
 
 import geotrellis.spark._
+import geotrellis.spark.tiling.{LayoutLevel, RowIndexScheme, TileIndexScheme}
 import geotrellis.spark.utils._
 import geotrellis.spark.io.hadoop.formats._
 
@@ -25,10 +26,13 @@ import org.apache.commons.codec.binary.Base64
 
 import java.io.PrintWriter
 import java.nio.ByteBuffer
+import geotrellis.spark.tiling._
 
 package object hadoop {
   /** Upgrades a string to a Hadoop Path URL. Seems dangerous, but not surprising. */
   implicit def stringToPath(path: String): Path = new Path(path)
+
+  case class NetCdfBand(extent: Extent, crs: CRS, varName: String, time: Double)
 
   implicit class HadoopSparkContextWrapper(sc: SparkContext) {
     def hadoopRasterRDD(path: String): TmsRasterRDD =
@@ -52,9 +56,8 @@ package object hadoop {
       )
     }
 
-    def hadoopGdalRDD(path: Path): RDD[(GdalRasterInfo, Tile)] = {
-      val updatedConf =
-        sc.hadoopConfiguration.withInputDirectory(path)
+    def gdalRDD(path: Path): RDD[(GdalRasterInfo, Tile)] = {
+      val updatedConf = sc.hadoopConfiguration.withInputDirectory(path)
 
       sc.newAPIHadoopRDD(
         updatedConf,
@@ -64,6 +67,18 @@ package object hadoop {
       )
     }
 
+    def netCdfRDD(path: Path): RDD[(NetCdfBand, Tile)] = {
+      gdalRDD(path)
+        .map{ case (info, tile) =>
+          val band = NetCdfBand(
+            extent = info.file.rasterExtent.extent,
+            crs = info.file.crs,
+            varName = info.bandMeta("NETCDF_VARNAME"),
+            time = info.bandMeta("NETCDF_DIM_Time").toDouble
+          )
+          band -> tile
+        }
+    }
   }
 
   implicit class SavableRasterRDD(val rdd: TmsRasterRDD) extends Logging {
