@@ -42,8 +42,8 @@ class CatalogSpec extends FunSpec
       tableOps.create("tiles")
 
       it("should provide a sink for Ingest") {
-        val sink = { (tiles: RDD[TmsTile], metaData: LayerMetaData) =>
-          val raster: TmsRasterRDD = new TmsRasterRDD(tiles, metaData)
+        val sink = { (tiles: RasterRDD[TileId]) =>
+          val raster: TmsRasterRDD = new TmsRasterRDD(tiles, tiles.metaData)
           catalog.save(raster, "ones", "tiles")
         }
         Ingest(sparkContext)(source, sink, LatLng, TilingScheme.TMS)

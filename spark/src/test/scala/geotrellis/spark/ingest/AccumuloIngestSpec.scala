@@ -2,7 +2,7 @@ package geotrellis.spark.ingest
 
 import geotrellis.spark.ingest.AccumuloIngestCommand._
 import geotrellis.spark.io.accumulo._
-import geotrellis.spark.rdd.{TmsRasterRDD, LayerMetaData}
+import geotrellis.spark.rdd.{RasterRDD, TmsRasterRDD, LayerMetaData}
 import org.apache.accumulo.core.client.Connector
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -10,7 +10,7 @@ import org.scalatest._
 import geotrellis.proj4.LatLng
 import geotrellis.spark.tiling.TilingScheme
 import geotrellis.spark.utils.SparkUtils
-import geotrellis.spark.{TmsTile, OnlyIfCanRunSpark, TestEnvironment}
+import geotrellis.spark.{TileId, TmsTile, OnlyIfCanRunSpark, TestEnvironment}
 import org.apache.accumulo.core.client.mock.MockInstance
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import org.apache.hadoop.fs.Path
@@ -38,8 +38,8 @@ class AccumuloIngestSpec extends FunSpec
 
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sparkContext.hadoopGeoTiffRDD(allOnes)
-      val sink = { (tiles: RDD[TmsTile], metaData: LayerMetaData) =>
-        val raster: TmsRasterRDD = new TmsRasterRDD(tiles, metaData)
+      val sink = { (tiles: RasterRDD[TileId]) =>
+        val raster: TmsRasterRDD = new TmsRasterRDD(tiles, tiles.metaData)
         catalog.save(raster, "ones", "tiles")
       }
 
