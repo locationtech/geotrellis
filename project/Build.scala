@@ -220,8 +220,7 @@ object GeotrellisBuild extends Build {
         scalacheck  % "test",
         spire % "test",
         sprayClient % "test",
-        sprayRouting % "test",
-        openCSV
+        sprayRouting % "test"
       )
     ) ++
     defaultAssemblySettings

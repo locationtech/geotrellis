@@ -36,8 +36,6 @@ class GeoTiffWriterSpec extends FunSpec
   private val testProj4String =
     "+proj=lcc +lat_0=33.750000000 +lon_0=-79.000000000 +lat_1=36.166666667 +lat_2=34.333333333 +x_0=609601.220 +y_0=0.000 +units=m"
 
-  private val testProj4StringMap = proj4StringToMap(testProj4String)
-
   private val testCRS = CRS.fromString(testProj4String)
 
   describe ("writing GeoTiffs without errors and with correct tiles, crs and extent") {
