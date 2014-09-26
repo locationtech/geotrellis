@@ -384,7 +384,7 @@ object GeotrellisBuild extends Build {
           "org.apache.accumulo" % "accumulo-core" % "1.5.1",
           spire, sprayRouting, sprayCan,
           scalatest % "test",
-          monocleCore
+          monocleCore, monocleMacro
         ),
       resolvers ++= Seq(
         "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
