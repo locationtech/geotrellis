@@ -18,7 +18,7 @@ object IngestNetCDF {
   type Source = RDD[(NetCdfBand, Tile)]
   type Sink = RasterRDD[(NetCdfBand, TileId)] => Unit
 
-  def apply (sc: SparkContext)(source: Source, sink:  Sink, destCRS: CRS, tilingScheme: TilingScheme): Unit = {
+  def apply (sc: SparkContext)(source: Source, sink:  Sink, destCRS: CRS, tilingScheme: TilingScheme = TilingScheme.TMS): Unit = {
     val reprojected = source.map {
       case (band, tile) =>
         val (reprojectedTile, reprojectedExtent) = tile.reproject(band.extent, band.crs, destCRS)
