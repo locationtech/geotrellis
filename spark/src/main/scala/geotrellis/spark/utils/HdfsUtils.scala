@@ -110,11 +110,9 @@ object HdfsUtils {
   def localCopy(conf: Configuration, path: Path): LocalPath =
     path.toUri.getScheme match {
       case "file" =>
-        println("NO COPY", path)
         LocalPath.Original(path)
       case _ =>
         val tmp = HdfsUtils.createTempFile(conf, "local-copy")
-        println("TEMP COPY", tmp)
         val fs = tmp.getFileSystem(conf)
         fs.copyToLocalFile(path, tmp)
         LocalPath.Temporary(tmp)
