@@ -32,16 +32,7 @@ import org.apache.spark.SparkContext._
 import scala.reflect.ClassTag
 
 import monocle.syntax._
-import monocle.function.HeadOption._ // to use headOption (a polymorphic optic)
-import monocle.std.string._
 import monocle._
-
-/** This is actually the base definition of a Lens. Going to try using those. */
-trait TmsTileId[T] {
-  def getTileId: TileId
-  def withTileId(id: TileId): T
-}
-
 
 
 object RasterRDD {
@@ -127,7 +118,7 @@ class RasterRDD[K](val prev: RDD[(K, Tile)], val metaData: LayerMetaData) extend
    * @param toKey    function that maps to the new RDD key, allowing you to add TileId information
    * @tparam KT      key type of the resulting RDD
    */
-  def mosaic[KT :ClassTag](extentOf: K => Extent, toKey: (K, TileId) => KT): RasterRDD[KT] = {
+  def mosaic[KT : ClassTag](extentOf: K => Extent, toKey: (K, TileId) => KT): RasterRDD[KT] = {
     val bcMetaData = sparkContext.broadcast(metaData)
     val newRdd = this
       .flatMap { case (key, tile) =>
