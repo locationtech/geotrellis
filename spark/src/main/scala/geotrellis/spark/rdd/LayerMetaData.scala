@@ -20,7 +20,10 @@ case class LayerMetaData(
   )
 
   lazy val gridBounds = transform.mapToGrid(extent)
+
   lazy val tileIds = transform.gridToIndex(gridBounds)
+
+  lazy val count = tileIds.size
 
   lazy val tileLayout = level.tileLayout
 

@@ -55,6 +55,14 @@ class AddSpec extends FunSpec
         rasterShouldBe(threes, (3, 3))
         rastersShouldHaveSameIdsAndTileCount(ones, threes)
       }
+
+      it("should add multiple rasters as a seq") {
+        val ones = sc.hadoopRasterRDD(allOnes.path)
+        val threes = ones + Seq(ones, ones)
+
+        rasterShouldBe(threes, (3, 3))
+        rastersShouldHaveSameIdsAndTileCount(ones, threes)
+      }
     }
   }
 }
