@@ -26,4 +26,12 @@ trait AddRasterRDDMethods extends RasterRDDMethods {
     }
   /** Add the values of each cell in each raster. */
   def +(other: RasterRDD): RasterRDD = localAdd(other)
+
+  def localAdd(others: Traversable[RasterRDD]): RasterRDD =
+    rasterRDD.combineTiles(others.toSeq) {
+      case tmsTiles: Seq[TmsTile] =>
+        TmsTile(tmsTiles.head.id, Add(tmsTiles.map(_.tile)))
+    }
+
+  def +(others: Traversable[RasterRDD]): RasterRDD = localAdd(others)
 }

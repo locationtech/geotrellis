@@ -55,8 +55,31 @@ class RasterRDD(val prev: RDD[TmsTile], val metaData: LayerMetaData)
       }
     }
 
-  def combineTiles(others: Seq[RasterRDD])(f: (Seq[TmsTile]) => TmsTile): RasterRDD =
-    ???
+  def combineTiles(others: Seq[RasterRDD]): RDD[Seq[TmsTile]] = {
+    def recurse(tail: RDD[Seq[TmsTile]],
+      rasters: List[RasterRDD]): RDD[Seq[TmsTile]] = {
+
+    }
+  }
+
+  def combineTiles(others: Seq[RasterRDD])(f: (Seq[TmsTile]) => TmsTile): RasterRDD = {
+    def recurse(tail: RasterRDD, rasters: List[RasterRDD]): RasterRDD = rasters match {
+      case Nil => tail
+      case x :: xs =>
+        val rs = asRasterRDD(metaData) {
+          tail.zipPartitions(x, true) { (partition1, partition2) =>
+            partition1.zip(partition2).map {
+              case (tile1, tile2) =>
+                f(Seq(tile1, tile2))
+            }
+          }
+        }
+
+        recurse(rs, xs)
+    }
+
+    recurse(this, others.toList)
+  }
 
   def minMax: (Int, Int) =
     map(_.tile.findMinMax)

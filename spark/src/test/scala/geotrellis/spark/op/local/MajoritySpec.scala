@@ -16,60 +16,69 @@
 
 package geotrellis.spark.op.local
 
+import geotrellis.raster._
+
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.rdd.RasterRDD
 import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
-class AndSpec extends FunSpec
+class MajoritySpec extends FunSpec
     with TestEnvironment
     with SharedSparkContext
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
-  describe("And Operation") {
+
+  describe("Majority Operation") {
     ifCanRunSpark {
       val allOnes = AllOnesTestFile(inputHome, conf)
       val allTwos = AllTwosTestFile(inputHome, conf)
       val allHundreds = AllHundredsTestFile(inputHome, conf)
 
-      it("should and a raster with a constant") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val res = ones & 1
-
-        rasterShouldBe(res, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(ones, res)
-      }
-
-      it("should and a constant with a raster") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val res = 1 &: ones
-
-        rasterShouldBe(res, (1, 1))
-        rastersShouldHaveSameIdsAndTileCount(ones, res)
-      }
-
-      it("should and three different rasters") {
+      it("should assign the majority of each raster, as a traversable") {
         val ones = sc.hadoopRasterRDD(allOnes.path)
         val twos = sc.hadoopRasterRDD(allTwos.path)
         val hundreds = sc.hadoopRasterRDD(allHundreds.path)
 
-        val res = ones & twos & hundreds
+        val res = ones.localMajority(List(twos, hundreds, hundreds))
+        println(res.collect.head.tile.get(0, 0))
 
-        rasterShouldBe(res, (0, 0))
-        rastersShouldHaveSameIdsAndTileCount(ones, res)
+        rasterShouldBe(res, (100, 100))
+        rastersShouldHaveSameIdsAndTileCount(res, ones)
       }
 
-      it("should and three different rasters as a seq") {
+      it("should assign the majority of each raster, as a vararg") {
         val ones = sc.hadoopRasterRDD(allOnes.path)
         val twos = sc.hadoopRasterRDD(allTwos.path)
         val hundreds = sc.hadoopRasterRDD(allHundreds.path)
 
-        val res = ones & Seq(twos, hundreds)
+        val res = ones.localMajority(twos, hundreds)
 
-        rasterShouldBe(res, (0, 0))
-        rastersShouldHaveSameIdsAndTileCount(ones, res)
+        rasterShouldBe(res, (100, 100))
+        rastersShouldHaveSameIdsAndTileCount(res, ones)
+      }
+
+      it("should assign the nth majority of each raster, as a traversable") {
+        val ones = sc.hadoopRasterRDD(allOnes.path)
+        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+
+        val res = ones.localMajority(1, List(twos, hundreds))
+
+        rasterShouldBe(res, (2, 2))
+        rastersShouldHaveSameIdsAndTileCount(res, ones)
+      }
+
+      it("should assign the nth majority of each raster, as a vararg") {
+        val ones = sc.hadoopRasterRDD(allOnes.path)
+        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+
+        val res = ones.localMajority(1, twos, hundreds)
+
+        rasterShouldBe(res, (2, 2))
+        rastersShouldHaveSameIdsAndTileCount(res, ones)
       }
     }
   }

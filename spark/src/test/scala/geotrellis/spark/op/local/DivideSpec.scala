@@ -59,6 +59,15 @@ class DivideSpec extends FunSpec
         rasterShouldBe(res, (25, 25))
         rastersShouldHaveSameIdsAndTileCount(hundreds, res)
       }
+
+      it("should divide multiple rasters as a seq") {
+        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val res = hundreds / Seq(twos, twos)
+
+        rasterShouldBe(res, (25, 25))
+        rastersShouldHaveSameIdsAndTileCount(hundreds, res)
+      }
     }
   }
 }

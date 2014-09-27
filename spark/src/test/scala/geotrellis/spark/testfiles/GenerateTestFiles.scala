@@ -56,8 +56,6 @@ object GenerateTestFiles {
     val localFS = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
     val prefix = new Path(localFS.getWorkingDirectory, "src/test/resources")
 
-    println(metaData.level.tileLayout)
-
     for((tfv, name) <- testFiles) {
       println(s"Creating test RasterRDD $name")
       val tmsTiles =
