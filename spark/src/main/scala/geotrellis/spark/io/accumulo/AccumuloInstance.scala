@@ -1,16 +1,20 @@
 package geotrellis.spark.io.accumulo
 
 
-import geotrellis.spark.{TileId, TmsTile}
+import geotrellis.spark.rdd.{TmsRasterRDD, LayerMetaData, RasterRDD}
+import geotrellis.spark.tiling.{TileCoordScheme, TilingScheme}
+import geotrellis.spark.{TileBounds, TileId, TmsTile}
 import org.apache.accumulo.core.client._
-import org.apache.accumulo.core.client.mapreduce.AccumuloInputFormat
-import org.apache.accumulo.core.client.mapreduce.AccumuloOutputFormat
+import org.apache.accumulo.core.client.mapreduce.{InputFormatBase, AccumuloInputFormat, AccumuloOutputFormat}
 import org.apache.accumulo.core.client.mock.MockInstance
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken
 import org.apache.accumulo.core.client.mapreduce.lib.util.{ConfiguratorBase => CB}
+import org.apache.accumulo.core.data.{Value, Key, Mutation}
+import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 
 case class AccumuloInstance(
@@ -29,19 +33,55 @@ case class AccumuloInstance(
   def tileCatalog(implicit sc: SparkContext) =
     new AccumuloCatalog(sc, this, metaDataCatalog)
 
-
   def setAccumuloConfig(conf: Configuration): Unit = {
-    if (instanceName == "fake")
+    if (instanceName == "fake") {
       CB.setMockInstance(classOf[AccumuloInputFormat], conf, instanceName)
-    else
+      CB.setMockInstance(classOf[AccumuloOutputFormat], conf, instanceName)
+    }
+    else {
       CB.setZooKeeperInstance(classOf[AccumuloInputFormat],conf, instanceName, zookeeper)
-    CB.setConnectorInfo(classOf[AccumuloInputFormat], conf, user, token)
+      CB.setZooKeeperInstance(classOf[AccumuloOutputFormat],conf, instanceName, zookeeper)
+    }
 
+    CB.setConnectorInfo(classOf[AccumuloInputFormat], conf, user, token)
+    CB.setConnectorInfo(classOf[AccumuloOutputFormat], conf, user, token)
   }
 
-  def setAccumuloConfig(job: Job): Unit =
-    setAccumuloConfig(job.getConfiguration)
+  def setAccumuloConfig(job: Job): Unit = setAccumuloConfig(job.getConfiguration)
 
-  def setAccumuloConfig(sc: SparkContext): Unit =
-    setAccumuloConfig(sc.hadoopConfiguration)
+  def setAccumuloConfig(sc: SparkContext): Unit = setAccumuloConfig(sc.hadoopConfiguration)
+
+
+  def saveRaster[K, Q <: RasterQuery[K]](raster: RasterRDD[K], table: String, layer: String)
+    (implicit sc: SparkContext, format: AccumuloFormat[K, Q])
+  {
+    import org.apache.spark.SparkContext._
+
+    //create output table if it does not exist
+    val tableOps = connector.tableOperations()
+    if (! tableOps.exists(table)) tableOps.create(table)
+
+    val job = new Job(sc.hadoopConfiguration)
+    setAccumuloConfig(job)
+    AccumuloOutputFormat.setBatchWriterOptions(job, new BatchWriterConfig())
+    AccumuloOutputFormat.setDefaultTableName(job, table)
+
+    format.encode(raster, layer).saveAsNewAPIHadoopFile(instanceName,
+      classOf[Text], classOf[Mutation], classOf[AccumuloOutputFormat],
+      job.getConfiguration)
+  }
+
+  def loadRaster[K, Q <: RasterQuery[K]](metaData: LayerMetaData, table: String, layer: String, query: Q)
+    (implicit sc: SparkContext, format: AccumuloFormat[K, Q]) : RasterRDD[K] =
+  {
+    import org.apache.spark.SparkContext._
+
+    val job = Job.getInstance(sc.hadoopConfiguration)
+    setAccumuloConfig(job)
+    InputFormatBase.setInputTableName(job, table)
+
+    format.setQueryParams(job, metaData, query)
+    val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[AccumuloInputFormat], classOf[Key], classOf[Value])
+    format.decode(rdd, metaData)
+  }
 }
