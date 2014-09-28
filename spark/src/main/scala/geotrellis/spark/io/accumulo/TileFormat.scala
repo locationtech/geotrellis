@@ -17,6 +17,7 @@ case class Layer(name: String, zoom: Int) {
  * In the future it may be desirable to have a type parameter for Tile tuple.
  * Currently the only possible representation as of now is TmsTile.
  */
+@deprecated("Working on a better way to do it", "September")
 trait TileFormat extends Serializable {
   type LAYER = Layer
 

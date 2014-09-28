@@ -8,7 +8,7 @@ import org.apache.accumulo.core.data.{Key, Mutation, Value, Range => ARange}
 import org.apache.hadoop.io.Text
 
 
-
+@deprecated("Working on a better way to do it", "September")
 object TmsTileFormat extends TileFormat {
 
   val rowIdRx = """(\d+)_(\d+)""".r // (zoom)_(TmsTilingId)
