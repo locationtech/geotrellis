@@ -93,7 +93,7 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance, metaDataCata
       val mut: Mutation = _format.value.write(_layer.value, row)
       (table, mut)
     }
-    val job = new Job(sc.hadoopConfiguration)
+    val job = Job.getInstance(sc.hadoopConfiguration)
     AccumuloOutputFormat.setZooKeeperInstance(job, instance.instanceName, instance.zookeeper)
     AccumuloOutputFormat.setConnectorInfo(job, instance.user, instance.token)
     AccumuloOutputFormat.setBatchWriterOptions(job, new BatchWriterConfig())

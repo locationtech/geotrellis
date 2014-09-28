@@ -61,7 +61,7 @@ case class AccumuloInstance(
     val tableOps = connector.tableOperations()
     if (! tableOps.exists(table)) tableOps.create(table)
 
-    val job = new Job(sc.hadoopConfiguration)
+    val job = Job.getInstance(sc.hadoopConfiguration)
     setAccumuloConfig(job)
     AccumuloOutputFormat.setBatchWriterOptions(job, new BatchWriterConfig())
     AccumuloOutputFormat.setDefaultTableName(job, table)
