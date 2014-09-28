@@ -52,8 +52,8 @@ case class AccumuloInstance(
   def setAccumuloConfig(sc: SparkContext): Unit = setAccumuloConfig(sc.hadoopConfiguration)
 
 
-  def saveRaster[K, Q <: RasterQuery[K]](raster: RasterRDD[K], table: String, layer: String)
-    (implicit sc: SparkContext, format: AccumuloFormat[K, Q])
+  def saveRaster[K](raster: RasterRDD[K], table: String, layer: String)
+    (implicit sc: SparkContext, format: AccumuloFormat[K, _])
   {
     import org.apache.spark.SparkContext._
 
