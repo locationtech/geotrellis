@@ -3,7 +3,6 @@ package geotrellis.spark.io.accumulo
 import geotrellis.raster.{Tile, CellType, ArrayTile}
 import geotrellis.spark._
 import geotrellis.spark.ingest.IngestNetCDF.TimeBandTile
-import geotrellis.spark.io.hadoop.NetCdfBand
 import geotrellis.spark.rdd.{LayerMetaData, RasterRDD}
 import geotrellis.spark.tiling.TileCoordScheme
 import org.apache.accumulo.core.client.mapreduce.{AccumuloOutputFormat, InputFormatBase, AccumuloInputFormat}
@@ -12,7 +11,6 @@ import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.rdd.RDD
 import org.apache.accumulo.core.util.{Pair => JPair}
-import scala.util.matching.Regex
 import scala.collection.JavaConversions._
 
 /** This trait represents a query that could be understood by a class implementing AccumuloFormat[K] */

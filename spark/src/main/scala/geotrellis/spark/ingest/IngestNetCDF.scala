@@ -3,6 +3,7 @@ package geotrellis.spark.ingest
 import geotrellis.proj4.CRS
 import geotrellis.raster.{CellSize, Tile}
 import geotrellis.spark._
+import geotrellis.spark.io.hadoop.formats.NetCdfBand
 import geotrellis.spark.rdd.{LayerMetaData, RasterRDD}
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling.{RowIndexScheme, LayoutLevel, TilingScheme}
