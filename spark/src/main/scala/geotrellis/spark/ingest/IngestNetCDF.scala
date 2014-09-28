@@ -16,7 +16,8 @@ import geotrellis.raster.reproject._
  */
 object IngestNetCDF {
   type Source = RDD[(NetCdfBand, Tile)]
-  type Sink = RasterRDD[(NetCdfBand, TileId)] => Unit
+  type Sink = RasterRDD[TimeBandTile] => Unit
+  case class TimeBandTile(tileId: TileId, time: Double)
 
   def apply (sc: SparkContext)(source: Source, sink:  Sink, destCRS: CRS, tilingScheme: TilingScheme = TilingScheme.TMS): Unit = {
     val reprojected = source.map {
@@ -38,8 +39,8 @@ object IngestNetCDF {
     }
 
     val raster =
-      new RasterRDD(reprojected, metaData)
-        .mosaic(extentOf = _.extent, toKey = (band, tileId) => (band, tileId))
+      new RasterRDD(reprojected, metaData) // WARNING: I'm discarding band.varName here // TODO deal with this
+        .mosaic(extentOf = _.extent, toKey = (band, tileId) => TimeBandTile(tileId, band.time))
 
     sink(raster)
   }
