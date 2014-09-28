@@ -58,6 +58,7 @@ class GdalInputFormat extends FileInputFormat[GdalRasterInfo, Tile] {
 
 case class GdalFileInfo(rasterExtent: RasterExtent, crs: CRS, meta: Map[String, String])
 case class GdalRasterInfo(file: GdalFileInfo, bandMeta: Map[String, String])
+case class NetCdfBand(extent: Extent, crs: CRS, varName: String, time: Double)
 
 object GdalInputFormat {
   def parseMeta(meta: List[String]): Map[String, String] =

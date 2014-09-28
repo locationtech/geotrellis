@@ -32,8 +32,6 @@ package object hadoop {
   /** Upgrades a string to a Hadoop Path URL. Seems dangerous, but not surprising. */
   implicit def stringToPath(path: String): Path = new Path(path)
 
-  case class NetCdfBand(extent: Extent, crs: CRS, varName: String, time: Double)
-
   implicit class HadoopSparkContextWrapper(sc: SparkContext) {
     def hadoopRasterRDD(path: String): TmsRasterRDD =
       hadoopRasterRDD(new Path(path))
