@@ -75,6 +75,26 @@ object SampleFormat {
 
 }
 
+/**
+  * The Orientations are named as such as the first position is where
+  * the rows start and the second where the columns start.
+  *
+  * For example TopLeft means that the the 0th row is the top of the image
+  * and the 0th column is the left of the image.
+  */
+object Orientations {
+
+  val TopLeft = 1
+  val TopRight = 2
+  val BottomRight = 3
+  val BottomLeft = 4
+  val LeftTop = 5
+  val RightTop = 6
+  val RightBottom = 7
+  val LeftBottom = 8
+
+}
+
 object Tags {
 
   val NewSubfileTypeTag = 254
@@ -221,7 +241,7 @@ case class NonBasicTags(
   grayResponseCurve: Option[Array[Int]] = None,
   grayResponseUnit: Option[Int] = None,
   newSubfileType: Option[Long] = None,
-  orientation: Option[Int] = None,
+  orientation: Int = 1,
   planarConfiguration: Option[Int] = None,
   subfileType: Option[Int] = None,
   thresholding: Int = 1,
@@ -555,14 +575,12 @@ case class ImageDirectory(
   def setGDALNoData(input: String) =
     this |-> gdalInternalNoDataLens set (parseGDALNoDataString(input))
 
-  lazy val proj4String: String = GeoTiffCSParser(this).getProj4String match {
-    case Some(s) => s
-    case None => throw new MalformedGeoTiffException(
-      "Malformed geodata in GeoTiff."
-    )
-  }
+  lazy val proj4String: Option[String] = GeoTiffCSParser(this).getProj4String
 
-  lazy val crs: CRS = CRS.fromString(proj4String)
+  lazy val crs: CRS = proj4String match {
+    case Some(s) => CRS.fromString(s)
+    case None => LatLng
+  }
 }
 
 object ImageDirectoryLenses {
@@ -634,8 +652,7 @@ object ImageDirectoryLenses {
     Option[Int]]("grayResponseUnit")
   val newSubfileTypeLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Option[Long]]("newSubfileType")
-  val orientationLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
-    Option[Int]]("orientation")
+  val orientationLens = nonBasicTagsLens |-> mkLens[NonBasicTags, Int]("orientation")
   val planarConfigurationLens = nonBasicTagsLens |-> mkLens[NonBasicTags,
     Option[Int]]("planarConfiguration")
   val subfileTypeLens = nonBasicTagsLens |-> mkLens[NonBasicTags,

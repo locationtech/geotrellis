@@ -6,7 +6,7 @@ import geotrellis.vector.json._
 import spray.json._
 
 package object json {
-  implicit object CelTypeFormat extends RootJsonFormat[CellType] {
+  implicit object CellTypeFormat extends RootJsonFormat[CellType] {
     def write(cellType: CellType) = 
       JsString(cellType.toString)
 

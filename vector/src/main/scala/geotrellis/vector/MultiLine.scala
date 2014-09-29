@@ -19,6 +19,9 @@ package geotrellis.vector
 import GeomFactory._
 
 import com.vividsolutions.jts.{geom=>jts}
+import com.vividsolutions.jts.operation.linemerge._//LineMerger
+
+import scala.collection.JavaConversions._
 
 object MultiLine {
   lazy val EMPTY = MultiLine(Seq[Line]())
@@ -118,6 +121,12 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
 
   // -- Union
 
+  /**
+    * Computes the union of contained lines.
+    * Useful for merging overlapping line segments.
+    */
+  def union(): MultiLineMultiLineUnionResult =
+    jtsGeom.union
 
   /**
    * Computes a Result that represents a Geometry made up of all the points in
@@ -331,4 +340,19 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
    */
   def within(g: AtLeastOneDimension): Boolean =
     jtsGeom.within(g.jtsGeom)
+
+  /**
+    * Merges the lines in this multiline
+    */
+  def merged: MultiLine = {
+    val merger = new LineMerger
+
+    lines.foreach { line => merger.add(line.jtsGeom) }
+    MultiLine(
+      merger.getMergedLineStrings.map { mergedLine =>
+        Line(mergedLine.asInstanceOf[jts.LineString])
+      }
+    )
+
+  }
 }

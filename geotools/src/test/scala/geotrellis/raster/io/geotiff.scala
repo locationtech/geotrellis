@@ -21,6 +21,7 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiffWriter
 import geotrellis.vector.Extent
 import geotrellis.raster.stats.FastMapHistogram
+import geotrellis.proj4._
 
 import geotrellis.testkit._
 
@@ -30,8 +31,6 @@ import org.geotools.gce.geotiff.GeoTiffFormat
 import org.geotools.factory.Hints
 import org.geotools.referencing.CRS
 import org.geotools.coverage.grid.GridCoordinates2D
-
-
 
 import java.io.{File,FileWriter}
 import javax.imageio.ImageIO
@@ -90,10 +89,10 @@ class GeoTiffSpec extends FunSpec with TestEngine with Matchers {
     }
 
     it ("should write and read back in the same") {
-      val (r, e) = GeoTiffReader.read("raster-test/data/econic.tif")
-      GeoTiffWriter.write("/tmp/written.tif", r, e)
-      val (r2, e2) = GeoTiffReader.read("/tmp/written.tif")
-      e should be (e2)
+      val (r, extent) = GeoTiffReader.read("raster-test/data/econic.tif")
+      GeoTiffWriter.write("/tmp/written.tif", r, extent, LatLng)
+      val (r2, extent2) = GeoTiffReader.read("/tmp/written.tif")
+      extent should be (extent)
       assertEqual(r, r2)
     }
 

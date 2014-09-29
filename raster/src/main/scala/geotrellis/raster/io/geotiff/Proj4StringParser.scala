@@ -120,7 +120,7 @@ class Proj4StringParser(val proj4String: String) {
     case Some("tmerc") => tmercProps
     case Some("utm") => utmProps
     case Some("lcc") => lccProps
-    case Some("longlat") | Some("latlong") => (Nil, Nil)
+    case Some("longlat") | Some("latlong") => longLatProps
     case Some(p) => throw new GeoTiffWriterLimitationException(
       s"This GeoTiff writer does either not support the projection $p or it is malformed."
     )
@@ -198,6 +198,9 @@ class Proj4StringParser(val proj4String: String) {
     (geoKeysInt, doublesLB.toList)
   }
 
+  private lazy val longLatProps =
+    (List((GTModelTypeGeoKey, ModelTypeGeographic)), Nil)
+
   private lazy val gcsOrDatumProps = if (gcs != UserDefinedCPV) {
     (List((GeogTypeGeoKey, gcs)), Nil)
   } else {
@@ -230,11 +233,10 @@ class Proj4StringParser(val proj4String: String) {
     val code = reversedProjectedLinearUnitsMap.getOrElse(unitString, UserDefinedCPV)
     val geoKeysInt = List((ProjLinearUnitsGeoKey, code))
 
-    val toMeters = getDouble("to_meter", "-1")
+    val toMeters = getDouble("to_meter", "1.0")
 
     val doubles =
-      if (code == UserDefinedCPV && toMeters != -1)
-        List((ProjLinearUnitSizeGeoKey, toMeters))
+      if (code == UserDefinedCPV) List((ProjLinearUnitSizeGeoKey, toMeters))
       else Nil
 
     (geoKeysInt, doubles)
