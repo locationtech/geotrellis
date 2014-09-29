@@ -1,4 +1,4 @@
-package org.gdal.scala.benchmark
+package geotrellis.gdal.benchmark
 
 import java.lang.System.currentTimeMillis
 
@@ -76,7 +76,7 @@ trait GeoTiffReadBenchmark extends SimpleBenchmark {
 
   @inline
   final def readGeoTools(path: String) =
-    geotrellis.raster.io.GeoTiff.readRaster(path)
+    geotrellis.geotools.GeoTiffReader.read(path)
 }
 
 object ReadLargeUncompressed extends BenchmarkRunner(classOf[ReadLargeUncompressed])

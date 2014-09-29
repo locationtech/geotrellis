@@ -17,14 +17,14 @@ class RowTransformSpec extends FunSpec
                           with TileBuilders
                           with TestEngine {
   val path = "raster-test/data/schoolgeo.json"
-  val f = scala.io.Source.fromFile(path)
-  val collection = f.mkString.parseGeoJson[JsonFeatureCollection]
-  f.close
 
-  val points = collection.getAllPoints
+  val LLtoWM = Transform(LatLng, WebMercator)
+  val WMtoLL = Transform(WebMercator, LatLng)
+  val pointsWM = GeoJson.fromFile[JsonFeatureCollection](path).getAllPoints
+  val pointsLL = pointsWM.map(_.reproject(WMtoLL))
 
-  val srcX = points.map(_.x).toArray
-  val srcY = points.map(_.y).toArray
+  val srcX = pointsLL.map(_.x).toArray
+  val srcY = pointsLL.map(_.y).toArray
 
   def getDestX = Array.ofDim[Double](srcX.size)
   def getDestY = Array.ofDim[Double](srcX.size)
@@ -32,33 +32,31 @@ class RowTransformSpec extends FunSpec
   describe("RowTransform.approximate") {
     it("should remain within 1.0 threshold for points in an WSG84 -> WebMercator") {
       val (destX, destY) = (getDestX, getDestY)
-      val transform = Transform(LatLng, WebMercator)
-      val rowTransform = RowTransform.approximate(transform, 1.0)
+      val rowTransform = RowTransform.approximate(LLtoWM, 1.0)
       rowTransform(srcX, srcY, destX, destY)
-      val actualPoints = destX.zip(destY).map { case(x,y) => Point(x, y) }
-      for((expected, actual) <- points.map(_.reproject(transform)).zip(actualPoints)) {
+      val expectedPoints = pointsLL.map(_.reproject(LLtoWM))
+      val actualPoints = destX.zip(destY).map { case (x,y) => Point(x, y) }
+      for((expected, actual) <- expectedPoints.zip(actualPoints)) {
         actual should matchGeom(expected, 1.0)
       }
     }
 
     it("should remain within .0125 threshold for points in an WSG84 -> WebMercator") {
       val (destX, destY) = (getDestX, getDestY)
-      val transform = Transform(LatLng, WebMercator)
-      val rowTransform = RowTransform.approximate(transform, 0.0125)
+      val rowTransform = RowTransform.approximate(LLtoWM, 0.0125)
       rowTransform(srcX, srcY, destX, destY)
       val actualPoints = destX.zip(destY).map { case(x,y) => Point(x, y) }
-      for((expected, actual) <- points.map(_.reproject(transform)).zip(actualPoints)) {
+      for((expected, actual) <- pointsLL.map(_.reproject(LLtoWM)).zip(actualPoints)) {
         actual should matchGeom(expected, 0.0125)
       }
     }
 
     it("should remain within 10.0 threshold for points in an WSG84 -> WebMercator") {
       val (destX, destY) = (getDestX, getDestY)
-      val transform = Transform(LatLng, WebMercator)
-      val rowTransform = RowTransform.approximate(transform, 10.0)
+      val rowTransform = RowTransform.approximate(LLtoWM, 10.0)
       rowTransform(srcX, srcY, destX, destY)
       val actualPoints = destX.zip(destY).map { case(x,y) => Point(x, y) }
-      for((expected, actual) <- points.map(_.reproject(transform)).zip(actualPoints)) {
+      for((expected, actual) <- pointsLL.map(_.reproject(LLtoWM)).zip(actualPoints)) {
         actual should matchGeom(expected, 10.0)
       }
     }
@@ -70,8 +68,7 @@ class RowTransformSpec extends FunSpec
 
       val threshold = ReprojectOptions.DEFAULT.errorThreshold
 
-      val transform = Transform(LatLng, WebMercator)
-      val rowTransform = RowTransform.approximate(transform, threshold)
+      val rowTransform = RowTransform.approximate(WMtoLL, threshold)
 
       for(row <- 0 until re.rows) {
         val srcX = (0 until re.cols).map { i => re.gridColToMap(i) }.toArray
@@ -82,7 +79,7 @@ class RowTransformSpec extends FunSpec
         rowTransform(srcX, srcY, destX, destY)
 
         val actualPoints = srcX.zip(srcY).map { case (x, y) => Point(x, y) }
-        val actualProjected = actualPoints.map(_.reproject(transform))
+        val actualProjected = actualPoints.map(_.reproject(WMtoLL))
         val actualDestX = actualProjected.map(_.x).toArray
         val actualDestY = actualProjected.map(_.y).toArray
 

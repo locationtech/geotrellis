@@ -19,14 +19,14 @@ object RowTransformCheck extends Properties("RowTransform") {
   def genPoint(xmin: Double, ymin: Double, 
                xmax: Double, ymax: Double): Gen[Point] =
     for {
-      x <- choose(-180,179.9999)
-      y <- choose(-90,89.9999)
+      x <- choose(-180.0, 180.0)
+      y <- choose(-85.0, 85.0)
     } yield Point(x, y)
 
   lazy val genExtent: Gen[Extent] = 
     for {
-      p1 <- genPoint(-180, -90, 179.9999, 89.9999)
-      p2 <- genPoint(-180, -90, 179.9999, 89.9999)
+      p1 <- genPoint(-180, -85.0, 180.00, 85.0)
+      p2 <- genPoint(-180, -85.0, 180.00, 85.0)
     } yield {
         val (x1, y1) = (p1.x, p1.y)
       val (x2, y2) = (p2.x, p2.y)
@@ -51,7 +51,6 @@ object RowTransformCheck extends Properties("RowTransform") {
 
   implicit lazy val arbTestCase: Arbitrary[TestCase] =
     Arbitrary(genTestCase)
-
 
   case class Threshold(v: Double)
   lazy val genThreshold: Gen[Threshold] = 
