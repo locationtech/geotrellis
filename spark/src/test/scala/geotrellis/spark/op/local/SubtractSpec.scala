@@ -61,6 +61,16 @@ class SubtractSpec extends FunSpec
         rasterShouldBe(res, (97, 97))
         rastersShouldHaveSameIdsAndTileCount(hundreds, res)
       }
+
+      it("should subtract multiple rasters as a seq") {
+        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val ones = sc.hadoopRasterRDD(allOnes.path)
+        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val res = hundreds - Seq(twos, ones)
+
+        rasterShouldBe(res, (97, 97))
+        rastersShouldHaveSameIdsAndTileCount(hundreds, res)
+      }
     }
   }
 }

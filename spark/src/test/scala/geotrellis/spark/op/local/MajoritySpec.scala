@@ -42,7 +42,6 @@ class MajoritySpec extends FunSpec
         val hundreds = sc.hadoopRasterRDD(allHundreds.path)
 
         val res = ones.localMajority(List(twos, hundreds, hundreds))
-        println(res.collect.head.tile.get(0, 0))
 
         rasterShouldBe(res, (100, 100))
         rastersShouldHaveSameIdsAndTileCount(res, ones)
@@ -53,9 +52,9 @@ class MajoritySpec extends FunSpec
         val twos = sc.hadoopRasterRDD(allTwos.path)
         val hundreds = sc.hadoopRasterRDD(allHundreds.path)
 
-        val res = ones.localMajority(twos, hundreds)
+        val res = ones.localMajority(twos, twos, hundreds)
 
-        rasterShouldBe(res, (100, 100))
+        rasterShouldBe(res, (2, 2))
         rastersShouldHaveSameIdsAndTileCount(res, ones)
       }
 
@@ -64,9 +63,9 @@ class MajoritySpec extends FunSpec
         val twos = sc.hadoopRasterRDD(allTwos.path)
         val hundreds = sc.hadoopRasterRDD(allHundreds.path)
 
-        val res = ones.localMajority(1, List(twos, hundreds))
+        val res = ones.localMajority(1, List(twos, hundreds, ones, twos, twos))
 
-        rasterShouldBe(res, (2, 2))
+        rasterShouldBe(res, (1, 1))
         rastersShouldHaveSameIdsAndTileCount(res, ones)
       }
 
@@ -75,9 +74,9 @@ class MajoritySpec extends FunSpec
         val twos = sc.hadoopRasterRDD(allTwos.path)
         val hundreds = sc.hadoopRasterRDD(allHundreds.path)
 
-        val res = ones.localMajority(1, twos, hundreds)
+        val res = ones.localMajority(1, twos, hundreds, ones, twos, twos)
 
-        rasterShouldBe(res, (2, 2))
+        rasterShouldBe(res, (1, 1))
         rastersShouldHaveSameIdsAndTileCount(res, ones)
       }
     }

@@ -112,7 +112,6 @@ class LocalSpec extends FunSpec
 
         val res = evo.localRound
 
-
         rasterShouldBe(
           res,
           (x: Int, y: Int) => 1
@@ -135,11 +134,24 @@ class LocalSpec extends FunSpec
         rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
+      it("should log base 10 all values in raster") {
+        val inc = sc.hadoopRasterRDD(increasing.path)
+
+        val res = inc.localLog10
+
+        rasterShouldBe(
+          res,
+          (x: Int, y: Int) => math.log10(y * cols + x),
+          1e-4
+        )
+
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
+      }
+
       it("should floor all values in raster") {
         val evo = sc.hadoopRasterRDD(everyOther0Point99Else1Point01.path)
 
         val res = evo.localFloor
-
 
         rasterShouldBe(
           res,
@@ -153,7 +165,6 @@ class LocalSpec extends FunSpec
         val evo = sc.hadoopRasterRDD(everyOther0Point99Else1Point01.path)
 
         val res = evo.localCeil
-
 
         rasterShouldBe(
           res,
@@ -220,7 +231,6 @@ class LocalSpec extends FunSpec
 
         val res = evo.localAcos
 
-
         rasterShouldBe(
           res,
           (x: Int, y: Int) => math.acos(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
@@ -234,7 +244,6 @@ class LocalSpec extends FunSpec
         val evo = sc.hadoopRasterRDD(everyOther0Point99Else1Point01.path)
 
         val res = evo.localAsin
-
 
         rasterShouldBe(
           res,
@@ -272,7 +281,6 @@ class LocalSpec extends FunSpec
 
         val res = evo.localAtan
 
-
         rasterShouldBe(
           res,
           (x: Int, y: Int) => math.atan(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
@@ -286,7 +294,6 @@ class LocalSpec extends FunSpec
         val inc = sc.hadoopRasterRDD(increasing.path)
 
         val res = inc.localCos
-
 
         rasterShouldBe(
           res,
@@ -302,7 +309,6 @@ class LocalSpec extends FunSpec
 
         val res = evo.localCosh
 
-
         rasterShouldBe(
           res,
           (x: Int, y: Int) => math.cosh(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
@@ -316,7 +322,6 @@ class LocalSpec extends FunSpec
         val inc = sc.hadoopRasterRDD(increasing.path)
 
         val res = inc.localSin
-
 
         rasterShouldBe(
           res,
@@ -332,7 +337,6 @@ class LocalSpec extends FunSpec
 
         val res = evo.localSinh
 
-
         rasterShouldBe(
           res,
           (x: Int, y: Int) => math.sinh(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
@@ -347,7 +351,6 @@ class LocalSpec extends FunSpec
 
         val res = evo.localTan
 
-
         rasterShouldBe(
           res,
           (x: Int, y: Int) => math.tan(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
@@ -361,7 +364,6 @@ class LocalSpec extends FunSpec
         val evo = sc.hadoopRasterRDD(everyOther0Point99Else1Point01.path)
 
         val res = evo.localTanh
-
 
         rasterShouldBe(
           res,

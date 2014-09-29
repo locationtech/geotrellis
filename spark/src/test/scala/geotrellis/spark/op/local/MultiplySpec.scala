@@ -55,6 +55,14 @@ class MultiplySpec extends FunSpec
         rasterShouldBe(eights, (8, 8))
         rastersShouldHaveSameIdsAndTileCount(twos, eights)
       }
+
+      it("should multiply multiple rasters as a seq") {
+        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val eights = twos * Seq(twos, twos)
+
+        rasterShouldBe(eights, (8, 8))
+        rastersShouldHaveSameIdsAndTileCount(twos, eights)
+      }
     }
   }
 }

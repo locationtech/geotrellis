@@ -32,6 +32,7 @@ class MinSpec extends FunSpec
     ifCanRunSpark {
       val increasing = IncreasingTestFile(inputHome, conf)
       val decreasing = DecreasingTestFile(inputHome, conf)
+      val allHundreds = AllHundredsTestFile(inputHome, conf)
 
       val cols = increasing.metaData.cols
       val rows = increasing.metaData.rows
@@ -76,6 +77,25 @@ class MinSpec extends FunSpec
             val incV = y * cols + x
 
             math.min(decV, incV)
+          }
+        )
+
+        rastersShouldHaveSameIdsAndTileCount(inc, res)
+      }
+
+      it("should min three rasters as a seq") {
+        val inc = sc.hadoopRasterRDD(increasing.path)
+        val dec = sc.hadoopRasterRDD(decreasing.path)
+        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val res = inc.localMin(Seq(dec, hundreds))
+
+        rasterShouldBe(
+          res,
+          (x: Int, y: Int) => {
+            val decV = cols * rows - (y * cols + x) - 1
+            val incV = y * cols + x
+
+            math.min(math.min(decV, incV), 100)
           }
         )
 

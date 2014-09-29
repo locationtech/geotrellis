@@ -60,6 +60,17 @@ class OrSpec extends FunSpec
         rasterShouldBe(res, (103, 103))
         rastersShouldHaveSameIdsAndTileCount(ones, res)
       }
+
+      it("should or three different rasters as a seq") {
+        val ones = sc.hadoopRasterRDD(allOnes.path)
+        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+
+        val res = ones | Seq(twos, hundreds)
+
+        rasterShouldBe(res, (103, 103))
+        rastersShouldHaveSameIdsAndTileCount(ones, res)
+      }
     }
   }
 }

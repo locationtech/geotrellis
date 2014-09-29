@@ -7,7 +7,7 @@ import geotrellis.spark.rdd.RasterRDD
 trait LocalRasterRDDMethods extends RasterRDDMethods
     with AddRasterRDDMethods
     with AndRasterRDDMethods
-    with ConditionalRasterRDDMethods
+    with IfCellRasterRDDMethods
     with DivideRasterRDDMethods
     with EqualRasterRDDMethods
     with GreaterOrEqualRasterRDDMethods
@@ -72,6 +72,10 @@ trait LocalRasterRDDMethods extends RasterRDDMethods
   /** Computes the Log of Tile values. */
   def localLog(): RasterRDD =
     rasterRDD.mapTiles { case TmsTile(t, r) => TmsTile(t, Log(r)) }
+
+  /** Computes the Log base 10 of Tile values. */
+  def localLog10(): RasterRDD =
+    rasterRDD.mapTiles { case TmsTile(t, r) => TmsTile(t, Log10(r)) }
 
   /** Takes the Flooring of each raster cell value. */
   def localFloor(): RasterRDD =

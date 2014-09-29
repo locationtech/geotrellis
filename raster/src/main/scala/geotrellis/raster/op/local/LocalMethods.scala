@@ -81,6 +81,10 @@ trait LocalMethods extends TileMethods
   def localLog(): Tile =
     Log(tile)
 
+  /** Computes the Log base 10 of Tile values. */
+  def localLog10(): Tile =
+    Log10(tile)
+
   /** Takes the Flooring of each raster cell value. */
   def localFloor(): Tile =
     Floor(tile)

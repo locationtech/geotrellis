@@ -49,4 +49,11 @@ trait SubtractRasterRDDMethods extends RasterRDDMethods {
   /** Subtract the values of each cell in each raster. */
   def -(other: RasterRDD): RasterRDD = localSubtract(other)
   /** Subtract the values of each cell in each raster. */
+  def localSubtract(others: Seq[RasterRDD]): RasterRDD =
+    rasterRDD.combineTiles(others) {
+      case tmsTiles: Seq[TmsTile] =>
+        TmsTile(tmsTiles.head.id, Subtract(tmsTiles.map(_.tile)))
+    }
+  /** Subtract the values of each cell in each raster. */
+  def -(others: Seq[RasterRDD]): RasterRDD = localSubtract(others)
 }

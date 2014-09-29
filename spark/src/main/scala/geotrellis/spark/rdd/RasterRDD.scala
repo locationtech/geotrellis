@@ -23,6 +23,7 @@ import geotrellis.spark.op.local._
 
 import org.apache.spark.Partition
 import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
 
@@ -55,30 +56,17 @@ class RasterRDD(val prev: RDD[TmsTile], val metaData: LayerMetaData)
       }
     }
 
-  def combineTiles(others: Seq[RasterRDD]): RDD[Seq[TmsTile]] = {
-    def recurse(tail: RDD[Seq[TmsTile]],
-      rasters: List[RasterRDD]): RDD[Seq[TmsTile]] = {
-
-    }
-  }
-
   def combineTiles(others: Seq[RasterRDD])(f: (Seq[TmsTile]) => TmsTile): RasterRDD = {
-    def recurse(tail: RasterRDD, rasters: List[RasterRDD]): RasterRDD = rasters match {
-      case Nil => tail
-      case x :: xs =>
-        val rs = asRasterRDD(metaData) {
-          tail.zipPartitions(x, true) { (partition1, partition2) =>
-            partition1.zip(partition2).map {
-              case (tile1, tile2) =>
-                f(Seq(tile1, tile2))
-            }
-          }
-        }
+    def create(t: TmsTile) = Seq(t)
+    def mergeValue(ts: Seq[TmsTile], t: TmsTile) = ts :+ t
+    def mergeContainers(ts1: Seq[TmsTile], ts2: Seq[TmsTile]) = ts1 ++ ts2
 
-        recurse(rs, xs)
+    asRasterRDD(metaData) {
+      (this :: others.toList).map(_.prev).reduceLeft(_ ++ _)
+        .map(t => (t.id, t))
+        .combineByKey(create, mergeValue, mergeContainers)
+        .map { case (id, tiles) => f(tiles) }
     }
-
-    recurse(this, others.toList)
   }
 
   def minMax: (Int, Int) =

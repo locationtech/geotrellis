@@ -42,4 +42,12 @@ trait MultiplyRasterRDDMethods extends RasterRDDMethods {
     }
   /** Multiply the values of each cell in each raster. */
   def *(other: RasterRDD): RasterRDD = localMultiply(other)
+  /** Multiply the values of each cell in each raster. */
+  def localMultiply(others: Seq[RasterRDD]): RasterRDD =
+    rasterRDD.combineTiles(others) {
+      case tmsTiles: Seq[TmsTile] =>
+        TmsTile(tmsTiles.head.id, Multiply(tmsTiles.map(_.tile)))
+    }
+  /** Multiply the values of each cell in each raster. */
+  def *(others: Seq[RasterRDD]): RasterRDD = localMultiply(others)
 }

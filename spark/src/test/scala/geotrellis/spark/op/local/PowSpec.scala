@@ -80,6 +80,17 @@ class PowSpec extends FunSpec
 
         rastersShouldHaveSameIdsAndTileCount(res, hundreds)
       }
+
+      it("should pow three rasters as a seq") {
+        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val twos = sc.hadoopRasterRDD(allTwos.path)
+
+        val res = hundreds ** Seq(twos, twos)
+
+        rasterShouldBe(res, (1e8.toInt, 1e8.toInt))
+
+        rastersShouldHaveSameIdsAndTileCount(res, hundreds)
+      }
     }
   }
 }

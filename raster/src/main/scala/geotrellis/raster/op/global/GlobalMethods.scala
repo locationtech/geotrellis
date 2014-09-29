@@ -19,6 +19,8 @@ trait GlobalMethods extends TileMethods {
   ): List[PolygonFeature[Int]] =
     ToVector(tile, extent, regionConnectivity)
 
+  def regionGroup: RegionGroupResult = regionGroup()
+
   def regionGroup(
     options: RegionGroupOptions = RegionGroupOptions.default): RegionGroupResult =
     RegionGroup(tile, options)
