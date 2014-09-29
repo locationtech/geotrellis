@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -105,6 +105,19 @@ class LessSpec extends FunSpec
       }
     }
 
+    it("checks double valued raster against double constant (right associative)") {
+      val r = positiveIntegerRaster.convert(TypeDouble).mapDouble(_.toDouble)
+      val result = (5.0 <<: r)
+      for (col <- 0 until r.cols) {
+        for (row <- 0 until r.rows) {
+          val z = r.getDouble(col, row)
+          val rz = result.get(col, row)
+          if (5.0 < z) rz should be(1)
+          else rz should be(0)
+        }
+      }
+    }
+
     it("checks an integer raster against itself") {
       val r = positiveIntegerRaster
       val result = r < r
@@ -191,7 +204,7 @@ class LessSpec extends FunSpec
         1, 0, 1, 0)
       val expected = ByteArrayTile(a3, 4, 4)
       val result = r1 < r2
-      
+
       for (col <- 0 until result.cols) {
         for (row <- 0 until result.rows) {
           result.get(col, row) should be(expected.get(col, row))
