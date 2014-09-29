@@ -319,7 +319,7 @@ class Encoder(
     todoDouble(0.0)    // i
     todoDouble(0.0)    // j
     todoDouble(0.0)    // k = 0.0
-    todoDouble(e.xmin) // x
+      todoDouble(e.xmin) // x
     todoDouble(e.ymax) // y
     todoDouble(0.0)    // z = 0.0
 
@@ -352,7 +352,7 @@ class Encoder(
     }
 
     writeTag(0x87b0, Const.float64, ds.size, dataOffset)
-    ds.foreach(todoDouble(_))
+    ds.foreach(todoDouble)
   }
 
 }
