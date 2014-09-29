@@ -575,14 +575,12 @@ case class ImageDirectory(
   def setGDALNoData(input: String) =
     this |-> gdalInternalNoDataLens set (parseGDALNoDataString(input))
 
-  lazy val proj4String: String = GeoTiffCSParser(this).getProj4String match {
-    case Some(s) => s
-    case None => throw new MalformedGeoTiffException(
-      "Malformed geodata in GeoTiff."
-    )
-  }
+  lazy val proj4String: Option[String] = GeoTiffCSParser(this).getProj4String
 
-  lazy val crs: CRS = CRS.fromString(proj4String)
+  lazy val crs: CRS = proj4String match {
+    case Some(s) => CRS.fromString(s)
+    case None => LatLng
+  }
 }
 
 object ImageDirectoryLenses {
