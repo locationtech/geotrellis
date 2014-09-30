@@ -80,7 +80,7 @@ case class AccumuloInstance(
     setAccumuloConfig(job)
     InputFormatBase.setInputTableName(job, table)
 
-    format.setFilters(job, metaData, filters)
+    format.setFilters(job, layer, metaData, filters)
     val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[AccumuloInputFormat], classOf[Key], classOf[Value])
     format.decode(rdd, metaData)
   }

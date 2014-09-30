@@ -5,13 +5,16 @@ import geotrellis.spark._
 import geotrellis.spark.ingest.IngestNetCDF.TimeBandTile
 import geotrellis.spark.tiling._
 import geotrellis.spark.rdd.{LayerMetaData, RasterRDD}
+import org.apache.accumulo.core.client.IteratorSetting
 import org.apache.accumulo.core.client.mapreduce.{AccumuloOutputFormat, InputFormatBase, AccumuloInputFormat}
 import org.apache.accumulo.core.data.{Key, Mutation, Value, Range => ARange}
+import org.apache.accumulo.core.client.IteratorSetting
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.rdd.RDD
 import org.apache.accumulo.core.util.{Pair => JPair}
 import scala.collection.JavaConversions._
+import scala.collection.immutable.HashMap
 
 object TimeBandAccumuloFormat extends AccumuloFormat[TimeBandTile] {
   def rowId(id: TileId, md: LayerMetaData) = new Text(s"${md.level.id}_${id}")
@@ -46,7 +49,7 @@ object TimeBandAccumuloFormat extends AccumuloFormat[TimeBandTile] {
     InputFormatBase.setRanges(job, range)
   }
 
-  def setFilters(job: Job, metaData: LayerMetaData, filters: Seq[AccumuloFilter]): Unit = {
+  def setFilters(job: Job, layer: String, metaData: LayerMetaData, filters: Seq[AccumuloFilter]): Unit = {
     var tileBoundSet = false
     filters.foreach{
       case SpaceFilter(bounds, scheme) =>
@@ -59,9 +62,16 @@ object TimeBandAccumuloFormat extends AccumuloFormat[TimeBandTile] {
         InputFormatBase.setRanges(job, ranges)
 
       case TimeFilter(startTime, endTime) =>
-        val pair = new JPair(new Text(startTime.toString), new Text(endTime.toString))
-        InputFormatBase.fetchColumns(job, pair :: Nil)
+        val from = new JPair(new Text(layer), new Text(startTime.toString))
+        val to =   new JPair(new Text(layer), new Text(endTime.toString))
+
+        val props = HashMap("startBound" -> startTime.toString, "endBound" -> endTime.toString,
+          "startInclusive" -> "true", "endInclusive" -> "true")
+        val iterator = new IteratorSetting(1, "TimeColumnFilter", "org.apache.accumulo.core.iterators.user.ColumnSliceFilter", props)
+            InputFormatBase.addIterator(job, iterator)
     }
     if (! tileBoundSet) setZoomBounds(job, metaData)
+    //Set the filter for layer we need
+    InputFormatBase.fetchColumns(job, new JPair(new Text(layer), null: Text) :: Nil)
   }
 }

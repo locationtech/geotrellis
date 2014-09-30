@@ -23,12 +23,6 @@ package object accumulo {
   implicit val spacialAccumuloFormat = FlatAccumuloFormat
   implicit val spacialTemporalAccumuloFormat = TimeBandAccumuloFormat
 
-
-  /** Names a layer and a zoom level */
-  case class Layer(name: String, zoom: Int) {
-    def asString = name
-  }
-
   implicit class AccumuloSettingsFunctions(sc: SparkContext) {
 
     def setZooKeeperInstance(instance: String, hosts: String) = instance match {

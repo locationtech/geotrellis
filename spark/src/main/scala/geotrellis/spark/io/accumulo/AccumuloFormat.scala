@@ -18,16 +18,16 @@ trait AccumuloFormat[K] {
 
   /** List of filters passed by the user. AccumuloFilter is a blank trait, so it's the job of the format
     * to figure out which filters it is going to respect and how. */
-  def setFilters(job: Job, metaData: LayerMetaData, filters: Seq[AccumuloFilter]): Unit
+  def setFilters(job: Job, layer: String, metaData: LayerMetaData, filters: Seq[AccumuloFilter]): Unit
 }
 
 
 trait AccumuloFilter
 
-case class SpaceFilter(bounds: TileBounds, scheme: TileCoordScheme) extends AccumuloFilter
+case class SpaceFilter(bounds: TileBounds, scheme: TileCoordScheme = GridCoordScheme) extends AccumuloFilter
 object SpaceFilter {
   def apply(col: Int, row: Int, scheme: TileCoordScheme): SpaceFilter =
-    SpaceFilter(GridBounds(col, row, col, row), scheme = GridCoordScheme)
+    SpaceFilter(GridBounds(col, row, col, row), scheme)
 }
 
 case class TimeFilter(startTime: Double, endTime: Double) extends AccumuloFilter

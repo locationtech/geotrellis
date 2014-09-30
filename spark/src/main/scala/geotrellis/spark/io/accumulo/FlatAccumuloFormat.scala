@@ -47,7 +47,7 @@ object FlatAccumuloFormat extends AccumuloFormat[TileId] {
     InputFormatBase.setRanges(job, range)
   }
 
-  def setFilters(job: Job, metaData: LayerMetaData, filters: Seq[AccumuloFilter]): Unit = {
+  def setFilters(job: Job, layer: String, metaData: LayerMetaData, filters: Seq[AccumuloFilter]): Unit = {
     var tileBoundSet = false
     filters.foreach{
       case SpaceFilter(bounds, scheme) =>
@@ -60,5 +60,7 @@ object FlatAccumuloFormat extends AccumuloFormat[TileId] {
         InputFormatBase.setRanges(job, ranges)
     }
     if (! tileBoundSet) setZoomBounds(job, metaData)
+    //Set the filter for layer we need
+    InputFormatBase.fetchColumns(job, new JPair(new Text(layer), null: Text) :: Nil)
   }
 }
