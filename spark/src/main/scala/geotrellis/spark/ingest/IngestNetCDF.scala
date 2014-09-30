@@ -1,6 +1,6 @@
 package geotrellis.spark.ingest
 
-import geotrellis.proj4.CRS
+import geotrellis.proj4.{LatLng, WebMercator, CRS}
 import geotrellis.raster.{CellSize, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop.formats.NetCdfBand
@@ -15,12 +15,14 @@ import geotrellis.raster.reproject._
 /**
  * Ingests raw multi-band NetCDF tiles into a re-projected and tiled RasterRDD
  */
-object IngestNetCDF {
+object IngestNetCDF extends Logging {
   type Source = RDD[(NetCdfBand, Tile)]
   type Sink = RasterRDD[TimeBandTile] => Unit
   case class TimeBandTile(tileId: TileId, time: Double)
 
   def apply (sc: SparkContext)(source: Source, sink:  Sink, destCRS: CRS, tilingScheme: TilingScheme = TilingScheme.TMS): Unit = {
+  import geotrellis.vector.reproject._
+
     val reprojected = source.map {
       case (band, tile) =>
         val (reprojectedTile, reprojectedExtent) = tile.reproject(band.extent, band.crs, destCRS)

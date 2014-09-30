@@ -52,14 +52,14 @@ class AccumuloIngestSpec extends FunSpec
       }
 
       it("should have saved only one layer with default sink") {
-        catalog.load("ones", 10) should  not be empty //base layer based on resolution
-        catalog.load("ones", 9) should be (empty)     //didn't pyramid
+        catalog.load[TileId]("ones", 10) should  not be empty //base layer based on resolution
+        catalog.load[TileId]("ones", 9) should be (empty)     //didn't pyramid
       }
 
       it("should work with pyramid sink"){
         Ingest(sparkContext)(source, Ingest.pyramid(sink), LatLng, TilingScheme.TMS)
         for (level <- 10 to 1 by -1) {
-          val rdd = catalog.load("ones", level)
+          val rdd = catalog.load[TileId]("ones", level)
           rdd should not be empty
           //println(s"Level: $level, tiles: ${rdd.get.count}")
         }

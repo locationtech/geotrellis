@@ -49,21 +49,21 @@ class CatalogSpec extends FunSpec
       }
 
       it("be able to map the id to grid") {
-        val rdd = catalog.load("ones", 10).get
+        val rdd = catalog.load[TileId]("ones", 10).get
         rdd
-          .map{ case TmsTile(id, tile) => (rdd.metaData.transform.indexToGrid(id))}
+          .map{ case (id, tile) => (rdd.metaData.transform.indexToGrid(id))}
           .collect//.foreach(println)
       }
 
       it("fetch a TileExtent from catalog"){
         val tileBounds = GridBounds(915,305,916,306)
-        val rdd1 = catalog.load("ones", 10, SpaceFilter(tileBounds, GridCoordScheme)).get
-        val rdd2 = catalog.load("ones", 10, SpaceFilter(tileBounds, GridCoordScheme)).get
+        val rdd1 = catalog.load[TileId]("ones", 10, SpaceFilter(tileBounds, GridCoordScheme)).get
+        val rdd2 = catalog.load[TileId]("ones", 10, SpaceFilter(tileBounds, GridCoordScheme)).get
 
         val out = rdd1.combineTiles(rdd2){case (tms1, tms2) =>
           require(tms1.id == tms2.id)
           val res = tms1.tile.localAdd(tms2.tile)
-          TmsTile(tms1.id, res)
+          (tms1.id, res)
         }
 
         val tile = out.first.tile
