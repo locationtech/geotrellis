@@ -3,6 +3,7 @@ package geotrellis.spark.service
 import geotrellis.raster._
 import geotrellis.raster.op.local._
 import geotrellis.raster.render.png._
+import geotrellis.spark.ingest.IngestNetCDF.TimeBandTile
 import geotrellis.spark.tiling._
 import geotrellis.spark.rdd._
 import geotrellis.spark.io.hadoop._
@@ -36,9 +37,9 @@ trait TmsHttpService extends HttpService {
   val catalog = accumulo.tileCatalog
 
   def rootRoute =
-    pathPrefix("tms" / Segment / IntNumber / IntNumber / IntNumber ) { (layer, zoom, x , y) =>
+    pathPrefix("tms" / Segment / DoubleNumber / IntNumber / IntNumber / IntNumber ) { (layer, time, zoom, x , y) =>
 
-      val rdd = catalog.load(Layer(layer, zoom), Some(GridBounds(x, y, x, y) -> TmsCoordScheme))
+      val rdd =  catalog.load[TimeBandTile](layer, zoom, SpaceFilter(x,y,TmsCoordScheme), TimeFilter(time))
 
       respondWithMediaType(MediaTypes.`image/png`) { complete {
         val tile = rdd.get.first.tile

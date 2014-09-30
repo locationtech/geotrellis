@@ -6,6 +6,12 @@ import geotrellis.vector.Extent
 import org.apache.spark.rdd._
 
 package object rdd {
+  /** Keeps with the convention while still using simple tups, nice */
+  implicit class TileTuple[K](tup: (K, Tile)) {
+    def id: K = tup._1
+    def tile: Tile = tup._2
+  }
+
   def asRasterRDD[K](metaData: LayerMetaData)(f: =>RDD[(K, Tile)]): RasterRDD[K] =
     new RasterRDD(f, metaData)
 

@@ -53,7 +53,7 @@ case class AccumuloInstance(
 
 
   def saveRaster[K](raster: RasterRDD[K], table: String, layer: String)
-    (implicit sc: SparkContext, format: AccumuloFormat[K, _])
+    (implicit sc: SparkContext, format: AccumuloFormat[K])
   {
     import org.apache.spark.SparkContext._
 
@@ -71,8 +71,8 @@ case class AccumuloInstance(
       job.getConfiguration)
   }
 
-  def loadRaster[K, Q <: RasterQuery[K]](metaData: LayerMetaData, table: String, layer: String, query: Q)
-    (implicit sc: SparkContext, format: AccumuloFormat[K, Q]) : RasterRDD[K] =
+  def loadRaster[K](metaData: LayerMetaData, table: String, layer: String, filters: AccumuloFilter*)
+    (implicit sc: SparkContext, format: AccumuloFormat[K]) : RasterRDD[K] =
   {
     import org.apache.spark.SparkContext._
 
@@ -80,7 +80,7 @@ case class AccumuloInstance(
     setAccumuloConfig(job)
     InputFormatBase.setInputTableName(job, table)
 
-    format.setQueryParams(job, metaData, query)
+    format.setFilters(job, metaData, filters)
     val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[AccumuloInputFormat], classOf[Key], classOf[Value])
     format.decode(rdd, metaData)
   }

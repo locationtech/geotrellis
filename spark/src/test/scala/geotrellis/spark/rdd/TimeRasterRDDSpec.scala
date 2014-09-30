@@ -50,7 +50,7 @@ class TimeRasterRDDSpec extends FunSpec with Matchers
 
       IngestNetCDF(sparkContext)(source, sink, LatLng, TilingScheme.TMS)
 
-      val out: RasterRDD[TimeBandTile] = accumulo.loadRaster(md, "net", "rcp45", SpaceTimeQuery(None, None))
+      val out: RasterRDD[TimeBandTile] = accumulo.loadRaster(md, "net", "rcp45")
       println("RECORDS", out.count)
     }
   }
