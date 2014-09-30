@@ -27,7 +27,7 @@ trait AccumuloFilter
 case class SpaceFilter(bounds: TileBounds, scheme: TileCoordScheme) extends AccumuloFilter
 object SpaceFilter {
   def apply(col: Int, row: Int, scheme: TileCoordScheme): SpaceFilter =
-    SpaceFilter(GridBounds(col, row, col, row), scheme)
+    SpaceFilter(GridBounds(col, row, col, row), scheme = GridCoordScheme)
 }
 
 case class TimeFilter(startTime: Double, endTime: Double) extends AccumuloFilter
