@@ -39,8 +39,7 @@ class AccumuloIngestSpec extends FunSpec
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sparkContext.hadoopGeoTiffRDD(allOnes)
       val sink = { (tiles: RasterRDD[TileId]) =>
-        val raster: TmsRasterRDD = new TmsRasterRDD(tiles, tiles.metaData)
-        catalog.save(raster, "ones", "tiles")
+        catalog.save(tiles, "ones", "tiles")
       }
 
       {//we should not expect catalog to  create the table
@@ -53,14 +52,14 @@ class AccumuloIngestSpec extends FunSpec
       }
 
       it("should have saved only one layer with default sink") {
-        catalog.load(Layer("ones", 10)) should  not be empty //base layer based on resolution
-        catalog.load(Layer("ones", 9)) should be (empty)     //didn't pyramid
+        catalog.load("ones", 10) should  not be empty //base layer based on resolution
+        catalog.load("ones", 9) should be (empty)     //didn't pyramid
       }
 
       it("should work with pyramid sink"){
         Ingest(sparkContext)(source, Ingest.pyramid(sink), LatLng, TilingScheme.TMS)
         for (level <- 10 to 1 by -1) {
-          val rdd = catalog.load(Layer("ones", level))
+          val rdd = catalog.load("ones", level)
           rdd should not be empty
           //println(s"Level: $level, tiles: ${rdd.get.count}")
         }
