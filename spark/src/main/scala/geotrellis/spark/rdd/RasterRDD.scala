@@ -160,15 +160,15 @@ class RasterRDD[K](val prev: RDD[(K, Tile)], val metaData: LayerMetaData) extend
       }, true)
     }
 
-//  def combineTiles(other: RasterRDD[I])(f: (TileTup[I], TileTup[I]) => TileTup[I]): RasterRDD[I] =
-//    asRasterRDD(metaData) {
-//      zipPartitions(other, true) { (partition1, partition2) =>
-//        partition1.zip(partition2).map {
-//          case (tile1, tile2) =>
-//            f(tile1, tile2)
-//        }
-//      }
-//    }
+  def combineTiles[R](other: RasterRDD[K])(f: ((K, Tile), (K, Tile)) => (R, Tile)): RasterRDD[R] =
+    asRasterRDD(metaData) {
+      zipPartitions(other, true) { (partition1, partition2) =>
+        partition1.zip(partition2).map {
+          case (tile1, tile2) =>
+            f(tile1, tile2)
+        }
+      }
+    }
 
 //  def minMax: (Int, Int) =
 //    map(_.tile.findMinMax)
