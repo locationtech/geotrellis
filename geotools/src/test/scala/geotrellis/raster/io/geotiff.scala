@@ -17,6 +17,7 @@
 package geotrellis.raster.io
 
 import geotrellis.engine._
+import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiffWriter
 import geotrellis.vector.Extent
@@ -101,7 +102,7 @@ class GeoTiffSpec extends FunSpec with TestEngine with Matchers {
 
     it ("should write and read back in the same") {
       val (r, re) = GeoTiff.readRaster("raster-test/data/econic.tif")
-      GeoTiffWriter.write("/tmp/written.tif", r, re.extent, "foo")
+      GeoTiffWriter.write("/tmp/written.tif", r, re.extent, LatLng)
       val (r2, re2) = GeoTiff.readRaster("/tmp/written.tif")
       re should be (re2)
       assertEqual(r, r2)
