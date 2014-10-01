@@ -14,7 +14,7 @@ import geotrellis.proj4._
 
 import org.apache.spark._
 import org.apache.spark.rdd._
-import org.apache.spark.SparkContext.rddToPairRDDFunctions
+import org.apache.spark.SparkContext._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.SequenceFile
@@ -33,10 +33,10 @@ package object hadoop {
   implicit def stringToPath(path: String): Path = new Path(path)
 
   implicit class HadoopSparkContextWrapper(sc: SparkContext) {
-    def hadoopRasterRDD(path: String): TmsRasterRDD =
+    def hadoopRasterRDD(path: String): RasterRDD[TileId] =
       hadoopRasterRDD(new Path(path))
 
-    def hadoopRasterRDD(path: Path): TmsRasterRDD =
+    def hadoopRasterRDD(path: Path): RasterRDD[TileId] =
       RasterHadoopRDD(path, sc).toRasterRDD
 
     def hadoopGeoTiffRDD(path: String): RDD[((Extent, CRS), Tile)] =
@@ -79,10 +79,10 @@ package object hadoop {
     }
   }
 
-  implicit class SavableRasterRDD(val rdd: TmsRasterRDD) extends Logging {
+  implicit class SavableRasterRDD(val rdd: RasterRDD[TileId]) extends Logging {
     def toWritable =
       rdd.mapPartitions({ partition =>
-        partition.map(_.toWritable)
+        partition.map{ case (id, tile) => TmsTile(id, tile).toWritable}
       }, true)
 
 

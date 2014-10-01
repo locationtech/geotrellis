@@ -15,16 +15,13 @@ package object rdd {
   def asRasterRDD[K](metaData: LayerMetaData)(f: =>RDD[(K, Tile)]): RasterRDD[K] =
     new RasterRDD(f, metaData)
 
-  def asTmsRasterRDD(metaData: LayerMetaData)(f: =>RDD[TmsTile]): TmsRasterRDD =
-    new TmsRasterRDD(f, metaData)
-
   implicit class MakeRasterRDD(val prev: RDD[TmsTile]) {
-    def toRasterRDD(metaData: LayerMetaData) = new TmsRasterRDD(prev, metaData)
+    def toRasterRDD(metaData: LayerMetaData) = new RasterRDD[TileId](prev, metaData)
   }
 
   implicit class MakeRasterRDD2(val prev: RDD[(Long, Tile)]) {
     def prevAsTmsTiles = 
       prev.mapPartitions({ seq => seq.map { case (id, tile) => TmsTile(id, tile) } }, true)
-    def toRasterRDD(metaData: LayerMetaData) = new TmsRasterRDD(prevAsTmsTiles, metaData)
+    def toRasterRDD(metaData: LayerMetaData) = new RasterRDD[TileId](prevAsTmsTiles, metaData)
   }
 }

@@ -1,7 +1,7 @@
 package geotrellis.spark.io.accumulo
 
 
-import geotrellis.spark.rdd.{TmsRasterRDD, LayerMetaData, RasterRDD}
+import geotrellis.spark.rdd.{LayerMetaData, RasterRDD}
 import geotrellis.spark.tiling.{TileCoordScheme, TilingScheme}
 import geotrellis.spark.{TileBounds, TileId, TmsTile}
 import org.apache.accumulo.core.client._
