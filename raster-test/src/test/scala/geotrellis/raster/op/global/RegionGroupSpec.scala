@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -95,7 +95,7 @@ class RegionGroupSpec extends FunSpec
       val histogram = regions.histogram
       val count = histogram.getValues.length
       count should be (8)
-      
+
       val regionCounts = mutable.Map[Int,mutable.Set[Int]]()
       for (col <- 0 until 17) {
         for (row <- 0 until 18) {
@@ -142,13 +142,13 @@ class RegionGroupSpec extends FunSpec
                17,18
       )
 
-      val RegionGroupResult(regions,regionMap) = 
+      val RegionGroupResult(regions,regionMap) =
         r.regionGroup(RegionGroupOptions(ignoreNoData = false))
 
       val histogram = regions.histogram
       val count = histogram.getValues.length
       count should be (9)
-      
+
       val regionCounts = mutable.Map[Int,mutable.Set[Int]]()
       for (col <- 0 until 17) {
         for (row <- 0 until 18) {
@@ -190,7 +190,7 @@ class RegionGroupSpec extends FunSpec
       val histogram = regions.histogram
       val count = histogram.getValues.length
       count should be (4)
-      
+
       val regionCounts = mutable.Map[Int,mutable.Set[Int]]()
       for (col <- 0 until 7) {
         for (row <- 0 until 8) {
@@ -231,7 +231,7 @@ class RegionGroupSpec extends FunSpec
       val histogram = regions.histogram
       val count = histogram.getValues.length
       count should be (1)
-      
+
       for (col <- 0 until 7) {
         for (row <- 0 until 8) {
           val v = r.get(col,row)
@@ -244,9 +244,9 @@ class RegionGroupSpec extends FunSpec
 
     it("should count regions with a nodata line almost separating regions") {
       val n = NODATA
-      val arr = 
+      val arr =
         Array(
-//             0  1  2  3  4 
+//             0  1  2  3  4
                1, 1, 1, 1, n,// 0
                1, 5, 5, 1, n,// 1
                5, 5, 1, 1, 1,// 2
@@ -270,7 +270,7 @@ class RegionGroupSpec extends FunSpec
       val histogram = regions.histogram
       val count = histogram.getValues.length
       count should be (4)
-      
+
       val regionCounts = mutable.Map[Int,mutable.Set[Int]]()
       for (col <- 0 until 5) {
         for (row <- 0 until 8) {
@@ -288,9 +288,9 @@ class RegionGroupSpec extends FunSpec
 
     it("should count regions with a nodata line almost separating regions without ignoring NODATA") {
       val n = NODATA
-      val arr = 
+      val arr =
         Array(
-//             0  1  2  3  4 
+//             0  1  2  3  4
                1, 1, 1, 1, n,// 0
                1, 5, 5, 1, n,// 1
                5, 5, 1, 1, 1,// 2
@@ -310,12 +310,12 @@ class RegionGroupSpec extends FunSpec
       val ymax = 0
 
       val r = ArrayTile(arr, cols, rows)
-      val RegionGroupResult(regions,regionMap) = 
+      val RegionGroupResult(regions,regionMap) =
         r.regionGroup(RegionGroupOptions(ignoreNoData = false))
       val histogram = regions.histogram
       val count = histogram.getValues.length
       count should be (7)
-      
+
       val regionCounts = mutable.Map[Int,mutable.Set[Int]]()
       for (col <- 0 until 5) {
         for (row <- 0 until 8) {

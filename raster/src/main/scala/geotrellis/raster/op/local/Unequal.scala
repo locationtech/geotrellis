@@ -22,10 +22,10 @@ import geotrellis.raster._
  * Determines if values are equal. Sets to 1 if true, else 0.
  */
 object Unequal extends LocalTileComparatorOp {
-  def compare(z1:Int,z2:Int):Boolean =
+  def compare(z1: Int, z2: Int):Boolean =
     if(z1 == z2) false else true
 
-  def compare(z1:Double,z2:Double):Boolean =
+  def compare(z1: Double, z2: Double):Boolean =
     if(isNoData(z1)) { if(isNoData(z2)) false else true }
     else {
       if(isNoData(z2)) { true }
@@ -48,13 +48,13 @@ trait UnequalMethods extends TileMethods {
    * the corresponding cell value of the input raster is equal to the input
    * integer, else 0.
    */
-  def !==(i:Int): Tile = localUnequal(i)
+  def !==(i: Int): Tile = localUnequal(i)
   /**
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
    * integer, else 0.
    */
-  def !==:(i:Int): Tile = localUnequal(i)
+  def !==:(i: Int): Tile = localUnequal(i)
   /**
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
@@ -66,21 +66,21 @@ trait UnequalMethods extends TileMethods {
    * the corresponding cell value of the input raster is equal to the input
    * double, else 0.
    */
-  def !==(d:Double): Tile = localUnequal(d)
+  def !==(d: Double): Tile = localUnequal(d)
   /**
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell value of the input raster is equal to the input
    * double, else 0.
    */
-  def !==:(d:Double): Tile = localUnequal(d)
+  def !==:(d: Double): Tile = localUnequal(d)
   /**
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the rasters are not equal, else 0.
    */
-  def localUnequal(r:Tile): Tile = Unequal(tile,r)
+  def localUnequal(r: Tile): Tile = Unequal(tile,r)
   /**
    * Returns a Tile with data of TypeBit, where cell values equal 1 if
    * the corresponding cell valued of the raster are not equal, else 0.
    */
-  def !==(r:Tile): Tile = localUnequal(r)
+  def !==(r: Tile): Tile = localUnequal(r)
 }
