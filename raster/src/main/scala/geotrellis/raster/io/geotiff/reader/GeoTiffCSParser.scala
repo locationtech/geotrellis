@@ -1140,7 +1140,8 @@ class GeoTiffCSParser(directory: ImageDirectory) {
     }
 
     if (proj4SB.length == 0 ||
-      gtgp.ctProjection == CT_TransvMercator_SouthOriented) None
+      gtgp.ctProjection == CT_TransvMercator_SouthOriented ||
+      !proj4SB.toString.contains("+proj")) None
     else Some(proj4SB.append(units).toString)
   }
 

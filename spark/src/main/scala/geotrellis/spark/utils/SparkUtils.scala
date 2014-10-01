@@ -69,8 +69,8 @@ object SparkUtils extends Logging {
       .setSparkHome(sparkHome)
       .set("spark.executor.extraClassPath", geoTrellisJar)
 //      .setJars(Array(geoTrellisJar))
-      // .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      // .set("spark.kryo.registrator", "geotrellis.spark.io.hadoop.KryoRegistrator")
+      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .set("spark.kryo.registrator", "geotrellis.spark.io.hadoop.KryoRegistrator")
 
     new SparkContext(sparkConf)
   }
