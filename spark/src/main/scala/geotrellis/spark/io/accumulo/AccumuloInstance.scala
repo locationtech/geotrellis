@@ -3,7 +3,7 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.rdd.{LayerMetaData, RasterRDD}
 import geotrellis.spark.tiling.{TileCoordScheme, TilingScheme}
-import geotrellis.spark.{TileBounds, TileId, TmsTile}
+import geotrellis.spark.{TileBounds, TileId}
 import org.apache.accumulo.core.client._
 import org.apache.accumulo.core.client.mapreduce.{InputFormatBase, AccumuloInputFormat, AccumuloOutputFormat}
 import org.apache.accumulo.core.client.mock.MockInstance
@@ -14,8 +14,7 @@ import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-
+import com.typesafe.config.{ConfigFactory,Config}
 
 case class AccumuloInstance(
   instanceName: String, zookeeper: String,
@@ -27,8 +26,11 @@ case class AccumuloInstance(
   }
   val connector = instance.getConnector(user, token)
 
-  //TODO: read the table from the configuration
-  val metaDataCatalog = new MetaDataCatalog(connector, "metadata")
+  /** The value is specified in reference.conf, applications can overwrite it in their application.conf */
+  val catalogTable: String = {
+    ConfigFactory.load().getString("geotrellis.accumulo.catalog")
+  }
+  val metaDataCatalog = new MetaDataCatalog(connector, catalogTable)
 
   def tileCatalog(implicit sc: SparkContext) =
     new AccumuloCatalog(sc, this, metaDataCatalog)
