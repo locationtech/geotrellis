@@ -2,18 +2,47 @@ package geotrellis.spark.op
 
 import org.apache.spark.AccumulatorParam
 
+import geotrellis.raster.stats.FastMapHistogram._
 import geotrellis.raster.stats.Histogram
+import geotrellis.raster.op.zonal.summary.MeanResult
 
-trait SeqAccumulatorParam[B] extends AccumulatorParam[Seq[B]] {
+class GenericAccumulatorParam[B](f: (B, B) => B)
+    extends AccumulatorParam[B] {
 
-  override def zero(initialValue: Seq[B]): Seq[B] = Seq[B]()
+  override def zero(init: B): B = init
 
-  override def addInPlace(s1: Seq[B], s2: Seq[B]): Seq[B] = s1 ++ s2
+  override def addInPlace(a: B, b: B): B = f(a, b)
 
 }
 
-object HistogramSeqAccumulatorParam extends SeqAccumulatorParam[Histogram]
+object HistogramAccumulatorParam extends GenericAccumulatorParam(
+  (a: Histogram, b: Histogram) => fromHistograms(Seq(a, b)).asInstanceOf[Histogram]
+)
 
-object DoubleSeqAccumulatorParam extends SeqAccumulatorParam[Double]
+object MaxAccumulatorParam extends GenericAccumulatorParam(
+  (a: Int, b: Int) => math.max(a, b)
+)
 
-object IntSeqAccumulatorParam extends SeqAccumulatorParam[Int]
+object DoubleMaxAccumulatorParam extends GenericAccumulatorParam(
+  (a: Double, b: Double) => math.max(a, b)
+)
+
+object MinAccumulatorParam extends GenericAccumulatorParam(
+  (a: Int, b: Int) => math.min(a, b)
+)
+
+object DoubleMinAccumulatorParam extends GenericAccumulatorParam(
+  (a: Double, b: Double) => math.min(a, b)
+)
+
+object MeanResultAccumulatorParam extends GenericAccumulatorParam(
+  (a: MeanResult, b: MeanResult) => a + b
+)
+
+object SumAccumulatorParam extends GenericAccumulatorParam(
+  (a: Long, b: Long) => a + b
+)
+
+object DoubleSumAccumulatorParam extends GenericAccumulatorParam(
+  (a: Double, b: Double) => a + b
+)
