@@ -17,6 +17,9 @@
 package geotrellis.spark.rdd
 
 import geotrellis.raster._
+
+import geotrellis.vector.Extent
+
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.op.local._
@@ -88,4 +91,10 @@ class RasterRDD(val prev: RDD[TmsTile], val metaData: LayerMetaData)
         }
       (min, max)
     }
+
+  def toExtentsRDD: RDD[(Extent, TmsTile)] = {
+    val sc = sparkContext
+    val metaDataBroadcast = sc.broadcast(metaData)
+    map(t => (metaDataBroadcast.value.transform.indexToMap(t.id), t))
+  }
 }
