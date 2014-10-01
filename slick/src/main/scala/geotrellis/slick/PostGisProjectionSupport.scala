@@ -70,9 +70,9 @@ class PostGisProjectionSupport(override val driver: JdbcDriver) extends PostGisE
   implicit val lineTypeMapper               = new ProjectedGeometryJdbcType[LINESTRING]
   implicit val polygonTypeMapper            = new ProjectedGeometryJdbcType[POLYGON]
   implicit val geometryCollectionTypeMapper = new ProjectedGeometryJdbcType[GEOMETRYCOLLECTION]
-  // implicit val multiPointTypeMapper = new ProjectedGeometryJdbcType[ProjectedGeometry[MultiPoint], MultiPoint]
-  // implicit val multiPolygonTypeMapper = new ProjectedGeometryJdbcType[ProjectedGeometry[MultiPolygon], MultiPolygon]
-  // implicit val multiLineTypeMapper = new ProjectedGeometryJdbcType[ProjectedGeometry[MultiLine], MultiLine]
+  implicit val multiPointTypeMapper         = new ProjectedGeometryJdbcType[Projected[MultiPoint]]
+  implicit val multiPolygonTypeMapper       = new ProjectedGeometryJdbcType[Projected[MultiPolygon]]
+  implicit val multiLineTypeMapper          = new ProjectedGeometryJdbcType[Projected[MultiLine]]
 
   implicit def geometryColumnExtensionMethods[G1 <: GEOMETRY](c: Column[G1]) = 
     new GeometryColumnExtensionMethods[G1, G1](c)

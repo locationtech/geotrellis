@@ -18,6 +18,7 @@ package geotrellis.engine
 
 import geotrellis.raster._
 import geotrellis.raster.io._
+import geotrellis.raster.io.ascii._
 import geotrellis.engine._
 import geotrellis.vector.Extent
 

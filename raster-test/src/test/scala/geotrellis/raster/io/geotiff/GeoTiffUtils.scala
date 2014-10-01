@@ -22,7 +22,7 @@ import org.scalatest._
 
 trait GeoTiffTestUtils extends Matchers {
 
-  val epsilon = 1e-9
+  val Epsilon = 1e-9
 
   var writtenFiles = Vector[String]()
 
@@ -33,32 +33,6 @@ trait GeoTiffTestUtils extends Matchers {
   protected def purge = writtenFiles foreach { path =>
     val file = new File(path)
     if (file.exists()) file.delete()
-  }
-
-  protected def proj4StringToMap(proj4String: String) =
-    proj4String.trim.split(" ").map( x =>
-      if (x.startsWith("+")) x.substring(1) else x).map(x => {
-        val index = x.indexOf('=')
-        if (index != -1) (x.substring(0, index) -> Some(x.substring(index + 1)))
-        else (x -> None)
-      }).groupBy(_._1).map { case (a, b) => (a, b.head._2) }
-      .filter { case (a, b) => !b.isEmpty }.map { case (a, b) => (a -> b.get) }
-      .map { case (a, b) => if (b == "latlong") (a -> "longlat") else (a, b) }
-      .filter { case (a, b) => (a != "to_meter" || b != "1.0") }
-
-  protected def compareValues(
-    firstMap: Map[String, String],
-    secondMap: Map[String, String],
-    key: String,
-    isDouble: Boolean,
-    eps: Double = epsilon) = firstMap.get(key) match {
-    case Some(str1) => secondMap.get(key) match {
-      case Some(str2) =>
-        if (isDouble) math.abs(str1.toDouble - str2.toDouble) should be <= eps
-        else str1 should equal (str2)
-      case None => fail
-    }
-    case None => fail
   }
 
 }
