@@ -90,6 +90,34 @@ object HdfsUtils {
     dirPath
   }
 
+  def createTempFile(conf: Configuration, prefix: String = ""): Path = {
+    val tmpDir = new Path(getTempDir(conf))
+    val tmpFile = prefix match {
+      case "" => new Path(tmpDir, createRandomString(40))
+      case fx => new Path(tmpDir, s"$prefix-${createRandomString(40)}")
+    }
+    tmpDir.getFileSystem(conf).create(tmpFile)
+    tmpFile
+  }
+
+
+  sealed trait LocalPath { val path: Path }
+  object LocalPath {
+    case class Original(path: Path) extends LocalPath
+    case class Temporary(path: Path) extends LocalPath
+  }
+
+  def localCopy(conf: Configuration, path: Path): LocalPath =
+    path.toUri.getScheme match {
+      case "file" =>
+        LocalPath.Original(path)
+      case _ =>
+        val tmp = HdfsUtils.createTempFile(conf, "local-copy")
+        val fs = tmp.getFileSystem(conf)
+        fs.copyToLocalFile(path, tmp)
+        LocalPath.Temporary(tmp)
+    }
+
   def createRandomString(size: Int): String = Random.alphanumeric.take(size).mkString
 
   def getLineScanner(path: String, conf: Configuration): Option[LineScanner] =

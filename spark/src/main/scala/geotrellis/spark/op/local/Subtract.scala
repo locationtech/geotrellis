@@ -18,9 +18,9 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.raster.op.local.Subtract
-import geotrellis.spark.rdd.RasterRDD
+import geotrellis.spark.rdd.TmsRasterRDD
 
-trait SubtractOpMethods[+Repr <: RasterRDD] { self: Repr =>
+trait SubtractOpMethods[+Repr <: TmsRasterRDD] { self: Repr =>
   /** Subtract a constant value from each cell.*/
   def localSubtract(i: Int) = 
     self.mapTiles { case TmsTile(t, r) => TmsTile(t, Subtract(r, i)) }
@@ -42,9 +42,9 @@ trait SubtractOpMethods[+Repr <: RasterRDD] { self: Repr =>
   /** Subtract each value of a cell from a double constant value. */
   def -:(d:Double) = localSubtractFrom(d)
   /** Subtract the values of each cell in each raster. */
-  def localSubtract(rdd: RasterRDD) = 
+  def localSubtract(rdd: TmsRasterRDD) =
     self.combineTiles(rdd) { case (TmsTile(t1, r1), TmsTile(t2, r2)) => TmsTile(t1, Subtract(r1, r2)) }
   /** Subtract the values of each cell in each raster. */
-  def -(rdd: RasterRDD) = localSubtract(rdd)
+  def -(rdd: TmsRasterRDD) = localSubtract(rdd)
   /** Subtract the values of each cell in each raster. */
 }

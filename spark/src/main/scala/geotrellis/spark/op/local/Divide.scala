@@ -18,9 +18,9 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.raster.op.local.Divide
-import geotrellis.spark.rdd.RasterRDD
+import geotrellis.spark.rdd.TmsRasterRDD
 
-trait DivideOpMethods[+Repr <: RasterRDD] { self: Repr =>
+trait DivideOpMethods[+Repr <: TmsRasterRDD] { self: Repr =>
   /** Divide each value of the raster by a constant value.*/
   def localDivide(i: Int) = 
     self.mapTiles { case TmsTile(t, r) => TmsTile(t, Divide(r, i)) }
@@ -42,8 +42,8 @@ trait DivideOpMethods[+Repr <: RasterRDD] { self: Repr =>
   /** Divide a double constant value by each cell value.*/
   def /:(d: Double) = localDivideValue(d)
   /** Divide the values of each cell in each raster. */
-  def localDivide(rdd: RasterRDD) = 
+  def localDivide(rdd: TmsRasterRDD) =
     self.combineTiles(rdd) { case (TmsTile(t1, r1), TmsTile(t2, r2)) => TmsTile(t1, Divide(r1, r2)) }
   /** Divide the values of each cell in each raster. */
-  def /(rdd: RasterRDD) = localDivide(rdd)
+  def /(rdd: TmsRasterRDD) = localDivide(rdd)
 }

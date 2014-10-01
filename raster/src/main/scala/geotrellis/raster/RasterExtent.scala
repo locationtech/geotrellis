@@ -55,6 +55,11 @@ case class CellSize(width: Double, height: Double) {
 object CellSize {
   def apply(extent: Extent, cols: Int, rows: Int): CellSize =
     CellSize(extent.width / cols, extent.height / rows)
+
+  def apply(extent: Extent, dims: (Int, Int)): CellSize = {
+    val (cols, rows) = dims
+    apply(extent, cols, rows)
+  }     
 }
 
 /**

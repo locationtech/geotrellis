@@ -18,9 +18,9 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.raster.op.local.Multiply
-import geotrellis.spark.rdd.RasterRDD
+import geotrellis.spark.rdd.TmsRasterRDD
 
-trait MultiplyOpMethods[+Repr <: RasterRDD] { self: Repr =>
+trait MultiplyOpMethods[+Repr <: TmsRasterRDD] { self: Repr =>
   /** Multiply a constant value from each cell.*/
   def localMultiply(i: Int) = 
     self.mapTiles { case TmsTile(t, r) => TmsTile(t, Multiply(r, i)) }
@@ -36,8 +36,8 @@ trait MultiplyOpMethods[+Repr <: RasterRDD] { self: Repr =>
   /** Multiply a double constant value from each cell.*/
   def *:(d:Double) = localMultiply(d)
   /** Multiply the values of each cell in each raster. */
-  def localMultiply(rdd: RasterRDD) = 
+  def localMultiply(rdd: TmsRasterRDD) =
     self.combineTiles(rdd) { case (TmsTile(t1, r1), TmsTile(t2, r2)) => TmsTile(t1, Multiply(r1, r2)) }
   /** Multiply the values of each cell in each raster. */
-  def *(rdd: RasterRDD) = localMultiply(rdd)
+  def *(rdd: TmsRasterRDD) = localMultiply(rdd)
 }

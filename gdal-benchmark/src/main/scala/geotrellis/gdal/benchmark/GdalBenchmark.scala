@@ -5,8 +5,7 @@ import java.lang.System.currentTimeMillis
 import geotrellis.raster._
 
 import com.google.caliper.Benchmark
-import com.google.caliper.Runner 
-import com.google.caliper.SimpleBenchmark
+import com.google.caliper.runner.CaliperMain
 
 import scala.io._
 
@@ -53,11 +52,11 @@ object Bench {
 /**
  * Extend this to create a main object which will run 'cls' (a benchmark).
  */
-abstract class BenchmarkRunner(cls: java.lang.Class[_ <: Benchmark]) {
-  def main(args: Array[String]): Unit = Runner.main(cls, args: _*)
+class BenchmarkRunner(cls: java.lang.Class[_ <: Benchmark]) {
+  def main(args: Array[String]): Unit = CaliperMain.main(cls, args)
 }
 
-trait GeoTiffReadBenchmark extends SimpleBenchmark {
+trait GeoTiffReadBenchmark extends Benchmark {
   /**
    * Sugar to run 'f' for 'reps' number of times.
    */
@@ -80,6 +79,7 @@ trait GeoTiffReadBenchmark extends SimpleBenchmark {
 }
 
 object ReadLargeUncompressed extends BenchmarkRunner(classOf[ReadLargeUncompressed])
+
 class ReadLargeUncompressed extends GeoTiffReadBenchmark {
 
   val path = "../raster-test/data/aspect.tif"

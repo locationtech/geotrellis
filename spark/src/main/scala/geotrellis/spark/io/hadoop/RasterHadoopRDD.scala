@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.hadoop
 
+import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.rdd._
 import geotrellis.spark.utils._
@@ -28,7 +29,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat
 
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.NewHadoopRDD
+import org.apache.spark.rdd.{RDD, NewHadoopRDD}
 
 /*
  * An RDD abstraction of rasters in Spark. This can give back either tuples of either
@@ -45,10 +46,8 @@ class RasterHadoopRDD private (sc: SparkContext, conf: Configuration, path: Path
   lazy val metaData = 
     HadoopUtils.readLayerMetaData(path, context.hadoopConfiguration)
 
-  def toRasterRDD: RasterRDD = 
-    asRasterRDD(metaData) {
-      map { _.toTmsTile(metaData) }
-    }
+  def toRasterRDD: RasterRDD[TileId] =
+    asRasterRDD(metaData) { map { _.toTuple(metaData) } }
 }
 
 object RasterHadoopRDD {

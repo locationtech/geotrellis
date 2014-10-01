@@ -20,6 +20,9 @@ import org.apache.accumulo.core.client.mapreduce.lib.util.{ConfiguratorBase => C
 import scala.collection.JavaConversions._
 
 package object accumulo {
+  implicit val spacialAccumuloFormat = FlatAccumuloFormat
+  implicit val spacialTemporalAccumuloFormat = TimeBandAccumuloFormat
+
   implicit class AccumuloSettingsFunctions(sc: SparkContext) {
 
     def setZooKeeperInstance(instance: String, hosts: String) = instance match {
@@ -48,7 +51,6 @@ package object accumulo {
       (next.getKey, next.getValue)
     }
   }
-
 
   trait AccumuloEncoder[T] {
     def encode(thing: T): Mutation

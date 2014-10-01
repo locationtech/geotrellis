@@ -25,6 +25,7 @@ import org.apache.hadoop.io.Writable
 
 package object formats {
   type WritableTile = (TileIdWritable, ArgWritable)
+
   implicit class WritableTileWrapper(wt: WritableTile) {
     def toTmsTile(metaData: LayerMetaData): TmsTile = {
       val tileId = 
@@ -34,7 +35,12 @@ package object formats {
 
       TmsTile(tileId, tile)
     }
+
+    def toTuple(metaData: LayerMetaData): (TileId, Tile) =
+      wt._1.get -> wt._2.toTile(metaData.cellType, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
   }
+
+
 
   type PayloadWritableTile = (TileIdWritable, PayloadArgWritable)
   implicit class PayloadWritableTileWrapper(pwt: PayloadWritableTile) {

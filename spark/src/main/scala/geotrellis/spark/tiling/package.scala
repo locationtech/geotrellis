@@ -34,7 +34,7 @@ package object tiling {
    */
   type MapCoord = (Double, Double)
 
-  private final val WORLD_WSG84 = Extent(-180, -90, 179.99999, 89.99999)
+  private final val WORLD_WSG84 = Extent(-180, -89.99999, 179.99999, 89.99999)
 
   implicit class CRSWorldExtent(crs: CRS) {
     def worldExtent: Extent =

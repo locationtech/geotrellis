@@ -13,6 +13,8 @@ object ReprojectOptions {
 
 object Reproject {
   def apply(tile: Tile, extent: Extent, src: CRS, dest: CRS, options: ReprojectOptions): (Tile, Extent) = {
+    if (src == dest) return (tile, extent)
+
     val re = RasterExtent(extent, tile.cols, tile.rows)
     val cellwidth = re.cellwidth
     val cellheight = re.cellheight

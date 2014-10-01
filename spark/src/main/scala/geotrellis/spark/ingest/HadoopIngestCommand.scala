@@ -76,7 +76,8 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
     val sparkContext = args.sparkContext("Ingest")
     try {
       val source = sparkContext.hadoopGeoTiffRDD(inPath)
-      val sink = { (tiles: RDD[TmsTile], metaData: LayerMetaData) =>
+      val sink = { tiles: RasterRDD[TileId] =>
+        val metaData = tiles.metaData
         val partitioner = {
           val gridBounds = metaData.transform.mapToGrid(metaData.extent)
           val tileSizeBytes = gridBounds.width * gridBounds.height * metaData.cellType.bytes

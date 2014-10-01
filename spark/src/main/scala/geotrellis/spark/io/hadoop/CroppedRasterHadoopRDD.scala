@@ -51,9 +51,9 @@ class CroppedRasterHadoopRDD private (
    */
   def includeKey(key: TileIdWritable): Boolean = metaData.transform.gridToIndex(gridBounds).contains(key.get)
 
-  def toRasterRDD(): RasterRDD =
+  def toRasterRDD(): RasterRDD[TileId] =
     asRasterRDD(metaData) {
-      map(_.toTmsTile(metaData))
+      map(_.toTuple(metaData))
     }
 }
 

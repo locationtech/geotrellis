@@ -3,6 +3,7 @@ package geotrellis.spark.io
 import geotrellis.spark.rdd._
 
 import geotrellis.spark._
+import geotrellis.spark.tiling.{LayoutLevel, RowIndexScheme, TileIndexScheme}
 import geotrellis.spark.utils._
 import geotrellis.spark.io.hadoop.formats._
 
@@ -13,7 +14,7 @@ import geotrellis.proj4._
 
 import org.apache.spark._
 import org.apache.spark.rdd._
-import org.apache.spark.SparkContext.rddToPairRDDFunctions
+import org.apache.spark.SparkContext._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.SequenceFile
@@ -25,13 +26,17 @@ import org.apache.commons.codec.binary.Base64
 
 import java.io.PrintWriter
 import java.nio.ByteBuffer
+import geotrellis.spark.tiling._
 
 package object hadoop {
+  /** Upgrades a string to a Hadoop Path URL. Seems dangerous, but not surprising. */
+  implicit def stringToPath(path: String): Path = new Path(path)
+
   implicit class HadoopSparkContextWrapper(sc: SparkContext) {
-    def hadoopRasterRDD(path: String): RasterRDD =
+    def hadoopRasterRDD(path: String): RasterRDD[TileId] =
       hadoopRasterRDD(new Path(path))
 
-    def hadoopRasterRDD(path: Path): RasterRDD =
+    def hadoopRasterRDD(path: Path): RasterRDD[TileId] =
       RasterHadoopRDD(path, sc).toRasterRDD
 
     def hadoopGeoTiffRDD(path: String): RDD[((Extent, CRS), Tile)] =
@@ -48,12 +53,36 @@ package object hadoop {
         classOf[Tile]
       )
     }
+
+    def gdalRDD(path: Path): RDD[(GdalRasterInfo, Tile)] = {
+      val updatedConf = sc.hadoopConfiguration.withInputDirectory(path)
+
+      sc.newAPIHadoopRDD(
+        updatedConf,
+        classOf[GdalInputFormat],
+        classOf[GdalRasterInfo],
+        classOf[Tile]
+      )
+    }
+
+    def netCdfRDD(path: Path): RDD[(NetCdfBand, Tile)] = {
+      gdalRDD(path)
+        .map{ case (info, tile) =>
+          val band = NetCdfBand(
+            extent = info.file.rasterExtent.extent,
+            crs = info.file.crs,
+            varName = info.bandMeta("NETCDF_VARNAME"),
+            time = info.bandMeta("NETCDF_DIM_Time").toDouble
+          )
+          band -> tile
+        }
+    }
   }
 
-  implicit class SavableRasterRDD(val rdd: RasterRDD) extends Logging {
+  implicit class SavableRasterRDD(val rdd: RasterRDD[TileId]) extends Logging {
     def toWritable =
       rdd.mapPartitions({ partition =>
-        partition.map(_.toWritable)
+        partition.map{ case (id, tile) => TmsTile(id, tile).toWritable}
       }, true)
 
 

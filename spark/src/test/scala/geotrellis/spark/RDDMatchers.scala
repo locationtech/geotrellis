@@ -16,7 +16,7 @@
 
 package geotrellis.spark
 
-import geotrellis.spark.rdd.RasterRDD
+import geotrellis.spark.rdd._
 import org.scalatest._
 
 trait RasterRDDMatchers extends Matchers {
@@ -26,7 +26,7 @@ trait RasterRDDMatchers extends Matchers {
    * a. if every tile has a min/max value set to those passed in, 
    * b. if number of tiles == count
    */  
-  def shouldBe(rdd: RasterRDD, minMaxCount: (Int, Int, Long)): Unit = {
+  def shouldBe[K](rdd: RasterRDD[K], minMaxCount: (Int, Int, Long)): Unit = {
     val res = rdd.map(_.tile.findMinMax).collect
     val (min, max, count) = minMaxCount
     res.count(_ == (min, max)) should be(count)
@@ -38,7 +38,7 @@ trait RasterRDDMatchers extends Matchers {
    * a. if every pixel == value, and
    * b. if number of tiles == count
    */   
-  def shouldBe(rdd: RasterRDD, value: Int, count: Int): Unit = {
+  def shouldBe[K](rdd: RasterRDD[K], value: Int, count: Int): Unit = {
     val res = rdd.map(_.tile).collect
 
     res.foreach { r =>

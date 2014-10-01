@@ -20,20 +20,19 @@ import geotrellis.raster._
 import geotrellis.engine._
 
 import com.google.caliper.Benchmark
-import com.google.caliper.Runner 
-import com.google.caliper.SimpleBenchmark
+import com.google.caliper.runner.CaliperMain
 
 /**
  * Extend this to create a main object which will run 'cls' (a benchmark).
  */
 abstract class BenchmarkRunner(cls: java.lang.Class[_ <: Benchmark]) {
-  def main(args: Array[String]): Unit = Runner.main(cls, args: _*)
+  def main(args: Array[String]): Unit = CaliperMain.main(cls, args)
 }
 
 /**
  * Extend this to create an actual benchmarking class.
  */
-trait OperationBenchmark extends SimpleBenchmark {
+trait OperationBenchmark extends Benchmark {
   def getRasterExtent(name: String, w: Int, h: Int): RasterExtent = {
     val ext = RasterSource(name).info.get.rasterExtent.extent
     RasterExtent(ext, w, h)
