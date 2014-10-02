@@ -20,17 +20,3 @@ trait AccumuloFormat[K] {
     * to figure out which filters it is going to respect and how. */
   def setFilters(job: Job, layer: String, metaData: LayerMetaData, filters: Seq[AccumuloFilter]): Unit
 }
-
-
-trait AccumuloFilter
-
-case class SpaceFilter(bounds: TileBounds, scheme: TileCoordScheme = GridCoordScheme) extends AccumuloFilter
-object SpaceFilter {
-  def apply(col: Int, row: Int, scheme: TileCoordScheme): SpaceFilter =
-    SpaceFilter(GridBounds(col, row, col, row), scheme)
-}
-
-case class TimeFilter(startTime: Double, endTime: Double) extends AccumuloFilter
-object TimeFilter {
-  def apply(time: Double): TimeFilter = TimeFilter(time, time)
-}

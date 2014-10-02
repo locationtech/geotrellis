@@ -39,7 +39,7 @@ trait TmsHttpService extends HttpService {
   def rootRoute =
     pathPrefix("tms" / Segment / DoubleNumber / IntNumber / IntNumber / IntNumber ) { (layer, time, zoom, x , y) =>
 
-      val rdd =  catalog.load[TimeBandTile](layer, zoom, SpaceFilter(x,y,TmsCoordScheme), TimeFilter(time))
+      val rdd: Option[RasterRDD[TileId]] =  ??? //catalog.load[TimeBandTile](layer, zoom, SpaceFilter(x,y,TmsCoordScheme), TimeFilter(time))
 
       respondWithMediaType(MediaTypes.`image/png`) { complete {
         val tile = rdd.get.first.tile

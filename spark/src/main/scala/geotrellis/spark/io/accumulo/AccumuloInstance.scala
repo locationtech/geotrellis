@@ -33,7 +33,7 @@ case class AccumuloInstance(
   val metaDataCatalog = new MetaDataCatalog(connector, catalogTable)
 
   def tileCatalog(implicit sc: SparkContext) =
-    new AccumuloCatalog(sc, this, metaDataCatalog)
+    new OldAndBustedAccumuloCatalog(sc, this, metaDataCatalog)
 
   def setAccumuloConfig(conf: Configuration): Unit = {
     if (instanceName == "fake") {
@@ -73,17 +73,10 @@ case class AccumuloInstance(
       job.getConfiguration)
   }
 
-  def loadRaster[K](metaData: LayerMetaData, table: String, layer: String, filters: AccumuloFilter*)
-    (implicit sc: SparkContext, format: AccumuloFormat[K]) : RasterRDD[K] =
+  def loadRaster[K](implicit sc: SparkContext, loader: AccumuloRddLoader[K]):
+    ((String,String, LayerMetaData, Seq[AccumuloFilter]) => Option[RasterRDD[K]]) =
   {
-    import org.apache.spark.SparkContext._
-
-    val job = Job.getInstance(sc.hadoopConfiguration)
-    setAccumuloConfig(job)
-    InputFormatBase.setInputTableName(job, table)
-
-    format.setFilters(job, layer, metaData, filters)
-    val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[AccumuloInputFormat], classOf[Key], classOf[Value])
-    format.decode(rdd, metaData)
+    loader.load(sc, this)
   }
+
 }

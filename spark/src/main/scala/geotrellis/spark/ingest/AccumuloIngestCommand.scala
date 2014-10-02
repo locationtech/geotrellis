@@ -25,7 +25,7 @@ class AccumuloIngestArgs extends IngestArgs with AccumuloArgs {
 
 object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
 
-  def accumuloSink(table: String, layer: String, catalog: AccumuloCatalog): Ingest.Sink = {
+  def accumuloSink(table: String, layer: String, catalog: OldAndBustedAccumuloCatalog): Ingest.Sink = {
     (tiles: RasterRDD[TileId]) =>
       val raster= new RasterRDD(tiles, tiles.metaData)
       catalog.save(raster, layer, table)(FlatAccumuloFormat)
