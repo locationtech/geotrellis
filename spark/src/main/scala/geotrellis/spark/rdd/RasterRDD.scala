@@ -93,8 +93,7 @@ class RasterRDD(val prev: RDD[TmsTile], val metaData: LayerMetaData)
     }
 
   def toExtentsRDD: RDD[(Extent, TmsTile)] = {
-    val sc = sparkContext
-    val metaDataBroadcast = sc.broadcast(metaData)
+    val metaDataBroadcast = sparkContext.broadcast(metaData)
     map(t => (metaDataBroadcast.value.transform.indexToMap(t.id), t))
   }
 }

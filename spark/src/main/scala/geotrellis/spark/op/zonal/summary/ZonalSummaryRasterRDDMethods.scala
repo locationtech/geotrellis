@@ -25,6 +25,7 @@ trait ZonalSummaryRasterRDDMethods extends RasterRDDMethods {
     val polygonBroadcast = sc.broadcast(polygon)
 
     extentsRDD.foreach { case (extent, tmsTile) =>
+      println(extent)
       val tile = tmsTile.tile
       val p = polygonBroadcast.value
       if (p.contains(extent)) {

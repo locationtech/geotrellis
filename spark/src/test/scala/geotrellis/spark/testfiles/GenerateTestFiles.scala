@@ -60,7 +60,7 @@ object GenerateTestFiles {
 
   lazy val testFiles = List(
     ConstantTestFileValues(1) _ -> "all-ones",
-    ConstantTestFileValues(2) _ -> "all-twos",
+    ConstantTestFileValues(2) _  -> "all-twos",
     ConstantTestFileValues(100) _ -> "all-hundreds",
     IncreasingTestFileValues(tileCols, tileRows) _ -> "increasing",
     DecreasingTestFileValues(tileCols, tileRows) _ -> "decreasing",
