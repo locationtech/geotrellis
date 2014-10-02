@@ -21,7 +21,6 @@ import geotrellis.spark._
 import geotrellis.spark.ingest._ //TODO, this is a wrong place for .merge to live
 import geotrellis.spark.tiling._
 
-import geotrellis.spark.op.local._
 import geotrellis.vector.Extent
 
 import org.apache.spark._
