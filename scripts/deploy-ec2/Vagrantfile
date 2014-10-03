@@ -25,7 +25,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |cluster|
   if Vagrant.has_plugin?("vagrant-proxyconf")
     cluster.proxy.http     = "http://#{local_ip}:8123/"
     cluster.proxy.https    = "http://#{local_ip}:8123/"
-    cluster.proxy.no_proxy = "localhost,127.0.0.1"
+    cluster.proxy.no_proxy = "localhost,127.0.0.1,*.maven.org,repo.typesafe.com,repo.scala-sbt.org,oss.sonatype.org"
   end
 
   cluster.vm.define "master" do |machine|
