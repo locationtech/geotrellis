@@ -2,7 +2,13 @@
 # vi: set ft=ruby :
 
 def local_ip
-  `ipconfig getifaddr eth0 || ipconfig getifaddr en0`.strip
+  `which ipconfig`
+
+  if $?.exitstatus == 0
+    `ipconfig getifaddr en0`
+  else
+    `ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1`
+  end.strip
 end
 
 VAGRANTFILE_API_VERSION = "2"
