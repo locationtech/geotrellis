@@ -1,0 +1,9 @@
+---
+- name: Include OS specific variables
+  include_vars: "{{ ansible_distribution_release }}.yml"
+
+- include: "precise.yml"
+  when: ansible_distribution_release  == "precise"
+
+- include: "trusty.yml"
+  when: ansible_distribution_release  == "trusty"
