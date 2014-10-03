@@ -1,34 +1,37 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
-import geotrellis.spark.io.Catalog
+import geotrellis.spark.io._
 import org.apache.spark.SparkContext
 import scala.reflect._
+import scala.util.{Failure, Success, Try}
 
 class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance, metaDataCatalog: MetaDataCatalog) extends Catalog {
   //type Source = AccumuloRddSource
   type DriverType[K] = AccumuloDriver[K]
 
-  var loaders: Map[ClassTag[_],  AccumuloDriver[_]] = Map.empty
-  def getLoader[K:ClassTag] = loaders.get(classTag[K]).map(_.asInstanceOf[AccumuloDriver[K]])
+  var drivers: Map[ClassTag[_],  AccumuloDriver[_]] = Map.empty
+  def getDriver[K:ClassTag]: Try[AccumuloDriver[K]] = drivers.get(classTag[K]) match {
+    case Some(driver) => Success(driver.asInstanceOf[AccumuloDriver[K]])
+    case None         => Failure(new DriverNotFound[K])
+  }
 
-  def register[K: ClassTag](loader: AccumuloDriver[K]): Unit = loaders += classTag[K] -> loader
+  def register[K: ClassTag](loader: AccumuloDriver[K]): Unit = drivers += classTag[K] -> loader
 
-  def load[K:ClassTag](layerName: String, zoom: Int, filters: FilterSet[K]): Option[RasterRDD[K]] =
+  def load[K:ClassTag](layerName: String, zoom: Int, filters: FilterSet[K] = new FilterSet[K]()): Try[RasterRDD[K]] =
   {
     for {
-      (table, metaData) <- metaDataCatalog.get(Layer(layerName, zoom))
-      loader <- getLoader[K]
+      driver <- getDriver[K]
+      md <- metaDataCatalog.get(Layer(layerName, zoom))
     } yield {
-      loader.load(sc, instance)(layerName, table, metaData, filters) // TODO where did the filters go?
+      driver.load(sc, instance)(layerName, md._1, md._2, filters)
     }
   }.flatten
 
-  def save[K: ClassTag](rdd: RasterRDD[K], layer: String, table: String): Unit = {
+  def save[K: ClassTag](rdd: RasterRDD[K], layer: String, table: String): Try[Unit] = {
     metaDataCatalog.save(table, Layer(layer, rdd.metaData.level.id), rdd.metaData)
-
-    for (loader <- getLoader[K]) {
-      loader.save(sc, instance)(rdd, layer, table)
+    for (driver <- getDriver[K]) yield {
+      driver.save(sc, instance)(rdd, layer, table)
     }
   }
 }

@@ -41,6 +41,7 @@ class AccumuloIngestSpec extends FunSpec
       val source = sparkContext.hadoopGeoTiffRDD(allOnes)
       val sink = { (tiles: RasterRDD[TileId]) =>
         catalog.save(tiles, "ones", "tiles")
+        ()
       }
 
       {//we should not expect catalog to  create the table

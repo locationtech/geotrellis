@@ -1,11 +1,16 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
+import geotrellis.spark.io.{LayerNotFound, CatalogError}
 import org.apache.accumulo.core.client.Connector
 import org.apache.accumulo.core.data.{Key, Value, Mutation}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.hadoop.io.Text
 import org.apache.spark.Logging
+import scala.util._
+import geotrellis.spark.utils._
+
+import scala.util.Try
 
 trait GenericMetaDataCatalog {
   def getLayerMetaData(layer: String, zoom: Int): Option[LayerMetaData]
@@ -25,8 +30,8 @@ class MetaDataCatalog(connector: Connector, val catalogTable: String) extends Lo
     metadata = metadata updated (layer, table -> metaData)
   }
 
-  def get(layer: Layer): Option[(String, LayerMetaData)] =
-    metadata.get(layer)
+  def get(layer: Layer): Try[(String, LayerMetaData)] =
+    metadata.get(layer).mapNone(new LayerNotFound(layer.name, layer.zoom))
 
   def fetchAll: Map[Layer, (String, LayerMetaData)] = {
     val scan = connector.createScanner(catalogTable, new Authorizations())
@@ -41,9 +46,12 @@ class MetaDataCatalog(connector: Connector, val catalogTable: String) extends Lo
   }
 }
 
+
 object MetaDataCatalog {
   import spray.json._
   import geotrellis.spark.json._
+
+
 
   def encodeMetaData(table: String, layer: Layer, md: LayerMetaData): Mutation = {
     val mutation = new Mutation(new Text(table))

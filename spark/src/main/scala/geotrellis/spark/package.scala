@@ -29,8 +29,8 @@ import spire.syntax.cfor._
 package object spark {
   type TileId = Long
   implicit object tileIdFilterableBySpace extends Filterable[TileId, SpaceFilter]
-  implicit object v1 extends Filterable[TimeTileId, TimeFilter]
-  implicit object v2 extends Filterable[TimeTileId, SpaceFilter]
+  implicit object timeTileIdFilterableByTime extends Filterable[TimeTileId, TimeFilter]
+  implicit object timeTileIdFilterableBySpace extends Filterable[TimeTileId, SpaceFilter]
 
   type ProjectedExtent = (Extent, CRS)
   type Dimensions = (Int, Int)
