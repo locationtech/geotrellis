@@ -17,13 +17,13 @@ class HdfsCatalog(sc: SparkContext, metaDataCatalog: MetaDataCatalog) extends Ca
 
   def register[K: ClassTag](loader: HdfsDriver[K]): Unit = loaders += classTag[K] -> loader
 
-  def load[K:ClassTag](layerName: String, zoom: Int, filters: KeyFilter*): Option[RasterRDD[K]] = {
+  def load[K:ClassTag](layerName: String, zoom: Int, filters: FilterSet[K]): Option[RasterRDD[K]] = {
     for {
       (table, metaData) <- metaDataCatalog.get(Layer(layerName, zoom))
       loader <- getLoader[K]
     } yield {
       val path: Path = ??? //came from metadata
-      loader.load[K](sc)(path, metaData) // TODO where did the filters go?
+      loader.load[K](sc)(path, metaData, filters)
     }
   }.flatten
 

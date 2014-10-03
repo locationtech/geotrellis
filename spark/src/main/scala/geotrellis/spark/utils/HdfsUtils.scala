@@ -38,7 +38,7 @@ import scala.util.Random
 abstract class LineScanner extends Iterator[String] with Closeable
 
 object HdfsUtils {
-  
+
   def putFilesInConf(filesAsCsv: String, inConf: Configuration): Configuration = {
     val job = Job.getInstance(inConf)
     FileInputFormat.setInputPaths(job, filesAsCsv)

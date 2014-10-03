@@ -19,12 +19,12 @@ trait AccumuloDriver[K] extends Driver[K]{
   def setFilters(job: Job, layer: String, metaData: LayerMetaData, filters: Seq[KeyFilter])
 
   def load(sc: SparkContext, accumulo: AccumuloInstance)
-          (layer: String, table: String, metaData: LayerMetaData, filters: KeyFilter*): Option[RasterRDD[K]] =
+          (layer: String, table: String, metaData: LayerMetaData, filters: FilterSet[K]): Option[RasterRDD[K]] =
   {
     val job = Job.getInstance(sc.hadoopConfiguration)
     accumulo.setAccumuloConfig(job)
     InputFormatBase.setInputTableName(job, table)
-    setFilters(job, layer, metaData, filters)
+    setFilters(job, layer, metaData, filters.filters)
     val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[AccumuloInputFormat], classOf[Key], classOf[Value])
     Some(decode(rdd, metaData)) // TODO what are the fail conditions, when is it none?
   }

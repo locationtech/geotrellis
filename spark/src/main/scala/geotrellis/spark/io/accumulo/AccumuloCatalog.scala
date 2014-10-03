@@ -14,13 +14,13 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance, metaDataCata
 
   def register[K: ClassTag](loader: AccumuloDriver[K]): Unit = loaders += classTag[K] -> loader
 
-  def load[K:ClassTag](layerName: String, zoom: Int, filters: KeyFilter*): Option[RasterRDD[K]] =
+  def load[K:ClassTag](layerName: String, zoom: Int, filters: FilterSet[K]): Option[RasterRDD[K]] =
   {
     for {
       (table, metaData) <- metaDataCatalog.get(Layer(layerName, zoom))
       loader <- getLoader[K]
     } yield {
-      loader.load(sc, instance)(layerName, table, metaData, filters: _*) // TODO where did the filters go?
+      loader.load(sc, instance)(layerName, table, metaData, filters) // TODO where did the filters go?
     }
   }.flatten
 

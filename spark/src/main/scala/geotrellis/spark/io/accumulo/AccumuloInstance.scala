@@ -57,7 +57,7 @@ case class AccumuloInstance(
 
 
   //TODO this doesn't seem very useful, maybe I should get metadata out of the catalog above
-  def loadRaster[K](layer: String, table: String, metaData: LayerMetaData, filters: KeyFilter*)
+  def loadRaster[K](layer: String, table: String, metaData: LayerMetaData, filters: FilterSet[K])
                    (implicit sc: SparkContext, driver: AccumuloDriver[K]) =
-    driver.load(sc, this)(layer, table, metaData, filters:_*)
+    driver.load(sc, this)(layer, table, metaData, filters)
 }

@@ -1,6 +1,6 @@
 package geotrellis.spark.io
 
-import geotrellis.spark.{Filterable, KeyFilter, RasterRDD}
+import geotrellis.spark.{FilterSet, Filterable, KeyFilter, RasterRDD}
 
 import scala.reflect.ClassTag
 
@@ -17,7 +17,7 @@ trait Catalog {
 
   def register[K:ClassTag](driver: DriverType[K]): Unit
 
-  def load[K:ClassTag](layerName: String, zoom: Int, filters: KeyFilter*): Option[RasterRDD[K]]
+  def load[K:ClassTag](layerName: String, zoom: Int, filters: FilterSet[K]): Option[RasterRDD[K]]
 
   def save[K:ClassTag](rdd: RasterRDD[K], layer:String, params: DriverType[K]#Params)
 }
