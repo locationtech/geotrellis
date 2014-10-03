@@ -91,7 +91,7 @@ class CatalogSpec extends FunSpec
 
       it("fetch a TileExtent from catalog"){
         val tileBounds = GridBounds(915,305,916,306)
-        val filters = FilterSet[TileId]().withFilter(SpaceFilter(tileBounds, GridCoordScheme))
+        val filters = FilterSet[TileId]() withFilter SpaceFilter(tileBounds, GridCoordScheme)
         val rdd1 = catalog.load[TileId]("ones", 10, filters).get
         val rdd2 = catalog.load[TileId]("ones", 10, filters).get
 

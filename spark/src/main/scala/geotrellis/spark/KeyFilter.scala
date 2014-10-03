@@ -3,26 +3,25 @@ package geotrellis.spark
 import geotrellis.spark.tiling.TileCoordScheme
 import geotrellis.spark._
 
+import scala.annotation.implicitNotFound
 import scala.collection.mutable
 
 trait KeyFilter
 
-trait Filterable[K, KF <: KeyFilter]
+@implicitNotFound("Filterable[K,F] instance required in implicit scope to associate a filter type F with a key type K")
+trait Filterable[K, F]
 
-case class SpaceFilter(val bounds: TileBounds, val scheme: TileCoordScheme) extends KeyFilter
-
-case class TimeFilter(val startTime: Double, val endTime: Double) extends KeyFilter
+case class SpaceFilter(bounds: TileBounds, scheme: TileCoordScheme) extends KeyFilter
+case class TimeFilter(startTime: Double, endTime: Double) extends KeyFilter
 
 class FilterSet[K] {
-  private val _filters = mutable.ListBuffer[KeyFilter]()
+  private var _filters = mutable.ListBuffer[KeyFilter]()
 
-  def withFilter[K, KF <: KeyFilter](filter: KF)(implicit ev: Filterable[K, KF]) = {
+  def withFilter[F <: KeyFilter](filter: F)(implicit ev: Filterable[K, F]) = {
     _filters += filter
     this
   }
-
   def filters: Seq[KeyFilter] = _filters
-
 }
 
 object FilterSet{
@@ -30,9 +29,3 @@ object FilterSet{
 }
 
 
-//object thing {
-//  val filters =
-//    FilterSet[TimeTileId]()
-//    .withFilter(SpaceFilter(???, ???))
-//    .withFilter(TimeFilter(???, ???))
-//}
