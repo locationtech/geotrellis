@@ -1,7 +1,6 @@
 package geotrellis.spark.io.hadoop.cmd
 
 import geotrellis.spark._
-import geotrellis.spark.rdd._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.utils.SparkUtils

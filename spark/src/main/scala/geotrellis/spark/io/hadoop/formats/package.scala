@@ -18,7 +18,6 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.raster._
 import geotrellis.spark._
-import geotrellis.spark.rdd._
 import geotrellis.spark.tiling._
 
 import org.apache.hadoop.io.Writable

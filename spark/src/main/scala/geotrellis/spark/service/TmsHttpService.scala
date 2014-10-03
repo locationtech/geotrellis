@@ -3,9 +3,7 @@ package geotrellis.spark.service
 import geotrellis.raster._
 import geotrellis.raster.op.local._
 import geotrellis.raster.render.png._
-import geotrellis.spark.ingest.IngestNetCDF.TimeBandTile
 import geotrellis.spark.tiling._
-import geotrellis.spark.rdd._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark._
 import geotrellis.spark.io.accumulo._
@@ -34,7 +32,7 @@ trait TmsHttpService extends HttpService {
 
   val accumulo = AccumuloInstance(
     args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
-  val catalog = accumulo.tileCatalog
+  val catalog = accumulo.catalog
 
   def rootRoute =
     pathPrefix("tms" / Segment / DoubleNumber / IntNumber / IntNumber / IntNumber ) { (layer, time, zoom, x , y) =>

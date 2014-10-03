@@ -21,9 +21,10 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 
+@deprecated("All code using this needs to change to (K, Tile) as used in RasterRDD", "September 2014")
 case class TmsTile(id: Long, tile: Tile)
 
 object TmsTile {
-  def apply(tup: (Long, Tile)): TmsTile = 
+  def apply(tup: (Long, Tile)): TmsTile =
     TmsTile(tup._1, tup._2)
 }

@@ -19,7 +19,6 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiffWriter
 
 import geotrellis.spark._
-import geotrellis.spark.rdd._
 import geotrellis.spark.cmd.args.HadoopArgs
 import geotrellis.spark.cmd.args.RasterArgs
 import geotrellis.spark.cmd.args.SparkArgs

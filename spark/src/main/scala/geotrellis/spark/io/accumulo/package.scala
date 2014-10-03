@@ -1,15 +1,6 @@
 package geotrellis.spark.io
 
-import geotrellis.spark._
-import geotrellis.spark.tiling._
-import geotrellis.spark.rdd._
-import geotrellis.raster._
-import org.apache.accumulo.core.security.Authorizations
-import org.apache.hadoop.io.Text
-
 import org.apache.spark._
-import org.apache.spark.rdd._
-import org.apache.hadoop.mapreduce.Job
 
 import org.apache.accumulo.core.client.security.tokens.AuthenticationToken
 import org.apache.accumulo.core.client.{Scanner, BatchWriterConfig, Connector}
@@ -20,21 +11,8 @@ import org.apache.accumulo.core.client.mapreduce.lib.util.{ConfiguratorBase => C
 import scala.collection.JavaConversions._
 
 package object accumulo {
-  implicit val spacialAccumuloFormat = FlatAccumuloFormat
-  implicit val spacialTemporalAccumuloFormat = TimeBandAccumuloFormat
-
-  implicit class AccumuloSettingsFunctions(sc: SparkContext) {
-
-    def setZooKeeperInstance(instance: String, hosts: String) = instance match {
-      case "fake" =>
-        CB.setMockInstance(classOf[AccumuloInputFormat], sc.hadoopConfiguration, "fake")
-      case _ =>
-        CB.setZooKeeperInstance(classOf[AccumuloInputFormat], sc.hadoopConfiguration, instance, hosts)
-    }
-
-    def setAccumuloCredential(user: String, token: AuthenticationToken) =
-      CB.setConnectorInfo(classOf[AccumuloInputFormat], sc.hadoopConfiguration, user, token)
-  }
+  implicit val rasterAccumuloDriver = RasterAccumuloDriver
+  implicit val timeRasterAccumuloDriver = TimeRasterAccumuloDriver
 
   implicit class scannerIterator(scan: Scanner) extends Iterator[(Key, Value)] {
     val iter = scan.iterator
@@ -46,7 +24,7 @@ package object accumulo {
         false
       }
 
-    override def next: (Key, Value) = {
+    override def next(): (Key, Value) = {
       val next = iter.next
       (next.getKey, next.getValue)
     }
@@ -72,4 +50,4 @@ package object accumulo {
     def write[T](table: String, thing: T)(implicit encoder: AccumuloEncoder[T]): Unit =
       write(table, List(thing))
   }
- }
+}

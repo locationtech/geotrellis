@@ -19,7 +19,6 @@ package geotrellis.spark.io.hadoop.reader
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.rdd.TileIdPartitioner
 import geotrellis.spark.utils.SparkUtils
 
 import org.apache.hadoop.io._

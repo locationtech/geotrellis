@@ -1,6 +1,5 @@
 package geotrellis.spark.io
 
-import geotrellis.spark.rdd._
 
 import geotrellis.spark._
 import geotrellis.spark.tiling.{LayoutLevel, RowIndexScheme, TileIndexScheme}

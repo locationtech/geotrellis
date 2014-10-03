@@ -18,7 +18,6 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.raster.Tile
 import geotrellis.spark._
-import geotrellis.spark.rdd._
 import geotrellis.spark.utils._
 import geotrellis.spark.io.hadoop.formats._
 

@@ -3,8 +3,7 @@ package geotrellis.spark.io.accumulo
 import geotrellis.raster.{Tile, CellType, ArrayTile}
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-import geotrellis.spark.rdd.{LayerMetaData, RasterRDD}
-import org.apache.accumulo.core.client.mapreduce.{AccumuloOutputFormat, InputFormatBase, AccumuloInputFormat}
+import org.apache.accumulo.core.client.mapreduce.{InputFormatBase}
 import org.apache.accumulo.core.data.{Key, Mutation, Value, Range => ARange}
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
@@ -12,8 +11,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.accumulo.core.util.{Pair => JPair}
 import scala.collection.JavaConversions._
 
-/** Format to be used when Raster RDD is indexed only by TileId */
-object FlatAccumuloFormat extends AccumuloFormat[TileId] {
+object RasterAccumuloDriver extends AccumuloDriver[TileId] {
   val rowIdRx = """(\d+)_(\d+)""".r // (zoom)_(TmsTilingId)
   def rowId(id: TileId, md: LayerMetaData) = new Text(s"${md.level.id}_${id}")
 
@@ -21,7 +19,7 @@ object FlatAccumuloFormat extends AccumuloFormat[TileId] {
     raster.map{ case (id, tile) =>
       val mutation = new Mutation(rowId(id, raster.metaData))
       mutation.put(
-        new Text(layer), null,
+        new Text(layer), new Text(),
         System.currentTimeMillis(),
         new Value(tile.toBytes()))
       (null, mutation)
@@ -47,7 +45,7 @@ object FlatAccumuloFormat extends AccumuloFormat[TileId] {
     InputFormatBase.setRanges(job, range)
   }
 
-  def setFilters(job: Job, layer: String, metaData: LayerMetaData, filters: Seq[AccumuloFilter]): Unit = {
+  def setFilters(job: Job, layer: String, metaData: LayerMetaData, filters: Seq[KeyFilter]): Unit = {
     var tileBoundSet = false
     filters.foreach{
       case SpaceFilter(bounds, scheme) =>

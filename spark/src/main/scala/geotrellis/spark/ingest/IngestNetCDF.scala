@@ -4,7 +4,6 @@ import geotrellis.proj4.{LatLng, WebMercator, CRS}
 import geotrellis.raster.{CellSize, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop.formats.NetCdfBand
-import geotrellis.spark.rdd.{LayerMetaData, RasterRDD}
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling.{RowIndexScheme, LayoutLevel, TilingScheme}
 import org.apache.spark._
@@ -17,8 +16,8 @@ import geotrellis.raster.reproject._
  */
 object IngestNetCDF extends Logging {
   type Source = RDD[(NetCdfBand, Tile)]
-  type Sink = RasterRDD[TimeBandTile] => Unit
-  case class TimeBandTile(tileId: TileId, time: Double)
+  type Sink = RasterRDD[TimeTileId] => Unit
+
 
   def apply (sc: SparkContext)(source: Source, sink:  Sink, destCRS: CRS, tilingScheme: TilingScheme = TilingScheme.TMS): Unit = {
   import geotrellis.vector.reproject._
@@ -43,7 +42,7 @@ object IngestNetCDF extends Logging {
 
     val raster =
       new RasterRDD(reprojected, metaData) // WARNING: I'm discarding band.varName here // TODO deal with this
-        .mosaic(extentOf = _.extent, toKey = (band, tileId) => TimeBandTile(tileId, band.time))
+        .mosaic(extentOf = _.extent, toKey = (band, tileId) => TimeTileId(tileId, band.time))
 
     sink(raster)
   }

@@ -23,7 +23,6 @@ import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils._
-import geotrellis.spark.rdd._
 import org.apache.spark._
 
 import org.apache.hadoop.conf.Configuration

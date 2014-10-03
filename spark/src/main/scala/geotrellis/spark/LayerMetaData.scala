@@ -1,4 +1,4 @@
-package geotrellis.spark.rdd
+package geotrellis.spark
 
 import geotrellis.spark._
 import geotrellis.raster._

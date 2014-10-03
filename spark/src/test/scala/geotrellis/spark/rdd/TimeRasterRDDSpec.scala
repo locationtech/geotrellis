@@ -3,10 +3,10 @@ package geotrellis.spark.rdd
 import geotrellis.proj4.{LatLng, CRS}
 import geotrellis.raster.{Tile, CellSize}
 import geotrellis.spark.ingest.IngestNetCDF
-import geotrellis.spark.ingest.IngestNetCDF.TimeBandTile
 import geotrellis.spark.{TileId, TestEnvironment}
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils.SparkUtils
+import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.accumulo._
 import geotrellis.raster.reproject._
@@ -50,9 +50,9 @@ class TimeRasterRDDSpec extends FunSpec with Matchers
 
       IngestNetCDF(sparkContext)(source, sink, LatLng, TilingScheme.TMS)
 
-      val out: RasterRDD[TimeBandTile] = accumulo.loadRaster(md, "net", "rcp45", SpaceFilter(0,0, GridCoordScheme), TimeFilter(13.5))
+//      val out: RasterRDD[TimeBandTile] = accumulo.loadRaster(md, "net", "rcp45", SpaceFilter(0,0, GridCoordScheme), TimeFilter(13.5))
 
-      out.map{ case (id, tile) => id}.foreach(println)
+//      out.map{ case (id, tile) => id}.foreach(println)
     }
   }
 

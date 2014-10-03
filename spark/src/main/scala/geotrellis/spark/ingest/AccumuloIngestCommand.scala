@@ -4,14 +4,12 @@ import geotrellis.spark._
 import geotrellis.spark.cmd.args.AccumuloArgs
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling._
-import geotrellis.spark.rdd._
 import geotrellis.proj4._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 
 import org.apache.hadoop.fs._
 
 import org.apache.spark._
-import org.apache.spark.rdd._
 
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Required
@@ -25,10 +23,10 @@ class AccumuloIngestArgs extends IngestArgs with AccumuloArgs {
 
 object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
 
-  def accumuloSink(table: String, layer: String, catalog: OldAndBustedAccumuloCatalog): Ingest.Sink = {
+  def accumuloSink(table: String, layer: String, catalog: AccumuloCatalog): Ingest.Sink = {
     (tiles: RasterRDD[TileId]) =>
       val raster= new RasterRDD(tiles, tiles.metaData)
-      catalog.save(raster, layer, table)(FlatAccumuloFormat)
+      catalog.save(raster, layer, table)
       logInfo(s"Saved raster '$layer' to accumulo table: ${table}.")
   }
 
@@ -46,7 +44,7 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
     implicit val sparkContext = args.sparkContext("Ingest")
 
     val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
-    val catalog = accumulo.tileCatalog
+    val catalog = accumulo.catalog
 
     try {
       val source = sparkContext.hadoopGeoTiffRDD(inPath)

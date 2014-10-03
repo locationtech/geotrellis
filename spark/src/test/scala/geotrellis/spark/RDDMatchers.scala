@@ -16,7 +16,6 @@
 
 package geotrellis.spark
 
-import geotrellis.spark.rdd._
 import org.scalatest._
 
 trait RasterRDDMatchers extends Matchers {

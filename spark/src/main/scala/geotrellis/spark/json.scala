@@ -1,6 +1,5 @@
 package geotrellis.spark
 
-import geotrellis.spark.rdd.LayerMetaData
 import geotrellis.spark.tiling._
 import geotrellis.raster._
 import geotrellis.raster.json._

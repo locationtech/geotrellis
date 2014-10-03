@@ -1,11 +1,15 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark.rdd.LayerMetaData
+import geotrellis.spark._
 import org.apache.accumulo.core.client.Connector
 import org.apache.accumulo.core.data.{Key, Value, Mutation}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.hadoop.io.Text
 import org.apache.spark.Logging
+
+trait GenericMetaDataCatalog {
+  def getLayerMetaData(layer: String, zoom: Int): Option[LayerMetaData]
+}
 
 class MetaDataCatalog(connector: Connector, val catalogTable: String) extends Logging {
   {//create the metadata table if it does not ext

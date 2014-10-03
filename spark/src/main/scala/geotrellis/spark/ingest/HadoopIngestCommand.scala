@@ -5,7 +5,6 @@ import geotrellis.spark.cmd.args._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.tiling._
-import geotrellis.spark.rdd._
 import geotrellis.spark.utils.HdfsUtils
 import geotrellis.raster._
 import geotrellis.proj4._

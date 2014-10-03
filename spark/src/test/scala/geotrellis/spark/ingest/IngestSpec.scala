@@ -22,7 +22,6 @@ import geotrellis.proj4._
 
 import geotrellis.spark._
 import geotrellis.spark.utils._
-import geotrellis.spark.rdd._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.reader.RasterReader
 import geotrellis.spark.tiling._

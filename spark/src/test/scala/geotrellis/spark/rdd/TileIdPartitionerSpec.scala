@@ -15,7 +15,7 @@
  */
 
 package geotrellis.spark.rdd
-import geotrellis.spark.TestEnvironment
+import geotrellis.spark.{TileIdPartitioner, TestEnvironment}
 import org.scalatest._
 import geotrellis.spark.io.hadoop.formats.SerializerTester
 

@@ -1,9 +1,8 @@
 package geotrellis.spark.io.accumulo
 
 
-import geotrellis.spark.rdd.{LayerMetaData, RasterRDD}
 import geotrellis.spark.tiling.{TileCoordScheme, TilingScheme}
-import geotrellis.spark.{TileBounds, TileId}
+import geotrellis.spark._
 import org.apache.accumulo.core.client._
 import org.apache.accumulo.core.client.mapreduce.{InputFormatBase, AccumuloInputFormat, AccumuloOutputFormat}
 import org.apache.accumulo.core.client.mock.MockInstance
@@ -32,8 +31,7 @@ case class AccumuloInstance(
   }
   val metaDataCatalog = new MetaDataCatalog(connector, catalogTable)
 
-  def tileCatalog(implicit sc: SparkContext) =
-    new OldAndBustedAccumuloCatalog(sc, this, metaDataCatalog)
+  def catalog(implicit sc: SparkContext) = new AccumuloCatalog(sc, this, metaDataCatalog)
 
   def setAccumuloConfig(conf: Configuration): Unit = {
     if (instanceName == "fake") {
@@ -53,30 +51,13 @@ case class AccumuloInstance(
 
   def setAccumuloConfig(sc: SparkContext): Unit = setAccumuloConfig(sc.hadoopConfiguration)
 
+  def saveRaster[K](raster: RasterRDD[K], layer: String, table: String)
+                   (implicit sc: SparkContext, driver: AccumuloDriver[K]) =
+    driver.save(sc, this)(raster, layer, table)
 
-  def saveRaster[K](raster: RasterRDD[K], table: String, layer: String)
-    (implicit sc: SparkContext, format: AccumuloFormat[K])
-  {
-    import org.apache.spark.SparkContext._
 
-    //create output table if it does not exist
-    val tableOps = connector.tableOperations()
-    if (! tableOps.exists(table)) tableOps.create(table)
-
-    val job = Job.getInstance(sc.hadoopConfiguration)
-    setAccumuloConfig(job)
-    AccumuloOutputFormat.setBatchWriterOptions(job, new BatchWriterConfig())
-    AccumuloOutputFormat.setDefaultTableName(job, table)
-
-    format.encode(raster, layer).saveAsNewAPIHadoopFile(instanceName,
-      classOf[Text], classOf[Mutation], classOf[AccumuloOutputFormat],
-      job.getConfiguration)
-  }
-
-  def loadRaster[K](implicit sc: SparkContext, loader: AccumuloRddLoader[K]):
-    ((String,String, LayerMetaData, Seq[AccumuloFilter]) => Option[RasterRDD[K]]) =
-  {
-    loader.load(sc, this)
-  }
-
+  //TODO this doesn't seem very useful, maybe I should get metadata out of the catalog above
+  def loadRaster[K](layer: String, table: String, metaData: LayerMetaData, filters: KeyFilter*)
+                   (implicit sc: SparkContext, driver: AccumuloDriver[K]) =
+    driver.load(sc, this)(layer, table, metaData, filters:_*)
 }

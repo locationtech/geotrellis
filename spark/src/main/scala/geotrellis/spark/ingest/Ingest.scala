@@ -24,7 +24,6 @@ import geotrellis.proj4._
 
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-import geotrellis.spark.rdd._
 import monocle.SimpleLens
 
 import org.apache.spark._
