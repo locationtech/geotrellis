@@ -23,9 +23,10 @@ class MetaDataCatalog(connector: Connector, val catalogTable: String) extends Lo
       ops.create(catalogTable)
   }
 
-  var metadata: Map[Layer, (String, LayerMetaData)] = fetchAll
+  private var metadata: Map[Layer, (String, LayerMetaData)] = fetchAll
 
-  def save(table: String, layer: Layer , metaData: LayerMetaData) = {
+  def save(table: String, layer: Layer , metaData: LayerMetaData): Try[Unit] =
+  Try {
     connector.write(catalogTable, MetaDataCatalog.encodeMetaData(table, layer, metaData))
     metadata = metadata updated (layer, table -> metaData)
   }
@@ -50,8 +51,6 @@ class MetaDataCatalog(connector: Connector, val catalogTable: String) extends Lo
 object MetaDataCatalog {
   import spray.json._
   import geotrellis.spark.json._
-
-
 
   def encodeMetaData(table: String, layer: Layer, md: LayerMetaData): Mutation = {
     val mutation = new Mutation(new Text(table))

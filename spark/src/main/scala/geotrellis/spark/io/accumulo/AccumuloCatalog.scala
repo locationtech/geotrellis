@@ -29,9 +29,10 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance, metaDataCata
   }.flatten
 
   def save[K: ClassTag](rdd: RasterRDD[K], layer: String, table: String): Try[Unit] = {
-    metaDataCatalog.save(table, Layer(layer, rdd.metaData.level.id), rdd.metaData)
-    for (driver <- getDriver[K]) yield {
-      driver.save(sc, instance)(rdd, layer, table)
-    }
+    for {
+      driver <- getDriver[K]
+      _ <- driver.save(sc, instance)(rdd, layer, table)
+      _ <- metaDataCatalog.save(table, Layer(layer, rdd.metaData.level.id), rdd.metaData)
+    } yield Unit // TODO : If this fails at metadata save. We will have orphan data in a table
   }
 }

@@ -1,5 +1,7 @@
 package geotrellis.spark.io.accumulo
 
+import java.io.IOException
+
 import geotrellis.raster._
 
 import geotrellis.raster.op.local._
@@ -18,9 +20,9 @@ import org.scalatest.Matchers._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 
 import org.apache.hadoop.fs.Path
-import scala.util.{Success, Failure}
+import scala.util.{Try, Success, Failure}
 
-class CatalogSpec extends FunSpec
+class AccumuloCatalogSpec extends FunSpec
   with Matchers
   with TestEnvironment
   with RasterVerifyMethods
@@ -43,11 +45,15 @@ class CatalogSpec extends FunSpec
       val source = sparkContext.hadoopGeoTiffRDD(allOnes)
       val tableOps = accumulo.connector.tableOperations()
       tableOps.create("tiles")
-      val sink: (RasterRDD[TileId] => Unit) = { tiles =>
-        catalog.save[TileId](tiles, "ones", "tiles") match {
-          case Failure(ex) => throw ex  // throw loud for the tests
-          case _ =>                     // don't get in the way of progress
+
+      def throwLoud[T](t: Try[T]): Unit = {
+        t match {
+          case Failure(ex) => throw ex // throw loud for the tests
+          case _ => // don't get in the way of progress
         }
+      }
+      val sink: (RasterRDD[TileId] => Unit) = { tiles =>
+        throwLoud(catalog.save[TileId](tiles, "ones", "tiles"))
       }
 
       it("should fail to save without driver"){
@@ -62,8 +68,16 @@ class CatalogSpec extends FunSpec
         }
       }
 
-      it("should provide a sink for Ingest") {
+      it("should fail writing to no table"){
         catalog.register(RasterAccumuloDriver)
+        intercept[TableNotFound] {
+          Ingest(sparkContext)(source,
+            { tiles => throwLoud(catalog.save[TileId](tiles, "ones", "NOtiles")) },
+            LatLng, TilingScheme.TMS)
+        }
+      }
+
+      it("should provide a sink for Ingest") {
         Ingest(sparkContext)(source, sink, LatLng, TilingScheme.TMS)
       }
 
