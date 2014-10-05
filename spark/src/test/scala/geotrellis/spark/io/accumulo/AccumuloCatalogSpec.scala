@@ -46,14 +46,8 @@ class AccumuloCatalogSpec extends FunSpec
       val tableOps = accumulo.connector.tableOperations()
       tableOps.create("tiles")
 
-      def throwLoud[T](t: Try[T]): Unit = {
-        t match {
-          case Failure(ex) => throw ex // throw loud for the tests
-          case _ => // don't get in the way of progress
-        }
-      }
       val sink: (RasterRDD[TileId] => Unit) = { tiles =>
-        throwLoud(catalog.save[TileId](tiles, "ones", "tiles"))
+        catalog.save[TileId](tiles, "ones", "tiles").get
       }
 
       it("should fail to save without driver"){
@@ -72,7 +66,7 @@ class AccumuloCatalogSpec extends FunSpec
         catalog.register(RasterAccumuloDriver)
         intercept[TableNotFound] {
           Ingest(sparkContext)(source,
-            { tiles => throwLoud(catalog.save[TileId](tiles, "ones", "NOtiles")) },
+            { tiles =>catalog.save[TileId](tiles, "ones", "NOtiles").get },
             LatLng, TilingScheme.TMS)
         }
       }
