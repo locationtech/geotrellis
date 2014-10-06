@@ -39,7 +39,7 @@ class AccumuloCatalogSpec extends FunSpec
         user = "root",
         token = new PasswordToken("")
       )
-      val catalog = accumulo.catalog
+      val catalog = new AccumuloCatalog(sparkContext, accumulo, accumulo.metaDataCatalog)
 
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sparkContext.hadoopGeoTiffRDD(allOnes)

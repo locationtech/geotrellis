@@ -31,7 +31,12 @@ case class AccumuloInstance(
   }
   val metaDataCatalog = new MetaDataCatalog(connector, catalogTable)
 
-  def catalog(implicit sc: SparkContext) = new AccumuloCatalog(sc, this, metaDataCatalog)
+  def catalog(implicit sc: SparkContext) = {
+    val cat = new AccumuloCatalog(sc, this, metaDataCatalog)
+    cat.register(RasterAccumuloDriver)
+    cat.register(TimeRasterAccumuloDriver)
+    cat
+  }
 
   def setAccumuloConfig(conf: Configuration): Unit = {
     if (instanceName == "fake") {
