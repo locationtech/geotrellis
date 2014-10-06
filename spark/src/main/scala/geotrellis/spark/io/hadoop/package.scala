@@ -66,8 +66,8 @@ package object hadoop {
     }
 
     def netCdfRDD(path: Path): RDD[(NetCdfBand, Tile)] = {
-      def makeTime(info: GdalRasterInfo): DateTime = {
-        require(info.bandMeta("Time#units") == "days since 1950-01-01")
+      val makeTime: GdalRasterInfo => DateTime = { info =>
+        require(info.file.meta("Time#units") == "days since 1950-01-01")
         val base = new DateTime(1950,1,1,0,0,0, DateTimeZone.UTC)
         val days = info.bandMeta("NETCDF_DIM_Time").toDouble
         base.plusDays(days.toInt).plusHours((days % 1 * 24).toInt)
