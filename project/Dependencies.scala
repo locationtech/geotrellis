@@ -67,4 +67,6 @@ object Dependencies {
   val postgresql    = "postgresql"         % "postgresql"  % "9.1-901.jdbc4"
 
   val caliper       = "com.google.caliper" % "caliper"     % "1.0-beta-1"
+
+  val nscalaTime    = "com.github.nscala-time" %% "nscala-time" % "1.4.0"
 }

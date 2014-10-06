@@ -10,8 +10,10 @@ import org.apache.accumulo.core.util.{Pair => JPair}
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.rdd.RDD
+import org.joda.time.{DateTimeZone, DateTime}
 import scala.collection.JavaConversions._
 import scala.collection.mutable
+
 
 object TimeRasterAccumuloDriver extends AccumuloDriver[TimeTileId] {
   def rowId(id: TileId, md: LayerMetaData) = new Text(s"${md.level.id}_${id}")
@@ -22,7 +24,8 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[TimeTileId] {
     raster.map {
       case (TimeTileId(tileId, time), tile) =>
         val mutation = new Mutation(rowId(tileId, raster.metaData))
-        mutation.put(new Text(layer), new Text(time.toString), System.currentTimeMillis(), new Value(tile.toBytes()))
+        mutation.put(new Text(layer), new Text(time.withZone(DateTimeZone.UTC)toString),
+          System.currentTimeMillis(), new Value(tile.toBytes()))
         (null, mutation)
     }
 
@@ -31,7 +34,7 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[TimeTileId] {
     val tileRdd = rdd.map {
       case (key, value) =>
         val rowIdRx(zoom, id) = key.getRow.toString
-        val time = key.getColumnQualifier.toString.toDouble
+        val time = DateTime.parse(key.getColumnQualifier.toString)
         val tile = ArrayTile.fromBytes(value.get, metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
         TimeTileId(id.toLong, time) -> tile.asInstanceOf[Tile]
     }

@@ -36,6 +36,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import org.apache.hadoop.conf.Configuration
 import GdalInputFormat._
+import org.joda.time.DateTime
 
 /**
  * Uses GDAL to attempt to read a raster file.
@@ -58,7 +59,7 @@ class GdalInputFormat extends FileInputFormat[GdalRasterInfo, Tile] {
 
 case class GdalFileInfo(rasterExtent: RasterExtent, crs: CRS, meta: Map[String, String])
 case class GdalRasterInfo(file: GdalFileInfo, bandMeta: Map[String, String])
-case class NetCdfBand(extent: Extent, crs: CRS, varName: String, time: Double)
+case class NetCdfBand(extent: Extent, crs: CRS, varName: String, time: DateTime)
 
 object GdalInputFormat {
   def parseMeta(meta: List[String]): Map[String, String] =

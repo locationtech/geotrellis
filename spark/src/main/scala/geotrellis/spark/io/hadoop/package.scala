@@ -26,6 +26,7 @@ import org.apache.commons.codec.binary.Base64
 import java.io.PrintWriter
 import java.nio.ByteBuffer
 import geotrellis.spark.tiling._
+import org.joda.time.{DateTimeZone, DateTime}
 
 package object hadoop {
   /** Upgrades a string to a Hadoop Path URL. Seems dangerous, but not surprising. */
@@ -65,13 +66,20 @@ package object hadoop {
     }
 
     def netCdfRDD(path: Path): RDD[(NetCdfBand, Tile)] = {
+      def makeTime(info: GdalRasterInfo): DateTime = {
+        require(info.bandMeta("Time#units") == "days since 1950-01-01")
+        val base = new DateTime(1950,1,1,0,0,0, DateTimeZone.UTC)
+        val days = info.bandMeta("NETCDF_DIM_Time").toDouble
+        base.plusDays(days.toInt).plusHours((days % 1 * 24).toInt)
+      }
+
       gdalRDD(path)
         .map{ case (info, tile) =>
           val band = NetCdfBand(
             extent = info.file.rasterExtent.extent,
             crs = info.file.crs,
             varName = info.bandMeta("NETCDF_VARNAME"),
-            time = info.bandMeta("NETCDF_DIM_Time").toDouble
+            time = makeTime(info)
           )
           band -> tile
         }
