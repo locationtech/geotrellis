@@ -22,12 +22,12 @@ object HadoopUtils {
   final val SPLITS_FILE = "splits"
   final val METADATA_FILE = "metadata.json"
 
-  def readSplits(raster: Path, conf: Configuration): Array[TileId] = {
+  def readSplits(raster: Path, conf: Configuration): Array[SpatialKey] = {
     val splitFile = new Path(raster, HadoopUtils.SPLITS_FILE)
     HdfsUtils.getLineScanner(splitFile, conf) match {
       case Some(in) =>
         try {
-          val splits = new mutable.ListBuffer[TileId]
+          val splits = new mutable.ListBuffer[SpatialKey]
           for (line <- in) {
             splits +=
             ByteBuffer.wrap(Base64.decodeBase64(line.getBytes)).getLong
@@ -37,7 +37,7 @@ object HadoopUtils {
           in.close
         }
       case None =>
-        Array[TileId]()
+        Array[SpatialKey]()
     }
   }
 

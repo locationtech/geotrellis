@@ -9,16 +9,16 @@ import geotrellis.vector.Extent
  * through the grid coordinates, using the transitive property by chaining
  * the transformations of its abstract members.
  */
-trait TileIndexTransform extends Serializable {self: TileGridTransform with IndexGridTransform =>
-  def tileToIndex(coord: TileCoord): TileId =
-    tileToIndex(coord._1, coord._2)
+trait TileSpatialKeyTransform extends Serializable {self: TileGridTransform with SpatialKeyGridTransform =>
+  def tileToSpatialKey(coord: TileCoord): SpatialKey =
+    tileToSpatialKey(coord._1, coord._2)
 
-  def tileToIndex(tx: Int, ty: Int): TileId =
-    tileToGrid(tx, ty) |> gridToIndex
+  def tileToSpatialKey(tx: Int, ty: Int): SpatialKey =
+    tileToGrid(tx, ty) |> gridToSpatialKey
 
-  def tileToIndex(tileBounds: TileBounds): Array[TileId] =
-    tileToGrid(tileBounds) |> gridToIndex
+  def tileToSpatialKey(tileBounds: TileBounds): Array[SpatialKey] =
+    tileToGrid(tileBounds) |> gridToSpatialKey
 
-  def indexToTile(tileId: TileId): TileCoord =
+  def indexToTile(tileId: SpatialKey): TileCoord =
     indexToGrid(tileId) |> gridToTile
 }

@@ -29,7 +29,8 @@ case class AccumuloInstance(
   val catalogTable: String = {
     ConfigFactory.load().getString("geotrellis.accumulo.catalog")
   }
-  val metaDataCatalog = new MetaDataCatalog(connector, catalogTable)
+
+  val metaDataCatalog = new AccumuloMetaDataCatalog(connector, catalogTable)
 
   def catalog(implicit sc: SparkContext) = new AccumuloCatalog(sc, this, metaDataCatalog)
 

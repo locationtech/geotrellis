@@ -12,7 +12,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import scala.util.{Failure, Try}
 
-class TableNotFound(table: String) extends Exception(s"Target Accumulo table `$table` does not exist.")
+class TableNotFoundError(table: String) extends Exception(s"Target Accumulo table `$table` does not exist.")
 
 trait AccumuloDriver[K] extends Driver[K]{
   /** Accumulo table name */
@@ -36,7 +36,7 @@ trait AccumuloDriver[K] extends Driver[K]{
   def save(sc: SparkContext, accumulo: AccumuloInstance)
           (raster: RasterRDD[K], layer: String, table: String): Try[Unit] = {
     if (! accumulo.connector.tableOperations().exists(table))
-      Failure[Unit](new TableNotFound(table))
+      Failure[Unit](new TableNotFoundError(table))
     else Try {
       val job = Job.getInstance(sc.hadoopConfiguration)
       accumulo.setAccumuloConfig(job)

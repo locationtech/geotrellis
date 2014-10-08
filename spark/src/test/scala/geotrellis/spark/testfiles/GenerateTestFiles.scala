@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 DigitalGlobe.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,8 @@ import org.apache.hadoop.fs.Path
 
 /** Use this command to create test files when there's a breaking change to the files (i.e. TileIdWritable package move) */
 object GenerateTestFiles {
-  def main(args: Array[String]):Unit = {
+
+  def main(args: Array[String]): Unit = {
     val cellType = TypeFloat
     val extent = Extent(141.7066666666667, -18.373333333333342, 142.56000000000003, -17.52000000000001)
     val layoutLevel = TilingScheme.TMS.level(10)
@@ -39,9 +40,14 @@ object GenerateTestFiles {
     val tileSize = tileCols * tileRows
 
     val testFiles = List(
-      1 -> "all-ones",
-      2 -> "all-twos",
-      100 -> "all-hundreds"
+      ConstantTestFileValues(1) -> "all-ones",
+      ConstantTestFileValues(2) -> "all-twos",
+      ConstantTestFileValues(100) -> "all-hundreds",
+      IncreasingTestFileValues(tileCols, tileRows) -> "increasing",
+      DecreasingTestFileValues(tileCols, tileRows) -> "decreasing",
+      EveryOtherUndefined(tileCols) -> "every-other-undefined",
+      EveryOther0Point99Else1Point01(tileCols) -> "every-other-0.99-else-1.01",
+      EveryOther1ElseMinus1(tileCols) -> "every-other-1-else-1"
     )
 
     val sc = new SparkContext("local", "create-test-files")
@@ -49,13 +55,11 @@ object GenerateTestFiles {
     val localFS = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
     val prefix = new Path(localFS.getWorkingDirectory, "src/test/resources")
 
-    println(metaData.level.tileLayout)
-
-    for((v, name) <- testFiles) {
-      println(s"Creating test RasterRDD $name with value $v")
+    for((tfv, name) <- testFiles) {
+      println(s"Creating test RasterRDD $name")
       val tmsTiles =
         metaData.tileIds.map { tileId =>
-          val arr = Array.ofDim[Float](tileSize).fill(v)
+          val arr = tfv(tileCols, tileRows)
           TmsTile(tileId, ArrayTile(arr, tileCols, tileRows))
         }
 
@@ -78,4 +82,5 @@ object GenerateTestFiles {
       rdd.saveAsHadoopRasterRDD(path)
     }
   }
+
 }

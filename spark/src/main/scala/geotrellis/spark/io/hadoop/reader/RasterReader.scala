@@ -37,20 +37,20 @@ import java.io.Closeable
 case class RasterReader(
   raster: Path,
   conf: Configuration,
-  startKey: TileId = Long.MinValue,
-  endKey: TileId = Long.MaxValue
+  startKey: SpatialKey = Long.MinValue,
+  endKey: SpatialKey = Long.MaxValue
 ) extends Iterable[WritableTile] with Closeable {
 
   def close = iterator.close
 
   def iterator = new Iterator[WritableTile] with Closeable {
 
-    private var curKey: TileIdWritable = TileIdWritable(startKey)
+    private var curKey: SpatialKeyWritable = SpatialKeyWritable(startKey)
     private var curValue: ArgWritable = new ArgWritable
 
     // initialize readers and partitioner
     private val readers = getReaders
-    private val partitioner = TileIdPartitioner(HadoopUtils.readSplits(raster, conf))
+    private val partitioner = SpatialKeyPartitioner(HadoopUtils.readSplits(raster, conf))
 
     private var readFirstKey: Boolean = false
     private var curPartition: Int = -1
@@ -62,8 +62,8 @@ case class RasterReader(
       while (curPartition == -1 && partition < partitioner.numPartitions) {
         curKey = 
           readers(partition)
-            .getClosest(TileIdWritable(startKey), curValue)
-            .asInstanceOf[TileIdWritable]
+            .getClosest(SpatialKeyWritable(startKey), curValue)
+            .asInstanceOf[SpatialKeyWritable]
         if (curKey != null) {
           readFirstKey = true
           curPartition = partition
@@ -82,7 +82,7 @@ case class RasterReader(
       if (readFirstKey) {
         readFirstKey = false
         // handle boundary case: startKey >= endKey
-        if (curKey.compareTo(TileIdWritable(endKey)) <= 0) {
+        if (curKey.compareTo(SpatialKeyWritable(endKey)) <= 0) {
           return true
         }
         return false
@@ -97,7 +97,7 @@ case class RasterReader(
       while (true) {
         val found = readers(curPartition).next(curKey, curValue)
         if (found) {
-          if (curKey.compareTo(TileIdWritable(endKey)) <= 0)
+          if (curKey.compareTo(SpatialKeyWritable(endKey)) <= 0)
             return true
           else
             return false

@@ -26,11 +26,18 @@ import org.apache.spark.rdd._
 
 import spire.syntax.cfor._
 
+import scala.reflect.ClassTag
+
 package object spark {
-  type TileId = Long
-  implicit object tileIdFilterableBySpace extends Filterable[TileId, SpaceFilter]
-  implicit object timeTileIdFilterableByTime extends Filterable[TimeTileId, TimeFilter]
-  implicit object timeTileIdFilterableBySpace extends Filterable[TimeTileId, SpaceFilter]
+
+  // Tile keys.
+  type SpatialKey = Long
+  case class TimeSpatialKey(tileId: SpatialKey, time: Double)
+
+  // Implicit objects that state what filters apply to what tile keys.
+  implicit object tileIdFilterableBySpace extends Filterable[SpatialKey, SpaceFilter]
+  implicit object timeSpatialKeyFilterableByTime extends Filterable[TimeSpatialKey, TimeFilter]
+  implicit object timeSpatialKeyFilterableBySpace extends Filterable[TimeSpatialKey, SpaceFilter]
 
   type ProjectedExtent = (Extent, CRS)
   type Dimensions = (Int, Int)
@@ -53,34 +60,17 @@ package object spark {
     def |> [T](f : (A, B, C, D) => T) = f(tup._1, tup._2, tup._3, tup._4)
   }
 
-  implicit def tmsTileRddToTupleRdd(rdd: RDD[TmsTile]): RDD[(Long, Tile)] =
-    rdd.map { case TmsTile(id, tile) => (id, tile) }
-
-  implicit def tupleRddToTmsTileRdd(rdd: RDD[(Long, Tile)]): RDD[TmsTile] =
-    rdd.map { case (id, tile) => TmsTile(id, tile) }
-
-  implicit def tmsTileRddToPairRddFunctions(rdd: RDD[TmsTile]): PairRDDFunctions[Long, Tile] =
-    new PairRDDFunctions(tmsTileRddToTupleRdd(rdd))
-
-  implicit def tmsTileRddToOrderedRddFunctions(rdd: RDD[TmsTile]): OrderedRDDFunctions[Long, Tile, (Long, Tile)] =
-    new OrderedRDDFunctions(tmsTileRddToTupleRdd(rdd))
-
   /** Keeps with the convention while still using simple tups, nice */
   implicit class TileTuple[K](tup: (K, Tile)) {
     def id: K = tup._1
     def tile: Tile = tup._2
   }
 
-  def asRasterRDD[K](metaData: LayerMetaData)(f: =>RDD[(K, Tile)]): RasterRDD[K] =
-    new RasterRDD(f, metaData)
+  def asRasterRDD[K: ClassTag](metaData: LayerMetaData)(f: =>RDD[(K, Tile)]): RasterRDD[K] =
+    new RasterRDD[K](f, metaData)
 
-  implicit class MakeRasterRDD(val prev: RDD[TmsTile]) {
-    def toRasterRDD(metaData: LayerMetaData) = new RasterRDD[TileId](prev, metaData)
-  }
-
-  implicit class MakeRasterRDD2(val prev: RDD[(Long, Tile)]) {
-    def prevAsTmsTiles =
-      prev.mapPartitions({ seq => seq.map { case (id, tile) => TmsTile(id, tile) } }, true)
-    def toRasterRDD(metaData: LayerMetaData) = new RasterRDD[TileId](prevAsTmsTiles, metaData)
+  implicit class MakeRasterRDD(val prev: RDD[(Long, Tile)]) {
+    def toRasterRDD(metaData: LayerMetaData) = 
+      new RasterRDD[SpatialKey](prev, metaData)
   }
 }

@@ -5,7 +5,6 @@ import geotrellis.spark.cmd.args._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.tiling._
-import geotrellis.spark.utils.HdfsUtils
 import geotrellis.raster._
 import geotrellis.proj4._
 
@@ -75,7 +74,7 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
     val sparkContext = args.sparkContext("Ingest")
     try {
       val source = sparkContext.hadoopGeoTiffRDD(inPath)
-      val sink = { tiles: RasterRDD[TileId] =>
+      val sink = { tiles: RasterRDD[SpatialKey] =>
         val metaData = tiles.metaData
         val partitioner = {
           val gridBounds = metaData.transform.mapToGrid(metaData.extent)
@@ -83,7 +82,7 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
           val blockSizeBytes = HdfsUtils.defaultBlockSize(inPath, conf)
           val splitGenerator =
             RasterSplitGenerator(gridBounds, metaData.transform, tileSizeBytes, blockSizeBytes)
-          TileIdPartitioner(splitGenerator.splits)
+          SpatialKeyPartitioner(splitGenerator.splits)
         }
 
         val outPathWithZoom = new Path(outPath, metaData.level.id.toString)

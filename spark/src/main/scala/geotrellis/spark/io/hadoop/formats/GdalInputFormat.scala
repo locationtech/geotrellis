@@ -16,10 +16,9 @@
 
 package geotrellis.spark.io.hadoop.formats
 
-import geotrellis.spark.utils.HdfsUtils
+import geotrellis.spark.io.hadoop._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.spark.utils.HdfsUtils.LocalPath
 import geotrellis.vector.Extent
 import geotrellis.vector.Extent
 import geotrellis.proj4._
@@ -36,6 +35,8 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import org.apache.hadoop.conf.Configuration
 import GdalInputFormat._
+
+import HdfsUtils.LocalPath
 
 /**
  * Uses GDAL to attempt to read a raster file.
@@ -76,7 +77,6 @@ object GdalInputFormat {
 }
 
 class GdalRecordReader extends RecordReader[GdalRasterInfo, Tile] {
-
   private var conf: Configuration = _
   private var file: LocalPath = _
   private var rasterDataSet: RasterDataSet = _

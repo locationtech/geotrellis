@@ -9,3 +9,5 @@ hdfs:
     { device: /dev/sdc, mount: /mnt/data2, size: 10 }
   ]
   replication: 3
+
+eth: "eth1"

@@ -20,6 +20,8 @@ import org.apache.hadoop.io.SequenceFile
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapred.MapFileOutputFormat
 import org.apache.hadoop.mapred.SequenceFileOutputFormat
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
+import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.Logging
 import org.apache.commons.codec.binary.Base64
 
@@ -32,10 +34,10 @@ package object hadoop {
   implicit def stringToPath(path: String): Path = new Path(path)
 
   implicit class HadoopSparkContextWrapper(sc: SparkContext) {
-    def hadoopRasterRDD(path: String): RasterRDD[TileId] =
+    def hadoopRasterRDD(path: String): RasterRDD[SpatialKey] =
       hadoopRasterRDD(new Path(path))
 
-    def hadoopRasterRDD(path: Path): RasterRDD[TileId] =
+    def hadoopRasterRDD(path: Path): RasterRDD[SpatialKey] =
       RasterHadoopRDD(path, sc).toRasterRDD
 
     def hadoopGeoTiffRDD(path: String): RDD[((Extent, CRS), Tile)] =
@@ -78,10 +80,10 @@ package object hadoop {
     }
   }
 
-  implicit class SavableRasterRDD(val rdd: RasterRDD[TileId]) extends Logging {
+  implicit class SavableRasterRDD(val rdd: RasterRDD[SpatialKey]) extends Logging {
     def toWritable =
       rdd.mapPartitions({ partition =>
-        partition.map{ case (id, tile) => TmsTile(id, tile).toWritable}
+        partition.map(_.toWritable)
       }, true)
 
 
@@ -97,11 +99,11 @@ package object hadoop {
       SequenceFileOutputFormat.setOutputCompressionType(jobConf, SequenceFile.CompressionType.RECORD)
 
       val writableRDD: RDD[WritableTile] =
-        rdd.sortByKey().map(TmsTile(_).toWritable)
+        rdd.sortByKey().map(_.toWritable)
 
       writableRDD.saveAsHadoopFile(
         path.toUri().toString(),
-        classOf[TileIdWritable],
+        classOf[SpatialKeyWritable],
         classOf[ArgWritable],
         classOf[MapFileOutputFormat],
         jobConf)
@@ -111,7 +113,7 @@ package object hadoop {
       rdd.partitioner match {
         case Some(partitioner) =>
           partitioner match {
-            case p: TileIdPartitioner =>
+            case p: SpatialKeyPartitioner =>
               HadoopUtils.writeSplits(p.splits, path, conf)
             case _ =>
           }
@@ -124,8 +126,17 @@ package object hadoop {
     }
   }
 
-  implicit class TmsTileWrapper(tmsTile: TmsTile) {
-    def toWritable(): WritableTile =
-      (TileIdWritable(tmsTile.id), ArgWritable.fromTile(tmsTile.tile))
+  implicit class HadoopConfigurationWrapper(config: Configuration) {
+    def withInputPath(path: Path): Configuration = {
+      val job = Job.getInstance(config)
+      FileInputFormat.addInputPath(job, path)
+      job.getConfiguration
+    }
+
+    /** Creates a Configuration with all files in a directory (recursively searched)*/
+    def withInputDirectory(path: Path): Configuration = {
+      val allFiles = HdfsUtils.listFiles(path, config)
+      HdfsUtils.putFilesInConf(allFiles.mkString(","), config)
+    }
   }
 }

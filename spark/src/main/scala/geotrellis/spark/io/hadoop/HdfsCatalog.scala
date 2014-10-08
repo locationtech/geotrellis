@@ -1,9 +1,8 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
-import geotrellis.spark.io.{CatalogError, Catalog}
-import geotrellis.spark.io.accumulo.{AccumuloDriver, Layer, MetaDataCatalog}
-import org.apache.accumulo.core.util.{Pair => JPair}
+import geotrellis.spark.io._
+
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import scala.reflect._
@@ -23,7 +22,7 @@ class HdfsCatalog(sc: SparkContext, metaDataCatalog: MetaDataCatalog) extends Ca
 
   def load[K:ClassTag](layerName: String, zoom: Int, filters: FilterSet[K]): Try[RasterRDD[K]] = {
     for {
-      md <- metaDataCatalog.get(Layer(layerName, zoom))
+      md <- metaDataCatalog.get(LayerId(layerName, zoom))
       loader <- getDriver[K]
     } yield {
       val path: Path = ??? //came from metadata

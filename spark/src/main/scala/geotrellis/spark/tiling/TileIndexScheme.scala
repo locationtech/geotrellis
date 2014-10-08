@@ -3,40 +3,40 @@ package geotrellis.spark.tiling
 import geotrellis.spark._
 import geotrellis.raster._
 
-object TileIndexScheme {
-  def fromTag(tag: String): TileIndexScheme = 
+object TileSpatialKeyScheme {
+  def fromTag(tag: String): TileSpatialKeyScheme = 
     tag match {
-      case "row_index" => RowIndexScheme
+      case "row_index" => RowSpatialKeyScheme
       case _ => sys.error(s"Unknown index scheme $tag")
     }
 }
 
 /**
- * Tile Index Scheme provides an object that is able to map from
+ * Tile SpatialKey Scheme provides an object that is able to map from
  * a given Grid Coordinate, where the origin is upper left corner
  * and tuple (x, y) represents (col, row), to a linear index.
  */
-trait TileIndexScheme extends Serializable {
+trait TileSpatialKeyScheme extends Serializable {
   def tag: String
 
-  def apply(tileDimensions: Dimensions): IndexGridTransform =
+  def apply(tileDimensions: Dimensions): SpatialKeyGridTransform =
     apply(tileDimensions._1, tileDimensions._2)
 
-  def apply(tileCols: Int, tileRows: Int): IndexGridTransform
+  def apply(tileCols: Int, tileRows: Int): SpatialKeyGridTransform
 }
 
-object RowIndexScheme extends TileIndexScheme {
+object RowSpatialKeyScheme extends TileSpatialKeyScheme {
   def tag = "row_index"
 
-  def apply(tileCols: Int, tileRows: Int): IndexGridTransform =
-    new IndexGridTransform {
-      def indexToGrid(tileId: TileId): GridCoord = {
-        val row = tileId / tileCols
-        val col = tileId - (row * tileCols)
+  def apply(tileCols: Int, tileRows: Int): SpatialKeyGridTransform =
+    new SpatialKeyGridTransform {
+      def keyToGrid(key: SpatialKey): GridCoord = {
+        val row = key / tileCols
+        val col = key - (row * tileCols)
         (col.toInt, row.toInt)
       }
 
-      def gridToIndex(col: Int, row: Int): TileId =
+      def gridToSpatialKey(col: Int, row: Int): SpatialKey =
         (row * tileCols) + col
     }
 }

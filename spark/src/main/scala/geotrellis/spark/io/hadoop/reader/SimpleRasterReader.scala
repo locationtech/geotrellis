@@ -42,14 +42,14 @@ import java.io.Closeable
  * 
  */ 
 case class SimpleRasterReader(raster: Path, conf: Configuration)
-  extends Iterable[(TileIdWritable, ArgWritable)]
+  extends Iterable[(SpatialKeyWritable, ArgWritable)]
   with Closeable {
 
   def close = iterator.close
 
-  def iterator = new Iterator[(TileIdWritable, ArgWritable)] with Closeable {
+  def iterator = new Iterator[(SpatialKeyWritable, ArgWritable)] with Closeable {
 
-    private val curKey: TileIdWritable = new TileIdWritable
+    private val curKey: SpatialKeyWritable = new SpatialKeyWritable
     private val curValue: ArgWritable = new ArgWritable
     private var curPartition: Int = 0
 

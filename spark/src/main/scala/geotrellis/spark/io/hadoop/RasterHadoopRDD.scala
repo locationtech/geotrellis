@@ -32,20 +32,20 @@ import org.apache.spark.rdd.{RDD, NewHadoopRDD}
 
 /*
  * An RDD abstraction of rasters in Spark. This can give back either tuples of either
- * (TileIdWritable, ArgWritable) or (Long, Raster), the latter being the deserialized 
+ * (SpatialKeyWritable, ArgWritable) or (Long, Raster), the latter being the deserialized 
  * form of the former. See companion object 
  */
 class RasterHadoopRDD private (sc: SparkContext, conf: Configuration, path: Path)
-  extends NewHadoopRDD[TileIdWritable, ArgWritable](
+  extends NewHadoopRDD[SpatialKeyWritable, ArgWritable](
     sc,
-    classOf[SequenceFileInputFormat[TileIdWritable, ArgWritable]],
-    classOf[TileIdWritable],
+    classOf[SequenceFileInputFormat[SpatialKeyWritable, ArgWritable]],
+    classOf[SpatialKeyWritable],
     classOf[ArgWritable],
     conf) {
   lazy val metaData = 
     HadoopUtils.readLayerMetaData(path, context.hadoopConfiguration)
 
-  def toRasterRDD: RasterRDD[TileId] =
+  def toRasterRDD: RasterRDD[SpatialKey] =
     asRasterRDD(metaData) { map { _.toTuple(metaData) } }
 }
 

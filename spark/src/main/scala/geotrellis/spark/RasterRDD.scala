@@ -27,17 +27,15 @@ import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
-
 object RasterRDD {
-  /** Trivial lens to allow us using TileId keyed RDDs without extra effort */
-  implicit val tileIdLens =  SimpleLens[TileId, TileId](x=>x, (e, c) => c)
-
+  /** Trivial lens to allow us using SpatialKey keyed RDDs without extra effort */
+  implicit val tileIdLens =  SimpleLens[SpatialKey, SpatialKey](x => x, (e, c) => c)
 
   /**
    * Functions that require RasterRDD to have a TMS grid dimension to their key
    */
-  implicit class TmsAddressableRasterRDD[K](rdd: RasterRDD[K])
-                                           (implicit _id: SimpleLens[K, TileId])
+  implicit class TmsAddressableRasterRDD[K: ClassTag](rdd: RasterRDD[K])
+                                                     (implicit _id: SimpleLens[K, SpatialKey])
   {
 
     def pyramidUp: RasterRDD[K] = {
@@ -45,13 +43,13 @@ object RasterRDD {
       val nextMetaData = rdd.metaData.copy(level = rdd.metaData.level.up)
 
       val nextRdd =
-      rdd
-      .map {
-        case (key, tile: Tile) =>
-          val (x, y) = metaData.transform.indexToGrid(key |-> _id get)
-          val nextId = nextMetaData.transform.gridToIndex(x/2, y/2)
-          (key -> nextId) -> (x % 2, y % 2, tile)
-      }
+        rdd
+          .map {
+            case (key, tile: Tile) =>
+              val (x, y) = metaData.transform.indexToGrid(key |-> _id get)
+              val nextId = nextMetaData.transform.gridToIndex(x/2, y/2)
+              (key -> nextId) -> (x % 2, y % 2, tile)
+          }
       .combineByKey(
         { case (x: Int, y: Int, tile: Tile) =>
             val tiles: Array[Option[Tile]] = Array.fill(4)(None)
@@ -79,9 +77,11 @@ object RasterRDD {
         val (cols, rows) = firstTile.dimensions //Must be at least one tile
         val cellType = firstTile.cellType
 
-        val tile = CompositeTile(
-          maybeTiles map { _.getOrElse(NoDataTile(cellType, cols, rows)) },
-          TileLayout(2, 2, cols, rows))
+        val tile = 
+          CompositeTile(
+            maybeTiles map { _.getOrElse(NoDataTile(cellType, cols, rows)) },
+            TileLayout(2, 2, cols, rows)
+          )
 
         //Assuming that target extent in the new level will match the combined extent of 2x2 composite
         val targetExtent = nextMetaData.transform.indexToMap(id)
@@ -94,8 +94,8 @@ object RasterRDD {
   }
 }
 
-class RasterRDD[K](val prev: RDD[(K, Tile)], val metaData: LayerMetaData) extends RDD[(K, Tile)](prev) {
-  override val partitioner = prev.partitioner
+class RasterRDD[K <: : ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: LayerMetaData) extends RDD[(K, Tile)](tileRdd) {
+  override val partitioner = tileRdd.partitioner
 
   override def getPartitions: Array[Partition] = firstParent.partitions
 
@@ -108,39 +108,42 @@ class RasterRDD[K](val prev: RDD[(K, Tile)], val metaData: LayerMetaData) extend
    * the tiling scheme specified in the metaData.
    *
    * @param extentOf function that extracts extent information from the key
-   * @param toKey    function that maps to the new RDD key, allowing you to add TileId information
+   * @param toKey    function that maps to the new RDD key, allowing you to add SpatialKey information
    * @tparam KT      key type of the resulting RDD
    */
-  def mosaic[KT : ClassTag](extentOf: K => Extent, toKey: (K, TileId) => KT): RasterRDD[KT] = {
+  def mosaic[KT : ClassTag](extentOf: K => Extent, toKey: (K, SpatialKey) => KT): RasterRDD[KT] = {
     val bcMetaData = sparkContext.broadcast(metaData)
     val newRdd = this
       .flatMap { case (key, tile) =>
-      val metaData = bcMetaData.value
-      val extent = extentOf(key)
-      metaData.transform.mapToGrid(extent).coords.map { coord =>
-        val tileId = metaData.transform.gridToIndex(coord)
-        val kt = toKey(key, tileId) //convert into new key, using the helpful function
-        (kt, (tileId, extent, tile))
-      }
-    }
-      .combineByKey(
-    {case (id, extent, tile) =>
-      val metaData = bcMetaData.value
-      val tmsTile = ArrayTile.empty(metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
-      tmsTile.merge(metaData.transform.indexToMap(id), metaData.extent, tile)
-    }, {
-      (tmsTile: MutableArrayTile, tup: (TileId, Extent, Tile)) =>
         val metaData = bcMetaData.value
-        val (id, extent, tile) = tup
-        tmsTile.merge(metaData.transform.indexToMap(id), extent, tile)
-    }, {
-      (tmsTile1: MutableArrayTile, tmsTile2: MutableArrayTile) =>
-        tmsTile1.merge(tmsTile2)
-    }
-    )
+        val extent = extentOf(key)
+
+        metaData.transform.mapToGrid(extent).coords
+          .map { coord =>
+            val tileId = metaData.transform.gridToIndex(coord)
+            val kt = toKey(key, tileId) //convert into new key, using the helpful function
+            (kt, (tileId, extent, tile))
+          }
+       }
+      .combineByKey(
+        { case (id, extent, tile) =>
+          val metaData = bcMetaData.value
+          val tmsTile = ArrayTile.empty(metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
+          tmsTile.merge(metaData.transform.indexToMap(id), metaData.extent, tile)
+        }, 
+        { (tmsTile: MutableArrayTile, tup: (SpatialKey, Extent, Tile)) =>
+          val metaData = bcMetaData.value
+          val (id, extent, tile) = tup
+          tmsTile.merge(metaData.transform.indexToMap(id), extent, tile)
+        }, 
+        { (tmsTile1: MutableArrayTile, tmsTile2: MutableArrayTile) =>
+          tmsTile1.merge(tmsTile2)
+        }
+       )
       .map{ case (key, tile) =>
-      (key, tile.asInstanceOf[Tile])
-    }
+        (key, tile.asInstanceOf[Tile])
+       }
+
     new RasterRDD[KT](newRdd, metaData)
   }
 
@@ -153,7 +156,7 @@ class RasterRDD[K](val prev: RDD[(K, Tile)], val metaData: LayerMetaData) extend
       }, true)
     }
 
-  def combineTiles[R](other: RasterRDD[K])(f: ((K, Tile), (K, Tile)) => (R, Tile)): RasterRDD[R] =
+  def combineTiles[R: ClassTag](other: RasterRDD[K])(f: ((K, Tile), (K, Tile)) => (R, Tile)): RasterRDD[R] =
     asRasterRDD(metaData) {
       zipPartitions(other, true) { (partition1, partition2) =>
         partition1.zip(partition2).map {
@@ -163,23 +166,38 @@ class RasterRDD[K](val prev: RDD[(K, Tile)], val metaData: LayerMetaData) extend
       }
     }
 
-//  def minMax: (Int, Int) =
-//    map(_.tile.findMinMax)
-//      .reduce { (t1, t2) =>
-//      val (min1, max1) = t1
-//      val (min2, max2) = t2
-//      val min =
-//        if(isNoData(min1)) min2
-//        else {
-//          if(isNoData(min2)) min1
-//          else math.min(min1, min2)
-//        }
-//      val max =
-//        if(isNoData(max1)) max2
-//        else {
-//          if(isNoData(max2)) max1
-//          else math.max(max1, max2)
-//        }
-//      (min, max)
-//    }
+  def combineTiles(others: Seq[RasterRDD[K]])(f: (Seq[(K, Tile)] => (K, Tile))): RasterRDD[K] = {
+    def create(t: (K, Tile)) = Seq(t)
+    def mergeValue(ts: Seq[(K, Tile)], t: (K, Tile)) = ts :+ t
+    def mergeContainers(ts1: Seq[(K, Tile)], ts2: Seq[(K, Tile)]) = ts1 ++ ts2
+
+    asRasterRDD(metaData) {
+      (this :: others.toList)
+        .map(_.tileRdd)
+        .reduceLeft(_ ++ _)
+        .map(t => (t.id, t))
+        .combineByKey(create, mergeValue, mergeContainers)
+        .map { case (id, tiles) => f(tiles) }
+    }
+  }
+
+  def minMax: (Int, Int) =
+    map(_.tile.findMinMax)
+      .reduce { (t1, t2) =>
+        val (min1, max1) = t1
+        val (min2, max2) = t2
+        val min =
+          if(isNoData(min1)) min2
+          else {
+            if(isNoData(min2)) min1
+            else math.min(min1, min2)
+          }
+        val max =
+          if(isNoData(max1)) max2
+          else {
+            if(isNoData(max2)) max1
+            else math.max(max1, max2)
+          }
+        (min, max)
+      }
 }

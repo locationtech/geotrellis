@@ -13,27 +13,27 @@ import org.apache.spark.rdd.RDD
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
-object TimeRasterAccumuloDriver extends AccumuloDriver[TimeTileId] {
-  def rowId(id: TileId, md: LayerMetaData) = new Text(s"${md.level.id}_${id}")
+object TimeRasterAccumuloDriver extends AccumuloDriver[TimeSpatialKey] {
+  def rowId(id: SpatialKey, md: LayerMetaData) = new Text(s"${md.level.id}_${id}")
 
   val rowIdRx = """(\d+)_(\d+)""".r // (zoom)_(TmsTilingId)
   /** Map rdd of indexed tiles to tuples of (table name, row mutation) */
-  def encode(raster: RasterRDD[TimeTileId], layer: String): RDD[(Text, Mutation)] =
+  def encode(raster: RasterRDD[TimeSpatialKey], layer: String): RDD[(Text, Mutation)] =
     raster.map {
-      case (TimeTileId(tileId, time), tile) =>
+      case (TimeSpatialKey(tileId, time), tile) =>
         val mutation = new Mutation(rowId(tileId, raster.metaData))
         mutation.put(new Text(layer), new Text(time.toString), System.currentTimeMillis(), new Value(tile.toBytes()))
         (null, mutation)
     }
 
   /** Maps RDD of Accumulo specific Key, Value pairs to a tuple of (K, Tile) and wraps it in RasterRDD */
-  def decode(rdd: RDD[(Key, Value)], metaData: LayerMetaData): RasterRDD[TimeTileId] = {
+  def decode(rdd: RDD[(Key, Value)], metaData: LayerMetaData): RasterRDD[TimeSpatialKey] = {
     val tileRdd = rdd.map {
       case (key, value) =>
         val rowIdRx(zoom, id) = key.getRow.toString
         val time = key.getColumnQualifier.toString.toDouble
         val tile = ArrayTile.fromBytes(value.get, metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
-        TimeTileId(id.toLong, time) -> tile.asInstanceOf[Tile]
+        TimeSpatialKey(id.toLong, time) -> tile.asInstanceOf[Tile]
     }
     new RasterRDD(tileRdd, metaData)
   }

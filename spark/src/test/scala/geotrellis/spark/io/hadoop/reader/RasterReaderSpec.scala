@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 DigitalGlobe.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,18 +19,18 @@ package geotrellis.spark.io.hadoop.reader
 import geotrellis.spark.TestEnvironment
 import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop.formats._
-import geotrellis.spark.testfiles.AllOnes
+import geotrellis.spark.testfiles.AllOnesTestFile
 
 import org.scalatest._
 
 class RasterReaderSpec extends FunSpec with TestEnvironment with Matchers {
   def tileSpans =
-    AllOnes(inputHome, conf).metaData.tileIds.spans
+    AllOnesTestFile(inputHome, conf).metaData.tileIds.spans
 
-  def tileIds = AllOnes(inputHome, conf).metaData.tileIds
+  def tileIds = AllOnesTestFile(inputHome, conf).metaData.tileIds
 
   def read(start: Long, end: Long): Int = {
-    val allOnes = AllOnes(inputHome, conf)
+    val allOnes = AllOnesTestFile(inputHome, conf)
     val reader = RasterReader(allOnes.path, conf, start, end)
     val numEntries = reader.count(_ => true)
     reader.close()

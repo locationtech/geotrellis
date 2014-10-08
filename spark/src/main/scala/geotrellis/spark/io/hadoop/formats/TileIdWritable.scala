@@ -21,10 +21,10 @@ import org.apache.hadoop.io.LongWritable
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 
-class TileIdWritable extends LongWritable with Serializable {
+class SpatialKeyWritable extends LongWritable with Serializable {
   override def equals(that: Any): Boolean =
     that match {
-      case other: TileIdWritable => other.get == this.get
+      case other: SpatialKeyWritable => other.get == this.get
       case _ => false
     }
 
@@ -41,16 +41,16 @@ class TileIdWritable extends LongWritable with Serializable {
   }
 }
 
-object TileIdWritable {
-  implicit def longToThis(l: Long): TileIdWritable = 
+object SpatialKeyWritable {
+  implicit def longToThis(l: Long): SpatialKeyWritable = 
     apply(l)
 
-  def apply(value: Long): TileIdWritable = {
-    val tw = new TileIdWritable
+  def apply(value: Long): SpatialKeyWritable = {
+    val tw = new SpatialKeyWritable
     tw.set(value)
     tw
   }
-  def apply(tw: TileIdWritable): TileIdWritable = {
-    TileIdWritable(tw.get)
+  def apply(tw: SpatialKeyWritable): SpatialKeyWritable = {
+    SpatialKeyWritable(tw.get)
   }
 }

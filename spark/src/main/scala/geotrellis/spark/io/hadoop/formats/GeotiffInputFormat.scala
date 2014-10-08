@@ -16,10 +16,9 @@
 
 package geotrellis.spark.io.hadoop.formats
 
-import geotrellis.spark.utils.HdfsUtils
+import geotrellis.spark.io.hadoop._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.vector.Extent
 import geotrellis.vector.Extent
 import geotrellis.proj4._
 

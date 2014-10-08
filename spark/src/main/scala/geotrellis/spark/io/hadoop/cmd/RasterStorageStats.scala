@@ -30,7 +30,7 @@ object RasterStorageStats extends ArgMain[RasterArgs] {
     val fs = inputRasterPath.getFileSystem(conf)
     val partDirs = fs.globStatus(partDirGlob).map(_.getPath())
 
-    val partitioner = TileIdPartitioner(HadoopUtils.readSplits(inputRasterPath, conf))
+    val partitioner = SpatialKeyPartitioner(HadoopUtils.readSplits(inputRasterPath, conf))
 
     val stats = partDirs.zipWithIndex.map({
       case (partDir, index) =>
@@ -47,7 +47,7 @@ object RasterStorageStats extends ArgMain[RasterArgs] {
 
         val indexFile = new Path(partDir, "index")
         val indexReader = new SequenceFile.Reader(fs, indexFile, conf)
-        val key = new TileIdWritable()
+        val key = new SpatialKeyWritable()
         var tiles = 0
         while (indexReader.next(key)) {
           assert(partitioner.getPartition(key) == index)

@@ -93,14 +93,15 @@ object Export extends ArgMain[ExportArgs] with Logging {
 
     // TMS tiles start from lower left corner whereas CompositeTile expects them to start from
     // upper left, so we need to re-sort the array
-    def compare(left: TmsTile, right: TmsTile): Boolean = {
+    def compare(left: (Long, Tile), right: (Long, Tile)): Boolean = {
       val (lx, ly) = metaData.transform.indexToGrid(left.id)
       val (rx, ry) = metaData.transform.indexToGrid(right.id)
       (ly > ry) || (ly == ry && lx < rx)
     }
 
     val tiles =
-      reader.map(_.toTmsTile(metaData))
+      reader
+        .map(_.toTmsTile(metaData))
         .toList
         .sortWith(compare)
         .map(_.tile)

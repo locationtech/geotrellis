@@ -16,7 +16,7 @@ import geotrellis.proj4._
  *
  *  @see [[geotrellis.spark.tiling.MapGridTransform]]
  *  @see [[geotrellis.spark.tiling.TileGridTransform]]
- *  @see [[geotrellis.spark.tiling.IndexGridTransform]]
+ *  @see [[geotrellis.spark.tiling.SpatialKeyGridTransform]]
  */
 package object tiling {
   /**
@@ -44,9 +44,9 @@ package object tiling {
         WORLD_WSG84
   }
 
-  implicit class TileIdArrayToSpans(arr: Array[TileId]) {
-    def spans: Seq[(TileId, TileId)] = {
-      val result = new scala.collection.mutable.ListBuffer[(TileId, TileId)]
+  implicit class SpatialKeyArrayToSpans(arr: Array[SpatialKey]) {
+    def spans: Seq[(SpatialKey, SpatialKey)] = {
+      val result = new scala.collection.mutable.ListBuffer[(SpatialKey, SpatialKey)]
       val sorted = arr.sorted
       val len = sorted.size
       var currMin = sorted(0)
@@ -70,55 +70,55 @@ package object tiling {
 
 
 
-  class TileIndexMapTransformTuple(
+  class TileSpatialKeyMapTransformTuple(
       val tileGridTransform: TileGridTransform,
-      val indexGridTransform: IndexGridTransform,
+      val indexGridTransform: SpatialKeyGridTransform,
       val mapGridTransform: MapGridTransform)
     extends TileGridTransformDelegate
-    with IndexGridTransformDelegate
+    with SpatialKeyGridTransformDelegate
     with MapGridTransformDelegate
-    with MapIndexTransform
-    with TileIndexTransform
+    with MapSpatialKeyTransform
+    with TileSpatialKeyTransform
     with TileMapTransform
 
   // Provides implicits to delegate transform functions
-  implicit class TileIndexMapTransform1(tup: (TileGridTransform, IndexGridTransform, MapGridTransform))
-    extends TileIndexMapTransformTuple(tup._1, tup._2, tup._3)
-  implicit class TileIndexMapTransform2(tup: (TileGridTransform, MapGridTransform, IndexGridTransform))
-    extends TileIndexMapTransformTuple(tup._1, tup._3, tup._2)
-  implicit class TileIndexMapTransform3(tup: (IndexGridTransform, TileGridTransform, MapGridTransform))
-    extends TileIndexMapTransformTuple(tup._2, tup._1, tup._3)
-  implicit class TileIndexMapTransform4(tup: (MapGridTransform, TileGridTransform, IndexGridTransform))
-    extends TileIndexMapTransformTuple(tup._2, tup._3, tup._1)
-  implicit class TileIndexMapTransform5(tup: (IndexGridTransform, MapGridTransform, TileGridTransform))
-    extends TileIndexMapTransformTuple(tup._3, tup._1, tup._2)
-  implicit class TileIndexMapTransform6(tup: (MapGridTransform, IndexGridTransform, TileGridTransform ))
-    extends TileIndexMapTransformTuple(tup._3, tup._2, tup._1)
+  implicit class TileSpatialKeyMapTransform1(tup: (TileGridTransform, SpatialKeyGridTransform, MapGridTransform))
+    extends TileSpatialKeyMapTransformTuple(tup._1, tup._2, tup._3)
+  implicit class TileSpatialKeyMapTransform2(tup: (TileGridTransform, MapGridTransform, SpatialKeyGridTransform))
+    extends TileSpatialKeyMapTransformTuple(tup._1, tup._3, tup._2)
+  implicit class TileSpatialKeyMapTransform3(tup: (SpatialKeyGridTransform, TileGridTransform, MapGridTransform))
+    extends TileSpatialKeyMapTransformTuple(tup._2, tup._1, tup._3)
+  implicit class TileSpatialKeyMapTransform4(tup: (MapGridTransform, TileGridTransform, SpatialKeyGridTransform))
+    extends TileSpatialKeyMapTransformTuple(tup._2, tup._3, tup._1)
+  implicit class TileSpatialKeyMapTransform5(tup: (SpatialKeyGridTransform, MapGridTransform, TileGridTransform))
+    extends TileSpatialKeyMapTransformTuple(tup._3, tup._1, tup._2)
+  implicit class TileSpatialKeyMapTransform6(tup: (MapGridTransform, SpatialKeyGridTransform, TileGridTransform ))
+    extends TileSpatialKeyMapTransformTuple(tup._3, tup._2, tup._1)
 
-  class TileIndexTransformTuple(
+  class TileSpatialKeyTransformTuple(
       val tileGridTransform: TileGridTransform,
-      val indexGridTransform: IndexGridTransform)
+      val indexGridTransform: SpatialKeyGridTransform)
     extends TileGridTransformDelegate
-    with IndexGridTransformDelegate
-    with TileIndexTransform
+    with SpatialKeyGridTransformDelegate
+    with TileSpatialKeyTransform
 
-  implicit class TileIndexTransform1(tup: (TileGridTransform, IndexGridTransform))
-    extends TileIndexTransformTuple(tup._1, tup._2)
-  implicit class TileIndexTransform2(tup: (IndexGridTransform, TileGridTransform))
-    extends TileIndexTransformTuple(tup._2, tup._1)
+  implicit class TileSpatialKeyTransform1(tup: (TileGridTransform, SpatialKeyGridTransform))
+    extends TileSpatialKeyTransformTuple(tup._1, tup._2)
+  implicit class TileSpatialKeyTransform2(tup: (SpatialKeyGridTransform, TileGridTransform))
+    extends TileSpatialKeyTransformTuple(tup._2, tup._1)
   
   
-  class MapIndexTransformTuple(
-      val indexGridTransform: IndexGridTransform,
+  class MapSpatialKeyTransformTuple(
+      val indexGridTransform: SpatialKeyGridTransform,
       val mapGridTransform: MapGridTransform)
-    extends IndexGridTransformDelegate
+    extends SpatialKeyGridTransformDelegate
     with MapGridTransformDelegate
-    with MapIndexTransform
+    with MapSpatialKeyTransform
 
-  implicit class MapIndexTransform1(tup: (IndexGridTransform, MapGridTransform))
-    extends MapIndexTransformTuple(tup._1, tup._2)
-  implicit class MapIndexTransform2(tup: (MapGridTransform, IndexGridTransform))
-    extends MapIndexTransformTuple(tup._2, tup._1)
+  implicit class MapSpatialKeyTransform1(tup: (SpatialKeyGridTransform, MapGridTransform))
+    extends MapSpatialKeyTransformTuple(tup._1, tup._2)
+  implicit class MapSpatialKeyTransform2(tup: (MapGridTransform, SpatialKeyGridTransform))
+    extends MapSpatialKeyTransformTuple(tup._2, tup._1)
 
 
   class TileMapTransformTuple(

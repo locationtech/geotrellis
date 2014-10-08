@@ -11,11 +11,11 @@ import org.apache.spark.rdd.RDD
 import org.apache.accumulo.core.util.{Pair => JPair}
 import scala.collection.JavaConversions._
 
-object RasterAccumuloDriver extends AccumuloDriver[TileId] {
+object RasterAccumuloDriver extends AccumuloDriver[SpatialKey] {
   val rowIdRx = """(\d+)_(\d+)""".r // (zoom)_(TmsTilingId)
-  def rowId(id: TileId, md: LayerMetaData) = new Text(s"${md.level.id}_${id}")
+  def rowId(id: SpatialKey, md: LayerMetaData) = new Text(s"${md.level.id}_${id}")
 
-  def encode(raster: RasterRDD[TileId], layer: String): RDD[(Text, Mutation)] =
+  def encode(raster: RasterRDD[SpatialKey], layer: String): RDD[(Text, Mutation)] =
     raster.map{ case (id, tile) =>
       val mutation = new Mutation(rowId(id, raster.metaData))
       mutation.put(
@@ -25,7 +25,7 @@ object RasterAccumuloDriver extends AccumuloDriver[TileId] {
       (null, mutation)
     }
 
-  def decode(rdd: RDD[(Key, Value)], metaData: LayerMetaData): RasterRDD[TileId] = {
+  def decode(rdd: RDD[(Key, Value)], metaData: LayerMetaData): RasterRDD[SpatialKey] = {
     val tileRdd = rdd.map {
       case (key, value) =>
         val rowIdRx(_, id) = key.getRow.toString

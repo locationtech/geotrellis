@@ -25,7 +25,7 @@ class FilterSet[K] {
 }
 
 object FilterSet{
+  def EMPTY[K] = new FilterSet[K]
+
   def apply[K]() = new FilterSet[K]
 }
-
-

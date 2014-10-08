@@ -34,14 +34,13 @@ import org.apache.spark.broadcast.Broadcast
 import spire.syntax.cfor._
 
 object Ingest extends Logging {
-  type Sink = RasterRDD[TileId] => Unit
-
+  type Sink = RasterRDD[SpatialKey] => Unit
 
   /** Turn a sink into a pyramiding sink */
   def pyramid(sink: Sink): Sink  = { rdd =>
     import RasterRDD._
 
-    def _pyramid(rdd: RasterRDD[TileId]): Unit = {
+    def _pyramid(rdd: RasterRDD[SpatialKey]): Unit = {
       val md = rdd.metaData
       logInfo(s"Pyramid: Sinking RDD for level: ${md.level.id}")
       sink(rdd)
@@ -65,45 +64,45 @@ class Ingest(sc: SparkContext) {
   }
 
   def setMetaData(tilingScheme: TilingScheme): RDD[((Extent, CRS), Tile)] => RasterRDD[Extent] =
-  { sourceTiles =>
-    // TODO: This methods seems like it could be generic, factor it out when there is another use case
-    // TODO: Allow variance of TilingScheme and TileIndexScheme
-    val tileIndexScheme: TileIndexScheme = RowIndexScheme
+    { sourceTiles =>
+      // TODO: This methods seems like it could be generic, factor it out when there is another use case
+      // TODO: Allow variance of TilingScheme and TileIndexScheme
+      val tileIndexScheme: TileIndexScheme = RowIndexScheme
 
-    val (uncappedExtent, cellType, cellSize, crs): (Extent, CellType, CellSize, CRS) =
-      sourceTiles
-        .map { case ((extent, crs), tile) =>
-        (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows), crs)
-      }
-        .reduce { (t1, t2) =>
-        val (e1, ct1, cs1, crs1) = t1
-        val (e2, ct2, cs2, crs2) = t2
-        (
-          e1.combine(e2),
-          ct1.union(ct2),
-          if(cs1.resolution < cs2.resolution) cs1 else cs2,
-          crs1
-          )
-      }
+      val (uncappedExtent, cellType, cellSize, crs): (Extent, CellType, CellSize, CRS) =
+        sourceTiles
+          .map { case ((extent, crs), tile) =>
+            (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows), crs)
+           }
+          .reduce { (t1, t2) =>
+            val (e1, ct1, cs1, crs1) = t1
+            val (e2, ct2, cs2, crs2) = t2
+            (
+              e1.combine(e2),
+              ct1.union(ct2),
+              if(cs1.resolution < cs2.resolution) cs1 else cs2,
+              crs1
+            )
+           }
 
-    val worldExtent = crs.worldExtent
-    val layerLevel: LayoutLevel = tilingScheme.layoutFor(worldExtent, cellSize)
+      val worldExtent = crs.worldExtent
+      val layerLevel: LayoutLevel = tilingScheme.layoutFor(worldExtent, cellSize)
 
-    val extentIntersection = worldExtent.intersection(uncappedExtent).get
+      val extentIntersection = worldExtent.intersection(uncappedExtent).get
 
-    val metaData = LayerMetaData(cellType, extentIntersection, crs, layerLevel, tileIndexScheme)
+      val metaData = LayerMetaData(layerName, cellType, extentIntersection, crs, layerLevel, tileIndexScheme)
 
-    new RasterRDD(sourceTiles.map{ case ((extent, _), tile) => extent -> tile}, metaData)
-  }
+      new RasterRDD(sourceTiles.map{ case ((extent, _), tile) => extent -> tile}, metaData)
+    }
 
-  def mosaic(source: RasterRDD[Extent]): RasterRDD[TileId] = {
+  def mosaic(source: RasterRDD[Extent]): RasterRDD[SpatialKey] = {
     source.mosaic(e => e, (extent, tileId) => tileId)
   }
 
   def apply(source: =>RDD[((Extent, CRS), Tile)], sink:  Sink, destCRS: CRS, tilingScheme: TilingScheme): Unit =
     source |>
       reproject(destCRS) |>
-      setMetaData(tilingScheme) |>
+      setMetaData(layerName, tilingScheme) |>
       mosaic |>
       sink
 }

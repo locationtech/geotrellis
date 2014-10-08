@@ -14,23 +14,23 @@ import org.apache.hadoop.conf._
 
 class CroppedRasterHadoopRDD private (
     path: Path, gridBounds: GridBounds, sc: SparkContext, conf: Configuration)
-  extends PreFilteredHadoopRDD[TileIdWritable, ArgWritable](
+  extends PreFilteredHadoopRDD[SpatialKeyWritable, ArgWritable](
     sc,
-    classOf[SequenceFileInputFormat[TileIdWritable, ArgWritable]],
-    classOf[TileIdWritable],
+    classOf[SequenceFileInputFormat[SpatialKeyWritable, ArgWritable]],
+    classOf[SpatialKeyWritable],
     classOf[ArgWritable],
     conf)
 {
   lazy val metaData = HadoopUtils.readLayerMetaData(path, context.hadoopConfiguration)
 
-  override val partitioner = Some(TileIdPartitioner(HadoopUtils.readSplits(path, conf)))
+  override val partitioner = Some(SpatialKeyPartitioner(HadoopUtils.readSplits(path, conf)))
 
   /**
    * returns true if specific partition has TileIDs for the gridBounds
    */
   def includePartition(p: Partition): Boolean = {
     //test if partition range intersects with a set of row ranges
-    def intersects(rows: Seq[(TileId, TileId)], partition: (TileId, TileId)): Boolean = {
+    def intersects(rows: Seq[(SpatialKey, SpatialKey)], partition: (SpatialKey, SpatialKey)): Boolean = {
       for (row <- rows) {
         if ( //If the row edges are in range or row fully includes the range
           (row._1 >= partition._1 && row._1 <= partition._1) ||
@@ -48,9 +48,9 @@ class CroppedRasterHadoopRDD private (
   /**
    * returns true if the specific TileID is in the extent
    */
-  def includeKey(key: TileIdWritable): Boolean = metaData.transform.gridToIndex(gridBounds).contains(key.get)
+  def includeKey(key: SpatialKeyWritable): Boolean = metaData.transform.gridToIndex(gridBounds).contains(key.get)
 
-  def toRasterRDD(): RasterRDD[TileId] =
+  def toRasterRDD(): RasterRDD[SpatialKey] =
     asRasterRDD(metaData) {
       map(_.toTuple(metaData))
     }
