@@ -38,10 +38,14 @@ package object tiling {
 
   implicit class CRSWorldExtent(crs: CRS) {
     def worldExtent: Extent =
-      if(crs != LatLng) 
-        WORLD_WSG84.reproject(LatLng, crs)
-      else 
-        WORLD_WSG84
+      crs match {
+        case LatLng =>
+          WORLD_WSG84
+        case WebMercator =>
+          Extent(-180, -85.05, 179.99999, 85.05).reproject(LatLng, WebMercator)
+        case _ =>
+          WORLD_WSG84.reproject(LatLng, crs)
+      }
   }
 
   implicit class TileIdArrayToSpans(arr: Array[TileId]) {
