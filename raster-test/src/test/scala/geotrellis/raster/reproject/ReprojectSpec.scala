@@ -7,7 +7,6 @@ import geotrellis.proj4._
 import geotrellis.raster.io.geotiff.reader._
 
 import org.scalatest._
-
 import spire.syntax.cfor._
 
 // TODO: Use the default crs in each tif?
@@ -16,9 +15,10 @@ class ReprojectSpec extends FunSpec
                        with TestEngine {
   describe("reprojects in approximation to GDAL") {
     // TODO: Implement Bilinear interpolation for reprojection
-    ignore("should (approximately) match a GDAL bilinear interpolation on nlcd tile") {
+    it("should (approximately) match a GDAL bilinear interpolation on nlcd tile") {
       val (source, extent, _) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_wsg84.tif").read.imageDirectories.head.toRaster
-      val (expected, expectedExtent, _) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-bilinear.tif").read.imageDirectories.head.toRaster
+
+      val (expected, expectedExtent, _) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-bilinear2.tif").read.imageDirectories.head.toRaster
 
       val (actual, actualExtent) = source.reproject(extent, LatLng, WebMercator, ReprojectOptions(Bilinear, 0.0))
 
@@ -30,15 +30,21 @@ class ReprojectSpec extends FunSpec
       actualExtent.ymin should be (expectedExtent.ymin +- 0.00001)
       actualExtent.ymax should be (expectedExtent.ymax +- 0.00001)
 
+      for (i <- 0 until source.cols) {
+        for (j <- 0 until source.rows) {
+        if (source.get(i, j) < -30000) println(s"YOOOLO: ($i, $j) ${source.get(i, j)}")
+        }
+      }
+
       var diffCount = 0
       var notNoData = 0
       cfor(0)(_ < actual.rows, _ + 1) { row =>
         cfor(0)(_ < actual.cols, _ + 1) { col =>
           withClue(s"Failed on ($col, $row): ") {
-            actual.getDouble(col, row) should be (expected.getDouble(col, row))
+            actual.getDouble(col, row) should be (expected.getDouble(col, row) +- 3000)
           }
-          if(actual.getDouble(col, row) != expected.getDouble(col, row)) { diffCount += 1 }
-          if(isData(actual.getDouble(col, row))) { notNoData += 1 }
+          if (actual.getDouble(col, row) != expected.getDouble(col, row)) { diffCount += 1 }
+          if (isData(actual.getDouble(col, row))) { notNoData += 1 }
         }
       }
       println(s"Total ${actual.cols * actual.rows}. Not No Data: $notNoData")
@@ -49,7 +55,7 @@ class ReprojectSpec extends FunSpec
       val (source, extent, _) =
         GeoTiffReader("raster-test/data/reproject/nlcd_tile_wsg84.tif").read.imageDirectories.head.toRaster
       val (expected, expectedExtent, _) =
-        GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").read.imageDirectories.head.toRaster
+        GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor2.tif").read.imageDirectories.head.toRaster
       val (actual, actualExtent) =
         source.reproject(extent, LatLng, WebMercator, ReprojectOptions(NearestNeighbor, 0.0))
 

@@ -26,7 +26,7 @@ object Reproject {
     val inverseTransform = Transform(dest, src)
 
     val rowTransform: RowTransform =
-      if(options.errorThreshold != 0.0)
+      if (options.errorThreshold != 0.0)
         RowTransform.approximate(inverseTransform, options.errorThreshold)
       else
         RowTransform.exact(inverseTransform)
@@ -42,7 +42,7 @@ object Reproject {
 
     val destY = Array.ofDim[Double](newCols).fill(topLeftY)
 
-    
+
     // The map coordinates of the source raster, transformed from the
     // destination map coordinates on each row iteration
     val srcX = Array.ofDim[Double](newCols)
@@ -73,6 +73,7 @@ object Reproject {
           val y = srcY(col)
 
           val v = interpolate(x, y)
+          if (col == 63 && row == 0) println(s"d x: $x y: $y, v: $v")
           newTile.set(col, row, v)
 
           // Add row height for next iteration

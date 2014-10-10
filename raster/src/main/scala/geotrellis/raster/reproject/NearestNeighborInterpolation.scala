@@ -24,7 +24,7 @@ class NearestNeighborInterpolation(tile: Tile, extent: Extent) extends Interpola
 
     if(0 <= col && col < cols && 0 <= row && row < rows)
       tile.getDouble(col, row)
-    else  
+    else
       Double.NaN
   }
 }
