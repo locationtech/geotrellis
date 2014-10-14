@@ -1,5 +1,6 @@
 package geotrellis.spark
 
+import geotrellis.spark.io.accumulo.Layer
 import geotrellis.spark.tiling._
 import geotrellis.raster._
 import geotrellis.raster.json._
@@ -10,6 +11,21 @@ import geotrellis.proj4.CRS
 import spray.json._
 
 package object json {
+  implicit object LayerFormat extends RootJsonFormat[Layer] {
+    def write(obj: Layer): JsValue =
+      JsObject(
+        "name" -> JsString(obj.name),
+        "zoom" -> JsNumber(obj.zoom)
+      )
+
+    def read(json: JsValue): Layer =
+      json.asJsObject.getFields("name", "zoom") match {
+      case Seq(JsString(name), JsNumber(zoom)) => Layer(name, zoom.toInt)
+      case _ =>
+        throw new DeserializationException("Layer expected")
+    }
+  }
+
   implicit object CRSFormat extends RootJsonFormat[CRS] {
     def write(crs: CRS) =
       JsString(crs.toProj4String)
