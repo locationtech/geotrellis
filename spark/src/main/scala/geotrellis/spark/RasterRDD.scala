@@ -127,7 +127,7 @@ class RasterRDD[K](val prev: RDD[(K, Tile)], val metaData: LayerMetaData) extend
     {case (id, extent, tile) =>
       val metaData = bcMetaData.value
       val tmsTile = ArrayTile.empty(metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
-      tmsTile.merge(metaData.transform.indexToMap(id), metaData.extent, tile)
+      tmsTile.merge(metaData.transform.indexToMap(id), extent, tile)
     }, {
       (tmsTile: MutableArrayTile, tup: (TileId, Extent, Tile)) =>
         val metaData = bcMetaData.value

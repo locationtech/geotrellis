@@ -6,7 +6,7 @@ import geotrellis.vector.Extent
 import geotrellis.vector.reproject._
 
 object TmsTilingScheme {
-  val DEFAULT_TILE_SIZE = 512
+  val DEFAULT_TILE_SIZE = 256
 
   def apply(tileSize: Int = DEFAULT_TILE_SIZE) =
     new TilingScheme {
@@ -22,7 +22,7 @@ object TmsTilingScheme {
       }
 
       def tileCols(level: Int): Int = math.pow(2, level).toInt
-      def tileRows(level: Int): Int = math.pow(2, level - 1).toInt
+      def tileRows(level: Int): Int = math.pow(2, level).toInt
 
       /** TODO: Improve this algorithm */
       def layoutFor(extent: Extent, cellSize: CellSize): LayoutLevel = {
