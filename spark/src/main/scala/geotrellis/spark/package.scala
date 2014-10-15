@@ -66,11 +66,11 @@ package object spark {
     def tile: Tile = tup._2
   }
 
-  def asRasterRDD[K: ClassTag](metaData: LayerMetaData)(f: =>RDD[(K, Tile)]): RasterRDD[K] =
+  def asRasterRDD[K: ClassTag](metaData: RasterMetaData)(f: =>RDD[(K, Tile)]): RasterRDD[K] =
     new RasterRDD[K](f, metaData)
 
-  implicit class MakeRasterRDD(val prev: RDD[(Long, Tile)]) {
-    def toRasterRDD(metaData: LayerMetaData) = 
-      new RasterRDD[SpatialKey](prev, metaData)
+  implicit class MakeRasterRDD[K: ClassTag](val rdd: RDD[(K, Tile)]) {
+    def toRasterRDD(metaData: RasterMetaData) = 
+      new RasterRDD[K](rdd, metaData)
   }
 }

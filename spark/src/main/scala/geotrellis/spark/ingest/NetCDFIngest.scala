@@ -28,15 +28,15 @@ object NetCDFIngest extends Logging {
     }
 
     // First step is to build metaData
-    val metaData: LayerMetaData = {
+    val metaData: RasterMetaData = {
       // Note: dimensions would have changed from the stored if we actually reprojected
       val (band, dims, cellType) =
         reprojected.map {
           case (band, tile) => (band, tile.dimensions, tile.cellType)
         }.first // HERE we make an assumption that all bands share the same extent, therefor the first will do
 
-      val layerLevel: LayoutLevel = tilingScheme.layoutFor(band.crs, CellSize(band.extent, dims))
-      LayerMetaData(cellType, band.extent, band.crs, layerLevel, RowIndexScheme)
+      val layerLevel: ZoomLevel = tilingScheme.layoutFor(band.crs, CellSize(band.extent, dims))
+      RasterMetaData(cellType, band.extent, band.crs, layerLevel, RowIndexScheme)
     }
 
     val raster =

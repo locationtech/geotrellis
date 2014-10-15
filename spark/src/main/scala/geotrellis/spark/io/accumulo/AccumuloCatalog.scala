@@ -20,16 +20,16 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance, metaDataCata
 
   def load[K:ClassTag](layerId: LayerId, filters: FilterSet[K] = new FilterSet[K]()): Try[RasterRDD[K]] =
     (for {
-      driver <- getDriver[K]
-      md <- metaDataCatalog.get(layerId)
+      driver <- getDriver[K];
+      (metaData, table) <- metaDataCatalog.load(layerId)
     } yield {
-      driver.load(sc, instance)(layerId.name, md._1, md._2, filters)
+      driver.load(sc, instance)(layerId, table, metaData, filters)
     }).flatten
 
-  def save[K: ClassTag](rdd: RasterRDD[K], layerName: String, table: String): Try[Unit] =
+  def save[K: ClassTag](layerId: LayerId, rdd: RasterRDD[K], table: String): Try[Unit] =
     for {
       driver <- getDriver[K]
-      _ <- driver.save(sc, instance)(rdd, layerName, table)
-      _ <- metaDataCatalog.save(table, LayerId(layerName, rdd.metaData.level.id), rdd.metaData)
+      _ <- driver.save(sc, instance)(layerId, rdd, table)
+      _ <- metaDataCatalog.save(LayerMetaData(layerId, rdd.metaData), table)
     } yield Unit // TODO : If this fails at metadata save. We will have orphan data in a table
 }

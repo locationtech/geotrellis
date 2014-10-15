@@ -52,13 +52,13 @@ case class AccumuloInstance(
 
   def setAccumuloConfig(sc: SparkContext): Unit = setAccumuloConfig(sc.hadoopConfiguration)
 
-  def saveRaster[K](raster: RasterRDD[K], layer: String, table: String)
+  def saveRaster[K](raster: RasterRDD[K], layerId: LayerId, table: String)
                    (implicit sc: SparkContext, driver: AccumuloDriver[K]) =
-    driver.save(sc, this)(raster, layer, table)
+    driver.save(sc, this)(layerId, raster, table)
 
 
-  //TODO this doesn't seem very useful, maybe I should get metadata out of the catalog above
-  def loadRaster[K](layer: String, table: String, metaData: LayerMetaData, filters: FilterSet[K])
-                   (implicit sc: SparkContext, driver: AccumuloDriver[K]) =
-    driver.load(sc, this)(layer, table, metaData, filters)
+  // //TODO this doesn't seem very useful, maybe I should get metadata out of the catalog above
+  // def loadRaster[K](layer: String, table: String, metaData: LayerMetaData, filters: FilterSet[K])
+  //                  (implicit sc: SparkContext, driver: AccumuloDriver[K]) =
+  //   driver.load(sc, this)(metaData, table, filters)
 }

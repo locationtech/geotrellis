@@ -31,7 +31,7 @@ package object formats {
   }
 
   implicit class WritableTileWrapper(wt: WritableTile) {
-    def toIdTile(metaData: LayerMetaData): (Long, Tile) = {
+    def toIdTile(metaData: RasterMetaData): (Long, Tile) = {
       val tileId = 
         wt._1.get
       val tile = 
@@ -40,7 +40,7 @@ package object formats {
       (tileId, tile)
     }
 
-    def toTuple(metaData: LayerMetaData): (SpatialKey, Tile) =
+    def toTuple(metaData: RasterMetaData): (SpatialKey, Tile) =
       wt._1.get -> wt._2.toTile(metaData.cellType, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
   }
 }

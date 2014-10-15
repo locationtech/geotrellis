@@ -14,20 +14,20 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable
 
 object TimeRasterAccumuloDriver extends AccumuloDriver[TimeSpatialKey] {
-  def rowId(id: SpatialKey, md: LayerMetaData) = new Text(s"${md.level.id}_${id}")
+  def rowId(layerId: LayerId, id: SpatialKey) = new Text(s"${layerId.zoom}_${id}")
+  val rowIdRx = """(\d+)_(\d+)""".r // (zoom)_(SpatialKey)
 
-  val rowIdRx = """(\d+)_(\d+)""".r // (zoom)_(TmsTilingId)
   /** Map rdd of indexed tiles to tuples of (table name, row mutation) */
-  def encode(raster: RasterRDD[TimeSpatialKey], layer: String): RDD[(Text, Mutation)] =
+  def encode(layerId: LayerId, raster: RasterRDD[TimeSpatialKey]): RDD[(Text, Mutation)] =
     raster.map {
-      case (TimeSpatialKey(tileId, time), tile) =>
-        val mutation = new Mutation(rowId(tileId, raster.metaData))
-        mutation.put(new Text(layer), new Text(time.toString), System.currentTimeMillis(), new Value(tile.toBytes()))
+      case (TimeSpatialKey(spatialKey, time), tile) =>
+        val mutation = new Mutation(rowId(layerId, spatialKey))
+        mutation.put(new Text(layerId.name), new Text(time.toString), System.currentTimeMillis(), new Value(tile.toBytes()))
         (null, mutation)
     }
 
   /** Maps RDD of Accumulo specific Key, Value pairs to a tuple of (K, Tile) and wraps it in RasterRDD */
-  def decode(rdd: RDD[(Key, Value)], metaData: LayerMetaData): RasterRDD[TimeSpatialKey] = {
+  def decode(rdd: RDD[(Key, Value)], metaData: RasterMetaData): RasterRDD[TimeSpatialKey] = {
     val tileRdd = rdd.map {
       case (key, value) =>
         val rowIdRx(zoom, id) = key.getRow.toString
@@ -40,31 +40,41 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[TimeSpatialKey] {
 
   def setZoomBounds(job: Job, metaData: LayerMetaData): Unit = {
 
-    val range = new ARange(new Text(s"${metaData.level.id}_0"), new Text(s"${metaData.level.id}_9")) :: Nil
+    val range = new ARange(new Text(s"${metaData.id.zoom}_0"), new Text(s"${metaData.id.zoom}_9")) :: Nil
     InputFormatBase.setRanges(job, range)
   }
 
-  def setFilters(job: Job, layer: String, metaData: LayerMetaData, filters: Seq[KeyFilter]): Unit = {
+  def setFilters(job: Job, layerMetaData: LayerMetaData, filters: Seq[KeyFilter]): Unit = {
+    val LayerMetaData(layerId, rasterMetaData) = layerMetaData
     var tileBoundSet = false
     filters.foreach {
       case SpaceFilter(bounds, scheme) =>
         tileBoundSet = true
-        val ranges = metaData.transform.withCoordScheme(scheme).tileToIndex(bounds).spans.map {
-          ts => new ARange(rowId(ts._1, metaData), rowId(ts._2, metaData))
-        }
+        val ranges = 
+          rasterMetaData.transform.withCoordScheme(scheme).tileToIndex(bounds).spans
+            .map { case (startKey, endKey) => 
+              new ARange(rowId(layerId, startKey), rowId(layerId, endKey))
+             }
+
         InputFormatBase.setRanges(job, ranges)
       case TimeFilter(startTime, endTime) =>
-        val from = new JPair(new Text(layer), new Text(startTime.toString))
-        val to = new JPair(new Text(layer), new Text(endTime.toString))
+        val from = new JPair(new Text(layerId.name), new Text(startTime.toString))
+        val to = new JPair(new Text(layerId.name), new Text(endTime.toString))
 
-        val props = mutable.HashMap("startBound" -> startTime.toString, "endBound" -> endTime.toString,
-          "startInclusive" -> "true", "endInclusive" -> "true")
-        val iterator = new IteratorSetting(1, "TimeColumnFilter",
-          "org.apache.accumulo.core.iterators.user.ColumnSliceFilter", props)
+        val props = 
+          Map(
+            "startBound" -> startTime.toString, 
+            "endBound" -> endTime.toString,
+            "startInclusive" -> "true",
+            "endInclusive" -> "true"
+          )
+
+        val iterator = 
+          new IteratorSetting(1, "TimeColumnFilter", "org.apache.accumulo.core.iterators.user.ColumnSliceFilter", props)
         InputFormatBase.addIterator(job, iterator)
     }
-    if (!tileBoundSet) setZoomBounds(job, metaData)
+    if (!tileBoundSet) setZoomBounds(job, layerMetaData)
     //Set the filter for layer we need
-    InputFormatBase.fetchColumns(job, new JPair(new Text(layer), null: Text) :: Nil)
+    InputFormatBase.fetchColumns(job, new JPair(new Text(layerId.name), null: Text) :: Nil)
   }
 }

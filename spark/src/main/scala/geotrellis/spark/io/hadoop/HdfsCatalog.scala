@@ -8,7 +8,7 @@ import org.apache.spark.SparkContext
 import scala.reflect._
 import scala.util.{Failure, Success, Try}
 
-class HdfsCatalog(sc: SparkContext, metaDataCatalog: MetaDataCatalog) extends Catalog {
+class HadoopCatalog(sc: SparkContext, metaDataCatalog: MetaDataCatalog) extends Catalog {
   //type Source = HdfsRddSource
   type DriverType[K] = HdfsDriver[K]
 

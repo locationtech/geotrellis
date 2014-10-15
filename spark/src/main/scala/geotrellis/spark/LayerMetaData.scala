@@ -7,15 +7,16 @@ import geotrellis.vector.Extent
 import geotrellis.spark.tiling._
 import geotrellis.proj4._
 
-case class LayerMetaData(
-  name: String,
+case class LayerMetaData(id: LayerId, rasterMetaData: RasterMetaData) {
+  lazy val zoomLevel: ZoomLevel = ZoomLevel(id.zoom, tileLayout)
+}
+
+case class RasterMetaData(
   cellType: CellType,
   extent: Extent,
   crs: CRS,
-  level: LayoutLevel,
-  tileIndexScheme: TileIndexScheme) {
-  lazy val id: LayerId = LayerId(name, level.id)
-
+  tileLayout: TileLayout
+) {
   lazy val transform = MapIndexTransform(
     MapGridTransform(crs, tileLayout.tileDimensions),
     tileIndexScheme(tileLayout.tileDimensions),
@@ -28,10 +29,7 @@ case class LayerMetaData(
 
   lazy val count = tileIds.size
 
-  lazy val tileLayout = level.tileLayout
-
   lazy val cols = tileLayout.tileCols
 
   lazy val rows = tileLayout.tileRows
-
 }

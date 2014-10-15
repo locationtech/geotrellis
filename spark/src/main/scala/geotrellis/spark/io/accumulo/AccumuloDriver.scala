@@ -18,23 +18,23 @@ trait AccumuloDriver[K] extends Driver[K]{
   /** Accumulo table name */
   type Params = String
 
-  def encode(raster: RasterRDD[K], layer: String): RDD[(Text, Mutation)]
-  def decode(rdd: RDD[(Key, Value)], metaData: LayerMetaData): RasterRDD[K]
-  def setFilters(job: Job, layer: String, metaData: LayerMetaData, filters: Seq[KeyFilter])
+  def encode(layerId: LayerId, raster: RasterRDD[K]): RDD[(Text, Mutation)]
+  def decode(rdd: RDD[(Key, Value)], metaData: RasterMetaData): RasterRDD[K]
+  def setFilters(job: Job, layerId: LayerId, metaData: LayerMetaData, filters: Seq[KeyFilter])
 
   def load(sc: SparkContext, accumulo: AccumuloInstance)
-          (layer: String, table: String, metaData: LayerMetaData, filters: FilterSet[K]): Try[RasterRDD[K]] =
+          (layerId: LayerId, table: String, metaData: LayerMetaData, filters: FilterSet[K]): Try[RasterRDD[K]] =
   Try {
     val job = Job.getInstance(sc.hadoopConfiguration)
     accumulo.setAccumuloConfig(job)
     InputFormatBase.setInputTableName(job, table)
-    setFilters(job, layer, metaData, filters.filters)
+    setFilters(job, layerId, metaData, filters.filters)
     val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[AccumuloInputFormat], classOf[Key], classOf[Value])
-    decode(rdd, metaData)
+    decode(rdd, metaData.rasterMetaData)
   }
 
   def save(sc: SparkContext, accumulo: AccumuloInstance)
-          (raster: RasterRDD[K], layer: String, table: String): Try[Unit] = {
+          (layerId: LayerId, raster: RasterRDD[K], table: String): Try[Unit] = {
     if (! accumulo.connector.tableOperations().exists(table))
       Failure[Unit](new TableNotFoundError(table))
     else Try {
@@ -42,7 +42,7 @@ trait AccumuloDriver[K] extends Driver[K]{
       accumulo.setAccumuloConfig(job)
       AccumuloOutputFormat.setBatchWriterOptions(job, new BatchWriterConfig())
       AccumuloOutputFormat.setDefaultTableName(job, table)
-      encode(raster, layer).saveAsNewAPIHadoopFile(accumulo.instanceName, classOf[Text], classOf[Mutation], classOf[AccumuloOutputFormat], job.getConfiguration)
+      encode(layerId, raster).saveAsNewAPIHadoopFile(accumulo.instanceName, classOf[Text], classOf[Mutation], classOf[AccumuloOutputFormat], job.getConfiguration)
     }
   }
 }

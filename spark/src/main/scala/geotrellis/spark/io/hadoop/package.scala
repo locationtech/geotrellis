@@ -2,7 +2,7 @@ package geotrellis.spark.io
 
 
 import geotrellis.spark._
-import geotrellis.spark.tiling.{LayoutLevel, RowIndexScheme, TileIndexScheme}
+import geotrellis.spark.tiling.{ZoomLevel, RowIndexScheme, TileIndexScheme}
 import geotrellis.spark.utils._
 import geotrellis.spark.io.hadoop.formats._
 

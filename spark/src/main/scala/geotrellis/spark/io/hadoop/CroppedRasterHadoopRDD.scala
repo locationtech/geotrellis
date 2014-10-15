@@ -21,7 +21,7 @@ class CroppedRasterHadoopRDD private (
     classOf[ArgWritable],
     conf)
 {
-  lazy val metaData = HadoopUtils.readLayerMetaData(path, context.hadoopConfiguration)
+  lazy val metaData = HadoopUtils.readLayerMetaData(path, context.hadoopConfiguration).rasterMetaData
 
   override val partitioner = Some(SpatialKeyPartitioner(HadoopUtils.readSplits(path, conf)))
 

@@ -10,36 +10,45 @@ import org.apache.hadoop.io.Text
 import org.apache.spark.Logging
 
 import scala.util.Try
+import scala.collection.mutable
 
-class AccumuloMetaDataCatalog(connector: Connector, val catalogTable: String) extends Logging {
-  {//create the metadata table if it does not exist
+class AccumuloMetaDataCatalog(connector: Connector, val catalogTable: String) extends MetaDataCatalog with Logging {
+  type Params = String
+
+  //create the metadata table if it does not exist
+  {
     val ops = connector.tableOperations()
     if (! ops.exists(catalogTable))
       ops.create(catalogTable)
   }
 
-  private var metadata: Map[LayerId, (String, LayerMetaData)] = fetchAll
+  private val idToMetaData: mutable.Map[LayerId, (LayerMetaData, String)] = 
+    mutable.Map(fetchAll.toSeq: _*)
 
-  def save(table: String, layerId: LayerId, metaData: LayerMetaData): Try[Unit] =
+  def save(metaData: LayerMetaData, table: String): Try[Unit] =
     Try {
-      connector.write(catalogTable, AccumuloMetaDataCatalog.encodeMetaData(table, layerId, metaData))
-      metadata = metadata updated (layerId, table -> metaData)
+      if(idToMetaData.contains(metaData.id)) {
+        throw new LayerExistsError(metaData.id)
+      }
+
+      connector.write(catalogTable, AccumuloMetaDataCatalog.encodeMetaData(table, metaData))
+      idToMetaData(metaData.id) = (metaData, table)
     }
 
-  def get(layerId: LayerId): Try[(String, LayerMetaData)] =
-    metadata
+  def load(layerId: LayerId): Try[(LayerMetaData, String)] =
+    idToMetaData
       .get(layerId)
-      .toTry(new LayerNotFoundError(layerId.name, layerId.zoom))
+      .toTry(new LayerNotFoundError(layerId))
 
-  def fetchAll: Map[LayerId, (String, LayerMetaData)] = {
+  def fetchAll: Map[LayerId, (LayerMetaData, String)] = {
     val scan = connector.createScanner(catalogTable, new Authorizations())
 
     scan.map { case (key, value) =>
       val meta: LayerMetaData = AccumuloMetaDataCatalog.decodeMetaData(key, value)
       val table = key.getRow.toString
       val name: String = key.getColumnFamily.toString
-      val layerId = LayerId(name, meta.level.id)
-      layerId -> (table, meta)
+      val layerId = LayerId(name, meta.id.zoom)
+      layerId -> (meta, table)
     }.toMap
   }
 }
@@ -48,10 +57,10 @@ object AccumuloMetaDataCatalog {
   import spray.json._
   import geotrellis.spark.json._
 
-  def encodeMetaData(table: String, layerId: LayerId, md: LayerMetaData): Mutation = {
+  def encodeMetaData(table: String, md: LayerMetaData): Mutation = {
     val mutation = new Mutation(new Text(table))
     mutation.put(
-      new Text(layerId.name), new Text(layerId.zoom.toString),
+      new Text(md.id.name), new Text(md.id.zoom.toString),
       System.currentTimeMillis(),
       new Value(md.toJson.prettyPrint.getBytes))
     mutation

@@ -13,33 +13,43 @@ import scala.collection.JavaConversions._
 
 object RasterAccumuloDriver extends AccumuloDriver[SpatialKey] {
   val rowIdRx = """(\d+)_(\d+)""".r // (zoom)_(TmsTilingId)
-  def rowId(id: SpatialKey, md: LayerMetaData) = new Text(s"${md.level.id}_${id}")
+  def rowId(layerId: LayerId, id: SpatialKey) = new Text(s"${layerId.zoom}_${id}")
 
-  def encode(raster: RasterRDD[SpatialKey], layer: String): RDD[(Text, Mutation)] =
-    raster.map{ case (id, tile) =>
-      val mutation = new Mutation(rowId(id, raster.metaData))
+  def encode(layerId: LayerId, raster: RasterRDD[SpatialKey]): RDD[(Text, Mutation)] =
+    raster.map { case (id, tile) =>
+      val mutation = new Mutation(rowId(layerId, id))
       mutation.put(
-        new Text(layer), new Text(),
+        new Text(layerId.name), new Text(),
         System.currentTimeMillis(),
-        new Value(tile.toBytes()))
+        new Value(tile.toBytes())
+      )
+      
       (null, mutation)
     }
 
   def decode(rdd: RDD[(Key, Value)], metaData: LayerMetaData): RasterRDD[SpatialKey] = {
-    val tileRdd = rdd.map {
-      case (key, value) =>
+    val LayerMetaData(layerId, rasterMetaData) = metaData
+    val tileRdd = 
+      rdd.map { case (key, value) =>
         val rowIdRx(_, id) = key.getRow.toString
-        val tile = ArrayTile.fromBytes(value.get,
-          metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
+        val tile = 
+          ArrayTile.fromBytes(
+            value.get,
+            rasterMetaData.cellType, 
+            rasterMetaData.tileLayout.pixelCols, 
+            rasterMetaData.tileLayout.pixelRows
+          )
+
         id.toLong -> tile.asInstanceOf[Tile]
     }
-    new RasterRDD(tileRdd, metaData)
+
+    new RasterRDD(tileRdd, rasterMetaData)
   }
 
   def setZoomBounds(job: Job, metaData: LayerMetaData): Unit = {
     val range = new ARange(
-      new Text(s"${metaData.level.id}_0"),
-      new Text(s"${metaData.level.id}_9")
+      new Text(s"${metaData.id.zoom}_0"),
+      new Text(s"${metaData.id.zoom}_9")
     ) :: Nil
 
     InputFormatBase.setRanges(job, range)
@@ -50,14 +60,17 @@ object RasterAccumuloDriver extends AccumuloDriver[SpatialKey] {
     filters.foreach{
       case SpaceFilter(bounds, scheme) =>
         tileBoundSet = true
-        val ranges = metaData.transform
-          .withCoordScheme(scheme)
-          .tileToIndex(bounds)
-          .spans
-          .map { ts => new ARange(rowId(ts._1, metaData), rowId(ts._2, metaData)) }
+        val ranges = 
+          metaData.rasterMetaData.transform
+            .withCoordScheme(scheme)
+            .tileToIndex(bounds)
+            .spans
+            .map { ts => new ARange(rowId(ts._1, metaData), rowId(ts._2, metaData)) }
+
         InputFormatBase.setRanges(job, ranges)
     }
     if (! tileBoundSet) setZoomBounds(job, metaData)
+
     //Set the filter for layer we need
     InputFormatBase.fetchColumns(job, new JPair(new Text(layer), null: Text) :: Nil)
   }

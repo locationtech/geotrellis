@@ -74,25 +74,28 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
     val sparkContext = args.sparkContext("Ingest")
     try {
       val source = sparkContext.hadoopGeoTiffRDD(inPath)
-      val sink = { tiles: RasterRDD[SpatialKey] =>
-        val metaData = tiles.metaData
-        val partitioner = {
-          val gridBounds = metaData.transform.mapToGrid(metaData.extent)
-          val tileSizeBytes = gridBounds.width * gridBounds.height * metaData.cellType.bytes
-          val blockSizeBytes = HdfsUtils.defaultBlockSize(inPath, conf)
-          val splitGenerator =
-            RasterSplitGenerator(gridBounds, metaData.transform, tileSizeBytes, blockSizeBytes)
-          SpatialKeyPartitioner(splitGenerator.splits)
+      val sink = 
+        new Sink[SpatialKey] {
+          def apply(layerMetaData: LayerMetaData, raster: RasterRDD[SpatialKey]) = {
+            val metaData = tiles.metaData
+            val partitioner = {
+              val gridBounds = metaData.transform.mapToGrid(metaData.extent)
+              val tileSizeBytes = gridBounds.width * gridBounds.height * metaData.cellType.bytes
+              val blockSizeBytes = HdfsUtils.defaultBlockSize(inPath, conf)
+              val splitGenerator =
+                RasterSplitGenerator(gridBounds, metaData.transform, tileSizeBytes, blockSizeBytes)
+              SpatialKeyPartitioner(splitGenerator.splits)
+            }
+
+            val outPathWithZoom = new Path(outPath, metaData.level.id.toString)
+            tiles
+              .partitionBy(partitioner)
+              .toRasterRDD(metaData)
+              .saveAsHadoopRasterRDD(outPathWithZoom)
+
+            logInfo(s"Saved raster at zoom level ${metaData.level.id} to $outPathWithZoom")
+          }
         }
-
-        val outPathWithZoom = new Path(outPath, metaData.level.id.toString)
-        tiles
-          .partitionBy(partitioner)
-          .toRasterRDD(metaData)
-          .saveAsHadoopRasterRDD(outPathWithZoom)
-
-        logInfo(s"Saved raster at zoom level ${metaData.level.id} to $outPathWithZoom")
-      }
 
       Ingest(sparkContext)(source, sink, destCRS, TilingScheme.TMS)
 

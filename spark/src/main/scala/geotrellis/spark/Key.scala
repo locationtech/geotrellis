@@ -5,15 +5,13 @@ trait KeyProjeciton[K, T] {
   def project(t: T): Seq[K]
 }
 
-SpatialKeyProjection[K] extends KeyProjection[K, SpatialKey]
+trait SpatialKeyProjection[K] extends KeyProjection[K, SpatialKey]
 
-TimeKeyProjection[K] extends KeyProjection[K, Double] // Change Double to LocalDateTime
+trait TimeKeyProjection[K] extends KeyProjection[K, Double] // Change Double to LocalDateTime
 
-BandKeyProjection[K] extends KeyProjection[K, Int]
+trait BandKeyProjection[K] extends KeyProjection[K, Int]
 
-ZoomKeyProjection[K] extends KeyProjection[K, Int]
-
-
+trait ZoomKeyProjection[K] extends KeyProjection[K, Int]
 
 
 
@@ -35,12 +33,3 @@ trait ZoomComponent {
 
 trait TileKey
 
-trait  extends TileKey {
-  val x: Int
-  val y: Int
-  val z: Int
-}
-
-trait TimeDimesion extends TileKey {
-  val time: Double
-}

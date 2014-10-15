@@ -11,5 +11,8 @@ import org.apache.spark.Logging
 import scala.util.Try
 
 trait MetaDataCatalog {
-  def getLayerMetaData(layer: String, zoom: Int): Option[LayerMetaData]
+  type Params
+
+  def load(layerId: LayerId): Try[(LayerMetaData, Params)]
+  def save(metaData: LayerMetaData, params: Params): Unit
 }

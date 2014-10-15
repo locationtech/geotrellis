@@ -18,7 +18,10 @@ package object io {
   class DriverNotFoundError[K: ClassTag]
       extends CatalogError(s"Driver not found for key type '${classTag[K]}'")
 
-  class LayerNotFoundError(layer: String, zoom: Int)
-      extends CatalogError(s"LayerMetaData not found for layer '$layer' at zoom $zoom")
+  class LayerNotFoundError(layerId: LayerId)
+      extends CatalogError(s"LayerMetaData not found for layer $layerId")
+
+  class LayerExistsError(layerId: LayerId) 
+      extends CatalogError(s"Layer ${layerId} already exists in the catalog.")
 
 }

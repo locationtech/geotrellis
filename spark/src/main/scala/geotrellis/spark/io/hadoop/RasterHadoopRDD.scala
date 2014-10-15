@@ -43,7 +43,7 @@ class RasterHadoopRDD private (sc: SparkContext, conf: Configuration, path: Path
     classOf[ArgWritable],
     conf) {
   lazy val metaData = 
-    HadoopUtils.readLayerMetaData(path, context.hadoopConfiguration)
+    HadoopUtils.readLayerMetaData(path, context.hadoopConfiguration).rasterMetaData
 
   def toRasterRDD: RasterRDD[SpatialKey] =
     asRasterRDD(metaData) { map { _.toTuple(metaData) } }
