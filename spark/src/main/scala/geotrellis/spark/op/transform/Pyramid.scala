@@ -13,16 +13,12 @@ import monocle.syntax._
 import scala.reflect.ClassTag
 
 object Pyramid {
-  /** Trivial lens to allow us using SpatialKey keyed RDDs without extra effort */
-  implicit val tileIdLens =  SimpleLens[SpatialKey, SpatialKey](x => x, (e, c) => c)
-
   /**
    * Functions that require RasterRDD to have a TMS grid dimension to their key
    */
-  def up[K: ClassTag](rdd: RasterRDD[K], level: ZoomLevel, zoomScheme: ZoomScheme)
-                     (implicit _id: SimpleLens[K, SpatialKey]): RasterRDD[K] = {
+  def up[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], level: LayoutLevel, layoutScheme: LayoutScheme): RasterRDD[K] = {
     val metaData = rdd.metaData
-    val nextLevel = zoomScheme.zoomOut(level)
+    val nextLevel = layoutScheme.zoomOut(level)
     val nextMetaData = 
       RasterMetaData(
         metaData.cellType,
@@ -32,57 +28,50 @@ object Pyramid {
       )
 
     // Functions for combine step
-    def createTiles(tup: (Int, Int, Tile)): Array[Option[Tile]] = {
-      val (x, y, tile) = tup
-      val tiles: Array[Option[Tile]] = Array.fill(4)(None)
-      tiles(y * 2 + x) = Some(tile)
-      tiles
-    }
+    def createTiles(tile: (K, Double, Double, Tile)): Seq[(K, Double, Double, Tile)] =
+      Seq(tile)
 
-    def mergeTiles1(tiles: Array[Option[Tile]], tup: (Int, Int, Tile)): Array[Option[Tile]] = {
-      val (x, y, tile) = tup
-      tiles(y * 2 + x) = Some(tile)
-      tiles
-    }
+    def mergeTiles1(tiles: Seq[(K, Double, Double, Tile)], tile: (K, Double, Double, Tile)): Seq[(K, Double, Double, Tile)] = 
+      tiles :+ tile
 
-    def mergeTiles2(tiles1: Array[Option[Tile]], tiles2: Array[Option[Tile]]): Array[Option[Tile]] = 
-      tiles1
-        .zip(tiles2)
-        .map { tup =>
-          val tile: Option[Tile] =
-            tup match {
-              case (None, tile: Some[Tile]) => tile
-              case (tile: Some[Tile], None) => tile
-              case (None, None) => None
-              case _ => sys.error("Indexing error when merging neighboring tiles")
-            }
-          tile
-        }
+    def mergeTiles2(tiles1: Seq[(K, Double, Double, Tile)], tiles2: Seq[(K, Double, Double, Tile)]): Seq[(K, Double, Double, Tile)] =
+      tiles1 ++ tiles2
   
-    val nextRdd =
+    val nextRdd: RDD[(K, Tile)] =
       rdd
         .map { case (key, tile: Tile) =>
-          val (x, y): (Int, Int) = metaData.transform.indexToGrid(key |-> _id get)
-          val nextId = nextMetaData.transform.gridToIndex(x/2, y/2)
-          val nextKey: K = key -> nextId
-          (nextKey, (x % 2, y % 2, tile))
+          val extent = metaData.mapTransform(key.spatialComponent)
+          val newSpatialKey = metaData.mapTransform(extent.xmin, extent.ymax)
+          (newSpatialKey, (key, extent.xmin, extent.ymax, tile))
          }
         .combineByKey(createTiles, mergeTiles1, mergeTiles2)
-        .map { case ((key: K, id: SpatialKey), maybeTiles: Array[Option[Tile]]) =>
-          val firstTile = maybeTiles.flatten.apply(0)
-          val (cols, rows) = firstTile.dimensions //Must be at least one tile
-          val cellType = firstTile.cellType
+        .map { case (spatialKey: SpatialKey, seq: Seq[(K, Double, Double, Tile)]) =>
+          val key = seq.head._1
+          val orderedTiles = 
+            seq
+              .sortBy { case (_, x, y, _) => (x, -y) }
+              .map { case (_, _, _, tile) => tile }
+
+          val (xs, ys) =
+            seq
+              .foldLeft((Set[Double](),Set[Double]())) { (sets, tileTup) =>
+                val (xs, ys) = sets
+                val (_, x, y, _) = tileTup
+                (xs + x, ys + y)
+              }
+
+          val (cols, rows) = (xs.size, ys.size)
 
           val tile = 
             CompositeTile(
-              maybeTiles map { _.getOrElse(NoDataTile(cellType, cols, rows)) },
-              TileLayout(2, 2, cols, rows)
+              orderedTiles,
+              TileLayout(cols, rows, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
             )
 
-          //Assuming that target extent in the new level will match the combined extent of 2x2 composite
-          val targetExtent = nextMetaData.transform.indexToMap(id)
-          val warped = tile.warp(targetExtent, cols, rows)
-          (key |-> _id set(id), warped)
+          val newKey = key.updateSpatialComponent(spatialKey)
+          val warped = tile.warp(nextMetaData.tileLayout.pixelCols, nextMetaData.tileLayout.pixelRows)
+
+          (newKey, warped)
         }
 
     new RasterRDD(nextRdd, nextMetaData)

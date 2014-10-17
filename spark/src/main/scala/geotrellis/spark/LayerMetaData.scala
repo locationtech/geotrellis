@@ -17,19 +17,7 @@ case class RasterMetaData(
   crs: CRS,
   tileLayout: TileLayout
 ) {
-  lazy val transform = MapIndexTransform(
-    MapGridTransform(crs, tileLayout.tileDimensions),
-    tileIndexScheme(tileLayout.tileDimensions),
-    tileLayout.tileDimensions
-  )
+  lazy val mapTransform = MapKeyTransform(crs, tileLayout.tileDimensions)
 
-  lazy val gridBounds = transform.mapToGrid(extent)
-
-  lazy val tileIds = transform.gridToIndex(gridBounds)
-
-  lazy val count = tileIds.size
-
-  lazy val cols = tileLayout.tileCols
-
-  lazy val rows = tileLayout.tileRows
+  def tileTransform(tileScheme: TileScheme): TileKeyTransform = tileScheme(tileLayout.tileCols, tileLayout.tileRows)
 }

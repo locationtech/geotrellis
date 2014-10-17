@@ -34,106 +34,106 @@ import java.io.Closeable
  * past the end tileId
  * 
  */
-case class RasterReader(
-  raster: Path,
-  conf: Configuration,
-  startKey: SpatialKey = Long.MinValue,
-  endKey: SpatialKey = Long.MaxValue
-) extends Iterable[WritableTile] with Closeable {
+// case class RasterReader(
+//   raster: Path,
+//   conf: Configuration,
+//   startKey: SpatialKey = Long.MinValue,
+//   endKey: SpatialKey = Long.MaxValue
+// ) extends Iterable[WritableTile] with Closeable {
 
-  def close = iterator.close
+//   def close = iterator.close
 
-  def iterator = new Iterator[WritableTile] with Closeable {
+//   def iterator = new Iterator[WritableTile] with Closeable {
 
-    private var curKey: SpatialKeyWritable = SpatialKeyWritable(startKey)
-    private var curValue: ArgWritable = new ArgWritable
+//     private var curKey: SpatialKeyWritable = SpatialKeyWritable(startKey)
+//     private var curValue: ArgWritable = new ArgWritable
 
-    // initialize readers and partitioner
-    private val readers = getReaders
-    private val partitioner = SpatialKeyPartitioner(HadoopUtils.readSplits(raster, conf))
+//     // initialize readers and partitioner
+//     private val readers = getReaders
+//     private val partitioner = SpatialKeyPartitioner(HadoopUtils.readSplits(raster, conf))
 
-    private var readFirstKey: Boolean = false
-    private var curPartition: Int = -1
+//     private var readFirstKey: Boolean = false
+//     private var curPartition: Int = -1
 
-    // find the partition containing the first key in the range
-    // if found, set curPartition to its partition
-    {
-      var partition = partitioner.getPartition(startKey)
-      while (curPartition == -1 && partition < partitioner.numPartitions) {
-        curKey = 
-          readers(partition)
-            .getClosest(SpatialKeyWritable(startKey), curValue)
-            .asInstanceOf[SpatialKeyWritable]
-        if (curKey != null) {
-          readFirstKey = true
-          curPartition = partition
-        } else {
-          partition += 1
-        }
-      }
-    }
+//     // find the partition containing the first key in the range
+//     // if found, set curPartition to its partition
+//     {
+//       var partition = partitioner.getPartition(startKey)
+//       while (curPartition == -1 && partition < partitioner.numPartitions) {
+//         curKey = 
+//           readers(partition)
+//             .getClosest(SpatialKeyWritable(startKey), curValue)
+//             .asInstanceOf[SpatialKeyWritable]
+//         if (curKey != null) {
+//           readFirstKey = true
+//           curPartition = partition
+//         } else {
+//           partition += 1
+//         }
+//       }
+//     }
 
-    def close = readers.foreach(r => if (r != null) r.close)
+//     def close = readers.foreach(r => if (r != null) r.close)
 
-    // TODO - rewrite to remove early returns 
-    override def hasNext: Boolean = {
-      if (curKey == null)
-        return false
-      if (readFirstKey) {
-        readFirstKey = false
-        // handle boundary case: startKey >= endKey
-        if (curKey.compareTo(SpatialKeyWritable(endKey)) <= 0) {
-          return true
-        }
-        return false
-      }
+//     // TODO - rewrite to remove early returns 
+//     override def hasNext: Boolean = {
+//       if (curKey == null)
+//         return false
+//       if (readFirstKey) {
+//         readFirstKey = false
+//         // handle boundary case: startKey >= endKey
+//         if (curKey.compareTo(SpatialKeyWritable(endKey)) <= 0) {
+//           return true
+//         }
+//         return false
+//       }
 
-      /*
-       *  1. found = readers[curPartition].next(currentKey, value)
-       *  2. if !found increment curPartition, ensure that its within limits, and 
-       *  run 1. again. if its not within limits, return false
-       *  3. if currentKey <= endKey return true, else return false;
-       */
-      while (true) {
-        val found = readers(curPartition).next(curKey, curValue)
-        if (found) {
-          if (curKey.compareTo(SpatialKeyWritable(endKey)) <= 0)
-            return true
-          else
-            return false
-        } else {
-          curPartition += 1
-          if(curPartition >= partitioner.numPartitions) {
-            return false
-          }
-        }
-      }
-      return true
-    }
+//       /*
+//        *  1. found = readers[curPartition].next(currentKey, value)
+//        *  2. if !found increment curPartition, ensure that its within limits, and 
+//        *  run 1. again. if its not within limits, return false
+//        *  3. if currentKey <= endKey return true, else return false;
+//        */
+//       while (true) {
+//         val found = readers(curPartition).next(curKey, curValue)
+//         if (found) {
+//           if (curKey.compareTo(SpatialKeyWritable(endKey)) <= 0)
+//             return true
+//           else
+//             return false
+//         } else {
+//           curPartition += 1
+//           if(curPartition >= partitioner.numPartitions) {
+//             return false
+//           }
+//         }
+//       }
+//       return true
+//     }
 
-    override def next = (curKey, curValue)
+//     override def next = (curKey, curValue)
 
-    private def getReaders: Array[MapFile.Reader] = {
-      val fs = raster.getFileSystem(conf)
-      val dirs = FileUtil.stat2Paths(fs.listStatus(raster)).sortBy(_.toUri.toString)
+//     private def getReaders: Array[MapFile.Reader] = {
+//       val fs = raster.getFileSystem(conf)
+//       val dirs = FileUtil.stat2Paths(fs.listStatus(raster)).sortBy(_.toUri.toString)
 
-      def isData(fst: FileStatus) = fst.getPath.getName.equals("data")
+//       def isData(fst: FileStatus) = fst.getPath.getName.equals("data")
 
-      def isMapFileDir(path: Path) = 
-        fs
-          .listStatus(path)
-          .find(isData(_)) match {
-            case Some(f) => true
-            case None    => false
-          }
+//       def isMapFileDir(path: Path) = 
+//         fs
+//           .listStatus(path)
+//           .find(isData(_)) match {
+//             case Some(f) => true
+//             case None    => false
+//           }
 
-      val readers = for {
-        dir <- dirs
-        if (isMapFileDir(dir))
-      } yield new MapFile.Reader(fs, dir.toUri().toString(), conf)
+//       val readers = for {
+//         dir <- dirs
+//         if (isMapFileDir(dir))
+//       } yield new MapFile.Reader(fs, dir.toUri().toString(), conf)
 
-      readers
-    }
+//       readers
+//     }
 
-  }
-}
+//   }
+// }

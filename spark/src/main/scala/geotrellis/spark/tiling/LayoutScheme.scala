@@ -18,3 +18,16 @@ trait LayoutScheme {
 }
 
 case class LayoutLevel(zoom: Int, tileLayout: TileLayout)
+
+/** Layout scheme for dealing with no zoom levels */
+object SingleLayoutScheme {
+  def apply(tileLayout: TileLayout): LayoutScheme = 
+    new LayoutScheme {
+      val layoutLevel = LayoutLevel(0, tileLayout)
+
+      def levelFor(extent: Extent, cellSize: CellSize): LayoutLevel = layoutLevel
+      def levelFor(levelId: Int): LayoutLevel = layoutLevel
+      def zoomOut(level: LayoutLevel): LayoutLevel = layoutLevel
+      def zoomIn(level: LayoutLevel): LayoutLevel = layoutLevel
+    }
+}

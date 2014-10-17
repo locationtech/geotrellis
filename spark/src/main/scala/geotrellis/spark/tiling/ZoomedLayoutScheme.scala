@@ -6,14 +6,16 @@ import geotrellis.proj4._
 import geotrellis.vector.Extent
 import geotrellis.vector.reproject._
 
-object TmsLayoutScheme {
+object ZoomedLayoutScheme {
   val DEFAULT_TILE_SIZE = 512
 
   def apply(tileSize: Int = DEFAULT_TILE_SIZE) =
-    new TmsLayoutScheme(tileSize)
+    new ZoomedLayoutScheme(tileSize)
 }
 
-class TmsLayoutScheme(tileSize: Int) {
+/** Layout for zoom levels based off of a power-of-2 scheme,
+  * used in Leaflet et al.*/
+class ZoomedLayoutScheme(tileSize: Int) {
   private def zoom(res: Double, tileSize: Int, worldSpan: Double): Int = {
     val resWithEp = res + 0.00000001
 
@@ -28,7 +30,9 @@ class TmsLayoutScheme(tileSize: Int) {
   private def tileCols(level: Int): Int = math.pow(2, level).toInt
   private def tileRows(level: Int): Int = math.pow(2, level - 1).toInt
 
-  /** TODO: Improve this algorithm */
+  /** TODO: Improve this algorithm. One improvement is to follow the algorithm
+    * described in  "Tile-Based Geospatial Information Systems Principles and Practices"
+    * by John T. Sample & Elias Ioup, section 3.1.2 */
   def layoutFor(extent: Extent, cellSize: CellSize): LayoutLevel = {
     val l =
       math.max(

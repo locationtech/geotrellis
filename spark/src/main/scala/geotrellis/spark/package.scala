@@ -26,12 +26,22 @@ import org.apache.spark.rdd._
 
 import spire.syntax.cfor._
 
+import monocle.syntax._
+
 import scala.reflect.ClassTag
 
 package object spark {
+  implicit class SpatialComponentWrapper[K: SpatialComponent](key: K) {
+    val _spatialComponent = implicitly[SpatialComponent[K]]
 
-  // Tile keys.
-  type SpatialKey = Long
+    def spatialComponent: SpatialKey = (key |-> _spatialComponent get)
+    def updateSpatialComponent(spatialKey: SpatialKey): K = (key |-> _spatialComponent set(spatialKey))
+  }
+
+  // Defines bounds of spatial keys.
+  type SpatialKeyBounds = GridBounds
+  val SpatialKeyBounds = GridBounds
+
   case class TimeSpatialKey(tileId: SpatialKey, time: Double)
 
   // Implicit objects that state what filters apply to what tile keys.

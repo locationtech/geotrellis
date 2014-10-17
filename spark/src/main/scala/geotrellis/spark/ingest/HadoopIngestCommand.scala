@@ -84,6 +84,7 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
               val blockSizeBytes = HdfsUtils.defaultBlockSize(inPath, conf)
               val splitGenerator =
                 RasterSplitGenerator(gridBounds, metaData.transform, tileSizeBytes, blockSizeBytes)
+
               SpatialKeyPartitioner(splitGenerator.splits)
             }
 

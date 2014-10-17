@@ -2,7 +2,7 @@ package geotrellis.spark.io
 
 
 import geotrellis.spark._
-import geotrellis.spark.tiling.{ZoomLevel, RowIndexScheme, TileIndexScheme}
+import geotrellis.spark.tiling._
 import geotrellis.spark.utils._
 import geotrellis.spark.io.hadoop.formats._
 
@@ -80,12 +80,11 @@ package object hadoop {
     }
   }
 
-  implicit class SavableRasterRDD(val rdd: RasterRDD[SpatialKey]) extends Logging {
+  implicit class SavableRasterRDD(val rdd: RasterRDD) extends Logging {
     def toWritable =
       rdd.mapPartitions({ partition =>
         partition.map(_.toWritable)
       }, true)
-
 
     def saveAsHadoopRasterRDD(path: String): Unit =
       saveAsHadoopRasterRDD(new Path(path))

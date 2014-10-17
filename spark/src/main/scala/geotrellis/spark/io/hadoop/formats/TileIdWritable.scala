@@ -16,12 +16,32 @@
 
 package geotrellis.spark.io.hadoop.formats
 
-import org.apache.hadoop.io.LongWritable
+import geotrellis.spark._
+
+import org.apache.hadoop.io._
 
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 
-class SpatialKeyWritable extends LongWritable with Serializable {
+class SpatialKeyWritable extends Writable 
+                            with WritableComparable[LongWritable] 
+                            with Serializable {
+  private var _value: SpatialKey = null
+
+  def set(spatialKey: SpatialKey): Unit = _value = spatialKey
+  def get(): SpatialKey = _value
+
+  private def writeObject(out: ObjectOutputStream) {
+    out.writeInt(_value.col)
+    out.writeInt(_value.row)
+  }
+
+  private def readObject(in: ObjectInputStream) {
+    val col = in.readInt
+    val row = in.readInt
+    _value = SpatialKey(col, row)
+  }
+
   override def equals(that: Any): Boolean =
     that match {
       case other: SpatialKeyWritable => other.get == this.get
@@ -29,28 +49,18 @@ class SpatialKeyWritable extends LongWritable with Serializable {
     }
 
   override def hashCode = get.hashCode
-  
-  private def writeObject(out: ObjectOutputStream) {
-    out.defaultWriteObject()
-    out.writeLong(get)
-  }
-
-  private def readObject(in: ObjectInputStream) {
-    in.defaultReadObject()
-    set(in.readLong)
-  }
 }
 
 object SpatialKeyWritable {
-  implicit def longToThis(l: Long): SpatialKeyWritable = 
-    apply(l)
+  implicit def ordering[A <: SpatialKeyWritable]: Ordering[A] =
+    Ordering.by(w => w.get)
 
-  def apply(value: Long): SpatialKeyWritable = {
-    val tw = new SpatialKeyWritable
-    tw.set(value)
-    tw
-  }
-  def apply(tw: SpatialKeyWritable): SpatialKeyWritable = {
-    SpatialKeyWritable(tw.get)
+  implicit def spatialKeytoWritable(spatialKey: SpatialKey): SpatialKeyWritable = 
+    apply(spatialKey)
+
+  def apply(spatialKey: SpatialKey): SpatialKeyWritable = {
+    val w = new SpatialKeyWritable
+    w.set(spatialKey)
+    w
   }
 }

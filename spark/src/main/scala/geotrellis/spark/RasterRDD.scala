@@ -33,51 +33,6 @@ class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMe
   override def compute(split: Partition, context: TaskContext) =
     firstParent.iterator(split, context)
 
-  /**
-   * Given a function that provides extent information for every tile in the sequence we will
-   * split/merge the source as needed to produce a RasterRDD with Tiles divided according to
-   * the tiling scheme specified in the metaData.
-   *
-   * @param extentOf function that extracts extent information from the key
-   * @param toKey    function that maps to the new RDD key, allowing you to add SpatialKey information
-   * @tparam KT      key type of the resulting RDD
-   */
-  def mosaic[KT : ClassTag](extentOf: K => Extent, toKey: (K, SpatialKey) => KT): RasterRDD[KT] = {
-    val bcMetaData = sparkContext.broadcast(metaData)
-    val newRdd = this
-      .flatMap { case (key, tile) =>
-        val metaData = bcMetaData.value
-        val extent = extentOf(key)
-
-        metaData.transform.mapToGrid(extent).coords
-          .map { coord =>
-            val tileId = metaData.transform.gridToIndex(coord)
-            val kt = toKey(key, tileId) //convert into new key, using the helpful function
-            (kt, (tileId, extent, tile))
-          }
-       }
-      .combineByKey(
-        { case (id, extent, tile) =>
-          val metaData = bcMetaData.value
-          val tmsTile = ArrayTile.empty(metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
-          tmsTile.merge(metaData.transform.indexToMap(id), metaData.extent, tile)
-        }, 
-        { (tmsTile: MutableArrayTile, tup: (SpatialKey, Extent, Tile)) =>
-          val metaData = bcMetaData.value
-          val (id, extent, tile) = tup
-          tmsTile.merge(metaData.transform.indexToMap(id), extent, tile)
-        }, 
-        { (tmsTile1: MutableArrayTile, tmsTile2: MutableArrayTile) =>
-          tmsTile1.merge(tmsTile2)
-        }
-       )
-      .map{ case (key, tile) =>
-        (key, tile.asInstanceOf[Tile])
-       }
-
-    new RasterRDD[KT](newRdd, metaData)
-  }
-
   def mapTiles(f: ((K, Tile)) => (K, Tile)): RasterRDD[K] =
     asRasterRDD(metaData) {
       mapPartitions({ partition =>

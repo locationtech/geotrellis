@@ -39,7 +39,8 @@ trait Sink[K] {
   def apply(layerMetaData: LayerMetaData, raster: RasterRDD[K]): Unit
 }
 
-trait IsProjectedExtent[T] extends SimpleLens[T, ProjectedExtent]
+trait ProjectedExtentView[T] extends SimpleLens[T, ProjectedExtent]
+
 trait IsSpatialKey[K] extends SimpleLens[K, SpatialKey]
 
 /** Represents the ingest process. 
@@ -69,7 +70,7 @@ object Ingest extends Logging {
   def apply(sc: SparkContext): Ingest = new Ingest(sc)
 }
 
-class Ingest[T: IngestKey, K: SpatialKeyView](sc: SparkContext, layoutScheme: LayoutScheme)(createKey: (T, SpatialKey) => K) {
+class Ingest[T: ProjectedExtentView, K: SpatialKeyView](layoutScheme: LayoutScheme)(createKey: (T, SpatialKey) => K) {
   def apply(sourceTiles: RasterRDD[(T, Tile)], layerName: String, destCRS: CRS) = {
     val reprojected = 
       source
@@ -79,67 +80,65 @@ class Ingest[T: IngestKey, K: SpatialKeyView](sc: SparkContext, layoutScheme: La
 
     val mosaic = 
       reprojected.mosaic(layerMetaData.rasterMetaData)(createKey)
-
-
   }
 }
 
-class Ingest(sc: SparkContext) {
-  import Ingest.Sink
+// class Ingest(sc: SparkContext) {
+//   import Ingest.Sink
 
-  def reproject(destCRS: CRS): RDD[((Extent, CRS), Tile)] => RDD[((Extent, CRS), Tile)] = {
-    _.map { case ((extent, crs), tile) =>
-      val (reprojectedTile, reprojectedExtent) = tile.reproject(extent, crs, destCRS)
-      (reprojectedExtent, destCRS) -> reprojectedTile
-    }
-  }
+//   def reproject(destCRS: CRS): RDD[((Extent, CRS), Tile)] => RDD[((Extent, CRS), Tile)] = {
+//     _.map { case ((extent, crs), tile) =>
+//       val (reprojectedTile, reprojectedExtent) = tile.reproject(extent, crs, destCRS)
+//       (reprojectedExtent, destCRS) -> reprojectedTile
+//     }
+//   }
 
-  def setMetaData(zoomScheme: LayoutScheme): RDD[((Extent, CRS), Tile)] => RasterRDD[Extent] =
-    { sourceTiles =>
-      // TODO: This methods seems like it could be generic, factor it out when there is another use case
-      // TODO: Allow variance of ZoomScheme and TileIndexScheme
-      val tileIndexScheme: TileIndexScheme = RowIndexScheme
+//   def setMetaData(zoomScheme: LayoutScheme): RDD[((Extent, CRS), Tile)] => RasterRDD[Extent] =
+//     { sourceTiles =>
+//       // TODO: This methods seems like it could be generic, factor it out when there is another use case
+//       // TODO: Allow variance of ZoomScheme and TileIndexScheme
+//       val tileIndexScheme: TileIndexScheme = RowIndexScheme
 
-      val (uncappedExtent, cellType, cellSize, crs): (Extent, CellType, CellSize, CRS) =
-        sourceTiles
-          .map { case ((extent, crs), tile) =>
-            (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows), crs)
-           }
-          .reduce { (t1, t2) =>
-            val (e1, ct1, cs1, crs1) = t1
-            val (e2, ct2, cs2, crs2) = t2
-            (
-              e1.combine(e2),
-              ct1.union(ct2),
-              if(cs1.resolution < cs2.resolution) cs1 else cs2,
-              crs1
-            )
-           }
+//       val (uncappedExtent, cellType, cellSize, crs): (Extent, CellType, CellSize, CRS) =
+//         sourceTiles
+//           .map { case ((extent, crs), tile) =>
+//             (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows), crs)
+//            }
+//           .reduce { (t1, t2) =>
+//             val (e1, ct1, cs1, crs1) = t1
+//             val (e2, ct2, cs2, crs2) = t2
+//             (
+//               e1.combine(e2),
+//               ct1.union(ct2),
+//               if(cs1.resolution < cs2.resolution) cs1 else cs2,
+//               crs1
+//             )
+//            }
 
-      val worldExtent = crs.worldExtent
-      val layerLevel: ZoomLevel = zoomScheme.layoutFor(worldExtent, cellSize)
+//       val worldExtent = crs.worldExtent
+//       val layerLevel: ZoomLevel = zoomScheme.layoutFor(worldExtent, cellSize)
 
-      val extentIntersection = worldExtent.intersection(uncappedExtent).get
+//       val extentIntersection = worldExtent.intersection(uncappedExtent).get
 
-      val metaData = RasterMetaData(layerName, cellType, extentIntersection, crs, layerLevel, tileIndexScheme)
+//       val metaData = RasterMetaData(layerName, cellType, extentIntersection, crs, layerLevel, tileIndexScheme)
 
-      new RasterRDD(sourceTiles.map{ case ((extent, _), tile) => extent -> tile}, metaData)
-    }
+//       new RasterRDD(sourceTiles.map{ case ((extent, _), tile) => extent -> tile}, metaData)
+//     }
 
-  def mosaic(source: RasterRDD[Extent]): RasterRDD[SpatialKey] = {
-    source.mosaic(e => e, (extent, tileId) => tileId)
-  }
+//   def mosaic(source: RasterRDD[Extent]): RasterRDD[SpatialKey] = {
+//     source.mosaic(e => e, (extent, tileId) => tileId)
+//   }
 
-  def apply(source: =>RDD[((Extent, CRS), Tile)], sink:  Sink, destCRS: CRS, zoomScheme: ZoomScheme): Unit = {
-    val reprojected = 
-      source
-        .reproject(destCRS)
+//   def apply(source: =>RDD[((Extent, CRS), Tile)], sink:  Sink, destCRS: CRS, zoomScheme: ZoomScheme): Unit = {
+//     val reprojected = 
+//       source
+//         .reproject(destCRS)
 
-    val layerMetaData = reprojected.createMetaData
+//     val layerMetaData = reprojected.createMetaData
 
-    val mosaic = 
-      reprojected.mosaic(layerMetaData.rasterMetaData) { (extent, spatialKey) => spatialKey }
-      setMetaData(layerName, zoomScheme) |>
-      mosaic |>
-      sink
-}
+//     val mosaic = 
+//       reprojected.mosaic(layerMetaData.rasterMetaData) { (extent, spatialKey) => spatialKey }
+//       setMetaData(layerName, zoomScheme) |>
+//       mosaic |>
+//       sink
+// }
