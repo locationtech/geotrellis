@@ -18,7 +18,7 @@ class ReprojectSpec extends FunSpec
     it("should (approximately) match a GDAL bilinear interpolation on nlcd tile") {
       val (source, extent, _) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_wsg84.tif").read.imageDirectories.head.toRaster
 
-      val (expected, expectedExtent, _) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-bilinear2.tif").read.imageDirectories.head.toRaster
+      val (expected, expectedExtent, _) = GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-bilinear.tif").read.imageDirectories.head.toRaster
 
       val (actual, actualExtent) = source.reproject(extent, LatLng, WebMercator, ReprojectOptions(Bilinear, 0.0))
 
@@ -55,7 +55,7 @@ class ReprojectSpec extends FunSpec
       val (source, extent, _) =
         GeoTiffReader("raster-test/data/reproject/nlcd_tile_wsg84.tif").read.imageDirectories.head.toRaster
       val (expected, expectedExtent, _) =
-        GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor2.tif").read.imageDirectories.head.toRaster
+        GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").read.imageDirectories.head.toRaster
       val (actual, actualExtent) =
         source.reproject(extent, LatLng, WebMercator, ReprojectOptions(NearestNeighbor, 0.0))
 
