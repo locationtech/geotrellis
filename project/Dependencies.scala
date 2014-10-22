@@ -33,6 +33,7 @@ object Dependencies {
   val jts           = "com.vividsolutions"  %  "jts"             % "1.13"
   val monocleCore   = "com.github.julien-truffaut" %% "monocle-core"    % "0.4.0"
   val monocleMacro  = "com.github.julien-truffaut" %% "monocle-macro"   % "0.4.0"
+  val trove4j       = "net.sf.trove4j"      % "trove4j"          % "3.0.3"
 
   val openCSV       = "net.sf.opencsv"       % "opencsv"    % "2.3"
 

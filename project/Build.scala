@@ -137,7 +137,9 @@ object GeotrellisBuild extends Build {
           jts,
           sprayJson,
           sprayHttpx,
-          apacheMath
+          apacheMath,
+          spire,
+          trove4j
         )
       )
       .settings(defaultAssemblySettings: _*)
@@ -150,7 +152,8 @@ object GeotrellisBuild extends Build {
       .settings(name := "geotrellis-vector-test")
       .settings(libraryDependencies ++= Seq(
         scalatest   % "test",
-        scalacheck  % "test"
+        scalacheck  % "test",
+        trove4j
       )
     )
 
