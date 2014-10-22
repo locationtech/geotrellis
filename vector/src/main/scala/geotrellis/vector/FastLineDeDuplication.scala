@@ -4,8 +4,6 @@ import collection._
 
 import spire.syntax.cfor._
 
-import gnu.trove.set.hash._
-
 import java.lang.{ Double => JDouble }
 
 object FastLineDeDuplication {
@@ -34,7 +32,7 @@ object FastLineDeDuplication {
         size += lines(i).points.size
       }
 
-      val hashSet = new THashSet[LineSegment](size + 1000, 1.0f)
+      val hashSet = new java.util.HashSet[LineSegment](size + 1000, 1.0f)
 
       cfor(0)(_ < lines.size, _ + 1) { i =>
         val line = lines(i)
