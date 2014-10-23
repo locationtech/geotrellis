@@ -26,16 +26,17 @@ object LineDissolve {
 
   }
 
-  def dissolve(lines: Seq[Line]): Seq[Line] = {
+  def dissolve(lines: Traversable[Line]): Seq[Line] = {
+    val lineArray = lines.toArray
     var size = 0
-    cfor(0)(_ < lines.size, _ + 1) { i =>
-      size += lines(i).points.size
+    cfor(0)(_ < lineArray.size, _ + 1) { i =>
+      size += lineArray(i).points.size
     }
 
     val hashSet = new java.util.HashSet[LineSegment](size + 1000, 1.0f)
 
-    cfor(0)(_ < lines.size, _ + 1) { i =>
-      val line = lines(i)
+    cfor(0)(_ < lineArray.size, _ + 1) { i =>
+      val line = lineArray(i)
       val points = line.points
 
       cfor(0)(_ < points.size - 1, _ + 1) { j =>
@@ -61,7 +62,7 @@ object LineDissolve {
   }
 
   trait Implicits {
-    implicit class LineDissolveWrapper(val lines: Seq[Line]) {
+    implicit class LineDissolveWrapper(val lines: Traversable[Line]) {
       def dissolve() = LineDissolve.dissolve(lines)
     }
   }
