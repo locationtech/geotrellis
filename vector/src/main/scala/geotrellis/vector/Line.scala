@@ -19,6 +19,8 @@ package geotrellis.vector
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
 
+import spire.syntax.cfor._
+
 object Line {
 
   implicit def jtsToLine(jtsGeom: jts.LineString): Line =
@@ -38,7 +40,13 @@ object Line {
       sys.error("Invalid line: Requires 2 or more points.")
     }
 
-    Line(factory.createLineString(points.map(_.jtsGeom.getCoordinate).toArray))
+    val pointArray = points.toArray
+    val coords = Array.ofDim[jts.Coordinate](pointArray.size)
+    cfor(0)(_ < pointArray.size, _ + 1) { i =>
+      coords(i) = pointArray(i).jtsGeom.getCoordinate
+    }
+
+    Line(factory.createLineString(coords))
   }
 }
 
@@ -50,10 +58,6 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
   def normalized(): Line = { jtsGeom.normalize ; Line(jtsGeom) }
-
-  /** Returns this Line's vertices as a list of Points. */
-  lazy val points: Array[Point] =
-    jtsGeom.getCoordinates.map(c => Point(c.x, c.y))
 
   /** Tests if the initial vertex equals the final vertex. */
   lazy val isClosed: Boolean =
@@ -75,9 +79,21 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   lazy val boundary: OneDimensionBoundaryResult =
     jtsGeom.getBoundary
 
+  def points: Array[Point] = vertices
+
   /** Returns this Line's vertices. */
-  lazy val vertices: Array[Point] =
-    jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
+  lazy val vertices: Array[Point] = {
+    val coords = jtsGeom.getCoordinates
+    val arr = Array.ofDim[Point](coords.size)
+    cfor(0)(_ < arr.size, _ + 1) { i =>
+      val coord = coords(i)
+      arr(i) = Point(coord.x, coord.y)
+    }
+    arr
+  }
+
+  /** Get the number of vertices in this geometry */
+  lazy val vertexCount: Int = jtsGeom.getNumPoints
 
   /**
    * Returns the minimum extent that contains this Line.
@@ -93,7 +109,7 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   def closed(): Line =
     if(isClosed) this
     else {
-      Line(points :+ points.head)
+      Line(vertices :+ vertices.head)
     }
 
   // -- Intersection
