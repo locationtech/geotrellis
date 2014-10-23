@@ -137,7 +137,8 @@ object GeotrellisBuild extends Build {
           jts,
           sprayJson,
           sprayHttpx,
-          apacheMath
+          apacheMath,
+          spire
         )
       )
       .settings(defaultAssemblySettings: _*)
