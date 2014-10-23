@@ -18,7 +18,7 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance, metaDataCata
 
   def register[K: ClassTag](loader: AccumuloDriver[K]): Unit = drivers += classTag[K] -> loader
 
-  def load[K:ClassTag](layerId: LayerId, filters: FilterSet[K] = new FilterSet[K]()): Try[RasterRDD[K]] =
+  def load[K: ClassTag: Ordering](layerId: LayerId, filters: FilterSet[K]): Try[RasterRDD[K]] =
     (for {
       driver <- getDriver[K];
       (metaData, table) <- metaDataCatalog.load(layerId)

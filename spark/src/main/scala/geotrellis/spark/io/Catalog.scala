@@ -9,9 +9,10 @@ import scala.util.Try
 trait Catalog {
   type DriverType[K] <: Driver[K]
 
-  def register[K: ClassTag](driver: DriverType[K]): Unit
+  def load[K: Ordering](layerId: LayerId, params: DriverType[K]#Params): Try[RasterRDD[K]] =
+    load(layerId, params, FilterSet.EMPTY[K])
 
-  def load[K: ClassTag](layerId: LayerId, params: DriverType[K]#Params, filters: FilterSet[K] = FilterSet.EMPTY[K]): Try[RasterRDD[K]]
+  def load[K: ClassTag](layerId: LayerId, params: DriverType[K]#Params, filters: FilterSet[K]): Try[RasterRDD[K]]
 
   def save[K: ClassTag](layerId: LayerId, rdd: RasterRDD[K], params: DriverType[K]#Params): Try[Unit]
 }

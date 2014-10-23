@@ -13,27 +13,28 @@ import org.apache.spark.rdd.RDD
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
-object TimeRasterAccumuloDriver extends AccumuloDriver[TimeSpatialKey] {
+object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
   def rowId(layerId: LayerId, id: SpatialKey) = new Text(s"${layerId.zoom}_${id}")
-  val rowIdRx = """(\d+)_(\d+)""".r // (zoom)_(SpatialKey)
+  val rowIdRx = """(\d+)_(\d+)_(\d+)""".r // (zoom)_(SpatialKey.col)_(SpatialKey.row)
 
   /** Map rdd of indexed tiles to tuples of (table name, row mutation) */
-  def encode(layerId: LayerId, raster: RasterRDD[TimeSpatialKey]): RDD[(Text, Mutation)] =
+  def encode(layerId: LayerId, raster: RasterRDD[SpaceTimeKey]): RDD[(Text, Mutation)] =
     raster.map {
-      case (TimeSpatialKey(spatialKey, time), tile) =>
+      case (SpaceTimeKey(spatialKey, time), tile) =>
         val mutation = new Mutation(rowId(layerId, spatialKey))
         mutation.put(new Text(layerId.name), new Text(time.toString), System.currentTimeMillis(), new Value(tile.toBytes()))
         (null, mutation)
     }
 
   /** Maps RDD of Accumulo specific Key, Value pairs to a tuple of (K, Tile) and wraps it in RasterRDD */
-  def decode(rdd: RDD[(Key, Value)], metaData: RasterMetaData): RasterRDD[TimeSpatialKey] = {
+  def decode(rdd: RDD[(Key, Value)], metaData: RasterMetaData): RasterRDD[SpaceTimeKey] = {
     val tileRdd = rdd.map {
       case (key, value) =>
-        val rowIdRx(zoom, id) = key.getRow.toString
+        val rowIdRx(zoom, col, row) = key.getRow.toString
+        val spatialKey = SpatialKey(col.toInt, row.toInt)
         val time = key.getColumnQualifier.toString.toDouble
         val tile = ArrayTile.fromBytes(value.get, metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
-        TimeSpatialKey(id.toLong, time) -> tile.asInstanceOf[Tile]
+        SpaceTimeKey(spatialKey, time) -> tile.asInstanceOf[Tile]
     }
     new RasterRDD(tileRdd, metaData)
   }
@@ -44,17 +45,17 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[TimeSpatialKey] {
     InputFormatBase.setRanges(job, range)
   }
 
-  def setFilters(job: Job, layerMetaData: LayerMetaData, filters: Seq[KeyFilter]): Unit = {
+  def setFilters(job: Job, layerMetaData: LayerMetaData, filterSet: FilterSet[SpaceTimeKey]): Unit = {
     val LayerMetaData(layerId, rasterMetaData) = layerMetaData
     var tileBoundSet = false
-    filters.foreach {
+    filterSet.filters.foreach {
       case SpaceFilter(bounds, scheme) =>
         tileBoundSet = true
+
         val ranges = 
-          rasterMetaData.transform.withCoordScheme(scheme).tileToIndex(bounds).spans
-            .map { case (startKey, endKey) => 
-              new ARange(rowId(layerId, startKey), rowId(layerId, endKey))
-             }
+          for(row <- bounds.rowMin to bounds.rowMax) yeild {
+            new ARange(rowId(layerId, bounds.colMin, row), rowId(layerId, bounds.colMax, row))
+          }
 
         InputFormatBase.setRanges(job, ranges)
       case TimeFilter(startTime, endTime) =>

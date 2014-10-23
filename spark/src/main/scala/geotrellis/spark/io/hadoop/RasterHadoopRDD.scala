@@ -27,27 +27,10 @@ import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat
 
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.{RDD, NewHadoopRDD}
+import org.apache.spark._
+import org.apache.spark.rdd._
 
-/*
- * An RDD abstraction of rasters in Spark. This can give back either tuples of either
- * (SpatialKeyWritable, ArgWritable) or (Long, Raster), the latter being the deserialized 
- * form of the former. See companion object 
- */
-class RasterHadoopRDD private (sc: SparkContext, conf: Configuration, path: Path)
-  extends NewHadoopRDD[SpatialKeyWritable, ArgWritable](
-    sc,
-    classOf[SequenceFileInputFormat[SpatialKeyWritable, ArgWritable]],
-    classOf[SpatialKeyWritable],
-    classOf[ArgWritable],
-    conf) {
-  lazy val metaData = 
-    HadoopUtils.readLayerMetaData(path, context.hadoopConfiguration).rasterMetaData
-
-  def toRasterRDD: RasterRDD[SpatialKey] =
-    asRasterRDD(metaData) { map { _.toTuple(metaData) } }
-}
+import scala.reflect._
 
 object RasterHadoopRDD {
   /* path - fully qualified path to the raster (with zoom level)
@@ -55,13 +38,68 @@ object RasterHadoopRDD {
    *   
    * sc - the spark context
    */
-  def apply(path: String, sc: SparkContext): RasterHadoopRDD =
-    apply(new Path(path), sc)
+  def apply[K: HadoopWritable: Ordering: ClassTag](path: String, sc: SparkContext): RasterRDD[K] =
+    apply(path, sc, FilterSet.EMPTY[K])
 
-  def apply(path: Path, sc: SparkContext): RasterHadoopRDD = {
-    val updatedConf = 
+  def apply[K: HadoopWritable: Ordering: ClassTag](path: String, sc: SparkContext, filters: FilterSet[K]): RasterRDD[K] =
+    apply(new Path(path), sc, filters)
+
+  def apply[K: HadoopWritable: Ordering: ClassTag](path: Path, sc: SparkContext): RasterRDD[K] =
+    apply(path, sc, FilterSet.EMPTY[K])
+
+  def apply[K: HadoopWritable: Ordering: ClassTag](path: Path, sc: SparkContext, filters: FilterSet[K]): RasterRDD[K] = {
+    val keyWritable = implicitly[HadoopWritable[K]]
+    import keyWritable.implicits._
+
+    val ordering = implicitly[Ordering[K]]
+
+    val conf = sc.hadoopConfiguration
+
+    val partitioner = 
+      KeyPartitioner[K](HadoopUtils.readSplits(path, conf))
+
+    val updatedConf =
       sc.hadoopConfiguration.withInputPath(path.suffix(HadoopUtils.SEQFILE_GLOB))
 
-    new RasterHadoopRDD(sc, updatedConf, path)
+    val writableRdd: RDD[(keyWritable.Writable, TileWritable)] =
+      if(filters.isEmpty) {
+        sc.newAPIHadoopRDD[keyWritable.Writable, TileWritable, SequenceFileInputFormat[keyWritable.Writable, TileWritable]](
+          updatedConf,
+          classOf[SequenceFileInputFormat[keyWritable.Writable, TileWritable]],
+          classTag[keyWritable.Writable].runtimeClass.asInstanceOf[Class[keyWritable.Writable]], // ¯\_(ツ)_/¯
+          classOf[TileWritable]
+        )
+      } else {
+        val includeKey: keyWritable.Writable => Boolean = 
+          { writable => 
+            filters.includeKey(writable.toValue)
+          }
+
+        val includePartition: Partition => Boolean = 
+          { partition =>
+            val minKey = partitioner.minKey(partition.index)
+            val maxKey = partitioner.maxKey(partition.index)
+
+            filters.includePartition(minKey, maxKey)
+          }
+
+        new PreFilteredHadoopRDD[keyWritable.Writable, TileWritable](
+          sc,
+          classOf[SequenceFileInputFormat[keyWritable.Writable, TileWritable]],
+          classTag[keyWritable.Writable].runtimeClass.asInstanceOf[Class[keyWritable.Writable]],
+          classOf[TileWritable],
+          updatedConf
+        )(includePartition)(includeKey)
+      }
+
+    val metaData =
+      HadoopUtils.readLayerMetaData(path, updatedConf).rasterMetaData
+
+    asRasterRDD(metaData) {
+      writableRdd
+        .map { case (keyWritable, tileWritable) =>
+          (keyWritable.toValue, tileWritable.toTile(metaData))
+         }
+    }
   }
 }

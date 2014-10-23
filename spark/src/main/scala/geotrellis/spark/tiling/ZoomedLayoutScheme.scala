@@ -15,7 +15,7 @@ object ZoomedLayoutScheme {
 
 /** Layout for zoom levels based off of a power-of-2 scheme,
   * used in Leaflet et al.*/
-class ZoomedLayoutScheme(tileSize: Int) {
+class ZoomedLayoutScheme(tileSize: Int) extends LayoutScheme {
   private def zoom(res: Double, tileSize: Int, worldSpan: Double): Int = {
     val resWithEp = res + 0.00000001
 

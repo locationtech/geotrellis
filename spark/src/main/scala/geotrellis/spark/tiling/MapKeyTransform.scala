@@ -23,17 +23,17 @@ object MapKeyTransform {
 /**
   * Transforms between geographic map coordinates and spatial keys.
   * Since geographic point can only be mapped to a grid tile that contains that point,
-  * transformation from [[Extent]] to [[SpatialKeyBounds]] to [[Extent]] will likely not
+  * transformation from [[Extent]] to [[GridBounds]] to [[Extent]] will likely not
   * produce the original geographic extent, but a larger one.
   */
 class MapKeyTransform(extent: Extent, tileCols: Int, tileRows: Int) extends Serializable {
   lazy val tileWidth: Double = extent.width / tileCols
   lazy val tileHeight: Double = extent.height / tileRows
 
-  def apply(extent: Extent): SpatialKeyBounds = {
+  def apply(extent: Extent): GridBounds = {
     val SpatialKey(colMin, rowMin) = apply(extent.xmin, extent.ymax)
     val SpatialKey(colMax, rowMax) = apply(extent.xmax, extent.ymin)
-    SpatialKeyBounds(colMin, rowMin, colMax, rowMax)
+    GridBounds(colMin, rowMin, colMax, rowMax)
   }
 
   def apply(x: Double, y: Double): SpatialKey = {
@@ -45,6 +45,9 @@ class MapKeyTransform(extent: Extent, tileCols: Int, tileRows: Int) extends Seri
 
     (tcol.toInt, trow.toInt)
   }
+
+  def apply[K: SpatialComponent](key: K): Extent =
+    apply(key.spatialComponent)
 
   def apply(key: SpatialKey): Extent =
     apply(key.col, key.row)

@@ -20,25 +20,53 @@ import geotrellis.spark._
 
 import org.apache.spark.Partitioner
 
-case class SpatialKeyPartitioner(splits: Array[Long]) extends Partitioner {
-  override def getPartition(key: Any): Int = {
-    val index = java.util.Arrays.binarySearch(splits, key.asInstanceOf[Long])
-    if (index < 0)
-      (index + 1) * -1
-    else
-      index
+object KeyPartitioner {
+  def apply[K: Ordering](splits: Array[K]): KeyPartitioner[K] = 
+    new KeyPartitioner[K](splits)
+}
+
+class KeyPartitioner[K: Ordering](splits: Array[K]) extends Partitioner {
+  private val ordering = implicitly[Ordering[K]]
+
+  override def getPartition(key: Any): Int = 
+    getPartition(key.asInstanceOf[K])
+
+  def getPartition(key: K): Int = {
+    var len = numPartitions - 1
+    var p = 0
+    while (len > 0) {
+      val half = len >>> 1
+      val middle = p + half
+      if(ordering.lt(key, splits(middle))) {
+        len = half
+      } else {
+        p = middle + 1
+        len = len - half - 1
+      }
+    }
+
+    p
   }
 
   override def numPartitions = splits.length + 1
 
-  def range(partition: Int): (SpatialKey, SpatialKey) = {
-    val min = if (partition == 0) Long.MinValue else splits(partition - 1) + 1
-    val max = if (partition == splits.length) Long.MaxValue else splits(partition)
-    (min, max)
-  }
+  def contains(partition: Int, key: K): Boolean =
+    getPartition(key) == partition
+
+  def minKey(partition: Int): KeyBound[K] =
+    if(partition == 0) MinKeyBound[K]()
+    else ValueKeyBound(splits(partition))
+
+  def maxKey(partition: Int): KeyBound[K] =
+    if(partition == numPartitions - 1) MaxKeyBound[K]
+    else ValueKeyBound(splits(partition))
+
+  def intersects(partition: Int, minKey: K, maxKey: K) =
+    getPartition(minKey) <= partition || partition <= getPartition(maxKey)
 
   override def hashCode: Int = splits.hashCode
-  override def toString = "SpatialKeyPartitioner split points: " + {
-    if (splits.isEmpty) "Empty" else splits.zipWithIndex.mkString
+  override def toString = {
+    val s = if (splits.isEmpty) "Empty" else splits.zipWithIndex.mkString
+    s"Partitioner split points: $s"
   }
 }

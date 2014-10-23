@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.hadoop
 
+import geotrellis.spark.io.hadoop.formats._
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileStatus
 import org.apache.hadoop.fs.FileSystem
@@ -25,17 +27,14 @@ import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.io._
 
-import java.io.BufferedReader
-import java.io.Closeable
-import java.io.File
-import java.io.FileReader
-import java.io.InputStreamReader
+import java.io._
 import java.util.Scanner
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
+import scala.reflect._
 
-abstract class LineScanner extends Iterator[String] with Closeable
+abstract class LineScanner extends Iterator[String] with org.apache.hadoop.io.Closeable
 
 object HdfsUtils {
 
@@ -128,8 +127,7 @@ object HdfsUtils {
     val len =
       fs.getFileStatus(path).getLen match {
         case l if l > Int.MaxValue.toLong =>
-          sys.error(s"Cannot read path $path because it's too big..." +
-            "you must tile your rasters to smaller tiles!")
+          sys.error(s"Cannot read path $path because it's too big...")
         case l => l.toInt
       }
 
@@ -144,6 +142,46 @@ object HdfsUtils {
     }
 
     bytes
+  }
+
+  def readArray[T: HadoopWritable: ClassTag](path: Path, conf: Configuration): Array[T] = {
+    val writable = implicitly[HadoopWritable[T]]
+    import writable.implicits._
+
+    val in = new DataInputStream(new ByteArrayInputStream(readBytes(path, conf)))
+    try {
+      val size = in.readInt
+      val arr = Array.ofDim[T](size)
+      var i = 0
+      while(i < size) {
+        val x = writable.newWritable
+        x.readFields(in)
+        arr(i) = x.toValue
+        i += 1
+      }
+      arr
+    } finally {
+      in.close()
+    }
+  }
+
+  def writeArray[T: HadoopWritable](path: Path, conf: Configuration, arr: Array[T]): Unit = {
+    val writable = implicitly[HadoopWritable[T]]
+    import writable.implicits._
+
+    val fs = FileSystem.get(conf)
+    val out = new ObjectOutputStream(fs.create(path))
+    try {
+      val size = arr.size
+      out.writeInt(size)
+      var i = 0
+      while(i < size) {
+        arr(i).toWritable.write(out)
+        i += 1
+      }
+    } finally {
+      out.close
+    }
   }
 
   def getLineScanner(path: Path, conf: Configuration): Option[LineScanner] = {

@@ -1,6 +1,5 @@
 package geotrellis.spark.io
 
-
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils._
@@ -29,101 +28,19 @@ import java.io.PrintWriter
 import java.nio.ByteBuffer
 import geotrellis.spark.tiling._
 
+import scala.reflect._
+
 package object hadoop {
-  /** Upgrades a string to a Hadoop Path URL. Seems dangerous, but not surprising. */
-  implicit def stringToPath(path: String): Path = new Path(path)
-
-  implicit class HadoopSparkContextWrapper(sc: SparkContext) {
-    def hadoopRasterRDD(path: String): RasterRDD[SpatialKey] =
-      hadoopRasterRDD(new Path(path))
-
-    def hadoopRasterRDD(path: Path): RasterRDD[SpatialKey] =
-      RasterHadoopRDD(path, sc).toRasterRDD
-
-    def hadoopGeoTiffRDD(path: String): RDD[((Extent, CRS), Tile)] =
-      hadoopGeoTiffRDD(new Path(path))
-
-    def hadoopGeoTiffRDD(path: Path): RDD[((Extent, CRS), Tile)] = {
-      val updatedConf =
-        sc.hadoopConfiguration.withInputDirectory(path)
-
-      sc.newAPIHadoopRDD(
-        updatedConf,
-        classOf[GeotiffInputFormat],
-        classOf[(Extent, CRS)],
-        classOf[Tile]
-      )
-    }
-
-    def gdalRDD(path: Path): RDD[(GdalRasterInfo, Tile)] = {
-      val updatedConf = sc.hadoopConfiguration.withInputDirectory(path)
-
-      sc.newAPIHadoopRDD(
-        updatedConf,
-        classOf[GdalInputFormat],
-        classOf[GdalRasterInfo],
-        classOf[Tile]
-      )
-    }
-
-    def netCdfRDD(path: Path): RDD[(NetCdfBand, Tile)] = {
-      gdalRDD(path)
-        .map{ case (info, tile) =>
-          val band = NetCdfBand(
-            extent = info.file.rasterExtent.extent,
-            crs = info.file.crs,
-            varName = info.bandMeta("NETCDF_VARNAME"),
-            time = info.bandMeta("NETCDF_DIM_Time").toDouble
-          )
-          band -> tile
-        }
-    }
+  implicit object SpatialKeyHadoopWritable extends HadoopWritable[SpatialKey] {
+    type Writable = SpatialKeyWritable
+    val writableClassTag = classTag[SpatialKeyWritable]
+    def toWritable(key: SpatialKey) = SpatialKeyWritable(key)
+    def toValue(writable: SpatialKeyWritable) = writable.get
   }
 
-  implicit class SavableRasterRDD(val rdd: RasterRDD) extends Logging {
-    def toWritable =
-      rdd.mapPartitions({ partition =>
-        partition.map(_.toWritable)
-      }, true)
+  implicit class HadoopSparkContextMethodsWrapper(val sc: SparkContext) extends HadoopSparkContextMethods
 
-    def saveAsHadoopRasterRDD(path: String): Unit =
-      saveAsHadoopRasterRDD(new Path(path))
-
-    def saveAsHadoopRasterRDD(path: Path) = {
-      val conf = rdd.context.hadoopConfiguration
-
-      logInfo("Saving RasterRDD out...")
-      val jobConf = new JobConf(conf)
-      jobConf.set("io.map.index.interval", "1");
-      SequenceFileOutputFormat.setOutputCompressionType(jobConf, SequenceFile.CompressionType.RECORD)
-
-      val writableRDD: RDD[WritableTile] =
-        rdd.sortByKey().map(_.toWritable)
-
-      writableRDD.saveAsHadoopFile(
-        path.toUri().toString(),
-        classOf[SpatialKeyWritable],
-        classOf[ArgWritable],
-        classOf[MapFileOutputFormat],
-        jobConf)
-
-      logInfo(s"Finished saving raster to ${path}")
-
-      rdd.partitioner match {
-        case Some(partitioner) =>
-          partitioner match {
-            case p: SpatialKeyPartitioner =>
-              HadoopUtils.writeSplits(p.splits, path, conf)
-            case _ =>
-          }
-        case _ =>
-      }
-
-      HadoopUtils.writeLayerMetaData(rdd.metaData, path, rdd.context.hadoopConfiguration)
-
-      logInfo(s"Finished saving ${path}")
-    }
-  }
+  implicit class SaveRasterMethodsWrapper[K: HadoopWritable](val rdd: RasterRDD[K]) extends SaveRasterMethods[K]
 
   implicit class HadoopConfigurationWrapper(config: Configuration) {
     def withInputPath(path: Path): Configuration = {

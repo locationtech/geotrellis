@@ -21,13 +21,13 @@ trait TileKeyTransform extends Serializable {
 
   def keyToTile(col: Int, row: Int): TileCoord
 
-  def tileToKey(tileBounds: GridBounds): SpatialKeyBounds = {
+  def tileToKey(tileBounds: GridBounds): GridBounds = {
     val (newColMin, newRowMin) = keyToTile(tileBounds.colMin, tileBounds.rowMin)
     val (newColMax, newRowMax) = keyToTile(tileBounds.colMax, tileBounds.rowMax)
     GridBounds(newColMin, newRowMin, newColMax, newRowMax)
   }
 
-  def keyToTile(gridBounds: SpatialKeyBounds): GridBounds = {
+  def keyToTile(gridBounds: GridBounds): GridBounds = {
     val SpatialKey(newColMin, newRowMin) = tileToKey(gridBounds.colMin, gridBounds.rowMin)
     val SpatialKey(newColMax, newRowMax) = tileToKey(gridBounds.colMax, gridBounds.rowMax)
     GridBounds(newColMin, newRowMin, newColMax, newRowMax)

@@ -23,20 +23,20 @@ import org.apache.hadoop.io._
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 
-class SpatialKeyWritable extends Writable 
-                            with WritableComparable[LongWritable] 
-                            with Serializable {
+class SpatialKeyWritable() extends Writable
+                              with WritableComparable[LongWritable] 
+                              with Serializable {
   private var _value: SpatialKey = null
 
   def set(spatialKey: SpatialKey): Unit = _value = spatialKey
   def get(): SpatialKey = _value
 
-  private def writeObject(out: ObjectOutputStream) {
+  private def write(out: ObjectOutputStream) {
     out.writeInt(_value.col)
     out.writeInt(_value.row)
   }
 
-  private def readObject(in: ObjectInputStream) {
+  private def readFields(in: ObjectInputStream) {
     val col = in.readInt
     val row = in.readInt
     _value = SpatialKey(col, row)
@@ -49,6 +49,11 @@ class SpatialKeyWritable extends Writable
     }
 
   override def hashCode = get.hashCode
+
+  def compareTo(other: SpatialKeyWritable): Int =
+    if(SpatialKey.ordering.lt(this._value, other._value)) -1
+    else if(this._value == other._value) 0 
+    else 1
 }
 
 object SpatialKeyWritable {

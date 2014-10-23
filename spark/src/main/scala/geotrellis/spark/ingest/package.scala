@@ -77,17 +77,17 @@ package object ingest {
     }
   }
 
-  implicit class RetileWrapper[T, K: SpatialComponent: ClassTag](rdd: RDD[(T, Tile)])(implicit _extent: SimpleLens[T, Extent]) {
-    def retile(rasterMetaData: RasterMetaData)(getExtent: T => Extent)(createKey: (T, SpatialKey) => K): RasterRDD[K] = {
+  implicit class RetileWrapper[T](rdd: RDD[(T, Tile)])(implicit _extent: SimpleLens[T, Extent]) {
+    def retile[K: SpatialComponent: ClassTag](rasterMetaData: RasterMetaData)(getExtent: T => Extent)(createKey: (T, SpatialKey) => K): RasterRDD[K] = {
       val bcMetaData = rdd.sparkContext.broadcast(rasterMetaData)
 
       val tilesWithKeys: RDD[(K, (K, Extent, Tile))] = 
         rdd
           .flatMap { case (key, tile) =>
-            val transform = bcMetaData.value.transform
+            val mapTransform = bcMetaData.value.mapTransform
             val extent = key |-> _extent get
 
-            transform.mapToGrid(extent)
+            mapTransform(extent)
               .coords
               .map { spatialKey =>
                 val newKey = createKey(key, spatialKey)
@@ -100,13 +100,13 @@ package object ingest {
         val (key, extent, tile) = tup
         val metaData = bcMetaData.value
         val tmsTile = ArrayTile.empty(metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
-        tmsTile.merge(metaData.transform.gridToMap(key), extent, tile)
+        tmsTile.merge(metaData.mapTransform(key), extent, tile)
       }
 
       def combineTiles1(tile: MutableArrayTile, tup: (K, Extent, Tile)): MutableArrayTile = {
         val (key, extent, prevTile) = tup
         val metaData = bcMetaData.value
-        tile.merge(metaData.transform.gridToMap(key.spatialComponent), extent, prevTile)
+        tile.merge(metaData.mapTransform(key), extent, prevTile)
       }
 
       def combineTiles2(tile1: MutableArrayTile, tile2: MutableArrayTile): MutableArrayTile =

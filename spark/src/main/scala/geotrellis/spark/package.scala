@@ -31,23 +31,27 @@ import monocle.syntax._
 import scala.reflect.ClassTag
 
 package object spark {
+  type SpatialComponent[K] = SimpleLens[K, SpatialKey]
+
   implicit class SpatialComponentWrapper[K: SpatialComponent](key: K) {
     val _spatialComponent = implicitly[SpatialComponent[K]]
 
-    def spatialComponent: SpatialKey = (key |-> _spatialComponent get)
-    def updateSpatialComponent(spatialKey: SpatialKey): K = (key |-> _spatialComponent set(spatialKey))
+    def spatialComponent: SpatialKey = 
+      (key |-> _spatialComponent get)
+
+    def updateSpatialComponent(spatialKey: SpatialKey): K = 
+      (key |-> _spatialComponent set(spatialKey))
   }
 
-  // Defines bounds of spatial keys.
-  type SpatialKeyBounds = GridBounds
-  val SpatialKeyBounds = GridBounds
+  implicit class TemporalCompenentWrapper[K: TemporalComponent](key: K) {
+    val _temporalComponent = implicitly[TemporalComponent[K]]
 
-  case class TimeSpatialKey(tileId: SpatialKey, time: Double)
+    def temporalComponent: TemporalKey = 
+      (key |-> _temporalComponent get)
 
-  // Implicit objects that state what filters apply to what tile keys.
-  implicit object tileIdFilterableBySpace extends Filterable[SpatialKey, SpaceFilter]
-  implicit object timeSpatialKeyFilterableByTime extends Filterable[TimeSpatialKey, TimeFilter]
-  implicit object timeSpatialKeyFilterableBySpace extends Filterable[TimeSpatialKey, SpaceFilter]
+    def updateTemporalComponent(temporalKey: TemporalKey): K = 
+      (key |-> _temporalComponent set(temporalKey))
+  }
 
   type ProjectedExtent = (Extent, CRS)
   type Dimensions = (Int, Int)

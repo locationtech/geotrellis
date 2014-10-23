@@ -46,7 +46,7 @@ import java.io.Closeable
 //   def iterator = new Iterator[WritableTile] with Closeable {
 
 //     private var curKey: SpatialKeyWritable = SpatialKeyWritable(startKey)
-//     private var curValue: ArgWritable = new ArgWritable
+//     private var curValue: TileWritable = new TileWritable
 
 //     // initialize readers and partitioner
 //     private val readers = getReaders

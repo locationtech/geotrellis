@@ -20,7 +20,7 @@ trait AccumuloDriver[K] extends Driver[K]{
 
   def encode(layerId: LayerId, raster: RasterRDD[K]): RDD[(Text, Mutation)]
   def decode(rdd: RDD[(Key, Value)], metaData: RasterMetaData): RasterRDD[K]
-  def setFilters(job: Job, layerId: LayerId, metaData: LayerMetaData, filters: Seq[KeyFilter])
+  def setFilters(job: Job, layerId: LayerId, metaData: LayerMetaData, filters: FilterSet[K])
 
   def load(sc: SparkContext, accumulo: AccumuloInstance)
           (layerId: LayerId, table: String, metaData: LayerMetaData, filters: FilterSet[K]): Try[RasterRDD[K]] =
@@ -28,7 +28,7 @@ trait AccumuloDriver[K] extends Driver[K]{
     val job = Job.getInstance(sc.hadoopConfiguration)
     accumulo.setAccumuloConfig(job)
     InputFormatBase.setInputTableName(job, table)
-    setFilters(job, layerId, metaData, filters.filters)
+    setFilters(job, layerId, metaData, filters)
     val rdd = sc.newAPIHadoopRDD(job.getConfiguration, classOf[AccumuloInputFormat], classOf[Key], classOf[Value])
     decode(rdd, metaData.rasterMetaData)
   }

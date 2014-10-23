@@ -24,6 +24,8 @@ import geotrellis.vector.Extent
 import geotrellis.proj4._
 import geotrellis.gdal.{RasterBand, RasterDataSet, Gdal}
 
+import monocle._
+
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.FSDataInputStream
 
@@ -59,7 +61,12 @@ class GdalInputFormat extends FileInputFormat[GdalRasterInfo, Tile] {
 
 case class GdalFileInfo(rasterExtent: RasterExtent, crs: CRS, meta: Map[String, String])
 case class GdalRasterInfo(file: GdalFileInfo, bandMeta: Map[String, String])
+
 case class NetCdfBand(extent: Extent, crs: CRS, varName: String, time: Double)
+object NetCdfBand {
+  implicit def _extent = 
+    SimpleLens[NetCdfBand, Extent](band => band.extent, (band, extent) => NetCdfBand(extent, band.crs, band.varName, band.time))
+}
 
 object GdalInputFormat {
   def parseMeta(meta: List[String]): Map[String, String] =

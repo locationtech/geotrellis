@@ -13,32 +13,22 @@ import org.apache.hadoop.fs.Path
 import spray.json._
 
 import scala.collection.mutable
+import scala.reflect._
 
 import java.nio.ByteBuffer
- import java.io.PrintWriter
+import java.io.PrintWriter
 
 object HadoopUtils {
   final val SEQFILE_GLOB = "/*[0-9]*/data"
   final val SPLITS_FILE = "splits"
   final val METADATA_FILE = "metadata.json"
 
-  def readSplits(raster: Path, conf: Configuration): Array[SpatialKey] = {
+  def readSplits[K: HadoopWritable: ClassTag](raster: Path, conf: Configuration): Array[K] = {
+    val keyWritable = implicitly[HadoopWritable[K]]
+
     val splitFile = new Path(raster, HadoopUtils.SPLITS_FILE)
-    HdfsUtils.getLineScanner(splitFile, conf) match {
-      case Some(in) =>
-        try {
-          val splits = new mutable.ListBuffer[SpatialKey]
-          for (line <- in) {
-            splits +=
-            ByteBuffer.wrap(Base64.decodeBase64(line.getBytes)).getLong
-          }
-          splits.toArray
-        } finally {
-          in.close
-        }
-      case None =>
-        Array[SpatialKey]()
-    }
+
+    HdfsUtils.readArray[K](splitFile, conf)
   }
 
   def writeSplits(splits: Seq[Long], raster: Path, conf: Configuration): Unit = {

@@ -34,7 +34,7 @@ class HadoopIngestArgs extends IngestArgs {
 /**
   * @author akini
   *
-  * Ingest GeoTIFFs into ArgWritable.
+  * Ingest GeoTIFFs into TileWritable.
   *
   * Works in two modes:
   *

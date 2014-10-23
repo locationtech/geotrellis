@@ -23,11 +23,11 @@ import geotrellis.spark.tiling._
 import org.apache.hadoop.io.Writable
 
 package object formats {
-//  type WritableTile = (SpatialKeyWritable, ArgWritable)
+//  type WritableTile = (SpatialKeyWritable, TileWritable)
 
   // implicit class ToWritableWrapper(idTile: (SpatialKey, Tile)) {
   //   def toWritable(): WritableTile =
-  //     (SpatialKeyWritable(idTile.id), ArgWritable.fromTile(idTile.tile))
+  //     (SpatialKeyWritable(idTile.id), TileWritable.fromTile(idTile.tile))
   // }
 
   // implicit class WritableTileWrapper(wt: WritableTile) {
