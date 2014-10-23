@@ -7,18 +7,34 @@ import spire.syntax.cfor._
 import scala.collection._
 import java.lang.{ Double => JDouble }
 
+import com.vividsolutions.jts.{geom => jts}
+import GeomFactory._
+
 object LineDissolve {
 
   class LineSegment(val p1: Point, val p2: Point) {
-    def toLine: Line = Line(p1, p2)
+    def toLine: Line = 
+      Line(factory.createLineString(Array(new Coordinate(p1.x, p1.y), new Coordinate(p2.x, p2.y)))
 
-    override def hashCode = {
-      val b0 = JDouble.doubleToLongBits(p1.x) ^ (
-        JDouble.doubleToLongBits(p1.y) * 31)
+    override val hashCode = {
+      var x1 = 0
+      var y1 = 0
+      var x2 = 0
+      var y2 = 0
+
+      if(p1.x < p2.x) { x1 = p1.x ; y1 = p1.y ; x2 = p2.x ; y2 = p2.y }
+      else if(p1.x > p2.x) { x1 = p2.x ; y1 = p2.y ; x2 = p1.x ; y2 = p1.y }
+      else {
+        if(p1.y < p2.y) { x1 = p1.x ; y1 = p1.y ; x2 = p2.x ; y2 = p2.y }
+        else { x1 = p2.x ; y1 = p2.y ; x2 = p1.x ; y2 = p1.y }
+      }
+
+      val b0 = JDouble.doubleToLongBits(x1) ^ (
+        JDouble.doubleToLongBits(y1) * 31)
       val hash0 = b0.toInt ^ (b0 >> 32).toInt
 
-      val b1 = JDouble.doubleToLongBits(p2.x) ^ (
-        JDouble.doubleToLongBits(p2.y) * 31)
+      val b1 = JDouble.doubleToLongBits(x2) ^ (
+        JDouble.doubleToLongBits(y2) * 31)
       val hash1 = b1.toInt ^ (b1 >> 32).toInt
 
       hash0 ^ hash1
