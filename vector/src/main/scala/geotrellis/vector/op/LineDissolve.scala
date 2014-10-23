@@ -30,7 +30,7 @@ object LineDissolve {
     val lineArray = lines.toArray
     var size = 0
     cfor(0)(_ < lineArray.size, _ + 1) { i =>
-      size += lineArray(i).points.size
+      size += lineArray(i).vertexCount
     }
 
     val hashSet = new java.util.HashSet[LineSegment](size + 1000, 1.0f)

@@ -19,9 +19,10 @@ package geotrellis.vector
 import GeomFactory._
 
 import com.vividsolutions.jts.{geom=>jts}
-import com.vividsolutions.jts.operation.linemerge._//LineMerger
 
 import scala.collection.JavaConversions._
+
+import spire.syntax.cfor._
 
 object MultiLine {
   lazy val EMPTY = MultiLine(Seq[Line]())
@@ -64,8 +65,18 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
     jtsGeom.getBoundary
 
   /** Returns this MulitLine's vertices. */
-  lazy val vertices: Array[Point] =
-    jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
+  lazy val vertices: Array[Point] = {
+    val coords = jtsGeom.getCoordinates
+    val arr = Array.ofDim[Point](coords.size)
+    cfor(0)(_ < arr.size, _ + 1) { i =>
+      val coord = coords(i)
+      arr(i) = Point(coord.x, coord.y)
+    }
+    arr
+  }
+
+  /** Get the number of vertices in this geometry */
+  lazy val vertexCount: Int = jtsGeom.getNumPoints
 
   /**
    * Returns the minimum extent that contains all the lines in
@@ -340,19 +351,4 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
    */
   def within(g: AtLeastOneDimension): Boolean =
     jtsGeom.within(g.jtsGeom)
-
-  /**
-    * Merges the lines in this multiline
-    */
-  def merged: MultiLine = {
-    val merger = new LineMerger
-
-    lines.foreach { line => merger.add(line.jtsGeom) }
-    MultiLine(
-      merger.getMergedLineStrings.map { mergedLine =>
-        Line(mergedLine.asInstanceOf[jts.LineString])
-      }
-    )
-
-  }
 }

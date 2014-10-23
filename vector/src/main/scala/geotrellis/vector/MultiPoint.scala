@@ -20,6 +20,8 @@ import GeomFactory._
 
 import com.vividsolutions.jts.{geom => jts}
 
+import spire.syntax.cfor._
+
 object MultiPoint {
   lazy val EMPTY = MultiPoint(Seq[Point]())
 
@@ -43,11 +45,20 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   def normalized(): MultiPoint = { jtsGeom.normalize ; MultiPoint(jtsGeom) }
 
   /** Returns the Points contained in MultiPoint. */
-  lazy val points: Array[Point] = {
-    for (i <- 0 until jtsGeom.getNumPoints) yield {
-      Point(jtsGeom.getGeometryN(i).asInstanceOf[jts.Point])
+  lazy val points: Array[Point] = vertices
+
+  lazy val vertices: Array[Point] = {
+    val coords = jtsGeom.getCoordinates
+    val arr = Array.ofDim[Point](coords.size)
+    cfor(0)(_ < arr.size, _ + 1) { i =>
+      val coord = coords(i)
+      arr(i) = Point(coord.x, coord.y)
     }
-  }.toArray
+    arr
+  }
+
+  /** Get the number of vertices in this geometry */
+  lazy val vertexCount: Int = jtsGeom.getNumPoints
 
   /**
    * Returns the minimum extent that contains all the points
