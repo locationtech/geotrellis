@@ -6,7 +6,7 @@ import spire.syntax.cfor._
 
 import java.lang.{ Double => JDouble }
 
-object FastLineDeDuplication {
+object LineDeDuplication {
 
   class LineSegment(val line: (Point, Point)) {
 
@@ -24,7 +24,7 @@ object FastLineDeDuplication {
 
   }
 
-  implicit class LineDeDuplication(val lines: Seq[Line]) {
+  implicit class DeDuplication(val lines: Seq[Line]) {
 
     def deDuplicate: Seq[(Point, Point)] = {
       var size = 0

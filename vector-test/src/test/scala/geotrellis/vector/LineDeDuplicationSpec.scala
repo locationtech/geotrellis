@@ -1,11 +1,11 @@
 package geotrellis.vector
 
-import geotrellis.vector.FastLineDeDuplication._
+import geotrellis.vector.LineDeDuplication._
 import geotrellis.vector.json._
 
 import org.scalatest._
 
-class FastLineDeDuplicationSpec extends FunSpec
+class LineDeDuplicationSpec extends FunSpec
     with Matchers {
 
   object Timer {
