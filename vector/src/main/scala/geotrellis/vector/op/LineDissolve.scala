@@ -14,7 +14,7 @@ object LineDissolve {
 
   class LineSegment(val p1: Point, val p2: Point) {
     def toLine: Line = 
-      Line(factory.createLineString(Array(new Coordinate(p1.x, p1.y), new Coordinate(p2.x, p2.y)))
+      Line(factory.createLineString(Array(new Coordinate(p1.x, p1.y), new Coordinate(p2.x, p2.y))))
 
     override val hashCode = {
       var x1 = 0
