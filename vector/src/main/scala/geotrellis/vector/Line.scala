@@ -82,12 +82,12 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   def points: Array[Point] = vertices
 
   /** Returns this Line's vertices. */
-  lazy val vertices: Array[Point] = {
-    val coords = jtsGeom.getCoordinates
-    val arr = Array.ofDim[Point](coords.size)
+  def vertices: Array[Point] = {
+    val size = jtsGeom.getNumPoints
+    val arr = Array.ofDim[Point](size)
     cfor(0)(_ < arr.size, _ + 1) { i =>
-      val coord = coords(i)
-      arr(i) = Point(coord.x, coord.y)
+      val p = jtsGeom.getPointN(i)
+      arr(i) = Point(p)
     }
     arr
   }
