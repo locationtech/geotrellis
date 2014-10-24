@@ -25,7 +25,7 @@ class LineDissolveSpec extends FunSpec
     lines
   }
 
-  describe("should work as expected") {
+  describe("LineDissolve") {
 
     it("should handle two line segments not overlapping") {
       val s = List(Line((0, 0), (1, 1)), Line((2, 2), (3, 3)))
@@ -33,6 +33,24 @@ class LineDissolveSpec extends FunSpec
         Line(Point(0, 0), Point(1, 1)),
         Line(Point(2, 2), Point(3, 3))
       ).sortBy(_.hashCode))
+    }
+
+    it("should merge two lines that are coincidental at the middle") {
+      val s = 
+        List(
+          Line( (0, 0), (1, 1), (1, 2), (2, 3)),
+          Line( (0, 3), (1, 2), (1, 1), (2, 0))
+        )
+
+      s.dissolve.sortBy(_.hashCode) should be(
+        List(
+          Line((0, 0), (1, 1)),
+          Line((1, 1), (1, 2)),
+          Line((0, 3), (1, 2)),
+          Line((1, 1), (2, 0)),
+          Line((1, 2), (2, 3))
+        ).sortBy(_.hashCode)
+      )
     }
 
     it("should handle one line string") {
@@ -47,8 +65,7 @@ class LineDissolveSpec extends FunSpec
     it("should handle two line segments overlapping") {
       val s = List(Line((0, 0), (1, 1)), Line((1, 1), (0, 0)))
       s.dissolve.sortBy(_.hashCode) should be(List(
-        Line(Point(0, 0), Point(1, 1)),
-        Line(Point(1, 1), Point(0, 0))
+        Line(Point(0, 0), Point(1, 1))
       ).sortBy(_.hashCode))
     }
 
