@@ -73,7 +73,6 @@ object Reproject {
           val y = srcY(col)
 
           val v = interpolate(x, y)
-          if (col == 63 && row == 0) println(s"d x: $x y: $y, v: $v")
           newTile.set(col, row, v)
 
           // Add row height for next iteration

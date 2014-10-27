@@ -39,17 +39,15 @@ object ImageConverter {
 class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
 
   def convert(uncompressedImage: Array[Array[Byte]]): Array[Byte] = {
+    val bitsPerPixel = directory.bitsPerPixel
+
     val stripedImage =
       if (!directory.hasStripStorage) tiledImageToRowImage(uncompressedImage)
-      else if (directory.bitsPerPixel == 1) stripBitImageOverflow(uncompressedImage)
+      else if (bitsPerPixel == 1) stripBitImageOverflow(uncompressedImage)
       else uncompressedImage.flatten
 
-    if (directory.cellType == TypeFloat && !isBigEndian)
-      flipToFloat(stripedImage)
-    else if (directory.cellType == TypeDouble && !isBigEndian)
-      flipToDouble(stripedImage)
-    else
-      stripedImage
+    if (!isBigEndian && bitsPerPixel > 8) flip(stripedImage, bitsPerPixel / 8)
+    else stripedImage
   }
 
   private def flipToFloat(image: Array[Byte]): Array[Byte] = flip(image, 4)
@@ -62,10 +60,11 @@ class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
 
     var i = 0
     while (i < size) {
-      arr(i) = image(i + flipSize - 1)
-      arr(i + 1) = image(i + flipSize - 2)
-      arr(i + 2) = image(i + flipSize - 3)
-      arr(i + 3) = image(i + flipSize - 4)
+      var j = 0
+      while (j < flipSize) {
+        arr(i + j) = image(i + flipSize - 1 - j)
+        j += 1
+      }
 
       i += flipSize
     }

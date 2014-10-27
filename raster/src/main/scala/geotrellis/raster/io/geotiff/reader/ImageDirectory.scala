@@ -456,16 +456,16 @@ case class ImageDirectory(
       case _ => throw new MalformedGeoTiffException("no bitsPerSample values!")
     }
 
-  def toRaster(): (ArrayTile, Extent, CRS) = {
+  def toRaster: (ArrayTile, Extent, CRS) = {
     val cols = this |-> imageWidthLens get
     val rows = this |-> imageLengthLens get
 
     val tile =
       this |-> gdalInternalNoDataLens get match {
         case Some(gdalNoData) =>
-          ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows, gdalNoData)
+          ArrayTile.fromBytes(imageBytes, cellType, cols, rows, gdalNoData)
         case None =>
-          ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows)
+          ArrayTile.fromBytes(imageBytes, cellType, cols, rows)
       }
 
     (tile, extent, crs)
