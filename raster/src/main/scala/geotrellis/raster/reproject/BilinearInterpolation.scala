@@ -5,8 +5,8 @@ import geotrellis.vector.Extent
 
 class BilinearInterpolation(tile: Tile, extent: Extent) extends Interpolation {
   private val re = RasterExtent(tile, extent)
-  private val cols = tile.cols
-  private val rows = tile.rows
+  protected val cols = tile.cols
+  protected val rows = tile.rows
 
   // Define bounds outside of which we will consider the source as NoData
   private val westBound = extent.xmin
@@ -14,27 +14,28 @@ class BilinearInterpolation(tile: Tile, extent: Extent) extends Interpolation {
   private val northBound = extent.ymax
   private val southBound = extent.ymin
 
-  private val xmin = extent.xmin + re.cellwidth / 2.0
-  private val xmax = extent.xmax - re.cellwidth / 2.0
-  private val ymin = extent.ymin + re.cellheight / 2.0
-  private val ymax = extent.ymax - re.cellheight / 2.0
-  private val cellwidth = re.cellwidth
-  private val cellheight = re.cellheight
+  protected val cellwidth = re.cellwidth
+  protected val cellheight = re.cellheight
 
+  protected val xmin = extent.xmin + cellwidth / 2.0
+  protected val xmax = extent.xmax - cellwidth / 2.0
+  protected val ymin = extent.ymin + cellheight / 2.0
+  protected val ymax = extent.ymax - cellheight / 2.0
+
+  protected def isValid(x: Double, y: Double) =
+    x >= westBound && x <= eastBound && y >= southBound && y <= northBound
+
+  // TODO: talk with Rob and find a way to avoid this code dup.
   override def interpolate(x: Double, y: Double): Int =
-    if (x < westBound || eastBound < x ||
-      y < southBound || northBound < y) {
-      NODATA // does raster have specific NODATA?
-    } else {
+    if (!isValid(x, y)) NODATA // does raster have specific NODATA?
+    else {
       val (leftCol, topRow, xRatio, yRatio) = resolveTopLeftCoordsAndRatios(x, y)
       bilinearInt(leftCol, topRow, xRatio, yRatio)
     }
 
-  def interpolateDouble(x: Double, y: Double): Double =
-    if (x < westBound || eastBound < x ||
-      y < southBound || northBound < y) {
-      Double.NaN // does raster have specific NODATA?
-    } else {
+  override def interpolateDouble(x: Double, y: Double): Double =
+    if (!isValid(x, y)) Double.NaN // does raster have specific NODATA?
+    else {
       val (leftCol, topRow, xRatio, yRatio) = resolveTopLeftCoordsAndRatios(x, y)
       bilinearDouble(leftCol, topRow, xRatio, yRatio)
     }

@@ -9,17 +9,28 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
 
   val Epsilon = 1e-9
 
-  def testBilinearInterpolation(
-    tile: Tile,
-    result: Double,
-    xRatio: Double,
-    yRatio: Double) = {
-    val bi = new BilinearInterpolation(tile, Extent(0, 0, 1, 1))
-    bi.bilinearDouble(0, 0, xRatio, yRatio) should be (result +- Epsilon)
+  def testInterpolationInt(
+    x: Double,
+    y: Double,
+    res: Double,
+    tile: Tile = ArrayTile(Array[Int](1, 2, 3, 4), 2, 2),
+    extent: Extent = Extent(0, 0, 1, 1)) = {
+    val bi = new BilinearInterpolation(tile, extent)
+    bi.interpolate(x, y) should be (res)
+  }
+
+  def testInterpolationDouble(
+    x: Double,
+    y: Double,
+    res: Double,
+    tile: Tile = ArrayTile(Array[Double](1, 2, 3, 4), 2, 2),
+    extent: Extent = Extent(0, 0, 1, 1)) = {
+    val bi = new BilinearInterpolation(tile, extent)
+    bi.interpolateDouble(x, y) should be (res +- Epsilon)
   }
 
   def testBilinearSquareCenter(tile: Tile, result: Double) =
-    testBilinearInterpolation(tile, result, 0.5, 0.5)
+    testInterpolationDouble(0.5, 0.5, result, tile)
 
   describe("interpolates correctly at square center") {
 
@@ -88,7 +99,7 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
 
       for (x <- 1 to 99; y <- 1 to 99) {
         val (xr, yr) = (x.toDouble / 100, y.toDouble / 100)
-        testBilinearInterpolation(tile, res, xr, yr)
+        testInterpolationDouble(xr, yr, res, tile)
       }
     }
 
@@ -101,7 +112,7 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
       // 4 contrib = 4 * 0.25 * 0.25 = 0.25
       // accum divisor = 1
       // res = 1.75
-      testBilinearInterpolation(t1, 1.75, 0.25, 0.25)
+      testInterpolationDouble(0.25, 0.25, 1.75, t1)
 
       // 1 contrib: 1 * 0.49 * 1 = 0.49
       // 2 contrib: 2 * 0.51 * 1 = 1.02
@@ -109,7 +120,7 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
       // 4 contrib: 0
       // accum divisor = 1
       // res = 1.51
-      testBilinearInterpolation(t1, 1.51, 0.51, 0)
+      testInterpolationDouble(0.51, 0, 1.51, t1)
 
       // 1 contrib: 0
       // 2 contrib: 0
@@ -117,7 +128,7 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
       // 4 contrib: 4 * 0.49 * 1 = 1.96
       // accum divisor = 1
       // res = 3.49
-      testBilinearInterpolation(t1, 3.49, 0.49, 1)
+      testInterpolationDouble(0.49, 1, 3.49, t1)
     }
 
   }
@@ -131,22 +142,22 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
 
       for (y <- 1 to 99) {
         val (xr, yr) = (0, y.toDouble / 100)
-        testBilinearInterpolation(tile, res, xr, yr)
+        testInterpolationDouble(xr, yr, res, tile)
       }
 
       for (y <- 1 to 99) {
         val (xr, yr) = (1, y.toDouble / 100)
-        testBilinearInterpolation(tile, res, xr, yr)
+        testInterpolationDouble(xr, yr, res, tile)
       }
 
       for (x <- 1 to 99) {
         val (xr, yr) = (x.toDouble / 100, 0)
-        testBilinearInterpolation(tile, res, xr, yr)
+        testInterpolationDouble(xr, yr, res, tile)
       }
 
       for (x <- 1 to 99) {
         val (xr, yr) = (x.toDouble / 100, 1)
-        testBilinearInterpolation(tile, res, xr, yr)
+        testInterpolationDouble(xr, yr, res, tile)
       }
     }
 
@@ -296,26 +307,6 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
   }
 
   describe("interpolation should work correctly") {
-
-    def testInterpolationInt(
-      x: Double,
-      y: Double,
-      res: Double,
-      tile: Tile = ArrayTile(Array[Int](1, 2, 3, 4), 2, 2),
-      extent: Extent = Extent(0, 0, 1, 1)) = {
-      val bi = new BilinearInterpolation(tile, extent)
-      bi.interpolate(x, y) should be (res)
-    }
-
-    def testInterpolationDouble(
-      x: Double,
-      y: Double,
-      res: Double,
-      tile: Tile = ArrayTile(Array[Double](1, 2, 3, 4), 2, 2),
-      extent: Extent = Extent(0, 0, 1, 1)) = {
-      val bi = new BilinearInterpolation(tile, extent)
-      bi.interpolateDouble(x, y) should be (res +- Epsilon)
-    }
 
     it("should interpolate correctly at top left corner") {
       testInterpolationInt(0, 1, 1)
