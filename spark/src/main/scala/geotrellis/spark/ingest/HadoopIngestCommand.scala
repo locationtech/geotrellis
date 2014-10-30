@@ -47,14 +47,13 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
     implicit val sparkContext = args.sparkContext("Ingest")
 
     val outPath = new Path(args.outputpyramid) // TODO: Change args.outputpyramid to be root path of catalog.
-
-    val catalog: HadoopCatalog = HadoopCatalog(sparkContext, inPath)
-    val ingest = new HadoopIngest[ProjectedExtent, SpatialKey](catalog, ZoomedLayoutScheme())
-
     val inPath = new Path(args.input) 
     val layerName: String = ??? // TODO: Create layer name argument
     val source = sparkContext.hadoopGeoTiffRDD(inPath)
     val destCRS = LatLng // Need to create from parameters
+
+    val catalog: HadoopCatalog = HadoopCatalog(sparkContext, inPath)
+    val ingest = new HadoopIngest[ProjectedExtent, SpatialKey](catalog, ZoomedLayoutScheme())
 
     ingest(source, layerName, destCRS)
   }

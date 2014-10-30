@@ -40,8 +40,7 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
     implicit val sparkContext = args.sparkContext("Ingest")
 
     val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
-    val ingest = 
-      new AccumuloIngest[ProjectedExtent, SpatialKey](accumulo.catalog(catalogConfig), ZoomedLayoutScheme())
+    val ingest = new AccumuloIngest[ProjectedExtent, SpatialKey](accumulo.catalog, ZoomedLayoutScheme())
 
     val inPath = new Path(args.input)
     val source = sparkContext.hadoopGeoTiffRDD(inPath)
