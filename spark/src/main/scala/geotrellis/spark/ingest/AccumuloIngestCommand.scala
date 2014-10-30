@@ -32,7 +32,7 @@ class AccumuloIngest[T: IngestKey, K: SpatialComponent: AccumuloDriver: ClassTag
 
 object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
   def main(args: AccumuloIngestArgs): Unit = {
-   System.setProperty("com.sun.media.jai.disableMediaLib", "true")
+    System.setProperty("com.sun.media.jai.disableMediaLib", "true")
 
     val conf = args.hadoopConf
     conf.set("io.map.index.interval", "1")
@@ -40,42 +40,14 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
     implicit val sparkContext = args.sparkContext("Ingest")
 
     val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
-    val ingest = new AccumuloIngest[ProjectedExtent, SpatialKey](accumulo.catalog, ZoomedLayoutScheme())
+    val ingest = 
+      new AccumuloIngest[ProjectedExtent, SpatialKey](accumulo.catalog(catalogConfig), ZoomedLayoutScheme())
 
     val inPath = new Path(args.input)
     val source = sparkContext.hadoopGeoTiffRDD(inPath)
     val layer = args.layer
-    val destCRS = LatLng // Need to create from parameters
+    val destCRS = LatLng // TODO: Need to create from parameters
 
     ingest(source, layer, destCRS)
   }
 }
-
-//   def main(args: AccumuloIngestArgs): Unit = {
-//     val conf = args.hadoopConf
-//     conf.set("io.map.index.interval", "1")
-
-//     val inPath = new Path(args.input)
-
-//     val sourceCRS = LatLng
-//     val destCRS = LatLng
-
-//     implicit val sparkContext = args.sparkContext("Ingest")
-
-//     val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
-//     val catalog = accumulo.catalog
-
-//     try {
-//       val source = sparkContext.hadoopGeoTiffRDD(inPath)
-//       val sink = accumuloSink(args.table, args.layer, catalog)
-
-//       if (args.pyramid)
-//         Ingest(sparkContext)(source, Ingest.pyramid(sink), destCRS, TilingScheme.TMS)
-//       else
-//         Ingest(sparkContext)(source, sink, destCRS, TilingScheme.TMS)
-
-//     } finally {
-//       sparkContext.stop()
-//     }
-//   }
-// }

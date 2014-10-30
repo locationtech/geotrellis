@@ -60,6 +60,7 @@ abstract class Ingest[T: IngestKey, K: SpatialComponent: ClassTag](layoutScheme:
   /** Override if you know the rasters are uniform in extent (performance optimization) */
   def isUniform = false
 
+  // TODO: Make configurable.
   def pyramid(layerMetaData: LayerMetaData, rdd: RasterRDD[K]): Unit = {
     val layerId = layerMetaData.id
     logInfo(s"Saving RDD: ${layerId.name} for zoom level ${layerId.zoom}")
@@ -68,15 +69,13 @@ abstract class Ingest[T: IngestKey, K: SpatialComponent: ClassTag](layoutScheme:
   }
 
   def apply(sourceTiles: RDD[(T, Tile)], layerName: String, destCRS: CRS) = {
-    val _projectedExtent = implicitly[SimpleLens[T, ProjectedExtent]]
-
     val reprojectedTiles =
       sourceTiles
         .reproject(destCRS)
 
     val layerMetaData = 
       LayerMetaData.fromRdd(reprojectedTiles, layerName, destCRS, layoutScheme, isUniform) {  key: T => 
-        (key |-> _projectedExtent get).extent 
+        key.projectedExtent.extent 
       }
 
     val rasterRdd = tiler.tile(reprojectedTiles, layerMetaData.rasterMetaData)

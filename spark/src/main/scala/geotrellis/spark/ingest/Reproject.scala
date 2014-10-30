@@ -13,11 +13,10 @@ import scala.reflect.ClassTag
 
 object Reproject {
   def reproject[T: IngestKey](rdd: RDD[(T, Tile)], destCRS: CRS): RDD[(T, Tile)] = {
-    val _projectedExtent = implicitly[IngestKey[T]]
     rdd.map { case (key, tile) =>
-      val ProjectedExtent(extent, crs) = key |-> _projectedExtent get
+      val ProjectedExtent(extent, crs) = key.projectedExtent
       val (newTile, newExtent) = tile.reproject(extent, crs, destCRS)
-      val newKey = key |-> _projectedExtent set(ProjectedExtent(newExtent, destCRS))
+      val newKey = key.updateProjectedExtent(ProjectedExtent(newExtent, destCRS))
       (newKey, newTile)
     }
   }

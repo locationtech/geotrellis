@@ -26,9 +26,9 @@ class AccumuloMetaDataCatalog(connector: Connector, val catalogTable: String) ex
   def save(metaData: LayerMetaData, table: String, clobber: Boolean): Try[Unit] =
     Try {
       if(idToMetaData.contains(metaData.id)) {
-        if(clobber) {
-          ??? // TODO: Need to implement deleting metadata out of catalog
-        } else {
+        // If we want to clobber, by default Accumulo will overwrite it.
+        // If not, let the user know.
+        if(!clobber) {
           throw new LayerExistsError(metaData.id)
         }
       }

@@ -26,7 +26,7 @@ trait TileScheme extends Serializable {
   def apply(tileCols: Int, tileRows: Int): TileKeyTransform
 }
 
-/** This does not seem right! Furthur research shows that TMS tiling actually
+/** TODO: This does not seem right! Furthur research shows that TMS tiling actually
   * says that (0,0) is the top left. What gives?
   */
 object TmsTileScheme extends TileScheme {

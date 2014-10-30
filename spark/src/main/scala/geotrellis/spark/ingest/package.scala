@@ -19,6 +19,17 @@ import scala.reflect.ClassTag
 package object ingest {
   type IngestKey[T] = SimpleLens[T, ProjectedExtent]
 
+  implicit class IngestKeyWrapper[T: IngestKey](key: T) {
+    val _projectedExtent = implicitly[IngestKey[T]]
+
+    def projectedExtent: ProjectedExtent =
+      key |-> _projectedExtent get
+
+    def updateProjectedExtent(pe: ProjectedExtent): T =
+      key |-> _projectedExtent set(pe)
+  }
+
+  // TODO: Move this to geotrellis.vector
   case class ProjectedExtent(extent: Extent, crs: CRS)
   object ProjectedExtent {
     implicit def ingestKey: IngestKey[ProjectedExtent] = SimpleLens(x => x, (_, x) => x)
@@ -38,54 +49,6 @@ package object ingest {
         val (newTile, newExtent) = tile.reproject(extent, crs, destCRS)
         (key |-> _projectedExtent set(ProjectedExtent(newExtent, destCRS))) -> newTile
       }
-  }
-
-  implicit class RetileWrapper[T: IngestKey](rdd: RDD[(T, Tile)]) {
-    val _projectedExtent = implicitly[IngestKey[T]]
-    private def getExtent(ingestKey: T): Extent =
-      (ingestKey |-> _projectedExtent get).extent
-
-    def retile[K: SpatialComponent: ClassTag](rasterMetaData: RasterMetaData)(createKey: (T, SpatialKey) => K): RasterRDD[K] = {
-      val bcMetaData = rdd.sparkContext.broadcast(rasterMetaData)
-
-      val tilesWithKeys: RDD[(K, (K, Extent, Tile))] = 
-        rdd
-          .flatMap { case (key, tile) =>
-            val mapTransform = bcMetaData.value.mapTransform
-            val extent = getExtent(key)
-
-            mapTransform(extent)
-              .coords
-              .map { spatialKey =>
-                val newKey = createKey(key, spatialKey)
-                (newKey, (newKey, extent, tile))
-              }
-           }
-
-      // Functions for combine step
-      def createTile(tup: (K, Extent, Tile)): MutableArrayTile = {
-        val (key, extent, tile) = tup
-        val metaData = bcMetaData.value
-        val tmsTile = ArrayTile.empty(metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
-        tmsTile.merge(metaData.mapTransform(key), extent, tile)
-      }
-
-      def combineTiles1(tile: MutableArrayTile, tup: (K, Extent, Tile)): MutableArrayTile = {
-        val (key, extent, prevTile) = tup
-        val metaData = bcMetaData.value
-        tile.merge(metaData.mapTransform(key), extent, prevTile)
-      }
-
-      def combineTiles2(tile1: MutableArrayTile, tile2: MutableArrayTile): MutableArrayTile =
-        tile1.merge(tile2)
-
-      val newRdd: RDD[(K, Tile)] = 
-        new PairRDDFunctions(tilesWithKeys)
-          .combineByKey(createTile, combineTiles1, combineTiles2)
-          .map { case (key, tile) => (key, tile: Tile) }
-
-      new RasterRDD[K](newRdd, rasterMetaData)
-    }
   }
 
   /** Tile methods used by the mosaicing function to merge tiles. */

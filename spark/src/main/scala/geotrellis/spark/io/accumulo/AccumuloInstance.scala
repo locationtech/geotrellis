@@ -25,13 +25,14 @@ case class AccumuloInstance(
   val connector = instance.getConnector(user, token)
 
   /** The value is specified in reference.conf, applications can overwrite it in their application.conf */
-  val catalogTable: String = {
+  val (catalogTable, tilesTable): String = {
     ConfigFactory.load().getString("geotrellis.accumulo.catalog")
   }
 
   val metaDataCatalog = new AccumuloMetaDataCatalog(connector, catalogTable)
 
-  def catalog(implicit sc: SparkContext) = new AccumuloCatalog(sc, this, metaDataCatalog)
+  def catalog(config: AccumuloCatalog.Config = DEFAULT)(implicit sc: SparkContext) = 
+    AccumuloCatalog(sc, this, metaDataCatalog, config)
 
   def setAccumuloConfig(conf: Configuration): Unit = {
     if (instanceName == "fake") {

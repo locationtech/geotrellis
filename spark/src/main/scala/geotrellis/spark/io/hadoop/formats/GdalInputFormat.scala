@@ -67,8 +67,6 @@ case class NetCdfBand(extent: Extent, crs: CRS, varName: String, time: Double)
 object NetCdfBand {
   implicit def ingestKey: IngestKey[NetCdfBand] = 
     SimpleLens[NetCdfBand, ProjectedExtent](band => ProjectedExtent(band.extent, band.crs), (band, pe) => NetCdfBand(pe.extent, pe.crs, band.varName, band.time))
-  // implicit def _extent = 
-  //   SimpleLens[NetCdfBand, Extent](band => band.extent, (band, extent) => NetCdfBand(extent, band.crs, band.varName, band.time))
 }
 
 object GdalInputFormat {

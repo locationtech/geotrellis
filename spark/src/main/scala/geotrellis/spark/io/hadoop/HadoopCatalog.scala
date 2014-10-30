@@ -30,7 +30,7 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
   type Params = Path
   type SupportedKey[K] = HadoopWritable[K]
 
-  def paramsFor(layerId: LayerId): Path =
+  def paramsFor[K: SupportedKey](layerId: LayerId): Path =
     new Path(rootPath, catalogConfig.layerDataDir(layerId))
 
   private def writeSplits[K: HadoopWritable](splits: Array[K], raster: Path, conf: Configuration): Unit = {

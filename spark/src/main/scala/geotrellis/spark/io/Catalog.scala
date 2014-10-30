@@ -11,7 +11,7 @@ trait Catalog {
   type SupportedKey[K]
 
   def metaDataCatalog: MetaDataCatalog[Params]
-  def paramsFor(layerId: LayerId): Params
+  def paramsFor[K: SupportedKey](layerId: LayerId): Params
 
   def load[K: SupportedKey: Ordering: ClassTag](layerId: LayerId): Try[RasterRDD[K]] =
     load(layerId, FilterSet.EMPTY[K])

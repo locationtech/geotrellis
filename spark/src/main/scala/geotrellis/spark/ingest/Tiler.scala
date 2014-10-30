@@ -57,11 +57,10 @@ abstract class Tiler[T, K: SpatialComponent: ClassTag] {
 
 object Tiler {
   def apply[T: IngestKey, K: SpatialComponent: ClassTag](createKey: (T, SpatialKey) => K): Tiler[T, K] = {
-    val _projectedExtent = implicitly[IngestKey[T]]
     val ck = createKey
 
     new Tiler[T, K] {
-      def getExtent(inKey: T): Extent = (inKey |-> _projectedExtent get).extent
+      def getExtent(inKey: T): Extent = inKey.projectedExtent.extent
       def createKey(inKey: T, spatialComponent: SpatialKey): K = ck(inKey, spatialComponent)
     }
   }
