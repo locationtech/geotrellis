@@ -16,9 +16,13 @@
 
 package geotrellis.spark.op
 
+import geotrellis.spark._
+import scala.reflect._
+
 package object local {
-  implicit class LocalRasterRDDSourceExtensions[K](val rasterRDD: RasterRDD[K]) 
+  implicit class LocalRasterRDDSourceExtensions[K](val rasterRDD: RasterRDD[K])(implicit val keyClassTag: ClassTag[K])
       extends LocalRasterRDDMethods[K] { }
 
-  implicit class LocalRasterRDDSeqExtensions[K](val rasterRDDs: Traversable[RasterRDD[K]]) extends LocalRasterRDDSeqMethods[K] { }
+  implicit class LocalRasterRDDSeqExtensions[K](val rasterRDDs: Traversable[RasterRDD[K]])(implicit val keyClassTag: ClassTag[K])
+      extends LocalRasterRDDSeqMethods[K] { }
 }

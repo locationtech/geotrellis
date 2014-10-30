@@ -34,10 +34,10 @@ object TmsTileScheme extends TileScheme {
 
   def apply(tileCols: Int, tileRows: Int): TileKeyTransform =
     new TileKeyTransform {
-      def tileToGrid(x: Int, y: Int): GridCoord =
+      def tileToKey(x: Int, y: Int): SpatialKey =
         (x, tileRows - y - 1)
 
-      def gridToTile(col: Int, row: Int): GridCoord =
+      def keyToTile(col: Int, row: Int): (Int, Int) =
         (col, tileRows - row - 1)
     }
 }
@@ -47,7 +47,7 @@ object GridTileScheme extends TileScheme {
 
   def apply(tileCols: Int, tileRows: Int): TileKeyTransform =
     new TileKeyTransform {
-      def tileToGrid(x: Int, y: Int) = (x, y)
-      def gridToTile(col: Int, row: Int) = (col, row)
+      def tileToKey(x: Int, y: Int): SpatialKey = SpatialKey(x, y)
+      def keyToTile(col: Int, row: Int): (Int, Int) = (col, row)
     }
 }

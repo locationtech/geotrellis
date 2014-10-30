@@ -34,7 +34,7 @@ import scala.collection.mutable.ListBuffer
 import scala.util.Random
 import scala.reflect._
 
-abstract class LineScanner extends Iterator[String] with org.apache.hadoop.io.Closeable
+abstract class LineScanner extends Iterator[String] with java.io.Closeable
 
 object HdfsUtils {
 

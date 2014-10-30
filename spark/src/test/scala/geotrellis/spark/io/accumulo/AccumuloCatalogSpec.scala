@@ -4,12 +4,12 @@ import java.io.IOException
 
 import geotrellis.raster._
 
-import geotrellis.raster.op.local._
+import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark._
 import geotrellis.spark.tiling._
+import geotrellis.raster.op.local._
 import geotrellis.spark.utils.SparkUtils
 import geotrellis.proj4.LatLng
 
@@ -46,19 +46,19 @@ class AccumuloCatalogSpec extends FunSpec
       val tableOps = accumulo.connector.tableOperations()
       tableOps.create("tiles")
 
-      val sink: (RasterRDD[TileId] => Unit) = { tiles =>
-        catalog.save[TileId](tiles, "ones", "tiles").get
+      val sink: (RasterRDD[SpatialKey] => Unit) = { tiles =>
+        catalog.save[SpatialKey](tiles, "ones", "tiles").get
       }
 
       it("should fail to save without driver"){
-        intercept[DriverNotFound[TileId]] {
+        intercept[DriverNotFound[SpatialKey]] {
           Ingest(sparkContext)(source, sink, LatLng, TilingScheme.TMS)
         }
       }
 
       it("should fail to load without driver"){
-        intercept[DriverNotFound[TileId]] {
-          catalog.load[TileId]("ones", 10).get.count
+        intercept[DriverNotFound[SpatialKey]] {
+          catalog.load[SpatialKey]("ones", 10).get.count
         }
       }
 
@@ -66,7 +66,7 @@ class AccumuloCatalogSpec extends FunSpec
         catalog.register(RasterAccumuloDriver)
         intercept[TableNotFound] {
           Ingest(sparkContext)(source,
-            { tiles =>catalog.save[TileId](tiles, "ones", "NOtiles").get },
+            { tiles =>catalog.save[SpatialKey](tiles, "ones", "NOtiles").get },
             LatLng, TilingScheme.TMS)
         }
       }
@@ -76,12 +76,12 @@ class AccumuloCatalogSpec extends FunSpec
       }
 
       it("should load out saved tiles"){
-        catalog.load[TileId]("ones", 10).get.count should be > 0l
+        catalog.load[SpatialKey]("ones", 10).get.count should be > 0l
       }
 
       it("should load out saved tiles, but only for the right zoom"){
         intercept[LayerNotFound] {
-          catalog.load[TileId]("ones", 9).get.count()
+          catalog.load[SpatialKey]("ones", 9).get.count()
         }
       }
 
@@ -91,7 +91,7 @@ class AccumuloCatalogSpec extends FunSpec
         val expected = List((915,305), (916,305), (917,305), (915,306), (916,306),
           (917,306), (915,307), (916,307), (917,307), (915,308), (916,308), (917,308))
 
-        val rdd = catalog.load[TileId]("ones", 10).get
+        val rdd = catalog.load[SpatialKey]("ones", 10).get
         rdd
           .map{ case (id, tile) => rdd.metaData.transform.indexToGrid(id)}
           .collect should be (expected)
@@ -99,9 +99,9 @@ class AccumuloCatalogSpec extends FunSpec
 
       it("fetch a TileExtent from catalog"){
         val tileBounds = GridBounds(915,305,916,306)
-        val filters = FilterSet[TileId]() withFilter SpaceFilter(tileBounds, GridCoordScheme)
-        val rdd1 = catalog.load[TileId]("ones", 10, filters).get
-        val rdd2 = catalog.load[TileId]("ones", 10, filters).get
+        val filters = FilterSet[SpatialKey]() withFilter SpaceFilter(tileBounds, GridCoordScheme)
+        val rdd1 = catalog.load[SpatialKey]("ones", 10, filters).get
+        val rdd2 = catalog.load[SpatialKey]("ones", 10, filters).get
 
         val out = rdd1.combineTiles(rdd2){case (tms1, tms2) =>
           require(tms1.id == tms2.id)

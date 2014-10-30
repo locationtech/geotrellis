@@ -1,6 +1,5 @@
 package geotrellis.spark
 
-import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.raster._
@@ -18,9 +17,21 @@ import spire.syntax.cfor._
 import scala.reflect.ClassTag
 
 package object ingest {
-  case class ProjectedExtent(extent: Extent, crs: CRS)
+  type IngestKey[T] = SimpleLens[T, ProjectedExtent]
 
-  implicit class ReprojectWrapper[T](rdd: RDD[(T, Tile)])(implicit _projectedExtent: SimpleLens[T, ProjectedExtent]) {
+  case class ProjectedExtent(extent: Extent, crs: CRS)
+  object ProjectedExtent {
+    implicit def ingestKey: IngestKey[ProjectedExtent] = SimpleLens(x => x, (_, x) => x)
+  }
+
+  implicit def projectedExtentToSpatialKeyTiler: Tiler[ProjectedExtent, SpatialKey] =
+    new Tiler[ProjectedExtent, SpatialKey] {
+      def getExtent(inKey: ProjectedExtent): Extent = inKey.extent
+      def createKey(inKey: ProjectedExtent, spatialComponent: SpatialKey): SpatialKey = spatialComponent
+    }
+
+  implicit class ReprojectWrapper[T: IngestKey](rdd: RDD[(T, Tile)]) {
+    val _projectedExtent = implicitly[IngestKey[T]]
     def reproject(destCRS: CRS): RDD[(T, Tile)] =
       rdd.map { case (key, tile) =>
         val ProjectedExtent(extent, crs) = key |-> _projectedExtent get
@@ -29,63 +40,19 @@ package object ingest {
       }
   }
 
-  implicit class MetaDataWrapper[T](rdd: RDD[(T, Tile)])(implicit _projectedExtent: SimpleLens[T, ProjectedExtent]) {
+  implicit class RetileWrapper[T: IngestKey](rdd: RDD[(T, Tile)]) {
+    val _projectedExtent = implicitly[IngestKey[T]]
+    private def getExtent(ingestKey: T): Extent =
+      (ingestKey |-> _projectedExtent get).extent
 
-    /**
-      * Creates metadata from the input RDD, based off of the keys and the LayoutScheme.
-      * Assumes all CRS's are the same for each key.
-      * 
-      *   @param layerName       Name of the layer.
-      *   @param layoutScheme    The LayoutScheme that will determine the zoom level for this layer.
-      *   @param isUniform       If this is true, go through each key to determine the overall extent,
-      *                          cell type and cell size. Otherwise, just take the first key's values.
-      *   @param newMax     New maximum value
-      */
-    def createMetaData(layerName: String, layoutScheme: LayoutScheme, isUniform: Boolean = true): LayerMetaData = {
-      val (uncappedExtent, cellType, cellSize, crs): (Extent, CellType, CellSize, CRS) =
-        if(isUniform) {
-          val (key, tile) = rdd.first
-          val ProjectedExtent(extent, crs) = (key |-> _projectedExtent get)
-          (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows), crs)
-        } else {
-          rdd
-            .map { case (key, tile) =>
-              val ProjectedExtent(extent, crs) = (key |-> _projectedExtent get)
-              (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows), crs)
-             }
-            .reduce { (t1, t2) =>
-              val (e1, ct1, cs1, crs1) = t1
-              val (e2, ct2, cs2, _) = t2
-              (
-                e1.combine(e2),
-                ct1.union(ct2),
-                if(cs1.resolution < cs2.resolution) cs1 else cs2,
-                crs1
-              )
-             }
-        }
-
-      val worldExtent = crs.worldExtent
-      val layoutLevel: LayoutLevel = layoutScheme.levelFor(worldExtent, cellSize)
-
-      val extentIntersection = worldExtent.intersection(uncappedExtent).get
-
-      LayerMetaData(
-        LayerId(layerName, layoutLevel.zoom),
-        RasterMetaData(cellType, extentIntersection, crs, layoutLevel.tileLayout)
-      )
-    }
-  }
-
-  implicit class RetileWrapper[T](rdd: RDD[(T, Tile)])(implicit _extent: SimpleLens[T, Extent]) {
-    def retile[K: SpatialComponent: ClassTag](rasterMetaData: RasterMetaData)(getExtent: T => Extent)(createKey: (T, SpatialKey) => K): RasterRDD[K] = {
+    def retile[K: SpatialComponent: ClassTag](rasterMetaData: RasterMetaData)(createKey: (T, SpatialKey) => K): RasterRDD[K] = {
       val bcMetaData = rdd.sparkContext.broadcast(rasterMetaData)
 
       val tilesWithKeys: RDD[(K, (K, Extent, Tile))] = 
         rdd
           .flatMap { case (key, tile) =>
             val mapTransform = bcMetaData.value.mapTransform
-            val extent = key |-> _extent get
+            val extent = getExtent(key)
 
             mapTransform(extent)
               .coords

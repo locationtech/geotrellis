@@ -1,14 +1,15 @@
 package geotrellis.spark.ingest
 
-import geotrellis.spark.io.accumulo._
-import org.scalatest._
-import geotrellis.proj4.LatLng
-import geotrellis.spark.tiling.TilingScheme
-import geotrellis.spark.utils.SparkUtils
 import geotrellis.spark._
+import geotrellis.spark.io.accumulo._
+import geotrellis.spark.io.hadoop._
+import geotrellis.spark.tiling._
+import geotrellis.proj4.LatLng
+import geotrellis.spark.utils.SparkUtils
+
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import org.apache.hadoop.fs.Path
-import geotrellis.spark.io.hadoop._
+import org.scalatest._
 
 
 class AccumuloIngestSpec extends FunSpec
@@ -29,44 +30,18 @@ class AccumuloIngestSpec extends FunSpec
         token = new PasswordToken("")
       )
 
-      {//we should not expect catalog to  create the table
-      val tableOps = accumulo.connector.tableOperations()
-        tableOps.create("tiles")
-      }
-
-      val catalog = new AccumuloCatalog(sparkContext, accumulo, accumulo.metaDataCatalog)
-      catalog.register(RasterAccumuloDriver)
-
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sparkContext.hadoopGeoTiffRDD(allOnes)
-      val sink = { (tiles: RasterRDD[TileId]) =>
-        catalog.save(tiles, "ones", "tiles")
-        ()
-      }
 
-      {//we should not expect catalog to  create the table
-        val tableOps = accumulo.connector.tableOperations()
-        if (! tableOps.exists("tiles")) tableOps.create("tiles")
-      }
+      val ingest = new AccumuloIngest[ProjectedExtent, SpatialKey](accumulo.catalog, ZoomedLayoutScheme())
 
-      it("should provide a sink for Ingest") {
-        Ingest(sparkContext)(source, sink, LatLng, TilingScheme.TMS)
-        println(accumulo.metaDataCatalog.fetchAll)
-      }
+      ingest(source, "ones", LatLng)
 
       it("should load some tiles") {
-        val rdd = catalog.load[TileId]("ones", 10)
-        val rdd2 = catalog.load[TileId]("ones", 10)
+        val rdd = accumulo.catalog.load[SpatialKey](LayerId("ones", 10))
 
         println("COUNT", rdd.get.count)
       }
-
-      it("can be shoved into a MultiCatlog") {
-//        val mc = new MultiCatalog
-
-//        mc.includeCatalog(AccumuloTarget("asdf", "asdf"))
-      }
-
     }
   }
 }

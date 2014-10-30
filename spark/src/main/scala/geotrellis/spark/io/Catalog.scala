@@ -7,12 +7,33 @@ import scala.reflect.ClassTag
 import scala.util.Try
 
 trait Catalog {
-  type DriverType[K] <: Driver[K]
+  type Params
+  type SupportedKey[K]
 
-  def load[K: Ordering](layerId: LayerId, params: DriverType[K]#Params): Try[RasterRDD[K]] =
-    load(layerId, params, FilterSet.EMPTY[K])
+  def metaDataCatalog: MetaDataCatalog[Params]
+  def paramsFor(layerId: LayerId): Params
 
-  def load[K: ClassTag](layerId: LayerId, params: DriverType[K]#Params, filters: FilterSet[K]): Try[RasterRDD[K]]
+  def load[K: SupportedKey: Ordering: ClassTag](layerId: LayerId): Try[RasterRDD[K]] =
+    load(layerId, FilterSet.EMPTY[K])
 
-  def save[K: ClassTag](layerId: LayerId, rdd: RasterRDD[K], params: DriverType[K]#Params): Try[Unit]
+  def load[K: SupportedKey: Ordering: ClassTag](layerId: LayerId, filters: KeyFilter[K]*): Try[RasterRDD[K]] =
+    load(layerId, FilterSet(filters))
+
+  def load[K: SupportedKey: ClassTag](layerId: LayerId, filters: FilterSet[K]): Try[RasterRDD[K]] =
+    metaDataCatalog.load(layerId).flatMap { case (metaData, params) =>
+      load(metaData, params, filters)
+    }
+
+  def load[K: SupportedKey: ClassTag](metaData: LayerMetaData, params: Params, filters: FilterSet[K]): Try[RasterRDD[K]]
+
+  def save[K: SupportedKey: ClassTag](layerId: LayerId, rdd: RasterRDD[K]): Try[Unit] =
+    save(layerId, rdd, paramsFor(layerId))
+
+  def save[K: SupportedKey: ClassTag](layerId: LayerId, rdd: RasterRDD[K], params: Params): Try[Unit] = {
+    val metaData = LayerMetaData(layerId, rdd.metaData)
+    metaDataCatalog.save(metaData, params)
+    save(rdd, metaData, params)
+  }
+
+  def save[K: SupportedKey: ClassTag](rdd: RasterRDD[K], layerMetaData: LayerMetaData, params: Params): Try[Unit]
 }

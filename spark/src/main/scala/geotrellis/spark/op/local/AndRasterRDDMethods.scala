@@ -1,6 +1,7 @@
 package geotrellis.spark.op.local
 
 import geotrellis.spark._
+import geotrellis.raster._
 import geotrellis.raster.op.local.And
 
 trait AndRasterRDDMethods[K] extends RasterRDDMethods[K] {

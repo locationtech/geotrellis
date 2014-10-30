@@ -3,7 +3,7 @@ package geotrellis.spark.rdd
 import geotrellis.proj4.{LatLng, CRS}
 import geotrellis.raster.{Tile, CellSize}
 import geotrellis.spark.ingest.IngestNetCDF
-import geotrellis.spark.{TileId, TestEnvironment}
+import geotrellis.spark.{SpatialKey, TestEnvironment}
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils.SparkUtils
 import geotrellis.spark._

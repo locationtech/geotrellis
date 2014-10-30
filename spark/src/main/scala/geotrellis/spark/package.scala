@@ -26,12 +26,14 @@ import org.apache.spark.rdd._
 
 import spire.syntax.cfor._
 
+import monocle._
 import monocle.syntax._
 
 import scala.reflect.ClassTag
 
 package object spark {
   type SpatialComponent[K] = SimpleLens[K, SpatialKey]
+  type TemporalComponent[K] = SimpleLens[K, TemporalKey]
 
   implicit class SpatialComponentWrapper[K: SpatialComponent](key: K) {
     val _spatialComponent = implicitly[SpatialComponent[K]]
@@ -57,7 +59,6 @@ package object spark {
   type Dimensions = (Int, Int)
   type TileBounds = GridBounds
 
-  /** The thing I miss the most from F# */
   implicit class toPipe[A](x : A) { 
     def |> [T](f : A => T) = f(x) 
   }

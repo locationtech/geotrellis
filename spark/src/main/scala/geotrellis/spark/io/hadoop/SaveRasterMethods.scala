@@ -14,42 +14,39 @@ import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
-abstract class SaveRasterMthods[K: HadoopWritable] extends Logging {
-  val rdd: RasterRDD[K]
+// TODO: Remove this.
+// abstract class SaveRasterMethods[K: HadoopWritable] extends Logging {
+//   val rdd: RasterRDD[K]
 
-  def saveAsHadoopRasterRDD(layerId: LayerId, path: String): Unit =
-    saveAsHadoopRasterRDD(layerId, new Path(path))
+//   def saveAsHadoopRasterRDD(path: String): Unit =
+//     saveAsHadoopRasterRDD(new Path(path))
 
-  def saveAsHadoopRasterRDD(layerId: LayerId, path: Path) = {
-    val keyWritable = implicitly[HadoopWritable[K]]
-    import keyWritable.implicits._
+//   def saveAsHadoopRasterRDD(path: Path) = {
+//     val keyWritable = implicitly[HadoopWritable[K]]
+//     import keyWritable.implicits._
 
-    val conf = rdd.context.hadoopConfiguration
-    val jobConf = new JobConf(conf)
+//     val conf = rdd.context.hadoopConfiguration
+//     val jobConf = new JobConf(conf)
 
-    jobConf.set("io.map.index.interval", "1")
-    SequenceFileOutputFormat.setOutputCompressionType(jobConf, SequenceFile.CompressionType.RECORD)
+//     jobConf.set("io.map.index.interval", "1")
+//     SequenceFileOutputFormat.setOutputCompressionType(jobConf, SequenceFile.CompressionType.RECORD)
 
-    val pathString = path.toUri.toString
+//     val pathString = path.toUri.toString
 
-    logInfo("Saving RasterRDD to ${path.toUri.toString} out...")
+//     logInfo("Saving RasterRDD to ${path.toUri.toString} out...")
 
-    rdd
-      .map { case (key, tile) => (key.toWritable, TileWritable(tile)) }
-      .sortByKey()
-      .saveAsHadoopFile(
-        pathString,
-        implicitly[ClassTag[keyWritable.Writable]].runtimeClass,
-        classOf[TileWritable],
-        classOf[MapFileOutputFormat],
-        jobConf
-      )
+//     rdd
+//       .map { case (key, tile) => (key.toWritable, TileWritable(tile)) }
+//       .sortByKey()
+//       .saveAsHadoopFile(
+//         pathString,
+//         implicitly[ClassTag[keyWritable.Writable]].runtimeClass,
+//         classOf[TileWritable],
+//         classOf[MapFileOutputFormat],
+//         jobConf
+//       )
 
-    logInfo(s"Finished saving tiles to ${path}")
-    logInfo(s"Saving metadata..")
+//     logInfo(s"Finished saving tiles to ${path}")
 
-    HadoopUtils.writeLayerMetaData(LayerMetaData(layerId, rdd.metaData), path, rdd.context.hadoopConfiguration)
-
-    logInfo(s"Finished saving ${path}")
-  }
-}
+//   }
+// }

@@ -29,9 +29,9 @@ class KeyPartitioner[K: Ordering](splits: Array[K]) extends Partitioner {
   private val ordering = implicitly[Ordering[K]]
 
   override def getPartition(key: Any): Int = 
-    getPartition(key.asInstanceOf[K])
+    getPartitionForKey(key.asInstanceOf[K])
 
-  def getPartition(key: K): Int = {
+  def getPartitionForKey(key: K): Int = {
     var len = numPartitions - 1
     var p = 0
     while (len > 0) {

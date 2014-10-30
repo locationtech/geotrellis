@@ -33,17 +33,17 @@ class ZoomedLayoutScheme(tileSize: Int) extends LayoutScheme {
   /** TODO: Improve this algorithm. One improvement is to follow the algorithm
     * described in  "Tile-Based Geospatial Information Systems Principles and Practices"
     * by John T. Sample & Elias Ioup, section 3.1.2 */
-  def layoutFor(extent: Extent, cellSize: CellSize): LayoutLevel = {
+  def levelFor(extent: Extent, cellSize: CellSize): LayoutLevel = {
     val l =
       math.max(
         zoom(cellSize.width, tileSize, extent.width),
         zoom(cellSize.height, tileSize, extent.height)
       )
 
-    layoutFor(l)
+    levelFor(l)
   }
 
-  def layoutFor(id: Int): LayoutLevel = {
+  def levelFor(id: Int): LayoutLevel = {
     if(id < 1)
       sys.error("TMS Tiling scheme does not have levels below 1")
 

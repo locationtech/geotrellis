@@ -1,6 +1,7 @@
 package geotrellis.spark.op.local
 
 import geotrellis.spark._
+import geotrellis.raster._
 import geotrellis.raster.op.local.Add
 
 trait AddRasterRDDMethods[K] extends RasterRDDMethods[K] {
@@ -37,7 +38,7 @@ trait AddRasterRDDMethods[K] extends RasterRDDMethods[K] {
   def localAdd(others: Traversable[RasterRDD[K]]): RasterRDD[K] =
     rasterRDD
       .combineTiles(others.toSeq) { case tiles: Seq[(K, Tile)] =>
-        (tmsTiles.head.id, Add(tmsTiles.map(_.tile)))
+        (tiles.head.id, Add(tiles.map(_.tile)))
       }
 
   def +(others: Traversable[RasterRDD[K]]): RasterRDD[K] = localAdd(others)

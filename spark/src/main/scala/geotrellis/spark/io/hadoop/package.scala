@@ -36,11 +36,10 @@ package object hadoop {
     val writableClassTag = classTag[SpatialKeyWritable]
     def toWritable(key: SpatialKey) = SpatialKeyWritable(key)
     def toValue(writable: SpatialKeyWritable) = writable.get
+    def newWritable = new SpatialKeyWritable
   }
 
   implicit class HadoopSparkContextMethodsWrapper(val sc: SparkContext) extends HadoopSparkContextMethods
-
-  implicit class SaveRasterMethodsWrapper[K: HadoopWritable](val rdd: RasterRDD[K]) extends SaveRasterMethods[K]
 
   implicit class HadoopConfigurationWrapper(config: Configuration) {
     def withInputPath(path: Path): Configuration = {

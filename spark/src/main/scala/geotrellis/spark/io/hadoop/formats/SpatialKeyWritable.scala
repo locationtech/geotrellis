@@ -20,23 +20,22 @@ import geotrellis.spark._
 
 import org.apache.hadoop.io._
 
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
+import java.io._
 
 class SpatialKeyWritable() extends Writable
-                              with WritableComparable[LongWritable] 
+                              with WritableComparable[SpatialKeyWritable] 
                               with Serializable {
   private var _value: SpatialKey = null
 
   def set(spatialKey: SpatialKey): Unit = _value = spatialKey
   def get(): SpatialKey = _value
 
-  private def write(out: ObjectOutputStream) {
+  def write(out: DataOutput): Unit = {
     out.writeInt(_value.col)
     out.writeInt(_value.row)
   }
 
-  private def readFields(in: ObjectInputStream) {
+  def readFields(in: DataInput): Unit = {
     val col = in.readInt
     val row = in.readInt
     _value = SpatialKey(col, row)

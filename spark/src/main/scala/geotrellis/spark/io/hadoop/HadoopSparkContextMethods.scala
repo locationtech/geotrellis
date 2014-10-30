@@ -1,6 +1,7 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
+import geotrellis.spark.ingest.ProjectedExtent
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.raster._
 import geotrellis.vector._
@@ -16,23 +17,17 @@ import scala.reflect._
 trait HadoopSparkContextMethods {
   val sc: SparkContext
 
-  def hadoopRasterRDD[K: ClassTag: HadoopWritable: Ordering](path: String): RasterRDD[K] =
-    hadoopRasterRDD(new Path(path))
-
-  def hadoopRasterRDD[K: ClassTag: HadoopWritable: Ordering](path: Path): RasterRDD[K] =
-    RasterHadoopRDD[K](path, sc)
-
-  def hadoopGeoTiffRDD(path: String): RDD[((Extent, CRS), Tile)] =
+  def hadoopGeoTiffRDD(path: String): RDD[(ProjectedExtent, Tile)] =
     hadoopGeoTiffRDD(new Path(path))
 
-  def hadoopGeoTiffRDD(path: Path): RDD[((Extent, CRS), Tile)] = {
+  def hadoopGeoTiffRDD(path: Path): RDD[(ProjectedExtent, Tile)] = {
     val updatedConf =
       sc.hadoopConfiguration.withInputDirectory(path)
 
     sc.newAPIHadoopRDD(
       updatedConf,
       classOf[GeotiffInputFormat],
-      classOf[(Extent, CRS)],
+      classOf[ProjectedExtent],
       classOf[Tile]
     )
   }

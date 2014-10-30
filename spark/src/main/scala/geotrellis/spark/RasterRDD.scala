@@ -28,10 +28,10 @@ import scala.reflect.ClassTag
 class RasterRDD[K: ClassTag](val tileRdd: RDD[(K, Tile)], val metaData: RasterMetaData) extends RDD[(K, Tile)](tileRdd) {
   override val partitioner = tileRdd.partitioner
 
-  override def getPartitions: Array[Partition] = firstParent.partitions
+  override def getPartitions: Array[Partition] = firstParent[(K, Tile)].partitions
 
   override def compute(split: Partition, context: TaskContext) =
-    firstParent.iterator(split, context)
+    firstParent[(K, Tile)].iterator(split, context)
 
   def mapTiles(f: ((K, Tile)) => (K, Tile)): RasterRDD[K] =
     asRasterRDD(metaData) {

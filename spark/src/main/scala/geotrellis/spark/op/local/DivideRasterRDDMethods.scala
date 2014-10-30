@@ -35,7 +35,7 @@ trait DivideRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** Divide the values of each cell in each raster. */
   def localDivide(other: RasterRDD[K]): RasterRDD[K] =
     rasterRDD
-      .combineTiles(other) { case (TmsTile(t1, r1), TmsTile(t2, r2)) => 
+      .combineTiles(other) { case ((t1, r1), (t2, r2)) => 
         (t1, Divide(r1, r2))
       }
 
@@ -44,8 +44,8 @@ trait DivideRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
   def localDivide(others: Traversable[RasterRDD[K]]): RasterRDD[K] =
     rasterRDD
-      .combineTiles(others.toSeq) { case tmsTiles: Seq[TmsTile] =>
-        (tmsTiles.head.id, Divide(tmsTiles.map(_.tile)))
+      .combineTiles(others.toSeq) { case tiles =>
+        (tiles.head.id, Divide(tiles.map(_.tile)))
       }
 
   def /(others: Traversable[RasterRDD[K]]): RasterRDD[K] = localDivide(others)

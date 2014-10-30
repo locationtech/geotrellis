@@ -15,6 +15,7 @@ import spray.routing._
 import spray.http.MediaTypes
 
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
+import scala.util._
 
 object TmsHttpActor {
   def props(args: TmsArgs): Props = akka.actor.Props(classOf[TmsHttpActor], args)
@@ -36,8 +37,8 @@ trait TmsHttpService extends HttpService {
 
   def rootRoute =
     pathPrefix("tms" / Segment / DoubleNumber / IntNumber / IntNumber / IntNumber ) { (layer, time, zoom, x , y) =>
-
-      val rdd: Option[RasterRDD[SpatialKey]] =  ??? //catalog.load[TimeBandTile](layer, zoom, SpaceFilter(x,y,TmsCoordScheme), TimeFilter(time))
+      val rdd: Try[RasterRDD[SpaceTimeKey]] =  
+        catalog.load(LayerId(layer, zoom), SpaceFilter[SpaceTimeKey](x,y), TimeFilter[SpaceTimeKey](time))
 
       respondWithMediaType(MediaTypes.`image/png`) { complete {
         val tile = rdd.get.first.tile

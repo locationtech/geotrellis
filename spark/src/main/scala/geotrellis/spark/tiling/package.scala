@@ -44,28 +44,4 @@ package object tiling {
         WORLD_WSG84
   }
 
-  // implicit class SpatialKeyArrayToSpans(arr: Array[SpatialKey]) {
-  //   def spans: Seq[(SpatialKey, SpatialKey)] = {
-  //     val result = new scala.collection.mutable.ListBuffer[(SpatialKey, SpatialKey)]
-  //     val sorted = arr.sorted
-  //     val len = sorted.size
-  //     var currMin = sorted(0)
-  //     var currMax = sorted(0)
-  //     var i = 1
-  //     while(i < len) {
-  //       val id = sorted(i)
-  //       if(id != currMax + 1) {
-  //         result += ((currMin, currMax))
-  //         currMin = id
-  //         currMax = id
-  //       } else { 
-  //         currMax = id 
-  //       }
-  //       i += 1
-  //     }
-  //     result += ((currMin, currMax))
-  //     result
-  //   }
-  // }
-
 }

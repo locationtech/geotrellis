@@ -15,7 +15,7 @@
  */
 
 package geotrellis.spark
-import geotrellis.spark.utils.HdfsUtils
+import geotrellis.spark.io.hadoop.HdfsUtils
 import geotrellis.spark.utils.SparkUtils
 
 import org.apache.hadoop.fs.FileSystem

@@ -12,9 +12,7 @@ import org.apache.spark.Logging
 import scala.util.Try
 import scala.collection.mutable
 
-class AccumuloMetaDataCatalog(connector: Connector, val catalogTable: String) extends MetaDataCatalog with Logging {
-  type Params = String
-
+class AccumuloMetaDataCatalog(connector: Connector, val catalogTable: String) extends MetaDataCatalog[String] with Logging {
   //create the metadata table if it does not exist
   {
     val ops = connector.tableOperations()

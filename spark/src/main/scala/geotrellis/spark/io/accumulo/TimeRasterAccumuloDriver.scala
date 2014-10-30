@@ -14,14 +14,14 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable
 
 object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
-  def rowId(layerId: LayerId, id: SpatialKey) = new Text(s"${layerId.zoom}_${id}")
+  def rowId(layerId: LayerId, col: Int, row: Int) = new Text(s"${layerId.zoom}_${col}_${row}")
   val rowIdRx = """(\d+)_(\d+)_(\d+)""".r // (zoom)_(SpatialKey.col)_(SpatialKey.row)
 
   /** Map rdd of indexed tiles to tuples of (table name, row mutation) */
   def encode(layerId: LayerId, raster: RasterRDD[SpaceTimeKey]): RDD[(Text, Mutation)] =
     raster.map {
       case (SpaceTimeKey(spatialKey, time), tile) =>
-        val mutation = new Mutation(rowId(layerId, spatialKey))
+        val mutation = new Mutation(rowId(layerId, spatialKey.col, spatialKey.row))
         mutation.put(new Text(layerId.name), new Text(time.toString), System.currentTimeMillis(), new Value(tile.toBytes()))
         (null, mutation)
     }
@@ -39,21 +39,19 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
     new RasterRDD(tileRdd, metaData)
   }
 
-  def setZoomBounds(job: Job, metaData: LayerMetaData): Unit = {
-
-    val range = new ARange(new Text(s"${metaData.id.zoom}_0"), new Text(s"${metaData.id.zoom}_9")) :: Nil
+  def setZoomBounds(job: Job, layerId: LayerId): Unit = {
+    val range = new ARange(new Text(s"${layerId.zoom}_0"), new Text(s"${layerId.zoom}_9")) :: Nil
     InputFormatBase.setRanges(job, range)
   }
 
-  def setFilters(job: Job, layerMetaData: LayerMetaData, filterSet: FilterSet[SpaceTimeKey]): Unit = {
-    val LayerMetaData(layerId, rasterMetaData) = layerMetaData
+  def setFilters(job: Job, layerId: LayerId, filterSet: FilterSet[SpaceTimeKey]): Unit = {
     var tileBoundSet = false
     filterSet.filters.foreach {
-      case SpaceFilter(bounds, scheme) =>
+      case SpaceFilter(bounds) =>
         tileBoundSet = true
 
         val ranges = 
-          for(row <- bounds.rowMin to bounds.rowMax) yeild {
+          for(row <- bounds.rowMin to bounds.rowMax) yield {
             new ARange(rowId(layerId, bounds.colMin, row), rowId(layerId, bounds.colMax, row))
           }
 
@@ -74,7 +72,7 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
           new IteratorSetting(1, "TimeColumnFilter", "org.apache.accumulo.core.iterators.user.ColumnSliceFilter", props)
         InputFormatBase.addIterator(job, iterator)
     }
-    if (!tileBoundSet) setZoomBounds(job, layerMetaData)
+    if (!tileBoundSet) setZoomBounds(job, layerId)
     //Set the filter for layer we need
     InputFormatBase.fetchColumns(job, new JPair(new Text(layerId.name), null: Text) :: Nil)
   }

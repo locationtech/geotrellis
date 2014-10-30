@@ -1,8 +1,7 @@
 package geotrellis.spark.io.accumulo
 
-
-import geotrellis.spark.tiling.{TileCoordScheme, TilingScheme}
 import geotrellis.spark._
+import geotrellis.spark.tiling._
 import org.apache.accumulo.core.client._
 import org.apache.accumulo.core.client.mapreduce.{InputFormatBase, AccumuloInputFormat, AccumuloOutputFormat}
 import org.apache.accumulo.core.client.mock.MockInstance
@@ -51,14 +50,4 @@ case class AccumuloInstance(
   def setAccumuloConfig(job: Job): Unit = setAccumuloConfig(job.getConfiguration)
 
   def setAccumuloConfig(sc: SparkContext): Unit = setAccumuloConfig(sc.hadoopConfiguration)
-
-  def saveRaster[K](raster: RasterRDD[K], layerId: LayerId, table: String)
-                   (implicit sc: SparkContext, driver: AccumuloDriver[K]) =
-    driver.save(sc, this)(layerId, raster, table)
-
-
-  // //TODO this doesn't seem very useful, maybe I should get metadata out of the catalog above
-  // def loadRaster[K](layer: String, table: String, metaData: LayerMetaData, filters: FilterSet[K])
-  //                  (implicit sc: SparkContext, driver: AccumuloDriver[K]) =
-  //   driver.load(sc, this)(metaData, table, filters)
 }

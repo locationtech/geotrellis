@@ -1,9 +1,10 @@
 package geotrellis.spark
 
-import monocle._
+import monocle.SimpleLens
 
 object TemporalKey {
-  implicit def _temporalComponent = SimpleLens[TemporalKey, TemporalKey](k => k, (_, k) => k)
+  implicit def _temporalComponent: TemporalComponent[TemporalKey] = 
+    SimpleLens[TemporalKey, TemporalKey](k => k, (_, k) => k)
 
   implicit def doubleToKey(time: Double): TemporalKey =
     TemporalKey(time)
@@ -18,4 +19,3 @@ object TemporalKey {
 /** A TemporalKey designates the temporal positioning of a layer's tile. */
 case class TemporalKey(time: Double)
 
-trait TemporalComponent[K] extends SimpleLens[K, TemporalKey]

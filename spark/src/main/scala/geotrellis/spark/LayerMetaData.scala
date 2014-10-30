@@ -1,23 +1,50 @@
 package geotrellis.spark
 
-import geotrellis.spark._
-import geotrellis.spark.io.LayerId
+import geotrellis.spark.tiling._
 import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.spark.tiling._
 import geotrellis.proj4._
 
+import org.apache.spark.rdd._
+
 case class LayerMetaData(id: LayerId, rasterMetaData: RasterMetaData) {
-  lazy val zoomLevel: ZoomLevel = ZoomLevel(id.zoom, tileLayout)
+  lazy val layoutLevel: LayoutLevel = LayoutLevel(id.zoom, rasterMetaData.tileLayout)
 }
 
-case class RasterMetaData(
-  cellType: CellType,
-  extent: Extent,
-  crs: CRS,
-  tileLayout: TileLayout
-) {
-  lazy val mapTransform = MapKeyTransform(crs, tileLayout.tileDimensions)
+object LayerMetaData {
+  def fromRdd[T](rdd: RDD[(T, Tile)], layerName: String, crs: CRS, layoutScheme: LayoutScheme, isUniform: Boolean = true)(getExtent: T => Extent): LayerMetaData = {
+    val (uncappedExtent, cellType, cellSize): (Extent, CellType, CellSize) =
+      if(isUniform) {
+        val (key, tile) = rdd.first
+        val extent = getExtent(key)
+        (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows))
+      } else {
+        rdd
+          .map { case (key, tile) =>
+            val extent = getExtent(key)
+            (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows))
+           }
+          .reduce { (t1, t2) =>
+            val (e1, ct1, cs1) = t1
+            val (e2, ct2, cs2) = t2
+            (
+              e1.combine(e2),
+              ct1.union(ct2),
+              if(cs1.resolution < cs2.resolution) cs1 else cs2
+            )
+          }
+      }
 
-  def tileTransform(tileScheme: TileScheme): TileKeyTransform = tileScheme(tileLayout.tileCols, tileLayout.tileRows)
+    val worldExtent = crs.worldExtent
+    val layoutLevel: LayoutLevel = layoutScheme.levelFor(worldExtent, cellSize)
+
+    val extentIntersection = worldExtent.intersection(uncappedExtent).get
+
+    LayerMetaData(
+      LayerId(layerName, layoutLevel.zoom),
+      RasterMetaData(cellType, extentIntersection, crs, layoutLevel.tileLayout)
+    )
+  }
 }
+

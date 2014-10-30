@@ -1,13 +1,9 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
-<<<<<<< HEAD
-import geotrellis.spark.testfiles.AllOnes
-=======
 import geotrellis.spark.rdd._
 import geotrellis.spark.testfiles.AllOnesTestFile
 import geotrellis.spark.op.local._
->>>>>>> upstream/master
 
 import org.apache.hadoop.fs.Path
 import org.scalatest._

@@ -10,9 +10,7 @@ import org.apache.spark.Logging
 
 import scala.util.Try
 
-trait MetaDataCatalog {
-  type Params
-
+trait MetaDataCatalog[Params] {
   def load(layerId: LayerId): Try[(LayerMetaData, Params)]
-  def save(metaData: LayerMetaData, params: Params): Unit
+  def save(metaData: LayerMetaData, params: Params): Try[Unit]
 }

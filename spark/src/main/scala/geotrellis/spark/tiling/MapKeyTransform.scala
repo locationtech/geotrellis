@@ -46,8 +46,10 @@ class MapKeyTransform(extent: Extent, tileCols: Int, tileRows: Int) extends Seri
     (tcol.toInt, trow.toInt)
   }
 
-  def apply[K: SpatialComponent](key: K): Extent =
+  def apply[K](key: K)(implicit ev: monocle.SimpleLens[K, SpatialKey]): Extent = {
+//    implicit val x = implicitly[SpatialComponent[K]]
     apply(key.spatialComponent)
+  }
 
   def apply(key: SpatialKey): Extent =
     apply(key.col, key.row)

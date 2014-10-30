@@ -23,7 +23,7 @@ import geotrellis.spark.cmd.args.HadoopArgs
 import geotrellis.spark.cmd.args.RasterArgs
 import geotrellis.spark.cmd.args.SparkArgs
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.io.hadoop.reader.RasterReader
+//import geotrellis.spark.io.hadoop.reader.RasterReader
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path

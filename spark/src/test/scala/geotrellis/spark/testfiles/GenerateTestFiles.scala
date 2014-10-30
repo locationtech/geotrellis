@@ -28,7 +28,7 @@ import org.apache.spark._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 
-/** Use this command to create test files when there's a breaking change to the files (i.e. TileIdWritable package move) */
+/** Use this command to create test files when there's a breaking change to the files (i.e. SpatialKeyWritable package move) */
 object GenerateTestFiles {
 
   def main(args: Array[String]): Unit = {
@@ -60,7 +60,7 @@ object GenerateTestFiles {
       val tmsTiles =
         metaData.tileIds.map { tileId =>
           val arr = tfv(tileCols, tileRows)
-          TmsTile(tileId, ArrayTile(arr, tileCols, tileRows))
+          (tileId, ArrayTile(arr, tileCols, tileRows))
         }
 
       val path = new Path(prefix, s"$name/${metaData.level.id}")

@@ -1,4 +1,4 @@
-package geotrellis.spark.op.transform
+package geotrellis.spark.ingest
 
 import geotrellis.spark._
 import geotrellis.spark.tiling._
@@ -13,6 +13,13 @@ import monocle.syntax._
 import scala.reflect.ClassTag
 
 object Pyramid {
+  /** Save layers up */
+  def saveLevels[K: SpatialComponent: ClassTag](layerMetaData: LayerMetaData, rdd: RasterRDD[K], layoutScheme: LayoutScheme)
+                                               (save: (LayerMetaData, RasterRDD[K]) => Unit): Unit = {
+    save(layerMetaData, rdd)
+    if (layerMetaData.id.zoom > 1) Pyramid.up(rdd, layerMetaData.layoutLevel, layoutScheme)
+  }
+
   /**
    * Functions that require RasterRDD to have a TMS grid dimension to their key
    */
@@ -40,7 +47,7 @@ object Pyramid {
     val nextRdd: RDD[(K, Tile)] =
       rdd
         .map { case (key, tile: Tile) =>
-          val extent = metaData.mapTransform(key.spatialComponent)
+          val extent = metaData.mapTransform(key)
           val newSpatialKey = metaData.mapTransform(extent.xmin, extent.ymax)
           (newSpatialKey, (key, extent.xmin, extent.ymax, tile))
          }

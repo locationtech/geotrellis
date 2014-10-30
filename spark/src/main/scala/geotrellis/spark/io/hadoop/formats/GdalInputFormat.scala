@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.hadoop.formats
 
+import geotrellis.spark.ingest.{IngestKey, ProjectedExtent}
 import geotrellis.spark.io.hadoop._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader._
@@ -64,8 +65,10 @@ case class GdalRasterInfo(file: GdalFileInfo, bandMeta: Map[String, String])
 
 case class NetCdfBand(extent: Extent, crs: CRS, varName: String, time: Double)
 object NetCdfBand {
-  implicit def _extent = 
-    SimpleLens[NetCdfBand, Extent](band => band.extent, (band, extent) => NetCdfBand(extent, band.crs, band.varName, band.time))
+  implicit def ingestKey: IngestKey[NetCdfBand] = 
+    SimpleLens[NetCdfBand, ProjectedExtent](band => ProjectedExtent(band.extent, band.crs), (band, pe) => NetCdfBand(pe.extent, pe.crs, band.varName, band.time))
+  // implicit def _extent = 
+  //   SimpleLens[NetCdfBand, Extent](band => band.extent, (band, extent) => NetCdfBand(extent, band.crs, band.varName, band.time))
 }
 
 object GdalInputFormat {
@@ -112,7 +115,7 @@ class GdalRecordReader extends RecordReader[GdalRasterInfo, Tile] {
   }
 
   def close() = file match {
-    case LocalPath.Temporary(path) => path.getFileSystem(conf).delete(path)
+    case LocalPath.Temporary(path) => path.getFileSystem(conf).delete(path, true)
     case LocalPath.Original(_) => // leave it well alone
   }
 

@@ -38,10 +38,10 @@ class PayloadArgWritableSpec extends FunSpec with Matchers {
     val cols = 2
     val rows = 2
     val size = cols * rows
-    val payload = TileIdWritable(100L)
+    val payload = SpatialKeyWritable(100L)
     it("should convert from Array of ints and a payload to PayloadArgWritable and back") {
       val expectedRD = Array.fill[Int](size)(1)
-      val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
+      val actualTW = SpatialKeyWritable(1L) // 1L is dummy - will be filled in
       val actualRD =
         PayloadArgWritable(IntArrayTile(expectedRD, cols, rows), payload)
           .toPayloadTile(TypeInt, cols, rows, actualTW)
@@ -51,7 +51,7 @@ class PayloadArgWritableSpec extends FunSpec with Matchers {
 
     it("should convert from Array of shorts and a payload to PayloadArgWritable and back") {
       val expectedRD = Array.fill[Short](size)(1)
-      val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
+      val actualTW = SpatialKeyWritable(1L) // 1L is dummy - will be filled in
       val actualRD =
         PayloadArgWritable(ShortArrayTile(expectedRD, cols, rows), payload)
           .toPayloadTile(TypeShort, cols, rows, actualTW)
@@ -61,7 +61,7 @@ class PayloadArgWritableSpec extends FunSpec with Matchers {
 
     it("should convert from Array of doubles and a payload to PayloadArgWritable and back") {
       val expectedRD = Array.fill[Double](size)(1)
-      val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
+      val actualTW = SpatialKeyWritable(1L) // 1L is dummy - will be filled in
       val actualRD =
         PayloadArgWritable(DoubleArrayTile(expectedRD, cols, rows), payload)
           .toPayloadTile(TypeDouble, cols, rows, actualTW)
@@ -71,7 +71,7 @@ class PayloadArgWritableSpec extends FunSpec with Matchers {
 
     it("should convert from Array of floats and a payload to PayloadArgWritable and back") {
       val expectedRD = Array.fill[Float](size)(1)
-      val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
+      val actualTW = SpatialKeyWritable(1L) // 1L is dummy - will be filled in
       val actualRD =
         PayloadArgWritable(FloatArrayTile(expectedRD, cols, rows), payload)
           .toPayloadTile(TypeFloat, cols, rows, actualTW)
@@ -81,7 +81,7 @@ class PayloadArgWritableSpec extends FunSpec with Matchers {
 
     it("should convert from Array of bytes and a payload to PayloadArgWritable and back") {
       val expectedRD = Array.fill[Byte](size)(1)
-      val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
+      val actualTW = SpatialKeyWritable(1L) // 1L is dummy - will be filled in
       val actualRD =
         PayloadArgWritable(ByteArrayTile(expectedRD, cols, rows), payload)
           .toPayloadTile(TypeByte, cols, rows, actualTW)
@@ -91,7 +91,7 @@ class PayloadArgWritableSpec extends FunSpec with Matchers {
 
     it("should convert from Array of bytes (actually, bit masks) to PayloadArgWritable and back") {
       val expectedRD = Array.fill[Byte](size)(1)
-      val actualTW = TileIdWritable(1L) // 1L is dummy - will be filled in
+      val actualTW = SpatialKeyWritable(1L) // 1L is dummy - will be filled in
 
       // bit mask length is 8x4 since there are 4 bytes of length 8 bits each
       val cols = 8
