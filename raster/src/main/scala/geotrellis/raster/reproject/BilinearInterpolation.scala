@@ -8,7 +8,6 @@ class BilinearInterpolation(tile: Tile, extent: Extent) extends Interpolation {
   protected val cols = tile.cols
   protected val rows = tile.rows
 
-  // Define bounds outside of which we will consider the source as NoData
   private val westBound = extent.xmin
   private val eastBound = extent.xmax
   private val northBound = extent.ymax
@@ -26,6 +25,7 @@ class BilinearInterpolation(tile: Tile, extent: Extent) extends Interpolation {
     x >= westBound && x <= eastBound && y >= southBound && y <= northBound
 
   // TODO: talk with Rob and find a way to avoid this code dup.
+  // What if 1 value is NODATA in interp, what should we do?
   override def interpolate(x: Double, y: Double): Int =
     if (!isValid(x, y)) NODATA // does raster have specific NODATA?
     else {
