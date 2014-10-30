@@ -36,7 +36,7 @@ import org.apache.spark.broadcast.Broadcast
 import scala.reflect.ClassTag
 
 /** Represents the ingest process. 
-  * An ingest process produces one layer from a set of input rasters.
+  * An ingest process produces one or more layer from a set of input rasters.
   * 
   * The ingest process has the following steps:
   * 
@@ -44,11 +44,14 @@ import scala.reflect.ClassTag
   *  - Determine the appropriate layer meta data for the layer. (CRS, LayoutScheme, RDD[(Extent, Tile)]) -> LayerMetaData)
   *  - Resample the rasters into the desired tile format. RDD[(Extent, Tile)] => RasterRDD[K]
   *  - Save the layer.
-  *  - Pyramid the rasters to the most zoomed out level.
+  *  - Pyramid the rasters to the most zoomed out level, and save those layers.
   * 
   * Ingesting is abstracted over the following variants:
   *  - The source of the input tiles, which are represented as an RDD of (T, Tile) tuples, where T: IngestKey
   *  - The LayoutScheme which will be used to determine how to retile the input tiles.
+  *  - How the layer is saved.
+  * 
+  * Future improvements: Control the pyramid and `isUniform` behavior through configuration.
   */
 
 abstract class Ingest[T: IngestKey, K: SpatialComponent: ClassTag](layoutScheme: LayoutScheme)(implicit tiler: Tiler[T, K]) extends Logging {
@@ -57,7 +60,6 @@ abstract class Ingest[T: IngestKey, K: SpatialComponent: ClassTag](layoutScheme:
   /** Override if you know the rasters are uniform in extent (performance optimization) */
   def isUniform = false
 
-  // TODO: Feel like this should be pushed out.
   def pyramid(layerMetaData: LayerMetaData, rdd: RasterRDD[K]): Unit = {
     val layerId = layerMetaData.id
     logInfo(s"Saving RDD: ${layerId.name} for zoom level ${layerId.zoom}")
@@ -76,8 +78,6 @@ abstract class Ingest[T: IngestKey, K: SpatialComponent: ClassTag](layoutScheme:
       LayerMetaData.fromRdd(reprojectedTiles, layerName, destCRS, layoutScheme, isUniform) {  key: T => 
         (key |-> _projectedExtent get).extent 
       }
-
-    
 
     val rasterRdd = tiler.tile(reprojectedTiles, layerMetaData.rasterMetaData)
 

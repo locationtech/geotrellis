@@ -10,8 +10,6 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance, val metaData
   type Params = String
   type SupportedKey[K] = AccumuloDriver[K]
 
-  // TODO: Figure out how we're going to create talbe names for layers.
-  // Maybe inject a strategy for this?
   def paramsFor(layerId: LayerId): String = layerId.name
 
   def load[K: AccumuloDriver: ClassTag](metaData: LayerMetaData, table: String, filters: FilterSet[K]): Try[RasterRDD[K]] = {
@@ -19,8 +17,8 @@ class AccumuloCatalog(sc: SparkContext, instance: AccumuloInstance, val metaData
     driver.load(sc, instance)(metaData, table, filters)
   }
 
-  def save[K: AccumuloDriver: ClassTag](rdd: RasterRDD[K], layerMetaData: LayerMetaData, table: String): Try[Unit] = {
+  def save[K: AccumuloDriver: ClassTag](rdd: RasterRDD[K], layerMetaData: LayerMetaData, table: String, clobber: Boolean): Try[Unit] = {
     val driver = implicitly[AccumuloDriver[K]]
-    driver.save(sc, instance)(layerMetaData.id, rdd, table)
+    driver.save(sc, instance)(layerMetaData.id, rdd, table, clobber)
   }
 }

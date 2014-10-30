@@ -6,6 +6,8 @@ import geotrellis.spark.service.TmsHttpActor
 import akka.actor.{ActorSystem, Props}
 import akka.io.IO
 
+import com.typesafe.config._
+
 import spray.can.Http
 
 import com.quantifind.sumac.ArgMain
@@ -15,9 +17,12 @@ class TmsArgs extends AccumuloArgs with SparkArgs with HadoopArgs
 
 object TMS extends ArgMain[TmsArgs] {
   def main(args: TmsArgs) {
+    val config = ConfigFactory.load()
+    val host = config.getString("geotrellis.admin.host")
+    val port = config.getInt("geotrellis.admin.port")
+
     implicit val system = ActorSystem()
     val service = system.actorOf(TmsHttpActor.props(args), "tms-service")
-    //This is how NOT to do it, what happend to config? //TODO - make config
-    IO(Http) ! Http.Bind(service, interface = "0.0.0.0", port = 8000)
+    IO(Http) ! Http.Bind(service, host, port)
   }
 }

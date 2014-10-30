@@ -30,11 +30,13 @@ trait AccumuloDriver[K] {
   }
 
   def save(sc: SparkContext, accumulo: AccumuloInstance)
-          (layerId: LayerId, raster: RasterRDD[K], table: String): Try[Unit] =
+          (layerId: LayerId, raster: RasterRDD[K], table: String, clobber: Boolean): Try[Unit] =
     Try {
       // Create table if it doesn't exist.
       if (! accumulo.connector.tableOperations().exists(table)) 
         accumulo.connector.tableOperations().create(table)
+
+      // TODO: How do we delete the tiles if they exist?
 
       val job = Job.getInstance(sc.hadoopConfiguration)
       accumulo.setAccumuloConfig(job)

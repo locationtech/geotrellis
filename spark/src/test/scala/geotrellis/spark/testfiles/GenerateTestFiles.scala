@@ -16,13 +16,13 @@
 
 package geotrellis.spark.testfiles
 
-import geotrellis.raster._
-import geotrellis.vector._
-import geotrellis.proj4._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling._
 import geotrellis.spark.utils._
+import geotrellis.raster._
+import geotrellis.vector._
+import geotrellis.proj4._
 import org.apache.spark._
 
 import org.apache.hadoop.conf.Configuration
@@ -33,11 +33,13 @@ object GenerateTestFiles {
 
   def main(args: Array[String]): Unit = {
     val cellType = TypeFloat
+    val layoutLevel = ZoomedLayoutScheme().levelFor(10)
+    val tileLayout = layoutLevel.tileLayout
+    val (tileCols, tileRows) =  (tileLayout.tileCols, tileLayout.tileRows)
+    val worldExtent = Extent(-180, -89.99999, 179.99999, 89.99999)
+    val re = RasterExtent(worldExtent, tileCols, tileRows)
     val extent = Extent(141.7066666666667, -18.373333333333342, 142.56000000000003, -17.52000000000001)
-    val layoutLevel = TilingScheme.TMS.level(10)
-    val metaData = LayerMetaData(cellType, extent, LatLng, layoutLevel, RowIndexScheme)
-    val (tileCols, tileRows) =  (metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
-    val tileSize = tileCols * tileRows
+    val gridBounds = re.gridBoundsFor(extent)
 
     val testFiles = List(
       ConstantTestFileValues(1) -> "all-ones",
@@ -53,33 +55,23 @@ object GenerateTestFiles {
     val sc = new SparkContext("local", "create-test-files")
     val conf = sc.hadoopConfiguration
     val localFS = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
-    val prefix = new Path(localFS.getWorkingDirectory, "src/test/resources")
+    val catalogPath = new Path(localFS.getWorkingDirectory, "src/test/resources/")
+    val catalog = HadoopCatalog(sc, catalogPath)
 
     for((tfv, name) <- testFiles) {
       println(s"Creating test RasterRDD $name")
       val tmsTiles =
-        metaData.tileIds.map { tileId =>
+        gridBounds.coords.map { case (col, row) =>
           val arr = tfv(tileCols, tileRows)
-          (tileId, ArrayTile(arr, tileCols, tileRows))
+          (SpatialKey(col, row), ArrayTile(arr, tileCols, tileRows): Tile)
         }
 
-      val path = new Path(prefix, s"$name/${metaData.level.id}")
-      localFS.delete(path, true)
-
-      val partitioner = {
-        val tileSizeBytes = metaData.tileLayout.tileCols * metaData.tileLayout.tileRows * cellType.bytes
-        val blockSizeBytes = HdfsUtils.defaultBlockSize(path, conf)
-        val splitGenerator =
-          RasterSplitGenerator(metaData.gridBounds, metaData.transform, tileSizeBytes, blockSizeBytes)
-        TileIdPartitioner(splitGenerator.splits)
-      }
-
       val rdd =
-        sc.parallelize(tmsTiles)
-          .partitionBy(partitioner)
-          .toRasterRDD(metaData)
+        asRasterRDD(RasterMetaData(cellType, extent, LatLng, tileLayout)) {
+          sc.parallelize(tmsTiles)
+        }
 
-      rdd.saveAsHadoopRasterRDD(path)
+      catalog.save(LayerId(name, 10), rdd, clobber = true)
     }
   }
 

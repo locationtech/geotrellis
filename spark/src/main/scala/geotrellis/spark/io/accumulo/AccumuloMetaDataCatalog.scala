@@ -23,10 +23,14 @@ class AccumuloMetaDataCatalog(connector: Connector, val catalogTable: String) ex
   private val idToMetaData: mutable.Map[LayerId, (LayerMetaData, String)] = 
     mutable.Map(fetchAll.toSeq: _*)
 
-  def save(metaData: LayerMetaData, table: String): Try[Unit] =
+  def save(metaData: LayerMetaData, table: String, clobber: Boolean): Try[Unit] =
     Try {
       if(idToMetaData.contains(metaData.id)) {
-        throw new LayerExistsError(metaData.id)
+        if(clobber) {
+          ??? // TODO: Need to implement deleting metadata out of catalog
+        } else {
+          throw new LayerExistsError(metaData.id)
+        }
       }
 
       connector.write(catalogTable, AccumuloMetaDataCatalog.encodeMetaData(table, metaData))
@@ -60,7 +64,8 @@ object AccumuloMetaDataCatalog {
     mutation.put(
       new Text(md.id.name), new Text(md.id.zoom.toString),
       System.currentTimeMillis(),
-      new Value(md.toJson.prettyPrint.getBytes))
+      new Value(md.toJson.prettyPrint.getBytes)
+    )
     mutation
   }
 

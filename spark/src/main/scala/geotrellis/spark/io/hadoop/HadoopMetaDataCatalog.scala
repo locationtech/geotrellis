@@ -11,8 +11,8 @@ import spray.json._
 import java.io.PrintWriter
 import scala.util.Try
 
-class HadoopMetaDataCatalog(sc: SparkContext, metaDataFolder: Path) extends MetaDataCatalog[Path] {
-  def metaDataPath(layerId: LayerId) = new Path(metaDataFolder, s"${layerId.name}_${layerId.zoom}_metadata.json")
+class HadoopMetaDataCatalog(sc: SparkContext, metaDataFolder: Path, metaDataFileName: LayerId => String) extends MetaDataCatalog[Path] {
+  def metaDataPath(layerId: LayerId) = new Path(metaDataFolder, metaDataFileName(layerId))
 
   def load(layerId: LayerId): Try[(LayerMetaData, Path)] = 
     Try {
@@ -31,10 +31,19 @@ class HadoopMetaDataCatalog(sc: SparkContext, metaDataFolder: Path) extends Meta
       txt.parseJson.convertTo[(LayerMetaData, Path)]
       }
 
-  def save(layerMetaData: LayerMetaData, path: Path): Try[Unit] = 
+  def save(layerMetaData: LayerMetaData, path: Path, clobber: Boolean): Try[Unit] = 
     Try {
       val metaPath = metaDataPath(layerMetaData.id)
+
       val fs = metaPath.getFileSystem(sc.hadoopConfiguration)
+
+      if(!fs.exists(metaPath)) {
+        if(clobber)
+          fs.delete(metaPath, false)
+        else
+          sys.error(s"Metadata at $metaPath already exists")
+      }
+
       val fdos = fs.create(metaPath)
       val out = new PrintWriter(fdos)
       try {
@@ -44,8 +53,4 @@ class HadoopMetaDataCatalog(sc: SparkContext, metaDataFolder: Path) extends Meta
         fdos.close()
       }
     }
-}
-
-object HadoopMetaDataCatalog {
-  final val METADATA_DIR = "metadata"
 }

@@ -19,6 +19,7 @@ import org.apache.spark.rdd.RDD
 
 import org.scalatest._
 
+// TODO: Make this test real.
 class TimeRasterRDDSpec extends FunSpec with Matchers
   with TestEnvironment
 {

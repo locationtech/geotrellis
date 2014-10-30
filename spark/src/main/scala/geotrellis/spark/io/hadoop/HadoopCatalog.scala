@@ -17,17 +17,33 @@ import org.apache.spark.rdd._
 import scala.reflect._
 import scala.util.{Failure, Success, Try}
 
-class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDataCatalog, rootPath: Path) extends Catalog with Logging {
+/** Provides a catalog for storing rasters in any Hadoop supported file system.
+  * 
+  * The user provides a root path, for example, hdfs://localhost:8020/user/hadoop/geotrellis.
+  * The meta data for all rasters will be stored under the 'metadata' directory by default, e.g. hdfs://localhost:8020/user/hadoop/geotrellis/metadata.
+  * Layer data will be stored under the 'layers' folder, in a subfolder with that layer's name, and then one level deeper with the zoom level.
+  * For instance, if we have a layer with name "NLCD" with zoom level 10, the path to the data might be
+  * hdfs://localhost:8020/user/hadoop/geotrellis/layers/NLCD/10
+  */
+class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDataCatalog, rootPath: Path, catalogConfig: HadoopCatalog.Config) 
+    extends Catalog with Logging {
   type Params = Path
   type SupportedKey[K] = HadoopWritable[K]
 
-  // assume tiles can be compressed 30% (so, compressionFactor - 1)
-  final val COMPRESSION_FACTOR = 1.3
-
-  // TODO: Figure out how we're laying out the rasters in HDFS.
-  // Maybe inject a strategy for this?
   def paramsFor(layerId: LayerId): Path =
-    new Path(new Path(rootPath, layerId.name), layerId.zoom.toString)
+    new Path(rootPath, catalogConfig.layerDataDir(layerId))
+
+  private def writeSplits[K: HadoopWritable](splits: Array[K], raster: Path, conf: Configuration): Unit = {
+    val keyWritable = implicitly[HadoopWritable[K]]
+    val splitFile = new Path(raster, catalogConfig.splitsFile)
+    HdfsUtils.writeArray[K](splitFile, conf, splits)
+  }
+
+  private def readSplits[K: HadoopWritable: ClassTag](raster: Path, conf: Configuration): Array[K] = {
+    val keyWritable = implicitly[HadoopWritable[K]]
+    val splitFile = new Path(raster, catalogConfig.splitsFile)
+    HdfsUtils.readArray[K](splitFile, conf)
+  }
 
   def load[K: HadoopWritable: ClassTag](metaData: LayerMetaData, path: Path, filters: FilterSet[K]): Try[RasterRDD[K]] =
     Try {
@@ -37,7 +53,7 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
       val conf = sc.hadoopConfiguration
 
       val updatedConf =
-        sc.hadoopConfiguration.withInputPath(path.suffix(HadoopCatalog.SEQFILE_GLOB))
+        sc.hadoopConfiguration.withInputPath(path.suffix(catalogConfig.SEQFILE_GLOB))
 
       val writableRdd: RDD[(keyWritable.Writable, TileWritable)] =
         if(filters.isEmpty) {
@@ -48,7 +64,7 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
             classOf[TileWritable]
           )
         } else {
-          val partitioner = KeyPartitioner[K](HadoopCatalog.readSplits(path, conf))
+          val partitioner = KeyPartitioner[K](readSplits(path, conf))
 
           val includeKey: keyWritable.Writable => Boolean =
           { writable =>
@@ -82,12 +98,21 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
 
     }
 
-  def save[K: HadoopWritable: ClassTag](rdd: RasterRDD[K], layerMetaData: LayerMetaData, path: Path): Try[Unit] =
+  def save[K: HadoopWritable: ClassTag](rdd: RasterRDD[K], layerMetaData: LayerMetaData, path: Path, clobber: Boolean): Try[Unit] =
     Try {
       val keyWritable = implicitly[HadoopWritable[K]]
       import keyWritable.implicits._
 
       val conf = rdd.context.hadoopConfiguration
+      val fs = path.getFileSystem(conf)
+      
+      if(!fs.exists(path)) {
+        if(clobber)
+          fs.delete(path, true)
+        else
+          sys.error(s"Directory already exists: $path")
+      }
+
       val jobConf = new JobConf(conf)
 
       jobConf.set("io.map.index.interval", "1")
@@ -95,16 +120,15 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
 
       val pathString = path.toUri.toString
 
-      logInfo("Saving RasterRDD to ${path.toUri.toString} out...")
+      logInfo("Saving RasterRDD to ${pathString} out...")
 
       // Figure out how many partitions there should be based on block size.
       val partitions = {
-        val fs = path.getFileSystem(conf)
         val blockSize = fs.getDefaultBlockSize(path)
         val tileCount = rdd.count
         val tileSize = layerMetaData.rasterMetaData.tileLayout.tileSize * layerMetaData.rasterMetaData.cellType.bytes
         val tilesPerBlock = {
-          val tpb = (blockSize / tileSize) * COMPRESSION_FACTOR
+          val tpb = (blockSize / tileSize) * catalogConfig.compressionFactor
           if(tpb == 0) {
             logWarning(s"Tile size is too large for this filesystem (tile size: $tileSize, block size: $blockSize)")
             1
@@ -129,7 +153,7 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
            }
           .collect
 
-      HadoopCatalog.writeSplits(splits, path, conf)
+      writeSplits(splits, path, conf)
 
       // Write the RDD.
       sortedWritable
@@ -146,11 +170,48 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
 }
 
 object HadoopCatalog {
-  final val SPLITS_FILE = "splits"
-  final val SEQFILE_GLOB = "/*[0-9]*/data"
+  case class Config(
+    /** Compression factor for determining how many tiles can fit into
+      * one block on a Hadoop-readable file system. */
+    compressionFactor: Double,
 
-  def apply(sc: SparkContext, rootPath: Path): HadoopCatalog = {
+    /** Name of directory that will contain the metadata under the root path. */
+    metaDataDir: String,
+
+    /** Name of the directory that will contain the layer data under the root path */
+    layerDir: String,
+
+    /** Name of the splits file that contains the partitioner data */
+    splitsFile: String,
+
+    /** Creates a subdirectory path based on a layer id. */
+    layerDataDir: LayerId => String,
+
+    /** Creates a metadata file name based on a layer id. */
+    metaDataFileName: LayerId => String
+  ) {
+    /** Sequence file data directory for reading data. 
+      * Don't see a reason why the API would allow this to be modified
+      */
+    final val SEQFILE_GLOB = "/*[0-9]*/data"      
+  }
+
+  object Config {
+    val DEFAULT = 
+      Config(
+        // Assume tiles can be compressed 30% (so, compressionFactor - 1)
+        compressionFactor = 1.3,
+        metaDataDir = "metadata",
+        layerDir = "layers",
+        splitsFile = "splits",
+        layerDataDir = { layerId: LayerId => s"${layerId.name}/${layerId.zoom}" },
+        metaDataFileName = { layerId: LayerId => s"${layerId.name}_${layerId.zoom}_metadata.json" }
+      )
+  }
+
+  def apply(sc: SparkContext, rootPath: Path, catalogConfig: HadoopCatalog.Config = Config.DEFAULT): HadoopCatalog = {
     val fs = rootPath.getFileSystem(sc.hadoopConfiguration)
+
     // Ensure root directory exists.
     if(!fs.exists(rootPath)) {
       fs.mkdirs(rootPath)
@@ -160,8 +221,8 @@ object HadoopCatalog {
       }
     }
 
-    val metaDataPath = new Path(rootPath, HadoopMetaDataCatalog.METADATA_DIR)
     // Ensure path exists.
+    val metaDataPath = new Path(rootPath, catalogConfig.metaDataDir)
     if(!fs.exists(metaDataPath)) {
       fs.mkdirs(rootPath)
     } else {
@@ -170,19 +231,7 @@ object HadoopCatalog {
       }
     }
 
-    val metaDataCatalog = new HadoopMetaDataCatalog(sc, metaDataPath)
-    new HadoopCatalog(sc, metaDataCatalog, rootPath)
-  }
-
-  def writeSplits[K: HadoopWritable](splits: Array[K], raster: Path, conf: Configuration): Unit = {
-    val keyWritable = implicitly[HadoopWritable[K]]
-    val splitFile = new Path(raster, SPLITS_FILE)
-    HdfsUtils.writeArray[K](splitFile, conf, splits)
-  }
-
-  def readSplits[K: HadoopWritable: ClassTag](raster: Path, conf: Configuration): Array[K] = {
-    val keyWritable = implicitly[HadoopWritable[K]]
-    val splitFile = new Path(raster, SPLITS_FILE)
-    HdfsUtils.readArray[K](splitFile, conf)
+    val metaDataCatalog = new HadoopMetaDataCatalog(sc, metaDataPath, catalogConfig.metaDataFileName)
+    new HadoopCatalog(sc, metaDataCatalog, rootPath, catalogConfig)
   }
 }

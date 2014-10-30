@@ -12,5 +12,5 @@ import scala.util.Try
 
 trait MetaDataCatalog[Params] {
   def load(layerId: LayerId): Try[(LayerMetaData, Params)]
-  def save(metaData: LayerMetaData, params: Params): Try[Unit]
+  def save(metaData: LayerMetaData, params: Params, clobber: Boolean): Try[Unit]
 }
