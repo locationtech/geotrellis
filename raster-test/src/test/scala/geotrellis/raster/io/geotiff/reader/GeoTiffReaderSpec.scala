@@ -457,8 +457,8 @@ class GeoTiffReaderSpec extends FunSpec
     it ("should read UINT 16 little endian files correctly") {
       val min = 71
       val max = 237
-      val mean = 210.67953254456
-      val file = "/reproject/nlcd_tile_webmercator-bilinear.tif"
+      val mean = 210.66777801514
+      val file = "/reproject/nlcd_tile_wsg84.tif"
 
       testMinMaxAndMean(min, max, mean, file)
     }

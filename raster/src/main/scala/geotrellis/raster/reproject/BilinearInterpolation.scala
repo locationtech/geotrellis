@@ -3,42 +3,25 @@ package geotrellis.raster.reproject
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-class BilinearInterpolation(tile: Tile, extent: Extent) extends Interpolation {
-  private val re = RasterExtent(tile, extent)
-  protected val cols = tile.cols
-  protected val rows = tile.rows
+class BilinearInterpolation(tile: Tile, extent: Extent)
+    extends Interpolation(tile, extent) {
 
-  private val westBound = extent.xmin
-  private val eastBound = extent.xmax
-  private val northBound = extent.ymax
-  private val southBound = extent.ymin
-
-  protected val cellwidth = re.cellwidth
-  protected val cellheight = re.cellheight
-
-  protected val xmin = extent.xmin + cellwidth / 2.0
-  protected val xmax = extent.xmax - cellwidth / 2.0
-  protected val ymin = extent.ymin + cellheight / 2.0
-  protected val ymax = extent.ymax - cellheight / 2.0
-
-  protected def isValid(x: Double, y: Double) =
-    x >= westBound && x <= eastBound && y >= southBound && y <= northBound
+  private val xmin = extent.xmin + cellwidth / 2.0
+  private val xmax = extent.xmax - cellwidth / 2.0
+  private val ymin = extent.ymin + cellheight / 2.0
+  private val ymax = extent.ymax - cellheight / 2.0
 
   // TODO: talk with Rob and find a way to avoid this code dup.
   // What if 1 value is NODATA in interp, what should we do?
-  override def interpolate(x: Double, y: Double): Int =
-    if (!isValid(x, y)) NODATA // does raster have specific NODATA?
-    else {
-      val (leftCol, topRow, xRatio, yRatio) = resolveTopLeftCoordsAndRatios(x, y)
-      bilinearInt(leftCol, topRow, xRatio, yRatio)
-    }
+  override def interpolateValid(x: Double, y: Double): Int = {
+    val (leftCol, topRow, xRatio, yRatio) = resolveTopLeftCoordsAndRatios(x, y)
+    bilinearInt(leftCol, topRow, xRatio, yRatio)
+  }
 
-  override def interpolateDouble(x: Double, y: Double): Double =
-    if (!isValid(x, y)) Double.NaN // does raster have specific NODATA?
-    else {
-      val (leftCol, topRow, xRatio, yRatio) = resolveTopLeftCoordsAndRatios(x, y)
-      bilinearDouble(leftCol, topRow, xRatio, yRatio)
-    }
+  override def interpolateDoubleValid(x: Double, y: Double): Double = {
+    val (leftCol, topRow, xRatio, yRatio) = resolveTopLeftCoordsAndRatios(x, y)
+    bilinearDouble(leftCol, topRow, xRatio, yRatio)
+  }
 
   def resolveTopLeftCoordsAndRatios(x: Double, y: Double): (Int, Int, Double, Double) = {
     val dleft = x - xmin

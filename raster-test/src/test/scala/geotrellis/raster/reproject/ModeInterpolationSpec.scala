@@ -95,19 +95,4 @@ class ModeInterpolationSpec extends FunSpec with Matchers {
 
   }
 
-  describe("when point outside extent it should return nodata") {
-
-    it("should return NODATA when point is outside extent") {
-      val tile = ArrayTile(Array[Int](100, 100, 100, 100), 2, 2)
-      val extent = Extent(1, 1, 2, 2)
-      val mi = new ModeInterpolation(tile, extent)
-
-      mi.interpolate(0.99, 1.01) should be (NODATA)
-      mi.interpolate(1.01, 0.99) should be (NODATA)
-      mi.interpolate(2.01, 1.01) should be (NODATA)
-      mi.interpolate(1.01, 2.01) should be (NODATA)
-    }
-
-  }
-
 }

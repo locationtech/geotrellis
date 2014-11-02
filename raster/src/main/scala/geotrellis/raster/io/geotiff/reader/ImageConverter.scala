@@ -50,10 +50,6 @@ class ImageConverter(directory: ImageDirectory, isBigEndian: Boolean) {
     else stripedImage
   }
 
-  private def flipToFloat(image: Array[Byte]): Array[Byte] = flip(image, 4)
-
-  private def flipToDouble(image: Array[Byte]): Array[Byte] = flip(image, 8)
-
   private def flip(image: Array[Byte], flipSize: Int): Array[Byte] = {
     val size = image.size
     val arr = Array.ofDim[Byte](size)

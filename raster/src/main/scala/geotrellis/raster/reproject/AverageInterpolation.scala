@@ -8,14 +8,8 @@ import spire.syntax.cfor._
 /**
   * Takes the average value of the tile and interpolates all points to that.
   */
-class AverageInterpolation(tile: Tile, extent: Extent) extends Interpolation {
-  private val cols = tile.cols
-  private val rows = tile.rows
-
-  private val westBound = extent.xmin // TODO: duplication
-  private val eastBound = extent.xmax
-  private val northBound = extent.ymax
-  private val southBound = extent.ymin
+class AverageInterpolation(tile: Tile, extent: Extent)
+    extends Interpolation(tile, extent) {
 
   private val RoundingScale = 5
 
@@ -51,16 +45,8 @@ class AverageInterpolation(tile: Tile, extent: Extent) extends Interpolation {
       nodata
   }
 
-  // TODO: duplication
-  protected def isValid(x: Double, y: Double) =
-    x >= westBound && x <= eastBound && y >= southBound && y <= northBound
+  override def interpolateValid(x: Double, y: Double): Int = average
 
-  def interpolate(x: Double, y: Double): Int =
-    if (!isValid(x, y)) NODATA
-    else average
-
-  def interpolateDouble(x: Double, y: Double): Double =
-    if (!isValid(x, y)) Double.NaN
-    else averageDouble
+  override def interpolateDoubleValid(x: Double, y: Double): Double = averageDouble
 
 }

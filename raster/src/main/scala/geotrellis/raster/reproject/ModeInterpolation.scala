@@ -10,19 +10,13 @@ import spire.syntax.cfor._
 /**
   * Takes the most common value in the tile and interpolates all points to that.
   */
-class ModeInterpolation(tile: Tile, extent: Extent) extends Interpolation {
-  private val cols = tile.cols
-  private val rows = tile.rows
+class ModeInterpolation(tile: Tile, extent: Extent)
+    extends Interpolation(tile, extent) {
 
-  private val westBound = extent.xmin // TODO: duplication
-  private val eastBound = extent.xmax
-  private val northBound = extent.ymax
-  private val southBound = extent.ymin
-
-  private lazy val average =
+  private lazy val mostCommonValue =
     calculateMostCommonValue(NODATA, tile.getDouble).toInt
 
-  private lazy val averageDouble =
+  private lazy val mostCommonValueDouble =
     calculateMostCommonValue(Double.NaN, tile.getDouble)
 
   private def calculateMostCommonValue(nodata: Double, f: (Int, Int) => Double) = {
@@ -48,16 +42,10 @@ class ModeInterpolation(tile: Tile, extent: Extent) extends Interpolation {
     max
   }
 
-  // TODO: duplication
-  protected def isValid(x: Double, y: Double) =
-    x >= westBound && x <= eastBound && y >= southBound && y <= northBound
+  override def interpolateValid(x: Double, y: Double): Int =
+    mostCommonValue
 
-  def interpolate(x: Double, y: Double): Int =
-    if (!isValid(x, y)) NODATA
-    else average
-
-  def interpolateDouble(x: Double, y: Double): Double =
-    if (!isValid(x, y)) Double.NaN
-    else averageDouble
+  override def interpolateDoubleValid(x: Double, y: Double): Double =
+    mostCommonValueDouble
 
 }

@@ -7,8 +7,9 @@ import org.scalatest._
 
 /**
   * Since cubic convolution interpolation inherits from cubic interpolation it
-  * is only needed to test the actual math, the rest is tested in the cubic
-  * interpolation spec and the bilinear interpolation spec.
+  * is only needed to test the actual math, the rest is tested in the bicubic
+  * interpolation spec, the cubic interpolation spec and the bilinear
+  * interpolation spec.
   *
   * It is also known that the bicubic interpolation resolves, if the cube
   * is D * D points, first D rows then the D values of each interpolation

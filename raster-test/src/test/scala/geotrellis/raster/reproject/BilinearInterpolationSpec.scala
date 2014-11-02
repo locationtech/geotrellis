@@ -104,7 +104,6 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
     }
 
     it("should interpolate correctly when varying values and points") {
-      val t1 = ArrayTile(Array[Int](1, 2, 3, 4), 2, 2)
 
       // 1 contrib = 1 * 0.75 * 0.75 = 0.5625
       // 2 contrib = 2 * 0.75 * 0.25 = 0.375
@@ -112,7 +111,7 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
       // 4 contrib = 4 * 0.25 * 0.25 = 0.25
       // accum divisor = 1
       // res = 1.75
-      testInterpolationDouble(0.25, 0.25, 1.75, t1)
+      testInterpolationDouble(0.375, 0.625, 1.75)
 
       // 1 contrib: 1 * 0.49 * 1 = 0.49
       // 2 contrib: 2 * 0.51 * 1 = 1.02
@@ -120,7 +119,7 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
       // 4 contrib: 0
       // accum divisor = 1
       // res = 1.51
-      testInterpolationDouble(0.51, 0, 1.51, t1)
+      testInterpolationDouble(0.51, 1, 1.52)
 
       // 1 contrib: 0
       // 2 contrib: 0
@@ -128,7 +127,7 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
       // 4 contrib: 4 * 0.49 * 1 = 1.96
       // accum divisor = 1
       // res = 3.49
-      testInterpolationDouble(0.49, 1, 3.49, t1)
+      testInterpolationDouble(0.49, 0, 3.48)
     }
 
   }
@@ -291,17 +290,6 @@ class BilinearInterpolationSpec extends FunSpec with Matchers {
       yc should be (1)
       xr should be (0)
       yr should be (0)
-    }
-
-    it("should return NODATA when point is outside extent") {
-      val tile = ArrayTile(Array[Int](100, 100, 100, 100), 2, 2)
-      val extent = Extent(1, 1, 2, 2)
-      val bi = new BilinearInterpolation(tile, extent)
-
-      bi.interpolate(0.99, 1.01) should be (NODATA)
-      bi.interpolate(1.01, 0.99) should be (NODATA)
-      bi.interpolate(2.01, 1.01) should be (NODATA)
-      bi.interpolate(1.01, 2.01) should be (NODATA)
     }
 
   }
