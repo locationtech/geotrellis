@@ -20,7 +20,7 @@ import com.vividsolutions.jts.{geom => jts}
 
 import scala.collection.mutable
 
-package object vector {
+package object vector extends op.LineDissolve.Implicits {
 
   implicit def tupleOfIntToPoint(t: (Double, Double)): Point =
     Point(t._1,t._2)

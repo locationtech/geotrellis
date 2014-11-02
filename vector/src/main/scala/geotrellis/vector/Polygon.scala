@@ -19,6 +19,8 @@ package geotrellis.vector
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
 
+import spire.syntax.cfor._
+
 object Polygon {
   implicit def jtsToPolygon(jtsGeom: jts.Polygon): Polygon =
     Polygon(jtsGeom)
@@ -34,7 +36,7 @@ object Polygon {
       sys.error(s"Cannot create a polygon with unclosed exterior: $exterior")
     }
 
-    if(exterior.points.length < 4) {
+    if(exterior.vertices.length < 4) {
       sys.error(s"Cannot create a polygon with exterior with less that 4 points: $exterior")
     }
 
@@ -45,7 +47,7 @@ object Polygon {
         if (!hole.isClosed) {
           sys.error(s"Cannot create a polygon with an unclosed hole: $hole")
         } else {
-          if (hole.points.length < 4)
+          if (hole.vertices.length < 4)
             sys.error(s"Cannot create a polygon with a hole with less that 4 points: $hole")
           else
             factory.createLinearRing(hole.jtsGeom.getCoordinates)
@@ -104,8 +106,18 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     jtsGeom.getBoundary
 
   /** Returns this Polygon's vertices. */
-  lazy val vertices: Array[Point] =
-    jtsGeom.getCoordinates.map { c => Point(c.x, c.y) }
+  lazy val vertices: Array[Point] = {
+    val coords = jtsGeom.getCoordinates
+    val arr = Array.ofDim[Point](coords.size)
+    cfor(0)(_ < arr.size, _ + 1) { i =>
+      val coord = coords(i)
+      arr(i) = Point(coord.x, coord.y)
+    }
+    arr
+  }
+
+  /** Get the number of vertices in this geometry */
+  lazy val vertexCount: Int = jtsGeom.getNumPoints
 
   /**
    * Returns the minimum extent that contains this Polygon.
