@@ -28,7 +28,9 @@ import spire.syntax.cfor._
 import scala.reflect.ClassTag
 
 class HadoopIngestArgs extends IngestArgs {
-  @Required var outputpyramid: String = _
+  @Required var catalog: String = _
+
+  def catalogPath = new Path(catalog)
 }
 
 class HadoopIngest[T: IngestKey, K: SpatialComponent: HadoopWritable: ClassTag](catalog: HadoopCatalog, layoutScheme: LayoutScheme)(implicit tiler: Tiler[T, K])
@@ -46,16 +48,11 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
 
     implicit val sparkContext = args.sparkContext("Ingest")
 
-    val outPath = new Path(args.outputpyramid) // TODO: Change args.outputpyramid to be root path of catalog.
-    val inPath = new Path(args.input) 
-    val layerName: String = ??? // TODO: Create layer name argument
-    val source = sparkContext.hadoopGeoTiffRDD(inPath)
-    val destCRS = LatLng // Need to create from parameters
-
-    val catalog: HadoopCatalog = HadoopCatalog(sparkContext, inPath)
+    val catalog: HadoopCatalog = HadoopCatalog(sparkContext, args.catalogPath)
     val ingest = new HadoopIngest[ProjectedExtent, SpatialKey](catalog, ZoomedLayoutScheme())
+    val source = sparkContext.hadoopGeoTiffRDD(args.inPath)    
 
-    ingest(source, layerName, destCRS)
+    ingest(source, args.layerName, args.destCrs)
   }
 }
 

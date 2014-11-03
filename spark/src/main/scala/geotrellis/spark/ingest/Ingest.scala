@@ -83,3 +83,20 @@ abstract class Ingest[T: IngestKey, K: SpatialComponent: ClassTag](layoutScheme:
     pyramid(layerMetaData, rasterRdd)
   }
 }
+
+object Ingest {
+  def apply[T: IngestKey, K: SpatialComponent: ClassTag](sourceTiles: RDD[(T, Tile)], layerName: String, destCRS: CRS, layoutScheme: LayoutScheme)(implicit tiler: Tiler[T, K]): (LayerMetaData, RasterRDD[K]) = {
+
+    var outRdd: RasterRDD[K] = null
+    var outMd: LayerMetaData = null
+
+    new Ingest(layoutScheme) {
+      def save(layerMetaData: LayerMetaData, rdd: RasterRDD[K]): Unit = {
+        outMd = layerMetaData
+        outRdd = rdd
+      }
+    }.apply(sourceTiles, layerName, LatLng)
+
+    outMd -> outRdd
+  }
+}

@@ -19,9 +19,7 @@ import com.quantifind.sumac.validation.Required
 import scala.reflect.ClassTag
 
 class AccumuloIngestArgs extends IngestArgs with AccumuloArgs {
-  @Required var table: String = _
-  @Required var layer: String = _
-  var pyramid: Boolean = false
+  @Required var table: String = _  
 }
 
 class AccumuloIngest[T: IngestKey, K: SpatialComponent: AccumuloDriver: ClassTag](catalog: AccumuloCatalog, layoutScheme: LayoutScheme)(implicit tiler: Tiler[T, K])
@@ -41,12 +39,8 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
 
     val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
     val ingest = new AccumuloIngest[ProjectedExtent, SpatialKey](accumulo.catalog, ZoomedLayoutScheme())
+    val source = sparkContext.hadoopGeoTiffRDD(args.inPath)
 
-    val inPath = new Path(args.input)
-    val source = sparkContext.hadoopGeoTiffRDD(inPath)
-    val layer = args.layer
-    val destCRS = LatLng // TODO: Need to create from parameters
-
-    ingest(source, layer, destCRS)
+    ingest(source, args.layerName, args.destCrs)
   }
 }

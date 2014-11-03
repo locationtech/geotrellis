@@ -47,12 +47,8 @@ object NetCDFIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
       }
 
     val ingest = new NetCdfIngest(accumulo.catalog, ZoomedLayoutScheme())
+    val source = sparkContext.netCdfRDD(args.inPath)
 
-    val inPath = new Path(args.input)
-    val source = sparkContext.netCdfRDD(inPath)
-    val layer = args.layer
-    val destCRS = LatLng // Need to create from parameters
-
-    ingest(source, layer, destCRS)
+    ingest(source, args.layerName, args.destCrs)
   }
 }
