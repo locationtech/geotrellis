@@ -1,95 +1,49 @@
-/*
- * Copyright (c) 2014 DigitalGlobe.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package geotrellis.spark.testfiles
 
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.FileUtil
+import org.apache.hadoop.fs.Path
+import org.apache.spark._
+import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
-
-class TestFiles(val path: Path, conf: Configuration) {
-  val metaData =
-    HadoopUtils.readLayerMetaData(path, conf)
-
-  def tileCount =
-    metaData.tileIds.size
+object TestFiles{
+  def catalog(implicit sc: SparkContext): HadoopCatalog = {
+    val conf = sc.hadoopConfiguration
+    val localFS = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
+    val catalogPath = new Path(localFS.getWorkingDirectory, "src/test/resources/test-catalog")
+    HadoopCatalog(sc, catalogPath)
+  }
 }
 
-object AllOnesTestFile {
-  def apply(prefix: Path, conf: Configuration) =
-    new TestFiles(
-      new Path(prefix, "all-ones/10"),
-      conf
-    )
-}
+trait TestFiles { self: SharedSparkContext =>
+  lazy val testCatalog = TestFiles.catalog
+  
+  def testFile(layerName: String): RasterRDD[SpatialKey] = {
+    testCatalog.load(LayerId(layerName, 10)).get.cache
+  }
 
-object AllTwosTestFile {
-  def apply(prefix: Path, conf: Configuration) =
-    new TestFiles(
-      new Path(prefix, "all-twos/10"),
-      conf
-    )
-}
+  def AllOnesTestFile = 
+    testFile("all-ones")
 
-object AllHundredsTestFile {
-  def apply(prefix: Path, conf: Configuration) =
-    new TestFiles(
-      new Path(
-        prefix, "all-hundreds/10"),
-      conf
-    )
-}
+  def AllTwosTestFile = 
+    testFile("all-twos")
 
-object IncreasingTestFile {
-  def apply(prefix: Path, conf: Configuration) =
-    new TestFiles(
-      new Path(prefix, "increasing/10"),
-      conf
-    )
-}
+  def AllHundredsTestFile = 
+    testFile("all-hundreds")
 
-object DecreasingTestFile {
-  def apply(prefix: Path, conf: Configuration) =
-    new TestFiles(
-      new Path(prefix, "decreasing/10"),
-      conf
-    )
-}
+  def IncreasingTestFile = 
+    testFile("increasing")
 
-object EveryOtherUndefinedTestFile {
-  def apply(prefix: Path, conf: Configuration) =
-    new TestFiles(
-      new Path(prefix, "every-other-undefined/10"),
-      conf
-    )
-}
+  def DecreasingTestFile = 
+    testFile("decreasing")
 
-object EveryOther0Point99Else1Point01TestFile {
-  def apply(prefix: Path, conf: Configuration) =
-    new TestFiles(
-      new Path(prefix, "every-other-0.99-else-1.01/10"),
-      conf
-    )
-}
+  def EveryOtherUndefinedTestFile = 
+    testFile("every-other-undefined")
 
-object EveryOther1ElseMinus1TestFile {
-  def apply(prefix: Path, conf: Configuration) =
-    new TestFiles(
-      new Path(prefix, "every-other-1-else-1/10"),
-      conf
-    )
+  def EveryOther0Point99Else1Point01TestFile = 
+    testFile("every-other-0.99-else-1.01")
+
+  def EveryOther1ElseMinus1TestFile = 
+    testFile("every-other-1-else-1")
 }

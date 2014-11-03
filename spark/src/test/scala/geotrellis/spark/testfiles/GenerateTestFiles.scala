@@ -53,13 +53,9 @@ object GenerateTestFiles {
     )
 
     val sc = new SparkContext("local", "create-test-files")
-    val conf = sc.hadoopConfiguration
-    val localFS = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
-    val catalogPath = new Path(localFS.getWorkingDirectory, "src/test/resources/")
-    val catalog = HadoopCatalog(sc, catalogPath)
+    val catalog = TestFiles.catalog(sc)
 
     for((tfv, name) <- testFiles) {
-      println(s"Creating test RasterRDD $name")
       val tmsTiles =
         gridBounds.coords.map { case (col, row) =>
           val arr = tfv(tileCols, tileRows)
@@ -71,7 +67,7 @@ object GenerateTestFiles {
           sc.parallelize(tmsTiles)
         }
 
-      catalog.save(LayerId(name, 10), rdd, clobber = true)
+      catalog.save(LayerId(name, 10), rdd, clobber = true).get
     }
   }
 
