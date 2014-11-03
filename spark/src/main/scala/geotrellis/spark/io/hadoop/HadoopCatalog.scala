@@ -98,7 +98,7 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
 
     }
 
-  def save[K: HadoopWritable: ClassTag](rdd: RasterRDD[K], layerMetaData: LayerMetaData, path: Path, clobber: Boolean): Try[Unit] =
+  protected def save[K: HadoopWritable: ClassTag](rdd: RasterRDD[K], layerMetaData: LayerMetaData, path: Path, clobber: Boolean): Try[Unit] =
     Try {
       val keyWritable = implicitly[HadoopWritable[K]]
       import keyWritable.implicits._

@@ -32,11 +32,15 @@ trait Catalog {
   def save[K: SupportedKey: ClassTag](layerId: LayerId, rdd: RasterRDD[K], clobber: Boolean): Try[Unit] =
     save(layerId, rdd, paramsFor(layerId), clobber)
 
+  def save[K: SupportedKey: ClassTag](layerId: LayerId, rdd: RasterRDD[K], params: Params): Try[Unit] =
+    save(layerId, rdd, params, false)
+
   def save[K: SupportedKey: ClassTag](layerId: LayerId, rdd: RasterRDD[K], params: Params, clobber: Boolean): Try[Unit] = {
     val metaData = LayerMetaData(layerId, rdd.metaData)
     metaDataCatalog.save(metaData, params, clobber)
     save(rdd, metaData, params, clobber)
   }
 
-  def save[K: SupportedKey: ClassTag](rdd: RasterRDD[K], layerMetaData: LayerMetaData, params: Params, clobber: Boolean): Try[Unit]
+  // protected so metaDataCatalog is always updated before this is called
+  protected def save[K: SupportedKey: ClassTag](rdd: RasterRDD[K], layerMetaData: LayerMetaData, params: Params, clobber: Boolean): Try[Unit]
 }
