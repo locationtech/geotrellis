@@ -25,7 +25,6 @@ import scala.util.{Try, Success, Failure}
 class AccumuloCatalogSpec extends FunSpec
   with Matchers
   with TestEnvironment
-  with RasterVerifyMethods
   with OnlyIfCanRunSpark
 {
 
@@ -44,64 +43,36 @@ class AccumuloCatalogSpec extends FunSpec
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sparkContext.hadoopGeoTiffRDD(allOnes)
       val tableOps = accumulo.connector.tableOperations()
+      val layoutScheme = ZoomedLayoutScheme()
       tableOps.create("tiles")
 
-      val sink: (RasterRDD[SpatialKey] => Unit) = { tiles =>
-        catalog.save[SpatialKey](tiles, "ones", "tiles").get
-      }
-
-      it("should fail to save without driver"){
-        intercept[DriverNotFound[SpatialKey]] {
-          Ingest(sparkContext)(source, sink, LatLng, TilingScheme.TMS)
+      val (onesMd, onesRdd) = Ingest(source, "ones", LatLng, layoutScheme)      
+     
+      it("should fail writing to no table"){        
+        intercept[TableNotFoundError] {
+          catalog.save(onesMd.id, onesRdd, "NOTiles")          
         }
       }
 
-      it("should fail to load without driver"){
-        intercept[DriverNotFound[SpatialKey]] {
-          catalog.load[SpatialKey]("ones", 10).get.count
-        }
-      }
-
-      it("should fail writing to no table"){
-        catalog.register(RasterAccumuloDriver)
-        intercept[TableNotFound] {
-          Ingest(sparkContext)(source,
-            { tiles =>catalog.save[SpatialKey](tiles, "ones", "NOtiles").get },
-            LatLng, TilingScheme.TMS)
-        }
-      }
-
-      it("should provide a sink for Ingest") {
-        Ingest(sparkContext)(source, sink, LatLng, TilingScheme.TMS)
+      it("should succeed writing to a table"){
+        catalog.save(onesMd.id, onesRdd, "tiles")          
       }
 
       it("should load out saved tiles"){
-        catalog.load[SpatialKey]("ones", 10).get.count should be > 0l
+        catalog.load[SpatialKey](LayerId("ones", 10)).get.count should be > 0l
       }
 
       it("should load out saved tiles, but only for the right zoom"){
-        intercept[LayerNotFound] {
-          catalog.load[SpatialKey]("ones", 9).get.count()
+        intercept[LayerNotFoundError] {
+          catalog.load[SpatialKey](LayerId("ones", 9)).get.count()
         }
-      }
-
-
-      it("be able to map the id to grid") {
-        //saved from first run, mostly detects regressions
-        val expected = List((915,305), (916,305), (917,305), (915,306), (916,306),
-          (917,306), (915,307), (916,307), (917,307), (915,308), (916,308), (917,308))
-
-        val rdd = catalog.load[SpatialKey]("ones", 10).get
-        rdd
-          .map{ case (id, tile) => rdd.metaData.transform.indexToGrid(id)}
-          .collect should be (expected)
       }
 
       it("fetch a TileExtent from catalog"){
         val tileBounds = GridBounds(915,305,916,306)
-        val filters = FilterSet[SpatialKey]() withFilter SpaceFilter(tileBounds, GridCoordScheme)
-        val rdd1 = catalog.load[SpatialKey]("ones", 10, filters).get
-        val rdd2 = catalog.load[SpatialKey]("ones", 10, filters).get
+        val filters = FilterSet.EMPTY[SpatialKey] withFilter SpaceFilter(tileBounds)
+        val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters).get
+        val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters).get
 
         val out = rdd1.combineTiles(rdd2){case (tms1, tms2) =>
           require(tms1.id == tms2.id)

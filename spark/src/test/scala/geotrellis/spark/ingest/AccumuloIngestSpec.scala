@@ -15,14 +15,12 @@ import org.scalatest._
 class AccumuloIngestSpec extends FunSpec
   with Matchers
   with TestEnvironment
-  with RasterVerifyMethods
+  with SharedSparkContext
   with OnlyIfCanRunSpark
 {
 
   describe("Accumulo Ingest") {
     ifCanRunSpark {
-      implicit val sparkContext = SparkUtils.createSparkContext("local", "Accumulo Ingest Test")
-
       val accumulo = new AccumuloInstance(
         instanceName = "fake",
         zookeeper = "localhost",
@@ -31,7 +29,7 @@ class AccumuloIngestSpec extends FunSpec
       )
 
       val allOnes = new Path(inputHome, "all-ones.tif")
-      val source = sparkContext.hadoopGeoTiffRDD(allOnes)
+      val source = sc.hadoopGeoTiffRDD(allOnes)
 
       val ingest = new AccumuloIngest[ProjectedExtent, SpatialKey](accumulo.catalog, ZoomedLayoutScheme())
 
@@ -39,8 +37,8 @@ class AccumuloIngestSpec extends FunSpec
 
       it("should load some tiles") {
         val rdd = accumulo.catalog.load[SpatialKey](LayerId("ones", 10))
-
-        println("COUNT", rdd.get.count)
+        val count = rdd.get.count
+        count should not be (0)
       }
     }
   }
