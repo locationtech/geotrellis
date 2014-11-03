@@ -3,6 +3,10 @@ package geotrellis.raster.reproject
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
+import org.apache.commons.math3.analysis.function.Sin
+
+import spire.syntax.cfor._
+
 /**
   * Implemented exactly as in:
   * http://en.wikipedia.org/wiki/Lanczos_resampling#Multidimensional_interpolation
@@ -32,21 +36,31 @@ class LanczosInterpolator {
   private val S = 1 - Radius
   private val E = Radius
 
+  private val sin = new Sin
+
+  private val PiDivRadius = math.Pi / Radius
+
+  private val Pi2 = math.Pi * math.Pi
+
+  @inline
   def lanczos(v: Double): Double =
     if (v == 0) 1
-    else if (math.abs(v) > 0 && math.abs(v) < Radius)
-      (Radius * math.sin(math.Pi * v) *
-        math.sin(math.Pi * v / Radius) / math.pow(math.Pi * v, 2))
+    else if (v < Radius && v > -Radius)
+      (Radius * sin.value(math.Pi * v) * sin.value(v * PiDivRadius) /
+        (Pi2 * v * v))
     else 0
 
+  @inline
   def interpolate(
     p: Array[Array[Double]],
     x: Double,
     y: Double): Double = {
     var accum = 0.0
 
-    for (i <- S to E; j <- S to E) {
-      accum += p(i - S)(j - S) * lanczos(y - j) * lanczos(x - i)
+    cfor(S)(_ <= E, _ + 1) { i =>
+      cfor(S)(_ <= E, _ + 1) { j =>
+        accum += p(i - S)(j - S) * lanczos(y - j) * lanczos(x - i)
+      }
     }
 
     accum
