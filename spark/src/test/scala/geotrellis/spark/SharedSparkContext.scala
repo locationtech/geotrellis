@@ -51,12 +51,14 @@ trait SharedSparkContext extends BeforeAndAfterAll { self: Suite =>
 
   @transient private var _sc: SparkContext = _
 
-  def sc: SparkContext = _sc
+  implicit def sc: SparkContext = {
+    if (_sc == null) {
+      System.setProperty("spark.master.port", "0")    
+      
+      _sc = SparkUtils.createSparkContext("local", self.suiteName)      
+    }
 
-  override def beforeAll() {
-    System.setProperty("spark.master.port", "0")    
-    _sc = SparkUtils.createSparkContext("local", self.suiteName)
-    super.beforeAll()
+    _sc
   }
 
   override def afterAll() {
