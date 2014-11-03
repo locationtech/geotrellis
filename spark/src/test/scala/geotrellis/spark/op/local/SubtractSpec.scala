@@ -19,23 +19,23 @@ package geotrellis.spark.op.local
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
-
 import org.scalatest.FunSpec
 
 class SubtractSpec extends FunSpec
     with TestEnvironment
+    with TestFiles
     with SharedSparkContext
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
 
   describe("Subtract Operation") {
     ifCanRunSpark {
-      val allOnes = AllOnesTestFile(inputHome, conf)
-      val allTwos = AllTwosTestFile(inputHome, conf)
-      val allHundreds = AllHundredsTestFile(inputHome, conf)
+      val allOnes = AllOnesTestFile
+      val allTwos = AllTwosTestFile
+      val allHundreds = AllHundredsTestFile
 
       it("should subtract a constant from a raster") {
-        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val twos = allTwos
 
         val ones = twos - 1
 
@@ -44,7 +44,7 @@ class SubtractSpec extends FunSpec
       }
 
       it("should subtract from a constant, raster values") {
-        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val twos = allTwos
 
         val ones = 3 -: twos
 
@@ -53,9 +53,9 @@ class SubtractSpec extends FunSpec
       }
 
       it("should subtract multiple rasters") {
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val hundreds = allHundreds
+        val ones = allOnes
+        val twos = allTwos
         val res = hundreds - twos - ones
 
         rasterShouldBe(res, (97, 97))
@@ -63,9 +63,9 @@ class SubtractSpec extends FunSpec
       }
 
       it("should subtract multiple rasters as a seq") {
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val hundreds = allHundreds
+        val ones = allOnes
+        val twos = allTwos
         val res = hundreds - Seq(twos, ones)
 
         rasterShouldBe(res, (97, 97))

@@ -18,22 +18,22 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.testfiles.AllTwosTestFile
-
+import geotrellis.spark.testfiles._
 import org.scalatest.FunSpec
 
 class MultiplySpec extends FunSpec
                       with TestEnvironment
+                      with TestFiles
                       with SharedSparkContext
                       with RasterRDDMatchers
                       with OnlyIfCanRunSpark {
 
   describe("Multiply Operation") {
     ifCanRunSpark {
-      val allTwos = AllTwosTestFile(inputHome, conf)
+      val allTwos = AllTwosTestFile
 
       it("should multiply a constant by a raster") {
-        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val twos = allTwos
         val fours = twos * 2
 
         rasterShouldBe(fours, (4, 4))
@@ -41,7 +41,7 @@ class MultiplySpec extends FunSpec
       }
 
       it("should multiply a raster by a constant") {
-        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val twos = allTwos
         val fours = 2 *: twos
 
         rasterShouldBe(fours, (4, 4))
@@ -49,7 +49,7 @@ class MultiplySpec extends FunSpec
       }
 
       it("should multiply multiple rasters") {
-        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val twos = allTwos
         val eights = twos * twos * twos
 
         rasterShouldBe(eights, (8, 8))
@@ -57,7 +57,7 @@ class MultiplySpec extends FunSpec
       }
 
       it("should multiply multiple rasters as a seq") {
-        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val twos = allTwos
         val eights = twos * Seq(twos, twos)
 
         rasterShouldBe(eights, (8, 8))

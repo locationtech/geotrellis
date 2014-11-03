@@ -18,24 +18,25 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.rdd.RasterRDD
+import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
 class OrSpec extends FunSpec
     with TestEnvironment
+    with TestFiles
     with SharedSparkContext
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Or Operation") {
     ifCanRunSpark {
-      val allOnes = AllOnesTestFile(inputHome, conf)
-      val allTwos = AllTwosTestFile(inputHome, conf)
-      val allHundreds = AllHundredsTestFile(inputHome, conf)
+      val allOnes = AllOnesTestFile
+      val allTwos = AllTwosTestFile
+      val allHundreds = AllHundredsTestFile
 
       it("should or a raster with a constant") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
+        val ones = allOnes
         val res = ones | 1
 
         rasterShouldBe(res, (1, 1))
@@ -43,7 +44,7 @@ class OrSpec extends FunSpec
       }
 
       it("should or a constant with a raster") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
+        val ones = allOnes
         val res = 1 |: ones
 
         rasterShouldBe(res, (1, 1))
@@ -51,9 +52,9 @@ class OrSpec extends FunSpec
       }
 
       it("should or three different rasters") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val ones = allOnes
+        val twos = allTwos
+        val hundreds = allHundreds
 
         val res = ones | twos | hundreds
 
@@ -62,9 +63,9 @@ class OrSpec extends FunSpec
       }
 
       it("should or three different rasters as a seq") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val ones = allOnes
+        val twos = allTwos
+        val hundreds = allHundreds
 
         val res = ones | Seq(twos, hundreds)
 

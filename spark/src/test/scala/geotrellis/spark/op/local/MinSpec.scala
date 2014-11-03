@@ -18,29 +18,30 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.rdd.RasterRDD
+import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
 class MinSpec extends FunSpec
     with TestEnvironment
+    with TestFiles
     with SharedSparkContext
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Min Operation") {
     ifCanRunSpark {
-      val increasing = IncreasingTestFile(inputHome, conf)
-      val decreasing = DecreasingTestFile(inputHome, conf)
-      val allHundreds = AllHundredsTestFile(inputHome, conf)
+      val increasing = IncreasingTestFile
+      val decreasing = DecreasingTestFile
+      val allHundreds = AllHundredsTestFile
 
-      val cols = increasing.metaData.cols
-      val rows = increasing.metaData.rows
+      val cols = increasing.metaData.tileLayout.totalCols
+      val rows = increasing.metaData.tileLayout.totalRows
 
       val tots = cols * rows;
 
       it("should min a raster with an integer") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
+        val inc = increasing
         val thresh = tots / 2
         val res = inc.localMin(thresh)
 
@@ -53,7 +54,7 @@ class MinSpec extends FunSpec
       }
 
       it("should min a raster with a double") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
+        val inc = increasing
         val thresh = tots / 2.0
         val res = inc.localMin(thresh)
 
@@ -66,8 +67,8 @@ class MinSpec extends FunSpec
       }
 
       it("should min two rasters") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val dec = sc.hadoopRasterRDD(decreasing.path)
+        val inc = increasing
+        val dec = decreasing
         val res = inc.localMin(dec)
 
         rasterShouldBe(
@@ -84,9 +85,9 @@ class MinSpec extends FunSpec
       }
 
       it("should min three rasters as a seq") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val dec = sc.hadoopRasterRDD(decreasing.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val inc = increasing
+        val dec = decreasing
+        val hundreds = allHundreds
         val res = inc.localMin(Seq(dec, hundreds))
 
         rasterShouldBe(
