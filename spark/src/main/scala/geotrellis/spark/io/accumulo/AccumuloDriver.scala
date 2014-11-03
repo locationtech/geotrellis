@@ -36,7 +36,9 @@ trait AccumuloDriver[K] {
       if (! accumulo.connector.tableOperations().exists(table)) 
         accumulo.connector.tableOperations().create(table)
 
-      // TODO: How do we delete the tiles if they exist?
+      // NOTE: Accumulo will always perform destructive update.
+      // This is a failsafe, metaDataCatalog.save will throw with better error before getting here.
+      if (! clobber) sys.error(s"Failed to save '$layerId', AccumuloDriver does not know how not to clobber.")
 
       val job = Job.getInstance(sc.hadoopConfiguration)
       accumulo.setAccumuloConfig(job)
