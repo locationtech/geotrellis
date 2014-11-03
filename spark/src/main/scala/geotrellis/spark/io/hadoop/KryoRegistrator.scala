@@ -27,5 +27,6 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[TileWritable])
     kryo.register(classOf[org.apache.accumulo.core.client.impl.ConnectorImpl])
     kryo.register(classOf[org.apache.accumulo.core.client.mock.MockConnector])
+    kryo.register(classOf[geotrellis.spark.SpatialKey])
   }
 }
