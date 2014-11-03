@@ -30,7 +30,7 @@ package object json {
       )
 
     def read(value: JsValue): LayerId =
-      value match {
+      value.asJsObject.getFields("name", "zoom") match {
         case Seq(JsString(name), JsNumber(zoom)) =>
           LayerId(name, zoom.toInt)
         case _ =>
@@ -48,8 +48,8 @@ package object json {
       )
 
     def read(value: JsValue): RasterMetaData =
-      value.asJsObject.getFields("cellType", "extent", "crs", "layoutLevel") match {
-        case Seq(cellType, extent, crs, tileLayout, JsString(gridIndex)) =>
+      value.asJsObject.getFields("cellType", "extent", "crs", "tileLayout") match {
+        case Seq(cellType, extent, crs, tileLayout) =>
           RasterMetaData(
             cellType.convertTo[CellType],
             extent.convertTo[Extent],
