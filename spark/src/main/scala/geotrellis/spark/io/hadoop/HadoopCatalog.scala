@@ -106,10 +106,11 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
       val conf = rdd.context.hadoopConfiguration
       val fs = path.getFileSystem(conf)
       
-      if(!fs.exists(path)) {
-        if(clobber)
+      if(fs.exists(path)) {
+        if(clobber) {
+          logDebug(s"Deleting $path")
           fs.delete(path, true)
-        else
+        } else
           sys.error(s"Directory already exists: $path")
       }
 
@@ -120,7 +121,7 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
 
       val pathString = path.toUri.toString
 
-      logInfo("Saving RasterRDD to ${pathString} out...")
+      logInfo(s"Saving RasterRDD to ${path}")
 
       // Figure out how many partitions there should be based on block size.
       val partitions = {
@@ -153,9 +154,7 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
            }
           .collect
 
-      writeSplits(splits, path, conf)
-
-      // Write the RDD.
+      // Write the RDD.      
       sortedWritable
         .saveAsHadoopFile(
           pathString,
@@ -165,6 +164,8 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
           jobConf
         )
 
+      writeSplits(splits, path, conf)
+      
       logInfo(s"Finished saving tiles to ${path}")
     }
 }
