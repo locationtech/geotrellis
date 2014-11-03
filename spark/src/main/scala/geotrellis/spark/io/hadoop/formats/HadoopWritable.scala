@@ -7,7 +7,7 @@ import scala.reflect.ClassTag
 /** Trait that serves as implicit evidence that type K can be used as
   * a key when writing Hadoop MapFiles.
   */
-abstract class HadoopWritable[K](implicit ordering: Ordering[K]) extends Serializable {
+abstract class HadoopWritable[K: Ordering] extends Serializable {
   type Writable <: org.apache.hadoop.io.Writable with WritableComparable[Writable]
 
   val writableClassTag: ClassTag[Writable]
@@ -28,7 +28,7 @@ abstract class HadoopWritable[K](implicit ordering: Ordering[K]) extends Seriali
       def toValue(): K = HadoopWritable.this.toValue(writable)
     }
 
-    implicit def keyOrdering = ordering
+    implicit def keyOrdering = implicitly[Ordering[K]]
 
     implicit def writableOrdering[T <: Writable] = 
       new Ordering[Writable] {
