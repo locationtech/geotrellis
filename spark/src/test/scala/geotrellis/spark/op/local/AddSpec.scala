@@ -28,11 +28,10 @@ import org.scalatest.FunSpec
 class AddSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with SharedSparkContext
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Add Operation") {
-    ifCanRunSpark {
+    ifCanRunSpark { 
       val allOnes = AllOnesTestFile.cache
 
       it("should add a constant to a raster") {

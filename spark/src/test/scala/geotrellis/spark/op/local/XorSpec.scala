@@ -26,7 +26,6 @@ import org.scalatest.FunSpec
 class XorSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with SharedSparkContext
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Xor Operation") {

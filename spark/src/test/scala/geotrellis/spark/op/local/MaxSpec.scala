@@ -26,7 +26,6 @@ import org.scalatest.FunSpec
 class MaxSpec extends FunSpec
     with TestEnvironment
     with TestFiles    
-    with SharedSparkContext
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Max Operation") {

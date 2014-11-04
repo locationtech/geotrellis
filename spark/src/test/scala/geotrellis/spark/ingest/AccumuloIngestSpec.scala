@@ -15,12 +15,11 @@ import org.scalatest._
 class AccumuloIngestSpec extends FunSpec
   with Matchers
   with TestEnvironment
-  with SharedSparkContext
   with OnlyIfCanRunSpark
 {
 
   describe("Accumulo Ingest") {
-    ifCanRunSpark {
+    ifCanRunSpark { 
       val accumulo = new AccumuloInstance(
         instanceName = "fake",
         zookeeper = "localhost",

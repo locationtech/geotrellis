@@ -27,7 +27,6 @@ import org.scalatest.FunSpec
 class MajoritySpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with SharedSparkContext
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
 

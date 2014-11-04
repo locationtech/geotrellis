@@ -29,8 +29,7 @@ class AccumuloCatalogSpec extends FunSpec
 {
 
   describe("Accumulo Catalog") {
-    ifCanRunSpark {
-      implicit val sparkContext = SparkUtils.createSparkContext("local", "Accumulo Ingest Test")
+    ifCanRunSpark { 
 
       val accumulo = new AccumuloInstance(
         instanceName = "fake",
@@ -41,7 +40,7 @@ class AccumuloCatalogSpec extends FunSpec
       val catalog = accumulo.catalog
 
       val allOnes = new Path(inputHome, "all-ones.tif")
-      val source = sparkContext.hadoopGeoTiffRDD(allOnes)
+      val source = sc.hadoopGeoTiffRDD(allOnes)
       val tableOps = accumulo.connector.tableOperations()
       val layoutScheme = ZoomedLayoutScheme()
       tableOps.create("tiles")

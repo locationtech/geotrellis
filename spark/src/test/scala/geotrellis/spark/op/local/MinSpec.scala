@@ -25,12 +25,11 @@ import org.scalatest.FunSpec
 
 class MinSpec extends FunSpec
     with TestEnvironment
-    with TestFiles
-    with SharedSparkContext
+    with TestFiles    
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Min Operation") {
-    ifCanRunSpark {
+    ifCanRunSpark { 
       val increasing = IncreasingTestFile
       val decreasing = DecreasingTestFile
       val allHundreds = AllHundredsTestFile

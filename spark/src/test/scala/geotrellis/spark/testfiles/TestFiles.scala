@@ -16,7 +16,7 @@ object TestFiles{
   }
 }
 
-trait TestFiles { self: SharedSparkContext =>
+trait TestFiles { self: OnlyIfCanRunSpark =>
   lazy val testCatalog = TestFiles.catalog
   
   def testFile(layerName: String): RasterRDD[SpatialKey] = {

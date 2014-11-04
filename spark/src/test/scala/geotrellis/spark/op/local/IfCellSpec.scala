@@ -26,7 +26,6 @@ import org.scalatest.FunSpec
 class IfCellSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with SharedSparkContext
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("IfCell Operation") {

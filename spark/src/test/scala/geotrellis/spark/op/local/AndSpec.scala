@@ -25,12 +25,11 @@ import org.scalatest.FunSpec
 
 class AndSpec extends FunSpec
     with TestEnvironment
-    with TestFiles
-    with SharedSparkContext
+    with TestFiles  
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("And Operation") {
-    ifCanRunSpark {
+    ifCanRunSpark { 
       val allOnes = AllOnesTestFile
       val allTwos = AllTwosTestFile
       val allHundreds = AllHundredsTestFile

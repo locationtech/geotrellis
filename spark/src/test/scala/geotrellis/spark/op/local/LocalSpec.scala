@@ -26,7 +26,6 @@ import org.scalatest.FunSpec
 class LocalSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with SharedSparkContext
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Local Operations") {

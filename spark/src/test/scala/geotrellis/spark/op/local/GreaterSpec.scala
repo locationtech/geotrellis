@@ -25,7 +25,6 @@ import org.scalatest.FunSpec
 class GreaterSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with SharedSparkContext
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Greater Operation") {

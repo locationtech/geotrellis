@@ -25,7 +25,6 @@ import org.scalatest.FunSpec
 class PowSpec extends FunSpec
     with TestEnvironment
     with TestFiles
-    with SharedSparkContext
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Pow Operation") {
