@@ -17,4 +17,7 @@ object SpatialKey {
 }
 
 /** A SpatialKey designates the spatial positioning of a layer's tile. */
-case class SpatialKey(col: Int, row: Int)
+case class SpatialKey(col: Int, row: Int) extends Product2[Int, Int] {
+  def _1 = col
+  def _2 = row
+}
