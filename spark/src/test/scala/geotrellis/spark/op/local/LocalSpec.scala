@@ -98,7 +98,7 @@ class LocalSpec extends FunSpec
 
         val res = inc.localSqrt
 
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
           (x: Int, y: Int) => math.sqrt(y * cols + x),
           1e-4
@@ -125,7 +125,7 @@ class LocalSpec extends FunSpec
 
         val res = inc.localLog
 
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
           (x: Int, y: Int) => math.log(y * cols + x),
           1e-4
@@ -139,7 +139,7 @@ class LocalSpec extends FunSpec
 
         val res = inc.localLog10
 
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
           (x: Int, y: Int) => math.log10(y * cols + x),
           1e-4
@@ -231,7 +231,7 @@ class LocalSpec extends FunSpec
 
         val res = evo.localAcos
 
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
           (x: Int, y: Int) => math.acos(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
           1e-4
@@ -245,7 +245,7 @@ class LocalSpec extends FunSpec
 
         val res = evo.localAsin
 
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
           (x: Int, y: Int) => math.asin(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
           1e-4
@@ -260,7 +260,7 @@ class LocalSpec extends FunSpec
 
         val res = evo.localAtan2(evoOneMinusOne)
 
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
           (x: Int, y: Int) => {
             val (xa, ya) = if ((y * cols + x) % 2 == 0)
@@ -281,7 +281,7 @@ class LocalSpec extends FunSpec
 
         val res = evo.localAtan
 
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
           (x: Int, y: Int) => math.atan(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
           1e-4
@@ -295,7 +295,7 @@ class LocalSpec extends FunSpec
 
         val res = inc.localCos
 
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
           (x: Int, y: Int) => math.cos(y * cols + x),
           1e-4
@@ -309,7 +309,7 @@ class LocalSpec extends FunSpec
 
         val res = evo.localCosh
 
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
           (x: Int, y: Int) => math.cosh(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
           1e-4
@@ -323,7 +323,7 @@ class LocalSpec extends FunSpec
 
         val res = inc.localSin
 
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
           (x: Int, y: Int) => math.sin(y * cols + x),
           1e-4
@@ -337,7 +337,7 @@ class LocalSpec extends FunSpec
 
         val res = evo.localSinh
 
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
           (x: Int, y: Int) => math.sinh(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
           1e-4
@@ -351,7 +351,7 @@ class LocalSpec extends FunSpec
 
         val res = evo.localTan
 
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
           (x: Int, y: Int) => math.tan(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
           1e-4
@@ -365,7 +365,7 @@ class LocalSpec extends FunSpec
 
         val res = evo.localTanh
 
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
           (x: Int, y: Int) => math.tanh(if ((y * cols + x) % 2 == 0) 0.99 else 1.01),
           1e-4

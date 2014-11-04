@@ -54,7 +54,7 @@ class PowSpec extends FunSpec
         val twos = allTwos
         val res = twos ** 1.5
 
-        rasterShouldBe(res, (x: Int, y: Int) => math.pow(2, 1.5), 1e-6)
+        rasterShouldBeAbout(res, (x: Int, y: Int) => math.pow(2, 1.5), 1e-6)
 
         rastersShouldHaveSameIdsAndTileCount(res, twos)
       }
@@ -63,7 +63,7 @@ class PowSpec extends FunSpec
         val twos = allTwos
         val res = 1.5 **: twos
 
-        rasterShouldBe(res, (x: Int, y: Int) => math.pow(1.5, 2), 1e-10)
+        rasterShouldBeAbout(res, (x: Int, y: Int) => math.pow(1.5, 2), 1e-10)
 
         rastersShouldHaveSameIdsAndTileCount(res, twos)
       }

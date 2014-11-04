@@ -20,7 +20,7 @@ import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
-
+import geotrellis.raster.Tile
 import org.scalatest.FunSpec
 
 class MinSpec extends FunSpec
@@ -34,19 +34,14 @@ class MinSpec extends FunSpec
       val decreasing = DecreasingTestFile
       val allHundreds = AllHundredsTestFile
 
-      val cols = increasing.metaData.tileLayout.totalCols
-      val rows = increasing.metaData.tileLayout.totalRows
-
-      val tots = cols * rows;
-
+      println("TileLayout", increasing.metaData.tileLayout)
       it("should min a raster with an integer") {
         val inc = increasing
-        val thresh = tots / 2
+        val thresh = 721.1
         val res = inc.localMin(thresh)
-
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => math.min(y * cols + x, thresh)
+          (tile: Tile, x: Int, y: Int) => math.min(y * tile.cols + x, thresh)
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
@@ -54,12 +49,12 @@ class MinSpec extends FunSpec
 
       it("should min a raster with a double") {
         val inc = increasing
-        val thresh = tots / 2.0
+        val thresh = 873.4
         val res = inc.localMin(thresh)
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => math.min(y * cols + x, thresh)
+          (t: Tile, x: Int, y: Int) => math.min(y * t.cols + x, thresh)
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
@@ -72,9 +67,9 @@ class MinSpec extends FunSpec
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => {
-            val decV = cols * rows - (y * cols + x) - 1
-            val incV = y * cols + x
+          (t: Tile, x: Int, y: Int) => {
+            val decV = t.cols * t.rows - (y * t.cols + x) - 1
+            val incV = y * t.cols + x
 
             math.min(decV, incV)
           }
@@ -91,9 +86,9 @@ class MinSpec extends FunSpec
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => {
-            val decV = cols * rows - (y * cols + x) - 1
-            val incV = y * cols + x
+          (t: Tile, x: Int, y: Int) => {
+            val decV = t.cols * t.rows - (y * t.cols + x) - 1
+            val incV = y * t.cols + x
 
             math.min(math.min(decV, incV), 100)
           }
