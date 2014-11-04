@@ -29,7 +29,7 @@ trait RasterMatchers extends Matchers {
   def rasterShouldBe(tile: Tile, value: Int): Unit = {
     for (col <- 0 until tile.cols) {
       for (row <- 0 until tile.rows) {
-        tile.get(col, row) should be(value)
+        withClue(s"(col=$col, row=$row)") { tile.get(col, row) should be(value) }
       }
     }
   }
@@ -43,7 +43,7 @@ trait RasterMatchers extends Matchers {
         val exp = f(tile, col, row)
         val v = tile.getDouble(col, row)
         if (!exp.isNaN || !v.isNaN) {
-          v should be(exp +- epsilon)
+          withClue(s"(col=$col, row=$row)") { v should be(exp +- epsilon) }
         }
       }
     }
@@ -58,7 +58,7 @@ trait RasterMatchers extends Matchers {
         val exp = f(col, row)
         val v = tile.getDouble(col, row)
         if (!exp.isNaN || !v.isNaN) {
-          v should be(exp +- epsilon)
+          withClue(s"(col=$col, row=$row)") { v should be(exp +- epsilon) }
         }
       }
     }
