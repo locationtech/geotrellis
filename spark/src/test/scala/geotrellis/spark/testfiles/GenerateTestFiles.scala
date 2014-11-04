@@ -41,14 +41,14 @@ object GenerateTestFiles {
     val gridBounds = re.gridBoundsFor(extent)
 
     val testFiles = List(
-      ConstantTestFileValues(1) -> "all-ones",
-      ConstantTestFileValues(2) -> "all-twos",
-      ConstantTestFileValues(100) -> "all-hundreds",
-      IncreasingTestFileValues(tileCols, tileRows) -> "increasing",
-      DecreasingTestFileValues(tileCols, tileRows) -> "decreasing",
-      EveryOtherUndefined(tileCols) -> "every-other-undefined",
-      EveryOther0Point99Else1Point01(tileCols) -> "every-other-0.99-else-1.01",
-      EveryOther1ElseMinus1(tileCols) -> "every-other-1-else-1"
+      new ConstantTestFileValues(1) -> "all-ones",
+      new ConstantTestFileValues(2) -> "all-twos",
+      new ConstantTestFileValues(100) -> "all-hundreds",
+      new IncreasingTestFileValues(tileCols, tileRows) -> "increasing",
+      new DecreasingTestFileValues(tileCols, tileRows) -> "decreasing",
+      new EveryOtherUndefined(tileCols) -> "every-other-undefined",
+      new EveryOther0Point99Else1Point01(tileCols) -> "every-other-0.99-else-1.01",
+      new EveryOther1ElseMinus1(tileCols) -> "every-other-1-else-1"
     )
 
     for((tfv, name) <- testFiles) {
