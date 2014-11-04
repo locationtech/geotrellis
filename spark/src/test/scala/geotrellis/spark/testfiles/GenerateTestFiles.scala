@@ -30,8 +30,7 @@ import org.apache.hadoop.fs.Path
 
 /** Use this command to create test files when there's a breaking change to the files (i.e. SpatialKeyWritable package move) */
 object GenerateTestFiles {
-
-  def main(args: Array[String]): Unit = {
+  def generate(catalog: HadoopCatalog, sc: SparkContext) {
     val cellType = TypeFloat
     val layoutLevel = ZoomedLayoutScheme().levelFor(10)
     val tileLayout = layoutLevel.tileLayout
@@ -52,9 +51,6 @@ object GenerateTestFiles {
       EveryOther1ElseMinus1(tileCols) -> "every-other-1-else-1"
     )
 
-    val sc = new SparkContext("local", "create-test-files")
-    val catalog = TestFiles.catalog(sc)
-
     for((tfv, name) <- testFiles) {
       val tmsTiles =
         gridBounds.coords.map { case (col, row) =>
@@ -69,6 +65,11 @@ object GenerateTestFiles {
 
       catalog.save(LayerId(name, 10), rdd, clobber = true).get
     }
-  }
 
+  }
+  def main(args: Array[String]): Unit = {
+    val sc = new SparkContext("local", "create-test-files")
+    val catalog = TestFiles.catalog(sc)
+    // creation of catalog will trigger generation if files aren't there
+  }
 }

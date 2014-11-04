@@ -7,12 +7,21 @@ import org.apache.spark._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 
-object TestFiles{
+object TestFiles extends Logging {
   def catalog(implicit sc: SparkContext): HadoopCatalog = {
+
     val conf = sc.hadoopConfiguration
     val localFS = new Path(System.getProperty("java.io.tmpdir")).getFileSystem(conf)
     val catalogPath = new Path(localFS.getWorkingDirectory, "src/test/resources/test-catalog")
-    HadoopCatalog(sc, catalogPath)
+    val needGenerate = !localFS.exists(catalogPath)    
+    val catalog = HadoopCatalog(sc, catalogPath)
+
+    if (needGenerate) {
+      logInfo(s"test-catalog empty, generating at $catalogPath")
+      GenerateTestFiles.generate(catalog, sc)
+    }
+
+    catalog
   }
 }
 
