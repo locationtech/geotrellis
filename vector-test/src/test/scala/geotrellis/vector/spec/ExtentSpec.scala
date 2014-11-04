@@ -135,5 +135,11 @@ class ExtentSpec extends FunSpec with Matchers {
       doesnot(Extent(-100.0,-9.0,-10.0,0.0))
     }
 
+    it("should buffer") {
+      Extent(0.0, -5.0, 10.0, 5.0).buffer(10) should be (
+        Extent(-10.0, -15.0, 20.0, 15.0)
+      )
+    }
+
   }
 }
