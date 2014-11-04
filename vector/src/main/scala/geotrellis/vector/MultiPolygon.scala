@@ -17,6 +17,7 @@
 package geotrellis.vector
 
 import GeomFactory._
+import geotrellis.vector._
 
 import com.vividsolutions.jts.{geom => jts}
 
@@ -25,7 +26,7 @@ import spire.syntax.cfor._
 object MultiPolygon {
   lazy val EMPTY = MultiPolygon(Seq[Polygon]())
 
-  def apply(ps: Polygon*): MultiPolygon = 
+  def apply(ps: Polygon*): MultiPolygon =
     apply(ps)
 
   def apply(ps: Traversable[Polygon]): MultiPolygon =
@@ -34,7 +35,7 @@ object MultiPolygon {
   implicit def jts2MultiPolygon(jtsGeom: jts.MultiPolygon): MultiPolygon = apply(jtsGeom)
 }
 
-case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry 
+case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
                                                    with Relatable
                                                    with TwoDimensions {
 
@@ -101,6 +102,7 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
 
   def |(p: Point): PointMultiPolygonUnionResult =
     union(p)
+
   def union(p: Point): PointMultiPolygonUnionResult =
     jtsGeom.union(p.jtsGeom)
 
@@ -111,8 +113,9 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
 
   def |(p: Polygon): TwoDimensionsTwoDimensionsUnionResult =
     union(p)
+
   def union(p: Polygon): TwoDimensionsTwoDimensionsUnionResult =
-    p.union(this)
+    Seq(this, MultiPolygon(p)).unioned
 
   def |(ps: MultiPoint): LineMultiPolygonUnionResult =
     union(ps)
@@ -126,7 +129,10 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
   def |(ps: MultiPolygon): TwoDimensionsTwoDimensionsUnionResult =
     union(ps)
   def union(ps: MultiPolygon): TwoDimensionsTwoDimensionsUnionResult =
-    jtsGeom.union(ps.jtsGeom)
+    Seq(this, ps).unioned
+
+  def union: TwoDimensionsTwoDimensionsUnionResult =
+    polygons.toSeq.unioned
 
   // -- Difference
 

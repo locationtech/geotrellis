@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,7 @@ package geotrellis.vector
 
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
+import geotrellis.vector._
 
 import spire.syntax.cfor._
 
@@ -218,10 +219,15 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
 
   /**
    * Computes a Result that represents a Geometry made up of all the points in
-   * this Polygon and g.
+   * this Polygon and g. Uses cascaded polygon union if g is a (multi)polygon
+   * else falls back to default jts union method.
    */
-  def union(g: TwoDimensions): TwoDimensionsTwoDimensionsUnionResult =
-    jtsGeom.union(g.jtsGeom)
+  def union(g: TwoDimensions): TwoDimensionsTwoDimensionsUnionResult = g match {
+    case p:Polygon => Seq(this, p).unioned
+    case mp:MultiPolygon => Seq(MultiPolygon(this), mp).unioned
+    case _ => jtsGeom.union(g.jtsGeom)
+  }
+
 
 
   // -- Difference
