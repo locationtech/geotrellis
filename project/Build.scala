@@ -112,7 +112,7 @@ object GeotrellisBuild extends Build {
   // Project: root
   lazy val root =
     Project("geotrellis", file("."))
-      .dependsOn(raster, vector, proj4)
+      .dependsOn(raster, vector, proj4, spark)
       .aggregate(raster, vector, proj4, spark, rasterTest, vectorTest)
       .settings(
         initialCommands in console:= 
@@ -120,6 +120,7 @@ object GeotrellisBuild extends Build {
           import geotrellis.raster._
           import geotrellis.vector._
           import geotrellis.proj4._
+          import geotrellis.spark._
           """
       )
 
