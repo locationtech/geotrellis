@@ -12,7 +12,7 @@ import scala.reflect.ClassTag
 trait RasterRDDSpatialMethods {
   val rdd: RasterRDD[SpatialKey]
 
-  def concat: Tile = {
+  def concat: CompositeTile = {
     val tileMap = rdd.collect.toMap
     val rmd = rdd.metaData
     val pixelCols = rmd.tileLayout.pixelCols
