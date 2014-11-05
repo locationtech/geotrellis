@@ -34,14 +34,15 @@ class MinSpec extends FunSpec
       val decreasing = DecreasingTestFile
       val allHundreds = AllHundredsTestFile
 
-      println("TileLayout", increasing.metaData.tileLayout)
       it("should min a raster with an integer") {
         val inc = increasing
+
         val thresh = 721.1
         val res = inc.localMin(thresh)
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
-          (tile: Tile, x: Int, y: Int) => math.min(y * tile.cols + x, thresh)
+          (tile: Tile, x: Int, y: Int) => math.min(y * tile.cols + x, thresh),
+          1e-3
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
@@ -52,9 +53,10 @@ class MinSpec extends FunSpec
         val thresh = 873.4
         val res = inc.localMin(thresh)
 
-        rasterShouldBe(
+        rasterShouldBeAbout(
           res,
-          (t: Tile, x: Int, y: Int) => math.min(y * t.cols + x, thresh)
+          (t: Tile, x: Int, y: Int) => math.min(y * t.cols + x, thresh),
+          1e-3
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
