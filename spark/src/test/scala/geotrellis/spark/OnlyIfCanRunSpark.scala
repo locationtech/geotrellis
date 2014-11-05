@@ -22,30 +22,29 @@ import org.scalatest._
 import org.scalatest.BeforeAndAfterAll
 import scala.util._
 
+object OnlyIfCanRunSpark {
+  lazy val _sc = Try{
+    System.setProperty("spark.driver.port", "0")
+    System.setProperty("spark.hostPort", "0")
+
+    val sparkContext =  SparkUtils.createSparkContext("local[4]", "Test Context")
+
+    System.clearProperty("spark.driver.port")
+    System.clearProperty("spark.hostPort")
+
+    sparkContext
+  }
+}
+
 trait OnlyIfCanRunSpark extends FunSpec with BeforeAndAfterAll {
-  @transient private var _sc: Try[SparkContext] = 
-    Failure(new Exception("SparContext not yet initialized"))
+  import OnlyIfCanRunSpark._
 
   implicit def sc: SparkContext = _sc.get
-
-  System.clearProperty("spark.driver.port")
-  System.clearProperty("spark.hostPort")
-  _sc = Try{SparkUtils.createSparkContext("local", this.suiteName)}
   
   def ifCanRunSpark(f: => Unit): Unit = {    
      _sc match {
       case Success(sc) => f
       case Failure(error) => ignore(error.getMessage) {}
     }    
-  }
-  
-  override def afterAll() {
-    _sc match {
-      case Success(sc) => sc.stop
-      case Failure(err) => 
-    } 
-    System.clearProperty("spark.driver.port")
-    System.clearProperty("spark.hostPort")
-    super.afterAll()
-  }
+  }  
 }
