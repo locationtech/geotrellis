@@ -23,7 +23,7 @@ import geotrellis.testkit.RasterMatchers
 import scala.reflect.ClassTag
 
 trait RasterRDDMatchers extends RasterMatchers {
-  implicit def rddToTile(rdd: RasterRDD[SpatialKey]) = rdd.concat
+  implicit def rddToTile(rdd: RasterRDD[SpatialKey]) = rdd.stitch
   /*
    * Takes a 3-tuple, min, max, and count and checks
    * a. if every tile has a min/max value set to those passed in,

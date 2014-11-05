@@ -34,7 +34,7 @@ class IfCellSpec extends FunSpec
       val decreasing = DecreasingTestFile
 
       val (cols: Int, rows: Int, tots: Int) = {
-        val tile = increasing.concat
+        val tile = increasing.stitch
         (tile.cols, tile.rows, tile.cols * tile.rows - 1)
       }
 

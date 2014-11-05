@@ -37,7 +37,7 @@ class LocalSeqSpec extends FunSpec
       val decreasing = DecreasingTestFile
 
       val (cols: Int, rows: Int) = {
-        val tile = allOnes.concat
+        val tile = allOnes.stitch
         (tile.cols, tile.rows)
       }
 

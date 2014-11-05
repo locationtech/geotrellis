@@ -38,7 +38,7 @@ class LocalSpec extends FunSpec
       val everyOther1ElseMinus1 = EveryOther1ElseMinus1TestFile
 
       val (cols: Int, rows: Int) = {
-        val tile = allOnes.concat
+        val tile = allOnes.stitch
         (tile.cols, tile.rows)
       }
 

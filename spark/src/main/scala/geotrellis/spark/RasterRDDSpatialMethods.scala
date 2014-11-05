@@ -1,24 +1,21 @@
 package geotrellis.spark
 
 import geotrellis.raster._
-import geotrellis.spark.ingest._
-import geotrellis.vector.Extent
-import org.apache.spark.SparkContext._
-import org.apache.spark._
-import org.apache.spark.rdd._
-
-import scala.reflect.ClassTag
 
 trait RasterRDDSpatialMethods {
   val rdd: RasterRDD[SpatialKey]
 
-  def concat: CompositeTile = {
+  /**
+   * Collects and stitches all the tiles in the RasterRDD into one CompositeTile.
+   * If a tile is missing from the RDD it will be represented with EmptyTile.
+   */
+  def stitch: CompositeTile = {
     val tileMap = rdd.collect.toMap
     val rmd = rdd.metaData
     val pixelCols = rmd.tileLayout.pixelCols
     val pixelRows = rmd.tileLayout.pixelRows
     
-    //discover what I have here, in reality RasterMetaData should refelect this already    
+    // discover what I have here, in reality RasterMetaData should reflect this already
     val te = GridBounds.envelope(tileMap.keys)    
     val tiles = te.coords map { case (col, row) => 
       tileMap.getOrElse(col -> row, EmptyTile(rmd.cellType, pixelCols, pixelRows))
