@@ -112,7 +112,7 @@ object GeotrellisBuild extends Build {
   // Project: root
   lazy val root =
     Project("geotrellis", file("."))
-      .dependsOn(raster, vector, proj4, spark)
+      .dependsOn(raster, vector, proj4)
       .aggregate(raster, vector, proj4, spark, rasterTest, vectorTest)
       .settings(
         initialCommands in console:= 
@@ -120,7 +120,6 @@ object GeotrellisBuild extends Build {
           import geotrellis.raster._
           import geotrellis.vector._
           import geotrellis.proj4._
-          import geotrellis.spark._
           """
       )
 
@@ -397,8 +396,16 @@ object GeotrellisBuild extends Build {
         ),
       resolvers ++= Seq(
         "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
-      )
-      )      
+      ),
+      initialCommands in console := 
+        """
+        import geotrellis.raster._
+        import geotrellis.vector._
+        import geotrellis.proj4._
+        import geotrellis.spark._
+        import geotrellis.spark.utils._      
+        import geotrellis.spark.tiling._
+        """      
     ) ++
     defaultAssemblySettings ++
     net.virtualvoid.sbt.graph.Plugin.graphSettings
