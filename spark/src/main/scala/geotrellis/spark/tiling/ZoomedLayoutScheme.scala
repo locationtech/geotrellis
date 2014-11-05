@@ -28,7 +28,7 @@ class ZoomedLayoutScheme(tileSize: Int) extends LayoutScheme {
   }
 
   private def tileCols(level: Int): Int = math.pow(2, level).toInt
-  private def tileRows(level: Int): Int = math.pow(2, level - 1).toInt
+  private def tileRows(level: Int): Int = math.pow(2, level).toInt
 
   /** TODO: Improve this algorithm. One improvement is to follow the algorithm
     * described in  "Tile-Based Geospatial Information Systems Principles and Practices"
