@@ -125,8 +125,8 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
   }
 
   /**
-   * Gets the GridBounds for this RasterExtent that is the smallest subgrid
-   * containing all points within the extent. The extent is considered inclusive
+   * Gets the tile GridBounds for this RasterExtent that is the smallest subgrid
+   * of tiles containing all points within the extent. The extent is considered inclusive
    * on it's north and west borders, exclusive on it's east and south borders.
    * See [[RasterExtent]] for a discussion of grid and extent boundary concepts.
    */
