@@ -17,6 +17,7 @@
 package geotrellis.spark.op.local
 
 import geotrellis.spark._
+import geotrellis.raster._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
@@ -34,10 +35,7 @@ class MaxSpec extends FunSpec
       val decreasing = DecreasingTestFile
       val allHundreds = AllHundredsTestFile
 
-      val cols = increasing.metaData.tileLayout.totalCols
-      val rows = increasing.metaData.tileLayout.totalRows
-
-      val tots = cols * rows;
+      val tots = 2342523;
 
       it("should max a raster with an integer") {
         val inc = increasing
@@ -46,7 +44,7 @@ class MaxSpec extends FunSpec
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => math.max(y * cols + x, thresh)
+          (tile: Tile, x: Int, y: Int) => math.max(y * tile.cols + x, thresh)
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
@@ -59,7 +57,7 @@ class MaxSpec extends FunSpec
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => math.max(y * cols + x, thresh)
+          (tile: Tile, x: Int, y: Int) => math.max(y * tile.cols + x, thresh)
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
@@ -72,9 +70,9 @@ class MaxSpec extends FunSpec
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => {
-            val decV = cols * rows - (y * cols + x) - 1
-            val incV = y * cols + x
+          (tile: Tile, x: Int, y: Int) => {
+            val decV = tile.cols * tile.rows - (y * tile.cols + x) - 1
+            val incV = y * tile.cols + x
 
             math.max(decV, incV)
           }
@@ -91,9 +89,9 @@ class MaxSpec extends FunSpec
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => {
-            val decV = cols * rows - (y * cols + x) - 1
-            val incV = y * cols + x
+          (tile: Tile, x: Int, y: Int) => {
+            val decV = tile.cols * tile.rows - (y * tile.cols + x) - 1
+            val incV = y * tile.cols + x
 
             math.max(math.max(decV, incV), 100)
           }

@@ -33,9 +33,10 @@ class IfCellSpec extends FunSpec
       val increasing = IncreasingTestFile
       val decreasing = DecreasingTestFile
 
-      val cols = increasing.metaData.tileLayout.totalCols
-      val rows = increasing.metaData.tileLayout.totalRows
-      val tots = cols * rows - 1
+      val (cols: Int, rows: Int, tots: Int) = {
+        val tile = increasing.concat
+        (tile.cols, tile.rows, tile.cols * tile.rows - 1)
+      }
 
       it("should change values mod 2 to 1, testing integer method") {
         val inc = increasing

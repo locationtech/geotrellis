@@ -37,7 +37,10 @@ class LocalSpec extends FunSpec
         EveryOther0Point99Else1Point01TestFile
       val everyOther1ElseMinus1 = EveryOther1ElseMinus1TestFile
 
-      val cols = allOnes.metaData.tileLayout.totalCols
+      val (cols: Int, rows: Int) = {
+        val tile = allOnes.concat
+        (tile.cols, tile.rows)
+      }
 
       it("should local mask two rasters") {
         val inc = increasing
@@ -101,7 +104,7 @@ class LocalSpec extends FunSpec
         rasterShouldBeAbout(
           res,
           (x: Int, y: Int) => math.sqrt(y * cols + x),
-          1e-4
+          1e-3
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)

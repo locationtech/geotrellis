@@ -36,8 +36,10 @@ class LocalSeqSpec extends FunSpec
       val increasing = IncreasingTestFile
       val decreasing = DecreasingTestFile
 
-      val cols = allOnes.metaData.tileLayout.totalCols
-      val rows = allOnes.metaData.tileLayout.totalRows
+      val (cols: Int, rows: Int) = {
+        val tile = allOnes.concat
+        (tile.cols, tile.rows)
+      }
 
       it("should test raster rdd seq with one element") {
         val ones = allOnes
