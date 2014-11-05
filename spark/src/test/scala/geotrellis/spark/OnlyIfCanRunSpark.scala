@@ -24,11 +24,12 @@ import scala.util._
 
 trait OnlyIfCanRunSpark extends FunSpec with BeforeAndAfterAll {
   @transient private var _sc: Try[SparkContext] = 
-    Failure(new Exception("SparContext not yet initilized"))
+    Failure(new Exception("SparContext not yet initialized"))
 
   implicit def sc: SparkContext = _sc.get
 
-  System.setProperty("spark.master.port", "0")    
+  System.clearProperty("spark.driver.port")
+  System.clearProperty("spark.hostPort")
   _sc = Try{SparkUtils.createSparkContext("local", this.suiteName)}
   
   def ifCanRunSpark(f: => Unit): Unit = {    
@@ -44,6 +45,7 @@ trait OnlyIfCanRunSpark extends FunSpec with BeforeAndAfterAll {
       case Failure(err) => 
     } 
     System.clearProperty("spark.driver.port")
+    System.clearProperty("spark.hostPort")
     super.afterAll()
   }
 }
