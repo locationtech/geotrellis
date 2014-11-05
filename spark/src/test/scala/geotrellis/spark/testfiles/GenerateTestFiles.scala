@@ -34,11 +34,10 @@ object GenerateTestFiles {
     val cellType = TypeFloat
     val layoutLevel = ZoomedLayoutScheme().levelFor(10)
     val tileLayout = layoutLevel.tileLayout
-    val (tileCols, tileRows) =  (tileLayout.tileCols, tileLayout.tileRows)
-    val worldExtent = Extent(-180, -89.99999, 179.99999, 89.99999)
-    val re = RasterExtent(worldExtent, tileCols, tileRows)
+    val (tileCols, tileRows) =  (tileLayout.pixelCols, tileLayout.pixelRows)      
+    val re = RasterExtent(LatLng.worldExtent, tileCols, tileRows)
     val extent = Extent(141.7066666666667, -18.373333333333342, 142.56000000000003, -17.52000000000001)
-    val gridBounds = re.gridBoundsFor(extent)
+    val tileBounds = re.gridBoundsFor(extent)
 
     val testFiles = List(
       new ConstantTestFileValues(1) -> "all-ones",
@@ -53,7 +52,7 @@ object GenerateTestFiles {
 
     for((tfv, name) <- testFiles) {
       val tmsTiles =
-        gridBounds.coords.map { case (col, row) =>
+        tileBounds.coords.map { case (col, row) =>
           val arr = tfv(tileCols, tileRows)
           (SpatialKey(col, row), ArrayTile(arr, tileCols, tileRows): Tile)
         }
