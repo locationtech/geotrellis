@@ -54,8 +54,8 @@ class ZoomedLayoutScheme(tileSize: Int) extends LayoutScheme {
     LayoutLevel(
       level.zoom - 1,
       TileLayout(
-        level.tileLayout.tileCols / 2, 
-        level.tileLayout.tileRows / 2,
+        level.tileLayout.layoutCols / 2,
+        level.tileLayout.layoutRows / 2,
         level.tileLayout.pixelCols / 2, 
         level.tileLayout.pixelRows / 2
       )
@@ -65,8 +65,8 @@ class ZoomedLayoutScheme(tileSize: Int) extends LayoutScheme {
     LayoutLevel(
       level.zoom + 1,
       TileLayout(
-        level.tileLayout.tileCols * 2,
-        level.tileLayout.tileRows * 2,
+        level.tileLayout.layoutCols * 2,
+        level.tileLayout.layoutRows * 2,
         level.tileLayout.pixelCols * 2,
         level.tileLayout.pixelRows * 2
       )

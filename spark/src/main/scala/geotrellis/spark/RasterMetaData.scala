@@ -16,7 +16,7 @@ case class RasterMetaData(
 ) {
   lazy val mapTransform = MapKeyTransform(crs, tileLayout.tileDimensions)
 
-  def tileTransform(tileScheme: TileScheme): TileKeyTransform = tileScheme(tileLayout.tileCols, tileLayout.tileRows)
+  def tileTransform(tileScheme: TileScheme): TileKeyTransform = tileScheme(tileLayout.layoutCols, tileLayout.layoutRows)
 }
 
 object RasterMetaData {

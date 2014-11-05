@@ -37,7 +37,7 @@ object GenerateTestFiles {
     /** HACK: each "cell" in RasterExtent is actually a tile from tileLayout
       * now I can use this to snap any Extent to my worldtile grid 
       */
-    val re = RasterExtent(LatLng.worldExtent, tileLayout.tileCols, tileLayout.tileRows)
+    val re = RasterExtent(LatLng.worldExtent, tileLayout.layoutCols, tileLayout.layoutRows)
     val extent = Extent(141.7066666666667, -18.373333333333342, 142.56000000000003, -17.52000000000001)
     val tileBounds = re.gridBoundsFor(extent)
     

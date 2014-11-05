@@ -32,8 +32,8 @@ case class TileExtents(extent: Extent, tileLayout: TileLayout) {
   }
 
   def apply(tileIndex: Int): Extent = {
-    val row = tileIndex / tileLayout.tileCols
-    val col = tileIndex - (row * tileLayout.tileCols)
+    val row = tileIndex / tileLayout.layoutCols
+    val col = tileIndex - (row * tileLayout.layoutCols)
     apply(col, row)
   }
 

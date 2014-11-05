@@ -64,8 +64,8 @@ object CompositeTile {
     val pRows = tileLayout.pixelRows
 
     val tiles = mutable.ListBuffer[Tile]()
-    cfor(0)(_ < tileLayout.tileRows, _ + 1) { trow =>
-      cfor(0)(_ < tileLayout.tileCols, _ + 1) { tcol =>
+    cfor(0)(_ < tileLayout.layoutRows, _ + 1) { trow =>
+      cfor(0)(_ < tileLayout.layoutCols, _ + 1) { tcol =>
         val firstCol = tcol * pCols
         val lastCol = firstCol + pCols - 1
         val firstRow = trow * pRows
@@ -89,7 +89,7 @@ case class CompositeTile(tiles: Seq[Tile],
   val rows = tileLayout.totalRows.toInt
 
   private val tileList = tiles.toList
-  private val tileCols = tileLayout.tileCols
+  private val tileCols = tileLayout.layoutCols
   private def getTile(tcol: Int, trow: Int) = tileList(trow * tileCols + tcol)
 
   val cellType: CellType = tiles(0).cellType
@@ -103,8 +103,8 @@ case class CompositeTile(tiles: Seq[Tile],
     } else {
       val tile = ArrayTile.alloc(cellType, cols, rows)
       val len = cols * rows
-      val tileCols = tileLayout.tileCols
-      val tileRows = tileLayout.tileRows
+      val tileCols = tileLayout.layoutCols
+      val tileRows = tileLayout.layoutRows
       val pixelCols = tileLayout.pixelCols
       val pixelRows = tileLayout.pixelRows
       if(!cellType.isFloatingPoint) {
@@ -144,8 +144,8 @@ case class CompositeTile(tiles: Seq[Tile],
     } else {
       val arr = Array.ofDim[Int](cols * rows)
       val len = cols * rows
-      val tileCols = tileLayout.tileCols
-      val tileRows = tileLayout.tileRows
+      val tileCols = tileLayout.layoutCols
+      val tileRows = tileLayout.layoutRows
       val pixelCols = tileLayout.pixelCols
       val pixelRows = tileLayout.pixelRows
       val totalCols = tileCols * pixelCols
@@ -172,8 +172,8 @@ case class CompositeTile(tiles: Seq[Tile],
     } else {
       val arr = Array.ofDim[Double](cols * rows)
       val len = cols * rows
-      val tileCols = tileLayout.tileCols
-      val tileRows = tileLayout.tileRows
+      val tileCols = tileLayout.layoutCols
+      val tileRows = tileLayout.layoutRows
       val pixelCols = tileLayout.pixelCols
       val pixelRows = tileLayout.pixelRows
       val totalCols = tileCols * pixelCols
@@ -260,9 +260,9 @@ case class CompositeTile(tiles: Seq[Tile],
   override
   def asciiDraw(): String = {
     val sb = new StringBuilder
-    for(tileRow <- 0 until tileLayout.tileRows) {
+    for(tileRow <- 0 until tileLayout.layoutRows) {
       for(row <- 0 until tileLayout.pixelRows) {
-        for(tileCol <- 0 until tileLayout.tileCols) {
+        for(tileCol <- 0 until tileLayout.layoutCols) {
           val tile = getTile(tileCol, tileRow)
 
           for(col <- 0 until tileLayout.pixelCols) {
@@ -275,16 +275,16 @@ case class CompositeTile(tiles: Seq[Tile],
             val pad = " " * math.max(6 - s.size, 0)
             sb.append(s"$pad$s")
           }
-          if(tileCol != tileLayout.tileCols - 1) {
+          if(tileCol != tileLayout.layoutCols - 1) {
             val pad = " " * 5
             sb.append(s"$pad| ")r
           }
         }
         sb.append(s"\n")
       }
-      if(tileRow != tileLayout.tileRows - 1) {
-        val rowDiv = "-" * (6 * tileLayout.pixelCols * tileLayout.tileCols - 2) + 
-                     "-" * (6 * tileLayout.tileCols)
+      if(tileRow != tileLayout.layoutRows - 1) {
+        val rowDiv = "-" * (6 * tileLayout.pixelCols * tileLayout.layoutCols - 2) +
+                     "-" * (6 * tileLayout.layoutCols)
         sb.append(s"  $rowDiv\n")
       }
     }
