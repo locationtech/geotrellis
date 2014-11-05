@@ -11,7 +11,7 @@ class ZoomedLayoutSchemeSpec extends FunSpec with Matchers {
     it("Cuts up the world in two for lowest zoom level") {
       val LayoutLevel(_, tileLayout) = ZoomedLayoutScheme().levelFor(1)
       tileLayout.layoutCols should be (2)
-      tileLayout.layoutRows should be (1)
+      tileLayout.layoutRows should be (2)
     }
   }
 }
