@@ -40,7 +40,10 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
   }
 
   def setZoomBounds(job: Job, layerId: LayerId): Unit = {
-    val range = new ARange(new Text(s"${layerId.zoom}_0"), new Text(s"${layerId.zoom}_9")) :: Nil
+    val range = new ARange(
+      new Text(s"${layerId.zoom}"),
+      new Text(s"${layerId.zoom+1}")
+    ) :: Nil
     InputFormatBase.setRanges(job, range)
   }
 
