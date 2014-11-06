@@ -16,8 +16,9 @@
 
 package geotrellis.spark
 
-import geotrellis.spark.rdd.RasterRDD
 import org.scalatest._
+
+import scala.reflect.ClassTag
 
 trait RasterRDDMatchers extends Matchers {
 
@@ -25,8 +26,8 @@ trait RasterRDDMatchers extends Matchers {
    * Takes a 3-tuple, min, max, and count and checks
    * a. if every tile has a min/max value set to those passed in,
    * b. if number of tiles == count
-   */
-  def rasterShouldBe(rdd: RasterRDD, minMax: (Int, Int)): Unit = {
+   */  
+  def rasterShouldBe[K: ClassTag](rdd: RasterRDD[K], minMax: (Int, Int)): Unit = {
     val res = rdd.map(_.tile.findMinMax).collect
     val (min, max) = minMax
     res.count(_ == (min, max)) should be(res.length)
@@ -37,7 +38,7 @@ trait RasterRDDMatchers extends Matchers {
    * a. if every pixel == value, and
    * b. if number of tiles == count
    */
-  def rasterShouldBe(rdd: RasterRDD, value: Int, count: Int): Unit = {
+  def rasterShouldBe[K: ClassTag](rdd: RasterRDD[K], value: Int, count: Int): Unit = {
     val res = rdd.map(_.tile).collect
 
     res.foreach { r =>
@@ -51,8 +52,8 @@ trait RasterRDDMatchers extends Matchers {
     res.length should be(count)
   }
 
-  def rasterShouldBe(
-    rdd: RasterRDD,
+  def rasterShouldBe[K: ClassTag](
+    rdd: RasterRDD[K],
     f: (Int, Int) => Double,
     epsilon: Double = 1e-100): Unit = {
     val res = rdd.map(_.tile).collect
@@ -69,11 +70,11 @@ trait RasterRDDMatchers extends Matchers {
     }
   }
 
-  def rastersShouldHaveSameIdsAndTileCount(
-    first: RasterRDD,
-    second: RasterRDD): Unit = {
+  def rastersShouldHaveSameIdsAndTileCount[K: ClassTag: Ordering](
+    first: RasterRDD[K],
+    second: RasterRDD[K]): Unit = {
     first.collect.sortBy(_.id).zip(second.collect.sortBy(_.id)).foreach {
-      case (TmsTile(t1, r1), TmsTile(t2, r2)) => t1 should be (t2)
+      case ((t1, r1), (t2, r2)) => t1 should be (t2)
     }
 
     first.count should be (second.count)

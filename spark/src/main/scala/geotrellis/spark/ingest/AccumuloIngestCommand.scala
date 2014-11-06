@@ -3,19 +3,20 @@ package geotrellis.spark.ingest
 import geotrellis.spark._
 import geotrellis.spark.cmd.args.AccumuloArgs
 import geotrellis.spark.io.hadoop._
+import geotrellis.spark.io.accumulo._
 import geotrellis.spark.tiling._
-import geotrellis.spark.rdd._
+import geotrellis.vector.Extent
 import geotrellis.proj4._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 
 import org.apache.hadoop.fs._
 
 import org.apache.spark._
-import org.apache.spark.rdd._
 
 import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Required
-import geotrellis.spark.io.accumulo._
+
+import scala.reflect.ClassTag
 
 class AccumuloIngestArgs extends IngestArgs with AccumuloArgs {
   @Required var table: String = _
@@ -23,42 +24,30 @@ class AccumuloIngestArgs extends IngestArgs with AccumuloArgs {
   var pyramid: Boolean = false
 }
 
+class AccumuloIngest[T: IngestKey, K: SpatialComponent: AccumuloDriver: ClassTag](catalog: AccumuloCatalog, layoutScheme: LayoutScheme)(implicit tiler: Tiler[T, K])
+    extends Ingest[T, K](layoutScheme) {
+  def save(layerMetaData: LayerMetaData, rdd: RasterRDD[K]): Unit =
+    catalog.save(layerMetaData.id, rdd)
+}
+
 object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
-
-  def accumuloSink(table: String, layer: String, catalog: Catalog): Ingest.Sink = {
-    (tiles: RDD[TmsTile], metaData: LayerMetaData) =>
-      val raster: RasterRDD = new RasterRDD(tiles, metaData)
-      catalog.save(raster, layer, table)
-      logInfo(s"Saved raster '$layer' to accumulo table: ${table}.")
-  }
-
-  System.setProperty("com.sun.media.jai.disableMediaLib", "true")
-
   def main(args: AccumuloIngestArgs): Unit = {
+    System.setProperty("com.sun.media.jai.disableMediaLib", "true")
+
     val conf = args.hadoopConf
     conf.set("io.map.index.interval", "1")
-
-    val inPath = new Path(args.input)
-
-    val sourceCRS = LatLng
-    val destCRS = LatLng
 
     implicit val sparkContext = args.sparkContext("Ingest")
 
     val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
-    val catalog = accumulo.tileCatalog
+    val ingest = 
+      new AccumuloIngest[ProjectedExtent, SpatialKey](accumulo.catalog(catalogConfig), ZoomedLayoutScheme())
 
-    try {
-      val source = sparkContext.hadoopGeoTiffRDD(inPath)
-      val sink = accumuloSink(args.table, args.layer, catalog)
+    val inPath = new Path(args.input)
+    val source = sparkContext.hadoopGeoTiffRDD(inPath)
+    val layer = args.layer
+    val destCRS = LatLng // TODO: Need to create from parameters
 
-      if (args.pyramid)
-        Ingest(sparkContext)(source, Ingest.pyramid(sink), destCRS, TilingScheme.TMS)
-      else
-        Ingest(sparkContext)(source, sink, destCRS, TilingScheme.TMS)
-
-    } finally {
-      sparkContext.stop()
-    }
+    ingest(source, layer, destCRS)
   }
 }

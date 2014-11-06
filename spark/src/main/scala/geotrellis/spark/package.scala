@@ -21,19 +21,44 @@ import geotrellis.vector._
 import geotrellis.proj4._
 
 import geotrellis.spark.tiling._
-import geotrellis.spark.rdd._
 
 import org.apache.spark.rdd._
 
 import spire.syntax.cfor._
 
+import monocle._
+import monocle.syntax._
+
+import scala.reflect.ClassTag
+
 package object spark {
-  type TileId = Long
+  type SpatialComponent[K] = SimpleLens[K, SpatialKey]
+  type TemporalComponent[K] = SimpleLens[K, TemporalKey]
+
+  implicit class SpatialComponentWrapper[K: SpatialComponent](key: K) {
+    val _spatialComponent = implicitly[SpatialComponent[K]]
+
+    def spatialComponent: SpatialKey = 
+      (key |-> _spatialComponent get)
+
+    def updateSpatialComponent(spatialKey: SpatialKey): K = 
+      (key |-> _spatialComponent set(spatialKey))
+  }
+
+  implicit class TemporalCompenentWrapper[K: TemporalComponent](key: K) {
+    val _temporalComponent = implicitly[TemporalComponent[K]]
+
+    def temporalComponent: TemporalKey = 
+      (key |-> _temporalComponent get)
+
+    def updateTemporalComponent(temporalKey: TemporalKey): K = 
+      (key |-> _temporalComponent set(temporalKey))
+  }
+
   type ProjectedExtent = (Extent, CRS)
   type Dimensions = (Int, Int)
   type TileBounds = GridBounds
 
-  /** The thing I miss the most from F# */
   implicit class toPipe[A](x : A) { 
     def |> [T](f : A => T) = f(x) 
   }
@@ -50,15 +75,17 @@ package object spark {
     def |> [T](f : (A, B, C, D) => T) = f(tup._1, tup._2, tup._3, tup._4)
   }
 
-  implicit def tmsTileRddToTupleRdd(rdd: RDD[TmsTile]): RDD[(Long, Tile)] =
-    rdd.map { case TmsTile(id, tile) => (id, tile) }
+  /** Keeps with the convention while still using simple tups, nice */
+  implicit class TileTuple[K](tup: (K, Tile)) {
+    def id: K = tup._1
+    def tile: Tile = tup._2
+  }
 
-  implicit def tupleRddToTmsTileRdd(rdd: RDD[(Long, Tile)]): RDD[TmsTile] =
-    rdd.map { case (id, tile) => TmsTile(id, tile) }
+  def asRasterRDD[K: ClassTag](metaData: RasterMetaData)(f: =>RDD[(K, Tile)]): RasterRDD[K] =
+    new RasterRDD[K](f, metaData)
 
-  implicit def tmsTileRddToPairRddFunctions(rdd: RDD[TmsTile]): PairRDDFunctions[Long, Tile] =
-    new PairRDDFunctions(tmsTileRddToTupleRdd(rdd))
-
-  implicit def tmsTileRddToOrderedRddFunctions(rdd: RDD[TmsTile]): OrderedRDDFunctions[Long, Tile, (Long, Tile)] =
-    new OrderedRDDFunctions(tmsTileRddToTupleRdd(rdd))
+  implicit class MakeRasterRDD[K: ClassTag](val rdd: RDD[(K, Tile)]) {
+    def toRasterRDD(metaData: RasterMetaData) = 
+      new RasterRDD[K](rdd, metaData)
+  }
 }

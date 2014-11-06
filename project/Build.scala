@@ -52,6 +52,7 @@ object GeotrellisBuild extends Build {
           "-Yinline-warnings",
           "-language:implicitConversions",
           "-language:reflectiveCalls",
+          "-language:higherKinds",
           "-language:postfixOps",
           "-language:existentials",
           "-feature"),
@@ -109,9 +110,9 @@ object GeotrellisBuild extends Build {
     )
 
   // Project: root
-  lazy val root =
-    Project("root", file("."))
-      .aggregate(raster, rasterTest)
+//  lazy val root =
+//    Project("geotrellis", file("."))
+//      .aggregate(raster, rasterTest, spark)
 
   // Project: macros
   lazy val macros =
@@ -354,38 +355,36 @@ object GeotrellisBuild extends Build {
   lazy val spark: Project =
     Project("spark", file("spark"))
       .settings(sparkSettings: _*)
-      .dependsOn(raster, testkit % "test")
+      .dependsOn(raster, gdal, testkit % "test")
 
   lazy val sparkSettings =
     Seq(
       name := "geotrellis-spark",
-      fork in Test := true,
+      fork := true,
       parallelExecution in Test := false,
-      javaOptions += "-Xmx8G",
+      javaOptions ++= List("-Xmx8G", "-Djava.library.path=/usr/local/lib"),
       libraryDependencies ++=
         Seq(
           // first two are just to quell the UnsupportedOperationException in Hadoop's Configuration
           // http://itellity.wordpress.com/2013/05/27/xerces-parse-error-with-hadoop-or-solr-feature-httpapache-orgxmlfeaturesxinclude-is-not-recognized/
           "xerces" % "xercesImpl" % "2.9.1",
           "xalan" % "xalan" % "2.7.1",
-          "org.apache.spark" %% "spark-core" % Version.spark excludeAll (
+          "org.apache.spark" %% "spark-core" % Version.spark
+            excludeAll (
             ExclusionRule(organization = "org.apache.hadoop"),
-            ExclusionRule(organization = "com.google.code.findbugs")
-          ),
-          "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "compile" excludeAll (
-	    ExclusionRule(organization = "hsqldb")
-          ),
-          "org.apache.hadoop" % "hadoop-client" % "2.4.1" % "test" excludeAll (
-	    ExclusionRule(organization = "hsqldb")
-          ),
-          "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0" excludeAll (
-            ExclusionRule(organization = "com.google.code.findbugs")
-          ),
+            ExclusionRule(organization = "com.google.code.findbugs")),
+          "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "compile"
+            excludeAll (ExclusionRule(organization = "hsqldb")),
+          "org.apache.hadoop" % "hadoop-client" % "2.4.1" % "test"
+            excludeAll (ExclusionRule(organization = "hsqldb")),
+          "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.3.0"
+            excludeAll (ExclusionRule(organization = "com.google.code.findbugs")),
           "com.quantifind" %% "sumac" % "0.2.3",
+          "org.mockito" % "mockito-core" % "1.9.5" % "test",
+          "org.apache.accumulo" % "accumulo-core" % "1.5.1",
           spire, sprayRouting, sprayCan,
           scalatest % "test",
-          "org.mockito" % "mockito-core" % "1.9.5" % "test",
-          "org.apache.accumulo" % "accumulo-core" % "1.5.1"
+          monocleCore, monocleMacro
         ),
       resolvers ++= Seq(
         "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos"
@@ -489,10 +488,9 @@ object GeotrellisBuild extends Build {
       libraryDependencies ++= Seq(
         scalatest % "test",
         scalacheck % "test",
+        caliper,
         "com.google.guava" % "guava" % "r09",
         "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
-        "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
-          from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
         "com.google.code.gson" % "gson" % "1.7.1"
       ),
 
@@ -558,10 +556,9 @@ object GeotrellisBuild extends Build {
 
       libraryDependencies ++= Seq(
         spire,
+        caliper,
         "com.google.guava" % "guava" % "r09",
         "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
-        "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
-          from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
         "com.google.code.gson" % "gson" % "1.7.1"
       ),
 
@@ -620,10 +617,9 @@ object GeotrellisBuild extends Build {
       javaOptions += "-Xmx8G",
       libraryDependencies ++= Seq(
         spire,
+        caliper,
         "com.google.guava" % "guava" % "r09",
         "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
-        "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
-          from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
         "com.google.code.gson" % "gson" % "1.7.1"
       ),
 

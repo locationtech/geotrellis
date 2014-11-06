@@ -5,8 +5,6 @@ import geotrellis.spark.cmd.args._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.tiling._
-import geotrellis.spark.rdd._
-import geotrellis.spark.utils.HdfsUtils
 import geotrellis.raster._
 import geotrellis.proj4._
 
@@ -27,16 +25,45 @@ import com.quantifind.sumac.ArgMain
 import com.quantifind.sumac.validation.Required
 
 import spire.syntax.cfor._
-
-
+import scala.reflect.ClassTag
 
 class HadoopIngestArgs extends IngestArgs {
   @Required var outputpyramid: String = _
 }
+
+class HadoopIngest[T: IngestKey, K: SpatialComponent: HadoopWritable: ClassTag](catalog: HadoopCatalog, layoutScheme: LayoutScheme)(implicit tiler: Tiler[T, K])
+    extends Ingest[T, K](layoutScheme) {
+  def save(layerMetaData: LayerMetaData, rdd: RasterRDD[K]): Unit =
+    catalog.save(layerMetaData.id, rdd)
+}
+
+object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
+  def main(args: HadoopIngestArgs): Unit = {
+   System.setProperty("com.sun.media.jai.disableMediaLib", "true")
+
+    val conf = args.hadoopConf
+    conf.set("io.map.index.interval", "1")
+
+    implicit val sparkContext = args.sparkContext("Ingest")
+
+    val outPath = new Path(args.outputpyramid) // TODO: Change args.outputpyramid to be root path of catalog.
+
+    val catalog: HadoopCatalog = HadoopCatalog(sparkContext, inPath)
+    val ingest = new HadoopIngest[ProjectedExtent, SpatialKey](catalog, ZoomedLayoutScheme())
+
+    val inPath = new Path(args.input) 
+    val layerName: String = ??? // TODO: Create layer name argument
+    val source = sparkContext.hadoopGeoTiffRDD(inPath)
+    val destCRS = LatLng // Need to create from parameters
+
+    ingest(source, layerName, destCRS)
+  }
+}
+
 /**
   * @author akini
   *
-  * Ingest GeoTIFFs into ArgWritable.
+  * Ingest GeoTIFFs into TileWritable.
   *
   * Works in two modes:
   *
@@ -55,50 +82,55 @@ class HadoopIngestArgs extends IngestArgs {
   * --sparkMaster <spark-name>   i.e. local[10]
   *
   */
-object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
+// object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
 
-  System.setProperty("com.sun.media.jai.disableMediaLib", "true")
+//   System.setProperty("com.sun.media.jai.disableMediaLib", "true")
 
-  def main(args: HadoopIngestArgs): Unit = {
-    val conf = args.hadoopConf
-    conf.set("io.map.index.interval", "1")
+//   def main(args: HadoopIngestArgs): Unit = {
+//     val conf = args.hadoopConf
+//     conf.set("io.map.index.interval", "1")
 
-    val inPath = new Path(args.input)
-    val outPath = new Path(args.outputpyramid)
+//     val inPath = new Path(args.input)
+//     val outPath = new Path(args.outputpyramid)
 
-    logInfo(s"Deleting and creating output path: $outPath")
-    val outFs: FileSystem = outPath.getFileSystem(conf)
-    outFs.delete(outPath, true)
-    outFs.mkdirs(outPath)
+//     logInfo(s"Deleting and creating output path: $outPath")
+//     val outFs: FileSystem = outPath.getFileSystem(conf)
+//     outFs.delete(outPath, true)
+//     outFs.mkdirs(outPath)
 
-    val destCRS = LatLng
+//     val destCRS = LatLng
 
-    val sparkContext = args.sparkContext("Ingest")
-    try {
-      val source = sparkContext.hadoopGeoTiffRDD(inPath)
-      val sink = { (tiles: RDD[TmsTile], metaData: LayerMetaData) =>
-        val partitioner = {
-          val gridBounds = metaData.transform.mapToGrid(metaData.extent)
-          val tileSizeBytes = gridBounds.width * gridBounds.height * metaData.cellType.bytes
-          val blockSizeBytes = HdfsUtils.defaultBlockSize(inPath, conf)
-          val splitGenerator =
-            RasterSplitGenerator(gridBounds, metaData.transform, tileSizeBytes, blockSizeBytes)
-          TileIdPartitioner(splitGenerator.splits)
-        }
+//     val sparkContext = args.sparkContext("Ingest")
+//     try {
+//       val source = sparkContext.hadoopGeoTiffRDD(inPath)
+//       val sink = 
+//         new Sink[SpatialKey] {
+//           def apply(layerMetaData: LayerMetaData, raster: RasterRDD[SpatialKey]) = {
+//             val metaData = tiles.metaData
+//             val partitioner = {
+//               val gridBounds = metaData.transform.mapToGrid(metaData.extent)
+//               val tileSizeBytes = gridBounds.width * gridBounds.height * metaData.cellType.bytes
+//               val blockSizeBytes = HdfsUtils.defaultBlockSize(inPath, conf)
+//               val splitGenerator =
+//                 RasterSplitGenerator(gridBounds, metaData.transform, tileSizeBytes, blockSizeBytes)
 
-        val outPathWithZoom = new Path(outPath, metaData.level.id.toString)
-        tiles
-          .partitionBy(partitioner)
-          .toRasterRDD(metaData)
-          .saveAsHadoopRasterRDD(outPathWithZoom)
+//               SpatialKeyPartitioner(splitGenerator.splits)
+//             }
 
-        logInfo(s"Saved raster at zoom level ${metaData.level.id} to $outPathWithZoom")
-      }
+//             val outPathWithZoom = new Path(outPath, metaData.level.id.toString)
+//             tiles
+//               .partitionBy(partitioner)
+//               .toRasterRDD(metaData)
+//               .saveAsHadoopRasterRDD(outPathWithZoom)
 
-      Ingest(sparkContext)(source, sink, destCRS, TilingScheme.TMS)
+//             logInfo(s"Saved raster at zoom level ${metaData.level.id} to $outPathWithZoom")
+//           }
+//         }
 
-    } finally {
-      sparkContext.stop
-    }
-  }
-}
+//       Ingest(sparkContext)(source, sink, destCRS, TilingScheme.TMS)
+
+//     } finally {
+//       sparkContext.stop
+//     }
+//   }
+// }

@@ -22,9 +22,7 @@ import geotrellis.proj4._
 
 import geotrellis.spark._
 import geotrellis.spark.utils._
-import geotrellis.spark.rdd._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.io.hadoop.reader.RasterReader
 import geotrellis.spark.tiling._
 
 import org.apache.hadoop.fs.Path
@@ -105,13 +103,13 @@ trait RasterVerifyMethods extends ShouldMatchers { self: TestEnvironment =>
   }
 
   def verifyTiles(raster: Path, meta: LayerMetaData): Unit = {
-    val expectedTileIds = meta.transform.mapToIndex(meta.extent)
+    val expectedSpatialKeys = meta.transform.mapToIndex(meta.extent)
 
     val reader = RasterReader(raster, conf)
-    val actualTileIds = reader.map { case (tw, aw) => tw.get }.toList
+    val actualSpatialKeys = reader.map { case (tw, aw) => tw.get }.toList
     reader.close()
 
-    actualTileIds should be(expectedTileIds)
+    actualSpatialKeys should be(expectedSpatialKeys)
   }
 
   def verifyCompression(raster: Path): Unit = {

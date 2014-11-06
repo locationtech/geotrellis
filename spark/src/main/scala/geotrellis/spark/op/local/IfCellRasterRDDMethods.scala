@@ -2,68 +2,67 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.raster.op.local.IfCell
-import geotrellis.spark.rdd.RasterRDD
 
-trait IfCellRasterRDDMethods extends RasterRDDMethods {
+trait IfCellRasterRDDMethods[K] extends RasterRDDMethods[K] {
 
-  def localIf(
-    cond: Int => Boolean,
-    trueValue: Int): RasterRDD = rasterRDD.mapTiles {
-    case TmsTile(t, r) => TmsTile(t, IfCell(r, cond, trueValue))
-  }
+  def localIf(cond: Int => Boolean, trueValue: Int): RasterRDD[K] = 
+    rasterRDD
+      .mapTiles { case (t, r) => 
+        (t, IfCell(r, cond, trueValue))
+      }
 
   def localIf(
     cond: Double => Boolean,
-    trueValue: Double): RasterRDD = rasterRDD.mapTiles {
-    case TmsTile(t, r) => TmsTile(t, IfCell(r, cond, trueValue))
+    trueValue: Double): RasterRDD[K] = rasterRDD.mapTiles {
+    case (t, r) => (t, IfCell(r, cond, trueValue))
   }
 
   def localIf(
     cond: Int => Boolean,
     trueValue: Int,
-    falseValue: Int): RasterRDD = rasterRDD.mapTiles {
-    case TmsTile(t, r) => TmsTile(t, IfCell(r, cond, trueValue, falseValue))
+    falseValue: Int): RasterRDD[K] = rasterRDD.mapTiles {
+    case (t, r) => (t, IfCell(r, cond, trueValue, falseValue))
   }
 
   def localIf(
     cond: Double => Boolean,
     trueValue: Double,
-    falseValue: Double): RasterRDD = rasterRDD.mapTiles {
-    case TmsTile(t, r) => TmsTile(t, IfCell(r, cond, trueValue, falseValue))
+    falseValue: Double): RasterRDD[K] = rasterRDD.mapTiles {
+    case (t, r) => (t, IfCell(r, cond, trueValue, falseValue))
   }
 
   def localIf(
-    other: RasterRDD,
+    other: RasterRDD[K],
     cond: (Int, Int) => Boolean,
-    trueValue: Int): RasterRDD = rasterRDD.combineTiles(other) {
-    case (TmsTile(t1, r1), TmsTile(t2, r2)) =>
-      TmsTile(t1, IfCell(r1, r2, cond, trueValue))
+    trueValue: Int): RasterRDD[K] = rasterRDD.combineTiles(other) {
+    case ((t1, r1), (t2, r2)) =>
+      (t1, IfCell(r1, r2, cond, trueValue))
   }
 
   def localIf(
-    other: RasterRDD,
+    other: RasterRDD[K],
     cond: (Double, Double) => Boolean,
-    trueValue: Double): RasterRDD = rasterRDD.combineTiles(other) {
-    case (TmsTile(t1, r1), TmsTile(t2, r2)) =>
-      TmsTile(t1, IfCell(r1, r2, cond, trueValue))
+    trueValue: Double): RasterRDD[K] = rasterRDD.combineTiles(other) {
+    case ((t1, r1), (t2, r2)) =>
+      (t1, IfCell(r1, r2, cond, trueValue))
   }
 
   def localIf(
-    other: RasterRDD,
+    other: RasterRDD[K],
     cond: (Int, Int) => Boolean,
     trueValue: Int,
-    falseValue: Int): RasterRDD = rasterRDD.combineTiles(other) {
-    case (TmsTile(t1, r1), TmsTile(t2, r2)) =>
-      TmsTile(t1, IfCell(r1, r2, cond, trueValue, falseValue))
+    falseValue: Int): RasterRDD[K] = rasterRDD.combineTiles(other) {
+    case ((t1, r1), (t2, r2)) =>
+      (t1, IfCell(r1, r2, cond, trueValue, falseValue))
   }
 
   def localIf(
-    other: RasterRDD,
+    other: RasterRDD[K],
     cond: (Double, Double) => Boolean,
     trueValue: Double,
-    falseValue: Double): RasterRDD = rasterRDD.combineTiles(other) {
-    case (TmsTile(t1, r1), TmsTile(t2, r2)) =>
-      TmsTile(t1, IfCell(r1, r2, cond, trueValue, falseValue))
+    falseValue: Double): RasterRDD[K] = rasterRDD.combineTiles(other) {
+    case ((t1, r1), (t2, r2)) =>
+      (t1, IfCell(r1, r2, cond, trueValue, falseValue))
   }
 
 }

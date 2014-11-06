@@ -2,29 +2,28 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.raster.op.local.Or
-import geotrellis.spark.rdd.RasterRDD
 
-trait OrRasterRDDMethods extends RasterRDDMethods {
+trait OrRasterRDDMethods[K] extends RasterRDDMethods[K] {
   /** Or a constant Int value to each cell. */
-  def localOr(i: Int): RasterRDD = rasterRDD.mapTiles {
-    case TmsTile(t, r) => TmsTile(t, Or(r, i))
+  def localOr(i: Int): RasterRDD[K] = rasterRDD.mapTiles {
+    case (t, r) => (t, Or(r, i))
   }
   /** Or a constant Int value to each cell. */
-  def |(i: Int): RasterRDD = localOr(i)
+  def |(i: Int): RasterRDD[K] = localOr(i)
   /** Or a constant Int value to each cell. */
-  def |:(i: Int): RasterRDD = localOr(i)
+  def |:(i: Int): RasterRDD[K] = localOr(i)
   /** Or the values of each cell in each raster.  */
-  def localOr(other: RasterRDD): RasterRDD = rasterRDD.combineTiles(other) {
-    case (TmsTile(t1, r1), TmsTile(t2, r2)) => TmsTile(t1, Or(r1, r2))
+  def localOr(other: RasterRDD[K]): RasterRDD[K] = rasterRDD.combineTiles(other) {
+    case ((t1, r1), (t2, r2)) => (t1, Or(r1, r2))
   }
   /** Or the values of each cell in each raster. */
-  def |(r: RasterRDD): RasterRDD = localOr(r)
+  def |(r: RasterRDD[K]): RasterRDD[K] = localOr(r)
   /** Or the values of each cell in each raster.  */
-  def localOr(others: Seq[RasterRDD]): RasterRDD =
+  def localOr(others: Seq[RasterRDD[K]]): RasterRDD[K] =
     rasterRDD.combineTiles(others.toSeq) {
-    case tmsTiles: Seq[TmsTile] =>
-      TmsTile(tmsTiles.head.id, Or(tmsTiles.map(_.tile)))
+    case tiles =>
+      (tiles.head.id, Or(tiles.map(_.tile)))
   }
   /** Or the values of each cell in each raster. */
-  def |(others: Seq[RasterRDD]): RasterRDD = localOr(others)
+  def |(others: Seq[RasterRDD[K]]): RasterRDD[K] = localOr(others)
 }

@@ -1,11 +1,56 @@
 package geotrellis.spark
 
-import geotrellis.raster._
+import geotrellis.spark.tiling._
 import geotrellis.vector._
+import geotrellis.raster._
+import geotrellis.raster.reproject._
+
+import geotrellis.proj4.CRS
+
+import org.apache.spark.rdd._
+
+import monocle._
+import monocle.syntax._
 
 import spire.syntax.cfor._
 
+import scala.reflect.ClassTag
+
 package object ingest {
+  type IngestKey[T] = SimpleLens[T, ProjectedExtent]
+
+  implicit class IngestKeyWrapper[T: IngestKey](key: T) {
+    val _projectedExtent = implicitly[IngestKey[T]]
+
+    def projectedExtent: ProjectedExtent =
+      key |-> _projectedExtent get
+
+    def updateProjectedExtent(pe: ProjectedExtent): T =
+      key |-> _projectedExtent set(pe)
+  }
+
+  // TODO: Move this to geotrellis.vector
+  case class ProjectedExtent(extent: Extent, crs: CRS)
+  object ProjectedExtent {
+    implicit def ingestKey: IngestKey[ProjectedExtent] = SimpleLens(x => x, (_, x) => x)
+  }
+
+  implicit def projectedExtentToSpatialKeyTiler: Tiler[ProjectedExtent, SpatialKey] =
+    new Tiler[ProjectedExtent, SpatialKey] {
+      def getExtent(inKey: ProjectedExtent): Extent = inKey.extent
+      def createKey(inKey: ProjectedExtent, spatialComponent: SpatialKey): SpatialKey = spatialComponent
+    }
+
+  implicit class ReprojectWrapper[T: IngestKey](rdd: RDD[(T, Tile)]) {
+    val _projectedExtent = implicitly[IngestKey[T]]
+    def reproject(destCRS: CRS): RDD[(T, Tile)] =
+      rdd.map { case (key, tile) =>
+        val ProjectedExtent(extent, crs) = key |-> _projectedExtent get
+        val (newTile, newExtent) = tile.reproject(extent, crs, destCRS)
+        (key |-> _projectedExtent set(ProjectedExtent(newExtent, destCRS))) -> newTile
+      }
+  }
+
   /** Tile methods used by the mosaicing function to merge tiles. */
   implicit class TileMerger(val tile: MutableArrayTile) {
     def merge(other: Tile): MutableArrayTile = {

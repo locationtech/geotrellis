@@ -1,5 +1,9 @@
 package geotrellis.spark
 
-import geotrellis.spark.rdd.RasterRDD
+import scala.reflect.ClassTag
 
-trait RasterRDDMethods { val rasterRDD: RasterRDD  }
+trait RasterRDDMethods[K] { 
+  implicit val keyClassTag: ClassTag[K]
+
+  val rasterRDD: RasterRDD[K]  
+}

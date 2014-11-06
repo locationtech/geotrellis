@@ -16,6 +16,7 @@
 
 package geotrellis.spark.rdd
 
+import geotrellis.spark.RasterSplitGenerator
 import geotrellis.spark.tiling._
 import geotrellis.raster._
 

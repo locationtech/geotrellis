@@ -17,7 +17,6 @@
 package geotrellis.spark.testfiles
 
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.rdd._
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path

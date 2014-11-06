@@ -4,7 +4,6 @@ import geotrellis.raster._
 import geotrellis.raster.op.local._
 import geotrellis.raster.render.png._
 import geotrellis.spark.tiling._
-import geotrellis.spark.rdd._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark._
 import geotrellis.spark.io.accumulo._
@@ -16,6 +15,7 @@ import spray.routing._
 import spray.http.MediaTypes
 
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
+import scala.util._
 
 object TmsHttpActor {
   def props(args: TmsArgs): Props = akka.actor.Props(classOf[TmsHttpActor], args)
@@ -33,12 +33,12 @@ trait TmsHttpService extends HttpService {
 
   val accumulo = AccumuloInstance(
     args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
-  val catalog = accumulo.tileCatalog
+  val catalog = accumulo.catalog
 
   def rootRoute =
-    pathPrefix("tms" / Segment / IntNumber / IntNumber / IntNumber ) { (layer, zoom, x , y) =>
-
-      val rdd = catalog.load(Layer(layer, zoom), Some(GridBounds(x, y, x, y) -> TmsCoordScheme))
+    pathPrefix("tms" / Segment / DoubleNumber / IntNumber / IntNumber / IntNumber ) { (layer, time, zoom, x , y) =>
+      val rdd: Try[RasterRDD[SpaceTimeKey]] =  
+        catalog.load(LayerId(layer, zoom), SpaceFilter[SpaceTimeKey](x,y), TimeFilter[SpaceTimeKey](time))
 
       respondWithMediaType(MediaTypes.`image/png`) { complete {
         val tile = rdd.get.first.tile
