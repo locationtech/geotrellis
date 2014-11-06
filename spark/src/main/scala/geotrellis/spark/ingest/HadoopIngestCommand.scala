@@ -33,12 +33,6 @@ class HadoopIngestArgs extends IngestArgs {
   def catalogPath = new Path(catalog)
 }
 
-class HadoopIngest[T: IngestKey, K: SpatialComponent: HadoopWritable: ClassTag](catalog: HadoopCatalog, layoutScheme: LayoutScheme)(implicit tiler: Tiler[T, K])
-    extends Ingest[T, K](layoutScheme) {
-  def save(layerMetaData: LayerMetaData, rdd: RasterRDD[K]): Unit =
-    catalog.save(layerMetaData.id, rdd)
-}
-
 object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
   def main(args: HadoopIngestArgs): Unit = {
    System.setProperty("com.sun.media.jai.disableMediaLib", "true")
@@ -49,84 +43,15 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
     implicit val sparkContext = args.sparkContext("Ingest")
 
     val catalog: HadoopCatalog = HadoopCatalog(sparkContext, args.catalogPath)
-    val ingest = new HadoopIngest[ProjectedExtent, SpatialKey](catalog, ZoomedLayoutScheme())
     val source = sparkContext.hadoopGeoTiffRDD(args.inPath)    
+    val (layerMetaData, rdd) =  Ingest[ProjectedExtent, SpatialKey](source, args.layerName, args.destCrs, ZoomedLayoutScheme())
 
-    ingest(source, args.layerName, args.destCrs)
+    if (args.pyramid) {
+      ??? // TODO do pyramiding
+    } else{
+      catalog.save(layerMetaData.id, rdd)    
+    }
   }
 }
 
-/**
-  * @author akini
-  *
-  * Ingest GeoTIFFs into TileWritable.
-  *
-  * Works in two modes:
-  *
-  * Local - all processing is done on a single node in RAM and not using Spark. Use this if
-  * ingesting a single file or a bunch of files that do not overlap. Also, all files in
-  * aggregate must fit in RAM. The non-overlapping constraint is due to there not being
-  * any mosaicing in local mode
-  *
-  * Constraints:
-  *
-  * --input <path-to-tiffs> - this can either be a directory or a single tiff file and can either be in local fs or hdfs
-  *
-  * --outputpyramid <path-to-raster> - this can be either on hdfs (hdfs://) or local fs (file://). If the directory
-  * already exists, it is deleted
-  *
-  * --sparkMaster <spark-name>   i.e. local[10]
-  *
-  */
-// object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
 
-//   System.setProperty("com.sun.media.jai.disableMediaLib", "true")
-
-//   def main(args: HadoopIngestArgs): Unit = {
-//     val conf = args.hadoopConf
-//     conf.set("io.map.index.interval", "1")
-
-//     val inPath = new Path(args.input)
-//     val outPath = new Path(args.outputpyramid)
-
-//     logInfo(s"Deleting and creating output path: $outPath")
-//     val outFs: FileSystem = outPath.getFileSystem(conf)
-//     outFs.delete(outPath, true)
-//     outFs.mkdirs(outPath)
-
-//     val destCRS = LatLng
-
-//     val sparkContext = args.sparkContext("Ingest")
-//     try {
-//       val source = sparkContext.hadoopGeoTiffRDD(inPath)
-//       val sink = 
-//         new Sink[SpatialKey] {
-//           def apply(layerMetaData: LayerMetaData, raster: RasterRDD[SpatialKey]) = {
-//             val metaData = tiles.metaData
-//             val partitioner = {
-//               val gridBounds = metaData.transform.mapToGrid(metaData.extent)
-//               val tileSizeBytes = gridBounds.width * gridBounds.height * metaData.cellType.bytes
-//               val blockSizeBytes = HdfsUtils.defaultBlockSize(inPath, conf)
-//               val splitGenerator =
-//                 RasterSplitGenerator(gridBounds, metaData.transform, tileSizeBytes, blockSizeBytes)
-
-//               SpatialKeyPartitioner(splitGenerator.splits)
-//             }
-
-//             val outPathWithZoom = new Path(outPath, metaData.level.id.toString)
-//             tiles
-//               .partitionBy(partitioner)
-//               .toRasterRDD(metaData)
-//               .saveAsHadoopRasterRDD(outPathWithZoom)
-
-//             logInfo(s"Saved raster at zoom level ${metaData.level.id} to $outPathWithZoom")
-//           }
-//         }
-
-//       Ingest(sparkContext)(source, sink, destCRS, TilingScheme.TMS)
-
-//     } finally {
-//       sparkContext.stop
-//     }
-//   }
-// }

@@ -30,14 +30,19 @@ class AccumuloIngestSpec extends FunSpec
       val allOnes = new Path(inputHome, "all-ones.tif")
       val source = sc.hadoopGeoTiffRDD(allOnes)
 
-      val ingest = new AccumuloIngest[ProjectedExtent, SpatialKey](accumulo.catalog, ZoomedLayoutScheme())
+      val tableOps = accumulo.connector.tableOperations()
+      tableOps.create("tiles")
 
-      ingest(source, "ones", LatLng)
+      val (md, rdd) = Ingest[ProjectedExtent, SpatialKey](source, "ones", LatLng, ZoomedLayoutScheme())
+      var tileCount: Long = rdd.count
+      
+      it("should save some tiles"){
+        accumulo.catalog.save(LayerId("ones", 10), rdd, "tiles", true).get  
+      }
 
       it("should load some tiles") {
-        val rdd = accumulo.catalog.load[SpatialKey](LayerId("ones", 10))
-        val count = rdd.get.count
-        count should not be (0)
+        val out = accumulo.catalog.load[SpatialKey](LayerId("ones", 10))
+        out.get.count should be (tileCount)
       }
     }
   }

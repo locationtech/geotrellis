@@ -22,12 +22,6 @@ class AccumuloIngestArgs extends IngestArgs with AccumuloArgs {
   @Required var table: String = _  
 }
 
-class AccumuloIngest[T: IngestKey, K: SpatialComponent: AccumuloDriver: ClassTag](catalog: AccumuloCatalog, layoutScheme: LayoutScheme)(implicit tiler: Tiler[T, K])
-    extends Ingest[T, K](layoutScheme) {
-  def save(layerMetaData: LayerMetaData, rdd: RasterRDD[K]): Unit =
-    catalog.save(layerMetaData.id, rdd)
-}
-
 object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
   def main(args: AccumuloIngestArgs): Unit = {
     System.setProperty("com.sun.media.jai.disableMediaLib", "true")
@@ -38,9 +32,14 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
     implicit val sparkContext = args.sparkContext("Ingest")
 
     val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
-    val ingest = new AccumuloIngest[ProjectedExtent, SpatialKey](accumulo.catalog, ZoomedLayoutScheme())
     val source = sparkContext.hadoopGeoTiffRDD(args.inPath)
 
-    ingest(source, args.layerName, args.destCrs)
+    val (md, rdd) =  Ingest[ProjectedExtent, SpatialKey](source, args.layerName, args.destCrs, ZoomedLayoutScheme())
+    
+    if (args.pyramid) {
+      ??? // TODO do pyramiding
+    } else{
+      accumulo.catalog.save(md.id, rdd, args.table, true)
+    }
   }
 }

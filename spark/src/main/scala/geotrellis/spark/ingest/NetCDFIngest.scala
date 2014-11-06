@@ -22,12 +22,6 @@ import com.quantifind.sumac.ArgMain
 /**
  * Ingests raw multi-band NetCDF tiles into a re-projected and tiled RasterRDD
  */
-
-class NetCdfIngest(catalog: AccumuloCatalog, layoutScheme: LayoutScheme)(implicit tiler: Tiler[NetCdfBand, SpaceTimeKey])
-    extends AccumuloIngest[NetCdfBand, SpaceTimeKey](catalog, layoutScheme) {
-  override def isUniform = true
-}
-
 object NetCDFIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
   def main(args: AccumuloIngestArgs): Unit = {
     System.setProperty("com.sun.media.jai.disableMediaLib", "true")
@@ -37,18 +31,23 @@ object NetCDFIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
 
     implicit val sparkContext = args.sparkContext("Ingest")
 
+    implicit val tiler: Tiler[NetCdfBand, SpaceTimeKey] = {
+      val getExtent = (inKey: NetCdfBand) => inKey.extent
+      val createKey = (inKey: NetCdfBand, spatialComponent: SpatialKey) =>
+        SpaceTimeKey(spatialComponent, inKey.time)
+
+      Tiler(getExtent, createKey)
+    }
+
     val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
-
-    implicit val tiler =
-      new Tiler[NetCdfBand, SpaceTimeKey] {
-        def getExtent(inKey: NetCdfBand): Extent = inKey.extent
-        def createKey(inKey: NetCdfBand, spatialComponent: SpatialKey): SpaceTimeKey = 
-          SpaceTimeKey(spatialComponent, inKey.time)
-      }
-
-    val ingest = new NetCdfIngest(accumulo.catalog, ZoomedLayoutScheme())
     val source = sparkContext.netCdfRDD(args.inPath)
 
-    ingest(source, args.layerName, args.destCrs)
+    val (layerMetaData, rdd) =  Ingest[NetCdfBand, SpaceTimeKey](source, args.layerName, args.destCrs, ZoomedLayoutScheme())
+    
+    if (args.pyramid) {
+      ??? // TODO do pyramiding
+    } else{
+      accumulo.catalog.save(layerMetaData.id, rdd, args.table, true)
+    }
   }
 }

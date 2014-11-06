@@ -21,6 +21,7 @@ import geotrellis.spark.tiling._
 
 import geotrellis.raster._
 import geotrellis.raster.reproject._
+import geotrellis.spark.utils.KryoClosure
 import geotrellis.vector._
 import geotrellis.vector.reproject._
 import geotrellis.proj4._
@@ -35,68 +36,46 @@ import org.apache.spark.broadcast.Broadcast
 
 import scala.reflect.ClassTag
 
-/** Represents the ingest process. 
-  * An ingest process produces one or more layer from a set of input rasters.
-  * 
-  * The ingest process has the following steps:
-  * 
-  *  - Reproject tiles to the desired CRS:  (CRS, RDD[(Extent, CRS), Tile)]) -> RDD[(Extent, Tile)]
-  *  - Determine the appropriate layer meta data for the layer. (CRS, LayoutScheme, RDD[(Extent, Tile)]) -> LayerMetaData)
-  *  - Resample the rasters into the desired tile format. RDD[(Extent, Tile)] => RasterRDD[K]
-  *  - Save the layer.
-  *  - Pyramid the rasters to the most zoomed out level, and save those layers.
-  * 
-  * Ingesting is abstracted over the following variants:
-  *  - The source of the input tiles, which are represented as an RDD of (T, Tile) tuples, where T: IngestKey
-  *  - The LayoutScheme which will be used to determine how to retile the input tiles.
-  *  - How the layer is saved.
-  * 
-  * Future improvements: Control the pyramid and `isUniform` behavior through configuration.
-  */
-
-abstract class Ingest[T: IngestKey, K: SpatialComponent: ClassTag](layoutScheme: LayoutScheme)(implicit tiler: Tiler[T, K]) extends Logging {
-  def save(layerMetaData: LayerMetaData, rdd: RasterRDD[K]): Unit
-
-  /** Override if you know the rasters are uniform in extent (performance optimization) */
-  def isUniform = false
-
-  // TODO: Make configurable.
-  def pyramid(layerMetaData: LayerMetaData, rdd: RasterRDD[K]): Unit = {
-    val layerId = layerMetaData.id
-    logInfo(s"Saving RDD: ${layerId.name} for zoom level ${layerId.zoom}")
-    save(layerMetaData, rdd)
-    if (layerId.zoom > 1) Pyramid.up(rdd, layerMetaData.layoutLevel, layoutScheme)
-  }
-
-  def apply(sourceTiles: RDD[(T, Tile)], layerName: String, destCRS: CRS) = {
-    val reprojectedTiles =
-      sourceTiles
-        .reproject(destCRS)
+object Ingest {
+  /**
+   * Represents the ingest process.
+   * An ingest process produces a layer from a set of input rasters.
+   *
+   * The ingest process has the following steps:
+   *
+   *  - Reproject tiles to the desired CRS:  (CRS, RDD[(Extent, CRS), Tile)]) -> RDD[(Extent, Tile)]
+   *  - Determine the appropriate layer meta data for the layer. (CRS, LayoutScheme, RDD[(Extent, Tile)]) -> LayerMetaData)
+   *  - Resample the rasters into the desired tile format. RDD[(Extent, Tile)] => RasterRDD[K]
+   *
+   * Ingesting is abstracted over the following variants:
+   *  - The source of the input tiles, which are represented as an RDD of (T, Tile) tuples, where T: IngestKey
+   *  - The LayoutScheme which will be used to determine how to retile the input tiles.
+   *
+   * Saving and pyramiding can be done by the caller as the result is RasterRDD[K]
+   * 
+   * @param sourceTiles   RDD of tiles that have Extent and CRS
+   * @param layerName     name of the layer being ingest // TODO factor this out
+   * @param destCRS       CRS to be used by the output layer
+   * @param LayoutScheme  LayoutScheme to be used by output layer
+   * @param isUniform     Flag that all input tiles share an the same extent (optimization)
+   * @param tiler         Tiler that can understand the input and out keys (implicit)
+   * @tparam T            type of input tile key
+   * @tparam K            type of output tile key, must have SpatialComponent
+   * @return
+   */
+  def apply[T: IngestKey: ClassTag, K: SpatialComponent: ClassTag]
+    (sourceTiles: RDD[(T, Tile)], layerName: String, destCRS: CRS, layoutScheme: LayoutScheme, isUniform: Boolean = false)
+    (implicit tiler: Tiler[T, K]): (LayerMetaData, RasterRDD[K]) = 
+  {
+    val reprojectedTiles = sourceTiles.reproject(destCRS)
 
     val layerMetaData = 
-      LayerMetaData.fromRdd(reprojectedTiles, layerName, destCRS, layoutScheme, isUniform) {  key: T => 
-        key.projectedExtent.extent 
+      LayerMetaData.fromRdd(reprojectedTiles, layerName, destCRS, layoutScheme, isUniform) { key: T =>
+        key.projectedExtent.extent
       }
 
-    val rasterRdd = tiler.tile(reprojectedTiles, layerMetaData.rasterMetaData)
+    val rasterRdd = tiler(reprojectedTiles, layerMetaData.rasterMetaData)
 
-    pyramid(layerMetaData, rasterRdd)
-  }
-}
-
-object Ingest {
-  def apply[T: IngestKey, K: SpatialComponent: ClassTag](sourceTiles: RDD[(T, Tile)], layerName: String, destCRS: CRS, layoutScheme: LayoutScheme)(implicit tiler: Tiler[T, K]): (LayerMetaData, RasterRDD[K]) = {
-
-    var outRdd: RasterRDD[K] = null
-    var outMd: LayerMetaData = null
-
-    new Ingest(layoutScheme) {
-      def save(layerMetaData: LayerMetaData, rdd: RasterRDD[K]): Unit = {
-        outMd = layerMetaData
-        outRdd = rdd
-      }
-    }.apply(sourceTiles, layerName, LatLng)
-
-    outMd -> outRdd
+    (layerMetaData, rasterRdd)
   }
 }

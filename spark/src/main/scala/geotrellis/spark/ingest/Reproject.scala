@@ -38,12 +38,12 @@ object Reproject {
     val metaData = 
       RasterMetaData.fromRdd(reprojectedTiles, destCRS, rdd.metaData.tileLayout) { key => key._2 }
 
-    val tiler = 
-      new Tiler[(K, Extent), K] {
-        def getExtent(inKey: (K, Extent)): Extent = inKey._2
-        def createKey(inKey: (K, Extent), spatialComponent: SpatialKey): K = inKey._1.updateSpatialComponent(spatialComponent)
+    val tiler: Tiler[(K, Extent), K] = {
+        val getExtent = (inKey: (K, Extent)) => inKey._2
+        val createKey = (inKey: (K, Extent), spatialComponent: SpatialKey) => inKey._1.updateSpatialComponent(spatialComponent)
+        Tiler(getExtent, createKey)
       }
 
-    tiler.tile(reprojectedTiles, metaData)
+    tiler(reprojectedTiles, metaData)
   }
 }

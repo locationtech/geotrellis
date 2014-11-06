@@ -1,6 +1,7 @@
 package geotrellis.spark
 
 import geotrellis.spark.tiling._
+import geotrellis.spark.utils.KryoClosure
 import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.reproject._
@@ -17,6 +18,8 @@ import spire.syntax.cfor._
 import scala.reflect.ClassTag
 
 package object ingest {
+  type Tiler[T, K] = (RDD[(T, Tile)], RasterMetaData) => RasterRDD[K]
+
   type IngestKey[T] = SimpleLens[T, ProjectedExtent]
 
   implicit class IngestKeyWrapper[T: IngestKey](key: T) {
@@ -35,20 +38,23 @@ package object ingest {
     implicit def ingestKey: IngestKey[ProjectedExtent] = SimpleLens(x => x, (_, x) => x)
   }
 
-  implicit def projectedExtentToSpatialKeyTiler: Tiler[ProjectedExtent, SpatialKey] =
-    new Tiler[ProjectedExtent, SpatialKey] {
-      def getExtent(inKey: ProjectedExtent): Extent = inKey.extent
-      def createKey(inKey: ProjectedExtent, spatialComponent: SpatialKey): SpatialKey = spatialComponent
+  implicit def projectedExtentToSpatialKeyTiler: Tiler[ProjectedExtent, SpatialKey] = {
+      val getExtent = (inKey: ProjectedExtent) => inKey.extent
+      val createKey = (inKey: ProjectedExtent, spatialComponent: SpatialKey) => spatialComponent
+      Tiler(getExtent, createKey)
     }
 
   implicit class ReprojectWrapper[T: IngestKey](rdd: RDD[(T, Tile)]) {
-    val _projectedExtent = implicitly[IngestKey[T]]
-    def reproject(destCRS: CRS): RDD[(T, Tile)] =
-      rdd.map { case (key, tile) =>
-        val ProjectedExtent(extent, crs) = key |-> _projectedExtent get
-        val (newTile, newExtent) = tile.reproject(extent, crs, destCRS)
-        (key |-> _projectedExtent set(ProjectedExtent(newExtent, destCRS))) -> newTile
+    def reproject(destCRS: CRS): RDD[(T, Tile)] = {
+      val _projectedExtent = implicitly[IngestKey[T]]
+      rdd.map {
+        KryoClosure { case (key, tile) =>
+          val ProjectedExtent(extent, crs) = key |-> _projectedExtent get
+          val (newTile, newExtent) = tile.reproject(extent, crs, destCRS)
+          (key |-> _projectedExtent set (ProjectedExtent(newExtent, destCRS))) -> newTile
+        }
       }
+    }
   }
 
   /** Tile methods used by the mosaicing function to merge tiles. */
