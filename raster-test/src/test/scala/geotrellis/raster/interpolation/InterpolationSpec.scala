@@ -1,4 +1,4 @@
-package geotrellis.raster.reproject
+package geotrellis.raster.interpolation
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
@@ -13,9 +13,11 @@ class InterpolationSpec extends FunSpec with Matchers {
   val extent = Extent(1, 1, 2, 2)
 
   val interp = new Interpolation(tile, extent) {
+
     protected def interpolateValid(x: Double, y: Double): Int = B
 
     protected def interpolateDoubleValid(x: Double, y: Double): Double = B
+
   }
 
   describe("when point outside extent it should return nodata") {

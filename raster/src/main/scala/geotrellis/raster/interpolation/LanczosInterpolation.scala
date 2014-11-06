@@ -1,4 +1,4 @@
-package geotrellis.raster.reproject
+package geotrellis.raster.interpolation
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
@@ -23,9 +23,9 @@ class LanczosInterpolation(tile: Tile, extent: Extent)
   private val lanczos = new LanczosInterpolator
 
   override def cubicInterpolation(
-    p: Array[Array[Double]],
+    t: Tile,
     x: Double,
-    y: Double): Double = lanczos.interpolate(p, x, y)
+    y: Double): Double = lanczos.interpolate(t, x, y)
 
 }
 
@@ -52,14 +52,14 @@ class LanczosInterpolator {
 
   @inline
   def interpolate(
-    p: Array[Array[Double]],
+    t: Tile,
     x: Double,
     y: Double): Double = {
     var accum = 0.0
 
     cfor(S)(_ <= E, _ + 1) { i =>
       cfor(S)(_ <= E, _ + 1) { j =>
-        accum += p(i - S)(j - S) * lanczos(y - j) * lanczos(x - i)
+        accum += t.getDouble(i - S, j - S) * lanczos(y - j) * lanczos(x - i)
       }
     }
 

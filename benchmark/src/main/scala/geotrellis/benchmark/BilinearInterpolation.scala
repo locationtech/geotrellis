@@ -1,6 +1,6 @@
 package geotrellis.benchmark
 
-import geotrellis.raster.reproject._
+import geotrellis.raster.interpolation._
 
 import com.google.caliper.Param
 

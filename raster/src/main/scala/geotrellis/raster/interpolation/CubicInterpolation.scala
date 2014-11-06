@@ -1,7 +1,9 @@
-package geotrellis.raster.reproject
+package geotrellis.raster.interpolation
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
+
+import spire.syntax.cfor._
 
 /**
   * This abstract class serves as a base class for the family of
@@ -11,12 +13,17 @@ import geotrellis.vector.Extent
   *
   * If there is less then dimension ^ 2 points obtainable for the current point
   * the implementation falls back on bilinear interpolation.
+  *
+  * Note that this class is single-threaded.
   */
 abstract class CubicInterpolation(tile: Tile, extent: Extent, dimension: Int)
     extends BilinearInterpolation(tile, extent) {
 
+  private val cubicTile =
+    ArrayTile(Array.ofDim[Double](dimension * dimension), dimension, dimension)
+
   protected def cubicInterpolation(
-    p: Array[Array[Double]],
+    t: Tile,
     x: Double,
     y: Double): Double
 
@@ -26,26 +33,23 @@ abstract class CubicInterpolation(tile: Tile, extent: Extent, dimension: Int)
     leftCol >= low && leftCol < cols - offset && topRow >= low && topRow < rows - offset
   }
 
-  private def getCubicValues(leftCol: Int, topRow: Int, f: (Int, Int) => Double) = {
+  private def setCubicValues(leftCol: Int, topRow: Int, f: (Int, Int) => Double) = {
     val offset = dimension / 2
-    val res = Array.ofDim[Array[Double]](dimension)
-    for (i <- 0 until dimension) {
-      res(i) = Array.ofDim[Double](dimension)
-      for (j <- 0 until dimension) {
-        res(i)(j) = f(leftCol - offset + 1 + j, topRow - offset + 1 + i)
+
+    cfor(0)(_ < dimension, _ + 1) { i =>
+      cfor(0)(_ < dimension, _ + 1) { j =>
+        val v = f(leftCol - offset + 1 + j, topRow - offset + 1 + i)
+        cubicTile.setDouble(j, i, v)
       }
     }
-
-    res
   }
 
-  // TODO: talk with Rob and find a way to avoid this code dup.
   override def interpolateValid(x: Double, y: Double): Int = {
     val (leftCol, topRow, xRatio, yRatio) = resolveTopLeftCoordsAndRatios(x, y)
     if (!validCubicCoords(leftCol, topRow)) bilinearInt(leftCol, topRow, xRatio, yRatio)
     else {
-      val cubicMatrix = getCubicValues(leftCol, topRow, tile.get)
-      cubicInterpolation(cubicMatrix, xRatio, yRatio).round.toInt
+      setCubicValues(leftCol, topRow, tile.get)
+      cubicInterpolation(cubicTile, xRatio, yRatio).round.toInt
     }
   }
 
@@ -53,8 +57,8 @@ abstract class CubicInterpolation(tile: Tile, extent: Extent, dimension: Int)
     val (leftCol, topRow, xRatio, yRatio) = resolveTopLeftCoordsAndRatios(x, y)
     if (!validCubicCoords(leftCol, topRow)) bilinearDouble(leftCol, topRow, xRatio, yRatio)
     else {
-      val cubicMatrix = getCubicValues(leftCol, topRow, tile.getDouble)
-      cubicInterpolation(cubicMatrix, xRatio, yRatio)
+      setCubicValues(leftCol, topRow, tile.getDouble)
+      cubicInterpolation(cubicTile, xRatio, yRatio)
     }
   }
 

@@ -1,4 +1,4 @@
-package geotrellis.raster.reproject
+package geotrellis.raster.interpolation
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
@@ -31,7 +31,7 @@ class CubicInterpolationSpec extends FunSpec with Matchers {
       CubicInterpolation(tile, extent, 4) {
 
     override def cubicInterpolation(
-      p: Array[Array[Double]],
+      p: Tile,
       x: Double,
       y: Double): Double = B
 
@@ -41,7 +41,7 @@ class CubicInterpolationSpec extends FunSpec with Matchers {
       CubicInterpolation(tile, extent, 6) {
 
     override def cubicInterpolation(
-      p: Array[Array[Double]],
+      p: Tile,
       x: Double,
       y: Double): Double = B
 
@@ -145,24 +145,16 @@ class CubicInterpolationSpec extends FunSpec with Matchers {
       for (i <- h - 1 until d2 - h; j <- d2 - h until h - 1 by -1) {
         val (x, y) = (cellSize + i, cellSize + j)
 
-        val q = mutable.Queue[Array[Double]]()
-        for (k <- 0 until d) {
-          val arr = Array.ofDim[Double](d)
-          q += arr
-          for (l <- 0 until d)
-            arr(l) = i - (h - 1) + l + (k + d2 - h - j) * d2
-        }
+        val t = ArrayTile(Array.ofDim[Double](d * d), d, d)
+        for (k <- 0 until d; l <- 0 until d)
+          t.setDouble(l, k, i - (h - 1) + l + (k + d2 - h - j) * d2)
 
         val interp = new CubicInterpolation(tile, extent, d) {
           override def cubicInterpolation(
-            p: Array[Array[Double]],
+            p: Tile,
             x: Double,
             y: Double): Double = {
-            for (i <- 0 until p.size) {
-              val arr = q.dequeue
-              p(i) should be (arr)
-            }
-
+            p.toArray should be(t.toArray)
             B
           }
         }
@@ -170,8 +162,6 @@ class CubicInterpolationSpec extends FunSpec with Matchers {
         withClue(s"Failed on ($x, $y): ") {
           interp.interpolate(x, y) should be (B)
         }
-
-        q.size should be (0)
       }
     }
 

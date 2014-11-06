@@ -1,6 +1,7 @@
-package geotrellis.raster.reproject
+package geotrellis.raster.interpolation
 
 import geotrellis.raster._
+import geotrellis.raster.stats._
 import geotrellis.vector.Extent
 
 import collection._
@@ -13,23 +14,24 @@ import spire.syntax.cfor._
 class ModeInterpolation(tile: Tile, extent: Extent)
     extends Interpolation(tile, extent) {
 
-  private lazy val mostCommonValue =
-    calculateMostCommonValue(NODATA, tile.getDouble).toInt
+  private lazy val mostCommonValue = FastMapHistogram.fromTile(tile).getMode
 
-  private lazy val mostCommonValueDouble =
-    calculateMostCommonValue(Double.NaN, tile.getDouble)
-
-  private def calculateMostCommonValue(nodata: Double, f: (Int, Int) => Double) = {
-    val map = mutable.HashMap[Double, Int]()
-    var max = nodata
+  private lazy val mostCommonValueDouble = {
+    val map = new java.util.HashMap[Double, Int](tile.size + 10, 1f)
+    var max = Double.NaN
     var maxAccum = 0
 
     cfor(0)(_ < cols, _ + 1) { i =>
       cfor(0)(_ < rows, _ + 1) { j =>
-        val c = f(i, j)
-        if (c != nodata && !c.isNaN) {
-          val accum = map.getOrElse(c, 0) + 1
-          map += (c -> accum)
+        val c = tile.getDouble(i, j)
+        if (!c.isNaN) {
+          var accum = 1
+          if (!map.containsKey(c)) {
+            map.put(c, 1);
+          } else {
+            accum = map.get(c);
+            map.put(c, accum + 1);
+          }
 
           if (accum > maxAccum) {
             max = c

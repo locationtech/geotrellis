@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.engine._
 import geotrellis.testkit._
 import geotrellis.proj4._
+import geotrellis.raster.interpolation._
 import geotrellis.raster.io.geotiff.reader._
 
 import org.scalatest._

@@ -1,7 +1,9 @@
-package geotrellis.raster.reproject
+package geotrellis.raster.interpolation
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
+
+import spire.syntax.cfor._
 
 /**
   * Uses the Akima cubic spline interpolation.
@@ -15,7 +17,7 @@ import geotrellis.vector.Extent
 class BicubicSplineInterpolation(tile: Tile, extent: Extent)
     extends BicubicInterpolation(tile, extent, 6) {
 
-  private val interpolator = new CubicSplineInterpolation()
+  private val interpolator = new CubicSplineInterpolation
 
   override def uniCubicInterpolation(p: Array[Double], x: Double) =
     interpolator.interpolate(p, x)
@@ -29,8 +31,9 @@ class CubicSplineInterpolation {
   def interpolate(p: Array[Double], x: Double): Double = {
     val n = p.size
     val u = Array.ofDim[Double](n + 3)
-    for (i <- 0 until n - 1)
+    cfor(0)(_ < n - 1, _ + 1) { i =>
       u(i + 2) = (p(i + 1) - p(i)) / (Xs(i + 1) - Xs(i))
+    }
 
     u(n + 1) = 2 * u(n) - u(n - 1)
     u(n + 2) = 2 * u(n + 1) - u(n)
@@ -39,7 +42,7 @@ class CubicSplineInterpolation {
 
     val yp = Array.ofDim[Double](n)
 
-    for (i <- 0 until n) {
+    cfor(0)(_ < n, _ + 1) { i =>
       val a = math.abs(u(i + 3) - u(i + 2))
       val b = math.abs(u(i + 1) - u(i))
 

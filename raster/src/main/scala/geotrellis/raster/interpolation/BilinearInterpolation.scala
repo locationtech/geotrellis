@@ -1,4 +1,4 @@
-package geotrellis.raster.reproject
+package geotrellis.raster.interpolation
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
@@ -11,8 +11,6 @@ class BilinearInterpolation(tile: Tile, extent: Extent)
   private val ymin = extent.ymin + cellheight / 2.0
   private val ymax = extent.ymax - cellheight / 2.0
 
-  // TODO: talk with Rob and find a way to avoid this code dup.
-  // What if 1 value is NODATA in interp, what should we do?
   override def interpolateValid(x: Double, y: Double): Int = {
     val (leftCol, topRow, xRatio, yRatio) = resolveTopLeftCoordsAndRatios(x, y)
     bilinearInt(leftCol, topRow, xRatio, yRatio)

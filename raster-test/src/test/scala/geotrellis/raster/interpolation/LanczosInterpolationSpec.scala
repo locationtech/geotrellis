@@ -1,4 +1,4 @@
-package geotrellis.raster.reproject
+package geotrellis.raster.interpolation
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
@@ -65,39 +65,37 @@ class LanczosInterpolationSpec extends FunSpec with Matchers {
   describe("bidimensional lanczos interpolation should work correctly") {
 
     it("should iterate through all values correctly") {
-      val array = Array(
-        Array(1, 2, 3, 4, 5, 6.0),
-        Array(7, 8, 9, 10, 11, 12.0),
-        Array(13, 14, 15, 16, 17, 18.0),
-        Array(19, 20, 21, 22, 23, 24.0),
-        Array(25, 26, 27, 28, 29, 30.0),
-        Array(31, 32, 33, 34, 35, 36.0)
-      )
+      val tile = ArrayTile(Array(
+        1, 2, 3, 4, 5, 6.0,
+        7, 8, 9, 10, 11, 12.0,
+        13, 14, 15, 16, 17, 18.0,
+        19, 20, 21, 22, 23, 24.0,
+        25, 26, 27, 28, 29, 30.0,
+        31, 32, 33, 34, 35, 36.0), 6, 6)
 
       val interp = new LanczosInterpolator {
         override def lanczos(v: Double) = 1
       }
 
-      interp.interpolate(array, 0, 0) should be (666)
+      interp.interpolate(tile, 0, 0) should be (666)
     }
 
     it("should iterate through all values correctly and let x and y contribute equally") {
-      val array = Array(
-        Array(1, 2, 3, 4, 5, 6.0),
-        Array(7, 8, 9, 10, 11, 12.0),
-        Array(13, 14, 15, 16, 17, 18.0),
-        Array(19, 20, 21, 22, 23, 24.0),
-        Array(25, 26, 27, 28, 29, 30.0),
-        Array(31, 32, 33, 34, 35, 36.0)
-      )
+      val tile = ArrayTile(Array(
+        1, 2, 3, 4, 5, 6.0,
+        7, 8, 9, 10, 11, 12.0,
+        13, 14, 15, 16, 17, 18.0,
+        19, 20, 21, 22, 23, 24.0,
+        25, 26, 27, 28, 29, 30.0,
+        31, 32, 33, 34, 35, 36.0), 6, 6)
 
       val interp = new LanczosInterpolator {
         override def lanczos(v: Double) = if (v % 1 != 0) 1 else 0
       }
 
-      interp.interpolate(array, 0, 0.5) should be (0)
-      interp.interpolate(array, 0.5, 0) should be (0)
-      interp.interpolate(array, 0.5, 0.5) should be (666)
+      interp.interpolate(tile, 0, 0.5) should be (0)
+      interp.interpolate(tile, 0.5, 0) should be (0)
+      interp.interpolate(tile, 0.5, 0.5) should be (666)
     }
 
   }

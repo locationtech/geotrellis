@@ -1,4 +1,4 @@
-package geotrellis.raster.reproject
+package geotrellis.raster.interpolation
 
 import geotrellis.raster._
 import geotrellis.vector.Extent
@@ -12,11 +12,10 @@ import org.apache.commons.math3.analysis.interpolation._
 class BicubicConvolutionInterpolation(tile: Tile, extent: Extent)
     extends BicubicInterpolation(tile, extent, 4) {
 
-  private val interpolator = new CubicConvolutionInterpolation()
+  private val interpolator = new CubicConvolutionInterpolation
 
   override def uniCubicInterpolation(p: Array[Double], x: Double) =
     interpolator.interpolate(p, x)
-
 
 }
 
