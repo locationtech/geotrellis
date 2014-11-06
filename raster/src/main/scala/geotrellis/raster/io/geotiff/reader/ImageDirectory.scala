@@ -397,7 +397,7 @@ case class ImageDirectory(
   def rowSize(): Int = (if (hasStripStorage) (this |-> imageWidthLens get)
   else (this |-> tileWidthLens get).get).toInt
 
-  def getRasterBoundaries: Array[Pixel3D] = {
+  lazy val getRasterBoundaries: Array[Pixel3D] = {
     val imageWidth = (this |-> imageWidthLens get).toInt
     val imageLength = (this |-> imageLengthLens get).toInt
 
@@ -431,7 +431,7 @@ case class ImageDirectory(
   }
 
   // What about multiple samples?
-  def cellType(): CellType =
+  lazy val cellType: CellType =
     (this |-> bitsPerSampleLens get, this |-> sampleFormatLens get) match {
       case (Some(bitsPerSampleArray), sampleFormatArray)
           if (bitsPerSampleArray.size > 0 && sampleFormatArray.size > 0) => {
@@ -456,16 +456,16 @@ case class ImageDirectory(
       case _ => throw new MalformedGeoTiffException("no bitsPerSample values!")
     }
 
-  def toRaster(): (ArrayTile, Extent, CRS) = {
+  lazy val toRaster: (ArrayTile, Extent, CRS) = {
     val cols = this |-> imageWidthLens get
     val rows = this |-> imageLengthLens get
 
     val tile =
       this |-> gdalInternalNoDataLens get match {
         case Some(gdalNoData) =>
-          ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows, gdalNoData)
+          ArrayTile.fromBytes(imageBytes, cellType, cols, rows, gdalNoData)
         case None =>
-          ArrayTile.fromBytes(imageBytes.toArray, cellType, cols, rows)
+          ArrayTile.fromBytes(imageBytes, cellType, cols, rows)
       }
 
     (tile, extent, crs)

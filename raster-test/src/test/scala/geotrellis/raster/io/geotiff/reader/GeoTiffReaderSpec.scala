@@ -22,7 +22,11 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.ImageDirectoryLenses._
 import geotrellis.raster.io.arg.ArgReader
 import geotrellis.raster.io.geotiff.GeoTiffTestUtils
+
+import geotrellis.raster.op.zonal.summary._
+
 import geotrellis.testkit._
+
 import geotrellis.proj4.CRS
 
 import scala.io.{Source, Codec}
@@ -433,6 +437,39 @@ class GeoTiffReaderSpec extends FunSpec
       val correctCRS = CRS.fromString("+proj=longlat +datum=WGS84 +no_defs")
 
       crs should equal(correctCRS)
+    }
+
+  }
+
+  describe ("reads file data correctly") {
+
+    val MeanEpsilon = 1e-8
+
+    def testMinMaxAndMean(min: Double, max: Double, mean: Double, file: String) {
+      val (tile, extent, _) = read(file)
+        .imageDirectories.head.toRaster
+
+      tile.zonalMax(extent, extent.toPolygon) should be (max)
+      tile.zonalMin(extent, extent.toPolygon) should be (min)
+      tile.zonalMean(extent, extent.toPolygon) should be (mean +- MeanEpsilon)
+    }
+
+    it ("should read UINT 16 little endian files correctly") {
+      val min = 71
+      val max = 237
+      val mean = 210.66777801514
+      val file = "/reproject/nlcd_tile_wsg84.tif"
+
+      testMinMaxAndMean(min, max, mean, file)
+    }
+
+    it ("should read FLOAT 32 little endian files correctly") {
+      val min = 0
+      val max = 360
+      val mean = 190.02287812187
+      val file = "/aspect.tif"
+
+      testMinMaxAndMean(min, max, mean, file)
     }
 
   }
