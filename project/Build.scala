@@ -370,7 +370,11 @@ object GeotrellisBuild extends Build {
       name := "geotrellis-spark",
       fork := true,
       parallelExecution in Test := false,
-      javaOptions ++= List("-Xmx8G", "-Djava.library.path=/usr/local/lib"),
+      javaOptions ++= List(
+        "-Xmx8G",
+        "-Djava.library.path=/usr/local/lib",
+        "-Dsun.io.serialization.extendedDebugInfo=true"
+      ),
       libraryDependencies ++=
         Seq(
           // first two are just to quell the UnsupportedOperationException in Hadoop's Configuration
@@ -405,7 +409,7 @@ object GeotrellisBuild extends Build {
         import geotrellis.spark._
         import geotrellis.spark.utils._      
         import geotrellis.spark.tiling._
-        """      
+        """
     ) ++
     defaultAssemblySettings ++
     net.virtualvoid.sbt.graph.Plugin.graphSettings
