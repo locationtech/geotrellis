@@ -1,19 +1,11 @@
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark._
 import geotrellis.spark.ingest.ProjectedExtent
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.raster._
-import geotrellis.spark.utils.KryoClosure
-import geotrellis.vector._
-import geotrellis.proj4.CRS
-
 import org.apache.spark._
 import org.apache.spark.rdd._
-
 import org.apache.hadoop.fs.Path
-
-import scala.reflect._
 import org.joda.time.{DateTimeZone, DateTime}
 
 trait HadoopSparkContextMethods {

@@ -18,22 +18,9 @@ package geotrellis.spark.ingest
 
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-
 import geotrellis.raster._
-import geotrellis.raster.reproject._
-import geotrellis.spark.utils.KryoClosure
-import geotrellis.vector._
-import geotrellis.vector.reproject._
 import geotrellis.proj4._
-
-import monocle.SimpleLens
-import monocle.syntax._
-
-import org.apache.spark._
 import org.apache.spark.rdd._
-import org.apache.spark.SparkContext._
-import org.apache.spark.broadcast.Broadcast
-
 import scala.reflect.ClassTag
 
 object Ingest {

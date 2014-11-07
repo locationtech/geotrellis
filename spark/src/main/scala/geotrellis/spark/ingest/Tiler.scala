@@ -2,11 +2,8 @@ package geotrellis.spark.ingest
 
 import geotrellis.spark._
 import geotrellis.raster._
-import geotrellis.spark.utils.KryoClosure
 import geotrellis.vector._
-
 import org.apache.spark.rdd._
-
 import scala.reflect.ClassTag
 
 object Tiler {
@@ -44,20 +41,20 @@ object Tiler {
       }
 
     // Functions for combine step
-    val createTile = KryoClosure { (tup: (K, Extent, Tile)) => {
+    val createTile =  { (tup: (K, Extent, Tile)) => {
       val (key, extent, tile) = tup
       //val metaData = bcMetaData.value
       val tmsTile = ArrayTile.empty(metaData.cellType, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
       tmsTile.merge(metaData.mapTransform(key), extent, tile)
     }}
 
-    val combineTiles1 = KryoClosure { (tile: MutableArrayTile, tup: (K, Extent, Tile)) => {
+    val combineTiles1 =  { (tile: MutableArrayTile, tup: (K, Extent, Tile)) => {
       val (key, extent, prevTile) = tup
       val metaData = bcMetaData.value
       tile.merge(metaData.mapTransform(key), extent, prevTile)
     }}
 
-    val combineTiles2 = KryoClosure { (tile1: MutableArrayTile, tile2: MutableArrayTile) =>
+    val combineTiles2 = { (tile1: MutableArrayTile, tile2: MutableArrayTile) =>
       tile1.merge(tile2)
     }
 

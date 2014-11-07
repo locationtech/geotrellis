@@ -1,22 +1,12 @@
 package geotrellis.spark.ingest
 
 import geotrellis.spark._
-import geotrellis.vector.Extent
-import geotrellis.proj4._
 import geotrellis.spark.tiling._
 import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats.NetCdfBand
-import org.apache.hadoop.fs._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
-
-import geotrellis.raster._
-import geotrellis.raster.reproject._
-import geotrellis.proj4.CRS
-
 import org.apache.spark._
-import org.apache.spark.rdd._
-
 import com.quantifind.sumac.ArgMain
 
 /**

@@ -1,26 +1,17 @@
 package geotrellis.spark
 
-import geotrellis.spark.tiling._
-import geotrellis.spark.utils.KryoClosure
 import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.reproject._
-
 import geotrellis.proj4.CRS
-
 import org.apache.spark.rdd._
-
-import monocle._
 import monocle.syntax._
-
+import geotrellis.spark._
 import spire.syntax.cfor._
-
-import scala.reflect.ClassTag
 
 package object ingest {
   type Tiler[T, K] = (RDD[(T, Tile)], RasterMetaData) => RasterRDD[K]
-
-  type IngestKey[T] = SimpleLens[T, ProjectedExtent]
+  type IngestKey[T] = KeyLens[T, ProjectedExtent]
 
   implicit class IngestKeyWrapper[T: IngestKey](key: T) {
     val _projectedExtent = implicitly[IngestKey[T]]
@@ -35,7 +26,7 @@ package object ingest {
   // TODO: Move this to geotrellis.vector
   case class ProjectedExtent(extent: Extent, crs: CRS)
   object ProjectedExtent {
-    implicit def ingestKey: IngestKey[ProjectedExtent] = SimpleLens(x => x, (_, x) => x)
+    implicit def ingestKey: IngestKey[ProjectedExtent] = KeyLens(x => x, (_, x) => x)
   }
 
   implicit def projectedExtentToSpatialKeyTiler: Tiler[ProjectedExtent, SpatialKey] = {

@@ -32,6 +32,8 @@ import monocle.syntax._
 import scala.reflect.ClassTag
 
 package object spark {
+  type KeyLens[T, K] = SerializableLens[T,T,K,K]
+
   type SpatialComponent[K] = SimpleLens[K, SpatialKey]
   type TemporalComponent[K] = SimpleLens[K, TemporalKey]
 

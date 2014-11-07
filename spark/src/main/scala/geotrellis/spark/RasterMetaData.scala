@@ -2,7 +2,6 @@ package geotrellis.spark
 
 import geotrellis.raster._
 import geotrellis.spark.tiling._
-import geotrellis.spark.utils.KryoClosure
 import geotrellis.vector.Extent
 
 import geotrellis.proj4.CRS
@@ -23,11 +22,10 @@ case class RasterMetaData(
 object RasterMetaData {
   def envelopeExtent[T](rdd: RDD[(T, Tile)])(getExtent: T => Extent): (Extent, CellType, CellSize) = {
     rdd
-      .map { KryoClosure{ tup =>
-        val (key, tile) = tup
+      .map { case (key, tile) =>
         val extent = getExtent(key)
         (extent, tile.cellType, CellSize(extent, tile.cols, tile.rows))
-      } }
+      }
       .reduce { (t1, t2) =>
         val (e1, ct1, cs1) = t1
         val (e2, ct2, cs2) = t2

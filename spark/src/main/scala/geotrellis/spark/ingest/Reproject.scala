@@ -14,7 +14,7 @@ import scala.reflect.ClassTag
 
 object Reproject {
   def apply[T: IngestKey](rdd: RDD[(T, Tile)], destCRS: CRS): RDD[(T, Tile)] = {
-    rdd.map  { KryoClosure { tup =>
+    rdd.map  {  { tup =>
       val (key, tile) = tup
       val ProjectedExtent(extent, crs) = key.projectedExtent
       val (newTile, newExtent) = tile.reproject(extent, crs, destCRS)
