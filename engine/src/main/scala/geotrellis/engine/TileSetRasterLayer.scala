@@ -177,7 +177,7 @@ abstract class TileLoader(tileSetInfo: RasterLayerInfo,
   val rasterExtent = tileSetInfo.rasterExtent
 
   def getTile(col: Int, row: Int, targetExtent: Option[RasterExtent]): Tile = {
-    val re = RasterExtent(tileExtents(col, row), tileLayout.pixelCols, tileLayout.pixelRows)
+    val re = RasterExtent(tileExtents(col, row), tileLayout.tileCols, tileLayout.tileRows)
     if(col < 0 || row < 0 ||
        tileLayout.layoutCols <= col || tileLayout.layoutRows <= row) {
       val tre = 

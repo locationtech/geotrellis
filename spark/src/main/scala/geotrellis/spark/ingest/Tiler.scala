@@ -47,7 +47,7 @@ object Tiler {
     val createTile = KryoClosure { (tup: (K, Extent, Tile)) => {
       val (key, extent, tile) = tup
       //val metaData = bcMetaData.value
-      val tmsTile = ArrayTile.empty(metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
+      val tmsTile = ArrayTile.empty(metaData.cellType, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
       tmsTile.merge(metaData.mapTransform(key), extent, tile)
     }}
 

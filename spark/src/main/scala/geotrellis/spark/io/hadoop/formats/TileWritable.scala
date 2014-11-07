@@ -41,7 +41,7 @@ class TileWritable() extends Writable with Serializable {
   }
 
   def toTile(metaData: RasterMetaData): Tile =
-    toTile(metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
+    toTile(metaData.cellType, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
 
   def toTile(cellType: CellType, cols: Int, rows: Int): Tile =
     ArrayTile.fromBytes(_bytes, cellType, cols, rows)

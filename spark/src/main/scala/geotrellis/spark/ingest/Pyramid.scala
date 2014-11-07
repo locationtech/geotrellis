@@ -72,11 +72,11 @@ object Pyramid {
           val tile = 
             CompositeTile(
               orderedTiles,
-              TileLayout(cols, rows, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
+              TileLayout(cols, rows, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
             )
 
           val newKey = key.updateSpatialComponent(spatialKey)
-          val warped = tile.warp(nextMetaData.tileLayout.pixelCols, nextMetaData.tileLayout.pixelRows)
+          val warped = tile.warp(nextMetaData.tileLayout.tileCols, nextMetaData.tileLayout.tileRows)
 
           (newKey, warped)
         }

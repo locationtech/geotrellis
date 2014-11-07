@@ -35,7 +35,7 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
         val rowIdRx(zoom, col, row) = key.getRow.toString
         val spatialKey = SpatialKey(col.toInt, row.toInt)
         val time = DateTime.parse(key.getColumnQualifier.toString)
-        val tile = ArrayTile.fromBytes(value.get, metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
+        val tile = ArrayTile.fromBytes(value.get, metaData.cellType, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
         SpaceTimeKey(spatialKey, time) -> tile.asInstanceOf[Tile]
     }
     new RasterRDD(tileRdd, metaData)

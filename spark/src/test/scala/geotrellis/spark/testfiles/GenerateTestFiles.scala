@@ -50,8 +50,8 @@ object GenerateTestFiles {
     val rasterExtent = 
       RasterExtent(
         extent = re.extentFor(tileBounds),
-        cols = tileBounds.width * tileLayout.pixelCols,
-        rows = tileBounds.height * tileLayout.pixelRows
+        cols = tileBounds.width * tileLayout.tileCols,
+        rows = tileBounds.height * tileLayout.tileRows
       )     
           
 
@@ -78,8 +78,8 @@ object GenerateTestFiles {
           val targetRasterExtent = 
             RasterExtent(
               extent = re.extentFor(GridBounds(col, row, col, row)),
-              cols = tileLayout.pixelCols,
-              rows = tileLayout.pixelRows
+              cols = tileLayout.tileCols,
+              rows = tileLayout.tileRows
             )
 
           val subTile: Tile = tile.warp(rasterExtent.extent, targetRasterExtent)     

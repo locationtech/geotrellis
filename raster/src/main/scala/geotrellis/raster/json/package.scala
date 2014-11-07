@@ -43,8 +43,8 @@ package object json {
       JsObject(
         "layoutCols" -> JsNumber(tileLayout.layoutCols),
         "layoutRows" -> JsNumber(tileLayout.layoutRows),
-        "tileCols" -> JsNumber(tileLayout.pixelCols),
-        "tileRows" -> JsNumber(tileLayout.pixelRows)
+        "tileCols" -> JsNumber(tileLayout.tileCols),
+        "tileRows" -> JsNumber(tileLayout.tileRows)
       )
 
     def read(value: JsValue): TileLayout =

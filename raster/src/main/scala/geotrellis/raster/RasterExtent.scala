@@ -213,8 +213,8 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
     * west borders
     */
   def adjustTo(tileLayout: TileLayout) = {
-    val totalCols = tileLayout.pixelCols * tileLayout.layoutCols
-    val totalRows = tileLayout.pixelRows * tileLayout.layoutRows
+    val totalCols = tileLayout.tileCols * tileLayout.layoutCols
+    val totalRows = tileLayout.tileRows * tileLayout.layoutRows
 
     val warpedExtent = Extent(extent.xmin, extent.ymax - (cellheight*totalRows),
                         extent.xmin + (cellwidth*totalCols), extent.ymax)

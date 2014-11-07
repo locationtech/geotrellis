@@ -35,8 +35,8 @@ object RasterAccumuloDriver extends AccumuloDriver[SpatialKey] {
           ArrayTile.fromBytes(
             value.get,
             rasterMetaData.cellType, 
-            rasterMetaData.tileLayout.pixelCols, 
-            rasterMetaData.tileLayout.pixelRows
+            rasterMetaData.tileLayout.tileCols,
+            rasterMetaData.tileLayout.tileRows
           )
 
         SpatialKey(col.toInt, row.toInt) -> tile.asInstanceOf[Tile]

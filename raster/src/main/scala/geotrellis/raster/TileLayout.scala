@@ -28,25 +28,27 @@ object TileLayout {
 }
 
 /**
- * This class stores the layout of a tiled raster: the number of tiles (in
- * cols/rows) and also the size of each tile (in cols/rows of pixels).
+ * @param layoutCols number of columns in the layout, East to West
+ * @param layoutRows number of rows in the layout grid, North to South
+ * @param tileCols   number of pixel columns in each tile, East to West
+ * @param tileRows   number of pixel rows in each tile, North to South
  */
-case class TileLayout(layoutCols: Int, layoutRows: Int, pixelCols: Int, pixelRows: Int) {
+case class TileLayout(layoutCols: Int, layoutRows: Int, tileCols: Int, tileRows: Int) {
   def isTiled = layoutCols > 1 || layoutRows > 1
 
   /**
    * Return the total number of columns across all the tiles.
    */
-  def totalCols: Long = layoutCols.toLong * pixelCols
+  def totalCols: Long = layoutCols.toLong * tileCols
 
   /**
    * Return the total number of rows across all the tiles.
    */
-  def totalRows: Long = layoutRows.toLong * pixelRows
+  def totalRows: Long = layoutRows.toLong * tileRows
 
   def tileDimensions: (Int, Int) = (layoutCols, layoutRows)
 
-  def tileSize: Int = pixelCols * pixelRows
+  def tileSize: Int = tileCols * tileRows
     
   def cellSize(extent: Extent): CellSize = 
     CellSize(extent.width / totalCols, extent.height / totalRows)

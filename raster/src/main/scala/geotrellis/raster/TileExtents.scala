@@ -52,7 +52,7 @@ case class TileExtents(extent: Extent, tileLayout: TileLayout) {
    *
    */
   private def xCoord(col: Int): Double =
-    extent.xmin + (col * cellSize.width * tileLayout.pixelCols)
+    extent.xmin + (col * cellSize.width * tileLayout.tileCols)
 
   /**
    * This method is identical to getXCoord except that it functions on the
@@ -62,5 +62,5 @@ case class TileExtents(extent: Extent, tileLayout: TileLayout) {
    * upper left corner of the origin tile is (xmin, ymax).
    */
   private def yCoord(row: Int): Double =
-    extent.ymax - (row * cellSize.height * tileLayout.pixelRows)
+    extent.ymax - (row * cellSize.height * tileLayout.tileRows)
 }
