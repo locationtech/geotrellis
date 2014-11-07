@@ -10,6 +10,7 @@ import geotrellis.spark.io.accumulo._
 import geotrellis.spark.cmd.TmsArgs
 
 import akka.actor._
+import org.joda.time.DateTime
 
 import spray.routing._
 import spray.http.MediaTypes
@@ -36,9 +37,11 @@ trait TmsHttpService extends HttpService {
   val catalog = accumulo.catalog
 
   def rootRoute =
-    pathPrefix("tms" / Segment / DoubleNumber / IntNumber / IntNumber / IntNumber ) { (layer, time, zoom, x , y) =>
-      val rdd: Try[RasterRDD[SpaceTimeKey]] =  
-        catalog.load(LayerId(layer, zoom), SpaceFilter[SpaceTimeKey](x,y), TimeFilter[SpaceTimeKey](time))
+    pathPrefix("tms" / Segment / Segment / IntNumber / IntNumber / IntNumber ) { (layer, timeStr, zoom, x , y) =>
+      val rdd: Try[RasterRDD[SpaceTimeKey]] = {
+        val time = DateTime.parse(timeStr)
+        catalog.load(LayerId(layer, zoom), SpaceFilter[SpaceTimeKey](x, y), TimeFilter[SpaceTimeKey](time))
+      }
 
       respondWithMediaType(MediaTypes.`image/png`) { complete {
         val tile = rdd.get.first.tile

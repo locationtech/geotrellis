@@ -4,6 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.ingest.ProjectedExtent
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.raster._
+import geotrellis.spark.utils.KryoClosure
 import geotrellis.vector._
 import geotrellis.proj4.CRS
 
@@ -13,6 +14,7 @@ import org.apache.spark.rdd._
 import org.apache.hadoop.fs.Path
 
 import scala.reflect._
+import org.joda.time.{DateTimeZone, DateTime}
 
 trait HadoopSparkContextMethods {
   val sc: SparkContext
@@ -43,15 +45,23 @@ trait HadoopSparkContextMethods {
     )
   }
 
-  def netCdfRDD(path: Path): RDD[(NetCdfBand, Tile)] =
+  def netCdfRDD(path: Path): RDD[(NetCdfBand, Tile)] = {
+    val makeTime = (info: GdalRasterInfo) => {
+      require(info.file.meta("Time#units") == "days since 1950-01-01")
+      val base = new DateTime(1950, 1, 1, 0, 0, 0, DateTimeZone.UTC)
+      val days = info.bandMeta("NETCDF_DIM_Time").toDouble
+      base.plusDays(days.toInt).plusHours((days % 1 * 24).toInt)
+    }
+
     gdalRDD(path)
       .map { case (info, tile) =>
-        val band = NetCdfBand(
-          extent = info.file.rasterExtent.extent,
-          crs = info.file.crs,
-          varName = info.bandMeta("NETCDF_VARNAME"),
-          time = info.bandMeta("NETCDF_DIM_Time").toDouble
-        )
-        band -> tile
+      val band = NetCdfBand(
+        extent = info.file.rasterExtent.extent,
+        crs = info.file.crs,
+        varName = info.bandMeta("NETCDF_VARNAME"),
+        time = makeTime(info)
+      )
+      band -> tile
     }
+  }
 }

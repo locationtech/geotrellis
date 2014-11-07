@@ -38,6 +38,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import org.apache.hadoop.conf.Configuration
 import GdalInputFormat._
+import org.joda.time.DateTime
 
 import HdfsUtils.LocalPath
 
@@ -63,7 +64,7 @@ class GdalInputFormat extends FileInputFormat[GdalRasterInfo, Tile] {
 case class GdalFileInfo(rasterExtent: RasterExtent, crs: CRS, meta: Map[String, String])
 case class GdalRasterInfo(file: GdalFileInfo, bandMeta: Map[String, String])
 
-case class NetCdfBand(extent: Extent, crs: CRS, varName: String, time: Double)
+case class NetCdfBand(extent: Extent, crs: CRS, varName: String, time: DateTime)
 object NetCdfBand {
   implicit def ingestKey: IngestKey[NetCdfBand] = 
     SimpleLens[NetCdfBand, ProjectedExtent](band => ProjectedExtent(band.extent, band.crs), (band, pe) => NetCdfBand(pe.extent, pe.crs, band.varName, band.time))

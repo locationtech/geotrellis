@@ -10,6 +10,7 @@ import org.apache.accumulo.core.util.{Pair => JPair}
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.rdd.RDD
+import org.joda.time.{DateTimeZone, DateTime}
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
@@ -22,7 +23,8 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
     raster.map {
       case (SpaceTimeKey(spatialKey, time), tile) =>
         val mutation = new Mutation(rowId(layerId, spatialKey.col, spatialKey.row))
-        mutation.put(new Text(layerId.name), new Text(time.toString), System.currentTimeMillis(), new Value(tile.toBytes()))
+        mutation.put(new Text(layerId.name), new Text(time.withZone(DateTimeZone.UTC).toString),
+          System.currentTimeMillis(), new Value(tile.toBytes()))
         (null, mutation)
     }
 
@@ -32,7 +34,7 @@ object TimeRasterAccumuloDriver extends AccumuloDriver[SpaceTimeKey] {
       case (key, value) =>
         val rowIdRx(zoom, col, row) = key.getRow.toString
         val spatialKey = SpatialKey(col.toInt, row.toInt)
-        val time = key.getColumnQualifier.toString.toDouble
+        val time = DateTime.parse(key.getColumnQualifier.toString)
         val tile = ArrayTile.fromBytes(value.get, metaData.cellType, metaData.tileLayout.pixelCols, metaData.tileLayout.pixelRows)
         SpaceTimeKey(spatialKey, time) -> tile.asInstanceOf[Tile]
     }
