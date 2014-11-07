@@ -26,9 +26,9 @@ class IngestSpec extends FunSpec
 
       it("should ingest GeoTiff"){
         val source = sc.hadoopGeoTiffRDD(new Path(inputHome, "all-ones.tif"))
-        val (md, rdd) = Ingest[ProjectedExtent, SpatialKey](source, "ones", LatLng, ZoomedLayoutScheme())
+        val (level, rdd) = Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme())
 
-        md.id.zoom should be (10)
+        level.zoom should be (10)
         rdd.count should be (18)
       }
 
@@ -42,7 +42,7 @@ class IngestSpec extends FunSpec
         }
 
         val source = sc.netCdfRDD(new Path(inputHome, "ipcc-access1-tasmin.nc"))
-        val (md, rdd) = Ingest[NetCdfBand, SpaceTimeKey](source, "ones", LatLng, ZoomedLayoutScheme())
+        val (md, rdd) = Ingest[NetCdfBand, SpaceTimeKey](source, LatLng, ZoomedLayoutScheme())
 
         val expectedKeys = List(
           SpaceTimeKey(SpatialKey(1,1),TemporalKey(DateTime.parse("2006-03-16T12:00:00.000Z"))),

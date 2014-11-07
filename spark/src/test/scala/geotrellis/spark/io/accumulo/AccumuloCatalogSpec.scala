@@ -45,16 +45,16 @@ class AccumuloCatalogSpec extends FunSpec
       val layoutScheme = ZoomedLayoutScheme()
       tableOps.create("tiles")
 
-      val (onesMd, onesRdd) = Ingest(source, "ones", LatLng, layoutScheme)      
+      val (level, onesRdd) = Ingest(source, LatLng, layoutScheme)
      
       it("should fail writing to no table"){        
         intercept[TableNotFoundError] {
-          catalog.save(onesMd.id, onesRdd, "NOTiles")          
+          catalog.save(LayerId("ones", level.zoom), onesRdd, "NOTiles")
         }
       }
 
       it("should succeed writing to a table"){
-        catalog.save(onesMd.id, onesRdd, "tiles")          
+        catalog.save(LayerId("ones", level.zoom), onesRdd, "tiles")
       }
 
       it("should load out saved tiles"){

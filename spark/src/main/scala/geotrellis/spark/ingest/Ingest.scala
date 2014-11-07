@@ -54,7 +54,6 @@ object Ingest {
    * Saving and pyramiding can be done by the caller as the result is RasterRDD[K]
    * 
    * @param sourceTiles   RDD of tiles that have Extent and CRS
-   * @param layerName     name of the layer being ingest // TODO factor this out
    * @param destCRS       CRS to be used by the output layer
    * @param LayoutScheme  LayoutScheme to be used by output layer
    * @param isUniform     Flag that all input tiles share an the same extent (optimization)
@@ -64,18 +63,18 @@ object Ingest {
    * @return
    */
   def apply[T: IngestKey: ClassTag, K: SpatialComponent: ClassTag]
-    (sourceTiles: RDD[(T, Tile)], layerName: String, destCRS: CRS, layoutScheme: LayoutScheme, isUniform: Boolean = false)
-    (implicit tiler: Tiler[T, K]): (LayerMetaData, RasterRDD[K]) = 
+    (sourceTiles: RDD[(T, Tile)], destCRS: CRS, layoutScheme: LayoutScheme, isUniform: Boolean = false)
+    (implicit tiler: Tiler[T, K]): (LayoutLevel, RasterRDD[K]) =
   {
     val reprojectedTiles = sourceTiles.reproject(destCRS)
 
-    val layerMetaData = 
-      LayerMetaData.fromRdd(reprojectedTiles, layerName, destCRS, layoutScheme, isUniform) { key: T =>
+    val (layoutLevel, rasterMetaData) =
+      RasterMetaData.fromRdd(reprojectedTiles, destCRS, layoutScheme, isUniform) { key: T =>
         key.projectedExtent.extent
       }
 
-    val rasterRdd = tiler(reprojectedTiles, layerMetaData.rasterMetaData)
+    val rasterRdd = tiler(reprojectedTiles, rasterMetaData)
 
-    (layerMetaData, rasterRdd)
+    (layoutLevel, rasterRdd)
   }
 }

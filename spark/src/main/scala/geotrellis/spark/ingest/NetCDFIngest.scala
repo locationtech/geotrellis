@@ -41,13 +41,17 @@ object NetCDFIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
 
     val accumulo = AccumuloInstance(args.instance, args.zookeeper, args.user, new PasswordToken(args.password))
     val source = sparkContext.netCdfRDD(args.inPath)
+    val layoutScheme = ZoomedLayoutScheme()
+    val (level, rdd) =  Ingest[NetCdfBand, SpaceTimeKey](source, args.destCrs, layoutScheme)
 
-    val (layerMetaData, rdd) =  Ingest[NetCdfBand, SpaceTimeKey](source, args.layerName, args.destCrs, ZoomedLayoutScheme())
-    
+    val save = { (rdd: RasterRDD[SpaceTimeKey], level: LayoutLevel) =>
+      accumulo.catalog.save(LayerId(args.layerName, level.zoom), rdd, args.table, true)
+    }
+
     if (args.pyramid) {
-      ??? // TODO do pyramiding
+      Pyramid.saveLevels(rdd, level, layoutScheme)(save).get // expose exceptions
     } else{
-      accumulo.catalog.save(layerMetaData.id, rdd, args.table, true)
+      save(rdd, level)
     }
   }
 }

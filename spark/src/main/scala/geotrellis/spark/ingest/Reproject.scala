@@ -1,6 +1,7 @@
 package geotrellis.spark.ingest
 
 import geotrellis.spark._
+import geotrellis.spark.utils._
 import geotrellis.raster._
 import geotrellis.raster.reproject._
 import geotrellis.vector._
@@ -12,16 +13,17 @@ import monocle.syntax._
 import scala.reflect.ClassTag
 
 object Reproject {
-  def reproject[T: IngestKey](rdd: RDD[(T, Tile)], destCRS: CRS): RDD[(T, Tile)] = {
-    rdd.map { case (key, tile) =>
+  def apply[T: IngestKey](rdd: RDD[(T, Tile)], destCRS: CRS): RDD[(T, Tile)] = {
+    rdd.map  { KryoClosure { tup =>
+      val (key, tile) = tup
       val ProjectedExtent(extent, crs) = key.projectedExtent
       val (newTile, newExtent) = tile.reproject(extent, crs, destCRS)
       val newKey = key.updateProjectedExtent(ProjectedExtent(newExtent, destCRS))
       (newKey, newTile)
-    }
+    } }
   }
 
-  def reproject[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], destCRS: CRS): RasterRDD[K] = {
+  def apply[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], destCRS: CRS): RasterRDD[K] = {
     val bcMetaData = rdd.sparkContext.broadcast(rdd.metaData)
 
     val reprojectedTiles = 

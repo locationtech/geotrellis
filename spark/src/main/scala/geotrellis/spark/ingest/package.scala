@@ -45,16 +45,7 @@ package object ingest {
     }
 
   implicit class ReprojectWrapper[T: IngestKey](rdd: RDD[(T, Tile)]) {
-    def reproject(destCRS: CRS): RDD[(T, Tile)] = {
-      val _projectedExtent = implicitly[IngestKey[T]]
-      rdd.map {
-        KryoClosure { case (key, tile) =>
-          val ProjectedExtent(extent, crs) = key |-> _projectedExtent get
-          val (newTile, newExtent) = tile.reproject(extent, crs, destCRS)
-          (key |-> _projectedExtent set (ProjectedExtent(newExtent, destCRS))) -> newTile
-        }
-      }
-    }
+    def reproject(destCRS: CRS): RDD[(T, Tile)] = Reproject(rdd, destCRS)
   }
 
   /** Tile methods used by the mosaicing function to merge tiles. */

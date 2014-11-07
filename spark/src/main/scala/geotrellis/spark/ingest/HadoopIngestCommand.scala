@@ -43,13 +43,18 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
     implicit val sparkContext = args.sparkContext("Ingest")
 
     val catalog: HadoopCatalog = HadoopCatalog(sparkContext, args.catalogPath)
-    val source = sparkContext.hadoopGeoTiffRDD(args.inPath)    
-    val (layerMetaData, rdd) =  Ingest[ProjectedExtent, SpatialKey](source, args.layerName, args.destCrs, ZoomedLayoutScheme())
+    val source = sparkContext.hadoopGeoTiffRDD(args.inPath)
+    val layoutScheme = ZoomedLayoutScheme()
+    val (level, rdd) =  Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme)
+
+    val save = { (rdd: RasterRDD[SpatialKey], level: LayoutLevel) =>
+      catalog.save(LayerId(args.layerName, level.zoom), rdd)
+    }
 
     if (args.pyramid) {
-      ??? // TODO do pyramiding
+      Pyramid.saveLevels(rdd, level, layoutScheme)(save).get // expose exceptions
     } else{
-      catalog.save(layerMetaData.id, rdd)    
+      save(rdd, level)
     }
   }
 }

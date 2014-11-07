@@ -1,5 +1,6 @@
 package geotrellis.spark
 
+import geotrellis.spark.io.LayerMetaData
 import geotrellis.spark.tiling._
 import geotrellis.raster._
 import geotrellis.raster.json._
@@ -61,9 +62,8 @@ package object json {
       }
   }
 
-
   implicit object LayerMetaDataFormat extends RootJsonFormat[LayerMetaData] {
-    def write(metaData: LayerMetaData) = 
+    def write(metaData: LayerMetaData) =
       JsObject(
         "id" -> metaData.id.toJson,
         "rasterMetaData" -> metaData.rasterMetaData.toJson

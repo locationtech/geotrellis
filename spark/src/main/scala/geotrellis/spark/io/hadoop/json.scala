@@ -1,6 +1,7 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
+import geotrellis.spark.io.LayerMetaData
 import geotrellis.spark.json._
 
 import org.apache.hadoop.fs.Path

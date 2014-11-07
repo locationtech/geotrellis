@@ -11,19 +11,28 @@ import monocle._
 import monocle.syntax._
 
 import scala.reflect.ClassTag
+import scala.util.Try
 
 object Pyramid {
-  /** Save layers up */
-  def saveLevels[K: SpatialComponent: ClassTag](layerMetaData: LayerMetaData, rdd: RasterRDD[K], layoutScheme: LayoutScheme)
-                                               (save: (LayerMetaData, RasterRDD[K]) => Unit): Unit = {
-    save(layerMetaData, rdd)
-    if (layerMetaData.id.zoom > 1) Pyramid.up(rdd, layerMetaData.layoutLevel, layoutScheme)
+  /**
+   * Save layers up, until level 1 is reached
+   * @param rdd           RDD containing original level to be pyramided
+   * @param layoutScheme  LayoutScheme used to create the RDD
+   * @param save          Function(rdd, layoutLevel) that will be called for zoom each level, including original
+   */
+  def saveLevels[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], level: LayoutLevel, layoutScheme: LayoutScheme)
+                                               (save: (RasterRDD[K], LayoutLevel) => Try[Unit]): Try[Unit] = Try {
+    save(rdd, level).get // force errors on save
+    if (level.zoom > 1) {
+      val (nextRdd, nextLevel) = Pyramid.up(rdd, level, layoutScheme)
+      saveLevels(nextRdd, nextLevel, layoutScheme)(save)
+    }
   }
 
   /**
    * Functions that require RasterRDD to have a TMS grid dimension to their key
    */
-  def up[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], level: LayoutLevel, layoutScheme: LayoutScheme): RasterRDD[K] = {
+  def up[K: SpatialComponent: ClassTag](rdd: RasterRDD[K], level: LayoutLevel, layoutScheme: LayoutScheme): (RasterRDD[K], LayoutLevel) = {
     val metaData = rdd.metaData
     val nextLevel = layoutScheme.zoomOut(level)
     val nextMetaData = 
@@ -81,6 +90,6 @@ object Pyramid {
           (newKey, warped)
         }
 
-    new RasterRDD(nextRdd, nextMetaData)
+    new RasterRDD(nextRdd, nextMetaData) -> nextLevel
   }
 }
