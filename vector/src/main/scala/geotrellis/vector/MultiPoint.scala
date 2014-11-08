@@ -60,13 +60,6 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   /** Get the number of vertices in this geometry */
   lazy val vertexCount: Int = jtsGeom.getNumPoints
 
-  /**
-   * Returns the minimum extent that contains all the points
-   * of this MultiPoint.
-   */
-  lazy val envelope: Extent =
-    jtsGeom.getEnvelopeInternal
-
   // -- Intersection
 
   /**
