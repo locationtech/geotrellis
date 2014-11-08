@@ -18,25 +18,22 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.rdd.RasterRDD
-import geotrellis.spark.testfiles.{IncreasingTestFile, AllOnesTestFile}
-
+import geotrellis.spark.RasterRDD
+import geotrellis.spark.testfiles._
 import org.scalatest.FunSpec
 
 class UnEqualSpec extends FunSpec
     with TestEnvironment
-    with SharedSparkContext
+    with TestFiles
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("UnEqual Operation") {
     ifCanRunSpark {
-      val increasing = IncreasingTestFile(inputHome, conf)
-      val allOnes = AllOnesTestFile(inputHome, conf)
-
-      val cols = increasing.metaData.cols
+      val increasing = IncreasingTestFile
+      val allOnes = AllOnesTestFile
 
       it("should check unEqual between an integer and a raster") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
+        val inc = increasing
         val res = inc !== 1
 
         rasterShouldBe(
@@ -48,7 +45,7 @@ class UnEqualSpec extends FunSpec
       }
 
       it("should check unEqual between a double and a raster") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
+        val inc = increasing
         val res = inc !== 1.0
 
         rasterShouldBe(
@@ -60,7 +57,7 @@ class UnEqualSpec extends FunSpec
       }
 
       it("should check unEqual between a raster and an integer") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
+        val inc = increasing
         val res = 1 !==: inc
 
         rasterShouldBe(
@@ -72,7 +69,7 @@ class UnEqualSpec extends FunSpec
       }
 
       it("should check unEqual between a raster and a double") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
+        val inc = increasing
         val res = 1.0 !==: inc
 
         rasterShouldBe(
@@ -84,8 +81,8 @@ class UnEqualSpec extends FunSpec
       }
 
       it("should check unEqual between two rasters") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val ones = sc.hadoopRasterRDD(allOnes.path)
+        val inc = increasing
+        val ones = allOnes
         val res = inc !== ones
 
         rasterShouldBe(

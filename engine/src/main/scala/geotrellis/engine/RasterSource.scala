@@ -249,8 +249,8 @@ class RasterSource(val rasterDef: Op[RasterDefinition], val tileOps: Op[Seq[Op[T
           val tileExtents = TileExtents(re.extent, tileLayout)
 
           val warped = mutable.ListBuffer[Op[(Tile, Extent)]]()
-          val tCols = tileLayout.tileCols
-          val tRows = tileLayout.tileRows
+          val tCols = tileLayout.layoutCols
+          val tRows = tileLayout.layoutRows
           cfor(0)(_ < tCols, _ + 1) { tCol =>
             cfor(0)(_ < tRows, _ + 1) { tRow =>
               val sourceExtent = tileExtents(tCol, tRow)
@@ -375,8 +375,8 @@ object RasterSource {
           }
         case None =>
           rasterLayer.map { layer =>
-            (for(tileRow <- 0 until layer.info.tileLayout.tileRows;
-              tileCol <- 0 until layer.info.tileLayout.tileCols) yield {
+            (for(tileRow <- 0 until layer.info.tileLayout.layoutRows;
+              tileCol <- 0 until layer.info.tileLayout.layoutCols) yield {
               Literal(layer.getTile(tileCol, tileRow))
             })
           }
@@ -421,8 +421,8 @@ object RasterSource {
         case None =>
           ( rasterDef,
             rasterDef.map { rd =>
-              (for(tileRow <- 0 until rd.tileLayout.tileRows;
-                tileCol <- 0 until rd.tileLayout.tileCols) yield {
+              (for(tileRow <- 0 until rd.tileLayout.layoutRows;
+                tileCol <- 0 until rd.tileLayout.layoutCols) yield {
                 LoadTile(rd.layerId, tileCol, tileRow)
               })
             }

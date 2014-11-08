@@ -18,33 +18,29 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.raster._
 import geotrellis.spark._
-import geotrellis.spark.rdd._
 import geotrellis.spark.tiling._
 
 import org.apache.hadoop.io.Writable
 
 package object formats {
-  type WritableTile = (TileIdWritable, ArgWritable)
-  implicit class WritableTileWrapper(wt: WritableTile) {
-    def toTmsTile(metaData: LayerMetaData): TmsTile = {
-      val tileId = 
-        wt._1.get
-      val tile = 
-        wt._2.toTile(metaData.cellType, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
+//  type WritableTile = (SpatialKeyWritable, TileWritable)
 
-      TmsTile(tileId, tile)
-    }
-  }
+  // implicit class ToWritableWrapper(idTile: (SpatialKey, Tile)) {
+  //   def toWritable(): WritableTile =
+  //     (SpatialKeyWritable(idTile.id), TileWritable.fromTile(idTile.tile))
+  // }
 
-  type PayloadWritableTile = (TileIdWritable, PayloadArgWritable)
-  implicit class PayloadWritableTileWrapper(pwt: PayloadWritableTile) {
-    def toPayloadTile(metaData: LayerMetaData): TmsTile = {
-       val tileId = 
-        pwt._1.get
-      val tile = 
-        pwt._2.toTile(metaData.cellType, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
+  // implicit class WritableTileWrapper(wt: WritableTile) {
+  //   def toIdTile(metaData: RasterMetaData): (Long, Tile) = {
+  //     val tileId = 
+  //       wt._1.get
+  //     val tile = 
+  //       wt._2.toTile(metaData.cellType, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
 
-      TmsTile(tileId, tile)
-    }
-  }
+  //     (tileId, tile)
+  //   }
+
+  //   def toTuple(metaData: RasterMetaData): (SpatialKey, Tile) =
+  //     wt._1.get -> wt._2.toTile(metaData.cellType, metaData.tileLayout.tileCols, metaData.tileLayout.tileRows)
+  // }
 }

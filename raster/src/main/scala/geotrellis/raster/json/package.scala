@@ -41,16 +41,16 @@ package object json {
   implicit object TileLayoutFormat extends RootJsonFormat[TileLayout] {
     def write(tileLayout: TileLayout) =
       JsObject(
-        "tileCols" -> JsNumber(tileLayout.tileCols), 
-        "tileRows" -> JsNumber(tileLayout.tileRows), 
-        "pixelCols" -> JsNumber(tileLayout.pixelCols), 
-        "pixelRows" -> JsNumber(tileLayout.pixelRows)
+        "layoutCols" -> JsNumber(tileLayout.layoutCols),
+        "layoutRows" -> JsNumber(tileLayout.layoutRows),
+        "tileCols" -> JsNumber(tileLayout.tileCols),
+        "tileRows" -> JsNumber(tileLayout.tileRows)
       )
 
     def read(value: JsValue): TileLayout =
-      value.asJsObject.getFields("tileCols", "tileRows", "pixelCols", "pixelRows") match {
-        case Seq(JsNumber(tileCols), JsNumber(tileRows), JsNumber(pixelCols), JsNumber(pixelRows)) =>
-          TileLayout(tileCols.toInt, tileRows.toInt, pixelCols.toInt, pixelRows.toInt)
+      value.asJsObject.getFields("layoutCols", "layoutRows", "tileCols", "tileRows") match {
+        case Seq(JsNumber(layoutCols), JsNumber(layoutRows), JsNumber(tileCols), JsNumber(tileRows)) =>
+          TileLayout(layoutCols.toInt, layoutRows.toInt, tileCols.toInt, tileRows.toInt)
         case _ =>
           throw new DeserializationException("TileLayout expected.")
       }

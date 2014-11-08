@@ -26,8 +26,8 @@ import geotrellis.raster.op.elevation._
 
 import com.google.caliper.Benchmark
 import com.google.caliper.Param
-import com.google.caliper.Runner 
-import com.google.caliper.SimpleBenchmark
+import com.google.caliper.runner.CaliperMain 
+import com.google.caliper.Benchmark
 import geotrellis.raster.op.focal.{Square, Circle}
 import geotrellis.raster.op.global
 

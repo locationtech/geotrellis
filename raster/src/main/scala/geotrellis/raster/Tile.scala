@@ -144,6 +144,10 @@ trait Tile {
   def warp(source: Extent, targetCols: Int, targetRows: Int): Tile =
     warp(source, RasterExtent(source, targetCols, targetRows))
 
+  /** Only changes the resolution */
+  def warp(targetCols: Int, targetRows: Int): Tile =
+    warp(Extent(0.0, 0.0, 1.0, 1.0), targetCols, targetRows)
+
   def crop(srcExtent: Extent, extent: Extent): Tile = 
     CroppedTile(this, RasterExtent(srcExtent, cols, rows).gridBoundsFor(extent))
 

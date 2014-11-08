@@ -17,64 +17,62 @@
 package geotrellis.spark.op.local
 
 import geotrellis.spark._
+import geotrellis.raster._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.rdd.RasterRDD
+import geotrellis.spark.RasterRDD
 import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
 class MaxSpec extends FunSpec
     with TestEnvironment
-    with SharedSparkContext
+    with TestFiles    
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
   describe("Max Operation") {
     ifCanRunSpark {
-      val increasing = IncreasingTestFile(inputHome, conf)
-      val decreasing = DecreasingTestFile(inputHome, conf)
-      val allHundreds = AllHundredsTestFile(inputHome, conf)
+      val increasing = IncreasingTestFile
+      val decreasing = DecreasingTestFile
+      val allHundreds = AllHundredsTestFile
 
-      val cols = increasing.metaData.cols
-      val rows = increasing.metaData.rows
-
-      val tots = cols * rows;
+      val tots = 2342523;
 
       it("should max a raster with an integer") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
+        val inc = increasing
         val thresh = tots / 2
         val res = inc.localMax(thresh)
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => math.max(y * cols + x, thresh)
+          (tile: Tile, x: Int, y: Int) => math.max(y * tile.cols + x, thresh)
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should max a raster with a double") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
+        val inc = increasing
         val thresh = tots / 2.0
         val res = inc.localMax(thresh)
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => math.max(y * cols + x, thresh)
+          (tile: Tile, x: Int, y: Int) => math.max(y * tile.cols + x, thresh)
         )
 
         rastersShouldHaveSameIdsAndTileCount(inc, res)
       }
 
       it("should max two rasters") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val dec = sc.hadoopRasterRDD(decreasing.path)
+        val inc = increasing
+        val dec = decreasing
         val res = inc.localMax(dec)
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => {
-            val decV = cols * rows - (y * cols + x) - 1
-            val incV = y * cols + x
+          (tile: Tile, x: Int, y: Int) => {
+            val decV = tile.cols * tile.rows - (y * tile.cols + x) - 1
+            val incV = y * tile.cols + x
 
             math.max(decV, incV)
           }
@@ -84,16 +82,16 @@ class MaxSpec extends FunSpec
       }
 
       it("should max three rasters as a seq") {
-        val inc = sc.hadoopRasterRDD(increasing.path)
-        val dec = sc.hadoopRasterRDD(decreasing.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val inc = increasing
+        val dec = decreasing
+        val hundreds = allHundreds
         val res = inc.localMax(Seq(dec, hundreds))
 
         rasterShouldBe(
           res,
-          (x: Int, y: Int) => {
-            val decV = cols * rows - (y * cols + x) - 1
-            val incV = y * cols + x
+          (tile: Tile, x: Int, y: Int) => {
+            val decV = tile.cols * tile.rows - (y * tile.cols + x) - 1
+            val incV = y * tile.cols + x
 
             math.max(math.max(decV, incV), 100)
           }

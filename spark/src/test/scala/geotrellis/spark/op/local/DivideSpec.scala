@@ -18,23 +18,23 @@ package geotrellis.spark.op.local
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.testfiles.{AllTwosTestFile, AllHundredsTestFile}
+import geotrellis.spark.testfiles._
 
 import org.scalatest.FunSpec
 
 class DivideSpec extends FunSpec
     with TestEnvironment
-    with SharedSparkContext
+    with TestFiles
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
 
   describe("Divide Operation") {
     ifCanRunSpark {
-      val allTwos = AllTwosTestFile(inputHome, conf)
-      val allHundreds = AllHundredsTestFile(inputHome, conf)
+      val allTwos = AllTwosTestFile
+      val allHundreds = AllHundredsTestFile
 
       it("should divide raster values by a constant") {
-        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val twos = allTwos
 
         val ones = twos / 2
 
@@ -43,7 +43,7 @@ class DivideSpec extends FunSpec
       }
 
       it("should divide from a constant, raster values") {
-        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val twos = allTwos
 
         val ones = 2 /: twos
 
@@ -52,8 +52,8 @@ class DivideSpec extends FunSpec
       }
 
       it("should divide multiple rasters") {
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val hundreds = allHundreds
+        val twos = allTwos
         val res = hundreds / twos / twos
 
         rasterShouldBe(res, (25, 25))
@@ -61,8 +61,8 @@ class DivideSpec extends FunSpec
       }
 
       it("should divide multiple rasters as a seq") {
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
+        val hundreds = allHundreds
+        val twos = allTwos
         val res = hundreds / Seq(twos, twos)
 
         rasterShouldBe(res, (25, 25))

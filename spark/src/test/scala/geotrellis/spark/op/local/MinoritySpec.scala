@@ -21,25 +21,24 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
-
 import org.scalatest.FunSpec
 
 class MinoritySpec extends FunSpec
     with TestEnvironment
-    with SharedSparkContext
+    with TestFiles
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
 
   describe("Minority Operation") {
     ifCanRunSpark {
-      val allOnes = AllOnesTestFile(inputHome, conf)
-      val allTwos = AllTwosTestFile(inputHome, conf)
-      val allHundreds = AllHundredsTestFile(inputHome, conf)
+      val allOnes = AllOnesTestFile
+      val allTwos = AllTwosTestFile
+      val allHundreds = AllHundredsTestFile
 
       it("should assign the minority of each raster, as a traversable") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val ones = allOnes
+        val twos = allTwos
+        val hundreds = allHundreds
 
         val res = ones.localMinority(List(twos, twos, twos, hundreds, hundreds))
 
@@ -48,9 +47,9 @@ class MinoritySpec extends FunSpec
       }
 
       it("should assign the minority of each raster, as a vararg") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val ones = allOnes
+        val twos = allTwos
+        val hundreds = allHundreds
 
         val res = ones.localMinority(twos, twos, hundreds, hundreds)
 
@@ -59,9 +58,9 @@ class MinoritySpec extends FunSpec
       }
 
       it("should assign the nth minority of each raster, as a traversable") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val ones = allOnes
+        val twos = allTwos
+        val hundreds = allHundreds
 
         val res = ones.localMinority(1, List(twos, hundreds, ones, twos, twos))
 
@@ -70,9 +69,9 @@ class MinoritySpec extends FunSpec
       }
 
       it("should assign the nth minority of each raster, as a vararg") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val ones = allOnes
+        val twos = allTwos
+        val hundreds = allHundreds
 
         val res = ones.localMinority(1, twos, hundreds, ones, twos, twos)
 

@@ -26,20 +26,20 @@ import org.scalatest.FunSpec
 
 class MajoritySpec extends FunSpec
     with TestEnvironment
-    with SharedSparkContext
+    with TestFiles
     with RasterRDDMatchers
     with OnlyIfCanRunSpark {
 
   describe("Majority Operation") {
     ifCanRunSpark {
-      val allOnes = AllOnesTestFile(inputHome, conf)
-      val allTwos = AllTwosTestFile(inputHome, conf)
-      val allHundreds = AllHundredsTestFile(inputHome, conf)
+      val allOnes = AllOnesTestFile
+      val allTwos = AllTwosTestFile
+      val allHundreds = AllHundredsTestFile
 
       it("should assign the majority of each raster, as a traversable") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val ones = allOnes
+        val twos = allTwos
+        val hundreds = allHundreds
 
         val res = ones.localMajority(List(twos, hundreds, hundreds))
 
@@ -48,9 +48,9 @@ class MajoritySpec extends FunSpec
       }
 
       it("should assign the majority of each raster, as a vararg") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val ones = allOnes
+        val twos = allTwos
+        val hundreds = allHundreds
 
         val res = ones.localMajority(twos, twos, hundreds)
 
@@ -59,9 +59,9 @@ class MajoritySpec extends FunSpec
       }
 
       it("should assign the nth majority of each raster, as a traversable") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val ones = allOnes
+        val twos = allTwos
+        val hundreds = allHundreds
 
         val res = ones.localMajority(1, List(twos, hundreds, ones, twos, twos))
 
@@ -70,9 +70,9 @@ class MajoritySpec extends FunSpec
       }
 
       it("should assign the nth majority of each raster, as a vararg") {
-        val ones = sc.hadoopRasterRDD(allOnes.path)
-        val twos = sc.hadoopRasterRDD(allTwos.path)
-        val hundreds = sc.hadoopRasterRDD(allHundreds.path)
+        val ones = allOnes
+        val twos = allTwos
+        val hundreds = allHundreds
 
         val res = ones.localMajority(1, twos, hundreds, ones, twos, twos)
 

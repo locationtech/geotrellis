@@ -68,7 +68,6 @@ object SparkUtils extends Logging {
       .setAppName(appName)
       .setSparkHome(sparkHome)
       .set("spark.executor.extraClassPath", geoTrellisJar)
-//      .setJars(Array(geoTrellisJar))
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryo.registrator", "geotrellis.spark.io.hadoop.KryoRegistrator")
 
@@ -76,8 +75,6 @@ object SparkUtils extends Logging {
   }
   
   def hadoopConfiguration = {
-    // TODO - figure out how to get the conf directory automatically added to classpath via sbt
-    // - right now it is manually added
     Configuration.addDefaultResource("core-site.xml")
     Configuration.addDefaultResource("mapred-site.xml")
     Configuration.addDefaultResource("hdfs-site.xml")
@@ -111,7 +108,6 @@ object SparkUtils extends Logging {
     
     val matches = findJar(new File(gtHome)).flatten
     if (matches.length == 1) {
-//      val firstMatch = prefix(matches(0).getAbsolutePath)
       val firstMatch = matches(0).getAbsolutePath
       logInfo(s"Found unique match for geotrellis-spark jar: ${firstMatch}")
       Some(firstMatch)
