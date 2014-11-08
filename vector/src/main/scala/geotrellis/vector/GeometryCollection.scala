@@ -83,7 +83,8 @@ class GeometryCollection(
    * this GeometryCollection.
    */
   lazy val envelope: Extent =
-    jtsGeom.getEnvelopeInternal
+    if(jtsGeom.isEmpty) Extent(0.0, 0.0, 0.0, 0.0)
+    else jtsGeom.getEnvelopeInternal
 
   override def equals(that: Any): Boolean = {
     that match {

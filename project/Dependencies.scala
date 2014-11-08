@@ -31,6 +31,7 @@ object Dependencies {
   val scalaReflect  = "org.scala-lang"      %  "scala-reflect"   % "2.10.2"
   val sigar         = "org.hyperic"         %  "sigar"           % "1.6.4"
   val jts           = "com.vividsolutions"  %  "jts"             % "1.13"
+
   val monocleCore   = "com.github.julien-truffaut" %% "monocle-core"    % "0.4.0"
   val monocleMacro  = "com.github.julien-truffaut" %% "monocle-macro"   % "0.4.0"
 

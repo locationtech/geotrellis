@@ -3,6 +3,7 @@ package geotrellis.raster.reproject
 import geotrellis.raster._
 import geotrellis.vector.Extent
 import geotrellis.proj4._
+import geotrellis.raster.interpolation._
 
 import spire.syntax.cfor._
 
@@ -28,7 +29,7 @@ object Reproject {
     val inverseTransform = Transform(dest, src)
 
     val rowTransform: RowTransform =
-      if(options.errorThreshold != 0.0)
+      if (options.errorThreshold != 0.0)
         RowTransform.approximate(inverseTransform, options.errorThreshold)
       else
         RowTransform.exact(inverseTransform)
@@ -44,7 +45,7 @@ object Reproject {
 
     val destY = Array.ofDim[Double](newCols).fill(topLeftY)
 
-    
+
     // The map coordinates of the source raster, transformed from the
     // destination map coordinates on each row iteration
     val srcX = Array.ofDim[Double](newCols)
