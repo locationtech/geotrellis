@@ -20,8 +20,6 @@ import geotrellis.vector._
 
 import com.vividsolutions.jts.{geom=>jts}
 
-import com.vividsolutions.jts.{geom=>jts}
-
 import org.scalatest._
 
 class MultiLineSpec extends FunSpec with Matchers {
