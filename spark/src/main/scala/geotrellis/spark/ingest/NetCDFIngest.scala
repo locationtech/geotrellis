@@ -41,7 +41,7 @@ object NetCDFIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
     if (args.pyramid) {
       Pyramid.saveLevels(rdd, level, layoutScheme)(save).get // expose exceptions
     } else{
-      save(rdd, level)
+      save(rdd, level).get
     }
   }
 }
