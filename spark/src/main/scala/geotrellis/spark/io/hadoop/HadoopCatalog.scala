@@ -8,9 +8,9 @@ import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.SequenceFile
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat
-import org.apache.hadoop.mapred.SequenceFileOutputFormat
-import org.apache.hadoop.mapred.MapFileOutputFormat
-import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
+import org.apache.hadoop.mapreduce.lib.output.MapFileOutputFormat
+import org.apache.hadoop.mapreduce.Job
 import org.apache.spark._
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd._
@@ -114,10 +114,9 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
           sys.error(s"Directory already exists: $path")
       }
 
-      val jobConf = new JobConf(conf)
-
-      jobConf.set("io.map.index.interval", "1")
-      SequenceFileOutputFormat.setOutputCompressionType(jobConf, SequenceFile.CompressionType.RECORD)
+      val job = new Job(conf)
+      job.getConfiguration.set("io.map.index.interval", "1")
+      SequenceFileOutputFormat.setOutputCompressionType(job, SequenceFile.CompressionType.RECORD)
 
       val pathString = path.toUri.toString
 
@@ -156,12 +155,12 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
 
       // Write the RDD.      
       sortedWritable
-        .saveAsHadoopFile(
+        .saveAsNewAPIHadoopFile(
           pathString,
           implicitly[ClassTag[keyWritable.Writable]].runtimeClass,
           classOf[TileWritable],
           classOf[MapFileOutputFormat],
-          jobConf
+          job.getConfiguration
         )
 
       writeSplits(splits, path, conf)
