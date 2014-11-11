@@ -10,7 +10,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
 import org.apache.hadoop.mapreduce.lib.output.MapFileOutputFormat
-import org.apache.hadoop.mapreduce.Job
+import org.apache.hadoop.mapreduce.{JobContext, Job}
 import org.apache.spark._
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd._
@@ -113,7 +113,7 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
           sys.error(s"Directory already exists: $path")
       }
 
-      val job = new Job(conf)
+      val job = Job.getInstance(conf)
       job.getConfiguration.set("io.map.index.interval", "1")
       SequenceFileOutputFormat.setOutputCompressionType(job, SequenceFile.CompressionType.RECORD)
 
