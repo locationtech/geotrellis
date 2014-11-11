@@ -12,4 +12,4 @@ case class MultiLineRecord(multiLine: MultiLine) extends ShapeRecord
 
 case class PolygonRecord(polygon: Polygon) extends ShapeRecord
 
-case class MultiPatchRecord(multiLine: MultiLine) extends ShapeRecord
+case class MultiPolygonRecord(multiPolygon: MultiPolygon) extends ShapeRecord

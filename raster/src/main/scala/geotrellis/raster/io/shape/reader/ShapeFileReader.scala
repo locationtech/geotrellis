@@ -6,7 +6,7 @@ import geotrellis.vector._
 
 import java.nio.{ByteBuffer, ByteOrder}
 
-import collection.mutable.ArrayBuffer
+import collection.mutable.{ArrayBuffer, ListBuffer}
 
 import spire.syntax.cfor._
 
@@ -14,7 +14,9 @@ case class MalformedShapeFileException(msg: String) extends RuntimeException(msg
 
 object ShapeFileReader {
 
-  def apply(path: String): ShapeFileReader = apply(Filesystem.slurp(path))
+  def apply(path: String): ShapeFileReader =
+    if (path.endsWith(".shp")) apply(Filesystem.slurp(path))
+    else throw new MalformedShapeFileException("Bad file ending (must be .shp).")
 
   def apply(bytes: Array[Byte]): ShapeFileReader =
     new ShapeFileReader(ByteBuffer.wrap(bytes, 0, bytes.size))
@@ -22,6 +24,7 @@ object ShapeFileReader {
 }
 
 object ShapeType {
+
   val PointType = 1
   val MultiLineType = 3
   val PolygonType = 5
@@ -34,59 +37,37 @@ object ShapeType {
   val MultiLineMType = 23
   val PolygonMType = 25
   val MultiPointMType = 28
-  val MultiPatchType = 31
+  val MultiPolygonType = 31
 
   val ValidValues = Set(1, 3, 5, 8, 11, 13, 15, 18, 21, 23, 25, 28, 31)
 
 }
 
-// Currently this is for the .shp
-class ShapeFileReader(byteBuffer: ByteBuffer) {
+object MultiPolygonPartType {
+
+  val TriangleStrip = 0
+  val TriangleFan = 1
+  val OuterRing = 2
+  val InnerRing = 3
+  val FirstRing = 4
+  val Ring = 5
+
+}
+
+class ShapeFileReader(byteBuffer: ByteBuffer) extends ShapeHeaderReader {
 
   import ShapeType._
 
   private val boundingBox = Array.ofDim[Double](8)
 
-  def read: ShapeFile = {
-    byteBuffer.order(ByteOrder.BIG_ENDIAN)
-    val version = readHeader
-
-    val recordBuffer = ArrayBuffer[ShapeRecord]()
-    while (byteBuffer.remaining > 0)
-      recordBuffer += readRecord
-
-    null
-  }
-
-  private def readHeader: Int = {
-    val fileCode = byteBuffer.getInt
-    if (fileCode != 9994)
-      throw new MalformedShapeFileException(s"Wrong file code, $fileCode != 9994.")
-
-    for (i <- 0 until 5)
-      if (byteBuffer.getInt != 0)
-        throw new MalformedShapeFileException("Malformed file header.")
+  lazy val read: ShapeFile = {
+    val boundingBox = readHeader(byteBuffer)
 
     byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
+    val recordBuffer = ArrayBuffer[ShapeRecord]()
+    while (byteBuffer.remaining > 0) recordBuffer += readRecord
 
-    val fileSize = byteBuffer.getInt
-    if (fileSize != byteBuffer.limit)
-      throw new MalformedShapeFileException(
-        s"Malformed file size, $fileSize != ${byteBuffer.limit}.")
-
-    val version = byteBuffer.getInt
-    if (version != 1000)
-      throw new MalformedShapeFileException(s"Wrong version, $fileCode != 1000.")
-
-    val shapeType = byteBuffer.getInt
-    if (!ValidValues.contains(shapeType))
-      throw new MalformedShapeFileException(s"Malformed shape type $shapeType.")
-
-    cfor(0)(_ < boundingBox.size, _ + 1) { i =>
-      boundingBox(i) = byteBuffer.getDouble
-    }
-
-    version
+    ShapeFile(recordBuffer.toArray, boundingBox)
   }
 
   private def readRecord: ShapeRecord = {
@@ -108,9 +89,9 @@ class ShapeFileReader(byteBuffer: ByteBuffer) {
       case MultiPointZType => readMultiPointZRecord
       case MultiLineZType => readMultiLineZRecord
       case PolygonZType => readPolygonZRecord
-      case MultiPatchType => readMultiPatchRecord
+      case MultiPolygonType => readMultiPolygonRecord
       case malformedShapeType => throw new MalformedShapeFileException(
-        s"""Malformed shape type $malformedShapeType for record no: $nr.
+        s"""Malformed shape type: $malformedShapeType for record no: $nr.
           Note that this reader doesn't support null types.""")
     }
 
@@ -256,6 +237,78 @@ class ShapeFileReader(byteBuffer: ByteBuffer) {
 
   private def readPolygonZRecord: PolygonRecord = readPolygonRecord(2)
 
-  private def readMultiPatchRecord = MultiPatchRecord(readMultiLine(2))
+  import MultiPolygonPartType._
+
+  private def readMultiPolygonRecord = {
+    moveByteBufferForward(32)
+
+    val numParts = byteBuffer.getInt
+    val numPoints = byteBuffer.getInt
+
+    val partIndices = Array.ofDim[Int](numParts)
+
+    cfor(0)(_ < numParts, _ + 1) { i =>
+      partIndices(i) = byteBuffer.getInt
+    }
+
+    val partTypes = Array.ofDim[Int](numParts)
+
+    cfor(0)(_ < numParts, _ + 1) { i =>
+      partTypes(i) = byteBuffer.getInt
+    }
+
+    val polygons = ListBuffer[Polygon]()
+
+    var idx = 0
+    def calcSize(idx: Int) = {
+        if (idx != numParts - 1) partIndices(idx + 1) - partIndices(idx)
+        else numPoints
+    }
+
+    while (idx < numParts) {
+      partTypes(idx) match {
+        case TriangleStrip | TriangleFan =>
+          polygons += Polygon(Line(readPoints(calcSize(idx))))
+        case OuterRing => {
+          val size = calcSize(idx)
+
+          val outer = Line(readPoints(size))
+          var inners = ListBuffer[Line]()
+
+          idx += 1
+          while (partTypes(idx) == InnerRing) {
+            inners += Line(readPoints(calcSize(idx)))
+            idx += 1
+          }
+          idx -= 1
+
+          polygons += Polygon(outer, inners)
+        }
+        case FirstRing => {
+          val size = calcSize(idx)
+
+          val first = Line(readPoints(size))
+          var rings = ListBuffer[Line]()
+
+          idx += 1
+          while (partTypes(idx) == Ring) {
+            rings += Line(readPoints(calcSize(idx)))
+            idx += 1
+          }
+          idx -= 1
+
+          polygons += Polygon(first, rings)
+        }
+        case Ring => polygons += Polygon(Line(readPoints(calcSize(idx))))
+        case malformedMultiPolygonType =>
+          throw new MalformedShapeFileException(
+            s"""${malformedMultiPolygonType} is not a valid multi patch type.""")
+      }
+
+      idx += 1
+    }
+
+    MultiPolygonRecord(MultiPolygon(polygons))
+  }
 
 }
