@@ -34,7 +34,6 @@ class HadoopCatalog private (sc: SparkContext, val metaDataCatalog: HadoopMetaDa
     new Path(rootPath, catalogConfig.layerDataDir(layerId))
 
   private def writeSplits[K: HadoopWritable](splits: Array[K], raster: Path, conf: Configuration): Unit = {
-    val keyWritable = implicitly[HadoopWritable[K]]
     val splitFile = new Path(raster, catalogConfig.splitsFile)
     HdfsUtils.writeArray[K](splitFile, conf, splits)
   }
