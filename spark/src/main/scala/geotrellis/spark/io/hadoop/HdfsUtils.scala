@@ -169,7 +169,8 @@ object HdfsUtils {
     val writable = implicitly[HadoopWritable[T]]
     import writable.implicits._
 
-    val fs = FileSystem.get(conf)
+    val fs = path.getFileSystem(conf)
+
     val out = new ObjectOutputStream(fs.create(path))
     try {
       val size = arr.size
