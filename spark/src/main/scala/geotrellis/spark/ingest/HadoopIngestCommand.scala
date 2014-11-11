@@ -48,7 +48,7 @@ object HadoopIngestCommand extends ArgMain[HadoopIngestArgs] with Logging {
     val (level, rdd) =  Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme)
 
     val save = { (rdd: RasterRDD[SpatialKey], level: LayoutLevel) =>
-      catalog.save(LayerId(args.layerName, level.zoom), rdd)
+      catalog.save(LayerId(args.layerName, level.zoom), rdd, args.clobber)
     }
 
     if (args.pyramid) {

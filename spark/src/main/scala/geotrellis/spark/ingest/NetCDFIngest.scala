@@ -35,7 +35,7 @@ object NetCDFIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
     val (level, rdd) =  Ingest[NetCdfBand, SpaceTimeKey](source, args.destCrs, layoutScheme)
 
     val save = { (rdd: RasterRDD[SpaceTimeKey], level: LayoutLevel) =>
-      accumulo.catalog.save(LayerId(args.layerName, level.zoom), rdd, args.table, true)
+      accumulo.catalog.save(LayerId(args.layerName, level.zoom), rdd, args.table, args.clobber)
     }
 
     if (args.pyramid) {

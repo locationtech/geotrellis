@@ -11,6 +11,7 @@ trait IngestArgs extends SparkArgs with HadoopArgs {
   @Required var layerName: String = _
   var crs: String = "EPSG:4326"
   var pyramid: Boolean = false
+  var clobber: Boolean = false
 
   def destCrs: CRS = CRS.fromName(crs)
   def inPath: Path = new Path(input)
