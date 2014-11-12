@@ -72,8 +72,8 @@ object RowTransform {
       } else {
         // Fill out the values based on the linear interpolation
         cfor(startIndex + 1)(_ < startIndex + length - 1, _ + 1) { i =>
-          if(startIndex + i != midPoint) {
-            var dxi = srcX(i + startIndex) - srcXMin
+          if(i != midPoint) {
+            val dxi = srcX(i) - srcXMin
             destX(i) = xmin + (deltaX * dxi)
             destY(i) = ymin + (deltaY * dxi)
           }
