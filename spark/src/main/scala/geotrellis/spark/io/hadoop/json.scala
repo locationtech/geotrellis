@@ -13,7 +13,7 @@ package object json {
     def write(metaData: (LayerMetaData, Path)) = 
       JsObject(
         "layerMetaData" -> metaData._1.toJson,
-        "path" -> JsString(metaData._2.toUri.getPath)
+        "path" -> JsString(metaData._2.toUri.toString)
       )
 
     def read(value: JsValue): (LayerMetaData, Path) =
