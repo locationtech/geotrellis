@@ -10,19 +10,18 @@ import geotrellis.raster.io.geotiff.reader._
 import org.scalatest._
 import spire.syntax.cfor._
 
-// TODO: Use the default crs in each tif?
 class ReprojectSpec extends FunSpec
                        with TileBuilders
                        with TestEngine {
   describe("reprojects in approximation to GDAL") {
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on nlcd tile") {
-      val (source, extent, _) =
+      val (source, extent, crs) =
         GeoTiffReader("raster-test/data/reproject/nlcd_tile_wsg84.tif").read.imageDirectories.head.toRaster
       val (expected, expectedExtent, _) =
         GeoTiffReader("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").read.imageDirectories.head.toRaster
       val (actual, actualExtent) =
-        source.reproject(extent, LatLng, WebMercator, ReprojectOptions(NearestNeighbor, 0.0))
+        source.reproject(extent, crs, WebMercator, ReprojectOptions(NearestNeighbor, 0.0))
 
       actual.rows should be (expected.rows)
       actual.cols should be (expected.cols)

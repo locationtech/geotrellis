@@ -61,7 +61,7 @@ object RowTransformCheck extends Properties("RowTransform") {
   implicit lazy val arbThreshold: Arbitrary[Threshold] =
     Arbitrary(genThreshold)
 
-  val transform = Transform(LatLng, WebMercator)
+  val transform = Transform(CRS.fromName("EPSG:32618"), WebMercator)
 
   property("Stays within thresholds") = forAll { (testCase: TestCase, thresh: Threshold) =>
     val TestCase(extent, srcX, srcY) = testCase
