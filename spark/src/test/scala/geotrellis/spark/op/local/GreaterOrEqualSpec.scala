@@ -32,7 +32,6 @@ class GreaterOrEqualSpec extends FunSpec
       val increasing = IncreasingTestFile
       val allOnes = AllOnesTestFile
 
-
       it("should check greater or equal between an integer and a raster") {
         val inc = increasing
         val res = inc >= 1
