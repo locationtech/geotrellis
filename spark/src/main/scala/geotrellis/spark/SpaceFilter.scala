@@ -19,14 +19,13 @@ case class SpaceFilter[K: SpatialComponent](bounds: GridBounds) extends KeyFilte
       }
 
     val (maxCol, maxRow) =
-      minKey match {
+      maxKey match {
         case _: MinKeyBound[K] => (0, 0)
         case _: MaxKeyBound[K] => (Int.MaxValue, Int.MaxValue)
         case ValueKeyBound(value) =>
           val SpatialKey(col, row) = value.spatialComponent
           (col, row)
       }
-
     bounds.intersects(GridBounds(minCol, minRow, maxCol, maxRow))
   }
 }
