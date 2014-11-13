@@ -37,7 +37,7 @@ object AccumuloIngestCommand extends ArgMain[AccumuloIngestArgs] with Logging {
     val (level, rdd) =  Ingest[ProjectedExtent, SpatialKey](source, args.destCrs, layoutScheme)
 
     val save = { (rdd: RasterRDD[SpatialKey], level: LayoutLevel) =>
-      accumulo.catalog.save(LayerId(args.layerName, level.zoom), rdd, args.table, args.clobber)
+      accumulo.catalog.save(LayerId(args.layerName, level.zoom), args.table, rdd, args.clobber)
     }
     if (args.pyramid) {
       Pyramid.saveLevels(rdd, level, layoutScheme)(save).get // expose exceptions

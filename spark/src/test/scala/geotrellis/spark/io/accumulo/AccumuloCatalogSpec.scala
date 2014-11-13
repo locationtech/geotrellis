@@ -3,6 +3,7 @@ package geotrellis.spark.io.accumulo
 import java.io.IOException
 
 import geotrellis.raster._
+import geotrellis.spark
 
 import geotrellis.spark._
 import geotrellis.spark.ingest._
@@ -15,6 +16,7 @@ import geotrellis.proj4.LatLng
 
 import org.apache.spark._
 import org.apache.spark.rdd._
+import org.joda.time.DateTime
 import org.scalatest._
 import org.scalatest.Matchers._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
@@ -50,12 +52,12 @@ class AccumuloCatalogSpec extends FunSpec
       ignore("should fail writing to no table"){
         // we actually try to create table now, ehh ?
         intercept[TableNotFoundError] {
-          catalog.save(LayerId("ones", level.zoom), onesRdd, "NOTiles").get
+          catalog.save(LayerId("ones", level.zoom), "NOTiles", onesRdd).get
         }
       }
 
       it("should succeed writing to a table"){
-        catalog.save(LayerId("ones", level.zoom), onesRdd, "tiles").get
+        catalog.save(LayerId("ones", level.zoom), "tiles", onesRdd).get
       }
 
       it("should load out saved tiles"){
@@ -70,7 +72,7 @@ class AccumuloCatalogSpec extends FunSpec
 
       it("fetch a TileExtent from catalog"){
         val tileBounds = GridBounds(915,305,916,306)
-        val filters = FilterSet.EMPTY[SpatialKey] withFilter SpaceFilter(tileBounds)
+        val filters = new FilterSet[SpatialKey] withFilter SpaceFilter(tileBounds)
         val rdd1 = catalog.load[SpatialKey](LayerId("ones", 10), filters).get
         val rdd2 = catalog.load[SpatialKey](LayerId("ones", 10), filters).get
 
